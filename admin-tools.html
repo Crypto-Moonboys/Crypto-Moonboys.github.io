@@ -18,12 +18,10 @@
       --accent: #7ec5ff;
     }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
+    .admin-page {
       min-height: 100vh;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       color: var(--text);
-      background: radial-gradient(circle at 20% -10%, #1d3357 0%, var(--bg) 50%), var(--bg);
       display: grid;
       place-items: center;
       padding: 24px;
@@ -81,7 +79,7 @@
   </style>
 </head>
 <body >
-<main id="content" role="main"></main>
+<main id="content" role="main"><div class="admin-page"></div></main>
 
 <!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
 <!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->

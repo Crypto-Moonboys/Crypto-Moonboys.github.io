@@ -20,39 +20,29 @@
   <style>
     /*
       Battle Chamber page-local styles.
-      Targets Battle Chamber page content and page-level overflow guards:
-        html, body — overflow-x guard only
-        #content — box model and overflow
-        .page-hero, .section — panel layout
-        .community-hero-grid, .community-grid, .community-card,
-        .community-card-inner, .cta-row — page content grid and cards
+      All rules are scoped to .battle-page — the page-owned wrapper inside #content.
 
-      Must NOT target shell-owned layout selectors.
-      Shell layout (#layout, #main-wrapper, #sidebar, #homepage-right-panel)
-      is governed exclusively by css/wiki.css and css/retro-16bit-theme.css.
+      Must NOT target shell-owned layout selectors:
+        html, body, #content, #layout, #main-wrapper,
+        #sidebar, #homepage-right-panel.
+      Shell layout is governed exclusively by css/wiki.css and
+      css/retro-16bit-theme.css.
     */
 
-    html,
-    body {
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden !important;
-    }
-
-    #content,
-    #content * {
+    .battle-page,
+    .battle-page * {
       box-sizing: border-box;
     }
 
-    #content {
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      overflow-x: hidden !important;
+    .battle-page {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow-x: hidden;
     }
 
-    .page-hero,
-    .section {
+    .battle-page .page-hero,
+    .battle-page .section {
       width: 100%;
       max-width: 100%;
       min-width: 0;
@@ -62,19 +52,19 @@
       overflow: visible;
     }
 
-    .page-hero {
+    .battle-page .page-hero {
       padding: clamp(24px,5vw,70px) clamp(16px,4vw,44px);
       margin-bottom: 18px;
     }
 
-    .section {
+    .battle-page .section {
       margin: 0 0 18px;
       padding: 18px;
     }
 
-    .page-hero h1,
-    .section h2,
-    .community-card h3 {
+    .battle-page .page-hero h1,
+    .battle-page .section h2,
+    .battle-page .community-card h3 {
       margin: 0 0 10px;
       max-width: 100%;
       text-transform: uppercase;
@@ -84,19 +74,19 @@
       line-height: 1.25;
     }
 
-    .page-hero p,
-    .section p,
-    .section li,
-    .community-card,
-    .community-card-inner,
-    .community-list,
-    .community-loading,
-    .community-empty,
-    #tg-community-leaderboard,
-    #tg-activity-feed,
-    #tg-quest-panel,
-    #tg-profile-card,
-    #tg-daily-status {
+    .battle-page .page-hero p,
+    .battle-page .section p,
+    .battle-page .section li,
+    .battle-page .community-card,
+    .battle-page .community-card-inner,
+    .battle-page .community-list,
+    .battle-page .community-loading,
+    .battle-page .community-empty,
+    .battle-page #tg-community-leaderboard,
+    .battle-page #tg-activity-feed,
+    .battle-page #tg-quest-panel,
+    .battle-page #tg-profile-card,
+    .battle-page #tg-daily-status {
       max-width: 100%;
       min-width: 0;
       color: var(--color-text-muted);
@@ -106,44 +96,44 @@
       word-break: normal;
     }
 
-    .community-hero-grid,
-    .community-grid,
-    .community-main,
-    .community-side,
-    .community-stat-grid,
-    #community-status-panel,
-    [data-csp-panel],
-    [data-las-panel],
-    #tg-profile-wrapper {
+    .battle-page .community-hero-grid,
+    .battle-page .community-grid,
+    .battle-page .community-main,
+    .battle-page .community-side,
+    .battle-page .community-stat-grid,
+    .battle-page #community-status-panel,
+    .battle-page [data-csp-panel],
+    .battle-page [data-las-panel],
+    .battle-page #tg-profile-wrapper {
       width: 100%;
       max-width: 100%;
       min-width: 0;
       overflow-x: hidden;
     }
 
-    .community-hero-grid,
-    .community-grid {
+    .battle-page .community-hero-grid,
+    .battle-page .community-grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       gap: 18px;
       margin-bottom: 18px;
     }
 
-    .community-card {
+    .battle-page .community-card {
       width: 100%;
       max-width: 100%;
       min-width: 0;
       overflow: visible;
     }
 
-    .community-card-inner {
+    .battle-page .community-card-inner {
       width: 100%;
       max-width: 100%;
       min-width: 0;
       overflow-x: hidden;
     }
 
-    .cta-row {
+    .battle-page .cta-row {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
@@ -153,14 +143,14 @@
       min-width: 0;
     }
 
-    .cta-row .btn {
+    .battle-page .cta-row .btn {
       max-width: 100%;
       white-space: normal !important;
       overflow-wrap: anywhere;
       text-align: center;
     }
 
-    .battle-telegram-bot-link {
+    .battle-page .battle-telegram-bot-link {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -168,55 +158,52 @@
     }
 
     @media (min-width: 901px) {
-      .community-hero-grid {
+      .battle-page .community-hero-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .community-grid {
+      .battle-page .community-grid {
         grid-template-columns: minmax(0, 2fr) minmax(260px, .8fr);
       }
     }
 
     @media (max-width: 900px) {
-      body.page-community #content {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        padding-left: max(14px, env(safe-area-inset-left)) !important;
-        padding-right: max(14px, env(safe-area-inset-right)) !important;
+      .battle-page {
+        padding-left: max(14px, env(safe-area-inset-left));
+        padding-right: max(14px, env(safe-area-inset-right));
       }
 
-      body.page-community .breadcrumb {
+      .battle-page .breadcrumb {
         max-width: 100%;
         white-space: normal !important;
         overflow-wrap: anywhere;
       }
 
-      body.page-community .page-hero,
-      body.page-community .section,
-      body.page-community .community-card,
-      body.page-community #community-status-panel,
-      body.page-community [data-csp-panel],
-      body.page-community [data-las-panel] {
+      .battle-page .page-hero,
+      .battle-page .section,
+      .battle-page .community-card,
+      .battle-page #community-status-panel,
+      .battle-page [data-csp-panel],
+      .battle-page [data-las-panel] {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
       }
 
-      body.page-community .community-hero-grid,
-      body.page-community .community-grid {
+      .battle-page .community-hero-grid,
+      .battle-page .community-grid {
         grid-template-columns: minmax(0, 1fr) !important;
       }
 
-      body.page-community .page-hero {
+      .battle-page .page-hero {
         padding: 22px 16px !important;
       }
 
-      body.page-community .section {
+      .battle-page .section {
         padding: 16px !important;
       }
 
-      body.page-community .page-hero h1 {
+      .battle-page .page-hero h1 {
         font-size: clamp(1.35rem, 7vw, 2rem) !important;
         letter-spacing: 0.02em !important;
         white-space: normal !important;
@@ -224,44 +211,44 @@
         word-break: normal !important;
       }
 
-      body.page-community .section h2,
-      body.page-community .community-card h3 {
+      .battle-page .section h2,
+      .battle-page .community-card h3 {
         font-size: clamp(1rem, 4.8vw, 1.3rem) !important;
         white-space: normal !important;
         overflow-wrap: anywhere !important;
       }
 
-      body.page-community p,
-      body.page-community li {
+      .battle-page p,
+      .battle-page li {
         font-size: clamp(0.95rem, 4vw, 1.05rem) !important;
         white-space: normal !important;
         overflow-wrap: anywhere !important;
       }
 
-      body.page-community ul {
+      .battle-page ul {
         padding-left: 1.1rem;
       }
 
-      body.page-community .cta-row {
+      .battle-page .cta-row {
         flex-direction: column;
       }
 
-      body.page-community .cta-row .btn {
+      .battle-page .cta-row .btn {
         width: 100%;
       }
     }
 
     @media (max-width: 480px) {
-      body.page-community #content {
-        padding-left: 12px !important;
-        padding-right: 12px !important;
+      .battle-page {
+        padding-left: 12px;
+        padding-right: 12px;
       }
 
-      body.page-community .page-hero {
+      .battle-page .page-hero {
         padding: 20px 14px !important;
       }
 
-      body.page-community .section {
+      .battle-page .section {
         padding: 14px !important;
       }
     }
@@ -269,6 +256,7 @@
 </head>
 <body class="page-community page-has-right-panel">
 <main id="content" role="main">
+  <div class="battle-page">
       <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span aria-current="page">Battle Chamber</span></nav>
       <div id="gklink-status" class="gklink-banner" style="display:none"></div>
       <div data-tg-sync-cta></div>
@@ -328,6 +316,7 @@
         </div>
       </section>
       <div class="wiki-comments" data-page-id="community"></div>
+  </div>
     </main>
 
 <!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
