@@ -153,19 +153,14 @@
     '</div>',
   ].join('\n');
 
-  /* ── 6. Right panel (same as before) ──────────────────────────── */
+  /* ── 6. Right panel ───────────────────────────────────────────── */
   function shouldShowRightPanel(pn, body) {
     if (body.classList.contains('page-has-right-panel')) return true;
-    var p = pn === '/' ? '/index.html'
-          : (pn.length > 1 && pn.charAt(pn.length - 1) === '/')
-            ? pn.slice(0, -1)
-            : pn;
+    var p = pn === '/' ? '/index.html' : (pn.length > 1 && pn.charAt(pn.length - 1) === '/') ? pn.slice(0, -1) : pn;
     var exact = ['/index.html','/sam.html','/graph.html','/search.html','/timeline.html','/dashboard.html','/community.html','/how-to-play.html','/games','/games/','/games/index.html','/games/leaderboard.html'];
     if (exact.indexOf(p) !== -1) return true;
     var prefixes = ['/categories/', '/wiki/'];
-    for (var i = 0; i < prefixes.length; i++) {
-      if (p.indexOf(prefixes[i]) === 0) return true;
-    }
+    for (var i = 0; i < prefixes.length; i++) { if (p.indexOf(prefixes[i]) === 0) return true; }
     return false;
   }
 
@@ -174,10 +169,116 @@
     rightPanel = document.createElement('aside');
     rightPanel.id = 'homepage-right-panel';
     rightPanel.setAttribute('aria-label', 'Player status and actions');
-    rightPanel.innerHTML = [ /* ... (same HUD HTML as before) ... */ ].join('\n');
-    // (keeping the full rightPanel block for brevity — identical to original)
-    setTimeout(function _hudPlayerInit() { /* ... */ }, 0);
-    (function _bindFactionUpdate() { /* ... */ })();
+    rightPanel.innerHTML = [
+      '<!-- ── PLAYER STATUS ── -->',
+      '<div class="retro-hud-box hud-box--player">',
+      '  <div class="retro-hud-title">',
+      '    <span class="retro-hud-title-icon" aria-hidden="true">\u25B6</span>',
+      '    Player Status',
+      '    <span class="retro-hud-mascot" aria-hidden="true">\uD83D\uDC3B</span>',
+      '  </div>',
+      '  <div class="retro-hud-body">',
+      '    <div class="hud-player-portrait-row">',
+      '      <div class="hud-avatar-box" id="hud-player-avatar" role="img" aria-label="Player avatar">',
+      '        <span class="hud-avatar-icon" aria-hidden="true">\uD83D\uDC7E</span>',
+      '      </div>',
+      '      <div class="hud-player-info">',
+      '        <span class="hud-player-name" id="hud-player-name">Guest</span>',
+      '      </div>',
+      '    </div>',
+      '    <div data-csp-panel></div>',
+      '  </div>',
+      '</div>',
+      '',
+      '<!-- ── NEXT ACTIONS ── -->',
+      '<div class="retro-hud-box hud-box--actions">',
+      '  <div class="retro-hud-title">',
+      '    <span class="retro-hud-title-icon" aria-hidden="true">\u25B6</span>',
+      '    Next Actions',
+      '    <span class="retro-hud-mascot" aria-hidden="true">\u26A1</span>',
+      '  </div>',
+      '  <div class="retro-hud-body">',
+      '    <ul class="hud-actions-list">',
+      '      <li class="hud-action-item">',
+      '        <a href="/games/" class="hud-action-link">\uD83C\uDFAE Play Arcade</a>',
+      '      </li>',
+      '    </ul>',
+      '    <div id="hud-actions-dynamic"></div>',
+      '    <div data-las-panel></div>',
+      '  </div>',
+      '</div>',
+    ].join('\n');
+
+    /* Deferred HUD population */
+    setTimeout(function _hudPlayerInit() {
+      var gate = window.MOONBOYS_IDENTITY;
+      if (!gate) return;
+
+      var avatarBox = document.getElementById('hud-player-avatar');
+      if (avatarBox) {
+        var photoUrl = typeof gate.getTelegramPhotoUrl === 'function' ? gate.getTelegramPhotoUrl() : null;
+        if (photoUrl) {
+          var img = document.createElement('img');
+          img.src = photoUrl;
+          img.alt = '';
+          img.className = 'hud-avatar-img';
+          img.width = 36; img.height = 36;
+          img.setAttribute('aria-hidden', 'true');
+          avatarBox.innerHTML = '';
+          avatarBox.appendChild(img);
+          avatarBox.removeAttribute('aria-label');
+          avatarBox.setAttribute('aria-label', 'Telegram avatar');
+        }
+      }
+
+      var nameEl = document.getElementById('hud-player-name');
+      if (nameEl) {
+        var displayName = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
+        if (displayName) nameEl.textContent = displayName;
+      }
+
+      var actionsEl = document.getElementById('hud-actions-dynamic');
+      if (actionsEl) {
+        var linked = typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked();
+        var factionApi = window.MOONBOYS_FACTION;
+        var factionStatus = factionApi && typeof factionApi.getCachedStatus === 'function' ? factionApi.getCachedStatus() : null;
+        var isUnaligned = factionStatus != null && (!factionStatus.faction || factionStatus.faction === 'unaligned');
+
+        var items = [];
+        if (!linked) {
+          items.push('<li class="hud-action-item hud-action--highlight"><a href="/gkniftyheads-incubator.html" class="hud-action-link">\uD83D\uDD17 Link Telegram</a></li>');
+        }
+        if (isUnaligned) {
+          items.push('<li class="hud-action-item"><a href="/community.html" class="hud-action-link">\u2694\uFE0F Join Faction</a></li>');
+        }
+        if (items.length > 0) {
+          actionsEl.innerHTML = '<ul class="hud-actions-list">' + items.join('') + '</ul>';
+        }
+      }
+    }, 0);
+
+    /* Faction update listener */
+    (function _bindFactionUpdate() {
+      var bus = window.MOONBOYS_EVENT_BUS;
+      if (!bus || typeof bus.on !== 'function') return;
+      bus.on('faction:update', function (d) {
+        var actEl = document.getElementById('hud-actions-dynamic');
+        if (!actEl) return;
+        var gate2 = window.MOONBOYS_IDENTITY;
+        var linked2 = gate2 && typeof gate2.isTelegramLinked === 'function' ? gate2.isTelegramLinked() : false;
+        var newFaction = (d && d.faction) ? d.faction : null;
+        if (!newFaction) {
+          var fApi = window.MOONBOYS_FACTION;
+          var fStatus = fApi && typeof fApi.getCachedStatus === 'function' ? fApi.getCachedStatus() : null;
+          newFaction = fStatus ? fStatus.faction : null;
+        }
+        var nowUnaligned = newFaction != null && (!newFaction || newFaction === 'unaligned');
+        var items2 = [];
+        if (!linked2) items2.push('<li class="hud-action-item hud-action--highlight"><a href="/gkniftyheads-incubator.html" class="hud-action-link">\uD83D\uDD17 Link Telegram</a></li>');
+        if (nowUnaligned) items2.push('<li class="hud-action-item"><a href="/community.html" class="hud-action-link">\u2694\uFE0F Join Faction</a></li>');
+        actEl.innerHTML = items2.length > 0 ? '<ul class="hud-actions-list">' + items2.join('') + '</ul>' : '';
+      });
+    })();
   }
 
   /* ── 7. Back-to-top button ───────────────────────────────────── */
@@ -186,10 +287,7 @@
   backToTop.setAttribute('aria-label', 'Back to top');
   backToTop.textContent = '\u2191';
 
-  /* ── 8. SAFE SHELL REBUILD (EXACT ORDER PER SPEC) ────────────── */
-  // 1. main already preserved above
-
-  // 2. Safely detach main if it is still inside any old shell node
+  /* ── 8. SAFE SHELL REBUILD (EXACT ORDER) ─────────────────────── */
   var oldLayout = document.getElementById('layout');
   var oldMainWrapper = document.getElementById('main-wrapper');
   if (oldMainWrapper && oldMainWrapper.contains(main)) {
@@ -200,7 +298,6 @@
     main.parentNode.removeChild(main);
   }
 
-  // 3. Remove ONLY old shell-owned nodes (now safe — main is detached)
   var OLD_SHELL_IDS = ['site-header', 'sidebar-overlay', 'layout', 'back-to-top', 'main-wrapper'];
   for (var si = 0; si < OLD_SHELL_IDS.length; si++) {
     var oldNode = document.getElementById(OLD_SHELL_IDS[si]);
@@ -209,32 +306,55 @@
     }
   }
 
-  // 4. Build fresh main-wrapper with the preserved main
   var mainWrapper = document.createElement('div');
   mainWrapper.id = 'main-wrapper';
   mainWrapper.appendChild(main);
   mainWrapper.appendChild(footer);
 
-  // 5. Build fresh layout
   var layout = document.createElement('div');
   layout.id = 'layout';
   layout.appendChild(sidebar);
   layout.appendChild(mainWrapper);
-  if (rightPanel) {
-    layout.appendChild(rightPanel);
-  }
+  if (rightPanel) layout.appendChild(rightPanel);
 
-  // 6. Insert new shell in correct visual order
   var firstChild = document.body.firstChild;
   document.body.insertBefore(backToTop, firstChild);
   document.body.insertBefore(layout, backToTop);
   document.body.insertBefore(overlay, layout);
   document.body.insertBefore(header, overlay);
 
-  /* ── 9. Mark active sidebar link (unchanged) ────────────────── */
-  // ... (same active link logic as original) ...
+  /* ── 9. Mark active sidebar link ────────────────────────────── */
+  var pathname = window.location.pathname;
+  var normPath = (pathname === '/' ? '/index.html' : pathname);
+  var exactMatches = ['/index.html','/dashboard.html','/sam.html','/community.html','/how-to-play.html','/graph.html','/timeline.html','/search.html','/about.html','/gkniftyheads-incubator.html','/games/leaderboard.html'];
+  var marked = false;
 
-  /* ── 10. Hamburger / sidebar binding (unchanged) ────────────── */
+  if (!marked && exactMatches.indexOf(normPath) !== -1) {
+    var links = sidebar.querySelectorAll('a[href="' + normPath + '"]');
+    if (links.length > 0) { links[0].classList.add('active'); links[0].setAttribute('aria-current', 'page'); marked = true; }
+  }
+  if (!marked && normPath === '/games/leaderboard.html') {
+    var lbLinks = sidebar.querySelectorAll('a[href="/games/leaderboard.html"]');
+    if (lbLinks.length > 0) { lbLinks[0].classList.add('active'); lbLinks[0].setAttribute('aria-current', 'page'); marked = true; }
+  }
+  if (!marked && normPath.indexOf('/games/') === 0 && normPath !== '/games/leaderboard.html') {
+    var gameLinks = sidebar.querySelectorAll('a[href="/games/"]');
+    if (gameLinks.length > 0) { gameLinks[0].classList.add('active'); gameLinks[0].setAttribute('aria-current', 'page'); marked = true; }
+  }
+  if (!marked && normPath.indexOf('/wiki/') === 0) {
+    var wikiLinks = sidebar.querySelectorAll('a[href="' + normPath + '"]');
+    if (wikiLinks.length > 0) { wikiLinks[0].classList.add('active'); wikiLinks[0].setAttribute('aria-current', 'page'); marked = true; }
+  }
+  if (!marked && normPath.indexOf('/categories/') === 0) {
+    var catLinks = sidebar.querySelectorAll('a[href="/categories/index.html"]');
+    if (catLinks.length > 0) { catLinks[0].classList.add('active'); catLinks[0].setAttribute('aria-current', 'page'); marked = true; }
+  }
+  if (normPath === '/index.html') {
+    var homeLinks = header.querySelectorAll('.header-nav a[href="/index.html"]');
+    if (homeLinks.length > 0) homeLinks[0].classList.add('active');
+  }
+
+  /* ── 10. Hamburger / sidebar binding ────────────────────────── */
   (function _bindSidebarNav() {
     var ham = document.getElementById('hamburger');
     var ov  = document.getElementById('sidebar-overlay');
@@ -249,29 +369,24 @@
 
     if (ham && !ham.dataset.sidebarBound) {
       ham.dataset.sidebarBound = 'true';
-      ham.addEventListener('click', function () {
-        _shellSetSidebarOpen(!document.body.classList.contains('sidebar-open'));
-      });
+      ham.addEventListener('click', function () { _shellSetSidebarOpen(!document.body.classList.contains('sidebar-open')); });
     }
-
     if (ov && !ov.dataset.sidebarBound) {
       ov.dataset.sidebarBound = 'true';
       ov.addEventListener('click', function () { _shellSetSidebarOpen(false); });
     }
-
     if (!window.__MOONBOYS_SIDEBAR_ESCAPE_BOUND) {
       window.__MOONBOYS_SIDEBAR_ESCAPE_BOUND = true;
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') _shellSetSidebarOpen(false);
-      });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') _shellSetSidebarOpen(false); });
     }
-
     window.__MOONBOYS_SIDEBAR_BOUND = !!(ham && ham.dataset.sidebarBound);
   }());
 
   /* ── ANTI-DRIFT GUARD ────────────────────────────────────────── */
-  // Fail fast if main was appended before safe removal (should never happen now)
   if (document.getElementById('main-wrapper') && document.getElementById('main-wrapper').contains(main)) {
     console.error('[site-shell] Anti-drift violation: main appended before old layout removal');
+  }
+  if (rightPanel && rightPanel.innerHTML.indexOf('Player Status') === -1) {
+    console.error('[site-shell] Anti-drift violation: rightPanel missing Player Status');
   }
 }());
