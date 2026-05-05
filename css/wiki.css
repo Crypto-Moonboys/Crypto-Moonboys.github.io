@@ -1937,7 +1937,6 @@ body::before {
     linear-gradient(90deg, rgba(102, 231, 255, 0.07) 1px, transparent 1px);
   background-size: 72px 72px;
   opacity: .22;
-  mask-image: radial-gradient(circle at center, rgba(255,255,255,.75), transparent 92%);
 }
 
 body::after {
