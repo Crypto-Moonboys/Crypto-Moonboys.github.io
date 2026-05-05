@@ -18,11 +18,11 @@
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
-    /*
-      Battle Chamber mobile overflow fix (targeted).
-      Scoped only to .battle-page.
-      No shell IDs touched.
-    */
+    /* Final aggressive mobile fix for community page */
+
+    body.page-community #content {
+      overflow-x: hidden;
+    }
 
     .battle-page {
       width: 100%;
@@ -30,84 +30,43 @@
       min-width: 0;
       overflow-x: clip;
       box-sizing: border-box;
+      padding-left: 10px;
+      padding-right: 10px;
     }
 
     .battle-page .page-hero,
-    .battle-page .section,
-    .battle-page .community-card,
-    .battle-page .community-card-inner {
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
+    .battle-page .section {
+      width: 100% !important;
+      max-width: calc(100vw - 20px) !important;
+      min-width: 0 !important;
       box-sizing: border-box;
+      margin-left: 0;
+      margin-right: 0;
     }
 
-    @media (max-width: 900px) {
-      body.page-community #content {
-        overflow-x: hidden;
-      }
-
-      .battle-page {
-        padding-left: 12px;
-        padding-right: 12px;
-      }
-
-      .battle-page .page-hero,
-      .battle-page .section {
-        width: 100% !important;
-        max-width: calc(100vw - 24px) !important;
-        min-width: 0 !important;
-        padding: 16px;
-        margin-left: 0;
-        margin-right: 0;
-        box-sizing: border-box;
-      }
-
-      .battle-page .page-hero {
-        padding: 20px 14px;
-      }
-
-      .battle-page .section {
-        padding: 14px;
-      }
-
-      .battle-page h1 {
-        font-size: clamp(1.1rem, 6.5vw, 1.45rem) !important;
-      }
-
-      .battle-page h2,
-      .battle-page .community-card h3 {
-        font-size: clamp(0.95rem, 5vw, 1.2rem) !important;
-      }
-
-      .battle-page p,
-      .battle-page li {
-        font-size: clamp(0.9rem, 4.2vw, 1.0rem) !important;
-      }
+    .battle-page .page-hero {
+      padding: 18px 12px;
     }
 
-    @media (max-width: 480px) {
-      .battle-page {
-        padding-left: 10px;
-        padding-right: 10px;
-      }
-
-      .battle-page .page-hero {
-        max-width: calc(100vw - 20px) !important;
-        padding: 16px 12px;
-      }
-
-      .battle-page .section {
-        max-width: calc(100vw - 20px) !important;
-        padding: 12px;
-      }
-
-      .battle-page h1 {
-        font-size: clamp(1.0rem, 7vw, 1.35rem) !important;
-      }
+    .battle-page .section {
+      padding: 14px;
     }
 
-    /* Keep all other desktop styles from previous version */
+    .battle-page h1 {
+      font-size: clamp(1.05rem, 7vw, 1.35rem) !important;
+    }
+
+    .battle-page h2,
+    .battle-page .community-card h3 {
+      font-size: clamp(0.9rem, 5.5vw, 1.15rem) !important;
+    }
+
+    .battle-page p,
+    .battle-page li {
+      font-size: clamp(0.85rem, 4.5vw, 0.95rem) !important;
+    }
+
+    /* Keep desktop styles */
     .battle-page .page-hero,
     .battle-page .section {
       border: 1px solid rgba(86,220,255,.26);
