@@ -381,12 +381,4 @@
     }
     window.__MOONBOYS_SIDEBAR_BOUND = !!(ham && ham.dataset.sidebarBound);
   }());
-
-  /* ── ANTI-DRIFT GUARD ────────────────────────────────────────── */
-  if (document.getElementById('main-wrapper') && document.getElementById('main-wrapper').contains(main)) {
-    console.error('[site-shell] Anti-drift violation: main appended before old layout removal');
-  }
-  if (rightPanel && rightPanel.innerHTML.indexOf('Player Status') === -1) {
-    console.error('[site-shell] Anti-drift violation: rightPanel missing Player Status');
-  }
 }());
