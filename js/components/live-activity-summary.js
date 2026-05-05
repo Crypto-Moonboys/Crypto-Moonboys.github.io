@@ -167,7 +167,8 @@
       var timer = setTimeout(function () { ac.abort(); }, 4000);
       var online = false;
       try {
-        var res = await fetch(apiBase, { method: 'HEAD', signal: ac.signal });
+        // HEAD /health — the worker returns 200 { ok: true } when up; never hit the bare root.
+        var res = await fetch(apiBase + '/health', { method: 'HEAD', signal: ac.signal });
         online = res.status < 500;
       } catch (_) {
         online = false;

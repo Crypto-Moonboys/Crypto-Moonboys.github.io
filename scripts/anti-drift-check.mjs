@@ -37,6 +37,9 @@
  * 30. Required sync/onboarding pages must have a Telegram entry point.
  * 31. Mobile category CSS must have a single-column breakpoint ≤640px.
  * 32. Site shell sidebar must link to /gkniftyheads-incubator.html.
+ * 33. Primary Telegram sync CTA button href anti-drift.
+ * 34. Right-panel anti-drift: no fake data.
+ * 35. No frontend JS fetches the bare Worker root URL (must use /health or a real endpoint).
  */
 
 import fs from 'node:fs';
@@ -2079,6 +2082,55 @@ console.log('\n[34] Right-panel anti-drift: no fake data');
   }
   if (check34Clean) {
     pass('[34] Right-panel anti-drift: all fake-data guards passed');
+  }
+}
+
+
+
+// ── 35. No frontend JS fetches the bare Worker root URL ───────────────────────
+// Fetching fetch(apiBase) / fetch(MOONBOYS_API.BASE_URL) without a path suffix
+// hits the Worker root and produces a 404 on every page load.
+// All availability/health checks must use /health.
+console.log('\n[35] No frontend JS fetches bare Worker root URL');
+{
+  // Patterns that indicate a fetch of a bare API base variable with no path appended.
+  // We match:  fetch(apiBase)  fetch(base)  fetch(MOONBOYS_API.BASE_URL)
+  //            fetch(window.MOONBOYS_API.BASE_URL)  fetch(getApiBase())
+  // A match is only a violation when the argument is NOT immediately followed by
+  // a string concatenation starting with '/'.
+  // Strategy: find fetch(X) where X is a known base-url variable and the closing
+  // paren or comma follows without a '+' string path suffix.
+  const bareRootRe = /fetch\s*\(\s*(?:apiBase|base|getApiBase\s*\(\s*\)|(?:window\.)?MOONBOYS_API\.BASE_URL)\s*[,)]/g;
+
+  // Scan all frontend JS files (js/**/*.js) — skip workers/ and server/ and scripts/
+  const allJsFiles = [];
+  function collectJs(dir) {
+    let entries;
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (_) { return; }
+    for (const e of entries) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) {
+        collectJs(full);
+      } else if (e.isFile() && e.name.endsWith('.js')) {
+        allJsFiles.push(full);
+      }
+    }
+  }
+  collectJs(path.join(ROOT, 'js'));
+
+  let check35Clean = true;
+  for (const file of allJsFiles) {
+    const src = fs.readFileSync(file, 'utf8');
+    const rel = path.relative(ROOT, file);
+    let m;
+    bareRootRe.lastIndex = 0;
+    while ((m = bareRootRe.exec(src)) !== null) {
+      fail(`[35] ${rel}: bare root URL fetch detected — use fetch(apiBase + '/health') or a real endpoint (offset ${m.index})`);
+      check35Clean = false;
+    }
+  }
+  if (check35Clean) {
+    pass('[35] No frontend JS fetches the bare Worker root URL');
   }
 }
 
