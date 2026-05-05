@@ -390,12 +390,11 @@ function ensureUi() {
   style.textContent = `
     #arcade-retention-root{position:fixed;inset:0;pointer-events:none;z-index:10001}
     #arcade-retention-toasts{position:fixed;top:16px;right:16px;display:grid;gap:8px;max-width:300px}
-    .arcade-retention-toast{pointer-events:none;background:rgba(8,12,22,.92);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:10px;padding:10px 12px;font-size:.76rem;font-weight:700;line-height:1.3;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-    .arcade-retention-toast.actionable{pointer-events:auto}
+    .arcade-retention-toast{pointer-events:auto;background:rgba(8,12,22,.92);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:10px;padding:10px 12px;font-size:.76rem;font-weight:700;line-height:1.3;box-shadow:0 10px 30px rgba(0,0,0,.35);position:relative}
     .arcade-retention-toast.critical{border-color:rgba(255,84,84,.75)}
     .arcade-retention-toast.high{border-color:rgba(247,171,26,.8)}
     .arcade-retention-toast.medium{border-color:rgba(46,197,255,.75)}
-    .art-title{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;opacity:.85}
+    .art-title{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;opacity:.85;padding-right:20px}
     .art-body{font-size:.74rem;font-weight:600;line-height:1.4;margin-bottom:6px}
     .art-cta-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
     .art-cta-btn{display:inline-block;padding:3px 9px;border-radius:5px;background:rgba(97,246,255,.14);border:1px solid rgba(97,246,255,.42);color:#d9fbff;font-size:.7rem;font-weight:700;text-decoration:none;cursor:pointer;transition:background 140ms ease,border-color 140ms ease}
@@ -404,6 +403,8 @@ function ensureUi() {
     .art-cta-btn.secondary:hover,.art-cta-btn.secondary:focus-visible{border-color:rgba(255,255,255,.35);color:#d9fbff}
     .art-footer{font-size:.65rem;font-weight:500;opacity:.55;margin-top:5px;line-height:1.3}
     .art-chip-link{color:inherit;text-decoration:none;display:block}
+    .art-close{position:absolute;top:6px;right:7px;background:none;border:none;color:rgba(255,255,255,.55);font-size:.95rem;line-height:1;cursor:pointer;padding:2px 4px;border-radius:3px;pointer-events:auto}
+    .art-close:hover,.art-close:focus-visible{color:#fff;background:rgba(255,255,255,.12);outline:none}
     #arcade-retention-banner{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(11,16,28,.92);border:1px solid rgba(247,201,72,.45);border-radius:999px;padding:8px 14px;color:#f5f8ff;font-size:.73rem;font-weight:700;opacity:0;transition:opacity .18s ease,transform .18s ease}
     #arcade-retention-banner.active{opacity:1;transform:translateX(-50%) scale(1.03)}
     #arcade-retention-mission-chip{position:fixed;right:16px;bottom:80px;pointer-events:auto;background:rgba(247,201,72,.14);border:1px solid rgba(247,201,72,.62);color:#fff;border-radius:999px;padding:7px 12px;font-size:.68rem;font-weight:800;letter-spacing:.02em;max-width:280px;line-height:1.2}
@@ -419,6 +420,13 @@ function ensureUi() {
   toastRoot = root.querySelector('#arcade-retention-toasts');
   banner = root.querySelector('#arcade-retention-banner');
   missionChip = root.querySelector('#arcade-retention-mission-chip');
+
+  // Escape key closes the topmost visible dismissible toast
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !toastRoot) return;
+    const last = toastRoot.lastElementChild;
+    if (last) { e.stopPropagation(); last.remove(); }
+  }, { capture: false });
 }
 
 function playCue(sound) {
@@ -435,10 +443,19 @@ function showToast(message, opts = {}) {
 
   const hasCta = !!(opts.cta && opts.cta.href && opts.cta.label);
   const toast = document.createElement('div');
-  toast.className = `arcade-retention-toast ${opts.urgency || 'medium'}${hasCta ? ' actionable' : ''}`;
+  toast.className = `arcade-retention-toast ${opts.urgency || 'medium'}`;
   toast.dataset.key = key;
 
   const countdown = Number(opts.countdown_ms) > 0 ? ` • ${formatCountdown(Number(opts.countdown_ms))}` : '';
+
+  // × close button — always present so every toast is dismissible
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'art-close';
+  closeBtn.setAttribute('aria-label', 'Close');
+  closeBtn.textContent = '×';
+  closeBtn.addEventListener('click', () => { toast.remove(); });
+  toast.appendChild(closeBtn);
 
   if (opts.title || hasCta) {
     // Structured layout: title / body / CTA row / footer
@@ -491,7 +508,9 @@ function showToast(message, opts = {}) {
     }
   } else {
     // Fallback: simple single-line text (backward compat for callers without title/cta)
-    toast.textContent = `${message}${countdown}`;
+    const textNode = document.createElement('span');
+    textNode.textContent = `${message}${countdown}`;
+    toast.appendChild(textNode);
   }
 
   toastRoot.appendChild(toast);

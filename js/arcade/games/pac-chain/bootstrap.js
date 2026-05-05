@@ -245,11 +245,23 @@ function createLegacybootstrapPacChain(root) {
     ui.card.appendChild(bannerEl);
   }
 
-  function showModal(title, subtitle, choices, onPick) {
+  function showModal(title, subtitle, choices, onPick, onSkip) {
     if (!overlayEl) return;
     state.isPaused = true;
     const panel = document.createElement('div');
     panel.className = 'pc-modal';
+
+    // Close / skip button — shown for non-required modals (onSkip provided)
+    if (typeof onSkip === 'function') {
+      const closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.className = 'pc-modal-close';
+      closeBtn.setAttribute('aria-label', 'Close');
+      closeBtn.textContent = '×';
+      closeBtn.addEventListener('click', () => { hideModal(); onSkip(); });
+      panel.appendChild(closeBtn);
+    }
+
     const h2 = document.createElement('h2');
     h2.textContent = title;
     const p = document.createElement('p');
@@ -270,6 +282,18 @@ function createLegacybootstrapPacChain(root) {
     overlayEl.innerHTML = '';
     overlayEl.appendChild(panel);
     overlayEl.classList.remove('hidden');
+
+    // Escape closes any dismissible modal (one with a skip handler)
+    if (typeof onSkip === 'function') {
+      const escHandler = (e) => {
+        if (e.key === 'Escape' && !overlayEl.classList.contains('hidden')) {
+          document.removeEventListener('keydown', escHandler);
+          hideModal();
+          onSkip();
+        }
+      };
+      document.addEventListener('keydown', escHandler);
+    }
   }
   function hideModal() { if (overlayEl) { overlayEl.classList.add('hidden'); overlayEl.innerHTML = ''; } state.isPaused = false; }
 
@@ -689,7 +713,7 @@ function createLegacybootstrapPacChain(root) {
         state.pendingLevelAdvance = false;
         if (state.level % 3 === 0) {
           state.riskModal = true;
-          showModal('Risk / Reward', 'Take one gamble for extra upside', rollRiskChoices(), (risk) => { state.riskModal = false; risk.apply(state); nextLevel(); });
+          showModal('Risk / Reward', 'Take one gamble for extra upside', rollRiskChoices(), (risk) => { state.riskModal = false; risk.apply(state); nextLevel(); }, () => { state.riskModal = false; nextLevel(); });
         } else nextLevel();
       });
     }, 520);
