@@ -259,12 +259,12 @@ async function runMobileNavTest(browser, port) {
   const sidebarInitBB = await page.evaluate(() => {
     const s = document.getElementById('sidebar');
     if (!s) return null;
-    const cs = window.getComputedStyle(s);
-    return { transform: cs.transform };
+    const bb = s.getBoundingClientRect();
+    return { left: bb.left, right: bb.right };
   });
-  // The sidebar should be off-screen (translated left)
-  assert(sidebarInitBB && sidebarInitBB.transform !== 'none' && !sidebarInitBB.transform.includes('matrix(1, 0, 0, 1, 0,'),
-    `mobile nav: sidebar starts off-screen (transform=${sidebarInitBB ? sidebarInitBB.transform : 'null'})`);
+  // The sidebar should be off-screen to the left (right edge at or below 0)
+  assert(sidebarInitBB && sidebarInitBB.right <= 0,
+    `mobile nav: sidebar starts off-screen (right=${sidebarInitBB ? sidebarInitBB.right : 'null'})`);
 
   // ── Click hamburger — sidebar must open ───────────────────────────────────
   await hamburger.click();
