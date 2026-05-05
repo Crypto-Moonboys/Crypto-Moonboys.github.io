@@ -19,14 +19,9 @@
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
     /*
-      Battle Chamber page-local styles.
-      All rules are scoped to .battle-page — the page-owned wrapper inside #content.
-
-      Must NOT target shell-owned layout selectors:
-        html, body, #content, #layout, #main-wrapper,
-        #sidebar, #homepage-right-panel.
-      Shell layout is governed exclusively by css/wiki.css and
-      css/retro-16bit-theme.css.
+      Battle Chamber page-local styles (mobile-first overflow fix).
+      All rules scoped ONLY to .battle-page and descendants.
+      Never target shell IDs (#layout, #main-wrapper, #sidebar, #homepage-right-panel, #content).
     */
 
     .battle-page,
@@ -38,28 +33,35 @@
       width: 100%;
       max-width: 100%;
       min-width: 0;
-      overflow-x: hidden;
+      overflow-x: clip;
+      padding-left: 12px;
+      padding-right: 12px;
     }
 
     .battle-page .page-hero,
-    .battle-page .section {
+    .battle-page .section,
+    .battle-page .community-card,
+    .battle-page .community-card-inner {
       width: 100%;
       max-width: 100%;
       min-width: 0;
-      border: 1px solid rgba(86,220,255,.26);
-      border-radius: 12px;
-      background: rgba(8,18,34,.72);
-      overflow: visible;
+      box-sizing: border-box;
     }
 
     .battle-page .page-hero {
-      padding: clamp(24px,5vw,70px) clamp(16px,4vw,44px);
+      padding: 24px 16px;
       margin-bottom: 18px;
+      border: 1px solid rgba(86,220,255,.26);
+      border-radius: 12px;
+      background: rgba(8,18,34,.72);
     }
 
     .battle-page .section {
       margin: 0 0 18px;
-      padding: 18px;
+      padding: 16px;
+      border: 1px solid rgba(86,220,255,.26);
+      border-radius: 12px;
+      background: rgba(8,18,34,.72);
     }
 
     .battle-page .page-hero h1,
@@ -78,15 +80,7 @@
     .battle-page .section p,
     .battle-page .section li,
     .battle-page .community-card,
-    .battle-page .community-card-inner,
-    .battle-page .community-list,
-    .battle-page .community-loading,
-    .battle-page .community-empty,
-    .battle-page #tg-community-leaderboard,
-    .battle-page #tg-activity-feed,
-    .battle-page #tg-quest-panel,
-    .battle-page #tg-profile-card,
-    .battle-page #tg-daily-status {
+    .battle-page .community-card-inner {
       max-width: 100%;
       min-width: 0;
       color: var(--color-text-muted);
@@ -94,21 +88,6 @@
       white-space: normal !important;
       overflow-wrap: anywhere;
       word-break: normal;
-    }
-
-    .battle-page .community-hero-grid,
-    .battle-page .community-grid,
-    .battle-page .community-main,
-    .battle-page .community-side,
-    .battle-page .community-stat-grid,
-    .battle-page #community-status-panel,
-    .battle-page [data-csp-panel],
-    .battle-page [data-las-panel],
-    .battle-page #tg-profile-wrapper {
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-      overflow-x: hidden;
     }
 
     .battle-page .community-hero-grid,
@@ -120,16 +99,10 @@
     }
 
     .battle-page .community-card {
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
       overflow: visible;
     }
 
     .battle-page .community-card-inner {
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
       overflow-x: hidden;
     }
 
@@ -161,7 +134,6 @@
       .battle-page .community-hero-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
-
       .battle-page .community-grid {
         grid-template-columns: minmax(0, 2fr) minmax(260px, .8fr);
       }
@@ -169,25 +141,17 @@
 
     @media (max-width: 900px) {
       .battle-page {
-        padding-left: max(14px, env(safe-area-inset-left));
-        padding-right: max(14px, env(safe-area-inset-right));
-      }
-
-      .battle-page .breadcrumb {
-        max-width: 100%;
-        white-space: normal !important;
-        overflow-wrap: anywhere;
+        padding-left: 12px;
+        padding-right: 12px;
       }
 
       .battle-page .page-hero,
-      .battle-page .section,
-      .battle-page .community-card,
-      .battle-page #community-status-panel,
-      .battle-page [data-csp-panel],
-      .battle-page [data-las-panel] {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
+      .battle-page .section {
+        width: 100%;
+        max-width: 100%;
+        padding: 16px;
+        margin-left: 0;
+        margin-right: 0;
       }
 
       .battle-page .community-hero-grid,
@@ -195,38 +159,23 @@
         grid-template-columns: minmax(0, 1fr) !important;
       }
 
-      .battle-page .page-hero {
-        padding: 22px 16px !important;
-      }
-
-      .battle-page .section {
-        padding: 16px !important;
-      }
-
       .battle-page .page-hero h1 {
-        font-size: clamp(1.35rem, 7vw, 2rem) !important;
-        letter-spacing: 0.02em !important;
-        white-space: normal !important;
-        overflow-wrap: anywhere !important;
-        word-break: normal !important;
+        font-size: clamp(1.15rem, 6.5vw, 1.55rem) !important;
+        letter-spacing: 0.01em !important;
       }
 
       .battle-page .section h2,
       .battle-page .community-card h3 {
-        font-size: clamp(1rem, 4.8vw, 1.3rem) !important;
-        white-space: normal !important;
-        overflow-wrap: anywhere !important;
+        font-size: clamp(0.95rem, 5vw, 1.25rem) !important;
       }
 
       .battle-page p,
       .battle-page li {
-        font-size: clamp(0.95rem, 4vw, 1.05rem) !important;
-        white-space: normal !important;
-        overflow-wrap: anywhere !important;
+        font-size: clamp(0.9rem, 4.2vw, 1.0rem) !important;
       }
 
       .battle-page ul {
-        padding-left: 1.1rem;
+        padding-left: 1rem;
       }
 
       .battle-page .cta-row {
@@ -240,16 +189,20 @@
 
     @media (max-width: 480px) {
       .battle-page {
-        padding-left: 12px;
-        padding-right: 12px;
+        padding-left: 10px;
+        padding-right: 10px;
       }
 
       .battle-page .page-hero {
-        padding: 20px 14px !important;
+        padding: 18px 12px !important;
       }
 
       .battle-page .section {
         padding: 14px !important;
+      }
+
+      .battle-page .page-hero h1 {
+        font-size: clamp(1.05rem, 7vw, 1.4rem) !important;
       }
     }
   </style>
