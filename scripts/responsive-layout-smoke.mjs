@@ -463,7 +463,7 @@ async function runTelegramSyncCheck(browser, port, pagePath) {
     const ctaBtn = document.querySelector('.tg-sync-cta-btn');
     const ctaBtnHref   = ctaBtn ? ctaBtn.getAttribute('href') : null;
     const ctaBtnTarget = ctaBtn ? ctaBtn.getAttribute('target') : null;
-    const ctaBtnRel    = ctaBtn ? (ctaBtn.getAttribute('rel') || '') : null;
+    const ctaBtnRel    = ctaBtn ? ctaBtn.getAttribute('rel') : null;
     const ctaBtnVisible = isElementStrictlyVisible(ctaBtn);
 
     // Check any <a href="/gkniftyheads-incubator.html"> visible link
@@ -507,7 +507,7 @@ async function runTelegramSyncCheck(browser, port, pagePath) {
       `${label}: .tg-sync-cta-btn href must be https://t.me/WIKICOMSBOT (got ${check.ctaBtnHref})`);
     assert(check.ctaBtnTarget === '_blank',
       `${label}: .tg-sync-cta-btn must have target="_blank" (got ${check.ctaBtnTarget})`);
-    assert(check.ctaBtnRel && check.ctaBtnRel.includes('noopener'),
+    assert(check.ctaBtnRel !== null && check.ctaBtnRel.includes('noopener'),
       `${label}: .tg-sync-cta-btn rel must include noopener (got ${check.ctaBtnRel})`);
     assert(check.ctaBtnVisible,
       `${label}: .tg-sync-cta-btn must be visible and clickable`);

@@ -1911,8 +1911,6 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
   } else {
     const src = fs.readFileSync(ctaFile, 'utf8');
     // The primary CTA button must use the bot URL, not the incubator page.
-    const btnPattern = /tg-sync-cta-btn[^"']*['"]\s*(?:target|href|rel)|href=['"][^'"]*tg-sync-cta-btn/;
-    // Simpler: check the bot URL appears near tg-sync-cta-btn in the template
     const hasBotBtn = src.includes('https://t.me/WIKICOMSBOT') &&
                       src.includes('tg-sync-cta-btn');
     if (hasBotBtn) {
