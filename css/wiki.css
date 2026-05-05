@@ -29,7 +29,7 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: clip; }
 
 body {
   font-family: var(--font-sans);
@@ -2555,6 +2555,39 @@ body.conflict-nearby {
   font-size: .76rem;
   opacity: 0;
   transition: opacity .25s ease;
+  /* Allow close-button clicks even though the parent feed passes pointer events through */
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.micro-note-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.micro-note-close {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 2px;
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+
+.micro-note-close:hover {
+  opacity: 1;
+}
+
+.micro-note-close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 .micro-note.is-live {
