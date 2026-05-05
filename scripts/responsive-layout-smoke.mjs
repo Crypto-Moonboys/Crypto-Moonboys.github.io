@@ -2,10 +2,21 @@
  * responsive-layout-smoke.mjs
  *
  * Browser-based visual regression smoke test.  Uses Playwright Chromium to
- * verify that the page layout is correct at desktop and mobile viewports:
+ * verify that the page layout is correct at desktop and mobile viewports.
  *
- *   Desktop 1440×900:  /sam.html, /graph.html, /categories/index.html, /games/pac-chain/
- *   Mobile  390×844:   /, /games/pac-chain/
+ * Desktop 1440×900:
+ *   /sam.html, /graph.html, /categories/index.html, /community.html,
+ *   /games/pac-chain/, /games/, /games/leaderboard.html, /how-to-play.html, /search.html
+ *
+ * Mobile 390×844:
+ *   /, /community.html, /categories/index.html, /games/pac-chain/,
+ *   /games/, /games/leaderboard.html, /how-to-play.html, /search.html
+ *
+ * Additional checks:
+ *   - Telegram sync CTA / incubator link on required pages
+ *   - Category card readability (stacked, not crushed) at mobile
+ *   - Sidebar incubator/Telegram link visible when open
+ *   - Mobile hamburger nav open/close cycle
  *
  * Run with:  node scripts/responsive-layout-smoke.mjs
  */
@@ -374,6 +385,190 @@ async function runMobileNavTest(browser, port, path) {
   await ctx.close();
 }
 
+// ── Telegram sync CTA / incubator link check ──────────────────────────────
+/**
+ * runTelegramSyncCheck(browser, port, path)
+ *
+ * Verifies that a page has a visible Telegram sync entry point:
+ *   - Either a [data-tg-sync-cta] element (component mount point) in the DOM, OR
+ *   - A rendered <a href="/gkniftyheads-incubator.html"> link, OR
+ *   - A rendered .tg-sync-cta element (component already rendered)
+ */
+async function runTelegramSyncCheck(browser, port, path) {
+  info('');
+  info(`── tg-sync check 390×844 ${path} ──`);
+
+  const ctx  = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await ctx.newPage();
+
+  await page.route('**', (route) => {
+    const url = route.request().url();
+    if (url.startsWith(`http://localhost:${port}`)) route.continue();
+    else route.fulfill({ status: 200, body: '' });
+  });
+
+  await page.goto(`http://localhost:${port}${path}`, { timeout: 20000, waitUntil: 'networkidle' });
+  await page.waitForTimeout(300);
+
+  const label = `tg-sync [${path}]`;
+
+  const check = await page.evaluate(() => {
+    const hasMountPoint  = !!document.querySelector('[data-tg-sync-cta]');
+    const hasRenderedCta = !!document.querySelector('.tg-sync-cta');
+    const hasIncubatorLink = !!document.querySelector('a[href="/gkniftyheads-incubator.html"]');
+    return { hasMountPoint, hasRenderedCta, hasIncubatorLink };
+  });
+
+  assert(check.hasMountPoint || check.hasRenderedCta || check.hasIncubatorLink,
+    `${label}: Telegram sync CTA or incubator link present (mountPoint=${check.hasMountPoint} rendered=${check.hasRenderedCta} link=${check.hasIncubatorLink})`);
+
+  await ctx.close();
+}
+
+// ── Category card readability check ───────────────────────────────────────
+/**
+ * runCategoryCardCheck(browser, port)
+ *
+ * At 390×844, verifies that /categories/index.html shows category cards in a
+ * stacked readable layout:
+ *   - Card width is close to viewport width (not squeezed into two columns)
+ *   - Icon is above (or at same y-start as) text — not beside it
+ *   - Card text div width is wide enough to be readable (>= 200px)
+ *   - No card forces the icon and text into a horizontal row so narrow
+ *     that text can only be read one character per line
+ */
+async function runCategoryCardCheck(browser, port) {
+  info('');
+  info(`── category card check 390×844 /categories/index.html ──`);
+
+  const ctx  = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await ctx.newPage();
+
+  await page.route('**', (route) => {
+    const url = route.request().url();
+    if (url.startsWith(`http://localhost:${port}`)) route.continue();
+    else route.fulfill({ status: 200, body: '' });
+  });
+
+  await page.goto(`http://localhost:${port}/categories/index.html`, { timeout: 20000, waitUntil: 'networkidle' });
+  await page.waitForTimeout(300);
+
+  const label = 'category-cards [/categories/index.html]';
+
+  const m = await page.evaluate(() => {
+    const vw = window.innerWidth;
+    const cards = Array.from(document.querySelectorAll('.category-card'));
+    return {
+      vw,
+      count: cards.length,
+      // Check first few visible cards
+      cards: cards.slice(0, 4).map(el => {
+        const bb   = el.getBoundingClientRect();
+        const cs   = window.getComputedStyle(el);
+        const icon = el.querySelector('.cat-icon');
+        const textDiv = icon ? icon.nextElementSibling : el.querySelector('div');
+        const iconBB  = icon ? icon.getBoundingClientRect() : null;
+        const textBB  = textDiv ? textDiv.getBoundingClientRect() : null;
+        return {
+          w:        Math.round(bb.width),
+          right:    Math.round(bb.right),
+          flexDir:  cs.flexDirection,
+          iconBottom: iconBB ? Math.round(iconBB.bottom) : null,
+          textTop:    textBB ? Math.round(textBB.top)    : null,
+          textW:      textBB ? Math.round(textBB.width)  : null,
+        };
+      }),
+    };
+  });
+
+  if (m.count === 0) {
+    info(`${label}: no .category-card elements found, skipping checks`);
+    await ctx.close();
+    return;
+  }
+
+  // Each card should be at least 280px wide (≥72% of 390px viewport)
+  for (let i = 0; i < m.cards.length; i++) {
+    const c = m.cards[i];
+    assert(c.w >= 280,
+      `${label}: card[${i}] width ${c.w}px ≥ 280px (readable, not crushed)`);
+    assert(c.right <= m.vw + 4,
+      `${label}: card[${i}] right edge ${c.right} ≤ vw ${m.vw}+4 (no overflow)`);
+    // Icon must be above (or same row start as) text — not to the left with
+    // text crushed into a narrow column.
+    // In a stacked layout: iconBottom ≤ textTop + small epsilon
+    // In a horizontal layout with very narrow text: textW would be tiny.
+    if (c.textW !== null) {
+      assert(c.textW >= 200,
+        `${label}: card[${i}] text div width ${c.textW}px ≥ 200px (not single-column letters)`);
+    }
+    if (c.iconBottom !== null && c.textTop !== null) {
+      // Icon bottom should be at or before the text block's vertical centre
+      // (stacked) OR text should have a reasonable width (not crushed horizontal)
+      const iconAboveText = c.iconBottom <= c.textTop + 8;
+      const textReadable  = c.textW !== null && c.textW >= 200;
+      assert(iconAboveText || textReadable,
+        `${label}: card[${i}] icon is above text or text has readable width (iconBottom=${c.iconBottom} textTop=${c.textTop} textW=${c.textW})`);
+    }
+  }
+
+  await ctx.close();
+}
+
+// ── Sidebar incubator link check (when sidebar is open) ───────────────────
+/**
+ * runSidebarIncubatorCheck(browser, port)
+ *
+ * Opens the mobile sidebar and verifies that a link to
+ * /gkniftyheads-incubator.html is visible/clickable inside it.
+ */
+async function runSidebarIncubatorCheck(browser, port) {
+  info('');
+  info(`── sidebar incubator check 390×844 / ──`);
+
+  const ctx  = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await ctx.newPage();
+
+  await page.route('**', (route) => {
+    const url = route.request().url();
+    if (url.startsWith(`http://localhost:${port}`)) route.continue();
+    else route.fulfill({ status: 200, body: '' });
+  });
+
+  await page.goto(`http://localhost:${port}/`, { timeout: 20000, waitUntil: 'networkidle' });
+  await page.waitForTimeout(300);
+
+  const label = 'sidebar-incubator [/]';
+
+  const hamburger = page.locator('#hamburger');
+  const hamExists = await hamburger.count().catch(() => 0);
+  assert(hamExists > 0, `${label}: #hamburger exists`);
+  if (!hamExists) { await ctx.close(); return; }
+
+  await hamburger.click();
+  await page.waitForTimeout(400);
+
+  const incubatorLink = await page.evaluate(() => {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return { exists: false, visible: false, text: '' };
+    const link = sidebar.querySelector('a[href="/gkniftyheads-incubator.html"]');
+    if (!link) return { exists: false, visible: false, text: '' };
+    const bb = link.getBoundingClientRect();
+    return {
+      exists:  true,
+      visible: bb.width > 0 && bb.height > 0 && bb.left >= 0 && bb.left < window.innerWidth,
+      text:    link.textContent.trim(),
+    };
+  });
+
+  assert(incubatorLink.exists,
+    `${label}: sidebar has a[href="/gkniftyheads-incubator.html"]`);
+  assert(incubatorLink.visible,
+    `${label}: sidebar incubator link is visible (left=${incubatorLink.visible})`);
+
+  await ctx.close();
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -401,9 +596,12 @@ async function main() {
         '/sam.html',
         '/graph.html',
         '/categories/index.html',
+        '/community.html',
         '/games/pac-chain/',
-        '/search.html',
         '/games/',
+        '/games/leaderboard.html',
+        '/how-to-play.html',
+        '/search.html',
       ];
       for (const p of desktopPages) {
         await runPage(browser, p, 1440, 900, 'desktop', screenshotDir, actualPort);
@@ -415,7 +613,16 @@ async function main() {
       }
 
       // Mobile 390×844 — layout checks
-      const mobilePages = ['/', '/games/pac-chain/', '/search.html'];
+      const mobilePages = [
+        '/',
+        '/community.html',
+        '/categories/index.html',
+        '/games/pac-chain/',
+        '/games/',
+        '/games/leaderboard.html',
+        '/how-to-play.html',
+        '/search.html',
+      ];
       for (const p of mobilePages) {
         await runPage(browser, p, 390, 844, 'mobile', screenshotDir, actualPort);
       }
@@ -426,14 +633,36 @@ async function main() {
         '/index.html',
         '/search.html',
         '/categories/concepts.html',
+        '/community.html',
         '/games/',
         '/games/pac-chain/',
+        '/games/leaderboard.html',
         '/sam.html',
         '/graph.html',
       ];
       for (const p of mobileNavPages) {
         await runMobileNavTest(browser, actualPort, p);
       }
+
+      // Telegram sync CTA / incubator link — required pages
+      const tgSyncPages = [
+        '/community.html',
+        '/games/',
+        '/games/leaderboard.html',
+        '/how-to-play.html',
+        '/games/pac-chain/',
+        '/games/invaders-3008/',
+        '/games/block-topia-quest-maze/',
+      ];
+      for (const p of tgSyncPages) {
+        await runTelegramSyncCheck(browser, actualPort, p);
+      }
+
+      // Category card readability at mobile
+      await runCategoryCardCheck(browser, actualPort);
+
+      // Sidebar incubator link
+      await runSidebarIncubatorCheck(browser, actualPort);
 
       await browser.close();
       server.close();
