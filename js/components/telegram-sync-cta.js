@@ -10,7 +10,8 @@
  *
  * The rendered banner:
  *   - Explains that /gklink syncs Arcade XP server-side for Telegram-linked users.
- *   - Links to /gkniftyheads-incubator.html ("Link Telegram").
+ *   - Primary "Link Telegram" button opens the Telegram bot (https://t.me/WIKICOMSBOT).
+ *   - Secondary info link leads to /gkniftyheads-incubator.html for more details.
  *   - Fits within the viewport on desktop and mobile (no horizontal overflow).
  *
  * Terminology (canonical):
@@ -21,7 +22,8 @@
 (function () {
   'use strict';
 
-  var INCUBATOR_HREF = '/gkniftyheads-incubator.html';
+  var BOT_HREF        = 'https://t.me/WIKICOMSBOT';
+  var INCUBATOR_HREF  = '/gkniftyheads-incubator.html';
 
   var TEMPLATE =
     '<div class="tg-sync-cta" role="note" aria-label="Link Telegram to sync Arcade XP">' +
@@ -31,10 +33,11 @@
         '<span>' +
           'Use <code>/gklink</code> in the Telegram bot to store Arcade XP server-side. ' +
           'Telegram-linked users earn persistent Arcade XP across sessions. ' +
-          'Unlinked users have local/browser-only progress.' +
+          'Unlinked users have local/browser-only progress. ' +
+          '<a href="' + INCUBATOR_HREF + '">Learn more</a>.' +
         '</span>' +
       '</div>' +
-      '<a href="' + INCUBATOR_HREF + '" class="btn btn-secondary tg-sync-cta-btn">Link Telegram</a>' +
+      '<a href="' + BOT_HREF + '" class="btn btn-primary tg-sync-cta-btn" target="_blank" rel="noopener noreferrer">Link Telegram</a>' +
     '</div>';
 
   function mount(el) {

@@ -1750,10 +1750,23 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
   if (fs.existsSync(ctaFile)) {
     pass('[29] js/components/telegram-sync-cta.js exists');
     const src = fs.readFileSync(ctaFile, 'utf8');
-    if (src.includes('/gkniftyheads-incubator.html')) {
-      pass('[29] telegram-sync-cta.js links to /gkniftyheads-incubator.html');
+    // Primary "Link Telegram" button must open the Telegram bot directly.
+    // Internal incubator-page links are allowed elsewhere in the component,
+    // but the primary tg-sync-cta-btn must use https://t.me/WIKICOMSBOT.
+    if (src.includes('https://t.me/WIKICOMSBOT')) {
+      pass('[29] telegram-sync-cta.js primary button links to https://t.me/WIKICOMSBOT');
     } else {
-      fail('[29] telegram-sync-cta.js does NOT link to /gkniftyheads-incubator.html');
+      fail('[29] telegram-sync-cta.js primary button does NOT link to https://t.me/WIKICOMSBOT');
+    }
+    if (src.includes('target="_blank"')) {
+      pass('[29] telegram-sync-cta.js primary button has target="_blank"');
+    } else {
+      fail('[29] telegram-sync-cta.js primary button missing target="_blank"');
+    }
+    if (src.includes('noopener')) {
+      pass('[29] telegram-sync-cta.js primary button has rel noopener');
+    } else {
+      fail('[29] telegram-sync-cta.js primary button missing rel noopener');
     }
     if (src.includes('[data-tg-sync-cta]') || src.includes('data-tg-sync-cta')) {
       pass('[29] telegram-sync-cta.js mounts on [data-tg-sync-cta] elements');
@@ -1881,6 +1894,95 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
       pass('[32] js/site-shell.js sidebar contains link to /gkniftyheads-incubator.html');
     } else {
       fail('[32] js/site-shell.js sidebar does NOT contain link to /gkniftyheads-incubator.html');
+    }
+  }
+}
+
+
+// ── [33] Primary Telegram sync CTA button must use the bot URL ───────────────
+// Enforces: the .tg-sync-cta-btn anchor in telegram-sync-cta.js must point to
+// https://t.me/WIKICOMSBOT. Internal incubator-page links are allowed elsewhere
+// in the component (e.g. secondary info links), but NOT as the primary button.
+//
+// Uses order-agnostic matching: renders the TEMPLATE by substituting the
+// BOT_HREF / INCUBATOR_HREF variable values, then inspects the actual <a>
+// element that carries the tg-sync-cta-btn class — regardless of whether href
+// appears before or after the class attribute.
+{
+  console.log('\n[33] Primary Telegram sync CTA button href (anti-drift)');
+  const ctaFile = path.join(ROOT, 'js', 'components', 'telegram-sync-cta.js');
+  if (!fs.existsSync(ctaFile)) {
+    fail('[33] js/components/telegram-sync-cta.js MISSING (cannot check primary button)');
+  } else {
+    const src = fs.readFileSync(ctaFile, 'utf8');
+
+    // 1. BOT_HREF constant must be assigned 'https://t.me/WIKICOMSBOT'.
+    //    Accept both single-quoted and double-quoted variable declarations.
+    const botHrefMatch    = src.match(/var\s+BOT_HREF\s*=\s*['"]([^'"]+)['"]/);
+    const incubHrefMatch  = src.match(/var\s+INCUBATOR_HREF\s*=\s*['"]([^'"]+)['"]/);
+    const botHrefVal  = botHrefMatch   ? botHrefMatch[1]  : null;
+    const incubHrefVal = incubHrefMatch ? incubHrefMatch[1] : null;
+
+    if (botHrefVal === 'https://t.me/WIKICOMSBOT') {
+      pass('[33] BOT_HREF constant is https://t.me/WIKICOMSBOT');
+    } else {
+      fail(`[33] BOT_HREF constant must be https://t.me/WIKICOMSBOT (got ${botHrefVal})`);
+    }
+
+    // 2. Build a rendered version of the TEMPLATE for structural analysis by
+    //    substituting the variable references with their literal values.
+    //    Handles both single-quoted and double-quoted JS string concatenation
+    //    patterns, e.g. both:
+    //      '<a href="' + BOT_HREF + '" ...'  (single-quote JS strings)
+    //      "<a href=\"" + BOT_HREF + "\" ..." (double-quote JS strings)
+    //    The URL is substituted in-place so the resulting string contains the
+    //    final HTML that the template will produce.
+    function subVar(s, varName, val) {
+      if (!val) return s;
+      // Single-quoted surrounds: '...' + VAR + '...'
+      s = s.replace(new RegExp("'\\s*\\+\\s*" + varName + "\\s*\\+\\s*'", 'g'), val);
+      // Double-quoted surrounds: "..." + VAR + "..."
+      s = s.replace(new RegExp('"\\s*\\+\\s*' + varName + '\\s*\\+\\s*"', 'g'), val);
+      return s;
+    }
+    let rendered = subVar(subVar(src, 'BOT_HREF', botHrefVal), 'INCUBATOR_HREF', incubHrefVal);
+
+    // Verify the substitution actually embedded the bot URL (guards against
+    // unexpected quote style or spacing that the patterns above couldn't match).
+    if (botHrefVal && !rendered.includes(botHrefVal)) {
+      fail('[33] Template variable substitution failed — BOT_HREF not embedded in rendered output; check quote style in telegram-sync-cta.js template');
+    }
+
+    // 3. Locate the <a> opening tag that carries the tg-sync-cta-btn class and
+    //    inspect its href — order-agnostic (works even if href precedes class or
+    //    vice versa). The [^>]* pattern is safe here because the known template
+    //    attributes do not contain unquoted '>' characters.
+    const aTagRe = /<a\b([^>]*)>/gi;
+    let aMatch;
+    let ctaBtnFound = false;
+    let ctaBtnHref  = null;
+    while ((aMatch = aTagRe.exec(rendered)) !== null) {
+      const attrs = aMatch[1];
+      if (!/\btg-sync-cta-btn\b/.test(attrs)) continue;
+      ctaBtnFound = true;
+      const hrefM = attrs.match(/\bhref\s*=\s*['"]([^'"]*)['"]/i);
+      ctaBtnHref = hrefM ? hrefM[1] : null;
+      break;
+    }
+
+    if (!ctaBtnFound) {
+      fail('[33] No <a class="tg-sync-cta-btn"> element found in rendered template');
+    } else {
+      if (ctaBtnHref === 'https://t.me/WIKICOMSBOT') {
+        pass('[33] tg-sync-cta-btn href is https://t.me/WIKICOMSBOT');
+      } else {
+        fail(`[33] tg-sync-cta-btn href must be https://t.me/WIKICOMSBOT (got ${ctaBtnHref})`);
+      }
+      if (incubHrefVal && ctaBtnHref === incubHrefVal) {
+        fail('[33] tg-sync-cta-btn must NOT use /gkniftyheads-incubator.html');
+      } else {
+        pass('[33] tg-sync-cta-btn does not use /gkniftyheads-incubator.html (correct)');
+      }
     }
   }
 }
