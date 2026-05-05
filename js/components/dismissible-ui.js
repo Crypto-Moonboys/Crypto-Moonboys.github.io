@@ -5,7 +5,7 @@
  *
  * Usage:
  *   window.DismissibleUI.addCloseButton(element, { onClose });
- *   window.DismissibleUI.register(element);
+ *   window.DismissibleUI.register(element, opts);
  *   window.DismissibleUI.unregister(element);
  *   // Escape key handler is wired automatically on load.
  *
@@ -14,21 +14,43 @@
  *  - Keyboard accessible (focusable, Enter/Space activates).
  *  - Escape closes the most recently registered visible floating element.
  *  - Closing one element does NOT affect the game loop or other elements.
+ *  - Close button click and Escape both call the same _dismiss() path, so
+ *    opts.hide and opts.onClose are honoured consistently.
  */
 (function () {
   'use strict';
 
+  /* ── Per-element options (WeakMap so GC can collect removed elements) ── */
+  var _optsMap = typeof WeakMap === 'function' ? new WeakMap() : null;
+
   /* ── Dismissible registry (ordered: first-in, last-dismissed) ──── */
   var _stack = [];
 
-  function register(el) {
+  function register(el, opts) {
     if (!el) return;
+    if (_optsMap) _optsMap.set(el, opts || {});
     if (_stack.indexOf(el) === -1) _stack.push(el);
   }
 
   function unregister(el) {
     var idx = _stack.indexOf(el);
     if (idx !== -1) _stack.splice(idx, 1);
+    if (_optsMap) _optsMap.delete(el);
+  }
+
+  /**
+   * Central dismiss path used by both close-button click and Escape.
+   * Guarantees opts.onClose and opts.hide are respected in every case.
+   */
+  function _dismiss(el) {
+    var opts = (_optsMap && _optsMap.get(el)) || {};
+    unregister(el);
+    if (opts.onClose) opts.onClose(el);
+    if (opts.hide) {
+      el.style.display = 'none';
+    } else {
+      el.remove();
+    }
   }
 
   /**
@@ -52,22 +74,12 @@
 
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
-      _dismiss(el, opts);
+      _dismiss(el);
     });
 
     el.appendChild(btn);
-    register(el);
+    register(el, opts);
     return btn;
-  }
-
-  function _dismiss(el, opts) {
-    unregister(el);
-    if (opts && opts.onClose) opts.onClose(el);
-    if (opts && opts.hide) {
-      el.style.display = 'none';
-    } else {
-      el.remove();
-    }
   }
 
   /* ── Global Escape handler ──────────────────────────────────────── */
@@ -84,9 +96,10 @@
     for (var i = _stack.length - 1; i >= 0; i--) {
       var el = _stack[i];
       if (el && window.getComputedStyle(el).display !== 'none') {
-        unregister(el);
-        el.remove();
+        // Use the shared _dismiss path so opts.hide / opts.onClose are honoured.
+        _dismiss(el);
         e.stopPropagation();
+        e.preventDefault();
         return;
       }
     }

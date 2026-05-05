@@ -1539,25 +1539,35 @@ console.log('\n[26] Dismissible UI compliance');
       check26Clean = false;
     } else {
       const braceStart = gfsSrc.indexOf('{', fnIdx);
-      let depth = 0, i = braceStart, fnBody = '';
-      while (i < gfsSrc.length) {
-        const ch = gfsSrc[i];
-        if (ch === '{') depth++;
-        else if (ch === '}') { depth--; if (depth === 0) { fnBody = gfsSrc.slice(fnIdx, i + 1); break; } }
-        i++;
-      }
-      if (fnBody.includes('micro-note-close')) {
-        pass('[26] pushMicroNotification contains micro-note-close (close button present)');
-      } else {
-        fail('[26] pushMicroNotification in game-fullscreen.js is missing the close button (micro-note-close)');
+      if (braceStart === -1) {
+        fail('[26] js/game-fullscreen.js: pushMicroNotification opening brace not found');
         check26Clean = false;
-      }
-      // Must also contain aria-label="Close" for accessibility (precise attribute match)
-      if (/setAttribute\s*\(\s*['"]aria-label['"]\s*,\s*['"]Close['"]\s*\)/.test(fnBody)) {
-        pass('[26] pushMicroNotification close button has aria-label="Close"');
       } else {
-        fail('[26] pushMicroNotification close button missing aria-label="Close" (setAttribute call)');
-        check26Clean = false;
+        let depth = 0, i = braceStart, fnBody = '';
+        while (i < gfsSrc.length) {
+          const ch = gfsSrc[i];
+          if (ch === '{') depth++;
+          else if (ch === '}') { depth--; if (depth === 0) { fnBody = gfsSrc.slice(fnIdx, i + 1); break; } }
+          i++;
+        }
+        if (!fnBody) {
+          fail('[26] js/game-fullscreen.js: pushMicroNotification body extraction failed (unbalanced braces?)');
+          check26Clean = false;
+        } else {
+          if (fnBody.includes('micro-note-close')) {
+            pass('[26] pushMicroNotification contains micro-note-close (close button present)');
+          } else {
+            fail('[26] pushMicroNotification in game-fullscreen.js is missing the close button (micro-note-close)');
+            check26Clean = false;
+          }
+          // Must also contain aria-label="Close" for accessibility (precise attribute match)
+          if (/setAttribute\s*\(\s*['"]aria-label['"]\s*,\s*['"]Close['"]\s*\)/.test(fnBody)) {
+            pass('[26] pushMicroNotification close button has aria-label="Close"');
+          } else {
+            fail('[26] pushMicroNotification close button missing aria-label="Close" (setAttribute call)');
+            check26Clean = false;
+          }
+        }
       }
     }
   }
@@ -1574,20 +1584,26 @@ console.log('\n[26] Dismissible UI compliance');
       fail('[26] css/wiki.css missing .micro-note-close — close button unstyled');
       check26Clean = false;
     }
-    // (d) .micro-note must have pointer-events: auto so close buttons are clickable
-    // We check that '.micro-note' block (NOT .micro-notify-feed) contains pointer-events: auto.
-    // Simple substring check: look for 'pointer-events: auto' somewhere after '.micro-note {'
-    // and before the next closing rule for .micro-note--success/warning/info overrides.
+    // (d) .micro-note must have pointer-events: auto so close buttons are clickable.
+    // Fail explicitly if the selector is missing or renamed.
     const microNoteIdx = wikiSrc.indexOf('.micro-note {');
-    const microNoteCloseIdx = wikiSrc.indexOf('.micro-note-close');
-    if (microNoteIdx !== -1 && microNoteCloseIdx !== -1) {
-      // Slice the block from '.micro-note {' up to '.micro-note-close' definition.
-      const slice = wikiSrc.slice(microNoteIdx, microNoteCloseIdx);
-      if (/pointer-events\s*:\s*auto/.test(slice)) {
-        pass('[26] .micro-note has pointer-events: auto (close button is clickable)');
-      } else {
-        fail('[26] .micro-note missing pointer-events: auto — close button may be unclickable');
+    if (microNoteIdx === -1) {
+      fail('[26] css/wiki.css: .micro-note { selector not found — selector may be missing or renamed');
+      check26Clean = false;
+    } else {
+      const microNoteCloseIdx = wikiSrc.indexOf('.micro-note-close');
+      if (microNoteCloseIdx === -1) {
+        fail('[26] css/wiki.css: .micro-note-close not found after .micro-note — cannot check pointer-events');
         check26Clean = false;
+      } else {
+        // Slice the block from '.micro-note {' up to '.micro-note-close' definition.
+        const slice = wikiSrc.slice(microNoteIdx, microNoteCloseIdx);
+        if (/pointer-events\s*:\s*auto/.test(slice)) {
+          pass('[26] .micro-note has pointer-events: auto (close button is clickable)');
+        } else {
+          fail('[26] .micro-note missing pointer-events: auto — close button may be unclickable');
+          check26Clean = false;
+        }
       }
     }
   }
@@ -1604,14 +1620,17 @@ console.log('\n[27] Fullscreen overlay overflow guard');
   let check27Clean = true;
 
   // (a) #game-overlay must not have width: 100vw (causes scrollbar-width overflow)
+  // Scoped checks: extract the #game-overlay rule block and validate within it.
   const gfsCss = read('css/game-fullscreen.css');
   if (!gfsCss) {
     fail('[27] css/game-fullscreen.css not found');
     check27Clean = false;
   } else {
-    // Find the #game-overlay rule block and check for width: 100vw inside it.
     const overlayIdx = gfsCss.indexOf('#game-overlay {');
-    if (overlayIdx !== -1) {
+    if (overlayIdx === -1) {
+      fail('[27] css/game-fullscreen.css: #game-overlay rule not found — cannot validate overlay sizing');
+      check27Clean = false;
+    } else {
       let depth = 0, i = overlayIdx;
       let overlayBlock = '';
       while (i < gfsCss.length) {
@@ -1620,21 +1639,23 @@ console.log('\n[27] Fullscreen overlay overflow guard');
         else if (ch === '}') { depth--; if (depth === 0) { overlayBlock = gfsCss.slice(overlayIdx, i + 1); break; } }
         i++;
       }
-      if (/width\s*:\s*100vw/.test(overlayBlock)) {
-        fail('[27] css/game-fullscreen.css #game-overlay has width: 100vw — causes horizontal overflow on scrolled pages');
+      if (!overlayBlock) {
+        fail('[27] css/game-fullscreen.css: #game-overlay block extraction failed');
         check27Clean = false;
       } else {
-        pass('[27] #game-overlay: no width: 100vw (overflow-safe)');
+        if (/width\s*:\s*100vw/.test(overlayBlock)) {
+          fail('[27] css/game-fullscreen.css #game-overlay has width: 100vw — causes horizontal overflow on scrolled pages');
+          check27Clean = false;
+        } else {
+          pass('[27] #game-overlay: no width: 100vw (overflow-safe)');
+        }
+        if (/\binset\s*:\s*0\b/.test(overlayBlock)) {
+          pass('[27] #game-overlay: inset: 0 present');
+        } else {
+          fail('[27] css/game-fullscreen.css #game-overlay missing inset: 0 — overlay may not fill viewport');
+          check27Clean = false;
+        }
       }
-    } else {
-      warn('[27] #game-overlay rule not found in css/game-fullscreen.css');
-    }
-    // inset: 0 must be present (required for correct viewport sizing)
-    if (/\binset\s*:\s*0\b/.test(gfsCss)) {
-      pass('[27] #game-overlay: inset: 0 present');
-    } else {
-      fail('[27] css/game-fullscreen.css #game-overlay missing inset: 0');
-      check27Clean = false;
     }
   }
 

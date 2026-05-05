@@ -1249,6 +1249,8 @@
   // variable because each game owns its state internally.
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && isOpen) {
+      e.stopPropagation();
+      e.preventDefault();
       closeOverlay();
       return;
     }
@@ -1260,6 +1262,8 @@
       // panels). This keeps micro-notify logic self-contained here.
       var feed = document.getElementById('micro-notify-feed');
       if (feed && feed.firstElementChild) {
+        e.stopPropagation();
+        e.preventDefault();
         feed.firstElementChild.remove();
       }
       return;
