@@ -2194,17 +2194,16 @@ console.log('\n[37] Shell pages must not target #layout / #main-wrapper / #homep
   const FORBIDDEN_IDS = ['#layout', '#main-wrapper', '#homepage-right-panel', '#sidebar'];
 
   // Regex that matches a CSS selector token containing one of the forbidden IDs.
-  // We look for the forbidden ID as a standalone token (not part of a longer name):
+  // We look for the forbidden ID as a standalone selector token:
   //   - preceded by start-of-text, whitespace, comma, or opening brace
-  //   - followed by end-of-text, whitespace, comma, opening brace, colon,
-  //     period, or closing paren
-  // This avoids false positives on things like `#sidebar-overlay` or `#layout > *`.
-  // We use a single composite pattern tested per ID.
+  //   - NOT immediately followed by an identifier character (letters, digits,
+  //     underscore, hyphen) — prevents false positives on longer names such as
+  //     `#sidebar-overlay` or `#layout-custom`, while correctly flagging
+  //     `#sidebar`, `#layout`, `#layout[attr]`, `#layout:pseudo`, etc.
   function buildForbiddenRe(id) {
     const escaped = id.replace('#', '\\#');
-    // Match the ID at a selector boundary
     return new RegExp(
-      '(?:^|[,\\s{])' + escaped + '(?:[\\s,{:>~+.[\\])]|$)',
+      '(?:^|[,\\s{])' + escaped + '(?![a-zA-Z0-9_-])',
       'gm'
     );
   }
