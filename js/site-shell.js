@@ -13,12 +13,6 @@
   var main = document.getElementById('content');
   if (!main) return; // safety: bail if no content found
 
-  /* ── 2. Skip-link ────────────────────────────────────────────── */
-  var skipLink = document.createElement('a');
-  skipLink.className = 'skip-link';
-  skipLink.href = '#content';
-  skipLink.textContent = 'Skip to content';
-
   /* ── 3. Header ───────────────────────────────────────────────── */
   var header = document.createElement('header');
   header.id = 'site-header';
@@ -397,7 +391,7 @@
   document.body.insertBefore(layout, backToTop);
   document.body.insertBefore(overlay, layout);
   document.body.insertBefore(header, overlay);
-  document.body.insertBefore(skipLink, header);
+  document.body.insertBefore(header, overlay);
 
   /* ── 11. Mark active sidebar link ────────────────────────────── */
   var pathname = window.location.pathname;

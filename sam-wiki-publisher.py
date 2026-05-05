@@ -261,8 +261,6 @@ def render_html(
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
 </head>
 <body data-wiki-stub="true">
-<a class="skip-link" href="#wiki-content">Skip to content</a>
-
 <header id="site-header" role="banner">
   <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">&#9776;</button>
   <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
