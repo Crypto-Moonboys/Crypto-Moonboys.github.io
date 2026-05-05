@@ -252,8 +252,15 @@ async function testPage(page, pathname, port) {
       noSystemStatus:    !document.body.textContent.includes('System Status'),
       noWikiNodes:       !document.body.textContent.includes('WIKI NODES'),
       noLiveFeedText:    !document.body.textContent.includes('Live System Feed'),
-      // No placeholder "--" in player panel stat chips
-      noPlaceholderDash: !document.querySelector('.hud-stat-val'),
+      // No placeholder "--" or em-dash in player panel stat chips (checks content, not presence)
+      noPlaceholderDash: (function () {
+        var chips = document.querySelectorAll('.hud-stat-val');
+        for (var i = 0; i < chips.length; i++) {
+          var t = chips[i].textContent.trim();
+          if (t === '--' || t === '\u2014') return false;
+        }
+        return true;
+      }()),
       // Max 2 retro-hud-box sections in right panel (Player Status + Next Actions)
       hudBoxCount:       document.querySelectorAll('#homepage-right-panel .retro-hud-box').length,
       layoutId:          !!document.getElementById('layout'),

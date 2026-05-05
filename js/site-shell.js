@@ -255,8 +255,8 @@
           img.src = photoUrl;
           img.alt = '';
           img.className = 'hud-avatar-img';
-          img.width = 36;
-          img.height = 36;
+          img.setAttribute('width', '36');
+          img.setAttribute('height', '36');
           avatarBox.innerHTML = '';
           avatarBox.appendChild(img);
           avatarBox.removeAttribute('aria-label');

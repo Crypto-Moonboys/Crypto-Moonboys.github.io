@@ -2021,13 +2021,17 @@ console.log('\n[34] Right-panel anti-drift: no fake data, no duplicate sections'
       pass('[34] site-shell.js: no hardcoded fake system status rows');
     }
 
-    // Must NOT contain static "--" placeholder in the player HUD stat chips
-    // (hud-stat-val with -- was the old fake chip pattern)
-    if (shellSrc34.includes('hud-stat-val">--') || shellSrc34.includes("hud-stat-val'>--")) {
-      fail('[34] site-shell.js contains placeholder "--" stat chips in player HUD');
+    // Must NOT contain static "--" or em-dash placeholder in the player HUD stat chips
+    // (hud-stat-val with -- or \u2014 was the old fake chip pattern)
+    if (
+      shellSrc34.includes('hud-stat-val">--') || shellSrc34.includes("hud-stat-val'>--") ||
+      shellSrc34.includes('hud-stat-val">\u2014') || shellSrc34.includes("hud-stat-val'>\u2014") ||
+      shellSrc34.includes('hud-stat-val">\\u2014') || shellSrc34.includes("hud-stat-val'>\\u2014")
+    ) {
+      fail('[34] site-shell.js contains placeholder "--"/em-dash stat chips in player HUD');
       check34Clean = false;
     } else {
-      pass('[34] site-shell.js: no "--" placeholder stat chips in player HUD');
+      pass('[34] site-shell.js: no "--"/em-dash placeholder stat chips in player HUD');
     }
 
     // Must NOT contain the removed Live System Feed section
