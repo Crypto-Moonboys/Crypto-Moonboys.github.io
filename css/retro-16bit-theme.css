@@ -321,12 +321,6 @@ a:hover           { color: var(--neon-magenta); }
     0 0 0 1px rgba(0, 229, 255, 0.18),
     5px 5px 0 rgba(0, 0, 0, 0.80),
     0 0 14px rgba(255, 45, 120, 0.18);
-  clip-path: polygon(
-    0 8px, 8px 0,
-    calc(100% - 8px) 0, 100% 8px,
-    100% calc(100% - 8px), calc(100% - 8px) 100%,
-    8px 100%, 0 calc(100% - 8px)
-  );
 }
 .category-card:hover {
   border-color: var(--neon-cyan);
@@ -379,12 +373,6 @@ a:hover           { color: var(--neon-magenta); }
   box-shadow:
     0 0 0 1px rgba(255, 45, 120, 0.10),
     5px 5px 0 rgba(0, 0, 0, 0.75);
-  clip-path: polygon(
-    0 6px, 6px 0,
-    calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%,
-    6px 100%, 0 calc(100% - 6px)
-  );
 }
 .article-card:hover {
   border-color: var(--neon-magenta);
@@ -426,7 +414,7 @@ a:hover           { color: var(--neon-magenta); }
 /*
  * Pixel-art game-window panel.
  * ─ No smooth border-radius
- * ─ Chamfered (octagonal) corners via clip-path
+ * ─ Standard rectangular borders
  * ─ Chunky 2px solid border with dark inset + colored glow
  * ─ Background uses the pixel-art city SVG asset
  * ─ Corner bracket accent via pseudo-elements
@@ -442,12 +430,6 @@ a:hover           { color: var(--neon-magenta); }
     6px 6px 0 0 rgba(0, 0, 0, 0.88),
     0 0 28px rgba(255, 45, 120, 0.22),
     0 0 60px rgba(0, 0, 0, 0.6) !important;
-  clip-path: polygon(
-    0 10px, 10px 0,
-    calc(100% - 10px) 0, 100% 10px,
-    100% calc(100% - 10px), calc(100% - 10px) 100%,
-    10px 100%, 0 calc(100% - 10px)
-  ) !important;
   overflow: hidden;
   position: relative;
   padding: 22px 28px 24px !important;
@@ -563,12 +545,6 @@ a:hover           { color: var(--neon-magenta); }
   display: inline-flex !important;
   align-items: center !important;
   gap: 8px !important;
-  clip-path: polygon(
-    0 5px, 5px 0,
-    calc(100% - 5px) 0, 100% 5px,
-    100% calc(100% - 5px), calc(100% - 5px) 100%,
-    5px 100%, 0 calc(100% - 5px)
-  );
 }
 
 /* Button icon */
@@ -665,12 +641,6 @@ a:hover           { color: var(--neon-magenta); }
     0 0 0 1px rgba(0, 229, 255, 0.18),
     5px 5px 0 rgba(0, 0, 0, 0.82),
     0 0 14px rgba(255, 45, 120, 0.18) !important;
-  clip-path: polygon(
-    0 5px, 5px 0,
-    calc(100% - 5px) 0, 100% 5px,
-    100% calc(100% - 5px), calc(100% - 5px) 100%,
-    5px 100%, 0 calc(100% - 5px)
-  );
 }
 .launch-route-title {
   font-family: var(--font-pixel) !important;
@@ -855,15 +825,8 @@ body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#mai
   /* Magenta outer border for arcade punch */
   border: 3px solid var(--neon-magenta);
   border-radius: 0;
-  overflow: hidden;
   flex-shrink: 0;
   position: relative;
-  clip-path: polygon(
-    0 8px, 8px 0,
-    calc(100% - 8px) 0, 100% 8px,
-    100% calc(100% - 8px), calc(100% - 8px) 100%,
-    8px 100%, 0 calc(100% - 8px)
-  );
   box-shadow:
     0 0 0 2px rgba(0, 229, 255, 0.30),
     6px 6px 0 rgba(0, 0, 0, 0.88),
@@ -1097,12 +1060,6 @@ body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#mai
     0 0 0 1px rgba(0, 229, 255, 0.18),
     5px 5px 0 rgba(0, 0, 0, 0.80),
     0 0 14px rgba(255, 45, 120, 0.18) !important;
-  clip-path: polygon(
-    0 8px, 8px 0,
-    calc(100% - 8px) 0, 100% 8px,
-    100% calc(100% - 8px), calc(100% - 8px) 100%,
-    8px 100%, 0 calc(100% - 8px)
-  );
   position: relative;
 }
 
@@ -1415,12 +1372,6 @@ body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#mai
   z-index: 2;
   box-shadow: 3px 3px 0 rgba(255, 45, 120, 0.25),
               inset 0 0 0 1px rgba(255, 45, 120, 0.1);
-  clip-path: polygon(
-    0 3px, 3px 0,
-    calc(100% - 3px) 0, 100% 3px,
-    100% calc(100% - 3px), calc(100% - 3px) 100%,
-    3px 100%, 0 calc(100% - 3px)
-  );
 }
 
 /* ── HERO MANIFESTO TEXT ─────────────────────────────────────── */
@@ -1460,12 +1411,6 @@ body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#mai
     0 0 0 1px rgba(0, 229, 255, 0.18),
     5px 5px 0 rgba(0, 0, 0, 0.80),
     0 0 14px rgba(255, 45, 120, 0.16);
-  clip-path: polygon(
-    0 6px, 6px 0,
-    calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%,
-    6px 100%, 0 calc(100% - 6px)
-  );
 }
 /* ==========================================================================
    HOMEPAGE 16-BIT NEON UI UNIFIER
@@ -1622,12 +1567,6 @@ body.page-home .home-widget {
     0 0 0 5px rgba(0, 229, 255, 0.23),
     0 0 22px rgba(255, 45, 120, 0.28),
     inset 0 0 0 2px rgba(0, 229, 255, 0.20) !important;
-  clip-path: polygon(
-    0 10px, 10px 0,
-    calc(100% - 10px) 0, 100% 10px,
-    100% calc(100% - 10px), calc(100% - 10px) 100%,
-    10px 100%, 0 calc(100% - 10px)
-  );
 }
 
 body.page-home .home-hero::before,
@@ -2508,12 +2447,6 @@ body.page-home .sidebar-section {
     0 0 0 5px rgba(0, 229, 255, 0.24),
     0 0 22px rgba(255, 45, 120, 0.28),
     inset 0 0 0 2px rgba(0, 229, 255, 0.20) !important;
-  clip-path: polygon(
-    0 8px, 8px 0,
-    calc(100% - 8px) 0, 100% 8px,
-    100% calc(100% - 8px), calc(100% - 8px) 100%,
-    8px 100%, 0 calc(100% - 8px)
-  );
   filter: drop-shadow(0 0 10px rgba(255, 45, 120, 0.52));
 }
 
@@ -2678,12 +2611,6 @@ body.page-home .sidebar-nav a.active {
     0 0 0 1px rgba(0, 229, 255, 0.20),
     5px 5px 0 rgba(0, 0, 0, 0.82),
     0 0 18px rgba(255, 45, 120, 0.22) !important;
-  clip-path: polygon(
-    0 10px, 10px 0,
-    calc(100% - 10px) 0, 100% 10px,
-    100% calc(100% - 10px), calc(100% - 10px) 100%,
-    10px 100%, 0 calc(100% - 10px)
-  );
 }
 
 .page-hero h1 {
@@ -3519,7 +3446,7 @@ body.page-has-right-panel .sidebar-nav a.active {
    No JS/gameplay/auth/XP/worker logic touched.
    ========================================================================== */
 
-/* ── Neon frame base: clip-path octagon + layered box-shadow ── */
+/* ── Neon frame base: layered box-shadow ── */
 body.page-has-right-panel .retro-hud-box,
 body.page-has-right-panel .category-card,
 body.page-has-right-panel .article-card,
@@ -3537,12 +3464,6 @@ body.page-has-right-panel .home-widget {
     0 0 0 5px rgba(0, 229, 255, 0.23),
     0 0 22px rgba(255, 45, 120, 0.28),
     inset 0 0 0 2px rgba(0, 229, 255, 0.20) !important;
-  clip-path: polygon(
-    0 10px, 10px 0,
-    calc(100% - 10px) 0, 100% 10px,
-    100% calc(100% - 10px), calc(100% - 10px) 100%,
-    10px 100%, 0 calc(100% - 10px)
-  );
 }
 
 /* ── Segmented / broken frame lines (::before) ─────────────── */
@@ -3625,12 +3546,6 @@ body.page-has-right-panel .sidebar-section {
     0 0 0 5px rgba(0, 229, 255, 0.24),
     0 0 22px rgba(255, 45, 120, 0.28),
     inset 0 0 0 2px rgba(0, 229, 255, 0.20) !important;
-  clip-path: polygon(
-    0 8px, 8px 0,
-    calc(100% - 8px) 0, 100% 8px,
-    100% calc(100% - 8px), calc(100% - 8px) 100%,
-    8px 100%, 0 calc(100% - 8px)
-  );
   filter: drop-shadow(0 0 10px rgba(255, 45, 120, 0.52));
 }
 
@@ -3817,12 +3732,6 @@ body.page-has-right-panel .article-list-item {
     0 0 0 2px rgba(255, 45, 120, 0.60),
     0 0 0 4px rgba(0, 229, 255, 0.18),
     inset 0 0 0 1px rgba(0, 229, 255, 0.15) !important;
-  clip-path: polygon(
-    0 6px, 6px 0,
-    calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%,
-    6px 100%, 0 calc(100% - 6px)
-  );
   text-decoration: none !important;
   color: var(--color-text) !important;
 }
@@ -3993,12 +3902,6 @@ body.page-has-right-panel .dash-section {
     0 0 0 2px rgba(0, 229, 255, 0.55),
     0 0 0 4px rgba(255, 45, 120, 0.15),
     inset 0 0 0 1px rgba(0, 229, 255, 0.12) !important;
-  clip-path: polygon(
-    0 6px, 6px 0,
-    calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%,
-    6px 100%, 0 calc(100% - 6px)
-  );
 }
 
 body.page-has-right-panel .dash-section-heading {
@@ -4024,12 +3927,6 @@ body.page-has-right-panel .sam-panel {
     0 0 0 2px rgba(255, 45, 120, 0.70),
     0 0 0 4px rgba(0, 229, 255, 0.20),
     inset 0 0 0 1px rgba(0, 229, 255, 0.18) !important;
-  clip-path: polygon(
-    0 6px, 6px 0,
-    calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%,
-    6px 100%, 0 calc(100% - 6px)
-  );
 }
 
 body.page-has-right-panel .sam-panel.sam-panel--blue {
@@ -4234,12 +4131,6 @@ body.page-game .retro-hud-box {
     0 0 0 5px rgba(0, 229, 255, 0.23),
     0 0 22px rgba(255, 45, 120, 0.28),
     inset 0 0 0 2px rgba(0, 229, 255, 0.20) !important;
-  clip-path: polygon(
-    0 10px, 10px 0,
-    calc(100% - 10px) 0, 100% 10px,
-    100% calc(100% - 10px), calc(100% - 10px) 100%,
-    10px 100%, 0 calc(100% - 10px)
-  );
 }
 
 body.page-has-right-panel .retro-hud-box::before,
@@ -4339,12 +4230,6 @@ body.page-game .sidebar-nav a.active {
     0 0 0 2px rgba(0, 229, 255, 0.50),
     0 0 0 4px rgba(255, 45, 120, 0.12),
     inset 0 0 0 1px rgba(0, 229, 255, 0.10) !important;
-  clip-path: polygon(
-    0 5px, 5px 0,
-    calc(100% - 5px) 0, 100% 5px,
-    100% calc(100% - 5px), calc(100% - 5px) 100%,
-    5px 100%, 0 calc(100% - 5px)
-  );
 }
 
 .las-panel {
@@ -4357,12 +4242,6 @@ body.page-game .sidebar-nav a.active {
     0 0 0 2px rgba(190, 76, 247, 0.45),
     0 0 0 4px rgba(0, 229, 255, 0.10),
     inset 0 0 0 1px rgba(190, 76, 247, 0.10) !important;
-  clip-path: polygon(
-    0 5px, 5px 0,
-    calc(100% - 5px) 0, 100% 5px,
-    100% calc(100% - 5px), calc(100% - 5px) 100%,
-    5px 100%, 0 calc(100% - 5px)
-  );
 }
 
 /* ==========================================================================
@@ -4386,10 +4265,6 @@ body.page-game .lb-tab {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
   text-transform: uppercase !important;
   letter-spacing: 0.07em !important;
-  clip-path: polygon(
-    0 4px, 4px 0, calc(100% - 4px) 0, 100% 4px,
-    100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px)
-  );
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.75) !important;
   padding: 7px 16px !important;
 }
@@ -4418,10 +4293,6 @@ body.page-game .lb-table-outer {
     0 0 0 2px rgba(0, 229, 255, 0.55),
     0 0 0 4px rgba(255, 45, 120, 0.18),
     inset 0 0 0 1px rgba(0, 229, 255, 0.12) !important;
-  clip-path: polygon(
-    0 6px, 6px 0, calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px)
-  );
 }
 
 body.page-game .lb-table thead th {
@@ -4470,10 +4341,6 @@ body.page-game .lb-faction {
   color: var(--neon-cyan) !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
-  clip-path: polygon(
-    0 3px, 3px 0, calc(100% - 3px) 0, 100% 3px,
-    100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0 calc(100% - 3px)
-  );
   padding: 3px 8px !important;
 }
 
@@ -4487,10 +4354,6 @@ body.page-game .lb-faction {
   text-transform: uppercase !important;
   letter-spacing: 0.07em !important;
   cursor: pointer;
-  clip-path: polygon(
-    0 4px, 4px 0, calc(100% - 4px) 0, 100% 4px,
-    100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px)
-  );
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.80) !important;
   padding: 7px 16px !important;
 }
@@ -4511,10 +4374,6 @@ body.page-game .lb-linked-identity {
     0 0 0 2px rgba(255, 45, 120, 0.55),
     0 0 0 4px rgba(0, 229, 255, 0.12),
     inset 0 0 0 1px rgba(255, 45, 120, 0.18) !important;
-  clip-path: polygon(
-    0 5px, 5px 0, calc(100% - 5px) 0, 100% 5px,
-    100% calc(100% - 5px), calc(100% - 5px) 100%, 5px 100%, 0 calc(100% - 5px)
-  );
 }
 body.page-game .lb-linked-identity strong {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
@@ -4547,10 +4406,6 @@ body.page-game .lb-presence-btn {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   cursor: pointer;
-  clip-path: polygon(
-    0 4px, 4px 0, calc(100% - 4px) 0, 100% 4px,
-    100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px)
-  );
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.75) !important;
   padding: 8px 14px !important;
 }
@@ -4564,10 +4419,6 @@ body.page-game .lb-presence-btn {
     0 0 0 2px rgba(0, 229, 255, 0.55),
     0 0 0 4px rgba(255, 45, 120, 0.15),
     inset 0 0 0 1px rgba(0, 229, 255, 0.12) !important;
-  clip-path: polygon(
-    0 6px, 6px 0, calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px)
-  );
 }
 
 body.page-game .lb-bd-player {
@@ -4592,10 +4443,6 @@ body.page-game .lb-bd-row {
   box-shadow:
     2px 2px 0 rgba(0, 0, 0, 0.75),
     0 0 0 1px rgba(0, 229, 255, 0.30) !important;
-  clip-path: polygon(
-    0 3px, 3px 0, calc(100% - 3px) 0, 100% 3px,
-    100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0 calc(100% - 3px)
-  );
 }
 body.page-game .lb-bd-label {
   font-family: var(--font-pixel, "Press Start 2P", monospace) !important;
@@ -4637,10 +4484,6 @@ body.page-game .lb-graph-wrap {
     0 0 0 2px rgba(0, 229, 255, 0.50),
     0 0 0 4px rgba(255, 45, 120, 0.12),
     inset 0 0 0 1px rgba(0, 229, 255, 0.10) !important;
-  clip-path: polygon(
-    0 6px, 6px 0, calc(100% - 6px) 0, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px)
-  );
 }
 
 body.page-game #lb-graph-reset {
@@ -4653,10 +4496,6 @@ body.page-game #lb-graph-reset {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.70) !important;
-  clip-path: polygon(
-    0 3px, 3px 0, calc(100% - 3px) 0, 100% 3px,
-    100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0 calc(100% - 3px)
-  );
 }
 body.page-game #lb-graph-reset:hover {
   background: rgba(0, 229, 255, 0.10) !important;

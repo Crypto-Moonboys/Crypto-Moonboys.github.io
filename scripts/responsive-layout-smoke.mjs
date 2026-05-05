@@ -108,6 +108,27 @@ async function getMetrics(page) {
       hero:      bb('.home-hero'),
       floatingWithoutCloseCount: floatingWithoutClose.length,
       floatingWithoutCloseLabels: floatingWithoutClose.map(el => el.className),
+
+      // Check for cards/boxes using clip-path (chamfered corners).
+      // Only count elements that are genuinely visible: not display:none, not
+      // visibility:hidden, not opacity:0, and with a non-zero bounding box that
+      // intersects the viewport.
+      clipPathCards: Array.from(document.querySelectorAll(
+        '.category-card, .article-card, .retro-hud-box, .retro-info-panel, .home-widget, ' +
+        '.launch-cta-primary, .launch-cta-secondary, .launch-route, .retro-panel, .page-hero, ' +
+        '.sidebar-section, .csp-panel, .las-panel, .lb-tab, .lb-table-outer, ' +
+        '.lb-faction, .lb-linked-identity, .lb-presence-btn, .lb-bd-row, ' +
+        '.lb-graph-wrap, .article-list-item, .dash-section, .sam-panel, ' +
+        '#lb-refresh-btn, #lb-breakdown-panel, #lb-graph-reset, .home-hero'
+      )).filter(el => {
+        const style = window.getComputedStyle(el);
+        if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0) return false;
+        const bb = el.getBoundingClientRect();
+        if (bb.width <= 0 || bb.height <= 0) return false;
+        // Must intersect the viewport
+        if (bb.bottom < 0 || bb.top > window.innerHeight || bb.right < 0 || bb.left > window.innerWidth) return false;
+        return style.clipPath && style.clipPath !== 'none';
+      }).length,
     };
   });
 }
@@ -194,6 +215,12 @@ async function runPage(browser, path, vw, vh, label, screenshotDir, port) {
   assert(m.floatingWithoutCloseCount === 0,
     `${label}: all visible floating cards have a close button (found ${m.floatingWithoutCloseCount} without)`);
 
+  // ── Cards must not have clip-path (no chamfered/polygon corners) ──────────
+  if (m.clipPathCards !== undefined) {
+    assert(m.clipPathCards === 0,
+      `${label}: no visible cards use clip-path (found ${m.clipPathCards} with clip-path)`);
+  }
+
   // ── Take screenshot when failures exist (best-effort, requires SCREENSHOT_DIR) ──
   if (screenshotDir && failures.length > 0) {
     const safeName = label.replace(/[^a-z0-9]/gi, '_') + '_' + vw + 'x' + vh + '.png';
@@ -205,6 +232,101 @@ async function runPage(browser, path, vw, vh, label, screenshotDir, port) {
 
   await ctx.close();
   return m;
+}
+
+// ── Mobile navigation test ────────────────────────────────────────────────────
+
+async function runMobileNavTest(browser, port) {
+  info('');
+  info('── mobile nav test 390×844 / ──');
+
+  const ctx  = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await ctx.newPage();
+
+  await page.route('**', (route) => {
+    const url = route.request().url();
+    if (url.startsWith(`http://localhost:${port}`)) route.continue();
+    else route.fulfill({ status: 200, body: '' });
+  });
+
+  await page.goto(`http://localhost:${port}/`, { timeout: 20000, waitUntil: 'networkidle' });
+  await page.waitForTimeout(300);
+
+  // ── Hamburger must be visible ──────────────────────────────────────────────
+  const hamburger = page.locator('#hamburger');
+  const hamVisible = await hamburger.isVisible().catch(() => false);
+  assert(hamVisible, 'mobile nav: hamburger is visible');
+
+  // ── aria-expanded starts false ────────────────────────────────────────────
+  const ariaExpandedInit = await hamburger.getAttribute('aria-expanded').catch(() => null);
+  assert(ariaExpandedInit === 'false',
+    `mobile nav: hamburger aria-expanded="false" before open (got "${ariaExpandedInit}")`);
+
+  // ── Sidebar starts off-screen ──────────────────────────────────────────────
+  const sidebarInitBB = await page.evaluate(() => {
+    const s = document.getElementById('sidebar');
+    if (!s) return null;
+    const bb = s.getBoundingClientRect();
+    return { left: bb.left, right: bb.right };
+  });
+  // The sidebar should be off-screen to the left (right edge at or below epsilon).
+  const SIDEBAR_OFFSCREEN_EPSILON = 1;
+  assert(sidebarInitBB && sidebarInitBB.right <= SIDEBAR_OFFSCREEN_EPSILON,
+    `mobile nav: sidebar starts off-screen (right=${sidebarInitBB ? sidebarInitBB.right : 'null'})`);
+
+  // ── Click hamburger — sidebar must open ───────────────────────────────────
+  await hamburger.click();
+  await page.waitForTimeout(400);
+
+  const afterOpen = await page.evaluate(() => {
+    const s = document.getElementById('sidebar');
+    const h = document.getElementById('hamburger');
+    if (!s || !h) return { error: 'elements missing' };
+    const bb = s.getBoundingClientRect();
+    const firstLink = s.querySelector('a');
+    const firstLinkBB = firstLink ? firstLink.getBoundingClientRect() : null;
+    return {
+      sidebarHasOpen: s.classList.contains('open'),
+      sidebarOnScreen: bb.right > 0 && bb.left < window.innerWidth,
+      sidebarLeft: bb.left,
+      sidebarRight: bb.right,
+      ariaExpanded: h.getAttribute('aria-expanded'),
+      firstLinkVisible: firstLinkBB ? (firstLinkBB.width > 0 && firstLinkBB.height > 0) : false,
+      firstLinkLeft: firstLinkBB ? firstLinkBB.left : -1,
+    };
+  });
+
+  assert(afterOpen.sidebarHasOpen === true,
+    'mobile nav: sidebar has .open class after hamburger click');
+  assert(afterOpen.sidebarOnScreen === true,
+    `mobile nav: sidebar is on-screen after click (left=${afterOpen.sidebarLeft} right=${afterOpen.sidebarRight})`);
+  assert(afterOpen.ariaExpanded === 'true',
+    `mobile nav: hamburger aria-expanded="true" after open (got "${afterOpen.ariaExpanded}")`);
+  assert(afterOpen.firstLinkVisible === true,
+    'mobile nav: first sidebar nav link is visible after open');
+  assert(afterOpen.firstLinkLeft >= 0,
+    `mobile nav: first nav link starts within viewport (left=${afterOpen.firstLinkLeft})`);
+
+  // ── Press Escape — sidebar must close ─────────────────────────────────────
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+
+  const afterEscape = await page.evaluate(() => {
+    const s = document.getElementById('sidebar');
+    const h = document.getElementById('hamburger');
+    if (!s || !h) return { error: 'elements missing' };
+    return {
+      sidebarHasOpen: s.classList.contains('open'),
+      ariaExpanded: h.getAttribute('aria-expanded'),
+    };
+  });
+
+  assert(afterEscape.sidebarHasOpen === false,
+    'mobile nav: sidebar .open removed after Escape');
+  assert(afterEscape.ariaExpanded === 'false',
+    `mobile nav: hamburger aria-expanded="false" after Escape (got "${afterEscape.ariaExpanded}")`);
+
+  await ctx.close();
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────
@@ -235,6 +357,8 @@ async function main() {
         '/graph.html',
         '/categories/index.html',
         '/games/pac-chain/',
+        '/search.html',
+        '/games/',
       ];
       for (const p of desktopPages) {
         await runPage(browser, p, 1440, 900, 'desktop', screenshotDir, actualPort);
@@ -246,10 +370,13 @@ async function main() {
       }
 
       // Mobile 390×844
-      const mobilePages = ['/', '/games/pac-chain/'];
+      const mobilePages = ['/', '/games/pac-chain/', '/search.html'];
       for (const p of mobilePages) {
         await runPage(browser, p, 390, 844, 'mobile', screenshotDir, actualPort);
       }
+
+      // Mobile navigation test (hamburger open/close)
+      await runMobileNavTest(browser, actualPort);
 
       await browser.close();
       server.close();

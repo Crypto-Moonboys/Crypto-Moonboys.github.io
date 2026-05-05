@@ -1686,6 +1686,56 @@ console.log('\n[27] Fullscreen overlay overflow guard');
   if (check27Clean) pass('[27] Fullscreen overlay overflow guard: all checks passed');
 }
 
+// ── 28. No clip-path / mask in non-gameplay shell CSS ────────────────────────
+console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
+{
+  let check28Clean = true;
+
+  // Shell CSS files that must not use clip-path or mask-image on UI elements
+  const shellCssFiles = [
+    'css/retro-16bit-theme.css',
+    'css/wiki.css',
+  ];
+
+  // Patterns that indicate clipped/chamfered corners in shell CSS.
+  // Anchored to the start of a declaration (preceded only by newline/whitespace)
+  // so they match property names but not comment text or vendor-prefixed variants
+  // of each other (e.g. clip-path must not also match -webkit-clip-path).
+  const forbiddenPatterns = [
+    { pattern: /(^|\n)\s*clip-path\s*:/m,         label: 'clip-path' },
+    { pattern: /(^|\n)\s*-webkit-clip-path\s*:/m, label: '-webkit-clip-path' },
+    { pattern: /(^|\n)\s*mask-image\s*:/m,         label: 'mask-image' },
+    { pattern: /(^|\n)\s*-webkit-mask\s*:/m,       label: '-webkit-mask' },
+    { pattern: /polygon\s*\(/m,                    label: 'polygon(' },
+  ];
+
+  for (const cssFile of shellCssFiles) {
+    const src = read(cssFile);
+    if (!src) {
+      fail(`[28] ${cssFile} not found`);
+      check28Clean = false;
+      continue;
+    }
+
+    // Strip CSS comments before scanning so comment text never triggers a false positive.
+    const stripped = src
+      .replace(/\/\*[\s\S]*?\*\//g, '') // block comments: /* ... */
+      .replace(/\/\/[^\n]*/g, '');       // line comments: // ...
+
+    let fileClean = true;
+    for (const { pattern, label } of forbiddenPatterns) {
+      if (pattern.test(stripped)) {
+        fail(`[28] ${cssFile} contains "${label}" — remove clipped/chamfered corner styling`);
+        check28Clean = false;
+        fileClean = false;
+      }
+    }
+    if (fileClean) pass(`[28] ${cssFile}: no clip-path/mask-image`);
+  }
+
+  if (check28Clean) pass('[28] No clip-path or mask-image in non-gameplay shell CSS: all checks passed');
+}
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log('\n─────────────────────────────────────────');
 console.log(`Anti-drift check complete.`);
