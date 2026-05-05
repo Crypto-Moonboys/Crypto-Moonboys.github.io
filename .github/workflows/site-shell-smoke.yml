@@ -5,8 +5,10 @@ name: Site Shell Smoke
 #   - right-HUD widget presence after JS execution (#homepage-right-panel,
 #     #live-feed-widget, Rocket Loader placeholder simulation)
 #   - canonical script order and data-cfasync drift
-#   - arcade manifest / sidebar / hub parity drift
-#   - XP terminology regressions
+#
+# Note: anti-drift (arcade manifest / sidebar / hub parity, XP terminology)
+# runs in its own dedicated anti-drift-check.yml workflow and is intentionally
+# NOT duplicated here.
 
 on:
   pull_request:
@@ -35,22 +37,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Syntax check — shell and test files
+      - name: Syntax check — canonical boot chain + test harness
         run: |
+          node --check js/api-config.js
+          node --check js/arcade/core/global-event-bus.js
+          node --check js/identity-gate.js
+          node --check js/core/moonboys-state.js
           node --check js/site-shell.js
+          node --check js/components/connection-status-panel.js
+          node --check js/components/global-player-header.js
+          node --check js/components/live-activity-summary.js
           node --check scripts/right-hud-browser-smoke.mjs
           node --check scripts/site-shell-parity-audit.mjs
           node --check scripts/anti-drift-check.mjs
           node --check scripts/apply-shell.mjs
 
-      - name: Right-HUD browser smoke
-        run: npm run test:right-hud
-
       - name: Shell parity audit
         run: npm run test:shell-parity
 
-      - name: Anti-drift check
-        run: npm run test:anti-drift
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Right-HUD browser smoke
+        run: npm run test:right-hud
