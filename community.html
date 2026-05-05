@@ -19,23 +19,17 @@
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
     /*
-      Battle Chamber page-local styles (mobile-first overflow fix).
-      All rules scoped ONLY to .battle-page and descendants.
-      Never target shell IDs (#layout, #main-wrapper, #sidebar, #homepage-right-panel, #content).
+      Battle Chamber mobile overflow fix (targeted).
+      Scoped only to .battle-page.
+      No shell IDs touched.
     */
-
-    .battle-page,
-    .battle-page * {
-      box-sizing: border-box;
-    }
 
     .battle-page {
       width: 100%;
       max-width: 100%;
       min-width: 0;
       overflow-x: clip;
-      padding-left: 12px;
-      padding-right: 12px;
+      box-sizing: border-box;
     }
 
     .battle-page .page-hero,
@@ -48,98 +42,11 @@
       box-sizing: border-box;
     }
 
-    .battle-page .page-hero {
-      padding: 24px 16px;
-      margin-bottom: 18px;
-      border: 1px solid rgba(86,220,255,.26);
-      border-radius: 12px;
-      background: rgba(8,18,34,.72);
-    }
-
-    .battle-page .section {
-      margin: 0 0 18px;
-      padding: 16px;
-      border: 1px solid rgba(86,220,255,.26);
-      border-radius: 12px;
-      background: rgba(8,18,34,.72);
-    }
-
-    .battle-page .page-hero h1,
-    .battle-page .section h2,
-    .battle-page .community-card h3 {
-      margin: 0 0 10px;
-      max-width: 100%;
-      text-transform: uppercase;
-      white-space: normal !important;
-      overflow-wrap: anywhere;
-      word-break: normal;
-      line-height: 1.25;
-    }
-
-    .battle-page .page-hero p,
-    .battle-page .section p,
-    .battle-page .section li,
-    .battle-page .community-card,
-    .battle-page .community-card-inner {
-      max-width: 100%;
-      min-width: 0;
-      color: var(--color-text-muted);
-      line-height: 1.7;
-      white-space: normal !important;
-      overflow-wrap: anywhere;
-      word-break: normal;
-    }
-
-    .battle-page .community-hero-grid,
-    .battle-page .community-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 18px;
-      margin-bottom: 18px;
-    }
-
-    .battle-page .community-card {
-      overflow: visible;
-    }
-
-    .battle-page .community-card-inner {
-      overflow-x: hidden;
-    }
-
-    .battle-page .cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 12px;
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-    }
-
-    .battle-page .cta-row .btn {
-      max-width: 100%;
-      white-space: normal !important;
-      overflow-wrap: anywhere;
-      text-align: center;
-    }
-
-    .battle-page .battle-telegram-bot-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 44px;
-    }
-
-    @media (min-width: 901px) {
-      .battle-page .community-hero-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .battle-page .community-grid {
-        grid-template-columns: minmax(0, 2fr) minmax(260px, .8fr);
-      }
-    }
-
     @media (max-width: 900px) {
+      body.page-community #content {
+        overflow-x: hidden;
+      }
+
       .battle-page {
         padding-left: 12px;
         padding-right: 12px;
@@ -147,43 +54,35 @@
 
       .battle-page .page-hero,
       .battle-page .section {
-        width: 100%;
-        max-width: 100%;
+        width: 100% !important;
+        max-width: calc(100vw - 24px) !important;
+        min-width: 0 !important;
         padding: 16px;
         margin-left: 0;
         margin-right: 0;
+        box-sizing: border-box;
       }
 
-      .battle-page .community-hero-grid,
-      .battle-page .community-grid {
-        grid-template-columns: minmax(0, 1fr) !important;
+      .battle-page .page-hero {
+        padding: 20px 14px;
       }
 
-      .battle-page .page-hero h1 {
-        font-size: clamp(1.15rem, 6.5vw, 1.55rem) !important;
-        letter-spacing: 0.01em !important;
+      .battle-page .section {
+        padding: 14px;
       }
 
-      .battle-page .section h2,
+      .battle-page h1 {
+        font-size: clamp(1.1rem, 6.5vw, 1.45rem) !important;
+      }
+
+      .battle-page h2,
       .battle-page .community-card h3 {
-        font-size: clamp(0.95rem, 5vw, 1.25rem) !important;
+        font-size: clamp(0.95rem, 5vw, 1.2rem) !important;
       }
 
       .battle-page p,
       .battle-page li {
         font-size: clamp(0.9rem, 4.2vw, 1.0rem) !important;
-      }
-
-      .battle-page ul {
-        padding-left: 1rem;
-      }
-
-      .battle-page .cta-row {
-        flex-direction: column;
-      }
-
-      .battle-page .cta-row .btn {
-        width: 100%;
       }
     }
 
@@ -194,15 +93,42 @@
       }
 
       .battle-page .page-hero {
-        padding: 18px 12px !important;
+        max-width: calc(100vw - 20px) !important;
+        padding: 16px 12px;
       }
 
       .battle-page .section {
-        padding: 14px !important;
+        max-width: calc(100vw - 20px) !important;
+        padding: 12px;
       }
 
-      .battle-page .page-hero h1 {
-        font-size: clamp(1.05rem, 7vw, 1.4rem) !important;
+      .battle-page h1 {
+        font-size: clamp(1.0rem, 7vw, 1.35rem) !important;
+      }
+    }
+
+    /* Keep all other desktop styles from previous version */
+    .battle-page .page-hero,
+    .battle-page .section {
+      border: 1px solid rgba(86,220,255,.26);
+      border-radius: 12px;
+      background: rgba(8,18,34,.72);
+    }
+
+    .battle-page .community-hero-grid,
+    .battle-page .community-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    @media (min-width: 901px) {
+      .battle-page .community-hero-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .battle-page .community-grid {
+        grid-template-columns: minmax(0, 2fr) minmax(260px, .8fr);
       }
     }
   </style>
