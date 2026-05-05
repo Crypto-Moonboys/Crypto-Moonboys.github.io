@@ -4900,13 +4900,19 @@ body.page-game .meta-item {
   padding: 8px 10px !important;
 }
 
-body.page-has-right-panel #layout,
-body.page-game #layout {
-  display: grid !important;
-  grid-template-columns: var(--color-sidebar-w) minmax(0, 1fr) 270px;
-  min-height: calc(100vh - var(--color-header-h));
-  align-items: start;
-  min-width: 0 !important;
+/* Display:grid rule scoped to desktop only.
+ * Without the min-width guard this rule's higher specificity (body + class + ID)
+ * overrides the max-width:900px media-query's display:flex !important, leaving
+ * mobile stuck in a 260 px grid column instead of a full-width flex column. */
+@media (min-width: 901px) {
+  body.page-has-right-panel #layout,
+  body.page-game #layout {
+    display: grid !important;
+    grid-template-columns: var(--color-sidebar-w) minmax(0, 1fr) 270px;
+    min-height: calc(100vh - var(--color-header-h));
+    align-items: start;
+    min-width: 0 !important;
+  }
 }
 
 :is(body.page-has-right-panel, body.page-game) {
@@ -5043,8 +5049,10 @@ body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
 }
 
 :is(body.page-has-right-panel, body.page-game) #content {
-  max-width: 980px;
+  /* max-width removed: content must fill the grid column, not leave a blank right gutter */
+  max-width: none;
   min-width: 0 !important;
+  width: 100%;
 }
 
 :is(body.page-has-right-panel, body.page-game) #main-wrapper {
