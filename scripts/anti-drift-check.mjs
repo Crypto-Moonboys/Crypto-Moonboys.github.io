@@ -40,8 +40,9 @@
  * 33. Primary Telegram sync CTA button href anti-drift.
  * 34. Right-panel anti-drift: no fake data.
  * 35. No frontend JS fetches the bare Worker root URL (must use /health or a real endpoint).
+ * 36. Press Start 2P pixel font must be @imported in css/retro-16bit-theme.css.
+ * 37. Shell pages must not contain page-local CSS targeting shell-owned layout IDs.
  */
-
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -2131,6 +2132,95 @@ console.log('\n[35] No frontend JS fetches bare Worker root URL');
   }
   if (check35Clean) {
     pass('[35] No frontend JS fetches the bare Worker root URL');
+  }
+}
+
+
+// ── 36. Press Start 2P font must be imported in retro-16bit-theme.css ────────
+// Ensures the pixel font is loaded globally via CSS @import so every page that
+// loads retro-16bit-theme.css gets the font automatically — no per-page <link>
+// is required. This prevents a regression where shell pages that lack an HTML
+// <link> tag would fall back to a different font and render smaller chrome text.
+console.log('\n[36] Press Start 2P @import in css/retro-16bit-theme.css');
+{
+  const themeCss = read('css/retro-16bit-theme.css');
+  if (!themeCss) {
+    fail('[36] css/retro-16bit-theme.css not found');
+  } else {
+    // The @import directive must reference the Press Start 2P Google Font.
+    // Accept any valid @import url(...) form pointing to fonts.googleapis.com
+    // with family=Press+Start+2P (with or without additional query params).
+    const importRe = /@import\s+url\s*\(\s*['"]?https:\/\/fonts\.googleapis\.com\/[^'")\s]*Press\+Start\+2P[^'")\s]*['"]?\s*\)/;
+    if (importRe.test(themeCss)) {
+      pass('[36] css/retro-16bit-theme.css contains @import for Press Start 2P');
+    } else {
+      fail('[36] css/retro-16bit-theme.css is missing @import url(...) for Press Start 2P — add it near the top of the file so every shell page gets the pixel font automatically');
+    }
+  }
+}
+
+
+// ── 37. Shell pages must not target shell-owned layout IDs in page-local CSS ──
+// Prevents page-level <style> blocks from overriding the shell layout managed by
+// css/wiki.css and css/retro-16bit-theme.css.  Any page-local CSS rule that
+// selects #layout, #main-wrapper, #homepage-right-panel, or #sidebar can break
+// the left sidebar, the right HUD, or the three-column grid on other pages.
+//
+// Strategy: extract all <style> content from every shell HTML page discovered by
+// collectShellHtml() (root, wiki, categories, about, games/index.html,
+// games/leaderboard.html — excludes actual game runtime directories), then scan
+// for CSS rule blocks that contain these forbidden IDs as part of a selector
+// (not just in a comment or string value).
+console.log('\n[37] Shell pages must not target #layout / #main-wrapper / #homepage-right-panel / #sidebar in page-local <style>');
+{
+  // Forbidden shell-layout IDs — these are owned by wiki.css / retro-16bit-theme.css
+  const FORBIDDEN_IDS = ['#layout', '#main-wrapper', '#homepage-right-panel', '#sidebar'];
+
+  // Regex that matches a CSS selector token containing one of the forbidden IDs.
+  // We look for the forbidden ID as a standalone selector token:
+  //   - preceded by start-of-text, whitespace, comma, or opening brace
+  //   - NOT immediately followed by an identifier character (letters, digits,
+  //     underscore, hyphen) — prevents false positives on longer names such as
+  //     `#sidebar-overlay` or `#layout-custom`, while correctly flagging
+  //     `#sidebar`, `#layout`, `#layout[attr]`, `#layout:pseudo`, etc.
+  function buildForbiddenRe(id) {
+    const escaped = id.replace('#', '\\#');
+    return new RegExp(
+      '(?:^|[,\\s{])' + escaped + '(?![a-zA-Z0-9_-])',
+      'gm'
+    );
+  }
+  const forbiddenRes = FORBIDDEN_IDS.map(id => ({ id, re: buildForbiddenRe(id) }));
+
+  let check37Clean = true;
+
+  for (const pageRel of collectShellHtml()) {
+    const src = read(pageRel);
+    if (!src) continue;
+
+    // Extract all content between <style> and </style> tags.
+    // Use a simple non-greedy extraction — multiple <style> blocks are handled
+    // by repeated matching.
+    const styleBlockRe = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
+    let styleMatch;
+    while ((styleMatch = styleBlockRe.exec(src)) !== null) {
+      const styleContent = styleMatch[1];
+
+      for (const { id, re } of forbiddenRes) {
+        re.lastIndex = 0;
+        // Strip block comments before checking to avoid false positives
+        const stripped = styleContent.replace(/\/\*[\s\S]*?\*\//g, '');
+        re.lastIndex = 0;
+        if (re.test(stripped)) {
+          fail(`[37] ${pageRel}: page-local <style> targets shell-owned layout selector "${id}" — remove it; shell layout is governed by css/wiki.css and css/retro-16bit-theme.css`);
+          check37Clean = false;
+        }
+      }
+    }
+  }
+
+  if (check37Clean) {
+    pass('[37] No shell page contains page-local CSS targeting shell-owned layout IDs');
   }
 }
 

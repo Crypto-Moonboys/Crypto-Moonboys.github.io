@@ -742,6 +742,13 @@ async function runCommunityMobileOverflowCheck(browser, port) {
       width: Math.round(p.getBoundingClientRect().width),
     }));
 
+    // Telegram Link button href check
+    const tgBtn = document.querySelector('.battle-telegram-bot-link') ||
+      document.querySelector('a[href="https://t.me/WIKICOMSBOT"]');
+    const tgBtnHref   = tgBtn ? tgBtn.getAttribute('href') : null;
+    const tgBtnTarget = tgBtn ? tgBtn.getAttribute('target') : null;
+    const tgBtnRel    = tgBtn ? tgBtn.getAttribute('rel') : null;
+
     return {
       vw, scrollW, bodyScrollW,
       contentRight: contentBB ? Math.round(contentBB.right) : null,
@@ -752,6 +759,7 @@ async function runCommunityMobileOverflowCheck(browser, port) {
       h1Width: h1BB ? Math.round(h1BB.width) : null,
       sectionOverflowCount: sectionOverflow.length,
       panelOverflow,
+      tgBtnHref, tgBtnTarget, tgBtnRel,
     };
   });
 
@@ -782,6 +790,15 @@ async function runCommunityMobileOverflowCheck(browser, port) {
   assert(mob.panelOverflow.length === 0,
     `community mobile: all community panels fit viewport (${mob.panelOverflow.length} overflow: ${JSON.stringify(mob.panelOverflow)})`);
 
+  // Telegram button href must point to the bot
+  info(`  tg-btn: href=${mob.tgBtnHref} target=${mob.tgBtnTarget} rel=${mob.tgBtnRel}`);
+  assert(mob.tgBtnHref === 'https://t.me/WIKICOMSBOT',
+    `community mobile: Link Telegram button href must be https://t.me/WIKICOMSBOT (got ${mob.tgBtnHref})`);
+  assert(mob.tgBtnTarget === '_blank',
+    `community mobile: Link Telegram button must have target="_blank" (got ${mob.tgBtnTarget})`);
+  assert(mob.tgBtnRel !== null && mob.tgBtnRel.includes('noopener'),
+    `community mobile: Link Telegram button rel must include noopener (got ${mob.tgBtnRel})`);
+
   await mCtx.close();
 
   // ── desktop 1440×900 ──
@@ -798,18 +815,71 @@ async function runCommunityMobileOverflowCheck(browser, port) {
   await dPage.goto(`http://localhost:${port}/community.html`, { timeout: 20000, waitUntil: 'networkidle' });
   await dPage.waitForTimeout(400);
 
-  const desk = await dPage.evaluate(() => ({
-    vw: window.innerWidth,
-    scrollW: document.documentElement.scrollWidth,
-    bodyScrollW: document.body.scrollWidth,
-  }));
+  const desk = await dPage.evaluate(() => {
+    const vw = window.innerWidth;
+    const scrollW = document.documentElement.scrollWidth;
+    const bodyScrollW = document.body.scrollWidth;
+
+    function bbOf(id) {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      const cs = window.getComputedStyle(el);
+      return {
+        left:    Math.round(r.left),
+        right:   Math.round(r.right),
+        width:   Math.round(r.width),
+        height:  Math.round(r.height),
+        display: cs.display,
+      };
+    }
+
+    return {
+      vw, scrollW, bodyScrollW,
+      sidebar:    bbOf('sidebar'),
+      rightPanel: bbOf('homepage-right-panel'),
+      content:    bbOf('content'),
+    };
+  });
 
   info(`  vw=${desk.vw} scrollW=${desk.scrollW} bodyScrollW=${desk.bodyScrollW}`);
+  if (desk.sidebar)    info(`  #sidebar:                left=${desk.sidebar.left} right=${desk.sidebar.right} w=${desk.sidebar.width}`);
+  if (desk.rightPanel) info(`  #homepage-right-panel:   left=${desk.rightPanel.left} right=${desk.rightPanel.right} w=${desk.rightPanel.width} display=${desk.rightPanel.display}`);
+  if (desk.content)    info(`  #content:                left=${desk.content.left} right=${desk.content.right} w=${desk.content.width}`);
 
   assert(desk.scrollW <= desk.vw + 2,
     `community desktop: document scrollWidth ${desk.scrollW} ≤ viewport ${desk.vw} + 2 (no horizontal overflow)`);
   assert(desk.bodyScrollW <= desk.vw + 2,
     `community desktop: body scrollWidth ${desk.bodyScrollW} ≤ viewport ${desk.vw} + 2 (no horizontal overflow)`);
+
+  // Sidebar must be present and positioned at the left edge (not pushed off by page CSS)
+  assert(desk.sidebar !== null && desk.sidebar.width > 0,
+    `community desktop: #sidebar must exist and have non-zero width (got ${desk.sidebar ? desk.sidebar.width : 'null'}px)`);
+  if (desk.sidebar) {
+    assert(desk.sidebar.left >= 0 && desk.sidebar.left < 20,
+      `community desktop: #sidebar left edge must be at viewport left (left=${desk.sidebar.left}px, expected ≈ 0)`);
+  }
+
+  // Right panel must be visible at 1440×900 — global CSS hides it only at ≤1200px.
+  // If page-local CSS re-introduces display:none at this viewport the assertion fails.
+  assert(desk.rightPanel !== null,
+    'community desktop: #homepage-right-panel must be injected by site-shell.js');
+  if (desk.rightPanel) {
+    assert(desk.rightPanel.display !== 'none',
+      `community desktop: #homepage-right-panel must not be hidden by page-local CSS at 1440px (display=${desk.rightPanel.display})`);
+    assert(desk.rightPanel.width > 0,
+      `community desktop: #homepage-right-panel must have non-zero width (got ${desk.rightPanel.width}px)`);
+  }
+
+  // Centre content must not overlap the left sidebar or right panel
+  if (desk.sidebar && desk.content) {
+    assert(desk.content.left >= desk.sidebar.right - 2,
+      `community desktop: #content left (${desk.content.left}) must be at or right of #sidebar right (${desk.sidebar.right}) — no overlap`);
+  }
+  if (desk.rightPanel && desk.rightPanel.display !== 'none' && desk.content) {
+    assert(desk.content.right <= desk.rightPanel.left + 2,
+      `community desktop: #content right (${desk.content.right}) must be at or left of #homepage-right-panel left (${desk.rightPanel.left}) — no overlap`);
+  }
 
   await dCtx.close();
 }
@@ -889,6 +959,12 @@ async function runShellChromeFontParityCheck(browser, port) {
         return parseFloat(window.getComputedStyle(el).fontSize) || null;
       }
 
+      function measureFontFamily(sel) {
+        const el = document.querySelector(sel);
+        if (!el) return null;
+        return window.getComputedStyle(el).fontFamily || null;
+      }
+
       function measureWidth(id) {
         const el = document.getElementById(id);
         if (!el) return null;
@@ -902,6 +978,9 @@ async function runShellChromeFontParityCheck(browser, port) {
         logoText:   measureFontSizePx(sels.logoText),
         sidebarNav: measureFontSizePx(sels.sidebarNav),
         hudTitle:   measureFontSizePx(sels.hudTitle),
+        logoTextFamily:   measureFontFamily(sels.logoText),
+        sidebarNavFamily: measureFontFamily(sels.sidebarNav),
+        hudTitleFamily:   measureFontFamily(sels.hudTitle),
         sidebarWidth:    measureWidth('sidebar'),
         rightPanelWidth: measureWidth('homepage-right-panel'),
       };
@@ -909,6 +988,7 @@ async function runShellChromeFontParityCheck(browser, port) {
 
     results[label] = m;
     info(`  ${label}: logoText=${m.logoText}px sidebarNav=${m.sidebarNav}px hudTitle=${m.hudTitle}px sidebar=${m.sidebarWidth}px rightPanel=${m.rightPanelWidth}px overflow=${m.hOverflow}`);
+    info(`  ${label}: logoTextFamily="${m.logoTextFamily}" sidebarNavFamily="${m.sidebarNavFamily}" hudTitleFamily="${m.hudTitleFamily}"`);
 
     await ctx.close();
   }
@@ -995,6 +1075,41 @@ async function runShellChromeFontParityCheck(browser, port) {
     const maxW = Math.max(...rpWidths);
     assert(maxW - minW <= 5,
       `shell-chrome parity: #homepage-right-panel width consistent across pages (min=${minW}px max=${maxW}px spread=${maxW - minW}px)`);
+  }
+
+  // ── font-family must include "Press Start 2P" on all shell pages ─────────
+  // Verifies the CSS @import in retro-16bit-theme.css reaches every page and
+  // that the --font-pixel stack is actually applied to the shell chrome elements.
+  const FONT_FAMILY_KEYS = [
+    { key: 'logoTextFamily',   sel: '.site-logo .logo-text' },
+    { key: 'sidebarNavFamily', sel: '#sidebar .sidebar-nav a' },
+    { key: 'hudTitleFamily',   sel: '#homepage-right-panel .retro-hud-title' },
+  ];
+  const RIGHT_PANEL_FAMILY_PAGES = new Set(['homepage', 'games', 'search', 'categories']);
+
+  for (const { label } of SHELL_PAGES) {
+    const m = results[label];
+    for (const { key, sel } of FONT_FAMILY_KEYS) {
+      // hudTitle is only expected on right-panel pages
+      if (key === 'hudTitleFamily' && !RIGHT_PANEL_FAMILY_PAGES.has(label)) continue;
+      const fam = m[key];
+      if (fam === null) continue; // element not present — presence checked above
+      assert(fam.toLowerCase().includes('press start 2p'),
+        `shell-chrome parity [${label}]: ${sel} font-family must include "Press Start 2P" (got "${fam}")`);
+    }
+  }
+
+  // ── font-family stack must be identical across all pages ─────────────────
+  const refFam = results['homepage'];
+  for (const label of PARITY_PAGES) {
+    const m = results[label];
+    if (!m) continue;
+    for (const { key, sel } of FONT_FAMILY_KEYS) {
+      if (key === 'hudTitleFamily' && !RIGHT_PANEL_FAMILY_PAGES.has(label)) continue;
+      if (refFam[key] === null || m[key] === null) continue;
+      assert(refFam[key] === m[key],
+        `shell-chrome parity [${label} vs homepage]: ${sel} font-family must match — homepage="${refFam[key]}" ${label}="${m[key]}"`);
+    }
   }
 }
 
