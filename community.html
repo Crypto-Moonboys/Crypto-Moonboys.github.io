@@ -20,7 +20,14 @@
   <style>
     /*
       Battle Chamber page-local styles.
-      Only targets #content and page-content elements.
+      Targets Battle Chamber page content and page-level overflow guards:
+        html, body — overflow-x guard only
+        #content — box model and overflow
+        .page-hero, .section — panel layout
+        .community-hero-grid, .community-grid, .community-card,
+        .community-card-inner, .cta-row — page content grid and cards
+
+      Must NOT target shell-owned layout selectors.
       Shell layout (#layout, #main-wrapper, #sidebar, #homepage-right-panel)
       is governed exclusively by css/wiki.css and css/retro-16bit-theme.css.
     */

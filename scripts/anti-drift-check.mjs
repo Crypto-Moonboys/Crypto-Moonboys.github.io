@@ -2166,30 +2166,13 @@ console.log('\n[36] Press Start 2P @import in css/retro-16bit-theme.css');
 // selects #layout, #main-wrapper, #homepage-right-panel, or #sidebar can break
 // the left sidebar, the right HUD, or the three-column grid on other pages.
 //
-// Strategy: extract all <style> content from every HTML page in SHELL_PAGES,
-// then scan for CSS rule blocks that contain these forbidden IDs as part of a
-// selector (not just in a comment or string value).
+// Strategy: extract all <style> content from every shell HTML page discovered by
+// collectShellHtml() (root, wiki, categories, about, games/index.html,
+// games/leaderboard.html — excludes actual game runtime directories), then scan
+// for CSS rule blocks that contain these forbidden IDs as part of a selector
+// (not just in a comment or string value).
 console.log('\n[37] Shell pages must not target #layout / #main-wrapper / #homepage-right-panel / #sidebar in page-local <style>');
 {
-  // Pages to check — the canonical shell pages list
-  const PAGES_37 = [
-    'index.html',
-    'community.html',
-    'games/index.html',
-    'games/leaderboard.html',
-    'dashboard.html',
-    'search.html',
-    'timeline.html',
-    'categories/index.html',
-    'about.html',
-    'how-to-play.html',
-    'gkniftyheads-incubator.html',
-    'graph.html',
-    'sam.html',
-    'hubs.html',
-    'paths.html',
-  ];
-
   // Forbidden shell-layout IDs — these are owned by wiki.css / retro-16bit-theme.css
   const FORBIDDEN_IDS = ['#layout', '#main-wrapper', '#homepage-right-panel', '#sidebar'];
 
@@ -2211,9 +2194,9 @@ console.log('\n[37] Shell pages must not target #layout / #main-wrapper / #homep
 
   let check37Clean = true;
 
-  for (const pageRel of PAGES_37) {
+  for (const pageRel of collectShellHtml()) {
     const src = read(pageRel);
-    if (!src) continue; // non-existent optional pages are skipped
+    if (!src) continue;
 
     // Extract all content between <style> and </style> tags.
     // Use a simple non-greedy extraction — multiple <style> blocks are handled
@@ -2225,8 +2208,7 @@ console.log('\n[37] Shell pages must not target #layout / #main-wrapper / #homep
 
       for (const { id, re } of forbiddenRes) {
         re.lastIndex = 0;
-        // Skip occurrences that appear only inside CSS comments
-        // Strip block comments first for analysis
+        // Strip block comments before checking to avoid false positives
         const stripped = styleContent.replace(/\/\*[\s\S]*?\*\//g, '');
         re.lastIndex = 0;
         if (re.test(stripped)) {
