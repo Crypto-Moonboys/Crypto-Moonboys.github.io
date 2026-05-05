@@ -2254,8 +2254,10 @@ console.log('\n[37] Shell pages must not target #layout / #main-wrapper / #homep
 //   3. Split each selector group by comma to get individual selectors.
 //   4. Check if any individual selector's first token matches a forbidden pattern.
 //
-// Note: { } inside CSS string values (e.g. content: "{}") can confuse the depth
-// counter — an acceptable limitation for this heuristic check.
+// Note: { } inside CSS string values (e.g. content: "{}") or inside url()
+// values can confuse the depth counter, potentially causing the extractor to
+// mis-identify selector text.  Such patterns are extremely rare in page-local
+// styles; the risk is a false negative (missed violation), never a false positive.
 console.log('\n[38] Shell pages must not target html / body / #content as root selectors in page-local <style>');
 {
   /**
@@ -2313,20 +2315,24 @@ console.log('\n[38] Shell pages must not target html / body / #content as root s
   const FORBIDDEN_ROOT_CHECKS = [
     {
       id: 'html',
-      // "html" at start, NOT immediately followed by an identifier character,
-      // dot, or hash (which would make it a qualified selector).
-      re: /^html(?![a-zA-Z0-9_.#-])/,
+      // "html" at start, NOT immediately followed by a letter, digit, dot,
+      // hash, or hyphen (which would make it a qualified or longer selector).
+      // HTML element names never contain underscores, so _ is excluded from
+      // the allowed-suffix set to keep the check tight.
+      re: /^html(?![a-zA-Z0-9.#-])/,
     },
     {
       id: 'body',
-      // "body" at start, NOT immediately followed by an identifier character,
-      // dot, or hash.  Allows body.page-x, body#id.
-      re: /^body(?![a-zA-Z0-9_.#-])/,
+      // "body" at start, NOT immediately followed by a letter, digit, dot,
+      // hash, or hyphen.  Allows body.page-x, body#id.
+      // HTML element names never contain underscores; _ excluded from allowed set.
+      re: /^body(?![a-zA-Z0-9.#-])/,
     },
     {
       id: '#content',
       // "#content" at start, NOT immediately followed by an identifier character
       // or hyphen (which would make it a longer ID like #content-box).
+      // CSS IDs can contain underscores so _ remains in the exclusion set.
       // Matches: #content  #content *  #content .x  #content > .x  #content[attr]
       re: /^#content(?![a-zA-Z0-9_-])/,
     },
