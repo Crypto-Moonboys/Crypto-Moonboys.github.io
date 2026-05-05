@@ -42,7 +42,7 @@
  * 35. No frontend JS fetches the bare Worker root URL (must use /health or a real endpoint).
  * 36. Press Start 2P pixel font must be @imported in css/retro-16bit-theme.css.
  * 37. Shell pages must not contain page-local CSS targeting shell-owned layout IDs.
- * 38. Shell pages must not target html, body, or #content as bare root selectors in page-local CSS.
+ * 38. Shell pages must not target html, body, or #content as root/shell selectors in page-local CSS.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -2226,43 +2226,110 @@ console.log('\n[37] Shell pages must not target #layout / #main-wrapper / #homep
 }
 
 
-// ── 38. Shell pages must not target html/body/\#content as bare root selectors ──
-// Page-local <style> blocks must not contain bare html { }, body { }, or
-// #content { } selector rules — these are root/shell-owned targets that can
+// ── 38. Shell pages must not target html/body/#content as root/shell selectors ──
+// Page-local <style> blocks must not contain rules whose selector starts with
+// html, bare body, or #content — these are root/shell-owned targets that can
 // override the shared shell layout set by wiki.css / retro-16bit-theme.css.
 //
-// Allowed: body.page-x .thing { }  (body used as a qualifier, not a bare block)
-// Allowed: body.graph-page #content { }  (#content as descendant, not root selector)
-// Forbidden: html, body { ... }  or  html { ... }  or  body { ... }  or  #content { ... }
+// Allowed:
+//   body.page-x .thing { }    — body qualified with a class
+//   body.graph-page #content  — body.class with #content as descendant
+//   html.loaded { }           — html qualified with a class
+//   #content-box { }          — different ID (hyphen-suffixed)
 //
-// Detection strategy (after stripping block comments):
-//   - bare html:     selector token "html" at start of rule or after ","
-//   - bare body:     "body" immediately followed by optional whitespace + "{" or ","
-//                    (excludes body.class and body>child qualifiers)
-//   - bare #content: "#content" at start of selector rule or after ","
-//                    (excludes descendant patterns like "body.x #content {")
-console.log('\n[38] Shell pages must not target html / body / #content as bare root selectors in page-local <style>');
+// Forbidden (root/shell-owned selector as FIRST compound in the rule):
+//   html { }  html, body { }  html * { }  html .x { }
+//   body { }  body > .x { }   body, html { }
+//   #content { }  #content * { }  #content .x { }
+//   #content > .x { }  #content[data-x] { }
+//
+// Also catches minified one-liners: .card{...}body{...}  .x{...}#content{...}
+// and @media-nested rules: @media (...) { #content { ... } }
+//
+// Detection strategy:
+//   1. Strip block comments from the style block.
+//   2. Walk the CSS character-by-character, tracking { } depth to identify
+//      rule selector text (depth 0→1 transition for top-level rules, depth
+//      N→N+1 for @media-nested rules).
+//   3. Split each selector group by comma to get individual selectors.
+//   4. Check if any individual selector's first token matches a forbidden pattern.
+//
+// Note: { } inside CSS string values (e.g. content: "{}") can confuse the depth
+// counter — an acceptable limitation for this heuristic check.
+console.log('\n[38] Shell pages must not target html / body / #content as root selectors in page-local <style>');
 {
-  // Matches bare html selector at the start of a rule or after a comma:
-  //   html { ... }  or  html, body { ... }
-  // Does NOT match: .html-list { }  or  [data-html] { }
-  const bareHtmlRe = /(?:^|[,\n])\s*html\s*[{,]/m;
+  /**
+   * Extract individual CSS selector strings from a style block.
+   *
+   * Walks the CSS character-by-character tracking { } depth, capturing the
+   * selector text that precedes each opening `{`.  Handles @media nesting and
+   * minified CSS that places multiple rules on one line.
+   *
+   * @param {string} styleContent  Raw content of a <style> block.
+   * @returns {string[]} Array of individual selector strings (trimmed).
+   */
+  function extractCssSelectors(styleContent) {
+    // Strip block comments first so /* #content */ does not trigger the check.
+    const css = styleContent.replace(/\/\*[\s\S]*?\*\//g, '');
+    const selectors = [];
+    let i = 0;
+    let depth = 0;
+    let ruleStart = 0;
 
-  // Matches bare body as the outermost block selector (followed by whitespace + "{" or ","):
-  //   body { ... }  or  html, body { ... }
-  // Does NOT match: body.page-class .x { }  (class qualifier after body)
-  //                 body > .x { }  (combinator after body)
-  const bareBodyRe = /(?:^|[,\n])\s*body\s*[{,]/m;
+    while (i < css.length) {
+      const ch = css[i];
+      if (ch === '{') {
+        // Text from ruleStart to here is the selector group for this rule.
+        const selectorGroup = css.slice(ruleStart, i).trim();
+        // Skip @-rule headers (@media, @keyframes, @supports …) — their inner
+        // rules will still be captured as depth increases.
+        if (selectorGroup && !selectorGroup.startsWith('@')) {
+          for (const sel of selectorGroup.split(',')) {
+            const t = sel.trim();
+            if (t) selectors.push(t);
+          }
+        }
+        ruleStart = i + 1;
+        depth++;
+      } else if (ch === '}') {
+        if (depth > 0) depth--;
+        ruleStart = i + 1;
+      }
+      i++;
+    }
 
-  // Matches #content as a root/first selector (not as a descendant via preceding space):
-  //   #content { ... }  or  #content, .foo { ... }
-  // Does NOT match: body.graph-page #content { }  (space before → descendant)
-  const bareContentRe = /(?:^|[,\n])\s*#content\s*[{,]/m;
+    return selectors;
+  }
 
-  const BARE_ROOT_SELECTORS = [
-    { id: 'html',     re: bareHtmlRe },
-    { id: 'body',     re: bareBodyRe },
-    { id: '#content', re: bareContentRe },
+  // Forbidden patterns checked against the FIRST (leftmost) compound selector token.
+  //
+  // html  — any rule whose selector starts with the html type selector, not
+  //         qualified by a class/id/attribute (html.loaded is allowed).
+  // body  — any rule whose selector starts with bare body (body.page-x allowed).
+  // #content — any rule whose selector starts with #content, including:
+  //            #content { }  #content * { }  #content .x { }
+  //            #content > .x { }  #content[attr] { }
+  //         (#content-box is a different ID and is allowed.)
+  const FORBIDDEN_ROOT_CHECKS = [
+    {
+      id: 'html',
+      // "html" at start, NOT immediately followed by an identifier character,
+      // dot, or hash (which would make it a qualified selector).
+      re: /^html(?![a-zA-Z0-9_.#-])/,
+    },
+    {
+      id: 'body',
+      // "body" at start, NOT immediately followed by an identifier character,
+      // dot, or hash.  Allows body.page-x, body#id.
+      re: /^body(?![a-zA-Z0-9_.#-])/,
+    },
+    {
+      id: '#content',
+      // "#content" at start, NOT immediately followed by an identifier character
+      // or hyphen (which would make it a longer ID like #content-box).
+      // Matches: #content  #content *  #content .x  #content > .x  #content[attr]
+      re: /^#content(?![a-zA-Z0-9_-])/,
+    },
   ];
 
   let check38Clean = true;
@@ -2274,19 +2341,20 @@ console.log('\n[38] Shell pages must not target html / body / #content as bare r
     const styleBlockRe = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
     let styleMatch;
     while ((styleMatch = styleBlockRe.exec(src)) !== null) {
-      const stripped = styleMatch[1].replace(/\/\*[\s\S]*?\*\//g, '');
-      for (const { id, re } of BARE_ROOT_SELECTORS) {
-        re.lastIndex = 0;
-        if (re.test(stripped)) {
-          fail(`[38] ${pageRel}: page-local <style> uses bare root selector "${id}" — scope it to a page-owned class wrapper instead (e.g. .battle-page)`);
-          check38Clean = false;
+      const selectors = extractCssSelectors(styleMatch[1]);
+      for (const sel of selectors) {
+        for (const { id, re } of FORBIDDEN_ROOT_CHECKS) {
+          if (re.test(sel)) {
+            fail(`[38] ${pageRel}: page-local <style> targets shell-owned root selector "${id}" (selector: "${sel}") — scope all rules to a page-owned class wrapper instead (e.g. .battle-page)`);
+            check38Clean = false;
+          }
         }
       }
     }
   }
 
   if (check38Clean) {
-    pass('[38] No shell page contains page-local CSS with bare html / body / #content root selectors');
+    pass('[38] No shell page contains page-local CSS targeting shell-owned root/layout selectors');
   }
 }
 
