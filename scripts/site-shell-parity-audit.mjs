@@ -221,9 +221,11 @@ if (shellJs) {
 console.log('\n[8] site-shell.js hamburger/sidebar binding');
 if (shellJs) {
   const SIDEBAR_CHECKS = [
-    { needle: '__MOONBOYS_SIDEBAR_BOUND', label: 'window.__MOONBOYS_SIDEBAR_BOUND marker' },
-    { needle: 'sidebar-open',            label: 'body.sidebar-open canonical class' },
-    { needle: '_shellSetSidebarOpen',    label: '_shellSetSidebarOpen() helper function' },
+    { needle: '__MOONBOYS_SIDEBAR_BOUND',        label: 'window.__MOONBOYS_SIDEBAR_BOUND marker' },
+    { needle: '__MOONBOYS_SIDEBAR_ESCAPE_BOUND', label: 'window.__MOONBOYS_SIDEBAR_ESCAPE_BOUND (global Escape once)' },
+    { needle: 'dataset.sidebarBound',            label: 'per-element dataset.sidebarBound marker' },
+    { needle: 'sidebar-open',                    label: 'body.sidebar-open canonical class' },
+    { needle: '_shellSetSidebarOpen',            label: '_shellSetSidebarOpen() helper function' },
   ];
   for (const { needle, label } of SIDEBAR_CHECKS) {
     if (shellJs.includes(needle)) {
@@ -234,16 +236,17 @@ if (shellJs) {
   }
 }
 
-// 9. wiki.js sidebar binding: readyState guard and idempotent binding
-console.log('\n[9] wiki.js sidebar binding (readyState guard + idempotent)');
+// 9. wiki.js sidebar binding: nav bound before await, per-element markers
+console.log('\n[9] wiki.js sidebar binding (nav-first + per-element idempotent)');
 const wikiJs = read('js/wiki.js');
 if (!wikiJs) {
   fail('js/wiki.js — file not found');
 } else {
   const WIKI_SIDEBAR_CHECKS = [
-    { needle: '__MOONBOYS_SIDEBAR_BOUND', label: 'window.__MOONBOYS_SIDEBAR_BOUND idempotency check' },
-    { needle: "sidebar-open",             label: 'body.sidebar-open canonical class' },
-    { needle: "document.readyState",      label: 'document.readyState guard (deferred-script support)' },
+    { needle: '__MOONBOYS_SIDEBAR_ESCAPE_BOUND', label: 'window.__MOONBOYS_SIDEBAR_ESCAPE_BOUND idempotency check' },
+    { needle: 'dataset.sidebarBound',            label: 'per-element dataset.sidebarBound marker' },
+    { needle: 'sidebar-open',                    label: 'body.sidebar-open canonical class' },
+    { needle: 'document.readyState',             label: 'document.readyState guard (deferred-script support)' },
   ];
   for (const { needle, label } of WIKI_SIDEBAR_CHECKS) {
     if (wikiJs.includes(needle)) {

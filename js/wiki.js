@@ -231,6 +231,67 @@ function renderSearchPage(query) {
 
 /* ── DOM READY ───────────────────────────────────────────────────────────── */
 async function _wikiInit() {
+  // ── Sidebar / hamburger ────────────────────────────────────────────────────
+  // Bind BEFORE any await so the hamburger is interactive immediately, even on
+  // pages without site-shell.js and even under slow network conditions.
+  // Uses per-element markers so wiki.js never double-binds elements that
+  // site-shell.js has already bound.
+  (function _bindWikiNav() {
+    const ham = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const ov = document.getElementById('sidebar-overlay');
+
+    function _setSidebarState(expanded) {
+      if (!sidebar) return;
+      document.body.classList.toggle('sidebar-open', expanded);
+      const h = document.getElementById('hamburger');
+      if (h) h.setAttribute('aria-expanded', String(expanded));
+    }
+
+    function _toggleSidebar(open) {
+      const expanded = open !== undefined ? open : !document.body.classList.contains('sidebar-open');
+      _setSidebarState(expanded);
+    }
+
+    // Only bind click listeners if this element has not already been bound
+    // (site-shell.js uses the same dataset.sidebarBound marker).
+    if (ham && !ham.dataset.sidebarBound) {
+      ham.dataset.sidebarBound = 'true';
+      ham.addEventListener('click', () => _toggleSidebar());
+    }
+    if (ov && !ov.dataset.sidebarBound) {
+      ov.dataset.sidebarBound = 'true';
+      ov.addEventListener('click', () => _toggleSidebar(false));
+    }
+
+    // Escape: register once globally; always acts on current DOM.
+    if (!window.__MOONBOYS_SIDEBAR_ESCAPE_BOUND) {
+      window.__MOONBOYS_SIDEBAR_ESCAPE_BOUND = true;
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') _toggleSidebar(false);
+      });
+    }
+
+    // Close sidebar on nav link click regardless of which script bound hamburger.
+    if (sidebar && !sidebar.dataset.navClickBound) {
+      sidebar.dataset.navClickBound = 'true';
+      sidebar.addEventListener('click', (event) => {
+        const link = event.target && event.target.closest ? event.target.closest('a') : null;
+        if (link) _toggleSidebar(false);
+      });
+    }
+  }());
+
+  // ── Back to top ──────────────────────────────────────────────────────────
+  const _backToTop = document.getElementById('back-to-top');
+  if (_backToTop) {
+    window.addEventListener('scroll', () => {
+      _backToTop.classList.toggle('visible', window.scrollY > 300);
+    }, { passive: true });
+    _backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  }
+
+  // ── Async data loading (kicked off after nav is already bound) ────────────
   await loadWikiIndex();
   await loadEntityMap();
   buildEntityLookup();
@@ -287,51 +348,6 @@ async function _wikiInit() {
   }
   if (_headerBtn) {
     _headerBtn.addEventListener('click', () => goToSearch(_headerInput ? _headerInput.value : ''));
-  }
-
-  // ── Sidebar / hamburger ──────────────────────────────────────────────────
-  const _hamburger = document.getElementById('hamburger');
-  const _sidebar   = document.getElementById('sidebar');
-  const _overlay   = document.getElementById('sidebar-overlay');
-
-  function _setSidebarState(expanded) {
-    if (!_sidebar) return; // bail gracefully if no sidebar on this page
-    document.body.classList.toggle('sidebar-open', expanded);
-    if (_hamburger) _hamburger.setAttribute('aria-expanded', String(expanded));
-  }
-
-  function _toggleSidebar(open) {
-    const expanded = open !== undefined ? open : !document.body.classList.contains('sidebar-open');
-    _setSidebarState(expanded);
-  }
-
-  // Bind hamburger only if site-shell.js has not already done so (idempotent).
-  // On game pages (no site-shell.js) wiki.js is still responsible for binding.
-  if (!window.__MOONBOYS_SIDEBAR_BOUND) {
-    if (_hamburger) _hamburger.addEventListener('click', () => _toggleSidebar());
-    if (_overlay)   _overlay.addEventListener('click',   () => _toggleSidebar(false));
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') _toggleSidebar(false);
-    });
-    window.__MOONBOYS_SIDEBAR_BOUND = true;
-  }
-
-  // Always close sidebar when a sidebar nav link is clicked — works regardless
-  // of which script bound the hamburger.
-  if (_sidebar) {
-    _sidebar.addEventListener('click', (event) => {
-      const link = event.target && event.target.closest ? event.target.closest('a') : null;
-      if (link) _toggleSidebar(false);
-    });
-  }
-
-  // ── Back to top ──────────────────────────────────────────────────────────
-  const _backToTop = document.getElementById('back-to-top');
-  if (_backToTop) {
-    window.addEventListener('scroll', () => {
-      _backToTop.classList.toggle('visible', window.scrollY > 300);
-    }, { passive: true });
-    _backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   }
 }
 

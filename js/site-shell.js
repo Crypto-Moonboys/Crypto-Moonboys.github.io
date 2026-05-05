@@ -419,33 +419,49 @@
    * handler.  Uses body.sidebar-open as the single canonical state
    * class so CSS never depends on page-specific body classes.
    *
+   * Per-element binding markers (dataset.sidebarBound) are used so
+   * that if site-shell.js ever reruns and replaces DOM nodes the new
+   * elements are still bound correctly.  The Escape handler is
+   * registered once globally but always reads the *current* DOM.
+   *
    * wiki.js checks window.__MOONBOYS_SIDEBAR_BOUND and skips its own
    * binding to prevent double-binding (idempotent).
    */
-  if (!window.__MOONBOYS_SIDEBAR_BOUND) {
-    var _ham = document.getElementById('hamburger');
-    var _sb  = document.getElementById('sidebar');
-    var _ov  = document.getElementById('sidebar-overlay');
+  (function _bindSidebarNav() {
+    var ham = document.getElementById('hamburger');
+    var ov  = document.getElementById('sidebar-overlay');
 
-    if (_ham && _sb) {
-      function _shellSetSidebarOpen(open) {
-        document.body.classList.toggle('sidebar-open', open);
-        _ham.setAttribute('aria-expanded', String(open));
-      }
+    function _shellSetSidebarOpen(open) {
+      var sb = document.getElementById('sidebar');
+      if (!sb) return;
+      document.body.classList.toggle('sidebar-open', open);
+      var h = document.getElementById('hamburger');
+      if (h) h.setAttribute('aria-expanded', String(open));
+    }
 
-      _ham.addEventListener('click', function () {
+    if (ham && !ham.dataset.sidebarBound) {
+      ham.dataset.sidebarBound = 'true';
+      ham.addEventListener('click', function () {
         _shellSetSidebarOpen(!document.body.classList.contains('sidebar-open'));
       });
+    }
 
-      if (_ov) {
-        _ov.addEventListener('click', function () { _shellSetSidebarOpen(false); });
-      }
+    if (ov && !ov.dataset.sidebarBound) {
+      ov.dataset.sidebarBound = 'true';
+      ov.addEventListener('click', function () { _shellSetSidebarOpen(false); });
+    }
 
+    // Escape handler: registered once globally; always acts on current DOM.
+    if (!window.__MOONBOYS_SIDEBAR_ESCAPE_BOUND) {
+      window.__MOONBOYS_SIDEBAR_ESCAPE_BOUND = true;
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') _shellSetSidebarOpen(false);
       });
-
-      window.__MOONBOYS_SIDEBAR_BOUND = true;
     }
-  }
+
+    // Signal to wiki.js that the hamburger is already bound so it does not
+    // attach duplicate click listeners.  Reset whenever shell rebuilds so
+    // wiki.js never skips rebinding against stale state.
+    window.__MOONBOYS_SIDEBAR_BOUND = !!(ham && ham.dataset.sidebarBound);
+  }());
 }());

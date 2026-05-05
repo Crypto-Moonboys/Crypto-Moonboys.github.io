@@ -269,6 +269,10 @@ async function runMobileNavTest(browser, port, path) {
   assert(hamExists > 0, `${label}: #hamburger exists`);
   if (!hamExists) { await ctx.close(); return; }
 
+  const sidebarExists = await page.evaluate(() => !!document.getElementById('sidebar'));
+  assert(sidebarExists, `${label}: #sidebar exists`);
+  if (!sidebarExists) { await ctx.close(); return; }
+
   // ── Hamburger must be visible ──────────────────────────────────────────────
   const hamVisible = await hamburger.isVisible().catch(() => false);
   assert(hamVisible, `${label}: #hamburger is visible`);
