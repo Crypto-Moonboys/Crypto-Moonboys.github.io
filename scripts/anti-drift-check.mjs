@@ -1344,9 +1344,29 @@ console.log('\n[21–25] XP/Progression terminology anti-drift');
     ...UI_COMPONENT_JS.filter(rel => exists(rel)),
   ];
 
+  // Helper: strip JS single-line (//) and block (/* */) comments before
+  // applying copy-phrasing checks to .js files, so developer-only code
+  // comments do not trigger terminology false positives.
+  function stripJsComments(src) {
+    return src
+      .replace(/\/\*[\s\S]*?\*\//g, '')  // block comments
+      .replace(/\/\/[^\n]*/g, '');        // line comments
+  }
+
+  // Return the source to check for a given file: strips JS comments for
+  // .js files so only user-facing strings are inspected; docs and HTML
+  // are checked as-is.
+  function srcForCheck(rel) {
+    const raw = read(rel);
+    if (!raw) return null;
+    return rel.endsWith('.js') ? stripJsComments(raw) : raw;
+  }
+
   // ── [21] Leaderboard ranking must not be described as XP-based ──────────────
   // Pattern: leaderboard rank/ranking described as using XP (not score).
   // Allow: "XP does not affect rank", "score = ranking", "ranked by score" (good).
+  // Allow negated/clarifying sentences: "not ranked by XP", "rank is not based on XP",
+  //   "leaderboard ranking is score-only, not XP-based", "never ranked by XP".
   // Deny: "leaderboard rank* based on XP", "ranked by XP", "leaderboard XP rank".
   {
     const badPatterns21 = [
@@ -1357,12 +1377,26 @@ console.log('\n[21–25] XP/Progression terminology anti-drift');
       { re: /xp\s+(is\s+)?(used\s+for|determines?)\s+(leaderboard\s+)?rank/i,
         label: 'XP described as determining leaderboard rank' },
     ];
+    // Negation words whose presence *before* the match on the same line indicates
+    // the sentence is a clarifying/corrective statement (e.g. "not ranked by XP").
+    const NEGATORS_21 = ['not ', "n't ", 'never ', 'no ', 'without ', 'cannot ', "can't "];
     let clean21 = true;
     for (const rel of scopedFiles) {
-      const src = read(rel);
+      const src = srcForCheck(rel);
       if (!src) continue;
       for (const { re, label } of badPatterns21) {
-        if (re.test(src)) {
+        let found = false;
+        for (const line of src.split('\n')) {
+          const m = re.exec(line);
+          if (!m) continue;
+          // A negation word appearing anywhere before the match start on the
+          // same line means the sentence is clarifying — allow it.
+          const prefix = line.slice(0, m.index).toLowerCase();
+          if (NEGATORS_21.some(n => prefix.includes(n))) continue;
+          found = true;
+          break;
+        }
+        if (found) {
           fail(`[21] Terminology drift in ${rel}: ${label}`);
           clean21 = false;
         }
@@ -1384,7 +1418,7 @@ console.log('\n[21–25] XP/Progression terminology anti-drift');
     ];
     let clean22 = true;
     for (const rel of scopedFiles) {
-      const src = read(rel);
+      const src = srcForCheck(rel);
       if (!src) continue;
       for (const { re, label } of badPatterns22) {
         if (re.test(src)) {
@@ -1406,7 +1440,7 @@ console.log('\n[21–25] XP/Progression terminology anti-drift');
     ];
     let clean23 = true;
     for (const rel of scopedFiles) {
-      const src = read(rel);
+      const src = srcForCheck(rel);
       if (!src) continue;
       for (const { re, label } of badPatterns23) {
         if (re.test(src)) {
@@ -1432,7 +1466,7 @@ console.log('\n[21–25] XP/Progression terminology anti-drift');
     ];
     let clean24 = true;
     for (const rel of scopedFiles) {
-      const src = read(rel);
+      const src = srcForCheck(rel);
       if (!src) continue;
       for (const { re, label } of badPatterns24) {
         if (re.test(src)) {
@@ -1458,7 +1492,7 @@ console.log('\n[21–25] XP/Progression terminology anti-drift');
     ];
     let clean25 = true;
     for (const rel of scopedFiles) {
-      const src = read(rel);
+      const src = srcForCheck(rel);
       if (!src) continue;
       for (const { re, label } of badPatterns25) {
         if (re.test(src)) {
