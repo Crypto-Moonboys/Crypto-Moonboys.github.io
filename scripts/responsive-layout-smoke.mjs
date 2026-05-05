@@ -236,9 +236,18 @@ async function runPage(browser, path, vw, vh, label, screenshotDir, port) {
 
 // ── Mobile navigation test ────────────────────────────────────────────────────
 
-async function runMobileNavTest(browser, port) {
+/**
+ * runMobileNavTest(browser, port, path)
+ *
+ * Verifies the mobile hamburger/sidebar open-close cycle on a single page:
+ *   1. #hamburger and #sidebar must exist
+ *   2. Sidebar initially off-screen
+ *   3. Click hamburger → body.sidebar-open, aria-expanded="true", sidebar on-screen
+ *   4. Press Escape → body.sidebar-open removed, aria-expanded="false"
+ */
+async function runMobileNavTest(browser, port, path) {
   info('');
-  info('── mobile nav test 390×844 / ──');
+  info(`── mobile nav test 390×844 ${path} ──`);
 
   const ctx  = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await ctx.newPage();
@@ -249,18 +258,27 @@ async function runMobileNavTest(browser, port) {
     else route.fulfill({ status: 200, body: '' });
   });
 
-  await page.goto(`http://localhost:${port}/`, { timeout: 20000, waitUntil: 'networkidle' });
+  await page.goto(`http://localhost:${port}${path}`, { timeout: 20000, waitUntil: 'networkidle' });
   await page.waitForTimeout(300);
 
-  // ── Hamburger must be visible ──────────────────────────────────────────────
+  const label = `mobile nav [${path}]`;
+
+  // ── #hamburger and #sidebar must exist (early-return on missing) ──────────
   const hamburger = page.locator('#hamburger');
+  const hamExists = await hamburger.count().catch(() => 0);
+  const sidebarExists = await page.evaluate(() => !!document.getElementById('sidebar'));
+  assert(hamExists > 0, `${label}: #hamburger exists`);
+  assert(sidebarExists, `${label}: #sidebar exists`);
+  if (!hamExists || !sidebarExists) { await ctx.close(); return; }
+
+  // ── Hamburger must be visible ──────────────────────────────────────────────
   const hamVisible = await hamburger.isVisible().catch(() => false);
-  assert(hamVisible, 'mobile nav: hamburger is visible');
+  assert(hamVisible, `${label}: #hamburger is visible`);
 
   // ── aria-expanded starts false ────────────────────────────────────────────
   const ariaExpandedInit = await hamburger.getAttribute('aria-expanded').catch(() => null);
   assert(ariaExpandedInit === 'false',
-    `mobile nav: hamburger aria-expanded="false" before open (got "${ariaExpandedInit}")`);
+    `${label}: aria-expanded="false" before open (got "${ariaExpandedInit}")`);
 
   // ── Sidebar starts off-screen ──────────────────────────────────────────────
   const sidebarInitBB = await page.evaluate(() => {
@@ -269,10 +287,9 @@ async function runMobileNavTest(browser, port) {
     const bb = s.getBoundingClientRect();
     return { left: bb.left, right: bb.right };
   });
-  // The sidebar should be off-screen to the left (right edge at or below epsilon).
   const SIDEBAR_OFFSCREEN_EPSILON = 1;
   assert(sidebarInitBB && sidebarInitBB.right <= SIDEBAR_OFFSCREEN_EPSILON,
-    `mobile nav: sidebar starts off-screen (right=${sidebarInitBB ? sidebarInitBB.right : 'null'})`);
+    `${label}: sidebar starts off-screen (right=${sidebarInitBB ? sidebarInitBB.right : 'null'})`);
 
   // ── Click hamburger — sidebar must open ───────────────────────────────────
   await hamburger.click();
@@ -286,7 +303,7 @@ async function runMobileNavTest(browser, port) {
     const firstLink = s.querySelector('a');
     const firstLinkBB = firstLink ? firstLink.getBoundingClientRect() : null;
     return {
-      sidebarHasOpen: s.classList.contains('open'),
+      bodyHasSidebarOpen: document.body.classList.contains('sidebar-open'),
       sidebarOnScreen: bb.right > 0 && bb.left < window.innerWidth,
       sidebarLeft: bb.left,
       sidebarRight: bb.right,
@@ -296,35 +313,63 @@ async function runMobileNavTest(browser, port) {
     };
   });
 
-  assert(afterOpen.sidebarHasOpen === true,
-    'mobile nav: sidebar has .open class after hamburger click');
+  assert(afterOpen.bodyHasSidebarOpen === true,
+    `${label}: body.sidebar-open set after hamburger click`);
   assert(afterOpen.sidebarOnScreen === true,
-    `mobile nav: sidebar is on-screen after click (left=${afterOpen.sidebarLeft} right=${afterOpen.sidebarRight})`);
+    `${label}: sidebar on-screen after click (left=${afterOpen.sidebarLeft} right=${afterOpen.sidebarRight})`);
   assert(afterOpen.ariaExpanded === 'true',
-    `mobile nav: hamburger aria-expanded="true" after open (got "${afterOpen.ariaExpanded}")`);
+    `${label}: aria-expanded="true" after open (got "${afterOpen.ariaExpanded}")`);
   assert(afterOpen.firstLinkVisible === true,
-    'mobile nav: first sidebar nav link is visible after open');
+    `${label}: first sidebar nav link visible after open`);
   assert(afterOpen.firstLinkLeft >= 0,
-    `mobile nav: first nav link starts within viewport (left=${afterOpen.firstLinkLeft})`);
+    `${label}: first nav link within viewport (left=${afterOpen.firstLinkLeft})`);
 
   // ── Press Escape — sidebar must close ─────────────────────────────────────
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(500);
 
   const afterEscape = await page.evaluate(() => {
     const s = document.getElementById('sidebar');
     const h = document.getElementById('hamburger');
     if (!s || !h) return { error: 'elements missing' };
+    const bb = s.getBoundingClientRect();
     return {
-      sidebarHasOpen: s.classList.contains('open'),
+      bodyHasSidebarOpen: document.body.classList.contains('sidebar-open'),
+      sidebarOffScreen: bb.right <= 1,
       ariaExpanded: h.getAttribute('aria-expanded'),
     };
   });
 
-  assert(afterEscape.sidebarHasOpen === false,
-    'mobile nav: sidebar .open removed after Escape');
+  assert(afterEscape.bodyHasSidebarOpen === false,
+    `${label}: body.sidebar-open removed after Escape`);
+  assert(afterEscape.sidebarOffScreen === true,
+    `${label}: sidebar off-screen after Escape`);
   assert(afterEscape.ariaExpanded === 'false',
-    `mobile nav: hamburger aria-expanded="false" after Escape (got "${afterEscape.ariaExpanded}")`);
+    `${label}: aria-expanded="false" after Escape (got "${afterEscape.ariaExpanded}")`);
+
+  // ── Script-order assertions (static DOM check) ────────────────────────────
+  const scriptCheck = await page.evaluate(() => {
+    const scripts = Array.from(document.querySelectorAll('script[src]'));
+    const srcs = scripts.map(s => ({ src: s.getAttribute('src'), cfasync: s.getAttribute('data-cfasync') }));
+    const shellIdx  = srcs.findIndex(s => /\/js\/site-shell\.js/.test(s.src));
+    const wikiIdx   = srcs.findIndex(s => /\/js\/wiki\.js/.test(s.src));
+    const wikiCf    = wikiIdx !== -1 ? srcs[wikiIdx].cfasync : null;
+    return {
+      hasShell: shellIdx !== -1,
+      hasWiki:  wikiIdx  !== -1,
+      shellBeforeWiki: shellIdx !== -1 && wikiIdx !== -1 && shellIdx < wikiIdx,
+      wikiHasCfasync: wikiCf === 'false',
+    };
+  });
+
+  if (scriptCheck.hasShell && scriptCheck.hasWiki) {
+    assert(scriptCheck.shellBeforeWiki,
+      `${label}: site-shell.js appears before wiki.js in script list`);
+  }
+  if (scriptCheck.hasWiki) {
+    assert(scriptCheck.wikiHasCfasync,
+      `${label}: wiki.js has data-cfasync="false"`);
+  }
 
   await ctx.close();
 }
@@ -369,14 +414,26 @@ async function main() {
         await runPage(browser, p, 1920, 1080, 'desktop-wide', screenshotDir, actualPort);
       }
 
-      // Mobile 390×844
+      // Mobile 390×844 — layout checks
       const mobilePages = ['/', '/games/pac-chain/', '/search.html'];
       for (const p of mobilePages) {
         await runPage(browser, p, 390, 844, 'mobile', screenshotDir, actualPort);
       }
 
-      // Mobile navigation test (hamburger open/close)
-      await runMobileNavTest(browser, actualPort);
+      // Mobile navigation test (hamburger open/close) — all canonical pages
+      const mobileNavPages = [
+        '/',
+        '/index.html',
+        '/search.html',
+        '/categories/concepts.html',
+        '/games/',
+        '/games/pac-chain/',
+        '/sam.html',
+        '/graph.html',
+      ];
+      for (const p of mobileNavPages) {
+        await runMobileNavTest(browser, actualPort, p);
+      }
 
       await browser.close();
       server.close();
