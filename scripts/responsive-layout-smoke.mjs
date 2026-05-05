@@ -263,15 +263,13 @@ async function runMobileNavTest(browser, port, path) {
 
   const label = `mobile nav [${path}]`;
 
-  // ── #hamburger and #sidebar must exist ────────────────────────────────────
+  // ── #hamburger and #sidebar must exist (early-return on missing) ──────────
   const hamburger = page.locator('#hamburger');
   const hamExists = await hamburger.count().catch(() => 0);
-  assert(hamExists > 0, `${label}: #hamburger exists`);
-  if (!hamExists) { await ctx.close(); return; }
-
   const sidebarExists = await page.evaluate(() => !!document.getElementById('sidebar'));
+  assert(hamExists > 0, `${label}: #hamburger exists`);
   assert(sidebarExists, `${label}: #sidebar exists`);
-  if (!sidebarExists) { await ctx.close(); return; }
+  if (!hamExists || !sidebarExists) { await ctx.close(); return; }
 
   // ── Hamburger must be visible ──────────────────────────────────────────────
   const hamVisible = await hamburger.isVisible().catch(() => false);

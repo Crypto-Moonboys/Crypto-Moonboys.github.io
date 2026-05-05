@@ -241,7 +241,7 @@ async function _wikiInit() {
     const sidebar = document.getElementById('sidebar');
     const ov = document.getElementById('sidebar-overlay');
 
-    function _setSidebarState(expanded) {
+    function _applySidebarState(expanded) {
       if (!sidebar) return;
       document.body.classList.toggle('sidebar-open', expanded);
       const h = document.getElementById('hamburger');
@@ -250,7 +250,7 @@ async function _wikiInit() {
 
     function _toggleSidebar(open) {
       const expanded = open !== undefined ? open : !document.body.classList.contains('sidebar-open');
-      _setSidebarState(expanded);
+      _applySidebarState(expanded);
     }
 
     // Only bind click listeners if this element has not already been bound

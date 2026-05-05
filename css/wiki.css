@@ -1052,8 +1052,8 @@ a.hero-stat-link:hover {
     display: block;
     pointer-events: auto;
   }
-  /* Removed complex negation: the base display:none rule already hides the
-     overlay by default; body.sidebar-open above is the only canonical opener. */
+  /* The base display:none on #sidebar-overlay hides it by default.
+     body.sidebar-open above is the only canonical opener. */
   .hamburger { display: flex; }
   #content { padding: 20px 18px 40px; }
   .infobox { float: none; width: 100%; margin: 0 0 20px 0; }

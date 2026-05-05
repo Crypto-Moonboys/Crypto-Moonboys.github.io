@@ -424,8 +424,10 @@
    * elements are still bound correctly.  The Escape handler is
    * registered once globally but always reads the *current* DOM.
    *
-   * wiki.js checks window.__MOONBOYS_SIDEBAR_BOUND and skips its own
-   * binding to prevent double-binding (idempotent).
+   * wiki.js uses the same per-element dataset.sidebarBound markers to
+   * avoid double-binding elements that site-shell.js has already bound.
+   * window.__MOONBOYS_SIDEBAR_BOUND reflects whether the *current*
+   * hamburger element is bound (recalculated on every shell run).
    */
   (function _bindSidebarNav() {
     var ham = document.getElementById('hamburger');
