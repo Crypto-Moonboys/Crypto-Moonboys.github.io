@@ -1930,14 +1930,32 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
 
     // 2. Build a rendered version of the TEMPLATE for structural analysis by
     //    substituting the variable references with their literal values.
-    //    Pattern: '"' + BOT_HREF + '"' → '"https://t.me/WIKICOMSBOT"'
-    //    This handles both orderings of href/class in the <a> tag.
-    let rendered = src;
-    if (botHrefVal)  rendered = rendered.replace(/'\s*\+\s*BOT_HREF\s*\+\s*'/g,       botHrefVal);
-    if (incubHrefVal) rendered = rendered.replace(/'\s*\+\s*INCUBATOR_HREF\s*\+\s*'/g, incubHrefVal);
+    //    Handles both single-quoted and double-quoted JS string concatenation
+    //    patterns, e.g. both:
+    //      '<a href="' + BOT_HREF + '" ...'  (single-quote JS strings)
+    //      "<a href=\"" + BOT_HREF + "\" ..." (double-quote JS strings)
+    //    The URL is substituted in-place so the resulting string contains the
+    //    final HTML that the template will produce.
+    function subVar(s, varName, val) {
+      if (!val) return s;
+      // Single-quoted surrounds: '...' + VAR + '...'
+      s = s.replace(new RegExp("'\\s*\\+\\s*" + varName + "\\s*\\+\\s*'", 'g'), val);
+      // Double-quoted surrounds: "..." + VAR + "..."
+      s = s.replace(new RegExp('"\\s*\\+\\s*' + varName + '\\s*\\+\\s*"', 'g'), val);
+      return s;
+    }
+    let rendered = subVar(subVar(src, 'BOT_HREF', botHrefVal), 'INCUBATOR_HREF', incubHrefVal);
+
+    // Verify the substitution actually embedded the bot URL (guards against
+    // unexpected quote style or spacing that the patterns above couldn't match).
+    if (botHrefVal && !rendered.includes(botHrefVal)) {
+      fail('[33] Template variable substitution failed — BOT_HREF not embedded in rendered output; check quote style in telegram-sync-cta.js template');
+    }
 
     // 3. Locate the <a> opening tag that carries the tg-sync-cta-btn class and
-    //    inspect its href — order-agnostic (works even if href precedes class or vice versa).
+    //    inspect its href — order-agnostic (works even if href precedes class or
+    //    vice versa). The [^>]* pattern is safe here because the known template
+    //    attributes do not contain unquoted '>' characters.
     const aTagRe = /<a\b([^>]*)>/gi;
     let aMatch;
     let ctaBtnFound = false;

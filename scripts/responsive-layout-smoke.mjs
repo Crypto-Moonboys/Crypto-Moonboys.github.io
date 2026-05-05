@@ -729,11 +729,11 @@ async function runCommunityMobileOverflowCheck(browser, port) {
     const sections = Array.from(document.querySelectorAll('.section'));
     const sectionOverflow = sections.filter(s => s.getBoundingClientRect().right > vw + 2);
 
-    // Check community cards/grids
-    const panels = Array.from(document.querySelectorAll(
-      '.community-card, .community-grid, .community-hero-grid, ' +
-      '#community-status-panel, [data-csp-panel], [data-las-panel]'
-    ));
+    // Check community cards/grids and dynamic panels (real overflow risks)
+    const PANEL_SELECTORS =
+      '.community-card, .community-grid, .community-hero-grid,' +
+      ' #community-status-panel, [data-csp-panel], [data-las-panel]';
+    const panels = Array.from(document.querySelectorAll(PANEL_SELECTORS));
     const panelOverflow = panels.filter(p => {
       const bb = p.getBoundingClientRect();
       return bb.right > vw + 2;
