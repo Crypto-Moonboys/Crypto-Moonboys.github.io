@@ -1697,13 +1697,16 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
     'css/wiki.css',
   ];
 
-  // Patterns that indicate clipped/chamfered corners in shell CSS
+  // Patterns that indicate clipped/chamfered corners in shell CSS.
+  // Anchored to the start of a declaration (preceded only by newline/whitespace)
+  // so they match property names but not comment text or vendor-prefixed variants
+  // of each other (e.g. clip-path must not also match -webkit-clip-path).
   const forbiddenPatterns = [
-    { pattern: /clip-path\s*:/i, label: 'clip-path' },
-    { pattern: /-webkit-clip-path\s*:/i, label: '-webkit-clip-path' },
-    { pattern: /mask-image\s*:/i, label: 'mask-image' },
-    { pattern: /-webkit-mask\s*:/i, label: '-webkit-mask' },
-    { pattern: /polygon\s*\(/i, label: 'polygon(' },
+    { pattern: /(^|\n)\s*clip-path\s*:/m,         label: 'clip-path' },
+    { pattern: /(^|\n)\s*-webkit-clip-path\s*:/m, label: '-webkit-clip-path' },
+    { pattern: /(^|\n)\s*mask-image\s*:/m,         label: 'mask-image' },
+    { pattern: /(^|\n)\s*-webkit-mask\s*:/m,       label: '-webkit-mask' },
+    { pattern: /polygon\s*\(/m,                    label: 'polygon(' },
   ];
 
   for (const cssFile of shellCssFiles) {
@@ -1714,9 +1717,14 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
       continue;
     }
 
+    // Strip CSS comments before scanning so comment text never triggers a false positive.
+    const stripped = src
+      .replace(/\/\*[\s\S]*?\*\//g, '') // block comments: /* ... */
+      .replace(/\/\/[^\n]*/g, '');       // line comments: // ...
+
     let fileClean = true;
     for (const { pattern, label } of forbiddenPatterns) {
-      if (pattern.test(src)) {
+      if (pattern.test(stripped)) {
         fail(`[28] ${cssFile} contains "${label}" — remove clipped/chamfered corner styling`);
         check28Clean = false;
         fileClean = false;

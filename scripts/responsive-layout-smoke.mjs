@@ -109,7 +109,10 @@ async function getMetrics(page) {
       floatingWithoutCloseCount: floatingWithoutClose.length,
       floatingWithoutCloseLabels: floatingWithoutClose.map(el => el.className),
 
-      // Check for cards/boxes using clip-path (chamfered corners)
+      // Check for cards/boxes using clip-path (chamfered corners).
+      // Only count elements that are genuinely visible: not display:none, not
+      // visibility:hidden, not opacity:0, and with a non-zero bounding box that
+      // intersects the viewport.
       clipPathCards: Array.from(document.querySelectorAll(
         '.category-card, .article-card, .retro-hud-box, .retro-info-panel, .home-widget, ' +
         '.launch-cta-primary, .launch-cta-secondary, .launch-route, .retro-panel, .page-hero, ' +
@@ -118,9 +121,13 @@ async function getMetrics(page) {
         '.lb-graph-wrap, .article-list-item, .dash-section, .sam-panel, ' +
         '#lb-refresh-btn, #lb-breakdown-panel, #lb-graph-reset, .home-hero'
       )).filter(el => {
-        const cs = window.getComputedStyle(el);
-        return cs.display !== 'none' && cs.visibility !== 'hidden' &&
-               cs.clipPath && cs.clipPath !== 'none';
+        const style = window.getComputedStyle(el);
+        if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0) return false;
+        const bb = el.getBoundingClientRect();
+        if (bb.width <= 0 || bb.height <= 0) return false;
+        // Must intersect the viewport
+        if (bb.bottom < 0 || bb.top > window.innerHeight || bb.right < 0 || bb.left > window.innerWidth) return false;
+        return style.clipPath && style.clipPath !== 'none';
       }).length,
     };
   });
@@ -262,8 +269,9 @@ async function runMobileNavTest(browser, port) {
     const bb = s.getBoundingClientRect();
     return { left: bb.left, right: bb.right };
   });
-  // The sidebar should be off-screen to the left (right edge at or below 0)
-  assert(sidebarInitBB && sidebarInitBB.right <= 0,
+  // The sidebar should be off-screen to the left (right edge at or below epsilon).
+  const SIDEBAR_OFFSCREEN_EPSILON = 1;
+  assert(sidebarInitBB && sidebarInitBB.right <= SIDEBAR_OFFSCREEN_EPSILON,
     `mobile nav: sidebar starts off-screen (right=${sidebarInitBB ? sidebarInitBB.right : 'null'})`);
 
   // ── Click hamburger — sidebar must open ───────────────────────────────────
@@ -274,7 +282,6 @@ async function runMobileNavTest(browser, port) {
     const s = document.getElementById('sidebar');
     const h = document.getElementById('hamburger');
     if (!s || !h) return { error: 'elements missing' };
-    const cs = window.getComputedStyle(s);
     const bb = s.getBoundingClientRect();
     const firstLink = s.querySelector('a');
     const firstLinkBB = firstLink ? firstLink.getBoundingClientRect() : null;

@@ -824,7 +824,8 @@ body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#mai
   background: rgba(3, 10, 22, 0.96);
   /* Magenta outer border for arcade punch */
   border: 3px solid var(--neon-magenta);
-  border-radius: 0;flex-shrink: 0;
+  border-radius: 0;
+  flex-shrink: 0;
   position: relative;
   box-shadow:
     0 0 0 2px rgba(0, 229, 255, 0.30),
