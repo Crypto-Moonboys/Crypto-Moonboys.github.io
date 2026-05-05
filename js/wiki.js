@@ -230,7 +230,7 @@ function renderSearchPage(query) {
 }
 
 /* ── DOM READY ───────────────────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', async () => {
+async function _wikiInit() {
   await loadWikiIndex();
   await loadEntityMap();
   buildEntityLookup();
@@ -295,33 +295,34 @@ document.addEventListener('DOMContentLoaded', async () => {
   const _overlay   = document.getElementById('sidebar-overlay');
 
   function _setSidebarState(expanded) {
-    if (!_sidebar) return;
-    _sidebar.classList.toggle('open', expanded);
-    _sidebar.classList.toggle('active', expanded);
+    document.body.classList.toggle('sidebar-open', expanded);
     if (_hamburger) _hamburger.setAttribute('aria-expanded', String(expanded));
-    if (_overlay) {
-      _overlay.classList.toggle('open', expanded);
-      _overlay.classList.toggle('active', expanded);
-    }
   }
 
   function _toggleSidebar(open) {
-    if (!_sidebar) return;
-    const expanded = open !== undefined ? open : !_sidebar.classList.contains('open');
+    const expanded = open !== undefined ? open : !document.body.classList.contains('sidebar-open');
     _setSidebarState(expanded);
   }
 
-  if (_hamburger) _hamburger.addEventListener('click', () => _toggleSidebar());
-  if (_overlay)   _overlay.addEventListener('click',   () => _toggleSidebar(false));
+  // Bind hamburger only if site-shell.js has not already done so (idempotent).
+  // On game pages (no site-shell.js) wiki.js is still responsible for binding.
+  if (!window.__MOONBOYS_SIDEBAR_BOUND) {
+    if (_hamburger) _hamburger.addEventListener('click', () => _toggleSidebar());
+    if (_overlay)   _overlay.addEventListener('click',   () => _toggleSidebar(false));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') _toggleSidebar(false);
+    });
+    window.__MOONBOYS_SIDEBAR_BOUND = true;
+  }
+
+  // Always close sidebar when a sidebar nav link is clicked — works regardless
+  // of which script bound the hamburger.
   if (_sidebar) {
     _sidebar.addEventListener('click', (event) => {
       const link = event.target && event.target.closest ? event.target.closest('a') : null;
       if (link) _toggleSidebar(false);
     });
   }
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') _toggleSidebar(false);
-  });
 
   // ── Back to top ──────────────────────────────────────────────────────────
   const _backToTop = document.getElementById('back-to-top');
@@ -331,7 +332,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, { passive: true });
     _backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   }
-});
+}
+
+// Handle the case where this script is deferred (e.g. by Cloudflare Rocket Loader)
+// and DOMContentLoaded has already fired by the time the script executes.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _wikiInit);
+} else {
+  _wikiInit();
+}
 
 /* scoreResult — ranking contract enforcement */
 function scoreResult(item, query) {

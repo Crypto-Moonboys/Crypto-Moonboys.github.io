@@ -1032,6 +1032,8 @@ a.hero-stat-link:hover {
     box-shadow: 4px 0 16px rgba(0,0,0,.4);
   }
   #sidebar.open { transform: translateX(0); }
+  /* Canonical body-class open state (set by site-shell.js or wiki.js) */
+  body.sidebar-open #sidebar { transform: translateX(0); }
   /* Safety: overlay must be non-interactive unless explicitly opened. */
   #sidebar-overlay {
     display: none;
@@ -1046,7 +1048,11 @@ a.hero-stat-link:hover {
     display: block;
     pointer-events: auto;
   }
-  #sidebar-overlay:not(.open):not(.active) {
+  body.sidebar-open #sidebar-overlay {
+    display: block;
+    pointer-events: auto;
+  }
+  body:not(.sidebar-open) #sidebar-overlay:not(.open):not(.active) {
     display: none !important;
     pointer-events: none !important;
   }

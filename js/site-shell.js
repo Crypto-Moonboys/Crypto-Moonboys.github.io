@@ -411,4 +411,41 @@
       markActive(homeLinks[0]);
     }
   }
+
+  /* ── 12. Hamburger / sidebar binding ─────────────────────────────
+   *
+   * Binds immediately after injection so the hamburger works before
+   * wiki.js (or any other script) attaches its DOMContentLoaded
+   * handler.  Uses body.sidebar-open as the single canonical state
+   * class so CSS never depends on page-specific body classes.
+   *
+   * wiki.js checks window.__MOONBOYS_SIDEBAR_BOUND and skips its own
+   * binding to prevent double-binding (idempotent).
+   */
+  if (!window.__MOONBOYS_SIDEBAR_BOUND) {
+    var _ham = document.getElementById('hamburger');
+    var _sb  = document.getElementById('sidebar');
+    var _ov  = document.getElementById('sidebar-overlay');
+
+    if (_ham && _sb) {
+      function _shellSetSidebarOpen(open) {
+        document.body.classList.toggle('sidebar-open', open);
+        _ham.setAttribute('aria-expanded', String(open));
+      }
+
+      _ham.addEventListener('click', function () {
+        _shellSetSidebarOpen(!document.body.classList.contains('sidebar-open'));
+      });
+
+      if (_ov) {
+        _ov.addEventListener('click', function () { _shellSetSidebarOpen(false); });
+      }
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') _shellSetSidebarOpen(false);
+      });
+
+      window.__MOONBOYS_SIDEBAR_BOUND = true;
+    }
+  }
 }());

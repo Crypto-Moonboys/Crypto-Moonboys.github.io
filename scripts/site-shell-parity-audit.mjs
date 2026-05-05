@@ -217,6 +217,62 @@ if (shellJs) {
   }
 }
 
+// 8. Hamburger/sidebar binding in site-shell.js
+console.log('\n[8] site-shell.js hamburger/sidebar binding');
+if (shellJs) {
+  const SIDEBAR_CHECKS = [
+    { needle: '__MOONBOYS_SIDEBAR_BOUND', label: 'window.__MOONBOYS_SIDEBAR_BOUND marker' },
+    { needle: 'sidebar-open',            label: 'body.sidebar-open canonical class' },
+    { needle: '_shellSetSidebarOpen',    label: '_shellSetSidebarOpen() helper function' },
+  ];
+  for (const { needle, label } of SIDEBAR_CHECKS) {
+    if (shellJs.includes(needle)) {
+      pass(`site-shell.js sidebar: ${label} present`);
+    } else {
+      fail(`site-shell.js sidebar: ${label} MISSING`);
+    }
+  }
+}
+
+// 9. wiki.js sidebar binding: readyState guard and idempotent binding
+console.log('\n[9] wiki.js sidebar binding (readyState guard + idempotent)');
+const wikiJs = read('js/wiki.js');
+if (!wikiJs) {
+  fail('js/wiki.js — file not found');
+} else {
+  const WIKI_SIDEBAR_CHECKS = [
+    { needle: '__MOONBOYS_SIDEBAR_BOUND', label: 'window.__MOONBOYS_SIDEBAR_BOUND idempotency check' },
+    { needle: "sidebar-open",             label: 'body.sidebar-open canonical class' },
+    { needle: "document.readyState",      label: 'document.readyState guard (deferred-script support)' },
+  ];
+  for (const { needle, label } of WIKI_SIDEBAR_CHECKS) {
+    if (wikiJs.includes(needle)) {
+      pass(`wiki.js sidebar: ${label} present`);
+    } else {
+      fail(`wiki.js sidebar: ${label} MISSING`);
+    }
+  }
+}
+
+// 10. CSS: body.sidebar-open rules present in wiki.css
+console.log('\n[10] wiki.css body.sidebar-open rules');
+const wikiCss = read('css/wiki.css');
+if (!wikiCss) {
+  fail('css/wiki.css — file not found');
+} else {
+  const CSS_CHECKS = [
+    { needle: 'body.sidebar-open #sidebar',         label: 'body.sidebar-open #sidebar rule' },
+    { needle: 'body.sidebar-open #sidebar-overlay', label: 'body.sidebar-open #sidebar-overlay rule' },
+  ];
+  for (const { needle, label } of CSS_CHECKS) {
+    if (wikiCss.includes(needle)) {
+      pass(`wiki.css: ${needle} present`);
+    } else {
+      fail(`wiki.css: ${label} MISSING`);
+    }
+  }
+}
+
 // ── Summary ──
 console.log(`\n─── Result ─────────────────────────────────────────────────────`);
 console.log(`  Failures : ${failures}`);
