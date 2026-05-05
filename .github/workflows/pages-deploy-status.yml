@@ -11,6 +11,9 @@ on:
 
 permissions:
   contents: read
+  actions: read
+  deployments: read
+  pages: read
 
 jobs:
   pages-deploy-status:

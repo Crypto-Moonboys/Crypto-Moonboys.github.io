@@ -206,7 +206,8 @@ async function main() {
   // If we cannot determine the main SHA at all, everything is UNKNOWN.
   if (!mainSha) {
     verdict = 'UNKNOWN';
-  } else if (runStatus === 'in_progress' || runStatus === 'queued' || runStatus === 'waiting' || deployState === 'pending' || deployState === 'queued') {
+  } else if (runStatus === 'in_progress' || runStatus === 'queued' || runStatus === 'waiting' ||
+             deployState === 'pending' || deployState === 'queued' || deployState === 'in_progress' || deployState === 'waiting') {
     verdict = 'DEPLOY_IN_PROGRESS';
   } else if (runConclusion === 'failure' || runConclusion === 'cancelled' || deployState === 'failure' || deployState === 'error') {
     verdict = 'DEPLOY_FAILED';
