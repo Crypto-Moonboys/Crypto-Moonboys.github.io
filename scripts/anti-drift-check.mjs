@@ -1833,7 +1833,7 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
 
     while ((match = mediaOpenerRe.exec(src)) !== null) {
       const bpWidth = parseInt(match[1], 10);
-      if (bpWidth > 640) continue; // only care about narrow breakpoints
+      if (bpWidth > 640) continue; // skip breakpoints wider than mobile viewport (>640px)
 
       // Walk forward to find the matching closing brace for this @media block
       let depth = 1;

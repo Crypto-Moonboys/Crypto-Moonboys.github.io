@@ -428,7 +428,7 @@ async function runTelegramSyncCheck(browser, port, pagePath) {
   const label = `tg-sync [${pagePath}]`;
 
   /**
-   * isElementVisible(el) — strict visibility:
+   * isElementStrictlyVisible(el) — comprehensive visibility check:
    *   - display !== none
    *   - visibility !== hidden
    *   - opacity !== 0
@@ -438,7 +438,7 @@ async function runTelegramSyncCheck(browser, port, pagePath) {
    *   - bottom > 0                (bottom of element is below top of viewport)
    */
   const check = await page.evaluate(() => {
-    function isVisible(el) {
+    function isElementStrictlyVisible(el) {
       if (!el) return false;
       const cs = window.getComputedStyle(el);
       if (cs.display === 'none')      return false;
@@ -456,16 +456,16 @@ async function runTelegramSyncCheck(browser, port, pagePath) {
 
     // Check .tg-sync-cta (rendered CTA banner)
     const ctaEl = document.querySelector('.tg-sync-cta');
-    const ctaVisible = isVisible(ctaEl);
+    const ctaVisible = isElementStrictlyVisible(ctaEl);
     const ctaBB = ctaEl ? ctaEl.getBoundingClientRect() : null;
 
     // Check any <a href="/gkniftyheads-incubator.html"> visible link
     const links = Array.from(document.querySelectorAll('a[href="/gkniftyheads-incubator.html"]'));
-    let visibleLink = null;
+    let hasVisibleLink = false;
     let visibleLinkBB = null;
     for (const link of links) {
-      if (isVisible(link)) {
-        visibleLink = true;
+      if (isElementStrictlyVisible(link)) {
+        hasVisibleLink = true;
         visibleLinkBB = link.getBoundingClientRect();
         break;
       }
@@ -475,7 +475,7 @@ async function runTelegramSyncCheck(browser, port, pagePath) {
       vw, vh,
       ctaVisible,
       ctaBB: ctaBB ? { w: Math.round(ctaBB.width), h: Math.round(ctaBB.height), top: Math.round(ctaBB.top) } : null,
-      visibleLink: !!visibleLink,
+      visibleLink: hasVisibleLink,
       visibleLinkBB: visibleLinkBB ? { w: Math.round(visibleLinkBB.width), h: Math.round(visibleLinkBB.height), top: Math.round(visibleLinkBB.top) } : null,
       // Diagnostic info
       hasMountPoint: !!document.querySelector('[data-tg-sync-cta]'),
