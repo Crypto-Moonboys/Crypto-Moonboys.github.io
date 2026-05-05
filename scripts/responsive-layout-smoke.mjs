@@ -37,17 +37,27 @@ const MIME = {
 // ── Local static server ──────────────────────────────────────────────────────
 
 const server = createServer((req, res) => {
-  let p = req.url.split('?')[0];
+  // Normalise and validate path to prevent directory traversal.
+  // This server is localhost-only (test tool), but CodeQL requires sanitisation.
+  const rawPath = req.url.split('?')[0];
+  const safePath = rawPath.replace(/\\/g, '/').replace(/\/\.\.?(\/|$)/g, '/');
+  let p = safePath || '/';
   if (p === '/') p = '/index.html';
   else if (!p.endsWith('/') && !extname(p)) p += '/index.html';
   else if (p.endsWith('/')) p += 'index.html';
   const full = join(ROOT, p);
+  // Guard: resolved path must remain inside ROOT
+  if (!full.startsWith(ROOT + '/') && full !== ROOT) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
+  }
   if (existsSync(full)) {
     res.writeHead(200, { 'Content-Type': MIME[extname(full)] || 'text/plain' });
     res.end(readFileSync(full));
   } else {
     res.writeHead(404);
-    res.end('Not found: ' + p);
+    res.end('Not found');
   }
 });
 

@@ -251,6 +251,13 @@ function createLegacybootstrapPacChain(root) {
     const panel = document.createElement('div');
     panel.className = 'pc-modal';
 
+    // Per-modal Escape handler reference — stored so it can be cleaned up from
+    // both the close-button click path AND the Escape key path.
+    let escHandler = null;
+    function cleanupEsc() {
+      if (escHandler) { document.removeEventListener('keydown', escHandler); escHandler = null; }
+    }
+
     // Close / skip button — shown for non-required modals (onSkip provided)
     if (typeof onSkip === 'function') {
       const closeBtn = document.createElement('button');
@@ -258,7 +265,7 @@ function createLegacybootstrapPacChain(root) {
       closeBtn.className = 'pc-modal-close';
       closeBtn.setAttribute('aria-label', 'Close');
       closeBtn.textContent = '×';
-      closeBtn.addEventListener('click', () => { hideModal(); onSkip(); });
+      closeBtn.addEventListener('click', () => { cleanupEsc(); hideModal(); onSkip(); });
       panel.appendChild(closeBtn);
     }
 
@@ -273,7 +280,7 @@ function createLegacybootstrapPacChain(root) {
       btn.type = 'button';
       btn.className = 'pc-choice ' + (choice.rarity || 'common');
       btn.innerHTML = '<strong>' + choice.name + '</strong><span>' + choice.desc + '</span>';
-      btn.addEventListener('click', () => { hideModal(); onPick(choice); });
+      btn.addEventListener('click', () => { cleanupEsc(); hideModal(); onPick(choice); });
       grid.appendChild(btn);
     });
     panel.appendChild(h2);
@@ -285,9 +292,9 @@ function createLegacybootstrapPacChain(root) {
 
     // Escape closes any dismissible modal (one with a skip handler)
     if (typeof onSkip === 'function') {
-      const escHandler = (e) => {
+      escHandler = (e) => {
         if (e.key === 'Escape' && !overlayEl.classList.contains('hidden')) {
-          document.removeEventListener('keydown', escHandler);
+          cleanupEsc();
           hideModal();
           onSkip();
         }
