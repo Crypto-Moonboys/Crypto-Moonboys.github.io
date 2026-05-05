@@ -30,6 +30,13 @@
  * 23. "Arcade XP" must not be described as in-game Block Topia upgrade XP.
  * 24. "score = XP" or direct-equality phrasing must not appear.
  * 25. Unlinked/guest copy must not imply server-stored Arcade XP.
+ * 26. Dismissible UI compliance.
+ * 27. Fullscreen overlay overflow guard.
+ * 28. No clip-path or mask-image in non-gameplay shell CSS.
+ * 29. Telegram sync CTA component must exist and link to /gkniftyheads-incubator.html.
+ * 30. Required sync/onboarding pages must have a Telegram entry point.
+ * 31. Mobile category CSS must have a single-column breakpoint ≤640px.
+ * 32. Site shell sidebar must link to /gkniftyheads-incubator.html.
  */
 
 import fs from 'node:fs';
@@ -1735,6 +1742,149 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
 
   if (check28Clean) pass('[28] No clip-path or mask-image in non-gameplay shell CSS: all checks passed');
 }
+
+// ── [29] Telegram sync CTA component must exist ───────────────────────────────
+{
+  console.log('\n[29] Telegram sync CTA component');
+  const ctaFile = path.join(ROOT, 'js', 'components', 'telegram-sync-cta.js');
+  if (fs.existsSync(ctaFile)) {
+    pass('[29] js/components/telegram-sync-cta.js exists');
+    const src = fs.readFileSync(ctaFile, 'utf8');
+    if (src.includes('/gkniftyheads-incubator.html')) {
+      pass('[29] telegram-sync-cta.js links to /gkniftyheads-incubator.html');
+    } else {
+      fail('[29] telegram-sync-cta.js does NOT link to /gkniftyheads-incubator.html');
+    }
+    if (src.includes('[data-tg-sync-cta]') || src.includes('data-tg-sync-cta')) {
+      pass('[29] telegram-sync-cta.js mounts on [data-tg-sync-cta] elements');
+    } else {
+      fail('[29] telegram-sync-cta.js does not target [data-tg-sync-cta] mount points');
+    }
+  } else {
+    fail('[29] js/components/telegram-sync-cta.js MISSING');
+  }
+}
+
+// ── [30] Required sync/onboarding pages must have a Telegram entry point ──────
+{
+  console.log('\n[30] Required sync pages have Telegram entry point');
+
+  // Valid states for a required sync page:
+  //   A) Static visible link path:  page contains href="/gkniftyheads-incubator.html"
+  //   OR
+  //   B) Component path (BOTH required):
+  //        page contains data-tg-sync-cta   (mount point that receives rendered CTA)
+  //        AND page loads /js/components/telegram-sync-cta.js  (script that renders it)
+  //
+  // Mount point alone or script alone is NOT sufficient.
+  const requiredPages = [
+    { file: 'community.html',                       label: '/community.html' },
+    { file: 'games/index.html',                     label: '/games/' },
+    { file: 'games/leaderboard.html',               label: '/games/leaderboard.html' },
+    { file: 'how-to-play.html',                     label: '/how-to-play.html' },
+    { file: 'games/pac-chain/index.html',           label: '/games/pac-chain/' },
+    { file: 'games/invaders-3008/index.html',       label: '/games/invaders-3008/' },
+    { file: 'games/block-topia-quest-maze/index.html', label: '/games/block-topia-quest-maze/' },
+  ];
+
+  let check30Clean = true;
+  for (const { file, label } of requiredPages) {
+    const fullPath = path.join(ROOT, file);
+    if (!fs.existsSync(fullPath)) {
+      warn(`[30] ${label}: file not found (${file})`);
+      continue;
+    }
+    const src = fs.readFileSync(fullPath, 'utf8');
+    const hasStaticLink = src.includes('href="/gkniftyheads-incubator.html"');
+    const hasMountPoint = src.includes('data-tg-sync-cta');
+    const hasCTAScript  = src.includes('telegram-sync-cta.js');
+    // State A: static link (visible href in markup)
+    const passA = hasStaticLink;
+    // State B: component path requires BOTH mount point AND script
+    const passB = hasMountPoint && hasCTAScript;
+    if (passA || passB) {
+      const how = passA ? 'static href' : 'mount point + script';
+      pass(`[30] ${label}: Telegram sync entry point present (${how})`);
+    } else {
+      const detail = `staticLink=${hasStaticLink} mountPoint=${hasMountPoint} ctaScript=${hasCTAScript}`;
+      fail(`[30] ${label}: NO valid Telegram sync entry point — need static href OR (mount point AND script). (${detail})`);
+      check30Clean = false;
+    }
+  }
+  if (check30Clean) pass('[30] All required sync pages have a Telegram entry point');
+}
+
+// ── [31] Mobile category CSS must have a narrow-column breakpoint ─────────────
+{
+  console.log('\n[31] Mobile category CSS narrow-column breakpoint');
+  const wikiCssPath = path.join(ROOT, 'css', 'wiki.css');
+  if (!fs.existsSync(wikiCssPath)) {
+    fail('[31] css/wiki.css not found');
+  } else {
+    const src = fs.readFileSync(wikiCssPath, 'utf8');
+
+    // Robustly extract all @media (max-width: Npx) blocks by matching braces,
+    // then check if any qualifying block contains .category-grid with 1fr.
+    // This avoids single-line regex patterns that break on nested braces.
+    const mediaOpenerRe = /@media\s*\(\s*max-width\s*:\s*(\d+)px\s*\)\s*\{/g;
+    let match;
+    let foundGridBreakpoint = false;
+    let foundGridBreakpointWidth = 0;
+
+    while ((match = mediaOpenerRe.exec(src)) !== null) {
+      const bpWidth = parseInt(match[1], 10);
+      if (bpWidth > 640) continue; // skip breakpoints wider than mobile viewport (>640px)
+
+      // Walk forward to find the matching closing brace for this @media block
+      let depth = 1;
+      let i = match.index + match[0].length;
+      while (i < src.length && depth > 0) {
+        if (src[i] === '{') depth++;
+        else if (src[i] === '}') depth--;
+        i++;
+      }
+      const blockContent = src.slice(match.index, i);
+
+      // Check if this block sets .category-grid to single-column
+      if (/\.category-grid[^{]*\{[^}]*grid-template-columns\s*:\s*1fr\s*;/s.test(blockContent)) {
+        foundGridBreakpoint = true;
+        foundGridBreakpointWidth = bpWidth;
+        break;
+      }
+    }
+
+    if (foundGridBreakpoint) {
+      pass(`[31] css/wiki.css has .category-grid single-column breakpoint at ≤${foundGridBreakpointWidth}px`);
+    } else {
+      fail('[31] css/wiki.css has no .category-grid { grid-template-columns: 1fr } mobile breakpoint ≤640px');
+    }
+
+    // Ensure there is a mobile rule that makes category-card stacked (flex-direction: column)
+    const stackPattern = /\.category-card[^}]*flex-direction\s*:\s*column/s;
+    if (stackPattern.test(src)) {
+      pass('[31] css/wiki.css has .category-card stacked (flex-direction: column) mobile rule');
+    } else {
+      fail('[31] css/wiki.css missing .category-card flex-direction:column mobile rule');
+    }
+  }
+}
+
+// ── [32] Site shell sidebar must link to /gkniftyheads-incubator.html ─────────
+{
+  console.log('\n[32] Site shell sidebar incubator link');
+  const shellPath = path.join(ROOT, 'js', 'site-shell.js');
+  if (!fs.existsSync(shellPath)) {
+    fail('[32] js/site-shell.js not found');
+  } else {
+    const src = fs.readFileSync(shellPath, 'utf8');
+    if (src.includes('/gkniftyheads-incubator.html')) {
+      pass('[32] js/site-shell.js sidebar contains link to /gkniftyheads-incubator.html');
+    } else {
+      fail('[32] js/site-shell.js sidebar does NOT contain link to /gkniftyheads-incubator.html');
+    }
+  }
+}
+
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log('\n─────────────────────────────────────────');
