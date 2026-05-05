@@ -962,8 +962,11 @@ async function runShellChromeFontParityCheck(browser, port) {
     for (const [key, selLabel] of Object.entries(SEL_LABELS)) {
       const refVal = ref[key];
       const val    = m[key];
-      // Both values must exist — missing values are already caught above.
-      if (refVal === null || val === null) continue;
+      // Fail explicitly if either value is null — element presence is validated above
+      // but asserting here catches any gap between the existence check and comparison.
+      assert(refVal !== null && val !== null,
+        `shell-chrome parity [${label} vs homepage]: ${selLabel} must be present on both pages for comparison (homepage=${refVal} ${label}=${val})`);
+      if (refVal === null || val === null) continue; // unreachable if assert passed, prevents divide-by-zero
       const pctDiff = Math.abs(val - refVal) / refVal;
       assert(pctDiff <= 0.10,
         `shell-chrome parity [${label} vs homepage]: ${selLabel} within 10% — ${label}=${val}px homepage=${refVal}px diff=${Math.round(pctDiff * 100)}%`);
