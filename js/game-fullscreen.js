@@ -1255,6 +1255,9 @@
       return;
     }
     if (e.key === 'Escape' && !isOpen) {
+      // Prevent default consistently for all Escape presses on this path,
+      // regardless of whether a micro note is present.
+      e.preventDefault();
       // Close the topmost (first-child) visible micro notification, if any.
       // Micro notifications are short-lived auto-expiring elements managed
       // entirely by pushMicroNotification(); they are not registered with the
@@ -1263,7 +1266,6 @@
       var feed = document.getElementById('micro-notify-feed');
       if (feed && feed.firstElementChild) {
         e.stopPropagation();
-        e.preventDefault();
         feed.firstElementChild.remove();
       }
       return;

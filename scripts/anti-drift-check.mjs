@@ -1505,6 +1505,28 @@ console.log('\n[21–25] XP/Progression terminology anti-drift');
   }
 }
 
+// ── Shared helper: extract a braced block starting at a known index ─────────
+// Returns the source slice from `startIdx` up to and including the closing `}`
+// that balances the first `{` found at or after `startIdx`.
+// Returns '' if no opening brace is found or braces are unbalanced.
+function extractBracedBlock(src, startIdx) {
+  const braceStart = src.indexOf('{', startIdx);
+  if (braceStart === -1) return '';
+  let depth = 0;
+  for (let i = braceStart; i < src.length; i++) {
+    const ch = src[i];
+    if (ch === '{') {
+      depth++;
+    } else if (ch === '}') {
+      depth--;
+      if (depth === 0) {
+        return src.slice(startIdx, i + 1);
+      }
+    }
+  }
+  return ''; // unbalanced
+}
+
 // ── 26. Dismissible UI compliance ─────────────────────────────────────────────
 // Checks that:
 //   (a) js/components/dismissible-ui.js exists.
@@ -1532,7 +1554,7 @@ console.log('\n[26] Dismissible UI compliance');
     fail('[26] js/game-fullscreen.js not found');
     check26Clean = false;
   } else {
-    // Locate pushMicroNotification and find its body.
+    // Locate pushMicroNotification and find its body using the shared helper.
     const fnIdx = gfsSrc.indexOf('function pushMicroNotification(');
     if (fnIdx === -1) {
       fail('[26] js/game-fullscreen.js: pushMicroNotification not found');
@@ -1543,13 +1565,7 @@ console.log('\n[26] Dismissible UI compliance');
         fail('[26] js/game-fullscreen.js: pushMicroNotification opening brace not found');
         check26Clean = false;
       } else {
-        let depth = 0, i = braceStart, fnBody = '';
-        while (i < gfsSrc.length) {
-          const ch = gfsSrc[i];
-          if (ch === '{') depth++;
-          else if (ch === '}') { depth--; if (depth === 0) { fnBody = gfsSrc.slice(fnIdx, i + 1); break; } }
-          i++;
-        }
+        const fnBody = extractBracedBlock(gfsSrc, fnIdx);
         if (!fnBody) {
           fail('[26] js/game-fullscreen.js: pushMicroNotification body extraction failed (unbalanced braces?)');
           check26Clean = false;
@@ -1631,14 +1647,7 @@ console.log('\n[27] Fullscreen overlay overflow guard');
       fail('[27] css/game-fullscreen.css: #game-overlay rule not found — cannot validate overlay sizing');
       check27Clean = false;
     } else {
-      let depth = 0, i = overlayIdx;
-      let overlayBlock = '';
-      while (i < gfsCss.length) {
-        const ch = gfsCss[i];
-        if (ch === '{') depth++;
-        else if (ch === '}') { depth--; if (depth === 0) { overlayBlock = gfsCss.slice(overlayIdx, i + 1); break; } }
-        i++;
-      }
+      const overlayBlock = extractBracedBlock(gfsCss, overlayIdx);
       if (!overlayBlock) {
         fail('[27] css/game-fullscreen.css: #game-overlay block extraction failed');
         check27Clean = false;

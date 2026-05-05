@@ -20,22 +20,22 @@
 (function () {
   'use strict';
 
-  /* ── Per-element options (WeakMap so GC can collect removed elements) ── */
-  var _optsMap = typeof WeakMap === 'function' ? new WeakMap() : null;
+  /* ── Per-element options — WeakMap (required; widely supported ES6+) ── */
+  var _optsMap = new WeakMap();
 
   /* ── Dismissible registry (ordered: first-in, last-dismissed) ──── */
   var _stack = [];
 
   function register(el, opts) {
     if (!el) return;
-    if (_optsMap) _optsMap.set(el, opts || {});
+    _optsMap.set(el, opts || {});
     if (_stack.indexOf(el) === -1) _stack.push(el);
   }
 
   function unregister(el) {
     var idx = _stack.indexOf(el);
     if (idx !== -1) _stack.splice(idx, 1);
-    if (_optsMap) _optsMap.delete(el);
+    _optsMap.delete(el);
   }
 
   /**
@@ -43,7 +43,7 @@
    * Guarantees opts.onClose and opts.hide are respected in every case.
    */
   function _dismiss(el) {
-    var opts = (_optsMap && _optsMap.get(el)) || {};
+    var opts = _optsMap.get(el) || {};
     unregister(el);
     if (opts.onClose) opts.onClose(el);
     if (opts.hide) {
