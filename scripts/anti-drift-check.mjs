@@ -1769,10 +1769,14 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
 {
   console.log('\n[30] Required sync pages have Telegram entry point');
 
-  // Pages that MUST contain either:
-  //   a) a link to /gkniftyheads-incubator.html  (static href)
-  //   b) a data-tg-sync-cta attribute            (component mount point)
-  //   c) a script loading telegram-sync-cta.js  (component injected at runtime)
+  // Valid states for a required sync page:
+  //   A) Static visible link path:  page contains href="/gkniftyheads-incubator.html"
+  //   OR
+  //   B) Component path (BOTH required):
+  //        page contains data-tg-sync-cta   (mount point that receives rendered CTA)
+  //        AND page loads /js/components/telegram-sync-cta.js  (script that renders it)
+  //
+  // Mount point alone or script alone is NOT sufficient.
   const requiredPages = [
     { file: 'community.html',                       label: '/community.html' },
     { file: 'games/index.html',                     label: '/games/' },
@@ -1794,10 +1798,16 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
     const hasStaticLink = src.includes('href="/gkniftyheads-incubator.html"');
     const hasMountPoint = src.includes('data-tg-sync-cta');
     const hasCTAScript  = src.includes('telegram-sync-cta.js');
-    if (hasStaticLink || hasMountPoint || hasCTAScript) {
-      pass(`[30] ${label}: Telegram sync entry point present`);
+    // State A: static link (visible href in markup)
+    const passA = hasStaticLink;
+    // State B: component path requires BOTH mount point AND script
+    const passB = hasMountPoint && hasCTAScript;
+    if (passA || passB) {
+      const how = passA ? 'static href' : 'mount point + script';
+      pass(`[30] ${label}: Telegram sync entry point present (${how})`);
     } else {
-      fail(`[30] ${label}: NO Telegram sync entry point (no incubator href, no data-tg-sync-cta, no cta script)`);
+      const detail = `staticLink=${hasStaticLink} mountPoint=${hasMountPoint} ctaScript=${hasCTAScript}`;
+      fail(`[30] ${label}: NO valid Telegram sync entry point — need static href OR (mount point AND script). (${detail})`);
       check30Clean = false;
     }
   }

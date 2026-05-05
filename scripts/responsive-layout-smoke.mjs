@@ -389,14 +389,21 @@ async function runMobileNavTest(browser, port, path) {
 /**
  * runTelegramSyncCheck(browser, port, path)
  *
- * Verifies that a page has a visible Telegram sync entry point:
- *   - Either a [data-tg-sync-cta] element (component mount point) in the DOM, OR
- *   - A rendered <a href="/gkniftyheads-incubator.html"> link, OR
- *   - A rendered .tg-sync-cta element (component already rendered)
+ * Verifies that a page has a VISIBLE, user-facing Telegram sync entry point.
+ *
+ * Pass criteria (one must be true):
+ *   a) A rendered .tg-sync-cta element is visible:
+ *        display !== none, visibility !== hidden, opacity !== 0,
+ *        bounding box width > 0, height > 0, intersects viewport.
+ *   OR
+ *   b) An <a href="/gkniftyheads-incubator.html"> is visible with the same
+ *      criteria.
+ *
+ * A bare [data-tg-sync-cta] mount point without a rendered child is NOT a pass.
  */
-async function runTelegramSyncCheck(browser, port, path) {
+async function runTelegramSyncCheck(browser, port, pagePath) {
   info('');
-  info(`── tg-sync check 390×844 ${path} ──`);
+  info(`── tg-sync check 390×844 ${pagePath} ──`);
 
   const ctx  = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await ctx.newPage();
@@ -407,20 +414,82 @@ async function runTelegramSyncCheck(browser, port, path) {
     else route.fulfill({ status: 200, body: '' });
   });
 
-  await page.goto(`http://localhost:${port}${path}`, { timeout: 20000, waitUntil: 'networkidle' });
-  await page.waitForTimeout(300);
+  await page.goto(`http://localhost:${port}${pagePath}`, { timeout: 20000, waitUntil: 'networkidle' });
 
-  const label = `tg-sync [${path}]`;
+  // If a mount point exists, wait briefly for the component script to render it.
+  const hasMountPoint = await page.evaluate(() => !!document.querySelector('[data-tg-sync-cta]'));
+  if (hasMountPoint) {
+    // Give the sync CTA component script time to mount its HTML into the placeholder
+    await page.waitForTimeout(600);
+  } else {
+    await page.waitForTimeout(200);
+  }
 
+  const label = `tg-sync [${pagePath}]`;
+
+  /**
+   * isElementVisible(el) — strict visibility:
+   *   - display !== none
+   *   - visibility !== hidden
+   *   - opacity !== 0
+   *   - bounding box width > 0
+   *   - bounding box height > 0
+   *   - top < window.innerHeight  (top of element is above bottom of viewport)
+   *   - bottom > 0                (bottom of element is below top of viewport)
+   */
   const check = await page.evaluate(() => {
-    const hasMountPoint  = !!document.querySelector('[data-tg-sync-cta]');
-    const hasRenderedCta = !!document.querySelector('.tg-sync-cta');
-    const hasIncubatorLink = !!document.querySelector('a[href="/gkniftyheads-incubator.html"]');
-    return { hasMountPoint, hasRenderedCta, hasIncubatorLink };
+    function isVisible(el) {
+      if (!el) return false;
+      const cs = window.getComputedStyle(el);
+      if (cs.display === 'none')      return false;
+      if (cs.visibility === 'hidden') return false;
+      if (parseFloat(cs.opacity) === 0) return false;
+      const bb = el.getBoundingClientRect();
+      if (bb.width <= 0 || bb.height <= 0) return false;
+      if (bb.top >= window.innerHeight)     return false;
+      if (bb.bottom <= 0)                   return false;
+      return true;
+    }
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Check .tg-sync-cta (rendered CTA banner)
+    const ctaEl = document.querySelector('.tg-sync-cta');
+    const ctaVisible = isVisible(ctaEl);
+    const ctaBB = ctaEl ? ctaEl.getBoundingClientRect() : null;
+
+    // Check any <a href="/gkniftyheads-incubator.html"> visible link
+    const links = Array.from(document.querySelectorAll('a[href="/gkniftyheads-incubator.html"]'));
+    let visibleLink = null;
+    let visibleLinkBB = null;
+    for (const link of links) {
+      if (isVisible(link)) {
+        visibleLink = true;
+        visibleLinkBB = link.getBoundingClientRect();
+        break;
+      }
+    }
+
+    return {
+      vw, vh,
+      ctaVisible,
+      ctaBB: ctaBB ? { w: Math.round(ctaBB.width), h: Math.round(ctaBB.height), top: Math.round(ctaBB.top) } : null,
+      visibleLink: !!visibleLink,
+      visibleLinkBB: visibleLinkBB ? { w: Math.round(visibleLinkBB.width), h: Math.round(visibleLinkBB.height), top: Math.round(visibleLinkBB.top) } : null,
+      // Diagnostic info
+      hasMountPoint: !!document.querySelector('[data-tg-sync-cta]'),
+      mountPointHasChildren: (() => { const mp = document.querySelector('[data-tg-sync-cta]'); return mp ? mp.children.length > 0 : false; })(),
+    };
   });
 
-  assert(check.hasMountPoint || check.hasRenderedCta || check.hasIncubatorLink,
-    `${label}: Telegram sync CTA or incubator link present (mountPoint=${check.hasMountPoint} rendered=${check.hasRenderedCta} link=${check.hasIncubatorLink})`);
+  info(`  vw=${check.vw} vh=${check.vh} ctaVisible=${check.ctaVisible} visibleLink=${check.visibleLink}`);
+  if (check.ctaBB) info(`  .tg-sync-cta: ${check.ctaBB.w}×${check.ctaBB.h} top=${check.ctaBB.top}`);
+  if (check.visibleLinkBB) info(`  a[incubator]: ${check.visibleLinkBB.w}×${check.visibleLinkBB.h} top=${check.visibleLinkBB.top}`);
+  info(`  mountPoint=${check.hasMountPoint} mountHasChildren=${check.mountPointHasChildren}`);
+
+  assert(check.ctaVisible || check.visibleLink,
+    `${label}: visible Telegram sync CTA (.tg-sync-cta) or visible incubator link must exist with non-zero bounding box (ctaVisible=${check.ctaVisible} visibleLink=${check.visibleLink})`);
 
   await ctx.close();
 }
@@ -550,22 +619,34 @@ async function runSidebarIncubatorCheck(browser, port) {
 
   const incubatorLink = await page.evaluate(() => {
     const sidebar = document.getElementById('sidebar');
-    if (!sidebar) return { exists: false, visible: false, text: '' };
+    if (!sidebar) return { exists: false, visible: false, text: '', left: -1, top: -1, bottom: -1 };
     const link = sidebar.querySelector('a[href="/gkniftyheads-incubator.html"]');
-    if (!link) return { exists: false, visible: false, text: '', left: -1 };
-    const bb = link.getBoundingClientRect();
+    if (!link) return { exists: false, visible: false, text: '', left: -1, top: -1, bottom: -1 };
+    const bb  = link.getBoundingClientRect();
+    const cs  = window.getComputedStyle(link);
+    const vw  = window.innerWidth;
+    const vh  = window.innerHeight;
     return {
       exists:  true,
-      visible: bb.width > 0 && bb.height > 0 && bb.left >= 0 && bb.left < window.innerWidth,
-      text:    link.textContent.trim(),
-      left:    Math.round(bb.left),
+      visible: (
+        cs.display !== 'none' &&
+        cs.visibility !== 'hidden' &&
+        parseFloat(cs.opacity) !== 0 &&
+        bb.width > 0 && bb.height > 0 &&
+        bb.left >= 0 && bb.left < vw &&
+        bb.top  >= 0 && bb.bottom <= vh
+      ),
+      text:   link.textContent.trim(),
+      left:   Math.round(bb.left),
+      top:    Math.round(bb.top),
+      bottom: Math.round(bb.bottom),
     };
   });
 
   assert(incubatorLink.exists,
     `${label}: sidebar has a[href="/gkniftyheads-incubator.html"]`);
   assert(incubatorLink.visible,
-    `${label}: sidebar incubator link is visible (left=${incubatorLink.left}px)`);
+    `${label}: sidebar incubator link is visible within viewport (left=${incubatorLink.left}px top=${incubatorLink.top}px bottom=${incubatorLink.bottom}px)`);
 
   await ctx.close();
 }
