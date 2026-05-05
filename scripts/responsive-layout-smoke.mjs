@@ -459,6 +459,13 @@ async function runTelegramSyncCheck(browser, port, pagePath) {
     const ctaVisible = isElementStrictlyVisible(ctaEl);
     const ctaBB = ctaEl ? ctaEl.getBoundingClientRect() : null;
 
+    // Check the primary Link Telegram button inside the CTA
+    const ctaBtn = document.querySelector('.tg-sync-cta-btn');
+    const ctaBtnHref   = ctaBtn ? ctaBtn.getAttribute('href') : null;
+    const ctaBtnTarget = ctaBtn ? ctaBtn.getAttribute('target') : null;
+    const ctaBtnRel    = ctaBtn ? (ctaBtn.getAttribute('rel') || '') : null;
+    const ctaBtnVisible = isElementStrictlyVisible(ctaBtn);
+
     // Check any <a href="/gkniftyheads-incubator.html"> visible link
     const links = Array.from(document.querySelectorAll('a[href="/gkniftyheads-incubator.html"]'));
     let hasVisibleLink = false;
@@ -477,6 +484,8 @@ async function runTelegramSyncCheck(browser, port, pagePath) {
       ctaBB: ctaBB ? { w: Math.round(ctaBB.width), h: Math.round(ctaBB.height), top: Math.round(ctaBB.top) } : null,
       visibleLink: hasVisibleLink,
       visibleLinkBB: visibleLinkBB ? { w: Math.round(visibleLinkBB.width), h: Math.round(visibleLinkBB.height), top: Math.round(visibleLinkBB.top) } : null,
+      // Primary CTA button info
+      ctaBtnHref, ctaBtnTarget, ctaBtnRel, ctaBtnVisible,
       // Diagnostic info
       hasMountPoint: !!document.querySelector('[data-tg-sync-cta]'),
       mountPointHasChildren: (() => { const mp = document.querySelector('[data-tg-sync-cta]'); return mp ? mp.children.length > 0 : false; })(),
@@ -487,9 +496,22 @@ async function runTelegramSyncCheck(browser, port, pagePath) {
   if (check.ctaBB) info(`  .tg-sync-cta: ${check.ctaBB.w}×${check.ctaBB.h} top=${check.ctaBB.top}`);
   if (check.visibleLinkBB) info(`  a[incubator]: ${check.visibleLinkBB.w}×${check.visibleLinkBB.h} top=${check.visibleLinkBB.top}`);
   info(`  mountPoint=${check.hasMountPoint} mountHasChildren=${check.mountPointHasChildren}`);
+  if (check.ctaBtnHref !== null) info(`  .tg-sync-cta-btn: href=${check.ctaBtnHref} target=${check.ctaBtnTarget} rel=${check.ctaBtnRel} visible=${check.ctaBtnVisible}`);
 
   assert(check.ctaVisible || check.visibleLink,
     `${label}: visible Telegram sync CTA (.tg-sync-cta) or visible incubator link must exist with non-zero bounding box (ctaVisible=${check.ctaVisible} visibleLink=${check.visibleLink})`);
+
+  // If the CTA rendered and the button is present, assert bot URL + security attrs
+  if (check.ctaVisible && check.ctaBtnHref !== null) {
+    assert(check.ctaBtnHref === 'https://t.me/WIKICOMSBOT',
+      `${label}: .tg-sync-cta-btn href must be https://t.me/WIKICOMSBOT (got ${check.ctaBtnHref})`);
+    assert(check.ctaBtnTarget === '_blank',
+      `${label}: .tg-sync-cta-btn must have target="_blank" (got ${check.ctaBtnTarget})`);
+    assert(check.ctaBtnRel && check.ctaBtnRel.includes('noopener'),
+      `${label}: .tg-sync-cta-btn rel must include noopener (got ${check.ctaBtnRel})`);
+    assert(check.ctaBtnVisible,
+      `${label}: .tg-sync-cta-btn must be visible and clickable`);
+  }
 
   await ctx.close();
 }
@@ -651,6 +673,140 @@ async function runSidebarIncubatorCheck(browser, port) {
   await ctx.close();
 }
 
+// ── Community page mobile overflow check ─────────────────────────────────────
+/**
+ * runCommunityMobileOverflowCheck(browser, port)
+ *
+ * At 390×844, verifies that /community.html has no horizontal overflow.
+ * Asserts:
+ *   - document.documentElement.scrollWidth <= window.innerWidth + 2
+ *   - document.body.scrollWidth <= window.innerWidth + 2
+ *   - #content fits within viewport
+ *   - .page-hero and .section elements fit within viewport
+ *   - "BATTLE CHAMBER" heading does not exceed viewport width
+ *   - No visible panel's right edge exceeds viewport width
+ *
+ * Also verifies at 1440×900 desktop: no horizontal overflow.
+ */
+async function runCommunityMobileOverflowCheck(browser, port) {
+  // ── mobile 390×844 ──
+  info('');
+  info('── community mobile overflow check 390×844 /community.html ──');
+
+  const mCtx  = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const mPage = await mCtx.newPage();
+  await mPage.route('**', (route) => {
+    const url = route.request().url();
+    if (url.startsWith(`http://localhost:${port}`)) route.continue();
+    else route.fulfill({ status: 200, body: '' });
+  });
+  await mPage.goto(`http://localhost:${port}/community.html`, { timeout: 20000, waitUntil: 'networkidle' });
+  await mPage.waitForTimeout(600);
+
+  const mob = await mPage.evaluate(() => {
+    const vw = window.innerWidth;
+    const scrollW = document.documentElement.scrollWidth;
+    const bodyScrollW = document.body.scrollWidth;
+
+    // Check #content
+    const content = document.getElementById('content');
+    const contentBB = content ? content.getBoundingClientRect() : null;
+
+    // Check .page-hero
+    const hero = document.querySelector('.page-hero');
+    const heroBB = hero ? hero.getBoundingClientRect() : null;
+
+    // Check heading
+    const h1 = document.querySelector('.page-hero h1');
+    const h1BB = h1 ? h1.getBoundingClientRect() : null;
+
+    // Check all .section panels
+    const sections = Array.from(document.querySelectorAll('.section'));
+    const sectionOverflow = sections.filter(s => s.getBoundingClientRect().right > vw + 2);
+
+    // Check community cards/grids
+    const panels = Array.from(document.querySelectorAll('.community-card, .community-grid, .community-hero-grid'));
+    const panelOverflow = panels.filter(p => {
+      const bb = p.getBoundingClientRect();
+      return bb.right > vw + 2;
+    }).map(p => ({
+      cls: p.className.slice(0, 60),
+      right: Math.round(p.getBoundingClientRect().right),
+      width: Math.round(p.getBoundingClientRect().width),
+    }));
+
+    return {
+      vw, scrollW, bodyScrollW,
+      contentRight: contentBB ? Math.round(contentBB.right) : null,
+      contentWidth: contentBB ? Math.round(contentBB.width) : null,
+      heroRight: heroBB ? Math.round(heroBB.right) : null,
+      heroWidth: heroBB ? Math.round(heroBB.width) : null,
+      h1Right: h1BB ? Math.round(h1BB.right) : null,
+      h1Width: h1BB ? Math.round(h1BB.width) : null,
+      sectionOverflowCount: sectionOverflow.length,
+      panelOverflow,
+    };
+  });
+
+  info(`  vw=${mob.vw} scrollW=${mob.scrollW} bodyScrollW=${mob.bodyScrollW}`);
+  info(`  #content: right=${mob.contentRight} w=${mob.contentWidth}`);
+  info(`  .page-hero: right=${mob.heroRight} w=${mob.heroWidth}`);
+  info(`  h1: right=${mob.h1Right} w=${mob.h1Width}`);
+  if (mob.panelOverflow.length) info(`  overflowing panels: ${JSON.stringify(mob.panelOverflow)}`);
+
+  assert(mob.scrollW <= mob.vw + 2,
+    `community mobile: document scrollWidth ${mob.scrollW} ≤ viewport ${mob.vw} + 2 (no horizontal overflow)`);
+  assert(mob.bodyScrollW <= mob.vw + 2,
+    `community mobile: body scrollWidth ${mob.bodyScrollW} ≤ viewport ${mob.vw} + 2 (no horizontal overflow)`);
+  if (mob.contentRight !== null) {
+    assert(mob.contentRight <= mob.vw + 2,
+      `community mobile: #content right edge ${mob.contentRight} ≤ viewport ${mob.vw} + 2`);
+  }
+  if (mob.heroWidth !== null) {
+    assert(mob.heroWidth <= mob.vw,
+      `community mobile: .page-hero width ${mob.heroWidth} ≤ viewport ${mob.vw}`);
+  }
+  if (mob.h1Width !== null) {
+    assert(mob.h1Width <= mob.vw,
+      `community mobile: .page-hero h1 width ${mob.h1Width} ≤ viewport ${mob.vw} (heading wraps safely)`);
+  }
+  assert(mob.sectionOverflowCount === 0,
+    `community mobile: all .section panels fit viewport (${mob.sectionOverflowCount} overflow)`);
+  assert(mob.panelOverflow.length === 0,
+    `community mobile: all community panels fit viewport (${mob.panelOverflow.length} overflow: ${JSON.stringify(mob.panelOverflow)})`);
+
+  await mCtx.close();
+
+  // ── desktop 1440×900 ──
+  info('');
+  info('── community desktop overflow check 1440×900 /community.html ──');
+
+  const dCtx  = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const dPage = await dCtx.newPage();
+  await dPage.route('**', (route) => {
+    const url = route.request().url();
+    if (url.startsWith(`http://localhost:${port}`)) route.continue();
+    else route.fulfill({ status: 200, body: '' });
+  });
+  await dPage.goto(`http://localhost:${port}/community.html`, { timeout: 20000, waitUntil: 'networkidle' });
+  await dPage.waitForTimeout(400);
+
+  const desk = await dPage.evaluate(() => ({
+    vw: window.innerWidth,
+    scrollW: document.documentElement.scrollWidth,
+    bodyScrollW: document.body.scrollWidth,
+  }));
+
+  info(`  vw=${desk.vw} scrollW=${desk.scrollW} bodyScrollW=${desk.bodyScrollW}`);
+
+  assert(desk.scrollW <= desk.vw + 2,
+    `community desktop: document scrollWidth ${desk.scrollW} ≤ viewport ${desk.vw} + 2 (no horizontal overflow)`);
+  assert(desk.bodyScrollW <= desk.vw + 2,
+    `community desktop: body scrollWidth ${desk.bodyScrollW} ≤ viewport ${desk.vw} + 2 (no horizontal overflow)`);
+
+  await dCtx.close();
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -745,6 +901,9 @@ async function main() {
 
       // Sidebar incubator link
       await runSidebarIncubatorCheck(browser, actualPort);
+
+      // Community page mobile overflow (no horizontal overflow at 390×844 or 1440×900)
+      await runCommunityMobileOverflowCheck(browser, actualPort);
 
       await browser.close();
       server.close();

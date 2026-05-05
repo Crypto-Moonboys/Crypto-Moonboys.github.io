@@ -1102,16 +1102,31 @@ a.hero-stat-link:hover {
   .section h2 {
     overflow-wrap: anywhere;
     word-break: break-word;
+    max-width: 100%;
   }
   .community-card,
   .community-card-inner,
   .community-main,
-  .community-side {
+  .community-side,
+  .community-hero-grid,
+  .community-grid,
+  .community-stat-box,
+  .community-stat-grid {
     min-width: 0;
     max-width: 100%;
+    box-sizing: border-box;
   }
   .cta-row {
     flex-wrap: wrap;
+  }
+  /* Prevent dynamically-loaded community panels from overflowing */
+  #community-status-panel,
+  #community-stats-grid,
+  [data-las-panel],
+  [data-csp-panel] {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
 }
 

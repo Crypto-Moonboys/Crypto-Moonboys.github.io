@@ -1750,10 +1750,23 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
   if (fs.existsSync(ctaFile)) {
     pass('[29] js/components/telegram-sync-cta.js exists');
     const src = fs.readFileSync(ctaFile, 'utf8');
-    if (src.includes('/gkniftyheads-incubator.html')) {
-      pass('[29] telegram-sync-cta.js links to /gkniftyheads-incubator.html');
+    // Primary "Link Telegram" button must open the Telegram bot directly.
+    // Internal incubator-page links are allowed elsewhere in the component,
+    // but the primary tg-sync-cta-btn must use https://t.me/WIKICOMSBOT.
+    if (src.includes('https://t.me/WIKICOMSBOT')) {
+      pass('[29] telegram-sync-cta.js primary button links to https://t.me/WIKICOMSBOT');
     } else {
-      fail('[29] telegram-sync-cta.js does NOT link to /gkniftyheads-incubator.html');
+      fail('[29] telegram-sync-cta.js primary button does NOT link to https://t.me/WIKICOMSBOT');
+    }
+    if (src.includes('target="_blank"')) {
+      pass('[29] telegram-sync-cta.js primary button has target="_blank"');
+    } else {
+      fail('[29] telegram-sync-cta.js primary button missing target="_blank"');
+    }
+    if (src.includes('noopener')) {
+      pass('[29] telegram-sync-cta.js primary button has rel noopener');
+    } else {
+      fail('[29] telegram-sync-cta.js primary button missing rel noopener');
     }
     if (src.includes('[data-tg-sync-cta]') || src.includes('data-tg-sync-cta')) {
       pass('[29] telegram-sync-cta.js mounts on [data-tg-sync-cta] elements');
@@ -1881,6 +1894,39 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
       pass('[32] js/site-shell.js sidebar contains link to /gkniftyheads-incubator.html');
     } else {
       fail('[32] js/site-shell.js sidebar does NOT contain link to /gkniftyheads-incubator.html');
+    }
+  }
+}
+
+
+// ── [33] Primary Telegram sync CTA button must use the bot URL ───────────────
+// Enforces: the .tg-sync-cta-btn in telegram-sync-cta.js must point to
+// https://t.me/WIKICOMSBOT. Internal incubator-page links are allowed elsewhere
+// in the component (e.g. secondary info links), but NOT as the primary button.
+{
+  console.log('\n[33] Primary Telegram sync CTA button href (anti-drift)');
+  const ctaFile = path.join(ROOT, 'js', 'components', 'telegram-sync-cta.js');
+  if (!fs.existsSync(ctaFile)) {
+    fail('[33] js/components/telegram-sync-cta.js MISSING (cannot check primary button)');
+  } else {
+    const src = fs.readFileSync(ctaFile, 'utf8');
+    // The primary CTA button must use the bot URL, not the incubator page.
+    const btnPattern = /tg-sync-cta-btn[^"']*['"]\s*(?:target|href|rel)|href=['"][^'"]*tg-sync-cta-btn/;
+    // Simpler: check the bot URL appears near tg-sync-cta-btn in the template
+    const hasBotBtn = src.includes('https://t.me/WIKICOMSBOT') &&
+                      src.includes('tg-sync-cta-btn');
+    if (hasBotBtn) {
+      pass('[33] Primary tg-sync-cta-btn uses https://t.me/WIKICOMSBOT');
+    } else {
+      fail('[33] Primary tg-sync-cta-btn must use https://t.me/WIKICOMSBOT');
+    }
+    // The tg-sync-cta-btn must NOT be the incubator link itself.
+    // (Secondary info links to the incubator page are fine in the body text.)
+    const incubatorBtnPattern = /tg-sync-cta-btn[^>]*href=["']\/gkniftyheads-incubator\.html/;
+    if (incubatorBtnPattern.test(src)) {
+      fail('[33] tg-sync-cta-btn must NOT link to /gkniftyheads-incubator.html (use bot URL for primary button)');
+    } else {
+      pass('[33] tg-sync-cta-btn does not use /gkniftyheads-incubator.html (correct)');
     }
   }
 }
