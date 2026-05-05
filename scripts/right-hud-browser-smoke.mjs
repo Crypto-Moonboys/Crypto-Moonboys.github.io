@@ -257,7 +257,7 @@ async function testPage(page, pathname, port) {
         var chips = document.querySelectorAll('.hud-stat-val');
         for (var i = 0; i < chips.length; i++) {
           var t = chips[i].textContent.trim();
-          if (t === '--' || t === '\u2014') return false;
+          if (t === '--' || t === '\u2014' || t === '—') return false;
         }
         return true;
       }()),
