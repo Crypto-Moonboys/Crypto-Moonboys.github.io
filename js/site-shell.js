@@ -196,7 +196,7 @@
   if (shouldShowRightPanel(window.location.pathname, document.body)) {
     rightPanel = document.createElement('aside');
     rightPanel.id = 'homepage-right-panel';
-    rightPanel.setAttribute('aria-label', 'Player and system status');
+    rightPanel.setAttribute('aria-label', 'Player status and actions');
     rightPanel.innerHTML = [
       '<!-- ── PLAYER STATUS ── -->',
       '<div class="retro-hud-box hud-box--player">',
@@ -207,93 +207,151 @@
       '  </div>',
       '  <div class="retro-hud-body">',
       '    <div class="hud-player-portrait-row">',
-      '      <div class="hud-avatar-box" role="img" aria-label="Player avatar">',
+      '      <div class="hud-avatar-box" id="hud-player-avatar" role="img" aria-label="Player avatar">',
       '        <span class="hud-avatar-icon" aria-hidden="true">\uD83D\uDC7E</span>',
       '      </div>',
       '      <div class="hud-player-info">',
-      '        <div class="hud-info-row">',
-      '          <span class="hud-label">PLAYER:</span>',
-      '          <span class="hud-value hud-player-name">\u2014</span>',
-      '        </div>',
-      '        <div class="hud-info-row">',
-      '          <span class="hud-label">RANK:</span>',
-      '          <span class="hud-value hud-rank-val">\u2014</span>',
-      '        </div>',
-      '        <div class="hud-info-row">',
-      '          <span class="hud-label">XP:</span>',
-      '          <span class="hud-value hud-xp-inline"><span class="hud-xp-cur">--</span>&thinsp;/&thinsp;<span class="hud-xp-max">--</span></span>',
-      '        </div>',
+      '        <span class="hud-player-name" id="hud-player-name">Guest</span>',
       '      </div>',
-      '    </div>',
-      '    <div class="hud-xp-bar-wrap">',
-      '      <span class="hud-xp-label">XP</span>',
-      '      <div class="hud-xp-track"><div class="hud-xp-fill"></div></div>',
-      '      <span class="hud-xp-pct">--</span>',
-      '    </div>',
-      '    <div class="hud-stats-row">',
-      '      <div class="hud-stat-chip"><span class="hud-stat-icon" aria-hidden="true">\uD83E\uDE99</span><span class="hud-stat-val">--</span></div>',
-      '      <div class="hud-stat-chip"><span class="hud-stat-icon" aria-hidden="true">\uD83D\uDC8E</span><span class="hud-stat-val">--</span></div>',
-      '      <div class="hud-stat-chip"><span class="hud-stat-icon" aria-hidden="true">\u26A1</span><span class="hud-stat-val">--</span></div>',
       '    </div>',
       '    <div data-csp-panel></div>',
       '  </div>',
       '</div>',
       '',
-      '<!-- ── SYSTEM STATUS ── -->',
-      '<div class="retro-hud-box hud-box--system">',
+      '<!-- ── NEXT ACTIONS ── -->',
+      '<div class="retro-hud-box hud-box--actions">',
       '  <div class="retro-hud-title">',
       '    <span class="retro-hud-title-icon" aria-hidden="true">\u25B6</span>',
-      '    System Status',
-      '    <span class="retro-hud-mascot" aria-hidden="true">\uD83E\uDD16</span>',
+      '    Next Actions',
+      '    <span class="retro-hud-mascot" aria-hidden="true">\u26A1</span>',
       '  </div>',
       '  <div class="retro-hud-body">',
-      '    <div class="hud-sys-table" aria-label="System status indicators">',
-      '      <div class="hud-sys-row">',
-      '        <span class="hud-sys-label">NETWORK</span>',
-      '        <span class="hud-sys-val hud-sys-online">ONLINE</span>',
-      '        <span class="hud-sys-dot" aria-hidden="true"></span>',
-      '      </div>',
-      '      <div class="hud-sys-row">',
-      '        <span class="hud-sys-label">ORACLE FEED</span>',
-      '        <span class="hud-sys-val hud-sys-online">SYNCED</span>',
-      '        <span class="hud-sys-dot" aria-hidden="true"></span>',
-      '      </div>',
-      '      <div class="hud-sys-row">',
-      '        <span class="hud-sys-label">BATTLE CHAMBER</span>',
-      '        <span class="hud-sys-val hud-sys-online">ACTIVE</span>',
-      '        <span class="hud-sys-dot" aria-hidden="true"></span>',
-      '      </div>',
-      '      <div class="hud-sys-row">',
-      '        <span class="hud-sys-label">ARCADE SERVER</span>',
-      '        <span class="hud-sys-val hud-sys-online">ONLINE</span>',
-      '        <span class="hud-sys-dot" aria-hidden="true"></span>',
-      '      </div>',
-      '      <div class="hud-sys-row">',
-      '        <span class="hud-sys-label">WIKI NODES</span>',
-      '        <span class="hud-sys-val hud-sys-ratio">\u2014 / \u2014</span>',
-      '        <span class="hud-sys-dot" aria-hidden="true"></span>',
-      '      </div>',
-      '    </div>',
+      '    <ul class="hud-actions-list">',
+      '      <li class="hud-action-item">',
+      '        <a href="/games/" class="hud-action-link">\uD83C\uDFAE Play Arcade</a>',
+      '      </li>',
+      '    </ul>',
+      '    <div id="hud-actions-dynamic"></div>',
       '    <div data-las-panel></div>',
       '  </div>',
       '</div>',
-      '',
-      '<!-- ── LIVE SYSTEM FEED ── -->',
-      '<div class="retro-hud-box hud-box--feed">',
-      '  <div class="retro-hud-title">',
-      '    <span class="retro-hud-title-icon" aria-hidden="true">\u25B6</span>',
-      '    Live System Feed',
-      '    <span class="retro-hud-mascot" aria-hidden="true">\u26D1\uFE0F</span>',
-      '  </div>',
-      '  <div class="retro-hud-body" id="live-feed-widget">',
-      '    <div class="hud-feed-item">',
-      '      <span class="hud-feed-icon" aria-hidden="true">\uD83D\uDCE1</span>',
-      '      <span class="hud-feed-text">Connecting to feed\u2026</span>',
-      '      <span class="hud-feed-time">--:--</span>',
-      '    </div>',
-      '  </div>',
-      '</div>',
     ].join('\n');
+
+    /* ── Deferred: populate avatar, player name, and dynamic actions ──────────
+     * Runs after all synchronous scripts (including identity-gate.js) have
+     * executed, so window.MOONBOYS_IDENTITY is guaranteed to be available.
+     */
+    setTimeout(function _hudPlayerInit() {
+      var gate = window.MOONBOYS_IDENTITY;
+      if (!gate) return;
+
+      /* Avatar — use Telegram photo_url when available */
+      var avatarBox = document.getElementById('hud-player-avatar');
+      if (avatarBox) {
+        var photoUrl = typeof gate.getTelegramPhotoUrl === 'function'
+          ? gate.getTelegramPhotoUrl() : null;
+        if (photoUrl) {
+          var img = document.createElement('img');
+          img.src = photoUrl;
+          img.alt = '';
+          img.className = 'hud-avatar-img';
+          img.width = 36;
+          img.height = 36;
+          img.setAttribute('aria-hidden', 'true');
+          avatarBox.innerHTML = '';
+          avatarBox.appendChild(img);
+          avatarBox.removeAttribute('aria-label');
+          avatarBox.setAttribute('aria-label', 'Telegram avatar');
+        }
+      }
+
+      /* Player name */
+      var nameEl = document.getElementById('hud-player-name');
+      if (nameEl) {
+        var displayName = typeof gate.getTelegramName === 'function'
+          ? gate.getTelegramName() : null;
+        if (displayName) {
+          nameEl.textContent = displayName;
+        }
+      }
+
+      /* Dynamic actions — shown only when relevant */
+      var actionsEl = document.getElementById('hud-actions-dynamic');
+      if (actionsEl) {
+        var linked = typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked();
+        var factionApi = window.MOONBOYS_FACTION;
+        var factionStatus = factionApi && typeof factionApi.getCachedStatus === 'function'
+          ? factionApi.getCachedStatus() : null;
+        /* Only treat as unaligned when the cache has a real status object.
+         * null means the status is not yet known (fresh device / first visit).
+         * Showing "Join Faction" on a cache-miss would be a false CTA. */
+        var isUnaligned = factionStatus != null &&
+          (!factionStatus.faction || factionStatus.faction === 'unaligned');
+
+        var items = [];
+        if (!linked) {
+          items.push(
+            '<li class="hud-action-item hud-action--highlight">' +
+            '<a href="/gkniftyheads-incubator.html" class="hud-action-link">' +
+            '\uD83D\uDD17 Link Telegram</a></li>'
+          );
+        }
+        if (isUnaligned) {
+          items.push(
+            '<li class="hud-action-item">' +
+            '<a href="/community.html" class="hud-action-link">' +
+            '\u2694\uFE0F Join Faction</a></li>'
+          );
+        }
+        if (items.length > 0) {
+          actionsEl.innerHTML = '<ul class="hud-actions-list">' + items.join('') + '</ul>';
+        }
+      }
+    }, 0);
+
+    /* Re-render Next Actions when faction status changes (e.g. user joins a
+     * faction in-page via the Arcade or Battle Chamber).  This avoids stale
+     * "Join Faction" CTAs that linger until the next full page load. */
+    (function _bindFactionUpdate() {
+      var bus = window.MOONBOYS_EVENT_BUS;
+      if (!bus || typeof bus.on !== 'function') return;
+      bus.on('faction:update', function (d) {
+        var actEl = document.getElementById('hud-actions-dynamic');
+        if (!actEl) return;
+        var gate2 = window.MOONBOYS_IDENTITY;
+        var linked2 = gate2 && typeof gate2.isTelegramLinked === 'function'
+          ? gate2.isTelegramLinked() : false;
+        var newFaction = (d && d.faction) ? d.faction : null;
+        if (!newFaction) {
+          /* Fallback: read from API cache */
+          var fApi = window.MOONBOYS_FACTION;
+          var fStatus = fApi && typeof fApi.getCachedStatus === 'function'
+            ? fApi.getCachedStatus() : null;
+          newFaction = fStatus ? fStatus.faction : null;
+        }
+        var nowUnaligned = newFaction != null &&
+          (!newFaction || newFaction === 'unaligned');
+
+        var items2 = [];
+        if (!linked2) {
+          items2.push(
+            '<li class="hud-action-item hud-action--highlight">' +
+            '<a href="/gkniftyheads-incubator.html" class="hud-action-link">' +
+            '\uD83D\uDD17 Link Telegram</a></li>'
+          );
+        }
+        if (nowUnaligned) {
+          items2.push(
+            '<li class="hud-action-item">' +
+            '<a href="/community.html" class="hud-action-link">' +
+            '\u2694\uFE0F Join Faction</a></li>'
+          );
+        }
+        actEl.innerHTML = items2.length > 0
+          ? '<ul class="hud-actions-list">' + items2.join('') + '</ul>'
+          : '';
+      });
+    }());
   }
 
   /* ── 8. Back-to-top button ───────────────────────────────────── */

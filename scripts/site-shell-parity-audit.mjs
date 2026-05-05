@@ -205,7 +205,9 @@ if (shellJs) {
     { needle: "rightPanel.id = 'homepage-right-panel'", label: '#homepage-right-panel' },
     { needle: 'data-csp-panel',            label: '[data-csp-panel]' },
     { needle: 'data-las-panel',            label: '[data-las-panel]' },
-    { needle: 'id="live-feed-widget"',     label: '#live-feed-widget' },
+    { needle: 'hud-player-avatar',         label: '#hud-player-avatar (player avatar box)' },
+    { needle: 'hud-player-name',           label: '.hud-player-name (player name)' },
+    { needle: 'hud-actions-list',          label: '.hud-actions-list (Next Actions block)' },
     { needle: 'shouldShowRightPanel',      label: 'shouldShowRightPanel() helper' },
   ];
   for (const { needle, label } of SMOKE_CHECKS) {

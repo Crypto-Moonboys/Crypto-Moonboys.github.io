@@ -2,7 +2,7 @@
 /**
  * right-hud-browser-smoke.mjs
  *
- * Browser-rendered smoke test for the right HUD / Live System Feed panel.
+ * Browser-rendered smoke test for the right HUD panel (Player Status + Next Actions).
  *
  * Uses Playwright (Chromium headless) to load each affected page from a local
  * HTTP server so that site-shell.js actually executes and DOM mutations happen
@@ -20,13 +20,16 @@
  * Assertions per page (after all scripts run):
  *   ✓ document.querySelector('#homepage-right-panel') exists
  *   ✓ #homepage-right-panel is visible (display≠none, visibility≠hidden, bbox>0)
- *   ✓ document.querySelector('#live-feed-widget') exists
- *   ✓ #live-feed-widget is visible
  *   ✓ document.querySelector('[data-csp-panel]') exists
  *   ✓ document.querySelector('[data-las-panel]') exists
- *   ✓ document.body.textContent includes "Live System Feed"
  *   ✓ document.body.textContent includes "Player Status"
- *   ✓ document.body.textContent includes "System Status"
+ *   ✓ document.body.textContent includes "Next Actions"
+ *   ✓ no #live-feed-widget in DOM (LIVE_FEED=false)
+ *   ✓ no "Live System Feed" text (removed section)
+ *   ✓ no "System Status" text (removed section)
+ *   ✓ no "WIKI NODES" fake row
+ *   ✓ no .hud-stat-val chips with placeholder "--" or em-dash values
+ *   ✓ right panel has ≤ 3 HUD boxes (currently 2; limit is 3)
  *
  * Also logged per page:
  *   • window.location.pathname
@@ -240,12 +243,26 @@ async function testPage(page, pathname, port) {
       bodyClass:         document.body.className,
       shouldShowPanel:   shouldShowRightPanel(window.location.pathname, document.body),
       rightPanel:        visibilityInfo('#homepage-right-panel'),
-      liveFeed:          visibilityInfo('#live-feed-widget'),
       cspPanelInDOM:     !!document.querySelector('[data-csp-panel]'),
       lasPanelInDOM:     !!document.querySelector('[data-las-panel]'),
-      textLiveFeed:      document.body.textContent.includes('Live System Feed'),
       textPlayerStatus:  document.body.textContent.includes('Player Status'),
-      textSystemStatus:  document.body.textContent.includes('System Status'),
+      textNextActions:   document.body.textContent.includes('Next Actions'),
+      // Anti-fake-data guards
+      noLiveFeed:        !document.getElementById('live-feed-widget'),
+      noSystemStatus:    !document.body.textContent.includes('System Status'),
+      noWikiNodes:       !document.body.textContent.includes('WIKI NODES'),
+      noLiveFeedText:    !document.body.textContent.includes('Live System Feed'),
+      // No placeholder "--" or em-dash values in player panel stat chips (checks text content of chips)
+      noPlaceholderDash: (function () {
+        var chips = document.querySelectorAll('.hud-stat-val');
+        for (var i = 0; i < chips.length; i++) {
+          var t = chips[i].textContent.trim();
+          if (t === '--' || t === '\u2014' || t === '—') return false;
+        }
+        return true;
+      }()),
+      // Max 2 retro-hud-box sections in right panel (Player Status + Next Actions); limit is 3
+      hudBoxCount:       document.querySelectorAll('#homepage-right-panel .retro-hud-box').length,
       layoutId:          !!document.getElementById('layout'),
       mainWrapperId:     !!document.getElementById('main-wrapper'),
     };
@@ -258,6 +275,9 @@ async function testPage(page, pathname, port) {
   info(`site-shell.js loaded: ${shellLoaded}`);
   info(`#layout in DOM:      ${diag.layoutId}`);
   info(`#main-wrapper in DOM:${diag.mainWrapperId}`);
+  if (diag.rightPanel.exists) {
+    info(`HUD box count in right panel: ${diag.hudBoxCount}`);
+  }
 
   if (consoleErrors.length > 0) {
     consoleErrors.forEach(e => info(`console error: ${e}`));
@@ -298,19 +318,6 @@ async function testPage(page, pathname, port) {
     fail(`#homepage-right-panel bounding box is zero (${rp.w}×${rp.h})`);
   }
 
-  const lf = diag.liveFeed;
-  if (lf.exists) {
-    pass('#live-feed-widget exists in post-JS DOM');
-  } else {
-    fail('#live-feed-widget MISSING from post-JS DOM');
-  }
-
-  if (lf.exists && lf.display !== 'none') {
-    pass('#live-feed-widget display !== "none"');
-  } else if (lf.exists) {
-    fail('#live-feed-widget has display:none (hidden)');
-  }
-
   if (diag.cspPanelInDOM) {
     pass('[data-csp-panel] exists in post-JS DOM');
   } else {
@@ -323,22 +330,55 @@ async function testPage(page, pathname, port) {
     fail('[data-las-panel] MISSING from post-JS DOM');
   }
 
-  if (diag.textLiveFeed) {
-    pass('body text includes "Live System Feed"');
-  } else {
-    fail('body text MISSING "Live System Feed"');
-  }
-
   if (diag.textPlayerStatus) {
     pass('body text includes "Player Status"');
   } else {
     fail('body text MISSING "Player Status"');
   }
 
-  if (diag.textSystemStatus) {
-    pass('body text includes "System Status"');
+  if (diag.textNextActions) {
+    pass('body text includes "Next Actions"');
   } else {
-    fail('body text MISSING "System Status"');
+    fail('body text MISSING "Next Actions"');
+  }
+
+  // Anti-fake-data guards
+  if (diag.noLiveFeed) {
+    pass('no #live-feed-widget in DOM (LIVE_FEED=false, correctly absent)');
+  } else {
+    fail('#live-feed-widget present — must be removed when LIVE_FEED=false');
+  }
+
+  if (diag.noLiveFeedText) {
+    pass('body text does not include removed "Live System Feed" section');
+  } else {
+    fail('body text still contains "Live System Feed" — section must be removed');
+  }
+
+  if (diag.noSystemStatus) {
+    pass('body text does not include removed "System Status" section');
+  } else {
+    fail('body text still contains "System Status" — section must be removed');
+  }
+
+  if (diag.noWikiNodes) {
+    pass('body text does not include fake "WIKI NODES" row');
+  } else {
+    fail('body text contains fake "WIKI NODES" row — must be removed');
+  }
+
+  if (diag.noPlaceholderDash) {
+    pass('no .hud-stat-val chips with placeholder "--"/em-dash values');
+  } else {
+    fail('.hud-stat-val chip has placeholder "--"/em-dash value — fake stat chips must be removed');
+  }
+
+  if (rp.exists) {
+    if (diag.hudBoxCount <= 3) {
+      pass(`right panel has ${diag.hudBoxCount} HUD box(es) — within 3-section limit`);
+    } else {
+      fail(`right panel has ${diag.hudBoxCount} HUD boxes — must be ≤ 3 sections`);
+    }
   }
 }
 

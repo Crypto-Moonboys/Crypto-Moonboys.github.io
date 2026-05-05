@@ -1068,9 +1068,9 @@ console.log('\n[17] Right-panel HUD anti-drift');
   // (b) site-shell.js must contain the right-panel element markers
   const SHELL_REQUIRED_STRINGS = [
     'homepage-right-panel',
-    'live-feed-widget',
     'data-csp-panel',
     'data-las-panel',
+    'hud-actions-list',
     'shouldShowRightPanel',
   ];
   let check17bClean = true;
@@ -1151,7 +1151,9 @@ console.log('\n[18] site-shell.js DOM smoke test (static)');
       { needle: "rightPanel.id = 'homepage-right-panel'", label: '#homepage-right-panel element' },
       { needle: 'data-csp-panel',             label: '[data-csp-panel] attribute' },
       { needle: 'data-las-panel',             label: '[data-las-panel] attribute' },
-      { needle: 'id="live-feed-widget"',      label: '#live-feed-widget element' },
+      { needle: 'hud-actions-list',           label: '.hud-actions-list element (Next Actions block)' },
+      { needle: 'hud-player-name',            label: '.hud-player-name element (player name)' },
+      { needle: 'hud-player-avatar',          label: '#hud-player-avatar element (avatar box)' },
     ];
     for (const { needle, label } of REQUIRED_SHELL_ELEMENTS) {
       if (shellSmoke.includes(needle)) {
@@ -1984,6 +1986,99 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
         pass('[33] tg-sync-cta-btn does not use /gkniftyheads-incubator.html (correct)');
       }
     }
+  }
+}
+
+
+// ── 34. Right-panel anti-drift: no fake data ──────────────────────────────────
+// Ensures site-shell.js right panel HTML never re-introduces:
+//   • placeholder "--" values in player stat chips
+//   • the removed "WIKI NODES" filler row
+//   • the removed fake System Status hardcoded rows
+// Also verifies the avatar init block reads photo_url from Telegram identity.
+console.log('\n[34] Right-panel anti-drift: no fake data');
+{
+  const shellSrc34 = read('js/site-shell.js');
+  let check34Clean = true;
+  if (!shellSrc34) {
+    fail('[34] js/site-shell.js not found');
+    check34Clean = false;
+  } else {
+    // Must NOT contain "WIKI NODES" filler
+    if (shellSrc34.includes('WIKI NODES')) {
+      fail('[34] site-shell.js contains forbidden filler "WIKI NODES" — remove it');
+      check34Clean = false;
+    } else {
+      pass('[34] site-shell.js: no "WIKI NODES" filler present');
+    }
+
+    // Must NOT contain hardcoded fake "ORACLE FEED" or "BATTLE CHAMBER" status rows
+    if (shellSrc34.includes('ORACLE FEED') || shellSrc34.includes('BATTLE CHAMBER')) {
+      fail('[34] site-shell.js contains hardcoded fake system status rows (ORACLE FEED / BATTLE CHAMBER)');
+      check34Clean = false;
+    } else {
+      pass('[34] site-shell.js: no hardcoded fake system status rows');
+    }
+
+    // Must NOT contain static "--" or em-dash placeholder in the player HUD stat chips
+    // (hud-stat-val with -- or \u2014 was the old fake chip pattern)
+    if (
+      shellSrc34.includes('hud-stat-val">--') || shellSrc34.includes("hud-stat-val'>--") ||
+      shellSrc34.includes('hud-stat-val">\u2014') || shellSrc34.includes("hud-stat-val'>\u2014") ||
+      shellSrc34.includes('hud-stat-val">\\u2014') || shellSrc34.includes("hud-stat-val'>\\u2014")
+    ) {
+      fail('[34] site-shell.js contains placeholder "--"/em-dash stat chips in player HUD');
+      check34Clean = false;
+    } else {
+      pass('[34] site-shell.js: no "--"/em-dash placeholder stat chips in player HUD');
+    }
+
+    // Must NOT contain the removed Live System Feed section
+    if (shellSrc34.includes('Live System Feed')) {
+      fail('[34] site-shell.js contains removed "Live System Feed" section (LIVE_FEED=false)');
+      check34Clean = false;
+    } else {
+      pass('[34] site-shell.js: no "Live System Feed" section (correctly removed)');
+    }
+
+    // Must NOT contain the removed System Status section with hardcoded rows
+    if (shellSrc34.includes('hud-box--system')) {
+      fail('[34] site-shell.js still has the removed "hud-box--system" section');
+      check34Clean = false;
+    } else {
+      pass('[34] site-shell.js: no "hud-box--system" section (correctly removed)');
+    }
+
+    // Must use Telegram photo_url for the avatar (getTelegramPhotoUrl)
+    if (shellSrc34.includes('getTelegramPhotoUrl')) {
+      pass('[34] site-shell.js: avatar init reads Telegram photo_url via getTelegramPhotoUrl()');
+    } else {
+      fail('[34] site-shell.js: avatar init must call getTelegramPhotoUrl() to use real Telegram avatar');
+      check34Clean = false;
+    }
+
+    // Must contain the Next Actions block
+    if (shellSrc34.includes('Next Actions')) {
+      pass('[34] site-shell.js: "Next Actions" block present');
+    } else {
+      fail('[34] site-shell.js: "Next Actions" block missing from right panel');
+      check34Clean = false;
+    }
+
+    // identity-gate.js must expose getTelegramPhotoUrl
+    const igSrc = read('js/identity-gate.js');
+    if (!igSrc) {
+      fail('[34] js/identity-gate.js not found');
+      check34Clean = false;
+    } else if (igSrc.includes('getTelegramPhotoUrl')) {
+      pass('[34] identity-gate.js: getTelegramPhotoUrl exposed on MOONBOYS_IDENTITY');
+    } else {
+      fail('[34] identity-gate.js: getTelegramPhotoUrl missing from MOONBOYS_IDENTITY public API');
+      check34Clean = false;
+    }
+  }
+  if (check34Clean) {
+    pass('[34] Right-panel anti-drift: all fake-data guards passed');
   }
 }
 

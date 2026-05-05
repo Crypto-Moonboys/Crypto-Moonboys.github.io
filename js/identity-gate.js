@@ -699,6 +699,11 @@
     getTelegramId:        getTelegramId,
     /** Telegram display name or null */
     getTelegramName:      getTelegramName,
+    /** Telegram profile photo URL from auth payload, or null if not available */
+    getTelegramPhotoUrl: function () {
+      var auth = getTelegramAuth();
+      return (auth && auth.photo_url) ? auth.photo_url : null;
+    },
     /** Last verified Telegram auth payload or null */
     getTelegramAuth:      getTelegramAuth,
     /** Last verified signed Telegram auth payload when fresh and ID-matched; otherwise null. */
