@@ -32,7 +32,18 @@ All eight live arcade games must remain present:
 - `games/block-topia-quest-maze`
 
 The arcade manifest (`js/arcade/arcade-manifest.js`) must contain **exactly** these eight game IDs:
-`invaders`, `pacchain`, `asteroids`, `breakout-bullrun`, `snake-run`, `tetris`, `blocktopia`, `crystal`.
+`invaders`, `pacchain`, `asteroids`, `breakout`, `snake`, `tetris`, `blocktopia`, `crystal`.
+
+> **Manifest IDs ≠ folder/route names.** Some folder names differ from their manifest ID:
+>
+> | Manifest ID | Folder / Route |
+> |---|---|
+> | `breakout` | `games/breakout-bullrun/` |
+> | `snake` | `games/snake-run/` |
+>
+> Do **not** document `breakout-bullrun` or `snake-run` as manifest IDs.
+> They are route/directory names only. The manifest ID is the canonical key used
+> for leaderboard submissions, XP accounting, and adapter registration.
 
 ### 3 — Forbidden paths
 The following paths were removed by design and must **not** be re-introduced:
@@ -51,8 +62,8 @@ The following paths were removed by design and must **not** be re-introduced:
 | `js/arcade/games/hexgl-monster-max/` | Dead bootstrap — removed in arcade cleanup |
 | `js/arcade/games/blocktopia-phaser/` | Dead bootstrap — removed in arcade cleanup |
 | `js/arcade/games/blocktopia-social-hub/` | Dead bootstrap — removed in arcade cleanup |
-| `js/arcade/games/breakout/` | Superseded by `breakout-bullrun` |
-| `js/arcade/games/snake/` | Superseded by `snake-run` |
+| `js/arcade/games/breakout/` | Superseded by `breakout-bullrun` (folder) / manifest ID `breakout` |
+| `js/arcade/games/snake/` | Superseded by `snake-run` (folder) / manifest ID `snake` |
 
 ### 4 — README.md content
 `README.md` must contain the headings:
@@ -171,6 +182,27 @@ deleted interaction system:
 
 - `TRON REACT ENGINE`, `tron-audio`, `hoverSound`, `clickSound`, `emitTron`,
   `ensureTronAssets` appearing in JS/CSS comment lines.
+
+---
+
+### 20 — Arcade hub and sidebar parity with manifest
+`games/index.html` (arcade hub) and the arcade sidebar section in `js/site-shell.js`
+must contain a link to **every** game page listed in `ARCADE_MANIFEST`.
+
+Specifically, all eight manifest `page` values must appear as `href` attributes in each:
+
+- `/games/invaders-3008/`
+- `/games/pac-chain/`
+- `/games/asteroid-fork/`
+- `/games/breakout-bullrun/`
+- `/games/snake-run/`
+- `/games/tetris-block-topia/`
+- `/games/block-topia-quest-maze/`
+- `/games/crystal-quest/`
+
+These lists may contain extra links (e.g. Block Topia Multiplayer) — only omissions fail.
+
+This prevents a manifest game from being added/removed without updating the display lists.
 
 ---
 
