@@ -214,13 +214,18 @@ async function main() {
   console.log('\nResponsive layout smoke tests\n');
 
   return new Promise((resolve) => {
-    // Fail cleanly if the server cannot bind (e.g. EADDRINUSE on a fixed port)
-    server.once('error', (err) => {
+    // Fail cleanly if the server cannot bind (e.g. EADDRINUSE on a fixed port).
+    // Remove the error listener once listen succeeds so only one path resolves.
+    const onServerError = (err) => {
       console.error('Server error:', err.message);
       resolve(1);
-    });
+    };
+    server.once('error', onServerError);
 
     server.listen(PORT, async () => {
+      // Bind succeeded — no longer need the error-before-listen handler
+      server.removeListener('error', onServerError);
+
       const actualPort = server.address().port;
       const browser = await chromium.launch();
 

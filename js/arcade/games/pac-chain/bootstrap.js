@@ -294,6 +294,9 @@ function createLegacybootstrapPacChain(root) {
     if (typeof onSkip === 'function') {
       escHandler = (e) => {
         if (e.key === 'Escape' && !overlayEl.classList.contains('hidden')) {
+          // Mark the event handled so lower-priority handlers (e.g. retention
+          // toast Escape) know this modal already consumed the key press.
+          e.preventDefault();
           cleanupEsc();
           hideModal();
           onSkip();
