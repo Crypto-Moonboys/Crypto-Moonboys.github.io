@@ -167,7 +167,8 @@
       var timer = setTimeout(function () { ac.abort(); }, 4000);
       var online = false;
       try {
-        var res = await fetch(apiBase, { method: 'HEAD', signal: ac.signal });
+        // GET /health — the worker only implements GET; HEAD falls through to 404.
+        var res = await fetch(apiBase + '/health', { method: 'GET', signal: ac.signal });
         online = res.status < 500;
       } catch (_) {
         online = false;

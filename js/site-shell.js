@@ -13,13 +13,7 @@
   var main = document.getElementById('content');
   if (!main) return; // safety: bail if no content found
 
-  /* ── 2. Skip-link ────────────────────────────────────────────── */
-  var skipLink = document.createElement('a');
-  skipLink.className = 'skip-link';
-  skipLink.href = '#content';
-  skipLink.textContent = 'Skip to content';
-
-  /* ── 3. Header ───────────────────────────────────────────────── */
+  /* ── 2. Header ───────────────────────────────────────────────── */
   var header = document.createElement('header');
   header.id = 'site-header';
   header.setAttribute('role', 'banner');
@@ -44,12 +38,12 @@
     '</nav>',
   ].join('\n');
 
-  /* ── 4. Sidebar overlay ──────────────────────────────────────── */
+  /* ── 3. Sidebar overlay ──────────────────────────────────────── */
   var overlay = document.createElement('div');
   overlay.id = 'sidebar-overlay';
   overlay.setAttribute('aria-hidden', 'true');
 
-  /* ── 5. Sidebar nav ──────────────────────────────────────────── */
+  /* ── 4. Sidebar nav ──────────────────────────────────────────── */
   var sidebar = document.createElement('nav');
   sidebar.id = 'sidebar';
   sidebar.setAttribute('aria-label', 'Wiki navigation');
@@ -120,7 +114,7 @@
     sidebar.appendChild(arcadeSection);
   }
 
-  /* ── 6. Footer ───────────────────────────────────────────────── */
+  /* ── 5. Footer ───────────────────────────────────────────────── */
   var footer = document.createElement('footer');
   footer.id = 'site-footer';
   footer.setAttribute('role', 'contentinfo');
@@ -153,7 +147,7 @@
     '</div>',
   ].join('\n');
 
-  /* ── 7. Right panel ─────────────────────────────────────────────
+  /* ── 6. Right panel ─────────────────────────────────────────────
    *
    * shouldShowRightPanel(pathname, body)
    *   Canonical, drift-resistant check.  Returns true when either:
@@ -354,13 +348,13 @@
     }());
   }
 
-  /* ── 8. Back-to-top button ───────────────────────────────────── */
+  /* ── 7. Back-to-top button ───────────────────────────────────── */
   var backToTop = document.createElement('button');
   backToTop.id = 'back-to-top';
   backToTop.setAttribute('aria-label', 'Back to top');
   backToTop.textContent = '\u2191';
 
-  /* ── 9. Assemble layout ──────────────────────────────────────── */
+  /* ── 8. Assemble layout ──────────────────────────────────────── */
   var mainWrapper = document.createElement('div');
   mainWrapper.id = 'main-wrapper';
   // Move existing <main> into wrapper
@@ -375,7 +369,7 @@
     layout.appendChild(rightPanel);
   }
 
-  /* ── 10. Build final body ────────────────────────────────────── */
+  /* ── 9. Build final body ────────────────────────────────────── */
   // Remove only known old shell nodes to avoid duplication on re-run.
   // Do NOT remove arbitrary body children — Cloudflare Rocket Loader
   // replaces later <script> tags with placeholder nodes that are not
@@ -397,9 +391,8 @@
   document.body.insertBefore(layout, backToTop);
   document.body.insertBefore(overlay, layout);
   document.body.insertBefore(header, overlay);
-  document.body.insertBefore(skipLink, header);
 
-  /* ── 11. Mark active sidebar link ────────────────────────────── */
+  /* ── 10. Mark active sidebar link ────────────────────────────── */
   var pathname = window.location.pathname;
   // Normalise: treat bare '/' as '/index.html'
   var normPath = (pathname === '/' ? '/index.html' : pathname);
@@ -470,7 +463,7 @@
     }
   }
 
-  /* ── 12. Hamburger / sidebar binding ─────────────────────────────
+  /* ── 11. Hamburger / sidebar binding ─────────────────────────────
    *
    * Binds immediately after injection so the hamburger works before
    * wiki.js (or any other script) attaches its DOMContentLoaded

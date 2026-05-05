@@ -514,8 +514,6 @@ function generateHubPageHtml(meta, byUrl, allHubMetas) {
 </head>
 <body>
 
-<a class="skip-link" href="#content">Skip to content</a>
-
 <header id="site-header" role="banner">
   <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
   <a href="/index.html" class="site-logo" aria-label="The Crypto Moonboys GK Wiki home">
