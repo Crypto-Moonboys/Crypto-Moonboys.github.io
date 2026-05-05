@@ -19,9 +19,10 @@
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
     /*
-      Battle Chamber page-local mobile hardfix.
-      This page was still overflowing because shared shell/page styles can force
-      desktop widths, nowrap headings, and right-panel grid behaviour onto mobile.
+      Battle Chamber page-local styles.
+      Only targets #content and page-content elements.
+      Shell layout (#layout, #main-wrapper, #sidebar, #homepage-right-panel)
+      is governed exclusively by css/wiki.css and css/retro-16bit-theme.css.
     */
 
     html,
@@ -170,25 +171,6 @@
     }
 
     @media (max-width: 900px) {
-      body.page-community #layout,
-      body.page-community.page-has-right-panel #layout {
-        display: flex !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-      }
-
-      body.page-community #main-wrapper {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        flex: 1 1 auto !important;
-      }
-
-      body.page-community #homepage-right-panel {
-        display: none !important;
-      }
-
       body.page-community #content {
         width: 100% !important;
         max-width: 100% !important;

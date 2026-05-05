@@ -41,6 +41,7 @@
  * 34. Right-panel anti-drift: no fake data.
  * 35. No frontend JS fetches the bare Worker root URL (must use /health or a real endpoint).
  * 36. Press Start 2P pixel font must be @imported in css/retro-16bit-theme.css.
+ * 37. Shell pages must not contain page-local CSS targeting shell-owned layout IDs.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -2155,6 +2156,90 @@ console.log('\n[36] Press Start 2P @import in css/retro-16bit-theme.css');
     } else {
       fail('[36] css/retro-16bit-theme.css is missing @import url(...) for Press Start 2P — add it near the top of the file so every shell page gets the pixel font automatically');
     }
+  }
+}
+
+
+// ── 37. Shell pages must not target shell-owned layout IDs in page-local CSS ──
+// Prevents page-level <style> blocks from overriding the shell layout managed by
+// css/wiki.css and css/retro-16bit-theme.css.  Any page-local CSS rule that
+// selects #layout, #main-wrapper, #homepage-right-panel, or #sidebar can break
+// the left sidebar, the right HUD, or the three-column grid on other pages.
+//
+// Strategy: extract all <style> content from every HTML page in SHELL_PAGES,
+// then scan for CSS rule blocks that contain these forbidden IDs as part of a
+// selector (not just in a comment or string value).
+console.log('\n[37] Shell pages must not target #layout / #main-wrapper / #homepage-right-panel / #sidebar in page-local <style>');
+{
+  // Pages to check — the canonical shell pages list
+  const PAGES_37 = [
+    'index.html',
+    'community.html',
+    'games/index.html',
+    'games/leaderboard.html',
+    'dashboard.html',
+    'search.html',
+    'timeline.html',
+    'categories/index.html',
+    'about.html',
+    'how-to-play.html',
+    'gkniftyheads-incubator.html',
+    'graph.html',
+    'sam.html',
+    'hubs.html',
+    'paths.html',
+  ];
+
+  // Forbidden shell-layout IDs — these are owned by wiki.css / retro-16bit-theme.css
+  const FORBIDDEN_IDS = ['#layout', '#main-wrapper', '#homepage-right-panel', '#sidebar'];
+
+  // Regex that matches a CSS selector token containing one of the forbidden IDs.
+  // We look for the forbidden ID as a standalone token (not part of a longer name):
+  //   - preceded by start-of-text, whitespace, comma, or opening brace
+  //   - followed by end-of-text, whitespace, comma, opening brace, colon,
+  //     period, or closing paren
+  // This avoids false positives on things like `#sidebar-overlay` or `#layout > *`.
+  // We use a single composite pattern tested per ID.
+  function buildForbiddenRe(id) {
+    const escaped = id.replace('#', '\\#');
+    // Match the ID at a selector boundary
+    return new RegExp(
+      '(?:^|[,\\s{])' + escaped + '(?:[\\s,{:>~+.[\\])]|$)',
+      'gm'
+    );
+  }
+  const forbiddenRes = FORBIDDEN_IDS.map(id => ({ id, re: buildForbiddenRe(id) }));
+
+  let check37Clean = true;
+
+  for (const pageRel of PAGES_37) {
+    const src = read(pageRel);
+    if (!src) continue; // non-existent optional pages are skipped
+
+    // Extract all content between <style> and </style> tags.
+    // Use a simple non-greedy extraction — multiple <style> blocks are handled
+    // by repeated matching.
+    const styleBlockRe = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
+    let styleMatch;
+    while ((styleMatch = styleBlockRe.exec(src)) !== null) {
+      const styleContent = styleMatch[1];
+
+      for (const { id, re } of forbiddenRes) {
+        re.lastIndex = 0;
+        // Skip occurrences that appear only inside CSS comments
+        // Strip block comments first for analysis
+        const stripped = styleContent.replace(/\/\*[\s\S]*?\*\//g, '');
+        re.lastIndex = 0;
+        if (re.test(stripped)) {
+          fail(`[37] ${pageRel}: page-local <style> targets shell-owned layout selector "${id}" — remove it; shell layout is governed by css/wiki.css and css/retro-16bit-theme.css`);
+          check37Clean = false;
+        }
+      }
+    }
+  }
+
+  if (check37Clean) {
+    pass('[37] No shell page contains page-local CSS targeting shell-owned layout IDs');
   }
 }
 
