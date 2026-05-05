@@ -1917,8 +1917,9 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
     const src = fs.readFileSync(ctaFile, 'utf8');
 
     // 1. BOT_HREF constant must be assigned 'https://t.me/WIKICOMSBOT'.
-    const botHrefMatch    = src.match(/var\s+BOT_HREF\s*=\s*'([^']+)'/);
-    const incubHrefMatch  = src.match(/var\s+INCUBATOR_HREF\s*=\s*'([^']+)'/);
+    //    Accept both single-quoted and double-quoted variable declarations.
+    const botHrefMatch    = src.match(/var\s+BOT_HREF\s*=\s*['"]([^'"]+)['"]/);
+    const incubHrefMatch  = src.match(/var\s+INCUBATOR_HREF\s*=\s*['"]([^'"]+)['"]/);
     const botHrefVal  = botHrefMatch   ? botHrefMatch[1]  : null;
     const incubHrefVal = incubHrefMatch ? incubHrefMatch[1] : null;
 
