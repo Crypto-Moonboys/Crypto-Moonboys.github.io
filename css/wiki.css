@@ -1052,10 +1052,8 @@ a.hero-stat-link:hover {
     display: block;
     pointer-events: auto;
   }
-  body:not(.sidebar-open) #sidebar-overlay:not(.open):not(.active) {
-    display: none !important;
-    pointer-events: none !important;
-  }
+  /* Removed complex negation: the base display:none rule already hides the
+     overlay by default; body.sidebar-open above is the only canonical opener. */
   .hamburger { display: flex; }
   #content { padding: 20px 18px 40px; }
   .infobox { float: none; width: 100%; margin: 0 0 20px 0; }

@@ -295,6 +295,7 @@ async function _wikiInit() {
   const _overlay   = document.getElementById('sidebar-overlay');
 
   function _setSidebarState(expanded) {
+    if (!_sidebar) return; // bail gracefully if no sidebar on this page
     document.body.classList.toggle('sidebar-open', expanded);
     if (_hamburger) _hamburger.setAttribute('aria-expanded', String(expanded));
   }
