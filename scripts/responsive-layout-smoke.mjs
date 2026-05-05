@@ -12,12 +12,12 @@
 
 import { chromium } from 'playwright';
 import { createServer } from 'http';
-import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'fs';
-import { join, extname, dirname } from 'path';
+import { readFileSync, existsSync, mkdirSync } from 'fs';
+import { join, extname, dirname, resolve as resolvePath, normalize } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT      = join(__dirname, '..');
+const ROOT      = resolvePath(join(__dirname, '..'));
 const PORT      = 8912;
 
 const MIME = {
@@ -37,16 +37,16 @@ const MIME = {
 // ── Local static server ──────────────────────────────────────────────────────
 
 const server = createServer((req, res) => {
-  // Normalise and validate path to prevent directory traversal.
-  // This server is localhost-only (test tool), but CodeQL requires sanitisation.
-  const rawPath = req.url.split('?')[0];
-  const safePath = rawPath.replace(/\\/g, '/').replace(/\/\.\.?(\/|$)/g, '/');
-  let p = safePath || '/';
-  if (p === '/') p = '/index.html';
-  else if (!p.endsWith('/') && !extname(p)) p += '/index.html';
-  else if (p.endsWith('/')) p += 'index.html';
-  const full = join(ROOT, p);
-  // Guard: resolved path must remain inside ROOT
+  // Normalise path: strip query string, resolve '..' components, strip leading slash.
+  const rawPath = (req.url || '/').split('?')[0];
+  // normalize() collapses '..' and '.' sequences
+  const normalised = normalize(rawPath).replace(/\\/g, '/');
+  let rel = normalised.startsWith('/') ? normalised.slice(1) : normalised;
+  if (!rel || rel === '.') rel = 'index.html';
+  else if (!extname(rel)) rel = rel.replace(/\/?$/, '/index.html');
+
+  // Resolve to an absolute path and enforce it is within ROOT
+  const full = resolvePath(ROOT, rel);
   if (!full.startsWith(ROOT + '/') && full !== ROOT) {
     res.writeHead(403);
     res.end('Forbidden');
@@ -192,9 +192,8 @@ async function runPage(browser, path, vw, vh, label, screenshotDir) {
   assert(m.floatingWithoutCloseCount === 0,
     `${label}: all visible floating cards have a close button (found ${m.floatingWithoutCloseCount} without)`);
 
-  // ── Take screenshot on failure ────────────────────────────────────────────
-  const pageFailed = failures.length > 0;
-  if (screenshotDir) {
+  // ── Take screenshot when failures exist (best-effort, requires SCREENSHOT_DIR) ──
+  if (screenshotDir && failures.length > 0) {
     const safeName = label.replace(/[^a-z0-9]/gi, '_') + '_' + vw + 'x' + vh + '.png';
     try {
       mkdirSync(screenshotDir, { recursive: true });
