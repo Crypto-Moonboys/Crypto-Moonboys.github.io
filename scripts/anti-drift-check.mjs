@@ -1813,22 +1813,40 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
   } else {
     const src = fs.readFileSync(wikiCssPath, 'utf8');
 
-    // Look for a media query that sets category-grid to 1fr (single column)
-    // at a width ≤ 640px.  Accept any of:
-    //   @media (max-width: Npx) { ... .category-grid { grid-template-columns: 1fr }
-    // where N ≤ 640.
-    const mobileBreakpointPattern =
-      /@media\s*\(\s*max-width\s*:\s*(\d+)px\s*\)[^{]*\{[^}]*\.category-grid[^}]*grid-template-columns\s*:\s*1fr\s*;/s;
-    const mobileBreakpointMatch = src.match(mobileBreakpointPattern);
-    if (mobileBreakpointMatch) {
-      const bpWidth = parseInt(mobileBreakpointMatch[1], 10);
-      if (bpWidth <= 640) {
-        pass(`[31] css/wiki.css has .category-grid single-column breakpoint at ≤${bpWidth}px`);
-      } else {
-        fail(`[31] css/wiki.css category-grid single-column breakpoint is ${bpWidth}px — must be ≤640px`);
+    // Robustly extract all @media (max-width: Npx) blocks by matching braces,
+    // then check if any qualifying block contains .category-grid with 1fr.
+    // This avoids single-line regex patterns that break on nested braces.
+    const mediaOpenerRe = /@media\s*\(\s*max-width\s*:\s*(\d+)px\s*\)\s*\{/g;
+    let match;
+    let foundGridBreakpoint = false;
+    let foundGridBreakpointWidth = 0;
+
+    while ((match = mediaOpenerRe.exec(src)) !== null) {
+      const bpWidth = parseInt(match[1], 10);
+      if (bpWidth > 640) continue; // only care about narrow breakpoints
+
+      // Walk forward to find the matching closing brace for this @media block
+      let depth = 1;
+      let i = match.index + match[0].length;
+      while (i < src.length && depth > 0) {
+        if (src[i] === '{') depth++;
+        else if (src[i] === '}') depth--;
+        i++;
       }
+      const blockContent = src.slice(match.index, i);
+
+      // Check if this block sets .category-grid to single-column
+      if (/\.category-grid[^{]*\{[^}]*grid-template-columns\s*:\s*1fr\s*;/s.test(blockContent)) {
+        foundGridBreakpoint = true;
+        foundGridBreakpointWidth = bpWidth;
+        break;
+      }
+    }
+
+    if (foundGridBreakpoint) {
+      pass(`[31] css/wiki.css has .category-grid single-column breakpoint at ≤${foundGridBreakpointWidth}px`);
     } else {
-      fail('[31] css/wiki.css has no .category-grid { grid-template-columns: 1fr } mobile breakpoint');
+      fail('[31] css/wiki.css has no .category-grid { grid-template-columns: 1fr } mobile breakpoint ≤640px');
     }
 
     // Ensure there is a mobile rule that makes category-card stacked (flex-direction: column)

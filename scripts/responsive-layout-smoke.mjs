@@ -552,19 +552,20 @@ async function runSidebarIncubatorCheck(browser, port) {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return { exists: false, visible: false, text: '' };
     const link = sidebar.querySelector('a[href="/gkniftyheads-incubator.html"]');
-    if (!link) return { exists: false, visible: false, text: '' };
+    if (!link) return { exists: false, visible: false, text: '', left: -1 };
     const bb = link.getBoundingClientRect();
     return {
       exists:  true,
       visible: bb.width > 0 && bb.height > 0 && bb.left >= 0 && bb.left < window.innerWidth,
       text:    link.textContent.trim(),
+      left:    Math.round(bb.left),
     };
   });
 
   assert(incubatorLink.exists,
     `${label}: sidebar has a[href="/gkniftyheads-incubator.html"]`);
   assert(incubatorLink.visible,
-    `${label}: sidebar incubator link is visible (left=${incubatorLink.visible})`);
+    `${label}: sidebar incubator link is visible (left=${incubatorLink.left}px)`);
 
   await ctx.close();
 }
