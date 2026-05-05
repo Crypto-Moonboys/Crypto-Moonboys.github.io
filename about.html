@@ -27,9 +27,6 @@
       0% { transform: translateY(-100%); }
       100% { transform: translateY(100%); }
     }
-    .neon-text {
-      text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc;
-    }
     .live-dot {
       display: inline-block;
       width: 10px;
@@ -43,151 +40,127 @@
 </head>
 <body class="page-about page-has-right-panel">
 
-  <!-- Shell will be injected here by site-shell.js -->
-  <!-- But for this full page, we include the structure -->
+<main id="content" role="main">
+  <div class="battle-page">
 
-  <header id="site-header" role="banner">
-    <!-- Header content injected by site-shell.js -->
-  </header>
-
-  <div id="sidebar-overlay" aria-hidden="true"></div>
-
-  <div id="layout">
-    
-    <!-- Sidebar injected by site-shell.js -->
-    <nav id="sidebar" aria-label="Wiki navigation">
-      <!-- Sidebar content -->
-    </nav>
-
-    <div id="main-wrapper">
-      
-      <main id="content" role="main">
-        <div class="battle-page">
-
-          <!-- HERO SECTION -->
-          <section class="page-hero wow-hero">
-            <div style="position: relative; z-index: 2;">
-              <h1 style="font-size: 3.2rem; line-height: 1.1;">
-                THIS ISN’T<br>
-                JUST ANOTHER<br>
-                WEB3 PROJECT.
-              </h1>
-              <p class="lead" style="font-size: 1.35rem; max-width: 620px;">
-                This is 40 years of street rebellion, now weaponized on-chain.
-              </p>
-              <div style="margin-top: 30px;">
-                <a href="/index.html" class="btn btn-primary" style="font-size: 1.1rem; padding: 16px 32px;">ENTER THE SYSTEM</a>
-              </div>
-              <p style="margin-top: 20px; opacity: 0.7; font-size: 0.95rem;">
-                <span class="live-dot"></span> <strong>87,429</strong> players active right now
-              </p>
-            </div>
-          </section>
-
-          <!-- WTF SECTION -->
-          <section class="section">
-            <h2 style="color: #00ffcc;">WTF IS THIS REALLY?</h2>
-            <p style="font-size: 1.15rem; max-width: 720px;">
-              Crypto Moonboys is a <strong>living Web3 wiki</strong> born from 40 years of London graffiti culture. 
-              It’s not a game. It’s not an NFT drop. It’s not a community token.<br><br>
-              It’s a <strong>reactive universe</strong> where the pages explain the world, the arcade lets you enter it, 
-              and your actions actually matter.
-            </p>
-            <p class="quote" style="font-size: 1.3rem; margin-top: 30px;">
-              “Most projects sell you a dream.<br>
-              We’re building the world you get to live in.”
-            </p>
-          </section>
-
-          <!-- LIVE RIGHT NOW -->
-          <section class="section">
-            <h2 style="color: #00ffcc;">🔥 WHAT’S LIVE RIGHT NOW</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-top: 20px;">
-              <div style="background: rgba(0,255,200,0.06); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,255,200,0.2);">
-                <strong>Block Topia Live City</strong><br>
-                <small style="color:#00ff9d;">2-Player Multiplayer • Gated</small><br>
-                <span style="font-size:0.9rem;">NPCs • Combat • Extraction • Upgrades</span>
-              </div>
-              <div style="background: rgba(0,255,200,0.06); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,255,200,0.2);">
-                <strong>8 Active Arcade Games</strong><br>
-                <small style="color:#00ff9d;">Invaders 3008 Season Live</small><br>
-                <span style="font-size:0.9rem;">Real-time leaderboards + Arcade XP</span>
-              </div>
-              <div style="background: rgba(0,255,200,0.06); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,255,200,0.2);">
-                <strong>Battle Chamber</strong><br>
-                <small style="color:#00ff9d;">Public Proof Layer</small><br>
-                <span style="font-size:0.9rem;">See who’s actually moving</span>
-              </div>
-            </div>
-          </section>
-
-          <!-- WHAT’S COMING HOT -->
-          <section class="section">
-            <h2 style="color: #ff00aa;">🚀 WHAT’S COMING NEXT (THE HYPE)</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-top: 15px;">
-              <div>
-                <strong>City Block Topia / Neon Sprawl</strong><br>
-                <small style="color:#ff00aa;">Q3 2026</small><br>
-                <span style="font-size:0.9rem;">Deeper living-wiki territory game with tagging, zones, Rebel Ink &amp; rebellion mechanics.</span>
-              </div>
-              <div>
-                <strong>On-Chain HODL Wars</strong><br>
-                <small style="color:#ff00aa;">Season 1 – Summer 2026</small><br>
-                <span style="font-size:0.9rem;">Faction-based seasonal warfare with real consequences.</span>
-              </div>
-              <div>
-                <strong>Phygital Street Drops</strong><br>
-                <small style="color:#ff00aa;">Coming Soon</small><br>
-                <span style="font-size:0.9rem;">Real-world graffiti events that unlock digital assets.</span>
-              </div>
-              <div>
-                <strong>Creator IP Layer</strong><br>
-                <small style="color:#ff00aa;">Late 2026</small><br>
-                <span style="font-size:0.9rem;">Own characters, build stories, and earn from the universe.</span>
-              </div>
-            </div>
-          </section>
-
-          <section class="section">
-            <h2>The Hard Truth</h2>
-            <p>We’re not here to make you rich quick.<br>
-            We’re here to build something that outlives us all.</p>
-            <p style="margin-top: 15px;">40 years of graffiti culture just got upgraded.<br>
-            This is <strong>Legacy Over Hype</strong>.</p>
-          </section>
-
-          <section class="section cta-final" style="text-align: center; padding: 50px 20px;">
-            <h2 style="font-size: 2rem; margin-bottom: 15px;">Ready to wake up?</h2>
-            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-              <a href="/index.html" class="btn btn-primary" style="font-size: 1.1rem; padding: 18px 36px;">ENTER THE WIKI</a>
-              <a href="/gkniftyheads-incubator.html" class="btn btn-secondary" style="font-size: 1.1rem; padding: 18px 36px;">LINK TELEGRAM</a>
-            </div>
-            <p style="margin-top: 25px; font-size: 0.95rem; opacity: 0.7;">
-              No gatekeepers. No false promises.<br>
-              Just pure street power — now on-chain.
-            </p>
-          </section>
-
+    <!-- HERO SECTION -->
+    <section class="page-hero wow-hero">
+      <div style="position: relative; z-index: 2;">
+        <h1 style="font-size: 3.2rem; line-height: 1.1;">
+          THIS ISN’T<br>
+          JUST ANOTHER<br>
+          WEB3 PROJECT.
+        </h1>
+        <p class="lead" style="font-size: 1.35rem; max-width: 620px;">
+          This is 40 years of street rebellion, now weaponized on-chain.
+        </p>
+        <div style="margin-top: 30px;">
+          <a href="/index.html" class="btn btn-primary" style="font-size: 1.1rem; padding: 16px 32px;">ENTER THE SYSTEM</a>
         </div>
-      </main>
+        <p style="margin-top: 20px; opacity: 0.7; font-size: 0.95rem;">
+          <span class="live-dot"></span> <strong>87,429</strong> players active right now
+        </p>
+      </div>
+    </section>
 
-      <!-- Right Panel -->
-      <aside id="homepage-right-panel" aria-label="Player status and actions">
-        <!-- Right panel content injected by site-shell.js -->
-      </aside>
+    <!-- WTF SECTION -->
+    <section class="section">
+      <h2 style="color: #00ffcc;">WTF IS THIS REALLY?</h2>
+      <p style="font-size: 1.15rem; max-width: 720px;">
+        Crypto Moonboys is a <strong>living Web3 wiki</strong> born from 40 years of London graffiti culture. 
+        It’s not a game. It’s not an NFT drop. It’s not a community token.<br><br>
+        It’s a <strong>reactive universe</strong> where the pages explain the world, the arcade lets you enter it, 
+        and your actions actually matter.
+      </p>
+      <p class="quote" style="font-size: 1.3rem; margin-top: 30px;">
+        “Most projects sell you a dream.<br>
+        We’re building the world you get to live in.”
+      </p>
+    </section>
 
-    </div> <!-- #main-wrapper -->
+    <!-- LIVE RIGHT NOW -->
+    <section class="section">
+      <h2 style="color: #00ffcc;">🔥 WHAT’S LIVE RIGHT NOW</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-top: 20px;">
+        <div style="background: rgba(0,255,200,0.06); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,255,200,0.2);">
+          <strong>Block Topia Live City</strong><br>
+          <small style="color:#00ff9d;">2-Player Multiplayer • Gated</small><br>
+          <span style="font-size:0.9rem;">NPCs • Combat • Extraction • Upgrades</span>
+        </div>
+        <div style="background: rgba(0,255,200,0.06); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,255,200,0.2);">
+          <strong>8 Active Arcade Games</strong><br>
+          <small style="color:#00ff9d;">Invaders 3008 Season Live</small><br>
+          <span style="font-size:0.9rem;">Real-time leaderboards + Arcade XP</span>
+        </div>
+        <div style="background: rgba(0,255,200,0.06); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,255,200,0.2);">
+          <strong>Battle Chamber</strong><br>
+          <small style="color:#00ff9d;">Public Proof Layer</small><br>
+          <span style="font-size:0.9rem;">See who’s actually moving</span>
+        </div>
+      </div>
+    </section>
 
-  </div> <!-- #layout -->
+    <!-- WHAT’S COMING HOT -->
+    <section class="section">
+      <h2 style="color: #ff00aa;">🚀 WHAT’S COMING NEXT (THE HYPE)</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-top: 15px;">
+        <div>
+          <strong>City Block Topia / Neon Sprawl</strong><br>
+          <small style="color:#ff00aa;">Q3 2026</small><br>
+          <span style="font-size:0.9rem;">Deeper living-wiki territory game with tagging, zones, Rebel Ink & rebellion mechanics.</span>
+        </div>
+        <div>
+          <strong>On-Chain HODL Wars</strong><br>
+          <small style="color:#ff00aa;">Season 1 – Summer 2026</small><br>
+          <span style="font-size:0.9rem;">Faction-based seasonal warfare with real consequences.</span>
+        </div>
+        <div>
+          <strong>Phygital Street Drops</strong><br>
+          <small style="color:#ff00aa;">Coming Soon</small><br>
+          <span style="font-size:0.9rem;">Real-world graffiti events that unlock digital assets.</span>
+        </div>
+        <div>
+          <strong>Creator IP Layer</strong><br>
+          <small style="color:#ff00aa;">Late 2026</small><br>
+          <span style="font-size:0.9rem;">Own characters, build stories, and earn from the universe.</span>
+        </div>
+      </div>
+    </section>
 
-  <!-- Footer -->
-  <footer id="site-footer" role="contentinfo">
-    <!-- Footer content injected by site-shell.js -->
-  </footer>
+    <section class="section">
+      <h2>The Hard Truth</h2>
+      <p>We’re not here to make you rich quick.<br>
+      We’re here to build something that outlives us all.</p>
+      <p style="margin-top: 15px;">40 years of graffiti culture just got upgraded.<br>
+      This is <strong>Legacy Over Hype</strong>.</p>
+    </section>
 
-  <!-- Scripts -->
-  <script data-cfasync="false" src="/js/site-shell.js"></script>
-  <script data-cfasync="false" src="/js/wiki.js"></script>
+    <section class="section cta-final" style="text-align: center; padding: 50px 20px;">
+      <h2 style="font-size: 2rem; margin-bottom: 15px;">Ready to wake up?</h2>
+      <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+        <a href="/index.html" class="btn btn-primary" style="font-size: 1.1rem; padding: 18px 36px;">ENTER THE WIKI</a>
+        <a href="/gkniftyheads-incubator.html" class="btn btn-secondary" style="font-size: 1.1rem; padding: 18px 36px;">LINK TELEGRAM</a>
+      </div>
+      <p style="margin-top: 25px; font-size: 0.95rem; opacity: 0.7;">
+        No gatekeepers. No false promises.<br>
+        Just pure street power — now on-chain.
+      </p>
+    </section>
+
+  </div>
+</main>
+
+<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
+<script data-cfasync="false" src="/js/api-config.js"></script>
+<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+<script data-cfasync="false" src="/js/identity-gate.js"></script>
+<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+<script data-cfasync="false" src="/js/site-shell.js"></script>
+<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+<script data-cfasync="false" src="/js/faction-alignment.js"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script>
 
 </body>
 </html>
