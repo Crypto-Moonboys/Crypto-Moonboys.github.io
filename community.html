@@ -18,55 +18,55 @@
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
-    /* Final aggressive mobile fix for community page */
+    /* EXTREME mobile fix - last attempt */
 
     body.page-community #content {
-      overflow-x: hidden;
+      overflow-x: hidden !important;
     }
 
     .battle-page {
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-      overflow-x: clip;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      overflow-x: hidden !important;
       box-sizing: border-box;
-      padding-left: 10px;
-      padding-right: 10px;
+      padding-left: 8px !important;
+      padding-right: 8px !important;
     }
 
     .battle-page .page-hero,
     .battle-page .section {
       width: 100% !important;
-      max-width: calc(100vw - 20px) !important;
+      max-width: 100% !important;
       min-width: 0 !important;
       box-sizing: border-box;
-      margin-left: 0;
-      margin-right: 0;
+      padding: 12px !important;
+      margin: 0 !important;
     }
 
     .battle-page .page-hero {
-      padding: 18px 12px;
+      padding: 16px 10px !important;
     }
 
     .battle-page .section {
-      padding: 14px;
+      padding: 12px !important;
     }
 
     .battle-page h1 {
-      font-size: clamp(1.05rem, 7vw, 1.35rem) !important;
+      font-size: 1.25rem !important;
     }
 
     .battle-page h2,
     .battle-page .community-card h3 {
-      font-size: clamp(0.9rem, 5.5vw, 1.15rem) !important;
+      font-size: 1.05rem !important;
     }
 
     .battle-page p,
     .battle-page li {
-      font-size: clamp(0.85rem, 4.5vw, 0.95rem) !important;
+      font-size: 0.9rem !important;
     }
 
-    /* Keep desktop styles */
+    /* Keep desktop */
     .battle-page .page-hero,
     .battle-page .section {
       border: 1px solid rgba(86,220,255,.26);
@@ -166,15 +166,15 @@
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
 <!-- 3. Identity -->
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
+<!-- 4. State */
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Shell + shared components -->
+<!-- 5. Shell + shared components */
 <script data-cfasync="false" src="/js/site-shell.js"></script>
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
-<!-- 6. Page-specific scripts -->
+<!-- 6. Page-specific scripts */
 
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
