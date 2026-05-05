@@ -18,7 +18,9 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT      = resolvePath(join(__dirname, '..'));
-const PORT      = 8912;
+// Port 0 lets the OS pick a free port automatically.
+// Set RESPONSIVE_LAYOUT_SMOKE_PORT to force a specific port (e.g. in CI).
+const PORT      = Number(process.env.RESPONSIVE_LAYOUT_SMOKE_PORT) || 0;
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -123,18 +125,18 @@ function assert(cond, label) {
   }
 }
 
-async function runPage(browser, path, vw, vh, label, screenshotDir) {
+async function runPage(browser, path, vw, vh, label, screenshotDir, port) {
   const ctx  = await browser.newContext({ viewport: { width: vw, height: vh } });
   const page = await ctx.newPage();
 
   // Block external requests to speed up tests and avoid flakiness
   await page.route('**', (route) => {
     const url = route.request().url();
-    if (url.startsWith(`http://localhost:${PORT}`)) route.continue();
+    if (url.startsWith(`http://localhost:${port}`)) route.continue();
     else route.fulfill({ status: 200, body: '' });
   });
 
-  await page.goto(`http://localhost:${PORT}${path}`, { timeout: 20000, waitUntil: 'networkidle' });
+  await page.goto(`http://localhost:${port}${path}`, { timeout: 20000, waitUntil: 'networkidle' });
   await page.waitForTimeout(300);
 
   const m = await getMetrics(page);
@@ -212,7 +214,14 @@ async function main() {
   console.log('\nResponsive layout smoke tests\n');
 
   return new Promise((resolve) => {
+    // Fail cleanly if the server cannot bind (e.g. EADDRINUSE on a fixed port)
+    server.once('error', (err) => {
+      console.error('Server error:', err.message);
+      resolve(1);
+    });
+
     server.listen(PORT, async () => {
+      const actualPort = server.address().port;
       const browser = await chromium.launch();
 
       // Desktop 1440×900
@@ -223,18 +232,18 @@ async function main() {
         '/games/pac-chain/',
       ];
       for (const p of desktopPages) {
-        await runPage(browser, p, 1440, 900, 'desktop', screenshotDir);
+        await runPage(browser, p, 1440, 900, 'desktop', screenshotDir, actualPort);
       }
 
       // Also check at 1920×1080 to validate no empty right gutter
       for (const p of ['/sam.html', '/graph.html']) {
-        await runPage(browser, p, 1920, 1080, 'desktop-wide', screenshotDir);
+        await runPage(browser, p, 1920, 1080, 'desktop-wide', screenshotDir, actualPort);
       }
 
       // Mobile 390×844
       const mobilePages = ['/', '/games/pac-chain/'];
       for (const p of mobilePages) {
-        await runPage(browser, p, 390, 844, 'mobile', screenshotDir);
+        await runPage(browser, p, 390, 844, 'mobile', screenshotDir, actualPort);
       }
 
       await browser.close();

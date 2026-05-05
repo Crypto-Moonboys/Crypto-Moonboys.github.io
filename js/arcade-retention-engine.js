@@ -421,11 +421,13 @@ function ensureUi() {
   banner = root.querySelector('#arcade-retention-banner');
   missionChip = root.querySelector('#arcade-retention-mission-chip');
 
-  // Escape key closes the topmost visible dismissible toast
+  // Escape key closes the topmost visible dismissible toast.
+  // Does NOT call stopPropagation so game/modal Escape handlers remain active.
+  // Skips if e.defaultPrevented so a higher-priority handler already handled it.
   document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape' || !toastRoot) return;
+    if (e.key !== 'Escape' || e.defaultPrevented || !toastRoot) return;
     const last = toastRoot.lastElementChild;
-    if (last) { e.stopPropagation(); last.remove(); }
+    if (last) last.remove();
   }, { capture: false });
 }
 
