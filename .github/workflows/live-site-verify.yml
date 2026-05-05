@@ -1,0 +1,36 @@
+name: Live Site Verify
+
+# Verifies that the live deployed site at cryptomoonboys.com is serving the
+# expected shell / right-HUD system.
+#
+# Run MANUALLY after a GitHub Pages deployment has propagated through Cloudflare.
+# Not triggered on PR or push — it depends on the public live domain.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-site-verify:
+    name: Live site verification — cryptomoonboys.com
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run live site verification
+        run: npm run test:live-site
