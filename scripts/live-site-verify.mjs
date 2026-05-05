@@ -37,7 +37,15 @@
  *   ✓ #homepage-right-panel is visible (display≠none, visibility≠hidden, bbox>0)
  *   ✓ no console error containing banned substrings (ROCKET LOADER, Placeholder
  *     for script, was detached from document, Script will not be executed)
- *   ✓ no failed request for critical JS files
+ *   ✓ no network failure for critical JS files (requestfailed event)
+ *   ✓ no HTTP 4xx/5xx for critical JS files
+ *   ✓ all critical JS files were actually requested (not silently absent)
+ *
+ * Critical JS request outcome matrix (per page):
+ *   requested + HTTP < 400  → pass
+ *   requested + HTTP ≥ 400  → fail
+ *   requestfailed event      → fail (includes reason, e.g. net::ERR_*)
+ *   not requested at all     → fail (stale HTML / broken boot block / Rocket Loader)
  *
  * JS source assertions (fetched directly, not via browser):
  *   https://cryptomoonboys.com/js/site-shell.js must contain:
@@ -124,9 +132,10 @@ async function testPage(page, pathname) {
   const url = `${BASE}${pathname}`;
   process.stdout.write(`\n── ${pathname} ──────────────────────────────────────────\n`);
 
-  const consoleErrors  = [];
-  const failedRequests = [];
-  const criticalStatus = {};
+  const consoleErrors    = [];
+  const failedRequests   = [];
+  const criticalStatus   = {};  // critPath → HTTP status (response received)
+  const criticalNetFailed = {}; // critPath → failure reason (no HTTP response)
 
   page.on('console', msg => {
     if (msg.type() === 'error') consoleErrors.push(msg.text());
@@ -141,6 +150,18 @@ async function testPage(page, pathname) {
     }
     if (!resp.ok() && resp.request().resourceType() === 'script') {
       failedRequests.push(`HTTP ${resp.status()} — ${respUrl}`);
+    }
+  });
+
+  // Capture network-level failures (no HTTP response at all: net::ERR_*, DNS
+  // failure, connection reset, Cloudflare block, request cancelled, etc.).
+  page.on('requestfailed', request => {
+    const reqUrl = request.url();
+    for (const critPath of CRITICAL_JS_PATHS) {
+      if (reqUrl.includes(critPath)) {
+        const failure = request.failure();
+        criticalNetFailed[critPath] = failure ? failure.errorText : 'unknown network error';
+      }
     }
   });
 
@@ -203,6 +224,24 @@ async function testPage(page, pathname) {
     failedRequests.forEach(r => info(`failed request: ${r}`));
   } else {
     info('failed script requests: none');
+  }
+
+  // ── Critical script diagnostics ───────────────────────────────────────
+  const requestedCritical = CRITICAL_JS_PATHS.filter(
+    p => (p in criticalStatus) || (p in criticalNetFailed),
+  );
+  const missingCritical = CRITICAL_JS_PATHS.filter(
+    p => !(p in criticalStatus) && !(p in criticalNetFailed),
+  );
+  info(`critical scripts requested (${requestedCritical.length}/${CRITICAL_JS_PATHS.length}): ${requestedCritical.length ? requestedCritical.join(', ') : 'none'}`);
+  if (missingCritical.length) {
+    info(`critical scripts NOT requested: ${missingCritical.join(', ')}`);
+  }
+  for (const p of Object.keys(criticalNetFailed)) {
+    info(`critical script network failure: ${p} — ${criticalNetFailed[p]}`);
+  }
+  for (const p of CRITICAL_JS_PATHS.filter(cp => (cp in criticalStatus) && criticalStatus[cp] >= 400)) {
+    info(`critical script HTTP failure: ${p} — HTTP ${criticalStatus[p]}`);
   }
 
   // ── Structural assertions ─────────────────────────────────────────────
@@ -292,8 +331,12 @@ async function testPage(page, pathname) {
   }
 
   // ── Critical JS file assertions ───────────────────────────────────────
+  // Matrix: requested+OK=pass, requested+4xx/5xx=fail, net-failed=fail,
+  //         not requested at all=fail (stale HTML / broken boot block).
   for (const critPath of CRITICAL_JS_PATHS) {
-    if (critPath in criticalStatus) {
+    if (critPath in criticalNetFailed) {
+      fail(`${critPath} network failure: ${criticalNetFailed[critPath]}`);
+    } else if (critPath in criticalStatus) {
       const s = criticalStatus[critPath];
       if (s < 400) {
         pass(`${critPath} loaded (HTTP ${s})`);
@@ -301,8 +344,7 @@ async function testPage(page, pathname) {
         fail(`${critPath} failed (HTTP ${s})`);
       }
     } else {
-      // Not requested on this page — not a failure, just skip.
-      info(`${critPath} not requested on this page`);
+      fail(`${critPath} was not requested — stale HTML, broken boot block, or Rocket Loader interference`);
     }
   }
 }
