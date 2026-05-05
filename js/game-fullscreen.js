@@ -392,7 +392,7 @@
     if (!hud || document.getElementById('projectedXpValue')) return;
     var stat = el('div', 'stat stat--projected-xp');
     stat.innerHTML = '' +
-      '<div class="label">Projected XP</div>' +
+      '<div class="label">Projected Arcade XP</div>' +
       '<div class="value" id="projectedXpValue">0</div>' +
       '<div class="subtle">Accepted score required</div>';
     hud.appendChild(stat);
@@ -405,13 +405,13 @@
     var note = el('div', 'arcade-sync-hint');
     note.id = 'arcade-sync-hint';
     note.innerHTML = '' +
-      '<strong>Arcade Sync:</strong> Play free without Telegram. Unsynced progress stays in this browser only; clearing browser data may reset local arcade progress. Link Telegram to store Block Topia XP and progression server-side.';
+      '<strong>Arcade Sync:</strong> Play free without Telegram. Unsynced progress stays in this browser only; clearing browser data may reset local arcade progress. Link Telegram to store Arcade XP and Block Topia progression server-side.';
     card.appendChild(note);
     var identity = el('div', 'arcade-sync-identity', 'Telegram not linked \u2014 run /gklink');
     identity.id = 'arcade-sync-identity';
     card.appendChild(identity);
     inlineSyncIdentity = identity;
-    var status = el('div', 'arcade-sync-status sync-error', 'Unsynced play stays local to this browser. Run /gklink in Telegram to store XP and Block Topia progression server-side.');
+    var status = el('div', 'arcade-sync-status sync-error', 'Unsynced play stays local to this browser. Run /gklink in Telegram to store Arcade XP and Block Topia progression server-side.');
     status.id = 'arcade-sync-status';
     card.appendChild(status);
     var actions = el('div', 'arcade-sync-actions');
@@ -712,7 +712,7 @@
     cachedSyncIdentity = el('div', 'panel-note panel-note--identity', 'Telegram not linked \u2014 run /gklink');
     cachedSyncIdentity.id = 'overlay-sync-identity';
     syncCard.appendChild(cachedSyncIdentity);
-    cachedSyncStatus = el('div', 'panel-note panel-note--status sync-error', 'Unsynced play stays local to this browser. Run /gklink in Telegram to store XP and Block Topia progression server-side.');
+    cachedSyncStatus = el('div', 'panel-note panel-note--status sync-error', 'Unsynced play stays local to this browser. Run /gklink in Telegram to store Arcade XP and Block Topia progression server-side.');
     cachedSyncStatus.id = 'overlay-sync-status';
     syncCard.appendChild(cachedSyncStatus);
     cachedSyncActions = el('div', 'panel-note panel-note--actions');
@@ -801,19 +801,19 @@
         return;
       case 'xp_awarded':
         setSyncVisualState(true);
-        setSyncStatusText('Accepted score converted — XP awarded: ' + (d.awardedXp || 0) + (Number.isFinite(d.totalXp) ? (' · Total XP: ' + d.totalXp) : ''));
+        setSyncStatusText('Accepted score converted — Arcade XP awarded: ' + (d.awardedXp || 0) + (Number.isFinite(d.totalXp) ? (' · Total Arcade XP: ' + d.totalXp) : ''));
         setActionHtml('');
         if (Number(d.awardedXp) > 0 && cachedLiveProjectedXp) {
           cachedLiveProjectedXp.classList.add('xp-gain');
           animateNumericNode(cachedLiveProjectedXp, Number(d.awardedXp || 0), 900);
-          pushMicroNotification('XP gained +' + Number(d.awardedXp || 0), 'success');
+          pushMicroNotification('Arcade XP gained +' + Number(d.awardedXp || 0), 'success');
           setTimeout(function () { cachedLiveProjectedXp && cachedLiveProjectedXp.classList.remove('xp-gain'); }, 1100);
         }
         return;
       case 'accepted_no_xp':
       case 'rejected_no_xp':
         setSyncVisualState(true);
-        setSyncStatusText('Accepted score recorded, but no XP was awarded.');
+        setSyncStatusText('Accepted score recorded, but no Arcade XP was awarded.');
         setActionHtml('');
         return;
       case 'auth_expired':
@@ -837,7 +837,7 @@
       case 'local_only':
       default:
         setSyncVisualState(false);
-        setSyncStatusText('Unsynced play stays local to this browser. Run /gklink in Telegram to store XP and Block Topia progression server-side.');
+        setSyncStatusText('Unsynced play stays local to this browser. Run /gklink in Telegram to store Arcade XP and Block Topia progression server-side.');
         setActionHtml('<a class="sync-action-link sync-action-link--danger" href="/gkniftyheads-incubator.html">Run /gklink</a>');
     }
   }
@@ -874,7 +874,7 @@
       });
       _bus.on('xp:update', function (d) {
         if (Number(d.amount) > 0) {
-          pushMicroNotification('XP gained +' + Number(d.amount), 'success');
+          pushMicroNotification('Arcade XP gained +' + Number(d.amount), 'success');
           pulseStateClass('xp-gain', 1050);
         }
       });

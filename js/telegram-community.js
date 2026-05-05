@@ -297,7 +297,7 @@
             }
           }
           if (banner) {
-            banner.textContent = '✅ Telegram linked successfully. XP and Block Topia progression will now be stored server-side.';
+            banner.textContent = '✅ Telegram linked successfully. Arcade XP and Block Topia progression will now be stored server-side.';
             banner.className = (banner.className || '') + ' gklink-success';
           }
         } else {

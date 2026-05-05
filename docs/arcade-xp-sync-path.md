@@ -5,7 +5,7 @@
 - Unsynced runs are stored locally in browser pending state.
 - After `/gklink` succeeds on `gkniftyheads-incubator.html`, pending runs are submitted to the server sync route.
 - Server verifies Telegram auth, applies anti-farm checks, and decides accepted XP.
-- Accepted XP is written to shared community XP (`telegram_users.xp`) and appears on Community stats/leaderboard.
+- Accepted Arcade XP is written to server-side progression (`telegram_users.xp`) and appears on Community XP stats (not score-based leaderboard ranking).
 
 ## Client flow
 1. `submitScore()` runs in `js/leaderboard-client.js`.

@@ -124,8 +124,8 @@ These are four distinct progression signals. They are not interchangeable.
 | Purpose | File |
 |---|---|
 | Arcade XP sync path doc | `docs/arcade-xp-sync-path.md` |
-| Block Topia XP gate (server config) | `workers/moonboys-api/blocktopia/config.js` |
-| Block Topia XP gate (shared/client default) | `shared/block-topia/constants.js` |
+| Arcade XP entry gate config (server) | `workers/moonboys-api/blocktopia/config.js` |
+| Arcade XP entry gate config (shared/client default) | `shared/block-topia/constants.js` |
 | Faction effect system | `js/arcade/systems/faction-effect-system.js` |
 | Cross-game modifier system | `js/arcade/systems/cross-game-modifier-system.js` |
 | Daily missions (local) | `js/arcade/systems/faction-missions.js` |
