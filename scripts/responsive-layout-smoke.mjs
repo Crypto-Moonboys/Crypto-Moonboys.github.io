@@ -889,6 +889,12 @@ async function runShellChromeFontParityCheck(browser, port) {
         return parseFloat(window.getComputedStyle(el).fontSize) || null;
       }
 
+      function measureFontFamily(sel) {
+        const el = document.querySelector(sel);
+        if (!el) return null;
+        return window.getComputedStyle(el).fontFamily || null;
+      }
+
       function measureWidth(id) {
         const el = document.getElementById(id);
         if (!el) return null;
@@ -902,6 +908,9 @@ async function runShellChromeFontParityCheck(browser, port) {
         logoText:   measureFontSizePx(sels.logoText),
         sidebarNav: measureFontSizePx(sels.sidebarNav),
         hudTitle:   measureFontSizePx(sels.hudTitle),
+        logoTextFamily:   measureFontFamily(sels.logoText),
+        sidebarNavFamily: measureFontFamily(sels.sidebarNav),
+        hudTitleFamily:   measureFontFamily(sels.hudTitle),
         sidebarWidth:    measureWidth('sidebar'),
         rightPanelWidth: measureWidth('homepage-right-panel'),
       };
@@ -909,6 +918,7 @@ async function runShellChromeFontParityCheck(browser, port) {
 
     results[label] = m;
     info(`  ${label}: logoText=${m.logoText}px sidebarNav=${m.sidebarNav}px hudTitle=${m.hudTitle}px sidebar=${m.sidebarWidth}px rightPanel=${m.rightPanelWidth}px overflow=${m.hOverflow}`);
+    info(`  ${label}: logoTextFamily="${m.logoTextFamily}" sidebarNavFamily="${m.sidebarNavFamily}" hudTitleFamily="${m.hudTitleFamily}"`);
 
     await ctx.close();
   }
@@ -995,6 +1005,41 @@ async function runShellChromeFontParityCheck(browser, port) {
     const maxW = Math.max(...rpWidths);
     assert(maxW - minW <= 5,
       `shell-chrome parity: #homepage-right-panel width consistent across pages (min=${minW}px max=${maxW}px spread=${maxW - minW}px)`);
+  }
+
+  // ── font-family must include "Press Start 2P" on all shell pages ─────────
+  // Verifies the CSS @import in retro-16bit-theme.css reaches every page and
+  // that the --font-pixel stack is actually applied to the shell chrome elements.
+  const FONT_FAMILY_KEYS = [
+    { key: 'logoTextFamily',   sel: '.site-logo .logo-text' },
+    { key: 'sidebarNavFamily', sel: '#sidebar .sidebar-nav a' },
+    { key: 'hudTitleFamily',   sel: '#homepage-right-panel .retro-hud-title' },
+  ];
+  const RIGHT_PANEL_FAMILY_PAGES = new Set(['homepage', 'games', 'search', 'categories']);
+
+  for (const { label } of SHELL_PAGES) {
+    const m = results[label];
+    for (const { key, sel } of FONT_FAMILY_KEYS) {
+      // hudTitle is only expected on right-panel pages
+      if (key === 'hudTitleFamily' && !RIGHT_PANEL_FAMILY_PAGES.has(label)) continue;
+      const fam = m[key];
+      if (fam === null) continue; // element not present — presence checked above
+      assert(fam.toLowerCase().includes('press start 2p'),
+        `shell-chrome parity [${label}]: ${sel} font-family must include "Press Start 2P" (got "${fam}")`);
+    }
+  }
+
+  // ── font-family stack must be identical across all pages ─────────────────
+  const refFam = results['homepage'];
+  for (const label of PARITY_PAGES) {
+    const m = results[label];
+    if (!m) continue;
+    for (const { key, sel } of FONT_FAMILY_KEYS) {
+      if (key === 'hudTitleFamily' && !RIGHT_PANEL_FAMILY_PAGES.has(label)) continue;
+      if (refFam[key] === null || m[key] === null) continue;
+      assert(refFam[key] === m[key],
+        `shell-chrome parity [${label} vs homepage]: ${sel} font-family must match — homepage="${refFam[key]}" ${label}="${m[key]}"`);
+    }
   }
 }
 

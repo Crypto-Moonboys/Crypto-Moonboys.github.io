@@ -40,8 +40,8 @@
  * 33. Primary Telegram sync CTA button href anti-drift.
  * 34. Right-panel anti-drift: no fake data.
  * 35. No frontend JS fetches the bare Worker root URL (must use /health or a real endpoint).
+ * 36. Press Start 2P pixel font must be @imported in css/retro-16bit-theme.css.
  */
-
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -2135,8 +2135,31 @@ console.log('\n[35] No frontend JS fetches bare Worker root URL');
 }
 
 
-// ── Summary ───────────────────────────────────────────────────────────────────
-console.log('\n─────────────────────────────────────────');
+// ── 36. Press Start 2P font must be imported in retro-16bit-theme.css ────────
+// Ensures the pixel font is loaded globally via CSS @import so every page that
+// loads retro-16bit-theme.css gets the font automatically — no per-page <link>
+// is required. This prevents a regression where shell pages that lack an HTML
+// <link> tag would fall back to a different font and render smaller chrome text.
+console.log('\n[36] Press Start 2P @import in css/retro-16bit-theme.css');
+{
+  const themeCss = read('css/retro-16bit-theme.css');
+  if (!themeCss) {
+    fail('[36] css/retro-16bit-theme.css not found');
+  } else {
+    // The @import directive must reference the Press Start 2P Google Font.
+    // Accept any valid @import url(...) form pointing to fonts.googleapis.com
+    // with family=Press+Start+2P (with or without additional query params).
+    const importRe = /@import\s+url\s*\(\s*['"]?https:\/\/fonts\.googleapis\.com\/[^'")\s]*Press\+Start\+2P[^'")\s]*['"]?\s*\)/;
+    if (importRe.test(themeCss)) {
+      pass('[36] css/retro-16bit-theme.css contains @import for Press Start 2P');
+    } else {
+      fail('[36] css/retro-16bit-theme.css is missing @import url(...) for Press Start 2P — add it near the top of the file so every shell page gets the pixel font automatically');
+    }
+  }
+}
+
+
+// ── Summary ───────────────────────────────────────────────────────────────────console.log('\n─────────────────────────────────────────');
 console.log(`Anti-drift check complete.`);
 console.log(`  Failures : ${failures}`);
 console.log(`  Warnings : ${warnings}`);

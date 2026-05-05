@@ -5,8 +5,10 @@
    ============================================================ */
 
 /* ── PIXEL FONT IMPORT ───────────────────────────────────────── */
-/* Press Start 2P is loaded in index.html via a <link> tag;
-   this file relies on that HTML import rather than duplicating it. */
+/* @import must appear before all other rules (except @charset).  */
+/* Importing here ensures every page that loads this stylesheet   */
+/* gets Press Start 2P automatically — no per-page <link> needed. */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 /* ── PALETTE & VARIABLE OVERRIDES ──────────────────────────── */
 :root {
