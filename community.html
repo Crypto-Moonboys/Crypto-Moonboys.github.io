@@ -18,55 +18,80 @@
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
-    /* EXTREME mobile fix - last attempt */
-
-    body.page-community #content {
-      overflow-x: hidden !important;
-    }
+    /* Clean mobile fix - no sidebar breakage */
 
     .battle-page {
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      overflow-x: hidden !important;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow-x: clip;
       box-sizing: border-box;
-      padding-left: 8px !important;
-      padding-right: 8px !important;
+      padding-left: 12px;
+      padding-right: 12px;
     }
 
     .battle-page .page-hero,
     .battle-page .section {
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
       box-sizing: border-box;
-      padding: 12px !important;
-      margin: 0 !important;
+      margin-left: 0;
+      margin-right: 0;
     }
 
-    .battle-page .page-hero {
-      padding: 16px 10px !important;
+    @media (max-width: 900px) {
+      .battle-page .page-hero,
+      .battle-page .section {
+        max-width: calc(100vw - 24px);
+        padding: 16px;
+      }
+
+      .battle-page .page-hero {
+        padding: 18px 14px;
+      }
+
+      .battle-page .section {
+        padding: 14px;
+      }
+
+      .battle-page h1 {
+        font-size: clamp(1.1rem, 6.5vw, 1.4rem);
+      }
+
+      .battle-page h2,
+      .battle-page .community-card h3 {
+        font-size: clamp(0.95rem, 5vw, 1.2rem);
+      }
+
+      .battle-page p,
+      .battle-page li {
+        font-size: clamp(0.9rem, 4.2vw, 1.0rem);
+      }
     }
 
-    .battle-page .section {
-      padding: 12px !important;
+    @media (max-width: 480px) {
+      .battle-page {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .battle-page .page-hero {
+        max-width: calc(100vw - 20px);
+        padding: 16px 12px;
+      }
+
+      .battle-page .section {
+        max-width: calc(100vw - 20px);
+        padding: 12px;
+      }
+
+      .battle-page h1 {
+        font-size: clamp(1.0rem, 7vw, 1.3rem);
+      }
     }
 
-    .battle-page h1 {
-      font-size: 1.25rem !important;
-    }
-
-    .battle-page h2,
-    .battle-page .community-card h3 {
-      font-size: 1.05rem !important;
-    }
-
-    .battle-page p,
-    .battle-page li {
-      font-size: 0.9rem !important;
-    }
-
-    /* Keep desktop */
+    /* Desktop styles */
     .battle-page .page-hero,
     .battle-page .section {
       border: 1px solid rgba(86,220,255,.26);
@@ -168,7 +193,7 @@
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
 <!-- 4. State */
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Shell + shared components */
+<!-- 5. Shell + shared components -->
 <script data-cfasync="false" src="/js/site-shell.js"></script>
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
