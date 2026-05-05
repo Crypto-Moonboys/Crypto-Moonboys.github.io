@@ -13,7 +13,7 @@
 import { chromium } from 'playwright';
 import { createServer } from 'http';
 import { readFileSync, existsSync, mkdirSync } from 'fs';
-import { join, extname, dirname, resolve as resolvePath, normalize } from 'path';
+import { join, extname, dirname, resolve as resolvePath, normalize, sep } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -47,7 +47,7 @@ const server = createServer((req, res) => {
 
   // Resolve to an absolute path and enforce it is within ROOT
   const full = resolvePath(ROOT, rel);
-  if (!full.startsWith(ROOT + '/') && full !== ROOT) {
+  if (!full.startsWith(ROOT + sep) && full !== ROOT) {
     res.writeHead(403);
     res.end('Forbidden');
     return;
