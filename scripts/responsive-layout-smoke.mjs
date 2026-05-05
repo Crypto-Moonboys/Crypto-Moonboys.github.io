@@ -501,8 +501,11 @@ async function runTelegramSyncCheck(browser, port, pagePath) {
   assert(check.ctaVisible || check.visibleLink,
     `${label}: visible Telegram sync CTA (.tg-sync-cta) or visible incubator link must exist with non-zero bounding box (ctaVisible=${check.ctaVisible} visibleLink=${check.visibleLink})`);
 
-  // If the CTA rendered and the button is present, assert bot URL + security attrs
-  if (check.ctaVisible && check.ctaBtnHref !== null) {
+  // If the CTA container is visible, the primary button MUST exist and be correct.
+  // A visible CTA without a working button is a test failure.
+  if (check.ctaVisible) {
+    assert(check.ctaBtnHref !== null,
+      `${label}: visible .tg-sync-cta must contain a .tg-sync-cta-btn button element`);
     assert(check.ctaBtnHref === 'https://t.me/WIKICOMSBOT',
       `${label}: .tg-sync-cta-btn href must be https://t.me/WIKICOMSBOT (got ${check.ctaBtnHref})`);
     assert(check.ctaBtnTarget === '_blank',
@@ -656,10 +659,12 @@ async function runSidebarIncubatorCheck(browser, port) {
         parseFloat(cs.opacity) !== 0 &&
         bb.width > 0 && bb.height > 0 &&
         bb.left >= 0 && bb.left < vw &&
+        bb.right > 0 && bb.right <= vw &&
         bb.top  >= 0 && bb.bottom <= vh
       ),
       text:   link.textContent.trim(),
       left:   Math.round(bb.left),
+      right:  Math.round(bb.right),
       top:    Math.round(bb.top),
       bottom: Math.round(bb.bottom),
     };
@@ -668,7 +673,7 @@ async function runSidebarIncubatorCheck(browser, port) {
   assert(incubatorLink.exists,
     `${label}: sidebar has a[href="/gkniftyheads-incubator.html"]`);
   assert(incubatorLink.visible,
-    `${label}: sidebar incubator link is visible within viewport (left=${incubatorLink.left}px top=${incubatorLink.top}px bottom=${incubatorLink.bottom}px)`);
+    `${label}: sidebar incubator link is visible within viewport (left=${incubatorLink.left}px right=${incubatorLink.right}px top=${incubatorLink.top}px bottom=${incubatorLink.bottom}px)`);
 
   await ctx.close();
 }
@@ -725,12 +730,15 @@ async function runCommunityMobileOverflowCheck(browser, port) {
     const sectionOverflow = sections.filter(s => s.getBoundingClientRect().right > vw + 2);
 
     // Check community cards/grids
-    const panels = Array.from(document.querySelectorAll('.community-card, .community-grid, .community-hero-grid'));
+    const panels = Array.from(document.querySelectorAll(
+      '.community-card, .community-grid, .community-hero-grid, ' +
+      '#community-status-panel, [data-csp-panel], [data-las-panel]'
+    ));
     const panelOverflow = panels.filter(p => {
       const bb = p.getBoundingClientRect();
       return bb.right > vw + 2;
     }).map(p => ({
-      cls: p.className.slice(0, 60),
+      cls: (p.id ? '#' + p.id : '') + (p.className ? '.' + p.className.toString().slice(0, 40) : ''),
       right: Math.round(p.getBoundingClientRect().right),
       width: Math.round(p.getBoundingClientRect().width),
     }));
