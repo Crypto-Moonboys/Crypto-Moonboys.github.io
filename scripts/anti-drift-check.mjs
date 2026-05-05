@@ -1241,6 +1241,10 @@ console.log('\n[20] Arcade hub/sidebar parity with manifest pages');
     } else {
       pass(`[20] Parsed ${manifestPages.length} page paths from arcade-manifest.js`);
 
+      // Helper: build a regex that matches href="..." or href='...' with optional
+      // whitespace around = for a literal path string.
+      const hrefRe = (path) => new RegExp(`href\\s*=\\s*["']${path.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&')}["']`);
+
       // (a) Check games/index.html (arcade hub)
       const hubSrc = read('games/index.html');
       if (!hubSrc) {
@@ -1248,7 +1252,7 @@ console.log('\n[20] Arcade hub/sidebar parity with manifest pages');
       } else {
         let hubClean = true;
         for (const gamePage of manifestPages) {
-          if (!hubSrc.includes(`href="${gamePage}"`)) {
+          if (!hrefRe(gamePage).test(hubSrc)) {
             fail(`[20] games/index.html missing link to manifest game page: ${gamePage}`);
             hubClean = false;
           }
@@ -1256,7 +1260,10 @@ console.log('\n[20] Arcade hub/sidebar parity with manifest pages');
         if (hubClean) pass('[20] games/index.html contains all manifest game page links');
       }
 
-      // (b) Check js/site-shell.js arcade sidebar
+      // (b) Check js/site-shell.js — scoped to the arcade sidebar block only.
+      // We extract from the "sidebarExtra === 'arcade'" marker up to and including
+      // "sidebar.appendChild(arcadeSection)" so that links elsewhere in site-shell.js
+      // cannot produce false passes.
       const shellSrc20 = read('js/site-shell.js');
       if (!shellSrc20) {
         fail('[20] js/site-shell.js not found');
@@ -1265,9 +1272,16 @@ console.log('\n[20] Arcade hub/sidebar parity with manifest pages');
         if (arcadeIdx === -1) {
           fail("[20] js/site-shell.js: arcade sidebar section not found (expected sidebarExtra === 'arcade')");
         } else {
+          // Bound the arcade block to just the if-body that builds arcadeSection.
+          const appendMarker = 'sidebar.appendChild(arcadeSection)';
+          const appendIdx = shellSrc20.indexOf(appendMarker, arcadeIdx);
+          const arcadeBlock = appendIdx === -1
+            ? shellSrc20.slice(arcadeIdx)
+            : shellSrc20.slice(arcadeIdx, appendIdx + appendMarker.length);
+
           let sidebarClean = true;
           for (const gamePage of manifestPages) {
-            if (!shellSrc20.includes(`href="${gamePage}"`)) {
+            if (!hrefRe(gamePage).test(arcadeBlock)) {
               fail(`[20] js/site-shell.js arcade sidebar missing link to manifest game page: ${gamePage}`);
               sidebarClean = false;
             }
