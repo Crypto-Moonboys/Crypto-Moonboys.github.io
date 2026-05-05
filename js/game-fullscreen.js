@@ -1254,6 +1254,10 @@
     }
     if (e.key === 'Escape' && !isOpen) {
       // Close the topmost (first-child) visible micro notification, if any.
+      // Micro notifications are short-lived auto-expiring elements managed
+      // entirely by pushMicroNotification(); they are not registered with the
+      // DismissibleUI stack (which is for manually-registered, longer-lived
+      // panels). This keeps micro-notify logic self-contained here.
       var feed = document.getElementById('micro-notify-feed');
       if (feed && feed.firstElementChild) {
         feed.firstElementChild.remove();

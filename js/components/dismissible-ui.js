@@ -79,9 +79,11 @@
     if (e.key !== 'Escape') return;
     if (_stack.length === 0) return;
     // Walk from top of stack to find the last visible element.
+    // Use computed display rather than offsetParent because position:fixed
+    // elements correctly have offsetParent === null in many browsers.
     for (var i = _stack.length - 1; i >= 0; i--) {
       var el = _stack[i];
-      if (el && el.offsetParent !== null) {
+      if (el && window.getComputedStyle(el).display !== 'none') {
         unregister(el);
         el.remove();
         e.stopPropagation();

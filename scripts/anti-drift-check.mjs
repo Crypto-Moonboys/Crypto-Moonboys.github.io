@@ -1552,11 +1552,11 @@ console.log('\n[26] Dismissible UI compliance');
         fail('[26] pushMicroNotification in game-fullscreen.js is missing the close button (micro-note-close)');
         check26Clean = false;
       }
-      // Must also contain aria-label="Close" for accessibility
-      if (fnBody.includes('aria-label') && (fnBody.includes('Close') || fnBody.includes("'Close'"))) {
-        pass('[26] pushMicroNotification close button has aria-label');
+      // Must also contain aria-label="Close" for accessibility (precise attribute match)
+      if (/setAttribute\s*\(\s*['"]aria-label['"]\s*,\s*['"]Close['"]\s*\)/.test(fnBody)) {
+        pass('[26] pushMicroNotification close button has aria-label="Close"');
       } else {
-        fail('[26] pushMicroNotification close button missing aria-label="Close"');
+        fail('[26] pushMicroNotification close button missing aria-label="Close" (setAttribute call)');
         check26Clean = false;
       }
     }
