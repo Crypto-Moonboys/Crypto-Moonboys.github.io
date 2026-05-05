@@ -182,7 +182,7 @@ function renderLinkedPresence() {
   if (isPresenceHidden()) box.classList.add('presence-offline');
   box.innerHTML = linked
     ? `<strong>You are linked as ${escHtml(display)}</strong><span class="lb-linked-meta">${online ? '● Online presence visible' : (isPresenceHidden() ? '○ Presence hidden' : '○ Sync attention required')}</span>`
-    : `<strong>${escHtml(COPY.UNLINKED)}</strong><span class="lb-linked-meta">Link to store ranking/XP server-side.</span>`;
+    : `<strong>${escHtml(COPY.UNLINKED)}</strong><span class="lb-linked-meta">Link to store ranking and Arcade XP server-side.</span>`;
 
   const toggle = el('lb-presence-toggle');
   if (toggle) {
@@ -332,7 +332,7 @@ function renderTable(data) {
         <td class="lb-rank">${medalFor(rank)}</td>
         <td class="lb-player">${escHtml(row.player || '—')}</td>
         <td class="lb-faction-cell">${factionBadge(row)}</td>
-        <td class="lb-score"><span class="lb-score-value" data-score-value="${Math.floor(Number(row.score ?? 0) || 0)}">${formatScore(row.score ?? 0)}</span> <span class="lb-score-sub" title="Ranking uses score only. XP stays secondary to score.">· est. +${projectedXpFromScore(row.score ?? 0)} Arcade XP</span></td>
+        <td class="lb-score"><span class="lb-score-value" data-score-value="${Math.floor(Number(row.score ?? 0) || 0)}">${formatScore(row.score ?? 0)}</span> <span class="lb-score-sub" title="Ranking uses score only. Arcade XP is separate from score ranking.">· est. +${projectedXpFromScore(row.score ?? 0)} Arcade XP</span></td>
       </tr>
     `;
   });

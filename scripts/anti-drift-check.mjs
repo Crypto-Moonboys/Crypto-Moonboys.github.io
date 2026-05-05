@@ -25,6 +25,11 @@
  * 18. site-shell.js DOM smoke test (static).
  * 19. Rocket Loader bypass: canonical boot scripts have data-cfasync="false".
  * 20. Arcade hub (games/index.html) and sidebar (site-shell.js) link to all manifest game pages.
+ * 21. Leaderboard ranking must not be described as XP-based (score-only ranking).
+ * 22. "Block Topia XP" must not be described as the multiplayer gate value (gate requires Arcade XP).
+ * 23. "Arcade XP" must not be described as in-game Block Topia upgrade XP.
+ * 24. "score = XP" or direct-equality phrasing must not appear.
+ * 25. Unlinked/guest copy must not imply server-stored Arcade XP.
  */
 
 import fs from 'node:fs';
@@ -1290,6 +1295,179 @@ console.log('\n[20] Arcade hub/sidebar parity with manifest pages');
         }
       }
     }
+  }
+}
+
+// ── 21–25. XP/Progression terminology anti-drift ─────────────────────────────
+// Scoped to docs (.md files), HTML pages, and UI component JS strings.
+// Internal code variable names (arcadeXp, faction_xp, required_xp, etc.) are
+// intentionally excluded — only user-facing copy and documentation is checked.
+console.log('\n[21–25] XP/Progression terminology anti-drift');
+{
+  // Collect scoped files: all .md, all .html (excl. game runtime HTML), UI component JS.
+  const UI_COMPONENT_JS = [
+    'js/components/connection-status-panel.js',
+    'js/components/live-activity-summary.js',
+    'js/components/ui-status-copy.js',
+    'js/game-fullscreen.js',
+    'js/arcade-leaderboard.js',
+    'js/leaderboard-client.js',
+    'js/telegram-community.js',
+  ];
+
+  function collectMdFiles() {
+    const results = [];
+    function walk(dir) {
+      if (!fs.existsSync(dir)) return;
+      for (const f of fs.readdirSync(dir)) {
+        if (f === 'node_modules' || f === '.git') continue;
+        const full = path.join(dir, f);
+        const rel = path.relative(ROOT, full);
+        const stat = fs.statSync(full);
+        if (stat.isDirectory()) {
+          walk(full);
+        } else if (f.endsWith('.md')) {
+          results.push(rel);
+        }
+      }
+    }
+    walk(ROOT);
+    return results;
+  }
+
+  const mdFiles = collectMdFiles();
+  // Shell HTML pages (reuse collectShellHtml already defined above)
+  const htmlFiles = collectShellHtml();
+  const scopedFiles = [
+    ...mdFiles,
+    ...htmlFiles,
+    ...UI_COMPONENT_JS.filter(rel => exists(rel)),
+  ];
+
+  // ── [21] Leaderboard ranking must not be described as XP-based ──────────────
+  // Pattern: leaderboard rank/ranking described as using XP (not score).
+  // Allow: "XP does not affect rank", "score = ranking", "ranked by score" (good).
+  // Deny: "leaderboard rank* based on XP", "ranked by XP", "leaderboard XP rank".
+  {
+    const badPatterns21 = [
+      { re: /leaderboard\s+rank\w*\s+(is\s+)?based\s+on\s+(arcade\s+)?xp/i,
+        label: 'leaderboard rank described as XP-based' },
+      { re: /ranked?\s+by\s+(arcade\s+)?xp/i,
+        label: 'ranking described as by XP' },
+      { re: /xp\s+(is\s+)?(used\s+for|determines?)\s+(leaderboard\s+)?rank/i,
+        label: 'XP described as determining leaderboard rank' },
+    ];
+    let clean21 = true;
+    for (const rel of scopedFiles) {
+      const src = read(rel);
+      if (!src) continue;
+      for (const { re, label } of badPatterns21) {
+        if (re.test(src)) {
+          fail(`[21] Terminology drift in ${rel}: ${label}`);
+          clean21 = false;
+        }
+      }
+    }
+    if (clean21) pass('[21] No leaderboard-rank-is-XP-based wording found');
+  }
+
+  // ── [22] "Block Topia XP" must not be described as the multiplayer gate value ─
+  // The gate requires Arcade XP, not Block Topia XP.
+  {
+    const badPatterns22 = [
+      { re: /block\s+topia\s+xp\s+(is\s+)?required\s+to\s+enter/i,
+        label: '"Block Topia XP" described as required to enter multiplayer' },
+      { re: /need\s+block\s+topia\s+xp\s+to\s+(enter|access|unlock)/i,
+        label: '"Block Topia XP" described as gate to enter/access' },
+      { re: /block\s+topia\s+xp.*gate/i,
+        label: '"Block Topia XP" associated with the entry gate' },
+    ];
+    let clean22 = true;
+    for (const rel of scopedFiles) {
+      const src = read(rel);
+      if (!src) continue;
+      for (const { re, label } of badPatterns22) {
+        if (re.test(src)) {
+          fail(`[22] Terminology drift in ${rel}: ${label}`);
+          clean22 = false;
+        }
+      }
+    }
+    if (clean22) pass('[22] "Block Topia XP" not described as multiplayer gate value');
+  }
+
+  // ── [23] "Arcade XP" must not be described as in-game Block Topia upgrade XP ─
+  {
+    const badPatterns23 = [
+      { re: /arcade\s+xp.*in[\s-]game\s+(block\s+topia\s+)?(upgrade|progression)/i,
+        label: '"Arcade XP" described as in-game Block Topia upgrade XP' },
+      { re: /arcade\s+xp.*block\s+topia\s+(upgrade|level|skill)/i,
+        label: '"Arcade XP" associated with Block Topia in-game upgrades' },
+    ];
+    let clean23 = true;
+    for (const rel of scopedFiles) {
+      const src = read(rel);
+      if (!src) continue;
+      for (const { re, label } of badPatterns23) {
+        if (re.test(src)) {
+          fail(`[23] Terminology drift in ${rel}: ${label}`);
+          clean23 = false;
+        }
+      }
+    }
+    if (clean23) pass('[23] "Arcade XP" not described as in-game Block Topia upgrade XP');
+  }
+
+  // ── [24] "score = XP" or similar direct-equality phrasing must not appear ────
+  {
+    const badPatterns24 = [
+      { re: /score\s*=\s*xp\b/i,
+        label: '"score = XP" equality phrasing' },
+      { re: /score\s+equals?\s+(arcade\s+)?xp/i,
+        label: '"score equals XP" phrasing' },
+      { re: /(arcade\s+)?xp\s*=\s*score\b/i,
+        label: '"XP = score" equality phrasing' },
+      { re: /xp\s+equals?\s+score/i,
+        label: '"XP equals score" phrasing' },
+    ];
+    let clean24 = true;
+    for (const rel of scopedFiles) {
+      const src = read(rel);
+      if (!src) continue;
+      for (const { re, label } of badPatterns24) {
+        if (re.test(src)) {
+          fail(`[24] Terminology drift in ${rel}: ${label}`);
+          clean24 = false;
+        }
+      }
+    }
+    if (clean24) pass('[24] No "score = XP" equality phrasing found');
+  }
+
+  // ── [25] Unlinked/guest copy must not imply server-stored Arcade XP ──────────
+  // Allow: "unlinked runs stay local", "unlinked users are prompted to sync".
+  // Deny: "unlinked users store XP server-side", "guests earn server XP".
+  {
+    const badPatterns25 = [
+      { re: /unlinked\s+users?\s+(can\s+)?(earn|store|get|receive)\s+(arcade\s+)?xp\s+server[\s-]side/i,
+        label: 'unlinked users described as storing server-side Arcade XP' },
+      { re: /guests?\s+(can\s+)?(earn|store|get|receive)\s+(arcade\s+)?xp\s+server[\s-]side/i,
+        label: 'guest users described as storing server-side Arcade XP' },
+      { re: /without\s+telegram[^.]*store[^.]*arcade\s+xp\s+server/i,
+        label: 'copy implies Arcade XP stored server-side without Telegram' },
+    ];
+    let clean25 = true;
+    for (const rel of scopedFiles) {
+      const src = read(rel);
+      if (!src) continue;
+      for (const { re, label } of badPatterns25) {
+        if (re.test(src)) {
+          fail(`[25] Terminology drift in ${rel}: ${label}`);
+          clean25 = false;
+        }
+      }
+    }
+    if (clean25) pass('[25] No unlinked/guest copy implying server-stored Arcade XP');
   }
 }
 

@@ -780,8 +780,8 @@ Each PR must:
 | Current live system truth | `docs/current-live-system-truth.md` |
 | Block Topia runtime truth | `docs/block-topia/CURRENT_RUNTIME_TRUTH.md` |
 | Arcade XP sync path | `docs/arcade-xp-sync-path.md` |
-| Block Topia XP gate (server config) | `workers/moonboys-api/blocktopia/config.js` |
-| Block Topia XP gate (shared default) | `shared/block-topia/constants.js` |
+| Arcade XP entry gate config (server) | `workers/moonboys-api/blocktopia/config.js` |
+| Arcade XP entry gate config (shared default) | `shared/block-topia/constants.js` |
 | Faction effect system | `js/arcade/systems/faction-effect-system.js` |
 | Cross-game modifier system | `js/arcade/systems/cross-game-modifier-system.js` |
 | Daily missions (local) | `js/arcade/systems/faction-missions.js` |

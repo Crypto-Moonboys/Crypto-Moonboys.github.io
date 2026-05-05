@@ -177,7 +177,7 @@ export async function submitScore(player, score, game = "global") {
     emitArcadeSubmissionStatus({
       ...result,
       state: "local_only",
-      message: "Unsynced play stays local to this browser. To store XP and Block Topia progression server-side, run /gklink in Telegram.",
+      message: "Unsynced play stays local to this browser. To store Arcade XP and Block Topia progression server-side, run /gklink in Telegram.",
     });
     emitMicroNotification("Sync required: run /gklink to store progression.", "warning");
     if (typeof window !== "undefined" && window.MOONBOYS_IDENTITY &&
