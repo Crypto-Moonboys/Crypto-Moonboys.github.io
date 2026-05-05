@@ -341,7 +341,17 @@
     var feed = ensureMicroFeed();
     var item = document.createElement('div');
     item.className = 'micro-note ' + (tone ? ('micro-note--' + tone) : 'micro-note--info');
-    item.textContent = text;
+    var msgSpan = document.createElement('span');
+    msgSpan.className = 'micro-note-text';
+    msgSpan.textContent = text;
+    var closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'micro-note-close';
+    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.textContent = '\u00D7';
+    closeBtn.addEventListener('click', function () { item.remove(); });
+    item.appendChild(msgSpan);
+    item.appendChild(closeBtn);
     feed.prepend(item);
     while (feed.children.length > maxMicroItems) {
       feed.lastElementChild && feed.lastElementChild.remove();
@@ -1231,14 +1241,33 @@
   updateSyncSurfaceState(getLinkedSyncState(), {});
   bindSubmissionStatus();
 
-  // Esc key closes the overlay.
+  // Esc key closes the overlay, or — when the overlay is not open — dismisses the
+  // topmost visible micro notification so players can clear blocking notices.
   // Enter / Space trigger the overlay ▶ Start button when the overlay is open
   // but the game has not yet started (running is false on all games at that point).
   // We check the game's own running flag via a DOM attribute rather than a shared
   // variable because each game owns its state internally.
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && isOpen) {
+      e.stopPropagation();
+      e.preventDefault();
       closeOverlay();
+      return;
+    }
+    if (e.key === 'Escape' && !isOpen) {
+      // Prevent default consistently for all Escape presses on this path,
+      // regardless of whether a micro note is present.
+      e.preventDefault();
+      // Close the topmost (first-child) visible micro notification, if any.
+      // Micro notifications are short-lived auto-expiring elements managed
+      // entirely by pushMicroNotification(); they are not registered with the
+      // DismissibleUI stack (which is for manually-registered, longer-lived
+      // panels). This keeps micro-notify logic self-contained here.
+      var feed = document.getElementById('micro-notify-feed');
+      if (feed && feed.firstElementChild) {
+        e.stopPropagation();
+        feed.firstElementChild.remove();
+      }
       return;
     }
     if ((e.key === 'Enter' || e.key === ' ') && isOpen) {

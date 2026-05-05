@@ -1505,6 +1505,187 @@ console.log('\n[21–25] XP/Progression terminology anti-drift');
   }
 }
 
+// ── Shared helper: extract a braced block starting at a known index ─────────
+// Returns the source slice from `startIdx` up to and including the closing `}`
+// that balances the first `{` found at or after `startIdx`.
+// Returns '' if no opening brace is found or braces are unbalanced.
+function extractBracedBlock(src, startIdx) {
+  const braceStart = src.indexOf('{', startIdx);
+  if (braceStart === -1) return '';
+  let depth = 0;
+  for (let i = braceStart; i < src.length; i++) {
+    const ch = src[i];
+    if (ch === '{') {
+      depth++;
+    } else if (ch === '}') {
+      depth--;
+      if (depth === 0) {
+        return src.slice(startIdx, i + 1);
+      }
+    }
+  }
+  return ''; // unbalanced
+}
+
+// ── 26. Dismissible UI compliance ─────────────────────────────────────────────
+// Checks that:
+//   (a) js/components/dismissible-ui.js exists.
+//   (b) js/game-fullscreen.js contains the close-button marker inside
+//       pushMicroNotification (i.e. micro notifications are user-dismissible).
+//   (c) css/wiki.css defines .micro-note-close styles (close button is styled).
+//   (d) css/wiki.css sets pointer-events: auto on .micro-note so close
+//       buttons are clickable within the pointer-events: none feed container.
+console.log('\n[26] Dismissible UI compliance');
+{
+  let check26Clean = true;
+
+  // (a) dismissible-ui.js must exist
+  if (exists('js/components/dismissible-ui.js')) {
+    pass('[26] js/components/dismissible-ui.js present');
+  } else {
+    fail('[26] js/components/dismissible-ui.js missing — create the dismissible helper');
+    check26Clean = false;
+  }
+
+  // (b) game-fullscreen.js must include a close button in pushMicroNotification.
+  // We require the function body to contain 'micro-note-close' (the close-button class).
+  const gfsSrc = read('js/game-fullscreen.js');
+  if (!gfsSrc) {
+    fail('[26] js/game-fullscreen.js not found');
+    check26Clean = false;
+  } else {
+    // Locate pushMicroNotification and find its body using the shared helper.
+    const fnIdx = gfsSrc.indexOf('function pushMicroNotification(');
+    if (fnIdx === -1) {
+      fail('[26] js/game-fullscreen.js: pushMicroNotification not found');
+      check26Clean = false;
+    } else {
+      const braceStart = gfsSrc.indexOf('{', fnIdx);
+      if (braceStart === -1) {
+        fail('[26] js/game-fullscreen.js: pushMicroNotification opening brace not found');
+        check26Clean = false;
+      } else {
+        const fnBody = extractBracedBlock(gfsSrc, fnIdx);
+        if (!fnBody) {
+          fail('[26] js/game-fullscreen.js: pushMicroNotification body extraction failed (unbalanced braces?)');
+          check26Clean = false;
+        } else {
+          if (fnBody.includes('micro-note-close')) {
+            pass('[26] pushMicroNotification contains micro-note-close (close button present)');
+          } else {
+            fail('[26] pushMicroNotification in game-fullscreen.js is missing the close button (micro-note-close)');
+            check26Clean = false;
+          }
+          // Must also contain aria-label="Close" for accessibility (precise attribute match)
+          if (/setAttribute\s*\(\s*['"]aria-label['"]\s*,\s*['"]Close['"]\s*\)/.test(fnBody)) {
+            pass('[26] pushMicroNotification close button has aria-label="Close"');
+          } else {
+            fail('[26] pushMicroNotification close button missing aria-label="Close" (setAttribute call)');
+            check26Clean = false;
+          }
+        }
+      }
+    }
+  }
+
+  // (c) css/wiki.css must define .micro-note-close
+  const wikiSrc = read('css/wiki.css');
+  if (!wikiSrc) {
+    fail('[26] css/wiki.css not found');
+    check26Clean = false;
+  } else {
+    if (wikiSrc.includes('.micro-note-close')) {
+      pass('[26] css/wiki.css defines .micro-note-close styles');
+    } else {
+      fail('[26] css/wiki.css missing .micro-note-close — close button unstyled');
+      check26Clean = false;
+    }
+    // (d) .micro-note must have pointer-events: auto so close buttons are clickable.
+    // Fail explicitly if the selector is missing or renamed.
+    const microNoteIdx = wikiSrc.indexOf('.micro-note {');
+    if (microNoteIdx === -1) {
+      fail('[26] css/wiki.css: .micro-note { selector not found — selector may be missing or renamed');
+      check26Clean = false;
+    } else {
+      const microNoteCloseIdx = wikiSrc.indexOf('.micro-note-close');
+      if (microNoteCloseIdx === -1) {
+        fail('[26] css/wiki.css: .micro-note-close not found after .micro-note — cannot check pointer-events');
+        check26Clean = false;
+      } else {
+        // Slice the block from '.micro-note {' up to '.micro-note-close' definition.
+        const slice = wikiSrc.slice(microNoteIdx, microNoteCloseIdx);
+        if (/pointer-events\s*:\s*auto/.test(slice)) {
+          pass('[26] .micro-note has pointer-events: auto (close button is clickable)');
+        } else {
+          fail('[26] .micro-note missing pointer-events: auto — close button may be unclickable');
+          check26Clean = false;
+        }
+      }
+    }
+  }
+
+  if (check26Clean) pass('[26] Dismissible UI compliance: all checks passed');
+}
+
+// ── 27. Fullscreen overlay horizontal overflow guard ──────────────────────────
+// Ensures the known overflow sources are fixed and cannot regress:
+//   (a) css/game-fullscreen.css must NOT use width: 100vw on #game-overlay.
+//   (b) css/wiki.css html selector must include overflow-x: clip.
+console.log('\n[27] Fullscreen overlay overflow guard');
+{
+  let check27Clean = true;
+
+  // (a) #game-overlay must not have width: 100vw (causes scrollbar-width overflow)
+  // Scoped checks: extract the #game-overlay rule block and validate within it.
+  const gfsCss = read('css/game-fullscreen.css');
+  if (!gfsCss) {
+    fail('[27] css/game-fullscreen.css not found');
+    check27Clean = false;
+  } else {
+    const overlayIdx = gfsCss.indexOf('#game-overlay {');
+    if (overlayIdx === -1) {
+      fail('[27] css/game-fullscreen.css: #game-overlay rule not found — cannot validate overlay sizing');
+      check27Clean = false;
+    } else {
+      const overlayBlock = extractBracedBlock(gfsCss, overlayIdx);
+      if (!overlayBlock) {
+        fail('[27] css/game-fullscreen.css: #game-overlay block extraction failed');
+        check27Clean = false;
+      } else {
+        if (/width\s*:\s*100vw/.test(overlayBlock)) {
+          fail('[27] css/game-fullscreen.css #game-overlay has width: 100vw — causes horizontal overflow on scrolled pages');
+          check27Clean = false;
+        } else {
+          pass('[27] #game-overlay: no width: 100vw (overflow-safe)');
+        }
+        if (/\binset\s*:\s*0\b/.test(overlayBlock)) {
+          pass('[27] #game-overlay: inset: 0 present');
+        } else {
+          fail('[27] css/game-fullscreen.css #game-overlay missing inset: 0 — overlay may not fill viewport');
+          check27Clean = false;
+        }
+      }
+    }
+  }
+
+  // (b) css/wiki.css html rule must include overflow-x: clip
+  const wikiSrc27 = read('css/wiki.css');
+  if (!wikiSrc27) {
+    fail('[27] css/wiki.css not found');
+    check27Clean = false;
+  } else {
+    // Find the html { ... } rule (may be single-line or multi-line).
+    if (/html\s*\{[^}]*overflow-x\s*:\s*clip/.test(wikiSrc27)) {
+      pass('[27] css/wiki.css html has overflow-x: clip');
+    } else {
+      fail('[27] css/wiki.css html missing overflow-x: clip — accidental horizontal scroll not prevented');
+      check27Clean = false;
+    }
+  }
+
+  if (check27Clean) pass('[27] Fullscreen overlay overflow guard: all checks passed');
+}
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log('\n─────────────────────────────────────────');
 console.log(`Anti-drift check complete.`);
