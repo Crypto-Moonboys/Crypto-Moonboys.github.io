@@ -18,12 +18,188 @@
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <style>
-    .page-hero,.section{border:1px solid rgba(86,220,255,.26);border-radius:12px;background:rgba(8,18,34,.72)}
-    .page-hero{padding:clamp(30px,6vw,70px) clamp(20px,4vw,44px);margin-bottom:18px}
-    .section{margin:0 0 18px;padding:18px}
-    .section h2{margin:0 0 10px;text-transform:uppercase}
-    .section p,.section li{color:var(--color-text-muted);line-height:1.7}
-    .cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    /* Page-local overflow hardening for Battle Chamber.
+       Keep this page usable even if shared shell CSS changes. */
+    #content,
+    #content * {
+      box-sizing: border-box;
+    }
+
+    #content {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow-x: clip;
+    }
+
+    .page-hero,
+    .section,
+    .community-hero-grid,
+    .community-grid,
+    .community-card,
+    .community-card-inner,
+    #community-status-panel,
+    [data-csp-panel],
+    [data-las-panel],
+    #tg-community-leaderboard,
+    #tg-activity-feed,
+    #tg-quest-panel,
+    #tg-profile-card,
+    #tg-daily-status {
+      max-width: 100%;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
+    .page-hero,
+    .section {
+      border: 1px solid rgba(86,220,255,.26);
+      border-radius: 12px;
+      background: rgba(8,18,34,.72);
+    }
+
+    .page-hero {
+      padding: clamp(24px,5vw,70px) clamp(16px,4vw,44px);
+      margin-bottom: 18px;
+    }
+
+    .section {
+      margin: 0 0 18px;
+      padding: 18px;
+    }
+
+    .section h2,
+    .page-hero h1,
+    .community-card h3 {
+      margin: 0 0 10px;
+      text-transform: uppercase;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      white-space: normal;
+      line-height: 1.25;
+    }
+
+    .section p,
+    .section li,
+    .page-hero p,
+    .community-card p,
+    .community-card li {
+      color: var(--color-text-muted);
+      line-height: 1.7;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      white-space: normal;
+    }
+
+    .community-hero-grid,
+    .community-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    @media (min-width: 900px) {
+      .community-hero-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .community-grid {
+        grid-template-columns: minmax(0, 2fr) minmax(260px, .8fr);
+      }
+    }
+
+    .community-main,
+    .community-side {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .community-card-inner {
+      padding: 16px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+      max-width: 100%;
+    }
+
+    .cta-row .btn {
+      min-width: 0;
+      white-space: normal;
+      text-align: center;
+    }
+
+    @media (max-width: 700px) {
+      html,
+      body {
+        overflow-x: hidden;
+      }
+
+      #content {
+        width: 100%;
+        max-width: 100%;
+        padding-left: 16px;
+        padding-right: 16px;
+        overflow-x: hidden;
+      }
+
+      .breadcrumb,
+      .page-hero,
+      .section,
+      .community-hero-grid,
+      .community-grid,
+      .community-card,
+      #community-status-panel,
+      [data-csp-panel],
+      [data-las-panel] {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .page-hero {
+        padding: 24px 18px;
+      }
+
+      .section,
+      .community-card-inner {
+        padding: 16px;
+      }
+
+      .page-hero h1 {
+        font-size: clamp(1.15rem, 7vw, 1.85rem);
+        letter-spacing: .02em;
+      }
+
+      .section h2,
+      .community-card h3 {
+        font-size: clamp(.95rem, 4.8vw, 1.2rem);
+      }
+
+      .page-hero p,
+      .section p,
+      .section li {
+        font-size: clamp(.95rem, 4vw, 1.05rem);
+      }
+
+      .community-hero-grid,
+      .community-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cta-row {
+        flex-direction: column;
+      }
+
+      .cta-row .btn {
+        width: 100%;
+        display: block;
+      }
+    }
   </style>
 </head>
 <body class="page-community page-has-right-panel">
@@ -81,7 +257,7 @@
         <div class="cta-row">
           <a href="/games/" class="btn btn-primary">Play Arcade</a>
           <a href="/how-to-play.html" class="btn btn-secondary">Read How To Play</a>
-          <a href="/gkniftyheads-incubator.html" class="btn btn-secondary">Link Telegram</a>
+          <a href="https://t.me/WIKICOMSBOT" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">Link Telegram</a>
           <a href="/games/leaderboard.html" class="btn btn-secondary">View Leaderboard</a>
           <a href="/games/block-topia/" class="btn btn-secondary">Enter Block Topia</a>
         </div>
