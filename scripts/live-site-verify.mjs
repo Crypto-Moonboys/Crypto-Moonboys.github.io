@@ -28,12 +28,14 @@
  *   ✓ #site-header exists
  *   ✓ #sidebar exists
  *   ✓ #homepage-right-panel exists
- *   ✓ #live-feed-widget exists
  *   ✓ [data-csp-panel] exists
  *   ✓ [data-las-panel] exists
  *   ✓ body text includes "Player Status"
- *   ✓ body text includes "System Status"
- *   ✓ body text includes "Live System Feed"
+ *   ✓ body text includes "Next Actions"
+ *   ✓ no #live-feed-widget in DOM (LIVE_FEED=false)
+ *   ✓ no "Live System Feed" text (removed section)
+ *   ✓ no "System Status" text (removed section)
+ *   ✓ no "WIKI NODES" fake row
  *   ✓ #homepage-right-panel is visible (display≠none, visibility≠hidden, bbox>0)
  *   ✓ no console error containing banned substrings (ROCKET LOADER, Placeholder
  *     for script, was detached from document, Script will not be executed)
@@ -49,7 +51,7 @@
  *
  * JS source assertions (fetched directly, not via browser):
  *   https://cryptomoonboys.com/js/site-shell.js must contain:
- *     shouldShowRightPanel, homepage-right-panel, live-feed-widget,
+ *     shouldShowRightPanel, homepage-right-panel, hud-player-avatar,
  *     data-csp-panel, data-las-panel
  */
 
@@ -91,7 +93,7 @@ const CRITICAL_JS_PATHS = [
 const SHELL_SOURCE_MUST_CONTAIN = [
   'shouldShowRightPanel',
   'homepage-right-panel',
-  'live-feed-widget',
+  'hud-player-avatar',
   'data-csp-panel',
   'data-las-panel',
 ];
@@ -199,12 +201,15 @@ async function testPage(page, pathname) {
       siteHeader:       !!document.querySelector('#site-header'),
       sidebar:          !!document.querySelector('#sidebar'),
       rightPanel:       visInfo('#homepage-right-panel'),
-      liveFeed:         visInfo('#live-feed-widget'),
+      noLiveFeed:       !document.getElementById('live-feed-widget'),
       cspPanel:         !!document.querySelector('[data-csp-panel]'),
       lasPanel:         !!document.querySelector('[data-las-panel]'),
       textPlayerStatus: document.body.textContent.includes('Player Status'),
-      textSystemStatus: document.body.textContent.includes('System Status'),
-      textLiveFeed:     document.body.textContent.includes('Live System Feed'),
+      textNextActions:  document.body.textContent.includes('Next Actions'),
+      noSystemStatus:   !document.body.textContent.includes('System Status'),
+      noLiveFeedText:   !document.body.textContent.includes('Live System Feed'),
+      noWikiNodes:      !document.body.textContent.includes('WIKI NODES'),
+      hudAvatar:        !!document.getElementById('hud-player-avatar'),
     };
   });
 
@@ -264,11 +269,10 @@ async function testPage(page, pathname) {
     fail('#homepage-right-panel MISSING');
   }
 
-  const lf = diag.liveFeed;
-  if (lf.exists) {
-    pass('#live-feed-widget exists');
+  if (diag.noLiveFeed) {
+    pass('no #live-feed-widget in DOM (LIVE_FEED=false, correctly absent)');
   } else {
-    fail('#live-feed-widget MISSING');
+    fail('#live-feed-widget present — must be absent when LIVE_FEED=false');
   }
 
   if (diag.cspPanel) {
@@ -289,16 +293,34 @@ async function testPage(page, pathname) {
     fail('body text MISSING "Player Status"');
   }
 
-  if (diag.textSystemStatus) {
-    pass('body text includes "System Status"');
+  if (diag.textNextActions) {
+    pass('body text includes "Next Actions"');
   } else {
-    fail('body text MISSING "System Status"');
+    fail('body text MISSING "Next Actions"');
   }
 
-  if (diag.textLiveFeed) {
-    pass('body text includes "Live System Feed"');
+  if (diag.noSystemStatus) {
+    pass('body text does not include removed "System Status" section');
   } else {
-    fail('body text MISSING "Live System Feed"');
+    fail('body text still contains "System Status" — section must be removed');
+  }
+
+  if (diag.noLiveFeedText) {
+    pass('body text does not include removed "Live System Feed" section');
+  } else {
+    fail('body text still contains "Live System Feed" — section must be removed');
+  }
+
+  if (diag.noWikiNodes) {
+    pass('body text does not include fake "WIKI NODES" row');
+  } else {
+    fail('body text contains fake "WIKI NODES" row — must be removed');
+  }
+
+  if (diag.hudAvatar) {
+    pass('#hud-player-avatar (avatar box) present');
+  } else {
+    fail('#hud-player-avatar MISSING');
   }
 
   // ── Visibility assertions for #homepage-right-panel ───────────────────

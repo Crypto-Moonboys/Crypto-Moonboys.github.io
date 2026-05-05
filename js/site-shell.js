@@ -282,7 +282,11 @@
         var factionApi = window.MOONBOYS_FACTION;
         var factionStatus = factionApi && typeof factionApi.getCachedStatus === 'function'
           ? factionApi.getCachedStatus() : null;
-        var faction = factionStatus ? factionStatus.faction : 'unaligned';
+        /* Only treat as unaligned when the cache has a real status object.
+         * null means the status is not yet known (fresh device / first visit).
+         * Showing "Join Faction" on a cache-miss would be a false CTA. */
+        var isUnaligned = factionStatus != null &&
+          (!factionStatus.faction || factionStatus.faction === 'unaligned');
 
         var items = [];
         if (!linked) {
@@ -292,7 +296,7 @@
             '\uD83D\uDD17 Link Telegram</a></li>'
           );
         }
-        if (!faction || faction === 'unaligned') {
+        if (isUnaligned) {
           items.push(
             '<li class="hud-action-item">' +
             '<a href="/community.html" class="hud-action-link">' +
@@ -304,6 +308,50 @@
         }
       }
     }, 0);
+
+    /* Re-render Next Actions when faction status changes (e.g. user joins a
+     * faction in-page via the Arcade or Battle Chamber).  This avoids stale
+     * "Join Faction" CTAs that linger until the next full page load. */
+    (function _bindFactionUpdate() {
+      var bus = window.MOONBOYS_EVENT_BUS;
+      if (!bus || typeof bus.on !== 'function') return;
+      bus.on('faction:update', function (d) {
+        var actEl = document.getElementById('hud-actions-dynamic');
+        if (!actEl) return;
+        var gate2 = window.MOONBOYS_IDENTITY;
+        var linked2 = gate2 && typeof gate2.isTelegramLinked === 'function'
+          ? gate2.isTelegramLinked() : false;
+        var newFaction = (d && d.faction) ? d.faction : null;
+        if (!newFaction) {
+          /* Fallback: read from API cache */
+          var fApi = window.MOONBOYS_FACTION;
+          var fStatus = fApi && typeof fApi.getCachedStatus === 'function'
+            ? fApi.getCachedStatus() : null;
+          newFaction = fStatus ? fStatus.faction : null;
+        }
+        var nowUnaligned = newFaction != null &&
+          (!newFaction || newFaction === 'unaligned');
+
+        var items2 = [];
+        if (!linked2) {
+          items2.push(
+            '<li class="hud-action-item hud-action--highlight">' +
+            '<a href="/gkniftyheads-incubator.html" class="hud-action-link">' +
+            '\uD83D\uDD17 Link Telegram</a></li>'
+          );
+        }
+        if (nowUnaligned) {
+          items2.push(
+            '<li class="hud-action-item">' +
+            '<a href="/community.html" class="hud-action-link">' +
+            '\u2694\uFE0F Join Faction</a></li>'
+          );
+        }
+        actEl.innerHTML = items2.length > 0
+          ? '<ul class="hud-actions-list">' + items2.join('') + '</ul>'
+          : '';
+      });
+    }());
   }
 
   /* ── 8. Back-to-top button ───────────────────────────────────── */

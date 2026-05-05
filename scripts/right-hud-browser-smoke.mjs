@@ -28,8 +28,8 @@
  *   ✓ no "Live System Feed" text (removed section)
  *   ✓ no "System Status" text (removed section)
  *   ✓ no "WIKI NODES" fake row
- *   ✓ no .hud-stat-val placeholder chips
- *   ✓ right panel has ≤ 3 HUD boxes (currently 2)
+ *   ✓ no .hud-stat-val chips with placeholder "--" or em-dash values
+ *   ✓ right panel has ≤ 3 HUD boxes (currently 2; limit is 3)
  *
  * Also logged per page:
  *   • window.location.pathname
@@ -252,7 +252,7 @@ async function testPage(page, pathname, port) {
       noSystemStatus:    !document.body.textContent.includes('System Status'),
       noWikiNodes:       !document.body.textContent.includes('WIKI NODES'),
       noLiveFeedText:    !document.body.textContent.includes('Live System Feed'),
-      // No placeholder "--" or em-dash in player panel stat chips (checks content, not presence)
+      // No placeholder "--" or em-dash values in player panel stat chips (checks text content of chips)
       noPlaceholderDash: (function () {
         var chips = document.querySelectorAll('.hud-stat-val');
         for (var i = 0; i < chips.length; i++) {
@@ -261,7 +261,7 @@ async function testPage(page, pathname, port) {
         }
         return true;
       }()),
-      // Max 2 retro-hud-box sections in right panel (Player Status + Next Actions)
+      // Max 2 retro-hud-box sections in right panel (Player Status + Next Actions); limit is 3
       hudBoxCount:       document.querySelectorAll('#homepage-right-panel .retro-hud-box').length,
       layoutId:          !!document.getElementById('layout'),
       mainWrapperId:     !!document.getElementById('main-wrapper'),
@@ -368,9 +368,9 @@ async function testPage(page, pathname, port) {
   }
 
   if (diag.noPlaceholderDash) {
-    pass('no .hud-stat-val placeholder chips in DOM');
+    pass('no .hud-stat-val chips with placeholder "--"/em-dash values');
   } else {
-    fail('.hud-stat-val placeholder chips found — fake "--" stat chips must be removed');
+    fail('.hud-stat-val chip has placeholder "--"/em-dash value — fake stat chips must be removed');
   }
 
   if (rp.exists) {

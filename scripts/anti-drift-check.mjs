@@ -1990,14 +1990,13 @@ console.log('\n[28] No clip-path or mask-image in non-gameplay shell CSS');
 }
 
 
-// ── 34. Right-panel anti-drift: no fake data, no duplicate sections ───────────
+// ── 34. Right-panel anti-drift: no fake data ──────────────────────────────────
 // Ensures site-shell.js right panel HTML never re-introduces:
 //   • placeholder "--" values in player stat chips
 //   • the removed "WIKI NODES" filler row
 //   • the removed fake System Status hardcoded rows
-//   • duplicate CORE API / SYNC / NETWORK sections
 // Also verifies the avatar init block reads photo_url from Telegram identity.
-console.log('\n[34] Right-panel anti-drift: no fake data, no duplicate sections');
+console.log('\n[34] Right-panel anti-drift: no fake data');
 {
   const shellSrc34 = read('js/site-shell.js');
   let check34Clean = true;
