@@ -922,6 +922,25 @@ async function runShellChromeFontParityCheck(browser, port) {
       `shell-chrome parity [${label}]: no body horizontal overflow (bodySW ≤ vw+2)`);
   }
 
+  // ── Required shell elements must exist and have non-zero font-size ─────────
+  // .retro-hud-title is only expected on pages that inject the right panel.
+  const RIGHT_PANEL_PAGES = new Set(['homepage', 'games', 'search', 'categories']);
+
+  for (const { label } of SHELL_PAGES) {
+    const m = results[label];
+
+    assert(m.logoText !== null && m.logoText > 0,
+      `shell-chrome parity [${label}]: .site-logo .logo-text must exist and have font-size > 0 (got ${m.logoText})`);
+
+    assert(m.sidebarNav !== null && m.sidebarNav > 0,
+      `shell-chrome parity [${label}]: #sidebar .sidebar-nav a must exist and have font-size > 0 (got ${m.sidebarNav})`);
+
+    if (RIGHT_PANEL_PAGES.has(label)) {
+      assert(m.hudTitle !== null && m.hudTitle > 0,
+        `shell-chrome parity [${label}]: #homepage-right-panel .retro-hud-title must exist and have font-size > 0 (got ${m.hudTitle})`);
+    }
+  }
+
   // ── Absolute minimums — no value may drop below MIN_PX ───────────────────
   for (const { label } of SHELL_PAGES) {
     const m = results[label];
@@ -943,6 +962,7 @@ async function runShellChromeFontParityCheck(browser, port) {
     for (const [key, selLabel] of Object.entries(SEL_LABELS)) {
       const refVal = ref[key];
       const val    = m[key];
+      // Both values must exist — missing values are already caught above.
       if (refVal === null || val === null) continue;
       const pctDiff = Math.abs(val - refVal) / refVal;
       assert(pctDiff <= 0.10,

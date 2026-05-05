@@ -201,8 +201,8 @@
     var ac = new AbortController();
     var timer = setTimeout(function () { ac.abort(); }, 4000);
     try {
-      // HEAD /health — the worker returns 200 { ok: true } when up; never hit the bare root.
-      var res = await fetch(apiBase + '/health', { method: 'HEAD', signal: ac.signal });
+      // GET /health — the worker only implements GET; HEAD falls through to 404.
+      var res = await fetch(apiBase + '/health', { method: 'GET', signal: ac.signal });
       _apiOnlineCache = res.status < 500;
     } catch (_) {
       _apiOnlineCache = false;
