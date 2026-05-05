@@ -13,7 +13,7 @@
   var main = document.getElementById('content');
   if (!main) return; // safety: bail if no content found
 
-  /* ── 3. Header ───────────────────────────────────────────────── */
+  /* ── 2. Header ───────────────────────────────────────────────── */
   var header = document.createElement('header');
   header.id = 'site-header';
   header.setAttribute('role', 'banner');
@@ -390,7 +390,6 @@
   document.body.insertBefore(backToTop, firstChild);
   document.body.insertBefore(layout, backToTop);
   document.body.insertBefore(overlay, layout);
-  document.body.insertBefore(header, overlay);
   document.body.insertBefore(header, overlay);
 
   /* ── 11. Mark active sidebar link ────────────────────────────── */
