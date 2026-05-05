@@ -814,6 +814,169 @@ async function runCommunityMobileOverflowCheck(browser, port) {
   await dCtx.close();
 }
 
+// ── Shell chrome font-size parity check ──────────────────────────────────────
+/**
+ * runShellChromeFontParityCheck(browser, port)
+ *
+ * At desktop 1440×900, loads /index.html (homepage = truth), /games/,
+ * /search.html and /categories/index.html.
+ *
+ * Measures computed font-size (in px) for the three shell chrome elements
+ * that are always present in the injected site-shell HTML:
+ *   - .site-logo .logo-text       (header logo title)
+ *   - #sidebar .sidebar-nav a     (first sidebar nav link)
+ *   - #homepage-right-panel .retro-hud-title  (right panel HUD title bar)
+ *
+ * Asserts:
+ *   - Each measured value on /games/, /search.html, /categories/index.html
+ *     is within 10% of the corresponding /index.html value.
+ *   - No value falls below an absolute readable minimum (7px).
+ *   - #sidebar width and #homepage-right-panel width are consistent
+ *     (within 5px) across pages that show them.
+ *   - No page has horizontal overflow.
+ */
+async function runShellChromeFontParityCheck(browser, port) {
+  info('');
+  info('── shell chrome font-size parity check 1440×900 ──');
+
+  const SHELL_PAGES = [
+    { path: '/index.html',            label: 'homepage' },
+    { path: '/games/',                label: 'games'    },
+    { path: '/search.html',           label: 'search'   },
+    { path: '/categories/index.html', label: 'categories' },
+  ];
+
+  /** Selectors we measure. key → CSS selector. */
+  const SELECTORS = {
+    logoText:   '.site-logo .logo-text',
+    sidebarNav: '#sidebar .sidebar-nav a',
+    hudTitle:   '#homepage-right-panel .retro-hud-title',
+  };
+
+  /** Readable names for assertion labels. */
+  const SEL_LABELS = {
+    logoText:   '.site-logo .logo-text',
+    sidebarNav: '#sidebar .sidebar-nav a',
+    hudTitle:   '#homepage-right-panel .retro-hud-title',
+  };
+
+  /** Absolute minimum readable font-size in px. */
+  const MIN_PX = 7;
+
+  const results = {};
+
+  for (const { path, label } of SHELL_PAGES) {
+    const ctx  = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const page = await ctx.newPage();
+
+    await page.route('**', (route) => {
+      const url = route.request().url();
+      if (url.startsWith(`http://localhost:${port}`)) route.continue();
+      else route.fulfill({ status: 200, body: '' });
+    });
+
+    await page.goto(`http://localhost:${port}${path}`, { timeout: 20000, waitUntil: 'networkidle' });
+    await page.waitForTimeout(400);
+
+    const m = await page.evaluate((sels) => {
+      const vw       = window.innerWidth;
+      const docSW    = document.documentElement.scrollWidth;
+      const bodySW   = document.body.scrollWidth;
+
+      function measureFontSizePx(sel) {
+        const el = sel.startsWith('#')
+          ? document.querySelector(sel)
+          : document.querySelector(sel);
+        if (!el) return null;
+        return parseFloat(window.getComputedStyle(el).fontSize) || null;
+      }
+
+      function measureWidth(id) {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        return Math.round(el.getBoundingClientRect().width);
+      }
+
+      return {
+        vw,
+        hOverflow: docSW > vw + 2,
+        bodyHOverflow: bodySW > vw + 2,
+        logoText:   measureFontSizePx(sels.logoText),
+        sidebarNav: measureFontSizePx(sels.sidebarNav),
+        hudTitle:   measureFontSizePx(sels.hudTitle),
+        sidebarWidth:    measureWidth('sidebar'),
+        rightPanelWidth: measureWidth('homepage-right-panel'),
+      };
+    }, SELECTORS);
+
+    results[label] = m;
+    info(`  ${label}: logoText=${m.logoText}px sidebarNav=${m.sidebarNav}px hudTitle=${m.hudTitle}px sidebar=${m.sidebarWidth}px rightPanel=${m.rightPanelWidth}px overflow=${m.hOverflow}`);
+
+    await ctx.close();
+  }
+
+  // ── No horizontal overflow ─────────────────────────────────────────────────
+  for (const { label } of SHELL_PAGES) {
+    const m = results[label];
+    assert(!m.hOverflow,
+      `shell-chrome parity [${label}]: no document horizontal overflow (docSW ≤ vw+2)`);
+    assert(!m.bodyHOverflow,
+      `shell-chrome parity [${label}]: no body horizontal overflow (bodySW ≤ vw+2)`);
+  }
+
+  // ── Absolute minimums — no value may drop below MIN_PX ───────────────────
+  for (const { label } of SHELL_PAGES) {
+    const m = results[label];
+    for (const [key, selLabel] of Object.entries(SEL_LABELS)) {
+      if (m[key] !== null) {
+        assert(m[key] >= MIN_PX,
+          `shell-chrome parity [${label}]: ${selLabel} font-size ${m[key]}px ≥ minimum ${MIN_PX}px`);
+      }
+    }
+  }
+
+  // ── /index.html is truth: other pages must be within 10% ─────────────────
+  const ref = results['homepage'];
+  const PARITY_PAGES = ['games', 'search', 'categories'];
+
+  for (const label of PARITY_PAGES) {
+    const m = results[label];
+    if (!m) continue;
+    for (const [key, selLabel] of Object.entries(SEL_LABELS)) {
+      const refVal = ref[key];
+      const val    = m[key];
+      if (refVal === null || val === null) continue;
+      const pctDiff = Math.abs(val - refVal) / refVal;
+      assert(pctDiff <= 0.10,
+        `shell-chrome parity [${label} vs homepage]: ${selLabel} within 10% — ${label}=${val}px homepage=${refVal}px diff=${Math.round(pctDiff * 100)}%`);
+    }
+  }
+
+  // ── Sidebar width consistent across all pages that have a sidebar ────────
+  const sidebarWidths = SHELL_PAGES
+    .map(({ label }) => results[label].sidebarWidth)
+    .filter(w => w !== null && w > 0);
+
+  if (sidebarWidths.length >= 2) {
+    const minW = Math.min(...sidebarWidths);
+    const maxW = Math.max(...sidebarWidths);
+    assert(maxW - minW <= 5,
+      `shell-chrome parity: #sidebar width consistent across pages (min=${minW}px max=${maxW}px spread=${maxW - minW}px)`);
+  }
+
+  // ── Right panel width consistent across pages that show it ──────────────
+  const rpWidths = SHELL_PAGES
+    .map(({ label }) => results[label].rightPanelWidth)
+    .filter(w => w !== null && w > 0);
+
+  if (rpWidths.length >= 2) {
+    const minW = Math.min(...rpWidths);
+    const maxW = Math.max(...rpWidths);
+    assert(maxW - minW <= 5,
+      `shell-chrome parity: #homepage-right-panel width consistent across pages (min=${minW}px max=${maxW}px spread=${maxW - minW}px)`);
+  }
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -911,6 +1074,9 @@ async function main() {
 
       // Community page mobile overflow (no horizontal overflow at 390×844 or 1440×900)
       await runCommunityMobileOverflowCheck(browser, actualPort);
+
+      // Shell chrome font-size parity (homepage is truth)
+      await runShellChromeFontParityCheck(browser, actualPort);
 
       await browser.close();
       server.close();

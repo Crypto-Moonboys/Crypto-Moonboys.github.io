@@ -4917,3 +4917,47 @@ body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
     overflow: hidden !important;
   }
 }
+
+/* ==========================================================================
+   SHELL CHROME STABLE SIZING — ID-SCOPED (highest specificity guard)
+   Uses element IDs for header, sidebar, and right panel so that no
+   page-body class (.page-game, .page-has-right-panel, etc.) can shrink
+   shell chrome.  Values mirror the cascade guard above (homepage is truth).
+   Touch only: #site-header, #sidebar, #homepage-right-panel typography.
+   DO NOT touch: gameplay JS, Worker, XP, leaderboard, Telegram/auth logic.
+   ========================================================================== */
+
+/* ── Header: logo and nav ──────────────────────────────────────── */
+#site-header .site-logo .logo-text {
+  font-size: 0.86rem !important;
+  line-height: 1.28 !important;
+}
+
+#site-header .site-logo .logo-sub {
+  font-size: 0.56rem !important;
+  line-height: 1.2 !important;
+}
+
+#site-header #header-search input {
+  font-size: 0.84rem !important;
+}
+
+#site-header .header-nav a {
+  font-size: 0.62rem !important;
+}
+
+/* ── Sidebar: headings and nav links ────────────────────────────── */
+#sidebar .sidebar-heading {
+  font-size: 0.64rem !important;
+}
+
+#sidebar .sidebar-nav a {
+  font-size: 0.62rem !important;
+  min-height: 34px;
+}
+
+/* ── Right panel: HUD titles ────────────────────────────────────── */
+#homepage-right-panel .retro-hud-title {
+  font-size: 0.62rem !important;
+  line-height: 1.35 !important;
+}
