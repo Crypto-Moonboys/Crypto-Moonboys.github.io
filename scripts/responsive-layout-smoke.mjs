@@ -884,9 +884,7 @@ async function runShellChromeFontParityCheck(browser, port) {
       const bodySW   = document.body.scrollWidth;
 
       function measureFontSizePx(sel) {
-        const el = sel.startsWith('#')
-          ? document.querySelector(sel)
-          : document.querySelector(sel);
+        const el = document.querySelector(sel);
         if (!el) return null;
         return parseFloat(window.getComputedStyle(el).fontSize) || null;
       }
