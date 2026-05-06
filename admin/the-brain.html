@@ -71,6 +71,13 @@
       <div class="card"><div class="label">Server Load</div><div id="serverLoad" class="value">--</div></div>
     </section>
 
+    <section class="panel">
+      <h2>Brain Health</h2>
+      <div id="brainHealthStatus" class="value">Checking...</div>
+      <div id="brainHealthChecks" class="logs" style="height:auto;min-height:120px;margin-top:12px"></div>
+      <button onclick="loadBrainHealth()" style="margin-top:10px">Refresh Health</button>
+    </section>
+
     <div class="grid">
       <main>
         <section class="panel">
@@ -184,6 +191,23 @@
         document.getElementById("modelInput").placeholder = data.npcBrain?.model || "qwen2.5:0.5b";
       } catch (e) {
         document.getElementById("connection").textContent = "FAILED";
+      }
+    }
+
+    async function loadBrainHealth() {
+      const statusEl = document.getElementById("brainHealthStatus");
+      const checksEl = document.getElementById("brainHealthChecks");
+
+      try {
+        const data = await getJson(API + "/health-summary");
+        statusEl.textContent = data.status || "UNKNOWN";
+
+        checksEl.textContent = (data.checks || []).map(check => {
+          return `${check.ok ? "✓" : "✗"} ${check.name}: ${check.detail}`;
+        }).join("\n");
+      } catch (e) {
+        statusEl.textContent = "FAILED";
+        checksEl.textContent = "Could not load Brain health.";
       }
     }
 
@@ -363,10 +387,12 @@
     });
 
     loadStatus();
+    loadBrainHealth();
     loadNpcs();
     loadRepoStatus();
     loadLogs();
     setInterval(loadStatus, 5000);
+    setInterval(loadBrainHealth, 10000);
     setInterval(loadLogs, 7000);
   </script>
 </body>
