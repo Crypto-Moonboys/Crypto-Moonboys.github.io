@@ -138,4 +138,35 @@ app.get("/api/brain/logs", requireAdmin, (req, res) => {
   });
 });
 
+
+const REPO_ROOT = "/root/Crypto-Moonboys.github.io";
+
+function runRepoGit(args) {
+  return new Promise((resolve) => {
+    execFile("git", args, { cwd: REPO_ROOT, timeout: 15000 }, (error, stdout, stderr) => {
+      resolve({
+        ok: !error,
+        stdout: stdout || "",
+        stderr: stderr || "",
+        error: error ? error.message : null
+      });
+    });
+  });
+}
+
+app.get("/api/brain/repo/status", requireAdmin, async (req, res) => {
+  const status = await runRepoGit(["status", "--short"]);
+  const branch = await runRepoGit(["branch", "--show-current"]);
+  const lastCommit = await runRepoGit(["log", "-1", "--oneline"]);
+  const diffStat = await runRepoGit(["diff", "--stat"]);
+
+  res.json({
+    repo: REPO_ROOT,
+    branch: branch.stdout.trim(),
+    lastCommit: lastCommit.stdout.trim(),
+    status: status.stdout.split("\n").filter(Boolean),
+    diffStat: diffStat.stdout.split("\n").filter(Boolean)
+  });
+});
+
 app.listen(PORT, () => console.log(`BRAIN API running on port ${PORT}`));
