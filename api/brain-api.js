@@ -260,7 +260,7 @@ app.post("/api/brain/commit-backup", requireAdmin, async (req, res) => {
     });
   }
 
-  const add = await runRepoGit(["add", "admin/brain-data"]);
+  const add = await runRepoGit(["add", "-A", "admin/brain-data/"]);
   if (!add.ok) {
     return res.status(500).json({ success: false, error: "git add failed", details: add });
   }
