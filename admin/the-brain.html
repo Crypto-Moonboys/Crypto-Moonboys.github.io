@@ -130,12 +130,35 @@
 
   <script>
     const API = "http://158.220.91.71:3001/api/brain";
+    const TOKEN_KEY = "moonboys_brain_admin_token";
+    let adminToken = localStorage.getItem(TOKEN_KEY) || "";
     let selectedNpc = null;
     let npcs = [];
 
-    async function getJson(url, opts) {
-      const res = await fetch(url, opts);
-      return res.json();
+    function ensureToken() {
+      if (!adminToken) {
+        adminToken = prompt("Enter THE BRAIN admin token") || "";
+        if (adminToken) localStorage.setItem(TOKEN_KEY, adminToken);
+      }
+      return adminToken;
+    }
+
+    async function getJson(url, opts = {}) {
+      const token = ensureToken();
+      const headers = Object.assign({}, opts.headers || {}, {
+        "x-brain-admin-token": token
+      });
+
+      const res = await fetch(url, { ...opts, headers });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.status === 401) {
+        localStorage.removeItem(TOKEN_KEY);
+        adminToken = "";
+        alert("Unauthorized. Token cleared.");
+      }
+
+      return data;
     }
 
     async function loadStatus() {

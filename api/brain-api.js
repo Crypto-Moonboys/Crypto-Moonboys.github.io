@@ -10,6 +10,18 @@ app.use(express.json());
 
 const PORT = 3001;
 const NPC_BRAIN = "http://127.0.0.1:3000";
+const ADMIN_TOKEN = process.env.BRAIN_ADMIN_TOKEN || "CHANGE_ME_BRAIN_ADMIN_TOKEN";
+
+function requireAdmin(req, res, next) {
+  const token = req.headers["x-brain-admin-token"] || req.query.token;
+  if (!ADMIN_TOKEN || ADMIN_TOKEN === "CHANGE_ME_BRAIN_ADMIN_TOKEN") {
+    return res.status(500).json({ error: "BRAIN_ADMIN_TOKEN is not configured" });
+  }
+  if (token !== ADMIN_TOKEN) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  next();
+}
 
 function pm2(action, name) {
   return new Promise((resolve) => {
@@ -30,7 +42,7 @@ async function proxyJson(path, options = {}) {
   return { status: r.status, data };
 }
 
-app.get("/api/brain/status", async (req, res) => {
+app.get("/api/brain/status", requireAdmin, async (req, res) => {
   const npcHealth = await proxyJson("/health").catch(() => ({
     status: 503,
     data: { online: false }
@@ -53,12 +65,12 @@ app.get("/api/brain/status", async (req, res) => {
   });
 });
 
-app.get("/api/brain/npcs", async (req, res) => {
+app.get("/api/brain/npcs", requireAdmin, async (req, res) => {
   const r = await proxyJson("/npcs").catch(() => ({ status: 503, data: { npcs: [] } }));
   res.status(r.status).json(r.data);
 });
 
-app.get("/api/brain/npcs/:npcId", async (req, res) => {
+app.get("/api/brain/npcs/:npcId", requireAdmin, async (req, res) => {
   const r = await proxyJson(`/npcs/${encodeURIComponent(req.params.npcId)}`).catch(() => ({
     status: 503,
     data: { error: "npc-brain unavailable" }
@@ -66,7 +78,7 @@ app.get("/api/brain/npcs/:npcId", async (req, res) => {
   res.status(r.status).json(r.data);
 });
 
-app.put("/api/brain/npcs/:npcId", async (req, res) => {
+app.put("/api/brain/npcs/:npcId", requireAdmin, async (req, res) => {
   const r = await proxyJson(`/npcs/${encodeURIComponent(req.params.npcId)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -75,7 +87,7 @@ app.put("/api/brain/npcs/:npcId", async (req, res) => {
   res.status(r.status).json(r.data);
 });
 
-app.post("/api/brain/chat", async (req, res) => {
+app.post("/api/brain/chat", requireAdmin, async (req, res) => {
   const r = await proxyJson("/npc/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -84,12 +96,12 @@ app.post("/api/brain/chat", async (req, res) => {
   res.status(r.status).json(r.data);
 });
 
-app.get("/api/brain/model", async (req, res) => {
+app.get("/api/brain/model", requireAdmin, async (req, res) => {
   const r = await proxyJson("/model").catch(() => ({ status: 503, data: { error: "npc-brain unavailable" } }));
   res.status(r.status).json(r.data);
 });
 
-app.post("/api/brain/model", async (req, res) => {
+app.post("/api/brain/model", requireAdmin, async (req, res) => {
   const r = await proxyJson("/model", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -98,7 +110,7 @@ app.post("/api/brain/model", async (req, res) => {
   res.status(r.status).json(r.data);
 });
 
-app.post("/api/brain/control", async (req, res) => {
+app.post("/api/brain/control", requireAdmin, async (req, res) => {
   const action = String(req.body?.action || "").trim();
 
   if (!["restart", "stop", "start"].includes(action)) {
@@ -114,7 +126,7 @@ app.post("/api/brain/control", async (req, res) => {
   });
 });
 
-app.get("/api/brain/logs", (req, res) => {
+app.get("/api/brain/logs", requireAdmin, (req, res) => {
   const file = "/root/.pm2/logs/npc-brain-out.log";
   const lines = Math.max(10, Math.min(Number(req.query.lines || 120), 500));
 
