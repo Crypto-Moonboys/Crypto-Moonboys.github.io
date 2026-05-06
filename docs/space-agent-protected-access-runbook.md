@@ -32,6 +32,17 @@ Expected: `158.220.91.71`
 
 ## 2) Systemd Service (localhost bind only)
 
+Create a dedicated unprivileged service user and set ownership:
+
+```bash
+id -u space-agent >/dev/null 2>&1 || useradd --system --home /opt/space-agent --shell /usr/sbin/nologin space-agent
+chown -R space-agent:space-agent /opt/space-agent
+find /opt/space-agent -type d -exec chmod 750 {} \;
+find /opt/space-agent -type f -exec chmod 640 {} \;
+```
+
+Note: if Space Agent needs execute permission on specific scripts/files, adjust those files to `750`/`755` as needed.
+
 Create `/etc/systemd/system/space-agent.service`:
 
 ```ini
@@ -47,7 +58,10 @@ Environment=PORT=3010
 ExecStart=/usr/bin/node space serve
 Restart=on-failure
 RestartSec=5
-User=root
+User=space-agent
+Group=space-agent
+NoNewPrivileges=true
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
@@ -73,7 +87,11 @@ Ensure htpasswd file exists:
 
 ```bash
 test -f /etc/nginx/.space-agent.htpasswd || htpasswd -c /etc/nginx/.space-agent.htpasswd admin
+chown root:www-data /etc/nginx/.space-agent.htpasswd
+chmod 640 /etc/nginx/.space-agent.htpasswd
 ```
+
+Note: replace `www-data` if your server uses a different Nginx runtime group.
 
 Create `/etc/nginx/sites-available/space-agent`:
 

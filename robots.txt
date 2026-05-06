@@ -1,8 +1,10 @@
 User-agent: *
 Allow: /
 
-# Internal admin and agent pages — not intended for search engine indexing.
+# Internal admin and agent pages - not intended for search engine indexing.
+# robots.txt is not security; it only reduces indexing/discovery.
 Disallow: /admin-tools.html
 Disallow: /agent.html
+Disallow: /admin/space-agent.html
 
 Sitemap: https://crypto-moonboys.github.io/sitemap.xml
