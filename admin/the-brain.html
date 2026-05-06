@@ -122,7 +122,11 @@
         <section class="panel">
           <h2>Repo Scanner</h2>
           <div id="repoStatus" class="logs"></div>
-          <button onclick="loadRepoStatus()" style="margin-top:10px">Refresh Repo</button>
+          <div class="row" style="margin-top:10px">
+            <button onclick="loadRepoStatus()">Refresh Repo</button>
+            <button onclick="backupBrainData()">Backup Brain Data</button>
+          </div>
+          <p id="backupResult" class="tiny"></p>
         </section>
 
         <section class="panel">
@@ -295,6 +299,16 @@
         "Diff:",
         ...((data.diffStat || []).length ? data.diffStat : ["none"])
       ].join("\n");
+    }
+
+    async function backupBrainData() {
+      const result = document.getElementById("backupResult");
+      result.textContent = "Backing up Brain data...";
+      const data = await getJson(API + "/backup", { method: "POST" });
+      result.textContent = data.success
+        ? "Backup complete. Check Repo Scanner for changed files."
+        : "Backup failed.";
+      await loadRepoStatus();
     }
 
     async function loadLogs() {
