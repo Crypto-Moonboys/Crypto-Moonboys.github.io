@@ -7,60 +7,55 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <style>
-    .brain-card { background: rgba(0,255,200,0.08); border: 2px solid #00ffcc; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
-    .status-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #00ff9d; animation: pulse 2s infinite; }
-    .log-window { background: #000; border: 1px solid #00ffcc; height: 300px; overflow-y: auto; font-family: monospace; font-size: 13px; padding: 15px; white-space: pre-wrap; }
+    .brain-card { background: rgba(0,255,200,0.08); border: 2px solid #00ffcc; border-radius: 12px; padding: 24px; margin-bottom: 28px; }
+    .status-dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #00ff9d; animation: pulse 2s infinite; }
+    .log-window { background: #000; border: 2px solid #00ffcc; height: 340px; overflow-y: auto; font-family: monospace; font-size: 14px; padding: 18px; white-space: pre-wrap; line-height: 1.5; }
+    .btn-brain { padding: 14px 28px; font-size: 1.1rem; margin-right: 12px; }
   </style>
 </head>
-<body class="page-admin page-the-brain">
+<body class="page-the-brain">
 
 <main id="content">
   <div class="battle-page">
 
-    <section class="page-hero" style="background: linear-gradient(135deg, #0a0a0f, #1a0033);">
-      <h1 style="color:#00ffcc; text-shadow: 0 0 20px #00ffcc;">THE BRAIN</h1>
-      <p class="lead">NPC Intelligence Core • Live Control Panel</p>
+    <section class="page-hero" style="background: linear-gradient(135deg, #0a0a0f, #1a0033); text-align:center;">
+      <h1 style="color:#00ffcc; text-shadow: 0 0 30px #00ffcc; font-size: 3.4rem;">THE BRAIN</h1>
+      <p class="lead" style="color:#00ff9d;">NPC Intelligence Core • Full Control</p>
     </section>
 
     <!-- STATUS -->
     <section class="section brain-card">
       <h2 style="color:#00ffcc;">BRAIN STATUS</h2>
       <div id="brain-status">
-        <p><span class="status-dot"></span> <strong>npc-brain</strong> is <span id="status-text" style="color:#00ff9d;">ONLINE</span> • Running on port <strong>3000</strong></p>
-        <p>Uptime: <span id="uptime">26h 14m</span> • Model: <span id="current-model">qwen2.5:0.5b</span></p>
+        <p><span class="status-dot"></span> <strong>npc-brain</strong> is <span id="status-text" style="color:#00ff9d;">ONLINE</span> • Port <strong>3000</strong></p>
+        <p>Uptime: <span id="uptime">Loading...</span> • Model: <span id="current-model">qwen2.5:0.5b</span></p>
       </div>
     </section>
 
     <!-- CONTROLS -->
     <section class="section brain-card">
       <h2 style="color:#00ffcc;">CONTROLS</h2>
-      <button onclick="controlBrain('start')" class="btn btn-primary">▶ START BRAIN</button>
-      <button onclick="controlBrain('stop')" class="btn btn-secondary">⏹ STOP BRAIN</button>
-      <button onclick="controlBrain('restart')" class="btn btn-primary">🔄 RESTART BRAIN</button>
-      
-      <div style="margin-top:20px;">
-        <strong>Model:</strong>
-        <select id="model-select" onchange="changeModel()">
-          <option value="qwen2.5:0.5b">qwen2.5:0.5b (fast)</option>
-          <option value="qwen2.5:1.5b">qwen2.5:1.5b (balanced)</option>
-          <option value="llama3.2:3b">llama3.2:3b (smarter)</option>
+      <button onclick="controlBrain('start')" class="btn btn-primary btn-brain">▶ START</button>
+      <button onclick="controlBrain('stop')" class="btn btn-secondary btn-brain">⏹ STOP</button>
+      <button onclick="controlBrain('restart')" class="btn btn-primary btn-brain">🔄 RESTART</button>
+
+      <div style="margin-top: 25px;">
+        <strong>Ollama Model:</strong><br>
+        <select id="model-select" onchange="changeModel()" style="padding:12px; font-size:1.1rem; width:280px;">
+          <option value="qwen2.5:0.5b">qwen2.5:0.5b (Fast)</option>
+          <option value="qwen2.5:1.5b">qwen2.5:1.5b (Balanced)</option>
+          <option value="llama3.2:3b">llama3.2:3b (Smarter)</option>
         </select>
       </div>
     </section>
 
-    <!-- NPC MANAGEMENT -->
-    <section class="section brain-card">
-      <h2 style="color:#00ffcc;">NPCs</h2>
-      <div id="npc-list">Loading NPCs...</div>
-    </section>
-
     <!-- LIVE CHAT TESTER -->
     <section class="section brain-card">
-      <h2 style="color:#00ffcc;">LIVE CHAT TESTER</h2>
-      <select id="test-npc" style="margin-bottom:10px;"></select>
-      <input id="test-input" type="text" placeholder="Type message to NPC..." style="width:100%; padding:12px; margin-bottom:10px;">
-      <button onclick="sendTestMessage()" class="btn btn-primary">SEND TO NPC</button>
-      <div id="test-response" class="log-window" style="margin-top:15px; min-height:120px;"></div>
+      <h2 style="color:#00ffcc;">LIVE NPC CHAT TESTER</h2>
+      <select id="test-npc" style="margin-bottom:12px; width:100%; padding:12px;"></select>
+      <input id="test-input" type="text" placeholder="Type message to NPC..." style="width:100%; padding:14px; margin-bottom:12px;">
+      <button onclick="sendTestMessage()" class="btn btn-primary" style="width:100%;">SEND TO NPC →</button>
+      <div id="test-response" class="log-window" style="margin-top:20px;"></div>
     </section>
 
     <!-- REAL-TIME LOGS -->
@@ -74,33 +69,55 @@
 
 <script src="/js/site-shell.js"></script>
 <script>
-// ============== BRAIN CONTROL PANEL ==============
+// ============== THE BRAIN - FULLY CONNECTED ==============
+const API_BASE = '/api/brain';
+
+async function apiCall(endpoint, body = null) {
+  const options = { method: body ? 'POST' : 'GET', headers: {'Content-Type': 'application/json'} };
+  if (body) options.body = JSON.stringify(body);
+  
+  const res = await fetch(API_BASE + endpoint, options);
+  return res.json();
+}
+
 async function controlBrain(action) {
-  const res = await fetch('/api/brain/control', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action })
-  });
-  const data = await res.json();
+  const data = await apiCall('/control', { action });
   alert(data.message || 'Action completed');
-  location.reload();
+  loadStatus();
 }
 
 async function changeModel() {
   const model = document.getElementById('model-select').value;
-  await fetch('/api/brain/model', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model })
-  });
-  alert('Model changed. Restarting brain...');
+  const data = await apiCall('/model', { model });
+  alert(data.message || 'Model updated');
   controlBrain('restart');
 }
 
-// Load live data (you can expand this later)
-setTimeout(() => {
-  console.log('%cTHE BRAIN control panel ready', 'color:#00ffcc; font-size:14px');
-}, 1000);
+async function sendTestMessage() {
+  const npcId = document.getElementById('test-npc').value;
+  const input = document.getElementById('test-input').value.trim();
+  if (!npcId || !input) return;
+
+  const data = await apiCall('/chat', { npc_id: npcId, player_input: input });
+  const log = document.getElementById('test-response');
+  log.innerHTML += `<strong>You:</strong> ${input}<br><strong>NPC:</strong> ${data.reply || data.message}<br><br>`;
+  log.scrollTop = log.scrollHeight;
+  document.getElementById('test-input').value = '';
+}
+
+async function loadStatus() {
+  const data = await apiCall('/status');
+  document.getElementById('status-text').textContent = data.online ? 'ONLINE' : 'OFFLINE';
+  document.getElementById('uptime').textContent = data.uptime || 'N/A';
+  document.getElementById('current-model').textContent = data.model || 'Unknown';
+}
+
+// Auto-refresh status
+setInterval(() => { loadStatus(); }, 5000);
+
+// Initial load
+loadStatus();
+console.log('%c🚀 THE BRAIN FULL CONTROL PANEL LOADED - OMG MODE', 'color:#00ffcc; font-size:18px; font-weight:bold');
 </script>
 
 </body>
