@@ -187,6 +187,8 @@ let displayedXp = 0;
 let targetXp = 0;
 let tickerInitialized = false;
 let sessionBaseline = null;
+let tickerEl = null;
+let gainedEl = null;
 const gameLinks = {
   snake: '/games/snake-run/',
   invaders: '/games/invaders-3008/',
@@ -201,6 +203,31 @@ const gameLinks = {
 
 function escapeText(value) {
   return String(value || '').replace(/[&<>"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
+}
+
+function ensureLoopStyles() {
+  if (document.getElementById('roguelite-loop-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'roguelite-loop-styles';
+  style.textContent = `
+    .roguelite-loop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:10px}
+    .roguelite-loop-meter,.roguelite-loop-stats{display:flex;flex-wrap:wrap;gap:8px;color:var(--color-text-muted);font-size:.82rem;line-height:1.5}
+    .roguelite-loop-stats{margin:10px 0 4px}
+    .roguelite-stat-pill{border:1px solid rgba(97,246,255,.24);border-radius:999px;padding:4px 9px;background:rgba(97,246,255,.06)}
+    .roguelite-stat-pill strong{color:var(--color-text)}
+    .roguelite-xp-live strong{color:#f7c948;text-shadow:0 0 10px rgba(247,201,72,.28)}
+    .roguelite-branch-title{margin-top:12px;color:var(--color-text);font-weight:800;font-size:.86rem}
+    .roguelite-branch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:8px}
+    .roguelite-branch-card,.roguelite-task-card{display:grid;gap:5px;padding:10px;border:1px solid rgba(97,246,255,.24);border-radius:10px;background:rgba(97,246,255,.06);text-decoration:none;color:inherit}
+    .roguelite-branch-card:hover,.roguelite-branch-card:focus-visible,.roguelite-task-card:hover,.roguelite-task-card:focus-visible{border-color:rgba(247,201,72,.55);outline:none}
+    .roguelite-branch-card.easy{border-color:rgba(97,246,255,.34)}
+    .roguelite-branch-card.risk{border-color:rgba(255,79,209,.38);background:rgba(255,79,209,.07)}
+    .roguelite-branch-card.faction{border-color:rgba(247,201,72,.4);background:rgba(247,201,72,.07)}
+    .roguelite-branch-card span,.roguelite-path{width:max-content;border:1px solid rgba(247,201,72,.45);border-radius:999px;padding:2px 7px;color:#f7c948;font-size:.68rem;text-transform:uppercase}
+    .roguelite-branch-card strong,.roguelite-task-card strong{font-size:.86rem;color:var(--color-text)}
+    .roguelite-branch-card small,.roguelite-task-card small{color:var(--color-text-muted);line-height:1.45}
+  `;
+  document.head.appendChild(style);
 }
 
 function readContext() {
@@ -249,19 +276,17 @@ function renderBranch(path, label, task) {
   return `<a class="roguelite-branch-card ${path}" href="${href}"><span>${label}</span><strong>${escapeText(title)}</strong><small>${escapeText(desc)}</small></a>`;
 }
 
-function updateTickerDom() {
-  const state = readState();
-  const currentXp = Math.max(0, Math.floor(Number(state?.daily?.points) || 0));
+function updateTickerDom(currentXp) {
   targetXp = currentXp;
   if (!tickerInitialized) {
     displayedXp = currentXp;
     tickerInitialized = true;
   }
   const baseline = getSessionBaseline(currentXp);
-  const ticker = document.getElementById('roguelite-xp-ticker');
-  const gained = document.getElementById('roguelite-session-xp');
-  if (ticker) ticker.textContent = Math.floor(displayedXp).toLocaleString();
-  if (gained) gained.textContent = `+${Math.max(0, currentXp - baseline).toLocaleString()}`;
+  if (!tickerEl) tickerEl = document.getElementById('roguelite-xp-ticker');
+  if (!gainedEl) gainedEl = document.getElementById('roguelite-session-xp');
+  if (tickerEl) tickerEl.textContent = Math.floor(displayedXp).toLocaleString();
+  if (gainedEl) gainedEl.textContent = `+${Math.max(0, currentXp - baseline).toLocaleString()}`;
 }
 
 function tickXpDisplay() {
@@ -271,11 +296,12 @@ function tickXpDisplay() {
   const diff = targetXp - displayedXp;
   if (Math.abs(diff) <= 1) displayedXp = targetXp;
   else displayedXp += Math.max(1, Math.ceil(Math.abs(diff) * 0.18)) * Math.sign(diff);
-  updateTickerDom();
+  updateTickerDom(currentXp);
 }
 
 function renderLoopBoard() {
   if (!board) return;
+  ensureLoopStyles();
   const context = readContext();
   const state = readState();
   const roguelite = context?.roguelite || {};
@@ -295,24 +321,6 @@ function renderLoopBoard() {
   }
   getSessionBaseline(currentXp);
   board.innerHTML = `
-    <style>
-      .roguelite-loop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:10px}
-      .roguelite-loop-meter,.roguelite-loop-stats{display:flex;flex-wrap:wrap;gap:8px;color:var(--color-text-muted);font-size:.82rem;line-height:1.5}
-      .roguelite-loop-stats{margin:10px 0 4px}
-      .roguelite-stat-pill{border:1px solid rgba(97,246,255,.24);border-radius:999px;padding:4px 9px;background:rgba(97,246,255,.06)}
-      .roguelite-stat-pill strong{color:var(--color-text)}
-      .roguelite-xp-live strong{color:#f7c948;text-shadow:0 0 10px rgba(247,201,72,.28)}
-      .roguelite-branch-title{margin-top:12px;color:var(--color-text);font-weight:800;font-size:.86rem}
-      .roguelite-branch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:8px}
-      .roguelite-branch-card,.roguelite-task-card{display:grid;gap:5px;padding:10px;border:1px solid rgba(97,246,255,.24);border-radius:10px;background:rgba(97,246,255,.06);text-decoration:none;color:inherit}
-      .roguelite-branch-card:hover,.roguelite-branch-card:focus-visible,.roguelite-task-card:hover,.roguelite-task-card:focus-visible{border-color:rgba(247,201,72,.55);outline:none}
-      .roguelite-branch-card.easy{border-color:rgba(97,246,255,.34)}
-      .roguelite-branch-card.risk{border-color:rgba(255,79,209,.38);background:rgba(255,79,209,.07)}
-      .roguelite-branch-card.faction{border-color:rgba(247,201,72,.4);background:rgba(247,201,72,.07)}
-      .roguelite-branch-card span,.roguelite-path{width:max-content;border:1px solid rgba(247,201,72,.45);border-radius:999px;padding:2px 7px;color:#f7c948;font-size:.68rem;text-transform:uppercase}
-      .roguelite-branch-card strong,.roguelite-task-card strong{font-size:.86rem;color:var(--color-text)}
-      .roguelite-branch-card small,.roguelite-task-card small{color:var(--color-text-muted);line-height:1.45}
-    </style>
     <div class="roguelite-loop-stats">
       <span class="roguelite-stat-pill roguelite-xp-live">Live XP: <strong id="roguelite-xp-ticker">${currentXp.toLocaleString()}</strong></span>
       <span class="roguelite-stat-pill">Session gained: <strong id="roguelite-session-xp">+0</strong></span>
@@ -320,7 +328,7 @@ function renderLoopBoard() {
       <span class="roguelite-stat-pill">Streak bonus: <strong>+${streakBonus}%</strong></span>
     </div>
     <div class="roguelite-loop-meter">
-      <span>Daily progress: <strong>${completedDaily}/12</strong></span>
+      <span>Daily progress: <strong>${completedDaily}/${daily.length}</strong></span>
       <span>Rabbit holes live: <strong>${rabbits.length}</strong></span>
       <span>Auto-submits: <strong>${Number(roguelite.total_auto_submits) || 0}</strong></span>
     </div>
@@ -334,7 +342,9 @@ function renderLoopBoard() {
       ${(nextRabbits.length ? nextRabbits : nextDaily).map(renderTask).join('')}
     </div>
   `;
-  updateTickerDom();
+  tickerEl = board.querySelector('#roguelite-xp-ticker');
+  gainedEl = board.querySelector('#roguelite-session-xp');
+  updateTickerDom(currentXp);
 }
 
 renderLoopBoard();

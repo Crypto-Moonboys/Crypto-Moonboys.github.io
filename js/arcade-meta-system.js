@@ -96,6 +96,7 @@ const DEFAULT_CONFIG = {
     dailyBonusMultiplier: 0.08,
     rabbitBonusMultiplier: 0.12,
     riskBonusMultiplier: 0.2,
+    branchCount: 3,
   },
 };
 
@@ -219,13 +220,16 @@ function createInitialEngagement(now = nowMs()) {
 
 function sanitizeTask(input) {
   if (!input || typeof input !== 'object') return null;
+  const taskGame = typeof input.game === 'string'
+    ? (input.game === 'asteroid-fork' ? 'asteroids' : input.game)
+    : null;
   return {
     id: String(input.id || makeQuestId('engage')),
     type: String(input.type || 'score_target'),
     path: String(input.path || 'easy'),
     title: String(input.title || 'Keep the loop alive'),
     description: String(input.description || 'Complete a valid arcade action.'),
-    game: typeof input.game === 'string' ? input.game : null,
+    game: taskGame,
     target: Number.isFinite(Number(input.target)) ? Number(input.target) : null,
     required_runs: Number.isFinite(Number(input.required_runs)) ? Math.max(1, Math.floor(Number(input.required_runs))) : null,
     required_unique_games: Number.isFinite(Number(input.required_unique_games)) ? Math.max(1, Math.floor(Number(input.required_unique_games))) : null,
@@ -242,13 +246,27 @@ function sanitizeTask(input) {
   };
 }
 
+function getRogueliteLimits() {
+  const dailyAvailable = DAILY_ROGUELITE_QUESTS.length;
+  const configuredDaily = Math.floor(Number(config.roguelite?.dailyQuestCount) || dailyAvailable);
+  const configuredRabbitCap = Math.floor(Number(config.roguelite?.maxRabbitHoles) || 9);
+  const branchAvailable = Object.keys(BRANCH_PATH_TEMPLATES).length;
+  const configuredBranchCount = Math.floor(Number(config.roguelite?.branchCount) || branchAvailable);
+  return {
+    dailyQuestCount: Math.min(dailyAvailable, Math.max(1, configuredDaily)),
+    maxRabbitHoles: Math.max(4, configuredRabbitCap),
+    branchCount: Math.min(branchAvailable, Math.max(1, configuredBranchCount)),
+  };
+}
+
 function sanitizeEngagement(input, fallback) {
   const source = input && typeof input === 'object' ? input : {};
+  const limits = getRogueliteLimits();
   return {
     day_key: typeof source.day_key === 'string' ? source.day_key : fallback.day_key,
-    daily_quests: Array.isArray(source.daily_quests) ? source.daily_quests.map(sanitizeTask).filter(Boolean).slice(0, 12) : [],
-    rabbit_holes: Array.isArray(source.rabbit_holes) ? source.rabbit_holes.map(sanitizeTask).filter(Boolean).slice(-12) : [],
-    next_branches: Array.isArray(source.next_branches) ? source.next_branches.map(sanitizeTask).filter(Boolean).slice(-3) : [],
+    daily_quests: Array.isArray(source.daily_quests) ? source.daily_quests.map(sanitizeTask).filter(Boolean).slice(0, limits.dailyQuestCount) : [],
+    rabbit_holes: Array.isArray(source.rabbit_holes) ? source.rabbit_holes.map(sanitizeTask).filter(Boolean).slice(-limits.maxRabbitHoles) : [],
+    next_branches: Array.isArray(source.next_branches) ? source.next_branches.map(sanitizeTask).filter(Boolean).slice(-limits.branchCount) : [],
     completed_tasks: Array.isArray(source.completed_tasks) ? source.completed_tasks.map(sanitizeTask).filter(Boolean).slice(-240) : [],
     streak_days: Math.max(0, Math.floor(Number(source.streak_days) || 0)),
     last_completed_day: typeof source.last_completed_day === 'string' ? source.last_completed_day : null,
@@ -520,7 +538,7 @@ const DAILY_ROGUELITE_QUESTS = [
   { id: 'daily-breakout', type: 'score_target', path: 'risk', title: 'Bullrun Breakout 750+', description: 'Risk path with brick-break combo momentum.', game: 'breakout', target: 750 },
   { id: 'daily-tetris', type: 'score_target', path: 'easy', title: 'Stack Tetris to 700+', description: 'Safe score-chase path.', game: 'tetris', target: 700 },
   { id: 'daily-crystal', type: 'score_target', path: 'exploration', title: 'Solve Crystal Quest 600+', description: 'Exploration path through clue-hunt energy.', game: 'crystal', target: 600 },
-  { id: 'daily-asteroids', type: 'score_target', path: 'risk', title: 'Survive Asteroid Fork 800+', description: 'High-risk survival branch.', game: 'asteroid-fork', target: 800 },
+  { id: 'daily-asteroids', type: 'score_target', path: 'risk', title: 'Survive Asteroid Fork 800+', description: 'High-risk survival branch.', game: 'asteroids', target: 800 },
   { id: 'daily-faction-signal', type: 'multi_game_burst', path: 'faction', title: 'Feed your faction signal', description: 'Complete 2 runs in different games to help faction momentum.', required_runs: 2, required_unique_games: 2, window_ms: MS_PER_DAY },
 ];
 
@@ -556,7 +574,7 @@ function ensureEngagementDay(state, now) {
     state.engagement = createInitialEngagement(now);
     state.engagement.streak_days = keptStreak ? previousStreak : 0;
   }
-  const dailyQuestCount = Math.max(1, Math.floor(Number(config.roguelite?.dailyQuestCount) || DAILY_ROGUELITE_QUESTS.length));
+  const dailyQuestCount = getRogueliteLimits().dailyQuestCount;
   if (!Array.isArray(state.engagement.daily_quests) || state.engagement.daily_quests.length !== dailyQuestCount) {
     state.engagement.daily_quests = DAILY_ROGUELITE_QUESTS.slice(0, dailyQuestCount).map((template) => sanitizeTask({
       ...template,
@@ -600,7 +618,7 @@ function spawnRabbitHoles(state, completedTask, now, minCount, maxCount) {
     state.engagement.rabbit_holes.push(next);
     spawned.push(next);
   }
-  const cap = Math.max(4, Number(config.roguelite?.maxRabbitHoles) || 9);
+  const cap = getRogueliteLimits().maxRabbitHoles;
   state.engagement.rabbit_holes = state.engagement.rabbit_holes
     .filter((task) => task && !task.completed && (!task.expires_at || Number(task.expires_at) > now))
     .slice(-cap);
@@ -609,7 +627,7 @@ function spawnRabbitHoles(state, completedTask, now, minCount, maxCount) {
 
 function createBranchOptions(state, completedTask, now) {
   if (!state.engagement) state.engagement = createInitialEngagement(now);
-  const branchPaths = ['easy', 'risk', 'faction'];
+  const branchPaths = ['easy', 'risk', 'faction'].slice(0, getRogueliteLimits().branchCount);
   const spawned = [];
   const branches = branchPaths.map((path) => {
     const existing = state.engagement.rabbit_holes.find((task) => task && task.path === path && Number(task.expires_at) > now);
@@ -619,8 +637,8 @@ function createBranchOptions(state, completedTask, now) {
     spawned.push(created);
     return created;
   }).filter(Boolean);
-  state.engagement.next_branches = branches.slice(0, 3);
-  const cap = Math.max(4, Number(config.roguelite?.maxRabbitHoles) || 9);
+  state.engagement.next_branches = branches.slice(0, getRogueliteLimits().branchCount);
+  const cap = getRogueliteLimits().maxRabbitHoles;
   state.engagement.rabbit_holes = state.engagement.rabbit_holes
     .filter((task) => task && !task.completed && (!task.expires_at || Number(task.expires_at) > now))
     .slice(-cap);
@@ -682,8 +700,10 @@ function completeEngagementLoops(state, run, now) {
       remainingRabbitHoles.push(task);
     }
   }
-  state.engagement.rabbit_holes = remainingRabbitHoles.concat(spawned).slice(-(Number(config.roguelite?.maxRabbitHoles) || 9));
-  state.engagement.next_branches = state.engagement.next_branches.filter((task) => task && Number(task.expires_at) > now).slice(0, 3);
+  state.engagement.rabbit_holes = remainingRabbitHoles.concat(spawned).slice(-getRogueliteLimits().maxRabbitHoles);
+  state.engagement.next_branches = state.engagement.next_branches
+    .filter((task) => task && Number(task.expires_at) > now)
+    .slice(0, getRogueliteLimits().branchCount);
   if (completed.length) {
     const dayKey = toUtcDateKey(now);
     if (state.engagement.last_completed_day !== dayKey) {
