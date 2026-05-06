@@ -70,7 +70,7 @@
 <script src="/js/site-shell.js"></script>
 <script>
 // ============== THE BRAIN - FULLY CONNECTED ==============
-const API_BASE = '/api/brain';
+const API_BASE =  'http://158.220.91.71:3001/api/brain';
 
 async function apiCall(endpoint, body = null) {
   const options = { method: body ? 'POST' : 'GET', headers: {'Content-Type': 'application/json'} };
