@@ -93,6 +93,49 @@
         <input id="advisorTask" placeholder="Describe the bug, idea, or task..." style="flex:1">
         <button onclick="runAdvisor()">Ask Advisor</button>
       </div>
+
+      <div class="row" style="margin-top:12px">
+        <button onclick="advisorPreset('Repo Health','Check current repo health, uncommitted files, branch, latest commit, and tell me if it is safe to start new work.')">Check Repo Health</button>
+        <button onclick="advisorPreset('Repo Health','Explain what has changed recently in THE BRAIN setup and what is safe to do next.')">Explain Current Setup</button>
+        <button onclick="advisorPreset('Repo Health','Generate a safe Codex/Copilot task message for the current issue, with no direct edits from THE BRAIN.')">Generate Codex Task</button>
+        <button onclick="advisorPreset('Repo Health','Review merge risk. Tell me what to check before merging a PR and what files are dangerous to touch.')">Review Merge Risk</button>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button onclick="advisorPreset('Website','Check website shell/layout risk. Look for likely files involved in homepage, navigation, CSS, and page shell problems. Do not edit.')">Website Shell Check</button>
+        <button onclick="advisorPreset('Website','Help me plan a clean website rebuild without editing files. Produce a Codex/Copilot instruction message.')">Website Rebuild Plan</button>
+        <button onclick="advisorPreset('Website','Check for dead pages, duplicate admin pages, redirect confusion, or stale public routes. Do not edit.')">Dead Page / Route Check</button>
+        <button onclick="advisorPreset('Website','Create a task message to improve THE BRAIN page layout in a Space-Agent-style workspace, but keep it read-only outside NPC Brain.')">Space-Agent UI Plan</button>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button onclick="advisorPreset('Block Topia','Check likely causes for Block Topia movement, start/continue, upgrade, NPC, or extraction bugs. Do not edit.')">Block Topia Bug Check</button>
+        <button onclick="advisorPreset('Block Topia','Generate a Codex/Copilot task to inspect Block Topia multiplayer state sync, movement, NPC combat, phases, and upgrade flow.')">Block Topia Codex Task</button>
+        <button onclick="advisorPreset('Block Topia','List likely files involved in Block Topia live city bugs and what tests should be run before merge.')">Block Topia Test Plan</button>
+        <button onclick="advisorPreset('Block Topia','Explain if a reported Block Topia bug sounds client-side, server-side, network sync, or gate/auth related.')">Classify Game Bug</button>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button onclick="advisorPreset('Arcade','Check likely causes for arcade XP, leaderboard, Telegram sync, score submission, or anti-farm issues. Do not edit.')">Arcade XP Check</button>
+        <button onclick="advisorPreset('Arcade','Generate a Codex/Copilot task to audit all arcade games for shared XP, leaderboard, faction effects, and fullscreen consistency.')">Arcade Audit Task</button>
+        <button onclick="advisorPreset('Arcade','Create a test checklist for arcade game changes before merge.')">Arcade Test Checklist</button>
+        <button onclick="advisorPreset('Arcade','Suggest ways to make arcade games feel more premium without changing files directly.')">Arcade Upgrade Ideas</button>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button onclick="advisorPreset('NPC Brain','Check NPC Brain health, model, knowledge, backup state, and likely cause of weak NPC replies.')">NPC Brain Check</button>
+        <button onclick="advisorPreset('NPC Brain','Suggest better NPC lore behaviour using current truth files and wiki context. Live edits allowed only after I choose them.')">NPC Lore Improvement</button>
+        <button onclick="advisorPreset('NPC Brain','Generate a safe plan to add new NPCs from Crypto Moonboys lore, including JSON fields and wiki context.')">Add NPC Plan</button>
+        <button onclick="advisorPreset('NPC Brain','Check whether Brain data is backed up and whether I should commit it.')">Brain Backup Check</button>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button onclick="advisorPreset('Admin / THE BRAIN','Check THE BRAIN admin security, token protection, exposed routes, and safe live-write boundaries.')">Admin Security Check</button>
+        <button onclick="advisorPreset('Admin / THE BRAIN','Suggest new THE BRAIN features that are safe, read-only, and useful for a non-developer.')">More Brain Features</button>
+        <button onclick="advisorPreset('Admin / THE BRAIN','Generate a task message for Codex/Copilot to improve THE BRAIN UI without changing website shell or game files.')">Brain UI Codex Task</button>
+        <button onclick="advisorPreset('Admin / THE BRAIN','Review whether Hermes should remain disconnected and how to use THE BRAIN as the safer read-only workspace.')">Hermes Safety Review</button>
+      </div>
+
       <div id="advisorOutput" class="logs" style="height:360px;margin-top:12px"></div>
     </section>
 
@@ -349,6 +392,12 @@ READ ONLY:
       });
       document.getElementById("controlResult").textContent = `${action}: ${data.success ? "ok" : "failed"}`;
       setTimeout(() => { loadStatus(); loadNpcs(); }, 1200);
+    }
+
+    function advisorPreset(scope, task) {
+      document.getElementById("advisorScope").value = scope;
+      document.getElementById("advisorTask").value = task;
+      runAdvisor();
     }
 
     async function runAdvisor() {
