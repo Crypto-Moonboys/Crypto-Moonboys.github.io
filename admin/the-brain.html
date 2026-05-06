@@ -122,3 +122,25 @@ console.log('%c🚀 THE BRAIN FULL CONTROL PANEL LOADED - OMG MODE', 'color:#00f
 
 </body>
 </html>
+<script>
+// Load NPCs into dropdown
+async function loadNPCs() {
+  try {
+    const res = await fetch('http://158.220.91.71:3001/api/brain/npcs');
+    const data = await res.json();
+    const select = document.getElementById('test-npc');
+    select.innerHTML = '';
+    data.npcs.forEach(npc => {
+      const opt = document.createElement('option');
+      opt.value = npc;
+      opt.textContent = npc.replace(/-/g, ' ').toUpperCase();
+      select.appendChild(opt);
+    });
+  } catch(e) {
+    console.log("NPC list failed, using defaults");
+  }
+}
+
+// Call it on load
+window.onload = loadNPCs;
+</script>
