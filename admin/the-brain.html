@@ -1,1 +1,272 @@
-<meta http-equiv="refresh" content="0; url=the-brain-new.html">
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>THE BRAIN — NPC Admin</title>
+  <style>
+    :root {
+      --bg:#050711;
+      --panel:#0b1020;
+      --panel2:#101933;
+      --line:#26385f;
+      --text:#e8f2ff;
+      --muted:#8ea4c7;
+      --cyan:#49eaff;
+      --green:#39ff88;
+      --red:#ff4f6d;
+      --yellow:#ffd166;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(circle at top,#142144 0,#050711 42%,#02030a 100%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+    .wrap{max-width:1480px;margin:0 auto;padding:28px}
+    header{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:22px}
+    h1{font-size:46px;letter-spacing:3px;margin:0;color:var(--cyan);text-shadow:0 0 18px rgba(73,234,255,.45)}
+    .sub{color:var(--muted);margin-top:8px}
+    .status-pill{border:1px solid var(--line);background:rgba(16,25,51,.8);padding:12px 16px;border-radius:14px}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+    .card,.panel{border:1px solid var(--line);background:linear-gradient(180deg,rgba(16,25,51,.92),rgba(7,11,25,.94));border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.35)}
+    .card{padding:16px}
+    .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+    .value{font-size:22px;margin-top:8px;color:var(--text)}
+    .panel{padding:18px;margin-bottom:18px}
+    h2{margin:0 0 14px;color:var(--cyan);font-size:18px;letter-spacing:1px}
+    button,select,input,textarea{background:#071022;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:11px;font:inherit}
+    button{cursor:pointer}
+    button:hover{border-color:var(--cyan);box-shadow:0 0 16px rgba(73,234,255,.18)}
+    .danger:hover{border-color:var(--red)}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .npc-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .npc{padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(5,9,20,.75);cursor:pointer}
+    .npc.active{border-color:var(--cyan);box-shadow:0 0 18px rgba(73,234,255,.18)}
+    .npc b{display:block;color:var(--text)}
+    .npc span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+    textarea{width:100%;min-height:120px;resize:vertical}
+    .chat-box,.logs{height:320px;overflow:auto;background:#030711;border:1px solid var(--line);border-radius:14px;padding:14px;color:#cfe8ff}
+    .msg{margin:0 0 12px;padding:10px;border-radius:12px;background:rgba(73,234,255,.07)}
+    .msg.admin{background:rgba(255,209,102,.08)}
+    .logs{font-family:Consolas,monospace;font-size:12px;color:#9fd6ff}
+    .tiny{font-size:12px;color:var(--muted)}
+    @media(max-width:1000px){.grid,.cards{grid-template-columns:1fr}.npc-list{grid-template-columns:1fr}header{display:block}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>THE BRAIN</h1>
+        <div class="sub">Admin control panel for Block Topia NPC intelligence.</div>
+      </div>
+      <div class="status-pill">
+        <div class="label">Connection</div>
+        <div id="connection" class="value">Checking...</div>
+      </div>
+    </header>
+
+    <section class="cards">
+      <div class="card"><div class="label">NPC Brain</div><div id="brainOnline" class="value">--</div></div>
+      <div class="card"><div class="label">Model</div><div id="modelName" class="value">--</div></div>
+      <div class="card"><div class="label">NPC Count</div><div id="npcCount" class="value">--</div></div>
+      <div class="card"><div class="label">Server Load</div><div id="serverLoad" class="value">--</div></div>
+    </section>
+
+    <div class="grid">
+      <main>
+        <section class="panel">
+          <h2>Controls</h2>
+          <div class="row">
+            <button onclick="controlBrain('start')">Start NPC Brain</button>
+            <button onclick="controlBrain('restart')">Restart NPC Brain</button>
+            <button class="danger" onclick="controlBrain('stop')">Stop NPC Brain</button>
+          </div>
+          <div class="row" style="margin-top:12px">
+            <input id="modelInput" placeholder="qwen2.5:0.5b">
+            <button onclick="setModel()">Switch Model</button>
+          </div>
+          <p id="controlResult" class="tiny"></p>
+        </section>
+
+        <section class="panel">
+          <h2>NPC Manager</h2>
+          <div id="npcList" class="npc-list"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Edit Selected NPC</h2>
+          <div class="row">
+            <input id="editName" placeholder="Name">
+            <input id="editBrand" placeholder="Brand">
+          </div>
+          <div class="row" style="margin-top:10px">
+            <input id="editTone" placeholder="Tone">
+            <input id="editRole" placeholder="Role">
+          </div>
+          <textarea id="editRules" placeholder="One rule per line" style="margin-top:10px"></textarea>
+          <button onclick="saveNpc()" style="margin-top:10px">Save NPC</button>
+          <p id="saveResult" class="tiny"></p>
+        </section>
+      </main>
+
+      <aside>
+        <section class="panel">
+          <h2>Live Chat Tester</h2>
+          <select id="chatNpc"></select>
+          <div id="chatBox" class="chat-box" style="margin-top:10px"></div>
+          <div class="row" style="margin-top:10px">
+            <input id="chatInput" placeholder="Talk to selected NPC..." style="flex:1">
+            <button onclick="sendChat()">Send</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Real-time Logs</h2>
+          <div id="logs" class="logs"></div>
+          <button onclick="loadLogs()" style="margin-top:10px">Refresh Logs</button>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const API = "http://158.220.91.71:3001/api/brain";
+    let selectedNpc = null;
+    let npcs = [];
+
+    async function getJson(url, opts) {
+      const res = await fetch(url, opts);
+      return res.json();
+    }
+
+    async function loadStatus() {
+      try {
+        const data = await getJson(API + "/status");
+        document.getElementById("connection").textContent = data.online ? "ONLINE" : "OFFLINE";
+        document.getElementById("brainOnline").textContent = data.npcBrain?.online ? "ONLINE" : "OFFLINE";
+        document.getElementById("modelName").textContent = data.npcBrain?.model || "--";
+        document.getElementById("npcCount").textContent = data.npcBrain?.npcCount ?? "--";
+        document.getElementById("serverLoad").textContent = data.system?.load?.[0]?.toFixed(2) ?? "--";
+        document.getElementById("modelInput").placeholder = data.npcBrain?.model || "qwen2.5:0.5b";
+      } catch (e) {
+        document.getElementById("connection").textContent = "FAILED";
+      }
+    }
+
+    async function loadNpcs() {
+      const data = await getJson(API + "/npcs");
+      npcs = data.npcs || [];
+      const list = document.getElementById("npcList");
+      const select = document.getElementById("chatNpc");
+      list.innerHTML = "";
+      select.innerHTML = "";
+
+      npcs.forEach(npc => {
+        const div = document.createElement("div");
+        div.className = "npc" + (selectedNpc?.id === npc.id ? " active" : "");
+        div.innerHTML = `<b>${npc.name}</b><span>${npc.brand} — ${npc.role}</span>`;
+        div.onclick = () => selectNpc(npc.id);
+        list.appendChild(div);
+
+        const opt = document.createElement("option");
+        opt.value = npc.id;
+        opt.textContent = npc.name;
+        select.appendChild(opt);
+      });
+
+      if (!selectedNpc && npcs[0]) selectNpc(npcs[0].id);
+    }
+
+    async function selectNpc(id) {
+      const data = await getJson(API + "/npcs/" + encodeURIComponent(id));
+      selectedNpc = data.npc;
+      document.getElementById("chatNpc").value = id;
+      document.getElementById("editName").value = selectedNpc.name || "";
+      document.getElementById("editBrand").value = selectedNpc.brand || "";
+      document.getElementById("editTone").value = selectedNpc.tone || "";
+      document.getElementById("editRole").value = selectedNpc.role || "";
+      document.getElementById("editRules").value = (selectedNpc.rules || []).join("\n");
+      loadNpcs();
+    }
+
+    async function saveNpc() {
+      if (!selectedNpc) return;
+      const body = {
+        name: document.getElementById("editName").value,
+        brand: document.getElementById("editBrand").value,
+        tone: document.getElementById("editTone").value,
+        role: document.getElementById("editRole").value,
+        rules: document.getElementById("editRules").value.split("\n").map(x => x.trim()).filter(Boolean)
+      };
+      const data = await getJson(API + "/npcs/" + encodeURIComponent(selectedNpc.id), {
+        method:"PUT",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify(body)
+      });
+      document.getElementById("saveResult").textContent = data.success ? "Saved." : "Save failed.";
+      await loadNpcs();
+    }
+
+    async function sendChat() {
+      const npc_id = document.getElementById("chatNpc").value;
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if (!text) return;
+      addMsg("admin", "You: " + text);
+      input.value = "";
+
+      const data = await getJson(API + "/chat", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({ npc_id, player_input:text })
+      });
+      addMsg("npc", `${data.npc_name || npc_id}: ${data.reply || "No reply."}`);
+    }
+
+    function addMsg(type, text) {
+      const box = document.getElementById("chatBox");
+      const div = document.createElement("div");
+      div.className = "msg " + type;
+      div.textContent = text;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function setModel() {
+      const model = document.getElementById("modelInput").value.trim();
+      if (!model) return;
+      const data = await getJson(API + "/model", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({ model })
+      });
+      document.getElementById("controlResult").textContent = data.success ? "Model switched." : "Model switch failed.";
+      loadStatus();
+    }
+
+    async function controlBrain(action) {
+      const data = await getJson(API + "/control", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({ action })
+      });
+      document.getElementById("controlResult").textContent = `${action}: ${data.success ? "ok" : "failed"}`;
+      setTimeout(() => { loadStatus(); loadNpcs(); }, 1200);
+    }
+
+    async function loadLogs() {
+      const data = await getJson(API + "/logs?lines=160");
+      document.getElementById("logs").textContent = (data.logs || []).join("\n");
+    }
+
+    document.getElementById("chatInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") sendChat();
+    });
+
+    loadStatus();
+    loadNpcs();
+    loadLogs();
+    setInterval(loadStatus, 5000);
+    setInterval(loadLogs, 7000);
+  </script>
+</body>
+</html>
