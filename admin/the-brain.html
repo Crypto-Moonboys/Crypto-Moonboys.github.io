@@ -78,6 +78,45 @@
       <button onclick="loadBrainHealth()" style="margin-top:10px">Refresh Health</button>
     </section>
 
+    <section class="panel">
+      <h2>Advisor Mode — Read Only</h2>
+      <p class="tiny">Website, game, repo, worker, and shell work is read-only here. THE BRAIN only generates findings and Codex/Copilot task messages. Live editing is allowed only for NPC Brain data.</p>
+      <div class="row">
+        <select id="advisorScope">
+          <option>Repo Health</option>
+          <option>Website</option>
+          <option>Block Topia</option>
+          <option>Arcade</option>
+          <option>NPC Brain</option>
+          <option>Admin / THE BRAIN</option>
+        </select>
+        <input id="advisorTask" placeholder="Describe the bug, idea, or task..." style="flex:1">
+        <button onclick="runAdvisor()">Ask Advisor</button>
+      </div>
+      <div id="advisorOutput" class="logs" style="height:360px;margin-top:12px"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Live-Write Boundary</h2>
+      <div class="logs" style="height:auto;min-height:90px">
+LIVE EDIT ALLOWED:
+✓ NPC personality
+✓ NPC rules
+✓ NPC wiki/lore context
+✓ NPC model switch
+✓ npc-brain restart
+✓ Brain data backup / restore / commit
+
+READ ONLY:
+✗ Website files
+✗ Arcade files
+✗ Block Topia game files
+✗ Worker/API production code
+✗ Homepage shell / CSS / layout
+✗ GitHub Pages content
+      </div>
+    </section>
+
     <div class="grid">
       <main>
         <section class="panel">
@@ -310,6 +349,53 @@
       });
       document.getElementById("controlResult").textContent = `${action}: ${data.success ? "ok" : "failed"}`;
       setTimeout(() => { loadStatus(); loadNpcs(); }, 1200);
+    }
+
+    async function runAdvisor() {
+      const scope = document.getElementById("advisorScope").value;
+      const task = document.getElementById("advisorTask").value.trim();
+      const output = document.getElementById("advisorOutput");
+
+      if (!task) {
+        output.textContent = "Enter a task first.";
+        return;
+      }
+
+      output.textContent = "Advisor checking repo state...";
+      const data = await getJson(API + "/advisor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope, task })
+      });
+
+      if (!data.success) {
+        output.textContent = "Advisor failed: " + (data.error || "unknown error");
+        return;
+      }
+
+      output.textContent = [
+        "MODE: " + data.mode,
+        "LIVE WRITE ALLOWED ONLY FOR: " + data.liveWriteAllowedOnlyFor,
+        "SCOPE: " + data.scope,
+        "RISK: " + data.risk,
+        "",
+        "REPO:",
+        "Branch: " + data.repo.branch,
+        "Last Commit: " + data.repo.lastCommit,
+        "Clean: " + (data.repo.clean ? "yes" : "no"),
+        "",
+        "LIKELY FILES:",
+        ...((data.likelyFiles || []).length ? data.likelyFiles.map(f => "- " + f) : ["- No obvious files matched. Ask Codex/Copilot to search first."]),
+        "",
+        "FINDINGS:",
+        ...(data.findings || []).map(x => "- " + x),
+        "",
+        "SUGGESTED FIX PLAN:",
+        ...(data.suggestedFixPlan || []).map((x, i) => `${i + 1}. ${x}`),
+        "",
+        "MESSAGE FOR CODEX / COPILOT:",
+        data.codexMessage
+      ].join("\n");
     }
 
     async function loadRepoStatus() {

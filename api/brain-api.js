@@ -356,4 +356,129 @@ app.get("/api/brain/health-summary", requireAdmin, async (req, res) => {
   });
 });
 
+
+app.post("/api/brain/advisor", requireAdmin, async (req, res) => {
+  const task = String(req.body?.task || "").trim().slice(0, 2000);
+  const scope = String(req.body?.scope || "Repo Health").trim();
+
+  if (!task) {
+    return res.status(400).json({
+      success: false,
+      error: "Missing advisor task"
+    });
+  }
+
+  const repoStatus = await runRepoGit(["status", "--short"]);
+  const branch = await runRepoGit(["branch", "--show-current"]);
+  const lastCommit = await runRepoGit(["log", "-1", "--oneline"]);
+
+  const statusLines = repoStatus.stdout.split("\n").filter(Boolean);
+  const isClean = statusLines.length === 0;
+
+  let likelyFiles = [];
+
+  const lower = `${scope} ${task}`.toLowerCase();
+
+  if (lower.includes("block topia") || lower.includes("multiplayer") || lower.includes("npc") || lower.includes("upgrade")) {
+    likelyFiles.push(
+      "games/block-topia/index.html",
+      "games/block-topia/main.js",
+      "games/block-topia/network.js",
+      "server/block-topia/src/rooms/MinimalCityRoom.js"
+    );
+  }
+
+  if (lower.includes("arcade") || lower.includes("xp") || lower.includes("leaderboard")) {
+    likelyFiles.push(
+      "games/index.html",
+      "js/leaderboard-client.js",
+      "js/arcade-meta-system.js",
+      "js/arcade-meta-ui.js",
+      "workers/moonboys-api/worker.js"
+    );
+  }
+
+  if (lower.includes("website") || lower.includes("shell") || lower.includes("homepage") || lower.includes("layout")) {
+    likelyFiles.push(
+      "index.html",
+      "css/retro-16bit-theme.css",
+      "games/index.html",
+      "community.html",
+      "how-to-play.html"
+    );
+  }
+
+  if (lower.includes("brain") || lower.includes("admin")) {
+    likelyFiles.push(
+      "admin/the-brain.html",
+      "api/brain-api.js",
+      "admin/brain-data/"
+    );
+  }
+
+  likelyFiles = [...new Set(likelyFiles)];
+
+  const risk =
+    scope === "NPC Brain" ? "LOW for NPC edits only. HIGH if changing site/game files." :
+    scope === "Repo Health" ? "LOW" :
+    "MEDIUM — advisor is read-only; actual edits must be done by Codex/Copilot after review.";
+
+  const codexMessage = [
+    "READ FIRST: Do not drift from current repo truth. Do not make unrelated UI/shell changes.",
+    "",
+    `Task scope: ${scope}`,
+    `User request: ${task}`,
+    "",
+    "Rules:",
+    "- Do not directly change unrelated files.",
+    "- Do not rewrite the site shell unless explicitly requested.",
+    "- Do not touch NPC Brain live data unless the task is specifically NPC Brain.",
+    "- Keep THE BRAIN as read-only advisor for website/game/repo work.",
+    "- Only NPC Brain personality/rules/wiki context may be live-edited from THE BRAIN.",
+    "",
+    "Likely files to inspect:",
+    ...(likelyFiles.length ? likelyFiles.map(f => `- ${f}`) : ["- Determine from repo search before editing."]),
+    "",
+    "Required output:",
+    "- What you inspected",
+    "- Root cause or likely cause",
+    "- Exact files changed",
+    "- Tests/checks run",
+    "- Any risks or follow-up work",
+    "",
+    "Before final response, run relevant syntax/tests/smoke checks where possible."
+  ].join("\n");
+
+  res.json({
+    success: true,
+    mode: "READ_ONLY_ADVISOR",
+    liveWriteAllowedOnlyFor: "NPC Brain personality/rules/wiki context",
+    scope,
+    task,
+    repo: {
+      branch: branch.stdout.trim(),
+      lastCommit: lastCommit.stdout.trim(),
+      clean: isClean,
+      status: statusLines
+    },
+    risk,
+    likelyFiles,
+    findings: [
+      "Advisor Mode does not edit files.",
+      isClean ? "Repo is currently clean." : `${statusLines.length} repo change(s) are present.`,
+      "Use Codex/Copilot for actual website, game, worker, or layout edits.",
+      "Use THE BRAIN live controls only for NPC Brain data and process controls."
+    ],
+    suggestedFixPlan: [
+      "Confirm scope.",
+      "Inspect likely files.",
+      "Identify root cause.",
+      "Make the smallest safe change in Codex/Copilot.",
+      "Run checks.",
+      "Open or review PR before merge."
+    ],
+    codexMessage
+  });
+});
+
 app.listen(PORT, () => console.log(`BRAIN API running on port ${PORT}`));
