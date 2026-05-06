@@ -109,3 +109,10 @@ What is not live:
 - Do not preserve old wrong details in archive sections.
 - Do not claim SAM, seasons, full economy, full HODL Wars, or Neon Sprawl integration are live unless the code is wired, accessible, tested, and documented.
 - Do not blur Score, Arcade XP, Faction XP, Block Topia XP / City XP, Rebel Ink, tokens, or NFTs.
+
+## Space Agent Protected Workspace
+
+- Static launcher page: `/admin/space-agent.html`
+- VPS + DNS + TLS runbook: `/docs/space-agent-protected-access-runbook.md`
+- Required website change workflow:
+  - `inspect -> explain -> propose -> user confirms -> edit -> test -> commit`

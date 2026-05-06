@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Space Agent | Protected Workspace</title>
+  <meta name="robots" content="noindex,nofollow">
+  <style>
+    :root {
+      --bg: #07131f;
+      --panel: #0f2236;
+      --line: #2c4c6e;
+      --text: #e6f3ff;
+      --muted: #9ec0dd;
+      --accent: #55d7ff;
+      --ok: #58f0a7;
+      --warn: #ffd27a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 10%, #16385b 0, transparent 48%),
+        radial-gradient(circle at 90% 80%, #12283f 0, transparent 40%),
+        var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+    .card {
+      width: min(840px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(15,34,54,.95), rgba(9,21,34,.97));
+      box-shadow: 0 26px 60px rgba(0,0,0,.45);
+      padding: 24px;
+    }
+    h1 {
+      margin: 0;
+      color: var(--accent);
+      letter-spacing: 1px;
+      font-size: clamp(1.6rem, 2vw, 2rem);
+    }
+    p {
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 10px 0 0;
+    }
+    .cta {
+      margin-top: 18px;
+      display: inline-block;
+      text-decoration: none;
+      color: #07131f;
+      background: linear-gradient(180deg, #79e4ff, #55d7ff);
+      font-weight: 700;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid #96ebff;
+    }
+    .rules {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      background: rgba(5, 14, 23, 0.72);
+    }
+    .rules h2 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      color: var(--ok);
+    }
+    ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--text);
+    }
+    li { margin: 6px 0; }
+    .warn {
+      margin-top: 16px;
+      border: 1px solid #7c6030;
+      color: var(--warn);
+      background: rgba(38, 28, 11, 0.55);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.94rem;
+    }
+    .small {
+      margin-top: 12px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Space Agent Protected Workspace</h1>
+    <p>
+      Space Agent is a protected workspace for repo inspection, planning, patch generation,
+      and controlled website work.
+    </p>
+    <a class="cta" href="https://space.cryptomoonboys.com" target="_blank" rel="noopener noreferrer">
+      Open Protected Space Agent
+    </a>
+
+    <section class="rules">
+      <h2>Required Workflow</h2>
+      <ul>
+        <li>inspect -> explain -> propose -> user confirms -> edit -> test -> commit</li>
+      </ul>
+      <h2 style="margin-top:14px">Safety Rules</h2>
+      <ul>
+        <li>Do not auto-edit production blindly.</li>
+        <li>Do not bypass tests.</li>
+        <li>Do not push direct unreviewed changes.</li>
+        <li>Do not alter THE BRAIN live-edit rules.</li>
+        <li>Do not expose Ollama publicly.</li>
+        <li>Do not expose admin tools without authentication.</li>
+      </ul>
+    </section>
+
+    <div class="warn">
+      Access requires Nginx HTTP Basic Auth first, then Space Agent login.
+    </div>
+    <p class="small">
+      This page is a launcher only. No credentials are embedded here.
+    </p>
+  </main>
+</body>
+</html>
