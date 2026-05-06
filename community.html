@@ -30,6 +30,9 @@
       <p class="lead">If the wiki is memory and the arcade is action, the Battle Chamber is proof. This is where movement becomes visible.</p>
     </section>
 
+    <div id="gklink-status" class="gklink-banner" style="display:none"></div>
+    <div data-tg-sync-cta></div>
+
     <section class="section">
       <h2>What The Battle Chamber Actually Is</h2>
       <p>The Battle Chamber is not a forum or comment section. It is the public proof layer of the entire Crypto Moonboys system. This is where activity becomes visible to the entire community.</p>
@@ -60,6 +63,25 @@
       <p>As City Block Topia / Neon Sprawl is integrated, the Battle Chamber will expand to include zone control, large-scale rebellion events, and deeper faction conflicts.</p>
     </section>
 
+    <!-- Telegram & XP Features -->
+    <section class="section">
+      <h2>Telegram Status</h2>
+      <div id="tg-community-leaderboard"><div class="community-loading">Loading community leaderboard…</div></div>
+    </section>
+
+    <section class="section">
+      <h2>Live Activity</h2>
+      <div id="tg-activity-feed"><div class="community-loading">Loading activity…</div></div>
+    </section>
+
+    <section class="section">
+      <h2>Your Profile</h2>
+      <div id="tg-profile-wrapper" style="display:none">
+        <div id="tg-profile-card"></div>
+        <div id="tg-daily-status"></div>
+      </div>
+    </section>
+
   </div>
 </main>
 
@@ -71,8 +93,10 @@
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+<script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
+<script data-cfasync="false" src="/js/telegram-community.js"></script>
 
 </body>
 </html>
