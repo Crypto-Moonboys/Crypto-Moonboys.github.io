@@ -126,6 +126,7 @@
             <button onclick="loadRepoStatus()">Refresh Repo</button>
             <button onclick="backupBrainData()">Backup Brain Data</button>
             <button class="danger" onclick="restoreBrainData()">Restore Brain Data</button>
+            <button onclick="commitBrainBackup()">Commit Brain Backup</button>
           </div>
           <p id="backupResult" class="tiny"></p>
         </section>
@@ -327,6 +328,29 @@
       await loadNpcs();
       await loadRepoStatus();
       await loadLogs();
+    }
+
+    async function commitBrainBackup() {
+      const result = document.getElementById("backupResult");
+      const message = prompt("Commit message", "Update THE BRAIN data backup");
+      if (!message) return;
+
+      result.textContent = "Committing Brain backup...";
+      const data = await getJson(API + "/commit-backup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      });
+
+      if (data.success && data.committed) {
+        result.textContent = "Brain backup committed and pushed.";
+      } else if (data.success && !data.committed) {
+        result.textContent = data.message || "No Brain backup changes to commit.";
+      } else {
+        result.textContent = "Commit failed: " + (data.error || "unknown error");
+      }
+
+      await loadRepoStatus();
     }
 
     async function loadLogs() {

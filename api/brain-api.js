@@ -244,4 +244,45 @@ app.post("/api/brain/restore", requireAdmin, async (req, res) => {
   });
 });
 
+
+app.post("/api/brain/commit-backup", requireAdmin, async (req, res) => {
+  const message = String(req.body?.message || "Update THE BRAIN data backup").trim().slice(0, 120);
+
+  const status = await runRepoGit(["status", "--short", "admin/brain-data"]);
+  const changed = status.stdout.split("\n").filter(Boolean);
+
+  if (!changed.length) {
+    return res.json({
+      success: true,
+      committed: false,
+      message: "No Brain backup changes to commit.",
+      changedFiles: []
+    });
+  }
+
+  const add = await runRepoGit(["add", "admin/brain-data"]);
+  if (!add.ok) {
+    return res.status(500).json({ success: false, error: "git add failed", details: add });
+  }
+
+  const commit = await runRepoGit(["commit", "-m", message]);
+  if (!commit.ok) {
+    return res.status(500).json({ success: false, error: "git commit failed", details: commit });
+  }
+
+  const push = await runRepoGit(["push"]);
+  if (!push.ok) {
+    return res.status(500).json({ success: false, error: "git push failed", details: push });
+  }
+
+  res.json({
+    success: true,
+    committed: true,
+    message,
+    changedFiles: changed,
+    commit: commit.stdout,
+    push: push.stdout || push.stderr
+  });
+});
+
 app.listen(PORT, () => console.log(`BRAIN API running on port ${PORT}`));
