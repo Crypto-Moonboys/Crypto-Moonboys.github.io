@@ -24,6 +24,7 @@ let hudChaos = null;
 let hudComeback = null;
 let hudLoop = null;
 let hudMission = null;
+let hudRabbit = null;
 let streakBarInner = null;
 let streakCountdown = null;
 let runActive = false;
@@ -129,6 +130,7 @@ function ensureUi() {
       <div class="meta-row" id="arcade-meta-comeback"><span>Pressure</span><span class="meta-val" id="arcade-meta-comeback-val">stable</span></div>
       <div class="meta-row" id="arcade-meta-loop"><span>Loop</span><span class="meta-val" id="arcade-meta-loop-val">idle</span></div>
       <div class="meta-row" id="arcade-meta-mission"><span>Mission</span><span class="meta-val" id="arcade-meta-mission-val">none</span></div>
+      <div class="meta-row" id="arcade-meta-rabbit"><span>Rabbits</span><span class="meta-val" id="arcade-meta-rabbit-val">0</span></div>
       <div id="arcade-meta-streak-pressure">
         <div class="meta-row"><span>Decay</span><span class="meta-val" id="arcade-meta-streak-countdown">--:--</span></div>
         <div id="arcade-meta-streak-bar"><div id="arcade-meta-streak-bar-inner"></div></div>
@@ -148,6 +150,7 @@ function ensureUi() {
   hudComeback = uiRoot.querySelector('#arcade-meta-comeback-val');
   hudLoop = uiRoot.querySelector('#arcade-meta-loop-val');
   hudMission = uiRoot.querySelector('#arcade-meta-mission-val');
+  hudRabbit = uiRoot.querySelector('#arcade-meta-rabbit-val');
   streakBarInner = uiRoot.querySelector('#arcade-meta-streak-bar-inner');
   streakCountdown = uiRoot.querySelector('#arcade-meta-streak-countdown');
 }
@@ -242,6 +245,11 @@ function updateHud() {
       hudMission.textContent = 'none';
       missionRow?.classList.remove('pulse');
     }
+  }
+  if (hudRabbit) {
+    const rabbits = Array.isArray(liveContext?.roguelite?.rabbit_holes) ? liveContext.roguelite.rabbit_holes.length : 0;
+    const autos = Number(liveContext?.roguelite?.total_auto_submits) || 0;
+    hudRabbit.textContent = `${rabbits} live • ${autos} auto`;
   }
 
   const pressureRoot = uiRoot.querySelector('#arcade-meta-streak-pressure');
@@ -495,6 +503,32 @@ function wireMetaEventListeners() {
     pulseScreen('arcade-meta-flash', 220);
   };
   document.addEventListener('arcade-meta-quest-completed', onQuestComplete);
+
+  document.addEventListener('arcade-meta-roguelite-completed', (ev) => {
+    const task = ev.detail?.task;
+    if (!task) return;
+    showPopup({
+      title: '⚡ AUTO-SUBMITTED',
+      reward: `${task.title || 'Task'} • new rabbit holes opening`,
+      rarity: task.path === 'risk' ? 'wtf' : 'epic',
+      durationMs: 2300,
+    });
+    safePlay('meta-quest-complete');
+    pulseScreen('arcade-meta-flash', 240);
+  });
+
+  document.addEventListener('arcade-meta-rabbit-holes-spawned', (ev) => {
+    const tasks = Array.isArray(ev.detail?.tasks) ? ev.detail.tasks : [];
+    if (!tasks.length) return;
+    showNearMiss(`${tasks.length} NEW XP RABBIT HOLES`, 'rabbit-spawn', 800);
+    showPopup({
+      title: '🕳️ BRANCH PATHS OPEN',
+      reward: 'Easy / Risk / Faction routes are live',
+      rarity: 'epic',
+      durationMs: 1900,
+    });
+    updateHud();
+  });
 
   document.addEventListener('arcade-meta-near-miss', (ev) => {
     const progress = Number(ev.detail?.progress) || 0;

@@ -85,6 +85,19 @@ const DEFAULT_CONFIG = {
     chaosChanceBoost: 0.03,
     featuredGameBoost: 0.18,
   },
+  roguelite: {
+    dailyQuestCount: 12,
+    rabbitMin: 2,
+    rabbitMax: 4,
+    popupRabbitMin: 1,
+    popupRabbitMax: 3,
+    maxRabbitHoles: 9,
+    rabbitTtlMs: 18 * MINUTE_MS,
+    dailyBonusMultiplier: 0.08,
+    rabbitBonusMultiplier: 0.12,
+    riskBonusMultiplier: 0.2,
+    branchCount: 3,
+  },
 };
 
 let config = deepClone(DEFAULT_CONFIG);
@@ -188,6 +201,76 @@ function createInitialState() {
       last_incentive_at: null,
       last_incentive_type: null,
     },
+    engagement: createInitialEngagement(now),
+  };
+}
+
+function createInitialEngagement(now = nowMs()) {
+  return {
+    day_key: toUtcDateKey(now),
+    daily_quests: [],
+    rabbit_holes: [],
+    next_branches: [],
+    completed_tasks: [],
+    streak_days: 0,
+    last_completed_day: null,
+    total_auto_submits: 0,
+  };
+}
+
+function sanitizeTask(input) {
+  if (!input || typeof input !== 'object') return null;
+  const taskGame = typeof input.game === 'string'
+    ? (input.game === 'asteroid-fork' ? 'asteroids' : input.game)
+    : null;
+  return {
+    id: String(input.id || makeQuestId('engage')),
+    type: String(input.type || 'score_target'),
+    path: String(input.path || 'easy'),
+    title: String(input.title || 'Keep the loop alive'),
+    description: String(input.description || 'Complete a valid arcade action.'),
+    game: taskGame,
+    target: Number.isFinite(Number(input.target)) ? Number(input.target) : null,
+    required_runs: Number.isFinite(Number(input.required_runs)) ? Math.max(1, Math.floor(Number(input.required_runs))) : null,
+    required_unique_games: Number.isFinite(Number(input.required_unique_games)) ? Math.max(1, Math.floor(Number(input.required_unique_games))) : null,
+    min_duration_ms: Number.isFinite(Number(input.min_duration_ms)) ? Math.max(1000, Math.floor(Number(input.min_duration_ms))) : null,
+    switches: Number.isFinite(Number(input.switches)) ? Math.max(1, Math.floor(Number(input.switches))) : null,
+    window_ms: Number.isFinite(Number(input.window_ms)) ? Math.max(30 * 1000, Math.floor(Number(input.window_ms))) : null,
+    created_at: Number(input.created_at) || nowMs(),
+    expires_at: Number(input.expires_at) || null,
+    bonus_multiplier: Number.isFinite(Number(input.bonus_multiplier)) ? Math.max(0, Number(input.bonus_multiplier)) : 0,
+    source: String(input.source || 'daily'),
+    chain_depth: Math.max(0, Math.floor(Number(input.chain_depth) || 0)),
+    completed: !!input.completed,
+    completed_at: Number(input.completed_at) || null,
+  };
+}
+
+function getRogueliteLimits() {
+  const dailyAvailable = DAILY_ROGUELITE_QUESTS.length;
+  const configuredDaily = Math.floor(Number(config.roguelite?.dailyQuestCount) || dailyAvailable);
+  const configuredRabbitCap = Math.floor(Number(config.roguelite?.maxRabbitHoles) || 9);
+  const branchAvailable = Object.keys(BRANCH_PATH_TEMPLATES).length;
+  const configuredBranchCount = Math.floor(Number(config.roguelite?.branchCount) || branchAvailable);
+  return {
+    dailyQuestCount: Math.min(dailyAvailable, Math.max(1, configuredDaily)),
+    maxRabbitHoles: Math.max(4, configuredRabbitCap),
+    branchCount: Math.min(branchAvailable, Math.max(1, configuredBranchCount)),
+  };
+}
+
+function sanitizeEngagement(input, fallback) {
+  const source = input && typeof input === 'object' ? input : {};
+  const limits = getRogueliteLimits();
+  return {
+    day_key: typeof source.day_key === 'string' ? source.day_key : fallback.day_key,
+    daily_quests: Array.isArray(source.daily_quests) ? source.daily_quests.map(sanitizeTask).filter(Boolean).slice(0, limits.dailyQuestCount) : [],
+    rabbit_holes: Array.isArray(source.rabbit_holes) ? source.rabbit_holes.map(sanitizeTask).filter(Boolean).slice(-limits.maxRabbitHoles) : [],
+    next_branches: Array.isArray(source.next_branches) ? source.next_branches.map(sanitizeTask).filter(Boolean).slice(-limits.branchCount) : [],
+    completed_tasks: Array.isArray(source.completed_tasks) ? source.completed_tasks.map(sanitizeTask).filter(Boolean).slice(-240) : [],
+    streak_days: Math.max(0, Math.floor(Number(source.streak_days) || 0)),
+    last_completed_day: typeof source.last_completed_day === 'string' ? source.last_completed_day : null,
+    total_auto_submits: Math.max(0, Math.floor(Number(source.total_auto_submits) || 0)),
   };
 }
 
@@ -216,6 +299,7 @@ function sanitizeState(input) {
         ? input.retention.last_incentive_type
         : null,
     },
+    engagement: sanitizeEngagement(input?.engagement, base.engagement),
   };
 }
 
@@ -442,6 +526,195 @@ function clearExpiredRareEvent(state, now) {
   return null;
 }
 
+
+const DAILY_ROGUELITE_QUESTS = [
+  { id: 'daily-play-any', type: 'multi_game_burst', path: 'easy', title: 'Play 3 arcade runs', description: 'Safe XP path: complete 3 accepted runs today.', required_runs: 3, required_unique_games: 1, window_ms: MS_PER_DAY },
+  { id: 'daily-three-games', type: 'multi_game_burst', path: 'easy', title: 'Play 3 different games', description: 'Auto-submits and opens multiple paths.', required_runs: 3, required_unique_games: 3, window_ms: MS_PER_DAY },
+  { id: 'daily-snake-60', type: 'snake_survivor', path: 'easy', title: 'Survive 60s in Snake Run', description: 'Hold the line for a clean streak bump.', game: 'snake', min_duration_ms: 60 * 1000 },
+  { id: 'daily-invaders-push', type: 'score_target', path: 'competitive', title: 'Push Invaders 3008 to 900+', description: 'Leaderboard pressure path.', game: 'invaders', target: 900 },
+  { id: 'daily-btqm-zone', type: 'btqm_zone_clear', path: 'exploration', title: 'Clear a BTQM zone', description: 'Dungeon path into Block Topia lore.', game: 'btqm', target: 1 },
+  { id: 'daily-switch', type: 'switch_chain', path: 'risk', title: 'Switch games twice fast', description: 'Risk path: rapid game swaps for bigger XP tempo.', switches: 2, window_ms: 12 * MINUTE_MS },
+  { id: 'daily-pacchain', type: 'score_target', path: 'competitive', title: 'Chain Pac-Chain to 800+', description: 'Combo path toward leaderboard pressure.', game: 'pacchain', target: 800 },
+  { id: 'daily-breakout', type: 'score_target', path: 'risk', title: 'Bullrun Breakout 750+', description: 'Risk path with brick-break combo momentum.', game: 'breakout', target: 750 },
+  { id: 'daily-tetris', type: 'score_target', path: 'easy', title: 'Stack Tetris to 700+', description: 'Safe score-chase path.', game: 'tetris', target: 700 },
+  { id: 'daily-crystal', type: 'score_target', path: 'exploration', title: 'Solve Crystal Quest 600+', description: 'Exploration path through clue-hunt energy.', game: 'crystal', target: 600 },
+  { id: 'daily-asteroids', type: 'score_target', path: 'risk', title: 'Survive Asteroid Fork 800+', description: 'High-risk survival branch.', game: 'asteroids', target: 800 },
+  { id: 'daily-faction-signal', type: 'multi_game_burst', path: 'faction', title: 'Feed your faction signal', description: 'Complete 2 runs in different games to help faction momentum.', required_runs: 2, required_unique_games: 2, window_ms: MS_PER_DAY },
+];
+
+const RABBIT_HOLE_TEMPLATES = [
+  { type: 'score_target', path: 'competitive', title: 'Push a personal best in {GAME}', description: 'The board is watching. Beat this score branch.', target: 1100 },
+  { type: 'score_target', path: 'risk', title: 'Risk branch: spike {GAME} to {TARGET}+', description: 'Harder, faster, bigger XP tempo.', target: 1400 },
+  { type: 'multi_game_burst', path: 'easy', title: 'Clear 2 runs before the window closes', description: 'Safe path: keep XP ticking.', required_runs: 2, required_unique_games: 1, window_ms: 6 * MINUTE_MS },
+  { type: 'multi_game_burst', path: 'faction', title: 'Faction surge: 3 runs / 2 games', description: 'Help your faction and keep the run alive.', required_runs: 3, required_unique_games: 2, window_ms: 8 * MINUTE_MS },
+  { type: 'switch_chain', path: 'risk', title: 'Roguelite swap: chain 3 game switches', description: 'Branch into a harder route immediately.', switches: 3, window_ms: 10 * MINUTE_MS },
+  { type: 'snake_survivor', path: 'easy', title: 'Hold Snake Run for 75 seconds', description: 'Safe survival branch with steady XP.', game: 'snake', min_duration_ms: 75 * 1000 },
+  { type: 'btqm_zone_clear', path: 'exploration', title: 'Dive deeper: clear BTQM again', description: 'Dungeon rabbit hole toward Block Topia.', game: 'btqm', target: 1 },
+];
+
+const BRANCH_PATH_TEMPLATES = {
+  easy: { type: 'multi_game_burst', path: 'easy', title: 'Easy branch: 2 steady runs', description: 'Safe XP path. Keep the ticker moving without gambling the streak.', required_runs: 2, required_unique_games: 1, window_ms: 7 * MINUTE_MS },
+  risk: { type: 'score_target', path: 'risk', title: 'Risk branch: spike {GAME} to {TARGET}+', description: 'Harder chase, bigger bonus, faster XP pressure.', target: 1500 },
+  faction: { type: 'multi_game_burst', path: 'faction', title: 'Faction branch: 3 runs / 2 games', description: 'Feed faction momentum and open the next war path.', required_runs: 3, required_unique_games: 2, window_ms: 9 * MINUTE_MS },
+};
+
+function formatTemplateTitle(template, game, target) {
+  return String(template.title || 'New rabbit hole')
+    .replace('{GAME}', String(game || 'ARCADE').toUpperCase())
+    .replace('{TARGET}', String(target || template.target || Number(config.quest.scoreTarget) || 800));
+}
+
+function ensureEngagementDay(state, now) {
+  if (!state.engagement) state.engagement = createInitialEngagement(now);
+  const dayKey = toUtcDateKey(now);
+  if (state.engagement.day_key !== dayKey) {
+    const previousStreak = state.engagement.streak_days || 0;
+    const keptStreak = state.engagement.last_completed_day
+      && (new Date(`${dayKey}T00:00:00Z`) - new Date(`${state.engagement.last_completed_day}T00:00:00Z`)) <= MS_PER_DAY;
+    state.engagement = createInitialEngagement(now);
+    state.engagement.streak_days = keptStreak ? previousStreak : 0;
+  }
+  const dailyQuestCount = getRogueliteLimits().dailyQuestCount;
+  if (!Array.isArray(state.engagement.daily_quests) || state.engagement.daily_quests.length !== dailyQuestCount) {
+    state.engagement.daily_quests = DAILY_ROGUELITE_QUESTS.slice(0, dailyQuestCount).map((template) => sanitizeTask({
+      ...template,
+      source: 'daily',
+      created_at: now,
+      expires_at: now + MS_PER_DAY,
+      bonus_multiplier: Number(config.roguelite?.dailyBonusMultiplier) || 0.08,
+    }));
+  }
+}
+
+function createRabbitHole(now, seed = {}, preferredTemplate = null) {
+  const gamePool = Object.keys(config.difficultyWeights);
+  const baseGame = seed.game || gamePool[Math.floor(Math.random() * gamePool.length)] || 'snake';
+  const template = preferredTemplate || RABBIT_HOLE_TEMPLATES[Math.floor(Math.random() * RABBIT_HOLE_TEMPLATES.length)] || RABBIT_HOLE_TEMPLATES[0];
+  const depth = Math.max(0, Number(seed.chain_depth) || 0) + 1;
+  const target = Math.ceil((Number(seed.target) || Number(template.target) || Number(config.quest.scoreTarget) || 800) * (1 + Math.min(0.6, depth * 0.12)));
+  const pathBonus = template.path === 'risk' ? Number(config.roguelite?.riskBonusMultiplier || 0.2) : Number(config.roguelite?.rabbitBonusMultiplier || 0.12);
+  return sanitizeTask({
+    ...template,
+    id: makeQuestId('rabbit'),
+    game: template.game || baseGame,
+    target,
+    title: formatTemplateTitle(template, template.game || baseGame, target),
+    source: 'rabbit',
+    created_at: now,
+    expires_at: now + (Number(config.roguelite?.rabbitTtlMs) || (18 * MINUTE_MS)),
+    bonus_multiplier: pathBonus,
+    chain_depth: depth,
+  });
+}
+
+function spawnRabbitHoles(state, completedTask, now, minCount, maxCount) {
+  if (!state.engagement) state.engagement = createInitialEngagement(now);
+  const min = Math.max(1, Math.floor(Number(minCount) || 1));
+  const max = Math.max(min, Math.floor(Number(maxCount) || min));
+  const count = randomInRange(min, max);
+  const spawned = [];
+  for (let i = 0; i < count; i += 1) {
+    const next = createRabbitHole(now, completedTask);
+    state.engagement.rabbit_holes.push(next);
+    spawned.push(next);
+  }
+  const cap = getRogueliteLimits().maxRabbitHoles;
+  state.engagement.rabbit_holes = state.engagement.rabbit_holes
+    .filter((task) => task && !task.completed && (!task.expires_at || Number(task.expires_at) > now))
+    .slice(-cap);
+  return spawned;
+}
+
+function createBranchOptions(state, completedTask, now) {
+  if (!state.engagement) state.engagement = createInitialEngagement(now);
+  const branchPaths = ['easy', 'risk', 'faction'].slice(0, getRogueliteLimits().branchCount);
+  const spawned = [];
+  const branches = branchPaths.map((path) => {
+    const existing = state.engagement.rabbit_holes.find((task) => task && task.path === path && Number(task.expires_at) > now);
+    if (existing) return existing;
+    const created = createRabbitHole(now, completedTask, BRANCH_PATH_TEMPLATES[path]);
+    state.engagement.rabbit_holes.push(created);
+    spawned.push(created);
+    return created;
+  }).filter(Boolean);
+  state.engagement.next_branches = branches.slice(0, getRogueliteLimits().branchCount);
+  const cap = getRogueliteLimits().maxRabbitHoles;
+  state.engagement.rabbit_holes = state.engagement.rabbit_holes
+    .filter((task) => task && !task.completed && (!task.expires_at || Number(task.expires_at) > now))
+    .slice(-cap);
+  return { branches: state.engagement.next_branches, spawned };
+}
+
+function computeStreakBonusPercent(streak) {
+  const sessionChain = Math.max(0, Number(streak?.session_chain) || 0);
+  const quickChain = Math.max(0, Number(streak?.quick_chain) || 0);
+  const switchChain = Math.max(0, Number(streak?.switch_chain) || 0);
+  const bonus = clamp(
+    (sessionChain * Number(config.streak.sessionStep || 0))
+      + (quickChain * Number(config.streak.quickStep || 0))
+      + (switchChain * Number(config.streak.switchStep || 0)),
+    0,
+    Number(config.streak.maxMultiplierBonus || 0)
+  );
+  return Math.round(bonus * 100);
+}
+
+function evaluateEngagementTask(task, history, run) {
+  return evaluateQuest(task, history, run);
+}
+
+function completeEngagementLoops(state, run, now) {
+  ensureEngagementDay(state, now);
+  const historyWithCurrent = state.history.concat(run);
+  let bonus = 0;
+  const completed = [];
+  const spawned = [];
+  const rabbitHolesBeforeRun = Array.isArray(state.engagement.rabbit_holes)
+    ? state.engagement.rabbit_holes.slice()
+    : [];
+  const completeOne = (task, source) => {
+    const done = sanitizeTask({ ...task, completed: true, completed_at: now, source });
+    completed.push(done);
+    state.engagement.completed_tasks.push(done);
+    state.engagement.total_auto_submits += 1;
+    bonus += Number(done.bonus_multiplier) || 0;
+    const min = source === 'daily' ? Number(config.roguelite?.rabbitMin) || 2 : Number(config.roguelite?.popupRabbitMin) || 1;
+    const max = source === 'daily' ? Number(config.roguelite?.rabbitMax) || 4 : Number(config.roguelite?.popupRabbitMax) || 3;
+    spawned.push(...spawnRabbitHoles(state, done, now, min, max));
+    const branches = createBranchOptions(state, done, now);
+    spawned.push(...branches.spawned);
+  };
+
+  state.engagement.daily_quests = state.engagement.daily_quests.map((task) => {
+    if (task.completed || !evaluateEngagementTask(task, historyWithCurrent, run)) return task;
+    completeOne(task, 'daily');
+    return sanitizeTask({ ...task, completed: true, completed_at: now });
+  });
+
+  const remainingRabbitHoles = [];
+  for (const task of rabbitHolesBeforeRun) {
+    if (!task || Number(task.expires_at) <= now) continue;
+    if (evaluateEngagementTask(task, historyWithCurrent, run)) {
+      completeOne(task, 'rabbit');
+    } else {
+      remainingRabbitHoles.push(task);
+    }
+  }
+  state.engagement.rabbit_holes = remainingRabbitHoles.concat(spawned).slice(-getRogueliteLimits().maxRabbitHoles);
+  state.engagement.next_branches = state.engagement.next_branches
+    .filter((task) => task && Number(task.expires_at) > now)
+    .slice(0, getRogueliteLimits().branchCount);
+  if (completed.length) {
+    const dayKey = toUtcDateKey(now);
+    if (state.engagement.last_completed_day !== dayKey) {
+      state.engagement.streak_days = Math.max(1, Number(state.engagement.streak_days || 0) + 1);
+      state.engagement.last_completed_day = dayKey;
+    }
+  }
+  state.engagement.completed_tasks = state.engagement.completed_tasks.slice(-240);
+  return { bonus: Math.min(bonus, 1.4), completed, spawned };
+}
+
 function createQuest(now, existingActive = []) {
   const games = Object.keys(config.difficultyWeights);
   const game = games[Math.floor(Math.random() * games.length)] || 'snake';
@@ -534,7 +807,9 @@ function evaluateQuest(quest, history, run) {
       && uniqueGames >= Number(quest.required_unique_games || 2);
   }
   if (quest.type === 'snake_survivor') {
-    return run.game === 'snake' && Number(run.duration || 0) >= Number(quest.min_duration_ms || 60000);
+    const fallbackScoreTarget = Math.max(300, Math.floor(Number(quest.min_duration_ms || 60000) / 100));
+    return run.game === 'snake'
+      && (Number(run.duration || 0) >= Number(quest.min_duration_ms || 60000) || Number(run.raw_score || 0) >= fallbackScoreTarget);
   }
   if (quest.type === 'btqm_zone_clear') {
     return run.game === 'btqm' && run.raw_score >= Number(quest.target || 1);
@@ -575,9 +850,12 @@ function checkNearMissProgress(quest, history, run) {
   }
   if (quest.type === 'snake_survivor') {
     const target = Math.max(1, Number(quest.min_duration_ms) || 60000);
-    const best = inQuestWindow.filter((h) => h.game === 'snake')
+    const scoreTarget = Math.max(300, Math.floor(target / 100));
+    const bestDuration = inQuestWindow.filter((h) => h.game === 'snake')
       .reduce((max, h) => Math.max(max, Number(h.duration) || 0), 0);
-    return cap(best / target);
+    const bestScore = inQuestWindow.filter((h) => h.game === 'snake')
+      .reduce((max, h) => Math.max(max, Number(h.raw_score) || 0), 0);
+    return cap(Math.max(bestDuration / target, bestScore / scoreTarget));
   }
   if (quest.type === 'btqm_zone_clear') {
     const target = Math.max(1, Number(quest.target) || 1);
@@ -783,6 +1061,7 @@ function trackGameResult(payload = {}) {
   updateWindow(state.weekly, weekKey);
   updateWindow(state.monthly, monthKey);
   updateWindow(state.seasonal, seasonKey);
+  ensureEngagementDay(state, timestamp);
 
   maintainQuests(state, timestamp);
   const triggeredRareEvent = maybeTriggerRareEvent(state, timestamp, { game, timestamp, raw_score: rawScore });
@@ -818,7 +1097,8 @@ function trackGameResult(payload = {}) {
   applyQuestTargetDiscount(state, metaLive.questTargetDiscount);
   const eventMultiplier = 1 + (isWeekend(timestamp) ? Number(config.event.weekendMultiplier || 0) : 0) + metaLive.eventBonus;
   const questBonusMultiplier = applyQuestBonuses(state, timestamp, run);
-  const questMultiplier = 1 + Math.max(0, Number(questBonusMultiplier || 0));
+  const engagementLoop = completeEngagementLoops(state, run, timestamp);
+  const questMultiplier = 1 + Math.max(0, Number(questBonusMultiplier || 0) + Number(engagementLoop.bonus || 0));
 
   const streakAdjusted = antiFarmBase * streakMultiplier;
   const eventAdjusted = streakAdjusted * eventMultiplier;
@@ -870,6 +1150,12 @@ function trackGameResult(payload = {}) {
     if (!beforeActiveIds.has(quest.id)) {
       dispatchMetaEvent('arcade-meta-quest-created', { quest, game });
     }
+  }
+  for (const task of engagementLoop.completed) {
+    dispatchMetaEvent('arcade-meta-roguelite-completed', { task, game, player: resolvedPlayer, auto_submitted: true });
+  }
+  if (engagementLoop.spawned.length) {
+    dispatchMetaEvent('arcade-meta-rabbit-holes-spawned', { tasks: engagementLoop.spawned, game, player: resolvedPlayer });
   }
   let bestNearMiss = null;
   for (const quest of state.quests.active) {
@@ -941,7 +1227,9 @@ function trackGameResult(payload = {}) {
       active: state.quests.active,
       completed_recent: state.quests.completed.slice(-10),
     },
+    roguelite: state.engagement,
     streak: state.streak.session_chain,
+    streak_bonus_percent: computeStreakBonusPercent(state.streak),
     retention: {
       featured_chaos: metaLive.featured,
       rare_event: metaLive.activeRare || triggeredRareEvent || null,
@@ -990,6 +1278,9 @@ function configure(nextConfig = {}) {
     if (nextConfig.rare && typeof nextConfig.rare === 'object') {
       merged.rare = Object.assign({}, merged.rare, nextConfig.rare);
     }
+    if (nextConfig.roguelite && typeof nextConfig.roguelite === 'object') {
+      merged.roguelite = Object.assign({}, merged.roguelite, nextConfig.roguelite);
+    }
   }
   config = merged;
 }
@@ -1030,6 +1321,7 @@ function getComebackPressure(now = nowMs()) {
 
 function getLiveContext(now = nowMs()) {
   const state = readState();
+  ensureEngagementDay(state, now);
   const rare = clearExpiredRareEvent(state, now) || null;
   const activeQuests = Array.isArray(state?.quests?.active) ? state.quests.active : [];
   const activeChain = activeQuests
@@ -1048,6 +1340,15 @@ function getLiveContext(now = nowMs()) {
       expires_in_ms: Math.max(0, Number(activeChain.expires_at || now) - now),
     } : null,
     quests_active: activeQuests.length,
+    roguelite: {
+      daily_quests: state.engagement.daily_quests,
+      rabbit_holes: state.engagement.rabbit_holes,
+      next_branches: state.engagement.next_branches,
+      completed_recent: state.engagement.completed_tasks.slice(-10),
+      streak_days: state.engagement.streak_days,
+      total_auto_submits: state.engagement.total_auto_submits,
+      streak_bonus_percent: computeStreakBonusPercent(state.streak),
+    },
   };
 }
 

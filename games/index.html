@@ -53,6 +53,15 @@
 
       <div id="arcade-status-panel" style="margin-bottom:18px"></div>
 
+      <section class="notice info roguelite-loop-panel" role="region" aria-label="Roguelite infinite engagement loop">
+        <span class="notice-icon" aria-hidden="true">⚡</span>
+        <div class="roguelite-loop-copy">
+          <strong>Roguelite Infinite Loop:</strong> Finish any task and it auto-submits into the same Arcade XP track, then immediately opens fresh rabbit holes. Choose safe XP, risk spikes, faction pushes, wiki exploration, or competitive leaderboard pressure — the flow never stops.
+          <div id="roguelite-loop-board" aria-live="polite" style="margin-top:12px"></div>
+        </div>
+      </section>
+
+
       <div data-tg-sync-cta></div>
 
       <div class="article-list" aria-label="Games in the Moonboys Arcade">
@@ -169,5 +178,182 @@
 
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
+<script type="module">
+import { ArcadeMeta } from '/js/arcade-meta-system.js';
+
+const board = document.getElementById('roguelite-loop-board');
+const SESSION_BASELINE_KEY = 'roguelite_loop_session_xp_baseline';
+let displayedXp = 0;
+let targetXp = 0;
+let tickerInitialized = false;
+let sessionBaseline = null;
+let tickerEl = null;
+let gainedEl = null;
+const gameLinks = {
+  snake: '/games/snake-run/',
+  invaders: '/games/invaders-3008/',
+  pacchain: '/games/pac-chain/',
+  breakout: '/games/breakout-bullrun/',
+  tetris: '/games/tetris-block-topia/',
+  crystal: '/games/crystal-quest/',
+  btqm: '/games/block-topia-quest-maze/',
+  asteroids: '/games/asteroid-fork/',
+  'asteroid-fork': '/games/asteroid-fork/',
+};
+
+function escapeText(value) {
+  return String(value || '').replace(/[&<>"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
+}
+
+function ensureLoopStyles() {
+  if (document.getElementById('roguelite-loop-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'roguelite-loop-styles';
+  style.textContent = `
+    .roguelite-loop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:10px}
+    .roguelite-loop-meter,.roguelite-loop-stats{display:flex;flex-wrap:wrap;gap:8px;color:var(--color-text-muted);font-size:.82rem;line-height:1.5}
+    .roguelite-loop-stats{margin:10px 0 4px}
+    .roguelite-stat-pill{border:1px solid rgba(97,246,255,.24);border-radius:999px;padding:4px 9px;background:rgba(97,246,255,.06)}
+    .roguelite-stat-pill strong{color:var(--color-text)}
+    .roguelite-xp-live strong{color:#f7c948;text-shadow:0 0 10px rgba(247,201,72,.28)}
+    .roguelite-branch-title{margin-top:12px;color:var(--color-text);font-weight:800;font-size:.86rem}
+    .roguelite-branch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:8px}
+    .roguelite-branch-card,.roguelite-task-card{display:grid;gap:5px;padding:10px;border:1px solid rgba(97,246,255,.24);border-radius:10px;background:rgba(97,246,255,.06);text-decoration:none;color:inherit}
+    .roguelite-branch-card:hover,.roguelite-branch-card:focus-visible,.roguelite-task-card:hover,.roguelite-task-card:focus-visible{border-color:rgba(247,201,72,.55);outline:none}
+    .roguelite-branch-card.easy{border-color:rgba(97,246,255,.34)}
+    .roguelite-branch-card.risk{border-color:rgba(255,79,209,.38);background:rgba(255,79,209,.07)}
+    .roguelite-branch-card.faction{border-color:rgba(247,201,72,.4);background:rgba(247,201,72,.07)}
+    .roguelite-branch-card span,.roguelite-path{width:max-content;border:1px solid rgba(247,201,72,.45);border-radius:999px;padding:2px 7px;color:#f7c948;font-size:.68rem;text-transform:uppercase}
+    .roguelite-branch-card strong,.roguelite-task-card strong{font-size:.86rem;color:var(--color-text)}
+    .roguelite-branch-card small,.roguelite-task-card small{color:var(--color-text-muted);line-height:1.45}
+  `;
+  document.head.appendChild(style);
+}
+
+function readContext() {
+  try { return ArcadeMeta.getLiveContext(); } catch (_) { return null; }
+}
+
+function readState() {
+  try { return ArcadeMeta.getState(); } catch (_) { return null; }
+}
+
+function getSessionBaseline(currentXp) {
+  if (sessionBaseline !== null) return sessionBaseline;
+  try {
+    const stored = Number(sessionStorage.getItem(SESSION_BASELINE_KEY));
+    sessionBaseline = Number.isFinite(stored) && stored <= currentXp ? stored : currentXp;
+    sessionStorage.setItem(SESSION_BASELINE_KEY, String(sessionBaseline));
+  } catch (_) {
+    sessionBaseline = currentXp;
+  }
+  return sessionBaseline;
+}
+
+function getTaskHref(task) {
+  return gameLinks[task?.game] || '/games/leaderboard.html';
+}
+
+function renderTask(task) {
+  const path = escapeText(task.path || 'easy');
+  const title = escapeText(task.title || 'Keep the XP loop moving');
+  const desc = escapeText(task.description || 'Complete this branch to open more options.');
+  const href = getTaskHref(task);
+  return `<a class="roguelite-task-card" href="${href}"><span class="roguelite-path">${path}</span><strong>${title}</strong><small>${desc}</small></a>`;
+}
+
+function findBranch(path, branches, rabbits, daily) {
+  return branches.find((task) => task.path === path)
+    || rabbits.find((task) => task.path === path)
+    || daily.find((task) => task.path === path && !task.completed)
+    || null;
+}
+
+function renderBranch(path, label, task) {
+  const title = task?.title || `${label} branch loading`;
+  const desc = task?.description || 'Complete any task to open this path immediately.';
+  const href = task ? getTaskHref(task) : '/games/leaderboard.html';
+  return `<a class="roguelite-branch-card ${path}" href="${href}"><span>${label}</span><strong>${escapeText(title)}</strong><small>${escapeText(desc)}</small></a>`;
+}
+
+function updateTickerDom(currentXp) {
+  targetXp = currentXp;
+  if (!tickerInitialized) {
+    displayedXp = currentXp;
+    tickerInitialized = true;
+  }
+  const baseline = getSessionBaseline(currentXp);
+  if (!tickerEl) tickerEl = document.getElementById('roguelite-xp-ticker');
+  if (!gainedEl) gainedEl = document.getElementById('roguelite-session-xp');
+  if (tickerEl) tickerEl.textContent = Math.floor(displayedXp).toLocaleString();
+  if (gainedEl) gainedEl.textContent = `+${Math.max(0, currentXp - baseline).toLocaleString()}`;
+}
+
+function tickXpDisplay() {
+  const state = readState();
+  const currentXp = Math.max(0, Math.floor(Number(state?.daily?.points) || 0));
+  targetXp = currentXp;
+  const diff = targetXp - displayedXp;
+  if (Math.abs(diff) <= 1) displayedXp = targetXp;
+  else displayedXp += Math.max(1, Math.ceil(Math.abs(diff) * 0.18)) * Math.sign(diff);
+  updateTickerDom(currentXp);
+}
+
+function renderLoopBoard() {
+  if (!board) return;
+  ensureLoopStyles();
+  const context = readContext();
+  const state = readState();
+  const roguelite = context?.roguelite || {};
+  const daily = Array.isArray(roguelite.daily_quests) ? roguelite.daily_quests : [];
+  const rabbits = Array.isArray(roguelite.rabbit_holes) ? roguelite.rabbit_holes : [];
+  const branches = Array.isArray(roguelite.next_branches) ? roguelite.next_branches : [];
+  const completedDaily = daily.filter((task) => task.completed).length;
+  const nextDaily = daily.filter((task) => !task.completed).slice(0, 4);
+  const nextRabbits = rabbits.slice(0, 4);
+  const currentXp = Math.max(0, Math.floor(Number(state?.daily?.points) || 0));
+  const streakDay = Number(roguelite.streak_days) || 0;
+  const streakBonus = Number(roguelite.streak_bonus_percent) || 0;
+  targetXp = currentXp;
+  if (!tickerInitialized) {
+    displayedXp = currentXp;
+    tickerInitialized = true;
+  }
+  getSessionBaseline(currentXp);
+  board.innerHTML = `
+    <div class="roguelite-loop-stats">
+      <span class="roguelite-stat-pill roguelite-xp-live">Live XP: <strong id="roguelite-xp-ticker">${currentXp.toLocaleString()}</strong></span>
+      <span class="roguelite-stat-pill">Session gained: <strong id="roguelite-session-xp">+0</strong></span>
+      <span class="roguelite-stat-pill">Streak day: <strong>${streakDay}</strong></span>
+      <span class="roguelite-stat-pill">Streak bonus: <strong>+${streakBonus}%</strong></span>
+    </div>
+    <div class="roguelite-loop-meter">
+      <span>Daily progress: <strong>${completedDaily}/${daily.length}</strong></span>
+      <span>Rabbit holes live: <strong>${rabbits.length}</strong></span>
+      <span>Auto-submits: <strong>${Number(roguelite.total_auto_submits) || 0}</strong></span>
+    </div>
+    <div class="roguelite-branch-title">Next rabbit hole paths</div>
+    <div class="roguelite-branch-grid">
+      ${renderBranch('easy', 'Easy', findBranch('easy', branches, rabbits, daily))}
+      ${renderBranch('risk', 'Risk', findBranch('risk', branches, rabbits, daily))}
+      ${renderBranch('faction', 'Faction', findBranch('faction', branches, rabbits, daily))}
+    </div>
+    <div class="roguelite-loop-grid">
+      ${(nextRabbits.length ? nextRabbits : nextDaily).map(renderTask).join('')}
+    </div>
+  `;
+  tickerEl = board.querySelector('#roguelite-xp-ticker');
+  gainedEl = board.querySelector('#roguelite-session-xp');
+  updateTickerDom(currentXp);
+}
+
+renderLoopBoard();
+document.addEventListener('arcade-meta-roguelite-completed', renderLoopBoard);
+document.addEventListener('arcade-meta-rabbit-holes-spawned', renderLoopBoard);
+document.addEventListener('arcade-meta-tracked', renderLoopBoard);
+setInterval(renderLoopBoard, 15000);
+setInterval(tickXpDisplay, 350);
+</script>
+
 </body>
 </html>
