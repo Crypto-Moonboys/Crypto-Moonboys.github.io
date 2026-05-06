@@ -285,4 +285,75 @@ app.post("/api/brain/commit-backup", requireAdmin, async (req, res) => {
   });
 });
 
+
+app.get("/api/brain/health-summary", requireAdmin, async (req, res) => {
+  const checks = [];
+
+  const npcHealth = await proxyJson("/health").catch(() => ({
+    status: 503,
+    data: { online: false }
+  }));
+
+  checks.push({
+    name: "NPC Brain",
+    ok: npcHealth.status === 200 && npcHealth.data?.online === true,
+    detail: npcHealth.status === 200 ? "NPC brain is online." : "NPC brain is not responding."
+  });
+
+  checks.push({
+    name: "NPC Count",
+    ok: Number(npcHealth.data?.npcCount || 0) > 0,
+    detail: `${npcHealth.data?.npcCount || 0} NPCs loaded.`
+  });
+
+  checks.push({
+    name: "Model",
+    ok: Boolean(npcHealth.data?.model),
+    detail: npcHealth.data?.model ? `Using ${npcHealth.data.model}.` : "No model reported."
+  });
+
+  const repoStatus = await runRepoGit(["status", "--short"]);
+  const repoLines = repoStatus.stdout.split("\n").filter(Boolean);
+  checks.push({
+    name: "Repo Status",
+    ok: repoStatus.ok && repoLines.length === 0,
+    detail: repoLines.length === 0 ? "Repo is clean." : `${repoLines.length} repo changes detected.`
+  });
+
+  const backupExists =
+    fs.existsSync(`${BRAIN_BACKUP_DIR}/npcs`) &&
+    fs.existsSync(`${BRAIN_BACKUP_DIR}/knowledge`);
+
+  checks.push({
+    name: "Brain Backup",
+    ok: backupExists,
+    detail: backupExists ? "Brain backup exists in the repo." : "Brain backup is missing."
+  });
+
+  const backupStatus = await runRepoGit(["status", "--short", "admin/brain-data"]);
+  const backupChanges = backupStatus.stdout.split("\n").filter(Boolean);
+  checks.push({
+    name: "Backup Commit State",
+    ok: backupChanges.length === 0,
+    detail: backupChanges.length === 0 ? "No uncommitted Brain backup changes." : `${backupChanges.length} Brain backup changes need commit.`
+  });
+
+  checks.push({
+    name: "Admin Protection",
+    ok: ADMIN_TOKEN && ADMIN_TOKEN !== "CHANGE_ME_BRAIN_ADMIN_TOKEN",
+    detail: ADMIN_TOKEN && ADMIN_TOKEN !== "CHANGE_ME_BRAIN_ADMIN_TOKEN"
+      ? "Admin API token is configured."
+      : "Admin API token is not configured."
+  });
+
+  const failed = checks.filter(c => !c.ok);
+  const status = failed.length === 0 ? "HEALTHY" : failed.length <= 2 ? "WARNING" : "BROKEN";
+
+  res.json({
+    status,
+    ok: failed.length === 0,
+    checks
+  });
+});
+
 app.listen(PORT, () => console.log(`BRAIN API running on port ${PORT}`));
