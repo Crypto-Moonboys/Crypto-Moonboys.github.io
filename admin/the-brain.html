@@ -177,6 +177,21 @@ READ ONLY:
         </section>
 
         <section class="panel">
+          <h2>Create New NPC</h2>
+          <p class="tiny">Creates a live NPC template plus wiki context. Backup Brain Data after creating real NPCs.</p>
+          <div class="row">
+            <input id="newNpcName" placeholder="NPC name">
+            <input id="newNpcBrand" placeholder="Brand / faction">
+          </div>
+          <div class="row" style="margin-top:10px">
+            <input id="newNpcTone" placeholder="Tone, e.g. tactical, funny, royal">
+            <input id="newNpcRole" placeholder="Role inside Block Topia">
+          </div>
+          <button onclick="createNpc()" style="margin-top:10px">Create NPC Template</button>
+          <p id="createNpcResult" class="tiny"></p>
+        </section>
+
+        <section class="panel">
           <h2>NPC Manager</h2>
           <div id="npcList" class="npc-list"></div>
         </section>
@@ -291,6 +306,45 @@ READ ONLY:
         statusEl.textContent = "FAILED";
         checksEl.textContent = "Could not load Brain health.";
       }
+    }
+
+    async function createNpc() {
+      const result = document.getElementById("createNpcResult");
+      const body = {
+        name: document.getElementById("newNpcName").value.trim(),
+        brand: document.getElementById("newNpcBrand").value.trim(),
+        tone: document.getElementById("newNpcTone").value.trim(),
+        role: document.getElementById("newNpcRole").value.trim()
+      };
+
+      if (!body.name) {
+        result.textContent = "NPC name is required.";
+        return;
+      }
+
+      result.textContent = "Creating NPC template...";
+      const data = await getJson(API + "/create-npc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      if (!data.success) {
+        result.textContent = "Create failed: " + (data.error || "unknown error");
+        return;
+      }
+
+      result.textContent = `Created ${data.npc.name}. Backup Brain Data when ready.`;
+
+      document.getElementById("newNpcName").value = "";
+      document.getElementById("newNpcBrand").value = "";
+      document.getElementById("newNpcTone").value = "";
+      document.getElementById("newNpcRole").value = "";
+
+      await loadStatus();
+      await loadBrainHealth();
+      await loadNpcs();
+      await selectNpc(data.npc.id);
     }
 
     async function loadNpcs() {

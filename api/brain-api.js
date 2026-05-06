@@ -481,4 +481,91 @@ app.post("/api/brain/advisor", requireAdmin, async (req, res) => {
   });
 });
 
+
+function slugifyNpcId(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64);
+}
+
+app.post("/api/brain/create-npc", requireAdmin, async (req, res) => {
+  const name = String(req.body?.name || "").trim().slice(0, 80);
+  const brand = String(req.body?.brand || "Crypto Moonboys").trim().slice(0, 80);
+  const tone = String(req.body?.tone || "lore-aware, tactical, useful").trim().slice(0, 160);
+  const role = String(req.body?.role || "NPC operator inside Block Topia").trim().slice(0, 160);
+  const id = slugifyNpcId(req.body?.id || name);
+
+  if (!id || !name) {
+    return res.status(400).json({
+      success: false,
+      error: "NPC name is required"
+    });
+  }
+
+  const npcFile = `/root/npc-brain/npcs/${id}.json`;
+  const wikiFile = `/root/npc-brain/knowledge/wiki/npcs/${id}.md`;
+
+  if (fs.existsSync(npcFile)) {
+    return res.status(409).json({
+      success: false,
+      error: "NPC already exists",
+      id
+    });
+  }
+
+  fs.mkdirSync("/root/npc-brain/npcs", { recursive: true });
+  fs.mkdirSync("/root/npc-brain/knowledge/wiki/npcs", { recursive: true });
+
+  const npc = {
+    id,
+    name,
+    brand,
+    tone,
+    role,
+    wikiPage: `npcs/${id}.md`,
+    rules: [
+      "Stay in character",
+      "Use the Crypto Moonboys / GK / Block Topia truth files",
+      "Give useful tactical or lore-aware answers",
+      "Do not invent fake links, commands, rewards, or lore",
+      "Keep replies clear and short"
+    ]
+  };
+
+  const wiki = `${name} is part of the Crypto Moonboys / GK / Block Topia universe.
+
+Brand / faction:
+${brand}
+
+Role:
+${role}
+
+Tone:
+${tone}
+
+Core behaviour:
+- Stay in character.
+- Use the living Web3 wiki truth.
+- Respect the route: Read -> Play -> Earn XP -> Link -> Battle Chamber -> Block Topia -> Build.
+- Give tactical, lore-aware, short answers.
+- Never invent fake commands, links, rewards, or live features.
+
+Add deeper lore here as the character develops.
+`;
+
+  fs.writeFileSync(npcFile, JSON.stringify(npc, null, 2) + "\n");
+  fs.writeFileSync(wikiFile, wiki);
+
+  const restart = await pm2("restart", "npc-brain");
+
+  res.json({
+    success: true,
+    npc,
+    wikiFile,
+    restart
+  });
+});
+
 app.listen(PORT, () => console.log(`BRAIN API running on port ${PORT}`));
