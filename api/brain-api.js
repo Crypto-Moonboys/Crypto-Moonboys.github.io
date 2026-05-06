@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const os = require("os");
 const fs = require("fs");
+const path = require("path");
 const { execFile } = require("child_process");
 
 const app = express();
@@ -166,6 +167,44 @@ app.get("/api/brain/repo/status", requireAdmin, async (req, res) => {
     lastCommit: lastCommit.stdout.trim(),
     status: status.stdout.split("\n").filter(Boolean),
     diffStat: diffStat.stdout.split("\n").filter(Boolean)
+  });
+});
+
+
+const BRAIN_BACKUP_DIR = `${REPO_ROOT}/admin/brain-data`;
+
+function copyDirSafe(src, dest) {
+  if (!fs.existsSync(src)) return;
+  fs.mkdirSync(dest, { recursive: true });
+
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const from = path.join(src, entry.name);
+    const to = path.join(dest, entry.name);
+
+    if (entry.isDirectory()) {
+      copyDirSafe(from, to);
+    } else if (entry.isFile()) {
+      fs.copyFileSync(from, to);
+    }
+  }
+}
+
+app.post("/api/brain/backup", requireAdmin, async (req, res) => {
+  const npcSource = "/root/npc-brain/npcs";
+  const knowledgeSource = "/root/npc-brain/knowledge";
+
+  fs.rmSync(BRAIN_BACKUP_DIR, { recursive: true, force: true });
+  fs.mkdirSync(BRAIN_BACKUP_DIR, { recursive: true });
+
+  copyDirSafe(npcSource, `${BRAIN_BACKUP_DIR}/npcs`);
+  copyDirSafe(knowledgeSource, `${BRAIN_BACKUP_DIR}/knowledge`);
+
+  const status = await runRepoGit(["status", "--short", "admin/brain-data"]);
+
+  res.json({
+    success: true,
+    backupDir: BRAIN_BACKUP_DIR,
+    changedFiles: status.stdout.split("\n").filter(Boolean)
   });
 });
 
