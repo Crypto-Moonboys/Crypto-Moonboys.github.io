@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head><title>THE BRAIN</title>
+<style>body{background:#000;color:#0ff;font-family:monospace;padding:20px}select,button,textarea{background:#111;color:#0ff;border:2px solid #0ff;padding:12px;width:100%;margin:8px 0}button{background:#0ff;color:#000;font-weight:bold;cursor:pointer}#chat-log{height:400px;overflow:auto;background:#000;padding:15px;border:1px solid #0ff}</style>
+</head>
+<body>
+<h1 style="text-align:center">THE BRAIN</h1>
+<h3 style="text-align:center;color:#0f0">NPC Intelligence Core • Full Control</h3>
+
+<p>🟢 npc-brain is ONLINE • Port 3000</p>
+<p>Uptime: Running • Model: qwen2.5:0.5b</p>
+
+<h3>CONTROLS</h3>
+<button onclick="control('start')">▶ START</button>
+<button onclick="control('stop')">■ STOP</button>
+<button onclick="control('restart')">🔄 RESTART</button>
+
+<h3>LIVE NPC CHAT TESTER</h3>
+<select id="npc-select">
+  <option value="block-topia-guard">🛡️ BLOCK-TOPIA-GUARD</option>
+  <option value="quest-giver">📜 QUEST-GIVER</option>
+  <option value="merchant">🛒 MERCHANT</option>
+  <option value="moonboy-villager">🌙 MOONBOY VILLAGER</option>
+  <option value="arena-boss">⚔️ ARENA BOSS</option>
+  <option value="crystal-keeper">💎 CRYSTAL KEEPER</option>
+</select>
+
+<textarea id="input" placeholder="Type message to NPC..." rows="5"></textarea>
+<button onclick="send()" style="padding:15px">SEND TO NPC</button>
+
+<div id="chat-log"></div>
+
+<script>
+function send() {
+  const npc = document.getElementById('npc-select').value;
+  const msg = document.getElementById('input').value;
+  if(!msg) return;
+  document.getElementById('chat-log').innerHTML += `<b>You:</b> ${msg}<br>`;
+  fetch('http://158.220.91.71:3001/api/brain/chat', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({npc_id:npc, player_input:msg})
+  }).then(r=>r.json()).then(d=>{
+    document.getElementById('chat-log').innerHTML += `<b>[${npc.toUpperCase()}]</b> ${d.reply}<br><br>`;
+    document.getElementById('chat-log').scrollTop = 99999;
+  });
+  document.getElementById('input').value = '';
+}
+function control(a){fetch('http://158.220.91.71:3001/api/brain/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:a})});}
+</script>
+</body>
+</html>
