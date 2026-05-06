@@ -208,4 +208,40 @@ app.post("/api/brain/backup", requireAdmin, async (req, res) => {
   });
 });
 
+
+app.post("/api/brain/restore", requireAdmin, async (req, res) => {
+  const npcTarget = "/root/npc-brain/npcs";
+  const knowledgeTarget = "/root/npc-brain/knowledge";
+
+  const npcBackup = `${BRAIN_BACKUP_DIR}/npcs`;
+  const knowledgeBackup = `${BRAIN_BACKUP_DIR}/knowledge`;
+
+  if (!fs.existsSync(npcBackup) || !fs.existsSync(knowledgeBackup)) {
+    return res.status(404).json({
+      success: false,
+      error: "Brain backup data not found in admin/brain-data"
+    });
+  }
+
+  fs.rmSync(npcTarget, { recursive: true, force: true });
+  fs.rmSync(knowledgeTarget, { recursive: true, force: true });
+
+  fs.mkdirSync(npcTarget, { recursive: true });
+  fs.mkdirSync(knowledgeTarget, { recursive: true });
+
+  copyDirSafe(npcBackup, npcTarget);
+  copyDirSafe(knowledgeBackup, knowledgeTarget);
+
+  const restart = await pm2("restart", "npc-brain");
+
+  res.json({
+    success: true,
+    restored: {
+      npcs: npcTarget,
+      knowledge: knowledgeTarget
+    },
+    restart
+  });
+});
+
 app.listen(PORT, () => console.log(`BRAIN API running on port ${PORT}`));

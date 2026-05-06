@@ -125,6 +125,7 @@
           <div class="row" style="margin-top:10px">
             <button onclick="loadRepoStatus()">Refresh Repo</button>
             <button onclick="backupBrainData()">Backup Brain Data</button>
+            <button class="danger" onclick="restoreBrainData()">Restore Brain Data</button>
           </div>
           <p id="backupResult" class="tiny"></p>
         </section>
@@ -309,6 +310,23 @@
         ? "Backup complete. Check Repo Scanner for changed files."
         : "Backup failed.";
       await loadRepoStatus();
+    }
+
+    async function restoreBrainData() {
+      const result = document.getElementById("backupResult");
+      const ok = confirm("Restore Brain data from repo backup? This overwrites live NPC and knowledge files, then restarts npc-brain.");
+      if (!ok) return;
+
+      result.textContent = "Restoring Brain data...";
+      const data = await getJson(API + "/restore", { method: "POST" });
+      result.textContent = data.success
+        ? "Restore complete. npc-brain restarted."
+        : "Restore failed: " + (data.error || "unknown error");
+
+      await loadStatus();
+      await loadNpcs();
+      await loadRepoStatus();
+      await loadLogs();
     }
 
     async function loadLogs() {
