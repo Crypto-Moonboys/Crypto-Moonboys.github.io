@@ -18,6 +18,54 @@
     }
     .battle-page .section h2 { margin-bottom: 20px; }
     .battle-page .section p, .battle-page .section li { line-height: 1.8; }
+
+    /* Modern Telegram Status UI */
+    .tg-user-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .tg-user-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(8, 18, 34, 0.6);
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(86, 220, 255, 0.15);
+    }
+    .tg-user-row:hover {
+      background: rgba(8, 18, 34, 0.85);
+      border-color: rgba(86, 220, 255, 0.3);
+    }
+    .tg-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #00ffcc;
+      flex-shrink: 0;
+    }
+    .tg-user-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .tg-username {
+      font-weight: 700;
+      color: #00ffcc;
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+    .tg-xp {
+      color: #ffcc00;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .tg-rank {
+      font-size: 0.85rem;
+      color: #888;
+      min-width: 24px;
+    }
   </style>
 </head>
 <body class="page-community page-has-right-panel">
@@ -52,6 +100,22 @@
       </ul>
     </section>
 
+    <!-- REDESIGNED TELEGRAM STATUS -->
+    <section class="section">
+      <h2>Telegram Status — Top Contributors</h2>
+      <div class="tg-user-list" id="tg-community-leaderboard">
+        <div class="community-loading">Loading community leaderboard…</div>
+      </div>
+    </section>
+
+    <!-- LIVE ACTIVITY -->
+    <section class="section">
+      <h2>Live Activity</h2>
+      <div id="tg-activity-feed">
+        <div class="community-loading">Loading live activity…</div>
+      </div>
+    </section>
+
     <section class="section">
       <h2>The Philosophy</h2>
       <p class="quote">“If you act, it shows. If you do nothing, nothing happens.”</p>
@@ -61,25 +125,6 @@
     <section class="section">
       <h2>Future of the Battle Chamber</h2>
       <p>As City Block Topia / Neon Sprawl is integrated, the Battle Chamber will expand to include zone control, large-scale rebellion events, and deeper faction conflicts.</p>
-    </section>
-
-    <!-- Telegram & XP Features -->
-    <section class="section">
-      <h2>Telegram Status</h2>
-      <div id="tg-community-leaderboard"><div class="community-loading">Loading community leaderboard…</div></div>
-    </section>
-
-    <section class="section">
-      <h2>Live Activity</h2>
-      <div id="tg-activity-feed"><div class="community-loading">Loading activity…</div></div>
-    </section>
-
-    <section class="section">
-      <h2>Your Profile</h2>
-      <div id="tg-profile-wrapper" style="display:none">
-        <div id="tg-profile-card"></div>
-        <div id="tg-daily-status"></div>
-      </div>
     </section>
 
   </div>
