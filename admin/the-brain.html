@@ -120,6 +120,12 @@
         </section>
 
         <section class="panel">
+          <h2>Repo Scanner</h2>
+          <div id="repoStatus" class="logs"></div>
+          <button onclick="loadRepoStatus()" style="margin-top:10px">Refresh Repo</button>
+        </section>
+
+        <section class="panel">
           <h2>Real-time Logs</h2>
           <div id="logs" class="logs"></div>
           <button onclick="loadLogs()" style="margin-top:10px">Refresh Logs</button>
@@ -276,6 +282,21 @@
       setTimeout(() => { loadStatus(); loadNpcs(); }, 1200);
     }
 
+    async function loadRepoStatus() {
+      const data = await getJson(API + "/repo/status");
+      document.getElementById("repoStatus").textContent = [
+        "Repo: " + (data.repo || "--"),
+        "Branch: " + (data.branch || "--"),
+        "Last Commit: " + (data.lastCommit || "--"),
+        "",
+        "Status:",
+        ...((data.status || []).length ? data.status : ["clean"]),
+        "",
+        "Diff:",
+        ...((data.diffStat || []).length ? data.diffStat : ["none"])
+      ].join("\n");
+    }
+
     async function loadLogs() {
       const data = await getJson(API + "/logs?lines=160");
       document.getElementById("logs").textContent = (data.logs || []).join("\n");
@@ -287,6 +308,7 @@
 
     loadStatus();
     loadNpcs();
+    loadRepoStatus();
     loadLogs();
     setInterval(loadStatus, 5000);
     setInterval(loadLogs, 7000);
