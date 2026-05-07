@@ -1,0 +1,560 @@
+Battle Chamber page structure
+1. Main Battle Chamber Hub
+
+Route:
+
+/community.html
+
+Upgrade it into the main command centre.
+
+Sections:
+
+Hero: Join a faction. Build clout. Take the chamber.
+Faction War Standings
+Weekly Faction War
+Monthly Clout War
+Seasonal Campaign
+Live Activity / Proof Feed
+Top Players
+Top Factions
+Active Faction Quests
+Featured XP Prizes
+Join Faction CTA
+
+Current community.html already has the right philosophy. It needs to become much more operational and faction-driven.
+
+2. Faction Directory Page
+
+Route:
+
+/battle-chamber/factions/
+
+Purpose:
+
+Show every faction as a choice.
+
+Each card should show:
+
+Faction name
+Icon
+Style
+Core playstyle
+Current weekly rank
+Current monthly rank
+Current seasonal rank
+Perk preview
+Active quest count
+Join button
+View faction chamber button
+
+Example card:
+
+GraffPUNKS
+Chaos / Combo / High-risk clout
+Weekly Rank: #2
+Current Perk: +combo branch odds
+Active Quest: Trigger 3 chaos events
+Join GraffPUNKS
+Enter Chamber
+3. Individual Faction Battle Chamber Pages
+
+Each faction gets its own chamber page.
+
+Routes:
+
+/battle-chamber/factions/hard-fork-rockers.html
+/battle-chamber/factions/rugpull-minors.html
+/battle-chamber/factions/graffpunks.html
+/battle-chamber/factions/blockchain-furies.html
+/battle-chamber/factions/crypto-moongirls.html
+/battle-chamber/factions/blockstars.html
+/battle-chamber/factions/all-city-bulls.html
+/battle-chamber/factions/nomad-bears.html
+/battle-chamber/factions/crypto-stoned-boys.html
+
+Each page should include:
+
+Faction lore
+Faction perks
+Faction playstyle
+Faction daily missions
+Faction weekly target
+Faction monthly target
+Seasonal campaign progress
+Faction badges
+Faction stickers
+Faction titles
+Faction live activity
+Top players inside the faction
+Current roguelite modifiers unlocked by faction ranking
+Join / switch faction CTA
+Related Substack / lore links
+
+This is where each faction becomes more than a name.
+
+Faction War mechanics
+Weekly Faction War
+
+Every week:
+
+Faction contribution resets.
+Factions compete on total valid contribution.
+Top factions unlock next-week perks.
+
+Scoring sources:
+
+Accepted arcade runs
+Faction daily missions
+Faction seasonal missions
+Roguelite rabbit holes
+Streaks
+Battle Chamber quests
+Leaderboard clout
+Special events
+
+Weekly rewards:
+
+#1 faction: major XP prize pool + best roguelite perk
+#2 faction: medium XP prize pool + secondary perk
+#3 faction: small XP prize pool + cosmetic/badge
+
+Keep rewards as XP / clout / badges / cosmetics / roguelite options, not financial claims.
+
+Monthly Clout War
+
+Every month:
+
+Faction clout is ranked across the whole website.
+
+Monthly ranking should include:
+
+faction power
+daily mission completions
+weekly placements
+top-player scores
+activity streaks
+leaderboard appearances
+quest completions
+
+Monthly rewards:
+
+Faction title upgrade
+Faction profile border
+Faction sticker pack
+Faction banner
+Bonus rabbit-hole path for next month
+Monthly Hall of Fame placement
+Seasonal Campaign
+
+Every season:
+
+A full campaign runs across all factions.
+
+Seasonal campaign examples:
+
+Season 1: The Clout War
+Season 2: Battle for Neon Sprawl
+Season 3: Hard Fork Uprising
+Season 4: The Proof Wall Rebellion
+
+Seasonal rewards:
+
+Seasonal badge
+Season title
+Faction archive placement
+Permanent clout record
+Special roguelite modifier
+Special faction page trophy
+Faction incentives
+1. Join bonus
+
+When the user joins a faction:
+
+Faction badge unlocked
+Faction daily missions unlocked
+Faction war contribution enabled
+Faction profile card activated
+Faction-specific roguelite branches activated
+
+No passive rewards. No token claims.
+
+2. First accepted run after joining
+
+Reward:
+
+Faction Initiate clout
+Starter faction XP
+First-war contribution
+3. First daily mission completed
+
+Reward:
+
+Faction sticker
+Daily proof feed event
+Faction mission streak started
+4. Weekly participation
+
+Reward:
+
+Weekly participant badge
+Faction contribution rank
+XP prize eligibility
+5. Monthly top performers
+
+Reward:
+
+Clout title
+Profile border
+Battle Chamber placement
+Faction champion role
+Faction-specific design direction
+
+Exact lore should come from the Substack pages, but the game/system roles can be structured like this.
+
+Hard Fork Rockers
+
+Replaces Diamond Hands.
+
+Playstyle:
+
+Endurance
+resistance
+long-run stability
+anti-chaos
+survival streaks
+
+Perks:
+
+reduced chaos exposure
+survival clout
+long-run bonus branches
+streak protection
+
+Best for:
+
+players who grind, survive, and build steady clout
+Rugpull Minors
+
+Replaces HODL Warriors.
+
+Playstyle:
+
+risky mining
+underground survival
+defensive play
+resource pressure
+
+Perks:
+
+shield support
+defensive runs
+comeback branches
+resource-recovery quests
+
+Best for:
+
+players who like grind-risk, recovery, and tactical survival
+GraffPUNKS
+
+Playstyle:
+
+chaos
+combos
+high-risk score bursts
+street rebellion
+
+Perks:
+
+higher chaos
+bigger combo paths
+high-risk rabbit holes
+tagging/clout events
+
+Best for:
+
+players who want fast, loud, aggressive leaderboard clout
+Blockchain Furies
+
+Playstyle:
+
+speed
+aggression
+revenge runs
+chain attacks
+
+Perks:
+
+fast-run missions
+burst windows
+revenge bonuses after failed runs
+combo recovery branches
+
+Best for:
+
+players who play fast and chase momentum
+Crypto Moongirls
+
+Playstyle:
+
+control
+status
+elite precision
+signal dominance
+
+Perks:
+
+precision missions
+leaderboard control
+reduced penalty windows
+elite faction titles
+
+Best for:
+
+players who want status, polish, and leaderboard authority
+The Blockstars
+
+Playstyle:
+
+celebrity clout
+performance
+spotlight events
+public ranking
+
+Perks:
+
+clout multipliers
+featured player chances
+profile spotlight
+monthly fame tracks
+
+Best for:
+
+players who want visible online status
+All City Bulls
+
+Playstyle:
+
+brute force
+high score pressure
+territory dominance
+
+Perks:
+
+score target branches
+weekly war contribution boosts
+leaderboard pressure missions
+
+Best for:
+
+players who want to smash points and dominate boards
+Nomad Bears
+
+Playstyle:
+
+exploration
+consistency
+route switching
+multi-game variety
+
+Perks:
+
+variety bonuses
+multi-game rabbit holes
+exploration quests
+daily/weekly route bonuses
+
+Best for:
+
+players who rotate games and complete lots of paths
+Crypto Stoned Boys
+
+Playstyle:
+
+chill grind
+weird events
+randomizer energy
+streak comfort
+
+Perks:
+
+random bonus branches
+rare event chances
+chill streaks
+low-pressure XP paths
+
+Best for:
+
+players who want fun, strange, unpredictable runs
+Battle Chamber data model
+
+You already have faction power, daily contribution, weekly contribution, momentum, dominant faction, and standings in faction-war-system.js.
+
+Extend toward:
+
+faction_weekly_score
+faction_monthly_score
+faction_seasonal_score
+faction_clout_total
+faction_badges
+faction_stickers
+faction_titles
+faction_event_log
+faction_perk_unlocks
+
+Suggested tables or frontend/server models:
+
+faction_profiles
+faction_weekly_standings
+faction_monthly_standings
+faction_season_standings
+faction_member_clout
+faction_badge_unlocks
+faction_activity_log
+faction_perk_unlocks
+
+Do not overbuild it all at once. Start with frontend pages reading existing models, then add server authority.
+
+Battle Chamber live events
+
+Battle Chamber should show proof feed events like:
+
+GK joined GraffPUNKS.
+Rugpull Minors completed 200 weekly runs.
+Hard Fork Rockers hit Momentum Tier 3.
+Blockchain Furies took the weekly lead.
+Crypto Moongirls unlocked Elite Signal perk.
+All City Bulls won Monthly Clout War.
+Nomad Bears completed 1,000 multi-game switches.
+Crypto Stoned Boys triggered a rare WTF event.
+The Blockstars crowned a monthly champion.
+
+This is the social addiction layer.
+
+Weekly / monthly / seasonal perks
+
+Perks for winning factions should alter the roguelite loop.
+
+Examples:
+
+Weekly winner perks
++10% faction clout from missions
+extra rabbit-hole branch
+bonus daily mission slot
+higher rare-event chance
+faction sticker unlock
+Monthly winner perks
+monthly champion badge
+profile frame
+faction banner
+Battle Chamber top placement
+special roguelite branch for next month
+Seasonal winner perks
+season trophy
+permanent Hall of Fame listing
+season title
+exclusive faction sticker set
+legendary clout badge
+
+Again: no money language.
+
+UI pages needed
+Main update
+/community.html
+
+Make it the Battle Chamber hub.
+
+Add:
+
+Faction War Standings
+Join a Faction CTA
+Weekly War
+Monthly Clout
+Season Campaign
+Live Proof Feed
+Top Faction Players
+Active Faction Missions
+Faction Perk Unlocks
+New pages
+/battle-chamber/factions/index.html
+/battle-chamber/factions/hard-fork-rockers.html
+/battle-chamber/factions/rugpull-minors.html
+/battle-chamber/factions/graffpunks.html
+/battle-chamber/factions/blockchain-furies.html
+/battle-chamber/factions/crypto-moongirls.html
+/battle-chamber/factions/blockstars.html
+/battle-chamber/factions/all-city-bulls.html
+/battle-chamber/factions/nomad-bears.html
+/battle-chamber/factions/crypto-stoned-boys.html
+Shared JS
+
+Add or extend:
+
+js/battle-chamber.js
+js/faction-directory.js
+js/faction-profile-pages.js
+
+Or keep it tighter:
+
+js/battle-chamber-factions.js
+Tests needed
+
+Add tests that fail if:
+
+Diamond Hands still appears as a live faction name
+HODL Warriors still appears as a live faction name
+Hard Fork Rockers missing
+Rugpull Minors missing
+New factions missing
+Faction pages missing
+community.html missing Faction War Standings
+community.html missing Weekly / Monthly / Seasonal sections
+faction-effect-system does not include every faction
+faction-missions does not include every faction
+faction-war-system does not include every faction
+leaderboard accepted flow stops calling faction earn
+Best PR title
+Build Battle Chamber faction wars hub
+
+Or stronger:
+
+Upgrade Battle Chamber into faction wars clout hub
+Build order
+PR 1 — Faction Canon + Rename
+Rename Diamond Hands -> Hard Fork Rockers
+Rename HODL Warriors -> Rugpull Minors
+Add six new factions
+Update faction definitions
+Update faction effects
+Update faction missions
+Update faction standings keys
+Add migration aliases
+Add anti-drift tests
+PR 2 — Battle Chamber Mega Page
+Upgrade community.html
+Add faction standings
+Add weekly/monthly/seasonal clout sections
+Add join CTA
+Add live faction proof feed
+Add active faction missions preview
+PR 3 — Faction Pages
+Add one page per faction
+Use Substack lore as source material
+Add perks, badges, stickers, quests, titles
+Add join buttons and faction status
+PR 4 — Clout Rewards + Roguelite Perks
+Weekly winner perks
+Monthly clout badges
+Seasonal champion titles
+Faction-specific rabbit holes
+Big XP prize pools
+PR 5 — Server Authority
+Server-backed weekly/monthly/season faction standings
+Server-backed faction clout
+Server-backed Battle Chamber activity log
+
+This is the correct long-term model:
+
+Arcade creates action.
+Faction gives identity.
+Battle Chamber gives public proof.
+Clout makes users care.
