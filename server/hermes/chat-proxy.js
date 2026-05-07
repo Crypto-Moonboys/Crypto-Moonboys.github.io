@@ -15,6 +15,7 @@ const MAX_HISTORY_MESSAGES = 20;
 const OLLAMA_TIMEOUT_MS = 45000;
 const MODE_CHAT = "chat";
 const MODE_AGENT_EDIT = "agent_edit";
+const MODE_ADMIN = "admin";
 
 function clampString(value, maxLength) {
   return String(value || "").trim().slice(0, maxLength);
@@ -71,8 +72,8 @@ function buildMessages(payload) {
 
 function validateMode(payload) {
   const mode = clampString(payload?.mode || MODE_CHAT, 32).toLowerCase();
-  if (![MODE_CHAT, MODE_AGENT_EDIT].includes(mode)) {
-    return { ok: false, error: "Invalid mode. Allowed: chat, agent_edit." };
+  if (![MODE_CHAT, MODE_AGENT_EDIT, MODE_ADMIN].includes(mode)) {
+    return { ok: false, error: "Invalid mode. Allowed: chat, agent_edit, admin." };
   }
   return { ok: true, value: mode };
 }
@@ -176,6 +177,7 @@ module.exports = {
   MAX_MESSAGE_LENGTH,
   MAX_SYSTEM_PROMPT_LENGTH,
   MODE_AGENT_EDIT,
+  MODE_ADMIN,
   MODE_CHAT,
   callLocalOllama
 };

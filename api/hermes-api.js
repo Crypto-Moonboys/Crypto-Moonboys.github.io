@@ -4,13 +4,13 @@ const express = require("express");
 const cors = require("cors");
 const {
   ALLOWED_MODELS,
-  DEFAULT_MODEL,
-  callLocalOllama
+  DEFAULT_MODEL
 } = require("../server/hermes/chat-proxy.js");
 const orchestrator = require("../server/hermes/orchestrator.js");
 const { getAgents } = require("../server/hermes/swarm-registry.js");
-const { assertRoleCapability } = require("../server/hermes/agent-runtime.js");
-const { consumeApproved } = require("../server/hermes/approval-gate.js");
+const { runConversation } = require("../server/hermes/conversation-runtime.js");
+const { executeAction } = require("../server/hermes/tool-executor.js");
+const { ACTIONS } = require("../server/hermes/action-schema.js");
 
 const app = express();
 app.disable("x-powered-by");
@@ -46,34 +46,234 @@ function readOpContext(req) {
   const mode = String(req.body?.mode || "chat");
   const confirmEdit = req.body?.confirmEdit === true;
   const approvalId = String(req.body?.approvalId || "");
-  return { role, mode, confirmEdit, approvalId };
+  const approvalToken = String(req.headers["x-hermes-edit-token"] || req.body?.approvalToken || "");
+  const sessionId = String(req.body?.sessionId || req.headers["x-hermes-session-id"] || "");
+  const swarm = getAgents();
+  return { role, mode, confirmEdit, approvalId, approvalToken, sessionId, swarm };
 }
 
-function requirePrivilegedRequest(req, roleCapability) {
-  const serverToken = String(process.env.HERMES_EDIT_TOKEN || "").trim();
-  if (!serverToken) {
-    throw new Error("HERMES_EDIT_TOKEN is not configured on server.");
-  }
-  const providedToken = String(req.headers["x-hermes-edit-token"] || "").trim();
-  if (providedToken !== serverToken) {
-    throw new Error("Missing or invalid Hermes edit token.");
-  }
-  const ctx = readOpContext(req);
-  if (!["agent_edit", "admin"].includes(ctx.mode)) {
-    throw new Error("Privileged operation requires agent_edit/admin mode.");
-  }
-  if (!ctx.confirmEdit) {
-    throw new Error("Privileged operation requires confirmEdit=true.");
-  }
-  assertRoleCapability(ctx.role, roleCapability);
-  return ctx;
+function buildActionContext(req, overrides = {}) {
+  return {
+    ...readOpContext(req),
+    ...overrides
+  };
 }
 
-function requireApprovalToken(ctx) {
-  if (!ctx.approvalId) {
-    throw new Error("Approval token is required.");
+async function executeActionRoute(req, res, action) {
+  try {
+    const result = await executeAction(action, buildActionContext(req));
+    const status = result.ok ? 200 : 403;
+    return res.status(status).json({
+      ok: result.ok,
+      action,
+      toolResult: result
+    });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
   }
-  consumeApproved(ctx.approvalId);
+}
+
+async function executePrivilegedActionRoute(req, res, action) {
+  return executeActionRoute(req, res, action);
+}
+
+function readTextQuery(req, key, fallback = "") {
+  return String(req.query?.[key] || fallback);
+}
+
+function readArrayBody(req, key) {
+  return Array.isArray(req.body?.[key]) ? req.body[key] : [];
+}
+
+function readObjectBody(req, key) {
+  const value = req.body?.[key];
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+function readStringBody(req, key, fallback = "") {
+  return String(req.body?.[key] || fallback);
+}
+
+function readBooleanBody(req, key) {
+  return req.body?.[key] === true;
+}
+
+function readNumberBody(req, key) {
+  const value = req.body?.[key];
+  return Number.isFinite(value) ? value : undefined;
+}
+
+function toAction(type, payload) {
+  return { type, payload };
+}
+
+function parseCommandAction(req) {
+  return toAction(ACTIONS.COMMAND_RUN, {
+    command: readStringBody(req, "command"),
+    args: readArrayBody(req, "args"),
+    timeoutMs: readNumberBody(req, "timeoutMs")
+  });
+}
+
+function parsePatchApplyAction(req) {
+  return toAction(ACTIONS.PATCH_APPLY, { operations: readArrayBody(req, "operations") });
+}
+
+function parsePatchRollbackAction(req) {
+  return toAction(ACTIONS.PATCH_ROLLBACK, { rollbackId: readStringBody(req, "rollbackId") });
+}
+
+function parseGitBranchAction(req) {
+  return toAction(ACTIONS.GIT_BRANCH, { name: readStringBody(req, "name") });
+}
+
+function parseGitCommitAction(req) {
+  return toAction(ACTIONS.GIT_COMMIT, { message: readStringBody(req, "message", "Hermes commit") });
+}
+
+function parseGitPushAction(req) {
+  return toAction(ACTIONS.GIT_PUSH, {
+    remote: readStringBody(req, "remote", "origin"),
+    branch: readStringBody(req, "branch"),
+    dryRun: readBooleanBody(req, "dryRun")
+  });
+}
+
+function parseMemoryMergeAction(req) {
+  return toAction(ACTIONS.MEMORY_MERGE, { patch: readObjectBody(req, "patch") });
+}
+
+function parseFileListAction(req) {
+  return toAction(ACTIONS.FILE_LIST, { path: readTextQuery(req, "path", ".") });
+}
+
+function parseFileReadAction(req) {
+  return toAction(ACTIONS.FILE_READ, { path: readTextQuery(req, "path", "") });
+}
+
+function parseRepoSearchAction(req) {
+  return toAction(ACTIONS.REPO_SEARCH, { query: readTextQuery(req, "q", ""), limit: req.query.limit });
+}
+
+function parseGitDiffAction(req) {
+  return toAction(ACTIONS.GIT_DIFF, { target: readTextQuery(req, "target", "") });
+}
+
+function parseGitPrMetadataAction(req) {
+  return toAction(ACTIONS.GIT_PR_METADATA, { base: readTextQuery(req, "base", "main") });
+}
+
+function parseGitStatusAction() {
+  return toAction(ACTIONS.GIT_STATUS, {});
+}
+
+function parseMemoryViewAction() {
+  return toAction(ACTIONS.MEMORY_VIEW, {});
+}
+
+function parseIndexRebuildAction() {
+  return toAction(ACTIONS.INDEX_REBUILD, {});
+}
+
+function parseFilesSearchBody(req) {
+  return {
+    query: readStringBody(req, "query"),
+    paths: readArrayBody(req, "paths")
+  };
+}
+
+function parseApprovalCreateBody(req) {
+  return req.body || {};
+}
+
+function parseApprovalDecideBody(req) {
+  return {
+    id: readStringBody(req, "id"),
+    approved: Boolean(req.body?.approved),
+    note: readStringBody(req, "note")
+  };
+}
+
+function readTaskBody(req) {
+  return req.body || {};
+}
+
+function parseChatBody(req) {
+  return req.body || {};
+}
+
+function readModeFromBody(req) {
+  return readStringBody(req, "mode", "chat");
+}
+
+function readRoleFromBody(req) {
+  return readStringBody(req, "role", "main_hermes");
+}
+
+function readPromptFromBody(req) {
+  return readStringBody(req, "prompt");
+}
+
+function readHistoryFromBody(req) {
+  return Array.isArray(req.body?.history) ? req.body.history : [];
+}
+
+function readSystemPromptFromBody(req) {
+  return readStringBody(req, "systemPrompt");
+}
+
+function readModelFromBody(req) {
+  return readStringBody(req, "model");
+}
+
+function readProposedOperationsFromBody(req) {
+  return readArrayBody(req, "proposedOperations");
+}
+
+function readRollbackIdFromBody(req) {
+  return readStringBody(req, "rollbackId");
+}
+
+function parseConversationInput(req) {
+  const body = parseChatBody(req);
+  return {
+    model: readModelFromBody(req),
+    systemPrompt: readSystemPromptFromBody(req),
+    prompt: readPromptFromBody(req),
+    history: readHistoryFromBody(req),
+    mode: readModeFromBody(req),
+    role: readRoleFromBody(req),
+    confirmEdit: req.body?.confirmEdit === true,
+    approvalId: readStringBody(req, "approvalId"),
+    approvalToken: String(req.headers["x-hermes-edit-token"] || req.body?.approvalToken || ""),
+    sessionId: String(req.body?.sessionId || req.headers["x-hermes-session-id"] || ""),
+    proposedOperations: readProposedOperationsFromBody(req),
+    rollbackId: readRollbackIdFromBody(req),
+    ...body
+  };
+}
+
+function parseActionBody(req) {
+  return req.body?.action || {};
+}
+
+function parseModeRoleFallback(req) {
+  return {
+    mode: readModeFromBody(req),
+    role: readRoleFromBody(req)
+  };
+}
+
+function conversationErrorPayload(req, error) {
+  const fallback = parseModeRoleFallback(req);
+  return {
+    reply: "Hermes failed to process request.",
+    actions: [],
+    toolResults: [],
+    missingRequirements: [String(error?.message || error)],
+    mode: fallback.mode,
+    role: fallback.role
+  };
 }
 
 app.get("/api/hermes/models", (_req, res) => {
@@ -129,28 +329,45 @@ app.get("/api/hermes/swarm", (_req, res) => {
 });
 
 app.post("/api/hermes/chat", async (req, res) => {
-  const result = await callLocalOllama(req.body || {});
-  res.status(result.status).json(result.body);
+  try {
+    const payload = parseConversationInput(req);
+    const response = await runConversation(payload);
+    res.json({
+      reply: response.reply,
+      actions: response.actions || [],
+      toolResults: response.toolResults || [],
+      missingRequirements: response.missingRequirements || [],
+      mode: response.mode,
+      role: response.role
+    });
+  } catch (error) {
+    res.status(400).json(conversationErrorPayload(req, error));
+  }
+});
+
+app.post("/api/hermes/action", async (req, res) => {
+  return executeActionRoute(req, res, parseActionBody(req));
 });
 
 app.post("/api/hermes/task/plan", (req, res) => {
-  handle(res, async () => ({ plan: await orchestrator.executeTask(req.body || {}) }));
+  handle(res, async () => ({ plan: await orchestrator.executeTask(readTaskBody(req)) }));
 });
 
 app.post("/api/hermes/index/rebuild", (_req, res) => {
-  handle(res, async () => ({ index: orchestrator.tools.buildIndex() }));
+  void _req;
+  return executeActionRoute({ ..._req, body: _req.body || {}, query: _req.query || {} }, res, parseIndexRebuildAction());
 });
 
 app.get("/api/hermes/index/search", (req, res) => {
-  handle(res, async () => ({ results: orchestrator.tools.searchIndex(req.query.q || "", { limit: req.query.limit }) }));
+  return executeActionRoute(req, res, parseRepoSearchAction(req));
 });
 
 app.get("/api/hermes/files/list", (req, res) => {
-  handle(res, async () => orchestrator.tools.listDirectory(req.query.path || ""));
+  return executeActionRoute(req, res, parseFileListAction(req));
 });
 
 app.get("/api/hermes/files/read", (req, res) => {
-  handle(res, async () => orchestrator.tools.readFile(req.query.path || ""));
+  return executeActionRoute(req, res, parseFileReadAction(req));
 });
 
 app.post("/api/hermes/files/search", (req, res) => {
@@ -164,134 +381,47 @@ app.post("/api/hermes/patch/preview", (req, res) => {
 });
 
 app.post("/api/hermes/patch/apply", (req, res) => {
-  let ctx;
-  try {
-    ctx = requirePrivilegedRequest(req, "canEditRepo");
-  } catch (error) {
-    return res.status(403).json({ ok: false, error: String(error.message || error) });
-  }
-  handle(res, async () => ({
-    result: orchestrator.tools.applyPatch(req.body?.operations || [], {
-      ...ctx
-    })
-  }));
+  return executePrivilegedActionRoute(req, res, parsePatchApplyAction(req));
 });
 
 app.post("/api/hermes/patch/rollback", (req, res) => {
-  let ctx;
-  try {
-    ctx = requirePrivilegedRequest(req, "canEditRepo");
-  } catch (error) {
-    return res.status(403).json({ ok: false, error: String(error.message || error) });
-  }
-  handle(res, async () => ({
-    result: orchestrator.tools.rollbackPatch(req.body?.rollbackId || "", ctx)
-  }));
+  return executePrivilegedActionRoute(req, res, parsePatchRollbackAction(req));
 });
 
 app.get("/api/hermes/git/status", (_req, res) => {
-  handle(res, async () => ({ status: await orchestrator.tools.git.status() }));
+  return executeActionRoute(_req, res, parseGitStatusAction());
 });
 
 app.post("/api/hermes/git/branch", (req, res) => {
-  handle(res, async () => ({ result: await orchestrator.tools.git.createBranch(req.body?.name || "") }));
+  return executePrivilegedActionRoute(req, res, parseGitBranchAction(req));
 });
 
 app.get("/api/hermes/git/diff", (req, res) => {
-  handle(res, async () => ({ result: await orchestrator.tools.git.diff(req.query.target || "") }));
+  return executeActionRoute(req, res, parseGitDiffAction(req));
 });
 
 app.post("/api/hermes/git/commit", (req, res) => {
-  let ctx;
-  try {
-    ctx = requirePrivilegedRequest(req, "canUseGit");
-  } catch (error) {
-    return res.status(403).json({ ok: false, error: String(error.message || error) });
-  }
-  try {
-    requireApprovalToken(ctx);
-  } catch (error) {
-    return res.status(403).json({ ok: false, error: String(error.message || error) });
-  }
-  handle(res, async () => ({
-    result: await orchestrator.tools.git.commit(req.body?.message || "Hermes commit", { mode: ctx.mode })
-  }));
+  return executePrivilegedActionRoute(req, res, parseGitCommitAction(req));
 });
 
 app.post("/api/hermes/git/stash", (_req, res) => {
-  let ctx;
-  try {
-    ctx = requirePrivilegedRequest(_req, "canUseGit");
-  } catch (error) {
-    return res.status(403).json({ ok: false, error: String(error.message || error) });
-  }
-  try {
-    requireApprovalToken(ctx);
-  } catch (error) {
-    return res.status(403).json({ ok: false, error: String(error.message || error) });
-  }
-  handle(res, async () => ({ result: await orchestrator.tools.git.stash({ mode: ctx.mode, approved: true }) }));
+  return executePrivilegedActionRoute(_req, res, toAction(ACTIONS.GIT_STASH, {}));
 });
 
 app.post("/api/hermes/git/restore", (req, res) => {
-  let ctx;
-  try {
-    ctx = requirePrivilegedRequest(req, "canUseGit");
-  } catch (error) {
-    return res.status(403).json({ ok: false, error: String(error.message || error) });
-  }
-  try {
-    requireApprovalToken(ctx);
-  } catch (error) {
-    return res.status(403).json({ ok: false, error: String(error.message || error) });
-  }
-  handle(res, async () => ({
-    result: await orchestrator.tools.git.restore(req.body?.paths || [], { mode: ctx.mode, approved: true })
-  }));
+  return executePrivilegedActionRoute(req, res, toAction(ACTIONS.GIT_RESTORE, { paths: readArrayBody(req, "paths") }));
 });
 
 app.post("/api/hermes/git/push", (req, res) => {
-  let ctx;
-  try {
-    ctx = requirePrivilegedRequest(req, "canUseGit");
-  } catch (error) {
-    return res.status(403).json({ ok: false, error: String(error.message || error) });
-  }
-  try {
-    requireApprovalToken(ctx);
-  } catch (error) {
-    return res.status(403).json({ ok: false, error: String(error.message || error) });
-  }
-  handle(res, async () => ({
-    result: await orchestrator.tools.git.pushWithPolicy(
-      req.body?.remote || "origin",
-      req.body?.branch || "",
-      {
-        mode: ctx.mode,
-        approved: true,
-        dryRun: req.body?.dryRun === true
-      }
-    )
-  }));
+  return executePrivilegedActionRoute(req, res, parseGitPushAction(req));
 });
 
 app.get("/api/hermes/git/pr-metadata", (req, res) => {
-  handle(res, async () => ({ result: await orchestrator.tools.git.createPrMetadata(req.query.base || "main") }));
+  return executeActionRoute(req, res, parseGitPrMetadataAction(req));
 });
 
 app.post("/api/hermes/command/run", (req, res) => {
-  let ctx;
-  try {
-    ctx = requirePrivilegedRequest(req, "canRunCommands");
-  } catch (error) {
-    return res.status(403).json({ ok: false, error: String(error.message || error) });
-  }
-  handle(res, async () => ({
-    result: await orchestrator.tools.enqueueCommand(req.body?.command, req.body?.args || [], {
-      timeoutMs: req.body?.timeoutMs,
-      ...ctx
-    })
-  }));
+  return executePrivilegedActionRoute(req, res, parseCommandAction(req));
 });
 
 app.get("/api/hermes/command/queue", (_req, res) => {
@@ -313,11 +443,11 @@ app.get("/api/hermes/approval/list", (_req, res) => {
 });
 
 app.get("/api/hermes/memory", (_req, res) => {
-  handle(res, async () => ({ memory: orchestrator.tools.readMemory() }));
+  return executeActionRoute(_req, res, parseMemoryViewAction());
 });
 
 app.post("/api/hermes/memory/merge", (req, res) => {
-  handle(res, async () => ({ memory: orchestrator.tools.mergeMemory(req.body?.patch || {}) }));
+  return executePrivilegedActionRoute(req, res, parseMemoryMergeAction(req));
 });
 
 const PORT = Number(process.env.PORT || 3012);
