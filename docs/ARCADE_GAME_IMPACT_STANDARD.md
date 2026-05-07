@@ -197,13 +197,13 @@ Faction perks must be implemented using shared helpers from `faction-effect-syst
 
 #### Hard Fork Rockers
 - Theme: Endurance, patience, survival, late-game scaling.
-- Perk behaviour: reduced chaos pressure (−20%), survival score bonus after 30 s (+12%), no shieldBonus.
+- Perk behaviour: reduced chaos pressure (~18%; chaosModifier: 0.82), slight combo reduction (comboModifier: 0.92), survival score bonus after 30 s (+12%), no shield bonus.
 - Upgrade bias: favour score/endurance upgrade options.
 - Best for: players who survive long and play clean.
 
 #### Rugpull Minors
 - Theme: Defense, shields, protection, recovery.
-- Perk behaviour: +1 starting shield where supported (shieldBonus: 1), slight combo bias (+5%), 15% chaos reduction.
+- Perk behaviour: +1 starting shield where supported (shieldBonus: 1), slight combo bias (+5%), 12% chaos reduction (chaosModifier: 0.88).
 - Upgrade bias: favour survival upgrade options.
 - Best for: players who want stability.
 

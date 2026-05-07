@@ -103,13 +103,21 @@ function _loadState() {
   if (!saved || typeof saved !== 'object' || !saved.factions) {
     return _buildDefaultState();
   }
+  if (typeof saved.factions !== 'object' || Array.isArray(saved.factions)) {
+    saved.factions = {};
+  }
+  var didMutate = _migrateLegacyFactionState(saved);
   // Ensure all faction keys are present
   for (var i = 0; i < FACTION_KEYS.length; i++) {
     var k = FACTION_KEYS[i];
-    if (!saved.factions[k]) saved.factions[k] = _makeFactionEntry();
+    if (!saved.factions[k]) {
+      saved.factions[k] = _makeFactionEntry();
+      didMutate = true;
+    }
   }
   saved.updatedAt = saved.updatedAt || 0;
   saved.season    = saved.season    || 1;
+  if (didMutate) _saveState(saved);
   return saved;
 }
 
@@ -128,6 +136,100 @@ function _saveState(state) {
 function _getOrCreateFaction(state, key) {
   if (!state.factions[key]) state.factions[key] = _makeFactionEntry();
   return state.factions[key];
+}
+
+function _migrateLegacyFactionState(state) {
+  var LEGACY_FACTION_ALIASES = {
+    'diamond-hands': 'hard-fork-rockers',
+    diamond_hands: 'hard-fork-rockers',
+    diamondhands: 'hard-fork-rockers',
+    'hodl-warriors': 'rugpull-minors',
+    hodl_warriors: 'rugpull-minors',
+    hodlwarriors: 'rugpull-minors',
+  };
+  var didMutate = false;
+  var factions = state && state.factions;
+  if (!factions || typeof factions !== 'object') return false;
+
+  for (var i = 0; i < FACTION_KEYS.length; i++) {
+    var canonicalKey = FACTION_KEYS[i];
+    var canonicalEntry = factions[canonicalKey];
+    if (canonicalEntry) {
+      var sanitisedCanonical = _sanitiseFactionEntry(canonicalEntry);
+      if (sanitisedCanonical !== canonicalEntry) {
+        factions[canonicalKey] = sanitisedCanonical;
+        canonicalEntry = sanitisedCanonical;
+        didMutate = true;
+      }
+    }
+  }
+
+  var legacyKeys = Object.keys(LEGACY_FACTION_ALIASES);
+  for (var j = 0; j < legacyKeys.length; j++) {
+    var legacyKey = legacyKeys[j];
+    var targetKey = LEGACY_FACTION_ALIASES[legacyKey];
+    if (!Object.prototype.hasOwnProperty.call(factions, legacyKey)) continue;
+    var legacyEntry = _sanitiseFactionEntry(factions[legacyKey]);
+    var targetEntry = _sanitiseFactionEntry(factions[targetKey] || _makeFactionEntry());
+    factions[targetKey] = _mergeFactionEntries(targetEntry, legacyEntry);
+    delete factions[legacyKey];
+    didMutate = true;
+  }
+
+  return didMutate;
+}
+
+function _sanitiseFactionEntry(entry) {
+  var src = (entry && typeof entry === 'object' && !Array.isArray(entry)) ? entry : {};
+  return {
+    power: _toFiniteNumber(src.power),
+    daily: _sanitiseNumberMap(src.daily),
+    weekly: _sanitiseNumberMap(src.weekly),
+    momentum: Math.max(0, Math.floor(_toFiniteNumber(src.momentum))),
+    contributions: _sanitiseNumberMap(src.contributions),
+  };
+}
+
+function _sanitiseNumberMap(map) {
+  var src = (map && typeof map === 'object' && !Array.isArray(map)) ? map : {};
+  var out = {};
+  var keys = Object.keys(src);
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    var value = _toFiniteNumber(src[key]);
+    if (value > 0) out[key] = value;
+  }
+  return out;
+}
+
+function _mergeFactionEntries(target, source) {
+  var merged = _sanitiseFactionEntry(target);
+  var safeSource = _sanitiseFactionEntry(source);
+
+  merged.power += safeSource.power;
+  _mergeNumberMapInto(merged.daily, safeSource.daily);
+  _mergeNumberMapInto(merged.weekly, safeSource.weekly);
+  _mergeNumberMapInto(merged.contributions, safeSource.contributions);
+  merged.momentum = Math.max(
+    merged.momentum,
+    safeSource.momentum,
+    _calcMomentum(merged.daily)
+  );
+
+  return merged;
+}
+
+function _mergeNumberMapInto(target, source) {
+  var keys = Object.keys(source || {});
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    target[key] = (target[key] || 0) + _toFiniteNumber(source[key]);
+  }
+}
+
+function _toFiniteNumber(value) {
+  var n = Number(value);
+  return Number.isFinite(n) ? n : 0;
 }
 
 // ── Public API ───────────────────────────────────────────────────────────────

@@ -165,12 +165,101 @@ function checkFactionKeysInModels() {
   assertFileContainsEveryKey(WAR_FILE, LIVE_FACTIONS);
 }
 
+function checkDocPerkParity() {
+  const src = read(DOCS_FILE);
+  assert.ok(src.includes('chaosModifier: 0.82'), 'Hard Fork Rockers doc must mention chaosModifier: 0.82');
+  assert.ok(src.includes('comboModifier: 0.92'), 'Hard Fork Rockers doc must mention comboModifier: 0.92');
+  assert.ok(
+    src.includes('12% chaos reduction') || src.includes('chaosModifier: 0.88'),
+    'Rugpull Minors doc must mention 12% chaos reduction or chaosModifier: 0.88'
+  );
+}
+
+async function checkWarStateMigration() {
+  const today = new Date();
+  const todayKey = today.getUTCFullYear()
+    + '-' + String(today.getUTCMonth() + 1).padStart(2, '0')
+    + '-' + String(today.getUTCDate()).padStart(2, '0');
+  const isoDow = today.getUTCDay() || 7;
+  const thu = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + (4 - isoDow)));
+  const yearStart = new Date(Date.UTC(thu.getUTCFullYear(), 0, 1));
+  const weekKey = thu.getUTCFullYear() + '-W' + String(Math.ceil(((thu - yearStart) / 86400000 + 1) / 7)).padStart(2, '0');
+
+  const localStorage = createMemoryStorage();
+  localStorage.setItem('fw_war_state_v1', JSON.stringify({
+    season: 7,
+    updatedAt: 123456789,
+    factions: {
+      'hard-fork-rockers': {
+        power: 4,
+        daily: { [todayKey]: 4 },
+        weekly: { [weekKey]: 4 },
+        momentum: 1,
+        contributions: { mission_complete: 4 },
+      },
+      'diamond-hands': {
+        power: 12,
+        daily: { [todayKey]: 5 },
+        weekly: { [weekKey]: 7 },
+        momentum: 2,
+        contributions: { score_submission: 9, streak_bonus: 3 },
+      },
+      hodlwarriors: {
+        power: 15,
+        daily: { [todayKey]: 6 },
+        weekly: { [weekKey]: 11 },
+        momentum: 3,
+        contributions: { global_event: 8, other: 2 },
+      },
+      'rugpull-minors': {
+        power: 2,
+        daily: { [todayKey]: 1 },
+        weekly: { [weekKey]: 1 },
+        momentum: 1,
+        contributions: { mission_complete: 1 },
+      },
+    },
+  }));
+
+  globalThis.localStorage = localStorage;
+  const warModule = await import(pathToFileURL(WAR_FILE).href + `?migration=${Date.now()}`);
+  const state = warModule.getWarState();
+  const stored = JSON.parse(localStorage.getItem('fw_war_state_v1'));
+
+  assert.equal(state.factions['hard-fork-rockers'].power, 16, 'diamond-hands power must migrate into hard-fork-rockers');
+  assert.equal(state.factions['hard-fork-rockers'].daily[todayKey], 9, 'diamond-hands daily totals must be preserved');
+  assert.equal(state.factions['hard-fork-rockers'].weekly[weekKey], 11, 'diamond-hands weekly totals must be preserved');
+  assert.equal(state.factions['hard-fork-rockers'].contributions.score_submission, 9, 'diamond-hands contributions must migrate');
+  assert.equal(state.factions['hard-fork-rockers'].contributions.streak_bonus, 3, 'diamond-hands streak contributions must migrate');
+  assert.equal(state.factions['hard-fork-rockers'].contributions.mission_complete, 4, 'existing hard-fork-rockers contributions must be preserved');
+  assert.equal(state.factions['hard-fork-rockers'].momentum, 2, 'hard-fork-rockers momentum must preserve the stronger legacy value');
+
+  assert.equal(state.factions['rugpull-minors'].power, 17, 'hodl-warriors power must migrate into rugpull-minors');
+  assert.equal(state.factions['rugpull-minors'].daily[todayKey], 7, 'hodl-warriors daily totals must be preserved');
+  assert.equal(state.factions['rugpull-minors'].weekly[weekKey], 12, 'hodl-warriors weekly totals must be preserved');
+  assert.equal(state.factions['rugpull-minors'].contributions.global_event, 8, 'hodl-warriors contributions must migrate');
+  assert.equal(state.factions['rugpull-minors'].contributions.other, 2, 'unknown contribution buckets must be preserved');
+  assert.equal(state.factions['rugpull-minors'].contributions.mission_complete, 1, 'existing rugpull-minors contributions must be preserved');
+  assert.equal(state.factions['rugpull-minors'].momentum, 3, 'rugpull-minors momentum must preserve the stronger legacy value');
+
+  assert.ok(!('diamond-hands' in state.factions), 'legacy diamond-hands key must not remain active');
+  assert.ok(!('hodlwarriors' in state.factions), 'legacy hodlwarriors key must not remain active');
+  assert.ok(!('diamond-hands' in stored.factions), 'stored state must remove legacy diamond-hands key');
+  assert.ok(!('hodlwarriors' in stored.factions), 'stored state must remove legacy hodlwarriors key');
+
+  const standingKeys = new Set(warModule.getFactionStandings().map((entry) => entry.faction));
+  assert.ok(!standingKeys.has('diamond-hands'), 'legacy diamond-hands must not appear in standings');
+  assert.ok(!standingKeys.has('hodlwarriors'), 'legacy hodlwarriors must not appear in standings');
+}
+
 async function main() {
   checkNoOldLiveLabels();
   checkFactionKeysInModels();
   checkAlignmentAliases();
   checkLeaderboardEarnPath();
+  checkDocPerkParity();
   await checkFactionModelsRuntime();
+  await checkWarStateMigration();
   console.log('Faction canon protection checks passed.');
 }
 
