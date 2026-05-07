@@ -5027,11 +5027,12 @@ body.page-game .arcade-top-logo {
   75.9%     { transform: translate(0, 0);          filter: none; }
 }
 
+/* Explicit boundary stops prevent CSS from interpolating into/out of the glitch tints */
 @keyframes arcadeGlitchOverlay {
-  0%, 8%, 9%, 40%, 41%, 75%, 76%, 100% { opacity: 0.5;  background: transparent; }
-  8.3%  { opacity: 0.9;  background: rgba(255, 0, 80, 0.12); }
-  8.6%  { opacity: 0.4;  background: rgba(0, 255, 200, 0.1); }
-  40.3% { opacity: 0.8;  background: rgba(255, 200, 0, 0.08); }
+  0%, 8%, 9%, 40%, 41%, 75%, 76%, 100% { opacity: 0.5; background: transparent; }
+  8.3%  { opacity: 0.9; background: rgba(255, 0, 80, 0.12); }
+  8.6%  { opacity: 0.4; background: rgba(0, 255, 200, 0.1); }
+  40.3% { opacity: 0.8; background: rgba(255, 200, 0, 0.08); }
   75.3% { opacity: 0.75; background: rgba(255, 0, 200, 0.1); }
 }
 
