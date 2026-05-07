@@ -33,7 +33,7 @@ This document reflects the **actual running system** — not speculation or plan
 
 - Player attack: Spacebar, range-limited, cooldown-gated
 - Attack damage upgradeable via `spray_damage` upgrade
-- Attack cooldown reduceable via `quick_trigger` upgrade
+- Attack cooldown reducible via `quick_trigger` upgrade
 - Server authoritative — client sends intent, server validates range + cooldown
 
 ### HP and downs
@@ -109,10 +109,12 @@ Six upgrades available, selected from a random pool of 3 choices per recovery:
 
 ### Persistence lite (Phase 2)
 
-- 60-second warm-slot reconnect: unexpected disconnects hold the player slot
-- On reconnect within 60 s: position, HP, upgrades, objective state restored from snapshot
+- 60-second warm-slot reconnect: non-consented disconnects (including browser close/tab crash) hold the player slot
+- During the reconnect window the disconnected player is excluded from all live simulation: NPC targeting, NPC damage, SIGNAL_HACK progress
+- On reconnect within 60 s: position, HP, upgrades, objective state restored from snapshot; spawn grace applied
 - Expired or duplicate reconnect attempts are rejected
-- Lightweight in-memory persistence: display name, last faction, district, run level
+- Lightweight in-memory persistence: display name, last faction, district, run level — applied as fallback on next join
+- Consented leaves (explicit client disconnect) skip the warm-slot hold and clean up immediately
 
 ---
 

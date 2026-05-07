@@ -328,9 +328,18 @@ export class MinimalCityRoom extends Room {
     player.id = client.sessionId;
     player.x = spawn.x;
     player.y = spawn.y;
-    player.name = String(options?.name || `Player_${this.state.players.length + 1}`).slice(0, 24);
-    player.faction = String(options?.faction || 'Liberators').slice(0, 24);
-    player.district = String(options?.district || 'neon-slums').slice(0, 32);
+
+    // Derive identity early so saved profile can fill in missing join options.
+    // Identity key uses the same dual-name pattern as validateMultiplayerEntry:
+    // the join options carry telegram_auth (snake_case from Colyseus options) or
+    // telegramAuth (camelCase from some callers).
+    const identityKey = _persistenceKey(options.telegram_auth ?? options.telegramAuth);
+    const savedProfile = identityKey ? _readPersistence(identityKey) : null;
+    if (identityKey) this._identityKeyBySession.set(client.sessionId, identityKey);
+
+    player.name = String(options?.name || savedProfile?.name || `Player_${this.state.players.length + 1}`).slice(0, 24);
+    player.faction = String(options?.faction || savedProfile?.faction || 'Liberators').slice(0, 24);
+    player.district = String(options?.district || savedProfile?.district || 'neon-slums').slice(0, 32);
     player.ready = false;
     player.upgradeState = this.state.eventLevel > 1 ? 'joined_late' : '';
 
@@ -340,11 +349,6 @@ export class MinimalCityRoom extends Room {
     this.missionStartedAtBySession.set(client.sessionId, 0);
     this.spawnProtectedUntilBySession.set(client.sessionId, Date.now() + SPAWN_GRACE_MS);
     this.lastActiveAtBySession.set(client.sessionId, Date.now());
-    // Identity key uses the same dual-name pattern as validateMultiplayerEntry:
-    // the join options carry telegram_auth (snake_case from Colyseus options) or
-    // telegramAuth (camelCase from some callers).
-    const identityKey = _persistenceKey(options.telegram_auth ?? options.telegramAuth);
-    if (identityKey) this._identityKeyBySession.set(client.sessionId, identityKey);
     this._scheduleReadyTimeout(client.sessionId);
     this._updateWorldMode();
 
@@ -706,6 +710,7 @@ export class MinimalCityRoom extends Room {
     for (const player of this.state.players) {
       if (!player || !player.ready || player.hp <= 0) continue;
       if (this.completedSessions.has(player.id)) continue;
+      if (this._warmSlotsBySession.has(player.id)) continue; // disconnected — skip simulation
       const dist = distance(player.x, player.y, npc.x, npc.y);
       if (dist < bestDist) {
         best = player;
@@ -776,6 +781,7 @@ export class MinimalCityRoom extends Room {
   _tryNpcDamagePlayer(npc, target) {
     if (!target?.ready) return;
     if (this.completedSessions.has(target?.id)) return;
+    if (this._warmSlotsBySession.has(target?.id)) return; // disconnected — skip simulation
     if (!npc || !target || target.hp <= 0) return;
     if (this.state.worldPhase !== PHASE_EVENT_ACTIVE) return;
     const now = Date.now();
@@ -818,6 +824,7 @@ export class MinimalCityRoom extends Room {
     if (this.state.eventObjectiveType === OBJECTIVE_SIGNAL_HACK) {
       for (const player of this.state.players) {
         if (!player || !player.ready || player.hp <= 0) continue;
+        if (this._warmSlotsBySession.has(player.id)) continue; // disconnected — skip simulation
         if (player.x === this.state.hackX && player.y === this.state.hackY) {
           player.objectiveProgress = Math.min(this.state.hackProgressTarget, (player.objectiveProgress || 0) + 1);
           this.state.objectiveProgress = Math.max(this.state.objectiveProgress, player.objectiveProgress);
@@ -1037,17 +1044,23 @@ function _persistenceKey(telegramAuth) {
 
 function _writePersistence(key, { name, faction, district, runLevel }) {
   if (!key) return;
-  if (_lightweightPersistence.size >= PERSISTENCE_MAX_ENTRIES) {
-    const oldest = _lightweightPersistence.keys().next().value;
-    _lightweightPersistence.delete(oldest);
-  }
-  _lightweightPersistence.set(key, {
+  const entry = {
     name: String(name || '').slice(0, 24),
     faction: String(faction || '').slice(0, 24),
     district: String(district || '').slice(0, 32),
     runLevel: Math.max(1, Math.floor(Number(runLevel) || 1)),
     lastSeen: Date.now(),
-  });
+  };
+  if (_lightweightPersistence.has(key)) {
+    // Delete then re-set to refresh Map insertion order so this key is
+    // treated as most-recently-used for LRU eviction.
+    _lightweightPersistence.delete(key);
+  } else if (_lightweightPersistence.size >= PERSISTENCE_MAX_ENTRIES) {
+    // New key and at capacity — evict the oldest-inserted entry.
+    const oldest = _lightweightPersistence.keys().next().value;
+    _lightweightPersistence.delete(oldest);
+  }
+  _lightweightPersistence.set(key, entry);
 }
 
 function _readPersistence(key) {

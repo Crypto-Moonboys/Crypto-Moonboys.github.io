@@ -87,12 +87,31 @@ assertContains(room, 'function _writePersistence(key, {', '_writePersistence hel
 assertContains(room, 'function _readPersistence(key)', '_readPersistence helper must exist');
 must(room, /_writePersistence[\s\S]{0,200}name[\s\S]{0,200}faction[\s\S]{0,200}district[\s\S]{0,200}runLevel/, '_writePersistence must store name, faction, district and runLevel');
 
+// ── Persistence read and applied on join ─────────────────────────────────────
+must(room, /onJoin[\s\S]{0,2500}_readPersistence/, 'onJoin must read saved persistence for returning players');
+must(room, /savedProfile\?\.name/, 'onJoin must use savedProfile.name as fallback');
+must(room, /savedProfile\?\.faction/, 'onJoin must use savedProfile.faction as fallback');
+must(room, /savedProfile\?\.district/, 'onJoin must use savedProfile.district as fallback');
+
+// ── Eviction preserves LRU order ─────────────────────────────────────────────
+must(room, /_writePersistence[\s\S]{0,400}_lightweightPersistence\.has\(key\)/, '_writePersistence must check if key exists to refresh LRU order');
+must(room, /_writePersistence[\s\S]{0,600}_lightweightPersistence\.delete\(key\)[\s\S]{0,200}_lightweightPersistence\.size/, '_writePersistence must delete existing key before size check for LRU refresh');
+
 // ── Identity key tracked in onJoin ────────────────────────────────────────────
 must(room, /onJoin[\s\S]{0,2000}_persistenceKey/, 'identity key must be derived in onJoin');
 must(room, /onJoin[\s\S]{0,2000}_identityKeyBySession\.set/, 'identity key must be stored in _identityKeyBySession in onJoin');
 
 // ── Persistence written in onLeave ────────────────────────────────────────────
 must(room, /onLeave[\s\S]{0,400}_writePersistence/, 'lightweight persistence must be written in onLeave');
+
+// ── Warm-slot players excluded from NPC targeting ────────────────────────────
+must(room, /_findNearestAlivePlayer[\s\S]{0,300}_warmSlotsBySession\.has/, 'NPC targeting must skip disconnected warm-slot players');
+
+// ── Warm-slot players excluded from NPC damage ────────────────────────────────
+must(room, /_tryNpcDamagePlayer[\s\S]{0,200}_warmSlotsBySession\.has/, 'NPC damage must skip disconnected warm-slot players');
+
+// ── Warm-slot players excluded from SIGNAL_HACK objective ────────────────────
+must(room, /_tickObjectives[\s\S]{0,400}_warmSlotsBySession\.has/, 'SIGNAL_HACK progress must skip disconnected warm-slot players');
 
 // ── NPC targeting survives reconnects ────────────────────────────────────────
 // NPCs target by sessionId which persists through allowReconnection.
@@ -179,5 +198,49 @@ assert.equal(snap.hp, 80, 'snapshot must capture HP at disconnect time');
 
 // Stale runGeneration test (simulated via snapshot check)
 assert.ok(snap.runGeneration !== 3, 'stale run generation must not match restored snapshot');
+
+// ── Unit tests: LRU eviction ordering ────────────────────────────────────────
+// Verify that re-writing an existing key refreshes its insertion order,
+// so it is NOT evicted as "oldest" on next overflow.
+{
+  const TINY_CAP = 3;
+  const harness2 = new Function(`
+    const PERSISTENCE_TTL_MS = ${PERSISTENCE_TTL_MS_VAL};
+    const PERSISTENCE_MAX_ENTRIES = ${TINY_CAP};
+    const _lightweightPersistence = new Map();
+    ${helperCode}
+    return { _writePersistence, _readPersistence };
+  `)();
+
+  // Write three entries (fills the cap)
+  harness2._writePersistence('tg_A', { name: 'A', faction: 'f', district: 'd', runLevel: 1 });
+  harness2._writePersistence('tg_B', { name: 'B', faction: 'f', district: 'd', runLevel: 1 });
+  harness2._writePersistence('tg_C', { name: 'C', faction: 'f', district: 'd', runLevel: 1 });
+
+  // Re-write the first entry — this should refresh its insertion order (move to end)
+  harness2._writePersistence('tg_A', { name: 'A2', faction: 'f', district: 'd', runLevel: 2 });
+
+  // Now write a fourth entry, which must evict the oldest (tg_B, not tg_A)
+  harness2._writePersistence('tg_D', { name: 'D', faction: 'f', district: 'd', runLevel: 1 });
+
+  assert.equal(harness2._readPersistence('tg_A')?.name, 'A2', 'recently-updated key must survive eviction');
+  assert.equal(harness2._readPersistence('tg_B'), null, 'true oldest key must be evicted on overflow');
+  assert.ok(harness2._readPersistence('tg_C') !== null, 'second-oldest key must survive when only one eviction needed');
+  assert.ok(harness2._readPersistence('tg_D') !== null, 'newly written key must be present');
+}
+
+// ── Unit tests: persistence applied as fallback on join ───────────────────────
+// Simulate the savedProfile fallback pattern from onJoin.
+{
+  _writePersistence('tg_returning', { name: 'OldAlice', faction: 'Syndicate', district: 'uptown', runLevel: 5 });
+  const prof = _readPersistence('tg_returning');
+  assert.ok(prof, 'returning player must have a saved profile');
+  // Simulated join with no explicit name (options.name is empty)
+  const joinedName = String('' || prof.name || 'Player_1').slice(0, 24);
+  assert.equal(joinedName, 'OldAlice', 'saved name must be used as fallback when join options are absent');
+  // Simulated join with explicit name (options.name overrides saved)
+  const joinedNameOverride = String('NewName' || prof.name || 'Player_1').slice(0, 24);
+  assert.equal(joinedNameOverride, 'NewName', 'explicit join option must override saved name');
+}
 
 console.log('Block Topia reconnect protection checks passed.');
