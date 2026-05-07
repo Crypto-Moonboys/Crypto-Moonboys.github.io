@@ -58,6 +58,10 @@
     <section class="panel">
       <h1>Hermes Local Chat</h1>
       <p>Website chat routed via backend proxy to local Ollama only.</p>
+      <p>
+        Backend config: this page defaults to same-origin API routes. GitHub Pages is static, so it needs a separately
+        deployed backend origin configured via <code>window.HERMES_API_BASE_URL</code>.
+      </p>
     </section>
 
     <section class="panel row two">
@@ -82,6 +86,11 @@
       <div id="error" class="error"></div>
     </section>
   </main>
+  <script>
+    // Leave empty for same-origin VPS/server deployments.
+    // Example for static hosting (GitHub Pages): window.HERMES_API_BASE_URL = "https://api.cryptomoonboys.com";
+    window.HERMES_API_BASE_URL = window.HERMES_API_BASE_URL || "";
+  </script>
   <script src="/js/hermes-chat.js"></script>
 </body>
 </html>

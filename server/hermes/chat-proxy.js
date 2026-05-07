@@ -13,6 +13,8 @@ const MAX_SYSTEM_PROMPT_LENGTH = 1200;
 const MAX_MESSAGE_LENGTH = 4000;
 const MAX_HISTORY_MESSAGES = 20;
 const OLLAMA_TIMEOUT_MS = 45000;
+const MODE_CHAT = "chat";
+const MODE_AGENT_EDIT = "agent_edit";
 
 function clampString(value, maxLength) {
   return String(value || "").trim().slice(0, maxLength);
@@ -33,7 +35,7 @@ function normalizeHistory(history) {
 
   for (const entry of bounded) {
     const role = String(entry?.role || "").trim();
-    if (!["user", "assistant", "system"].includes(role)) {
+    if (!["user", "assistant"].includes(role)) {
       continue;
     }
 
@@ -67,10 +69,32 @@ function buildMessages(payload) {
   return { ok: true, value: messages };
 }
 
+function validateMode(payload) {
+  const mode = clampString(payload?.mode || MODE_CHAT, 32).toLowerCase();
+  if (![MODE_CHAT, MODE_AGENT_EDIT].includes(mode)) {
+    return { ok: false, error: "Invalid mode. Allowed: chat, agent_edit." };
+  }
+  return { ok: true, value: mode };
+}
+
 async function callLocalOllama(payload, options = {}) {
   const fetchImpl = options.fetchImpl || globalThis.fetch;
   if (typeof fetchImpl !== "function") {
     throw new Error("Fetch implementation is unavailable.");
+  }
+
+  const modeCheck = validateMode(payload);
+  if (!modeCheck.ok) {
+    return { status: 400, body: { error: modeCheck.error } };
+  }
+
+  // Guardrail: chat requests never mutate files/repo automatically.
+  // Future edit flows must be explicit and separately authorized.
+  if (modeCheck.value === MODE_AGENT_EDIT && payload?.confirmEdit !== true) {
+    return {
+      status: 403,
+      body: { error: "Agent edit mode requires explicit confirmEdit=true before any edit workflow." }
+    };
   }
 
   const modelCheck = validateModel(payload?.model);
@@ -148,5 +172,10 @@ module.exports = {
   ALLOWED_MODELS,
   DEFAULT_MODEL,
   OLLAMA_CHAT_URL,
+  MAX_HISTORY_MESSAGES,
+  MAX_MESSAGE_LENGTH,
+  MAX_SYSTEM_PROMPT_LENGTH,
+  MODE_AGENT_EDIT,
+  MODE_CHAT,
   callLocalOllama
 };

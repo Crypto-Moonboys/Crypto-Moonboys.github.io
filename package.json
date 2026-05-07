@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "node scripts/smoke-test.js && node scripts/site-shell-parity-audit.mjs && node scripts/right-hud-browser-smoke.mjs",
+    "test": "node tests/hermes-chat-proxy.test.js && node scripts/smoke-test.js && node scripts/site-shell-parity-audit.mjs && node scripts/right-hud-browser-smoke.mjs",
     "test:smoke": "node scripts/smoke-test.js",
     "test:shell-parity": "node scripts/site-shell-parity-audit.mjs",
     "test:right-hud": "node scripts/right-hud-browser-smoke.mjs",

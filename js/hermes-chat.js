@@ -1,6 +1,10 @@
 ﻿(() => {
-  const endpoint = "/api/hermes/chat";
-  const modelsEndpoint = "/api/hermes/models";
+  // For VPS/server deployments, leave this empty to use same-origin backend routes.
+  // GitHub Pages is static and cannot run Express API routes, so set window.HERMES_API_BASE_URL
+  // to a deployed backend origin (for example: "https://api.cryptomoonboys.com").
+  const apiBaseUrl = String(window.HERMES_API_BASE_URL || "").trim().replace(/\/+$/u, "");
+  const endpoint = `${apiBaseUrl}/api/hermes/chat`;
+  const modelsEndpoint = `${apiBaseUrl}/api/hermes/models`;
   const maxHistory = 20;
   const history = [];
 
@@ -14,7 +18,12 @@
   function addMessage(role, content) {
     const item = document.createElement("div");
     item.className = "msg";
-    item.innerHTML = `<b>${role}</b><div>${String(content || "").replace(/</g, "&lt;")}</div>`;
+    const title = document.createElement("b");
+    title.textContent = role;
+    const body = document.createElement("div");
+    body.textContent = String(content || "");
+    item.appendChild(title);
+    item.appendChild(body);
     log.appendChild(item);
     log.scrollTop = log.scrollHeight;
   }
@@ -56,10 +65,14 @@
       model: modelSelect.value,
       systemPrompt: String(systemPrompt.value || ""),
       prompt: message,
-      history: history.slice(-maxHistory)
+      history: history.slice(-maxHistory),
+      mode: "chat"
     };
 
     history.push({ role: "user", content: message });
+    if (history.length > maxHistory) {
+      history.splice(0, history.length - maxHistory);
+    }
 
     try {
       const response = await fetch(endpoint, {
@@ -76,6 +89,9 @@
 
       const reply = String(data.reply || "").trim();
       history.push({ role: "assistant", content: reply });
+      if (history.length > maxHistory) {
+        history.splice(0, history.length - maxHistory);
+      }
       addMessage("Hermes", reply);
       prompt.value = "";
     } catch (error) {
