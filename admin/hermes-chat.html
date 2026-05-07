@@ -1,0 +1,87 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hermes Local Chat</title>
+  <meta name="robots" content="noindex,nofollow">
+  <style>
+    :root {
+      --bg: #0e1a16;
+      --panel: #152721;
+      --line: #2f5b4e;
+      --text: #e8fff4;
+      --muted: #a5d8c4;
+      --accent: #65f2b2;
+      --danger: #ff8a8a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at 20% 0, #1d3d32 0, transparent 40%), var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 18px;
+    }
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(21,39,33,.95), rgba(12,22,19,.95));
+      padding: 14px;
+    }
+    .row { display: grid; gap: 10px; }
+    @media (min-width: 760px) {
+      .row.two { grid-template-columns: 1fr 2fr; }
+    }
+    label { font-size: 0.92rem; color: var(--muted); display: block; margin-bottom: 6px; }
+    select, textarea, button {
+      width: 100%; border-radius: 10px; border: 1px solid var(--line);
+      background: #0f1d18; color: var(--text); padding: 10px;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    #log { max-height: 52vh; overflow: auto; display: grid; gap: 8px; }
+    .msg { border: 1px solid var(--line); border-radius: 10px; padding: 8px; }
+    .msg b { color: var(--accent); }
+    .error { color: var(--danger); font-size: 0.9rem; min-height: 1.2em; }
+    button { cursor: pointer; background: linear-gradient(180deg, #82f6c4, #65f2b2); color: #0a1612; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="panel">
+      <h1>Hermes Local Chat</h1>
+      <p>Website chat routed via backend proxy to local Ollama only.</p>
+    </section>
+
+    <section class="panel row two">
+      <div>
+        <label for="model">Model</label>
+        <select id="model"></select>
+      </div>
+      <div>
+        <label for="systemPrompt">System Prompt (Hermes identity)</label>
+        <textarea id="systemPrompt" maxlength="1200">You are Hermes, the Crypto Moonboys local assistant. Be concise, safe, and direct.</textarea>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div id="log" aria-live="polite"></div>
+    </section>
+
+    <section class="panel">
+      <label for="prompt">Message</label>
+      <textarea id="prompt" maxlength="4000" placeholder="Type your message"></textarea>
+      <div style="margin-top:10px"><button id="send" type="button">Send</button></div>
+      <div id="error" class="error"></div>
+    </section>
+  </main>
+  <script src="/js/hermes-chat.js"></script>
+</body>
+</html>
