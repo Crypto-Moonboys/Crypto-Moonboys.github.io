@@ -279,6 +279,13 @@ app.post("/api/brain/commit-backup", requireAdmin, async (req, res) => {
 
   // --- P0: block push if on main/master branch ---
   const branchResult = await runRepoGit(["branch", "--show-current"]);
+  if (!branchResult.ok) {
+    return res.status(500).json({
+      success: false,
+      error: "Unable to determine current branch. Refusing push as a safety measure.",
+      details: branchResult.error
+    });
+  }
   const currentBranch = branchResult.stdout.trim().toLowerCase();
   if (!currentBranch || currentBranch === "main" || currentBranch === "master") {
     return res.status(403).json({
@@ -522,30 +529,43 @@ app.post("/api/brain/advisor", requireAdmin, async (req, res) => {
 });
 
 
-// --- Simple in-process rate limiter (no extra dependencies required) ---
-// Protects mutating admin endpoints against rapid-fire calls from a
+// --- In-process rate limiter for NPC mutation endpoints ---
+// Protects file-mutating admin endpoints against rapid-fire calls from a
 // compromised or misconfigured token holder.
-function makeRateLimiter(windowMs, maxRequests) {
-  const hits = new Map();
-  return function rateLimit(req, res, next) {
-    const key = req.ip || "unknown";
-    const now = Date.now();
-    const record = hits.get(key) || { count: 0, start: now };
-    if (now - record.start > windowMs) {
-      record.count = 0;
-      record.start = now;
-    }
-    record.count += 1;
-    hits.set(key, record);
-    if (record.count > maxRequests) {
-      return res.status(429).json({ error: "Too many requests. Slow down." });
-    }
-    return next();
-  };
-}
+// Note: in-memory only; does not coordinate across multiple processes.
+// If PM2 cluster mode is used, move to a shared store (e.g. Redis).
+const NPC_RATE_WINDOW_MS = 60 * 1000;
+const NPC_RATE_MAX = 10;
+const _npcRateHits = new Map();
 
-// 10 mutating NPC requests per minute per IP (post-auth guard)
-const npcMutateRateLimit = makeRateLimiter(60 * 1000, 10);
+// Periodically evict entries older than two windows to prevent unbounded growth.
+setInterval(() => {
+  const cutoff = Date.now() - NPC_RATE_WINDOW_MS * 2;
+  for (const [key, record] of _npcRateHits) {
+    if (record.start < cutoff) _npcRateHits.delete(key);
+  }
+}, NPC_RATE_WINDOW_MS * 2).unref();
+
+function checkNpcRateLimit(req, res) {
+  // Prefer x-forwarded-for when behind a trusted reverse proxy; fall back to
+  // socket IP. Express's req.ip already respects trust proxy settings.
+  const key = String(
+    (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.ip || "unknown"
+  );
+  const now = Date.now();
+  const record = _npcRateHits.get(key) || { count: 0, start: now };
+  if (now - record.start > NPC_RATE_WINDOW_MS) {
+    record.count = 0;
+    record.start = now;
+  }
+  record.count += 1;
+  _npcRateHits.set(key, record);
+  if (record.count > NPC_RATE_MAX) {
+    res.status(429).json({ error: "Too many requests. Slow down." });
+    return false;
+  }
+  return true;
+}
 
 function slugifyNpcId(value) {
   return String(value || "")
@@ -555,7 +575,10 @@ function slugifyNpcId(value) {
     .slice(0, 64);
 }
 
-app.post("/api/brain/create-npc", requireAdmin, npcMutateRateLimit, async (req, res) => {
+app.post("/api/brain/create-npc", requireAdmin, async (req, res) => {
+  // Rate limit check inline so static analysis can see it directly tied to I/O.
+  if (!checkNpcRateLimit(req, res)) return;
+
   const name = String(req.body?.name || "").trim().slice(0, 80);
   const brand = String(req.body?.brand || "Crypto Moonboys").trim().slice(0, 80);
   const tone = String(req.body?.tone || "lore-aware, tactical, useful").trim().slice(0, 160);
@@ -635,9 +658,9 @@ Add deeper lore here as the character develops.
     });
   }
 
-  // --- P1: require explicit confirmation; return preview if missing ---
+  // --- P1: require explicit confirmation; return 400 with preview if missing ---
   if (!confirmCreate) {
-    return res.status(200).json({
+    return res.status(400).json({
       success: false,
       requiresConfirmation: true,
       error: "confirmCreate must be set to true to create an NPC. Use dryRun=true to preview without side-effects.",
