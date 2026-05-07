@@ -1,6 +1,7 @@
 # Arcade XP Sync Path (Current Production Flow)
 
 ## Summary
+- The arcade uses one protected browser-driven roguelite post-run loop. All accepted game runs feed the same `submitScore()` path, while most roguelite/meta state remains frontend-driven with partial server sync.
 - Players can always play arcade games before linking Telegram.
 - Unsynced runs are stored locally in browser pending state.
 - After `/gklink` succeeds on `gkniftyheads-incubator.html`, pending runs are submitted to the server sync route.
@@ -14,7 +15,10 @@
    - run is queued locally via `ArcadeSync.queuePendingProgress(...)`.
 3. If linked and score is accepted:
    - existing leaderboard flow remains active.
-   - run is queued and `ArcadeSync.syncPendingArcadeProgress()` is called.
+   - `ArcadeMeta.trackGameResult(...)` updates local UTC daily, weekly, monthly, seasonal, and yearly windows for browser-side loop presentation.
+   - local leaderboard clout, streak clout, faction clout, game mastery clout, loop-cycle previews, and rabbit-hole branches are refreshed as frontend state.
+   - run is queued and `ArcadeSync.syncPendingArcadeProgress()` is called so the server can authoritatively accept XP/progression entries.
+   - faction earn remains in the accepted linked-score flow and is server-authoritative when the earn API accepts it.
 4. On `/gklink` completion (`js/incubator-link.js`):
    - pending queue sync is triggered immediately (no need to play another run first).
 
@@ -50,6 +54,15 @@ Defined in:
 - Leaderboard ranking remains score-based.
 - Existing Block Topia progression route remains intact.
 - Existing Invaders accepted-score path remains intact and now also participates in shared progression sync.
+- Every active arcade game calls the shared `submitScore()` path; no active game owns a separate post-run progression path.
+
+## Runtime authority truth
+- Browser-authoritative/cache-only: roguelite quests, rabbit-hole choices, local clout previews, streak display, loop-cycle cards, and next-action hints.
+- Server-authoritative: leaderboard score acceptance, synced Arcade XP awards, progression dedupe/caps/anti-farm enforcement, and accepted faction earn.
+- Synced boundary: `ArcadeSync.queuePendingProgress(...)` stores pending browser entries; `ArcadeSync.syncPendingArcadeProgress()` submits them for server acceptance when Telegram auth is available.
+
+## Next safe evolution: Shared Meta Authority
+A safe next phase is Shared Meta Authority: server-backed daily loop state, faction pressure, seasonal previews/campaigns, clout state, and shared rabbit-hole state. Do this without an MMO rebuild, giant realtime rewrite, Redis/Postgres overengineering, or removing the existing frontend loop logic.
 
 ## Manual validation: rejected linked score is not queued
 1. Link Telegram so account is `telegram_linked`.

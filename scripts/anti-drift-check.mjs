@@ -20,6 +20,8 @@ const SCAN_TARGETS = [
   'js/components/ui-status-copy.js',
   'workers/moonboys-api/README.md',
   'workers/moonboys-api/blocktopia',
+  'scripts',
+  'workers',
 ];
 
 const FILE_EXTENSIONS = new Set(['.md', '.txt', '.html', '.js', '.mjs', '.yml', '.yaml']);
@@ -55,6 +57,9 @@ const FORBIDDEN_TERMS = [
   { label: 'term-13', value: ['package', 'present'].join('-') },
   { label: 'term-14', value: ['integration', 'staged'].join('-') },
   { label: 'term-15', value: ['source', 'present'].join('-') },
+  { label: 'term-16', value: ['space', 'agent'].join('_') },
+  { label: 'term-17', value: ['space', 'agent'].join('/') },
+  { label: 'term-18', value: ['space', 'agent'].join('.') },
 ];
 const FORBIDDEN_TERMS_LOWER = FORBIDDEN_TERMS.map((term) => ({
   ...term,
