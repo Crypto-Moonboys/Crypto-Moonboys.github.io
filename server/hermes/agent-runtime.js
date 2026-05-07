@@ -4,37 +4,44 @@ const ROLE_RULES = {
   main_hermes: {
     canEditRepo: true,
     canRunCommands: true,
-    canManageNpc: true
+    canManageNpc: true,
+    canUseGit: true
   },
   ui_agent: {
     canEditRepo: true,
     canRunCommands: true,
-    canManageNpc: false
+    canManageNpc: false,
+    canUseGit: true
   },
   runtime_agent: {
     canEditRepo: true,
     canRunCommands: true,
-    canManageNpc: false
+    canManageNpc: false,
+    canUseGit: true
   },
   test_agent: {
     canEditRepo: false,
     canRunCommands: true,
-    canManageNpc: false
+    canManageNpc: false,
+    canUseGit: false
   },
   deploy_agent: {
     canEditRepo: false,
     canRunCommands: true,
-    canManageNpc: false
+    canManageNpc: false,
+    canUseGit: true
   },
   watcher_agent: {
     canEditRepo: false,
     canRunCommands: true,
-    canManageNpc: false
+    canManageNpc: false,
+    canUseGit: false
   },
   npc_agent: {
-    canEditRepo: true,
+    canEditRepo: false,
     canRunCommands: false,
     canManageNpc: true,
+    canUseGit: false,
     pathPrefixes: ["admin/brain-data", "admin/the-brain", "api/brain-api.js"]
   }
 };
@@ -55,8 +62,17 @@ function assertRolePathAccess(role, relPath) {
   return true;
 }
 
+function assertRoleCapability(role, capability) {
+  const policy = getRolePolicy(role);
+  if (!policy || !policy[capability]) {
+    throw new Error(`Role "${role}" lacks capability "${capability}".`);
+  }
+  return true;
+}
+
 module.exports = {
   ROLE_RULES,
   getRolePolicy,
-  assertRolePathAccess
+  assertRolePathAccess,
+  assertRoleCapability
 };

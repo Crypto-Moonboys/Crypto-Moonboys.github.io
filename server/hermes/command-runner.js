@@ -18,6 +18,9 @@ const queue = [];
 let active = null;
 
 function isAllowed(cmd, args = []) {
+  if (args.some((arg) => /(^|[\\/])\.\.([\\/]|$)/u.test(String(arg)))) {
+    return false;
+  }
   return ALLOWED_COMMANDS.some((rule) => {
     if (rule[0] !== cmd) return false;
     for (let i = 1; i < rule.length; i += 1) {
@@ -29,15 +32,30 @@ function isAllowed(cmd, args = []) {
 
 function runProcess(task) {
   return new Promise((resolve) => {
-    const child = spawn(task.command, task.args, {
-      cwd: REPO_ROOT,
-      shell: false,
-      env: process.env
-    });
+    let child;
+    try {
+      child = spawn(task.command, task.args, {
+        cwd: REPO_ROOT,
+        shell: false,
+        env: process.env
+      });
+    } catch (error) {
+      resolve({
+        code: 126,
+        stdout: "",
+        stderr: String(error?.message || error),
+        timedOut: false,
+        signal: null,
+        ok: false
+      });
+      return;
+    }
 
     let stdout = "";
     let stderr = "";
+    let timedOut = false;
     const timer = setTimeout(() => {
+      timedOut = true;
       child.kill("SIGTERM");
     }, Math.min(task.timeoutMs || MAX_COMMAND_TIMEOUT_MS, MAX_COMMAND_TIMEOUT_MS));
 
@@ -53,9 +71,32 @@ function runProcess(task) {
       task.onOutput?.({ stream: "stderr", chunk });
     });
 
-    child.on("close", (code) => {
+    child.on("error", (error) => {
       clearTimeout(timer);
-      resolve({ code: Number(code || 0), stdout, stderr });
+      resolve({
+        code: 126,
+        stdout,
+        stderr: `${stderr}${String(error?.message || error)}`,
+        timedOut: false,
+        signal: null,
+        ok: false
+      });
+    });
+
+    child.on("close", (code, signal) => {
+      clearTimeout(timer);
+      let normalizedCode = Number.isInteger(code) ? code : 1;
+      if (timedOut || signal) {
+        normalizedCode = normalizedCode === 0 ? 124 : normalizedCode;
+      }
+      resolve({
+        code: normalizedCode,
+        stdout,
+        stderr,
+        timedOut,
+        signal: signal || null,
+        ok: normalizedCode === 0 && !timedOut && !signal
+      });
     });
   });
 }

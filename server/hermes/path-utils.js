@@ -5,12 +5,22 @@ const path = require("node:path");
 const { REPO_ROOT, DENY_PATTERNS, IGNORE_DIRS } = require("./config.js");
 
 function normalizeRepoPath(inputPath) {
-  const rel = String(inputPath || "").replace(/\\/gu, "/").replace(/^\/+/, "").trim();
+  const raw = String(inputPath || "").trim();
+  if (!raw) {
+    return { relPath: ".", absPath: REPO_ROOT };
+  }
+
+  if (path.isAbsolute(raw)) {
+    throw new Error("Absolute paths are not allowed.");
+  }
+
+  const rel = raw.replace(/\\/gu, "/").replace(/^\/+/, "");
   const resolved = path.resolve(REPO_ROOT, rel);
-  if (!resolved.startsWith(REPO_ROOT)) {
+  const relative = path.relative(REPO_ROOT, resolved);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
     throw new Error("Path escapes repository root.");
   }
-  return { relPath: rel, absPath: resolved };
+  return { relPath: relative.replace(/\\/gu, "/") || ".", absPath: resolved };
 }
 
 function isDeniedPath(inputPath) {

@@ -54,12 +54,20 @@ async function commit(message, options = {}) {
   return { branch, head };
 }
 
-async function stash() {
+async function stash(options = {}) {
+  const mode = String(options.mode || "chat");
+  if (!["agent_edit", "admin"].includes(mode) || !options.approved) {
+    throw new Error("Stash requires approved agent_edit/admin mode.");
+  }
   const output = await runGit(["stash", "push", "-u", "-m", "hermes-auto-stash"]);
   return { output };
 }
 
-async function restore(paths = []) {
+async function restore(paths = [], options = {}) {
+  const mode = String(options.mode || "chat");
+  if (!["agent_edit", "admin"].includes(mode) || !options.approved) {
+    throw new Error("Restore requires approved agent_edit/admin mode.");
+  }
   const arr = Array.isArray(paths) ? paths.filter(Boolean) : [];
   const args = arr.length ? ["restore", ...arr] : ["restore", "."];
   const output = await runGit(args);
@@ -67,9 +75,27 @@ async function restore(paths = []) {
 }
 
 async function push(remote = "origin", branch = "") {
+  return pushWithPolicy(remote, branch, {});
+}
+
+async function pushWithPolicy(remote = "origin", branch = "", options = {}) {
+  const mode = String(options.mode || "chat");
+  if (!["agent_edit", "admin"].includes(mode)) {
+    throw new Error("Push requires agent_edit/admin mode.");
+  }
+  if (!options.approved) {
+    throw new Error("Push requires approved action token.");
+  }
   const currentBranch = branch || (await runGit(["branch", "--show-current"]));
+  if (["main", "master"].includes(currentBranch)) {
+    throw new Error("Push to main/master is blocked.");
+  }
+  if (options.dryRun) {
+    const dry = await runGit(["push", "--dry-run", remote, currentBranch], 60000);
+    return { remote, branch: currentBranch, dryRun: true, output: dry };
+  }
   const output = await runGit(["push", remote, currentBranch], 60000);
-  return { remote, branch: currentBranch, output };
+  return { remote, branch: currentBranch, dryRun: false, output };
 }
 
 async function createPrMetadata(base = "main") {
@@ -87,5 +113,6 @@ module.exports = {
   stash,
   restore,
   push,
+  pushWithPolicy,
   createPrMetadata
 };

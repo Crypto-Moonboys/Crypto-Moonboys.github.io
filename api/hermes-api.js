@@ -9,6 +9,8 @@ const {
 } = require("../server/hermes/chat-proxy.js");
 const orchestrator = require("../server/hermes/orchestrator.js");
 const { getAgents } = require("../server/hermes/swarm-registry.js");
+const { assertRoleCapability } = require("../server/hermes/agent-runtime.js");
+const { consumeApproved } = require("../server/hermes/approval-gate.js");
 
 const app = express();
 app.disable("x-powered-by");
@@ -37,6 +39,41 @@ function handle(res, fn) {
     .then(fn)
     .then((data) => res.json({ ok: true, ...data }))
     .catch((error) => res.status(400).json({ ok: false, error: String(error?.message || error) }));
+}
+
+function readOpContext(req) {
+  const role = String(req.body?.role || "main_hermes");
+  const mode = String(req.body?.mode || "chat");
+  const confirmEdit = req.body?.confirmEdit === true;
+  const approvalId = String(req.body?.approvalId || "");
+  return { role, mode, confirmEdit, approvalId };
+}
+
+function requirePrivilegedRequest(req, roleCapability) {
+  const serverToken = String(process.env.HERMES_EDIT_TOKEN || "").trim();
+  if (!serverToken) {
+    throw new Error("HERMES_EDIT_TOKEN is not configured on server.");
+  }
+  const providedToken = String(req.headers["x-hermes-edit-token"] || "").trim();
+  if (providedToken !== serverToken) {
+    throw new Error("Missing or invalid Hermes edit token.");
+  }
+  const ctx = readOpContext(req);
+  if (!["agent_edit", "admin"].includes(ctx.mode)) {
+    throw new Error("Privileged operation requires agent_edit/admin mode.");
+  }
+  if (!ctx.confirmEdit) {
+    throw new Error("Privileged operation requires confirmEdit=true.");
+  }
+  assertRoleCapability(ctx.role, roleCapability);
+  return ctx;
+}
+
+function requireApprovalToken(ctx) {
+  if (!ctx.approvalId) {
+    throw new Error("Approval token is required.");
+  }
+  consumeApproved(ctx.approvalId);
 }
 
 app.get("/api/hermes/models", (_req, res) => {
@@ -127,17 +164,28 @@ app.post("/api/hermes/patch/preview", (req, res) => {
 });
 
 app.post("/api/hermes/patch/apply", (req, res) => {
+  let ctx;
+  try {
+    ctx = requirePrivilegedRequest(req, "canEditRepo");
+  } catch (error) {
+    return res.status(403).json({ ok: false, error: String(error.message || error) });
+  }
   handle(res, async () => ({
     result: orchestrator.tools.applyPatch(req.body?.operations || [], {
-      mode: req.body?.mode,
-      role: req.body?.role || "main_hermes"
+      ...ctx
     })
   }));
 });
 
 app.post("/api/hermes/patch/rollback", (req, res) => {
+  let ctx;
+  try {
+    ctx = requirePrivilegedRequest(req, "canEditRepo");
+  } catch (error) {
+    return res.status(403).json({ ok: false, error: String(error.message || error) });
+  }
   handle(res, async () => ({
-    result: orchestrator.tools.rollbackPatch(req.body?.rollbackId || "", { mode: req.body?.mode })
+    result: orchestrator.tools.rollbackPatch(req.body?.rollbackId || "", ctx)
   }));
 });
 
@@ -154,21 +202,77 @@ app.get("/api/hermes/git/diff", (req, res) => {
 });
 
 app.post("/api/hermes/git/commit", (req, res) => {
+  let ctx;
+  try {
+    ctx = requirePrivilegedRequest(req, "canUseGit");
+  } catch (error) {
+    return res.status(403).json({ ok: false, error: String(error.message || error) });
+  }
+  try {
+    requireApprovalToken(ctx);
+  } catch (error) {
+    return res.status(403).json({ ok: false, error: String(error.message || error) });
+  }
   handle(res, async () => ({
-    result: await orchestrator.tools.git.commit(req.body?.message || "Hermes commit", { mode: req.body?.mode })
+    result: await orchestrator.tools.git.commit(req.body?.message || "Hermes commit", { mode: ctx.mode })
   }));
 });
 
 app.post("/api/hermes/git/stash", (_req, res) => {
-  handle(res, async () => ({ result: await orchestrator.tools.git.stash() }));
+  let ctx;
+  try {
+    ctx = requirePrivilegedRequest(_req, "canUseGit");
+  } catch (error) {
+    return res.status(403).json({ ok: false, error: String(error.message || error) });
+  }
+  try {
+    requireApprovalToken(ctx);
+  } catch (error) {
+    return res.status(403).json({ ok: false, error: String(error.message || error) });
+  }
+  handle(res, async () => ({ result: await orchestrator.tools.git.stash({ mode: ctx.mode, approved: true }) }));
 });
 
 app.post("/api/hermes/git/restore", (req, res) => {
-  handle(res, async () => ({ result: await orchestrator.tools.git.restore(req.body?.paths || []) }));
+  let ctx;
+  try {
+    ctx = requirePrivilegedRequest(req, "canUseGit");
+  } catch (error) {
+    return res.status(403).json({ ok: false, error: String(error.message || error) });
+  }
+  try {
+    requireApprovalToken(ctx);
+  } catch (error) {
+    return res.status(403).json({ ok: false, error: String(error.message || error) });
+  }
+  handle(res, async () => ({
+    result: await orchestrator.tools.git.restore(req.body?.paths || [], { mode: ctx.mode, approved: true })
+  }));
 });
 
 app.post("/api/hermes/git/push", (req, res) => {
-  handle(res, async () => ({ result: await orchestrator.tools.git.push(req.body?.remote || "origin", req.body?.branch || "") }));
+  let ctx;
+  try {
+    ctx = requirePrivilegedRequest(req, "canUseGit");
+  } catch (error) {
+    return res.status(403).json({ ok: false, error: String(error.message || error) });
+  }
+  try {
+    requireApprovalToken(ctx);
+  } catch (error) {
+    return res.status(403).json({ ok: false, error: String(error.message || error) });
+  }
+  handle(res, async () => ({
+    result: await orchestrator.tools.git.pushWithPolicy(
+      req.body?.remote || "origin",
+      req.body?.branch || "",
+      {
+        mode: ctx.mode,
+        approved: true,
+        dryRun: req.body?.dryRun === true
+      }
+    )
+  }));
 });
 
 app.get("/api/hermes/git/pr-metadata", (req, res) => {
@@ -176,9 +280,16 @@ app.get("/api/hermes/git/pr-metadata", (req, res) => {
 });
 
 app.post("/api/hermes/command/run", (req, res) => {
+  let ctx;
+  try {
+    ctx = requirePrivilegedRequest(req, "canRunCommands");
+  } catch (error) {
+    return res.status(403).json({ ok: false, error: String(error.message || error) });
+  }
   handle(res, async () => ({
     result: await orchestrator.tools.enqueueCommand(req.body?.command, req.body?.args || [], {
-      timeoutMs: req.body?.timeoutMs
+      timeoutMs: req.body?.timeoutMs,
+      ...ctx
     })
   }));
 });
