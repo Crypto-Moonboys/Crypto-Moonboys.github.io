@@ -340,6 +340,9 @@ export class MinimalCityRoom extends Room {
     this.missionStartedAtBySession.set(client.sessionId, 0);
     this.spawnProtectedUntilBySession.set(client.sessionId, Date.now() + SPAWN_GRACE_MS);
     this.lastActiveAtBySession.set(client.sessionId, Date.now());
+    // Identity key uses the same dual-name pattern as validateMultiplayerEntry:
+    // the join options carry telegram_auth (snake_case from Colyseus options) or
+    // telegramAuth (camelCase from some callers).
     const identityKey = _persistenceKey(options.telegram_auth ?? options.telegramAuth);
     if (identityKey) this._identityKeyBySession.set(client.sessionId, identityKey);
     this._scheduleReadyTimeout(client.sessionId);

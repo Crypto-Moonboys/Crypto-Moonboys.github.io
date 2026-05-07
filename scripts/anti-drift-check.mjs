@@ -33,7 +33,8 @@ const FORBIDDEN_PATHS = [
   ['docs', 'block-topia', ['multiplayer', 'architecture.md'].join('-')].join('/'),
   ['docs', 'block-topia', ['player', 'experience.md'].join('-')].join('/'),
   ['docs', 'block-topia', ['visual', 'asset', 'pipeline.md'].join('-')].join('/'),
-  // CURRENT_STATE_AUDIT.md is now a live truth document — no longer forbidden
+  // CURRENT_STATE_AUDIT.md (games/block-topia/CURRENT_STATE_AUDIT.md) is now
+  // a live truth document — no longer forbidden
   ['workers', 'moonboys-api', 'blocktopia', ['covert', 'js'].join('.')].join('/'),
   [['HERMES', 'AGENT', 'RUNTIME', 'HANDOVER.md'].join('_')][0],
   [['HERMES', 'NPC', 'AGENT', 'AUDIT', 'REPORT.md'].join('_')][0],
