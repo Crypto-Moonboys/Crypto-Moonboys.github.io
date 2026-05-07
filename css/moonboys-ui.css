@@ -1,0 +1,119 @@
+:root {
+  --mb-bg: #05070d;
+  --mb-panel: #0d1522;
+  --mb-panel-2: #132238;
+  --mb-border: rgba(0, 229, 255, 0.26);
+  --mb-text: #e8f6ff;
+  --mb-muted: #8fb7d4;
+  --mb-accent: #00e5ff;
+  --mb-accent-2: #ffd600;
+  --mb-danger: #ff6685;
+  --mb-radius: 14px;
+}
+
+body {
+  color: var(--mb-text);
+}
+
+.mb-shell-header {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, rgba(5, 10, 18, 0.96), rgba(5, 10, 18, 0.86));
+  border-bottom: 1px solid var(--mb-border);
+  backdrop-filter: blur(8px);
+}
+
+.mb-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--mb-text);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.mb-brand img {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 229, 255, 0.45);
+}
+
+.mb-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mb-nav a {
+  color: var(--mb-muted);
+  text-decoration: none;
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.mb-nav a:hover,
+.mb-nav a.is-active {
+  color: var(--mb-text);
+  border-color: var(--mb-border);
+  background: rgba(0, 229, 255, 0.08);
+}
+
+.mb-status-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--mb-border);
+  background: rgba(0, 229, 255, 0.06);
+  color: var(--mb-text);
+  font-size: 0.74rem;
+}
+
+.mb-chip--warn { border-color: rgba(255, 214, 0, 0.45); }
+.mb-chip--bad { border-color: rgba(255, 102, 133, 0.45); }
+
+.mb-page-frame {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.mb-page-card {
+  border: 1px solid var(--mb-border);
+  border-radius: var(--mb-radius);
+  background: linear-gradient(180deg, rgba(13, 21, 34, 0.86), rgba(7, 12, 20, 0.86));
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.mb-runtime-panel {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px dashed rgba(0, 229, 255, 0.25);
+  border-radius: 10px;
+  color: var(--mb-muted);
+  font-size: 0.76rem;
+}
+
+@media (max-width: 900px) {
+  .mb-shell-header {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}
