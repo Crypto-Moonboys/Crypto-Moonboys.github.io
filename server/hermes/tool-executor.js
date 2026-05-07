@@ -107,13 +107,19 @@ async function executeAction(action, ctx = {}) {
   try {
     switch (type) {
       case ACTIONS.FILE_LIST:
-        return {
-          ok: true,
-          action: type,
-          repo: activeRepo ? { id: activeRepo.id, name: activeRepo.name } : null,
-          path: String(payload.path || "."),
-          result: orchestrator.tools.listDirectory(payload.path || ".")
-        };
+        {
+          const list = orchestrator.tools.listDirectory(payload.path || ".");
+          return {
+            ok: true,
+            action: type,
+            repo: activeRepo ? { id: activeRepo.id, name: activeRepo.name } : null,
+            path: String(payload.path || "."),
+            result: {
+              ...list,
+              totalCount: Array.isArray(list.entries) ? list.entries.length : 0
+            }
+          };
+        }
       case ACTIONS.FILE_READ:
         return {
           ok: true,
@@ -123,12 +129,18 @@ async function executeAction(action, ctx = {}) {
           result: orchestrator.tools.readFile(payload.path || "")
         };
       case ACTIONS.REPO_SEARCH:
-        return {
-          ok: true,
-          action: type,
-          repo: activeRepo ? { id: activeRepo.id, name: activeRepo.name } : null,
-          result: orchestrator.tools.searchIndex(payload.query || "", { limit: payload.limit || 20 })
-        };
+        {
+          const items = orchestrator.tools.searchIndex(payload.query || "", { limit: payload.limit || 120 });
+          return {
+            ok: true,
+            action: type,
+            repo: activeRepo ? { id: activeRepo.id, name: activeRepo.name } : null,
+            result: {
+              items,
+              totalCount: Array.isArray(items) ? items.length : 0
+            }
+          };
+        }
       case ACTIONS.INDEX_REBUILD:
         return { ok: true, action: type, result: orchestrator.tools.buildIndex() };
       case ACTIONS.GIT_STATUS:

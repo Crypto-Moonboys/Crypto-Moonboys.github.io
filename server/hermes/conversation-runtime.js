@@ -14,17 +14,59 @@ function formatToolResult(result, debug = false) {
   let summary = ok ? "Action succeeded." : "Action failed.";
   let pathUsed = result?.path || "";
   let entries = [];
+  let totalCount = 0;
+  let shownCount = 0;
+
+  if (!ok) {
+    const missing = Array.isArray(result?.missingRequirements) ? result.missingRequirements : [];
+    const err = String(result?.error || "").trim();
+    if (missing.length) {
+      summary = `Action denied: ${missing.join("; ")}.`;
+    } else if (err) {
+      const reason = /denied|requires|missing|blocked|mismatch|not allowed|not found/iu.test(err)
+        ? err
+        : `operation failed (${err})`;
+      summary = `Action failed: ${reason}.`;
+    } else {
+      summary = "Action failed: no details returned.";
+    }
+    const failedView = {
+      action,
+      ok,
+      repoUsed,
+      pathUsed,
+      resultSummary: summary,
+      entries: [],
+      totalCount: 0,
+      shownCount: 0,
+      missingRequirements: missing,
+      error: err
+    };
+    if (debug) {
+      failedView.raw = result;
+    }
+    return failedView;
+  }
+
   if (action === "file/list") {
-    entries = Array.isArray(result?.result?.entries) ? result.result.entries.slice(0, 20) : [];
-    summary = `Tool returned ${entries.length} entries.`;
+    const source = Array.isArray(result?.result?.entries) ? result.result.entries : [];
+    totalCount = Number(result?.result?.totalCount || source.length || 0);
+    entries = source.slice(0, 20);
+    shownCount = entries.length;
+    summary = `Tool returned ${totalCount} entries (showing first ${shownCount}).`;
   } else if (action === "repo/search") {
-    entries = Array.isArray(result?.result) ? result.result.slice(0, 20) : [];
-    summary = `Tool returned ${entries.length} search matches.`;
+    const source = Array.isArray(result?.result?.items) ? result.result.items : [];
+    totalCount = Number(result?.result?.totalCount || source.length || 0);
+    entries = source.slice(0, 20);
+    shownCount = entries.length;
+    summary = `Tool returned ${totalCount} search matches (showing first ${shownCount}).`;
   } else if (action === "file/read") {
     const size = Number(result?.result?.size || 0);
     summary = `Read file (${size} bytes).`;
     pathUsed = result?.result?.path || pathUsed;
     entries = [{ snippet: String(result?.result?.content || "").slice(0, 300) }];
+    totalCount = 1;
+    shownCount = 1;
   } else if (action === "command/run") {
     summary = String(result?.result?.summary || summary);
     entries = [{
@@ -33,12 +75,18 @@ function formatToolResult(result, debug = false) {
       firstStderrLine: result?.result?.firstStderrLine || "",
       nextSafeAction: result?.result?.nextSafeAction || ""
     }];
+    totalCount = 1;
+    shownCount = 1;
   } else if (action === "memory/view") {
     summary = "Loaded memory snapshot.";
     entries = [result?.result || {}];
+    totalCount = 1;
+    shownCount = 1;
   } else if (action === "memory/merge") {
     summary = "Memory write completed.";
     entries = [{ savedPatch: result?.result?.savedPatch || {} }];
+    totalCount = 1;
+    shownCount = 1;
   }
 
   const view = {
@@ -48,6 +96,8 @@ function formatToolResult(result, debug = false) {
     pathUsed,
     resultSummary: summary,
     entries,
+    totalCount,
+    shownCount,
     missingRequirements: result?.missingRequirements || [],
     error: result?.error || ""
   };
@@ -141,8 +191,9 @@ async function runConversation(input = {}) {
     for (const result of results) {
       if (!result?.ok) continue;
       if (result.action === "file/list" || result.action === "repo/search") {
-        const count = Array.isArray(result.entries) ? result.entries.length : 0;
-        summary = `Tool returned only ${count} entries.`;
+        const total = Number(result.totalCount || 0);
+        const shown = Number(result.shownCount || 0);
+        summary = `Tool returned ${total} entries (showing first ${shown}).`;
       }
     }
 

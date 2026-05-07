@@ -362,9 +362,26 @@ app.get("/api/hermes/policy", (_req, res) => {
 });
 
 app.get("/api/hermes/swarm", (_req, res) => {
+  const sanitizeRoleCapabilities = () =>
+    Object.entries(ROLE_RULES).map(([role, rules]) => {
+      const allow = [];
+      if (rules.canEditRepo) allow.push("repo edits");
+      if (rules.canRunCommands) allow.push("commands");
+      if (rules.canUseGit) allow.push("git");
+      if (rules.canManageNpc) allow.push("npc management");
+      const restrict = [];
+      if (!rules.canEditRepo) restrict.push("no repo edits");
+      if (!rules.canRunCommands) restrict.push("no commands");
+      if (!rules.canUseGit) restrict.push("no git");
+      if (role === "npc_agent") {
+        restrict.push("npc paths only");
+      }
+      return { role, allowed: allow, restricted: restrict };
+    });
+
   res.json({
     agents: getAgents(),
-    capabilities: ROLE_RULES,
+    capabilities: sanitizeRoleCapabilities(),
     npcRestrictions: {
       denied: [
         "website/repo runtime edits",
