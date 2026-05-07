@@ -333,6 +333,32 @@
       accent-color: var(--ok);
     }
 
+    .status-board {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .status-item {
+      border: 1px solid rgba(96, 213, 255, 0.26);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      background: rgba(8, 17, 28, 0.7);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      font-size: 0.82rem;
+    }
+
+    .status-pill {
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 0.72rem;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #cfe8ff;
+    }
+
     .subtle {
       border-top: 1px dashed rgba(96, 213, 255, 0.25);
       padding-top: 10px;
@@ -349,6 +375,7 @@
       .swarm-grid { grid-template-columns: 1fr; }
       .checkbox-grid { grid-template-columns: 1fr; }
       .swarm-actions { grid-template-columns: 1fr; }
+      .status-board { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -529,6 +556,76 @@
           <button class="control-btn" data-cleanup-action="reset-workspace">Reset Sandbox Workspace</button>
         </div>
       </div>
+    </section>
+
+    <section class="panel">
+      <h2>Task History</h2>
+      <div class="control-buttons">
+        <button class="control-btn safe" data-hermes-prompt="Show last sandbox task details and current status. Read-only only." data-hermes-autosend="true">Show last sandbox task</button>
+        <button class="control-btn safe" data-hermes-prompt="Show last PR created with title, branch, and status. Read-only only." data-hermes-autosend="true">Show last PR</button>
+        <button class="control-btn safe" data-hermes-prompt="Show last changed files from most recent task branch. Read-only only." data-hermes-autosend="true">Show last changed files</button>
+        <button class="control-btn safe" data-hermes-prompt="Show last test result summary with pass/fail and failing suites. Read-only only." data-hermes-autosend="true">Show last test result</button>
+        <button class="control-btn safe" data-hermes-prompt="Show last runtime/task error with likely cause and safe next step. Read-only only." data-hermes-autosend="true">Show last error</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Emergency Controls</h2>
+      <div class="control-buttons">
+        <button class="control-btn" data-hermes-prompt="Stop current task safely. Do not apply new edits. Report current state and partial outputs.">Stop current task</button>
+        <button class="control-btn" data-hermes-prompt="Pause swarm execution and wait for GK instructions. Report paused subtasks.">Pause swarm</button>
+        <button class="control-btn" data-hermes-prompt="Roll back sandbox branch to last safe checkpoint only after confirmation. Show rollback plan first.">Roll back sandbox branch</button>
+        <button class="control-btn" data-hermes-prompt="Restore from backup branch only after confirmation. Show exact branch/ref actions first.">Restore from backup branch</button>
+        <button class="control-btn safe" data-hermes-prompt="Show what is safe to delete from sandbox leftovers and what must never be deleted. Read-only only." data-hermes-autosend="true">Show what is safe to delete</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Visual Review</h2>
+      <div class="control-buttons">
+        <button class="control-btn safe" data-hermes-prompt="Open sandbox preview URL and report status only. Read-only check." data-hermes-autosend="true">Open sandbox preview</button>
+        <button class="control-btn safe" data-hermes-prompt="Compare sandbox vs live visually and summarize key differences. Read-only only." data-hermes-autosend="true">Compare sandbox vs live</button>
+        <button class="control-btn" data-hermes-prompt="Take screenshots for sandbox visual review and provide labeled evidence report.">Take screenshots</button>
+        <button class="control-btn safe" data-hermes-prompt="Report visual differences between sandbox and live with severity list. Read-only only." data-hermes-autosend="true">Report visual differences</button>
+        <button class="control-btn" data-hermes-prompt="Mark task ready for GK review and provide merge-readiness summary checklist.">Mark ready for GK review</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Merge Readiness Checklist</h2>
+      <div class="row">
+        <label class="check"><input type="checkbox" id="mergeCheckTests"> Tests passed?</label>
+        <label class="check"><input type="checkbox" id="mergeCheckFiles"> Files changed reviewed?</label>
+        <label class="check"><input type="checkbox" id="mergeCheckMain"> Main untouched?</label>
+        <label class="check"><input type="checkbox" id="mergeCheckPreview"> Sandbox preview checked?</label>
+        <label class="check"><input type="checkbox" id="mergeCheckRisks"> Risks listed?</label>
+        <label class="check"><input type="checkbox" id="mergeCheckReady"> Ready to merge?</label>
+      </div>
+      <button id="buildMergeChecklistPromptBtn" class="warn">Build Merge Readiness Prompt</button>
+    </section>
+
+    <section class="panel">
+      <h2>Plain-English Explainers</h2>
+      <div class="control-buttons">
+        <button class="control-btn safe" data-hermes-prompt="Explain in plain English: what will this button do? Use short beginner-friendly steps." data-hermes-autosend="true">What will this button do?</button>
+        <button class="control-btn safe" data-hermes-prompt="Explain in plain English: is this safe right now, and why?" data-hermes-autosend="true">Is this safe?</button>
+        <button class="control-btn safe" data-hermes-prompt="Explain in plain English: what can be deleted safely vs never deleted?" data-hermes-autosend="true">What can be deleted?</button>
+        <button class="control-btn safe" data-hermes-prompt="Explain in plain English: what happens next after this action?" data-hermes-autosend="true">What happens next?</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Agent Status Board</h2>
+      <div class="muted">Operator-facing status labels. Refresh status from Hermes to update these indicators.</div>
+      <div class="status-board">
+        <div class="status-item"><span>Main Hermes Agent</span><span class="status-pill" id="statusMainHermes">idle</span></div>
+        <div class="status-item"><span>UI Agent</span><span class="status-pill" id="statusUiAgent">idle</span></div>
+        <div class="status-item"><span>Runtime Agent</span><span class="status-pill" id="statusRuntimeAgent">idle</span></div>
+        <div class="status-item"><span>Test Agent</span><span class="status-pill" id="statusTestAgent">idle</span></div>
+        <div class="status-item"><span>Deploy Agent</span><span class="status-pill" id="statusDeployAgent">idle</span></div>
+        <div class="status-item"><span>Repo Audit Agent</span><span class="status-pill" id="statusRepoAuditAgent">idle</span></div>
+      </div>
+      <button id="refreshAgentStatusBtn" class="safe">Refresh Agent Status</button>
     </section>
 
     <main class="layout">
@@ -923,10 +1020,59 @@
         });
       }
 
+      function bindMergeChecklist() {
+        var btn = document.getElementById("buildMergeChecklistPromptBtn");
+        if (!btn) return;
+        btn.addEventListener("click", function () {
+          var checklist = [
+            ["Tests passed?", document.getElementById("mergeCheckTests") && document.getElementById("mergeCheckTests").checked],
+            ["Files changed reviewed?", document.getElementById("mergeCheckFiles") && document.getElementById("mergeCheckFiles").checked],
+            ["Main untouched?", document.getElementById("mergeCheckMain") && document.getElementById("mergeCheckMain").checked],
+            ["Sandbox preview checked?", document.getElementById("mergeCheckPreview") && document.getElementById("mergeCheckPreview").checked],
+            ["Risks listed?", document.getElementById("mergeCheckRisks") && document.getElementById("mergeCheckRisks").checked],
+            ["Ready to merge?", document.getElementById("mergeCheckReady") && document.getElementById("mergeCheckReady").checked]
+          ];
+          var lines = checklist.map(function (item) {
+            return "- " + item[0] + " " + (item[1] ? "YES" : "NO");
+          });
+          setPrompt("Merge readiness checklist report:\n" + lines.join("\n") + "\n\nSummarize blockers and next safe actions before GK merge decision.");
+        });
+      }
+
+      function bindAgentStatusBoard() {
+        var refresh = document.getElementById("refreshAgentStatusBtn");
+        if (!refresh) return;
+
+        var ids = [
+          "statusMainHermes",
+          "statusUiAgent",
+          "statusRuntimeAgent",
+          "statusTestAgent",
+          "statusDeployAgent",
+          "statusRepoAuditAgent"
+        ];
+
+        function setAll(value) {
+          ids.forEach(function (id) {
+            var node = document.getElementById(id);
+            if (node) node.textContent = value;
+          });
+        }
+
+        refresh.addEventListener("click", function () {
+          setAll("working");
+          setPrompt("Report current swarm/agent status in this format: Main Hermes, UI, Runtime, Test, Deploy, Repo Audit = idle/working/error with one-line reason each.");
+          maybeAutoSend(true);
+          setTimeout(function () { setAll("idle"); }, 1400);
+        });
+      }
+
       bindControlButtons();
       bindTemplates();
       bindSwarmBuilder();
       bindSandboxCleanup();
+      bindMergeChecklist();
+      bindAgentStatusBoard();
     }());
   </script>
 </body>
