@@ -192,6 +192,47 @@ test("clone/register requires admin token and approval", async (t) => {
   assert.match(JSON.stringify(denied.body), /admin|agent_edit|confirmEdit|token|approval/i);
 });
 
+test("repo register and switch are admin-only", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  let approvalId = await createApproved(base, "register non-admin");
+  const registerDenied = await post(base, "/api/hermes/action", {
+    mode: "agent_edit",
+    role: "main_hermes",
+    confirmEdit: true,
+    approvalId,
+    approvalToken: "test-token",
+    action: {
+      type: "repo/register",
+      payload: {
+        id: "x",
+        name: "X",
+        remoteUrl: "https://github.com/example/x",
+        localPath: root
+      }
+    }
+  });
+  assert.equal(registerDenied.status, 403);
+  assert.match(JSON.stringify(registerDenied.body), /admin mode/i);
+
+  approvalId = await createApproved(base, "switch non-admin");
+  const switchDenied = await post(base, "/api/hermes/action", {
+    mode: "agent_edit",
+    role: "main_hermes",
+    confirmEdit: true,
+    approvalId,
+    approvalToken: "test-token",
+    action: {
+      type: "repo/switch",
+      payload: { idOrName: "crypto-moonboys-site" }
+    }
+  });
+  assert.equal(switchDenied.status, 403);
+  assert.match(JSON.stringify(switchDenied.body), /admin mode/i);
+});
+
 test("unregistered repo switch returns missing repo registration message", async (t) => {
   const root = setupSandbox();
   const { server, base } = await startServer(root);
@@ -212,4 +253,3 @@ test("unregistered repo switch returns missing repo registration message", async
   assert.equal(res.status, 403);
   assert.match(JSON.stringify(res.body), /not registered/i);
 });
-

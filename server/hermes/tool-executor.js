@@ -68,12 +68,18 @@ function executePrivilegedAction(action, ctx, handler) {
   }
   assertServerToken(ctx);
   consumeApprovalOrThrow(action, ctx);
-  return handler();
+  return handler({
+    ...ctx,
+    approvalConsumed: true
+  });
 }
 
 function ensureAdminMode(ctx = {}, actionType) {
-  if (actionType === ACTIONS.REPO_CLONE && String(ctx.mode || "") !== "admin") {
-    throw new Error("Repo clone requires admin mode.");
+  if (
+    [ACTIONS.REPO_REGISTER, ACTIONS.REPO_SWITCH, ACTIONS.REPO_CLONE].includes(actionType) &&
+    String(ctx.mode || "") !== "admin"
+  ) {
+    throw new Error("Repo register/switch/clone require admin mode.");
   }
 }
 
@@ -119,79 +125,82 @@ async function executeAction(action, ctx = {}) {
       case ACTIONS.REPO_LIST:
         return { ok: true, action: type, result: getRegistrySnapshot() };
       case ACTIONS.COMMAND_RUN:
-        return await executePrivilegedAction(normalizedAction, ctx, async () => ({
+        return await executePrivilegedAction(normalizedAction, ctx, async (privCtx) => ({
           ok: true,
           action: type,
           result: await orchestrator.tools.enqueueCommand(payload.command, payload.args || [], {
-            mode: ctx.mode,
+            mode: privCtx.mode,
             role,
-            confirmEdit: ctx.confirmEdit,
-            approvalId: ctx.approvalId,
+            confirmEdit: privCtx.confirmEdit,
+            approvalId: privCtx.approvalId,
+            approvalConsumed: true,
             timeoutMs: payload.timeoutMs
           })
         }));
       case ACTIONS.PATCH_PREVIEW:
         return { ok: true, action: type, result: orchestrator.tools.previewPatch(payload.operations || []) };
       case ACTIONS.PATCH_APPLY:
-        return executePrivilegedAction(normalizedAction, ctx, () => ({
+        return executePrivilegedAction(normalizedAction, ctx, (privCtx) => ({
           ok: true,
           action: type,
           result: orchestrator.tools.applyPatch(payload.operations || [], {
-            mode: ctx.mode,
+            mode: privCtx.mode,
             role,
-            confirmEdit: ctx.confirmEdit,
-            approvalId: ctx.approvalId
+            confirmEdit: privCtx.confirmEdit,
+            approvalId: privCtx.approvalId,
+            approvalConsumed: true
           })
         }));
       case ACTIONS.PATCH_ROLLBACK:
-        return executePrivilegedAction(normalizedAction, ctx, () => ({
+        return executePrivilegedAction(normalizedAction, ctx, (privCtx) => ({
           ok: true,
           action: type,
           result: orchestrator.tools.rollbackPatch(payload.rollbackId || "", {
-            mode: ctx.mode,
+            mode: privCtx.mode,
             role,
-            confirmEdit: ctx.confirmEdit,
-            approvalId: ctx.approvalId
+            confirmEdit: privCtx.confirmEdit,
+            approvalId: privCtx.approvalId,
+            approvalConsumed: true
           })
         }));
       case ACTIONS.GIT_BRANCH:
-        return await executePrivilegedAction(normalizedAction, ctx, async () => ({
+        return await executePrivilegedAction(normalizedAction, ctx, async (_privCtx) => ({
           ok: true,
           action: type,
           result: await orchestrator.tools.git.createBranch(payload.name || "")
         }));
       case ACTIONS.GIT_COMMIT:
-        return await executePrivilegedAction(normalizedAction, ctx, async () => ({
+        return await executePrivilegedAction(normalizedAction, ctx, async (privCtx) => ({
           ok: true,
           action: type,
-          result: await orchestrator.tools.git.commit(payload.message || "Hermes commit", { mode: ctx.mode })
+          result: await orchestrator.tools.git.commit(payload.message || "Hermes commit", { mode: privCtx.mode })
         }));
       case ACTIONS.GIT_PUSH:
-        return await executePrivilegedAction(normalizedAction, ctx, async () => ({
+        return await executePrivilegedAction(normalizedAction, ctx, async (privCtx) => ({
           ok: true,
           action: type,
           result: await orchestrator.tools.git.pushWithPolicy(payload.remote || "origin", payload.branch || "", {
-            mode: ctx.mode,
+            mode: privCtx.mode,
             approved: true,
             dryRun: payload.dryRun === true
           })
         }));
       case ACTIONS.GIT_STASH:
-        return await executePrivilegedAction(normalizedAction, ctx, async () => ({
+        return await executePrivilegedAction(normalizedAction, ctx, async (privCtx) => ({
           ok: true,
           action: type,
-          result: await orchestrator.tools.git.stash({ mode: ctx.mode, approved: true })
+          result: await orchestrator.tools.git.stash({ mode: privCtx.mode, approved: true })
         }));
       case ACTIONS.GIT_RESTORE:
-        return await executePrivilegedAction(normalizedAction, ctx, async () => ({
+        return await executePrivilegedAction(normalizedAction, ctx, async (privCtx) => ({
           ok: true,
           action: type,
-          result: await orchestrator.tools.git.restore(payload.paths || [], { mode: ctx.mode, approved: true })
+          result: await orchestrator.tools.git.restore(payload.paths || [], { mode: privCtx.mode, approved: true })
         }));
       case ACTIONS.GIT_PR_METADATA:
         return { ok: true, action: type, result: await orchestrator.tools.git.createPrMetadata(payload.base || "main") };
       case ACTIONS.MEMORY_MERGE:
-        return executePrivilegedAction(normalizedAction, ctx, () => ({
+        return executePrivilegedAction(normalizedAction, ctx, (_privCtx) => ({
           ok: true,
           action: type,
           result: orchestrator.tools.mergeMemory(payload.patch || {})
@@ -205,7 +214,7 @@ async function executeAction(action, ctx = {}) {
             id: payload.id,
             name: payload.name,
             remoteUrl: payload.remoteUrl,
-            localPath: payload.localPath,
+            localPath: payload.localPath || getActiveRepoOrThrow().localPath,
             defaultBranch: payload.defaultBranch,
             status: payload.status || "inactive"
           })

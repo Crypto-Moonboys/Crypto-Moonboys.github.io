@@ -29,6 +29,7 @@ async function runConversation(input = {}) {
       confirmEdit: input.confirmEdit === true,
       approvalId: input.approvalId,
       approvalToken: input.approvalToken,
+      sessionId: input.sessionId,
       swarm: getAgents()
     };
 

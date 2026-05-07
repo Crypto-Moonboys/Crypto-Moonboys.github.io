@@ -2,7 +2,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { execFileSync } = require("node:child_process");
+const { spawnSync } = require("node:child_process");
 const { HERMES_DATA_ROOT, DEFAULT_REPO_ROOT, CLONE_PARENT_DIR } = require("./config.js");
 
 const REGISTRY_FILE = path.join(HERMES_DATA_ROOT, "repo-registry.json");
@@ -180,7 +180,18 @@ function cloneAndRegisterRepo(input = {}) {
     throw new Error("Target clone directory already exists.");
   }
   fs.mkdirSync(cloneRoot, { recursive: true });
-  execFileSync("git", ["clone", remoteUrl, localPath], { stdio: "pipe" });
+  const timeoutMs = Math.min(Math.max(Number(input.timeoutMs || 180000), 10000), 600000);
+  const clone = spawnSync("git", ["clone", remoteUrl, localPath], {
+    stdio: "pipe",
+    encoding: "utf8",
+    timeout: timeoutMs
+  });
+  if (clone.error) {
+    throw new Error(`git clone failed: ${String(clone.error.message || clone.error)}`);
+  }
+  if (clone.status !== 0) {
+    throw new Error(`git clone failed: ${String(clone.stderr || clone.stdout || "").trim()}`);
+  }
   const repo = registerRepo({
     id: repoId,
     name: String(input.name || repoId),
@@ -189,7 +200,7 @@ function cloneAndRegisterRepo(input = {}) {
     defaultBranch: String(input.defaultBranch || "main"),
     status: "inactive"
   });
-  return { repo, cloneRoot, localPath };
+  return { repo, cloneRoot, localPath, output: String(clone.stdout || "").trim() };
 }
 
 module.exports = {
@@ -201,4 +212,3 @@ module.exports = {
   listRegisteredRepos,
   cloneAndRegisterRepo
 };
-

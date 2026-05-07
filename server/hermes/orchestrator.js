@@ -33,6 +33,9 @@ function requirePrivileged(options = {}) {
   if (!options.approvalId) {
     throw new Error("Operation requires approval token.");
   }
+  if (options.approvalConsumed === true) {
+    return;
+  }
   consumeApproved(options.approvalId);
 }
 

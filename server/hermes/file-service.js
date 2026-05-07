@@ -6,7 +6,7 @@ const { MAX_READ_BYTES, MAX_SEARCH_RESULTS } = require("./config.js");
 const { assertAllowedPath, shouldIgnoreDir } = require("./path-utils.js");
 
 function listDirectory(inputPath = "") {
-  const { absPath, relPath, repoRoot } = assertAllowedPath(inputPath || ".");
+  const { absPath, relPath } = assertAllowedPath(inputPath || ".");
   const entries = fs.readdirSync(absPath, { withFileTypes: true })
     .filter((entry) => !entry.isDirectory() || !shouldIgnoreDir(entry.name))
     .map((entry) => ({
@@ -14,7 +14,7 @@ function listDirectory(inputPath = "") {
       path: path.posix.join(relPath || ".", entry.name).replace(/^\.\//u, ""),
       type: entry.isDirectory() ? "dir" : "file"
     }));
-  return { path: relPath || ".", repoRoot, entries };
+  return { path: relPath || ".", entries };
 }
 
 function readFile(inputPath) {

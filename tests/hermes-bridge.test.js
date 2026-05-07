@@ -365,3 +365,27 @@ test("git capability mapping requires canUseGit and not canEditRepo", async (t) 
   assert.equal(res.status, 403);
   assert.match(JSON.stringify(res.body), /canUseGit/i);
 });
+
+test("chat privileged action enforces session-bound approval", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const approval = await post(base, "/api/hermes/approval/create", { title: "chat command", sessionId: "session-a" });
+  await post(base, "/api/hermes/approval/decide", { id: approval.body.approval.id, approved: true });
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "admin",
+    role: "main_hermes",
+    confirmEdit: true,
+    approvalId: approval.body.approval.id,
+    approvalToken: "test-token",
+    sessionId: "session-b",
+    prompt: "Run npm test",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(res.body.toolResults[0].ok, false);
+  assert.match(JSON.stringify(res.body.toolResults[0]), /session mismatch/i);
+});
