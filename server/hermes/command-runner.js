@@ -33,6 +33,46 @@ function isAllowed(cmd, args = []) {
   });
 }
 
+// Env vars that are safe to pass to child processes.
+// Sensitive Hermes/brain tokens are intentionally excluded.
+// GIT identity vars use explicit key names (not broad prefix match) to avoid
+// inadvertently passing any GIT_*_TOKEN or GIT_*_SECRET variable.
+const SAFE_ENV_KEYS = [
+  "PATH",
+  "HOME",
+  "USER",
+  "LOGNAME",
+  "SHELL",
+  "TMPDIR",
+  "TMP",
+  "TEMP",
+  "NODE_ENV",
+  "LANG",
+  "LC_ALL",
+  "LC_CTYPE",
+  "GIT_AUTHOR_NAME",
+  "GIT_AUTHOR_EMAIL",
+  "GIT_COMMITTER_NAME",
+  "GIT_COMMITTER_EMAIL"
+];
+const SAFE_ENV_PREFIXES = ["npm_", "npm_config_"];
+
+function buildSafeEnv() {
+  const env = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (
+      SAFE_ENV_KEYS.includes(key) ||
+      SAFE_ENV_PREFIXES.some((prefix) => key.startsWith(prefix))
+    ) {
+      env[key] = value;
+    }
+  }
+  if (!env.PATH) {
+    env.PATH = "/usr/local/bin:/usr/bin:/bin";
+  }
+  return env;
+}
+
 function runProcess(task) {
   return new Promise((resolve) => {
     let child;
@@ -40,7 +80,7 @@ function runProcess(task) {
       child = spawn(task.command, task.args, {
         cwd: getActiveRepoRoot(),
         shell: false,
-        env: process.env
+        env: buildSafeEnv()
       });
     } catch (error) {
       resolve({

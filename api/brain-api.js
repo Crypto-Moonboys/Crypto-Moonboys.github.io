@@ -1,28 +1,73 @@
+"use strict";
+
 const express = require("express");
 const cors = require("cors");
+const { rateLimit } = require("express-rate-limit");
 const os = require("os");
 const fs = require("fs");
 const path = require("path");
 const { execFile } = require("child_process");
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+// --- P1: explicit CORS allowlist (no wildcard) ---
+const ALLOWED_ORIGINS = (process.env.BRAIN_ALLOWED_ORIGINS ||
+  "https://cryptomoonboys.com,https://www.cryptomoonboys.com,https://space.cryptomoonboys.com,http://localhost:3001,http://127.0.0.1:3001")
+  .split(",")
+  .map((v) => v.trim())
+  .filter(Boolean);
+const allowedOriginSet = new Set(ALLOWED_ORIGINS);
 
-const PORT = 3001;
+const app = express();
+app.disable("x-powered-by");
+if (String(process.env.BRAIN_TRUST_PROXY || "").trim().toLowerCase() === "true") {
+  app.set("trust proxy", true);
+}
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOriginSet.has(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error("Origin not allowed by CORS policy."));
+  }
+}));
+app.use(express.json({ limit: "128kb" }));
+
+function readPortFromEnv() {
+  const raw = String(process.env.BRAIN_API_PORT || "3001").trim();
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 1 || value > 65535) {
+    throw new Error(`Invalid BRAIN_API_PORT "${raw}". Expected an integer between 1 and 65535.`);
+  }
+  return value;
+}
+
+const PORT = readPortFromEnv();
+const BRAIN_API_BIND_HOST = String(process.env.BRAIN_API_BIND_HOST || "127.0.0.1").trim() || "127.0.0.1";
 const NPC_BRAIN = "http://127.0.0.1:3000";
-const ADMIN_TOKEN = process.env.BRAIN_ADMIN_TOKEN || "CHANGE_ME_BRAIN_ADMIN_TOKEN";
+
+// --- P1: refuse insecure/missing token at the token-read site ---
+// At startup (main module), we enforce this is set.  At middleware level we
+// double-check so a unit-test environment that imports without starting up also
+// gets a clear 500 if the token is misconfigured.
+const ADMIN_TOKEN = String(process.env.BRAIN_ADMIN_TOKEN || "").trim();
 
 function requireAdmin(req, res, next) {
-  const token = req.headers["x-brain-admin-token"] || req.query.token;
+  // Defense-in-depth: startup validation (require.main) also checks this.
+  // Kept here so test environments that import the module without starting
+  // the server still get a clear 500 rather than a wrong-token 401.
   if (!ADMIN_TOKEN || ADMIN_TOKEN === "CHANGE_ME_BRAIN_ADMIN_TOKEN") {
     return res.status(500).json({ error: "BRAIN_ADMIN_TOKEN is not configured" });
   }
+  const token = req.headers["x-brain-admin-token"] || req.query.token;
   if (token !== ADMIN_TOKEN) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   next();
 }
+
+// --- P0: env-var driven repo and NPC paths (no more /root hardcodes) ---
+const REPO_ROOT = String(process.env.BRAIN_REPO_ROOT || "/home/moonboys/Crypto-Moonboys.github.io").trim();
+const NPC_BRAIN_ROOT = String(process.env.NPC_BRAIN_ROOT || "/home/moonboys/npc-brain").trim();
+const PM2_LOGS_PATH = String(process.env.BRAIN_PM2_LOGS_PATH || "/home/moonboys/.pm2/logs/npc-brain-out.log").trim();
 
 function pm2(action, name) {
   return new Promise((resolve) => {
@@ -128,7 +173,7 @@ app.post("/api/brain/control", requireAdmin, async (req, res) => {
 });
 
 app.get("/api/brain/logs", requireAdmin, (req, res) => {
-  const file = "/root/.pm2/logs/npc-brain-out.log";
+  const file = PM2_LOGS_PATH;
   const lines = Math.max(10, Math.min(Number(req.query.lines || 120), 500));
 
   if (!fs.existsSync(file)) return res.json({ logs: [] });
@@ -139,8 +184,6 @@ app.get("/api/brain/logs", requireAdmin, (req, res) => {
   });
 });
 
-
-const REPO_ROOT = "/root/Crypto-Moonboys.github.io";
 
 function runRepoGit(args) {
   return new Promise((resolve) => {
@@ -171,7 +214,7 @@ app.get("/api/brain/repo/status", requireAdmin, async (req, res) => {
 });
 
 
-const BRAIN_BACKUP_DIR = `${REPO_ROOT}/admin/brain-data`;
+const BRAIN_BACKUP_DIR = path.join(REPO_ROOT, "admin", "brain-data");
 
 function copyDirSafe(src, dest) {
   if (!fs.existsSync(src)) return;
@@ -190,8 +233,8 @@ function copyDirSafe(src, dest) {
 }
 
 app.post("/api/brain/backup", requireAdmin, async (req, res) => {
-  const npcSource = "/root/npc-brain/npcs";
-  const knowledgeSource = "/root/npc-brain/knowledge";
+  const npcSource = path.join(NPC_BRAIN_ROOT, "npcs");
+  const knowledgeSource = path.join(NPC_BRAIN_ROOT, "knowledge");
 
   fs.rmSync(BRAIN_BACKUP_DIR, { recursive: true, force: true });
   fs.mkdirSync(BRAIN_BACKUP_DIR, { recursive: true });
@@ -210,11 +253,11 @@ app.post("/api/brain/backup", requireAdmin, async (req, res) => {
 
 
 app.post("/api/brain/restore", requireAdmin, async (req, res) => {
-  const npcTarget = "/root/npc-brain/npcs";
-  const knowledgeTarget = "/root/npc-brain/knowledge";
+  const npcTarget = path.join(NPC_BRAIN_ROOT, "npcs");
+  const knowledgeTarget = path.join(NPC_BRAIN_ROOT, "knowledge");
 
-  const npcBackup = `${BRAIN_BACKUP_DIR}/npcs`;
-  const knowledgeBackup = `${BRAIN_BACKUP_DIR}/knowledge`;
+  const npcBackup = path.join(BRAIN_BACKUP_DIR, "npcs");
+  const knowledgeBackup = path.join(BRAIN_BACKUP_DIR, "knowledge");
 
   if (!fs.existsSync(npcBackup) || !fs.existsSync(knowledgeBackup)) {
     return res.status(404).json({
@@ -247,6 +290,24 @@ app.post("/api/brain/restore", requireAdmin, async (req, res) => {
 
 app.post("/api/brain/commit-backup", requireAdmin, async (req, res) => {
   const message = String(req.body?.message || "Update THE BRAIN data backup").trim().slice(0, 120);
+
+  // --- P0: block push if on main/master branch ---
+  const branchResult = await runRepoGit(["branch", "--show-current"]);
+  if (!branchResult.ok) {
+    return res.status(500).json({
+      success: false,
+      error: "Unable to determine current branch. Refusing push as a safety measure.",
+      details: branchResult.error
+    });
+  }
+  const currentBranch = branchResult.stdout.trim().toLowerCase();
+  if (!currentBranch || currentBranch === "main" || currentBranch === "master") {
+    return res.status(403).json({
+      success: false,
+      error: "commit-backup is not allowed on main, master, or a detached HEAD. Check out a sandbox or backup branch first.",
+      branch: currentBranch || "(detached HEAD)"
+    });
+  }
 
   const status = await runRepoGit(["status", "--short", "admin/brain-data"]);
   const changed = status.stdout.split("\n").filter(Boolean);
@@ -482,6 +543,19 @@ app.post("/api/brain/advisor", requireAdmin, async (req, res) => {
 });
 
 
+const npcCreateRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator(req) {
+    return String(req.ip || req.socket?.remoteAddress || "unknown");
+  },
+  handler(_req, res) {
+    res.status(429).json({ success: false, error: "Too many requests. Slow down." });
+  }
+});
+
 function slugifyNpcId(value) {
   return String(value || "")
     .toLowerCase()
@@ -490,12 +564,14 @@ function slugifyNpcId(value) {
     .slice(0, 64);
 }
 
-app.post("/api/brain/create-npc", requireAdmin, async (req, res) => {
+app.post("/api/brain/create-npc", requireAdmin, npcCreateRateLimit, async (req, res) => {
   const name = String(req.body?.name || "").trim().slice(0, 80);
   const brand = String(req.body?.brand || "Crypto Moonboys").trim().slice(0, 80);
   const tone = String(req.body?.tone || "lore-aware, tactical, useful").trim().slice(0, 160);
   const role = String(req.body?.role || "NPC operator inside Block Topia").trim().slice(0, 160);
   const id = slugifyNpcId(req.body?.id || name);
+  const dryRun = req.body?.dryRun === true;
+  const confirmCreate = req.body?.confirmCreate === true;
 
   if (!id || !name) {
     return res.status(400).json({
@@ -504,8 +580,10 @@ app.post("/api/brain/create-npc", requireAdmin, async (req, res) => {
     });
   }
 
-  const npcFile = `/root/npc-brain/npcs/${id}.json`;
-  const wikiFile = `/root/npc-brain/knowledge/wiki/npcs/${id}.md`;
+  const npcsDir = path.join(NPC_BRAIN_ROOT, "npcs");
+  const wikiDir = path.join(NPC_BRAIN_ROOT, "knowledge", "wiki", "npcs");
+  const npcFile = path.join(npcsDir, `${id}.json`);
+  const wikiFile = path.join(wikiDir, `${id}.md`);
 
   if (fs.existsSync(npcFile)) {
     return res.status(409).json({
@@ -514,9 +592,6 @@ app.post("/api/brain/create-npc", requireAdmin, async (req, res) => {
       id
     });
   }
-
-  fs.mkdirSync("/root/npc-brain/npcs", { recursive: true });
-  fs.mkdirSync("/root/npc-brain/knowledge/wiki/npcs", { recursive: true });
 
   const npc = {
     id,
@@ -555,6 +630,33 @@ Core behaviour:
 Add deeper lore here as the character develops.
 `;
 
+  // --- P1: dryRun returns preview without writing ---
+  if (dryRun) {
+    return res.json({
+      success: true,
+      dryRun: true,
+      preview: {
+        npcFile,
+        wikiFile,
+        npc
+      },
+      note: "Set confirmCreate=true to create this NPC for real."
+    });
+  }
+
+  // --- P1: require explicit confirmation; 428 = missing precondition ---
+  if (!confirmCreate) {
+    return res.status(428).json({
+      success: false,
+      requiresConfirmation: true,
+      error: "confirmCreate must be set to true to create an NPC. Use dryRun=true to preview without side-effects.",
+      preview: { npcFile, wikiFile, npc }
+    });
+  }
+
+  fs.mkdirSync(npcsDir, { recursive: true });
+  fs.mkdirSync(wikiDir, { recursive: true });
+
   fs.writeFileSync(npcFile, JSON.stringify(npc, null, 2) + "\n");
   fs.writeFileSync(wikiFile, wiki);
 
@@ -563,9 +665,21 @@ Add deeper lore here as the character develops.
   res.json({
     success: true,
     npc,
+    npcFile,
     wikiFile,
     restart
   });
 });
 
-app.listen(PORT, () => console.log(`BRAIN API running on port ${PORT}`));
+if (require.main === module) {
+  // --- P1: refuse startup if BRAIN_ADMIN_TOKEN is missing or insecure ---
+  if (!ADMIN_TOKEN || ADMIN_TOKEN === "CHANGE_ME_BRAIN_ADMIN_TOKEN") {
+    console.error("[brain-api] FATAL: BRAIN_ADMIN_TOKEN must be set to a non-default secret value. Refusing to start.");
+    process.exit(1);
+  }
+  app.listen(PORT, BRAIN_API_BIND_HOST, () => {
+    console.log(`BRAIN API running on http://${BRAIN_API_BIND_HOST}:${PORT}`);
+  });
+}
+
+module.exports = { app };
