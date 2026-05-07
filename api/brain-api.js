@@ -255,8 +255,8 @@ app.post("/api/brain/restore", requireAdmin, async (req, res) => {
   const npcTarget = path.join(NPC_BRAIN_ROOT, "npcs");
   const knowledgeTarget = path.join(NPC_BRAIN_ROOT, "knowledge");
 
-  const npcBackup = `${BRAIN_BACKUP_DIR}/npcs`;
-  const knowledgeBackup = `${BRAIN_BACKUP_DIR}/knowledge`;
+  const npcBackup = path.join(BRAIN_BACKUP_DIR, "npcs");
+  const knowledgeBackup = path.join(BRAIN_BACKUP_DIR, "knowledge");
 
   if (!fs.existsSync(npcBackup) || !fs.existsSync(knowledgeBackup)) {
     return res.status(404).json({
@@ -559,23 +559,6 @@ setInterval(() => {
   }
 }, NPC_RATE_WINDOW_MS * 2).unref();
 
-function checkNpcRateLimit(req, res) {
-  const key = String(req.ip || "unknown");
-  const now = Date.now();
-  const record = _npcRateHits.get(key) || { count: 0, start: now };
-  if (now - record.start > NPC_RATE_WINDOW_MS) {
-    record.count = 0;
-    record.start = now;
-  }
-  record.count += 1;
-  _npcRateHits.set(key, record);
-  if (record.count > NPC_RATE_MAX) {
-    res.status(429).json({ error: "Too many requests. Slow down." });
-    return false;
-  }
-  return true;
-}
-
 function slugifyNpcId(value) {
   return String(value || "")
     .toLowerCase()
@@ -585,8 +568,21 @@ function slugifyNpcId(value) {
 }
 
 app.post("/api/brain/create-npc", requireAdmin, async (req, res) => {
-  // Rate limit check inline so static analysis can see it directly tied to I/O.
-  if (!checkNpcRateLimit(req, res)) return;
+  const clientIp = String(req.ip || "").trim();
+  if (!clientIp) {
+    return res.status(400).json({ success: false, error: "Unable to determine client IP for rate limiting." });
+  }
+  const now = Date.now();
+  const rateRecord = _npcRateHits.get(clientIp) || { count: 0, start: now };
+  if (now - rateRecord.start > NPC_RATE_WINDOW_MS) {
+    rateRecord.count = 0;
+    rateRecord.start = now;
+  }
+  rateRecord.count += 1;
+  _npcRateHits.set(clientIp, rateRecord);
+  if (rateRecord.count > NPC_RATE_MAX) {
+    return res.status(429).json({ success: false, error: "Too many requests. Slow down." });
+  }
 
   const name = String(req.body?.name || "").trim().slice(0, 80);
   const brand = String(req.body?.brand || "Crypto Moonboys").trim().slice(0, 80);

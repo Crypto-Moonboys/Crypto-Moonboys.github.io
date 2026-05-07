@@ -254,10 +254,10 @@ READ ONLY:
       const storedOverride = normalizeApiBase(localStorage.getItem("moonboys_brain_api_base"));
       if (queryOverride) return queryOverride;
       if (storedOverride) return storedOverride;
-      if (window.location?.origin && window.location.origin !== "null") {
+      if (window.location.origin && window.location.origin !== "null") {
         return `${window.location.origin}/api/brain`;
       }
-      const host = window.location?.hostname || "127.0.0.1";
+      const host = window.location.hostname || "127.0.0.1";
       return `http://${host}:3001/api/brain`;
     }
 
