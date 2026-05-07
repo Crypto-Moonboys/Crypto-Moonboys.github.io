@@ -37,6 +37,9 @@ const NPC_BRAIN = "http://127.0.0.1:3000";
 const ADMIN_TOKEN = String(process.env.BRAIN_ADMIN_TOKEN || "").trim();
 
 function requireAdmin(req, res, next) {
+  // Defense-in-depth: startup validation (require.main) also checks this.
+  // Kept here so test environments that import the module without starting
+  // the server still get a clear 500 rather than a wrong-token 401.
   if (!ADMIN_TOKEN || ADMIN_TOKEN === "CHANGE_ME_BRAIN_ADMIN_TOKEN") {
     return res.status(500).json({ error: "BRAIN_ADMIN_TOKEN is not configured" });
   }
@@ -280,8 +283,8 @@ app.post("/api/brain/commit-backup", requireAdmin, async (req, res) => {
   if (!currentBranch || currentBranch === "main" || currentBranch === "master") {
     return res.status(403).json({
       success: false,
-      error: "commit-backup is not allowed on the main/master branch. Check out a sandbox or backup branch first.",
-      branch: currentBranch || "(unknown)"
+      error: "commit-backup is not allowed on main, master, or a detached HEAD. Check out a sandbox or backup branch first.",
+      branch: currentBranch || "(detached HEAD)"
     });
   }
 
@@ -519,6 +522,31 @@ app.post("/api/brain/advisor", requireAdmin, async (req, res) => {
 });
 
 
+// --- Simple in-process rate limiter (no extra dependencies required) ---
+// Protects mutating admin endpoints against rapid-fire calls from a
+// compromised or misconfigured token holder.
+function makeRateLimiter(windowMs, maxRequests) {
+  const hits = new Map();
+  return function rateLimit(req, res, next) {
+    const key = req.ip || "unknown";
+    const now = Date.now();
+    const record = hits.get(key) || { count: 0, start: now };
+    if (now - record.start > windowMs) {
+      record.count = 0;
+      record.start = now;
+    }
+    record.count += 1;
+    hits.set(key, record);
+    if (record.count > maxRequests) {
+      return res.status(429).json({ error: "Too many requests. Slow down." });
+    }
+    return next();
+  };
+}
+
+// 10 mutating NPC requests per minute per IP (post-auth guard)
+const npcMutateRateLimit = makeRateLimiter(60 * 1000, 10);
+
 function slugifyNpcId(value) {
   return String(value || "")
     .toLowerCase()
@@ -527,7 +555,7 @@ function slugifyNpcId(value) {
     .slice(0, 64);
 }
 
-app.post("/api/brain/create-npc", requireAdmin, async (req, res) => {
+app.post("/api/brain/create-npc", requireAdmin, npcMutateRateLimit, async (req, res) => {
   const name = String(req.body?.name || "").trim().slice(0, 80);
   const brand = String(req.body?.brand || "Crypto Moonboys").trim().slice(0, 80);
   const tone = String(req.body?.tone || "lore-aware, tactical, useful").trim().slice(0, 160);
@@ -609,9 +637,10 @@ Add deeper lore here as the character develops.
 
   // --- P1: require explicit confirmation; return preview if missing ---
   if (!confirmCreate) {
-    return res.status(400).json({
+    return res.status(200).json({
       success: false,
-      error: "confirmCreate must be set to true to create an NPC. Use dryRun=true to preview first.",
+      requiresConfirmation: true,
+      error: "confirmCreate must be set to true to create an NPC. Use dryRun=true to preview without side-effects.",
       preview: { npcFile, wikiFile, npc }
     });
   }

@@ -35,7 +35,20 @@ function isAllowed(cmd, args = []) {
 
 // Env vars that are safe to pass to child processes.
 // Sensitive Hermes/brain tokens are intentionally excluded.
-const SAFE_ENV_KEYS = ["PATH", "HOME", "USER", "LOGNAME", "SHELL", "TMPDIR", "TMP", "TEMP", "NODE_ENV", "LANG", "LC_ALL", "LC_CTYPE"];
+const SAFE_ENV_KEYS = [
+  "PATH",
+  "HOME",
+  "USER",
+  "LOGNAME",
+  "SHELL",
+  "TMPDIR",
+  "TMP",
+  "TEMP",
+  "NODE_ENV",
+  "LANG",
+  "LC_ALL",
+  "LC_CTYPE"
+];
 const SAFE_ENV_PREFIXES = ["npm_", "npm_config_", "GIT_AUTHOR_", "GIT_COMMITTER_"];
 
 function buildSafeEnv() {
