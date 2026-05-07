@@ -16,6 +16,8 @@ Production only changes after GK says yes.
 ## Branch naming convention
 - Backup: `codex/backup-<task>-<timestamp>`
 - Sandbox: `codex/sandbox-<task>-<timestamp>`
+- `<task>` must be lowercase kebab-case and contain only `a-z`, `0-9`, and `-` (example: `fix-login-timeout`).
+- `<timestamp>` must use UTC in `YYYYMMDD-HHMMSS` format (example: `20260507-142530`).
 
 ## PR handover checklist
 - backup branch name

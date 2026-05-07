@@ -8,7 +8,7 @@
 
 ## Sandbox-first requirement
 All Hermes-driven editing follows:
-- backup branch -> sandbox branch -> validate -> report -> GK approval -> merge.
+- backup branch -> sandbox branch -> validate -> report -> gatekeeper (GK) approval -> merge.
 
 ## Safety invariants
 - No direct edits to `main`/`master`.
