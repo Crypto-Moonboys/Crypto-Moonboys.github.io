@@ -35,6 +35,14 @@ function loadExecutor(root) {
   return require("../server/hermes/tool-executor.js");
 }
 
+function loadWebcrawlModule(root) {
+  process.env.HERMES_REPO_ROOT = root;
+  process.env.HERMES_DATA_ROOT = path.join(root, "admin", "hermes-data");
+  delete process.env.OPENAI_API_KEY;
+  clearCache();
+  return require("../server/hermes/webcrawl-agent.js");
+}
+
 test("webcrawl search reports unavailable when OpenAI key is missing", async () => {
   const root = setupSandbox();
   const { executeAction } = loadExecutor(root);
@@ -85,4 +93,73 @@ test("webcrawl can save and list watch topics", async () => {
   assert.equal(list.ok, true);
   assert.ok(Array.isArray(list.result.topics));
   assert.ok(list.result.topics.some((item) => String(item.topic || "").includes("hermes runtime")));
+});
+
+test("webcrawl blocks redirect to localhost/private target", async () => {
+  const root = setupSandbox();
+  const webcrawl = loadWebcrawlModule(root);
+  const originalFetch = global.fetch;
+  global.fetch = async () => {
+    return new Response("", {
+      status: 302,
+      headers: { location: "http://127.0.0.1:11434/v1/models" }
+    });
+  };
+  try {
+    await assert.rejects(
+      () => webcrawl.__test.fetchWithTimeout("https://example.com"),
+      /Blocked private or local network target/i
+    );
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test("find updates preserves previous good snapshot on failure", async () => {
+  const root = setupSandbox();
+  const webcrawl = loadWebcrawlModule(root);
+  const historyDir = path.join(root, "admin", "hermes-data");
+  fs.mkdirSync(historyDir, { recursive: true });
+  const file = path.join(historyDir, "webcrawl-history.json");
+  fs.writeFileSync(file, JSON.stringify({
+    topics: {
+      "crypto moonboys": {
+        topic: "crypto moonboys",
+        sources: [{ url: "https://example.com/old", title: "old" }],
+        summary: "old summary",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z"
+      }
+    },
+    sessions: []
+  }, null, 2));
+
+  const result = await webcrawl.__test.findNewUpdates("crypto moonboys");
+  assert.equal(result.ok, false);
+  const history = webcrawl.readHistory();
+  const saved = history.topics["crypto moonboys"];
+  assert.equal(saved.lastResultOk, false);
+  assert.equal(saved.summary, "old summary");
+  assert.equal(saved.sources[0].url, "https://example.com/old");
+  assert.ok(saved.checkedAt);
+});
+
+test("rss parser reads full safe body and returns multiple items", async () => {
+  const root = setupSandbox();
+  const webcrawl = loadWebcrawlModule(root);
+  const originalFetch = global.fetch;
+  const padding = "x".repeat(1400);
+  const rss = `<?xml version="1.0"?><rss><channel>${padding}<item><title>Item One</title><link>https://example.com/1</link><pubDate>Mon, 01 Jan 2026 00:00:00 GMT</pubDate></item><item><title>Item Two</title><link>https://example.com/2</link><pubDate>Tue, 02 Jan 2026 00:00:00 GMT</pubDate></item></channel></rss>`;
+  global.fetch = async () => {
+    return new Response(rss, { status: 200, headers: { "content-type": "application/rss+xml" } });
+  };
+  try {
+    const result = await webcrawl.__test.checkRssFeed("https://example.com/feed.xml");
+    assert.equal(result.ok, true);
+    assert.ok(Array.isArray(result.items));
+    assert.ok(result.items.length >= 2);
+    assert.equal(result.items[1].url, "https://example.com/2");
+  } finally {
+    global.fetch = originalFetch;
+  }
 });

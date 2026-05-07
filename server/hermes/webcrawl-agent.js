@@ -11,6 +11,7 @@ const MAX_CRAWL_PAGES = 12;
 const MAX_FETCH_BYTES = 250000;
 const DEFAULT_TIMEOUT_MS = 12000;
 const SEARCH_LIMIT = 8;
+const MAX_REDIRECTS = 5;
 
 function nowIso() {
   return new Date().toISOString();
@@ -103,25 +104,77 @@ async function assertPublicTarget(url) {
 
 async function fetchWithTimeout(url, options = {}) {
   const timeoutMs = Number(options.timeoutMs || DEFAULT_TIMEOUT_MS);
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(url, {
-      method: options.method || "GET",
-      headers: options.headers || {},
-      body: options.body,
-      signal: controller.signal
-    });
-    const text = await response.text();
+  let nextUrl = normalizeUrl(url);
+  let redirectCount = 0;
+
+  while (true) {
+    await assertPublicTarget(nextUrl);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    let response;
+    try {
+      response = await fetch(nextUrl.toString(), {
+        method: options.method || "GET",
+        headers: options.headers || {},
+        body: options.body,
+        redirect: "manual",
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timer);
+    }
+
+    const location = String(response.headers.get("location") || "").trim();
+    if (response.status >= 300 && response.status < 400 && location) {
+      if (redirectCount >= MAX_REDIRECTS) {
+        throw new Error("Redirect limit exceeded.");
+      }
+      nextUrl = normalizeUrl(new URL(location, nextUrl).toString());
+      redirectCount += 1;
+      continue;
+    }
+
+    let text = "";
+    let truncated = false;
+    const reader = response.body?.getReader ? response.body.getReader() : null;
+    if (reader) {
+      const decoder = new TextDecoder();
+      let total = 0;
+      while (true) {
+        const chunk = await reader.read();
+        if (chunk.done) break;
+        const bytes = chunk.value || new Uint8Array(0);
+        const remain = MAX_FETCH_BYTES - total;
+        if (remain <= 0) {
+          truncated = true;
+          await reader.cancel("max bytes reached");
+          break;
+        }
+        const slice = bytes.byteLength > remain ? bytes.slice(0, remain) : bytes;
+        text += decoder.decode(slice, { stream: true });
+        total += slice.byteLength;
+        if (bytes.byteLength > remain || total >= MAX_FETCH_BYTES) {
+          truncated = true;
+          await reader.cancel("max bytes reached");
+          break;
+        }
+      }
+      text += decoder.decode();
+    } else {
+      const fallback = await response.text();
+      text = fallback.slice(0, MAX_FETCH_BYTES);
+      truncated = fallback.length > MAX_FETCH_BYTES;
+    }
+
     return {
       ok: response.ok,
       status: response.status,
       headers: Object.fromEntries(response.headers.entries()),
-      text: text.slice(0, MAX_FETCH_BYTES),
-      truncated: text.length > MAX_FETCH_BYTES
+      text,
+      truncated,
+      finalUrl: nextUrl.toString(),
+      redirectCount
     };
-  } finally {
-    clearTimeout(timer);
   }
 }
 
@@ -236,10 +289,11 @@ async function fetchUrl(rawUrl, options = {}) {
   return {
     ok: response.ok,
     action: "webcrawl/fetch-url",
-    url: url.toString(),
+    url: response.finalUrl || url.toString(),
     checkedAt: nowIso(),
     status: response.status,
     title: titleMatch ? String(titleMatch[1]).trim() : "",
+    bodyText: String(response.text || ""),
     snippet: String(response.text || "").slice(0, 1000),
     truncated: response.truncated === true,
     confidence: response.ok ? "high" : "low",
@@ -362,10 +416,10 @@ function saveWatchTopic(topic, metadata = {}) {
   }
   const history = readHistory();
   history.topics[key] = {
+    ...history.topics[key],
     topic: key,
     createdAt: history.topics[key]?.createdAt || nowIso(),
     updatedAt: nowIso(),
-    ...history.topics[key],
     ...metadata
   };
   writeHistory(history);
@@ -422,12 +476,17 @@ async function findNewUpdates(topic, options = {}) {
     newSources
   };
   history.topics[key.toLowerCase()] = {
+    ...previous,
     topic: key,
     updatedAt: nowIso(),
     checkedAt: result.checkedAt,
-    sources: latest.sources || [],
-    summary: latest.summary || "",
-    lastResultOk: latest.ok === true
+    lastResultOk: latest.ok === true,
+    ...(latest.ok === true
+      ? {
+          sources: latest.sources || [],
+          summary: latest.summary || ""
+        }
+      : {})
   };
   history.sessions.unshift(buildSessionRecord("find-updates", result));
   history.sessions = history.sessions.slice(0, 200);
@@ -438,7 +497,7 @@ async function findNewUpdates(topic, options = {}) {
 async function checkRssFeed(rawUrl, options = {}) {
   const fetched = await fetchUrl(rawUrl, options);
   if (!fetched.ok) return fetched;
-  const items = extractRssItems(fetched.snippet || "");
+  const items = extractRssItems(fetched.bodyText || "");
   return {
     ok: true,
     action: "webcrawl/rss-check",
@@ -536,5 +595,10 @@ module.exports = {
   executeWebcrawlAction,
   assertPublicTarget,
   normalizeUrl,
-  readHistory
+  readHistory,
+  __test: {
+    fetchWithTimeout,
+    findNewUpdates,
+    checkRssFeed
+  }
 };
