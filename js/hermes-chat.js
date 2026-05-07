@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
   const apiBaseUrl = String(window.HERMES_API_BASE_URL || "").trim().replace(/\/+$/u, "");
   const maxHistory = 20;
   const history = [];
@@ -10,11 +10,27 @@
     tools: el("toolResults"),
     missing: el("missingRequirements"),
     action: el("actionOutput"),
-    repo: el("repoStatus")
+    repo: el("repoStatus"),
+    ops: el("opsStatus")
   };
 
   function setOut(node, value) {
+    if (!node) return;
     node.textContent = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+  }
+
+  function summarizeToolResults(toolResults) {
+    const arr = Array.isArray(toolResults) ? toolResults : [];
+    return arr.map((item) => ({
+      action: item.action,
+      repo: item.repoUsed || "",
+      path: item.pathUsed || "",
+      ok: item.ok === true,
+      summary: item.resultSummary || "",
+      entries: Array.isArray(item.entries) ? item.entries.slice(0, 8) : [],
+      error: item.error || "",
+      missingRequirements: item.missingRequirements || []
+    }));
   }
 
   function basePayload() {
@@ -34,13 +50,11 @@
     if (token) {
       headers["x-hermes-edit-token"] = token;
     }
-
     const response = await fetch(`${apiBaseUrl}${path}`, {
       ...options,
       headers,
       body: payload ? JSON.stringify(payload) : undefined
     });
-
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       throw new Error(data.error || data.reply || `Request failed (${response.status})`);
@@ -65,6 +79,7 @@
       if (m === data.defaultModel) o.selected = true;
       modelSelect.appendChild(o);
     });
+    return data;
   }
 
   el("sendChat").addEventListener("click", async () => {
@@ -83,13 +98,17 @@
       clampHistory();
 
       const data = await api("/api/hermes/chat", { method: "POST", body: JSON.stringify(payload) });
-
       history.push({ role: "assistant", content: String(data.reply || "") });
       clampHistory();
 
-      setOut(out.chat, { reply: data.reply, mode: data.mode, role: data.role });
+      setOut(out.chat, {
+        reply: data.reply,
+        mode: data.mode,
+        role: data.role,
+        lastActionCount: Array.isArray(data.actions) ? data.actions.length : 0
+      });
       setOut(out.plan, data.actions || []);
-      setOut(out.tools, data.toolResults || []);
+      setOut(out.tools, summarizeToolResults(data.toolResults || []));
       setOut(out.missing, data.missingRequirements || []);
     } catch (error) {
       setOut(out.chat, { error: String(error?.message || error) });
@@ -99,10 +118,7 @@
   el("runAction").addEventListener("click", async () => {
     try {
       const action = JSON.parse(String(el("actionJson").value || "{}").trim());
-      const payload = {
-        ...basePayload(),
-        action
-      };
+      const payload = { ...basePayload(), action };
       const data = await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) });
       setOut(out.action, data);
     } catch (error) {
@@ -125,8 +141,7 @@
 
   el("listRepos").addEventListener("click", async () => {
     try {
-      const data = await api("/api/hermes/repos");
-      setOut(out.repo, data);
+      setOut(out.repo, await api("/api/hermes/repos"));
     } catch (error) {
       setOut(out.repo, { error: String(error?.message || error) });
     }
@@ -136,10 +151,7 @@
     try {
       const payload = {
         ...basePayload(),
-        action: {
-          type: "repo/switch",
-          payload: { idOrName: String(el("switchRepoId").value || "").trim() }
-        }
+        action: { type: "repo/switch", payload: { idOrName: String(el("switchRepoId").value || "").trim() } }
       };
       const data = await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) });
       setOut(out.repo, data);
@@ -162,8 +174,7 @@
           }
         }
       };
-      const data = await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) });
-      setOut(out.repo, data);
+      setOut(out.repo, await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) }));
     } catch (error) {
       setOut(out.repo, { error: String(error?.message || error) });
     }
@@ -173,17 +184,47 @@
     try {
       const payload = {
         ...basePayload(),
-        action: {
-          type: "repo/clone",
-          payload: {
-            remoteUrl: String(el("cloneRepoUrl").value || "").trim()
-          }
-        }
+        action: { type: "repo/clone", payload: { remoteUrl: String(el("cloneRepoUrl").value || "").trim() } }
       };
-      const data = await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) });
-      setOut(out.repo, data);
+      setOut(out.repo, await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) }));
     } catch (error) {
       setOut(out.repo, { error: String(error?.message || error) });
+    }
+  });
+
+  el("showPm2Status").addEventListener("click", async () => {
+    try {
+      const payload = {
+        ...basePayload(),
+        action: { type: "command/run", payload: { command: "pm2", args: ["status"] } }
+      };
+      setOut(out.ops, await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) }));
+    } catch (error) {
+      setOut(out.ops, { error: String(error?.message || error) });
+    }
+  });
+
+  el("showApprovals").addEventListener("click", async () => {
+    try {
+      setOut(out.ops, await api("/api/hermes/approval/list"));
+    } catch (error) {
+      setOut(out.ops, { error: String(error?.message || error) });
+    }
+  });
+
+  el("showSwarm").addEventListener("click", async () => {
+    try {
+      setOut(out.ops, await api("/api/hermes/swarm"));
+    } catch (error) {
+      setOut(out.ops, { error: String(error?.message || error) });
+    }
+  });
+
+  el("showModels").addEventListener("click", async () => {
+    try {
+      setOut(out.ops, await api("/api/hermes/models"));
+    } catch (error) {
+      setOut(out.ops, { error: String(error?.message || error) });
     }
   });
 
@@ -191,3 +232,4 @@
     .then(() => showRuntimeRoot().catch(() => null))
     .catch((error) => setOut(out.chat, { error: String(error?.message || error) }));
 })();
+

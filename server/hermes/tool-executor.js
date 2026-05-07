@@ -88,6 +88,12 @@ async function executeAction(action, ctx = {}) {
   const payload = action?.payload || {};
   const role = String(ctx.role || "main_hermes");
   const normalizedAction = { type, payload };
+  let activeRepo = null;
+  try {
+    activeRepo = getActiveRepoOrThrow();
+  } catch (_error) {
+    activeRepo = null;
+  }
 
   const mappedCapability = capabilityForAction(type);
   if (mappedCapability) {
@@ -101,15 +107,40 @@ async function executeAction(action, ctx = {}) {
   try {
     switch (type) {
       case ACTIONS.FILE_LIST:
-        return { ok: true, action: type, result: orchestrator.tools.listDirectory(payload.path || ".") };
+        {
+          const list = orchestrator.tools.listDirectory(payload.path || ".");
+          return {
+            ok: true,
+            action: type,
+            repo: activeRepo ? { id: activeRepo.id, name: activeRepo.name } : null,
+            path: String(payload.path || "."),
+            result: {
+              ...list,
+              totalCount: Array.isArray(list.entries) ? list.entries.length : 0
+            }
+          };
+        }
       case ACTIONS.FILE_READ:
-        return { ok: true, action: type, result: orchestrator.tools.readFile(payload.path || "") };
-      case ACTIONS.REPO_SEARCH:
         return {
           ok: true,
           action: type,
-          result: orchestrator.tools.searchIndex(payload.query || "", { limit: payload.limit || 20 })
+          repo: activeRepo ? { id: activeRepo.id, name: activeRepo.name } : null,
+          path: String(payload.path || ""),
+          result: orchestrator.tools.readFile(payload.path || "")
         };
+      case ACTIONS.REPO_SEARCH:
+        {
+          const items = orchestrator.tools.searchIndex(payload.query || "", { limit: payload.limit || 120 });
+          return {
+            ok: true,
+            action: type,
+            repo: activeRepo ? { id: activeRepo.id, name: activeRepo.name } : null,
+            result: {
+              items,
+              totalCount: Array.isArray(items) ? items.length : 0
+            }
+          };
+        }
       case ACTIONS.INDEX_REBUILD:
         return { ok: true, action: type, result: orchestrator.tools.buildIndex() };
       case ACTIONS.GIT_STATUS:
@@ -125,18 +156,35 @@ async function executeAction(action, ctx = {}) {
       case ACTIONS.REPO_LIST:
         return { ok: true, action: type, result: getRegistrySnapshot() };
       case ACTIONS.COMMAND_RUN:
-        return await executePrivilegedAction(normalizedAction, ctx, async (privCtx) => ({
-          ok: true,
-          action: type,
-          result: await orchestrator.tools.enqueueCommand(payload.command, payload.args || [], {
+        return await executePrivilegedAction(normalizedAction, ctx, async (privCtx) => {
+          const cmdResult = await orchestrator.tools.enqueueCommand(payload.command, payload.args || [], {
             mode: privCtx.mode,
             role,
             confirmEdit: privCtx.confirmEdit,
             approvalId: privCtx.approvalId,
             approvalConsumed: true,
             timeoutMs: payload.timeoutMs
-          })
-        }));
+          });
+          const stderrLine = String(cmdResult.stderr || "").split(/\r?\n/u).find(Boolean) || "";
+          const stdoutLine = String(cmdResult.stdout || "").split(/\r?\n/u).find(Boolean) || "";
+          const sourceHintMatch = String(cmdResult.stderr || cmdResult.stdout || "").match(/[A-Za-z0-9_.\-\/\\]+\.(js|ts|json|mjs|cjs|md|html|css):\d+/u);
+          const summary = cmdResult.ok
+            ? `Command succeeded with exit code ${cmdResult.code}.`
+            : `Command failed with exit code ${cmdResult.code}.`;
+          return {
+            ok: cmdResult.ok === true,
+            action: type,
+            repo: activeRepo ? { id: activeRepo.id, name: activeRepo.name } : null,
+            result: {
+              ...cmdResult,
+              summary,
+              likelySource: sourceHintMatch ? sourceHintMatch[0] : "",
+              nextSafeAction: cmdResult.ok ? "No action required." : "Inspect stderr and run targeted file checks before retry.",
+              firstStdoutLine: stdoutLine,
+              firstStderrLine: stderrLine
+            }
+          };
+        });
       case ACTIONS.PATCH_PREVIEW:
         return { ok: true, action: type, result: orchestrator.tools.previewPatch(payload.operations || []) };
       case ACTIONS.PATCH_APPLY:
@@ -203,7 +251,10 @@ async function executeAction(action, ctx = {}) {
         return executePrivilegedAction(normalizedAction, ctx, (_privCtx) => ({
           ok: true,
           action: type,
-          result: orchestrator.tools.mergeMemory(payload.patch || {})
+          result: {
+            savedPatch: payload.patch || {},
+            memory: orchestrator.tools.mergeMemory(payload.patch || {})
+          }
         }));
       case ACTIONS.REPO_REGISTER:
         ensureAdminMode(ctx, type);

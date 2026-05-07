@@ -125,7 +125,7 @@ test("chat tool response is grounded and does not invent files", async (t) => {
     history: []
   });
   assert.equal(res.status, 200);
-  assert.match(String(res.body.reply || ""), /Tool returned only \d+ entries/);
+  assert.match(String(res.body.reply || ""), /Tool returned \d+ entries \(showing first \d+\)/);
   assert.doesNotMatch(String(res.body.reply || ""), /blog\.md|about\.md|contact\.md|privacy\.md/i);
 });
 
