@@ -11,7 +11,9 @@ const ALLOWED_COMMANDS = [
   ["npx", "wrangler", "check"],
   ["npx", "wrangler", "deploy", "--dry-run"],
   ["git", "status"],
-  ["git", "diff"]
+  ["git", "diff"],
+  ["pm2", "status"],
+  ["pm2", "list"]
 ];
 
 const queue = [];

@@ -4,13 +4,15 @@ const express = require("express");
 const cors = require("cors");
 const {
   ALLOWED_MODELS,
-  DEFAULT_MODEL,
-  callLocalOllama
+  DEFAULT_MODEL
 } = require("../server/hermes/chat-proxy.js");
 const orchestrator = require("../server/hermes/orchestrator.js");
 const { getAgents } = require("../server/hermes/swarm-registry.js");
 const { assertRoleCapability } = require("../server/hermes/agent-runtime.js");
 const { consumeApproved } = require("../server/hermes/approval-gate.js");
+const { runConversation } = require("../server/hermes/conversation-runtime.js");
+const { executeAction } = require("../server/hermes/tool-executor.js");
+const { requiresPrivilege } = require("../server/hermes/action-schema.js");
 
 const app = express();
 app.disable("x-powered-by");
@@ -54,7 +56,7 @@ function requirePrivilegedRequest(req, roleCapability) {
   if (!serverToken) {
     throw new Error("HERMES_EDIT_TOKEN is not configured on server.");
   }
-  const providedToken = String(req.headers["x-hermes-edit-token"] || "").trim();
+  const providedToken = String(req.headers["x-hermes-edit-token"] || req.body?.approvalToken || "").trim();
   if (providedToken !== serverToken) {
     throw new Error("Missing or invalid Hermes edit token.");
   }
@@ -129,8 +131,52 @@ app.get("/api/hermes/swarm", (_req, res) => {
 });
 
 app.post("/api/hermes/chat", async (req, res) => {
-  const result = await callLocalOllama(req.body || {});
-  res.status(result.status).json(result.body);
+  try {
+    const payload = req.body || {};
+    const response = await runConversation(payload);
+    res.json({
+      reply: response.reply,
+      actions: response.actions || [],
+      toolResults: response.toolResults || [],
+      missingRequirements: response.missingRequirements || [],
+      mode: response.mode,
+      role: response.role
+    });
+  } catch (error) {
+    res.status(400).json({
+      reply: "Hermes failed to process request.",
+      actions: [],
+      toolResults: [],
+      missingRequirements: [String(error?.message || error)],
+      mode: String(req.body?.mode || "chat"),
+      role: String(req.body?.role || "main_hermes")
+    });
+  }
+});
+
+app.post("/api/hermes/action", async (req, res) => {
+  try {
+    const ctx = readOpContext(req);
+    const action = req.body?.action || {};
+    if (requiresPrivilege(action.type)) {
+      requirePrivilegedRequest(req, action.type.startsWith("command/") ? "canRunCommands" : "canEditRepo");
+    }
+    const result = await executeAction(req.body?.action || {}, {
+      ...ctx,
+      approvalToken: req.body?.approvalToken,
+      swarm: getAgents()
+    });
+    res.json({
+      ok: result.ok,
+      action: req.body?.action || {},
+      toolResult: result
+    });
+  } catch (error) {
+    res.status(400).json({
+      ok: false,
+      error: String(error?.message || error)
+    });
+  }
 });
 
 app.post("/api/hermes/task/plan", (req, res) => {
