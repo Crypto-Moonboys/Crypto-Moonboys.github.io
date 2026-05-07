@@ -3,23 +3,323 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Battle Chamber | Crypto Moonboys Proof Wall</title>
+  <title>Battle Chamber: Faction Wars | Crypto Moonboys</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <style>
+    /* ── Battle Chamber page layout ────────────────────────────── */
     .battle-page .section {
-      padding-left: 40px;
-      padding-right: 40px;
-      padding-top: 35px;
-      padding-bottom: 35px;
+      padding: 35px 40px;
     }
     .battle-page .page-hero {
       padding: 50px 40px;
     }
     .battle-page .section h2 { margin-bottom: 20px; }
-    .battle-page .section p, .battle-page .section li { line-height: 1.8; }
+    .battle-page .section p,
+    .battle-page .section li { line-height: 1.8; }
 
-    /* Modern Telegram Status UI */
+    /* ── Hero CTA row ────────────────────────────────────────────── */
+    .bc-hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .bc-hero-cta {
+      display: inline-block;
+      padding: 10px 22px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-decoration: none;
+      color: #000;
+      background: #00ffcc;
+      transition: opacity 0.15s;
+    }
+    .bc-hero-cta:hover { opacity: 0.85; }
+    .bc-hero-cta.bc-cta-secondary {
+      background: transparent;
+      color: #00ffcc;
+      border: 2px solid #00ffcc;
+    }
+
+    /* ── Why Join list ───────────────────────────────────────────── */
+    .bc-why-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .bc-why-list li {
+      background: rgba(8, 18, 34, 0.6);
+      border: 1px solid rgba(86, 220, 255, 0.18);
+      border-radius: 8px;
+      padding: 14px 16px;
+      line-height: 1.6;
+    }
+    .bc-why-list li::before {
+      content: '\26A1 ';
+    }
+
+    /* ── Faction standings ───────────────────────────────────────── */
+    .bc-standings-note {
+      font-size: 0.85rem;
+      color: #8a9bac;
+      margin-bottom: 16px;
+    }
+    .bc-faction-standings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .bc-faction-row {
+      display: grid;
+      grid-template-columns: 2.5rem 2rem 1fr 1fr 1fr 1fr 1fr 2fr 1fr;
+      align-items: center;
+      gap: 8px;
+      background: rgba(8, 18, 34, 0.6);
+      border: 1px solid rgba(86, 220, 255, 0.15);
+      border-left: 3px solid var(--faction-color, #56dcff);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.87rem;
+    }
+    .bc-faction-row--dominant {
+      border-color: var(--faction-color, #56dcff);
+      background: rgba(8, 18, 34, 0.85);
+    }
+    .bc-faction-rank { font-weight: 700; color: #ffcc00; }
+    .bc-faction-icon { font-size: 1.25rem; }
+    .bc-faction-name { font-weight: 700; color: #fff; }
+    .bc-dominant-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      background: rgba(255, 204, 0, 0.2);
+      color: #ffcc00;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .bc-faction-power,
+    .bc-faction-daily,
+    .bc-faction-weekly { color: #aac6dc; }
+    .bc-faction-momentum { color: #00ffcc; }
+    .bc-faction-perk-teaser { color: #8a9bac; font-size: 0.82rem; }
+    .bc-faction-chamber-link {
+      color: #56dcff;
+      font-size: 0.82rem;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .bc-faction-chamber-link:hover { text-decoration: underline; }
+
+    @media (max-width: 900px) {
+      .bc-faction-row {
+        grid-template-columns: 2rem 2rem 1fr 1fr;
+        grid-template-rows: auto auto auto;
+      }
+      .bc-faction-perk-teaser,
+      .bc-faction-chamber-link { grid-column: 1 / -1; }
+    }
+
+    /* ── Weekly war ──────────────────────────────────────────────── */
+    .bc-weekly-header { margin-bottom: 16px; font-size: 1.1rem; }
+    .bc-weekly-leader { font-weight: 700; color: #ffcc00; }
+    .bc-weekly-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .bc-weekly-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(8, 18, 34, 0.5);
+      border: 1px solid rgba(86, 220, 255, 0.12);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+    }
+    .bc-weekly-rank { font-weight: 700; color: #ffcc00; min-width: 28px; }
+    .bc-weekly-name { flex: 1; font-weight: 600; }
+    .bc-weekly-score { color: #00ffcc; }
+    .bc-weekly-reset-note { color: #8a9bac; font-size: 0.85rem; margin-bottom: 12px; }
+    .bc-weekly-prizes {
+      background: rgba(8, 18, 34, 0.5);
+      border: 1px solid rgba(86, 220, 255, 0.15);
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    /* ── Monthly / Seasonal ──────────────────────────────────────── */
+    .bc-monthly-target,
+    .bc-season-current {
+      background: rgba(8, 18, 34, 0.5);
+      border: 1px solid rgba(86, 220, 255, 0.15);
+      border-radius: 6px;
+      padding: 14px 16px;
+      margin: 16px 0;
+    }
+    .bc-placeholder { color: #8a9bac; }
+    .bc-monthly-rewards ul,
+    .bc-season-rewards ul {
+      margin: 10px 0 10px 20px;
+      line-height: 1.9;
+    }
+    .bc-rewards-disclaimer {
+      font-size: 0.85rem;
+      color: #8a9bac;
+      margin-top: 10px;
+    }
+    .bc-hall-of-fame {
+      color: #ffcc00;
+      font-style: italic;
+      margin-top: 12px;
+    }
+
+    /* ── Join faction panel ──────────────────────────────────────── */
+    .bc-join-intro { margin-bottom: 20px; }
+    .bc-join-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .bc-join-card {
+      background: rgba(8, 18, 34, 0.6);
+      border: 1px solid rgba(86, 220, 255, 0.15);
+      border-top: 3px solid var(--faction-color, #56dcff);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .bc-join-card-icon { font-size: 1.6rem; }
+    .bc-join-card-name { font-weight: 700; font-size: 0.95rem; color: #fff; }
+    .bc-join-card-playstyle { font-size: 0.82rem; color: #00ffcc; }
+    .bc-join-card-perk { font-size: 0.8rem; color: #8a9bac; flex: 1; }
+    .bc-join-btn {
+      margin-top: 8px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      background: var(--faction-color, #56dcff);
+      color: #000;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: opacity 0.15s;
+    }
+    .bc-join-btn:hover { opacity: 0.85; }
+    .bc-join-btn:disabled { opacity: 0.5; cursor: wait; }
+
+    /* ── Aligned player panel ────────────────────────────────────── */
+    .bc-aligned-panel {
+      background: rgba(8, 18, 34, 0.7);
+      border: 2px solid var(--faction-color, #56dcff);
+      border-radius: 10px;
+      padding: 22px 24px;
+      max-width: 500px;
+    }
+    .bc-aligned-header { font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 14px; }
+    .bc-aligned-row { margin-bottom: 10px; color: #aac6dc; }
+    .bc-aligned-row strong { color: #fff; }
+    .bc-aligned-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+    .bc-cta-btn {
+      display: inline-block;
+      padding: 9px 18px;
+      border-radius: 6px;
+      font-weight: 700;
+      text-decoration: none;
+      background: #00ffcc;
+      color: #000;
+      font-size: 0.9rem;
+    }
+    .bc-cta-btn.bc-cta-secondary {
+      background: transparent;
+      color: #00ffcc;
+      border: 2px solid #00ffcc;
+    }
+
+    /* ── Missions ────────────────────────────────────────────────── */
+    .bc-missions-header {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 14px;
+    }
+    .bc-missions-list { display: flex; flex-direction: column; gap: 10px; }
+    .bc-mission-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr 1fr;
+      gap: 8px;
+      align-items: center;
+      background: rgba(8, 18, 34, 0.5);
+      border: 1px solid rgba(86, 220, 255, 0.12);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 0.87rem;
+    }
+    .bc-mission-row--done {
+      border-color: rgba(0, 255, 204, 0.35);
+      background: rgba(0, 255, 204, 0.06);
+    }
+    .bc-mission-label { font-weight: 700; color: #fff; }
+    .bc-mission-desc { color: #aac6dc; }
+    .bc-mission-progress { color: #00ffcc; font-weight: 600; }
+    .bc-mission-reward { color: #ffcc00; font-size: 0.82rem; }
+    .bc-missions-empty,
+    .bc-missions-loading { color: #8a9bac; font-style: italic; }
+    .bc-missions-note { margin-top: 12px; font-size: 0.82rem; color: #8a9bac; }
+    @media (max-width: 700px) {
+      .bc-mission-row { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ── Perks ───────────────────────────────────────────────────── */
+    .bc-perks-intro { margin-bottom: 20px; }
+    .bc-perk-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 14px;
+    }
+    .bc-perk-card {
+      background: rgba(8, 18, 34, 0.6);
+      border: 1px solid rgba(86, 220, 255, 0.15);
+      border-top: 3px solid var(--faction-color, #56dcff);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .bc-perk-icon { font-size: 1.5rem; margin-bottom: 6px; }
+    .bc-perk-name { font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .bc-perk-playstyle { font-size: 0.82rem; color: #00ffcc; margin-bottom: 8px; }
+    .bc-perk-text { font-size: 0.85rem; color: #aac6dc; }
+    .bc-perk-xp-meta,
+    .bc-perk-score-meta { font-size: 0.78rem; color: #8a9bac; margin-top: 6px; }
+    .bc-perks-note { margin-top: 16px; font-size: 0.82rem; color: #8a9bac; }
+
+    /* ── Clout rewards ───────────────────────────────────────────── */
+    .bc-rewards-intro { margin-bottom: 20px; }
+    .bc-rewards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .bc-reward-item {
+      background: rgba(8, 18, 34, 0.6);
+      border: 1px solid rgba(86, 220, 255, 0.15);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .bc-reward-icon { font-size: 1.4rem; display: block; margin-bottom: 6px; }
+    .bc-reward-item strong { display: block; color: #fff; margin-bottom: 6px; }
+    .bc-reward-item p { color: #aac6dc; font-size: 0.85rem; line-height: 1.6; margin: 0; }
+
+    /* ── Proof feed header ───────────────────────────────────────── */
+    .bc-proof-intro { margin-bottom: 12px; }
+
+    /* ── Telegram leaderboard / activity feed ────────────────────── */
     .tg-user-list {
       display: flex;
       flex-direction: column;
@@ -46,25 +346,18 @@
       border: 2px solid #00ffcc;
       flex-shrink: 0;
     }
-    .tg-user-info {
-      flex: 1;
-      min-width: 0;
-    }
-    .tg-username {
-      font-weight: 700;
-      color: #00ffcc;
-      font-size: 0.95rem;
-      margin-bottom: 2px;
-    }
-    .tg-xp {
-      color: #ffcc00;
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-    .tg-rank {
-      font-size: 0.85rem;
-      color: #888;
-      min-width: 24px;
+    .tg-user-info { flex: 1; min-width: 0; }
+    .tg-username { font-weight: 700; color: #00ffcc; font-size: 0.95rem; margin-bottom: 2px; }
+    .tg-xp { color: #ffcc00; font-size: 0.9rem; font-weight: 600; }
+    .tg-rank { font-size: 0.85rem; color: #888; min-width: 24px; }
+
+    /* ── Coming Next preview ─────────────────────────────────────── */
+    .bc-coming-next {
+      background: rgba(86, 220, 255, 0.06);
+      border: 1px dashed rgba(86, 220, 255, 0.3);
+      border-radius: 8px;
+      padding: 20px 24px;
+      line-height: 1.8;
     }
   </style>
 </head>
@@ -73,63 +366,138 @@
 <main id="content" role="main">
   <div class="battle-page">
 
+    <!-- Section 1: Hero — Battle Chamber / Faction Wars -->
     <section class="page-hero">
-      <h1>Battle Chamber — The Proof Wall</h1>
-      <p class="lead">If the wiki is memory and the arcade is action, the Battle Chamber is proof. This is where movement becomes visible.</p>
+      <h1>Battle Chamber: Faction Wars</h1>
+      <p class="lead">Join a faction. Build online clout. Make your gameplay public.</p>
+      <p>The Battle Chamber is where faction clout becomes public. Join a faction, play the arcade, complete missions, build proof, and climb the weekly, monthly, and seasonal war boards.</p>
+      <div class="bc-hero-ctas">
+        <a class="bc-hero-cta" href="#battle-join-faction">Join a Faction</a>
+        <a class="bc-hero-cta bc-cta-secondary" href="#battle-weekly-war">View Weekly War</a>
+        <a class="bc-hero-cta bc-cta-secondary" href="/games/index.html">Play Arcade</a>
+        <a class="bc-hero-cta bc-cta-secondary" href="/gkniftyheads-incubator.html">Link Telegram</a>
+      </div>
     </section>
 
     <div id="gklink-status" class="gklink-banner" style="display:none"></div>
     <div data-tg-sync-cta></div>
 
-    <section class="section">
-      <h2>What The Battle Chamber Actually Is</h2>
-      <p>The Battle Chamber is not a forum or comment section. It is the public proof layer of the entire Crypto Moonboys system. This is where activity becomes visible to the entire community.</p>
-      <p>Most Web3 projects hide progression behind private dashboards. We do the opposite. People believe what they can see. A public activity layer turns invisible effort into visible movement.</p>
-    </section>
-
-    <section class="section">
-      <h2>What You’ll Find in the Battle Chamber</h2>
-      <ul>
-        <li>Live activity and proof feeds (where wired)</li>
-        <li>Community leaderboards and top contributors</li>
-        <li>Faction alignment signals and status</li>
-        <li>Mission and quest panels (when active)</li>
-        <li>Telegram-linked player visibility</li>
-        <li>Daily and seasonal progress indicators</li>
-        <li>Future City Block Topia zone events and rebellion signals</li>
+    <!-- Section 2: Why Join a Faction? -->
+    <section class="section" id="why-join-faction">
+      <h2>Why Join a Faction?</h2>
+      <p>Battle Chamber is the public proof layer. Join a faction to make your arcade activity count for something bigger. Your runs build clout. Your faction earns pressure.</p>
+      <ul class="bc-why-list">
+        <li>Unlock faction daily and seasonal missions</li>
+        <li>Unlock faction perks and roguelite options</li>
+        <li>Unlock faction proof — your activity becomes public</li>
+        <li>Appear on public weekly, monthly, and seasonal boards</li>
+        <li>Build weekly, monthly, and seasonal clout</li>
+        <li>Gain access to faction-specific roguelite paths</li>
+        <li>Compete for badges, stickers, titles, and XP prize pool eligibility</li>
+        <li>Contribute to faction war standing and help your faction dominate</li>
       </ul>
+      <p>Weekly and monthly winners get visibility, badges, stickers, and roguelite advantages. No action, no proof. More action, more clout.</p>
     </section>
 
+    <!-- Section 3: Faction War Standings -->
     <section class="section">
-      <h2>Faction Wars Foundation</h2>
-      <p>Faction Wars are coming to the Battle Chamber. Join a faction, build weekly and monthly clout, complete faction missions, and appear on public proof boards.</p>
-    </section>
-
-    <!-- REDESIGNED TELEGRAM STATUS -->
-    <section class="section">
-      <h2>Telegram Status — Top Contributors</h2>
-      <div class="tg-user-list" id="tg-community-leaderboard">
-        <div class="community-loading">Loading community leaderboard…</div>
+      <h2>Faction War Standings</h2>
+      <div id="battle-faction-standings">
+        <div class="community-loading">Loading faction standings&#8230;</div>
       </div>
     </section>
 
-    <!-- LIVE ACTIVITY -->
+    <!-- Section 4: Weekly Faction War -->
     <section class="section">
-      <h2>Live Activity</h2>
+      <h2>Weekly Faction War</h2>
+      <div id="battle-weekly-war">
+        <div class="community-loading">Loading weekly war&#8230;</div>
+      </div>
+    </section>
+
+    <!-- Section 5: Monthly Clout Chase -->
+    <section class="section">
+      <h2>Monthly Clout Chase</h2>
+      <div id="battle-monthly-clout">
+        <div class="community-loading">Loading monthly clout&#8230;</div>
+      </div>
+    </section>
+
+    <!-- Section 6: Seasonal Campaign -->
+    <section class="section">
+      <h2>Seasonal Campaign</h2>
+      <div id="battle-seasonal-campaign">
+        <div class="community-loading">Loading seasonal campaign&#8230;</div>
+      </div>
+    </section>
+
+    <!-- Section 7: Join a Faction Panel -->
+    <section class="section">
+      <h2>Join a Faction</h2>
+      <div id="battle-join-faction">
+        <div class="community-loading">Loading faction panel&#8230;</div>
+      </div>
+    </section>
+
+    <!-- Section 8: Active Faction Missions -->
+    <section class="section">
+      <h2>Active Faction Missions</h2>
+      <div id="battle-active-missions">
+        <div class="community-loading">Loading missions&#8230;</div>
+      </div>
+    </section>
+
+    <!-- Section 9: Faction Perks + Roguelite Options -->
+    <section class="section">
+      <h2>Faction Perks + Roguelite Options</h2>
+      <div id="battle-faction-perks">
+        <div class="community-loading">Loading faction perks&#8230;</div>
+      </div>
+    </section>
+
+    <!-- Section 10: Clout Rewards Board -->
+    <section class="section">
+      <h2>Clout Rewards Board</h2>
+      <div id="battle-clout-rewards">
+        <div class="community-loading">Loading rewards&#8230;</div>
+      </div>
+    </section>
+
+    <!-- Section 11: Live Proof Feed -->
+    <section class="section">
+      <h2>Live Proof Feed</h2>
+      <div id="battle-faction-proof-feed"></div>
       <div id="tg-activity-feed">
-        <div class="community-loading">Loading live activity…</div>
+        <div class="community-loading">Loading live activity&#8230;</div>
       </div>
     </section>
 
+    <!-- Section 12: Top Contributors -->
     <section class="section">
-      <h2>The Philosophy</h2>
-      <p class="quote">“If you act, it shows. If you do nothing, nothing happens.”</p>
-      <p>This is intentional. The Battle Chamber rewards real movement and makes passive behavior visible.</p>
+      <h2>Top Contributors</h2>
+      <p>Community XP and synced arcade activity. These are the most active faction members on the Battle Chamber proof board.</p>
+      <div class="tg-user-list" id="tg-community-leaderboard">
+        <div class="community-loading">Loading community leaderboard&#8230;</div>
+      </div>
     </section>
 
-    <section class="section">
-      <h2>Future of the Battle Chamber</h2>
-      <p>As City Block Topia / Neon Sprawl is integrated, the Battle Chamber will expand to include zone control, large-scale rebellion events, and deeper faction conflicts.</p>
+    <!-- Section 13: Coming Next — Faction Chambers -->
+    <section class="section" id="coming-next-faction-chambers">
+      <h2>Coming Next: Faction Chambers</h2>
+      <div class="bc-coming-next">
+        <p>Each faction is getting a dedicated chamber page with:</p>
+        <ul>
+          <li>Faction lore and history</li>
+          <li>Live news and faction events</li>
+          <li>Full perk tree and roguelite modifier list</li>
+          <li>Active missions and weekly/monthly targets</li>
+          <li>Badges, stickers, and titles unique to the faction</li>
+          <li>Top faction members and clout rankings</li>
+          <li>Faction live activity feed</li>
+          <li>Join / switch faction CTA</li>
+        </ul>
+        <p>Individual faction chambers are being built in the next phase. Each of the 9 factions will have its own dedicated page: Hard Fork Rockers, Rugpull Minors, GraffPUNKS, Blockchain Furies, Crypto Moongirls, The Blockstars, All City Bulls, Nomad Bears, and Crypto Stoned Boys.</p>
+      </div>
     </section>
 
   </div>
@@ -147,6 +515,7 @@
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
 <script data-cfasync="false" src="/js/telegram-community.js"></script>
+<script data-cfasync="false" src="/js/battle-chamber-factions.js"></script>
 
 </body>
 </html>
