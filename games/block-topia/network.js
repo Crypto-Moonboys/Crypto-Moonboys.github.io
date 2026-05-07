@@ -8,6 +8,8 @@ let _isConnecting = false;
 let _cityUnavailable = false;
 let _preStartDisconnectCount = 0;
 let _lastWorldEventLevel = 1;
+let _reconnectionToken = null;
+let _colyseusEndpoint = null;
 const CLOSED_ROOM_WARN_THROTTLE_MS = 3000;
 const _closedRoomWarnAt = {};
 const MAX_RETRIES = 3;
@@ -196,6 +198,9 @@ export async function connectMultiplayer({
       client = new window.Colyseus.Client(endpoint);
       room = await joinCityOnly(client, roomId, { name: playerName, telegram_auth: telegramAuth });
 
+      _reconnectionToken = room.reconnectionToken || null;
+      _colyseusEndpoint = endpoint;
+
       onStatus?.({ ws: 'connected', joined: true, error: '', roomId: room.name || roomId, sessionId: room.sessionId || '' });
       onFeed?.(`Connected to ${room.name || roomId}`);
 
@@ -379,12 +384,91 @@ function _scheduleReconnect() {
   }, 2500);
 }
 
+async function _tryWarmReconnect() {
+  if (!_reconnectionToken || !_colyseusEndpoint || !window.Colyseus) return null;
+  try {
+    const { onStatus, onPlayers, onNpcs, onWorld, onFeed, roomId } = _reconnectOptions;
+    const warmClient = new window.Colyseus.Client(_colyseusEndpoint);
+    const reconRoom = await warmClient.reconnect(_reconnectionToken);
+    client = warmClient;
+    room = reconRoom;
+    _reconnectionToken = reconRoom.reconnectionToken || null;
+
+    const capturedRef = room;
+    const joinedRoomName = room.name || roomId;
+
+    room.onLeave((code) => {
+      if (room === capturedRef) room = null;
+      onStatus?.({ ws: 'disconnected', joined: false, error: `Disconnected (code: ${code})`, roomId: joinedRoomName });
+      onFeed?.(`Multiplayer connection lost (code: ${code})`);
+      _preStartDisconnectCount += 1;
+      if (_preStartDisconnectCount <= 1) _scheduleReconnect();
+    });
+
+    room.onStateChange((state) => {
+      const playerList = toPlayerList(state?.players);
+      const me = playerList.find((entry) => String(entry?.id || '') === String(room?.sessionId || ''));
+      if (me?.ready === true) _preStartDisconnectCount = 0;
+      const nextEventLevel = Number(state.eventLevel);
+      if (Number.isFinite(nextEventLevel) && nextEventLevel >= 1) {
+        _lastWorldEventLevel = Math.max(1, Math.floor(nextEventLevel));
+      }
+      onPlayers?.(toPlayerList(state.players));
+      onNpcs?.(toNpcList(state.npcs));
+      onWorld?.({
+        mode: String(state.worldMode || ''),
+        phase: String(state.worldPhase || ''),
+        phaseStartedAt: Math.max(0, Number(state.phaseStartedAt) || 0),
+        phaseEndsAt: Math.max(0, Number(state.phaseEndsAt) || 0),
+        eventLevel: _lastWorldEventLevel,
+        eventObjective: String(state.eventObjective || ''),
+        roomRunStartedAt: Math.max(0, Number(state.roomRunStartedAt) || 0),
+        objectiveType: String(state.eventObjectiveType || ''),
+        objectiveTarget: Math.max(0, Number(state.objectiveTarget) || 0),
+        objectiveProgress: Math.max(0, Number(state.objectiveProgress) || 0),
+        extractionX: Math.max(0, Number(state.extractionX) || 0),
+        extractionY: Math.max(0, Number(state.extractionY) || 0),
+        hackX: Math.max(0, Number(state.hackX) || 0),
+        hackY: Math.max(0, Number(state.hackY) || 0),
+        hackProgressTarget: Math.max(0, Number(state.hackProgressTarget) || 0),
+        runStartedAt: Math.max(0, Number(state.runStartedAt) || 0),
+      });
+    });
+
+    room.onMessage('system', (message) => {
+      const messageEventLevel = Number(message?.eventLevel);
+      const hasEventLevel = Number.isFinite(messageEventLevel) && messageEventLevel >= 1;
+      if (hasEventLevel) _lastWorldEventLevel = Math.max(1, Math.floor(messageEventLevel));
+      if (message?.mode || message?.phase || message?.phaseEndsAt || message?.eventLevel || message?.eventObjective) {
+        onWorld?.({
+          mode: message?.mode ? String(message.mode) : '',
+          phase: message?.phase ? String(message.phase) : '',
+          phaseEndsAt: Math.max(0, Number(message?.phaseEndsAt) || 0),
+          eventLevel: _lastWorldEventLevel,
+          eventObjective: String(message?.eventObjective || ''),
+        });
+      }
+      onFeed?.(`System: ${message?.message || 'System update'}`);
+    });
+
+    onStatus?.({ ws: 'connected', joined: true, error: '', roomId: joinedRoomName, sessionId: room.sessionId || '' });
+    onFeed?.(`Reconnected to ${joinedRoomName}`);
+    _preStartDisconnectCount = 0;
+    return room;
+  } catch {
+    _reconnectionToken = null;
+    return null;
+  }
+}
+
 export async function reconnectMultiplayer() {
   if (!_reconnectOptions) return null;
   if (isRoomOpen()) return null;
   if (_isConnecting) return null;
   _isConnecting = true;
   try {
+    const warm = await _tryWarmReconnect();
+    if (warm) return warm;
     return await connectMultiplayer(_reconnectOptions);
   } finally {
     _isConnecting = false;

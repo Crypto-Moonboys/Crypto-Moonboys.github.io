@@ -70,6 +70,11 @@ const UPGRADE_POOL = [
 ];
 const PASSABLE_TERRAIN = new Set(['road', 'grass']);
 
+// ── Persistence lite ──────────────────────────────────────────────────────────
+const RECONNECT_HOLD_SECS = 60;        // warm-slot window (seconds)
+const PERSISTENCE_TTL_MS = 30 * 60_000; // in-memory persistence lifetime
+const PERSISTENCE_MAX_ENTRIES = 500;    // evict oldest when full
+
 class PlayerState extends Schema {
   constructor() {
     super();
@@ -210,6 +215,8 @@ export class MinimalCityRoom extends Room {
     this.missionStartedAtBySession = new Map();
     this.lastActiveAtBySession = new Map();
     this.runGeneration = 0;
+    this._warmSlotsBySession = new Map();
+    this._identityKeyBySession = new Map();
     this.terrain = buildTerrainGrid(MAP_WIDTH, MAP_HEIGHT);
     this._seedNpcs();
 
@@ -333,6 +340,8 @@ export class MinimalCityRoom extends Room {
     this.missionStartedAtBySession.set(client.sessionId, 0);
     this.spawnProtectedUntilBySession.set(client.sessionId, Date.now() + SPAWN_GRACE_MS);
     this.lastActiveAtBySession.set(client.sessionId, Date.now());
+    const identityKey = _persistenceKey(options.telegram_auth ?? options.telegramAuth);
+    if (identityKey) this._identityKeyBySession.set(client.sessionId, identityKey);
     this._scheduleReadyTimeout(client.sessionId);
     this._updateWorldMode();
 
@@ -357,30 +366,94 @@ export class MinimalCityRoom extends Room {
     });
   }
 
-  onLeave(client) {
+  async onLeave(client, consented) {
     const player = this.playersBySession.get(client.sessionId);
-    const npcDamageKeySuffix = `:${client.sessionId}`;
+    const identityKey = this._identityKeyBySession.get(client.sessionId);
+
+    // Write lightweight persistence before any state change.
+    if (player && identityKey) {
+      _writePersistence(identityKey, {
+        name: player.name,
+        faction: player.faction,
+        district: player.district,
+        runLevel: player.runLevel,
+      });
+    }
+
+    if (!consented && player && player.ready) {
+      // Player was active — hold the slot for warm reconnect.
+      this._warmSlotsBySession.set(client.sessionId, _snapshotPlayer(player, this.runGeneration));
+      try {
+        await this.allowReconnection(client, RECONNECT_HOLD_SECS);
+        // Reconnected — restore state from snapshot.
+        const snapshot = this._warmSlotsBySession.get(client.sessionId);
+        this._warmSlotsBySession.delete(client.sessionId);
+        if (snapshot) this._restorePlayerFromSnapshot(client.sessionId, snapshot);
+        this.broadcast('system', { message: `${player.name} reconnected.` });
+      } catch {
+        // Reconnect window expired — clean up normally.
+        this._warmSlotsBySession.delete(client.sessionId);
+        this._removePlayerBySession(client.sessionId);
+      }
+    } else {
+      this._removePlayerBySession(client.sessionId);
+    }
+  }
+
+  _removePlayerBySession(sessionId) {
+    const player = this.playersBySession.get(sessionId);
+    const npcDamageKeySuffix = `:${sessionId}`;
     for (const key of this.lastNpcDamageAtByNpcAndTarget.keys()) {
       if (key.endsWith(npcDamageKeySuffix)) {
         this.lastNpcDamageAtByNpcAndTarget.delete(key);
       }
     }
-    this.playersBySession.delete(client.sessionId);
-    this.completedSessions.delete(client.sessionId);
-    this.lastAttackAtBySession.delete(client.sessionId);
-    this.spawnProtectedUntilBySession.delete(client.sessionId);
-    this.lastNpcDamageAtByTarget.delete(client.sessionId);
-    this.pendingRespawnBySession.delete(client.sessionId);
-    this.pendingReadyTimeoutBySession.delete(client.sessionId);
-    this.missionStartedAtBySession.delete(client.sessionId);
-    this.lastActiveAtBySession.delete(client.sessionId);
+    this.playersBySession.delete(sessionId);
+    this.completedSessions.delete(sessionId);
+    this.lastAttackAtBySession.delete(sessionId);
+    this.spawnProtectedUntilBySession.delete(sessionId);
+    this.lastNpcDamageAtByTarget.delete(sessionId);
+    this.pendingRespawnBySession.delete(sessionId);
+    this.pendingReadyTimeoutBySession.delete(sessionId);
+    this.missionStartedAtBySession.delete(sessionId);
+    this.lastActiveAtBySession.delete(sessionId);
+    this._warmSlotsBySession.delete(sessionId);
+    this._identityKeyBySession.delete(sessionId);
     if (player) {
-      const index = this.state.players.findIndex((entry) => entry.id === client.sessionId);
+      const index = this.state.players.findIndex((entry) => entry.id === sessionId);
       if (index >= 0) this.state.players.splice(index, 1);
       this.broadcast('system', { message: `${player.name} left the city.` });
     }
     if (this.state.players.length === 0) this._startRun({ eventLevel: 1 });
     this._updateWorldMode();
+  }
+
+  _restorePlayerFromSnapshot(sessionId, snapshot) {
+    const player = this.playersBySession.get(sessionId);
+    if (!player) return;
+    // Only restore game state if still in the same run generation.
+    if (snapshot.runGeneration !== this.runGeneration) return;
+    player.x = snapshot.x;
+    player.y = snapshot.y;
+    // Restore HP: if downed at disconnect, bring back at half max HP.
+    player.hp = snapshot.hp > 0 ? snapshot.hp : Math.floor(snapshot.maxHp * 0.5);
+    player.maxHp = snapshot.maxHp;
+    player.kills = snapshot.kills;
+    player.downs = snapshot.downs;
+    player.respawnAt = 0;
+    player.attackDamage = snapshot.attackDamage;
+    player.attackCooldownMs = snapshot.attackCooldownMs;
+    player.armorPct = snapshot.armorPct;
+    player.secondWindAvailable = snapshot.secondWindAvailable;
+    player.secondWindUsed = snapshot.secondWindUsed;
+    player.upgradesJson = snapshot.upgradesJson;
+    player.upgradeChoicesJson = snapshot.upgradeChoicesJson;
+    player.upgradeChoicesMetaJson = snapshot.upgradeChoicesMetaJson;
+    player.upgradeState = snapshot.upgradeState;
+    player.objectiveProgress = snapshot.objectiveProgress;
+    // Grant spawn grace so the player isn't immediately hit on reconnect.
+    this.spawnProtectedUntilBySession.set(sessionId, Date.now() + SPAWN_GRACE_MS);
+    this._markActivity(sessionId);
   }
 
   _seedNpcs() {
@@ -816,6 +889,7 @@ export class MinimalCityRoom extends Room {
     for (const client of this.clients) {
       const sessionId = client?.sessionId;
       if (!sessionId) continue;
+      if (this._warmSlotsBySession.has(sessionId)) continue; // in reconnect hold
       const lastActiveAt = this.lastActiveAtBySession.get(sessionId) || now;
       if (now - lastActiveAt < IDLE_RESET_MS) continue;
       const player = this.playersBySession.get(sessionId);
@@ -944,6 +1018,68 @@ export class MinimalCityRoom extends Room {
     }
     return 0;
   }
+}
+
+// ── Lightweight in-memory persistence ─────────────────────────────────────────
+// Survives within a single server process. No database required.
+// Stores display name, faction, district, and run level keyed by Telegram user ID.
+const _lightweightPersistence = new Map();
+
+function _persistenceKey(telegramAuth) {
+  if (!telegramAuth || typeof telegramAuth !== 'object') return null;
+  const id = telegramAuth.id ?? telegramAuth.user_id;
+  if (!id) return null;
+  return `tg_${String(id)}`;
+}
+
+function _writePersistence(key, { name, faction, district, runLevel }) {
+  if (!key) return;
+  if (_lightweightPersistence.size >= PERSISTENCE_MAX_ENTRIES) {
+    const oldest = _lightweightPersistence.keys().next().value;
+    _lightweightPersistence.delete(oldest);
+  }
+  _lightweightPersistence.set(key, {
+    name: String(name || '').slice(0, 24),
+    faction: String(faction || '').slice(0, 24),
+    district: String(district || '').slice(0, 32),
+    runLevel: Math.max(1, Math.floor(Number(runLevel) || 1)),
+    lastSeen: Date.now(),
+  });
+}
+
+function _readPersistence(key) {
+  if (!key) return null;
+  const entry = _lightweightPersistence.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.lastSeen > PERSISTENCE_TTL_MS) {
+    _lightweightPersistence.delete(key);
+    return null;
+  }
+  return entry;
+}
+
+function _snapshotPlayer(player, runGeneration) {
+  return {
+    x: player.x,
+    y: player.y,
+    hp: player.hp,
+    maxHp: player.maxHp,
+    kills: player.kills,
+    downs: player.downs,
+    respawnAt: player.respawnAt,
+    ready: player.ready,
+    attackDamage: player.attackDamage,
+    attackCooldownMs: player.attackCooldownMs,
+    armorPct: player.armorPct,
+    secondWindAvailable: player.secondWindAvailable,
+    secondWindUsed: player.secondWindUsed,
+    upgradesJson: player.upgradesJson,
+    upgradeChoicesJson: player.upgradeChoicesJson,
+    upgradeChoicesMetaJson: player.upgradeChoicesMetaJson,
+    upgradeState: player.upgradeState,
+    objectiveProgress: player.objectiveProgress,
+    runGeneration,
+  };
 }
 
 function resolveApiBase() {
