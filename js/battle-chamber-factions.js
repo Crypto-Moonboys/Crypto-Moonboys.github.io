@@ -13,13 +13,13 @@
  * This file reads from existing faction systems and must not re-implement
  * or duplicate faction logic.  All data flows through:
  *   window.MOONBOYS_FACTION      (faction-alignment.js)
- *   window.MOONBOYS_WAR          (faction-war-system.js — module; accessed via event/data)
- *   window.FACTION_DEFS          (faction-effect-system.js — module; accessed via data cache)
- *   window.MOONBOYS_MISSIONS     (faction-missions.js — module; accessed via event/data)
+ *   window.MOONBOYS_WAR_DATA     (faction-war-system.js — set by battle-chamber-faction-bridge.js)
+ *   window.FACTION_EFFECT_DEFS   (faction-effect-system.js — set by battle-chamber-faction-bridge.js)
+ *   window.MOONBOYS_MISSION_DATA (faction-missions.js — set by battle-chamber-faction-bridge.js)
  *
- * Because faction-war-system.js and faction-missions.js are ES modules, this
- * IIFE reads the rendered data they place onto window.MOONBOYS_WAR_DATA and
- * window.MOONBOYS_MISSION_DATA if set, and re-renders when faction events fire.
+ * battle-chamber-faction-bridge.js (type="module") imports the real ES-module
+ * faction systems, populates those window caches, and dispatches
+ * 'battle-chamber:faction-data-ready' so this IIFE can re-render with real data.
  *
  * Hook elements this file targets (all optional — renders only if present):
  *   #battle-faction-standings
@@ -93,11 +93,6 @@
 
   function el(id) { return document.getElementById(id); }
 
-  function setHtml(id, html) {
-    var node = el(id);
-    if (node) node.innerHTML = html;
-  }
-
   // ── War data helpers ──────────────────────────────────────────────────────
 
   /**
@@ -109,15 +104,10 @@
   function getStandings() {
     var cache = window.MOONBOYS_WAR_DATA;
     if (cache && Array.isArray(cache.standings)) return cache.standings;
-    // Build fallback from faction roster
+    // Build fallback from faction roster until bridge sets the real data
     return LIVE_FACTIONS.map(function (f) {
       return { faction: f.key, power: 0, daily: 0, weekly: 0, momentum: 0 };
     });
-  }
-
-  function getDominant() {
-    var standings = getStandings().slice().sort(function (a, b) { return b.power - a.power; });
-    return standings.length ? standings[0].faction : 'hard-fork-rockers';
   }
 
   // ── Mission data helpers ──────────────────────────────────────────────────
@@ -307,14 +297,23 @@
         btn.addEventListener('click', function () {
           var targetFaction = btn.getAttribute('data-faction');
           if (!targetFaction) return;
+
+          // Check Telegram linked state first.  Unlinked users must link before joining.
+          var identity = window.MOONBOYS_IDENTITY;
+          var isLinked = identity && typeof identity.isTelegramLinked === 'function'
+            ? identity.isTelegramLinked()
+            : false;
+
           var api = window.MOONBOYS_FACTION;
-          if (!api || typeof api.joinFaction !== 'function') {
-            // Redirect to Telegram link if not connected
+
+          if (!isLinked || !api || typeof api.joinFaction !== 'function') {
+            // Not linked — redirect to Telegram link CTA page
             window.location.href = '/gkniftyheads-incubator.html';
             return;
           }
+
           btn.disabled = true;
-          btn.textContent = 'Joining…';
+          btn.textContent = 'Joining\u2026';
           api.joinFaction(targetFaction).then(function () {
             renderJoinFaction(null);
           }).catch(function () {
@@ -374,8 +373,9 @@
     if (!container) return;
 
     var cards = LIVE_FACTIONS.map(function (f) {
-      // Read effect metadata from FACTION_DEFS cache if available
-      var defs = window.FACTION_EFFECT_DEFS;
+      // Read effect metadata from FACTION_EFFECT_DEFS (set by bridge from FACTION_DEFS)
+      // Also accepts window.FACTION_DEFS directly for resilience
+      var defs = window.FACTION_EFFECT_DEFS || window.FACTION_DEFS;
       var def = defs && defs[f.key];
       var xpMeta = def != null ? def.xpModifier : null;
       var scoreMulti = def != null ? def.scoreMultiplier : null;
@@ -447,8 +447,23 @@
   // ─────────────────────────────────────────────────────────────────────────
 
   function init() {
-    // Initial render pass (works offline / pre-auth)
+    // Initial render pass (works offline / pre-auth / before bridge fires)
     renderAll(null);
+
+    // Hydrate faction status — triggers a re-render with current server state
+    var factionApi = window.MOONBOYS_FACTION;
+    if (factionApi && typeof factionApi.loadStatus === 'function') {
+      factionApi.loadStatus().then(function (status) {
+        renderAll(status || null);
+      }).catch(function () {
+        // Failure is safe — page already rendered with cached/placeholder data
+      });
+    }
+
+    // Re-render when the faction data bridge has populated window globals
+    window.addEventListener('battle-chamber:faction-data-ready', function () {
+      renderAll(null);
+    });
 
     // Re-render when faction status is loaded or updated
     window.addEventListener('moonboys:faction-status', function (e) {

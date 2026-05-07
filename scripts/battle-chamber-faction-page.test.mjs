@@ -1,8 +1,9 @@
 /**
  * battle-chamber-faction-page.test.mjs
  *
- * CI guard for the Battle Chamber Faction Wars hub page (community.html) and
- * the supporting JS file (js/battle-chamber-factions.js).
+ * CI guard for the Battle Chamber Faction Wars hub page (community.html),
+ * the renderer (js/battle-chamber-factions.js), and the data bridge
+ * (js/battle-chamber-faction-bridge.js).
  *
  * Fails if any of the following is violated:
  *   - community.html does not include "Battle Chamber: Faction Wars"
@@ -12,13 +13,18 @@
  *   - community.html does not include the activity feed container
  *   - community.html does not load telegram-community.js
  *   - community.html does not load battle-chamber-factions.js
+ *   - community.html does not load the bridge before the renderer
  *   - community.html contains old live faction names "Diamond Hands" or "HODL Warriors"
  *   - community.html uses forbidden reward wording
  *   - battle-chamber-factions.js references old faction names as current live factions
  *   - battle-chamber-factions.js does not import/reference existing faction systems
+ *   - bridge does not import faction-war-system.js / faction-missions.js / faction-effect-system.js
+ *   - bridge does not assign window.MOONBOYS_WAR_DATA / MOONBOYS_MISSION_DATA / FACTION_EFFECT_DEFS
+ *   - renderer does not listen for battle-chamber:faction-data-ready
+ *   - renderer does not call MOONBOYS_FACTION.loadStatus on init
+ *   - join buttons do not check isTelegramLinked before calling joinFaction
  */
 
-import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,6 +34,7 @@ const ROOT = path.resolve(__dirname, '..');
 
 const COMMUNITY_FILE = path.join(ROOT, 'community.html');
 const BC_FACTIONS_FILE = path.join(ROOT, 'js', 'battle-chamber-factions.js');
+const BC_BRIDGE_FILE = path.join(ROOT, 'js', 'battle-chamber-faction-bridge.js');
 
 function read(filePath) {
   return fs.readFileSync(filePath, 'utf8');
@@ -60,9 +67,11 @@ console.log('\n─── Battle Chamber Faction Page Tests ───────
 
 check(fs.existsSync(COMMUNITY_FILE), 'community.html exists');
 check(fs.existsSync(BC_FACTIONS_FILE), 'js/battle-chamber-factions.js exists');
+check(fs.existsSync(BC_BRIDGE_FILE), 'js/battle-chamber-faction-bridge.js exists');
 
 const communityHtml = fs.existsSync(COMMUNITY_FILE) ? read(COMMUNITY_FILE) : '';
 const bcFactionsJs = fs.existsSync(BC_FACTIONS_FILE) ? read(BC_FACTIONS_FILE) : '';
+const bcBridgeJs = fs.existsSync(BC_BRIDGE_FILE) ? read(BC_BRIDGE_FILE) : '';
 
 // ── community.html: required headline ─────────────────────────────────────────
 
@@ -135,6 +144,17 @@ console.log('\n[6] community.html — required JS files loaded');
 check(communityHtml.includes('telegram-community.js'), 'community.html loads telegram-community.js');
 check(communityHtml.includes('battle-chamber-factions.js'), 'community.html loads battle-chamber-factions.js');
 check(communityHtml.includes('faction-alignment.js'), 'community.html loads faction-alignment.js');
+check(communityHtml.includes('battle-chamber-faction-bridge.js'), 'community.html loads battle-chamber-faction-bridge.js');
+
+// Bridge must load BEFORE the renderer so globals are set first
+{
+  const bridgeIdx = communityHtml.indexOf('battle-chamber-faction-bridge.js');
+  const rendererIdx = communityHtml.indexOf('battle-chamber-factions.js');
+  check(
+    bridgeIdx !== -1 && rendererIdx !== -1 && bridgeIdx < rendererIdx,
+    'community.html loads bridge before renderer'
+  );
+}
 
 // ── community.html: no old live faction names ─────────────────────────────────
 
@@ -228,6 +248,44 @@ console.log('\n[13] battle-chamber-factions.js — no forbidden reward wording')
 for (const term of FORBIDDEN_REWARD_TERMS) {
   check(!bcLower.includes(term), `battle-chamber-factions.js does not contain forbidden term: "${term}"`);
 }
+
+// ── bridge: imports real faction systems ──────────────────────────────────────
+
+console.log('\n[14] battle-chamber-faction-bridge.js — imports real faction systems');
+check(bcBridgeJs.includes('faction-war-system.js'), 'bridge imports faction-war-system.js');
+check(bcBridgeJs.includes('faction-missions.js'), 'bridge imports faction-missions.js');
+check(bcBridgeJs.includes('faction-effect-system.js'), 'bridge imports faction-effect-system.js');
+check(bcBridgeJs.includes('getFactionStandings'), 'bridge imports getFactionStandings from faction-war-system.js');
+check(bcBridgeJs.includes('getDailyMissions'), 'bridge imports getDailyMissions from faction-missions.js');
+check(bcBridgeJs.includes('FACTION_DEFS'), 'bridge imports FACTION_DEFS from faction-effect-system.js');
+
+// ── bridge: assigns window globals ───────────────────────────────────────────
+
+console.log('\n[15] battle-chamber-faction-bridge.js — assigns window globals');
+check(bcBridgeJs.includes('window.MOONBOYS_WAR_DATA'), 'bridge assigns window.MOONBOYS_WAR_DATA');
+check(bcBridgeJs.includes('window.MOONBOYS_MISSION_DATA'), 'bridge assigns window.MOONBOYS_MISSION_DATA');
+check(bcBridgeJs.includes('window.FACTION_EFFECT_DEFS'), 'bridge assigns window.FACTION_EFFECT_DEFS');
+check(bcBridgeJs.includes('battle-chamber:faction-data-ready'), 'bridge dispatches battle-chamber:faction-data-ready');
+
+// ── renderer: listens for bridge event ───────────────────────────────────────
+
+console.log('\n[16] battle-chamber-factions.js — listens for bridge event and calls loadStatus');
+check(
+  bcFactionsJs.includes('battle-chamber:faction-data-ready'),
+  'renderer listens for battle-chamber:faction-data-ready'
+);
+check(
+  bcFactionsJs.includes('loadStatus'),
+  'renderer calls MOONBOYS_FACTION.loadStatus on init'
+);
+check(
+  bcFactionsJs.includes('isTelegramLinked'),
+  'join buttons check isTelegramLinked before calling joinFaction'
+);
+check(
+  bcFactionsJs.includes('FACTION_EFFECT_DEFS') && bcFactionsJs.includes('FACTION_DEFS'),
+  'renderer reads FACTION_EFFECT_DEFS with FACTION_DEFS fallback'
+);
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 
