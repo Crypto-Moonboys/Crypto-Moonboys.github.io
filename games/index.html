@@ -60,7 +60,7 @@
       <section class="notice info roguelite-loop-panel" role="region" aria-label="Roguelite infinite engagement loop">
         <span class="notice-icon" aria-hidden="true">⚡</span>
         <div class="roguelite-loop-copy">
-          <strong>Roguelite Infinite Loop:</strong> Finish any task and it auto-submits into the same Arcade XP track, then immediately opens fresh rabbit holes. Choose safe XP, risk spikes, faction pushes, wiki exploration, or competitive leaderboard pressure — the flow never stops.
+          <strong>Roguelite Infinite Loop:</strong> The arcade uses one protected browser-driven roguelite post-run loop. Accepted game runs feed the shared submit path, refresh local UTC daily/weekly/monthly/seasonal previews, queue Arcade XP for server sync, update local clout, and roll local rabbit-hole choices automatically.
           <div id="roguelite-loop-board" aria-live="polite" style="margin-top:12px"></div>
         </div>
       </section>
@@ -227,6 +227,14 @@ function ensureLoopStyles() {
     .roguelite-branch-card.easy{border-color:rgba(97,246,255,.34)}
     .roguelite-branch-card.risk{border-color:rgba(255,79,209,.38);background:rgba(255,79,209,.07)}
     .roguelite-branch-card.faction{border-color:rgba(247,201,72,.4);background:rgba(247,201,72,.07)}
+    .roguelite-branch-card.competitive{border-color:rgba(49,210,255,.42);background:rgba(49,210,255,.07)}
+    .roguelite-branch-card.exploration{border-color:rgba(121,255,162,.36);background:rgba(121,255,162,.07)}
+    .roguelite-branch-card.comeback{border-color:rgba(255,120,120,.46);background:rgba(255,120,120,.08)}
+    .roguelite-cycle-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:10px}
+    .roguelite-cycle-card{border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:9px;background:rgba(255,255,255,.04)}
+    .roguelite-cycle-card span{display:block;color:var(--color-text-muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em}
+    .roguelite-cycle-card strong{display:block;color:var(--color-text);font-size:.9rem;margin-top:2px}
+    .roguelite-cycle-card small{display:block;color:var(--color-text-muted);font-size:.72rem;margin-top:2px}
     .roguelite-branch-card span,.roguelite-path{width:max-content;border:1px solid rgba(247,201,72,.45);border-radius:999px;padding:2px 7px;color:#f7c948;font-size:.68rem;text-transform:uppercase}
     .roguelite-branch-card strong,.roguelite-task-card strong{font-size:.86rem;color:var(--color-text)}
     .roguelite-branch-card small,.roguelite-task-card small{color:var(--color-text-muted);line-height:1.45}
@@ -303,6 +311,26 @@ function tickXpDisplay() {
   updateTickerDom(currentXp);
 }
 
+function formatPoints(value) {
+  return Math.max(0, Math.floor(Number(value) || 0)).toLocaleString();
+}
+
+function formatReset(ms) {
+  const timestamp = Number(ms);
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return 'pending';
+  const diff = Math.max(0, timestamp - Date.now());
+  const hours = Math.floor(diff / (60 * 60 * 1000));
+  const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+  if (hours >= 24) return `${Math.floor(hours / 24)}d ${hours % 24}h`;
+  return `${hours}h ${minutes}m`;
+}
+
+function renderCycleCard(label, cycle) {
+  const current = formatPoints(cycle?.points);
+  const target = formatPoints(cycle?.target);
+  return `<div class="roguelite-cycle-card"><span>${escapeText(label)}</span><strong>${current} / ${target}</strong><small>UTC reset: ${formatReset(cycle?.resets_at)}</small></div>`;
+}
+
 function renderLoopBoard() {
   if (!board) return;
   ensureLoopStyles();
@@ -313,6 +341,9 @@ function renderLoopBoard() {
   const rabbits = Array.isArray(roguelite.rabbit_holes) ? roguelite.rabbit_holes : [];
   const branches = Array.isArray(roguelite.next_branches) ? roguelite.next_branches : [];
   const completedDaily = daily.filter((task) => task.completed).length;
+  const cycle = roguelite.loop_cycle || context?.loop_cycle || {};
+  const clout = roguelite.clout || context?.clout || state?.clout || {};
+  const nextAction = roguelite.next_action || {};
   const nextDaily = daily.filter((task) => !task.completed).slice(0, 4);
   const nextRabbits = rabbits.slice(0, 4);
   const currentXp = Math.max(0, Math.floor(Number(state?.daily?.points) || 0));
@@ -330,17 +361,30 @@ function renderLoopBoard() {
       <span class="roguelite-stat-pill">Session gained: <strong id="roguelite-session-xp">+0</strong></span>
       <span class="roguelite-stat-pill">Streak day: <strong>${streakDay}</strong></span>
       <span class="roguelite-stat-pill">Streak bonus: <strong>+${streakBonus}%</strong></span>
+      <span class="roguelite-stat-pill">Daily clout: <strong>${formatPoints(clout?.daily?.points)}</strong></span>
+      <span class="roguelite-stat-pill">Weekly clout: <strong>${formatPoints(clout?.weekly?.points)}</strong></span>
+      <span class="roguelite-stat-pill">Faction clout: <strong>${formatPoints(Object.values(clout?.faction || {}).reduce((sum, value) => sum + (Number(value) || 0), 0))}</strong></span>
     </div>
     <div class="roguelite-loop-meter">
       <span>Daily progress: <strong>${completedDaily}/${daily.length}</strong></span>
       <span>Rabbit holes live: <strong>${rabbits.length}</strong></span>
       <span>Auto-submits: <strong>${Number(roguelite.total_auto_submits) || 0}</strong></span>
+      <span>Next best action: <strong>${escapeText(nextAction.label || 'Run any active arcade game')}</strong></span>
+    </div>
+    <div class="roguelite-cycle-grid">
+      ${renderCycleCard('Active daily cycle', cycle.daily_objectives)}
+      ${renderCycleCard('Weekly faction target', cycle.weekly_faction_pressure)}
+      ${renderCycleCard('Monthly clout target', cycle.monthly_clout_chase)}
+      ${renderCycleCard('Seasonal preview target', cycle.seasonal_campaign_pressure)}
     </div>
     <div class="roguelite-branch-title">Next rabbit hole paths</div>
     <div class="roguelite-branch-grid">
       ${renderBranch('easy', 'Easy', findBranch('easy', branches, rabbits, daily))}
       ${renderBranch('risk', 'Risk', findBranch('risk', branches, rabbits, daily))}
       ${renderBranch('faction', 'Faction', findBranch('faction', branches, rabbits, daily))}
+      ${renderBranch('competitive', 'Leaderboard', findBranch('competitive', branches, rabbits, daily))}
+      ${renderBranch('exploration', 'Explore/Wiki', findBranch('exploration', branches, rabbits, daily))}
+      ${renderBranch('comeback', 'Comeback', findBranch('comeback', branches, rabbits, daily))}
     </div>
     <div class="roguelite-loop-grid">
       ${(nextRabbits.length ? nextRabbits : nextDaily).map(renderTask).join('')}
@@ -355,6 +399,7 @@ renderLoopBoard();
 document.addEventListener('arcade-meta-roguelite-completed', renderLoopBoard);
 document.addEventListener('arcade-meta-rabbit-holes-spawned', renderLoopBoard);
 document.addEventListener('arcade-meta-tracked', renderLoopBoard);
+document.addEventListener('arcade-meta-loop-cycle-updated', renderLoopBoard);
 setInterval(renderLoopBoard, 15000);
 setInterval(tickXpDisplay, 350);
 </script>

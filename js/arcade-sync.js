@@ -1,3 +1,7 @@
+// Runtime authority truth (May 2026): ArcadeSync owns browser cache/queue
+// transport only. Pending entries and projected XP are local cache/preview.
+// The /arcade/progression/sync API is authoritative for accepted Arcade XP,
+// dedupe, caps, anti-farm enforcement, and persisted linked-user progression.
 export const ArcadeSync = {
   PENDING_KEY: "moonboys_arcade_pending_progress_v1",
   PENDING_MAX: 250,

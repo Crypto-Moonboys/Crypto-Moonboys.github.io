@@ -242,3 +242,7 @@ The script checks every active game has:
 ---
 
 *Maintained by the Crypto Moonboys arcade team.*
+
+## Shared roguelite post-run truth
+
+The arcade uses one protected browser-driven roguelite post-run loop. All accepted game runs feed the same `submitScore()` path: leaderboard acceptance remains server-authoritative, ArcadeMeta updates local UTC daily/weekly/monthly/seasonal previews, streaks, rabbit holes, branch rolls, local clout, Arcade XP queue/sync, faction earn for linked accepted scores, and roguelite UI refresh all stay on that protected path. Most roguelite/meta state is frontend-driven cache until a future Shared Meta Authority phase makes it server-backed.

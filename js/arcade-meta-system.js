@@ -1,7 +1,13 @@
+// Runtime authority truth (May 2026): ArcadeMeta is browser-authoritative for
+// roguelite/meta presentation state: local quests, rabbit holes, clout previews,
+// streak display, loop-cycle cards, rare/live-event UI, and next-action hints.
+// Server authority remains with leaderboard acceptance and server-side Arcade XP
+// awards. Synced meta points are advisory telemetry; localStorage is cache only.
 const STORAGE_KEY = 'arcade_meta';
 const MAX_HISTORY = 300;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const DAYS_PER_WEEK = 7;
+const DAYS_PER_SEASON = 90;
 const MINUTE_MS = 60 * 1000;
 // Keep aligned with the leaderboard worker season anchor for consistent seasonal windows.
 const SEASON_EPOCH_MS = Date.UTC(2024, 0, 1);
@@ -96,7 +102,21 @@ const DEFAULT_CONFIG = {
     dailyBonusMultiplier: 0.08,
     rabbitBonusMultiplier: 0.12,
     riskBonusMultiplier: 0.2,
-    branchCount: 3,
+    branchCount: 6,
+    cycleTargets: {
+      dailyObjectivePoints: 12000,
+      weeklyFactionPressure: 85000,
+      monthlyCloutChase: 320000,
+      seasonalCampaignPreview: 950000,
+    },
+    clout: {
+      scoreDivisor: 100,
+      metaPointDivisor: 250,
+      streakUnit: 2,
+      taskUnit: 15,
+      factionLinkedUnit: 10,
+      masteryUnit: 12,
+    },
   },
 };
 
@@ -127,6 +147,10 @@ function toUtcMonthKey(ms) {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
 }
 
+function toUtcYearKey(ms) {
+  return String(new Date(ms).getUTCFullYear());
+}
+
 function toUtcWeekKey(ms) {
   const d = new Date(ms);
   const utc = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
@@ -138,7 +162,7 @@ function toUtcWeekKey(ms) {
 }
 
 function toSeasonKey(ms) {
-  const seasonLengthMs = 90 * MS_PER_DAY;
+  const seasonLengthMs = DAYS_PER_SEASON * MS_PER_DAY;
   const seasonIndex = Math.floor((ms - SEASON_EPOCH_MS) / seasonLengthMs);
   return `S${seasonIndex + 1}`;
 }
@@ -185,6 +209,8 @@ function createInitialState() {
     weekly: { key: toUtcWeekKey(now), points: 0 },
     monthly: { key: toUtcMonthKey(now), points: 0 },
     seasonal: { key: toSeasonKey(now), points: 0 },
+    yearly: { key: toUtcYearKey(now), points: 0 },
+    clout: createInitialClout(now),
     quests: { active: [], completed: [] },
     streak: {
       count: 0,
@@ -215,6 +241,21 @@ function createInitialEngagement(now = nowMs()) {
     streak_days: 0,
     last_completed_day: null,
     total_auto_submits: 0,
+    loop_cycle: createLoopCycleModel(now),
+    next_action: null,
+  };
+}
+
+function createInitialClout(now = nowMs()) {
+  return {
+    daily: { key: toUtcDateKey(now), points: 0 },
+    weekly: { key: toUtcWeekKey(now), points: 0 },
+    monthly: { key: toUtcMonthKey(now), points: 0 },
+    seasonal: { key: toSeasonKey(now), points: 0 },
+    yearly: { key: toUtcYearKey(now), points: 0 },
+    streak: 0,
+    faction: {},
+    game_mastery: {},
   };
 }
 
@@ -259,6 +300,49 @@ function getRogueliteLimits() {
   };
 }
 
+function sanitizeCycleWindow(input, fallback) {
+  const source = input && typeof input === 'object' ? input : {};
+  const base = fallback && typeof fallback === 'object' ? fallback : {};
+  const points = Math.max(0, Math.floor(Number(source.points ?? base.points) || 0));
+  const target = Math.max(1, Math.floor(Number(source.target ?? base.target) || 1));
+  const startsAt = Number.isFinite(Number(source.starts_at)) ? Number(source.starts_at) : (Number(base.starts_at) || null);
+  const resetsAt = Number.isFinite(Number(source.resets_at)) ? Number(source.resets_at) : (Number(base.resets_at) || null);
+  return {
+    key: typeof source.key === 'string' ? source.key : String(base.key || ''),
+    label: typeof source.label === 'string' ? source.label : String(base.label || 'Loop window'),
+    points,
+    target,
+    starts_at: startsAt,
+    resets_at: resetsAt,
+    reset_timezone: 'UTC',
+    progress: clamp(points / target, 0, 1),
+  };
+}
+
+function sanitizeLoopCycle(input, fallback) {
+  const source = input && typeof input === 'object' ? input : {};
+  const base = fallback && typeof fallback === 'object' ? fallback : createLoopCycleModel(nowMs());
+  return {
+    reset_timezone: 'UTC',
+    daily_objectives: sanitizeCycleWindow(source.daily_objectives, base.daily_objectives),
+    weekly_faction_pressure: sanitizeCycleWindow(source.weekly_faction_pressure, base.weekly_faction_pressure),
+    monthly_clout_chase: sanitizeCycleWindow(source.monthly_clout_chase, base.monthly_clout_chase),
+    seasonal_campaign_pressure: sanitizeCycleWindow(source.seasonal_campaign_pressure, base.seasonal_campaign_pressure),
+  };
+}
+
+function sanitizeNextAction(input) {
+  if (!input || typeof input !== 'object') return null;
+  const urgency = ['normal', 'high', 'critical'].includes(String(input.urgency)) ? String(input.urgency) : 'normal';
+  return {
+    path: String(input.path || 'daily').replace(/[^a-z0-9_-]/gi, '').slice(0, 32) || 'daily',
+    label: String(input.label || 'Run any active arcade game to continue the loop').slice(0, 140),
+    task_id: input.task_id ? String(input.task_id).slice(0, 80) : null,
+    game: input.game ? normalizeGame(input.game) : null,
+    urgency,
+  };
+}
+
 function sanitizeEngagement(input, fallback) {
   const source = input && typeof input === 'object' ? input : {};
   const limits = getRogueliteLimits();
@@ -271,6 +355,8 @@ function sanitizeEngagement(input, fallback) {
     streak_days: Math.max(0, Math.floor(Number(source.streak_days) || 0)),
     last_completed_day: typeof source.last_completed_day === 'string' ? source.last_completed_day : null,
     total_auto_submits: Math.max(0, Math.floor(Number(source.total_auto_submits) || 0)),
+    loop_cycle: sanitizeLoopCycle(source.loop_cycle, fallback.loop_cycle),
+    next_action: sanitizeNextAction(source.next_action),
   };
 }
 
@@ -282,6 +368,8 @@ function sanitizeState(input) {
     weekly: sanitizeWindow(input.weekly, base.weekly),
     monthly: sanitizeWindow(input.monthly, base.monthly),
     seasonal: sanitizeWindow(input.seasonal, base.seasonal),
+    yearly: sanitizeWindow(input.yearly, base.yearly),
+    clout: sanitizeClout(input?.clout, base.clout),
     quests: {
       active: Array.isArray(input?.quests?.active) ? input.quests.active.filter(Boolean) : [],
       completed: Array.isArray(input?.quests?.completed) ? input.quests.completed.filter(Boolean).slice(-200) : [],
@@ -300,6 +388,30 @@ function sanitizeState(input) {
         : null,
     },
     engagement: sanitizeEngagement(input?.engagement, base.engagement),
+  };
+}
+
+function sanitizeClout(current, fallback) {
+  const source = current && typeof current === 'object' ? current : {};
+  const numberMap = (value) => {
+    const out = {};
+    if (value && typeof value === 'object') {
+      for (const [key, raw] of Object.entries(value)) {
+        const n = Math.max(0, Math.floor(Number(raw) || 0));
+        if (key) out[key] = n;
+      }
+    }
+    return out;
+  };
+  return {
+    daily: sanitizeWindow(source.daily, fallback.daily),
+    weekly: sanitizeWindow(source.weekly, fallback.weekly),
+    monthly: sanitizeWindow(source.monthly, fallback.monthly),
+    seasonal: sanitizeWindow(source.seasonal, fallback.seasonal),
+    yearly: sanitizeWindow(source.yearly, fallback.yearly),
+    streak: Math.max(0, Math.floor(Number(source.streak) || 0)),
+    faction: numberMap(source.faction),
+    game_mastery: numberMap(source.game_mastery),
   };
 }
 
@@ -527,6 +639,63 @@ function clearExpiredRareEvent(state, now) {
 }
 
 
+function getUtcWindowStartMs(kind, now = nowMs()) {
+  const d = new Date(now);
+  if (kind === 'weekly') {
+    const day = d.getUTCDay() || DAYS_PER_WEEK;
+    return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - day + 1);
+  }
+  if (kind === 'monthly') return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1);
+  if (kind === 'seasonal') {
+    const seasonIndex = Math.floor((now - SEASON_EPOCH_MS) / (DAYS_PER_SEASON * MS_PER_DAY));
+    return SEASON_EPOCH_MS + (seasonIndex * DAYS_PER_SEASON * MS_PER_DAY);
+  }
+  if (kind === 'yearly') return Date.UTC(d.getUTCFullYear(), 0, 1);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
+function createCycleWindow(kind, now, key, points, target, label) {
+  const startsAt = getUtcWindowStartMs(kind, now);
+  const duration = kind === 'weekly' ? DAYS_PER_WEEK * MS_PER_DAY
+    : kind === 'monthly' ? (Date.UTC(new Date(now).getUTCFullYear(), new Date(now).getUTCMonth() + 1, 1) - startsAt)
+      : kind === 'seasonal' ? DAYS_PER_SEASON * MS_PER_DAY
+        : kind === 'yearly' ? (Date.UTC(new Date(now).getUTCFullYear() + 1, 0, 1) - startsAt)
+          : MS_PER_DAY;
+  return {
+    key,
+    label,
+    points: Math.max(0, Math.floor(Number(points) || 0)),
+    target: Math.max(1, Math.floor(Number(target) || 1)),
+    starts_at: startsAt,
+    resets_at: startsAt + duration,
+    reset_timezone: 'UTC',
+    progress: clamp((Number(points) || 0) / Math.max(1, Number(target) || 1), 0, 1),
+  };
+}
+
+function getCycleTargets() {
+  const targets = config.roguelite?.cycleTargets || {};
+  return {
+    daily: Number(targets.dailyObjectivePoints) || 12000,
+    weekly: Number(targets.weeklyFactionPressure) || 85000,
+    monthly: Number(targets.monthlyCloutChase) || 320000,
+    seasonal: Number(targets.seasonalCampaignPreview ?? targets.seasonalCampaignPressure) || 950000,
+  };
+}
+
+function createLoopCycleModel(now = nowMs(), state = null) {
+  const targets = getCycleTargets();
+  const source = state || {};
+  return {
+    reset_timezone: 'UTC',
+    daily_objectives: createCycleWindow('daily', now, toUtcDateKey(now), source.daily?.points || 0, targets.daily, 'Daily objectives'),
+    weekly_faction_pressure: createCycleWindow('weekly', now, toUtcWeekKey(now), source.weekly?.points || 0, targets.weekly, 'Weekly faction pressure'),
+    monthly_clout_chase: createCycleWindow('monthly', now, toUtcMonthKey(now), source.monthly?.points || 0, targets.monthly, 'Monthly clout preview'),
+    seasonal_campaign_pressure: createCycleWindow('seasonal', now, toSeasonKey(now), source.seasonal?.points || 0, targets.seasonal, 'Seasonal preview pressure'),
+  };
+}
+
+
 const DAILY_ROGUELITE_QUESTS = [
   { id: 'daily-play-any', type: 'multi_game_burst', path: 'easy', title: 'Play 3 arcade runs', description: 'Safe XP path: complete 3 accepted runs today.', required_runs: 3, required_unique_games: 1, window_ms: MS_PER_DAY },
   { id: 'daily-three-games', type: 'multi_game_burst', path: 'easy', title: 'Play 3 different games', description: 'Auto-submits and opens multiple paths.', required_runs: 3, required_unique_games: 3, window_ms: MS_PER_DAY },
@@ -553,9 +722,12 @@ const RABBIT_HOLE_TEMPLATES = [
 ];
 
 const BRANCH_PATH_TEMPLATES = {
-  easy: { type: 'multi_game_burst', path: 'easy', title: 'Easy branch: 2 steady runs', description: 'Safe XP path. Keep the ticker moving without gambling the streak.', required_runs: 2, required_unique_games: 1, window_ms: 7 * MINUTE_MS },
+  easy: { type: 'multi_game_burst', path: 'easy', title: 'Safe XP branch: 2 steady runs', description: 'Safe XP path. Keep the ticker moving without gambling the streak.', required_runs: 2, required_unique_games: 1, window_ms: 7 * MINUTE_MS },
   risk: { type: 'score_target', path: 'risk', title: 'Risk branch: spike {GAME} to {TARGET}+', description: 'Harder chase, bigger bonus, faster XP pressure.', target: 1500 },
   faction: { type: 'multi_game_burst', path: 'faction', title: 'Faction branch: 3 runs / 2 games', description: 'Feed faction momentum and open the next war path.', required_runs: 3, required_unique_games: 2, window_ms: 9 * MINUTE_MS },
+  competitive: { type: 'score_target', path: 'competitive', title: 'Leaderboard branch: push {GAME} to {TARGET}+', description: 'Competitive clout route. Chase the board and improve mastery.', target: 1250 },
+  exploration: { type: 'btqm_zone_clear', path: 'exploration', title: 'Exploration branch: clear a BTQM zone', description: 'Rabbit-hole/wiki route into dungeon clues and lore context.', game: 'btqm', target: 1 },
+  comeback: { type: 'multi_game_burst', path: 'comeback', title: 'Comeback branch: 2 runs now', description: 'Stabilize streak pressure and recover loop momentum.', required_runs: 2, required_unique_games: 1, window_ms: 6 * MINUTE_MS },
 };
 
 function formatTemplateTitle(template, game, target) {
@@ -627,7 +799,8 @@ function spawnRabbitHoles(state, completedTask, now, minCount, maxCount) {
 
 function createBranchOptions(state, completedTask, now) {
   if (!state.engagement) state.engagement = createInitialEngagement(now);
-  const branchPaths = ['easy', 'risk', 'faction'].slice(0, getRogueliteLimits().branchCount);
+  const branchPaths = ['easy', 'risk', 'faction', 'competitive', 'exploration', 'comeback']
+    .slice(0, getRogueliteLimits().branchCount);
   const spawned = [];
   const branches = branchPaths.map((path) => {
     const existing = state.engagement.rabbit_holes.find((task) => task && task.path === path && Number(task.expires_at) > now);
@@ -1033,6 +1206,66 @@ function isWeekend(timestamp) {
   return day === 0 || day === 6;
 }
 
+function updateCloutWindows(state, run, metaPoints, completedTasks, timestamp, payload = {}) {
+  if (!state.clout) state.clout = createInitialClout(timestamp);
+  updateWindow(state.clout.daily, toUtcDateKey(timestamp));
+  updateWindow(state.clout.weekly, toUtcWeekKey(timestamp));
+  updateWindow(state.clout.monthly, toUtcMonthKey(timestamp));
+  updateWindow(state.clout.seasonal, toSeasonKey(timestamp));
+  updateWindow(state.clout.yearly, toUtcYearKey(timestamp));
+
+  const c = config.roguelite?.clout || {};
+  const scoreClout = Math.floor((Number(run.raw_score) || 0) / Math.max(1, Number(c.scoreDivisor) || 100));
+  const metaClout = Math.floor((Number(metaPoints) || 0) / Math.max(1, Number(c.metaPointDivisor) || 250));
+  const streakClout = Math.floor((Number(state.streak?.session_chain) || 0) * (Number(c.streakUnit) || 2));
+  const taskClout = Math.floor((Array.isArray(completedTasks) ? completedTasks.length : 0) * (Number(c.taskUnit) || 15));
+  const linkedFactionClout = payload.linked && payload.accepted ? Math.floor(Number(c.factionLinkedUnit) || 10) : 0;
+  const masteryClout = Math.floor(Number(c.masteryUnit) || 12);
+  const total = Math.max(0, scoreClout + metaClout + streakClout + taskClout + linkedFactionClout + masteryClout);
+
+  state.clout.daily.points += total;
+  state.clout.weekly.points += total;
+  state.clout.monthly.points += total;
+  state.clout.seasonal.points += total;
+  state.clout.yearly.points += total;
+  state.clout.streak = Math.max(Number(state.clout.streak) || 0, streakClout);
+
+  const faction = String(payload.faction || '').trim().toLowerCase();
+  if (faction && faction !== 'unaligned') {
+    state.clout.faction[faction] = Math.max(0, Math.floor(Number(state.clout.faction[faction]) || 0) + linkedFactionClout + taskClout);
+  }
+  state.clout.game_mastery[run.game] = Math.max(0, Math.floor(Number(state.clout.game_mastery[run.game]) || 0) + masteryClout + scoreClout);
+  return { total, scoreClout, metaClout, streakClout, taskClout, linkedFactionClout, masteryClout };
+}
+
+function pickNextBestAction(state, now = nowMs()) {
+  const engagement = state?.engagement || {};
+  const comeback = getComebackPressure(now);
+  if (comeback) {
+    const task = (engagement.rabbit_holes || []).find((item) => item.path === 'comeback') || null;
+    return { path: 'comeback', label: comeback.label, task_id: task?.id || null, game: task?.game || null, urgency: comeback.urgency || 'high' };
+  }
+  const openDaily = (engagement.daily_quests || []).find((task) => task && !task.completed) || null;
+  const openBranch = (engagement.next_branches || [])[0] || null;
+  const openRabbit = (engagement.rabbit_holes || [])[0] || null;
+  const chosen = openBranch || openRabbit || openDaily;
+  if (!chosen) return { path: 'daily', label: 'Run any arcade game to roll the next branch', task_id: null, game: null, urgency: 'normal' };
+  return {
+    path: chosen.path || 'daily',
+    label: chosen.title || 'Keep the arcade loop moving',
+    task_id: chosen.id || null,
+    game: chosen.game || null,
+    urgency: chosen.path === 'risk' ? 'high' : 'normal',
+  };
+}
+
+function refreshLoopCycleState(state, timestamp) {
+  if (!state.engagement) state.engagement = createInitialEngagement(timestamp);
+  state.engagement.loop_cycle = createLoopCycleModel(timestamp, state);
+  state.engagement.next_action = pickNextBestAction(state, timestamp);
+  return state.engagement.loop_cycle;
+}
+
 function trackGameResult(payload = {}) {
   const player = String(payload.player || '').trim();
   const game = normalizeGame(payload.game);
@@ -1060,7 +1293,9 @@ function trackGameResult(payload = {}) {
   updateWindow(state.daily, dayKey);
   updateWindow(state.weekly, weekKey);
   updateWindow(state.monthly, monthKey);
+  const yearKey = toUtcYearKey(timestamp);
   updateWindow(state.seasonal, seasonKey);
+  updateWindow(state.yearly, yearKey);
   ensureEngagementDay(state, timestamp);
 
   maintainQuests(state, timestamp);
@@ -1113,6 +1348,10 @@ function trackGameResult(payload = {}) {
   state.weekly.points += metaPoints;
   state.monthly.points += metaPoints;
   state.seasonal.points += metaPoints;
+  state.yearly.points += metaPoints;
+
+  const cloutEarned = updateCloutWindows(state, run, metaPoints, engagementLoop.completed, timestamp, payload);
+  refreshLoopCycleState(state, timestamp);
 
   state.history.push({
     timestamp,
@@ -1128,6 +1367,7 @@ function trackGameResult(payload = {}) {
     event_bonus: Math.floor(streakAdjusted * Math.max(0, eventMultiplier - 1)),
     diminishing_multiplier: Number(diminishing.toFixed(4)),
     repeat_penalty_multiplier: Number(repeatPenalty.toFixed(4)),
+    clout: cloutEarned.total,
   });
   if (state.history.length > MAX_HISTORY) {
     state.history = state.history.slice(-MAX_HISTORY);
@@ -1180,12 +1420,22 @@ function trackGameResult(payload = {}) {
       player: resolvedPlayer,
     });
   }
+  dispatchMetaEvent('arcade-meta-loop-cycle-updated', {
+    cycle: state.engagement.loop_cycle,
+    clout: state.clout,
+    next_action: state.engagement.next_action,
+    game,
+    player: resolvedPlayer,
+  });
   dispatchMetaEvent('arcade-meta-tracked', {
     game,
     player: resolvedPlayer,
     meta_points: metaPoints,
     streak: state.streak.session_chain,
     daily: state.daily.points,
+    loop_cycle: state.engagement.loop_cycle,
+    clout: state.clout,
+    next_action: state.engagement.next_action,
     featured_chaos: metaLive.featured,
     // Prefer currently-active rare event context; fall back to newly-triggered event this run.
     rare_event: metaLive.activeRare || triggeredRareEvent || null,
@@ -1222,12 +1472,15 @@ function trackGameResult(payload = {}) {
       weekly: state.weekly.points,
       monthly: state.monthly.points,
       seasonal: state.seasonal.points,
+      yearly: state.yearly.points,
     },
     quests: {
       active: state.quests.active,
       completed_recent: state.quests.completed.slice(-10),
     },
     roguelite: state.engagement,
+    loop_cycle: state.engagement.loop_cycle,
+    clout: state.clout,
     streak: state.streak.session_chain,
     streak_bonus_percent: computeStreakBonusPercent(state.streak),
     retention: {
@@ -1347,6 +1600,9 @@ function getLiveContext(now = nowMs()) {
       completed_recent: state.engagement.completed_tasks.slice(-10),
       streak_days: state.engagement.streak_days,
       total_auto_submits: state.engagement.total_auto_submits,
+      loop_cycle: state.engagement.loop_cycle || refreshLoopCycleState(state, now),
+      next_action: state.engagement.next_action || pickNextBestAction(state, now),
+      clout: state.clout,
       streak_bonus_percent: computeStreakBonusPercent(state.streak),
     },
   };

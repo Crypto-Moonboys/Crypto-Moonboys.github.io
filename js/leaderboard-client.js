@@ -1,3 +1,8 @@
+// Runtime authority truth (May 2026): submitScore() is the shared browser
+// gateway for all active arcade runs. The leaderboard worker is authoritative for
+// accepted/rejected competitive scores; the moonboys API is authoritative for
+// server-side Arcade XP and faction earn. ArcadeMeta updates here are local
+// presentation/cache state, and ArcadeSync queues are synced when auth allows.
 import { ArcadeMeta } from '/js/arcade-meta-system.js';
 import { ArcadeSync } from '/js/arcade-sync.js';
 import '/js/arcade-meta-ui.js';
@@ -370,9 +375,12 @@ export async function submitScore(player, score, game = "global") {
     // Telegram linking is missing; sync to worker remains linked-only below.
     metaResult = ArcadeMeta.trackGameResult({
       player: resolvedPlayer,
-      game,
+      game: gameKey,
       raw_score: score,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      linked,
+      accepted: result.accepted,
+      faction: getCurrentFactionKey(),
     });
   } catch (err) {
     console.error("[leaderboard-client] Meta tracking failed:", err);
