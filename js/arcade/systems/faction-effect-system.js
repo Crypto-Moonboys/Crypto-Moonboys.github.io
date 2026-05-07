@@ -39,29 +39,29 @@
  */
 export var FACTION_DEFS = Object.freeze({
 
-  'diamond-hands': Object.freeze({
-    key:             'diamond-hands',
-    label:           'Diamond Hands',
-    bonusText:       '💎 Diamond Hands: Endurance score bonus active',
+  'hard-fork-rockers': Object.freeze({
+    key:             'hard-fork-rockers',
+    label:           'Hard Fork Rockers',
+    bonusText:       '🪨 Hard Fork Rockers: Endurance stability active',
     scoreMultiplier: 1.0,
-    survivalBonus:   0.12,   // +12 % after 30 s alive
-    chaosModifier:   0.80,   // 20 % less chaos exposure
+    survivalBonus:   0.12,
+    chaosModifier:   0.82,
     shieldBonus:     0,
-    comboModifier:   0.90,   // reduced early burst
-    xpModifier:      1.05,   // metadata only
+    comboModifier:   0.92,
+    xpModifier:      1.05,
     rewardBias:      'endurance',
   }),
 
-  'hodl-warriors': Object.freeze({
-    key:             'hodl-warriors',
-    label:           'HODL Warriors',
-    bonusText:       '⚔️ HODL Warriors: +Shield & survivability active',
+  'rugpull-minors': Object.freeze({
+    key:             'rugpull-minors',
+    label:           'Rugpull Minors',
+    bonusText:       '⛏️ Rugpull Minors: Shielded recovery active',
     scoreMultiplier: 1.0,
-    survivalBonus:   0.15,   // +15 % survival-biased score bonus
-    chaosModifier:   0.85,   // 15 % less chaos
-    shieldBonus:     1,      // +1 starting shield where supported
-    comboModifier:   1.05,   // slight streak/contribution bias
-    xpModifier:      1.0,    // metadata only
+    survivalBonus:   0.15,
+    chaosModifier:   0.88,
+    shieldBonus:     1,
+    comboModifier:   1.05,
+    xpModifier:      1.02,
     rewardBias:      'contribution',
   }),
 
@@ -71,11 +71,89 @@ export var FACTION_DEFS = Object.freeze({
     bonusText:       '🎨 GraffPUNKS: Chaos & combo bonus active',
     scoreMultiplier: 1.0,
     survivalBonus:   0.0,
-    chaosModifier:   1.25,   // 25 % more chaos
+    chaosModifier:   1.25,
     shieldBonus:     0,
-    comboModifier:   1.25,   // +25 % combo multiplier
-    xpModifier:      1.02,   // metadata only
+    comboModifier:   1.25,
+    xpModifier:      1.03,
     rewardBias:      'chaos',
+  }),
+
+  'blockchain-furies': Object.freeze({
+    key:             'blockchain-furies',
+    label:           'Blockchain Furies',
+    bonusText:       '🔥 Blockchain Furies: Speed and revenge chain active',
+    scoreMultiplier: 1.03,
+    survivalBonus:   0.08,
+    chaosModifier:   1.12,
+    shieldBonus:     0,
+    comboModifier:   1.14,
+    xpModifier:      1.04,
+    rewardBias:      'chaos',
+  }),
+
+  'crypto-moongirls': Object.freeze({
+    key:             'crypto-moongirls',
+    label:           'Crypto Moongirls',
+    bonusText:       '🌙 Crypto Moongirls: Precision control active',
+    scoreMultiplier: 1.04,
+    survivalBonus:   0.08,
+    chaosModifier:   0.92,
+    shieldBonus:     0,
+    comboModifier:   1.08,
+    xpModifier:      1.03,
+    rewardBias:      'contribution',
+  }),
+
+  blockstars: Object.freeze({
+    key:             'blockstars',
+    label:           'The Blockstars',
+    bonusText:       '⭐ The Blockstars: Spotlight clout active',
+    scoreMultiplier: 1.08,
+    survivalBonus:   0.03,
+    chaosModifier:   1.0,
+    shieldBonus:     0,
+    comboModifier:   1.1,
+    xpModifier:      1.06,
+    rewardBias:      'contribution',
+  }),
+
+  'all-city-bulls': Object.freeze({
+    key:             'all-city-bulls',
+    label:           'All City Bulls',
+    bonusText:       '🐂 All City Bulls: Territory pressure active',
+    scoreMultiplier: 1.1,
+    survivalBonus:   0.05,
+    chaosModifier:   1.08,
+    shieldBonus:     0,
+    comboModifier:   1.12,
+    xpModifier:      1.04,
+    rewardBias:      'contribution',
+  }),
+
+  'nomad-bears': Object.freeze({
+    key:             'nomad-bears',
+    label:           'Nomad Bears',
+    bonusText:       '🐻 Nomad Bears: Route variety stability active',
+    scoreMultiplier: 1.02,
+    survivalBonus:   0.1,
+    chaosModifier:   0.95,
+    shieldBonus:     1,
+    comboModifier:   1.04,
+    xpModifier:      1.03,
+    rewardBias:      'endurance',
+  }),
+
+  'crypto-stoned-boys': Object.freeze({
+    key:             'crypto-stoned-boys',
+    label:           'Crypto Stoned Boys',
+    bonusText:       '😶‍🌫️ Crypto Stoned Boys: Chill random branch active',
+    scoreMultiplier: 1.01,
+    survivalBonus:   0.12,
+    chaosModifier:   1.03,
+    shieldBonus:     1,
+    comboModifier:   1.02,
+    xpModifier:      1.02,
+    rewardBias:      'endurance',
   }),
 
   unaligned: Object.freeze({
@@ -97,9 +175,8 @@ export var FACTION_DEFS = Object.freeze({
 
 function _normalise(factionId) {
   var v = String(factionId || 'unaligned').toLowerCase().trim();
-  // Accept alternate spellings used elsewhere in the codebase
-  if (v === 'diamond_hands' || v === 'diamondhands') return 'diamond-hands';
-  if (v === 'hodl_warriors' || v === 'hodlwarriors') return 'hodl-warriors';
+  if (v === 'diamond-hands' || v === 'diamond_hands' || v === 'diamondhands') return 'hard-fork-rockers';
+  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') return 'rugpull-minors';
   if (v === 'graff-punks' || v === 'graff_punks') return 'graffpunks';
   return FACTION_DEFS[v] ? v : 'unaligned';
 }
@@ -123,7 +200,7 @@ export function getFactionEffects(factionId, context) {
 /**
  * Apply faction score modifier to a base score.
  *
- * DiamondHands endurance bonus activates after timeAlive > 30 seconds.
+ * Endurance faction bonus activates after timeAlive > 30 seconds.
  * All other factions use the base scoreMultiplier only.
  *
  * @param {number} baseScore

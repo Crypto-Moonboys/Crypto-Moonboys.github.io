@@ -31,7 +31,17 @@ var CONTRIBUTION_SOURCES = Object.freeze([
   'global_event',
 ]);
 
-var FACTION_KEYS = Object.freeze(['diamond-hands', 'hodl-warriors', 'graffpunks']);
+var FACTION_KEYS = Object.freeze([
+  'hard-fork-rockers',
+  'rugpull-minors',
+  'graffpunks',
+  'blockchain-furies',
+  'crypto-moongirls',
+  'blockstars',
+  'all-city-bulls',
+  'nomad-bears',
+  'crypto-stoned-boys',
+]);
 
 // ── Storage helpers ──────────────────────────────────────────────────────────
 
@@ -238,7 +248,7 @@ export function getMomentum(factionId) {
 
 /**
  * Return the key of the faction with the highest total power.
- * Returns 'diamond-hands' as the default if all are equal (or no data).
+ * Returns 'hard-fork-rockers' as the default if all are equal (or no data).
  * @returns {string}
  */
 export function getDominantFaction() {
@@ -250,7 +260,7 @@ export function getDominantFaction() {
     var pow = (state.factions[k] && state.factions[k].power) || 0;
     if (pow > bestPower) { bestPower = pow; best = k; }
   }
-  return best || 'diamond-hands';
+  return best || 'hard-fork-rockers';
 }
 
 /**
@@ -284,8 +294,8 @@ export function resetDailyCycle() {
 
 function _normaliseFactionKey(id) {
   var v = String(id || '').toLowerCase().trim();
-  if (v === 'diamond_hands' || v === 'diamondhands') v = 'diamond-hands';
-  if (v === 'hodl_warriors' || v === 'hodlwarriors') v = 'hodl-warriors';
+  if (v === 'diamond-hands' || v === 'diamond_hands' || v === 'diamondhands') v = 'hard-fork-rockers';
+  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') v = 'rugpull-minors';
   if (v === 'graff-punks' || v === 'graff_punks') v = 'graffpunks';
   return FACTION_KEYS.indexOf(v) !== -1 ? v : null;
 }

@@ -184,8 +184,8 @@ MOONBOYS_EVENT_BUS.emit('arcade:faction-signal', { gameId, factionId, amount, ts
 
 If `window.MOONBOYS_LAS_ADD_EVENT` exists (Live Activity Summary local entries), games may add entries like:
 - `"GraffPUNKS chaos perk triggered"` (type: `arcade`)
-- `"HODL Warriors shield perk saved a run"` (type: `arcade`)
-- `"Diamond Hands survival bonus active"` (type: `arcade`)
+- `"Rugpull Minors shield perk saved a run"` (type: `arcade`)
+- `"Hard Fork Rockers survival bonus active"` (type: `arcade`)
 
 ---
 
@@ -195,13 +195,13 @@ Faction perks must be implemented using shared helpers from `faction-effect-syst
 
 ### Faction identities:
 
-#### Diamond Hands
+#### Hard Fork Rockers
 - Theme: Endurance, patience, survival, late-game scaling.
 - Perk behaviour: reduced chaos pressure (−20%), survival score bonus after 30 s (+12%), no shieldBonus.
 - Upgrade bias: favour score/endurance upgrade options.
 - Best for: players who survive long and play clean.
 
-#### HODL Warriors
+#### Rugpull Minors
 - Theme: Defense, shields, protection, recovery.
 - Perk behaviour: +1 starting shield where supported (shieldBonus: 1), slight combo bias (+5%), 15% chaos reduction.
 - Upgrade bias: favour survival upgrade options.
@@ -215,7 +215,7 @@ Faction perks must be implemented using shared helpers from `faction-effect-syst
 
 ### Game-specific perk mapping:
 
-| Game | Diamond Hands | HODL Warriors | GraffPUNKS |
+| Game | Hard Fork Rockers | Rugpull Minors | GraffPUNKS |
 |------|---------------|----------------|------------|
 | Invaders 3008 | Survival bonus after 30s + reduced chaos | +1 bunker shield durability | More chaos invaders + combo window |
 | Pac-Chain | Routing streak bonus on long runs | Shield pickup bias + ghost collision buffer | More golden pellets + chain bonus |

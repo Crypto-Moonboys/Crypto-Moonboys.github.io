@@ -50,10 +50,16 @@ export const UPGRADE_CATEGORIES = Object.freeze({
  * Used by getUpgradeChoices() to bias the 3 options toward the faction's style.
  */
 export const UPGRADE_CATEGORY_BIAS = Object.freeze({
-  'diamond-hands': Object.freeze(['score', 'survival', 'faction']),
-  'hodl-warriors': Object.freeze(['survival', 'faction', 'score']),
-  'graffpunks':    Object.freeze(['chaos', 'rare', 'faction']),
-  'unaligned':     Object.freeze(['survival', 'score', 'rare']),
+  'hard-fork-rockers': Object.freeze(['score', 'survival', 'faction']),
+  'rugpull-minors': Object.freeze(['survival', 'faction', 'score']),
+  graffpunks: Object.freeze(['chaos', 'rare', 'faction']),
+  'blockchain-furies': Object.freeze(['chaos', 'score', 'faction']),
+  'crypto-moongirls': Object.freeze(['score', 'faction', 'survival']),
+  blockstars: Object.freeze(['score', 'rare', 'faction']),
+  'all-city-bulls': Object.freeze(['score', 'chaos', 'faction']),
+  'nomad-bears': Object.freeze(['survival', 'score', 'rare']),
+  'crypto-stoned-boys': Object.freeze(['rare', 'survival', 'faction']),
+  unaligned: Object.freeze(['survival', 'score', 'rare']),
 });
 
 // ── Upgrade catalogue ─────────────────────────────────────────────────────────
@@ -172,7 +178,7 @@ export const ARCADE_UPGRADE_DEFS = Object.freeze([
     description:        '+12% score bonus applies after 45s alive in this run.',
     tags:               Object.freeze(['shooter', 'breakout', 'physics', 'snake', 'maze', 'puzzle']),
     compatibleGames:    Object.freeze([]),
-    compatibleFactions: Object.freeze(['diamond-hands', 'unaligned']),
+    compatibleFactions: Object.freeze(['hard-fork-rockers', 'unaligned']),
     rarity:             'uncommon',
     category:           'score',
     effectType:         'endurance_score_bonus',
@@ -299,12 +305,12 @@ export const ARCADE_UPGRADE_DEFS = Object.freeze([
   // ── Faction ──────────────────────────────────────────────────────────────────
 
   Object.freeze({
-    id:                 'diamond_hold',
-    label:              'Diamond Hold',
+    id:                 'fork_hold',
+    label:              'Fork Hold',
     description:        'Endurance bonus activates 10s earlier this run.',
     tags:               Object.freeze(['shooter', 'snake', 'breakout', 'maze', 'physics', 'puzzle']),
     compatibleGames:    Object.freeze([]),
-    compatibleFactions: Object.freeze(['diamond-hands']),
+    compatibleFactions: Object.freeze(['hard-fork-rockers']),
     rarity:             'rare',
     category:           'faction',
     effectType:         'endurance_early_activation',
@@ -313,12 +319,12 @@ export const ARCADE_UPGRADE_DEFS = Object.freeze([
   }),
 
   Object.freeze({
-    id:                 'hodl_guard',
-    label:              'HODL Guard',
+    id:                 'miner_guard',
+    label:              'Miner Guard',
     description:        'Next shield break is blocked once (auto-block).',
     tags:               Object.freeze(['shooter', 'snake', 'breakout', 'physics']),
     compatibleGames:    Object.freeze([]),
-    compatibleFactions: Object.freeze(['hodl-warriors']),
+    compatibleFactions: Object.freeze(['rugpull-minors']),
     rarity:             'rare',
     category:           'faction',
     effectType:         'auto_block_next_hit',
@@ -476,8 +482,8 @@ export function getUpgradeChoices(opts) {
 
 function _normaliseFaction(id) {
   var v = String(id || 'unaligned').toLowerCase().trim();
-  if (v === 'diamond_hands' || v === 'diamondhands') return 'diamond-hands';
-  if (v === 'hodl_warriors' || v === 'hodlwarriors') return 'hodl-warriors';
+  if (v === 'diamond-hands' || v === 'diamond_hands' || v === 'diamondhands') return 'hard-fork-rockers';
+  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') return 'rugpull-minors';
   if (v === 'graff-punks' || v === 'graff_punks') return 'graffpunks';
   if (UPGRADE_CATEGORY_BIAS[v]) return v;
   return 'unaligned';

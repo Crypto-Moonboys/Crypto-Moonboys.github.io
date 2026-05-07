@@ -5,12 +5,41 @@
   var BASE = cfg.BASE_URL || '';
   var KEY = 'moonboys_faction_status_v1';
 
+  var LIVE_FACTION_ORDER = Object.freeze([
+    'hard-fork-rockers',
+    'rugpull-minors',
+    'graffpunks',
+    'blockchain-furies',
+    'crypto-moongirls',
+    'blockstars',
+    'all-city-bulls',
+    'nomad-bears',
+    'crypto-stoned-boys',
+  ]);
+
   var FACTIONS = {
-    'diamond-hands': { key: 'diamond-hands', label: 'Diamond Hands', icon: '💎', color: '#56dcff', bonus: '+XP stability (less decay, better long-term gain)' },
-    'hodl-warriors': { key: 'hodl-warriors', label: 'HODL Warriors', icon: '⚔️', color: '#ff6ad5', bonus: '+combat rewards and XP bursts' },
-    graffpunks: { key: 'graffpunks', label: 'GraffPUNKS', icon: '🎨', color: '#7dff72', bonus: '+event rewards and mission bonuses' },
+    'hard-fork-rockers': { key: 'hard-fork-rockers', label: 'Hard Fork Rockers', icon: '🪨', color: '#56dcff', bonus: '+endurance stability and streak protection' },
+    'rugpull-minors': { key: 'rugpull-minors', label: 'Rugpull Minors', icon: '⛏️', color: '#ff6ad5', bonus: '+defensive recovery and shield support' },
+    graffpunks: { key: 'graffpunks', label: 'GraffPUNKS', icon: '🎨', color: '#7dff72', bonus: '+chaos bursts and combo pressure' },
+    'blockchain-furies': { key: 'blockchain-furies', label: 'Blockchain Furies', icon: '🔥', color: '#ff9f43', bonus: '+speed pressure and revenge momentum' },
+    'crypto-moongirls': { key: 'crypto-moongirls', label: 'Crypto Moongirls', icon: '🌙', color: '#b88dff', bonus: '+precision control and penalty resistance' },
+    blockstars: { key: 'blockstars', label: 'The Blockstars', icon: '⭐', color: '#ffd166', bonus: '+featured clout tracks and spotlight scoring' },
+    'all-city-bulls': { key: 'all-city-bulls', label: 'All City Bulls', icon: '🐂', color: '#ff6b6b', bonus: '+score pressure and war push' },
+    'nomad-bears': { key: 'nomad-bears', label: 'Nomad Bears', icon: '🐻', color: '#8ecf7a', bonus: '+route variety and consistency rewards' },
+    'crypto-stoned-boys': { key: 'crypto-stoned-boys', label: 'Crypto Stoned Boys', icon: '😶‍🌫️', color: '#8fd3ff', bonus: '+chill streak comfort and random branch luck' },
     unaligned: { key: 'unaligned', label: 'Unaligned', icon: '◌', color: '#7f8a96', bonus: 'No faction bonus active' },
   };
+
+  var FACTION_ALIASES = Object.freeze({
+    'diamond-hands': 'hard-fork-rockers',
+    diamond_hands: 'hard-fork-rockers',
+    diamondhands: 'hard-fork-rockers',
+    'hodl-warriors': 'rugpull-minors',
+    hodl_warriors: 'rugpull-minors',
+    hodlwarriors: 'rugpull-minors',
+    'graff-punks': 'graffpunks',
+    graff_punks: 'graffpunks',
+  });
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -28,9 +57,7 @@
 
   function normalizeFaction(value) {
     var v = String(value || '').toLowerCase().trim();
-    if (v === 'diamond_hands' || v === 'diamondhands') return 'diamond-hands';
-    if (v === 'hodl_warriors' || v === 'hodlwarriors') return 'hodl-warriors';
-    if (v === 'graff-punks' || v === 'graff_punks') return 'graffpunks';
+    if (FACTION_ALIASES[v]) return FACTION_ALIASES[v];
     if (FACTIONS[v]) return v;
     return 'unaligned';
   }
@@ -152,13 +179,12 @@
     var linked = isLinked();
     var unaligned = faction.key === 'unaligned';
     var glowClass = linked && !unaligned ? ' faction-state--active sync-live' : ' faction-state--dim';
-    var joinPrompt = unaligned ? '<div class="faction-join-prompt">Choose a faction to unlock alignment bonuses.</div>' : '';
+    var joinPrompt = unaligned ? '<div class="faction-join-prompt">Choose a faction to unlock missions, clout, perks, and Battle Chamber proof.</div>' : '';
     var actions = (opts && opts.showJoinActions && unaligned)
-      ? '<div class="faction-join-actions">' +
-          '<button class="faction-join-btn interactive" data-faction="diamond-hands">Join Diamond Hands</button>' +
-          '<button class="faction-join-btn interactive" data-faction="hodl-warriors">Join HODL Warriors</button>' +
-          '<button class="faction-join-btn interactive" data-faction="graffpunks">Join GraffPUNKS</button>' +
-        '</div>'
+      ? '<div class="faction-join-actions">' + LIVE_FACTION_ORDER.map(function (key) {
+          var meta = FACTIONS[key];
+          return '<button class="faction-join-btn interactive" data-faction="' + esc(meta.key) + '">Join ' + esc(meta.label) + '</button>';
+        }).join('') + '</div>'
       : '';
 
     return '' +
