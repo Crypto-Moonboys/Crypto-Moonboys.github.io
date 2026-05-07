@@ -9,7 +9,6 @@
     :root {
       --bg-0: #03060d;
       --bg-1: #0a1220;
-      --bg-2: #0f1d33;
       --panel: rgba(10, 18, 32, 0.92);
       --panel-2: rgba(13, 24, 42, 0.95);
       --line: rgba(96, 213, 255, 0.26);
@@ -17,9 +16,9 @@
       --text: #e7f4ff;
       --muted: #8eb1cd;
       --accent: #60d5ff;
-      --accent-2: #ffcf5a;
       --danger: #ff758d;
       --ok: #6dffa2;
+      --warn: #ffcf5a;
       --radius: 14px;
       --radius-sm: 10px;
     }
@@ -39,68 +38,14 @@
     }
 
     .app {
-      max-width: 1700px;
+      max-width: 1320px;
       margin: 0 auto;
       display: grid;
       gap: 12px;
     }
 
-    .hero {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(15, 29, 51, 0.95), rgba(7, 13, 23, 0.95));
-      padding: 16px;
-      display: grid;
-      gap: 10px;
-    }
-
-    .hero-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 1.25rem;
-      letter-spacing: 0.02em;
-      color: var(--accent);
-    }
-
-    .muted {
-      color: var(--muted);
-      font-size: 0.86rem;
-      line-height: 1.45;
-    }
-
-    .chip-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 5px 10px;
-      font-size: 0.74rem;
-      color: var(--muted);
-      background: rgba(10, 20, 35, 0.6);
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 1.4fr 1fr 1fr;
-      gap: 12px;
-      align-items: start;
-    }
-
-    .panel {
+    .panel,
+    details.panel {
       border: 1px solid var(--line);
       border-radius: var(--radius);
       background: linear-gradient(180deg, var(--panel), var(--panel-2));
@@ -110,24 +55,45 @@
       box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
     }
 
-    .panel h2 {
+    h1, h2, h3 {
       margin: 0;
-      font-size: 0.96rem;
-      letter-spacing: 0.03em;
       color: var(--accent);
     }
 
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+    h1 { font-size: 1.2rem; }
+    h2 { font-size: 0.98rem; }
+    h3 { font-size: 0.9rem; }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.45;
     }
 
-    .row3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 9px;
+      color: var(--muted);
+      font-size: 0.74rem;
+      background: rgba(10, 20, 35, 0.6);
     }
+
+    .badge-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .badge {
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 0.74rem;
+      border: 1px solid var(--line);
+    }
+    .badge.safe { color: var(--ok); border-color: rgba(109,255,162,0.5); }
+    .badge.warn { color: #ffd88b; border-color: rgba(255,207,90,0.5); }
+    .badge.sandbox { color: #8fd8ff; border-color: rgba(96,213,255,0.5); }
+    .badge.danger { color: #ffb3c0; border-color: rgba(255,117,141,0.6); }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 
     label {
       display: block;
@@ -138,10 +104,7 @@
       letter-spacing: 0.04em;
     }
 
-    input,
-    select,
-    textarea,
-    button {
+    input, select, textarea, button {
       width: 100%;
       border-radius: var(--radius-sm);
       border: 1px solid var(--line);
@@ -151,19 +114,7 @@
       font: inherit;
     }
 
-    input:focus,
-    select:focus,
-    textarea:focus {
-      outline: none;
-      border-color: var(--line-strong);
-      box-shadow: 0 0 0 2px rgba(96, 213, 255, 0.2);
-    }
-
-    textarea {
-      min-height: 88px;
-      resize: vertical;
-      line-height: 1.45;
-    }
+    textarea { min-height: 88px; resize: vertical; line-height: 1.45; }
 
     button {
       cursor: pointer;
@@ -171,13 +122,6 @@
       background: linear-gradient(180deg, rgba(96, 213, 255, 0.92), rgba(66, 169, 214, 0.92));
       color: #041019;
       font-weight: 700;
-      letter-spacing: 0.01em;
-      transition: transform 0.12s ease, filter 0.12s ease;
-    }
-
-    button:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.04);
     }
 
     button.warn {
@@ -190,6 +134,26 @@
       border-color: rgba(255, 117, 141, 0.65);
     }
 
+    .start-btn {
+      min-height: 90px;
+      text-align: left;
+      display: grid;
+      gap: 4px;
+      align-content: center;
+      padding: 12px;
+    }
+
+    .start-btn .title { font-size: 0.96rem; font-weight: 700; color: #041019; }
+    .start-btn .desc { font-size: 0.78rem; font-weight: 600; opacity: 0.88; color: #0d2434; }
+
+    .path {
+      border: 1px dashed rgba(96, 213, 255, 0.35);
+      border-radius: var(--radius-sm);
+      padding: 9px;
+      color: #cce7ff;
+      font-size: 0.84rem;
+    }
+
     .check {
       display: flex;
       align-items: center;
@@ -198,10 +162,7 @@
       font-size: 0.82rem;
     }
 
-    .check input {
-      width: auto;
-      accent-color: var(--accent);
-    }
+    .check input { width: auto; }
 
     .out {
       border: 1px solid rgba(96, 213, 255, 0.2);
@@ -218,45 +179,116 @@
       color: #cfe9ff;
     }
 
-    .ops-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    details > summary {
+      cursor: pointer;
+      list-style: none;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 8px;
     }
 
-    .subtle {
-      border-top: 1px dashed rgba(96, 213, 255, 0.25);
-      padding-top: 10px;
+    details > summary::-webkit-details-marker { display: none; }
+    .summary-hint { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
+    .stack { display: grid; gap: 10px; }
+
+    @media (max-width: 1100px) {
+      .grid4 { grid-template-columns: 1fr 1fr; }
+      .grid2 { grid-template-columns: 1fr; }
     }
 
-    @media (max-width: 1360px) {
-      .layout { grid-template-columns: 1fr; }
-      .row3 { grid-template-columns: 1fr; }
-      .row { grid-template-columns: 1fr; }
-      .ops-grid { grid-template-columns: 1fr; }
+    @media (max-width: 700px) {
+      .grid4 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <section class="hero">
-      <div class="hero-top">
-        <h1>Hermes Admin Console</h1>
-        <div class="chip-row">
-          <span class="chip">Tool-Using Runtime</span>
-          <span class="chip">Server-Gated Actions</span>
-          <span class="chip">Approval-Aware Ops</span>
-        </div>
+    <section class="panel">
+      <h1>Hermes Admin Console</h1>
+      <div class="muted">Wizard-style operator flow for GK. Advanced controls are still available below but collapsed by default.</div>
+      <div class="chips">
+        <span class="chip">Admin Only</span>
+        <span class="chip">Server-Gated Actions</span>
+        <span class="chip">No Public Site Changes</span>
       </div>
-      <div class="muted">
-        Unified admin workspace for Hermes chat, action execution, repo routing, approval checks, and runtime health. This page is admin-only and does not alter the public site shell.
+      <div class="badge-row">
+        <span class="badge safe">Safe: reads only</span>
+        <span class="badge warn">Needs approval: changes files</span>
+        <span class="badge sandbox">Sandbox only</span>
+        <span class="badge danger">Do not use unless fixing a failed task</span>
       </div>
     </section>
 
-    <main class="layout">
-      <section class="panel">
-        <h2>Chat + Planning</h2>
-        <div class="row3">
+    <section class="panel">
+      <h2>Start Here</h2>
+      <div class="path">For most tasks: Start Here -> choose task -> build prompt -> review -> send to Hermes.</div>
+      <div class="grid4">
+        <button id="startFixBuildWebsite" class="start-btn warn" type="button">
+          <span class="title">Fix / Build Website</span>
+          <span class="desc">Needs approval: changes files</span>
+        </button>
+        <button id="startAskWebcrawl" class="start-btn" type="button">
+          <span class="title">Ask Webcrawl Agent</span>
+          <span class="desc">Safe: reads only</span>
+        </button>
+        <button id="startRunRepoCheck" class="start-btn" type="button">
+          <span class="title">Run Repo Check</span>
+          <span class="desc">Safe: reads only</span>
+        </button>
+        <button id="startManageSandbox" class="start-btn warn" type="button">
+          <span class="title">Manage Sandbox Task</span>
+          <span class="desc">Sandbox only</span>
+        </button>
+      </div>
+      <div class="grid2">
+        <button id="helperWhatShouldIPress" type="button">What should I press?</button>
+        <button id="sendChat" type="button">Send to Hermes</button>
+      </div>
+    </section>
+
+    <details class="panel" open>
+      <summary>
+        <span>Operator Prompt + Results</span>
+        <span class="summary-hint">Main working area</span>
+      </summary>
+      <div class="stack">
+        <div>
+          <label for="prompt">Prompt</label>
+          <textarea id="prompt" placeholder="Use Start Here buttons to build this automatically."></textarea>
+        </div>
+
+        <div>
+          <label>Chat Reply</label>
+          <pre id="chatLog" class="out"></pre>
+        </div>
+
+        <div>
+          <label>Action Plan</label>
+          <pre id="actionPlan" class="out"></pre>
+        </div>
+
+        <div>
+          <label>Tool Results</label>
+          <pre id="toolResults" class="out"></pre>
+        </div>
+
+        <div>
+          <label>Missing Requirements</label>
+          <pre id="missingRequirements" class="out"></pre>
+        </div>
+      </div>
+    </details>
+
+    <details class="panel">
+      <summary>
+        <span>Advanced Chat</span>
+        <span class="summary-hint">Collapsed by default</span>
+      </summary>
+      <div class="stack">
+        <div class="grid2">
           <div>
             <label for="model">Model</label>
             <select id="model"></select>
@@ -269,21 +301,22 @@
               <option value="admin">admin</option>
             </select>
           </div>
-          <div>
-            <label for="role">Role</label>
-            <select id="role">
-              <option>main_hermes</option>
-              <option>ui_agent</option>
-              <option>runtime_agent</option>
-              <option>test_agent</option>
-              <option>deploy_agent</option>
-              <option>watcher_agent</option>
-              <option>npc_agent</option>
-            </select>
-          </div>
         </div>
 
-        <div class="row">
+        <div>
+          <label for="role">Role</label>
+          <select id="role">
+            <option>main_hermes</option>
+            <option>ui_agent</option>
+            <option>runtime_agent</option>
+            <option>test_agent</option>
+            <option>deploy_agent</option>
+            <option>watcher_agent</option>
+            <option>npc_agent</option>
+          </select>
+        </div>
+
+        <div class="grid2">
           <div>
             <label for="approvalId">Approval ID</label>
             <input id="approvalId" placeholder="approval_xxx">
@@ -305,56 +338,60 @@
         </div>
 
         <div>
-          <label for="prompt">Prompt</label>
-          <textarea id="prompt" placeholder="Enter an operator instruction..."></textarea>
-        </div>
-
-        <button id="sendChat">Run Chat</button>
-
-        <div>
-          <label>Chat Reply</label>
-          <pre id="chatLog" class="out"></pre>
-        </div>
-
-        <div class="subtle">
-          <label>Action Plan</label>
-          <pre id="actionPlan" class="out"></pre>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2>Execution + Requirements</h2>
-        <div>
-          <label>Tool Results</label>
-          <pre id="toolResults" class="out"></pre>
-        </div>
-
-        <div>
-          <label>Missing Requirements</label>
-          <pre id="missingRequirements" class="out"></pre>
-        </div>
-
-        <div class="subtle">
           <label for="actionJson">Direct Action JSON</label>
           <textarea id="actionJson">{"type":"file/list","payload":{"path":"."}}</textarea>
-          <button id="runAction" class="warn">Run /api/hermes/action</button>
+          <button id="runAction" class="warn" type="button">Run /api/hermes/action</button>
           <label>Action Response</label>
           <pre id="actionOutput" class="out"></pre>
         </div>
-      </section>
+      </div>
+    </details>
 
-      <section class="panel">
-        <h2>Repo + Runtime Ops</h2>
+    <details class="panel">
+      <summary>
+        <span>Swarm Builder</span>
+        <span class="summary-hint">Sandbox only</span>
+      </summary>
+      <div class="stack">
+        <div class="muted">Use this only for multi-step or parallel work. Main branch is not touched automatically.</div>
+        <button id="swarmBuilderPrompt" class="warn" type="button">Build Swarm Prompt in Prompt Box</button>
+      </div>
+    </details>
 
-        <div class="ops-grid">
-          <button id="showRuntimeRoot">Show Runtime Root</button>
-          <button id="listRepos">List Registered Repos</button>
+    <details class="panel">
+      <summary>
+        <span>Sandbox Cleanup</span>
+        <span class="summary-hint">Do not use unless fixing a failed task</span>
+      </summary>
+      <div class="stack">
+        <div class="grid2">
+          <button id="sandboxListLeftovers" type="button">List Sandbox Leftovers (Safe)</button>
+          <button id="sandboxPreviewCleanup" type="button">Preview Cleanup Plan (Safe)</button>
+          <button id="sandboxCleanupSession" class="warn" type="button">Cleanup Sandbox Session</button>
+          <button id="sandboxDeleteFailed" class="danger" type="button">Delete Failed Sandbox Data</button>
+        </div>
+      </div>
+    </details>
+
+    <details class="panel">
+      <summary>
+        <span>Runtime Ops</span>
+        <span class="summary-hint">Collapsed advanced diagnostics</span>
+      </summary>
+      <div class="stack">
+        <div class="grid2">
+          <button id="showRuntimeRoot" type="button">Show Runtime Root</button>
+          <button id="listRepos" type="button">List Registered Repos</button>
+          <button id="showPm2Status" type="button">PM2 Status</button>
+          <button id="showApprovals" type="button">Approval Queue</button>
+          <button id="showSwarm" type="button">Swarm Roles</button>
+          <button id="showModels" type="button">Model List</button>
         </div>
 
         <div>
           <label for="switchRepoId">Switch Active Repo (id or name)</label>
           <input id="switchRepoId" placeholder="crypto-moonboys-site">
-          <button id="switchRepo" class="warn">Switch Active Repo</button>
+          <button id="switchRepo" class="warn" type="button">Switch Active Repo</button>
         </div>
 
         <div>
@@ -362,33 +399,30 @@
           <input id="registerRepoUrl" placeholder="https://github.com/org/repo">
           <label for="registerRepoPath">Register Repo Local Path</label>
           <input id="registerRepoPath" placeholder="/path/to/repo">
-          <button id="registerRepo" class="warn">Register Repo</button>
+          <button id="registerRepo" class="warn" type="button">Register Repo</button>
         </div>
 
         <div>
           <label for="cloneRepoUrl">Clone Repo URL (admin-only)</label>
           <input id="cloneRepoUrl" placeholder="https://github.com/org/repo">
-          <button id="cloneRepo" class="danger">Clone + Register Repo</button>
+          <button id="cloneRepo" class="danger" type="button">Clone + Register Repo</button>
         </div>
 
         <label>Repo Status</label>
         <pre id="repoStatus" class="out"></pre>
 
-        <div class="subtle">
-          <div class="ops-grid">
-            <button id="showPm2Status">PM2 Status</button>
-            <button id="showApprovals">Approval Queue</button>
-            <button id="showSwarm">Swarm Roles</button>
-            <button id="showModels">Model List</button>
-          </div>
-          <label>Runtime Ops Output</label>
-          <pre id="opsStatus" class="out"></pre>
-        </div>
-      </section>
+        <label>Runtime Ops Output</label>
+        <pre id="opsStatus" class="out"></pre>
+      </div>
+    </details>
 
-      <section class="panel">
-        <h2>Webcrawl Agent</h2>
-        <div class="muted">Real server-side web research. If search tooling is unavailable, Hermes will return "Webcrawl tools unavailable" instead of guessing.</div>
+    <details class="panel">
+      <summary>
+        <span>Webcrawl Advanced</span>
+        <span class="summary-hint">Safe: reads only</span>
+      </summary>
+      <div class="stack">
+        <div class="muted">Real server-side web research. If unavailable, Hermes must return "Webcrawl tools unavailable".</div>
         <div>
           <label for="webcrawlTopic">What do you want to track?</label>
           <input id="webcrawlTopic" placeholder="Find new updates on anything">
@@ -397,26 +431,68 @@
           <label for="webcrawlUrl">URL (for Fetch/Crawl/RSS topic link)</label>
           <input id="webcrawlUrl" placeholder="https://example.com">
         </div>
-        <div class="ops-grid">
-          <button id="webcrawlFindUpdates">Find New Updates</button>
-          <button id="webcrawlSearch">Search Web</button>
-          <button id="webcrawlFetchUrl">Fetch URL</button>
-          <button id="webcrawlCrawlSite">Crawl Website</button>
-          <button id="webcrawlCheckRss">Check RSS Feed</button>
-          <button id="webcrawlCompare">Compare With Last Snapshot</button>
-          <button id="webcrawlSaveTopic">Save Watch Topic</button>
-          <button id="webcrawlListTopics">List Watch Topics</button>
-          <button id="webcrawlSummarize">Summarize Findings</button>
-          <button id="webcrawlClearSession" class="warn">Clear Webcrawl Session</button>
+        <div class="grid2">
+          <button id="webcrawlFindUpdates" type="button">Find New Updates</button>
+          <button id="webcrawlSearch" type="button">Search Web</button>
+          <button id="webcrawlFetchUrl" type="button">Fetch URL</button>
+          <button id="webcrawlCrawlSite" type="button">Crawl Website</button>
+          <button id="webcrawlCheckRss" type="button">Check RSS Feed</button>
+          <button id="webcrawlCompare" type="button">Compare With Last Snapshot</button>
+          <button id="webcrawlSaveTopic" type="button">Save Watch Topic</button>
+          <button id="webcrawlListTopics" type="button">List Watch Topics</button>
+          <button id="webcrawlSummarize" type="button">Summarize Findings</button>
+          <button id="webcrawlClearSession" class="warn" type="button">Clear Webcrawl Session</button>
         </div>
         <label>Webcrawl Output</label>
         <pre id="webcrawlOutput" class="out"></pre>
-      </section>
-    </main>
+      </div>
+    </details>
+
+    <details class="panel">
+      <summary>
+        <span>Emergency Controls</span>
+        <span class="summary-hint">Do not use unless fixing a failed task</span>
+      </summary>
+      <div class="stack">
+        <button id="emergencyStopPrompt" class="danger" type="button">Stop / Cancel Current Task (Prompt Only)</button>
+        <button id="emergencyRollbackPrompt" class="danger" type="button">Show Rollback Options (Prompt Only)</button>
+      </div>
+    </details>
   </div>
 
   <script>
     window.HERMES_API_BASE_URL = window.HERMES_API_BASE_URL || "";
+
+    (function () {
+      function setPrompt(value) {
+        var prompt = document.getElementById("prompt");
+        if (!prompt) return;
+        prompt.value = String(value || "").trim();
+        prompt.focus();
+      }
+
+      function bind(id, text) {
+        var node = document.getElementById(id);
+        if (!node) return;
+        node.addEventListener("click", function () {
+          setPrompt(text);
+        });
+      }
+
+      bind("startFixBuildWebsite", "Enter agent_edit mode. Audit the target website page, propose a sandbox-first plan, list exact files to change, then prepare a safe patch preview. Do not apply changes until approval.");
+      bind("startAskWebcrawl", "Use webcrawl_agent to find new updates on this topic. Return sources checked, timestamps, what changed, confidence level, and failures. No guesses.");
+      bind("startRunRepoCheck", "Run a read-only repo check: show active repo root, list top-level directories, summarize git status and key risks. Do not modify files.");
+      bind("startManageSandbox", "Start sandbox task flow: create backup branch, create sandbox branch, perform requested work in sandbox only, run tests, and report files changed/risks before any merge.");
+
+      bind("helperWhatShouldIPress", "Explain which Hermes Admin button I should use for my current goal, in simple steps.");
+      bind("swarmBuilderPrompt", "Build a swarm task prompt with selected goals, sandbox-first constraints, and a clear output plan. Do not push to main/master.");
+      bind("sandboxListLeftovers", "List sandbox leftovers only. Do not delete anything yet.");
+      bind("sandboxPreviewCleanup", "Preview sandbox cleanup plan. List what would be removed and confirm production/main/.git/.env/secrets are excluded.");
+      bind("sandboxCleanupSession", "Cleanup sandbox session leftovers only after showing the cleanup plan and getting explicit approval.");
+      bind("sandboxDeleteFailed", "Delete failed sandbox data only after explicit approval. Never touch main/master, .git, .env, secrets, runtime services, or live files.");
+      bind("emergencyStopPrompt", "Stop current Hermes task safely and report current state, pending actions, and safe rollback options.");
+      bind("emergencyRollbackPrompt", "Show rollback options for the current sandbox task. Do not apply rollback yet; wait for explicit approval.");
+    })();
   </script>
   <script src="/js/hermes-chat.js"></script>
 </body>
