@@ -527,12 +527,11 @@ When sources disagree, future agents must follow this hierarchy.
 | 1 | Current runtime source code | What is actually live and wired |
 | 2 | `README.md` and runtime truth docs | Product truth, current game state, XP definitions |
 | 3 | `.copilot-instructions.md` | Agent behavior rules and language rules |
-| 4 | `.copilot-instructions.md` guardrails | repository editing constraints |
-| 5 | Current live pages | visible copy and user-facing route |
-| 6 | This Master Source of Truth | product positioning, naming, truth boundaries, website/game rules |
-| 7 | Build decks and dev docs | planning and future roadmap |
-| 8 | Substack / lore posts | lore, vibe, history, canon material, but not always implementation truth |
-| 9 | Agent-generated suggestions | never source of truth unless accepted into docs or code |
+| 4 | Current live pages | visible copy and user-facing route |
+| 5 | This Master Source of Truth | product positioning, naming, truth boundaries, website/game rules |
+| 6 | Build decks and dev docs | planning and future roadmap |
+| 7 | Substack / lore posts | lore, vibe, history, canon material, but not always implementation truth |
+| 8 | Agent-generated suggestions | never source of truth unless accepted into docs or code |
 
 ## Rule
 

@@ -201,7 +201,7 @@ for (const rel of LIVE_PAGES) {
 // 7. DOM marker check: site-shell.js must contain all right-panel element markers
 console.log('\n[7] site-shell.js DOM marker check (static string check)');
 if (shellJs) {
-  const SMOKE_CHECKS = [
+  const MARKER_CHECKS = [
     { needle: "rightPanel.id = 'homepage-right-panel'", label: '#homepage-right-panel' },
     { needle: 'data-csp-panel',            label: '[data-csp-panel]' },
     { needle: 'data-las-panel',            label: '[data-las-panel]' },
@@ -210,7 +210,7 @@ if (shellJs) {
     { needle: 'hud-actions-list',          label: '.hud-actions-list (Next Actions block)' },
     { needle: 'shouldShowRightPanel',      label: 'shouldShowRightPanel() helper' },
   ];
-  for (const { needle, label } of SMOKE_CHECKS) {
+  for (const { needle, label } of MARKER_CHECKS) {
     if (shellJs.includes(needle)) {
       pass(`site-shell.js marker: ${label} present`);
     } else {
