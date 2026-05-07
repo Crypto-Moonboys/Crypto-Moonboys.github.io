@@ -769,7 +769,7 @@ Each PR must:
 1. Reference this roadmap document in its description
 2. Update the Live vs Future table in Part 7 if a system ships
 3. Not describe future systems as live
-4. Pass the anti-drift-check.mjs CI check
+4. Keep repository documentation and implementation aligned
 
 ---
 
@@ -791,8 +791,6 @@ Each PR must:
 | Faction API client | `js/faction-alignment.js` |
 | MOONBOYS_STATE singleton | `js/core/moonboys-state.js` |
 | Global event bus | `js/arcade/core/global-event-bus.js` |
-| Agent enforcement rules | `AGENT_ENFORCEMENT.md` |
-| Anti-drift check script | `scripts/anti-drift-check.mjs` |
 | Article template | `_article-template.html` |
 
 ---

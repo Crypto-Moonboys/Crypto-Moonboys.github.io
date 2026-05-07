@@ -137,4 +137,4 @@ assert.equal(neutralizedNpc3Count, 1, 'Distinct NPC neutralization should still 
 assert.equal(downed1111Count, 1, 'Repeated downed feed for same player/NPC pair should dedupe.');
 assert.equal(downed2222Count, 1, 'Distinct downed feed for another player should still appear.');
 
-console.log('Block Topia attack feedback smoke checks passed.');
+console.log('Block Topia attack feedback sanity checks passed.');

@@ -76,4 +76,4 @@ if (/\.close\s*\(\s*['"`]/.test(source)) {
   throw new Error('Invalid string-only .close(...) usage detected.');
 }
 
-console.log('MinimalCityRoom safety smoke checks passed.');
+console.log('MinimalCityRoom safety checks passed.');

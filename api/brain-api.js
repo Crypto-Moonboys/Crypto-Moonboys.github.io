@@ -507,7 +507,7 @@ app.post("/api/brain/advisor", requireAdmin, async (req, res) => {
     "- Tests/checks run",
     "- Any risks or follow-up work",
     "",
-    "Before final response, run relevant syntax/tests/smoke checks where possible."
+    "Before final response, run relevant syntax/tests/checks where possible."
   ].join("\n");
 
   res.json({

@@ -197,7 +197,7 @@ function validateCorePages() {
   assert(searchHtml.includes('id="search-results-page"') || searchHtml.includes("id='search-results-page'"), 'search.html missing search results container');
   assert(searchHtml.includes('ranking debug') || searchHtml.includes('ranking-debug') || searchHtml.includes('Ranking debug'), 'search.html missing ranking debug panel');
 
-  console.log('Core page smoke tests passed ✅');
+  console.log('Core page validation checks passed ✅');
 }
 
 const PHASE5_6_REQUIRED_KEYS = ['generated_at', 'phase', 'schema_version', 'summary', 'entries'];

@@ -4,7 +4,7 @@
 - Normal chat mode: read/answer only, no write side effects.
 - Agent edit mode: write-capable only after explicit user instruction and required approvals.
 - Admin mode: operational/runtime actions with strict confirmation and policy checks.
-- NPC agent mode: restricted to NPC-scoped data/config workflows only.
+- NPC agent mode: restricted to NPC-scoped data/config work only.
 
 ## Sandbox-first requirement
 All Hermes-driven editing follows:
@@ -18,6 +18,6 @@ All Hermes-driven editing follows:
 
 ## Operator handoff checks
 - Confirm active branch scope matches requested task.
-- Confirm tests/smoke checks executed.
+- Confirm required checks executed.
 - Confirm remaining risks and manual steps are documented.
 - Confirm merge is pending GK approval.

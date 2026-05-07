@@ -141,7 +141,7 @@ const manifest = entryBlocks.map(block => ({
 console.log('\n[0] Manifest parsed: ' + manifest.length + ' entries found');
 manifest.forEach(e => console.log('     • ' + e.id + ' → ' + e.page));
 
-// ── Active game directories (mirrors anti-drift-check.mjs required games) ────
+// ── Active game directories (matches the current required live games set) ────
 
 const ACTIVE_GAME_DIRS = [
   'games/invaders-3008',

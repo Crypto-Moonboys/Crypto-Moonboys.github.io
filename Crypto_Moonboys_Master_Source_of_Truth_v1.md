@@ -219,7 +219,7 @@ Use this:
 
 Use this:
 
-**City Block Topia / Neon Sprawl is a separate deeper living-wiki game layer planned for integration, preferably under `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/`. It must not be confused with the current `/games/block-topia/` live runtime until it is imported, wired, smoke-tested, and documented.**
+**City Block Topia / Neon Sprawl is a separate deeper living-wiki game layer planned for integration, preferably under `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/`. It must not be confused with the current `/games/block-topia/` live runtime until it is imported, wired, validated, and documented.**
 
 ---
 
@@ -527,12 +527,11 @@ When sources disagree, future agents must follow this hierarchy.
 | 1 | Current runtime source code | What is actually live and wired |
 | 2 | `README.md` and runtime truth docs | Product truth, current game state, XP definitions |
 | 3 | `.copilot-instructions.md` | Agent behavior rules and language rules |
-| 4 | `AGENT_ENFORCEMENT.md` | hard anti-drift technical rules |
-| 5 | Current live pages | visible copy and user-facing route |
-| 6 | This Master Source of Truth | product positioning, naming, truth boundaries, website/game rules |
-| 7 | Build decks and dev docs | planning and future roadmap |
-| 8 | Substack / lore posts | lore, vibe, history, canon material, but not always implementation truth |
-| 9 | Agent-generated suggestions | never source of truth unless accepted into docs or code |
+| 4 | Current live pages | visible copy and user-facing route |
+| 5 | This Master Source of Truth | product positioning, naming, truth boundaries, website/game rules |
+| 6 | Build decks and dev docs | planning and future roadmap |
+| 7 | Substack / lore posts | lore, vibe, history, canon material, but not always implementation truth |
+| 8 | Agent-generated suggestions | never source of truth unless accepted into docs or code |
 
 ## Rule
 
@@ -542,7 +541,7 @@ If an older doc says Block Topia is only a bare map skeleton but the current run
 
 If lore says a mechanic exists but code does not wire it, call it lore/planned, not live.
 
-If build decks describe City Block Topia / Neon Sprawl, treat them as integration planning until the route exists and passes smoke tests.
+If build decks describe City Block Topia / Neon Sprawl, treat them as integration planning until the route exists and is fully shipped.
 
 ---
 
@@ -918,7 +917,7 @@ Treat City Block Topia systems as planned, package-present, or integration-stage
 1. imported into the repo,
 2. placed under a clear route,
 3. wired to a page,
-4. smoke-tested,
+4. validated,
 5. documented in runtime truth docs.
 
 ## Needs verification before live claims
@@ -1173,7 +1172,7 @@ Should not:
 - claim future features as live
 - remove wiki identity
 - mutate game rules without runtime truth update
-- bypass anti-drift checks
+- bypass required repository checks
 - import stale systems into live routes without tests
 - claim SAM live events when only webhook stubs exist
 
@@ -1225,7 +1224,6 @@ Read:
 
 - `README.md`
 - `.copilot-instructions.md`
-- `AGENT_ENFORCEMENT.md`
 - `docs/current-live-system-truth.md`
 - `docs/block-topia/CURRENT_RUNTIME_TRUTH.md` if Block Topia is involved
 - current target page
@@ -1256,9 +1254,9 @@ Before claiming a feature:
 - Is it wired?
 - Is it accessible to users?
 - Is it documented in runtime truth?
-- Does it pass anti-drift?
+- Does it pass the required validation?
 - Does it have a public route?
-- Does it have a smoke test?
+- Does it have validation coverage?
 
 If not, label it planned, integration-staged, or source-present but not verified.
 
@@ -1270,9 +1268,9 @@ Do not leave old conflicting wording visible in the same source-of-truth file.
 
 ## Step 5: Run checks
 
-Run anti-drift checks.
+Run the required validation commands.
 
-Manual smoke test:
+Manual validation:
 
 - homepage loads
 - `/games/` loads
@@ -1536,7 +1534,7 @@ Do not break:
 - current Block Topia Live City route
 - Block Topia Quest Maze route
 - City Block Topia route separation once created
-- anti-drift rules
+- repository guardrails
 - live vs planned clarity
 - no financial-promise language
 
@@ -1572,7 +1570,7 @@ Block Topia Live City is the current gated `/games/block-topia/` 2-player Colyse
 
 Block Topia Quest Maze is a separate arcade/RPG score game and Arcade XP path at `/games/block-topia-quest-maze/`.
 
-City Block Topia / Neon Sprawl is a separate deeper living-wiki territory layer planned for integration, preferably under `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/`. It must not be treated as the current `/games/block-topia/` runtime until it is imported, wired, smoke-tested, and documented.
+City Block Topia / Neon Sprawl is a separate deeper living-wiki territory layer planned for integration, preferably under `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/`. It must not be treated as the current `/games/block-topia/` runtime until it is imported, wired, validated, and documented.
 
 Deeper systems are planned, not live, unless explicitly verified and documented.
 

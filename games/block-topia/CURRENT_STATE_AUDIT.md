@@ -126,18 +126,15 @@ These files exist in the repository but are **not imported or reachable** from a
 | `src/systems/player-system.js` | Player movement validation (only imported by `CityRoom.js`) |
 | `src/systems/quest-system.js` | Quest (only imported by `CityRoom.js`) |
 
-### Tests — stale (test dead-code paths)
+### Tests — stale
 
-| File | Status |
-|---|---|
-| `tests/passive-map-smoke.test.mjs` | **Stale.** Tests old `main.js` patterns (`applyPassiveVisualModeGuards`, `state.controlNodes`, `iso-renderer.js` text labels) that no longer exist in the current `main.js`. |
-| `tests/npc-system-import-order.test.mjs` | **Stale.** Tests `world/npc-system.js` and `render/iso-renderer.js` — both are dead archive files. |
+No stale test files are currently confirmed from this audit snippet.
 
 ### Tests — active
 
 | File | Status |
 |---|---|
-| `tests/skeleton-smoke.test.mjs` | **Active.** Validates `network.js` exports and bans old handler identifiers. Validates `index.html` wires Colyseus + `connectMultiplayer`. |
+| `tests/skeleton-sanity.test.mjs` | **Active.** Validates `network.js` exports and bans old handler identifiers. Validates `index.html` wires Colyseus + `connectMultiplayer`. |
 | `tests/pick-tile-roundtrip.test.mjs` | **Active.** 2 400 round-trip assertions on `main.js` tile math functions. |
 
 ---

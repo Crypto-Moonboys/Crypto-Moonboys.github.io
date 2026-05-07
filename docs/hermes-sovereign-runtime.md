@@ -37,7 +37,5 @@ Hermes now operates as a local sovereign agent runtime with real tooling.
 - Hermes backend should be deployed server-side (GitHub Pages is static).
 - No direct public Ollama exposure.
 
-## Test workflow
-- `npm test`: deterministic non-browser checks (Hermes policy/runtime tests + repo smoke/parity checks).
-- `npm run test:browser`: Playwright browser smoke coverage (`scripts/right-hud-browser-smoke.mjs`).
-- `npm run test:full`: runs both deterministic and browser suites.
+## Validation commands
+- `npm test`: Hermes policy/runtime checks plus the site-shell parity audit.

@@ -732,7 +732,6 @@ function main() {
   console.log('  node scripts/generate-site-stats.js');
   console.log('  node scripts/generate-entity-map.js');
   console.log('  node scripts/validate-generated-assets.js');
-  console.log('  node scripts/smoke-test.js');
 }
 
 main();

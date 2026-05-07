@@ -1,7 +1,7 @@
 /**
- * arcade-smoke.test.mjs
+ * arcade-sanity.test.mjs
  *
- * Syntax / structural smoke tests for all 6 arcade games that do not yet
+ * Syntax / structural sanity checks for all 6 arcade games that do not yet
  * have dedicated per-game test files:
  *   - Snake Run
  *   - Breakout Bullrun
@@ -17,10 +17,10 @@
  *   4. game page index.html exists and has expected canvas/button elements
  *   5. game page links to arcade sidebar nav (all 8 arcade games)
  *
- * Existing smoke tests (Invaders 3008, Block Topia) are unchanged.
+ * Existing sanity checks (Invaders 3008, Block Topia) are unchanged.
  *
  * Run:
- *   node scripts/arcade-smoke.test.mjs
+ *   node scripts/arcade-sanity.test.mjs
  */
 
 import assert from 'node:assert/strict';
@@ -240,8 +240,8 @@ check(
 // ── Summary ───────────────────────────────────────────────────────────────────
 process.stdout.write('\n');
 if (failures > 0) {
-  process.stderr.write(`Arcade smoke test FAILED with ${failures} failure(s).\n`);
+  process.stderr.write(`Arcade sanity check FAILED with ${failures} failure(s).\n`);
   process.exit(1);
 } else {
-  process.stdout.write('All arcade smoke tests PASSED.\n');
+  process.stdout.write('All arcade sanity checks PASSED.\n');
 }

@@ -49,7 +49,7 @@
   var LS_SYNC_HEALTH = 'moonboys_tg_sync_health';
   // Must match TELEGRAM_AUTH_MAX_AGE in workers/moonboys-api/blocktopia/config.js
   // and TELEGRAM_AUTH_MAX_AGE_SECONDS in workers/leaderboard-worker.js.
-  // Anti-drift: scripts/anti-drift-check.mjs compares this value across all three files.
+  // Keep this value aligned across the three Telegram auth config locations.
   var TELEGRAM_AUTH_MAX_AGE_SECONDS = 86400;
   var MODAL_ID     = 'tg-sync-gate-modal';
   var STYLE_ID     = 'tg-sync-gate-styles';
