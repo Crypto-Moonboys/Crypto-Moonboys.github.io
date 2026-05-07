@@ -3,96 +3,134 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hermes Local Chat</title>
+  <title>Hermes Sovereign Runtime Console</title>
   <meta name="robots" content="noindex,nofollow">
   <style>
     :root {
-      --bg: #0e1a16;
-      --panel: #152721;
-      --line: #2f5b4e;
-      --text: #e8fff4;
-      --muted: #a5d8c4;
-      --accent: #65f2b2;
-      --danger: #ff8a8a;
+      --bg: #070d14;
+      --panel: #0f1c2a;
+      --line: #2d4a67;
+      --text: #e9f6ff;
+      --muted: #90b3d1;
+      --accent: #52e3ff;
+      --warn: #ffd166;
+      --ok: #69ffb3;
+      --danger: #ff6b7a;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: radial-gradient(circle at 20% 0, #1d3d32 0, transparent 40%), var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 18px;
-    }
-    .wrap {
-      max-width: 920px;
-      margin: 0 auto;
-      display: grid;
-      gap: 14px;
-    }
-    .panel {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: linear-gradient(180deg, rgba(21,39,33,.95), rgba(12,22,19,.95));
-      padding: 14px;
-    }
-    .row { display: grid; gap: 10px; }
-    @media (min-width: 760px) {
-      .row.two { grid-template-columns: 1fr 2fr; }
-    }
-    label { font-size: 0.92rem; color: var(--muted); display: block; margin-bottom: 6px; }
-    select, textarea, button {
-      width: 100%; border-radius: 10px; border: 1px solid var(--line);
-      background: #0f1d18; color: var(--text); padding: 10px;
-    }
-    textarea { min-height: 80px; resize: vertical; }
-    #log { max-height: 52vh; overflow: auto; display: grid; gap: 8px; }
-    .msg { border: 1px solid var(--line); border-radius: 10px; padding: 8px; }
-    .msg b { color: var(--accent); }
-    .error { color: var(--danger); font-size: 0.9rem; min-height: 1.2em; }
-    button { cursor: pointer; background: linear-gradient(180deg, #82f6c4, #65f2b2); color: #0a1612; font-weight: 700; }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(circle at 20% 0,#11314f 0,transparent 40%),var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,sans-serif;padding:14px}
+    .grid{display:grid;gap:10px;grid-template-columns:1.2fr 1fr 1fr}
+    .panel{border:1px solid var(--line);background:linear-gradient(180deg,rgba(15,28,42,.96),rgba(9,16,24,.96));border-radius:12px;padding:10px}
+    h1{margin:0 0 6px;color:var(--accent);font-size:1.3rem}
+    h2{margin:0 0 8px;color:var(--accent);font-size:0.95rem}
+    .muted{color:var(--muted);font-size:0.86rem}
+    label{display:block;color:var(--muted);font-size:0.82rem;margin-bottom:4px}
+    input,select,textarea,button{width:100%;background:#08121c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit}
+    textarea{min-height:72px;resize:vertical}
+    button{cursor:pointer;background:linear-gradient(180deg,#7de9ff,#52e3ff);color:#061018;font-weight:700}
+    button.warn{background:linear-gradient(180deg,#ffe08e,#ffd166)}
+    button.danger{background:linear-gradient(180deg,#ff9ba6,#ff6b7a)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    .stack{display:grid;gap:8px}
+    pre{margin:0;background:#02070d;border:1px solid var(--line);border-radius:8px;padding:8px;max-height:220px;overflow:auto;font-size:12px;white-space:pre-wrap}
+    .tag{display:inline-block;padding:2px 6px;border:1px solid var(--line);border-radius:999px;font-size:11px;color:var(--muted)}
+    @media (max-width:1200px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <section class="panel">
-      <h1>Hermes Local Chat</h1>
-      <p>Website chat routed via backend proxy to local Ollama only.</p>
-      <p>
-        Backend config: this page defaults to same-origin API routes. GitHub Pages is static, so it needs a separately
-        deployed backend origin configured via <code>window.HERMES_API_BASE_URL</code>.
-      </p>
-      <p>
-        Permission model: normal chat is read-only. Any future repo/file edits require explicit Hermes
-        <code>agent_edit</code> mode and explicit user instruction.
-      </p>
-    </section>
+  <section class="panel" style="margin-bottom:10px">
+    <h1>Hermes Sovereign Runtime Console</h1>
+    <div class="muted">Production admin console for planning, repo awareness, controlled editing, command execution, approvals, and swarm orchestration.</div>
+    <div style="margin-top:6px" class="tag">Normal chat: read-only | Agent edit: explicit approval required | NPC agent: strictly scoped</div>
+  </section>
 
-    <section class="panel row two">
-      <div>
-        <label for="model">Model</label>
-        <select id="model"></select>
+  <main class="grid">
+    <section class="panel stack">
+      <h2>Chat + Task</h2>
+      <div class="row">
+        <div><label>Model</label><select id="model"></select></div>
+        <div><label>Mode</label><select id="mode"><option value="chat">chat</option><option value="agent_edit">agent_edit</option><option value="admin">admin</option></select></div>
       </div>
-      <div>
-        <label for="systemPrompt">System Prompt (Hermes identity)</label>
-        <textarea id="systemPrompt" maxlength="1200">You are Hermes, the Crypto Moonboys local assistant. Be concise, safe, and direct.</textarea>
+      <div><label>System Prompt</label><textarea id="systemPrompt">You are Hermes, sovereign engineering runtime for Crypto Moonboys. Be precise and safe.</textarea></div>
+      <div><label>Prompt</label><textarea id="prompt"></textarea></div>
+      <button id="sendChat">Run Chat</button>
+      <div><label>Task Planner Input</label><input id="taskInput" placeholder="Investigate failing tests and propose patch"></div>
+      <button id="planTask" class="warn">Plan Task</button>
+      <pre id="chatLog"></pre>
+    </section>
+
+    <section class="panel stack">
+      <h2>Repo + Files</h2>
+      <div class="row">
+        <button id="rebuildIndex">Rebuild Index</button>
+        <button id="gitStatus">Git Status</button>
       </div>
+      <div><label>Repo Search</label><input id="searchQuery" placeholder="hermes"></div>
+      <button id="runSearch">Search Index</button>
+      <div><label>List Directory</label><input id="dirPath" placeholder="."></div>
+      <button id="listDir">List</button>
+      <div><label>Read File</label><input id="readPath" placeholder="README.md"></div>
+      <button id="readFileBtn">Read</button>
+      <pre id="repoOutput"></pre>
     </section>
 
-    <section class="panel">
-      <div id="log" aria-live="polite"></div>
+    <section class="panel stack">
+      <h2>Patch + Approval</h2>
+      <div><label>Patch JSON (operations)</label><textarea id="patchJson">[{"type":"update","path":"docs/hermes-npc-permission-model.md","content":"# update\n"}]</textarea></div>
+      <div class="row3">
+        <button id="previewPatch">Preview</button>
+        <button id="applyPatch" class="warn">Apply</button>
+        <button id="rollbackPatch" class="danger">Rollback</button>
+      </div>
+      <div><label>Rollback ID</label><input id="rollbackId" placeholder="rb_..."></div>
+      <div class="row">
+        <button id="createApproval">Queue Approval</button>
+        <button id="listApprovals">List Approvals</button>
+      </div>
+      <pre id="patchOutput"></pre>
     </section>
 
-    <section class="panel">
-      <label for="prompt">Message</label>
-      <textarea id="prompt" maxlength="4000" placeholder="Type your message"></textarea>
-      <div style="margin-top:10px"><button id="send" type="button">Send</button></div>
-      <div id="error" class="error"></div>
+    <section class="panel stack">
+      <h2>Commands + Queue</h2>
+      <div class="row">
+        <div><label>Command</label><input id="cmd" value="npm"></div>
+        <div><label>Args (JSON array)</label><input id="cmdArgs" value='["test"]'></div>
+      </div>
+      <button id="runCmd">Run Command</button>
+      <button id="queueState" class="warn">Queue State</button>
+      <pre id="cmdOutput"></pre>
+    </section>
+
+    <section class="panel stack">
+      <h2>Swarm + Memory</h2>
+      <div class="row">
+        <button id="swarmView">View Swarm</button>
+        <button id="loadMemory">Load Memory</button>
+      </div>
+      <div><label>Merge Memory Patch JSON</label><textarea id="memoryPatch">{"domains":["cryptomoonboys.com"],"pm2Apps":["hermes-api","npc-brain"]}</textarea></div>
+      <button id="mergeMemory">Merge Memory</button>
+      <pre id="memoryOutput"></pre>
+    </section>
+
+    <section class="panel stack">
+      <h2>Git Ops</h2>
+      <div><label>Create Branch</label><input id="branchName" placeholder="codex/hermes-task"></div>
+      <div class="row3">
+        <button id="createBranch">Branch</button>
+        <button id="gitDiff">Diff</button>
+        <button id="gitPrMeta">PR Meta</button>
+      </div>
+      <div><label>Commit Message</label><input id="commitMsg" placeholder="Hermes infra update"></div>
+      <div class="row">
+        <button id="gitCommit" class="warn">Commit</button>
+        <button id="gitPush" class="warn">Push</button>
+      </div>
+      <pre id="gitOutput"></pre>
     </section>
   </main>
+
   <script>
-    // Leave empty for same-origin VPS/server deployments.
-    // Example for static hosting (GitHub Pages): window.HERMES_API_BASE_URL = "https://api.cryptomoonboys.com";
     window.HERMES_API_BASE_URL = window.HERMES_API_BASE_URL || "";
   </script>
   <script src="/js/hermes-chat.js"></script>

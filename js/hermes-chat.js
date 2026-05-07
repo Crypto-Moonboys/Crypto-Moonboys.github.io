@@ -1,115 +1,221 @@
 ﻿(() => {
-  // For VPS/server deployments, leave this empty to use same-origin backend routes.
-  // GitHub Pages is static and cannot run Express API routes, so set window.HERMES_API_BASE_URL
-  // to a deployed backend origin (for example: "https://api.cryptomoonboys.com").
   const apiBaseUrl = String(window.HERMES_API_BASE_URL || "").trim().replace(/\/+$/u, "");
-  const endpoint = `${apiBaseUrl}/api/hermes/chat`;
-  const modelsEndpoint = `${apiBaseUrl}/api/hermes/models`;
   const maxHistory = 20;
   const history = [];
 
-  const modelSelect = document.getElementById("model");
-  const systemPrompt = document.getElementById("systemPrompt");
-  const prompt = document.getElementById("prompt");
-  const send = document.getElementById("send");
-  const log = document.getElementById("log");
-  const errorNode = document.getElementById("error");
+  const el = (id) => document.getElementById(id);
+  const out = {
+    chat: el("chatLog"),
+    repo: el("repoOutput"),
+    patch: el("patchOutput"),
+    cmd: el("cmdOutput"),
+    memory: el("memoryOutput"),
+    git: el("gitOutput")
+  };
 
-  function addMessage(role, content) {
-    const item = document.createElement("div");
-    item.className = "msg";
-    const title = document.createElement("b");
-    title.textContent = role;
-    const body = document.createElement("div");
-    body.textContent = String(content || "");
-    item.appendChild(title);
-    item.appendChild(body);
-    log.appendChild(item);
-    log.scrollTop = log.scrollHeight;
+  function setOut(node, value) {
+    node.textContent = typeof value === "string" ? value : JSON.stringify(value, null, 2);
   }
 
-  function setError(message) {
-    errorNode.textContent = message ? String(message) : "";
-  }
-
-  async function loadModels() {
-    const response = await fetch(modelsEndpoint);
-    const data = await response.json();
-    const models = Array.isArray(data.models) ? data.models : [];
-
-    modelSelect.innerHTML = "";
-    models.forEach((name) => {
-      const option = document.createElement("option");
-      option.value = name;
-      option.textContent = name;
-      if (name === data.defaultModel) {
-        option.selected = true;
-      }
-      modelSelect.appendChild(option);
+  async function api(path, options = {}) {
+    const response = await fetch(`${apiBaseUrl}${path}`, {
+      headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+      ...options
     });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || `Request failed (${response.status})`);
+    }
+    return data;
   }
 
-  async function sendPrompt() {
-    const message = String(prompt.value || "").trim();
-    if (!message) {
-      setError("Prompt is required.");
-      return;
-    }
-
-    setError("");
-    send.disabled = true;
-
-    addMessage("You", message);
-
-    const payload = {
-      model: modelSelect.value,
-      systemPrompt: String(systemPrompt.value || ""),
-      prompt: message,
-      history: history.slice(-maxHistory),
-      mode: "chat"
-    };
-
-    history.push({ role: "user", content: message });
+  function clampHistory() {
     if (history.length > maxHistory) {
       history.splice(0, history.length - maxHistory);
     }
-
-    try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        setError(data.error || "Chat request failed.");
-        return;
-      }
-
-      const reply = String(data.reply || "").trim();
-      history.push({ role: "assistant", content: reply });
-      if (history.length > maxHistory) {
-        history.splice(0, history.length - maxHistory);
-      }
-      addMessage("Hermes", reply);
-      prompt.value = "";
-    } catch (error) {
-      setError(`Network error: ${String(error?.message || "Unknown error")}`);
-    } finally {
-      send.disabled = false;
-      prompt.focus();
-    }
   }
 
-  send.addEventListener("click", sendPrompt);
-  prompt.addEventListener("keydown", (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-      sendPrompt();
+  async function loadModels() {
+    const data = await api("/api/hermes/models");
+    const modelSelect = el("model");
+    modelSelect.innerHTML = "";
+    (data.models || []).forEach((m) => {
+      const o = document.createElement("option");
+      o.value = m;
+      o.textContent = m;
+      if (m === data.defaultModel) o.selected = true;
+      modelSelect.appendChild(o);
+    });
+  }
+
+  el("sendChat").addEventListener("click", async () => {
+    try {
+      const prompt = String(el("prompt").value || "").trim();
+      if (!prompt) throw new Error("Prompt is required.");
+      const mode = String(el("mode").value || "chat");
+      const payload = {
+        model: el("model").value,
+        systemPrompt: el("systemPrompt").value,
+        prompt,
+        history: history.slice(-maxHistory),
+        mode,
+        confirmEdit: mode !== "chat"
+      };
+      history.push({ role: "user", content: prompt });
+      clampHistory();
+      const data = await api("/api/hermes/chat", { method: "POST", body: JSON.stringify(payload) });
+      history.push({ role: "assistant", content: data.reply || "" });
+      clampHistory();
+      setOut(out.chat, { prompt, reply: data.reply, model: data.model, mode });
+      el("prompt").value = "";
+    } catch (error) {
+      setOut(out.chat, { error: String(error.message || error) });
     }
   });
 
-  loadModels().catch((error) => {
-    setError(`Failed to load models: ${String(error?.message || "Unknown error")}`);
+  el("planTask").addEventListener("click", async () => {
+    try {
+      const data = await api("/api/hermes/task/plan", {
+        method: "POST",
+        body: JSON.stringify({ task: el("taskInput").value, mode: el("mode").value })
+      });
+      setOut(out.chat, data);
+    } catch (error) {
+      setOut(out.chat, { error: String(error.message || error) });
+    }
   });
+
+  el("rebuildIndex").addEventListener("click", async () => {
+    try { setOut(out.repo, await api("/api/hermes/index/rebuild", { method: "POST" })); }
+    catch (error) { setOut(out.repo, { error: String(error.message || error) }); }
+  });
+
+  el("runSearch").addEventListener("click", async () => {
+    try { setOut(out.repo, await api(`/api/hermes/index/search?q=${encodeURIComponent(el("searchQuery").value)}`)); }
+    catch (error) { setOut(out.repo, { error: String(error.message || error) }); }
+  });
+
+  el("listDir").addEventListener("click", async () => {
+    try { setOut(out.repo, await api(`/api/hermes/files/list?path=${encodeURIComponent(el("dirPath").value)}`)); }
+    catch (error) { setOut(out.repo, { error: String(error.message || error) }); }
+  });
+
+  el("readFileBtn").addEventListener("click", async () => {
+    try { setOut(out.repo, await api(`/api/hermes/files/read?path=${encodeURIComponent(el("readPath").value)}`)); }
+    catch (error) { setOut(out.repo, { error: String(error.message || error) }); }
+  });
+
+  el("gitStatus").addEventListener("click", async () => {
+    try { setOut(out.repo, await api("/api/hermes/git/status")); }
+    catch (error) { setOut(out.repo, { error: String(error.message || error) }); }
+  });
+
+  function parseJsonInput(id) {
+    return JSON.parse(String(el(id).value || "").trim() || "null");
+  }
+
+  el("previewPatch").addEventListener("click", async () => {
+    try {
+      const operations = parseJsonInput("patchJson") || [];
+      setOut(out.patch, await api("/api/hermes/patch/preview", { method: "POST", body: JSON.stringify({ operations }) }));
+    } catch (error) { setOut(out.patch, { error: String(error.message || error) }); }
+  });
+
+  el("applyPatch").addEventListener("click", async () => {
+    try {
+      const operations = parseJsonInput("patchJson") || [];
+      const payload = { operations, mode: el("mode").value, role: "main_hermes" };
+      const data = await api("/api/hermes/patch/apply", { method: "POST", body: JSON.stringify(payload) });
+      if (data.result?.rollbackId) {
+        el("rollbackId").value = data.result.rollbackId;
+      }
+      setOut(out.patch, data);
+    } catch (error) { setOut(out.patch, { error: String(error.message || error) }); }
+  });
+
+  el("rollbackPatch").addEventListener("click", async () => {
+    try {
+      setOut(out.patch, await api("/api/hermes/patch/rollback", {
+        method: "POST",
+        body: JSON.stringify({ rollbackId: el("rollbackId").value, mode: el("mode").value })
+      }));
+    } catch (error) { setOut(out.patch, { error: String(error.message || error) }); }
+  });
+
+  el("createApproval").addEventListener("click", async () => {
+    try {
+      setOut(out.patch, await api("/api/hermes/approval/create", {
+        method: "POST",
+        body: JSON.stringify({ title: "Manual approval", details: "Review proposed operations" })
+      }));
+    } catch (error) { setOut(out.patch, { error: String(error.message || error) }); }
+  });
+
+  el("listApprovals").addEventListener("click", async () => {
+    try { setOut(out.patch, await api("/api/hermes/approval/list")); }
+    catch (error) { setOut(out.patch, { error: String(error.message || error) }); }
+  });
+
+  el("runCmd").addEventListener("click", async () => {
+    try {
+      const args = parseJsonInput("cmdArgs") || [];
+      setOut(out.cmd, await api("/api/hermes/command/run", {
+        method: "POST",
+        body: JSON.stringify({ command: el("cmd").value, args })
+      }));
+    } catch (error) { setOut(out.cmd, { error: String(error.message || error) }); }
+  });
+
+  el("queueState").addEventListener("click", async () => {
+    try { setOut(out.cmd, await api("/api/hermes/command/queue")); }
+    catch (error) { setOut(out.cmd, { error: String(error.message || error) }); }
+  });
+
+  el("swarmView").addEventListener("click", async () => {
+    try { setOut(out.memory, await api("/api/hermes/swarm")); }
+    catch (error) { setOut(out.memory, { error: String(error.message || error) }); }
+  });
+
+  el("loadMemory").addEventListener("click", async () => {
+    try { setOut(out.memory, await api("/api/hermes/memory")); }
+    catch (error) { setOut(out.memory, { error: String(error.message || error) }); }
+  });
+
+  el("mergeMemory").addEventListener("click", async () => {
+    try {
+      const patch = parseJsonInput("memoryPatch") || {};
+      setOut(out.memory, await api("/api/hermes/memory/merge", { method: "POST", body: JSON.stringify({ patch }) }));
+    } catch (error) { setOut(out.memory, { error: String(error.message || error) }); }
+  });
+
+  el("createBranch").addEventListener("click", async () => {
+    try { setOut(out.git, await api("/api/hermes/git/branch", { method: "POST", body: JSON.stringify({ name: el("branchName").value }) })); }
+    catch (error) { setOut(out.git, { error: String(error.message || error) }); }
+  });
+
+  el("gitDiff").addEventListener("click", async () => {
+    try { setOut(out.git, await api("/api/hermes/git/diff")); }
+    catch (error) { setOut(out.git, { error: String(error.message || error) }); }
+  });
+
+  el("gitPrMeta").addEventListener("click", async () => {
+    try { setOut(out.git, await api("/api/hermes/git/pr-metadata")); }
+    catch (error) { setOut(out.git, { error: String(error.message || error) }); }
+  });
+
+  el("gitCommit").addEventListener("click", async () => {
+    try {
+      setOut(out.git, await api("/api/hermes/git/commit", {
+        method: "POST",
+        body: JSON.stringify({ message: el("commitMsg").value, mode: el("mode").value })
+      }));
+    } catch (error) { setOut(out.git, { error: String(error.message || error) }); }
+  });
+
+  el("gitPush").addEventListener("click", async () => {
+    try { setOut(out.git, await api("/api/hermes/git/push", { method: "POST", body: JSON.stringify({}) })); }
+    catch (error) { setOut(out.git, { error: String(error.message || error) }); }
+  });
+
+  loadModels().catch((error) => setOut(out.chat, { error: String(error.message || error) }));
 })();
