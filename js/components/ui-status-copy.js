@@ -72,9 +72,7 @@
 
       /** Faction war standings are pre-season / server-backed. */
       preSeasonFactionSignal: function () {
-        return '<p class="lb-fw-preseason"><strong>Faction Signal \u2014 Pre-Season.</strong> '
-          + 'Contributions from linked players are tracked server-side. '
-          + 'Full seasonal war standings are a future layer.</p>';
+        return '<p class="lb-fw-preseason"><strong>Faction Signal \u2014 Pre-Season.</strong> Linked-player faction standings are tracked server-side.</p>';
       },
 
       /** Faction signal prompt for unlinked users. */
