@@ -85,6 +85,7 @@ test("chat route invokes file/list for directory request", async (t) => {
   assert.ok(Array.isArray(res.body.actions));
   assert.equal(res.body.actions[0].type, "file/list");
   assert.equal(res.body.toolResults[0].ok, true);
+  assert.match(String(res.body.reply || ""), /tool returned only \d+ entries/i);
 });
 
 test("chat read file uses real file service", async (t) => {
@@ -103,7 +104,7 @@ test("chat read file uses real file service", async (t) => {
   assert.equal(res.status, 200);
   assert.equal(res.body.actions[0].type, "file/read");
   assert.equal(res.body.toolResults[0].ok, true);
-  assert.match(String(res.body.toolResults[0].result.content || ""), /route placeholder/);
+  assert.match(String(res.body.toolResults[0].entries?.[0]?.snippet || ""), /route placeholder/);
 });
 
 test("chat search request uses index/search", async (t) => {
@@ -121,6 +122,7 @@ test("chat search request uses index/search", async (t) => {
 
   assert.equal(res.status, 200);
   assert.equal(res.body.actions[0].type, "repo/search");
+  assert.doesNotMatch(String(res.body.reply || ""), /blog\.md|about\.md|contact\.md|privacy\.md/i);
 });
 
 test("privileged command request returns missing requirements without approvals", async (t) => {
@@ -138,7 +140,25 @@ test("privileged command request returns missing requirements without approvals"
 
   assert.equal(res.status, 200);
   assert.equal(res.body.toolResults[0].ok, false);
+  assert.equal(res.body.toolResults[0].action, "plan/privileged");
   assert.ok((res.body.missingRequirements || []).length > 0);
+});
+
+test("edit request produces plan and not patch apply", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "edit README.md",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(res.body.actions[0].type, "patch/preview");
+  assert.match(String(res.body.reply || ""), /executed|tool returned/i);
 });
 
 test("patch apply blocked without confirm/token/approval", async (t) => {
@@ -366,26 +386,49 @@ test("git capability mapping requires canUseGit and not canEditRepo", async (t) 
   assert.match(JSON.stringify(res.body), /canUseGit/i);
 });
 
-test("chat privileged action enforces session-bound approval", async (t) => {
+test("chat privileged action stays plan-only and does not execute", async (t) => {
   const root = setupSandbox();
   const { server, base } = await startServer(root);
   t.after(() => server.close());
-
-  const approval = await post(base, "/api/hermes/approval/create", { title: "chat command", sessionId: "session-a" });
-  await post(base, "/api/hermes/approval/decide", { id: approval.body.approval.id, approved: true });
 
   const res = await post(base, "/api/hermes/chat", {
     mode: "admin",
     role: "main_hermes",
     confirmEdit: true,
-    approvalId: approval.body.approval.id,
+    approvalId: "approval_any",
     approvalToken: "test-token",
-    sessionId: "session-b",
+    sessionId: "session-a",
     prompt: "Run npm test",
     history: []
   });
 
   assert.equal(res.status, 200);
   assert.equal(res.body.toolResults[0].ok, false);
-  assert.match(JSON.stringify(res.body.toolResults[0]), /session mismatch/i);
+  assert.equal(res.body.toolResults[0].action, "plan/privileged");
+  assert.match(String(res.body.reply || ""), /planned only/i);
+});
+
+test("failed command returns failure summary and never fake success", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const approval = await post(base, "/api/hermes/approval/create", { title: "run bad cmd" });
+  await post(base, "/api/hermes/approval/decide", { id: approval.body.approval.id, approved: true });
+
+  const res = await post(base, "/api/hermes/action", {
+    mode: "admin",
+    role: "main_hermes",
+    confirmEdit: true,
+    approvalId: approval.body.approval.id,
+    approvalToken: "test-token",
+    action: {
+      type: "command/run",
+      payload: { command: "npm", args: ["definitely-not-a-real-script"] }
+    }
+  });
+
+  assert.equal(res.status, 403);
+  assert.equal(res.body.toolResult.ok, false);
+  assert.match(JSON.stringify(res.body.toolResult), /failed|not allowed|exit code/i);
 });

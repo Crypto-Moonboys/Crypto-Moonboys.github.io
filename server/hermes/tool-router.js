@@ -115,7 +115,7 @@ function routePromptToAction(input = {}) {
   if (/^edit\s+/iu.test(lower)) {
     const target = prompt.replace(/^edit\s+/iu, "").trim() || "README.md";
     actions.push({
-      type: ACTIONS.PATCH_APPLY,
+      type: ACTIONS.PATCH_PREVIEW,
       payload: {
         operations: [{ type: "update", path: target, content: "" }]
       }

@@ -15,6 +15,7 @@ const { executeAction } = require("../server/hermes/tool-executor.js");
 const { ACTIONS } = require("../server/hermes/action-schema.js");
 const { getRegistrySnapshot, getActiveRepoOrThrow } = require("../server/hermes/repo-registry.js");
 const git = require("../server/hermes/git-operator.js");
+const { ROLE_RULES } = require("../server/hermes/agent-runtime.js");
 
 const app = express();
 app.disable("x-powered-by");
@@ -361,7 +362,17 @@ app.get("/api/hermes/policy", (_req, res) => {
 });
 
 app.get("/api/hermes/swarm", (_req, res) => {
-  res.json({ agents: getAgents() });
+  res.json({
+    agents: getAgents(),
+    capabilities: ROLE_RULES,
+    npcRestrictions: {
+      denied: [
+        "website/repo runtime edits",
+        "shell/runtime command execution",
+        "global worker/arcade/block-topia changes"
+      ]
+    }
+  });
 });
 
 app.get("/api/hermes/runtime/root", async (_req, res) => {
