@@ -130,14 +130,14 @@ These files exist in the repository but are **not imported or reachable** from a
 
 | File | Status |
 |---|---|
-| `tests/passive-map-smoke.test.mjs` | **Stale.** Tests old `main.js` patterns (`applyPassiveVisualModeGuards`, `state.controlNodes`, `iso-renderer.js` text labels) that no longer exist in the current `main.js`. |
+| `tests/passive-map-legacy-check.test.mjs` | **Stale.** Tests old `main.js` patterns (`applyPassiveVisualModeGuards`, `state.controlNodes`, `iso-renderer.js` text labels) that no longer exist in the current `main.js`. |
 | `tests/npc-system-import-order.test.mjs` | **Stale.** Tests `world/npc-system.js` and `render/iso-renderer.js` — both are dead archive files. |
 
 ### Tests — active
 
 | File | Status |
 |---|---|
-| `tests/skeleton-smoke.test.mjs` | **Active.** Validates `network.js` exports and bans old handler identifiers. Validates `index.html` wires Colyseus + `connectMultiplayer`. |
+| `tests/skeleton-sanity.test.mjs` | **Active.** Validates `network.js` exports and bans old handler identifiers. Validates `index.html` wires Colyseus + `connectMultiplayer`. |
 | `tests/pick-tile-roundtrip.test.mjs` | **Active.** 2 400 round-trip assertions on `main.js` tile math functions. |
 
 ---

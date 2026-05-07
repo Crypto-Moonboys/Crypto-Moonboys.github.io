@@ -1,5 +1,5 @@
 /**
- * Skeleton smoke test for the Block Topia 2-player isometric skeleton.
+ * Skeleton sanity check for the Block Topia 2-player isometric skeleton.
  *
  * Validates:
  * - network.js exports the expected public API
@@ -342,4 +342,4 @@ assert.ok(
   'network.js should preserve world eventLevel across partial system payloads.',
 );
 
-console.log('Block Topia skeleton smoke checks passed.');
+console.log('Block Topia skeleton sanity checks passed.');

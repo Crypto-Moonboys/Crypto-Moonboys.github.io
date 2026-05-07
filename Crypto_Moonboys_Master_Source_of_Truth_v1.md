@@ -219,7 +219,7 @@ Use this:
 
 Use this:
 
-**City Block Topia / Neon Sprawl is a separate deeper living-wiki game layer planned for integration, preferably under `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/`. It must not be confused with the current `/games/block-topia/` live runtime until it is imported, wired, smoke-tested, and documented.**
+**City Block Topia / Neon Sprawl is a separate deeper living-wiki game layer planned for integration, preferably under `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/`. It must not be confused with the current `/games/block-topia/` live runtime until it is imported, wired, validated, and documented.**
 
 ---
 
@@ -918,7 +918,7 @@ Treat City Block Topia systems as planned, package-present, or integration-stage
 1. imported into the repo,
 2. placed under a clear route,
 3. wired to a page,
-4. smoke-tested,
+4. validated,
 5. documented in runtime truth docs.
 
 ## Needs verification before live claims
@@ -1571,7 +1571,7 @@ Block Topia Live City is the current gated `/games/block-topia/` 2-player Colyse
 
 Block Topia Quest Maze is a separate arcade/RPG score game and Arcade XP path at `/games/block-topia-quest-maze/`.
 
-City Block Topia / Neon Sprawl is a separate deeper living-wiki territory layer planned for integration, preferably under `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/`. It must not be treated as the current `/games/block-topia/` runtime until it is imported, wired, smoke-tested, and documented.
+City Block Topia / Neon Sprawl is a separate deeper living-wiki territory layer planned for integration, preferably under `/games/city-block-topia/` or `/games/block-topia/neon-sprawl/`. It must not be treated as the current `/games/block-topia/` runtime until it is imported, wired, validated, and documented.
 
 Deeper systems are planned, not live, unless explicitly verified and documented.
 

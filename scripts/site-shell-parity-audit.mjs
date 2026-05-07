@@ -198,8 +198,8 @@ for (const rel of LIVE_PAGES) {
   }
 }
 
-// 7. DOM smoke test: site-shell.js must contain all right-panel element markers
-console.log('\n[7] site-shell.js DOM smoke test (static string check)');
+// 7. DOM marker check: site-shell.js must contain all right-panel element markers
+console.log('\n[7] site-shell.js DOM marker check (static string check)');
 if (shellJs) {
   const SMOKE_CHECKS = [
     { needle: "rightPanel.id = 'homepage-right-panel'", label: '#homepage-right-panel' },
@@ -212,9 +212,9 @@ if (shellJs) {
   ];
   for (const { needle, label } of SMOKE_CHECKS) {
     if (shellJs.includes(needle)) {
-      pass(`site-shell.js smoke: ${label} present`);
+      pass(`site-shell.js marker: ${label} present`);
     } else {
-      fail(`site-shell.js smoke: ${label} MISSING`);
+      fail(`site-shell.js marker: ${label} MISSING`);
     }
   }
 }

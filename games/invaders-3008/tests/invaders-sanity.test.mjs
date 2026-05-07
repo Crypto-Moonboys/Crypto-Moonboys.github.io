@@ -1,5 +1,5 @@
 /**
- * Invaders 3008 smoke test (follow-up refactor).
+ * Invaders 3008 sanity check (follow-up refactor).
  *
  * Validates:
  * BOOTSTRAP
@@ -223,4 +223,4 @@ assert.ok(gameFsSrc.includes('overlay-btn-mute'),
 assert.ok(gameFsSrc.includes('overlay-btn-fs'),
   'game-fullscreen.js must provide a FS overlay button (overlay-btn-fs)');
 
-console.log('Invaders 3008 smoke checks passed (refactor).');
+console.log('Invaders 3008 sanity checks passed (refactor).');

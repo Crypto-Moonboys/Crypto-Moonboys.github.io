@@ -82,7 +82,7 @@ City Block Topia / Neon Sprawl / GraffPunk Infiltration is a **separate deeper l
 - Deeper Three.js / Neon Sprawl / GraffPunk tagging and zone-control world.
 - Click → Tag → Zone reacts → Rebel Ink → Rebellion rises → Zone captured.
 - Wiki-linked districts/zones. Battle Chamber events planned. Telegram save/sync planned.
-- Treat advanced modules as planned or package-present unless imported, wired, smoke-tested, and documented.
+- Treat advanced modules as planned or package-present unless imported, wired, validated, and documented.
 
 This is **not** the current `/games/block-topia/` runtime.
 

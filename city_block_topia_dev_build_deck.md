@@ -3,7 +3,7 @@
 **Document status:** integration planning deck, not runtime truth  
 **Target repo:** `Crypto-Moonboys/Crypto-Moonboys.github.io`  
 **Updated:** 2026-05-04  
-**Primary rule:** Neon Sprawl is a separate deeper layer. It is not the current live `/games/block-topia/` runtime until imported, wired, smoke-tested, and documented.
+**Primary rule:** Neon Sprawl is a separate deeper layer. It is not the current live `/games/block-topia/` runtime until imported, wired, validated, and documented.
 
 ---
 
@@ -221,7 +221,7 @@ Rebel Ink is an in-game resource. Do not blur it with tokens, cash value, guaran
 | Three.js isometric Neon Sprawl scene | Integration-pending | Live only after route loads it. |
 | Procedural buildings | Integration-pending | Verify asset/performance behavior. |
 | Zones and bridges | Integration-pending | Must be mapped to wiki slugs. |
-| Click-to-tag | Integration-pending | First smoke-test target. |
+| Click-to-tag | Integration-pending | First validation target. |
 | Rebel Ink | Integration-pending | Must remain in-game resource. |
 | Rebellion meter | Integration-pending | Must drive UI feedback and lore unlocks. |
 | Starter GraffPunk squad | Integration-pending | Verify squad UI and state. |
@@ -569,7 +569,7 @@ Tasks:
 - Verify module paths work on GitHub Pages.
 - Add minimal route styling and fallback UI.
 - Add honest launch placeholder if package fails to load.
-- Add route card to `/games/` only after smoke passes.
+- Add route card to `/games/` only after validation passes.
 
 Exit condition:
 

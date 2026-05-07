@@ -125,7 +125,7 @@ However, several **critical and high-risk issues** exist that must be resolved b
 
 ### M-3: `task-planner.js` — `audit` keyword routes to `test_agent` which has no `canEditRepo`
 - **File:** `server/hermes/task-planner.js`, line 6
-- **Detail:** The regex `/(test|smoke|regression|audit)/u` routes audit tasks to `test_agent`. This is correct for read-only audit flows. However, the task planner is used only in `/api/hermes/task/plan` and is not yet integrated into the main conversation-runtime routing. The `task/plan` route exists but the resulting role from the planner is not fed back into privileged action execution — it's purely advisory.
+- **Detail:** The regex `/(test|validation|regression|audit)/u` routes audit tasks to `test_agent`. This is correct for read-only audit flows. However, the task planner is used only in `/api/hermes/task/plan` and is not yet integrated into the main conversation-runtime routing. The `task/plan` route exists but the resulting role from the planner is not fed back into privileged action execution — it's purely advisory.
 - **Impact:** No actual security risk. The planner output is only informational; actual execution still goes through `executeAction` with explicit role from the request body.
 - **Recommended fix (low priority):** Document that task planning is advisory only. Consider whether the planner role should be enforced as a default role when none is specified.
 

@@ -28,7 +28,7 @@ Block Topia (`/games/block-topia/`) is the current live gated 2-player Colyseus 
 
 | File | What it checks |
 |---|---|
-| `tests/skeleton-smoke.test.mjs` | `network.js` exports, banned old-handler identifiers, `index.html` wiring. |
+| `tests/skeleton-sanity.test.mjs` | `network.js` exports, banned old-handler identifiers, `index.html` wiring. |
 | `tests/pick-tile-roundtrip.test.mjs` | 2 400 tile pick round-trip assertions on `main.js` math. |
 
 ---
