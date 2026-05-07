@@ -950,7 +950,7 @@ function resolveApiBase() {
   return String(process.env.MOONBOYS_API_BASE || DEFAULT_MOONBOYS_API_BASE).replace(/\/$/, '');
 }
 
-export async function validateMultiplayerEntry(options = {}) {
+async function validateMultiplayerEntry(options = {}) {
   const telegramAuth = normalizeAuthPayload(options.telegram_auth ?? options.telegramAuth ?? options.identity_token);
   if (!telegramAuth) {
     return { ok: false, reason: 'telegram_required' };

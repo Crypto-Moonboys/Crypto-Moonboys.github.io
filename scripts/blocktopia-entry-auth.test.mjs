@@ -72,28 +72,49 @@ assertOrdered(
 assertContains(main, 'function setConnectionStatus(status = {})', 'Block Topia main must still expose connection status updates after join');
 
 
-const { validateMultiplayerEntry } = await import('../server/block-topia/src/rooms/MinimalCityRoom.js');
-const originalFetch = globalThis.fetch;
-const validAuth = { id: '123', auth_date: Math.floor(Date.now() / 1000), hash: 'signed' };
-try {
-  let requestedBody = null;
-  globalThis.fetch = async (_url, options = {}) => {
-    requestedBody = JSON.parse(String(options.body || '{}'));
-    return { ok: true, json: async () => ({ ok: true, progression: { arcade_xp_total: 50 } }) };
-  };
-  assert.deepEqual(await validateMultiplayerEntry({ telegram_auth: validAuth }), { ok: true }, 'Telegram-linked user with required XP should enter Block Topia');
-  assert.deepEqual(requestedBody.telegram_auth, validAuth, 'server progression check must receive the expected Telegram auth payload');
-
-  assert.deepEqual(await validateMultiplayerEntry({}), { ok: false, reason: 'telegram_required' }, 'missing Telegram auth should reject with telegram_required');
-
-  globalThis.fetch = async () => ({ ok: false, json: async () => ({ ok: false, error: 'auth_invalid' }) });
-  assert.deepEqual(await validateMultiplayerEntry({ telegram_auth: validAuth }), { ok: false, reason: 'auth_invalid' }, 'expired/invalid auth should reject cleanly');
-
-  globalThis.fetch = async () => ({ ok: true, json: async () => ({ ok: true, progression: { arcade_xp_total: 0 } }) });
-  assert.deepEqual(await validateMultiplayerEntry({ telegram_auth: validAuth }), { ok: false, reason: 'xp_required' }, 'Telegram-linked users below required Arcade XP should stay gated');
-} finally {
-  globalThis.fetch = originalFetch;
+function extractFunction(source, name) {
+  const match = source.match(new RegExp(`(?:export\\s+)?(?:async\\s+)?function\\s+${name}\\s*\\(`));
+  assert.ok(match, `expected to find function ${name}`);
+  const start = match.index;
+  const signatureEnd = source.indexOf(') {', start);
+  assert.ok(signatureEnd > start, `expected signature for function ${name}`);
+  const bodyStart = signatureEnd + 2;
+  let depth = 0;
+  for (let i = bodyStart; i < source.length; i += 1) {
+    const char = source[i];
+    if (char === '{') depth += 1;
+    if (char === '}') depth -= 1;
+    if (depth === 0) return source.slice(start, i + 1).replace(/^export\s+/, '');
+  }
+  throw new Error(`unterminated function ${name}`);
 }
 
+let currentFetch = async () => ({ ok: false, json: async () => ({}) });
+const makeValidatedEntryHarness = new Function('callFetch', `
+  const BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP = 50;
+  const PROGRESSION_FETCH_TIMEOUT_MS = 1000;
+  const fetch = (...args) => callFetch(...args);
+  function resolveApiBase() { return 'https://moonboys-api.test'; }
+  ${extractFunction(room, 'normalizeAuthPayload')}
+  ${extractFunction(room, 'validateMultiplayerEntry')}
+  return { validateMultiplayerEntry, normalizeAuthPayload };
+`);
+const { validateMultiplayerEntry } = makeValidatedEntryHarness((...args) => currentFetch(...args));
+const validAuth = { id: '123', auth_date: Math.floor(Date.now() / 1000), hash: 'signed' };
+let requestedBody = null;
+currentFetch = async (_url, options = {}) => {
+  requestedBody = JSON.parse(String(options.body || '{}'));
+  return { ok: true, json: async () => ({ ok: true, progression: { arcade_xp_total: 50 } }) };
+};
+assert.deepEqual(await validateMultiplayerEntry({ telegram_auth: validAuth }), { ok: true }, 'Telegram-linked user with required XP should enter Block Topia');
+assert.deepEqual(requestedBody.telegram_auth, validAuth, 'server progression check must receive the expected Telegram auth payload');
+
+assert.deepEqual(await validateMultiplayerEntry({}), { ok: false, reason: 'telegram_required' }, 'missing Telegram auth should reject with telegram_required');
+
+currentFetch = async () => ({ ok: false, json: async () => ({ ok: false, error: 'auth_invalid' }) });
+assert.deepEqual(await validateMultiplayerEntry({ telegram_auth: validAuth }), { ok: false, reason: 'auth_invalid' }, 'expired/invalid auth should reject cleanly');
+
+currentFetch = async () => ({ ok: true, json: async () => ({ ok: true, progression: { arcade_xp_total: 0 } }) });
+assert.deepEqual(await validateMultiplayerEntry({ telegram_auth: validAuth }), { ok: false, reason: 'xp_required' }, 'Telegram-linked users below required Arcade XP should stay gated');
 
 console.log('Block Topia entry auth protection checks passed.');
