@@ -1052,8 +1052,8 @@ function _writePersistence(key, { name, faction, district, runLevel }) {
     lastSeen: Date.now(),
   };
   if (_lightweightPersistence.has(key)) {
-    // Delete then re-set to refresh Map insertion order so this key is
-    // treated as most-recently-used for LRU eviction.
+    // Maps preserve insertion order. Delete then re-set moves this key to the
+    // end so it is treated as most-recently-used and not evicted early (LRU).
     _lightweightPersistence.delete(key);
   } else if (_lightweightPersistence.size >= PERSISTENCE_MAX_ENTRIES) {
     // New key and at capacity — evict the oldest-inserted entry.
