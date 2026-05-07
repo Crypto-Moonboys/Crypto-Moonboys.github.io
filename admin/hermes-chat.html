@@ -60,6 +60,22 @@
       <button id="runAction" class="warn">Run /api/hermes/action</button>
       <pre id="actionOutput"></pre>
     </section>
+
+    <section class="panel stack">
+      <h2>Active Repo</h2>
+      <div class="row">
+        <button id="showRuntimeRoot">Show Runtime Root</button>
+        <button id="listRepos">List Registered Repos</button>
+      </div>
+      <div><label>Switch Active Repo (id or name)</label><input id="switchRepoId" placeholder="crypto-moonboys-site"></div>
+      <button id="switchRepo" class="warn">Switch Active Repo</button>
+      <div><label>Register Repo Remote URL</label><input id="registerRepoUrl" placeholder="https://github.com/org/repo"></div>
+      <div><label>Register Repo Local Path</label><input id="registerRepoPath" placeholder="/path/to/repo"></div>
+      <button id="registerRepo" class="warn">Register Repo</button>
+      <div><label>Clone Repo URL (admin-only)</label><input id="cloneRepoUrl" placeholder="https://github.com/org/repo"></div>
+      <button id="cloneRepo" class="danger">Clone + Register Repo</button>
+      <pre id="repoStatus"></pre>
+    </section>
   </main>
 
   <script>

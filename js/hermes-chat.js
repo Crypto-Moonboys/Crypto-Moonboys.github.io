@@ -9,7 +9,8 @@
     plan: el("actionPlan"),
     tools: el("toolResults"),
     missing: el("missingRequirements"),
-    action: el("actionOutput")
+    action: el("actionOutput"),
+    repo: el("repoStatus")
   };
 
   function setOut(node, value) {
@@ -109,5 +110,84 @@
     }
   });
 
-  loadModels().catch((error) => setOut(out.chat, { error: String(error?.message || error) }));
+  async function showRuntimeRoot() {
+    const data = await api("/api/hermes/runtime/root");
+    setOut(out.repo, data);
+  }
+
+  el("showRuntimeRoot").addEventListener("click", async () => {
+    try {
+      await showRuntimeRoot();
+    } catch (error) {
+      setOut(out.repo, { error: String(error?.message || error) });
+    }
+  });
+
+  el("listRepos").addEventListener("click", async () => {
+    try {
+      const data = await api("/api/hermes/repos");
+      setOut(out.repo, data);
+    } catch (error) {
+      setOut(out.repo, { error: String(error?.message || error) });
+    }
+  });
+
+  el("switchRepo").addEventListener("click", async () => {
+    try {
+      const payload = {
+        ...basePayload(),
+        action: {
+          type: "repo/switch",
+          payload: { idOrName: String(el("switchRepoId").value || "").trim() }
+        }
+      };
+      const data = await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) });
+      setOut(out.repo, data);
+      await showRuntimeRoot();
+    } catch (error) {
+      setOut(out.repo, { error: String(error?.message || error) });
+    }
+  });
+
+  el("registerRepo").addEventListener("click", async () => {
+    try {
+      const payload = {
+        ...basePayload(),
+        action: {
+          type: "repo/register",
+          payload: {
+            remoteUrl: String(el("registerRepoUrl").value || "").trim(),
+            localPath: String(el("registerRepoPath").value || "").trim(),
+            name: "Registered Repo"
+          }
+        }
+      };
+      const data = await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) });
+      setOut(out.repo, data);
+    } catch (error) {
+      setOut(out.repo, { error: String(error?.message || error) });
+    }
+  });
+
+  el("cloneRepo").addEventListener("click", async () => {
+    try {
+      const payload = {
+        ...basePayload(),
+        action: {
+          type: "repo/clone",
+          payload: {
+            remoteUrl: String(el("cloneRepoUrl").value || "").trim()
+          }
+        }
+      };
+      const data = await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) });
+      setOut(out.repo, data);
+    } catch (error) {
+      setOut(out.repo, { error: String(error?.message || error) });
+    }
+  });
+
+  loadModels()
+    .then(() => showRuntimeRoot().catch(() => null))
+    .catch((error) => setOut(out.chat, { error: String(error?.message || error) }));
 })();

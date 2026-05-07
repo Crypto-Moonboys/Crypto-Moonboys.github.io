@@ -42,6 +42,10 @@ function clearCache() {
 
 async function startServer(root) {
   process.env.HERMES_REPO_ROOT = root;
+  process.env.HERMES_DATA_ROOT = path.join(root, "admin", "hermes-data");
+  process.env.HERMES_PRIMARY_REPO_ID = "crypto-moonboys-site";
+  process.env.HERMES_PRIMARY_REPO_NAME = "Crypto Moonboys Website";
+  process.env.HERMES_PRIMARY_REPO_REMOTE = "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io";
   process.env.HERMES_EDIT_TOKEN = "test-token";
   clearCache();
   const { app } = require("../api/hermes-api.js");
@@ -360,4 +364,28 @@ test("git capability mapping requires canUseGit and not canEditRepo", async (t) 
 
   assert.equal(res.status, 403);
   assert.match(JSON.stringify(res.body), /canUseGit/i);
+});
+
+test("chat privileged action enforces session-bound approval", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const approval = await post(base, "/api/hermes/approval/create", { title: "chat command", sessionId: "session-a" });
+  await post(base, "/api/hermes/approval/decide", { id: approval.body.approval.id, approved: true });
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "admin",
+    role: "main_hermes",
+    confirmEdit: true,
+    approvalId: approval.body.approval.id,
+    approvalToken: "test-token",
+    sessionId: "session-b",
+    prompt: "Run npm test",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(res.body.toolResults[0].ok, false);
+  assert.match(JSON.stringify(res.body.toolResults[0]), /session mismatch/i);
 });

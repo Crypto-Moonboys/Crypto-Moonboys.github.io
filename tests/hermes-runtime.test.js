@@ -15,7 +15,8 @@ const MODULES = [
   "../server/hermes/agent-runtime.js",
   "../server/hermes/approval-gate.js",
   "../server/hermes/memory-store.js",
-  "../server/hermes/command-runner.js"
+  "../server/hermes/command-runner.js",
+  "../server/hermes/repo-registry.js"
 ];
 
 function clearHermesModules() {
@@ -39,6 +40,10 @@ function setupSandbox() {
 
 function loadWithRoot(root) {
   process.env.HERMES_REPO_ROOT = root;
+  process.env.HERMES_DATA_ROOT = path.join(root, "admin", "hermes-data");
+  process.env.HERMES_PRIMARY_REPO_ID = "crypto-moonboys-site";
+  process.env.HERMES_PRIMARY_REPO_NAME = "Crypto Moonboys Website";
+  process.env.HERMES_PRIMARY_REPO_REMOTE = "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io";
   clearHermesModules();
   return {
     repoIndexer: require("../server/hermes/repo-indexer.js"),

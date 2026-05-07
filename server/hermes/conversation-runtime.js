@@ -29,6 +29,7 @@ async function runConversation(input = {}) {
       confirmEdit: input.confirmEdit === true,
       approvalId: input.approvalId,
       approvalToken: input.approvalToken,
+      sessionId: input.sessionId,
       swarm: getAgents()
     };
 
@@ -43,15 +44,38 @@ async function runConversation(input = {}) {
     }
 
     const failed = results.filter((r) => !r.ok);
-    const summary = failed.length
+    let summary = failed.length
       ? `Action completed with ${failed.length} error(s).`
       : `Executed ${results.length} action(s) successfully.`;
+
+    for (const result of results) {
+      if (!result?.ok) continue;
+      if (result.action === "file/list") {
+        const count = Array.isArray(result.result?.entries) ? result.result.entries.length : 0;
+        summary = `Tool returned only ${count} entries.`;
+      }
+      if (result.action === "repo/search") {
+        const count = Array.isArray(result.result) ? result.result.length : 0;
+        summary = `Tool returned only ${count} entries.`;
+      }
+    }
 
     return {
       reply: summary,
       actions: routing.actions,
       toolResults: results,
       missingRequirements: [...new Set(missing)],
+      mode,
+      role
+    };
+  }
+
+  if (/(repo|directory|directories|file|files|package\.json|index\.html|read\s+)/iu.test(prompt)) {
+    return {
+      reply: "No matching tool action was found for that repo/file request. Tool result is required; Hermes will not invent files.",
+      actions: [],
+      toolResults: [],
+      missingRequirements: [],
       mode,
       role
     };

@@ -1,7 +1,8 @@
 ﻿"use strict";
 
 const { spawn } = require("node:child_process");
-const { MAX_COMMAND_TIMEOUT_MS, REPO_ROOT } = require("./config.js");
+const { MAX_COMMAND_TIMEOUT_MS } = require("./config.js");
+const { getActiveRepoRoot } = require("./path-utils.js");
 
 const ALLOWED_COMMANDS = [
   ["npm", "install"],
@@ -37,7 +38,7 @@ function runProcess(task) {
     let child;
     try {
       child = spawn(task.command, task.args, {
-        cwd: REPO_ROOT,
+        cwd: getActiveRepoRoot(),
         shell: false,
         env: process.env
       });

@@ -57,6 +57,36 @@ function routePromptToAction(input = {}) {
     return { actions, unmatched: false };
   }
 
+  if (/switch\s+active\s+repo\s+to\s+/iu.test(lower)) {
+    const value = prompt.replace(/.*switch\s+active\s+repo\s+to\s*/iu, "").trim();
+    actions.push({ type: ACTIONS.REPO_SWITCH, payload: { idOrName: value } });
+    return { actions, unmatched: false };
+  }
+
+  if (/show\s+active\s+repo$/iu.test(lower) || /^active\s+repo$/iu.test(lower)) {
+    actions.push({ type: ACTIONS.REPO_SHOW_ACTIVE, payload: {} });
+    return { actions, unmatched: false };
+  }
+
+  if (/list\s+registered\s+repos|show\s+registered\s+repos/iu.test(lower)) {
+    actions.push({ type: ACTIONS.REPO_LIST, payload: {} });
+    return { actions, unmatched: false };
+  }
+
+  if (/register\s+this\s+repo\s*:/iu.test(lower)) {
+    const remoteUrl = (prompt.match(/https?:\/\/\S+/iu) || [])[0] || "";
+    const localPathMatch = prompt.match(/\bat\s+([^\n]+)$/iu);
+    const localPath = localPathMatch ? String(localPathMatch[1] || "").trim() : "";
+    actions.push({ type: ACTIONS.REPO_REGISTER, payload: { remoteUrl, localPath } });
+    return { actions, unmatched: false };
+  }
+
+  if (/register\s+and\s+clone\s+https?:\/\//iu.test(lower) || /^clone\s+https?:\/\//iu.test(lower)) {
+    const remoteUrl = (prompt.match(/https?:\/\/\S+/iu) || [])[0] || "";
+    actions.push({ type: ACTIONS.REPO_CLONE, payload: { remoteUrl } });
+    return { actions, unmatched: false };
+  }
+
   if (/git\s+status/iu.test(lower)) {
     actions.push({ type: ACTIONS.GIT_STATUS, payload: {} });
     return { actions, unmatched: false };

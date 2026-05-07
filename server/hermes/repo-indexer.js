@@ -2,8 +2,9 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { REPO_ROOT, INDEX_CACHE_FILE, MAX_SEARCH_RESULTS } = require("./config.js");
-const { shouldIgnoreDir, isDeniedPath } = require("./path-utils.js");
+const { INDEX_CACHE_DIR, MAX_SEARCH_RESULTS } = require("./config.js");
+const { shouldIgnoreDir, isDeniedPath, getActiveRepoRoot } = require("./path-utils.js");
+const { getActiveRepoOrThrow } = require("./repo-registry.js");
 
 function detectLanguage(filePath) {
   const ext = path.extname(filePath).toLowerCase();
@@ -16,16 +17,16 @@ function detectLanguage(filePath) {
   return map[ext] || "text";
 }
 
-function walk(dirAbs, acc = []) {
+function walk(repoRoot, dirAbs, acc = []) {
   const entries = fs.readdirSync(dirAbs, { withFileTypes: true });
   for (const entry of entries) {
     const nextAbs = path.join(dirAbs, entry.name);
-    const rel = path.relative(REPO_ROOT, nextAbs).replace(/\\/gu, "/");
+    const rel = path.relative(repoRoot, nextAbs).replace(/\\/gu, "/");
     if (entry.isDirectory()) {
       if (shouldIgnoreDir(entry.name)) {
         continue;
       }
-      walk(nextAbs, acc);
+      walk(repoRoot, nextAbs, acc);
       continue;
     }
     if (isDeniedPath(rel)) {
@@ -41,23 +42,29 @@ function walk(dirAbs, acc = []) {
 }
 
 function buildIndex() {
-  const files = walk(REPO_ROOT);
+  const activeRepo = getActiveRepoOrThrow();
+  const repoRoot = getActiveRepoRoot();
+  const files = walk(repoRoot, repoRoot);
   const index = {
     generatedAt: new Date().toISOString(),
-    root: REPO_ROOT,
+    repoId: activeRepo.id,
+    root: repoRoot,
     files
   };
 
-  fs.mkdirSync(path.dirname(INDEX_CACHE_FILE), { recursive: true });
-  fs.writeFileSync(INDEX_CACHE_FILE, JSON.stringify(index, null, 2));
+  fs.mkdirSync(INDEX_CACHE_DIR, { recursive: true });
+  const indexPath = path.join(INDEX_CACHE_DIR, `${activeRepo.id}.json`);
+  fs.writeFileSync(indexPath, JSON.stringify(index, null, 2));
   return index;
 }
 
 function loadIndex() {
-  if (!fs.existsSync(INDEX_CACHE_FILE)) {
+  const activeRepo = getActiveRepoOrThrow();
+  const indexPath = path.join(INDEX_CACHE_DIR, `${activeRepo.id}.json`);
+  if (!fs.existsSync(indexPath)) {
     return buildIndex();
   }
-  return JSON.parse(fs.readFileSync(INDEX_CACHE_FILE, "utf8"));
+  return JSON.parse(fs.readFileSync(indexPath, "utf8"));
 }
 
 function searchIndex(query, options = {}) {

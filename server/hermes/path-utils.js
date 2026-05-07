@@ -2,12 +2,18 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
-const { REPO_ROOT, DENY_PATTERNS, IGNORE_DIRS } = require("./config.js");
+const { DENY_PATTERNS, IGNORE_DIRS } = require("./config.js");
+const { getActiveRepoOrThrow } = require("./repo-registry.js");
+
+function getActiveRepoRoot() {
+  return path.resolve(getActiveRepoOrThrow().localPath);
+}
 
 function normalizeRepoPath(inputPath) {
+  const repoRoot = getActiveRepoRoot();
   const raw = String(inputPath || "").trim();
   if (!raw) {
-    return { relPath: ".", absPath: REPO_ROOT };
+    return { relPath: ".", absPath: repoRoot, repoRoot };
   }
 
   if (path.isAbsolute(raw)) {
@@ -15,12 +21,12 @@ function normalizeRepoPath(inputPath) {
   }
 
   const rel = raw.replace(/\\/gu, "/").replace(/^\/+/, "");
-  const resolved = path.resolve(REPO_ROOT, rel);
-  const relative = path.relative(REPO_ROOT, resolved);
+  const resolved = path.resolve(repoRoot, rel);
+  const relative = path.relative(repoRoot, resolved);
   if (relative.startsWith("..") || path.isAbsolute(relative)) {
     throw new Error("Path escapes repository root.");
   }
-  return { relPath: relative.replace(/\\/gu, "/") || ".", absPath: resolved };
+  return { relPath: relative.replace(/\\/gu, "/") || ".", absPath: resolved, repoRoot };
 }
 
 function isDeniedPath(inputPath) {
@@ -44,6 +50,7 @@ function ensureParentDir(absPath) {
 }
 
 module.exports = {
+  getActiveRepoRoot,
   normalizeRepoPath,
   isDeniedPath,
   assertAllowedPath,
