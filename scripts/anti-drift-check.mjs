@@ -56,6 +56,10 @@ const FORBIDDEN_TERMS = [
   { label: 'term-14', value: ['integration', 'staged'].join('-') },
   { label: 'term-15', value: ['source', 'present'].join('-') },
 ];
+const FORBIDDEN_TERMS_LOWER = FORBIDDEN_TERMS.map((term) => ({
+  ...term,
+  valueLower: String(term.value).toLowerCase(),
+}));
 
 function isScanFile(filePath) {
   return FILE_EXTENSIONS.has(path.extname(filePath));
@@ -92,8 +96,8 @@ for (const filePath of filesToScan) {
   const relPath = path.relative(ROOT, filePath);
   const content = fs.readFileSync(filePath, 'utf8');
   const contentLower = content.toLowerCase();
-  for (const term of FORBIDDEN_TERMS) {
-    if (contentLower.includes(String(term.value).toLowerCase())) {
+  for (const term of FORBIDDEN_TERMS_LOWER) {
+    if (contentLower.includes(term.valueLower)) {
       failures.push(`Forbidden term "${term.label}" found in ${relPath}`);
     }
   }
