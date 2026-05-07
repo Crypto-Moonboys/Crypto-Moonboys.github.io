@@ -17,6 +17,9 @@ const allowedOriginSet = new Set(ALLOWED_ORIGINS);
 
 const app = express();
 app.disable("x-powered-by");
+if (String(process.env.BRAIN_TRUST_PROXY || "").trim().toLowerCase() === "true") {
+  app.set("trust proxy", true);
+}
 app.use(cors({
   origin(origin, callback) {
     if (!origin || allowedOriginSet.has(origin)) {
@@ -27,7 +30,17 @@ app.use(cors({
 }));
 app.use(express.json({ limit: "128kb" }));
 
-const PORT = Number(process.env.BRAIN_API_PORT || 3001);
+function readPortFromEnv() {
+  const raw = String(process.env.BRAIN_API_PORT || "3001").trim();
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 1 || value > 65535) {
+    throw new Error(`Invalid BRAIN_API_PORT "${raw}". Expected an integer between 1 and 65535.`);
+  }
+  return value;
+}
+
+const PORT = readPortFromEnv();
+const BRAIN_API_BIND_HOST = String(process.env.BRAIN_API_BIND_HOST || "127.0.0.1").trim() || "127.0.0.1";
 const NPC_BRAIN = "http://127.0.0.1:3000";
 
 // --- P1: refuse insecure/missing token at the token-read site ---
@@ -547,11 +560,7 @@ setInterval(() => {
 }, NPC_RATE_WINDOW_MS * 2).unref();
 
 function checkNpcRateLimit(req, res) {
-  // Prefer x-forwarded-for when behind a trusted reverse proxy; fall back to
-  // socket IP. Express's req.ip already respects trust proxy settings.
-  const key = String(
-    (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.ip || "unknown"
-  );
+  const key = String(req.ip || "unknown");
   const now = Date.now();
   const record = _npcRateHits.get(key) || { count: 0, start: now };
   if (now - record.start > NPC_RATE_WINDOW_MS) {
@@ -691,8 +700,9 @@ if (require.main === module) {
     console.error("[brain-api] FATAL: BRAIN_ADMIN_TOKEN must be set to a non-default secret value. Refusing to start.");
     process.exit(1);
   }
-  // --- P1: bind to 127.0.0.1 only, not 0.0.0.0 ---
-  app.listen(PORT, "127.0.0.1", () => console.log(`BRAIN API running on http://127.0.0.1:${PORT}`));
+  app.listen(PORT, BRAIN_API_BIND_HOST, () => {
+    console.log(`BRAIN API running on http://${BRAIN_API_BIND_HOST}:${PORT}`);
+  });
 }
 
 module.exports = { app };

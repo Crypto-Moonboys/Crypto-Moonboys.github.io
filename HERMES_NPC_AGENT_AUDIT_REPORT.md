@@ -7,6 +7,27 @@
 
 ---
 
+## Snapshot vs. remediation status (important)
+
+This document is a **point-in-time audit snapshot**. Findings below describe conditions observed at audit time and are not automatically updated when fixes land later in the same branch.
+
+When reviewing this file after hardening commits:
+- Treat sections 2–6 as the original snapshot evidence.
+- Verify current status from code + test results in the PR diff.
+- Do not interpret unresolved wording in older sections as proof a fix is still missing.
+
+### Post-audit remediation status on this branch (2026-05-07 update)
+
+- C-1 (`express` runtime availability): **Addressed** via CI test workflow running dependency install before tests.
+- C-2 (hardcoded `/root` repo/NPC paths): **Addressed** with env-driven path config defaults under `/home/moonboys/...`.
+- C-3 (`commit-backup` unrestricted push): **Addressed** with main/master/detached-head guard.
+- H-1 (wildcard CORS): **Addressed** with explicit allowlist.
+- H-2 (NPC creation approval gap): **Partially addressed** in backend with dry-run + explicit confirm, and admin UI flow updated to use that path.
+- H-3 (`process.env` child-process leak): **Addressed** with explicit env allowlist.
+- H-5 (insecure `BRAIN_ADMIN_TOKEN` default fallback): **Addressed** with startup refusal on missing/insecure token.
+
+---
+
 ## 1. Executive Summary
 
 The Hermes runtime is a solid, layered system with meaningful security controls: approval gating, token-gated privileged actions, path traversal blocking, main/master push protections, SSRF guards in the webcrawl agent, and NPC role restrictions are all correctly implemented.

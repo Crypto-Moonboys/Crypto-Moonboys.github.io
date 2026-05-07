@@ -245,7 +245,23 @@ READ ONLY:
   </div>
 
   <script>
-    const API = "http://158.220.91.71:3001/api/brain";
+    function normalizeApiBase(value) {
+      return String(value || "").trim().replace(/\/+$/, "");
+    }
+
+    function detectApiBase() {
+      const queryOverride = normalizeApiBase(new URLSearchParams(window.location.search).get("brainApi"));
+      const storedOverride = normalizeApiBase(localStorage.getItem("moonboys_brain_api_base"));
+      if (queryOverride) return queryOverride;
+      if (storedOverride) return storedOverride;
+      if (window.location?.origin && window.location.origin !== "null") {
+        return `${window.location.origin}/api/brain`;
+      }
+      const host = window.location?.hostname || "127.0.0.1";
+      return `http://${host}:3001/api/brain`;
+    }
+
+    const API = detectApiBase();
     const TOKEN_KEY = "moonboys_brain_admin_token";
     let adminToken = localStorage.getItem(TOKEN_KEY) || "";
     let selectedNpc = null;
@@ -308,25 +324,55 @@ READ ONLY:
       }
     }
 
-    async function createNpc() {
-      const result = document.getElementById("createNpcResult");
-      const body = {
+    function buildNpcCreatePayload() {
+      return {
         name: document.getElementById("newNpcName").value.trim(),
         brand: document.getElementById("newNpcBrand").value.trim(),
         tone: document.getElementById("newNpcTone").value.trim(),
         role: document.getElementById("newNpcRole").value.trim()
       };
+    }
+
+    async function createNpc() {
+      const result = document.getElementById("createNpcResult");
+      const body = buildNpcCreatePayload();
 
       if (!body.name) {
         result.textContent = "NPC name is required.";
         return;
       }
 
-      result.textContent = "Creating NPC template...";
+      result.textContent = "Running dry-run preview...";
+      const preview = await getJson(API + "/create-npc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...body, dryRun: true })
+      });
+
+      if (!preview.success) {
+        result.textContent = "Preview failed: " + (preview.error || "unknown error");
+        return;
+      }
+
+      const confirmText = [
+        "⚠️ Live NPC creation confirmation",
+        "",
+        `Name: ${body.name}`,
+        `Brand: ${body.brand || "Crypto Moonboys"}`,
+        "",
+        "This will write live NPC files and restart npc-brain.",
+        "Press OK to continue or Cancel to abort."
+      ].join("\n");
+      if (!window.confirm(confirmText)) {
+        result.textContent = "NPC creation cancelled.";
+        return;
+      }
+
+      result.textContent = "Creating NPC...";
       const data = await getJson(API + "/create-npc", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
+        body: JSON.stringify({ ...body, confirmCreate: true })
       });
 
       if (!data.success) {
