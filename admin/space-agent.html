@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Space Agent | Protected Workspace</title>
+  <title>Hermes Local Chat | Protected Workspace</title>
   <meta name="robots" content="noindex,nofollow">
   <style>
     :root {
@@ -96,13 +96,12 @@
 </head>
 <body>
   <main class="card">
-    <h1>Space Agent Protected Workspace</h1>
+    <h1>Hermes Local Chat Workspace</h1>
     <p>
-      Space Agent is a protected workspace for repo inspection, planning, patch generation,
-      and controlled website work.
+      Hermes local chat is the protected website-facing assistant route, backed by a localhost-only Ollama proxy.
     </p>
-    <a class="cta" href="https://space.cryptomoonboys.com" target="_blank" rel="noopener noreferrer">
-      Open Protected Space Agent
+    <a class="cta" href="/admin/hermes-chat.html" rel="noopener noreferrer">
+      Open Hermes Local Chat
     </a>
 
     <section class="rules">
@@ -122,10 +121,10 @@
     </section>
 
     <div class="warn">
-      Access requires Nginx HTTP Basic Auth first, then Space Agent login.
+      Ollama remains private on localhost. Public traffic must go through backend API proxy only.
     </div>
     <p class="small">
-      This page is a launcher only. No credentials are embedded here.
+      This page is a launcher only. No credentials or direct Ollama endpoint are exposed here.
     </p>
   </main>
 </body>
