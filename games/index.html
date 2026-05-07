@@ -316,7 +316,9 @@ function formatPoints(value) {
 }
 
 function formatReset(ms) {
-  const diff = Math.max(0, Number(ms) - Date.now());
+  const timestamp = Number(ms);
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return 'pending';
+  const diff = Math.max(0, timestamp - Date.now());
   const hours = Math.floor(diff / (60 * 60 * 1000));
   const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
   if (hours >= 24) return `${Math.floor(hours / 24)}d ${hours % 24}h`;

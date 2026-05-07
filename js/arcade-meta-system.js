@@ -300,6 +300,49 @@ function getRogueliteLimits() {
   };
 }
 
+function sanitizeCycleWindow(input, fallback) {
+  const source = input && typeof input === 'object' ? input : {};
+  const base = fallback && typeof fallback === 'object' ? fallback : {};
+  const points = Math.max(0, Math.floor(Number(source.points ?? base.points) || 0));
+  const target = Math.max(1, Math.floor(Number(source.target ?? base.target) || 1));
+  const startsAt = Number.isFinite(Number(source.starts_at)) ? Number(source.starts_at) : (Number(base.starts_at) || null);
+  const resetsAt = Number.isFinite(Number(source.resets_at)) ? Number(source.resets_at) : (Number(base.resets_at) || null);
+  return {
+    key: typeof source.key === 'string' ? source.key : String(base.key || ''),
+    label: typeof source.label === 'string' ? source.label : String(base.label || 'Loop window'),
+    points,
+    target,
+    starts_at: startsAt,
+    resets_at: resetsAt,
+    reset_timezone: 'UTC',
+    progress: clamp(points / target, 0, 1),
+  };
+}
+
+function sanitizeLoopCycle(input, fallback) {
+  const source = input && typeof input === 'object' ? input : {};
+  const base = fallback && typeof fallback === 'object' ? fallback : createLoopCycleModel(nowMs());
+  return {
+    reset_timezone: 'UTC',
+    daily_objectives: sanitizeCycleWindow(source.daily_objectives, base.daily_objectives),
+    weekly_faction_pressure: sanitizeCycleWindow(source.weekly_faction_pressure, base.weekly_faction_pressure),
+    monthly_clout_chase: sanitizeCycleWindow(source.monthly_clout_chase, base.monthly_clout_chase),
+    seasonal_campaign_pressure: sanitizeCycleWindow(source.seasonal_campaign_pressure, base.seasonal_campaign_pressure),
+  };
+}
+
+function sanitizeNextAction(input) {
+  if (!input || typeof input !== 'object') return null;
+  const urgency = ['normal', 'high', 'critical'].includes(String(input.urgency)) ? String(input.urgency) : 'normal';
+  return {
+    path: String(input.path || 'daily').replace(/[^a-z0-9_-]/gi, '').slice(0, 32) || 'daily',
+    label: String(input.label || 'Run any active arcade game to continue the loop').slice(0, 140),
+    task_id: input.task_id ? String(input.task_id).slice(0, 80) : null,
+    game: input.game ? normalizeGame(input.game) : null,
+    urgency,
+  };
+}
+
 function sanitizeEngagement(input, fallback) {
   const source = input && typeof input === 'object' ? input : {};
   const limits = getRogueliteLimits();
@@ -312,8 +355,8 @@ function sanitizeEngagement(input, fallback) {
     streak_days: Math.max(0, Math.floor(Number(source.streak_days) || 0)),
     last_completed_day: typeof source.last_completed_day === 'string' ? source.last_completed_day : null,
     total_auto_submits: Math.max(0, Math.floor(Number(source.total_auto_submits) || 0)),
-    loop_cycle: source.loop_cycle && typeof source.loop_cycle === 'object' ? source.loop_cycle : fallback.loop_cycle,
-    next_action: source.next_action && typeof source.next_action === 'object' ? source.next_action : null,
+    loop_cycle: sanitizeLoopCycle(source.loop_cycle, fallback.loop_cycle),
+    next_action: sanitizeNextAction(source.next_action),
   };
 }
 
@@ -756,9 +799,7 @@ function spawnRabbitHoles(state, completedTask, now, minCount, maxCount) {
 
 function createBranchOptions(state, completedTask, now) {
   if (!state.engagement) state.engagement = createInitialEngagement(now);
-  const comeback = getComebackPressure(now);
-  const branchPaths = ['easy', 'risk', 'faction', 'competitive', 'exploration', comeback ? 'comeback' : 'competitive']
-    .filter((path, index, arr) => arr.indexOf(path) === index)
+  const branchPaths = ['easy', 'risk', 'faction', 'competitive', 'exploration', 'comeback']
     .slice(0, getRogueliteLimits().branchCount);
   const spawned = [];
   const branches = branchPaths.map((path) => {

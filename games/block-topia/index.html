@@ -223,6 +223,20 @@
         return payload.progression || null;
       }
 
+
+      async function resolveBlockTopiaTelegramAuth(identity) {
+        let telegramAuth =
+          identity && typeof identity.getSignedTelegramAuth === "function"
+            ? identity.getSignedTelegramAuth()
+            : null;
+        if (!telegramAuth && identity && typeof identity.restoreLinkedTelegramAuth === "function") {
+          const restored = await identity.restoreLinkedTelegramAuth({ force: true }).catch(() => null);
+          telegramAuth = restored?.ok ? restored.telegram_auth : null;
+        }
+        if (!telegramAuth || !telegramAuth.hash || !telegramAuth.auth_date) return null;
+        return telegramAuth;
+      }
+
       async function runGateAndLaunch() {
         const identity = window.MOONBOYS_IDENTITY || null;
 
@@ -246,14 +260,7 @@
         }
 
         // ── Step 2: Resolve signed auth token ────────────────────────
-        let telegramAuth =
-          identity && typeof identity.getSignedTelegramAuth === "function"
-            ? identity.getSignedTelegramAuth()
-            : null;
-        if (!telegramAuth && identity && typeof identity.restoreLinkedTelegramAuth === "function") {
-          const restored = await identity.restoreLinkedTelegramAuth().catch(() => null);
-          telegramAuth = restored?.ok ? restored.telegram_auth : null;
-        }
+        const telegramAuth = await resolveBlockTopiaTelegramAuth(identity);
         if (!telegramAuth) {
           console.log("blocktopia_gate_progression_result", JSON.stringify({
             linked: true,

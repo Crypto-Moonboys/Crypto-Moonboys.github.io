@@ -92,10 +92,10 @@ for (const relPath of FORBIDDEN_PATHS) {
   }
 }
 
-const filesToScan = SCAN_TARGETS.flatMap((relPath) => {
+const filesToScan = Array.from(new Set(SCAN_TARGETS.flatMap((relPath) => {
   const absPath = path.join(ROOT, relPath);
   return fs.existsSync(absPath) ? walk(absPath) : [];
-});
+}))).sort();
 
 for (const filePath of filesToScan) {
   const relPath = path.relative(ROOT, filePath);

@@ -75,6 +75,9 @@ assertContains(meta, 'completeEngagementLoops(state, run, timestamp)', 'trackGam
 assertContains(meta, 'updateStreakState(state, run)', 'trackGameResult() must update streaks');
 assertContains(meta, 'updateCloutWindows(state, run, metaPoints', 'trackGameResult() must update clout');
 assertContains(meta, 'refreshLoopCycleState(state, timestamp)', 'trackGameResult() must refresh shared loop/next-action state');
+assertContains(meta, 'function sanitizeLoopCycle', 'ArcadeMeta must sanitize stored loop_cycle cache');
+assertContains(meta, 'function sanitizeNextAction', 'ArcadeMeta must sanitize stored next_action cache');
+assertContains(meta, "const branchPaths = ['easy', 'risk', 'faction', 'competitive', 'exploration', 'comeback']", 'normal branch rolls must keep the configured six branch paths');
 assertContains(meta, 'roguelite: state.engagement', 'trackGameResult() must return roguelite state to callers');
 assertContains(meta, 'next_action: state.engagement.next_action', 'trackGameResult() must return next-action state to callers/events');
 for (const branch of ['easy', 'risk', 'faction', 'competitive', 'exploration', 'comeback']) {
@@ -86,6 +89,7 @@ for (const cloutKey of ['daily', 'weekly', 'monthly', 'seasonal', 'streak', 'fac
 
 const hub = await read('games/index.html');
 assertContains(hub, 'id="roguelite-loop-board"', 'games/index.html must render roguelite-loop-board');
+assertContains(hub, "if (!Number.isFinite(timestamp) || timestamp <= 0) return 'pending';", 'formatReset() must guard invalid reset timestamps');
 assertContains(hub, 'protected browser-driven roguelite post-run loop', 'games/index.html must state frontend-driven shared loop truth');
 for (const label of ['Active daily cycle', 'Weekly faction target', 'Monthly clout target', 'Seasonal preview target', 'Next best action']) {
   assertContains(hub, label, `roguelite-loop-board must show ${label}`);
