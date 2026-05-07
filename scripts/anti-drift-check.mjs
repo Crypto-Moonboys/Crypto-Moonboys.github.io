@@ -33,12 +33,15 @@ const FORBIDDEN_PATHS = [
   ['docs', 'block-topia', ['multiplayer', 'architecture.md'].join('-')].join('/'),
   ['docs', 'block-topia', ['player', 'experience.md'].join('-')].join('/'),
   ['docs', 'block-topia', ['visual', 'asset', 'pipeline.md'].join('-')].join('/'),
-  ['games', 'block-topia', ['CURRENT', 'STATE', 'AUDIT.md'].join('_')].join('/'),
+  // CURRENT_STATE_AUDIT.md (games/block-topia/CURRENT_STATE_AUDIT.md) is now
+  // a live truth document — no longer forbidden
   ['workers', 'moonboys-api', 'blocktopia', ['covert', 'js'].join('.')].join('/'),
   [['HERMES', 'AGENT', 'RUNTIME', 'HANDOVER.md'].join('_')][0],
   [['HERMES', 'NPC', 'AGENT', 'AUDIT', 'REPORT.md'].join('_')][0],
   [['Crypto', 'Moonboys', 'Master', 'Source', 'of', 'Truth', 'v1.md'].join('_')][0],
   [['city', 'block', 'topia', 'dev', 'build', 'deck.md'].join('_')][0],
+  // Anti-drift: old block-topia room file that was replaced by MinimalCityRoom.js
+  ['server', 'block-topia', 'src', 'rooms', ['City', 'Room.js'].join('')].join('/'),
 ];
 
 const FORBIDDEN_TERMS = [
@@ -60,7 +63,18 @@ const FORBIDDEN_TERMS = [
   { label: 'term-16', value: ['space', 'agent'].join('_') },
   { label: 'term-17', value: ['space', 'agent'].join('/') },
   { label: 'term-18', value: ['space', 'agent'].join('.') },
+  // Anti-drift: block-topia runtime protection terms
+  { label: 'term-19', value: ['faction', 'war', 'runtime'].join(' ') },
+  { label: 'term-21', value: ['Neon', 'Sprawl', 'merge'].join(' ') },
+  { label: 'term-24', value: ['SAM', 'world', 'brain'].join(' ') },
+  { label: 'term-25', value: ['covert', 'ops'].join(' ') },
 ];
+// Files whose content must not be checked for forbidden terms.
+// These are truth/audit documents that explicitly list forbidden patterns for documentation.
+const SCAN_TERM_EXCLUDED_FILES = new Set([
+  path.join(ROOT, 'games', 'block-topia', 'CURRENT_STATE_AUDIT.md'),
+]);
+
 const FORBIDDEN_TERMS_LOWER = FORBIDDEN_TERMS.map((term) => ({
   ...term,
   valueLower: String(term.value).toLowerCase(),
@@ -99,6 +113,7 @@ const filesToScan = Array.from(new Set(SCAN_TARGETS.flatMap((relPath) => {
 
 for (const filePath of filesToScan) {
   const relPath = path.relative(ROOT, filePath);
+  if (SCAN_TERM_EXCLUDED_FILES.has(filePath)) continue;
   const content = fs.readFileSync(filePath, 'utf8');
   const contentLower = content.toLowerCase();
   for (const term of FORBIDDEN_TERMS_LOWER) {
