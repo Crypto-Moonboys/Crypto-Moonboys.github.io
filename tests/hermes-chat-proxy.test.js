@@ -127,3 +127,13 @@ test("api cors config is explicit and not wildcard", () => {
   assert.doesNotMatch(apiSource, /cors\(\)/);
   assert.doesNotMatch(apiSource, /["']\*["']/);
 });
+
+test("api exposes explicit hermes and npc policy contract", () => {
+  const apiSource = fs.readFileSync(
+    path.join(__dirname, "..", "api", "hermes-api.js"),
+    "utf8"
+  );
+  assert.match(apiSource, /\/api\/hermes\/policy/);
+  assert.match(apiSource, /npcAgent/);
+  assert.match(apiSource, /agent_edit/);
+});
