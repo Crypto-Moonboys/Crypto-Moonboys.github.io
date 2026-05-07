@@ -506,8 +506,7 @@ function renderFactionStandings() {
 
   var preSeasonCopy = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
     ? window.UI_STATUS_COPY.panels.preSeasonFactionSignal()
-    : '<p class="lb-fw-preseason">Faction signal is currently based on local arcade activity in this browser. '
-      + 'Linked-player faction standings are tracked server-side.</p>';
+    : '<p class="lb-fw-preseason">Faction signal is unavailable because shared status copy did not load.</p>';
 
   var allZero = standings.length > 0 && standings.every(function (s) { return s.power === 0 && s.daily === 0 && s.weekly === 0; });
 

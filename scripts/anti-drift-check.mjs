@@ -91,8 +91,9 @@ const filesToScan = SCAN_TARGETS.flatMap((relPath) => {
 for (const filePath of filesToScan) {
   const relPath = path.relative(ROOT, filePath);
   const content = fs.readFileSync(filePath, 'utf8');
+  const contentLower = content.toLowerCase();
   for (const term of FORBIDDEN_TERMS) {
-    if (content.includes(term.value)) {
+    if (contentLower.includes(String(term.value).toLowerCase())) {
       failures.push(`Forbidden term "${term.label}" found in ${relPath}`);
     }
   }
