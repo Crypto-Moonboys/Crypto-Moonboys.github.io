@@ -280,6 +280,59 @@
       align-items: end;
     }
 
+    .swarm-box {
+      border: 1px solid rgba(109, 255, 162, 0.35);
+      border-radius: var(--radius-sm);
+      background: rgba(4, 13, 10, 0.55);
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .swarm-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .swarm-actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .swarm-note {
+      border: 1px dashed rgba(109, 255, 162, 0.35);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      color: #c8f9dc;
+      background: rgba(8, 29, 20, 0.5);
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 10px;
+    }
+
+    .checkbox-grid label {
+      margin: 0;
+      text-transform: none;
+      letter-spacing: normal;
+      font-size: 0.82rem;
+      color: #d6f1ff;
+      display: flex;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .checkbox-grid input[type="checkbox"] {
+      width: auto;
+      accent-color: var(--ok);
+    }
+
     .subtle {
       border-top: 1px dashed rgba(96, 213, 255, 0.25);
       padding-top: 10px;
@@ -293,6 +346,9 @@
       .row { grid-template-columns: 1fr; }
       .ops-grid { grid-template-columns: 1fr; }
       .template-row { grid-template-columns: 1fr; }
+      .swarm-grid { grid-template-columns: 1fr; }
+      .checkbox-grid { grid-template-columns: 1fr; }
+      .swarm-actions { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -382,6 +438,78 @@
             <button class="control-btn" data-hermes-prompt="Cancel or stop the current task safely and report current state without applying edits.">Cancel/stop current task</button>
             <button class="control-btn safe" data-hermes-prompt="Show rollback options for recent changes and safest restoration path." data-hermes-autosend="true">Show rollback options</button>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Swarm Builder</h2>
+      <div class="muted">Build a clear swarm task without writing commands. Hermes will coordinate selected specialist agents while keeping work sandbox-first.</div>
+
+      <div class="swarm-box">
+        <div>
+          <label for="swarmMainTask">What do you want Hermes to build or fix?</label>
+          <textarea id="swarmMainTask" placeholder="Example: Rebuild the admin dashboard UI and fix broken navigation states."></textarea>
+        </div>
+
+        <div>
+          <label>Swarm Presets</label>
+          <div class="control-buttons">
+            <button class="control-btn" data-swarm-preset="Website Rebuild Swarm">Website Rebuild Swarm</button>
+            <button class="control-btn" data-swarm-preset="Bug Fix Swarm">Bug Fix Swarm</button>
+            <button class="control-btn" data-swarm-preset="UI Design Swarm">UI Design Swarm</button>
+            <button class="control-btn" data-swarm-preset="Testing Swarm">Testing Swarm</button>
+            <button class="control-btn" data-swarm-preset="Deploy Review Swarm">Deploy Review Swarm</button>
+            <button class="control-btn" data-swarm-preset="Repo Audit Swarm">Repo Audit Swarm</button>
+            <button class="control-btn" data-swarm-preset="Full Task Swarm">Full Task Swarm</button>
+          </div>
+        </div>
+
+        <div class="swarm-grid">
+          <div>
+            <label>Agent Roles</label>
+            <div class="checkbox-grid">
+              <label><input type="checkbox" class="swarm-agent" value="Main Hermes Agent" checked> Main Hermes Agent</label>
+              <label><input type="checkbox" class="swarm-agent" value="UI Agent" checked> UI Agent</label>
+              <label><input type="checkbox" class="swarm-agent" value="Runtime Agent" checked> Runtime Agent</label>
+              <label><input type="checkbox" class="swarm-agent" value="Test Agent" checked> Test Agent</label>
+              <label><input type="checkbox" class="swarm-agent" value="Deploy Agent"> Deploy Agent</label>
+              <label><input type="checkbox" class="swarm-agent" value="Repo Audit Agent"> Repo Audit Agent</label>
+              <label><input type="checkbox" class="swarm-agent" value="NPC Agent"> NPC Agent</label>
+              <label><input type="checkbox" class="swarm-agent" value="Documentation Agent"> Documentation Agent</label>
+            </div>
+          </div>
+
+          <div>
+            <label for="swarmTaskStyle">Task Style</label>
+            <select id="swarmTaskStyle">
+              <option>Safe read-only audit</option>
+              <option>Sandbox edit task</option>
+              <option>Full rebuild in sandbox</option>
+              <option>Test and report only</option>
+              <option>Prepare PR only</option>
+            </select>
+
+            <label for="swarmOutputTarget">Output Target</label>
+            <select id="swarmOutputTarget">
+              <option>Report only</option>
+              <option>Create sandbox branch</option>
+              <option>Prepare PR</option>
+              <option>Deploy sandbox preview</option>
+              <option>Ready for GK merge review</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="swarm-note">
+          Plain English safety: main branch is not touched, swarm works inside sandbox branches, GK approves merge, and destructive work is allowed only inside sandbox.
+        </div>
+
+        <div class="swarm-actions">
+          <button id="buildSwarmPromptBtn" class="warn">Build Swarm Prompt</button>
+          <button id="sendSwarmPromptBtn" class="safe">Send to Hermes</button>
+          <button id="clearSwarmPromptBtn">Clear</button>
+          <button id="explainSwarmModeBtn">Explain This Mode</button>
         </div>
       </div>
     </section>
@@ -580,8 +708,175 @@
         });
       }
 
+      function selectedSwarmAgents() {
+        var checks = Array.prototype.slice.call(document.querySelectorAll(".swarm-agent:checked"));
+        return checks.map(function (node) { return node.value; });
+      }
+
+      function buildSwarmPrompt() {
+        var task = (document.getElementById("swarmMainTask") || {}).value || "";
+        var style = (document.getElementById("swarmTaskStyle") || {}).value || "Safe read-only audit";
+        var target = (document.getElementById("swarmOutputTarget") || {}).value || "Report only";
+        var agents = selectedSwarmAgents();
+
+        var safeAgents = agents.length ? agents.join(", ") : "Main Hermes Agent";
+        var coreTask = task.trim() || "Please plan and execute this task using the selected swarm configuration.";
+        var needsSandboxRules = /sandbox edit task|full rebuild in sandbox|deploy sandbox preview|prepare pr|ready for gk merge review/i.test(style + " " + target);
+
+        var lines = [
+          "Swarm Task Request",
+          "",
+          "Main task:",
+          coreTask,
+          "",
+          "Selected swarm agents:",
+          "- " + safeAgents,
+          "",
+          "Task style:",
+          "- " + style,
+          "",
+          "Target output:",
+          "- " + target,
+          "",
+          "Execution rules:",
+          "- Use sandbox-first workflow.",
+          "- Never push directly to main/master.",
+          "- Report files changed, tests run, and known risks."
+        ];
+
+        if (needsSandboxRules) {
+          lines = lines.concat([
+            "- Create/confirm backup branch before high-risk edits.",
+            "- Create/confirm sandbox branch for implementation.",
+            "- Destructive work is allowed only in sandbox.",
+            "- GK approval is required before merge."
+          ]);
+        }
+
+        return lines.join("\n");
+      }
+
+      function applySwarmPreset(name) {
+        var defaultTask = document.getElementById("swarmMainTask");
+        var style = document.getElementById("swarmTaskStyle");
+        var target = document.getElementById("swarmOutputTarget");
+        var checks = Array.prototype.slice.call(document.querySelectorAll(".swarm-agent"));
+        checks.forEach(function (n) { n.checked = false; });
+
+        function check(agent) {
+          var node = checks.find(function (n) { return n.value === agent; });
+          if (node) node.checked = true;
+        }
+
+        check("Main Hermes Agent");
+
+        switch (name) {
+          case "Website Rebuild Swarm":
+            check("UI Agent"); check("Runtime Agent"); check("Test Agent");
+            if (style) style.value = "Full rebuild in sandbox";
+            if (target) target.value = "Prepare PR";
+            if (defaultTask && !defaultTask.value.trim()) defaultTask.value = "Rebuild the scoped website/admin UI with one consistent system and preserve runtime behavior.";
+            break;
+          case "Bug Fix Swarm":
+            check("Runtime Agent"); check("Test Agent");
+            if (style) style.value = "Sandbox edit task";
+            if (target) target.value = "Report only";
+            if (defaultTask && !defaultTask.value.trim()) defaultTask.value = "Find and fix the root cause bug in scope, then provide verification steps.";
+            break;
+          case "UI Design Swarm":
+            check("UI Agent"); check("Documentation Agent");
+            if (style) style.value = "Sandbox edit task";
+            if (target) target.value = "Prepare PR";
+            if (defaultTask && !defaultTask.value.trim()) defaultTask.value = "Redesign the targeted UI for clarity and usability while preserving behavior.";
+            break;
+          case "Testing Swarm":
+            check("Test Agent"); check("Repo Audit Agent");
+            if (style) style.value = "Test and report only";
+            if (target) target.value = "Report only";
+            if (defaultTask && !defaultTask.value.trim()) defaultTask.value = "Run relevant checks/tests and summarize failures, causes, and next safe actions.";
+            break;
+          case "Deploy Review Swarm":
+            check("Deploy Agent"); check("Test Agent"); check("Runtime Agent");
+            if (style) style.value = "Safe read-only audit";
+            if (target) target.value = "Deploy sandbox preview";
+            if (defaultTask && !defaultTask.value.trim()) defaultTask.value = "Review deploy readiness, runtime health, and sandbox rollout checklist.";
+            break;
+          case "Repo Audit Swarm":
+            check("Repo Audit Agent"); check("Test Agent");
+            if (style) style.value = "Safe read-only audit";
+            if (target) target.value = "Report only";
+            if (defaultTask && !defaultTask.value.trim()) defaultTask.value = "Audit repo drift/conflicts/risk and provide a prioritized action report.";
+            break;
+          case "Full Task Swarm":
+            check("UI Agent"); check("Runtime Agent"); check("Test Agent"); check("Deploy Agent"); check("Repo Audit Agent"); check("Documentation Agent");
+            if (style) style.value = "Full rebuild in sandbox";
+            if (target) target.value = "Ready for GK merge review";
+            if (defaultTask && !defaultTask.value.trim()) defaultTask.value = "Execute full task workflow end-to-end in sandbox with test evidence and final merge-readiness report.";
+            break;
+          default:
+            break;
+        }
+      }
+
+      function bindSwarmBuilder() {
+        var buildBtn = document.getElementById("buildSwarmPromptBtn");
+        var sendBtn = document.getElementById("sendSwarmPromptBtn");
+        var clearBtn = document.getElementById("clearSwarmPromptBtn");
+        var explainBtn = document.getElementById("explainSwarmModeBtn");
+        var presetBtns = document.querySelectorAll("[data-swarm-preset]");
+        var swarmBox = document.getElementById("swarmMainTask");
+        var lastBuilt = "";
+
+        presetBtns.forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            applySwarmPreset(btn.getAttribute("data-swarm-preset") || "");
+          });
+        });
+
+        if (buildBtn) {
+          buildBtn.addEventListener("click", function () {
+            lastBuilt = buildSwarmPrompt();
+            setPrompt(lastBuilt);
+          });
+        }
+
+        if (sendBtn) {
+          sendBtn.addEventListener("click", function () {
+            if (!lastBuilt.trim()) {
+              lastBuilt = buildSwarmPrompt();
+              setPrompt(lastBuilt);
+            }
+            maybeAutoSend(true);
+          });
+        }
+
+        if (clearBtn) {
+          clearBtn.addEventListener("click", function () {
+            if (swarmBox) swarmBox.value = "";
+            lastBuilt = "";
+            setPrompt("");
+          });
+        }
+
+        if (explainBtn) {
+          explainBtn.addEventListener("click", function () {
+            var info = [
+              "Swarm Builder Mode:",
+              "- You describe the goal in plain English.",
+              "- Hermes coordinates selected specialist agents.",
+              "- Main branch is never edited directly.",
+              "- Work happens in sandbox branches.",
+              "- GK must approve merge.",
+              "- Destructive actions are allowed only in sandbox."
+            ].join("\n");
+            setPrompt(info);
+          });
+        }
+      }
+
       bindControlButtons();
       bindTemplates();
+      bindSwarmBuilder();
     }());
   </script>
 </body>
