@@ -359,6 +359,17 @@
       color: #cfe8ff;
     }
 
+    .ui-test {
+      border: 1px dashed rgba(255, 220, 120, 0.38);
+      border-radius: var(--radius-sm);
+      background: rgba(35, 25, 6, 0.45);
+      padding: 8px 10px;
+      color: #ffe8b2;
+      font-size: 0.78rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+
     .subtle {
       border-top: 1px dashed rgba(96, 213, 255, 0.25);
       padding-top: 10px;
@@ -398,6 +409,7 @@
     <section class="panel">
       <h2>Guided Operator Controls</h2>
       <div class="muted">Use buttons to generate clear instructions for Hermes. Safe read-only actions can auto-send. Edit/destructive actions fill the prompt only and require your confirmation.</div>
+      <div class="swarm-note">Prompt-only controls: these buttons generate Hermes instructions for review first. They do not directly mutate server/runtime by themselves.</div>
 
       <div class="template-row">
         <div>
@@ -472,6 +484,7 @@
     <section class="panel">
       <h2>Swarm Builder</h2>
       <div class="muted">Build a clear swarm task without writing commands. Hermes will coordinate selected specialist agents while keeping work sandbox-first.</div>
+      <div class="swarm-note">Swarm Builder is orchestration prompt mode. It generates a structured request for Hermes; it does not directly execute backend mutations by itself.</div>
 
       <div class="swarm-box">
         <div>
@@ -544,6 +557,7 @@
     <section class="panel">
       <h2>Sandbox Cleanup</h2>
       <div class="muted">Use these controls after any sandbox task to inspect and clean leftovers safely. Cleanup must never touch production or protected runtime assets.</div>
+      <div class="swarm-note">Cleanup buttons are prompt-first. Destructive cleanup must be explicitly confirmed after Hermes lists planned removals.</div>
 
       <div class="control-group">
         <h3>Cleanup Controls</h3>
@@ -560,6 +574,7 @@
 
     <section class="panel">
       <h2>Task History</h2>
+      <div class="muted">These controls request history reports from Hermes. They do not directly query backend storage by themselves.</div>
       <div class="control-buttons">
         <button class="control-btn safe" data-hermes-prompt="Show last sandbox task details and current status. Read-only only." data-hermes-autosend="true">Show last sandbox task</button>
         <button class="control-btn safe" data-hermes-prompt="Show last PR created with title, branch, and status. Read-only only." data-hermes-autosend="true">Show last PR</button>
@@ -571,6 +586,7 @@
 
     <section class="panel">
       <h2>Emergency Controls</h2>
+      <div class="swarm-note">Emergency controls are safety prompts. Rollback/restore actions require explicit confirmation and should remain sandbox-only.</div>
       <div class="control-buttons">
         <button class="control-btn" data-hermes-prompt="Stop current task safely. Do not apply new edits. Report current state and partial outputs.">Stop current task</button>
         <button class="control-btn" data-hermes-prompt="Pause swarm execution and wait for GK instructions. Report paused subtasks.">Pause swarm</button>
@@ -582,6 +598,7 @@
 
     <section class="panel">
       <h2>Visual Review</h2>
+      <div class="muted">Visual actions are request prompts for Hermes workflows (preview checks, screenshot/report tasks), not direct browser automation in this UI.</div>
       <div class="control-buttons">
         <button class="control-btn safe" data-hermes-prompt="Open sandbox preview URL and report status only. Read-only check." data-hermes-autosend="true">Open sandbox preview</button>
         <button class="control-btn safe" data-hermes-prompt="Compare sandbox vs live visually and summarize key differences. Read-only only." data-hermes-autosend="true">Compare sandbox vs live</button>
@@ -593,6 +610,7 @@
 
     <section class="panel">
       <h2>Merge Readiness Checklist</h2>
+      <div class="muted">Checklist builds a merge-readiness prompt for Hermes to summarize blockers; it does not perform merge actions directly.</div>
       <div class="row">
         <label class="check"><input type="checkbox" id="mergeCheckTests"> Tests passed?</label>
         <label class="check"><input type="checkbox" id="mergeCheckFiles"> Files changed reviewed?</label>
@@ -617,6 +635,7 @@
     <section class="panel">
       <h2>Agent Status Board</h2>
       <div class="muted">Operator-facing status labels. Refresh status from Hermes to update these indicators.</div>
+      <div class="swarm-note">Status board is UI-level and prompt-driven. Use “Refresh Agent Status” to request real status from Hermes.</div>
       <div class="status-board">
         <div class="status-item"><span>Main Hermes Agent</span><span class="status-pill" id="statusMainHermes">idle</span></div>
         <div class="status-item"><span>UI Agent</span><span class="status-pill" id="statusUiAgent">idle</span></div>
@@ -626,6 +645,7 @@
         <div class="status-item"><span>Repo Audit Agent</span><span class="status-pill" id="statusRepoAuditAgent">idle</span></div>
       </div>
       <button id="refreshAgentStatusBtn" class="safe">Refresh Agent Status</button>
+      <div id="uiSelfTestStatus" class="ui-test">UI self-test pending…</div>
     </section>
 
     <main class="layout">
@@ -796,6 +816,7 @@
             setPrompt(text);
             maybeAutoSend(auto);
           });
+          btn.setAttribute("data-handler-bound", "true");
         });
       }
 
@@ -813,6 +834,7 @@
         load.addEventListener("click", function () {
           setPrompt(templatePrompt(select.value));
         });
+        load.setAttribute("data-handler-bound", "true");
 
         loadSend.addEventListener("click", function () {
           var value = select.value || "";
@@ -820,6 +842,7 @@
           var safeReadOnly = /audit|summarize|check why website changed/i.test(value);
           maybeAutoSend(safeReadOnly);
         });
+        loadSend.setAttribute("data-handler-bound", "true");
       }
 
       function selectedSwarmAgents() {
@@ -945,6 +968,7 @@
           btn.addEventListener("click", function () {
             applySwarmPreset(btn.getAttribute("data-swarm-preset") || "");
           });
+          btn.setAttribute("data-handler-bound", "true");
         });
 
         if (buildBtn) {
@@ -952,6 +976,7 @@
             lastBuilt = buildSwarmPrompt();
             setPrompt(lastBuilt);
           });
+          buildBtn.setAttribute("data-handler-bound", "true");
         }
 
         if (sendBtn) {
@@ -962,6 +987,7 @@
             }
             maybeAutoSend(true);
           });
+          sendBtn.setAttribute("data-handler-bound", "true");
         }
 
         if (clearBtn) {
@@ -970,6 +996,7 @@
             lastBuilt = "";
             setPrompt("");
           });
+          clearBtn.setAttribute("data-handler-bound", "true");
         }
 
         if (explainBtn) {
@@ -985,6 +1012,7 @@
             ].join("\n");
             setPrompt(info);
           });
+          explainBtn.setAttribute("data-handler-bound", "true");
         }
       }
 
@@ -1017,6 +1045,7 @@
             setPrompt(cleanupInstruction(action));
             maybeAutoSend(auto);
           });
+          btn.setAttribute("data-handler-bound", "true");
         });
       }
 
@@ -1037,6 +1066,7 @@
           });
           setPrompt("Merge readiness checklist report:\n" + lines.join("\n") + "\n\nSummarize blockers and next safe actions before GK merge decision.");
         });
+        btn.setAttribute("data-handler-bound", "true");
       }
 
       function bindAgentStatusBoard() {
@@ -1065,6 +1095,49 @@
           maybeAutoSend(true);
           setTimeout(function () { setAll("idle"); }, 1400);
         });
+        refresh.setAttribute("data-handler-bound", "true");
+      }
+
+      function runUiSelfTest() {
+        var out = document.getElementById("uiSelfTestStatus");
+        if (!out) return;
+
+        var requiredIds = [
+          "model","mode","role","approvalId","approvalToken","confirmEdit","systemPrompt","prompt","sendChat",
+          "chatLog","actionPlan","toolResults","missingRequirements","actionJson","runAction","actionOutput",
+          "showRuntimeRoot","listRepos","switchRepoId","switchRepo","registerRepoUrl","registerRepoPath","registerRepo",
+          "cloneRepoUrl","cloneRepo","repoStatus","showPm2Status","showApprovals","showSwarm","showModels","opsStatus"
+        ];
+
+        var missing = requiredIds.filter(function (id) { return !document.getElementById(id); });
+        var allInteractive = Array.prototype.slice.call(document.querySelectorAll("button,[data-hermes-prompt],[data-cleanup-action],[data-swarm-preset]"));
+        var unbound = allInteractive.filter(function (n) {
+          if (n.id && ["sendChat","runAction","showRuntimeRoot","listRepos","switchRepo","registerRepo","cloneRepo","showPm2Status","showApprovals","showSwarm","showModels"].indexOf(n.id) !== -1) return false;
+          return n.tagName.toLowerCase() === "button" && n.getAttribute("data-handler-bound") !== "true" && !n.id;
+        });
+
+        var promptBuildButtons = [
+          document.getElementById("buildSwarmPromptBtn"),
+          document.getElementById("buildMergeChecklistPromptBtn")
+        ].filter(Boolean);
+        var nonEmptyPromptBuild = promptBuildButtons.every(function (b) { return !!b; });
+
+        var destructiveAutosend = Array.prototype.slice.call(document.querySelectorAll("[data-cleanup-action],[data-hermes-prompt]")).filter(function (n) {
+          var txt = ((n.getAttribute("data-hermes-prompt") || "") + " " + (n.textContent || "")).toLowerCase();
+          var readOnlyHint = /show |explain|report |list |preview |compare |what can be deleted|rollback options|safe to delete/.test(txt);
+          var destructive = !readOnlyHint && /delete|remove|rollback|restore|deploy|rebuild|reset|fix broken page|cleanup sandbox session|failed sandbox/.test(txt);
+          return destructive && n.getAttribute("data-hermes-autosend") === "true";
+        });
+
+        var lines = [
+          "UI Self-Test Results:",
+          "- Required core IDs present: " + (missing.length === 0 ? "PASS" : "FAIL"),
+          "- Interactive controls with handler markers: " + (unbound.length === 0 ? "PASS" : ("WARN (" + unbound.length + " unbound)")),
+          "- Prompt builder controls present: " + (nonEmptyPromptBuild ? "PASS" : "FAIL"),
+          "- Destructive buttons auto-send guard: " + (destructiveAutosend.length === 0 ? "PASS" : ("FAIL (" + destructiveAutosend.length + " risky autosend)"))
+        ];
+        if (missing.length) lines.push("- Missing IDs: " + missing.join(", "));
+        out.textContent = lines.join("\n");
       }
 
       bindControlButtons();
@@ -1073,6 +1146,7 @@
       bindSandboxCleanup();
       bindMergeChecklist();
       bindAgentStatusBoard();
+      runUiSelfTest();
     }());
   </script>
 </body>
