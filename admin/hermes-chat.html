@@ -514,6 +514,23 @@
       </div>
     </section>
 
+    <section class="panel">
+      <h2>Sandbox Cleanup</h2>
+      <div class="muted">Use these controls after any sandbox task to inspect and clean leftovers safely. Cleanup must never touch production or protected runtime assets.</div>
+
+      <div class="control-group">
+        <h3>Cleanup Controls</h3>
+        <div class="control-buttons">
+          <button class="control-btn" data-cleanup-action="cleanup-session">Cleanup Sandbox Session</button>
+          <button class="control-btn safe" data-cleanup-action="preview-plan" data-cleanup-autosend="true">Preview Cleanup Plan</button>
+          <button class="control-btn safe" data-cleanup-action="list-leftovers" data-cleanup-autosend="true">List Sandbox Leftovers</button>
+          <button class="control-btn" data-cleanup-action="delete-failed">Delete Failed Sandbox Data</button>
+          <button class="control-btn" data-cleanup-action="archive-report">Archive Sandbox Report</button>
+          <button class="control-btn" data-cleanup-action="reset-workspace">Reset Sandbox Workspace</button>
+        </div>
+      </div>
+    </section>
+
     <main class="layout">
       <section class="panel">
         <h2>Chat + Planning</h2>
@@ -874,9 +891,42 @@
         }
       }
 
+      function cleanupInstruction(action) {
+        var baseGuard = "List what will be removed before deleting anything. Do not delete production, main/master, .git, .env, secrets, runtime services, or public live files. Only clean sandbox/session leftovers after GK approval.";
+        switch (action) {
+          case "preview-plan":
+            return "Preview cleanup plan for current sandbox session. " + baseGuard + " Read-only only.";
+          case "list-leftovers":
+            return "List sandbox leftovers (temporary sandbox branches, sandbox preview folders, generated temp files, task logs, local patch drafts, approved sandbox artifacts). " + baseGuard + " Read-only only.";
+          case "cleanup-session":
+            return "Prepare sandbox cleanup session instructions. " + baseGuard + " Require explicit confirmation before any deletion.";
+          case "delete-failed":
+            return "Delete only failed sandbox data and temp leftovers. " + baseGuard + " Require explicit confirmation before deleting.";
+          case "archive-report":
+            return "Archive sandbox task report and cleanup evidence files only. " + baseGuard + " No production file changes.";
+          case "reset-workspace":
+            return "Reset sandbox workspace safely for next task. " + baseGuard + " Require explicit confirmation before destructive cleanup.";
+          default:
+            return "Sandbox cleanup request. " + baseGuard;
+        }
+      }
+
+      function bindSandboxCleanup() {
+        var buttons = document.querySelectorAll("[data-cleanup-action]");
+        buttons.forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var action = btn.getAttribute("data-cleanup-action") || "";
+            var auto = btn.getAttribute("data-cleanup-autosend") === "true";
+            setPrompt(cleanupInstruction(action));
+            maybeAutoSend(auto);
+          });
+        });
+      }
+
       bindControlButtons();
       bindTemplates();
       bindSwarmBuilder();
+      bindSandboxCleanup();
     }());
   </script>
 </body>
