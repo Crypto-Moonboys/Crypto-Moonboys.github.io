@@ -85,7 +85,8 @@
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   // ── DOM helpers ───────────────────────────────────────────────────────────
@@ -165,7 +166,7 @@
         '<span class="bc-faction-weekly">Week: <strong>' + (row.weekly || 0) + '</strong></span>' +
         '<span class="bc-faction-momentum">Momentum: <strong>' + esc(momentumLabel) + '</strong></span>' +
         '<span class="bc-faction-perk-teaser">' + esc(meta.perkTeaser) + '</span>' +
-        '<a class="bc-faction-chamber-link" href="/battle-chamber/factions/' + esc(row.faction) + '.html" aria-label="Enter ' + esc(meta.label) + ' Chamber">Enter Faction Chamber →</a>' +
+        '<a class="bc-faction-chamber-link" href="#coming-next-faction-chambers" aria-label="Enter ' + esc(meta.label) + ' Chamber (coming next)">Enter Faction Chamber →</a>' +
         '</div>';
     }).join('');
 
@@ -302,7 +303,7 @@
 
       // Wire join buttons to MOONBOYS_FACTION.joinFaction if available
       var btns = container.querySelectorAll('.bc-join-btn[data-faction]');
-      btns.forEach(function (btn) {
+      Array.prototype.forEach.call(btns, function (btn) {
         btn.addEventListener('click', function () {
           var targetFaction = btn.getAttribute('data-faction');
           if (!targetFaction) return;
@@ -376,16 +377,16 @@
       // Read effect metadata from FACTION_DEFS cache if available
       var defs = window.FACTION_EFFECT_DEFS;
       var def = defs && defs[f.key];
-      var xpMeta = def ? def.xpModifier : null;
-      var scoreMulti = def ? def.scoreMultiplier : null;
+      var xpMeta = def != null ? def.xpModifier : null;
+      var scoreMulti = def != null ? def.scoreMultiplier : null;
 
       return '<div class="bc-perk-card" style="--faction-color:' + esc(f.color) + '">' +
         '<div class="bc-perk-icon">' + f.icon + '</div>' +
         '<div class="bc-perk-name">' + esc(f.label) + '</div>' +
         '<div class="bc-perk-playstyle">' + esc(f.playstyle) + '</div>' +
         '<div class="bc-perk-text">' + esc(f.perkTeaser) + '</div>' +
-        (xpMeta !== null ? '<div class="bc-perk-xp-meta">XP modifier metadata: ×' + esc(String(xpMeta)) + ' <em>(display only — not applied to XP base math)</em></div>' : '') +
-        (scoreMulti !== null ? '<div class="bc-perk-score-meta">Score modifier: ×' + esc(String(scoreMulti)) + '</div>' : '') +
+        (xpMeta != null ? '<div class="bc-perk-xp-meta">XP modifier metadata: ×' + esc(String(xpMeta)) + ' <em>(display only — not applied to XP base math)</em></div>' : '') +
+        (scoreMulti != null ? '<div class="bc-perk-score-meta">Score modifier: ×' + esc(String(scoreMulti)) + '</div>' : '') +
         '</div>';
     }).join('');
 
