@@ -451,15 +451,27 @@ async function loadLeaderboard() {
 // It does not modify score submission math or leaderboard core logic.
 
 const FACTION_COLORS = {
-  'diamond-hands': '#56dcff',
-  'hodl-warriors': '#ff6ad5',
-  graffpunks:      '#7dff72',
+  'hard-fork-rockers': '#56dcff',
+  'rugpull-minors': '#ff6ad5',
+  graffpunks: '#7dff72',
+  'blockchain-furies': '#ff9f43',
+  'crypto-moongirls': '#b88dff',
+  blockstars: '#ffd166',
+  'all-city-bulls': '#ff6b6b',
+  'nomad-bears': '#8ecf7a',
+  'crypto-stoned-boys': '#8fd3ff',
 };
 
 const FACTION_LABELS = {
-  'diamond-hands': '💎 Diamond Hands',
-  'hodl-warriors': '⚔️ HODL Warriors',
-  graffpunks:      '🎨 GraffPUNKS',
+  'hard-fork-rockers': '🪨 Hard Fork Rockers',
+  'rugpull-minors': '⛏️ Rugpull Minors',
+  graffpunks: '🎨 GraffPUNKS',
+  'blockchain-furies': '🔥 Blockchain Furies',
+  'crypto-moongirls': '🌙 Crypto Moongirls',
+  blockstars: '⭐ The Blockstars',
+  'all-city-bulls': '🐂 All City Bulls',
+  'nomad-bears': '🐻 Nomad Bears',
+  'crypto-stoned-boys': '😶‍🌫️ Crypto Stoned Boys',
 };
 
 function renderFactionStandings() {

@@ -43,22 +43,58 @@ var MISSIONS_STORAGE_KEY = 'fw_missions_v1';
  */
 var DAILY_MISSION_POOL = Object.freeze({
 
-  'diamond-hands': Object.freeze([
-    Object.freeze({ id: 'dh_survive_60',   label: 'Endure the Dip',    description: 'Survive for 60 seconds in any run.',            type: 'survive',    target: 60,   reward: { warContrib: 50 } }),
-    Object.freeze({ id: 'dh_no_shield',    label: 'Bare Hands',        description: 'Complete a run without using your shield.',      type: 'no_shield',  target: 1,    reward: { warContrib: 80 } }),
-    Object.freeze({ id: 'dh_bank_score',   label: 'Long Game',         description: 'Bank a score after surviving more than 45 s.',   type: 'bank_score', target: 1,    reward: { warContrib: 65 } }),
+  'hard-fork-rockers': Object.freeze([
+    Object.freeze({ id: 'hfr_survive_60',   label: 'Stable Core',       description: 'Survive for 60 seconds in any run.',                    type: 'survive',    target: 60,   reward: { warContrib: 60 } }),
+    Object.freeze({ id: 'hfr_bank_score',   label: 'Long Branch',       description: 'Bank a score after surviving more than 45 s.',          type: 'bank_score', target: 1,    reward: { warContrib: 70 } }),
+    Object.freeze({ id: 'hfr_runs_4',       label: 'Streak Guard',      description: 'Complete 4 runs with steady pacing.',                   type: 'runs',       target: 4,    reward: { warContrib: 55 } }),
   ]),
 
-  'hodl-warriors': Object.freeze([
-    Object.freeze({ id: 'hw_shield_hold',  label: 'Shield Protocol',   description: 'Protect your shield for 30 seconds in a run.',   type: 'shield_time', target: 30,  reward: { warContrib: 55 } }),
-    Object.freeze({ id: 'hw_runs_3',       label: 'Commitment',        description: 'Complete 3 runs in any arcade game.',            type: 'runs',        target: 3,   reward: { warContrib: 40 } }),
-    Object.freeze({ id: 'hw_war_contrib',  label: 'For the Faction',   description: 'Contribute 200 points to the faction war.',      type: 'war_contrib', target: 200, reward: { warContrib: 60 } }),
+  'rugpull-minors': Object.freeze([
+    Object.freeze({ id: 'rpm_shield_hold',  label: 'Tunnel Guard',      description: 'Protect your shield for 30 seconds in a run.',          type: 'shield_time', target: 30,  reward: { warContrib: 60 } }),
+    Object.freeze({ id: 'rpm_runs_3',       label: 'Recovery Shift',    description: 'Complete 3 runs under pressure.',                       type: 'runs',        target: 3,   reward: { warContrib: 50 } }),
+    Object.freeze({ id: 'rpm_war_contrib',  label: 'Underground Push',  description: 'Contribute 220 points to faction war.',                 type: 'war_contrib', target: 220, reward: { warContrib: 70 } }),
   ]),
 
   graffpunks: Object.freeze([
-    Object.freeze({ id: 'gp_chaos_3',      label: 'Chaos Agent',       description: 'Trigger 3 chaos events across any runs.',        type: 'chaos',      target: 3,   reward: { warContrib: 70 } }),
-    Object.freeze({ id: 'gp_combo_x3',     label: 'Combo Graffiti',    description: 'Reach a ×3 combo multiplier in any run.',        type: 'combo',      target: 3,   reward: { warContrib: 60 } }),
-    Object.freeze({ id: 'gp_high_risk',    label: 'Risk Canvas',       description: 'Score 500+ points during a high-risk window.',   type: 'high_risk',  target: 500, reward: { warContrib: 90 } }),
+    Object.freeze({ id: 'gp_chaos_3',       label: 'Chaos Agent',       description: 'Trigger 3 chaos events across any runs.',                type: 'chaos',      target: 3,   reward: { warContrib: 70 } }),
+    Object.freeze({ id: 'gp_combo_x3',      label: 'Combo Graffiti',    description: 'Reach a ×3 combo multiplier in any run.',                type: 'combo',      target: 3,   reward: { warContrib: 65 } }),
+    Object.freeze({ id: 'gp_high_risk',     label: 'Risk Canvas',       description: 'Score 500+ points during a high-risk window.',           type: 'high_risk',  target: 500, reward: { warContrib: 90 } }),
+  ]),
+
+  'blockchain-furies': Object.freeze([
+    Object.freeze({ id: 'bcf_runs_5',       label: 'Revenge Route',     description: 'Complete 5 fast runs this cycle.',                       type: 'runs',       target: 5,   reward: { warContrib: 60 } }),
+    Object.freeze({ id: 'bcf_combo_x4',     label: 'Chain Fury',        description: 'Reach a ×4 combo multiplier in any run.',               type: 'combo',      target: 4,   reward: { warContrib: 70 } }),
+    Object.freeze({ id: 'bcf_high_risk',    label: 'Burst Window',      description: 'Score 650+ points during a high-risk window.',          type: 'high_risk',  target: 650, reward: { warContrib: 80 } }),
+  ]),
+
+  'crypto-moongirls': Object.freeze([
+    Object.freeze({ id: 'cmg_no_shield',    label: 'Signal Precision',  description: 'Complete a run without using your shield.',              type: 'no_shield',  target: 1,   reward: { warContrib: 65 } }),
+    Object.freeze({ id: 'cmg_bank_score',   label: 'Authority Control', description: 'Bank a score after surviving more than 45 s.',           type: 'bank_score', target: 1,   reward: { warContrib: 70 } }),
+    Object.freeze({ id: 'cmg_combo_x3',     label: 'Elite Calibration', description: 'Reach a ×3 combo multiplier with clean execution.',      type: 'combo',      target: 3,   reward: { warContrib: 60 } }),
+  ]),
+
+  blockstars: Object.freeze([
+    Object.freeze({ id: 'bs_score_1800',    label: 'Spotlight Run',     description: 'Accumulate 1,800 score in featured games.',             type: 'score',      target: 1800,reward: { warContrib: 70 } }),
+    Object.freeze({ id: 'bs_runs_4',        label: 'Public Performance',description: 'Complete 4 runs to stay visible.',                       type: 'runs',       target: 4,   reward: { warContrib: 55 } }),
+    Object.freeze({ id: 'bs_combo_x4',      label: 'Fame Chain',        description: 'Reach a ×4 combo multiplier in any run.',               type: 'combo',      target: 4,   reward: { warContrib: 75 } }),
+  ]),
+
+  'all-city-bulls': Object.freeze([
+    Object.freeze({ id: 'acb_score_2400',   label: 'Territory Crush',   description: 'Accumulate 2,400 score in any game.',                   type: 'score',      target: 2400,reward: { warContrib: 80 } }),
+    Object.freeze({ id: 'acb_war_260',      label: 'Board Pressure',    description: 'Contribute 260 points to faction war.',                 type: 'war_contrib',target: 260, reward: { warContrib: 80 } }),
+    Object.freeze({ id: 'acb_survive_75',   label: 'Power Hold',        description: 'Survive for 75 seconds in any run.',                    type: 'survive',    target: 75,  reward: { warContrib: 70 } }),
+  ]),
+
+  'nomad-bears': Object.freeze([
+    Object.freeze({ id: 'nb_runs_6',        label: 'Route Wanderer',    description: 'Complete 6 runs across your rotation.',                 type: 'runs',       target: 6,   reward: { warContrib: 65 } }),
+    Object.freeze({ id: 'nb_bank_2',        label: 'Map Commit',        description: 'Bank score in 2 separate runs.',                        type: 'bank_score', target: 2,   reward: { warContrib: 70 } }),
+    Object.freeze({ id: 'nb_survive_70',    label: 'Trail Consistency', description: 'Survive for 70 seconds in any run.',                    type: 'survive',    target: 70,  reward: { warContrib: 60 } }),
+  ]),
+
+  'crypto-stoned-boys': Object.freeze([
+    Object.freeze({ id: 'csb_runs_5',       label: 'Chill Loop',        description: 'Complete 5 relaxed runs.',                               type: 'runs',       target: 5,   reward: { warContrib: 55 } }),
+    Object.freeze({ id: 'csb_chaos_2',      label: 'Weird Signal',      description: 'Trigger 2 chaos events and stay in the run.',           type: 'chaos',      target: 2,   reward: { warContrib: 65 } }),
+    Object.freeze({ id: 'csb_combo_x3',     label: 'Cloud Combo',       description: 'Reach a ×3 combo multiplier in any run.',               type: 'combo',      target: 3,   reward: { warContrib: 60 } }),
   ]),
 
 });
@@ -69,16 +105,40 @@ var DAILY_MISSION_POOL = Object.freeze({
  */
 var SEASONAL_MISSIONS = Object.freeze({
 
-  'diamond-hands': Object.freeze([
-    Object.freeze({ id: 'dh_season_endure', label: 'Diamond Patience', description: 'Accumulate 1 800 total seconds alive across all runs.',  type: 'survive',    target: 1800, reward: { warContrib: 500, rankBonus: 1 } }),
+  'hard-fork-rockers': Object.freeze([
+    Object.freeze({ id: 'hfr_season_endure', label: 'Forkline Endurance', description: 'Accumulate 1,800 total seconds alive across all runs.', type: 'survive', target: 1800, reward: { warContrib: 520 } }),
   ]),
 
-  'hodl-warriors': Object.freeze([
-    Object.freeze({ id: 'hw_season_runs',   label: 'HODL Veteran',     description: 'Complete 30 total runs across all arcade games.',         type: 'runs',       target: 30,   reward: { warContrib: 450, rankBonus: 1 } }),
+  'rugpull-minors': Object.freeze([
+    Object.freeze({ id: 'rpm_season_recover', label: 'Deep Recovery', description: 'Complete 32 total runs across all arcade games.', type: 'runs', target: 32, reward: { warContrib: 500 } }),
   ]),
 
   graffpunks: Object.freeze([
-    Object.freeze({ id: 'gp_season_chaos',  label: 'Maximum Chaos',    description: 'Trigger 50 chaos events across all time.',                type: 'chaos',      target: 50,   reward: { warContrib: 480, rankBonus: 1 } }),
+    Object.freeze({ id: 'gp_season_chaos', label: 'Maximum Chaos', description: 'Trigger 50 chaos events across all time.', type: 'chaos', target: 50, reward: { warContrib: 520 } }),
+  ]),
+
+  'blockchain-furies': Object.freeze([
+    Object.freeze({ id: 'bcf_season_combo', label: 'Revenge Engine', description: 'Reach combo milestones totaling 80 points.', type: 'combo', target: 80, reward: { warContrib: 500 } }),
+  ]),
+
+  'crypto-moongirls': Object.freeze([
+    Object.freeze({ id: 'cmg_season_control', label: 'Signal Crown', description: 'Bank score in 25 controlled runs.', type: 'bank_score', target: 25, reward: { warContrib: 500 } }),
+  ]),
+
+  blockstars: Object.freeze([
+    Object.freeze({ id: 'bs_season_fame', label: 'Main Character Arc', description: 'Accumulate 18,000 score across spotlight runs.', type: 'score', target: 18000, reward: { warContrib: 540 } }),
+  ]),
+
+  'all-city-bulls': Object.freeze([
+    Object.freeze({ id: 'acb_season_pressure', label: 'Board Domination', description: 'Contribute 4,000 points to faction war.', type: 'war_contrib', target: 4000, reward: { warContrib: 600 } }),
+  ]),
+
+  'nomad-bears': Object.freeze([
+    Object.freeze({ id: 'nb_season_routes', label: 'Nomad Atlas', description: 'Complete 90 runs across rotating games.', type: 'runs', target: 90, reward: { warContrib: 520 } }),
+  ]),
+
+  'crypto-stoned-boys': Object.freeze([
+    Object.freeze({ id: 'csb_season_weird', label: 'Cosmic Drift', description: 'Trigger 35 chaos events while keeping chill momentum.', type: 'chaos', target: 35, reward: { warContrib: 500 } }),
   ]),
 
 });
@@ -294,8 +354,8 @@ export function resetDailyMissions() {
 
 function _normaliseFaction(id) {
   var v = String(id || 'unaligned').toLowerCase().trim();
-  if (v === 'diamond_hands' || v === 'diamondhands') v = 'diamond-hands';
-  if (v === 'hodl_warriors' || v === 'hodlwarriors') v = 'hodl-warriors';
+  if (v === 'diamond-hands' || v === 'diamond_hands' || v === 'diamondhands') v = 'hard-fork-rockers';
+  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') v = 'rugpull-minors';
   if (v === 'graff-punks' || v === 'graff_punks') v = 'graffpunks';
   return DAILY_MISSION_POOL[v] ? v : null;
 }

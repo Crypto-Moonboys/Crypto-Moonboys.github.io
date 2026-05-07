@@ -189,9 +189,15 @@ export function unsubscribeActivityFeed(handler) {
 
 function _factionLabel(id) {
   var labels = {
-    'diamond-hands': '💎 Diamond Hands',
-    'hodl-warriors': '⚔️ HODL Warriors',
-    graffpunks:      '🎨 GraffPUNKS',
+    'hard-fork-rockers': '🪨 Hard Fork Rockers',
+    'rugpull-minors': '⛏️ Rugpull Minors',
+    graffpunks: '🎨 GraffPUNKS',
+    'blockchain-furies': '🔥 Blockchain Furies',
+    'crypto-moongirls': '🌙 Crypto Moongirls',
+    blockstars: '⭐ The Blockstars',
+    'all-city-bulls': '🐂 All City Bulls',
+    'nomad-bears': '🐻 Nomad Bears',
+    'crypto-stoned-boys': '😶‍🌫️ Crypto Stoned Boys',
   };
   return labels[String(id || '')] || String(id || 'Faction');
 }

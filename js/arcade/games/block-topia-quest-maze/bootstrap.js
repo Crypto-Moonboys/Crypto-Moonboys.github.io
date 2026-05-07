@@ -343,7 +343,7 @@ function createPlayer(name) {
     potions: 3,
     skillCharges: 2,
     lifetimeClears: 0,
-    faction: 'diamond_hands',
+    faction: 'hard-fork-rockers',
   };
 }
 

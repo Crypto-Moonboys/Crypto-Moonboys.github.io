@@ -325,7 +325,7 @@ function resetRun(state) {
   state._srFxDef          = getFactionEffects(state._srFactionId);
   state._srFactionPerkFired = false;
 
-  // HODL Warriors: +1 shield segment at run start
+  // Rugpull Minors: +1 shield segment at run start
   const _srFactionShield = applyFactionStartingShield(0, state._srFactionId, { supportsShield: true });
   if (_srFactionShield > 0) {
     state.upgrades['shield-segment'] = Math.max(state.upgrades['shield-segment'], 1) + _srFactionShield;
@@ -1119,11 +1119,11 @@ function updateSim(state, dt) {
     if (state.warningBanner.value.timer <= 0) state.warningBanner.value = null;
   }
 
-  // Faction survival bonus: Diamond Hands triggers after 45s
+  // Faction survival bonus: Hard Fork Rockers triggers after 45s
   if (!state._srFactionPerkFired && state._srFxDef && state._srFxDef.rewardBias === 'endurance' && state.elapsed > 45) {
     state._srFactionPerkFired = true;
     _srEmitBus('arcade:perk-triggered', { gameId: GAME_ID, factionId: state._srFactionId, perkKey: 'survivalBonus', ts: Date.now() });
-    setTransientBanner(state.warningBanner, '💎 Diamond Hands: Endurance bonus active!', '#b9f2ff', 2.5);
+    setTransientBanner(state.warningBanner, '🪨 Hard Fork Rockers: Endurance bonus active!', '#b9f2ff', 2.5);
   }
 
   if (state.waitingForFirstInput) {

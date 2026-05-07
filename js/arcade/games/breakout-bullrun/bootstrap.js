@@ -1055,11 +1055,11 @@ function createLegacyBootstrapBreakoutBullrun(root) {
       * bbModPressureRate
       * (_bbFxDef ? applyFactionEventRate(1, _bbFactionId) : 1));
 
-    // Faction survival bonus: Diamond Hands activates after 45s
+    // Faction survival bonus: Hard Fork Rockers activates after 45s
     if (!_bbFactionPerkFired && _bbFxDef && _bbFxDef.rewardBias === 'endurance' && elapsed > 45) {
       _bbFactionPerkFired = true;
       _bbEmitBus('arcade:perk-triggered', { gameId: GAME_ID, factionId: _bbFactionId, perkKey: 'survivalBonus', ts: Date.now() });
-      addBanner('💎 Diamond Hands: Endurance bonus active!', '#b9f2ff');
+      addBanner('🪨 Hard Fork Rockers: Endurance bonus active!', '#b9f2ff');
     }
 
     // ── Forced chaos event ──────────────────────────────────────────────────
@@ -1798,7 +1798,7 @@ function createLegacyBootstrapBreakoutBullrun(root) {
     _bbRefreshCrossMods();
     // Faction: initialise faction effects for this run
     _bbInitFaction();
-    // Shielded Start: add a floor shield charge at run start (modifier or faction HODL Warriors)
+    // Shielded Start: add a floor shield charge at run start (modifier or faction Rugpull Minors)
     if (bbModShieldedStart) {
       lives += 1;
     }
