@@ -190,6 +190,12 @@
       border-color: rgba(255, 117, 141, 0.65);
     }
 
+    button.safe {
+      background: linear-gradient(180deg, rgba(145, 255, 190, 0.96), rgba(89, 218, 138, 0.96));
+      border-color: rgba(109, 255, 162, 0.65);
+      color: #03200d;
+    }
+
     .check {
       display: flex;
       align-items: center;
@@ -224,6 +230,56 @@
       gap: 8px;
     }
 
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .control-group {
+      border: 1px solid rgba(96, 213, 255, 0.2);
+      border-radius: var(--radius-sm);
+      background: rgba(6, 12, 20, 0.72);
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .control-group h3 {
+      margin: 0;
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+      color: var(--accent-2);
+      text-transform: uppercase;
+    }
+
+    .control-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .control-btn {
+      font-size: 0.8rem;
+      text-align: left;
+      padding: 8px 9px;
+      background: linear-gradient(180deg, rgba(18, 39, 64, 0.96), rgba(10, 21, 36, 0.96));
+      color: #d6eeff;
+      border-color: rgba(96, 213, 255, 0.35);
+    }
+
+    .control-btn.safe {
+      border-color: rgba(109, 255, 162, 0.45);
+      box-shadow: inset 0 0 0 1px rgba(109, 255, 162, 0.2);
+    }
+
+    .template-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: end;
+    }
+
     .subtle {
       border-top: 1px dashed rgba(96, 213, 255, 0.25);
       padding-top: 10px;
@@ -231,9 +287,12 @@
 
     @media (max-width: 1360px) {
       .layout { grid-template-columns: 1fr; }
+      .control-grid { grid-template-columns: 1fr; }
+      .control-buttons { grid-template-columns: 1fr; }
       .row3 { grid-template-columns: 1fr; }
       .row { grid-template-columns: 1fr; }
       .ops-grid { grid-template-columns: 1fr; }
+      .template-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -250,6 +309,80 @@
       </div>
       <div class="muted">
         Unified admin workspace for Hermes chat, action execution, repo routing, approval checks, and runtime health. This page is admin-only and does not alter the public site shell.
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Guided Operator Controls</h2>
+      <div class="muted">Use buttons to generate clear instructions for Hermes. Safe read-only actions can auto-send. Edit/destructive actions fill the prompt only and require your confirmation.</div>
+
+      <div class="template-row">
+        <div>
+          <label for="quickTaskTemplate">Quick Task Template</label>
+          <select id="quickTaskTemplate">
+            <option value="">Select a template...</option>
+            <option value="Fix this page">Fix this page</option>
+            <option value="Rebuild this admin UI">Rebuild this admin UI</option>
+            <option value="Audit repo conflicts">Audit repo conflicts</option>
+            <option value="Create sandbox-first PR">Create sandbox-first PR</option>
+            <option value="Check why website changed">Check why website changed</option>
+            <option value="Deploy latest main to server">Deploy latest main to server</option>
+            <option value="Summarize current runtime state">Summarize current runtime state</option>
+          </select>
+        </div>
+        <button id="useTemplateBtn" class="warn">Load Template</button>
+        <button id="useTemplateSendBtn" class="safe">Load + Send (safe if read-only)</button>
+      </div>
+
+      <div class="control-grid">
+        <div class="control-group">
+          <h3>Repo / Runtime</h3>
+          <div class="control-buttons">
+            <button class="control-btn safe" data-hermes-prompt="Show git status and summarize working tree changes. Read-only only." data-hermes-autosend="true">Check repo status</button>
+            <button class="control-btn safe" data-hermes-prompt="Show the active repo root, repo id, and remote URL from runtime metadata." data-hermes-autosend="true">Show active repo root</button>
+            <button class="control-btn safe" data-hermes-prompt="List only top-level files/directories in the active repo. Do not edit anything." data-hermes-autosend="true">List top-level files</button>
+            <button class="control-btn safe" data-hermes-prompt="Check PM2 and runtime status. Return service health only, no changes." data-hermes-autosend="true">Check PM2/runtime status</button>
+            <button class="control-btn safe" data-hermes-prompt="List Hermes models and default model from runtime endpoints." data-hermes-autosend="true">Check Hermes models</button>
+            <button class="control-btn safe" data-hermes-prompt="Check runtime root details and summarize repo health indicators." data-hermes-autosend="true">Check runtime root</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h3>Agent Tasks</h3>
+          <div class="control-buttons">
+            <button class="control-btn" data-hermes-prompt="Start a sandbox task plan for this request. Outline steps and required approvals before edits.">Start sandbox task</button>
+            <button class="control-btn" data-hermes-prompt="Create a backup branch snapshot for the current task and report branch name.">Create backup branch</button>
+            <button class="control-btn" data-hermes-prompt="Create a sandbox branch for this task and report branch name and scope.">Create sandbox branch</button>
+            <button class="control-btn safe" data-hermes-prompt="Review changed files on current branch and summarize risk by file." data-hermes-autosend="true">Review changed files</button>
+            <button class="control-btn" data-hermes-prompt="Run project tests/checks and summarize pass/fail with next safe actions.">Run tests</button>
+            <button class="control-btn" data-hermes-prompt="Prepare a PR summary with scope, files changed, test results, and known issues.">Prepare PR summary</button>
+            <button class="control-btn" data-hermes-prompt="Deploy or test sandbox preview URL and report validation results.">Deploy/test sandbox URL</button>
+            <button class="control-btn safe" data-hermes-prompt="Report exactly what changed in the current task branch, with files and purpose." data-hermes-autosend="true">Report what changed</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h3>Website Editing</h3>
+          <div class="control-buttons">
+            <button class="control-btn safe" data-hermes-prompt="Audit the current page/UI for drift, duplication, and broken layout issues. Read-only report." data-hermes-autosend="true">Audit current page/UI</button>
+            <button class="control-btn" data-hermes-prompt="Identify and remove old duplicated UI shell in the scoped target page only, then report before/after.">Remove old UI shell</button>
+            <button class="control-btn" data-hermes-prompt="Rebuild the selected page UI using shared patterns while preserving runtime behavior.">Rebuild selected page UI</button>
+            <button class="control-btn" data-hermes-prompt="Diagnose and fix the broken page in scope, preserving existing runtime integrations.">Fix broken page</button>
+            <button class="control-btn safe" data-hermes-prompt="Check internal links for breakage in the scoped area and report broken links only." data-hermes-autosend="true">Check broken links</button>
+            <button class="control-btn safe" data-hermes-prompt="Check for missing assets (css/js/images) and report missing references with file paths." data-hermes-autosend="true">Check missing assets</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h3>Safety / Approval</h3>
+          <div class="control-buttons">
+            <button class="control-btn" data-hermes-prompt="Create an approval request for the pending edit action and list required confirmation fields.">Request edit approval</button>
+            <button class="control-btn safe" data-hermes-prompt="Show current mode, role, and active safety gates in effect." data-hermes-autosend="true">Show current mode</button>
+            <button class="control-btn safe" data-hermes-prompt="Explain what Hermes can edit in the current mode and what remains restricted." data-hermes-autosend="true">Explain what Hermes can edit</button>
+            <button class="control-btn" data-hermes-prompt="Cancel or stop the current task safely and report current state without applying edits.">Cancel/stop current task</button>
+            <button class="control-btn safe" data-hermes-prompt="Show rollback options for recent changes and safest restoration path." data-hermes-autosend="true">Show rollback options</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -392,5 +525,64 @@
     window.HERMES_API_BASE_URL = window.HERMES_API_BASE_URL || "";
   </script>
   <script src="/js/hermes-chat.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      function promptNode() { return document.getElementById("prompt"); }
+      function sendNode() { return document.getElementById("sendChat"); }
+
+      function setPrompt(text) {
+        var node = promptNode();
+        if (!node) return;
+        node.value = String(text || "").trim();
+        node.focus();
+      }
+
+      function maybeAutoSend(shouldSend) {
+        if (!shouldSend) return;
+        var send = sendNode();
+        if (send) send.click();
+      }
+
+      function bindControlButtons() {
+        var buttons = document.querySelectorAll("[data-hermes-prompt]");
+        buttons.forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var text = btn.getAttribute("data-hermes-prompt") || "";
+            var auto = btn.getAttribute("data-hermes-autosend") === "true";
+            setPrompt(text);
+            maybeAutoSend(auto);
+          });
+        });
+      }
+
+      function bindTemplates() {
+        var select = document.getElementById("quickTaskTemplate");
+        var load = document.getElementById("useTemplateBtn");
+        var loadSend = document.getElementById("useTemplateSendBtn");
+        if (!select || !load || !loadSend) return;
+
+        function templatePrompt(label) {
+          if (!label) return "";
+          return "Template request: " + label + ". Please produce a clear step-by-step plan first, then ask for confirmation before any edit or deployment action.";
+        }
+
+        load.addEventListener("click", function () {
+          setPrompt(templatePrompt(select.value));
+        });
+
+        loadSend.addEventListener("click", function () {
+          var value = select.value || "";
+          setPrompt(templatePrompt(value));
+          var safeReadOnly = /audit|summarize|check why website changed/i.test(value);
+          maybeAutoSend(safeReadOnly);
+        });
+      }
+
+      bindControlButtons();
+      bindTemplates();
+    }());
+  </script>
 </body>
 </html>
