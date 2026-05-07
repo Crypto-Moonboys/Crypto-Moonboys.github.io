@@ -2,6 +2,7 @@
 
 const express = require("express");
 const cors = require("cors");
+const { rateLimit } = require("express-rate-limit");
 const os = require("os");
 const fs = require("fs");
 const path = require("path");
@@ -542,22 +543,18 @@ app.post("/api/brain/advisor", requireAdmin, async (req, res) => {
 });
 
 
-// --- In-process rate limiter for NPC mutation endpoints ---
-// Protects file-mutating admin endpoints against rapid-fire calls from a
-// compromised or misconfigured token holder.
-// Note: in-memory only; does not coordinate across multiple processes.
-// If PM2 cluster mode is used, move to a shared store (e.g. Redis).
-const NPC_RATE_WINDOW_MS = 60 * 1000;
-const NPC_RATE_MAX = 10;
-const _npcRateHits = new Map();
-
-// Periodically evict entries older than two windows to prevent unbounded growth.
-setInterval(() => {
-  const cutoff = Date.now() - NPC_RATE_WINDOW_MS * 2;
-  for (const [key, record] of _npcRateHits) {
-    if (record.start < cutoff) _npcRateHits.delete(key);
+const npcCreateRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator(req) {
+    return String(req.ip || req.socket?.remoteAddress || "unknown");
+  },
+  handler(_req, res) {
+    res.status(429).json({ success: false, error: "Too many requests. Slow down." });
   }
-}, NPC_RATE_WINDOW_MS * 2).unref();
+});
 
 function slugifyNpcId(value) {
   return String(value || "")
@@ -567,23 +564,7 @@ function slugifyNpcId(value) {
     .slice(0, 64);
 }
 
-app.post("/api/brain/create-npc", requireAdmin, async (req, res) => {
-  const clientIp = String(req.ip || "").trim();
-  if (!clientIp) {
-    return res.status(400).json({ success: false, error: "Unable to determine client IP for rate limiting." });
-  }
-  const now = Date.now();
-  const rateRecord = _npcRateHits.get(clientIp) || { count: 0, start: now };
-  if (now - rateRecord.start > NPC_RATE_WINDOW_MS) {
-    rateRecord.count = 0;
-    rateRecord.start = now;
-  }
-  rateRecord.count += 1;
-  _npcRateHits.set(clientIp, rateRecord);
-  if (rateRecord.count > NPC_RATE_MAX) {
-    return res.status(429).json({ success: false, error: "Too many requests. Slow down." });
-  }
-
+app.post("/api/brain/create-npc", requireAdmin, npcCreateRateLimit, async (req, res) => {
   const name = String(req.body?.name || "").trim().slice(0, 80);
   const brand = String(req.body?.brand || "Crypto Moonboys").trim().slice(0, 80);
   const tone = String(req.body?.tone || "lore-aware, tactical, useful").trim().slice(0, 160);
@@ -663,9 +644,9 @@ Add deeper lore here as the character develops.
     });
   }
 
-  // --- P1: require explicit confirmation; return 400 with preview if missing ---
+  // --- P1: require explicit confirmation; 428 = missing precondition ---
   if (!confirmCreate) {
-    return res.status(400).json({
+    return res.status(428).json({
       success: false,
       requiresConfirmation: true,
       error: "confirmCreate must be set to true to create an NPC. Use dryRun=true to preview without side-effects.",

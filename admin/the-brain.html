@@ -257,8 +257,7 @@ READ ONLY:
       if (window.location.origin && window.location.origin !== "null") {
         return `${window.location.origin}/api/brain`;
       }
-      const host = window.location.hostname || "127.0.0.1";
-      return `http://${host}:3001/api/brain`;
+      return "";
     }
 
     const API = detectApiBase();
@@ -276,6 +275,9 @@ READ ONLY:
     }
 
     async function getJson(url, opts = {}) {
+      if (!API) {
+        throw new Error("Brain API base is not configured. Open via HTTPS origin or set ?brainApi=https://host/api/brain.");
+      }
       const token = ensureToken();
       const headers = Object.assign({}, opts.headers || {}, {
         "x-brain-admin-token": token
