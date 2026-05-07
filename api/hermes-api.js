@@ -184,6 +184,50 @@ function parseFileListAction(req) {
   return toAction(ACTIONS.FILE_LIST, { path: readTextQuery(req, "path", ".") });
 }
 
+function parseWebcrawlFindUpdatesAction(req) {
+  return toAction(ACTIONS.WEBCRAWL_FIND_UPDATES, { topic: readStringBody(req, "topic") });
+}
+
+function parseWebcrawlSearchAction(req) {
+  return toAction(ACTIONS.WEBCRAWL_SEARCH, { topic: readStringBody(req, "topic"), model: readStringBody(req, "model") });
+}
+
+function parseWebcrawlFetchAction(req) {
+  return toAction(ACTIONS.WEBCRAWL_FETCH_URL, { url: readStringBody(req, "url") });
+}
+
+function parseWebcrawlCrawlAction(req) {
+  return toAction(ACTIONS.WEBCRAWL_CRAWL_SITE, {
+    url: readStringBody(req, "url"),
+    maxDepth: readNumberBody(req, "maxDepth"),
+    maxPages: readNumberBody(req, "maxPages")
+  });
+}
+
+function parseWebcrawlRssAction(req) {
+  return toAction(ACTIONS.WEBCRAWL_RSS_CHECK, { url: readStringBody(req, "url") });
+}
+
+function parseWebcrawlCompareAction(req) {
+  return toAction(ACTIONS.WEBCRAWL_COMPARE_SNAPSHOT, { topic: readStringBody(req, "topic") });
+}
+
+function parseWebcrawlSaveTopicAction(req) {
+  return toAction(ACTIONS.WEBCRAWL_SAVE_TOPIC, { topic: readStringBody(req, "topic"), url: readStringBody(req, "url") });
+}
+
+function parseWebcrawlListTopicsAction() {
+  return toAction(ACTIONS.WEBCRAWL_LIST_TOPICS, {});
+}
+
+function parseWebcrawlSummarizeAction(req) {
+  return toAction(ACTIONS.WEBCRAWL_SUMMARIZE, { topic: readStringBody(req, "topic") });
+}
+
+function parseWebcrawlClearAction() {
+  return toAction(ACTIONS.WEBCRAWL_CLEAR_SESSION, {});
+}
+
 function parseFileReadAction(req) {
   return toAction(ACTIONS.FILE_READ, { path: readTextQuery(req, "path", "") });
 }
@@ -325,6 +369,10 @@ app.get("/api/hermes/models", (_req, res) => {
     authority: {
       mainHermes: "Can manage/update NPC Agent systems and rules when explicitly instructed in agent edit mode.",
       npcAgent: "Cannot perform direct website/repo edits outside approved NPC-related data/config paths."
+    },
+    webcrawl: {
+      available: Boolean(String(process.env.OPENAI_API_KEY || "").trim()),
+      note: "Webcrawl runs server-side only. API keys are never exposed to browser clients."
     }
   });
 });
@@ -463,6 +511,46 @@ app.get("/api/hermes/files/list", (req, res) => {
 
 app.get("/api/hermes/files/read", (req, res) => {
   return executeActionRoute(req, res, parseFileReadAction(req));
+});
+
+app.post("/api/hermes/webcrawl/find-updates", (req, res) => {
+  return executeActionRoute(req, res, parseWebcrawlFindUpdatesAction(req));
+});
+
+app.post("/api/hermes/webcrawl/search", (req, res) => {
+  return executeActionRoute(req, res, parseWebcrawlSearchAction(req));
+});
+
+app.post("/api/hermes/webcrawl/fetch", (req, res) => {
+  return executeActionRoute(req, res, parseWebcrawlFetchAction(req));
+});
+
+app.post("/api/hermes/webcrawl/crawl", (req, res) => {
+  return executeActionRoute(req, res, parseWebcrawlCrawlAction(req));
+});
+
+app.post("/api/hermes/webcrawl/rss", (req, res) => {
+  return executeActionRoute(req, res, parseWebcrawlRssAction(req));
+});
+
+app.post("/api/hermes/webcrawl/compare", (req, res) => {
+  return executeActionRoute(req, res, parseWebcrawlCompareAction(req));
+});
+
+app.post("/api/hermes/webcrawl/save-topic", (req, res) => {
+  return executeActionRoute(req, res, parseWebcrawlSaveTopicAction(req));
+});
+
+app.get("/api/hermes/webcrawl/topics", (_req, res) => {
+  return executeActionRoute(_req, res, parseWebcrawlListTopicsAction());
+});
+
+app.post("/api/hermes/webcrawl/summarize", (req, res) => {
+  return executeActionRoute(req, res, parseWebcrawlSummarizeAction(req));
+});
+
+app.post("/api/hermes/webcrawl/clear-session", (_req, res) => {
+  return executeActionRoute(_req, res, parseWebcrawlClearAction());
 });
 
 app.post("/api/hermes/files/search", (req, res) => {

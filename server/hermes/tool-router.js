@@ -73,6 +73,64 @@ function routePromptToAction(input = {}) {
     return { actions, unmatched: false };
   }
 
+  if (/find\s+new\s+updates\s+on\s+anything|find\s+new\s+updates/iu.test(lower)) {
+    const topic = prompt.replace(/.*find\s+new\s+updates(\s+on)?/iu, "").trim() || "anything";
+    actions.push({ type: ACTIONS.WEBCRAWL_FIND_UPDATES, payload: { topic } });
+    return { actions, unmatched: false };
+  }
+
+  if (/search\s+web\s+for|search\s+the\s+web\s+for|webcrawl\s+search/iu.test(lower)) {
+    const topic = prompt.replace(/.*(search\s+web\s+for|search\s+the\s+web\s+for|webcrawl\s+search)\s*/iu, "").trim();
+    actions.push({ type: ACTIONS.WEBCRAWL_SEARCH, payload: { topic: topic || prompt } });
+    return { actions, unmatched: false };
+  }
+
+  if (/fetch\s+url\s+/iu.test(lower)) {
+    const url = (prompt.match(/https?:\/\/\S+/iu) || [])[0] || "";
+    actions.push({ type: ACTIONS.WEBCRAWL_FETCH_URL, payload: { url } });
+    return { actions, unmatched: false };
+  }
+
+  if (/crawl\s+website\s+/iu.test(lower)) {
+    const url = (prompt.match(/https?:\/\/\S+/iu) || [])[0] || "";
+    actions.push({ type: ACTIONS.WEBCRAWL_CRAWL_SITE, payload: { url } });
+    return { actions, unmatched: false };
+  }
+
+  if (/check\s+rss\s+feed/iu.test(lower)) {
+    const url = (prompt.match(/https?:\/\/\S+/iu) || [])[0] || "";
+    actions.push({ type: ACTIONS.WEBCRAWL_RSS_CHECK, payload: { url } });
+    return { actions, unmatched: false };
+  }
+
+  if (/compare\s+with\s+last\s+snapshot/iu.test(lower)) {
+    const topic = prompt.replace(/.*compare\s+with\s+last\s+snapshot\s*/iu, "").trim();
+    actions.push({ type: ACTIONS.WEBCRAWL_COMPARE_SNAPSHOT, payload: { topic } });
+    return { actions, unmatched: false };
+  }
+
+  if (/save\s+watch\s+topic/iu.test(lower)) {
+    const topic = prompt.replace(/.*save\s+watch\s+topic\s*/iu, "").trim();
+    actions.push({ type: ACTIONS.WEBCRAWL_SAVE_TOPIC, payload: { topic } });
+    return { actions, unmatched: false };
+  }
+
+  if (/list\s+watch\s+topics/iu.test(lower)) {
+    actions.push({ type: ACTIONS.WEBCRAWL_LIST_TOPICS, payload: {} });
+    return { actions, unmatched: false };
+  }
+
+  if (/summarize\s+findings/iu.test(lower)) {
+    const topic = prompt.replace(/.*summarize\s+findings\s*/iu, "").trim();
+    actions.push({ type: ACTIONS.WEBCRAWL_SUMMARIZE, payload: { topic } });
+    return { actions, unmatched: false };
+  }
+
+  if (/clear\s+webcrawl\s+session/iu.test(lower)) {
+    actions.push({ type: ACTIONS.WEBCRAWL_CLEAR_SESSION, payload: {} });
+    return { actions, unmatched: false };
+  }
+
   if (/register\s+this\s+repo\s*:/iu.test(lower)) {
     const remoteUrl = (prompt.match(/https?:\/\/\S+/iu) || [])[0] || "";
     const localPathMatch = prompt.match(/\bat\s+([^\n]+)$/iu);

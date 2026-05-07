@@ -20,6 +20,7 @@ function formatToolResult(result, debug = false) {
   if (!ok) {
     const missing = Array.isArray(result?.missingRequirements) ? result.missingRequirements : [];
     const err = String(result?.error || "").trim();
+    const toolMessage = String(result?.result?.message || "").trim();
     if (missing.length) {
       summary = `Action denied: ${missing.join("; ")}.`;
     } else if (err) {
@@ -27,6 +28,8 @@ function formatToolResult(result, debug = false) {
         ? err
         : `operation failed (${err})`;
       summary = `Action failed: ${reason}.`;
+    } else if (toolMessage) {
+      summary = `Action failed: ${toolMessage}.`;
     } else {
       summary = "Action failed: no details returned.";
     }
@@ -87,6 +90,27 @@ function formatToolResult(result, debug = false) {
     entries = [{ savedPatch: result?.result?.savedPatch || {} }];
     totalCount = 1;
     shownCount = 1;
+  } else if (action.startsWith("webcrawl/")) {
+    const wc = result?.result || {};
+    summary = String(wc.message || wc.whatChanged || wc.summary || "Webcrawl action completed.");
+    pathUsed = String(wc.url || wc.sourceRoot || "");
+    const sourceEntries = Array.isArray(wc.sources) ? wc.sources : [];
+    const topic = String(wc.topic || "");
+    const checkedAt = String(wc.checkedAt || "");
+    const confidence = String(wc.confidence || "");
+    entries = [{
+      topic,
+      checkedAt,
+      confidence,
+      whatChanged: wc.whatChanged || "",
+      sources: sourceEntries.slice(0, 10),
+      failures: Array.isArray(wc.failures) ? wc.failures.slice(0, 10) : []
+    }];
+    totalCount = sourceEntries.length;
+    shownCount = Math.min(sourceEntries.length, 10);
+    if (wc.unavailable === true) {
+      summary = "Webcrawl tools unavailable";
+    }
   }
 
   const view = {

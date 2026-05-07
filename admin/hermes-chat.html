@@ -385,6 +385,33 @@
           <pre id="opsStatus" class="out"></pre>
         </div>
       </section>
+
+      <section class="panel">
+        <h2>Webcrawl Agent</h2>
+        <div class="muted">Real server-side web research. If search tooling is unavailable, Hermes will return "Webcrawl tools unavailable" instead of guessing.</div>
+        <div>
+          <label for="webcrawlTopic">What do you want to track?</label>
+          <input id="webcrawlTopic" placeholder="Find new updates on anything">
+        </div>
+        <div>
+          <label for="webcrawlUrl">URL (for Fetch/Crawl/RSS topic link)</label>
+          <input id="webcrawlUrl" placeholder="https://example.com">
+        </div>
+        <div class="ops-grid">
+          <button id="webcrawlFindUpdates">Find New Updates</button>
+          <button id="webcrawlSearch">Search Web</button>
+          <button id="webcrawlFetchUrl">Fetch URL</button>
+          <button id="webcrawlCrawlSite">Crawl Website</button>
+          <button id="webcrawlCheckRss">Check RSS Feed</button>
+          <button id="webcrawlCompare">Compare With Last Snapshot</button>
+          <button id="webcrawlSaveTopic">Save Watch Topic</button>
+          <button id="webcrawlListTopics">List Watch Topics</button>
+          <button id="webcrawlSummarize">Summarize Findings</button>
+          <button id="webcrawlClearSession" class="warn">Clear Webcrawl Session</button>
+        </div>
+        <label>Webcrawl Output</label>
+        <pre id="webcrawlOutput" class="out"></pre>
+      </section>
     </main>
   </div>
 

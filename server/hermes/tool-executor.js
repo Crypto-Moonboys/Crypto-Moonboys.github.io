@@ -12,6 +12,7 @@ const {
   cloneAndRegisterRepo
 } = require("./repo-registry.js");
 const { CLONE_PARENT_DIR } = require("./config.js");
+const { executeWebcrawlAction } = require("./webcrawl-agent.js");
 
 function missingForPrivileged(ctx = {}) {
   const missing = [];
@@ -155,6 +156,24 @@ async function executeAction(action, ctx = {}) {
         return { ok: true, action: type, result: getActiveRepoOrThrow() };
       case ACTIONS.REPO_LIST:
         return { ok: true, action: type, result: getRegistrySnapshot() };
+      case ACTIONS.WEBCRAWL_FIND_UPDATES:
+      case ACTIONS.WEBCRAWL_SEARCH:
+      case ACTIONS.WEBCRAWL_FETCH_URL:
+      case ACTIONS.WEBCRAWL_CRAWL_SITE:
+      case ACTIONS.WEBCRAWL_RSS_CHECK:
+      case ACTIONS.WEBCRAWL_COMPARE_SNAPSHOT:
+      case ACTIONS.WEBCRAWL_SAVE_TOPIC:
+      case ACTIONS.WEBCRAWL_LIST_TOPICS:
+      case ACTIONS.WEBCRAWL_SUMMARIZE:
+      case ACTIONS.WEBCRAWL_CLEAR_SESSION:
+        {
+          const wcResult = await executeWebcrawlAction(type, payload);
+          return {
+            ok: wcResult?.ok === true,
+            action: type,
+            result: wcResult
+          };
+        }
       case ACTIONS.COMMAND_RUN:
         return await executePrivilegedAction(normalizedAction, ctx, async (privCtx) => {
           const cmdResult = await orchestrator.tools.enqueueCommand(payload.command, payload.args || [], {
