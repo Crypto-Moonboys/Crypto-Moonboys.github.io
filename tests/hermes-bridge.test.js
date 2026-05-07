@@ -204,6 +204,160 @@ test("git push blocked on main/master", async (t) => {
     }
   });
 
-  assert.equal(res.status, 200);
+  assert.equal(res.status, 403);
   assert.equal(res.body.toolResult.ok, false);
+});
+
+test("chat privileged action without approval is denied", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "agent_edit",
+    role: "main_hermes",
+    confirmEdit: true,
+    approvalToken: "test-token",
+    prompt: "Run npm test",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(res.body.toolResults[0].ok, false);
+  assert.match(JSON.stringify(res.body.toolResults[0]), /approval/i);
+});
+
+test("fake approval id is denied", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/action", {
+    mode: "admin",
+    role: "main_hermes",
+    confirmEdit: true,
+    approvalId: "approval_fake_id",
+    approvalToken: "test-token",
+    action: {
+      type: "command/run",
+      payload: { command: "npm", args: ["test"] }
+    }
+  });
+
+  assert.equal(res.status, 403);
+  assert.match(JSON.stringify(res.body), /approved token not found/i);
+});
+
+test("approval consumption is one-time-use", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const approval = await post(base, "/api/hermes/approval/create", { title: "push once" });
+  await post(base, "/api/hermes/approval/decide", { id: approval.body.approval.id, approved: true });
+
+  const first = await post(base, "/api/hermes/action", {
+    mode: "admin",
+    role: "main_hermes",
+    confirmEdit: true,
+    approvalId: approval.body.approval.id,
+    approvalToken: "test-token",
+    action: {
+      type: "git/push",
+      payload: { remote: "origin" }
+    }
+  });
+
+  const second = await post(base, "/api/hermes/action", {
+    mode: "admin",
+    role: "main_hermes",
+    confirmEdit: true,
+    approvalId: approval.body.approval.id,
+    approvalToken: "test-token",
+    action: {
+      type: "git/push",
+      payload: { remote: "origin" }
+    }
+  });
+
+  assert.equal(first.status, 403);
+  assert.equal(second.status, 403);
+  assert.match(JSON.stringify(second.body), /approved token not found/i);
+});
+
+test("git push without approved token is denied", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/action", {
+    mode: "admin",
+    role: "main_hermes",
+    confirmEdit: true,
+    approvalId: "",
+    approvalToken: "test-token",
+    action: {
+      type: "git/push",
+      payload: { remote: "origin" }
+    }
+  });
+
+  assert.equal(res.status, 403);
+  assert.match(JSON.stringify(res.body), /approval/i);
+});
+
+test("memory merge without edit permissions is denied", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/memory/merge", {
+    mode: "chat",
+    role: "main_hermes",
+    confirmEdit: false,
+    patch: { test: true }
+  });
+
+  assert.equal(res.status, 403);
+  assert.match(JSON.stringify(res.body), /agent_edit|confirmEdit|token|approval/i);
+});
+
+test("git branch without privileged mode is denied", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/git/branch", {
+    mode: "chat",
+    role: "main_hermes",
+    confirmEdit: false,
+    name: "codex/test-branch"
+  });
+
+  assert.equal(res.status, 403);
+  assert.match(JSON.stringify(res.body), /agent_edit|confirmEdit|token|approval/i);
+});
+
+test("git capability mapping requires canUseGit and not canEditRepo", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const approval = await post(base, "/api/hermes/approval/create", { title: "branch test" });
+  await post(base, "/api/hermes/approval/decide", { id: approval.body.approval.id, approved: true });
+
+  const res = await post(base, "/api/hermes/action", {
+    mode: "admin",
+    role: "test_agent",
+    confirmEdit: true,
+    approvalId: approval.body.approval.id,
+    approvalToken: "test-token",
+    action: {
+      type: "git/branch",
+      payload: { name: "codex/capability-test" }
+    }
+  });
+
+  assert.equal(res.status, 403);
+  assert.match(JSON.stringify(res.body), /canUseGit/i);
 });

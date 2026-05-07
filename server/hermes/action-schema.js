@@ -9,6 +9,7 @@ const ACTIONS = Object.freeze({
   GIT_DIFF: "git/diff",
   SWARM_VIEW: "swarm/view",
   MEMORY_VIEW: "memory/view",
+  MEMORY_MERGE: "memory/merge",
   COMMAND_RUN: "command/run",
   PATCH_PREVIEW: "patch/preview",
   PATCH_APPLY: "patch/apply",
@@ -16,6 +17,8 @@ const ACTIONS = Object.freeze({
   GIT_BRANCH: "git/branch",
   GIT_COMMIT: "git/commit",
   GIT_PUSH: "git/push",
+  GIT_STASH: "git/stash",
+  GIT_RESTORE: "git/restore",
   GIT_PR_METADATA: "git/pr-metadata",
   APPROVAL_CREATE: "approval/create"
 });
@@ -26,14 +29,27 @@ const PRIVILEGED_ACTIONS = new Set([
   ACTIONS.PATCH_ROLLBACK,
   ACTIONS.GIT_BRANCH,
   ACTIONS.GIT_COMMIT,
-  ACTIONS.GIT_PUSH
+  ACTIONS.GIT_PUSH,
+  ACTIONS.GIT_STASH,
+  ACTIONS.GIT_RESTORE,
+  ACTIONS.MEMORY_MERGE
 ]);
 
 function requiresPrivilege(action) {
   return PRIVILEGED_ACTIONS.has(action);
 }
 
+function capabilityForAction(action) {
+  if (!action) return null;
+  if (action.startsWith("git/")) return "canUseGit";
+  if (action.startsWith("patch/")) return "canEditRepo";
+  if (action.startsWith("command/")) return "canRunCommands";
+  if (action === ACTIONS.MEMORY_MERGE) return "canEditRepo";
+  return null;
+}
+
 module.exports = {
   ACTIONS,
-  requiresPrivilege
+  requiresPrivilege,
+  capabilityForAction
 };
