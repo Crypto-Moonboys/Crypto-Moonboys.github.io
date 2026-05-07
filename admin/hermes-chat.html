@@ -191,6 +191,12 @@
     }
 
     button.safe {
+      border-color: rgba(96, 213, 255, 0.5);
+      background: linear-gradient(180deg, rgba(96, 213, 255, 0.92), rgba(66, 169, 214, 0.92));
+      color: #041019;
+    }
+
+    button.safe-intent {
       background: linear-gradient(180deg, rgba(145, 255, 190, 0.96), rgba(89, 218, 138, 0.96));
       border-color: rgba(109, 255, 162, 0.65);
       color: #03200d;
@@ -426,7 +432,7 @@
           </select>
         </div>
         <button id="useTemplateBtn" class="warn">Load Template</button>
-        <button id="useTemplateSendBtn" class="safe">Load + Send (safe if read-only)</button>
+        <button id="useTemplateSendBtn" class="safe safe-intent">Load + Send (safe if read-only)</button>
       </div>
 
       <div class="control-grid">
@@ -547,7 +553,7 @@
 
         <div class="swarm-actions">
           <button id="buildSwarmPromptBtn" class="warn">Build Swarm Prompt</button>
-          <button id="sendSwarmPromptBtn" class="safe">Send to Hermes</button>
+          <button id="sendSwarmPromptBtn" class="safe safe-intent">Send to Hermes</button>
           <button id="clearSwarmPromptBtn">Clear</button>
           <button id="explainSwarmModeBtn">Explain This Mode</button>
         </div>
@@ -644,7 +650,7 @@
         <div class="status-item"><span>Deploy Agent</span><span class="status-pill" id="statusDeployAgent">idle</span></div>
         <div class="status-item"><span>Repo Audit Agent</span><span class="status-pill" id="statusRepoAuditAgent">idle</span></div>
       </div>
-      <button id="refreshAgentStatusBtn" class="safe">Refresh Agent Status</button>
+      <button id="refreshAgentStatusBtn" class="safe safe-intent">Refresh Agent Status</button>
       <div id="uiSelfTestStatus" class="ui-test">UI self-test pending…</div>
     </section>
 
@@ -809,7 +815,8 @@
 
       function bindControlButtons() {
         var buttons = document.querySelectorAll("[data-hermes-prompt]");
-        buttons.forEach(function (btn) {
+        for (var i = 0; i < buttons.length; i += 1) {
+          var btn = buttons[i];
           btn.addEventListener("click", function () {
             var text = btn.getAttribute("data-hermes-prompt") || "";
             var auto = btn.getAttribute("data-hermes-autosend") === "true";
@@ -817,7 +824,7 @@
             maybeAutoSend(auto);
           });
           btn.setAttribute("data-handler-bound", "true");
-        });
+        }
       }
 
       function bindTemplates() {
@@ -831,15 +838,31 @@
           return "Template request: " + label + ". Please produce a clear step-by-step plan first, then ask for confirmation before any edit or deployment action.";
         }
 
+        function templateCanAutoSend(label) {
+          var map = {
+            "Audit repo conflicts": true,
+            "Check why website changed": true,
+            "Summarize current runtime state": true,
+            "Fix this page": false,
+            "Rebuild this admin UI": false,
+            "Create sandbox-first PR": false,
+            "Deploy latest main to server": false
+          };
+          return map[label] === true;
+        }
+
         load.addEventListener("click", function () {
-          setPrompt(templatePrompt(select.value));
+          var value = select.value || "";
+          if (!value) return;
+          setPrompt(templatePrompt(value));
         });
         load.setAttribute("data-handler-bound", "true");
 
         loadSend.addEventListener("click", function () {
           var value = select.value || "";
+          if (!value) return;
           setPrompt(templatePrompt(value));
-          var safeReadOnly = /audit|summarize|check why website changed/i.test(value);
+          var safeReadOnly = templateCanAutoSend(value);
           maybeAutoSend(safeReadOnly);
         });
         loadSend.setAttribute("data-handler-bound", "true");
@@ -898,11 +921,15 @@
         var style = document.getElementById("swarmTaskStyle");
         var target = document.getElementById("swarmOutputTarget");
         var checks = Array.prototype.slice.call(document.querySelectorAll(".swarm-agent"));
-        checks.forEach(function (n) { n.checked = false; });
+        for (var i = 0; i < checks.length; i += 1) checks[i].checked = false;
 
         function check(agent) {
-          var node = checks.find(function (n) { return n.value === agent; });
-          if (node) node.checked = true;
+          for (var i = 0; i < checks.length; i += 1) {
+            if (checks[i].value === agent) {
+              checks[i].checked = true;
+              return;
+            }
+          }
         }
 
         check("Main Hermes Agent");
@@ -962,29 +989,25 @@
         var explainBtn = document.getElementById("explainSwarmModeBtn");
         var presetBtns = document.querySelectorAll("[data-swarm-preset]");
         var swarmBox = document.getElementById("swarmMainTask");
-        var lastBuilt = "";
-
-        presetBtns.forEach(function (btn) {
+        for (var i = 0; i < presetBtns.length; i += 1) {
+          var btn = presetBtns[i];
           btn.addEventListener("click", function () {
             applySwarmPreset(btn.getAttribute("data-swarm-preset") || "");
           });
           btn.setAttribute("data-handler-bound", "true");
-        });
+        }
 
         if (buildBtn) {
           buildBtn.addEventListener("click", function () {
-            lastBuilt = buildSwarmPrompt();
-            setPrompt(lastBuilt);
+            setPrompt(buildSwarmPrompt());
           });
           buildBtn.setAttribute("data-handler-bound", "true");
         }
 
         if (sendBtn) {
           sendBtn.addEventListener("click", function () {
-            if (!lastBuilt.trim()) {
-              lastBuilt = buildSwarmPrompt();
-              setPrompt(lastBuilt);
-            }
+            var freshPrompt = buildSwarmPrompt();
+            setPrompt(freshPrompt);
             maybeAutoSend(true);
           });
           sendBtn.setAttribute("data-handler-bound", "true");
@@ -993,7 +1016,6 @@
         if (clearBtn) {
           clearBtn.addEventListener("click", function () {
             if (swarmBox) swarmBox.value = "";
-            lastBuilt = "";
             setPrompt("");
           });
           clearBtn.setAttribute("data-handler-bound", "true");
@@ -1038,7 +1060,8 @@
 
       function bindSandboxCleanup() {
         var buttons = document.querySelectorAll("[data-cleanup-action]");
-        buttons.forEach(function (btn) {
+        for (var i = 0; i < buttons.length; i += 1) {
+          var btn = buttons[i];
           btn.addEventListener("click", function () {
             var action = btn.getAttribute("data-cleanup-action") || "";
             var auto = btn.getAttribute("data-cleanup-autosend") === "true";
@@ -1046,7 +1069,7 @@
             maybeAutoSend(auto);
           });
           btn.setAttribute("data-handler-bound", "true");
-        });
+        }
       }
 
       function bindMergeChecklist() {
@@ -1083,17 +1106,17 @@
         ];
 
         function setAll(value) {
-          ids.forEach(function (id) {
+          for (var i = 0; i < ids.length; i += 1) {
+            var id = ids[i];
             var node = document.getElementById(id);
             if (node) node.textContent = value;
-          });
+          }
         }
 
         refresh.addEventListener("click", function () {
           setAll("working");
           setPrompt("Report current swarm/agent status in this format: Main Hermes, UI, Runtime, Test, Deploy, Repo Audit = idle/working/error with one-line reason each.");
           maybeAutoSend(true);
-          setTimeout(function () { setAll("idle"); }, 1400);
         });
         refresh.setAttribute("data-handler-bound", "true");
       }
@@ -1111,22 +1134,34 @@
 
         var missing = requiredIds.filter(function (id) { return !document.getElementById(id); });
         var allInteractive = Array.prototype.slice.call(document.querySelectorAll("button,[data-hermes-prompt],[data-cleanup-action],[data-swarm-preset]"));
+        var explicitExternal = {
+          sendChat: true,
+          runAction: true,
+          showRuntimeRoot: true,
+          listRepos: true,
+          switchRepo: true,
+          registerRepo: true,
+          cloneRepo: true,
+          showPm2Status: true,
+          showApprovals: true,
+          showSwarm: true,
+          showModels: true
+        };
         var unbound = allInteractive.filter(function (n) {
-          if (n.id && ["sendChat","runAction","showRuntimeRoot","listRepos","switchRepo","registerRepo","cloneRepo","showPm2Status","showApprovals","showSwarm","showModels"].indexOf(n.id) !== -1) return false;
-          return n.tagName.toLowerCase() === "button" && n.getAttribute("data-handler-bound") !== "true" && !n.id;
+          if (n.id && explicitExternal[n.id]) return false;
+          return n.tagName.toLowerCase() === "button" && n.getAttribute("data-handler-bound") !== "true";
         });
 
-        var promptBuildButtons = [
-          document.getElementById("buildSwarmPromptBtn"),
-          document.getElementById("buildMergeChecklistPromptBtn")
-        ].filter(Boolean);
-        var nonEmptyPromptBuild = promptBuildButtons.every(function (b) { return !!b; });
+        var hasSwarmBuilder = !!document.getElementById("buildSwarmPromptBtn");
+        var hasMergeBuilder = !!document.getElementById("buildMergeChecklistPromptBtn");
+        var nonEmptyPromptBuild = hasSwarmBuilder && hasMergeBuilder;
 
         var destructiveAutosend = Array.prototype.slice.call(document.querySelectorAll("[data-cleanup-action],[data-hermes-prompt]")).filter(function (n) {
           var txt = ((n.getAttribute("data-hermes-prompt") || "") + " " + (n.textContent || "")).toLowerCase();
           var readOnlyHint = /show |explain|report |list |preview |compare |what can be deleted|rollback options|safe to delete/.test(txt);
           var destructive = !readOnlyHint && /delete|remove|rollback|restore|deploy|rebuild|reset|fix broken page|cleanup sandbox session|failed sandbox/.test(txt);
-          return destructive && n.getAttribute("data-hermes-autosend") === "true";
+          var autoSend = n.getAttribute("data-hermes-autosend") === "true" || n.getAttribute("data-cleanup-autosend") === "true";
+          return destructive && autoSend;
         });
 
         var lines = [
