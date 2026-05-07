@@ -121,7 +121,6 @@ async function checkFactionModelsRuntime() {
   globalThis.localStorage = createMemoryStorage();
 
   const effectModule = await import(pathToFileURL(EFFECTS_FILE).href + `?v=${Date.now()}`);
-  const missionModule = await import(pathToFileURL(MISSIONS_FILE).href + `?v=${Date.now()}`);
   const warModule = await import(pathToFileURL(WAR_FILE).href + `?v=${Date.now()}`);
 
   for (const key of LIVE_FACTIONS) {
@@ -129,11 +128,20 @@ async function checkFactionModelsRuntime() {
     assert.ok(fx && fx.key === key, `Missing faction effect definition for ${key}`);
   }
 
+  const missionSrc = read(MISSIONS_FILE);
+  const dailySection = missionSrc.split('var SEASONAL_MISSIONS')[0] || missionSrc;
+  const seasonalSection = missionSrc.split('var SEASONAL_MISSIONS')[1] || '';
   for (const key of LIVE_FACTIONS) {
-    const daily = missionModule.getDailyMissions(key);
-    const seasonal = missionModule.getSeasonalMissions(key);
-    assert.equal(daily.length, 3, `Faction ${key} must have exactly 3 daily missions`);
-    assert.ok(seasonal.length >= 1, `Faction ${key} must have at least 1 seasonal mission`);
+    const keyToken = key.includes('-') ? `['"]${key}['"]` : `(?:['"]${key}['"]|${key})`;
+    const dailyMatch = dailySection.match(new RegExp(`${keyToken}\\s*:\\s*Object\\.freeze\\(\\[([\\s\\S]*?)\\]\\)\\s*,`));
+    assert.ok(dailyMatch, `Missing daily mission block for ${key}`);
+    const dailyCount = (dailyMatch[1].match(/Object\.freeze\(\{\s*id:/g) || []).length;
+    assert.equal(dailyCount, 3, `Faction ${key} must have exactly 3 daily missions`);
+
+    const seasonMatch = seasonalSection.match(new RegExp(`${keyToken}\\s*:\\s*Object\\.freeze\\(\\[([\\s\\S]*?)\\]\\)\\s*,`));
+    assert.ok(seasonMatch, `Missing seasonal mission block for ${key}`);
+    const seasonCount = (seasonMatch[1].match(/Object\.freeze\(\{\s*id:/g) || []).length;
+    assert.ok(seasonCount >= 1, `Faction ${key} must have at least 1 seasonal mission`);
   }
 
   const standings = warModule.getFactionStandings();
