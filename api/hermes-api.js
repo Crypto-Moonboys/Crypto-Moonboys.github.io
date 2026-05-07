@@ -21,7 +21,7 @@ const app = express();
 app.disable("x-powered-by");
 
 const ALLOWED_ORIGINS = (process.env.HERMES_ALLOWED_ORIGINS ||
-  "https://cryptomoonboys.com,https://www.cryptomoonboys.com,https://space.cryptomoonboys.com,http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173")
+  "https://cryptomoonboys.com,https://www.cryptomoonboys.com,http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173")
   .split(",")
   .map((value) => value.trim())
   .filter(Boolean);

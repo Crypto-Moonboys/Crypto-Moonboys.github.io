@@ -5,6 +5,5 @@ Allow: /
 # robots.txt is not security; it only reduces indexing/discovery.
 Disallow: /admin-tools.html
 Disallow: /agent.html
-Disallow: /admin/space-agent.html
 
 Sitemap: https://crypto-moonboys.github.io/sitemap.xml

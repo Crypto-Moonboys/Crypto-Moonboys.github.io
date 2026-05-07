@@ -306,7 +306,7 @@
     if (missionsContainer && !missionsContainer.hasChildNodes()) {
       var localBadge = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
         ? window.UI_STATUS_COPY.panels.localMissionOnly()
-        : '<span class="mission-scope-badge">Local mission \u2014 server sync coming later.</span>';
+        : '<span class="mission-scope-badge">Guest mission \u2014 link Telegram to persist progress.</span>';
       var communityMissions = [
         {
           tag: 'Daily Arcade',

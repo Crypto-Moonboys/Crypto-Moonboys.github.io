@@ -10,7 +10,7 @@ const { execFile } = require("child_process");
 
 // --- P1: explicit CORS allowlist (no wildcard) ---
 const ALLOWED_ORIGINS = (process.env.BRAIN_ALLOWED_ORIGINS ||
-  "https://cryptomoonboys.com,https://www.cryptomoonboys.com,https://space.cryptomoonboys.com,http://localhost:3001,http://127.0.0.1:3001")
+  "https://cryptomoonboys.com,https://www.cryptomoonboys.com,http://localhost:3001,http://127.0.0.1:3001")
   .split(",")
   .map((v) => v.trim())
   .filter(Boolean);

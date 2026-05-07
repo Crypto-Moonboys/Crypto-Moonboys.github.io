@@ -507,7 +507,7 @@ function renderFactionStandings() {
   var preSeasonCopy = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
     ? window.UI_STATUS_COPY.panels.preSeasonFactionSignal()
     : '<p class="lb-fw-preseason">Faction signal is currently based on local arcade activity in this browser. '
-      + 'Full server-backed seasonal war standings are a future layer.</p>';
+      + 'Linked-player faction standings are tracked server-side.</p>';
 
   var allZero = standings.length > 0 && standings.every(function (s) { return s.power === 0 && s.daily === 0 && s.weekly === 0; });
 

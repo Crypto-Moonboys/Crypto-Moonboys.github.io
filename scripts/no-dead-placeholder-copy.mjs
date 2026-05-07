@@ -60,7 +60,7 @@ const FORBIDDEN = [
   /engagement layer is live/i,
   /TODO user-facing/i,
   /mission board static filler/i,
-  /future layer shown as live/i,
+  /speculative runtime copy shown as live/i,
 ];
 
 // ── HTML comment stripper ────────────────────────────────────────────────────
