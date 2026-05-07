@@ -10,6 +10,11 @@ const ACTIONS = Object.freeze({
   SWARM_VIEW: "swarm/view",
   MEMORY_VIEW: "memory/view",
   MEMORY_MERGE: "memory/merge",
+  REPO_SHOW_ACTIVE: "repo/show-active",
+  REPO_LIST: "repo/list",
+  REPO_SWITCH: "repo/switch",
+  REPO_REGISTER: "repo/register",
+  REPO_CLONE: "repo/clone",
   COMMAND_RUN: "command/run",
   PATCH_PREVIEW: "patch/preview",
   PATCH_APPLY: "patch/apply",
@@ -32,7 +37,10 @@ const PRIVILEGED_ACTIONS = new Set([
   ACTIONS.GIT_PUSH,
   ACTIONS.GIT_STASH,
   ACTIONS.GIT_RESTORE,
-  ACTIONS.MEMORY_MERGE
+  ACTIONS.MEMORY_MERGE,
+  ACTIONS.REPO_SWITCH,
+  ACTIONS.REPO_REGISTER,
+  ACTIONS.REPO_CLONE
 ]);
 
 function requiresPrivilege(action) {
@@ -45,6 +53,9 @@ function capabilityForAction(action) {
   if (action.startsWith("patch/")) return "canEditRepo";
   if (action.startsWith("command/")) return "canRunCommands";
   if (action === ACTIONS.MEMORY_MERGE) return "canEditRepo";
+  if (action.startsWith("repo/clone")) return "canEditRepo";
+  if (action.startsWith("repo/register")) return "canEditRepo";
+  if (action.startsWith("repo/switch")) return "canEditRepo";
   return null;
 }
 

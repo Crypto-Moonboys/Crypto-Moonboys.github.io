@@ -5,6 +5,7 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 const { ROLLBACK_DIR } = require("./config.js");
 const { assertAllowedPath, ensureParentDir } = require("./path-utils.js");
+const { getActiveRepoOrThrow } = require("./repo-registry.js");
 
 function nextRollbackId() {
   return `rb_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
@@ -19,8 +20,10 @@ function snapshotFile(relPath) {
 }
 
 function writeRollback(rollbackId, payload) {
-  fs.mkdirSync(ROLLBACK_DIR, { recursive: true });
-  const file = path.join(ROLLBACK_DIR, `${rollbackId}.json`);
+  const repoId = getActiveRepoOrThrow().id;
+  const repoRollbackDir = path.join(ROLLBACK_DIR, repoId);
+  fs.mkdirSync(repoRollbackDir, { recursive: true });
+  const file = path.join(repoRollbackDir, `${rollbackId}.json`);
   fs.writeFileSync(file, JSON.stringify(payload, null, 2));
   return file;
 }
@@ -94,7 +97,8 @@ function rollbackPatch(rollbackId, options = {}) {
   if (mode !== "agent_edit") {
     throw new Error("Rollback requires agent_edit mode.");
   }
-  const file = path.join(ROLLBACK_DIR, `${rollbackId}.json`);
+  const repoId = getActiveRepoOrThrow().id;
+  const file = path.join(ROLLBACK_DIR, repoId, `${rollbackId}.json`);
   if (!fs.existsSync(file)) {
     throw new Error("Rollback id not found.");
   }

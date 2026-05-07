@@ -2,6 +2,8 @@
 
 const express = require("express");
 const cors = require("cors");
+const fs = require("node:fs");
+const path = require("node:path");
 const {
   ALLOWED_MODELS,
   DEFAULT_MODEL
@@ -11,6 +13,8 @@ const { getAgents } = require("../server/hermes/swarm-registry.js");
 const { runConversation } = require("../server/hermes/conversation-runtime.js");
 const { executeAction } = require("../server/hermes/tool-executor.js");
 const { ACTIONS } = require("../server/hermes/action-schema.js");
+const { getRegistrySnapshot, getActiveRepoOrThrow } = require("../server/hermes/repo-registry.js");
+const git = require("../server/hermes/git-operator.js");
 
 const app = express();
 app.disable("x-powered-by");
@@ -141,6 +145,38 @@ function parseGitPushAction(req) {
 
 function parseMemoryMergeAction(req) {
   return toAction(ACTIONS.MEMORY_MERGE, { patch: readObjectBody(req, "patch") });
+}
+
+function parseRepoShowActiveAction() {
+  return toAction(ACTIONS.REPO_SHOW_ACTIVE, {});
+}
+
+function parseRepoListAction() {
+  return toAction(ACTIONS.REPO_LIST, {});
+}
+
+function parseRepoSwitchAction(req) {
+  return toAction(ACTIONS.REPO_SWITCH, { idOrName: readStringBody(req, "idOrName") });
+}
+
+function parseRepoRegisterAction(req) {
+  return toAction(ACTIONS.REPO_REGISTER, {
+    id: readStringBody(req, "id"),
+    name: readStringBody(req, "name"),
+    remoteUrl: readStringBody(req, "remoteUrl"),
+    localPath: readStringBody(req, "localPath"),
+    defaultBranch: readStringBody(req, "defaultBranch", "main"),
+    status: readStringBody(req, "status", "inactive")
+  });
+}
+
+function parseRepoCloneAction(req) {
+  return toAction(ACTIONS.REPO_CLONE, {
+    id: readStringBody(req, "id"),
+    name: readStringBody(req, "name"),
+    remoteUrl: readStringBody(req, "remoteUrl"),
+    defaultBranch: readStringBody(req, "defaultBranch", "main")
+  });
 }
 
 function parseFileListAction(req) {
@@ -328,6 +364,37 @@ app.get("/api/hermes/swarm", (_req, res) => {
   res.json({ agents: getAgents() });
 });
 
+app.get("/api/hermes/runtime/root", async (_req, res) => {
+  try {
+    const activeRepo = getActiveRepoOrThrow();
+    const cwd = process.cwd();
+    let gitRoot = "";
+    try {
+      gitRoot = await git.runGit(["rev-parse", "--show-toplevel"]);
+    } catch (_error) {
+      gitRoot = "";
+    }
+    const topLevelEntries = fs.existsSync(activeRepo.localPath)
+      ? fs.readdirSync(activeRepo.localPath).slice(0, 120)
+      : [];
+    return res.json({
+      ok: true,
+      activeRepoId: activeRepo.id,
+      activeRepoName: activeRepo.name,
+      remoteUrl: activeRepo.remoteUrl,
+      localPath: activeRepo.localPath,
+      cwd,
+      gitRoot,
+      packageJsonExists: fs.existsSync(path.join(activeRepo.localPath, "package.json")),
+      indexHtmlExists: fs.existsSync(path.join(activeRepo.localPath, "index.html")),
+      apiHermesExists: fs.existsSync(path.join(activeRepo.localPath, "api", "hermes-api.js")),
+      topLevelEntries
+    });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
 app.post("/api/hermes/chat", async (req, res) => {
   try {
     const payload = parseConversationInput(req);
@@ -448,6 +515,30 @@ app.get("/api/hermes/memory", (_req, res) => {
 
 app.post("/api/hermes/memory/merge", (req, res) => {
   return executePrivilegedActionRoute(req, res, parseMemoryMergeAction(req));
+});
+
+app.get("/api/hermes/repos", (_req, res) => {
+  try {
+    return res.json({ ok: true, ...getRegistrySnapshot() });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.get("/api/hermes/repos/active", (_req, res) => {
+  return executeActionRoute(_req, res, parseRepoShowActiveAction());
+});
+
+app.post("/api/hermes/repos/switch", (req, res) => {
+  return executePrivilegedActionRoute(req, res, parseRepoSwitchAction(req));
+});
+
+app.post("/api/hermes/repos/register", (req, res) => {
+  return executePrivilegedActionRoute(req, res, parseRepoRegisterAction(req));
+});
+
+app.post("/api/hermes/repos/clone", (req, res) => {
+  return executePrivilegedActionRoute(req, res, parseRepoCloneAction(req));
 });
 
 const PORT = Number(process.env.PORT || 3012);

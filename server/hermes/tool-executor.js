@@ -4,6 +4,14 @@ const orchestrator = require("./orchestrator.js");
 const { ACTIONS, capabilityForAction } = require("./action-schema.js");
 const { assertRoleCapability } = require("./agent-runtime.js");
 const { consumeApproved } = require("./approval-gate.js");
+const {
+  getRegistrySnapshot,
+  getActiveRepoOrThrow,
+  registerRepo,
+  switchActiveRepo,
+  cloneAndRegisterRepo
+} = require("./repo-registry.js");
+const { CLONE_PARENT_DIR } = require("./config.js");
 
 function missingForPrivileged(ctx = {}) {
   const missing = [];
@@ -63,6 +71,12 @@ function executePrivilegedAction(action, ctx, handler) {
   return handler();
 }
 
+function ensureAdminMode(ctx = {}, actionType) {
+  if (actionType === ACTIONS.REPO_CLONE && String(ctx.mode || "") !== "admin") {
+    throw new Error("Repo clone requires admin mode.");
+  }
+}
+
 async function executeAction(action, ctx = {}) {
   const type = action?.type;
   const payload = action?.payload || {};
@@ -100,6 +114,10 @@ async function executeAction(action, ctx = {}) {
         return { ok: true, action: type, result: ctx.swarm || [] };
       case ACTIONS.MEMORY_VIEW:
         return { ok: true, action: type, result: orchestrator.tools.readMemory() };
+      case ACTIONS.REPO_SHOW_ACTIVE:
+        return { ok: true, action: type, result: getActiveRepoOrThrow() };
+      case ACTIONS.REPO_LIST:
+        return { ok: true, action: type, result: getRegistrySnapshot() };
       case ACTIONS.COMMAND_RUN:
         return await executePrivilegedAction(normalizedAction, ctx, async () => ({
           ok: true,
@@ -177,6 +195,40 @@ async function executeAction(action, ctx = {}) {
           ok: true,
           action: type,
           result: orchestrator.tools.mergeMemory(payload.patch || {})
+        }));
+      case ACTIONS.REPO_REGISTER:
+        ensureAdminMode(ctx, type);
+        return executePrivilegedAction(normalizedAction, ctx, () => ({
+          ok: true,
+          action: type,
+          result: registerRepo({
+            id: payload.id,
+            name: payload.name,
+            remoteUrl: payload.remoteUrl,
+            localPath: payload.localPath,
+            defaultBranch: payload.defaultBranch,
+            status: payload.status || "inactive"
+          })
+        }));
+      case ACTIONS.REPO_SWITCH:
+        ensureAdminMode(ctx, type);
+        return executePrivilegedAction(normalizedAction, ctx, () => ({
+          ok: true,
+          action: type,
+          result: switchActiveRepo(payload.idOrName)
+        }));
+      case ACTIONS.REPO_CLONE:
+        ensureAdminMode(ctx, type);
+        return executePrivilegedAction(normalizedAction, ctx, () => ({
+          ok: true,
+          action: type,
+          result: cloneAndRegisterRepo({
+            id: payload.id,
+            name: payload.name,
+            remoteUrl: payload.remoteUrl,
+            defaultBranch: payload.defaultBranch,
+            cloneParentDir: CLONE_PARENT_DIR
+          })
         }));
       case ACTIONS.APPROVAL_CREATE:
         return { ok: true, action: type, result: orchestrator.tools.createApproval(payload) };

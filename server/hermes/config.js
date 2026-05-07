@@ -2,10 +2,15 @@
 
 const path = require("node:path");
 
-const REPO_ROOT = path.resolve(process.env.HERMES_REPO_ROOT || process.cwd());
-const MEMORY_FILE = path.join(REPO_ROOT, "admin", "hermes-data", "memory-store.json");
-const ROLLBACK_DIR = path.join(REPO_ROOT, "admin", "hermes-data", "rollbacks");
-const INDEX_CACHE_FILE = path.join(REPO_ROOT, "admin", "hermes-data", "repo-index.json");
+const DEFAULT_REPO_ROOT = path.resolve(process.env.HERMES_REPO_ROOT || "/root/Crypto-Moonboys.github.io");
+const HERMES_DATA_ROOT = path.resolve(
+  process.env.HERMES_DATA_ROOT ||
+  path.join(process.cwd(), "admin", "hermes-data")
+);
+const MEMORY_FILE = path.join(HERMES_DATA_ROOT, "memory-store.json");
+const ROLLBACK_DIR = path.join(HERMES_DATA_ROOT, "rollbacks");
+const INDEX_CACHE_DIR = path.join(HERMES_DATA_ROOT, "indexes");
+const CLONE_PARENT_DIR = path.resolve(process.env.HERMES_REPO_CLONE_PARENT || "/root/hermes-repos");
 
 const IGNORE_DIRS = new Set([
   ".git",
@@ -34,10 +39,12 @@ const MAX_SEARCH_RESULTS = 120;
 const MAX_COMMAND_TIMEOUT_MS = 120000;
 
 module.exports = {
-  REPO_ROOT,
+  DEFAULT_REPO_ROOT,
+  HERMES_DATA_ROOT,
   MEMORY_FILE,
   ROLLBACK_DIR,
-  INDEX_CACHE_FILE,
+  INDEX_CACHE_DIR,
+  CLONE_PARENT_DIR,
   IGNORE_DIRS,
   DENY_PATTERNS,
   MAX_READ_BYTES,

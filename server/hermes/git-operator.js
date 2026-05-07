@@ -1,11 +1,12 @@
 ﻿"use strict";
 
 const { execFile } = require("node:child_process");
-const { REPO_ROOT } = require("./config.js");
+const { getActiveRepoRoot } = require("./path-utils.js");
 
 function runGit(args, timeoutMs = 15000) {
+  const cwd = getActiveRepoRoot();
   return new Promise((resolve, reject) => {
-    execFile("git", args, { cwd: REPO_ROOT, timeout: timeoutMs }, (error, stdout, stderr) => {
+    execFile("git", args, { cwd, timeout: timeoutMs }, (error, stdout, stderr) => {
       if (error) {
         reject(new Error(stderr || error.message));
         return;
