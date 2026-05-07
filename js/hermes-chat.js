@@ -11,12 +11,19 @@
     missing: el("missingRequirements"),
     action: el("actionOutput"),
     repo: el("repoStatus"),
-    ops: el("opsStatus")
+    ops: el("opsStatus"),
+    webcrawl: el("webcrawlOutput")
   };
 
   function setOut(node, value) {
     if (!node) return;
     node.textContent = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+  }
+
+  function bindClick(id, handler) {
+    const node = el(id);
+    if (!node) return;
+    node.addEventListener("click", handler);
   }
 
   function summarizeToolResults(toolResults) {
@@ -82,7 +89,7 @@
     return data;
   }
 
-  el("sendChat").addEventListener("click", async () => {
+  bindClick("sendChat", async () => {
     try {
       const prompt = String(el("prompt").value || "").trim();
       if (!prompt) throw new Error("Prompt is required.");
@@ -115,7 +122,7 @@
     }
   });
 
-  el("runAction").addEventListener("click", async () => {
+  bindClick("runAction", async () => {
     try {
       const action = JSON.parse(String(el("actionJson").value || "{}").trim());
       const payload = { ...basePayload(), action };
@@ -131,7 +138,7 @@
     setOut(out.repo, data);
   }
 
-  el("showRuntimeRoot").addEventListener("click", async () => {
+  bindClick("showRuntimeRoot", async () => {
     try {
       await showRuntimeRoot();
     } catch (error) {
@@ -139,7 +146,7 @@
     }
   });
 
-  el("listRepos").addEventListener("click", async () => {
+  bindClick("listRepos", async () => {
     try {
       setOut(out.repo, await api("/api/hermes/repos"));
     } catch (error) {
@@ -147,7 +154,7 @@
     }
   });
 
-  el("switchRepo").addEventListener("click", async () => {
+  bindClick("switchRepo", async () => {
     try {
       const payload = {
         ...basePayload(),
@@ -161,7 +168,7 @@
     }
   });
 
-  el("registerRepo").addEventListener("click", async () => {
+  bindClick("registerRepo", async () => {
     try {
       const payload = {
         ...basePayload(),
@@ -180,7 +187,7 @@
     }
   });
 
-  el("cloneRepo").addEventListener("click", async () => {
+  bindClick("cloneRepo", async () => {
     try {
       const payload = {
         ...basePayload(),
@@ -192,7 +199,7 @@
     }
   });
 
-  el("showPm2Status").addEventListener("click", async () => {
+  bindClick("showPm2Status", async () => {
     try {
       const payload = {
         ...basePayload(),
@@ -204,7 +211,7 @@
     }
   });
 
-  el("showApprovals").addEventListener("click", async () => {
+  bindClick("showApprovals", async () => {
     try {
       setOut(out.ops, await api("/api/hermes/approval/list"));
     } catch (error) {
@@ -212,7 +219,7 @@
     }
   });
 
-  el("showSwarm").addEventListener("click", async () => {
+  bindClick("showSwarm", async () => {
     try {
       setOut(out.ops, await api("/api/hermes/swarm"));
     } catch (error) {
@@ -220,12 +227,132 @@
     }
   });
 
-  el("showModels").addEventListener("click", async () => {
+  bindClick("showModels", async () => {
     try {
       setOut(out.ops, await api("/api/hermes/models"));
     } catch (error) {
       setOut(out.ops, { error: String(error?.message || error) });
     }
+  });
+
+  function currentTopic() {
+    return String(el("webcrawlTopic")?.value || "").trim();
+  }
+
+  function currentUrl() {
+    return String(el("webcrawlUrl")?.value || "").trim();
+  }
+
+  function setPrompt(value) {
+    const node = el("prompt");
+    if (!node) return;
+    node.value = String(value || "").trim();
+  }
+
+  async function runWebcrawl(pathName, body, generatedPrompt) {
+    try {
+      if (generatedPrompt) {
+        setPrompt(generatedPrompt);
+      }
+      const payload = { ...basePayload(), ...body };
+      const data = await api(pathName, { method: "POST", body: JSON.stringify(payload) });
+      setOut(out.webcrawl, data);
+      return data;
+    } catch (error) {
+      setOut(out.webcrawl, { error: String(error?.message || error) });
+      return null;
+    }
+  }
+
+  bindClick("webcrawlFindUpdates", async () => {
+    const topic = currentTopic() || "anything";
+    await runWebcrawl(
+      "/api/hermes/webcrawl/find-updates",
+      { topic },
+      `Find new updates on ${topic}. Include checked sources, timestamp, what changed, confidence, and failures.`
+    );
+  });
+
+  bindClick("webcrawlSearch", async () => {
+    const topic = currentTopic();
+    await runWebcrawl(
+      "/api/hermes/webcrawl/search",
+      { topic },
+      `Search web for ${topic}. Return real sources and no guesses.`
+    );
+  });
+
+  bindClick("webcrawlFetchUrl", async () => {
+    const url = currentUrl();
+    await runWebcrawl(
+      "/api/hermes/webcrawl/fetch",
+      { url },
+      `Fetch URL ${url}. Summarize factual findings with source citation.`
+    );
+  });
+
+  bindClick("webcrawlCrawlSite", async () => {
+    const url = currentUrl();
+    await runWebcrawl(
+      "/api/hermes/webcrawl/crawl",
+      { url, maxDepth: 2, maxPages: 12 },
+      `Crawl website ${url} with safe limits and summarize new updates.`
+    );
+  });
+
+  bindClick("webcrawlCheckRss", async () => {
+    const url = currentUrl();
+    await runWebcrawl(
+      "/api/hermes/webcrawl/rss",
+      { url },
+      `Check RSS feed ${url} and list new items with links and timestamps.`
+    );
+  });
+
+  bindClick("webcrawlCompare", async () => {
+    const topic = currentTopic();
+    await runWebcrawl(
+      "/api/hermes/webcrawl/compare",
+      { topic },
+      `Compare ${topic} with last snapshot and report what changed.`
+    );
+  });
+
+  bindClick("webcrawlSaveTopic", async () => {
+    const topic = currentTopic();
+    const url = currentUrl();
+    await runWebcrawl(
+      "/api/hermes/webcrawl/save-topic",
+      { topic, url },
+      `Save watch topic ${topic} for recurring update checks.`
+    );
+  });
+
+  bindClick("webcrawlListTopics", async () => {
+    try {
+      setPrompt("List watch topics for webcrawl agent.");
+      const data = await api("/api/hermes/webcrawl/topics");
+      setOut(out.webcrawl, data);
+    } catch (error) {
+      setOut(out.webcrawl, { error: String(error?.message || error) });
+    }
+  });
+
+  bindClick("webcrawlSummarize", async () => {
+    const topic = currentTopic();
+    await runWebcrawl(
+      "/api/hermes/webcrawl/summarize",
+      { topic },
+      `Summarize findings for ${topic || "all watch topics"} including latest checks and failures.`
+    );
+  });
+
+  bindClick("webcrawlClearSession", async () => {
+    await runWebcrawl(
+      "/api/hermes/webcrawl/clear-session",
+      {},
+      "Clear webcrawl session history only. Do not delete production or repo files."
+    );
   });
 
   loadModels()

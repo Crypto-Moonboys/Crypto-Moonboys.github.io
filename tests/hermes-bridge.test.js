@@ -503,3 +503,21 @@ test("swarm endpoint exposes sanitized capabilities only", async (t) => {
   assert.ok(Array.isArray(body.capabilities));
   assert.doesNotMatch(JSON.stringify(body), /canEditRepo|pathPrefixes|ROLE_RULES/i);
 });
+
+test("chat webcrawl request uses real webcrawl action and reports unavailable without tools", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "Find new updates on anything",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(res.body.actions[0].type, "webcrawl/find-updates");
+  assert.equal(res.body.toolResults[0].ok, false);
+  assert.match(JSON.stringify(res.body.toolResults[0]), /webcrawl tools unavailable/i);
+});
