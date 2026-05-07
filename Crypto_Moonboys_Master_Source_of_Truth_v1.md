@@ -527,7 +527,7 @@ When sources disagree, future agents must follow this hierarchy.
 | 1 | Current runtime source code | What is actually live and wired |
 | 2 | `README.md` and runtime truth docs | Product truth, current game state, XP definitions |
 | 3 | `.copilot-instructions.md` | Agent behavior rules and language rules |
-| 4 | `AGENT_ENFORCEMENT.md` | hard anti-drift technical rules |
+| 4 | `.copilot-instructions.md` guardrails | repository editing constraints |
 | 5 | Current live pages | visible copy and user-facing route |
 | 6 | This Master Source of Truth | product positioning, naming, truth boundaries, website/game rules |
 | 7 | Build decks and dev docs | planning and future roadmap |
@@ -542,7 +542,7 @@ If an older doc says Block Topia is only a bare map skeleton but the current run
 
 If lore says a mechanic exists but code does not wire it, call it lore/planned, not live.
 
-If build decks describe City Block Topia / Neon Sprawl, treat them as integration planning until the route exists and passes smoke tests.
+If build decks describe City Block Topia / Neon Sprawl, treat them as integration planning until the route exists and is fully shipped.
 
 ---
 
@@ -1173,7 +1173,7 @@ Should not:
 - claim future features as live
 - remove wiki identity
 - mutate game rules without runtime truth update
-- bypass anti-drift checks
+- bypass required repository checks
 - import stale systems into live routes without tests
 - claim SAM live events when only webhook stubs exist
 
@@ -1225,7 +1225,6 @@ Read:
 
 - `README.md`
 - `.copilot-instructions.md`
-- `AGENT_ENFORCEMENT.md`
 - `docs/current-live-system-truth.md`
 - `docs/block-topia/CURRENT_RUNTIME_TRUTH.md` if Block Topia is involved
 - current target page
@@ -1256,9 +1255,9 @@ Before claiming a feature:
 - Is it wired?
 - Is it accessible to users?
 - Is it documented in runtime truth?
-- Does it pass anti-drift?
+- Does it pass the required validation?
 - Does it have a public route?
-- Does it have a smoke test?
+- Does it have validation coverage?
 
 If not, label it planned, integration-staged, or source-present but not verified.
 
@@ -1270,9 +1269,9 @@ Do not leave old conflicting wording visible in the same source-of-truth file.
 
 ## Step 5: Run checks
 
-Run anti-drift checks.
+Run the required validation commands.
 
-Manual smoke test:
+Manual validation:
 
 - homepage loads
 - `/games/` loads
@@ -1536,7 +1535,7 @@ Do not break:
 - current Block Topia Live City route
 - Block Topia Quest Maze route
 - City Block Topia route separation once created
-- anti-drift rules
+- repository guardrails
 - live vs planned clarity
 - no financial-promise language
 

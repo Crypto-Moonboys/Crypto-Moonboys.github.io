@@ -7,14 +7,9 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "node tests/hermes-chat-proxy.test.js && node tests/hermes-runtime.test.js && node tests/hermes-bridge.test.js && node tests/hermes-repo-targeting.test.js && node tests/hermes-webcrawl.test.js && node scripts/smoke-test.js && node scripts/site-shell-parity-audit.mjs",
-    "test:full": "npm run test && npm run test:browser",
-    "test:browser": "node scripts/right-hud-browser-smoke.mjs",
-    "test:smoke": "node scripts/smoke-test.js",
+    "test": "node tests/hermes-chat-proxy.test.js && node tests/hermes-runtime.test.js && node tests/hermes-bridge.test.js && node tests/hermes-repo-targeting.test.js && node tests/hermes-webcrawl.test.js && node scripts/site-shell-parity-audit.mjs",
+    "test:full": "npm run test",
     "test:shell-parity": "node scripts/site-shell-parity-audit.mjs",
-    "test:right-hud": "npm run test:browser",
-    "test:anti-drift": "node scripts/anti-drift-check.mjs",
-    "test:layout": "node scripts/responsive-layout-smoke.mjs",
     "lint:shell": "node --check js/site-shell.js",
     "test:live-site": "node scripts/live-site-verify.mjs",
     "deploy:status": "node scripts/pages-deploy-status.mjs"

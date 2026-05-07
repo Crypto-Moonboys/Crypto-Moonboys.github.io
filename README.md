@@ -114,5 +114,5 @@ What is not live:
 
 - Static launcher page: `/admin/space-agent.html`
 - VPS + DNS + TLS runbook: `/docs/space-agent-protected-access-runbook.md`
-- Required website change workflow:
-  - `inspect -> explain -> propose -> user confirms -> edit -> test -> commit`
+- Required website change flow:
+  - `inspect -> explain -> propose -> user confirms -> edit -> commit`

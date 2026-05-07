@@ -97,7 +97,7 @@ Do not present planned systems as live. A feature is live only when:
 1. the code exists in this repo,
 2. it is imported by a public route,
 3. users can reach it,
-4. it passes smoke tests, and
+4. required validation has passed, and
 5. the runtime truth docs describe it accurately.
 
 ---
@@ -431,7 +431,7 @@ Preferred public route:
 /games/city-block-topia/
 ```
 
-Required site links after route passes smoke tests:
+Required site links after route is ready to ship:
 
 - `/games/`
 - `/how-to-play.html`

@@ -3,7 +3,7 @@
 **Audit Date:** 2026-05-07
 **Branch:** copilot/audit-hermes-npc-creation-admin-agents
 **Auditor:** Copilot Cloud Agent (automated audit, no functional changes)
-**Scope:** Hermes runtime, admin console, webcrawl agent, swarm controls, sandbox workflow, NPC creation/admin agent systems
+**Scope:** Hermes runtime, admin console, webcrawl agent, swarm controls, sandbox flow, NPC creation/admin agent systems
 
 ---
 
@@ -18,7 +18,7 @@ When reviewing this file after hardening commits:
 
 ### Post-audit remediation status on this branch (2026-05-07 update)
 
-- C-1 (`express` runtime availability): **Addressed** via CI test workflow running dependency install before tests.
+- C-1 (`express` runtime availability): **Addressed** via the current automated test setup running dependency install before tests.
 - C-2 (hardcoded `/root` repo/NPC paths): **Addressed** with env-driven path config defaults under `/home/moonboys/...`.
 - C-3 (`commit-backup` unrestricted push): **Addressed** with main/master/detached-head guard.
 - H-1 (wildcard CORS): **Addressed** with explicit allowlist.
@@ -49,7 +49,7 @@ However, several **critical and high-risk issues** exist that must be resolved b
 - **File:** `package.json`, `api/hermes-api.js`
 - **Detail:** `express@^5.2.1` is listed in `package.json` `dependencies` but `node_modules` is absent in the CI/sandbox environment used for testing. `hermes-bridge.test.js` (22 tests) and `hermes-repo-targeting.test.js` (8 tests) all fail with `Cannot find module 'express'`. `npm install` must be run before the server-integration tests can execute.
 - **Impact:** No integration test coverage for the HTTP API layer, approval flows, NPC role denial, git push block, CORS tests, etc.
-- **Required fix:** Run `npm install` as part of the test setup or CI workflow. Confirm `express` and `cors` are installed before running bridge/repo-targeting tests.
+- **Required fix:** Run `npm install` as part of the test setup. Confirm `express` and `cors` are installed before running bridge/repo-targeting tests.
 
 ### C-2: `api/brain-api.js` hardcoded stale path `/root/Crypto-Moonboys.github.io`
 - **File:** `api/brain-api.js`, line 143
@@ -415,7 +415,7 @@ Via `brain-api.js` (separate system): **PARTIALLY YES**:
 ## 13. Tests / Checks Run
 
 ### `npm test`
-Runs: `hermes-chat-proxy.test.js` → `hermes-runtime.test.js` → `hermes-bridge.test.js` → `hermes-repo-targeting.test.js` → `hermes-webcrawl.test.js` → `scripts/smoke-test.js` → `scripts/site-shell-parity-audit.mjs`
+Runs: `hermes-chat-proxy.test.js` → `hermes-runtime.test.js` → `hermes-bridge.test.js` → `hermes-repo-targeting.test.js` → `hermes-webcrawl.test.js` → `scripts/site-shell-parity-audit.mjs`
 
 ### `node --check` (syntax validation)
 All Hermes runtime files pass syntax check cleanly.
@@ -442,7 +442,6 @@ All Hermes runtime files pass syntax check cleanly.
 | `hermes-bridge.test.js` (22 tests) | ❌ FAIL | All 22 fail — `express` not installed |
 | `hermes-repo-targeting.test.js` (8 tests) | ❌ FAIL | All 8 fail — `express` not installed |
 | `hermes-webcrawl.test.js` (6 tests) | ✅ PASS | All 6 pass |
-| `scripts/smoke-test.js` | ✅ PASS | |
 | `scripts/site-shell-parity-audit.mjs` | ✅ PASS | 0 failures, 0 warnings |
 | Stale path grep (`/root/Crypto-Moonboys`) | ❌ FAIL | Found in `api/brain-api.js:143` |
 | Stale path grep (`/home/moonboys`) | ✅ PASS | Not found in code |

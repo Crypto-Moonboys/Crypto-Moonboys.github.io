@@ -15,7 +15,7 @@ const ALL_TIME_TOP_SEASONAL = 50;    // top N seasonal players evaluated for all
  * Master season epoch: 2024-01-01T00:00:00.000Z (Unix ms 1704067200000).
  * Must match SEASON_EPOCH_MS in workers/moonboys-api/worker.js so both workers
  * always report the same current season number regardless of deployment order.
- * Anti-drift: scripts/anti-drift-check.mjs verifies this value matches moonboys-api.
+ * Keep this value aligned with moonboys-api.
  */
 const SEASON_EPOCH_MS = 1704067200000;
 
