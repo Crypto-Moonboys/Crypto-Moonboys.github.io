@@ -429,7 +429,48 @@
       '<p class="bc-rewards-disclaimer"><strong>Rewards stay focused on clout and gameplay status progression only.</strong> All rewards are clout, badges, stickers, titles, and roguelite options only.</p>';
   }
 
-  // ── 9. Faction Proof Feed headline ───────────────────────────────────────
+  // ── 9. Faction Reward Unlocks ─────────────────────────────────────────────
+
+  function renderFactionRewardUnlocks() {
+    var container = el('battle-faction-reward-unlocks');
+    if (!container) return;
+
+    var rewardData = window.MOONBOYS_FACTION_REWARD_DATA;
+    var factions = rewardData && rewardData.factions ? rewardData.factions : null;
+
+    // Build per-faction reward status cards
+    var factionCards = '';
+    for (var fi = 0; fi < LIVE_FACTIONS.length; fi++) {
+      var f = LIVE_FACTIONS[fi];
+      var fReward = factions && factions[f.key] ? factions[f.key] : null;
+      var weeklyBadge = fReward && fReward.weekly && fReward.weekly.badge ? fReward.weekly.badge : '—';
+      var monthlyTitle = fReward && fReward.monthly && fReward.monthly.title ? fReward.monthly.title : '—';
+      var seasonalTrophy = fReward && fReward.seasonal && fReward.seasonal.trophy ? fReward.seasonal.trophy : '—';
+      var roguelitePerks = '—';
+      if (fReward && Array.isArray(fReward.roguelite)) {
+        var perks = fReward.roguelite.slice(0, 3);
+        var truncated = fReward.roguelite.length > 3;
+        roguelitePerks = perks.join(', ') + (truncated ? ', …' : '');
+      }
+
+      factionCards += '<div class="bc-faction-reward-card" style="--faction-color:' + esc(f.color) + '">' +
+        '<div class="bc-frc-header">' + f.icon + ' ' + esc(f.label) + '</div>' +
+        '<div class="bc-frc-row"><span>Weekly badge:</span> <strong>' + esc(weeklyBadge) + '</strong></div>' +
+        '<div class="bc-frc-row"><span>Monthly title:</span> <strong>' + esc(monthlyTitle) + '</strong></div>' +
+        '<div class="bc-frc-row"><span>Seasonal trophy:</span> <strong>' + esc(seasonalTrophy) + '</strong></div>' +
+        '<div class="bc-frc-row"><span>Roguelite options:</span> <strong>' + esc(roguelitePerks) + '</strong></div>' +
+        '<a class="bc-frc-link" href="' + esc(CHAMBER_ROUTES[f.key] || '/battle-chamber/factions/index.html') + '">View faction →</a>' +
+        '</div>';
+    }
+
+    container.innerHTML =
+      '<p class="bc-rew-intro"><strong>Win the week. Own the chamber.</strong></p>' +
+      '<p>Monthly clout puts your faction on the board. Seasonal winners become part of the Battle Chamber record. Badges, stickers, titles, and roguelite options prove your faction moved.</p>' +
+      '<div class="bc-faction-reward-grid">' + factionCards + '</div>' +
+      '<p class="bc-rew-disclaimer"><strong>Faction rewards are gameplay/status rewards only.</strong> These are clout, badges, stickers, titles, and roguelite branch eligibility only.</p>';
+  }
+
+  // ── 10. Faction Proof Feed headline ──────────────────────────────────────
 
   function renderProofFeedHeader() {
     var container = el('battle-faction-proof-feed');
@@ -451,6 +492,7 @@
     renderActiveMissions(status);
     renderFactionPerks();
     renderCloutRewards();
+    renderFactionRewardUnlocks();
     renderProofFeedHeader();
   }
 
@@ -475,6 +517,11 @@
     // Re-render when the faction data bridge has populated window globals
     window.addEventListener('battle-chamber:faction-data-ready', function () {
       renderAll(null);
+    });
+
+    // Re-render when reward data is ready
+    window.addEventListener('battle-chamber:faction-rewards-ready', function () {
+      renderFactionRewardUnlocks();
     });
 
     // Re-render when faction status is loaded or updated
@@ -509,6 +556,7 @@
     renderActiveMissions: renderActiveMissions,
     renderFactionPerks: renderFactionPerks,
     renderCloutRewards: renderCloutRewards,
+    renderFactionRewardUnlocks: renderFactionRewardUnlocks,
   };
 
 })();

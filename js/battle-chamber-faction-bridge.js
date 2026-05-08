@@ -6,14 +6,16 @@
  * can read current faction state without duplicating logic.
  *
  * Window globals set by this bridge:
- *   window.MOONBOYS_WAR_DATA   — { standings: Array<{faction,power,daily,weekly,momentum}> }
- *   window.MOONBOYS_MISSION_DATA — { [factionKey]: { daily: Mission[], progress: {}, completed: [] } }
- *   window.FACTION_EFFECT_DEFS — same object as FACTION_DEFS from faction-effect-system.js
+ *   window.MOONBOYS_WAR_DATA           — { standings: Array<{faction,power,daily,weekly,momentum}> }
+ *   window.MOONBOYS_MISSION_DATA       — { [factionKey]: { daily: Mission[], progress: {}, completed: [] } }
+ *   window.FACTION_EFFECT_DEFS         — same object as FACTION_DEFS from faction-effect-system.js
+ *   window.MOONBOYS_FACTION_REWARD_DATA — { factions: { [key]: rewardSummary }, updatedAt: number }
  *
  * After populating those caches, the bridge dispatches:
  *   CustomEvent('battle-chamber:faction-data-ready') on window
+ *   CustomEvent('battle-chamber:faction-rewards-ready') on window
  *
- * battle-chamber-factions.js listens for that event and re-renders all sections
+ * battle-chamber-factions.js listens for those events and re-renders all sections
  * with real data instead of the initial zero-value placeholders.
  *
  * All faction system imports are from their canonical paths.  This bridge must
@@ -41,6 +43,10 @@ import {
   getXpModifierMeta,
 } from '/js/arcade/systems/faction-effect-system.js';
 
+import {
+  getFactionRewardSummary,
+} from '/js/arcade/systems/faction-reward-system.js';
+
 // ── Canonical faction keys ────────────────────────────────────────────────────
 
 const LIVE_FACTION_KEYS = [
@@ -54,6 +60,50 @@ const LIVE_FACTION_KEYS = [
   'nomad-bears',
   'crypto-stoned-boys',
 ];
+
+// ── Populate window.MOONBOYS_FACTION_REWARD_DATA ──────────────────────────────
+
+function buildRewardData() {
+  function emptyRewardSummary(key) {
+    return {
+      factionId: key,
+      weekly: {},
+      monthly: {},
+      seasonal: {},
+      personal: {},
+      badgeTrack: [],
+      stickerTrack: [],
+      titleTrack: [],
+      roguelite: [],
+    };
+  }
+
+  function normaliseRewardSummary(key, summary) {
+    const base = emptyRewardSummary(key);
+    if (!summary || typeof summary !== 'object') return base;
+    return {
+      factionId: key,
+      weekly: summary.weekly && typeof summary.weekly === 'object' ? summary.weekly : base.weekly,
+      monthly: summary.monthly && typeof summary.monthly === 'object' ? summary.monthly : base.monthly,
+      seasonal: summary.seasonal && typeof summary.seasonal === 'object' ? summary.seasonal : base.seasonal,
+      personal: summary.personal && typeof summary.personal === 'object' ? summary.personal : base.personal,
+      badgeTrack: Array.isArray(summary.badgeTrack) ? summary.badgeTrack : base.badgeTrack,
+      stickerTrack: Array.isArray(summary.stickerTrack) ? summary.stickerTrack : base.stickerTrack,
+      titleTrack: Array.isArray(summary.titleTrack) ? summary.titleTrack : base.titleTrack,
+      roguelite: Array.isArray(summary.roguelite) ? summary.roguelite : base.roguelite,
+    };
+  }
+
+  const factions = {};
+  for (const key of LIVE_FACTION_KEYS) {
+    try {
+      factions[key] = normaliseRewardSummary(key, getFactionRewardSummary(key));
+    } catch (_) {
+      factions[key] = emptyRewardSummary(key);
+    }
+  }
+  return { factions, updatedAt: Date.now() };
+}
 
 // ── Populate window.MOONBOYS_WAR_DATA ─────────────────────────────────────────
 
@@ -96,12 +146,20 @@ function hydrate() {
   window.MOONBOYS_MISSION_DATA = buildMissionData();
   // Expose FACTION_DEFS as FACTION_EFFECT_DEFS (consistent with renderer expectation)
   window.FACTION_EFFECT_DEFS = FACTION_DEFS;
+  // Expose reward data for Battle Chamber renderers
+  window.MOONBOYS_FACTION_REWARD_DATA = buildRewardData();
 
   window.dispatchEvent(new CustomEvent('battle-chamber:faction-data-ready', {
     detail: {
       warData: window.MOONBOYS_WAR_DATA,
       missionData: window.MOONBOYS_MISSION_DATA,
       factionDefs: window.FACTION_EFFECT_DEFS,
+    },
+  }));
+
+  window.dispatchEvent(new CustomEvent('battle-chamber:faction-rewards-ready', {
+    detail: {
+      rewardData: window.MOONBOYS_FACTION_REWARD_DATA,
     },
   }));
 }
