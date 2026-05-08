@@ -41,6 +41,16 @@ function hasCfBypassedModuleScript(html, src) {
   const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`<script[^>]+data-cfasync=["']false["'][^>]+type=["']module["'][^>]+src=["']${escaped}["']`).test(html);
 }
+
+function functionBlock(src, name) {
+  const start = src.indexOf(`function ${name}`);
+  if (start === -1) return '';
+  const remainder = src.slice(start + 1);
+  const nextMatch = remainder.match(/\n\s*function\s+/);
+  const next = nextMatch ? start + 1 + nextMatch.index : -1;
+  return src.slice(start, next === -1 ? src.length : next);
+}
+
 function routeBlock(src, route) {
   const start = src.indexOf(`path === '${route}'`);
   if (start === -1) return '';
@@ -119,6 +129,30 @@ check(las.includes('getWtfProofSource') && las.includes('VALID_WTF_COMPLETION_SO
 check(!las.includes("completeWtfEvent(eventId, 'right_rail_ops', 'faction_daily_ops')") && !las.includes('right_rail_ops'), 'right rail does not call completeWtfEvent with invalid right_rail_ops proof source');
 check(las.includes('data-completion-source') && las.includes('data-source-id') && las.includes('Complete with proof'), 'complete CTA only renders with proof source and source id attributes');
 check(las.includes('Complete objective in Arcade / Missions first') && las.includes('wtfRequirementText'), 'right rail shows instruction copy when no proof source is available');
+check(wtf.includes('setTransientState') && wtf.includes('Loading Daily WTF signal…'), 'Daily WTF system publishes a loading state before fetch resolves');
+check(wtf.includes('Signal feed unavailable; deterministic local schedule rendered') && wtf.includes('makeFallbackSchedule'), 'Daily WTF system has a deterministic fallback instead of leaving schedule loading forever');
+check(wtf.includes('normalizeEvent') && wtf.includes('start_at: event.start_at || event.starts_at') && wtf.includes('end_at: event.end_at || event.ends_at'), 'Daily WTF system normalizes Worker event field aliases');
+check(las.includes('data-wtf-state="loading"') && las.includes('Loading Daily WTF signal…'), 'faction ops panel renders an explicit loading state');
+check(las.includes('data-wtf-state="error"') && las.includes('Signal feed unavailable.'), 'faction ops panel renders a controlled feed failure state');
+check(las.includes('Get Ready') && las.includes('check-in opens when this signal goes live'), 'upcoming WTF state renders title/countdown preparation copy');
+check(las.includes('Check In') && las.includes('data-wtf-checkin'), 'active WTF state renders Check In CTA for linked users');
+check(las.includes('No Daily WTF signals generated for today') && las.includes('Play Arcade'), 'no-event WTF fallback remains actionable');
+check(las.includes('FACTION_MISSION_FALLBACKS') && las.includes('fallbackDailyMissions') && las.includes('gp_chaos_3'), 'faction mission definitions render when live progress data is absent');
+check(las.includes('Link Telegram') && las.includes('Telegram sync inactive'), 'unlinked users see a Link Telegram CTA');
+
+const wtfStatusBlock = functionBlock(las, 'wtfStatus');
+const wtfHtmlBlock = functionBlock(las, 'wtfHTML');
+const updateGlobalBlock = functionBlock(wtf, 'updateGlobal');
+const setTransientBlock = functionBlock(wtf, 'setTransientState');
+const tickerBlock = functionBlock(wtf, 'startCountdownTicker');
+check(wtfStatusBlock.indexOf('state.next_event') < wtfStatusBlock.indexOf('state.completed_today'), 'upcoming/next WTF signal has render priority over completed_today');
+check(wtfHtmlBlock.includes('completedOnly = completed && !active && !next') && wtfHtmlBlock.includes("completedOnly ? '✓ ' : ''"), 'completed tick only appears when no active or next signal exists');
+check(updateGlobalBlock.includes("const isLoading = transientStatus === 'loading'") && updateGlobalBlock.includes('const active = isLoading ? null') && updateGlobalBlock.includes('let next = isLoading ? null'), 'loading state does not populate active or next_event');
+check(updateGlobalBlock.includes('const computedCountdown = isLoading ? 0') && updateGlobalBlock.includes('const hasServerCountdown = !isLoading'), 'loading state does not derive or tick a countdown');
+check(setTransientBlock.includes("updateGlobal({ ok: false") && setTransientBlock.includes("if (status !== 'loading') dispatch('moonboys:wtf-events-ready'"), 'loading state does not dispatch the final ready event');
+check(wtf.includes("dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);") && wtf.includes('updateGlobal(fallback)'), 'final Worker/fallback WTF state still dispatches ready');
+check(wtf.includes('triggerBoundaryRefresh') && tickerBlock.includes('state.countdown_seconds === 0') && tickerBlock.includes('triggerBoundaryRefresh()'), 'countdown boundary triggers immediate refresh so upcoming cannot stay at 00:00:00');
+check(las.includes("window.addEventListener('moonboys:wtf-countdown-tick', updateWtfCountdownUI)") && !las.includes('setInterval(updateWtfCountdownUI'), 'right rail uses one countdown update mechanism');
 
 console.log('\n[6] Missed perks');
 check(las.includes('missed_history_count') && las.includes('missed_today'), 'missed count and daily missed summary can render');
@@ -138,6 +172,7 @@ check(missedHistoryBlock.includes("request.method === 'POST' ? tgBody?.limit") &
 check(worker.includes('GET  /roguelite/missed-history?limit=30') && worker.includes('POST /roguelite/missed-history  JSON { telegram_auth, limit, utc_day }'), 'Worker route docs distinguish GET query limit from POST JSON body filters');
 check(worker.includes('Legacy query-auth compatibility only') && worker.includes('deprecated for linked state'), 'legacy GET auth compatibility is explicitly documented as deprecated');
 check(bridge.includes("fetchJsonWithTelegramAuth(apiBase + '/roguelite/daily-state')") && bridge.includes("fetchJsonWithTelegramAuth(apiBase + '/roguelite/missed-history', { limit: 8 })"), 'Battle Chamber bridge uses the Worker POST contract for roguelite state');
+check(worker.includes('getNextDailyWtfEvent') && worker.includes('addUtcDays') && worker.includes('upcomingEvents = [nextEvent]'), 'Worker /wtf/events/today returns a next Daily WTF signal even after today’s windows expire');
 
 console.log('\n[8] Safety and no auth query drift');
 check(!bridge.includes('telegram_auth=') && !bridge.includes('buildTelegramAuthQuery'), 'Battle Chamber bridge no longer sends auth payloads in GET query strings');

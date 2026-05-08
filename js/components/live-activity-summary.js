@@ -280,6 +280,44 @@
     return '<div class="las-event-log" aria-label="Recent activity" data-las-log>' + rows + '</div>';
   }
 
+
+  var FACTION_MISSION_FALLBACKS = {
+    graffpunks: [
+      { id: 'gp_chaos_3', label: 'Chaos Agent', description: 'Trigger 3 chaos events across any runs.', target: 3, reward: { warContrib: 70 } },
+      { id: 'gp_combo_x3', label: 'Combo Graffiti', description: 'Reach a ×3 combo multiplier in any run.', target: 3, reward: { warContrib: 65 } },
+      { id: 'gp_high_risk', label: 'Risk Canvas', description: 'Score 500+ points during a high-risk window.', target: 500, reward: { warContrib: 90 } },
+    ],
+    default: [
+      { id: 'daily_arcade_run', label: 'Arcade Proof Run', description: 'Complete an arcade run to create faction activity proof.', target: 1, reward: { warContrib: 50 } },
+      { id: 'daily_faction_push', label: 'Faction Push', description: 'Advance one faction mission or Battle Chamber action today.', target: 1, reward: { warContrib: 50 } },
+      { id: 'daily_score_signal', label: 'Score Signal', description: 'Post a scored run so your faction rail has live activity.', target: 1, reward: { warContrib: 50 } },
+    ],
+  };
+
+  function rewardText(reward) {
+    if (!reward) return '';
+    if (typeof reward === 'string') return reward;
+    if (reward.warContrib != null) return '+' + String(reward.warContrib) + ' war contrib';
+    if (reward.xp != null) return '+' + String(reward.xp) + ' XP preview';
+    return '';
+  }
+
+  function fallbackDailyMissions(factionKey) {
+    var list = FACTION_MISSION_FALLBACKS[factionKey] || FACTION_MISSION_FALLBACKS.default;
+    return list.map(function (m) {
+      return {
+        id: m.id,
+        title: m.label || m.title || m.id,
+        objective: m.description || m.objective || 'Complete the faction objective.',
+        current: 0,
+        target: Number(m.target || 1),
+        done: false,
+        reward: rewardText(m.reward),
+        fallback: true,
+      };
+    });
+  }
+
   function normaliseMissionList() {
     var faction = getFactionStatus();
     var factionKey = faction && faction.faction && faction.faction !== 'unaligned' ? faction.faction : null;
@@ -287,24 +325,28 @@
     var missionData = window.MOONBOYS_MISSION_DATA || {};
     var data = missionData[factionKey] || {};
     var daily = Array.isArray(data.daily) ? data.daily : [];
+    if (!daily.length && (!missionData || !missionData[factionKey])) {
+      return { factionKey: factionKey, missions: fallbackDailyMissions(factionKey), fallback: true };
+    }
     var completed = Array.isArray(data.completed) ? data.completed : [];
     var progress = data.progress && typeof data.progress === 'object' ? data.progress : {};
     var missions = daily.slice(0, 3).map(function (m) {
       var id = m.id || m.key || m.title || '';
       var p = progress[id] || {};
-      var current = Number(p.progress != null ? p.progress : (p.current != null ? p.current : (p.count != null ? p.count : (p.value || 0))));
+      var current = Number(p.progress != null ? p.progress : (p.current != null ? p.current : (p.count != null ? p.count : (p.value != null ? p.value : (m.progress || 0)))));
       var target = Number(p.target != null ? p.target : (m.target || m.goal || 1));
-      var done = completed.indexOf(id) !== -1 || p.complete === true || p.completed === true || current >= target;
+      var done = completed.indexOf(id) !== -1 || p.complete === true || p.completed === true || m.complete === true || m.completed === true || current >= target;
       return {
-        title: m.title || m.name || id || 'Faction mission',
+        title: m.title || m.name || m.label || id || 'Faction mission',
         objective: m.description || m.objective || 'Complete the faction objective.',
         current: current,
         target: target,
         done: done,
-        reward: m.reward || m.contribution || m.reward_preview || '',
+        reward: rewardText(m.reward || m.contribution || m.reward_preview || ''),
       };
     });
-    return { factionKey: factionKey, missions: missions };
+    if (!missions.length) missions = fallbackDailyMissions(factionKey);
+    return { factionKey: factionKey, missions: missions, fallback: !daily.length };
   }
 
   function missionHTML(missions) {
@@ -337,10 +379,10 @@
 
   function wtfStatus(state) {
     if (!state) return 'waiting';
-    if (state.completed_today) return 'completed';
-    if (state.checked_in) return 'checked in';
+    if (state.active_event && state.checked_in) return 'checked in';
     if (state.active_event) return 'active';
     if (state.next_event || (state.upcoming_events && state.upcoming_events.length)) return 'upcoming';
+    if (state.completed_today) return 'completed';
     if (state.missed_today) return 'missed / expired';
     return 'waiting';
   }
@@ -372,39 +414,80 @@
 
   function wtfRequirementText(state, active) {
     var task = (state && state.current_task) || active || {};
-    return task.requirement || task.objective || task.description || 'Complete objective in Arcade / Missions first.';
+    if (typeof task === 'string') return task;
+    return task.requirement || task.objective || task.description || task.required_action || 'Complete objective in Arcade / Missions first.';
+  }
+
+  function eventTitle(event, fallback) {
+    return event ? (event.title || event.name || event.id || event.event_id || fallback) : fallback;
   }
 
   function wtfHTML(linked) {
     var state = getWtfState();
-    if (!state) return '<div class="las-signal-card"><span class="las-pill las-pill--next">NEXT SIGNAL</span><strong>Daily WTF schedule loading</strong><p>Waiting for /wtf/events/today.</p><div class="las-countdown" data-wtf-countdown>--:--:--</div></div>';
+    if (!state || state.status === 'loading') {
+      return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">NEXT SIGNAL</span><strong>Loading Daily WTF signal…</strong><p>Fetching /wtf/events/today.</p><div class="las-countdown" data-wtf-countdown>--:--:--</div></div>';
+    }
+    if (state.status === 'error') {
+      return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>' + esc(state.diagnostic || 'Try the arcade while the feed reconnects.') + '</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
+    }
     var active = state.active_event || null;
     var next = state.next_event || (state.upcoming_events && state.upcoming_events[0]) || null;
-    var title = active ? (active.title || active.name || active.id || 'Active WTF event') : next ? (next.title || next.name || next.id || 'Upcoming WTF event') : 'No WTF signal scheduled';
-    var nextTitle = next ? (next.title || next.name || next.id || 'Next WTF event') : 'Wait for next daily signal';
     var status = wtfStatus(state);
+    var completed = Number(state.completed_today || 0) > 0;
+    var completedOnly = completed && !active && !next;
     var eventId = active && (active.id || active.event_id || active.key) ? (active.id || active.event_id || active.key) : '';
+    var focus = active || next || (state.completed_events && state.completed_events[0]) || (state.expired_events && state.expired_events[0]) || null;
+    var title = eventTitle(focus, 'No Daily WTF signals generated for today');
+    var objective = wtfRequirementText(state, focus);
+    var subcopy = '';
     var buttons = '';
-    if (linked && active && !state.checked_in && !state.completed_today) {
-      buttons += '<button type="button" class="las-action-btn" data-wtf-checkin data-event-id="' + esc(eventId) + '">Check in</button>';
-    }
-    if (linked && active && state.checked_in && !state.completed_today) {
-      var proof = getWtfProofSource(state, active);
-      if (proof) {
-        buttons += '<button type="button" class="las-action-btn" data-wtf-complete data-event-id="' + esc(eventId) + '" data-completion-source="' + esc(proof.completion_source) + '" data-source-id="' + esc(proof.source_id) + '">Complete with proof</button>';
-      } else {
-        buttons += '<div class="las-task-copy">Complete objective in Arcade / Missions first. ' + esc(wtfRequirementText(state, active)) + '</div>';
+
+    if (completedOnly) {
+      subcopy = 'Completed tick locked for today. XP burst preview and chain options show when the Worker reports them.';
+    } else if (active) {
+      subcopy = state.checked_in ? 'Checked in — complete the objective before the signal expires.' : 'Live now — check in before the timer ends.';
+      if (linked && eventId && !state.checked_in && !completed) {
+        buttons += '<button type="button" class="las-action-btn" data-wtf-checkin data-event-id="' + esc(eventId) + '">Check In</button>';
       }
+      if (linked && state.checked_in && !completed) {
+        var proof = getWtfProofSource(state, active);
+        if (proof) {
+          buttons += '<button type="button" class="las-action-btn" data-wtf-complete data-event-id="' + esc(eventId) + '" data-completion-source="' + esc(proof.completion_source) + '" data-source-id="' + esc(proof.source_id) + '">Complete with proof</button>';
+        } else {
+          buttons += '<div class="las-task-copy">Complete objective in Arcade / Missions first. ' + esc(objective) + '</div>';
+        }
+      }
+    } else if (next) {
+      status = 'upcoming';
+      subcopy = 'Get ready — check-in opens when this signal goes live.';
+      buttons += '<a class="las-action-btn" href="/games/">Get Ready</a>';
+    } else if (Number(state.missed_today || 0) > 0) {
+      status = 'missed / expired';
+      subcopy = 'Missed marker recorded. Watch the next signal window.';
+      buttons += '<a class="las-action-btn" href="/games/">Play Arcade</a>';
+    } else {
+      status = 'waiting';
+      subcopy = 'No Daily WTF signals generated for today.';
+      buttons += '<a class="las-action-btn" href="/games/">Play Arcade</a>';
+    }
+
+    var pillClass = status === 'active' || status === 'checked in' ? 'las-pill--live' : status === 'completed' ? 'las-pill--done' : status === 'missed / expired' ? 'las-pill--missed' : 'las-pill--next';
+    if (state.error && state.source === 'client_fallback_schedule') {
+      subcopy = 'Signal feed unavailable; showing fallback schedule. ' + subcopy;
     }
     var options = Array.isArray(state.chain_options) && state.chain_options.length
-      ? '<div class="las-chain-options">' + state.chain_options.slice(0, 3).map(function (o) { return '<span>' + esc(o.title || o.name || o.id || 'Chain option') + '</span>'; }).join('') + '</div>'
+      ? '<div class="las-chain-options"><strong>Unlocked chain options</strong>' + state.chain_options.slice(0, 3).map(function (o) { return '<span>' + esc(o.title || o.display_title || o.name || o.id || 'Chain option') + '</span>'; }).join('') + '</div>'
       : '';
-    return '<div class="las-signal-card">' +
-      '<span class="las-pill ' + (status === 'active' ? 'las-pill--live' : status === 'completed' ? 'las-pill--done' : 'las-pill--next') + '">' + esc(status.toUpperCase()) + '</span>' +
-      '<strong>' + esc(title) + '</strong>' +
-      '<p>Next signal: ' + esc(nextTitle) + '</p>' +
+    var factionCopy = focus && (focus.faction_relevance || focus.faction_bonus || focus.faction_id)
+      ? '<small>Faction relevance: ' + esc(focus.faction_relevance || focus.faction_bonus || focus.faction_id) + '</small>'
+      : '';
+    return '<div class="las-signal-card" data-wtf-state="' + esc(status) + '">' +
+      '<span class="las-pill ' + pillClass + '">' + esc(status.toUpperCase()) + '</span>' +
+      '<strong>' + (completedOnly ? '✓ ' : '') + esc(title) + '</strong>' +
+      '<p>' + esc(subcopy) + '</p>' +
+      '<div class="las-task-copy">Objective: ' + esc(objective) + '</div>' +
       '<div class="las-countdown" data-wtf-countdown>' + countdownText(state.countdown_seconds) + '</div>' +
-      buttons + options +
+      factionCopy + buttons + options +
       '</div>';
   }
 
@@ -618,6 +701,7 @@
     window.addEventListener('moonboys:wtf-events-ready', refresh);
     window.addEventListener('moonboys:wtf-event-checkin', refresh);
     window.addEventListener('moonboys:wtf-event-complete', refresh);
+    window.addEventListener('moonboys:wtf-countdown-tick', updateWtfCountdownUI);
     window.addEventListener('battle-chamber:faction-data-ready', refresh);
   }
 
@@ -644,7 +728,6 @@
     if (!_singleton.opsActionsBound) {
       _singleton.opsActionsBound = true;
       bindOpsActions();
-      _singleton.opsCountdownTimer = setInterval(updateWtfCountdownUI, 1000);
     }
   }
 
