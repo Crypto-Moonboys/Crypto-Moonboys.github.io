@@ -174,7 +174,7 @@
       '<div class="retro-hud-box hud-box--player">',
       '  <div class="retro-hud-title">',
       '    <span class="retro-hud-title-icon" aria-hidden="true">\u25B6</span>',
-      '    Player Status',
+      '    PLAYER LIVE FEED',
       '    <span class="retro-hud-mascot" aria-hidden="true">\uD83D\uDC3B</span>',
       '  </div>',
       '  <div class="retro-hud-body">',
@@ -183,7 +183,7 @@
       '        <span class="hud-avatar-icon" aria-hidden="true">\uD83D\uDC7E</span>',
       '      </div>',
       '      <div class="hud-player-info">',
-      '        <span class="hud-player-name" id="hud-player-name">Guest</span>',
+      '        <span class="hud-player-name" id="hud-player-name">Live identity below</span>',
       '      </div>',
       '    </div>',
       '    <div data-csp-panel></div>',
@@ -194,7 +194,7 @@
       '<div class="retro-hud-box hud-box--actions">',
       '  <div class="retro-hud-title">',
       '    <span class="retro-hud-title-icon" aria-hidden="true">\u25B6</span>',
-      '    Next Actions',
+      '    FACTION DAILY OPS',
       '    <span class="retro-hud-mascot" aria-hidden="true">\u26A1</span>',
       '  </div>',
       '  <div class="retro-hud-body">',
@@ -234,7 +234,7 @@
       var nameEl = document.getElementById('hud-player-name');
       if (nameEl) {
         var displayName = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
-        if (displayName) nameEl.textContent = displayName;
+        if (displayName) nameEl.textContent = 'Live linked avatar';
       }
 
       var actionsEl = document.getElementById('hud-actions-dynamic');

@@ -214,6 +214,48 @@
 
   // ── Render ─────────────────────────────────────────────────────────────
 
+  function normaliseFactionKey(status) {
+    if (!status || !status.faction || status.faction === 'unaligned') return null;
+    return String(status.faction);
+  }
+
+  function blocktopiaAccessHTML(linked, arcadeXp, requiredXp) {
+    if (!linked) return '<span class="csp-val-locked">Telegram sync required</span>';
+    if (arcadeXp >= requiredXp) return '<span class="csp-val-good">Access unlocked</span>';
+    return '<span class="csp-val-locked">Locked — ' + esc(String(arcadeXp)) + ' / ' + requiredXp + ' Arcade XP</span>';
+  }
+
+  function latestActivityRows() {
+    var rows = [];
+    var activity = Array.isArray(window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY) ? window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY : [];
+    if (activity.length) {
+      var latest = activity[0] || {};
+      rows.push({ tag: 'Battle', text: latest.title || latest.event || latest.action || latest.type || 'Latest Battle Chamber proof synced' });
+    }
+    var daily = window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
+    if (daily && typeof daily === 'object') {
+      var task = daily.latest_completion || daily.latest || daily.current_task || daily.today || null;
+      rows.push({ tag: 'Daily', text: task && (task.title || task.name || task.id) ? (task.title || task.name || task.id) : 'Daily opportunity state synced' });
+    }
+    var wtf = window.MOONBOYS_WTF_EVENTS || null;
+    if (wtf && typeof wtf === 'object') {
+      if (wtf.completed_today) rows.push({ tag: 'WTF', text: 'WTF timed event completed today' });
+      else if (wtf.checked_in) rows.push({ tag: 'WTF', text: 'WTF timed event check-in synced' });
+    }
+    var missed = Array.isArray(window.MOONBOYS_ROGUELITE_MISSED_HISTORY) ? window.MOONBOYS_ROGUELITE_MISSED_HISTORY : [];
+    if (missed.length) rows.push({ tag: 'Missed', text: 'Missed history updated (' + missed.length + ')' });
+    return rows.slice(0, 5);
+  }
+
+  function buildFeedHTML(rows) {
+    if (!rows.length) {
+      return '<div class="csp-feed-empty">No synced activity yet. Play an arcade run or complete a faction task.</div>';
+    }
+    return rows.map(function (row) {
+      return '<div class="csp-feed-row"><span class="csp-feed-tag">' + esc(row.tag) + '</span><span>' + esc(row.text) + '</span></div>';
+    }).join('');
+  }
+
   async function buildPanelHTML() {
     var linked = isLinked();
     var name = getDisplayName();
@@ -222,101 +264,58 @@
     var arcadeXp = getArcadeXp();
     var requiredXp = progression.requiredXp;
     var apiOnline = await checkApiOnline();
-    var blocktopiaUnlocked = linked && arcadeXp >= requiredXp;
+    var status = getFactionStatus();
     var faction = factionLabel();
     var sync = syncLabel(state);
     var syncClass = syncBadgeClass(state);
+    var blocktopia = blocktopiaAccessHTML(linked, arcadeXp, requiredXp);
+    var season = status && (status.season || status.current_season || status.season_key) ? (status.season || status.current_season || status.season_key) : 'Season lock not reported';
 
-    var identityRow;
-    if (linked) {
-      identityRow =
-        '<span class="csp-dot csp-dot--green" aria-hidden="true"></span>' +
-        'Telegram: <strong>' + esc(name || 'Player') + '</strong>';
-    } else {
-      identityRow =
-        '<span class="csp-dot csp-dot--red" aria-hidden="true"></span>' +
-        '<a href="/gkniftyheads-incubator.html" class="csp-link">Link Telegram to activate</a>';
-    }
-
-    var btAccess;
     if (!linked) {
-      btAccess = '<span class="csp-val-locked">🔒 Telegram link required</span>';
-    } else if (blocktopiaUnlocked) {
-      btAccess = '<span class="csp-val-good">✅ Unlocked</span>';
-    } else {
-      btAccess =
-        '<span class="csp-val-locked">🔒 Locked — ' +
-        esc(String(arcadeXp)) + ' / ' + requiredXp + ' Arcade XP</span>';
+      return '' +
+        '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
+          '<div class="csp-live-head"><span class="csp-pulse csp-pulse--warn"></span><div><strong>Player Live Feed</strong><span>Telegram sync is required to activate the live system.</span></div></div>' +
+          '<a href="/gkniftyheads-incubator.html" class="csp-live-cta">Link Telegram</a>' +
+        '</div>';
     }
 
     return '' +
-      '<div class="csp-panel" role="status" aria-label="Connection status">' +
-
-      '<div class="csp-row csp-row--identity">' + identityRow + '</div>' +
-
-      '<div class="csp-grid">' +
-
-      '<div class="csp-item">' +
-        '<div class="csp-item-label">Arcade XP' +
-          '<span class="csp-item-note">Block Topia gate progress</span>' +
+      '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
+        '<div class="csp-live-head">' +
+          '<span class="csp-avatar-mini" aria-hidden="true">👾</span>' +
+          '<div class="csp-live-identity"><strong>' + esc(name || 'Telegram Player') + '</strong><span><b class="csp-live-pill csp-live-pill--good">LIVE LINKED</b> <b class="csp-live-pill ' + esc(syncClass) + '">' + esc(sync) + '</b></span></div>' +
         '</div>' +
-        '<div class="csp-item-val" data-csp-xp>' +
-          (linked ? esc(String(arcadeXp)) : '—') +
+        '<div class="csp-grid csp-grid--live">' +
+          '<div class="csp-item"><div class="csp-item-label">Arcade XP</div><div class="csp-item-val" data-csp-xp>' + esc(String(arcadeXp)) + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Faction</div><div class="csp-item-val" data-csp-faction data-csp-faction-key="' + esc(normaliseFactionKey(status) || '') + '">' + esc(faction) + '</div></div>' +
+          '<div class="csp-item csp-item--wide"><div class="csp-item-label">Block Topia</div><div class="csp-item-val" data-csp-bt-access>' + blocktopia + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Season</div><div class="csp-item-val">' + esc(season) + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">API Sync</div><div class="csp-item-val ' + (apiOnline ? 'csp-val-good' : 'csp-val-locked') + '">' + (apiOnline ? '● Online' : 'Core API unavailable') + '</div></div>' +
         '</div>' +
-      '</div>' +
-
-      '<div class="csp-item">' +
-        '<div class="csp-item-label">Required XP' +
-          '<span class="csp-item-note">Block Topia entry</span>' +
-        '</div>' +
-        '<div class="csp-item-val">' + requiredXp + '</div>' +
-      '</div>' +
-
-      '<div class="csp-item csp-item--wide">' +
-        '<div class="csp-item-label">Block Topia access</div>' +
-        '<div class="csp-item-val" data-csp-bt-access>' + btAccess + '</div>' +
-      '</div>' +
-
-      '<div class="csp-item">' +
-        '<div class="csp-item-label">Faction' +
-          '<span class="csp-item-note">alignment only</span>' +
-        '</div>' +
-        '<div class="csp-item-val" data-csp-faction>' + esc(faction) + '</div>' +
-      '</div>' +
-
-      '<div class="csp-item">' +
-        '<div class="csp-item-label">Core API</div>' +
-        '<div class="csp-item-val ' + (apiOnline ? 'csp-val-good' : 'csp-val-locked') + '">' +
-          (apiOnline ? '● Online' : 'Core API unavailable') +
-        '</div>' +
-      '</div>' +
-
-      '<div class="csp-item">' +
-        '<div class="csp-item-label">Sync</div>' +
-        '<div class="csp-item-val csp-item-val--badge ' + esc(syncClass) + '">' +
-          esc(sync) +
-        '</div>' +
-      '</div>' +
-
-      '</div>' + // .csp-grid
-      '</div>';  // .csp-panel
+        '<div class="csp-feed"><div class="csp-feed-title">Recent Personal Activity</div>' + buildFeedHTML(latestActivityRows()) + '</div>' +
+      '</div>';
   }
 
   async function buildBadgeHTML() {
     var linked = isLinked();
     if (!linked) {
-      return '<a href="/gkniftyheads-incubator.html" class="csp-badge csp-badge--unlinked" aria-label="Link Telegram to activate">🔗 Link Telegram</a>';
+      return '<a href="/gkniftyheads-incubator.html" class="csp-badge csp-badge--unlinked" aria-label="Telegram Sync Required"><span class="csp-pulse csp-pulse--warn"></span><span><strong>Telegram Sync Required</strong><small>Link to activate live systems</small></span></a>';
     }
     var name = getDisplayName();
     var progression = await fetchRequiredXp();
     var arcadeXp = getArcadeXp();
     var requiredXp = progression.requiredXp;
     var unlocked = arcadeXp >= requiredXp;
+    var status = getFactionStatus();
+    var faction = factionLabel();
+    var shortFaction = faction.length > 18 ? faction.slice(0, 17) + '…' : faction;
+    var apiOnline = await checkApiOnline();
     return '' +
-      '<span class="csp-badge csp-badge--linked" aria-label="Status: Telegram linked">' +
-      'Telegram: ' + esc(name || 'Player') +
-      ' · Arcade XP <strong data-csp-badge-xp>' + arcadeXp + '</strong>' +
-      ' · Block Topia <span data-csp-badge-bt>' + (unlocked ? 'unlocked' : 'locked') + '</span>' +
+      '<span class="csp-badge csp-badge--linked" aria-label="Live sync active">' +
+        '<span class="csp-pulse"></span>' +
+        '<span class="csp-badge-stack"><strong>LIVE SYNC</strong><small>' + esc(name || 'Player') + ' · XP <span data-csp-badge-xp>' + arcadeXp + '</span> · ' + esc(shortFaction) + '</small></span>' +
+        '<span class="csp-badge-chip" data-csp-badge-bt>' + (unlocked ? 'BT OPEN' : 'BT LOCK') + '</span>' +
+        '<span class="csp-badge-chip ' + (apiOnline ? 'csp-badge-chip--good' : 'csp-badge-chip--warn') + '">' + (apiOnline ? 'API' : 'API?') + '</span>' +
       '</span>';
   }
 
@@ -347,10 +346,32 @@
       '.csp-badge--bad{background:rgba(248,81,73,.12);border:1px solid rgba(248,81,73,.4);color:#f85149}',
       '.csp-val-good{color:#3fb950}',
       '.csp-val-locked{color:var(--color-text-muted,#8b949e)}',
+      '.csp-panel--live-feed{border-color:rgba(0,229,255,.36);box-shadow:0 0 18px rgba(0,229,255,.14),inset 0 0 18px rgba(255,45,120,.05)}',
+      '.csp-live-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}',
+      '.csp-live-head strong{display:block;color:#fff;text-transform:uppercase;letter-spacing:.06em}',
+      '.csp-live-head span{display:block;color:var(--color-text-muted,#8b949e);font-size:.72rem}',
+      '.csp-avatar-mini{width:34px;height:34px;border:1px solid rgba(0,229,255,.45);display:inline-flex!important;align-items:center;justify-content:center;background:rgba(0,229,255,.08);box-shadow:0 0 10px rgba(0,229,255,.18)}',
+      '.csp-live-identity{min-width:0}.csp-live-identity strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.csp-live-pill{display:inline-flex!important;padding:2px 6px;border-radius:999px;border:1px solid rgba(86,220,255,.28);font-size:.58rem!important;letter-spacing:.04em;margin-top:4px}',
+      '.csp-live-pill--good{color:#3fb950;background:rgba(63,185,80,.12);border-color:rgba(63,185,80,.4)}',
+      '.csp-grid--live{grid-template-columns:1fr;gap:7px}',
+      '.csp-feed{margin-top:10px;padding-top:9px;border-top:1px solid rgba(86,220,255,.16)}',
+      '.csp-feed-title{font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#56dcff;margin-bottom:6px}',
+      '.csp-feed-row{display:flex;gap:6px;align-items:flex-start;padding:5px 0;border-bottom:1px solid rgba(86,220,255,.08);font-size:.72rem}',
+      '.csp-feed-tag{flex:0 0 auto;color:#f7c948;font-weight:800;text-transform:uppercase;font-size:.58rem;border:1px solid rgba(247,201,72,.35);padding:1px 4px}',
+      '.csp-feed-empty{color:var(--color-text-muted,#8b949e);font-size:.72rem;line-height:1.45}',
+      '.csp-live-cta{display:inline-flex;margin-top:8px;padding:7px 9px;border:1px solid rgba(0,229,255,.45);color:#c8f0ff;text-decoration:none;background:rgba(0,229,255,.08);font-weight:800;text-transform:uppercase;font-size:.68rem}',
+      '.csp-pulse{width:8px;height:8px;border-radius:999px;background:#3fb950;box-shadow:0 0 10px #3fb950;display:inline-block;flex:0 0 auto;animation:cspPulse 1.2s infinite}',
+      '.csp-pulse--warn{background:#f7c948;box-shadow:0 0 10px #f7c948}',
+      '@keyframes cspPulse{0%,100%{opacity:.55;transform:scale(.9)}50%{opacity:1;transform:scale(1.15)}}',
       /* Global header badge */
       '#moonboys-global-status-badge{display:flex;align-items:center;margin-left:auto}',
-      '.csp-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;font-size:.75rem;font-weight:600;white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis}',
-      '.csp-badge--linked{background:rgba(86,220,255,.1);border:1px solid rgba(86,220,255,.35);color:#c8f0ff}',
+      '.csp-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 9px;border-radius:99px;font-size:.72rem;font-weight:700;white-space:nowrap;max-width:340px;overflow:hidden;text-overflow:ellipsis}',
+      '.csp-badge strong{display:block;font-size:.62rem;letter-spacing:.08em;color:#fff}.csp-badge small{display:block;font-size:.66rem;font-weight:600;color:#c8f0ff;overflow:hidden;text-overflow:ellipsis}',
+      '.csp-badge-stack{min-width:0;line-height:1.15}',
+      '.csp-badge-chip{font-size:.56rem;border:1px solid rgba(86,220,255,.28);border-radius:99px;padding:2px 5px;color:#56dcff;background:rgba(86,220,255,.08)}',
+      '.csp-badge-chip--good{color:#3fb950;border-color:rgba(63,185,80,.35)}.csp-badge-chip--warn{color:#f7c948;border-color:rgba(247,201,72,.35)}',
+      '.csp-badge--linked{background:rgba(86,220,255,.1);border:1px solid rgba(86,220,255,.35);color:#c8f0ff;box-shadow:0 0 12px rgba(86,220,255,.12)}',
       '.csp-badge--unlinked{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.35);color:#ffd0cd;text-decoration:none}',
       /* Loading placeholder */
       '.csp-loading{color:var(--color-text-muted,#8b949e);font-size:.82rem;padding:10px 0}',

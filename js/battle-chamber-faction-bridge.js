@@ -86,15 +86,6 @@ function getSignedTelegramAuthPayload() {
   }
 }
 
-function buildTelegramAuthQuery() {
-  var payload = getSignedTelegramAuthPayload();
-  if (!payload) return '';
-  try {
-    return '?telegram_auth=' + encodeURIComponent(JSON.stringify(payload));
-  } catch (_) {
-    return '';
-  }
-}
 
 function emptyRewardSummary(key) {
   return {
@@ -239,6 +230,29 @@ function mapWeeklyServerStandingsToWarData(weeklyData) {
   };
 }
 
+
+async function fetchJsonWithTelegramAuth(url, extraBody) {
+  var payload = getSignedTelegramAuthPayload();
+  if (!payload) return null;
+  var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var timer = controller ? setTimeout(function () { controller.abort(); }, FETCH_TIMEOUT_MS) : null;
+  try {
+    var body = Object.assign({}, extraBody || {}, { telegram_auth: payload });
+    var res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller ? controller.signal : undefined,
+    });
+    if (!res.ok) return null;
+    return await res.json().catch(function () { return null; });
+  } catch (_) {
+    return null;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 async function fetchJson(url) {
   var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
   var timer = controller ? setTimeout(function () { controller.abort(); }, FETCH_TIMEOUT_MS) : null;
@@ -312,8 +326,6 @@ function hydrateLocalFirst() {
 async function hydrateServerAuthority() {
   var apiBase = getApiBase();
   if (!apiBase) return false;
-  var authQuery = buildTelegramAuthQuery();
-
   var currentFaction = getCurrentFactionKey();
   var endpoints = [
     fetchJson(apiBase + '/battle-chamber/factions/standings?period=weekly'),
@@ -321,8 +333,8 @@ async function hydrateServerAuthority() {
     fetchJson(apiBase + '/battle-chamber/factions/standings?period=seasonal'),
     fetchJson(apiBase + '/battle-chamber/activity?limit=20'),
     currentFaction ? fetchJson(apiBase + '/battle-chamber/factions/' + encodeURIComponent(currentFaction)) : Promise.resolve(null),
-    authQuery ? fetchJson(apiBase + '/roguelite/daily-state' + authQuery) : Promise.resolve(null),
-    authQuery ? fetchJson(apiBase + '/roguelite/missed-history?limit=8&' + authQuery.slice(1)) : Promise.resolve(null),
+    fetchJsonWithTelegramAuth(apiBase + '/roguelite/daily-state'),
+    fetchJsonWithTelegramAuth(apiBase + '/roguelite/missed-history', { limit: 8 }),
   ];
 
   var results = await Promise.all(endpoints);
