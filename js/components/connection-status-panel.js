@@ -74,6 +74,12 @@
     return typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
   }
 
+  function getTelegramId() {
+    var gate = getIdentity();
+    if (!gate || typeof gate.getTelegramId !== 'function') return null;
+    return gate.getTelegramId();
+  }
+
   function getSyncState() {
     var gate = getIdentity();
     if (!gate || typeof gate.getSyncState !== 'function') return null;
@@ -230,12 +236,26 @@
     return unlocked ? 'BT OPEN' : 'BT LOCK';
   }
 
+  function isOwnBattleActivity(row) {
+    if (!row || typeof row !== 'object') return false;
+    var telegramId = getTelegramId();
+    var displayName = getDisplayName();
+    if (telegramId && row.telegram_id != null && String(row.telegram_id) === String(telegramId)) return true;
+    if (displayName && row.display_name && String(row.display_name).toLowerCase() === String(displayName).toLowerCase()) return true;
+    return false;
+  }
+
   function latestActivityRows() {
     var rows = [];
     var activity = Array.isArray(window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY) ? window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY : [];
     if (activity.length) {
-      var latest = activity[0] || {};
-      rows.push({ tag: 'Battle', text: latest.title || latest.event || latest.action || latest.type || 'Latest Battle Chamber proof synced' });
+      var ownActivity = activity.filter(isOwnBattleActivity);
+      if (ownActivity.length) {
+        var latest = ownActivity[0] || {};
+        rows.push({ tag: 'Battle', text: latest.title || latest.event_text || latest.event || latest.action || latest.event_type || 'Latest Battle Chamber proof synced' });
+      } else {
+        rows.push({ tag: 'Global', text: 'Battle Chamber global feed active; no personal proof matched yet.' });
+      }
     }
     var daily = window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
     if (daily && typeof daily === 'object') {

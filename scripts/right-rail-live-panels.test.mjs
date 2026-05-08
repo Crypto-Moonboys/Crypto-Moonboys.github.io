@@ -70,6 +70,8 @@ check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requi
 console.log('\n[4] Panel separation');
 check(siteShell.includes('PLAYER LIVE FEED') && siteShell.includes('FACTION DAILY OPS'), 'right rail boxes are titled PLAYER LIVE FEED and FACTION DAILY OPS');
 check(csp.includes('Recent Personal Activity') && csp.includes('No synced activity yet. Play an arcade run or complete a faction task.'), 'player panel owns user/sync/progression/recent activity data');
+check(csp.includes('isOwnBattleActivity') && csp.includes('getTelegramId()') && csp.includes('activity.filter(isOwnBattleActivity)'), 'player feed filters Battle Chamber activity to the linked player when possible');
+check(csp.includes('Battle Chamber global feed active; no personal proof matched yet.'), 'player feed labels unmatched public Battle Chamber activity as global, not personal proof');
 check((las.includes("Today\\'s Missions") || las.includes("Today's Missions")) && las.includes('Daily WTF Signal') && las.includes('Missed Opportunities'), 'faction panel owns missions/events/missed signals');
 check(!las.includes('data-csp-xp') && !las.includes('data-csp-panel'), 'faction ops panel does not repeat the Arcade XP block');
 check(!siteShell.includes('id="hud-player-name">Guest'), 'right rail no longer renders a duplicate Guest/Telegram name block');
