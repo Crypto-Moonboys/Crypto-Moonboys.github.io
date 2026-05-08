@@ -46,6 +46,7 @@
         linear-gradient(rgba(86, 220, 255, 0.06) 1px, transparent 1px),
         linear-gradient(90deg, rgba(86, 220, 255, 0.06) 1px, transparent 1px);
       background-size: 22px 22px;
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent 80%);
       mask-image: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent 80%);
     }
 
@@ -128,6 +129,13 @@
       box-shadow: 0 0 24px rgba(0, 255, 204, 0.16);
     }
 
+    .howto-btn:focus-visible {
+      background: rgba(0, 255, 204, 0.2);
+      box-shadow: 0 0 24px rgba(0, 255, 204, 0.16);
+      outline: 2px solid var(--howto-green);
+      outline-offset: 3px;
+    }
+
     .howto-btn-secondary {
       color: var(--howto-cyan);
       border-color: rgba(86, 220, 255, 0.38);
@@ -165,6 +173,7 @@
     .howto-card,
     .howto-highlight,
     .howto-warning,
+    .howto-danger,
     .howto-system-card {
       border: 1px solid var(--howto-border);
       border-top: 3px solid var(--howto-cyan);
@@ -250,10 +259,12 @@
     }
 
     .howto-table {
+      display: block;
       width: 100%;
+      max-width: 100%;
       border-collapse: collapse;
       margin-top: 18px;
-      overflow: hidden;
+      overflow-x: auto;
       border: 1px solid rgba(86, 220, 255, 0.22);
     }
 
