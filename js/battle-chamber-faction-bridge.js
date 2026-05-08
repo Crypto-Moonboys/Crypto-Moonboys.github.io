@@ -6,28 +6,23 @@
  * can read current faction state without duplicating logic.
  *
  * Window globals set by this bridge:
- *   window.MOONBOYS_WAR_DATA           — { standings: Array<{faction,power,daily,weekly,momentum}> }
- *   window.MOONBOYS_MISSION_DATA       — { [factionKey]: { daily: Mission[], progress: {}, completed: [] } }
- *   window.FACTION_EFFECT_DEFS         — same object as FACTION_DEFS from faction-effect-system.js
- *   window.MOONBOYS_FACTION_REWARD_DATA — { factions: { [key]: rewardSummary }, updatedAt: number }
+ *   window.MOONBOYS_WAR_DATA             — local/server standings compatibility cache
+ *   window.MOONBOYS_MISSION_DATA         — mission cache by faction
+ *   window.FACTION_EFFECT_DEFS           — same object as FACTION_DEFS
+ *   window.MOONBOYS_FACTION_REWARD_DATA  — reward summary cache
+ *   window.MOONBOYS_BATTLE_CHAMBER_STANDINGS — { weekly, monthly, seasonal }
+ *   window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY  — server activity feed cache
+ *   window.MOONBOYS_BATTLE_CHAMBER_FACTION_DETAIL — optional faction detail cache
  *
- * After populating those caches, the bridge dispatches:
- *   CustomEvent('battle-chamber:faction-data-ready') on window
- *   CustomEvent('battle-chamber:faction-rewards-ready') on window
- *
- * battle-chamber-factions.js listens for those events and re-renders all sections
- * with real data instead of the initial zero-value placeholders.
- *
- * All faction system imports are from their canonical paths.  This bridge must
- * never alter the faction logic — it is read-only.
+ * Events dispatched:
+ *   battle-chamber:faction-data-ready
+ *   battle-chamber:faction-rewards-ready
+ *   battle-chamber:activity-ready
  */
 
 import {
   getFactionStandings,
   getDominantFaction,
-  getDailyContribution,
-  getWeeklyContribution,
-  getMomentum,
 } from '/js/arcade/systems/faction-war-system.js';
 
 import {
@@ -39,15 +34,11 @@ import {
 
 import {
   FACTION_DEFS,
-  getFactionEffects,
-  getXpModifierMeta,
 } from '/js/arcade/systems/faction-effect-system.js';
 
 import {
   getFactionRewardSummary,
 } from '/js/arcade/systems/faction-reward-system.js';
-
-// ── Canonical faction keys ────────────────────────────────────────────────────
 
 const LIVE_FACTION_KEYS = [
   'hard-fork-rockers',
@@ -61,77 +52,97 @@ const LIVE_FACTION_KEYS = [
   'crypto-stoned-boys',
 ];
 
-// ── Populate window.MOONBOYS_FACTION_REWARD_DATA ──────────────────────────────
+function getApiBase() {
+  try {
+    var cfg = (typeof window !== 'undefined') && window.MOONBOYS_API;
+    return cfg && cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
+  } catch (_) { return ''; }
+}
+
+function getCurrentFactionKey() {
+  try {
+    var api = window.MOONBOYS_FACTION;
+    if (!api || typeof api.getCachedStatus !== 'function') return null;
+    var status = api.getCachedStatus();
+    var faction = status && status.faction ? String(status.faction).toLowerCase().trim() : '';
+    if (!faction || faction === 'unaligned') return null;
+    return LIVE_FACTION_KEYS.indexOf(faction) !== -1 ? faction : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function emptyRewardSummary(key) {
+  return {
+    factionId: key,
+    weekly: {},
+    monthly: {},
+    seasonal: {},
+    personal: {},
+    badgeTrack: [],
+    stickerTrack: [],
+    titleTrack: [],
+    roguelite: [],
+  };
+}
+
+function normaliseRewardSummary(key, summary) {
+  var base = emptyRewardSummary(key);
+  if (!summary || typeof summary !== 'object') return base;
+  return {
+    factionId: key,
+    weekly: summary.weekly && typeof summary.weekly === 'object' ? summary.weekly : base.weekly,
+    monthly: summary.monthly && typeof summary.monthly === 'object' ? summary.monthly : base.monthly,
+    seasonal: summary.seasonal && typeof summary.seasonal === 'object' ? summary.seasonal : base.seasonal,
+    personal: summary.personal && typeof summary.personal === 'object' ? summary.personal : base.personal,
+    badgeTrack: Array.isArray(summary.badgeTrack) ? summary.badgeTrack : base.badgeTrack,
+    stickerTrack: Array.isArray(summary.stickerTrack) ? summary.stickerTrack : base.stickerTrack,
+    titleTrack: Array.isArray(summary.titleTrack) ? summary.titleTrack : base.titleTrack,
+    roguelite: Array.isArray(summary.roguelite) ? summary.roguelite : base.roguelite,
+  };
+}
 
 function buildRewardData() {
-  function emptyRewardSummary(key) {
-    return {
-      factionId: key,
-      weekly: {},
-      monthly: {},
-      seasonal: {},
-      personal: {},
-      badgeTrack: [],
-      stickerTrack: [],
-      titleTrack: [],
-      roguelite: [],
-    };
-  }
-
-  function normaliseRewardSummary(key, summary) {
-    const base = emptyRewardSummary(key);
-    if (!summary || typeof summary !== 'object') return base;
-    return {
-      factionId: key,
-      weekly: summary.weekly && typeof summary.weekly === 'object' ? summary.weekly : base.weekly,
-      monthly: summary.monthly && typeof summary.monthly === 'object' ? summary.monthly : base.monthly,
-      seasonal: summary.seasonal && typeof summary.seasonal === 'object' ? summary.seasonal : base.seasonal,
-      personal: summary.personal && typeof summary.personal === 'object' ? summary.personal : base.personal,
-      badgeTrack: Array.isArray(summary.badgeTrack) ? summary.badgeTrack : base.badgeTrack,
-      stickerTrack: Array.isArray(summary.stickerTrack) ? summary.stickerTrack : base.stickerTrack,
-      titleTrack: Array.isArray(summary.titleTrack) ? summary.titleTrack : base.titleTrack,
-      roguelite: Array.isArray(summary.roguelite) ? summary.roguelite : base.roguelite,
-    };
-  }
-
-  const factions = {};
-  for (const key of LIVE_FACTION_KEYS) {
+  var factions = {};
+  for (var i = 0; i < LIVE_FACTION_KEYS.length; i++) {
+    var key = LIVE_FACTION_KEYS[i];
     try {
       factions[key] = normaliseRewardSummary(key, getFactionRewardSummary(key));
     } catch (_) {
       factions[key] = emptyRewardSummary(key);
     }
   }
-  return { factions, updatedAt: Date.now() };
+  return { factions: factions, updatedAt: Date.now() };
 }
 
-// ── Populate window.MOONBOYS_WAR_DATA ─────────────────────────────────────────
-
-function buildWarData() {
+function buildLocalWarData() {
   try {
-    const standings = getFactionStandings();
-    return { standings, dominantFaction: getDominantFaction() };
+    var standings = getFactionStandings();
+    return { standings: standings, dominantFaction: getDominantFaction() };
   } catch (_) {
-    return { standings: LIVE_FACTION_KEYS.map(function (key) {
-      return { faction: key, power: 0, daily: 0, weekly: 0, momentum: 0 };
-    }), dominantFaction: 'hard-fork-rockers' };
+    return {
+      standings: LIVE_FACTION_KEYS.map(function (key) {
+        return { faction: key, power: 0, daily: 0, weekly: 0, momentum: 0 };
+      }),
+      dominantFaction: 'hard-fork-rockers',
+    };
   }
 }
 
-// ── Populate window.MOONBOYS_MISSION_DATA ─────────────────────────────────────
-
 function buildMissionData() {
-  const data = {};
-  for (const key of LIVE_FACTION_KEYS) {
+  var data = {};
+  for (var i = 0; i < LIVE_FACTION_KEYS.length; i++) {
+    var key = LIVE_FACTION_KEYS[i];
     try {
-      const daily = getDailyMissions(key);
-      const seasonal = getSeasonalMissions(key);
-      const completed = getCompletedMissions(key);
-      const progress = {};
-      for (const m of daily) {
-        progress[m.id] = getMissionProgress(key, m.id);
+      var daily = getDailyMissions(key);
+      var seasonal = getSeasonalMissions(key);
+      var completed = getCompletedMissions(key);
+      var progress = {};
+      for (var j = 0; j < daily.length; j++) {
+        var mission = daily[j];
+        progress[mission.id] = getMissionProgress(key, mission.id);
       }
-      data[key] = { daily, seasonal, completed, progress };
+      data[key] = { daily: daily, seasonal: seasonal, completed: completed, progress: progress };
     } catch (_) {
       data[key] = { daily: [], seasonal: [], completed: [], progress: {} };
     }
@@ -139,24 +150,94 @@ function buildMissionData() {
   return data;
 }
 
-// ── Hydrate and dispatch ──────────────────────────────────────────────────────
+function normaliseServerStandings(payload) {
+  if (!payload || !payload.ok || !Array.isArray(payload.factions)) return null;
+  var rows = payload.factions.map(function (row) {
+    var key = String(row.faction_id || '').toLowerCase();
+    return {
+      faction_id: key,
+      rank: Number(row.rank) || 0,
+      clout_total: Number(row.clout_total) || 0,
+      contribution_total: Number(row.contribution_total) || 0,
+      mission_total: Number(row.mission_total) || 0,
+      score_total: Number(row.score_total) || 0,
+      member_count: Number(row.member_count) || 0,
+      momentum: row.momentum == null ? null : Number(row.momentum) || 0,
+    };
+  }).filter(function (row) { return LIVE_FACTION_KEYS.indexOf(row.faction_id) !== -1; });
+  return {
+    period: payload.period || 'weekly',
+    period_key: payload.period_key || null,
+    rows: rows,
+  };
+}
 
-function hydrate() {
-  window.MOONBOYS_WAR_DATA = buildWarData();
-  window.MOONBOYS_MISSION_DATA = buildMissionData();
-  // Expose FACTION_DEFS as FACTION_EFFECT_DEFS (consistent with renderer expectation)
-  window.FACTION_EFFECT_DEFS = FACTION_DEFS;
-  // Expose reward data for Battle Chamber renderers
-  window.MOONBOYS_FACTION_REWARD_DATA = buildRewardData();
+function mapWeeklyServerStandingsToWarData(weeklyData) {
+  var local = buildLocalWarData();
+  if (!weeklyData || !Array.isArray(weeklyData.rows) || !weeklyData.rows.length) return local;
+  var byFaction = {};
+  for (var i = 0; i < weeklyData.rows.length; i++) {
+    byFaction[weeklyData.rows[i].faction_id] = weeklyData.rows[i];
+  }
+  var standings = LIVE_FACTION_KEYS.map(function (key) {
+    var localRow = (local.standings || []).find(function (r) { return r.faction === key; }) || { daily: 0, momentum: 0 };
+    var serverRow = byFaction[key] || null;
+    if (!serverRow) {
+      return {
+        faction: key,
+        power: Number(localRow.power) || 0,
+        daily: Number(localRow.daily) || 0,
+        weekly: Number(localRow.weekly) || 0,
+        momentum: Number(localRow.momentum) || 0,
+      };
+    }
+    return {
+      faction: key,
+      power: Number(serverRow.clout_total) || 0,
+      daily: Number(localRow.daily) || 0,
+      weekly: Number(serverRow.clout_total) || 0,
+      momentum: serverRow.momentum == null ? (Number(localRow.momentum) || 0) : Number(serverRow.momentum) || 0,
+      contribution_total: Number(serverRow.contribution_total) || 0,
+      mission_total: Number(serverRow.mission_total) || 0,
+      score_total: Number(serverRow.score_total) || 0,
+      member_count: Number(serverRow.member_count) || 0,
+      period_key: weeklyData.period_key || null,
+      source: 'server',
+    };
+  }).sort(function (a, b) { return (b.power || 0) - (a.power || 0); });
 
+  return {
+    standings: standings,
+    dominantFaction: standings.length ? standings[0].faction : local.dominantFaction,
+    source: 'server',
+    period: 'weekly',
+    period_key: weeklyData.period_key || null,
+  };
+}
+
+async function fetchJson(url) {
+  try {
+    var res = await fetch(url);
+    if (!res.ok) return null;
+    return await res.json().catch(function () { return null; });
+  } catch (_) {
+    return null;
+  }
+}
+
+function dispatchFactionDataReady() {
   window.dispatchEvent(new CustomEvent('battle-chamber:faction-data-ready', {
     detail: {
       warData: window.MOONBOYS_WAR_DATA,
       missionData: window.MOONBOYS_MISSION_DATA,
       factionDefs: window.FACTION_EFFECT_DEFS,
+      standings: window.MOONBOYS_BATTLE_CHAMBER_STANDINGS || null,
+      serverStatus: window.MOONBOYS_BATTLE_CHAMBER_SERVER_STATUS || null,
     },
   }));
+}
 
+function dispatchRewardReady() {
   window.dispatchEvent(new CustomEvent('battle-chamber:faction-rewards-ready', {
     detail: {
       rewardData: window.MOONBOYS_FACTION_REWARD_DATA,
@@ -164,9 +245,103 @@ function hydrate() {
   }));
 }
 
-// Run after DOM is ready so the renderer's hook containers exist
+function dispatchActivityReady() {
+  window.dispatchEvent(new CustomEvent('battle-chamber:activity-ready', {
+    detail: {
+      activity: window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY || [],
+      serverStatus: window.MOONBOYS_BATTLE_CHAMBER_SERVER_STATUS || null,
+    },
+  }));
+}
+
+function hydrateLocalFirst() {
+  window.MOONBOYS_WAR_DATA = buildLocalWarData();
+  window.MOONBOYS_MISSION_DATA = buildMissionData();
+  window.FACTION_EFFECT_DEFS = FACTION_DEFS;
+  window.MOONBOYS_FACTION_REWARD_DATA = buildRewardData();
+  window.MOONBOYS_BATTLE_CHAMBER_STANDINGS = window.MOONBOYS_BATTLE_CHAMBER_STANDINGS || {
+    weekly: null,
+    monthly: null,
+    seasonal: null,
+  };
+  window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY = Array.isArray(window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY)
+    ? window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY
+    : [];
+  window.MOONBOYS_BATTLE_CHAMBER_SERVER_STATUS = {
+    available: false,
+    fallback: true,
+    message: 'Live server standings unavailable. Showing local display state.',
+    updatedAt: Date.now(),
+  };
+}
+
+async function hydrateServerAuthority() {
+  var apiBase = getApiBase();
+  if (!apiBase) return false;
+
+  var currentFaction = getCurrentFactionKey();
+  var endpoints = [
+    fetchJson(apiBase + '/battle-chamber/factions/standings?period=weekly'),
+    fetchJson(apiBase + '/battle-chamber/factions/standings?period=monthly'),
+    fetchJson(apiBase + '/battle-chamber/factions/standings?period=seasonal'),
+    fetchJson(apiBase + '/battle-chamber/activity?limit=20'),
+    currentFaction ? fetchJson(apiBase + '/battle-chamber/faction?faction_id=' + encodeURIComponent(currentFaction)) : Promise.resolve(null),
+  ];
+
+  var results = await Promise.all(endpoints);
+  var weekly = normaliseServerStandings(results[0]);
+  var monthly = normaliseServerStandings(results[1]);
+  var seasonal = normaliseServerStandings(results[2]);
+  var activity = results[3] && results[3].ok && Array.isArray(results[3].items) ? results[3].items : null;
+  var factionDetail = results[4] && results[4].ok ? results[4] : null;
+
+  var hasServerData = !!(weekly || monthly || seasonal || activity);
+  if (!hasServerData) return false;
+
+  window.MOONBOYS_BATTLE_CHAMBER_STANDINGS = {
+    weekly: weekly,
+    monthly: monthly,
+    seasonal: seasonal,
+  };
+
+  if (weekly) {
+    window.MOONBOYS_WAR_DATA = mapWeeklyServerStandingsToWarData(weekly);
+  }
+
+  if (activity) {
+    window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY = activity;
+  }
+
+  if (factionDetail && factionDetail.faction && factionDetail.faction.id) {
+    window.MOONBOYS_BATTLE_CHAMBER_FACTION_DETAIL = window.MOONBOYS_BATTLE_CHAMBER_FACTION_DETAIL || {};
+    window.MOONBOYS_BATTLE_CHAMBER_FACTION_DETAIL[factionDetail.faction.id] = factionDetail;
+  }
+
+  window.MOONBOYS_BATTLE_CHAMBER_SERVER_STATUS = {
+    available: true,
+    fallback: false,
+    updatedAt: Date.now(),
+    message: '',
+  };
+
+  return true;
+}
+
+async function hydrate() {
+  hydrateLocalFirst();
+  dispatchFactionDataReady();
+  dispatchRewardReady();
+  dispatchActivityReady();
+
+  var serverReady = await hydrateServerAuthority();
+  if (serverReady) {
+    dispatchFactionDataReady();
+    dispatchActivityReady();
+  }
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', hydrate);
+  document.addEventListener('DOMContentLoaded', function () { hydrate().catch(function () {}); });
 } else {
-  hydrate();
+  hydrate().catch(function () {});
 }

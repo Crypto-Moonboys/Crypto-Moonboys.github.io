@@ -59,6 +59,31 @@
     });
   }
 
+  function getServerStatus() {
+    var status = window.MOONBOYS_BATTLE_CHAMBER_SERVER_STATUS;
+    return status && typeof status === 'object' ? status : { available: false, fallback: true };
+  }
+
+  function getServerPeriodRows(period) {
+    var standings = window.MOONBOYS_BATTLE_CHAMBER_STANDINGS;
+    if (!standings || !standings[period] || !Array.isArray(standings[period].rows)) return null;
+    return standings[period].rows.slice();
+  }
+
+  function getFactionServerDetail(key) {
+    var details = window.MOONBOYS_BATTLE_CHAMBER_FACTION_DETAIL;
+    if (!details || typeof details !== 'object') return null;
+    return details[key] || null;
+  }
+
+  function getServerActivityForFaction(key) {
+    var rows = window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY;
+    if (!Array.isArray(rows)) return [];
+    return rows.filter(function (row) {
+      return row && row.faction_id === key;
+    });
+  }
+
   function getFactionStanding(key) {
     var standings = getStandings().slice().sort(function (a, b) { return (b.power || 0) - (a.power || 0); });
     for (var i = 0; i < standings.length; i++) {
@@ -111,13 +136,28 @@
     var validKeys = order.filter(function (key) { return !!profiles[key]; });
     if (!validKeys.length) return;
     var standings = getStandings().slice().sort(function (a, b) { return (b.power || 0) - (a.power || 0); });
-    var rankByFaction = {};
-    standings.forEach(function (row, idx) { rankByFaction[row.faction] = idx + 1; });
+    var weeklyRankByFaction = {};
+    standings.forEach(function (row, idx) { weeklyRankByFaction[row.faction] = idx + 1; });
+    var monthlyRows = getServerPeriodRows('monthly');
+    var seasonalRows = getServerPeriodRows('seasonal');
+    var monthlyRankByFaction = {};
+    var seasonalRankByFaction = {};
+    if (monthlyRows && monthlyRows.length) {
+      monthlyRows.slice().sort(function (a, b) { return (Number(b.clout_total) || 0) - (Number(a.clout_total) || 0); })
+        .forEach(function (row, idx) { monthlyRankByFaction[row.faction_id] = idx + 1; });
+    }
+    if (seasonalRows && seasonalRows.length) {
+      seasonalRows.slice().sort(function (a, b) { return (Number(b.clout_total) || 0) - (Number(a.clout_total) || 0); })
+        .forEach(function (row, idx) { seasonalRankByFaction[row.faction_id] = idx + 1; });
+    }
+    var fallbackCopy = 'Live server standings unavailable. Showing local display state.';
 
     grid.innerHTML = validKeys.map(function (key) {
       var p = profiles[key];
       if (!p) return '';
-      var rank = rankByFaction[key] || '—';
+      var rank = weeklyRankByFaction[key] || '—';
+      var monthlyRank = monthlyRankByFaction[key] || (getServerStatus().available ? '—' : fallbackCopy);
+      var seasonalRank = seasonalRankByFaction[key] || (getServerStatus().available ? '—' : fallbackCopy);
       var missionCount = (getFactionMissions(key).daily || []).length;
       return '' +
         '<article class="fcp-card" style="--faction-color:' + esc(p.chamberColor) + '">' +
@@ -125,8 +165,8 @@
           '<p class="fcp-card-tagline">' + esc(p.tagline) + '</p>' +
           '<p>' + esc(p.playstyle) + '</p>' +
           '<p><strong>Current weekly rank:</strong> #' + esc(rank) + '</p>' +
-          '<p><strong>Current monthly rank:</strong> Mirror of current chamber data until monthly board authority expands.</p>' +
-          '<p><strong>Current seasonal rank:</strong> Mirror of current chamber data until seasonal board authority expands.</p>' +
+          '<p><strong>Current monthly rank:</strong> ' + esc(monthlyRank === fallbackCopy ? monthlyRank : ('#' + monthlyRank)) + '</p>' +
+          '<p><strong>Current seasonal rank:</strong> ' + esc(seasonalRank === fallbackCopy ? seasonalRank : ('#' + seasonalRank)) + '</p>' +
           '<p><strong>Perk preview:</strong> ' + esc(p.perkSummary) + '</p>' +
           '<p><strong>Active quest count:</strong> ' + esc(missionCount) + '</p>' +
           '<div class="fcp-card-actions">' +
@@ -157,6 +197,9 @@
 
     var standing = getFactionStanding(key);
     var row = standing.row;
+    var serverDetail = getFactionServerDetail(key);
+    var serverTotals = serverDetail && serverDetail.totals ? serverDetail.totals : null;
+    var serverStatus = getServerStatus();
     var missions = getFactionMissions(key);
     var effects = getFactionEffects(key) || {};
     var rewardSummary = getFactionRewardSummary(key);
@@ -229,13 +272,19 @@
 
     var war = byId('fcp-war-status');
     if (war) {
+      var weeklyClout = serverTotals && serverTotals.weekly ? Number(serverTotals.weekly.clout_total) || 0 : (row.weekly || 0);
+      var monthlyClout = serverTotals && serverTotals.monthly ? Number(serverTotals.monthly.clout_total) || 0 : null;
+      var seasonalClout = serverTotals && serverTotals.seasonal ? Number(serverTotals.seasonal.clout_total) || 0 : null;
       war.innerHTML = '<ul>' +
         '<li><strong>Faction rank:</strong> #' + esc(standing.rank) + '</li>' +
         '<li><strong>Total power:</strong> ' + esc(row.power || 0) + '</li>' +
         '<li><strong>Daily contribution:</strong> ' + esc(row.daily || 0) + '</li>' +
-        '<li><strong>Weekly contribution:</strong> ' + esc(row.weekly || 0) + '</li>' +
+        '<li><strong>Weekly clout:</strong> ' + esc(weeklyClout) + '</li>' +
+        '<li><strong>Monthly clout:</strong> ' + esc(monthlyClout == null ? '—' : monthlyClout) + '</li>' +
+        '<li><strong>Seasonal clout:</strong> ' + esc(seasonalClout == null ? '—' : seasonalClout) + '</li>' +
         '<li><strong>Momentum tier:</strong> ' + esc(row.momentum || 0) + '</li>' +
         '<li><strong>Dominant faction:</strong> ' + esc((profiles[standing.dominantFaction] && profiles[standing.dominantFaction].name) || standing.dominantFaction) + '</li>' +
+        (serverStatus.available ? '' : '<li><strong>Status:</strong> Live server standings unavailable. Showing local display state.</li>') +
       '</ul>';
     }
 
@@ -306,19 +355,32 @@
 
     var live = byId('fcp-live-proof-feed');
     if (live) {
-      live.innerHTML = '<p>Faction proof feed will show linked activity where wired.</p>' +
-        '<ul>' +
-        '<li>Faction joins</li>' +
-        '<li>Mission completions</li>' +
-        '<li>Weekly war gains</li>' +
-        '<li>Badge unlocks</li>' +
-        '<li>Top member actions</li>' +
-        '</ul>';
+      var recentActivity = serverDetail && Array.isArray(serverDetail.recent_activity)
+        ? serverDetail.recent_activity
+        : getServerActivityForFaction(key);
+      if (recentActivity.length) {
+        live.innerHTML = '<p>Recent faction proof activity:</p>' +
+          '<ul>' + recentActivity.slice(0, 10).map(function (item) {
+            return '<li>' + esc(item.event_text || '') + '</li>';
+          }).join('') + '</ul>';
+      } else {
+        live.innerHTML = '<p>Live server standings unavailable. Showing local display state.</p>' +
+          '<p>Faction proof feed will show linked activity where wired.</p>';
+      }
     }
 
     var topMembers = byId('fcp-top-members');
     if (topMembers) {
-      topMembers.innerHTML = '<p>Top faction members, weekly clout, monthly clout, and seasonal clout board visibility is coming as Battle Chamber data expands.</p>';
+      var members = serverDetail && Array.isArray(serverDetail.top_members) ? serverDetail.top_members : [];
+      if (members.length) {
+        topMembers.innerHTML = '<ul>' + members.slice(0, 8).map(function (member, idx) {
+          return '<li>#' + (idx + 1) + ' ' + esc(member.display_name || member.telegram_id || 'Unknown') +
+            ' — weekly clout ' + esc(member.clout_total || 0) + '</li>';
+        }).join('') + '</ul>';
+      } else {
+        topMembers.innerHTML = '<p>Live server standings unavailable. Showing local display state.</p>' +
+          '<p>Top faction members, weekly clout, monthly clout, and seasonal clout board visibility is coming as Battle Chamber data expands.</p>';
+      }
     }
 
     var related = byId('fcp-related-links');
@@ -361,6 +423,7 @@
     }
 
     window.addEventListener('battle-chamber:faction-data-ready', renderAll);
+    window.addEventListener('battle-chamber:activity-ready', renderAll);
     window.addEventListener('battle-chamber:faction-rewards-ready', renderAll);
     window.addEventListener('moonboys:faction-status', renderAll);
     window.addEventListener('moonboys:faction-boost', renderAll);
