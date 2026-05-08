@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faction Chambers Directory | Crypto Moonboys</title>
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/retro-16bit-theme.css">
+  <style>
+    .fcp-wrap .section { padding: 28px 32px; }
+    .fcp-wrap .page-hero { padding: 40px 32px; }
+    .fcp-hero-card,
+    .fcp-panel,
+    .fcp-card {
+      background: rgba(8, 18, 34, 0.62);
+      border: 1px solid rgba(86, 220, 255, 0.18);
+      border-top: 3px solid var(--faction-color, #56dcff);
+      border-radius: 10px;
+      padding: 16px;
+      line-height: 1.65;
+    }
+    .fcp-hero-tagline,
+    .fcp-card-tagline { color: #00ffcc; }
+    .fcp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 14px;
+    }
+    .fcp-card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .fcp-btn {
+      display: inline-block;
+      padding: 9px 14px;
+      border-radius: 6px;
+      background: #00ffcc;
+      color: #000;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .fcp-btn.fcp-btn-secondary {
+      background: transparent;
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
+    }
+    .fcp-panel ul { margin: 10px 0 0 18px; }
+</style>
+</head>
+<body class="page-community page-has-right-panel">
+<main id="content" role="main">
+  <div class="fcp-wrap">
+    <section class="page-hero">
+      <h1>Battle Chamber Faction Directory</h1>
+      <p class="lead">Faction Chambers are now open.</p>
+      <div class="fcp-card-actions">
+        <a class="fcp-btn" href="/community.html">Back to Battle Chamber</a>
+        <a class="fcp-btn fcp-btn-secondary" href="/games/">Play Arcade</a>
+        <a class="fcp-btn fcp-btn-secondary" href="/gkniftyheads-incubator.html">Link Telegram</a>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Choose Your Faction Chamber</h2>
+      <div id="faction-directory-grid" class="fcp-grid">
+        <div class="fcp-card">Loading faction directory...</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Source Lore Links</h2>
+      <div id="source-lore-links" class="fcp-panel">
+        <p>Source links will appear here.</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script data-cfasync="false" src="/js/api-config.js"></script>
+<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+<script data-cfasync="false" src="/js/identity-gate.js"></script>
+<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+<script data-cfasync="false" src="/js/site-shell.js"></script>
+<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+<script data-cfasync="false" src="/js/faction-alignment.js"></script>
+<script type="module" src="/js/battle-chamber-faction-bridge.js"></script>
+<script data-cfasync="false" src="/js/faction-profile-data.js"></script>
+<script data-cfasync="false" src="/js/faction-chamber-page.js"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script>
+
+</body>
+</html>

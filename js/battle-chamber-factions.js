@@ -78,6 +78,18 @@
 
   var MOMENTUM_LABELS = ['—', 'Rising', 'Hot', 'Dominant'];
 
+  var CHAMBER_ROUTES = Object.freeze({
+    'hard-fork-rockers': '/battle-chamber/factions/hard-fork-rockers.html',
+    'rugpull-minors': '/battle-chamber/factions/rugpull-minors.html',
+    graffpunks: '/battle-chamber/factions/graffpunks.html',
+    'blockchain-furies': '/battle-chamber/factions/blockchain-furies.html',
+    'crypto-moongirls': '/battle-chamber/factions/crypto-moongirls.html',
+    blockstars: '/battle-chamber/factions/blockstars.html',
+    'all-city-bulls': '/battle-chamber/factions/all-city-bulls.html',
+    'nomad-bears': '/battle-chamber/factions/nomad-bears.html',
+    'crypto-stoned-boys': '/battle-chamber/factions/crypto-stoned-boys.html',
+  });
+
   // ── HTML escape ───────────────────────────────────────────────────────────
 
   function esc(s) {
@@ -156,7 +168,7 @@
         '<span class="bc-faction-weekly">Week: <strong>' + (row.weekly || 0) + '</strong></span>' +
         '<span class="bc-faction-momentum">Momentum: <strong>' + esc(momentumLabel) + '</strong></span>' +
         '<span class="bc-faction-perk-teaser">' + esc(meta.perkTeaser) + '</span>' +
-        '<a class="bc-faction-chamber-link" href="#coming-next-faction-chambers" aria-label="Enter ' + esc(meta.label) + ' Chamber (coming next)">Enter Faction Chamber →</a>' +
+        '<a class="bc-faction-chamber-link" href="' + esc(CHAMBER_ROUTES[row.faction] || '/battle-chamber/factions/index.html') + '" aria-label="Enter ' + esc(meta.label) + ' Chamber">Enter Faction Chamber →</a>' +
         '</div>';
     }).join('');
 
@@ -220,7 +232,7 @@
         '<li>Bonus roguelite branch for next month</li>' +
         '<li>Monthly Hall of Fame placement</li>' +
         '</ul>' +
-        '<p class="bc-rewards-disclaimer">Rewards are gameplay/status rewards, not cash or investment rewards.</p>' +
+        '<p class="bc-rewards-disclaimer">Rewards stay focused on clout and gameplay status progression only.</p>' +
       '</div>';
   }
 
@@ -247,7 +259,7 @@
         '<li>Special faction page trophy</li>' +
         '<li>Legendary clout badge</li>' +
         '</ul>' +
-        '<p class="bc-rewards-disclaimer">Rewards are gameplay/status rewards, not cash or investment rewards.</p>' +
+        '<p class="bc-rewards-disclaimer">Rewards stay focused on clout and gameplay status progression only.</p>' +
       '</div>' +
       '<p class="bc-hall-of-fame">Seasonal winners become part of the Battle Chamber record. Hall of Fame placement is permanent.</p>';
   }
@@ -414,7 +426,7 @@
         '<div class="bc-reward-item"><span class="bc-reward-icon">🌿</span><strong>Bonus Roguelite Branches</strong><p>Winning factions unlock extra bonus roguelite branch paths for the next period.</p></div>' +
         '<div class="bc-reward-item"><span class="bc-reward-icon">🎯</span><strong>XP Prize Pool Eligibility</strong><p>Active faction members become eligible for XP prize pool participation.</p></div>' +
       '</div>' +
-      '<p class="bc-rewards-disclaimer"><strong>Rewards are gameplay/status rewards, not cash or investment rewards.</strong> All rewards are clout, badges, stickers, titles, and roguelite options — never cash, token, or investment claims.</p>';
+      '<p class="bc-rewards-disclaimer"><strong>Rewards stay focused on clout and gameplay status progression only.</strong> All rewards are clout, badges, stickers, titles, and roguelite options only.</p>';
   }
 
   // ── 9. Faction Proof Feed headline ───────────────────────────────────────
