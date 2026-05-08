@@ -488,7 +488,7 @@ function generateHubPageHtml(meta, byUrl, allHubMetas) {
   <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <title>${escapeHtml(fullTitle)}</title>
   <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" type="image/png" href="/favicon.png">
   <style>
     .wiki-section { margin: 1.6em 0; }
     .lore-paragraph { line-height: 1.75; margin: 0 0 1em 0; }

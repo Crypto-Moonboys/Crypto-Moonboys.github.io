@@ -854,7 +854,7 @@ ${prose}`;
   <title>${escapeHtml(title)}</title>
   <link rel="canonical" href="${canonicalUrl}">
   <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body>
 

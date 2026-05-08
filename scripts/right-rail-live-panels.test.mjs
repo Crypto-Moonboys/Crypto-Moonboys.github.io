@@ -44,7 +44,7 @@ check(!hasPreloadFor(community, '/js/arcade/systems/daily-wtf-event-system.js'),
 check(hasModuleScript(community, '/js/battle-chamber-faction-bridge.js'), 'community.html still runtime-loads Battle Chamber bridge as a module');
 check(hasModuleScript(community, '/js/arcade/systems/daily-wtf-event-system.js'), 'community.html still runtime-loads Daily WTF system as a module');
 check(!community.includes('href="/favicon.ico"'), 'community.html does not reference a missing or fake /favicon.ico asset');
-check(community.includes('href="/img/favicon.svg"') && community.includes('type="image/svg+xml"') && community.includes('sizes="any"'), 'community.html uses the existing SVG favicon with an explicit type');
+check(community.includes('<link rel="icon" type="image/png" href="/favicon.png">'), 'community.html uses the standardized PNG favicon');
 check(!fs.existsSync(path.join(ROOT, 'favicon.ico')), 'repo does not ship a fake .ico file containing SVG text');
 
 console.log('\n[2] Daily WTF frontend verification');

@@ -122,7 +122,7 @@ function buildHubHtml(rec) {
   <title>${escapeHtml(fullTitle)}</title>
   <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
   <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" type="image/png" href="/favicon.png">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
