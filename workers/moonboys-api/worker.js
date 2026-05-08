@@ -1312,6 +1312,20 @@ function getWtfEventStatus(nowMs, startsAt, endsAt, playerStatus) {
   return 'active';
 }
 
+
+function addUtcDays(utcDay, days) {
+  const d = new Date(`${utcDay}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+async function getNextDailyWtfEvent(db, utcDay, nowMs, normalizeRow) {
+  const tomorrow = addUtcDays(utcDay, 1);
+  await ensureWtfEventsForDay(db, tomorrow).catch(() => {});
+  const row = await db.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC LIMIT 1`).bind(tomorrow).first().catch(() => null);
+  return row ? normalizeRow(row, 'upcoming') : null;
+}
+
 function getAllowedSourcesForWtfEvent(eventRow) {
   const key = String(eventRow?.required_action || '').trim();
   const fromAction = WTF_REQUIRED_ACTION_SOURCE_MAP[key];
@@ -3131,15 +3145,35 @@ export default {
           visual_theme: row.theme || 'neon-signal',
           status: getWtfEventStatus(nowMs, row.starts_at, row.ends_at, 'upcoming'),
         }));
-        const nextEvent = normalizedPublic.find((row) => row.status === 'upcoming') || null;
+        const activeEvent = normalizedPublic.find((row) => row.status === 'active') || null;
+        let upcomingEvents = normalizedPublic.filter((row) => row.status === 'upcoming');
+        let nextEvent = upcomingEvents[0] || null;
+        if (!activeEvent && !nextEvent) {
+          nextEvent = await getNextDailyWtfEvent(env.DB, utcDay, nowMs, (row) => ({
+            event_id: row.event_id,
+            utc_day: row.utc_day,
+            start_at: row.starts_at,
+            end_at: row.ends_at,
+            event_type: row.event_type,
+            title: row.title,
+            description: row.description,
+            required_action: row.required_action,
+            reward_preview: row.reward_key,
+            multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+            visual_theme: row.theme || 'neon-signal',
+            status: 'upcoming',
+          }));
+          if (nextEvent) upcomingEvents = [nextEvent];
+        }
+        const countdownTarget = activeEvent ? activeEvent.end_at : nextEvent ? nextEvent.start_at : null;
         return json({
           ok: true,
           auth_mode: 'public_schedule',
           utc_day: utcDay,
-          active_event: normalizedPublic.find((row) => row.status === 'active') || null,
-          upcoming_events: normalizedPublic.filter((row) => row.status === 'upcoming'),
+          active_event: activeEvent,
+          upcoming_events: upcomingEvents,
           next_event: nextEvent,
-          countdown_seconds: nextEvent ? Math.max(0, Math.floor((Date.parse(nextEvent.start_at) - nowMs) / 1000)) : 0,
+          countdown_seconds: countdownTarget ? Math.max(0, Math.floor((Date.parse(countdownTarget) - nowMs) / 1000)) : 0,
         });
       }
 
@@ -3196,7 +3230,31 @@ export default {
         };
       });
       const activeEvent = normalized.find((row) => row.status === 'active') || null;
-      const nextEvent = normalized.find((row) => row.status === 'upcoming') || null;
+      let upcomingEvents = normalized.filter((row) => row.status === 'upcoming');
+      let nextEvent = upcomingEvents[0] || null;
+      if (!activeEvent && !nextEvent) {
+        nextEvent = await getNextDailyWtfEvent(env.DB, utcDay, nowMs, (row) => ({
+          event_id: row.event_id,
+          utc_day: row.utc_day,
+          start_at: row.starts_at,
+          end_at: row.ends_at,
+          event_type: row.event_type,
+          title: row.title,
+          description: row.description,
+          required_action: row.required_action,
+          reward_preview: row.reward_key,
+          multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+          visual_theme: row.theme || 'neon-signal',
+          status: 'upcoming',
+          player_status: 'not_checked_in',
+          checked_in_at: null,
+          completed_at: null,
+          chain_depth: 0,
+          chain_options: [],
+        }));
+        if (nextEvent) upcomingEvents = [nextEvent];
+      }
+      const countdownTarget = activeEvent ? activeEvent.end_at : nextEvent ? nextEvent.start_at : null;
       const missedCount = await env.DB.prepare(`SELECT COUNT(*) AS total FROM daily_missed_perks WHERE telegram_id = ?`).bind(verified.telegramId).first().catch(() => ({ total: 0 }));
       return json({
         ok: true,
@@ -3204,9 +3262,9 @@ export default {
         telegram_id: verified.telegramId,
         utc_day: utcDay,
         active_event: activeEvent,
-        upcoming_events: normalized.filter((row) => row.status === 'upcoming'),
+        upcoming_events: upcomingEvents,
         next_event: nextEvent,
-        countdown_seconds: nextEvent ? Math.max(0, Math.floor((Date.parse(nextEvent.start_at) - nowMs) / 1000)) : 0,
+        countdown_seconds: countdownTarget ? Math.max(0, Math.floor((Date.parse(countdownTarget) - nowMs) / 1000)) : 0,
         checked_in: !!(activeEvent && activeEvent.player_status === 'checked_in'),
         current_task: activeEvent ? activeEvent.required_action : null,
         completed_today: normalized.filter((row) => row.player_status === 'completed').length,
