@@ -233,9 +233,12 @@
       // Read reward tracks from MOONBOYS_FACTION_REWARD_DATA when available
       var rewardData = window.MOONBOYS_FACTION_REWARD_DATA;
       var rewardSummary = rewardData && rewardData.factions && rewardData.factions[key] ? rewardData.factions[key] : null;
-      var badgeTrack = (rewardSummary && Array.isArray(rewardSummary.badgeTrack)) ? rewardSummary.badgeTrack : profile.badgeIdeas;
-      var stickerTrack = (rewardSummary && Array.isArray(rewardSummary.stickerTrack)) ? rewardSummary.stickerTrack : profile.stickerIdeas;
-      var titleTrack = (rewardSummary && Array.isArray(rewardSummary.titleTrack)) ? rewardSummary.titleTrack : profile.titleLadder;
+      function getTrackOrFallback(summary, trackKey, fallback) {
+        return (summary && Array.isArray(summary[trackKey])) ? summary[trackKey] : fallback;
+      }
+      var badgeTrack = getTrackOrFallback(rewardSummary, 'badgeTrack', profile.badgeIdeas);
+      var stickerTrack = getTrackOrFallback(rewardSummary, 'stickerTrack', profile.stickerIdeas);
+      var titleTrack = getTrackOrFallback(rewardSummary, 'titleTrack', profile.titleLadder);
       clout.innerHTML = '' +
         '<p><strong>Badge ladder:</strong> ' + esc(badgeTrack.join(' → ')) + '</p>' +
         '<p><strong>Sticker unlock ideas:</strong> ' + esc(stickerTrack.join(' · ')) + '</p>' +

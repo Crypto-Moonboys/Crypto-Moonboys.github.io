@@ -132,7 +132,7 @@ console.log('\n[2] Reward data coverage — every faction has required tracks');
 // Import and execute the module to test runtime data
 let rewardModule = null;
 try {
-  rewardModule = await import(path.join(ROOT, REWARD_SYSTEM_FILE) + '?t=' + Date.now());
+  rewardModule = await import(path.join(ROOT, REWARD_SYSTEM_FILE));
 } catch (err) {
   fail('reward system can be imported in Node.js', String(err));
 }
