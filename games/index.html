@@ -62,6 +62,7 @@
         <div class="roguelite-loop-copy">
           <strong>Roguelite Infinite Loop:</strong> The arcade uses one protected browser-driven roguelite post-run loop. Accepted game runs feed the shared submit path, refresh local UTC daily/weekly/monthly/seasonal previews, queue Arcade XP for server sync, update local clout, and roll local rabbit-hole choices automatically.
           <div id="roguelite-loop-board" aria-live="polite" style="margin-top:12px"></div>
+          <div id="roguelite-daily-digest-summary" aria-live="polite" style="margin-top:12px"></div>
         </div>
       </section>
 
@@ -186,6 +187,7 @@
 import { ArcadeMeta } from '/js/arcade-meta-system.js';
 
 const board = document.getElementById('roguelite-loop-board');
+const digestSummaryEl = document.getElementById('roguelite-daily-digest-summary');
 const SESSION_BASELINE_KEY = 'roguelite_loop_session_xp_baseline';
 let displayedXp = 0;
 let targetXp = 0;
@@ -395,12 +397,54 @@ function renderLoopBoard() {
   updateTickerDom(currentXp);
 }
 
+async function renderDailyDigestSummary() {
+  if (!digestSummaryEl) return;
+  const api = window.MOONBOYS_API || {};
+  const identity = window.MOONBOYS_IDENTITY;
+  const base = api.BASE_URL ? String(api.BASE_URL).replace(/\/$/, '') : '';
+  const linked = !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
+  if (!linked || !base || !identity || typeof identity.getSignedTelegramAuth !== 'function') {
+    digestSummaryEl.innerHTML =
+      '<small><strong>Daily signal:</strong> link Telegram to view today’s signal, missed perks count, and digest reminder.</small>';
+    return;
+  }
+  const auth = identity.getSignedTelegramAuth();
+  if (!auth || typeof auth !== 'object') {
+    digestSummaryEl.innerHTML =
+      '<small><strong>Daily signal:</strong> sync payload unavailable. Run /gklink to refresh Telegram link.</small>';
+    return;
+  }
+  try {
+    const query = encodeURIComponent(JSON.stringify(auth));
+    const res = await fetch(base + '/roguelite/daily-state?telegram_auth=' + query);
+    const data = res.ok ? await res.json() : null;
+    if (!data || !data.ok) throw new Error('daily_state_unavailable');
+    const missions = Array.isArray(data.today_active && data.today_active.mission_opportunities)
+      ? data.today_active.mission_opportunities
+      : [];
+    const next = missions.find((mission) => !mission.completed) || missions[0] || null;
+    const nextLabel = next
+      ? `${next.title || next.mission_id || 'mission'} (${next.completed ? 'complete' : `${next.progress || 0} / ?`})`
+      : 'Open Battle Chamber to activate a mission';
+    digestSummaryEl.innerHTML =
+      '<small><strong>Today’s daily signal:</strong> UTC ' + escapeText(data.utc_day || '—') + ' · ' +
+      '<strong>Missed perks:</strong> ' + escapeText(data.missed_history_count || 0) + ' · ' +
+      '<strong>Next active opportunity:</strong> ' + escapeText(nextLabel) + ' · ' +
+      '<strong>Telegram daily digest:</strong> check your bot inbox once per UTC day.</small>';
+  } catch (_) {
+    digestSummaryEl.innerHTML =
+      '<small><strong>Daily signal:</strong> unavailable right now. Open Battle Chamber for live status.</small>';
+  }
+}
+
 renderLoopBoard();
+renderDailyDigestSummary();
 document.addEventListener('arcade-meta-roguelite-completed', renderLoopBoard);
 document.addEventListener('arcade-meta-rabbit-holes-spawned', renderLoopBoard);
 document.addEventListener('arcade-meta-tracked', renderLoopBoard);
 document.addEventListener('arcade-meta-loop-cycle-updated', renderLoopBoard);
 setInterval(renderLoopBoard, 15000);
+setInterval(renderDailyDigestSummary, 30000);
 setInterval(tickXpDisplay, 350);
 </script>
 

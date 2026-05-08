@@ -31,6 +31,8 @@
  *   #battle-faction-perks
  *   #battle-clout-rewards
  *   #battle-faction-proof-feed  (headline/copy only — feed is tg-activity-feed)
+ *   #battle-todays-active-options
+ *   #battle-missed-perks-history
  */
 (function () {
   'use strict';
@@ -136,6 +138,25 @@
   function getServerActivity() {
     var rows = window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY;
     return Array.isArray(rows) ? rows.slice() : [];
+  }
+
+  function getRogueliteDailyState() {
+    var state = window.MOONBOYS_ROGUELITE_DAILY_STATE;
+    return state && typeof state === 'object' ? state : null;
+  }
+
+  function getRogueliteMissedHistory() {
+    var rows = window.MOONBOYS_ROGUELITE_MISSED_HISTORY;
+    return Array.isArray(rows) ? rows.slice() : [];
+  }
+
+  function isTelegramLinked() {
+    try {
+      var identity = window.MOONBOYS_IDENTITY;
+      return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
+    } catch (_) {
+      return false;
+    }
   }
 
   function toWarRowsFromServerPeriod(periodRows) {
@@ -690,6 +711,82 @@
       '<p class="bc-proof-intro">Faction activity, XP movement, and public proof appear below where wired. Telegram-linked users sync activity to the server.</p>';
   }
 
+  function renderTodaysActiveOptions(status) {
+    var container = el('battle-todays-active-options');
+    if (!container) return;
+    var linked = isTelegramLinked();
+    if (!linked) {
+      container.innerHTML =
+        '<p>Today’s active opportunities reset at UTC midnight.</p>' +
+        '<p>Complete missions, runs, and proof actions to unlock more choices.</p>' +
+        '<p>Link Telegram to load your live daily state.</p>' +
+        '<p><a class="bc-cta-btn" href="/gkniftyheads-incubator.html">Link Telegram</a></p>';
+      return;
+    }
+    var dailyState = getRogueliteDailyState();
+    if (!dailyState || !dailyState.today_active) {
+      container.innerHTML =
+        '<p>Today’s active opportunities reset at UTC midnight.</p>' +
+        '<p>Complete missions, runs, and proof actions to unlock more choices.</p>' +
+        '<p>Daily state is syncing. Refresh shortly.</p>';
+      return;
+    }
+    var active = dailyState.today_active || {};
+    var missionRows = Array.isArray(active.mission_opportunities) ? active.mission_opportunities : [];
+    var missionHtml = missionRows.length
+      ? '<ul>' + missionRows.slice(0, 3).map(function (mission) {
+          return '<li><strong>' + esc(mission.title || mission.mission_id || 'Mission') + ':</strong> ' +
+            esc((mission.completed ? 'complete' : ((mission.progress || 0) + ' / ?'))) +
+            ' · ' + esc(mission.contribution_preview || 'clout/status opportunity') + '</li>';
+        }).join('') + '</ul>'
+      : '<p>No mission opportunities synced yet for today.</p>';
+    container.innerHTML =
+      '<p><strong>Today’s active opportunities reset at UTC midnight.</strong></p>' +
+      '<p>Complete missions, runs, and proof actions to unlock more choices.</p>' +
+      '<p><strong>UTC day:</strong> ' + esc(dailyState.utc_day || active.utc_day || '—') + '</p>' +
+      '<p><strong>Daily seed:</strong> ' + esc(active.daily_seed || '—') + '</p>' +
+      '<p><strong>Chain depth:</strong> ' + esc(active.chain_depth == null ? 0 : active.chain_depth) + '</p>' +
+      missionHtml +
+      '<div class="bc-aligned-actions">' +
+        '<a class="bc-cta-btn" href="/community.html">Open Battle Chamber</a>' +
+        '<a class="bc-cta-btn bc-cta-secondary" href="/games/index.html">Play Arcade</a>' +
+        '<a class="bc-cta-btn bc-cta-secondary" href="/battle-chamber/factions/index.html">View Faction Chamber</a>' +
+      '</div>';
+  }
+
+  function renderMissedPerksHistory() {
+    var container = el('battle-missed-perks-history');
+    if (!container) return;
+    var linked = isTelegramLinked();
+    if (!linked) {
+      container.innerHTML =
+        '<p><strong>This does not reset.</strong></p>' +
+        '<p>The city kept moving while you were away.</p>' +
+        '<p>Missed perks history builds over time.</p>' +
+        '<p>Log in daily to stop the missed list growing.</p>' +
+        '<p><a class="bc-cta-btn" href="/gkniftyheads-incubator.html">Link Telegram</a></p>';
+      return;
+    }
+    var dailyState = getRogueliteDailyState();
+    var rows = getRogueliteMissedHistory();
+    var total = dailyState && typeof dailyState.missed_history_count === 'number'
+      ? dailyState.missed_history_count
+      : rows.length;
+    var previewRows = rows.length
+      ? rows.slice(0, 6).map(function (item) {
+          return '<li><strong>' + esc(item.title || 'Missed chance') + '</strong> — ' +
+            esc(item.utc_day || '') + (item.faction_id ? ' · ' + esc(item.faction_id) : '') + '</li>';
+        }).join('')
+      : '<li>No missed entries yet. Keep checking in daily.</li>';
+    container.innerHTML =
+      '<p><strong>This does not reset.</strong></p>' +
+      '<p>The city kept moving while you were away.</p>' +
+      '<p>Missed perks history builds over time.</p>' +
+      '<p>Log in daily to stop the missed list growing.</p>' +
+      '<p><strong>Total missed opportunities:</strong> ' + esc(total) + '</p>' +
+      '<ul>' + previewRows + '</ul>';
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // Full render pass
   // ─────────────────────────────────────────────────────────────────────────
@@ -705,6 +802,8 @@
     renderCloutRewards();
     renderFactionRewardUnlocks();
     renderProofFeedHeader();
+    renderTodaysActiveOptions(status);
+    renderMissedPerksHistory();
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -771,6 +870,8 @@
     renderFactionPerks: renderFactionPerks,
     renderCloutRewards: renderCloutRewards,
     renderFactionRewardUnlocks: renderFactionRewardUnlocks,
+    renderTodaysActiveOptions: renderTodaysActiveOptions,
+    renderMissedPerksHistory: renderMissedPerksHistory,
   };
 
 })();

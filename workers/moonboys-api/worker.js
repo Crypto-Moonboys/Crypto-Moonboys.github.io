@@ -39,6 +39,10 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
  *   GET  /battle-chamber/activity?limit=20
  *   POST /battle-chamber/event
  *   POST /player/mastery/update
+ *   GET  /roguelite/daily-state
+ *   GET  /roguelite/missed-history?limit=30
+ *   POST /roguelite/mark-missed
+ *   POST /telegram/daily-digest/run
  *
  * Telegram bot commands (POST /telegram/webhook):
  *   /gkstart /gkhelp /gklink /gkstatus /gkseason /gkleaderboard /gkquests /gkfaction /gkunlink
@@ -402,7 +406,7 @@ async function callAntiCheatWorker(env, method, acPath, body) {
 async function sendTelegramMessage(botToken, chatId, text, extra = {}) {
   if (!botToken || !chatId) {
     console.log('TG send skipped', JSON.stringify({ hasBotToken: !!botToken, hasChatId: !!chatId }));
-    return;
+    return { ok: false, status: 0, error: 'missing_bot_token_or_chat_id' };
   }
   try {
     const response = await fetch(
@@ -417,9 +421,12 @@ async function sendTelegramMessage(botToken, chatId, text, extra = {}) {
     console.log('TG send status:', response.status);
     if (!response.ok) {
       console.log('TG send failed', JSON.stringify({ status: response.status, chatId, response: responseText }));
+      return { ok: false, status: response.status, response: responseText, error: 'telegram_send_failed' };
     }
+    return { ok: true, status: response.status, response: responseText };
   } catch (error) {
     console.log('TG send exception:', error?.message || error);
+    return { ok: false, status: 0, error: error?.message || String(error) };
   }
 }
 
@@ -881,6 +888,22 @@ const PLAYER_STATE_TABLES = [
   'player_game_mastery_state',
 ];
 
+const DAILY_DIGEST_TABLES = [
+  'daily_missed_perks',
+  'telegram_daily_digest_log',
+  'daily_opportunity_state',
+];
+
+const DAILY_MISSED_TEXT_LIMITS = Object.freeze({
+  source: 80,
+  opportunityType: 80,
+  title: 140,
+  description: 400,
+  missedReason: 160,
+});
+
+const DAILY_MISSED_HISTORY_MAX_LIMIT = 100;
+
 async function ensurePlayerStateTables(db) {
   for (const tableName of PLAYER_STATE_TABLES) {
     const row = await db.prepare(
@@ -1183,6 +1206,563 @@ async function _updateContributionStreak(db, telegramId, todayKey) {
         updated_at = ?
     `).bind(telegramId, newStreak, todayKey, nowStr, newStreak, todayKey, nowStr).run().catch(() => {});
   } catch { /* non-fatal */ }
+}
+
+async function ensureDailyDigestTables(db) {
+  for (const tableName of DAILY_DIGEST_TABLES) {
+    const row = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      return {
+        _isDailyDigestUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'daily_digest_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Daily digest and missed history tables are not yet configured. Apply migration 018.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+        }),
+      };
+    }
+  }
+  return null;
+}
+
+function clampText(value, maxLen, fallback = '') {
+  const safe = String(value == null ? fallback : value).trim();
+  if (!safe) return String(fallback || '').slice(0, maxLen);
+  return safe.slice(0, maxLen);
+}
+
+function getUtcDayFromIso(isoLike) {
+  if (!isoLike) return null;
+  const ts = Date.parse(String(isoLike));
+  if (!Number.isFinite(ts)) return null;
+  return new Date(ts).toISOString().slice(0, 10);
+}
+
+function getPreviousUtcDay(utcDay) {
+  const ts = Date.parse(`${String(utcDay)}T00:00:00Z`);
+  if (!Number.isFinite(ts)) return null;
+  return new Date(ts - 86400000).toISOString().slice(0, 10);
+}
+
+function listUtcDaysBetweenExclusive(startUtcDay, endUtcDay, maxDays = 45) {
+  const startTs = Date.parse(`${String(startUtcDay)}T00:00:00Z`);
+  const endTs = Date.parse(`${String(endUtcDay)}T00:00:00Z`);
+  if (!Number.isFinite(startTs) || !Number.isFinite(endTs) || endTs <= startTs) return [];
+  const days = [];
+  let cursor = startTs + 86400000;
+  while (cursor < endTs && days.length < maxDays) {
+    days.push(new Date(cursor).toISOString().slice(0, 10));
+    cursor += 86400000;
+  }
+  return days;
+}
+
+function normaliseMissedMetadata(metadata) {
+  if (!metadata) return null;
+  if (typeof metadata === 'string') {
+    const parsed = safeJsonParse(metadata, null);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return JSON.stringify(parsed).slice(0, 4000);
+    }
+    return null;
+  }
+  if (typeof metadata === 'object' && !Array.isArray(metadata)) {
+    return JSON.stringify(metadata).slice(0, 4000);
+  }
+  return null;
+}
+
+function formatMissionIdLabel(missionId) {
+  const base = String(missionId || '').replace(/[_-]+/g, ' ').trim();
+  if (!base) return 'Mission';
+  return base.replace(/\b\w/g, (m) => m.toUpperCase()).slice(0, 60);
+}
+
+async function insertMissedPerkEntry(db, {
+  telegramId,
+  utcDay,
+  factionId,
+  source,
+  opportunityType,
+  title,
+  description,
+  missedReason,
+  statusValue,
+  metadataJson,
+  missedAt,
+}) {
+  const safeTelegramId = String(telegramId || '').trim();
+  if (!safeTelegramId) return null;
+  const safeUtcDay = clampText(utcDay || getTodayUtcDate(), 10, getTodayUtcDate());
+  const normalizedFaction = factionId ? normalizeBattleChamberFaction(factionId) : null;
+  const safeSource = clampText(source, DAILY_MISSED_TEXT_LIMITS.source, 'unknown');
+  const safeType = clampText(opportunityType, DAILY_MISSED_TEXT_LIMITS.opportunityType, 'daily_opportunity');
+  const safeTitle = clampText(title, DAILY_MISSED_TEXT_LIMITS.title, 'Missed daily opportunity');
+  const safeDescription = clampText(description, DAILY_MISSED_TEXT_LIMITS.description, '');
+  const safeReason = clampText(missedReason, DAILY_MISSED_TEXT_LIMITS.missedReason, 'not_played');
+  const safeStatusValue = Math.max(0, Math.floor(Number(statusValue) || 0));
+  const safeMetadata = normaliseMissedMetadata(metadataJson);
+  const safeMissedAt = missedAt && Number.isFinite(Date.parse(String(missedAt)))
+    ? new Date(missedAt).toISOString()
+    : new Date().toISOString();
+  const result = await db.prepare(`
+    INSERT INTO daily_missed_perks
+      (telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    safeTelegramId,
+    safeUtcDay,
+    normalizedFaction || null,
+    safeSource,
+    safeType,
+    safeTitle,
+    safeDescription || null,
+    safeReason || null,
+    safeStatusValue,
+    safeMetadata,
+    safeMissedAt,
+    new Date().toISOString(),
+  ).run().catch(() => null);
+  return result;
+}
+
+async function ensureDailyOpportunityStateForToday(db, telegramId, utcDay) {
+  const safeTelegramId = String(telegramId || '').trim();
+  const dayKey = clampText(utcDay || getTodayUtcDate(), 10, getTodayUtcDate());
+  await db.prepare(`
+    INSERT INTO daily_opportunity_state
+      (telegram_id, utc_day, daily_seed, chain_depth, activated_at, last_roll_at, created_at, updated_at)
+    VALUES (?, ?, ?, 0, ?, NULL, ?, ?)
+    ON CONFLICT(telegram_id, utc_day) DO NOTHING
+  `).bind(
+    safeTelegramId,
+    dayKey,
+    crypto.randomUUID(),
+    new Date().toISOString(),
+    new Date().toISOString(),
+    new Date().toISOString(),
+  ).run();
+  return db.prepare(`
+    SELECT telegram_id, utc_day, daily_seed, chain_depth, activated_at, last_roll_at, created_at, updated_at
+    FROM daily_opportunity_state
+    WHERE telegram_id = ? AND utc_day = ?
+    LIMIT 1
+  `).bind(safeTelegramId, dayKey).first().catch(() => null);
+}
+
+async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcDay, factionId) {
+  const prior = await db.prepare(`
+    SELECT utc_day
+    FROM daily_opportunity_state
+    WHERE telegram_id = ? AND utc_day < ?
+    ORDER BY utc_day DESC
+    LIMIT 1
+  `).bind(String(telegramId), todayUtcDay).first().catch(() => null);
+  if (!prior?.utc_day) return { created: 0, missed_days: [] };
+  const missedDays = listUtcDaysBetweenExclusive(prior.utc_day, todayUtcDay, 45);
+  let created = 0;
+  for (const missedDay of missedDays) {
+    const existing = await db.prepare(`
+      SELECT id
+      FROM daily_missed_perks
+      WHERE telegram_id = ? AND utc_day = ? AND source = 'daily_reset' AND opportunity_type = 'daily_activation_window'
+      LIMIT 1
+    `).bind(String(telegramId), missedDay).first().catch(() => null);
+    if (existing?.id) continue;
+    await insertMissedPerkEntry(db, {
+      telegramId,
+      utcDay: missedDay,
+      factionId: factionId || null,
+      source: 'daily_reset',
+      opportunityType: 'daily_activation_window',
+      title: 'Daily activation window expired',
+      description: 'The city kept moving while you were away.',
+      missedReason: 'inactive_utc_day',
+      statusValue: 1,
+      metadataJson: { trigger: 'utc_reset_backfill' },
+      missedAt: `${missedDay}T23:59:59.000Z`,
+    });
+    created += 1;
+    const factionNormalized = normalizeBattleChamberFaction(factionId);
+    if (factionNormalized) {
+      await insertMissedPerkEntry(db, {
+        telegramId,
+        utcDay: missedDay,
+        factionId: factionNormalized,
+        source: 'faction_missions',
+        opportunityType: 'daily_mission_window',
+        title: 'Faction daily mission window missed',
+        description: 'Faction daily missions reset at UTC midnight.',
+        missedReason: 'faction_mission_window_expired',
+        statusValue: 1,
+        metadataJson: { trigger: 'utc_reset_backfill' },
+        missedAt: `${missedDay}T23:59:59.000Z`,
+      });
+    } else {
+      await insertMissedPerkEntry(db, {
+        telegramId,
+        utcDay: missedDay,
+        factionId: null,
+        source: 'faction_selection',
+        opportunityType: 'faction_unselected',
+        title: 'Faction clout window missed',
+        description: 'No faction selected. Join a faction to activate faction war opportunities.',
+        missedReason: 'faction_not_selected',
+        statusValue: 1,
+        metadataJson: { trigger: 'utc_reset_backfill' },
+        missedAt: `${missedDay}T23:59:59.000Z`,
+      });
+    }
+  }
+  return { created, missed_days: missedDays };
+}
+
+async function getMissedHistorySnapshot(db, telegramId, limit = 5) {
+  const safeLimit = Math.max(1, Math.min(20, Math.floor(Number(limit) || 5)));
+  const [countRow, rows] = await Promise.all([
+    db.prepare(`
+      SELECT COUNT(*) AS total
+      FROM daily_missed_perks
+      WHERE telegram_id = ?
+    `).bind(String(telegramId)).first().catch(() => ({ total: 0 })),
+    db.prepare(`
+      SELECT id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at
+      FROM daily_missed_perks
+      WHERE telegram_id = ?
+      ORDER BY missed_at DESC, id DESC
+      LIMIT ?
+    `).bind(String(telegramId), safeLimit).all().catch(() => ({ results: [] })),
+  ]);
+  return {
+    total: Number(countRow?.total) || 0,
+    recent: (rows?.results || []).map((row) => ({
+      id: row.id,
+      utc_day: row.utc_day,
+      faction_id: row.faction_id || null,
+      source: row.source,
+      opportunity_type: row.opportunity_type,
+      title: row.title,
+      description: row.description || null,
+      missed_reason: row.missed_reason || null,
+      status_value: Number(row.status_value) || 0,
+      metadata: safeJsonParse(row.metadata_json, {}),
+      missed_at: row.missed_at || null,
+      created_at: row.created_at || null,
+    })),
+  };
+}
+
+async function getMissionDigestRows(db, telegramId, utcDay) {
+  const rows = await db.prepare(`
+    SELECT mission_id, progress, completed
+    FROM player_daily_mission_state
+    WHERE telegram_id = ? AND mission_date = ?
+    ORDER BY mission_id ASC
+    LIMIT 3
+  `).bind(String(telegramId), String(utcDay)).all().catch(() => ({ results: [] }));
+  return (rows?.results || []).map((row) => ({
+    mission_id: row.mission_id,
+    title: formatMissionIdLabel(row.mission_id),
+    progress: Math.max(0, Math.floor(Number(row.progress) || 0)),
+    target: null,
+    completed: Number(row.completed) === 1,
+  }));
+}
+
+async function getFactionDailyLog(db, telegramId, factionId, utcDay) {
+  const weekKey = getIsoWeekKey();
+  const normalizedFaction = normalizeBattleChamberFaction(factionId);
+  const [dailyRow, weeklyRow] = await Promise.all([
+    normalizedFaction
+      ? db.prepare(`
+          SELECT contribution
+          FROM player_faction_signal_state
+          WHERE telegram_id = ? AND faction_id = ? AND day_key = ?
+          LIMIT 1
+        `).bind(String(telegramId), normalizedFaction, utcDay).first().catch(() => null)
+      : Promise.resolve(null),
+    normalizedFaction
+      ? db.prepare(`
+          SELECT SUM(contribution) AS total
+          FROM player_faction_signal_state
+          WHERE telegram_id = ? AND faction_id = ? AND week_key = ?
+        `).bind(String(telegramId), normalizedFaction, weekKey).first().catch(() => null)
+      : Promise.resolve(null),
+  ]);
+
+  let weeklyStanding = null;
+  let momentum = null;
+  const bcCheck = await ensureBattleChamberTables(db);
+  if (!bcCheck && normalizedFaction) {
+    const weeklyPeriodKey = await getBattlePeriodKey('weekly', db, Date.now());
+    const rows = await db.prepare(`
+      SELECT faction_id, clout_total
+      FROM battle_chamber_faction_clout
+      WHERE period_type = 'weekly' AND period_key = ?
+      ORDER BY clout_total DESC, faction_id ASC
+    `).bind(weeklyPeriodKey).all().catch(() => ({ results: [] }));
+    const list = rows?.results || [];
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].faction_id === normalizedFaction) {
+        weeklyStanding = i + 1;
+        const lead = Number(list[0]?.clout_total) || 0;
+        const mine = Number(list[i]?.clout_total) || 0;
+        const ratio = lead > 0 ? mine / lead : 0;
+        momentum = ratio >= 0.95 ? 'Dominant' : (ratio >= 0.7 ? 'Hot' : (ratio >= 0.45 ? 'Rising' : 'Building'));
+        break;
+      }
+    }
+  }
+
+  return {
+    daily_contribution: Math.max(0, Math.floor(Number(dailyRow?.contribution) || 0)),
+    weekly_contribution: Math.max(0, Math.floor(Number(weeklyRow?.total) || 0)),
+    momentum: momentum || 'Building',
+    weekly_standing: weeklyStanding,
+  };
+}
+
+function buildDigestNextBestAction({ factionId, missions, missedTotal }) {
+  if (!normalizeBattleChamberFaction(factionId)) {
+    return 'Pick a faction to activate faction war missions and clout opportunities.';
+  }
+  const pendingMission = (missions || []).find((mission) => !mission.completed);
+  if (pendingMission) {
+    return `Complete ${pendingMission.title} in Battle Chamber to push faction clout today.`;
+  }
+  if (Number(missedTotal) > 0) {
+    return 'Open Battle Chamber and clear today’s opportunities to slow missed-history growth.';
+  }
+  return 'Log a Battle Chamber proof action and run Arcade to keep momentum up.';
+}
+
+function buildFactionChamberLink(factionId) {
+  const normalizedFaction = normalizeBattleChamberFaction(factionId);
+  if (!normalizedFaction) return `${SITE_URL}/battle-chamber/factions/index.html`;
+  return `${SITE_URL}/battle-chamber/factions/${encodeURIComponent(normalizedFaction)}.html`;
+}
+
+async function claimDailyDigestSlot(db, telegramId, utcDay) {
+  const result = await db.prepare(`
+    INSERT INTO telegram_daily_digest_log
+      (telegram_id, utc_day, sent_at, status, error_message, metadata_json, created_at, updated_at)
+    VALUES (?, ?, NULL, 'pending', NULL, ?, ?, ?)
+    ON CONFLICT(telegram_id, utc_day) DO NOTHING
+  `).bind(
+    String(telegramId),
+    String(utcDay),
+    JSON.stringify({ claim_source: 'daily_digest_run' }),
+    new Date().toISOString(),
+    new Date().toISOString(),
+  ).run().catch(() => null);
+  return Number(result?.meta?.changes || 0) === 1;
+}
+
+async function finalizeDailyDigestLog(db, telegramId, utcDay, status, payload = {}) {
+  const safeStatus = status === 'sent' ? 'sent' : 'failed';
+  const safeError = payload?.error ? String(payload.error).slice(0, 500) : null;
+  const safeMetadata = normaliseMissedMetadata(payload?.metadata || null);
+  await db.prepare(`
+    UPDATE telegram_daily_digest_log
+    SET sent_at = ?, status = ?, error_message = ?, metadata_json = ?, updated_at = ?
+    WHERE telegram_id = ? AND utc_day = ?
+  `).bind(
+    new Date().toISOString(),
+    safeStatus,
+    safeError,
+    safeMetadata,
+    new Date().toISOString(),
+    String(telegramId),
+    String(utcDay),
+  ).run().catch(() => {});
+}
+
+async function getLinkedTelegramUsersForDigest(db, targetTelegramId = null) {
+  if (targetTelegramId) {
+    const row = await db.prepare(`
+      SELECT u.telegram_id
+      FROM telegram_users u
+      WHERE u.telegram_id = ?
+        AND (
+          EXISTS (
+            SELECT 1 FROM telegram_activity_log al
+            WHERE al.telegram_id = u.telegram_id AND al.action = 'link_confirmed'
+          )
+          OR EXISTS (
+            SELECT 1 FROM blocktopia_progression bp
+            WHERE bp.telegram_id = u.telegram_id
+          )
+        )
+      LIMIT 1
+    `).bind(String(targetTelegramId)).first().catch(() => null);
+    return row?.telegram_id ? [String(row.telegram_id)] : [];
+  }
+
+  const rows = await db.prepare(`
+    SELECT u.telegram_id
+    FROM telegram_users u
+    WHERE
+      EXISTS (
+        SELECT 1 FROM telegram_activity_log al
+        WHERE al.telegram_id = u.telegram_id AND al.action = 'link_confirmed'
+      )
+      OR EXISTS (
+        SELECT 1 FROM blocktopia_progression bp
+        WHERE bp.telegram_id = u.telegram_id
+      )
+    ORDER BY u.updated_at DESC, u.telegram_id DESC
+  `).all().catch(() => ({ results: [] }));
+  return (rows?.results || []).map((row) => String(row.telegram_id)).filter(Boolean);
+}
+
+async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
+  const [faction, missions, missedSnapshot, yesterdayCountRow] = await Promise.all([
+    getUserFaction(db, telegramId),
+    getMissionDigestRows(db, telegramId, utcDay),
+    getMissedHistorySnapshot(db, telegramId, 1),
+    db.prepare(`
+      SELECT COUNT(*) AS total
+      FROM daily_missed_perks
+      WHERE telegram_id = ? AND utc_day = ?
+    `).bind(String(telegramId), getPreviousUtcDay(utcDay) || '').first().catch(() => ({ total: 0 })),
+  ]);
+
+  const factionId = normalizeBattleChamberFaction(faction?.id || faction?.name) || null;
+  const factionLabel = factionId ? (BATTLE_CHAMBER_FACTION_LABELS[factionId] || factionId) : 'Unaligned';
+  const factionLogData = await getFactionDailyLog(db, telegramId, factionId, utcDay);
+  const missedTotal = Number(missedSnapshot?.total) || 0;
+  const yesterdayMissed = Number(yesterdayCountRow?.total) || 0;
+  const recentMissed = missedSnapshot?.recent && missedSnapshot.recent.length ? missedSnapshot.recent[0] : null;
+  const nextBestAction = buildDigestNextBestAction({
+    factionId,
+    missions,
+    missedTotal,
+  });
+
+  const missionLines = missions.length
+    ? missions.map((mission, idx) => {
+        const progressLabel = mission.completed ? 'complete' : `${mission.progress} / ${mission.target || '?'}`;
+        return `${idx + 1}. <b>${escapeHtml(mission.title)}</b> — ${escapeHtml(progressLabel)} — clout/status push`;
+      }).join('\n')
+    : 'No synced mission progress yet. Open Battle Chamber to activate today’s faction missions.';
+
+  const missedLine = recentMissed
+    ? `Recent missed: ${escapeHtml(recentMissed.title)} (${escapeHtml(recentMissed.utc_day)})`
+    : 'Recent missed: none recorded yet';
+
+  const weeklyStanding = factionLogData.weekly_standing ? `#${factionLogData.weekly_standing}` : '—';
+  const message =
+    `GM, the Battle Chamber has reset. Your faction has new work.\n\n` +
+    `<b>Faction:</b> ${escapeHtml(factionLabel)}\n\n` +
+    `<b>Today’s faction daily missions</b>\n${missionLines}\n\n` +
+    `<b>Missed perks update</b>\n` +
+    `You have ${missedTotal} missed opportunities in your Battle Chamber history. The city kept moving while you were away.\n` +
+    `Yesterday missed: ${yesterdayMissed}\n` +
+    `${missedLine}\n\n` +
+    `<b>Faction daily log</b>\n` +
+    `Daily contribution: ${factionLogData.daily_contribution}\n` +
+    `Weekly contribution: ${factionLogData.weekly_contribution}\n` +
+    `Momentum: ${escapeHtml(factionLogData.momentum)}\n` +
+    `Weekly standing: ${escapeHtml(weeklyStanding)}\n` +
+    `Next best action: ${escapeHtml(nextBestAction)}`;
+
+  const sendResult = await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, telegramId, message, {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '⚔️ Open Battle Chamber', url: `${SITE_URL}/community.html` },
+          { text: '🕹️ Play Arcade', url: `${SITE_URL}/games/index.html` },
+        ],
+        [
+          { text: '🏛️ View Faction Chamber', url: buildFactionChamberLink(factionId) },
+          { text: '🔗 Refresh Telegram Link', url: `${SITE_URL}/gkniftyheads-incubator.html` },
+        ],
+      ],
+    },
+  });
+
+  return {
+    ok: !!sendResult?.ok,
+    status: sendResult?.status || null,
+    error: sendResult?.ok ? null : (sendResult?.error || sendResult?.response || 'telegram_send_failed'),
+    context: {
+      faction_id: factionId,
+      missions_count: missions.length,
+      missed_total: missedTotal,
+      yesterday_missed: yesterdayMissed,
+      next_best_action: nextBestAction,
+      daily_contribution: factionLogData.daily_contribution,
+      weekly_contribution: factionLogData.weekly_contribution,
+      momentum: factionLogData.momentum,
+      weekly_standing: factionLogData.weekly_standing,
+      utc_day: utcDay,
+    },
+  };
+}
+
+async function runTelegramDailyDigest(env, options = {}) {
+  const db = env.DB;
+  const utcDay = options.utcDay || getTodayUtcDate();
+  const targetTelegramId = options.targetTelegramId ? String(options.targetTelegramId) : null;
+  const dbCheck = await ensureDailyDigestTables(db);
+  if (dbCheck) {
+    return { ok: false, error: 'daily_digest_unavailable', reason: dbCheck.tableName };
+  }
+  const linkedIds = await getLinkedTelegramUsersForDigest(db, targetTelegramId);
+  const summary = {
+    ok: true,
+    utc_day: utcDay,
+    trigger: options.trigger || 'manual',
+    linked_users_considered: linkedIds.length,
+    sent: 0,
+    skipped_already_sent: 0,
+    skipped_unlinked: targetTelegramId && !linkedIds.length ? 1 : 0,
+    failed: 0,
+    failures: [],
+  };
+  for (const telegramId of linkedIds) {
+    const claimed = await claimDailyDigestSlot(db, telegramId, utcDay);
+    if (!claimed) {
+      summary.skipped_already_sent += 1;
+      continue;
+    }
+    const result = await sendDailyDigestMessage(db, env, telegramId, utcDay).catch((error) => ({
+      ok: false,
+      error: error?.message || String(error),
+      context: {},
+    }));
+    if (result.ok) {
+      summary.sent += 1;
+      await finalizeDailyDigestLog(db, telegramId, utcDay, 'sent', {
+        metadata: {
+          trigger: options.trigger || 'manual',
+          ...result.context,
+        },
+      });
+    } else {
+      summary.failed += 1;
+      summary.failures.push({
+        telegram_id: telegramId,
+        error: result.error || 'telegram_send_failed',
+      });
+      await finalizeDailyDigestLog(db, telegramId, utcDay, 'failed', {
+        error: result.error || 'telegram_send_failed',
+        metadata: {
+          trigger: options.trigger || 'manual',
+          status: result.status || null,
+          ...result.context,
+        },
+      });
+    }
+  }
+  return summary;
 }
 
 // ── Main fetch handler ────────────────────────────────────────────────────────
@@ -1953,6 +2533,231 @@ export default {
       } catch {
         return err('Failed to load user status', 500);
       }
+    }
+
+    // ── GET /roguelite/daily-state ──────────────────────────────────────────
+    if (path === '/roguelite/daily-state' && request.method === 'GET') {
+      const rawAuth = url.searchParams.get('telegram_auth');
+      if (!rawAuth) return err('verified telegram_auth payload required', 401);
+      let tgBody;
+      try {
+        tgBody = { telegram_auth: JSON.parse(rawAuth) };
+      } catch {
+        return err('Invalid telegram_auth payload', 400);
+      }
+      const verified = await verifyTelegramIdentityFromBody(tgBody, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const ddCheck = await ensureDailyDigestTables(env.DB);
+      if (ddCheck) return ddCheck.response;
+      try {
+        await upsertTelegramUser(env.DB, verified.user);
+        const utcDay = getTodayUtcDate();
+        const faction = await getUserFaction(env.DB, verified.telegramId).catch(() => null);
+        const factionId = normalizeBattleChamberFaction(faction?.id || faction?.name) || null;
+        const backfill = await backfillMissedPerkGapsFromLastActiveDay(env.DB, verified.telegramId, utcDay, factionId);
+        const state = await ensureDailyOpportunityStateForToday(env.DB, verified.telegramId, utcDay);
+        const playerTables = await ensurePlayerStateTables(env.DB);
+        const missionRows = playerTables
+          ? []
+          : await env.DB.prepare(`
+              SELECT mission_id, progress, completed
+              FROM player_daily_mission_state
+              WHERE telegram_id = ? AND mission_date = ?
+              ORDER BY mission_id ASC
+            `).bind(verified.telegramId, utcDay).all().catch(() => ({ results: [] }));
+        const missed = await getMissedHistorySnapshot(env.DB, verified.telegramId, 5);
+        const digestLog = await env.DB.prepare(`
+          SELECT status, sent_at, error_message
+          FROM telegram_daily_digest_log
+          WHERE telegram_id = ? AND utc_day = ?
+          LIMIT 1
+        `).bind(verified.telegramId, utcDay).first().catch(() => null);
+        return json({
+          ok: true,
+          utc_day: utcDay,
+          telegram_id: verified.telegramId,
+          faction_id: factionId,
+          today_active: {
+            utc_day: utcDay,
+            daily_seed: state?.daily_seed || null,
+            chain_depth: Math.max(0, Math.floor(Number(state?.chain_depth) || 0)),
+            activated_at: state?.activated_at || null,
+            last_roll_at: state?.last_roll_at || null,
+            claimed_items: [],
+            mission_opportunities: (missionRows?.results || []).slice(0, 3).map((row) => ({
+              mission_id: row.mission_id,
+              title: formatMissionIdLabel(row.mission_id),
+              progress: Math.max(0, Math.floor(Number(row.progress) || 0)),
+              completed: Number(row.completed) === 1,
+              contribution_preview: 'clout/status opportunity',
+            })),
+          },
+          missed_history_count: missed.total,
+          recent_missed_history: missed.recent,
+          missed_backfill: backfill,
+          digest_status: {
+            sent_today: digestLog?.status === 'sent',
+            status: digestLog?.status || null,
+            sent_at: digestLog?.sent_at || null,
+            error_message: digestLog?.error_message || null,
+          },
+        });
+      } catch (error) {
+        logApiFailure('roguelite_daily_state_failed', {
+          telegramId: verified.telegramId,
+          message: error?.message || String(error),
+        });
+        return err('Failed to load roguelite daily state', 500);
+      }
+    }
+
+    // ── GET /roguelite/missed-history ───────────────────────────────────────
+    if (path === '/roguelite/missed-history' && request.method === 'GET') {
+      const rawAuth = url.searchParams.get('telegram_auth');
+      if (!rawAuth) return err('verified telegram_auth payload required', 401);
+      let tgBody;
+      try {
+        tgBody = { telegram_auth: JSON.parse(rawAuth) };
+      } catch {
+        return err('Invalid telegram_auth payload', 400);
+      }
+      const verified = await verifyTelegramIdentityFromBody(tgBody, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const ddCheck = await ensureDailyDigestTables(env.DB);
+      if (ddCheck) return ddCheck.response;
+      const limit = Math.max(1, Math.min(DAILY_MISSED_HISTORY_MAX_LIMIT, Math.floor(Number(url.searchParams.get('limit') || 30) || 30)));
+      const utcDay = clampText(url.searchParams.get('utc_day') || '', 10, '');
+      try {
+        const query = utcDay
+          ? env.DB.prepare(`
+              SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at
+              FROM daily_missed_perks
+              WHERE telegram_id = ? AND utc_day = ?
+              ORDER BY missed_at DESC, id DESC
+              LIMIT ?
+            `).bind(verified.telegramId, utcDay, limit)
+          : env.DB.prepare(`
+              SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at
+              FROM daily_missed_perks
+              WHERE telegram_id = ?
+              ORDER BY missed_at DESC, id DESC
+              LIMIT ?
+            `).bind(verified.telegramId, limit);
+        const rows = await query.all().catch(() => ({ results: [] }));
+        const countRow = await env.DB.prepare(`
+          SELECT COUNT(*) AS total
+          FROM daily_missed_perks
+          WHERE telegram_id = ?
+        `).bind(verified.telegramId).first().catch(() => ({ total: 0 }));
+        const items = (rows?.results || []).map((row) => ({
+          id: row.id,
+          telegram_id: row.telegram_id,
+          utc_day: row.utc_day,
+          faction_id: row.faction_id || null,
+          source: row.source,
+          opportunity_type: row.opportunity_type,
+          title: row.title,
+          description: row.description || null,
+          missed_reason: row.missed_reason || null,
+          status_value: Math.max(0, Math.floor(Number(row.status_value) || 0)),
+          metadata_json: safeJsonParse(row.metadata_json, {}),
+          missed_at: row.missed_at || null,
+          created_at: row.created_at || null,
+        }));
+        return json({
+          ok: true,
+          telegram_id: verified.telegramId,
+          utc_day: utcDay || null,
+          limit,
+          total: Math.max(0, Math.floor(Number(countRow?.total) || 0)),
+          items,
+        });
+      } catch (error) {
+        logApiFailure('roguelite_missed_history_failed', {
+          telegramId: verified.telegramId,
+          message: error?.message || String(error),
+        });
+        return err('Failed to load missed history', 500);
+      }
+    }
+
+    // ── POST /roguelite/mark-missed ─────────────────────────────────────────
+    if (path === '/roguelite/mark-missed' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const ddCheck = await ensureDailyDigestTables(env.DB);
+      if (ddCheck) return ddCheck.response;
+      try {
+        await upsertTelegramUser(env.DB, verified.user);
+        const factionId = body?.faction_id ? normalizeBattleChamberFaction(body.faction_id) : null;
+        await insertMissedPerkEntry(env.DB, {
+          telegramId: verified.telegramId,
+          utcDay: getTodayUtcDate(),
+          factionId,
+          source: body?.source,
+          opportunityType: body?.opportunity_type,
+          title: body?.title,
+          description: body?.description,
+          missedReason: body?.missed_reason || 'manual_mark',
+          statusValue: body?.status_value,
+          metadataJson: body?.metadata_json,
+          missedAt: body?.missed_at,
+        });
+        return json({
+          ok: true,
+          telegram_id: verified.telegramId,
+          utc_day: getTodayUtcDate(),
+          faction_id: factionId,
+          recorded: true,
+          safety: {
+            xp_awarded: 0,
+            leaderboard_score_mutated: false,
+            faction_clout_mutated: false,
+          },
+        });
+      } catch (error) {
+        logApiFailure('roguelite_mark_missed_failed', {
+          telegramId: verified.telegramId,
+          message: error?.message || String(error),
+        });
+        return err('Failed to record missed opportunity', 500);
+      }
+    }
+
+    // ── POST /telegram/daily-digest/run ─────────────────────────────────────
+    if (path === '/telegram/daily-digest/run' && request.method === 'POST') {
+      let body = {};
+      try { body = await request.json(); } catch { body = {}; }
+      const configuredSecret = String(env.ADMIN_SECRET || '').trim();
+      const headerSecret = readAdminSecret(request);
+      let allowed = false;
+      let authMode = null;
+      if (configuredSecret && headerSecret === configuredSecret) {
+        allowed = true;
+        authMode = 'admin_secret';
+      } else if (body && body.telegram_auth) {
+        const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+        if (!verified.error && isAdminTelegramUser(verified.telegramId, env)) {
+          allowed = true;
+          authMode = 'admin_telegram_auth';
+        }
+      }
+      if (!allowed) return err('Unauthorized', 401);
+      const summary = await runTelegramDailyDigest(env, {
+        trigger: 'manual_route',
+        targetTelegramId: body?.telegram_id ? String(body.telegram_id) : null,
+        utcDay: body?.utc_day ? clampText(body.utc_day, 10, getTodayUtcDate()) : getTodayUtcDate(),
+      });
+      if (!summary?.ok) {
+        return json(summary, 503);
+      }
+      return json({
+        ok: true,
+        auth_mode: authMode,
+        ...summary,
+      });
     }
 
     // ── GET /faction/status with telegram_auth query payload ──────────────
@@ -3254,6 +4059,26 @@ export default {
 
     return err('Not found', 404);
   },
+  async scheduled(_event, env, _ctx) {
+    const summary = await runTelegramDailyDigest(env, {
+      trigger: 'scheduled_cron',
+      utcDay: getTodayUtcDate(),
+    }).catch((error) => ({
+      ok: false,
+      error: error?.message || String(error),
+    }));
+    if (!summary?.ok) {
+      logApiFailure('telegram_daily_digest_scheduled_failed', summary);
+      return;
+    }
+    logApiFailure('telegram_daily_digest_scheduled_complete', {
+      utcDay: summary.utc_day,
+      linked_users_considered: summary.linked_users_considered,
+      sent: summary.sent,
+      skipped_already_sent: summary.skipped_already_sent,
+      failed: summary.failed,
+    });
+  },
 };
 
 // ── Telegram bot command handler ──────────────────────────────────────────────
@@ -3353,7 +4178,7 @@ async function handleTelegramUpdate(update, env) {
     case 'gkleaderboard':
     case 'leaderboard':  await cmdGkLeaderboard(db, tok, chatId);                    break;
     case 'gkquests':
-    case 'quest':        await cmdGkQuests(db, tok, chatId);                         break;
+    case 'quest':        await cmdGkQuests(db, tok, chatId, telegramId);             break;
     case 'gkfaction':
     case 'faction':      await cmdGkFaction(db, tok, chatId, telegramId, argStr);    break;
     case 'gkunlink':     await cmdGkUnlink(db, tok, chatId, telegramId);             break;
@@ -3530,13 +4355,18 @@ async function cmdGkLink(db, tok, chatId, telegramId) {
 }
 
 async function cmdGkStatus(db, tok, chatId, telegramId) {
-  const [user, faction, season] = await Promise.all([
+  const [user, faction, season, missedRow] = await Promise.all([
     db.prepare(
       `SELECT username, first_name, last_name, xp, level, created_at
        FROM telegram_users WHERE telegram_id = ?`
     ).bind(telegramId).first().catch(() => null),
     getUserFaction(db, telegramId),
     getCurrentSeason(db),
+    db.prepare(
+      `SELECT COUNT(*) AS total
+       FROM daily_missed_perks
+       WHERE telegram_id = ?`
+    ).bind(telegramId).first().catch(() => ({ total: 0 })),
   ]);
 
   if (!user) {
@@ -3547,14 +4377,34 @@ async function cmdGkStatus(db, tok, chatId, telegramId) {
   const displayName = escapeHtml(getTelegramDisplayName({ ...user, id: telegramId }));
   const factionName = faction ? escapeHtml(faction.name) : 'None';
   const seasonLabel = season ? `S${season.id}` : '?';
+  const missedTotal = Math.max(0, Math.floor(Number(missedRow?.total) || 0));
+  let factionClout = 0;
+  try {
+    const normalizedFaction = normalizeBattleChamberFaction(faction?.id || faction?.name);
+    const bcCheck = await ensureBattleChamberTables(db);
+    if (!bcCheck && normalizedFaction) {
+      const weeklyPeriodKey = await getBattlePeriodKey('weekly', db, Date.now());
+      const cloutRow = await db.prepare(`
+        SELECT clout_total
+        FROM battle_chamber_member_clout
+        WHERE telegram_id = ? AND faction_id = ? AND period_type = 'weekly' AND period_key = ?
+        LIMIT 1
+      `).bind(telegramId, normalizedFaction, weeklyPeriodKey).first().catch(() => null);
+      factionClout = Math.max(0, Math.floor(Number(cloutRow?.clout_total) || 0));
+    }
+  } catch {
+    factionClout = 0;
+  }
 
   await sendTelegramMessage(tok, chatId,
     `📊 <b>Your Stats</b>\n\n` +
     `Name:         ${displayName}\n` +
     `Faction:      ${factionName}\n` +
+    `Faction clout (weekly): ${factionClout}\n` +
     `XP:           ${user.xp || 0}\n` +
     `Level:        ${user.level || 1}\n` +
     `Season:       ${seasonLabel}\n` +
+    `Missed perks: ${missedTotal}\n` +
     `Member since: ${(user.created_at || '').slice(0, 10)}`
   );
 }
@@ -3621,21 +4471,48 @@ async function cmdGkLeaderboard(db, tok, chatId) {
   );
 }
 
-async function cmdGkQuests(db, tok, chatId) {
+async function cmdGkQuests(db, tok, chatId, telegramId) {
   const now  = new Date().toISOString();
-  const rows = await db.prepare(
+  const [rows, faction, missionRows, missedRow] = await Promise.all([
+    db.prepare(
     `SELECT id, title, description, xp_reward
      FROM telegram_quests
      WHERE is_active = 1
        AND (start_date IS NULL OR start_date <= ?)
        AND (end_date IS NULL OR end_date >= ?)
      ORDER BY created_at DESC
-     LIMIT 5`
-  ).bind(now, now).all().catch(() => ({ results: [] }));
+      LIMIT 5`
+    ).bind(now, now).all().catch(() => ({ results: [] })),
+    getUserFaction(db, telegramId).catch(() => null),
+    db.prepare(`
+      SELECT mission_id, progress, completed
+      FROM player_daily_mission_state
+      WHERE telegram_id = ? AND mission_date = ?
+      ORDER BY mission_id ASC
+      LIMIT 3
+    `).bind(telegramId, getTodayUtcDate()).all().catch(() => ({ results: [] })),
+    db.prepare(`
+      SELECT COUNT(*) AS total
+      FROM daily_missed_perks
+      WHERE telegram_id = ?
+    `).bind(telegramId).first().catch(() => ({ total: 0 })),
+  ]);
 
   const quests = rows.results || [];
+  const missionDigest = (missionRows?.results || []).map((row, idx) =>
+    `${idx + 1}. ${formatMissionIdLabel(row.mission_id)} — ${(Number(row.completed) === 1) ? 'complete' : `${Math.max(0, Math.floor(Number(row.progress) || 0))} / ?`}`
+  );
+  const missedTotal = Math.max(0, Math.floor(Number(missedRow?.total) || 0));
+  const factionLabel = faction?.name ? escapeHtml(faction.name) : 'Unaligned';
   if (!quests.length) {
-    await sendTelegramMessage(tok, chatId, '🔍 No active missions right now. Check back soon!');
+    await sendTelegramMessage(tok, chatId,
+      `🔍 No active missions right now. Check back soon!\n\n` +
+      `<b>Battle Chamber daily missions</b>\n` +
+      `${missionDigest.length ? missionDigest.map((line) => escapeHtml(line)).join('\n') : 'No synced faction mission progress yet.'}\n\n` +
+      `Faction: ${factionLabel}\n` +
+      `Missed perks history count: ${missedTotal}\n` +
+      `Open Battle Chamber: ${SITE_URL}/community.html`
+    );
     return;
   }
 
@@ -3644,7 +4521,15 @@ async function cmdGkQuests(db, tok, chatId) {
     `   ${escapeHtml(q.description || '')}`
   ).join('\n\n');
 
-  await sendTelegramMessage(tok, chatId, `🗺️ <b>Active Missions</b>\n\n${lines}`);
+  await sendTelegramMessage(tok, chatId,
+    `🗺️ <b>Active Missions</b>\n\n${lines}\n\n` +
+    `<b>Battle Chamber daily missions</b>\n` +
+    `${missionDigest.length ? missionDigest.map((line) => escapeHtml(line)).join('\n') : 'No synced faction mission progress yet.'}\n\n` +
+    `Faction: ${factionLabel}\n` +
+    `Missed perks history count: ${missedTotal}\n` +
+    `Battle Chamber: ${SITE_URL}/community.html\n` +
+    `Arcade: ${SITE_URL}/games/index.html`
+  );
 }
 
 async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
@@ -3678,7 +4563,15 @@ async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
     ],
   };
 
-  const current = await getUserFaction(db, telegramId);
+  const [current, missedRow] = await Promise.all([
+    getUserFaction(db, telegramId),
+    db.prepare(`
+      SELECT COUNT(*) AS total
+      FROM daily_missed_perks
+      WHERE telegram_id = ?
+    `).bind(telegramId).first().catch(() => ({ total: 0 })),
+  ]);
+  const missedTotal = Math.max(0, Math.floor(Number(missedRow?.total) || 0));
 
   if (current) {
     await sendTelegramMessage(tok, chatId,
@@ -3686,6 +4579,7 @@ async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
       `Your faction: <b>${escapeHtml(current.name)}</b>\n\n` +
       `You are locked to this faction for the current season.\n` +
       `At season reset, your faction lock clears and you can choose a new side.\n\n` +
+      `Missed perks history count: ${missedTotal}\n\n` +
       `View faction activity and missions in the Battle Chamber:`,
       { reply_markup: replyMarkup },
     );
@@ -3696,7 +4590,8 @@ async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
       `If you're ready, choose your faction in the Battle Chamber. ` +
       `Your choice locks for the current season, then resets when the next season starts.\n\n` +
       `Faction clout only counts when you are Telegram-linked.\n` +
-      `No faction, no faction clout.`,
+      `No faction, no faction clout.\n\n` +
+      `Missed perks history count: ${missedTotal}`,
       { reply_markup: replyMarkup },
     );
   }
