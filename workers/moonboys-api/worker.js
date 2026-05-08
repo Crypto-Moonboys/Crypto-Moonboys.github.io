@@ -2328,7 +2328,10 @@ export default {
             const backfilledLock = await env.DB.prepare(
               `SELECT faction_id FROM telegram_faction_season_locks WHERE telegram_id = ? AND season_key = ?`
             ).bind(verified.telegramId, seasonKey).first();
-            const storedFaction = backfilledLock?.faction_id || existingFaction;
+            // After INSERT DO NOTHING the row must exist (either we wrote it or it already existed).
+            // If re-read returns null something is seriously wrong with the DB — surface as 500.
+            if (!backfilledLock?.faction_id) throw new Error('season_lock_reread_failed');
+            const storedFaction = backfilledLock.faction_id;
 
             if (storedFaction === requestedFaction) {
               // Idempotent — same faction as what is stored
@@ -3662,7 +3665,7 @@ async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
   const replyMarkup = {
     inline_keyboard: [
       [
-        { text: '⚔️ Open Battle Chamber', web_app: { url: `${SITE_URL}/community.html#battle-join-faction` } },
+        { text: '⚔️ Open Battle Chamber', web_app: { url: battleChamberUrl } },
       ],
       [
         { text: '🌐 Open in Browser', url: battleChamberUrl },
