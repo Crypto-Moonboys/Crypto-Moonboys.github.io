@@ -379,10 +379,10 @@
 
   function wtfStatus(state) {
     if (!state) return 'waiting';
-    if (state.completed_today) return 'completed';
-    if (state.checked_in) return 'checked in';
+    if (state.active_event && state.checked_in) return 'checked in';
     if (state.active_event) return 'active';
     if (state.next_event || (state.upcoming_events && state.upcoming_events.length)) return 'upcoming';
+    if (state.completed_today) return 'completed';
     if (state.missed_today) return 'missed / expired';
     return 'waiting';
   }
@@ -414,7 +414,8 @@
 
   function wtfRequirementText(state, active) {
     var task = (state && state.current_task) || active || {};
-    return task.requirement || task.objective || task.description || 'Complete objective in Arcade / Missions first.';
+    if (typeof task === 'string') return task;
+    return task.requirement || task.objective || task.description || task.required_action || 'Complete objective in Arcade / Missions first.';
   }
 
   function eventTitle(event, fallback) {
@@ -433,6 +434,7 @@
     var next = state.next_event || (state.upcoming_events && state.upcoming_events[0]) || null;
     var status = wtfStatus(state);
     var completed = Number(state.completed_today || 0) > 0;
+    var completedOnly = completed && !active && !next;
     var eventId = active && (active.id || active.event_id || active.key) ? (active.id || active.event_id || active.key) : '';
     var focus = active || next || (state.completed_events && state.completed_events[0]) || (state.expired_events && state.expired_events[0]) || null;
     var title = eventTitle(focus, 'No Daily WTF signals generated for today');
@@ -440,7 +442,7 @@
     var subcopy = '';
     var buttons = '';
 
-    if (completed && !active) {
+    if (completedOnly) {
       subcopy = 'Completed tick locked for today. XP burst preview and chain options show when the Worker reports them.';
     } else if (active) {
       subcopy = state.checked_in ? 'Checked in — complete the objective before the signal expires.' : 'Live now — check in before the timer ends.';
@@ -481,7 +483,7 @@
       : '';
     return '<div class="las-signal-card" data-wtf-state="' + esc(status) + '">' +
       '<span class="las-pill ' + pillClass + '">' + esc(status.toUpperCase()) + '</span>' +
-      '<strong>' + (completed && !active ? '✓ ' : '') + esc(title) + '</strong>' +
+      '<strong>' + (completedOnly ? '✓ ' : '') + esc(title) + '</strong>' +
       '<p>' + esc(subcopy) + '</p>' +
       '<div class="las-task-copy">Objective: ' + esc(objective) + '</div>' +
       '<div class="las-countdown" data-wtf-countdown>' + countdownText(state.countdown_seconds) + '</div>' +
@@ -726,7 +728,6 @@
     if (!_singleton.opsActionsBound) {
       _singleton.opsActionsBound = true;
       bindOpsActions();
-      _singleton.opsCountdownTimer = setInterval(updateWtfCountdownUI, 1000);
     }
   }
 

@@ -41,6 +41,14 @@ function hasCfBypassedModuleScript(html, src) {
   const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`<script[^>]+data-cfasync=["']false["'][^>]+type=["']module["'][^>]+src=["']${escaped}["']`).test(html);
 }
+
+function functionBlock(src, name) {
+  const start = src.indexOf(`function ${name}`);
+  if (start === -1) return '';
+  const next = src.indexOf('\nfunction ', start + 1);
+  return src.slice(start, next === -1 ? src.length : next);
+}
+
 function routeBlock(src, route) {
   const start = src.indexOf(`path === '${route}'`);
   if (start === -1) return '';
@@ -129,6 +137,20 @@ check(las.includes('Check In') && las.includes('data-wtf-checkin'), 'active WTF 
 check(las.includes('No Daily WTF signals generated for today') && las.includes('Play Arcade'), 'no-event WTF fallback remains actionable');
 check(las.includes('FACTION_MISSION_FALLBACKS') && las.includes('fallbackDailyMissions') && las.includes('gp_chaos_3'), 'faction mission definitions render when live progress data is absent');
 check(las.includes('Link Telegram') && las.includes('Telegram sync inactive'), 'unlinked users see a Link Telegram CTA');
+
+const wtfStatusBlock = functionBlock(las, 'wtfStatus');
+const wtfHtmlBlock = functionBlock(las, 'wtfHTML');
+const updateGlobalBlock = functionBlock(wtf, 'updateGlobal');
+const setTransientBlock = functionBlock(wtf, 'setTransientState');
+const tickerBlock = functionBlock(wtf, 'startCountdownTicker');
+check(wtfStatusBlock.indexOf('state.next_event') < wtfStatusBlock.indexOf('state.completed_today'), 'upcoming/next WTF signal has render priority over completed_today');
+check(wtfHtmlBlock.includes('completedOnly = completed && !active && !next') && wtfHtmlBlock.includes("completedOnly ? '✓ ' : ''"), 'completed tick only appears when no active or next signal exists');
+check(updateGlobalBlock.includes("const isLoading = transientStatus === 'loading'") && updateGlobalBlock.includes('const active = isLoading ? null') && updateGlobalBlock.includes('let next = isLoading ? null'), 'loading state does not populate active or next_event');
+check(updateGlobalBlock.includes('const computedCountdown = isLoading ? 0') && updateGlobalBlock.includes('const hasServerCountdown = !isLoading'), 'loading state does not derive or tick a countdown');
+check(setTransientBlock.includes("updateGlobal({ ok: false") && setTransientBlock.includes("if (status !== 'loading') dispatch('moonboys:wtf-events-ready'"), 'loading state does not dispatch the final ready event');
+check(wtf.includes("dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);") && wtf.includes('updateGlobal(fallback)'), 'final Worker/fallback WTF state still dispatches ready');
+check(wtf.includes('triggerBoundaryRefresh') && tickerBlock.includes('state.countdown_seconds === 0') && tickerBlock.includes('triggerBoundaryRefresh()'), 'countdown boundary triggers immediate refresh so upcoming cannot stay at 00:00:00');
+check(las.includes("window.addEventListener('moonboys:wtf-countdown-tick', updateWtfCountdownUI)") && !las.includes('setInterval(updateWtfCountdownUI'), 'right rail uses one countdown update mechanism');
 
 console.log('\n[6] Missed perks');
 check(las.includes('missed_history_count') && las.includes('missed_today'), 'missed count and daily missed summary can render');

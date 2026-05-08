@@ -1,6 +1,7 @@
 const POLL_MS = 60 * 1000;
 let pollTimer = null;
 let lastCountdownTick = null;
+let boundaryRefreshInFlight = false;
 
 function getApiBase() {
   const cfg = (typeof window !== 'undefined') ? window.MOONBOYS_API : null;
@@ -113,24 +114,26 @@ function secondsUntil(value, nowMs) {
 
 function updateGlobal(payload, extra) {
   const safe = payload && typeof payload === 'object' ? payload : {};
-  const active = normalizeEvent(safe.active_event);
-  const upcoming = Array.isArray(safe.upcoming_events) ? safe.upcoming_events.map(normalizeEvent).filter(Boolean) : [];
-  let next = normalizeEvent(safe.next_event) || upcoming[0] || null;
-  const completedEvents = Array.isArray(safe.completed_events) ? safe.completed_events.map(normalizeEvent).filter(Boolean) : [];
-  const expiredEvents = Array.isArray(safe.expired_events) ? safe.expired_events.map(normalizeEvent).filter(Boolean) : [];
-  if (!active && !next && safe.ok) {
+  const transientStatus = extra && extra.status ? String(extra.status) : '';
+  const isLoading = transientStatus === 'loading';
+  const active = isLoading ? null : normalizeEvent(safe.active_event);
+  const upcoming = isLoading ? [] : Array.isArray(safe.upcoming_events) ? safe.upcoming_events.map(normalizeEvent).filter(Boolean) : [];
+  let next = isLoading ? null : normalizeEvent(safe.next_event) || upcoming[0] || null;
+  const completedEvents = isLoading ? [] : Array.isArray(safe.completed_events) ? safe.completed_events.map(normalizeEvent).filter(Boolean) : [];
+  const expiredEvents = isLoading ? [] : Array.isArray(safe.expired_events) ? safe.expired_events.map(normalizeEvent).filter(Boolean) : [];
+  if (!isLoading && !active && !next && safe.ok) {
     next = normalizeEvent(getNextFallbackEventFromNow());
     if (next) upcoming.push(next);
   }
   const nowMs = Date.now();
-  const computedCountdown = active ? secondsUntil(active.end_at, nowMs) : next ? secondsUntil(next.start_at, nowMs) : 0;
+  const computedCountdown = isLoading ? 0 : active ? secondsUntil(active.end_at, nowMs) : next ? secondsUntil(next.start_at, nowMs) : 0;
   const count = Number(safe.countdown_seconds);
-  const hasServerCountdown = Number.isFinite(count) && count > 0;
+  const hasServerCountdown = !isLoading && Number.isFinite(count) && count > 0;
   const noEvents = !active && !next && upcoming.length === 0 && !completedEvents.length && !expiredEvents.length;
   window.MOONBOYS_WTF_EVENTS = {
     ok: !!safe.ok,
     source: safe.source || safe.auth_mode || 'wtf_events_today',
-    status: extra && extra.status ? extra.status : safe.ok === false ? 'error' : noEvents ? 'empty' : active ? 'active' : next ? 'upcoming' : safe.missed_today ? 'missed' : 'ready',
+    status: transientStatus || (safe.ok === false ? 'error' : noEvents ? 'empty' : active ? 'active' : next ? 'upcoming' : safe.missed_today ? 'missed' : 'ready'),
     error: safe.error || null,
     diagnostic: safe.diagnostic || '',
     utc_day: safe.utc_day || null,
@@ -153,8 +156,8 @@ function updateGlobal(payload, extra) {
 }
 
 function setTransientState(status, message) {
-  updateGlobal({ ok: status !== 'error', error: status === 'error' ? message : null, diagnostic: message || '' }, { status });
-  dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);
+  updateGlobal({ ok: false, error: status === 'error' ? message : null, diagnostic: message || '' }, { status });
+  if (status !== 'loading') dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);
 }
 
 async function refresh() {
@@ -176,13 +179,21 @@ async function refresh() {
   dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);
 }
 
+function triggerBoundaryRefresh() {
+  if (boundaryRefreshInFlight) return;
+  boundaryRefreshInFlight = true;
+  Promise.resolve(refresh()).finally(() => { boundaryRefreshInFlight = false; });
+}
+
 function startCountdownTicker() {
   if (lastCountdownTick) return;
   lastCountdownTick = setInterval(() => {
     const state = window.MOONBOYS_WTF_EVENTS;
-    if (!state || !state.countdown_seconds) return;
-    state.countdown_seconds = Math.max(0, Number(state.countdown_seconds) - 1);
+    if (!state || state.status === 'loading' || !state.countdown_seconds) return;
+    const before = Number(state.countdown_seconds) || 0;
+    state.countdown_seconds = Math.max(0, before - 1);
     dispatch('moonboys:wtf-countdown-tick', state);
+    if (before > 0 && state.countdown_seconds === 0) triggerBoundaryRefresh();
   }, 1000);
 }
 
