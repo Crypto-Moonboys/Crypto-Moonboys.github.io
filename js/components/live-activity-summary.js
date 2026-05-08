@@ -1,118 +1,9 @@
-/**
- * Crypto Moonboys — Live Activity Summary
- * =========================================
- * Shared frontend helper showing current player activity state.
- *
- * Shows:
- *   - Core API: online / unavailable
- *     (never shows "not connected" when BASE_URL is set — only "unavailable" if a
- *      network call fails, or "not configured" when BASE_URL is genuinely absent)
- *   - Identity / sync state (from MOONBOYS_IDENTITY)
- *   - Current faction state (from MOONBOYS_FACTION)
- *   - Clear fallback text when individual features are unavailable
- *
- * XP labels enforced:
- *   Score         = leaderboard ranking
- *   Arcade XP     = multiplayer gate progress (Block Topia entry)
- *   Block Topia XP = in-game progression only
- *   Faction       = faction alignment only
- *
- * Usage — auto-mount:
- *   <div data-las-panel></div>
- *   (script auto-mounts all elements with that attribute on DOMContentLoaded)
- *
- * Usage — manual:
- *   window.MOONBOYS_LIVE_ACTIVITY.mount(elementOrId)
- *   window.MOONBOYS_LIVE_ACTIVITY.refresh()
- *
- * Depends on (all optional — graceful fallback if absent):
- *   window.MOONBOYS_API          (api-config.js)
- *   window.MOONBOYS_IDENTITY     (identity-gate.js)
- *   window.MOONBOYS_FACTION      (faction-alignment.js)
- *   window.MOONBOYS_STATUS_PANEL (connection-status-panel.js)
- */
 (function () {
   'use strict';
 
   var STYLE_ID = 'las-styles';
-  var LOG_MAX = 6; // max recent activity entries to show
-
-  // Unsubscribe token for MOONBOYS_STATE subscriber (avoids leak if re-bootstrapped)
   var _stateUnsub = null;
-
-  // ── True singleton: survive script re-execution (dynamic injection / re-mount) ──
-  // All shared mutable state lives on window.__MOONBOYS_LAS_SINGLETON so that a
-  // second execution of this IIFE reuses the existing log array and listener
-  // registration flag rather than resetting them.
-  if (!window.__MOONBOYS_LAS_SINGLETON) {
-    window.__MOONBOYS_LAS_SINGLETON = { activityLog: [], addToLog: null, listenersRegistered: false };
-  }
-  var _singleton = window.__MOONBOYS_LAS_SINGLETON;
-
-  // ── In-memory activity log ────────────────────────────────────────────────
-  // Always points to the same array held by the singleton, even after re-execution.
-  var _activityLog = _singleton.activityLog;
-
-  function buildLogRowHTML(e) {
-    var icon = e.type === 'xp' ? '⚡' : e.type === 'faction' ? '🏴' : e.type === 'sync' ? '🔗' : '📡';
-    return '<div class="las-event-row">' +
-      '<span class="las-event-time">' + esc(e.time) + '</span>' +
-      '<span class="las-event-icon" aria-hidden="true">' + icon + '</span>' +
-      '<span class="las-event-text">' + esc(e.text) + '</span>' +
-      '</div>';
-  }
-
-  function addToLog(entry) {
-    _activityLog.unshift(entry);
-    if (_activityLog.length > LOG_MAX) _activityLog.length = LOG_MAX;
-
-    // Bus is mandatory: global-event-bus.js is listed before this file on
-    // every page (see load order in HTML).  Guard is kept as a belt-and-suspenders
-    // safeguard in case the load order ever changes.
-    if (!window.MOONBOYS_EVENT_BUS || typeof window.MOONBOYS_EVENT_BUS.emit !== 'function') {
-      console.warn('[live-activity-summary] MOONBOYS_EVENT_BUS unavailable — activity:event not emitted.');
-      return;
-    }
-    window.MOONBOYS_EVENT_BUS.emit('activity:event', entry);
-
-    // ── Performance: append directly to existing log containers ────────────
-    // Avoids a full async panel remount on every event.  Only fall back to
-    // full remount when the log container doesn't exist yet (first event).
-    var logContainers = document.querySelectorAll('[data-las-panel] [data-las-log]');
-    if (logContainers.length > 0) {
-      var rowHTML = buildLogRowHTML(entry);
-      logContainers.forEach(function (logEl) {
-        var tmp = document.createElement('div');
-        tmp.innerHTML = rowHTML;
-        logEl.insertBefore(tmp.firstChild, logEl.firstChild);
-        // Trim rows beyond LOG_MAX.
-        while (logEl.children.length > LOG_MAX) {
-          logEl.removeChild(logEl.lastChild);
-        }
-      });
-    } else {
-      // Panels exist but haven't rendered the log container yet; do one full mount.
-      document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
-    }
-  }
-  // Store addToLog on the singleton so a re-executing IIFE reuses the same function
-  // reference (and the same _activityLog closure) rather than creating a new one.
-  if (!_singleton.addToLog) { _singleton.addToLog = addToLog; }
-
-  function pad2(n) {
-    return n < 10 ? '0' + n : String(n);
-  }
-
-  function formatTime() {
-    var d = new Date();
-    return pad2(d.getHours()) + ':' + pad2(d.getMinutes());
-  }
-
-  function buildLogEntry(type, text) {
-    return { type: type, text: text, time: formatTime(), ts: Date.now() };
-  }
-
-  // ── Helpers ─────────────────────────────────────────────────────────────
+  var _countdownTimer = null;
 
   function esc(s) {
     return String(s == null ? '' : s)
@@ -122,339 +13,307 @@
       .replace(/"/g, '&quot;');
   }
 
-  function getApiBase() {
-    var cfg = window.MOONBOYS_API || {};
-    return cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
-  }
+  function getIdentity() { return window.MOONBOYS_IDENTITY || null; }
 
   function isLinked() {
-    var gate = window.MOONBOYS_IDENTITY;
+    var gate = getIdentity();
     return !!(gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked());
   }
 
   function getFactionStatus() {
     var fa = window.MOONBOYS_FACTION;
-    if (!fa) return null;
+    if (!fa || typeof fa.getCachedStatus !== 'function') return null;
     return fa.getCachedStatus() || { faction: 'unaligned', faction_xp: 0 };
   }
 
-  // ── API online check ─────────────────────────────────────────────────────
-  // Delegates to MOONBOYS_STATUS_PANEL.checkApiOnline() (connection-status-panel.js)
-  // so there is ONE source of truth and no duplicate HTTP polling.
-  // The local fallback runs only when CSP has not loaded on this page.
-
-  var _apiOnlineCache = null;
-  var _apiOnlineInflight = null;
-
-  function checkApiOnline() {
-    // Preferred: reuse the shared cache from MOONBOYS_STATUS_PANEL.
-    var csp = window.MOONBOYS_STATUS_PANEL;
-    if (csp && typeof csp.checkApiOnline === 'function') {
-      return csp.checkApiOnline();
-    }
-    // Local fallback for pages where CSP is not loaded.
-    if (_apiOnlineCache !== null) return Promise.resolve(_apiOnlineCache);
-    if (_apiOnlineInflight !== null) return _apiOnlineInflight;
-
-    _apiOnlineInflight = (async function () {
-      var apiBase = getApiBase();
-      if (!apiBase) {
-        _apiOnlineCache = false;
-        _apiOnlineInflight = null;
-        return false;
-      }
-      var ac = new AbortController();
-      var timer = setTimeout(function () { ac.abort(); }, 4000);
-      var online = false;
-      try {
-        // GET /health — the worker only implements GET; HEAD falls through to 404.
-        var res = await fetch(apiBase + '/health', { method: 'GET', signal: ac.signal });
-        online = res.status < 500;
-      } catch (_) {
-        online = false;
-      } finally {
-        clearTimeout(timer);
-      }
-      _apiOnlineCache = online;
-      _apiOnlineInflight = null;
-      return online;
-    }());
-
-    return _apiOnlineInflight;
+  function getFactionKey() {
+    var status = getFactionStatus();
+    if (!status || !status.faction || status.faction === 'unaligned') return null;
+    return String(status.faction).toLowerCase();
   }
 
-  // ── Sync / identity summary ───────────────────────────────────────────────
-  // Four distinct cases — never collapsed:
-  //   1. Identity layer missing  → "Identity system unavailable"
-  //   2. Identity present, not linked → "Telegram not linked — run /gklink"
-  //   3. Linked, not yet synced  → "Sync in progress"
-  //   4. Linked + valid          → "Sync ready"
-
-  function syncSummary() {
-    var gate = window.MOONBOYS_IDENTITY;
-
-    // Case 1: identity layer not loaded
-    if (!gate || typeof gate.getSyncState !== 'function') {
-      return { text: 'Identity system unavailable', good: false };
-    }
-
-    var state = gate.getSyncState();
-
-    // Case 2: identity present but Telegram not linked
-    if (!state || !state.linked) {
-      return { text: 'Telegram not linked — run /gklink', good: false };
-    }
-
-    // Case 4: linked and fully synced
-    if (state.good) {
-      return { text: 'Sync ready', good: true };
-    }
-
-    // Case 3: linked but auth not yet resolved (pending, expired, etc.)
-    return { text: 'Sync in progress', good: false };
-  }
-
-  // ── Faction summary ──────────────────────────────────────────────────────
-
-  function factionSummary(status) {
-    if (!status || !status.faction || status.faction === 'unaligned') {
-      return 'No faction selected';
-    }
+  function factionLabel() {
+    var status = getFactionStatus();
+    if (!status || !status.faction || status.faction === 'unaligned') return 'No faction selected';
     var fa = window.MOONBOYS_FACTION;
     var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(status.faction) : null;
     return meta ? (meta.icon + ' ' + meta.label) : String(status.faction);
   }
 
-  // ── Inline DOM patchers ──────────────────────────────────────────────────
-  // These are the ONLY way UI rows update after initial mount.
-  // No remount, no refresh() call — only targeted textContent / className patches.
-
-  /**
-   * Patches all rendered faction rows across every mounted LAS panel.
-   * Called from the MOONBOYS_STATE subscriber whenever state changes.
-   * @param {string|null|undefined} faction - faction key (e.g. 'bulls', 'bears')
-   *   or falsy to fall back to MOONBOYS_FACTION.getCachedStatus().
-   */
-  function updateFactionUI(faction) {
-    var factionText = factionSummary(faction ? { faction: faction } : getFactionStatus());
-    document.querySelectorAll('[data-las-panel] [data-las-faction]').forEach(function (el) {
-      el.textContent = factionText;
-    });
+  function formatCountdown(seconds) {
+    var total = Math.max(0, Math.floor(Number(seconds) || 0));
+    var h = Math.floor(total / 3600);
+    var m = Math.floor((total % 3600) / 60);
+    var s = total % 60;
+    return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
   }
 
-  /**
-   * Patches all rendered sync rows across every mounted LAS panel.
-   *
-   * @param {Object|null|undefined} syncPayload - state.sync from MOONBOYS_STATE.
-   *   When non-null, its `.state` string drives the display text so the row
-   *   reflects the most-recent bus event without any additional identity reads.
-   *   When absent (initial render before the first sync:state event fires) it
-   *   falls back to syncSummary() which reads from MOONBOYS_IDENTITY.
-   *
-   * Sole call site: MOONBOYS_STATE.subscribe() — state.sync is populated by the
-   * bus.on('sync:state') bridge in moonboys-state.js.
-   */
-  function updateSyncUI(syncPayload) {
-    var sync;
-    if (syncPayload && typeof syncPayload.state === 'string') {
-      var s = syncPayload.state;
-      var good = s === 'good' || s === 'xp_awarded' || s === 'accepted_no_xp';
-      var text = good ? 'Sync ready'
-        : s === 'bad' ? 'Sync issue detected'
-        : 'Sync in progress';
-      sync = { text: text, good: good };
-    } else {
-      sync = syncSummary();
+  function missionProgressText(mission, missionData) {
+    var progress = 0;
+    if (missionData && missionData.progress && mission && mission.id && missionData.progress[mission.id]) {
+      progress = Number(missionData.progress[mission.id]) || 0;
+    } else if (mission && typeof mission.progress === 'number') {
+      progress = Number(mission.progress) || 0;
     }
-    document.querySelectorAll('[data-las-panel] [data-las-sync]').forEach(function (el) {
-      el.textContent = sync.text;
-      el.className = 'las-val ' + (sync.good ? 'las-val--good' : 'las-val--warn');
-    });
+    var target = Math.max(1, Math.floor(Number(mission && mission.target) || 1));
+    var completed = !!(mission && (mission.complete || (Array.isArray(missionData && missionData.completed) && missionData.completed.indexOf(mission.id) !== -1)));
+    if (completed) return { text: 'Completed', ratio: 1, completed: true };
+    var safeProgress = Math.max(0, Math.min(target, Math.floor(progress)));
+    return { text: safeProgress + ' / ' + target, ratio: safeProgress / target, completed: false };
   }
 
-  // ── Build HTML ────────────────────────────────────────────────────────────
+  function buildMissionsHTML(factionKey) {
+    var missionRoot = window.MOONBOYS_MISSION_DATA || {};
+    var missionData = factionKey && missionRoot[factionKey] ? missionRoot[factionKey] : null;
+    var daily = missionData && Array.isArray(missionData.daily) ? missionData.daily.slice(0, 3) : [];
 
-  function buildLogHTML() {
-    if (!_activityLog.length) return '';
-    var rows = _activityLog.map(buildLogRowHTML).join('');
-    return '<div class="las-event-log" aria-label="Recent activity" data-las-log>' + rows + '</div>';
+    if (!daily.length) {
+      return '<div class="las-empty">No mission signal yet. Play an arcade run or wait for mission sync.</div>';
+    }
+
+    return '<div class="las-mission-list">' + daily.map(function (mission) {
+      var progress = missionProgressText(mission, missionData);
+      var reward = mission && mission.reward && mission.reward.warContrib != null
+        ? ('+' + Math.max(0, Number(mission.reward.warContrib) || 0) + ' contribution')
+        : 'Contribution preview unavailable';
+      return '' +
+        '<div class="las-mission-card' + (progress.completed ? ' las-mission-card--done' : '') + '">' +
+          '<div class="las-mission-head">' +
+            '<span class="las-check">' + (progress.completed ? '✅' : '⬜') + '</span>' +
+            '<strong>' + esc(mission && (mission.label || mission.title || mission.id) || 'Mission') + '</strong>' +
+          '</div>' +
+          '<div class="las-mission-desc">' + esc(mission && mission.description || 'Objective syncing...') + '</div>' +
+          '<div class="las-mission-progress"><span>' + esc(progress.text) + '</span><span>' + esc(reward) + '</span></div>' +
+          '<div class="las-bar"><span style="width:' + Math.round(progress.ratio * 100) + '%"></span></div>' +
+        '</div>';
+    }).join('') + '</div>';
+  }
+
+  function deriveWtfStatus(state) {
+    if (!state) return 'upcoming';
+    var completed = Math.max(0, Number(state.completed_today) || 0) > 0;
+    if (completed) return 'completed';
+    if (state.active_event && state.checked_in) return 'checked in';
+    if (state.active_event) return 'active';
+    if (Math.max(0, Number(state.missed_today) || 0) > 0) return 'missed';
+    return 'upcoming';
+  }
+
+  function buildWtfEventHTML(linked) {
+    var state = window.MOONBOYS_WTF_EVENTS || null;
+    if (!state) {
+      return '<div class="las-empty">WTF signal feed not loaded yet. Waiting for /wtf/events/today.</div>';
+    }
+
+    var active = state.active_event || null;
+    var upcoming = state.next_event || (Array.isArray(state.upcoming_events) && state.upcoming_events.length ? state.upcoming_events[0] : null);
+    var status = deriveWtfStatus(state);
+    var canCheckIn = !!(linked && active && !state.checked_in && window.MOONBOYS_DAILY_WTF && typeof window.MOONBOYS_DAILY_WTF.checkInWtfEvent === 'function');
+    var task = state.current_task || null;
+    var canComplete = !!(linked && active && state.checked_in && Math.max(0, Number(state.completed_today) || 0) === 0 && task && task.completion_source && window.MOONBOYS_DAILY_WTF && typeof window.MOONBOYS_DAILY_WTF.completeWtfEvent === 'function');
+    var chain = Array.isArray(state.chain_options) ? state.chain_options.slice(0, 3) : [];
+
+    var ctaHtml = '';
+    if (canCheckIn) {
+      ctaHtml += '<button type="button" class="las-btn" data-las-action="checkin" data-event-id="' + esc(active.id || active.event_id || '') + '">Check In</button>';
+    }
+    if (canComplete) {
+      ctaHtml += '<button type="button" class="las-btn las-btn--secondary" data-las-action="complete" data-event-id="' + esc(active.id || active.event_id || '') + '" data-completion-source="' + esc(task.completion_source) + '" data-source-id="' + esc(task.source_id || '') + '">Complete</button>';
+    }
+
+    return '' +
+      '<div class="las-signal-grid">' +
+        '<div class="las-signal-row"><span class="las-k">Status</span><span class="las-pill las-pill--' + esc(status.replace(/\s+/g, '-')) + '">' + esc(status.toUpperCase()) + '</span></div>' +
+        '<div class="las-signal-row"><span class="las-k">Active event</span><span class="las-v">' + esc(active && (active.title || active.event_title) || 'No active event') + '</span></div>' +
+        '<div class="las-signal-row"><span class="las-k">Next signal</span><span class="las-v">' + esc(upcoming && (upcoming.title || upcoming.event_title) || 'No upcoming event yet') + '</span></div>' +
+        '<div class="las-signal-row"><span class="las-k">Countdown</span><span class="las-v" data-las-countdown>' + esc(formatCountdown(state.countdown_seconds)) + '</span></div>' +
+      '</div>' +
+      (ctaHtml ? '<div class="las-cta-row">' + ctaHtml + '</div>' : '') +
+      (chain.length
+        ? '<div class="las-chain"><span class="las-tag">NEXT SIGNAL</span>' + chain.map(function (opt) {
+            return '<span class="las-chain-item">' + esc(opt.title || opt.label || opt.option_id || 'Option') + '</span>';
+          }).join('') + '</div>'
+        : '');
+  }
+
+  function buildMissedHTML() {
+    var state = window.MOONBOYS_WTF_EVENTS || {};
+    var history = Array.isArray(window.MOONBOYS_ROGUELITE_MISSED_HISTORY) ? window.MOONBOYS_ROGUELITE_MISSED_HISTORY : [];
+    var missedToday = Math.max(0, Number(state.missed_today) || 0);
+    var total = Math.max(Math.max(0, Number(state.missed_history_count) || 0), history.length);
+    var latest = history.length ? String(history[0].title || history[0].opportunity_type || 'Missed city signal') : 'No missed entries synced yet.';
+
+    return '' +
+      '<div class="las-missed-box">' +
+        '<div class="las-missed-row"><span class="las-tag las-tag--missed">MISSED</span><strong>Total history: ' + total + '</strong></div>' +
+        '<div class="las-missed-row">Today: ' + missedToday + '</div>' +
+        '<div class="las-missed-row">Latest: ' + esc(latest) + '</div>' +
+        '<div class="las-missed-copy">The city kept moving while you were away.</div>' +
+      '</div>' +
+      '<div class="las-reset-copy">Daily options reset at UTC midnight.</div>' +
+      '<div class="las-reset-copy">Missed history does not reset.</div>';
+  }
+
+  function buildLinkedNoFactionHTML() {
+    return '' +
+      '<div class="las-panel" role="status" aria-label="Faction daily ops inactive">' +
+        '<div class="las-title-row"><span class="las-dot"></span><strong>FACTION DAILY OPS</strong><span class="las-live">LIVE</span></div>' +
+        '<div class="las-empty">Join a faction to unlock mission ops and faction signal routing.</div>' +
+        '<p><a class="las-link-btn" href="/community.html#battle-join-faction">Join Faction</a></p>' +
+      '</div>';
+  }
+
+  function buildUnlinkedHTML() {
+    return '' +
+      '<div class="las-panel las-panel--locked" role="status" aria-label="Faction daily ops inactive">' +
+        '<div class="las-title-row"><span class="las-dot"></span><strong>FACTION DAILY OPS</strong><span class="las-live">OFFLINE</span></div>' +
+        '<div class="las-empty">Telegram sync required to activate daily ops, WTF check-ins, and missed signal tracking.</div>' +
+        '<p><a class="las-link-btn" href="/gkniftyheads-incubator.html">Link Telegram</a></p>' +
+      '</div>';
   }
 
   async function buildHTML() {
-    var linked = isLinked();
-    var faction = getFactionStatus();
-    var apiBase = getApiBase();
-    var sync = syncSummary();
-    var factionText = factionSummary(faction);
+    if (!isLinked()) return buildUnlinkedHTML();
 
-    // Determine API status label.
-    // "not configured" when BASE_URL is absent; "unavailable" only when a
-    // live request fails — never "not connected".
-    var apiStatusText;
-    var apiStatusClass;
-    if (!apiBase) {
-      apiStatusText = 'Core API not configured';
-      apiStatusClass = 'las-val--warn';
-    } else {
-      var online = await checkApiOnline();
-      if (online) {
-        apiStatusText = 'Core API online';
-        apiStatusClass = 'las-val--good';
-      } else {
-        apiStatusText = 'Core API unavailable';
-        apiStatusClass = 'las-val--bad';
-      }
-    }
+    var factionKey = getFactionKey();
+    if (!factionKey) return buildLinkedNoFactionHTML();
 
-    return (
-      '<div class="las-panel" role="status" aria-label="Live activity summary">' +
-        '<div class="las-row">' +
-          '<span class="las-label">Core API</span>' +
-          '<span class="las-val ' + apiStatusClass + '">' + esc(apiStatusText) + '</span>' +
+    return '' +
+      '<div class="las-panel" role="status" aria-label="Faction daily ops">' +
+        '<div class="las-title-row"><span class="las-dot"></span><strong>FACTION DAILY OPS</strong><span class="las-live">LIVE</span></div>' +
+        '<div class="las-section">' +
+          '<div class="las-section-head"><span>Today\'s faction missions</span><span class="las-faction-label">' + esc(factionLabel()) + '</span></div>' +
+          buildMissionsHTML(factionKey) +
         '</div>' +
-        '<div class="las-row">' +
-          '<span class="las-label">Sync</span>' +
-          '<span class="las-val ' + (sync.good ? 'las-val--good' : 'las-val--warn') + '" data-las-sync>' +
-            esc(sync.text) +
-          '</span>' +
+        '<div class="las-section">' +
+          '<div class="las-section-head"><span>Daily WTF timed event signal</span><span class="las-tag">LIVE</span></div>' +
+          buildWtfEventHTML(true) +
         '</div>' +
-        '<div class="las-row">' +
-          '<span class="las-label">Faction</span>' +
-          '<span class="las-val" data-las-faction>' + esc(factionText) + '</span>' +
+        '<div class="las-section">' +
+          '<div class="las-section-head"><span>Missed opportunities</span></div>' +
+          buildMissedHTML() +
         '</div>' +
-        (!linked
-          ? '<div class="las-row las-row--cta">' +
-              '<a href="/gkniftyheads-incubator.html" class="las-link">' +
-                '🔗 Link Telegram to activate Arcade XP &amp; Faction XP sync' +
-              '</a>' +
-            '</div>'
-          : '') +
-        buildLogHTML() +
-      '</div>'
-    );
+      '</div>';
   }
-
-  // ── CSS ───────────────────────────────────────────────────────────────────
 
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
     var style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = [
-      '.las-panel{padding:10px 14px;border:1px solid rgba(86,220,255,.18);border-radius:10px;background:linear-gradient(165deg,rgba(10,23,44,.7),rgba(8,18,34,.6));font-size:.82rem;color:var(--color-text,#e6f0ff);display:flex;flex-direction:column;gap:6px}',
-      '.las-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}',
-      '.las-row--cta{margin-top:4px}',
-      '.las-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted,#8b949e);flex-shrink:0;min-width:80px}',
-      '.las-val{font-size:.82rem;color:var(--color-text,#e6f0ff)}',
-      '.las-val--good{color:#3fb950}',
-      '.las-val--bad{color:#f85149}',
-      '.las-val--warn{color:#d2991d}',
-      '.las-link{color:#56dcff;text-decoration:underline;font-size:.8rem}',
-      '.las-event-log{margin-top:6px;border-top:1px solid rgba(86,220,255,.1);padding-top:6px;display:flex;flex-direction:column;gap:3px}',
-      '.las-event-row{display:flex;align-items:baseline;gap:5px;font-size:.75rem}',
-      '.las-event-time{color:var(--color-text-muted,#8b949e);flex-shrink:0;font-size:.68rem}',
-      '.las-event-icon{flex-shrink:0}',
-      '.las-event-text{color:var(--color-text,#e6f0ff);opacity:.85}',
+      '.las-panel{padding:12px;border:1px solid rgba(86,220,255,.28);border-radius:12px;background:linear-gradient(165deg,rgba(8,18,34,.93),rgba(6,12,24,.9));display:flex;flex-direction:column;gap:10px;color:var(--color-text,#e6f0ff)}',
+      '.las-panel--locked{border-color:rgba(248,81,73,.3);background:linear-gradient(165deg,rgba(28,12,20,.75),rgba(16,8,14,.85))}',
+      '.las-title-row{display:flex;align-items:center;gap:8px;font-size:.76rem;letter-spacing:.08em;text-transform:uppercase}',
+      '.las-dot{width:8px;height:8px;border-radius:50%;background:#56dcff;box-shadow:0 0 10px rgba(86,220,255,.9)}',
+      '.las-live{margin-left:auto;padding:2px 8px;border-radius:999px;border:1px solid rgba(86,220,255,.35);background:rgba(86,220,255,.12)}',
+      '.las-section{border:1px solid rgba(86,220,255,.2);border-radius:9px;padding:8px;background:rgba(86,220,255,.05)}',
+      '.las-section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.69rem;text-transform:uppercase;letter-spacing:.06em;color:#8fdfff;margin-bottom:6px}',
+      '.las-faction-label{font-size:.66rem;color:#d8f6ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}',
+      '.las-mission-list{display:flex;flex-direction:column;gap:6px}',
+      '.las-mission-card{border:1px solid rgba(86,220,255,.16);border-radius:8px;padding:7px;background:rgba(86,220,255,.04)}',
+      '.las-mission-card--done{box-shadow:0 0 12px rgba(63,185,80,.22);border-color:rgba(63,185,80,.38)}',
+      '.las-mission-head{display:flex;align-items:center;gap:6px;font-size:.77rem}',
+      '.las-check{flex-shrink:0}',
+      '.las-mission-desc{margin-top:4px;font-size:.72rem;opacity:.9;line-height:1.35}',
+      '.las-mission-progress{margin-top:4px;display:flex;justify-content:space-between;gap:8px;font-size:.68rem;color:#8fdfff}',
+      '.las-bar{margin-top:4px;height:4px;border-radius:999px;background:rgba(86,220,255,.14);overflow:hidden}',
+      '.las-bar span{display:block;height:100%;background:linear-gradient(90deg,#56dcff,#53f5b4)}',
+      '.las-signal-grid{display:flex;flex-direction:column;gap:5px}',
+      '.las-signal-row{display:flex;justify-content:space-between;gap:8px;font-size:.74rem}',
+      '.las-k{color:var(--color-text-muted,#8b949e)}',
+      '.las-v{font-weight:600;text-align:right}',
+      '.las-pill{padding:2px 7px;border-radius:999px;border:1px solid rgba(86,220,255,.28);font-size:.62rem}',
+      '.las-pill--active{color:#53f5b4;border-color:rgba(83,245,180,.45)}',
+      '.las-pill--checked-in{color:#56dcff}',
+      '.las-pill--completed{color:#3fb950;border-color:rgba(63,185,80,.45)}',
+      '.las-pill--missed{color:#f85149;border-color:rgba(248,81,73,.45)}',
+      '.las-cta-row{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap}',
+      '.las-btn{cursor:pointer;border:1px solid rgba(86,220,255,.4);background:rgba(86,220,255,.12);color:#d8f7ff;border-radius:8px;padding:5px 9px;font-size:.7rem;font-weight:700}',
+      '.las-btn--secondary{background:rgba(83,245,180,.12);border-color:rgba(83,245,180,.4)}',
+      '.las-chain{margin-top:7px;display:flex;flex-wrap:wrap;gap:5px}',
+      '.las-tag{padding:2px 6px;border-radius:999px;background:rgba(86,220,255,.14);border:1px solid rgba(86,220,255,.3);font-size:.62rem;letter-spacing:.04em}',
+      '.las-tag--missed{background:rgba(248,81,73,.14);border-color:rgba(248,81,73,.38);color:#ffbeb9}',
+      '.las-chain-item{padding:2px 7px;border-radius:999px;border:1px solid rgba(86,220,255,.2);background:rgba(86,220,255,.06);font-size:.66rem}',
+      '.las-missed-box{display:flex;flex-direction:column;gap:4px;font-size:.72rem}',
+      '.las-missed-row{line-height:1.3}',
+      '.las-missed-copy{margin-top:2px;color:#ffcfab}',
+      '.las-reset-copy{font-size:.66rem;color:var(--color-text-muted,#8b949e)}',
+      '.las-empty{font-size:.75rem;color:var(--color-text-muted,#8b949e);line-height:1.4}',
+      '.las-link-btn{display:inline-block;padding:6px 10px;border-radius:8px;border:1px solid rgba(86,220,255,.38);background:rgba(86,220,255,.11);text-decoration:none;color:#d8f6ff;font-weight:700;font-size:.74rem}'
     ].join('\n');
     (document.head || document.documentElement).appendChild(style);
   }
 
-  // ── Mount ────────────────────────────────────────────────────────────────
-
   async function mount(containerOrId) {
-    var el = typeof containerOrId === 'string'
-      ? document.getElementById(containerOrId)
-      : containerOrId;
+    var el = typeof containerOrId === 'string' ? document.getElementById(containerOrId) : containerOrId;
     if (!el) return;
     injectStyles();
     var token = (Number(el.dataset.lasToken || 0) + 1);
     el.dataset.lasToken = String(token);
-    el.innerHTML = '<div style="color:var(--color-text-muted,#8b949e);font-size:.82rem;padding:6px 0">Checking activity\u2026</div>';
+    el.innerHTML = '<div class="las-empty">Loading faction ops…</div>';
     var html = await buildHTML();
-    if (String(el.dataset.lasToken) === String(token)) {
-      el.innerHTML = html;
-    }
+    if (String(el.dataset.lasToken) === String(token)) el.innerHTML = html;
   }
 
   function refresh() {
-    // Clear local fallback cache only (when CSP is present its own cache governs).
-    _apiOnlineCache = null;
-    _apiOnlineInflight = null;
     document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
   }
 
-  // ── Event log listeners ───────────────────────────────────────────────────
+  function handlePanelClicks(event) {
+    var btn = event.target && event.target.closest ? event.target.closest('[data-las-action]') : null;
+    if (!btn) return;
+    var action = btn.getAttribute('data-las-action');
+    var eventId = btn.getAttribute('data-event-id');
+    if (!eventId || !window.MOONBOYS_DAILY_WTF) return;
 
-  function listenForActivity() {
-    // Null guard: skip if bus is unavailable
-    var bus = window.MOONBOYS_EVENT_BUS;
-    if (!bus) return;
-    // Idempotency guard: register listeners only once even if this script re-executes.
-    // Stored on the singleton (not a module-scoped var) so it survives re-execution.
-    if (_singleton.listenersRegistered) return;
-    _singleton.listenersRegistered = true;
-    bus.on('xp:update', function (d) {
-      var amount = Number(d.amount || 0);
-      var total = Number(d.total || 0);
-      var text = amount > 0
-        ? 'Arcade XP +' + amount + (total ? ' (total ' + total + ')' : '')
-        : 'Arcade XP synced';
-      addToLog(buildLogEntry('xp', text));
-    });
+    if (action === 'checkin' && typeof window.MOONBOYS_DAILY_WTF.checkInWtfEvent === 'function') {
+      btn.disabled = true;
+      window.MOONBOYS_DAILY_WTF.checkInWtfEvent(eventId).finally(function () { refresh(); });
+      return;
+    }
 
-    bus.on('faction:update', function (d) {
-      // Only log user-initiated events.  faction-alignment.js sets d.source
-      // to 'join', 'earn', etc. for real actions; initial page-load fetches
-      // arrive without a source (or source === 'load') and are skipped here.
-      if (!d.source || d.source === 'load') return;
-      var fa = window.MOONBOYS_FACTION;
-      var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(d.faction) : null;
-      var fLabel = meta ? (meta.icon + ' ' + meta.label) : String(d.faction || 'faction');
-      var text = d.source === 'join'
-        ? 'Joined ' + fLabel
-        : 'Faction XP earned (' + fLabel + ')';
-      addToLog(buildLogEntry('faction', text));
-    });
+    if (action === 'complete' && typeof window.MOONBOYS_DAILY_WTF.completeWtfEvent === 'function') {
+      btn.disabled = true;
+      var completionSource = btn.getAttribute('data-completion-source') || '';
+      var sourceId = btn.getAttribute('data-source-id') || '';
+      window.MOONBOYS_DAILY_WTF.completeWtfEvent(eventId, completionSource, sourceId).finally(function () { refresh(); });
+    }
+  }
 
-    bus.on('sync:state', function (d) {
-      var text = d.state === 'good' || d.state === 'xp_awarded' || d.state === 'accepted_no_xp'
-        ? 'Sync complete'
-        : d.state === 'bad' ? 'Sync issue detected' : 'Syncing\u2026';
-      addToLog(buildLogEntry('sync', text));
-      // UI row update is handled exclusively by the MOONBOYS_STATE subscriber
-      // (moonboys-state.js bridges sync:state into state.sync so every subscriber
-      //  receives the update automatically — no direct UI call needed here).
-    });
-
-    // Score updates arrive via the bus bridge as activity:event with _src set.
-    bus.on('activity:event', function (d) {
-      if (d._src === 'moonboys:score-updated') {
-        var text = 'Score recorded' + (d.game ? ' (' + d.game + ')' : '');
-        addToLog(buildLogEntry('score', text));
-      }
+  function patchCountdownText() {
+    var state = window.MOONBOYS_WTF_EVENTS;
+    if (!state) return;
+    var text = formatCountdown(state.countdown_seconds);
+    document.querySelectorAll('[data-las-panel] [data-las-countdown]').forEach(function (el) {
+      el.textContent = text;
     });
   }
 
-  // ── Bootstrap ─────────────────────────────────────────────────────────────
+  function ensureCountdownTicker() {
+    if (_countdownTimer) return;
+    _countdownTimer = setInterval(patchCountdownText, 1000);
+  }
+
+  function listenForUpdates() {
+    document.addEventListener('click', handlePanelClicks);
+    window.addEventListener('moonboys:wtf-events-ready', refresh);
+    window.addEventListener('moonboys:wtf-event-checkin', refresh);
+    window.addEventListener('moonboys:wtf-event-complete', refresh);
+    window.addEventListener('battle-chamber:faction-data-ready', refresh);
+    window.addEventListener('battle-chamber:activity-ready', refresh);
+
+    if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
+      if (_stateUnsub) { try { _stateUnsub(); } catch (_) {} }
+      _stateUnsub = window.MOONBOYS_STATE.subscribe(function () { refresh(); });
+    }
+
+    ensureCountdownTicker();
+  }
 
   function bootstrap() {
     injectStyles();
-    document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
-
-    // MOONBOYS_STATE is the single source of truth for all UI rows.
-    // state.sync is populated by the bus.on('sync:state') bridge in
-    // moonboys-state.js, so both faction and sync update through one path.
-    if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
-      if (_stateUnsub) { try { _stateUnsub(); } catch (_) {} }
-      _stateUnsub = window.MOONBOYS_STATE.subscribe(function (state) {
-        updateFactionUI(state.faction);
-        updateSyncUI(state.sync);
-      });
-    }
-
-    // Bus listeners are used ONLY to append log entries; they never trigger
-    // full remounts or refresh() calls.
-    listenForActivity();
+    refresh();
+    listenForUpdates();
   }
 
   if (document.readyState === 'loading') {
@@ -463,12 +322,9 @@
     bootstrap();
   }
 
-  // ── Public API ────────────────────────────────────────────────────────────
-
   window.MOONBOYS_LIVE_ACTIVITY = {
     mount: mount,
     refresh: refresh,
-    addEvent: function (type, text) { addToLog(buildLogEntry(type || 'info', text || '')); },
+    addEvent: function () {},
   };
-
 }());

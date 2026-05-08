@@ -205,9 +205,8 @@ if (shellJs) {
     { needle: "rightPanel.id = 'homepage-right-panel'", label: '#homepage-right-panel' },
     { needle: 'data-csp-panel',            label: '[data-csp-panel]' },
     { needle: 'data-las-panel',            label: '[data-las-panel]' },
-    { needle: 'hud-player-avatar',         label: '#hud-player-avatar (player avatar box)' },
-    { needle: 'hud-player-name',           label: '.hud-player-name (player name)' },
-    { needle: 'hud-actions-list',          label: '.hud-actions-list (Next Actions block)' },
+    { needle: 'PLAYER LIVE FEED',          label: 'PLAYER LIVE FEED title' },
+    { needle: 'FACTION DAILY OPS',         label: 'FACTION DAILY OPS title' },
     { needle: 'shouldShowRightPanel',      label: 'shouldShowRightPanel() helper' },
   ];
   for (const { needle, label } of MARKER_CHECKS) {

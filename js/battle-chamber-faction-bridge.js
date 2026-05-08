@@ -86,16 +86,6 @@ function getSignedTelegramAuthPayload() {
   }
 }
 
-function buildTelegramAuthQuery() {
-  var payload = getSignedTelegramAuthPayload();
-  if (!payload) return '';
-  try {
-    return '?telegram_auth=' + encodeURIComponent(JSON.stringify(payload));
-  } catch (_) {
-    return '';
-  }
-}
-
 function emptyRewardSummary(key) {
   return {
     factionId: key,
@@ -239,11 +229,13 @@ function mapWeeklyServerStandingsToWarData(weeklyData) {
   };
 }
 
-async function fetchJson(url) {
+async function fetchJson(url, options) {
   var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
   var timer = controller ? setTimeout(function () { controller.abort(); }, FETCH_TIMEOUT_MS) : null;
   try {
-    var res = await fetch(url, controller ? { signal: controller.signal } : undefined);
+    var requestOptions = options && typeof options === 'object' ? Object.assign({}, options) : {};
+    if (controller) requestOptions.signal = controller.signal;
+    var res = await fetch(url, requestOptions);
     if (!res.ok) return null;
     return await res.json().catch(function () { return null; });
   } catch (_) {
@@ -312,7 +304,7 @@ function hydrateLocalFirst() {
 async function hydrateServerAuthority() {
   var apiBase = getApiBase();
   if (!apiBase) return false;
-  var authQuery = buildTelegramAuthQuery();
+  var authPayload = getSignedTelegramAuthPayload();
 
   var currentFaction = getCurrentFactionKey();
   var endpoints = [
@@ -321,8 +313,16 @@ async function hydrateServerAuthority() {
     fetchJson(apiBase + '/battle-chamber/factions/standings?period=seasonal'),
     fetchJson(apiBase + '/battle-chamber/activity?limit=20'),
     currentFaction ? fetchJson(apiBase + '/battle-chamber/factions/' + encodeURIComponent(currentFaction)) : Promise.resolve(null),
-    authQuery ? fetchJson(apiBase + '/roguelite/daily-state' + authQuery) : Promise.resolve(null),
-    authQuery ? fetchJson(apiBase + '/roguelite/missed-history?limit=8&' + authQuery.slice(1)) : Promise.resolve(null),
+    authPayload ? fetchJson(apiBase + '/roguelite/daily-state', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: authPayload }),
+    }) : Promise.resolve(null),
+    authPayload ? fetchJson(apiBase + '/roguelite/missed-history?limit=8', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: authPayload }),
+    }) : Promise.resolve(null),
   ];
 
   var results = await Promise.all(endpoints);

@@ -168,117 +168,32 @@
   if (shouldShowRightPanel(window.location.pathname, document.body)) {
     rightPanel = document.createElement('aside');
     rightPanel.id = 'homepage-right-panel';
-    rightPanel.setAttribute('aria-label', 'Player status and actions');
+    rightPanel.setAttribute('aria-label', 'Player live feed and faction daily ops');
     rightPanel.innerHTML = [
-      '<!-- ── PLAYER STATUS ── -->',
+      '<!-- ── PLAYER LIVE FEED ── -->',
       '<div class="retro-hud-box hud-box--player">',
       '  <div class="retro-hud-title">',
       '    <span class="retro-hud-title-icon" aria-hidden="true">\u25B6</span>',
-      '    Player Status',
-      '    <span class="retro-hud-mascot" aria-hidden="true">\uD83D\uDC3B</span>',
+      '    PLAYER LIVE FEED',
+      '    <span class="retro-hud-mascot" aria-hidden="true">\uD83D\uDCE1</span>',
       '  </div>',
       '  <div class="retro-hud-body">',
-      '    <div class="hud-player-portrait-row">',
-      '      <div class="hud-avatar-box" id="hud-player-avatar" role="img" aria-label="Player avatar">',
-      '        <span class="hud-avatar-icon" aria-hidden="true">\uD83D\uDC7E</span>',
-      '      </div>',
-      '      <div class="hud-player-info">',
-      '        <span class="hud-player-name" id="hud-player-name">Guest</span>',
-      '      </div>',
-      '    </div>',
       '    <div data-csp-panel></div>',
       '  </div>',
       '</div>',
       '',
-      '<!-- ── NEXT ACTIONS ── -->',
+      '<!-- ── FACTION DAILY OPS ── -->',
       '<div class="retro-hud-box hud-box--actions">',
       '  <div class="retro-hud-title">',
       '    <span class="retro-hud-title-icon" aria-hidden="true">\u25B6</span>',
-      '    Next Actions',
-      '    <span class="retro-hud-mascot" aria-hidden="true">\u26A1</span>',
+      '    FACTION DAILY OPS',
+      '    <span class="retro-hud-mascot" aria-hidden="true">\uD83D\uDEF0\uFE0F</span>',
       '  </div>',
       '  <div class="retro-hud-body">',
-      '    <ul class="hud-actions-list">',
-      '      <li class="hud-action-item">',
-      '        <a href="/games/" class="hud-action-link">\uD83C\uDFAE Play Arcade</a>',
-      '      </li>',
-      '    </ul>',
-      '    <div id="hud-actions-dynamic"></div>',
       '    <div data-las-panel></div>',
       '  </div>',
       '</div>',
     ].join('\n');
-
-    /* Deferred HUD population */
-    setTimeout(function _hudPlayerInit() {
-      var gate = window.MOONBOYS_IDENTITY;
-      if (!gate) return;
-
-      var avatarBox = document.getElementById('hud-player-avatar');
-      if (avatarBox) {
-        var photoUrl = typeof gate.getTelegramPhotoUrl === 'function' ? gate.getTelegramPhotoUrl() : null;
-        if (photoUrl) {
-          var img = document.createElement('img');
-          img.src = photoUrl;
-          img.alt = '';
-          img.className = 'hud-avatar-img';
-          img.width = 36; img.height = 36;
-          img.setAttribute('aria-hidden', 'true');
-          avatarBox.innerHTML = '';
-          avatarBox.appendChild(img);
-          avatarBox.removeAttribute('aria-label');
-          avatarBox.setAttribute('aria-label', 'Telegram avatar');
-        }
-      }
-
-      var nameEl = document.getElementById('hud-player-name');
-      if (nameEl) {
-        var displayName = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
-        if (displayName) nameEl.textContent = displayName;
-      }
-
-      var actionsEl = document.getElementById('hud-actions-dynamic');
-      if (actionsEl) {
-        var linked = typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked();
-        var factionApi = window.MOONBOYS_FACTION;
-        var factionStatus = factionApi && typeof factionApi.getCachedStatus === 'function' ? factionApi.getCachedStatus() : null;
-        var isUnaligned = factionStatus != null && (!factionStatus.faction || factionStatus.faction === 'unaligned');
-
-        var items = [];
-        if (!linked) {
-          items.push('<li class="hud-action-item hud-action--highlight"><a href="/gkniftyheads-incubator.html" class="hud-action-link">\uD83D\uDD17 Link Telegram</a></li>');
-        }
-        if (isUnaligned) {
-          items.push('<li class="hud-action-item"><a href="/community.html" class="hud-action-link">\u2694\uFE0F Join Faction</a></li>');
-        }
-        if (items.length > 0) {
-          actionsEl.innerHTML = '<ul class="hud-actions-list">' + items.join('') + '</ul>';
-        }
-      }
-    }, 0);
-
-    /* Faction update listener */
-    (function _bindFactionUpdate() {
-      var bus = window.MOONBOYS_EVENT_BUS;
-      if (!bus || typeof bus.on !== 'function') return;
-      bus.on('faction:update', function (d) {
-        var actEl = document.getElementById('hud-actions-dynamic');
-        if (!actEl) return;
-        var gate2 = window.MOONBOYS_IDENTITY;
-        var linked2 = gate2 && typeof gate2.isTelegramLinked === 'function' ? gate2.isTelegramLinked() : false;
-        var newFaction = (d && d.faction) ? d.faction : null;
-        if (!newFaction) {
-          var fApi = window.MOONBOYS_FACTION;
-          var fStatus = fApi && typeof fApi.getCachedStatus === 'function' ? fApi.getCachedStatus() : null;
-          newFaction = fStatus ? fStatus.faction : null;
-        }
-        var nowUnaligned = newFaction != null && (!newFaction || newFaction === 'unaligned');
-        var items2 = [];
-        if (!linked2) items2.push('<li class="hud-action-item hud-action--highlight"><a href="/gkniftyheads-incubator.html" class="hud-action-link">\uD83D\uDD17 Link Telegram</a></li>');
-        if (nowUnaligned) items2.push('<li class="hud-action-item"><a href="/community.html" class="hud-action-link">\u2694\uFE0F Join Faction</a></li>');
-        actEl.innerHTML = items2.length > 0 ? '<ul class="hud-actions-list">' + items2.join('') + '</ul>' : '';
-      });
-    })();
   }
 
   /* ── 7. Back-to-top button ───────────────────────────────────── */
