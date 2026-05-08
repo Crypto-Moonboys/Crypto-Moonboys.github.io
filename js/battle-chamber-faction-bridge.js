@@ -334,8 +334,8 @@ async function hydrateServerAuthority() {
   var dailyState = results[5] && results[5].ok ? results[5] : null;
   var missedHistory = results[6] && results[6].ok && Array.isArray(results[6].items) ? results[6].items : null;
 
-  var hasServerData = !!(weekly || monthly || seasonal || activity);
-  if (!hasServerData && !dailyState && !missedHistory) return false;
+  var hasServerData = !!(weekly || monthly || seasonal || activity || dailyState || missedHistory);
+  if (!hasServerData) return false;
 
   window.MOONBOYS_BATTLE_CHAMBER_STANDINGS = {
     weekly: weekly,
