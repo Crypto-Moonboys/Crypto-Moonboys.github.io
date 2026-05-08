@@ -96,6 +96,10 @@
     return rewardData.factions[key];
   }
 
+  function getTrackOrFallback(summary, trackKey, fallback) {
+    return (summary && Array.isArray(summary[trackKey])) ? summary[trackKey] : fallback;
+  }
+
   function renderDirectoryPage() {
     var grid = byId('faction-directory-grid');
     if (!grid) return;
@@ -237,9 +241,6 @@
 
     var clout = byId('fcp-clout-track');
     if (clout) {
-      function getTrackOrFallback(summary, trackKey, fallback) {
-        return (summary && Array.isArray(summary[trackKey])) ? summary[trackKey] : fallback;
-      }
       var badgeTrack = getTrackOrFallback(rewardSummary, 'badgeTrack', profile.badgeIdeas);
       var stickerTrack = getTrackOrFallback(rewardSummary, 'stickerTrack', profile.stickerIdeas);
       var titleTrack = getTrackOrFallback(rewardSummary, 'titleTrack', profile.titleLadder);
