@@ -90,6 +90,12 @@
     return effectDefs && effectDefs[key] ? effectDefs[key] : null;
   }
 
+  function getFactionRewardSummary(key) {
+    var rewardData = window.MOONBOYS_FACTION_REWARD_DATA;
+    if (!rewardData || !rewardData.factions || !rewardData.factions[key]) return null;
+    return rewardData.factions[key];
+  }
+
   function renderDirectoryPage() {
     var grid = byId('faction-directory-grid');
     if (!grid) return;
@@ -149,6 +155,7 @@
     var row = standing.row;
     var missions = getFactionMissions(key);
     var effects = getFactionEffects(key) || {};
+    var rewardSummary = getFactionRewardSummary(key);
     var status = getFactionStatus();
     var currentFaction = status && status.faction ? status.faction : 'unaligned';
     var isCurrentFaction = currentFaction === key;
@@ -230,9 +237,6 @@
 
     var clout = byId('fcp-clout-track');
     if (clout) {
-      // Read reward tracks from MOONBOYS_FACTION_REWARD_DATA when available
-      var rewardData = window.MOONBOYS_FACTION_REWARD_DATA;
-      var rewardSummary = rewardData && rewardData.factions && rewardData.factions[key] ? rewardData.factions[key] : null;
       function getTrackOrFallback(summary, trackKey, fallback) {
         return (summary && Array.isArray(summary[trackKey])) ? summary[trackKey] : fallback;
       }
@@ -248,11 +252,9 @@
 
     var rewardTracks = byId('fcp-reward-tracks');
     if (rewardTracks) {
-      var rd = window.MOONBOYS_FACTION_REWARD_DATA;
-      var rs = rd && rd.factions && rd.factions[key] ? rd.factions[key] : null;
-      var weekly = rs && rs.weekly ? rs.weekly : null;
-      var monthly = rs && rs.monthly ? rs.monthly : null;
-      var seasonal = rs && rs.seasonal ? rs.seasonal : null;
+      var weekly = rewardSummary && rewardSummary.weekly ? rewardSummary.weekly : null;
+      var monthly = rewardSummary && rewardSummary.monthly ? rewardSummary.monthly : null;
+      var seasonal = rewardSummary && rewardSummary.seasonal ? rewardSummary.seasonal : null;
       rewardTracks.innerHTML = '' +
         '<div class="fcp-reward-section">' +
           '<h3>Weekly Reward</h3>' +
@@ -292,9 +294,7 @@
 
     var rogue = byId('fcp-roguelite-identity');
     if (rogue) {
-      var rd2 = window.MOONBOYS_FACTION_REWARD_DATA;
-      var rs2 = rd2 && rd2.factions && rd2.factions[key] ? rd2.factions[key] : null;
-      var roguelitePerks = rs2 && Array.isArray(rs2.roguelite) ? rs2.roguelite : [];
+      var roguelitePerks = rewardSummary && Array.isArray(rewardSummary.roguelite) ? rewardSummary.roguelite : [];
       var perksHtml = roguelitePerks.length
         ? '<ul>' + roguelitePerks.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>'
         : '';

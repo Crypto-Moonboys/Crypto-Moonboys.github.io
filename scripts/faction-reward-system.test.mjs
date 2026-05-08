@@ -17,7 +17,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -132,7 +132,9 @@ console.log('\n[2] Reward data coverage — every faction has required tracks');
 // Import and execute the module to test runtime data
 let rewardModule = null;
 try {
-  rewardModule = await import(path.join(ROOT, REWARD_SYSTEM_FILE));
+  const rewardSystemPath = path.join(ROOT, REWARD_SYSTEM_FILE);
+  rewardModule = await import(pathToFileURL(rewardSystemPath).href);
+  pass('reward system can be imported in Node.js');
 } catch (err) {
   fail('reward system can be imported in Node.js', String(err));
 }
@@ -218,6 +220,10 @@ check(bridgeJs.includes('faction-reward-system.js'), 'bridge imports faction-rew
 check(bridgeJs.includes('getFactionRewardSummary'), 'bridge imports getFactionRewardSummary');
 check(bridgeJs.includes('window.MOONBOYS_FACTION_REWARD_DATA'), 'bridge assigns window.MOONBOYS_FACTION_REWARD_DATA');
 check(bridgeJs.includes('battle-chamber:faction-rewards-ready'), 'bridge dispatches battle-chamber:faction-rewards-ready');
+check(bridgeJs.includes('emptyRewardSummary'), 'bridge has stable reward fallback builder');
+for (const stableKey of ['weekly', 'monthly', 'seasonal', 'personal', 'badgeTrack', 'stickerTrack', 'titleTrack', 'roguelite']) {
+  check(bridgeJs.includes(`${stableKey}:`), `bridge reward fallback includes stable key: ${stableKey}`);
+}
 
 // Existing bridge globals still present
 check(bridgeJs.includes('window.MOONBOYS_WAR_DATA'), 'bridge still assigns window.MOONBOYS_WAR_DATA');

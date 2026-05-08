@@ -1,8 +1,9 @@
 /**
  * faction-reward-system.js — Faction reward and perk eligibility layer.
  *
- * Reads existing faction standings, missions, and clout state, then provides
- * visible status rewards and roguelite perk eligibility.
+ * Defines static faction reward tracks and perk metadata, and can combine them
+ * with existing faction standings data from window.MOONBOYS_WAR_DATA when
+ * building visible status rewards and roguelite perk eligibility.
  *
  * This is a display/perk eligibility layer ONLY.
  *   - Does NOT alter Arcade XP math.

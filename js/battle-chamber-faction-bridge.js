@@ -64,12 +64,42 @@ const LIVE_FACTION_KEYS = [
 // ── Populate window.MOONBOYS_FACTION_REWARD_DATA ──────────────────────────────
 
 function buildRewardData() {
+  function emptyRewardSummary(key) {
+    return {
+      factionId: key,
+      weekly: {},
+      monthly: {},
+      seasonal: {},
+      personal: {},
+      badgeTrack: [],
+      stickerTrack: [],
+      titleTrack: [],
+      roguelite: [],
+    };
+  }
+
+  function normaliseRewardSummary(key, summary) {
+    const base = emptyRewardSummary(key);
+    if (!summary || typeof summary !== 'object') return base;
+    return {
+      factionId: key,
+      weekly: summary.weekly && typeof summary.weekly === 'object' ? summary.weekly : base.weekly,
+      monthly: summary.monthly && typeof summary.monthly === 'object' ? summary.monthly : base.monthly,
+      seasonal: summary.seasonal && typeof summary.seasonal === 'object' ? summary.seasonal : base.seasonal,
+      personal: summary.personal && typeof summary.personal === 'object' ? summary.personal : base.personal,
+      badgeTrack: Array.isArray(summary.badgeTrack) ? summary.badgeTrack : base.badgeTrack,
+      stickerTrack: Array.isArray(summary.stickerTrack) ? summary.stickerTrack : base.stickerTrack,
+      titleTrack: Array.isArray(summary.titleTrack) ? summary.titleTrack : base.titleTrack,
+      roguelite: Array.isArray(summary.roguelite) ? summary.roguelite : base.roguelite,
+    };
+  }
+
   const factions = {};
   for (const key of LIVE_FACTION_KEYS) {
     try {
-      factions[key] = getFactionRewardSummary(key);
+      factions[key] = normaliseRewardSummary(key, getFactionRewardSummary(key));
     } catch (_) {
-      factions[key] = { factionId: key, weekly: null, monthly: null, seasonal: null, personal: null, roguelite: [] };
+      factions[key] = emptyRewardSummary(key);
     }
   }
   return { factions, updatedAt: Date.now() };
