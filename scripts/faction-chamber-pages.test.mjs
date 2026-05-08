@@ -63,6 +63,39 @@ function read(relativePath) {
   return fs.readFileSync(path.join(ROOT, relativePath.replace(/^\//, '')), 'utf8');
 }
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function hasAttr(tag, attr, value) {
+  const attrPattern = new RegExp(`\\s${attr}=(['\"])${escapeRegExp(value)}\\1`, 'i');
+  return attrPattern.test(tag);
+}
+
+function linkTagsFor(html, href) {
+  return html.match(/<link\b[^>]*>/gi)?.filter((tag) => hasAttr(tag, 'href', href)) || [];
+}
+
+function scriptTagsFor(html, src) {
+  return html.match(/<script\b[^>]*>/gi)?.filter((tag) => hasAttr(tag, 'src', src)) || [];
+}
+
+function hasClassicScriptPreload(html, href) {
+  return linkTagsFor(html, href).some((tag) => hasAttr(tag, 'rel', 'preload') && hasAttr(tag, 'as', 'script'));
+}
+
+function hasModulePreload(html, href) {
+  return linkTagsFor(html, href).some((tag) => hasAttr(tag, 'rel', 'modulepreload'));
+}
+
+function hasModuleScript(html, src) {
+  return scriptTagsFor(html, src).some((tag) => hasAttr(tag, 'type', 'module'));
+}
+
+function hasClassicScript(html, src) {
+  return scriptTagsFor(html, src).some((tag) => !hasAttr(tag, 'type', 'module'));
+}
+
 let passed = 0;
 let failed = 0;
 
@@ -91,6 +124,12 @@ for (const route of ROUTES) {
   for (const requiredTag of REQUIRED_SHARED_STACK_TAGS) {
     check(html.includes(requiredTag), `${route}: includes ${requiredTag}`);
   }
+  check(hasModuleScript(html, '/js/battle-chamber-faction-bridge.js'), `${route}: runtime-loads Battle Chamber faction bridge as a module`);
+  check(scriptTagsFor(html, '/js/battle-chamber-faction-bridge.js').some((tag) => hasAttr(tag, 'data-cfasync', 'false')), `${route}: bypasses Cloudflare Rocket Loader for bridge runtime module load`);
+  check(hasClassicScript(html, '/js/faction-profile-data.js'), `${route}: runtime-loads shared faction profile data as a classic script`);
+  check(hasClassicScript(html, '/js/faction-chamber-page.js'), `${route}: runtime-loads shared faction chamber renderer as a classic script`);
+  check(!hasClassicScriptPreload(html, '/js/battle-chamber-faction-bridge.js'), `${route}: does not classic-preload Battle Chamber faction bridge module`);
+  check(!hasModulePreload(html, '/js/battle-chamber-faction-bridge.js'), `${route}: does not modulepreload Battle Chamber faction bridge before runtime load`);
   check(!html.includes('/js/wiki.js'), `${route}: does not load /js/wiki.js`);
   check(!/<style[^>]*>[\s\S]*\.fcp-wrap\s+\.section[\s\S]*<\/style>/i.test(html), `${route}: no duplicated inline faction style block`);
 }
