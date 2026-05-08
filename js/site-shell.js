@@ -231,12 +231,6 @@
         }
       }
 
-      var nameEl = document.getElementById('hud-player-name');
-      if (nameEl) {
-        var displayName = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
-        if (displayName) nameEl.textContent = 'Live linked avatar';
-      }
-
       var actionsEl = document.getElementById('hud-actions-dynamic');
       if (actionsEl) {
         var linked = typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked();

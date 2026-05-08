@@ -292,9 +292,9 @@
     var missions = daily.slice(0, 3).map(function (m) {
       var id = m.id || m.key || m.title || '';
       var p = progress[id] || {};
-      var current = Number(p.current || p.count || p.value || 0);
-      var target = Number(m.target || m.goal || p.target || 1);
-      var done = completed.indexOf(id) !== -1 || p.completed === true || current >= target;
+      var current = Number(p.progress != null ? p.progress : (p.current != null ? p.current : (p.count != null ? p.count : (p.value || 0))));
+      var target = Number(p.target != null ? p.target : (m.target || m.goal || 1));
+      var done = completed.indexOf(id) !== -1 || p.complete === true || p.completed === true || current >= target;
       return {
         title: m.title || m.name || id || 'Faction mission',
         objective: m.description || m.objective || 'Complete the faction objective.',
