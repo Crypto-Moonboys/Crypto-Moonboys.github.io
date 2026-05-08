@@ -2264,7 +2264,12 @@ export default {
       try {
         await upsertTelegramUser(env.DB, verified.user);
         if (!(await hasBlockTopiaFactionColumns(env.DB))) {
-          return err('Faction progression schema is pending migration', 503);
+          return json({
+            ok: false,
+            error: 'missing_required_table',
+            reason: 'migration_pending:blocktopia_progression_faction_columns',
+            message: 'Faction progression schema is pending migration. Apply required D1 migrations before joining.',
+          }, 503);
         }
 
         // ── Season lock check + backfill ──────────────────────────────────

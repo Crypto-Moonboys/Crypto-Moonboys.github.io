@@ -77,6 +77,7 @@ console.log('\n[2] Worker routes exist');
 check(workerJs.includes('/battle-chamber/factions/standings'), 'worker includes /battle-chamber/factions/standings route');
 check(workerJs.includes('/battle-chamber/activity'), 'worker includes /battle-chamber/activity route');
 check(workerJs.includes('/battle-chamber/event'), 'worker includes /battle-chamber/event route');
+check(workerJs.includes("path === '/faction/join'"), 'worker includes /faction/join route');
 check(
   workerJs.includes("path === '/battle-chamber/faction'") || workerJs.includes("path.startsWith('/battle-chamber/factions/')"),
   'worker includes faction detail route (query or path form)'
@@ -109,6 +110,8 @@ check(bridgeJs.includes('/battle-chamber/activity?limit=20'), 'bridge fetches se
 check(bridgeJs.includes('MOONBOYS_BATTLE_CHAMBER_ACTIVITY'), 'bridge populates MOONBOYS_BATTLE_CHAMBER_ACTIVITY');
 check(bridgeJs.includes('battle-chamber:activity-ready'), 'bridge dispatches battle-chamber:activity-ready');
 check(bridgeJs.includes('Live server standings unavailable. Showing local display state.'), 'bridge includes fallback copy');
+check(bridgeJs.includes('if (!res.ok) return null;'), 'bridge treats non-2xx standings/activity responses (including 404) as fallback-safe null');
+check(bridgeJs.includes('if (!hasServerData) return false;'), 'bridge falls back cleanly when server routes are unavailable');
 
 console.log('\n[6] UI wiring uses server-backed data where available');
 check(hubJs.includes('MOONBOYS_BATTLE_CHAMBER_STANDINGS'), 'hub reads server-backed standings cache');
