@@ -1,14 +1,14 @@
 /**
  * faction-season-lock.test.mjs
  *
- * Tests for the faction season lock feature (PR 6).
+ * Tests for the faction season lock feature (PR 6 + PR 6 follow-up).
  *
  * Coverage:
  *   1. Frontend join flow (source-level checks on battle-chamber-factions.js)
- *   2. Server season lock (source-level checks on worker.js)
+ *   2. Server season lock — atomic, race-safe, backfill (worker.js)
  *   3. Bot /gkfaction copy (worker.js)
  *   4. Preservation — existing faction routes / earn / status still present
- *   5. Migration file exists with correct schema
+ *   5. Migration file exists with correct schema, no redundant index
  */
 
 import fs from 'node:fs';
@@ -107,7 +107,7 @@ check(
 
 check(
   bcFactions.includes('faction_locked_for_season') ||
-  bcFactions.includes('locked') && bcFactions.includes('Faction switch blocked'),
+  (bcFactions.includes('locked') && bcFactions.includes('Faction switch blocked')),
   'faction_locked_for_season error path: shows blocked message',
 );
 
@@ -119,11 +119,6 @@ check(
 check(
   bcFactions.includes('Your runs, missions, and proof events'),
   'Aligned user sees clout contribution note',
-);
-
-check(
-  bcFactions.includes('Next reset'),
-  'Aligned user sees next reset info',
 );
 
 check(
@@ -151,11 +146,27 @@ check(
   'Unaligned panel shows no-faction warning',
 );
 
+// season_key merged into dispatched status when loadStatus() doesn't return it
+check(
+  bcFactions.includes('season_key') &&
+  (bcFactions.includes("freshStatus.season_key ? freshStatus") ||
+   bcFactions.includes('Object.assign') && bcFactions.includes('season_key: seasonKey')),
+  'Frontend: season_key is merged into dispatched status when loadStatus() does not return it',
+);
+
+// "Next reset: Season: ..." wording must NOT appear
+check(
+  !bcFactions.includes("'Season: '") &&
+  !bcFactions.includes('"Season: "') &&
+  !bcFactions.includes('Next reset: <strong>Season:'),
+  'Frontend: aligned panel does not show "Next reset: Season: ..." (confusing wording fixed)',
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
-// 2. Server season lock — worker.js
+// 2. Server season lock — atomic, race-safe, backfill (worker.js)
 // ─────────────────────────────────────────────────────────────────────────────
 
-console.log('\n── 2. Server season lock ────────────────────────────────────────────────');
+console.log('\n── 2. Server season lock (atomic + backfill) ────────────────────────────');
 
 check(
   migration017.includes('telegram_faction_season_locks'),
@@ -181,6 +192,13 @@ check(
   'Migration 017: locked_at and updated_at columns present',
 );
 
+// Redundant index must be removed
+check(
+  !migration017.includes('CREATE INDEX') &&
+  !migration017.includes('idx_faction_season_locks_telegram'),
+  'Migration 017: no redundant index on (telegram_id, season_key) — UNIQUE already covers it',
+);
+
 check(
   worker.includes("'telegram_faction_season_locks'"),
   'Worker: /faction/join checks telegram_faction_season_locks table',
@@ -192,15 +210,13 @@ check(
 );
 
 check(
-  worker.includes('Same faction') ||
-  (worker.includes('existingLock.faction_id === requestedFaction') ||
-   worker.includes("existingLock?.faction_id === requestedFaction")),
+  worker.includes('existingLock.faction_id === requestedFaction') ||
+  worker.includes("existingLock?.faction_id === requestedFaction"),
   'Worker: same faction join is idempotent (allowed)',
 );
 
 check(
-  worker.includes('Different faction') ||
-  (worker.includes('409') && worker.includes('faction_locked_for_season')),
+  worker.includes('409') && worker.includes('faction_locked_for_season'),
   'Worker: different faction same season returns 409 faction_locked_for_season',
 );
 
@@ -219,9 +235,81 @@ check(
   'Worker: uses getBattleSeasonKey() for season determination',
 );
 
+// ── Atomic / race-safe: must use DO NOTHING, not DO UPDATE SET faction_id ────
 check(
-  worker.includes("ON CONFLICT(telegram_id, season_key) DO UPDATE"),
-  'Worker: upserts season lock row on successful join',
+  !worker.includes('DO UPDATE SET faction_id = excluded.faction_id'),
+  'Worker: season lock insert does NOT use DO UPDATE SET faction_id (race-safe — first-choice-wins)',
+);
+
+check(
+  worker.includes('DO NOTHING'),
+  'Worker: season lock insert uses ON CONFLICT DO NOTHING (first-writer-wins)',
+);
+
+// Re-read after insert to detect race
+check(
+  (function () {
+    // The re-read pattern: after INSERT DO NOTHING, worker reads back the stored lock
+    // and returns 409 if the stored faction differs from requestedFaction.
+    const insertIdx = worker.lastIndexOf('DO NOTHING');
+    const reReadPattern = worker.indexOf('storedLock', insertIdx);
+    return insertIdx !== -1 && reReadPattern !== -1;
+  })(),
+  'Worker: re-reads stored lock after INSERT DO NOTHING to detect concurrent race',
+);
+
+check(
+  worker.includes('storedLock') && worker.includes('storedLock.faction_id !== requestedFaction'),
+  'Worker: if stored lock faction differs from requested, returns 409 (race detection)',
+);
+
+// ── Backfill: existing non-unaligned users are locked to their current faction ─
+check(
+  worker.includes('existingFaction') &&
+  worker.includes('existingFaction !== FACTION_UNALIGNED'),
+  'Worker: checks existing progression faction for backfill (non-unaligned users)',
+);
+
+check(
+  (function () {
+    // Backfill: INSERT DO NOTHING for existingFaction when existingFaction != UNALIGNED
+    const backfillBlock = worker.indexOf('Backfill');
+    return backfillBlock !== -1 && worker.indexOf('DO NOTHING', backfillBlock) !== -1;
+  })(),
+  'Worker: backfills lock for existing non-unaligned faction before allowing fresh join',
+);
+
+check(
+  (function () {
+    // After backfill, if requestedFaction !== storedFaction → 409
+    const backfillIdx = worker.indexOf('Backfill');
+    const block = worker.slice(backfillIdx, backfillIdx + 2500);
+    return block.includes('faction_locked_for_season') &&
+           (block.includes('storedFaction') || block.includes('storedFactionId'));
+  })(),
+  'Worker: existing user cannot switch faction during season (backfill path returns 409)',
+);
+
+check(
+  (function () {
+    // After backfill, if requestedFaction === storedFaction → idempotent 200
+    const backfillIdx = worker.indexOf('Backfill');
+    const block = worker.slice(backfillIdx, backfillIdx + 1500);
+    return block.includes('ok: true') && block.includes('storedFaction');
+  })(),
+  'Worker: existing user re-joining same faction is idempotent (backfill path)',
+);
+
+// ── Progression update after lock confirmed ────────────────────────────────
+check(
+  (function () {
+    // UPDATE blocktopia_progression should appear AFTER the lock insert logic
+    const lockInsertIdx = worker.indexOf('ON CONFLICT(telegram_id, season_key) DO NOTHING');
+    const progressionUpdateIdx = worker.lastIndexOf('UPDATE blocktopia_progression');
+    // The last progression UPDATE should come after the last lock insert
+    return progressionUpdateIdx > lockInsertIdx;
+  })(),
+  'Worker: progression is updated only after season lock is confirmed (race-safe ordering)',
 );
 
 // All 9 canonical factions recognized by normalizeFaction
@@ -247,13 +335,10 @@ allNineKeys.forEach(function (key) {
 // Legacy aliases still map to canonical
 check(
   worker.includes("'diamond-hands'") && worker.includes("'hard-fork-rockers'") &&
-  (worker.includes("diamond-hands') return 'hard-fork-rockers'") ||
-   worker.includes("'diamond-hands') return 'hard-fork-rockers'") ||
-   // Check that diamond-hands appears as an alias key in normalizeFaction
-   (function () {
-     const normFn = worker.match(/function normalizeFaction[\s\S]*?\n\}/);
-     return normFn && normFn[0].includes('hard-fork-rockers');
-   })()),
+  (function () {
+    const normFn = worker.match(/function normalizeFaction[\s\S]*?\n\}/);
+    return normFn && normFn[0].includes('hard-fork-rockers');
+  })(),
   'Worker: diamond-hands alias maps to hard-fork-rockers',
 );
 
@@ -376,11 +461,10 @@ check(
 
 console.log('\n── 5. No forbidden wording ──────────────────────────────────────────────');
 
-const newBcContent = bcFactions;
 const FORBIDDEN_IN_BC = ['token reward', 'passive income', 'financial reward', 'earn money'];
 FORBIDDEN_IN_BC.forEach(function (term) {
   check(
-    !newBcContent.toLowerCase().includes(term.toLowerCase()),
+    !bcFactions.toLowerCase().includes(term.toLowerCase()),
     'No forbidden wording in battle-chamber-factions.js: "' + term + '"',
   );
 });

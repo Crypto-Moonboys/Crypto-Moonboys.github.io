@@ -369,7 +369,9 @@
       var meta = factionMeta(currentFaction);
       var chamberLink = CHAMBER_ROUTES[currentFaction] || '/battle-chamber/factions/index.html';
       var seasonKey = (cached && cached.season_key) ? cached.season_key : null;
-      var nextReset = seasonKey ? 'Season: ' + esc(seasonKey) : 'next season reset';
+      var seasonDisplay = seasonKey
+        ? '<div class="bc-aligned-row bc-aligned-season-note"><span>Current season:</span> <strong>' + esc(seasonKey) + '</strong></div>'
+        : '';
       container.innerHTML =
         '<div class="bc-aligned-panel" style="--faction-color:' + esc(meta.color) + '">' +
           '<div class="bc-aligned-header">' + meta.icon + ' <strong>' + esc(meta.label) + '</strong></div>' +
@@ -378,7 +380,7 @@
           '<div class="bc-aligned-row"><span>Active bonus:</span> <strong>' + esc((cached.bonuses && cached.bonuses.bonus) || meta.perkTeaser) + '</strong></div>' +
           '<div class="bc-aligned-row"><span>Playstyle:</span> <strong>' + esc(meta.playstyle) + '</strong></div>' +
           '<div class="bc-aligned-row bc-aligned-clout-note">Your runs, missions, and proof events now count toward this faction.</div>' +
-          '<div class="bc-aligned-row bc-aligned-reset-note">Next reset: <strong>' + nextReset + '</strong></div>' +
+          seasonDisplay +
           '<div class="bc-aligned-actions">' +
             '<a class="bc-cta-btn" href="/games/index.html">Play Arcade</a>' +
             '<a class="bc-cta-btn bc-cta-secondary" href="#battle-active-missions">View Daily Missions</a>' +
@@ -469,11 +471,15 @@
                     '<div class="bc-join-success-icon">' + targetMeta.icon + '</div>' +
                     '<div class="bc-join-success-msg">You joined ' + esc(targetMeta.label) + '. Your faction clout now counts for this season.</div>' +
                   '</div>';
-                // Reload full status and re-render after brief delay
+                // Reload full status and re-render after brief delay.
+                // Merge season_key from join response when loadStatus() doesn't return it.
                 if (typeof api.loadStatus === 'function') {
                   api.loadStatus().then(function (freshStatus) {
+                    var merged = freshStatus
+                      ? (freshStatus.season_key ? freshStatus : Object.assign({}, freshStatus, { season_key: seasonKey }))
+                      : successStatus;
                     window.dispatchEvent(new CustomEvent('moonboys:faction-status', {
-                      detail: freshStatus || successStatus,
+                      detail: merged,
                     }));
                   }).catch(function () {
                     window.dispatchEvent(new CustomEvent('moonboys:faction-status', {

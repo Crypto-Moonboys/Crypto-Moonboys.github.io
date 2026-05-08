@@ -14,6 +14,5 @@ CREATE TABLE IF NOT EXISTS telegram_faction_season_locks (
   updated_at  TEXT    NOT NULL DEFAULT (datetime('now')),
   UNIQUE (telegram_id, season_key)
 );
-
-CREATE INDEX IF NOT EXISTS idx_faction_season_locks_telegram
-  ON telegram_faction_season_locks(telegram_id, season_key);
+-- Note: no separate index on (telegram_id, season_key) — the UNIQUE constraint
+-- already creates an implicit index that serves all lookup queries.

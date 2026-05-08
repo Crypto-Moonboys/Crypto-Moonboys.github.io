@@ -2267,12 +2267,16 @@ export default {
           return err('Faction progression schema is pending migration', 503);
         }
 
-        // ── Season lock check ──────────────────────────────────────────────
+        // ── Season lock check + backfill ──────────────────────────────────
         const seasonKey = await getBattleSeasonKey(env.DB);
         const lockTableRow = await env.DB.prepare(
           `SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'telegram_faction_season_locks' LIMIT 1`
         ).first().catch(() => null);
         const lockTableExists = !!(lockTableRow?.name);
+
+        // Read existing progression first — needed for both cooldown logic and backfill.
+        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+        const existingFaction = normalizeFaction(row?.faction) || FACTION_UNALIGNED;
 
         if (lockTableExists) {
           const existingLock = await env.DB.prepare(
@@ -2282,13 +2286,12 @@ export default {
           if (existingLock) {
             if (existingLock.faction_id === requestedFaction) {
               // Same faction — idempotent OK
-              const progressionRow = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
               const meta = factionMeta(requestedFaction);
               return json({
                 ok: true,
                 faction: meta.key,
                 faction_label: meta.label,
-                faction_xp: Math.max(0, Math.floor(Number(progressionRow?.faction_xp) || 0)),
+                faction_xp: Math.max(0, Math.floor(Number(row?.faction_xp) || 0)),
                 bonuses: { icon: meta.icon, color: meta.color, bonus: meta.bonus, xp_multiplier: meta.xp_multiplier },
                 first_join: false,
                 switched: false,
@@ -2309,15 +2312,60 @@ export default {
               message: `You are locked to ${lockedMeta.label} for this season. Faction switch blocked until the next season resets.`,
             }, 409);
           }
+
+          // No lock row yet. If the user already has a non-unaligned faction from before
+          // migration 017 deployed, backfill a lock for that faction before allowing any change.
+          if (existingFaction !== FACTION_UNALIGNED) {
+            const nowIso = new Date().toISOString();
+            // Backfill: INSERT ... DO NOTHING — first writer wins (race-safe).
+            await env.DB.prepare(`
+              INSERT INTO telegram_faction_season_locks (telegram_id, season_key, faction_id, locked_at, updated_at)
+              VALUES (?, ?, ?, ?, ?)
+              ON CONFLICT(telegram_id, season_key) DO NOTHING
+            `).bind(verified.telegramId, seasonKey, existingFaction, nowIso, nowIso).run();
+
+            // Re-read the authoritative stored lock.
+            const backfilledLock = await env.DB.prepare(
+              `SELECT faction_id FROM telegram_faction_season_locks WHERE telegram_id = ? AND season_key = ?`
+            ).bind(verified.telegramId, seasonKey).first();
+            const storedFaction = backfilledLock?.faction_id || existingFaction;
+
+            if (storedFaction === requestedFaction) {
+              // Idempotent — same faction as what is stored
+              const meta = factionMeta(requestedFaction);
+              return json({
+                ok: true,
+                faction: meta.key,
+                faction_label: meta.label,
+                faction_xp: Math.max(0, Math.floor(Number(row?.faction_xp) || 0)),
+                bonuses: { icon: meta.icon, color: meta.color, bonus: meta.bonus, xp_multiplier: meta.xp_multiplier },
+                first_join: false,
+                switched: false,
+                cooldown_ms: 0,
+                season_key: seasonKey,
+                locked_until: 'next season reset',
+              });
+            }
+            // Attempting to switch away from backfilled faction — reject
+            const lockedMeta = factionMeta(storedFaction);
+            return json({
+              ok: false,
+              error: 'faction_locked_for_season',
+              faction: storedFaction,
+              faction_label: lockedMeta.label,
+              season_key: seasonKey,
+              locked_until: 'next season reset',
+              message: `You are locked to ${lockedMeta.label} for this season. Faction switch blocked until the next season resets.`,
+            }, 409);
+          }
         }
 
-        // ── Progression update (existing cooldown logic unchanged) ─────────
-        const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
-        const currentFaction = normalizeFaction(row?.faction) || FACTION_UNALIGNED;
+        // ── No lock, no existing faction (fresh user) ──────────────────────
+        // Cooldown check (legacy guard, kept intact).
         const lastSwitch = Number(row?.faction_last_switch) || 0;
         const now = Date.now();
-        const firstJoin = currentFaction === FACTION_UNALIGNED;
-        const isSwitching = currentFaction !== requestedFaction;
+        const firstJoin = existingFaction === FACTION_UNALIGNED;
+        const isSwitching = existingFaction !== requestedFaction;
         if (!firstJoin && isSwitching && lastSwitch > 0 && now - lastSwitch < FACTION_SWITCH_COOLDOWN_MS) {
           const retryAt = lastSwitch + FACTION_SWITCH_COOLDOWN_MS;
           return json({
@@ -2327,6 +2375,38 @@ export default {
           }, 429);
         }
 
+        // ── Atomic season lock insert (race-safe) ──────────────────────────
+        // DO NOTHING: the first concurrent writer wins; subsequent writers for a
+        // different faction will be rejected in the re-read below.
+        if (lockTableExists) {
+          const nowIso = new Date().toISOString();
+          await env.DB.prepare(`
+            INSERT INTO telegram_faction_season_locks (telegram_id, season_key, faction_id, locked_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(telegram_id, season_key) DO NOTHING
+          `).bind(verified.telegramId, seasonKey, requestedFaction, nowIso, nowIso).run();
+
+          // Re-read: if another concurrent request won the INSERT race for a different
+          // faction, this request loses and must return 409.
+          const storedLock = await env.DB.prepare(
+            `SELECT faction_id FROM telegram_faction_season_locks WHERE telegram_id = ? AND season_key = ?`
+          ).bind(verified.telegramId, seasonKey).first();
+
+          if (storedLock && storedLock.faction_id !== requestedFaction) {
+            const lockedMeta = factionMeta(storedLock.faction_id);
+            return json({
+              ok: false,
+              error: 'faction_locked_for_season',
+              faction: storedLock.faction_id,
+              faction_label: lockedMeta.label,
+              season_key: seasonKey,
+              locked_until: 'next season reset',
+              message: `You are locked to ${lockedMeta.label} for this season. Faction switch blocked until the next season resets.`,
+            }, 409);
+          }
+        }
+
+        // ── Update progression (only reached when lock is confirmed) ───────
         const shouldStampSwitch = isSwitching || firstJoin;
         await env.DB.prepare(`
           UPDATE blocktopia_progression
@@ -2337,16 +2417,6 @@ export default {
           shouldStampSwitch ? now : lastSwitch || null,
           verified.telegramId,
         ).run();
-
-        // ── Upsert season lock ─────────────────────────────────────────────
-        if (lockTableExists) {
-          const nowIso = new Date().toISOString();
-          await env.DB.prepare(`
-            INSERT INTO telegram_faction_season_locks (telegram_id, season_key, faction_id, locked_at, updated_at)
-            VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT(telegram_id, season_key) DO UPDATE SET faction_id = excluded.faction_id, updated_at = excluded.updated_at
-          `).bind(verified.telegramId, seasonKey, requestedFaction, nowIso, nowIso).run();
-        }
 
         const meta = factionMeta(requestedFaction);
         return json({
