@@ -21,8 +21,14 @@ async function fetchTodayEvents() {
   const base = getApiBase();
   if (!base) return null;
   const auth = getSignedAuth();
-  const query = auth ? `?telegram_auth=${encodeURIComponent(JSON.stringify(auth))}` : '';
-  const res = await fetch(`${base}/wtf/events/today${query}`).catch(() => null);
+  const req = auth
+    ? fetch(`${base}/wtf/events/today`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_auth: auth }),
+    })
+    : fetch(`${base}/wtf/events/today`);
+  const res = await req.catch(() => null);
   if (!res || !res.ok) return null;
   return res.json().catch(() => null);
 }

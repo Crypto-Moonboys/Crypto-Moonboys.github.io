@@ -20,20 +20,42 @@
     var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var overlay = document.createElement('div');
     overlay.className = 'xp-burst-overlay';
+
     var card = document.createElement('div');
     card.className = 'xp-burst-card';
+
     var total = Math.max(0, Math.floor(Number(payload.total_xp) || 0));
     var start = reducedMotion ? total : 0;
-    card.innerHTML =
-      '<h3 class="xp-burst-title">' + String(payload.title || 'XP BURST') + '</h3>' +
-      '<div class="xp-burst-total" data-xp-total>' + start.toLocaleString() + '</div>' +
-      '<div class="xp-burst-meta">Base: ' + Math.max(0, Math.floor(Number(payload.base_xp) || 0)) +
-      ' â€¢ Bonus: ' + Math.max(0, Math.floor(Number(payload.bonus_xp) || 0)) + '</div>' +
-      '<div class="xp-burst-meta">Signal cleared. Chain options unlocked.</div>';
+
+    var title = document.createElement('h3');
+    title.className = 'xp-burst-title';
+    title.textContent = String(payload.title || 'XP BURST');
+
+    var totalNode = document.createElement('div');
+    totalNode.className = 'xp-burst-total';
+    totalNode.setAttribute('data-xp-total', '1');
+    totalNode.textContent = start.toLocaleString();
+
+    var meta = document.createElement('div');
+    meta.className = 'xp-burst-meta';
+    meta.textContent = 'Base: '
+      + Math.max(0, Math.floor(Number(payload.base_xp) || 0))
+      + ' • Bonus: '
+      + Math.max(0, Math.floor(Number(payload.bonus_xp) || 0));
+
+    var note = document.createElement('div');
+    note.className = 'xp-burst-meta';
+    note.textContent = 'Signal cleared. Chain options unlocked.';
+
+    card.appendChild(title);
+    card.appendChild(totalNode);
+    card.appendChild(meta);
+    card.appendChild(note);
     overlay.appendChild(card);
     document.body.appendChild(overlay);
+
     if (!reducedMotion) {
-      var node = card.querySelector('[data-xp-total]');
+      var node = totalNode;
       var current = 0;
       var step = Math.max(1, Math.ceil(total / 30));
       var timer = setInterval(function () {
@@ -42,6 +64,7 @@
         if (current >= total) clearInterval(timer);
       }, 24);
     }
+
     setTimeout(function () {
       if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
     }, reducedMotion ? 1700 : 2400);

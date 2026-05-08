@@ -47,6 +47,7 @@ check(migrationSql.includes('UNIQUE (event_id, utc_day)'), 'event unique constra
 check(migrationSql.includes('UNIQUE (telegram_id, event_id, utc_day)'), 'player unique constraint exists');
 
 check(workerJs.includes("path === '/wtf/events/today'"), 'route /wtf/events/today exists');
+check(workerJs.includes("path === '/wtf/events/today' && (request.method === 'GET' || request.method === 'POST')"), '/today supports GET public + POST auth');
 check(workerJs.includes("path === '/wtf/events/check-in'"), 'route /wtf/events/check-in exists');
 check(workerJs.includes("path === '/wtf/events/complete'"), 'route /wtf/events/complete exists');
 check(workerJs.includes("path === '/wtf/events/choose-option'"), 'route /wtf/events/choose-option exists');
@@ -55,6 +56,10 @@ check(workerJs.includes('WTF_ALLOWED_COMPLETION_SOURCES'), 'completion source al
 check(workerJs.includes('WTF_MAX_BONUS_XP_PER_EVENT'), 'completion cap constant exists');
 check(workerJs.includes('daily chain cap reached'), 'daily chain cap enforcement exists');
 check(workerJs.includes('check-in required'), 'no completion without check-in');
+check(workerJs.includes("auth_mode: 'public_schedule'"), 'unauthenticated /today returns public schedule only');
+check(workerJs.includes("auth_mode: 'telegram_verified'"), 'authenticated /today returns player state');
+check(workerJs.includes('player_status'), '/today includes per-event player status');
+check(workerJs.includes('checked_in_at') && workerJs.includes('completed_at'), '/today includes checked_in_at/completed_at fields');
 check(workerJs.includes('daily_missed_perks'), 'missed history base table remains in worker');
 
 check(workerJs.includes('ensureWtfEventsForDay'), 'UTC-day schedule generation helper exists');
@@ -62,16 +67,27 @@ check(workerJs.includes('getWtfEventStatus'), 'active/upcoming/expired status he
 check(workerJs.includes('countdown_seconds'), 'countdown field exists');
 
 check(workerJs.includes('daily_wtf_chain_options') && workerJs.includes("'available'"), 'chain options unlocked on completion');
+check(workerJs.includes("status = CASE WHEN daily_wtf_player_events.completed_at IS NOT NULL THEN 'completed' ELSE 'checked_in' END"), 'check-in cannot downgrade completed event');
+check(workerJs.includes('await upsertTelegramUser(env.DB, verified.user);'), 'check-in ensures telegram user upsert for FK safety');
+check(workerJs.includes("return err('event_inactive', 409)") && workerJs.includes("return err('event_expired', 409)"), 'completion enforces event active window');
+check(workerJs.includes('getAllowedSourcesForWtfEvent') && workerJs.includes('proof_required'), 'completion source must match event objective');
+check(workerJs.includes('const chainDepth = Math.min(WTF_MAX_CHAIN_DEPTH, completedToday + 1);'), 'chain depth computed per-day progression');
+check(workerJs.includes("source: 'daily_wtf_timed_event'"), 'missed-event writes use daily_wtf_timed_event source');
+check(workerJs.includes('reconcileWtfExpiryForUser') && workerJs.includes('upsertWtfMissedEntry'), 'expired events are reconciled into missed history');
 check(workerJs.includes("status='chosen'"), 'choose option marks chosen');
 check(workerJs.includes('option already claimed'), 'duplicate option claim blocked');
 
 check(wtfSystemJs.includes('window.MOONBOYS_WTF_EVENTS'), 'global rightside panel contract exists');
+check(!wtfSystemJs.includes('telegram_auth='), 'no telegram_auth query string is used for /today');
+check(wtfSystemJs.includes("method: 'POST'") && wtfSystemJs.includes('/wtf/events/today'), 'player-specific /today uses safe POST auth transport');
 check(wtfSystemJs.includes('moonboys:wtf-events-ready'), 'wtf ready event dispatch exists');
 check(wtfSystemJs.includes('moonboys:wtf-event-checkin'), 'check-in event dispatch exists');
 check(wtfSystemJs.includes('moonboys:wtf-event-complete'), 'complete event dispatch exists');
 check(wtfSystemJs.includes('moonboys:xp-burst'), 'xp burst event dispatch exists');
 check(wtfSystemJs.includes('moonboys:roguelite-options-unlocked'), 'roguelite unlock event dispatch exists');
 check(xpBurstJs.includes('prefers-reduced-motion'), 'reduced motion fallback exists');
+check(!xpBurstJs.includes('payload.title ||') || !xpBurstJs.includes('innerHTML'), 'xp burst does not inject payload.title via innerHTML');
+check(xpBurstJs.includes('textContent = String(payload.title ||'), 'xp burst dynamic title uses textContent');
 
 check(communityHtml.includes('/js/arcade/systems/daily-wtf-event-system.js'), 'community loads timed event system');
 check(gamesHtml.includes('/js/arcade/systems/daily-wtf-event-system.js'), 'games hub loads timed event system');
