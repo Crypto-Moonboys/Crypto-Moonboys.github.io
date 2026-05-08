@@ -1567,7 +1567,8 @@ function buildFactionChamberLink(factionId) {
 
 async function claimDailyDigestSlot(db, telegramId, utcDay, options = {}) {
   const nowIso = new Date().toISOString();
-  const retryCutoffIso = new Date(Date.now() - DIGEST_PENDING_STALE_MS).toISOString();
+  const retryCutoffTs = Date.now() - DIGEST_PENDING_STALE_MS;
+  const retryCutoffIso = new Date(retryCutoffTs).toISOString();
   const forceRetry = !!options.forceRetry;
   const safeMetadata = normaliseMissedMetadata({
     claim_source: 'daily_digest_run',
@@ -1600,7 +1601,7 @@ async function claimDailyDigestSlot(db, telegramId, utcDay, options = {}) {
     return { claimed: false, reason: 'already_sent' };
   }
   const updatedAtTs = Date.parse(String(existing?.updated_at || ''));
-  const isStalePending = status === 'pending' && (!Number.isFinite(updatedAtTs) || updatedAtTs <= Date.now() - DIGEST_PENDING_STALE_MS);
+  const isStalePending = status === 'pending' && (!Number.isFinite(updatedAtTs) || updatedAtTs <= retryCutoffTs);
   if (!forceRetry && status === 'pending' && !isStalePending) {
     return { claimed: false, reason: 'pending_recent' };
   }
@@ -2742,11 +2743,17 @@ export default {
               LIMIT ?
             `).bind(verified.telegramId, limit);
         const rows = await query.all().catch(() => ({ results: [] }));
-        const countRow = await env.DB.prepare(`
-          SELECT COUNT(*) AS total
-          FROM daily_missed_perks
-          WHERE telegram_id = ? ${utcDay ? 'AND utc_day = ?' : ''}
-        `).bind(...(utcDay ? [verified.telegramId, utcDay] : [verified.telegramId])).first().catch(() => ({ total: 0 }));
+        const countRow = utcDay
+          ? await env.DB.prepare(`
+              SELECT COUNT(*) AS total
+              FROM daily_missed_perks
+              WHERE telegram_id = ? AND utc_day = ?
+            `).bind(verified.telegramId, utcDay).first().catch(() => ({ total: 0 }))
+          : await env.DB.prepare(`
+              SELECT COUNT(*) AS total
+              FROM daily_missed_perks
+              WHERE telegram_id = ?
+            `).bind(verified.telegramId).first().catch(() => ({ total: 0 }));
         const allTimeCountRow = await env.DB.prepare(`
           SELECT COUNT(*) AS total
           FROM daily_missed_perks
