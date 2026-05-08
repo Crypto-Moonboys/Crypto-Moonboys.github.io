@@ -41,6 +41,7 @@
   var _progressionCache = null;
   var _progressionInflight = null;
   var _apiOnlineCache = null;
+  var _liveDataRefreshTimer = null;
   // Unsubscribe token for MOONBOYS_STATE subscriber (avoids leak if re-initialised)
   var _stateUnsub = null;
 
@@ -452,6 +453,14 @@
     if (badge) mountBadge(badge);
   }
 
+  function scheduleLiveDataRefresh() {
+    if (_liveDataRefreshTimer) clearTimeout(_liveDataRefreshTimer);
+    _liveDataRefreshTimer = setTimeout(function () {
+      _liveDataRefreshTimer = null;
+      document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
+    }, 120);
+  }
+
   function listenForUpdates() {
     // Storage listener: remount panel only on identity/sync changes that are
     // persisted in localStorage (e.g. Telegram link state).
@@ -516,6 +525,19 @@
         }
       });
     }
+
+    [
+      'battle-chamber:faction-data-ready',
+      'battle-chamber:activity-ready',
+      'moonboys:wtf-events-ready',
+      'moonboys:wtf-event-checkin',
+      'moonboys:wtf-event-complete',
+      'moonboys:roguelite-options-unlocked',
+      'moonboys:faction-status',
+      'moonboys:faction-boost',
+    ].forEach(function (eventName) {
+      window.addEventListener(eventName, scheduleLiveDataRefresh);
+    });
   }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────

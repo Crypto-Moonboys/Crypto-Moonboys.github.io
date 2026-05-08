@@ -70,14 +70,23 @@ check(!las.includes('data-csp-xp') && !las.includes('data-csp-panel'), 'faction 
 check(!siteShell.includes('id="hud-player-name">Guest'), 'right rail no longer renders a duplicate Guest/Telegram name block');
 check(!siteShell.includes('Live linked avatar'), 'HUD player-name logic does not replace the name with literal Live linked avatar');
 check(las.includes('p.progress != null') && las.includes('p.target != null') && las.includes('p.complete === true'), 'mission normalization reads saved progress, target, and complete fields from bridge cache');
-check(las.includes('esc(String(m.current))') && las.includes('esc(String(m.target))') && las.includes("m.done ? '✓ COMPLETE'"), 'mission renderer displays saved progress counters and completed check state');
+check(las.includes('esc(String(current))') && las.includes('esc(String(target))') && las.includes("m.done ? '✓ COMPLETE'"), 'mission renderer displays saved progress counters and completed check state');
+check(las.includes('Number.isFinite(Number(m.current))') && las.includes('Number.isFinite(Number(m.target))') && las.includes('var pct = Math.max(0, Math.min(100'), 'mission progress percentage guards against NaN widths');
+check(csp.includes('scheduleLiveDataRefresh') && csp.includes('_liveDataRefreshTimer') && csp.includes('setTimeout(function ()'), 'connection status panel debounces live-data refreshes');
+for (const evt of ['battle-chamber:faction-data-ready','battle-chamber:activity-ready','moonboys:wtf-events-ready','moonboys:wtf-event-checkin','moonboys:wtf-event-complete','moonboys:roguelite-options-unlocked','moonboys:faction-status','moonboys:faction-boost']) {
+  check(csp.includes(evt), `connection status panel listens for ${evt}`);
+}
+check(csp.includes("document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); })"), 'recent personal activity remounts after live-data events so empty feed is not permanently stuck');
 
 console.log('\n[5] WTF event visibility');
 check(las.includes('window.MOONBOYS_WTF_EVENTS'), 'faction ops panel reads window.MOONBOYS_WTF_EVENTS');
 check(las.includes('active_event') && las.includes('upcoming_events') && las.includes('next_event'), 'faction ops panel renders active/upcoming/next event state');
 check(las.includes('data-wtf-countdown'), 'faction ops panel includes countdown field');
 check(las.includes('data-wtf-checkin') && las.includes('checkInWtfEvent'), 'faction ops panel includes wired check-in CTA');
-check(las.includes('data-wtf-complete') && las.includes('completeWtfEvent'), 'faction ops panel includes safe complete CTA hook');
+check(las.includes('getWtfProofSource') && las.includes('VALID_WTF_COMPLETION_SOURCES'), 'faction ops panel gates completion behind valid proof sources');
+check(!las.includes("completeWtfEvent(eventId, 'right_rail_ops', 'faction_daily_ops')") && !las.includes('right_rail_ops'), 'right rail does not call completeWtfEvent with invalid right_rail_ops proof source');
+check(las.includes('data-completion-source') && las.includes('data-source-id') && las.includes('Complete with proof'), 'complete CTA only renders with proof source and source id attributes');
+check(las.includes('Complete objective in Arcade / Missions first') && las.includes('wtfRequirementText'), 'right rail shows instruction copy when no proof source is available');
 
 console.log('\n[6] Missed perks');
 check(las.includes('missed_history_count') && las.includes('missed_today'), 'missed count and daily missed summary can render');
@@ -93,6 +102,7 @@ check(missedHistoryBlock.includes("request.method === 'GET' || request.method ==
 check(dailyStateBlock.includes('tgBody = await request.json()') && dailyStateBlock.includes('verifyTelegramIdentityFromBody(tgBody'), 'daily-state POST reads telegram_auth from JSON body');
 check(missedHistoryBlock.includes('tgBody = await request.json()') && missedHistoryBlock.includes('verifyTelegramIdentityFromBody(tgBody'), 'missed-history POST reads telegram_auth from JSON body');
 check(missedHistoryBlock.includes("request.method === 'POST' ? tgBody?.limit") && missedHistoryBlock.includes("request.method === 'POST' ? tgBody?.utc_day"), 'missed-history POST body supports limit and utc_day filters');
+check(worker.includes('GET  /roguelite/missed-history?limit=30') && worker.includes('POST /roguelite/missed-history  JSON { telegram_auth, limit, utc_day }'), 'Worker route docs distinguish GET query limit from POST JSON body filters');
 check(bridge.includes("fetchJsonWithTelegramAuth(apiBase + '/roguelite/daily-state')") && bridge.includes("fetchJsonWithTelegramAuth(apiBase + '/roguelite/missed-history', { limit: 8 })"), 'Battle Chamber bridge uses the Worker POST contract for roguelite state');
 
 console.log('\n[8] Safety and no auth query drift');

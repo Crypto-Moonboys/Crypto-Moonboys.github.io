@@ -310,12 +310,14 @@
   function missionHTML(missions) {
     if (!missions.length) return '<div class="las-empty">No live faction missions reported yet.</div>';
     return missions.map(function (m) {
-      var pct = Math.max(0, Math.min(100, Math.round((m.current / Math.max(1, m.target)) * 100)));
+      var current = Number.isFinite(Number(m.current)) ? Math.max(0, Number(m.current)) : 0;
+      var target = Number.isFinite(Number(m.target)) && Number(m.target) > 0 ? Number(m.target) : 1;
+      var pct = Math.max(0, Math.min(100, Math.round((current / target) * 100)));
       return '<div class="las-mission-card ' + (m.done ? 'is-complete' : '') + '">' +
         '<div class="las-mission-top"><strong>' + esc(m.title) + '</strong><span>' + (m.done ? '✓ COMPLETE' : 'LIVE') + '</span></div>' +
         '<div class="las-mission-obj">' + esc(m.objective) + '</div>' +
         '<div class="las-progress"><i style="width:' + pct + '%"></i></div>' +
-        '<div class="las-mission-meta"><span>' + esc(String(m.current)) + ' / ' + esc(String(m.target)) + '</span>' + (m.reward ? '<span>' + esc(m.reward) + '</span>' : '') + '</div>' +
+        '<div class="las-mission-meta"><span>' + esc(String(current)) + ' / ' + esc(String(target)) + '</span>' + (m.reward ? '<span>' + esc(m.reward) + '</span>' : '') + '</div>' +
       '</div>';
     }).join('');
   }
@@ -343,6 +345,36 @@
     return 'waiting';
   }
 
+  var VALID_WTF_COMPLETION_SOURCES = {
+    arcade_run_accepted: true,
+    faction_daily_mission: true,
+    battle_chamber_proof: true,
+    roguelite_branch: true,
+  };
+
+  function getWtfProofSource(state, active) {
+    var sources = [
+      active && active.completion_proof,
+      active,
+      state && state.current_task,
+      state && state.completion_proof,
+    ];
+    for (var i = 0; i < sources.length; i++) {
+      var item = sources[i] || {};
+      var source = item.completion_source || item.proof_source || item.source;
+      var sourceId = item.source_id || item.proof_id || item.proofId || item.run_id || item.mission_id || item.branch_id || item.battle_proof_id;
+      if (source && sourceId && VALID_WTF_COMPLETION_SOURCES[source]) {
+        return { completion_source: source, source_id: sourceId };
+      }
+    }
+    return null;
+  }
+
+  function wtfRequirementText(state, active) {
+    var task = (state && state.current_task) || active || {};
+    return task.requirement || task.objective || task.description || 'Complete objective in Arcade / Missions first.';
+  }
+
   function wtfHTML(linked) {
     var state = getWtfState();
     if (!state) return '<div class="las-signal-card"><span class="las-pill las-pill--next">NEXT SIGNAL</span><strong>Daily WTF schedule loading</strong><p>Waiting for /wtf/events/today.</p><div class="las-countdown" data-wtf-countdown>--:--:--</div></div>';
@@ -357,7 +389,12 @@
       buttons += '<button type="button" class="las-action-btn" data-wtf-checkin data-event-id="' + esc(eventId) + '">Check in</button>';
     }
     if (linked && active && state.checked_in && !state.completed_today) {
-      buttons += '<button type="button" class="las-action-btn" data-wtf-complete data-event-id="' + esc(eventId) + '">Complete safely</button>';
+      var proof = getWtfProofSource(state, active);
+      if (proof) {
+        buttons += '<button type="button" class="las-action-btn" data-wtf-complete data-event-id="' + esc(eventId) + '" data-completion-source="' + esc(proof.completion_source) + '" data-source-id="' + esc(proof.source_id) + '">Complete with proof</button>';
+      } else {
+        buttons += '<div class="las-task-copy">Complete objective in Arcade / Missions first. ' + esc(wtfRequirementText(state, active)) + '</div>';
+      }
     }
     var options = Array.isArray(state.chain_options) && state.chain_options.length
       ? '<div class="las-chain-options">' + state.chain_options.slice(0, 3).map(function (o) { return '<span>' + esc(o.title || o.name || o.id || 'Chain option') + '</span>'; }).join('') + '</div>'
@@ -468,6 +505,7 @@
       '.las-signal-card strong{display:block;color:#fff}.las-signal-card p,.las-missed-box p{margin:4px 0;color:var(--color-text-muted,#8b949e);font-size:.7rem;line-height:1.35}',
       '.las-countdown{font-family:monospace;color:#00e5ff;font-size:1rem;text-shadow:0 0 8px rgba(0,229,255,.4);margin:5px 0}',
       '.las-action-btn{margin:4px 5px 0 0;padding:5px 7px;border:1px solid rgba(0,229,255,.45);background:rgba(0,229,255,.08);color:#c8f0ff;font-weight:800;text-transform:uppercase;font-size:.6rem;cursor:pointer}',
+      '.las-task-copy{margin-top:5px;color:#f7c948;font-size:.68rem;line-height:1.35;border-left:2px solid rgba(247,201,72,.45);padding-left:6px}',
       '.las-chain-options{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.las-chain-options span{font-size:.58rem;border:1px solid rgba(247,201,72,.3);color:#f7c948;padding:2px 5px}',
       '.las-missed-box small{color:var(--color-text-muted,#8b949e);font-size:.64rem}.las-reset-copy{color:var(--color-text-muted,#8b949e);font-size:.66rem;line-height:1.4;border-left:2px solid rgba(0,229,255,.4);padding-left:7px}',
     ].join('\n');
@@ -567,11 +605,13 @@
       var api = window.MOONBOYS_DAILY_WTF;
       if (!api) return;
       var eventId = btn.getAttribute('data-event-id') || '';
+      var completionSource = btn.getAttribute('data-completion-source') || '';
+      var sourceId = btn.getAttribute('data-source-id') || '';
       btn.disabled = true;
       var action = check && typeof api.checkInWtfEvent === 'function'
         ? api.checkInWtfEvent(eventId)
-        : complete && typeof api.completeWtfEvent === 'function'
-          ? api.completeWtfEvent(eventId, 'right_rail_ops', 'faction_daily_ops')
+        : complete && typeof api.completeWtfEvent === 'function' && completionSource && sourceId
+          ? api.completeWtfEvent(eventId, completionSource, sourceId)
           : Promise.resolve(null);
       action.then(function () { refresh(); }).catch(function () {}).finally(function () { btn.disabled = false; });
     });

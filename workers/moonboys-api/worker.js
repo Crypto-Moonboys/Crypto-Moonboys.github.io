@@ -40,7 +40,8 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
  *   POST /battle-chamber/event
  *   POST /player/mastery/update
  *   GET/POST /roguelite/daily-state
- *   GET/POST /roguelite/missed-history?limit=30
+ *   GET  /roguelite/missed-history?limit=30
+ *   POST /roguelite/missed-history  JSON { telegram_auth, limit, utc_day }
  *   POST /roguelite/mark-missed
  *   POST /telegram/daily-digest/run
  *
@@ -2956,7 +2957,7 @@ export default {
       }
     }
 
-    // ── GET/POST /roguelite/missed-history ──────────────────────────────────
+    // ── GET /roguelite/missed-history?limit=30 OR POST JSON { telegram_auth, limit, utc_day }
     if (path === '/roguelite/missed-history' && (request.method === 'GET' || request.method === 'POST')) {
       let tgBody = {};
       if (request.method === 'POST') {
