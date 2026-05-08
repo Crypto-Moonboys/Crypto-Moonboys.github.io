@@ -12,6 +12,8 @@ function check(condition, message) {
 
 const community = read('community.html');
 const games = read('games/index.html');
+const incubator = read('gkniftyheads-incubator.html');
+const incubatorLink = read('js/incubator-link.js');
 const siteShell = read('js/site-shell.js');
 const csp = read('js/components/connection-status-panel.js');
 const las = read('js/components/live-activity-summary.js');
@@ -31,6 +33,14 @@ function hasPreloadFor(html, href) {
   const re = new RegExp(`<link[^>]+rel=["']preload["'][^>]+href=["']${href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`);
   return re.test(html);
 }
+function hasModulePreloadFor(html, href) {
+  const re = new RegExp(`<link[^>]+rel=["']modulepreload["'][^>]+href=["']${href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`);
+  return re.test(html);
+}
+function hasCfBypassedModuleScript(html, src) {
+  const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`<script[^>]+data-cfasync=["']false["'][^>]+type=["']module["'][^>]+src=["']${escaped}["']`).test(html);
+}
 function routeBlock(src, route) {
   const start = src.indexOf(`path === '${route}'`);
   if (start === -1) return '';
@@ -41,11 +51,26 @@ function routeBlock(src, route) {
 console.log('\n[1] Live page warning cleanup');
 check(!hasPreloadFor(community, '/js/battle-chamber-faction-bridge.js'), 'community.html does not classic-preload the module Battle Chamber bridge');
 check(!hasPreloadFor(community, '/js/arcade/systems/daily-wtf-event-system.js'), 'community.html does not classic-preload the Daily WTF module');
+check(!hasPreloadFor(games, '/js/arcade/systems/daily-wtf-event-system.js'), 'games/index.html does not classic-preload the Daily WTF module');
+check(!hasModulePreloadFor(community, '/js/battle-chamber-faction-bridge.js'), 'community.html does not modulepreload the Battle Chamber bridge before delayed shell/component work');
+check(!hasModulePreloadFor(community, '/js/arcade/systems/daily-wtf-event-system.js'), 'community.html does not modulepreload the Daily WTF system before delayed shell/component work');
+check(!hasModulePreloadFor(games, '/js/arcade/systems/daily-wtf-event-system.js'), 'games/index.html does not modulepreload the Daily WTF system before delayed shell/component work');
 check(hasModuleScript(community, '/js/battle-chamber-faction-bridge.js'), 'community.html still runtime-loads Battle Chamber bridge as a module');
 check(hasModuleScript(community, '/js/arcade/systems/daily-wtf-event-system.js'), 'community.html still runtime-loads Daily WTF system as a module');
+check(hasCfBypassedModuleScript(community, '/js/battle-chamber-faction-bridge.js'), 'community.html bypasses Cloudflare Rocket Loader for Battle Chamber module runtime load');
+check(hasCfBypassedModuleScript(community, '/js/arcade/systems/daily-wtf-event-system.js'), 'community.html bypasses Cloudflare Rocket Loader for Daily WTF module runtime load');
+check(hasCfBypassedModuleScript(games, '/js/arcade/systems/daily-wtf-event-system.js'), 'games/index.html bypasses Cloudflare Rocket Loader for Daily WTF module runtime load');
 check(!community.includes('href="/favicon.ico"'), 'community.html does not reference a missing or fake /favicon.ico asset');
 check(community.includes('<link rel="icon" type="image/png" href="/favicon.png">'), 'community.html uses the standardized PNG favicon');
 check(!fs.existsSync(path.join(ROOT, 'favicon.ico')), 'repo does not ship a fake .ico file containing SVG text');
+check(incubator.includes('href="/favicon.png"') && !incubator.includes('href="/favicon.ico"'), 'incubator page uses standardized PNG favicon without /favicon.ico fallback');
+
+console.log('\n[1b] Incubator direct-visit link handling');
+check(incubator.includes('/js/incubator-link.js'), 'incubator page still loads Telegram link handler');
+check(incubatorLink.includes('getTelegramHashState') && incubatorLink.includes('params.has(HASH_KEY)'), 'incubator link handler distinguishes direct visits from empty bot callbacks');
+check(incubatorLink.includes('Use /gklink in the Telegram bot to connect your account.'), 'incubator direct visit shows neutral /gklink instructions');
+check(!incubatorLink.includes("debug('payload_missing');"), 'incubator direct visit does not log noisy payload_missing');
+check(incubatorLink.includes("debug('payload_missing_after_callback');"), 'incubator empty bot callback still records debug context');
 
 console.log('\n[2] Daily WTF frontend verification');
 check(hasScript(community, '/js/components/xp-burst-animation.js') && hasScript(games, '/js/components/xp-burst-animation.js'), 'xp-burst-animation.js is loaded on community and games hub');
