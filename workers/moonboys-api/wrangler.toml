@@ -2,6 +2,9 @@ name = "moonboys-api"
 main = "worker.js"
 compatibility_date = "2026-04-12"
 
+[triggers]
+crons = ["0 9 * * *"]
+
 # Non-secret production defaults used by worker.js. These may be overridden
 # in the Cloudflare dashboard if the deployed worker URLs change.
 [vars]

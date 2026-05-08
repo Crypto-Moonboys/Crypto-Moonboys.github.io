@@ -25,6 +25,7 @@ console.log('\n─── Telegram Daily Digest + Missed Perks Tests ────
 
 const MIGRATION = 'workers/moonboys-api/migrations/018_daily_digest_missed_perks.sql';
 const WORKER = 'workers/moonboys-api/worker.js';
+const WRANGLER = 'workers/moonboys-api/wrangler.toml';
 const BRIDGE = 'js/battle-chamber-faction-bridge.js';
 const HUB = 'js/battle-chamber-factions.js';
 const FACTION_PAGE = 'js/faction-chamber-page.js';
@@ -34,6 +35,7 @@ const LEADERBOARD = 'js/leaderboard-client.js';
 
 const migrationSql = exists(MIGRATION) ? read(MIGRATION) : '';
 const workerJs = read(WORKER);
+const wranglerToml = exists(WRANGLER) ? read(WRANGLER) : '';
 const bridgeJs = read(BRIDGE);
 const hubJs = read(HUB);
 const factionPageJs = read(FACTION_PAGE);
@@ -56,6 +58,12 @@ check(workerJs.includes("path === '/roguelite/missed-history'"), 'worker include
 check(workerJs.includes("path === '/roguelite/mark-missed'"), 'worker includes /roguelite/mark-missed');
 check(workerJs.includes("path === '/telegram/daily-digest/run'"), 'worker includes /telegram/daily-digest/run');
 check(workerJs.includes('async scheduled('), 'worker includes scheduled handler');
+const cronMatches = wranglerToml.match(/^\s*crons\s*=\s*\[(.*?)\]\s*$/m);
+const cronEntries = cronMatches?.[1]
+  ? cronMatches[1].split(',').map((entry) => entry.trim()).filter(Boolean)
+  : [];
+check(wranglerToml.includes('[triggers]') && cronEntries.length === 1, 'wrangler defines exactly one cron trigger');
+check(workerJs.includes('scheduled_cron') ? cronEntries.length > 0 : true, 'scheduled digest requires cron trigger in wrangler');
 
 console.log('\n[3] Daily active reset checks');
 check(workerJs.includes('ensureDailyOpportunityStateForToday'), 'worker has daily opportunity state helper');
@@ -68,10 +76,18 @@ check(workerJs.includes('backfillMissedPerkGapsFromLastActiveDay'), 'worker back
 check(workerJs.includes('FROM daily_missed_perks') && workerJs.includes('ORDER BY missed_at DESC'), 'missed history route reads persistent missed table newest-first');
 check(workerJs.includes('missed_history_count'), 'daily-state route returns missed history count separately from today active data');
 check(workerJs.includes('The city kept moving while you were away.'), 'worker includes required missed-history retention copy');
+check(workerJs.includes('total_all_time'), 'missed history route exposes all-time total');
+check(workerJs.includes('metadata_json: row.metadata_json || null') && workerJs.includes('metadata: safeJsonParse(row.metadata_json, {})'), 'missed history route returns raw metadata_json and parsed metadata');
+check(!workerJs.includes('missedAt: body?.missed_at') && workerJs.includes('client_missed_at'), 'mark-missed does not trust client missed_at for primary ordering');
 
 console.log('\n[5] Telegram digest checks');
 check(workerJs.includes('claimDailyDigestSlot'), 'worker claims one digest slot per user/day');
 check(workerJs.includes('telegram_daily_digest_log'), 'worker logs digest status in telegram_daily_digest_log');
+check(workerJs.includes('DIGEST_PENDING_STALE_MINUTES') && workerJs.includes("status = 'failed'") && workerJs.includes("status = 'pending'"), 'worker allows safe retry for failed/stale pending digest slots');
+check(workerJs.includes("reason: 'pending_recent'") && workerJs.includes("reason: 'already_sent'"), 'worker blocks resend for recent pending and sent states');
+check(workerJs.includes("safeStatus === 'sent' ? nowIso : null"), 'worker sets sent_at only for sent status');
+check(workerJs.includes('DIGEST_SEND_BATCH_SIZE') && workerJs.includes('DIGEST_SEND_MAX_CONCURRENCY') && workerJs.includes('Promise.all'), 'digest runner uses bounded batching/concurrency');
+check(workerJs.includes('processed: 0') && workerJs.includes('skipped:') && workerJs.includes('failed: 0'), 'digest summary includes processed/sent/failed/skipped tracking');
 check(workerJs.includes('GM, the Battle Chamber has reset. Your faction has new work.'), 'digest includes hello/check-in copy');
 check(workerJs.includes('Today’s faction daily missions'), 'digest includes today mission section');
 check(workerJs.includes('Missed perks update'), 'digest includes missed perks update');
@@ -87,6 +103,8 @@ check(!communityHtml.toLowerCase().includes('missed history clears daily'), 'no 
 check(factionPageJs.includes('fcp-daily-digest') && factionPageJs.includes('fcp-missed-perks'), 'faction chamber renderer includes missed/digest hooks');
 check(bridgeJs.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && bridgeJs.includes('MOONBOYS_ROGUELITE_MISSED_HISTORY'), 'bridge wires roguelite daily/missed caches');
 check(gamesHtml.includes('roguelite-daily-digest-summary'), 'arcade hub includes daily signal summary hook');
+check(gamesHtml.includes('DAILY_DIGEST_SUMMARY_POLL_MS') && !gamesHtml.includes('setInterval(renderDailyDigestSummary, 30000)'), 'arcade hub daily digest polling reduced from 30s');
+check(gamesHtml.includes("document.addEventListener('visibilitychange'"), 'arcade hub pauses digest polling while hidden');
 
 console.log('\n[7] Safety checks');
 const FORBIDDEN = [

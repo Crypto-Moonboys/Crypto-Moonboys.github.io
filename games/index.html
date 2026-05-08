@@ -189,12 +189,14 @@ import { ArcadeMeta } from '/js/arcade-meta-system.js';
 const board = document.getElementById('roguelite-loop-board');
 const digestSummaryEl = document.getElementById('roguelite-daily-digest-summary');
 const SESSION_BASELINE_KEY = 'roguelite_loop_session_xp_baseline';
+const DAILY_DIGEST_SUMMARY_POLL_MS = 5 * 60 * 1000;
 let displayedXp = 0;
 let targetXp = 0;
 let tickerInitialized = false;
 let sessionBaseline = null;
 let tickerEl = null;
 let gainedEl = null;
+let digestSummaryInterval = null;
 const gameLinks = {
   snake: '/games/snake-run/',
   invaders: '/games/invaders-3008/',
@@ -443,8 +445,31 @@ document.addEventListener('arcade-meta-roguelite-completed', renderLoopBoard);
 document.addEventListener('arcade-meta-rabbit-holes-spawned', renderLoopBoard);
 document.addEventListener('arcade-meta-tracked', renderLoopBoard);
 document.addEventListener('arcade-meta-loop-cycle-updated', renderLoopBoard);
+document.addEventListener('arcade-meta-roguelite-completed', renderDailyDigestSummary);
+document.addEventListener('arcade-meta-rabbit-holes-spawned', renderDailyDigestSummary);
+document.addEventListener('arcade-meta-tracked', renderDailyDigestSummary);
+document.addEventListener('arcade-meta-loop-cycle-updated', renderDailyDigestSummary);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') {
+    if (digestSummaryInterval) {
+      clearInterval(digestSummaryInterval);
+      digestSummaryInterval = null;
+    }
+    return;
+  }
+  renderDailyDigestSummary();
+  if (!digestSummaryInterval) {
+    digestSummaryInterval = setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
+      renderDailyDigestSummary();
+    }, DAILY_DIGEST_SUMMARY_POLL_MS);
+  }
+});
 setInterval(renderLoopBoard, 15000);
-setInterval(renderDailyDigestSummary, 30000);
+digestSummaryInterval = setInterval(() => {
+  if (document.visibilityState !== 'visible') return;
+  renderDailyDigestSummary();
+}, DAILY_DIGEST_SUMMARY_POLL_MS);
 setInterval(tickXpDisplay, 350);
 </script>
 

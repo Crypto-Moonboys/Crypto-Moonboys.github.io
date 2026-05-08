@@ -911,6 +911,9 @@ const DAILY_MISSED_TEXT_LIMITS = Object.freeze({
 });
 
 const DAILY_MISSED_HISTORY_MAX_LIMIT = 100;
+const DIGEST_PENDING_STALE_MINUTES = 15;
+const DIGEST_SEND_BATCH_SIZE = 12;
+const DIGEST_SEND_MAX_CONCURRENCY = 3;
 
 async function ensurePlayerStateTables(db) {
   for (const tableName of PLAYER_STATE_TABLES) {
@@ -1561,8 +1564,16 @@ function buildFactionChamberLink(factionId) {
   return `${SITE_URL}/battle-chamber/factions/${encodeURIComponent(normalizedFaction)}.html`;
 }
 
-async function claimDailyDigestSlot(db, telegramId, utcDay) {
-  const result = await db.prepare(`
+async function claimDailyDigestSlot(db, telegramId, utcDay, options = {}) {
+  const nowIso = new Date().toISOString();
+  const retryCutoffIso = new Date(Date.now() - (DIGEST_PENDING_STALE_MINUTES * 60 * 1000)).toISOString();
+  const forceRetry = !!options.forceRetry;
+  const safeMetadata = normaliseMissedMetadata({
+    claim_source: 'daily_digest_run',
+    trigger: options.trigger || null,
+    retry_override: forceRetry,
+  });
+  const insertResult = await db.prepare(`
     INSERT INTO telegram_daily_digest_log
       (telegram_id, utc_day, sent_at, status, error_message, metadata_json, created_at, updated_at)
     VALUES (?, ?, NULL, 'pending', NULL, ?, ?, ?)
@@ -1570,27 +1581,70 @@ async function claimDailyDigestSlot(db, telegramId, utcDay) {
   `).bind(
     String(telegramId),
     String(utcDay),
-    JSON.stringify({ claim_source: 'daily_digest_run' }),
-    new Date().toISOString(),
-    new Date().toISOString(),
+    safeMetadata,
+    nowIso,
+    nowIso,
   ).run().catch(() => null);
-  return Number(result?.meta?.changes || 0) === 1;
+  if (Number(insertResult?.meta?.changes || 0) === 1) {
+    return { claimed: true, reason: 'created' };
+  }
+  const existing = await db.prepare(`
+    SELECT status, sent_at, updated_at
+    FROM telegram_daily_digest_log
+    WHERE telegram_id = ? AND utc_day = ?
+    LIMIT 1
+  `).bind(String(telegramId), String(utcDay)).first().catch(() => null);
+  const status = String(existing?.status || '').toLowerCase();
+  if (status === 'sent') {
+    return { claimed: false, reason: 'already_sent' };
+  }
+  const updatedAtTs = Date.parse(String(existing?.updated_at || ''));
+  const isStalePending = status === 'pending' && (!Number.isFinite(updatedAtTs) || updatedAtTs <= Date.now() - (DIGEST_PENDING_STALE_MINUTES * 60 * 1000));
+  if (!forceRetry && status === 'pending' && !isStalePending) {
+    return { claimed: false, reason: 'pending_recent' };
+  }
+  if (!forceRetry && status !== 'failed' && !isStalePending) {
+    return { claimed: false, reason: status || 'blocked' };
+  }
+  const retryUpdate = await db.prepare(`
+    UPDATE telegram_daily_digest_log
+    SET status = 'pending', sent_at = NULL, error_message = NULL, metadata_json = ?, updated_at = ?
+    WHERE telegram_id = ? AND utc_day = ?
+      AND (
+        (? = 1 AND status <> 'sent')
+        OR status = 'failed'
+        OR (status = 'pending' AND (updated_at IS NULL OR updated_at <= ?))
+      )
+  `).bind(
+    safeMetadata,
+    nowIso,
+    String(telegramId),
+    String(utcDay),
+    forceRetry ? 1 : 0,
+    retryCutoffIso,
+  ).run().catch(() => null);
+  if (Number(retryUpdate?.meta?.changes || 0) === 1) {
+    return { claimed: true, reason: forceRetry ? 'retry_override' : (status === 'failed' ? 'retry_failed' : 'retry_stale_pending') };
+  }
+  return { claimed: false, reason: status === 'pending' ? 'pending_recent' : (status || 'blocked') };
 }
 
 async function finalizeDailyDigestLog(db, telegramId, utcDay, status, payload = {}) {
   const safeStatus = status === 'sent' ? 'sent' : 'failed';
   const safeError = payload?.error ? String(payload.error).slice(0, 500) : null;
   const safeMetadata = normaliseMissedMetadata(payload?.metadata || null);
+  const nowIso = new Date().toISOString();
+  const sentAt = safeStatus === 'sent' ? nowIso : null;
   await db.prepare(`
     UPDATE telegram_daily_digest_log
     SET sent_at = ?, status = ?, error_message = ?, metadata_json = ?, updated_at = ?
     WHERE telegram_id = ? AND utc_day = ?
   `).bind(
-    new Date().toISOString(),
+    sentAt,
     safeStatus,
     safeError,
     safeMetadata,
-    new Date().toISOString(),
+    nowIso,
     String(telegramId),
     String(utcDay),
   ).run().catch(() => {});
@@ -1723,6 +1777,7 @@ async function runTelegramDailyDigest(env, options = {}) {
   const db = env.DB;
   const utcDay = options.utcDay || getTodayUtcDate();
   const targetTelegramId = options.targetTelegramId ? String(options.targetTelegramId) : null;
+  const forceRetry = !!options.forceRetry;
   const dbCheck = await ensureDailyDigestTables(db);
   if (dbCheck) {
     return { ok: false, error: 'daily_digest_unavailable', reason: dbCheck.tableName };
@@ -1733,17 +1788,22 @@ async function runTelegramDailyDigest(env, options = {}) {
     utc_day: utcDay,
     trigger: options.trigger || 'manual',
     linked_users_considered: linkedIds.length,
+    processed: 0,
     sent: 0,
+    skipped: targetTelegramId && !linkedIds.length ? 1 : 0,
     skipped_already_sent: 0,
+    skipped_pending_recent: 0,
     skipped_unlinked: targetTelegramId && !linkedIds.length ? 1 : 0,
     failed: 0,
     failures: [],
   };
-  for (const telegramId of linkedIds) {
-    const claimed = await claimDailyDigestSlot(db, telegramId, utcDay);
-    if (!claimed) {
-      summary.skipped_already_sent += 1;
-      continue;
+  const processTelegramId = async (telegramId) => {
+    const claim = await claimDailyDigestSlot(db, telegramId, utcDay, {
+      forceRetry,
+      trigger: options.trigger || 'manual',
+    });
+    if (!claim?.claimed) {
+      return { kind: 'skipped', telegram_id: telegramId, reason: claim?.reason || 'blocked' };
     }
     const result = await sendDailyDigestMessage(db, env, telegramId, utcDay).catch((error) => ({
       ok: false,
@@ -1751,27 +1811,52 @@ async function runTelegramDailyDigest(env, options = {}) {
       context: {},
     }));
     if (result.ok) {
-      summary.sent += 1;
       await finalizeDailyDigestLog(db, telegramId, utcDay, 'sent', {
         metadata: {
           trigger: options.trigger || 'manual',
           ...result.context,
         },
       });
-    } else {
-      summary.failed += 1;
-      summary.failures.push({
-        telegram_id: telegramId,
-        error: result.error || 'telegram_send_failed',
-      });
-      await finalizeDailyDigestLog(db, telegramId, utcDay, 'failed', {
-        error: result.error || 'telegram_send_failed',
-        metadata: {
-          trigger: options.trigger || 'manual',
-          status: result.status || null,
-          ...result.context,
-        },
-      });
+      return { kind: 'sent', telegram_id: telegramId };
+    }
+    await finalizeDailyDigestLog(db, telegramId, utcDay, 'failed', {
+      error: result.error || 'telegram_send_failed',
+      metadata: {
+        trigger: options.trigger || 'manual',
+        status: result.status || null,
+        ...result.context,
+      },
+    });
+    return {
+      kind: 'failed',
+      telegram_id: telegramId,
+      error: result.error || 'telegram_send_failed',
+    };
+  };
+  for (let i = 0; i < linkedIds.length; i += DIGEST_SEND_BATCH_SIZE) {
+    const batch = linkedIds.slice(i, i + DIGEST_SEND_BATCH_SIZE);
+    for (let j = 0; j < batch.length; j += DIGEST_SEND_MAX_CONCURRENCY) {
+      const concurrencySlice = batch.slice(j, j + DIGEST_SEND_MAX_CONCURRENCY);
+      const results = await Promise.all(concurrencySlice.map((telegramId) => processTelegramId(telegramId)));
+      for (const entry of results) {
+        if (entry.kind === 'sent') {
+          summary.processed += 1;
+          summary.sent += 1;
+          continue;
+        }
+        if (entry.kind === 'failed') {
+          summary.processed += 1;
+          summary.failed += 1;
+          summary.failures.push({
+            telegram_id: entry.telegram_id,
+            error: entry.error,
+          });
+          continue;
+        }
+        summary.skipped += 1;
+        if (entry.reason === 'already_sent') summary.skipped_already_sent += 1;
+        if (entry.reason === 'pending_recent') summary.skipped_pending_recent += 1;
+      }
     }
   }
   return summary;
@@ -2659,6 +2744,11 @@ export default {
         const countRow = await env.DB.prepare(`
           SELECT COUNT(*) AS total
           FROM daily_missed_perks
+          WHERE telegram_id = ? ${utcDay ? 'AND utc_day = ?' : ''}
+        `).bind(...(utcDay ? [verified.telegramId, utcDay] : [verified.telegramId])).first().catch(() => ({ total: 0 }));
+        const allTimeCountRow = await env.DB.prepare(`
+          SELECT COUNT(*) AS total
+          FROM daily_missed_perks
           WHERE telegram_id = ?
         `).bind(verified.telegramId).first().catch(() => ({ total: 0 }));
         const items = (rows?.results || []).map((row) => ({
@@ -2672,7 +2762,8 @@ export default {
           description: row.description || null,
           missed_reason: row.missed_reason || null,
           status_value: Math.max(0, Math.floor(Number(row.status_value) || 0)),
-          metadata_json: safeJsonParse(row.metadata_json, {}),
+          metadata_json: row.metadata_json || null,
+          metadata: safeJsonParse(row.metadata_json, {}),
           missed_at: row.missed_at || null,
           created_at: row.created_at || null,
         }));
@@ -2682,6 +2773,7 @@ export default {
           utc_day: utcDay || null,
           limit,
           total: Math.max(0, Math.floor(Number(countRow?.total) || 0)),
+          total_all_time: Math.max(0, Math.floor(Number(allTimeCountRow?.total) || 0)),
           items,
         });
       } catch (error) {
@@ -2704,6 +2796,14 @@ export default {
       try {
         await upsertTelegramUser(env.DB, verified.user);
         const factionId = body?.faction_id ? normalizeBattleChamberFaction(body.faction_id) : null;
+        const clientMissedAt = body?.missed_at && Number.isFinite(Date.parse(String(body.missed_at)))
+          ? new Date(body.missed_at).toISOString()
+          : null;
+        const metadataBase = safeJsonParse(normaliseMissedMetadata(body?.metadata_json), {});
+        const metadataObject = metadataBase && typeof metadataBase === 'object' && !Array.isArray(metadataBase)
+          ? metadataBase
+          : {};
+        if (clientMissedAt) metadataObject.client_missed_at = clientMissedAt;
         await insertMissedPerkEntry(env.DB, {
           telegramId: verified.telegramId,
           utcDay: getTodayUtcDate(),
@@ -2714,8 +2814,7 @@ export default {
           description: body?.description,
           missedReason: body?.missed_reason || 'manual_mark',
           statusValue: body?.status_value,
-          metadataJson: body?.metadata_json,
-          missedAt: body?.missed_at,
+          metadataJson: metadataObject,
         });
         return json({
           ok: true,
@@ -2761,6 +2860,7 @@ export default {
         trigger: 'manual_route',
         targetTelegramId: body?.telegram_id ? String(body.telegram_id) : null,
         utcDay: body?.utc_day ? clampText(body.utc_day, 10, getTodayUtcDate()) : getTodayUtcDate(),
+        forceRetry: body?.force_retry === true,
       });
       if (!summary?.ok) {
         return json(summary, 503);
@@ -4086,8 +4186,11 @@ export default {
     logApiEvent('telegram_daily_digest_scheduled_complete', {
       utcDay: summary.utc_day,
       linked_users_considered: summary.linked_users_considered,
+      processed: summary.processed,
       sent: summary.sent,
+      skipped: summary.skipped,
       skipped_already_sent: summary.skipped_already_sent,
+      skipped_pending_recent: summary.skipped_pending_recent,
       failed: summary.failed,
     });
   },
