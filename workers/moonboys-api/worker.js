@@ -1020,20 +1020,14 @@ async function applyBattleChamberCloutUpdate(db, {
   for (const periodType of BATTLE_CHAMBER_PERIODS) {
     periodKeys[periodType] = await getBattlePeriodKey(periodType, db, ts);
   }
+  if (safeDelta <= 0) return periodKeys;
 
   for (const periodType of BATTLE_CHAMBER_PERIODS) {
     const periodKey = periodKeys[periodType];
-    await db.prepare(`
-      INSERT INTO battle_chamber_member_clout
+    const memberInsert = await db.prepare(`
+      INSERT OR IGNORE INTO battle_chamber_member_clout
         (telegram_id, faction_id, period_type, period_key, clout_total, mission_total, score_total, streak_total, last_event_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(telegram_id, faction_id, period_type, period_key) DO UPDATE SET
-        clout_total = battle_chamber_member_clout.clout_total + excluded.clout_total,
-        mission_total = battle_chamber_member_clout.mission_total + excluded.mission_total,
-        score_total = battle_chamber_member_clout.score_total + excluded.score_total,
-        streak_total = battle_chamber_member_clout.streak_total + excluded.streak_total,
-        last_event_at = excluded.last_event_at,
-        updated_at = excluded.updated_at
     `).bind(
       String(telegramId),
       factionId,
@@ -1046,16 +1040,42 @@ async function applyBattleChamberCloutUpdate(db, {
       nowStr,
       nowStr,
     ).run();
+    const insertedMemberPeriod = Number(memberInsert?.meta?.changes || 0) > 0;
+    if (!insertedMemberPeriod) {
+      await db.prepare(`
+        UPDATE battle_chamber_member_clout
+        SET
+          clout_total = clout_total + ?,
+          mission_total = mission_total + ?,
+          score_total = score_total + ?,
+          streak_total = streak_total + ?,
+          last_event_at = ?,
+          updated_at = ?
+        WHERE telegram_id = ? AND faction_id = ? AND period_type = ? AND period_key = ?
+      `).bind(
+        safeDelta,
+        bucket.mission,
+        bucket.score,
+        bucket.streak,
+        nowStr,
+        nowStr,
+        String(telegramId),
+        factionId,
+        periodType,
+        periodKey,
+      ).run();
+    }
 
     await db.prepare(`
       INSERT INTO battle_chamber_faction_clout
         (faction_id, period_type, period_key, clout_total, contribution_total, mission_total, score_total, member_count, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(faction_id, period_type, period_key) DO UPDATE SET
         clout_total = battle_chamber_faction_clout.clout_total + excluded.clout_total,
         contribution_total = battle_chamber_faction_clout.contribution_total + excluded.contribution_total,
         mission_total = battle_chamber_faction_clout.mission_total + excluded.mission_total,
         score_total = battle_chamber_faction_clout.score_total + excluded.score_total,
+        member_count = battle_chamber_faction_clout.member_count + excluded.member_count,
         updated_at = excluded.updated_at
     `).bind(
       factionId,
@@ -1065,25 +1085,8 @@ async function applyBattleChamberCloutUpdate(db, {
       bucket.contribution,
       bucket.mission,
       bucket.score,
+      insertedMemberPeriod ? 1 : 0,
       nowStr,
-    ).run();
-
-    const memberCountRow = await db.prepare(
-      `SELECT COUNT(*) AS total
-       FROM battle_chamber_member_clout
-       WHERE faction_id = ? AND period_type = ? AND period_key = ?`
-    ).bind(factionId, periodType, periodKey).first().catch(() => ({ total: 0 }));
-
-    await db.prepare(`
-      UPDATE battle_chamber_faction_clout
-      SET member_count = ?, updated_at = ?
-      WHERE faction_id = ? AND period_type = ? AND period_key = ?
-    `).bind(
-      Number(memberCountRow?.total) || 0,
-      nowStr,
-      factionId,
-      periodType,
-      periodKey,
     ).run();
   }
 
@@ -2856,7 +2859,7 @@ export default {
           SELECT id, telegram_id, display_name, faction_id, event_type, event_text, clout_delta, source, metadata_json, created_at
           FROM battle_chamber_activity_log
           WHERE faction_id = ?
-          ORDER BY datetime(created_at) DESC, id DESC
+          ORDER BY created_at DESC, id DESC
           LIMIT 20
         `).bind(factionId).all().catch(() => ({ results: [] }));
 
@@ -2914,7 +2917,9 @@ export default {
     if (path === '/battle-chamber/activity' && request.method === 'GET') {
       const bcCheck = await ensureBattleChamberTables(env.DB);
       if (bcCheck) return bcCheck.response;
-      const requestedFaction = normalizeBattleChamberFaction(url.searchParams.get('faction_id'));
+      const rawFactionFilter = url.searchParams.get('faction_id');
+      const requestedFaction = rawFactionFilter == null ? null : normalizeBattleChamberFaction(rawFactionFilter);
+      if (rawFactionFilter != null && !requestedFaction) return err('Valid faction_id required', 400);
       const limit = Math.max(1, Math.min(100, Math.floor(Number(url.searchParams.get('limit') || 20) || 20)));
       try {
         const query = requestedFaction
@@ -2922,13 +2927,13 @@ export default {
               SELECT id, telegram_id, display_name, faction_id, event_type, event_text, clout_delta, source, metadata_json, created_at
               FROM battle_chamber_activity_log
               WHERE faction_id = ?
-              ORDER BY datetime(created_at) DESC, id DESC
+              ORDER BY created_at DESC, id DESC
               LIMIT ?
             `).bind(requestedFaction, limit)
           : env.DB.prepare(`
               SELECT id, telegram_id, display_name, faction_id, event_type, event_text, clout_delta, source, metadata_json, created_at
               FROM battle_chamber_activity_log
-              ORDER BY datetime(created_at) DESC, id DESC
+              ORDER BY created_at DESC, id DESC
               LIMIT ?
             `).bind(limit);
         const rows = await query.all().catch(() => ({ results: [] }));
@@ -2975,26 +2980,22 @@ export default {
       }
       if (!factionId) return err('Valid faction_id required', 400);
 
-      const cloutDelta = clampBattleClout(body?.clout_delta);
+      // Public /battle-chamber/event is proof-feed only; clout authority lives on
+      // /faction/signal/contribute and other server-owned validated paths.
+      const cloutDelta = 0; // Keep hard-zero: proof route must never mutate clout totals.
       const source = String(body?.source || 'battle_chamber_client').trim().slice(0, 80) || 'battle_chamber_client';
       const verifiedDisplayName = getTelegramDisplayName(verified.user || verified.authPayload || { id: verified.telegramId });
-      const displayName = String(body?.display_name || verifiedDisplayName).trim().slice(0, 80) || verifiedDisplayName;
-      const eventText = String(body?.event_text || '').trim().slice(0, 220)
-        || buildBattleEventText({ displayName, factionId, eventType });
+      const displayName = verifiedDisplayName;
+      const eventText = buildBattleEventText({ displayName, factionId, eventType });
       let metadata = body?.metadata_json;
       if (typeof metadata === 'string') metadata = safeJsonParse(metadata, {});
       if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) metadata = {};
       metadata.faction_normalized = factionId;
-      metadata.clout_clamped = cloutDelta;
+      metadata.clout_clamped = 0;
+      metadata.proof_only = true;
+      metadata.ownership = 'proof_feed_only';
 
       try {
-        const periodKeys = await applyBattleChamberCloutUpdate(env.DB, {
-          telegramId: verified.telegramId,
-          factionId,
-          eventType,
-          cloutDelta,
-          nowMs: Date.now(),
-        });
         await appendBattleChamberActivity(env.DB, {
           telegramId: verified.telegramId,
           displayName,
@@ -3011,7 +3012,6 @@ export default {
           faction_id: factionId,
           event_type: eventType,
           clout_delta: cloutDelta,
-          period_keys: periodKeys,
         });
       } catch {
         return err('Failed to record battle chamber event', 500);

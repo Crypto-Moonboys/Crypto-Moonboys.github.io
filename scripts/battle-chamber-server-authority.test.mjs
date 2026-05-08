@@ -56,6 +56,13 @@ const communityHtml = read(COMMUNITY_FILE);
 const leaderboardJs = read(LEADERBOARD_FILE);
 const rewardJs = read(REWARD_FILE);
 
+function getRouteBlock(source, startMarker, endMarker) {
+  const start = source.indexOf(startMarker);
+  if (start === -1) return '';
+  const end = source.indexOf(endMarker, start + startMarker.length);
+  return end === -1 ? source.slice(start) : source.slice(start, end);
+}
+
 console.log('[1] Migration exists and defines required authority tables/indexes');
 check(exists(MIGRATION_FILE), `${MIGRATION_FILE} exists`);
 check(migrationSql.includes('CREATE TABLE IF NOT EXISTS battle_chamber_faction_clout'), 'migration creates battle_chamber_faction_clout');
@@ -80,12 +87,21 @@ check(/path === '\/battle-chamber\/event'[\s\S]*verifyTelegramIdentityFromBody/.
 check(workerJs.includes('normalizeBattleChamberFaction'), 'worker normalizes battle chamber faction keys');
 check(workerJs.includes('clampBattleClout'), 'worker clamps battle chamber clout values');
 check(workerJs.includes('BATTLE_CHAMBER_CLAMP_MAX'), 'worker defines max clout clamp constant');
+const eventRouteBlock = getRouteBlock(workerJs, "if (path === '/battle-chamber/event' && request.method === 'POST')", '// ── POST /player/mastery/update');
+check(eventRouteBlock.length > 0, 'event route block is discoverable for static assertions');
+check(!eventRouteBlock.includes('applyBattleChamberCloutUpdate('), 'event route does not call applyBattleChamberCloutUpdate()');
+check(eventRouteBlock.includes('const cloutDelta = 0;'), 'event route forces proof-only clout_delta to zero');
+check(!eventRouteBlock.includes('body?.display_name'), 'event route ignores client-provided display_name');
+check(!eventRouteBlock.includes('body?.event_text'), 'event route ignores client-provided event_text');
+check(eventRouteBlock.includes('buildBattleEventText('), 'event route generates event text server-side');
 
 console.log('\n[4] Period helper checks (daily/weekly/monthly/seasonal)');
 check(workerJs.includes('getBattleChamberPeriodKey'), 'worker defines period helper for daily/weekly/monthly');
 check(workerJs.includes('getBattleSeasonKey'), 'worker defines seasonal helper');
 check(workerJs.includes('BATTLE_CHAMBER_DAYS_PER_SEASON = 90'), 'worker includes deterministic 90-day season fallback');
 check(workerJs.includes('getBattlePeriodKey(periodType, db'), 'worker has async period key helper including seasonal');
+const cloutUpdateBlock = getRouteBlock(workerJs, 'async function applyBattleChamberCloutUpdate', 'async function _updateMissionStreak');
+check(cloutUpdateBlock.includes('if (safeDelta <= 0) return periodKeys;'), 'zero-delta updates short-circuit before member/faction writes');
 
 console.log('\n[5] Client bridge server-data + fallback checks');
 check(bridgeJs.includes('/battle-chamber/factions/standings?period=weekly'), 'bridge fetches weekly server standings route');
@@ -102,6 +118,23 @@ check(factionPageJs.includes('MOONBOYS_BATTLE_CHAMBER_FACTION_DETAIL'), 'faction
 check(factionPageJs.includes('getServerActivityForFaction'), 'faction page reads server-backed activity');
 check(factionPageJs.includes('Live server standings unavailable. Showing local display state.'), 'faction page includes fallback copy');
 check(communityHtml.includes('battle-faction-proof-feed'), 'community hub includes battle proof feed container');
+check(!communityHtml.includes('Live server standings unavailable. Showing local display state.'), 'community.html does not include static unavailable fallback copy');
+check(factionPageJs.includes('formatRankDisplay'), 'faction page has rank formatter helper');
+check(!factionPageJs.includes("('#' + monthlyRank)"), 'faction page does not force # prefix for non-numeric monthly rank');
+check(!factionPageJs.includes("('#' + seasonalRank)"), 'faction page does not force # prefix for non-numeric seasonal rank');
+check(!factionPageJs.includes('#—'), 'faction page source does not include #— rank rendering pattern');
+
+console.log('\n[6b] Activity filter/order safety checks');
+const activityRouteBlock = getRouteBlock(workerJs, "if (path === '/battle-chamber/activity' && request.method === 'GET')", "// ── POST /battle-chamber/event");
+check(/rawFactionFilter\s*!=\s*null\s*&&\s*!requestedFaction[\s\S]*return err\('Valid faction_id required', 400\)/.test(activityRouteBlock), 'invalid activity faction filter returns 400');
+check(!workerJs.includes('datetime(created_at)'), 'worker activity ordering does not use datetime(created_at)');
+check(workerJs.includes('ORDER BY created_at DESC, id DESC'), 'worker activity ordering uses created_at DESC with id tie-breaker');
+
+console.log('\n[6c] Ownership model checks');
+check(workerJs.includes('/faction/signal/contribute owns clout increments'), 'worker documents clout ownership on /faction/signal/contribute');
+check(workerJs.includes("ownership: 'faction_signal_route'"), 'worker writes ownership marker for contribution-owned updates');
+check(warJs.includes("ownership: 'faction_signal_route'"), 'faction war proof events document ownership marker');
+check(missionsJs.includes("ownership: 'faction_signal_route'"), 'mission proof events document ownership marker');
 
 console.log('\n[7] Safety wording checks in touched runtime files');
 const FORBIDDEN = [
@@ -137,6 +170,9 @@ console.log('\n[8] Preservation checks for accepted-score and XP integrity');
 check(leaderboardJs.includes('export async function submitScore'), 'leaderboard submitScore path remains present');
 check(/callFactionEarn\(["']score_accept["']\s*,\s*score\)/.test(leaderboardJs), 'accepted linked score flow still calls faction earn');
 check(workerJs.includes('const ARCADE_XP_PER_POINT = 0.02;'), 'worker Arcade XP formula constant remains unchanged');
+const factionContribRouteBlock = getRouteBlock(workerJs, "if (path === '/faction/signal/contribute' && request.method === 'POST')", '// ── GET /battle-chamber/factions/standings');
+check(factionContribRouteBlock.includes('FACTION_SIGNAL_CONTRIBUTION_MAX'), 'server-owned contribution path keeps per-request clamp max');
+check(/contribution\s*>\s*FACTION_SIGNAL_CONTRIBUTION_MAX/.test(factionContribRouteBlock), 'server-owned contribution path enforces clamp max check');
 check(!/submitScore\s*\(/.test(rewardJs), 'faction reward system does not call submitScore()');
 check(!/ArcadeSync\.queuePendingProgress\s*\(/.test(rewardJs), 'faction reward system does not call ArcadeSync.queuePendingProgress()');
 

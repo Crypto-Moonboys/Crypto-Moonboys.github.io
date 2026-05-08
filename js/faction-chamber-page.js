@@ -84,6 +84,13 @@
     });
   }
 
+  function formatRankDisplay(value) {
+    var n = Number(value);
+    if (Number.isFinite(n) && n > 0) return '#' + Math.floor(n);
+    if (value == null || value === '') return '—';
+    return String(value);
+  }
+
   function getFactionStanding(key) {
     var standings = getStandings().slice().sort(function (a, b) { return (b.power || 0) - (a.power || 0); });
     for (var i = 0; i < standings.length; i++) {
@@ -164,9 +171,9 @@
           '<h3>' + esc(p.icon) + ' ' + esc(p.name) + '</h3>' +
           '<p class="fcp-card-tagline">' + esc(p.tagline) + '</p>' +
           '<p>' + esc(p.playstyle) + '</p>' +
-          '<p><strong>Current weekly rank:</strong> #' + esc(rank) + '</p>' +
-          '<p><strong>Current monthly rank:</strong> ' + esc(monthlyRank === fallbackCopy ? monthlyRank : ('#' + monthlyRank)) + '</p>' +
-          '<p><strong>Current seasonal rank:</strong> ' + esc(seasonalRank === fallbackCopy ? seasonalRank : ('#' + seasonalRank)) + '</p>' +
+          '<p><strong>Current weekly rank:</strong> ' + esc(formatRankDisplay(rank)) + '</p>' +
+          '<p><strong>Current monthly rank:</strong> ' + esc(formatRankDisplay(monthlyRank)) + '</p>' +
+          '<p><strong>Current seasonal rank:</strong> ' + esc(formatRankDisplay(seasonalRank)) + '</p>' +
           '<p><strong>Perk preview:</strong> ' + esc(p.perkSummary) + '</p>' +
           '<p><strong>Active quest count:</strong> ' + esc(missionCount) + '</p>' +
           '<div class="fcp-card-actions">' +
