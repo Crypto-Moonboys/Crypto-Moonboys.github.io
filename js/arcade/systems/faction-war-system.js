@@ -43,6 +43,8 @@ var FACTION_KEYS = Object.freeze([
   'crypto-stoned-boys',
 ]);
 
+var BATTLE_CHAMBER_EVENT_CLAMP_MAX = 5000;
+
 // ── Storage helpers ──────────────────────────────────────────────────────────
 
 function _safeGet(key) {
@@ -289,6 +291,7 @@ export function recordContribution(factionId, source, amount) {
 
     // Sync contribution to server for Telegram-linked users
     _syncContributionToServer(fk, amt, safeSource);
+    _syncBattleChamberEventToServer(fk, amt, safeSource);
   } catch (e) {
     try { console.warn('[faction-war] recordContribution error:', e); } catch (_) {}
   }
@@ -496,6 +499,46 @@ function _syncContributionToServer(factionId, amount, reason) {
         faction_id: factionId,
         contribution: amount,
         reason: serverReason,
+      }),
+    }).catch(function () {});
+  } catch (_) {}
+}
+
+/**
+ * Optionally write a Battle Chamber proof event.
+ * Ownership model: /faction/signal/contribute owns clout increment authority.
+ * This event call is proof/feed only (clout_delta is zero to avoid double-counting).
+ */
+function _syncBattleChamberEventToServer(factionId, amount, reason) {
+  if (!_isLinked()) return;
+  var auth = _getSignedAuth();
+  var apiBase = _getApiBase();
+  if (!auth || !apiBase) return;
+  var safeAmount = Math.max(0, Math.min(BATTLE_CHAMBER_EVENT_CLAMP_MAX, Math.floor(Number(amount) || 0)));
+  var EVENT_TYPE_MAP = {
+    score_submission: 'weekly_contribution',
+    mission_complete: 'mission_complete',
+    streak_bonus: 'streak_bonus',
+    global_event: 'weekly_contribution',
+    other: 'weekly_contribution',
+  };
+  var eventType = EVENT_TYPE_MAP[reason] || 'weekly_contribution';
+  try {
+    fetch(apiBase + '/battle-chamber/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        telegram_auth: auth,
+        faction_id: factionId,
+        event_type: eventType,
+        // Proof-only event; /faction/signal/contribute already owns clout totals.
+        clout_delta: 0,
+        source: 'faction-war-system',
+        metadata_json: {
+          ownership: 'faction_signal_route',
+          contribution_amount: safeAmount,
+          contribution_source: reason,
+        },
       }),
     }).catch(function () {});
   } catch (_) {}

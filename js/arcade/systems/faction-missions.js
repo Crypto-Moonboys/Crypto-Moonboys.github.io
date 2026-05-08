@@ -268,6 +268,7 @@ export function recordMissionProgress(factionId, eventType, value) {
         completedToday.push(m.id);
         changed = true;
         _emitMissionComplete(fk, m, 'daily');
+        _syncBattleChamberMissionEvent(fk, m, 'daily');
       }
       // Sync incremental progress to server for linked users
       _syncMissionProgressToServer(m.id, delta, m.target);
@@ -283,6 +284,7 @@ export function recordMissionProgress(factionId, eventType, value) {
         s.completed.seasonal.push(m.id);
         changed = true;
         _emitMissionComplete(fk, m, 'seasonal');
+        _syncBattleChamberMissionEvent(fk, m, 'seasonal');
       }
     });
 
@@ -441,6 +443,34 @@ function _syncMissionProgressToServer(missionId, amount, target) {
         mission_id: missionId,
         amount: amount,
         target: target,
+      }),
+    }).catch(function () {});
+  } catch (_) {}
+}
+
+function _syncBattleChamberMissionEvent(factionId, mission, tier) {
+  if (!_isLinked()) return;
+  var auth = _getSignedAuth();
+  var apiBase = _getApiBase();
+  if (!auth || !apiBase) return;
+  try {
+    fetch(apiBase + '/battle-chamber/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        telegram_auth: auth,
+        faction_id: factionId,
+        event_type: 'mission_complete',
+        // Proof-only event; contribution authority is owned by /faction/signal/contribute.
+        clout_delta: 0,
+        source: 'faction-missions',
+        event_text: 'Mission complete logged for faction activity proof.',
+        metadata_json: {
+          mission_id: mission && mission.id ? mission.id : null,
+          mission_label: mission && mission.label ? mission.label : null,
+          mission_tier: tier || 'daily',
+          ownership: 'faction_signal_route',
+        },
       }),
     }).catch(function () {});
   } catch (_) {}

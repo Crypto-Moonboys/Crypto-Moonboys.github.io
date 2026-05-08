@@ -122,6 +122,35 @@
     });
   }
 
+  function getServerStatus() {
+    var status = window.MOONBOYS_BATTLE_CHAMBER_SERVER_STATUS;
+    return status && typeof status === 'object' ? status : { available: false, fallback: true };
+  }
+
+  function getServerPeriodRows(period) {
+    var standings = window.MOONBOYS_BATTLE_CHAMBER_STANDINGS;
+    if (!standings || !standings[period] || !Array.isArray(standings[period].rows)) return null;
+    return standings[period].rows.slice();
+  }
+
+  function getServerActivity() {
+    var rows = window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY;
+    return Array.isArray(rows) ? rows.slice() : [];
+  }
+
+  function toWarRowsFromServerPeriod(periodRows) {
+    if (!Array.isArray(periodRows)) return [];
+    return periodRows.map(function (row) {
+      return {
+        faction: row.faction_id,
+        power: Number(row.clout_total) || 0,
+        weekly: Number(row.clout_total) || 0,
+        daily: 0,
+        momentum: row.momentum == null ? 0 : Number(row.momentum) || 0,
+      };
+    });
+  }
+
   // ── Mission data helpers ──────────────────────────────────────────────────
 
   function getMissions(factionKey) {
@@ -151,8 +180,13 @@
     var container = el('battle-faction-standings');
     if (!container) return;
 
-    var standings = getStandings().slice().sort(function (a, b) { return b.power - a.power; });
+    var serverWeekly = getServerPeriodRows('weekly');
+    var usingServer = !!(serverWeekly && serverWeekly.length);
+    var standings = usingServer
+      ? toWarRowsFromServerPeriod(serverWeekly).sort(function (a, b) { return b.power - a.power; })
+      : getStandings().slice().sort(function (a, b) { return b.power - a.power; });
     var dominant = standings.length ? standings[0].faction : '';
+    var serverStatus = getServerStatus();
 
     var rows = standings.map(function (row, idx) {
       var meta = factionMeta(row.faction);
@@ -173,7 +207,9 @@
     }).join('');
 
     container.innerHTML =
-      '<p class="bc-standings-note">Standings reflect local display cache. Telegram-linked users sync activity to server.</p>' +
+      '<p class="bc-standings-note">' + esc(usingServer
+        ? 'Standings are using Battle Chamber server authority.'
+        : (serverStatus.message || 'Live server standings unavailable. Showing local display state.')) + '</p>' +
       '<div class="bc-faction-standings-list">' + rows + '</div>';
   }
 
@@ -183,7 +219,11 @@
     var container = el('battle-weekly-war');
     if (!container) return;
 
-    var standings = getStandings().slice().sort(function (a, b) { return b.weekly - a.weekly; });
+    var serverWeekly = getServerPeriodRows('weekly');
+    var usingServer = !!(serverWeekly && serverWeekly.length);
+    var standings = usingServer
+      ? toWarRowsFromServerPeriod(serverWeekly).sort(function (a, b) { return b.weekly - a.weekly; })
+      : getStandings().slice().sort(function (a, b) { return b.weekly - a.weekly; });
     var leader = standings.length ? standings[0] : null;
     var leaderMeta = leader ? factionMeta(leader.faction) : null;
 
@@ -205,7 +245,9 @@
             '</div>';
         }).join('') +
       '</div>' +
-      '<div class="bc-weekly-reset-note">Weekly war resets every Monday at 00:00 UTC.</div>' +
+      '<div class="bc-weekly-reset-note">' + esc(usingServer
+        ? 'Weekly war reflects server-backed clout authority.'
+        : 'Weekly war resets every Monday at 00:00 UTC.') + '</div>' +
       '<div class="bc-weekly-prizes">' +
         '<strong>Weekly prizes (display):</strong> ' +
         'Top weekly factions unlock stronger roguelite options, Battle Chamber badges, and XP prize pool eligibility.' +
@@ -218,7 +260,31 @@
     var container = el('battle-monthly-clout');
     if (!container) return;
 
+    var monthlyRows = getServerPeriodRows('monthly');
+    var serverStatus = getServerStatus();
+    if (monthlyRows && monthlyRows.length) {
+      var top = monthlyRows
+        .slice()
+        .sort(function (a, b) { return (Number(b.clout_total) || 0) - (Number(a.clout_total) || 0); })
+        .slice(0, 5);
+      container.innerHTML =
+        '<p>Monthly clout standings are server-backed when available.</p>' +
+        '<div class="bc-weekly-rows">' +
+          top.map(function (row, idx) {
+            var meta = factionMeta(row.faction_id);
+            return '<div class="bc-weekly-row">' +
+              '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
+              '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+              '<span class="bc-weekly-score">Monthly clout: <strong>' + (Number(row.clout_total) || 0) + '</strong></span>' +
+              '</div>';
+          }).join('') +
+        '</div>' +
+        '<div class="bc-monthly-target"><strong>Live monthly source:</strong> Battle Chamber authority layer</div>';
+      return;
+    }
+
     container.innerHTML =
+      '<p class="bc-standings-note">' + esc(serverStatus.message || 'Live server standings unavailable. Showing local display state.') + '</p>' +
       '<p>Monthly clout rankings track cumulative faction power, daily mission completions, weekly placements, top-player scores, activity streaks, leaderboard appearances, and quest completions across the full calendar month.</p>' +
       '<div class="bc-monthly-target"><strong>Current monthly target:</strong> <span class="bc-placeholder">Monthly standings update live — keep building faction clout.</span></div>' +
       '<div class="bc-monthly-rewards">' +
@@ -242,7 +308,31 @@
     var container = el('battle-seasonal-campaign');
     if (!container) return;
 
+    var seasonalRows = getServerPeriodRows('seasonal');
+    var serverStatus = getServerStatus();
+    if (seasonalRows && seasonalRows.length) {
+      var top = seasonalRows
+        .slice()
+        .sort(function (a, b) { return (Number(b.clout_total) || 0) - (Number(a.clout_total) || 0); })
+        .slice(0, 5);
+      container.innerHTML =
+        '<p>Seasonal campaign standings are server-backed when available.</p>' +
+        '<div class="bc-weekly-rows">' +
+          top.map(function (row, idx) {
+            var meta = factionMeta(row.faction_id);
+            return '<div class="bc-weekly-row">' +
+              '<span class="bc-weekly-rank">#' + (idx + 1) + '</span>' +
+              '<span class="bc-weekly-name">' + meta.icon + ' ' + esc(meta.label) + '</span>' +
+              '<span class="bc-weekly-score">Seasonal clout: <strong>' + (Number(row.clout_total) || 0) + '</strong></span>' +
+              '</div>';
+          }).join('') +
+        '</div>' +
+        '<p class="bc-hall-of-fame">Seasonal winners become part of the Battle Chamber record. Hall of Fame placement is permanent.</p>';
+      return;
+    }
+
     container.innerHTML =
+      '<p class="bc-standings-note">' + esc(serverStatus.message || 'Live server standings unavailable. Showing local display state.') + '</p>' +
       '<p>Each season runs a full cross-faction campaign. Complete seasonal missions, build maximum clout, and secure your faction\'s place in the Battle Chamber record.</p>' +
       '<div class="bc-season-current">' +
         '<strong>Season 1: The Clout War</strong>' +
@@ -475,7 +565,17 @@
   function renderProofFeedHeader() {
     var container = el('battle-faction-proof-feed');
     if (!container) return;
+    var activity = getServerActivity().slice(0, 8);
+    if (activity.length) {
+      container.innerHTML =
+        '<p class="bc-proof-intro">Server-backed Battle Chamber proof feed:</p>' +
+        '<ul>' + activity.map(function (item) {
+          return '<li>' + esc(item.event_text || '') + '</li>';
+        }).join('') + '</ul>';
+      return;
+    }
     container.innerHTML =
+      '<p class="bc-proof-intro">Live server standings unavailable. Showing local display state.</p>' +
       '<p class="bc-proof-intro">Faction activity, XP movement, and public proof appear below where wired. Telegram-linked users sync activity to the server.</p>';
   }
 
@@ -522,6 +622,9 @@
     // Re-render when reward data is ready
     window.addEventListener('battle-chamber:faction-rewards-ready', function () {
       renderFactionRewardUnlocks();
+    });
+    window.addEventListener('battle-chamber:activity-ready', function () {
+      renderProofFeedHeader();
     });
 
     // Re-render when faction status is loaded or updated

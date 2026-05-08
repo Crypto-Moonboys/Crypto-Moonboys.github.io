@@ -33,6 +33,11 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
  *   POST /player/daily-missions/progress
  *   GET/POST /faction/signal
  *   POST /faction/signal/contribute
+ *   GET  /battle-chamber/factions/standings?period=weekly
+ *   GET  /battle-chamber/factions/:faction_id
+ *   GET  /battle-chamber/faction?faction_id=
+ *   GET  /battle-chamber/activity?limit=20
+ *   POST /battle-chamber/event
  *   POST /player/mastery/update
  *
  * Telegram bot commands (POST /telegram/webhook):
@@ -759,6 +764,65 @@ const FACTION_SIGNAL_ALLOWED_REASONS = new Set([
   'score_submission', 'mission_complete', 'arcade_run', 'daily_bonus', 'war_contribution', 'manual',
 ]);
 
+const BATTLE_CHAMBER_TABLES = [
+  'battle_chamber_faction_clout',
+  'battle_chamber_member_clout',
+  'battle_chamber_activity_log',
+];
+
+const BATTLE_CHAMBER_PERIODS = Object.freeze(['daily', 'weekly', 'monthly', 'seasonal']);
+
+const BATTLE_CHAMBER_EVENT_TYPES = new Set([
+  'score_accept',
+  'faction_join',
+  'mission_complete',
+  'daily_mission_progress',
+  'weekly_contribution',
+  'streak_bonus',
+  'reward_unlock',
+  'manual_safe_event',
+]);
+
+const BATTLE_CHAMBER_FACTIONS = Object.freeze([
+  'hard-fork-rockers',
+  'rugpull-minors',
+  'graffpunks',
+  'blockchain-furies',
+  'crypto-moongirls',
+  'blockstars',
+  'all-city-bulls',
+  'nomad-bears',
+  'crypto-stoned-boys',
+]);
+
+const BATTLE_CHAMBER_FACTION_LABELS = Object.freeze({
+  'hard-fork-rockers': 'Hard Fork Rockers',
+  'rugpull-minors': 'Rugpull Minors',
+  graffpunks: 'GraffPUNKS',
+  'blockchain-furies': 'Blockchain Furies',
+  'crypto-moongirls': 'Crypto Moongirls',
+  blockstars: 'The Blockstars',
+  'all-city-bulls': 'All City Bulls',
+  'nomad-bears': 'Nomad Bears',
+  'crypto-stoned-boys': 'Crypto Stoned Boys',
+});
+
+const BATTLE_CHAMBER_FACTION_ALIASES = Object.freeze({
+  'diamond-hands': 'hard-fork-rockers',
+  diamond_hands: 'hard-fork-rockers',
+  diamondhands: 'hard-fork-rockers',
+  'hodl-warriors': 'rugpull-minors',
+  hodl_warriors: 'rugpull-minors',
+  hodlwarriors: 'rugpull-minors',
+  'graff-punks': 'graffpunks',
+  graff_punks: 'graffpunks',
+});
+
+const BATTLE_CHAMBER_CLAMP_MAX = 5000;
+const BATTLE_CHAMBER_METADATA_MAX_LENGTH = 4000;
+const BATTLE_CHAMBER_SEASON_EPOCH_MS = Date.UTC(2024, 0, 1);
+const BATTLE_CHAMBER_DAYS_PER_SEASON = 90;
+
 const PLAYER_STATE_TABLES = [
   'player_modifier_state',
   'player_daily_mission_state',
@@ -804,6 +868,229 @@ function getIsoWeekKey() {
   const yearStart = new Date(Date.UTC(thu.getUTCFullYear(), 0, 1));
   const weekNum = Math.ceil(((thu - yearStart) / 86400000 + 1) / 7);
   return thu.getUTCFullYear() + '-W' + String(weekNum).padStart(2, '0');
+}
+
+async function ensureBattleChamberTables(db) {
+  const checks = await Promise.all(BATTLE_CHAMBER_TABLES.map((tableName) =>
+    db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first().catch(() => null).then((row) => ({ tableName, row }))
+  ));
+  const missing = checks.find((entry) => !entry.row?.name);
+  if (missing) {
+    return {
+      _isBattleChamberUnavailable: true,
+      tableName: missing.tableName,
+      response: new Response(JSON.stringify({
+        ok: false,
+        error: 'battle_chamber_unavailable',
+        reason: `migration_pending:${missing.tableName}`,
+        message: 'Battle Chamber authority tables are not yet configured. Apply migration 016.',
+      }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+      }),
+    };
+  }
+  return null;
+}
+
+// Battle Chamber uses canonical 9-faction keys while legacy faction progression
+// routes still rely on normalizeFaction() for backward-compatible aliases.
+function normalizeBattleChamberFaction(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  const fromAlias = BATTLE_CHAMBER_FACTION_ALIASES[raw] || raw;
+  return BATTLE_CHAMBER_FACTIONS.includes(fromAlias) ? fromAlias : null;
+}
+
+function getBattleChamberPeriodKey(periodType, nowMs = Date.now()) {
+  const now = new Date(nowMs);
+  if (periodType === 'daily') {
+    return now.toISOString().slice(0, 10);
+  }
+  if (periodType === 'weekly') {
+    const dow = now.getUTCDay() || 7;
+    const thu = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + (4 - dow)));
+    const yearStart = new Date(Date.UTC(thu.getUTCFullYear(), 0, 1));
+    const weekNum = Math.ceil(((thu - yearStart) / 86400000 + 1) / 7);
+    return `${thu.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+  }
+  if (periodType === 'monthly') {
+    return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+  }
+  return null;
+}
+
+function getBattleSeasonFallbackKey(nowMs = Date.now()) {
+  const seasonLengthMs = BATTLE_CHAMBER_DAYS_PER_SEASON * 24 * 60 * 60 * 1000;
+  const seasonIndex = Math.floor((nowMs - BATTLE_CHAMBER_SEASON_EPOCH_MS) / seasonLengthMs);
+  return `S${seasonIndex + 1}`;
+}
+
+async function getBattleSeasonKey(db, nowMs = Date.now()) {
+  const season = await getCurrentSeason(db).catch(() => null);
+  if (season && typeof season === 'object') {
+    const explicit = season.season_key || season.key || season.slug || season.code;
+    if (explicit) return String(explicit);
+    if (season.id != null) return `S${season.id}`;
+  }
+  return getBattleSeasonFallbackKey(nowMs);
+}
+
+async function getBattlePeriodKey(periodType, db, nowMs = Date.now()) {
+  if (periodType === 'seasonal') return getBattleSeasonKey(db, nowMs);
+  return getBattleChamberPeriodKey(periodType, nowMs);
+}
+
+function clampBattleClout(raw, max = BATTLE_CHAMBER_CLAMP_MAX) {
+  const n = Math.floor(Number(raw) || 0);
+  if (n <= 0) return 0;
+  return Math.min(max, n);
+}
+
+function classifyBattleChamberEvent(eventType, cloutDelta) {
+  const delta = Math.max(0, Math.floor(Number(cloutDelta) || 0));
+  if (eventType === 'mission_complete' || eventType === 'daily_mission_progress') {
+    return { mission: delta, score: 0, contribution: 0, streak: 0 };
+  }
+  if (eventType === 'score_accept') {
+    return { mission: 0, score: delta, contribution: 0, streak: 0 };
+  }
+  if (eventType === 'streak_bonus') {
+    return { mission: 0, score: 0, contribution: 0, streak: delta };
+  }
+  return { mission: 0, score: 0, contribution: delta, streak: 0 };
+}
+
+function buildBattleEventText({ displayName, factionId, eventType }) {
+  const name = String(displayName || 'Player');
+  const factionLabel = BATTLE_CHAMBER_FACTION_LABELS[factionId] || factionId || 'faction';
+  if (eventType === 'faction_join') return `${name} joined ${factionLabel}.`;
+  if (eventType === 'mission_complete') return `${name} completed a mission for ${factionLabel}.`;
+  if (eventType === 'weekly_contribution') return `${name} gained weekly pressure for ${factionLabel}.`;
+  if (eventType === 'streak_bonus') return `${name} triggered a streak bonus for ${factionLabel}.`;
+  if (eventType === 'reward_unlock') return `${name} unlocked a reward in ${factionLabel}.`;
+  if (eventType === 'score_accept') return `${name} moved up the weekly clout board for ${factionLabel}.`;
+  return `${name} logged Battle Chamber activity for ${factionLabel}.`;
+}
+
+async function appendBattleChamberActivity(db, {
+  telegramId,
+  displayName,
+  factionId,
+  eventType,
+  eventText,
+  cloutDelta,
+  source,
+  metadata,
+  createdAt,
+}) {
+  const metadataJson = metadata && typeof metadata === 'object'
+    ? JSON.stringify(metadata).slice(0, BATTLE_CHAMBER_METADATA_MAX_LENGTH)
+    : null;
+  await db.prepare(`
+    INSERT INTO battle_chamber_activity_log
+      (telegram_id, display_name, faction_id, event_type, event_text, clout_delta, source, metadata_json, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    String(telegramId),
+    displayName || null,
+    factionId,
+    eventType,
+    eventText,
+    Math.max(0, Math.floor(Number(cloutDelta) || 0)),
+    source || null,
+    metadataJson,
+    createdAt || new Date().toISOString(),
+  ).run();
+}
+
+async function applyBattleChamberCloutUpdate(db, {
+  telegramId,
+  factionId,
+  eventType,
+  cloutDelta,
+  nowMs,
+}) {
+  const ts = Number.isFinite(nowMs) ? nowMs : Date.now();
+  const nowStr = new Date(ts).toISOString();
+  const safeDelta = Math.max(0, Math.floor(Number(cloutDelta) || 0));
+  const bucket = classifyBattleChamberEvent(eventType, safeDelta);
+  const periodKeys = {};
+  for (const periodType of BATTLE_CHAMBER_PERIODS) {
+    periodKeys[periodType] = await getBattlePeriodKey(periodType, db, ts);
+  }
+  if (safeDelta <= 0) return periodKeys;
+
+  for (const periodType of BATTLE_CHAMBER_PERIODS) {
+    const periodKey = periodKeys[periodType];
+    const memberInsert = await db.prepare(`
+      INSERT OR IGNORE INTO battle_chamber_member_clout
+        (telegram_id, faction_id, period_type, period_key, clout_total, mission_total, score_total, streak_total, last_event_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      String(telegramId),
+      factionId,
+      periodType,
+      periodKey,
+      safeDelta,
+      bucket.mission,
+      bucket.score,
+      bucket.streak,
+      nowStr,
+      nowStr,
+    ).run();
+    const insertedMemberPeriod = Number(memberInsert?.meta?.changes || 0) > 0;
+    if (!insertedMemberPeriod) {
+      await db.prepare(`
+        UPDATE battle_chamber_member_clout
+        SET
+          clout_total = clout_total + ?,
+          mission_total = mission_total + ?,
+          score_total = score_total + ?,
+          streak_total = streak_total + ?,
+          last_event_at = ?,
+          updated_at = ?
+        WHERE telegram_id = ? AND faction_id = ? AND period_type = ? AND period_key = ?
+      `).bind(
+        safeDelta,
+        bucket.mission,
+        bucket.score,
+        bucket.streak,
+        nowStr,
+        nowStr,
+        String(telegramId),
+        factionId,
+        periodType,
+        periodKey,
+      ).run();
+    }
+
+    await db.prepare(`
+      INSERT INTO battle_chamber_faction_clout
+        (faction_id, period_type, period_key, clout_total, contribution_total, mission_total, score_total, member_count, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(faction_id, period_type, period_key) DO UPDATE SET
+        clout_total = battle_chamber_faction_clout.clout_total + excluded.clout_total,
+        contribution_total = battle_chamber_faction_clout.contribution_total + excluded.contribution_total,
+        mission_total = battle_chamber_faction_clout.mission_total + excluded.mission_total,
+        score_total = battle_chamber_faction_clout.score_total + excluded.score_total,
+        member_count = battle_chamber_faction_clout.member_count + excluded.member_count,
+        updated_at = excluded.updated_at
+    `).bind(
+      factionId,
+      periodType,
+      periodKey,
+      safeDelta,
+      bucket.contribution,
+      bucket.mission,
+      bucket.score,
+      insertedMemberPeriod ? 1 : 0,
+      nowStr,
+    ).run();
+  }
+
+  return periodKeys;
 }
 
 async function _updateMissionStreak(db, telegramId, todayKey) {
@@ -2378,7 +2665,7 @@ export default {
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
       const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
       if (verified.error) return err(verified.error, verified.status || 401);
-      const factionId = normalizeFaction(body?.faction_id);
+      const factionId = normalizeBattleChamberFaction(body?.faction_id);
       if (!factionId || factionId === FACTION_UNALIGNED) return err('Valid faction_id required', 400);
       const rawContribution = Number(body?.contribution);
       if (!Number.isFinite(rawContribution) || rawContribution <= 0) return err('contribution must be a positive integer', 400);
@@ -2422,6 +2709,38 @@ export default {
              WHERE faction_id = ? AND week_key = ?`
           ).bind(factionId, weekKey).first().catch(() => null),
         ]);
+
+        // Battle Chamber authority ownership model:
+        // /faction/signal/contribute owns clout increments for contribution pressure.
+        // /battle-chamber/event is used for explicit public proof activity.
+        const battleTables = await ensureBattleChamberTables(env.DB);
+        if (!battleTables) {
+          const safeBattleDelta = clampBattleClout(contribution);
+          await applyBattleChamberCloutUpdate(env.DB, {
+            telegramId: verified.telegramId,
+            factionId,
+            eventType: reason === 'mission_complete' ? 'mission_complete' : 'weekly_contribution',
+            cloutDelta: safeBattleDelta,
+            nowMs: Date.now(),
+          }).catch(() => {});
+          const actor = getTelegramDisplayName(verified.user || verified.authPayload || { id: verified.telegramId });
+          await appendBattleChamberActivity(env.DB, {
+            telegramId: verified.telegramId,
+            displayName: actor,
+            factionId,
+            eventType: 'weekly_contribution',
+            eventText: `${actor} gained weekly pressure for ${BATTLE_CHAMBER_FACTION_LABELS[factionId] || factionId}.`,
+            cloutDelta: safeBattleDelta,
+            source: '/faction/signal/contribute',
+            metadata: {
+              reason,
+              game_id: gameId,
+              ownership: 'faction_signal_route',
+            },
+            createdAt: nowStr,
+          }).catch(() => {});
+        }
+
         return json({
           ok: true,
           faction_id: factionId,
@@ -2431,6 +2750,271 @@ export default {
         });
       } catch (e) {
         return err('Failed to record faction signal contribution', 500);
+      }
+    }
+
+    // ── GET /battle-chamber/factions/standings ─────────────────────────────
+    if (path === '/battle-chamber/factions/standings' && request.method === 'GET') {
+      const period = String(url.searchParams.get('period') || 'weekly').trim().toLowerCase();
+      if (!BATTLE_CHAMBER_PERIODS.includes(period)) return err('period must be daily, weekly, monthly, or seasonal', 400);
+      const bcCheck = await ensureBattleChamberTables(env.DB);
+      if (bcCheck) return bcCheck.response;
+      try {
+        const periodKey = await getBattlePeriodKey(period, env.DB, Date.now());
+        const rows = await env.DB.prepare(`
+          SELECT faction_id, clout_total, contribution_total, mission_total, score_total, member_count, updated_at
+          FROM battle_chamber_faction_clout
+          WHERE period_type = ? AND period_key = ?
+        `).bind(period, periodKey).all().catch(() => ({ results: [] }));
+        const byFaction = {};
+        for (const row of (rows?.results || [])) byFaction[row.faction_id] = row;
+        const standings = BATTLE_CHAMBER_FACTIONS.map((factionId) => {
+          const row = byFaction[factionId] || {};
+          return {
+            faction_id: factionId,
+            period_type: period,
+            period_key: periodKey,
+            clout_total: Number(row.clout_total) || 0,
+            contribution_total: Number(row.contribution_total) || 0,
+            mission_total: Number(row.mission_total) || 0,
+            score_total: Number(row.score_total) || 0,
+            member_count: Number(row.member_count) || 0,
+            momentum: null,
+            updated_at: row.updated_at || null,
+          };
+        }).sort((a, b) => (b.clout_total - a.clout_total) || a.faction_id.localeCompare(b.faction_id));
+        for (let i = 0; i < standings.length; i++) standings[i].rank = i + 1;
+        return json({
+          ok: true,
+          period,
+          period_key: periodKey,
+          factions: standings,
+        });
+      } catch {
+        return err('Failed to load battle chamber standings', 500);
+      }
+    }
+
+    // ── GET /battle-chamber/factions/:faction_id and /battle-chamber/faction ─
+    if ((path.startsWith('/battle-chamber/factions/') || path === '/battle-chamber/faction') && request.method === 'GET') {
+      let requestedFaction = '';
+      if (path === '/battle-chamber/faction') {
+        requestedFaction = String(url.searchParams.get('faction_id') || '').trim();
+      } else {
+        requestedFaction = decodeURIComponent(path.replace('/battle-chamber/factions/', '').trim());
+      }
+      const factionId = normalizeBattleChamberFaction(requestedFaction);
+      if (!factionId) return err('Valid faction_id required', 400);
+      const bcCheck = await ensureBattleChamberTables(env.DB);
+      if (bcCheck) return bcCheck.response;
+      try {
+        const nowMs = Date.now();
+        const periodKeys = {};
+        for (const periodType of BATTLE_CHAMBER_PERIODS) {
+          periodKeys[periodType] = await getBattlePeriodKey(periodType, env.DB, nowMs);
+        }
+        const totals = {};
+        for (const periodType of BATTLE_CHAMBER_PERIODS) {
+          const row = await env.DB.prepare(`
+            SELECT faction_id, period_type, period_key, clout_total, contribution_total, mission_total, score_total, member_count, updated_at
+            FROM battle_chamber_faction_clout
+            WHERE faction_id = ? AND period_type = ? AND period_key = ?
+            LIMIT 1
+          `).bind(factionId, periodType, periodKeys[periodType]).first().catch(() => null);
+          totals[periodType] = row || {
+            faction_id: factionId,
+            period_type: periodType,
+            period_key: periodKeys[periodType],
+            clout_total: 0,
+            contribution_total: 0,
+            mission_total: 0,
+            score_total: 0,
+            member_count: 0,
+            updated_at: null,
+          };
+        }
+
+        const topMembers = await env.DB.prepare(`
+          SELECT
+            mc.telegram_id,
+            mc.faction_id,
+            mc.period_type,
+            mc.period_key,
+            mc.clout_total,
+            mc.mission_total,
+            mc.score_total,
+            mc.streak_total,
+            mc.last_event_at,
+            u.username,
+            u.first_name,
+            u.last_name
+          FROM battle_chamber_member_clout mc
+          LEFT JOIN telegram_users u ON u.telegram_id = mc.telegram_id
+          WHERE mc.faction_id = ? AND mc.period_type = ? AND mc.period_key = ?
+          ORDER BY mc.clout_total DESC, mc.score_total DESC
+          LIMIT 10
+        `).bind(factionId, 'weekly', periodKeys.weekly).all().catch(() => ({ results: [] }));
+
+        const activityRows = await env.DB.prepare(`
+          SELECT id, telegram_id, display_name, faction_id, event_type, event_text, clout_delta, source, metadata_json, created_at
+          FROM battle_chamber_activity_log
+          WHERE faction_id = ?
+          ORDER BY created_at DESC, id DESC
+          LIMIT 20
+        `).bind(factionId).all().catch(() => ({ results: [] }));
+
+        const unlockTable = await env.DB.prepare(
+          `SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'battle_chamber_reward_unlocks' LIMIT 1`
+        ).first().catch(() => null);
+        let rewardUnlocks = [];
+        if (unlockTable?.name) {
+          const unlockRows = await env.DB.prepare(`
+            SELECT telegram_id, faction_id, reward_key, reward_type, period_type, period_key, unlocked_at
+            FROM battle_chamber_reward_unlocks
+            WHERE faction_id = ?
+            ORDER BY datetime(unlocked_at) DESC
+            LIMIT 20
+          `).bind(factionId).all().catch(() => ({ results: [] }));
+          rewardUnlocks = unlockRows?.results || [];
+        }
+
+        return json({
+          ok: true,
+          faction: {
+            id: factionId,
+            label: BATTLE_CHAMBER_FACTION_LABELS[factionId] || factionId,
+          },
+          totals,
+          top_members: (topMembers?.results || []).map((row) => ({
+            telegram_id: row.telegram_id,
+            display_name: displayNameFromRow(row),
+            clout_total: Number(row.clout_total) || 0,
+            mission_total: Number(row.mission_total) || 0,
+            score_total: Number(row.score_total) || 0,
+            streak_total: Number(row.streak_total) || 0,
+            last_event_at: row.last_event_at || null,
+          })),
+          recent_activity: (activityRows?.results || []).map((row) => ({
+            id: row.id,
+            telegram_id: row.telegram_id,
+            display_name: row.display_name || row.telegram_id,
+            faction_id: row.faction_id,
+            event_type: row.event_type,
+            event_text: row.event_text,
+            clout_delta: Number(row.clout_delta) || 0,
+            source: row.source || null,
+            metadata: safeJsonParse(row.metadata_json, {}),
+            created_at: row.created_at,
+          })),
+          reward_unlocks: rewardUnlocks,
+        });
+      } catch {
+        return err('Failed to load battle chamber faction details', 500);
+      }
+    }
+
+    // ── GET /battle-chamber/activity ─────────────────────────────────────────
+    if (path === '/battle-chamber/activity' && request.method === 'GET') {
+      const bcCheck = await ensureBattleChamberTables(env.DB);
+      if (bcCheck) return bcCheck.response;
+      const rawFactionFilter = url.searchParams.get('faction_id');
+      const requestedFaction = rawFactionFilter == null ? null : normalizeBattleChamberFaction(rawFactionFilter);
+      if (rawFactionFilter != null && !requestedFaction) return err('Valid faction_id required', 400);
+      const limit = Math.max(1, Math.min(100, Math.floor(Number(url.searchParams.get('limit') || 20) || 20)));
+      try {
+        const query = requestedFaction
+          ? env.DB.prepare(`
+              SELECT id, telegram_id, display_name, faction_id, event_type, event_text, clout_delta, source, metadata_json, created_at
+              FROM battle_chamber_activity_log
+              WHERE faction_id = ?
+              ORDER BY created_at DESC, id DESC
+              LIMIT ?
+            `).bind(requestedFaction, limit)
+          : env.DB.prepare(`
+              SELECT id, telegram_id, display_name, faction_id, event_type, event_text, clout_delta, source, metadata_json, created_at
+              FROM battle_chamber_activity_log
+              ORDER BY created_at DESC, id DESC
+              LIMIT ?
+            `).bind(limit);
+        const rows = await query.all().catch(() => ({ results: [] }));
+        return json({
+          ok: true,
+          limit,
+          faction_id: requestedFaction || null,
+          items: (rows?.results || []).map((row) => ({
+            id: row.id,
+            telegram_id: row.telegram_id,
+            display_name: row.display_name || row.telegram_id,
+            faction_id: row.faction_id,
+            event_type: row.event_type,
+            event_text: row.event_text,
+            clout_delta: Number(row.clout_delta) || 0,
+            source: row.source || null,
+            metadata: safeJsonParse(row.metadata_json, {}),
+            created_at: row.created_at,
+          })),
+        });
+      } catch {
+        return err('Failed to load battle chamber activity', 500);
+      }
+    }
+
+    // ── POST /battle-chamber/event ───────────────────────────────────────────
+    if (path === '/battle-chamber/event' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const bcCheck = await ensureBattleChamberTables(env.DB);
+      if (bcCheck) return bcCheck.response;
+
+      const eventType = String(body?.event_type || '').trim().toLowerCase();
+      if (!BATTLE_CHAMBER_EVENT_TYPES.has(eventType)) return err('event_type not recognized', 400);
+
+      let factionId = normalizeBattleChamberFaction(body?.faction_id);
+      if (!factionId) {
+        const row = await env.DB.prepare(
+          `SELECT faction FROM telegram_progression WHERE telegram_id = ? LIMIT 1`
+        ).bind(verified.telegramId).first().catch(() => null);
+        factionId = normalizeBattleChamberFaction(row?.faction);
+      }
+      if (!factionId) return err('Valid faction_id required', 400);
+
+      // Public /battle-chamber/event is proof-feed only; clout authority lives on
+      // /faction/signal/contribute and other server-owned validated paths.
+      const cloutDelta = 0; // Keep hard-zero: proof route must never mutate clout totals.
+      const source = String(body?.source || 'battle_chamber_client').trim().slice(0, 80) || 'battle_chamber_client';
+      const verifiedDisplayName = getTelegramDisplayName(verified.user || verified.authPayload || { id: verified.telegramId });
+      const displayName = verifiedDisplayName;
+      const eventText = buildBattleEventText({ displayName, factionId, eventType });
+      let metadata = body?.metadata_json;
+      if (typeof metadata === 'string') metadata = safeJsonParse(metadata, {});
+      if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) metadata = {};
+      metadata.faction_normalized = factionId;
+      metadata.clout_clamped = 0;
+      metadata.proof_only = true;
+      metadata.ownership = 'proof_feed_only';
+
+      try {
+        await appendBattleChamberActivity(env.DB, {
+          telegramId: verified.telegramId,
+          displayName,
+          factionId,
+          eventType,
+          eventText,
+          cloutDelta,
+          source,
+          metadata,
+        });
+        return json({
+          ok: true,
+          telegram_id: verified.telegramId,
+          faction_id: factionId,
+          event_type: eventType,
+          clout_delta: cloutDelta,
+        });
+      } catch {
+        return err('Failed to record battle chamber event', 500);
       }
     }
 
