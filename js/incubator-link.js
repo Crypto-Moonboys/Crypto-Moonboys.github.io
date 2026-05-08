@@ -62,13 +62,6 @@
     return 'Linked Telegram';
   }
 
-  function clearStoredPayload() {
-    try {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-      localStorage.removeItem('moonboys_tg_auth');
-    } catch (_) {}
-  }
-
   function scrubTelegramHash() {
     try {
       var url = new URL(window.location.href);
@@ -144,7 +137,6 @@
     scrubTelegramHash();
     if (!rawPayload) {
       if (hashState.present) {
-        clearStoredPayload();
         setStatus(COPY.UNLINKED, 'Telegram link payload was missing. ' + DIRECT_VISIT_PROMPT, false);
         emitSyncState('bad', 'missing_payload');
         debug('payload_missing_after_callback');
@@ -175,7 +167,6 @@
     debug('payload_received', { hasPayload: !!parsedPayload });
 
     if (!parsedPayload || typeof parsedPayload !== 'object') {
-      clearStoredPayload();
       setStatus(COPY.UNLINKED, 'Invalid link. Use /gklink again.', false);
       emitSyncState('bad', 'invalid_payload');
       debug('payload_parse_failed', { rawLength: rawPayload.length });
@@ -199,7 +190,6 @@
           var errorMessage = result.data && result.data.error
             ? String(result.data.error)
             : 'Sync verification failed. Run /gklink again.';
-          clearStoredPayload();
           setStatus(COPY.UNLINKED, errorMessage, false);
           emitSyncState('bad', 'verify_failed');
           debug('verify_failed', {
@@ -233,7 +223,6 @@
         }
 
         if (!linkedOk) {
-          clearStoredPayload();
           setStatus(COPY.UNLINKED, 'Signed Telegram auth is missing or expired. Run /gklink again.', false);
           emitSyncState('bad', 'link_persist_failed');
           debug('link_persist_failed', { telegramId: result.data.telegram_id || null });
@@ -247,7 +236,6 @@
         debug('verify_success', { telegramId: result.data.telegram_id });
       })
       .catch(function (error) {
-        clearStoredPayload();
         setStatus(COPY.UNLINKED, COPY.API_UNAVAILABLE + ' \u2014 run /gklink again if this persists.', false);
         emitSyncState('bad', 'network_error');
         debug('verify_exception', { message: error && error.message ? error.message : String(error) });
