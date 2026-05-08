@@ -20,7 +20,7 @@
       titleLadder: ['Roadie', 'Amp Runner', 'Fork Rocker', 'Chainbreaker', 'Headliner'],
       rogueliteIdentity: 'Endurance / anti-chaos / streak protection',
       relatedLinks: [
-        { label: 'Faction wiki: Hard Fork Games', href: '/wiki/hard-fork-games.html' },
+        { label: 'Faction wiki: The Hard Fork Rockers', href: '/wiki/the-hard-fork-rockers.html' },
       ],
       joinCtaCopy: 'Join Hard Fork Rockers and build durable chamber pressure.'
     },
@@ -87,7 +87,7 @@
       titleLadder: ['Spark', 'Fury Runner', 'Chain Striker', 'Rage Node', 'Storm Captain'],
       rogueliteIdentity: 'Speed / aggression / revenge momentum',
       relatedLinks: [
-        { label: 'Faction wiki: Blockchain GraffPUNKS', href: '/wiki/blockchain-graffpunks.html' },
+        { label: 'Faction wiki: The Blockchain Furies', href: '/wiki/the-blockchain-furies.html' },
       ],
       joinCtaCopy: 'Join Blockchain Furies and keep momentum blazing.'
     },
@@ -109,7 +109,7 @@
       titleLadder: ['Moon Recruit', 'Signal Siren', 'Lunar Elite', 'Queen’s Blade', 'Moon Commander'],
       rogueliteIdentity: 'Control / precision / status',
       relatedLinks: [
-        { label: 'Faction wiki: The Princess', href: '/wiki/the-princess.html' },
+        { label: 'Faction wiki: The Crypto Moongirls', href: '/wiki/the-crypto-moongirls.html' },
       ],
       joinCtaCopy: 'Join Crypto Moongirls and dominate with precision control.'
     },

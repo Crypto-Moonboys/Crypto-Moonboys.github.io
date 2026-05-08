@@ -81,11 +81,15 @@
 
     var profiles = getProfiles();
     var order = getProfileOrder();
+    if (!profiles || typeof profiles !== 'object') return;
+    if (!Array.isArray(order) || !order.length) return;
+    var validKeys = order.filter(function (key) { return !!profiles[key]; });
+    if (!validKeys.length) return;
     var standings = getStandings().slice().sort(function (a, b) { return (b.power || 0) - (a.power || 0); });
     var rankByFaction = {};
     standings.forEach(function (row, idx) { rankByFaction[row.faction] = idx + 1; });
 
-    grid.innerHTML = order.map(function (key) {
+    grid.innerHTML = validKeys.map(function (key) {
       var p = profiles[key];
       if (!p) return '';
       var rank = rankByFaction[key] || '—';

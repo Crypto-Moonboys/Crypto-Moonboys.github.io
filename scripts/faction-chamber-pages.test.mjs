@@ -30,6 +30,8 @@ const FACTIONS = [
   { key: 'crypto-stoned-boys', name: 'Crypto Stoned Boys' },
 ];
 
+const FACTION_PAGE_ROUTES = FACTIONS.map((f) => `/battle-chamber/factions/${f.key}.html`);
+
 const REQUIRED_SECTIONS = [
   'Faction Lore',
   'Current Perks',
@@ -48,6 +50,13 @@ const FORBIDDEN_TERMS = [
   'investment',
   'earn money',
   'cash prizes',
+];
+
+const REQUIRED_SHARED_STACK_TAGS = [
+  '/js/battle-chamber-faction-bridge.js',
+  '/js/faction-profile-data.js',
+  '/js/faction-chamber-page.js',
+  '/css/faction-chamber.css',
 ];
 
 function read(relativePath) {
@@ -69,13 +78,24 @@ function check(condition, label) {
 
 console.log('\n─── Faction Chamber Pages Tests ──────────────────────────────\n');
 
-console.log('[1] Required routes exist');
+console.log('[1] Required routes and shared CSS file exist');
 for (const route of ROUTES) {
   const filePath = path.join(ROOT, route.replace(/^\//, ''));
   check(fs.existsSync(filePath), `${route} exists`);
 }
+check(fs.existsSync(path.join(ROOT, 'css/faction-chamber.css')), '/css/faction-chamber.css exists');
 
-console.log('\n[2] Faction pages include required content and CTAs');
+console.log('\n[2] Every chamber route loads shared stack and does not load wiki.js');
+for (const route of ROUTES) {
+  const html = read(route);
+  for (const requiredTag of REQUIRED_SHARED_STACK_TAGS) {
+    check(html.includes(requiredTag), `${route}: includes ${requiredTag}`);
+  }
+  check(!html.includes('/js/wiki.js'), `${route}: does not load /js/wiki.js`);
+  check(!/<style[^>]*>[\s\S]*\.fcp-wrap\s+\.section[\s\S]*<\/style>/i.test(html), `${route}: no duplicated inline faction style block`);
+}
+
+console.log('\n[3] Faction pages include required content and CTAs');
 for (const faction of FACTIONS) {
   const route = `/battle-chamber/factions/${faction.key}.html`;
   const html = read(route);
@@ -85,73 +105,82 @@ for (const faction of FACTIONS) {
   check(lower.includes('join this faction'), `${faction.key}: join CTA present`);
   check(/<a[^>]+href="\/community\.html"[^>]*>Back to Battle Chamber<\/a>/i.test(html), `${faction.key}: explicit back to Battle Chamber link present`);
   check(html.includes('/games/'), `${faction.key}: arcade link present`);
+  check(html.includes('/gkniftyheads-incubator.html'), `${faction.key}: Telegram link CTA present`);
 
   for (const heading of REQUIRED_SECTIONS) {
     check(html.includes(heading), `${faction.key}: section present - ${heading}`);
   }
 
   check(html.includes('Top Members / Clout Board'), `${faction.key}: top members/clout board section present`);
-
-  check(
-    html.includes('/js/faction-profile-data.js') && html.includes('/js/faction-chamber-page.js'),
-    `${faction.key}: shared data/renderer scripts loaded`
-  );
 }
 
-console.log('\n[3] Directory links to all faction pages');
+console.log('\n[4] Directory links and navigation');
 const directoryHtml = read('/battle-chamber/factions/index.html');
 for (const faction of FACTIONS) {
-  check(
-    directoryHtml.includes(`/battle-chamber/factions/${faction.key}.html`),
-    `directory links to ${faction.key}.html`
-  );
+  check(directoryHtml.includes(`/battle-chamber/factions/${faction.key}.html`), `directory links to ${faction.key}.html`);
 }
 check(directoryHtml.includes('/community.html'), 'directory has Battle Chamber back link');
 check(directoryHtml.includes('/games/'), 'directory has Arcade link');
 check(directoryHtml.includes('/gkniftyheads-incubator.html'), 'directory has Telegram link');
 
-console.log('\n[4] Community hub chamber links are not placeholder anchors');
+console.log('\n[5] Community hub chamber links are live');
 const communityHtml = read('/community.html');
-check(
-  !communityHtml.includes('#coming-next-faction-chambers'),
-  'community.html does not use #coming-next-faction-chambers placeholder links'
-);
+check(!communityHtml.includes('#coming-next-faction-chambers'), 'community.html does not use #coming-next-faction-chambers placeholder links');
 
-console.log('\n[5] Old faction labels are not live in chamber pages/hub');
+const hubRendererJs = read('/js/battle-chamber-factions.js');
+for (const faction of FACTIONS) {
+  check(hubRendererJs.includes(`'${faction.key}': '/battle-chamber/factions/${faction.key}.html'`) || hubRendererJs.includes(`${faction.key}: '/battle-chamber/factions/${faction.key}.html'`), `hub renderer maps ${faction.key} to real chamber route`);
+}
+
+console.log('\n[6] Old labels and forbidden wording are absent');
 const chamberCorpus = [communityHtml, directoryHtml]
-  .concat(FACTIONS.map((f) => read(`/battle-chamber/factions/${f.key}.html`)))
+  .concat(FACTION_PAGE_ROUTES.map(read))
+  .concat([read('/js/faction-profile-data.js'), read('/js/faction-chamber-page.js'), hubRendererJs])
   .join('\n')
   .toLowerCase();
+
 check(!chamberCorpus.includes('diamond hands'), 'no Diamond Hands live chamber label');
 check(!chamberCorpus.includes('hodl warriors'), 'no HODL Warriors live chamber label');
-
-console.log('\n[6] Forbidden reward wording absent from chamber pages/hub/renderer/data');
-const chamberFiles = [
-  '/community.html',
-  '/battle-chamber/factions/index.html',
-  ...FACTIONS.map((f) => `/battle-chamber/factions/${f.key}.html`),
-  '/js/faction-profile-data.js',
-  '/js/faction-chamber-page.js',
-  '/js/battle-chamber-factions.js',
-];
-const allText = chamberFiles.map(read).join('\n').toLowerCase();
 for (const term of FORBIDDEN_TERMS) {
-  check(!allText.includes(term), `forbidden wording absent: "${term}"`);
+  check(!chamberCorpus.includes(term), `forbidden wording absent: "${term}"`);
 }
 
-console.log('\n[7] Shared data/renderer integrity checks');
+console.log('\n[7] Shared data and wiring integrity checks');
 const profileDataJs = read('/js/faction-profile-data.js');
 for (const faction of FACTIONS) {
-  check(profileDataJs.includes(`'${faction.key}'`) || profileDataJs.includes(`\"${faction.key}\"`), `profile data contains key: ${faction.key}`);
+  check(profileDataJs.includes(`'${faction.key}'`) || profileDataJs.includes(`"${faction.key}"`), `profile data contains key: ${faction.key}`);
 }
+
+// Guard against misleading faction wiki labels on mismatched pages
+check(!profileDataJs.includes("label: 'Faction wiki: Hard Fork Games'"), 'profile data does not mislabel Hard Fork Games as faction wiki');
+check(!profileDataJs.includes("label: 'Faction wiki: The Princess'"), 'profile data does not mislabel The Princess as faction wiki');
+check(!profileDataJs.includes("label: 'Faction wiki: Blockchain GraffPUNKS'"), 'profile data does not mislabel Blockchain GraffPUNKS as faction wiki');
+check(profileDataJs.includes("href: '/wiki/the-hard-fork-rockers.html'"), 'profile data links Hard Fork Rockers to canonical faction wiki page');
+check(profileDataJs.includes("href: '/wiki/the-crypto-moongirls.html'"), 'profile data links Crypto Moongirls to canonical faction wiki page');
+check(profileDataJs.includes("href: '/wiki/the-blockchain-furies.html'"), 'profile data links Blockchain Furies to canonical faction wiki page');
 
 const chamberRendererJs = read('/js/faction-chamber-page.js');
 check(chamberRendererJs.includes('MOONBOYS_FACTION'), 'renderer references MOONBOYS_FACTION');
 check(chamberRendererJs.includes('MOONBOYS_WAR_DATA'), 'renderer references MOONBOYS_WAR_DATA');
 check(chamberRendererJs.includes('MOONBOYS_MISSION_DATA'), 'renderer references MOONBOYS_MISSION_DATA');
 check(chamberRendererJs.includes('FACTION_EFFECT_DEFS') || chamberRendererJs.includes('FACTION_DEFS'), 'renderer references faction effects defs');
+check(chamberRendererJs.includes('MOONBOYS_FACTION_PROFILES'), 'renderer references MOONBOYS_FACTION_PROFILES');
+check(chamberRendererJs.includes('battle-chamber:faction-data-ready'), 'renderer listens for battle-chamber:faction-data-ready');
+check(chamberRendererJs.includes('faction:update'), 'renderer listens for faction:update');
+check(chamberRendererJs.includes('moonboys:faction-status'), 'renderer listens for moonboys:faction-status');
+check(chamberRendererJs.includes('moonboys:faction-boost'), 'renderer listens for moonboys:faction-boost');
 
-console.log('\n[8] Faction pages use shared renderer/data (no disconnected per-page JS)');
+// Guard that directory fallback is preserved when profile data/order are unavailable
+check(chamberRendererJs.includes('if (!Array.isArray(order) || !order.length) return;'), 'renderer preserves directory fallback when profile order is unavailable');
+check(chamberRendererJs.includes('if (!validKeys.length) return;'), 'renderer preserves directory fallback when profiles are unavailable');
+check(chamberRendererJs.includes('grid.innerHTML = validKeys.map'), 'renderer only renders directory from validated profile keys');
+
+const bridgeJs = read('/js/battle-chamber-faction-bridge.js');
+check(bridgeJs.includes('getFactionStandings'), 'bridge uses faction-war-system standings');
+check(bridgeJs.includes('getDailyMissions') && bridgeJs.includes('getSeasonalMissions'), 'bridge uses faction-missions daily and seasonal missions');
+check(bridgeJs.includes('FACTION_DEFS'), 'bridge uses faction-effect-system effect defs');
+
+console.log('\n[8] Faction pages use shared renderer/data stack (no disconnected per-page JS)');
 for (const faction of FACTIONS) {
   const html = read(`/battle-chamber/factions/${faction.key}.html`);
   check(!html.includes(`/js/${faction.key}.js`), `${faction.key}: no per-page JS file`);
