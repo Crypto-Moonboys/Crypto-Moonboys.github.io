@@ -230,16 +230,74 @@
 
     var clout = byId('fcp-clout-track');
     if (clout) {
+      // Read reward tracks from MOONBOYS_FACTION_REWARD_DATA when available
+      var rewardData = window.MOONBOYS_FACTION_REWARD_DATA;
+      var rewardSummary = rewardData && rewardData.factions && rewardData.factions[key] ? rewardData.factions[key] : null;
+      var badgeTrack = (rewardSummary && Array.isArray(rewardSummary.badgeTrack)) ? rewardSummary.badgeTrack : profile.badgeIdeas;
+      var stickerTrack = (rewardSummary && Array.isArray(rewardSummary.stickerTrack)) ? rewardSummary.stickerTrack : profile.stickerIdeas;
+      var titleTrack = (rewardSummary && Array.isArray(rewardSummary.titleTrack)) ? rewardSummary.titleTrack : profile.titleLadder;
       clout.innerHTML = '' +
-        '<p><strong>Badge ladder:</strong> ' + esc(profile.badgeIdeas.join(' → ')) + '</p>' +
-        '<p><strong>Sticker unlock ideas:</strong> ' + esc(profile.stickerIdeas.join(' · ')) + '</p>' +
-        '<p><strong>Title ladder:</strong> ' + esc(profile.titleLadder.join(' → ')) + '</p>' +
+        '<p><strong>Badge ladder:</strong> ' + esc(badgeTrack.join(' → ')) + '</p>' +
+        '<p><strong>Sticker unlock ideas:</strong> ' + esc(stickerTrack.join(' · ')) + '</p>' +
+        '<p><strong>Title ladder:</strong> ' + esc(titleTrack.join(' → ')) + '</p>' +
         '<p><strong>Placement tracks:</strong> Weekly, monthly, and seasonal clout placement updates as Battle Chamber data expands.</p>';
+    }
+
+    var rewardTracks = byId('fcp-reward-tracks');
+    if (rewardTracks) {
+      var rd = window.MOONBOYS_FACTION_REWARD_DATA;
+      var rs = rd && rd.factions && rd.factions[key] ? rd.factions[key] : null;
+      var weekly = rs && rs.weekly ? rs.weekly : null;
+      var monthly = rs && rs.monthly ? rs.monthly : null;
+      var seasonal = rs && rs.seasonal ? rs.seasonal : null;
+      rewardTracks.innerHTML = '' +
+        '<div class="fcp-reward-section">' +
+          '<h3>Weekly Reward</h3>' +
+          (weekly
+            ? '<ul>' +
+                '<li><strong>Badge eligible:</strong> ' + esc(weekly.badge) + '</li>' +
+                '<li><strong>Placement:</strong> ' + esc(weekly.placement) + '</li>' +
+                '<li><strong>Roguelite perk:</strong> ' + esc(weekly.roguelitePerk) + '</li>' +
+                '<li><strong>Spotlight:</strong> ' + esc(weekly.spotlight) + '</li>' +
+              '</ul>'
+            : '<p>Weekly reward data loading.</p>') +
+        '</div>' +
+        '<div class="fcp-reward-section">' +
+          '<h3>Monthly Reward</h3>' +
+          (monthly
+            ? '<ul>' +
+                '<li><strong>Title eligible:</strong> ' + esc(monthly.title) + '</li>' +
+                '<li><strong>Profile border:</strong> ' + esc(monthly.border) + '</li>' +
+                '<li><strong>Sticker unlock:</strong> ' + esc(monthly.sticker) + '</li>' +
+                '<li><strong>Chamber placement:</strong> ' + esc(monthly.chamberPlacement) + '</li>' +
+              '</ul>'
+            : '<p>Monthly reward data loading.</p>') +
+        '</div>' +
+        '<div class="fcp-reward-section">' +
+          '<h3>Seasonal Reward</h3>' +
+          (seasonal
+            ? '<ul>' +
+                '<li><strong>Trophy:</strong> ' + esc(seasonal.trophy) + '</li>' +
+                '<li><strong>Title eligible:</strong> ' + esc(seasonal.title) + '</li>' +
+                '<li><strong>Hall of Fame:</strong> ' + esc(seasonal.hallOfFame) + '</li>' +
+                '<li><strong>Sticker set:</strong> ' + esc(seasonal.stickerSet) + '</li>' +
+              '</ul>'
+            : '<p>Seasonal reward data loading.</p>') +
+        '</div>' +
+        '<p class="fcp-reward-disclaimer"><strong>Faction rewards are gameplay/status rewards only.</strong></p>';
     }
 
     var rogue = byId('fcp-roguelite-identity');
     if (rogue) {
-      rogue.innerHTML = '<p>' + esc(profile.rogueliteIdentity) + ' defines this faction’s roguelite branch identity.</p>';
+      var rd2 = window.MOONBOYS_FACTION_REWARD_DATA;
+      var rs2 = rd2 && rd2.factions && rd2.factions[key] ? rd2.factions[key] : null;
+      var roguelitePerks = rs2 && Array.isArray(rs2.roguelite) ? rs2.roguelite : [];
+      var perksHtml = roguelitePerks.length
+        ? '<ul>' + roguelitePerks.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>'
+        : '';
+      rogue.innerHTML = '<p>' + esc(profile.rogueliteIdentity) + ' defines this faction’s roguelite branch identity.</p>' +
+        (perksHtml ? '<p><strong>Roguelite perk eligibility (display only, not live wired unless noted):</strong></p>' + perksHtml : '') +
+        '<p>Roguelite perk options are eligibility indicators. They are shown as unlocked/eligible here and will be wired into the roguelite loop where confirmed.</p>';
     }
 
     var live = byId('fcp-live-proof-feed');
@@ -299,6 +357,7 @@
     }
 
     window.addEventListener('battle-chamber:faction-data-ready', renderAll);
+    window.addEventListener('battle-chamber:faction-rewards-ready', renderAll);
     window.addEventListener('moonboys:faction-status', renderAll);
     window.addEventListener('moonboys:faction-boost', renderAll);
 
