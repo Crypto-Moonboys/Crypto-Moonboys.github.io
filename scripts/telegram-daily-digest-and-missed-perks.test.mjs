@@ -83,7 +83,7 @@ console.log('\n[6] UI checks');
 check(communityHtml.includes('battle-todays-active-options'), 'Battle Chamber has Today’s Active Options panel');
 check(communityHtml.includes('battle-missed-perks-history'), 'Battle Chamber has Missed Days / Missed Perks panel');
 check(communityHtml.includes('Missed perks history builds over time.'), 'Missed panel copy says history builds over time');
-check(!communityHtml.toLowerCase().includes('missed history clears daily'), 'no copy claims missed history clears daily');
+check(!communityHtml.toLowerCase().includes('missed history clears daily'), 'no copy contains "missed history clears daily" (case-insensitive)');
 check(factionPageJs.includes('fcp-daily-digest') && factionPageJs.includes('fcp-missed-perks'), 'faction chamber renderer includes missed/digest hooks');
 check(bridgeJs.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && bridgeJs.includes('MOONBOYS_ROGUELITE_MISSED_HISTORY'), 'bridge wires roguelite daily/missed caches');
 check(gamesHtml.includes('roguelite-daily-digest-summary'), 'arcade hub includes daily signal summary hook');

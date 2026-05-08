@@ -135,6 +135,14 @@ function logApiFailure(event, context = {}) {
   }));
 }
 
+function logApiEvent(event, context = {}) {
+  console.log('[moonboys-api]', JSON.stringify({
+    event,
+    ...context,
+    timestamp: new Date().toISOString(),
+  }));
+}
+
 /** Return today's UTC date as a YYYY-MM-DD string. */
 function getTodayUtcDate() {
   return new Date().toISOString().slice(0, 10);
@@ -406,7 +414,7 @@ async function callAntiCheatWorker(env, method, acPath, body) {
 async function sendTelegramMessage(botToken, chatId, text, extra = {}) {
   if (!botToken || !chatId) {
     console.log('TG send skipped', JSON.stringify({ hasBotToken: !!botToken, hasChatId: !!chatId }));
-    return { ok: false, status: 0, error: 'missing_bot_token_or_chat_id' };
+    return { ok: false, status: 0, error: 'missing_chat_or_token' };
   }
   try {
     const response = await fetch(
@@ -1251,6 +1259,9 @@ function getPreviousUtcDay(utcDay) {
   return new Date(ts - 86400000).toISOString().slice(0, 10);
 }
 
+/**
+ * Returns UTC day keys between start and end, excluding both boundary days.
+ */
 function listUtcDaysBetweenExclusive(startUtcDay, endUtcDay, maxDays = 45) {
   const startTs = Date.parse(`${String(startUtcDay)}T00:00:00Z`);
   const endTs = Date.parse(`${String(endUtcDay)}T00:00:00Z`);
@@ -1300,7 +1311,8 @@ async function insertMissedPerkEntry(db, {
 }) {
   const safeTelegramId = String(telegramId || '').trim();
   if (!safeTelegramId) return null;
-  const safeUtcDay = clampText(utcDay || getTodayUtcDate(), 10, getTodayUtcDate());
+  const fallbackToday = getTodayUtcDate();
+  const safeUtcDay = clampText(utcDay || fallbackToday, 10, fallbackToday);
   const normalizedFaction = factionId ? normalizeBattleChamberFaction(factionId) : null;
   const safeSource = clampText(source, DAILY_MISSED_TEXT_LIMITS.source, 'unknown');
   const safeType = clampText(opportunityType, DAILY_MISSED_TEXT_LIMITS.opportunityType, 'daily_opportunity');
@@ -4071,7 +4083,7 @@ export default {
       logApiFailure('telegram_daily_digest_scheduled_failed', summary);
       return;
     }
-    logApiFailure('telegram_daily_digest_scheduled_complete', {
+    logApiEvent('telegram_daily_digest_scheduled_complete', {
       utcDay: summary.utc_day,
       linked_users_considered: summary.linked_users_considered,
       sent: summary.sent,
