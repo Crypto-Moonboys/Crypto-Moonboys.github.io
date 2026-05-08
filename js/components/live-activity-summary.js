@@ -325,6 +325,8 @@
   window.MOONBOYS_LIVE_ACTIVITY = {
     mount: mount,
     refresh: refresh,
+    // Legacy compatibility: older pages may call addEvent() directly.
+    // This panel now renders from synced global state, so manual event pushes are ignored.
     addEvent: function () {},
   };
 }());
