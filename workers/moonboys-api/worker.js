@@ -188,26 +188,69 @@ function escapeHtml(str) {
 const FACTION_UNALIGNED = 'unaligned';
 const FACTION_SWITCH_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const FACTION_CONFIG = {
-  'diamond-hands': {
-    label: 'Diamond Hands',
-    icon: '💎',
+  // Canonical 9-faction keys — mirrors LIVE_FACTIONS in battle-chamber-factions.js
+  'hard-fork-rockers': {
+    label: 'Hard Fork Rockers',
+    icon: '🪨',
     color: '#56dcff',
-    bonus: '+XP stability (less decay, better long-term gain)',
+    bonus: '+endurance stability and streak protection',
     xpMultiplier: 1.1,
   },
-  'hodl-warriors': {
-    label: 'HODL Warriors',
-    icon: '⚔️',
+  'rugpull-minors': {
+    label: 'Rugpull Minors',
+    icon: '⛏️',
     color: '#ff6ad5',
-    bonus: '+combat rewards (future NPC war) and XP bursts',
+    bonus: '+defensive recovery and shield support',
     xpMultiplier: 1.15,
   },
-  'graffpunks': {
+  graffpunks: {
     label: 'GraffPUNKS',
     icon: '🎨',
     color: '#7dff72',
-    bonus: '+event rewards and mission bonuses',
+    bonus: '+chaos bursts and combo pressure',
     xpMultiplier: 1.12,
+  },
+  'blockchain-furies': {
+    label: 'Blockchain Furies',
+    icon: '🔥',
+    color: '#ff9f43',
+    bonus: '+speed pressure and revenge momentum',
+    xpMultiplier: 1.0,
+  },
+  'crypto-moongirls': {
+    label: 'Crypto Moongirls',
+    icon: '🌙',
+    color: '#b88dff',
+    bonus: '+precision control and penalty resistance',
+    xpMultiplier: 1.0,
+  },
+  blockstars: {
+    label: 'The Blockstars',
+    icon: '⭐',
+    color: '#ffd166',
+    bonus: '+featured clout tracks and spotlight scoring',
+    xpMultiplier: 1.0,
+  },
+  'all-city-bulls': {
+    label: 'All City Bulls',
+    icon: '🐂',
+    color: '#ff6b6b',
+    bonus: '+score pressure and war push',
+    xpMultiplier: 1.0,
+  },
+  'nomad-bears': {
+    label: 'Nomad Bears',
+    icon: '🐻',
+    color: '#8ecf7a',
+    bonus: '+route variety and consistency rewards',
+    xpMultiplier: 1.0,
+  },
+  'crypto-stoned-boys': {
+    label: 'Crypto Stoned Boys',
+    icon: '😶‍🌫️',
+    color: '#8fd3ff',
+    bonus: '+chill streak comfort and random branch luck',
+    xpMultiplier: 1.0,
   },
   unaligned: {
     label: 'Unaligned',
@@ -220,9 +263,16 @@ const FACTION_CONFIG = {
 
 function normalizeFaction(value) {
   const cleaned = String(value || '').trim().toLowerCase();
-  if (cleaned === 'diamondhands' || cleaned === 'diamond_hands' || cleaned === 'diamond-hands') return 'diamond-hands';
-  if (cleaned === 'hodlwarriors' || cleaned === 'hodl_warriors' || cleaned === 'hodl-warriors') return 'hodl-warriors';
-  if (cleaned === 'graffpunks' || cleaned === 'graff-punks' || cleaned === 'graff_punks') return 'graffpunks';
+  // All 9 canonical Battle Chamber faction keys
+  const CANONICAL_FACTIONS = [
+    'hard-fork-rockers', 'rugpull-minors', 'graffpunks', 'blockchain-furies',
+    'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys',
+  ];
+  if (CANONICAL_FACTIONS.includes(cleaned)) return cleaned;
+  // Legacy aliases → canonical keys
+  if (cleaned === 'diamondhands' || cleaned === 'diamond_hands' || cleaned === 'diamond-hands') return 'hard-fork-rockers';
+  if (cleaned === 'hodlwarriors' || cleaned === 'hodl_warriors' || cleaned === 'hodl-warriors') return 'rugpull-minors';
+  if (cleaned === 'graff-punks' || cleaned === 'graff_punks') return 'graffpunks';
   if (cleaned === 'unaligned') return FACTION_UNALIGNED;
   return null;
 }
@@ -2216,6 +2266,52 @@ export default {
         if (!(await hasBlockTopiaFactionColumns(env.DB))) {
           return err('Faction progression schema is pending migration', 503);
         }
+
+        // ── Season lock check ──────────────────────────────────────────────
+        const seasonKey = await getBattleSeasonKey(env.DB);
+        const lockTableRow = await env.DB.prepare(
+          `SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'telegram_faction_season_locks' LIMIT 1`
+        ).first().catch(() => null);
+        const lockTableExists = !!(lockTableRow?.name);
+
+        if (lockTableExists) {
+          const existingLock = await env.DB.prepare(
+            `SELECT faction_id FROM telegram_faction_season_locks WHERE telegram_id = ? AND season_key = ?`
+          ).bind(verified.telegramId, seasonKey).first().catch(() => null);
+
+          if (existingLock) {
+            if (existingLock.faction_id === requestedFaction) {
+              // Same faction — idempotent OK
+              const progressionRow = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
+              const meta = factionMeta(requestedFaction);
+              return json({
+                ok: true,
+                faction: meta.key,
+                faction_label: meta.label,
+                faction_xp: Math.max(0, Math.floor(Number(progressionRow?.faction_xp) || 0)),
+                bonuses: { icon: meta.icon, color: meta.color, bonus: meta.bonus, xp_multiplier: meta.xp_multiplier },
+                first_join: false,
+                switched: false,
+                cooldown_ms: 0,
+                season_key: seasonKey,
+                locked_until: 'next season reset',
+              });
+            }
+            // Different faction — blocked for this season
+            const lockedMeta = factionMeta(existingLock.faction_id);
+            return json({
+              ok: false,
+              error: 'faction_locked_for_season',
+              faction: existingLock.faction_id,
+              faction_label: lockedMeta.label,
+              season_key: seasonKey,
+              locked_until: 'next season reset',
+              message: `You are locked to ${lockedMeta.label} for this season. Faction switch blocked until the next season resets.`,
+            }, 409);
+          }
+        }
+
+        // ── Progression update (existing cooldown logic unchanged) ─────────
         const row = await getOrCreateBlockTopiaProgression(env.DB, verified.telegramId);
         const currentFaction = normalizeFaction(row?.faction) || FACTION_UNALIGNED;
         const lastSwitch = Number(row?.faction_last_switch) || 0;
@@ -2242,6 +2338,16 @@ export default {
           verified.telegramId,
         ).run();
 
+        // ── Upsert season lock ─────────────────────────────────────────────
+        if (lockTableExists) {
+          const nowIso = new Date().toISOString();
+          await env.DB.prepare(`
+            INSERT INTO telegram_faction_season_locks (telegram_id, season_key, faction_id, locked_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(telegram_id, season_key) DO UPDATE SET faction_id = excluded.faction_id, updated_at = excluded.updated_at
+          `).bind(verified.telegramId, seasonKey, requestedFaction, nowIso, nowIso).run().catch(() => null);
+        }
+
         const meta = factionMeta(requestedFaction);
         return json({
           ok: true,
@@ -2257,6 +2363,8 @@ export default {
           first_join: firstJoin,
           switched: isSwitching,
           cooldown_ms: FACTION_SWITCH_COOLDOWN_MS,
+          season_key: seasonKey,
+          locked_until: 'next season reset',
         });
       } catch {
         return err('Failed to join faction', 500);
@@ -3232,7 +3340,7 @@ async function cmdGkStart(db, tok, chatId, telegramId, fromUser) {
     `📊 /gkstatus — View your XP, level, and faction\n` +
     `🏆 /gkleaderboard — Community XP leaderboard\n` +
     `🗺️ /gkquests — Active missions\n` +
-    `⚔️ /gkfaction — Join or view your faction\n` +
+    `⚔️ /gkfaction — View faction status or choose on the website\n` +
     `❓ /gkhelp — Full command list${xpMsg}`,
     { reply_markup: replyMarkup },
   );
@@ -3257,7 +3365,7 @@ async function cmdGkHelp(tok, chatId) {
     `/gkseason — Current season info\n` +
     `/gkleaderboard — Leaderboard\n` +
     `/gkquests — Active missions\n` +
-    `/gkfaction [name] — View or join a faction\n` +
+    `/gkfaction — View faction status or choose in Battle Chamber\n` +
     `/gkunlink — Invalidate legacy link tokens\n` +
     `/daily — Claim daily XP\n` +
     `/solve — Submit quest answers\n` +
@@ -3462,9 +3570,7 @@ async function cmdGkQuests(db, tok, chatId) {
 }
 
 async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
-  const requested = (argStr || '').trim().toLowerCase();
-
-  // Anti-cheat gate: blocked accounts cannot change faction (competitive action).
+  // Anti-cheat gate: blocked accounts cannot perform competitive actions.
   try {
     const acState = await db.prepare(
       `SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?`
@@ -3482,62 +3588,40 @@ async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
     });
   }
 
-  // Fetch available factions from the DB
-  const factionsResult = await db.prepare(
-    `SELECT id, name, description, icon FROM telegram_factions ORDER BY name`
-  ).all().catch(() => ({ results: [] }));
-  const factions = factionsResult.results || [];
+  const battleChamberUrl = `${SITE_URL}/community.html#battle-join-faction`;
+  const replyMarkup = {
+    inline_keyboard: [
+      [
+        { text: '⚔️ Open Battle Chamber', web_app: { url: `${SITE_URL}/community.html#battle-join-faction` } },
+      ],
+      [
+        { text: '🌐 Open in Browser', url: battleChamberUrl },
+      ],
+    ],
+  };
 
-  if (!requested) {
-    // Show current faction and available list
-    const current = await getUserFaction(db, telegramId);
-    const factionList = factions
-      .map(f => `${f.icon ? escapeHtml(f.icon) + ' ' : ''}<code>${escapeHtml(f.name)}</code>`)
-      .join(', ');
+  const current = await getUserFaction(db, telegramId);
+
+  if (current) {
+    await sendTelegramMessage(tok, chatId,
+      `⚔️ <b>Faction Status</b>\n\n` +
+      `Your faction: <b>${escapeHtml(current.name)}</b>\n\n` +
+      `You are locked to this faction for the current season.\n` +
+      `At season reset, your faction lock clears and you can choose a new side.\n\n` +
+      `View faction activity and missions in the Battle Chamber:`,
+      { reply_markup: replyMarkup },
+    );
+  } else {
     await sendTelegramMessage(tok, chatId,
       `⚔️ <b>Faction</b>\n\n` +
-      `Current: <b>${current ? escapeHtml(current.name) : 'None'}</b>\n\n` +
-      `To join a faction:\n<code>/gkfaction &lt;name&gt;</code>\n\n` +
-      `Available: ${factionList || 'none listed yet'}`
+      `You haven't joined a faction yet.\n\n` +
+      `If you're ready, choose your faction in the Battle Chamber. ` +
+      `Your choice locks for the current season, then resets when the next season starts.\n\n` +
+      `Faction clout only counts when you are Telegram-linked.\n` +
+      `No faction, no faction clout.`,
+      { reply_markup: replyMarkup },
     );
-    return;
   }
-
-  // Find the faction by name (case-insensitive)
-  const target = factions.find(f => f.name.toLowerCase() === requested);
-  if (!target) {
-    const list = factions.map(f => escapeHtml(f.name)).join(', ');
-    await sendTelegramMessage(tok, chatId,
-      `❌ Unknown faction. Available:\n<code>${list || 'none listed yet'}</code>`
-    );
-    return;
-  }
-
-  // Upsert faction membership — UNIQUE(telegram_id) means one faction per user
-  await db.prepare(`
-    INSERT INTO telegram_faction_members (telegram_id, faction_id, role)
-    VALUES (?, ?, 'member')
-    ON CONFLICT(telegram_id) DO UPDATE SET faction_id = excluded.faction_id
-  `).bind(telegramId, target.id).run().catch((error) => {
-    logApiFailure('gkfaction_membership_upsert_failed', {
-      telegramId,
-      factionId: target.id,
-      message: error?.message || String(error),
-    });
-  });
-
-  await logTelegramActivity(db, telegramId, 'faction_join',
-    JSON.stringify({ faction: target.name })).catch((error) => {
-    logApiFailure('gkfaction_activity_log_failed', {
-      telegramId,
-      faction: target.name,
-      message: error?.message || String(error),
-    });
-  });
-
-  await sendTelegramMessage(tok, chatId,
-    `⚔️ You have joined faction <b>${escapeHtml(target.name)}</b>. Loyalty noted, moonboy.`
-  );
 }
 
 async function cmdGkUnlink(db, tok, chatId, telegramId) {

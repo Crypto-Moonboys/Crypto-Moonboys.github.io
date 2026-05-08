@@ -367,15 +367,22 @@
 
     if (isAligned) {
       var meta = factionMeta(currentFaction);
+      var chamberLink = CHAMBER_ROUTES[currentFaction] || '/battle-chamber/factions/index.html';
+      var seasonKey = (cached && cached.season_key) ? cached.season_key : null;
+      var nextReset = seasonKey ? 'Season: ' + esc(seasonKey) : 'next season reset';
       container.innerHTML =
         '<div class="bc-aligned-panel" style="--faction-color:' + esc(meta.color) + '">' +
           '<div class="bc-aligned-header">' + meta.icon + ' <strong>' + esc(meta.label) + '</strong></div>' +
+          '<div class="bc-aligned-season-lock">You are locked to ' + esc(meta.label) + ' for this season.</div>' +
           '<div class="bc-aligned-row"><span>Faction XP:</span> <strong>' + (Number(cached.faction_xp) || 0) + '</strong></div>' +
           '<div class="bc-aligned-row"><span>Active bonus:</span> <strong>' + esc((cached.bonuses && cached.bonuses.bonus) || meta.perkTeaser) + '</strong></div>' +
           '<div class="bc-aligned-row"><span>Playstyle:</span> <strong>' + esc(meta.playstyle) + '</strong></div>' +
+          '<div class="bc-aligned-row bc-aligned-clout-note">Your runs, missions, and proof events now count toward this faction.</div>' +
+          '<div class="bc-aligned-row bc-aligned-reset-note">Next reset: <strong>' + nextReset + '</strong></div>' +
           '<div class="bc-aligned-actions">' +
             '<a class="bc-cta-btn" href="/games/index.html">Play Arcade</a>' +
             '<a class="bc-cta-btn bc-cta-secondary" href="#battle-active-missions">View Daily Missions</a>' +
+            '<a class="bc-cta-btn bc-cta-chamber" href="' + esc(chamberLink) + '">View Faction Chamber</a>' +
           '</div>' +
         '</div>';
     } else {
@@ -390,10 +397,15 @@
       }).join('');
 
       container.innerHTML =
+        '<div class="bc-join-season-notice">' +
+          '<p class="bc-join-season-lock-copy">Choose carefully. Your faction is locked for the current season.</p>' +
+          '<p class="bc-join-season-reset-copy">At season reset, your faction lock clears and you can join again or pick a new side.</p>' +
+          '<p class="bc-join-link-copy">Faction clout only counts when you are Telegram-linked. No faction, no faction clout.</p>' +
+        '</div>' +
         '<p class="bc-join-intro">Join a faction to make your arcade activity count for something bigger. Your runs build clout. Your faction earns pressure.</p>' +
         '<div class="bc-join-grid">' + cards + '</div>';
 
-      // Wire join buttons to MOONBOYS_FACTION.joinFaction if available
+      // Wire join buttons
       var btns = container.querySelectorAll('.bc-join-btn[data-faction]');
       Array.prototype.forEach.call(btns, function (btn) {
         btn.addEventListener('click', function () {
@@ -414,14 +426,86 @@
             return;
           }
 
-          btn.disabled = true;
-          btn.textContent = 'Joining\u2026';
-          api.joinFaction(targetFaction).then(function () {
-            renderJoinFaction(null);
-          }).catch(function () {
-            btn.disabled = false;
-            btn.textContent = 'Join ' + (factionMeta(targetFaction).label);
-          });
+          // Show inline confirmation panel
+          var targetMeta = factionMeta(targetFaction);
+          container.innerHTML =
+            '<div class="bc-join-confirm-panel" style="--faction-color:' + esc(targetMeta.color) + '">' +
+              '<div class="bc-join-confirm-icon">' + targetMeta.icon + '</div>' +
+              '<div class="bc-join-confirm-title">Confirm faction choice</div>' +
+              '<div class="bc-join-confirm-faction"><strong>' + esc(targetMeta.label) + '</strong></div>' +
+              '<div class="bc-join-confirm-lock">You will be locked to this faction for the current season.</div>' +
+              '<div class="bc-join-confirm-reset">You can choose again when the next season starts.</div>' +
+              '<div class="bc-join-confirm-actions">' +
+                '<button class="bc-join-confirm-btn interactive" id="bc-confirm-join">Confirm — Join ' + esc(targetMeta.label) + '</button>' +
+                '<button class="bc-join-cancel-btn interactive" id="bc-cancel-join">Cancel</button>' +
+              '</div>' +
+            '</div>';
+
+          var confirmBtn = container.querySelector('#bc-confirm-join');
+          var cancelBtn = container.querySelector('#bc-cancel-join');
+
+          if (cancelBtn) {
+            cancelBtn.addEventListener('click', function () {
+              renderJoinFaction(null);
+            });
+          }
+
+          if (confirmBtn) {
+            confirmBtn.addEventListener('click', function () {
+              confirmBtn.disabled = true;
+              confirmBtn.textContent = 'Joining\u2026';
+
+              api.joinFaction(targetFaction).then(function (data) {
+                var seasonKey = data && data.season_key ? data.season_key : null;
+                var successStatus = {
+                  faction: targetFaction,
+                  faction_xp: (data && data.faction_xp) || 0,
+                  bonuses: (data && data.bonuses) || null,
+                  season_key: seasonKey,
+                };
+                // Show success message before re-rendering
+                container.innerHTML =
+                  '<div class="bc-join-success-panel" style="--faction-color:' + esc(targetMeta.color) + '">' +
+                    '<div class="bc-join-success-icon">' + targetMeta.icon + '</div>' +
+                    '<div class="bc-join-success-msg">You joined ' + esc(targetMeta.label) + '. Your faction clout now counts for this season.</div>' +
+                  '</div>';
+                // Reload full status and re-render after brief delay
+                if (typeof api.loadStatus === 'function') {
+                  api.loadStatus().then(function (freshStatus) {
+                    window.dispatchEvent(new CustomEvent('moonboys:faction-status', {
+                      detail: freshStatus || successStatus,
+                    }));
+                  }).catch(function () {
+                    window.dispatchEvent(new CustomEvent('moonboys:faction-status', {
+                      detail: successStatus,
+                    }));
+                  });
+                } else {
+                  window.dispatchEvent(new CustomEvent('moonboys:faction-status', {
+                    detail: successStatus,
+                  }));
+                }
+              }).catch(function (err) {
+                var errMsg = err && err.message ? err.message : String(err || '');
+                // Handle season lock rejection from server
+                if (errMsg.indexOf('faction_locked_for_season') !== -1 ||
+                    errMsg.indexOf('locked') !== -1) {
+                  container.innerHTML =
+                    '<div class="bc-join-locked-panel">' +
+                      '<div class="bc-join-locked-msg">Faction switch blocked. You are already locked to a faction until the next season.</div>' +
+                      '<button class="bc-join-cancel-btn interactive" id="bc-locked-back">Back</button>' +
+                    '</div>';
+                  var backBtn = container.querySelector('#bc-locked-back');
+                  if (backBtn) {
+                    backBtn.addEventListener('click', function () { renderJoinFaction(null); });
+                  }
+                } else {
+                  // General error — restore button
+                  renderJoinFaction(null);
+                }
+              });
+            });
+          }
         });
       });
     }
