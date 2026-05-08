@@ -61,6 +61,11 @@ console.log('\n[3] Top notice');
 check(csp.includes('LIVE SYNC') && csp.includes('Telegram Sync Required'), 'compact Telegram/XP live notice supports linked and unlinked states');
 check(csp.includes('csp-badge-stack') && csp.includes('csp-badge-chip'), 'top notice is compact and chip-based');
 check(csp.indexOf('LIVE SYNC') < csp.indexOf('async function buildPanelHTML') || csp.includes('async function buildBadgeHTML'), 'top notice is rendered by badge path, not the full panel');
+check(csp.includes('blocktopiaBadgeLabel(unlocked)') && csp.includes("return unlocked ? 'BT OPEN' : 'BT LOCK'"), 'initial badge uses shared BT OPEN / BT LOCK labels');
+const stateSubscribeBlock = csp.slice(csp.indexOf('MOONBOYS_STATE.subscribe'), csp.indexOf('// ── Bootstrap'));
+check(stateSubscribeBlock.includes('blocktopiaBadgeLabel(unlocked)'), 'live XP subscription path reuses BT OPEN / BT LOCK labels');
+check(!stateSubscribeBlock.includes("btNode.textContent = unlocked ? 'unlocked' : 'locked'"), 'live badge updater does not flip back to old unlocked / locked labels');
+check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requiredXp)'), 'live Block Topia row updater reuses initial access markup helper');
 
 console.log('\n[4] Panel separation');
 check(siteShell.includes('PLAYER LIVE FEED') && siteShell.includes('FACTION DAILY OPS'), 'right rail boxes are titled PLAYER LIVE FEED and FACTION DAILY OPS');
@@ -100,9 +105,11 @@ const missedHistoryBlock = routeBlock(worker, '/roguelite/missed-history');
 check(dailyStateBlock.includes("request.method === 'GET' || request.method === 'POST'"), 'Worker supports POST /roguelite/daily-state while keeping GET compatibility');
 check(missedHistoryBlock.includes("request.method === 'GET' || request.method === 'POST'"), 'Worker supports POST /roguelite/missed-history while keeping GET compatibility');
 check(dailyStateBlock.includes('tgBody = await request.json()') && dailyStateBlock.includes('verifyTelegramIdentityFromBody(tgBody'), 'daily-state POST reads telegram_auth from JSON body');
+check(worker.includes('GET  /roguelite/daily-state') && worker.includes('POST /roguelite/daily-state  JSON { telegram_auth }'), 'Worker route docs document daily-state GET and POST JSON body separately');
 check(missedHistoryBlock.includes('tgBody = await request.json()') && missedHistoryBlock.includes('verifyTelegramIdentityFromBody(tgBody'), 'missed-history POST reads telegram_auth from JSON body');
 check(missedHistoryBlock.includes("request.method === 'POST' ? tgBody?.limit") && missedHistoryBlock.includes("request.method === 'POST' ? tgBody?.utc_day"), 'missed-history POST body supports limit and utc_day filters');
 check(worker.includes('GET  /roguelite/missed-history?limit=30') && worker.includes('POST /roguelite/missed-history  JSON { telegram_auth, limit, utc_day }'), 'Worker route docs distinguish GET query limit from POST JSON body filters');
+check(worker.includes('Legacy query-auth compatibility only') && worker.includes('deprecated for linked state'), 'legacy GET auth compatibility is explicitly documented as deprecated');
 check(bridge.includes("fetchJsonWithTelegramAuth(apiBase + '/roguelite/daily-state')") && bridge.includes("fetchJsonWithTelegramAuth(apiBase + '/roguelite/missed-history', { limit: 8 })"), 'Battle Chamber bridge uses the Worker POST contract for roguelite state');
 
 console.log('\n[8] Safety and no auth query drift');

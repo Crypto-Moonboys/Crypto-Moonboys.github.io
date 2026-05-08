@@ -226,6 +226,10 @@
     return '<span class="csp-val-locked">Locked — ' + esc(String(arcadeXp)) + ' / ' + requiredXp + ' Arcade XP</span>';
   }
 
+  function blocktopiaBadgeLabel(unlocked) {
+    return unlocked ? 'BT OPEN' : 'BT LOCK';
+  }
+
   function latestActivityRows() {
     var rows = [];
     var activity = Array.isArray(window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY) ? window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY : [];
@@ -315,7 +319,7 @@
       '<span class="csp-badge csp-badge--linked" aria-label="Live sync active">' +
         '<span class="csp-pulse"></span>' +
         '<span class="csp-badge-stack"><strong>LIVE SYNC</strong><small>' + esc(name || 'Player') + ' · XP <span data-csp-badge-xp>' + arcadeXp + '</span> · ' + esc(shortFaction) + '</small></span>' +
-        '<span class="csp-badge-chip" data-csp-badge-bt>' + (unlocked ? 'BT OPEN' : 'BT LOCK') + '</span>' +
+        '<span class="csp-badge-chip" data-csp-badge-bt>' + blocktopiaBadgeLabel(unlocked) + '</span>' +
         '<span class="csp-badge-chip ' + (apiOnline ? 'csp-badge-chip--good' : 'csp-badge-chip--warn') + '">' + (apiOnline ? 'API' : 'API?') + '</span>' +
       '</span>';
   }
@@ -507,21 +511,12 @@
         var unlocked = linked && state.xp >= requiredXp;
 
         document.querySelectorAll('.csp-item-val[data-csp-bt-access]').forEach(function (el) {
-          var btHtml;
-          if (!linked) {
-            btHtml = '<span class="csp-val-locked">\uD83D\uDD12 Telegram link required</span>';
-          } else if (unlocked) {
-            btHtml = '<span class="csp-val-good">\u2705 Unlocked</span>';
-          } else {
-            btHtml = '<span class="csp-val-locked">\uD83D\uDD12 Locked \u2014 ' +
-              esc(String(state.xp)) + ' / ' + requiredXp + ' Arcade XP</span>';
-          }
-          el.innerHTML = btHtml;
+          el.innerHTML = blocktopiaAccessHTML(linked, state.xp, requiredXp);
         });
 
         if (badge) {
           var btNode = badge.querySelector('[data-csp-badge-bt]');
-          if (btNode) btNode.textContent = unlocked ? 'unlocked' : 'locked';
+          if (btNode) btNode.textContent = blocktopiaBadgeLabel(unlocked);
         }
       });
     }

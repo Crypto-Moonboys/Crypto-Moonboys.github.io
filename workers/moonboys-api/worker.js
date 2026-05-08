@@ -39,8 +39,9 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
  *   GET  /battle-chamber/activity?limit=20
  *   POST /battle-chamber/event
  *   POST /player/mastery/update
- *   GET/POST /roguelite/daily-state
- *   GET  /roguelite/missed-history?limit=30
+ *   GET  /roguelite/daily-state  (legacy query-auth compatibility; deprecated for linked state)
+ *   POST /roguelite/daily-state  JSON { telegram_auth }
+ *   GET  /roguelite/missed-history?limit=30  (legacy query-auth compatibility; deprecated for linked state)
  *   POST /roguelite/missed-history  JSON { telegram_auth, limit, utc_day }
  *   POST /roguelite/mark-missed
  *   POST /telegram/daily-digest/run
@@ -2877,12 +2878,14 @@ export default {
       }
     }
 
-    // ── GET/POST /roguelite/daily-state ─────────────────────────────────────
+    // ── GET /roguelite/daily-state (legacy) OR POST JSON { telegram_auth }
     if (path === '/roguelite/daily-state' && (request.method === 'GET' || request.method === 'POST')) {
       let tgBody = {};
       if (request.method === 'POST') {
         try { tgBody = await request.json(); } catch { return err('Invalid JSON', 400); }
       } else {
+        // Legacy query-auth compatibility only. New frontend callers must use POST JSON
+        // so signed Telegram auth is not placed in browser/server URL logs.
         const rawAuth = url.searchParams.get('telegram_auth');
         if (!rawAuth) return err('verified telegram_auth payload required', 401);
         try {
@@ -2963,6 +2966,8 @@ export default {
       if (request.method === 'POST') {
         try { tgBody = await request.json(); } catch { return err('Invalid JSON', 400); }
       } else {
+        // Legacy query-auth compatibility only. New frontend callers must use POST JSON
+        // so signed Telegram auth is not placed in browser/server URL logs.
         const rawAuth = url.searchParams.get('telegram_auth');
         if (!rawAuth) return err('verified telegram_auth payload required', 401);
         try {
