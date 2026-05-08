@@ -19,7 +19,19 @@
   }
 
   function getProfileOrder() {
-    return window.MOONBOYS_FACTION_PROFILE_ORDER || Object.keys(getProfiles());
+    var configuredOrder = window.MOONBOYS_FACTION_PROFILE_ORDER;
+    if (Array.isArray(configuredOrder) && configuredOrder.length) return configuredOrder;
+    return [
+      'hard-fork-rockers',
+      'rugpull-minors',
+      'graffpunks',
+      'blockchain-furies',
+      'crypto-moongirls',
+      'blockstars',
+      'all-city-bulls',
+      'nomad-bears',
+      'crypto-stoned-boys',
+    ];
   }
 
   function getFactionKeyFromPage() {
@@ -71,8 +83,11 @@
   }
 
   function getFactionEffects(key) {
-    var defs = window.FACTION_EFFECT_DEFS || window.FACTION_DEFS;
-    return defs && defs[key] ? defs[key] : null;
+    // FACTION_EFFECT_DEFS is the bridge's canonical export.
+    // FACTION_DEFS is kept as a compatibility fallback for any legacy page
+    // load order where the bridge-global alias has not been hydrated yet.
+    var effectDefs = window.FACTION_EFFECT_DEFS || window.FACTION_DEFS;
+    return effectDefs && effectDefs[key] ? effectDefs[key] : null;
   }
 
   function renderDirectoryPage() {

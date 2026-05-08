@@ -99,10 +99,9 @@ console.log('\n[3] Faction pages include required content and CTAs');
 for (const faction of FACTIONS) {
   const route = `/battle-chamber/factions/${faction.key}.html`;
   const html = read(route);
-  const lower = html.toLowerCase();
 
   check(html.includes(faction.name), `${faction.key}: faction name present`);
-  check(lower.includes('join this faction'), `${faction.key}: join CTA present`);
+  check(/join this faction/i.test(html), `${faction.key}: join CTA present`);
   check(/<a[^>]+href="\/community\.html"[^>]*>Back to Battle Chamber<\/a>/i.test(html), `${faction.key}: explicit back to Battle Chamber link present`);
   check(html.includes('/games/'), `${faction.key}: arcade link present`);
   check(html.includes('/gkniftyheads-incubator.html'), `${faction.key}: Telegram link CTA present`);
@@ -152,6 +151,8 @@ for (const faction of FACTIONS) {
 }
 
 // Guard against misleading faction wiki labels on mismatched pages
+// These specific labels were previously flagged in review because they pointed
+// to adjacent lore/character pages rather than canonical faction pages.
 check(!profileDataJs.includes("label: 'Faction wiki: Hard Fork Games'"), 'profile data does not mislabel Hard Fork Games as faction wiki');
 check(!profileDataJs.includes("label: 'Faction wiki: The Princess'"), 'profile data does not mislabel The Princess as faction wiki');
 check(!profileDataJs.includes("label: 'Faction wiki: Blockchain GraffPUNKS'"), 'profile data does not mislabel Blockchain GraffPUNKS as faction wiki');

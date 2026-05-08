@@ -42,7 +42,7 @@
       titleLadder: ['Tunnel Rat', 'Miner', 'Shaft Runner', 'Rugproof', 'Deep Vault Boss'],
       rogueliteIdentity: 'Shield / recovery / comeback branches',
       relatedLinks: [
-        { label: 'Faction wiki: The Rugpull Miners', href: '/wiki/the-rugpull-miners.html' },
+        { label: 'Related lore: The Rugpull Miners', href: '/wiki/the-rugpull-miners.html' },
       ],
       joinCtaCopy: 'Join Rugpull Minors and turn pressure into defensive momentum.'
     },
@@ -153,7 +153,7 @@
       titleLadder: ['Bull Runner', 'Wall Smasher', 'Score Bruiser', 'All-City Charger', 'Board Breaker'],
       rogueliteIdentity: 'Brute force / high score pressure',
       relatedLinks: [
-        { label: 'Faction wiki: The AllCity Bulls', href: '/wiki/the-allcity-bulls.html' },
+        { label: 'Related lore: The AllCity Bulls', href: '/wiki/the-allcity-bulls.html' },
       ],
       joinCtaCopy: 'Join All City Bulls and apply full score pressure.'
     },
