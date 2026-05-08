@@ -73,6 +73,7 @@ check(workerJs.includes('chain_depth, activated_at, last_roll_at, created_at, up
 
 console.log('\n[4] Missed history persistence checks');
 check(workerJs.includes('backfillMissedPerkGapsFromLastActiveDay'), 'worker backfills missed history across missed UTC days');
+check(workerJs.includes('days_backfilled') && workerJs.includes('entries_created'), 'backfill returns non-misleading day and entry counters');
 check(workerJs.includes('FROM daily_missed_perks') && workerJs.includes('ORDER BY missed_at DESC'), 'missed history route reads persistent missed table newest-first');
 check(workerJs.includes('missed_history_count'), 'daily-state route returns missed history count separately from today active data');
 check(workerJs.includes('The city kept moving while you were away.'), 'worker includes required missed-history retention copy');
@@ -105,6 +106,8 @@ check(bridgeJs.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && bridgeJs.includes('
 check(gamesHtml.includes('roguelite-daily-digest-summary'), 'arcade hub includes daily signal summary hook');
 check(gamesHtml.includes('DAILY_DIGEST_SUMMARY_POLL_MS') && gamesHtml.includes('5 * 60 * 1000') && !gamesHtml.includes('setInterval(renderDailyDigestSummary, 30000)'), 'arcade hub daily digest polling reduced to at least 5 minutes');
 check(gamesHtml.includes("document.addEventListener('visibilitychange'"), 'arcade hub pauses digest polling while hidden');
+check(gamesHtml.includes('scheduleDailyDigestSummaryRefresh') && gamesHtml.includes('DAILY_DIGEST_SUMMARY_DEBOUNCE_MS'), 'arcade hub uses debounced digest summary refresh scheduler');
+check(gamesHtml.includes('digestSummaryRequestInFlight') && gamesHtml.includes('digestSummaryRefreshQueued'), 'arcade hub guards digest refresh requests with in-flight/queued state');
 
 console.log('\n[7] Safety checks');
 const FORBIDDEN = [

@@ -1381,9 +1381,10 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
     ORDER BY utc_day DESC
     LIMIT 1
   `).bind(String(telegramId), todayUtcDay).first().catch(() => null);
-  if (!prior?.utc_day) return { created: 0, missed_days: [] };
+  if (!prior?.utc_day) return { days_backfilled: 0, entries_created: 0, created: 0, missed_days: [] };
   const missedDays = listUtcDaysBetweenExclusive(prior.utc_day, todayUtcDay, 45);
-  let created = 0;
+  let entriesCreated = 0;
+  let daysFilledCount = 0;
   for (const missedDay of missedDays) {
     const existing = await db.prepare(`
       SELECT id
@@ -1392,7 +1393,7 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
       LIMIT 1
     `).bind(String(telegramId), missedDay).first().catch(() => null);
     if (existing?.id) continue;
-    await insertMissedPerkEntry(db, {
+    const dailyResetInsert = await insertMissedPerkEntry(db, {
       telegramId,
       utcDay: missedDay,
       factionId: factionId || null,
@@ -1405,10 +1406,11 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
       metadataJson: { trigger: 'utc_reset_backfill' },
       missedAt: `${missedDay}T23:59:59.000Z`,
     });
-    created += 1;
+    entriesCreated += Number(dailyResetInsert?.meta?.changes || 0);
+    daysFilledCount += 1;
     const factionNormalized = normalizeBattleChamberFaction(factionId);
     if (factionNormalized) {
-      await insertMissedPerkEntry(db, {
+      const factionInsert = await insertMissedPerkEntry(db, {
         telegramId,
         utcDay: missedDay,
         factionId: factionNormalized,
@@ -1421,8 +1423,9 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
         metadataJson: { trigger: 'utc_reset_backfill' },
         missedAt: `${missedDay}T23:59:59.000Z`,
       });
+      entriesCreated += Number(factionInsert?.meta?.changes || 0);
     } else {
-      await insertMissedPerkEntry(db, {
+      const factionSelectionInsert = await insertMissedPerkEntry(db, {
         telegramId,
         utcDay: missedDay,
         factionId: null,
@@ -1435,9 +1438,15 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
         metadataJson: { trigger: 'utc_reset_backfill' },
         missedAt: `${missedDay}T23:59:59.000Z`,
       });
+      entriesCreated += Number(factionSelectionInsert?.meta?.changes || 0);
     }
   }
-  return { created, missed_days: missedDays };
+  return {
+    days_backfilled: daysFilledCount,
+    entries_created: entriesCreated,
+    created: entriesCreated,
+    missed_days: missedDays,
+  };
 }
 
 async function getMissedHistorySnapshot(db, telegramId, limit = 5) {
