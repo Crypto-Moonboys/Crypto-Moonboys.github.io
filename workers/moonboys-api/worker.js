@@ -819,6 +819,7 @@ const BATTLE_CHAMBER_FACTION_ALIASES = Object.freeze({
 });
 
 const BATTLE_CHAMBER_CLAMP_MAX = 5000;
+const BATTLE_CHAMBER_METADATA_MAX_LENGTH = 4000;
 const BATTLE_CHAMBER_SEASON_EPOCH_MS = Date.UTC(2024, 0, 1);
 const BATTLE_CHAMBER_DAYS_PER_SEASON = 90;
 
@@ -870,29 +871,32 @@ function getIsoWeekKey() {
 }
 
 async function ensureBattleChamberTables(db) {
-  for (const tableName of BATTLE_CHAMBER_TABLES) {
-    const row = await db.prepare(
+  const checks = await Promise.all(BATTLE_CHAMBER_TABLES.map((tableName) =>
+    db.prepare(
       `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
-    ).bind(tableName).first().catch(() => null);
-    if (!row?.name) {
-      return {
-        _isBattleChamberUnavailable: true,
-        tableName,
-        response: new Response(JSON.stringify({
-          ok: false,
-          error: 'battle_chamber_unavailable',
-          reason: `migration_pending:${tableName}`,
-          message: 'Battle Chamber authority tables are not yet configured. Apply migration 016.',
-        }), {
-          status: 503,
-          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
-        }),
-      };
-    }
+    ).bind(tableName).first().catch(() => null).then((row) => ({ tableName, row }))
+  ));
+  const missing = checks.find((entry) => !entry.row?.name);
+  if (missing) {
+    return {
+      _isBattleChamberUnavailable: true,
+      tableName: missing.tableName,
+      response: new Response(JSON.stringify({
+        ok: false,
+        error: 'battle_chamber_unavailable',
+        reason: `migration_pending:${missing.tableName}`,
+        message: 'Battle Chamber authority tables are not yet configured. Apply migration 016.',
+      }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+      }),
+    };
   }
   return null;
 }
 
+// Battle Chamber uses canonical 9-faction keys while legacy faction progression
+// routes still rely on normalizeFaction() for backward-compatible aliases.
 function normalizeBattleChamberFaction(value) {
   const raw = String(value || '').trim().toLowerCase();
   const fromAlias = BATTLE_CHAMBER_FACTION_ALIASES[raw] || raw;
@@ -982,7 +986,7 @@ async function appendBattleChamberActivity(db, {
   createdAt,
 }) {
   const metadataJson = metadata && typeof metadata === 'object'
-    ? JSON.stringify(metadata).slice(0, 4000)
+    ? JSON.stringify(metadata).slice(0, BATTLE_CHAMBER_METADATA_MAX_LENGTH)
     : null;
   await db.prepare(`
     INSERT INTO battle_chamber_activity_log
@@ -2973,8 +2977,8 @@ export default {
 
       const cloutDelta = clampBattleClout(body?.clout_delta);
       const source = String(body?.source || 'battle_chamber_client').trim().slice(0, 80) || 'battle_chamber_client';
-      const displayName = String(body?.display_name || getTelegramDisplayName(verified.user || verified.authPayload || { id: verified.telegramId })).trim().slice(0, 80)
-        || getTelegramDisplayName(verified.user || verified.authPayload || { id: verified.telegramId });
+      const verifiedDisplayName = getTelegramDisplayName(verified.user || verified.authPayload || { id: verified.telegramId });
+      const displayName = String(body?.display_name || verifiedDisplayName).trim().slice(0, 80) || verifiedDisplayName;
       const eventText = String(body?.event_text || '').trim().slice(0, 220)
         || buildBattleEventText({ displayName, factionId, eventType });
       let metadata = body?.metadata_json;

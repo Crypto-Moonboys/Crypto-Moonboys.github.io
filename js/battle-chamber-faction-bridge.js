@@ -51,6 +51,7 @@ const LIVE_FACTION_KEYS = [
   'nomad-bears',
   'crypto-stoned-boys',
 ];
+var FETCH_TIMEOUT_MS = 6000;
 
 function getApiBase() {
   try {
@@ -216,12 +217,16 @@ function mapWeeklyServerStandingsToWarData(weeklyData) {
 }
 
 async function fetchJson(url) {
+  var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var timer = controller ? setTimeout(function () { controller.abort(); }, FETCH_TIMEOUT_MS) : null;
   try {
-    var res = await fetch(url);
+    var res = await fetch(url, controller ? { signal: controller.signal } : undefined);
     if (!res.ok) return null;
     return await res.json().catch(function () { return null; });
   } catch (_) {
     return null;
+  } finally {
+    if (timer) clearTimeout(timer);
   }
 }
 
@@ -285,7 +290,7 @@ async function hydrateServerAuthority() {
     fetchJson(apiBase + '/battle-chamber/factions/standings?period=monthly'),
     fetchJson(apiBase + '/battle-chamber/factions/standings?period=seasonal'),
     fetchJson(apiBase + '/battle-chamber/activity?limit=20'),
-    currentFaction ? fetchJson(apiBase + '/battle-chamber/faction?faction_id=' + encodeURIComponent(currentFaction)) : Promise.resolve(null),
+    currentFaction ? fetchJson(apiBase + '/battle-chamber/factions/' + encodeURIComponent(currentFaction)) : Promise.resolve(null),
   ];
 
   var results = await Promise.all(endpoints);

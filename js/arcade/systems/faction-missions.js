@@ -461,6 +461,7 @@ function _syncBattleChamberMissionEvent(factionId, mission, tier) {
         telegram_auth: auth,
         faction_id: factionId,
         event_type: 'mission_complete',
+        // Proof-only event; contribution authority is owned by /faction/signal/contribute.
         clout_delta: 0,
         source: 'faction-missions',
         event_text: 'Mission complete logged for faction activity proof.',

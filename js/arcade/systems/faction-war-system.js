@@ -43,6 +43,8 @@ var FACTION_KEYS = Object.freeze([
   'crypto-stoned-boys',
 ]);
 
+var BATTLE_CHAMBER_EVENT_CLAMP_MAX = 5000;
+
 // ── Storage helpers ──────────────────────────────────────────────────────────
 
 function _safeGet(key) {
@@ -512,7 +514,7 @@ function _syncBattleChamberEventToServer(factionId, amount, reason) {
   var auth = _getSignedAuth();
   var apiBase = _getApiBase();
   if (!auth || !apiBase) return;
-  var safeAmount = Math.max(0, Math.min(5000, Math.floor(Number(amount) || 0)));
+  var safeAmount = Math.max(0, Math.min(BATTLE_CHAMBER_EVENT_CLAMP_MAX, Math.floor(Number(amount) || 0)));
   var EVENT_TYPE_MAP = {
     score_submission: 'weekly_contribution',
     mission_complete: 'mission_complete',
@@ -529,6 +531,7 @@ function _syncBattleChamberEventToServer(factionId, amount, reason) {
         telegram_auth: auth,
         faction_id: factionId,
         event_type: eventType,
+        // Proof-only event; /faction/signal/contribute already owns clout totals.
         clout_delta: 0,
         source: 'faction-war-system',
         metadata_json: {
