@@ -901,6 +901,26 @@ const DAILY_DIGEST_TABLES = [
   'telegram_daily_digest_log',
   'daily_opportunity_state',
 ];
+const DAILY_WTF_TABLES = [
+  'daily_wtf_events',
+  'daily_wtf_player_events',
+  'daily_wtf_chain_options',
+];
+const WTF_MAX_CHAIN_DEPTH = 5;
+const WTF_MAX_CHAIN_TRIGGERS_PER_DAY = 12;
+const WTF_MAX_BONUS_XP_PER_EVENT = 500;
+const WTF_ALLOWED_COMPLETION_SOURCES = new Set([
+  'arcade_run_accepted',
+  'faction_daily_mission',
+  'battle_chamber_proof',
+  'roguelite_branch',
+]);
+const WTF_REQUIRED_ACTION_SOURCE_MAP = Object.freeze({
+  play_any_accepted_arcade_run: ['arcade_run_accepted'],
+  complete_faction_or_battle_action: ['faction_daily_mission', 'battle_chamber_proof'],
+  score_target_any_game: ['arcade_run_accepted'],
+  choose_and_complete_chaos_path: ['roguelite_branch', 'arcade_run_accepted'],
+});
 
 const DAILY_MISSED_TEXT_LIMITS = Object.freeze({
   source: 80,
@@ -1242,6 +1262,207 @@ async function ensureDailyDigestTables(db) {
     }
   }
   return null;
+}
+
+async function ensureDailyWtfTables(db) {
+  for (const tableName of DAILY_WTF_TABLES) {
+    const row = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      return {
+        _isDailyWtfUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'daily_wtf_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Daily WTF event tables are not yet configured. Apply migration 019.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+        }),
+      };
+    }
+  }
+  return null;
+}
+
+function getWtfDailySchedule(utcDay) {
+  return [
+    { event_id: 'wtf-morning-signal', title: 'Morning WTF Signal', event_type: 'signal_window', startHour: 8, durationMinutes: 90, required_action: 'play_any_accepted_arcade_run', reward_key: `wtf:${utcDay}:morning`, theme: 'neon-sunrise' },
+    { event_id: 'wtf-midday-rush', title: 'Midday Faction Rush', event_type: 'faction_rush', startHour: 12, durationMinutes: 90, required_action: 'complete_faction_or_battle_action', reward_key: `wtf:${utcDay}:midday`, theme: 'faction-overdrive' },
+    { event_id: 'wtf-evening-burst', title: 'Evening Arcade Burst', event_type: 'arcade_burst', startHour: 18, durationMinutes: 120, required_action: 'score_target_any_game', reward_key: `wtf:${utcDay}:evening`, theme: 'neon-jackpot' },
+    { event_id: 'wtf-late-chaos', title: 'Late Night Chaos Window', event_type: 'chaos_window', startHour: 22, durationMinutes: 90, required_action: 'choose_and_complete_chaos_path', reward_key: `wtf:${utcDay}:late`, theme: 'after-hours-chaos' },
+  ];
+}
+
+function buildWtfIso(utcDay, hour, minute = 0) {
+  return `${utcDay}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00.000Z`;
+}
+
+function getWtfEventStatus(nowMs, startsAt, endsAt, playerStatus) {
+  const startMs = Date.parse(startsAt);
+  const endMs = Date.parse(endsAt);
+  if (Number.isFinite(endMs) && nowMs >= endMs) return playerStatus === 'completed' ? 'completed' : 'expired';
+  if (Number.isFinite(startMs) && nowMs < startMs) return 'upcoming';
+  if (playerStatus === 'completed') return 'completed';
+  return 'active';
+}
+
+function getAllowedSourcesForWtfEvent(eventRow) {
+  const key = String(eventRow?.required_action || '').trim();
+  const fromAction = WTF_REQUIRED_ACTION_SOURCE_MAP[key];
+  if (Array.isArray(fromAction) && fromAction.length) return fromAction.slice();
+  return ['arcade_run_accepted'];
+}
+
+async function upsertWtfMissedEntry(db, { telegramId, utcDay, eventRow, reason }) {
+  const safeTitle = String(eventRow?.title || 'WTF signal window missed').slice(0, 140);
+  const eventId = String(eventRow?.event_id || '').trim() || null;
+  const existing = await db.prepare(`
+    SELECT id FROM daily_missed_perks
+    WHERE telegram_id = ? AND utc_day = ? AND source = 'daily_wtf_timed_event'
+      AND opportunity_type = 'timed_event_window'
+      AND title = ?
+      AND (
+        metadata_json LIKE ?
+        OR metadata_json LIKE ?
+      )
+    LIMIT 1
+  `).bind(String(telegramId), String(utcDay), safeTitle, `%"event_id":"${eventId}"%`, `%"event_id": "${eventId}"%`).first().catch(() => null);
+  if (existing?.id) return;
+  await insertMissedPerkEntry(db, {
+    telegramId,
+    utcDay,
+    factionId: eventRow?.faction_id || null,
+    source: 'daily_wtf_timed_event',
+    opportunityType: 'timed_event_window',
+    title: safeTitle,
+    description: 'The city kept moving while you were away.',
+    missedReason: reason || 'event_expired',
+    statusValue: 1,
+    metadataJson: {
+      event_id: eventRow?.event_id || null,
+      reward_preview: eventRow?.reward_key || null,
+      starts_at: eventRow?.starts_at || null,
+      ends_at: eventRow?.ends_at || null,
+    },
+    missedAt: eventRow?.ends_at || new Date().toISOString(),
+  });
+}
+
+async function verifyWtfCompletionProof(db, { telegramId, source, sourceId, event, utcDay }) {
+  const safeTelegramId = String(telegramId || '').trim();
+  const safeSourceId = String(sourceId || '').trim();
+  if (!safeSourceId) {
+    return { ok: false, error: 'proof_required', message: 'Completion proof is required before this WTF signal can be cleared.' };
+  }
+  if (source === 'arcade_run_accepted') {
+    const row = await db.prepare(`
+      SELECT client_run_id, status
+      FROM arcade_progression_events
+      WHERE telegram_id = ? AND client_run_id = ? AND status = 'accepted'
+      LIMIT 1
+    `).bind(safeTelegramId, safeSourceId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Accepted arcade run proof was not verified.' };
+    return { ok: true, proof: { type: 'arcade_run_accepted', source_id: safeSourceId } };
+  }
+  if (source === 'faction_daily_mission') {
+    const row = await db.prepare(`
+      SELECT mission_id, completed
+      FROM player_daily_mission_state
+      WHERE telegram_id = ? AND mission_date = ? AND mission_id = ? AND completed = 1
+      LIMIT 1
+    `).bind(safeTelegramId, String(utcDay), safeSourceId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Faction mission completion proof was not verified.' };
+    return { ok: true, proof: { type: 'faction_daily_mission', source_id: safeSourceId } };
+  }
+  if (source === 'battle_chamber_proof') {
+    const sourceNumeric = Number.parseInt(safeSourceId, 10);
+    if (!Number.isFinite(sourceNumeric) || sourceNumeric <= 0) {
+      return { ok: false, error: 'proof_required', message: 'Battle Chamber proof id is required.' };
+    }
+    const row = await db.prepare(`
+      SELECT id, event_type
+      FROM battle_chamber_activity_log
+      WHERE id = ? AND telegram_id = ?
+      LIMIT 1
+    `).bind(sourceNumeric, safeTelegramId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Battle Chamber proof was not verified.' };
+    return { ok: true, proof: { type: 'battle_chamber_proof', source_id: sourceNumeric } };
+  }
+  if (source === 'roguelite_branch') {
+    const row = await db.prepare(`
+      SELECT option_id, status
+      FROM daily_wtf_chain_options
+      WHERE telegram_id = ? AND utc_day = ? AND option_id = ? AND status IN ('chosen', 'completed')
+      LIMIT 1
+    `).bind(safeTelegramId, String(utcDay), safeSourceId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Roguelite branch proof was not verified.' };
+    return { ok: true, proof: { type: 'roguelite_branch', source_id: safeSourceId } };
+  }
+  return { ok: false, error: 'proof_required', message: 'Completion proof is required before this WTF signal can be cleared.' };
+}
+
+async function reconcileWtfExpiryForUser(db, telegramId, utcDay, nowMs) {
+  const rows = await db.prepare(`
+    SELECT e.event_id, e.utc_day, e.title, e.faction_id, e.reward_key, e.starts_at, e.ends_at, p.status, p.checked_in_at, p.completed_at
+    FROM daily_wtf_events e
+    LEFT JOIN daily_wtf_player_events p
+      ON p.event_id = e.event_id AND p.utc_day = e.utc_day AND p.telegram_id = ?
+    WHERE e.utc_day = ?
+  `).bind(String(telegramId), String(utcDay)).all().catch(() => ({ results: [] }));
+  for (const row of (rows?.results || [])) {
+    const endMs = Date.parse(row.ends_at);
+    if (!Number.isFinite(endMs) || nowMs < endMs) continue;
+    if (row.completed_at) continue;
+    const priorStatus = String(row.status || '').trim();
+    const nextStatus = row.checked_in_at ? 'missed' : 'expired';
+    await db.prepare(`
+      INSERT INTO daily_wtf_player_events
+        (telegram_id, event_id, utc_day, status, checked_in_at, completed_at, missed_at, chain_depth, reward_status, metadata_json, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, NULL, ?, 0, 'none', ?, ?, ?)
+      ON CONFLICT(telegram_id, event_id, utc_day) DO UPDATE SET
+        status = CASE WHEN daily_wtf_player_events.completed_at IS NOT NULL THEN 'completed' ELSE excluded.status END,
+        missed_at = CASE WHEN daily_wtf_player_events.completed_at IS NOT NULL THEN daily_wtf_player_events.missed_at ELSE excluded.missed_at END,
+        updated_at = excluded.updated_at
+    `).bind(
+      String(telegramId), row.event_id, row.utc_day, nextStatus, row.checked_in_at || null,
+      new Date(endMs).toISOString(),
+      JSON.stringify({ prior_status: priorStatus || 'none', reason: 'window_expired' }),
+      new Date().toISOString(),
+      new Date().toISOString(),
+    ).run();
+    await upsertWtfMissedEntry(db, {
+      telegramId,
+      utcDay,
+      eventRow: row,
+      reason: row.checked_in_at ? 'checked_in_not_completed_before_expiry' : 'not_checked_in_before_expiry',
+    });
+  }
+}
+
+async function ensureWtfEventsForDay(db, utcDay) {
+  const countRow = await db.prepare(`SELECT COUNT(*) AS total FROM daily_wtf_events WHERE utc_day = ?`).bind(utcDay).first().catch(() => ({ total: 0 }));
+  if (Number(countRow?.total) > 0) return;
+  const schedule = getWtfDailySchedule(utcDay);
+  for (const event of schedule) {
+    const startsAt = buildWtfIso(utcDay, event.startHour, 0);
+    const endsAt = new Date(Date.parse(startsAt) + event.durationMinutes * 60 * 1000).toISOString();
+    await db.prepare(`
+      INSERT INTO daily_wtf_events
+        (event_id, utc_day, event_type, title, description, starts_at, ends_at, required_action, reward_key, xp_multiplier_display, faction_id, game_key, theme, metadata_json, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '5x XP opportunity', NULL, NULL, ?, ?, ?)
+      ON CONFLICT(event_id, utc_day) DO NOTHING
+    `).bind(
+      event.event_id, utcDay, event.event_type, event.title,
+      'Check in during the signal window, complete the objective, and trigger a status burst.',
+      startsAt, endsAt, event.required_action, event.reward_key, event.theme,
+      JSON.stringify({ chain_cap: WTF_MAX_CHAIN_DEPTH }),
+      new Date().toISOString(),
+    ).run();
+  }
 }
 
 function clampText(value, maxLen, fallback = '') {
@@ -1722,6 +1943,14 @@ async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
     missions,
     missedTotal,
   });
+  await ensureWtfEventsForDay(db, utcDay).catch(() => {});
+  const nextWtf = await db.prepare(`
+    SELECT title, starts_at, ends_at
+    FROM daily_wtf_events
+    WHERE utc_day = ? AND ends_at >= ?
+    ORDER BY starts_at ASC
+    LIMIT 1
+  `).bind(utcDay, new Date().toISOString()).first().catch(() => null);
 
   const missionLines = missions.length
     ? missions.map((mission, idx) => {
@@ -1735,10 +1964,14 @@ async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
     : 'Recent missed: none recorded yet';
 
   const weeklyStanding = factionLogData.weekly_standing ? `#${factionLogData.weekly_standing}` : '—';
+  const wtfSignalLine = nextWtf
+    ? `${nextWtf.title} (${String(nextWtf.starts_at).slice(11, 16)}-${String(nextWtf.ends_at).slice(11, 16)} UTC)`
+    : 'No live window right now. Next signal loads soon.';
   const message =
     `GM, the Battle Chamber has reset. Your faction has new work.\n\n` +
     `<b>Faction:</b> ${escapeHtml(factionLabel)}\n\n` +
     `<b>Today’s faction daily missions</b>\n${missionLines}\n\n` +
+    `<b>WTF timed signal</b>\n${escapeHtml(wtfSignalLine)}\nCheck in when the signal opens.\n\n` +
     `<b>Missed perks update</b>\n` +
     `You have ${missedTotal} missed opportunities in your Battle Chamber history. The city kept moving while you were away.\n` +
     `Yesterday missed: ${yesterdayMissed}\n` +
@@ -2854,8 +3087,275 @@ export default {
       }
     }
 
-    // ── POST /telegram/daily-digest/run ─────────────────────────────────────
-    if (path === '/telegram/daily-digest/run' && request.method === 'POST') {
+    // ── Daily WTF timed events ───────────────────────────────────────────────
+    if (path === '/wtf/events/today' && (request.method === 'GET' || request.method === 'POST')) {
+      let body = {};
+      if (request.method === 'POST') {
+        try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      }
+      const wtfCheck = await ensureDailyWtfTables(env.DB);
+      if (wtfCheck) return wtfCheck.response;
+      const utcDay = getTodayUtcDate();
+      await ensureWtfEventsForDay(env.DB, utcDay);
+      const nowMs = Date.now();
+      const events = await env.DB.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC`).bind(utcDay).all().catch(() => ({ results: [] }));
+
+      if (request.method === 'GET') {
+        const normalizedPublic = (events?.results || []).map((row) => ({
+          event_id: row.event_id,
+          utc_day: row.utc_day,
+          start_at: row.starts_at,
+          end_at: row.ends_at,
+          event_type: row.event_type,
+          title: row.title,
+          description: row.description,
+          required_action: row.required_action,
+          reward_preview: row.reward_key,
+          multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+          visual_theme: row.theme || 'neon-signal',
+          status: getWtfEventStatus(nowMs, row.starts_at, row.ends_at, 'upcoming'),
+        }));
+        const nextEvent = normalizedPublic.find((row) => row.status === 'upcoming') || null;
+        return json({
+          ok: true,
+          auth_mode: 'public_schedule',
+          utc_day: utcDay,
+          active_event: normalizedPublic.find((row) => row.status === 'active') || null,
+          upcoming_events: normalizedPublic.filter((row) => row.status === 'upcoming'),
+          next_event: nextEvent,
+          countdown_seconds: nextEvent ? Math.max(0, Math.floor((Date.parse(nextEvent.start_at) - nowMs) / 1000)) : 0,
+        });
+      }
+
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      await upsertTelegramUser(env.DB, verified.user);
+      await reconcileWtfExpiryForUser(env.DB, verified.telegramId, utcDay, nowMs);
+
+      const playerRows = await env.DB.prepare(`
+        SELECT event_id, status, checked_in_at, completed_at, missed_at, chain_depth, reward_status
+        FROM daily_wtf_player_events
+        WHERE telegram_id = ? AND utc_day = ?
+      `).bind(verified.telegramId, utcDay).all().catch(() => ({ results: [] }));
+      const byEvent = new Map((playerRows?.results || []).map((row) => [String(row.event_id), row]));
+      const chainOptions = await env.DB.prepare(`
+        SELECT event_id, option_id, option_type, status, reward_key, display_title, display_text
+        FROM daily_wtf_chain_options
+        WHERE telegram_id = ? AND utc_day = ? AND status = 'available'
+        ORDER BY created_at DESC
+      `).bind(verified.telegramId, utcDay).all().catch(() => ({ results: [] }));
+      const availableByEvent = {};
+      for (const opt of (chainOptions?.results || [])) {
+        const key = String(opt.event_id);
+        if (!availableByEvent[key]) availableByEvent[key] = [];
+        availableByEvent[key].push(opt);
+      }
+
+      const normalized = (events?.results || []).map((row) => {
+        const player = byEvent.get(String(row.event_id)) || null;
+        const scheduleStatus = getWtfEventStatus(nowMs, row.starts_at, row.ends_at, player?.status || 'upcoming');
+        let playerStatus = 'not_checked_in';
+        if (player?.completed_at) playerStatus = 'completed';
+        else if (player?.status === 'missed') playerStatus = 'missed';
+        else if (player?.checked_in_at && scheduleStatus === 'active') playerStatus = 'checked_in';
+        else if (scheduleStatus === 'expired') playerStatus = (player?.status === 'missed' ? 'missed' : 'expired');
+        return {
+          event_id: row.event_id,
+          utc_day: row.utc_day,
+          start_at: row.starts_at,
+          end_at: row.ends_at,
+          event_type: row.event_type,
+          title: row.title,
+          description: row.description,
+          required_action: row.required_action,
+          reward_preview: row.reward_key,
+          multiplier_display: row.xp_multiplier_display || '5x XP opportunity',
+          visual_theme: row.theme || 'neon-signal',
+          status: scheduleStatus,
+          player_status: playerStatus,
+          checked_in_at: player?.checked_in_at || null,
+          completed_at: player?.completed_at || null,
+          chain_depth: Math.max(0, Math.floor(Number(player?.chain_depth) || 0)),
+          chain_options: availableByEvent[String(row.event_id)] || [],
+        };
+      });
+      const activeEvent = normalized.find((row) => row.status === 'active') || null;
+      const nextEvent = normalized.find((row) => row.status === 'upcoming') || null;
+      const missedCount = await env.DB.prepare(`SELECT COUNT(*) AS total FROM daily_missed_perks WHERE telegram_id = ?`).bind(verified.telegramId).first().catch(() => ({ total: 0 }));
+      return json({
+        ok: true,
+        auth_mode: 'telegram_verified',
+        telegram_id: verified.telegramId,
+        utc_day: utcDay,
+        active_event: activeEvent,
+        upcoming_events: normalized.filter((row) => row.status === 'upcoming'),
+        next_event: nextEvent,
+        countdown_seconds: nextEvent ? Math.max(0, Math.floor((Date.parse(nextEvent.start_at) - nowMs) / 1000)) : 0,
+        checked_in: !!(activeEvent && activeEvent.player_status === 'checked_in'),
+        current_task: activeEvent ? activeEvent.required_action : null,
+        completed_today: normalized.filter((row) => row.player_status === 'completed').length,
+        missed_today: normalized.filter((row) => row.player_status === 'missed' || row.player_status === 'expired').length,
+        missed_history_count: Math.max(0, Math.floor(Number(missedCount?.total) || 0)),
+        chain_options: activeEvent ? (activeEvent.chain_options || []) : ((chainOptions?.results || []).slice(0, 3)),
+      });
+    }
+
+    if (path === '/wtf/events/check-in' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const wtfCheck = await ensureDailyWtfTables(env.DB);
+      if (wtfCheck) return wtfCheck.response;
+      await upsertTelegramUser(env.DB, verified.user);
+      const utcDay = getTodayUtcDate();
+      const eventId = clampText(body?.event_id, 80, '');
+      const event = await env.DB.prepare(`SELECT event_id, starts_at, ends_at, required_action FROM daily_wtf_events WHERE utc_day = ? AND event_id = ? LIMIT 1`).bind(utcDay, eventId).first().catch(() => null);
+      if (!event) return err('event_id not found for UTC day', 404);
+      const nowMs = Date.now();
+      if (nowMs < Date.parse(event.starts_at) || nowMs >= Date.parse(event.ends_at)) return err('Event is not active', 409);
+      const existing = await env.DB.prepare(`SELECT status, checked_in_at, completed_at FROM daily_wtf_player_events WHERE telegram_id = ? AND event_id = ? AND utc_day = ? LIMIT 1`).bind(verified.telegramId, eventId, utcDay).first().catch(() => null);
+      if (existing?.completed_at) {
+        return json({ ok: true, event_id: eventId, status: 'completed', already_completed: true, current_task: event.required_action });
+      }
+      const nowIso = new Date().toISOString();
+      await env.DB.prepare(`
+        INSERT INTO daily_wtf_player_events
+          (telegram_id, event_id, utc_day, status, checked_in_at, completed_at, chain_depth, reward_status, metadata_json, created_at, updated_at)
+        VALUES (?, ?, ?, 'checked_in', ?, NULL, 0, 'none', ?, ?, ?)
+        ON CONFLICT(telegram_id, event_id, utc_day) DO UPDATE SET
+          status = CASE WHEN daily_wtf_player_events.completed_at IS NOT NULL THEN 'completed' ELSE 'checked_in' END,
+          checked_in_at = COALESCE(daily_wtf_player_events.checked_in_at, excluded.checked_in_at),
+          updated_at = excluded.updated_at
+      `).bind(verified.telegramId, eventId, utcDay, nowIso, JSON.stringify({ source: 'daily_wtf_checkin' }), nowIso, nowIso).run();
+      return json({ ok: true, event_id: eventId, status: 'checked_in', current_task: event.required_action });
+    }
+
+    if (path === '/wtf/events/complete' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const wtfCheck = await ensureDailyWtfTables(env.DB);
+      if (wtfCheck) return wtfCheck.response;
+      const utcDay = getTodayUtcDate();
+      const eventId = clampText(body?.event_id, 80, '');
+      const source = clampText(body?.completion_source, 80, '');
+      if (!WTF_ALLOWED_COMPLETION_SOURCES.has(source)) {
+        return json({
+          error: 'proof_required',
+          message: 'Completion proof is required before this WTF signal can be cleared.',
+        }, 409);
+      }
+      const event = await env.DB.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? AND event_id = ? LIMIT 1`).bind(utcDay, eventId).first().catch(() => null);
+      if (!event) return err('event not found', 404);
+      const nowMs = Date.now();
+      const startsAtMs = Date.parse(event.starts_at);
+      const endsAtMs = Date.parse(event.ends_at);
+      if (Number.isFinite(startsAtMs) && nowMs < startsAtMs) return err('event_inactive', 409);
+      if (Number.isFinite(endsAtMs) && nowMs >= endsAtMs) {
+        await upsertWtfMissedEntry(env.DB, { telegramId: verified.telegramId, utcDay, eventRow: event, reason: 'attempted_completion_after_expiry' });
+        return err('event_expired', 409);
+      }
+      const allowedForEvent = getAllowedSourcesForWtfEvent(event);
+      if (!allowedForEvent.includes(source)) {
+        return json({
+          error: 'proof_required',
+          message: 'Completion proof source does not match this WTF objective.',
+        }, 409);
+      }
+      const proofResult = await verifyWtfCompletionProof(env.DB, {
+        telegramId: verified.telegramId,
+        source,
+        sourceId: clampText(body?.source_id, 120, ''),
+        event,
+        utcDay,
+      });
+      if (!proofResult?.ok) {
+        return json({
+          error: 'proof_required',
+          message: proofResult?.message || 'Completion proof is required before this WTF signal can be cleared.',
+        }, 409);
+      }
+      const player = await env.DB.prepare(`SELECT * FROM daily_wtf_player_events WHERE telegram_id = ? AND event_id = ? AND utc_day = ? LIMIT 1`).bind(verified.telegramId, eventId, utcDay).first().catch(() => null);
+      if (!player || !player.checked_in_at) return err('check-in required', 409);
+      if (player.completed_at) return json({ ok: true, event_id: eventId, already_completed: true });
+      const dailyTriggers = await env.DB.prepare(`SELECT COUNT(*) AS total FROM daily_wtf_player_events WHERE telegram_id = ? AND utc_day = ? AND completed_at IS NOT NULL`).bind(verified.telegramId, utcDay).first().catch(() => ({ total: 0 }));
+      if (Number(dailyTriggers?.total || 0) >= WTF_MAX_CHAIN_TRIGGERS_PER_DAY) return err('daily chain cap reached', 429);
+      const completedToday = Math.max(0, Math.floor(Number(dailyTriggers?.total || 0)));
+      const chainDepth = Math.min(WTF_MAX_CHAIN_DEPTH, completedToday + 1);
+      const nowIso = new Date().toISOString();
+      const bonusXp = Math.min(WTF_MAX_BONUS_XP_PER_EVENT, 100 * chainDepth);
+      await env.DB.prepare(`UPDATE daily_wtf_player_events SET status='completed', completed_at=?, chain_depth=?, reward_status='previewed', updated_at=?, metadata_json=? WHERE telegram_id=? AND event_id=? AND utc_day=?`)
+        .bind(nowIso, chainDepth, nowIso, JSON.stringify({
+          completion_source: source,
+          source_id: clampText(body?.source_id, 120, ''),
+          proof: proofResult?.proof || null,
+          bonus_xp_preview: bonusXp,
+          persisted_xp_awarded: false,
+        }), verified.telegramId, eventId, utcDay).run();
+      const options = ['comeback', 'chaos', 'faction'].map((type, idx) => ({
+        option_id: `${eventId}-o${idx + 1}`,
+        option_type: type,
+        reward_key: `${event.reward_key}:${type}`,
+        display_title: type === 'comeback' ? 'Comeback Route' : (type === 'chaos' ? 'Chaos Route' : 'Faction Route'),
+        display_text: 'Choose one path to unlock the next objective.',
+      }));
+      for (const option of options) {
+        await env.DB.prepare(`
+          INSERT INTO daily_wtf_chain_options
+            (telegram_id, event_id, utc_day, option_id, option_type, status, reward_key, display_title, display_text, created_at)
+          VALUES (?, ?, ?, ?, ?, 'available', ?, ?, ?, ?)
+          ON CONFLICT(telegram_id, event_id, utc_day, option_id) DO NOTHING
+        `).bind(verified.telegramId, eventId, utcDay, option.option_id, option.option_type, option.reward_key, option.display_title, option.display_text, nowIso).run();
+      }
+      return json({
+        ok: true,
+        event_id: eventId,
+        status: 'completed',
+        xp_burst: {
+          title: 'WTF BONUS PREVIEW',
+          base_xp: 0,
+          bonus_xp: bonusXp,
+          total_xp: bonusXp,
+          milestones: [100, 250, 500],
+          event_id: eventId,
+          chain_options: options,
+          reduced_motion_fallback: true,
+          persisted_xp_awarded: false,
+          reward_status: 'previewed',
+          message: 'XP opportunity preview only. Persistent XP award is server-authority gated.',
+        },
+        reward_status: 'previewed',
+        chain_options: options,
+      });
+    }
+
+    if (path === '/wtf/events/choose-option' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+      const wtfCheck = await ensureDailyWtfTables(env.DB);
+      if (wtfCheck) return wtfCheck.response;
+      const utcDay = getTodayUtcDate();
+      const eventId = clampText(body?.event_id, 80, '');
+      const optionId = clampText(body?.option_id, 120, '');
+      const option = await env.DB.prepare(`SELECT * FROM daily_wtf_chain_options WHERE telegram_id = ? AND event_id = ? AND utc_day = ? AND option_id = ? LIMIT 1`).bind(verified.telegramId, eventId, utcDay, optionId).first().catch(() => null);
+      if (!option) return err('option not found', 404);
+      if (option.status !== 'available') return err('option already claimed', 409);
+      const nowIso = new Date().toISOString();
+      await env.DB.prepare(`UPDATE daily_wtf_chain_options SET status='chosen', chosen_at=? WHERE telegram_id = ? AND event_id = ? AND utc_day = ? AND option_id = ?`)
+        .bind(nowIso, verified.telegramId, eventId, utcDay, optionId).run();
+      return json({
+        ok: true,
+        event_id: eventId,
+        option_id: optionId,
+        status: 'chosen',
+        next_objective: `Complete the ${option.display_title.toLowerCase()} objective before the next signal window.`,
+      });
+    }
+if (path === '/telegram/daily-digest/run' && request.method === 'POST') {
       let body = {};
       try { body = await request.json(); } catch { body = {}; }
       const configuredSecret = String(env.ADMIN_SECRET || '').trim();
@@ -5014,3 +5514,5 @@ async function cmdGkClearStrikes(db, tok, chatId, callerTelegramId, argStr, env)
       `⚠️ Failed to clear strikes for ${escapeHtml(label)}: ${escapeHtml(result?.error || 'unknown error')}`);
   }
 }
+
+
