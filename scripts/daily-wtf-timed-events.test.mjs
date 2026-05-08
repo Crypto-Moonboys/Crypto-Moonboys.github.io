@@ -53,6 +53,7 @@ check(workerJs.includes("path === '/wtf/events/complete'"), 'route /wtf/events/c
 check(workerJs.includes("path === '/wtf/events/choose-option'"), 'route /wtf/events/choose-option exists');
 check(workerJs.includes('verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth)'), 'check-in/complete routes require telegram auth');
 check(workerJs.includes('WTF_ALLOWED_COMPLETION_SOURCES'), 'completion source allowlist exists');
+check(workerJs.includes('verifyWtfCompletionProof('), 'server-side completion proof verifier exists');
 check(workerJs.includes('WTF_MAX_BONUS_XP_PER_EVENT'), 'completion cap constant exists');
 check(workerJs.includes('daily chain cap reached'), 'daily chain cap enforcement exists');
 check(workerJs.includes('check-in required'), 'no completion without check-in');
@@ -71,8 +72,14 @@ check(workerJs.includes("status = CASE WHEN daily_wtf_player_events.completed_at
 check(workerJs.includes('await upsertTelegramUser(env.DB, verified.user);'), 'check-in ensures telegram user upsert for FK safety');
 check(workerJs.includes("return err('event_inactive', 409)") && workerJs.includes("return err('event_expired', 409)"), 'completion enforces event active window');
 check(workerJs.includes('getAllowedSourcesForWtfEvent') && workerJs.includes('proof_required'), 'completion source must match event objective');
+check(!workerJs.includes("proof required"), 'non-standard proof error text is removed');
+check(workerJs.includes("error: 'proof_required'"), 'proof failures use standardized machine-readable key');
+check(workerJs.includes('arcade_progression_events') && workerJs.includes("status = 'accepted'"), 'arcade accepted proof verification exists');
+check(workerJs.includes('player_daily_mission_state') && workerJs.includes('mission_date = ?') && workerJs.includes('completed = 1'), 'faction mission proof verification exists');
+check(workerJs.includes('battle_chamber_activity_log') && workerJs.includes('WHERE id = ? AND telegram_id = ?'), 'battle chamber proof ownership verification exists');
 check(workerJs.includes('const chainDepth = Math.min(WTF_MAX_CHAIN_DEPTH, completedToday + 1);'), 'chain depth computed per-day progression');
 check(workerJs.includes("source: 'daily_wtf_timed_event'"), 'missed-event writes use daily_wtf_timed_event source');
+check(workerJs.includes('metadata_json LIKE ?') && workerJs.includes('safeTitle'), 'missed-entry dedupe uses clamped title + stable metadata event_id');
 check(workerJs.includes('reconcileWtfExpiryForUser') && workerJs.includes('upsertWtfMissedEntry'), 'expired events are reconciled into missed history');
 check(workerJs.includes("status='chosen'"), 'choose option marks chosen');
 check(workerJs.includes('option already claimed'), 'duplicate option claim blocked');
@@ -88,6 +95,7 @@ check(wtfSystemJs.includes('moonboys:roguelite-options-unlocked'), 'roguelite un
 check(xpBurstJs.includes('prefers-reduced-motion'), 'reduced motion fallback exists');
 check(!xpBurstJs.includes('payload.title ||') || !xpBurstJs.includes('innerHTML'), 'xp burst does not inject payload.title via innerHTML');
 check(xpBurstJs.includes('textContent = String(payload.title ||'), 'xp burst dynamic title uses textContent');
+check(xpBurstJs.includes('Base: ') && xpBurstJs.includes(' | Bonus: '), 'xp burst separator is stable and clean');
 
 check(communityHtml.includes('/js/arcade/systems/daily-wtf-event-system.js'), 'community loads timed event system');
 check(gamesHtml.includes('/js/arcade/systems/daily-wtf-event-system.js'), 'games hub loads timed event system');
@@ -99,6 +107,8 @@ check(workerJs.includes('WTF timed signal') && workerJs.includes('Check in when 
 check(digestTestJs.includes("path === '/telegram/daily-digest/run'"), 'daily digest test suite still covers once-per-day route');
 
 check(workerJs.includes('const ARCADE_XP_PER_POINT = 0.02;'), 'arcade xp formula unchanged');
+check(workerJs.includes("reward_status='previewed'") && !workerJs.includes("reward_status='awarded'"), 'reward status is truthful preview-only unless persisted award exists');
+check(workerJs.includes('persisted_xp_awarded: false'), 'response clearly marks no persisted XP award');
 check(leaderboardJs.includes('export async function submitScore'), 'leaderboard accepted-score flow remains');
 check(workerJs.includes('hard-fork-rockers') && workerJs.includes('crypto-stoned-boys'), 'faction canon keys preserved');
 

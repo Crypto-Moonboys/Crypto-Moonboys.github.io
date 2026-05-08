@@ -1318,13 +1318,19 @@ function getAllowedSourcesForWtfEvent(eventRow) {
 }
 
 async function upsertWtfMissedEntry(db, { telegramId, utcDay, eventRow, reason }) {
+  const safeTitle = String(eventRow?.title || 'WTF signal window missed').slice(0, 140);
+  const eventId = String(eventRow?.event_id || '').trim() || null;
   const existing = await db.prepare(`
     SELECT id FROM daily_missed_perks
     WHERE telegram_id = ? AND utc_day = ? AND source = 'daily_wtf_timed_event'
       AND opportunity_type = 'timed_event_window'
       AND title = ?
+      AND (
+        metadata_json LIKE ?
+        OR metadata_json LIKE ?
+      )
     LIMIT 1
-  `).bind(String(telegramId), String(utcDay), String(eventRow?.title || 'WTF signal window missed')).first().catch(() => null);
+  `).bind(String(telegramId), String(utcDay), safeTitle, `%"event_id":"${eventId}"%`, `%"event_id": "${eventId}"%`).first().catch(() => null);
   if (existing?.id) return;
   await insertMissedPerkEntry(db, {
     telegramId,
@@ -1332,7 +1338,7 @@ async function upsertWtfMissedEntry(db, { telegramId, utcDay, eventRow, reason }
     factionId: eventRow?.faction_id || null,
     source: 'daily_wtf_timed_event',
     opportunityType: 'timed_event_window',
-    title: String(eventRow?.title || 'WTF signal window missed').slice(0, 140),
+    title: safeTitle,
     description: 'The city kept moving while you were away.',
     missedReason: reason || 'event_expired',
     statusValue: 1,
@@ -1344,6 +1350,59 @@ async function upsertWtfMissedEntry(db, { telegramId, utcDay, eventRow, reason }
     },
     missedAt: eventRow?.ends_at || new Date().toISOString(),
   });
+}
+
+async function verifyWtfCompletionProof(db, { telegramId, source, sourceId, event, utcDay }) {
+  const safeTelegramId = String(telegramId || '').trim();
+  const safeSourceId = String(sourceId || '').trim();
+  if (!safeSourceId) {
+    return { ok: false, error: 'proof_required', message: 'Completion proof is required before this WTF signal can be cleared.' };
+  }
+  if (source === 'arcade_run_accepted') {
+    const row = await db.prepare(`
+      SELECT client_run_id, status
+      FROM arcade_progression_events
+      WHERE telegram_id = ? AND client_run_id = ? AND status = 'accepted'
+      LIMIT 1
+    `).bind(safeTelegramId, safeSourceId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Accepted arcade run proof was not verified.' };
+    return { ok: true, proof: { type: 'arcade_run_accepted', source_id: safeSourceId } };
+  }
+  if (source === 'faction_daily_mission') {
+    const row = await db.prepare(`
+      SELECT mission_id, completed
+      FROM player_daily_mission_state
+      WHERE telegram_id = ? AND mission_date = ? AND mission_id = ? AND completed = 1
+      LIMIT 1
+    `).bind(safeTelegramId, String(utcDay), safeSourceId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Faction mission completion proof was not verified.' };
+    return { ok: true, proof: { type: 'faction_daily_mission', source_id: safeSourceId } };
+  }
+  if (source === 'battle_chamber_proof') {
+    const sourceNumeric = Number.parseInt(safeSourceId, 10);
+    if (!Number.isFinite(sourceNumeric) || sourceNumeric <= 0) {
+      return { ok: false, error: 'proof_required', message: 'Battle Chamber proof id is required.' };
+    }
+    const row = await db.prepare(`
+      SELECT id, event_type
+      FROM battle_chamber_activity_log
+      WHERE id = ? AND telegram_id = ?
+      LIMIT 1
+    `).bind(sourceNumeric, safeTelegramId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Battle Chamber proof was not verified.' };
+    return { ok: true, proof: { type: 'battle_chamber_proof', source_id: sourceNumeric } };
+  }
+  if (source === 'roguelite_branch') {
+    const row = await db.prepare(`
+      SELECT option_id, status
+      FROM daily_wtf_chain_options
+      WHERE telegram_id = ? AND utc_day = ? AND option_id = ? AND status IN ('chosen', 'completed')
+      LIMIT 1
+    `).bind(safeTelegramId, String(utcDay), safeSourceId).first().catch(() => null);
+    if (!row) return { ok: false, error: 'proof_required', message: 'Roguelite branch proof was not verified.' };
+    return { ok: true, proof: { type: 'roguelite_branch', source_id: safeSourceId } };
+  }
+  return { ok: false, error: 'proof_required', message: 'Completion proof is required before this WTF signal can be cleared.' };
 }
 
 async function reconcileWtfExpiryForUser(db, telegramId, utcDay, nowMs) {
@@ -3182,7 +3241,12 @@ export default {
       const utcDay = getTodayUtcDate();
       const eventId = clampText(body?.event_id, 80, '');
       const source = clampText(body?.completion_source, 80, '');
-      if (!WTF_ALLOWED_COMPLETION_SOURCES.has(source)) return err('proof required', 409);
+      if (!WTF_ALLOWED_COMPLETION_SOURCES.has(source)) {
+        return json({
+          error: 'proof_required',
+          message: 'Completion proof is required before this WTF signal can be cleared.',
+        }, 409);
+      }
       const event = await env.DB.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? AND event_id = ? LIMIT 1`).bind(utcDay, eventId).first().catch(() => null);
       if (!event) return err('event not found', 404);
       const nowMs = Date.now();
@@ -3194,7 +3258,25 @@ export default {
         return err('event_expired', 409);
       }
       const allowedForEvent = getAllowedSourcesForWtfEvent(event);
-      if (!allowedForEvent.includes(source)) return err('proof_required', 409);
+      if (!allowedForEvent.includes(source)) {
+        return json({
+          error: 'proof_required',
+          message: 'Completion proof source does not match this WTF objective.',
+        }, 409);
+      }
+      const proofResult = await verifyWtfCompletionProof(env.DB, {
+        telegramId: verified.telegramId,
+        source,
+        sourceId: clampText(body?.source_id, 120, ''),
+        event,
+        utcDay,
+      });
+      if (!proofResult?.ok) {
+        return json({
+          error: 'proof_required',
+          message: proofResult?.message || 'Completion proof is required before this WTF signal can be cleared.',
+        }, 409);
+      }
       const player = await env.DB.prepare(`SELECT * FROM daily_wtf_player_events WHERE telegram_id = ? AND event_id = ? AND utc_day = ? LIMIT 1`).bind(verified.telegramId, eventId, utcDay).first().catch(() => null);
       if (!player || !player.checked_in_at) return err('check-in required', 409);
       if (player.completed_at) return json({ ok: true, event_id: eventId, already_completed: true });
@@ -3204,8 +3286,14 @@ export default {
       const chainDepth = Math.min(WTF_MAX_CHAIN_DEPTH, completedToday + 1);
       const nowIso = new Date().toISOString();
       const bonusXp = Math.min(WTF_MAX_BONUS_XP_PER_EVENT, 100 * chainDepth);
-      await env.DB.prepare(`UPDATE daily_wtf_player_events SET status='completed', completed_at=?, chain_depth=?, reward_status='awarded', updated_at=?, metadata_json=? WHERE telegram_id=? AND event_id=? AND utc_day=?`)
-        .bind(nowIso, chainDepth, nowIso, JSON.stringify({ completion_source: source, source_id: clampText(body?.source_id, 120, ''), bonus_xp: bonusXp }), verified.telegramId, eventId, utcDay).run();
+      await env.DB.prepare(`UPDATE daily_wtf_player_events SET status='completed', completed_at=?, chain_depth=?, reward_status='previewed', updated_at=?, metadata_json=? WHERE telegram_id=? AND event_id=? AND utc_day=?`)
+        .bind(nowIso, chainDepth, nowIso, JSON.stringify({
+          completion_source: source,
+          source_id: clampText(body?.source_id, 120, ''),
+          proof: proofResult?.proof || null,
+          bonus_xp_preview: bonusXp,
+          persisted_xp_awarded: false,
+        }), verified.telegramId, eventId, utcDay).run();
       const options = ['comeback', 'chaos', 'faction'].map((type, idx) => ({
         option_id: `${eventId}-o${idx + 1}`,
         option_type: type,
@@ -3226,15 +3314,19 @@ export default {
         event_id: eventId,
         status: 'completed',
         xp_burst: {
-          title: 'WTF BONUS COMPLETE',
-          base_xp: 50,
+          title: 'WTF BONUS PREVIEW',
+          base_xp: 0,
           bonus_xp: bonusXp,
-          total_xp: 50 + bonusXp,
+          total_xp: bonusXp,
           milestones: [100, 250, 500],
           event_id: eventId,
           chain_options: options,
           reduced_motion_fallback: true,
+          persisted_xp_awarded: false,
+          reward_status: 'previewed',
+          message: 'XP opportunity preview only. Persistent XP award is server-authority gated.',
         },
+        reward_status: 'previewed',
         chain_options: options,
       });
     }

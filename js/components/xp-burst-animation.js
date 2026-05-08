@@ -40,7 +40,7 @@
     meta.className = 'xp-burst-meta';
     meta.textContent = 'Base: '
       + Math.max(0, Math.floor(Number(payload.base_xp) || 0))
-      + ' • Bonus: '
+      + ' | Bonus: '
       + Math.max(0, Math.floor(Number(payload.bonus_xp) || 0));
 
     var note = document.createElement('div');
