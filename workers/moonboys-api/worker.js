@@ -39,8 +39,10 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
  *   GET  /battle-chamber/activity?limit=20
  *   POST /battle-chamber/event
  *   POST /player/mastery/update
- *   GET  /roguelite/daily-state
- *   GET  /roguelite/missed-history?limit=30
+ *   GET  /roguelite/daily-state  (legacy query-auth compatibility; deprecated for linked state)
+ *   POST /roguelite/daily-state  JSON { telegram_auth }
+ *   GET  /roguelite/missed-history?limit=30  (legacy query-auth compatibility; deprecated for linked state)
+ *   POST /roguelite/missed-history  JSON { telegram_auth, limit, utc_day }
  *   POST /roguelite/mark-missed
  *   POST /telegram/daily-digest/run
  *
@@ -2876,15 +2878,21 @@ export default {
       }
     }
 
-    // ── GET /roguelite/daily-state ──────────────────────────────────────────
-    if (path === '/roguelite/daily-state' && request.method === 'GET') {
-      const rawAuth = url.searchParams.get('telegram_auth');
-      if (!rawAuth) return err('verified telegram_auth payload required', 401);
-      let tgBody;
-      try {
-        tgBody = { telegram_auth: JSON.parse(rawAuth) };
-      } catch {
-        return err('Invalid telegram_auth payload', 400);
+    // ── GET /roguelite/daily-state (legacy) OR POST JSON { telegram_auth }
+    if (path === '/roguelite/daily-state' && (request.method === 'GET' || request.method === 'POST')) {
+      let tgBody = {};
+      if (request.method === 'POST') {
+        try { tgBody = await request.json(); } catch { return err('Invalid JSON', 400); }
+      } else {
+        // Legacy query-auth compatibility only. New frontend callers must use POST JSON
+        // so signed Telegram auth is not placed in browser/server URL logs.
+        const rawAuth = url.searchParams.get('telegram_auth');
+        if (!rawAuth) return err('verified telegram_auth payload required', 401);
+        try {
+          tgBody = { telegram_auth: JSON.parse(rawAuth) };
+        } catch {
+          return err('Invalid telegram_auth payload', 400);
+        }
       }
       const verified = await verifyTelegramIdentityFromBody(tgBody, env, verifyTelegramAuth);
       if (verified.error) return err(verified.error, verified.status || 401);
@@ -2952,22 +2960,30 @@ export default {
       }
     }
 
-    // ── GET /roguelite/missed-history ───────────────────────────────────────
-    if (path === '/roguelite/missed-history' && request.method === 'GET') {
-      const rawAuth = url.searchParams.get('telegram_auth');
-      if (!rawAuth) return err('verified telegram_auth payload required', 401);
-      let tgBody;
-      try {
-        tgBody = { telegram_auth: JSON.parse(rawAuth) };
-      } catch {
-        return err('Invalid telegram_auth payload', 400);
+    // ── GET /roguelite/missed-history?limit=30 OR POST JSON { telegram_auth, limit, utc_day }
+    if (path === '/roguelite/missed-history' && (request.method === 'GET' || request.method === 'POST')) {
+      let tgBody = {};
+      if (request.method === 'POST') {
+        try { tgBody = await request.json(); } catch { return err('Invalid JSON', 400); }
+      } else {
+        // Legacy query-auth compatibility only. New frontend callers must use POST JSON
+        // so signed Telegram auth is not placed in browser/server URL logs.
+        const rawAuth = url.searchParams.get('telegram_auth');
+        if (!rawAuth) return err('verified telegram_auth payload required', 401);
+        try {
+          tgBody = { telegram_auth: JSON.parse(rawAuth) };
+        } catch {
+          return err('Invalid telegram_auth payload', 400);
+        }
       }
       const verified = await verifyTelegramIdentityFromBody(tgBody, env, verifyTelegramAuth);
       if (verified.error) return err(verified.error, verified.status || 401);
       const ddCheck = await ensureDailyDigestTables(env.DB);
       if (ddCheck) return ddCheck.response;
-      const limit = Math.max(1, Math.min(DAILY_MISSED_HISTORY_MAX_LIMIT, Math.floor(Number(url.searchParams.get('limit') || 30) || 30)));
-      const utcDay = clampText(url.searchParams.get('utc_day') || '', 10, '');
+      const limitInput = request.method === 'POST' ? tgBody?.limit : url.searchParams.get('limit');
+      const utcDayInput = request.method === 'POST' ? tgBody?.utc_day : url.searchParams.get('utc_day');
+      const limit = Math.max(1, Math.min(DAILY_MISSED_HISTORY_MAX_LIMIT, Math.floor(Number(limitInput || 30) || 30)));
+      const utcDay = clampText(utcDayInput || '', 10, '');
       try {
         const query = utcDay
           ? env.DB.prepare(`
