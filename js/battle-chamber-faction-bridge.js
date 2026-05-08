@@ -13,6 +13,8 @@
  *   window.MOONBOYS_BATTLE_CHAMBER_STANDINGS — { weekly, monthly, seasonal }
  *   window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY  — server activity feed cache
  *   window.MOONBOYS_BATTLE_CHAMBER_FACTION_DETAIL — optional faction detail cache
+ *   window.MOONBOYS_ROGUELITE_DAILY_STATE    — linked-user daily opportunity state
+ *   window.MOONBOYS_ROGUELITE_MISSED_HISTORY — linked-user missed history snapshot
  *
  * Events dispatched:
  *   battle-chamber:faction-data-ready
@@ -70,6 +72,27 @@ function getCurrentFactionKey() {
     return LIVE_FACTION_KEYS.indexOf(faction) !== -1 ? faction : null;
   } catch (_) {
     return null;
+  }
+}
+
+function getSignedTelegramAuthPayload() {
+  try {
+    var identity = window.MOONBOYS_IDENTITY;
+    if (!identity || typeof identity.getSignedTelegramAuth !== 'function') return null;
+    var payload = identity.getSignedTelegramAuth();
+    return payload && typeof payload === 'object' ? payload : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function buildTelegramAuthQuery() {
+  var payload = getSignedTelegramAuthPayload();
+  if (!payload) return '';
+  try {
+    return '?telegram_auth=' + encodeURIComponent(JSON.stringify(payload));
+  } catch (_) {
+    return '';
   }
 }
 
@@ -238,6 +261,8 @@ function dispatchFactionDataReady() {
       factionDefs: window.FACTION_EFFECT_DEFS,
       standings: window.MOONBOYS_BATTLE_CHAMBER_STANDINGS || null,
       serverStatus: window.MOONBOYS_BATTLE_CHAMBER_SERVER_STATUS || null,
+      rogueliteDailyState: window.MOONBOYS_ROGUELITE_DAILY_STATE || null,
+      missedHistory: window.MOONBOYS_ROGUELITE_MISSED_HISTORY || null,
     },
   }));
 }
@@ -278,11 +303,16 @@ function hydrateLocalFirst() {
     message: 'Live server standings unavailable. Showing local display state.',
     updatedAt: Date.now(),
   };
+  window.MOONBOYS_ROGUELITE_DAILY_STATE = window.MOONBOYS_ROGUELITE_DAILY_STATE || null;
+  window.MOONBOYS_ROGUELITE_MISSED_HISTORY = Array.isArray(window.MOONBOYS_ROGUELITE_MISSED_HISTORY)
+    ? window.MOONBOYS_ROGUELITE_MISSED_HISTORY
+    : [];
 }
 
 async function hydrateServerAuthority() {
   var apiBase = getApiBase();
   if (!apiBase) return false;
+  var authQuery = buildTelegramAuthQuery();
 
   var currentFaction = getCurrentFactionKey();
   var endpoints = [
@@ -291,6 +321,8 @@ async function hydrateServerAuthority() {
     fetchJson(apiBase + '/battle-chamber/factions/standings?period=seasonal'),
     fetchJson(apiBase + '/battle-chamber/activity?limit=20'),
     currentFaction ? fetchJson(apiBase + '/battle-chamber/factions/' + encodeURIComponent(currentFaction)) : Promise.resolve(null),
+    authQuery ? fetchJson(apiBase + '/roguelite/daily-state' + authQuery) : Promise.resolve(null),
+    authQuery ? fetchJson(apiBase + '/roguelite/missed-history?limit=8&' + authQuery.slice(1)) : Promise.resolve(null),
   ];
 
   var results = await Promise.all(endpoints);
@@ -299,8 +331,10 @@ async function hydrateServerAuthority() {
   var seasonal = normaliseServerStandings(results[2]);
   var activity = results[3] && results[3].ok && Array.isArray(results[3].items) ? results[3].items : null;
   var factionDetail = results[4] && results[4].ok ? results[4] : null;
+  var dailyState = results[5] && results[5].ok ? results[5] : null;
+  var missedHistory = results[6] && results[6].ok && Array.isArray(results[6].items) ? results[6].items : null;
 
-  var hasServerData = !!(weekly || monthly || seasonal || activity);
+  var hasServerData = !!(weekly || monthly || seasonal || activity || dailyState || missedHistory);
   if (!hasServerData) return false;
 
   window.MOONBOYS_BATTLE_CHAMBER_STANDINGS = {
@@ -320,6 +354,13 @@ async function hydrateServerAuthority() {
   if (factionDetail && factionDetail.faction && factionDetail.faction.id) {
     window.MOONBOYS_BATTLE_CHAMBER_FACTION_DETAIL = window.MOONBOYS_BATTLE_CHAMBER_FACTION_DETAIL || {};
     window.MOONBOYS_BATTLE_CHAMBER_FACTION_DETAIL[factionDetail.faction.id] = factionDetail;
+  }
+
+  if (dailyState) {
+    window.MOONBOYS_ROGUELITE_DAILY_STATE = dailyState;
+  }
+  if (missedHistory) {
+    window.MOONBOYS_ROGUELITE_MISSED_HISTORY = missedHistory;
   }
 
   window.MOONBOYS_BATTLE_CHAMBER_SERVER_STATUS = {

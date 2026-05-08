@@ -128,6 +128,25 @@
     return rewardData.factions[key];
   }
 
+  function getRogueliteDailyState() {
+    var state = window.MOONBOYS_ROGUELITE_DAILY_STATE;
+    return state && typeof state === 'object' ? state : null;
+  }
+
+  function getRogueliteMissedHistory() {
+    var rows = window.MOONBOYS_ROGUELITE_MISSED_HISTORY;
+    return Array.isArray(rows) ? rows.slice() : [];
+  }
+
+  function isTelegramLinked() {
+    try {
+      var identity = window.MOONBOYS_IDENTITY;
+      return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
+    } catch (_) {
+      return false;
+    }
+  }
+
   function getTrackOrFallback(summary, trackKey, fallback) {
     return (summary && Array.isArray(summary[trackKey])) ? summary[trackKey] : fallback;
   }
@@ -213,6 +232,13 @@
     var status = getFactionStatus();
     var currentFaction = status && status.faction ? status.faction : 'unaligned';
     var isCurrentFaction = currentFaction === key;
+    var linked = isTelegramLinked();
+    var dailyState = getRogueliteDailyState();
+    var missedRows = getRogueliteMissedHistory();
+    var missedTotal = dailyState && typeof dailyState.missed_history_count === 'number'
+      ? dailyState.missed_history_count
+      : missedRows.length;
+    var digestStatus = dailyState && dailyState.digest_status ? dailyState.digest_status : null;
 
     var hero = byId('fcp-hero');
     if (hero) {
@@ -275,6 +301,54 @@
         : '<p><strong>Seasonal mission:</strong> Seasonal objective syncs in as bridge data updates.</p>';
 
       missionsEl.innerHTML = missionRows + seasonalRow + '<p>Complete missions to build faction pressure and clout.</p>';
+      if (linked) {
+        missionsEl.innerHTML +=
+          '<p><strong>Faction daily mission digest preview:</strong> Today’s active opportunities reset at UTC midnight.</p>' +
+          '<p><strong>Daily digest status:</strong> ' +
+          esc(digestStatus && digestStatus.sent_today ? 'sent today' : 'pending for today') +
+          '</p>' +
+          '<p><strong>Missed perks count:</strong> ' + esc(missedTotal) + '</p>' +
+          '<p><strong>Missed perks history summary:</strong> The city kept moving while you were away.</p>';
+      } else {
+        missionsEl.innerHTML +=
+          '<p><strong>Faction daily mission digest preview:</strong> Link Telegram to load your live daily mission digest.</p>' +
+          '<p><a href="/gkniftyheads-incubator.html">Link Telegram</a></p>';
+      }
+    }
+
+    var digestEl = byId('fcp-daily-digest');
+    if (digestEl) {
+      if (linked) {
+        digestEl.innerHTML =
+          '<p><strong>Daily digest status:</strong> ' + esc(digestStatus && digestStatus.sent_today ? 'sent today' : 'pending for today') + '</p>' +
+          '<p><strong>UTC day:</strong> ' + esc((dailyState && dailyState.utc_day) || '—') + '</p>' +
+          '<p>Telegram-linked users receive one digest per UTC day with missions, missed perks, faction log, and Battle Chamber / Arcade links.</p>';
+      } else {
+        digestEl.innerHTML =
+          '<p>Link Telegram to activate daily digest delivery.</p>' +
+          '<p><a href="/gkniftyheads-incubator.html">Link Telegram</a></p>';
+      }
+    }
+
+    var missedEl = byId('fcp-missed-perks');
+    if (missedEl) {
+      if (linked) {
+        var missedPreview = missedRows.length
+          ? '<ul>' + missedRows.slice(0, 5).map(function (item) {
+              return '<li><strong>' + esc(item.title || 'Missed chance') + '</strong> — ' + esc(item.utc_day || '') + '</li>';
+            }).join('') + '</ul>'
+          : '<p>No missed entries yet.</p>';
+        missedEl.innerHTML =
+          '<p><strong>This does not reset.</strong></p>' +
+          '<p>The city kept moving while you were away.</p>' +
+          '<p><strong>Missed perks count:</strong> ' + esc(missedTotal) + '</p>' +
+          missedPreview;
+      } else {
+        missedEl.innerHTML =
+          '<p>This does not reset.</p>' +
+          '<p>The city kept moving while you were away.</p>' +
+          '<p>Link Telegram to view your missed perks history.</p>';
+      }
     }
 
     var war = byId('fcp-war-status');
@@ -409,7 +483,11 @@
         : 'Not aligned with this faction yet. Join when ready and push the chamber.';
       join.innerHTML = '' +
         '<p>' + esc(joinCopy) + '</p>' +
+        '<p><strong>Missed perks history count:</strong> ' + esc(missedTotal) + '</p>' +
+        '<p><strong>Daily digest status:</strong> ' + esc(linked ? (digestStatus && digestStatus.sent_today ? 'sent today' : 'pending for today') : 'link Telegram required') + '</p>' +
         '<div class="fcp-card-actions">' +
+          '<a class="fcp-btn" href="/community.html">Open Battle Chamber</a>' +
+          '<a class="fcp-btn fcp-btn-secondary" href="/games/">Play Arcade</a>' +
           '<a class="fcp-btn" href="/community.html#battle-join-faction">Join this faction</a>' +
           '<a class="fcp-btn fcp-btn-secondary" href="/gkniftyheads-incubator.html">Link Telegram</a>' +
         '</div>';
