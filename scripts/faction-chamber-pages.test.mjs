@@ -83,7 +83,7 @@ for (const faction of FACTIONS) {
 
   check(html.includes(faction.name), `${faction.key}: faction name present`);
   check(lower.includes('join this faction'), `${faction.key}: join CTA present`);
-  check(html.includes('/community.html'), `${faction.key}: back to Battle Chamber link present`);
+  check(/<a[^>]+href="\/community\.html"[^>]*>Back to Battle Chamber<\/a>/i.test(html), `${faction.key}: explicit back to Battle Chamber link present`);
   check(html.includes('/games/'), `${faction.key}: arcade link present`);
 
   for (const heading of REQUIRED_SECTIONS) {
