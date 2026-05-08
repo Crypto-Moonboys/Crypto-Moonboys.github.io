@@ -7,77 +7,594 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <style>
-    .battle-page .section {
-      padding-left: 40px;
-      padding-right: 40px;
-      padding-top: 35px;
-      padding-bottom: 35px;
+    .howto-page {
+      --howto-cyan: #56dcff;
+      --howto-green: #00ffcc;
+      --howto-pink: #ff6ad5;
+      --howto-yellow: #ffcc00;
+      --howto-orange: #ff8a00;
+      --howto-red: #ff405c;
+      --howto-panel: rgba(8, 18, 34, 0.72);
+      --howto-panel-strong: rgba(5, 12, 24, 0.92);
+      --howto-border: rgba(86, 220, 255, 0.25);
+      --howto-border-hot: rgba(0, 255, 204, 0.5);
     }
-    .battle-page .page-hero {
-      padding: 50px 40px;
+
+    .howto-page .section {
+      padding: 36px 40px;
+      margin-bottom: 22px;
     }
-    .battle-page .section h2 { margin-bottom: 20px; }
-    .battle-page .section p, .battle-page .section li { line-height: 1.8; }
+
+    .howto-page .page-hero {
+      position: relative;
+      overflow: hidden;
+      padding: 58px 42px;
+      border: 1px solid rgba(86, 220, 255, 0.28);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(0, 255, 204, 0.16), transparent 30%),
+        radial-gradient(circle at 80% 10%, rgba(255, 106, 213, 0.14), transparent 28%),
+        linear-gradient(135deg, rgba(8, 18, 34, 0.96), rgba(3, 6, 14, 0.98));
+      box-shadow: 0 0 32px rgba(0, 255, 204, 0.12);
+    }
+
+    .howto-page .page-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(86, 220, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(86, 220, 255, 0.06) 1px, transparent 1px);
+      background-size: 22px 22px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent 80%);
+    }
+
+    .howto-page .page-hero > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .howto-kicker {
+      display: inline-block;
+      margin-bottom: 12px;
+      color: var(--howto-green);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .howto-neon-title,
+    .howto-page h1 {
+      color: #eaffff;
+      text-shadow:
+        0 0 8px rgba(86, 220, 255, 0.8),
+        0 0 18px rgba(0, 255, 204, 0.28);
+    }
+
+    .howto-glitch-title {
+      position: relative;
+      display: inline-block;
+      color: #eaffff;
+      text-shadow:
+        2px 0 rgba(255, 106, 213, 0.6),
+        -2px 0 rgba(86, 220, 255, 0.7),
+        0 0 18px rgba(0, 255, 204, 0.3);
+    }
+
+    .howto-pulse {
+      animation: howtoPulse 2.8s ease-in-out infinite;
+    }
+
+    @keyframes howtoPulse {
+      0%, 100% { text-shadow: 0 0 8px rgba(86, 220, 255, 0.55), 0 0 20px rgba(0, 255, 204, 0.18); }
+      50% { text-shadow: 0 0 16px rgba(86, 220, 255, 0.9), 0 0 34px rgba(0, 255, 204, 0.34); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .howto-pulse { animation: none; }
+    }
+
+    .howto-lead {
+      max-width: 980px;
+      font-size: 1.08rem;
+      line-height: 1.85;
+      color: rgba(235, 255, 255, 0.9);
+    }
+
+    .howto-hero-actions,
+    .howto-card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .howto-btn {
+      display: inline-block;
+      padding: 11px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--howto-border-hot);
+      background: rgba(0, 255, 204, 0.12);
+      color: var(--howto-green);
+      text-decoration: none;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      box-shadow: 0 0 18px rgba(0, 255, 204, 0.08);
+    }
+
+    .howto-btn:hover {
+      background: rgba(0, 255, 204, 0.2);
+      box-shadow: 0 0 24px rgba(0, 255, 204, 0.16);
+    }
+
+    .howto-btn-secondary {
+      color: var(--howto-cyan);
+      border-color: rgba(86, 220, 255, 0.38);
+      background: rgba(86, 220, 255, 0.08);
+    }
+
+    .howto-route {
+      margin: 22px 0;
+      padding: 20px;
+      border: 1px solid rgba(0, 255, 204, 0.45);
+      border-left: 5px solid var(--howto-green);
+      background: linear-gradient(90deg, rgba(0, 255, 204, 0.12), rgba(86, 220, 255, 0.05));
+      color: #f4ffff;
+      font-size: 1.08rem;
+      font-weight: 900;
+      line-height: 1.8;
+      text-transform: uppercase;
+      box-shadow: inset 0 0 24px rgba(0, 255, 204, 0.05);
+    }
+
+    .howto-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .howto-grid-wide {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .howto-card,
+    .howto-highlight,
+    .howto-warning,
+    .howto-system-card {
+      border: 1px solid var(--howto-border);
+      border-top: 3px solid var(--howto-cyan);
+      border-radius: 12px;
+      padding: 18px;
+      background: var(--howto-panel);
+      box-shadow: 0 0 20px rgba(86, 220, 255, 0.06);
+      line-height: 1.75;
+    }
+
+    .howto-card:hover,
+    .howto-system-card:hover {
+      border-color: rgba(0, 255, 204, 0.45);
+      box-shadow: 0 0 26px rgba(0, 255, 204, 0.08);
+    }
+
+    .howto-card h3,
+    .howto-system-card h3 {
+      margin-top: 0;
+      color: var(--howto-green);
+    }
+
+    .howto-highlight {
+      border-top-color: var(--howto-green);
+      background: linear-gradient(135deg, rgba(0, 255, 204, 0.12), rgba(8, 18, 34, 0.82));
+    }
+
+    .howto-warning {
+      border-color: rgba(255, 204, 0, 0.38);
+      border-top-color: var(--howto-yellow);
+      background: linear-gradient(135deg, rgba(255, 204, 0, 0.13), rgba(8, 18, 34, 0.88));
+    }
+
+    .howto-danger {
+      border-color: rgba(255, 64, 92, 0.42);
+      border-top-color: var(--howto-red);
+      background: linear-gradient(135deg, rgba(255, 64, 92, 0.13), rgba(8, 18, 34, 0.88));
+    }
+
+    .howto-label {
+      display: inline-block;
+      margin-bottom: 8px;
+      padding: 4px 8px;
+      border: 1px solid rgba(86, 220, 255, 0.35);
+      color: var(--howto-cyan);
+      border-radius: 999px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+    }
+
+    .howto-split {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .howto-split { grid-template-columns: 1fr; }
+      .howto-page .section,
+      .howto-page .page-hero { padding-left: 24px; padding-right: 24px; }
+    }
+
+    .howto-step {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .howto-step-num {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: rgba(0, 255, 204, 0.12);
+      border: 1px solid rgba(0, 255, 204, 0.5);
+      color: var(--howto-green);
+      font-weight: 900;
+    }
+
+    .howto-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(86, 220, 255, 0.22);
+    }
+
+    .howto-table th,
+    .howto-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(86, 220, 255, 0.15);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .howto-table th {
+      color: var(--howto-green);
+      background: rgba(0, 255, 204, 0.08);
+    }
+
+    .howto-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--howto-yellow);
+    }
+
+    .howto-divider-title {
+      margin-bottom: 14px;
+      color: var(--howto-cyan);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 900;
+    }
   </style>
 </head>
 <body class="page-how-to-play page-has-right-panel">
 
 <main id="content" role="main">
-  <div class="battle-page">
+  <div class="battle-page howto-page">
 
     <section class="page-hero">
-      <h1>How to Play Crypto Moonboys</h1>
-      <p class="lead">The complete step-by-step guide to entering and progressing through the living Web3 wiki system.</p>
+      <span class="howto-kicker">SYSTEM GUIDE / PLAYER ONBOARDING / BATTLE CHAMBER MANUAL</span>
+      <h1 class="howto-glitch-title howto-pulse">How to Play Crypto Moonboys</h1>
+      <p class="howto-lead">
+        Crypto Moonboys is not just a website, not just a wiki, and not just an arcade. It is a living progression universe where lore, games, Telegram identity, factions, missions, clout, missed opportunities, and Battle Chamber proof all connect. This page explains how the whole machine works.
+      </p>
+      <div class="howto-route">
+        READ / EXPLORE → PLAY ARCADE → EARN ACCEPTED PROGRESSION → LINK TELEGRAM → JOIN A FACTION → COMPLETE MISSIONS → BUILD CLOUT / STATUS → ENTER BATTLE CHAMBER → UNLOCK MORE OPPORTUNITIES → REACH BLOCK TOPIA → BECOME A BUILDER
+      </div>
+      <div class="howto-hero-actions">
+        <a class="howto-btn" href="/games/">Play Arcade</a>
+        <a class="howto-btn howto-btn-secondary" href="/gkniftyheads-incubator.html">Link Telegram</a>
+        <a class="howto-btn howto-btn-secondary" href="/community.html">Enter Battle Chamber</a>
+        <a class="howto-btn howto-btn-secondary" href="/battle-chamber/factions/">View Community</a>
+      </div>
     </section>
 
     <section class="section">
-      <h2>The Official Route</h2>
-      <p class="big-route">Read → Play → Earn XP → Link → Battle Chamber → Block Topia → Build</p>
-      <p>This is the core journey that every player follows. Each step builds on the last, creating a complete progression system from curious visitor to active builder.</p>
+      <h2 class="howto-neon-title">What This Universe Actually Is</h2>
+      <div class="howto-split">
+        <div>
+          <p>
+            Crypto Moonboys is a connected progression ecosystem. It is not just a wiki, not just an arcade, not just a game, and not just a community page. It is one living system where each layer feeds the next.
+          </p>
+          <p>
+            Wiki is world memory. Arcade is playable action. Telegram is persistent identity and sync. Factions define your alignment and season pressure. Battle Chamber is public proof. Roguelite loops create daily choices. Block Topia is deeper city progression. The build layer is where players become contributors.
+          </p>
+        </div>
+        <div class="howto-highlight">
+          <span class="howto-label">KEY TRUTH</span>
+          <h3>This universe keeps moving.</h3>
+          <p>
+            Score proves a run. XP proves a player. Faction choice changes how the city sees you. Battle Chamber is where your motion becomes public.
+          </p>
+        </div>
+      </div>
     </section>
 
     <section class="section">
-      <h2>Step 1: Read the Living Wiki</h2>
-      <p>Start by exploring the wiki. The pages are not just static information — they are the living memory of the Crypto Moonboys universe. Understanding the lore, factions, history, mechanics, and culture makes every action more meaningful and powerful.</p>
-      <p>You don’t need to read everything before playing, but the deeper your knowledge of the world, the more rewarding your experience becomes.</p>
+      <h2 class="howto-glitch-title">Step-by-Step: How to Start</h2>
+      <div class="howto-grid-wide">
+        <div class="howto-card howto-step"><div class="howto-step-num">01</div><div><h3>Explore the Universe</h3><p>Read lore, systems, and pages so your actions connect to the world memory layer.</p></div></div>
+        <div class="howto-card howto-step"><div class="howto-step-num">02</div><div><h3>Play Games</h3><p>Use the arcade as your active entry point and start generating run performance data.</p></div></div>
+        <div class="howto-card howto-step"><div class="howto-step-num">03</div><div><h3>Understand Score vs XP</h3><p>Score is per run. XP is accepted long-term progression. They are linked, but not the same signal.</p></div></div>
+        <div class="howto-card howto-step"><div class="howto-step-num">04</div><div><h3>Link Telegram</h3><p>Sync identity so progression persists beyond one browser and can enter full system loops.</p></div></div>
+        <div class="howto-card howto-step"><div class="howto-step-num">05</div><div><h3>Join a Faction</h3><p>Pick your side for season lock, mission identity, and faction-level contribution pressure.</p></div></div>
+        <div class="howto-card howto-step"><div class="howto-step-num">06</div><div><h3>Complete Missions</h3><p>Use daily missions, quests, and events to push structured progress instead of random play.</p></div></div>
+        <div class="howto-card howto-step"><div class="howto-step-num">07</div><div><h3>Watch Battle Chamber</h3><p>Follow proof feeds, standings, logs, and visibility to track your movement in public.</p></div></div>
+        <div class="howto-card howto-step"><div class="howto-step-num">08</div><div><h3>Push Deeper Progression</h3><p>Unlock advanced opportunity chains, strengthen clout, and work toward Block Topia access.</p></div></div>
+        <div class="howto-card howto-step"><div class="howto-step-num">09</div><div><h3>Contribute and Build</h3><p>Move from player into builder by helping shape systems, community momentum, and future layers.</p></div></div>
+      </div>
     </section>
 
     <section class="section">
-      <h2>Step 2: Play the Arcade</h2>
-      <p>The arcade is the first real action layer of the system. Every game you play generates a score. Scores can appear on leaderboards and contribute to Arcade XP when accepted and synced through Telegram.</p>
-      <p>Current active games include Invaders 3008, Asteroid Fork, Breakout Bullrun, Crystal Quest, Pac-Chain, Snake Run, Tetris Block Topia, and Block Topia Quest Maze.</p>
-      <p><strong>Important:</strong> Score is not the same as Arcade XP. Score measures your performance in a single run. Arcade XP measures consistent participation over time.</p>
+      <h2 class="howto-neon-title">Play the Arcade</h2>
+      <p>
+        Arcade is the active game layer. Runs test skill across different game styles and feed shared progression loops when accepted through the platform flow.
+      </p>
+      <div class="howto-grid-wide">
+        <div class="howto-card">
+          <span class="howto-label">ACTIVE GAME LAYER</span>
+          <h3>Current Arcade Roster</h3>
+          <p>Invaders 3008, Asteroid Fork, Breakout Bullrun, Crystal Quest, Pac-Chain, Snake Run, Tetris Block Topia, and Block Topia Quest Maze.</p>
+          <p>Different games feed different rhythms, but all meaningful runs can route into the same broader progression loop.</p>
+        </div>
+        <div class="howto-warning">
+          <span class="howto-label">IMPORTANT</span>
+          <h3>SCORE ≠ XP</h3>
+          <p>Score = run performance. XP = accepted long-term progression. Clout = public or faction-facing momentum. Missions = objective layer. Perks/rewards = status and opportunity layer.</p>
+        </div>
+      </div>
+
+      <table class="howto-table">
+        <thead>
+          <tr>
+            <th>Term</th>
+            <th>What it means</th>
+            <th>Why it matters</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Score</strong></td>
+            <td>Single-run performance inside one game session.</td>
+            <td>Shows run quality and leaderboard competitiveness.</td>
+          </tr>
+          <tr>
+            <td><strong>Arcade XP</strong></td>
+            <td>Accepted long-term progression after linked/synced flow.</td>
+            <td>Drives advancement, eligibility, and access gates.</td>
+          </tr>
+          <tr>
+            <td><strong>Faction Clout</strong></td>
+            <td>Contribution and momentum connected to your faction.</td>
+            <td>Shapes standings and social visibility in Battle Chamber.</td>
+          </tr>
+          <tr>
+            <td><strong>Rewards / Perks</strong></td>
+            <td>Titles, badges, stickers, unlock eligibility, and status markers.</td>
+            <td>Makes consistent activity visible and meaningful.</td>
+          </tr>
+        </tbody>
+      </table>
     </section>
 
     <section class="section">
-      <h2>Step 3: Earn Arcade XP</h2>
-      <p>Arcade XP is the true progression currency of Crypto Moonboys. It is earned when you play supported games, link your Telegram account, and have your runs accepted by the system.</p>
-      <p class="quote">“XP is not given. It is earned through activity.”</p>
-      <p>Currently, 50 Arcade XP is required to unlock Block Topia Live City.</p>
+      <h2 class="howto-neon-title">Telegram Linking</h2>
+      <div class="howto-split">
+        <div>
+          <p>
+            Telegram linking is the bridge from browser-only activity to persistent progression. Linked users can keep identity continuity across sessions and future system layers.
+          </p>
+          <p>
+            Linked users can sync accepted progression, maintain faction status, receive daily digest updates, and stay connected to missions and visibility systems.
+          </p>
+          <p>
+            Use the Incubator flow and run <code>/gklink</code> in <span class="howto-mono">@WIKICOMSBOT</span>.
+          </p>
+          <div data-tg-sync-cta></div>
+        </div>
+        <div class="howto-danger howto-card">
+          <span class="howto-label">SYNC WARNING</span>
+          <h3>Without Telegram link, long-term progression is limited.</h3>
+          <p>Browser-only play can show activity, but cannot fully carry persistent identity, mission continuity, and full proof-layer integration.</p>
+        </div>
+      </div>
     </section>
 
     <section class="section">
-      <h2>Step 4: Link Your Telegram Identity</h2>
-      <p>This is the most critical step for long-term progress. Without linking Telegram, your progress is temporary and browser-only. Once linked, your Arcade XP, faction status, and future progression become persistent and server-backed.</p>
-      <p>Use the Incubator page and run <code>/gklink</code> in @WIKICOMSBOT to connect your identity permanently.</p>
-      <div data-tg-sync-cta></div>
+      <h2 class="howto-glitch-title">Factions</h2>
+      <p>
+        Factions are a core gameplay layer: identity, competition, season pressure, mission context, and Battle Chamber presence. Joining a faction defines how your activity is interpreted across the city.
+      </p>
+
+      <div class="howto-warning">
+        <span class="howto-label">SEASON LOCK</span>
+        <h3>Faction choice matters.</h3>
+        <p>
+          Your selection is locked for the active season. That lock creates real commitment, keeps competition fair, and makes contribution/clout meaningful.
+        </p>
+      </div>
+
+      <div class="howto-grid">
+        <div class="howto-system-card"><h3>Identity & Style</h3><p>Your faction defines your side, chamber style, and public profile context.</p></div>
+        <div class="howto-system-card"><h3>Daily Missions</h3><p>Faction alignment influences mission pressure and ongoing objective flow.</p></div>
+        <div class="howto-system-card"><h3>Public Status</h3><p>Activity contributes to visible faction momentum and standing narratives.</p></div>
+        <div class="howto-system-card"><h3>Seasonal Competition</h3><p>Faction movement compounds through daily, weekly, and seasonal cycles.</p></div>
+        <div class="howto-system-card"><h3>Rewards Identity</h3><p>Titles, badges, and stickers align with faction path and contribution visibility.</p></div>
+        <div class="howto-system-card"><h3>Battle Presence</h3><p>Faction chambers and logs show how your side is moving right now.</p></div>
+      </div>
     </section>
 
     <section class="section">
-      <h2>Step 5: Enter the Battle Chamber</h2>
-      <p>The Battle Chamber is the public proof layer. This is where your activity becomes visible to the entire community. XP movement, faction alignment, missions, and community status all appear here.</p>
-      <p>If you take action, it shows. If you stay passive, nothing appears.</p>
+      <h2 class="howto-neon-title">Battle Chamber</h2>
+      <p>
+        Battle Chamber is the public proof layer where standings, logs, missions, perks previews, and activity visibility are exposed. This is where private effort becomes public signal.
+      </p>
+
+      <div class="howto-grid-wide">
+        <div class="howto-highlight">
+          <span class="howto-label">PUBLIC PROOF LAYER</span>
+          <h3>What you see in Battle Chamber</h3>
+          <ul>
+            <li>Standings and faction motion</li>
+            <li>Faction logs and activity history</li>
+            <li>Mission signals and objective pressure</li>
+            <li>Reward/perk previews and status tracks</li>
+            <li>Proof feed and contribution visibility</li>
+            <li>Faction chamber pages and identity routes</li>
+          </ul>
+        </div>
+        <div class="howto-card">
+          <span class="howto-label">KEY RULE</span>
+          <h3>No movement, no signal.</h3>
+          <p>Battle Chamber exists to reveal momentum. Showing up builds proof. Going inactive grows missed history.</p>
+        </div>
+      </div>
     </section>
 
     <section class="section">
-      <h2>Step 6: Enter Block Topia Live City</h2>
-      <p>Once you reach 50 Arcade XP and have a linked Telegram account, you can enter Block Topia Live City — the current gated 2-player Colyseus multiplayer survival and mission prototype.</p>
-      <p>This is a focused, high-stakes multiplayer experience featuring NPCs, combat, phases, objectives, extraction, and upgrades.</p>
+      <h2 class="howto-glitch-title">Missions / Quests / Events</h2>
+      <p>
+        Missions provide direction, quests deepen repeat engagement, events add urgency, and roguelite branching introduces evolving choices. The system is designed to move every day.
+      </p>
+
+      <div class="howto-grid">
+        <div class="howto-card"><h3>Daily Missions</h3><p>Short-cycle objectives that reward active participation every UTC day.</p></div>
+        <div class="howto-card"><h3>Weekly / Monthly / Seasonal</h3><p>Longer pressure arcs that compound faction and personal visibility.</p></div>
+        <div class="howto-card"><h3>Special Events</h3><p>Limited windows that increase urgency and reshape what matters now.</p></div>
+        <div class="howto-card"><h3>Random Opportunities</h3><p>Pop-up moments and rabbit-hole routes that can appear and expire.</p></div>
+        <div class="howto-card"><h3>Roguelite Branching</h3><p>Complete one objective to unlock the next decision path and keep momentum alive.</p></div>
+        <div class="howto-card"><h3>Repeat Loop</h3><p>The strongest path is chain activity: finish, unlock, choose, push, repeat.</p></div>
+      </div>
     </section>
 
     <section class="section">
-      <h2>Step 7: Build</h2>
-      <p>The final stage is contribution. Whether that means creating content, joining factions, shaping lore, or eventually helping build City Block Topia / Neon Sprawl — the system rewards those who move from player to builder.</p>
+      <h2 class="howto-neon-title">Rewards / Perks / Status</h2>
+      <p>
+        Rewards here are about gameplay progression, status identity, and visible contribution. They represent activity, not payouts.
+      </p>
+
+      <div class="howto-grid-wide">
+        <div class="howto-card">
+          <h3>What players can gain</h3>
+          <ul>
+            <li>Arcade XP progression</li>
+            <li>Faction clout and contribution status</li>
+            <li>Titles, badges, and stickers</li>
+            <li>Faction identity markers and role visibility</li>
+            <li>Reward/perk eligibility and unlock options</li>
+            <li>Public proof and featured recognition</li>
+            <li>Seasonal memory and hall-of-fame style status</li>
+          </ul>
+        </div>
+        <div class="howto-danger howto-card">
+          <span class="howto-label">IMPORTANT</span>
+          <h3>Faction rewards are gameplay/status rewards.</h3>
+          <p>They are progression, identity, and recognition layers tied to activity and contribution.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="howto-glitch-title">Daily Active Opportunities</h2>
+      <p>
+        Daily active opportunities reset every UTC day. Fresh active options appear each day, and some opportunities are available only within that day window.
+      </p>
+      <div class="howto-highlight">
+        <span class="howto-label">DAILY LOOP</span>
+        <h3>Stay active to stay synced with the city.</h3>
+        <p>Daily missions and active opportunities are built to reward players who keep showing up.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="howto-glitch-title">Missed Days / Missed Perks</h2>
+      <p>
+        Missed history does not reset. It accumulates over time and shows what moved while you were away. This creates pressure, context, and visibility.
+      </p>
+      <div class="howto-grid-wide">
+        <div class="howto-warning">
+          <span class="howto-label">WARNING</span>
+          <h3>Today’s active options reset daily.</h3>
+          <p>Daily boards refresh every UTC day, changing what can be acted on now.</p>
+        </div>
+        <div class="howto-danger howto-card">
+          <span class="howto-label">PERSISTENT HISTORY</span>
+          <h3>Missed history does not reset.</h3>
+          <p>If you stop showing up, the missed list grows. The city kept moving while you were away.</p>
+        </div>
+      </div>
+      <div class="howto-route">DAILY ACTIVE RESETS. MISSED HISTORY BUILDS.</div>
+    </section>
+
+    <section class="section">
+      <h2 class="howto-neon-title">Block Topia / Live City</h2>
+      <p>
+        Block Topia is a deeper progression layer, not the starting point. It sits further down the ladder and represents the broader live-city multiplayer direction.
+      </p>
+      <div class="howto-grid-wide">
+        <div class="howto-card"><h3>Progression Gate</h3><p>Access is tied to linked identity and progression requirements.</p></div>
+        <div class="howto-card"><h3>System Position</h3><p>It comes after the core route: arcade, sync, missions, faction momentum, and chamber proof.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="howto-neon-title">Visitor → Player → Faction Member → Builder</h2>
+      <div class="howto-grid-wide">
+        <div class="howto-card"><h3>Visitor</h3><p>Explore lore and systems to understand how the world works.</p></div>
+        <div class="howto-card"><h3>Player</h3><p>Enter arcade loops and start generating score-based activity.</p></div>
+        <div class="howto-card"><h3>Synced Player</h3><p>Link Telegram and transition into persistent progression.</p></div>
+        <div class="howto-card"><h3>Faction Member</h3><p>Choose alignment, complete missions, and build visible clout.</p></div>
+        <div class="howto-card"><h3>Battle Chamber Presence</h3><p>Your movement appears in logs, standings, proof, and seasonal memory.</p></div>
+        <div class="howto-card"><h3>Builder</h3><p>Contribute to evolving systems, culture, and future universe expansion.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="howto-glitch-title howto-pulse">Why This All Matters</h2>
+      <p>
+        This universe rewards repeated participation. Stop logging in just to claim. Start showing up to build. Visibility comes from movement, and the system favors players who stay involved.
+      </p>
+      <div class="howto-route">SHOW UP. SYNC UP. BUILD UP.</div>
+      <div class="howto-grid">
+        <div class="howto-highlight">
+          <h3>Read the Wiki</h3>
+          <p>Understand world memory, faction context, and system depth.</p>
+          <div class="howto-card-actions"><a class="howto-btn" href="/articles.html">Read the Wiki</a></div>
+        </div>
+        <div class="howto-card">
+          <h3>Play + Link</h3>
+          <p>Start arcade runs, sync Telegram, and unlock persistent loops.</p>
+          <div class="howto-card-actions">
+            <a class="howto-btn" href="/games/">Play Arcade</a>
+            <a class="howto-btn howto-btn-secondary" href="/gkniftyheads-incubator.html">Link Telegram</a>
+          </div>
+        </div>
+        <div class="howto-card">
+          <h3>Join + Enter</h3>
+          <p>Pick a faction, enter Battle Chamber, and keep showing up daily.</p>
+          <div class="howto-card-actions">
+            <a class="howto-btn" href="/community.html#battle-join-faction">Join a Faction</a>
+            <a class="howto-btn howto-btn-secondary" href="/community.html">Enter Battle Chamber</a>
+          </div>
+        </div>
+      </div>
     </section>
 
   </div>
