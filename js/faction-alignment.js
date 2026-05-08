@@ -94,7 +94,7 @@
     var res = await fetch(BASE + path, init || {});
     var data = await res.json().catch(function () { return {}; });
     if (!res.ok) {
-      var error = new Error(data.error || ('HTTP ' + res.status));
+      var error = new Error((data && data.message) || data.error || ('HTTP ' + res.status));
       error.status = res.status;
       error.code = data && data.error ? data.error : null;
       error.payload = data;

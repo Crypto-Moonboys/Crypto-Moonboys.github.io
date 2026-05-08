@@ -116,6 +116,41 @@ check(
   'Frontend: 503/backend unavailable join path shows explicit deployment-in-progress message',
 );
 
+// ── faction-alignment.js Error.message priority ───────────────────────────────
+// The request() helper must use data.message first so human-readable server text
+// surfaces to callers, while error.code preserves the machine-readable code.
+check(
+  (function () {
+    // Must use data.message before data.error for the Error constructor argument.
+    // Accept both: `(data && data.message) || data.error` or `data?.message || data.error`.
+    return /new Error\(\(?data(\s*&&\s*data)?\.message\)?\s*\|\|\s*data\.error/.test(alignment) ||
+           alignment.includes('data.message) || data.error') ||
+           alignment.includes('data.message || data.error');
+  })(),
+  'faction-alignment.js: Error.message uses data.message before data.error (human-readable text first)',
+);
+
+check(
+  (function () {
+    // error.code must be set to data.error (machine-readable code), NOT data.message.
+    const codeAssign = alignment.match(/error\.code\s*=\s*([^;]+)/);
+    if (!codeAssign) return false;
+    const rhs = codeAssign[1].trim();
+    // Must contain data.error, must NOT contain data.message.
+    return rhs.includes('data.error') && !rhs.includes('data.message');
+  })(),
+  'faction-alignment.js: error.code is set to data.error (machine-readable code), not data.message',
+);
+
+check(
+  (function () {
+    // isBackendUnavailable must detect missing_required_table via errCode,
+    // not by searching errMsg, so the human-readable message does not interfere.
+    return bcFactions.includes("errCode === 'missing_required_table'");
+  })(),
+  'Frontend: isBackendUnavailable detects missing_required_table via errCode (not errMsg)',
+);
+
 check(
   bcFactions.includes('You are locked to') && bcFactions.includes('for this season'),
   'Aligned user sees season lock message',
