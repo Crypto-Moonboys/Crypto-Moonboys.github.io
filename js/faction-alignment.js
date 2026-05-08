@@ -96,7 +96,7 @@
     if (!res.ok) {
       var error = new Error((data && data.message) || data.error || ('HTTP ' + res.status));
       error.status = res.status;
-      error.code = data && data.error ? data.error : null;
+      error.code = data.error || null;
       error.payload = data;
       throw error;
     }
