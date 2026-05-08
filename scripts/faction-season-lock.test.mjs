@@ -112,6 +112,11 @@ check(
 );
 
 check(
+  bcFactions.includes('Faction backend is updating. Your Telegram link is active, but faction join is temporarily unavailable. Try again after deployment.'),
+  'Frontend: 503/backend unavailable join path shows explicit deployment-in-progress message',
+);
+
+check(
   bcFactions.includes('You are locked to') && bcFactions.includes('for this season'),
   'Aligned user sees season lock message',
 );
@@ -202,6 +207,12 @@ check(
 check(
   worker.includes("'telegram_faction_season_locks'"),
   'Worker: /faction/join checks telegram_faction_season_locks table',
+);
+
+check(
+  worker.includes("error: 'missing_required_table'") &&
+  worker.includes('migration_pending:blocktopia_progression_faction_columns'),
+  'Worker: /faction/join returns explicit missing_required_table payload when required schema is pending',
 );
 
 check(
@@ -408,6 +419,11 @@ check(
 check(
   worker.includes("path === '/faction/join'"),
   'Preservation: /faction/join route still present',
+);
+
+check(
+  !worker.includes("Faction progression schema is pending migration', 503"),
+  'Preservation: /faction/join no longer returns generic schema-pending 503 string',
 );
 
 check(

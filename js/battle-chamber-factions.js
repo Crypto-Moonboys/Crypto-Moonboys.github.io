@@ -493,9 +493,19 @@
                 }
               }).catch(function (err) {
                 var errMsg = err && err.message ? err.message : String(err || '');
+                var errMsgLower = errMsg.toLowerCase();
+                var errCode = err && err.code ? String(err.code).toLowerCase() : '';
+                var errStatus = Number(err && err.status) || 0;
                 // Handle season lock rejection from server (check both error code and message)
                 var isSeasonLock = errMsg.indexOf('faction_locked_for_season') !== -1 ||
-                  (err && err.code === 'faction_locked_for_season');
+                  errCode === 'faction_locked_for_season';
+                var isBackendUnavailable = errStatus === 503 ||
+                  errCode === 'missing_required_table' ||
+                  errCode === 'battle_chamber_unavailable' ||
+                  errMsgLower.indexOf('http 503') !== -1 ||
+                  errMsgLower.indexOf('service unavailable') !== -1 ||
+                  errMsgLower.indexOf('migration_pending') !== -1 ||
+                  errMsgLower.indexOf('schema is pending migration') !== -1;
                 if (isSeasonLock) {
                   container.innerHTML =
                     '<div class="bc-join-locked-panel">' +
@@ -505,6 +515,16 @@
                   var backBtn = container.querySelector('#bc-locked-back');
                   if (backBtn) {
                     backBtn.addEventListener('click', function () { renderJoinFaction(null); });
+                  }
+                } else if (isBackendUnavailable) {
+                  container.innerHTML =
+                    '<div class="bc-join-locked-panel">' +
+                      '<div class="bc-join-locked-msg">Faction backend is updating. Your Telegram link is active, but faction join is temporarily unavailable. Try again after deployment.</div>' +
+                      '<button class="bc-join-cancel-btn interactive" id="bc-backend-back">Back</button>' +
+                    '</div>';
+                  var backendBackBtn = container.querySelector('#bc-backend-back');
+                  if (backendBackBtn) {
+                    backendBackBtn.addEventListener('click', function () { renderJoinFaction(null); });
                   }
                 } else {
                   // General error — restore button

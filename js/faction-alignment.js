@@ -93,7 +93,13 @@
     if (!BASE) throw new Error('API unavailable');
     var res = await fetch(BASE + path, init || {});
     var data = await res.json().catch(function () { return {}; });
-    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    if (!res.ok) {
+      var error = new Error(data.error || ('HTTP ' + res.status));
+      error.status = res.status;
+      error.code = data && data.error ? data.error : null;
+      error.payload = data;
+      throw error;
+    }
     return data;
   }
 
