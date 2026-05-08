@@ -487,9 +487,10 @@
                 }
               }).catch(function (err) {
                 var errMsg = err && err.message ? err.message : String(err || '');
-                // Handle season lock rejection from server
-                if (errMsg.indexOf('faction_locked_for_season') !== -1 ||
-                    errMsg.indexOf('locked') !== -1) {
+                // Handle season lock rejection from server (check both error code and message)
+                var isSeasonLock = errMsg.indexOf('faction_locked_for_season') !== -1 ||
+                  (err && err.code === 'faction_locked_for_season');
+                if (isSeasonLock) {
                   container.innerHTML =
                     '<div class="bc-join-locked-panel">' +
                       '<div class="bc-join-locked-msg">Faction switch blocked. You are already locked to a faction until the next season.</div>' +

@@ -2277,7 +2277,7 @@ export default {
         if (lockTableExists) {
           const existingLock = await env.DB.prepare(
             `SELECT faction_id FROM telegram_faction_season_locks WHERE telegram_id = ? AND season_key = ?`
-          ).bind(verified.telegramId, seasonKey).first().catch(() => null);
+          ).bind(verified.telegramId, seasonKey).first();
 
           if (existingLock) {
             if (existingLock.faction_id === requestedFaction) {
@@ -2345,7 +2345,7 @@ export default {
             INSERT INTO telegram_faction_season_locks (telegram_id, season_key, faction_id, locked_at, updated_at)
             VALUES (?, ?, ?, ?, ?)
             ON CONFLICT(telegram_id, season_key) DO UPDATE SET faction_id = excluded.faction_id, updated_at = excluded.updated_at
-          `).bind(verified.telegramId, seasonKey, requestedFaction, nowIso, nowIso).run().catch(() => null);
+          `).bind(verified.telegramId, seasonKey, requestedFaction, nowIso, nowIso).run();
         }
 
         const meta = factionMeta(requestedFaction);
