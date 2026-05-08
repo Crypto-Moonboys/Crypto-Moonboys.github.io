@@ -5,6 +5,7 @@
   var BASE = cfg.BASE_URL || '';
   var HASH_KEY = 'telegram_auth';
   var AUTH_STORAGE_KEY = 'MOONBOYS_TELEGRAM_AUTH';
+  var DIRECT_VISIT_PROMPT = 'Use /gklink in the Telegram bot to connect your account.';
 
   // Resolved text constants — fall back to literals so no type="module" is needed.
   var COPY = window.UI_STATUS_COPY || {
@@ -14,7 +15,8 @@
 
   function debug(event, context) {
     try {
-      console.log('[incubator-link]', event, context || {});
+      var log = console.debug || console.log;
+      log.call(console, '[incubator-link]', event, context || {});
     } catch (_) {}
   }
 
@@ -77,13 +79,16 @@
     } catch (_) {}
   }
 
-  function getHashPayload() {
+  function getTelegramHashState() {
     var hash = window.location.hash || '';
-    if (!hash) return null;
+    if (!hash) return { present: false, value: null };
     var trimmed = hash.charAt(0) === '#' ? hash.slice(1) : hash;
-    if (!trimmed) return null;
+    if (!trimmed) return { present: false, value: null };
     var params = new URLSearchParams(trimmed);
-    return params.get(HASH_KEY);
+    return {
+      present: params.has(HASH_KEY),
+      value: params.get(HASH_KEY),
+    };
   }
 
   function emitSyncState(state, reason, telegramId) {
@@ -134,11 +139,18 @@
 
   function boot() {
     if (!BASE) return;
-    var rawPayload = getHashPayload();
+    var hashState = getTelegramHashState();
+    var rawPayload = hashState.value;
     scrubTelegramHash();
     if (!rawPayload) {
-      debug('payload_missing');
-      // Normal page visit (no #telegram_auth in URL) — do NOT show "Invalid link".
+      if (hashState.present) {
+        clearStoredPayload();
+        setStatus(COPY.UNLINKED, 'Telegram link payload was missing. ' + DIRECT_VISIT_PROMPT, false);
+        emitSyncState('bad', 'missing_payload');
+        debug('payload_missing_after_callback');
+        return;
+      }
+      // Normal page visit (no #telegram_auth in URL) — do NOT log noisy payload warnings.
       // Show the current identity state: linked-ready, or neutral unlinked prompt.
       var gate = window.MOONBOYS_IDENTITY;
       var isLinked = gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked();
@@ -153,7 +165,7 @@
           emitSyncState('bad', 'sync_stale');
         }
       } else {
-        setStatus(COPY.UNLINKED, 'Run /gklink in Telegram to link your account and enable server-side sync.', false);
+        setStatus(COPY.UNLINKED, DIRECT_VISIT_PROMPT, false);
         emitSyncState('bad', 'not_linked');
       }
       return;
