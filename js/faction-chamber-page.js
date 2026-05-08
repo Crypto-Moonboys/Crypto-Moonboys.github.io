@@ -301,7 +301,7 @@
         : '';
       rogue.innerHTML = '<p>' + esc(profile.rogueliteIdentity) + ' defines this faction’s roguelite branch identity.</p>' +
         (perksHtml ? '<p><strong>Roguelite perk eligibility (display only, not live wired unless noted):</strong></p>' + perksHtml : '') +
-        '<p>Roguelite perk options are eligibility indicators. They are shown as unlocked/eligible here and will be wired into the roguelite loop where confirmed.</p>';
+        '<p>Roguelite perk options are eligibility indicators shown as unlocked/eligible and wired into the roguelite loop where confirmed.</p>';
     }
 
     var live = byId('fcp-live-proof-feed');

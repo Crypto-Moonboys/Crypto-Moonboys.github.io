@@ -446,7 +446,12 @@
       var weeklyBadge = fReward && fReward.weekly && fReward.weekly.badge ? fReward.weekly.badge : '—';
       var monthlyTitle = fReward && fReward.monthly && fReward.monthly.title ? fReward.monthly.title : '—';
       var seasonalTrophy = fReward && fReward.seasonal && fReward.seasonal.trophy ? fReward.seasonal.trophy : '—';
-      var roguelitePerks = fReward && Array.isArray(fReward.roguelite) ? fReward.roguelite.join(', ') : '—';
+      var roguelitePerks = '—';
+      if (fReward && Array.isArray(fReward.roguelite)) {
+        var perks = fReward.roguelite.slice(0, 3);
+        var truncated = fReward.roguelite.length > 3;
+        roguelitePerks = perks.join(', ') + (truncated ? ', …' : '');
+      }
 
       factionCards += '<div class="bc-faction-reward-card" style="--faction-color:' + esc(f.color) + '">' +
         '<div class="bc-frc-header">' + f.icon + ' ' + esc(f.label) + '</div>' +
