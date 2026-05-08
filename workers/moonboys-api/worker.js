@@ -1319,11 +1319,11 @@ function addUtcDays(utcDay, days) {
   return d.toISOString().slice(0, 10);
 }
 
-async function getNextDailyWtfEvent(db, utcDay, nowMs, normalizeRow) {
+async function getNextDailyWtfEvent(db, utcDay, normalizeRow) {
   const tomorrow = addUtcDays(utcDay, 1);
   await ensureWtfEventsForDay(db, tomorrow).catch(() => {});
   const row = await db.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC LIMIT 1`).bind(tomorrow).first().catch(() => null);
-  return row ? normalizeRow(row, 'upcoming') : null;
+  return row ? normalizeRow(row) : null;
 }
 
 function getAllowedSourcesForWtfEvent(eventRow) {
@@ -3149,7 +3149,7 @@ export default {
         let upcomingEvents = normalizedPublic.filter((row) => row.status === 'upcoming');
         let nextEvent = upcomingEvents[0] || null;
         if (!activeEvent && !nextEvent) {
-          nextEvent = await getNextDailyWtfEvent(env.DB, utcDay, nowMs, (row) => ({
+          nextEvent = await getNextDailyWtfEvent(env.DB, utcDay, (row) => ({
             event_id: row.event_id,
             utc_day: row.utc_day,
             start_at: row.starts_at,
@@ -3233,7 +3233,7 @@ export default {
       let upcomingEvents = normalized.filter((row) => row.status === 'upcoming');
       let nextEvent = upcomingEvents[0] || null;
       if (!activeEvent && !nextEvent) {
-        nextEvent = await getNextDailyWtfEvent(env.DB, utcDay, nowMs, (row) => ({
+        nextEvent = await getNextDailyWtfEvent(env.DB, utcDay, (row) => ({
           event_id: row.event_id,
           utc_day: row.utc_day,
           start_at: row.starts_at,

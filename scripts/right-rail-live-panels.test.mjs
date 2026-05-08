@@ -45,7 +45,9 @@ function hasCfBypassedModuleScript(html, src) {
 function functionBlock(src, name) {
   const start = src.indexOf(`function ${name}`);
   if (start === -1) return '';
-  const next = src.indexOf('\nfunction ', start + 1);
+  const remainder = src.slice(start + 1);
+  const nextMatch = remainder.match(/\n\s*function\s+/);
+  const next = nextMatch ? start + 1 + nextMatch.index : -1;
   return src.slice(start, next === -1 ? src.length : next);
 }
 
