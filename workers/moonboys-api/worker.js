@@ -912,6 +912,7 @@ const DAILY_MISSED_TEXT_LIMITS = Object.freeze({
 
 const DAILY_MISSED_HISTORY_MAX_LIMIT = 100;
 const DIGEST_PENDING_STALE_MINUTES = 15;
+const DIGEST_PENDING_STALE_MS = DIGEST_PENDING_STALE_MINUTES * 60 * 1000;
 const DIGEST_SEND_BATCH_SIZE = 12;
 const DIGEST_SEND_MAX_CONCURRENCY = 3;
 
@@ -1566,7 +1567,7 @@ function buildFactionChamberLink(factionId) {
 
 async function claimDailyDigestSlot(db, telegramId, utcDay, options = {}) {
   const nowIso = new Date().toISOString();
-  const retryCutoffIso = new Date(Date.now() - (DIGEST_PENDING_STALE_MINUTES * 60 * 1000)).toISOString();
+  const retryCutoffIso = new Date(Date.now() - DIGEST_PENDING_STALE_MS).toISOString();
   const forceRetry = !!options.forceRetry;
   const safeMetadata = normaliseMissedMetadata({
     claim_source: 'daily_digest_run',
@@ -1599,7 +1600,7 @@ async function claimDailyDigestSlot(db, telegramId, utcDay, options = {}) {
     return { claimed: false, reason: 'already_sent' };
   }
   const updatedAtTs = Date.parse(String(existing?.updated_at || ''));
-  const isStalePending = status === 'pending' && (!Number.isFinite(updatedAtTs) || updatedAtTs <= Date.now() - (DIGEST_PENDING_STALE_MINUTES * 60 * 1000));
+  const isStalePending = status === 'pending' && (!Number.isFinite(updatedAtTs) || updatedAtTs <= Date.now() - DIGEST_PENDING_STALE_MS);
   if (!forceRetry && status === 'pending' && !isStalePending) {
     return { claimed: false, reason: 'pending_recent' };
   }

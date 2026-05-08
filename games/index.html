@@ -189,6 +189,7 @@ import { ArcadeMeta } from '/js/arcade-meta-system.js';
 const board = document.getElementById('roguelite-loop-board');
 const digestSummaryEl = document.getElementById('roguelite-daily-digest-summary');
 const SESSION_BASELINE_KEY = 'roguelite_loop_session_xp_baseline';
+// Keep daily-signal polling lightweight: 5 minutes + visibility/event-driven refreshes.
 const DAILY_DIGEST_SUMMARY_POLL_MS = 5 * 60 * 1000;
 let displayedXp = 0;
 let targetXp = 0;

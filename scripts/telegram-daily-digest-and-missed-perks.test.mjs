@@ -103,7 +103,7 @@ check(!communityHtml.toLowerCase().includes('missed history clears daily'), 'no 
 check(factionPageJs.includes('fcp-daily-digest') && factionPageJs.includes('fcp-missed-perks'), 'faction chamber renderer includes missed/digest hooks');
 check(bridgeJs.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && bridgeJs.includes('MOONBOYS_ROGUELITE_MISSED_HISTORY'), 'bridge wires roguelite daily/missed caches');
 check(gamesHtml.includes('roguelite-daily-digest-summary'), 'arcade hub includes daily signal summary hook');
-check(gamesHtml.includes('DAILY_DIGEST_SUMMARY_POLL_MS') && !gamesHtml.includes('setInterval(renderDailyDigestSummary, 30000)'), 'arcade hub daily digest polling reduced from 30s');
+check(gamesHtml.includes('DAILY_DIGEST_SUMMARY_POLL_MS') && gamesHtml.includes('5 * 60 * 1000') && !gamesHtml.includes('30000'), 'arcade hub daily digest polling reduced to at least 5 minutes');
 check(gamesHtml.includes("document.addEventListener('visibilitychange'"), 'arcade hub pauses digest polling while hidden');
 
 console.log('\n[7] Safety checks');
