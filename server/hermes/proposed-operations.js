@@ -361,7 +361,7 @@ function detectTaskProfile(prompt, likelyFiles) {
 function buildAdminHermesChatHtml(repoRoot) {
   let source = readRepoFile(repoRoot, "admin/hermes-chat.html");
   if (!source.includes("id=\"openBtcChartPopup\"")) {
-    source = insertBefore(source, "    @media (max-width: 900px) {", `${BTC_CHART_STYLE_BLOCK}\n`);
+    source = insertBefore(source, "  </style>", `${BTC_CHART_STYLE_BLOCK}\n`);
     source = insertAfter(source, '      <button id="openOgFullscreen" type="button">OPEN HERMES OG FULLSCREEN</button>', BTC_CHART_BUTTON_MARKUP);
     source = insertBefore(source, "\n  <!-- OG Fullscreen Overlay -->", BTC_CHART_POPUP_MARKUP);
   }
@@ -381,7 +381,7 @@ function buildHermesChatJs(repoRoot) {
 function buildHermesOgFullscreenTest(repoRoot) {
   let source = readRepoFile(repoRoot, "tests/hermes-og-fullscreen.test.js");
   if (!source.includes('test("btc chart popup button exists in admin console"')) {
-    source = insertAfter(source, 'test("owner execution pipeline panels exist in main and OG UIs", () => {\n  assert.match(htmlSource, /Owner Execution Pipeline/);\n  assert.match(htmlSource, /id="executionPipelineBoard"/);\n  assert.match(htmlSource, /id="executionPipelineOutput"/);\n  assert.match(htmlSource, /OWNER EXECUTION PIPELINE/);\n  assert.match(htmlSource, /id="ogExecutionPipelineBoard"/);\n});', BTC_CHART_TEST_BLOCK);
+    source = insertBefore(source, "\n// ── Edit safety warning", BTC_CHART_TEST_BLOCK);
   }
   return source;
 }

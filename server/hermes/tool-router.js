@@ -24,9 +24,6 @@ function detectOperatorIntent(prompt) {
   if (/\b(admin\s+page|hermes\s+page)\b/iu.test(lower)) {
     likelyFiles.push("admin/hermes-chat.html", "js/hermes-chat.js");
   }
-  if (/\bbrain\s+page\b/iu.test(lower)) {
-    likelyFiles.push("admin/the-brain.html");
-  }
   if (/\b(css|ui)\b/iu.test(lower)) {
     likelyFiles.push("css/wiki.css");
   }
