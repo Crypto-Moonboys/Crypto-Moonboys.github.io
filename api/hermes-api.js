@@ -497,6 +497,7 @@ app.post("/api/hermes/chat", async (req, res) => {
       missingRequirements: response.missingRequirements || [],
       executionPipeline: response.executionPipeline || null,
       swarmPlan: response.swarmPlan || null,
+      proposedOperations: response.proposedOperations || [],
       mode: response.mode,
       role: response.role
     });

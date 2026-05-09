@@ -34,6 +34,7 @@ function clearCache() {
     "../server/hermes/tool-executor.js",
     "../server/hermes/conversation-runtime.js",
     "../server/hermes/execution-pipeline.js",
+    "../server/hermes/proposed-operations.js",
     "../server/hermes/orchestrator.js"
   ];
   for (const mod of targets) {
@@ -200,6 +201,12 @@ test("safe review mode operator flow returns proposal stages and does not apply 
   const actions = (res.body.toolResults || []).map((item) => item.action);
   assert.ok(!actions.includes("patch/apply"));
   assert.ok(!actions.includes("command/run"));
+  // Auto-generated proposed operations must be present.
+  assert.ok(Array.isArray(res.body.proposedOperations) && res.body.proposedOperations.length > 0,
+    "Safe Review Mode must return auto-generated proposedOperations");
+  const patchPreviewStage = stages.find((stage) => stage.stage === "patch_preview");
+  assert.equal(patchPreviewStage?.status, "ready", "patch_preview must be ready when proposedOperations are generated");
+  assert.ok(actions.includes("proposed/operations"), "toolResults must include proposed/operations entry");
 });
 
 test("owner operator mode returns explicit missing requirements for approval-gated execution", async (t) => {

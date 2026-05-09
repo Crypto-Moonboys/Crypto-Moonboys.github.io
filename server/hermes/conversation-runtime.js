@@ -9,6 +9,7 @@ const { ACTIONS } = require("./action-schema.js");
 const { getActiveRepoOrThrow } = require("./repo-registry.js");
 const { createSwarmPlan, EXECUTION_MODES } = require("./swarm-manager.js");
 const { buildExecutionPipeline } = require("./execution-pipeline.js");
+const { generateProposedOperations } = require("./proposed-operations.js");
 
 function formatToolResult(result, debug = false) {
   const action = String(result?.action || "");
@@ -163,13 +164,23 @@ async function runConversation(input = {}) {
       mode,
       role
     });
-    const proposedOperations = Array.isArray(input.proposedOperations) ? input.proposedOperations : [];
+    // Use client-supplied proposed operations if present; otherwise auto-generate.
+    const clientOps = Array.isArray(input.proposedOperations) ? input.proposedOperations : [];
+    const proposedOperations = clientOps.length > 0
+      ? clientOps
+      : generateProposedOperations({
+          classification: routing.operatorIntent.classification,
+          prompt,
+          likelyFiles
+        });
+    const hasProposedOperations = proposedOperations.length > 0;
+
     const basePipeline = buildExecutionPipeline({
       executionMode,
       role,
       filesAffected: likelyFiles,
       missingRequirements: [],
-      hasProposedOperations: proposedOperations.length > 0
+      hasProposedOperations
     });
 
     if (executionMode === EXECUTION_MODES.SAFE_REVIEW) {
@@ -197,11 +208,22 @@ async function runConversation(input = {}) {
             entries: [basePipeline],
             totalCount: 1,
             shownCount: 1
+          },
+          {
+            action: "proposed/operations",
+            ok: true,
+            repoUsed: "",
+            pathUsed: "",
+            resultSummary: `${proposedOperations.length} proposed operation(s) generated for patch preview.`,
+            entries: proposedOperations,
+            totalCount: proposedOperations.length,
+            shownCount: proposedOperations.length
           }
         ],
         missingRequirements: [],
         executionPipeline: basePipeline,
         swarmPlan,
+        proposedOperations,
         mode,
         role
       };
@@ -214,14 +236,13 @@ async function runConversation(input = {}) {
       approvalId: input.approvalId,
       approvalToken: input.approvalToken
     });
-    const pipelineMissing = proposedOperations.length > 0 ? [] : ["needs proposedOperations for patch preview"];
-    const executionMissing = [...new Set([...missing, ...pipelineMissing])];
+    const executionMissing = [...new Set(missing)];
     const pipeline = buildExecutionPipeline({
       executionMode,
       role,
       filesAffected: likelyFiles,
       missingRequirements: missing,
-      hasProposedOperations: proposedOperations.length > 0
+      hasProposedOperations
     });
 
     const toolResults = [
@@ -273,6 +294,7 @@ async function runConversation(input = {}) {
         missingRequirements: executionMissing,
         executionPipeline: pipeline,
         swarmPlan,
+        proposedOperations,
         mode,
         role
       };
@@ -303,6 +325,7 @@ async function runConversation(input = {}) {
       missingRequirements: [],
       executionPipeline: pipeline,
       swarmPlan,
+      proposedOperations,
       mode,
       role
     };

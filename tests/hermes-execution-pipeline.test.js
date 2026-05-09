@@ -8,6 +8,7 @@ const path = require("node:path");
 
 const pipelinePath = path.join(__dirname, "..", "server", "hermes", "execution-pipeline.js");
 const repairPolicyPath = path.join(__dirname, "..", "server", "hermes", "repair-policy.js");
+const proposedOpsPath = path.join(__dirname, "..", "server", "hermes", "proposed-operations.js");
 const apiPath = path.join(__dirname, "..", "api", "hermes-api.js");
 
 function setupSandbox() {
@@ -33,6 +34,7 @@ function clearCache() {
     "../server/hermes/tool-executor.js",
     "../server/hermes/swarm-manager.js",
     "../server/hermes/repair-policy.js",
+    "../server/hermes/proposed-operations.js",
     "../server/hermes/execution-pipeline.js",
     "../server/hermes/conversation-runtime.js"
   ];
@@ -58,6 +60,7 @@ function loadRuntime(root) {
 test("pipeline module exists with required stage definitions", () => {
   assert.ok(fs.existsSync(pipelinePath), "server/hermes/execution-pipeline.js should exist");
   assert.ok(fs.existsSync(repairPolicyPath), "server/hermes/repair-policy.js should exist");
+  assert.ok(fs.existsSync(proposedOpsPath), "server/hermes/proposed-operations.js should exist");
   const { VALID_STAGES } = require("../server/hermes/execution-pipeline.js");
   assert.deepEqual(VALID_STAGES, [
     "plan",
@@ -115,6 +118,15 @@ test("natural operator prompt returns pipeline and swarm plan in safe review mod
   assert.doesNotMatch(JSON.stringify(response), /django|pynacl|messenger of gods/i);
   const applyStage = (response.executionPipeline.stages || []).find((stage) => stage.stage === "apply");
   assert.equal(applyStage?.status, "blocked");
+  // Auto-generated proposed operations must be present so patch_preview is ready.
+  assert.ok(Array.isArray(response.proposedOperations) && response.proposedOperations.length > 0,
+    "Safe Review Mode must return auto-generated proposedOperations");
+  const patchPreviewStage = (response.executionPipeline.stages || []).find((stage) => stage.stage === "patch_preview");
+  assert.equal(patchPreviewStage?.status, "ready", "patch_preview stage must be ready when proposedOperations exist");
+  // Confirm no patch/apply was invoked.
+  const toolActions = (response.toolResults || []).map((item) => item.action);
+  assert.ok(!toolActions.includes("patch/apply"), "Safe Review Mode must not invoke patch/apply");
+  assert.ok(toolActions.includes("proposed/operations"), "Response must include proposed/operations tool result");
 });
 
 test("owner operator mode exposes explicit missing requirements when approval data is absent", async () => {
@@ -161,4 +173,56 @@ test("repo keeps same Hermes runtime and does not add Hermes2/direct browser wri
   assert.match(apiSource, /app\.post\("\/api\/hermes\/chat"/u);
   assert.doesNotMatch(apiSource, /Hermes2|hermes2/u);
   assert.doesNotMatch(apiSource, /browser.*(write|edit)|repo.*write.*browser|direct.*repo.*write/u);
+});
+
+test("proposed-operations module generates bounded ops for admin UI feature prompts", () => {
+  const { generateProposedOperations } = require("../server/hermes/proposed-operations.js");
+  const ops = generateProposedOperations({
+    classification: "repo_admin_ui_operator_task",
+    prompt: "can you create a popup canvas here in admin page showing BTC chart",
+    likelyFiles: ["admin/hermes-chat.html", "js/hermes-chat.js"]
+  });
+  assert.ok(ops.length >= 2, "Should generate at least HTML and JS operations");
+  for (const op of ops) {
+    assert.ok(op.type, "Each op must have a type");
+    assert.ok(op.path, "Each op must have a path");
+    assert.ok(op.summary, "Each op must have a summary");
+    assert.ok(String(op.content || "").length > 0, "Each op must have non-empty content");
+  }
+  const htmlOp = ops.find((op) => op.path === "admin/hermes-chat.html");
+  assert.ok(htmlOp, "Must include admin/hermes-chat.html operation");
+  assert.match(htmlOp.content, /canvas|popup|modal/i);
+  const jsOp = ops.find((op) => op.path === "js/hermes-chat.js");
+  assert.ok(jsOp, "Must include js/hermes-chat.js operation");
+  const testOp = ops.find((op) => op.path.startsWith("tests/"));
+  assert.ok(testOp, "Must include a test file operation");
+});
+
+test("proposed-operations module returns empty for non-operator classifications", () => {
+  const { generateProposedOperations } = require("../server/hermes/proposed-operations.js");
+  const ops = generateProposedOperations({
+    classification: "generic_chat",
+    prompt: "hello world",
+    likelyFiles: []
+  });
+  assert.deepEqual(ops, []);
+});
+
+test("safe review mode auto-generates proposed operations and patch_preview is ready", async () => {
+  const { conversationRuntime } = loadRuntime(setupSandbox());
+  const response = await conversationRuntime.runConversation({
+    mode: "chat",
+    role: "main_hermes",
+    swarmExecutionMode: "safe_review",
+    prompt: "can you create a popup canvas here in admin page showing BTC chart",
+    history: []
+  });
+
+  assert.ok(Array.isArray(response.proposedOperations) && response.proposedOperations.length > 0);
+  const patchPreviewStage = (response.executionPipeline?.stages || []).find((stage) => stage.stage === "patch_preview");
+  assert.equal(patchPreviewStage?.status, "ready");
+  // Do not apply in Safe Review Mode.
+  const toolActions = (response.toolResults || []).map((item) => item.action);
+  assert.ok(!toolActions.includes("patch/apply"));
+  assert.ok(toolActions.includes("proposed/operations"));
 });
