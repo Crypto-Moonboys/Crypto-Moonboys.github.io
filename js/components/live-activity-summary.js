@@ -373,6 +373,7 @@
   var WTF_LOADING_REPAINT_BUFFER_MS = 250;
   var WTF_HELPER_RETRY_MS = 400;
   var WTF_HELPER_RETRY_MAX = 8;
+  var WTF_RECOVERY_TIMEOUT_MS = 5000;
 
   function clearWtfLoadingRepaintTimer() {
     if (_singleton.wtfLoadingRepaintTimer) {
@@ -408,6 +409,73 @@
       _singleton.wtfLoadingRepaintTimer = null;
       refresh();
     }, delay);
+  }
+
+  function normalizeEmergencyEvent(event) {
+    if (!event || typeof event !== 'object') return null;
+    var id = event.event_id || event.id || event.key || '';
+    return Object.assign({}, event, {
+      id: id,
+      event_id: id,
+      title: event.title || event.name || id || 'Daily WTF Signal',
+      description: event.description || event.objective || event.requirement || '',
+      objective: event.objective || event.description || event.requirement || '',
+      requirement: event.requirement || event.objective || event.description || event.required_action || '',
+      start_at: event.start_at || event.starts_at || event.start_time || event.startsAt || null,
+      end_at: event.end_at || event.ends_at || event.end_time || event.endsAt || null,
+      status: event.status || 'upcoming',
+    });
+  }
+
+  function normalizeEmergencyState(payload) {
+    var safe = payload && typeof payload === 'object' ? payload : null;
+    if (!safe || !safe.ok) return null;
+    var active = normalizeEmergencyEvent(safe.active_event);
+    var upcoming = Array.isArray(safe.upcoming_events) ? safe.upcoming_events.map(normalizeEmergencyEvent).filter(Boolean) : [];
+    var next = normalizeEmergencyEvent(safe.next_event) || upcoming[0] || null;
+    if (!active && !next) return null;
+    var countdown = Number(safe.countdown_seconds);
+    if (!Number.isFinite(countdown) || countdown < 0) countdown = 0;
+    return {
+      ok: true,
+      source: safe.source || safe.auth_mode || 'direct_panel_recovery',
+      status: active ? 'active' : 'upcoming',
+      active_event: active,
+      upcoming_events: upcoming,
+      next_event: next,
+      countdown_seconds: countdown,
+      checked_in: !!safe.checked_in,
+      current_task: safe.current_task || active || next || null,
+      completed_today: Number(safe.completed_today) || 0,
+      missed_today: Number(safe.missed_today) || 0,
+      chain_options: Array.isArray(safe.chain_options) ? safe.chain_options : [],
+      diagnostic: '',
+    };
+  }
+
+  function maybeKickEmergencyWtfRecovery() {
+    if (_singleton.wtfEmergencyFetchInFlight) return;
+    var base = getApiBase();
+    if (!base) return;
+    _singleton.wtfEmergencyFetchInFlight = true;
+    var ac = (typeof AbortController === 'function') ? new AbortController() : null;
+    var timer = setTimeout(function () {
+      try { if (ac) ac.abort(); } catch (_) {}
+    }, WTF_RECOVERY_TIMEOUT_MS);
+    fetch(base + '/wtf/events/today', ac ? { signal: ac.signal } : {})
+      .then(function (res) { return res && res.ok ? res.json() : null; })
+      .then(function (payload) {
+        var recovered = normalizeEmergencyState(payload);
+        if (recovered) {
+          _singleton.wtfEmergencyState = recovered;
+          refresh();
+        }
+      })
+      .catch(function () {})
+      .finally(function () {
+        clearTimeout(timer);
+        _singleton.wtfEmergencyFetchInFlight = false;
+      });
   }
 
   function buildDeterministicWtfFallbackState(now) {
@@ -499,6 +567,9 @@
 
   function wtfHTML(linked) {
     var state = getWtfState();
+    if ((!state || state.status === 'error') && _singleton.wtfEmergencyState) {
+      state = _singleton.wtfEmergencyState;
+    }
     if (!state || state.status === 'loading') {
       var nowMs = Date.now();
       if (!_singleton.wtfLoadingStartedAt) _singleton.wtfLoadingStartedAt = nowMs;
@@ -508,6 +579,7 @@
       }
       var fallbackState = buildDeterministicWtfFallbackState(new Date());
       if (!fallbackState) {
+        maybeKickEmergencyWtfRecovery();
         scheduleWtfHelperRetry();
         if (Number(_singleton.wtfHelperRetryAttempts || 0) < WTF_HELPER_RETRY_MAX) {
           return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">NEXT SIGNAL</span><strong>Loading Daily WTF signal...</strong><p>Daily WTF signal feed is reconnecting. Play Arcade while the next signal loads.</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
@@ -529,8 +601,10 @@
     _singleton.wtfHelperRetryAttempts = 0;
     _singleton.wtfLoadingStartedAt = null;
     if (state.status === 'error') {
+      maybeKickEmergencyWtfRecovery();
       return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>' + esc(state.diagnostic || 'Try the arcade while the feed reconnects.') + '</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
     }
+    _singleton.wtfEmergencyState = null;
     var active = state.active_event || null;
     var next = state.next_event || (state.upcoming_events && state.upcoming_events[0]) || null;
     var status = wtfStatus(state);
