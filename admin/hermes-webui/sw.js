@@ -23,6 +23,10 @@ const SHELL_ASSETS = [
   '../../js/hermes-chat.js',
   './manifest.json',
 ];
+const SHELL_ASSET_URLS = new Set(SHELL_ASSETS.map((asset) => {
+  const resolved = new URL(asset, self.registration.scope);
+  return resolved.pathname + resolved.search;
+}));
 
 // Install: pre-cache the app shell
 self.addEventListener('install', (event) => {
@@ -119,12 +123,8 @@ self.addEventListener('fetch', (event) => {
   // Only explicit shell assets are cached. Everything else should hit the
   // network so stale one-off files (especially auth/login scripts) do not get
   // trapped in CacheStorage until a manual cache clear.
-  const shellAssetUrls = new Set(SHELL_ASSETS.map((asset) => {
-    const resolved = new URL(asset, self.registration.scope);
-    return resolved.pathname + resolved.search;
-  }));
   const requestPath = url.pathname + url.search;
-  if (!shellAssetUrls.has(requestPath)) return;
+  if (!SHELL_ASSET_URLS.has(requestPath)) return;
 
   // Shell assets: network-first with cache fallback. This keeps offline support
   // but avoids executing stale JS/CSS after a local hotfix when WEBUI_VERSION
