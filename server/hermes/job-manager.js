@@ -23,13 +23,16 @@ function nowIso() {
 }
 
 function slugify(text) {
-  return String(text || "")
-    .toLowerCase()
-    .replace(/\s+/gu, "-")
-    .replace(/[^a-z0-9-]/gu, "")
-    .replace(/-+/gu, "-")
-    .replace(/^-+|-+$/gu, "")
-    .slice(0, 48);
+  const lower = String(text || "").toLowerCase();
+  const chars = [];
+  for (const ch of lower) {
+    if (ch === " " || ch === "\t" || ch === "\n" || ch === "\r") {
+      chars.push("-");
+    } else if ((ch >= "a" && ch <= "z") || (ch >= "0" && ch <= "9") || ch === "-") {
+      chars.push(ch);
+    }
+  }
+  return chars.join("").split("-").filter(Boolean).join("-").slice(0, 48);
 }
 
 function makeJobId() {

@@ -5,8 +5,21 @@ const { readJob, updateJob } = require("./job-manager.js");
 
 const MAX_REPAIR_ATTEMPTS = 5;
 
-function runCommand(cmd, args, cwd, timeoutMs = 60000) {
-  const result = spawnSync(cmd, args, { cwd, timeout: timeoutMs, encoding: "utf8", stdio: "pipe" });
+const ALLOWED_TEST_EXECUTABLES = new Set([
+  "npm", "node", "npx", "jest", "mocha", "vitest", "tap"
+]);
+
+function parseTestCommand(cmd) {
+  const parts = String(cmd || "").trim().split(/\s+/u);
+  const exe = parts[0];
+  if (!ALLOWED_TEST_EXECUTABLES.has(exe)) {
+    throw new Error(`Test executable not allowed: ${exe}. Allowed: ${[...ALLOWED_TEST_EXECUTABLES].join(", ")}`);
+  }
+  return { exe, args: parts.slice(1) };
+}
+
+function runCommand(exe, args, cwd, timeoutMs = 60000) {
+  const result = spawnSync(exe, args, { cwd, timeout: timeoutMs, encoding: "utf8", stdio: "pipe" });
   return {
     ok: result.status === 0 && !result.error,
     stdout: String(result.stdout || "").trim(),
@@ -23,9 +36,7 @@ function runTests(jobId, testCommands = []) {
   const results = [];
 
   for (const cmd of commands) {
-    const parts = cmd.trim().split(/\s+/u);
-    const exe = parts[0];
-    const args = parts.slice(1);
+    const { exe, args } = parseTestCommand(cmd);
     const result = runCommand(exe, args, cwd, 120000);
     results.push({ command: cmd, ...result });
   }
@@ -106,7 +117,7 @@ function repairLoop(jobId, options = {}) {
 function markReadyForPr(jobId) {
   const job = readJob(jobId);
   if (!["tests_passed", "repairing"].includes(job.status)) {
-    throw new Error(`Job must be tests_passed to mark ready_for_pr. Current: ${job.status}`);
+    throw new Error(`Job must be in tests_passed or repairing status to mark ready_for_pr. Current: ${job.status}`);
   }
   return updateJob(jobId, { status: "ready_for_pr" });
 }

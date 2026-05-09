@@ -756,13 +756,22 @@ app.post("/api/hermes/jobs/:id/create-pr", async (req, res) => {
   try {
     const job = jobManager.readJob(req.params.id);
     jobManager.assertReadyForPr(job);
-    const prMeta = await git.createPrMetadata("main");
+    let baseBranch = String(job.rollbackPlan?.rollbackBranch || "");
+    if (!baseBranch) {
+      try {
+        const activeRepo = getActiveRepoOrThrow();
+        baseBranch = String(activeRepo.defaultBranch || "main");
+      } catch (_e) {
+        baseBranch = "main";
+      }
+    }
+    const prMeta = await git.createPrMetadata(baseBranch);
     const prUrl = String(req.body?.prUrl || "");
     const updated = jobManager.updateJob(job.jobId, {
       prUrl,
       status: "ready_for_pr"
     });
-    return res.json({ ok: true, job: updated, prMeta, prUrl });
+    return res.json({ ok: true, job: updated, prMeta, prUrl, baseBranch });
   } catch (error) {
     return res.status(400).json({ ok: false, error: String(error?.message || error) });
   }

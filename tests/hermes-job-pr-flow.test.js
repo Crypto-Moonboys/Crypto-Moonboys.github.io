@@ -120,7 +120,7 @@ test("markReadyForPr requires tests_passed status", () => {
   const repoRoot = setupGitRepo();
   const { jobManager, repairLoop } = loadModules(repoRoot);
   const job = jobManager.createJob({ ownerPrompt: "ready check" });
-  assert.throws(() => repairLoop.markReadyForPr(job.jobId), /tests_passed/u);
+  assert.throws(() => repairLoop.markReadyForPr(job.jobId), /tests_passed or repairing/u);
 
   jobManager.updateJob(job.jobId, { status: "tests_passed" });
   const updated = repairLoop.markReadyForPr(job.jobId);
