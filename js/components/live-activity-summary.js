@@ -369,6 +369,61 @@
     return state && typeof state === 'object' ? state : null;
   }
 
+  var WTF_LOADING_STALL_MS = 8000;
+  var WTF_LOADING_REPAINT_BUFFER_MS = 250;
+
+  function clearWtfLoadingRepaintTimer() {
+    if (_singleton.wtfLoadingRepaintTimer) {
+      clearTimeout(_singleton.wtfLoadingRepaintTimer);
+      _singleton.wtfLoadingRepaintTimer = null;
+    }
+  }
+
+  function scheduleWtfLoadingFallbackRepaint(nowMs) {
+    if (_singleton.wtfLoadingRepaintTimer) return;
+    var startedAt = Number(_singleton.wtfLoadingStartedAt || nowMs || Date.now());
+    var elapsed = Math.max(0, (nowMs || Date.now()) - startedAt);
+    var delay = Math.max(0, (WTF_LOADING_STALL_MS - elapsed) + WTF_LOADING_REPAINT_BUFFER_MS);
+    _singleton.wtfLoadingRepaintTimer = setTimeout(function () {
+      _singleton.wtfLoadingRepaintTimer = null;
+      refresh();
+    }, delay);
+  }
+
+  function buildDeterministicWtfFallbackState(now) {
+    var current = now instanceof Date ? now : new Date();
+    var api = window.MOONBOYS_DAILY_WTF;
+    if (!api || typeof api.makeFallbackSchedule !== 'function') return null;
+    var schedule = api.makeFallbackSchedule(current);
+    if (!schedule || typeof schedule !== 'object') return null;
+    var active = schedule.active_event || null;
+    var next = schedule.next_event || (Array.isArray(schedule.upcoming_events) ? (schedule.upcoming_events[0] || null) : null);
+    if (!active && !next) {
+      var tomorrowStart = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate() + 1));
+      var tomorrowSchedule = api.makeFallbackSchedule(tomorrowStart);
+      var nextFromTomorrow = tomorrowSchedule && (
+        tomorrowSchedule.active_event ||
+        tomorrowSchedule.next_event ||
+        (Array.isArray(tomorrowSchedule.upcoming_events) ? (tomorrowSchedule.upcoming_events[0] || null) : null)
+      );
+      if (nextFromTomorrow) next = nextFromTomorrow;
+    }
+    var countdown = Number(schedule.countdown_seconds);
+    if ((!Number.isFinite(countdown) || countdown <= 0) && !active && next && next.start_at) {
+      countdown = Math.max(0, Math.floor((Date.parse(next.start_at) - current.getTime()) / 1000));
+    }
+    return Object.assign({}, schedule, {
+      source: 'panel_loading_fallback',
+      status: active ? 'active' : 'upcoming',
+      fallback: true,
+      diagnostic: 'Signal feed fallback active',
+      checked_in: false,
+      next_event: next || null,
+      countdown_seconds: Number.isFinite(countdown) && countdown > 0 ? countdown : 0,
+      current_task: schedule.current_task || active || next || null,
+    });
+  }
+
   function countdownText(seconds) {
     var total = Math.max(0, Math.floor(Number(seconds) || 0));
     var h = Math.floor(total / 3600);
@@ -425,8 +480,26 @@
   function wtfHTML(linked) {
     var state = getWtfState();
     if (!state || state.status === 'loading') {
-      return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">NEXT SIGNAL</span><strong>Loading Daily WTF signal…</strong><p>Fetching /wtf/events/today.</p><div class="las-countdown" data-wtf-countdown>--:--:--</div></div>';
+      var nowMs = Date.now();
+      if (!_singleton.wtfLoadingStartedAt) _singleton.wtfLoadingStartedAt = nowMs;
+      scheduleWtfLoadingFallbackRepaint(nowMs);
+      if ((nowMs - _singleton.wtfLoadingStartedAt) < WTF_LOADING_STALL_MS) {
+        return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">NEXT SIGNAL</span><strong>Loading Daily WTF signal…</strong><p>Fetching /wtf/events/today.</p><div class="las-countdown" data-wtf-countdown>--:--:--</div></div>';
+      }
+      var fallbackState = buildDeterministicWtfFallbackState(new Date());
+      if (!fallbackState) {
+        return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>Fallback helper unavailable. Unable to construct a local Daily WTF schedule right now.</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
+      }
+      var fallbackFocus = fallbackState.active_event || fallbackState.next_event || null;
+      var fallbackTitle = eventTitle(fallbackFocus, 'Next Daily WTF Signal');
+      var fallbackObjective = wtfRequirementText(fallbackState, fallbackFocus);
+      var fallbackAction = linked
+        ? '<a class="las-action-btn" href="/games/">Get Ready</a>'
+        : '<a class="las-action-btn" href="/gkniftyheads-incubator.html">Link Telegram</a>';
+      return '<div class="las-signal-card" data-wtf-state="fallback"><span class="las-pill las-pill--next">FALLBACK</span><strong>' + esc(fallbackTitle) + '</strong><p>Signal feed fallback active. Daily WTF signals open every 4 hours.</p><div class="las-task-copy">Objective: ' + esc(fallbackObjective) + '</div><div class="las-countdown" data-wtf-countdown>' + countdownText(fallbackState.countdown_seconds) + '</div>' + fallbackAction + '</div>';
     }
+    clearWtfLoadingRepaintTimer();
+    _singleton.wtfLoadingStartedAt = null;
     if (state.status === 'error') {
       return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>' + esc(state.diagnostic || 'Try the arcade while the feed reconnects.') + '</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
     }

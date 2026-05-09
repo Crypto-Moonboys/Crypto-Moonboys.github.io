@@ -1,7 +1,7 @@
 const POLL_MS = 60 * 1000;
-const FETCH_TIMEOUT_MS = 7000;
+const FETCH_TIMEOUT_MS = 8000;
 const WTF_LOADING_STALL_MS = 3500;
-const API_BASE_RETRY_DELAYS_MS = [1500, 3000, 6000, 12000, 20000];
+const API_BASE_RETRY_DELAYS_MS = [1500, 3000, 6000, 12000];
 let pollTimer = null;
 let lastCountdownTick = null;
 let boundaryRefreshInFlight = false;
@@ -83,13 +83,7 @@ async function fetchTodayEvents() {
   if (!base) return { ok: false, error: 'api_base_missing' };
   const auth = getSignedAuth();
   const ac = new AbortController();
-  let timedOut = false;
-  let timeoutId = setTimeout(() => {
-    timedOut = true;
-    clearTimeout(timeoutId);
-    timeoutId = null;
-    ac.abort();
-  }, FETCH_TIMEOUT_MS);
+  let timeoutId = null;
   try {
     const req = auth
       ? fetch(`${base}/wtf/events/today`, {
@@ -99,8 +93,17 @@ async function fetchTodayEvents() {
         signal: ac.signal,
       })
       : fetch(`${base}/wtf/events/today`, { signal: ac.signal });
-    const res = await req.catch(() => null);
-    if (!res) return { ok: false, error: timedOut ? 'timeout' : 'network_error' };
+    const timed = await Promise.race([
+      req.then((res) => ({ ok: true, res })).catch(() => ({ ok: false, error: 'network_error' })),
+      new Promise((resolve) => {
+        timeoutId = setTimeout(() => {
+          ac.abort();
+          resolve({ ok: false, error: 'timeout' });
+        }, FETCH_TIMEOUT_MS);
+      }),
+    ]);
+    const res = timed && timed.ok ? timed.res : null;
+    if (!res) return { ok: false, error: timed && timed.error ? timed.error : 'network_error' };
     if (!res.ok) return { ok: false, error: 'http_' + res.status };
     return res.json().catch(() => ({ ok: false, error: 'invalid_json' }));
   } finally {
@@ -209,7 +212,7 @@ function clearApiBaseRetryTimer() {
   apiBaseRetryTimer = null;
 }
 
-function resetApiBaseRetry() {
+function resetApiBaseRetryState() {
   apiBaseRetryAttempt = 0;
   clearApiBaseRetryTimer();
 }
@@ -221,8 +224,15 @@ function scheduleApiBaseRetry() {
   apiBaseRetryAttempt += 1;
   apiBaseRetryTimer = setTimeout(() => {
     apiBaseRetryTimer = null;
-    refresh();
+    refresh().catch(() => {});
   }, delay);
+}
+
+function fallbackFromError(payload) {
+  const fallback = makeFallbackSchedule();
+  fallback.error = payload && payload.error ? payload.error : 'fetch_failed';
+  fallback.diagnostic = 'Signal feed unavailable; deterministic local schedule rendered so the panel remains actionable.';
+  return fallback;
 }
 
 async function refresh() {
@@ -230,28 +240,35 @@ async function refresh() {
   const runId = loadingRunId;
   setTransientState('loading', 'Loading Daily WTF signal…');
   armLoadingStallTimer(runId);
-  const payload = await fetchTodayEvents();
-  clearLoadingStallTimer();
-  if (!payload || !payload.ok) {
-    if (payload && payload.error === 'api_base_missing') {
-      scheduleApiBaseRetry();
-    }
-    const fallback = makeFallbackSchedule();
-    fallback.error = payload && payload.error ? payload.error : 'fetch_failed';
-    fallback.diagnostic = 'Signal feed unavailable; deterministic local schedule rendered so the panel remains actionable.';
-    updateGlobal(fallback);
-    try { console.warn('[daily-wtf-event-system] /wtf/events/today unavailable; using fallback schedule.', fallback.error); } catch (_) {}
-    dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);
+  let payload = null;
+  let finalState = null;
+  try {
+    payload = await fetchTodayEvents();
+  } catch (_) {
+    clearLoadingStallTimer();
+    setTransientState('error', 'Signal feed unavailable.');
     return;
   }
-  resetApiBaseRetry();
-  updateGlobal(payload);
+  clearLoadingStallTimer();
+  if (payload && payload.ok) resetApiBaseRetryState();
+  if (!payload || !payload.ok) {
+    if (payload && payload.error === 'api_base_missing') scheduleApiBaseRetry();
+    finalState = fallbackFromError(payload);
+    try { console.warn('[daily-wtf-event-system] /wtf/events/today unavailable; using fallback schedule.', finalState.error); } catch (_) {}
+  } else {
+    finalState = payload;
+  }
+  try {
+    updateGlobal(finalState);
+  } catch (_) {
+    setTransientState('error', 'Signal feed unavailable.');
+    return;
+  }
   if (window.MOONBOYS_WTF_EVENTS.no_events) {
-    try { console.warn('[daily-wtf-event-system] /wtf/events/today returned no active or upcoming events.', payload); } catch (_) {}
+    try { console.warn('[daily-wtf-event-system] /wtf/events/today resolved with no active or upcoming events.', finalState); } catch (_) {}
   }
   dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);
 }
-
 function triggerBoundaryRefresh() {
   if (boundaryRefreshInFlight) return;
   boundaryRefreshInFlight = true;
@@ -344,6 +361,9 @@ if (typeof window !== 'undefined') {
     completeWtfEvent,
     chooseWtfOption,
     emitWtfXpBurst,
+    makeFallbackSchedule,
   };
   initDailyWtfEventSystem();
 }
+
+
