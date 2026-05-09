@@ -94,6 +94,9 @@ function makeTestStub(featureType) {
  * @param {string} input.prompt - The original operator prompt.
  * @param {string[]} input.likelyFiles - Files identified by tool-router.
  * @returns {Array<{type: string, path: string, summary: string, content: string}>}
+ *   Each item has `type` (e.g. "update"), `path` (relative file path),
+ *   `summary` (human-readable description of the proposed change), and
+ *   `content` (placeholder stub compatible with patch-engine previewPatch).
  */
 function generateProposedOperations({ classification, prompt, likelyFiles } = {}) {
   if (classification !== "repo_admin_ui_operator_task") return [];
