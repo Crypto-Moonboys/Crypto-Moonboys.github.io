@@ -62,7 +62,7 @@ const cronMatches = wranglerToml.match(/^\s*crons\s*=\s*\[(.*?)\]\s*$/m);
 const cronEntries = cronMatches?.[1]
   ? cronMatches[1].split(',').map((entry) => entry.trim()).filter(Boolean)
   : [];
-check(wranglerToml.includes('[triggers]') && cronEntries.length === 1, 'wrangler defines exactly one cron trigger');
+check(wranglerToml.includes('[triggers]') && cronEntries.some((entry) => entry.includes('0 9 * * *')), 'wrangler preserves 09:00 digest cron trigger');
 check(workerJs.includes('scheduled_cron') ? cronEntries.length > 0 : true, 'scheduled digest requires cron trigger in wrangler');
 
 console.log('\n[3] Daily active reset checks');
