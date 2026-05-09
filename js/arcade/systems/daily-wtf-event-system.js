@@ -1,7 +1,10 @@
 const POLL_MS = 60 * 1000;
+const FETCH_TIMEOUT_MS = 8000;
+const API_BASE_RETRY_MS = 1500;
 let pollTimer = null;
 let lastCountdownTick = null;
 let boundaryRefreshInFlight = false;
+let apiBaseRetryTimer = null;
 
 function getApiBase() {
   const cfg = (typeof window !== 'undefined') ? window.MOONBOYS_API : null;
@@ -75,14 +78,28 @@ async function fetchTodayEvents() {
   const base = getApiBase();
   if (!base) return { ok: false, error: 'api_base_missing' };
   const auth = getSignedAuth();
+  const controller = typeof AbortController === 'function' ? new AbortController() : null;
   const req = auth
     ? fetch(`${base}/wtf/events/today`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ telegram_auth: auth }),
+      ...(controller ? { signal: controller.signal } : {}),
     })
-    : fetch(`${base}/wtf/events/today`);
-  const res = await req.catch(() => null);
+    : fetch(`${base}/wtf/events/today`, controller ? { signal: controller.signal } : undefined);
+  const timed = await Promise.race([
+    req.then((res) => ({ res })).catch((err) => ({ err })),
+    new Promise((resolve) => setTimeout(() => resolve({ timeout: true }), FETCH_TIMEOUT_MS)),
+  ]);
+  if (timed.timeout) {
+    try { if (controller) controller.abort(); } catch (_) {}
+    return { ok: false, error: 'timeout' };
+  }
+  if (timed.err) {
+    if (timed.err && timed.err.name === 'AbortError') return { ok: false, error: 'timeout' };
+    return { ok: false, error: 'network_error' };
+  }
+  const res = timed.res || null;
   if (!res) return { ok: false, error: 'network_error' };
   if (!res.ok) return { ok: false, error: 'http_' + res.status };
   return res.json().catch(() => ({ ok: false, error: 'invalid_json' }));
@@ -162,20 +179,43 @@ function setTransientState(status, message) {
   if (status !== 'loading') dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);
 }
 
+function scheduleApiBaseRetry() {
+  if (apiBaseRetryTimer) return;
+  apiBaseRetryTimer = setTimeout(() => {
+    apiBaseRetryTimer = null;
+    refresh().catch(() => {});
+  }, API_BASE_RETRY_MS);
+}
+
+function fallbackFromError(errorCode) {
+  const fallback = makeFallbackSchedule();
+  fallback.error = errorCode || 'fetch_failed';
+  fallback.diagnostic = 'Signal feed unavailable; deterministic local schedule rendered so the panel remains actionable.';
+  return fallback;
+}
+
 async function refresh() {
   setTransientState('loading', 'Loading Daily WTF signal…');
-  const payload = await fetchTodayEvents();
+  let payload = null;
+  try {
+    payload = await fetchTodayEvents();
+  } catch (_) {
+    payload = { ok: false, error: 'refresh_exception' };
+  }
+  let finalState = payload;
+  const payloadError = payload && payload.error ? payload.error : 'fetch_failed';
   if (!payload || !payload.ok) {
-    const fallback = makeFallbackSchedule();
-    fallback.error = payload && payload.error ? payload.error : 'fetch_failed';
-    fallback.diagnostic = 'Signal feed unavailable; deterministic local schedule rendered so the panel remains actionable.';
-    updateGlobal(fallback);
-    try { console.warn('[daily-wtf-event-system] /wtf/events/today unavailable; using fallback schedule.', fallback.error); } catch (_) {}
-    dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);
+    if (payloadError === 'api_base_missing') scheduleApiBaseRetry();
+    finalState = fallbackFromError(payloadError);
+    try { console.warn('[daily-wtf-event-system] /wtf/events/today unavailable; using fallback schedule.', payloadError); } catch (_) {}
+  }
+  try {
+    updateGlobal(finalState);
+  } catch (_) {
+    setTransientState('error', 'Signal feed unavailable.');
     return;
   }
-  updateGlobal(payload);
-  if (window.MOONBOYS_WTF_EVENTS.no_events) {
+  if (window.MOONBOYS_WTF_EVENTS.no_events && payload && payload.ok) {
     try { console.warn('[daily-wtf-event-system] /wtf/events/today returned no active or upcoming events.', payload); } catch (_) {}
   }
   dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);

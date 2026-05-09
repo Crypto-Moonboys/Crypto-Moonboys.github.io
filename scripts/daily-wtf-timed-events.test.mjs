@@ -161,11 +161,15 @@ check(workerJs.includes('option already claimed'), 'duplicate option claim block
 check(wtfSystemJs.includes('window.MOONBOYS_WTF_EVENTS'), 'global rightside panel contract exists');
 check(!wtfSystemJs.includes('telegram_auth='), 'no telegram_auth query string is used for /today');
 check(wtfSystemJs.includes("method: 'POST'") && wtfSystemJs.includes('/wtf/events/today'), 'player-specific /today uses safe POST auth transport');
+check(wtfSystemJs.includes('FETCH_TIMEOUT_MS = 8000') && wtfSystemJs.includes('Promise.race([') && wtfSystemJs.includes("error: 'timeout'"), 'frontend /today fetch has timeout guard so loading cannot hang forever');
+check(wtfSystemJs.includes('scheduleApiBaseRetry') && wtfSystemJs.includes('api_base_missing') && wtfSystemJs.includes('API_BASE_RETRY_MS = 1500'), 'api_base_missing path schedules retry instead of dead-end state');
 check(wtfSystemJs.includes('moonboys:wtf-events-ready'), 'wtf ready event dispatch exists');
 check(wtfSystemJs.includes('moonboys:wtf-event-checkin'), 'check-in event dispatch exists');
 check(wtfSystemJs.includes('moonboys:wtf-event-complete'), 'complete event dispatch exists');
 check(wtfSystemJs.includes('moonboys:xp-burst'), 'xp burst event dispatch exists');
 check(wtfSystemJs.includes('moonboys:roguelite-options-unlocked'), 'roguelite unlock event dispatch exists');
+check(wtfSystemJs.includes("setTransientState('error', 'Signal feed unavailable.')"), 'frontend system publishes explicit unavailable state if payload and fallback application fail');
+check(read('js/components/live-activity-summary.js').includes('buildDeterministicWtfFallbackState') && read('js/components/live-activity-summary.js').includes('data-wtf-state="fallback"'), 'right-rail renderer has deterministic fallback card for stalled loading state');
 check(xpBurstJs.includes('prefers-reduced-motion'), 'reduced motion fallback exists');
 check(!xpBurstJs.includes('payload.title ||') || !xpBurstJs.includes('innerHTML'), 'xp burst does not inject payload.title via innerHTML');
 check(xpBurstJs.includes('textContent = String(payload.title ||'), 'xp burst dynamic title uses textContent');
