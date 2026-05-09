@@ -1,9 +1,12 @@
 const POLL_MS = 60 * 1000;
 const FETCH_TIMEOUT_MS = 8000;
+const WTF_LOADING_STALL_MS = 3500;
 const API_BASE_RETRY_DELAYS_MS = [1500, 3000, 6000, 12000];
 let pollTimer = null;
 let lastCountdownTick = null;
 let boundaryRefreshInFlight = false;
+let loadingStallTimer = null;
+let loadingRunId = 0;
 let apiBaseRetryTimer = null;
 let apiBaseRetryAttempt = 0;
 
@@ -79,42 +82,33 @@ async function fetchTodayEvents() {
   const base = getApiBase();
   if (!base) return { ok: false, error: 'api_base_missing' };
   const auth = getSignedAuth();
-  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-  const req = auth
-    ? fetch(`${base}/wtf/events/today`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telegram_auth: auth }),
-      ...(controller ? { signal: controller.signal } : {}),
-    })
-    : controller
-      ? fetch(`${base}/wtf/events/today`, { signal: controller.signal })
-      : fetch(`${base}/wtf/events/today`);
+  const ac = new AbortController();
   let timeoutId = null;
-  let timed = null;
   try {
-    timed = await Promise.race([
-      req.then((res) => ({ res })).catch((err) => ({ err })),
+    const req = auth
+      ? fetch(`${base}/wtf/events/today`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegram_auth: auth }),
+        signal: ac.signal,
+      })
+      : fetch(`${base}/wtf/events/today`, { signal: ac.signal });
+    const timed = await Promise.race([
+      req.then((res) => ({ ok: true, res })).catch(() => ({ ok: false, error: 'network_error' })),
       new Promise((resolve) => {
-        timeoutId = setTimeout(() => resolve({ timeout: true }), FETCH_TIMEOUT_MS);
+        timeoutId = setTimeout(() => {
+          ac.abort();
+          resolve({ ok: false, error: 'timeout' });
+        }, FETCH_TIMEOUT_MS);
       }),
     ]);
+    const res = timed && timed.ok ? timed.res : null;
+    if (!res) return { ok: false, error: timed && timed.error ? timed.error : 'network_error' };
+    if (!res.ok) return { ok: false, error: 'http_' + res.status };
+    return res.json().catch(() => ({ ok: false, error: 'invalid_json' }));
   } finally {
     if (timeoutId) clearTimeout(timeoutId);
-    timeoutId = null;
   }
-  if (timed.timeout) {
-    try { if (controller) controller.abort(); } catch (_) {}
-    return { ok: false, error: 'timeout' };
-  }
-  if (timed.err) {
-    if (timed.err && timed.err.name === 'AbortError') return { ok: false, error: 'timeout' };
-    return { ok: false, error: 'network_error' };
-  }
-  const res = timed.res || null;
-  if (!res) return { ok: false, error: 'network_error' };
-  if (!res.ok) return { ok: false, error: 'http_' + res.status };
-  return res.json().catch(() => ({ ok: false, error: 'invalid_json' }));
 }
 
 function dispatch(name, detail) {
@@ -191,12 +185,36 @@ function setTransientState(status, message) {
   if (status !== 'loading') dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);
 }
 
+function clearLoadingStallTimer() {
+  if (!loadingStallTimer) return;
+  clearTimeout(loadingStallTimer);
+  loadingStallTimer = null;
+}
+
+function armLoadingStallTimer(runId) {
+  if (loadingStallTimer) return;
+  loadingStallTimer = setTimeout(() => {
+    loadingStallTimer = null;
+    if (runId !== loadingRunId) return;
+    const state = window.MOONBOYS_WTF_EVENTS;
+    if (!state || state.status !== 'loading') return;
+    const fallback = makeFallbackSchedule();
+    fallback.error = 'loading_stalled';
+    fallback.diagnostic = 'Signal fetch stalled; deterministic local schedule rendered so the panel never remains stuck on loading.';
+    updateGlobal(fallback);
+    dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);
+  }, WTF_LOADING_STALL_MS);
+}
+
+function clearApiBaseRetryTimer() {
+  if (!apiBaseRetryTimer) return;
+  clearTimeout(apiBaseRetryTimer);
+  apiBaseRetryTimer = null;
+}
+
 function resetApiBaseRetryState() {
   apiBaseRetryAttempt = 0;
-  if (apiBaseRetryTimer) {
-    clearTimeout(apiBaseRetryTimer);
-    apiBaseRetryTimer = null;
-  }
+  clearApiBaseRetryTimer();
 }
 
 function scheduleApiBaseRetry() {
@@ -210,28 +228,35 @@ function scheduleApiBaseRetry() {
   }, delay);
 }
 
-function fallbackFromError(errorCode) {
+function fallbackFromError(payload) {
   const fallback = makeFallbackSchedule();
-  fallback.error = errorCode || 'fetch_failed';
+  fallback.error = payload && payload.error ? payload.error : 'fetch_failed';
   fallback.diagnostic = 'Signal feed unavailable; deterministic local schedule rendered so the panel remains actionable.';
   return fallback;
 }
 
 async function refresh() {
-  setTransientState('loading', 'Loading Daily WTF signalâ€¦');
+  loadingRunId += 1;
+  const runId = loadingRunId;
+  setTransientState('loading', 'Loading Daily WTF signal…');
+  armLoadingStallTimer(runId);
   let payload = null;
+  let finalState = null;
   try {
     payload = await fetchTodayEvents();
   } catch (_) {
-    payload = { ok: false, error: 'refresh_exception' };
+    clearLoadingStallTimer();
+    setTransientState('error', 'Signal feed unavailable.');
+    return;
   }
-  let finalState = payload;
-  const payloadError = payload && payload.error ? payload.error : 'fetch_failed';
+  clearLoadingStallTimer();
   if (payload && payload.ok) resetApiBaseRetryState();
   if (!payload || !payload.ok) {
-    if (payloadError === 'api_base_missing') scheduleApiBaseRetry();
-    finalState = fallbackFromError(payloadError);
-    try { console.warn('[daily-wtf-event-system] /wtf/events/today unavailable; using fallback schedule.', payloadError); } catch (_) {}
+    if (payload && payload.error === 'api_base_missing') scheduleApiBaseRetry();
+    finalState = fallbackFromError(payload);
+    try { console.warn('[daily-wtf-event-system] /wtf/events/today unavailable; using fallback schedule.', finalState.error); } catch (_) {}
+  } else {
+    finalState = payload;
   }
   try {
     updateGlobal(finalState);
@@ -244,7 +269,6 @@ async function refresh() {
   }
   dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);
 }
-
 function triggerBoundaryRefresh() {
   if (boundaryRefreshInFlight) return;
   boundaryRefreshInFlight = true;
@@ -333,7 +357,6 @@ if (typeof window !== 'undefined') {
   window.MOONBOYS_DAILY_WTF = {
     init: initDailyWtfEventSystem,
     refresh,
-    makeFallbackSchedule,
     checkInWtfEvent,
     completeWtfEvent,
     chooseWtfOption,
@@ -341,3 +364,5 @@ if (typeof window !== 'undefined') {
   };
   initDailyWtfEventSystem();
 }
+
+
