@@ -141,6 +141,7 @@ test("js can render owner execution pipeline returned from SEND", () => {
   assert.match(jsSource, /extractExecutionPipelineFromResponse/);
   assert.match(jsSource, /extractSwarmPlanFromResponse/);
   assert.match(jsSource, /No execution pipeline yet\. Send an operator prompt to generate one\./);
+  assert.match(jsSource, /Risk level/);
 });
 
 test("overlay documents safe review and owner operator modes", () => {

@@ -1,5 +1,7 @@
 "use strict";
 
+const { buildRepairPolicy } = require("./repair-policy.js");
+
 const VALID_STAGES = Object.freeze([
   "plan",
   "inspect",
@@ -56,6 +58,7 @@ function buildExecutionPipeline(input = {}) {
   const hasProposedOperations = input.hasProposedOperations === true;
   const hasPrivilegedRequirements = missingRequirements.length === 0;
   const modeLabel = executionMode === EXECUTION_MODES.OWNER_OPERATOR ? "OWNER OPERATOR MODE" : "Safe Review Mode";
+  const repairPolicy = buildRepairPolicy({ filesAffected });
 
   const inspectSummary = executionMode === EXECUTION_MODES.SAFE_REVIEW
     ? "Inspect existing repo/admin implementation and collect exact edit targets without changing files."
@@ -126,24 +129,24 @@ function buildExecutionPipeline(input = {}) {
       status: executionMode === EXECUTION_MODES.SAFE_REVIEW ? "blocked" : "pending_approval",
       summary: executionMode === EXECUTION_MODES.SAFE_REVIEW
         ? "Safe Review Mode does not apply patches."
-        : "Apply stage uses Hermes patch/apply only after approval is satisfied.",
+        : "Apply stage uses Hermes patch/apply only after approval is satisfied and repairs stay small and reversible.",
       agentRole: role,
       filesAffected,
       requiredInputs: ["approved patch preview", "approvalId/token"],
       toolAction: "patch-engine.js applyPatch via patch/apply",
       nextAction: executionMode === EXECUTION_MODES.SAFE_REVIEW
         ? "Review plan output only."
-        : "Apply patch after approval requirements are met.",
+        : "Apply the smallest approved patch set after approval requirements are met.",
       riskLevel: "high"
     }),
     makeStage("test", {
       status: executionMode === EXECUTION_MODES.SAFE_REVIEW ? "blocked" : "pending_approval",
-      summary: "Run targeted tests/validation through command-runner after approved apply stage.",
+      summary: "Run targeted tests/validation through command-runner after approved apply stage before marking work complete.",
       agentRole: role,
       filesAffected,
       requiredInputs: ["test command list", "approvalId/token for privileged command runs"],
       toolAction: "command-runner.js via command/run",
-      nextAction: "Execute required checks and capture results.",
+      nextAction: "Execute targeted checks first, capture results, and avoid broad no-op reruns.",
       riskLevel: "medium"
     }),
     makeStage("deploy", {
@@ -158,27 +161,27 @@ function buildExecutionPipeline(input = {}) {
     }),
     makeStage("verify", {
       status: executionMode === EXECUTION_MODES.SAFE_REVIEW ? "blocked" : "pending_approval",
-      summary: "Verify live/service status after deploy or restart.",
+      summary: "Verify live/service status after deploy or restart and capture any failure reason.",
       agentRole: role,
       filesAffected,
       requiredInputs: ["verification command/check list"],
       toolAction: "command-runner.js",
-      nextAction: "Confirm expected live behavior and collect evidence.",
+      nextAction: "Confirm expected live behavior, collect evidence, or record failure reason for targeted repair.",
       riskLevel: "medium"
     }),
     makeStage("rollback", {
       status: executionMode === EXECUTION_MODES.SAFE_REVIEW ? "planned" : "ready",
-      summary: "Rollback path is available through Hermes patch rollback and git safeguards.",
+      summary: "Rollback path is available through Hermes patch rollback and git safeguards when apply/test/verify fails.",
       agentRole: role,
       filesAffected,
       requiredInputs: ["rollback id or rollback patch plan"],
       toolAction: "patch-engine.js rollbackPatch + git-operator.js",
-      nextAction: "Trigger rollback if verification fails.",
+      nextAction: "Trigger rollback on failure, then return to targeted repair with the failure reason recorded.",
       riskLevel: "high"
     }),
     makeStage("report", {
       status: "ready",
-      summary: "Report plan, approvals, apply/test/deploy results, verification, and rollback status.",
+      summary: "Report plan, approvals, apply/test/deploy results, verification, rollback status, and any repair failures.",
       agentRole: role,
       filesAffected,
       requiredInputs: ["stage outputs"],
@@ -194,6 +197,7 @@ function buildExecutionPipeline(input = {}) {
     modeLabel,
     executionMode,
     validStages: VALID_STAGES,
+    repairPolicy,
     stages,
     missingRequirements: dedupe([
       ...(hasProposedOperations ? [] : ["needs proposedOperations for patch preview"]),

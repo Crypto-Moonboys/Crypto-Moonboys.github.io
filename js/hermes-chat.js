@@ -182,6 +182,7 @@
             const missing = Array.isArray(item.missingRequirements) && item.missingRequirements.length
               ? item.missingRequirements.join(", ")
               : "none";
+            const risk = String(item.riskLevel || "medium");
             const stageTitle = String(item.stage || "").replace(/_/gu, " ").toUpperCase();
             return `<article class="execution-stage-card">
               <div class="execution-stage-head">
@@ -193,6 +194,7 @@
                 <div class="swarm-task-field"><strong>File targets</strong><span>${escapeHtml(files)}</span></div>
                 <div class="swarm-task-field"><strong>Next action</strong><span>${escapeHtml(item.nextAction || "Review")}</span></div>
                 <div class="swarm-task-field"><strong>Missing requirements</strong><span>${escapeHtml(missing)}</span></div>
+                <div class="swarm-task-field"><strong>Risk level</strong><span>${escapeHtml(risk)}</span></div>
               </div>
             </article>`;
           })

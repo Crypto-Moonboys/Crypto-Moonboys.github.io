@@ -7,6 +7,7 @@ const os = require("node:os");
 const path = require("node:path");
 
 const pipelinePath = path.join(__dirname, "..", "server", "hermes", "execution-pipeline.js");
+const repairPolicyPath = path.join(__dirname, "..", "server", "hermes", "repair-policy.js");
 const apiPath = path.join(__dirname, "..", "api", "hermes-api.js");
 
 function setupSandbox() {
@@ -31,6 +32,7 @@ function clearCache() {
     "../server/hermes/tool-router.js",
     "../server/hermes/tool-executor.js",
     "../server/hermes/swarm-manager.js",
+    "../server/hermes/repair-policy.js",
     "../server/hermes/execution-pipeline.js",
     "../server/hermes/conversation-runtime.js"
   ];
@@ -55,6 +57,7 @@ function loadRuntime(root) {
 
 test("pipeline module exists with required stage definitions", () => {
   assert.ok(fs.existsSync(pipelinePath), "server/hermes/execution-pipeline.js should exist");
+  assert.ok(fs.existsSync(repairPolicyPath), "server/hermes/repair-policy.js should exist");
   const { VALID_STAGES } = require("../server/hermes/execution-pipeline.js");
   assert.deepEqual(VALID_STAGES, [
     "plan",
@@ -79,6 +82,9 @@ test("buildExecutionPipeline stage shape includes required fields", () => {
     hasProposedOperations: false
   });
   assert.equal(built.type, "hermes_execution_pipeline");
+  assert.equal(built.repairPolicy?.label, "DADDY-style repair discipline");
+  assert.ok(Array.isArray(built.repairPolicy?.rules));
+  assert.match(JSON.stringify(built.repairPolicy), /small bounded patches|rollback on failure|avoid deadlock\/no-op cycles/i);
   for (const stage of built.stages) {
     assert.ok(stage.stage);
     assert.ok(stage.status);
@@ -123,6 +129,8 @@ test("owner operator mode exposes explicit missing requirements when approval da
   const approveStage = (response.executionPipeline?.stages || []).find((stage) => stage.stage === "approve");
   assert.ok(Array.isArray(approveStage?.missingRequirements));
   assert.ok(approveStage.missingRequirements.length > 0);
+  const rollbackStage = (response.executionPipeline?.stages || []).find((stage) => stage.stage === "rollback");
+  assert.match(String(rollbackStage?.nextAction || ""), /rollback on failure|targeted repair/i);
   assert.match(JSON.stringify(response.toolResults), /plan\/privileged/i);
 });
 

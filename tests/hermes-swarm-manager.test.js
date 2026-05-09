@@ -114,6 +114,18 @@ test("planner UI calls plan endpoint and describes approved execution authority"
   assert.match(htmlSource, /Owner Operator Mode is for self-hosted repo control/u);
 });
 
+test("owner pipeline repair discipline exists without adding a new runtime", () => {
+  const repairPolicyPath = path.join(__dirname, "..", "server", "hermes", "repair-policy.js");
+  const executionPipelinePath = path.join(__dirname, "..", "server", "hermes", "execution-pipeline.js");
+  const repairPolicySource = fs.readFileSync(repairPolicyPath, "utf8");
+  const executionPipelineSource = fs.readFileSync(executionPipelinePath, "utf8");
+  assert.match(repairPolicySource, /small bounded patches/u);
+  assert.match(repairPolicySource, /rollback on failure/u);
+  assert.match(repairPolicySource, /avoid deadlock\/no-op cycles/u);
+  assert.match(executionPipelineSource, /repairPolicy/u);
+  assert.doesNotMatch(executionPipelineSource, /Hermes2/u);
+});
+
 test("planner does not call patch application or command execution directly", () => {
   assert.doesNotMatch(managerSource, /applyPatch|runCommand|executeAction|require\(.*orchestrator/u);
   const routeStart = apiSource.indexOf('app.post("/api/hermes/swarm/plan"');
