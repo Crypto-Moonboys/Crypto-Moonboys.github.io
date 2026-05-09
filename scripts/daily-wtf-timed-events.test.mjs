@@ -222,6 +222,13 @@ for (const term of forbidden) check(!corpus.includes(term), `forbidden wording a
 for (const changedJs of [wtfSystemJs, read('js/components/live-activity-summary.js')]) {
   check(!changedJs.includes('�'), 'no replacement character remains in changed Daily WTF JS files');
 }
+const mojibakeMarkers = ['Ã', 'Â', '�', 'â‚¬', 'â€œ', 'â€', 'Å“'];
+const liveSummaryJs = read('js/components/live-activity-summary.js');
+for (const marker of mojibakeMarkers) {
+  check(!liveSummaryJs.includes(marker), `live-activity-summary has no mojibake marker: ${marker}`);
+  check(!wtfSystemJs.includes(marker), `daily-wtf-event-system has no mojibake marker: ${marker}`);
+  check(!xpBurstJs.includes(marker), `xp-burst-animation has no mojibake marker: ${marker}`);
+}
 
 console.log(`\nPassed: ${passed}`);
 console.log(`Failed: ${failed}`);

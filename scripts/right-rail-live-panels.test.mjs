@@ -119,7 +119,7 @@ check(!las.includes('data-csp-xp') && !las.includes('data-csp-panel'), 'faction 
 check(!siteShell.includes('id="hud-player-name">Guest'), 'right rail no longer renders a duplicate Guest/Telegram name block');
 check(!siteShell.includes('Live linked avatar'), 'HUD player-name logic does not replace the name with literal Live linked avatar');
 check(las.includes('p.progress != null') && las.includes('p.target != null') && las.includes('p.complete === true'), 'mission normalization reads saved progress, target, and complete fields from bridge cache');
-check(las.includes('esc(String(current))') && las.includes('esc(String(target))') && las.includes("m.done ? '") && las.includes(" COMPLETE'"), 'mission renderer displays saved progress counters and completed check state');
+check(las.includes('esc(String(current))') && las.includes('esc(String(target))') && las.includes("m.done ? 'COMPLETE'"), 'mission renderer displays saved progress counters and completed check state');
 check(las.includes('Number.isFinite(Number(m.current))') && las.includes('Number.isFinite(Number(m.target))') && las.includes('var pct = Math.max(0, Math.min(100'), 'mission progress percentage guards against NaN widths');
 check(csp.includes('scheduleLiveDataRefresh') && csp.includes('_liveDataRefreshTimer') && csp.includes('setTimeout(function ()'), 'connection status panel debounces live-data refreshes');
 for (const evt of ['battle-chamber:faction-data-ready','battle-chamber:activity-ready','moonboys:wtf-events-ready','moonboys:wtf-event-checkin','moonboys:wtf-event-complete','moonboys:roguelite-options-unlocked','moonboys:faction-status','moonboys:faction-boost']) {
@@ -145,7 +145,7 @@ check(wtf.includes('scheduleApiBaseRetry') && wtf.includes('api_base_missing') &
 check(wtf.includes('apiBaseRetryAttempt') && wtf.includes('if (apiBaseRetryAttempt >= API_BASE_RETRY_DELAYS_MS.length) return;'), 'api_base_missing retry attempts are capped');
 check(wtf.includes('resetApiBaseRetryState') && wtf.includes('if (payload && payload.ok) resetApiBaseRetryState();'), 'successful Daily WTF refresh resets api-base retry state');
 check(wtf.includes('normalizeEvent') && wtf.includes('start_at: event.start_at || event.starts_at') && wtf.includes('end_at: event.end_at || event.ends_at'), 'Daily WTF system normalizes Worker event field aliases');
-check(las.includes('data-wtf-state="loading"') && las.includes('Loading Daily WTF signal…'), 'faction ops panel renders an explicit loading state');
+check(las.includes('data-wtf-state="loading"') && las.includes('Loading Daily WTF signal...'), 'faction ops panel renders an explicit loading state');
 check(las.includes('WTF_LOADING_STALL_MS = 8000') && las.includes('buildDeterministicWtfFallbackState') && las.includes('data-wtf-state="fallback"'), 'faction ops panel renders deterministic fallback after loading stall timeout');
 check(las.includes('scheduleWtfLoadingFallbackRepaint') && las.includes('wtfLoadingRepaintTimer') && las.includes('setTimeout(function ()') && las.includes('refresh();'), 'loading state schedules a one-shot repaint so fallback appears without ready events');
 check(las.includes('clearWtfLoadingRepaintTimer') && las.includes('clearTimeout(_singleton.wtfLoadingRepaintTimer)'), 'loading repaint timer is cleared when real Daily WTF state resolves');
@@ -172,7 +172,13 @@ const setTransientBlock = functionBlock(wtf, 'setTransientState');
 const refreshBlock = functionBlock(wtf, 'refresh');
 const tickerBlock = functionBlock(wtf, 'startCountdownTicker');
 check(wtfStatusBlock.indexOf('state.next_event') < wtfStatusBlock.indexOf('state.completed_today'), 'upcoming/next WTF signal has render priority over completed_today');
-check(wtfHtmlBlock.includes('completedOnly = completed && !active && !next') && wtfHtmlBlock.includes("completedOnly ? '") && wtfHtmlBlock.includes(" : ''"), 'completed tick only appears when no active or next signal exists');
+check(wtfHtmlBlock.includes('completedOnly = completed && !active && !next') && wtfHtmlBlock.includes("completedOnly ? 'COMPLETE ' : ''"), 'completed tick only appears when no active or next signal exists');
+
+const mojibakeMarkers = ['Ã', 'Â', '�', 'â‚¬', 'â€œ', 'â€', 'Å“'];
+for (const marker of mojibakeMarkers) {
+  check(!las.includes(marker), `live-activity-summary is free of mojibake marker: ${marker}`);
+  check(!wtf.includes(marker), `daily-wtf-event-system is free of mojibake marker: ${marker}`);
+}
 check(updateGlobalBlock.includes("const isLoading = transientStatus === 'loading'") && updateGlobalBlock.includes('const active = isLoading ? null') && updateGlobalBlock.includes('let next = isLoading ? null'), 'loading state does not populate active or next_event');
 check(updateGlobalBlock.includes('const computedCountdown = isLoading ? 0') && updateGlobalBlock.includes('const hasServerCountdown = !isLoading'), 'loading state does not derive or tick a countdown');
 check(setTransientBlock.includes("updateGlobal({ ok: false") && setTransientBlock.includes("if (status !== 'loading') dispatch('moonboys:wtf-events-ready'"), 'loading state does not dispatch the final ready event');
