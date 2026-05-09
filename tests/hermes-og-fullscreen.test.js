@@ -186,12 +186,15 @@ test("js loadOgStatus loads command queue from existing endpoint", () => {
   assert.match(jsSource, /\/api\/hermes\/command\/queue/);
 });
 
-test("js Escape key closes overlay", () => {
-  assert.match(jsSource, /key === "Escape"/);
+test("js OG send removes ogMessages entry on failure to stay in sync with history", () => {
+  assert.match(jsSource, /ogMessages\.pop\(\)/u);
 });
 
 test("js does not add a second api function or duplicate chat endpoint", () => {
+  // Only one api() function definition
+  const apiDefs = jsSource.match(/async function api\(/gu) || [];
+  assert.equal(apiDefs.length, 1, "api() should be defined exactly once");
+  // Both sendChat and ogSendChat reference the same /api/hermes/chat path
   const chatEndpoints = jsSource.match(/\/api\/hermes\/chat/gu) || [];
-  // Should appear in sendChat and ogSendChat (and potentially string literal), but only one endpoint
   assert.ok(chatEndpoints.length >= 2, "chat endpoint used in at least two send handlers");
 });

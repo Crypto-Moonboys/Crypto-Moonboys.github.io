@@ -147,7 +147,7 @@
       const appEl = el("ogApprovals");
       if (appEl) appEl.textContent = JSON.stringify(approvals.approvals || {}, null, 2);
       updateOgBarApproval(approvals.approvals);
-    } catch (_) {
+    } catch (_err) {
       const appEl = el("ogApprovals");
       if (appEl) appEl.textContent = "(unavailable)";
     }
@@ -156,7 +156,7 @@
       const queue = await api("/api/hermes/command/queue");
       const qEl = el("ogQueue");
       if (qEl) qEl.textContent = JSON.stringify(queue.queue || {}, null, 2);
-    } catch (_) {
+    } catch (_err) {
       const qEl = el("ogQueue");
       if (qEl) qEl.textContent = "(unavailable)";
     }
@@ -171,7 +171,7 @@
           `path: ${root.localPath || "—"}`
         ].join("\n");
       }
-    } catch (_) {
+    } catch (_err) {
       const rEl = el("ogRepoInfo");
       if (rEl) rEl.textContent = "(unavailable)";
     }
@@ -209,7 +209,7 @@
           updateOgStatusBar(el("mode")?.value, item.dataset.role);
         });
       });
-    } catch (_) {
+    } catch (_err) {
       const listEl = el("ogSwarmList");
       if (listEl) listEl.textContent = "(unavailable)";
     }
@@ -291,6 +291,7 @@
       if (barLast) barLast.textContent = lastAction;
     } catch (error) {
       history.pop(); // remove the user turn that failed
+      ogMessages.pop(); // keep ogMessages in sync with history on failure
       appendOgMessage("error", String(error?.message || error));
     }
   });
