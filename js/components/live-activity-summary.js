@@ -374,6 +374,7 @@
   var WTF_HELPER_RETRY_MS = 400;
   var WTF_HELPER_RETRY_MAX = 8;
   var WTF_RECOVERY_TIMEOUT_MS = 5000;
+  var WTF_EMERGENCY_STATE_TTL_MS = 2 * 60 * 1000;
 
   function clearWtfLoadingRepaintTimer() {
     if (_singleton.wtfLoadingRepaintTimer) {
@@ -453,21 +454,63 @@
     };
   }
 
+  function getSignedAuthForEmergencyRecovery() {
+    try {
+      var identity = window.MOONBOYS_IDENTITY;
+      if (!identity || typeof identity.getSignedTelegramAuth !== 'function') return null;
+      return identity.getSignedTelegramAuth() || null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function hasUsablePrimaryWtfState(state) {
+    if (!state || typeof state !== 'object') return false;
+    if (state.status === 'error') return false;
+    if (state.active_event) return true;
+    if (state.next_event) return true;
+    if (Array.isArray(state.upcoming_events) && state.upcoming_events.length > 0) return true;
+    return false;
+  }
+
+  function getEmergencyStateIfUsable() {
+    var emergency = _singleton.wtfEmergencyState;
+    if (!emergency || typeof emergency !== 'object') return null;
+    var recoveredAt = Number(_singleton.wtfEmergencyRecoveredAt || 0);
+    if (!Number.isFinite(recoveredAt) || recoveredAt <= 0) return emergency;
+    if ((Date.now() - recoveredAt) > WTF_EMERGENCY_STATE_TTL_MS) {
+      _singleton.wtfEmergencyState = null;
+      _singleton.wtfEmergencyRecoveredAt = 0;
+      return null;
+    }
+    return emergency;
+  }
+
   function maybeKickEmergencyWtfRecovery() {
     if (_singleton.wtfEmergencyFetchInFlight) return;
     var base = getApiBase();
     if (!base) return;
     _singleton.wtfEmergencyFetchInFlight = true;
+    var auth = getSignedAuthForEmergencyRecovery();
+    var requestOptions = auth
+      ? {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegram_auth: auth }),
+      }
+      : {};
     var ac = (typeof AbortController === 'function') ? new AbortController() : null;
+    if (ac) requestOptions.signal = ac.signal;
     var timer = setTimeout(function () {
       try { if (ac) ac.abort(); } catch (_) {}
     }, WTF_RECOVERY_TIMEOUT_MS);
-    fetch(base + '/wtf/events/today', ac ? { signal: ac.signal } : {})
+    fetch(base + '/wtf/events/today', requestOptions)
       .then(function (res) { return res && res.ok ? res.json() : null; })
       .then(function (payload) {
         var recovered = normalizeEmergencyState(payload);
         if (recovered) {
           _singleton.wtfEmergencyState = recovered;
+          _singleton.wtfEmergencyRecoveredAt = Date.now();
           refresh();
         }
       })
@@ -567,8 +610,9 @@
 
   function wtfHTML(linked) {
     var state = getWtfState();
-    if ((!state || state.status === 'error') && _singleton.wtfEmergencyState) {
-      state = _singleton.wtfEmergencyState;
+    var emergencyState = getEmergencyStateIfUsable();
+    if ((!state || state.status === 'error') && emergencyState) {
+      state = emergencyState;
     }
     if (!state || state.status === 'loading') {
       var nowMs = Date.now();
@@ -604,7 +648,10 @@
       maybeKickEmergencyWtfRecovery();
       return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>' + esc(state.diagnostic || 'Try the arcade while the feed reconnects.') + '</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
     }
-    _singleton.wtfEmergencyState = null;
+    if (hasUsablePrimaryWtfState(getWtfState())) {
+      _singleton.wtfEmergencyState = null;
+      _singleton.wtfEmergencyRecoveredAt = 0;
+    }
     var active = state.active_event || null;
     var next = state.next_event || (state.upcoming_events && state.upcoming_events[0]) || null;
     var status = wtfStatus(state);
