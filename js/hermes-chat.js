@@ -16,7 +16,8 @@
     action: el("actionOutput"),
     repo: el("repoStatus"),
     ops: el("opsStatus"),
-    webcrawl: el("webcrawlOutput")
+    webcrawl: el("webcrawlOutput"),
+    swarmPlan: el("swarmPlanOutput")
   };
 
   function setOut(node, value) {
@@ -121,6 +122,121 @@
       ogMessages.splice(0, ogMessages.length - maxOgMessages);
     }
     renderOgMessages();
+  }
+
+
+  let currentSwarmPlan = null;
+
+  function renderSwarmTaskBoard(plan) {
+    const targets = [el("swarmTaskBoard"), el("ogSwarmTaskBoard")].filter(Boolean);
+    if (targets.length === 0) return;
+    const subtasks = Array.isArray(plan?.subtasks) ? plan.subtasks : [];
+    const html = subtasks.length
+      ? subtasks
+          .map((task) => {
+            const status = String(task.status || "planned");
+            const risk = String(task.riskLevel || "medium");
+            const files = Array.isArray(task.filesLikelyAffected)
+              ? task.filesLikelyAffected.join(", ")
+              : String(task.filesLikelyAffected || "TBD");
+            const tests = Array.isArray(task.requiredTests)
+              ? task.requiredTests.join(", ")
+              : String(task.requiredTests || "TBD");
+            return `<article class="swarm-task-card ${escapeHtml(status)}">
+              <div class="swarm-task-head">
+                <div class="swarm-task-title">${escapeHtml(task.taskTitle || task.title || "Swarm task")}</div>
+                <div class="swarm-task-meta">
+                  <span class="swarm-pill">${escapeHtml(task.assignedAgent || "main_hermes")}</span>
+                  <span class="swarm-pill status-${escapeHtml(status)}">${escapeHtml(status)}</span>
+                  <span class="swarm-pill risk-${escapeHtml(risk)}">risk: ${escapeHtml(risk)}</span>
+                </div>
+              </div>
+              <div class="swarm-task-grid">
+                <div class="swarm-task-field"><strong>Files likely affected</strong><span>${escapeHtml(files)}</span></div>
+                <div class="swarm-task-field"><strong>Required tests</strong><span>${escapeHtml(tests)}</span></div>
+                <div class="swarm-task-field"><strong>Next action</strong><span>${escapeHtml(task.nextAction || "Review plan")}</span></div>
+                <div class="swarm-task-field"><strong>Mode capability</strong><span>${escapeHtml(task.modeCapability || "Safe Review Mode")}</span></div>
+              </div>
+            </article>`;
+          })
+          .join("")
+      : '<div class="swarm-task-empty">No swarm plan yet. Enter a task prompt, then create a swarm plan.</div>';
+    targets.forEach((target) => {
+      target.innerHTML = html;
+    });
+  }
+
+  function getPlanPrompt(preferredId) {
+    const preferred = String(el(preferredId)?.value || "").trim();
+    if (preferred) return preferred;
+    return String(el("prompt")?.value || el("ogPrompt")?.value || "").trim();
+  }
+
+  function getSwarmExecutionMode(preferredPromptId) {
+    const preferredSelectId = preferredPromptId === "ogPrompt" ? "ogSwarmExecutionMode" : "swarmExecutionMode";
+    const fallbackSelectId = preferredPromptId === "ogPrompt" ? "swarmExecutionMode" : "ogSwarmExecutionMode";
+    return String(el(preferredSelectId)?.value || el(fallbackSelectId)?.value || "safe_review");
+  }
+
+  function syncSwarmExecutionMode(sourceId) {
+    const source = el(sourceId);
+    if (!source) return;
+    const targetId = sourceId === "ogSwarmExecutionMode" ? "swarmExecutionMode" : "ogSwarmExecutionMode";
+    const target = el(targetId);
+    if (target) target.value = source.value;
+  }
+
+  let swarmPlanInFlight = false;
+
+  function setSwarmPlanButtonsDisabled(disabled) {
+    const main = el("createSwarmPlan");
+    const og = el("ogCreateSwarmPlan");
+    if (main) main.disabled = disabled;
+    if (og) og.disabled = disabled;
+  }
+
+  async function createSwarmPlanFromPrompt(preferredPromptId) {
+    if (swarmPlanInFlight) {
+      appendOgMessage("error", "Swarm planner request already in progress.");
+      return;
+    }
+    const taskBrief = getPlanPrompt(preferredPromptId);
+    if (!taskBrief) {
+      appendOgMessage("error", "Prompt is required before creating a swarm plan.");
+      setOut(out.swarmPlan, { error: "Prompt is required before creating a swarm plan." });
+      return;
+    }
+
+    const swarmExecutionMode = getSwarmExecutionMode(preferredPromptId);
+    swarmPlanInFlight = true;
+    setSwarmPlanButtonsDisabled(true);
+    try {
+      const payload = {
+        ...basePayload(),
+        taskBrief,
+        context: {
+          mode: String(el("mode")?.value || "chat"),
+          role: String(el("role")?.value || "main_hermes"),
+          source: preferredPromptId === "ogPrompt" ? "hermes_og" : "admin_console",
+          swarmExecutionMode,
+          ownerOperatorMode: swarmExecutionMode === "owner_operator"
+        }
+      };
+      const data = await api("/api/hermes/swarm/plan", { method: "POST", body: JSON.stringify(payload) });
+      const plan = data.plan || data;
+      currentSwarmPlan = plan;
+      renderSwarmTaskBoard(plan);
+      setOut(out.swarmPlan, plan);
+      appendOgMessage("assistant", `Swarm plan created: ${plan.taskTitle || "task"}`, `mode:${plan.modeLabel || swarmExecutionMode}  flow:${plan.ownerOperatorMode?.flow || "plan → execute → test → rollback/report"}`);
+      const barLast = el("ogBarLastAction");
+      if (barLast) barLast.textContent = "swarm/plan";
+    } catch (error) {
+      appendOgMessage("error", String(error?.message || error));
+      setOut(out.swarmPlan, { error: String(error?.message || error) });
+    } finally {
+      swarmPlanInFlight = false;
+      setSwarmPlanButtonsDisabled(false);
+    }
   }
 
   function updateOgStatusBar(mode, role) {
@@ -231,6 +347,7 @@
     updateOgStatusBar(el("mode")?.value || "chat", el("role")?.value || "main_hermes");
     loadOgSwarm().catch(() => null);
     loadOgStatus().catch(() => null);
+    renderSwarmTaskBoard(currentSwarmPlan);
   }
 
   function closeOgOverlay() {
@@ -321,6 +438,19 @@
       setSendButtonsDisabled(false);
     }
   }
+
+  const swarmExecutionSelect = el("swarmExecutionMode");
+  if (swarmExecutionSelect) swarmExecutionSelect.addEventListener("change", () => syncSwarmExecutionMode("swarmExecutionMode"));
+  const ogSwarmExecutionSelect = el("ogSwarmExecutionMode");
+  if (ogSwarmExecutionSelect) ogSwarmExecutionSelect.addEventListener("change", () => syncSwarmExecutionMode("ogSwarmExecutionMode"));
+
+  bindClick("createSwarmPlan", async () => {
+    await createSwarmPlanFromPrompt("prompt");
+  });
+
+  bindClick("ogCreateSwarmPlan", async () => {
+    await createSwarmPlanFromPrompt("ogPrompt");
+  });
 
   bindClick("ogSendChat", async () => {
     const promptEl = el("ogPrompt");

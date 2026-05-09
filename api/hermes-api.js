@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 const express = require("express");
 const cors = require("cors");
@@ -10,6 +10,7 @@ const {
 } = require("../server/hermes/chat-proxy.js");
 const orchestrator = require("../server/hermes/orchestrator.js");
 const { getAgents } = require("../server/hermes/swarm-registry.js");
+const { createSwarmPlan } = require("../server/hermes/swarm-manager.js");
 const { runConversation } = require("../server/hermes/conversation-runtime.js");
 const { executeAction } = require("../server/hermes/tool-executor.js");
 const { ACTIONS } = require("../server/hermes/action-schema.js");
@@ -438,6 +439,18 @@ app.get("/api/hermes/swarm", (_req, res) => {
       ]
     }
   });
+});
+
+app.post("/api/hermes/swarm/plan", (req, res) => {
+  const taskBrief = readStringBody(req, "taskBrief") || readStringBody(req, "prompt") || readStringBody(req, "task");
+  const normalizedTaskBrief = taskBrief.trim();
+
+  if (!normalizedTaskBrief) {
+    return res.status(400).json({ ok: false, error: "taskBrief is required" });
+  }
+
+  const context = readObjectBody(req, "context");
+  return res.json({ plan: createSwarmPlan(normalizedTaskBrief, context) });
 });
 
 app.get("/api/hermes/runtime/root", async (_req, res) => {

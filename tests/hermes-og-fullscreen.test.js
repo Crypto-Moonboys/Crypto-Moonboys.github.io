@@ -105,6 +105,39 @@ test("overlay has repo info pane", () => {
   assert.match(htmlSource, /id="ogRepoInfo"/);
 });
 
+
+// ── OG swarm task board ──────────────────────────────────────────────────────
+
+test("overlay has swarm task board and create plan control", () => {
+  assert.match(htmlSource, /id="ogSwarmTaskBoard"/);
+  assert.match(htmlSource, /id="ogCreateSwarmPlan"/);
+  assert.match(htmlSource, /CREATE SWARM PLAN/);
+});
+
+test("main console has swarm task board panel", () => {
+  assert.match(htmlSource, /Swarm Task Board/);
+  assert.match(htmlSource, /id="swarmTaskBoard"/);
+  assert.match(htmlSource, /id="swarmPlanOutput"/);
+});
+
+test("js can render and create swarm plans without sending chat", () => {
+  assert.match(jsSource, /function renderSwarmTaskBoard/);
+  assert.match(jsSource, /function createSwarmPlanFromPrompt/);
+  assert.match(jsSource, /\/api\/hermes\/swarm\/plan/);
+  assert.match(jsSource, /getSwarmExecutionMode/);
+  assert.match(jsSource, /ownerOperatorMode: swarmExecutionMode === "owner_operator"/);
+});
+
+test("overlay documents safe review and owner operator modes", () => {
+  assert.match(htmlSource, /AUTHORITY MODEL/);
+  assert.match(htmlSource, /OWNER OPERATOR MODE/);
+  assert.match(htmlSource, /Safe Review Mode/);
+  assert.match(htmlSource, /Owner Operator Mode is for self-hosted repo control/);
+  assert.match(htmlSource, /plan → execute → test → rollback\/report/);
+  assert.match(htmlSource, /id="ogSwarmExecutionMode"/);
+  assert.match(htmlSource, /id="swarmExecutionMode"/);
+});
+
 // ── Edit safety warning ───────────────────────────────────────────────────────
 
 test("edit safety warning is present in overlay", () => {
