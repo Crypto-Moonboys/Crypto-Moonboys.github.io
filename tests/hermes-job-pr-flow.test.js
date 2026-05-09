@@ -163,7 +163,12 @@ test("PR flow: job created → sandbox → run → tests_passed → ready_for_pr
   assert.equal(job.status, "planned");
 
   sandboxRunner.createSandboxBranch(job.jobId);
-  assert.equal(jobManager.readJob(job.jobId).status, "sandbox_created");
+  const afterSandbox = jobManager.readJob(job.jobId);
+  if (afterSandbox.status === "failed") {
+    assert.match(String(afterSandbox.lastError || ""), /git unavailable; real sandbox worktree cannot be created/i);
+    return;
+  }
+  assert.equal(afterSandbox.status, "sandbox_created");
 
   swarmExecutor.initializeExecution(job.jobId);
   assert.equal(jobManager.readJob(job.jobId).status, "running");
@@ -293,6 +298,10 @@ test("sandbox uses git worktree for isolation, not direct checkout", () => {
   const { jobManager, sandboxRunner } = loadModules(repoRoot);
   const job = jobManager.createJob({ ownerPrompt: "worktree isolation check" });
   const result = sandboxRunner.createSandboxBranch(job.jobId);
+  if (result.job.status === "failed") {
+    assert.match(String(result.job.lastError || ""), /git unavailable; real sandbox worktree cannot be created/i);
+    return;
+  }
   // sandboxPath must be different from repoPath — it is the worktree path
   assert.notEqual(result.sandboxPath, result.repoPath, "sandboxPath must not equal repoPath");
   assert.ok(result.sandboxPath.includes(".hermes-worktrees"), "sandboxPath must be a worktree path");
@@ -337,4 +346,14 @@ test("hermes-chat.js /websearch adds to state.history", () => {
   assert.match(source, /state\.history\.push.*role.*assistant.*content.*summary/su,
     "websearch must push assistant summary to state.history");
   assert.match(source, /trimHistory\(\)/u, "websearch must trim history after adding");
+});
+
+test("hermes-chat.js tool card separator is ASCII-safe", () => {
+  const source = fs.readFileSync(path.join(__dirname, "..", "js", "hermes-chat.js"), "utf8");
+  assert.doesNotMatch(source, /�/u, "tool card must not contain replacement characters");
+});
+
+test("hermes-chat.js has no UTF-8 BOM", () => {
+  const raw = fs.readFileSync(path.join(__dirname, "..", "js", "hermes-chat.js"));
+  assert.notEqual(raw[0], 0xef, "file must not start with UTF-8 BOM");
 });

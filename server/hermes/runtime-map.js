@@ -4,7 +4,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { HERMES_DATA_ROOT } = require("./config.js");
 
-const RUNTIME_MAP_FILE = path.join(HERMES_DATA_ROOT, "runtime-map.json");
+const RUNTIME_MAP_FILE = path.join(HERMES_DATA_ROOT, "runtime-map.local.json");
+const RUNTIME_MAP_EXAMPLE_FILE = path.join(HERMES_DATA_ROOT, "runtime-map.example.json");
 const REPOS_FILE = path.join(HERMES_DATA_ROOT, "repos.json");
 const TOOL_POLICY_FILE = path.join(HERMES_DATA_ROOT, "tool-policy.json");
 
@@ -18,7 +19,9 @@ function readJson(file, fallback) {
 }
 
 function loadRuntimeMap() {
-  return readJson(RUNTIME_MAP_FILE, {});
+  const local = readJson(RUNTIME_MAP_FILE, null);
+  if (local && typeof local === "object") return local;
+  return readJson(RUNTIME_MAP_EXAMPLE_FILE, {});
 }
 
 function loadReposConfig() {
@@ -31,6 +34,7 @@ function loadToolPolicy() {
 
 module.exports = {
   RUNTIME_MAP_FILE,
+  RUNTIME_MAP_EXAMPLE_FILE,
   REPOS_FILE,
   TOOL_POLICY_FILE,
   loadRuntimeMap,

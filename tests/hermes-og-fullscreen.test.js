@@ -97,7 +97,7 @@ test("compat adapter maps to existing Hermes and Brain backend routes", () => {
 
 test("adapter exposes parity capability map and honest missing statuses", () => {
   assert.match(adapterJs, /getCapabilityMap\(\)/u);
-  assert.match(adapterJs, /skills:\s*\{\s*status:\s*"missing"/u);
+  assert.match(adapterJs, /skills:\s*\{\s*status:\s*"working"/u);
   assert.match(adapterJs, /streaming:\s*\{\s*status:\s*"missing"/u);
   assert.match(adapterJs, /sessions:\s*\{\s*status:\s*"partial"/u);
 });

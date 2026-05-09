@@ -33,6 +33,12 @@ function setupGitRepo() {
   return root;
 }
 
+function setupPlainRepoDir() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-sandbox-plain-"));
+  fs.writeFileSync(path.join(root, "README.md"), "plain dir\n");
+  return root;
+}
+
 function loadWithRepo(repoRoot) {
   process.env.HERMES_REPO_ROOT = repoRoot;
   process.env.HERMES_DATA_ROOT = path.join(repoRoot, "admin", "hermes-data");
@@ -70,11 +76,18 @@ test("createSandboxBranch creates the branch and updates job status", () => {
   const job = jobManager.createJob({ ownerPrompt: "rebuild website UI" });
   const result = sandboxRunner.createSandboxBranch(job.jobId);
   assert.equal(result.branch, job.branch);
-  assert.equal(result.job.status, "sandbox_created");
-  assert.ok(result.sandboxPath, "sandboxPath must be set");
+  assert.ok(["sandbox_created", "failed"].includes(result.job.status));
+  if (result.job.status === "sandbox_created") {
+    assert.ok(result.sandboxPath, "sandboxPath must be set");
+  } else {
+    assert.equal(result.sandboxPath, "");
+    assert.match(String(result.job.lastError || ""), /git unavailable; real sandbox worktree cannot be created/i);
+  }
   assert.ok(result.rollbackRef, "rollbackRef must be set");
   // sandboxPath must be a worktree path
-  assert.ok(result.sandboxPath.includes(".hermes-worktrees"), "sandboxPath must be a worktree");
+  if (result.sandboxPath) {
+    assert.ok(result.sandboxPath.includes(".hermes-worktrees"), "sandboxPath must be a worktree");
+  }
 });
 
 test("createSandboxBranch creates worktree directory on disk", () => {
@@ -82,7 +95,11 @@ test("createSandboxBranch creates worktree directory on disk", () => {
   const { jobManager, sandboxRunner } = loadWithRepo(repoRoot);
   const job = jobManager.createJob({ ownerPrompt: "build bomber royale" });
   const result = sandboxRunner.createSandboxBranch(job.jobId);
-  assert.ok(fs.existsSync(result.sandboxPath), "worktree path must exist on disk");
+  if (result.job.status === "sandbox_created") {
+    assert.ok(fs.existsSync(result.sandboxPath), "worktree path must exist on disk");
+  } else {
+    assert.equal(result.sandboxPath, "");
+  }
 });
 
 test("getSandboxStatus returns current branch info", () => {
@@ -138,4 +155,14 @@ test("createSandboxBranch resolves job repoId from registry before falling back 
   assert.match(source, /resolveRepoForJob/u, "must have resolveRepoForJob function");
   assert.match(source, /job\.repoId/u, "must check job.repoId");
   assert.match(source, /getRegistrySnapshot/u, "must use getRegistrySnapshot to look up job repo");
+});
+
+test("sandbox fallback does not create empty sandbox when git is unavailable", () => {
+  const repoRoot = setupPlainRepoDir();
+  const { jobManager, sandboxRunner } = loadWithRepo(repoRoot);
+  const job = jobManager.createJob({ ownerPrompt: "fallback guard" });
+  const result = sandboxRunner.createSandboxBranch(job.jobId);
+  assert.equal(result.job.status, "failed");
+  assert.equal(result.sandboxPath, "");
+  assert.match(String(result.job.lastError || ""), /git unavailable; real sandbox worktree cannot be created/i);
 });

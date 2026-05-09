@@ -13,3 +13,6 @@ workers/**/.wrangler/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+
+# Hermes local topology
+admin/hermes-data/runtime-map.local.json

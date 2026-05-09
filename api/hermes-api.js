@@ -27,6 +27,8 @@ const { loadRuntimeMap, loadReposConfig, loadToolPolicy } = require("../server/h
 const { getToolRegistry } = require("../server/hermes/tool-registry.js");
 const { generateImage } = require("../server/hermes/image-generator.js");
 const githubConnector = require("../server/hermes/github-connector.js");
+const { missingForPrivileged } = require("../server/hermes/tool-executor.js");
+const { consumeApproved } = require("../server/hermes/approval-gate.js");
 const {
   listSessions,
   createSession,
@@ -376,6 +378,41 @@ function conversationErrorPayload(req, error) {
   };
 }
 
+function assertPrivilegedGate(req) {
+  const ctx = readOpContext(req);
+  const missing = missingForPrivileged(ctx);
+  if (missing.length > 0) {
+    const err = new Error(`Privileged route denied: ${missing.join("; ")}`);
+    err.statusCode = 403;
+    throw err;
+  }
+  const serverToken = String(process.env.HERMES_EDIT_TOKEN || "").trim();
+  if (!serverToken) {
+    const err = new Error("HERMES_EDIT_TOKEN is not configured on server.");
+    err.statusCode = 403;
+    throw err;
+  }
+  if (String(ctx.approvalToken || "").trim() !== serverToken) {
+    const err = new Error("Missing or invalid Hermes edit token.");
+    err.statusCode = 403;
+    throw err;
+  }
+  consumeApproved(String(ctx.approvalId || "").trim());
+  return ctx;
+}
+
+function redactRuntimeMap(runtimeMap = {}) {
+  return {
+    runtimeRoots: [],
+    webOrigin: String(runtimeMap.webOrigin || ""),
+    pm2Apps: Array.isArray(runtimeMap.pm2Apps) ? runtimeMap.pm2Apps.map((v) => String(v)) : [],
+    ports: {},
+    adminPages: Array.isArray(runtimeMap.adminPages) ? runtimeMap.adminPages.map((v) => String(v)) : [],
+    nginxNotes: String(runtimeMap.nginxNotes || ""),
+    apiNotes: String(runtimeMap.apiNotes || "")
+  };
+}
+
 app.get("/api/hermes/models", (_req, res) => {
   res.json({
     defaultModel: DEFAULT_MODEL,
@@ -410,7 +447,7 @@ app.get("/api/hermes/webui/capabilities", (_req, res) => {
       { key: "memory", status: "working", endpoint: "/api/hermes/memory" },
       { key: "skills", status: "working", endpoint: "/api/hermes/skills" },
       { key: "tasks_cron", status: "partial", endpoint: "/api/hermes/task/plan,/api/hermes/jobs/*" },
-      { key: "profiles", status: "missing", endpoint: "" },
+      { key: "profiles", status: "working", endpoint: "/api/hermes/profile" },
       { key: "model_selector", status: "working", endpoint: "/api/hermes/models" },
       { key: "attachments", status: "missing", endpoint: "" },
       { key: "voice_input", status: "missing", endpoint: "" },
@@ -556,36 +593,31 @@ app.get("/api/hermes/skills", (_req, res) => {
 app.get("/api/hermes/runtime/map", (_req, res) => {
   return res.json({
     ok: true,
-    runtimeMap: loadRuntimeMap(),
-    repos: loadReposConfig(),
-    toolPolicy: loadToolPolicy()
+    runtimeMap: redactRuntimeMap(loadRuntimeMap()),
+    repos: { repos: [] },
+    toolPolicy: { ownerFlow: ["sandbox-first", "owner-controlled", "repo-aware", "test-gated", "pr-before-merge"] }
   });
 });
 
 app.get("/api/hermes/profile", (_req, res) => {
-  const base = process.env.HERMES_DATA_ROOT || path.join(process.cwd(), "admin", "hermes-data");
-  const readJson = (name) => {
-    const file = path.join(base, name);
-    if (!fs.existsSync(file)) return {};
-    try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch (_e) { return {}; }
-  };
   return res.json({
     ok: true,
-    profile: readJson("profile.json"),
-    settings: readJson("settings.json"),
-    personality: readJson("personality.json"),
-    toolPolicy: readJson("tool-policy.json")
+    profile: { name: "Hermes", role: "Owner-controlled Crypto Moonboys repo operator" },
+    settings: { surface: "hermes-webui" },
+    personality: { identity: "Hermes is the owner-controlled Crypto Moonboys repo operator." },
+    toolPolicy: { ownerFlow: ["sandbox-first", "owner-controlled", "repo-aware", "test-gated", "pr-before-merge"] }
   });
 });
 
 app.post("/api/hermes/images/generate", async (req, res) => {
   try {
+    assertPrivilegedGate(req);
     const prompt = readStringBody(req, "prompt");
     if (!prompt) return res.status(400).json({ ok: false, error: "prompt is required." });
     const image = await generateImage(prompt, { size: readStringBody(req, "size", "1024x1024") });
     return res.json({ ok: true, image });
   } catch (error) {
-    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+    return res.status(Number(error?.statusCode || 400)).json({ ok: false, error: String(error?.message || error) });
   }
 });
 
@@ -625,6 +657,7 @@ app.post("/api/hermes/github/push", (req, res) => {
 
 app.post("/api/hermes/github/pr", async (req, res) => {
   try {
+    assertPrivilegedGate(req);
     const pr = await githubConnector.createPullRequest(
       readStringBody(req, "owner"),
       readStringBody(req, "repo"),
@@ -635,12 +668,13 @@ app.post("/api/hermes/github/pr", async (req, res) => {
     );
     return res.json({ ok: true, pr });
   } catch (error) {
-    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+    return res.status(Number(error?.statusCode || 400)).json({ ok: false, error: String(error?.message || error) });
   }
 });
 
 app.post("/api/hermes/github/pr/comment", async (req, res) => {
   try {
+    assertPrivilegedGate(req);
     const comment = await githubConnector.commentOnPr(
       readStringBody(req, "owner"),
       readStringBody(req, "repo"),
@@ -649,12 +683,13 @@ app.post("/api/hermes/github/pr/comment", async (req, res) => {
     );
     return res.json({ ok: true, comment });
   } catch (error) {
-    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+    return res.status(Number(error?.statusCode || 400)).json({ ok: false, error: String(error?.message || error) });
   }
 });
 
 app.post("/api/hermes/github/pr/request-review", async (req, res) => {
   try {
+    assertPrivilegedGate(req);
     const review = await githubConnector.requestReview(
       readStringBody(req, "owner"),
       readStringBody(req, "repo"),
@@ -663,7 +698,7 @@ app.post("/api/hermes/github/pr/request-review", async (req, res) => {
     );
     return res.json({ ok: true, review });
   } catch (error) {
-    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+    return res.status(Number(error?.statusCode || 400)).json({ ok: false, error: String(error?.message || error) });
   }
 });
 

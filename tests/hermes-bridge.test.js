@@ -775,6 +775,7 @@ test("webui capabilities endpoint marks missing/partial features honestly", asyn
   assert.equal(byKey.memory?.status, "working");
   assert.equal(byKey.websearch?.status, "working");
   assert.equal(byKey.skills?.status, "working");
+  assert.equal(byKey.profiles?.status, "working");
   assert.equal(byKey.streaming?.status, "missing");
   assert.equal(byKey.sessions?.status, "partial");
 });
@@ -831,6 +832,55 @@ test("runtime map route returns runtime and repo config", async (t) => {
   assert.equal(res.body.ok, true);
   assert.ok(res.body.runtimeMap);
   assert.ok(res.body.repos);
+  assert.deepEqual(res.body.repos.repos, []);
+  assert.doesNotMatch(JSON.stringify(res.body.runtimeMap), /\/root\/Crypto-Moonboys\.github\.io|\/home\/moonboys|space\.cryptomoonboys\.com|3012|3011/i);
+});
+
+test("profile route is available and redacted for non-admin mode", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+  const res = await get(base, "/api/hermes/profile");
+  assert.equal(res.status, 200);
+  assert.equal(res.body.ok, true);
+  assert.match(String(res.body.personality?.identity || ""), /owner-controlled Crypto Moonboys repo operator/i);
+});
+
+test("github write routes require privileged approval", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+  const res = await post(base, "/api/hermes/github/pr", {
+    owner: "a",
+    repo: "b",
+    head: "x",
+    title: "t"
+  });
+  assert.equal(res.status, 403);
+  assert.match(String(res.body.error || ""), /Privileged route denied/i);
+  const comment = await post(base, "/api/hermes/github/pr/comment", {
+    owner: "a",
+    repo: "b",
+    issueNumber: 1,
+    body: "x"
+  });
+  assert.equal(comment.status, 403);
+  const review = await post(base, "/api/hermes/github/pr/request-review", {
+    owner: "a",
+    repo: "b",
+    pullNumber: 1,
+    reviewers: ["octocat"]
+  });
+  assert.equal(review.status, 403);
+});
+
+test("image generation route requires privileged approval", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+  const res = await post(base, "/api/hermes/images/generate", { prompt: "moonboy" });
+  assert.equal(res.status, 403);
+  assert.match(String(res.body.error || ""), /Privileged route denied/i);
 });
 
 test("broad owner prompt does not route to literal file/read", async (t) => {

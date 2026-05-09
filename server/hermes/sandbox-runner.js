@@ -11,6 +11,7 @@ const BLOCKED_BRANCHES = new Set(["main", "master"]);
 // Timeout for git worktree/branch operations (seconds: 30).
 const GIT_TIMEOUT_MS = 30000;
 const FALLBACK_REF = "git-unavailable";
+const GIT_UNAVAILABLE_REASON = "git unavailable; real sandbox worktree cannot be created";
 
 function slugFromBranch(branch) {
   return String(branch || "").replace(/[^a-zA-Z0-9_-]/gu, "-");
@@ -84,8 +85,39 @@ function createSandboxBranch(jobId) {
   }
 
   const gitAvailable = canUseGit(repoPath);
-  const currentBranch = gitAvailable ? getCurrentBranch(repoPath) : "";
-  const rollbackRef = gitAvailable ? runGitSync(["rev-parse", "HEAD"], repoPath) : FALLBACK_REF;
+  let currentBranch = "";
+  let rollbackRef = FALLBACK_REF;
+
+  if (gitAvailable) {
+    try {
+      currentBranch = getCurrentBranch(repoPath);
+      rollbackRef = runGitSync(["rev-parse", "HEAD"], repoPath);
+    } catch (_e) {
+      const blocked = updateJob(jobId, {
+        status: "failed",
+        repoId: repo.id,
+        repoPath,
+        sandboxPath: "",
+        lastError: GIT_UNAVAILABLE_REASON,
+        rollbackPlan: {
+          type: "git_worktree",
+          rollbackBranch: "",
+          rollbackRef: FALLBACK_REF,
+          gitAvailable: false,
+          blockedReason: GIT_UNAVAILABLE_REASON
+        }
+      });
+      return {
+        jobId,
+        branch,
+        repoPath,
+        sandboxPath: "",
+        rollbackRef: FALLBACK_REF,
+        previousBranch: "",
+        job: blocked
+      };
+    }
+  }
 
   // Use a git worktree for real isolation so job operations never touch the shared working tree.
   const worktreePath = path.join(repoPath, ".hermes-worktrees", slugFromBranch(branch));
@@ -101,12 +133,29 @@ function createSandboxBranch(jobId) {
       runGitSync(["worktree", "add", "-b", branch, worktreePath], repoPath);
     }
   } else {
-    // Fallback mode for restricted runtimes where git subprocess execution is blocked.
-    fs.mkdirSync(worktreePath, { recursive: true });
-    const markerPath = path.join(worktreePath, ".hermes-sandbox-fallback");
-    if (!fs.existsSync(markerPath)) {
-      fs.writeFileSync(markerPath, "git unavailable; sandbox created in fallback mode\n");
-    }
+    const blocked = updateJob(jobId, {
+      status: "failed",
+      repoId: repo.id,
+      repoPath,
+      sandboxPath: "",
+      lastError: GIT_UNAVAILABLE_REASON,
+      rollbackPlan: {
+        type: "git_worktree",
+        rollbackBranch: currentBranch,
+        rollbackRef,
+        gitAvailable: false,
+        blockedReason: GIT_UNAVAILABLE_REASON
+      }
+    });
+    return {
+      jobId,
+      branch,
+      repoPath,
+      sandboxPath: "",
+      rollbackRef,
+      previousBranch: currentBranch,
+      job: blocked
+    };
   }
 
   const updated = updateJob(jobId, {

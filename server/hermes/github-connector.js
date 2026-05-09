@@ -1,6 +1,8 @@
 "use strict";
 
 const https = require("node:https");
+const GITHUB_TIMEOUT_MS = 30000;
+const GITHUB_MAX_RESPONSE_BYTES = 512 * 1024;
 
 function getGithubToken() {
   return String(process.env.GITHUB_TOKEN || "").trim();
@@ -31,16 +33,35 @@ function githubRequest(method, path, body) {
       }
     }, (res) => {
       const chunks = [];
-      res.on("data", (c) => chunks.push(c));
+      let totalBytes = 0;
+      res.on("data", (c) => {
+        totalBytes += c.length;
+        if (totalBytes > GITHUB_MAX_RESPONSE_BYTES) {
+          req.destroy(new Error("GitHub response exceeded size limit."));
+          return;
+        }
+        chunks.push(c);
+      });
       res.on("end", () => {
         const raw = Buffer.concat(chunks).toString("utf8");
-        const json = raw ? JSON.parse(raw) : {};
+        let json = {};
+        try {
+          json = raw ? JSON.parse(raw) : {};
+        } catch (_e) {
+          json = null;
+        }
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(json);
+          resolve(json ?? { raw });
         } else {
-          reject(new Error(`GitHub API ${res.statusCode}: ${json.message || raw || "request failed"}`));
+          const message = json && typeof json === "object"
+            ? String(json.message || raw || "request failed")
+            : String(raw || "request failed");
+          reject(new Error(`GitHub API ${res.statusCode}: ${message}`));
         }
       });
+    });
+    req.setTimeout(GITHUB_TIMEOUT_MS, () => {
+      req.destroy(new Error(`GitHub request timed out after ${GITHUB_TIMEOUT_MS}ms.`));
     });
     req.on("error", reject);
     if (payload) req.write(payload);

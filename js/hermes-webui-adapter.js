@@ -66,7 +66,7 @@
         sessions: { status: "partial", endpoint: "/api/hermes/sessions" },
         workspace: { status: "working", list: "/api/hermes/files/list", read: "/api/hermes/files/read" },
         memory: { status: "working", endpoint: "/api/hermes/memory" },
-        skills: { status: "missing", endpoint: "", note: "Not implemented in this backend yet." },
+        skills: { status: "working", endpoint: "/api/hermes/skills" },
         websearch: { status: "working", endpoint: "/api/hermes/webcrawl/search" },
         patchFlow: { status: "working", preview: "/api/hermes/patch/preview", apply: "/api/hermes/patch/apply", rollback: "/api/hermes/patch/rollback" },
         images: { status: "working", endpoint: "/api/hermes/images/generate" },

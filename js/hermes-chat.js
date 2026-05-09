@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 (function bootstrapImportedHermesWebUi(global) {
   const adapter = new global.HermesWebUiAdapter();
@@ -59,7 +59,7 @@
       const action = String(item?.action || "tool");
       const status = item?.ok === true ? "ok" : "error";
       const summary = String(item?.resultSummary || item?.error || "").trim();
-      card.innerHTML = `<strong>${escapeHtml(action)}</strong> � ${escapeHtml(status)}<br>${escapeHtml(summary)}`;
+      card.innerHTML = `<strong>${escapeHtml(action)}</strong> - ${escapeHtml(status)}<br>${escapeHtml(summary)}`;
       cards.appendChild(card);
     }
     return cards;

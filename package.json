@@ -1,31 +1,34 @@
 {
-  "name": "crypto-moonboys.github.io",
-  "version": "1.0.0",
-  "description": "Crypto Moonboys is the live website for the project, including the arcade and shared frontend support assets.",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
-  "scripts": {
-    "test": "node tests/hermes-chat-proxy.test.js && node tests/hermes-runtime.test.js && node tests/hermes-bridge.test.js && node tests/hermes-execution-pipeline.test.js && node tests/hermes-repo-targeting.test.js && node tests/hermes-webcrawl.test.js && node tests/hermes-swarm-manager.test.js && node tests/hermes-og-fullscreen.test.js && node tests/hermes-job-manager.test.js && node tests/hermes-openai-command-interpreter.test.js && node tests/hermes-sandbox-runner.test.js && node tests/hermes-job-pr-flow.test.js && node scripts/arcade-roguelite-protection.test.mjs && node scripts/blocktopia-entry-auth.test.mjs && node scripts/blocktopia-reconnect-protection.test.mjs && node scripts/faction-canon-protection.test.mjs && node scripts/battle-chamber-faction-page.test.mjs && node scripts/faction-chamber-pages.test.mjs && node scripts/faction-reward-system.test.mjs && node scripts/battle-chamber-server-authority.test.mjs && node scripts/faction-season-lock.test.mjs && node scripts/telegram-daily-digest-and-missed-perks.test.mjs && node scripts/telegram-group-event-announcements.test.mjs && node scripts/daily-wtf-timed-events.test.mjs && node scripts/right-rail-live-panels.test.mjs && node scripts/incubator-link-auth-cache.test.mjs && node scripts/favicon-consistency.test.mjs && node scripts/anti-drift-check.mjs && node scripts/site-shell-parity-audit.mjs",
-    "test:full": "npm run test",
-    "test:anti-drift": "node scripts/anti-drift-check.mjs",
-    "test:shell-parity": "node scripts/site-shell-parity-audit.mjs",
-    "lint:shell": "node --check js/site-shell.js",
-    "test:live-site": "node scripts/live-site-verify.mjs",
-    "deploy:status": "node scripts/pages-deploy-status.mjs",
-    "test:hermes-audit": "node scripts/hermes-agent-readiness-audit.mjs",
-    "test:hermes-readiness": "node tests/hermes-chat-proxy.test.js && node tests/hermes-runtime.test.js && node tests/hermes-bridge.test.js && node tests/hermes-execution-pipeline.test.js && node tests/hermes-repo-targeting.test.js && node tests/hermes-webcrawl.test.js && node tests/hermes-swarm-manager.test.js && node tests/hermes-job-manager.test.js && node tests/hermes-openai-command-interpreter.test.js && node tests/hermes-sandbox-runner.test.js && node tests/hermes-job-pr-flow.test.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "playwright": "^1.59.1"
-  },
-  "dependencies": {
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.5.1"
-  }
+    "name":  "crypto-moonboys.github.io",
+    "version":  "1.0.0",
+    "description":  "Crypto Moonboys is the live website for the project, including the arcade and shared frontend support assets.",
+    "main":  "index.js",
+    "directories":  {
+                        "doc":  "docs"
+                    },
+    "scripts":  {
+                    "test":  "node tests/hermes-chat-proxy.test.js \u0026\u0026 node tests/hermes-runtime.test.js \u0026\u0026 node tests/hermes-bridge.test.js \u0026\u0026 node tests/hermes-execution-pipeline.test.js \u0026\u0026 node tests/hermes-repo-targeting.test.js \u0026\u0026 node tests/hermes-webcrawl.test.js \u0026\u0026 node tests/hermes-swarm-manager.test.js \u0026\u0026 node tests/hermes-og-fullscreen.test.js \u0026\u0026 node tests/hermes-job-manager.test.js \u0026\u0026 node tests/hermes-openai-command-interpreter.test.js \u0026\u0026 node tests/hermes-github-connector.test.js \u0026\u0026 node tests/hermes-sandbox-runner.test.js \u0026\u0026 node tests/hermes-job-pr-flow.test.js \u0026\u0026 node scripts/arcade-roguelite-protection.test.mjs \u0026\u0026 node scripts/blocktopia-entry-auth.test.mjs \u0026\u0026 node scripts/blocktopia-reconnect-protection.test.mjs \u0026\u0026 node scripts/faction-canon-protection.test.mjs \u0026\u0026 node scripts/battle-chamber-faction-page.test.mjs \u0026\u0026 node scripts/faction-chamber-pages.test.mjs \u0026\u0026 node scripts/faction-reward-system.test.mjs \u0026\u0026 node scripts/battle-chamber-server-authority.test.mjs \u0026\u0026 node scripts/faction-season-lock.test.mjs \u0026\u0026 node scripts/telegram-daily-digest-and-missed-perks.test.mjs \u0026\u0026 node scripts/telegram-group-event-announcements.test.mjs \u0026\u0026 node scripts/daily-wtf-timed-events.test.mjs \u0026\u0026 node scripts/right-rail-live-panels.test.mjs \u0026\u0026 node scripts/incubator-link-auth-cache.test.mjs \u0026\u0026 node scripts/favicon-consistency.test.mjs \u0026\u0026 node scripts/anti-drift-check.mjs \u0026\u0026 node scripts/site-shell-parity-audit.mjs",
+                    "test:full":  "npm run test",
+                    "test:anti-drift":  "node scripts/anti-drift-check.mjs",
+                    "test:shell-parity":  "node scripts/site-shell-parity-audit.mjs",
+                    "lint:shell":  "node --check js/site-shell.js",
+                    "test:live-site":  "node scripts/live-site-verify.mjs",
+                    "deploy:status":  "node scripts/pages-deploy-status.mjs",
+                    "test:hermes-audit":  "node scripts/hermes-agent-readiness-audit.mjs",
+                    "test:hermes-readiness":  "node tests/hermes-chat-proxy.test.js \u0026\u0026 node tests/hermes-runtime.test.js \u0026\u0026 node tests/hermes-bridge.test.js \u0026\u0026 node tests/hermes-execution-pipeline.test.js \u0026\u0026 node tests/hermes-repo-targeting.test.js \u0026\u0026 node tests/hermes-webcrawl.test.js \u0026\u0026 node tests/hermes-swarm-manager.test.js \u0026\u0026 node tests/hermes-job-manager.test.js \u0026\u0026 node tests/hermes-openai-command-interpreter.test.js \u0026\u0026 node tests/hermes-github-connector.test.js \u0026\u0026 node tests/hermes-sandbox-runner.test.js \u0026\u0026 node tests/hermes-job-pr-flow.test.js"
+                },
+    "keywords":  [
+
+                 ],
+    "author":  "",
+    "license":  "MIT",
+    "devDependencies":  {
+                            "playwright":  "^1.59.1"
+                        },
+    "dependencies":  {
+                         "cors":  "^2.8.6",
+                         "express":  "^5.2.1",
+                         "express-rate-limit":  "^8.5.1"
+                     }
 }
+
