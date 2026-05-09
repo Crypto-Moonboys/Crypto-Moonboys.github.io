@@ -45,6 +45,7 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
  *   POST /roguelite/missed-history  JSON { telegram_auth, limit, utc_day }
  *   POST /roguelite/mark-missed
  *   POST /telegram/daily-digest/run
+ *   POST /telegram/group-announcements/run
  *
  * Telegram bot commands (POST /telegram/webhook):
  *   /gkstart /gkhelp /gklink /gkstatus /gkseason /gkleaderboard /gkquests /gkfaction /gkunlink
@@ -57,6 +58,8 @@ import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
  *   TELEGRAM_BOT_USERNAME — @username (used in widget docs only)
  *   ADMIN_TELEGRAM_IDS    — comma-separated Telegram user IDs allowed to run admin commands
  *   ADMIN_SECRET          — shared secret forwarded to the anti-cheat worker (X-Admin-Secret)
+ *   TELEGRAM_GROUP_CHAT_ID   — main Telegram group chat ID for group announcements
+ *   TELEGRAM_GROUP_THREAD_ID — optional Telegram topic/thread ID for group announcements
  *   ANTI_CHEAT_WORKER_URL — base URL of the deployed anti-cheat Cloudflare Worker
  */
 
@@ -902,6 +905,9 @@ const DAILY_DIGEST_TABLES = [
   'daily_missed_perks',
   'telegram_daily_digest_log',
   'daily_opportunity_state',
+];
+const TELEGRAM_GROUP_ANNOUNCEMENT_TABLES = [
+  'telegram_group_announcement_log',
 ];
 const DAILY_WTF_TABLES = [
   'daily_wtf_events',
@@ -2180,6 +2186,324 @@ async function runTelegramDailyDigest(env, options = {}) {
         if (entry.reason === 'pending_recent') summary.skipped_pending_recent += 1;
       }
     }
+  }
+  return summary;
+}
+
+
+const TELEGRAM_GROUP_ANNOUNCEMENT_TYPES = Object.freeze({
+  TIMED_EVENTS: 'timed_events',
+  DAILY_SUMMARY: 'daily_summary',
+  ALL: 'all',
+});
+const TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS = 5 * 60 * 1000;
+const TELEGRAM_GROUP_PRE_EVENT_MINUTES = 10;
+const TELEGRAM_GROUP_RETRY_PENDING_AFTER_MS = 10 * 60 * 1000;
+
+async function ensureTelegramGroupAnnouncementTables(db) {
+  for (const tableName of TELEGRAM_GROUP_ANNOUNCEMENT_TABLES) {
+    const row = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      return {
+        _isTelegramGroupAnnouncementsUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'telegram_group_announcements_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Telegram group announcement tables are not yet configured. Apply migration 020.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+        }),
+      };
+    }
+  }
+  return null;
+}
+
+function getTelegramGroupConfig(env) {
+  const chatId = String(env.TELEGRAM_GROUP_CHAT_ID || '').trim();
+  const threadId = String(env.TELEGRAM_GROUP_THREAD_ID || '').trim();
+  return {
+    configured: !!chatId,
+    chat_id: chatId || null,
+    message_thread_id: threadId || null,
+  };
+}
+
+function describeWtfRequiredAction(requiredAction) {
+  if (requiredAction === 'complete_faction_or_battle_action') return 'Complete a faction mission or Battle Chamber proof while the signal is live.';
+  if (requiredAction === 'score_target_any_game') return 'Post an accepted arcade score while the burst is live.';
+  if (requiredAction === 'choose_and_complete_chaos_path') return 'Choose a roguelite chaos path and complete the objective.';
+  return 'Open an accepted arcade run while the signal is live.';
+}
+
+function formatUtcHm(iso) {
+  return String(iso || '').slice(11, 16);
+}
+
+function buildWtfPreEventGroupAnnouncement(eventRow) {
+  const durationMinutes = Math.round((Date.parse(eventRow.ends_at) - Date.parse(eventRow.starts_at)) / 60000) || 90;
+  return [
+    '🚨 WTF SIGNAL IN 10 MINUTES',
+    '',
+    `${eventRow.title} opens at ${formatUtcHm(eventRow.starts_at)} UTC.`,
+    '',
+    `Objective: ${describeWtfRequiredAction(eventRow.required_action)}`,
+    `Window: ${durationMinutes} minutes.`,
+    '',
+    'Check in when it opens, complete the objective, and unlock roguelite options.',
+    '',
+    `Battle Chamber: ${SITE_URL}/community.html`,
+    `Arcade: ${SITE_URL}/games/`,
+    '',
+    'Fun community gameplay/status event only — not a market signal.',
+  ].join('\n');
+}
+
+function buildDailyGroupSummaryMessage(utcDay) {
+  const windows = getWtfDailySchedule(utcDay)
+    .map((event) => `${String(event.startHour).padStart(2, '0')}:00`)
+    .join(', ');
+  return [
+    '⚡ Battle Chamber Daily Board is live.',
+    '',
+    `Six Daily WTF signals open today at ${windows} UTC.`,
+    '',
+    'Current focus: Battle Chamber proof, faction clout, accepted arcade runs, and missed opportunity history.',
+    '',
+    'Daily faction missions are live. Faction chambers have mission boards, and missed history does not reset. The city keeps moving while you are away.',
+    '',
+    'Check the site for current tasks, timed quests, roguelite options, and XP/status preview details.',
+    '',
+    `Battle Chamber: ${SITE_URL}/community.html`,
+    `Arcade: ${SITE_URL}/games/`,
+    `Faction Chambers: ${SITE_URL}/battle-chamber/factions/index.html`,
+  ].join('\n');
+}
+
+function getTimedGroupAnnouncementCandidates(nowMs, options = {}) {
+  const windowMs = Number(options.windowMs) || TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS;
+  const force = !!options.force;
+  const now = new Date(nowMs);
+  const today = now.toISOString().slice(0, 10);
+  const days = [...new Set([today, addUtcDays(today, 1), addUtcDays(today, -1)].filter(Boolean))];
+  const candidates = [];
+  for (const utcDay of days) {
+    for (const event of getWtfDailySchedule(utcDay)) {
+      const row = buildWtfScheduleRow(utcDay, event);
+      const scheduledMs = Date.parse(row.starts_at) - TELEGRAM_GROUP_PRE_EVENT_MINUTES * 60 * 1000;
+      const due = force || (nowMs >= scheduledMs && nowMs < scheduledMs + windowMs);
+      if (!due) continue;
+      candidates.push({
+        announcement_key: `wtf:${utcDay}:${row.event_id}:minus_10`,
+        utc_day: utcDay,
+        event_id: row.event_id,
+        announcement_type: 'wtf_pre_event_minus_10',
+        scheduled_for: new Date(scheduledMs).toISOString(),
+        message: buildWtfPreEventGroupAnnouncement(row),
+        metadata: {
+          title: row.title,
+          starts_at: row.starts_at,
+          ends_at: row.ends_at,
+          required_action: row.required_action,
+          pre_event_minutes: TELEGRAM_GROUP_PRE_EVENT_MINUTES,
+        },
+      });
+    }
+  }
+  return candidates.sort((a, b) => String(a.scheduled_for).localeCompare(String(b.scheduled_for)) || String(a.announcement_key).localeCompare(String(b.announcement_key)));
+}
+
+function getDailyGroupSummaryCandidates(nowMs, options = {}) {
+  const force = !!options.force;
+  const now = new Date(nowMs);
+  const utcDay = now.toISOString().slice(0, 10);
+  const scheduledMs = Date.parse(`${utcDay}T09:00:00.000Z`);
+  const windowMs = Number(options.windowMs) || TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS;
+  if (!force && !(nowMs >= scheduledMs && nowMs < scheduledMs + windowMs)) return [];
+  return [{
+    announcement_key: `daily-summary:${utcDay}`,
+    utc_day: utcDay,
+    event_id: null,
+    announcement_type: 'daily_summary',
+    scheduled_for: new Date(scheduledMs).toISOString(),
+    message: buildDailyGroupSummaryMessage(utcDay),
+    metadata: {
+      wtf_windows_utc: getWtfDailySchedule(utcDay).map((event) => `${String(event.startHour).padStart(2, '0')}:00`),
+      coverage: ['daily_faction_missions', 'battle_chamber_proof', 'missed_opportunities'],
+    },
+  }];
+}
+
+function getTelegramGroupAnnouncementCandidates(type, nowMs, options = {}) {
+  const normalized = String(type || TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.ALL).trim().toLowerCase();
+  const candidates = [];
+  if (normalized === TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.ALL || normalized === TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.TIMED_EVENTS) {
+    candidates.push(...getTimedGroupAnnouncementCandidates(nowMs, options));
+  }
+  if (normalized === TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.ALL || normalized === TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.DAILY_SUMMARY) {
+    candidates.push(...getDailyGroupSummaryCandidates(nowMs, options));
+  }
+  return candidates;
+}
+
+async function getTelegramGroupAnnouncementLog(db, announcementKey) {
+  return db.prepare(`
+    SELECT announcement_key, status, sent_at, updated_at
+    FROM telegram_group_announcement_log
+    WHERE announcement_key = ?
+    LIMIT 1
+  `).bind(announcementKey).first().catch(() => null);
+}
+
+async function claimTelegramGroupAnnouncement(db, candidate, options = {}) {
+  const nowIso = new Date().toISOString();
+  const force = !!options.force;
+  const existing = await getTelegramGroupAnnouncementLog(db, candidate.announcement_key);
+  if (existing?.status === 'sent') return { claimed: false, reason: 'already_sent' };
+  if (existing?.status === 'pending' && !force) {
+    const updatedMs = Date.parse(existing.updated_at || '');
+    if (Number.isFinite(updatedMs) && Date.now() - updatedMs < TELEGRAM_GROUP_RETRY_PENDING_AFTER_MS) {
+      return { claimed: false, reason: 'pending_recent' };
+    }
+  }
+  if (existing?.announcement_key) {
+    await db.prepare(`
+      UPDATE telegram_group_announcement_log
+      SET utc_day = ?, event_id = ?, announcement_type = ?, scheduled_for = ?, status = 'pending', error_message = NULL, metadata_json = ?, updated_at = ?
+      WHERE announcement_key = ? AND status IS NOT 'sent'
+    `).bind(
+      candidate.utc_day,
+      candidate.event_id || null,
+      candidate.announcement_type,
+      candidate.scheduled_for,
+      JSON.stringify(candidate.metadata || {}),
+      nowIso,
+      candidate.announcement_key,
+    ).run();
+    const updated = await getTelegramGroupAnnouncementLog(db, candidate.announcement_key);
+    return updated?.status === 'pending' ? { claimed: true, reason: 'retry' } : { claimed: false, reason: 'already_sent' };
+  }
+  const result = await db.prepare(`
+    INSERT OR IGNORE INTO telegram_group_announcement_log
+      (announcement_key, utc_day, event_id, announcement_type, scheduled_for, status, metadata_json, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?)
+  `).bind(
+    candidate.announcement_key,
+    candidate.utc_day,
+    candidate.event_id || null,
+    candidate.announcement_type,
+    candidate.scheduled_for,
+    JSON.stringify(candidate.metadata || {}),
+    nowIso,
+    nowIso,
+  ).run();
+  return Number(result?.meta?.changes || 0) > 0 ? { claimed: true, reason: 'new' } : { claimed: false, reason: 'duplicate' };
+}
+
+async function finalizeTelegramGroupAnnouncement(db, candidate, status, payload = {}) {
+  const nowIso = new Date().toISOString();
+  const sentAt = status === 'sent' ? nowIso : null;
+  await db.prepare(`
+    UPDATE telegram_group_announcement_log
+    SET sent_at = COALESCE(?, sent_at), status = ?, error_message = ?, metadata_json = ?, updated_at = ?
+    WHERE announcement_key = ?
+  `).bind(
+    sentAt,
+    status,
+    payload.error ? clampText(payload.error, 500, 'telegram_group_send_failed') : null,
+    JSON.stringify({ ...(candidate.metadata || {}), ...(payload.metadata || {}) }),
+    nowIso,
+    candidate.announcement_key,
+  ).run().catch((error) => {
+    logApiFailure('telegram_group_announcement_finalize_failed', {
+      announcement_key: candidate.announcement_key,
+      message: error?.message || String(error),
+    });
+  });
+}
+
+async function sendTelegramGroupAnnouncement(env, candidate) {
+  const groupConfig = getTelegramGroupConfig(env);
+  if (!groupConfig.configured) {
+    console.log('telegram_group_not_configured', JSON.stringify({ announcement_key: candidate?.announcement_key || null }));
+    return { ok: false, skipped: true, error: 'telegram_group_not_configured' };
+  }
+  const extra = { disable_web_page_preview: true };
+  if (groupConfig.message_thread_id) extra.message_thread_id = Number(groupConfig.message_thread_id) || groupConfig.message_thread_id;
+  const result = await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, groupConfig.chat_id, candidate.message, extra);
+  if (!result?.ok) {
+    logApiFailure('telegram_group_send_failed', {
+      announcement_key: candidate.announcement_key,
+      status: result?.status || null,
+      response: clampText(result?.response || result?.error || 'telegram_send_failed', 500, 'telegram_send_failed'),
+    });
+  }
+  return result;
+}
+
+async function runTelegramGroupAnnouncements(env, options = {}) {
+  const nowMs = Number.isFinite(Date.parse(options.now || '')) ? Date.parse(options.now) : Date.now();
+  const type = options.type || TELEGRAM_GROUP_ANNOUNCEMENT_TYPES.ALL;
+  const dryRun = options.dry_run === true || options.dryRun === true;
+  const force = options.force === true;
+  const groupConfig = getTelegramGroupConfig(env);
+  const dueAnnouncements = getTelegramGroupAnnouncementCandidates(type, nowMs, { force });
+  const summary = {
+    ok: true,
+    group_configured: groupConfig.configured,
+    group_thread_configured: !!groupConfig.message_thread_id,
+    type,
+    now: new Date(nowMs).toISOString(),
+    due_announcements: dueAnnouncements.map((candidate) => ({
+      announcement_key: candidate.announcement_key,
+      utc_day: candidate.utc_day,
+      event_id: candidate.event_id,
+      announcement_type: candidate.announcement_type,
+      scheduled_for: candidate.scheduled_for,
+    })),
+    sent_count: 0,
+    skipped_count: 0,
+    failed_count: 0,
+    dry_run: dryRun,
+    errors: [],
+  };
+  if (!groupConfig.configured) {
+    console.log('telegram_group_not_configured');
+    summary.skipped_count = dueAnnouncements.length;
+    return summary;
+  }
+  if (dryRun) {
+    summary.skipped_count = dueAnnouncements.length;
+    return summary;
+  }
+  const dbCheck = await ensureTelegramGroupAnnouncementTables(env.DB);
+  if (dbCheck) {
+    summary.ok = false;
+    summary.failed_count = dueAnnouncements.length;
+    summary.errors.push(dbCheck.tableName || 'telegram_group_announcement_log');
+    return summary;
+  }
+  for (const candidate of dueAnnouncements) {
+    const claim = await claimTelegramGroupAnnouncement(env.DB, candidate, { force });
+    if (!claim?.claimed) {
+      summary.skipped_count += 1;
+      continue;
+    }
+    const result = await sendTelegramGroupAnnouncement(env, candidate).catch((error) => ({ ok: false, error: error?.message || String(error) }));
+    if (result?.ok) {
+      await finalizeTelegramGroupAnnouncement(env.DB, candidate, 'sent', { metadata: { telegram_status: result.status || null } });
+      summary.sent_count += 1;
+      continue;
+    }
+    const errorMessage = result?.response || result?.error || 'telegram_group_send_failed';
+    await finalizeTelegramGroupAnnouncement(env.DB, candidate, 'failed', { error: errorMessage });
+    summary.failed_count += 1;
+    summary.errors.push({ announcement_key: candidate.announcement_key, error: clampText(errorMessage, 500, 'telegram_group_send_failed') });
   }
   return summary;
 }
@@ -3527,6 +3851,39 @@ if (path === '/telegram/daily-digest/run' && request.method === 'POST') {
       });
     }
 
+    if (path === '/telegram/group-announcements/run' && request.method === 'POST') {
+      let body = {};
+      try { body = await request.json(); } catch { body = {}; }
+      const configuredSecret = String(env.ADMIN_SECRET || '').trim();
+      const headerSecret = readAdminSecret(request);
+      let allowed = false;
+      let authMode = null;
+      if (configuredSecret && headerSecret === configuredSecret) {
+        allowed = true;
+        authMode = 'admin_secret';
+      } else if (body && body.telegram_auth) {
+        const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+        if (!verified.error && isAdminTelegramUser(verified.telegramId, env)) {
+          allowed = true;
+          authMode = 'admin_telegram_auth';
+        }
+      }
+      if (!allowed) return err('Unauthorized', 401);
+      const type = ['timed_events', 'daily_summary', 'all'].includes(String(body?.type || 'all')) ? String(body?.type || 'all') : 'all';
+      const summary = await runTelegramGroupAnnouncements(env, {
+        trigger: 'manual_route',
+        dry_run: body?.dry_run === true,
+        force: body?.force === true,
+        now: body?.now ? String(body.now) : undefined,
+        type,
+      });
+      return json({
+        ok: !!summary?.ok,
+        auth_mode: authMode,
+        ...summary,
+      }, summary?.ok ? 200 : 503);
+    }
+
     // ── GET /faction/status with telegram_auth query payload ──────────────
     // Shared arcade progression sync endpoint.
     if (path === '/arcade/progression/sync' && request.method === 'POST') {
@@ -4826,28 +5183,60 @@ if (path === '/telegram/daily-digest/run' && request.method === 'POST') {
 
     return err('Not found', 404);
   },
-  async scheduled(_event, env, _ctx) {
-    const summary = await runTelegramDailyDigest(env, {
-      trigger: 'scheduled_cron',
-      utcDay: getTodayUtcDate(),
-    }).catch((error) => ({
-      ok: false,
-      error: error?.message || String(error),
-    }));
-    if (!summary?.ok) {
-      logApiFailure('telegram_daily_digest_scheduled_failed', summary);
-      return;
+  async scheduled(event, env, _ctx) {
+    const cron = String(event?.cron || '');
+    const shouldRunDigest = !cron || cron === '0 9 * * *';
+    const shouldRunDailySummary = !cron || cron === '0 9 * * *';
+    const shouldRunTimedEvents = !cron || cron === '*/5 * * * *';
+
+    if (shouldRunDigest) {
+      const summary = await runTelegramDailyDigest(env, {
+        trigger: 'scheduled_cron',
+        utcDay: getTodayUtcDate(),
+      }).catch((error) => ({
+        ok: false,
+        error: error?.message || String(error),
+      }));
+      if (!summary?.ok) {
+        logApiFailure('telegram_daily_digest_scheduled_failed', summary);
+      } else {
+        logApiEvent('telegram_daily_digest_scheduled_complete', {
+          utcDay: summary.utc_day,
+          linked_users_considered: summary.linked_users_considered,
+          processed: summary.processed,
+          sent: summary.sent,
+          skipped: summary.skipped,
+          skipped_already_sent: summary.skipped_already_sent,
+          skipped_pending_recent: summary.skipped_pending_recent,
+          failed: summary.failed,
+        });
+      }
     }
-    logApiEvent('telegram_daily_digest_scheduled_complete', {
-      utcDay: summary.utc_day,
-      linked_users_considered: summary.linked_users_considered,
-      processed: summary.processed,
-      sent: summary.sent,
-      skipped: summary.skipped,
-      skipped_already_sent: summary.skipped_already_sent,
-      skipped_pending_recent: summary.skipped_pending_recent,
-      failed: summary.failed,
-    });
+
+    const groupType = shouldRunDailySummary && shouldRunTimedEvents
+      ? 'all'
+      : (shouldRunDailySummary ? 'daily_summary' : (shouldRunTimedEvents ? 'timed_events' : null));
+    if (groupType) {
+      const groupSummary = await runTelegramGroupAnnouncements(env, {
+        trigger: 'scheduled_cron',
+        type: groupType,
+      }).catch((error) => ({
+        ok: false,
+        error: error?.message || String(error),
+      }));
+      if (!groupSummary?.ok) {
+        logApiFailure('telegram_group_announcements_scheduled_failed', groupSummary);
+      } else {
+        logApiEvent('telegram_group_announcements_scheduled_complete', {
+          type: groupType,
+          due: groupSummary.due_announcements?.length || 0,
+          sent: groupSummary.sent_count,
+          skipped: groupSummary.skipped_count,
+          failed: groupSummary.failed_count,
+          group_configured: groupSummary.group_configured,
+        });
+      }
+    }
   },
 };
 

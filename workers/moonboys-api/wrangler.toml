@@ -3,8 +3,8 @@ main = "worker.js"
 compatibility_date = "2026-04-12"
 
 [triggers]
-# Daily Telegram digest delivery at 09:00 UTC.
-crons = ["0 9 * * *"]
+# Daily Telegram digest delivery at 09:00 UTC, plus 5-minute group announcement checks.
+crons = ["0 9 * * *", "*/5 * * * *"]
 
 # Non-secret production defaults used by worker.js. These may be overridden
 # in the Cloudflare dashboard if the deployed worker URLs change.
@@ -28,11 +28,15 @@ migrations_dir = "migrations"
 #   wrangler secret put TELEGRAM_BOT_USERNAME
 #   wrangler secret put ADMIN_TELEGRAM_IDS
 #   wrangler secret put ADMIN_SECRET
+#   wrangler secret put TELEGRAM_GROUP_CHAT_ID
+#   wrangler secret put TELEGRAM_GROUP_THREAD_ID   # optional topic/thread
 #
 # TELEGRAM_BOT_TOKEN    — The bot token from BotFather (used for HMAC verification).
 # TELEGRAM_BOT_USERNAME — The bot @username (kept for runtime/dashboard consistency).
 # ADMIN_TELEGRAM_IDS    — CSV of Telegram user IDs authorised to run admin bot commands.
-# ADMIN_SECRET          — Shared secret forwarded as X-Admin-Secret to the anti-cheat worker.
+# ADMIN_SECRET             — Shared secret forwarded as X-Admin-Secret to the anti-cheat worker.
+# TELEGRAM_GROUP_CHAT_ID   — Main Telegram group chat ID for group announcements.
+# TELEGRAM_GROUP_THREAD_ID — Optional Telegram topic/thread ID for group announcements.
 #
 # BotFather setup:
 #   /setdomain   → set to:  moonboys-api.sercullen.workers.dev
