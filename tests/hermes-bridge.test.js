@@ -38,6 +38,7 @@ function clearCache() {
     "../server/hermes/command-runner.js",
     "../server/hermes/approval-gate.js",
     "../server/hermes/memory-store.js",
+    "../server/hermes/chat-session-store.js",
     "../server/hermes/agent-runtime.js",
     "../server/hermes/tool-router.js",
     "../server/hermes/tool-executor.js",
@@ -46,7 +47,8 @@ function clearCache() {
     "../server/hermes/capabilities.js",
     "../server/hermes/execution-pipeline.js",
     "../server/hermes/proposed-operations.js",
-    "../server/hermes/orchestrator.js"
+    "../server/hermes/orchestrator.js",
+    "../server/hermes/skill-loader.js"
   ];
   for (const mod of targets) {
     delete require.cache[require.resolve(mod)];
@@ -74,6 +76,17 @@ async function post(base, pathName, body, headers = {}) {
     method: "POST",
     headers: { "Content-Type": "application/json", ...headers },
     body: JSON.stringify(body)
+  });
+  return {
+    status: response.status,
+    body: await response.json()
+  };
+}
+
+async function get(base, pathName, headers = {}) {
+  const response = await fetch(`${base}${pathName}`, {
+    method: "GET",
+    headers
   });
   return {
     status: response.status,
@@ -742,4 +755,65 @@ test("chat tools prompt returns Hermes tool grounding", async (t) => {
   assert.match(reply, /patch|git|command|webcrawl/i);
   assert.match(reply, /repo read\/search\/list|swarm plan|owner execution pipeline/i);
   assert.doesNotMatch(reply, /I am Qwen|Alibaba Cloud|hire professionals|lack internet/i);
+});
+
+test("webui capabilities endpoint marks missing/partial features honestly", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await get(base, "/api/hermes/webui/capabilities");
+  assert.equal(res.status, 200);
+  const features = Array.isArray(res.body.features) ? res.body.features : [];
+  assert.ok(features.length > 0);
+  const byKey = Object.fromEntries(features.map((feature) => [feature.key, feature]));
+  assert.equal(byKey.chat?.status, "working");
+  assert.equal(byKey.workspace_browser?.status, "working");
+  assert.equal(byKey.memory?.status, "working");
+  assert.equal(byKey.websearch?.status, "working");
+  assert.equal(byKey.skills?.status, "missing");
+  assert.equal(byKey.streaming?.status, "missing");
+  assert.equal(byKey.sessions?.status, "partial");
+});
+
+test("session routes persist history for webui", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const created = await post(base, "/api/hermes/sessions", { title: "webui parity" });
+  assert.equal(created.status, 200);
+  const sessionId = String(created.body?.session?.id || "");
+  assert.ok(sessionId);
+
+  const appended = await post(base, `/api/hermes/sessions/${encodeURIComponent(sessionId)}/messages`, {
+    messages: [
+      { role: "user", content: "hello" },
+      { role: "assistant", content: "world" }
+    ]
+  });
+  assert.equal(appended.status, 200);
+  assert.equal(Array.isArray(appended.body?.session?.messages), true);
+  assert.equal(appended.body.session.messages.length, 2);
+
+  const listed = await get(base, "/api/hermes/sessions");
+  assert.equal(listed.status, 200);
+  assert.ok(Array.isArray(listed.body.sessions));
+  assert.ok(listed.body.sessions.some((session) => session.id === sessionId));
+
+  const read = await get(base, `/api/hermes/sessions/${encodeURIComponent(sessionId)}`);
+  assert.equal(read.status, 200);
+  assert.equal(read.body.session.id, sessionId);
+  assert.equal(read.body.session.messages.length, 2);
+});
+
+test("skills route is honest when not implemented", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await get(base, "/api/hermes/skills");
+  assert.equal(res.status, 501);
+  assert.equal(res.body.status, "missing");
+  assert.match(String(res.body.message || ""), /not implemented/i);
 });

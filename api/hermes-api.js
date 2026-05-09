@@ -22,6 +22,13 @@ const { interpretOwnerCommand } = require("../server/hermes/openai-command-inter
 const sandboxRunner = require("../server/hermes/sandbox-runner.js");
 const swarmExecutor = require("../server/hermes/swarm-executor.js");
 const { runTests, applyRepair, markReadyForPr } = require("../server/hermes/job-repair-loop.js");
+const { getSkillLoaderStatus } = require("../server/hermes/skill-loader.js");
+const {
+  listSessions,
+  createSession,
+  getSessionById,
+  appendSessionMessages
+} = require("../server/hermes/chat-session-store.js");
 
 const app = express();
 app.disable("x-powered-by");
@@ -385,6 +392,31 @@ app.get("/api/hermes/models", (_req, res) => {
   });
 });
 
+app.get("/api/hermes/webui/capabilities", (_req, res) => {
+  res.json({
+    ok: true,
+    features: [
+      { key: "chat", status: "working", endpoint: "/api/hermes/chat" },
+      { key: "streaming", status: "missing", endpoint: "" },
+      { key: "sessions", status: "partial", endpoint: "/api/hermes/sessions/*" },
+      { key: "workspace_browser", status: "working", endpoint: "/api/hermes/files/list" },
+      { key: "file_preview", status: "working", endpoint: "/api/hermes/files/read" },
+      { key: "file_editing", status: "partial", endpoint: "/api/hermes/patch/preview,/api/hermes/patch/apply,/api/hermes/patch/rollback" },
+      { key: "tool_cards", status: "partial", endpoint: "/api/hermes/chat (toolResults)" },
+      { key: "memory", status: "working", endpoint: "/api/hermes/memory" },
+      { key: "skills", status: "missing", endpoint: "/api/hermes/skills" },
+      { key: "tasks_cron", status: "partial", endpoint: "/api/hermes/task/plan,/api/hermes/jobs/*" },
+      { key: "profiles", status: "missing", endpoint: "" },
+      { key: "model_selector", status: "working", endpoint: "/api/hermes/models" },
+      { key: "attachments", status: "missing", endpoint: "" },
+      { key: "voice_input", status: "missing", endpoint: "" },
+      { key: "settings_control_center", status: "partial", endpoint: "/api/hermes/models,/api/hermes/policy,/api/hermes/swarm" },
+      { key: "websearch", status: "working", endpoint: "/api/hermes/webcrawl/search" }
+    ],
+    honestyNote: "Vendored Hermes WebUI shell is not full product parity. Unsupported features are explicitly marked missing or partial."
+  });
+});
+
 app.get("/api/hermes/policy", (_req, res) => {
   res.json({
     modes: {
@@ -508,6 +540,42 @@ app.post("/api/hermes/chat", async (req, res) => {
     });
   } catch (error) {
     res.status(400).json(conversationErrorPayload(req, error));
+  }
+});
+
+app.get("/api/hermes/skills", (_req, res) => {
+  return res.status(501).json(getSkillLoaderStatus());
+});
+
+app.get("/api/hermes/sessions", (_req, res) => {
+  try {
+    return res.json({ ok: true, sessions: listSessions() });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/sessions", (req, res) => {
+  try {
+    return res.json({ ok: true, session: createSession({ title: readStringBody(req, "title", "Hermes session") }) });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.get("/api/hermes/sessions/:id", (req, res) => {
+  try {
+    return res.json({ ok: true, session: getSessionById(req.params.id) });
+  } catch (error) {
+    return res.status(404).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/sessions/:id/messages", (req, res) => {
+  try {
+    return res.json({ ok: true, session: appendSessionMessages(req.params.id, readArrayBody(req, "messages")) });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
   }
 });
 

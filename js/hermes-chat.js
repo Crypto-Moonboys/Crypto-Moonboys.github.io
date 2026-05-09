@@ -10,6 +10,7 @@
     history: [],
     sending: false,
     brainRefreshTimer: null,
+    sessionId: "",
   };
 
   function trimHistory() {
@@ -33,7 +34,7 @@
     return String(value || "").replace(/[&<>\"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
   }
 
-  function appendMessage(role, text) {
+  function appendMessage(role, text, options = {}) {
     const empty = $("emptyState");
     if (empty) empty.style.display = "none";
     const container = $("msgInner");
@@ -45,6 +46,28 @@
       <div class="msg-head"><span class="msg-role ${role === "user" ? "user" : "assistant"}">${role === "user" ? "You" : (surface === "brain" ? "THE BRAIN" : "Hermes")}</span></div>
       <div class="msg-body">${escapeHtml(text)}</div>
     `;
+    if (role === "assistant" && Array.isArray(options.toolResults) && options.toolResults.length > 0) {
+      const cards = global.document.createElement("div");
+      cards.className = "tool-cards";
+      cards.style.marginTop = "8px";
+      cards.style.display = "grid";
+      cards.style.gap = "6px";
+      for (const item of options.toolResults.slice(0, 8)) {
+        const card = global.document.createElement("div");
+        card.className = "tool-card";
+        card.style.border = "1px solid var(--border)";
+        card.style.borderRadius = "8px";
+        card.style.padding = "8px";
+        card.style.fontSize = "12px";
+        card.style.background = "var(--surface-2, transparent)";
+        const action = String(item?.action || "tool");
+        const status = item?.ok === true ? "ok" : "error";
+        const summary = String(item?.resultSummary || item?.error || "").trim();
+        card.innerHTML = `<strong>${escapeHtml(action)}</strong> · ${escapeHtml(status)}<br>${escapeHtml(summary)}`;
+        cards.appendChild(card);
+      }
+      row.appendChild(cards);
+    }
     container.appendChild(row);
     const messages = $("messages");
     if (messages) messages.scrollTop = messages.scrollHeight;
@@ -101,7 +124,11 @@
     if (!panel) return;
     panel.textContent = "Loading Hermes status…";
     try {
-      const status = await adapter.hermesStatus();
+      const [status, workspace, capabilities] = await Promise.all([
+        adapter.hermesStatus(),
+        adapter.listWorkspace("."),
+        adapter.getWebUiCapabilities()
+      ]);
       const swarmCount = status.swarm.status === "fulfilled"
         ? (status.swarm.value?.swarm?.length || status.swarm.value?.agents?.length || 0)
         : "n/a";
@@ -111,14 +138,25 @@
       const queueCount = status.queue.status === "fulfilled"
         ? (status.queue.value?.queue?.length || 0)
         : "n/a";
+      const workspaceEntries = Array.isArray(workspace?.toolResult?.result?.entries)
+        ? workspace.toolResult.result.entries.slice(0, 8).map((entry) => entry.path || entry.name || "").filter(Boolean)
+        : [];
+      const featureItems = Array.isArray(capabilities?.features) ? capabilities.features : [];
+      const missingFeatures = featureItems.filter((feature) => feature.status !== "working").map((feature) => feature.key);
       panel.textContent = [
         `Hermes swarm agents: ${swarmCount}`,
         `Pending approvals: ${approvalCount}`,
         `Command queue: ${queueCount}`,
+        `Session: ${state.sessionId || "none"}`,
         formatSettled("Swarm", status.swarm),
         formatSettled("Approvals", status.approvals),
         formatSettled("Queue", status.queue),
-        formatSettled("Repos", status.repos)
+        formatSettled("Repos", status.repos),
+        "",
+        "Workspace sample:",
+        ...(workspaceEntries.length ? workspaceEntries : ["(no entries)"]),
+        "",
+        `WebUI parity honesty: ${missingFeatures.length ? `partial/missing -> ${missingFeatures.join(", ")}` : "working"}`
       ].join("\n");
     } catch (error) {
       panel.textContent = `Hermes status failed: ${error.message}`;
@@ -158,6 +196,45 @@
     }
   }
 
+  async function ensureSession() {
+    if (state.sessionId) return state.sessionId;
+    const listed = await adapter.listSessions();
+    const existing = Array.isArray(listed?.sessions) ? listed.sessions[0] : null;
+    if (existing?.id) {
+      state.sessionId = String(existing.id);
+      return state.sessionId;
+    }
+    const created = await adapter.createSession("Hermes WebUI session");
+    state.sessionId = String(created?.session?.id || "");
+    return state.sessionId;
+  }
+
+  async function persistExchange(userPrompt, assistantReply) {
+    const sessionId = await ensureSession();
+    if (!sessionId) return;
+    await adapter.appendSessionMessages(sessionId, [
+      { role: "user", content: String(userPrompt || "") },
+      { role: "assistant", content: String(assistantReply || "") }
+    ]);
+  }
+
+  async function runSlashCommand(prompt) {
+    const text = String(prompt || "").trim();
+    if (/^\/websearch(\s+|$)/iu.test(text)) {
+      const topic = text.replace(/^\/websearch\s*/iu, "").trim();
+      if (!topic) {
+        appendMessage("assistant", "Usage: /websearch <query>");
+        return true;
+      }
+      const result = await adapter.webSearch(topic);
+      const summary = String(result?.toolResult?.result?.message || result?.toolResult?.resultSummary || "Websearch completed.");
+      appendMessage("assistant", summary, { toolResults: [result.toolResult || result] });
+      await persistExchange(prompt, summary);
+      return true;
+    }
+    return false;
+  }
+
   async function sendChat() {
     if (state.sending) return;
     const input = $("msg");
@@ -171,11 +248,16 @@
 
     try {
       trimHistory();
-      const payload = await adapter.hermesChat(prompt, state.history);
+      if (await runSlashCommand(prompt)) {
+        return;
+      }
+      const sessionId = await ensureSession();
+      const payload = await adapter.hermesChat(prompt, state.history, { sessionId });
       const reply = String(payload.reply || payload.response || "No response returned.");
-      appendMessage("assistant", reply);
+      appendMessage("assistant", reply, { toolResults: payload.toolResults || [] });
       state.history.push({ role: "user", content: prompt });
       state.history.push({ role: "assistant", content: reply });
+      await persistExchange(prompt, reply);
       trimHistory();
       if (surface === "hermes") {
         await refreshHermesStatus();
@@ -244,6 +326,26 @@
     installNoopHandlers();
     prepareLayout();
     bindEvents();
+    if (surface === "hermes") {
+      try {
+        const sessionId = await ensureSession();
+        if (sessionId) {
+          const loaded = await adapter.readSession(sessionId);
+          const messages = Array.isArray(loaded?.session?.messages) ? loaded.session.messages : [];
+          const recent = messages.slice(-maxHistory);
+          for (const message of recent) {
+            const role = String(message?.role || "");
+            const content = String(message?.content || "");
+            if (!["user", "assistant"].includes(role) || !content) continue;
+            appendMessage(role, content);
+            state.history.push({ role, content });
+          }
+          trimHistory();
+        }
+      } catch (_error) {
+        // Keep UI usable even when sessions are unavailable.
+      }
+    }
     if (surface === "brain") {
       await refreshBrainStatus();
       state.brainRefreshTimer = global.setInterval(refreshBrainStatus, 15000);
