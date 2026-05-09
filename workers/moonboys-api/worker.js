@@ -1292,10 +1292,12 @@ async function ensureDailyWtfTables(db) {
 
 function getWtfDailySchedule(utcDay) {
   return [
+    { event_id: 'wtf-midnight-signal', title: 'Midnight WTF Signal', event_type: 'signal_window', startHour: 0, durationMinutes: 90, required_action: 'play_any_accepted_arcade_run', reward_key: `wtf:${utcDay}:midnight`, theme: 'neon-midnight' },
+    { event_id: 'wtf-early-chain-wake-up', title: 'Early Chain Wake-Up', event_type: 'chain_wake_up', startHour: 4, durationMinutes: 90, required_action: 'choose_and_complete_chaos_path', reward_key: `wtf:${utcDay}:early`, theme: 'chain-wake-up' },
     { event_id: 'wtf-morning-signal', title: 'Morning WTF Signal', event_type: 'signal_window', startHour: 8, durationMinutes: 90, required_action: 'play_any_accepted_arcade_run', reward_key: `wtf:${utcDay}:morning`, theme: 'neon-sunrise' },
     { event_id: 'wtf-midday-rush', title: 'Midday Faction Rush', event_type: 'faction_rush', startHour: 12, durationMinutes: 90, required_action: 'complete_faction_or_battle_action', reward_key: `wtf:${utcDay}:midday`, theme: 'faction-overdrive' },
-    { event_id: 'wtf-evening-burst', title: 'Evening Arcade Burst', event_type: 'arcade_burst', startHour: 18, durationMinutes: 120, required_action: 'score_target_any_game', reward_key: `wtf:${utcDay}:evening`, theme: 'neon-jackpot' },
-    { event_id: 'wtf-late-chaos', title: 'Late Night Chaos Window', event_type: 'chaos_window', startHour: 22, durationMinutes: 90, required_action: 'choose_and_complete_chaos_path', reward_key: `wtf:${utcDay}:late`, theme: 'after-hours-chaos' },
+    { event_id: 'wtf-evening-burst', title: 'Evening Arcade Burst', event_type: 'arcade_burst', startHour: 16, durationMinutes: 90, required_action: 'score_target_any_game', reward_key: `wtf:${utcDay}:evening`, theme: 'neon-jackpot' },
+    { event_id: 'wtf-late-chaos', title: 'Late Night Chaos Window', event_type: 'chaos_window', startHour: 20, durationMinutes: 90, required_action: 'choose_and_complete_chaos_path', reward_key: `wtf:${utcDay}:late`, theme: 'after-hours-chaos' },
   ];
 }
 
@@ -1322,7 +1324,9 @@ function addUtcDays(utcDay, days) {
 async function getNextDailyWtfEvent(db, utcDay, normalizeRow) {
   const tomorrow = addUtcDays(utcDay, 1);
   await ensureWtfEventsForDay(db, tomorrow).catch(() => {});
-  const row = await db.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC LIMIT 1`).bind(tomorrow).first().catch(() => null);
+  const rows = await db.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC`).bind(tomorrow).all().catch(() => ({ results: [] }));
+  const officialIds = new Set(getWtfDailySchedule(tomorrow).map((event) => event.event_id));
+  const row = (rows?.results || []).find((candidate) => officialIds.has(String(candidate.event_id))) || null;
   return row ? normalizeRow(row) : null;
 }
 
@@ -1429,7 +1433,9 @@ async function reconcileWtfExpiryForUser(db, telegramId, utcDay, nowMs) {
       ON p.event_id = e.event_id AND p.utc_day = e.utc_day AND p.telegram_id = ?
     WHERE e.utc_day = ?
   `).bind(String(telegramId), String(utcDay)).all().catch(() => ({ results: [] }));
+  const officialIds = new Set(getWtfDailySchedule(utcDay).map((event) => event.event_id));
   for (const row of (rows?.results || [])) {
+    if (!officialIds.has(String(row.event_id))) continue;
     const endMs = Date.parse(row.ends_at);
     if (!Number.isFinite(endMs) || nowMs < endMs) continue;
     if (row.completed_at) continue;
@@ -1459,24 +1465,79 @@ async function reconcileWtfExpiryForUser(db, telegramId, utcDay, nowMs) {
   }
 }
 
+function buildWtfScheduleRow(utcDay, event) {
+  const startsAt = buildWtfIso(utcDay, event.startHour, 0);
+  return {
+    event_id: event.event_id,
+    utc_day: utcDay,
+    event_type: event.event_type,
+    title: event.title,
+    description: 'Check in during the signal window, complete the objective, and trigger a status burst.',
+    starts_at: startsAt,
+    ends_at: new Date(Date.parse(startsAt) + event.durationMinutes * 60 * 1000).toISOString(),
+    required_action: event.required_action,
+    reward_key: event.reward_key,
+    xp_multiplier_display: '5x XP opportunity',
+    theme: event.theme,
+    metadata_json: JSON.stringify({ chain_cap: WTF_MAX_CHAIN_DEPTH, duration_minutes: event.durationMinutes, official_schedule: true }),
+  };
+}
+
+function wtfScheduleRowMatches(row, expected) {
+  if (!row || !expected) return false;
+  return String(row.event_id) === expected.event_id &&
+    String(row.utc_day) === expected.utc_day &&
+    String(row.event_type || '') === expected.event_type &&
+    String(row.title || '') === expected.title &&
+    String(row.description || '') === expected.description &&
+    String(row.starts_at || '') === expected.starts_at &&
+    String(row.ends_at || '') === expected.ends_at &&
+    String(row.required_action || '') === expected.required_action &&
+    String(row.reward_key || '') === expected.reward_key &&
+    String(row.xp_multiplier_display || '') === expected.xp_multiplier_display &&
+    String(row.theme || '') === expected.theme &&
+    String(row.metadata_json || '') === expected.metadata_json;
+}
+
 async function ensureWtfEventsForDay(db, utcDay) {
-  const countRow = await db.prepare(`SELECT COUNT(*) AS total FROM daily_wtf_events WHERE utc_day = ?`).bind(utcDay).first().catch(() => ({ total: 0 }));
-  if (Number(countRow?.total) > 0) return;
-  const schedule = getWtfDailySchedule(utcDay);
-  for (const event of schedule) {
-    const startsAt = buildWtfIso(utcDay, event.startHour, 0);
-    const endsAt = new Date(Date.parse(startsAt) + event.durationMinutes * 60 * 1000).toISOString();
+  const scheduleRows = getWtfDailySchedule(utcDay).map((event) => buildWtfScheduleRow(utcDay, event));
+  const officialIds = new Set(scheduleRows.map((event) => event.event_id));
+  const existingRows = await db.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC`).bind(utcDay).all().catch(() => ({ results: [] }));
+  const existingById = new Map((existingRows?.results || []).filter((row) => officialIds.has(String(row.event_id))).map((row) => [String(row.event_id), row]));
+  const scheduleAlreadyCurrent = existingById.size === scheduleRows.length && scheduleRows.every((expected) => wtfScheduleRowMatches(existingById.get(expected.event_id), expected));
+  if (scheduleAlreadyCurrent) return;
+
+  for (const event of scheduleRows) {
     await db.prepare(`
       INSERT INTO daily_wtf_events
         (event_id, utc_day, event_type, title, description, starts_at, ends_at, required_action, reward_key, xp_multiplier_display, faction_id, game_key, theme, metadata_json, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '5x XP opportunity', NULL, NULL, ?, ?, ?)
-      ON CONFLICT(event_id, utc_day) DO NOTHING
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?)
+      ON CONFLICT(event_id, utc_day) DO UPDATE SET
+        event_type = excluded.event_type,
+        title = excluded.title,
+        description = excluded.description,
+        starts_at = excluded.starts_at,
+        ends_at = excluded.ends_at,
+        required_action = excluded.required_action,
+        reward_key = excluded.reward_key,
+        xp_multiplier_display = excluded.xp_multiplier_display,
+        theme = excluded.theme,
+        metadata_json = excluded.metadata_json
+      WHERE daily_wtf_events.event_type IS NOT excluded.event_type
+        OR daily_wtf_events.title IS NOT excluded.title
+        OR daily_wtf_events.description IS NOT excluded.description
+        OR daily_wtf_events.starts_at IS NOT excluded.starts_at
+        OR daily_wtf_events.ends_at IS NOT excluded.ends_at
+        OR daily_wtf_events.required_action IS NOT excluded.required_action
+        OR daily_wtf_events.reward_key IS NOT excluded.reward_key
+        OR daily_wtf_events.xp_multiplier_display IS NOT excluded.xp_multiplier_display
+        OR daily_wtf_events.theme IS NOT excluded.theme
+        OR daily_wtf_events.metadata_json IS NOT excluded.metadata_json
     `).bind(
-      event.event_id, utcDay, event.event_type, event.title,
-      'Check in during the signal window, complete the objective, and trigger a status burst.',
-      startsAt, endsAt, event.required_action, event.reward_key, event.theme,
-      JSON.stringify({ chain_cap: WTF_MAX_CHAIN_DEPTH }),
-      new Date().toISOString(),
+      event.event_id, event.utc_day, event.event_type, event.title,
+      event.description, event.starts_at, event.ends_at, event.required_action,
+      event.reward_key, event.xp_multiplier_display, event.theme,
+      event.metadata_json, new Date().toISOString(),
     ).run();
   }
 }
@@ -1960,13 +2021,14 @@ async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
     missedTotal,
   });
   await ensureWtfEventsForDay(db, utcDay).catch(() => {});
-  const nextWtf = await db.prepare(`
-    SELECT title, starts_at, ends_at
+  const nextWtfRows = await db.prepare(`
+    SELECT event_id, title, starts_at, ends_at
     FROM daily_wtf_events
     WHERE utc_day = ? AND ends_at >= ?
     ORDER BY starts_at ASC
-    LIMIT 1
-  `).bind(utcDay, new Date().toISOString()).first().catch(() => null);
+  `).bind(utcDay, new Date().toISOString()).all().catch(() => ({ results: [] }));
+  const officialWtfIds = new Set(getWtfDailySchedule(utcDay).map((event) => event.event_id));
+  const nextWtf = (nextWtfRows?.results || []).find((row) => officialWtfIds.has(String(row.event_id))) || null;
 
   const missionLines = missions.length
     ? missions.map((mission, idx) => {
@@ -3129,9 +3191,11 @@ export default {
       await ensureWtfEventsForDay(env.DB, utcDay);
       const nowMs = Date.now();
       const events = await env.DB.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC`).bind(utcDay).all().catch(() => ({ results: [] }));
+      const officialEventIds = new Set(getWtfDailySchedule(utcDay).map((event) => event.event_id));
+      const officialRows = (events?.results || []).filter((row) => officialEventIds.has(String(row.event_id)));
 
       if (request.method === 'GET') {
-        const normalizedPublic = (events?.results || []).map((row) => ({
+        const normalizedPublic = officialRows.map((row) => ({
           event_id: row.event_id,
           utc_day: row.utc_day,
           start_at: row.starts_at,
@@ -3201,7 +3265,7 @@ export default {
         availableByEvent[key].push(opt);
       }
 
-      const normalized = (events?.results || []).map((row) => {
+      const normalized = officialRows.map((row) => {
         const player = byEvent.get(String(row.event_id)) || null;
         const scheduleStatus = getWtfEventStatus(nowMs, row.starts_at, row.ends_at, player?.status || 'upcoming');
         let playerStatus = 'not_checked_in';
