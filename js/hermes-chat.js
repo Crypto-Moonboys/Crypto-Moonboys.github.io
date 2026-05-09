@@ -5,7 +5,7 @@
 
   // Accumulated messages for the OG fullscreen log (shared across both UIs)
   const ogMessages = [];
-  const maxOgMessages = 200;
+  const maxOgMessages = 100;
 
   const el = (id) => document.getElementById(id);
   const out = {
@@ -237,11 +237,7 @@
     const overlay = el("ogOverlay");
     if (!overlay || !overlay.classList.contains("open")) return;
     overlay.classList.remove("open");
-    if (previousBodyOverflow) {
-      document.body.style.overflow = previousBodyOverflow;
-    } else {
-      document.body.style.removeProperty("overflow");
-    }
+    document.body.style.overflow = previousBodyOverflow;
   }
 
   bindClick("openOgFullscreen", openOgOverlay);
@@ -287,7 +283,8 @@
     };
 
     appendOgMessage("user", prompt);
-    history.push({ role: "user", content: prompt });
+    const userHistoryEntry = { role: "user", content: prompt };
+    history.push(userHistoryEntry);
     clampHistory();
 
     try {
@@ -313,8 +310,10 @@
       const barLast = el("ogBarLastAction");
       if (barLast) barLast.textContent = lastAction;
     } catch (error) {
-      history.pop();
-      ogMessages.pop();
+      const userEntryIndex = history.indexOf(userHistoryEntry);
+      if (userEntryIndex !== -1) {
+        history.splice(userEntryIndex, 1);
+      }
       appendOgMessage("error", String(error?.message || error));
       setOut(out.chat, { error: String(error?.message || error) });
     } finally {
