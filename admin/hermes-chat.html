@@ -190,6 +190,109 @@
       gap: 8px;
     }
 
+
+    .authority-model-card {
+      border: 1px solid rgba(109, 255, 162, 0.25);
+      border-radius: var(--radius-sm);
+      background: rgba(7, 22, 18, 0.58);
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+    .authority-model-title {
+      color: var(--ok);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+    }
+    .authority-model-copy {
+      color: #dfffea;
+      line-height: 1.45;
+      font-size: 0.82rem;
+    }
+    .authority-model-copy strong { color: #8fd8ff; }
+
+
+    .swarm-mode-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .swarm-mode-card {
+      border: 1px solid rgba(96, 213, 255, 0.22);
+      border-radius: var(--radius-sm);
+      background: rgba(2, 6, 12, 0.45);
+      padding: 9px;
+      color: #cfe9ff;
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+    .swarm-mode-card strong {
+      display: block;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+      margin-bottom: 3px;
+    }
+    .swarm-mode-card.owner strong { color: var(--ok); }
+
+    .swarm-task-board {
+      display: grid;
+      gap: 8px;
+    }
+    .swarm-task-empty {
+      color: var(--muted);
+      border: 1px dashed rgba(96, 213, 255, 0.25);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      background: rgba(2, 6, 12, 0.55);
+    }
+    .swarm-task-card {
+      border: 1px solid rgba(96, 213, 255, 0.2);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      background: rgba(2, 6, 12, 0.72);
+      display: grid;
+      gap: 8px;
+    }
+    .swarm-task-card.needs_approval { border-color: rgba(255, 207, 90, 0.5); }
+    .swarm-task-card.blocked,
+    .swarm-task-card.failed { border-color: rgba(255, 117, 141, 0.55); }
+    .swarm-task-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .swarm-task-title { color: var(--accent); font-weight: 800; }
+    .swarm-task-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+    .swarm-pill {
+      border: 1px solid rgba(96, 213, 255, 0.25);
+      border-radius: 999px;
+      padding: 2px 7px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      background: rgba(10, 20, 35, 0.7);
+    }
+    .swarm-pill.status-needs_approval { color: #ffd88b; border-color: rgba(255, 207, 90, 0.55); }
+    .swarm-pill.risk-critical,
+    .swarm-pill.risk-high { color: #ffb3c0; border-color: rgba(255, 117, 141, 0.55); }
+    .swarm-task-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      font-size: 0.74rem;
+    }
+    .swarm-task-field strong {
+      display: block;
+      color: #8fd8ff;
+      font-size: 0.66rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .swarm-task-field span { color: #cfe9ff; }
+
     details > summary::-webkit-details-marker { display: none; }
     .summary-hint { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
     .stack { display: grid; gap: 10px; }
@@ -367,6 +470,53 @@
       letter-spacing: 0.04em;
     }
 
+    .og-authority-card {
+      margin: 8px 10px;
+      padding: 8px;
+      border: 1px solid rgba(109, 255, 162, 0.24);
+      border-radius: 8px;
+      background: rgba(7, 22, 18, 0.58);
+      color: #dfffea;
+      font-size: 0.72rem;
+      line-height: 1.45;
+    }
+    .og-authority-card strong {
+      display: block;
+      color: #6dffa2;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+
+    .og-mode-select {
+      margin: 8px 10px 0;
+      width: calc(100% - 20px);
+      font-size: 0.72rem;
+      padding: 7px 8px;
+    }
+
+    .og-task-board {
+      max-height: 32vh;
+      overflow-y: auto;
+      padding: 10px;
+      border-bottom: 1px solid rgba(96, 213, 255, 0.15);
+      background: rgba(5, 12, 22, 0.72);
+      flex-shrink: 0;
+    }
+    .og-task-board .swarm-task-grid { grid-template-columns: 1fr 1fr; }
+    .og-create-plan-btn {
+      cursor: pointer;
+      background: linear-gradient(180deg, rgba(109, 255, 162, 0.92), rgba(56, 200, 120, 0.92));
+      border: 1px solid rgba(109, 255, 162, 0.55);
+      border-radius: 8px;
+      color: #021a0a;
+      font-weight: 900;
+      font-size: 0.78rem;
+      padding: 10px 14px;
+      width: auto;
+      letter-spacing: 0.04em;
+    }
+
     /* Right panel */
     .og-right { overflow-y: auto; }
     .og-section-label {
@@ -419,6 +569,8 @@
       .og-body { grid-template-columns: 1fr; }
       .og-panel.og-left,
       .og-panel.og-right { display: none; }
+      .swarm-task-grid,
+      .og-task-board .swarm-task-grid { grid-template-columns: 1fr; }
     }
   </style>
   <link rel="icon" type="image/png" href="/favicon.png">
@@ -468,6 +620,40 @@
         <button id="sendChat" type="button">Send to Hermes</button>
       </div>
     </section>
+
+
+    <details class="panel" open>
+      <summary>
+        <span>Swarm Task Board</span>
+        <span class="summary-hint">Planning first; approval-gated execution</span>
+      </summary>
+      <div class="stack">
+        <div class="muted">Create a structured task → plan → assign agents → preview → approve → test → deploy → report board. Planner output does not edit files or run commands; approved execution remains available through main_hermes and the existing approval-gated toolchain.</div>
+        <div class="authority-model-card">
+          <div class="authority-model-title">AUTHORITY MODEL</div>
+          <div class="authority-model-copy"><strong>Safe Review Mode</strong> planning only; no repo changes.</div>
+          <div class="authority-model-copy"><strong>OWNER OPERATOR MODE</strong> Owner Operator Mode is for self-hosted repo control. When enabled by the owner, Hermes swarm agents can perform real repo work through the Hermes toolchain, including edits, tests, git operations, rollback patches, and deployment steps according to their assigned task.</div>
+          <div class="authority-model-copy">Specialists create plans, reviews, tests, deployment steps, and risk notes; main_hermes remains the orchestrator and full-repo controller.</div>
+        </div>
+        <div class="swarm-mode-grid">
+          <div class="swarm-mode-card"><strong>Safe Review Mode</strong>Plan, review, and risk-note only. No repo changes.</div>
+          <div class="swarm-mode-card owner"><strong>Owner Operator Mode</strong>Real execution mode: can edit/run/test/revert when instructed by the owner through the Hermes toolchain. Flow: plan → execute → test → rollback/report.</div>
+        </div>
+        <div>
+          <label for="swarmExecutionMode">Swarm execution mode</label>
+          <select id="swarmExecutionMode">
+            <option value="safe_review">Safe Review Mode</option>
+            <option value="owner_operator">OWNER OPERATOR MODE</option>
+          </select>
+        </div>
+        <button id="createSwarmPlan" type="button">CREATE SWARM PLAN</button>
+        <div id="swarmTaskBoard" class="swarm-task-board">
+          <div class="swarm-task-empty">No swarm plan yet. Enter a task prompt, then create a swarm plan.</div>
+        </div>
+        <label>Swarm Plan JSON</label>
+        <pre id="swarmPlanOutput" class="out"></pre>
+      </div>
+    </details>
 
     <details class="panel" open>
       <summary>
@@ -702,11 +888,28 @@
       </div>
 
       <div class="og-panel og-main">
+        <div class="og-panel-title">TASK BOARD</div>
+        <div class="og-authority-card">
+          <strong>AUTHORITY MODEL</strong>
+          <b>Safe Review Mode</b>: planning only; no repo changes. <b>OWNER OPERATOR MODE</b>: real execution mode for self-hosted repo control through the Hermes toolchain. Flow: plan → execute → test → rollback/report.
+        </div>
+        <div class="og-authority-card">
+          <strong>OWNER OPERATOR MODE</strong>
+          Owner Operator Mode is for self-hosted repo control. When enabled by the owner, Hermes swarm agents can perform real repo work through the Hermes toolchain, including edits, tests, git operations, rollback patches, and deployment steps according to their assigned task.
+        </div>
+        <select id="ogSwarmExecutionMode" class="og-mode-select" aria-label="Swarm execution mode">
+          <option value="safe_review">Safe Review Mode</option>
+          <option value="owner_operator">OWNER OPERATOR MODE</option>
+        </select>
+        <div id="ogSwarmTaskBoard" class="og-task-board swarm-task-board">
+          <div class="swarm-task-empty">No swarm plan yet. Enter a task below, then CREATE SWARM PLAN.</div>
+        </div>
         <div class="og-panel-title">CONSOLE</div>
         <div id="ogChatLog" class="og-log"></div>
         <div class="og-edit-warning">⚠ Repo edit mode requires explicit approval. Hermes will preview before applying changes.</div>
         <div class="og-input-row">
           <textarea id="ogPrompt" class="og-textarea" placeholder="Enter prompt…"></textarea>
+          <button id="ogCreateSwarmPlan" type="button" class="og-create-plan-btn">CREATE SWARM PLAN</button>
           <button id="ogSendChat" type="button" class="og-send-btn">SEND ▶</button>
         </div>
       </div>
