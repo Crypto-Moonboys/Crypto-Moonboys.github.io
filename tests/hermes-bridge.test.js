@@ -891,10 +891,12 @@ test("broad owner prompt does not route to literal file/read", async (t) => {
   const res = await post(base, "/api/hermes/chat", {
     mode: "chat",
     role: "main_hermes",
-    prompt: "READ ALL YOUR FILES AND TELL ME WHAT YOU CAN EDIT",
+    prompt: "READ ALL YOUR FILES, UNDERSTAND THE POWER YOU HAVE TO SOLVE, FIX AND CREATE, AND HOW, AND WHY.",
     history: []
   });
   assert.equal(res.status, 200);
   assert.equal(Array.isArray(res.body.actions) ? res.body.actions.some((a) => a.type === "file/read") : false, false);
-  assert.equal(res.body.swarmPlan?.type, "hermes_swarm_plan");
+  assert.equal(Boolean(res.body.swarmPlan), false);
+  assert.match(String(res.body.reply || ""), /I am Hermes|repo operator|toolchain|skills|webcrawl|jobs/i);
+  assert.doesNotMatch(String(res.body.reply || ""), /Safe Review Mode created a swarm plan|admin\/repo UI operator task/i);
 });

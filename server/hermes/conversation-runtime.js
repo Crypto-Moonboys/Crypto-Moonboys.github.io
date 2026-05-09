@@ -41,6 +41,9 @@ function formatToolResult(result, debug = false) {
     } else {
       summary = "Action failed: no details returned.";
     }
+    const nextSafeAction = missing.length
+      ? "Provide required approval inputs and retry through owner/operator flow."
+      : "Review tool error details, adjust target/path/inputs, and retry safely.";
     const failedView = {
       action,
       ok,
@@ -51,7 +54,8 @@ function formatToolResult(result, debug = false) {
       totalCount: 0,
       shownCount: 0,
       missingRequirements: missing,
-      error: err
+      error: err,
+      nextSafeAction
     };
     if (debug) {
       failedView.raw = result;
@@ -154,6 +158,7 @@ async function runConversation(input = {}) {
   const prompt = String(input.prompt || "").trim();
   const capabilityPromptKind = classifyCapabilityPrompt(prompt);
   if (capabilityPromptKind) {
+    const capabilities = getHermesCapabilities();
     return {
       reply: buildCapabilityReply(capabilityPromptKind),
       actions: [],
@@ -163,9 +168,9 @@ async function runConversation(input = {}) {
         repoUsed: "",
         pathUsed: "",
         resultSummary: "Hermes identity and capability grounding reply generated.",
-        entries: getHermesCapabilities(),
-        totalCount: getHermesCapabilities().length,
-        shownCount: getHermesCapabilities().length,
+        entries: capabilities,
+        totalCount: capabilities.length,
+        shownCount: capabilities.length,
         missingRequirements: [],
         error: ""
       }],

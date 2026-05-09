@@ -114,6 +114,11 @@ function classifyCapabilityPrompt(prompt) {
   if (/(?:can you|do you)\s+(?:websearch|search web)|do you have internet|can you browse/iu.test(text)) {
     return "websearch";
   }
+  if (
+    /(read all your files|understand your power|understand the power you have|read all your files,\s*understand the power you have to solve,\s*fix and create,\s*and how,\s*and why)/iu.test(text)
+  ) {
+    return "readiness";
+  }
   if (/(what tools do you have|what can you do|what capabilities do you have)/iu.test(text)) return "tools";
   return null;
 }
@@ -134,6 +139,14 @@ function buildCapabilityReply(kind) {
   }
   if (kind === "tools") {
     return `I am Hermes, ${HERMES_OPERATOR_TITLE}. My tools include ${toolsSummary()}, plus repo/admin operator routing, proposed operations, approval-gated execution, and Brain integration through the Hermes backend.`;
+  }
+  if (kind === "readiness") {
+    return [
+      `I am Hermes, ${HERMES_OPERATOR_TITLE}.`,
+      "I can inspect and search registered repos, read/list files, generate patch previews, apply/rollback approved patches, run tests/commands, and use git and PR workflows.",
+      "I can use webcrawl/search tools, skills, memory, swarm plans, sandbox jobs, owner execution pipeline, GitHub connector, and image generation when provider/approval requirements are met.",
+      "For a readiness scan, next safe steps are: list active repo + registered repos, run repo index/search checks, run sandbox/job smoke tests, and report any missing requirements before execution."
+    ].join(" ");
   }
   return "";
 }
