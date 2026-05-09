@@ -123,7 +123,8 @@ test("action bar approval indicator is present", () => {
   assert.match(htmlSource, /id="ogBarApproval"/);
 });
 
-// ── JS wiring ─────────────────────────────────────────────────────────────────
+// Slice window used when searching within a specific function body
+const FUNCTION_SEARCH_WINDOW = 500;
 
 test("js has openOgOverlay function", () => {
   assert.match(jsSource, /function openOgOverlay/);
@@ -162,11 +163,11 @@ test("js renderOgMessages uses the shared log", () => {
 });
 
 test("js OG send uses the same api() function as main send", () => {
-  // api() is defined exactly once and both send handlers call the same /api/hermes/chat path
+  // api() is defined exactly once; both handlers delegate to runHermesSend which calls /api/hermes/chat
   const apiDefs = jsSource.match(/async function api\(/gu) || [];
   assert.equal(apiDefs.length, 1, "api() should be defined exactly once");
   const chatEndpoints = jsSource.match(/\/api\/hermes\/chat/gu) || [];
-  assert.ok(chatEndpoints.length >= 2, "chat endpoint used in at least two send handlers");
+  assert.ok(chatEndpoints.length >= 1, "chat endpoint used in shared runHermesSend");
 });
 
 test("js OG send uses the shared history array", () => {
@@ -188,8 +189,60 @@ test("js loadOgStatus loads command queue from existing endpoint", () => {
   assert.match(jsSource, /\/api\/hermes\/command\/queue/);
 });
 
-test("js OG send removes ogMessages entry on failure to stay in sync with history", () => {
-  assert.match(jsSource, /ogMessages\.pop\(\)/u);
+test("js sends are serialized by hermesSendInFlight guard", () => {
+  assert.match(jsSource, /hermesSendInFlight/u, "hermesSendInFlight flag must exist");
+  assert.match(jsSource, /async function runHermesSend/u, "runHermesSend shared function must exist");
+  assert.match(jsSource, /if \(hermesSendInFlight\)/u, "shared send function must guard concurrent sends");
+  assert.match(jsSource, /Hermes request already in progress/u, "guard should provide operator-facing warning");
+  assert.match(jsSource, /setSendButtonsDisabled/u, "send buttons must be disabled while in-flight");
+});
+
+test("js runHermesSend rolls back history and ogMessages on failure", () => {
+  const start = jsSource.indexOf("async function runHermesSend");
+  assert.ok(start !== -1, "runHermesSend not found");
+  const section = jsSource.slice(start);
+  assert.match(section, /\/api\/hermes\/chat/u, "shared send function must call Hermes chat endpoint");
+  assert.match(section, /history\.pop\(\)/u, "runHermesSend must roll back history on failure");
+  assert.match(section, /ogMessages\.pop\(\)/u, "runHermesSend must roll back ogMessages on failure");
+});
+
+test("js ogSendChat delegates to runHermesSend", () => {
+  const start = jsSource.indexOf('bindClick("ogSendChat"');
+  const end = jsSource.indexOf('bindClick("sendChat"');
+  assert.ok(start !== -1 && end !== -1);
+  const section = jsSource.slice(start, end);
+  assert.match(section, /const promptEl = el\("ogPrompt"\)/u, "og prompt element must be cached");
+  assert.match(section, /if \(promptEl\) promptEl\.value = ""/u, "og prompt clear must be guarded");
+  assert.match(section, /runHermesSend/u, "ogSendChat handler must call runHermesSend");
+});
+
+test("js sendChat delegates to runHermesSend", () => {
+  const start = jsSource.indexOf('bindClick("sendChat"');
+  const end = jsSource.indexOf('bindClick("runAction"');
+  assert.ok(start !== -1 && end !== -1);
+  const section = jsSource.slice(start, end);
+  assert.match(section, /runHermesSend/u, "sendChat handler must call runHermesSend");
+});
+
+test("js openOgOverlay guards against double-open and saves previous overflow", () => {
+  const start = jsSource.indexOf("function openOgOverlay");
+  assert.ok(start !== -1, "openOgOverlay not found");
+  const section = jsSource.slice(start, start + FUNCTION_SEARCH_WINDOW);
+  assert.match(section, /previousBodyOverflow/u, "must save previous overflow before setting hidden");
+  assert.match(section, /classList\.contains\("open"\)/u, "must guard against double-open");
+});
+
+test("js closeOgOverlay restores saved overflow and only runs when overlay is open", () => {
+  const start = jsSource.indexOf("function closeOgOverlay");
+  assert.ok(start !== -1, "closeOgOverlay not found");
+  const section = jsSource.slice(start, start + FUNCTION_SEARCH_WINDOW);
+  assert.match(section, /previousBodyOverflow/u, "must restore previously saved overflow");
+  assert.match(section, /classList\.contains\("open"\)/u, "must guard against closing an already-closed overlay");
+});
+
+test("js ogMessages is capped to prevent unbounded log growth", () => {
+  assert.match(jsSource, /maxOgMessages = 100/u, "maxOgMessages constant must be capped to 100");
+  assert.match(jsSource, /ogMessages\.splice/u, "ogMessages must be trimmed on overflow");
 });
 
 test("js Escape key closes overlay", () => {
