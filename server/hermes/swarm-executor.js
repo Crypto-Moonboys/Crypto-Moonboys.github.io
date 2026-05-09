@@ -118,9 +118,14 @@ function advanceSubtask(jobId, taskId, result = {}) {
   const allDone = updated.every((t) => t.status === "done" || t.status === "failed");
   const anyFailed = updated.some((t) => t.status === "failed");
 
+  let nextStatus = job.status;
+  if (allDone) {
+    nextStatus = anyFailed ? "tests_failed" : "tests_passed";
+  }
+
   return updateJob(jobId, {
     swarmPlan: { ...swarmPlan, subtasks: updated },
-    status: allDone ? (anyFailed ? "tests_failed" : job.status) : job.status
+    status: nextStatus
   });
 }
 

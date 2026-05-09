@@ -2,6 +2,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const crypto = require("node:crypto");
 const { HERMES_DATA_ROOT } = require("./config.js");
 
 const SESSIONS_FILE = path.join(HERMES_DATA_ROOT, "chat-sessions.json");
@@ -16,8 +17,9 @@ function nowIso() {
   return new Date().toISOString();
 }
 
-function makeId(prefix) {
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+function makeSessionId() {
+  // Use cryptographically random UUIDs — no Date.now()/Math.random() guessable components.
+  return `session_${crypto.randomUUID()}`;
 }
 
 function ensureStore() {
@@ -72,7 +74,7 @@ function createSession(input = {}) {
   const store = readStore();
   const now = nowIso();
   const session = {
-    id: makeId("session"),
+    id: makeSessionId(),
     title: String(input.title || "Hermes session").trim() || "Hermes session",
     createdAt: now,
     updatedAt: now,

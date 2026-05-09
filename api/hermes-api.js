@@ -21,7 +21,7 @@ const jobManager = require("../server/hermes/job-manager.js");
 const { interpretOwnerCommand } = require("../server/hermes/openai-command-interpreter.js");
 const sandboxRunner = require("../server/hermes/sandbox-runner.js");
 const swarmExecutor = require("../server/hermes/swarm-executor.js");
-const { runTests, applyRepair, markReadyForPr } = require("../server/hermes/job-repair-loop.js");
+const { runTests, applyRepair, markReadyForPr, SAFE_TEST_ALIASES } = require("../server/hermes/job-repair-loop.js");
 const { getSkillLoaderStatus } = require("../server/hermes/skill-loader.js");
 const {
   listSessions,
@@ -804,8 +804,20 @@ app.post("/api/hermes/jobs/:id/run", async (req, res) => {
 
 app.post("/api/hermes/jobs/:id/test", (req, res) => {
   try {
-    const testCommands = Array.isArray(req.body?.testCommands) ? req.body.testCommands : [];
-    const result = runTests(req.params.id, testCommands);
+    // Only predefined safe test aliases are accepted — no arbitrary raw commands from callers.
+    const requestedAliases = Array.isArray(req.body?.testAliases)
+      ? req.body.testAliases.map(String)
+      : [];
+    // Validate each alias against the allow-list before running anything.
+    for (const alias of requestedAliases) {
+      if (!SAFE_TEST_ALIASES[alias]) {
+        return res.status(400).json({
+          ok: false,
+          error: `Test alias not allowed: "${alias}". Allowed: ${Object.keys(SAFE_TEST_ALIASES).join(", ")}`
+        });
+      }
+    }
+    const result = runTests(req.params.id, requestedAliases);
     return res.json({ ok: true, ...result });
   } catch (error) {
     return res.status(400).json({ ok: false, error: String(error?.message || error) });
@@ -834,7 +846,10 @@ app.post("/api/hermes/jobs/:id/create-pr", async (req, res) => {
         baseBranch = "main";
       }
     }
-    const prMeta = await git.createPrMetadata(baseBranch);
+    // Generate PR metadata from the job's own branch and sandboxPath/repoPath,
+    // never from whatever branch the server process happens to be on globally.
+    const gitCwd = String(job.sandboxPath || job.repoPath || "").trim() || undefined;
+    const prMeta = await git.createPrMetadata(baseBranch, { cwd: gitCwd, branch: job.branch });
     const prUrl = String(req.body?.prUrl || "");
     const updated = jobManager.updateJob(job.jobId, {
       prUrl,

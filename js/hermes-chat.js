@@ -241,6 +241,10 @@
       const result = await adapter.webSearch(topic);
       const summary = String(result?.toolResult?.result?.message || result?.toolResult?.resultSummary || "Websearch completed.");
       appendMessage("assistant", summary, { toolResults: [result.toolResult || result] });
+      // Add the exchange to state.history so follow-up messages have context.
+      state.history.push({ role: "user", content: prompt });
+      state.history.push({ role: "assistant", content: summary });
+      trimHistory();
       await persistExchange(prompt, summary);
       return true;
     }

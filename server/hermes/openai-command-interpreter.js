@@ -54,6 +54,11 @@ function parseOpenAiResponse(raw) {
   };
 }
 
+// Request timeout for OpenAI calls (30 seconds).
+const OPENAI_TIMEOUT_MS = 30000;
+// Maximum response body size to guard against runaway responses before JSON.parse.
+const OPENAI_MAX_RESPONSE_BYTES = 256 * 1024;
+
 function callOpenAi(prompt, systemPrompt) {
   return new Promise((resolve, reject) => {
     const body = Buffer.from(
@@ -80,7 +85,15 @@ function callOpenAi(prompt, systemPrompt) {
       },
       (res) => {
         const chunks = [];
-        res.on("data", (chunk) => chunks.push(chunk));
+        let totalBytes = 0;
+        res.on("data", (chunk) => {
+          totalBytes += chunk.length;
+          if (totalBytes > OPENAI_MAX_RESPONSE_BYTES) {
+            req.destroy(new Error("OpenAI response exceeded size limit."));
+            return;
+          }
+          chunks.push(chunk);
+        });
         res.on("end", () => {
           try {
             const data = JSON.parse(Buffer.concat(chunks).toString("utf8"));
@@ -96,6 +109,9 @@ function callOpenAi(prompt, systemPrompt) {
         });
       }
     );
+    req.setTimeout(OPENAI_TIMEOUT_MS, () => {
+      req.destroy(new Error(`OpenAI request timed out after ${OPENAI_TIMEOUT_MS}ms.`));
+    });
     req.on("error", reject);
     req.write(body);
     req.end();

@@ -73,14 +73,16 @@ test("createSandboxBranch creates the branch and updates job status", () => {
   assert.equal(result.job.status, "sandbox_created");
   assert.ok(result.sandboxPath, "sandboxPath must be set");
   assert.ok(result.rollbackRef, "rollbackRef must be set");
+  // sandboxPath must be a worktree path
+  assert.ok(result.sandboxPath.includes(".hermes-worktrees"), "sandboxPath must be a worktree");
 });
 
-test("createSandboxBranch creates sandbox directory on disk", () => {
+test("createSandboxBranch creates worktree directory on disk", () => {
   const repoRoot = setupGitRepo();
   const { jobManager, sandboxRunner } = loadWithRepo(repoRoot);
   const job = jobManager.createJob({ ownerPrompt: "build bomber royale" });
   const result = sandboxRunner.createSandboxBranch(job.jobId);
-  assert.ok(fs.existsSync(result.sandboxPath), "sandboxPath directory must exist on disk");
+  assert.ok(fs.existsSync(result.sandboxPath), "worktree path must exist on disk");
 });
 
 test("getSandboxStatus returns current branch info", () => {
@@ -101,7 +103,8 @@ test("rollbackPlan is set after sandbox creation", () => {
   sandboxRunner.createSandboxBranch(job.jobId);
   const updated = jobManager.readJob(job.jobId);
   assert.ok(updated.rollbackPlan, "rollbackPlan must be set");
-  assert.equal(updated.rollbackPlan.type, "git_reset");
+  // Now uses git_worktree strategy, not git_reset
+  assert.equal(updated.rollbackPlan.type, "git_worktree");
   assert.ok(updated.rollbackPlan.rollbackRef, "rollbackRef must be a commit SHA");
 });
 
@@ -110,4 +113,29 @@ test("BLOCKED_BRANCHES contains main and master", () => {
   const sandboxRunner = require("../server/hermes/sandbox-runner.js");
   assert.ok(sandboxRunner.BLOCKED_BRANCHES.has("main"));
   assert.ok(sandboxRunner.BLOCKED_BRANCHES.has("master"));
+});
+
+test("sandbox uses git worktree add for isolation — sandboxPath is a worktree, not a subdirectory checkout", () => {
+  const source = fs.readFileSync(sandboxRunnerPath, "utf8");
+  // git worktree add is passed as spawnSync args: ["worktree", "add", ...]
+  assert.match(source, /"worktree",\s*"add"/u, "sandbox-runner must use git worktree add");
+  assert.match(source, /\.hermes-worktrees/u, "worktree path must use .hermes-worktrees");
+});
+
+test("teardownSandboxBranch does not set status to failed in source", () => {
+  const source = fs.readFileSync(sandboxRunnerPath, "utf8");
+  // teardownSandboxBranch must never call updateJob with status "failed"
+  // (applyRepair in a different file can use status:failed — this check is scoped to teardown)
+  const teardownSection = source.slice(source.indexOf("function teardownSandboxBranch"));
+  const nextFn = teardownSection.indexOf("\nfunction ", 1);
+  const teardownBody = nextFn > 0 ? teardownSection.slice(0, nextFn) : teardownSection;
+  assert.doesNotMatch(teardownBody, /status.*"failed"|"failed".*status/su,
+    "teardownSandboxBranch must not set status to failed");
+});
+
+test("createSandboxBranch resolves job repoId from registry before falling back to active repo", () => {
+  const source = fs.readFileSync(sandboxRunnerPath, "utf8");
+  assert.match(source, /resolveRepoForJob/u, "must have resolveRepoForJob function");
+  assert.match(source, /job\.repoId/u, "must check job.repoId");
+  assert.match(source, /getRegistrySnapshot/u, "must use getRegistrySnapshot to look up job repo");
 });

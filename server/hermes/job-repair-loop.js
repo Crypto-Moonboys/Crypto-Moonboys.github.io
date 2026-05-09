@@ -5,17 +5,24 @@ const { readJob, updateJob } = require("./job-manager.js");
 
 const MAX_REPAIR_ATTEMPTS = 5;
 
-const ALLOWED_TEST_EXECUTABLES = new Set([
-  "npm", "node", "npx", "jest", "mocha", "vitest", "tap"
-]);
+// Only these safe, predefined test aliases may be requested by a caller.
+// Arbitrary commands from the request body are not permitted.
+const SAFE_TEST_ALIASES = Object.freeze({
+  "npm test": { exe: "npm", args: ["test"] },
+  "npm run test:hermes-readiness": { exe: "npm", args: ["run", "test:hermes-readiness"] }
+});
 
-function parseTestCommand(cmd) {
-  const parts = String(cmd || "").trim().split(/\s+/u);
-  const exe = parts[0];
-  if (!ALLOWED_TEST_EXECUTABLES.has(exe)) {
-    throw new Error(`Test executable not allowed: ${exe}. Allowed: ${[...ALLOWED_TEST_EXECUTABLES].join(", ")}`);
+const DEFAULT_TEST_ALIAS = "npm test";
+
+function resolveTestAlias(alias) {
+  const key = String(alias || DEFAULT_TEST_ALIAS).trim();
+  const resolved = SAFE_TEST_ALIASES[key];
+  if (!resolved) {
+    throw new Error(
+      `Test alias not allowed: "${key}". Allowed aliases: ${Object.keys(SAFE_TEST_ALIASES).join(", ")}`
+    );
   }
-  return { exe, args: parts.slice(1) };
+  return { command: key, ...resolved };
 }
 
 function runCommand(exe, args, cwd, timeoutMs = 60000) {
@@ -29,16 +36,20 @@ function runCommand(exe, args, cwd, timeoutMs = 60000) {
   };
 }
 
-function runTests(jobId, testCommands = []) {
+// MAX_OUTPUT_LENGTH caps per-result stdout/stderr stored on disk.
+const MAX_OUTPUT_LENGTH = 2000;
+
+function runTests(jobId, testAliases = []) {
   const job = readJob(jobId);
-  const cwd = job.repoPath || process.cwd();
-  const commands = testCommands.length > 0 ? testCommands : ["npm test"];
+  const cwd = job.sandboxPath || job.repoPath || process.cwd();
+  // Use provided safe aliases, or fall back to the default.
+  const aliases = testAliases.length > 0 ? testAliases : [DEFAULT_TEST_ALIAS];
   const results = [];
 
-  for (const cmd of commands) {
-    const { exe, args } = parseTestCommand(cmd);
+  for (const alias of aliases) {
+    const { command, exe, args } = resolveTestAlias(alias);
     const result = runCommand(exe, args, cwd, 120000);
-    results.push({ command: cmd, ...result });
+    results.push({ command, ...result });
   }
 
   const allPassed = results.every((r) => r.ok);
@@ -46,8 +57,8 @@ function runTests(jobId, testCommands = []) {
     results.map((r) => ({
       command: r.command,
       passed: r.ok,
-      stdout: r.stdout.slice(0, 2000),
-      stderr: r.stderr.slice(0, 2000),
+      stdout: r.stdout.slice(0, MAX_OUTPUT_LENGTH),
+      stderr: r.stderr.slice(0, MAX_OUTPUT_LENGTH),
       ranAt: new Date().toISOString()
     }))
   );
@@ -83,7 +94,7 @@ function applyRepair(jobId, repairPatch = {}) {
 
 function repairLoop(jobId, options = {}) {
   const maxAttempts = Math.min(Number(options.maxAttempts || 3), MAX_REPAIR_ATTEMPTS);
-  const testCommands = Array.isArray(options.testCommands) ? options.testCommands : [];
+  const testAliases = Array.isArray(options.testAliases) ? options.testAliases : [];
   const job = readJob(jobId);
 
   if (!["tests_failed", "repairing", "running"].includes(job.status)) {
@@ -91,9 +102,11 @@ function repairLoop(jobId, options = {}) {
   }
 
   let lastResult = null;
+  let attemptCount = 0;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    attemptCount = attempt;
     applyRepair(jobId, { attempt, failureReason: lastResult?.results?.find((r) => !r.ok)?.stderr || "" });
-    const testResult = runTests(jobId, testCommands);
+    const testResult = runTests(jobId, testAliases);
     lastResult = testResult;
     if (testResult.allPassed) {
       break;
@@ -108,7 +121,7 @@ function repairLoop(jobId, options = {}) {
   return {
     jobId,
     finalStatus: readJob(jobId).status,
-    attempts: lastResult ? lastResult.results.length : 0,
+    attempts: attemptCount,
     allPassed: lastResult ? lastResult.allPassed : false,
     testsRun: readJob(jobId).testsRun
   };
@@ -116,14 +129,15 @@ function repairLoop(jobId, options = {}) {
 
 function markReadyForPr(jobId) {
   const job = readJob(jobId);
-  if (!["tests_passed", "repairing"].includes(job.status)) {
-    throw new Error(`Job must be in tests_passed or repairing status to mark ready_for_pr. Current: ${job.status}`);
+  if (job.status !== "tests_passed") {
+    throw new Error(`Job must be in tests_passed status to mark ready_for_pr. Current: ${job.status}`);
   }
   return updateJob(jobId, { status: "ready_for_pr" });
 }
 
 module.exports = {
   MAX_REPAIR_ATTEMPTS,
+  SAFE_TEST_ALIASES,
   runTests,
   applyRepair,
   repairLoop,

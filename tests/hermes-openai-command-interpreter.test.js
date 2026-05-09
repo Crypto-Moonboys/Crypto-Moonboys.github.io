@@ -101,3 +101,12 @@ test("heuristicInterpret for bomber royale includes block-topia files", () => {
   const result = heuristicInterpret("build my 2-player bomber royale game");
   assert.ok(result.filesLikelyInvolved.some((f) => f.includes("block-topia")));
 });
+
+test("callOpenAi has request timeout and response size guard", () => {
+  const source = fs.readFileSync(interpreterPath, "utf8");
+  assert.match(source, /req\.setTimeout/u, "must call req.setTimeout");
+  assert.match(source, /OPENAI_TIMEOUT_MS/u, "must define OPENAI_TIMEOUT_MS constant");
+  assert.match(source, /req\.destroy/u, "must destroy on timeout");
+  assert.match(source, /OPENAI_MAX_RESPONSE_BYTES/u, "must define OPENAI_MAX_RESPONSE_BYTES constant");
+  assert.match(source, /totalBytes/u, "must track total response bytes");
+});
