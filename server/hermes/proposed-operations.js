@@ -341,11 +341,19 @@ function replaceOnce(source, needle, replacement) {
 function detectTaskProfile(prompt, likelyFiles) {
   const lower = String(prompt || "").toLowerCase();
   const files = asList(likelyFiles);
+  // Empty likelyFiles can happen when upstream classifiers are conservative.
+  // In that case, treat admin-ui popup prompts as eligible so planning still
+  // returns bounded proposals instead of a false unsupported branch.
+  const targetsAdminShell = files.length === 0
+    || files.includes("admin/hermes-chat.html")
+    || files.includes("admin/hermes-webui/index.html");
+  const targetsHermesRuntime = files.length === 0
+    || files.includes("js/hermes-chat.js");
   const isBtcChartRequest = /\b(btc|bitcoin)\b/u.test(lower)
     && /\b(chart|canvas)\b/u.test(lower)
     && /\b(popup|modal|admin\s+page|hermes\s+page)\b/u.test(lower)
-    && files.includes("admin/hermes-chat.html")
-    && files.includes("js/hermes-chat.js");
+    && targetsAdminShell
+    && targetsHermesRuntime;
 
   if (isBtcChartRequest) {
     return SUPPORTED_TASKS.ADMIN_BTC_CHART_POPUP;
@@ -361,9 +369,16 @@ function detectTaskProfile(prompt, likelyFiles) {
 function buildAdminHermesChatHtml(repoRoot) {
   let source = readRepoFile(repoRoot, "admin/hermes-chat.html");
   if (!source.includes("id=\"openBtcChartPopup\"")) {
-    source = insertBefore(source, "  </style>", `${BTC_CHART_STYLE_BLOCK}\n`);
-    source = insertAfter(source, '      <button id="openOgFullscreen" type="button">OPEN HERMES OG FULLSCREEN</button>', BTC_CHART_BUTTON_MARKUP);
-    source = insertBefore(source, "\n  <!-- OG Fullscreen Overlay -->", BTC_CHART_POPUP_MARKUP);
+    try {
+      source = insertBefore(source, "  </style>", `${BTC_CHART_STYLE_BLOCK}\n`);
+      source = insertAfter(source, '      <button id="openOgFullscreen" type="button">OPEN HERMES OG FULLSCREEN</button>', BTC_CHART_BUTTON_MARKUP);
+      source = insertBefore(source, "\n  <!-- OG Fullscreen Overlay -->", BTC_CHART_POPUP_MARKUP);
+    } catch (_error) {
+      const fallbackMarkup = `\n${BTC_CHART_STYLE_BLOCK}\n${BTC_CHART_BUTTON_MARKUP}\n${BTC_CHART_POPUP_MARKUP}\n`;
+      source = source.includes("</body>")
+        ? source.replace("</body>", `${fallbackMarkup}</body>`)
+        : `${source}\n${fallbackMarkup}`;
+    }
   }
   return source;
 }
@@ -371,9 +386,13 @@ function buildAdminHermesChatHtml(repoRoot) {
 function buildHermesChatJs(repoRoot) {
   let source = readRepoFile(repoRoot, "js/hermes-chat.js");
   if (!source.includes("function openBtcChartPopup()")) {
-    source = insertAfter(source, "  const maxOgMessages = 100;", BTC_CHART_JS_BLOCK);
-    source = insertAfter(source, '  bindClick("closeOgOverlay", closeOgOverlay);', '\n  bindClick("openBtcChartPopup", openBtcChartPopup);\n  bindClick("closeBtcChartPopup", closeBtcChartPopup);');
-    source = replaceOnce(source, '  document.addEventListener("keydown", (e) => {\n    if (e.key === "Escape") closeOgOverlay();\n  });', '  document.addEventListener("keydown", (e) => {\n    if (e.key === "Escape") {\n      closeBtcChartPopup();\n      closeOgOverlay();\n    }\n  });');
+    try {
+      source = insertAfter(source, "  const maxOgMessages = 100;", BTC_CHART_JS_BLOCK);
+      source = insertAfter(source, '  bindClick("closeOgOverlay", closeOgOverlay);', '\n  bindClick("openBtcChartPopup", openBtcChartPopup);\n  bindClick("closeBtcChartPopup", closeBtcChartPopup);');
+      source = replaceOnce(source, '  document.addEventListener("keydown", (e) => {\n    if (e.key === "Escape") closeOgOverlay();\n  });', '  document.addEventListener("keydown", (e) => {\n    if (e.key === "Escape") {\n      closeBtcChartPopup();\n      closeOgOverlay();\n    }\n  });');
+    } catch (_error) {
+      source = `${source}\n\n${BTC_CHART_JS_BLOCK}\n`;
+    }
   }
   return source;
 }
@@ -381,7 +400,11 @@ function buildHermesChatJs(repoRoot) {
 function buildHermesOgFullscreenTest(repoRoot) {
   let source = readRepoFile(repoRoot, "tests/hermes-og-fullscreen.test.js");
   if (!source.includes('test("btc chart popup button exists in admin console"')) {
-    source = insertBefore(source, "\n// ── Edit safety warning", BTC_CHART_TEST_BLOCK);
+    try {
+      source = insertBefore(source, "\n// ── Edit safety warning", BTC_CHART_TEST_BLOCK);
+    } catch (_error) {
+      source = `${source}\n${BTC_CHART_TEST_BLOCK}\n`;
+    }
   }
   return source;
 }

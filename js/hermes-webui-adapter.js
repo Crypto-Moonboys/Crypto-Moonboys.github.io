@@ -59,11 +59,20 @@
   }
 
   class HermesWebUiAdapter {
+    getHermesModel() {
+      const params = new URLSearchParams(global.location.search || "");
+      const queryModel = String(params.get("model") || "").trim();
+      if (queryModel) return queryModel;
+      const storedModel = String(global.localStorage.getItem("moonboys_hermes_model") || "").trim();
+      if (storedModel) return storedModel;
+      return "qwen2.5:1.5b";
+    }
+
     async hermesChat(prompt, history = []) {
       const payload = await request("/api/hermes/chat", {
         method: "POST",
         body: JSON.stringify({
-          model: "qwen2.5:1.5b",
+          model: this.getHermesModel(),
           mode: "chat",
           role: "main_hermes",
           prompt,

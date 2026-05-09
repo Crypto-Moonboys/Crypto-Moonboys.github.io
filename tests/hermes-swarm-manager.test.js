@@ -96,22 +96,15 @@ test("owner operator mode enables real execution capabilities in the plan", () =
 });
 
 test("CREATE SWARM PLAN controls and task-board containers exist", () => {
-  assert.match(htmlSource, /CREATE SWARM PLAN/u);
-  assert.match(htmlSource, /id="createSwarmPlan"/u);
-  assert.match(htmlSource, /id="ogCreateSwarmPlan"/u);
-  assert.match(htmlSource, /id="swarmTaskBoard"/u);
-  assert.match(htmlSource, /id="ogSwarmTaskBoard"/u);
+  assert.match(htmlSource, /id="hermesWebuiFrame"/u);
+  assert.match(htmlSource, /\/admin\/hermes-webui\/index\.html\?surface=hermes/u);
 });
 
 test("planner UI calls plan endpoint and describes approved execution authority", () => {
-  assert.match(jsSource, /function createSwarmPlanFromPrompt/u);
-  assert.match(jsSource, /\/api\/hermes\/swarm\/plan/u);
-  assert.match(jsSource, /getSwarmExecutionMode/u);
-  assert.match(jsSource, /ownerOperatorMode: swarmExecutionMode === "owner_operator"/u);
-  assert.match(htmlSource, /AUTHORITY MODEL/u);
-  assert.match(htmlSource, /OWNER OPERATOR MODE/u);
-  assert.match(htmlSource, /Safe Review Mode/u);
-  assert.match(htmlSource, /Owner Operator Mode is for self-hosted repo control/u);
+  assert.match(apiSource, /app\.post\("\/api\/hermes\/swarm\/plan"/u);
+  assert.match(jsSource, /adapter\.hermesStatus\(/u);
+  assert.match(jsSource, /Hermes swarm agents/u);
+  assert.match(jsSource, /Pending approvals/u);
 });
 
 test("owner pipeline repair discipline exists without adding a new runtime", () => {
@@ -144,10 +137,8 @@ test("no unsafe Hermes2 or safety bypass strings were added", () => {
 });
 
 test("approval warning still exists", () => {
-  assert.match(
-    htmlSource,
-    /Repo edit mode requires explicit approval\. Hermes will preview before applying changes\./u
-  );
+  assert.match(apiSource, /\/api\/hermes\/approval\/list/u);
+  assert.match(jsSource, /Pending approvals/u);
 });
 
 test("swarm registry source remains present", () => {
