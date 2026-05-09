@@ -9,33 +9,18 @@
 // __WEBUI_VERSION__ is an upstream placeholder token; update/replace it in your deploy pipeline if desired.
 const CACHE_NAME = 'hermes-shell-__WEBUI_VERSION__';
 
-// Static assets that form the app shell.
-//
-// Versioned assets (CSS + JS) include `?v=__WEBUI_VERSION__` to match the
-// query string the page sends — see index.html. Without the version query
-// here, every cache lookup against `?v=...` URLs would miss and fall through
-// to network, defeating the pre-cache.
+// Static assets that form the app shell. Keep these paths aligned with the
+// actual URLs requested by admin/hermes-webui/index.html.
 //
 // Do not pre-cache './' or login assets here: under password auth they can be
 // either the authenticated app shell or login code, and stale cached responses
 // can make valid password submits fail until the user clears browser cache.
 // Navigations populate './' only after a successful non-redirect network load.
-const VQ = '?v=__WEBUI_VERSION__';
 const SHELL_ASSETS = [
-  './static/style.css' + VQ,
-  './static/boot.js' + VQ,
-  './static/ui.js' + VQ,
-  './static/messages.js' + VQ,
-  './static/sessions.js' + VQ,
-  './static/panels.js' + VQ,
-  './static/commands.js' + VQ,
-  './static/icons.js' + VQ,
-  './static/i18n.js' + VQ,
-  './static/workspace.js' + VQ,
-  './static/terminal.js' + VQ,
-  './static/onboarding.js' + VQ,
-  './static/favicon.svg',
-  './static/favicon-32.png',
+  './style.css',
+  './static/vendor/smd.min.js',
+  '../../js/hermes-webui-adapter.js',
+  '../../js/hermes-chat.js',
   './manifest.json',
 ];
 
@@ -134,12 +119,12 @@ self.addEventListener('fetch', (event) => {
   // Only explicit shell assets are cached. Everything else should hit the
   // network so stale one-off files (especially auth/login scripts) do not get
   // trapped in CacheStorage until a manual cache clear.
-  const scopePath = new URL(self.registration.scope).pathname;
-  const relPath = url.pathname.startsWith(scopePath)
-    ? url.pathname.slice(scopePath.length)
-    : url.pathname.replace(/^\/+/, '');
-  const shellPath = './' + relPath.replace(/^\/+/, '') + url.search;
-  if (!SHELL_ASSETS.includes(shellPath)) return;
+  const shellAssetUrls = new Set(SHELL_ASSETS.map((asset) => {
+    const resolved = new URL(asset, self.registration.scope);
+    return resolved.pathname + resolved.search;
+  }));
+  const requestPath = url.pathname + url.search;
+  if (!shellAssetUrls.has(requestPath)) return;
 
   // Shell assets: network-first with cache fallback. This keeps offline support
   // but avoids executing stale JS/CSS after a local hotfix when WEBUI_VERSION
