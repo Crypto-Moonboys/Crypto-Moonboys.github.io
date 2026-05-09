@@ -5,8 +5,8 @@
  * Caches only static shell assets so the app shell loads fast on repeat visits.
  */
 
-// Cache version is injected by the server at request time (routes.py /sw.js handler).
-// Bumps automatically whenever the git commit changes — no manual edits needed.
+// This file is served statically in this repository.
+// __WEBUI_VERSION__ remains an upstream placeholder token.
 const CACHE_NAME = 'hermes-shell-__WEBUI_VERSION__';
 
 // Static assets that form the app shell.
@@ -22,20 +22,20 @@ const CACHE_NAME = 'hermes-shell-__WEBUI_VERSION__';
 // Navigations populate './' only after a successful non-redirect network load.
 const VQ = '?v=__WEBUI_VERSION__';
 const SHELL_ASSETS = [
-  './static/style.css' + VQ,
-  './static/boot.js' + VQ,
-  './static/ui.js' + VQ,
-  './static/messages.js' + VQ,
-  './static/sessions.js' + VQ,
-  './static/panels.js' + VQ,
-  './static/commands.js' + VQ,
-  './static/icons.js' + VQ,
-  './static/i18n.js' + VQ,
-  './static/workspace.js' + VQ,
-  './static/terminal.js' + VQ,
-  './static/onboarding.js' + VQ,
-  './static/favicon.svg',
-  './static/favicon-32.png',
+  './style.css' + VQ,
+  './boot.js' + VQ,
+  './ui.js' + VQ,
+  './messages.js' + VQ,
+  './sessions.js' + VQ,
+  './panels.js' + VQ,
+  './commands.js' + VQ,
+  './icons.js' + VQ,
+  './i18n.js' + VQ,
+  './workspace.js' + VQ,
+  './terminal.js' + VQ,
+  './onboarding.js' + VQ,
+  './favicon.svg',
+  './favicon-32.png',
   './manifest.json',
 ];
 
