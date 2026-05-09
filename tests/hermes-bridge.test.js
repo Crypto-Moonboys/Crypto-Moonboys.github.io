@@ -145,6 +145,30 @@ test("chat search request uses index/search", async (t) => {
   assert.match(String(res.body.reply || ""), /showing first/i);
 });
 
+test("natural admin UI feature request routes to operator task plan and avoids generic fallback", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const prompt = "can you create a popup canvas here in admin page showing BTC chart";
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    prompt,
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(Array.isArray(res.body.actions), true);
+  assert.equal(res.body.actions.length, 0);
+  assert.ok(Array.isArray(res.body.toolResults));
+  assert.equal(res.body.toolResults[0].action, "swarm/plan");
+  assert.equal(res.body.toolResults[0].ok, true);
+  assert.match(JSON.stringify(res.body.toolResults[0]), /repo_admin_ui_operator_task/i);
+  assert.match(String(res.body.reply || ""), /admin\/repo ui operator task|swarm plan/i);
+  assert.doesNotMatch(JSON.stringify(res.body), /django|pynacl|messenger of gods/i);
+});
+
 test("file/list failure formatting never says returned 0 entries", async (t) => {
   const root = setupSandbox();
   const { server, base } = await startServer(root);

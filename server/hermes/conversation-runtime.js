@@ -6,6 +6,7 @@ const { executeAction, missingForPrivileged } = require("./tool-executor.js");
 const { getAgents } = require("./swarm-registry.js");
 const { requiresPrivilege } = require("./action-schema.js");
 const { getActiveRepoOrThrow } = require("./repo-registry.js");
+const { createSwarmPlan, EXECUTION_MODES } = require("./swarm-manager.js");
 
 function formatToolResult(result, debug = false) {
   const action = String(result?.action || "");
@@ -144,6 +145,72 @@ async function runConversation(input = {}) {
       toolResults: [],
       missingRequirements: [],
       mode: routing.modeSwitch,
+      role
+    };
+  }
+
+  if (routing.operatorIntent) {
+    const executionMode = String(input.swarmExecutionMode || input.executionMode || "").toLowerCase() === "owner_operator"
+      ? EXECUTION_MODES.OWNER_OPERATOR
+      : EXECUTION_MODES.SAFE_REVIEW;
+    const likelyFiles = Array.isArray(routing.operatorIntent.likelyFiles) ? routing.operatorIntent.likelyFiles : [];
+    const taskBrief = prompt;
+
+    if (executionMode === EXECUTION_MODES.SAFE_REVIEW) {
+      const plan = createSwarmPlan(taskBrief, { swarmExecutionMode: "safe_review", mode, role });
+      return {
+        reply:
+          "This is an admin/repo UI operator task. Safe Review Mode created a swarm plan; no generic chat fallback was used.",
+        actions: [],
+        toolResults: [
+          {
+            action: "swarm/plan",
+            ok: true,
+            repoUsed: "",
+            pathUsed: "",
+            resultSummary: "Swarm plan created for admin/repo UI task.",
+            entries: [plan, { classification: routing.operatorIntent.classification, likelyFiles }],
+            totalCount: 2,
+            shownCount: 2
+          }
+        ],
+        missingRequirements: [],
+        mode,
+        role
+      };
+    }
+
+    const missing = missingForPrivileged({
+      mode,
+      role,
+      confirmEdit: input.confirmEdit === true,
+      approvalId: input.approvalId,
+      approvalToken: input.approvalToken
+    });
+    return {
+      reply:
+        "This is an admin/repo UI feature request. Owner Operator Mode can proceed through Hermes patch-preview and approval-gated execution.",
+      actions: [],
+      toolResults: [
+        {
+          action: "plan/privileged",
+          ok: false,
+          repoUsed: "",
+          pathUsed: "",
+          resultSummary: "Approval-gated execution required.",
+          entries: [
+            {
+              classification: routing.operatorIntent.classification,
+              likelyFiles,
+              nextStep: "Prepare patch preview via Hermes toolchain, then apply only after approval."
+            }
+          ],
+          missingRequirements: [...new Set(missing)],
+          error: ""
+        }
+      ],
+      missingRequirements: [...new Set(missing)],
+      mode,
       role
     };
   }
