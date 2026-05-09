@@ -216,7 +216,7 @@ const BTC_CHART_JS_BLOCK = `
     if (typeof fetch !== "function") return [];
     const controller = typeof AbortController === "function" ? new AbortController() : null;
     const timeoutId = controller && typeof window !== "undefined"
-      ? window.setTimeout(() => controller.abort(), 1800)
+      ? window.setTimeout(() => controller.abort(), 5000)
       : null;
     try {
       const response = await fetch(BTC_CHART_FETCH_URL, {
