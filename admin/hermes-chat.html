@@ -202,6 +202,224 @@
     @media (max-width: 700px) {
       .grid4 { grid-template-columns: 1fr; }
     }
+
+    /* ── OG FULLSCREEN OVERLAY ──────────────────────────── */
+    #ogOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #03060d;
+      flex-direction: column;
+      font-family: "Segoe UI", "Inter", "Tahoma", sans-serif;
+      color: #e7f4ff;
+    }
+    #ogOverlay.open { display: flex; }
+
+    .og-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(96, 213, 255, 0.3);
+      background: rgba(6, 12, 24, 0.98);
+      flex-shrink: 0;
+      gap: 12px;
+    }
+    .og-header-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #60d5ff;
+    }
+    .og-logo { font-size: 1.2rem; }
+    .og-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .og-chip {
+      border: 1px solid rgba(96, 213, 255, 0.35);
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 0.72rem;
+      color: #8eb1cd;
+      background: rgba(10, 20, 35, 0.6);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .og-btn-sm {
+      cursor: pointer;
+      border: 1px solid rgba(96, 213, 255, 0.4);
+      border-radius: 8px;
+      background: rgba(10, 20, 35, 0.8);
+      color: #60d5ff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 5px 10px;
+      width: auto;
+    }
+    .og-btn-close { color: #ff758d; border-color: rgba(255, 117, 141, 0.4); }
+
+    .og-body {
+      display: grid;
+      grid-template-columns: 220px 1fr 280px;
+      flex: 1;
+      overflow: hidden;
+    }
+    .og-panel {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(96, 213, 255, 0.15);
+      overflow: hidden;
+    }
+    .og-panel:last-child { border-right: none; }
+    .og-panel-title {
+      padding: 8px 12px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.09em;
+      color: #60d5ff;
+      border-bottom: 1px solid rgba(96, 213, 255, 0.15);
+      background: rgba(6, 12, 24, 0.7);
+      flex-shrink: 0;
+    }
+
+    /* Left panel */
+    .og-swarm-list { flex: 1; overflow-y: auto; padding: 8px; }
+    .og-agent-item {
+      padding: 8px 10px;
+      border: 1px solid rgba(96, 213, 255, 0.15);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .og-agent-item:hover { border-color: rgba(96, 213, 255, 0.45); }
+    .og-agent-item.active { border-color: #60d5ff; background: rgba(96, 213, 255, 0.08); }
+    .og-agent-id { font-size: 0.82rem; font-weight: 700; color: #60d5ff; }
+    .og-agent-label { font-size: 0.74rem; color: #8eb1cd; margin-top: 2px; }
+    .og-agent-caps { font-size: 0.68rem; color: rgba(142, 177, 205, 0.7); margin-top: 3px; }
+
+    /* Center panel */
+    .og-log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      background: rgba(2, 5, 10, 0.7);
+    }
+    .og-log-entry { margin-bottom: 10px; }
+    .og-log-user { color: #60d5ff; font-weight: 700; }
+    .og-log-assistant { color: #cfe9ff; }
+    .og-log-error { color: #ff758d; }
+    .og-log-meta { color: rgba(142, 177, 205, 0.6); font-size: 0.68rem; margin-top: 2px; }
+    .og-log-empty { color: rgba(142, 177, 205, 0.45); font-style: italic; }
+
+    .og-edit-warning {
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      color: #ffcf5a;
+      background: rgba(255, 207, 90, 0.07);
+      border-top: 1px solid rgba(255, 207, 90, 0.2);
+      border-bottom: 1px solid rgba(255, 207, 90, 0.2);
+      flex-shrink: 0;
+    }
+    .og-input-row {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid rgba(96, 213, 255, 0.15);
+      background: rgba(6, 12, 24, 0.9);
+      flex-shrink: 0;
+      align-items: flex-end;
+    }
+    .og-textarea {
+      flex: 1;
+      min-height: 60px;
+      max-height: 120px;
+      resize: vertical;
+      background: rgba(2, 6, 12, 0.96);
+      border: 1px solid rgba(96, 213, 255, 0.3);
+      border-radius: 8px;
+      color: #e7f4ff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      padding: 8px 10px;
+    }
+    .og-send-btn {
+      cursor: pointer;
+      background: linear-gradient(180deg, rgba(96, 213, 255, 0.92), rgba(66, 169, 214, 0.92));
+      border: 1px solid rgba(96, 213, 255, 0.5);
+      border-radius: 8px;
+      color: #041019;
+      font-weight: 800;
+      font-size: 0.82rem;
+      padding: 10px 16px;
+      width: auto;
+      letter-spacing: 0.04em;
+    }
+
+    /* Right panel */
+    .og-right { overflow-y: auto; }
+    .og-section-label {
+      padding: 5px 10px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #60d5ff;
+      background: rgba(6, 12, 24, 0.5);
+      border-bottom: 1px solid rgba(96, 213, 255, 0.1);
+      flex-shrink: 0;
+    }
+    .og-pre {
+      margin: 0;
+      padding: 8px 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      color: #8eb1cd;
+      border-bottom: 1px solid rgba(96, 213, 255, 0.1);
+    }
+
+    /* Action bar */
+    .og-action-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 16px;
+      border-top: 1px solid rgba(96, 213, 255, 0.2);
+      background: rgba(3, 6, 13, 0.98);
+      font-size: 0.72rem;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .og-bar-label { color: rgba(96, 213, 255, 0.65); font-weight: 700; letter-spacing: 0.06em; }
+    .og-bar-value { color: #e7f4ff; font-weight: 600; }
+    .og-bar-sep { color: rgba(96, 213, 255, 0.3); }
+
+    #openOgFullscreen {
+      background: linear-gradient(180deg, rgba(109, 255, 162, 0.9), rgba(56, 200, 120, 0.9));
+      border-color: rgba(109, 255, 162, 0.55);
+      color: #021a0a;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 900px) {
+      .og-body { grid-template-columns: 1fr; }
+      .og-panel.og-left,
+      .og-panel.og-right { display: none; }
+    }
   </style>
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
@@ -221,6 +439,7 @@
         <span class="badge sandbox">Sandbox only</span>
         <span class="badge danger">Do not use unless fixing a failed task</span>
       </div>
+      <button id="openOgFullscreen" type="button">OPEN HERMES OG FULLSCREEN</button>
     </section>
 
     <section class="panel">
@@ -459,6 +678,63 @@
         <button id="emergencyRollbackPrompt" class="danger" type="button">Show Rollback Options (Prompt Only)</button>
       </div>
     </details>
+  </div>
+
+  <!-- OG Fullscreen Overlay -->
+  <div id="ogOverlay" role="dialog" aria-label="Hermes OG Repo Control" aria-modal="true">
+    <div class="og-header">
+      <div class="og-header-title">
+        <span class="og-logo">◈</span>
+        <span>HERMES OG REPO CONTROL</span>
+      </div>
+      <div class="og-header-actions">
+        <span id="ogModeChip" class="og-chip">MODE: chat</span>
+        <span id="ogRoleChip" class="og-chip">ROLE: main_hermes</span>
+        <button id="ogRefreshStatus" type="button" class="og-btn-sm">↻ Refresh</button>
+        <button id="closeOgOverlay" type="button" class="og-btn-sm og-btn-close">✕ Close</button>
+      </div>
+    </div>
+
+    <div class="og-body">
+      <div class="og-panel og-left">
+        <div class="og-panel-title">AGENT ROLES</div>
+        <div id="ogSwarmList" class="og-swarm-list"></div>
+      </div>
+
+      <div class="og-panel og-main">
+        <div class="og-panel-title">CONSOLE</div>
+        <div id="ogChatLog" class="og-log"><span class="og-log-empty">No messages yet. Send a prompt below.</span></div>
+        <div class="og-edit-warning">⚠ Repo edit mode requires explicit approval. Hermes will preview before applying changes.</div>
+        <div class="og-input-row">
+          <textarea id="ogPrompt" class="og-textarea" placeholder="Enter prompt…"></textarea>
+          <button id="ogSendChat" type="button" class="og-send-btn">SEND ▶</button>
+        </div>
+      </div>
+
+      <div class="og-panel og-right">
+        <div class="og-panel-title">SYSTEM STATUS</div>
+        <div class="og-section-label">ACTIVE REPO</div>
+        <pre id="ogRepoInfo" class="og-pre">—</pre>
+        <div class="og-section-label">APPROVALS</div>
+        <pre id="ogApprovals" class="og-pre">—</pre>
+        <div class="og-section-label">COMMAND QUEUE</div>
+        <pre id="ogQueue" class="og-pre">—</pre>
+      </div>
+    </div>
+
+    <div class="og-action-bar">
+      <span class="og-bar-label">MODE</span>
+      <span id="ogBarMode" class="og-bar-value">chat</span>
+      <span class="og-bar-sep">|</span>
+      <span class="og-bar-label">ROLE</span>
+      <span id="ogBarRole" class="og-bar-value">main_hermes</span>
+      <span class="og-bar-sep">|</span>
+      <span class="og-bar-label">APPROVAL</span>
+      <span id="ogBarApproval" class="og-bar-value">—</span>
+      <span class="og-bar-sep">|</span>
+      <span class="og-bar-label">LAST ACTION</span>
+      <span id="ogBarLastAction" class="og-bar-value">—</span>
+    </div>
   </div>
 
   <script>
