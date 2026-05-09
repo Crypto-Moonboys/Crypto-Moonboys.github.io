@@ -1,11 +1,11 @@
 /**
- * Crypto Moonboys — Live Activity Summary
+ * Crypto Moonboys Ã¢â‚¬â€ Live Activity Summary
  * =========================================
  * Shared frontend helper showing current player activity state.
  *
  * Shows:
  *   - Core API: online / unavailable
- *     (never shows "not connected" when BASE_URL is set — only "unavailable" if a
+ *     (never shows "not connected" when BASE_URL is set Ã¢â‚¬â€ only "unavailable" if a
  *      network call fails, or "not configured" when BASE_URL is genuinely absent)
  *   - Identity / sync state (from MOONBOYS_IDENTITY)
  *   - Current faction state (from MOONBOYS_FACTION)
@@ -17,15 +17,15 @@
  *   Block Topia XP = in-game progression only
  *   Faction       = faction alignment only
  *
- * Usage — auto-mount:
+ * Usage Ã¢â‚¬â€ auto-mount:
  *   <div data-las-panel></div>
  *   (script auto-mounts all elements with that attribute on DOMContentLoaded)
  *
- * Usage — manual:
+ * Usage Ã¢â‚¬â€ manual:
  *   window.MOONBOYS_LIVE_ACTIVITY.mount(elementOrId)
  *   window.MOONBOYS_LIVE_ACTIVITY.refresh()
  *
- * Depends on (all optional — graceful fallback if absent):
+ * Depends on (all optional Ã¢â‚¬â€ graceful fallback if absent):
  *   window.MOONBOYS_API          (api-config.js)
  *   window.MOONBOYS_IDENTITY     (identity-gate.js)
  *   window.MOONBOYS_FACTION      (faction-alignment.js)
@@ -40,7 +40,7 @@
   // Unsubscribe token for MOONBOYS_STATE subscriber (avoids leak if re-bootstrapped)
   var _stateUnsub = null;
 
-  // ── True singleton: survive script re-execution (dynamic injection / re-mount) ──
+  // Ã¢â€â‚¬Ã¢â€â‚¬ True singleton: survive script re-execution (dynamic injection / re-mount) Ã¢â€â‚¬Ã¢â€â‚¬
   // All shared mutable state lives on window.__MOONBOYS_LAS_SINGLETON so that a
   // second execution of this IIFE reuses the existing log array and listener
   // registration flag rather than resetting them.
@@ -49,12 +49,12 @@
   }
   var _singleton = window.__MOONBOYS_LAS_SINGLETON;
 
-  // ── In-memory activity log ────────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ In-memory activity log Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   // Always points to the same array held by the singleton, even after re-execution.
   var _activityLog = _singleton.activityLog;
 
   function buildLogRowHTML(e) {
-    var icon = e.type === 'xp' ? '⚡' : e.type === 'faction' ? '🏴' : e.type === 'sync' ? '🔗' : '📡';
+    var icon = e.type === 'xp' ? 'Ã¢Å¡Â¡' : e.type === 'faction' ? 'Ã°Å¸ÂÂ´' : e.type === 'sync' ? 'Ã°Å¸â€â€”' : 'Ã°Å¸â€œÂ¡';
     return '<div class="las-event-row">' +
       '<span class="las-event-time">' + esc(e.time) + '</span>' +
       '<span class="las-event-icon" aria-hidden="true">' + icon + '</span>' +
@@ -70,12 +70,12 @@
     // every page (see load order in HTML).  Guard is kept as a belt-and-suspenders
     // safeguard in case the load order ever changes.
     if (!window.MOONBOYS_EVENT_BUS || typeof window.MOONBOYS_EVENT_BUS.emit !== 'function') {
-      console.warn('[live-activity-summary] MOONBOYS_EVENT_BUS unavailable — activity:event not emitted.');
+      console.warn('[live-activity-summary] MOONBOYS_EVENT_BUS unavailable Ã¢â‚¬â€ activity:event not emitted.');
       return;
     }
     window.MOONBOYS_EVENT_BUS.emit('activity:event', entry);
 
-    // ── Performance: append directly to existing log containers ────────────
+    // Ã¢â€â‚¬Ã¢â€â‚¬ Performance: append directly to existing log containers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
     // Avoids a full async panel remount on every event.  Only fall back to
     // full remount when the log container doesn't exist yet (first event).
     var logContainers = document.querySelectorAll('[data-las-panel] [data-las-log]');
@@ -112,7 +112,7 @@
     return { type: type, text: text, time: formatTime(), ts: Date.now() };
   }
 
-  // ── Helpers ─────────────────────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Helpers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   function esc(s) {
     return String(s == null ? '' : s)
@@ -138,7 +138,7 @@
     return fa.getCachedStatus() || { faction: 'unaligned', faction_xp: 0 };
   }
 
-  // ── API online check ─────────────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ API online check Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   // Delegates to MOONBOYS_STATUS_PANEL.checkApiOnline() (connection-status-panel.js)
   // so there is ONE source of truth and no duplicate HTTP polling.
   // The local fallback runs only when CSP has not loaded on this page.
@@ -167,7 +167,7 @@
       var timer = setTimeout(function () { ac.abort(); }, 4000);
       var online = false;
       try {
-        // GET /health — the worker only implements GET; HEAD falls through to 404.
+        // GET /health Ã¢â‚¬â€ the worker only implements GET; HEAD falls through to 404.
         var res = await fetch(apiBase + '/health', { method: 'GET', signal: ac.signal });
         online = res.status < 500;
       } catch (_) {
@@ -183,12 +183,12 @@
     return _apiOnlineInflight;
   }
 
-  // ── Sync / identity summary ───────────────────────────────────────────────
-  // Four distinct cases — never collapsed:
-  //   1. Identity layer missing  → "Identity system unavailable"
-  //   2. Identity present, not linked → "Telegram not linked — run /gklink"
-  //   3. Linked, not yet synced  → "Sync in progress"
-  //   4. Linked + valid          → "Sync ready"
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Sync / identity summary Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+  // Four distinct cases Ã¢â‚¬â€ never collapsed:
+  //   1. Identity layer missing  Ã¢â€ â€™ "Identity system unavailable"
+  //   2. Identity present, not linked Ã¢â€ â€™ "Telegram not linked Ã¢â‚¬â€ run /gklink"
+  //   3. Linked, not yet synced  Ã¢â€ â€™ "Sync in progress"
+  //   4. Linked + valid          Ã¢â€ â€™ "Sync ready"
 
   function syncSummary() {
     var gate = window.MOONBOYS_IDENTITY;
@@ -202,7 +202,7 @@
 
     // Case 2: identity present but Telegram not linked
     if (!state || !state.linked) {
-      return { text: 'Telegram not linked — run /gklink', good: false };
+      return { text: 'Telegram not linked Ã¢â‚¬â€ run /gklink', good: false };
     }
 
     // Case 4: linked and fully synced
@@ -214,7 +214,7 @@
     return { text: 'Sync in progress', good: false };
   }
 
-  // ── Faction summary ──────────────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Faction summary Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   function factionSummary(status) {
     if (!status || !status.faction || status.faction === 'unaligned') {
@@ -225,9 +225,9 @@
     return meta ? (meta.icon + ' ' + meta.label) : String(status.faction);
   }
 
-  // ── Inline DOM patchers ──────────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Inline DOM patchers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   // These are the ONLY way UI rows update after initial mount.
-  // No remount, no refresh() call — only targeted textContent / className patches.
+  // No remount, no refresh() call Ã¢â‚¬â€ only targeted textContent / className patches.
 
   /**
    * Patches all rendered faction rows across every mounted LAS panel.
@@ -251,7 +251,7 @@
    *   When absent (initial render before the first sync:state event fires) it
    *   falls back to syncSummary() which reads from MOONBOYS_IDENTITY.
    *
-   * Sole call site: MOONBOYS_STATE.subscribe() — state.sync is populated by the
+   * Sole call site: MOONBOYS_STATE.subscribe() Ã¢â‚¬â€ state.sync is populated by the
    * bus.on('sync:state') bridge in moonboys-state.js.
    */
   function updateSyncUI(syncPayload) {
@@ -272,7 +272,7 @@
     });
   }
 
-  // ── Build HTML ────────────────────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Build HTML Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   function buildLogHTML() {
     if (!_activityLog.length) return '';
@@ -284,7 +284,7 @@
   var FACTION_MISSION_FALLBACKS = {
     graffpunks: [
       { id: 'gp_chaos_3', label: 'Chaos Agent', description: 'Trigger 3 chaos events across any runs.', target: 3, reward: { warContrib: 70 } },
-      { id: 'gp_combo_x3', label: 'Combo Graffiti', description: 'Reach a ×3 combo multiplier in any run.', target: 3, reward: { warContrib: 65 } },
+      { id: 'gp_combo_x3', label: 'Combo Graffiti', description: 'Reach a Ãƒâ€”3 combo multiplier in any run.', target: 3, reward: { warContrib: 65 } },
       { id: 'gp_high_risk', label: 'Risk Canvas', description: 'Score 500+ points during a high-risk window.', target: 500, reward: { warContrib: 90 } },
     ],
     default: [
@@ -356,7 +356,7 @@
       var target = Number.isFinite(Number(m.target)) && Number(m.target) > 0 ? Number(m.target) : 1;
       var pct = Math.max(0, Math.min(100, Math.round((current / target) * 100)));
       return '<div class="las-mission-card ' + (m.done ? 'is-complete' : '') + '">' +
-        '<div class="las-mission-top"><strong>' + esc(m.title) + '</strong><span>' + (m.done ? '✓ COMPLETE' : 'LIVE') + '</span></div>' +
+        '<div class="las-mission-top"><strong>' + esc(m.title) + '</strong><span>' + (m.done ? 'Ã¢Å“â€œ COMPLETE' : 'LIVE') + '</span></div>' +
         '<div class="las-mission-obj">' + esc(m.objective) + '</div>' +
         '<div class="las-progress"><i style="width:' + pct + '%"></i></div>' +
         '<div class="las-mission-meta"><span>' + esc(String(current)) + ' / ' + esc(String(target)) + '</span>' + (m.reward ? '<span>' + esc(m.reward) + '</span>' : '') + '</div>' +
@@ -371,12 +371,32 @@
 
   var WTF_LOADING_STALL_MS = 8000;
   var WTF_LOADING_REPAINT_BUFFER_MS = 250;
+  var WTF_HELPER_RETRY_MS = 400;
+  var WTF_HELPER_RETRY_MAX = 8;
 
   function clearWtfLoadingRepaintTimer() {
     if (_singleton.wtfLoadingRepaintTimer) {
       clearTimeout(_singleton.wtfLoadingRepaintTimer);
       _singleton.wtfLoadingRepaintTimer = null;
     }
+  }
+
+  function clearWtfHelperRetryTimer() {
+    if (_singleton.wtfHelperRetryTimer) {
+      clearTimeout(_singleton.wtfHelperRetryTimer);
+      _singleton.wtfHelperRetryTimer = null;
+    }
+  }
+
+  function scheduleWtfHelperRetry() {
+    if (_singleton.wtfHelperRetryTimer) return;
+    var attempts = Number(_singleton.wtfHelperRetryAttempts || 0);
+    if (attempts >= WTF_HELPER_RETRY_MAX) return;
+    _singleton.wtfHelperRetryAttempts = attempts + 1;
+    _singleton.wtfHelperRetryTimer = setTimeout(function () {
+      _singleton.wtfHelperRetryTimer = null;
+      refresh();
+    }, WTF_HELPER_RETRY_MS);
   }
 
   function scheduleWtfLoadingFallbackRepaint(nowMs) {
@@ -488,8 +508,14 @@
       }
       var fallbackState = buildDeterministicWtfFallbackState(new Date());
       if (!fallbackState) {
-        return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>Fallback helper unavailable. Unable to construct a local Daily WTF schedule right now.</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
+        scheduleWtfHelperRetry();
+        if (Number(_singleton.wtfHelperRetryAttempts || 0) < WTF_HELPER_RETRY_MAX) {
+          return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">NEXT SIGNAL</span><strong>Loading Daily WTF signal…</strong><p>Daily WTF signal feed is reconnecting. Play Arcade while the next signal loads.</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
+        }
+        return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>Signal feed unavailable. Play Arcade and check Battle Chamber again shortly.</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
       }
+      _singleton.wtfHelperRetryAttempts = 0;
+      clearWtfHelperRetryTimer();
       var fallbackFocus = fallbackState.active_event || fallbackState.next_event || null;
       var fallbackTitle = eventTitle(fallbackFocus, 'Next Daily WTF Signal');
       var fallbackObjective = wtfRequirementText(fallbackState, fallbackFocus);
@@ -499,6 +525,8 @@
       return '<div class="las-signal-card" data-wtf-state="fallback"><span class="las-pill las-pill--next">FALLBACK</span><strong>' + esc(fallbackTitle) + '</strong><p>Signal feed fallback active. Daily WTF signals open every 4 hours.</p><div class="las-task-copy">Objective: ' + esc(fallbackObjective) + '</div><div class="las-countdown" data-wtf-countdown>' + countdownText(fallbackState.countdown_seconds) + '</div>' + fallbackAction + '</div>';
     }
     clearWtfLoadingRepaintTimer();
+    clearWtfHelperRetryTimer();
+    _singleton.wtfHelperRetryAttempts = 0;
     _singleton.wtfLoadingStartedAt = null;
     if (state.status === 'error') {
       return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>' + esc(state.diagnostic || 'Try the arcade while the feed reconnects.') + '</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
@@ -518,7 +546,7 @@
     if (completedOnly) {
       subcopy = 'Completed tick locked for today. XP burst preview and chain options show when the Worker reports them.';
     } else if (active) {
-      subcopy = state.checked_in ? 'Checked in — complete the objective before the signal expires.' : 'Live now — Daily WTF signals open every 4 hours; check in before this 90-minute timer ends.';
+      subcopy = state.checked_in ? 'Checked in Ã¢â‚¬â€ complete the objective before the signal expires.' : 'Live now Ã¢â‚¬â€ Daily WTF signals open every 4 hours; check in before this 90-minute timer ends.';
       if (linked && eventId && !state.checked_in && !completed) {
         buttons += '<button type="button" class="las-action-btn" data-wtf-checkin data-event-id="' + esc(eventId) + '">Check In</button>';
       }
@@ -532,7 +560,7 @@
       }
     } else if (next) {
       status = 'upcoming';
-      subcopy = 'Get ready — Daily WTF signals open every 4 hours across the UTC day.';
+      subcopy = 'Get ready Ã¢â‚¬â€ Daily WTF signals open every 4 hours across the UTC day.';
       buttons += '<a class="las-action-btn" href="/games/">Get Ready</a>';
     } else if (Number(state.missed_today || 0) > 0) {
       status = 'missed / expired';
@@ -556,7 +584,7 @@
       : '';
     return '<div class="las-signal-card" data-wtf-state="' + esc(status) + '">' +
       '<span class="las-pill ' + pillClass + '">' + esc(status.toUpperCase()) + '</span>' +
-      '<strong>' + (completedOnly ? '✓ ' : '') + esc(title) + '</strong>' +
+      '<strong>' + (completedOnly ? 'Ã¢Å“â€œ ' : '') + esc(title) + '</strong>' +
       '<p>' + esc(subcopy) + '</p>' +
       '<div class="las-task-copy">Objective: ' + esc(objective) + '</div>' +
       '<div class="las-countdown" data-wtf-countdown>' + countdownText(state.countdown_seconds) + '</div>' +
@@ -571,7 +599,7 @@
     var count = Number(state.missed_history_count || history.length || 0);
     var today = Number(state.missed_today || 0);
     return '<div class="las-missed-box"><span class="las-pill las-pill--missed">MISSED</span>' +
-      '<div><strong>' + count + '</strong> history · <strong>' + today + '</strong> today</div>' +
+      '<div><strong>' + count + '</strong> history Ã‚Â· <strong>' + today + '</strong> today</div>' +
       '<p>The city kept moving while you were away.</p>' +
       (latest ? '<small>Latest: ' + esc(latest.title || latest.name || latest.id || latest.type || 'missed item') + '</small>' : '<small>No missed item detail reported.</small>') +
       '</div>';
@@ -623,7 +651,7 @@
     '</div>';
   }
 
-  // ── CSS ───────────────────────────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ CSS Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
@@ -668,7 +696,7 @@
     (document.head || document.documentElement).appendChild(style);
   }
 
-  // ── Mount ────────────────────────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Mount Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   async function mount(containerOrId) {
     var el = typeof containerOrId === 'string'
@@ -692,7 +720,7 @@
     document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
   }
 
-  // ── Event log listeners ───────────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Event log listeners Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   function listenForActivity() {
     // Null guard: skip if bus is unavailable
@@ -732,7 +760,7 @@
       addToLog(buildLogEntry('sync', text));
       // UI row update is handled exclusively by the MOONBOYS_STATE subscriber
       // (moonboys-state.js bridges sync:state into state.sync so every subscriber
-      //  receives the update automatically — no direct UI call needed here).
+      //  receives the update automatically Ã¢â‚¬â€ no direct UI call needed here).
     });
 
     // Score updates arrive via the bus bridge as activity:event with _src set.
@@ -778,7 +806,7 @@
     window.addEventListener('battle-chamber:faction-data-ready', refresh);
   }
 
-  // ── Bootstrap ─────────────────────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Bootstrap Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   function bootstrap() {
     injectStyles();
@@ -810,7 +838,7 @@
     bootstrap();
   }
 
-  // ── Public API ────────────────────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Public API Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   window.MOONBOYS_LIVE_ACTIVITY = {
     mount: mount,
