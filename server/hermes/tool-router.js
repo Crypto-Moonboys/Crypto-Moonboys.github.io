@@ -121,6 +121,9 @@ function classifyOwnerCommand(prompt) {
   if (/\b(create pr|pull request|copilot review|request review)\b/iu.test(lower)) {
     return { intent: "pr_github_workflow", confidence: "high", toolPath: "github/pr-workflow", nextAction: "Use GitHub workflow path and approval flow.", requiresSandbox: false, requiresApproval: true };
   }
+  if (/\b(ask copilot to review|have copilot review|review this pr|request copilot review)\b/iu.test(lower)) {
+    return { intent: "pr_github_workflow", confidence: "high", toolPath: "github/pr-workflow", nextAction: "Use GitHub workflow path and approval flow.", requiresSandbox: false, requiresApproval: true };
+  }
   if (/\b(deploy|vps|pm2|nginx)\b/iu.test(lower)) {
     return { intent: "deployment_vps", confidence: "medium", toolPath: "command/run", nextAction: "Run deployment status/commands with approval.", requiresSandbox: false, requiresApproval: true };
   }
@@ -165,7 +168,8 @@ function routePromptToAction(input = {}) {
     return {
       actions: [],
       modeSwitch: lower.includes("admin") ? "admin" : "agent_edit",
-      unmatched: false
+      unmatched: false,
+      commandIntent
     };
   }
 
@@ -350,17 +354,17 @@ function routePromptToAction(input = {}) {
 
   if (/commit/iu.test(lower)) {
     actions.push({ type: ACTIONS.GIT_COMMIT, payload: { message: "Hermes commit" } });
-    return { actions, unmatched: false };
+    return { actions, unmatched: false, commandIntent };
   }
 
   if (/push/iu.test(lower)) {
     actions.push({ type: ACTIONS.GIT_PUSH, payload: { remote: "origin" } });
-    return { actions, unmatched: false };
+    return { actions, unmatched: false, commandIntent };
   }
 
   if (/pr\s+metadata/iu.test(lower)) {
     actions.push({ type: ACTIONS.GIT_PR_METADATA, payload: {} });
-    return { actions, unmatched: false };
+    return { actions, unmatched: false, commandIntent };
   }
 
   return { actions: [], unmatched: true, commandIntent };

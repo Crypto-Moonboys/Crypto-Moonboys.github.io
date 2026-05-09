@@ -499,19 +499,70 @@ async function runConversation(input = {}) {
         sessionId: input.sessionId,
         swarm: getAgents()
       };
-      const action = {
-        type: ACTIONS.REPO_SEARCH,
-        payload: { query: "bug OR error OR fail OR FIXME OR TODO OR broken" }
-      };
-      const result = await executeAction(action, ctx);
-      const formatted = formatToolResult(result, input.debug === true);
+      const auditTerms = ["bug", "error", "fail", "fixme", "todo", "broken"];
+      const results = [];
+      for (const term of auditTerms) {
+        const action = { type: ACTIONS.REPO_SEARCH, payload: { query: term } };
+        const result = await executeAction(action, ctx);
+        const formatted = formatToolResult(result, input.debug === true);
+        results.push({
+          term,
+          totalCount: Number(formatted.totalCount || 0),
+          ok: formatted.ok
+        });
+      }
+      const successful = results.filter((r) => r.ok);
+      const totalMatches = successful.reduce((sum, item) => sum + item.totalCount, 0);
       return {
-        reply: formatted.ok
-          ? "Ran a repo bug-scan search. Review the matches and I can propose a sandbox fix plan next."
-          : `Repo bug-scan failed: ${formatted.resultSummary}`,
-        actions: [action],
-        toolResults: [formatted],
-        missingRequirements: Array.isArray(formatted.missingRequirements) ? formatted.missingRequirements : [],
+        reply: `Ran repo-audit term searches (${auditTerms.join(", ")}). Found ${totalMatches} total path matches across term scans. I can now propose a sandbox fix plan for the top findings.`,
+        actions: [],
+        toolResults: [{
+          action: "repo/audit-scan",
+          ok: successful.length > 0,
+          repoUsed: "",
+          pathUsed: "",
+          resultSummary: "Repo audit completed using multiple term-based repo searches.",
+          entries: results,
+          totalCount: results.length,
+          shownCount: results.length,
+          missingRequirements: [],
+          error: ""
+        }],
+        missingRequirements: [],
+        executionPipeline: null,
+        swarmPlan: null,
+        mode,
+        role
+      };
+    }
+
+    if (commandIntent.intent === "test_run") {
+      const missing = missingForPrivileged({
+        mode,
+        role,
+        confirmEdit: input.confirmEdit === true,
+        approvalId: input.approvalId,
+        approvalToken: input.approvalToken
+      });
+      return {
+        reply: "Test execution is available through Hermes command/job flow. I prepared an approval-gated test plan (`npm test`) and can run it after approval.",
+        actions: [{ type: ACTIONS.COMMAND_RUN, payload: { command: "npm", args: ["test"] } }],
+        toolResults: [{
+          action: "plan/privileged",
+          ok: false,
+          repoUsed: "",
+          pathUsed: "",
+          resultSummary: "Approval-gated execution required for test command.",
+          entries: [{
+            command: "npm test",
+            nextAction: "Approve and run tests in owner/operator flow."
+          }],
+          totalCount: 1,
+          shownCount: 1,
+          missingRequirements: missing,
+          error: ""
+        }],
+        missingRequirements: missing,
         executionPipeline: null,
         swarmPlan: null,
         mode,
