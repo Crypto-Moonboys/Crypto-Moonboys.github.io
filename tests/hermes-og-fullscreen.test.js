@@ -77,6 +77,12 @@ test("runtime uses adapter and Hermes chat endpoint wiring", () => {
 
 test("compat adapter maps to existing Hermes and Brain backend routes", () => {
   assert.match(adapterJs, /\/api\/hermes\/chat/u);
+  assert.match(adapterJs, /\/api\/hermes\/webui\/capabilities/u);
+  assert.match(adapterJs, /\/api\/hermes\/sessions/u);
+  assert.match(adapterJs, /\/api\/hermes\/files\/list/u);
+  assert.match(adapterJs, /\/api\/hermes\/files\/read/u);
+  assert.match(adapterJs, /\/api\/hermes\/memory/u);
+  assert.match(adapterJs, /\/api\/hermes\/webcrawl\/search/u);
   assert.match(adapterJs, /\/api\/hermes\/swarm/u);
   assert.match(adapterJs, /\/api\/hermes\/approval\/list/u);
   assert.match(adapterJs, /\/api\/hermes\/command\/queue/u);
@@ -89,9 +95,26 @@ test("compat adapter maps to existing Hermes and Brain backend routes", () => {
   assert.match(adapterJs, /\/chat/u);
 });
 
+test("adapter exposes parity capability map and honest missing statuses", () => {
+  assert.match(adapterJs, /getCapabilityMap\(\)/u);
+  assert.match(adapterJs, /skills:\s*\{\s*status:\s*"missing"/u);
+  assert.match(adapterJs, /streaming:\s*\{\s*status:\s*"missing"/u);
+  assert.match(adapterJs, /sessions:\s*\{\s*status:\s*"partial"/u);
+});
+
+test("runtime renders toolResults cards and persists webui sessions", () => {
+  assert.match(runtimeJs, /toolResults/u);
+  assert.match(runtimeJs, /tool-card/u);
+  assert.match(runtimeJs, /ensureSession\(/u);
+  assert.match(runtimeJs, /appendSessionMessages\(/u);
+  assert.match(runtimeJs, /\/websearch/u);
+});
+
 test("required Hermes backend routes remain wired", () => {
   const required = [
     '/api/hermes/chat',
+    '/api/hermes/webui/capabilities',
+    '/api/hermes/sessions',
     '/api/hermes/action',
     '/api/hermes/swarm',
     '/api/hermes/swarm/plan',
@@ -102,6 +125,7 @@ test("required Hermes backend routes remain wired", () => {
     '/api/hermes/command/run',
     '/api/hermes/approval/list',
     '/api/hermes/webcrawl/search',
+    '/api/hermes/skills',
     '/api/hermes/memory',
     '/api/hermes/repos'
   ];

@@ -99,9 +99,21 @@ async function pushWithPolicy(remote = "origin", branch = "", options = {}) {
   return { remote, branch: currentBranch, dryRun: false, output };
 }
 
-async function createPrMetadata(base = "main") {
-  const branch = await runGit(["branch", "--show-current"]);
-  const log = await runGit(["log", "--oneline", `${base}..HEAD`]);
+async function createPrMetadata(base = "main", options = {}) {
+  // Use the job's sandboxPath or repoPath when provided — never rely on global process cwd.
+  const cwd = String(options.cwd || "").trim() || getActiveRepoRoot();
+  const branch = String(options.branch || "").trim() || await new Promise((resolve, reject) => {
+    execFile("git", ["branch", "--show-current"], { cwd }, (error, stdout) => {
+      if (error) reject(error);
+      else resolve(String(stdout || "").trim());
+    });
+  });
+  const log = await new Promise((resolve, reject) => {
+    execFile("git", ["log", "--oneline", `${base}..${branch}`], { cwd }, (error, stdout) => {
+      if (error) reject(error);
+      else resolve(String(stdout || "").trim());
+    });
+  });
   return { base, branch, commits: log ? log.split("\n") : [] };
 }
 

@@ -6,6 +6,9 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const STUB_MARKER_PATTERN = /HERMES PROPOSED PATCH|HERMES PROPOSED TEST ASSERTIONS|openFeaturePopup|featureCanvas|renderFeatureChart|Show Feature/u;
+const FORBIDDEN_IDENTITY_PATTERN = /(?:I am Qwen|Alibaba Cloud|hire professionals)/iu;
+const FORBIDDEN_WEBSEARCH_PATTERN = /(?:lack internet|I am Qwen|Alibaba Cloud)/iu;
+const FORBIDDEN_TOOLS_PATTERN = /(?:I am Qwen|Alibaba Cloud|hire professionals|lack internet)/iu;
 
 function setupSandbox() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-bridge-"));
@@ -38,13 +41,17 @@ function clearCache() {
     "../server/hermes/command-runner.js",
     "../server/hermes/approval-gate.js",
     "../server/hermes/memory-store.js",
+    "../server/hermes/chat-session-store.js",
     "../server/hermes/agent-runtime.js",
     "../server/hermes/tool-router.js",
     "../server/hermes/tool-executor.js",
     "../server/hermes/conversation-runtime.js",
+    "../server/hermes/chat-proxy.js",
+    "../server/hermes/capabilities.js",
     "../server/hermes/execution-pipeline.js",
     "../server/hermes/proposed-operations.js",
-    "../server/hermes/orchestrator.js"
+    "../server/hermes/orchestrator.js",
+    "../server/hermes/skill-loader.js"
   ];
   for (const mod of targets) {
     delete require.cache[require.resolve(mod)];
@@ -72,6 +79,17 @@ async function post(base, pathName, body, headers = {}) {
     method: "POST",
     headers: { "Content-Type": "application/json", ...headers },
     body: JSON.stringify(body)
+  });
+  return {
+    status: response.status,
+    body: await response.json()
+  };
+}
+
+async function get(base, pathName, headers = {}) {
+  const response = await fetch(`${base}${pathName}`, {
+    method: "GET",
+    headers
   });
   return {
     status: response.status,
@@ -665,4 +683,140 @@ test("chat webcrawl request uses real webcrawl action and reports unavailable wi
   assert.equal(res.body.actions[0].type, "webcrawl/find-updates");
   assert.equal(res.body.toolResults[0].ok, false);
   assert.match(JSON.stringify(res.body.toolResults[0]), /webcrawl tools unavailable/i);
+});
+
+test("chat identity prompt returns Hermes identity grounding", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "DO YOU KNOW WHAT YOU ARE?",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.match(String(res.body.reply || ""), /I am Hermes/i);
+  assert.match(String(res.body.reply || ""), /(?:repo operator|backend toolchain|repo toolchain)/i);
+  assert.doesNotMatch(String(res.body.reply || ""), FORBIDDEN_IDENTITY_PATTERN);
+});
+
+test("chat website capability prompt confirms Hermes can edit and create websites", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "CAN YOU EDIT/CREATE WEBSITES",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.match(String(res.body.reply || ""), /Yes\./i);
+  assert.match(String(res.body.reply || ""), /create and edit websites/i);
+  assert.match(String(res.body.reply || ""), /patch previews|run tests|owner\/operator workflow/i);
+  assert.doesNotMatch(String(res.body.reply || ""), /I cannot edit websites|hire professionals|I am Qwen|Alibaba Cloud/i);
+});
+
+test("chat websearch capability prompt confirms Hermes webcrawl access", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "CAN YOU WEBSEARCH",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.match(String(res.body.reply || ""), /Yes\./i);
+  assert.match(String(res.body.reply || ""), /webcrawl\/search tools available through the backend/i);
+  assert.doesNotMatch(String(res.body.reply || ""), FORBIDDEN_WEBSEARCH_PATTERN);
+});
+
+test("chat tools prompt returns Hermes tool grounding", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "WHAT TOOLS DO YOU HAVE?",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  const reply = String(res.body.reply || "");
+  assert.match(reply, /I am Hermes/i);
+  assert.match(reply, /patch|git|command|webcrawl/i);
+  assert.match(reply, /repo read\/search\/list|swarm plan|owner execution pipeline/i);
+  assert.doesNotMatch(reply, FORBIDDEN_TOOLS_PATTERN);
+});
+
+test("webui capabilities endpoint marks missing/partial features honestly", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await get(base, "/api/hermes/webui/capabilities");
+  assert.equal(res.status, 200);
+  const features = Array.isArray(res.body.features) ? res.body.features : [];
+  assert.ok(features.length > 0);
+  const byKey = Object.fromEntries(features.map((feature) => [feature.key, feature]));
+  assert.equal(byKey.chat?.status, "working");
+  assert.equal(byKey.workspace_browser?.status, "working");
+  assert.equal(byKey.memory?.status, "working");
+  assert.equal(byKey.websearch?.status, "working");
+  assert.equal(byKey.skills?.status, "missing");
+  assert.equal(byKey.streaming?.status, "missing");
+  assert.equal(byKey.sessions?.status, "partial");
+});
+
+test("session routes persist history for webui", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const created = await post(base, "/api/hermes/sessions", { title: "webui parity" });
+  assert.equal(created.status, 200);
+  const sessionId = String(created.body?.session?.id || "");
+  assert.ok(sessionId);
+
+  const appended = await post(base, `/api/hermes/sessions/${encodeURIComponent(sessionId)}/messages`, {
+    messages: [
+      { role: "user", content: "hello" },
+      { role: "assistant", content: "world" }
+    ]
+  });
+  assert.equal(appended.status, 200);
+  assert.equal(Array.isArray(appended.body?.session?.messages), true);
+  assert.equal(appended.body.session.messages.length, 2);
+
+  const listed = await get(base, "/api/hermes/sessions");
+  assert.equal(listed.status, 200);
+  assert.ok(Array.isArray(listed.body.sessions));
+  assert.ok(listed.body.sessions.some((session) => session.id === sessionId));
+
+  const read = await get(base, `/api/hermes/sessions/${encodeURIComponent(sessionId)}`);
+  assert.equal(read.status, 200);
+  assert.equal(read.body.session.id, sessionId);
+  assert.equal(read.body.session.messages.length, 2);
+});
+
+test("skills route is honest when not implemented", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await get(base, "/api/hermes/skills");
+  assert.equal(res.status, 501);
+  assert.equal(res.body.status, "missing");
+  assert.match(String(res.body.message || ""), /not implemented/i);
 });

@@ -9,6 +9,11 @@ const { getActiveRepoOrThrow } = require("./repo-registry.js");
 const { createSwarmPlan, EXECUTION_MODES } = require("./swarm-manager.js");
 const { buildExecutionPipeline } = require("./execution-pipeline.js");
 const { createProposedOperationsPlan } = require("./proposed-operations.js");
+const {
+  getHermesCapabilities,
+  classifyCapabilityPrompt,
+  buildCapabilityReply
+} = require("./capabilities.js");
 
 function formatToolResult(result, debug = false) {
   const action = String(result?.action || "");
@@ -138,6 +143,31 @@ async function runConversation(input = {}) {
   const role = String(input.role || "main_hermes");
   const mode = String(input.mode || "chat");
   const prompt = String(input.prompt || "").trim();
+  const capabilityPromptKind = classifyCapabilityPrompt(prompt);
+  if (capabilityPromptKind) {
+    return {
+      reply: buildCapabilityReply(capabilityPromptKind),
+      actions: [],
+      toolResults: [{
+        action: "hermes/capabilities",
+        ok: true,
+        repoUsed: "",
+        pathUsed: "",
+        resultSummary: "Hermes identity and capability grounding reply generated.",
+        entries: getHermesCapabilities(),
+        totalCount: getHermesCapabilities().length,
+        shownCount: getHermesCapabilities().length,
+        missingRequirements: [],
+        error: ""
+      }],
+      missingRequirements: [],
+      executionPipeline: null,
+      swarmPlan: null,
+      proposedOperations: [],
+      mode,
+      role
+    };
+  }
   const routing = routePromptToAction(input);
 
   if (routing.modeSwitch) {

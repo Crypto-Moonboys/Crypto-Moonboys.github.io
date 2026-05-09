@@ -17,6 +17,18 @@ const { ACTIONS } = require("../server/hermes/action-schema.js");
 const { getRegistrySnapshot, getActiveRepoOrThrow } = require("../server/hermes/repo-registry.js");
 const git = require("../server/hermes/git-operator.js");
 const { ROLE_RULES } = require("../server/hermes/agent-runtime.js");
+const jobManager = require("../server/hermes/job-manager.js");
+const { interpretOwnerCommand } = require("../server/hermes/openai-command-interpreter.js");
+const sandboxRunner = require("../server/hermes/sandbox-runner.js");
+const swarmExecutor = require("../server/hermes/swarm-executor.js");
+const { runTests, applyRepair, markReadyForPr, SAFE_TEST_ALIASES } = require("../server/hermes/job-repair-loop.js");
+const { getSkillLoaderStatus } = require("../server/hermes/skill-loader.js");
+const {
+  listSessions,
+  createSession,
+  getSessionById,
+  appendSessionMessages
+} = require("../server/hermes/chat-session-store.js");
 
 const app = express();
 app.disable("x-powered-by");
@@ -380,6 +392,31 @@ app.get("/api/hermes/models", (_req, res) => {
   });
 });
 
+app.get("/api/hermes/webui/capabilities", (_req, res) => {
+  res.json({
+    ok: true,
+    features: [
+      { key: "chat", status: "working", endpoint: "/api/hermes/chat" },
+      { key: "streaming", status: "missing", endpoint: "" },
+      { key: "sessions", status: "partial", endpoint: "/api/hermes/sessions/*" },
+      { key: "workspace_browser", status: "working", endpoint: "/api/hermes/files/list" },
+      { key: "file_preview", status: "working", endpoint: "/api/hermes/files/read" },
+      { key: "file_editing", status: "partial", endpoint: "/api/hermes/patch/preview,/api/hermes/patch/apply,/api/hermes/patch/rollback" },
+      { key: "tool_cards", status: "partial", endpoint: "/api/hermes/chat (toolResults)" },
+      { key: "memory", status: "working", endpoint: "/api/hermes/memory" },
+      { key: "skills", status: "missing", endpoint: "/api/hermes/skills" },
+      { key: "tasks_cron", status: "partial", endpoint: "/api/hermes/task/plan,/api/hermes/jobs/*" },
+      { key: "profiles", status: "missing", endpoint: "" },
+      { key: "model_selector", status: "working", endpoint: "/api/hermes/models" },
+      { key: "attachments", status: "missing", endpoint: "" },
+      { key: "voice_input", status: "missing", endpoint: "" },
+      { key: "settings_control_center", status: "partial", endpoint: "/api/hermes/models,/api/hermes/policy,/api/hermes/swarm" },
+      { key: "websearch", status: "working", endpoint: "/api/hermes/webcrawl/search" }
+    ],
+    honestyNote: "Vendored Hermes WebUI shell is not full product parity. Unsupported features are explicitly marked missing or partial."
+  });
+});
+
 app.get("/api/hermes/policy", (_req, res) => {
   res.json({
     modes: {
@@ -503,6 +540,43 @@ app.post("/api/hermes/chat", async (req, res) => {
     });
   } catch (error) {
     res.status(400).json(conversationErrorPayload(req, error));
+  }
+});
+
+app.get("/api/hermes/skills", (_req, res) => {
+  return res.status(501).json(getSkillLoaderStatus());
+});
+
+app.get("/api/hermes/sessions", (_req, res) => {
+  try {
+    return res.json({ ok: true, sessions: listSessions() });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/sessions", (req, res) => {
+  try {
+    const title = readStringBody(req, "title", "Hermes session");
+    return res.json({ ok: true, session: createSession({ title }) });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.get("/api/hermes/sessions/:id", (req, res) => {
+  try {
+    return res.json({ ok: true, session: getSessionById(req.params.id) });
+  } catch (error) {
+    return res.status(404).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/sessions/:id/messages", (req, res) => {
+  try {
+    return res.json({ ok: true, session: appendSessionMessages(req.params.id, readArrayBody(req, "messages")) });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
   }
 });
 
@@ -673,6 +747,121 @@ app.post("/api/hermes/repos/register", (req, res) => {
 
 app.post("/api/hermes/repos/clone", (req, res) => {
   return executePrivilegedActionRoute(req, res, parseRepoCloneAction(req));
+});
+
+// ── Hermes Job Manager routes ──────────────────────────────────────────────
+
+app.post("/api/hermes/jobs/create", async (req, res) => {
+  try {
+    const ownerPrompt = String(req.body?.ownerPrompt || req.body?.prompt || "").trim();
+    if (!ownerPrompt) return res.status(400).json({ ok: false, error: "ownerPrompt is required." });
+    const repoContext = req.body?.repoContext || {};
+    const job = jobManager.createJob({ ownerPrompt, repoId: String(req.body?.repoId || "") });
+    let interpretation = null;
+    try {
+      interpretation = await interpretOwnerCommand(ownerPrompt, repoContext);
+    } catch (_e) {
+      interpretation = null;
+    }
+    if (interpretation) {
+      jobManager.updateJob(job.jobId, { interpretation });
+    }
+    return res.json({ ok: true, job: jobManager.readJob(job.jobId), interpretation });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.get("/api/hermes/jobs", (_req, res) => {
+  try {
+    return res.json({ ok: true, jobs: jobManager.listJobs() });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.get("/api/hermes/jobs/:id", (req, res) => {
+  try {
+    const job = jobManager.readJob(req.params.id);
+    return res.json({ ok: true, job });
+  } catch (error) {
+    return res.status(404).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/jobs/:id/run", async (req, res) => {
+  try {
+    const job = jobManager.readJob(req.params.id);
+    if (job.status === "planned") {
+      sandboxRunner.createSandboxBranch(job.jobId);
+    }
+    const updated = swarmExecutor.initializeExecution(job.jobId);
+    return res.json({ ok: true, job: updated });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/jobs/:id/test", (req, res) => {
+  try {
+    // Only predefined safe test aliases are accepted — no arbitrary raw commands from callers.
+    const requestedAliases = Array.isArray(req.body?.testAliases)
+      ? req.body.testAliases.map(String)
+      : [];
+    // Validate each alias against the allow-list before running anything.
+    for (const alias of requestedAliases) {
+      if (!SAFE_TEST_ALIASES[alias]) {
+        return res.status(400).json({
+          ok: false,
+          error: `Test alias not allowed: "${alias}". Allowed: ${Object.keys(SAFE_TEST_ALIASES).join(", ")}`
+        });
+      }
+    }
+    const result = runTests(req.params.id, requestedAliases);
+    return res.json({ ok: true, ...result });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/jobs/:id/repair", (req, res) => {
+  try {
+    const result = applyRepair(req.params.id, req.body || {});
+    return res.json({ ok: true, job: result });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/jobs/:id/create-pr", async (req, res) => {
+  try {
+    const job = jobManager.readJob(req.params.id);
+    jobManager.assertReadyForPr(job);
+    let baseBranch = String(job.rollbackPlan?.rollbackBranch || "");
+    if (!baseBranch) {
+      try {
+        const activeRepo = getActiveRepoOrThrow();
+        baseBranch = String(activeRepo.defaultBranch || "main");
+      } catch (_e) {
+        baseBranch = "main";
+      }
+    }
+    // Generate PR metadata from the job's own branch and sandboxPath/repoPath,
+    // never from whatever branch the server process happens to be on globally.
+    const gitCwd = String(job.sandboxPath || job.repoPath || "").trim();
+    if (!gitCwd) {
+      return res.status(400).json({ ok: false, error: "Job has no sandboxPath or repoPath set — cannot generate PR metadata." });
+    }
+    const prMeta = await git.createPrMetadata(baseBranch, { cwd: gitCwd, branch: job.branch });
+    const prUrl = String(req.body?.prUrl || "");
+    const updated = jobManager.updateJob(job.jobId, {
+      prUrl,
+      status: "ready_for_pr"
+    });
+    return res.json({ ok: true, job: updated, prMeta, prUrl, baseBranch });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
 });
 
 const PORT = Number(process.env.PORT || 3012);

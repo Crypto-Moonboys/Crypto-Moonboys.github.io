@@ -1,4 +1,6 @@
-﻿"use strict";
+"use strict";
+
+const { buildHermesSystemPrompt } = require("./capabilities.js");
 
 const OLLAMA_CHAT_URL = "http://127.0.0.1:11434/v1/chat/completions";
 const ALLOWED_MODELS = Object.freeze([
@@ -52,7 +54,10 @@ function normalizeHistory(history) {
 }
 
 function buildMessages(payload) {
-  const systemPrompt = clampString(payload?.systemPrompt || "", MAX_SYSTEM_PROMPT_LENGTH);
+  const systemPrompt = clampString(
+    buildHermesSystemPrompt(payload?.systemPrompt || ""),
+    MAX_SYSTEM_PROMPT_LENGTH
+  );
   const prompt = clampString(payload?.prompt || "", MAX_MESSAGE_LENGTH);
 
   if (!prompt) {

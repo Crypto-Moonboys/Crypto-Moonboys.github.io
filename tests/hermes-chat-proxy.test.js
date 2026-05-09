@@ -8,7 +8,8 @@ const path = require("node:path");
 const {
   MODE_AGENT_EDIT,
   OLLAMA_CHAT_URL,
-  callLocalOllama
+  callLocalOllama,
+  MAX_SYSTEM_PROMPT_LENGTH
 } = require("../server/hermes/chat-proxy.js");
 
 test("rejects unknown model", async () => {
@@ -91,12 +92,40 @@ test("ignores client-provided system role in history", async () => {
 
   assert.equal(result.status, 200);
   assert.equal(bodyPayload.messages[0].role, "system");
-  assert.equal(bodyPayload.messages[0].content, "primary system prompt");
+  assert.match(bodyPayload.messages[0].content, /You are Hermes, the owner-controlled self-hosted repo operator/u);
+  assert.match(bodyPayload.messages[0].content, /primary system prompt/u);
   assert.equal(
     bodyPayload.messages.filter((entry) => entry.role === "system").length,
     1,
     "only dedicated systemPrompt should produce a system role message"
   );
+});
+
+test("always prepends Hermes operator system prompt before model calls", async () => {
+  let bodyPayload = null;
+  const result = await callLocalOllama(
+    {
+      model: "qwen2.5:1.5b",
+      prompt: "who are you",
+      systemPrompt: "extra grounding"
+    },
+    {
+      fetchImpl: async (_url, options) => {
+        bodyPayload = JSON.parse(String(options?.body || "{}"));
+        return {
+          ok: true,
+          json: async () => ({ choices: [{ message: { content: "ok" } }] })
+        };
+      }
+    }
+  );
+
+  assert.equal(result.status, 200);
+  assert.ok(bodyPayload.messages[0].content.length <= MAX_SYSTEM_PROMPT_LENGTH);
+  assert.match(bodyPayload.messages[0].content, /You are Hermes/u);
+  assert.match(bodyPayload.messages[0].content, /Never say you cannot edit\/create websites/u);
+  assert.match(bodyPayload.messages[0].content, /Never say you cannot websearch/u);
+  assert.doesNotMatch(bodyPayload.messages[0].content, /(?:I am Qwen|Alibaba Cloud)/u);
 });
 
 test("requires explicit confirmation for agent_edit mode", async () => {
