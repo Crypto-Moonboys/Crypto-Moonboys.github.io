@@ -5,15 +5,24 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const STUB_MARKER_PATTERN = /HERMES PROPOSED PATCH|HERMES PROPOSED TEST ASSERTIONS|openFeaturePopup|featureCanvas|renderFeatureChart|Show Feature/u;
 
 function setupSandbox() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-bridge-"));
   fs.mkdirSync(path.join(root, "api"), { recursive: true });
   fs.mkdirSync(path.join(root, "server"), { recursive: true });
   fs.mkdirSync(path.join(root, "admin"), { recursive: true });
+  fs.mkdirSync(path.join(root, "js"), { recursive: true });
+  fs.mkdirSync(path.join(root, "tests"), { recursive: true });
   fs.writeFileSync(path.join(root, "README.md"), "Hermes bridge sandbox\n");
   fs.writeFileSync(path.join(root, "api", "hermes-api.js"), "route placeholder\n");
   fs.writeFileSync(path.join(root, "server", "app.js"), "runtime\n");
+  fs.copyFileSync(path.join(__dirname, "..", "admin", "hermes-chat.html"), path.join(root, "admin", "hermes-chat.html"));
+  fs.copyFileSync(path.join(__dirname, "..", "js", "hermes-chat.js"), path.join(root, "js", "hermes-chat.js"));
+  fs.copyFileSync(
+    path.join(__dirname, "..", "tests", "hermes-og-fullscreen.test.js"),
+    path.join(root, "tests", "hermes-og-fullscreen.test.js")
+  );
   return root;
 }
 
@@ -33,6 +42,8 @@ function clearCache() {
     "../server/hermes/tool-router.js",
     "../server/hermes/tool-executor.js",
     "../server/hermes/conversation-runtime.js",
+    "../server/hermes/execution-pipeline.js",
+    "../server/hermes/proposed-operations.js",
     "../server/hermes/orchestrator.js"
   ];
   for (const mod of targets) {
@@ -161,12 +172,101 @@ test("natural admin UI feature request routes to operator task plan and avoids g
   assert.equal(res.status, 200);
   assert.equal(Array.isArray(res.body.actions), true);
   assert.equal(res.body.actions.length, 0);
+  assert.equal(res.body.swarmPlan?.type, "hermes_swarm_plan");
+  assert.equal(res.body.executionPipeline?.type, "hermes_execution_pipeline");
   assert.ok(Array.isArray(res.body.toolResults));
   assert.equal(res.body.toolResults[0].action, "swarm/plan");
   assert.equal(res.body.toolResults[0].ok, true);
+  assert.equal(res.body.toolResults[1].action, "execution/pipeline");
+  assert.equal(res.body.toolResults[1].ok, true);
   assert.match(JSON.stringify(res.body.toolResults[0]), /repo_admin_ui_operator_task/i);
+  assert.match(JSON.stringify(res.body.executionPipeline), /patch_preview|approve|apply|deploy/i);
   assert.match(String(res.body.reply || ""), /admin\/repo ui operator task|swarm plan/i);
+  assert.match(JSON.stringify(res.body.proposedOperations || []), /openBtcChartPopup|btcChartPopup|closeBtcChartPopup|btcChartCanvas|renderBtcChartCanvas/u);
+  assert.doesNotMatch(JSON.stringify(res.body.proposedOperations || []), STUB_MARKER_PATTERN);
+  // Guard against legacy fallback hallucinations: Django/PyNaCl are irrelevant Python-stack terms here,
+  // and "messenger of gods" was previously hallucinated instead of returning Hermes operator data.
   assert.doesNotMatch(JSON.stringify(res.body), /django|pynacl|messenger of gods/i);
+});
+
+test("safe review mode operator flow returns proposal stages and does not apply changes", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    swarmExecutionMode: "safe_review",
+    prompt: "can you create a popup canvas here in admin page showing BTC chart",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  const stages = res.body.executionPipeline?.stages || [];
+  assert.ok(stages.some((stage) => stage.stage === "plan"));
+  assert.ok(stages.some((stage) => stage.stage === "inspect"));
+  assert.ok(stages.some((stage) => stage.stage === "patch_preview"));
+  const applyStage = stages.find((stage) => stage.stage === "apply");
+  assert.equal(applyStage?.status, "blocked");
+  const actions = (res.body.toolResults || []).map((item) => item.action);
+  assert.ok(!actions.includes("patch/apply"));
+  assert.ok(!actions.includes("command/run"));
+  // Auto-generated proposed operations must be present.
+  assert.ok(Array.isArray(res.body.proposedOperations) && res.body.proposedOperations.length > 0,
+    "Safe Review Mode must return auto-generated proposedOperations");
+  const patchPreviewStage = stages.find((stage) => stage.stage === "patch_preview");
+  assert.equal(patchPreviewStage?.status, "ready", "patch_preview must be ready when proposedOperations are generated");
+  assert.ok(actions.includes("proposed/operations"), "toolResults must include proposed/operations entry");
+  const previewBlob = JSON.stringify(res.body.proposedOperations);
+  assert.match(previewBlob, /openBtcChartPopup|btcChartPopup|closeBtcChartPopup|btcChartCanvas|renderBtcChartCanvas/u);
+  assert.doesNotMatch(previewBlob, STUB_MARKER_PATTERN);
+});
+
+test("owner operator mode returns explicit missing requirements for approval-gated execution", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    swarmExecutionMode: "owner_operator",
+    prompt: "can you create a popup canvas here in admin page showing BTC chart",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.ok((res.body.missingRequirements || []).length > 0);
+  const approveStage = (res.body.executionPipeline?.stages || []).find((stage) => stage.stage === "approve");
+  assert.ok(Array.isArray(approveStage?.missingRequirements));
+  assert.ok(approveStage.missingRequirements.length > 0);
+  assert.match(JSON.stringify(res.body.toolResults), /plan\/privileged|missingRequirements/i);
+  assert.match(JSON.stringify(res.body.toolResults), /proposed\/operations/i);
+});
+
+test("owner operator mode with requirements and proposed operations generates patch preview path", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "admin",
+    role: "main_hermes",
+    swarmExecutionMode: "owner_operator",
+    confirmEdit: true,
+    approvalId: "approval_ready",
+    approvalToken: "test-token",
+    proposedOperations: [{ type: "update", path: "README.md", content: "Hermes owner execution pipeline\n" }],
+    prompt: "can you create a popup canvas here in admin page showing BTC chart",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(res.body.missingRequirements.length, 0);
+  const actions = (res.body.toolResults || []).map((item) => item.action);
+  assert.ok(actions.includes("patch/preview"));
+  assert.ok(!actions.includes("patch/apply"));
 });
 
 test("file/list failure formatting never says returned 0 entries", async (t) => {

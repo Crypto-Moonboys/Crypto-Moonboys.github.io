@@ -292,6 +292,26 @@
       margin-bottom: 2px;
     }
     .swarm-task-field span { color: #cfe9ff; }
+    .execution-pipeline-board {
+      display: grid;
+      gap: 10px;
+    }
+    .execution-stage-card {
+      border: 1px solid rgba(87, 166, 255, 0.35);
+      border-radius: 12px;
+      background: rgba(6, 16, 36, 0.65);
+      padding: 10px;
+    }
+    .execution-stage-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .execution-stage-grid {
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    }
 
     details > summary::-webkit-details-marker { display: none; }
     .summary-hint { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
@@ -632,7 +652,8 @@
         <div class="authority-model-card">
           <div class="authority-model-title">AUTHORITY MODEL</div>
           <div class="authority-model-copy"><strong>Safe Review Mode</strong> planning only; no repo changes.</div>
-          <div class="authority-model-copy"><strong>OWNER OPERATOR MODE</strong> Owner Operator Mode is for self-hosted repo control. When enabled by the owner, Hermes swarm agents can perform real repo work through the Hermes toolchain, including edits, tests, git operations, rollback patches, and deployment steps according to their assigned task.</div>
+          <div class="authority-model-copy">Owner Operator Mode is for self-hosted repo control. Hermes can inspect, patch, test, revert, and deploy when instructed by the owner through the existing Hermes toolchain.</div>
+          <div class="authority-model-copy"><strong>OWNER OPERATOR MODE</strong> When enabled by the owner, Hermes swarm agents can perform real repo work through the Hermes toolchain, including edits, tests, git operations, rollback patches, and deployment steps according to their assigned task.</div>
           <div class="authority-model-copy">Specialists create plans, reviews, tests, deployment steps, and risk notes; main_hermes remains the orchestrator and full-repo controller.</div>
         </div>
         <div class="swarm-mode-grid">
@@ -650,6 +671,12 @@
         <div id="swarmTaskBoard" class="swarm-task-board">
           <div class="swarm-task-empty">No swarm plan yet. Enter a task prompt, then create a swarm plan.</div>
         </div>
+        <label>Owner Execution Pipeline</label>
+        <div id="executionPipelineBoard" class="execution-pipeline-board">
+          <div class="swarm-task-empty">No execution pipeline yet. Send an operator prompt to generate one.</div>
+        </div>
+        <label>Execution Pipeline JSON</label>
+        <pre id="executionPipelineOutput" class="out"></pre>
         <label>Swarm Plan JSON</label>
         <pre id="swarmPlanOutput" class="out"></pre>
       </div>
@@ -895,7 +922,11 @@
         </div>
         <div class="og-authority-card">
           <strong>OWNER OPERATOR MODE</strong>
-          Owner Operator Mode is for self-hosted repo control. When enabled by the owner, Hermes swarm agents can perform real repo work through the Hermes toolchain, including edits, tests, git operations, rollback patches, and deployment steps according to their assigned task.
+          Owner Operator Mode is for self-hosted repo control. Hermes can inspect, patch, test, revert, and deploy when instructed by the owner through the existing Hermes toolchain.
+        </div>
+        <div class="og-authority-card">
+          <strong>EXECUTION SCOPE</strong>
+          When enabled by the owner, Hermes swarm agents can perform real repo work through the Hermes toolchain, including edits, tests, git operations, rollback patches, and deployment steps according to their assigned task.
         </div>
         <select id="ogSwarmExecutionMode" class="og-mode-select" aria-label="Swarm execution mode">
           <option value="safe_review">Safe Review Mode</option>
@@ -903,6 +934,10 @@
         </select>
         <div id="ogSwarmTaskBoard" class="og-task-board swarm-task-board">
           <div class="swarm-task-empty">No swarm plan yet. Enter a task below, then CREATE SWARM PLAN.</div>
+        </div>
+        <div class="og-panel-title">OWNER EXECUTION PIPELINE</div>
+        <div id="ogExecutionPipelineBoard" class="execution-pipeline-board">
+          <div class="swarm-task-empty">No execution pipeline yet. Send an operator prompt to generate one.</div>
         </div>
         <div class="og-panel-title">CONSOLE</div>
         <div id="ogChatLog" class="og-log"></div>
