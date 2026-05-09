@@ -8,15 +8,26 @@ function parsePathAfterKeyword(prompt, keyword) {
   return prompt.slice(idx + keyword.length).trim().replace(/^['"]|['"]$/gu, "");
 }
 
+function isPathLikeReadTarget(value) {
+  const target = String(value || "").trim();
+  if (!target) return false;
+  if (/^[./~\\]/u.test(target)) return true;
+  if (/^[a-zA-Z]:[\\/]/u.test(target)) return true;
+  if (/[\\/]/u.test(target)) return true;
+  if (/[*?]/u.test(target)) return true;
+  if (/\.(?:md|txt|json|js|mjs|cjs|ts|tsx|jsx|html|css|yml|yaml|xml|sh|ps1)$/iu.test(target)) return true;
+  return false;
+}
+
 const OPERATOR_VERB_PATTERN = /\b(create|add|build|make|implement|update|change|fix|patch|install|wire|connect|remove|replace)\b/iu;
 const OPERATOR_SCOPE_PATTERN =
-  /\b(admin\s+page|hermes\s+page|brain\s+page|popup|canvas|chart|button|modal|ui|css|js|html|repo|file|page|dashboard|pixel|sprite|tile|animation|code)\b/iu;
+  /\b(admin\s+page|hermes\s+page|brain\s+page|popup|canvas|chart|button|modal|ui|css|js|html|repo|file|page|dashboard|pixel|sprite|tile|animation|code|website|site|game|games|bomber|royale|block-?topia)\b/iu;
 
 function detectOperatorIntent(prompt) {
   const text = String(prompt || "").trim();
   if (!text) return null;
   if (!OPERATOR_VERB_PATTERN.test(text) || !OPERATOR_SCOPE_PATTERN.test(text)) {
-    if (/\b(rebuild the whole website|build my 2-?player bomber royale game|read all your files)\b/iu.test(text)) {
+    if (/\b(rebuild the whole website|build my 2-?player bomber royale game)\b/iu.test(text)) {
       return {
         classification: "repo_admin_ui_operator_task",
         likelyFiles: [
@@ -101,8 +112,10 @@ function routePromptToAction(input = {}) {
 
   if (/read\s+[^\n]+/iu.test(lower) && !/\bread all (your|the) files\b/iu.test(lower)) {
     const filePath = parsePathAfterKeyword(prompt, "read");
-    actions.push({ type: ACTIONS.FILE_READ, payload: { path: filePath } });
-    return { actions, unmatched: false };
+    if (isPathLikeReadTarget(filePath)) {
+      actions.push({ type: ACTIONS.FILE_READ, payload: { path: filePath } });
+      return { actions, unmatched: false };
+    }
   }
 
   if (/rebuild\s+index|refresh\s+index/iu.test(lower)) {
@@ -280,5 +293,6 @@ function routePromptToAction(input = {}) {
 
 module.exports = {
   routePromptToAction,
-  detectOperatorIntent
+  detectOperatorIntent,
+  isPathLikeReadTarget
 };

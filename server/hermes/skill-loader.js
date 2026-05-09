@@ -26,11 +26,18 @@ function parseSkillSections(markdown) {
     sections[current].push(line);
   }
   const pick = (name) => (sections[name] || []).join("\n").trim();
+  const pickAny = (...names) => {
+    for (const name of names) {
+      const value = pick(name);
+      if (value) return value;
+    }
+    return "";
+  };
   return {
-    whenToUse: pick("when to use it"),
-    filesToInspect: pick("files to inspect"),
-    commandsToRun: pick("commands/tests to run"),
-    doNotTouch: pick("what not to touch"),
+    whenToUse: pickAny("when to use it", "when to use"),
+    filesToInspect: pickAny("files to inspect", "files/tools needed"),
+    commandsToRun: pickAny("commands/tests to run", "commands/tests"),
+    doNotTouch: pickAny("what not to touch", "do not touch"),
     rollbackNotes: pick("rollback notes"),
     successCriteria: pick("success criteria")
   };
