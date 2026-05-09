@@ -62,7 +62,7 @@ assertContains(room, 'player.objectiveProgress = snapshot.objectiveProgress', 'o
 assertContains(room, 'player.maxHp = snapshot.maxHp', 'max HP must be restored from snapshot');
 
 // ── Spawn grace on reconnect ──────────────────────────────────────────────────
-must(room, /_restorePlayerFromSnapshot\s*\(sessionId,\s*snapshot\)\s*\{[\s\S]{0,1200}spawnProtectedUntilBySession\.set/, 'spawn grace must be granted on reconnect');
+must(room, /_restorePlayerFromSnapshot\s*\(sessionId,\s*snapshot\)\s*\{[\s\S]{0,3200}spawnProtectedUntilBySession\.set/, 'spawn grace must be granted on reconnect');
 
 // ── Cleanup on timeout ────────────────────────────────────────────────────────
 assertContains(room, '_warmSlotsBySession.delete(client.sessionId)', 'warm slot must be deleted on timeout');

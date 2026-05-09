@@ -43,8 +43,18 @@ const leaderboardJs = read(LEADERBOARD);
 const scheduleBlock = (src, functionName) => {
   const start = src.indexOf(`function ${functionName}`);
   if (start < 0) return '';
-  const end = src.indexOf('\n}\n', start);
-  return end >= 0 ? src.slice(start, end + 3) : src.slice(start);
+  const bodyStart = src.indexOf('{', start);
+  if (bodyStart < 0) return src.slice(start);
+  let depth = 0;
+  for (let i = bodyStart; i < src.length; i += 1) {
+    const ch = src[i];
+    if (ch === '{') depth += 1;
+    else if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) return src.slice(start, i + 1);
+    }
+  }
+  return src.slice(start);
 };
 const workerSchedule = scheduleBlock(workerJs, 'getWtfDailySchedule');
 const fallbackSchedule = scheduleBlock(wtfSystemJs, 'makeFallbackSchedule');
