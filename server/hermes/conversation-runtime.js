@@ -4,12 +4,11 @@ const { callLocalOllama } = require("./chat-proxy.js");
 const { routePromptToAction } = require("./tool-router.js");
 const { executeAction, missingForPrivileged } = require("./tool-executor.js");
 const { getAgents } = require("./swarm-registry.js");
-const { requiresPrivilege } = require("./action-schema.js");
-const { ACTIONS } = require("./action-schema.js");
+const { ACTIONS, requiresPrivilege } = require("./action-schema.js");
 const { getActiveRepoOrThrow } = require("./repo-registry.js");
 const { createSwarmPlan, EXECUTION_MODES } = require("./swarm-manager.js");
 const { buildExecutionPipeline } = require("./execution-pipeline.js");
-const { generateProposedOperations } = require("./proposed-operations.js");
+const { createProposedOperationsPlan } = require("./proposed-operations.js");
 
 function formatToolResult(result, debug = false) {
   const action = String(result?.action || "");
@@ -164,24 +163,54 @@ async function runConversation(input = {}) {
       mode,
       role
     });
+    const activeRepoContext = (() => {
+      try {
+        return getActiveRepoOrThrow();
+      } catch (_error) {
+        return null;
+      }
+    })();
     // Use client-supplied proposed operations if present; otherwise auto-generate.
     const clientOps = Array.isArray(input.proposedOperations) ? input.proposedOperations : [];
-    const proposedOperations = clientOps.length > 0
-      ? clientOps
-      : generateProposedOperations({
+    const proposedPlan = clientOps.length > 0
+      ? {
+          operations: clientOps,
+          missingRequirements: [],
+          taskType: "client_supplied"
+        }
+      : createProposedOperationsPlan({
           classification: routing.operatorIntent.classification,
           prompt,
-          likelyFiles
+          likelyFiles,
+          activeRepoContext
         });
+    const proposalMissing = Array.isArray(proposedPlan.missingRequirements) ? proposedPlan.missingRequirements : [];
+    const proposedOperations = Array.isArray(proposedPlan.operations) ? proposedPlan.operations : [];
     const hasProposedOperations = proposedOperations.length > 0;
 
     const basePipeline = buildExecutionPipeline({
       executionMode,
       role,
       filesAffected: likelyFiles,
-      missingRequirements: [],
+      missingRequirements: proposalMissing,
       hasProposedOperations
     });
+    const proposedOperationsResult = {
+      action: "proposed/operations",
+      ok: hasProposedOperations,
+      repoUsed: activeRepoContext?.id || "",
+      pathUsed: "",
+      resultSummary: hasProposedOperations
+        ? `${proposedOperations.length} usable proposed operation(s) generated for patch preview.`
+        : proposalMissing.length > 0
+          ? `No usable proposed operations generated: ${proposalMissing.join("; ")}.`
+          : "No usable proposed operations generated.",
+      entries: proposedOperations,
+      totalCount: proposedOperations.length,
+      shownCount: proposedOperations.length,
+      missingRequirements: proposalMissing,
+      error: hasProposedOperations ? "" : proposalMissing.join("; ")
+    };
 
     if (executionMode === EXECUTION_MODES.SAFE_REVIEW) {
       return {
@@ -210,17 +239,10 @@ async function runConversation(input = {}) {
             shownCount: 1
           },
           {
-            action: "proposed/operations",
-            ok: true,
-            repoUsed: "",
-            pathUsed: "",
-            resultSummary: `${proposedOperations.length} proposed operation(s) generated for patch preview.`,
-            entries: proposedOperations,
-            totalCount: proposedOperations.length,
-            shownCount: proposedOperations.length
+            ...proposedOperationsResult
           }
         ],
-        missingRequirements: [],
+        missingRequirements: basePipeline.missingRequirements || [],
         executionPipeline: basePipeline,
         swarmPlan,
         proposedOperations,
@@ -236,12 +258,12 @@ async function runConversation(input = {}) {
       approvalId: input.approvalId,
       approvalToken: input.approvalToken
     });
-    const executionMissing = [...new Set(missing)];
+    const executionMissing = [...new Set([...missing, ...proposalMissing])];
     const pipeline = buildExecutionPipeline({
       executionMode,
       role,
       filesAffected: likelyFiles,
-      missingRequirements: missing,
+      missingRequirements: executionMissing,
       hasProposedOperations
     });
 
@@ -265,6 +287,9 @@ async function runConversation(input = {}) {
         entries: [pipeline],
         totalCount: 1,
         shownCount: 1
+      },
+      {
+        ...proposedOperationsResult
       }
     ];
 
@@ -291,7 +316,7 @@ async function runConversation(input = {}) {
           "This is an admin/repo UI feature request. Owner Operator Mode requires explicit approval inputs before apply/test/deploy.",
         actions: [],
         toolResults,
-        missingRequirements: executionMissing,
+        missingRequirements: pipeline.missingRequirements || [],
         executionPipeline: pipeline,
         swarmPlan,
         proposedOperations,
@@ -322,7 +347,7 @@ async function runConversation(input = {}) {
         "This is an admin/repo UI feature request. Owner Operator Mode can proceed through Hermes patch-preview and approval-gated execution.",
       actions: [],
       toolResults,
-      missingRequirements: [],
+      missingRequirements: pipeline.missingRequirements || [],
       executionPipeline: pipeline,
       swarmPlan,
       proposedOperations,

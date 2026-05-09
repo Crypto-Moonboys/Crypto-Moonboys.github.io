@@ -10,11 +10,20 @@ const pipelinePath = path.join(__dirname, "..", "server", "hermes", "execution-p
 const repairPolicyPath = path.join(__dirname, "..", "server", "hermes", "repair-policy.js");
 const proposedOpsPath = path.join(__dirname, "..", "server", "hermes", "proposed-operations.js");
 const apiPath = path.join(__dirname, "..", "api", "hermes-api.js");
+const STUB_MARKER_PATTERN = /HERMES PROPOSED PATCH|HERMES PROPOSED TEST ASSERTIONS|openFeaturePopup|featureCanvas|renderFeatureChart|Show Feature/u;
 
 function setupSandbox() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-execution-pipeline-"));
   fs.mkdirSync(path.join(root, "admin"), { recursive: true });
+  fs.mkdirSync(path.join(root, "js"), { recursive: true });
+  fs.mkdirSync(path.join(root, "tests"), { recursive: true });
   fs.writeFileSync(path.join(root, "README.md"), "Hermes pipeline sandbox\n");
+  fs.copyFileSync(path.join(__dirname, "..", "admin", "hermes-chat.html"), path.join(root, "admin", "hermes-chat.html"));
+  fs.copyFileSync(path.join(__dirname, "..", "js", "hermes-chat.js"), path.join(root, "js", "hermes-chat.js"));
+  fs.copyFileSync(
+    path.join(__dirname, "..", "tests", "hermes-og-fullscreen.test.js"),
+    path.join(root, "tests", "hermes-og-fullscreen.test.js")
+  );
   return root;
 }
 
@@ -146,6 +155,7 @@ test("owner operator mode exposes explicit missing requirements when approval da
   const rollbackStage = (response.executionPipeline?.stages || []).find((stage) => stage.stage === "rollback");
   assert.match(String(rollbackStage?.nextAction || ""), /rollback on failure|targeted repair/i);
   assert.match(JSON.stringify(response.toolResults), /plan\/privileged/i);
+  assert.match(JSON.stringify(response.toolResults), /proposed\/operations/i);
 });
 
 test("owner operator mode with requirements creates approval-gated patch preview path", async () => {
@@ -176,13 +186,16 @@ test("repo keeps same Hermes runtime and does not add Hermes2/direct browser wri
 });
 
 test("proposed-operations module generates bounded ops for admin UI feature prompts", () => {
-  const { generateProposedOperations } = require("../server/hermes/proposed-operations.js");
-  const ops = generateProposedOperations({
+  const { createProposedOperationsPlan, generateProposedOperations } = require("../server/hermes/proposed-operations.js");
+  const plan = createProposedOperationsPlan({
     classification: "repo_admin_ui_operator_task",
     prompt: "can you create a popup canvas here in admin page showing BTC chart",
-    likelyFiles: ["admin/hermes-chat.html", "js/hermes-chat.js"]
+    likelyFiles: ["admin/hermes-chat.html", "js/hermes-chat.js"],
+    activeRepoContext: { localPath: path.join(__dirname, "..") }
   });
+  const ops = plan.operations;
   assert.ok(ops.length >= 2, "Should generate at least HTML and JS operations");
+  assert.deepEqual(plan.missingRequirements, []);
   for (const op of ops) {
     assert.ok(op.type, "Each op must have a type");
     assert.ok(op.path, "Each op must have a path");
@@ -191,21 +204,40 @@ test("proposed-operations module generates bounded ops for admin UI feature prom
   }
   const htmlOp = ops.find((op) => op.path === "admin/hermes-chat.html");
   assert.ok(htmlOp, "Must include admin/hermes-chat.html operation");
-  assert.match(htmlOp.content, /canvas|popup|modal/i);
+  assert.match(htmlOp.content, /openBtcChartPopup|btcChartPopup|closeBtcChartPopup|btcChartCanvas/u);
+  assert.match(htmlOp.content, /BTC|canvas|modal/u);
+  assert.doesNotMatch(htmlOp.content, STUB_MARKER_PATTERN);
   const jsOp = ops.find((op) => op.path === "js/hermes-chat.js");
   assert.ok(jsOp, "Must include js/hermes-chat.js operation");
+  assert.match(jsOp.content, /function openBtcChartPopup|function closeBtcChartPopup|function renderBtcChartCanvas/u);
+  assert.match(jsOp.content, /BTC_CHART_SAMPLE_POINTS|btcChartCanvas/u);
+  assert.doesNotMatch(jsOp.content, STUB_MARKER_PATTERN);
   const testOp = ops.find((op) => op.path.startsWith("tests/"));
   assert.ok(testOp, "Must include a test file operation");
+  assert.match(testOp.content, /openBtcChartPopup|btcChartPopup|closeBtcChartPopup|btcChartCanvas|renderBtcChartCanvas/u);
+  assert.doesNotMatch(testOp.content, STUB_MARKER_PATTERN);
+  assert.equal(generateProposedOperations({
+    classification: "repo_admin_ui_operator_task",
+    prompt: "can you create a popup canvas here in admin page showing BTC chart",
+    likelyFiles: ["admin/hermes-chat.html", "js/hermes-chat.js"],
+    activeRepoContext: { localPath: path.join(__dirname, "..") }
+  }).length, ops.length);
 });
 
 test("proposed-operations module returns empty for non-operator classifications", () => {
-  const { generateProposedOperations } = require("../server/hermes/proposed-operations.js");
+  const { createProposedOperationsPlan, generateProposedOperations } = require("../server/hermes/proposed-operations.js");
   const ops = generateProposedOperations({
     classification: "generic_chat",
     prompt: "hello world",
     likelyFiles: []
   });
   assert.deepEqual(ops, []);
+  assert.deepEqual(createProposedOperationsPlan({
+    classification: "repo_admin_ui_operator_task",
+    prompt: "adjust the css only for this admin ui card",
+    likelyFiles: ["css/wiki.css"],
+    activeRepoContext: { localPath: path.join(__dirname, "..") }
+  }).missingRequirements, ["No concrete proposed operations generated for CSS-only admin UI requests yet."]);
 });
 
 test("safe review mode auto-generates proposed operations and patch_preview is ready", async () => {
@@ -225,4 +257,7 @@ test("safe review mode auto-generates proposed operations and patch_preview is r
   const toolActions = (response.toolResults || []).map((item) => item.action);
   assert.ok(!toolActions.includes("patch/apply"));
   assert.ok(toolActions.includes("proposed/operations"));
+  const previewBlob = JSON.stringify(response.proposedOperations);
+  assert.match(previewBlob, /openBtcChartPopup|btcChartPopup|closeBtcChartPopup|btcChartCanvas|renderBtcChartCanvas/u);
+  assert.doesNotMatch(previewBlob, STUB_MARKER_PATTERN);
 });

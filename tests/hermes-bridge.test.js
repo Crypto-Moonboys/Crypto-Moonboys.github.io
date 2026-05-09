@@ -5,15 +5,24 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const STUB_MARKER_PATTERN = /HERMES PROPOSED PATCH|HERMES PROPOSED TEST ASSERTIONS|openFeaturePopup|featureCanvas|renderFeatureChart|Show Feature/u;
 
 function setupSandbox() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-bridge-"));
   fs.mkdirSync(path.join(root, "api"), { recursive: true });
   fs.mkdirSync(path.join(root, "server"), { recursive: true });
   fs.mkdirSync(path.join(root, "admin"), { recursive: true });
+  fs.mkdirSync(path.join(root, "js"), { recursive: true });
+  fs.mkdirSync(path.join(root, "tests"), { recursive: true });
   fs.writeFileSync(path.join(root, "README.md"), "Hermes bridge sandbox\n");
   fs.writeFileSync(path.join(root, "api", "hermes-api.js"), "route placeholder\n");
   fs.writeFileSync(path.join(root, "server", "app.js"), "runtime\n");
+  fs.copyFileSync(path.join(__dirname, "..", "admin", "hermes-chat.html"), path.join(root, "admin", "hermes-chat.html"));
+  fs.copyFileSync(path.join(__dirname, "..", "js", "hermes-chat.js"), path.join(root, "js", "hermes-chat.js"));
+  fs.copyFileSync(
+    path.join(__dirname, "..", "tests", "hermes-og-fullscreen.test.js"),
+    path.join(root, "tests", "hermes-og-fullscreen.test.js")
+  );
   return root;
 }
 
@@ -173,6 +182,8 @@ test("natural admin UI feature request routes to operator task plan and avoids g
   assert.match(JSON.stringify(res.body.toolResults[0]), /repo_admin_ui_operator_task/i);
   assert.match(JSON.stringify(res.body.executionPipeline), /patch_preview|approve|apply|deploy/i);
   assert.match(String(res.body.reply || ""), /admin\/repo ui operator task|swarm plan/i);
+  assert.match(JSON.stringify(res.body.proposedOperations || []), /openBtcChartPopup|btcChartPopup|closeBtcChartPopup|btcChartCanvas|renderBtcChartCanvas/u);
+  assert.doesNotMatch(JSON.stringify(res.body.proposedOperations || []), STUB_MARKER_PATTERN);
   // Guard against legacy fallback hallucinations: Django/PyNaCl are irrelevant Python-stack terms here,
   // and "messenger of gods" was previously hallucinated instead of returning Hermes operator data.
   assert.doesNotMatch(JSON.stringify(res.body), /django|pynacl|messenger of gods/i);
@@ -207,6 +218,9 @@ test("safe review mode operator flow returns proposal stages and does not apply 
   const patchPreviewStage = stages.find((stage) => stage.stage === "patch_preview");
   assert.equal(patchPreviewStage?.status, "ready", "patch_preview must be ready when proposedOperations are generated");
   assert.ok(actions.includes("proposed/operations"), "toolResults must include proposed/operations entry");
+  const previewBlob = JSON.stringify(res.body.proposedOperations);
+  assert.match(previewBlob, /openBtcChartPopup|btcChartPopup|closeBtcChartPopup|btcChartCanvas|renderBtcChartCanvas/u);
+  assert.doesNotMatch(previewBlob, STUB_MARKER_PATTERN);
 });
 
 test("owner operator mode returns explicit missing requirements for approval-gated execution", async (t) => {
@@ -228,6 +242,7 @@ test("owner operator mode returns explicit missing requirements for approval-gat
   assert.ok(Array.isArray(approveStage?.missingRequirements));
   assert.ok(approveStage.missingRequirements.length > 0);
   assert.match(JSON.stringify(res.body.toolResults), /plan\/privileged|missingRequirements/i);
+  assert.match(JSON.stringify(res.body.toolResults), /proposed\/operations/i);
 });
 
 test("owner operator mode with requirements and proposed operations generates patch preview path", async (t) => {
