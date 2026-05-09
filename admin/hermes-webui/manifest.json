@@ -1,0 +1,8 @@
+{
+  "name": "Hermes WebUI Shell",
+  "short_name": "Hermes",
+  "start_url": "/admin/hermes-chat.html",
+  "display": "standalone",
+  "background_color": "#0D0D1A",
+  "theme_color": "#0D0D1A"
+}

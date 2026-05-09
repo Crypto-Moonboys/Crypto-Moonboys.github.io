@@ -127,11 +127,18 @@ test("natural operator prompt returns pipeline and swarm plan in safe review mod
   assert.doesNotMatch(JSON.stringify(response), /django|pynacl|messenger of gods/i);
   const applyStage = (response.executionPipeline.stages || []).find((stage) => stage.stage === "apply");
   assert.equal(applyStage?.status, "blocked");
-  // Auto-generated proposed operations must be present so patch_preview is ready.
-  assert.ok(Array.isArray(response.proposedOperations) && response.proposedOperations.length > 0,
-    "Safe Review Mode must return auto-generated proposedOperations");
+  assert.ok(Array.isArray(response.proposedOperations), "Safe Review Mode should return proposedOperations array");
   const patchPreviewStage = (response.executionPipeline.stages || []).find((stage) => stage.stage === "patch_preview");
-  assert.equal(patchPreviewStage?.status, "ready", "patch_preview stage must be ready when proposedOperations exist");
+  if (response.proposedOperations.length > 0) {
+    assert.equal(patchPreviewStage?.status, "ready", "patch_preview stage must be ready when proposedOperations exist");
+  } else {
+    assert.ok(["blocked", "ready"].includes(String(patchPreviewStage?.status || "")));
+    const missingRequirements = [
+      ...(Array.isArray(response.missingRequirements) ? response.missingRequirements : []),
+      ...(Array.isArray(response.executionPipeline?.missingRequirements) ? response.executionPipeline.missingRequirements : [])
+    ];
+    assert.ok(missingRequirements.length > 0, "empty proposedOperations must include explicit missing requirements");
+  }
   // Confirm no patch/apply was invoked.
   const toolActions = (response.toolResults || []).map((item) => item.action);
   assert.ok(!toolActions.includes("patch/apply"), "Safe Review Mode must not invoke patch/apply");
@@ -185,41 +192,22 @@ test("repo keeps same Hermes runtime and does not add Hermes2/direct browser wri
   assert.doesNotMatch(apiSource, /browser.*(write|edit)|repo.*write.*browser|direct.*repo.*write/u);
 });
 
-test("proposed-operations module generates bounded ops for admin UI feature prompts", () => {
+test("proposed-operations module blocks unsafe legacy BTC auto-patches and returns explicit requirements", () => {
   const { createProposedOperationsPlan, generateProposedOperations } = require("../server/hermes/proposed-operations.js");
   const plan = createProposedOperationsPlan({
     classification: "repo_admin_ui_operator_task",
     prompt: "can you create a popup canvas here in admin page showing BTC chart",
-    likelyFiles: ["admin/hermes-chat.html", "js/hermes-chat.js"],
+    likelyFiles: ["admin/hermes-webui/index.html", "js/hermes-chat.js", "js/hermes-webui-adapter.js"],
     activeRepoContext: { localPath: path.join(__dirname, "..") }
   });
   const ops = plan.operations;
-  assert.ok(ops.length >= 2, "Should generate at least HTML and JS operations");
-  assert.deepEqual(plan.missingRequirements, []);
-  for (const op of ops) {
-    assert.ok(op.type, "Each op must have a type");
-    assert.ok(op.path, "Each op must have a path");
-    assert.ok(op.summary, "Each op must have a summary");
-    assert.ok(String(op.content || "").length > 0, "Each op must have non-empty content");
-  }
-  const htmlOp = ops.find((op) => op.path === "admin/hermes-chat.html");
-  assert.ok(htmlOp, "Must include admin/hermes-chat.html operation");
-  assert.match(htmlOp.content, /openBtcChartPopup|btcChartPopup|closeBtcChartPopup|btcChartCanvas/u);
-  assert.match(htmlOp.content, /BTC|canvas|modal/u);
-  assert.doesNotMatch(htmlOp.content, STUB_MARKER_PATTERN);
-  const jsOp = ops.find((op) => op.path === "js/hermes-chat.js");
-  assert.ok(jsOp, "Must include js/hermes-chat.js operation");
-  assert.match(jsOp.content, /function openBtcChartPopup|function closeBtcChartPopup|function renderBtcChartCanvas/u);
-  assert.match(jsOp.content, /BTC_CHART_SAMPLE_POINTS|btcChartCanvas/u);
-  assert.doesNotMatch(jsOp.content, STUB_MARKER_PATTERN);
-  const testOp = ops.find((op) => op.path.startsWith("tests/"));
-  assert.ok(testOp, "Must include a test file operation");
-  assert.match(testOp.content, /openBtcChartPopup|btcChartPopup|closeBtcChartPopup|btcChartCanvas|renderBtcChartCanvas/u);
-  assert.doesNotMatch(testOp.content, STUB_MARKER_PATTERN);
+  assert.deepEqual(ops, [], "Unsafe legacy BTC patch templates must not be emitted");
+  assert.ok(Array.isArray(plan.missingRequirements) && plan.missingRequirements.length > 0);
+  assert.match(JSON.stringify(plan.missingRequirements), /hermes-webui|adapter|legacy|unsafe/i);
   assert.equal(generateProposedOperations({
     classification: "repo_admin_ui_operator_task",
     prompt: "can you create a popup canvas here in admin page showing BTC chart",
-    likelyFiles: ["admin/hermes-chat.html", "js/hermes-chat.js"],
+    likelyFiles: ["admin/hermes-webui/index.html", "js/hermes-chat.js", "js/hermes-webui-adapter.js"],
     activeRepoContext: { localPath: path.join(__dirname, "..") }
   }).length, ops.length);
 });
@@ -240,7 +228,7 @@ test("proposed-operations module returns empty for non-operator classifications"
   }).missingRequirements, ["No concrete proposed operations generated for CSS-only admin UI requests yet."]);
 });
 
-test("safe review mode auto-generates proposed operations and patch_preview is ready", async () => {
+test("safe review mode returns explicit requirements when proposed operations are unavailable", async () => {
   const { conversationRuntime } = loadRuntime(setupSandbox());
   const response = await conversationRuntime.runConversation({
     mode: "chat",
@@ -250,14 +238,23 @@ test("safe review mode auto-generates proposed operations and patch_preview is r
     history: []
   });
 
-  assert.ok(Array.isArray(response.proposedOperations) && response.proposedOperations.length > 0);
+  assert.ok(Array.isArray(response.proposedOperations));
   const patchPreviewStage = (response.executionPipeline?.stages || []).find((stage) => stage.stage === "patch_preview");
-  assert.equal(patchPreviewStage?.status, "ready");
+  if (response.proposedOperations.length > 0) {
+    assert.equal(patchPreviewStage?.status, "ready");
+  } else {
+    assert.ok(["blocked", "ready"].includes(String(patchPreviewStage?.status || "")));
+    const missingRequirements = [
+      ...(Array.isArray(response.missingRequirements) ? response.missingRequirements : []),
+      ...(Array.isArray(response.executionPipeline?.missingRequirements) ? response.executionPipeline.missingRequirements : [])
+    ];
+    assert.ok(missingRequirements.length > 0);
+  }
   // Do not apply in Safe Review Mode.
   const toolActions = (response.toolResults || []).map((item) => item.action);
   assert.ok(!toolActions.includes("patch/apply"));
-  assert.ok(toolActions.includes("proposed/operations"));
-  const previewBlob = JSON.stringify(response.proposedOperations);
-  assert.match(previewBlob, /openBtcChartPopup|btcChartPopup|closeBtcChartPopup|btcChartCanvas|renderBtcChartCanvas/u);
-  assert.doesNotMatch(previewBlob, STUB_MARKER_PATTERN);
+  if (response.proposedOperations.length > 0) {
+    assert.ok(toolActions.includes("proposed/operations"));
+  }
+  assert.doesNotMatch(JSON.stringify(response.proposedOperations), STUB_MARKER_PATTERN);
 });

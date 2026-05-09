@@ -1,809 +1,260 @@
-(() => {
-  const apiBaseUrl = String(window.HERMES_API_BASE_URL || "").trim().replace(/\/+$/u, "");
-  const maxHistory = 20;
-  const history = [];
+"use strict";
 
-  // Accumulated messages for the OG fullscreen log (shared across both UIs)
-  const ogMessages = [];
-  const maxOgMessages = 100;
+(function bootstrapImportedHermesWebUi(global) {
+  const adapter = new global.HermesWebUiAdapter();
+  const params = new URLSearchParams(global.location.search || "");
+  const surface = String(params.get("surface") || "hermes").toLowerCase() === "brain" ? "brain" : "hermes";
 
-  const el = (id) => document.getElementById(id);
-  const out = {
-    chat: el("chatLog"),
-    plan: el("actionPlan"),
-    tools: el("toolResults"),
-    missing: el("missingRequirements"),
-    action: el("actionOutput"),
-    repo: el("repoStatus"),
-    ops: el("opsStatus"),
-    webcrawl: el("webcrawlOutput"),
-    swarmPlan: el("swarmPlanOutput"),
-    pipeline: el("executionPipelineOutput")
+  const maxHistory = 24;
+  const state = {
+    history: [],
+    sending: false,
+    brainRefreshTimer: null,
   };
 
-  function setOut(node, value) {
-    if (!node) return;
-    node.textContent = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+  function trimHistory() {
+    if (state.history.length <= maxHistory) return;
+    state.history = state.history.slice(-maxHistory);
   }
 
-  function bindClick(id, handler) {
-    const node = el(id);
-    if (!node) return;
-    node.addEventListener("click", handler);
+  const $ = (id) => global.document.getElementById(id);
+
+  function setText(id, value) {
+    const node = $(id);
+    if (node) node.textContent = value;
   }
 
-  function summarizeToolResults(toolResults) {
-    const arr = Array.isArray(toolResults) ? toolResults : [];
-    return arr.map((item) => ({
-      action: item.action,
-      repo: item.repoUsed || "",
-      path: item.pathUsed || "",
-      ok: item.ok === true,
-      summary: item.resultSummary || "",
-      entries: Array.isArray(item.entries) ? item.entries.slice(0, 8) : [],
-      error: item.error || "",
-      missingRequirements: item.missingRequirements || []
-    }));
+  function setSendDisabled(disabled) {
+    const send = $("btnSend");
+    if (send) send.disabled = !!disabled;
   }
 
-  function basePayload() {
-    return {
-      mode: String(el("mode").value || "chat"),
-      role: String(el("role").value || "main_hermes"),
-      confirmEdit: el("confirmEdit").checked === true,
-      approvalId: String(el("approvalId").value || "").trim(),
-      approvalToken: String(el("approvalToken").value || "").trim()
-    };
+  function escapeHtml(value) {
+    return String(value || "").replace(/[&<>\"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
   }
 
-  async function api(path, options = {}) {
-    const payload = options.body ? JSON.parse(String(options.body)) : null;
-    const token = String(payload?.approvalToken || "").trim();
-    const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
-    if (token) {
-      headers["x-hermes-edit-token"] = token;
+  function appendMessage(role, text) {
+    const empty = $("emptyState");
+    if (empty) empty.style.display = "none";
+    const container = $("msgInner");
+    if (!container) return;
+    const row = global.document.createElement("div");
+    row.className = "msg-row";
+    row.setAttribute("data-role", role);
+    row.innerHTML = `
+      <div class="msg-head"><span class="msg-role ${role === "user" ? "user" : "assistant"}">${role === "user" ? "You" : (surface === "brain" ? "THE BRAIN" : "Hermes")}</span></div>
+      <div class="msg-body">${escapeHtml(text)}</div>
+    `;
+    container.appendChild(row);
+    const messages = $("messages");
+    if (messages) messages.scrollTop = messages.scrollHeight;
+  }
+
+  function prepareLayout() {
+    setText("appTitlebarTitle", surface === "brain" ? "THE BRAIN" : "Hermes Admin");
+    setText("workspacePanelHeading", surface === "brain" ? "Brain Ops" : "Hermes Ops");
+
+    const sidebar = global.document.querySelector(".sidebar");
+    if (sidebar) {
+      sidebar.innerHTML = `
+        <div class="panel-head"><span>${surface === "brain" ? "THE BRAIN" : "HERMES"}</span></div>
+        <div class="session-list" id="sessionList"></div>
+      `;
     }
-    const response = await fetch(`${apiBaseUrl}${path}`, {
-      ...options,
-      headers,
-      body: payload ? JSON.stringify(payload) : undefined
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(data.error || data.reply || `Request failed (${response.status})`);
+
+    const right = global.document.querySelector(".rightpanel");
+    if (right) {
+      right.innerHTML = `
+        <div class="rightpanel-head">
+          <span id="workspacePanelHeading" class="workspace-panel-heading">${surface === "brain" ? "Brain Ops" : "Hermes Ops"}</span>
+        </div>
+        <div class="file-tree" id="adapterStatusPanel" style="padding:12px;white-space:pre-wrap;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.45"></div>
+        <div id="brainAdvisorBox" style="display:${surface === "brain" ? "grid" : "none"};gap:8px;padding:12px;border-top:1px solid var(--border)">
+          <input id="brainAdvisorPrompt" placeholder="Ask THE BRAIN advisor" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg);color:var(--text)">
+          <button id="brainAdvisorSend" class="send-btn" type="button" style="width:auto;padding:8px 12px">Send Advisor Prompt</button>
+        </div>
+      `;
     }
-    return data;
-  }
 
-  function clampHistory() {
-    if (history.length > maxHistory) {
-      history.splice(0, history.length - maxHistory);
+    const msg = $("msg");
+    if (msg) {
+      msg.placeholder = surface === "brain"
+        ? "Message Hermes (with THE BRAIN context)…"
+        : "Message Hermes…";
     }
-  }
 
-  // ── OG Fullscreen helpers ────────────────────────────────────────────────
-
-  function escapeHtml(str) {
-    return String(str || "")
-      .replace(/&/gu, "&amp;")
-      .replace(/</gu, "&lt;")
-      .replace(/>/gu, "&gt;")
-      .replace(/"/gu, "&quot;");
-  }
-
-  function renderOgMessages() {
-    const log = el("ogChatLog");
-    if (!log) return;
-    if (ogMessages.length === 0) {
-      log.innerHTML = '<span class="og-log-empty">No messages yet. Send a prompt below.</span>';
-      return;
-    }
-    log.innerHTML = ogMessages
-      .map((m) => {
-        const cls =
-          m.role === "user"
-            ? "og-log-user"
-            : m.role === "error"
-              ? "og-log-error"
-              : "og-log-assistant";
-        const prefix =
-          m.role === "user" ? "YOU ▶ " : m.role === "error" ? "ERROR: " : "HERMES ▶ ";
-        const meta = m.meta
-          ? `<div class="og-log-meta">${escapeHtml(m.meta)}</div>`
-          : "";
-        return `<div class="og-log-entry"><span class="${cls}">${prefix}</span>${escapeHtml(m.content)}${meta}</div>`;
-      })
-      .join("");
-    log.scrollTop = log.scrollHeight;
-  }
-
-  function appendOgMessage(role, content, meta) {
-    ogMessages.push({ role, content: String(content || ""), meta: meta || "" });
-    if (ogMessages.length > maxOgMessages) {
-      ogMessages.splice(0, ogMessages.length - maxOgMessages);
-    }
-    renderOgMessages();
-  }
-
-
-  let currentSwarmPlan = null;
-  let currentExecutionPipeline = null;
-
-  function renderSwarmTaskBoard(plan) {
-    const targets = [el("swarmTaskBoard"), el("ogSwarmTaskBoard")].filter(Boolean);
-    if (targets.length === 0) return;
-    const subtasks = Array.isArray(plan?.subtasks) ? plan.subtasks : [];
-    const html = subtasks.length
-      ? subtasks
-          .map((task) => {
-            const status = String(task.status || "planned");
-            const risk = String(task.riskLevel || "medium");
-            const files = Array.isArray(task.filesLikelyAffected)
-              ? task.filesLikelyAffected.join(", ")
-              : String(task.filesLikelyAffected || "TBD");
-            const tests = Array.isArray(task.requiredTests)
-              ? task.requiredTests.join(", ")
-              : String(task.requiredTests || "TBD");
-            return `<article class="swarm-task-card ${escapeHtml(status)}">
-              <div class="swarm-task-head">
-                <div class="swarm-task-title">${escapeHtml(task.taskTitle || task.title || "Swarm task")}</div>
-                <div class="swarm-task-meta">
-                  <span class="swarm-pill">${escapeHtml(task.assignedAgent || "main_hermes")}</span>
-                  <span class="swarm-pill status-${escapeHtml(status)}">${escapeHtml(status)}</span>
-                  <span class="swarm-pill risk-${escapeHtml(risk)}">risk: ${escapeHtml(risk)}</span>
-                </div>
-              </div>
-              <div class="swarm-task-grid">
-                <div class="swarm-task-field"><strong>Files likely affected</strong><span>${escapeHtml(files)}</span></div>
-                <div class="swarm-task-field"><strong>Required tests</strong><span>${escapeHtml(tests)}</span></div>
-                <div class="swarm-task-field"><strong>Next action</strong><span>${escapeHtml(task.nextAction || "Review plan")}</span></div>
-                <div class="swarm-task-field"><strong>Mode capability</strong><span>${escapeHtml(task.modeCapability || "Safe Review Mode")}</span></div>
-              </div>
-            </article>`;
-          })
-          .join("")
-      : '<div class="swarm-task-empty">No swarm plan yet. Enter a task prompt, then create a swarm plan.</div>';
-    targets.forEach((target) => {
-      target.innerHTML = html;
+    global.document.querySelectorAll(".rail .nav-tab, .sidebar-nav, #panelTasks, #panelKanban, #panelSkills, #panelMemory, #panelWorkspaces, #panelProfiles, #panelTodos, #panelInsights, #panelLogs, #panelSettings").forEach((node) => {
+      if (node) node.style.display = "none";
     });
   }
 
-  function renderExecutionPipeline(pipeline) {
-    const targets = [el("executionPipelineBoard"), el("ogExecutionPipelineBoard")].filter(Boolean);
-    if (targets.length === 0) return;
-    const stages = Array.isArray(pipeline?.stages) ? pipeline.stages : [];
-    const html = stages.length
-      ? stages
-          .map((item) => {
-            const status = String(item.status || "planned");
-            const files = Array.isArray(item.filesAffected) && item.filesAffected.length
-              ? item.filesAffected.join(", ")
-              : "TBD";
-            const missing = Array.isArray(item.missingRequirements) && item.missingRequirements.length
-              ? item.missingRequirements.join(", ")
-              : "none";
-            const risk = String(item.riskLevel || "medium");
-            const stageTitle = String(item.stage || "").replace(/_/gu, " ").toUpperCase();
-            return `<article class="execution-stage-card">
-              <div class="execution-stage-head">
-                <strong>${escapeHtml(stageTitle || "STAGE")}</strong>
-                <span class="swarm-pill status-${escapeHtml(status)}">${escapeHtml(status)}</span>
-              </div>
-              <div class="swarm-task-grid execution-stage-grid">
-                <div class="swarm-task-field"><strong>Assigned role</strong><span>${escapeHtml(item.agentRole || "main_hermes")}</span></div>
-                <div class="swarm-task-field"><strong>File targets</strong><span>${escapeHtml(files)}</span></div>
-                <div class="swarm-task-field"><strong>Next action</strong><span>${escapeHtml(item.nextAction || "Review")}</span></div>
-                <div class="swarm-task-field"><strong>Missing requirements</strong><span>${escapeHtml(missing)}</span></div>
-                <div class="swarm-task-field"><strong>Risk level</strong><span>${escapeHtml(risk)}</span></div>
-              </div>
-            </article>`;
-          })
-          .join("")
-      : '<div class="swarm-task-empty">No execution pipeline yet. Send an operator prompt to generate one.</div>';
-    targets.forEach((target) => {
-      target.innerHTML = html;
-    });
-  }
-
-  function extractSwarmPlanFromResponse(data) {
-    if (data?.swarmPlan && data.swarmPlan.type === "hermes_swarm_plan") {
-      return data.swarmPlan;
+  function formatSettled(label, settled) {
+    if (!settled) return `${label}: unavailable`;
+    if (settled.status === "fulfilled") {
+      return `${label}: ok`;
     }
-    const toolResults = Array.isArray(data?.toolResults) ? data.toolResults : [];
-    for (const item of toolResults) {
-      if (item?.action !== "swarm/plan") continue;
-      const entries = Array.isArray(item.entries) ? item.entries : [];
-      const match = entries.find((entry) => entry && entry.type === "hermes_swarm_plan");
-      if (match) return match;
-    }
-    return null;
+    return `${label}: ${settled.reason?.message || "failed"}`;
   }
 
-  function extractExecutionPipelineFromResponse(data) {
-    if (data?.executionPipeline && data.executionPipeline.type === "hermes_execution_pipeline") {
-      return data.executionPipeline;
-    }
-    const toolResults = Array.isArray(data?.toolResults) ? data.toolResults : [];
-    for (const item of toolResults) {
-      if (item?.action !== "execution/pipeline") continue;
-      const entries = Array.isArray(item.entries) ? item.entries : [];
-      const match = entries.find((entry) => entry && entry.type === "hermes_execution_pipeline");
-      if (match) return match;
-    }
-    return null;
-  }
-
-  function getPlanPrompt(preferredId) {
-    const preferred = String(el(preferredId)?.value || "").trim();
-    if (preferred) return preferred;
-    return String(el("prompt")?.value || el("ogPrompt")?.value || "").trim();
-  }
-
-  function getSwarmExecutionMode(preferredPromptId) {
-    const preferredSelectId = preferredPromptId === "ogPrompt" ? "ogSwarmExecutionMode" : "swarmExecutionMode";
-    const fallbackSelectId = preferredPromptId === "ogPrompt" ? "swarmExecutionMode" : "ogSwarmExecutionMode";
-    return String(el(preferredSelectId)?.value || el(fallbackSelectId)?.value || "safe_review");
-  }
-
-  function syncSwarmExecutionMode(sourceId) {
-    const source = el(sourceId);
-    if (!source) return;
-    const targetId = sourceId === "ogSwarmExecutionMode" ? "swarmExecutionMode" : "ogSwarmExecutionMode";
-    const target = el(targetId);
-    if (target) target.value = source.value;
-  }
-
-  let swarmPlanInFlight = false;
-
-  function setSwarmPlanButtonsDisabled(disabled) {
-    const main = el("createSwarmPlan");
-    const og = el("ogCreateSwarmPlan");
-    if (main) main.disabled = disabled;
-    if (og) og.disabled = disabled;
-  }
-
-  async function createSwarmPlanFromPrompt(preferredPromptId) {
-    if (swarmPlanInFlight) {
-      appendOgMessage("error", "Swarm planner request already in progress.");
-      return;
-    }
-    const taskBrief = getPlanPrompt(preferredPromptId);
-    if (!taskBrief) {
-      appendOgMessage("error", "Prompt is required before creating a swarm plan.");
-      setOut(out.swarmPlan, { error: "Prompt is required before creating a swarm plan." });
-      return;
-    }
-
-    const swarmExecutionMode = getSwarmExecutionMode(preferredPromptId);
-    swarmPlanInFlight = true;
-    setSwarmPlanButtonsDisabled(true);
+  async function refreshHermesStatus() {
+    const panel = $("adapterStatusPanel");
+    if (!panel) return;
+    panel.textContent = "Loading Hermes status…";
     try {
-      const payload = {
-        ...basePayload(),
-        taskBrief,
-        context: {
-          mode: String(el("mode")?.value || "chat"),
-          role: String(el("role")?.value || "main_hermes"),
-          source: preferredPromptId === "ogPrompt" ? "hermes_og" : "admin_console",
-          swarmExecutionMode,
-          ownerOperatorMode: swarmExecutionMode === "owner_operator"
-        }
-      };
-      const data = await api("/api/hermes/swarm/plan", { method: "POST", body: JSON.stringify(payload) });
-      const plan = data.plan || data;
-      currentSwarmPlan = plan;
-      renderSwarmTaskBoard(plan);
-      setOut(out.swarmPlan, plan);
-      appendOgMessage("assistant", `Swarm plan created: ${plan.taskTitle || "task"}`, `mode:${plan.modeLabel || swarmExecutionMode}  flow:${plan.ownerOperatorMode?.flow || "plan → execute → test → rollback/report"}`);
-      const barLast = el("ogBarLastAction");
-      if (barLast) barLast.textContent = "swarm/plan";
+      const status = await adapter.hermesStatus();
+      const swarmCount = status.swarm.status === "fulfilled"
+        ? (status.swarm.value?.swarm?.length || status.swarm.value?.agents?.length || 0)
+        : "n/a";
+      const approvalCount = status.approvals.status === "fulfilled"
+        ? (status.approvals.value?.items?.length || status.approvals.value?.approvals?.length || 0)
+        : "n/a";
+      const queueCount = status.queue.status === "fulfilled"
+        ? (status.queue.value?.queue?.length || 0)
+        : "n/a";
+      panel.textContent = [
+        `Hermes swarm agents: ${swarmCount}`,
+        `Pending approvals: ${approvalCount}`,
+        `Command queue: ${queueCount}`,
+        formatSettled("Swarm", status.swarm),
+        formatSettled("Approvals", status.approvals),
+        formatSettled("Queue", status.queue),
+        formatSettled("Repos", status.repos)
+      ].join("\n");
     } catch (error) {
-      appendOgMessage("error", String(error?.message || error));
-      setOut(out.swarmPlan, { error: String(error?.message || error) });
-    } finally {
-      swarmPlanInFlight = false;
-      setSwarmPlanButtonsDisabled(false);
+      panel.textContent = `Hermes status failed: ${error.message}`;
     }
   }
 
-  function updateOgStatusBar(mode, role) {
-    const chipMode = el("ogModeChip");
-    const chipRole = el("ogRoleChip");
-    const barMode = el("ogBarMode");
-    const barRole = el("ogBarRole");
-    if (mode) {
-      if (chipMode) chipMode.textContent = `MODE: ${mode}`;
-      if (barMode) barMode.textContent = mode;
-    }
-    if (role) {
-      if (chipRole) chipRole.textContent = `ROLE: ${role}`;
-      if (barRole) barRole.textContent = role;
-    }
-  }
-
-  function updateOgBarApproval(approvals) {
-    const node = el("ogBarApproval");
-    if (!node) return;
-    const pending = approvals?.pending?.length ?? 0;
-    node.textContent = pending > 0 ? `${pending} pending` : "none";
-  }
-
-  async function loadOgStatus() {
+  async function refreshBrainStatus() {
+    const panel = $("adapterStatusPanel");
+    if (!panel) return;
+    panel.textContent = "Loading THE BRAIN status…";
     try {
-      const approvals = await api("/api/hermes/approval/list");
-      const appEl = el("ogApprovals");
-      if (appEl) appEl.textContent = JSON.stringify(approvals.approvals || {}, null, 2);
-      updateOgBarApproval(approvals.approvals);
-    } catch (_err) {
-      const appEl = el("ogApprovals");
-      if (appEl) appEl.textContent = "(unavailable)";
-    }
-
-    try {
-      const queue = await api("/api/hermes/command/queue");
-      const qEl = el("ogQueue");
-      if (qEl) qEl.textContent = JSON.stringify(queue.queue || {}, null, 2);
-    } catch (_err) {
-      const qEl = el("ogQueue");
-      if (qEl) qEl.textContent = "(unavailable)";
-    }
-
-    try {
-      const root = await api("/api/hermes/runtime/root");
-      const rEl = el("ogRepoInfo");
-      if (rEl) {
-        rEl.textContent = [
-          `repo: ${root.activeRepoName || "—"}`,
-          `id:   ${root.activeRepoId || "—"}`,
-          `path: ${root.localPath || "—"}`
-        ].join("\n");
-      }
-    } catch (_err) {
-      const rEl = el("ogRepoInfo");
-      if (rEl) rEl.textContent = "(unavailable)";
-    }
-  }
-
-  async function loadOgSwarm() {
-    try {
-      const data = await api("/api/hermes/swarm");
-      const listEl = el("ogSwarmList");
-      if (!listEl) return;
-
-      const agents = data.agents || [];
-      const currentRole = String(el("role")?.value || "main_hermes");
-
-      listEl.innerHTML = agents
-        .map((a) => {
-          const isActive = a.id === currentRole;
-          const caps = Array.isArray(a.capabilities) ? a.capabilities.join(", ") : "";
-          return `<div class="og-agent-item${isActive ? " active" : ""}" data-role="${escapeHtml(a.id)}">
-            <div class="og-agent-id">${escapeHtml(a.id)}</div>
-            <div class="og-agent-label">${escapeHtml(a.label || "")}</div>
-            ${caps ? `<div class="og-agent-caps">${escapeHtml(caps)}</div>` : ""}
-          </div>`;
-        })
-        .join("");
-
-      listEl.querySelectorAll(".og-agent-item").forEach((item) => {
-        item.addEventListener("click", () => {
-          const roleEl = el("role");
-          if (roleEl) roleEl.value = item.dataset.role;
-          listEl
-            .querySelectorAll(".og-agent-item")
-            .forEach((i) => i.classList.remove("active"));
-          item.classList.add("active");
-          updateOgStatusBar(el("mode")?.value, item.dataset.role);
-        });
-      });
-    } catch (_err) {
-      const listEl = el("ogSwarmList");
-      if (listEl) listEl.textContent = "(unavailable)";
-    }
-  }
-
-  let previousBodyOverflow = "";
-
-  function openOgOverlay() {
-    const overlay = el("ogOverlay");
-    if (!overlay || overlay.classList.contains("open")) return;
-    previousBodyOverflow = document.body.style.overflow || "";
-    overlay.classList.add("open");
-    document.body.style.overflow = "hidden";
-    renderOgMessages();
-    updateOgStatusBar(el("mode")?.value || "chat", el("role")?.value || "main_hermes");
-    loadOgSwarm().catch(() => null);
-    loadOgStatus().catch(() => null);
-    renderSwarmTaskBoard(currentSwarmPlan);
-    renderExecutionPipeline(currentExecutionPipeline);
-  }
-
-  function closeOgOverlay() {
-    const overlay = el("ogOverlay");
-    if (!overlay || !overlay.classList.contains("open")) return;
-    overlay.classList.remove("open");
-    document.body.style.overflow = previousBodyOverflow;
-  }
-
-  bindClick("openOgFullscreen", openOgOverlay);
-  bindClick("closeOgOverlay", closeOgOverlay);
-  bindClick("ogRefreshStatus", () => {
-    loadOgSwarm().catch(() => null);
-    loadOgStatus().catch(() => null);
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeOgOverlay();
-  });
-
-  // ── Serialized Hermes send (shared by ogSendChat and sendChat) ──────────
-
-  let hermesSendInFlight = false;
-
-  function setSendButtonsDisabled(disabled) {
-    const s = el("sendChat");
-    const og = el("ogSendChat");
-    if (s) s.disabled = disabled;
-    if (og) og.disabled = disabled;
-  }
-
-  async function runHermesSend(prompt) {
-    if (hermesSendInFlight) {
-      appendOgMessage(
-        "error",
-        "Hermes request already in progress. Wait for the current reply before sending another prompt."
-      );
-      return;
-    }
-
-    hermesSendInFlight = true;
-    setSendButtonsDisabled(true);
-
-    const payload = {
-      ...basePayload(),
-      model: el("model").value,
-      systemPrompt: el("systemPrompt").value,
-      prompt,
-      history: history.slice(-maxHistory)
-    };
-
-    appendOgMessage("user", prompt);
-    const userHistoryEntry = { role: "user", content: prompt };
-    history.push(userHistoryEntry);
-    clampHistory();
-
-    try {
-      const data = await api("/api/hermes/chat", { method: "POST", body: JSON.stringify(payload) });
-      history.push({ role: "assistant", content: String(data.reply || "") });
-      clampHistory();
-
-      const meta = `mode:${data.mode}  role:${data.role}  actions:${Array.isArray(data.actions) ? data.actions.length : 0}`;
-      appendOgMessage("assistant", data.reply || "(no reply)", meta);
-
-      setOut(out.chat, {
-        reply: data.reply,
-        mode: data.mode,
-        role: data.role,
-        lastActionCount: Array.isArray(data.actions) ? data.actions.length : 0
-      });
-      setOut(out.plan, data.actions || []);
-      setOut(out.tools, summarizeToolResults(data.toolResults || []));
-      setOut(out.missing, data.missingRequirements || []);
-
-      const swarmPlan = extractSwarmPlanFromResponse(data);
-      if (swarmPlan) {
-        currentSwarmPlan = swarmPlan;
-        renderSwarmTaskBoard(swarmPlan);
-        setOut(out.swarmPlan, swarmPlan);
-      }
-
-      const pipeline = extractExecutionPipelineFromResponse(data);
-      if (pipeline) {
-        currentExecutionPipeline = pipeline;
-        renderExecutionPipeline(pipeline);
-        setOut(out.pipeline, pipeline);
-      }
-
-      updateOgStatusBar(data.mode, data.role);
-      const primaryAction = Array.isArray(data.actions) && data.actions[0] ? data.actions[0].type : "";
-      const fallbackToolAction = Array.isArray(data.toolResults) && data.toolResults[0] ? data.toolResults[0].action : "";
-      const displayAction = primaryAction || fallbackToolAction || "—";
-      const barLast = el("ogBarLastAction");
-      if (barLast) barLast.textContent = displayAction;
+      const status = await adapter.brainStatus();
+      const online = status.status.status === "fulfilled" ? status.status.value.online : false;
+      const model = status.model.status === "fulfilled"
+        ? (status.model.value?.model || status.model.value?.activeModel || "unknown")
+        : "unknown";
+      const npcCount = status.npcs.status === "fulfilled"
+        ? (Array.isArray(status.npcs.value?.npcs) ? status.npcs.value.npcs.length : 0)
+        : 0;
+      const healthSummary = status.health.status === "fulfilled"
+        ? JSON.stringify(status.health.value)
+        : "health unavailable";
+      const logs = status.logs.status === "fulfilled"
+        ? (status.logs.value?.logs || []).slice(-8).join("\n")
+        : "logs unavailable";
+      panel.textContent = [
+        `Brain online: ${online ? "yes" : "no"}`,
+        `Model: ${model}`,
+        `NPC count: ${npcCount}`,
+        `Health: ${healthSummary}`,
+        "",
+        "Logs:",
+        logs || "(no logs)"
+      ].join("\n");
     } catch (error) {
-      const userEntryIndex = history.indexOf(userHistoryEntry);
-      if (userEntryIndex !== -1) {
-        history.splice(userEntryIndex, 1);
-      }
-      appendOgMessage("error", String(error?.message || error));
-      setOut(out.chat, { error: String(error?.message || error) });
-    } finally {
-      hermesSendInFlight = false;
-      setSendButtonsDisabled(false);
+      panel.textContent = `THE BRAIN status failed: ${error.message}`;
     }
   }
 
-  const swarmExecutionSelect = el("swarmExecutionMode");
-  if (swarmExecutionSelect) swarmExecutionSelect.addEventListener("change", () => syncSwarmExecutionMode("swarmExecutionMode"));
-  const ogSwarmExecutionSelect = el("ogSwarmExecutionMode");
-  if (ogSwarmExecutionSelect) ogSwarmExecutionSelect.addEventListener("change", () => syncSwarmExecutionMode("ogSwarmExecutionMode"));
-
-  bindClick("createSwarmPlan", async () => {
-    await createSwarmPlanFromPrompt("prompt");
-  });
-
-  bindClick("ogCreateSwarmPlan", async () => {
-    await createSwarmPlanFromPrompt("ogPrompt");
-  });
-
-  bindClick("ogSendChat", async () => {
-    const promptEl = el("ogPrompt");
-    const prompt = String(promptEl?.value || "").trim();
+  async function sendChat() {
+    if (state.sending) return;
+    const input = $("msg");
+    const prompt = String(input?.value || "").trim();
     if (!prompt) return;
-    if (promptEl) promptEl.value = "";
-    await runHermesSend(prompt);
-  });
 
-  // ── Main send (also feeds the OG log) ───────────────────────────────────
+    state.sending = true;
+    setSendDisabled(true);
+    if (input) input.value = "";
+    appendMessage("user", prompt);
 
-  async function loadModels() {
-    const data = await api("/api/hermes/models");
-    const modelSelect = el("model");
-    modelSelect.innerHTML = "";
-    (data.models || []).forEach((m) => {
-      const o = document.createElement("option");
-      o.value = m;
-      o.textContent = m;
-      if (m === data.defaultModel) o.selected = true;
-      modelSelect.appendChild(o);
-    });
-    return data;
-  }
-
-  bindClick("sendChat", async () => {
-    const prompt = String(el("prompt").value || "").trim();
-    if (!prompt) {
-      appendOgMessage("error", "Prompt is required.");
-      setOut(out.chat, { error: "Prompt is required." });
-      return;
-    }
-    await runHermesSend(prompt);
-  });
-
-  bindClick("runAction", async () => {
     try {
-      const action = JSON.parse(String(el("actionJson").value || "{}").trim());
-      const payload = { ...basePayload(), action };
-      const data = await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) });
-      setOut(out.action, data);
-    } catch (error) {
-      setOut(out.action, { error: String(error?.message || error) });
-    }
-  });
-
-  async function showRuntimeRoot() {
-    const data = await api("/api/hermes/runtime/root");
-    setOut(out.repo, data);
-  }
-
-  bindClick("showRuntimeRoot", async () => {
-    try {
-      await showRuntimeRoot();
-    } catch (error) {
-      setOut(out.repo, { error: String(error?.message || error) });
-    }
-  });
-
-  bindClick("listRepos", async () => {
-    try {
-      setOut(out.repo, await api("/api/hermes/repos"));
-    } catch (error) {
-      setOut(out.repo, { error: String(error?.message || error) });
-    }
-  });
-
-  bindClick("switchRepo", async () => {
-    try {
-      const payload = {
-        ...basePayload(),
-        action: { type: "repo/switch", payload: { idOrName: String(el("switchRepoId").value || "").trim() } }
-      };
-      const data = await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) });
-      setOut(out.repo, data);
-      await showRuntimeRoot();
-    } catch (error) {
-      setOut(out.repo, { error: String(error?.message || error) });
-    }
-  });
-
-  bindClick("registerRepo", async () => {
-    try {
-      const payload = {
-        ...basePayload(),
-        action: {
-          type: "repo/register",
-          payload: {
-            remoteUrl: String(el("registerRepoUrl").value || "").trim(),
-            localPath: String(el("registerRepoPath").value || "").trim(),
-            name: "Registered Repo"
-          }
-        }
-      };
-      setOut(out.repo, await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) }));
-    } catch (error) {
-      setOut(out.repo, { error: String(error?.message || error) });
-    }
-  });
-
-  bindClick("cloneRepo", async () => {
-    try {
-      const payload = {
-        ...basePayload(),
-        action: { type: "repo/clone", payload: { remoteUrl: String(el("cloneRepoUrl").value || "").trim() } }
-      };
-      setOut(out.repo, await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) }));
-    } catch (error) {
-      setOut(out.repo, { error: String(error?.message || error) });
-    }
-  });
-
-  bindClick("showPm2Status", async () => {
-    try {
-      const payload = {
-        ...basePayload(),
-        action: { type: "command/run", payload: { command: "pm2", args: ["status"] } }
-      };
-      setOut(out.ops, await api("/api/hermes/action", { method: "POST", body: JSON.stringify(payload) }));
-    } catch (error) {
-      setOut(out.ops, { error: String(error?.message || error) });
-    }
-  });
-
-  bindClick("showApprovals", async () => {
-    try {
-      setOut(out.ops, await api("/api/hermes/approval/list"));
-    } catch (error) {
-      setOut(out.ops, { error: String(error?.message || error) });
-    }
-  });
-
-  bindClick("showSwarm", async () => {
-    try {
-      setOut(out.ops, await api("/api/hermes/swarm"));
-    } catch (error) {
-      setOut(out.ops, { error: String(error?.message || error) });
-    }
-  });
-
-  bindClick("showModels", async () => {
-    try {
-      setOut(out.ops, await api("/api/hermes/models"));
-    } catch (error) {
-      setOut(out.ops, { error: String(error?.message || error) });
-    }
-  });
-
-  function currentTopic() {
-    return String(el("webcrawlTopic")?.value || "").trim();
-  }
-
-  function currentUrl() {
-    return String(el("webcrawlUrl")?.value || "").trim();
-  }
-
-  function setPrompt(value) {
-    const node = el("prompt");
-    if (!node) return;
-    node.value = String(value || "").trim();
-  }
-
-  async function runWebcrawl(pathName, body, generatedPrompt) {
-    try {
-      if (generatedPrompt) {
-        setPrompt(generatedPrompt);
+      trimHistory();
+      const payload = await adapter.hermesChat(prompt, state.history);
+      const reply = String(payload.reply || payload.response || "No response returned.");
+      appendMessage("assistant", reply);
+      state.history.push({ role: "user", content: prompt });
+      state.history.push({ role: "assistant", content: reply });
+      trimHistory();
+      if (surface === "hermes") {
+        await refreshHermesStatus();
       }
-      const payload = { ...basePayload(), ...body };
-      const data = await api(pathName, { method: "POST", body: JSON.stringify(payload) });
-      setOut(out.webcrawl, data);
-      return data;
     } catch (error) {
-      setOut(out.webcrawl, { error: String(error?.message || error) });
-      return null;
+      appendMessage("assistant", `Request failed: ${error.message}`);
+    } finally {
+      state.sending = false;
+      setSendDisabled(false);
+      if (input) input.focus();
     }
   }
 
-  bindClick("webcrawlFindUpdates", async () => {
-    const topic = currentTopic() || "anything";
-    await runWebcrawl(
-      "/api/hermes/webcrawl/find-updates",
-      { topic },
-      `Find new updates on ${topic}. Include checked sources, timestamp, what changed, confidence, and failures.`
-    );
-  });
-
-  bindClick("webcrawlSearch", async () => {
-    const topic = currentTopic();
-    await runWebcrawl(
-      "/api/hermes/webcrawl/search",
-      { topic },
-      `Search web for ${topic}. Return real sources and no guesses.`
-    );
-  });
-
-  bindClick("webcrawlFetchUrl", async () => {
-    const url = currentUrl();
-    await runWebcrawl(
-      "/api/hermes/webcrawl/fetch",
-      { url },
-      `Fetch URL ${url}. Summarize factual findings with source citation.`
-    );
-  });
-
-  bindClick("webcrawlCrawlSite", async () => {
-    const url = currentUrl();
-    await runWebcrawl(
-      "/api/hermes/webcrawl/crawl",
-      { url, maxDepth: 2, maxPages: 12 },
-      `Crawl website ${url} with safe limits and summarize new updates.`
-    );
-  });
-
-  bindClick("webcrawlCheckRss", async () => {
-    const url = currentUrl();
-    await runWebcrawl(
-      "/api/hermes/webcrawl/rss",
-      { url },
-      `Check RSS feed ${url} and list new items with links and timestamps.`
-    );
-  });
-
-  bindClick("webcrawlCompare", async () => {
-    const topic = currentTopic();
-    await runWebcrawl(
-      "/api/hermes/webcrawl/compare",
-      { topic },
-      `Compare ${topic} with last snapshot and report what changed.`
-    );
-  });
-
-  bindClick("webcrawlSaveTopic", async () => {
-    const topic = currentTopic();
-    const url = currentUrl();
-    await runWebcrawl(
-      "/api/hermes/webcrawl/save-topic",
-      { topic, url },
-      `Save watch topic ${topic} for recurring update checks.`
-    );
-  });
-
-  bindClick("webcrawlListTopics", async () => {
+  async function sendBrainAdvisor() {
+    const input = $("brainAdvisorPrompt");
+    const prompt = String(input?.value || "").trim();
+    if (!prompt) return;
+    if (input) input.value = "";
+    appendMessage("user", `[Advisor] ${prompt}`);
     try {
-      setPrompt("List watch topics for webcrawl agent.");
-      const data = await api("/api/hermes/webcrawl/topics");
-      setOut(out.webcrawl, data);
+      const response = await adapter.brainChat(prompt, "advisor");
+      appendMessage("assistant", String(response.reply || response.message || JSON.stringify(response)));
+      await refreshBrainStatus();
     } catch (error) {
-      setOut(out.webcrawl, { error: String(error?.message || error) });
+      appendMessage("assistant", `Brain advisor failed: ${error.message}`);
     }
-  });
+  }
 
-  bindClick("webcrawlSummarize", async () => {
-    const topic = currentTopic();
-    await runWebcrawl(
-      "/api/hermes/webcrawl/summarize",
-      { topic },
-      `Summarize findings for ${topic || "all watch topics"} including latest checks and failures.`
-    );
-  });
+  function bindEvents() {
+    const send = $("btnSend");
+    const msg = $("msg");
+    const advisor = $("brainAdvisorSend");
 
-  bindClick("webcrawlClearSession", async () => {
-    await runWebcrawl(
-      "/api/hermes/webcrawl/clear-session",
-      {},
-      "Clear webcrawl session history only. Do not delete production or repo files."
-    );
-  });
+    if (send) {
+      send.addEventListener("click", sendChat);
+    }
+    if (msg) {
+      setSendDisabled(false);
+      msg.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          sendChat();
+        }
+      });
+      msg.focus();
+    }
+    if (advisor) {
+      advisor.addEventListener("click", sendBrainAdvisor);
+    }
+  }
 
-  loadModels()
-    .then(() => showRuntimeRoot().catch(() => null))
-    .catch((error) => setOut(out.chat, { error: String(error?.message || error) }));
-})();
+  function installNoopHandlers() {
+    const noops = [
+      "toggleMobileSidebar", "switchPanel", "loadSessions", "loadLogs", "copyLogsAll", "dismissUpdate",
+      "applyUpdates", "forceUpdate", "dismissReconnect", "refreshSession", "checkOfflineRecoveryNow",
+      "dismissAgentHealthAlert", "respondApproval", "toggleYoloFromApproval", "respondClarify"
+    ];
+    for (const name of noops) {
+      if (typeof global[name] !== "function") {
+        global[name] = () => {};
+      }
+    }
+  }
+
+  async function init() {
+    installNoopHandlers();
+    prepareLayout();
+    bindEvents();
+    if (surface === "brain") {
+      await refreshBrainStatus();
+      state.brainRefreshTimer = global.setInterval(refreshBrainStatus, 15000);
+    } else {
+      await refreshHermesStatus();
+    }
+  }
+
+  if (global.document.readyState === "loading") {
+    global.document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    void init();
+  }
+})(window);
