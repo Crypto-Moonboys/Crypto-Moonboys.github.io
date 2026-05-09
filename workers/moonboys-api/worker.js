@@ -1324,7 +1324,9 @@ function addUtcDays(utcDay, days) {
 async function getNextDailyWtfEvent(db, utcDay, normalizeRow) {
   const tomorrow = addUtcDays(utcDay, 1);
   await ensureWtfEventsForDay(db, tomorrow).catch(() => {});
-  const row = await db.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC LIMIT 1`).bind(tomorrow).first().catch(() => null);
+  const rows = await db.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC`).bind(tomorrow).all().catch(() => ({ results: [] }));
+  const officialIds = new Set(getWtfDailySchedule(tomorrow).map((event) => event.event_id));
+  const row = (rows?.results || []).find((candidate) => officialIds.has(String(candidate.event_id))) || null;
   return row ? normalizeRow(row) : null;
 }
 
@@ -1431,7 +1433,9 @@ async function reconcileWtfExpiryForUser(db, telegramId, utcDay, nowMs) {
       ON p.event_id = e.event_id AND p.utc_day = e.utc_day AND p.telegram_id = ?
     WHERE e.utc_day = ?
   `).bind(String(telegramId), String(utcDay)).all().catch(() => ({ results: [] }));
+  const officialIds = new Set(getWtfDailySchedule(utcDay).map((event) => event.event_id));
   for (const row of (rows?.results || [])) {
+    if (!officialIds.has(String(row.event_id))) continue;
     const endMs = Date.parse(row.ends_at);
     if (!Number.isFinite(endMs) || nowMs < endMs) continue;
     if (row.completed_at) continue;
@@ -1462,8 +1466,6 @@ async function reconcileWtfExpiryForUser(db, telegramId, utcDay, nowMs) {
 }
 
 async function ensureWtfEventsForDay(db, utcDay) {
-  const countRow = await db.prepare(`SELECT COUNT(*) AS total FROM daily_wtf_events WHERE utc_day = ?`).bind(utcDay).first().catch(() => ({ total: 0 }));
-  if (Number(countRow?.total) > 0) return;
   const schedule = getWtfDailySchedule(utcDay);
   for (const event of schedule) {
     const startsAt = buildWtfIso(utcDay, event.startHour, 0);
@@ -1472,12 +1474,22 @@ async function ensureWtfEventsForDay(db, utcDay) {
       INSERT INTO daily_wtf_events
         (event_id, utc_day, event_type, title, description, starts_at, ends_at, required_action, reward_key, xp_multiplier_display, faction_id, game_key, theme, metadata_json, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '5x XP opportunity', NULL, NULL, ?, ?, ?)
-      ON CONFLICT(event_id, utc_day) DO NOTHING
+      ON CONFLICT(event_id, utc_day) DO UPDATE SET
+        event_type = excluded.event_type,
+        title = excluded.title,
+        description = excluded.description,
+        starts_at = excluded.starts_at,
+        ends_at = excluded.ends_at,
+        required_action = excluded.required_action,
+        reward_key = excluded.reward_key,
+        xp_multiplier_display = excluded.xp_multiplier_display,
+        theme = excluded.theme,
+        metadata_json = excluded.metadata_json
     `).bind(
       event.event_id, utcDay, event.event_type, event.title,
       'Check in during the signal window, complete the objective, and trigger a status burst.',
       startsAt, endsAt, event.required_action, event.reward_key, event.theme,
-      JSON.stringify({ chain_cap: WTF_MAX_CHAIN_DEPTH }),
+      JSON.stringify({ chain_cap: WTF_MAX_CHAIN_DEPTH, duration_minutes: event.durationMinutes, official_schedule: true }),
       new Date().toISOString(),
     ).run();
   }
@@ -1962,13 +1974,14 @@ async function sendDailyDigestMessage(db, env, telegramId, utcDay) {
     missedTotal,
   });
   await ensureWtfEventsForDay(db, utcDay).catch(() => {});
-  const nextWtf = await db.prepare(`
-    SELECT title, starts_at, ends_at
+  const nextWtfRows = await db.prepare(`
+    SELECT event_id, title, starts_at, ends_at
     FROM daily_wtf_events
     WHERE utc_day = ? AND ends_at >= ?
     ORDER BY starts_at ASC
-    LIMIT 1
-  `).bind(utcDay, new Date().toISOString()).first().catch(() => null);
+  `).bind(utcDay, new Date().toISOString()).all().catch(() => ({ results: [] }));
+  const officialWtfIds = new Set(getWtfDailySchedule(utcDay).map((event) => event.event_id));
+  const nextWtf = (nextWtfRows?.results || []).find((row) => officialWtfIds.has(String(row.event_id))) || null;
 
   const missionLines = missions.length
     ? missions.map((mission, idx) => {
@@ -3131,9 +3144,11 @@ export default {
       await ensureWtfEventsForDay(env.DB, utcDay);
       const nowMs = Date.now();
       const events = await env.DB.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC`).bind(utcDay).all().catch(() => ({ results: [] }));
+      const officialEventIds = new Set(getWtfDailySchedule(utcDay).map((event) => event.event_id));
+      const officialRows = (events?.results || []).filter((row) => officialEventIds.has(String(row.event_id)));
 
       if (request.method === 'GET') {
-        const normalizedPublic = (events?.results || []).map((row) => ({
+        const normalizedPublic = officialRows.map((row) => ({
           event_id: row.event_id,
           utc_day: row.utc_day,
           start_at: row.starts_at,
@@ -3203,7 +3218,7 @@ export default {
         availableByEvent[key].push(opt);
       }
 
-      const normalized = (events?.results || []).map((row) => {
+      const normalized = officialRows.map((row) => {
         const player = byEvent.get(String(row.event_id)) || null;
         const scheduleStatus = getWtfEventStatus(nowMs, row.starts_at, row.ends_at, player?.status || 'upcoming');
         let playerStatus = 'not_checked_in';

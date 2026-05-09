@@ -111,6 +111,9 @@ check(csp.includes('isOwnBattleActivity') && csp.includes('getTelegramId()') && 
 check(!ownBattleBlock.includes('getDisplayName()') && !ownBattleBlock.includes('display_name'), 'personal Battle Chamber matching does not rely on display name when Telegram identifiers are required');
 check(!latestActivityBlock.includes("tag: 'Global'") && !latestActivityBlock.includes('global feed active'), 'global/unmatched Battle Chamber rows are not rendered inside Recent Personal Activity');
 check(csp.includes('Latest Public Battle Chamber Activity') && csp.includes("tag: 'Public'") && csp.includes('latestGlobalBattleRows'), 'global Battle Chamber feed is rendered only under a public/global heading');
+check(csp.includes('No synced activity yet. Play an arcade run or complete a faction task.'), 'personal feed keeps personal action empty-state copy');
+check(csp.includes('No public Battle Chamber activity yet.'), 'public feed has public-specific empty-state copy');
+check(csp.includes("buildFeedHTML(latestGlobalBattleRows(), 'No public Battle Chamber activity yet.')"), 'public feed empty state does not reuse the personal action copy');
 check((las.includes("Today\\'s Missions") || las.includes("Today's Missions")) && las.includes('Daily WTF Signal') && las.includes('Missed Opportunities'), 'faction panel owns missions/events/missed signals');
 check(!las.includes('data-csp-xp') && !las.includes('data-csp-panel'), 'faction ops panel does not repeat the Arcade XP block');
 check(!siteShell.includes('id="hud-player-name">Guest'), 'right rail no longer renders a duplicate Guest/Telegram name block');

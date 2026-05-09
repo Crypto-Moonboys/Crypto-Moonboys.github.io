@@ -282,9 +282,9 @@
     });
   }
 
-  function buildFeedHTML(rows) {
+  function buildFeedHTML(rows, emptyMessage) {
     if (!rows.length) {
-      return '<div class="csp-feed-empty">No synced activity yet. Play an arcade run or complete a faction task.</div>';
+      return '<div class="csp-feed-empty">' + esc(emptyMessage || 'No synced activity yet. Play an arcade run or complete a faction task.') + '</div>';
     }
     return rows.map(function (row) {
       return '<div class="csp-feed-row"><span class="csp-feed-tag">' + esc(row.tag) + '</span><span>' + esc(row.text) + '</span></div>';
@@ -328,7 +328,7 @@
           '<div class="csp-item"><div class="csp-item-label">API Sync</div><div class="csp-item-val ' + (apiOnline ? 'csp-val-good' : 'csp-val-locked') + '">' + (apiOnline ? '● Online' : 'Core API unavailable') + '</div></div>' +
         '</div>' +
         '<div class="csp-feed"><div class="csp-feed-title">Recent Personal Activity</div>' + buildFeedHTML(latestActivityRows()) + '</div>' +
-        '<div class="csp-feed"><div class="csp-feed-title">Latest Public Battle Chamber Activity</div>' + buildFeedHTML(latestGlobalBattleRows()) + '</div>' +
+        '<div class="csp-feed"><div class="csp-feed-title">Latest Public Battle Chamber Activity</div>' + buildFeedHTML(latestGlobalBattleRows(), 'No public Battle Chamber activity yet.') + '</div>' +
       '</div>';
   }
 
