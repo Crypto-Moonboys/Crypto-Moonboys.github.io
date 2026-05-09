@@ -2196,7 +2196,7 @@ const TELEGRAM_GROUP_ANNOUNCEMENT_TYPES = Object.freeze({
   DAILY_SUMMARY: 'daily_summary',
   ALL: 'all',
 });
-const TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS = 5 * 60 * 1000;
+const TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS = 15 * 60 * 1000;
 const TELEGRAM_GROUP_PRE_EVENT_MINUTES = 10;
 const TELEGRAM_GROUP_RETRY_PENDING_AFTER_MS = 10 * 60 * 1000;
 
@@ -2288,18 +2288,27 @@ function buildDailyGroupSummaryMessage(utcDay) {
 function getTimedGroupAnnouncementCandidates(nowMs, options = {}) {
   const windowMs = Number(options.windowMs) || TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS;
   const force = !!options.force;
+  const announcementKeyFilter = options.announcementKey ? String(options.announcementKey).trim() : null;
+  const eventIdFilter = options.eventId ? String(options.eventId).trim() : null;
+  const utcDayFilter = options.utcDay ? String(options.utcDay).trim().slice(0, 10) : null;
   const now = new Date(nowMs);
   const today = now.toISOString().slice(0, 10);
   const days = [...new Set([today, addUtcDays(today, 1), addUtcDays(today, -1)].filter(Boolean))];
   const candidates = [];
   for (const utcDay of days) {
+    if (utcDayFilter && utcDay !== utcDayFilter) continue;
     for (const event of getWtfDailySchedule(utcDay)) {
       const row = buildWtfScheduleRow(utcDay, event);
+      const announcementKey = `wtf:${utcDay}:${row.event_id}:minus_10`;
+      if (announcementKeyFilter && announcementKey !== announcementKeyFilter) continue;
+      if (eventIdFilter && row.event_id !== eventIdFilter) continue;
       const scheduledMs = Date.parse(row.starts_at) - TELEGRAM_GROUP_PRE_EVENT_MINUTES * 60 * 1000;
-      const due = force || (nowMs >= scheduledMs && nowMs < scheduledMs + windowMs);
+      const dueByTime = nowMs >= scheduledMs && nowMs <= scheduledMs + windowMs;
+      const explicitlyForced = force && (announcementKeyFilter || (eventIdFilter && utcDayFilter));
+      const due = dueByTime || explicitlyForced;
       if (!due) continue;
       candidates.push({
-        announcement_key: `wtf:${utcDay}:${row.event_id}:minus_10`,
+        announcement_key: announcementKey,
         utc_day: utcDay,
         event_id: row.event_id,
         announcement_type: 'wtf_pre_event_minus_10',
@@ -2324,7 +2333,7 @@ function getDailyGroupSummaryCandidates(nowMs, options = {}) {
   const utcDay = now.toISOString().slice(0, 10);
   const scheduledMs = Date.parse(`${utcDay}T09:00:00.000Z`);
   const windowMs = Number(options.windowMs) || TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS;
-  if (!force && !(nowMs >= scheduledMs && nowMs < scheduledMs + windowMs)) return [];
+  if (!force && !(nowMs >= scheduledMs && nowMs <= scheduledMs + windowMs)) return [];
   return [{
     announcement_key: `daily-summary:${utcDay}`,
     utc_day: utcDay,
@@ -2361,37 +2370,13 @@ async function getTelegramGroupAnnouncementLog(db, announcementKey) {
 }
 
 async function claimTelegramGroupAnnouncement(db, candidate, options = {}) {
-  const nowIso = new Date().toISOString();
-  const force = !!options.force;
-  const existing = await getTelegramGroupAnnouncementLog(db, candidate.announcement_key);
-  if (existing?.status === 'sent') return { claimed: false, reason: 'already_sent' };
-  if (existing?.status === 'pending' && !force) {
-    const updatedMs = Date.parse(existing.updated_at || '');
-    if (Number.isFinite(updatedMs) && Date.now() - updatedMs < TELEGRAM_GROUP_RETRY_PENDING_AFTER_MS) {
-      return { claimed: false, reason: 'pending_recent' };
-    }
-  }
-  if (existing?.announcement_key) {
-    await db.prepare(`
-      UPDATE telegram_group_announcement_log
-      SET utc_day = ?, event_id = ?, announcement_type = ?, scheduled_for = ?, status = 'pending', error_message = NULL, metadata_json = ?, updated_at = ?
-      WHERE announcement_key = ? AND status IS NOT 'sent'
-    `).bind(
-      candidate.utc_day,
-      candidate.event_id || null,
-      candidate.announcement_type,
-      candidate.scheduled_for,
-      JSON.stringify(candidate.metadata || {}),
-      nowIso,
-      candidate.announcement_key,
-    ).run();
-    const updated = await getTelegramGroupAnnouncementLog(db, candidate.announcement_key);
-    return updated?.status === 'pending' ? { claimed: true, reason: 'retry' } : { claimed: false, reason: 'already_sent' };
-  }
-  const result = await db.prepare(`
+  const nowMs = Number.isFinite(Number(options.nowMs)) ? Number(options.nowMs) : Date.now();
+  const nowIso = new Date(nowMs).toISOString();
+  const staleBeforeIso = new Date(nowMs - TELEGRAM_GROUP_RETRY_PENDING_AFTER_MS).toISOString();
+  const insertResult = await db.prepare(`
     INSERT OR IGNORE INTO telegram_group_announcement_log
       (announcement_key, utc_day, event_id, announcement_type, scheduled_for, status, metadata_json, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, 'sending', ?, ?, ?)
   `).bind(
     candidate.announcement_key,
     candidate.utc_day,
@@ -2402,7 +2387,32 @@ async function claimTelegramGroupAnnouncement(db, candidate, options = {}) {
     nowIso,
     nowIso,
   ).run();
-  return Number(result?.meta?.changes || 0) > 0 ? { claimed: true, reason: 'new' } : { claimed: false, reason: 'duplicate' };
+  if (Number(insertResult?.meta?.changes || 0) === 1) return { claimed: true, reason: 'new' };
+
+  const updateResult = await db.prepare(`
+    UPDATE telegram_group_announcement_log
+    SET utc_day = ?, event_id = ?, announcement_type = ?, scheduled_for = ?, status = 'sending', error_message = NULL, metadata_json = ?, updated_at = ?
+    WHERE announcement_key = ?
+      AND (
+        status = 'failed'
+        OR (status IN ('pending', 'sending') AND updated_at <= ?)
+      )
+  `).bind(
+    candidate.utc_day,
+    candidate.event_id || null,
+    candidate.announcement_type,
+    candidate.scheduled_for,
+    JSON.stringify(candidate.metadata || {}),
+    nowIso,
+    candidate.announcement_key,
+    staleBeforeIso,
+  ).run();
+  if (Number(updateResult?.meta?.changes || 0) === 1) return { claimed: true, reason: 'retry' };
+
+  const existing = await getTelegramGroupAnnouncementLog(db, candidate.announcement_key);
+  if (existing?.status === 'sent') return { claimed: false, reason: 'already_sent' };
+  if (existing?.status === 'pending' || existing?.status === 'sending') return { claimed: false, reason: 'already_claimed' };
+  return { claimed: false, reason: 'duplicate' };
 }
 
 async function finalizeTelegramGroupAnnouncement(db, candidate, status, payload = {}) {
@@ -2452,7 +2462,12 @@ async function runTelegramGroupAnnouncements(env, options = {}) {
   const dryRun = options.dry_run === true || options.dryRun === true;
   const force = options.force === true;
   const groupConfig = getTelegramGroupConfig(env);
-  const dueAnnouncements = getTelegramGroupAnnouncementCandidates(type, nowMs, { force });
+  const dueAnnouncements = getTelegramGroupAnnouncementCandidates(type, nowMs, {
+    force,
+    announcementKey: options.announcement_key || options.announcementKey || null,
+    eventId: options.event_id || options.eventId || null,
+    utcDay: options.utc_day || options.utcDay || null,
+  });
   const summary = {
     ok: true,
     group_configured: groupConfig.configured,
@@ -2473,7 +2488,7 @@ async function runTelegramGroupAnnouncements(env, options = {}) {
     errors: [],
   };
   if (!groupConfig.configured) {
-    console.log('telegram_group_not_configured');
+    if (dueAnnouncements.length > 0) console.log('telegram_group_not_configured');
     summary.skipped_count = dueAnnouncements.length;
     return summary;
   }
@@ -3876,6 +3891,9 @@ if (path === '/telegram/daily-digest/run' && request.method === 'POST') {
         force: body?.force === true,
         now: body?.now ? String(body.now) : undefined,
         type,
+        announcement_key: body?.announcement_key ? String(body.announcement_key) : null,
+        event_id: body?.event_id ? String(body.event_id) : null,
+        utc_day: body?.utc_day ? String(body.utc_day) : null,
       });
       return json({
         ok: !!summary?.ok,

@@ -53,7 +53,12 @@ check(workerEvents.length === 6, 'six WTF events per UTC day are considered');
 check(JSON.stringify(workerEvents.map((event) => event.hour)) === JSON.stringify([0, 4, 8, 12, 16, 20]), 'WTF event hours are 00/04/08/12/16/20 UTC');
 check(workerEvents.every((event) => event.duration === 90), 'each WTF event remains a 90-minute window');
 check(workerJs.includes('TELEGRAM_GROUP_PRE_EVENT_MINUTES = 10'), 'announcements are scheduled 10 minutes before event start');
+check(workerJs.includes('TELEGRAM_GROUP_ANNOUNCEMENT_LOOKAHEAD_MS = 15 * 60 * 1000'), 'due window tolerates cron jitter with a 15-minute window');
 check(workerJs.includes('Date.parse(row.starts_at) - TELEGRAM_GROUP_PRE_EVENT_MINUTES * 60 * 1000'), 'midnight event naturally announces on previous day at 23:50 UTC');
+check(!workerJs.includes('force || (nowMs >= scheduledMs'), 'generic force does not bypass timed-event due filtering');
+check(workerJs.includes('const explicitlyForced = force && (announcementKeyFilter || (eventIdFilter && utcDayFilter))'), 'force for timed events requires explicit announcement_key or event_id plus utc_day');
+check(workerJs.includes('announcementKey: options.announcement_key || options.announcementKey || null'), 'manual runner accepts explicit announcement_key filter');
+check(workerJs.includes('nowMs >= scheduledMs && nowMs <= scheduledMs + windowMs'), 'due-time boundary is inclusive for late cron tolerance');
 check(workerJs.includes('`wtf:${utcDay}:${row.event_id}:minus_10`'), 'timed announcement keys are stable');
 check(workerJs.includes("existing?.status === 'sent'") && workerJs.includes("reason: 'already_sent'"), 'duplicate sends are blocked after a sent log row');
 check(workerJs.includes('buildWtfPreEventGroupAnnouncement'), 'pre-event group message builder exists');
@@ -73,15 +78,21 @@ check(migrationSql.includes('CREATE TABLE IF NOT EXISTS telegram_group_announcem
 for (const column of ['announcement_key', 'utc_day', 'event_id', 'announcement_type', 'scheduled_for', 'sent_at', 'status', 'error_message', 'metadata_json', 'created_at', 'updated_at']) {
   check(migrationSql.includes(column), `migration includes ${column}`);
 }
-check(migrationSql.includes('PRIMARY KEY') || migrationSql.includes('UNIQUE'), 'announcement_key is unique');
+check(migrationSql.includes('announcement_key   TEXT PRIMARY KEY'), 'announcement_key is unique through primary key');
+check(!migrationSql.includes('idx_telegram_group_announcement_key'), 'migration does not add redundant unique index for announcement_key');
 check(workerJs.includes('INSERT OR IGNORE INTO telegram_group_announcement_log'), 'claim path uses insert-or-ignore dedupe');
+check(workerJs.includes("VALUES (?, ?, ?, ?, ?, 'sending'"), 'new claims atomically insert a sending row');
+check(workerJs.includes("status = 'failed'") && workerJs.includes("status IN ('pending', 'sending') AND updated_at <= ?"), 'atomic retry claims only failed or stale pending/sending rows');
+check(workerJs.includes('Number(updateResult?.meta?.changes || 0) === 1'), 'claim result uses meta.changes from conditional update');
+check(workerJs.includes("if (existing?.status === 'sent') return { claimed: false, reason: 'already_sent' }"), 'sent row is never resent');
+check(workerJs.includes("reason: 'already_claimed'"), 'fresh pending/sending rows are treated as already claimed');
 check(workerJs.includes("finalizeTelegramGroupAnnouncement(env.DB, candidate, 'sent'"), 'successful send locks the key as sent');
 
 console.log('\n[5] Admin route');
 check(workerJs.includes("path === '/telegram/group-announcements/run'"), 'manual group announcement route exists');
 check(workerJs.includes('readAdminSecret(request)') && workerJs.includes('admin_telegram_auth'), 'route requires admin secret or admin Telegram auth');
 check(workerJs.includes('dry_run: body?.dry_run === true'), 'route supports dry_run');
-check(workerJs.includes('if (dryRun)') && workerJs.includes('summary.skipped_count = dueAnnouncements.length'), 'dry_run does not send messages');
+check(workerJs.includes('if (dryRun)') && workerJs.includes('summary.skipped_count = dueAnnouncements.length'), 'dry_run does not send messages, including force-filtered dry runs');
 for (const field of ['group_configured', 'due_announcements', 'sent_count', 'skipped_count', 'failed_count', 'dry_run', 'errors']) {
   check(workerJs.includes(field), `route response includes ${field}`);
 }
@@ -90,6 +101,7 @@ console.log('\n[6] Scheduled integration');
 check(workerJs.includes('async scheduled(event, env, _ctx)'), 'scheduled handler accepts event safely');
 check(workerJs.includes("cron === '0 9 * * *'") && workerJs.includes('runTelegramDailyDigest'), 'existing 09:00 personal digest cron still runs');
 check(workerJs.includes("cron === '*/5 * * * *'") && workerJs.includes("type: groupType"), 'scheduled handler supports 5-minute timed announcement checks');
+check(workerJs.includes("if (dueAnnouncements.length > 0) console.log('telegram_group_not_configured')"), 'missing group config logs only when announcements are due');
 check(wranglerToml.includes('"0 9 * * *"') && wranglerToml.includes('"*/5 * * * *"'), 'wrangler.toml includes daily and 5-minute cron triggers');
 
 console.log('\n[7] Message safety');

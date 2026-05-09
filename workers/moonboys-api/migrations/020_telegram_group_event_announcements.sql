@@ -16,8 +16,5 @@ CREATE TABLE IF NOT EXISTS telegram_group_announcement_log (
   updated_at         TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_telegram_group_announcement_key
-  ON telegram_group_announcement_log(announcement_key);
-
 CREATE INDEX IF NOT EXISTS idx_telegram_group_announcement_due
   ON telegram_group_announcement_log(utc_day, announcement_type, status, scheduled_for);
