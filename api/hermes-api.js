@@ -848,7 +848,10 @@ app.post("/api/hermes/jobs/:id/create-pr", async (req, res) => {
     }
     // Generate PR metadata from the job's own branch and sandboxPath/repoPath,
     // never from whatever branch the server process happens to be on globally.
-    const gitCwd = String(job.sandboxPath || job.repoPath || "").trim() || undefined;
+    const gitCwd = String(job.sandboxPath || job.repoPath || "").trim();
+    if (!gitCwd) {
+      return res.status(400).json({ ok: false, error: "Job has no sandboxPath or repoPath set — cannot generate PR metadata." });
+    }
     const prMeta = await git.createPrMetadata(baseBranch, { cwd: gitCwd, branch: job.branch });
     const prUrl = String(req.body?.prUrl || "");
     const updated = jobManager.updateJob(job.jobId, {

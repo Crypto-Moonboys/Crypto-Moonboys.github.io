@@ -115,7 +115,7 @@ function repairLoop(jobId, options = {}) {
 
   const finalJob = readJob(jobId);
   if (finalJob.status === "tests_passed") {
-    updateJob(jobId, { status: "ready_for_pr" });
+    markReadyForPr(jobId);
   }
 
   return {
