@@ -5,8 +5,8 @@
  * Caches only static shell assets so the app shell loads fast on repeat visits.
  */
 
-// Cache version is injected by the server at request time (routes.py /sw.js handler).
-// Bumps automatically whenever the git commit changes — no manual edits needed.
+// This repository serves sw.js as a static file (no routes.py/template handler).
+// __WEBUI_VERSION__ is an upstream placeholder token; update/replace it in your deploy pipeline if desired.
 const CACHE_NAME = 'hermes-shell-__WEBUI_VERSION__';
 
 // Static assets that form the app shell.
