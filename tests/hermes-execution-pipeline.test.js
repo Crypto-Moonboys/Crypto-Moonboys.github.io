@@ -141,8 +141,9 @@ test("owner operator mode with requirements creates approval-gated patch preview
   });
 
   assert.equal(response.missingRequirements.length, 0);
-  assert.match(JSON.stringify(response.toolResults), /patch\/preview/i);
-  assert.doesNotMatch(JSON.stringify(response.toolResults), /patch\/apply/i);
+  const actions = (response.toolResults || []).map((item) => item.action);
+  assert.ok(actions.includes("patch/preview"));
+  assert.ok(!actions.includes("patch/apply"));
 });
 
 test("repo keeps same Hermes runtime and does not add Hermes2/direct browser writes", () => {

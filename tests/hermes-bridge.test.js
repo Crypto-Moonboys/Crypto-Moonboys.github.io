@@ -195,7 +195,9 @@ test("safe review mode operator flow returns proposal stages and does not apply 
   assert.ok(stages.some((stage) => stage.stage === "patch_preview"));
   const applyStage = stages.find((stage) => stage.stage === "apply");
   assert.equal(applyStage?.status, "blocked");
-  assert.doesNotMatch(JSON.stringify(res.body.toolResults), /patch\/apply|command\/run/i);
+  const actions = (res.body.toolResults || []).map((item) => item.action);
+  assert.ok(!actions.includes("patch/apply"));
+  assert.ok(!actions.includes("command/run"));
 });
 
 test("owner operator mode returns explicit missing requirements for approval-gated execution", async (t) => {
@@ -238,8 +240,9 @@ test("owner operator mode with requirements and proposed operations generates pa
 
   assert.equal(res.status, 200);
   assert.equal(res.body.missingRequirements.length, 0);
-  assert.match(JSON.stringify(res.body.toolResults), /patch\/preview/i);
-  assert.doesNotMatch(JSON.stringify(res.body.toolResults), /patch\/apply/i);
+  const actions = (res.body.toolResults || []).map((item) => item.action);
+  assert.ok(actions.includes("patch/preview"));
+  assert.ok(!actions.includes("patch/apply"));
 });
 
 test("file/list failure formatting never says returned 0 entries", async (t) => {
