@@ -1,10 +1,11 @@
 const POLL_MS = 60 * 1000;
 const FETCH_TIMEOUT_MS = 8000;
-const API_BASE_RETRY_MS = 1500;
+const API_BASE_RETRY_DELAYS_MS = [1500, 3000, 6000, 12000];
 let pollTimer = null;
 let lastCountdownTick = null;
 let boundaryRefreshInFlight = false;
 let apiBaseRetryTimer = null;
+let apiBaseRetryAttempt = 0;
 
 function getApiBase() {
   const cfg = (typeof window !== 'undefined') ? window.MOONBOYS_API : null;
@@ -89,10 +90,19 @@ async function fetchTodayEvents() {
     : controller
       ? fetch(`${base}/wtf/events/today`, { signal: controller.signal })
       : fetch(`${base}/wtf/events/today`);
-  const timed = await Promise.race([
-    req.then((res) => ({ res })).catch((err) => ({ err })),
-    new Promise((resolve) => setTimeout(() => resolve({ timeout: true }), FETCH_TIMEOUT_MS)),
-  ]);
+  let timeoutId = null;
+  let timed = null;
+  try {
+    timed = await Promise.race([
+      req.then((res) => ({ res })).catch((err) => ({ err })),
+      new Promise((resolve) => {
+        timeoutId = setTimeout(() => resolve({ timeout: true }), FETCH_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = null;
+  }
   if (timed.timeout) {
     try { if (controller) controller.abort(); } catch (_) {}
     return { ok: false, error: 'timeout' };
@@ -181,12 +191,23 @@ function setTransientState(status, message) {
   if (status !== 'loading') dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);
 }
 
+function resetApiBaseRetryState() {
+  apiBaseRetryAttempt = 0;
+  if (apiBaseRetryTimer) {
+    clearTimeout(apiBaseRetryTimer);
+    apiBaseRetryTimer = null;
+  }
+}
+
 function scheduleApiBaseRetry() {
   if (apiBaseRetryTimer) return;
+  if (apiBaseRetryAttempt >= API_BASE_RETRY_DELAYS_MS.length) return;
+  const delay = API_BASE_RETRY_DELAYS_MS[apiBaseRetryAttempt];
+  apiBaseRetryAttempt += 1;
   apiBaseRetryTimer = setTimeout(() => {
     apiBaseRetryTimer = null;
     refresh().catch(() => {});
-  }, API_BASE_RETRY_MS);
+  }, delay);
 }
 
 function fallbackFromError(errorCode) {
@@ -206,6 +227,7 @@ async function refresh() {
   }
   let finalState = payload;
   const payloadError = payload && payload.error ? payload.error : 'fetch_failed';
+  if (payload && payload.ok) resetApiBaseRetryState();
   if (!payload || !payload.ok) {
     if (payloadError === 'api_base_missing') scheduleApiBaseRetry();
     finalState = fallbackFromError(payloadError);
@@ -311,6 +333,7 @@ if (typeof window !== 'undefined') {
   window.MOONBOYS_DAILY_WTF = {
     init: initDailyWtfEventSystem,
     refresh,
+    makeFallbackSchedule,
     checkInWtfEvent,
     completeWtfEvent,
     chooseWtfOption,

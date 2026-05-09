@@ -370,67 +370,40 @@
   }
 
   var WTF_LOADING_STALL_MS = 8000;
+  var WTF_LOADING_REPAINT_BUFFER_MS = 250;
+
+  function clearWtfLoadingRepaintTimer() {
+    if (_singleton.wtfLoadingRepaintTimer) {
+      clearTimeout(_singleton.wtfLoadingRepaintTimer);
+      _singleton.wtfLoadingRepaintTimer = null;
+    }
+  }
+
+  function scheduleWtfLoadingFallbackRepaint(nowMs) {
+    if (_singleton.wtfLoadingRepaintTimer) return;
+    var startedAt = Number(_singleton.wtfLoadingStartedAt || nowMs || Date.now());
+    var elapsed = Math.max(0, (nowMs || Date.now()) - startedAt);
+    var delay = Math.max(0, (WTF_LOADING_STALL_MS - elapsed) + WTF_LOADING_REPAINT_BUFFER_MS);
+    _singleton.wtfLoadingRepaintTimer = setTimeout(function () {
+      _singleton.wtfLoadingRepaintTimer = null;
+      refresh();
+    }, delay);
+  }
 
   function buildDeterministicWtfFallbackState(now) {
     var current = now instanceof Date ? now : new Date();
-    var windows = [
-      { event_id: 'wtf-midnight-signal', title: 'Midnight WTF Signal', startHour: 0, durationMinutes: 90, objective: 'Open an accepted arcade run while the midnight signal is live.' },
-      { event_id: 'wtf-early-chain-wake-up', title: 'Early Chain Wake-Up', startHour: 4, durationMinutes: 90, objective: 'Choose a chaos path and complete the early chain objective.' },
-      { event_id: 'wtf-morning-signal', title: 'Morning WTF Signal', startHour: 8, durationMinutes: 90, objective: 'Open an accepted arcade run while the morning signal is live.' },
-      { event_id: 'wtf-midday-rush', title: 'Midday Faction Rush', startHour: 12, durationMinutes: 90, objective: 'Push a faction mission or Battle Chamber proof during the rush.' },
-      { event_id: 'wtf-evening-burst', title: 'Evening Arcade Burst', startHour: 16, durationMinutes: 90, objective: 'Score in any arcade game before the burst closes.' },
-      { event_id: 'wtf-late-chaos', title: 'Late Night Chaos Window', startHour: 20, durationMinutes: 90, objective: 'Choose a chaos path and complete the objective.' },
-    ];
-    function dayEvents(offsetDays) {
-      var dayDate = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate() + offsetDays));
-      var utcDay = dayDate.toISOString().slice(0, 10);
-      return windows.map(function (w) {
-        var start = Date.parse(utcDay + 'T' + pad2(w.startHour) + ':00:00.000Z');
-        var end = start + (w.durationMinutes * 60 * 1000);
-        return {
-          id: w.event_id,
-          event_id: w.event_id,
-          title: w.title,
-          objective: w.objective,
-          required_action: w.objective,
-          start_at: new Date(start).toISOString(),
-          end_at: new Date(end).toISOString(),
-          utc_day: utcDay,
-        };
-      });
-    }
-    var nowMs = current.getTime();
-    var events = dayEvents(0).concat(dayEvents(1));
-    var active = null;
-    var next = null;
-    for (var i = 0; i < events.length; i++) {
-      var event = events[i];
-      var startMs = Date.parse(event.start_at);
-      var endMs = Date.parse(event.end_at);
-      if (!active && nowMs >= startMs && nowMs < endMs) active = event;
-      if (!next && startMs > nowMs) next = event;
-      if (active && next) break;
-    }
-    var focus = active || next || null;
-    var countdownSeconds = 0;
-    if (focus) {
-      var targetMs = active ? Date.parse(active.end_at) : Date.parse(focus.start_at);
-      countdownSeconds = Math.max(0, Math.floor((targetMs - nowMs) / 1000));
-    }
-    return {
-      ok: false,
+    var api = window.MOONBOYS_DAILY_WTF;
+    if (!api || typeof api.makeFallbackSchedule !== 'function') return null;
+    var schedule = api.makeFallbackSchedule(current);
+    if (!schedule || typeof schedule !== 'object') return null;
+    return Object.assign({}, schedule, {
       source: 'panel_loading_fallback',
-      status: active ? 'active' : 'upcoming',
+      status: schedule.active_event ? 'active' : 'upcoming',
       fallback: true,
       diagnostic: 'Signal feed fallback active',
       checked_in: false,
-      active_event: active,
-      next_event: next,
-      upcoming_events: next ? [next] : [],
-      current_task: focus,
-      countdown_seconds: countdownSeconds,
-      no_events: !focus,
-    };
+      current_task: schedule.current_task || schedule.active_event || schedule.next_event || null,
+    });
   }
 
   function countdownText(seconds) {
@@ -491,10 +464,14 @@
     if (!state || state.status === 'loading') {
       var nowMs = Date.now();
       if (!_singleton.wtfLoadingStartedAt) _singleton.wtfLoadingStartedAt = nowMs;
+      scheduleWtfLoadingFallbackRepaint(nowMs);
       if ((nowMs - _singleton.wtfLoadingStartedAt) < WTF_LOADING_STALL_MS) {
         return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">NEXT SIGNAL</span><strong>Loading Daily WTF signal…</strong><p>Fetching /wtf/events/today.</p><div class="las-countdown" data-wtf-countdown>--:--:--</div></div>';
       }
       var fallbackState = buildDeterministicWtfFallbackState(new Date());
+      if (!fallbackState) {
+        return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>Signal feed fallback active. Daily WTF signals open every 4 hours.</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
+      }
       var fallbackFocus = fallbackState.active_event || fallbackState.next_event || null;
       var fallbackTitle = eventTitle(fallbackFocus, 'Next Daily WTF Signal');
       var fallbackObjective = wtfRequirementText(fallbackState, fallbackFocus);
@@ -503,6 +480,7 @@
         : '<a class="las-action-btn" href="/gkniftyheads-incubator.html">Link Telegram</a>';
       return '<div class="las-signal-card" data-wtf-state="fallback"><span class="las-pill las-pill--next">FALLBACK</span><strong>' + esc(fallbackTitle) + '</strong><p>Signal feed fallback active. Daily WTF signals open every 4 hours.</p><div class="las-task-copy">Objective: ' + esc(fallbackObjective) + '</div><div class="las-countdown" data-wtf-countdown>' + countdownText(fallbackState.countdown_seconds) + '</div>' + fallbackAction + '</div>';
     }
+    clearWtfLoadingRepaintTimer();
     _singleton.wtfLoadingStartedAt = null;
     if (state.status === 'error') {
       return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>' + esc(state.diagnostic || 'Try the arcade while the feed reconnects.') + '</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';

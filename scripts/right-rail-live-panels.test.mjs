@@ -139,10 +139,16 @@ check(las.includes('Complete objective in Arcade / Missions first') && las.inclu
 check(wtf.includes('setTransientState') && wtf.includes('Loading Daily WTF signal…'), 'Daily WTF system publishes a loading state before fetch resolves');
 check(wtf.includes('Signal feed unavailable; deterministic local schedule rendered') && wtf.includes('makeFallbackSchedule'), 'Daily WTF system has a deterministic fallback instead of leaving schedule loading forever');
 check(wtf.includes('FETCH_TIMEOUT_MS = 8000') && wtf.includes('Promise.race([') && wtf.includes("error: 'timeout'"), 'Daily WTF fetch path enforces timeout instead of waiting forever');
-check(wtf.includes('scheduleApiBaseRetry') && wtf.includes('api_base_missing') && wtf.includes('API_BASE_RETRY_MS = 1500'), 'api_base_missing schedules a near-term retry instead of permanently stalling');
+check(wtf.includes('timeoutId = setTimeout') && wtf.includes('if (timeoutId) clearTimeout(timeoutId);'), 'Daily WTF fetch timeout timer is cleared after request settles');
+check(wtf.includes('scheduleApiBaseRetry') && wtf.includes('api_base_missing') && wtf.includes('API_BASE_RETRY_DELAYS_MS = [1500, 3000, 6000, 12000]'), 'api_base_missing retry uses capped stepped backoff');
+check(wtf.includes('apiBaseRetryAttempt') && wtf.includes('if (apiBaseRetryAttempt >= API_BASE_RETRY_DELAYS_MS.length) return;'), 'api_base_missing retry attempts are capped');
+check(wtf.includes('resetApiBaseRetryState') && wtf.includes('if (payload && payload.ok) resetApiBaseRetryState();'), 'successful Daily WTF refresh resets api-base retry state');
 check(wtf.includes('normalizeEvent') && wtf.includes('start_at: event.start_at || event.starts_at') && wtf.includes('end_at: event.end_at || event.ends_at'), 'Daily WTF system normalizes Worker event field aliases');
 check(las.includes('data-wtf-state="loading"') && las.includes('Loading Daily WTF signal…'), 'faction ops panel renders an explicit loading state');
 check(las.includes('WTF_LOADING_STALL_MS = 8000') && las.includes('buildDeterministicWtfFallbackState') && las.includes('data-wtf-state="fallback"'), 'faction ops panel renders deterministic fallback after loading stall timeout');
+check(las.includes('scheduleWtfLoadingFallbackRepaint') && las.includes('wtfLoadingRepaintTimer') && las.includes('setTimeout(function ()') && las.includes('refresh();'), 'loading state schedules a one-shot repaint so fallback appears without ready events');
+check(las.includes('clearWtfLoadingRepaintTimer') && las.includes('clearTimeout(_singleton.wtfLoadingRepaintTimer)'), 'loading repaint timer is cleared when real Daily WTF state resolves');
+check(las.includes('window.MOONBOYS_DAILY_WTF') && las.includes('api.makeFallbackSchedule') && !las.includes('wtf-midnight-signal'), 'right-rail fallback uses shared Daily WTF fallback helper instead of duplicating schedule windows');
 check(las.includes('Signal feed fallback active. Daily WTF signals open every 4 hours.') && las.includes('Next Daily WTF Signal'), 'fallback WTF card includes actionable fallback copy and deterministic signal title');
 check(las.includes('data-wtf-state="error"') && las.includes('Signal feed unavailable.'), 'faction ops panel renders a controlled feed failure state');
 check(las.includes('Get Ready') && las.includes('Daily WTF signals open every 4 hours across the UTC day'), 'upcoming WTF state renders title/countdown preparation copy');
