@@ -238,7 +238,7 @@ function fallbackFromError(payload) {
 async function refresh() {
   loadingRunId += 1;
   const runId = loadingRunId;
-  setTransientState('loading', 'Loading Daily WTF signal…');
+  setTransientState('loading', 'Loading Daily WTF signalâ€¦');
   armLoadingStallTimer(runId);
   let payload = null;
   let finalState = null;
