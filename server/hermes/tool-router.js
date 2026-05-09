@@ -8,6 +8,35 @@ function parsePathAfterKeyword(prompt, keyword) {
   return prompt.slice(idx + keyword.length).trim().replace(/^['"]|['"]$/gu, "");
 }
 
+const OPERATOR_VERB_PATTERN = /\b(create|add|build|make|implement|update|change|fix|patch|install|wire|connect|remove|replace)\b/iu;
+const OPERATOR_SCOPE_PATTERN =
+  /\b(admin\s+page|hermes\s+page|brain\s+page|popup|canvas|chart|button|modal|ui|css|js|html|repo|file|page|dashboard)\b/iu;
+
+function detectOperatorIntent(prompt) {
+  const text = String(prompt || "").trim();
+  if (!text) return null;
+  if (!OPERATOR_VERB_PATTERN.test(text) || !OPERATOR_SCOPE_PATTERN.test(text)) {
+    return null;
+  }
+
+  const lower = text.toLowerCase();
+  const likelyFiles = [];
+  if (/\b(admin\s+page|hermes\s+page)\b/iu.test(lower)) {
+    likelyFiles.push("admin/hermes-chat.html", "js/hermes-chat.js");
+  }
+  if (/\bbrain\s+page\b/iu.test(lower)) {
+    likelyFiles.push("admin/brain.html", "js/brain.js");
+  }
+  if (/\b(css|ui)\b/iu.test(lower)) {
+    likelyFiles.push("css/wiki.css");
+  }
+
+  return {
+    classification: "repo_admin_ui_operator_task",
+    likelyFiles: [...new Set(likelyFiles)]
+  };
+}
+
 function routePromptToAction(input = {}) {
   const prompt = String(input.prompt || "").trim();
   const lower = prompt.toLowerCase();
@@ -15,6 +44,15 @@ function routePromptToAction(input = {}) {
 
   if (!prompt) {
     return { actions, unmatched: true };
+  }
+
+  const operatorIntent = detectOperatorIntent(prompt);
+  if (operatorIntent) {
+    return {
+      actions: [],
+      unmatched: false,
+      operatorIntent
+    };
   }
 
   if (/^enter\s+(agent_edit|admin)\s+mode/iu.test(lower)) {
@@ -216,5 +254,6 @@ function routePromptToAction(input = {}) {
 }
 
 module.exports = {
-  routePromptToAction
+  routePromptToAction,
+  detectOperatorIntent
 };
