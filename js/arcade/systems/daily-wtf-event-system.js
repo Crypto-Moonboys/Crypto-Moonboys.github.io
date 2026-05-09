@@ -21,10 +21,12 @@ function getSignedAuth() {
 function makeFallbackSchedule(now = new Date()) {
   const utcDay = now.toISOString().slice(0, 10);
   const windows = [
+    { event_id: 'wtf-midnight-signal', title: 'Midnight WTF Signal', startHour: 0, durationMinutes: 90, description: 'Open an accepted arcade run while the midnight signal is live.', required_action: 'play_any_accepted_arcade_run' },
+    { event_id: 'wtf-early-chain-wake-up', title: 'Early Chain Wake-Up', startHour: 4, durationMinutes: 90, description: 'Choose a chaos path and complete the early chain objective.', required_action: 'choose_and_complete_chaos_path' },
     { event_id: 'wtf-morning-signal', title: 'Morning WTF Signal', startHour: 8, durationMinutes: 90, description: 'Open an accepted arcade run while the morning signal is live.', required_action: 'play_any_accepted_arcade_run' },
-    { event_id: 'wtf-midday-rush', title: 'Midday Faction Rush', startHour: 12, durationMinutes: 90, description: 'Push a faction mission or battle chamber proof during the rush.', required_action: 'complete_faction_or_battle_action' },
-    { event_id: 'wtf-evening-burst', title: 'Evening Arcade Burst', startHour: 18, durationMinutes: 120, description: 'Score in any arcade game before the burst closes.', required_action: 'score_target_any_game' },
-    { event_id: 'wtf-late-chaos', title: 'Late Night Chaos Window', startHour: 22, durationMinutes: 90, description: 'Choose a chaos path and complete the objective.', required_action: 'choose_and_complete_chaos_path' },
+    { event_id: 'wtf-midday-rush', title: 'Midday Faction Rush', startHour: 12, durationMinutes: 90, description: 'Push a faction mission or Battle Chamber proof during the rush.', required_action: 'complete_faction_or_battle_action' },
+    { event_id: 'wtf-evening-burst', title: 'Evening Arcade Burst', startHour: 16, durationMinutes: 90, description: 'Score in any arcade game before the burst closes.', required_action: 'score_target_any_game' },
+    { event_id: 'wtf-late-chaos', title: 'Late Night Chaos Window', startHour: 20, durationMinutes: 90, description: 'Choose a chaos path and complete the objective.', required_action: 'choose_and_complete_chaos_path' },
   ];
   const nowMs = now.getTime();
   const events = windows.map((w) => {

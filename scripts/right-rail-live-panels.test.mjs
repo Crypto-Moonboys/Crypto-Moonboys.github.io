@@ -105,8 +105,12 @@ check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requi
 console.log('\n[4] Panel separation');
 check(siteShell.includes('PLAYER LIVE FEED') && siteShell.includes('FACTION DAILY OPS'), 'right rail boxes are titled PLAYER LIVE FEED and FACTION DAILY OPS');
 check(csp.includes('Recent Personal Activity') && csp.includes('No synced activity yet. Play an arcade run or complete a faction task.'), 'player panel owns user/sync/progression/recent activity data');
+const ownBattleBlock = functionBlock(csp, 'isOwnBattleActivity');
+const latestActivityBlock = functionBlock(csp, 'latestActivityRows');
 check(csp.includes('isOwnBattleActivity') && csp.includes('getTelegramId()') && csp.includes('activity.filter(isOwnBattleActivity)'), 'player feed filters Battle Chamber activity to the linked player when possible');
-check(csp.includes('Battle Chamber global feed active; no personal proof matched yet.'), 'player feed labels unmatched public Battle Chamber activity as global, not personal proof');
+check(!ownBattleBlock.includes('getDisplayName()') && !ownBattleBlock.includes('display_name'), 'personal Battle Chamber matching does not rely on display name when Telegram identifiers are required');
+check(!latestActivityBlock.includes("tag: 'Global'") && !latestActivityBlock.includes('global feed active'), 'global/unmatched Battle Chamber rows are not rendered inside Recent Personal Activity');
+check(csp.includes('Latest Public Battle Chamber Activity') && csp.includes("tag: 'Public'") && csp.includes('latestGlobalBattleRows'), 'global Battle Chamber feed is rendered only under a public/global heading');
 check((las.includes("Today\\'s Missions") || las.includes("Today's Missions")) && las.includes('Daily WTF Signal') && las.includes('Missed Opportunities'), 'faction panel owns missions/events/missed signals');
 check(!las.includes('data-csp-xp') && !las.includes('data-csp-panel'), 'faction ops panel does not repeat the Arcade XP block');
 check(!siteShell.includes('id="hud-player-name">Guest'), 'right rail no longer renders a duplicate Guest/Telegram name block');
@@ -134,8 +138,8 @@ check(wtf.includes('Signal feed unavailable; deterministic local schedule render
 check(wtf.includes('normalizeEvent') && wtf.includes('start_at: event.start_at || event.starts_at') && wtf.includes('end_at: event.end_at || event.ends_at'), 'Daily WTF system normalizes Worker event field aliases');
 check(las.includes('data-wtf-state="loading"') && las.includes('Loading Daily WTF signal…'), 'faction ops panel renders an explicit loading state');
 check(las.includes('data-wtf-state="error"') && las.includes('Signal feed unavailable.'), 'faction ops panel renders a controlled feed failure state');
-check(las.includes('Get Ready') && las.includes('check-in opens when this signal goes live'), 'upcoming WTF state renders title/countdown preparation copy');
-check(las.includes('Check In') && las.includes('data-wtf-checkin'), 'active WTF state renders Check In CTA for linked users');
+check(las.includes('Get Ready') && las.includes('Daily WTF signals open every 4 hours across the UTC day'), 'upcoming WTF state renders title/countdown preparation copy');
+check(las.includes('Check In') && las.includes('data-wtf-checkin') && las.includes('90-minute timer'), 'active WTF state renders Check In CTA for linked users');
 check(las.includes('No Daily WTF signals generated for today') && las.includes('Play Arcade'), 'no-event WTF fallback remains actionable');
 check(las.includes('FACTION_MISSION_FALLBACKS') && las.includes('fallbackDailyMissions') && las.includes('gp_chaos_3'), 'faction mission definitions render when live progress data is absent');
 check(las.includes('Link Telegram') && las.includes('Telegram sync inactive'), 'unlinked users see a Link Telegram CTA');
@@ -157,7 +161,7 @@ check(las.includes("window.addEventListener('moonboys:wtf-countdown-tick', updat
 console.log('\n[6] Missed perks');
 check(las.includes('missed_history_count') && las.includes('missed_today'), 'missed count and daily missed summary can render');
 check(las.includes('The city kept moving while you were away.'), 'missed opportunities copy is present');
-check(las.includes('Daily options reset at UTC midnight. Missed history does not reset.'), 'daily reset copy and missed history persistence copy are separate and present');
+check(las.includes('Daily WTF signals open every 4 hours. Daily options reset at UTC midnight. Missed history does not reset.'), 'daily reset copy and missed history persistence copy are separate and present');
 
 
 console.log('\n[7] Roguelite client/server method contract');

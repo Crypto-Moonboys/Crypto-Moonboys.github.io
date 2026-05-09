@@ -239,10 +239,14 @@
   function isOwnBattleActivity(row) {
     if (!row || typeof row !== 'object') return false;
     var telegramId = getTelegramId();
-    var displayName = getDisplayName();
     if (telegramId && row.telegram_id != null && String(row.telegram_id) === String(telegramId)) return true;
-    if (displayName && row.display_name && String(row.display_name).toLowerCase() === String(displayName).toLowerCase()) return true;
+    if (telegramId && row.user_telegram_id != null && String(row.user_telegram_id) === String(telegramId)) return true;
+    if (telegramId && row.player_telegram_id != null && String(row.player_telegram_id) === String(telegramId)) return true;
     return false;
+  }
+
+  function battleActivityText(row) {
+    return row.title || row.event_text || row.event || row.action || row.event_type || 'Latest Battle Chamber proof synced';
   }
 
   function latestActivityRows() {
@@ -252,9 +256,7 @@
       var ownActivity = activity.filter(isOwnBattleActivity);
       if (ownActivity.length) {
         var latest = ownActivity[0] || {};
-        rows.push({ tag: 'Battle', text: latest.title || latest.event_text || latest.event || latest.action || latest.event_type || 'Latest Battle Chamber proof synced' });
-      } else {
-        rows.push({ tag: 'Global', text: 'Battle Chamber global feed active; no personal proof matched yet.' });
+        rows.push({ tag: 'Battle', text: battleActivityText(latest) });
       }
     }
     var daily = window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
@@ -270,6 +272,14 @@
     var missed = Array.isArray(window.MOONBOYS_ROGUELITE_MISSED_HISTORY) ? window.MOONBOYS_ROGUELITE_MISSED_HISTORY : [];
     if (missed.length) rows.push({ tag: 'Missed', text: 'Missed history updated (' + missed.length + ')' });
     return rows.slice(0, 5);
+  }
+
+
+  function latestGlobalBattleRows() {
+    var activity = Array.isArray(window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY) ? window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY : [];
+    return activity.filter(function (row) { return row && !isOwnBattleActivity(row); }).slice(0, 2).map(function (row) {
+      return { tag: 'Public', text: battleActivityText(row) };
+    });
   }
 
   function buildFeedHTML(rows) {
@@ -318,6 +328,7 @@
           '<div class="csp-item"><div class="csp-item-label">API Sync</div><div class="csp-item-val ' + (apiOnline ? 'csp-val-good' : 'csp-val-locked') + '">' + (apiOnline ? '● Online' : 'Core API unavailable') + '</div></div>' +
         '</div>' +
         '<div class="csp-feed"><div class="csp-feed-title">Recent Personal Activity</div>' + buildFeedHTML(latestActivityRows()) + '</div>' +
+        '<div class="csp-feed"><div class="csp-feed-title">Latest Public Battle Chamber Activity</div>' + buildFeedHTML(latestGlobalBattleRows()) + '</div>' +
       '</div>';
   }
 

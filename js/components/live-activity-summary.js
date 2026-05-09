@@ -445,7 +445,7 @@
     if (completedOnly) {
       subcopy = 'Completed tick locked for today. XP burst preview and chain options show when the Worker reports them.';
     } else if (active) {
-      subcopy = state.checked_in ? 'Checked in — complete the objective before the signal expires.' : 'Live now — check in before the timer ends.';
+      subcopy = state.checked_in ? 'Checked in — complete the objective before the signal expires.' : 'Live now — Daily WTF signals open every 4 hours; check in before this 90-minute timer ends.';
       if (linked && eventId && !state.checked_in && !completed) {
         buttons += '<button type="button" class="las-action-btn" data-wtf-checkin data-event-id="' + esc(eventId) + '">Check In</button>';
       }
@@ -459,7 +459,7 @@
       }
     } else if (next) {
       status = 'upcoming';
-      subcopy = 'Get ready — check-in opens when this signal goes live.';
+      subcopy = 'Get ready — Daily WTF signals open every 4 hours across the UTC day.';
       buttons += '<a class="las-action-btn" href="/games/">Get Ready</a>';
     } else if (Number(state.missed_today || 0) > 0) {
       status = 'missed / expired';
@@ -545,7 +545,7 @@
       '<div class="las-section-title">Today\'s Missions</div>' + missionHTML(missionState.missions) +
       '<div class="las-section-title">Daily WTF Signal</div>' + wtfHTML(linked) +
       '<div class="las-section-title">Missed Opportunities</div>' + missedHTML() +
-      '<div class="las-reset-copy">Daily options reset at UTC midnight. Missed history does not reset.</div>' +
+      '<div class="las-reset-copy">Daily WTF signals open every 4 hours. Daily options reset at UTC midnight. Missed history does not reset.</div>' +
       buildLogHTML() +
     '</div>';
   }

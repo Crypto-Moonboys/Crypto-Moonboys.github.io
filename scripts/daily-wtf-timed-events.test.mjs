@@ -17,6 +17,7 @@ function check(condition, label) {
 const MIGRATION = 'workers/moonboys-api/migrations/019_daily_wtf_timed_events.sql';
 const WORKER = 'workers/moonboys-api/worker.js';
 const COMMUNITY = 'community.html';
+const HOW_TO_PLAY = 'how-to-play.html';
 const GAMES = 'games/index.html';
 const BRIDGE = 'js/battle-chamber-faction-bridge.js';
 const HUB = 'js/battle-chamber-factions.js';
@@ -29,6 +30,7 @@ const LEADERBOARD = 'js/leaderboard-client.js';
 const migrationSql = exists(MIGRATION) ? read(MIGRATION) : '';
 const workerJs = read(WORKER);
 const communityHtml = read(COMMUNITY);
+const howToPlayHtml = read(HOW_TO_PLAY);
 const gamesHtml = read(GAMES);
 const bridgeJs = read(BRIDGE);
 const hubJs = read(HUB);
@@ -37,6 +39,21 @@ const wtfSystemJs = read(WTF_SYSTEM);
 const xpBurstJs = read(XP_BURST);
 const digestTestJs = read(DIGEST_TEST);
 const leaderboardJs = read(LEADERBOARD);
+
+const scheduleBlock = (src, functionName) => {
+  const start = src.indexOf(`function ${functionName}`);
+  if (start < 0) return '';
+  const end = src.indexOf('\n}\n', start);
+  return end >= 0 ? src.slice(start, end + 3) : src.slice(start);
+};
+const workerSchedule = scheduleBlock(workerJs, 'getWtfDailySchedule');
+const fallbackSchedule = scheduleBlock(wtfSystemJs, 'makeFallbackSchedule');
+const extractSchedule = (block) => [...block.matchAll(/event_id: '([^']+)'[\s\S]*?title: '([^']+)'[\s\S]*?startHour: (\d+)[\s\S]*?durationMinutes: (\d+)/g)]
+  .map((m) => ({ id: m[1], title: m[2], hour: Number(m[3]), duration: Number(m[4]) }));
+const workerEvents = extractSchedule(workerSchedule);
+const fallbackEvents = extractSchedule(fallbackSchedule);
+const expectedHours = [0, 4, 8, 12, 16, 20];
+const expectedTitles = ['Midnight WTF Signal', 'Early Chain Wake-Up', 'Morning WTF Signal', 'Midday Faction Rush', 'Evening Arcade Burst', 'Late Night Chaos Window'];
 
 console.log('\n--- Daily WTF Timed Events Tests ---\n');
 check(exists(MIGRATION), 'migration 019 exists');
@@ -64,7 +81,17 @@ check(workerJs.includes('checked_in_at') && workerJs.includes('completed_at'), '
 check(workerJs.includes('daily_missed_perks'), 'missed history base table remains in worker');
 
 check(workerJs.includes('ensureWtfEventsForDay'), 'UTC-day schedule generation helper exists');
+check(workerEvents.length === 6, 'Worker generates exactly 6 Daily WTF events per UTC day');
+check(fallbackEvents.length === 6, 'frontend fallback generates exactly 6 Daily WTF events per UTC day');
+check(JSON.stringify(workerEvents.map((e) => e.hour)) === JSON.stringify(expectedHours), 'Worker event starts are 00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC');
+check(JSON.stringify(fallbackEvents.map((e) => e.hour)) === JSON.stringify(expectedHours), 'frontend fallback event starts are 00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC');
+check(workerEvents.every((e) => e.duration === 90) && fallbackEvents.every((e) => e.duration === 90), 'Worker and frontend use consistent 90-minute event windows');
+check(JSON.stringify(workerEvents.map((e) => e.title)) === JSON.stringify(expectedTitles), 'Worker schedule names match the six-window model');
+check(JSON.stringify(fallbackEvents.map((e) => e.title)) === JSON.stringify(expectedTitles), 'frontend fallback schedule names match the Worker');
+check(JSON.stringify(workerEvents.map((e) => e.id)) === JSON.stringify(fallbackEvents.map((e) => e.id)), 'Worker/frontend event ids match');
+check(JSON.stringify(workerEvents.map((e) => e.hour)) === JSON.stringify(fallbackEvents.map((e) => e.hour)), 'Worker/frontend start hours match');
 check(workerJs.includes('getWtfEventStatus'), 'active/upcoming/expired status helper exists');
+check(workerJs.includes('getNextDailyWtfEvent') && workerJs.includes('addUtcDays') && workerJs.includes('upcomingEvents = [nextEvent]'), 'after final window expires, /today points at next UTC day first signal');
 check(workerJs.includes('countdown_seconds'), 'countdown field exists');
 
 check(workerJs.includes('daily_wtf_chain_options') && workerJs.includes("'available'"), 'chain options unlocked on completion');
@@ -106,6 +133,10 @@ check(bridgeJs.length > 0 && hubJs.length > 0 && factionPageJs.length > 0, 'batt
 check(workerJs.includes('WTF timed signal') && workerJs.includes('Check in when the signal opens.'), 'digest includes WTF timed signal preview');
 check(digestTestJs.includes("path === '/telegram/daily-digest/run'"), 'daily digest test suite still covers once-per-day route');
 
+check(howToPlayHtml.includes('Daily WTF signals open every 4 hours') && howToPlayHtml.includes('00:00, 04:00, 08:00, 12:00, 16:00, and 20:00 UTC'), 'how-to-play.html documents every-4-hour Daily WTF signals');
+check(communityHtml.includes('Daily WTF signals open every 4 hours') && communityHtml.includes('Missed history does not reset'), 'community/right-rail copy documents every-4-hour signals and persistent missed history');
+check(gamesHtml.includes('Daily WTF signals open every 4 hours') && gamesHtml.includes('does not reset'), 'games hub explains Daily WTF signal cadence and missed history persistence');
+check(factionPageJs.includes('Daily WTF') || read('battle-chamber/factions/index.html').includes('Daily WTF signals open every 4 hours'), 'faction pages/shared renderer mention Daily WTF timed signals');
 check(workerJs.includes('const ARCADE_XP_PER_POINT = 0.02;'), 'arcade xp formula unchanged');
 check(workerJs.includes("reward_status='previewed'") && !workerJs.includes("reward_status='awarded'"), 'reward status is truthful preview-only unless persisted award exists');
 check(workerJs.includes('persisted_xp_awarded: false'), 'response clearly marks no persisted XP award');
