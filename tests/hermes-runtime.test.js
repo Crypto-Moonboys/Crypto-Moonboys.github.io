@@ -64,7 +64,8 @@ function loadWithRoot(root) {
     commandRunner: require("../server/hermes/command-runner.js"),
     pathUtils: require("../server/hermes/path-utils.js"),
     conversationRuntime: require("../server/hermes/conversation-runtime.js"),
-    capabilities: require("../server/hermes/capabilities.js")
+    capabilities: require("../server/hermes/capabilities.js"),
+    toolRouter: require("../server/hermes/tool-router.js")
   };
 }
 
@@ -208,4 +209,45 @@ test("normal operator prompt still routes to swarm plan and execution pipeline",
   });
   assert.equal(response.swarmPlan?.type, "hermes_swarm_plan");
   assert.equal(response.executionPipeline?.type, "hermes_execution_pipeline");
+});
+
+test("owner command classifier covers broad intents deterministically", () => {
+  const root = setupSandbox();
+  const { toolRouter } = loadWithRoot(root);
+  const cases = [
+    ["read repo for code bugs", "repo_audit"],
+    ["scan repo for bugs", "repo_audit"],
+    ["fix admin page", "website_build_edit"],
+    ["build my 2 player bomber royale game", "game_build_edit"],
+    ["run tests", "test_run"],
+    ["create PR", "pr_github_workflow"],
+    ["create an image", "image_generation"],
+    ["make animated canvas code", "animation_code_generation"],
+    ["show skills", "memory_skills_settings"],
+    ["open brain npc advisor", "brain_npc"]
+  ];
+  for (const [prompt, expectedIntent] of cases) {
+    const classified = toolRouter.classifyOwnerCommand(prompt);
+    assert.equal(classified.intent, expectedIntent);
+    assert.ok(classified.confidence);
+    assert.ok("requiresSandbox" in classified);
+    assert.ok("requiresApproval" in classified);
+  }
+});
+
+test("read repo for code bugs routes to actionable scan response", async () => {
+  const root = setupSandbox();
+  const { conversationRuntime } = loadWithRoot(root);
+  const response = await conversationRuntime.runConversation({
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "read repo for code bugs",
+    history: []
+  });
+  const merged = `${String(response.reply || "")}\n${JSON.stringify(response.toolResults || [])}`;
+  assert.doesNotMatch(merged, /No matching tool action was found/i);
+  assert.ok(
+    (Array.isArray(response.actions) && response.actions.length > 0) ||
+    (Array.isArray(response.toolResults) && response.toolResults.length > 0)
+  );
 });

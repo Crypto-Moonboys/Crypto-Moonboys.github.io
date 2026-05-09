@@ -183,6 +183,7 @@ async function runConversation(input = {}) {
     };
   }
   const routing = routePromptToAction(input);
+  const commandIntent = routing.commandIntent || null;
 
   if (routing.modeSwitch) {
     return {
@@ -487,11 +488,153 @@ async function runConversation(input = {}) {
     };
   }
 
+  if (commandIntent && commandIntent.intent !== "unknown") {
+    if (commandIntent.intent === "repo_audit") {
+      const ctx = {
+        mode,
+        role,
+        confirmEdit: input.confirmEdit === true,
+        approvalId: input.approvalId,
+        approvalToken: input.approvalToken,
+        sessionId: input.sessionId,
+        swarm: getAgents()
+      };
+      const auditTerms = ["bug", "error", "fail", "fixme", "todo", "broken"];
+      const results = [];
+      for (const term of auditTerms) {
+        const action = { type: ACTIONS.REPO_SEARCH, payload: { query: term } };
+        const result = await executeAction(action, ctx);
+        const formatted = formatToolResult(result, input.debug === true);
+        results.push({
+          term,
+          totalCount: Number(formatted.totalCount || 0),
+          ok: formatted.ok
+        });
+      }
+      const successful = results.filter((r) => r.ok);
+      const totalMatches = successful.reduce((sum, item) => sum + item.totalCount, 0);
+      return {
+        reply: `Ran repo-audit term searches (${auditTerms.join(", ")}). Found ${totalMatches} total path matches across term scans. I can now propose a sandbox fix plan for the top findings.`,
+        actions: [],
+        toolResults: [{
+          action: "repo/audit-scan",
+          ok: successful.length > 0,
+          repoUsed: "",
+          pathUsed: "",
+          resultSummary: "Repo audit completed using multiple term-based repo searches.",
+          entries: results,
+          totalCount: results.length,
+          shownCount: results.length,
+          missingRequirements: [],
+          error: ""
+        }],
+        missingRequirements: [],
+        executionPipeline: null,
+        swarmPlan: null,
+        mode,
+        role
+      };
+    }
+
+    if (commandIntent.intent === "test_run") {
+      const missing = missingForPrivileged({
+        mode,
+        role,
+        confirmEdit: input.confirmEdit === true,
+        approvalId: input.approvalId,
+        approvalToken: input.approvalToken
+      });
+      return {
+        reply: "Test execution is available through Hermes command/job flow. I prepared an approval-gated test plan (`npm test`) and can run it after approval.",
+        actions: [{ type: ACTIONS.COMMAND_RUN, payload: { command: "npm", args: ["test"] } }],
+        toolResults: [{
+          action: "plan/privileged",
+          ok: false,
+          repoUsed: "",
+          pathUsed: "",
+          resultSummary: "Approval-gated execution required for test command.",
+          entries: [{
+            command: "npm test",
+            nextAction: "Approve and run tests in owner/operator flow."
+          }],
+          totalCount: 1,
+          shownCount: 1,
+          missingRequirements: missing,
+          error: ""
+        }],
+        missingRequirements: missing,
+        executionPipeline: null,
+        swarmPlan: null,
+        mode,
+        role
+      };
+    }
+
+    if (commandIntent.intent === "memory_skills_settings") {
+      return {
+        reply: "Hermes can load skills, runtime map, memory, profile/settings, and registered repos through backend routes. Tell me which one to open first: skills, runtime map, memory, profile, or repos.",
+        actions: [],
+        toolResults: [{
+          action: "hermes/owner-intent",
+          ok: true,
+          repoUsed: "",
+          pathUsed: "",
+          resultSummary: "Owner intent classified.",
+          entries: [commandIntent],
+          totalCount: 1,
+          shownCount: 1,
+          missingRequirements: [],
+          error: ""
+        }],
+        missingRequirements: [],
+        executionPipeline: null,
+        swarmPlan: null,
+        mode,
+        role
+      };
+    }
+
+    if (commandIntent.intent === "pr_github_workflow" || commandIntent.intent === "sandbox_job" || commandIntent.intent === "deployment_vps" || commandIntent.intent === "brain_npc") {
+      return {
+        reply: `${commandIntent.nextAction}`,
+        actions: [],
+        toolResults: [{
+          action: "hermes/owner-intent",
+          ok: true,
+          repoUsed: "",
+          pathUsed: "",
+          resultSummary: "Owner command classified for workflow routing.",
+          entries: [commandIntent],
+          totalCount: 1,
+          shownCount: 1,
+          missingRequirements: [],
+          error: ""
+        }],
+        missingRequirements: [],
+        executionPipeline: null,
+        swarmPlan: null,
+        mode,
+        role
+      };
+    }
+  }
+
   if (/(repo|directory|directories|file|files|package\.json|index\.html|read\s+)/iu.test(prompt)) {
     return {
-      reply: "No matching tool action was found for that repo/file request. Tool result is required; Hermes will not invent files.",
+      reply: "I understood this as a repo/file request, but I still need a concrete path or query. Try: `read README.md`, `search the repo for <term>`, or `list repo files`.",
       actions: [],
-      toolResults: [],
+      toolResults: commandIntent ? [{
+        action: "hermes/owner-intent",
+        ok: false,
+        repoUsed: "",
+        pathUsed: "",
+        resultSummary: "Repo/file intent recognized but missing specific target.",
+        entries: [commandIntent],
+        totalCount: 1,
+        shownCount: 1,
+        missingRequirements: ["concrete path or query"],
+        error: ""
+      }] : [],
       missingRequirements: [],
       executionPipeline: null,
       swarmPlan: null,
