@@ -187,7 +187,10 @@ check(read('js/components/live-activity-summary.js').includes('clearWtfLoadingRe
 check(read('js/components/live-activity-summary.js').includes('window.MOONBOYS_DAILY_WTF') && read('js/components/live-activity-summary.js').includes('api.makeFallbackSchedule') && !read('js/components/live-activity-summary.js').includes('wtf-midnight-signal'), 'right-rail fallback schedule uses shared Daily WTF helper and avoids duplicated window definitions');
 check(read('js/components/live-activity-summary.js').includes('buildDeterministicWtfFallbackState') && read('js/components/live-activity-summary.js').includes('api.makeFallbackSchedule(current)') && read('js/components/live-activity-summary.js').includes('data-wtf-state="fallback"'), 'right-rail deterministic fallback path can call helper and render fallback card');
 check(read('js/components/live-activity-summary.js').includes('data-wtf-state="fallback"') && read('js/components/live-activity-summary.js').includes('Signal feed fallback active'), 'right-rail renderer has deterministic fallback card for stalled loading state');
-check(read('js/components/live-activity-summary.js').includes('Fallback helper unavailable. Unable to construct a local Daily WTF schedule right now.'), 'fallback-unavailable branch uses truthful helper-unavailable copy');
+check(read('js/components/live-activity-summary.js').includes('scheduleWtfHelperRetry') && read('js/components/live-activity-summary.js').includes('WTF_HELPER_RETRY_MS') && read('js/components/live-activity-summary.js').includes('WTF_HELPER_RETRY_MAX'), 'right-rail handles delayed fallback-helper availability with bounded retries');
+check(!read('js/components/live-activity-summary.js').includes('Fallback helper unavailable. Unable to construct a local Daily WTF schedule right now.'), 'right-rail does not show technical helper-unavailable copy');
+check(read('js/components/live-activity-summary.js').includes('Daily WTF signal feed is reconnecting. Play Arcade while the next signal loads.') && read('js/components/live-activity-summary.js').includes('Signal feed unavailable. Play Arcade and check Battle Chamber again shortly.'), 'right-rail fallback copy is user-friendly during reconnect and unavailable states');
+check(read('js/components/live-activity-summary.js').includes('data-wtf-state="error"') && read('js/components/live-activity-summary.js').includes('href="/games/"') && read('js/components/live-activity-summary.js').includes('Play Arcade'), 'right-rail error fallback includes an actionable CTA');
 check(read('js/components/live-activity-summary.js').includes('tomorrowStart = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate() + 1))') && read('js/components/live-activity-summary.js').includes('nextFromTomorrow') && read('js/components/live-activity-summary.js').includes('Date.parse(next.start_at) - current.getTime()'), 'right-rail fallback uses tomorrow signal and non-zero countdown when today windows are exhausted');
 check(xpBurstJs.includes('prefers-reduced-motion'), 'reduced motion fallback exists');
 check(!xpBurstJs.includes('payload.title ||') || !xpBurstJs.includes('innerHTML'), 'xp burst does not inject payload.title via innerHTML');
@@ -218,6 +221,13 @@ const corpus = [workerJs, wtfSystemJs, xpBurstJs, communityHtml, gamesHtml].join
 for (const term of forbidden) check(!corpus.includes(term), `forbidden wording absent: ${term}`);
 for (const changedJs of [wtfSystemJs, read('js/components/live-activity-summary.js')]) {
   check(!changedJs.includes('�'), 'no replacement character remains in changed Daily WTF JS files');
+}
+const mojibakeMarkers = ['Ã', 'Â', '�', 'â‚¬', 'â€œ', 'â€', 'Å“'];
+const liveSummaryJs = read('js/components/live-activity-summary.js');
+for (const marker of mojibakeMarkers) {
+  check(!liveSummaryJs.includes(marker), `live-activity-summary has no mojibake marker: ${marker}`);
+  check(!wtfSystemJs.includes(marker), `daily-wtf-event-system has no mojibake marker: ${marker}`);
+  check(!xpBurstJs.includes(marker), `xp-burst-animation has no mojibake marker: ${marker}`);
 }
 
 console.log(`\nPassed: ${passed}`);
