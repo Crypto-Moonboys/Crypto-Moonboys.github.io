@@ -3,6 +3,10 @@
   const maxHistory = 20;
   const history = [];
 
+  // Accumulated messages for the OG fullscreen log (shared across both UIs)
+  const ogMessages = [];
+  const maxOgMessages = 200;
+
   const el = (id) => document.getElementById(id);
   const out = {
     chat: el("chatLog"),
@@ -75,6 +79,260 @@
     }
   }
 
+  // ── OG Fullscreen helpers ────────────────────────────────────────────────
+
+  function escapeHtml(str) {
+    return String(str || "")
+      .replace(/&/gu, "&amp;")
+      .replace(/</gu, "&lt;")
+      .replace(/>/gu, "&gt;")
+      .replace(/"/gu, "&quot;");
+  }
+
+  function renderOgMessages() {
+    const log = el("ogChatLog");
+    if (!log) return;
+    if (ogMessages.length === 0) {
+      log.innerHTML = '<span class="og-log-empty">No messages yet. Send a prompt below.</span>';
+      return;
+    }
+    log.innerHTML = ogMessages
+      .map((m) => {
+        const cls =
+          m.role === "user"
+            ? "og-log-user"
+            : m.role === "error"
+              ? "og-log-error"
+              : "og-log-assistant";
+        const prefix =
+          m.role === "user" ? "YOU ▶ " : m.role === "error" ? "ERROR: " : "HERMES ▶ ";
+        const meta = m.meta
+          ? `<div class="og-log-meta">${escapeHtml(m.meta)}</div>`
+          : "";
+        return `<div class="og-log-entry"><span class="${cls}">${prefix}</span>${escapeHtml(m.content)}${meta}</div>`;
+      })
+      .join("");
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function appendOgMessage(role, content, meta) {
+    ogMessages.push({ role, content: String(content || ""), meta: meta || "" });
+    if (ogMessages.length > maxOgMessages) {
+      ogMessages.splice(0, ogMessages.length - maxOgMessages);
+    }
+    renderOgMessages();
+  }
+
+  function updateOgStatusBar(mode, role) {
+    const chipMode = el("ogModeChip");
+    const chipRole = el("ogRoleChip");
+    const barMode = el("ogBarMode");
+    const barRole = el("ogBarRole");
+    if (mode) {
+      if (chipMode) chipMode.textContent = `MODE: ${mode}`;
+      if (barMode) barMode.textContent = mode;
+    }
+    if (role) {
+      if (chipRole) chipRole.textContent = `ROLE: ${role}`;
+      if (barRole) barRole.textContent = role;
+    }
+  }
+
+  function updateOgBarApproval(approvals) {
+    const node = el("ogBarApproval");
+    if (!node) return;
+    const pending = approvals?.pending?.length ?? 0;
+    node.textContent = pending > 0 ? `${pending} pending` : "none";
+  }
+
+  async function loadOgStatus() {
+    try {
+      const approvals = await api("/api/hermes/approval/list");
+      const appEl = el("ogApprovals");
+      if (appEl) appEl.textContent = JSON.stringify(approvals.approvals || {}, null, 2);
+      updateOgBarApproval(approvals.approvals);
+    } catch (_err) {
+      const appEl = el("ogApprovals");
+      if (appEl) appEl.textContent = "(unavailable)";
+    }
+
+    try {
+      const queue = await api("/api/hermes/command/queue");
+      const qEl = el("ogQueue");
+      if (qEl) qEl.textContent = JSON.stringify(queue.queue || {}, null, 2);
+    } catch (_err) {
+      const qEl = el("ogQueue");
+      if (qEl) qEl.textContent = "(unavailable)";
+    }
+
+    try {
+      const root = await api("/api/hermes/runtime/root");
+      const rEl = el("ogRepoInfo");
+      if (rEl) {
+        rEl.textContent = [
+          `repo: ${root.activeRepoName || "—"}`,
+          `id:   ${root.activeRepoId || "—"}`,
+          `path: ${root.localPath || "—"}`
+        ].join("\n");
+      }
+    } catch (_err) {
+      const rEl = el("ogRepoInfo");
+      if (rEl) rEl.textContent = "(unavailable)";
+    }
+  }
+
+  async function loadOgSwarm() {
+    try {
+      const data = await api("/api/hermes/swarm");
+      const listEl = el("ogSwarmList");
+      if (!listEl) return;
+
+      const agents = data.agents || [];
+      const currentRole = String(el("role")?.value || "main_hermes");
+
+      listEl.innerHTML = agents
+        .map((a) => {
+          const isActive = a.id === currentRole;
+          const caps = Array.isArray(a.capabilities) ? a.capabilities.join(", ") : "";
+          return `<div class="og-agent-item${isActive ? " active" : ""}" data-role="${escapeHtml(a.id)}">
+            <div class="og-agent-id">${escapeHtml(a.id)}</div>
+            <div class="og-agent-label">${escapeHtml(a.label || "")}</div>
+            ${caps ? `<div class="og-agent-caps">${escapeHtml(caps)}</div>` : ""}
+          </div>`;
+        })
+        .join("");
+
+      listEl.querySelectorAll(".og-agent-item").forEach((item) => {
+        item.addEventListener("click", () => {
+          const roleEl = el("role");
+          if (roleEl) roleEl.value = item.dataset.role;
+          listEl
+            .querySelectorAll(".og-agent-item")
+            .forEach((i) => i.classList.remove("active"));
+          item.classList.add("active");
+          updateOgStatusBar(el("mode")?.value, item.dataset.role);
+        });
+      });
+    } catch (_err) {
+      const listEl = el("ogSwarmList");
+      if (listEl) listEl.textContent = "(unavailable)";
+    }
+  }
+
+  let previousBodyOverflow = "";
+
+  function openOgOverlay() {
+    const overlay = el("ogOverlay");
+    if (!overlay || overlay.classList.contains("open")) return;
+    previousBodyOverflow = document.body.style.overflow || "";
+    overlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+    renderOgMessages();
+    updateOgStatusBar(el("mode")?.value || "chat", el("role")?.value || "main_hermes");
+    loadOgSwarm().catch(() => null);
+    loadOgStatus().catch(() => null);
+  }
+
+  function closeOgOverlay() {
+    const overlay = el("ogOverlay");
+    if (!overlay || !overlay.classList.contains("open")) return;
+    overlay.classList.remove("open");
+    if (previousBodyOverflow) {
+      document.body.style.overflow = previousBodyOverflow;
+    } else {
+      document.body.style.removeProperty("overflow");
+    }
+  }
+
+  bindClick("openOgFullscreen", openOgOverlay);
+  bindClick("closeOgOverlay", closeOgOverlay);
+  bindClick("ogRefreshStatus", () => {
+    loadOgSwarm().catch(() => null);
+    loadOgStatus().catch(() => null);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeOgOverlay();
+  });
+
+  // ── Serialized Hermes send (shared by ogSendChat and sendChat) ──────────
+
+  let hermesSendInFlight = false;
+
+  function setSendButtonsDisabled(disabled) {
+    const s = el("sendChat");
+    const og = el("ogSendChat");
+    if (s) s.disabled = disabled;
+    if (og) og.disabled = disabled;
+  }
+
+  async function runHermesSend(prompt) {
+    if (hermesSendInFlight) {
+      appendOgMessage(
+        "error",
+        "Hermes request already in progress. Wait for the current reply before sending another prompt."
+      );
+      return;
+    }
+
+    hermesSendInFlight = true;
+    setSendButtonsDisabled(true);
+
+    const payload = {
+      ...basePayload(),
+      model: el("model").value,
+      systemPrompt: el("systemPrompt").value,
+      prompt,
+      history: history.slice(-maxHistory)
+    };
+
+    appendOgMessage("user", prompt);
+    history.push({ role: "user", content: prompt });
+    clampHistory();
+
+    try {
+      const data = await api("/api/hermes/chat", { method: "POST", body: JSON.stringify(payload) });
+      history.push({ role: "assistant", content: String(data.reply || "") });
+      clampHistory();
+
+      const meta = `mode:${data.mode}  role:${data.role}  actions:${Array.isArray(data.actions) ? data.actions.length : 0}`;
+      appendOgMessage("assistant", data.reply || "(no reply)", meta);
+
+      setOut(out.chat, {
+        reply: data.reply,
+        mode: data.mode,
+        role: data.role,
+        lastActionCount: Array.isArray(data.actions) ? data.actions.length : 0
+      });
+      setOut(out.plan, data.actions || []);
+      setOut(out.tools, summarizeToolResults(data.toolResults || []));
+      setOut(out.missing, data.missingRequirements || []);
+
+      updateOgStatusBar(data.mode, data.role);
+      const lastAction = Array.isArray(data.actions) && data.actions[0] ? data.actions[0].type : "—";
+      const barLast = el("ogBarLastAction");
+      if (barLast) barLast.textContent = lastAction;
+    } catch (error) {
+      history.pop();
+      ogMessages.pop();
+      appendOgMessage("error", String(error?.message || error));
+      setOut(out.chat, { error: String(error?.message || error) });
+    } finally {
+      hermesSendInFlight = false;
+      setSendButtonsDisabled(false);
+    }
+  }
+
+  bindClick("ogSendChat", async () => {
+    const promptEl = el("ogPrompt");
+    const prompt = String(promptEl?.value || "").trim();
+    if (!prompt) return;
+    if (promptEl) promptEl.value = "";
+    await runHermesSend(prompt);
+  });
+
+  // ── Main send (also feeds the OG log) ───────────────────────────────────
+
   async function loadModels() {
     const data = await api("/api/hermes/models");
     const modelSelect = el("model");
@@ -90,36 +348,13 @@
   }
 
   bindClick("sendChat", async () => {
-    try {
-      const prompt = String(el("prompt").value || "").trim();
-      if (!prompt) throw new Error("Prompt is required.");
-      const payload = {
-        ...basePayload(),
-        model: el("model").value,
-        systemPrompt: el("systemPrompt").value,
-        prompt,
-        history: history.slice(-maxHistory)
-      };
-
-      history.push({ role: "user", content: prompt });
-      clampHistory();
-
-      const data = await api("/api/hermes/chat", { method: "POST", body: JSON.stringify(payload) });
-      history.push({ role: "assistant", content: String(data.reply || "") });
-      clampHistory();
-
-      setOut(out.chat, {
-        reply: data.reply,
-        mode: data.mode,
-        role: data.role,
-        lastActionCount: Array.isArray(data.actions) ? data.actions.length : 0
-      });
-      setOut(out.plan, data.actions || []);
-      setOut(out.tools, summarizeToolResults(data.toolResults || []));
-      setOut(out.missing, data.missingRequirements || []);
-    } catch (error) {
-      setOut(out.chat, { error: String(error?.message || error) });
+    const prompt = String(el("prompt").value || "").trim();
+    if (!prompt) {
+      appendOgMessage("error", "Prompt is required.");
+      setOut(out.chat, { error: "Prompt is required." });
+      return;
     }
+    await runHermesSend(prompt);
   });
 
   bindClick("runAction", async () => {
