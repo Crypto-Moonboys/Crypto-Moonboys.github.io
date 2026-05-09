@@ -361,6 +361,7 @@ if (typeof window !== 'undefined') {
     completeWtfEvent,
     chooseWtfOption,
     emitWtfXpBurst,
+    makeFallbackSchedule,
   };
   initDailyWtfEventSystem();
 }

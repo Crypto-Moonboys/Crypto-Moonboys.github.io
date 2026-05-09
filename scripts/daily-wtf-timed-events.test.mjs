@@ -175,6 +175,7 @@ check(wtfSystemJs.includes('FETCH_TIMEOUT_MS = 8000') && wtfSystemJs.includes('P
 check(wtfSystemJs.includes('timeoutId = setTimeout') && wtfSystemJs.includes('if (timeoutId) clearTimeout(timeoutId);'), 'frontend /today clears fetch timeout timer after request settles');
 check(wtfSystemJs.includes('scheduleApiBaseRetry') && wtfSystemJs.includes('api_base_missing') && wtfSystemJs.includes('API_BASE_RETRY_DELAYS_MS = [1500, 3000, 6000, 12000]'), 'api_base_missing path uses capped stepped retry backoff');
 check(wtfSystemJs.includes('if (apiBaseRetryAttempt >= API_BASE_RETRY_DELAYS_MS.length) return;') && wtfSystemJs.includes('resetApiBaseRetryState'), 'api_base_missing retry is capped and resets after success');
+check(wtfSystemJs.includes('window.MOONBOYS_DAILY_WTF') && wtfSystemJs.includes('makeFallbackSchedule,'), 'Daily WTF global API exposes makeFallbackSchedule');
 check(wtfSystemJs.includes('moonboys:wtf-events-ready'), 'wtf ready event dispatch exists');
 check(wtfSystemJs.includes('moonboys:wtf-event-checkin'), 'check-in event dispatch exists');
 check(wtfSystemJs.includes('moonboys:wtf-event-complete'), 'complete event dispatch exists');
@@ -184,7 +185,9 @@ check(wtfSystemJs.includes("setTransientState('error', 'Signal feed unavailable.
 check(read('js/components/live-activity-summary.js').includes('scheduleWtfLoadingFallbackRepaint') && read('js/components/live-activity-summary.js').includes('setTimeout(function ()') && read('js/components/live-activity-summary.js').includes('refresh();'), 'right-rail loading state schedules repaint at stall boundary');
 check(read('js/components/live-activity-summary.js').includes('clearWtfLoadingRepaintTimer') && read('js/components/live-activity-summary.js').includes('clearTimeout(_singleton.wtfLoadingRepaintTimer)'), 'right-rail clears loading repaint timer when state resolves');
 check(read('js/components/live-activity-summary.js').includes('window.MOONBOYS_DAILY_WTF') && read('js/components/live-activity-summary.js').includes('api.makeFallbackSchedule') && !read('js/components/live-activity-summary.js').includes('wtf-midnight-signal'), 'right-rail fallback schedule uses shared Daily WTF helper and avoids duplicated window definitions');
+check(read('js/components/live-activity-summary.js').includes('buildDeterministicWtfFallbackState') && read('js/components/live-activity-summary.js').includes('api.makeFallbackSchedule(current)') && read('js/components/live-activity-summary.js').includes('data-wtf-state="fallback"'), 'right-rail deterministic fallback path can call helper and render fallback card');
 check(read('js/components/live-activity-summary.js').includes('data-wtf-state="fallback"') && read('js/components/live-activity-summary.js').includes('Signal feed fallback active'), 'right-rail renderer has deterministic fallback card for stalled loading state');
+check(read('js/components/live-activity-summary.js').includes('Fallback helper unavailable. Unable to construct a local Daily WTF schedule right now.'), 'fallback-unavailable branch uses truthful helper-unavailable copy');
 check(read('js/components/live-activity-summary.js').includes('tomorrowStart = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate() + 1))') && read('js/components/live-activity-summary.js').includes('nextFromTomorrow') && read('js/components/live-activity-summary.js').includes('Date.parse(next.start_at) - current.getTime()'), 'right-rail fallback uses tomorrow signal and non-zero countdown when today windows are exhausted');
 check(xpBurstJs.includes('prefers-reduced-motion'), 'reduced motion fallback exists');
 check(!xpBurstJs.includes('payload.title ||') || !xpBurstJs.includes('innerHTML'), 'xp burst does not inject payload.title via innerHTML');
@@ -213,6 +216,9 @@ check(workerJs.includes('hard-fork-rockers') && workerJs.includes('crypto-stoned
 const forbidden = ['passive income', 'financial reward', 'token reward', 'cash prize', 'investment', 'earn money'];
 const corpus = [workerJs, wtfSystemJs, xpBurstJs, communityHtml, gamesHtml].join('\n').toLowerCase();
 for (const term of forbidden) check(!corpus.includes(term), `forbidden wording absent: ${term}`);
+for (const changedJs of [wtfSystemJs, read('js/components/live-activity-summary.js')]) {
+  check(!changedJs.includes('�'), 'no replacement character remains in changed Daily WTF JS files');
+}
 
 console.log(`\nPassed: ${passed}`);
 console.log(`Failed: ${failed}`);

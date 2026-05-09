@@ -488,7 +488,7 @@
       }
       var fallbackState = buildDeterministicWtfFallbackState(new Date());
       if (!fallbackState) {
-        return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>Signal feed fallback active. Daily WTF signals open every 4 hours.</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
+        return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>Fallback helper unavailable. Unable to construct a local Daily WTF schedule right now.</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
       }
       var fallbackFocus = fallbackState.active_event || fallbackState.next_event || null;
       var fallbackTitle = eventTitle(fallbackFocus, 'Next Daily WTF Signal');
