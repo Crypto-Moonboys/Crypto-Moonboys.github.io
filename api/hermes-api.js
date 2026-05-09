@@ -557,7 +557,8 @@ app.get("/api/hermes/sessions", (_req, res) => {
 
 app.post("/api/hermes/sessions", (req, res) => {
   try {
-    return res.json({ ok: true, session: createSession({ title: readStringBody(req, "title", "Hermes session") }) });
+    const title = readStringBody(req, "title", "Hermes session");
+    return res.json({ ok: true, session: createSession({ title }) });
   } catch (error) {
     return res.status(400).json({ ok: false, error: String(error?.message || error) });
   }

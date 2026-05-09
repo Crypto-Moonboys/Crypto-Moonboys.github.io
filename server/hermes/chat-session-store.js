@@ -5,7 +5,11 @@ const path = require("node:path");
 const { HERMES_DATA_ROOT } = require("./config.js");
 
 const SESSIONS_FILE = path.join(HERMES_DATA_ROOT, "chat-sessions.json");
+// Keep enough recent context for active operator workflows while bounding disk growth:
+// ~120 sessions comfortably covers frequent admin usage without accumulating unbounded files.
 const MAX_SESSIONS = 120;
+// Preserve conversation continuity without allowing unbounded per-session history:
+// 300 messages keeps long troubleshooting threads while preventing oversized session blobs.
 const MAX_MESSAGES_PER_SESSION = 300;
 
 function nowIso() {

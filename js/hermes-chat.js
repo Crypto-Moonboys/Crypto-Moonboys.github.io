@@ -34,6 +34,37 @@
     return String(value || "").replace(/[&<>\"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
   }
 
+  const TOOL_CARD_CONTAINER_STYLE = {
+    marginTop: "8px",
+    display: "grid",
+    gap: "6px"
+  };
+
+  const TOOL_CARD_STYLE = {
+    border: "1px solid var(--border)",
+    borderRadius: "8px",
+    padding: "8px",
+    fontSize: "12px",
+    background: "var(--surface-2, transparent)"
+  };
+
+  function createToolCards(toolResults = []) {
+    const cards = global.document.createElement("div");
+    cards.className = "tool-cards";
+    Object.assign(cards.style, TOOL_CARD_CONTAINER_STYLE);
+    for (const item of toolResults.slice(0, 8)) {
+      const card = global.document.createElement("div");
+      card.className = "tool-card";
+      Object.assign(card.style, TOOL_CARD_STYLE);
+      const action = String(item?.action || "tool");
+      const status = item?.ok === true ? "ok" : "error";
+      const summary = String(item?.resultSummary || item?.error || "").trim();
+      card.innerHTML = `<strong>${escapeHtml(action)}</strong> · ${escapeHtml(status)}<br>${escapeHtml(summary)}`;
+      cards.appendChild(card);
+    }
+    return cards;
+  }
+
   function appendMessage(role, text, options = {}) {
     const empty = $("emptyState");
     if (empty) empty.style.display = "none";
@@ -47,26 +78,7 @@
       <div class="msg-body">${escapeHtml(text)}</div>
     `;
     if (role === "assistant" && Array.isArray(options.toolResults) && options.toolResults.length > 0) {
-      const cards = global.document.createElement("div");
-      cards.className = "tool-cards";
-      cards.style.marginTop = "8px";
-      cards.style.display = "grid";
-      cards.style.gap = "6px";
-      for (const item of options.toolResults.slice(0, 8)) {
-        const card = global.document.createElement("div");
-        card.className = "tool-card";
-        card.style.border = "1px solid var(--border)";
-        card.style.borderRadius = "8px";
-        card.style.padding = "8px";
-        card.style.fontSize = "12px";
-        card.style.background = "var(--surface-2, transparent)";
-        const action = String(item?.action || "tool");
-        const status = item?.ok === true ? "ok" : "error";
-        const summary = String(item?.resultSummary || item?.error || "").trim();
-        card.innerHTML = `<strong>${escapeHtml(action)}</strong> · ${escapeHtml(status)}<br>${escapeHtml(summary)}`;
-        cards.appendChild(card);
-      }
-      row.appendChild(cards);
+      row.appendChild(createToolCards(options.toolResults));
     }
     container.appendChild(row);
     const messages = $("messages");
@@ -343,7 +355,7 @@
           trimHistory();
         }
       } catch (_error) {
-        // Keep UI usable even when sessions are unavailable.
+        // Keep UI usable when sessions cannot load (e.g. backend unavailable, endpoint errors, or unreadable session data).
       }
     }
     if (surface === "brain") {

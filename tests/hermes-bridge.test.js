@@ -6,6 +6,9 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const STUB_MARKER_PATTERN = /HERMES PROPOSED PATCH|HERMES PROPOSED TEST ASSERTIONS|openFeaturePopup|featureCanvas|renderFeatureChart|Show Feature/u;
+const FORBIDDEN_IDENTITY_PATTERN = /(?:I am Qwen|Alibaba Cloud|hire professionals)/iu;
+const FORBIDDEN_WEBSEARCH_PATTERN = /(?:lack internet|I am Qwen|Alibaba Cloud)/iu;
+const FORBIDDEN_TOOLS_PATTERN = /(?:I am Qwen|Alibaba Cloud|hire professionals|lack internet)/iu;
 
 function setupSandbox() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-bridge-"));
@@ -697,7 +700,7 @@ test("chat identity prompt returns Hermes identity grounding", async (t) => {
   assert.equal(res.status, 200);
   assert.match(String(res.body.reply || ""), /I am Hermes/i);
   assert.match(String(res.body.reply || ""), /(?:repo operator|backend toolchain|repo toolchain)/i);
-  assert.doesNotMatch(String(res.body.reply || ""), /I am Qwen|Alibaba Cloud|hire professionals/i);
+  assert.doesNotMatch(String(res.body.reply || ""), FORBIDDEN_IDENTITY_PATTERN);
 });
 
 test("chat website capability prompt confirms Hermes can edit and create websites", async (t) => {
@@ -734,7 +737,7 @@ test("chat websearch capability prompt confirms Hermes webcrawl access", async (
   assert.equal(res.status, 200);
   assert.match(String(res.body.reply || ""), /Yes\./i);
   assert.match(String(res.body.reply || ""), /webcrawl\/search tools available through the backend/i);
-  assert.doesNotMatch(String(res.body.reply || ""), /lack internet|I am Qwen|Alibaba Cloud/i);
+  assert.doesNotMatch(String(res.body.reply || ""), FORBIDDEN_WEBSEARCH_PATTERN);
 });
 
 test("chat tools prompt returns Hermes tool grounding", async (t) => {
@@ -754,7 +757,7 @@ test("chat tools prompt returns Hermes tool grounding", async (t) => {
   assert.match(reply, /I am Hermes/i);
   assert.match(reply, /patch|git|command|webcrawl/i);
   assert.match(reply, /repo read\/search\/list|swarm plan|owner execution pipeline/i);
-  assert.doesNotMatch(reply, /I am Qwen|Alibaba Cloud|hire professionals|lack internet/i);
+  assert.doesNotMatch(reply, FORBIDDEN_TOOLS_PATTERN);
 });
 
 test("webui capabilities endpoint marks missing/partial features honestly", async (t) => {

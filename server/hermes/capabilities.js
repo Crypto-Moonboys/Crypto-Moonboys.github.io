@@ -110,7 +110,7 @@ function classifyCapabilityPrompt(prompt) {
   if (!text) return null;
   if (/^(?:do you know what you are|who are you|what are you)(?:\?)?$/iu.test(text)) return "identity";
   if (/(can you|do you)\s+(edit|create).*(website|websites|site|sites)/iu.test(text)) return "websites";
-  if (/(can you|do you)\s+(websearch|search web)|can you websearch|can you search web|do you have internet|can you browse/iu.test(text)) {
+  if (/(?:can you|do you)\s+(?:websearch|search web)|do you have internet|can you browse/iu.test(text)) {
     return "websearch";
   }
   if (/(what tools do you have|what can you do|what capabilities do you have)/iu.test(text)) return "tools";
