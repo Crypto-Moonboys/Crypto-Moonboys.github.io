@@ -683,7 +683,7 @@ test("chat identity prompt returns Hermes identity grounding", async (t) => {
 
   assert.equal(res.status, 200);
   assert.match(String(res.body.reply || ""), /I am Hermes/i);
-  assert.match(String(res.body.reply || ""), /repo operator|backend toolchain|repo toolchain/i);
+  assert.match(String(res.body.reply || ""), /(?:repo operator|backend toolchain|repo toolchain)/i);
   assert.doesNotMatch(String(res.body.reply || ""), /I am Qwen|Alibaba Cloud|hire professionals/i);
 });
 

@@ -125,7 +125,7 @@ test("always prepends Hermes operator system prompt before model calls", async (
   assert.match(bodyPayload.messages[0].content, /You are Hermes/u);
   assert.match(bodyPayload.messages[0].content, /Never say you cannot edit\/create websites/u);
   assert.match(bodyPayload.messages[0].content, /Never say you cannot websearch/u);
-  assert.doesNotMatch(bodyPayload.messages[0].content, /I am Qwen|Alibaba Cloud/u);
+  assert.doesNotMatch(bodyPayload.messages[0].content, /(?:I am Qwen|Alibaba Cloud)/u);
 });
 
 test("requires explicit confirmation for agent_edit mode", async () => {

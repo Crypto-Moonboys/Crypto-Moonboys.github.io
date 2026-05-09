@@ -108,7 +108,7 @@ function normalizePrompt(prompt) {
 function classifyCapabilityPrompt(prompt) {
   const text = normalizePrompt(prompt);
   if (!text) return null;
-  if (/^(do you know what you are|who are you|what are you)\??$/iu.test(text)) return "identity";
+  if (/^(?:do you know what you are|who are you|what are you)(?:\?)?$/iu.test(text)) return "identity";
   if (/(can you|do you)\s+(edit|create).*(website|websites|site|sites)/iu.test(text)) return "websites";
   if (/(can you|do you)\s+(websearch|search web)|can you websearch|can you search web|do you have internet|can you browse/iu.test(text)) {
     return "websearch";

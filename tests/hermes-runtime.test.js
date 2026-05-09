@@ -163,7 +163,7 @@ test("Hermes capability prompt answers with Hermes identity instead of base mode
     history: []
   });
   assert.match(String(response.reply || ""), /I am Hermes/i);
-  assert.match(String(response.reply || ""), /repo operator|repo toolchain|backend toolchain/i);
+  assert.match(String(response.reply || ""), /(?:repo operator|repo toolchain|backend toolchain)/i);
   assert.doesNotMatch(String(response.reply || ""), /I am Qwen|Alibaba Cloud/i);
   assert.equal(response.toolResults[0]?.action, "hermes/capabilities");
 });
