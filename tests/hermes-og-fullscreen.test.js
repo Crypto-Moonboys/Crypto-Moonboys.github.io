@@ -123,7 +123,8 @@ test("action bar approval indicator is present", () => {
   assert.match(htmlSource, /id="ogBarApproval"/);
 });
 
-// ── JS wiring ─────────────────────────────────────────────────────────────────
+// Slice window used when searching within a specific function body
+const FUNCTION_SEARCH_WINDOW = 500;
 
 test("js has openOgOverlay function", () => {
   assert.match(jsSource, /function openOgOverlay/);
@@ -162,11 +163,11 @@ test("js renderOgMessages uses the shared log", () => {
 });
 
 test("js OG send uses the same api() function as main send", () => {
-  // api() is defined exactly once and both send handlers call the same /api/hermes/chat path
+  // api() is defined exactly once; both handlers delegate to runHermesSend which calls /api/hermes/chat
   const apiDefs = jsSource.match(/async function api\(/gu) || [];
   assert.equal(apiDefs.length, 1, "api() should be defined exactly once");
   const chatEndpoints = jsSource.match(/\/api\/hermes\/chat/gu) || [];
-  assert.ok(chatEndpoints.length >= 2, "chat endpoint used in at least two send handlers");
+  assert.ok(chatEndpoints.length >= 1, "chat endpoint used in shared runHermesSend");
 });
 
 test("js OG send uses the shared history array", () => {
@@ -188,25 +189,50 @@ test("js loadOgStatus loads command queue from existing endpoint", () => {
   assert.match(jsSource, /\/api\/hermes\/command\/queue/);
 });
 
-test("js OG send failure rolls back both history AND ogMessages", () => {
-  // ogSendChat comes before sendChat in the file; slice that section
-  const ogSendStart = jsSource.indexOf('bindClick("ogSendChat"');
-  const sendChatStart = jsSource.indexOf('bindClick("sendChat"');
-  assert.ok(ogSendStart !== -1, "ogSendChat handler not found");
-  assert.ok(sendChatStart !== -1, "sendChat handler not found");
-
-  const ogSection = jsSource.slice(ogSendStart, sendChatStart);
-  assert.match(ogSection, /history\.pop\(\)/u, "ogSendChat catch must roll back history");
-  assert.match(ogSection, /ogMessages\.pop\(\)/u, "ogSendChat catch must roll back ogMessages");
+test("js sends are serialized by hermesSendInFlight guard", () => {
+  assert.match(jsSource, /hermesSendInFlight/u, "hermesSendInFlight flag must exist");
+  assert.match(jsSource, /async function runHermesSend/u, "runHermesSend shared function must exist");
+  assert.match(jsSource, /setSendButtonsDisabled/u, "send buttons must be disabled while in-flight");
 });
 
-test("js main sendChat failure rolls back both history AND ogMessages", () => {
-  const sendChatStart = jsSource.indexOf('bindClick("sendChat"');
-  assert.ok(sendChatStart !== -1, "sendChat handler not found");
+test("js runHermesSend rolls back history and ogMessages on failure", () => {
+  const start = jsSource.indexOf("async function runHermesSend");
+  assert.ok(start !== -1, "runHermesSend not found");
+  const section = jsSource.slice(start);
+  assert.match(section, /history\.pop\(\)/u, "runHermesSend must roll back history on failure");
+  assert.match(section, /ogMessages\.pop\(\)/u, "runHermesSend must roll back ogMessages on failure");
+});
 
-  const sendSection = jsSource.slice(sendChatStart);
-  assert.match(sendSection, /history\.pop\(\)/u, "sendChat catch must roll back history");
-  assert.match(sendSection, /ogMessages\.pop\(\)/u, "sendChat catch must roll back ogMessages");
+test("js ogSendChat delegates to runHermesSend", () => {
+  const start = jsSource.indexOf('bindClick("ogSendChat"');
+  const end = jsSource.indexOf('bindClick("sendChat"');
+  assert.ok(start !== -1 && end !== -1);
+  const section = jsSource.slice(start, end);
+  assert.match(section, /runHermesSend/u, "ogSendChat handler must call runHermesSend");
+});
+
+test("js sendChat delegates to runHermesSend", () => {
+  const start = jsSource.indexOf('bindClick("sendChat"');
+  const end = jsSource.indexOf('bindClick("runAction"');
+  assert.ok(start !== -1 && end !== -1);
+  const section = jsSource.slice(start, end);
+  assert.match(section, /runHermesSend/u, "sendChat handler must call runHermesSend");
+});
+
+test("js openOgOverlay guards against double-open and saves previous overflow", () => {
+  const start = jsSource.indexOf("function openOgOverlay");
+  assert.ok(start !== -1, "openOgOverlay not found");
+  const section = jsSource.slice(start, start + FUNCTION_SEARCH_WINDOW);
+  assert.match(section, /previousBodyOverflow/u, "must save previous overflow before setting hidden");
+  assert.match(section, /classList\.contains\("open"\)/u, "must guard against double-open");
+});
+
+test("js closeOgOverlay restores saved overflow and only runs when overlay is open", () => {
+  const start = jsSource.indexOf("function closeOgOverlay");
+  assert.ok(start !== -1, "closeOgOverlay not found");
+  const section = jsSource.slice(start, start + FUNCTION_SEARCH_WINDOW);
+  assert.match(section, /previousBodyOverflow/u, "must restore previously saved overflow");
+  assert.match(section, /classList\.contains\("open"\)/u, "must guard against closing an already-closed overlay");
 });
 
 test("js ogMessages is capped to prevent unbounded log growth", () => {
