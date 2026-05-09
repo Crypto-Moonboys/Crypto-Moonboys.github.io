@@ -1465,15 +1465,53 @@ async function reconcileWtfExpiryForUser(db, telegramId, utcDay, nowMs) {
   }
 }
 
+function buildWtfScheduleRow(utcDay, event) {
+  const startsAt = buildWtfIso(utcDay, event.startHour, 0);
+  return {
+    event_id: event.event_id,
+    utc_day: utcDay,
+    event_type: event.event_type,
+    title: event.title,
+    description: 'Check in during the signal window, complete the objective, and trigger a status burst.',
+    starts_at: startsAt,
+    ends_at: new Date(Date.parse(startsAt) + event.durationMinutes * 60 * 1000).toISOString(),
+    required_action: event.required_action,
+    reward_key: event.reward_key,
+    xp_multiplier_display: '5x XP opportunity',
+    theme: event.theme,
+    metadata_json: JSON.stringify({ chain_cap: WTF_MAX_CHAIN_DEPTH, duration_minutes: event.durationMinutes, official_schedule: true }),
+  };
+}
+
+function wtfScheduleRowMatches(row, expected) {
+  if (!row || !expected) return false;
+  return String(row.event_id) === expected.event_id &&
+    String(row.utc_day) === expected.utc_day &&
+    String(row.event_type || '') === expected.event_type &&
+    String(row.title || '') === expected.title &&
+    String(row.description || '') === expected.description &&
+    String(row.starts_at || '') === expected.starts_at &&
+    String(row.ends_at || '') === expected.ends_at &&
+    String(row.required_action || '') === expected.required_action &&
+    String(row.reward_key || '') === expected.reward_key &&
+    String(row.xp_multiplier_display || '') === expected.xp_multiplier_display &&
+    String(row.theme || '') === expected.theme &&
+    String(row.metadata_json || '') === expected.metadata_json;
+}
+
 async function ensureWtfEventsForDay(db, utcDay) {
-  const schedule = getWtfDailySchedule(utcDay);
-  for (const event of schedule) {
-    const startsAt = buildWtfIso(utcDay, event.startHour, 0);
-    const endsAt = new Date(Date.parse(startsAt) + event.durationMinutes * 60 * 1000).toISOString();
+  const scheduleRows = getWtfDailySchedule(utcDay).map((event) => buildWtfScheduleRow(utcDay, event));
+  const officialIds = new Set(scheduleRows.map((event) => event.event_id));
+  const existingRows = await db.prepare(`SELECT * FROM daily_wtf_events WHERE utc_day = ? ORDER BY starts_at ASC`).bind(utcDay).all().catch(() => ({ results: [] }));
+  const existingById = new Map((existingRows?.results || []).filter((row) => officialIds.has(String(row.event_id))).map((row) => [String(row.event_id), row]));
+  const scheduleAlreadyCurrent = existingById.size === scheduleRows.length && scheduleRows.every((expected) => wtfScheduleRowMatches(existingById.get(expected.event_id), expected));
+  if (scheduleAlreadyCurrent) return;
+
+  for (const event of scheduleRows) {
     await db.prepare(`
       INSERT INTO daily_wtf_events
         (event_id, utc_day, event_type, title, description, starts_at, ends_at, required_action, reward_key, xp_multiplier_display, faction_id, game_key, theme, metadata_json, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '5x XP opportunity', NULL, NULL, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, ?)
       ON CONFLICT(event_id, utc_day) DO UPDATE SET
         event_type = excluded.event_type,
         title = excluded.title,
@@ -1485,12 +1523,21 @@ async function ensureWtfEventsForDay(db, utcDay) {
         xp_multiplier_display = excluded.xp_multiplier_display,
         theme = excluded.theme,
         metadata_json = excluded.metadata_json
+      WHERE daily_wtf_events.event_type IS NOT excluded.event_type
+        OR daily_wtf_events.title IS NOT excluded.title
+        OR daily_wtf_events.description IS NOT excluded.description
+        OR daily_wtf_events.starts_at IS NOT excluded.starts_at
+        OR daily_wtf_events.ends_at IS NOT excluded.ends_at
+        OR daily_wtf_events.required_action IS NOT excluded.required_action
+        OR daily_wtf_events.reward_key IS NOT excluded.reward_key
+        OR daily_wtf_events.xp_multiplier_display IS NOT excluded.xp_multiplier_display
+        OR daily_wtf_events.theme IS NOT excluded.theme
+        OR daily_wtf_events.metadata_json IS NOT excluded.metadata_json
     `).bind(
-      event.event_id, utcDay, event.event_type, event.title,
-      'Check in during the signal window, complete the objective, and trigger a status burst.',
-      startsAt, endsAt, event.required_action, event.reward_key, event.theme,
-      JSON.stringify({ chain_cap: WTF_MAX_CHAIN_DEPTH, duration_minutes: event.durationMinutes, official_schedule: true }),
-      new Date().toISOString(),
+      event.event_id, event.utc_day, event.event_type, event.title,
+      event.description, event.starts_at, event.ends_at, event.required_action,
+      event.reward_key, event.xp_multiplier_display, event.theme,
+      event.metadata_json, new Date().toISOString(),
     ).run();
   }
 }

@@ -49,6 +49,7 @@ const scheduleBlock = (src, functionName) => {
 const workerSchedule = scheduleBlock(workerJs, 'getWtfDailySchedule');
 const fallbackSchedule = scheduleBlock(wtfSystemJs, 'makeFallbackSchedule');
 const ensureScheduleBlock = scheduleBlock(workerJs, 'ensureWtfEventsForDay');
+const wtfScheduleUpsertBlock = workerJs.slice(workerJs.indexOf('function buildWtfScheduleRow'), workerJs.indexOf('function clampText'));
 const extractSchedule = (block) => [...block.matchAll(/event_id: '([^']+)'[\s\S]*?title: '([^']+)'[\s\S]*?startHour: (\d+)[\s\S]*?durationMinutes: (\d+)/g)]
   .map((m) => ({ id: m[1], title: m[2], hour: Number(m[3]), duration: Number(m[4]) }));
 const workerEvents = extractSchedule(workerSchedule);
@@ -71,6 +72,20 @@ for (const event of workerEvents) {
 const upgradedRows = [...simulatedRows.values()].filter((row) => workerEvents.some((event) => event.id === row.event_id));
 const upgradedHours = upgradedRows.map((row) => Number(row.starts_at.slice(11, 13))).sort((a, b) => a - b);
 const oldPlayerStatePreserved = oldSeededRows.every((row) => simulatedRows.get(row.event_id)?.player_state === row.player_state);
+const correctSeededRows = workerEvents.map((event) => {
+  const starts_at = `2026-05-09T${String(event.hour).padStart(2, '0')}:00:00.000Z`;
+  return {
+    event_id: event.id,
+    starts_at,
+    ends_at: new Date(Date.parse(starts_at) + event.duration * 60 * 1000).toISOString(),
+    title: event.title,
+    metadata_json: JSON.stringify({ chain_cap: 3, duration_minutes: event.duration, official_schedule: true }),
+  };
+});
+const correctSeededDayNeedsWrite = correctSeededRows.length !== workerEvents.length || correctSeededRows.some((row, index) => {
+  const expected = workerEvents[index];
+  return row.event_id !== expected.id || Number(row.starts_at.slice(11, 13)) !== expected.hour || (Date.parse(row.ends_at) - Date.parse(row.starts_at)) / 60000 !== expected.duration || !row.metadata_json.includes('official_schedule');
+});
 
 console.log('\n--- Daily WTF Timed Events Tests ---\n');
 check(exists(MIGRATION), 'migration 019 exists');
@@ -99,14 +114,19 @@ check(workerJs.includes('daily_missed_perks'), 'missed history base table remain
 
 check(workerJs.includes('ensureWtfEventsForDay'), 'UTC-day schedule generation helper exists');
 check(!ensureScheduleBlock.includes('COUNT(*) AS total') && !ensureScheduleBlock.includes('DO NOTHING'), 'ensureWtfEventsForDay does not return early or no-op when rows already exist');
+check(ensureScheduleBlock.includes('SELECT * FROM daily_wtf_events WHERE utc_day = ?') && ensureScheduleBlock.includes('scheduleAlreadyCurrent') && ensureScheduleBlock.includes('if (scheduleAlreadyCurrent) return'), 'ensureWtfEventsForDay has a cheap no-write guard for already-current schedules');
+check(wtfScheduleUpsertBlock.includes('wtfScheduleRowMatches') && ensureScheduleBlock.includes('existingById.size === scheduleRows.length'), 'ensureWtfEventsForDay compares all official rows before writing');
 check(ensureScheduleBlock.includes('ON CONFLICT(event_id, utc_day) DO UPDATE SET'), 'ensureWtfEventsForDay upserts changed schedule definitions by stable event_id + utc_day');
+check(ensureScheduleBlock.includes('WHERE daily_wtf_events.event_type IS NOT excluded.event_type') && ensureScheduleBlock.includes('OR daily_wtf_events.metadata_json IS NOT excluded.metadata_json'), 'conditional upsert update only fires when scheduled fields differ');
 check(ensureScheduleBlock.includes('starts_at = excluded.starts_at') && ensureScheduleBlock.includes('ends_at = excluded.ends_at') && ensureScheduleBlock.includes('required_action = excluded.required_action'), 'ensureWtfEventsForDay updates changed timing/action fields for seeded days');
-check(ensureScheduleBlock.includes('duration_minutes') && ensureScheduleBlock.includes('official_schedule'), 'ensureWtfEventsForDay marks canonical schedule metadata for backfilled rows');
+check(wtfScheduleUpsertBlock.includes('duration_minutes') && wtfScheduleUpsertBlock.includes('official_schedule'), 'ensureWtfEventsForDay marks canonical schedule metadata for backfilled rows');
 check(upgradedRows.length === 6, 'old 4-row seeded day is upgraded to exactly 6 official schedule rows');
 check(JSON.stringify(upgradedHours) === JSON.stringify(expectedHours), 'old seeded 18:00/22:00 rows are updated to official 16:00/20:00 hours and missing 00:00/04:00 rows are added');
 check(new Set(upgradedRows.map((row) => row.event_id)).size === upgradedRows.length, 'upserted schedule has no duplicate event_id/utc_day rows');
 check(upgradedRows.every((row) => (Date.parse(row.ends_at) - Date.parse(row.starts_at)) / 60000 === 90), 'upserted official schedule rows are 90 minutes');
 check(oldPlayerStatePreserved, 'simulated schedule upsert preserves existing player state objects');
+check(correctSeededDayNeedsWrite === false, 'already-correct 6-row seeded day performs no simulated write/update path');
+check(wtfSystemJs.includes('POLL_MS = 60 * 1000') && ensureScheduleBlock.includes('if (scheduleAlreadyCurrent) return'), '/wtf/events/today remains safe for frequent 60-second frontend polling');
 check(workerJs.includes('officialRows') && workerJs.includes('officialEventIds') && workerJs.includes('officialIds'), 'Worker filters served/reconciled Daily WTF rows to official schedule ids');
 check(workerEvents.length === 6, 'Worker generates exactly 6 Daily WTF events per UTC day');
 check(fallbackEvents.length === 6, 'frontend fallback generates exactly 6 Daily WTF events per UTC day');
