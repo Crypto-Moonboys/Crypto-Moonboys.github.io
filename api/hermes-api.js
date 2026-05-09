@@ -17,6 +17,11 @@ const { ACTIONS } = require("../server/hermes/action-schema.js");
 const { getRegistrySnapshot, getActiveRepoOrThrow } = require("../server/hermes/repo-registry.js");
 const git = require("../server/hermes/git-operator.js");
 const { ROLE_RULES } = require("../server/hermes/agent-runtime.js");
+const jobManager = require("../server/hermes/job-manager.js");
+const { interpretOwnerCommand } = require("../server/hermes/openai-command-interpreter.js");
+const sandboxRunner = require("../server/hermes/sandbox-runner.js");
+const swarmExecutor = require("../server/hermes/swarm-executor.js");
+const { runTests, applyRepair, markReadyForPr } = require("../server/hermes/job-repair-loop.js");
 
 const app = express();
 app.disable("x-powered-by");
@@ -673,6 +678,94 @@ app.post("/api/hermes/repos/register", (req, res) => {
 
 app.post("/api/hermes/repos/clone", (req, res) => {
   return executePrivilegedActionRoute(req, res, parseRepoCloneAction(req));
+});
+
+// ── Hermes Job Manager routes ──────────────────────────────────────────────
+
+app.post("/api/hermes/jobs/create", async (req, res) => {
+  try {
+    const ownerPrompt = String(req.body?.ownerPrompt || req.body?.prompt || "").trim();
+    if (!ownerPrompt) return res.status(400).json({ ok: false, error: "ownerPrompt is required." });
+    const repoContext = req.body?.repoContext || {};
+    const job = jobManager.createJob({ ownerPrompt, repoId: String(req.body?.repoId || "") });
+    let interpretation = null;
+    try {
+      interpretation = await interpretOwnerCommand(ownerPrompt, repoContext);
+    } catch (_e) {
+      interpretation = null;
+    }
+    if (interpretation) {
+      jobManager.updateJob(job.jobId, { interpretation });
+    }
+    return res.json({ ok: true, job: jobManager.readJob(job.jobId), interpretation });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.get("/api/hermes/jobs", (_req, res) => {
+  try {
+    return res.json({ ok: true, jobs: jobManager.listJobs() });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.get("/api/hermes/jobs/:id", (req, res) => {
+  try {
+    const job = jobManager.readJob(req.params.id);
+    return res.json({ ok: true, job });
+  } catch (error) {
+    return res.status(404).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/jobs/:id/run", async (req, res) => {
+  try {
+    const job = jobManager.readJob(req.params.id);
+    if (job.status === "planned") {
+      sandboxRunner.createSandboxBranch(job.jobId);
+    }
+    const updated = swarmExecutor.initializeExecution(job.jobId);
+    return res.json({ ok: true, job: updated });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/jobs/:id/test", (req, res) => {
+  try {
+    const testCommands = Array.isArray(req.body?.testCommands) ? req.body.testCommands : [];
+    const result = runTests(req.params.id, testCommands);
+    return res.json({ ok: true, ...result });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/jobs/:id/repair", (req, res) => {
+  try {
+    const result = applyRepair(req.params.id, req.body || {});
+    return res.json({ ok: true, job: result });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/jobs/:id/create-pr", async (req, res) => {
+  try {
+    const job = jobManager.readJob(req.params.id);
+    jobManager.assertReadyForPr(job);
+    const prMeta = await git.createPrMetadata("main");
+    const prUrl = String(req.body?.prUrl || "");
+    const updated = jobManager.updateJob(job.jobId, {
+      prUrl,
+      status: "ready_for_pr"
+    });
+    return res.json({ ok: true, job: updated, prMeta, prUrl });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
 });
 
 const PORT = Number(process.env.PORT || 3012);
