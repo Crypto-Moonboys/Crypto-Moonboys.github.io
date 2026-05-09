@@ -15,6 +15,11 @@ const jsSource = fs.readFileSync(
   "utf8"
 );
 
+const apiSource = fs.readFileSync(
+  path.join(__dirname, "..", "api", "hermes-api.js"),
+  "utf8"
+);
+
 // ── Existing page preservation ───────────────────────────────────────────────
 
 test("existing admin page title is preserved", () => {
@@ -195,12 +200,34 @@ test("js sends are serialized by hermesSendInFlight guard", () => {
   assert.match(jsSource, /setSendButtonsDisabled/u, "send buttons must be disabled while in-flight");
 });
 
-test("js runHermesSend rolls back history and ogMessages on failure", () => {
+test("js shared in-flight guard rejects concurrent prompts with operator warning", () => {
   const start = jsSource.indexOf("async function runHermesSend");
   assert.ok(start !== -1, "runHermesSend not found");
-  const section = jsSource.slice(start);
-  assert.match(section, /history\.pop\(\)/u, "runHermesSend must roll back history on failure");
-  assert.match(section, /ogMessages\.pop\(\)/u, "runHermesSend must roll back ogMessages on failure");
+  const section = jsSource.slice(start, jsSource.indexOf('bindClick("ogSendChat"'));
+  assert.match(section, /if \(hermesSendInFlight\)/u);
+  assert.match(section, /Hermes request already in progress\. Wait for the current reply before sending another prompt\./u);
+  assert.match(section, /finally \{[\s\S]*hermesSendInFlight = false/u);
+});
+
+test("js ogPrompt is guarded before clearing", () => {
+  const start = jsSource.indexOf('bindClick("ogSendChat"');
+  const end = jsSource.indexOf('bindClick("sendChat"');
+  assert.ok(start !== -1 && end !== -1);
+  const section = jsSource.slice(start, end);
+  assert.match(section, /const promptEl = el\("ogPrompt"\)/u);
+  assert.match(section, /const prompt = String\(promptEl\?\.value \|\| ""\)\.trim\(\)/u);
+  assert.match(section, /if \(!prompt\) return/u);
+  assert.match(section, /if \(promptEl\) promptEl\.value = ""/u);
+  assert.doesNotMatch(section, /el\("ogPrompt"\)\.value = ""/u);
+});
+
+test("js runHermesSend avoids unsafe pop rollback under shared sends", () => {
+  const start = jsSource.indexOf("async function runHermesSend");
+  assert.ok(start !== -1, "runHermesSend not found");
+  const section = jsSource.slice(start, jsSource.indexOf('bindClick("ogSendChat"'));
+  assert.doesNotMatch(section, /history\.pop\(\)/u, "runHermesSend must not use unsafe history.pop rollback");
+  assert.doesNotMatch(section, /ogMessages\.pop\(\)/u, "runHermesSend must not use unsafe ogMessages.pop rollback");
+  assert.match(section, /history\.splice\(userEntryIndex, 1\)/u, "failed user history entry should be removed by identity/index");
 });
 
 test("js ogSendChat delegates to runHermesSend", () => {
@@ -236,8 +263,25 @@ test("js closeOgOverlay restores saved overflow and only runs when overlay is op
 });
 
 test("js ogMessages is capped to prevent unbounded log growth", () => {
-  assert.match(jsSource, /maxOgMessages/u, "maxOgMessages constant must exist");
+  assert.match(jsSource, /const maxOgMessages = 100/u, "maxOgMessages constant must be 100");
   assert.match(jsSource, /ogMessages\.splice/u, "ogMessages must be trimmed on overflow");
+});
+
+test("js body overflow restore uses tracked previous value", () => {
+  const openStart = jsSource.indexOf("function openOgOverlay");
+  const closeStart = jsSource.indexOf("function closeOgOverlay");
+  assert.ok(openStart !== -1 && closeStart !== -1);
+  const openSection = jsSource.slice(openStart, closeStart);
+  const closeSection = jsSource.slice(closeStart, closeStart + FUNCTION_SEARCH_WINDOW);
+  assert.match(openSection, /previousBodyOverflow = document\.body\.style\.overflow \|\| ""/u);
+  assert.match(closeSection, /document\.body\.style\.overflow = previousBodyOverflow/u);
+  assert.doesNotMatch(closeSection, /removeProperty\("overflow"\)/u);
+});
+
+test("api does not add unsafe Hermes2 or direct browser repo-write endpoints", () => {
+  assert.doesNotMatch(apiSource, /Hermes2|hermes2/u);
+  assert.doesNotMatch(apiSource, /browser.*(write|edit)|repo.*write.*browser|direct.*repo.*write/u);
+  assert.match(apiSource, /app\.post\("\/api\/hermes\/chat"/u, "same Hermes chat runtime endpoint must remain");
 });
 
 test("js Escape key closes overlay", () => {
