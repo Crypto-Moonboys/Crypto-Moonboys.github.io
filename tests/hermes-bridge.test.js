@@ -42,6 +42,8 @@ function clearCache() {
     "../server/hermes/tool-router.js",
     "../server/hermes/tool-executor.js",
     "../server/hermes/conversation-runtime.js",
+    "../server/hermes/chat-proxy.js",
+    "../server/hermes/capabilities.js",
     "../server/hermes/execution-pipeline.js",
     "../server/hermes/proposed-operations.js",
     "../server/hermes/orchestrator.js"
@@ -665,4 +667,79 @@ test("chat webcrawl request uses real webcrawl action and reports unavailable wi
   assert.equal(res.body.actions[0].type, "webcrawl/find-updates");
   assert.equal(res.body.toolResults[0].ok, false);
   assert.match(JSON.stringify(res.body.toolResults[0]), /webcrawl tools unavailable/i);
+});
+
+test("chat identity prompt returns Hermes identity grounding", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "DO YOU KNOW WHAT YOU ARE?",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.match(String(res.body.reply || ""), /I am Hermes/i);
+  assert.match(String(res.body.reply || ""), /repo operator|backend toolchain|repo toolchain/i);
+  assert.doesNotMatch(String(res.body.reply || ""), /I am Qwen|Alibaba Cloud|hire professionals/i);
+});
+
+test("chat website capability prompt confirms Hermes can edit and create websites", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "CAN YOU EDIT/CREATE WEBSITES",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.match(String(res.body.reply || ""), /Yes\./i);
+  assert.match(String(res.body.reply || ""), /create and edit websites/i);
+  assert.match(String(res.body.reply || ""), /patch previews|run tests|owner\/operator workflow/i);
+  assert.doesNotMatch(String(res.body.reply || ""), /I cannot edit websites|hire professionals|I am Qwen|Alibaba Cloud/i);
+});
+
+test("chat websearch capability prompt confirms Hermes webcrawl access", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "CAN YOU WEBSEARCH",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.match(String(res.body.reply || ""), /Yes\./i);
+  assert.match(String(res.body.reply || ""), /webcrawl\/search tools available through the backend/i);
+  assert.doesNotMatch(String(res.body.reply || ""), /lack internet|I am Qwen|Alibaba Cloud/i);
+});
+
+test("chat tools prompt returns Hermes tool grounding", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "WHAT TOOLS DO YOU HAVE?",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  const reply = String(res.body.reply || "");
+  assert.match(reply, /I am Hermes/i);
+  assert.match(reply, /patch|git|command|webcrawl/i);
+  assert.match(reply, /repo read\/search\/list|swarm plan|owner execution pipeline/i);
+  assert.doesNotMatch(reply, /I am Qwen|Alibaba Cloud|hire professionals|lack internet/i);
 });

@@ -16,7 +16,16 @@ const MODULES = [
   "../server/hermes/approval-gate.js",
   "../server/hermes/memory-store.js",
   "../server/hermes/command-runner.js",
-  "../server/hermes/repo-registry.js"
+  "../server/hermes/repo-registry.js",
+  "../server/hermes/tool-router.js",
+  "../server/hermes/tool-executor.js",
+  "../server/hermes/swarm-registry.js",
+  "../server/hermes/swarm-manager.js",
+  "../server/hermes/execution-pipeline.js",
+  "../server/hermes/proposed-operations.js",
+  "../server/hermes/conversation-runtime.js",
+  "../server/hermes/capabilities.js",
+  "../server/hermes/chat-proxy.js"
 ];
 
 function clearHermesModules() {
@@ -53,7 +62,9 @@ function loadWithRoot(root) {
     approvalGate: require("../server/hermes/approval-gate.js"),
     memoryStore: require("../server/hermes/memory-store.js"),
     commandRunner: require("../server/hermes/command-runner.js"),
-    pathUtils: require("../server/hermes/path-utils.js")
+    pathUtils: require("../server/hermes/path-utils.js"),
+    conversationRuntime: require("../server/hermes/conversation-runtime.js"),
+    capabilities: require("../server/hermes/capabilities.js")
   };
 }
 
@@ -136,7 +147,65 @@ test("new runtime files exist", () => {
     "server/hermes/git-operator.js",
     "server/hermes/command-runner.js",
     "server/hermes/approval-gate.js",
-    "server/hermes/memory-store.js"
+    "server/hermes/memory-store.js",
+    "server/hermes/capabilities.js"
   ];
   files.forEach((file) => assert.ok(fs.existsSync(file), `${file} missing`));
+});
+
+test("Hermes capability prompt answers with Hermes identity instead of base model identity", async () => {
+  const root = setupSandbox();
+  const { conversationRuntime } = loadWithRoot(root);
+  const response = await conversationRuntime.runConversation({
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "DO YOU KNOW WHAT YOU ARE?",
+    history: []
+  });
+  assert.match(String(response.reply || ""), /I am Hermes/i);
+  assert.match(String(response.reply || ""), /repo operator|repo toolchain|backend toolchain/i);
+  assert.doesNotMatch(String(response.reply || ""), /I am Qwen|Alibaba Cloud/i);
+  assert.equal(response.toolResults[0]?.action, "hermes/capabilities");
+});
+
+test("Hermes website capability prompt says it can create and edit websites", async () => {
+  const root = setupSandbox();
+  const { conversationRuntime } = loadWithRoot(root);
+  const response = await conversationRuntime.runConversation({
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "CAN YOU EDIT/CREATE WEBSITES",
+    history: []
+  });
+  assert.match(String(response.reply || ""), /Yes\./i);
+  assert.match(String(response.reply || ""), /create and edit websites/i);
+  assert.match(String(response.reply || ""), /patch previews|owner\/operator workflow|repo toolchain/i);
+  assert.doesNotMatch(String(response.reply || ""), /cannot edit websites|hire professionals/i);
+});
+
+test("Hermes websearch capability prompt says webcrawl tools are available", async () => {
+  const root = setupSandbox();
+  const { conversationRuntime } = loadWithRoot(root);
+  const response = await conversationRuntime.runConversation({
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "CAN YOU WEBSEARCH",
+    history: []
+  });
+  assert.match(String(response.reply || ""), /Yes\./i);
+  assert.match(String(response.reply || ""), /webcrawl\/search tools available through the backend/i);
+  assert.doesNotMatch(String(response.reply || ""), /lack internet|I am Qwen|Alibaba Cloud/i);
+});
+
+test("normal operator prompt still routes to swarm plan and execution pipeline", async () => {
+  const root = setupSandbox();
+  const { conversationRuntime } = loadWithRoot(root);
+  const response = await conversationRuntime.runConversation({
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "can you create a popup canvas here in admin page showing BTC chart",
+    history: []
+  });
+  assert.equal(response.swarmPlan?.type, "hermes_swarm_plan");
+  assert.equal(response.executionPipeline?.type, "hermes_execution_pipeline");
 });
