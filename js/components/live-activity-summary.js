@@ -396,13 +396,31 @@
     if (!api || typeof api.makeFallbackSchedule !== 'function') return null;
     var schedule = api.makeFallbackSchedule(current);
     if (!schedule || typeof schedule !== 'object') return null;
+    var active = schedule.active_event || null;
+    var next = schedule.next_event || (Array.isArray(schedule.upcoming_events) ? (schedule.upcoming_events[0] || null) : null);
+    if (!active && !next) {
+      var tomorrowStart = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate() + 1));
+      var tomorrowSchedule = api.makeFallbackSchedule(tomorrowStart);
+      var nextFromTomorrow = tomorrowSchedule && (
+        tomorrowSchedule.active_event ||
+        tomorrowSchedule.next_event ||
+        (Array.isArray(tomorrowSchedule.upcoming_events) ? (tomorrowSchedule.upcoming_events[0] || null) : null)
+      );
+      if (nextFromTomorrow) next = nextFromTomorrow;
+    }
+    var countdown = Number(schedule.countdown_seconds);
+    if ((!Number.isFinite(countdown) || countdown <= 0) && !active && next && next.start_at) {
+      countdown = Math.max(0, Math.floor((Date.parse(next.start_at) - current.getTime()) / 1000));
+    }
     return Object.assign({}, schedule, {
       source: 'panel_loading_fallback',
-      status: schedule.active_event ? 'active' : 'upcoming',
+      status: active ? 'active' : 'upcoming',
       fallback: true,
       diagnostic: 'Signal feed fallback active',
       checked_in: false,
-      current_task: schedule.current_task || schedule.active_event || schedule.next_event || null,
+      next_event: next || null,
+      countdown_seconds: Number.isFinite(countdown) && countdown > 0 ? countdown : 0,
+      current_task: schedule.current_task || active || next || null,
     });
   }
 

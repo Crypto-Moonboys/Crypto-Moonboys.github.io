@@ -150,6 +150,7 @@ check(las.includes('scheduleWtfLoadingFallbackRepaint') && las.includes('wtfLoad
 check(las.includes('clearWtfLoadingRepaintTimer') && las.includes('clearTimeout(_singleton.wtfLoadingRepaintTimer)'), 'loading repaint timer is cleared when real Daily WTF state resolves');
 check(las.includes('window.MOONBOYS_DAILY_WTF') && las.includes('api.makeFallbackSchedule') && !las.includes('wtf-midnight-signal'), 'right-rail fallback uses shared Daily WTF fallback helper instead of duplicating schedule windows');
 check(las.includes('Signal feed fallback active. Daily WTF signals open every 4 hours.') && las.includes('Next Daily WTF Signal'), 'fallback WTF card includes actionable fallback copy and deterministic signal title');
+check(las.includes('tomorrowStart = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate() + 1))') && las.includes('nextFromTomorrow') && las.includes('Date.parse(next.start_at) - current.getTime()'), 'right-rail fallback looks ahead to tomorrow midnight signal and computes countdown after final daily window');
 check(las.includes('data-wtf-state="error"') && las.includes('Signal feed unavailable.'), 'faction ops panel renders a controlled feed failure state');
 check(las.includes('Get Ready') && las.includes('Daily WTF signals open every 4 hours across the UTC day'), 'upcoming WTF state renders title/countdown preparation copy');
 check(las.includes('Check In') && las.includes('data-wtf-checkin') && las.includes('90-minute timer'), 'active WTF state renders Check In CTA for linked users');
