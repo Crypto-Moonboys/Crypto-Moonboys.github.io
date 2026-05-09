@@ -78,7 +78,7 @@ async function fetchTodayEvents() {
   const base = getApiBase();
   if (!base) return { ok: false, error: 'api_base_missing' };
   const auth = getSignedAuth();
-  const controller = typeof AbortController === 'function' ? new AbortController() : null;
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
   const req = auth
     ? fetch(`${base}/wtf/events/today`, {
       method: 'POST',
@@ -86,7 +86,9 @@ async function fetchTodayEvents() {
       body: JSON.stringify({ telegram_auth: auth }),
       ...(controller ? { signal: controller.signal } : {}),
     })
-    : fetch(`${base}/wtf/events/today`, controller ? { signal: controller.signal } : undefined);
+    : controller
+      ? fetch(`${base}/wtf/events/today`, { signal: controller.signal })
+      : fetch(`${base}/wtf/events/today`);
   const timed = await Promise.race([
     req.then((res) => ({ res })).catch((err) => ({ err })),
     new Promise((resolve) => setTimeout(() => resolve({ timeout: true }), FETCH_TIMEOUT_MS)),
@@ -215,8 +217,8 @@ async function refresh() {
     setTransientState('error', 'Signal feed unavailable.');
     return;
   }
-  if (window.MOONBOYS_WTF_EVENTS.no_events && payload && payload.ok) {
-    try { console.warn('[daily-wtf-event-system] /wtf/events/today returned no active or upcoming events.', payload); } catch (_) {}
+  if (window.MOONBOYS_WTF_EVENTS.no_events) {
+    try { console.warn('[daily-wtf-event-system] /wtf/events/today resolved with no active or upcoming events.', finalState); } catch (_) {}
   }
   dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EVENTS);
 }
