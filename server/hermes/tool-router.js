@@ -11,7 +11,6 @@ function parsePathAfterKeyword(prompt, keyword) {
 function isPathLikeReadTarget(value) {
   const target = String(value || "").trim();
   if (!target) return false;
-  if (/^["'][^"']+["']$/u.test(target)) return true;
   if (/^[./~\\]/u.test(target)) return true;
   if (/^[a-zA-Z]:[\\/]/u.test(target)) return true;
   if (/[\\/]/u.test(target)) return true;
@@ -22,7 +21,7 @@ function isPathLikeReadTarget(value) {
 
 const OPERATOR_VERB_PATTERN = /\b(create|add|build|make|implement|update|change|fix|patch|install|wire|connect|remove|replace)\b/iu;
 const OPERATOR_SCOPE_PATTERN =
-  /\b(admin\s+page|hermes\s+page|brain\s+page|popup|canvas|chart|button|modal|ui|css|js|html|repo|file|page|dashboard|pixel|sprite|tile|animation|code)\b/iu;
+  /\b(admin\s+page|hermes\s+page|brain\s+page|popup|canvas|chart|button|modal|ui|css|js|html|repo|file|page|dashboard|pixel|sprite|tile|animation|code|website|site|game|games|bomber|royale|block-?topia)\b/iu;
 
 function detectOperatorIntent(prompt) {
   const text = String(prompt || "").trim();

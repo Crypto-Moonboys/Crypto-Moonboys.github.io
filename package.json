@@ -15,7 +15,7 @@
                     "test:live-site":  "node scripts/live-site-verify.mjs",
                     "deploy:status":  "node scripts/pages-deploy-status.mjs",
                     "test:hermes-audit":  "node scripts/hermes-agent-readiness-audit.mjs",
-                    "test:hermes-readiness":  "node scripts/hermes-agent-readiness-audit.mjs"
+                    "test:hermes-readiness":  "node scripts/hermes-agent-readiness-audit.mjs \u0026\u0026 node tests/hermes-chat-proxy.test.js \u0026\u0026 node tests/hermes-runtime.test.js \u0026\u0026 node tests/hermes-bridge.test.js \u0026\u0026 node tests/hermes-execution-pipeline.test.js \u0026\u0026 node tests/hermes-repo-targeting.test.js \u0026\u0026 node tests/hermes-webcrawl.test.js \u0026\u0026 node tests/hermes-swarm-manager.test.js \u0026\u0026 node tests/hermes-job-manager.test.js \u0026\u0026 node tests/hermes-openai-command-interpreter.test.js \u0026\u0026 node tests/hermes-github-connector.test.js \u0026\u0026 node tests/hermes-sandbox-runner.test.js \u0026\u0026 node tests/hermes-job-pr-flow.test.js"
                 },
     "keywords":  [
 
