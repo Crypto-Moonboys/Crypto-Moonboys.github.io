@@ -188,8 +188,30 @@ test("js loadOgStatus loads command queue from existing endpoint", () => {
   assert.match(jsSource, /\/api\/hermes\/command\/queue/);
 });
 
-test("js OG send removes ogMessages entry on failure to stay in sync with history", () => {
-  assert.match(jsSource, /ogMessages\.pop\(\)/u);
+test("js OG send failure rolls back both history AND ogMessages", () => {
+  // ogSendChat comes before sendChat in the file; slice that section
+  const ogSendStart = jsSource.indexOf('bindClick("ogSendChat"');
+  const sendChatStart = jsSource.indexOf('bindClick("sendChat"');
+  assert.ok(ogSendStart !== -1, "ogSendChat handler not found");
+  assert.ok(sendChatStart !== -1, "sendChat handler not found");
+
+  const ogSection = jsSource.slice(ogSendStart, sendChatStart);
+  assert.match(ogSection, /history\.pop\(\)/u, "ogSendChat catch must roll back history");
+  assert.match(ogSection, /ogMessages\.pop\(\)/u, "ogSendChat catch must roll back ogMessages");
+});
+
+test("js main sendChat failure rolls back both history AND ogMessages", () => {
+  const sendChatStart = jsSource.indexOf('bindClick("sendChat"');
+  assert.ok(sendChatStart !== -1, "sendChat handler not found");
+
+  const sendSection = jsSource.slice(sendChatStart);
+  assert.match(sendSection, /history\.pop\(\)/u, "sendChat catch must roll back history");
+  assert.match(sendSection, /ogMessages\.pop\(\)/u, "sendChat catch must roll back ogMessages");
+});
+
+test("js ogMessages is capped to prevent unbounded log growth", () => {
+  assert.match(jsSource, /maxOgMessages/u, "maxOgMessages constant must exist");
+  assert.match(jsSource, /ogMessages\.splice/u, "ogMessages must be trimmed on overflow");
 });
 
 test("js Escape key closes overlay", () => {

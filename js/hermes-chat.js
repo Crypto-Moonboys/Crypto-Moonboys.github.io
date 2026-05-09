@@ -5,6 +5,7 @@
 
   // Accumulated messages for the OG fullscreen log (shared across both UIs)
   const ogMessages = [];
+  const maxOgMessages = 200;
 
   const el = (id) => document.getElementById(id);
   const out = {
@@ -116,6 +117,9 @@
 
   function appendOgMessage(role, content, meta) {
     ogMessages.push({ role, content: String(content || ""), meta: meta || "" });
+    if (ogMessages.length > maxOgMessages) {
+      ogMessages.splice(0, ogMessages.length - maxOgMessages);
+    }
     renderOgMessages();
   }
 
@@ -249,11 +253,12 @@
   // ── OG send (shares history + api with main chat) ────────────────────────
 
   bindClick("ogSendChat", async () => {
-    const prompt = String(el("ogPrompt")?.value || "").trim();
+    const promptEl = el("ogPrompt");
+    const prompt = String(promptEl?.value || "").trim();
     if (!prompt) return;
 
     appendOgMessage("user", prompt);
-    el("ogPrompt").value = "";
+    if (promptEl) promptEl.value = "";
 
     const payload = {
       ...basePayload(),
@@ -313,11 +318,10 @@
   }
 
   bindClick("sendChat", async () => {
+    let pushedContext = false;
     try {
       const prompt = String(el("prompt").value || "").trim();
       if (!prompt) throw new Error("Prompt is required.");
-
-      appendOgMessage("user", prompt);
 
       const payload = {
         ...basePayload(),
@@ -327,7 +331,9 @@
         history: history.slice(-maxHistory)
       };
 
+      appendOgMessage("user", prompt);
       history.push({ role: "user", content: prompt });
+      pushedContext = true;
       clampHistory();
 
       const data = await api("/api/hermes/chat", { method: "POST", body: JSON.stringify(payload) });
@@ -349,6 +355,10 @@
 
       updateOgStatusBar(data.mode, data.role);
     } catch (error) {
+      if (pushedContext) {
+        history.pop();
+        ogMessages.pop();
+      }
       appendOgMessage("error", String(error?.message || error));
       setOut(out.chat, { error: String(error?.message || error) });
     }
