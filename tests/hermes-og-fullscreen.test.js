@@ -33,6 +33,22 @@ test("imports actual hermes-webui shell structure and styling", () => {
   assert.match(shellStyle, /\.rightpanel/u);
 });
 
+test("vendored hermes-webui static assets required by index exist", () => {
+  assert.equal(fs.existsSync(path.join(repoRoot, "admin", "hermes-webui", "static", "vendor", "smd.min.js")), true);
+  assert.equal(fs.existsSync(path.join(repoRoot, "admin", "hermes-webui", "sw.js")), true);
+  assert.match(shellIndex, /import \* as smd from '.\/static\/vendor\/smd\.min\.js'/u);
+  assert.match(shellIndex, /serviceWorker\.register\('sw\.js\?v=__WEBUI_VERSION__'\)/u);
+});
+
+test("shell asset paths are relative with dynamic base href", () => {
+  assert.match(shellIndex, /base href enables subpath mount support/u);
+  assert.match(shellIndex, /href="style\.css"/u);
+  assert.match(shellIndex, /src="\.\.\/\.\.\/js\/hermes-webui-adapter\.js"/u);
+  assert.match(shellIndex, /src="\.\.\/\.\.\/js\/hermes-chat\.js"/u);
+  assert.doesNotMatch(shellIndex, /href="\/admin\/hermes-webui\/style\.css"/u);
+  assert.doesNotMatch(shellIndex, /src="\/js\/hermes-webui-adapter\.js"/u);
+});
+
 test("admin entry pages use imported hermes-webui shell for Hermes and Brain", () => {
   assert.match(hermesPage, /src="\/admin\/hermes-webui\/index\.html\?surface=hermes"/u);
   assert.match(brainPage, /src="\/admin\/hermes-webui\/index\.html\?surface=brain"/u);

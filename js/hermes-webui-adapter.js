@@ -18,11 +18,11 @@
   async function request(url, options = {}) {
     const response = await fetch(url, {
       credentials: "same-origin",
+      ...options,
       headers: {
-        "Content-Type": "application/json",
-        ...(options.headers || {})
-      },
-      ...options
+        ...(options.headers || {}),
+        "Content-Type": "application/json"
+      }
     });
     const payload = await jsonOrText(response);
     if (!response.ok) {

@@ -5,11 +5,17 @@
   const params = new URLSearchParams(global.location.search || "");
   const surface = String(params.get("surface") || "hermes").toLowerCase() === "brain" ? "brain" : "hermes";
 
+  const maxHistory = 24;
   const state = {
     history: [],
     sending: false,
     brainRefreshTimer: null,
   };
+
+  function trimHistory() {
+    if (state.history.length <= maxHistory) return;
+    state.history = state.history.slice(-maxHistory);
+  }
 
   const $ = (id) => global.document.getElementById(id);
 
@@ -164,11 +170,13 @@
     appendMessage("user", prompt);
 
     try {
+      trimHistory();
       const payload = await adapter.hermesChat(prompt, state.history);
       const reply = String(payload.reply || payload.response || "No response returned.");
       appendMessage("assistant", reply);
       state.history.push({ role: "user", content: prompt });
       state.history.push({ role: "assistant", content: reply });
+      trimHistory();
       if (surface === "hermes") {
         await refreshHermesStatus();
       }
