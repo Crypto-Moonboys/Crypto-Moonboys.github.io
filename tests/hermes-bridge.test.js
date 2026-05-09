@@ -172,6 +172,7 @@ test("natural admin UI feature request routes to operator task plan and avoids g
   assert.match(JSON.stringify(res.body.toolResults[0]), /repo_admin_ui_operator_task/i);
   assert.match(JSON.stringify(res.body.executionPipeline), /patch_preview|approve|apply|deploy/i);
   assert.match(String(res.body.reply || ""), /admin\/repo ui operator task|swarm plan/i);
+  // Guard against legacy fallback hallucinations from earlier broken operator-task responses.
   assert.doesNotMatch(JSON.stringify(res.body), /django|pynacl|messenger of gods/i);
 });
 

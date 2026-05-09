@@ -505,9 +505,9 @@
       }
 
       updateOgStatusBar(data.mode, data.role);
-      const firstAction = Array.isArray(data.actions) && data.actions[0] ? data.actions[0].type : "";
-      const firstToolAction = Array.isArray(data.toolResults) && data.toolResults[0] ? data.toolResults[0].action : "";
-      const displayAction = firstAction || firstToolAction || "—";
+      const primaryAction = Array.isArray(data.actions) && data.actions[0] ? data.actions[0].type : "";
+      const fallbackToolAction = Array.isArray(data.toolResults) && data.toolResults[0] ? data.toolResults[0].action : "";
+      const displayAction = primaryAction || fallbackToolAction || "—";
       const barLast = el("ogBarLastAction");
       if (barLast) barLast.textContent = displayAction;
     } catch (error) {

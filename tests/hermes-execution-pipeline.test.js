@@ -110,6 +110,7 @@ test("natural operator prompt returns pipeline and swarm plan in safe review mod
 
   assert.equal(response.swarmPlan?.type, "hermes_swarm_plan");
   assert.equal(response.executionPipeline?.type, "hermes_execution_pipeline");
+  // Guard against legacy fallback hallucinations from earlier broken operator-task responses.
   assert.doesNotMatch(JSON.stringify(response), /django|pynacl|messenger of gods/i);
   const applyStage = (response.executionPipeline.stages || []).find((stage) => stage.stage === "apply");
   assert.equal(applyStage?.status, "blocked");
