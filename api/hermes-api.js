@@ -353,6 +353,8 @@ function conversationErrorPayload(req, error) {
     actions: [],
     toolResults: [],
     missingRequirements: [String(error?.message || error)],
+    executionPipeline: null,
+    swarmPlan: null,
     mode: fallback.mode,
     role: fallback.role
   };
@@ -493,6 +495,8 @@ app.post("/api/hermes/chat", async (req, res) => {
       actions: response.actions || [],
       toolResults: response.toolResults || [],
       missingRequirements: response.missingRequirements || [],
+      executionPipeline: response.executionPipeline || null,
+      swarmPlan: response.swarmPlan || null,
       mode: response.mode,
       role: response.role
     });

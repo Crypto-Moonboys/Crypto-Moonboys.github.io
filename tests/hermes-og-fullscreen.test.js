@@ -114,6 +114,14 @@ test("overlay has swarm task board and create plan control", () => {
   assert.match(htmlSource, /CREATE SWARM PLAN/);
 });
 
+test("owner execution pipeline panels exist in main and OG UIs", () => {
+  assert.match(htmlSource, /Owner Execution Pipeline/);
+  assert.match(htmlSource, /id="executionPipelineBoard"/);
+  assert.match(htmlSource, /id="executionPipelineOutput"/);
+  assert.match(htmlSource, /OWNER EXECUTION PIPELINE/);
+  assert.match(htmlSource, /id="ogExecutionPipelineBoard"/);
+});
+
 test("main console has swarm task board panel", () => {
   assert.match(htmlSource, /Swarm Task Board/);
   assert.match(htmlSource, /id="swarmTaskBoard"/);
@@ -128,10 +136,18 @@ test("js can render and create swarm plans without sending chat", () => {
   assert.match(jsSource, /ownerOperatorMode: swarmExecutionMode === "owner_operator"/);
 });
 
+test("js can render owner execution pipeline returned from SEND", () => {
+  assert.match(jsSource, /function renderExecutionPipeline/);
+  assert.match(jsSource, /extractExecutionPipelineFromResponse/);
+  assert.match(jsSource, /extractSwarmPlanFromResponse/);
+  assert.match(jsSource, /No execution pipeline yet\. Send an operator prompt to generate one\./);
+});
+
 test("overlay documents safe review and owner operator modes", () => {
   assert.match(htmlSource, /AUTHORITY MODEL/);
   assert.match(htmlSource, /OWNER OPERATOR MODE/);
   assert.match(htmlSource, /Safe Review Mode/);
+  assert.match(htmlSource, /Hermes can inspect, patch, test, revert, and deploy when instructed by the owner through the existing Hermes toolchain\./);
   assert.match(htmlSource, /Owner Operator Mode is for self-hosted repo control/);
   assert.match(htmlSource, /plan → execute → test → rollback\/report/);
   assert.match(htmlSource, /id="ogSwarmExecutionMode"/);

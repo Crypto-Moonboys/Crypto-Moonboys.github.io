@@ -17,7 +17,8 @@
     repo: el("repoStatus"),
     ops: el("opsStatus"),
     webcrawl: el("webcrawlOutput"),
-    swarmPlan: el("swarmPlanOutput")
+    swarmPlan: el("swarmPlanOutput"),
+    pipeline: el("executionPipelineOutput")
   };
 
   function setOut(node, value) {
@@ -126,6 +127,7 @@
 
 
   let currentSwarmPlan = null;
+  let currentExecutionPipeline = null;
 
   function renderSwarmTaskBoard(plan) {
     const targets = [el("swarmTaskBoard"), el("ogSwarmTaskBoard")].filter(Boolean);
@@ -164,6 +166,69 @@
     targets.forEach((target) => {
       target.innerHTML = html;
     });
+  }
+
+  function renderExecutionPipeline(pipeline) {
+    const targets = [el("executionPipelineBoard"), el("ogExecutionPipelineBoard")].filter(Boolean);
+    if (targets.length === 0) return;
+    const stages = Array.isArray(pipeline?.stages) ? pipeline.stages : [];
+    const html = stages.length
+      ? stages
+          .map((item) => {
+            const status = String(item.status || "planned");
+            const files = Array.isArray(item.filesAffected) && item.filesAffected.length
+              ? item.filesAffected.join(", ")
+              : "TBD";
+            const missing = Array.isArray(item.missingRequirements) && item.missingRequirements.length
+              ? item.missingRequirements.join(", ")
+              : "none";
+            const stageTitle = String(item.stage || "").replace(/_/gu, " ").toUpperCase();
+            return `<article class="execution-stage-card">
+              <div class="execution-stage-head">
+                <strong>${escapeHtml(stageTitle || "STAGE")}</strong>
+                <span class="swarm-pill status-${escapeHtml(status)}">${escapeHtml(status)}</span>
+              </div>
+              <div class="swarm-task-grid execution-stage-grid">
+                <div class="swarm-task-field"><strong>Assigned role</strong><span>${escapeHtml(item.agentRole || "main_hermes")}</span></div>
+                <div class="swarm-task-field"><strong>File targets</strong><span>${escapeHtml(files)}</span></div>
+                <div class="swarm-task-field"><strong>Next action</strong><span>${escapeHtml(item.nextAction || "Review")}</span></div>
+                <div class="swarm-task-field"><strong>Missing requirements</strong><span>${escapeHtml(missing)}</span></div>
+              </div>
+            </article>`;
+          })
+          .join("")
+      : '<div class="swarm-task-empty">No execution pipeline yet. Send an operator prompt to generate one.</div>';
+    targets.forEach((target) => {
+      target.innerHTML = html;
+    });
+  }
+
+  function extractSwarmPlanFromResponse(data) {
+    if (data?.swarmPlan && data.swarmPlan.type === "hermes_swarm_plan") {
+      return data.swarmPlan;
+    }
+    const toolResults = Array.isArray(data?.toolResults) ? data.toolResults : [];
+    for (const item of toolResults) {
+      if (item?.action !== "swarm/plan") continue;
+      const entries = Array.isArray(item.entries) ? item.entries : [];
+      const match = entries.find((entry) => entry && entry.type === "hermes_swarm_plan");
+      if (match) return match;
+    }
+    return null;
+  }
+
+  function extractExecutionPipelineFromResponse(data) {
+    if (data?.executionPipeline && data.executionPipeline.type === "hermes_execution_pipeline") {
+      return data.executionPipeline;
+    }
+    const toolResults = Array.isArray(data?.toolResults) ? data.toolResults : [];
+    for (const item of toolResults) {
+      if (item?.action !== "execution/pipeline") continue;
+      const entries = Array.isArray(item.entries) ? item.entries : [];
+      const match = entries.find((entry) => entry && entry.type === "hermes_execution_pipeline");
+      if (match) return match;
+    }
+    return null;
   }
 
   function getPlanPrompt(preferredId) {
@@ -348,6 +413,7 @@
     loadOgSwarm().catch(() => null);
     loadOgStatus().catch(() => null);
     renderSwarmTaskBoard(currentSwarmPlan);
+    renderExecutionPipeline(currentExecutionPipeline);
   }
 
   function closeOgOverlay() {
@@ -422,8 +488,24 @@
       setOut(out.tools, summarizeToolResults(data.toolResults || []));
       setOut(out.missing, data.missingRequirements || []);
 
+      const swarmPlan = extractSwarmPlanFromResponse(data);
+      if (swarmPlan) {
+        currentSwarmPlan = swarmPlan;
+        renderSwarmTaskBoard(swarmPlan);
+        setOut(out.swarmPlan, swarmPlan);
+      }
+
+      const pipeline = extractExecutionPipelineFromResponse(data);
+      if (pipeline) {
+        currentExecutionPipeline = pipeline;
+        renderExecutionPipeline(pipeline);
+        setOut(out.pipeline, pipeline);
+      }
+
       updateOgStatusBar(data.mode, data.role);
-      const lastAction = Array.isArray(data.actions) && data.actions[0] ? data.actions[0].type : "—";
+      const firstAction = Array.isArray(data.actions) && data.actions[0] ? data.actions[0].type : "";
+      const firstToolAction = Array.isArray(data.toolResults) && data.toolResults[0] ? data.toolResults[0].action : "";
+      const lastAction = firstAction || firstToolAction || "—";
       const barLast = el("ogBarLastAction");
       if (barLast) barLast.textContent = lastAction;
     } catch (error) {
@@ -723,4 +805,3 @@
     .then(() => showRuntimeRoot().catch(() => null))
     .catch((error) => setOut(out.chat, { error: String(error?.message || error) }));
 })();
-

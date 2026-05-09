@@ -33,6 +33,7 @@ function clearCache() {
     "../server/hermes/tool-router.js",
     "../server/hermes/tool-executor.js",
     "../server/hermes/conversation-runtime.js",
+    "../server/hermes/execution-pipeline.js",
     "../server/hermes/orchestrator.js"
   ];
   for (const mod of targets) {
@@ -161,12 +162,84 @@ test("natural admin UI feature request routes to operator task plan and avoids g
   assert.equal(res.status, 200);
   assert.equal(Array.isArray(res.body.actions), true);
   assert.equal(res.body.actions.length, 0);
+  assert.equal(res.body.swarmPlan?.type, "hermes_swarm_plan");
+  assert.equal(res.body.executionPipeline?.type, "hermes_execution_pipeline");
   assert.ok(Array.isArray(res.body.toolResults));
   assert.equal(res.body.toolResults[0].action, "swarm/plan");
   assert.equal(res.body.toolResults[0].ok, true);
+  assert.equal(res.body.toolResults[1].action, "execution/pipeline");
+  assert.equal(res.body.toolResults[1].ok, true);
   assert.match(JSON.stringify(res.body.toolResults[0]), /repo_admin_ui_operator_task/i);
+  assert.match(JSON.stringify(res.body.executionPipeline), /patch_preview|approve|apply|deploy/i);
   assert.match(String(res.body.reply || ""), /admin\/repo ui operator task|swarm plan/i);
   assert.doesNotMatch(JSON.stringify(res.body), /django|pynacl|messenger of gods/i);
+});
+
+test("safe review mode operator flow returns proposal stages and does not apply changes", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    swarmExecutionMode: "safe_review",
+    prompt: "can you create a popup canvas here in admin page showing BTC chart",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  const stages = res.body.executionPipeline?.stages || [];
+  assert.ok(stages.some((stage) => stage.stage === "plan"));
+  assert.ok(stages.some((stage) => stage.stage === "inspect"));
+  assert.ok(stages.some((stage) => stage.stage === "patch_preview"));
+  const applyStage = stages.find((stage) => stage.stage === "apply");
+  assert.equal(applyStage?.status, "blocked");
+  assert.doesNotMatch(JSON.stringify(res.body.toolResults), /patch\/apply|command\/run/i);
+});
+
+test("owner operator mode returns explicit missing requirements for approval-gated execution", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    swarmExecutionMode: "owner_operator",
+    prompt: "can you create a popup canvas here in admin page showing BTC chart",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.ok((res.body.missingRequirements || []).length > 0);
+  const approveStage = (res.body.executionPipeline?.stages || []).find((stage) => stage.stage === "approve");
+  assert.ok(Array.isArray(approveStage?.missingRequirements));
+  assert.ok(approveStage.missingRequirements.length > 0);
+  assert.match(JSON.stringify(res.body.toolResults), /plan\/privileged|missingRequirements/i);
+});
+
+test("owner operator mode with requirements and proposed operations generates patch preview path", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "admin",
+    role: "main_hermes",
+    swarmExecutionMode: "owner_operator",
+    confirmEdit: true,
+    approvalId: "approval_ready",
+    approvalToken: "test-token",
+    proposedOperations: [{ type: "update", path: "README.md", content: "Hermes owner execution pipeline\n" }],
+    prompt: "can you create a popup canvas here in admin page showing BTC chart",
+    history: []
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(res.body.missingRequirements.length, 0);
+  assert.match(JSON.stringify(res.body.toolResults), /patch\/preview/i);
+  assert.doesNotMatch(JSON.stringify(res.body.toolResults), /patch\/apply/i);
 });
 
 test("file/list failure formatting never says returned 0 entries", async (t) => {
