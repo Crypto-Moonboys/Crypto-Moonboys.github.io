@@ -19,6 +19,11 @@ const { runConversation } = await import("../server/hermes/conversation-runtime.
 const { createJob } = await import("../server/hermes/job-manager.js");
 const { createSandboxBranch } = await import("../server/hermes/sandbox-runner.js");
 
+const hermesPanel = fs.readFileSync(path.join(process.cwd(), "admin", "hermes-chat.html"), "utf8");
+const brainPanel = fs.readFileSync(path.join(process.cwd(), "admin", "the-brain.html"), "utf8");
+assert.match(hermesPanel, /hermes-webui\/index\.html\?surface=hermes/i);
+assert.match(brainPanel, /hermes-webui\/index\.html\?surface=brain/i);
+
 const identity = await runConversation({ mode: "chat", role: "main_hermes", prompt: "DO YOU KNOW WHAT YOU ARE?", history: [] });
 assert.match(String(identity.reply || ""), /I am Hermes/i);
 assert.doesNotMatch(String(identity.reply || ""), /I am Qwen|created by Alibaba/i);
@@ -61,6 +66,68 @@ const sandbox = createSandboxBranch(job.jobId);
 assert.ok(["sandbox_created", "failed"].includes(String(sandbox.job.status || "")));
 if (sandbox.job.status === "failed") {
   assert.match(String(sandbox.job.lastError || ""), /git unavailable; real sandbox worktree cannot be created/i);
+}
+
+const forbiddenPatterns = [
+  /No matching tool action was found/iu,
+  /I am Qwen/iu,
+  /created by Alibaba/iu,
+  /I cannot edit websites/iu,
+  /I don't have the capability/iu,
+  /hire professionals/iu,
+  /I lack internet/iu,
+  /I cannot websearch/iu,
+  /Action completed with 1 error\(s\)/iu
+];
+
+const ownerCommands = [
+  "what are you?",
+  "what tools do you have?",
+  "can you edit websites?",
+  "can you websearch?",
+  "read repo for code bugs",
+  "scan repo for bugs",
+  "check repo health",
+  "audit codebase",
+  "find broken files",
+  "fix admin page",
+  "rebuild the whole website",
+  "build my 2 player bomber royale game",
+  "create a sandbox job for bomber royale",
+  "run tests",
+  "create PR",
+  "ask Copilot to review",
+  "create an image",
+  "make animated canvas code",
+  "show skills",
+  "load runtime map",
+  "show registered repos",
+  "show active repo",
+  "search the repo for auth middleware",
+  "read README.md",
+  "read server/hermes/tool-router.js",
+  "list repo files",
+  "find new updates on anything",
+  "show memory",
+  "show swarm status",
+  "deploy status",
+  "open brain npc advisor",
+  "create branch codex/test-hermes",
+  "preview patch for admin page"
+];
+
+for (const command of ownerCommands) {
+  const result = await runConversation({ mode: "chat", role: "main_hermes", prompt: command, history: [] });
+  const combined = `${String(result.reply || "")}\n${JSON.stringify(result.toolResults || [])}`;
+  for (const pattern of forbiddenPatterns) {
+    assert.doesNotMatch(combined, pattern, `Forbidden output for command: ${command}`);
+  }
+  const hasMeaningfulResponse =
+    Boolean(String(result.reply || "").trim()) ||
+    Boolean(result.swarmPlan) ||
+    Boolean(result.executionPipeline) ||
+    (Array.isArray(result.toolResults) && result.toolResults.length > 0);
+  assert.equal(hasMeaningfulResponse, true, `Expected meaningful routing response for command: ${command}`);
 }
 
 console.log("Hermes readiness audit passed");

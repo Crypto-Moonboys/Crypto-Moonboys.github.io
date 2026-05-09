@@ -183,6 +183,7 @@ async function runConversation(input = {}) {
     };
   }
   const routing = routePromptToAction(input);
+  const commandIntent = routing.commandIntent || null;
 
   if (routing.modeSwitch) {
     return {
@@ -487,11 +488,102 @@ async function runConversation(input = {}) {
     };
   }
 
+  if (commandIntent && commandIntent.intent !== "unknown") {
+    if (commandIntent.intent === "repo_audit") {
+      const ctx = {
+        mode,
+        role,
+        confirmEdit: input.confirmEdit === true,
+        approvalId: input.approvalId,
+        approvalToken: input.approvalToken,
+        sessionId: input.sessionId,
+        swarm: getAgents()
+      };
+      const action = {
+        type: ACTIONS.REPO_SEARCH,
+        payload: { query: "bug OR error OR fail OR FIXME OR TODO OR broken" }
+      };
+      const result = await executeAction(action, ctx);
+      const formatted = formatToolResult(result, input.debug === true);
+      return {
+        reply: formatted.ok
+          ? "Ran a repo bug-scan search. Review the matches and I can propose a sandbox fix plan next."
+          : `Repo bug-scan failed: ${formatted.resultSummary}`,
+        actions: [action],
+        toolResults: [formatted],
+        missingRequirements: Array.isArray(formatted.missingRequirements) ? formatted.missingRequirements : [],
+        executionPipeline: null,
+        swarmPlan: null,
+        mode,
+        role
+      };
+    }
+
+    if (commandIntent.intent === "memory_skills_settings") {
+      return {
+        reply: "Hermes can load skills, runtime map, memory, profile/settings, and registered repos through backend routes. Tell me which one to open first: skills, runtime map, memory, profile, or repos.",
+        actions: [],
+        toolResults: [{
+          action: "hermes/owner-intent",
+          ok: true,
+          repoUsed: "",
+          pathUsed: "",
+          resultSummary: "Owner intent classified.",
+          entries: [commandIntent],
+          totalCount: 1,
+          shownCount: 1,
+          missingRequirements: [],
+          error: ""
+        }],
+        missingRequirements: [],
+        executionPipeline: null,
+        swarmPlan: null,
+        mode,
+        role
+      };
+    }
+
+    if (commandIntent.intent === "pr_github_workflow" || commandIntent.intent === "sandbox_job" || commandIntent.intent === "deployment_vps" || commandIntent.intent === "brain_npc") {
+      return {
+        reply: `${commandIntent.nextAction}`,
+        actions: [],
+        toolResults: [{
+          action: "hermes/owner-intent",
+          ok: true,
+          repoUsed: "",
+          pathUsed: "",
+          resultSummary: "Owner command classified for workflow routing.",
+          entries: [commandIntent],
+          totalCount: 1,
+          shownCount: 1,
+          missingRequirements: [],
+          error: ""
+        }],
+        missingRequirements: [],
+        executionPipeline: null,
+        swarmPlan: null,
+        mode,
+        role
+      };
+    }
+  }
+
   if (/(repo|directory|directories|file|files|package\.json|index\.html|read\s+)/iu.test(prompt)) {
     return {
-      reply: "No matching tool action was found for that repo/file request. Tool result is required; Hermes will not invent files.",
+      reply: "I understood this as a repo/file request, but I still need a concrete path or query. Try: `read README.md`, `search the repo for <term>`, or `list repo files`.",
       actions: [],
-      toolResults: [],
+      toolResults: commandIntent ? [{
+        action: "hermes/owner-intent",
+        ok: false,
+        repoUsed: "",
+        pathUsed: "",
+        resultSummary: "Repo/file intent recognized but missing specific target.",
+        entries: [commandIntent],
+        totalCount: 1,
+        shownCount: 1,
+        missingRequirements: ["concrete path or query"],
+        error: ""
+      }] : [],
       missingRequirements: [],
       executionPipeline: null,
       swarmPlan: null,
