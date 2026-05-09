@@ -27,7 +27,6 @@ assert.match(brainPanel, /hermes-webui\/index\.html\?surface=brain/i);
 const identity = await runConversation({ mode: "chat", role: "main_hermes", prompt: "DO YOU KNOW WHAT YOU ARE?", history: [] });
 assert.match(String(identity.reply || ""), /I am Hermes/i);
 assert.doesNotMatch(String(identity.reply || ""), /I am Qwen|created by Alibaba/i);
-
 const tools = await runConversation({ mode: "chat", role: "main_hermes", prompt: "WHAT TOOLS DO YOU HAVE?", history: [] });
 assert.match(String(tools.reply || ""), /github|image generation|webcrawl|patch|jobs/i);
 
