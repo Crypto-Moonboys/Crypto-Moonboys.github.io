@@ -214,17 +214,13 @@ async function runConversation(input = {}) {
       approvalId: input.approvalId,
       approvalToken: input.approvalToken
     });
-    const executionMissing = [
-      ...new Set([
-        ...missing,
-        ...(proposedOperations.length > 0 ? [] : ["needs proposedOperations for patch preview"])
-      ])
-    ];
+    const pipelineMissing = proposedOperations.length > 0 ? [] : ["needs proposedOperations for patch preview"];
+    const executionMissing = [...new Set([...missing, ...pipelineMissing])];
     const pipeline = buildExecutionPipeline({
       executionMode,
       role,
       filesAffected: likelyFiles,
-      missingRequirements: executionMissing.filter((item) => item !== "needs proposedOperations for patch preview"),
+      missingRequirements: missing,
       hasProposedOperations: proposedOperations.length > 0
     });
 

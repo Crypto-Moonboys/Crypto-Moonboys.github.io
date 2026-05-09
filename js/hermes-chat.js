@@ -505,9 +505,9 @@
       updateOgStatusBar(data.mode, data.role);
       const firstAction = Array.isArray(data.actions) && data.actions[0] ? data.actions[0].type : "";
       const firstToolAction = Array.isArray(data.toolResults) && data.toolResults[0] ? data.toolResults[0].action : "";
-      const lastAction = firstAction || firstToolAction || "—";
+      const displayAction = firstAction || firstToolAction || "—";
       const barLast = el("ogBarLastAction");
-      if (barLast) barLast.textContent = lastAction;
+      if (barLast) barLast.textContent = displayAction;
     } catch (error) {
       const userEntryIndex = history.indexOf(userHistoryEntry);
       if (userEntryIndex !== -1) {
