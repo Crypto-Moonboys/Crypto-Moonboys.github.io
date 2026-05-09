@@ -1,6 +1,7 @@
 "use strict";
 
 const https = require("node:https");
+const { loadReposConfig } = require("./runtime-map.js");
 
 const INTENT_VALUES = Object.freeze([
   "rebuild_website",
@@ -132,7 +133,11 @@ function heuristicInterpret(prompt) {
     intent = "repo_fix";
   }
 
-  const reposLikelyInvolved = ["crypto-moonboys-site"];
+  const reposCfg = loadReposConfig();
+  const reposLikelyInvolved = (Array.isArray(reposCfg?.repos) ? reposCfg.repos : [])
+    .map((repo) => String(repo.id || "").trim())
+    .filter(Boolean);
+  if (reposLikelyInvolved.length === 0) reposLikelyInvolved.push("crypto-moonboys-site");
   const filesLikelyInvolved = [];
   const taskBreakdown = ["Inspect relevant files", "Plan changes", "Execute in sandbox", "Run tests", "Report"];
   const riskLevel = intent === "rebuild_website" ? "high" : intent === "build_bomber_royale" ? "high" : "medium";
@@ -165,6 +170,13 @@ function heuristicInterpret(prompt) {
       "Run static/tests",
       "Report changes"
     );
+  }
+
+  if (/rebuild the whole website/u.test(lower)) {
+    intent = "rebuild_website";
+  }
+  if (/build my 2-player bomber royale game|build my 2 player bomber royale game/u.test(lower)) {
+    intent = "build_bomber_royale";
   }
 
   return {

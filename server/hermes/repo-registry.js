@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
 const { HERMES_DATA_ROOT, DEFAULT_REPO_ROOT, CLONE_PARENT_DIR } = require("./config.js");
+const { loadReposConfig } = require("./runtime-map.js");
 
 const REGISTRY_FILE = path.join(HERMES_DATA_ROOT, "repo-registry.json");
 
@@ -35,16 +36,34 @@ function defaultSeedRepo() {
   };
 }
 
+function additionalSeedRepos() {
+  const cfg = loadReposConfig();
+  const list = Array.isArray(cfg?.repos) ? cfg.repos : [];
+  return list
+    .map((repo) => ({
+      id: normalizeRepoId(repo.id || `${repo.owner || ""}-${repo.name || ""}`),
+      name: String(repo.name || repo.id || "repo"),
+      remoteUrl: String(repo.remoteUrl || ""),
+      localPath: String(repo.localPath || ""),
+      defaultBranch: String(repo.defaultBranch || "main"),
+      status: "inactive",
+      createdAt: nowIso(),
+      updatedAt: nowIso()
+    }))
+    .filter((repo) => repo.id && repo.remoteUrl);
+}
+
 function ensureRegistryFile() {
   if (!fs.existsSync(REGISTRY_FILE)) {
     fs.mkdirSync(path.dirname(REGISTRY_FILE), { recursive: true });
     const seed = defaultSeedRepo();
+    const extras = additionalSeedRepos().filter((repo) => repo.id !== seed.id);
     fs.writeFileSync(
       REGISTRY_FILE,
       JSON.stringify(
         {
           activeRepoId: seed.id,
-          repos: [seed]
+          repos: [seed, ...extras]
         },
         null,
         2

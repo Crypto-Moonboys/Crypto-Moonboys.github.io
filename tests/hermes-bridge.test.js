@@ -774,7 +774,7 @@ test("webui capabilities endpoint marks missing/partial features honestly", asyn
   assert.equal(byKey.workspace_browser?.status, "working");
   assert.equal(byKey.memory?.status, "working");
   assert.equal(byKey.websearch?.status, "working");
-  assert.equal(byKey.skills?.status, "missing");
+  assert.equal(byKey.skills?.status, "working");
   assert.equal(byKey.streaming?.status, "missing");
   assert.equal(byKey.sessions?.status, "partial");
 });
@@ -810,13 +810,41 @@ test("session routes persist history for webui", async (t) => {
   assert.equal(read.body.session.messages.length, 2);
 });
 
-test("skills route is honest when not implemented", async (t) => {
+test("skills route returns persistent Hermes skill catalog", async (t) => {
   const root = setupSandbox();
   const { server, base } = await startServer(root);
   t.after(() => server.close());
 
   const res = await get(base, "/api/hermes/skills");
-  assert.equal(res.status, 501);
-  assert.equal(res.body.status, "missing");
-  assert.match(String(res.body.message || ""), /not implemented/i);
+  assert.equal(res.status, 200);
+  assert.equal(res.body.status, "ready");
+  assert.ok(Array.isArray(res.body.skills));
+});
+
+test("runtime map route returns runtime and repo config", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await get(base, "/api/hermes/runtime/map");
+  assert.equal(res.status, 200);
+  assert.equal(res.body.ok, true);
+  assert.ok(res.body.runtimeMap);
+  assert.ok(res.body.repos);
+});
+
+test("broad owner prompt does not route to literal file/read", async (t) => {
+  const root = setupSandbox();
+  const { server, base } = await startServer(root);
+  t.after(() => server.close());
+
+  const res = await post(base, "/api/hermes/chat", {
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "READ ALL YOUR FILES AND TELL ME WHAT YOU CAN EDIT",
+    history: []
+  });
+  assert.equal(res.status, 200);
+  assert.equal(Array.isArray(res.body.actions) ? res.body.actions.some((a) => a.type === "file/read") : false, false);
+  assert.equal(res.body.swarmPlan?.type, "hermes_swarm_plan");
 });

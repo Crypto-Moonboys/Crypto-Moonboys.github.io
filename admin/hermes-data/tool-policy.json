@@ -1,0 +1,5 @@
+{
+  "allowPrivilegedActions": ["patch/apply", "patch/rollback", "command/run", "git/*", "repo/register", "repo/clone", "repo/switch"],
+  "requiredServerSecrets": ["OPENAI_API_KEY", "HERMES_EDIT_TOKEN", "BRAIN_ADMIN_TOKEN", "GITHUB_TOKEN"],
+  "ownerFlow": ["sandbox-first", "owner-controlled", "repo-aware", "test-gated", "pr-before-merge"]
+}

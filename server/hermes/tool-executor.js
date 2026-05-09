@@ -13,6 +13,7 @@ const {
 } = require("./repo-registry.js");
 const { CLONE_PARENT_DIR } = require("./config.js");
 const { executeWebcrawlAction } = require("./webcrawl-agent.js");
+const { generateImage } = require("./image-generator.js");
 
 function missingForPrivileged(ctx = {}) {
   const missing = [];
@@ -172,6 +173,19 @@ async function executeAction(action, ctx = {}) {
             ok: wcResult?.ok === true,
             action: type,
             result: wcResult
+          };
+        }
+      case ACTIONS.IMAGE_GENERATE:
+        {
+          const prompt = String(payload.prompt || "").trim();
+          if (!prompt) {
+            return { ok: false, action: type, error: "prompt is required." };
+          }
+          const image = await generateImage(prompt, { size: payload.size || "1024x1024" });
+          return {
+            ok: true,
+            action: type,
+            result: image
           };
         }
       case ACTIONS.COMMAND_RUN:

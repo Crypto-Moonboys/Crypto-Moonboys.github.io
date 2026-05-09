@@ -4,6 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const os = require("node:os");
 
 const interpreterPath = path.join(__dirname, "..", "server", "hermes", "openai-command-interpreter.js");
 
@@ -100,6 +101,27 @@ test("heuristicInterpret for bomber royale includes block-topia files", () => {
   const { heuristicInterpret } = require(interpreterPath);
   const result = heuristicInterpret("build my 2-player bomber royale game");
   assert.ok(result.filesLikelyInvolved.some((f) => f.includes("block-topia")));
+});
+
+test("heuristicInterpret loads cross-repo awareness from repos.json", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-intent-"));
+  const dataRoot = path.join(root, "admin", "hermes-data");
+  fs.mkdirSync(dataRoot, { recursive: true });
+  fs.writeFileSync(path.join(dataRoot, "repos.json"), JSON.stringify({
+    repos: [
+      { id: "crypto-moonboys-site" },
+      { id: "the-daddy" },
+      { id: "the-brain" },
+      { id: "agents-of-change" }
+    ]
+  }));
+  process.env.HERMES_DATA_ROOT = dataRoot;
+  delete require.cache[require.resolve(interpreterPath)];
+  const { heuristicInterpret } = require(interpreterPath);
+  const result = heuristicInterpret("rebuild the whole website");
+  assert.ok(result.reposLikelyInvolved.includes("crypto-moonboys-site"));
+  assert.ok(result.reposLikelyInvolved.includes("the-brain"));
+  assert.ok(result.reposLikelyInvolved.length >= 4);
 });
 
 test("callOpenAi has request timeout and response size guard", () => {

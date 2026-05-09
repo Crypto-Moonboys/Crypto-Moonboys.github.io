@@ -10,12 +10,26 @@ function parsePathAfterKeyword(prompt, keyword) {
 
 const OPERATOR_VERB_PATTERN = /\b(create|add|build|make|implement|update|change|fix|patch|install|wire|connect|remove|replace)\b/iu;
 const OPERATOR_SCOPE_PATTERN =
-  /\b(admin\s+page|hermes\s+page|brain\s+page|popup|canvas|chart|button|modal|ui|css|js|html|repo|file|page|dashboard)\b/iu;
+  /\b(admin\s+page|hermes\s+page|brain\s+page|popup|canvas|chart|button|modal|ui|css|js|html|repo|file|page|dashboard|pixel|sprite|tile|animation|code)\b/iu;
 
 function detectOperatorIntent(prompt) {
   const text = String(prompt || "").trim();
   if (!text) return null;
   if (!OPERATOR_VERB_PATTERN.test(text) || !OPERATOR_SCOPE_PATTERN.test(text)) {
+    if (/\b(rebuild the whole website|build my 2-?player bomber royale game|read all your files)\b/iu.test(text)) {
+      return {
+        classification: "repo_admin_ui_operator_task",
+        likelyFiles: [
+          "index.html",
+          "css/",
+          "js/",
+          "admin/",
+          "games/block-topia/",
+          "server/block-topia/",
+          "workers/moonboys-api/blocktopia/"
+        ]
+      };
+    }
     return null;
   }
 
@@ -26,6 +40,15 @@ function detectOperatorIntent(prompt) {
   }
   if (/\b(css|ui)\b/iu.test(lower)) {
     likelyFiles.push("css/wiki.css");
+  }
+  if (/\b(animated|animation|canvas|pixel|sprite|tile)\b/iu.test(lower)) {
+    likelyFiles.push("js/", "games/", "index.html");
+  }
+  if (/\bbomber|royale|colyseus|arena|blast\b/iu.test(lower)) {
+    likelyFiles.push("games/block-topia/", "server/block-topia/", "workers/moonboys-api/blocktopia/");
+  }
+  if (/\brebuild|website|site\b/iu.test(lower)) {
+    likelyFiles.push("index.html", "css/", "js/", "admin/");
   }
 
   return {
@@ -71,7 +94,12 @@ function routePromptToAction(input = {}) {
     return { actions, unmatched: false };
   }
 
-  if (/read\s+[^\n]+/iu.test(lower)) {
+  if (/(create|generate|make)\s+(an?\s+)?image|image generation|draw image/iu.test(lower)) {
+    actions.push({ type: ACTIONS.IMAGE_GENERATE, payload: { prompt } });
+    return { actions, unmatched: false };
+  }
+
+  if (/read\s+[^\n]+/iu.test(lower) && !/\bread all (your|the) files\b/iu.test(lower)) {
     const filePath = parsePathAfterKeyword(prompt, "read");
     actions.push({ type: ACTIONS.FILE_READ, payload: { path: filePath } });
     return { actions, unmatched: false };

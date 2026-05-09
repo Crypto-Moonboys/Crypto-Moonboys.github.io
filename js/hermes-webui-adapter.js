@@ -68,7 +68,11 @@
         memory: { status: "working", endpoint: "/api/hermes/memory" },
         skills: { status: "missing", endpoint: "", note: "Not implemented in this backend yet." },
         websearch: { status: "working", endpoint: "/api/hermes/webcrawl/search" },
-        patchFlow: { status: "working", preview: "/api/hermes/patch/preview", apply: "/api/hermes/patch/apply", rollback: "/api/hermes/patch/rollback" }
+        patchFlow: { status: "working", preview: "/api/hermes/patch/preview", apply: "/api/hermes/patch/apply", rollback: "/api/hermes/patch/rollback" },
+        images: { status: "working", endpoint: "/api/hermes/images/generate" },
+        jobs: { status: "working", endpoint: "/api/hermes/jobs" },
+        tools: { status: "working", endpoint: "/api/hermes/tools" },
+        github: { status: "working", endpoint: "/api/hermes/github/repos" }
       };
     }
 
@@ -151,6 +155,29 @@
           message: String(error?.message || "Hermes skills loader is not implemented on this backend yet.")
         };
       }
+    }
+
+    async getTools() {
+      return request("/api/hermes/tools");
+    }
+
+    async getProfile() {
+      return request("/api/hermes/profile");
+    }
+
+    async generateImage(prompt, size = "1024x1024") {
+      return request("/api/hermes/images/generate", {
+        method: "POST",
+        body: JSON.stringify({ prompt, size })
+      });
+    }
+
+    async listJobs() {
+      return request("/api/hermes/jobs");
+    }
+
+    async listGithubRepos() {
+      return request("/api/hermes/github/repos");
     }
 
     async previewPatch(operations = []) {

@@ -1,0 +1,15 @@
+{
+  "runtimeRoots": [
+    "/root/Crypto-Moonboys.github.io",
+    "/home/moonboys/Crypto-Moonboys.github.io"
+  ],
+  "webOrigin": "https://space.cryptomoonboys.com",
+  "pm2Apps": ["hermes-api", "brain-api", "moonboys-site"],
+  "ports": {
+    "hermesApi": 3012,
+    "brainApi": 3011
+  },
+  "adminPages": ["/admin/hermes-chat.html", "/admin-tools.html"],
+  "nginxNotes": "Reverse proxy terminates TLS and forwards /api/hermes to localhost:3012.",
+  "apiNotes": "Hermes and Brain APIs run server-side only with token-based privileged flows."
+}

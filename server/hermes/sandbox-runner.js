@@ -10,6 +10,7 @@ const BLOCKED_BRANCHES = new Set(["main", "master"]);
 
 // Timeout for git worktree/branch operations (seconds: 30).
 const GIT_TIMEOUT_MS = 30000;
+const FALLBACK_REF = "git-unavailable";
 
 function slugFromBranch(branch) {
   return String(branch || "").replace(/[^a-zA-Z0-9_-]/gu, "-");
@@ -22,6 +23,15 @@ function runGitSync(args, cwd, timeoutMs = GIT_TIMEOUT_MS) {
     throw new Error(`git ${args[0]} failed: ${String(result.stderr || result.stdout || "").trim()}`);
   }
   return String(result.stdout || "").trim();
+}
+
+function canUseGit(repoPath) {
+  try {
+    runGitSync(["rev-parse", "--is-inside-work-tree"], repoPath);
+    return true;
+  } catch (_e) {
+    return false;
+  }
 }
 
 function getCurrentBranch(repoPath) {
@@ -61,7 +71,7 @@ function createSandboxBranch(jobId) {
   const job = readJob(jobId);
   assertJobNotOnMain(job);
 
-  // Resolve the repo the job is targeted at — not necessarily the active repo.
+  // Resolve the repo the job is targeted at, not necessarily the active repo.
   const repo = resolveRepoForJob(job);
   const repoPath = repo.localPath;
   if (!fs.existsSync(repoPath)) {
@@ -73,20 +83,30 @@ function createSandboxBranch(jobId) {
     throw new Error("Sandbox branch cannot be main or master.");
   }
 
-  const currentBranch = getCurrentBranch(repoPath);
-  const rollbackRef = runGitSync(["rev-parse", "HEAD"], repoPath);
+  const gitAvailable = canUseGit(repoPath);
+  const currentBranch = gitAvailable ? getCurrentBranch(repoPath) : "";
+  const rollbackRef = gitAvailable ? runGitSync(["rev-parse", "HEAD"], repoPath) : FALLBACK_REF;
 
   // Use a git worktree for real isolation so job operations never touch the shared working tree.
   const worktreePath = path.join(repoPath, ".hermes-worktrees", slugFromBranch(branch));
 
-  if (worktreeExists(repoPath, worktreePath)) {
-    // Worktree already exists — reuse it.
-  } else if (branchExists(repoPath, branch)) {
-    fs.mkdirSync(path.dirname(worktreePath), { recursive: true });
-    runGitSync(["worktree", "add", worktreePath, branch], repoPath);
+  if (gitAvailable) {
+    if (worktreeExists(repoPath, worktreePath)) {
+      // Worktree already exists, reuse it.
+    } else if (branchExists(repoPath, branch)) {
+      fs.mkdirSync(path.dirname(worktreePath), { recursive: true });
+      runGitSync(["worktree", "add", worktreePath, branch], repoPath);
+    } else {
+      fs.mkdirSync(path.dirname(worktreePath), { recursive: true });
+      runGitSync(["worktree", "add", "-b", branch, worktreePath], repoPath);
+    }
   } else {
-    fs.mkdirSync(path.dirname(worktreePath), { recursive: true });
-    runGitSync(["worktree", "add", "-b", branch, worktreePath], repoPath);
+    // Fallback mode for restricted runtimes where git subprocess execution is blocked.
+    fs.mkdirSync(worktreePath, { recursive: true });
+    const markerPath = path.join(worktreePath, ".hermes-sandbox-fallback");
+    if (!fs.existsSync(markerPath)) {
+      fs.writeFileSync(markerPath, "git unavailable; sandbox created in fallback mode\n");
+    }
   }
 
   const updated = updateJob(jobId, {
@@ -97,7 +117,8 @@ function createSandboxBranch(jobId) {
     rollbackPlan: {
       type: "git_worktree",
       rollbackBranch: currentBranch,
-      rollbackRef
+      rollbackRef,
+      gitAvailable
     }
   });
 
@@ -121,8 +142,9 @@ function teardownSandboxBranch(jobId) {
 
   const sandboxBranch = job.branch;
   const worktreePath = job.sandboxPath;
+  const gitAvailable = canUseGit(repoPath);
 
-  if (worktreePath && worktreeExists(repoPath, worktreePath)) {
+  if (gitAvailable && worktreePath && worktreeExists(repoPath, worktreePath)) {
     try {
       runGitSync(["worktree", "remove", "--force", worktreePath], repoPath);
     } catch (_e) {
@@ -136,10 +158,12 @@ function teardownSandboxBranch(jobId) {
   }
 
   // Prune stale worktree references.
-  try { runGitSync(["worktree", "prune"], repoPath); } catch (_e) { /* ignore */ }
+  if (gitAvailable) {
+    try { runGitSync(["worktree", "prune"], repoPath); } catch (_e) { /* ignore */ }
+  }
 
   // Delete the sandbox branch if it still exists.
-  if (branchExists(repoPath, sandboxBranch)) {
+  if (gitAvailable && branchExists(repoPath, sandboxBranch)) {
     try { runGitSync(["branch", "-D", sandboxBranch], repoPath); } catch (_e) { /* ignore */ }
   }
 
@@ -153,7 +177,7 @@ function getSandboxStatus(jobId) {
   let currentBranch = "";
   let onSandboxBranch = false;
 
-  if (repoPath && fs.existsSync(repoPath)) {
+  if (repoPath && fs.existsSync(repoPath) && canUseGit(repoPath)) {
     try {
       currentBranch = getCurrentBranch(repoPath);
       onSandboxBranch = currentBranch === job.branch;

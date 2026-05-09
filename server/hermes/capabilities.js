@@ -1,4 +1,5 @@
 "use strict";
+const { listToolLabels } = require("./tool-registry.js");
 
 const HERMES_IDENTITY = "Hermes";
 const HERMES_OPERATOR_TITLE = "your self-hosted Crypto Moonboys repo operator";
@@ -118,7 +119,7 @@ function classifyCapabilityPrompt(prompt) {
 }
 
 function toolsSummary() {
-  return HERMES_CAPABILITY_GROUPS.map((group) => group.label).join(", ");
+  return [...new Set([...HERMES_CAPABILITY_GROUPS.map((group) => group.label), ...listToolLabels()])].join(", ");
 }
 
 function buildCapabilityReply(kind) {

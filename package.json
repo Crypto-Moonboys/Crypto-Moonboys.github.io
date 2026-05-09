@@ -13,7 +13,9 @@
     "test:shell-parity": "node scripts/site-shell-parity-audit.mjs",
     "lint:shell": "node --check js/site-shell.js",
     "test:live-site": "node scripts/live-site-verify.mjs",
-    "deploy:status": "node scripts/pages-deploy-status.mjs"
+    "deploy:status": "node scripts/pages-deploy-status.mjs",
+    "test:hermes-audit": "node scripts/hermes-agent-readiness-audit.mjs",
+    "test:hermes-readiness": "node tests/hermes-chat-proxy.test.js && node tests/hermes-runtime.test.js && node tests/hermes-bridge.test.js && node tests/hermes-execution-pipeline.test.js && node tests/hermes-repo-targeting.test.js && node tests/hermes-webcrawl.test.js && node tests/hermes-swarm-manager.test.js && node tests/hermes-job-manager.test.js && node tests/hermes-openai-command-interpreter.test.js && node tests/hermes-sandbox-runner.test.js && node tests/hermes-job-pr-flow.test.js"
   },
   "keywords": [],
   "author": "",

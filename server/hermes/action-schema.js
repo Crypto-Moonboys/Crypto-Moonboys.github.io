@@ -25,6 +25,7 @@ const ACTIONS = Object.freeze({
   WEBCRAWL_LIST_TOPICS: "webcrawl/list-topics",
   WEBCRAWL_SUMMARIZE: "webcrawl/summarize",
   WEBCRAWL_CLEAR_SESSION: "webcrawl/clear-session",
+  IMAGE_GENERATE: "images/generate",
   COMMAND_RUN: "command/run",
   PATCH_PREVIEW: "patch/preview",
   PATCH_APPLY: "patch/apply",

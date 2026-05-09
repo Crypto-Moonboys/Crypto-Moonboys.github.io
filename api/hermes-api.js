@@ -23,6 +23,10 @@ const sandboxRunner = require("../server/hermes/sandbox-runner.js");
 const swarmExecutor = require("../server/hermes/swarm-executor.js");
 const { runTests, applyRepair, markReadyForPr, SAFE_TEST_ALIASES } = require("../server/hermes/job-repair-loop.js");
 const { getSkillLoaderStatus } = require("../server/hermes/skill-loader.js");
+const { loadRuntimeMap, loadReposConfig, loadToolPolicy } = require("../server/hermes/runtime-map.js");
+const { getToolRegistry } = require("../server/hermes/tool-registry.js");
+const { generateImage } = require("../server/hermes/image-generator.js");
+const githubConnector = require("../server/hermes/github-connector.js");
 const {
   listSessions,
   createSession,
@@ -404,14 +408,16 @@ app.get("/api/hermes/webui/capabilities", (_req, res) => {
       { key: "file_editing", status: "partial", endpoint: "/api/hermes/patch/preview,/api/hermes/patch/apply,/api/hermes/patch/rollback" },
       { key: "tool_cards", status: "partial", endpoint: "/api/hermes/chat (toolResults)" },
       { key: "memory", status: "working", endpoint: "/api/hermes/memory" },
-      { key: "skills", status: "missing", endpoint: "/api/hermes/skills" },
+      { key: "skills", status: "working", endpoint: "/api/hermes/skills" },
       { key: "tasks_cron", status: "partial", endpoint: "/api/hermes/task/plan,/api/hermes/jobs/*" },
       { key: "profiles", status: "missing", endpoint: "" },
       { key: "model_selector", status: "working", endpoint: "/api/hermes/models" },
       { key: "attachments", status: "missing", endpoint: "" },
       { key: "voice_input", status: "missing", endpoint: "" },
       { key: "settings_control_center", status: "partial", endpoint: "/api/hermes/models,/api/hermes/policy,/api/hermes/swarm" },
-      { key: "websearch", status: "working", endpoint: "/api/hermes/webcrawl/search" }
+      { key: "websearch", status: "working", endpoint: "/api/hermes/webcrawl/search" },
+      { key: "job_dashboard", status: "working", endpoint: "/api/hermes/jobs" },
+      { key: "create_pr_button", status: "working", endpoint: "/api/hermes/jobs/:id/create-pr" }
     ],
     honestyNote: "Vendored Hermes WebUI shell is not full product parity. Unsupported features are explicitly marked missing or partial."
   });
@@ -544,7 +550,138 @@ app.post("/api/hermes/chat", async (req, res) => {
 });
 
 app.get("/api/hermes/skills", (_req, res) => {
-  return res.status(501).json(getSkillLoaderStatus());
+  return res.json(getSkillLoaderStatus());
+});
+
+app.get("/api/hermes/runtime/map", (_req, res) => {
+  return res.json({
+    ok: true,
+    runtimeMap: loadRuntimeMap(),
+    repos: loadReposConfig(),
+    toolPolicy: loadToolPolicy()
+  });
+});
+
+app.get("/api/hermes/profile", (_req, res) => {
+  const base = process.env.HERMES_DATA_ROOT || path.join(process.cwd(), "admin", "hermes-data");
+  const readJson = (name) => {
+    const file = path.join(base, name);
+    if (!fs.existsSync(file)) return {};
+    try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch (_e) { return {}; }
+  };
+  return res.json({
+    ok: true,
+    profile: readJson("profile.json"),
+    settings: readJson("settings.json"),
+    personality: readJson("personality.json"),
+    toolPolicy: readJson("tool-policy.json")
+  });
+});
+
+app.post("/api/hermes/images/generate", async (req, res) => {
+  try {
+    const prompt = readStringBody(req, "prompt");
+    if (!prompt) return res.status(400).json({ ok: false, error: "prompt is required." });
+    const image = await generateImage(prompt, { size: readStringBody(req, "size", "1024x1024") });
+    return res.json({ ok: true, image });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.get("/api/hermes/github/repos", async (_req, res) => {
+  try {
+    const repos = await githubConnector.listRepos();
+    return res.json({ ok: true, repos });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/github/clone-register", (req, res) => {
+  return executePrivilegedActionRoute(req, res, toAction(ACTIONS.REPO_CLONE, {
+    id: readStringBody(req, "id"),
+    name: readStringBody(req, "name"),
+    remoteUrl: readStringBody(req, "remoteUrl"),
+    defaultBranch: readStringBody(req, "defaultBranch", "main")
+  }));
+});
+
+app.post("/api/hermes/github/branch", (req, res) => {
+  return executePrivilegedActionRoute(req, res, toAction(ACTIONS.GIT_BRANCH, { name: readStringBody(req, "name") }));
+});
+
+app.post("/api/hermes/github/commit", (req, res) => {
+  return executePrivilegedActionRoute(req, res, toAction(ACTIONS.GIT_COMMIT, { message: readStringBody(req, "message", "Hermes commit") }));
+});
+
+app.post("/api/hermes/github/push", (req, res) => {
+  return executePrivilegedActionRoute(req, res, toAction(ACTIONS.GIT_PUSH, {
+    remote: readStringBody(req, "remote", "origin"),
+    branch: readStringBody(req, "branch"),
+    dryRun: readBooleanBody(req, "dryRun")
+  }));
+});
+
+app.post("/api/hermes/github/pr", async (req, res) => {
+  try {
+    const pr = await githubConnector.createPullRequest(
+      readStringBody(req, "owner"),
+      readStringBody(req, "repo"),
+      readStringBody(req, "head"),
+      readStringBody(req, "base", "main"),
+      readStringBody(req, "title"),
+      readStringBody(req, "body")
+    );
+    return res.json({ ok: true, pr });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/github/pr/comment", async (req, res) => {
+  try {
+    const comment = await githubConnector.commentOnPr(
+      readStringBody(req, "owner"),
+      readStringBody(req, "repo"),
+      Number(req.body?.issueNumber || 0),
+      readStringBody(req, "body")
+    );
+    return res.json({ ok: true, comment });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.post("/api/hermes/github/pr/request-review", async (req, res) => {
+  try {
+    const review = await githubConnector.requestReview(
+      readStringBody(req, "owner"),
+      readStringBody(req, "repo"),
+      Number(req.body?.pullNumber || 0),
+      Array.isArray(req.body?.reviewers) ? req.body.reviewers.map(String) : []
+    );
+    return res.json({ ok: true, review });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.get("/api/hermes/github/pr/comments", async (req, res) => {
+  try {
+    const comments = await githubConnector.readReviewComments(
+      readTextQuery(req, "owner"),
+      readTextQuery(req, "repo"),
+      Number(req.query?.pullNumber || 0)
+    );
+    return res.json({ ok: true, comments });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: String(error?.message || error) });
+  }
+});
+
+app.get("/api/hermes/tools", (_req, res) => {
+  return res.json({ ok: true, tools: getToolRegistry() });
 });
 
 app.get("/api/hermes/sessions", (_req, res) => {

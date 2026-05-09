@@ -119,6 +119,15 @@ function formatToolResult(result, debug = false) {
     if (wc.unavailable === true) {
       summary = "Webcrawl tools unavailable";
     }
+  } else if (action === "images/generate") {
+    summary = "Image generation completed.";
+    entries = [{
+      provider: result?.result?.provider || "",
+      revisedPrompt: result?.result?.revisedPrompt || "",
+      b64Json: result?.result?.b64Json ? "[base64 image data]" : ""
+    }];
+    totalCount = 1;
+    shownCount = 1;
   }
 
   const view = {
@@ -449,7 +458,7 @@ async function runConversation(input = {}) {
 
     const failed = results.filter((r) => r.ok !== true);
     let summary = failed.length
-      ? `Action completed with ${failed.length} error(s).`
+      ? `Actions finished with ${failed.length} failure(s): ${failed.map((r) => r.resultSummary).slice(0, 2).join(" | ")}`
       : `Executed ${results.length} action(s) successfully.`;
 
     for (const result of results) {

@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 
 (function bootstrapImportedHermesWebUi(global) {
   const adapter = new global.HermesWebUiAdapter();
@@ -59,7 +59,7 @@
       const action = String(item?.action || "tool");
       const status = item?.ok === true ? "ok" : "error";
       const summary = String(item?.resultSummary || item?.error || "").trim();
-      card.innerHTML = `<strong>${escapeHtml(action)}</strong> · ${escapeHtml(status)}<br>${escapeHtml(summary)}`;
+      card.innerHTML = `<strong>${escapeHtml(action)}</strong> � ${escapeHtml(status)}<br>${escapeHtml(summary)}`;
       cards.appendChild(card);
     }
     return cards;
@@ -114,8 +114,8 @@
     const msg = $("msg");
     if (msg) {
       msg.placeholder = surface === "brain"
-        ? "Message Hermes (with THE BRAIN context)…"
-        : "Message Hermes…";
+        ? "Message Hermes (with THE BRAIN context)..."
+        : "Message Hermes...";
     }
 
     global.document.querySelectorAll(".rail .nav-tab, .sidebar-nav, #panelTasks, #panelKanban, #panelSkills, #panelMemory, #panelWorkspaces, #panelProfiles, #panelTodos, #panelInsights, #panelLogs, #panelSettings").forEach((node) => {
@@ -134,12 +134,16 @@
   async function refreshHermesStatus() {
     const panel = $("adapterStatusPanel");
     if (!panel) return;
-    panel.textContent = "Loading Hermes status…";
+    panel.textContent = "Loading Hermes status...";
     try {
-      const [status, workspace, capabilities] = await Promise.all([
+      const [status, workspace, capabilities, tools, skills, jobs, profile] = await Promise.all([
         adapter.hermesStatus(),
         adapter.listWorkspace("."),
-        adapter.getWebUiCapabilities()
+        adapter.getWebUiCapabilities(),
+        adapter.getTools(),
+        adapter.getSkillsStatus(),
+        adapter.listJobs(),
+        adapter.getProfile()
       ]);
       const swarmCount = status.swarm.status === "fulfilled"
         ? (status.swarm.value?.swarm?.length || status.swarm.value?.agents?.length || 0)
@@ -155,10 +159,16 @@
         : [];
       const featureItems = Array.isArray(capabilities?.features) ? capabilities.features : [];
       const missingFeatures = featureItems.filter((feature) => feature.status !== "working").map((feature) => feature.key);
+      const toolLabels = Array.isArray(tools?.tools) ? tools.tools.map((t) => t.label).slice(0, 8) : [];
+      const skillItems = Array.isArray(skills?.skills) ? skills.skills.map((s) => s.id).slice(0, 8) : [];
+      const jobCount = Array.isArray(jobs?.jobs) ? jobs.jobs.length : 0;
+      const identity = String(profile?.personality?.identity || profile?.profile?.role || "Hermes is the owner-controlled Crypto Moonboys repo operator.");
       panel.textContent = [
+        `Identity: ${identity}`,
         `Hermes swarm agents: ${swarmCount}`,
         `Pending approvals: ${approvalCount}`,
         `Command queue: ${queueCount}`,
+        `Jobs: ${jobCount}`,
         `Session: ${state.sessionId || "none"}`,
         formatSettled("Swarm", status.swarm),
         formatSettled("Approvals", status.approvals),
@@ -167,6 +177,9 @@
         "",
         "Workspace sample:",
         ...(workspaceEntries.length ? workspaceEntries : ["(no entries)"]),
+        "",
+        `Tools: ${toolLabels.join(", ") || "(none)"}`,
+        `Skills: ${skillItems.join(", ") || "(none)"}`,
         "",
         `WebUI parity honesty: ${missingFeatures.length ? `partial/missing -> ${missingFeatures.join(", ")}` : "working"}`
       ].join("\n");
@@ -178,7 +191,7 @@
   async function refreshBrainStatus() {
     const panel = $("adapterStatusPanel");
     if (!panel) return;
-    panel.textContent = "Loading THE BRAIN status…";
+    panel.textContent = "Loading THE BRAIN status...";
     try {
       const status = await adapter.brainStatus();
       const online = status.status.status === "fulfilled" ? status.status.value.online : false;
@@ -242,6 +255,25 @@
       const summary = String(result?.toolResult?.result?.message || result?.toolResult?.resultSummary || "Websearch completed.");
       appendMessage("assistant", summary, { toolResults: [result.toolResult || result] });
       // Add the exchange to state.history so follow-up messages have context.
+      state.history.push({ role: "user", content: prompt });
+      state.history.push({ role: "assistant", content: summary });
+      trimHistory();
+      await persistExchange(prompt, summary);
+      return true;
+    }
+    if (/^\/image(\s+|$)/iu.test(text)) {
+      const imagePrompt = text.replace(/^\/image\s*/iu, "").trim();
+      if (!imagePrompt) {
+        appendMessage("assistant", "Usage: /image <prompt>");
+        return true;
+      }
+      const result = await adapter.generateImage(imagePrompt);
+      const revised = String(result?.image?.revisedPrompt || imagePrompt);
+      const hasImage = Boolean(result?.image?.b64Json);
+      const summary = hasImage
+        ? `Image generated via ${result?.image?.provider || "provider"}. Revised prompt: ${revised}`
+        : "Image generation completed but image payload was empty.";
+      appendMessage("assistant", summary, { toolResults: [{ action: "images/generate", ok: hasImage, resultSummary: summary }] });
       state.history.push({ role: "user", content: prompt });
       state.history.push({ role: "assistant", content: summary });
       trimHistory();
@@ -376,3 +408,4 @@
     void init();
   }
 })(window);
+

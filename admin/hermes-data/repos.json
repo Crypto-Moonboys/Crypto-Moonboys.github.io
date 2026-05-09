@@ -1,0 +1,28 @@
+{
+  "repos": [
+    {
+      "id": "crypto-moonboys-site",
+      "owner": "Crypto-Moonboys",
+      "name": "Crypto-Moonboys.github.io",
+      "remoteUrl": "https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io"
+    },
+    {
+      "id": "the-daddy",
+      "owner": "HODLKONG64",
+      "name": "THEY-CALL-ME-THE-DADDY",
+      "remoteUrl": "https://github.com/HODLKONG64/THEY-CALL-ME-THE-DADDY"
+    },
+    {
+      "id": "the-brain",
+      "owner": "HODLKONG64",
+      "name": "the-brain",
+      "remoteUrl": "https://github.com/HODLKONG64/the-brain"
+    },
+    {
+      "id": "agents-of-change",
+      "owner": "HODLKONG64",
+      "name": "HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE",
+      "remoteUrl": "https://github.com/HODLKONG64/HAY-MUM-IM-BUILDING-AGENTS-OF-CHANGE"
+    }
+  ]
+}
