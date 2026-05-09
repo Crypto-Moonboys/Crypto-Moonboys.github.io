@@ -162,9 +162,11 @@ test("js renderOgMessages uses the shared log", () => {
 });
 
 test("js OG send uses the same api() function as main send", () => {
-  // api is defined exactly once
+  // api() is defined exactly once and both send handlers call the same /api/hermes/chat path
   const apiDefs = jsSource.match(/async function api\(/gu) || [];
-  assert.equal(apiDefs.length, 1);
+  assert.equal(apiDefs.length, 1, "api() should be defined exactly once");
+  const chatEndpoints = jsSource.match(/\/api\/hermes\/chat/gu) || [];
+  assert.ok(chatEndpoints.length >= 2, "chat endpoint used in at least two send handlers");
 });
 
 test("js OG send uses the shared history array", () => {
@@ -190,11 +192,6 @@ test("js OG send removes ogMessages entry on failure to stay in sync with histor
   assert.match(jsSource, /ogMessages\.pop\(\)/u);
 });
 
-test("js does not add a second api function or duplicate chat endpoint", () => {
-  // Only one api() function definition
-  const apiDefs = jsSource.match(/async function api\(/gu) || [];
-  assert.equal(apiDefs.length, 1, "api() should be defined exactly once");
-  // Both sendChat and ogSendChat reference the same /api/hermes/chat path
-  const chatEndpoints = jsSource.match(/\/api\/hermes\/chat/gu) || [];
-  assert.ok(chatEndpoints.length >= 2, "chat endpoint used in at least two send handlers");
+test("js Escape key closes overlay", () => {
+  assert.match(jsSource, /key === "Escape"/);
 });

@@ -291,7 +291,7 @@
       if (barLast) barLast.textContent = lastAction;
     } catch (error) {
       history.pop(); // remove the user turn that failed
-      ogMessages.pop(); // keep ogMessages in sync with history on failure
+      ogMessages.pop(); // remove the user entry added above so both arrays stay in sync
       appendOgMessage("error", String(error?.message || error));
     }
   });
