@@ -443,8 +443,14 @@ app.get("/api/hermes/swarm", (_req, res) => {
 
 app.post("/api/hermes/swarm/plan", (req, res) => {
   const taskBrief = readStringBody(req, "taskBrief") || readStringBody(req, "prompt") || readStringBody(req, "task");
+  const normalizedTaskBrief = taskBrief.trim();
+
+  if (!normalizedTaskBrief) {
+    return res.status(400).json({ ok: false, error: "taskBrief is required" });
+  }
+
   const context = readObjectBody(req, "context");
-  res.json({ plan: createSwarmPlan(taskBrief, context) });
+  return res.json({ plan: createSwarmPlan(normalizedTaskBrief, context) });
 });
 
 app.get("/api/hermes/runtime/root", async (_req, res) => {

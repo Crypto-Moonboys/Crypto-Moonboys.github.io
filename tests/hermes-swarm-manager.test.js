@@ -148,3 +148,32 @@ test("swarm registry source remains present", () => {
   assert.ok(validRoleIds.has("npc_agent"));
   assert.ok(validRoleIds.has("watcher_agent"));
 });
+
+test("swarm plan API rejects empty task briefs and trims valid briefs", async () => {
+  const { app } = require("../api/hermes-api.js");
+  const server = await new Promise((resolve) => {
+    const listening = app.listen(0, "127.0.0.1", () => resolve(listening));
+  });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const empty = await fetch(`${base}/api/hermes/swarm/plan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ taskBrief: "   " })
+    });
+    assert.equal(empty.status, 400);
+    assert.deepEqual(await empty.json(), { ok: false, error: "taskBrief is required" });
+
+    const valid = await fetch(`${base}/api/hermes/swarm/plan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ taskBrief: "  Fix UI task board  ", context: { swarmExecutionMode: "owner_operator" } })
+    });
+    assert.equal(valid.status, 200);
+    const data = await valid.json();
+    assert.equal(data.plan.taskBrief, "Fix UI task board");
+    assert.equal(data.plan.executionMode, EXECUTION_MODES.OWNER_OPERATOR);
+  } finally {
+    await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  }
+});
