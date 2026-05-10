@@ -9,6 +9,7 @@ const { getActiveRepoOrThrow } = require("./repo-registry.js");
 const { createSwarmPlan, EXECUTION_MODES } = require("./swarm-manager.js");
 const { buildExecutionPipeline } = require("./execution-pipeline.js");
 const { createProposedOperationsPlan } = require("./proposed-operations.js");
+const { runRepoAudit } = require("./repo-audit.js");
 const {
   getHermesCapabilities,
   classifyCapabilityPrompt,
@@ -184,6 +185,7 @@ async function runConversation(input = {}) {
   }
   const routing = routePromptToAction(input);
   const commandIntent = routing.commandIntent || null;
+  const repoAuditFn = typeof input.repoAuditFn === "function" ? input.repoAuditFn : runRepoAudit;
 
   if (routing.modeSwitch) {
     return {
@@ -490,50 +492,82 @@ async function runConversation(input = {}) {
 
   if (commandIntent && commandIntent.intent !== "unknown") {
     if (commandIntent.intent === "repo_audit") {
-      const ctx = {
-        mode,
-        role,
-        confirmEdit: input.confirmEdit === true,
-        approvalId: input.approvalId,
-        approvalToken: input.approvalToken,
-        sessionId: input.sessionId,
-        swarm: getAgents()
-      };
-      const auditTerms = ["bug", "error", "fail", "fixme", "todo", "broken"];
-      const results = [];
-      for (const term of auditTerms) {
-        const action = { type: ACTIONS.REPO_SEARCH, payload: { query: term } };
-        const result = await executeAction(action, ctx);
-        const formatted = formatToolResult(result, input.debug === true);
-        results.push({
-          term,
-          totalCount: Number(formatted.totalCount || 0),
-          ok: formatted.ok
-        });
-      }
-      const successful = results.filter((r) => r.ok);
-      const totalMatches = successful.reduce((sum, item) => sum + item.totalCount, 0);
-      return {
-        reply: `Ran repo-audit term searches (${auditTerms.join(", ")}). Found ${totalMatches} total path matches across term scans. I can now propose a sandbox fix plan for the top findings.`,
-        actions: [],
-        toolResults: [{
-          action: "repo/audit-scan",
-          ok: successful.length > 0,
-          repoUsed: "",
-          pathUsed: "",
-          resultSummary: "Repo audit completed using multiple term-based repo searches.",
-          entries: results,
-          totalCount: results.length,
-          shownCount: results.length,
+      const activeRepo = (() => {
+        try {
+          return getActiveRepoOrThrow();
+        } catch (_error) {
+          return null;
+        }
+      })();
+      try {
+        const audit = repoAuditFn();
+        const high = Number(audit.bySeverity?.high || 0);
+        const medium = Number(audit.bySeverity?.medium || 0);
+        const low = Number(audit.bySeverity?.low || 0);
+        return {
+          reply: `Structured repo audit complete: scanned ${audit.scannedFiles}/${audit.maxScanFiles} files and collected ${audit.findingsCollected} findings (high ${high}, medium ${medium}, low ${low}). I can now create a sandbox repair plan for the top findings.`,
+          actions: [],
+          toolResults: [{
+            action: "repo/audit-scan",
+            ok: true,
+            repoUsed: activeRepo ? `${activeRepo.id} (${activeRepo.name})` : "",
+            pathUsed: String(activeRepo?.localPath || ""),
+            resultSummary: "Repo audit completed using content-aware rule scanning.",
+            entries: [
+              {
+                scannedFiles: audit.scannedFiles,
+                maxScanFiles: audit.maxScanFiles,
+                bySeverity: audit.bySeverity,
+                findingsCollected: audit.findingsCollected,
+                maxFindings: audit.maxFindings,
+                findingsCapped: audit.findingsCapped === true,
+                capped: audit.capped === true,
+                findings: audit.findings,
+                nextActions: audit.nextActions
+              }
+            ],
+            totalCount: audit.findingsCollected,
+            shownCount: audit.findings.length,
+            missingRequirements: [],
+            error: ""
+          }],
           missingRequirements: [],
-          error: ""
-        }],
-        missingRequirements: [],
-        executionPipeline: null,
-        swarmPlan: null,
-        mode,
-        role
-      };
+          executionPipeline: null,
+          swarmPlan: null,
+          mode,
+          role
+        };
+      } catch (error) {
+        const err = String(error?.message || error || "Repo audit failed");
+        const missingRequirements = [];
+        if (/repo|active/i.test(err)) {
+          missingRequirements.push("active repo context");
+        }
+        return {
+          reply: "Repo audit could not run from current repo state. I returned a safe failure report instead of crashing the request.",
+          actions: [],
+          toolResults: [{
+            action: "repo/audit-scan",
+            ok: false,
+            repoUsed: activeRepo ? `${activeRepo.id} (${activeRepo.name})` : "",
+            pathUsed: String(activeRepo?.localPath || ""),
+            resultSummary: "Repo audit failed before scan completion.",
+            entries: [{
+              nextAction: "Rebuild repo index, verify active repo selection, and confirm repo root path exists."
+            }],
+            totalCount: 0,
+            shownCount: 0,
+            missingRequirements,
+            error: err,
+            nextSafeAction: "Run index/rebuild, select active repo, then retry repo audit."
+          }],
+          missingRequirements,
+          executionPipeline: null,
+          swarmPlan: null,
+          mode,
+          role
+        };
+      }
     }
 
     if (commandIntent.intent === "test_run") {
@@ -594,7 +628,7 @@ async function runConversation(input = {}) {
       };
     }
 
-    if (commandIntent.intent === "pr_github_workflow" || commandIntent.intent === "sandbox_job" || commandIntent.intent === "deployment_vps" || commandIntent.intent === "brain_npc") {
+    if (commandIntent.intent === "pr_workflow" || commandIntent.intent === "sandbox_job" || commandIntent.intent === "deploy" || commandIntent.intent === "brain_npc") {
       return {
         reply: `${commandIntent.nextAction}`,
         actions: [],
