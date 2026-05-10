@@ -148,14 +148,38 @@ const DEPLOY_HTML_DIRS = [
   'games',
 ];
 
+function collectDeployHtmlFiles(absDir, files = []) {
+  if (!fs.existsSync(absDir)) return files;
+  for (const entry of fs.readdirSync(absDir, { withFileTypes: true })) {
+    const absEntry = path.join(absDir, entry.name);
+
+    if (entry.isDirectory()) {
+      const name = entry.name;
+      if (
+        name.startsWith('.') ||
+        name === 'node_modules' ||
+        name === '.git' ||
+        name.startsWith('_')
+      ) {
+        continue;
+      }
+      collectDeployHtmlFiles(absEntry, files);
+      continue;
+    }
+
+    if (!entry.isFile()) continue;
+    if (!entry.name.endsWith('.html')) continue;
+    if (entry.name.startsWith('_')) continue;
+    files.push(absEntry);
+  }
+  return files;
+}
+
 const deployFilesToCheck = [
   ...DEPLOY_FILE_PATTERNS.map((f) => path.join(ROOT, f)),
   ...DEPLOY_HTML_DIRS.flatMap((dir) => {
     const absDir = path.join(ROOT, dir);
-    if (!fs.existsSync(absDir)) return [];
-    return fs.readdirSync(absDir, { withFileTypes: true })
-      .filter((e) => e.isFile() && e.name.endsWith('.html'))
-      .map((e) => path.join(absDir, e.name));
+    return collectDeployHtmlFiles(absDir);
   }),
   // Root-level HTML pages (excluding _ prefixed templates)
   ...fs.readdirSync(ROOT, { withFileTypes: true })
