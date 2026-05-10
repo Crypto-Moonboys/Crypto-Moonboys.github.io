@@ -1,8 +1,0 @@
-{
-  "surface": "hermes-webui",
-  "chatStyle": "gpt",
-  "maxHistory": 24,
-  "jobDashboard": true,
-  "toolRegistryPanel": true,
-  "skillsPanel": true
-}
