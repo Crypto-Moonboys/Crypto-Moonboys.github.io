@@ -12,8 +12,11 @@
  * Canonical article hub:
  *   /search.html
  *
- * Legacy page explicitly excluded:
- *   /wiki/index.html
+ * Pages explicitly excluded from sitemap:
+ *   /wiki/index.html      — legacy redirect stub
+ *   /articles.html        — noindex meta-refresh redirect stub
+ *   /agent.html           — disallowed in robots.txt
+ *   /about/index.html     — noindex redirect to /about.html
  */
 
 'use strict';
@@ -98,7 +101,7 @@ addEntry(`${BASE_URL}/`, 'weekly', '1.0');
 const ROOT_PAGES = [
   { file: 'about.html', changefreq: 'weekly', priority: '0.9' },
   { file: 'search.html', changefreq: 'weekly', priority: '1.0' },
-  { file: 'articles.html', changefreq: 'weekly', priority: '0.9' },
+  // articles.html is a noindex meta-refresh redirect stub — excluded from sitemap
   // agent.html is disallowed in robots.txt — excluded from sitemap
   { file: 'block-topia.html', changefreq: 'daily', priority: '0.9' },
 ];

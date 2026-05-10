@@ -123,6 +123,29 @@ for (const filePath of filesToScan) {
   }
 }
 
+/* ── Sitemap exclusion check ───────────────────────────────────────────────
+ * The following URL paths must never appear in sitemap.xml because they are
+ * noindex redirect stubs or pages disallowed in robots.txt.
+ */
+const SITEMAP_FORBIDDEN_PATHS = [
+  '/agent.html',
+  '/about/index.html',
+  '/articles.html',
+];
+
+const sitemapPath = path.join(ROOT, 'sitemap.xml');
+if (fs.existsSync(sitemapPath)) {
+  const sitemapContent = fs.readFileSync(sitemapPath, 'utf8');
+  for (const forbidden of SITEMAP_FORBIDDEN_PATHS) {
+    // Match the exact path inside a <loc>…</loc> tag to avoid false positives
+    // from comments, other URLs that share a suffix, etc.
+    const locRe = new RegExp(`<loc>[^<]*${forbidden.replace(/\./g, '\\.')}\\s*</loc>`);
+    if (locRe.test(sitemapContent)) {
+      failures.push(`Forbidden URL path "${forbidden}" found in sitemap.xml`);
+    }
+  }
+}
+
 /* ── Canonical domain drift check ──────────────────────────────────────────
  * Public-facing deploy files must never reference the old github.io domain.
  * Canonical public domain is https://cryptomoonboys.com.
