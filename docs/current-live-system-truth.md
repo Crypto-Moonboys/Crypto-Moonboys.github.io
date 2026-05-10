@@ -8,7 +8,6 @@
 - Arcade XP sync is live.
 - Faction join/status/earn routes are live.
 - Block Topia entry gating is live.
-- Hermes runtime/admin tooling is live.
 
 ## Active Block Topia truth
 

@@ -8,7 +8,6 @@ This repository should track only live routes, wired runtime systems, and active
 
 - `README.md` is the top-level repo truth.
 - `robots.txt` stays at the repository root.
-- Hermes is the active operator/runtime agent layer.
 
 ## Active Runtime Areas
 
@@ -16,7 +15,6 @@ This repository should track only live routes, wired runtime systems, and active
 - Arcade routes under `/games/`
 - Telegram-linked Arcade XP progression
 - Block Topia live city runtime under `/games/block-topia/`
-- Hermes admin/runtime tooling
 
 ## Active Arcade Routes
 
