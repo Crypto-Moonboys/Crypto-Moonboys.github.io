@@ -26,9 +26,18 @@ function isTextCandidate(filePath) {
   return TEXT_EXTENSIONS.has(path.extname(String(filePath || "")).toLowerCase());
 }
 
-function runRepoAudit() {
-  const index = loadIndex();
-  const repoRoot = getActiveRepoRoot();
+function isPathInsideRepo(repoRootResolved, candidateAbsPath) {
+  const normalizedRoot = String(repoRootResolved || "");
+  const normalizedCandidate = String(candidateAbsPath || "");
+  if (!normalizedRoot || !normalizedCandidate) return false;
+  const rel = path.relative(normalizedRoot, normalizedCandidate);
+  return rel !== ".." && !rel.startsWith(`..${path.sep}`) && !path.isAbsolute(rel);
+}
+
+function runRepoAudit(options = {}) {
+  const index = options.index || loadIndex();
+  const repoRoot = options.repoRoot || getActiveRepoRoot();
+  const repoRootResolved = path.resolve(repoRoot);
   const candidates = (Array.isArray(index.files) ? index.files : [])
     .filter((f) => isTextCandidate(f.path))
     .slice(0, MAX_SCAN_FILES);
@@ -36,13 +45,16 @@ function runRepoAudit() {
   const findings = [];
   const bySeverity = { high: 0, medium: 0, low: 0 };
   let scannedFiles = 0;
+  let findingsCapped = false;
 
   for (const file of candidates) {
     const relPath = String(file.path || "");
     if (!relPath) continue;
-    const absPath = path.join(repoRoot, relPath);
+    const absPath = path.resolve(repoRootResolved, relPath);
+    if (!isPathInsideRepo(repoRootResolved, absPath)) continue;
     if (!fs.existsSync(absPath)) continue;
-    const stat = fs.statSync(absPath);
+    const stat = fs.lstatSync(absPath);
+    if (stat.isSymbolicLink()) continue;
     if (!stat.isFile() || stat.size > MAX_FILE_BYTES) continue;
     scannedFiles += 1;
 
@@ -61,11 +73,20 @@ function runRepoAudit() {
           reason: rule.reason
         });
         bySeverity[rule.severity] += 1;
-        if (findings.length >= MAX_FINDINGS) break;
+        if (findings.length >= MAX_FINDINGS) {
+          findingsCapped = true;
+          break;
+        }
       }
-      if (findings.length >= MAX_FINDINGS) break;
+      if (findings.length >= MAX_FINDINGS) {
+        findingsCapped = true;
+        break;
+      }
     }
-    if (findings.length >= MAX_FINDINGS) break;
+    if (findings.length >= MAX_FINDINGS) {
+      findingsCapped = true;
+      break;
+    }
   }
 
   findings.sort((a, b) => {
@@ -81,9 +102,13 @@ function runRepoAudit() {
 
   return {
     scannedFiles,
+    maxScanFiles: MAX_SCAN_FILES,
     findings: topFindings,
     bySeverity,
-    totalFindings: findings.length,
+    findingsCollected: findings.length,
+    maxFindings: MAX_FINDINGS,
+    findingsCapped,
+    capped: findingsCapped || candidates.length >= MAX_SCAN_FILES,
     nextActions
   };
 }
@@ -91,4 +116,3 @@ function runRepoAudit() {
 module.exports = {
   runRepoAudit
 };
-

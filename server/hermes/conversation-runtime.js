@@ -185,6 +185,7 @@ async function runConversation(input = {}) {
   }
   const routing = routePromptToAction(input);
   const commandIntent = routing.commandIntent || null;
+  const repoAuditFn = typeof input.repoAuditFn === "function" ? input.repoAuditFn : runRepoAudit;
 
   if (routing.modeSwitch) {
     return {
@@ -491,39 +492,82 @@ async function runConversation(input = {}) {
 
   if (commandIntent && commandIntent.intent !== "unknown") {
     if (commandIntent.intent === "repo_audit") {
-      const audit = runRepoAudit();
-      const high = Number(audit.bySeverity?.high || 0);
-      const medium = Number(audit.bySeverity?.medium || 0);
-      const low = Number(audit.bySeverity?.low || 0);
-      return {
-        reply: `Structured repo audit complete: scanned ${audit.scannedFiles} files and found ${audit.totalFindings} findings (high ${high}, medium ${medium}, low ${low}). I can now create a sandbox repair plan for the top findings.`,
-        actions: [],
-        toolResults: [{
-          action: "repo/audit-scan",
-          ok: true,
-          repoUsed: "",
-          pathUsed: "",
-          resultSummary: "Repo audit completed using content-aware rule scanning.",
-          entries: [
-            {
-              scannedFiles: audit.scannedFiles,
-              bySeverity: audit.bySeverity,
-              totalFindings: audit.totalFindings,
-              findings: audit.findings,
-              nextActions: audit.nextActions
-            }
-          ],
-          totalCount: audit.totalFindings,
-          shownCount: audit.findings.length,
+      const activeRepo = (() => {
+        try {
+          return getActiveRepoOrThrow();
+        } catch (_error) {
+          return null;
+        }
+      })();
+      try {
+        const audit = repoAuditFn();
+        const high = Number(audit.bySeverity?.high || 0);
+        const medium = Number(audit.bySeverity?.medium || 0);
+        const low = Number(audit.bySeverity?.low || 0);
+        return {
+          reply: `Structured repo audit complete: scanned ${audit.scannedFiles}/${audit.maxScanFiles} files and collected ${audit.findingsCollected} findings (high ${high}, medium ${medium}, low ${low}). I can now create a sandbox repair plan for the top findings.`,
+          actions: [],
+          toolResults: [{
+            action: "repo/audit-scan",
+            ok: true,
+            repoUsed: activeRepo ? `${activeRepo.id} (${activeRepo.name})` : "",
+            pathUsed: String(activeRepo?.localPath || ""),
+            resultSummary: "Repo audit completed using content-aware rule scanning.",
+            entries: [
+              {
+                scannedFiles: audit.scannedFiles,
+                maxScanFiles: audit.maxScanFiles,
+                bySeverity: audit.bySeverity,
+                findingsCollected: audit.findingsCollected,
+                maxFindings: audit.maxFindings,
+                findingsCapped: audit.findingsCapped === true,
+                capped: audit.capped === true,
+                findings: audit.findings,
+                nextActions: audit.nextActions
+              }
+            ],
+            totalCount: audit.findingsCollected,
+            shownCount: audit.findings.length,
+            missingRequirements: [],
+            error: ""
+          }],
           missingRequirements: [],
-          error: ""
-        }],
-        missingRequirements: [],
-        executionPipeline: null,
-        swarmPlan: null,
-        mode,
-        role
-      };
+          executionPipeline: null,
+          swarmPlan: null,
+          mode,
+          role
+        };
+      } catch (error) {
+        const err = String(error?.message || error || "Repo audit failed");
+        const missingRequirements = [];
+        if (/repo|active/i.test(err)) {
+          missingRequirements.push("active repo context");
+        }
+        return {
+          reply: "Repo audit could not run from current repo state. I returned a safe failure report instead of crashing the request.",
+          actions: [],
+          toolResults: [{
+            action: "repo/audit-scan",
+            ok: false,
+            repoUsed: activeRepo ? `${activeRepo.id} (${activeRepo.name})` : "",
+            pathUsed: String(activeRepo?.localPath || ""),
+            resultSummary: "Repo audit failed before scan completion.",
+            entries: [{
+              nextAction: "Rebuild repo index, verify active repo selection, and confirm repo root path exists."
+            }],
+            totalCount: 0,
+            shownCount: 0,
+            missingRequirements,
+            error: err,
+            nextSafeAction: "Run index/rebuild, select active repo, then retry repo audit."
+          }],
+          missingRequirements,
+          executionPipeline: null,
+          swarmPlan: null,
+          mode,
+          role
+        };
+      }
     }
 
     if (commandIntent.intent === "test_run") {
@@ -584,7 +628,7 @@ async function runConversation(input = {}) {
       };
     }
 
-    if (commandIntent.intent === "pr_github_workflow" || commandIntent.intent === "sandbox_job" || commandIntent.intent === "deployment_vps" || commandIntent.intent === "brain_npc") {
+    if (commandIntent.intent === "pr_workflow" || commandIntent.intent === "sandbox_job" || commandIntent.intent === "deploy" || commandIntent.intent === "brain_npc") {
       return {
         reply: `${commandIntent.nextAction}`,
         actions: [],

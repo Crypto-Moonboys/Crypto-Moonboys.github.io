@@ -23,6 +23,7 @@ const MODULES = [
   "../server/hermes/swarm-manager.js",
   "../server/hermes/execution-pipeline.js",
   "../server/hermes/proposed-operations.js",
+  "../server/hermes/repo-audit.js",
   "../server/hermes/conversation-runtime.js",
   "../server/hermes/capabilities.js",
   "../server/hermes/chat-proxy.js"
@@ -63,6 +64,7 @@ function loadWithRoot(root) {
     memoryStore: require("../server/hermes/memory-store.js"),
     commandRunner: require("../server/hermes/command-runner.js"),
     pathUtils: require("../server/hermes/path-utils.js"),
+    repoAudit: require("../server/hermes/repo-audit.js"),
     conversationRuntime: require("../server/hermes/conversation-runtime.js"),
     capabilities: require("../server/hermes/capabilities.js"),
     toolRouter: require("../server/hermes/tool-router.js")
@@ -221,6 +223,10 @@ test("owner command classifier covers broad intents deterministically", () => {
     ["build my 2 player bomber royale game", "game_build"],
     ["run tests", "test_run"],
     ["create PR", "pr_workflow"],
+    ["ask Copilot to review", "pr_workflow"],
+    ["request PR review", "pr_workflow"],
+    ["deploy", "deploy"],
+    ["restart VPS", "deploy"],
     ["create an image", "image_generation"],
     ["make animated canvas code", "animation_code"],
     ["show skills", "memory_skills_settings"],
@@ -253,4 +259,97 @@ test("read repo for code bugs routes to actionable scan response", async () => {
   const audit = response.toolResults.find((item) => item.action === "repo/audit-scan");
   assert.ok(audit);
   assert.match(String(audit.resultSummary || ""), /content-aware rule scanning/i);
+  assert.match(String(audit.repoUsed || ""), /crypto-moonboys-site/i);
+  assert.ok(String(audit.pathUsed || "").length > 0);
+  const entry = audit.entries?.[0] || {};
+  assert.ok(typeof entry.maxScanFiles === "number");
+  assert.ok(typeof entry.maxFindings === "number");
+  assert.ok(typeof entry.findingsCollected === "number");
+  assert.ok(typeof entry.findingsCapped === "boolean");
+});
+
+test("repo audit failure returns structured error and does not throw request", async () => {
+  const root = setupSandbox();
+  const { conversationRuntime } = loadWithRoot(root);
+  const response = await conversationRuntime.runConversation({
+    mode: "chat",
+    role: "main_hermes",
+    prompt: "read repo for code bugs",
+    history: [],
+    repoAuditFn: () => {
+      throw new Error("forced repo audit failure");
+    }
+  });
+  const audit = response.toolResults.find((item) => item.action === "repo/audit-scan");
+  assert.ok(audit);
+  assert.equal(audit.ok, false);
+  assert.match(String(audit.resultSummary || ""), /failed/i);
+  assert.match(String(audit.error || ""), /forced repo audit failure/i);
+});
+
+test("repo audit skips symlinks and out-of-root entries", () => {
+  const root = setupSandbox();
+  const { repoAudit } = loadWithRoot(root);
+  const outside = path.join(os.tmpdir(), `outside-${Date.now()}.js`);
+  fs.writeFileSync(outside, "eval('boom')\n");
+  const linkPath = path.join(root, "src", "outside-link.js");
+  try {
+    fs.symlinkSync(outside, linkPath);
+  } catch (_error) {
+    // Ignore symlink creation failures on restricted environments.
+  }
+  const result = repoAudit.runRepoAudit({
+    repoRoot: root,
+    index: {
+      files: [
+        { path: "src/outside-link.js" },
+        { path: "../outside.js" },
+        { path: "src/index.js" }
+      ]
+    }
+  });
+  const paths = (result.findings || []).map((item) => item.path);
+  assert.ok(!paths.includes("src/outside-link.js"));
+  assert.ok(!paths.includes("../outside.js"));
+});
+
+test("repo audit reports capped findings honestly", () => {
+  const root = setupSandbox();
+  const { repoAudit } = loadWithRoot(root);
+  const bulk = path.join(root, "src", "bulk.js");
+  const lines = [];
+  for (let i = 0; i < 400; i += 1) {
+    lines.push(`// TODO item ${i}`);
+  }
+  fs.writeFileSync(bulk, `${lines.join("\n")}\n`);
+  const result = repoAudit.runRepoAudit({
+    repoRoot: root,
+    index: { files: [{ path: "src/bulk.js" }] }
+  });
+  assert.equal(result.findingsCollected, result.maxFindings);
+  assert.equal(result.findingsCapped, true);
+  assert.equal(result.capped, true);
+});
+
+test("PR and deploy prompts route to workflow intent path", async () => {
+  const root = setupSandbox();
+  const { conversationRuntime } = loadWithRoot(root);
+  const prompts = [
+    ["create PR", "pr_workflow"],
+    ["ask Copilot to review", "pr_workflow"],
+    ["request PR review", "pr_workflow"],
+    ["deploy", "deploy"],
+    ["restart VPS", "deploy"]
+  ];
+  for (const [prompt, expectedIntent] of prompts) {
+    const response = await conversationRuntime.runConversation({
+      mode: "chat",
+      role: "main_hermes",
+      prompt,
+      history: []
+    });
+    const intentCard = (response.toolResults || []).find((item) => item.action === "hermes/owner-intent");
+    assert.ok(intentCard, `missing intent card for prompt: ${prompt}`);
+    assert.equal(intentCard.entries?.[0]?.intent, expectedIntent);
+  }
 });

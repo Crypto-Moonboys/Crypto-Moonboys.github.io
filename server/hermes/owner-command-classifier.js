@@ -133,7 +133,7 @@ function classifyOwnerCommand(prompt) {
       nextAction: "Route into GitHub PR and review workflow.",
       requiresSandbox: false,
       requiresApproval: true,
-      patterns: [/\b(create pr|pull request|copilot review|request review|ask copilot to review|review this pr)\b/iu]
+      patterns: [/\b(create pr|pull request|copilot review|request(?:\s+pr)?\s+review|ask copilot to review|review this pr)\b/iu]
     },
     {
       intent: "deploy",
