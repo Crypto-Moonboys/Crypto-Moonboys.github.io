@@ -11,10 +11,16 @@ This repository should track only live routes, wired runtime systems, and active
 
 ## Active Runtime Areas
 
+- GitHub Pages static frontend
 - Wiki and shared site shell
 - Arcade routes under `/games/`
 - Telegram-linked Arcade XP progression
+- `moonboys-api` Cloudflare Worker
+- leaderboard worker
+- anti-cheat worker
 - Block Topia live city runtime under `/games/block-topia/`
+- Block Topia server files under `server/block-topia/`
+- worker configs under `workers/`
 
 ## Active Arcade Routes
 
