@@ -202,6 +202,7 @@ const EXPECTED_SITEMAP_URL = 'https://cryptomoonboys.com/sitemap.xml';
 const SITEMAP_FORBIDDEN_PATHS = [
   '/agent.html',
   '/about/index.html',
+  '/articles.html',
 ];
 
 if (!fs.existsSync(ROBOTS_PATH)) {

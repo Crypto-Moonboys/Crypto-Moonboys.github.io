@@ -98,7 +98,6 @@ addEntry(`${BASE_URL}/`, 'weekly', '1.0');
 const ROOT_PAGES = [
   { file: 'about.html', changefreq: 'weekly', priority: '0.9' },
   { file: 'search.html', changefreq: 'weekly', priority: '1.0' },
-  { file: 'articles.html', changefreq: 'weekly', priority: '0.9' },
   // agent.html is disallowed in robots.txt — excluded from sitemap
   { file: 'block-topia.html', changefreq: 'daily', priority: '0.9' },
 ];
@@ -111,6 +110,7 @@ for (const page of ROOT_PAGES) {
 
 /* ── 3. /about/*.html ───────────────────────────────────────────────────── */
 // about/index.html is a noindex redirect to /about.html — excluded from sitemap
+// articles.html is a noindex redirect stub — excluded from sitemap
 for (const file of htmlFiles(path.join(ROOT, 'about')).filter(f => f !== 'index.html')) {
   addEntry(`${BASE_URL}/about/${file}`, 'monthly', '0.6');
 }
