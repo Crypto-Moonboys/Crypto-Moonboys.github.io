@@ -126,8 +126,11 @@ for (const filePath of filesToScan) {
 /* ── Canonical domain drift check ──────────────────────────────────────────
  * Public-facing deploy files must never reference the old github.io domain.
  * Canonical public domain is https://cryptomoonboys.com.
+ *
+ * Using a regex with escaped dots so the match is precise to the hostname
+ * rather than an open-ended substring search.
  */
-const OLD_DOMAIN = 'crypto-moonboys.github.io';
+const OLD_DOMAIN_RE = /crypto-moonboys\.github\.io/;
 
 // Explicit public-facing files that must be clean of the old domain
 const DEPLOY_FILE_PATTERNS = [
@@ -163,8 +166,8 @@ const deployFilesToCheck = [
 for (const absPath of deployFilesToCheck) {
   if (!fs.existsSync(absPath)) continue;
   const content = fs.readFileSync(absPath, 'utf8');
-  if (content.includes(OLD_DOMAIN)) {
-    failures.push(`Canonical domain drift: "${OLD_DOMAIN}" found in ${path.relative(ROOT, absPath)}`);
+  if (OLD_DOMAIN_RE.test(content)) {
+    failures.push(`Canonical domain drift: "crypto-moonboys.github.io" found in ${path.relative(ROOT, absPath)}`);
   }
 }
 
