@@ -1,6 +1,7 @@
 ﻿"use strict";
 
 const { ACTIONS } = require("./action-schema.js");
+const { classifyOwnerCommand: classifyOwnerCommandDeterministic } = require("./owner-command-classifier.js");
 
 function parsePathAfterKeyword(prompt, keyword) {
   const idx = prompt.toLowerCase().indexOf(keyword);
@@ -69,79 +70,7 @@ function detectOperatorIntent(prompt) {
 }
 
 function classifyOwnerCommand(prompt) {
-  const text = String(prompt || "").trim();
-  const lower = text.toLowerCase();
-  if (!text) {
-    return {
-      intent: "unknown",
-      confidence: "low",
-      toolPath: "",
-      nextAction: "Ask for an owner command.",
-      requiresSandbox: false,
-      requiresApproval: false
-    };
-  }
-
-  if (/^(who are you|what are you|do you know what you are|what tools do you have|what can you do)/iu.test(lower)) {
-    return { intent: "identity_capability", confidence: "high", toolPath: "hermes/capabilities", nextAction: "Return Hermes capability grounding.", requiresSandbox: false, requiresApproval: false };
-  }
-  if (/\b(can you edit\/create websites?|can you websearch)\b/iu.test(lower)) {
-    return { intent: "identity_capability", confidence: "high", toolPath: "hermes/capabilities", nextAction: "Return tool-grounded capability answer.", requiresSandbox: false, requiresApproval: false };
-  }
-  if (/\b(read repo for code bugs|scan repo for bugs|check repo health|audit codebase|find broken files)\b/iu.test(lower)) {
-    return { intent: "repo_audit", confidence: "high", toolPath: "repo/search", nextAction: "Run repo search for bug/error signals.", requiresSandbox: false, requiresApproval: false };
-  }
-  if (/\b(search the repo|repo search|find in repo)\b/iu.test(lower)) {
-    return { intent: "repo_search", confidence: "high", toolPath: "repo/search", nextAction: "Run repo search.", requiresSandbox: false, requiresApproval: false };
-  }
-  if (/^read\s+/iu.test(lower)) {
-    return { intent: "file_read", confidence: "high", toolPath: "file/read", nextAction: "Read file if target is path-like.", requiresSandbox: false, requiresApproval: false };
-  }
-  if (/\b(rebuild the whole website|fix admin page|fix the admin page|website|site)\b/iu.test(lower) && OPERATOR_VERB_PATTERN.test(lower)) {
-    return { intent: "website_build_edit", confidence: "high", toolPath: "swarm/pipeline", nextAction: "Create operator swarm plan and execution pipeline.", requiresSandbox: true, requiresApproval: false };
-  }
-  if (/\b(build my 2 player bomber royale game|build my 2-player bomber royale game|bomber royale|block-?topia|colyseus)\b/iu.test(lower)) {
-    return { intent: "game_build_edit", confidence: "high", toolPath: "swarm/pipeline", nextAction: "Create game build operator plan and pipeline.", requiresSandbox: true, requiresApproval: false };
-  }
-  if (/\b(run tests?|npm test|test run)\b/iu.test(lower)) {
-    return { intent: "test_run", confidence: "high", toolPath: "command/run", nextAction: "Plan or run approved test command.", requiresSandbox: false, requiresApproval: true };
-  }
-  if (/\b(websearch|search web|find new updates|crawl|rss|fetch url)\b/iu.test(lower)) {
-    return { intent: "websearch", confidence: "high", toolPath: "webcrawl/*", nextAction: "Run webcrawl tool action.", requiresSandbox: false, requiresApproval: false };
-  }
-  if (/\b(create an image|make an image|stencil|pixel art)\b/iu.test(lower)) {
-    return { intent: "image_generation", confidence: "high", toolPath: "images/generate", nextAction: "Use image generation route (approval-gated).", requiresSandbox: false, requiresApproval: true };
-  }
-  if (/\b(animated canvas|sprite|tile animation|animation code)\b/iu.test(lower)) {
-    return { intent: "animation_code_generation", confidence: "high", toolPath: "swarm/pipeline", nextAction: "Create code-generation operator plan.", requiresSandbox: true, requiresApproval: false };
-  }
-  if (/\b(create a sandbox job|sandbox job)\b/iu.test(lower)) {
-    return { intent: "sandbox_job", confidence: "high", toolPath: "jobs/create", nextAction: "Create sandbox job proposal.", requiresSandbox: true, requiresApproval: false };
-  }
-  if (/\b(create pr|pull request|copilot review|request review)\b/iu.test(lower)) {
-    return { intent: "pr_github_workflow", confidence: "high", toolPath: "github/pr-workflow", nextAction: "Use GitHub workflow path and approval flow.", requiresSandbox: false, requiresApproval: true };
-  }
-  if (/\b(ask copilot to review|have copilot review|review this pr|request copilot review)\b/iu.test(lower)) {
-    return { intent: "pr_github_workflow", confidence: "high", toolPath: "github/pr-workflow", nextAction: "Use GitHub workflow path and approval flow.", requiresSandbox: false, requiresApproval: true };
-  }
-  if (/\b(deploy|vps|pm2|nginx)\b/iu.test(lower)) {
-    return { intent: "deployment_vps", confidence: "medium", toolPath: "command/run", nextAction: "Run deployment status/commands with approval.", requiresSandbox: false, requiresApproval: true };
-  }
-  if (/\b(show skills|load runtime map|show registered repos|memory|settings|profile)\b/iu.test(lower)) {
-    return { intent: "memory_skills_settings", confidence: "high", toolPath: "skills/runtime/repos", nextAction: "Return skills/runtime/repo capabilities.", requiresSandbox: false, requiresApproval: false };
-  }
-  if (/\b(brain|npc)\b/iu.test(lower)) {
-    return { intent: "brain_npc", confidence: "medium", toolPath: "brain/api", nextAction: "Route to Brain integration path.", requiresSandbox: false, requiresApproval: false };
-  }
-
-  return {
-    intent: "unknown",
-    confidence: "low",
-    toolPath: "",
-    nextAction: "Fallback to chat model with Hermes system prompt.",
-    requiresSandbox: false,
-    requiresApproval: false
-  };
+  return classifyOwnerCommandDeterministic(prompt);
 }
 
 function routePromptToAction(input = {}) {

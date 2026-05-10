@@ -9,6 +9,7 @@ const { getActiveRepoOrThrow } = require("./repo-registry.js");
 const { createSwarmPlan, EXECUTION_MODES } = require("./swarm-manager.js");
 const { buildExecutionPipeline } = require("./execution-pipeline.js");
 const { createProposedOperationsPlan } = require("./proposed-operations.js");
+const { runRepoAudit } = require("./repo-audit.js");
 const {
   getHermesCapabilities,
   classifyCapabilityPrompt,
@@ -490,41 +491,30 @@ async function runConversation(input = {}) {
 
   if (commandIntent && commandIntent.intent !== "unknown") {
     if (commandIntent.intent === "repo_audit") {
-      const ctx = {
-        mode,
-        role,
-        confirmEdit: input.confirmEdit === true,
-        approvalId: input.approvalId,
-        approvalToken: input.approvalToken,
-        sessionId: input.sessionId,
-        swarm: getAgents()
-      };
-      const auditTerms = ["bug", "error", "fail", "fixme", "todo", "broken"];
-      const results = [];
-      for (const term of auditTerms) {
-        const action = { type: ACTIONS.REPO_SEARCH, payload: { query: term } };
-        const result = await executeAction(action, ctx);
-        const formatted = formatToolResult(result, input.debug === true);
-        results.push({
-          term,
-          totalCount: Number(formatted.totalCount || 0),
-          ok: formatted.ok
-        });
-      }
-      const successful = results.filter((r) => r.ok);
-      const totalMatches = successful.reduce((sum, item) => sum + item.totalCount, 0);
+      const audit = runRepoAudit();
+      const high = Number(audit.bySeverity?.high || 0);
+      const medium = Number(audit.bySeverity?.medium || 0);
+      const low = Number(audit.bySeverity?.low || 0);
       return {
-        reply: `Ran repo-audit term searches (${auditTerms.join(", ")}). Found ${totalMatches} total path matches across term scans. I can now propose a sandbox fix plan for the top findings.`,
+        reply: `Structured repo audit complete: scanned ${audit.scannedFiles} files and found ${audit.totalFindings} findings (high ${high}, medium ${medium}, low ${low}). I can now create a sandbox repair plan for the top findings.`,
         actions: [],
         toolResults: [{
           action: "repo/audit-scan",
-          ok: successful.length > 0,
+          ok: true,
           repoUsed: "",
           pathUsed: "",
-          resultSummary: "Repo audit completed using multiple term-based repo searches.",
-          entries: results,
-          totalCount: results.length,
-          shownCount: results.length,
+          resultSummary: "Repo audit completed using content-aware rule scanning.",
+          entries: [
+            {
+              scannedFiles: audit.scannedFiles,
+              bySeverity: audit.bySeverity,
+              totalFindings: audit.totalFindings,
+              findings: audit.findings,
+              nextActions: audit.nextActions
+            }
+          ],
+          totalCount: audit.totalFindings,
+          shownCount: audit.findings.length,
           missingRequirements: [],
           error: ""
         }],

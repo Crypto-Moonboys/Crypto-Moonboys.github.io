@@ -217,12 +217,12 @@ test("owner command classifier covers broad intents deterministically", () => {
   const cases = [
     ["read repo for code bugs", "repo_audit"],
     ["scan repo for bugs", "repo_audit"],
-    ["fix admin page", "website_build_edit"],
-    ["build my 2 player bomber royale game", "game_build_edit"],
+    ["fix admin page", "website_build"],
+    ["build my 2 player bomber royale game", "game_build"],
     ["run tests", "test_run"],
-    ["create PR", "pr_github_workflow"],
+    ["create PR", "pr_workflow"],
     ["create an image", "image_generation"],
-    ["make animated canvas code", "animation_code_generation"],
+    ["make animated canvas code", "animation_code"],
     ["show skills", "memory_skills_settings"],
     ["open brain npc advisor", "brain_npc"]
   ];
@@ -250,4 +250,7 @@ test("read repo for code bugs routes to actionable scan response", async () => {
     (Array.isArray(response.actions) && response.actions.length > 0) ||
     (Array.isArray(response.toolResults) && response.toolResults.length > 0)
   );
+  const audit = response.toolResults.find((item) => item.action === "repo/audit-scan");
+  assert.ok(audit);
+  assert.match(String(audit.resultSummary || ""), /content-aware rule scanning/i);
 });
