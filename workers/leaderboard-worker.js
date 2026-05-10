@@ -49,7 +49,6 @@ const GAME_KEY_ALIASES = {
  */
 const DEFAULT_ALLOWED_ORIGINS = [
   'https://cryptomoonboys.com',
-  'https://crypto-moonboys.github.io',
 ];
 
 // ── Telegram HMAC verification ───────────────────────────────────────────────

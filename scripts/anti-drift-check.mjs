@@ -123,6 +123,78 @@ for (const filePath of filesToScan) {
   }
 }
 
+/* ── Canonical domain drift check ──────────────────────────────────────────
+ * Public-facing deploy files must never reference the old github.io domain.
+ * Canonical public domain is https://cryptomoonboys.com.
+ *
+ * Using a regex with escaped dots so the match is precise to the hostname
+ * rather than an open-ended substring search.
+ */
+const OLD_DOMAIN_RE = /crypto-moonboys\.github\.io/;
+
+// Explicit public-facing files that must be clean of the old domain
+const DEPLOY_FILE_PATTERNS = [
+  'robots.txt',
+  'sitemap.xml',
+  'index.html',
+  'about/index.html',
+];
+
+// Directories whose *.html files are all public-facing deploy pages
+const DEPLOY_HTML_DIRS = [
+  'about',
+  'categories',
+  'wiki',
+  'games',
+];
+
+function collectDeployHtmlFiles(absDir, files = []) {
+  if (!fs.existsSync(absDir)) return files;
+  for (const entry of fs.readdirSync(absDir, { withFileTypes: true })) {
+    const absEntry = path.join(absDir, entry.name);
+
+    if (entry.isDirectory()) {
+      const name = entry.name;
+      if (
+        name.startsWith('.') ||
+        name === 'node_modules' ||
+        name === '.git' ||
+        name.startsWith('_')
+      ) {
+        continue;
+      }
+      collectDeployHtmlFiles(absEntry, files);
+      continue;
+    }
+
+    if (!entry.isFile()) continue;
+    if (!entry.name.endsWith('.html')) continue;
+    if (entry.name.startsWith('_')) continue;
+    files.push(absEntry);
+  }
+  return files;
+}
+
+const deployFilesToCheck = [
+  ...DEPLOY_FILE_PATTERNS.map((f) => path.join(ROOT, f)),
+  ...DEPLOY_HTML_DIRS.flatMap((dir) => {
+    const absDir = path.join(ROOT, dir);
+    return collectDeployHtmlFiles(absDir);
+  }),
+  // Root-level HTML pages (excluding _ prefixed templates)
+  ...fs.readdirSync(ROOT, { withFileTypes: true })
+    .filter((e) => e.isFile() && e.name.endsWith('.html') && !e.name.startsWith('_'))
+    .map((e) => path.join(ROOT, e.name)),
+];
+
+for (const absPath of deployFilesToCheck) {
+  if (!fs.existsSync(absPath)) continue;
+  const content = fs.readFileSync(absPath, 'utf8');
+  if (OLD_DOMAIN_RE.test(content)) {
+    failures.push(`Canonical domain drift: "crypto-moonboys.github.io" found in ${path.relative(ROOT, absPath)}`);
+  }
+}
+
 if (failures.length) {
   console.error('Anti-drift check failed.');
   for (const failure of failures) {

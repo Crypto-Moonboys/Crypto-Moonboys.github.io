@@ -102,7 +102,7 @@ function buildHubHtml(rec) {
   const hubTitle     = slugToTitle(hubSlug);
   const anchorTitle  = rec.anchor_title || slugToTitle(rec.anchor_slug);
   const fullTitle    = `${hubTitle} — Crypto Moonboys Wiki`;
-  const canonicalUrl = `https://crypto-moonboys.github.io/wiki/${hubSlug}.html`;
+  const canonicalUrl = `https://cryptomoonboys.com/wiki/${hubSlug}.html`;
   const memberCount  = rec.cluster_size || (rec.members || []).length;
   const membersHtml  = buildMembersHtml(rec.members || []);
 
@@ -117,7 +117,7 @@ function buildHubHtml(rec) {
   <meta property="og:description" content="${escapeHtml(fullTitle)}">
   <meta property="og:type" content="article">
   <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
-  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <meta name="twitter:card" content="summary_large_image">
   <title>${escapeHtml(fullTitle)}</title>
   <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
@@ -139,7 +139,7 @@ function buildHubHtml(rec) {
       "name": "Crypto Moonboys",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
+        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
       }
     }
   }

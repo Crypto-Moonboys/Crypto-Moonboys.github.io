@@ -75,7 +75,6 @@ const QUEST_WEEK_TIERS = [
 
 const DEFAULT_CORS_ALLOWED_ORIGINS = [
   'https://cryptomoonboys.com',
-  'https://crypto-moonboys.github.io',
 ];
 
 function buildCorsHeaders(request, env) {

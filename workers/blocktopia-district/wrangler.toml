@@ -46,7 +46,7 @@ preview_id = "YOUR_CACHE_KV_ID"
 
 # ── Non-secret variables ───────────────────────────────────────────────────────
 [vars]
-ALLOWED_ORIGIN     = "https://crypto-moonboys.github.io"
+ALLOWED_ORIGIN     = "https://cryptomoonboys.com"
 DISTRICT_COUNT     = "12"
 SEASON_LENGTH_DAYS = "90"
 CACHE_TTL_SECONDS  = "60"

@@ -15,7 +15,7 @@
 const SEASON_KEY  = 'R2-Upload/leaderboards/current-season.json';
 const MASTERS_KEY = 'R2-Upload/leaderboards/masters-all-time.json';
 
-const ALLOWED_ORIGIN = 'https://crypto-moonboys.github.io';
+const ALLOWED_ORIGIN = 'https://cryptomoonboys.com';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  ALLOWED_ORIGIN,

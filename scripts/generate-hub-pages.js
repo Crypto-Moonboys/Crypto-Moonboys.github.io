@@ -432,7 +432,7 @@ function generateHubPageHtml(meta, byUrl, allHubMetas) {
   const { slug, label, emoji, category, categorySlug, description, leadParagraphs, sections } = meta;
   const { membersHtml } = meta._html;
 
-  const pageUrl    = `https://crypto-moonboys.github.io/wiki/${slug}.html`;
+  const pageUrl    = `https://cryptomoonboys.com/wiki/${slug}.html`;
   const fullTitle  = `${label} — Crypto Moonboys Wiki`;
   const entitySlug = slug.replace(/-/g, '_');
   const catLabel   = category.charAt(0).toUpperCase() + category.slice(1);
@@ -485,7 +485,7 @@ function generateHubPageHtml(meta, byUrl, allHubMetas) {
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="${escapeHtml(pageUrl)}">
-  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <title>${escapeHtml(fullTitle)}</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="icon" type="image/png" href="/favicon.png">

@@ -32,4 +32,4 @@ database_id   = "8a36e17a-18fa-4b98-90e1-3f269164b166"
 #
 # Optional variables:
 # CORS_ALLOWED_ORIGINS — Comma-separated list of allowed browser origins.
-#                        Defaults to https://cryptomoonboys.com,https://crypto-moonboys.github.io
+#                        Defaults to https://cryptomoonboys.com,https://cryptomoonboys.com

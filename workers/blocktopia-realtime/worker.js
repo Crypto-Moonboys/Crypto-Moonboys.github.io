@@ -186,7 +186,7 @@ async function handleDeleteEvent(request, env, origin, id) {
 
 export default {
   async fetch(request, env) {
-    const origin = env.ALLOWED_ORIGIN || 'https://crypto-moonboys.github.io';
+    const origin = env.ALLOWED_ORIGIN || 'https://cryptomoonboys.com';
     const url    = new URL(request.url);
     const path   = url.pathname;
 

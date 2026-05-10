@@ -87,7 +87,6 @@ const ARCADE_ADMIN_XP_GRANT_MAX = 50000;
 
 const DEFAULT_CORS_ALLOWED_ORIGINS = [
   'https://cryptomoonboys.com',
-  'https://crypto-moonboys.github.io',
 ];
 
 /**

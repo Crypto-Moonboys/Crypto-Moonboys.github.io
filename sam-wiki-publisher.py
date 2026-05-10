@@ -36,8 +36,8 @@ from typing import Any
 
 from slugify import slugify
 
-BASE_URL = "https://crypto-moonboys.github.io/wiki/"
-SEARCH_HUB_URL = "https://crypto-moonboys.github.io/search.html"
+BASE_URL = "https://cryptomoonboys.com/wiki/"
+SEARCH_HUB_URL = "https://cryptomoonboys.com/search.html"
 WIKI_DIR = "wiki"
 SITEMAP_PATH = "sitemap.xml"
 DEFAULT_INPUT = "main-brain-export.json"
@@ -254,7 +254,7 @@ def render_html(
   <meta property="og:title" content="{title_safe} — Crypto Moonboys Wiki">
   <meta property="og:type" content="website">
   <meta property="og:url" content="{page_url}">
-  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <title>{title_safe} — Crypto Moonboys Wiki</title>
   <link rel="canonical" href="{page_url}">
   <link rel="stylesheet" href="/css/wiki.css">

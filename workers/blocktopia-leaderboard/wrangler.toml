@@ -46,7 +46,7 @@ crons = ["0 0 * * *"]
 
 # ── Non-secret variables ───────────────────────────────────────────────────────
 [vars]
-ALLOWED_ORIGIN        = "https://crypto-moonboys.github.io"
+ALLOWED_ORIGIN        = "https://cryptomoonboys.com"
 SEASON_LENGTH_DAYS    = "90"
 BOARD_LIMIT           = "100"
 CACHE_TTL_SECONDS     = "60"
