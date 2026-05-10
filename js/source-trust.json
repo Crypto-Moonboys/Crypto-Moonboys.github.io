@@ -8,7 +8,7 @@
       "label": "Official",
       "description": "Content originating from official Crypto Moonboys or GraffPUNKS channels",
       "score_weight": 1.0,
-      "examples": ["graffpunks.com", "crypto-moonboys.github.io", "official social accounts"],
+      "examples": ["graffpunks.com", "cryptomoonboys.com", "official social accounts"],
       "rules": [
         "Must be traceable to an official account or domain",
         "No editorial override required for inclusion",

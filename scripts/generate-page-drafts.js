@@ -812,7 +812,7 @@ function buildDraftHtml(d) {
   const title = d.draft.title;
   const metaDesc = d.draft.meta_description;
   const slug = d.target_url_slug;
-  const canonicalUrl = `https://crypto-moonboys.github.io/wiki/${slug}.html`;
+  const canonicalUrl = `https://cryptomoonboys.com/wiki/${slug}.html`;
 
   // Rich lore-style section HTML (prose, not source lists)
   const sectionHtml = d.draft.section_blocks.map(block => {
@@ -850,7 +850,7 @@ ${prose}`;
   <meta property="og:description" content="${escapeHtml(metaDesc)}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="${canonicalUrl}">
-  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <title>${escapeHtml(title)}</title>
   <link rel="canonical" href="${canonicalUrl}">
   <link rel="stylesheet" href="/css/wiki.css">

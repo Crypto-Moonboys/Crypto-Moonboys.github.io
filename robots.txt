@@ -6,4 +6,4 @@ Allow: /
 Disallow: /admin-tools.html
 Disallow: /agent.html
 
-Sitemap: https://crypto-moonboys.github.io/sitemap.xml
+Sitemap: https://cryptomoonboys.com/sitemap.xml

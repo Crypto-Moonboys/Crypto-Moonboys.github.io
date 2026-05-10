@@ -185,7 +185,7 @@ function validateSiteStats() {
 function validateSitemap() {
   const xml = fs.readFileSync(SITEMAP_PATH, 'utf8');
   assert(xml.includes('<urlset'), 'sitemap.xml missing <urlset>');
-  assert(xml.includes('<loc>https://crypto-moonboys.github.io/search.html</loc>'), 'sitemap.xml missing search.html');
+  assert(xml.includes('<loc>https://cryptomoonboys.com/search.html</loc>'), 'sitemap.xml missing search.html');
   assert(!xml.includes('/wiki/index.html'), 'sitemap.xml must not include legacy /wiki/index.html');
   console.log('sitemap.xml validated ✅');
 }

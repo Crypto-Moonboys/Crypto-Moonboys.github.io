@@ -116,7 +116,7 @@ function buildStubHtml(action, provenance) {
   const slug         = action.target_url_slug;
   const title        = slugToTitle(slug);
   const fullTitle    = `${title} — Crypto Moonboys Wiki`;
-  const canonicalUrl = `https://crypto-moonboys.github.io/wiki/${slug}.html`;
+  const canonicalUrl = `https://cryptomoonboys.com/wiki/${slug}.html`;
   const relatedHtml  = buildRelatedLinksHtml(action.related_pages);
 
   // Machine-readable SAM provenance metadata for this generated page
@@ -158,7 +158,7 @@ function buildStubHtml(action, provenance) {
   <meta property="og:description" content="${escapeHtml(fullTitle)}">
   <meta property="og:type" content="article">
   <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
-  <meta property="og:image" content="https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <meta name="twitter:card" content="summary_large_image">
   <title>${escapeHtml(fullTitle)}</title>
   <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
@@ -180,7 +180,7 @@ function buildStubHtml(action, provenance) {
       "name": "Crypto Moonboys",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://crypto-moonboys.github.io/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
+        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
       }
     }
   }

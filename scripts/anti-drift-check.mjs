@@ -123,6 +123,51 @@ for (const filePath of filesToScan) {
   }
 }
 
+/* ── Canonical domain drift check ──────────────────────────────────────────
+ * Public-facing deploy files must never reference the old github.io domain.
+ * Canonical public domain is https://cryptomoonboys.com.
+ */
+const OLD_DOMAIN = 'crypto-moonboys.github.io';
+
+// Explicit public-facing files that must be clean of the old domain
+const DEPLOY_FILE_PATTERNS = [
+  'robots.txt',
+  'sitemap.xml',
+  'index.html',
+  'about/index.html',
+];
+
+// Directories whose *.html files are all public-facing deploy pages
+const DEPLOY_HTML_DIRS = [
+  'about',
+  'categories',
+  'wiki',
+  'games',
+];
+
+const deployFilesToCheck = [
+  ...DEPLOY_FILE_PATTERNS.map((f) => path.join(ROOT, f)),
+  ...DEPLOY_HTML_DIRS.flatMap((dir) => {
+    const absDir = path.join(ROOT, dir);
+    if (!fs.existsSync(absDir)) return [];
+    return fs.readdirSync(absDir, { withFileTypes: true })
+      .filter((e) => e.isFile() && e.name.endsWith('.html'))
+      .map((e) => path.join(absDir, e.name));
+  }),
+  // Root-level HTML pages (excluding _ prefixed templates)
+  ...fs.readdirSync(ROOT, { withFileTypes: true })
+    .filter((e) => e.isFile() && e.name.endsWith('.html') && !e.name.startsWith('_'))
+    .map((e) => path.join(ROOT, e.name)),
+];
+
+for (const absPath of deployFilesToCheck) {
+  if (!fs.existsSync(absPath)) continue;
+  const content = fs.readFileSync(absPath, 'utf8');
+  if (content.includes(OLD_DOMAIN)) {
+    failures.push(`Canonical domain drift: "${OLD_DOMAIN}" found in ${path.relative(ROOT, absPath)}`);
+  }
+}
+
 if (failures.length) {
   console.error('Anti-drift check failed.');
   for (const failure of failures) {

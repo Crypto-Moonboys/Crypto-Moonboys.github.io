@@ -34,7 +34,6 @@ responses.
 Requests from browser origins are only accepted from the allowlist:
 
 - `https://cryptomoonboys.com`
-- `https://crypto-moonboys.github.io`
 
 Set the `CORS_ALLOWED_ORIGINS` environment variable (comma-separated) to override
 for staging environments.
@@ -58,7 +57,7 @@ If the GitHub Pages domain is fronted by Cloudflare's proxy (orange cloud), use
 a Cloudflare **Transform Rule** to inject headers on all responses:
 
 1. In the Cloudflare dashboard → Rules → Transform Rules → Modify Response Header.
-2. Add a rule that matches `http.host eq "crypto-moonboys.github.io"` (or your
+2. Add a rule that matches `http.host eq "cryptomoonboys.com"` (or your
    custom domain).
 3. Add the following response headers:
    - `X-Content-Type-Options: nosniff`

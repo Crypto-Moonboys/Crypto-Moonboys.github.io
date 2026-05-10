@@ -34,6 +34,6 @@ preview_id = "YOUR_CACHE_KV_ID"
 
 # ── Non-secret variables ───────────────────────────────────────────────────────
 [vars]
-ALLOWED_ORIGIN      = "https://crypto-moonboys.github.io"
+ALLOWED_ORIGIN      = "https://cryptomoonboys.com"
 FEED_MAX_EVENTS     = "100"
 CACHE_TTL_SECONDS   = "10"

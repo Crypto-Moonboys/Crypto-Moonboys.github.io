@@ -24,7 +24,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const OUTPUT = path.join(ROOT, 'sitemap.xml');
 const INDEX_FILE = path.join(ROOT, 'js', 'wiki-index.json');
-const BASE_URL = 'https://crypto-moonboys.github.io';
+const BASE_URL = 'https://cryptomoonboys.com';
 const TODAY = new Date().toISOString().slice(0, 10);
 
 const EXCLUDED_URLS = new Set([
@@ -99,7 +99,7 @@ const ROOT_PAGES = [
   { file: 'about.html', changefreq: 'weekly', priority: '0.9' },
   { file: 'search.html', changefreq: 'weekly', priority: '1.0' },
   { file: 'articles.html', changefreq: 'weekly', priority: '0.9' },
-  { file: 'agent.html', changefreq: 'weekly', priority: '0.9' },
+  // agent.html is disallowed in robots.txt — excluded from sitemap
   { file: 'block-topia.html', changefreq: 'daily', priority: '0.9' },
 ];
 
@@ -110,7 +110,8 @@ for (const page of ROOT_PAGES) {
 }
 
 /* ── 3. /about/*.html ───────────────────────────────────────────────────── */
-for (const file of htmlFiles(path.join(ROOT, 'about'))) {
+// about/index.html is a noindex redirect to /about.html — excluded from sitemap
+for (const file of htmlFiles(path.join(ROOT, 'about')).filter(f => f !== 'index.html')) {
   addEntry(`${BASE_URL}/about/${file}`, 'monthly', '0.6');
 }
 

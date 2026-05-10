@@ -60,7 +60,7 @@ Copy `.env.example` to `.env` and configure before starting:
 |----------|----------|---------|-------------|
 | `PORT` | No | `2567` | Server listen port |
 | `NODE_ENV` | Yes (prod) | `development` | Set to `production` in production |
-| `CORS_ORIGIN` | No | `https://cryptomoonboys.com,https://crypto-moonboys.github.io` | Comma-separated allowed browser origins |
+| `CORS_ORIGIN` | No | `https://cryptomoonboys.com` | Comma-separated allowed browser origins |
 | `MONITOR_USERNAME` | No | `admin` | Username for `/colyseus` monitor Basic Auth |
 | `MONITOR_PASSWORD` | **Yes in production** | _(none)_ | Password for `/colyseus` monitor. **Required in production** — if not set, `/colyseus` is disabled entirely |
 | `BLOCKTOPIA_FREE_ROAM_MS` | No | `600000` (prod) / `60000` (dev) | Free-roam phase duration in ms |

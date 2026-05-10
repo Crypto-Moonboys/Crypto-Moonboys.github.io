@@ -21,7 +21,7 @@ const ALLOWED_ORIGINS = rawCorsOrigins
   ? rawCorsOrigins.split(',').map(s => s.trim()).filter(Boolean)
   : [
       'https://cryptomoonboys.com',
-      'https://crypto-moonboys.github.io',
+      'https://cryptomoonboys.com',
     ];
 
 const corsOptions = {
