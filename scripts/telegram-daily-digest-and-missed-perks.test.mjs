@@ -104,6 +104,8 @@ check(workerJs.includes('// missedXpValue is not accepted from clients'), 'mark-
 check(workerJs.includes('hasDailyMissedXpValueColumn') && workerJs.includes('PRAGMA table_info(daily_missed_perks)'), 'worker detects missed_xp_value column availability for migration-safe reads');
 check(workerJs.includes('getMissedPerkTotals') && workerJs.includes('SELECT COUNT(*) AS events_total'), 'worker keeps missed event counts independent from missed_xp_value SUM queries');
 check(workerJs.includes('getMissedPerkRows') && workerJs.includes('has_missed_xp_value') && workerJs.includes('missed_xp_value: rowResult.has_missed_xp_value ?'), 'worker falls back to rows without missed_xp_value and maps missed_xp_value to 0 when unavailable');
+check(workerJs.includes('insertMissedPerkEntry') && workerJs.includes('const hasMissedXpValue = missedXpValueAvailable == null') && workerJs.includes('runInsertWithoutXp'), 'worker write path detects missed_xp_value availability and supports migration-safe fallback inserts');
+check(workerJs.includes('status_value, metadata_json, missed_at, created_at') && workerJs.includes("message.includes('no such column')"), 'worker can insert missed entries without missed_xp_value when migration 021 is not yet applied');
 // dashboard.html must remain wiki/editorial only - no missed XP player data
 check(!dashboardHtml.includes('missed_xp') && !dashboardHtml.includes('missed_xp_all_time'), 'dashboard.html does not contain missed_xp player data (wiki/editorial only)');
 

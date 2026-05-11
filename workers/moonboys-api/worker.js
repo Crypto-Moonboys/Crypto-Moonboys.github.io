@@ -1625,6 +1625,7 @@ async function insertMissedPerkEntry(db, {
   missedXpValue,
   metadataJson,
   missedAt,
+  missedXpValueAvailable,
 }) {
   const safeTelegramId = String(telegramId || '').trim();
   if (!safeTelegramId) return null;
@@ -1643,7 +1644,12 @@ async function insertMissedPerkEntry(db, {
   const safeMissedAt = missedAt && Number.isFinite(Date.parse(String(missedAt)))
     ? new Date(missedAt).toISOString()
     : new Date().toISOString();
-  const result = await db.prepare(`
+  const safeCreatedAt = new Date().toISOString();
+  const hasMissedXpValue = missedXpValueAvailable == null
+    ? await hasDailyMissedXpValueColumn(db)
+    : !!missedXpValueAvailable;
+
+  const runInsertWithXp = () => db.prepare(`
     INSERT INTO daily_missed_perks
       (telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -1660,8 +1666,40 @@ async function insertMissedPerkEntry(db, {
     safeMissedXpValue,
     safeMetadata,
     safeMissedAt,
-    new Date().toISOString(),
-  ).run().catch(() => null);
+    safeCreatedAt,
+  ).run();
+
+  const runInsertWithoutXp = () => db.prepare(`
+    INSERT INTO daily_missed_perks
+      (telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    safeTelegramId,
+    safeUtcDay,
+    normalizedFaction || null,
+    safeSource,
+    safeType,
+    safeTitle,
+    safeDescription || null,
+    safeReason || null,
+    safeStatusValue,
+    safeMetadata,
+    safeMissedAt,
+    safeCreatedAt,
+  ).run();
+
+  let result = null;
+  if (hasMissedXpValue) {
+    result = await runInsertWithXp().catch(async (error) => {
+      const message = String(error?.message || error || '').toLowerCase();
+      if (message.includes('no such column') || message.includes('missed_xp_value')) {
+        return runInsertWithoutXp().catch(() => null);
+      }
+      return null;
+    });
+  } else {
+    result = await runInsertWithoutXp().catch(() => null);
+  }
   return result;
 }
 
@@ -1699,6 +1737,7 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
   `).bind(String(telegramId), todayUtcDay).first().catch(() => null);
   if (!prior?.utc_day) return { days_backfilled: 0, entries_created: 0, created: 0, missed_days: [] };
   const missedDays = listUtcDaysBetweenExclusive(prior.utc_day, todayUtcDay, 45);
+  const missedXpValueAvailable = await hasDailyMissedXpValueColumn(db);
   let entriesCreated = 0;
   let daysFilledCount = 0;
   for (const missedDay of missedDays) {
@@ -1722,6 +1761,7 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
       missedXpValue: MISSED_XP_PER_DAILY_WINDOW,
       metadataJson: { trigger: 'utc_reset_backfill' },
       missedAt: `${missedDay}T23:59:59.000Z`,
+      missedXpValueAvailable,
     });
     entriesCreated += Number(dailyResetInsert?.meta?.changes || 0);
     daysFilledCount += 1;
@@ -1740,6 +1780,7 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
         missedXpValue: MISSED_XP_PER_DAILY_WINDOW,
         metadataJson: { trigger: 'utc_reset_backfill' },
         missedAt: `${missedDay}T23:59:59.000Z`,
+        missedXpValueAvailable,
       });
       entriesCreated += Number(factionInsert?.meta?.changes || 0);
     } else {
@@ -1756,6 +1797,7 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
         missedXpValue: MISSED_XP_PER_DAILY_WINDOW,
         metadataJson: { trigger: 'utc_reset_backfill' },
         missedAt: `${missedDay}T23:59:59.000Z`,
+        missedXpValueAvailable,
       });
       entriesCreated += Number(factionSelectionInsert?.meta?.changes || 0);
     }
