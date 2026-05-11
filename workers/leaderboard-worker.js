@@ -275,7 +275,25 @@ export default {
 
       const { player, score, game } = body;
       const rawFaction = String(body.faction || "unaligned").toLowerCase().trim();
-      const faction = ["diamond-hands", "hodl-warriors", "graffpunks"].includes(rawFaction) ? rawFaction : "unaligned";
+      // All 9 canonical Battle Chamber faction keys — must stay in sync with
+      // workers/moonboys-api/worker.js CANONICAL_FACTIONS and js/faction-alignment.js.
+      const CANONICAL_FACTIONS = [
+        "hard-fork-rockers", "rugpull-minors", "graffpunks", "blockchain-furies",
+        "crypto-moongirls", "blockstars", "all-city-bulls", "nomad-bears", "crypto-stoned-boys",
+      ];
+      // Legacy alias resolution — keeps old clients working after the faction rename.
+      const FACTION_ALIASES = {
+        "diamond-hands": "hard-fork-rockers",
+        "diamond_hands": "hard-fork-rockers",
+        "diamondhands": "hard-fork-rockers",
+        "hodl-warriors": "rugpull-minors",
+        "hodl_warriors": "rugpull-minors",
+        "hodlwarriors": "rugpull-minors",
+        "graff-punks": "graffpunks",
+        "graff_punks": "graffpunks",
+      };
+      const resolvedFaction = FACTION_ALIASES[rawFaction] || rawFaction;
+      const faction = CANONICAL_FACTIONS.includes(resolvedFaction) ? resolvedFaction : "unaligned";
       const submissionMode = String(body.score_type || "raw").toLowerCase();
 
       // Anti-cheat gate — the anti-cheat worker writes anticheat:blocked:{id}

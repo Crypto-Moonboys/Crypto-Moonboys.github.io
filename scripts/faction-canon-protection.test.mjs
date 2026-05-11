@@ -24,6 +24,7 @@ const EFFECTS_FILE = path.join(ROOT, 'js', 'arcade', 'systems', 'faction-effect-
 const MISSIONS_FILE = path.join(ROOT, 'js', 'arcade', 'systems', 'faction-missions.js');
 const WAR_FILE = path.join(ROOT, 'js', 'arcade', 'systems', 'faction-war-system.js');
 const LEADERBOARD_FILE = path.join(ROOT, 'js', 'leaderboard-client.js');
+const LEADERBOARD_WORKER_FILE = path.join(ROOT, 'workers', 'leaderboard-worker.js');
 const GAMES_FILE = path.join(ROOT, 'games', 'index.html');
 const COMMUNITY_FILE = path.join(ROOT, 'community.html');
 const DOCS_FILE = path.join(ROOT, 'docs', 'ARCADE_GAME_IMPACT_STANDARD.md');
@@ -165,6 +166,20 @@ function checkFactionKeysInModels() {
   assertFileContainsEveryKey(WAR_FILE, LIVE_FACTIONS);
 }
 
+function checkLeaderboardWorkerFactions() {
+  const src = read(LEADERBOARD_WORKER_FILE);
+  // Must contain all 9 canonical faction keys so no valid submission is silently
+  // downgraded to "unaligned" by an outdated allowlist.
+  for (const key of LIVE_FACTIONS) {
+    assert.ok(src.includes(`"${key}"`), `workers/leaderboard-worker.js is missing canonical faction key: ${key}`);
+  }
+  // Old 3-faction allowlist must not remain as the sole guard.
+  assert.ok(
+    !src.includes('["diamond-hands", "hodl-warriors", "graffpunks"]'),
+    'workers/leaderboard-worker.js must not restrict faction acceptance to the old 3-faction list'
+  );
+}
+
 function checkDocPerkParity() {
   const src = read(DOCS_FILE);
   assert.ok(src.includes('chaosModifier: 0.82'), 'Hard Fork Rockers doc must mention chaosModifier: 0.82');
@@ -255,6 +270,7 @@ async function checkWarStateMigration() {
 async function main() {
   checkNoOldLiveLabels();
   checkFactionKeysInModels();
+  checkLeaderboardWorkerFactions();
   checkAlignmentAliases();
   checkLeaderboardEarnPath();
   checkDocPerkParity();
