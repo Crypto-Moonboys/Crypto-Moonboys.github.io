@@ -1770,7 +1770,7 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
 
 async function getMissedHistorySnapshot(db, telegramId, limit = 5) {
   const safeLimit = Math.max(1, Math.min(20, Math.floor(Number(limit) || 5)));
-  const [countRow, xpRow, rows] = await Promise.all([
+  const [countRow, xpTotalRow, rows] = await Promise.all([
     db.prepare(`
       SELECT COUNT(*) AS total
       FROM daily_missed_perks
@@ -1791,7 +1791,7 @@ async function getMissedHistorySnapshot(db, telegramId, limit = 5) {
   ]);
   return {
     total: Number(countRow?.total) || 0,
-    xp_total: Math.max(0, Math.floor(Number(xpRow?.xp_total) || 0)),
+    xp_total: Math.max(0, Math.floor(Number(xpTotalRow?.xp_total) || 0)),
     recent: (rows?.results || []).map((row) => ({
       id: row.id,
       utc_day: row.utc_day,
