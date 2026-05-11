@@ -32,10 +32,13 @@ function read(filePath) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
-function assertFileContainsEveryKey(filePath, keys) {
+function assertFileContainsEveryKeyToken(filePath, keys) {
   const src = read(filePath);
   for (const key of keys) {
-    assert.ok(src.includes(key), `${path.relative(ROOT, filePath)} is missing faction key: ${key}`);
+    const keyToken = key.includes('-')
+      ? new RegExp(`['"]${key}['"]`)
+      : new RegExp(`(?:['"]${key}['"]|\\b${key}\\b)`);
+    assert.ok(keyToken.test(src), `${path.relative(ROOT, filePath)} is missing faction key token: ${key}`);
   }
 }
 
@@ -159,10 +162,10 @@ function checkLeaderboardEarnPath() {
 }
 
 function checkFactionKeysInModels() {
-  assertFileContainsEveryKey(ALIGNMENT_FILE, LIVE_FACTIONS);
-  assertFileContainsEveryKey(EFFECTS_FILE, LIVE_FACTIONS);
-  assertFileContainsEveryKey(MISSIONS_FILE, LIVE_FACTIONS);
-  assertFileContainsEveryKey(WAR_FILE, LIVE_FACTIONS);
+  assertFileContainsEveryKeyToken(ALIGNMENT_FILE, LIVE_FACTIONS);
+  assertFileContainsEveryKeyToken(EFFECTS_FILE, LIVE_FACTIONS);
+  assertFileContainsEveryKeyToken(MISSIONS_FILE, LIVE_FACTIONS);
+  assertFileContainsEveryKeyToken(WAR_FILE, LIVE_FACTIONS);
 }
 
 function checkDocPerkParity() {
