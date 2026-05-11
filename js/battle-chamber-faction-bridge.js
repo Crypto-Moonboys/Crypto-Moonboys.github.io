@@ -44,7 +44,7 @@ import {
 
 const LIVE_FACTION_KEYS = [
   'hard-fork-rockers',
-  'rugpull-minors',
+  'rugpull-miners',
   'graffpunks',
   'blockchain-furies',
   'crypto-moongirls',

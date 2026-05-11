@@ -49,7 +49,7 @@ var DAILY_MISSION_POOL = Object.freeze({
     Object.freeze({ id: 'hfr_runs_4',       label: 'Streak Guard',      description: 'Complete 4 runs with steady pacing.',                   type: 'runs',       target: 4,    reward: { warContrib: 55 } }),
   ]),
 
-  'rugpull-minors': Object.freeze([
+  'rugpull-miners': Object.freeze([
     Object.freeze({ id: 'rpm_shield_hold',  label: 'Tunnel Guard',      description: 'Protect your shield for 30 seconds in a run.',          type: 'shield_time', target: 30,  reward: { warContrib: 60 } }),
     Object.freeze({ id: 'rpm_runs_3',       label: 'Recovery Shift',    description: 'Complete 3 runs under pressure.',                       type: 'runs',        target: 3,   reward: { warContrib: 50 } }),
     Object.freeze({ id: 'rpm_war_contrib',  label: 'Underground Push',  description: 'Contribute 220 points to faction war.',                 type: 'war_contrib', target: 220, reward: { warContrib: 70 } }),
@@ -109,7 +109,7 @@ var SEASONAL_MISSIONS = Object.freeze({
     Object.freeze({ id: 'hfr_season_endure', label: 'Forkline Endurance', description: 'Accumulate 1,800 total seconds alive across all runs.', type: 'survive', target: 1800, reward: { warContrib: 520 } }),
   ]),
 
-  'rugpull-minors': Object.freeze([
+  'rugpull-miners': Object.freeze([
     Object.freeze({ id: 'rpm_season_recover', label: 'Deep Recovery', description: 'Complete 32 total runs across all arcade games.', type: 'runs', target: 32, reward: { warContrib: 500 } }),
   ]),
 
@@ -357,7 +357,8 @@ export function resetDailyMissions() {
 function _normaliseFaction(id) {
   var v = String(id || 'unaligned').toLowerCase().trim();
   if (v === 'diamond-hands' || v === 'diamond_hands' || v === 'diamondhands') v = 'hard-fork-rockers';
-  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') v = 'rugpull-minors';
+  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') v = 'rugpull-miners';
+  if (v === 'rugpull-minors' || v === 'rugpull_minors' || v === 'rugpullminors') v = 'rugpull-miners';
   if (v === 'graff-punks' || v === 'graff_punks') v = 'graffpunks';
   return DAILY_MISSION_POOL[v] ? v : null;
 }

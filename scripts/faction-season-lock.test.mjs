@@ -360,7 +360,7 @@ check(
 
 // All 9 canonical factions recognized by normalizeFaction
 const allNineKeys = [
-  'hard-fork-rockers', 'rugpull-minors', 'graffpunks', 'blockchain-furies',
+  'hard-fork-rockers', 'rugpull-miners', 'graffpunks', 'blockchain-furies',
   'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys',
 ];
 allNineKeys.forEach(function (key) {

@@ -9,7 +9,7 @@ const ROOT = path.resolve(__dirname, '..');
 
 const LIVE_FACTIONS = Object.freeze([
   'hard-fork-rockers',
-  'rugpull-minors',
+  'rugpull-miners',
   'graffpunks',
   'blockchain-furies',
   'crypto-moongirls',
@@ -20,10 +20,14 @@ const LIVE_FACTIONS = Object.freeze([
 ]);
 
 const ALIGNMENT_FILE = path.join(ROOT, 'js', 'faction-alignment.js');
+const PROFILE_FILE = path.join(ROOT, 'js', 'faction-profile-data.js');
+const BRIDGE_FILE = path.join(ROOT, 'js', 'battle-chamber-faction-bridge.js');
 const EFFECTS_FILE = path.join(ROOT, 'js', 'arcade', 'systems', 'faction-effect-system.js');
 const MISSIONS_FILE = path.join(ROOT, 'js', 'arcade', 'systems', 'faction-missions.js');
 const WAR_FILE = path.join(ROOT, 'js', 'arcade', 'systems', 'faction-war-system.js');
 const LEADERBOARD_FILE = path.join(ROOT, 'js', 'leaderboard-client.js');
+const LEADERBOARD_WORKER_FILE = path.join(ROOT, 'workers', 'leaderboard-worker.js');
+const API_WORKER_FILE = path.join(ROOT, 'workers', 'moonboys-api', 'worker.js');
 const GAMES_FILE = path.join(ROOT, 'games', 'index.html');
 const COMMUNITY_FILE = path.join(ROOT, 'community.html');
 const DOCS_FILE = path.join(ROOT, 'docs', 'ARCADE_GAME_IMPACT_STANDARD.md');
@@ -32,10 +36,14 @@ function read(filePath) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
-function assertFileContainsEveryKey(filePath, keys) {
+function assertFileContainsEveryKeyToken(filePath, keys) {
   const src = read(filePath);
   for (const key of keys) {
-    assert.ok(src.includes(key), `${path.relative(ROOT, filePath)} is missing faction key: ${key}`);
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = key.includes('-')
+      ? new RegExp(`['"]${escaped}['"]`)
+      : new RegExp(`(?:['"]${escaped}['"]|\\b${escaped}\\b)`);
+    assert.ok(pattern.test(src), `${path.relative(ROOT, filePath)} is missing faction key token: ${key}`);
   }
 }
 
@@ -112,9 +120,14 @@ function checkAlignmentAliases() {
   assert.equal(api.normalizeFaction('diamond-hands'), 'hard-fork-rockers');
   assert.equal(api.normalizeFaction('diamond_hands'), 'hard-fork-rockers');
   assert.equal(api.normalizeFaction('diamondhands'), 'hard-fork-rockers');
-  assert.equal(api.normalizeFaction('hodl-warriors'), 'rugpull-minors');
-  assert.equal(api.normalizeFaction('hodl_warriors'), 'rugpull-minors');
-  assert.equal(api.normalizeFaction('hodlwarriors'), 'rugpull-minors');
+  assert.equal(api.normalizeFaction('hodl-warriors'), 'rugpull-miners');
+  assert.equal(api.normalizeFaction('hodl_warriors'), 'rugpull-miners');
+  assert.equal(api.normalizeFaction('hodlwarriors'), 'rugpull-miners');
+  assert.equal(api.normalizeFaction('rugpull-minors'), 'rugpull-miners');
+  assert.equal(api.normalizeFaction('rugpull_minors'), 'rugpull-miners');
+  assert.equal(api.normalizeFaction('rugpullminors'), 'rugpull-miners');
+  assert.equal(api.normalizeFaction('graff-punks'), 'graffpunks');
+  assert.equal(api.normalizeFaction('graff_punks'), 'graffpunks');
 }
 
 async function checkFactionModelsRuntime() {
@@ -159,10 +172,50 @@ function checkLeaderboardEarnPath() {
 }
 
 function checkFactionKeysInModels() {
-  assertFileContainsEveryKey(ALIGNMENT_FILE, LIVE_FACTIONS);
-  assertFileContainsEveryKey(EFFECTS_FILE, LIVE_FACTIONS);
-  assertFileContainsEveryKey(MISSIONS_FILE, LIVE_FACTIONS);
-  assertFileContainsEveryKey(WAR_FILE, LIVE_FACTIONS);
+  assertFileContainsEveryKeyToken(ALIGNMENT_FILE, LIVE_FACTIONS);
+  assertFileContainsEveryKeyToken(PROFILE_FILE, LIVE_FACTIONS);
+  assertFileContainsEveryKeyToken(BRIDGE_FILE, LIVE_FACTIONS);
+  assertFileContainsEveryKeyToken(EFFECTS_FILE, LIVE_FACTIONS);
+  assertFileContainsEveryKeyToken(MISSIONS_FILE, LIVE_FACTIONS);
+  assertFileContainsEveryKeyToken(WAR_FILE, LIVE_FACTIONS);
+}
+
+function checkLeaderboardWorkerFactions() {
+  assertFileContainsEveryKeyToken(LEADERBOARD_WORKER_FILE, LIVE_FACTIONS);
+  assertFileContainsEveryKeyToken(API_WORKER_FILE, LIVE_FACTIONS);
+  // Old 3-faction allowlist must not remain as the sole guard.
+  const src = read(LEADERBOARD_WORKER_FILE);
+  assert.ok(
+    !src.includes('["diamond-hands", "hodl-warriors", "graffpunks"]'),
+    'workers/leaderboard-worker.js must not restrict faction acceptance to the old 3-faction list'
+  );
+}
+
+function checkRugpullCanonAndLegacySplit() {
+  const canonicalFiles = [
+    ALIGNMENT_FILE,
+    PROFILE_FILE,
+    BRIDGE_FILE,
+    EFFECTS_FILE,
+    MISSIONS_FILE,
+    WAR_FILE,
+    LEADERBOARD_WORKER_FILE,
+    API_WORKER_FILE,
+  ];
+  for (const filePath of canonicalFiles) {
+    const src = read(filePath);
+    assert.ok(!src.includes("'rugpull-minors': Object.freeze"), `${path.relative(ROOT, filePath)} must not define rugpull-minors as canonical model key`);
+    assert.ok(!src.includes('"rugpull-minors": Object.freeze'), `${path.relative(ROOT, filePath)} must not define rugpull-minors as canonical model key`);
+    assert.ok(!src.includes("key: 'rugpull-minors'"), `${path.relative(ROOT, filePath)} must not use rugpull-minors as canonical key`);
+    assert.ok(!src.includes('key: "rugpull-minors"'), `${path.relative(ROOT, filePath)} must not use rugpull-minors as canonical key`);
+  }
+  assert.ok(read(ALIGNMENT_FILE).includes("'rugpull-minors': 'rugpull-miners'"), 'alignment aliases must map rugpull-minors -> rugpull-miners');
+  assert.ok(read(API_WORKER_FILE).includes("'rugpull-minors': 'rugpull-miners'"), 'api worker aliases must map rugpull-minors -> rugpull-miners');
+  assert.ok(read(LEADERBOARD_WORKER_FILE).includes("'rugpull-minors': 'rugpull-miners'"), 'leaderboard worker aliases must map rugpull-minors -> rugpull-miners');
+  assert.ok(read(API_WORKER_FILE).includes("'hodl-warriors': 'rugpull-miners'"), 'api worker aliases must map hodl-warriors -> rugpull-miners');
+  assert.ok(read(LEADERBOARD_WORKER_FILE).includes("'hodl-warriors': 'rugpull-miners'"), 'leaderboard worker aliases must map hodl-warriors -> rugpull-miners');
+  assert.ok(read(API_WORKER_FILE).includes("'diamond-hands': 'hard-fork-rockers'"), 'api worker aliases must map diamond-hands -> hard-fork-rockers');
+  assert.ok(read(API_WORKER_FILE).includes("'graff-punks': 'graffpunks'"), 'api worker aliases must map graff-punks -> graffpunks');
 }
 
 function checkDocPerkParity() {
@@ -171,7 +224,7 @@ function checkDocPerkParity() {
   assert.ok(src.includes('comboModifier: 0.92'), 'Hard Fork Rockers doc must mention comboModifier: 0.92');
   assert.ok(
     src.includes('12% chaos reduction') || src.includes('chaosModifier: 0.88'),
-    'Rugpull Minors doc must mention 12% chaos reduction or chaosModifier: 0.88'
+    'Rugpull Miners doc must mention 12% chaos reduction or chaosModifier: 0.88'
   );
 }
 
@@ -211,7 +264,7 @@ async function checkWarStateMigration() {
         momentum: 3,
         contributions: { global_event: 8, other: 2 },
       },
-      'rugpull-minors': {
+      'rugpull-miners': {
         power: 2,
         daily: { [todayKey]: 1 },
         weekly: { [weekKey]: 1 },
@@ -234,13 +287,13 @@ async function checkWarStateMigration() {
   assert.equal(state.factions['hard-fork-rockers'].contributions.mission_complete, 4, 'existing hard-fork-rockers contributions must be preserved');
   assert.equal(state.factions['hard-fork-rockers'].momentum, 2, 'hard-fork-rockers momentum must preserve the stronger legacy value');
 
-  assert.equal(state.factions['rugpull-minors'].power, 17, 'hodl-warriors power must migrate into rugpull-minors');
-  assert.equal(state.factions['rugpull-minors'].daily[todayKey], 7, 'hodl-warriors daily totals must be preserved');
-  assert.equal(state.factions['rugpull-minors'].weekly[weekKey], 12, 'hodl-warriors weekly totals must be preserved');
-  assert.equal(state.factions['rugpull-minors'].contributions.global_event, 8, 'hodl-warriors contributions must migrate');
-  assert.equal(state.factions['rugpull-minors'].contributions.other, 2, 'unknown contribution buckets must be preserved');
-  assert.equal(state.factions['rugpull-minors'].contributions.mission_complete, 1, 'existing rugpull-minors contributions must be preserved');
-  assert.equal(state.factions['rugpull-minors'].momentum, 3, 'rugpull-minors momentum must preserve the stronger legacy value');
+  assert.equal(state.factions['rugpull-miners'].power, 17, 'hodl-warriors power must migrate into rugpull-miners');
+  assert.equal(state.factions['rugpull-miners'].daily[todayKey], 7, 'hodl-warriors daily totals must be preserved');
+  assert.equal(state.factions['rugpull-miners'].weekly[weekKey], 12, 'hodl-warriors weekly totals must be preserved');
+  assert.equal(state.factions['rugpull-miners'].contributions.global_event, 8, 'hodl-warriors contributions must migrate');
+  assert.equal(state.factions['rugpull-miners'].contributions.other, 2, 'unknown contribution buckets must be preserved');
+  assert.equal(state.factions['rugpull-miners'].contributions.mission_complete, 1, 'existing rugpull-miners contributions must be preserved');
+  assert.equal(state.factions['rugpull-miners'].momentum, 3, 'rugpull-miners momentum must preserve the stronger legacy value');
 
   assert.ok(!('diamond-hands' in state.factions), 'legacy diamond-hands key must not remain active');
   assert.ok(!('hodlwarriors' in state.factions), 'legacy hodlwarriors key must not remain active');
@@ -255,6 +308,8 @@ async function checkWarStateMigration() {
 async function main() {
   checkNoOldLiveLabels();
   checkFactionKeysInModels();
+  checkLeaderboardWorkerFactions();
+  checkRugpullCanonAndLegacySplit();
   checkAlignmentAliases();
   checkLeaderboardEarnPath();
   checkDocPerkParity();

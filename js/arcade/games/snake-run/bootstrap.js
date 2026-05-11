@@ -325,7 +325,7 @@ function resetRun(state) {
   state._srFxDef          = getFactionEffects(state._srFactionId);
   state._srFactionPerkFired = false;
 
-  // Rugpull Minors: +1 shield segment at run start
+  // Rugpull Miners: +1 shield segment at run start
   const _srFactionShield = applyFactionStartingShield(0, state._srFactionId, { supportsShield: true });
   if (_srFactionShield > 0) {
     state.upgrades['shield-segment'] = Math.max(state.upgrades['shield-segment'], 1) + _srFactionShield;

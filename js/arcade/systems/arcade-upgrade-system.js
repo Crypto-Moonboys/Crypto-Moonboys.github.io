@@ -51,7 +51,7 @@ export const UPGRADE_CATEGORIES = Object.freeze({
  */
 export const UPGRADE_CATEGORY_BIAS = Object.freeze({
   'hard-fork-rockers': Object.freeze(['score', 'survival', 'faction']),
-  'rugpull-minors': Object.freeze(['survival', 'faction', 'score']),
+  'rugpull-miners': Object.freeze(['survival', 'faction', 'score']),
   graffpunks: Object.freeze(['chaos', 'rare', 'faction']),
   'blockchain-furies': Object.freeze(['chaos', 'score', 'faction']),
   'crypto-moongirls': Object.freeze(['score', 'faction', 'survival']),
@@ -324,7 +324,7 @@ export const ARCADE_UPGRADE_DEFS = Object.freeze([
     description:        'Next shield break is blocked once (auto-block).',
     tags:               Object.freeze(['shooter', 'snake', 'breakout', 'physics']),
     compatibleGames:    Object.freeze([]),
-    compatibleFactions: Object.freeze(['rugpull-minors']),
+    compatibleFactions: Object.freeze(['rugpull-miners']),
     rarity:             'rare',
     category:           'faction',
     effectType:         'auto_block_next_hit',
@@ -483,7 +483,8 @@ export function getUpgradeChoices(opts) {
 function _normaliseFaction(id) {
   var v = String(id || 'unaligned').toLowerCase().trim();
   if (v === 'diamond-hands' || v === 'diamond_hands' || v === 'diamondhands') return 'hard-fork-rockers';
-  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') return 'rugpull-minors';
+  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') return 'rugpull-miners';
+  if (v === 'rugpull-minors' || v === 'rugpull_minors' || v === 'rugpullminors') return 'rugpull-miners';
   if (v === 'graff-punks' || v === 'graff_punks') return 'graffpunks';
   if (UPGRADE_CATEGORY_BIAS[v]) return v;
   return 'unaligned';

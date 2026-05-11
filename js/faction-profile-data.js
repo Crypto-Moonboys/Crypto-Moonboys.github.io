@@ -24,14 +24,14 @@
       ],
       joinCtaCopy: 'Join Hard Fork Rockers and build durable chamber pressure.'
     },
-    'rugpull-minors': {
-      key: 'rugpull-minors',
-      name: 'Rugpull Minors',
-      slug: 'rugpull-minors',
+    'rugpull-miners': {
+      key: 'rugpull-miners',
+      name: 'Rugpull Miners',
+      slug: 'rugpull-miners',
       icon: '⛏️',
       chamberColor: '#ff6ad5',
       tagline: 'Dig deeper. Recover harder.',
-      shortLore: 'Rugpull Minors thrive underground where unstable runs break weaker crews. They convert pressure moments into recovery paths and defensive gains.',
+      shortLore: 'Rugpull Miners thrive underground where unstable runs break weaker crews. They convert pressure moments into recovery paths and defensive gains.',
       playstyle: 'Risky mining, underground survival, defensive grind, and recovery routing.',
       suitedFor: 'Best for tactical players who survive pressure and recover from bad runs.',
       uniqueEdge: 'Comeback stability through shield and defensive pressure management.',
@@ -44,7 +44,7 @@
       relatedLinks: [
         { label: 'Related lore: The Rugpull Miners', href: '/wiki/the-rugpull-miners.html' },
       ],
-      joinCtaCopy: 'Join Rugpull Minors and turn pressure into defensive momentum.'
+      joinCtaCopy: 'Join Rugpull Miners and turn pressure into defensive momentum.'
     },
     'graffpunks': {
       key: 'graffpunks',
@@ -205,7 +205,7 @@
 
   var factionOrder = [
     'hard-fork-rockers',
-    'rugpull-minors',
+    'rugpull-miners',
     'graffpunks',
     'blockchain-furies',
     'crypto-moongirls',

@@ -42,6 +42,37 @@ const GAME_KEY_ALIASES = {
   'block-topia-quest-maze': 'blocktopia',
 };
 
+const CANONICAL_FACTIONS = [
+  'hard-fork-rockers',
+  'rugpull-miners',
+  'graffpunks',
+  'blockchain-furies',
+  'crypto-moongirls',
+  'blockstars',
+  'all-city-bulls',
+  'nomad-bears',
+  'crypto-stoned-boys',
+];
+
+const CANONICAL_FACTION_SET = new Set(CANONICAL_FACTIONS);
+
+const FACTION_ALIASES = {
+  'diamond-hands': 'hard-fork-rockers',
+  diamond_hands: 'hard-fork-rockers',
+  diamondhands: 'hard-fork-rockers',
+
+  'hodl-warriors': 'rugpull-miners',
+  hodl_warriors: 'rugpull-miners',
+  hodlwarriors: 'rugpull-miners',
+
+  'rugpull-minors': 'rugpull-miners',
+  rugpull_minors: 'rugpull-miners',
+  rugpullminors: 'rugpull-miners',
+
+  'graff-punks': 'graffpunks',
+  graff_punks: 'graffpunks',
+};
+
 /**
  * CORS allowed origins for browser-facing routes.
  * Only origins in this list receive the Access-Control-Allow-Origin header.
@@ -275,7 +306,8 @@ export default {
 
       const { player, score, game } = body;
       const rawFaction = String(body.faction || "unaligned").toLowerCase().trim();
-      const faction = ["diamond-hands", "hodl-warriors", "graffpunks"].includes(rawFaction) ? rawFaction : "unaligned";
+      const resolvedFaction = FACTION_ALIASES[rawFaction] || rawFaction;
+      const faction = CANONICAL_FACTION_SET.has(resolvedFaction) ? resolvedFaction : "unaligned";
       const submissionMode = String(body.score_type || "raw").toLowerCase();
 
       // Anti-cheat gate — the anti-cheat worker writes anticheat:blocked:{id}

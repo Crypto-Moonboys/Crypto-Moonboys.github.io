@@ -691,7 +691,7 @@ function createLegacybootstrapInvaders(root) {
     player = { x: W / 2, y: H - 50, w: SHIP_W, h: SHIP_H, speed: 320, moveDir: 1, shielded: false };
     // Re-fetch cross-game modifiers so each new run picks up any selection change
     _refreshCrossMods();
-    // Apply faction starting-shield bonus (Rugpull Minors: +1 life)
+    // Apply faction starting-shield bonus (Rugpull Miners: +1 life)
     const factionShieldedLives = applyFactionStartingShield(lives, _factionId, { supportsShield: true });
     if (factionShieldedLives > lives) {
       lives = factionShieldedLives;

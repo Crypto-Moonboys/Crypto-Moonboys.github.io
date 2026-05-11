@@ -452,7 +452,7 @@ async function loadLeaderboard() {
 
 const FACTION_COLORS = {
   'hard-fork-rockers': '#56dcff',
-  'rugpull-minors': '#ff6ad5',
+  'rugpull-miners': '#ff6ad5',
   graffpunks: '#7dff72',
   'blockchain-furies': '#ff9f43',
   'crypto-moongirls': '#b88dff',
@@ -464,7 +464,7 @@ const FACTION_COLORS = {
 
 const FACTION_LABELS = {
   'hard-fork-rockers': '🪨 Hard Fork Rockers',
-  'rugpull-minors': '⛏️ Rugpull Minors',
+  'rugpull-miners': '⛏️ Rugpull Miners',
   graffpunks: '🎨 GraffPUNKS',
   'blockchain-furies': '🔥 Blockchain Furies',
   'crypto-moongirls': '🌙 Crypto Moongirls',

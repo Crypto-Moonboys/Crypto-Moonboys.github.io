@@ -52,10 +52,10 @@ export var FACTION_DEFS = Object.freeze({
     rewardBias:      'endurance',
   }),
 
-  'rugpull-minors': Object.freeze({
-    key:             'rugpull-minors',
-    label:           'Rugpull Minors',
-    bonusText:       '⛏️ Rugpull Minors: Shielded recovery active',
+  'rugpull-miners': Object.freeze({
+    key:             'rugpull-miners',
+    label:           'Rugpull Miners',
+    bonusText:       '⛏️ Rugpull Miners: Shielded recovery active',
     scoreMultiplier: 1.0,
     survivalBonus:   0.15,
     chaosModifier:   0.88,
@@ -176,7 +176,8 @@ export var FACTION_DEFS = Object.freeze({
 function _normalise(factionId) {
   var v = String(factionId || 'unaligned').toLowerCase().trim();
   if (v === 'diamond-hands' || v === 'diamond_hands' || v === 'diamondhands') return 'hard-fork-rockers';
-  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') return 'rugpull-minors';
+  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') return 'rugpull-miners';
+  if (v === 'rugpull-minors' || v === 'rugpull_minors' || v === 'rugpullminors') return 'rugpull-miners';
   if (v === 'graff-punks' || v === 'graff_punks') return 'graffpunks';
   return FACTION_DEFS[v] ? v : 'unaligned';
 }

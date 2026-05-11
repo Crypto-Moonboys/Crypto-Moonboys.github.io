@@ -8,7 +8,7 @@ const ROOT = path.resolve(__dirname, '..');
 const ROUTES = [
   '/battle-chamber/factions/index.html',
   '/battle-chamber/factions/hard-fork-rockers.html',
-  '/battle-chamber/factions/rugpull-minors.html',
+  '/battle-chamber/factions/rugpull-miners.html',
   '/battle-chamber/factions/graffpunks.html',
   '/battle-chamber/factions/blockchain-furies.html',
   '/battle-chamber/factions/crypto-moongirls.html',
@@ -20,7 +20,7 @@ const ROUTES = [
 
 const FACTIONS = [
   { key: 'hard-fork-rockers', name: 'Hard Fork Rockers' },
-  { key: 'rugpull-minors', name: 'Rugpull Minors' },
+  { key: 'rugpull-miners', name: 'Rugpull Miners' },
   { key: 'graffpunks', name: 'GraffPUNKS' },
   { key: 'blockchain-furies', name: 'Blockchain Furies' },
   { key: 'crypto-moongirls', name: 'Crypto Moongirls' },

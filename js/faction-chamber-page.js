@@ -23,7 +23,7 @@
     if (Array.isArray(configuredOrder) && configuredOrder.length) return configuredOrder;
     return [
       'hard-fork-rockers',
-      'rugpull-minors',
+      'rugpull-miners',
       'graffpunks',
       'blockchain-furies',
       'crypto-moongirls',

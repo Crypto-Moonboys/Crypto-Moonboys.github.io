@@ -132,7 +132,7 @@ check(leaderboardJs.includes('export async function submitScore'), 'leaderboard 
 check(leaderboardJs.includes('callFactionEarn("score_accept", score)'), 'leaderboard accepted-score faction flow unchanged');
 for (const factionKey of [
   'hard-fork-rockers',
-  'rugpull-minors',
+  'rugpull-miners',
   'graffpunks',
   'blockchain-furies',
   'crypto-moongirls',

@@ -37,7 +37,7 @@ export var RANK_TIERS = Object.freeze([
 
 var FACTION_RANK_COLORS = Object.freeze({
   'hard-fork-rockers': '#56dcff',
-  'rugpull-minors': '#ff6ad5',
+  'rugpull-miners': '#ff6ad5',
   graffpunks: '#7dff72',
   'blockchain-furies': '#ff9f43',
   'crypto-moongirls': '#b88dff',
@@ -94,7 +94,8 @@ function _nextTierForPower(power) {
 function _normaliseFaction(id) {
   var v = String(id || 'unaligned').toLowerCase().trim();
   if (v === 'diamond-hands' || v === 'diamond_hands' || v === 'diamondhands') return 'hard-fork-rockers';
-  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') return 'rugpull-minors';
+  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') return 'rugpull-miners';
+  if (v === 'rugpull-minors' || v === 'rugpull_minors' || v === 'rugpullminors') return 'rugpull-miners';
   if (v === 'graff-punks' || v === 'graff_punks') return 'graffpunks';
   return v;
 }
@@ -165,7 +166,7 @@ export function checkRankUp(factionId, power) {
  * @returns {Array<{ faction: string, rank: object }>}
  */
 export function getAllRanks() {
-  var factions = ['hard-fork-rockers', 'rugpull-minors', 'graffpunks', 'blockchain-furies', 'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys'];
+  var factions = ['hard-fork-rockers', 'rugpull-miners', 'graffpunks', 'blockchain-furies', 'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys'];
   return factions.map(function (fk) {
     return { faction: fk, rank: getFactionRank(fk) };
   });

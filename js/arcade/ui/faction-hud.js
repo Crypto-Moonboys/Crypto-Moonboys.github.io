@@ -84,7 +84,7 @@ function _esc(s) {
 function _factionColor(id) {
   var colors = {
     'hard-fork-rockers': '#56dcff',
-    'rugpull-minors': '#ff6ad5',
+    'rugpull-miners': '#ff6ad5',
     graffpunks: '#7dff72',
     'blockchain-furies': '#ff9f43',
     'crypto-moongirls': '#b88dff',
