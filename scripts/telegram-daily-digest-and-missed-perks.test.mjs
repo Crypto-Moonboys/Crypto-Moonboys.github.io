@@ -24,6 +24,7 @@ function check(condition, label) {
 console.log('\n─── Telegram Daily Digest + Missed Perks Tests ───────────────\n');
 
 const MIGRATION = 'workers/moonboys-api/migrations/018_daily_digest_missed_perks.sql';
+const MIGRATION_XP = 'workers/moonboys-api/migrations/021_missed_xp_value.sql';
 const WORKER = 'workers/moonboys-api/worker.js';
 const WRANGLER = 'workers/moonboys-api/wrangler.toml';
 const BRIDGE = 'js/battle-chamber-faction-bridge.js';
@@ -32,8 +33,10 @@ const FACTION_PAGE = 'js/faction-chamber-page.js';
 const COMMUNITY = 'community.html';
 const GAMES = 'games/index.html';
 const LEADERBOARD = 'js/leaderboard-client.js';
+const DASHBOARD = 'dashboard.html';
 
 const migrationSql = exists(MIGRATION) ? read(MIGRATION) : '';
+const migrationXpSql = exists(MIGRATION_XP) ? read(MIGRATION_XP) : '';
 const workerJs = read(WORKER);
 const wranglerToml = exists(WRANGLER) ? read(WRANGLER) : '';
 const bridgeJs = read(BRIDGE);
@@ -42,6 +45,7 @@ const factionPageJs = read(FACTION_PAGE);
 const communityHtml = read(COMMUNITY);
 const gamesHtml = read(GAMES);
 const leaderboardJs = read(LEADERBOARD);
+const dashboardHtml = read(DASHBOARD);
 
 console.log('[1] Schema checks');
 check(exists(MIGRATION), `${MIGRATION} exists`);
@@ -51,6 +55,10 @@ check(migrationSql.includes('CREATE TABLE IF NOT EXISTS daily_opportunity_state'
 check(migrationSql.includes('idx_daily_missed_perks_user_day'), 'migration defines missed history (telegram_id, utc_day) index');
 check(migrationSql.includes('idx_daily_missed_perks_user_missed_desc'), 'migration defines missed history (telegram_id, missed_at DESC) index');
 check(/UNIQUE\s*\(telegram_id,\s*utc_day\)/.test(migrationSql), 'migration defines unique (telegram_id, utc_day)');
+// Migration 021: missed_xp_value column
+check(exists(MIGRATION_XP), `${MIGRATION_XP} exists`);
+check(migrationXpSql.includes('missed_xp_value'), 'migration 021 adds missed_xp_value column');
+check(migrationXpSql.includes('ALTER TABLE daily_missed_perks ADD COLUMN missed_xp_value'), 'migration 021 is an ALTER TABLE (non-destructive add)');
 
 console.log('\n[2] Route checks');
 check(workerJs.includes("path === '/roguelite/daily-state'"), 'worker includes /roguelite/daily-state');
@@ -80,6 +88,17 @@ check(workerJs.includes('The city kept moving while you were away.'), 'worker in
 check(workerJs.includes('total_all_time'), 'missed history route exposes all-time total');
 check(workerJs.includes('metadata_json: row.metadata_json || null') && workerJs.includes('metadata: safeJsonParse(row.metadata_json, {})'), 'missed history route returns raw metadata_json and parsed metadata');
 check(!workerJs.includes('missedAt: body?.missed_at') && workerJs.includes('client_missed_at'), 'mark-missed does not trust client missed_at for primary ordering');
+// Missed XP all-time tracking (never resets)
+check(workerJs.includes('missed_xp_all_time'), 'worker exposes missed_xp_all_time in daily-state and missed-history payloads');
+check(workerJs.includes('missed_events_all_time'), 'worker exposes missed_events_all_time in payloads');
+check(workerJs.includes('missed_xp_today'), 'worker exposes missed_xp_today in daily-state and WTF events payloads');
+check(workerJs.includes('missed_events_today'), 'worker exposes missed_events_today in payloads');
+check(workerJs.includes('missed_xp_value: Math.max(0, Math.floor'), 'worker normalizes missed_xp_value per row in missed-history response');
+check(workerJs.includes('MISSED_XP_PER_TIMED_EVENT') && workerJs.includes('MISSED_XP_PER_DAILY_WINDOW'), 'worker defines XP constants for timed events and daily window misses');
+check(!workerJs.includes('missedXpValue: body?.missed_xp_value'), 'mark-missed does not accept client-supplied missedXpValue');
+check(workerJs.includes('// missedXpValue is not accepted from clients'), 'mark-missed documents the client XP value rejection');
+// dashboard.html must remain wiki/editorial only - no missed XP player data
+check(!dashboardHtml.includes('missed_xp') && !dashboardHtml.includes('missed_xp_all_time'), 'dashboard.html does not contain missed_xp player data (wiki/editorial only)');
 
 console.log('\n[5] Telegram digest checks');
 check(workerJs.includes('claimDailyDigestSlot'), 'worker claims one digest slot per user/day');

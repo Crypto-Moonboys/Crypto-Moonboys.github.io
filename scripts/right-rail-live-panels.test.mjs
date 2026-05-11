@@ -198,6 +198,16 @@ console.log('\n[6] Missed perks');
 check(las.includes('missed_history_count') && las.includes('missed_today'), 'missed count and daily missed summary can render');
 check(las.includes('The city kept moving while you were away.'), 'missed opportunities copy is present');
 check(las.includes('Daily WTF signals open every 4 hours. Daily options reset at UTC midnight. Missed history does not reset.'), 'daily reset copy and missed history persistence copy are separate and present');
+// All-time missed XP visibility in right-rail PLAYER LIVE FEED
+check(las.includes('missed_xp_all_time'), 'right rail reads missed_xp_all_time for all-time missed XP display');
+check(las.includes('Missed XP:'), 'right rail renders "Missed XP:" label for all-time missed XP');
+check(las.includes('Missed opportunities are tracked over time.'), 'right rail includes "Missed opportunities are tracked over time." copy');
+check(las.includes('MOONBOYS_ROGUELITE_DAILY_STATE'), 'right rail reads missed_xp_all_time from roguelite daily state as fallback');
+// dashboard.html must not contain missed XP (wiki/editorial only)
+const dashboard = read('dashboard.html');
+check(!dashboard.includes('missed_xp') && !dashboard.includes('missed_xp_all_time'), 'dashboard.html does not contain missed XP player data (wiki/editorial only)');
+// Missed history persistence: data is accumulated, not reset by UTC day
+check(!las.toLowerCase().includes('missed xp resets') && !las.includes('missed_xp_reset'), 'right rail does not suggest missed XP resets by day');
 
 
 console.log('\n[7] Roguelite client/server method contract');

@@ -942,6 +942,10 @@ const DAILY_MISSED_TEXT_LIMITS = Object.freeze({
 });
 
 const DAILY_MISSED_HISTORY_MAX_LIMIT = 100;
+// Notional XP values per event type (never awarded; tracking only).
+// status_value (0/1) is a presence flag — missed_xp_value is the real XP amount.
+const MISSED_XP_PER_TIMED_EVENT = 50;   // WTF signal window missed
+const MISSED_XP_PER_DAILY_WINDOW = 25;  // daily activation window backfill
 const DIGEST_PENDING_STALE_MINUTES = 15;
 const DIGEST_PENDING_STALE_MS = DIGEST_PENDING_STALE_MINUTES * 60 * 1000;
 const DIGEST_SEND_BATCH_SIZE = 12;
@@ -1371,6 +1375,7 @@ async function upsertWtfMissedEntry(db, { telegramId, utcDay, eventRow, reason }
     description: 'The city kept moving while you were away.',
     missedReason: reason || 'event_expired',
     statusValue: 1,
+    missedXpValue: MISSED_XP_PER_TIMED_EVENT,
     metadataJson: {
       event_id: eventRow?.event_id || null,
       reward_preview: eventRow?.reward_key || null,
@@ -1617,6 +1622,7 @@ async function insertMissedPerkEntry(db, {
   description,
   missedReason,
   statusValue,
+  missedXpValue,
   metadataJson,
   missedAt,
 }) {
@@ -1631,14 +1637,16 @@ async function insertMissedPerkEntry(db, {
   const safeDescription = clampText(description, DAILY_MISSED_TEXT_LIMITS.description, '');
   const safeReason = clampText(missedReason, DAILY_MISSED_TEXT_LIMITS.missedReason, 'not_played');
   const safeStatusValue = Math.max(0, Math.floor(Number(statusValue) || 0));
+  // missed_xp_value: notional XP forfeited (never awarded to player; tracking only)
+  const safeMissedXpValue = Math.max(0, Math.floor(Number(missedXpValue) || 0));
   const safeMetadata = normaliseMissedMetadata(metadataJson);
   const safeMissedAt = missedAt && Number.isFinite(Date.parse(String(missedAt)))
     ? new Date(missedAt).toISOString()
     : new Date().toISOString();
   const result = await db.prepare(`
     INSERT INTO daily_missed_perks
-      (telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     safeTelegramId,
     safeUtcDay,
@@ -1649,6 +1657,7 @@ async function insertMissedPerkEntry(db, {
     safeDescription || null,
     safeReason || null,
     safeStatusValue,
+    safeMissedXpValue,
     safeMetadata,
     safeMissedAt,
     new Date().toISOString(),
@@ -1710,6 +1719,7 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
       description: 'The city kept moving while you were away.',
       missedReason: 'inactive_utc_day',
       statusValue: 1,
+      missedXpValue: MISSED_XP_PER_DAILY_WINDOW,
       metadataJson: { trigger: 'utc_reset_backfill' },
       missedAt: `${missedDay}T23:59:59.000Z`,
     });
@@ -1727,6 +1737,7 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
         description: 'Faction daily missions reset at UTC midnight.',
         missedReason: 'faction_mission_window_expired',
         statusValue: 1,
+        missedXpValue: MISSED_XP_PER_DAILY_WINDOW,
         metadataJson: { trigger: 'utc_reset_backfill' },
         missedAt: `${missedDay}T23:59:59.000Z`,
       });
@@ -1742,6 +1753,7 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
         description: 'No faction selected. Join a faction to activate faction war opportunities.',
         missedReason: 'faction_not_selected',
         statusValue: 1,
+        missedXpValue: MISSED_XP_PER_DAILY_WINDOW,
         metadataJson: { trigger: 'utc_reset_backfill' },
         missedAt: `${missedDay}T23:59:59.000Z`,
       });
@@ -1758,14 +1770,19 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
 
 async function getMissedHistorySnapshot(db, telegramId, limit = 5) {
   const safeLimit = Math.max(1, Math.min(20, Math.floor(Number(limit) || 5)));
-  const [countRow, rows] = await Promise.all([
+  const [countRow, xpRow, rows] = await Promise.all([
     db.prepare(`
       SELECT COUNT(*) AS total
       FROM daily_missed_perks
       WHERE telegram_id = ?
     `).bind(String(telegramId)).first().catch(() => ({ total: 0 })),
     db.prepare(`
-      SELECT id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at
+      SELECT COALESCE(SUM(missed_xp_value), 0) AS xp_total
+      FROM daily_missed_perks
+      WHERE telegram_id = ?
+    `).bind(String(telegramId)).first().catch(() => ({ xp_total: 0 })),
+    db.prepare(`
+      SELECT id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at
       FROM daily_missed_perks
       WHERE telegram_id = ?
       ORDER BY missed_at DESC, id DESC
@@ -1774,6 +1791,7 @@ async function getMissedHistorySnapshot(db, telegramId, limit = 5) {
   ]);
   return {
     total: Number(countRow?.total) || 0,
+    xp_total: Math.max(0, Math.floor(Number(xpRow?.xp_total) || 0)),
     recent: (rows?.results || []).map((row) => ({
       id: row.id,
       utc_day: row.utc_day,
@@ -1784,6 +1802,7 @@ async function getMissedHistorySnapshot(db, telegramId, limit = 5) {
       description: row.description || null,
       missed_reason: row.missed_reason || null,
       status_value: Number(row.status_value) || 0,
+      missed_xp_value: Math.max(0, Math.floor(Number(row.missed_xp_value) || 0)),
       metadata: safeJsonParse(row.metadata_json, {}),
       missed_at: row.missed_at || null,
       created_at: row.created_at || null,
@@ -3333,6 +3352,11 @@ export default {
               ORDER BY mission_id ASC
             `).bind(verified.telegramId, utcDay).all().catch(() => ({ results: [] }));
         const missed = await getMissedHistorySnapshot(env.DB, verified.telegramId, 5);
+        const missedTodayRow = await env.DB.prepare(`
+          SELECT COUNT(*) AS events_today, COALESCE(SUM(missed_xp_value), 0) AS xp_today
+          FROM daily_missed_perks
+          WHERE telegram_id = ? AND utc_day = ?
+        `).bind(verified.telegramId, utcDay).first().catch(() => ({ events_today: 0, xp_today: 0 }));
         const digestLog = await env.DB.prepare(`
           SELECT status, sent_at, error_message
           FROM telegram_daily_digest_log
@@ -3360,6 +3384,10 @@ export default {
             })),
           },
           missed_history_count: missed.total,
+          missed_events_all_time: missed.total,
+          missed_xp_all_time: missed.xp_total,
+          missed_events_today: Math.max(0, Math.floor(Number(missedTodayRow?.events_today) || 0)),
+          missed_xp_today: Math.max(0, Math.floor(Number(missedTodayRow?.xp_today) || 0)),
           recent_missed_history: missed.recent,
           missed_backfill: backfill,
           digest_status: {
@@ -3405,14 +3433,14 @@ export default {
       try {
         const query = utcDay
           ? env.DB.prepare(`
-              SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at
+              SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at
               FROM daily_missed_perks
               WHERE telegram_id = ? AND utc_day = ?
               ORDER BY missed_at DESC, id DESC
               LIMIT ?
             `).bind(verified.telegramId, utcDay, limit)
           : env.DB.prepare(`
-              SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at
+              SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at
               FROM daily_missed_perks
               WHERE telegram_id = ?
               ORDER BY missed_at DESC, id DESC
@@ -3430,11 +3458,11 @@ export default {
               FROM daily_missed_perks
               WHERE telegram_id = ?
             `).bind(verified.telegramId).first().catch(() => ({ total: 0 }));
-        const allTimeCountRow = await env.DB.prepare(`
-          SELECT COUNT(*) AS total
+        const allTimeRow = await env.DB.prepare(`
+          SELECT COUNT(*) AS events_all_time, COALESCE(SUM(missed_xp_value), 0) AS xp_all_time
           FROM daily_missed_perks
           WHERE telegram_id = ?
-        `).bind(verified.telegramId).first().catch(() => ({ total: 0 }));
+        `).bind(verified.telegramId).first().catch(() => ({ events_all_time: 0, xp_all_time: 0 }));
         const items = (rows?.results || []).map((row) => ({
           id: row.id,
           telegram_id: row.telegram_id,
@@ -3446,6 +3474,7 @@ export default {
           description: row.description || null,
           missed_reason: row.missed_reason || null,
           status_value: Math.max(0, Math.floor(Number(row.status_value) || 0)),
+          missed_xp_value: Math.max(0, Math.floor(Number(row.missed_xp_value) || 0)),
           metadata_json: row.metadata_json || null,
           metadata: safeJsonParse(row.metadata_json, {}),
           missed_at: row.missed_at || null,
@@ -3457,7 +3486,9 @@ export default {
           utc_day: utcDay || null,
           limit,
           total: Math.max(0, Math.floor(Number(countRow?.total) || 0)),
-          total_all_time: Math.max(0, Math.floor(Number(allTimeCountRow?.total) || 0)),
+          total_all_time: Math.max(0, Math.floor(Number(allTimeRow?.events_all_time) || 0)),
+          missed_events_all_time: Math.max(0, Math.floor(Number(allTimeRow?.events_all_time) || 0)),
+          missed_xp_all_time: Math.max(0, Math.floor(Number(allTimeRow?.xp_all_time) || 0)),
           items,
         });
       } catch (error) {
@@ -3498,6 +3529,8 @@ export default {
           description: body?.description,
           missedReason: body?.missed_reason || 'manual_mark',
           statusValue: body?.status_value,
+          // missedXpValue is not accepted from clients; only the Worker sets XP values.
+          missedXpValue: 0,
           metadataJson: metadataObject,
         });
         return json({
@@ -3661,7 +3694,16 @@ export default {
         if (nextEvent) upcomingEvents = [nextEvent];
       }
       const countdownTarget = activeEvent ? activeEvent.end_at : nextEvent ? nextEvent.start_at : null;
-      const missedCount = await env.DB.prepare(`SELECT COUNT(*) AS total FROM daily_missed_perks WHERE telegram_id = ?`).bind(verified.telegramId).first().catch(() => ({ total: 0 }));
+      const allTimeMissedRow = await env.DB.prepare(`
+        SELECT COUNT(*) AS events_all_time, COALESCE(SUM(missed_xp_value), 0) AS xp_all_time
+        FROM daily_missed_perks
+        WHERE telegram_id = ?
+      `).bind(verified.telegramId).first().catch(() => ({ events_all_time: 0, xp_all_time: 0 }));
+      const todayMissedRow = await env.DB.prepare(`
+        SELECT COUNT(*) AS events_today, COALESCE(SUM(missed_xp_value), 0) AS xp_today
+        FROM daily_missed_perks
+        WHERE telegram_id = ? AND utc_day = ?
+      `).bind(verified.telegramId, utcDay).first().catch(() => ({ events_today: 0, xp_today: 0 }));
       return json({
         ok: true,
         auth_mode: 'telegram_verified',
@@ -3675,7 +3717,11 @@ export default {
         current_task: activeEvent ? activeEvent.required_action : null,
         completed_today: normalized.filter((row) => row.player_status === 'completed').length,
         missed_today: normalized.filter((row) => row.player_status === 'missed' || row.player_status === 'expired').length,
-        missed_history_count: Math.max(0, Math.floor(Number(missedCount?.total) || 0)),
+        missed_history_count: Math.max(0, Math.floor(Number(allTimeMissedRow?.events_all_time) || 0)),
+        missed_events_all_time: Math.max(0, Math.floor(Number(allTimeMissedRow?.events_all_time) || 0)),
+        missed_xp_all_time: Math.max(0, Math.floor(Number(allTimeMissedRow?.xp_all_time) || 0)),
+        missed_events_today: Math.max(0, Math.floor(Number(todayMissedRow?.events_today) || 0)),
+        missed_xp_today: Math.max(0, Math.floor(Number(todayMissedRow?.xp_today) || 0)),
         chain_options: activeEvent ? (activeEvent.chain_options || []) : ((chainOptions?.results || []).slice(0, 3)),
       });
     }
