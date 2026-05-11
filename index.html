@@ -279,11 +279,5 @@
 <script data-cfasync="false" src="/js/price-ticker.js"></script>
 <script data-cfasync="false" src="/js/home-widgets.js"></script>
 <script data-cfasync="false" src="/js/battle-layer.js"></script>
-<script>
-  fetch('https://api.cryptomoonboys.com/health')
-    .then(response => response.json())
-    .then(data => console.log('Worker connected:', data))
-    .catch(err => console.error('Worker connection failed:', err));
-</script>
 </body>
 </html>
