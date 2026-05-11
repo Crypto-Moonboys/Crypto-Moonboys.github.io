@@ -195,6 +195,62 @@ for (const absPath of deployFilesToCheck) {
   }
 }
 
+/* ── robots/sitemap contradiction guards ─────────────────────────────────── */
+const ROBOTS_PATH = path.join(ROOT, 'robots.txt');
+const SITEMAP_PATH = path.join(ROOT, 'sitemap.xml');
+const EXPECTED_SITEMAP_URL = 'https://cryptomoonboys.com/sitemap.xml';
+const SITEMAP_FORBIDDEN_PATHS = [
+  '/agent.html',
+  '/about/index.html',
+  '/articles.html',
+];
+
+if (!fs.existsSync(ROBOTS_PATH)) {
+  failures.push('robots.txt missing');
+}
+
+if (!fs.existsSync(SITEMAP_PATH)) {
+  failures.push('sitemap.xml missing');
+}
+
+if (fs.existsSync(ROBOTS_PATH) && fs.existsSync(SITEMAP_PATH)) {
+  const robotsContent = fs.readFileSync(ROBOTS_PATH, 'utf8');
+  const sitemapContent = fs.readFileSync(SITEMAP_PATH, 'utf8');
+
+  const sitemapLine = robotsContent
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => /^sitemap:/i.test(line));
+
+  const robotsSitemapUrl = sitemapLine ? sitemapLine.replace(/^sitemap:\s*/i, '').trim() : '';
+  if (robotsSitemapUrl !== EXPECTED_SITEMAP_URL) {
+    const observedSitemapUrl = robotsSitemapUrl || '(missing)';
+    const observedSitemapLine = sitemapLine || '(no Sitemap line found)';
+    failures.push(
+      `robots.txt Sitemap must be exactly ${EXPECTED_SITEMAP_URL}; found ${observedSitemapUrl} from line: ${observedSitemapLine}`,
+    );
+  }
+
+  for (const forbiddenPath of SITEMAP_FORBIDDEN_PATHS) {
+    if (sitemapContent.includes(`<loc>https://cryptomoonboys.com${forbiddenPath}</loc>`)) {
+      failures.push(`sitemap.xml must not contain ${forbiddenPath}`);
+    }
+  }
+
+  const disallowedExactPaths = robotsContent
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => /^disallow:/i.test(line))
+    .map((line) => line.replace(/^disallow:\s*/i, '').trim())
+    .filter((value) => value.startsWith('/') && value.endsWith('.html') && !value.includes('*'));
+
+  for (const disallowedPath of disallowedExactPaths) {
+    if (sitemapContent.includes(`<loc>https://cryptomoonboys.com${disallowedPath}</loc>`)) {
+      failures.push(`sitemap.xml includes robots-disallowed page ${disallowedPath}`);
+    }
+  }
+}
+
 if (failures.length) {
   console.error('Anti-drift check failed.');
   for (const failure of failures) {
