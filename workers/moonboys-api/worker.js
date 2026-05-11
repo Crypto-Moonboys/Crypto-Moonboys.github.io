@@ -212,8 +212,8 @@ const FACTION_CONFIG = {
     bonus: '+endurance stability and streak protection',
     xpMultiplier: 1.1,
   },
-  'rugpull-minors': {
-    label: 'Rugpull Minors',
+  'rugpull-miners': {
+    label: 'Rugpull Miners',
     icon: '⛏️',
     color: '#ff6ad5',
     bonus: '+defensive recovery and shield support',
@@ -281,13 +281,14 @@ function normalizeFaction(value) {
   const cleaned = String(value || '').trim().toLowerCase();
   // All 9 canonical Battle Chamber faction keys
   const CANONICAL_FACTIONS = [
-    'hard-fork-rockers', 'rugpull-minors', 'graffpunks', 'blockchain-furies',
+    'hard-fork-rockers', 'rugpull-miners', 'graffpunks', 'blockchain-furies',
     'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys',
   ];
   if (CANONICAL_FACTIONS.includes(cleaned)) return cleaned;
   // Legacy aliases → canonical keys
   if (cleaned === 'diamondhands' || cleaned === 'diamond_hands' || cleaned === 'diamond-hands') return 'hard-fork-rockers';
-  if (cleaned === 'hodlwarriors' || cleaned === 'hodl_warriors' || cleaned === 'hodl-warriors') return 'rugpull-minors';
+  if (cleaned === 'hodlwarriors' || cleaned === 'hodl_warriors' || cleaned === 'hodl-warriors') return 'rugpull-miners';
+  if (cleaned === 'rugpullminors' || cleaned === 'rugpull_minors' || cleaned === 'rugpull-minors') return 'rugpull-miners';
   if (cleaned === 'graff-punks' || cleaned === 'graff_punks') return 'graffpunks';
   if (cleaned === 'unaligned') return FACTION_UNALIGNED;
   return null;
@@ -854,7 +855,7 @@ const BATTLE_CHAMBER_EVENT_TYPES = new Set([
 
 const BATTLE_CHAMBER_FACTIONS = Object.freeze([
   'hard-fork-rockers',
-  'rugpull-minors',
+  'rugpull-miners',
   'graffpunks',
   'blockchain-furies',
   'crypto-moongirls',
@@ -866,7 +867,7 @@ const BATTLE_CHAMBER_FACTIONS = Object.freeze([
 
 const BATTLE_CHAMBER_FACTION_LABELS = Object.freeze({
   'hard-fork-rockers': 'Hard Fork Rockers',
-  'rugpull-minors': 'Rugpull Minors',
+  'rugpull-miners': 'Rugpull Miners',
   graffpunks: 'GraffPUNKS',
   'blockchain-furies': 'Blockchain Furies',
   'crypto-moongirls': 'Crypto Moongirls',
@@ -880,9 +881,12 @@ const BATTLE_CHAMBER_FACTION_ALIASES = Object.freeze({
   'diamond-hands': 'hard-fork-rockers',
   diamond_hands: 'hard-fork-rockers',
   diamondhands: 'hard-fork-rockers',
-  'hodl-warriors': 'rugpull-minors',
-  hodl_warriors: 'rugpull-minors',
-  hodlwarriors: 'rugpull-minors',
+  'hodl-warriors': 'rugpull-miners',
+  hodl_warriors: 'rugpull-miners',
+  hodlwarriors: 'rugpull-miners',
+  'rugpull-minors': 'rugpull-miners',
+  rugpull_minors: 'rugpull-miners',
+  rugpullminors: 'rugpull-miners',
   'graff-punks': 'graffpunks',
   graff_punks: 'graffpunks',
 });
@@ -6058,5 +6062,4 @@ async function cmdGkClearStrikes(db, tok, chatId, callerTelegramId, argStr, env)
       `⚠️ Failed to clear strikes for ${escapeHtml(label)}: ${escapeHtml(result?.error || 'unknown error')}`);
   }
 }
-
 

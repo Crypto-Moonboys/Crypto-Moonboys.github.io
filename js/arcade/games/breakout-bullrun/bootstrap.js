@@ -1798,7 +1798,7 @@ function createLegacyBootstrapBreakoutBullrun(root) {
     _bbRefreshCrossMods();
     // Faction: initialise faction effects for this run
     _bbInitFaction();
-    // Shielded Start: add a floor shield charge at run start (modifier or faction Rugpull Minors)
+    // Shielded Start: add a floor shield charge at run start (modifier or faction Rugpull Miners)
     if (bbModShieldedStart) {
       lives += 1;
     }

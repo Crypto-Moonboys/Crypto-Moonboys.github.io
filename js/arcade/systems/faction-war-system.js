@@ -33,7 +33,7 @@ var CONTRIBUTION_SOURCES = Object.freeze([
 
 var FACTION_KEYS = Object.freeze([
   'hard-fork-rockers',
-  'rugpull-minors',
+  'rugpull-miners',
   'graffpunks',
   'blockchain-furies',
   'crypto-moongirls',
@@ -145,9 +145,12 @@ function _migrateLegacyFactionState(state) {
     'diamond-hands': 'hard-fork-rockers',
     diamond_hands: 'hard-fork-rockers',
     diamondhands: 'hard-fork-rockers',
-    'hodl-warriors': 'rugpull-minors',
-    hodl_warriors: 'rugpull-minors',
-    hodlwarriors: 'rugpull-minors',
+    'hodl-warriors': 'rugpull-miners',
+    hodl_warriors: 'rugpull-miners',
+    hodlwarriors: 'rugpull-miners',
+    'rugpull-minors': 'rugpull-miners',
+    rugpull_minors: 'rugpull-miners',
+    rugpullminors: 'rugpull-miners',
   };
   var didMutate = false;
   var factions = state && state.factions;
@@ -400,7 +403,8 @@ export function resetDailyCycle() {
 function _normaliseFactionKey(id) {
   var v = String(id || '').toLowerCase().trim();
   if (v === 'diamond-hands' || v === 'diamond_hands' || v === 'diamondhands') v = 'hard-fork-rockers';
-  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') v = 'rugpull-minors';
+  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') v = 'rugpull-miners';
+  if (v === 'rugpull-minors' || v === 'rugpull_minors' || v === 'rugpullminors') v = 'rugpull-miners';
   if (v === 'graff-punks' || v === 'graff_punks') v = 'graffpunks';
   return FACTION_KEYS.indexOf(v) !== -1 ? v : null;
 }

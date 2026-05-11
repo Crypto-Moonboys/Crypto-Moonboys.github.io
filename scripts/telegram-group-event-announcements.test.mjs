@@ -126,7 +126,7 @@ for (const term of FORBIDDEN) {
 console.log('\n[8] Preservation');
 check(workerJs.includes('const ARCADE_XP_PER_POINT = 0.02;'), 'Arcade XP formula constant unchanged');
 check(leaderboardJs.includes('export async function submitScore') && leaderboardJs.includes('callFactionEarn("score_accept", score)'), 'leaderboard accepted-score flow unchanged');
-for (const factionKey of ['hard-fork-rockers', 'rugpull-minors', 'graffpunks', 'blockchain-furies', 'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys']) {
+for (const factionKey of ['hard-fork-rockers', 'rugpull-miners', 'graffpunks', 'blockchain-furies', 'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys']) {
   check(workerJs.includes(factionKey), `faction canon key preserved: ${factionKey}`);
 }
 check(blockTopiaRoutes.includes('handleBlockTopiaProgressionRoute'), 'Block Topia route module remains present');

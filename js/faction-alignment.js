@@ -7,7 +7,7 @@
 
   var LIVE_FACTION_ORDER = Object.freeze([
     'hard-fork-rockers',
-    'rugpull-minors',
+    'rugpull-miners',
     'graffpunks',
     'blockchain-furies',
     'crypto-moongirls',
@@ -19,7 +19,7 @@
 
   var FACTIONS = {
     'hard-fork-rockers': { key: 'hard-fork-rockers', label: 'Hard Fork Rockers', icon: '🪨', color: '#56dcff', bonus: '+endurance stability and streak protection' },
-    'rugpull-minors': { key: 'rugpull-minors', label: 'Rugpull Minors', icon: '⛏️', color: '#ff6ad5', bonus: '+defensive recovery and shield support' },
+    'rugpull-miners': { key: 'rugpull-miners', label: 'Rugpull Miners', icon: '⛏️', color: '#ff6ad5', bonus: '+defensive recovery and shield support' },
     graffpunks: { key: 'graffpunks', label: 'GraffPUNKS', icon: '🎨', color: '#7dff72', bonus: '+chaos bursts and combo pressure' },
     'blockchain-furies': { key: 'blockchain-furies', label: 'Blockchain Furies', icon: '🔥', color: '#ff9f43', bonus: '+speed pressure and revenge momentum' },
     'crypto-moongirls': { key: 'crypto-moongirls', label: 'Crypto Moongirls', icon: '🌙', color: '#b88dff', bonus: '+precision control and penalty resistance' },
@@ -34,9 +34,12 @@
     'diamond-hands': 'hard-fork-rockers',
     diamond_hands: 'hard-fork-rockers',
     diamondhands: 'hard-fork-rockers',
-    'hodl-warriors': 'rugpull-minors',
-    hodl_warriors: 'rugpull-minors',
-    hodlwarriors: 'rugpull-minors',
+    'hodl-warriors': 'rugpull-miners',
+    hodl_warriors: 'rugpull-miners',
+    hodlwarriors: 'rugpull-miners',
+    'rugpull-minors': 'rugpull-miners',
+    rugpull_minors: 'rugpull-miners',
+    rugpullminors: 'rugpull-miners',
     'graff-punks': 'graffpunks',
     graff_punks: 'graffpunks',
   });

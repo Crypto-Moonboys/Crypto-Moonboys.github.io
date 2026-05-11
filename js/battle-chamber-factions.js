@@ -44,7 +44,7 @@
       playstyle: 'Endurance · Stability · Streak Protection',
       perkTeaser: 'Reduced chaos exposure, long-run bonus branches, streak protection',
       rewardBias: 'endurance' },
-    { key: 'rugpull-minors',      label: 'Rugpull Minors',     icon: '⛏️', color: '#ff6ad5',
+    { key: 'rugpull-miners',      label: 'Rugpull Miners',     icon: '⛏️', color: '#ff6ad5',
       playstyle: 'Defensive Recovery · Shield Support · Resource Pressure',
       perkTeaser: 'Shield bonus, comeback branches, resource-recovery quests',
       rewardBias: 'contribution' },
@@ -82,7 +82,7 @@
 
   var CHAMBER_ROUTES = Object.freeze({
     'hard-fork-rockers': '/battle-chamber/factions/hard-fork-rockers.html',
-    'rugpull-minors': '/battle-chamber/factions/rugpull-minors.html',
+    'rugpull-miners': '/battle-chamber/factions/rugpull-miners.html',
     graffpunks: '/battle-chamber/factions/graffpunks.html',
     'blockchain-furies': '/battle-chamber/factions/blockchain-furies.html',
     'crypto-moongirls': '/battle-chamber/factions/crypto-moongirls.html',

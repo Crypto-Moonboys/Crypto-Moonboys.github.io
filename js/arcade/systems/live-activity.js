@@ -190,7 +190,7 @@ export function unsubscribeActivityFeed(handler) {
 function _factionLabel(id) {
   var labels = {
     'hard-fork-rockers': '🪨 Hard Fork Rockers',
-    'rugpull-minors': '⛏️ Rugpull Minors',
+    'rugpull-miners': '⛏️ Rugpull Miners',
     graffpunks: '🎨 GraffPUNKS',
     'blockchain-furies': '🔥 Blockchain Furies',
     'crypto-moongirls': '🌙 Crypto Moongirls',

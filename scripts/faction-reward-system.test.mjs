@@ -64,7 +64,7 @@ const COMMUNITY_HTML_FILE = 'community.html';
 
 const LIVE_FACTION_KEYS = [
   'hard-fork-rockers',
-  'rugpull-minors',
+  'rugpull-miners',
   'graffpunks',
   'blockchain-furies',
   'crypto-moongirls',
@@ -192,7 +192,7 @@ if (rewardModule) {
   console.log('\n[2b] Faction-specific reward flavour');
   const specificChecks = [
     { key: 'hard-fork-rockers',   weeklyBadge: 'Long Run Survivor',     monthlyTitle: 'Chainbreaker Headliner', trophy: 'Fork Amplifier' },
-    { key: 'rugpull-minors',      weeklyBadge: 'Deep Shaft Survivor',    monthlyTitle: 'Rugproof Captain',       trophy: 'Vault Miner' },
+    { key: 'rugpull-miners',      weeklyBadge: 'Deep Shaft Survivor',    monthlyTitle: 'Rugproof Captain',       trophy: 'Vault Miner' },
     { key: 'graffpunks',          weeklyBadge: 'Chaos Tagger',           monthlyTitle: 'All-City Burner',        trophy: 'Wall King' },
     { key: 'blockchain-furies',   weeklyBadge: 'Fury Spark',             monthlyTitle: 'Chain Striker',          trophy: 'Storm Node' },
     { key: 'crypto-moongirls',    weeklyBadge: 'Lunar Signal',           monthlyTitle: 'Moon Commander',         trophy: "Queen's Crest" },

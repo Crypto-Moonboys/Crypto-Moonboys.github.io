@@ -65,7 +65,7 @@ var SEASON_THEMES = Object.freeze([
 
 var FACTION_LABELS = Object.freeze({
   'hard-fork-rockers': '🪨 Hard Fork Rockers',
-  'rugpull-minors': '⛏️ Rugpull Minors',
+  'rugpull-miners': '⛏️ Rugpull Miners',
   graffpunks: '🎨 GraffPUNKS',
   'blockchain-furies': '🔥 Blockchain Furies',
   'crypto-moongirls': '🌙 Crypto Moongirls',
@@ -104,7 +104,7 @@ export function getDailyRotation() {
 
   // Featured faction: 70 % dominant faction, 30 % random
   var dominant = _safeGetDominant();
-  var factions = ['hard-fork-rockers', 'rugpull-minors', 'graffpunks', 'blockchain-furies', 'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys'];
+  var factions = ['hard-fork-rockers', 'rugpull-miners', 'graffpunks', 'blockchain-furies', 'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys'];
   var featuredFaction;
   if (rng() < 0.70) {
     featuredFaction = dominant;
@@ -152,7 +152,7 @@ export function getWeeklyRotation() {
 
   var themeIdx    = Math.floor(rng() * SEASON_THEMES.length);
   var scaleBoost  = 1 + Math.floor(rng() * 3) * 0.05;   // 1.00, 1.05, or 1.10
-  var factions    = ['hard-fork-rockers', 'rugpull-minors', 'graffpunks', 'blockchain-furies', 'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys'];
+  var factions    = ['hard-fork-rockers', 'rugpull-miners', 'graffpunks', 'blockchain-furies', 'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys'];
   var dominant    = _safeGetDominant();
   var featured    = rng() < 0.60 ? dominant : factions[Math.floor(rng() * factions.length)];
 

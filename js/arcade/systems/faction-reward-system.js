@@ -33,7 +33,7 @@
 
 export const LIVE_FACTION_REWARD_KEYS = Object.freeze([
   'hard-fork-rockers',
-  'rugpull-minors',
+  'rugpull-miners',
   'graffpunks',
   'blockchain-furies',
   'crypto-moongirls',
@@ -118,7 +118,7 @@ export const FACTION_REWARD_DEFS = Object.freeze({
     titleTrack: Object.freeze(['Roadie', 'Amp Runner', 'Fork Rocker', 'Chainbreaker', 'Chainbreaker Headliner']),
   }),
 
-  'rugpull-minors': Object.freeze({
+  'rugpull-miners': Object.freeze({
     weekly: Object.freeze({
       badge: 'Deep Shaft Survivor',
       placement: 'Weekly top faction placement eligible',
@@ -143,7 +143,7 @@ export const FACTION_REWARD_DEFS = Object.freeze({
       elitePath: 'seasonal_elite_path',
     }),
     personal: Object.freeze({
-      joinBadge: 'Rugpull Minors member badge',
+      joinBadge: 'Rugpull Miners member badge',
       firstMissionBadge: 'First mission complete badge',
       dailyStreakBadge: 'Daily mission streak badge',
       weeklyContribBadge: 'Weekly contributor badge',
@@ -461,7 +461,8 @@ export const FACTION_REWARD_DEFS = Object.freeze({
 function _normalise(factionId) {
   var v = String(factionId || 'unaligned').toLowerCase().trim();
   if (v === 'diamond-hands' || v === 'diamond_hands' || v === 'diamondhands') return 'hard-fork-rockers';
-  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') return 'rugpull-minors';
+  if (v === 'hodl-warriors' || v === 'hodl_warriors' || v === 'hodlwarriors') return 'rugpull-miners';
+  if (v === 'rugpull-minors' || v === 'rugpull_minors' || v === 'rugpullminors') return 'rugpull-miners';
   if (v === 'graff-punks' || v === 'graff_punks') return 'graffpunks';
   return FACTION_REWARD_DEFS[v] ? v : null;
 }

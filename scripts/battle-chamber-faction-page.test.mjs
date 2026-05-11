@@ -83,7 +83,7 @@ check(communityHtml.includes('Battle Chamber: Faction Wars'), 'community.html in
 console.log('\n[2] community.html — all 9 live faction names');
 const LIVE_FACTION_LABELS = [
   'Hard Fork Rockers',
-  'Rugpull Minors',
+  'Rugpull Miners',
   'GraffPUNKS',
   'Blockchain Furies',
   'Crypto Moongirls',
@@ -196,7 +196,7 @@ check(!bcLower.includes("label: 'hodl warriors'"), 'battle-chamber-factions.js h
 console.log('\n[10] battle-chamber-factions.js — all 9 live faction keys');
 const LIVE_FACTION_KEYS = [
   'hard-fork-rockers',
-  'rugpull-minors',
+  'rugpull-miners',
   'graffpunks',
   'blockchain-furies',
   'crypto-moongirls',
