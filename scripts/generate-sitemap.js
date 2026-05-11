@@ -91,15 +91,15 @@ function addEntry(loc, changefreq, priority, lastmod = TODAY) {
   entries.push(url(loc, lastmod, changefreq, priority));
 }
 
-/* ── 1. Homepage ─────────────────────────────────────────────────────────── */
+/* 1. Homepage */
 addEntry(`${BASE_URL}/`, 'weekly', '1.0');
 
-/* ── 2. Root pages ──────────────────────────────────────────────────────── */
+/* 2. Root pages */
 const ROOT_PAGES = [
   { file: 'about.html', changefreq: 'weekly', priority: '0.9' },
   { file: 'search.html', changefreq: 'weekly', priority: '1.0' },
-  // articles.html is a noindex redirect stub � excluded from sitemap
-  // agent.html is disallowed in robots.txt � excluded from sitemap
+  // articles.html is a noindex redirect stub - excluded from sitemap
+  // agent.html is disallowed in robots.txt - excluded from sitemap
   { file: 'block-topia.html', changefreq: 'daily', priority: '0.9' },
 ];
 
@@ -109,24 +109,24 @@ for (const page of ROOT_PAGES) {
   }
 }
 
-/* ── 3. /about/*.html ───────────────────────────────────────────────────── */
-// about/index.html is a noindex redirect to /about.html — excluded from sitemap
+/* 3. /about/*.html */
+// about/index.html is a noindex redirect to /about.html - excluded from sitemap
 for (const file of htmlFiles(path.join(ROOT, 'about')).filter(f => f !== 'index.html')) {
   addEntry(`${BASE_URL}/about/${file}`, 'monthly', '0.6');
 }
 
-/* ── 4. /categories/*.html ──────────────────────────────────────────────── */
+/* 4. /categories/*.html */
 for (const file of htmlFiles(path.join(ROOT, 'categories'))) {
   const priority = file === 'index.html' ? '1.0' : '0.9';
   addEntry(`${BASE_URL}/categories/${file}`, 'weekly', priority);
 }
 
-/* ── 5. /wiki/*.html (canonical only, no legacy wiki index) ────────────── */
+/* 5. /wiki/*.html */
 for (const file of wikiPageFiles()) {
   addEntry(`${BASE_URL}/wiki/${file}`, 'weekly', '0.7');
 }
 
-/* ── Write output ───────────────────────────────────────────────────────── */
+/* Write output */
 const xml = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
@@ -135,4 +135,4 @@ const xml = [
 ].join('\n') + '\n';
 
 fs.writeFileSync(OUTPUT, xml, 'utf8');
-console.log(`sitemap.xml written — ${entries.length} URLs (${TODAY})`);
+console.log(`sitemap.xml written - ${entries.length} URLs (${TODAY})`);
