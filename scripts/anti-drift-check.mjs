@@ -224,7 +224,11 @@ if (fs.existsSync(ROBOTS_PATH) && fs.existsSync(SITEMAP_PATH)) {
 
   const robotsSitemapUrl = sitemapLine ? sitemapLine.replace(/^sitemap:\s*/i, '').trim() : '';
   if (robotsSitemapUrl !== EXPECTED_SITEMAP_URL) {
-    failures.push(`robots.txt Sitemap must be exactly ${EXPECTED_SITEMAP_URL}`);
+    const observedSitemapUrl = robotsSitemapUrl || '(missing)';
+    const observedSitemapLine = sitemapLine || '(no Sitemap line found)';
+    failures.push(
+      `robots.txt Sitemap must be exactly ${EXPECTED_SITEMAP_URL}; found ${observedSitemapUrl} from line: ${observedSitemapLine}`,
+    );
   }
 
   for (const forbiddenPath of SITEMAP_FORBIDDEN_PATHS) {
