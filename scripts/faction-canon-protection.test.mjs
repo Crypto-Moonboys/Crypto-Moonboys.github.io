@@ -36,13 +36,6 @@ function read(filePath) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
-function assertFileContainsEveryKey(filePath, keys) {
-  const src = read(filePath);
-  for (const key of keys) {
-    assert.ok(src.includes(key), `${path.relative(ROOT, filePath)} is missing faction key: ${key}`);
-  }
-}
-
 function assertFileContainsEveryKeyToken(filePath, keys) {
   const src = read(filePath);
   for (const key of keys) {
