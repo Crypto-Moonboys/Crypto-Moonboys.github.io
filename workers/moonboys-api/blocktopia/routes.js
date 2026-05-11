@@ -106,20 +106,49 @@ function logProgressionResponse(route, progression = {}, meta = {}) {
   }));
 }
 
+const BLOCKTOPIA_CANONICAL_FACTIONS = [
+  'hard-fork-rockers',
+  'rugpull-miners',
+  'graffpunks',
+  'blockchain-furies',
+  'crypto-moongirls',
+  'blockstars',
+  'all-city-bulls',
+  'nomad-bears',
+  'crypto-stoned-boys',
+];
+
+const BLOCKTOPIA_FACTION_ALIASES = {
+  'diamond-hands': 'hard-fork-rockers',
+  diamond_hands: 'hard-fork-rockers',
+  diamondhands: 'hard-fork-rockers',
+  'hodl-warriors': 'rugpull-miners',
+  hodl_warriors: 'rugpull-miners',
+  hodlwarriors: 'rugpull-miners',
+  'rugpull-minors': 'rugpull-miners',
+  rugpull_minors: 'rugpull-miners',
+  rugpullminors: 'rugpull-miners',
+  'graff-punks': 'graffpunks',
+  graff_punks: 'graffpunks',
+};
+
+// XP multipliers keyed to canonical faction keys; mirrors FACTION_CONFIG.xpMultiplier in worker.js.
+const BLOCKTOPIA_FACTION_XP_MULTIPLIERS = {
+  'hard-fork-rockers': 1.1,
+  'rugpull-miners': 1.15,
+  graffpunks: 1.12,
+};
+
 function normalizeFaction(value) {
   const cleaned = String(value || '').trim().toLowerCase();
-  if (cleaned === 'diamond-hands' || cleaned === 'diamond_hands' || cleaned === 'diamondhands') return 'diamond-hands';
-  if (cleaned === 'hodl-warriors' || cleaned === 'hodl_warriors' || cleaned === 'hodlwarriors') return 'hodl-warriors';
-  if (cleaned === 'graffpunks' || cleaned === 'graff-punks' || cleaned === 'graff_punks') return 'graffpunks';
+  if (BLOCKTOPIA_CANONICAL_FACTIONS.includes(cleaned)) return cleaned;
+  if (BLOCKTOPIA_FACTION_ALIASES[cleaned]) return BLOCKTOPIA_FACTION_ALIASES[cleaned];
   return 'unaligned';
 }
 
 function factionXpMultiplier(faction) {
   const key = normalizeFaction(faction);
-  if (key === 'diamond-hands') return 1.1;
-  if (key === 'hodl-warriors') return 1.15;
-  if (key === 'graffpunks') return 1.12;
-  return 1;
+  return BLOCKTOPIA_FACTION_XP_MULTIPLIERS[key] || 1;
 }
 
 function changedRows(result) {

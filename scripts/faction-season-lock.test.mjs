@@ -521,6 +521,78 @@ FORBIDDEN_IN_BC.forEach(function (term) {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 6. Block Topia routes.js — faction canon compliance
+// ─────────────────────────────────────────────────────────────────────────────
+
+console.log('\n── 6. Block Topia routes.js faction canon ───────────────────────────────');
+
+const blockTopiaRoutes = read('workers/moonboys-api/blocktopia/routes.js');
+
+check(
+  blockTopiaRoutes.includes('BLOCKTOPIA_CANONICAL_FACTIONS'),
+  'routes.js: canonical faction list is defined',
+);
+
+check(
+  blockTopiaRoutes.includes('BLOCKTOPIA_FACTION_ALIASES'),
+  'routes.js: faction alias map is defined',
+);
+
+// normalizeFaction must NOT return legacy keys as canonical
+check(
+  !blockTopiaRoutes.includes("return 'diamond-hands'") &&
+  !blockTopiaRoutes.includes('return "diamond-hands"'),
+  'routes.js: normalizeFaction must not return diamond-hands as a canonical key',
+);
+
+check(
+  !blockTopiaRoutes.includes("return 'hodl-warriors'") &&
+  !blockTopiaRoutes.includes('return "hodl-warriors"'),
+  'routes.js: normalizeFaction must not return hodl-warriors as a canonical key',
+);
+
+// Legacy aliases must map to canonical keys
+check(
+  blockTopiaRoutes.includes("'diamond-hands': 'hard-fork-rockers'"),
+  'routes.js: diamond-hands alias maps to hard-fork-rockers',
+);
+
+check(
+  blockTopiaRoutes.includes("'hodl-warriors': 'rugpull-miners'"),
+  'routes.js: hodl-warriors alias maps to rugpull-miners',
+);
+
+check(
+  blockTopiaRoutes.includes("'rugpull-minors': 'rugpull-miners'"),
+  'routes.js: rugpull-minors alias maps to rugpull-miners',
+);
+
+// factionXpMultiplier must not reference legacy keys
+check(
+  !blockTopiaRoutes.includes("key === 'diamond-hands'") &&
+  !blockTopiaRoutes.includes('key === "diamond-hands"'),
+  'routes.js: factionXpMultiplier must not branch on diamond-hands',
+);
+
+check(
+  !blockTopiaRoutes.includes("key === 'hodl-warriors'") &&
+  !blockTopiaRoutes.includes('key === "hodl-warriors"'),
+  'routes.js: factionXpMultiplier must not branch on hodl-warriors',
+);
+
+// All 9 canonical keys must be present in routes.js
+const CANONICAL_NINE = [
+  'hard-fork-rockers', 'rugpull-miners', 'graffpunks', 'blockchain-furies',
+  'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys',
+];
+CANONICAL_NINE.forEach(function (key) {
+  check(
+    blockTopiaRoutes.includes("'" + key + "'") || blockTopiaRoutes.includes('"' + key + '"'),
+    'routes.js: canonical faction key present — ' + key,
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Summary
 // ─────────────────────────────────────────────────────────────────────────────
 
