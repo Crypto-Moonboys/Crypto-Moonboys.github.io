@@ -718,13 +718,29 @@
     var rogueliteState = window.MOONBOYS_ROGUELITE_DAILY_STATE || {};
     var history = Array.isArray(window.MOONBOYS_ROGUELITE_MISSED_HISTORY) ? window.MOONBOYS_ROGUELITE_MISSED_HISTORY : [];
     var latest = history[0] || null;
-    var count = Number(state.missed_events_all_time || state.missed_history_count || history.length || 0);
-    var today = Number(state.missed_events_today || state.missed_today || 0);
+    var count = Number(
+      state.missed_events_all_time != null ? state.missed_events_all_time :
+        (rogueliteState.missed_events_all_time != null ? rogueliteState.missed_events_all_time :
+          (state.missed_history_count != null ? state.missed_history_count : history.length))
+    );
+    var today = Number(
+      state.missed_events_today != null ? state.missed_events_today :
+        (rogueliteState.missed_events_today != null ? rogueliteState.missed_events_today :
+          (state.missed_today != null ? state.missed_today : 0))
+    );
     // missed_xp_all_time: prefer WTF state (most recent), fall back to roguelite daily state,
     // then compute from history items if neither source has the value yet.
-    var xpAllTime = Number(state.missed_xp_all_time || rogueliteState.missed_xp_all_time ||
-      history.reduce(function (sum, item) { return sum + (Number(item.missed_xp_value) || 0); }, 0) || 0);
-    var xpToday = Number(state.missed_xp_today || rogueliteState.missed_xp_today || 0);
+    var xpAllTime = Number(
+      state.missed_xp_all_time != null ? state.missed_xp_all_time :
+        (rogueliteState.missed_xp_all_time != null ? rogueliteState.missed_xp_all_time :
+          history.reduce(function (sum, item) {
+            return sum + (Number(item.missed_xp_value) || 0);
+          }, 0))
+    );
+    var xpToday = Number(
+      state.missed_xp_today != null ? state.missed_xp_today :
+        (rogueliteState.missed_xp_today != null ? rogueliteState.missed_xp_today : 0)
+    );
     var xpDisplay = xpAllTime.toLocaleString ? xpAllTime.toLocaleString() : String(xpAllTime);
     return '<div class="las-missed-box"><span class="las-pill las-pill--missed">MISSED</span>' +
       '<div class="las-missed-xp"><strong>Missed XP: ' + esc(xpDisplay) + '</strong></div>' +

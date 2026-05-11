@@ -93,10 +93,17 @@ check(workerJs.includes('missed_xp_all_time'), 'worker exposes missed_xp_all_tim
 check(workerJs.includes('missed_events_all_time'), 'worker exposes missed_events_all_time in payloads');
 check(workerJs.includes('missed_xp_today'), 'worker exposes missed_xp_today in daily-state and WTF events payloads');
 check(workerJs.includes('missed_events_today'), 'worker exposes missed_events_today in payloads');
-check(workerJs.includes('missed_xp_value: Math.max(0, Math.floor'), 'worker normalizes missed_xp_value per row in missed-history response');
+check(
+  workerJs.includes('missed_xp_value: Math.max(0, Math.floor') ||
+  workerJs.includes('missed_xp_value: rowResult.has_missed_xp_value ? Math.max(0, Math.floor'),
+  'worker normalizes missed_xp_value per row in missed-history response'
+);
 check(workerJs.includes('MISSED_XP_PER_TIMED_EVENT') && workerJs.includes('MISSED_XP_PER_DAILY_WINDOW'), 'worker defines XP constants for timed events and daily window misses');
 check(!workerJs.includes('missedXpValue: body?.missed_xp_value'), 'mark-missed does not accept client-supplied missedXpValue');
 check(workerJs.includes('// missedXpValue is not accepted from clients'), 'mark-missed documents the client XP value rejection');
+check(workerJs.includes('hasDailyMissedXpValueColumn') && workerJs.includes('PRAGMA table_info(daily_missed_perks)'), 'worker detects missed_xp_value column availability for migration-safe reads');
+check(workerJs.includes('getMissedPerkTotals') && workerJs.includes('SELECT COUNT(*) AS events_total'), 'worker keeps missed event counts independent from missed_xp_value SUM queries');
+check(workerJs.includes('getMissedPerkRows') && workerJs.includes('has_missed_xp_value') && workerJs.includes('missed_xp_value: rowResult.has_missed_xp_value ?'), 'worker falls back to rows without missed_xp_value and maps missed_xp_value to 0 when unavailable');
 // dashboard.html must remain wiki/editorial only - no missed XP player data
 check(!dashboardHtml.includes('missed_xp') && !dashboardHtml.includes('missed_xp_all_time'), 'dashboard.html does not contain missed_xp player data (wiki/editorial only)');
 
