@@ -4389,6 +4389,10 @@ body.page-game .lb-score-sub {
 }
 
 body.page-game .lb-faction {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center;
+  gap: 4px;
   border-radius: 0 !important;
   border: 1px solid rgba(0, 229, 255, 0.45) !important;
   background: rgba(0, 229, 255, 0.08) !important;
@@ -4399,9 +4403,14 @@ body.page-game .lb-faction {
   letter-spacing: 0.05em !important;
   padding: 3px 8px !important;
   max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 body.page-game .lb-faction--empty {
+  display: inline-flex !important;
+  align-items: center !important;
   border-color: rgba(139, 148, 158, 0.35) !important;
   background: rgba(139, 148, 158, 0.08) !important;
   color: rgba(157, 215, 238, 0.7) !important;
