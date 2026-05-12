@@ -141,11 +141,11 @@ function factionBadge(row) {
   if (!hasFactionValue || !key || key === 'unaligned') {
     return '<span class="lb-faction lb-faction--empty" aria-label="No faction">—</span>';
   }
-  var displayLabel = String(key).replace(/[-_]+/g, ' ').replace(/\b\w/g, function (ch) { return ch.toUpperCase(); });
+  var formattedFactionLabel = String(key).replace(/[-_]+/g, ' ').replace(/\b\w/g, function (ch) { return ch.toUpperCase(); });
   var meta = api && typeof api.getVisualMeta === 'function'
     ? api.getVisualMeta(key)
-    : { icon: '◈', label: displayLabel, color: '#8b949e' };
-  var safeLabel = escHtml((meta && meta.label) || displayLabel);
+    : { icon: '◈', label: formattedFactionLabel, color: '#8b949e' };
+  var safeLabel = escHtml((meta && meta.label) || formattedFactionLabel);
   var safeIcon = escHtml((meta && meta.icon) || '◈');
   var safeColor = escHtml((meta && meta.color) || '#8b949e');
   return `<span class="lb-faction" style="--faction-color:${safeColor}">${safeIcon} ${safeLabel}</span>`;

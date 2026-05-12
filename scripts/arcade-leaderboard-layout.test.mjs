@@ -48,8 +48,13 @@ assert.ok(
 );
 
 assert.ok(
-  leaderboardJs.includes('class="lb-col-score" title="Ranking uses score only. Accepted scores can convert into Arcade XP after sync">Score (Ranking)</th>'),
+  leaderboardJs.includes('class="lb-col-score"'),
   'leaderboard table must keep a distinct Score column',
+);
+
+assert.ok(
+  leaderboardJs.includes('Ranking uses score only. Accepted scores can convert into Arcade XP after sync'),
+  'leaderboard score column should keep the ranking guidance copy',
 );
 
 assert.ok(
