@@ -21,6 +21,22 @@ function fail(msg) { console.error(`  [FAIL] ${msg}`); failures += 1; }
 function warn(msg) { console.warn(`  [WARN] ${msg}`); warnings += 1; }
 function pass(msg) { console.log(`  [PASS] ${msg}`); }
 
+function functionBlock(src, name) {
+  const start = src ? src.indexOf(`function ${name}`) : -1;
+  if (start === -1) return '';
+  const remainder = src.slice(start + 1);
+  const nextMatch = remainder.match(/\n\s*function\s+/);
+  const next = nextMatch ? start + 1 + nextMatch.index : -1;
+  return src.slice(start, next === -1 ? src.length : next);
+}
+
+function stringArrayValues(src, varName) {
+  const re = new RegExp('var\\s+' + varName + '\\s*=\\s*\\[([^\\]]*)\\]');
+  const match = src.match(re);
+  if (!match) return [];
+  return Array.from(match[1].matchAll(/['\"]([^'\"]+)['\"]/g)).map((m) => m[1]);
+}
+
 function read(rel) {
   const full = path.join(ROOT, rel);
   if (!fs.existsSync(full)) return null;
@@ -184,7 +200,7 @@ for (const rel of LIVE_PAGES) {
 console.log('\n[6] Right-panel trigger present on named live pages');
 const RIGHT_PANEL_ALLOWLIST = [
   '/index.html', '/sam.html', '/graph.html', '/search.html', '/timeline.html',
-  '/dashboard.html', '/community.html', '/how-to-play.html',
+  '/community.html', '/how-to-play.html',
   '/games/', '/games/index.html', '/games/leaderboard.html',
 ];
 for (const rel of LIVE_PAGES) {
@@ -196,6 +212,34 @@ for (const rel of LIVE_PAGES) {
   } else {
     fail(`${rel} — missing page-has-right-panel class and not in canonical allowlist`);
   }
+}
+
+
+
+// 6b. Dashboard is editorial/wiki only: no static hooks and no runtime right-panel injection.
+console.log('\n[6b] Dashboard excludes runtime right panel');
+const dashboardHtml = read('dashboard.html') || '';
+const shouldShowRightPanelBlock = functionBlock(shellJs, 'shouldShowRightPanel');
+const runtimeAllowlist = stringArrayValues(shouldShowRightPanelBlock, 'exact');
+if (dashboardHtml.includes('data-csp-panel') || dashboardHtml.includes('data-las-panel')) {
+  fail('dashboard.html — contains live player panel hooks');
+} else {
+  pass('dashboard.html: no live player panel hooks');
+}
+if (dashboardHtml.includes('page-has-right-panel')) {
+  fail('dashboard.html — opts into page-has-right-panel');
+} else {
+  pass('dashboard.html: no page-has-right-panel opt-in');
+}
+if (runtimeAllowlist.includes('/dashboard.html')) {
+  fail('site-shell.js — right-panel allowlist includes /dashboard.html');
+} else {
+  pass('site-shell.js: right-panel allowlist excludes /dashboard.html');
+}
+if (shouldShowRightPanelBlock.includes("if (p === '/dashboard.html') return false;")) {
+  pass('site-shell.js: shouldShowRightPanel explicitly blocks dashboard route');
+} else {
+  fail('site-shell.js — shouldShowRightPanel lacks explicit dashboard exclusion');
 }
 
 // 7. DOM marker check: site-shell.js must contain all right-panel element markers

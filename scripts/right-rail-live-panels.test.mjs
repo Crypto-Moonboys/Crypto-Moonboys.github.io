@@ -58,6 +58,14 @@ function functionBlock(src, name) {
   return src.slice(start, next === -1 ? src.length : next);
 }
 
+
+function stringArrayValues(src, varName) {
+  const re = new RegExp('var\\s+' + varName + '\\s*=\\s*\\[([^\\]]*)\\]');
+  const match = src.match(re);
+  if (!match) return [];
+  return Array.from(match[1].matchAll(/['"]([^'"]+)['"]/g)).map((m) => m[1]);
+}
+
 function routeBlock(src, route) {
   const start = src.indexOf(`path === '${route}'`);
   if (start === -1) return '';
@@ -223,9 +231,15 @@ check(!las.includes('state.missed_xp_all_time || rogueliteState.missed_xp_all_ti
 check(!las.includes('state.missed_xp_today || rogueliteState.missed_xp_today'), 'right rail does not use truthy fallback for missed_xp_today');
 check(las.includes('state.missed_xp_all_time != null ? state.missed_xp_all_time') && las.includes('rogueliteState.missed_xp_all_time != null ? rogueliteState.missed_xp_all_time'), 'right rail preserves authoritative 0 missed_xp_all_time values');
 check(las.includes('state.missed_events_all_time != null ? state.missed_events_all_time') && las.includes('state.missed_events_today != null ? state.missed_events_today'), 'right rail preserves authoritative 0 missed event counters');
-// dashboard.html must not contain missed XP (wiki/editorial only)
+// dashboard.html must remain wiki/editorial only, both in static HTML and runtime shell injection.
 const dashboard = read('dashboard.html');
+const shouldShowRightPanelBlock = functionBlock(siteShell, 'shouldShowRightPanel');
+const rightPanelAllowlist = stringArrayValues(shouldShowRightPanelBlock, 'exact');
 check(!dashboard.includes('missed_xp') && !dashboard.includes('missed_xp_all_time'), 'dashboard.html does not contain missed XP player data (wiki/editorial only)');
+check(!dashboard.includes('data-las-panel') && !dashboard.includes('data-csp-panel'), 'dashboard.html does not contain live player feed panel hooks');
+check(!dashboard.includes('page-has-right-panel'), 'dashboard.html does not opt into the runtime right rail');
+check(!rightPanelAllowlist.includes('/dashboard.html'), 'site-shell.js right-panel allowlist excludes /dashboard.html');
+check(shouldShowRightPanelBlock.includes("if (p === '/dashboard.html') return false;"), 'site-shell.js explicitly prevents dashboard runtime right-rail injection even if body classes drift');
 // Missed history persistence: data is accumulated, not reset by UTC day
 check(!las.toLowerCase().includes('missed xp resets') && !las.includes('missed_xp_reset'), 'right rail does not suggest missed XP resets by day');
 
@@ -295,20 +309,32 @@ check(globalHeader.includes("document.body.dataset.autoLasPanel !== 'true'"), 'g
 check(!globalHeader.includes("setTimeout(autoMountActivityPanel") || globalHeader.includes("data-auto-las-panel"), 'autoMountActivityPanel is either removed or properly gated from bootstrap');
 
 // Issue 8: Home widgets do not label disabled feeds as live
-check(homeWidgets.includes('not yet available') || homeWidgets.includes('not live yet') || homeWidgets.includes('coming soon'), 'home-widgets.js uses honest copy when live feed is disabled');
-check(!homeWidgets.includes('Recent activity is generated from synced arcade'), 'home-widgets.js does not use misleading "is generated" copy when LIVE_FEED is false');
+const initLiveFeedBlock = functionBlock(homeWidgets, 'initLiveFeed');
+const initLeaderboardBlock = functionBlock(homeWidgets, 'initLeaderboard');
+const initActivityPanelBlock = functionBlock(homeWidgets, 'initActivityPanel');
+const initCommentsTeaserBlock = functionBlock(homeWidgets, 'initCommentsTeaser');
+check(initLiveFeedBlock.includes('Activity feed not live yet.'), 'disabled homepage live feed renders honest not-live-yet copy');
+check(initLeaderboardBlock.includes('Engagement leaderboard not yet available.'), 'disabled homepage leaderboard renders honest not-yet-available copy');
+check(initActivityPanelBlock.includes('activity heat not live yet'), 'disabled homepage activity panel renders honest not-live-yet copy');
+check(initCommentsTeaserBlock.includes('Community comments are not yet available here.'), 'disabled homepage comments teaser renders honest not-yet-available copy');
+check(!initLiveFeedBlock.includes('Recent activity is generated from synced arcade'), 'disabled homepage live feed does not use misleading "is generated" copy');
+check(!initLiveFeedBlock.includes('Live feed'), 'disabled homepage live feed does not label a disabled endpoint as "Live feed"');
 
 // Issue 9: Telegram community does not use "Active" for non-presence state
 check(!telegramCommunity.includes('>✅ Active<'), 'telegram-community.js does not use "Active" for profile-found/faction-linked state');
 check(telegramCommunity.includes('>✅ Linked<'), 'telegram-community.js uses "Linked" instead of "Active" for profile card badge');
 
 // Issue 10: leaderboard fetch errors are distinguishable from empty leaderboard
-check(leaderboardClient.includes('error: true') && leaderboardClient.includes('entries: null'), 'fetchLeaderboard returns structured error object on fetch failure');
-check(!leaderboardClient.includes('return [];\n  }'), 'fetchLeaderboard does not return empty [] on catch (ambiguous with real empty leaderboard)');
+const fetchLeaderboardBlock = functionBlock(leaderboardClient, 'fetchLeaderboard');
+const arcadeLeaderboard = read('js/arcade-leaderboard.js');
+const loadLeaderboardBlock = functionBlock(arcadeLeaderboard, 'loadLeaderboard');
+const setEmptyStateBlock = functionBlock(arcadeLeaderboard, 'setEmptyState');
+check(fetchLeaderboardBlock.includes('error: true') && fetchLeaderboardBlock.includes('entries: null'), 'fetchLeaderboard returns structured error object on fetch failure');
+check(!fetchLeaderboardBlock.includes('return [];'), 'fetchLeaderboard does not return empty [] on catch (ambiguous with real empty leaderboard)');
+check(loadLeaderboardBlock.includes('data.error === true') && loadLeaderboardBlock.includes('Leaderboard unavailable'), 'arcade leaderboard treats structured fetch errors as unavailable, not empty');
+check(setEmptyStateBlock.includes('No scores recorded yet'), 'arcade leaderboard preserves normal empty-state copy for real empty arrays');
 
-// dashboard.html remains wiki/editorial only (existing check extended)
-check(!dashboard.includes('missed_xp') && !dashboard.includes('missed_xp_all_time'), 'dashboard.html does not contain missed XP player data (wiki/editorial only)');
-check(!dashboard.includes('data-las-panel') && !dashboard.includes('data-csp-panel'), 'dashboard.html does not contain live player feed panels');
+// dashboard.html wiki/editorial checks are covered in the targeted dashboard block above.
 
 // Issue 11: connection-status-panel top Latest row must not show broken daily-state copy
 check(!csp.includes('Daily opportunity state synced'), 'connection-status-panel does not contain "Daily opportunity state synced"');

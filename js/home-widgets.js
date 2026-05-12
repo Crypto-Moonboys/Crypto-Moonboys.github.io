@@ -106,7 +106,7 @@
     if (!BASE || !FEATURES.LIVE_FEED) {
       el.innerHTML =
         '<div class="live-activity-panel">' +
-          '<p class="live-activity-desc">Live activity feed not yet available. ' +
+          '<p class="live-activity-desc">Activity feed not live yet. ' +
             'Arcade runs, faction actions, and Battle Chamber events will appear here when the feed launches.</p>' +
           '<div class="live-activity-cta">' +
             '<a href="/games/" class="btn btn-primary">Play Arcade</a>' +
@@ -147,10 +147,8 @@
     if (!el) return;
 
     if (!BASE || !FEATURES.LEADERBOARD) {
-      el.innerHTML = (window.UI_STATUS_COPY && window.UI_STATUS_COPY.panels)
-        ? window.UI_STATUS_COPY.panels.leaderboardUnavailable()
-        : '<div class="widget-unavailable"><p>Arcade leaderboard temporarily unavailable.</p>'
-          + '<a href="/games/leaderboard.html" class="btn btn-secondary">Open full leaderboard \u2192</a></div>';
+      el.innerHTML = '<div class="widget-unavailable"><p>Engagement leaderboard not yet available.</p>'
+        + '<a href="/games/leaderboard.html" class="btn btn-secondary">Open arcade leaderboard \u2192</a></div>';
       return;
     }
 
@@ -186,7 +184,7 @@
     if (!BASE || !FEATURES.ACTIVITY_PANEL) {
       el.innerHTML =
         '<div class="explore-wiki-panel">' +
-          '<p class="explore-wiki-desc">Explore the Living Wiki</p>' +
+          '<p class="explore-wiki-desc">Explore the Living Wiki — activity heat not live yet</p>' +
           '<ul class="explore-wiki-links">' +
             '<li><a href="/search.html">\uD83D\uDCD6 All Articles</a></li>' +
             '<li><a href="/timeline.html">\uD83D\uDCC5 Timeline</a></li>' +
@@ -232,8 +230,8 @@
           '<div class="bt-icon" aria-hidden="true">⚔️</div>' +
           '<div class="bt-body">' +
             '<div class="bt-title">Battle Chamber</div>' +
-            '<div class="bt-sub">The Battle Chamber is the proof wall. It shows Arcade XP movement, ' +
-              'faction alignment, leaderboard pressure, and player activity across the living wiki.</div>' +
+            '<div class="bt-sub">Community comments are not yet available here. ' +
+              'Open the Battle Chamber for the current proof wall and faction entry points.</div>' +
             '<div class="bt-cta"><a href="/community.html" class="btn btn-primary">Open Battle Chamber \u2192</a></div>' +
           '</div>' +
         '</div>';
