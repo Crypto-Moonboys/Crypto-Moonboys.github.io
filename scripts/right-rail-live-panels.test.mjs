@@ -316,6 +316,25 @@ const latestActivityRowsBlock = functionBlock(csp, 'latestActivityRows');
 check(!latestActivityRowsBlock.includes('Daily opportunity'), 'latestActivityRows does not generate generic "Daily opportunity" text');
 check(!latestActivityRowsBlock.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && !latestActivityRowsBlock.includes('MOONBOYS_DAILY_ROGUELITE_LOTTERY'), 'latestActivityRows does not read daily-state globals (daily logic belongs in the lower Faction Daily Ops box)');
 
+console.log('\n[12] Confirmed Missed XP fetch — non-blocking and cache-safe');
+const buildPanelHTMLBlock = functionBlock(csp, 'buildPanelHTML');
+const fetchDailyStateBlock = functionBlock(csp, 'fetchDailyStateWithAuth');
+const scheduleRefreshBlock = functionBlock(csp, 'scheduleLiveDataRefresh');
+// buildPanelHTML must not unconditionally await the fetch before checking globals
+check(!buildPanelHTMLBlock.includes('await fetchDailyStateWithAuth()'), 'buildPanelHTML does not block-await daily-state fetch before rendering');
+check(buildPanelHTMLBlock.includes('fetchDailyStateWithAuth().then'), 'buildPanelHTML fires daily-state fetch in background and patches Missed XP when ready');
+// fetchDailyStateWithAuth must target the correct Worker route
+check(fetchDailyStateBlock.includes("'/roguelite/daily-state'"), 'fetchDailyStateWithAuth targets /roguelite/daily-state Worker route');
+// daily-state cache must be invalidated when live-data refresh events fire
+check(csp.includes('function invalidateDailyStateCache'), 'connection-status-panel has invalidateDailyStateCache helper');
+check(scheduleRefreshBlock.includes('invalidateDailyStateCache()'), 'scheduleLiveDataRefresh calls invalidateDailyStateCache before remounting panels');
+// _dailyStateInflight must be cleared in exactly one finally path
+const inflightNullCount = (fetchDailyStateBlock.match(/_dailyStateInflight\s*=\s*null/g) || []).length;
+check(inflightNullCount === 1, 'fetchDailyStateWithAuth clears _dailyStateInflight in exactly one path');
+check(fetchDailyStateBlock.includes('} finally {') && fetchDailyStateBlock.includes('_dailyStateInflight = null'), 'fetchDailyStateWithAuth clears _dailyStateInflight inside a finally block');
+// Missed XP still must not default to hard 0 after fetch refactor
+check(!/return\s+0\s*;/.test(functionBlock(csp, 'missedXpAllTime')), 'missedXpAllTime still does not default to hard 0 after background-fetch refactor');
+
 
 const failed = checks.filter((c) => !c.ok);
 if (failed.length) {

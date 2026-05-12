@@ -13,11 +13,13 @@
  *   RELINK             — linked in localStorage but signed auth expired/missing
  *   Telegram Sync Required — not linked
  *
- * Missed XP display: first attempts linked-user confirmation via
- * POST /roguelite/daily-state (fresh/restorable signed Telegram auth),
- * then falls back to page globals (MOONBOYS_WTF_EVENTS,
- * MOONBOYS_ROGUELITE_DAILY_STATE). Shows "syncing…" until at least one
- * source reports a confirmed value — never shows 0 before data is loaded.
+ * Missed XP display: checks page globals (MOONBOYS_WTF_EVENTS,
+ * MOONBOYS_ROGUELITE_DAILY_STATE) and the session daily-state cache first.
+ * Renders immediately with the confirmed value when available; otherwise shows
+ * "syncing…" and fires POST /roguelite/daily-state in the background
+ * (fresh/restorable signed Telegram auth required), then patches the element
+ * when the fetch confirms missed_xp_all_time — never blocks the panel render
+ * for a network round-trip and never shows 0 before data is confirmed.
  *
  * Usage — full panel:
  *   <div id="my-status-panel" data-csp-panel></div>
@@ -216,54 +218,43 @@
     return _apiOnlineCache;
   }
 
-  async function fetchDailyStateWithAuth() {
-    if (_dailyStateCache !== null) return _dailyStateCache;
+  function fetchDailyStateWithAuth() {
+    if (_dailyStateCache !== null) return Promise.resolve(_dailyStateCache);
     if (_dailyStateInflight !== null) return _dailyStateInflight;
 
     _dailyStateInflight = (async function () {
-      if (!isLinked()) {
-        _dailyStateCache = null;
-        _dailyStateInflight = null;
-        return null;
-      }
-      var apiBase = getApiBase();
-      if (!apiBase) {
-        _dailyStateCache = null;
-        _dailyStateInflight = null;
-        return null;
-      }
-      var telegramAuth = await getSignedTelegramAuthWithRestore();
-      if (!telegramAuth) {
-        _dailyStateCache = null;
-        _dailyStateInflight = null;
-        return null;
-      }
-      var ac = new AbortController();
-      var timer = setTimeout(function () { ac.abort(); }, DAILY_STATE_FETCH_TIMEOUT_MS);
       try {
-        var res = await fetch(apiBase + '/roguelite/daily-state', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegram_auth: telegramAuth }),
-          signal: ac.signal,
-        });
-        var payload = await res.json().catch(function () { return null; });
-        if (res.ok && payload && payload.ok === true) {
-          _dailyStateCache = payload;
-          return payload;
+        if (!isLinked()) return null;
+        var apiBase = getApiBase();
+        if (!apiBase) return null;
+        var telegramAuth = await getSignedTelegramAuthWithRestore();
+        if (!telegramAuth) return null;
+        var ac = new AbortController();
+        var timer = setTimeout(function () { ac.abort(); }, DAILY_STATE_FETCH_TIMEOUT_MS);
+        try {
+          var res = await fetch(apiBase + '/roguelite/daily-state', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegram_auth: telegramAuth }),
+            signal: ac.signal,
+          });
+          var payload = await res.json().catch(function () { return null; });
+          if (res.ok && payload && payload.ok === true) {
+            _dailyStateCache = payload;
+            return payload;
+          }
+          return null;
+        } catch (_) {
+          return null;
+        } finally {
+          clearTimeout(timer);
         }
-      } catch (_) {
-        // Keep null so UI remains "syncing…" until confirmed data arrives.
       } finally {
-        clearTimeout(timer);
+        _dailyStateInflight = null;
       }
-      _dailyStateCache = null;
-      return null;
     }());
 
-    var result = await _dailyStateInflight;
-    _dailyStateInflight = null;
-    return result;
+    return _dailyStateInflight;
   }
 
   // ── Render ─────────────────────────────────────────────────────────────
@@ -347,7 +338,6 @@
     var linked = isLinked();
     var name = getDisplayName();
     var progression = await fetchRequiredXp();
-    var confirmedDailyState = linked ? await fetchDailyStateWithAuth() : null;
     var arcadeXp = getArcadeXp();
     var requiredXp = progression.requiredXp;
     var blocktopia = blocktopiaAccessHTML(linked, arcadeXp, requiredXp);
@@ -364,7 +354,20 @@
           '<a href="/gkniftyheads-incubator.html" class="csp-live-cta">Link Telegram</a>' +
         '</div>';
     }
-    var missedXp = missedXpAllTime(confirmedDailyState);
+    // Use cached daily-state or globals for immediate render — do not block for a network fetch.
+    var missedXp = missedXpAllTime(_dailyStateCache || null);
+    var missedXpDisplay = missedXp !== null ? esc(String(missedXp)) : 'syncing…';
+    // If no confirmed data yet, fire background fetch and patch the element when ready.
+    if (missedXp === null) {
+      fetchDailyStateWithAuth().then(function (confirmedState) {
+        if (confirmedState && confirmedState.missed_xp_all_time != null) {
+          var val = Number(confirmedState.missed_xp_all_time) || 0;
+          document.querySelectorAll('.csp-item-val[data-csp-missed-xp]').forEach(function (el) {
+            el.textContent = String(val);
+          });
+        }
+      }).catch(function () {});
+    }
     var missedXpDisplay = missedXp !== null ? esc(String(missedXp)) : 'syncing…';
 
     return '' +
@@ -563,10 +566,15 @@
     if (badge) mountBadge(badge);
   }
 
+  function invalidateDailyStateCache() {
+    _dailyStateCache = null;
+  }
+
   function scheduleLiveDataRefresh() {
     if (_liveDataRefreshTimer) clearTimeout(_liveDataRefreshTimer);
     _liveDataRefreshTimer = setTimeout(function () {
       _liveDataRefreshTimer = null;
+      invalidateDailyStateCache();
       document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
     }, 120);
   }
