@@ -92,8 +92,8 @@ const tagsFallback = sandbox.getArticleSummary({
 });
 assert.equal(
   tagsFallback,
-  'Explore this Crypto Moonboys Wiki article covering HODL Wars, with links to HODL, Moonboys, Crypto.',
-  'fallback summary with tags should include first three tags',
+  'Explore this Crypto Moonboys Wiki article covering HODL Wars, with links to HODL, Lore.',
+  'fallback summary with tags should exclude generic tags',
 );
 
 const thresholdFallback = sandbox.getArticleSummary({

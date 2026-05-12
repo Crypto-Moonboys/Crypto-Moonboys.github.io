@@ -186,13 +186,22 @@ function normalizeText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
 
+function isGenericSummaryTag(tag) {
+  const key = normalizeText(tag).toLowerCase();
+  return ['crypto', 'moonboys', 'wiki', 'crypto moonboys', 'cryptomoonboys'].includes(key);
+}
+
 const COMPRESSED_SUMMARY_MIN_LENGTH = 18;
 const COMPRESSED_SUMMARY_MIN_WIKI_KEYWORDS = 2;
 
 function looksCompressedSlugText(text) {
   const v = normalizeText(text).toLowerCase();
   if (!v) return true;
-  if (/^(https?:\/\/|\/)/.test(v) || /\/|\.html?$/.test(v)) return true;
+  const looksUrlOrPathLike =
+    /^(https?:\/\/|\/)/.test(v)
+    || v.includes('://')
+    || /\.html?$/.test(v);
+  if (looksUrlOrPathLike) return true;
 
   const hasWhitespace = /\s/.test(v);
   const plainSlugLike = /^[a-z0-9_-]+$/.test(v);
@@ -255,7 +264,7 @@ function getArticleSummary(item) {
     || 'this topic';
 
   const tags = Array.isArray(item && item.tags)
-    ? item.tags.map(t => normalizeText(t)).filter(Boolean).slice(0, 3)
+    ? item.tags.map(t => normalizeText(t)).filter(Boolean).filter(t => !isGenericSummaryTag(t)).slice(0, 3)
     : [];
 
   if (tags.length) {
