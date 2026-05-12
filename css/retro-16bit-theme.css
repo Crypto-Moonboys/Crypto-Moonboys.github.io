@@ -4297,6 +4297,46 @@ body.page-game .lb-table-outer {
     inset 0 0 0 1px rgba(0, 229, 255, 0.12) !important;
 }
 
+body.page-game .lb-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+body.page-game .lb-table .lb-row { display: table-row !important; }
+
+body.page-game .lb-table th,
+body.page-game .lb-table td {
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+body.page-game .lb-col-rank,
+body.page-game .lb-rank {
+  width: 64px;
+  max-width: 64px;
+  text-align: center !important;
+}
+
+body.page-game .lb-col-player,
+body.page-game .lb-player {
+  width: 40%;
+  text-align: left !important;
+}
+
+body.page-game .lb-col-faction,
+body.page-game .lb-faction-cell {
+  width: 24%;
+  text-align: center !important;
+}
+
+body.page-game .lb-col-score,
+body.page-game .lb-score {
+  width: 36%;
+  text-align: right !important;
+}
+
 body.page-game .lb-table thead th {
   background: rgba(0, 0, 0, 0.70) !important;
   color: var(--neon-yellow) !important;
@@ -4331,7 +4371,21 @@ body.page-game .lb-score {
   font-size: 0.50rem !important;
   color: var(--neon-cyan) !important;
   text-shadow: 0 0 6px rgba(0, 229, 255, 0.55) !important;
-  text-align: center !important;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+body.page-game .lb-score-value {
+  display: inline-block;
+  min-width: 5ch;
+}
+
+body.page-game .lb-score-sub {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
 }
 
 body.page-game .lb-faction {
@@ -4344,6 +4398,15 @@ body.page-game .lb-faction {
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   padding: 3px 8px !important;
+  max-width: 100%;
+}
+
+body.page-game .lb-faction--empty {
+  border-color: rgba(139, 148, 158, 0.35) !important;
+  background: rgba(139, 148, 158, 0.08) !important;
+  color: rgba(157, 215, 238, 0.7) !important;
+  min-width: 2.2ch;
+  justify-content: center;
 }
 
 #lb-refresh-btn {
