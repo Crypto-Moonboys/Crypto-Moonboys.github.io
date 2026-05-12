@@ -225,6 +225,14 @@ function formatCategoryLabel(category) {
     .replace(/\b\w/g, m => m.toUpperCase());
 }
 
+function formatRankSignal(value) {
+  const rank = Number(value);
+  if (!Number.isFinite(rank)) return '';
+  return Number.isInteger(rank)
+    ? rank.toLocaleString()
+    : rank.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
 function getArticleSummary(item) {
   const candidates = [
     item && item.summary,
@@ -298,10 +306,8 @@ function renderSearchPage(query) {
     const topTags = tags.slice(0, 3);
     const metaBits = [];
     if (item.category) metaBits.push(`Category: ${formatCategoryLabel(item.category)}`);
-    const rankScore = Number(item.rank_score);
-    if (Number.isFinite(rankScore)) {
-      metaBits.push(`Rank signal: ${rankScore}`);
-    }
+    const rankSignal = formatRankSignal(item.rank_score);
+    if (rankSignal) metaBits.push(`Rank signal: ${rankSignal}`);
     if (topTags.length) {
       metaBits.push(`Tags: ${topTags.join(', ')}`);
     }

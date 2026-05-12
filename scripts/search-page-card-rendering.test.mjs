@@ -96,6 +96,17 @@ assert.equal(
   'fallback summary with tags should include first three tags',
 );
 
+const thresholdFallback = sandbox.getArticleSummary({
+  title: 'Moonboys Lore',
+  summary: 'cryptomoonboyswiki',
+  tags: []
+});
+assert.equal(
+  thresholdFallback,
+  'Explore this Crypto Moonboys Wiki article covering Moonboys Lore.',
+  'minimum-length compressed keyword slug text should fall back to readable copy',
+);
+
 const preferredField = sandbox.getArticleSummary({
   title: 'HODL Wars',
   desc: 'A readable lore summary.'
