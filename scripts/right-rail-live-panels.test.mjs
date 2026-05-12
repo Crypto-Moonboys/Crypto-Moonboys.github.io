@@ -21,6 +21,8 @@ const wtf = read('js/arcade/systems/daily-wtf-event-system.js');
 const xpBurst = read('js/components/xp-burst-animation.js');
 const bridge = read('js/battle-chamber-faction-bridge.js');
 const worker = read('workers/moonboys-api/worker.js');
+const dailyDigestRoutes = read('workers/moonboys-api/routes/daily-digest.js');
+const workerAndDailyDigest = worker + '\n' + dailyDigestRoutes;
 
 function hasScript(html, src) {
   return html.includes(`src="${src}"`) || html.includes(`src='${src}'`);
@@ -215,16 +217,18 @@ check(!las.toLowerCase().includes('missed xp resets') && !las.includes('missed_x
 
 
 console.log('\n[7] Roguelite client/server method contract');
-const dailyStateBlock = routeBlock(worker, '/roguelite/daily-state');
-const missedHistoryBlock = routeBlock(worker, '/roguelite/missed-history');
+const dailyStateBlock = routeBlock(dailyDigestRoutes, '/roguelite/daily-state');
+const missedHistoryBlock = routeBlock(dailyDigestRoutes, '/roguelite/missed-history');
+check(worker.includes("import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';"), 'Worker imports delegated roguelite daily route handler module');
+check(worker.includes('handleRogueliteDailyRoutes(request, env, url,'), 'Worker delegates roguelite daily route handling to shared module');
 check(dailyStateBlock.includes("request.method === 'GET' || request.method === 'POST'"), 'Worker supports POST /roguelite/daily-state while keeping GET compatibility');
 check(missedHistoryBlock.includes("request.method === 'GET' || request.method === 'POST'"), 'Worker supports POST /roguelite/missed-history while keeping GET compatibility');
 check(dailyStateBlock.includes('tgBody = await request.json()') && dailyStateBlock.includes('verifyTelegramIdentityFromBody(tgBody'), 'daily-state POST reads telegram_auth from JSON body');
-check(worker.includes('GET  /roguelite/daily-state') && worker.includes('POST /roguelite/daily-state  JSON { telegram_auth }'), 'Worker route docs document daily-state GET and POST JSON body separately');
+check(workerAndDailyDigest.includes('GET  /roguelite/daily-state') && workerAndDailyDigest.includes('POST /roguelite/daily-state  JSON { telegram_auth }'), 'Worker route docs document daily-state GET and POST JSON body separately');
 check(missedHistoryBlock.includes('tgBody = await request.json()') && missedHistoryBlock.includes('verifyTelegramIdentityFromBody(tgBody'), 'missed-history POST reads telegram_auth from JSON body');
 check(missedHistoryBlock.includes("request.method === 'POST' ? tgBody?.limit") && missedHistoryBlock.includes("request.method === 'POST' ? tgBody?.utc_day"), 'missed-history POST body supports limit and utc_day filters');
-check(worker.includes('GET  /roguelite/missed-history?limit=30') && worker.includes('POST /roguelite/missed-history  JSON { telegram_auth, limit, utc_day }'), 'Worker route docs distinguish GET query limit from POST JSON body filters');
-check(worker.includes('Legacy query-auth compatibility only') && worker.includes('deprecated for linked state'), 'legacy GET auth compatibility is explicitly documented as deprecated');
+check(workerAndDailyDigest.includes('GET  /roguelite/missed-history?limit=30') && workerAndDailyDigest.includes('POST /roguelite/missed-history  JSON { telegram_auth, limit, utc_day }'), 'Worker route docs distinguish GET query limit from POST JSON body filters');
+check(workerAndDailyDigest.includes('legacy query-auth compatibility; deprecated for linked state'), 'legacy GET auth compatibility is explicitly documented as deprecated');
 check(bridge.includes("fetchJsonWithTelegramAuth(apiBase + '/roguelite/daily-state')") && bridge.includes("fetchJsonWithTelegramAuth(apiBase + '/roguelite/missed-history', { limit: 8 })"), 'Battle Chamber bridge uses the Worker POST contract for roguelite state');
 check(worker.includes('getNextDailyWtfEvent') && worker.includes('addUtcDays') && worker.includes('upcomingEvents = [nextEvent]'), 'Worker /wtf/events/today returns a next Daily WTF signal even after today’s windows expire');
 
