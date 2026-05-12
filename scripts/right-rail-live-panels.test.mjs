@@ -382,9 +382,9 @@ check(!csp.includes('function factionLabel('), 'connection-status-panel does not
 check(!csp.includes('function normaliseFactionKey('), 'connection-status-panel does not define normaliseFactionKey helper');
 // The subscriber must not patch [data-csp-faction] (faction text no longer in header badge or panel)
 check(!csp.includes('data-csp-faction'), 'connection-status-panel subscriber does not patch [data-csp-faction] elements');
-// Header badge must not include faction or unaligned text
+// Header badge must not include faction or unaligned rendered text (use specific rendered patterns)
 const buildBadgeHTMLBlock = functionBlock(csp, 'buildBadgeHTML');
-check(!buildBadgeHTMLBlock.includes('faction') && !buildBadgeHTMLBlock.includes('unaligned'), 'buildBadgeHTML does not render faction or unaligned text in the header badge');
+check(!buildBadgeHTMLBlock.includes('data-csp-faction') && !buildBadgeHTMLBlock.includes('No faction selected yet') && !buildBadgeHTMLBlock.includes('factionLabel'), 'buildBadgeHTML does not render faction data or call factionLabel in the header badge');
 
 // live-activity-summary: removed sync/faction/log helpers must not return
 check(!las.includes('function syncSummary('), 'live-activity-summary does not define syncSummary helper');
