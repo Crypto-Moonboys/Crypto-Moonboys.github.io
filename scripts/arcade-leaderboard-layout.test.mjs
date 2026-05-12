@@ -35,7 +35,7 @@ assert.ok(
 assert.ok(
   leaderboardJs.includes('<th scope="col" class="lb-col-player">Player</th>') &&
     leaderboardJs.includes('<th scope="col" class="lb-col-faction">Faction</th>') &&
-    leaderboardJs.includes('<th scope="col" class="lb-col-score"'),
+    leaderboardJs.includes('class="lb-col-score" title="Ranking uses score only. Accepted scores can convert into Arcade XP after sync">Score (Ranking)</th>'),
   'leaderboard table must keep distinct Player/Faction/Score columns',
 );
 
