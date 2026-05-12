@@ -571,6 +571,7 @@
 
   function invalidateDailyStateCache() {
     _dailyStateCache = null;
+    // Intentionally keep inflight request alive; generation guard will ignore stale completion.
     _dailyStateGeneration++;
   }
 
