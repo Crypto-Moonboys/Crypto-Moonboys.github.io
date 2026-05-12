@@ -240,6 +240,36 @@
     return null;
   }
 
+  function cspCountdownText(seconds) {
+    var total = Math.max(0, Math.floor(Number(seconds) || 0));
+    var h = Math.floor(total / 3600);
+    var m = Math.floor((total % 3600) / 60);
+    var s = total % 60;
+    function p(n) { return n < 10 ? '0' + n : String(n); }
+    return p(h) + ':' + p(m) + ':' + p(s);
+  }
+
+  // Returns a compact, actionable WTF status string for the top Latest line,
+  // mirroring the lower Faction Daily Ops panel logic without duplicating its
+  // full rendering path.  Returns null when no meaningful signal is available.
+  function getWtfLatestText() {
+    var wtf = window.MOONBOYS_WTF_EVENTS || null;
+    if (!wtf || typeof wtf !== 'object') return null;
+    if (wtf.status === 'loading' || wtf.status === 'error') return null;
+    var cd = Number.isFinite(Number(wtf.countdown_seconds)) ? Number(wtf.countdown_seconds) : 0;
+    if (wtf.active_event) {
+      return 'Daily WTF active \u00b7 ends in ' + cspCountdownText(cd);
+    }
+    var next = wtf.next_event || (Array.isArray(wtf.upcoming_events) && wtf.upcoming_events[0]) || null;
+    if (next) {
+      return 'Daily WTF starts in ' + cspCountdownText(cd);
+    }
+    if (Number(wtf.completed_today || 0) > 0) {
+      return 'Daily WTF completed today';
+    }
+    return null;
+  }
+
   function latestActivityRows() {
     var rows = [];
     var activity = Array.isArray(window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY) ? window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY : [];
@@ -250,16 +280,8 @@
         rows.push({ tag: 'Battle', text: battleActivityText(latest) });
       }
     }
-    var daily = window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
-    if (daily && typeof daily === 'object') {
-      var task = daily.latest_completion || daily.latest || daily.current_task || daily.today || null;
-      rows.push({ tag: 'Daily', text: task && (task.title || task.name || task.id) ? (task.title || task.name || task.id) : 'Daily opportunity state synced' });
-    }
-    var wtf = window.MOONBOYS_WTF_EVENTS || null;
-    if (wtf && typeof wtf === 'object') {
-      if (wtf.completed_today) rows.push({ tag: 'WTF', text: 'WTF timed event completed today' });
-      else if (wtf.checked_in) rows.push({ tag: 'WTF', text: 'WTF timed event check-in synced' });
-    }
+    var wtfText = getWtfLatestText();
+    if (wtfText) rows.push({ tag: 'WTF', text: wtfText });
     var missed = Array.isArray(window.MOONBOYS_ROGUELITE_MISSED_HISTORY) ? window.MOONBOYS_ROGUELITE_MISSED_HISTORY : [];
     if (missed.length) rows.push({ tag: 'Missed', text: 'Missed history updated (' + missed.length + ')' });
     return rows.slice(0, 5);
@@ -294,7 +316,7 @@
     var latestRows = latestActivityRows();
     // Compact rail rule: show one short personal activity line only.
     var latestLine = latestRows.length ? latestRows[0] : null;
-    var latestActivityText = latestLine ? latestLine.text : 'No synced activity yet — play Arcade.';
+    var latestActivityText = latestLine ? latestLine.text : 'Play Arcade to create activity';
     if (!linked) {
       return '' +
         '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +

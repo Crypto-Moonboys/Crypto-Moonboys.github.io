@@ -310,6 +310,15 @@ check(!leaderboardClient.includes('return [];\n  }'), 'fetchLeaderboard does not
 check(!dashboard.includes('missed_xp') && !dashboard.includes('missed_xp_all_time'), 'dashboard.html does not contain missed XP player data (wiki/editorial only)');
 check(!dashboard.includes('data-las-panel') && !dashboard.includes('data-csp-panel'), 'dashboard.html does not contain live player feed panels');
 
+// Issue 11: Top Latest must not use generic or broken daily state copy
+check(!csp.includes('Daily opportunity state synced'), 'connection-status-panel.js does not render "Daily opportunity state synced"');
+check(!csp.includes("tag: 'Daily'"), 'top Latest does not push generic Daily tag rows');
+check(!functionBlock(csp, 'latestActivityRows').includes('MOONBOYS_ROGUELITE_DAILY_STATE'), 'latestActivityRows does not read MOONBOYS_ROGUELITE_DAILY_STATE');
+check(csp.includes('function getWtfLatestText'), 'connection-status-panel exposes getWtfLatestText helper for top Latest WTF signal');
+check(csp.includes('Daily WTF active') && csp.includes('ends in') && csp.includes('Daily WTF starts in'), 'top Latest uses compact actionable WTF copy (active·ends / starts in)');
+check(csp.includes("'Play Arcade to create activity'"), 'top Latest fallback is actionable "Play Arcade to create activity"');
+check(!csp.includes("'No synced activity yet — play Arcade.'"), 'top Latest does not use old no-activity fallback copy');
+
 const failed = checks.filter((c) => !c.ok);
 if (failed.length) {
   console.error(`\n${failed.length} right-rail live panel checks failed.`);
