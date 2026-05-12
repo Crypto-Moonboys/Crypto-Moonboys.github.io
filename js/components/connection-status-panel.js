@@ -46,6 +46,7 @@
 
   // Fallback used when the API does not return required_xp.
   var FALLBACK_REQUIRED_XP = 50;
+  var DAILY_STATE_FETCH_TIMEOUT_MS = 6000;
   var STYLE_ID = 'csp-styles';
 
   // ── Per-session cache ─────────────────────────────────────────────────
@@ -238,7 +239,7 @@
         return null;
       }
       var ac = new AbortController();
-      var timer = setTimeout(function () { ac.abort(); }, 6000);
+      var timer = setTimeout(function () { ac.abort(); }, DAILY_STATE_FETCH_TIMEOUT_MS);
       try {
         var res = await fetch(apiBase + '/roguelite/daily-state', {
           method: 'POST',
@@ -249,7 +250,6 @@
         var payload = await res.json().catch(function () { return null; });
         if (res.ok && payload && payload.ok === true) {
           _dailyStateCache = payload;
-          window.MOONBOYS_ROGUELITE_DAILY_STATE = payload;
           return payload;
         }
       } catch (_) {
