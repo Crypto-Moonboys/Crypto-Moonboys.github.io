@@ -280,8 +280,6 @@
     // Compact rail rule: show one short personal activity line only.
     var latestLine = latestRows.length ? latestRows[0] : null;
     var latestActivityText = latestLine ? latestLine.text : 'No synced activity yet — play Arcade.';
-    var missedXp = missedXpAllTime();
-
     if (!linked) {
       return '' +
         '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
@@ -289,6 +287,7 @@
           '<a href="/gkniftyheads-incubator.html" class="csp-live-cta">Link Telegram</a>' +
         '</div>';
     }
+    var missedXp = missedXpAllTime();
 
     return '' +
       '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
