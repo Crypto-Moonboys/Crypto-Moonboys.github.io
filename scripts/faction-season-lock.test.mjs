@@ -528,6 +528,10 @@ console.log('\n── 6. Block Topia routes.js faction canon ──────�
 
 const blockTopiaRoutes = read('workers/moonboys-api/blocktopia/routes.js');
 
+// PR scope note: this PR intentionally fixes Block Topia route drift only.
+// Follow-up PR will centralise faction canon into one shared module used by
+// worker.js and blocktopia/routes.js.
+
 check(
   blockTopiaRoutes.includes('BLOCKTOPIA_CANONICAL_FACTIONS'),
   'routes.js: canonical faction list is defined',
@@ -553,17 +557,17 @@ check(
 
 // Legacy aliases must map to canonical keys
 check(
-  blockTopiaRoutes.includes("'diamond-hands': 'hard-fork-rockers'"),
+  /["']diamond-hands["']\s*:\s*["']hard-fork-rockers["']/.test(blockTopiaRoutes),
   'routes.js: diamond-hands alias maps to hard-fork-rockers',
 );
 
 check(
-  blockTopiaRoutes.includes("'hodl-warriors': 'rugpull-miners'"),
+  /["']hodl-warriors["']\s*:\s*["']rugpull-miners["']/.test(blockTopiaRoutes),
   'routes.js: hodl-warriors alias maps to rugpull-miners',
 );
 
 check(
-  blockTopiaRoutes.includes("'rugpull-minors': 'rugpull-miners'"),
+  /["']rugpull-minors["']\s*:\s*["']rugpull-miners["']/.test(blockTopiaRoutes),
   'routes.js: rugpull-minors alias maps to rugpull-miners',
 );
 
@@ -599,3 +603,4 @@ CANONICAL_NINE.forEach(function (key) {
 console.log('\n────────────────────────────────────────────────────────────────────────');
 console.log(`faction-season-lock.test.mjs: ${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);
+
