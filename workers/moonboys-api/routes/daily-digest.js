@@ -1,31 +1,345 @@
+import { CANONICAL_FACTION_KEYS, normalizeFaction } from '../shared/faction-canon.js';
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 
+const PLAYER_STATE_TABLES = [
+  'player_modifier_state',
+  'player_daily_mission_state',
+  'player_faction_signal_state',
+  'player_streak_state',
+  'player_game_mastery_state',
+];
+
+const DAILY_DIGEST_TABLES = [
+  'daily_missed_perks',
+  'telegram_daily_digest_log',
+  'daily_opportunity_state',
+];
+
+const DAILY_MISSED_TEXT_LIMITS = Object.freeze({
+  source: 80,
+  opportunityType: 80,
+  title: 140,
+  description: 400,
+  missedReason: 160,
+});
+
+const DAILY_MISSED_HISTORY_MAX_LIMIT = 100;
+const MISSED_XP_PER_DAILY_WINDOW = 25;
+const BATTLE_CHAMBER_FACTIONS = CANONICAL_FACTION_KEYS;
+
+function getTodayUtcDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function clampText(value, maxLen, fallback = '') {
+  const safe = String(value == null ? fallback : value).trim();
+  if (!safe) return String(fallback || '').slice(0, maxLen);
+  return safe.slice(0, maxLen);
+}
+
+function safeJsonParse(raw, fallback) {
+  try { return raw != null ? JSON.parse(raw) : fallback; } catch { return fallback; }
+}
+
+function normalizeBattleChamberFaction(value) {
+  const normalized = normalizeFaction(value);
+  return BATTLE_CHAMBER_FACTIONS.includes(normalized) ? normalized : null;
+}
+
+function normaliseMissedMetadata(metadata) {
+  if (!metadata) return null;
+  if (typeof metadata === 'string') {
+    const parsed = safeJsonParse(metadata, null);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return JSON.stringify(parsed).slice(0, 4000);
+    return null;
+  }
+  if (typeof metadata === 'object' && !Array.isArray(metadata)) return JSON.stringify(metadata).slice(0, 4000);
+  return null;
+}
+
+function formatMissionIdLabel(missionId) {
+  const base = String(missionId || '').replace(/[_-]+/g, ' ').trim();
+  if (!base) return 'Mission';
+  return base.replace(/\b\w/g, (m) => m.toUpperCase()).slice(0, 60);
+}
+
+async function ensurePlayerStateTables(db) {
+  for (const tableName of PLAYER_STATE_TABLES) {
+    const row = await db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      return {
+        _isPlayerStateUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'player_state_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Player state tables are not yet configured. Apply migration 015.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+        }),
+      };
+    }
+  }
+  return null;
+}
+
+async function ensureDailyDigestTables(db) {
+  for (const tableName of DAILY_DIGEST_TABLES) {
+    const row = await db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      return {
+        _isDailyDigestUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'daily_digest_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Daily digest and missed history tables are not yet configured. Apply migration 018.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60' },
+        }),
+      };
+    }
+  }
+  return null;
+}
+
+async function getUserFaction(db, telegramId) {
+  const row = await db.prepare(`
+    SELECT f.id, f.name, f.description, f.icon, fm.role
+    FROM telegram_faction_members fm
+    JOIN telegram_factions f ON f.id = fm.faction_id
+    WHERE fm.telegram_id = ?
+  `).bind(telegramId).first().catch(() => null);
+  return row || null;
+}
+
+async function hasDailyMissedXpValueColumn(db) {
+  const info = await db.prepare(`PRAGMA table_info(daily_missed_perks)`).all().catch(() => ({ results: [] }));
+  return (info?.results || []).some((column) => String(column?.name || '') === 'missed_xp_value');
+}
+
+async function getMissedPerkTotals(db, telegramId, utcDay = null, missedXpValueAvailable = null) {
+  const hasMissedXpValue = missedXpValueAvailable == null ? await hasDailyMissedXpValueColumn(db) : !!missedXpValueAvailable;
+  const countRow = utcDay
+    ? await db.prepare(`SELECT COUNT(*) AS events_total FROM daily_missed_perks WHERE telegram_id = ? AND utc_day = ?`).bind(String(telegramId), String(utcDay)).first().catch(() => ({ events_total: 0 }))
+    : await db.prepare(`SELECT COUNT(*) AS events_total FROM daily_missed_perks WHERE telegram_id = ?`).bind(String(telegramId)).first().catch(() => ({ events_total: 0 }));
+  if (!hasMissedXpValue) {
+    return { events_total: Math.max(0, Math.floor(Number(countRow?.events_total) || 0)), xp_total: 0, has_missed_xp_value: false };
+  }
+  const xpRow = utcDay
+    ? await db.prepare(`SELECT COALESCE(SUM(missed_xp_value), 0) AS xp_total FROM daily_missed_perks WHERE telegram_id = ? AND utc_day = ?`).bind(String(telegramId), String(utcDay)).first().catch(() => ({ xp_total: 0 }))
+    : await db.prepare(`SELECT COALESCE(SUM(missed_xp_value), 0) AS xp_total FROM daily_missed_perks WHERE telegram_id = ?`).bind(String(telegramId)).first().catch(() => ({ xp_total: 0 }));
+  return {
+    events_total: Math.max(0, Math.floor(Number(countRow?.events_total) || 0)),
+    xp_total: Math.max(0, Math.floor(Number(xpRow?.xp_total) || 0)),
+    has_missed_xp_value: true,
+  };
+}
+
+async function getMissedPerkRows(db, telegramId, limit = 5, utcDay = null, missedXpValueAvailable = null) {
+  const safeLimit = Math.max(1, Math.floor(Number(limit) || 5));
+  const hasMissedXpValue = missedXpValueAvailable == null ? await hasDailyMissedXpValueColumn(db) : !!missedXpValueAvailable;
+  const query = hasMissedXpValue
+    ? (utcDay
+      ? db.prepare(`SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at FROM daily_missed_perks WHERE telegram_id = ? AND utc_day = ? ORDER BY missed_at DESC, id DESC LIMIT ?`).bind(String(telegramId), String(utcDay), safeLimit)
+      : db.prepare(`SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at FROM daily_missed_perks WHERE telegram_id = ? ORDER BY missed_at DESC, id DESC LIMIT ?`).bind(String(telegramId), safeLimit))
+    : (utcDay
+      ? db.prepare(`SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at FROM daily_missed_perks WHERE telegram_id = ? AND utc_day = ? ORDER BY missed_at DESC, id DESC LIMIT ?`).bind(String(telegramId), String(utcDay), safeLimit)
+      : db.prepare(`SELECT id, telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at FROM daily_missed_perks WHERE telegram_id = ? ORDER BY missed_at DESC, id DESC LIMIT ?`).bind(String(telegramId), safeLimit));
+  const rows = await query.all().catch(() => ({ results: [] }));
+  return { rows: rows?.results || [], has_missed_xp_value: hasMissedXpValue };
+}
+
+async function getMissedHistorySnapshot(db, telegramId, limit = 5, missedXpValueAvailable = null) {
+  const [totals, rowResult] = await Promise.all([
+    getMissedPerkTotals(db, telegramId, null, missedXpValueAvailable),
+    getMissedPerkRows(db, telegramId, limit, null, missedXpValueAvailable),
+  ]);
+  return {
+    total: totals.events_total,
+    xp_total: totals.xp_total,
+    recent: (rowResult.rows || []).map((row) => ({
+      id: row.id,
+      utc_day: row.utc_day,
+      faction_id: row.faction_id || null,
+      source: row.source,
+      opportunity_type: row.opportunity_type,
+      title: row.title,
+      description: row.description || null,
+      missed_reason: row.missed_reason || null,
+      status_value: Number(row.status_value) || 0,
+      missed_xp_value: rowResult.has_missed_xp_value ? Math.max(0, Math.floor(Number(row.missed_xp_value) || 0)) : 0,
+      metadata: safeJsonParse(row.metadata_json, {}),
+      missed_at: row.missed_at || null,
+      created_at: row.created_at || null,
+    })),
+  };
+}
+
+async function insertMissedPerkEntry(db, {
+  telegramId,
+  utcDay,
+  factionId,
+  source,
+  opportunityType,
+  title,
+  description,
+  missedReason,
+  statusValue,
+  missedXpValue,
+  metadataJson,
+  missedAt,
+  missedXpValueAvailable,
+}) {
+  const safeTelegramId = String(telegramId || '').trim();
+  if (!safeTelegramId) return null;
+  const fallbackToday = getTodayUtcDate();
+  const safeUtcDay = clampText(utcDay || fallbackToday, 10, fallbackToday);
+  const normalizedFaction = factionId ? normalizeBattleChamberFaction(factionId) : null;
+  const safeSource = clampText(source, DAILY_MISSED_TEXT_LIMITS.source, 'unknown');
+  const safeType = clampText(opportunityType, DAILY_MISSED_TEXT_LIMITS.opportunityType, 'daily_opportunity');
+  const safeTitle = clampText(title, DAILY_MISSED_TEXT_LIMITS.title, 'Missed daily opportunity');
+  const safeDescription = clampText(description, DAILY_MISSED_TEXT_LIMITS.description, '');
+  const safeReason = clampText(missedReason, DAILY_MISSED_TEXT_LIMITS.missedReason, 'not_played');
+  const safeStatusValue = Math.max(0, Math.floor(Number(statusValue) || 0));
+  const safeMissedXpValue = Math.max(0, Math.floor(Number(missedXpValue) || 0));
+  const safeMetadata = normaliseMissedMetadata(metadataJson);
+  const safeMissedAt = missedAt && Number.isFinite(Date.parse(String(missedAt))) ? new Date(missedAt).toISOString() : new Date().toISOString();
+  const safeCreatedAt = new Date().toISOString();
+  const hasMissedXpValue = missedXpValueAvailable == null ? await hasDailyMissedXpValueColumn(db) : !!missedXpValueAvailable;
+
+  const runInsertWithXp = () => db.prepare(`
+    INSERT INTO daily_missed_perks
+      (telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, missed_xp_value, metadata_json, missed_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    safeTelegramId,
+    safeUtcDay,
+    normalizedFaction || null,
+    safeSource,
+    safeType,
+    safeTitle,
+    safeDescription || null,
+    safeReason || null,
+    safeStatusValue,
+    safeMissedXpValue,
+    safeMetadata,
+    safeMissedAt,
+    safeCreatedAt,
+  ).run();
+
+  const runInsertWithoutXp = () => db.prepare(`
+    INSERT INTO daily_missed_perks
+      (telegram_id, utc_day, faction_id, source, opportunity_type, title, description, missed_reason, status_value, metadata_json, missed_at, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    safeTelegramId,
+    safeUtcDay,
+    normalizedFaction || null,
+    safeSource,
+    safeType,
+    safeTitle,
+    safeDescription || null,
+    safeReason || null,
+    safeStatusValue,
+    safeMetadata,
+    safeMissedAt,
+    safeCreatedAt,
+  ).run();
+
+  let result = null;
+  if (hasMissedXpValue) {
+    result = await runInsertWithXp().catch(async (error) => {
+      const message = String(error?.message || error || '').toLowerCase();
+      if (message.includes('no such column') || message.includes('missed_xp_value')) return runInsertWithoutXp().catch(() => null);
+      return null;
+    });
+  } else {
+    result = await runInsertWithoutXp().catch(() => null);
+  }
+  return result;
+}
+
+function listUtcDaysBetweenExclusive(startUtcDay, endUtcDay, maxDays = 45) {
+  const startTs = Date.parse(`${String(startUtcDay)}T00:00:00Z`);
+  const endTs = Date.parse(`${String(endUtcDay)}T00:00:00Z`);
+  if (!Number.isFinite(startTs) || !Number.isFinite(endTs) || endTs <= startTs) return [];
+  const days = [];
+  let cursor = startTs + 86400000;
+  while (cursor < endTs && days.length < maxDays) {
+    days.push(new Date(cursor).toISOString().slice(0, 10));
+    cursor += 86400000;
+  }
+  return days;
+}
+
+async function ensureDailyOpportunityStateForToday(db, telegramId, utcDay) {
+  const safeTelegramId = String(telegramId || '').trim();
+  const dayKey = clampText(utcDay || getTodayUtcDate(), 10, getTodayUtcDate());
+  await db.prepare(`
+    INSERT INTO daily_opportunity_state
+      (telegram_id, utc_day, daily_seed, chain_depth, activated_at, last_roll_at, created_at, updated_at)
+    VALUES (?, ?, ?, 0, ?, NULL, ?, ?)
+    ON CONFLICT(telegram_id, utc_day) DO NOTHING
+  `).bind(
+    safeTelegramId,
+    dayKey,
+    crypto.randomUUID(),
+    new Date().toISOString(),
+    new Date().toISOString(),
+    new Date().toISOString(),
+  ).run();
+  return db.prepare(`
+    SELECT telegram_id, utc_day, daily_seed, chain_depth, activated_at, last_roll_at, created_at, updated_at
+    FROM daily_opportunity_state
+    WHERE telegram_id = ? AND utc_day = ?
+    LIMIT 1
+  `).bind(safeTelegramId, dayKey).first().catch(() => null);
+}
+
+async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcDay, factionId) {
+  const prior = await db.prepare(`
+    SELECT utc_day FROM daily_opportunity_state WHERE telegram_id = ? AND utc_day < ? ORDER BY utc_day DESC LIMIT 1
+  `).bind(String(telegramId), todayUtcDay).first().catch(() => null);
+  if (!prior?.utc_day) return { days_backfilled: 0, entries_created: 0, created: 0, missed_days: [] };
+  const missedDays = listUtcDaysBetweenExclusive(prior.utc_day, todayUtcDay, 45);
+  const missedXpValueAvailable = await hasDailyMissedXpValueColumn(db);
+  let entriesCreated = 0;
+  let daysFilledCount = 0;
+  for (const missedDay of missedDays) {
+    const existing = await db.prepare(`
+      SELECT id FROM daily_missed_perks
+      WHERE telegram_id = ? AND utc_day = ? AND source = 'daily_reset' AND opportunity_type = 'daily_activation_window'
+      LIMIT 1
+    `).bind(String(telegramId), missedDay).first().catch(() => null);
+    if (existing?.id) continue;
+    const dailyResetInsert = await insertMissedPerkEntry(db, {
+      telegramId,
+      utcDay: missedDay,
+      factionId: factionId || null,
+      source: 'daily_reset',
+      opportunityType: 'daily_activation_window',
+      title: 'Daily activation window expired',
+      description: 'The city kept moving while you were away.',
+      missedReason: 'inactive_utc_day',
+      statusValue: 1,
+      missedXpValue: MISSED_XP_PER_DAILY_WINDOW,
+      metadataJson: { trigger: 'utc_reset_backfill' },
+      missedAt: `${missedDay}T23:59:59.000Z`,
+      missedXpValueAvailable,
+    });
+    entriesCreated += Number(dailyResetInsert?.meta?.changes || 0);
+    daysFilledCount += 1;
+  }
+  return { days_backfilled: daysFilledCount, entries_created: entriesCreated, created: entriesCreated, missed_days: missedDays };
+}
+
 export async function handleRogueliteDailyRoutes(request, env, url, helpers) {
-  const { path, json, err, verifyTelegramAuth } = helpers;
-  const {
-    ensureDailyDigestTables,
-    upsertTelegramUser,
-    getTodayUtcDate,
-    getUserFaction,
-    normalizeBattleChamberFaction,
-    backfillMissedPerkGapsFromLastActiveDay,
-    ensureDailyOpportunityStateForToday,
-    ensurePlayerStateTables,
-    hasDailyMissedXpValueColumn,
-    getMissedHistorySnapshot,
-    getMissedPerkTotals,
-    formatMissionIdLabel,
-    logApiFailure,
-    clampText,
-    DAILY_MISSED_HISTORY_MAX_LIMIT,
-    getMissedPerkRows,
-    safeJsonParse,
-    normaliseMissedMetadata,
-    insertMissedPerkEntry,
-    readAdminSecret,
-    isAdminTelegramUser,
-    runTelegramDailyDigest,
-  } = helpers;
+  const { path, json, err, verifyTelegramAuth, upsertTelegramUser, logApiFailure, readAdminSecret, isAdminTelegramUser, runTelegramDailyDigest } = helpers;
 
   if (path === '/roguelite/daily-state' && (request.method === 'GET' || request.method === 'POST')) {
     let tgBody = {};
@@ -34,11 +348,7 @@ export async function handleRogueliteDailyRoutes(request, env, url, helpers) {
     } else {
       const rawAuth = url.searchParams.get('telegram_auth');
       if (!rawAuth) return err('verified telegram_auth payload required', 401);
-      try {
-        tgBody = { telegram_auth: JSON.parse(rawAuth) };
-      } catch {
-        return err('Invalid telegram_auth payload', 400);
-      }
+      try { tgBody = { telegram_auth: JSON.parse(rawAuth) }; } catch { return err('Invalid telegram_auth payload', 400); }
     }
     const verified = await verifyTelegramIdentityFromBody(tgBody, env, verifyTelegramAuth);
     if (verified.error) return err(verified.error, verified.status || 401);
@@ -52,9 +362,7 @@ export async function handleRogueliteDailyRoutes(request, env, url, helpers) {
       const backfill = await backfillMissedPerkGapsFromLastActiveDay(env.DB, verified.telegramId, utcDay, factionId);
       const state = await ensureDailyOpportunityStateForToday(env.DB, verified.telegramId, utcDay);
       const playerTables = await ensurePlayerStateTables(env.DB);
-      const missionRows = playerTables
-        ? []
-        : await env.DB.prepare(`
+      const missionRows = playerTables ? [] : await env.DB.prepare(`
             SELECT mission_id, progress, completed
             FROM player_daily_mission_state
             WHERE telegram_id = ? AND mission_date = ?
@@ -104,10 +412,7 @@ export async function handleRogueliteDailyRoutes(request, env, url, helpers) {
         },
       });
     } catch (error) {
-      logApiFailure('roguelite_daily_state_failed', {
-        telegramId: verified.telegramId,
-        message: error?.message || String(error),
-      });
+      logApiFailure('roguelite_daily_state_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
       return err('Failed to load roguelite daily state', 500);
     }
   }
@@ -119,11 +424,7 @@ export async function handleRogueliteDailyRoutes(request, env, url, helpers) {
     } else {
       const rawAuth = url.searchParams.get('telegram_auth');
       if (!rawAuth) return err('verified telegram_auth payload required', 401);
-      try {
-        tgBody = { telegram_auth: JSON.parse(rawAuth) };
-      } catch {
-        return err('Invalid telegram_auth payload', 400);
-      }
+      try { tgBody = { telegram_auth: JSON.parse(rawAuth) }; } catch { return err('Invalid telegram_auth payload', 400); }
     }
     const verified = await verifyTelegramIdentityFromBody(tgBody, env, verifyTelegramAuth);
     if (verified.error) return err(verified.error, verified.status || 401);
@@ -169,10 +470,7 @@ export async function handleRogueliteDailyRoutes(request, env, url, helpers) {
         items,
       });
     } catch (error) {
-      logApiFailure('roguelite_missed_history_failed', {
-        telegramId: verified.telegramId,
-        message: error?.message || String(error),
-      });
+      logApiFailure('roguelite_missed_history_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
       return err('Failed to load missed history', 500);
     }
   }
@@ -187,13 +485,9 @@ export async function handleRogueliteDailyRoutes(request, env, url, helpers) {
     try {
       await upsertTelegramUser(env.DB, verified.user);
       const factionId = body?.faction_id ? normalizeBattleChamberFaction(body.faction_id) : null;
-      const clientMissedAt = body?.missed_at && Number.isFinite(Date.parse(String(body.missed_at)))
-        ? new Date(body.missed_at).toISOString()
-        : null;
+      const clientMissedAt = body?.missed_at && Number.isFinite(Date.parse(String(body.missed_at))) ? new Date(body.missed_at).toISOString() : null;
       const metadataBase = safeJsonParse(normaliseMissedMetadata(body?.metadata_json), {});
-      const metadataObject = metadataBase && typeof metadataBase === 'object' && !Array.isArray(metadataBase)
-        ? metadataBase
-        : {};
+      const metadataObject = metadataBase && typeof metadataBase === 'object' && !Array.isArray(metadataBase) ? metadataBase : {};
       if (clientMissedAt) metadataObject.client_missed_at = clientMissedAt;
       await insertMissedPerkEntry(env.DB, {
         telegramId: verified.telegramId,
@@ -214,17 +508,10 @@ export async function handleRogueliteDailyRoutes(request, env, url, helpers) {
         utc_day: getTodayUtcDate(),
         faction_id: factionId,
         recorded: true,
-        safety: {
-          xp_awarded: 0,
-          leaderboard_score_mutated: false,
-          faction_clout_mutated: false,
-        },
+        safety: { xp_awarded: 0, leaderboard_score_mutated: false, faction_clout_mutated: false },
       });
     } catch (error) {
-      logApiFailure('roguelite_mark_missed_failed', {
-        telegramId: verified.telegramId,
-        message: error?.message || String(error),
-      });
+      logApiFailure('roguelite_mark_missed_failed', { telegramId: verified.telegramId, message: error?.message || String(error) });
       return err('Failed to record missed opportunity', 500);
     }
   }
@@ -253,14 +540,8 @@ export async function handleRogueliteDailyRoutes(request, env, url, helpers) {
       utcDay: body?.utc_day ? clampText(body.utc_day, 10, getTodayUtcDate()) : getTodayUtcDate(),
       forceRetry: body?.force_retry === true,
     });
-    if (!summary?.ok) {
-      return json(summary, 503);
-    }
-    return json({
-      ok: true,
-      auth_mode: authMode,
-      ...summary,
-    });
+    if (!summary?.ok) return json(summary, 503);
+    return json({ ok: true, auth_mode: authMode, ...summary });
   }
 
   return null;
