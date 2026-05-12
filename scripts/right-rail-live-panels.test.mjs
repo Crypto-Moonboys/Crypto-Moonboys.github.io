@@ -76,6 +76,11 @@ function routeBlock(src, route) {
   return src.slice(start, next === -1 ? src.length : next);
 }
 
+function hasFunctionDeclaration(src, name) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp('function\\s+' + escaped + '\\s*\\(').test(src);
+}
+
 console.log('\n[1] Live page warning cleanup');
 check(!hasPreloadFor(community, '/js/battle-chamber-faction-bridge.js'), 'community.html does not classic-preload the module Battle Chamber bridge');
 check(!hasPreloadFor(community, '/js/arcade/systems/daily-wtf-event-system.js'), 'community.html does not classic-preload the Daily WTF module');
@@ -374,6 +379,27 @@ check(buildPanelHTMLBlock.includes('var patchGeneration = _dailyStateGeneration;
 // Missed XP still must not default to hard 0 after fetch refactor
 check(!/return\s+0\s*;/.test(functionBlock(csp, 'missedXpAllTime')), 'missedXpAllTime still does not default to hard 0 after background-fetch refactor');
 
+console.log('\n[13] Dead-code drift prevention');
+// connection-status-panel: removed faction helpers must not return
+check(!hasFunctionDeclaration(csp, 'getFactionApi'), 'connection-status-panel does not define getFactionApi helper');
+check(!hasFunctionDeclaration(csp, 'getFactionStatus'), 'connection-status-panel does not define getFactionStatus helper');
+check(!hasFunctionDeclaration(csp, 'factionLabel'), 'connection-status-panel does not define factionLabel helper');
+check(!hasFunctionDeclaration(csp, 'normaliseFactionKey'), 'connection-status-panel does not define normaliseFactionKey helper');
+// The subscriber must not patch [data-csp-faction] (faction text no longer in header badge or panel)
+check(!csp.includes('data-csp-faction'), 'connection-status-panel subscriber does not patch [data-csp-faction] elements');
+// Header badge must not include faction or unaligned rendered text (use specific rendered patterns)
+const buildBadgeHTMLBlock = functionBlock(csp, 'buildBadgeHTML');
+check(!buildBadgeHTMLBlock.includes('data-csp-faction') && !buildBadgeHTMLBlock.includes('No faction selected yet') && !buildBadgeHTMLBlock.includes('factionLabel'), 'buildBadgeHTML does not render faction data or call factionLabel in the header badge');
+
+// live-activity-summary: removed sync/faction/log helpers must not return
+check(!hasFunctionDeclaration(las, 'syncSummary'), 'live-activity-summary does not define syncSummary helper');
+check(!hasFunctionDeclaration(las, 'updateSyncUI'), 'live-activity-summary does not define updateSyncUI helper');
+check(!hasFunctionDeclaration(las, 'updateFactionUI'), 'live-activity-summary does not define updateFactionUI helper');
+check(!hasFunctionDeclaration(las, 'factionSummary'), 'live-activity-summary does not define factionSummary helper');
+check(!hasFunctionDeclaration(las, 'buildLogHTML'), 'live-activity-summary does not define buildLogHTML helper');
+// Compact ops panel must not render Core API / Sync rows
+check(!las.includes('data-las-sync'), 'live-activity-summary does not render [data-las-sync] rows in compact ops');
+check(!las.includes('data-las-faction'), 'live-activity-summary does not render [data-las-faction] rows in compact ops');
 
 const failed = checks.filter((c) => !c.ok);
 if (failed.length) {
