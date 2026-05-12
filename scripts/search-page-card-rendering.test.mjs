@@ -9,13 +9,25 @@ const ROOT = path.resolve(here, '..');
 const wikiPath = path.join(ROOT, 'js', 'wiki.js');
 const wikiJs = await fs.readFile(wikiPath, 'utf8');
 
+function functionBlock(src, name) {
+  const start = src ? src.indexOf(`function ${name}`) : -1;
+  if (start === -1) return '';
+  const remainder = src.slice(start + 1);
+  const nextMatch = remainder.match(/\n\s*function\s+/);
+  const next = nextMatch ? start + 1 + nextMatch.index : -1;
+  return src.slice(start, next === -1 ? src.length : next);
+}
+
+const renderSearchPageBlock = functionBlock(wikiJs, 'renderSearchPage');
+const scoreResultBlock = functionBlock(wikiJs, 'scoreResult');
+
 assert.ok(
   /function\s+getArticleSummary\s*\(/.test(wikiJs),
   'wiki.js must define getArticleSummary(item)',
 );
 
 assert.ok(
-  /function\s+renderSearchPage[\s\S]*getArticleSummary\(item\)/.test(wikiJs),
+  renderSearchPageBlock.includes('getArticleSummary(item)'),
   'renderSearchPage() must use getArticleSummary(item)',
 );
 
@@ -30,8 +42,8 @@ assert.ok(
 );
 
 assert.ok(
-  wikiJs.includes('return { queryScore: 0, rankScore: item.rank_score, finalScore: item.rank_score };') &&
-  wikiJs.includes('finalScore: (queryScore * FINAL_QUERY_WEIGHT) + (rankScore * FINAL_RANK_WEIGHT)'),
+  /return\s*\{\s*queryScore:\s*0,\s*rankScore:\s*item\.rank_score,\s*finalScore:\s*item\.rank_score\s*\};/.test(scoreResultBlock) &&
+  /finalScore:\s*\(queryScore\s*\*\s*FINAL_QUERY_WEIGHT\)\s*\+\s*\(rankScore\s*\*\s*FINAL_RANK_WEIGHT\)/.test(scoreResultBlock),
   'scoreResult/rank_score contract must remain unchanged',
 );
 

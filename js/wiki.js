@@ -186,6 +186,9 @@ function normalizeText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
 
+const COMPRESSED_SUMMARY_MIN_LENGTH = 18;
+const COMPRESSED_SUMMARY_MIN_WIKI_KEYWORDS = 2;
+
 function looksCompressedSlugText(text) {
   const v = normalizeText(text).toLowerCase();
   if (!v) return true;
@@ -198,7 +201,10 @@ function looksCompressedSlugText(text) {
   const compact = v.replace(/[^a-z0-9]/g, '');
   const wikiKeywordHits = ['crypto', 'moonboys', 'wiki'].filter(k => compact.includes(k)).length;
 
-  return compact.length >= 18 && wikiKeywordHits >= 2;
+  // Heuristic: very long, no-space slug text that repeats wiki-brand keywords
+  // is usually index/keyword-bag noise rather than a readable summary.
+  return compact.length >= COMPRESSED_SUMMARY_MIN_LENGTH
+    && wikiKeywordHits >= COMPRESSED_SUMMARY_MIN_WIKI_KEYWORDS;
 }
 
 function humanizePathSlug(url) {
