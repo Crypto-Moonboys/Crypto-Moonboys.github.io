@@ -213,11 +213,11 @@
     setTimeout(function _hudPlayerInit() {
       var gate = window.MOONBOYS_IDENTITY;
       if (!gate) return;
+      var linked = typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked();
 
       /* Populate #hud-player-name from live identity */
       var nameEl = document.getElementById('hud-player-name');
       if (nameEl) {
-        var linked = typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked();
         var telegramName = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
         if (linked && telegramName) {
           nameEl.textContent = telegramName;
