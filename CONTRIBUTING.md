@@ -8,6 +8,7 @@
 ## Validation before merge
 
 - `npm test` must pass before merge.
+- Every PR must complete the pull request template. PRs with missing deploy/test scope should not be merged.
 
 ## Deployment and restart notes
 
