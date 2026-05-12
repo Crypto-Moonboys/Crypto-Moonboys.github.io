@@ -331,6 +331,16 @@
     // Check for fresh signed auth — LIVE SYNC requires confirmed auth, not just localStorage linked state.
     var gate = getIdentity();
     var freshAuth = gate && typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+    // Before showing RELINK, attempt one auth restore so a linked user whose token
+    // is renewable is not permanently stuck on RELINK due to hydration load order.
+    if (!freshAuth && gate && typeof gate.restoreLinkedTelegramAuth === 'function') {
+      var restored = await gate.restoreLinkedTelegramAuth().catch(function () { return null; });
+      if (restored && restored.ok) {
+        freshAuth = typeof gate.getSignedTelegramAuth === 'function'
+          ? gate.getSignedTelegramAuth()
+          : (restored.telegram_auth || null);
+      }
+    }
     if (!freshAuth) {
       // Linked in localStorage but auth is expired or missing — show RELINK state.
       var relinkName = getDisplayName() || 'Player';

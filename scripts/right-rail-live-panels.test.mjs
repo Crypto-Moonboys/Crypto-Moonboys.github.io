@@ -280,9 +280,13 @@ check(csp.includes('RELINK'), 'connection-status-panel has a RELINK badge state 
 check(csp.includes('getSignedTelegramAuth'), 'connection-status-panel checks getSignedTelegramAuth before showing LIVE SYNC');
 check(csp.includes('csp-badge--relink'), 'RELINK badge has its own CSS class');
 check(csp.includes('Auth expired'), 'RELINK badge copy includes "Auth expired" to explain the state');
+const buildBadgeBlock = functionBlock(csp, 'buildBadgeHTML');
+check(buildBadgeBlock.includes('restoreLinkedTelegramAuth'), 'buildBadgeHTML attempts restoreLinkedTelegramAuth before rendering RELINK badge');
 
-// Issue 6: Server XP always wins during hydration
-check(!moonboysState.includes('if (incomingXp >= _state.xp)'), 'moonboys-state.js does not guard server XP with >= local XP on hydration');
+// Issue 6: Hydration is authoritative for cached state but cannot roll back live in-session XP
+check(moonboysState.includes('_liveXpRevision'), 'moonboys-state.js has a _liveXpRevision race guard to protect live in-session XP from hydration rollback');
+check(moonboysState.includes('hydrateXpRevision'), 'moonboys-state.js captures hydrateXpRevision before fetch to detect live xp:updates during hydration');
+check(moonboysState.includes('_liveXpRevision === hydrateXpRevision'), 'moonboys-state.js applies server XP unconditionally only when no live xp:update arrived during fetch');
 check(moonboysState.includes('Server is authoritative during hydration'), 'moonboys-state.js documents that server XP is authoritative on hydration');
 
 // Issue 7: global-player-header.js must not auto-create [data-las-panel] unless opted in
