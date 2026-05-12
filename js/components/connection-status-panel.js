@@ -249,6 +249,14 @@
     return row.title || row.event_text || row.event || row.action || row.event_type || 'Latest Battle Chamber proof synced';
   }
 
+  function missedXpAllTime() {
+    var state = window.MOONBOYS_WTF_EVENTS || null;
+    var daily = window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
+    if (state && state.missed_xp_all_time != null) return Number(state.missed_xp_all_time) || 0;
+    if (daily && daily.missed_xp_all_time != null) return Number(daily.missed_xp_all_time) || 0;
+    return 0;
+  }
+
   function latestActivityRows() {
     var rows = [];
     var activity = Array.isArray(window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY) ? window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY : [];
@@ -304,7 +312,12 @@
     var sync = syncLabel(state);
     var syncClass = syncBadgeClass(state);
     var blocktopia = blocktopiaAccessHTML(linked, arcadeXp, requiredXp);
-    var season = status && (status.season || status.current_season || status.season_key) ? (status.season || status.current_season || status.season_key) : 'Season lock not reported';
+    var playerHref = '/games/leaderboard.html';
+    var publicRows = latestGlobalBattleRows();
+    var latestRows = latestActivityRows();
+    var latestLine = latestRows.length ? latestRows[0] : null;
+    var latestLineText = latestLine ? (latestLine.tag + ': ' + latestLine.text) : 'No synced activity yet.';
+    var missedXp = missedXpAllTime();
 
     if (!linked) {
       return '' +
@@ -318,17 +331,17 @@
       '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
         '<div class="csp-live-head">' +
           '<span class="csp-avatar-mini" aria-hidden="true">👾</span>' +
-          '<div class="csp-live-identity"><strong>' + esc(name || 'Telegram Player') + '</strong><span><b class="csp-live-pill csp-live-pill--good">LIVE LINKED</b> <b class="csp-live-pill ' + esc(syncClass) + '">' + esc(sync) + '</b></span></div>' +
+          '<div class="csp-live-identity"><strong><a class="csp-player-link" href="' + esc(playerHref) + '">' + esc(name || 'Telegram Player') + '</a></strong><span><b class="csp-live-pill csp-live-pill--good">LIVE LINKED</b></span></div>' +
         '</div>' +
         '<div class="csp-grid csp-grid--live">' +
           '<div class="csp-item"><div class="csp-item-label">Arcade XP</div><div class="csp-item-val" data-csp-xp>' + esc(String(arcadeXp)) + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Faction</div><div class="csp-item-val" data-csp-faction data-csp-faction-key="' + esc(normaliseFactionKey(status) || '') + '">' + esc(faction) + '</div></div>' +
           '<div class="csp-item csp-item--wide"><div class="csp-item-label">Block Topia</div><div class="csp-item-val" data-csp-bt-access>' + blocktopia + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Season</div><div class="csp-item-val">' + esc(season) + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">API Sync</div><div class="csp-item-val ' + (apiOnline ? 'csp-val-good' : 'csp-val-locked') + '">' + (apiOnline ? '● Online' : 'Core API unavailable') + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Missed XP</div><div class="csp-item-val">' + esc(String(missedXp)) + '</div></div>' +
         '</div>' +
-        '<div class="csp-feed"><div class="csp-feed-title">Recent Personal Activity</div>' + buildFeedHTML(latestActivityRows()) + '</div>' +
-        '<div class="csp-feed"><div class="csp-feed-title">Latest Public Battle Chamber Activity</div>' + buildFeedHTML(latestGlobalBattleRows(), 'No public Battle Chamber activity yet.') + '</div>' +
+        '<div class="csp-feed"><div class="csp-feed-title">Latest Activity</div><div class="csp-feed-row"><span class="csp-feed-tag">Now</span><span>' + esc(latestLineText) + '</span></div></div>' +
+        (publicRows.length
+          ? ('<div class="csp-feed"><div class="csp-feed-title">Latest Public Battle Chamber Activity</div>' + buildFeedHTML(publicRows) + '</div>')
+          : '') +
       '</div>';
   }
 

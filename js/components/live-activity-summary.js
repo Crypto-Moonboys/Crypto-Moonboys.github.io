@@ -354,12 +354,10 @@
     return missions.map(function (m) {
       var current = Number.isFinite(Number(m.current)) ? Math.max(0, Number(m.current)) : 0;
       var target = Number.isFinite(Number(m.target)) && Number(m.target) > 0 ? Number(m.target) : 1;
-      var pct = Math.max(0, Math.min(100, Math.round((current / target) * 100)));
-      return '<div class="las-mission-card ' + (m.done ? 'is-complete' : '') + '">' +
-        '<div class="las-mission-top"><strong>' + esc(m.title) + '</strong><span>' + (m.done ? 'COMPLETE' : 'LIVE') + '</span></div>' +
-        '<div class="las-mission-obj">' + esc(m.objective) + '</div>' +
-        '<div class="las-progress"><i style="width:' + pct + '%"></i></div>' +
-        '<div class="las-mission-meta"><span>' + esc(String(current)) + ' / ' + esc(String(target)) + '</span>' + (m.reward ? '<span>' + esc(m.reward) + '</span>' : '') + '</div>' +
+      return '<div class="las-mission-row ' + (m.done ? 'is-complete' : '') + '">' +
+        '<span class="las-mission-title">' + esc(m.title) + '</span>' +
+        '<span class="las-mission-progress">' + esc(String(current)) + '/' + esc(String(target)) + '</span>' +
+        '<span class="las-mission-reward">' + (m.reward ? esc(m.reward) : (m.done ? 'COMPLETE' : 'LIVE')) + '</span>' +
       '</div>';
     }).join('');
   }
@@ -619,16 +617,16 @@
       if (!_singleton.wtfLoadingStartedAt) _singleton.wtfLoadingStartedAt = nowMs;
       scheduleWtfLoadingFallbackRepaint(nowMs);
       if ((nowMs - _singleton.wtfLoadingStartedAt) < WTF_LOADING_STALL_MS) {
-        return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">NEXT SIGNAL</span><strong>Loading Daily WTF signal...</strong><p>Fetching /wtf/events/today.</p><div class="las-countdown" data-wtf-countdown>--:--:--</div></div>';
+        return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">UPCOMING</span><strong>Daily WTF: Loading signal</strong><div class="las-countdown" data-wtf-countdown>Starts in --:--:--</div></div>';
       }
       var fallbackState = buildDeterministicWtfFallbackState(new Date());
       if (!fallbackState) {
         maybeKickEmergencyWtfRecovery();
         scheduleWtfHelperRetry();
         if (Number(_singleton.wtfHelperRetryAttempts || 0) < WTF_HELPER_RETRY_MAX) {
-          return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">NEXT SIGNAL</span><strong>Loading Daily WTF signal...</strong><p>Daily WTF signal feed is reconnecting. Play Arcade while the next signal loads.</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
+          return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">UPCOMING</span><strong>Daily WTF: Loading signal</strong><div class="las-countdown" data-wtf-countdown>Starts in --:--:--</div><a class="las-action-btn" href="/games/">Get Ready</a></div>';
         }
-        return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>Signal feed unavailable. Play Arcade and check Battle Chamber again shortly.</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
+        return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">UPCOMING</span><strong>Daily WTF: Signal unavailable</strong><div class="las-countdown" data-wtf-countdown>Starts in --:--:--</div><a class="las-action-btn" href="/games/">Get Ready</a></div>';
       }
       _singleton.wtfHelperRetryAttempts = 0;
       clearWtfHelperRetryTimer();
@@ -638,7 +636,7 @@
       var fallbackAction = linked
         ? '<a class="las-action-btn" href="/games/">Get Ready</a>'
         : '<a class="las-action-btn" href="/gkniftyheads-incubator.html">Link Telegram</a>';
-      return '<div class="las-signal-card" data-wtf-state="fallback"><span class="las-pill las-pill--next">FALLBACK</span><strong>' + esc(fallbackTitle) + '</strong><p>Signal feed fallback active. Daily WTF signals open every 4 hours.</p><div class="las-task-copy">Objective: ' + esc(fallbackObjective) + '</div><div class="las-countdown" data-wtf-countdown>' + countdownText(fallbackState.countdown_seconds) + '</div>' + fallbackAction + '</div>';
+      return '<div class="las-signal-card" data-wtf-state="fallback"><span class="las-pill las-pill--next">UPCOMING</span><strong>Daily WTF: ' + esc(fallbackTitle) + '</strong><div class="las-countdown" data-wtf-countdown>Starts in ' + countdownText(fallbackState.countdown_seconds) + '</div>' + fallbackAction + '</div>';
     }
     clearWtfLoadingRepaintTimer();
     clearWtfHelperRetryTimer();
@@ -646,7 +644,7 @@
     _singleton.wtfLoadingStartedAt = null;
     if (state.status === 'error') {
       maybeKickEmergencyWtfRecovery();
-      return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">SIGNAL</span><strong>Signal feed unavailable.</strong><p>' + esc(state.diagnostic || 'Try the arcade while the feed reconnects.') + '</p><a class="las-action-btn" href="/games/">Play Arcade</a></div>';
+      return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">UPCOMING</span><strong>Daily WTF: Signal unavailable</strong><div class="las-countdown" data-wtf-countdown>Starts in --:--:--</div><a class="las-action-btn" href="/games/">Get Ready</a></div>';
     }
     if (hasUsablePrimaryWtfState(getWtfState())) {
       _singleton.wtfEmergencyState = null;
@@ -660,14 +658,16 @@
     var eventId = active && (active.id || active.event_id || active.key) ? (active.id || active.event_id || active.key) : '';
     var focus = active || next || (state.completed_events && state.completed_events[0]) || (state.expired_events && state.expired_events[0]) || null;
     var title = eventTitle(focus, 'No Daily WTF signals generated for today');
-    var objective = wtfRequirementText(state, focus);
     var subcopy = '';
     var buttons = '';
+    var timerLabel = 'Starts in ';
 
     if (completedOnly) {
-      subcopy = 'Completed tick locked for today. XP burst preview and chain options show when the Worker reports them.';
+      subcopy = 'completed';
+      timerLabel = 'Next in ';
     } else if (active) {
-      subcopy = state.checked_in ? 'Checked in - complete the objective before the signal expires.' : 'Live now - Daily WTF signals open every 4 hours; check in before this 90-minute timer ends.';
+      subcopy = 'active';
+      timerLabel = 'Ends in ';
       if (linked && eventId && !state.checked_in && !completed) {
         buttons += '<button type="button" class="las-action-btn" data-wtf-checkin data-event-id="' + esc(eventId) + '">Check In</button>';
       }
@@ -676,40 +676,36 @@
         if (proof) {
           buttons += '<button type="button" class="las-action-btn" data-wtf-complete data-event-id="' + esc(eventId) + '" data-completion-source="' + esc(proof.completion_source) + '" data-source-id="' + esc(proof.source_id) + '">Complete with proof</button>';
         } else {
-          buttons += '<div class="las-task-copy">Complete objective in Arcade / Missions first. ' + esc(objective) + '</div>';
+          buttons += '<a class="las-action-btn" href="/games/">Play Arcade</a>';
         }
       }
     } else if (next) {
       status = 'upcoming';
-      subcopy = 'Get ready - Daily WTF signals open every 4 hours across the UTC day.';
+      subcopy = 'upcoming';
       buttons += '<a class="las-action-btn" href="/games/">Get Ready</a>';
     } else if (Number(state.missed_today || 0) > 0) {
       status = 'missed / expired';
-      subcopy = 'Missed marker recorded. Watch the next signal window.';
-      buttons += '<a class="las-action-btn" href="/games/">Play Arcade</a>';
+      subcopy = 'upcoming';
+      buttons += '<a class="las-action-btn" href="/games/">Get Ready</a>';
     } else {
       status = 'waiting';
-      subcopy = 'No Daily WTF signals generated for today.';
-      buttons += '<a class="las-action-btn" href="/games/">Play Arcade</a>';
+      subcopy = 'upcoming';
+      buttons += '<a class="las-action-btn" href="/games/">Get Ready</a>';
     }
 
     var pillClass = status === 'active' || status === 'checked in' ? 'las-pill--live' : status === 'completed' ? 'las-pill--done' : status === 'missed / expired' ? 'las-pill--missed' : 'las-pill--next';
     if (state.error && state.source === 'client_fallback_schedule') {
-      subcopy = 'Signal feed unavailable; showing fallback schedule. ' + subcopy;
+      subcopy = 'upcoming';
     }
     var options = Array.isArray(state.chain_options) && state.chain_options.length
       ? '<div class="las-chain-options"><strong>Unlocked chain options</strong>' + state.chain_options.slice(0, 3).map(function (o) { return '<span>' + esc(o.title || o.display_title || o.name || o.id || 'Chain option') + '</span>'; }).join('') + '</div>'
       : '';
-    var factionCopy = focus && (focus.faction_relevance || focus.faction_bonus || focus.faction_id)
-      ? '<small>Faction relevance: ' + esc(focus.faction_relevance || focus.faction_bonus || focus.faction_id) + '</small>'
-      : '';
+    var statusLabel = status === 'active' || status === 'checked in' ? 'Active' : 'Upcoming';
     return '<div class="las-signal-card" data-wtf-state="' + esc(status) + '">' +
-      '<span class="las-pill ' + pillClass + '">' + esc(status.toUpperCase()) + '</span>' +
-      '<strong>' + (completedOnly ? 'COMPLETE ' : '') + esc(title) + '</strong>' +
-      '<p>' + esc(subcopy) + '</p>' +
-      '<div class="las-task-copy">Objective: ' + esc(objective) + '</div>' +
-      '<div class="las-countdown" data-wtf-countdown>' + countdownText(state.countdown_seconds) + '</div>' +
-      factionCopy + buttons + options +
+      '<span class="las-pill ' + pillClass + '">' + esc(statusLabel.toUpperCase()) + '</span>' +
+      '<strong>Daily WTF: ' + (completedOnly ? 'COMPLETE ' : '') + esc(title) + '</strong>' +
+      '<div class="las-countdown" data-wtf-countdown>' + esc(timerLabel) + countdownText(state.countdown_seconds) + '</div>' +
+      buttons + options +
       '</div>';
   }
 
@@ -744,10 +740,7 @@
     var xpDisplay = xpAllTime.toLocaleString ? xpAllTime.toLocaleString() : String(xpAllTime);
     return '<div class="las-missed-box"><span class="las-pill las-pill--missed">MISSED</span>' +
       '<div class="las-missed-xp"><strong>Missed XP: ' + esc(xpDisplay) + '</strong></div>' +
-      '<div><strong>' + count + '</strong> missed all-time | <strong>' + today + '</strong> today</div>' +
-      '<p>The city kept moving while you were away.</p>' +
-      '<small>Missed opportunities are tracked over time. Missed XP today: ' + esc(String(xpToday)) + '</small>' +
-      (latest ? '<small>Latest: ' + esc(latest.title || latest.name || latest.id || latest.type || 'missed item') + '</small>' : '<small>No missed item detail reported.</small>') +
+      '<div class="las-missed-meta">' + count + ' missed all-time · ' + today + ' today</div>' +
       '</div>';
   }
 
@@ -786,14 +779,13 @@
     }
 
     return '<div class="las-panel las-panel--ops" role="status" aria-label="Faction daily ops">' +
-      '<div class="las-ops-head"><span class="las-live-dot"></span><div><strong>Faction Daily Ops</strong><span data-las-faction>' + esc(factionText) + '</span></div></div>' +
-      '<div class="las-row"><span class="las-label">Core API</span><span class="las-val ' + apiStatusClass + '">' + esc(apiStatusText) + '</span></div>' +
-      '<div class="las-row"><span class="las-label">Sync</span><span class="las-val ' + (sync.good ? 'las-val--good' : 'las-val--warn') + '" data-las-sync>' + esc(sync.text) + '</span></div>' +
+      '<div class="las-ops-head"><span class="las-live-dot"></span><div><strong>Faction Daily Ops</strong><span>Compact mission feed</span></div></div>' +
       '<div class="las-section-title">Today\'s Missions</div>' + missionHTML(missionState.missions) +
+      '<div class="las-row las-row--cta"><a class="las-link" href="/community.html">View details</a></div>' +
       '<div class="las-section-title">Daily WTF Signal</div>' + wtfHTML(linked) +
+      '<div class="las-row las-row--cta"><a class="las-link" href="/how-to-play.html">View details</a></div>' +
       '<div class="las-section-title">Missed Opportunities</div>' + missedHTML() +
-      '<div class="las-reset-copy">Daily WTF signals open every 4 hours. Daily options reset at UTC midnight. Missed history does not reset.</div>' +
-      buildLogHTML() +
+      '<div class="las-row las-row--cta"><a class="las-link" href="/games/leaderboard.html">View details</a></div>' +
     '</div>';
   }
 
@@ -825,19 +817,19 @@
       '.las-section-title{margin-top:8px;padding-top:8px;border-top:1px solid rgba(86,220,255,.13);font-size:.63rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#56dcff}',
       '.las-empty{color:var(--color-text-muted,#8b949e);font-size:.74rem;line-height:1.45;margin:4px 0}',
       '.las-ops-cta{display:inline-flex;margin-top:4px;padding:7px 9px;border:1px solid rgba(0,229,255,.45);background:rgba(0,229,255,.08);font-weight:800;text-transform:uppercase;text-decoration:none}',
-      '.las-mission-card,.las-signal-card,.las-missed-box{border:1px solid rgba(86,220,255,.18);background:rgba(86,220,255,.055);padding:8px;border-radius:8px;box-shadow:inset 0 0 12px rgba(0,229,255,.04)}',
-      '.las-mission-card.is-complete{border-color:rgba(63,185,80,.45);box-shadow:0 0 12px rgba(63,185,80,.12)}',
-      '.las-mission-top{display:flex;justify-content:space-between;gap:6px;align-items:center}.las-mission-top strong{color:#fff;font-size:.76rem}.las-mission-top span{font-size:.56rem;color:#3fb950;font-weight:900}',
-      '.las-mission-obj{color:var(--color-text-muted,#8b949e);font-size:.7rem;line-height:1.35;margin-top:4px}',
-      '.las-progress{height:6px;background:rgba(255,255,255,.08);margin:7px 0;border-radius:99px;overflow:hidden}.las-progress i{display:block;height:100%;background:linear-gradient(90deg,#ff2d78,#00e5ff);box-shadow:0 0 8px rgba(0,229,255,.5)}',
-      '.las-mission-meta{display:flex;justify-content:space-between;gap:8px;color:#f7c948;font-size:.64rem;font-weight:800}',
+      '.las-mission-row,.las-signal-card,.las-missed-box{border:1px solid rgba(86,220,255,.18);background:rgba(86,220,255,.055);padding:7px 8px;border-radius:8px;box-shadow:inset 0 0 12px rgba(0,229,255,.04)}',
+      '.las-mission-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center}',
+      '.las-mission-row.is-complete{border-color:rgba(63,185,80,.45);box-shadow:0 0 12px rgba(63,185,80,.12)}',
+      '.las-mission-title{color:#fff;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.las-mission-progress{font-size:.62rem;color:#c8f0ff}',
+      '.las-mission-reward{font-size:.62rem;color:#f7c948;font-weight:800}',
       '.las-pill{display:inline-flex;width:max-content;padding:2px 6px;border-radius:99px;border:1px solid rgba(86,220,255,.35);font-size:.56rem;font-weight:900;letter-spacing:.08em;color:#56dcff;margin-bottom:5px}.las-pill--live{color:#3fb950;border-color:rgba(63,185,80,.45)}.las-pill--done{color:#f7c948;border-color:rgba(247,201,72,.45)}.las-pill--missed{color:#ff7b72;border-color:rgba(255,123,114,.45)}',
-      '.las-signal-card strong{display:block;color:#fff}.las-signal-card p,.las-missed-box p{margin:4px 0;color:var(--color-text-muted,#8b949e);font-size:.7rem;line-height:1.35}',
-      '.las-countdown{font-family:monospace;color:#00e5ff;font-size:1rem;text-shadow:0 0 8px rgba(0,229,255,.4);margin:5px 0}',
+      '.las-signal-card strong{display:block;color:#fff}',
+      '.las-countdown{font-family:monospace;color:#00e5ff;font-size:.86rem;text-shadow:0 0 8px rgba(0,229,255,.4);margin:4px 0}',
       '.las-action-btn{margin:4px 5px 0 0;padding:5px 7px;border:1px solid rgba(0,229,255,.45);background:rgba(0,229,255,.08);color:#c8f0ff;font-weight:800;text-transform:uppercase;font-size:.6rem;cursor:pointer}',
       '.las-task-copy{margin-top:5px;color:#f7c948;font-size:.68rem;line-height:1.35;border-left:2px solid rgba(247,201,72,.45);padding-left:6px}',
       '.las-chain-options{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.las-chain-options span{font-size:.58rem;border:1px solid rgba(247,201,72,.3);color:#f7c948;padding:2px 5px}',
-      '.las-missed-box small{color:var(--color-text-muted,#8b949e);font-size:.64rem}.las-reset-copy{color:var(--color-text-muted,#8b949e);font-size:.66rem;line-height:1.4;border-left:2px solid rgba(0,229,255,.4);padding-left:7px}',
+      '.las-missed-meta{color:var(--color-text-muted,#8b949e);font-size:.64rem}',
     ].join('\n');
     (document.head || document.documentElement).appendChild(style);
   }
