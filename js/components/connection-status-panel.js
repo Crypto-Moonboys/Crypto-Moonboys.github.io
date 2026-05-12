@@ -250,11 +250,6 @@
         rows.push({ tag: 'Battle', text: battleActivityText(latest) });
       }
     }
-    var daily = window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
-    if (daily && typeof daily === 'object') {
-      var task = daily.latest_completion || daily.latest || daily.current_task || daily.today || null;
-      rows.push({ tag: 'Daily', text: task && (task.title || task.name || task.id) ? (task.title || task.name || task.id) : 'Daily opportunity state synced' });
-    }
     var wtf = window.MOONBOYS_WTF_EVENTS || null;
     if (wtf && typeof wtf === 'object') {
       if (wtf.completed_today) rows.push({ tag: 'WTF', text: 'WTF timed event completed today' });
@@ -294,7 +289,7 @@
     var latestRows = latestActivityRows();
     // Compact rail rule: show one short personal activity line only.
     var latestLine = latestRows.length ? latestRows[0] : null;
-    var latestActivityText = latestLine ? latestLine.text : 'No synced activity yet — play Arcade.';
+    var latestActivityText = latestLine ? latestLine.text : 'Play Arcade to create activity';
     if (!linked) {
       return '' +
         '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
