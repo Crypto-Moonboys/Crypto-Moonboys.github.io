@@ -13,8 +13,10 @@
  *   RELINK             — linked in localStorage but signed auth expired/missing
  *   Telegram Sync Required — not linked
  *
- * Missed XP display: reads from page globals (MOONBOYS_WTF_EVENTS,
- * MOONBOYS_ROGUELITE_DAILY_STATE).  Shows "syncing…" until at least one
+ * Missed XP display: first attempts linked-user confirmation via
+ * POST /roguelite/daily-state (fresh/restorable signed Telegram auth),
+ * then falls back to page globals (MOONBOYS_WTF_EVENTS,
+ * MOONBOYS_ROGUELITE_DAILY_STATE). Shows "syncing…" until at least one
  * source reports a confirmed value — never shows 0 before data is loaded.
  *
  * Usage — full panel:
@@ -53,6 +55,8 @@
   // Clearing both on invalidate ensures the next call starts fresh.
   var _progressionCache = null;
   var _progressionInflight = null;
+  var _dailyStateCache = null;
+  var _dailyStateInflight = null;
   var _apiOnlineCache = null;
   var _liveDataRefreshTimer = null;
   // Unsubscribe token for MOONBOYS_STATE subscriber (avoids leak if re-initialised)
@@ -97,6 +101,17 @@
     var fa = getFactionApi();
     if (!fa) return null;
     return fa.getCachedStatus() || { faction: 'unaligned', faction_xp: 0 };
+  }
+
+  async function getSignedTelegramAuthWithRestore() {
+    var gate = getIdentity();
+    if (!gate) return null;
+    var freshAuth = typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+    if (freshAuth) return freshAuth;
+    if (typeof gate.restoreLinkedTelegramAuth !== 'function') return null;
+    var restored = await gate.restoreLinkedTelegramAuth().catch(function () { return null; });
+    if (restored && restored.ok && restored.telegram_auth) return restored.telegram_auth;
+    return typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
   }
 
   function factionLabel() {
@@ -200,6 +215,57 @@
     return _apiOnlineCache;
   }
 
+  async function fetchDailyStateWithAuth() {
+    if (_dailyStateCache !== null) return _dailyStateCache;
+    if (_dailyStateInflight !== null) return _dailyStateInflight;
+
+    _dailyStateInflight = (async function () {
+      if (!isLinked()) {
+        _dailyStateCache = null;
+        _dailyStateInflight = null;
+        return null;
+      }
+      var apiBase = getApiBase();
+      if (!apiBase) {
+        _dailyStateCache = null;
+        _dailyStateInflight = null;
+        return null;
+      }
+      var telegramAuth = await getSignedTelegramAuthWithRestore();
+      if (!telegramAuth) {
+        _dailyStateCache = null;
+        _dailyStateInflight = null;
+        return null;
+      }
+      var ac = new AbortController();
+      var timer = setTimeout(function () { ac.abort(); }, 6000);
+      try {
+        var res = await fetch(apiBase + '/roguelite/daily-state', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegram_auth: telegramAuth }),
+          signal: ac.signal,
+        });
+        var payload = await res.json().catch(function () { return null; });
+        if (res.ok && payload && payload.ok === true) {
+          _dailyStateCache = payload;
+          window.MOONBOYS_ROGUELITE_DAILY_STATE = payload;
+          return payload;
+        }
+      } catch (_) {
+        // Keep null so UI remains "syncing…" until confirmed data arrives.
+      } finally {
+        clearTimeout(timer);
+      }
+      _dailyStateCache = null;
+      return null;
+    }());
+
+    var result = await _dailyStateInflight;
+    _dailyStateInflight = null;
+    return result;
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────
 
   function normaliseFactionKey(status) {
@@ -230,9 +296,9 @@
     return row.title || row.event_text || row.event || row.action || row.event_type || 'Latest Battle Chamber proof synced';
   }
 
-  function missedXpAllTime() {
+  function missedXpAllTime(confirmedDailyState) {
     var state = window.MOONBOYS_WTF_EVENTS || null;
-    var daily = window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
+    var daily = confirmedDailyState || window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
     if (state && state.missed_xp_all_time != null) return Number(state.missed_xp_all_time) || 0;
     if (daily && daily.missed_xp_all_time != null) return Number(daily.missed_xp_all_time) || 0;
     // Neither source has confirmed data yet — return null so the panel can show "syncing…"
@@ -281,6 +347,7 @@
     var linked = isLinked();
     var name = getDisplayName();
     var progression = await fetchRequiredXp();
+    var confirmedDailyState = linked ? await fetchDailyStateWithAuth() : null;
     var arcadeXp = getArcadeXp();
     var requiredXp = progression.requiredXp;
     var blocktopia = blocktopiaAccessHTML(linked, arcadeXp, requiredXp);
@@ -297,7 +364,7 @@
           '<a href="/gkniftyheads-incubator.html" class="csp-live-cta">Link Telegram</a>' +
         '</div>';
     }
-    var missedXp = missedXpAllTime();
+    var missedXp = missedXpAllTime(confirmedDailyState);
     var missedXpDisplay = missedXp !== null ? esc(String(missedXp)) : 'syncing…';
 
     return '' +
@@ -488,6 +555,8 @@
   function invalidateAndRefresh() {
     _progressionCache = null;
     _progressionInflight = null;
+    _dailyStateCache = null;
+    _dailyStateInflight = null;
     _apiOnlineCache = null;
     document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
     var badge = document.getElementById('moonboys-global-status-badge');
