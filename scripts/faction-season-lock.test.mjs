@@ -635,9 +635,46 @@ const CANONICAL_NINE = [
 CANONICAL_NINE.forEach(function (key) {
   check(
     factionCanon.includes("'" + key + "'") || factionCanon.includes('"' + key + '"'),
-    'shared canon: canonical faction key present � ' + key,
+    'shared canon: canonical faction key present � ' + key,
   );
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7. worker.js XP multiplier source-of-truth
+// ─────────────────────────────────────────────────────────────────────────────
+
+console.log('\n── 7. worker.js XP multiplier source-of-truth ───────────────────────────');
+
+// worker.js must not duplicate xpMultiplier values inside FACTION_CONFIG.
+// Detect `xpMultiplier:` as a key inside the FACTION_CONFIG block.
+check(
+  !/xpMultiplier\s*:/.test(worker),
+  'worker.js: FACTION_CONFIG must not contain duplicated xpMultiplier values',
+);
+
+// worker.js must import getFactionXpMultiplier from shared faction canon.
+check(
+  worker.includes('getFactionXpMultiplier') &&
+  worker.includes("from './shared/faction-canon.js'"),
+  'worker.js: imports getFactionXpMultiplier from shared faction-canon.js',
+);
+
+// factionMeta must delegate xp_multiplier to getFactionXpMultiplier.
+check(
+  worker.includes('xp_multiplier: getFactionXpMultiplier('),
+  'worker.js: factionMeta uses getFactionXpMultiplier() for xp_multiplier',
+);
+
+// Shared canon must still be the owner of FACTION_XP_MULTIPLIERS.
+check(
+  factionCanon.includes('FACTION_XP_MULTIPLIERS'),
+  'shared faction-canon.js: still owns FACTION_XP_MULTIPLIERS',
+);
+
+check(
+  factionCanon.includes('getFactionXpMultiplier'),
+  'shared faction-canon.js: still exports getFactionXpMultiplier',
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Summary

@@ -3,7 +3,7 @@ import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
 import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from './blocktopia/db.js';
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
-import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction } from './shared/faction-canon.js';
+import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
 /**
  * Moonboys API — Cloudflare Worker entrypoint
  *
@@ -211,70 +211,60 @@ const FACTION_CONFIG = {
     icon: '🪨',
     color: '#56dcff',
     bonus: '+endurance stability and streak protection',
-    xpMultiplier: 1.1,
   },
   'rugpull-miners': {
     label: 'Rugpull Miners',
     icon: '⛏️',
     color: '#ff6ad5',
     bonus: '+defensive recovery and shield support',
-    xpMultiplier: 1.15,
   },
   graffpunks: {
     label: 'GraffPUNKS',
     icon: '🎨',
     color: '#7dff72',
     bonus: '+chaos bursts and combo pressure',
-    xpMultiplier: 1.12,
   },
   'blockchain-furies': {
     label: 'Blockchain Furies',
     icon: '🔥',
     color: '#ff9f43',
     bonus: '+speed pressure and revenge momentum',
-    xpMultiplier: 1.0,
   },
   'crypto-moongirls': {
     label: 'Crypto Moongirls',
     icon: '🌙',
     color: '#b88dff',
     bonus: '+precision control and penalty resistance',
-    xpMultiplier: 1.0,
   },
   blockstars: {
     label: 'The Blockstars',
     icon: '⭐',
     color: '#ffd166',
     bonus: '+featured clout tracks and spotlight scoring',
-    xpMultiplier: 1.0,
   },
   'all-city-bulls': {
     label: 'All City Bulls',
     icon: '🐂',
     color: '#ff6b6b',
     bonus: '+score pressure and war push',
-    xpMultiplier: 1.0,
   },
   'nomad-bears': {
     label: 'Nomad Bears',
     icon: '🐻',
     color: '#8ecf7a',
     bonus: '+route variety and consistency rewards',
-    xpMultiplier: 1.0,
   },
   'crypto-stoned-boys': {
     label: 'Crypto Stoned Boys',
     icon: '😶‍🌫️',
     color: '#8fd3ff',
     bonus: '+chill streak comfort and random branch luck',
-    xpMultiplier: 1.0,
   },
   unaligned: {
     label: 'Unaligned',
     icon: '◌',
     color: '#8b949e',
     bonus: 'No faction bonus active',
-    xpMultiplier: 1,
   },
 };
 
@@ -287,7 +277,7 @@ function factionMeta(faction) {
     icon: cfg.icon,
     color: cfg.color,
     bonus: cfg.bonus,
-    xp_multiplier: cfg.xpMultiplier,
+    xp_multiplier: getFactionXpMultiplier(key),
   };
 }
 
