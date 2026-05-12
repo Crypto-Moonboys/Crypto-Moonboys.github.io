@@ -1,0 +1,175 @@
+name: PR template check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  validate-pr-body:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR template sections
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          const eventPath = process.env.GITHUB_EVENT_PATH;
+          const event = JSON.parse(fs.readFileSync(eventPath, 'utf8'));
+          const body = event?.pull_request?.body || '';
+          const errors = [];
+
+          const requiredHeadings = [
+            '# Summary',
+            '# Scope lock',
+            '# Files changed',
+            '# Runtime impact',
+            '# Deploy notes',
+            '# Tests run',
+            '# Live verification needed',
+            '# Anti-drift checklist',
+            '# Merge decision'
+          ];
+
+          for (const heading of requiredHeadings) {
+            if (!body.includes(heading)) {
+              errors.push(`Missing required heading: ${heading}`);
+            }
+          }
+
+          function getSection(markdown, heading) {
+            const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const sectionRegex = new RegExp(
+              `(?:^|\\n)${escapedHeading}[^\\n]*\\n([\\s\\S]*?)(?=\\n# [^\\n]+|$)`,
+              'i'
+            );
+            const match = markdown.match(sectionRegex);
+            return match ? match[1].trim() : '';
+          }
+
+          function countCheckedOptions(section, options) {
+            return options.reduce((count, option) => {
+              const escapedOption = option.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const checkedRegex = new RegExp(
+                `(?:^|\\n)\\s*[-*]\\s*\\[[xX]\\]\\s*${escapedOption}\\s*(?=\\n|$)`,
+                'i'
+              );
+              return count + (checkedRegex.test(section) ? 1 : 0);
+            }, 0);
+          }
+
+          const runtimeImpactSection = getSection(body, '# Runtime impact');
+          const runtimeOptions = [
+            'Static frontend only',
+            'Worker/API change',
+            'D1 migration',
+            'VPS/server change',
+            'GitHub Pages/workflow/docs only'
+          ];
+          const runtimeChecked = countCheckedOptions(runtimeImpactSection, runtimeOptions);
+          if (runtimeChecked !== 1) {
+            errors.push('Runtime impact must have exactly one checked option.');
+          }
+
+          const mergeDecisionSection = getSection(body, '# Merge decision');
+          const mergeOptions = ['Ready to merge', 'Hold merge'];
+          const mergeChecked = countCheckedOptions(mergeDecisionSection, mergeOptions);
+          if (mergeChecked !== 1) {
+            errors.push('Merge decision must have exactly one checked option.');
+          }
+
+          const deployFields = [
+            'Worker deploy required',
+            'D1 migration required',
+            'VPS restart required',
+            'GitHub Pages only'
+          ];
+
+          for (const field of deployFields) {
+            const fieldRegex = new RegExp(
+              `(?:^|\\n)\\s*[-*]?\\s*${field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*(Yes|No)\\s*(?:\\n|$)`,
+              'i'
+            );
+            if (!fieldRegex.test(body)) {
+              errors.push(`Deploy notes must set "${field}:" to explicit Yes or No.`);
+            }
+          }
+
+          const testsSection = getSection(body, '# Tests run');
+          const testsLines = testsSection
+            .split('\n')
+            .map((line) => line.trim())
+            .filter(Boolean);
+
+          const templateBoilerplateLineRegexes = [
+            /^Paste exact commands and results:\s*$/i,
+            /^[-*]\s*\[\s\]\s*git diff --check\s*$/i,
+            /^[-*]\s*\[\s\]\s*node --check changed JS files\s*$/i,
+            /^[-*]\s*\[\s\]\s*npm test\s*$/i,
+            /^[-*]\s*\[\s\]\s*other:\s*$/i
+          ];
+
+          const nonBoilerplateLines = testsLines.filter(
+            (line) => !templateBoilerplateLineRegexes.some((regex) => regex.test(line))
+          );
+
+          if (nonBoilerplateLines.length === 0) {
+            errors.push('Tests run section is empty. Include concrete test evidence.');
+          }
+
+          // Self-check expectations:
+          // - [ ] npm test — not run            => fail
+          // - [x] npm test                      => fail
+          // - no runtime impact selected        => fail
+          // - both merge decisions selected     => fail
+          const uncheckedNpmTestRegex = /(?:^|\n)\s*[-*]\s*\[\s\]\s*`?npm test`?\b/i;
+          if (uncheckedNpmTestRegex.test(testsSection)) {
+            errors.push('Unchecked "npm test" lines do not satisfy test evidence requirements.');
+          }
+
+          const checkedNpmWithoutResultRegex = /(?:^|\n)\s*[-*]\s*\[[xX]\]\s*`?npm test`?\s*(?:\n|$)/i;
+          if (checkedNpmWithoutResultRegex.test(testsSection)) {
+            errors.push('Checked "npm test" entries must include result text after the command.');
+          }
+
+          const indicatesTestNotRun = (resultText) => /\bnot\s+run\b/i.test(resultText);
+
+          const hasValidNpmTestRunEvidence = testsLines.some((line) => {
+            const match = line.match(/^(?:[-*]\s*\[[xX]\]\s*)?`?npm test`?\s*(?:—|--|:)\s*(.+)$/i);
+            if (!match) {
+              return false;
+            }
+            const resultText = match[1].trim();
+            if (!resultText || indicatesTestNotRun(resultText)) {
+              return false;
+            }
+            return /\b(pass|passed|clean)\b/i.test(resultText);
+          });
+
+          const hasNpmNotRequiredExplanation = testsLines.some((line) => {
+            const match = line.match(/^(?:[-*]\s*(?:\[[ xX]\]\s*)?)?`?npm test`?\s+not\s+required\b(?:\s*(?:—|--|:)\s*.+)?$/i);
+            if (!match) {
+              return false;
+            }
+            const isNotRequired = /\bnot\s+required\b/i.test(line);
+            const wordCount = line.replace(/[`-]/g, ' ').trim().split(/\s+/).length;
+            return isNotRequired && wordCount >= 5;
+          });
+
+          if (!hasValidNpmTestRunEvidence && !hasNpmNotRequiredExplanation) {
+            errors.push('Tests run section must include "npm test" with result evidence or an explicit "npm test not required" explanation.');
+          }
+
+          if (errors.length) {
+            console.error('PR template validation failed:');
+            for (const error of errors) {
+              console.error(`- ${error}`);
+            }
+            process.exit(1);
+          }
+
+          console.log('PR template validation passed.');
+          NODE
