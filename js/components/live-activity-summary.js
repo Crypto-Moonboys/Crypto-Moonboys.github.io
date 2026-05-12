@@ -646,7 +646,7 @@
     var statusLabel = wtfStatusLabel(status, completedOnly);
     return '<div class="las-signal-card" data-wtf-state="' + esc(status) + '">' +
       '<span class="las-pill ' + pillClass + '">' + esc(statusLabel) + '</span>' +
-      '<strong>Daily WTF: ' + (completedOnly ? 'COMPLETE ' : '') + esc(title) + '</strong>' +
+      '<strong>Daily WTF: ' + (completedOnly ? 'COMPLETE' : '') + (completedOnly ? ' ' : '') + esc(title) + '</strong>' +
       '<div class="las-countdown" data-wtf-countdown>' + esc(timerLabel) + ' ' + countdownText(state.countdown_seconds) + '</div>' +
       buttons + options +
       '</div>';

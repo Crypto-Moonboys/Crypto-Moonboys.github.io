@@ -184,7 +184,7 @@ const setTransientBlock = functionBlock(wtf, 'setTransientState');
 const refreshBlock = functionBlock(wtf, 'refresh');
 const tickerBlock = functionBlock(wtf, 'startCountdownTicker');
 check(wtfStatusBlock.indexOf('state.next_event') < wtfStatusBlock.indexOf('state.completed_today'), 'upcoming/next WTF signal has render priority over completed_today');
-check(wtfHtmlBlock.includes('completedOnly = completed && !active && !next') && wtfHtmlBlock.includes("completedOnly ? 'COMPLETE ' : ''"), 'completed tick only appears when no active or next signal exists');
+check(wtfHtmlBlock.includes('completedOnly = completed && !active && !next') && wtfHtmlBlock.includes("completedOnly ? 'COMPLETE' : ''"), 'completed tick only appears when no active or next signal exists');
 check(las.includes("if (completedOnly || status === 'completed') return 'COMPLETE';"), 'completed Daily WTF status maps to COMPLETE');
 
 const mojibakeMarkers = ['Ã', 'Â', '�', 'â‚¬', 'â€œ', 'â€', 'Å“'];
