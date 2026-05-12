@@ -80,12 +80,6 @@
     return gate.getTelegramId();
   }
 
-  function getSyncState() {
-    var gate = getIdentity();
-    if (!gate || typeof gate.getSyncState !== 'function') return null;
-    return gate.getSyncState();
-  }
-
   function getFactionStatus() {
     var fa = getFactionApi();
     if (!fa) return null;
@@ -100,32 +94,6 @@
     var fa = getFactionApi();
     var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(status.faction) : null;
     return meta ? (meta.icon + ' ' + meta.label) : status.faction;
-  }
-
-  /**
-   * Derives a human-readable sync label from getSyncState() output.
-   * Checks all known representations of auth_expired and missing_auth_payload
-   * so the label is correct regardless of which field the identity layer populates.
-   */
-  function syncLabel(state) {
-    if (!state || !state.linked) return 'Telegram not linked \u2014 run /gklink';
-    if (state.good) return 'Ready';
-    var expired =
-      state.auth_expired === true ||
-      state.status === 'auth_expired' ||
-      state.reason === 'auth_expired';
-    if (expired) return 'Auth expired — relink';
-    var pending =
-      state.status === 'missing_auth_payload' ||
-      state.reason === 'missing_auth_payload';
-    if (pending) return 'Pending';
-    return 'Error';
-  }
-
-  function syncBadgeClass(state) {
-    if (!state || !state.linked) return 'csp-badge--warn';
-    if (state.good) return 'csp-badge--good';
-    return 'csp-badge--bad';
   }
 
   // ── Async data ─────────────────────────────────────────────────────────
@@ -302,15 +270,9 @@
   async function buildPanelHTML() {
     var linked = isLinked();
     var name = getDisplayName();
-    var state = getSyncState();
     var progression = await fetchRequiredXp();
     var arcadeXp = getArcadeXp();
     var requiredXp = progression.requiredXp;
-    var apiOnline = await checkApiOnline();
-    var status = getFactionStatus();
-    var faction = factionLabel();
-    var sync = syncLabel(state);
-    var syncClass = syncBadgeClass(state);
     var blocktopia = blocktopiaAccessHTML(linked, arcadeXp, requiredXp);
     var playerHref = '/games/leaderboard.html';
     var publicRows = latestGlobalBattleRows();

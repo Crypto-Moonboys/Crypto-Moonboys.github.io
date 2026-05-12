@@ -139,6 +139,8 @@ check(!las.includes("completeWtfEvent(eventId, 'right_rail_ops', 'faction_daily_
 check(las.includes('data-completion-source') && las.includes('data-source-id') && las.includes('Complete with proof'), 'complete CTA only renders with proof source and source id attributes');
 check(las.includes('Daily WTF:') && las.includes('Starts in') && las.includes('Ends in') && las.includes('Get Ready'), 'Daily WTF rail is compact with title/timer/action');
 check(!las.includes('Live now - Daily WTF signals open every 4 hours') && !las.includes('Get ready - Daily WTF signals open every 4 hours across the UTC day.'), 'Daily WTF rail removes verbose legacy subcopy');
+check(las.includes('function wtfStatusLabel(status, completedOnly)') && las.includes("if (completedOnly || status === 'completed') return 'COMPLETE';") && las.includes("if (status === 'waiting') return 'WAITING';"), 'Daily WTF rail has explicit status-label mapping for completed/missed/waiting');
+check(las.includes('var statusLabel = wtfStatusLabel(status, completedOnly);') && !las.includes("var statusLabel = status === 'active' || status === 'checked in' ? 'Active' : 'Upcoming';"), 'Daily WTF status labels are derived from the status-label helper, not upcoming-only fallback');
 check(wtf.includes('setTransientState') && wtf.includes('Loading Daily WTF signal…'), 'Daily WTF system publishes a loading state before fetch resolves');
 check(wtf.includes('window.MOONBOYS_DAILY_WTF') && wtf.includes('makeFallbackSchedule,'), 'Daily WTF global API exposes makeFallbackSchedule for shared fallback rendering');
 check(wtf.includes('Signal feed unavailable; deterministic local schedule rendered') && wtf.includes('makeFallbackSchedule'), 'Daily WTF system has a deterministic fallback instead of leaving schedule loading forever');
@@ -183,6 +185,7 @@ const refreshBlock = functionBlock(wtf, 'refresh');
 const tickerBlock = functionBlock(wtf, 'startCountdownTicker');
 check(wtfStatusBlock.indexOf('state.next_event') < wtfStatusBlock.indexOf('state.completed_today'), 'upcoming/next WTF signal has render priority over completed_today');
 check(wtfHtmlBlock.includes('completedOnly = completed && !active && !next') && wtfHtmlBlock.includes("completedOnly ? 'COMPLETE ' : ''"), 'completed tick only appears when no active or next signal exists');
+check(las.includes("if (completedOnly || status === 'completed') return 'COMPLETE';"), 'completed Daily WTF status maps to COMPLETE');
 
 const mojibakeMarkers = ['Ã', 'Â', '�', 'â‚¬', 'â€œ', 'â€', 'Å“'];
 for (const marker of mojibakeMarkers) {
@@ -196,6 +199,8 @@ check(wtf.includes("dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EV
 check(refreshBlock.includes('payload = await fetchTodayEvents()') && refreshBlock.includes('finalState = fallbackFromError') && refreshBlock.includes("setTransientState('error', 'Signal feed unavailable.')"), 'refresh always resolves to worker payload, fallback, or explicit unavailable state');
 check(wtf.includes('triggerBoundaryRefresh') && tickerBlock.includes('state.countdown_seconds === 0') && tickerBlock.includes('triggerBoundaryRefresh()'), 'countdown boundary triggers immediate refresh so upcoming cannot stay at 00:00:00');
 check(las.includes("window.addEventListener('moonboys:wtf-countdown-tick', updateWtfCountdownUI)") && !las.includes('setInterval(updateWtfCountdownUI'), 'right rail uses one countdown update mechanism');
+const addToLogBlock = functionBlock(las, 'addToLog');
+check(!addToLogBlock.includes("document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });"), 'addToLog does not force full right-rail remount when visible log UI is absent');
 
 console.log('\n[6] Missed perks');
 check(las.includes('missed_history_count') && las.includes('missed_today'), 'missed count and daily missed summary can render');

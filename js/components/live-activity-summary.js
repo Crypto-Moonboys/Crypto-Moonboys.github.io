@@ -76,8 +76,7 @@
     window.MOONBOYS_EVENT_BUS.emit('activity:event', entry);
 
     //  Performance: append directly to existing log containers 
-    // Avoids a full async panel remount on every event.  Only fall back to
-    // full remount when the log container doesn't exist yet (first event).
+    // Avoids a full async panel remount on every event.
     var logContainers = document.querySelectorAll('[data-las-panel] [data-las-log]');
     if (logContainers.length > 0) {
       var rowHTML = buildLogRowHTML(entry);
@@ -90,9 +89,6 @@
           logEl.removeChild(logEl.lastChild);
         }
       });
-    } else {
-      // Panels exist but haven't rendered the log container yet; do one full mount.
-      document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
     }
   }
   // Store addToLog on the singleton so a re-executing IIFE reuses the same function
@@ -136,51 +132,6 @@
     var fa = window.MOONBOYS_FACTION;
     if (!fa) return null;
     return fa.getCachedStatus() || { faction: 'unaligned', faction_xp: 0 };
-  }
-
-  //  API online check 
-  // Delegates to MOONBOYS_STATUS_PANEL.checkApiOnline() (connection-status-panel.js)
-  // so there is ONE source of truth and no duplicate HTTP polling.
-  // The local fallback runs only when CSP has not loaded on this page.
-
-  var _apiOnlineCache = null;
-  var _apiOnlineInflight = null;
-
-  function checkApiOnline() {
-    // Preferred: reuse the shared cache from MOONBOYS_STATUS_PANEL.
-    var csp = window.MOONBOYS_STATUS_PANEL;
-    if (csp && typeof csp.checkApiOnline === 'function') {
-      return csp.checkApiOnline();
-    }
-    // Local fallback for pages where CSP is not loaded.
-    if (_apiOnlineCache !== null) return Promise.resolve(_apiOnlineCache);
-    if (_apiOnlineInflight !== null) return _apiOnlineInflight;
-
-    _apiOnlineInflight = (async function () {
-      var apiBase = getApiBase();
-      if (!apiBase) {
-        _apiOnlineCache = false;
-        _apiOnlineInflight = null;
-        return false;
-      }
-      var ac = new AbortController();
-      var timer = setTimeout(function () { ac.abort(); }, 4000);
-      var online = false;
-      try {
-        // GET /health  the worker only implements GET; HEAD falls through to 404.
-        var res = await fetch(apiBase + '/health', { method: 'GET', signal: ac.signal });
-        online = res.status < 500;
-      } catch (_) {
-        online = false;
-      } finally {
-        clearTimeout(timer);
-      }
-      _apiOnlineCache = online;
-      _apiOnlineInflight = null;
-      return online;
-    }());
-
-    return _apiOnlineInflight;
   }
 
   //  Sync / identity summary 
@@ -596,14 +547,16 @@
     return null;
   }
 
-  function wtfRequirementText(state, active) {
-    var task = (state && state.current_task) || active || {};
-    if (typeof task === 'string') return task;
-    return task.requirement || task.objective || task.description || task.required_action || 'Complete objective in Arcade / Missions first.';
-  }
-
   function eventTitle(event, fallback) {
     return event ? (event.title || event.name || event.id || event.event_id || fallback) : fallback;
+  }
+
+  function wtfStatusLabel(status, completedOnly) {
+    if (completedOnly || status === 'completed') return 'COMPLETE';
+    if (status === 'active' || status === 'checked in') return 'ACTIVE';
+    if (status === 'missed / expired' || status === 'missed' || status === 'expired') return 'MISSED';
+    if (status === 'waiting') return 'WAITING';
+    return 'UPCOMING';
   }
 
   function wtfHTML(linked) {
@@ -632,7 +585,6 @@
       clearWtfHelperRetryTimer();
       var fallbackFocus = fallbackState.active_event || fallbackState.next_event || null;
       var fallbackTitle = eventTitle(fallbackFocus, 'Next Daily WTF Signal');
-      var fallbackObjective = wtfRequirementText(fallbackState, fallbackFocus);
       var fallbackAction = linked
         ? '<a class="las-action-btn" href="/games/">Get Ready</a>'
         : '<a class="las-action-btn" href="/gkniftyheads-incubator.html">Link Telegram</a>';
@@ -691,9 +643,9 @@
     var options = Array.isArray(state.chain_options) && state.chain_options.length
       ? '<div class="las-chain-options"><strong>Unlocked chain options</strong>' + state.chain_options.slice(0, 3).map(function (o) { return '<span>' + esc(o.title || o.display_title || o.name || o.id || 'Chain option') + '</span>'; }).join('') + '</div>'
       : '';
-    var statusLabel = status === 'active' || status === 'checked in' ? 'Active' : 'Upcoming';
+    var statusLabel = wtfStatusLabel(status, completedOnly);
     return '<div class="las-signal-card" data-wtf-state="' + esc(status) + '">' +
-      '<span class="las-pill ' + pillClass + '">' + esc(statusLabel.toUpperCase()) + '</span>' +
+      '<span class="las-pill ' + pillClass + '">' + esc(statusLabel) + '</span>' +
       '<strong>Daily WTF: ' + (completedOnly ? 'COMPLETE ' : '') + esc(title) + '</strong>' +
       '<div class="las-countdown" data-wtf-countdown>' + esc(timerLabel) + ' ' + countdownText(state.countdown_seconds) + '</div>' +
       buttons + options +
@@ -704,7 +656,6 @@
     var state = getWtfState() || {};
     var rogueliteState = window.MOONBOYS_ROGUELITE_DAILY_STATE || {};
     var history = Array.isArray(window.MOONBOYS_ROGUELITE_MISSED_HISTORY) ? window.MOONBOYS_ROGUELITE_MISSED_HISTORY : [];
-    var latest = history[0] || null;
     var count = Number(
       state.missed_events_all_time != null ? state.missed_events_all_time :
         (rogueliteState.missed_events_all_time != null ? rogueliteState.missed_events_all_time :
@@ -724,10 +675,6 @@
             return sum + (Number(item.missed_xp_value) || 0);
           }, 0))
     );
-    var xpToday = Number(
-      state.missed_xp_today != null ? state.missed_xp_today :
-        (rogueliteState.missed_xp_today != null ? rogueliteState.missed_xp_today : 0)
-    );
     var xpDisplay = xpAllTime.toLocaleString ? xpAllTime.toLocaleString() : String(xpAllTime);
     return '<div class="las-missed-box"><span class="las-pill las-pill--missed">MISSED</span>' +
       '<div class="las-missed-xp"><strong>Missed XP: ' + esc(xpDisplay) + '</strong></div>' +
@@ -737,21 +684,7 @@
 
   async function buildHTML() {
     var linked = isLinked();
-    var apiBase = getApiBase();
-    var sync = syncSummary();
     var missionState = normaliseMissionList();
-    var factionText = factionSummary(getFactionStatus());
-
-    var apiStatusText;
-    var apiStatusClass;
-    if (!apiBase) {
-      apiStatusText = 'Core API not configured';
-      apiStatusClass = 'las-val--warn';
-    } else {
-      var online = await checkApiOnline();
-      apiStatusText = online ? 'Core API online' : 'Core API unavailable';
-      apiStatusClass = online ? 'las-val--good' : 'las-val--bad';
-    }
 
     if (!linked) {
       return '<div class="las-panel las-panel--ops" role="status" aria-label="Faction daily ops">' +
@@ -843,9 +776,6 @@
   }
 
   function refresh() {
-    // Clear local fallback cache only (when CSP is present its own cache governs).
-    _apiOnlineCache = null;
-    _apiOnlineInflight = null;
     document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
   }
 
