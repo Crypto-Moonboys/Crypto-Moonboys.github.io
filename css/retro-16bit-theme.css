@@ -4321,19 +4321,19 @@ body.page-game .lb-rank {
 
 body.page-game .lb-col-player,
 body.page-game .lb-player {
-  width: 40%;
+  width: 44%;
   text-align: left !important;
 }
 
 body.page-game .lb-col-faction,
 body.page-game .lb-faction-cell {
-  width: 24%;
+  width: 22%;
   text-align: center !important;
 }
 
 body.page-game .lb-col-score,
 body.page-game .lb-score {
-  width: 36%;
+  width: auto;
   text-align: right !important;
 }
 
