@@ -60,9 +60,12 @@ function functionBlock(src, name) {
 
 
 function stringArrayValues(src, varName) {
-  const re = new RegExp('var\\s+' + varName + '\\s*=\\s*\\[([^\\]]*)\\]');
+  const escapedVarName = varName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(?:var|let|const)\\s+${escapedVarName}\\s*=\\s*\\[([\\s\\S]*?)\\]`);
   const match = src.match(re);
-  if (!match) return [];
+  if (!match) {
+    throw new Error(`Unable to locate string array definition for "${varName}"`);
+  }
   return Array.from(match[1].matchAll(/['"]([^'"]+)['"]/g)).map((m) => m[1]);
 }
 
