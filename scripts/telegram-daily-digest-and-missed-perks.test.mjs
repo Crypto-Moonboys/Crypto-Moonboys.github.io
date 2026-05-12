@@ -26,6 +26,7 @@ console.log('\n─── Telegram Daily Digest + Missed Perks Tests ────
 const MIGRATION = 'workers/moonboys-api/migrations/018_daily_digest_missed_perks.sql';
 const MIGRATION_XP = 'workers/moonboys-api/migrations/021_missed_xp_value.sql';
 const WORKER = 'workers/moonboys-api/worker.js';
+const DAILY_DIGEST_MODULE = 'workers/moonboys-api/routes/daily-digest.js';
 const WRANGLER = 'workers/moonboys-api/wrangler.toml';
 const BRIDGE = 'js/battle-chamber-faction-bridge.js';
 const HUB = 'js/battle-chamber-factions.js';
@@ -38,6 +39,7 @@ const DASHBOARD = 'dashboard.html';
 const migrationSql = exists(MIGRATION) ? read(MIGRATION) : '';
 const migrationXpSql = exists(MIGRATION_XP) ? read(MIGRATION_XP) : '';
 const workerJs = read(WORKER);
+const dailyDigestModuleJs = exists(DAILY_DIGEST_MODULE) ? read(DAILY_DIGEST_MODULE) : '';
 const wranglerToml = exists(WRANGLER) ? read(WRANGLER) : '';
 const bridgeJs = read(BRIDGE);
 const hubJs = read(HUB);
@@ -61,10 +63,13 @@ check(migrationXpSql.includes('missed_xp_value'), 'migration 021 adds missed_xp_
 check(migrationXpSql.includes('ALTER TABLE daily_missed_perks ADD COLUMN missed_xp_value'), 'migration 021 is an ALTER TABLE (non-destructive add)');
 
 console.log('\n[2] Route checks');
-check(workerJs.includes("path === '/roguelite/daily-state'"), 'worker includes /roguelite/daily-state');
-check(workerJs.includes("path === '/roguelite/missed-history'"), 'worker includes /roguelite/missed-history');
-check(workerJs.includes("path === '/roguelite/mark-missed'"), 'worker includes /roguelite/mark-missed');
-check(workerJs.includes("path === '/telegram/daily-digest/run'"), 'worker includes /telegram/daily-digest/run');
+check(exists(DAILY_DIGEST_MODULE), `${DAILY_DIGEST_MODULE} exists`);
+check(workerJs.includes("handleRogueliteDailyRoutes(request, env, url"), 'worker delegates roguelite/daily/digest routes to extracted module');
+check(workerJs.includes("from './routes/daily-digest.js'"), 'worker imports extracted daily digest route module');
+check(dailyDigestModuleJs.includes("path === '/roguelite/daily-state'"), 'module includes /roguelite/daily-state');
+check(dailyDigestModuleJs.includes("path === '/roguelite/missed-history'"), 'module includes /roguelite/missed-history');
+check(dailyDigestModuleJs.includes("path === '/roguelite/mark-missed'"), 'module includes /roguelite/mark-missed');
+check(dailyDigestModuleJs.includes("path === '/telegram/daily-digest/run'"), 'module includes /telegram/daily-digest/run');
 check(workerJs.includes('async scheduled('), 'worker includes scheduled handler');
 const cronMatches = wranglerToml.match(/^\s*crons\s*=\s*\[(.*?)\]\s*$/m);
 const cronEntries = cronMatches?.[1]
@@ -82,28 +87,29 @@ check(workerJs.includes('chain_depth, activated_at, last_roll_at, created_at, up
 console.log('\n[4] Missed history persistence checks');
 check(workerJs.includes('backfillMissedPerkGapsFromLastActiveDay'), 'worker backfills missed history across missed UTC days');
 check(workerJs.includes('days_backfilled') && workerJs.includes('entries_created'), 'backfill returns non-misleading day and entry counters');
-check(workerJs.includes('FROM daily_missed_perks') && workerJs.includes('ORDER BY missed_at DESC'), 'missed history route reads persistent missed table newest-first');
-check(workerJs.includes('missed_history_count'), 'daily-state route returns missed history count separately from today active data');
-check(workerJs.includes('The city kept moving while you were away.'), 'worker includes required missed-history retention copy');
-check(workerJs.includes('total_all_time'), 'missed history route exposes all-time total');
-check(workerJs.includes('metadata_json: row.metadata_json || null') && workerJs.includes('metadata: safeJsonParse(row.metadata_json, {})'), 'missed history route returns raw metadata_json and parsed metadata');
-check(!workerJs.includes('missedAt: body?.missed_at') && workerJs.includes('client_missed_at'), 'mark-missed does not trust client missed_at for primary ordering');
+const digestRouteCorpus = `${workerJs}\n${dailyDigestModuleJs}`;
+check(digestRouteCorpus.includes('FROM daily_missed_perks') && digestRouteCorpus.includes('ORDER BY missed_at DESC'), 'missed history route reads persistent missed table newest-first');
+check(digestRouteCorpus.includes('missed_history_count'), 'daily-state route returns missed history count separately from today active data');
+check(digestRouteCorpus.includes('The city kept moving while you were away.'), 'worker/module includes required missed-history retention copy');
+check(digestRouteCorpus.includes('total_all_time'), 'missed history route exposes all-time total');
+check(digestRouteCorpus.includes('metadata_json: row.metadata_json || null') && digestRouteCorpus.includes('metadata: safeJsonParse(row.metadata_json, {})'), 'missed history route returns raw metadata_json and parsed metadata');
+check(!digestRouteCorpus.includes('missedAt: body?.missed_at') && digestRouteCorpus.includes('client_missed_at'), 'mark-missed does not trust client missed_at for primary ordering');
 // Missed XP all-time tracking (never resets)
-check(workerJs.includes('missed_xp_all_time'), 'worker exposes missed_xp_all_time in daily-state and missed-history payloads');
-check(workerJs.includes('missed_events_all_time'), 'worker exposes missed_events_all_time in payloads');
-check(workerJs.includes('missed_xp_today'), 'worker exposes missed_xp_today in daily-state and WTF events payloads');
-check(workerJs.includes('missed_events_today'), 'worker exposes missed_events_today in payloads');
+check(digestRouteCorpus.includes('missed_xp_all_time'), 'worker/module exposes missed_xp_all_time in daily-state and missed-history payloads');
+check(digestRouteCorpus.includes('missed_events_all_time'), 'worker/module exposes missed_events_all_time in payloads');
+check(digestRouteCorpus.includes('missed_xp_today'), 'worker/module exposes missed_xp_today in daily-state and WTF events payloads');
+check(digestRouteCorpus.includes('missed_events_today'), 'worker/module exposes missed_events_today in payloads');
 check(
-  workerJs.includes('missed_xp_value: Math.max(0, Math.floor') ||
-  workerJs.includes('missed_xp_value: rowResult.has_missed_xp_value ? Math.max(0, Math.floor'),
+  digestRouteCorpus.includes('missed_xp_value: Math.max(0, Math.floor') ||
+  digestRouteCorpus.includes('missed_xp_value: rowResult.has_missed_xp_value ? Math.max(0, Math.floor'),
   'worker normalizes missed_xp_value per row in missed-history response'
 );
 check(workerJs.includes('MISSED_XP_PER_TIMED_EVENT') && workerJs.includes('MISSED_XP_PER_DAILY_WINDOW'), 'worker defines XP constants for timed events and daily window misses');
-check(!workerJs.includes('missedXpValue: body?.missed_xp_value'), 'mark-missed does not accept client-supplied missedXpValue');
-check(workerJs.includes('// missedXpValue is not accepted from clients'), 'mark-missed documents the client XP value rejection');
+check(!digestRouteCorpus.includes('missedXpValue: body?.missed_xp_value'), 'mark-missed does not accept client-supplied missedXpValue');
+check(digestRouteCorpus.includes('missedXpValue: 0'), 'mark-missed keeps worker-authority missedXpValue behavior');
 check(workerJs.includes('hasDailyMissedXpValueColumn') && workerJs.includes('PRAGMA table_info(daily_missed_perks)'), 'worker detects missed_xp_value column availability for migration-safe reads');
 check(workerJs.includes('getMissedPerkTotals') && workerJs.includes('SELECT COUNT(*) AS events_total'), 'worker keeps missed event counts independent from missed_xp_value SUM queries');
-check(workerJs.includes('getMissedPerkRows') && workerJs.includes('has_missed_xp_value') && workerJs.includes('missed_xp_value: rowResult.has_missed_xp_value ?'), 'worker falls back to rows without missed_xp_value and maps missed_xp_value to 0 when unavailable');
+check(digestRouteCorpus.includes('getMissedPerkRows') && digestRouteCorpus.includes('has_missed_xp_value') && digestRouteCorpus.includes('missed_xp_value: rowResult.has_missed_xp_value ?'), 'worker/module falls back to rows without missed_xp_value and maps missed_xp_value to 0 when unavailable');
 check(workerJs.includes('insertMissedPerkEntry') && workerJs.includes('const hasMissedXpValue = missedXpValueAvailable == null') && workerJs.includes('runInsertWithoutXp'), 'worker write path detects missed_xp_value availability and supports migration-safe fallback inserts');
 check(workerJs.includes('status_value, metadata_json, missed_at, created_at') && workerJs.includes("message.includes('no such column')"), 'worker can insert missed entries without missed_xp_value when migration 021 is not yet applied');
 // dashboard.html must remain wiki/editorial only - no missed XP player data
@@ -111,7 +117,7 @@ check(!dashboardHtml.includes('missed_xp') && !dashboardHtml.includes('missed_xp
 
 console.log('\n[5] Telegram digest checks');
 check(workerJs.includes('claimDailyDigestSlot'), 'worker claims one digest slot per user/day');
-check(workerJs.includes('telegram_daily_digest_log'), 'worker logs digest status in telegram_daily_digest_log');
+check(digestRouteCorpus.includes('telegram_daily_digest_log'), 'worker/module logs digest status in telegram_daily_digest_log');
 check(workerJs.includes('DIGEST_PENDING_STALE_MINUTES') && workerJs.includes("status = 'failed'") && workerJs.includes("status = 'pending'"), 'worker allows safe retry for failed/stale pending digest slots');
 check(workerJs.includes("reason: 'pending_recent'") && workerJs.includes("reason: 'already_sent'"), 'worker blocks resend for recent pending and sent states');
 check(workerJs.includes("safeStatus === 'sent' ? nowIso : null"), 'worker sets sent_at only for sent status');
