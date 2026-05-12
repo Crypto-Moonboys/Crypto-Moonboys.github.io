@@ -40,6 +40,47 @@ jobs:
             }
           }
 
+          function getSection(markdown, heading) {
+            const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const sectionRegex = new RegExp(
+              `(?:^|\\n)${escapedHeading}[^\\n]*\\n([\\s\\S]*?)(?=\\n# [^\\n]+|$)`,
+              'i'
+            );
+            const match = markdown.match(sectionRegex);
+            return match ? match[1].trim() : '';
+          }
+
+          function countCheckedOptions(section, options) {
+            return options.reduce((count, option) => {
+              const escapedOption = option.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const checkedRegex = new RegExp(
+                `(?:^|\\n)\\s*[-*]\\s*\\[[xX]\\]\\s*${escapedOption}\\s*(?=\\n|$)`,
+                'i'
+              );
+              return count + (checkedRegex.test(section) ? 1 : 0);
+            }, 0);
+          }
+
+          const runtimeImpactSection = getSection(body, '# Runtime impact');
+          const runtimeOptions = [
+            'Static frontend only',
+            'Worker/API change',
+            'D1 migration',
+            'VPS/server change',
+            'GitHub Pages/workflow/docs only'
+          ];
+          const runtimeChecked = countCheckedOptions(runtimeImpactSection, runtimeOptions);
+          if (runtimeChecked !== 1) {
+            errors.push('Runtime impact must have exactly one checked option.');
+          }
+
+          const mergeDecisionSection = getSection(body, '# Merge decision');
+          const mergeOptions = ['Ready to merge', 'Hold merge'];
+          const mergeChecked = countCheckedOptions(mergeDecisionSection, mergeOptions);
+          if (mergeChecked !== 1) {
+            errors.push('Merge decision must have exactly one checked option.');
+          }
+
           const deployFields = [
             'Worker deploy required',
             'D1 migration required',
@@ -57,33 +98,64 @@ jobs:
             }
           }
 
-          const testsMatch = body.match(/(?:^|\n)# Tests run[^\n]*\n([\s\S]*?)(?=\n# [^\n]+|$)/i);
-          const testsSection = testsMatch ? testsMatch[1].trim() : '';
+          const testsSection = getSection(body, '# Tests run');
+          const testsLines = testsSection
+            .split('\n')
+            .map((line) => line.trim())
+            .filter(Boolean);
 
-          const testsEvidence = testsSection
-            .replace(/^\s*Paste exact commands and results:\s*$/gim, '')
-            .replace(/^\s*[-*]\s*\[\s\]\s*git diff --check\s*$/gim, '')
-            .replace(/^\s*[-*]\s*\[\s\]\s*node --check changed JS files\s*$/gim, '')
-            .replace(/^\s*[-*]\s*\[\s\]\s*npm test\s*$/gim, '')
-            .replace(/^\s*[-*]\s*\[\s\]\s*other:\s*$/gim, '')
-            .trim();
+          const templateBoilerplateLineRegexes = [
+            /^Paste exact commands and results:\s*$/i,
+            /^[-*]\s*\[\s\]\s*git diff --check\s*$/i,
+            /^[-*]\s*\[\s\]\s*node --check changed JS files\s*$/i,
+            /^[-*]\s*\[\s\]\s*npm test\s*$/i,
+            /^[-*]\s*\[\s\]\s*other:\s*$/i
+          ];
 
-          const hasCheckedTestItem = /(?:^|\n)\s*[-*]\s*\[[xX]\]\s*(git diff --check|node --check changed JS files|npm test|other:)/.test(testsSection);
-          const hasTestsEvidence = testsEvidence.length > 0 || hasCheckedTestItem;
-          if (!hasTestsEvidence) {
-            errors.push('Tests run section is empty. Include test evidence.');
+          const nonBoilerplateLines = testsLines.filter(
+            (line) => !templateBoilerplateLineRegexes.some((regex) => regex.test(line))
+          );
+
+          if (nonBoilerplateLines.length === 0) {
+            errors.push('Tests run section is empty. Include concrete test evidence.');
           }
 
-          const hasNpmTest =
-            /(?:^|\n)\s*[-*]\s*\[[xX]\]\s*npm test\b/i.test(testsSection) ||
-            /(?:^|\n)\s*`?npm test`?\s*(?:$|\n)/i.test(testsSection) ||
-            /\bnpm test\b.+/i.test(testsSection);
-          const hasNpmNotRequiredExplanation =
-            /\bnpm\s+test\b[\s\S]{0,200}\bnot\s+required\b/i.test(testsSection) ||
-            /\bnot\s+required\b[\s\S]{0,200}\bnpm\s+test\b/i.test(testsSection);
+          // Self-check expectations:
+          // - [ ] npm test — not run            => fail
+          // - [x] npm test                      => fail
+          // - no runtime impact selected        => fail
+          // - both merge decisions selected     => fail
+          const uncheckedNpmTestRegex = /(?:^|\n)\s*[-*]\s*\[\s\]\s*`?npm test`?\b/i;
+          if (uncheckedNpmTestRegex.test(testsSection)) {
+            errors.push('Unchecked "npm test" lines do not satisfy test evidence requirements.');
+          }
 
-          if (!hasNpmTest && !hasNpmNotRequiredExplanation) {
-            errors.push('Tests run section must include "npm test" or explain why npm test was not required.');
+          const checkedNpmWithoutResultRegex = /(?:^|\n)\s*[-*]\s*\[[xX]\]\s*`?npm test`?\s*(?:\n|$)/i;
+          if (checkedNpmWithoutResultRegex.test(testsSection)) {
+            errors.push('Checked "npm test" entries must include result text after the command.');
+          }
+
+          const isNegativeNoRun = (resultText) => /\bnot\s+run\b/i.test(resultText);
+
+          const hasValidNpmTestRunEvidence = testsLines.some((line) => {
+            const match = line.match(/^(?:[-*]\s*\[[xX]\]\s*)?`?npm test`?\s*(?:—|--|:)\s*(.+)$/i);
+            if (!match) {
+              return false;
+            }
+            const resultText = match[1].trim();
+            if (!resultText || isNegativeNoRun(resultText)) {
+              return false;
+            }
+            return /\b(pass|passed|clean)\b/i.test(resultText);
+          });
+
+          const hasNpmNotRequiredExplanation = testsLines.some((line) => {
+            const match = line.match(/^(?:[-*]\s*(?:\[[ xX]\]\s*)?)?`?npm test`?\s+not\s+required\b(?:\s*(?:—|--|:)\s*.+)?$/i);
+            return !!match && /\bnpm test\b/i.test(line) && /\bnot\s+required\b/i.test(line) && line.replace(/[`-]/g, ' ').trim().split(/\s+/).length >= 5;
+          });
+
+          if (!hasValidNpmTestRunEvidence && !hasNpmNotRequiredExplanation) {
+            errors.push('Tests run section must include "npm test" with result evidence or an explicit "npm test not required" explanation.');
           }
 
           if (errors.length) {
