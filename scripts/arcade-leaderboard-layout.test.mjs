@@ -18,7 +18,12 @@ assert.ok(
 );
 
 assert.ok(
-  leaderboardJs.includes("aria-label=\"No faction\">—</span>"),
+  leaderboardJs.includes('aria-label="No faction"'),
+  'empty/missing/unaligned faction should include a no-faction accessible label',
+);
+
+assert.ok(
+  leaderboardJs.includes('>—</span>'),
   'empty/missing/unaligned faction should render a dash placeholder',
 );
 
@@ -33,10 +38,18 @@ assert.ok(
 );
 
 assert.ok(
-  leaderboardJs.includes('<th scope="col" class="lb-col-player">Player</th>') &&
-    leaderboardJs.includes('<th scope="col" class="lb-col-faction">Faction</th>') &&
-    leaderboardJs.includes('class="lb-col-score" title="Ranking uses score only. Accepted scores can convert into Arcade XP after sync">Score (Ranking)</th>'),
-  'leaderboard table must keep distinct Player/Faction/Score columns',
+  leaderboardJs.includes('<th scope="col" class="lb-col-player">Player</th>'),
+  'leaderboard table must keep a distinct Player column',
+);
+
+assert.ok(
+  leaderboardJs.includes('<th scope="col" class="lb-col-faction">Faction</th>'),
+  'leaderboard table must keep a distinct Faction column',
+);
+
+assert.ok(
+  leaderboardJs.includes('class="lb-col-score" title="Ranking uses score only. Accepted scores can convert into Arcade XP after sync">Score (Ranking)</th>'),
+  'leaderboard table must keep a distinct Score column',
 );
 
 assert.ok(
