@@ -123,6 +123,12 @@ function formatScore(value) {
   return Math.floor(num).toLocaleString('en-GB');
 }
 
+function toTitleCase(value) {
+  return String(value || '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, function (ch) { return ch.toUpperCase(); });
+}
+
 function projectedXpFromScore(value) {
   const num = Number(value);
   if (!Number.isFinite(num) || num < 0) return 0;
@@ -131,14 +137,21 @@ function projectedXpFromScore(value) {
 
 function factionBadge(row) {
   var api = (typeof window !== 'undefined') ? window.MOONBOYS_FACTION : null;
-  var key = api && typeof api.normalizeFaction === 'function'
-    ? api.normalizeFaction(row && row.faction)
-    : String((row && row.faction) || 'unaligned');
+  var rawFaction = row && row.faction;
+  var hasFactionValue = rawFaction != null && String(rawFaction).trim() !== '';
+  var key = hasFactionValue
+    ? (api && typeof api.normalizeFaction === 'function'
+      ? api.normalizeFaction(rawFaction)
+      : String(rawFaction).trim().toLowerCase())
+    : '';
+  if (!hasFactionValue || !key || key === 'unaligned') {
+    return '<span class="lb-faction lb-faction--empty" aria-label="No faction">—</span>';
+  }
   var meta = api && typeof api.getVisualMeta === 'function'
     ? api.getVisualMeta(key)
-    : { icon: '◌', label: 'Unaligned', color: '#8b949e' };
-  var safeLabel = escHtml((meta && meta.label) || 'Unaligned');
-  var safeIcon = escHtml((meta && meta.icon) || '◌');
+    : null;
+  var safeLabel = escHtml((meta && meta.label) || toTitleCase(key));
+  var safeIcon = escHtml((meta && meta.icon) || '◈');
   var safeColor = escHtml((meta && meta.color) || '#8b949e');
   return `<span class="lb-faction" style="--faction-color:${safeColor}">${safeIcon} ${safeLabel}</span>`;
 }
