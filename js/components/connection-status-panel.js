@@ -13,9 +13,13 @@
  *   RELINK             — linked in localStorage but signed auth expired/missing
  *   Telegram Sync Required — not linked
  *
- * Missed XP display: reads from page globals (MOONBOYS_WTF_EVENTS,
- * MOONBOYS_ROGUELITE_DAILY_STATE).  Shows "syncing…" until at least one
- * source reports a confirmed value — never shows 0 before data is loaded.
+ * Missed XP display: checks page globals (MOONBOYS_WTF_EVENTS,
+ * MOONBOYS_ROGUELITE_DAILY_STATE) and the session daily-state cache first.
+ * Renders immediately with the confirmed value when available; otherwise shows
+ * "syncing…" and fires POST /roguelite/daily-state in the background
+ * (fresh/restorable signed Telegram auth required), then remounts the panel
+ * when the fetch confirms missed_xp_all_time — never blocks the panel render
+ * for a network round-trip and never shows 0 before data is confirmed.
  *
  * Usage — full panel:
  *   <div id="my-status-panel" data-csp-panel></div>
@@ -44,6 +48,7 @@
 
   // Fallback used when the API does not return required_xp.
   var FALLBACK_REQUIRED_XP = 50;
+  var DAILY_STATE_FETCH_TIMEOUT_MS = 6000;
   var STYLE_ID = 'csp-styles';
 
   // ── Per-session cache ─────────────────────────────────────────────────
@@ -53,6 +58,9 @@
   // Clearing both on invalidate ensures the next call starts fresh.
   var _progressionCache = null;
   var _progressionInflight = null;
+  var _dailyStateCache = null;
+  var _dailyStateInflight = null;
+  var _dailyStateGeneration = 0;
   var _apiOnlineCache = null;
   var _liveDataRefreshTimer = null;
   // Unsubscribe token for MOONBOYS_STATE subscriber (avoids leak if re-initialised)
@@ -97,6 +105,17 @@
     var fa = getFactionApi();
     if (!fa) return null;
     return fa.getCachedStatus() || { faction: 'unaligned', faction_xp: 0 };
+  }
+
+  async function getSignedTelegramAuthWithRestore() {
+    var gate = getIdentity();
+    if (!gate) return null;
+    var freshAuth = typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+    if (freshAuth) return freshAuth;
+    if (typeof gate.restoreLinkedTelegramAuth !== 'function') return null;
+    var restored = await gate.restoreLinkedTelegramAuth().catch(function () { return null; });
+    if (restored && restored.ok && restored.telegram_auth) return restored.telegram_auth;
+    return typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
   }
 
   function factionLabel() {
@@ -200,6 +219,46 @@
     return _apiOnlineCache;
   }
 
+  function fetchDailyStateWithAuth() {
+    if (_dailyStateCache !== null) return Promise.resolve(_dailyStateCache);
+    if (_dailyStateInflight !== null) return _dailyStateInflight;
+    var requestGeneration = _dailyStateGeneration;
+
+    _dailyStateInflight = (async function () {
+      try {
+        if (!isLinked()) return null;
+        var apiBase = getApiBase();
+        if (!apiBase) return null;
+        var telegramAuth = await getSignedTelegramAuthWithRestore();
+        if (!telegramAuth) return null;
+        var ac = new AbortController();
+        var timer = setTimeout(function () { ac.abort(); }, DAILY_STATE_FETCH_TIMEOUT_MS);
+        try {
+          var res = await fetch(apiBase + '/roguelite/daily-state', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegram_auth: telegramAuth }),
+            signal: ac.signal,
+          });
+          var payload = await res.json().catch(function () { return null; });
+          if (res.ok && payload && payload.ok === true && requestGeneration === _dailyStateGeneration) {
+            _dailyStateCache = payload;
+            return payload;
+          }
+          return null;
+        } catch (_) {
+          return null;
+        } finally {
+          clearTimeout(timer);
+        }
+      } finally {
+        _dailyStateInflight = null;
+      }
+    }());
+
+    return _dailyStateInflight;
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────
 
   function normaliseFactionKey(status) {
@@ -230,9 +289,9 @@
     return row.title || row.event_text || row.event || row.action || row.event_type || 'Latest Battle Chamber proof synced';
   }
 
-  function missedXpAllTime() {
+  function missedXpAllTime(confirmedDailyState) {
     var state = window.MOONBOYS_WTF_EVENTS || null;
-    var daily = window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
+    var daily = confirmedDailyState || window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
     if (state && state.missed_xp_all_time != null) return Number(state.missed_xp_all_time) || 0;
     if (daily && daily.missed_xp_all_time != null) return Number(daily.missed_xp_all_time) || 0;
     // Neither source has confirmed data yet — return null so the panel can show "syncing…"
@@ -297,8 +356,19 @@
           '<a href="/gkniftyheads-incubator.html" class="csp-live-cta">Link Telegram</a>' +
         '</div>';
     }
-    var missedXp = missedXpAllTime();
+    // Use cached daily-state or globals for immediate render — do not block for a network fetch.
+    var missedXp = missedXpAllTime(_dailyStateCache || null);
     var missedXpDisplay = missedXp !== null ? esc(String(missedXp)) : 'syncing…';
+    // If no confirmed data yet, fire background fetch and remount once confirmed.
+    if (missedXp === null) {
+      var patchGeneration = _dailyStateGeneration;
+      fetchDailyStateWithAuth().then(function (confirmedState) {
+        if (patchGeneration !== _dailyStateGeneration) return;
+        if (confirmedState && confirmedState.missed_xp_all_time != null) {
+          schedulePanelRemount();
+        }
+      }).catch(function () {});
+    }
 
     return '' +
       '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
@@ -488,18 +558,37 @@
   function invalidateAndRefresh() {
     _progressionCache = null;
     _progressionInflight = null;
+    _dailyStateCache = null;
+    _dailyStateInflight = null;
     _apiOnlineCache = null;
     document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
     var badge = document.getElementById('moonboys-global-status-badge');
     if (badge) mountBadge(badge);
   }
 
+  function invalidateDailyStateCache() {
+    _dailyStateCache = null;
+    // Intentionally keep inflight request alive; generation guard will ignore stale completion.
+    _dailyStateGeneration++;
+  }
+
   function scheduleLiveDataRefresh() {
     if (_liveDataRefreshTimer) clearTimeout(_liveDataRefreshTimer);
     _liveDataRefreshTimer = setTimeout(function () {
       _liveDataRefreshTimer = null;
+      invalidateDailyStateCache();
       document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
     }, 120);
+  }
+
+  function schedulePanelRemount() {
+    // Share the same timer as scheduleLiveDataRefresh so a newer refresh intent
+    // (invalidate+remount or remount-only) supersedes any pending older one.
+    if (_liveDataRefreshTimer) clearTimeout(_liveDataRefreshTimer);
+    _liveDataRefreshTimer = setTimeout(function () {
+      _liveDataRefreshTimer = null;
+      document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
+    }, 0);
   }
 
   function listenForUpdates() {
