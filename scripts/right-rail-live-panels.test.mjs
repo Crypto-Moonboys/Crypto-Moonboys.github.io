@@ -106,7 +106,7 @@ check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requi
 
 console.log('\n[4] Panel separation');
 check(siteShell.includes('PLAYER LIVE FEED') && siteShell.includes('FACTION DAILY OPS'), 'right rail boxes are titled PLAYER LIVE FEED and FACTION DAILY OPS');
-check(csp.includes('Latest Activity') && csp.includes('Missed XP'), 'player live feed is compact and keeps key personal fields');
+check(csp.includes('Latest:') && csp.includes('csp-feed-row--latest') && csp.includes('csp-feed-text') && csp.includes('Missed XP'), 'player live feed latest status is a compact muted row with bounded wrap');
 check(!csp.includes('<div class="csp-item-label">Faction</div>') && !csp.includes('<div class="csp-item-label">Season</div>') && !csp.includes('<div class="csp-item-label">API Sync</div>'), 'player live feed does not repeat faction/season/API rows');
 const ownBattleBlock = functionBlock(csp, 'isOwnBattleActivity');
 const latestActivityBlock = functionBlock(csp, 'latestActivityRows');
@@ -121,8 +121,10 @@ check(!las.includes('data-csp-xp') && !las.includes('data-csp-panel'), 'faction 
 check(!siteShell.includes('id="hud-player-name">Guest'), 'right rail no longer renders a duplicate Guest/Telegram name block');
 check(!siteShell.includes('Live linked avatar'), 'HUD player-name logic does not replace the name with literal Live linked avatar');
 check(las.includes('p.progress != null') && las.includes('p.target != null') && las.includes('p.complete === true'), 'mission normalization reads saved progress, target, and complete fields from bridge cache');
-check(las.includes('esc(String(current))') && las.includes('esc(String(target))') && las.includes('las-mission-row'), 'mission renderer displays compact title/progress/reward rows');
+check(las.includes('esc(String(current))') && las.includes('esc(String(target))') && las.includes('las-mission-row') && las.includes('las-mission-meta') && las.includes('las-mission-sep'), 'mission renderer displays compact title + progress · reward rows');
 check(las.includes('Number.isFinite(Number(m.current))') && las.includes('Number.isFinite(Number(m.target))') && !las.includes('las-mission-card') && !las.includes('las-mission-top') && !las.includes('las-mission-obj') && !las.includes('las-progress'), 'mission cards do not render large objective paragraphs or progress bars in right rail');
+const viewDetailsCount = (las.match(/View details/g) || []).length;
+check(viewDetailsCount === 1, 'faction ops panel keeps only one compact "View details" link');
 check(csp.includes('scheduleLiveDataRefresh') && csp.includes('_liveDataRefreshTimer') && csp.includes('setTimeout(function ()'), 'connection status panel debounces live-data refreshes');
 for (const evt of ['battle-chamber:faction-data-ready','battle-chamber:activity-ready','moonboys:wtf-events-ready','moonboys:wtf-event-checkin','moonboys:wtf-event-complete','moonboys:roguelite-options-unlocked','moonboys:faction-status','moonboys:faction-boost']) {
   check(csp.includes(evt), `connection status panel listens for ${evt}`);
@@ -206,6 +208,7 @@ console.log('\n[6] Missed perks');
 check(las.includes('missed_history_count') && las.includes('missed_today'), 'missed count and daily missed summary can render');
 check(!las.includes('The city kept moving while you were away.'), 'missed opportunities does not include oversized away copy');
 check(!las.includes('Daily WTF signals open every 4 hours. Daily options reset at UTC midnight. Missed history does not reset.'), 'right rail omits oversized reset/explainer copy');
+check(las.includes('las-missed-stat') && las.includes('las-missed-sep') && las.includes('missed all-time') && las.includes('today'), 'missed opportunities summary stays compact and avoids awkward wrapping');
 // All-time missed XP visibility in right-rail PLAYER LIVE FEED
 check(las.includes('missed_xp_all_time'), 'right rail reads missed_xp_all_time for all-time missed XP display');
 check(las.includes('Missed XP:'), 'right rail renders "Missed XP:" label for all-time missed XP');
