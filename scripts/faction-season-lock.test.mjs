@@ -635,9 +635,52 @@ const CANONICAL_NINE = [
 CANONICAL_NINE.forEach(function (key) {
   check(
     factionCanon.includes("'" + key + "'") || factionCanon.includes('"' + key + '"'),
-    'shared canon: canonical faction key present � ' + key,
+    'shared canon: canonical faction key present -> ' + key,
   );
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7. worker.js XP multiplier source-of-truth
+// ─────────────────────────────────────────────────────────────────────────────
+
+console.log('\n── 7. worker.js XP multiplier source-of-truth ───────────────────────────');
+
+// worker.js must not duplicate xpMultiplier values inside FACTION_CONFIG.
+// Detect `xpMultiplier:` as a key inside the FACTION_CONFIG block.
+const factionConfigStart = worker.indexOf('const FACTION_CONFIG');
+const factionConfigEnd = factionConfigStart === -1 ? -1 : worker.indexOf('};', factionConfigStart);
+const factionConfigBlock =
+  factionConfigStart === -1 || factionConfigEnd === -1
+    ? ''
+    : worker.slice(factionConfigStart, factionConfigEnd + 2);
+
+check(
+  factionConfigBlock !== '' && !/xpMultiplier\s*:/.test(factionConfigBlock),
+  'worker.js: FACTION_CONFIG must not contain duplicated xpMultiplier values',
+);
+
+// worker.js must import getFactionXpMultiplier from shared faction canon.
+check(
+  /import\s*{\s*[^}]*\bgetFactionXpMultiplier\b[^}]*}\s*from\s*['"]\.\/shared\/faction-canon\.js['"]/m.test(worker),
+  'worker.js: imports getFactionXpMultiplier from shared faction-canon.js',
+);
+
+// factionMeta must delegate xp_multiplier to getFactionXpMultiplier.
+check(
+  /xp_multiplier\s*:\s*getFactionXpMultiplier\s*\(/.test(worker),
+  'worker.js: factionMeta uses getFactionXpMultiplier() for xp_multiplier',
+);
+
+// Shared canon must still be the owner of FACTION_XP_MULTIPLIERS.
+check(
+  factionCanon.includes('FACTION_XP_MULTIPLIERS'),
+  'shared faction-canon.js: still owns FACTION_XP_MULTIPLIERS',
+);
+
+check(
+  factionCanon.includes('getFactionXpMultiplier'),
+  'shared faction-canon.js: still exports getFactionXpMultiplier',
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Summary
@@ -646,4 +689,3 @@ CANONICAL_NINE.forEach(function (key) {
 console.log('\n────────────────────────────────────────────────────────────────────────');
 console.log(`faction-season-lock.test.mjs: ${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);
-
