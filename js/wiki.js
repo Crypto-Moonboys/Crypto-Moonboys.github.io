@@ -191,12 +191,14 @@ function looksCompressedSlugText(text) {
   if (!v) return true;
   if (/^(https?:\/\/|\/)/.test(v) || /\/|\.html?$/.test(v)) return true;
 
-  const compact = v.replace(/[^a-z0-9]/g, '');
   const hasWhitespace = /\s/.test(v);
   const plainSlugLike = /^[a-z0-9_-]+$/.test(v);
+  if (hasWhitespace || !plainSlugLike) return false;
+
+  const compact = v.replace(/[^a-z0-9]/g, '');
   const wikiKeywordHits = ['crypto', 'moonboys', 'wiki'].filter(k => compact.includes(k)).length;
 
-  return !hasWhitespace && compact.length >= 18 && plainSlugLike && wikiKeywordHits >= 2;
+  return compact.length >= 18 && wikiKeywordHits >= 2;
 }
 
 function humanizePathSlug(url) {

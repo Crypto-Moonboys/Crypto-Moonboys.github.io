@@ -52,7 +52,7 @@ const sandbox = {
     location: {
       pathname: '/search.html',
       search: '',
-      href: 'https://cryptomoonboys.com/search.html'
+      href: 'https://example.test/search.html'
     }
   }
 };
