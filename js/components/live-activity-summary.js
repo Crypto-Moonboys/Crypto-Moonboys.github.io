@@ -305,10 +305,10 @@
     return missions.map(function (m) {
       var current = Number.isFinite(Number(m.current)) ? Math.max(0, Number(m.current)) : 0;
       var target = Number.isFinite(Number(m.target)) && Number(m.target) > 0 ? Number(m.target) : 1;
+      var reward = m.reward ? esc(m.reward) : (m.done ? 'COMPLETE' : 'LIVE');
       return '<div class="las-mission-row ' + (m.done ? 'is-complete' : '') + '">' +
         '<span class="las-mission-title">' + esc(m.title) + '</span>' +
-        '<span class="las-mission-progress">' + esc(String(current)) + '/' + esc(String(target)) + '</span>' +
-        '<span class="las-mission-reward">' + (m.reward ? esc(m.reward) : (m.done ? 'COMPLETE' : 'LIVE')) + '</span>' +
+        '<span class="las-mission-meta"><span class="las-mission-progress">' + esc(String(current)) + '/' + esc(String(target)) + '</span><span class="las-mission-sep" aria-hidden="true">·</span><span class="las-mission-reward">' + reward + '</span></span>' +
       '</div>';
     }).join('');
   }
@@ -679,7 +679,7 @@
     var xpDisplay = xpAllTime.toLocaleString ? xpAllTime.toLocaleString() : String(xpAllTime);
     return '<div class="las-missed-box"><span class="las-pill las-pill--missed">MISSED</span>' +
       '<div class="las-missed-xp"><strong>Missed XP: ' + esc(xpDisplay) + '</strong></div>' +
-      '<div class="las-missed-meta" aria-label="' + esc(String(count)) + ' missed all-time and ' + esc(String(today)) + ' missed today">' + esc(String(count)) + ' missed all-time · ' + esc(String(today)) + ' today</div>' +
+      '<div class="las-missed-meta" aria-label="' + esc(String(count)) + ' missed all-time and ' + esc(String(today)) + ' missed today"><span class="las-missed-stat">' + esc(String(count)) + ' missed all-time</span><span class="las-missed-sep" aria-hidden="true">·</span><span class="las-missed-stat">' + esc(String(today)) + ' today</span></div>' +
       '</div>';
   }
 
@@ -706,11 +706,9 @@
     return '<div class="las-panel las-panel--ops" role="status" aria-label="Faction daily ops">' +
       '<div class="las-ops-head"><span class="las-live-dot"></span><div><strong>Faction Daily Ops</strong><span>Compact mission feed</span></div></div>' +
       '<div class="las-section-title">Today\'s Missions</div>' + missionHTML(missionState.missions) +
-      '<div class="las-row las-row--cta"><a class="las-link" href="/community.html">View details</a></div>' +
       '<div class="las-section-title">Daily WTF Signal</div>' + wtfHTML(linked) +
-      '<div class="las-row las-row--cta"><a class="las-link" href="/how-to-play.html">View details</a></div>' +
       '<div class="las-section-title">Missed Opportunities</div>' + missedHTML() +
-      '<div class="las-row las-row--cta"><a class="las-link" href="/games/leaderboard.html">View details</a></div>' +
+      '<div class="las-row las-row--cta"><a class="las-link las-link--tiny" href="/community.html">View details</a></div>' +
     '</div>';
   }
 
@@ -723,13 +721,14 @@
     style.textContent = [
       '.las-panel{padding:10px 14px;border:1px solid rgba(86,220,255,.18);border-radius:10px;background:linear-gradient(165deg,rgba(10,23,44,.7),rgba(8,18,34,.6));font-size:.82rem;color:var(--color-text,#e6f0ff);display:flex;flex-direction:column;gap:6px}',
       '.las-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}',
-      '.las-row--cta{margin-top:4px}',
+      '.las-row--cta{margin-top:3px;justify-content:flex-end}',
       '.las-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted,#8b949e);flex-shrink:0;min-width:80px}',
       '.las-val{font-size:.82rem;color:var(--color-text,#e6f0ff)}',
       '.las-val--good{color:#3fb950}',
       '.las-val--bad{color:#f85149}',
       '.las-val--warn{color:#d2991d}',
       '.las-link{color:#56dcff;text-decoration:underline;font-size:.8rem}',
+      '.las-link--tiny{font-size:.66rem;opacity:.82}',
       '.las-event-log{margin-top:6px;border-top:1px solid rgba(86,220,255,.1);padding-top:6px;display:flex;flex-direction:column;gap:3px}',
       '.las-event-row{display:flex;align-items:baseline;gap:5px;font-size:.75rem}',
       '.las-event-time{color:var(--color-text-muted,#8b949e);flex-shrink:0;font-size:.68rem}',
@@ -743,10 +742,12 @@
       '.las-empty{color:var(--color-text-muted,#8b949e);font-size:.74rem;line-height:1.45;margin:4px 0}',
       '.las-ops-cta{display:inline-flex;margin-top:4px;padding:7px 9px;border:1px solid rgba(0,229,255,.45);background:rgba(0,229,255,.08);font-weight:800;text-transform:uppercase;text-decoration:none}',
       '.las-mission-row,.las-signal-card,.las-missed-box{border:1px solid rgba(86,220,255,.18);background:rgba(86,220,255,.055);padding:7px 8px;border-radius:8px;box-shadow:inset 0 0 12px rgba(0,229,255,.04)}',
-      '.las-mission-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center}',
+      '.las-mission-row{display:flex;flex-direction:column;gap:2px;align-items:flex-start}',
       '.las-mission-row.is-complete{border-color:rgba(63,185,80,.45);box-shadow:0 0 12px rgba(63,185,80,.12)}',
-      '.las-mission-title{color:#fff;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.las-mission-progress{font-size:.62rem;color:#c8f0ff}',
+      '.las-mission-title{color:#fff;font-size:.7rem;line-height:1.3;word-break:break-word}',
+      '.las-mission-meta{display:flex;align-items:baseline;gap:4px;font-size:.61rem;line-height:1.25}',
+      '.las-mission-progress{font-size:.61rem;color:#c8f0ff}',
+      '.las-mission-sep{color:var(--color-text-muted,#8b949e);font-size:.58rem}',
       '.las-mission-reward{font-size:.62rem;color:#f7c948;font-weight:800}',
       '.las-pill{display:inline-flex;width:max-content;padding:2px 6px;border-radius:99px;border:1px solid rgba(86,220,255,.35);font-size:.56rem;font-weight:900;letter-spacing:.08em;color:#56dcff;margin-bottom:5px}.las-pill--live{color:#3fb950;border-color:rgba(63,185,80,.45)}.las-pill--done{color:#f7c948;border-color:rgba(247,201,72,.45)}.las-pill--missed{color:#ff7b72;border-color:rgba(255,123,114,.45)}',
       '.las-signal-card strong{display:block;color:#fff}',
@@ -754,7 +755,10 @@
       '.las-action-btn{margin:4px 5px 0 0;padding:5px 7px;border:1px solid rgba(0,229,255,.45);background:rgba(0,229,255,.08);color:#c8f0ff;font-weight:800;text-transform:uppercase;font-size:.6rem;cursor:pointer}',
       '.las-task-copy{margin-top:5px;color:#f7c948;font-size:.68rem;line-height:1.35;border-left:2px solid rgba(247,201,72,.45);padding-left:6px}',
       '.las-chain-options{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.las-chain-options span{font-size:.58rem;border:1px solid rgba(247,201,72,.3);color:#f7c948;padding:2px 5px}',
-      '.las-missed-meta{color:var(--color-text-muted,#8b949e);font-size:.64rem}',
+      '.las-missed-xp{font-size:.68rem;line-height:1.25}',
+      '.las-missed-meta{color:var(--color-text-muted,#8b949e);font-size:.58rem;line-height:1.25;display:flex;align-items:baseline;gap:4px;flex-wrap:wrap}',
+      '.las-missed-stat{white-space:nowrap}',
+      '.las-missed-sep{color:var(--color-text-muted,#8b949e)}',
     ].join('\n');
     (document.head || document.documentElement).appendChild(style);
   }
