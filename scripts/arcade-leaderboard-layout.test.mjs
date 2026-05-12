@@ -39,4 +39,10 @@ assert.ok(
   'leaderboard table must keep distinct Player/Faction/Score columns',
 );
 
+assert.ok(
+  leaderboardJs.includes('class="lb-score-value"') &&
+    leaderboardJs.includes('class="lb-score-sub"'),
+  'leaderboard row rendering must keep lb-score-value and lb-score-sub wrappers for score layout',
+);
+
 console.log('arcade-leaderboard-layout.test: PASS');
