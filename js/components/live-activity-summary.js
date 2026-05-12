@@ -355,9 +355,9 @@
       var current = Number.isFinite(Number(m.current)) ? Math.max(0, Number(m.current)) : 0;
       var target = Number.isFinite(Number(m.target)) && Number(m.target) > 0 ? Number(m.target) : 1;
       return '<div class="las-mission-row ' + (m.done ? 'is-complete' : '') + '">' +
-        '<span class="las-mission-title">' + esc(m.title) + '</span>' +
-        '<span class="las-mission-progress">' + esc(String(current)) + '/' + esc(String(target)) + '</span>' +
-        '<span class="las-mission-reward">' + (m.reward ? esc(m.reward) : (m.done ? 'COMPLETE' : 'LIVE')) + '</span>' +
+        '<span class="las-mission-title" aria-label="Mission title">' + esc(m.title) + '</span>' +
+        '<span class="las-mission-progress" aria-label="Mission progress">' + esc(String(current)) + '/' + esc(String(target)) + '</span>' +
+        '<span class="las-mission-reward" aria-label="Mission reward">' + (m.reward ? esc(m.reward) : (m.done ? 'COMPLETE' : 'LIVE')) + '</span>' +
       '</div>';
     }).join('');
   }
@@ -617,16 +617,16 @@
       if (!_singleton.wtfLoadingStartedAt) _singleton.wtfLoadingStartedAt = nowMs;
       scheduleWtfLoadingFallbackRepaint(nowMs);
       if ((nowMs - _singleton.wtfLoadingStartedAt) < WTF_LOADING_STALL_MS) {
-        return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">UPCOMING</span><strong>Daily WTF: Loading signal</strong><div class="las-countdown" data-wtf-countdown>Starts in --:--:--</div></div>';
+        return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">UPCOMING</span><strong>Daily WTF: Loading signal</strong><div class="las-countdown" data-wtf-countdown aria-live="polite">Starts in --:--:--</div></div>';
       }
       var fallbackState = buildDeterministicWtfFallbackState(new Date());
       if (!fallbackState) {
         maybeKickEmergencyWtfRecovery();
         scheduleWtfHelperRetry();
         if (Number(_singleton.wtfHelperRetryAttempts || 0) < WTF_HELPER_RETRY_MAX) {
-          return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">UPCOMING</span><strong>Daily WTF: Loading signal</strong><div class="las-countdown" data-wtf-countdown>Starts in --:--:--</div><a class="las-action-btn" href="/games/">Get Ready</a></div>';
+          return '<div class="las-signal-card" data-wtf-state="loading"><span class="las-pill las-pill--next">UPCOMING</span><strong>Daily WTF: Loading signal</strong><div class="las-countdown" data-wtf-countdown aria-live="polite">Starts in --:--:--</div><a class="las-action-btn" href="/games/">Get Ready</a></div>';
         }
-        return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">UPCOMING</span><strong>Daily WTF: Signal unavailable</strong><div class="las-countdown" data-wtf-countdown>Starts in --:--:--</div><a class="las-action-btn" href="/games/">Get Ready</a></div>';
+        return '<div class="las-signal-card" data-wtf-state="error"><span class="las-pill las-pill--missed">UPCOMING</span><strong>Daily WTF: Signal unavailable</strong><div class="las-countdown" data-wtf-countdown aria-live="polite">Starts in --:--:--</div><a class="las-action-btn" href="/games/">Get Ready</a></div>';
       }
       _singleton.wtfHelperRetryAttempts = 0;
       clearWtfHelperRetryTimer();
@@ -658,16 +658,13 @@
     var eventId = active && (active.id || active.event_id || active.key) ? (active.id || active.event_id || active.key) : '';
     var focus = active || next || (state.completed_events && state.completed_events[0]) || (state.expired_events && state.expired_events[0]) || null;
     var title = eventTitle(focus, 'No Daily WTF signals generated for today');
-    var subcopy = '';
     var buttons = '';
-    var timerLabel = 'Starts in ';
+    var timerLabel = 'Starts in';
 
     if (completedOnly) {
-      subcopy = 'completed';
-      timerLabel = 'Next in ';
+      timerLabel = 'Next in';
     } else if (active) {
-      subcopy = 'active';
-      timerLabel = 'Ends in ';
+      timerLabel = 'Ends in';
       if (linked && eventId && !state.checked_in && !completed) {
         buttons += '<button type="button" class="las-action-btn" data-wtf-checkin data-event-id="' + esc(eventId) + '">Check In</button>';
       }
@@ -681,22 +678,16 @@
       }
     } else if (next) {
       status = 'upcoming';
-      subcopy = 'upcoming';
       buttons += '<a class="las-action-btn" href="/games/">Get Ready</a>';
     } else if (Number(state.missed_today || 0) > 0) {
       status = 'missed / expired';
-      subcopy = 'upcoming';
       buttons += '<a class="las-action-btn" href="/games/">Get Ready</a>';
     } else {
       status = 'waiting';
-      subcopy = 'upcoming';
       buttons += '<a class="las-action-btn" href="/games/">Get Ready</a>';
     }
 
     var pillClass = status === 'active' || status === 'checked in' ? 'las-pill--live' : status === 'completed' ? 'las-pill--done' : status === 'missed / expired' ? 'las-pill--missed' : 'las-pill--next';
-    if (state.error && state.source === 'client_fallback_schedule') {
-      subcopy = 'upcoming';
-    }
     var options = Array.isArray(state.chain_options) && state.chain_options.length
       ? '<div class="las-chain-options"><strong>Unlocked chain options</strong>' + state.chain_options.slice(0, 3).map(function (o) { return '<span>' + esc(o.title || o.display_title || o.name || o.id || 'Chain option') + '</span>'; }).join('') + '</div>'
       : '';
@@ -704,7 +695,7 @@
     return '<div class="las-signal-card" data-wtf-state="' + esc(status) + '">' +
       '<span class="las-pill ' + pillClass + '">' + esc(statusLabel.toUpperCase()) + '</span>' +
       '<strong>Daily WTF: ' + (completedOnly ? 'COMPLETE ' : '') + esc(title) + '</strong>' +
-      '<div class="las-countdown" data-wtf-countdown>' + esc(timerLabel) + countdownText(state.countdown_seconds) + '</div>' +
+      '<div class="las-countdown" data-wtf-countdown>' + esc(timerLabel) + ' ' + countdownText(state.countdown_seconds) + '</div>' +
       buttons + options +
       '</div>';
   }
@@ -740,7 +731,7 @@
     var xpDisplay = xpAllTime.toLocaleString ? xpAllTime.toLocaleString() : String(xpAllTime);
     return '<div class="las-missed-box"><span class="las-pill las-pill--missed">MISSED</span>' +
       '<div class="las-missed-xp"><strong>Missed XP: ' + esc(xpDisplay) + '</strong></div>' +
-      '<div class="las-missed-meta">' + count + ' missed all-time · ' + today + ' today</div>' +
+      '<div class="las-missed-meta" aria-label="' + esc(String(count)) + ' missed all-time and ' + esc(String(today)) + ' missed today">' + esc(String(count)) + ' missed all-time · ' + esc(String(today)) + ' today</div>' +
       '</div>';
   }
 

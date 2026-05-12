@@ -315,8 +315,10 @@
     var playerHref = '/games/leaderboard.html';
     var publicRows = latestGlobalBattleRows();
     var latestRows = latestActivityRows();
+    // Compact rail rule: show one short personal activity line only.
     var latestLine = latestRows.length ? latestRows[0] : null;
-    var latestLineText = latestLine ? (latestLine.tag + ': ' + latestLine.text) : 'No synced activity yet.';
+    var latestActivityText = latestLine ? latestLine.text : 'No synced activity yet.';
+    var latestActivityTag = latestLine && latestLine.tag ? latestLine.tag : 'Now';
     var missedXp = missedXpAllTime();
 
     if (!linked) {
@@ -338,7 +340,7 @@
           '<div class="csp-item csp-item--wide"><div class="csp-item-label">Block Topia</div><div class="csp-item-val" data-csp-bt-access>' + blocktopia + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Missed XP</div><div class="csp-item-val">' + esc(String(missedXp)) + '</div></div>' +
         '</div>' +
-        '<div class="csp-feed"><div class="csp-feed-title">Latest Activity</div><div class="csp-feed-row"><span class="csp-feed-tag">Now</span><span>' + esc(latestLineText) + '</span></div></div>' +
+        '<div class="csp-feed"><div class="csp-feed-title">Latest Activity</div><div class="csp-feed-row"><span class="csp-feed-tag">' + esc(latestActivityTag) + '</span><span>' + esc(latestActivityText) + '</span></div></div>' +
         (publicRows.length
           ? ('<div class="csp-feed"><div class="csp-feed-title">Latest Public Battle Chamber Activity</div>' + buildFeedHTML(publicRows) + '</div>')
           : '') +

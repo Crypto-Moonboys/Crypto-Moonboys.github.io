@@ -107,6 +107,7 @@ check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requi
 console.log('\n[4] Panel separation');
 check(siteShell.includes('PLAYER LIVE FEED') && siteShell.includes('FACTION DAILY OPS'), 'right rail boxes are titled PLAYER LIVE FEED and FACTION DAILY OPS');
 check(csp.includes('Latest Activity') && csp.includes('Missed XP'), 'player live feed is compact and keeps key personal fields');
+check(!csp.includes('<div class="csp-item-label">Faction</div>') && !csp.includes('<div class="csp-item-label">Season</div>') && !csp.includes('<div class="csp-item-label">API Sync</div>'), 'player live feed does not repeat faction/season/API rows');
 const ownBattleBlock = functionBlock(csp, 'isOwnBattleActivity');
 const latestActivityBlock = functionBlock(csp, 'latestActivityRows');
 check(csp.includes('isOwnBattleActivity') && csp.includes('getTelegramId()') && csp.includes('activity.filter(isOwnBattleActivity)'), 'player feed filters Battle Chamber activity to the linked player when possible');
@@ -114,13 +115,14 @@ check(!ownBattleBlock.includes('getDisplayName()') && !ownBattleBlock.includes('
 check(!latestActivityBlock.includes("tag: 'Global'") && !latestActivityBlock.includes('global feed active'), 'global/unmatched Battle Chamber rows are not rendered inside Recent Personal Activity');
 check(csp.includes('Latest Public Battle Chamber Activity') && csp.includes("tag: 'Public'") && csp.includes('latestGlobalBattleRows'), 'global Battle Chamber feed is rendered only under a public/global heading');
 check(!csp.includes('No public Battle Chamber activity yet.') && !csp.includes("buildFeedHTML(latestGlobalBattleRows(), 'No public Battle Chamber activity yet.')"), 'public Battle Chamber box is hidden when empty');
+check(csp.includes('(publicRows.length') && csp.includes('buildFeedHTML(publicRows)'), 'public Battle Chamber section only renders when there are public rows');
 check((las.includes("Today\\'s Missions") || las.includes("Today's Missions")) && las.includes('Daily WTF Signal') && las.includes('Missed Opportunities'), 'faction panel owns missions/events/missed signals');
 check(!las.includes('data-csp-xp') && !las.includes('data-csp-panel'), 'faction ops panel does not repeat the Arcade XP block');
 check(!siteShell.includes('id="hud-player-name">Guest'), 'right rail no longer renders a duplicate Guest/Telegram name block');
 check(!siteShell.includes('Live linked avatar'), 'HUD player-name logic does not replace the name with literal Live linked avatar');
 check(las.includes('p.progress != null') && las.includes('p.target != null') && las.includes('p.complete === true'), 'mission normalization reads saved progress, target, and complete fields from bridge cache');
 check(las.includes('esc(String(current))') && las.includes('esc(String(target))') && las.includes('las-mission-row'), 'mission renderer displays compact title/progress/reward rows');
-check(las.includes('Number.isFinite(Number(m.current))') && las.includes('Number.isFinite(Number(m.target))') && !las.includes('las-mission-obj') && !las.includes('las-progress'), 'mission cards do not render large objective paragraphs or progress bars in right rail');
+check(las.includes('Number.isFinite(Number(m.current))') && las.includes('Number.isFinite(Number(m.target))') && !las.includes('las-mission-card') && !las.includes('las-mission-top') && !las.includes('las-mission-obj') && !las.includes('las-progress'), 'mission cards do not render large objective paragraphs or progress bars in right rail');
 check(csp.includes('scheduleLiveDataRefresh') && csp.includes('_liveDataRefreshTimer') && csp.includes('setTimeout(function ()'), 'connection status panel debounces live-data refreshes');
 for (const evt of ['battle-chamber:faction-data-ready','battle-chamber:activity-ready','moonboys:wtf-events-ready','moonboys:wtf-event-checkin','moonboys:wtf-event-complete','moonboys:roguelite-options-unlocked','moonboys:faction-status','moonboys:faction-boost']) {
   check(csp.includes(evt), `connection status panel listens for ${evt}`);
@@ -136,6 +138,7 @@ check(las.includes('getWtfProofSource') && las.includes('VALID_WTF_COMPLETION_SO
 check(!las.includes("completeWtfEvent(eventId, 'right_rail_ops', 'faction_daily_ops')") && !las.includes('right_rail_ops'), 'right rail does not call completeWtfEvent with invalid right_rail_ops proof source');
 check(las.includes('data-completion-source') && las.includes('data-source-id') && las.includes('Complete with proof'), 'complete CTA only renders with proof source and source id attributes');
 check(las.includes('Daily WTF:') && las.includes('Starts in') && las.includes('Ends in') && las.includes('Get Ready'), 'Daily WTF rail is compact with title/timer/action');
+check(!las.includes('Live now - Daily WTF signals open every 4 hours') && !las.includes('Get ready - Daily WTF signals open every 4 hours across the UTC day.'), 'Daily WTF rail removes verbose legacy subcopy');
 check(wtf.includes('setTransientState') && wtf.includes('Loading Daily WTF signal…'), 'Daily WTF system publishes a loading state before fetch resolves');
 check(wtf.includes('window.MOONBOYS_DAILY_WTF') && wtf.includes('makeFallbackSchedule,'), 'Daily WTF global API exposes makeFallbackSchedule for shared fallback rendering');
 check(wtf.includes('Signal feed unavailable; deterministic local schedule rendered') && wtf.includes('makeFallbackSchedule'), 'Daily WTF system has a deterministic fallback instead of leaving schedule loading forever');
@@ -145,7 +148,7 @@ check(wtf.includes('scheduleApiBaseRetry') && wtf.includes('api_base_missing') &
 check(wtf.includes('apiBaseRetryAttempt') && wtf.includes('if (apiBaseRetryAttempt >= API_BASE_RETRY_DELAYS_MS.length) return;'), 'api_base_missing retry attempts are capped');
 check(wtf.includes('resetApiBaseRetryState') && wtf.includes('if (payload && payload.ok) resetApiBaseRetryState();'), 'successful Daily WTF refresh resets api-base retry state');
 check(wtf.includes('normalizeEvent') && wtf.includes('start_at: event.start_at || event.starts_at') && wtf.includes('end_at: event.end_at || event.ends_at'), 'Daily WTF system normalizes Worker event field aliases');
-check(las.includes('data-wtf-state="loading"') && las.includes('Loading Daily WTF signal...'), 'faction ops panel renders an explicit loading state');
+check(las.includes('data-wtf-state="loading"') && las.includes('Daily WTF: Loading signal'), 'faction ops panel renders an explicit loading state');
 check(las.includes('WTF_LOADING_STALL_MS = 8000') && las.includes('buildDeterministicWtfFallbackState') && las.includes('data-wtf-state="fallback"'), 'faction ops panel renders deterministic fallback after loading stall timeout');
 check(las.includes('scheduleWtfLoadingFallbackRepaint') && las.includes('wtfLoadingRepaintTimer') && las.includes('setTimeout(function ()') && las.includes('refresh();'), 'loading state schedules a one-shot repaint so fallback appears without ready events');
 check(las.includes('clearWtfLoadingRepaintTimer') && las.includes('clearTimeout(_singleton.wtfLoadingRepaintTimer)'), 'loading repaint timer is cleared when real Daily WTF state resolves');
