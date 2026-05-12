@@ -537,6 +537,6 @@ export async function fetchLeaderboard(game = "global", options = {}) {
     console.error("[leaderboard-client] Leaderboard fetch failed:", err);
     // Return a structured error so callers can distinguish a fetch failure from
     // a genuinely empty leaderboard.  An empty array [] would be ambiguous.
-    return { error: true, message: String((err && err.message) || err || "fetch_failed"), entries: null };
+    return { error: true, message: (err instanceof Error ? err.message : "fetch_failed"), entries: null };
   }
 }

@@ -446,7 +446,7 @@ async function loadLeaderboard() {
   try {
     const data = await fetchLeaderboard(currentTab, { mode: currentMode });
     // Structured error from fetchLeaderboard means a fetch failure, not an empty leaderboard.
-    if (data && data.error === true) throw new Error('Leaderboard unavailable: ' + (data.message || 'fetch_failed'));
+    if (data && data.error === true) throw new Error(`Leaderboard unavailable: ${data.message || 'worker fetch failed'}`);
     if (!Array.isArray(data)) throw new Error('Invalid response from leaderboard worker.');
     currentData = data;
     renderTable(data);

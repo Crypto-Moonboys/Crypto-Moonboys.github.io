@@ -267,12 +267,8 @@ check(!las.includes('{ factionKey: factionKey, missions: fallback'), 'normaliseM
 
 // Issue 3: Missed XP panel must not default to 0 before confirmed data
 check(csp.includes('return null;'), 'missedXpAllTime returns null (not 0) when no confirmed data is available');
-check(csp.includes("syncing\u2026") || csp.includes('syncing\\u2026'), 'connection-status-panel shows "syncing…" for unconfirmed Missed XP');
-check(!csp.includes('return 0;\n  }') || (function() {
-  // Ensure the remaining `return 0` is not the bottom-of-function fallback
-  const idx = csp.lastIndexOf('return 0;');
-  return idx === -1 || !csp.slice(idx - 50, idx).includes('function missedXpAllTime');
-}()), 'missedXpAllTime no longer hard-returns 0 when globals are absent');
+check(csp.includes('syncing…'), 'connection-status-panel shows "syncing…" for unconfirmed Missed XP');
+check(!csp.includes('function missedXpAllTime') || !csp.includes('return 0;\n  }'), 'missedXpAllTime no longer hard-returns 0 when globals are absent');
 
 // Issue 4: Daily WTF fallback is labelled syncing/fallback
 check(las.includes('Syncing schedule'), 'Daily WTF fallback card is labelled "Syncing schedule" not presented as confirmed live');

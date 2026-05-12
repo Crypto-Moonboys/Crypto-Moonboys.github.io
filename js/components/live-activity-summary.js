@@ -253,7 +253,7 @@
       { id: 'daily_score_signal', label: 'Score Signal', description: 'Post a scored run so your faction rail has live activity.', target: 1, reward: { warContrib: 50 } },
     ],
   };
-  void _QUARANTINED_FACTION_MISSION_FALLBACKS; // referenced to prevent lint warnings
+  void _QUARANTINED_FACTION_MISSION_FALLBACKS; // referenced to suppress lint warnings; see quarantine comment above
 
   function rewardText(reward) {
     if (!reward) return '';

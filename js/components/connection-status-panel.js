@@ -303,7 +303,7 @@
         '</div>';
     }
     var missedXp = missedXpAllTime();
-    var missedXpDisplay = missedXp !== null ? esc(String(missedXp)) : 'syncing\u2026';
+    var missedXpDisplay = missedXp !== null ? esc(String(missedXp)) : 'syncing…';
 
     return '' +
       '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
