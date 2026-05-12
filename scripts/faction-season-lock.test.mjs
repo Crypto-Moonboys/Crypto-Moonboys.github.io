@@ -46,6 +46,8 @@ function read(relPath) {
 const bcFactions   = read('js/battle-chamber-factions.js');
 const alignment    = read('js/faction-alignment.js');
 const worker       = read('workers/moonboys-api/worker.js');
+const factionCanon = read('workers/moonboys-api/shared/faction-canon.js');
+const canonPath = './shared/faction-canon.js';
 const migration017 = read('workers/moonboys-api/migrations/017_faction_season_lock.sql');
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -358,37 +360,64 @@ check(
   'Worker: progression is updated only after season lock is confirmed (race-safe ordering)',
 );
 
-// All 9 canonical factions recognized by normalizeFaction
+// Worker must import shared faction canon module (single source of truth)
+check(
+  worker.includes("from './shared/faction-canon.js'"),
+  'Worker: imports shared faction canon module',
+);
+
+check(
+  worker.includes('normalizeFaction'),
+  'Worker: uses shared normalizeFaction',
+);
+
+check(
+  !worker.includes('function normalizeFaction('),
+  'Worker: does not define local normalizeFaction',
+);
+
+check(
+  !worker.includes('const CANONICAL_FACTIONS = ['),
+  'Worker: does not define separate local canonical faction list',
+);
+
+check(
+  !worker.includes('const BATTLE_CHAMBER_FACTION_ALIASES ='),
+  'Worker: does not define separate Battle Chamber alias map',
+);
+
+// Shared canon module must define all 9 canonical keys
 const allNineKeys = [
   'hard-fork-rockers', 'rugpull-miners', 'graffpunks', 'blockchain-furies',
   'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys',
 ];
 allNineKeys.forEach(function (key) {
   check(
-    worker.includes("'" + key + "'") || worker.includes('"' + key + '"'),
-    'Worker normalizeFaction: recognizes canonical key — ' + key,
+    factionCanon.includes("'" + key + "'") || factionCanon.includes('"' + key + '"'),
+    'Shared canon: includes canonical faction key � ' + key,
   );
 });
 
-// FACTION_CONFIG includes all 9
-allNineKeys.forEach(function (key) {
-  check(
-    worker.includes("'" + key + "'"),
-    'Worker FACTION_CONFIG: includes canonical faction — ' + key,
-  );
-});
-
-// Legacy aliases still map to canonical
+// Legacy aliases must map to canonical in shared module
 check(
-  worker.includes("'diamond-hands'") && worker.includes("'hard-fork-rockers'") &&
-  (function () {
-    const normFn = worker.match(/function normalizeFaction[\s\S]*?\n\}/);
-    return normFn && normFn[0].includes('hard-fork-rockers');
-  })(),
-  'Worker: diamond-hands alias maps to hard-fork-rockers',
+  /["']diamond-hands["']\s*:\s*["']hard-fork-rockers["']/.test(factionCanon),
+  'Shared canon: diamond-hands alias maps to hard-fork-rockers',
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
+check(
+  /["']hodl-warriors["']\s*:\s*["']rugpull-miners["']/.test(factionCanon),
+  'Shared canon: hodl-warriors alias maps to rugpull-miners',
+);
+
+check(
+  /["']rugpull-minors["']\s*:\s*["']rugpull-miners["']/.test(factionCanon),
+  'Shared canon: rugpull-minors alias maps to rugpull-miners',
+);
+
+check(
+  /["']graff-punks["']\s*:\s*["']graffpunks["']/.test(factionCanon),
+  'Shared canon: graff-punks alias maps to graffpunks',
+);
 // 3. Bot /gkfaction copy
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -533,13 +562,29 @@ const blockTopiaRoutes = read('workers/moonboys-api/blocktopia/routes.js');
 // worker.js and blocktopia/routes.js.
 
 check(
-  blockTopiaRoutes.includes('BLOCKTOPIA_CANONICAL_FACTIONS'),
-  'routes.js: canonical faction list is defined',
+  blockTopiaRoutes.includes("from '../shared/faction-canon.js'"),
+  'routes.js: imports shared faction canon module',
 );
 
 check(
-  blockTopiaRoutes.includes('BLOCKTOPIA_FACTION_ALIASES'),
-  'routes.js: faction alias map is defined',
+  blockTopiaRoutes.includes('normalizeFaction') &&
+  blockTopiaRoutes.includes('getFactionXpMultiplier'),
+  'routes.js: uses shared normalizeFaction and XP multiplier helper',
+);
+
+check(
+  !blockTopiaRoutes.includes('const BLOCKTOPIA_CANONICAL_FACTIONS = ['),
+  'routes.js: does not define local canonical faction list',
+);
+
+check(
+  !blockTopiaRoutes.includes('const BLOCKTOPIA_FACTION_ALIASES = {'),
+  'routes.js: does not define local alias map',
+);
+
+check(
+  !blockTopiaRoutes.includes('const BLOCKTOPIA_FACTION_XP_MULTIPLIERS = {'),
+  'routes.js: does not define local faction XP multipliers',
 );
 
 // normalizeFaction must NOT return legacy keys as canonical
@@ -557,18 +602,18 @@ check(
 
 // Legacy aliases must map to canonical keys
 check(
-  /["']diamond-hands["']\s*:\s*["']hard-fork-rockers["']/.test(blockTopiaRoutes),
-  'routes.js: diamond-hands alias maps to hard-fork-rockers',
+  /["']diamond-hands["']\s*:\s*["']hard-fork-rockers["']/.test(factionCanon),
+  'shared canon: diamond-hands alias maps to hard-fork-rockers',
 );
 
 check(
-  /["']hodl-warriors["']\s*:\s*["']rugpull-miners["']/.test(blockTopiaRoutes),
-  'routes.js: hodl-warriors alias maps to rugpull-miners',
+  /["']hodl-warriors["']\s*:\s*["']rugpull-miners["']/.test(factionCanon),
+  'shared canon: hodl-warriors alias maps to rugpull-miners',
 );
 
 check(
-  /["']rugpull-minors["']\s*:\s*["']rugpull-miners["']/.test(blockTopiaRoutes),
-  'routes.js: rugpull-minors alias maps to rugpull-miners',
+  /["']rugpull-minors["']\s*:\s*["']rugpull-miners["']/.test(factionCanon),
+  'shared canon: rugpull-minors alias maps to rugpull-miners',
 );
 
 // factionXpMultiplier must not reference legacy keys
@@ -584,15 +629,15 @@ check(
   'routes.js: factionXpMultiplier must not branch on hodl-warriors',
 );
 
-// All 9 canonical keys must be present in routes.js
+// All 9 canonical keys must be present in shared canon module
 const CANONICAL_NINE = [
   'hard-fork-rockers', 'rugpull-miners', 'graffpunks', 'blockchain-furies',
   'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys',
 ];
 CANONICAL_NINE.forEach(function (key) {
   check(
-    blockTopiaRoutes.includes("'" + key + "'") || blockTopiaRoutes.includes('"' + key + '"'),
-    'routes.js: canonical faction key present — ' + key,
+    factionCanon.includes("'" + key + "'") || factionCanon.includes('"' + key + '"'),
+    'shared canon: canonical faction key present ? ' + key,
   );
 });
 
@@ -603,4 +648,3 @@ CANONICAL_NINE.forEach(function (key) {
 console.log('\n────────────────────────────────────────────────────────────────────────');
 console.log(`faction-season-lock.test.mjs: ${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);
-

@@ -28,6 +28,7 @@ const WAR_FILE = path.join(ROOT, 'js', 'arcade', 'systems', 'faction-war-system.
 const LEADERBOARD_FILE = path.join(ROOT, 'js', 'leaderboard-client.js');
 const LEADERBOARD_WORKER_FILE = path.join(ROOT, 'workers', 'leaderboard-worker.js');
 const API_WORKER_FILE = path.join(ROOT, 'workers', 'moonboys-api', 'worker.js');
+const API_FACTION_CANON_FILE = path.join(ROOT, 'workers', 'moonboys-api', 'shared', 'faction-canon.js');
 const GAMES_FILE = path.join(ROOT, 'games', 'index.html');
 const COMMUNITY_FILE = path.join(ROOT, 'community.html');
 const DOCS_FILE = path.join(ROOT, 'docs', 'ARCADE_GAME_IMPACT_STANDARD.md');
@@ -209,13 +210,16 @@ function checkRugpullCanonAndLegacySplit() {
     assert.ok(!src.includes("key: 'rugpull-minors'"), `${path.relative(ROOT, filePath)} must not use rugpull-minors as canonical key`);
     assert.ok(!src.includes('key: "rugpull-minors"'), `${path.relative(ROOT, filePath)} must not use rugpull-minors as canonical key`);
   }
+  const apiWorkerSrc = read(API_WORKER_FILE);
+  const apiCanonSrc = read(API_FACTION_CANON_FILE);
   assert.ok(read(ALIGNMENT_FILE).includes("'rugpull-minors': 'rugpull-miners'"), 'alignment aliases must map rugpull-minors -> rugpull-miners');
-  assert.ok(read(API_WORKER_FILE).includes("'rugpull-minors': 'rugpull-miners'"), 'api worker aliases must map rugpull-minors -> rugpull-miners');
+  assert.ok(apiWorkerSrc.includes("from './shared/faction-canon.js'"), 'api worker must import shared faction canon module');
+  assert.ok(apiCanonSrc.includes("'rugpull-minors': 'rugpull-miners'"), 'api shared canon aliases must map rugpull-minors -> rugpull-miners');
   assert.ok(read(LEADERBOARD_WORKER_FILE).includes("'rugpull-minors': 'rugpull-miners'"), 'leaderboard worker aliases must map rugpull-minors -> rugpull-miners');
-  assert.ok(read(API_WORKER_FILE).includes("'hodl-warriors': 'rugpull-miners'"), 'api worker aliases must map hodl-warriors -> rugpull-miners');
+  assert.ok(apiCanonSrc.includes("'hodl-warriors': 'rugpull-miners'"), 'api shared canon aliases must map hodl-warriors -> rugpull-miners');
   assert.ok(read(LEADERBOARD_WORKER_FILE).includes("'hodl-warriors': 'rugpull-miners'"), 'leaderboard worker aliases must map hodl-warriors -> rugpull-miners');
-  assert.ok(read(API_WORKER_FILE).includes("'diamond-hands': 'hard-fork-rockers'"), 'api worker aliases must map diamond-hands -> hard-fork-rockers');
-  assert.ok(read(API_WORKER_FILE).includes("'graff-punks': 'graffpunks'"), 'api worker aliases must map graff-punks -> graffpunks');
+  assert.ok(apiCanonSrc.includes("'diamond-hands': 'hard-fork-rockers'"), 'api shared canon aliases must map diamond-hands -> hard-fork-rockers');
+  assert.ok(apiCanonSrc.includes("'graff-punks': 'graffpunks'"), 'api shared canon aliases must map graff-punks -> graffpunks');
 }
 
 function checkDocPerkParity() {
