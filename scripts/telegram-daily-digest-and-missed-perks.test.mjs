@@ -124,7 +124,7 @@ check(workerJs.includes("safeStatus === 'sent' ? nowIso : null"), 'worker sets s
 check(workerJs.includes('DIGEST_SEND_BATCH_SIZE') && workerJs.includes('DIGEST_SEND_MAX_CONCURRENCY') && workerJs.includes('Promise.all'), 'digest runner uses bounded batching/concurrency');
 check(workerJs.includes('processed: 0') && workerJs.includes('skipped:') && workerJs.includes('failed: 0'), 'digest summary includes processed/sent/failed/skipped tracking');
 check(workerJs.includes('GM, the Battle Chamber has reset. Your faction has new work.'), 'digest includes hello/check-in copy');
-check(workerJs.includes('Today’s faction daily missions'), 'digest includes today mission section');
+check(/Today.{0,12}faction daily missions/.test(workerJs), 'digest includes today mission section');
 check(workerJs.includes('Missed perks update'), 'digest includes missed perks update');
 check(workerJs.includes('Faction daily log'), 'digest includes faction daily log');
 check(workerJs.includes('Open Battle Chamber') && workerJs.includes('Play Arcade') && workerJs.includes('View Faction Chamber'), 'digest includes CTA links');

@@ -3389,7 +3389,7 @@ export default {
     }
 
     // ── GET /roguelite/daily-state (legacy) OR POST JSON { telegram_auth }
-        const rogueliteDailyResponse = await handleRogueliteDailyRoutes(request, env, url, {
+    const rogueliteDailyResponse = await handleRogueliteDailyRoutes(request, env, url, {
       path,
       json,
       err,
@@ -3419,7 +3419,7 @@ export default {
     });
     if (rogueliteDailyResponse) return rogueliteDailyResponse;
 
-if (path === '/wtf/events/today' && (request.method === 'GET' || request.method === 'POST')) {
+    if (path === '/wtf/events/today' && (request.method === 'GET' || request.method === 'POST')) {
       let body = {};
       if (request.method === 'POST') {
         try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
