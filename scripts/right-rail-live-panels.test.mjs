@@ -310,6 +310,13 @@ check(!leaderboardClient.includes('return [];\n  }'), 'fetchLeaderboard does not
 check(!dashboard.includes('missed_xp') && !dashboard.includes('missed_xp_all_time'), 'dashboard.html does not contain missed XP player data (wiki/editorial only)');
 check(!dashboard.includes('data-las-panel') && !dashboard.includes('data-csp-panel'), 'dashboard.html does not contain live player feed panels');
 
+// Issue 11: connection-status-panel top Latest row must not show broken daily-state copy
+check(!csp.includes('Daily opportunity state synced'), 'connection-status-panel does not contain "Daily opportunity state synced"');
+const latestActivityRowsBlock = functionBlock(csp, 'latestActivityRows');
+check(!latestActivityRowsBlock.includes('Daily opportunity'), 'latestActivityRows does not generate generic "Daily opportunity" text');
+check(!latestActivityRowsBlock.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && !latestActivityRowsBlock.includes('MOONBOYS_DAILY_ROGUELITE_LOTTERY'), 'latestActivityRows does not read daily-state globals (daily logic belongs in the lower Faction Daily Ops box)');
+
+
 const failed = checks.filter((c) => !c.ok);
 if (failed.length) {
   console.error(`\n${failed.length} right-rail live panel checks failed.`);
