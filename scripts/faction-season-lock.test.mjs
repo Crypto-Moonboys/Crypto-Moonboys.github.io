@@ -47,7 +47,6 @@ const bcFactions   = read('js/battle-chamber-factions.js');
 const alignment    = read('js/faction-alignment.js');
 const worker       = read('workers/moonboys-api/worker.js');
 const factionCanon = read('workers/moonboys-api/shared/faction-canon.js');
-const canonPath = './shared/faction-canon.js';
 const migration017 = read('workers/moonboys-api/migrations/017_faction_season_lock.sql');
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -394,7 +393,7 @@ const allNineKeys = [
 allNineKeys.forEach(function (key) {
   check(
     factionCanon.includes("'" + key + "'") || factionCanon.includes('"' + key + '"'),
-    'Shared canon: includes canonical faction key � ' + key,
+    'Shared canon: includes canonical faction key - ' + key,
   );
 });
 
@@ -557,9 +556,8 @@ console.log('\n── 6. Block Topia routes.js faction canon ──────�
 
 const blockTopiaRoutes = read('workers/moonboys-api/blocktopia/routes.js');
 
-// PR scope note: this PR intentionally fixes Block Topia route drift only.
-// Follow-up PR will centralise faction canon into one shared module used by
-// worker.js and blocktopia/routes.js.
+// Shared faction canon is now centralized in workers/moonboys-api/shared/faction-canon.js.
+// worker.js and blocktopia/routes.js must import that module rather than redefining canon locally.
 
 check(
   blockTopiaRoutes.includes("from '../shared/faction-canon.js'"),
@@ -637,7 +635,7 @@ const CANONICAL_NINE = [
 CANONICAL_NINE.forEach(function (key) {
   check(
     factionCanon.includes("'" + key + "'") || factionCanon.includes('"' + key + '"'),
-    'shared canon: canonical faction key present ? ' + key,
+    'shared canon: canonical faction key present � ' + key,
   );
 });
 
@@ -648,3 +646,4 @@ CANONICAL_NINE.forEach(function (key) {
 console.log('\n────────────────────────────────────────────────────────────────────────');
 console.log(`faction-season-lock.test.mjs: ${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);
+
