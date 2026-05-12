@@ -245,8 +245,8 @@
     var h = Math.floor(total / 3600);
     var m = Math.floor((total % 3600) / 60);
     var s = total % 60;
-    function p(n) { return n < 10 ? '0' + n : String(n); }
-    return p(h) + ':' + p(m) + ':' + p(s);
+    function pad2(n) { return n < 10 ? '0' + n : String(n); }
+    return pad2(h) + ':' + pad2(m) + ':' + pad2(s);
   }
 
   // Returns a compact, actionable WTF status string for the top Latest line,
