@@ -155,9 +155,11 @@
 
   /* ── 6. Right panel ───────────────────────────────────────────── */
   function shouldShowRightPanel(pn, body) {
-    if (body.classList.contains('page-has-right-panel')) return true;
     var p = pn === '/' ? '/index.html' : (pn.length > 1 && pn.charAt(pn.length - 1) === '/') ? pn.slice(0, -1) : pn;
-    var exact = ['/index.html','/sam.html','/graph.html','/search.html','/timeline.html','/dashboard.html','/community.html','/how-to-play.html','/games','/games/','/games/index.html','/games/leaderboard.html'];
+    // The editorial dashboard is intentionally wiki-only: never inject player live/faction panels at runtime.
+    if (p === '/dashboard.html') return false;
+    if (body.classList.contains('page-has-right-panel')) return true;
+    var exact = ['/index.html','/sam.html','/graph.html','/search.html','/timeline.html','/community.html','/how-to-play.html','/games','/games/','/games/index.html','/games/leaderboard.html'];
     if (exact.indexOf(p) !== -1) return true;
     var prefixes = ['/categories/', '/wiki/'];
     for (var i = 0; i < prefixes.length; i++) { if (p.indexOf(prefixes[i]) === 0) return true; }
