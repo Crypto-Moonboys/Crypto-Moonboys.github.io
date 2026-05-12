@@ -217,8 +217,8 @@ check(!las.toLowerCase().includes('missed xp resets') && !las.includes('missed_x
 
 
 console.log('\n[7] Roguelite client/server method contract');
-const dailyStateBlock = routeBlock(workerAndDailyDigest, '/roguelite/daily-state');
-const missedHistoryBlock = routeBlock(workerAndDailyDigest, '/roguelite/missed-history');
+const dailyStateBlock = routeBlock(dailyDigestRoutes, '/roguelite/daily-state');
+const missedHistoryBlock = routeBlock(dailyDigestRoutes, '/roguelite/missed-history');
 check(worker.includes("import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';"), 'Worker imports delegated roguelite daily route handler module');
 check(worker.includes('handleRogueliteDailyRoutes(request, env, url,'), 'Worker delegates roguelite daily route handling to shared module');
 check(dailyStateBlock.includes("request.method === 'GET' || request.method === 'POST'"), 'Worker supports POST /roguelite/daily-state while keeping GET compatibility');

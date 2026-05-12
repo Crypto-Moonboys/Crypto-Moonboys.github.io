@@ -3389,35 +3389,43 @@ export default {
     }
 
     // ── GET /roguelite/daily-state (legacy) OR POST JSON { telegram_auth }
-    const rogueliteDailyResponse = await handleRogueliteDailyRoutes(request, env, url, {
-      path,
-      json,
-      err,
-      verifyTelegramAuth,
-      ensureDailyDigestTables,
-      upsertTelegramUser,
-      getTodayUtcDate,
-      getUserFaction,
-      normalizeBattleChamberFaction,
-      backfillMissedPerkGapsFromLastActiveDay,
-      ensureDailyOpportunityStateForToday,
-      ensurePlayerStateTables,
-      hasDailyMissedXpValueColumn,
-      getMissedHistorySnapshot,
-      getMissedPerkTotals,
-      formatMissionIdLabel,
-      logApiFailure,
-      clampText,
-      DAILY_MISSED_HISTORY_MAX_LIMIT,
-      getMissedPerkRows,
-      safeJsonParse,
-      normaliseMissedMetadata,
-      insertMissedPerkEntry,
-      readAdminSecret,
-      isAdminTelegramUser,
-      runTelegramDailyDigest,
-    });
-    if (rogueliteDailyResponse) return rogueliteDailyResponse;
+    const isRogueliteDailyRoute =
+      path === '/roguelite/daily-state' ||
+      path === '/roguelite/missed-history' ||
+      path === '/roguelite/mark-missed' ||
+      path === '/telegram/daily-digest/run';
+
+    if (isRogueliteDailyRoute) {
+      const rogueliteDailyResponse = await handleRogueliteDailyRoutes(request, env, url, {
+        path,
+        json,
+        err,
+        verifyTelegramAuth,
+        ensureDailyDigestTables,
+        upsertTelegramUser,
+        getTodayUtcDate,
+        getUserFaction,
+        normalizeBattleChamberFaction,
+        backfillMissedPerkGapsFromLastActiveDay,
+        ensureDailyOpportunityStateForToday,
+        ensurePlayerStateTables,
+        hasDailyMissedXpValueColumn,
+        getMissedHistorySnapshot,
+        getMissedPerkTotals,
+        formatMissionIdLabel,
+        logApiFailure,
+        clampText,
+        DAILY_MISSED_HISTORY_MAX_LIMIT,
+        getMissedPerkRows,
+        safeJsonParse,
+        normaliseMissedMetadata,
+        insertMissedPerkEntry,
+        readAdminSecret,
+        isAdminTelegramUser,
+        runTelegramDailyDigest,
+      });
+      if (rogueliteDailyResponse) return rogueliteDailyResponse;
+    }
 
     if (path === '/wtf/events/today' && (request.method === 'GET' || request.method === 'POST')) {
       let body = {};
@@ -3740,7 +3748,7 @@ export default {
         next_objective: `Complete the ${option.display_title.toLowerCase()} objective before the next signal window.`,
       });
     }
-if (path === '/telegram/group-announcements/run' && request.method === 'POST') {
+    if (path === '/telegram/group-announcements/run' && request.method === 'POST') {
       let body = {};
       try { body = await request.json(); } catch { body = {}; }
       const configuredSecret = String(env.ADMIN_SECRET || '').trim();
