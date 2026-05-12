@@ -137,8 +137,8 @@ function factionBadge(row) {
     ? (api && typeof api.normalizeFaction === 'function'
       ? api.normalizeFaction(rawFaction)
       : String(rawFaction).trim().toLowerCase())
-    : 'unaligned';
-  if (!key || key === 'unaligned') {
+    : '';
+  if (!hasFactionValue || !key || key === 'unaligned') {
     return '<span class="lb-faction lb-faction--empty" aria-label="No faction">—</span>';
   }
   var fallbackLabel = String(key).replace(/[-_]+/g, ' ').replace(/\b\w/g, function (ch) { return ch.toUpperCase(); });

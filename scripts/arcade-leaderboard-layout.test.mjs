@@ -23,8 +23,8 @@ assert.ok(
 );
 
 assert.ok(
-  leaderboardJs.includes("if (!key || key === 'unaligned')"),
-  'faction badge logic should suppress prominent Unaligned fallback rows',
+  leaderboardJs.includes("if (!hasFactionValue || !key || key === 'unaligned')"),
+  'faction badge logic should treat missing and unaligned faction values as the subtle empty badge case',
 );
 
 assert.ok(
