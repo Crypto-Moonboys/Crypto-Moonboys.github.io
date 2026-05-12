@@ -183,7 +183,7 @@
       '        <span class="hud-avatar-icon" aria-hidden="true">\uD83D\uDC7E</span>',
       '      </div>',
       '      <div class="hud-player-info">',
-      '        <span class="hud-player-name" id="hud-player-name">Live identity below</span>',
+      '        <span class="hud-player-name" id="hud-player-name">Telegram not linked</span>',
       '      </div>',
       '    </div>',
       '    <div data-csp-panel></div>',
@@ -213,6 +213,20 @@
     setTimeout(function _hudPlayerInit() {
       var gate = window.MOONBOYS_IDENTITY;
       if (!gate) return;
+      var linked = typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked();
+
+      /* Populate #hud-player-name from live identity */
+      var nameEl = document.getElementById('hud-player-name');
+      if (nameEl) {
+        var telegramName = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
+        if (linked && telegramName) {
+          nameEl.textContent = telegramName;
+        } else if (linked) {
+          nameEl.textContent = 'Telegram linked';
+        } else {
+          nameEl.textContent = 'Telegram not linked';
+        }
+      }
 
       var avatarBox = document.getElementById('hud-player-avatar');
       if (avatarBox) {
@@ -233,7 +247,6 @@
 
       var actionsEl = document.getElementById('hud-actions-dynamic');
       if (actionsEl) {
-        var linked = typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked();
         var factionApi = window.MOONBOYS_FACTION;
         var factionStatus = factionApi && typeof factionApi.getCachedStatus === 'function' ? factionApi.getCachedStatus() : null;
         var isUnaligned = factionStatus != null && (!factionStatus.faction || factionStatus.faction === 'unaligned');

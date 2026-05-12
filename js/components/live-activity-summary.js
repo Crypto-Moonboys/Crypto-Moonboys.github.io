@@ -1,15 +1,21 @@
 /**
  * Crypto Moonboys  Live Activity Summary
  * =========================================
- * Shared frontend helper showing current player activity state.
+ * Shared frontend helper showing current faction activity state.
  *
  * Shows:
- *   - Core API: online / unavailable
- *     (never shows "not connected" when BASE_URL is set  only "unavailable" if a
- *      network call fails, or "not configured" when BASE_URL is genuinely absent)
- *   - Identity / sync state (from MOONBOYS_IDENTITY)
- *   - Current faction state (from MOONBOYS_FACTION)
- *   - Clear fallback text when individual features are unavailable
+ *   - Faction Daily Ops: real server-backed mission data, or honest empty state
+ *     (no hardcoded fallback missions are rendered as live faction data)
+ *   - Daily WTF Signal: live Worker-provided event, loading, syncing-schedule fallback, or error
+ *   - Missed Opportunities: event counts and missed XP from server globals
+ *
+ * Faction Daily Ops renders only real MOONBOYS_MISSION_DATA.  If no server
+ * mission data is available, an honest "No live faction missions reported."
+ * empty state is shown.  FACTION_MISSION_FALLBACKS is quarantined and not
+ * used for live rendering.
+ *
+ * Daily WTF fallback (loading stall / helper unavailable) is labelled
+ * "Syncing schedule" to distinguish it from a confirmed live signal.
  *
  * XP labels enforced:
  *   Score         = leaderboard ranking
@@ -232,7 +238,10 @@
   }
 
 
-  var FACTION_MISSION_FALLBACKS = {
+  // FACTION_MISSION_FALLBACKS is quarantined: these are locally-invented placeholders
+  // that must NOT be rendered as live faction data. Kept for reference only.
+  // Do NOT call the old fallback-mission helper from normaliseMissionList() or any live render path.
+  var _QUARANTINED_FACTION_MISSION_FALLBACKS = {
     graffpunks: [
       { id: 'gp_chaos_3', label: 'Chaos Agent', description: 'Trigger 3 chaos events across any runs.', target: 3, reward: { warContrib: 70 } },
       { id: 'gp_combo_x3', label: 'Combo Graffiti', description: 'Reach a x3 combo multiplier in any run.', target: 3, reward: { warContrib: 65 } },
@@ -244,6 +253,7 @@
       { id: 'daily_score_signal', label: 'Score Signal', description: 'Post a scored run so your faction rail has live activity.', target: 1, reward: { warContrib: 50 } },
     ],
   };
+  void _QUARANTINED_FACTION_MISSION_FALLBACKS; // referenced to suppress lint warnings; see quarantine comment above
 
   function rewardText(reward) {
     if (!reward) return '';
@@ -253,22 +263,6 @@
     return '';
   }
 
-  function fallbackDailyMissions(factionKey) {
-    var list = FACTION_MISSION_FALLBACKS[factionKey] || FACTION_MISSION_FALLBACKS.default;
-    return list.map(function (m) {
-      return {
-        id: m.id,
-        title: m.label || m.title || m.id,
-        objective: m.description || m.objective || 'Complete the faction objective.',
-        current: 0,
-        target: Number(m.target || 1),
-        done: false,
-        reward: rewardText(m.reward),
-        fallback: true,
-      };
-    });
-  }
-
   function normaliseMissionList() {
     var faction = getFactionStatus();
     var factionKey = faction && faction.faction && faction.faction !== 'unaligned' ? faction.faction : null;
@@ -276,8 +270,9 @@
     var missionData = window.MOONBOYS_MISSION_DATA || {};
     var data = missionData[factionKey] || {};
     var daily = Array.isArray(data.daily) ? data.daily : [];
-    if (!daily.length && (!missionData || !missionData[factionKey])) {
-      return { factionKey: factionKey, missions: fallbackDailyMissions(factionKey), fallback: true };
+    if (!daily.length) {
+      // No real server-backed mission data — show honest empty state.
+      return { factionKey: factionKey, missions: [] };
     }
     var completed = Array.isArray(data.completed) ? data.completed : [];
     var progress = data.progress && typeof data.progress === 'object' ? data.progress : {};
@@ -296,8 +291,7 @@
         reward: rewardText(m.reward || m.contribution || m.reward_preview || ''),
       };
     });
-    if (!missions.length) missions = fallbackDailyMissions(factionKey);
-    return { factionKey: factionKey, missions: missions, fallback: !daily.length };
+    return { factionKey: factionKey, missions: missions };
   }
 
   function missionHTML(missions) {
@@ -588,7 +582,7 @@
       var fallbackAction = linked
         ? '<a class="las-action-btn" href="/games/">Get Ready</a>'
         : '<a class="las-action-btn" href="/gkniftyheads-incubator.html">Link Telegram</a>';
-      return '<div class="las-signal-card" data-wtf-state="fallback"><span class="las-pill las-pill--next">UPCOMING</span><strong>Daily WTF: ' + esc(fallbackTitle) + '</strong><div class="las-countdown" data-wtf-countdown>Starts in ' + countdownText(fallbackState.countdown_seconds) + '</div>' + fallbackAction + '</div>';
+      return '<div class="las-signal-card" data-wtf-state="fallback"><span class="las-pill las-pill--next">UPCOMING</span><strong>Daily WTF: Syncing schedule</strong><div class="las-countdown las-fallback-label">Fallback schedule · ' + esc(fallbackTitle) + '</div><div class="las-countdown" data-wtf-countdown>Starts in ' + countdownText(fallbackState.countdown_seconds) + '</div>' + fallbackAction + '</div>';
     }
     clearWtfLoadingRepaintTimer();
     clearWtfHelperRetryTimer();

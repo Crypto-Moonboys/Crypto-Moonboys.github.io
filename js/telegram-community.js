@@ -174,7 +174,7 @@
         : '<img class="tg-profile-avatar" src="' + gravatar('', 64) + '" alt="" loading="lazy">';
       var factionName = p.faction && p.faction.name ? p.faction.name : null;
       var linked = factionName || p.wallet_address
-        ? '<span class="tg-badge tg-badge-linked">✅ Active</span>'
+        ? '<span class="tg-badge tg-badge-linked">✅ Linked</span>'
         : '<span class="tg-badge tg-badge-unlinked">Run /gklink to activate</span>';
       var factionBadge = factionName
         ? '<span class="tg-badge tg-badge-faction">⚔️ ' + escapeHtml(factionName) + '</span>'

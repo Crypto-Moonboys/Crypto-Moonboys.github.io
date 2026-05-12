@@ -11,6 +11,11 @@
  *   - On pages WITHOUT #site-header: injects a compact fixed top-right badge
  *     using MOONBOYS_STATUS_PANEL.mountBadge().
  *
+ * autoMountActivityPanel() does NOT run unless the page opts in via
+ * <body data-auto-las-panel="true">.  The personal live feed / faction ops
+ * panel belongs in the right rail (site-shell.js) only; this module must not
+ * auto-create it globally.
+ *
  * Public API:
  *   window.MOONBOYS_GLOBAL_HEADER.refresh()
  *   window.MOONBOYS_GLOBAL_HEADER.mount(elementOrId)      // full status panel
@@ -98,24 +103,27 @@
 
   // ── Bootstrap ─────────────────────────────────────────────────────────
   /**
-   * Auto-creates a [data-las-panel] element if the page has none.
-   * Inserted after #site-header (wiki pages) or after the fixed badge (game
-   * pages without a wiki-shell). For pages that already have a [data-las-panel]
-   * in their markup this is a no-op.
+   * Auto-mounts a [data-las-panel] element only when the page explicitly opts in
+   * via <body data-auto-las-panel="true">.
+   *
+   * The personal live feed / faction ops panel belongs in the right rail only
+   * (site-shell.js already injects one there).  Auto-creating it globally would
+   * reintroduce player live panels outside the intended right rail.
+   *
+   * Pages that genuinely need an auto-mounted LAS panel outside the right rail
+   * must set <body data-auto-las-panel="true"> to opt in explicitly.
    */
   function autoMountActivityPanel() {
     if (document.querySelector('[data-las-panel]')) return; // already present
+    // Only auto-create if the page has opted in.
+    if (document.body && document.body.dataset.autoLasPanel !== 'true') return;
     var wrap = document.createElement('div');
     wrap.setAttribute('data-las-panel', '');
     wrap.style.marginBottom = '12px';
     var header = document.getElementById('site-header');
     if (header && header.parentNode) {
-      // Wiki-shell pages: insert directly after the header.
       header.parentNode.insertBefore(wrap, header.nextSibling);
     }
-    // For game pages the fixed badge is already compact; skip appending to body
-    // to avoid overlapping the canvas. LAS will still bootstrap on the element
-    // if it was added above.
     var las = window.MOONBOYS_LIVE_ACTIVITY;
     if (las && typeof las.mount === 'function') las.mount(wrap);
   }

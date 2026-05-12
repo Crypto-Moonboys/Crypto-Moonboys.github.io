@@ -106,8 +106,8 @@
     if (!BASE || !FEATURES.LIVE_FEED) {
       el.innerHTML =
         '<div class="live-activity-panel">' +
-          '<p class="live-activity-desc">Recent activity is generated from synced arcade runs, faction actions, and Battle Chamber events. ' +
-            'Play an arcade game, link Telegram, or join a faction to create visible movement.</p>' +
+          '<p class="live-activity-desc">Live activity feed not yet available. ' +
+            'Arcade runs, faction actions, and Battle Chamber events will appear here when the feed launches.</p>' +
           '<div class="live-activity-cta">' +
             '<a href="/games/" class="btn btn-primary">Play Arcade</a>' +
             '<a href="/community.html" class="btn btn-secondary">Open Battle Chamber</a>' +

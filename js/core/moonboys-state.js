@@ -131,6 +131,10 @@
    * write to state.  Calling hydrateState() again is a no-op.
    */
   var _hydrated = false;
+  // Incremented each time a live xp:update bus event changes XP while hydration may
+  // be in flight.  hydrateState() captures this revision before the fetch so it can
+  // detect whether a live update raced the server response.
+  var _liveXpRevision = 0;
 
   function hydrateState() {
     if (_hydrated) return Promise.resolve(getState());
@@ -164,6 +168,9 @@
       // Fetch the authoritative XP value from the API.  This is the ONLY time
       // the API is consulted for state — all subsequent XP changes arrive via
       // bus events (xp:update) which update state through the bus listeners below.
+      // Capture the live-XP revision before the async fetch so we can detect a
+      // concurrent xp:update that arrived while the request was in flight.
+      var hydrateXpRevision = _liveXpRevision;
       try {
         var res = await fetch(apiBase + '/blocktopia/progression', {
           method: 'POST',
@@ -174,12 +181,19 @@
         if (res.ok && payload && payload.ok === true && payload.progression) {
           var prog = payload.progression;
           var incomingXp = Math.max(0, Math.floor(Number(prog.arcade_xp_total) || 0));
-          // Only apply the API value if it is at least as high as the current
-          // cached/live value.  This prevents a stale API response from rolling
-          // back XP that has already been updated by in-session bus events.
-          if (incomingXp >= _state.xp) {
+          if (_liveXpRevision === hydrateXpRevision) {
+            // No live xp:update arrived while hydration was in flight.
+            // Server is authoritative during hydration: always apply the server-confirmed
+            // XP value regardless of what is cached in localStorage.  Stale local XP
+            // must not overrule the server on page load.
+            setState({ xp: incomingXp, linked: true, source: 'server', syncedAt: Date.now() });
+          } else if (incomingXp >= _state.xp) {
+            // A live xp:update raced the hydration response and the server value is at
+            // least as large — safe to apply it without rolling back in-session XP.
             setState({ xp: incomingXp, linked: true, source: 'server', syncedAt: Date.now() });
           } else {
+            // The server snapshot is older than the live in-session XP — preserve the
+            // current XP while still recording that the server confirmed the user is linked.
             setState({ linked: true, source: 'server', syncedAt: Date.now() });
           }
         }
@@ -214,6 +228,9 @@
       // Dedup guard: skip if XP hasn't changed to prevent redundant writes and
       // duplicate subscriber notifications.
       if (newXp === currentXp) return;
+      // A live XP change has arrived — increment the revision so any hydration
+      // response in flight knows it must not unconditionally overwrite this value.
+      _liveXpRevision++;
       setState({ xp: newXp, lastEvent: 'xp' });
     });
 
