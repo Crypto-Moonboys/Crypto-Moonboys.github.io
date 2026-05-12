@@ -321,9 +321,12 @@ const buildPanelHTMLBlock = functionBlock(csp, 'buildPanelHTML');
 const fetchDailyStateBlock = functionBlock(csp, 'fetchDailyStateWithAuth');
 const invalidateDailyStateCacheBlock = functionBlock(csp, 'invalidateDailyStateCache');
 const scheduleRefreshBlock = functionBlock(csp, 'scheduleLiveDataRefresh');
+const schedulePanelRemountBlock = functionBlock(csp, 'schedulePanelRemount');
 // buildPanelHTML must not unconditionally await the fetch before checking globals
 check(!buildPanelHTMLBlock.includes('await fetchDailyStateWithAuth()'), 'buildPanelHTML does not block-await daily-state fetch before rendering');
-check(buildPanelHTMLBlock.includes('fetchDailyStateWithAuth().then'), 'buildPanelHTML fires daily-state fetch in background and patches Missed XP when ready');
+check(buildPanelHTMLBlock.includes('fetchDailyStateWithAuth().then'), 'buildPanelHTML fires daily-state fetch in background when Missed XP is unconfirmed');
+check(!buildPanelHTMLBlock.includes("document.querySelectorAll('.csp-item-val[data-csp-missed-xp]')"), 'buildPanelHTML does not directly patch Missed XP DOM nodes from daily-state fetch callback');
+check(buildPanelHTMLBlock.includes('schedulePanelRemount()'), 'confirmed daily-state fetch triggers panel remount path');
 check(csp.includes('var _dailyStateGeneration = 0;'), 'connection-status-panel defines _dailyStateGeneration');
 check(invalidateDailyStateCacheBlock.includes('_dailyStateGeneration++'), 'invalidateDailyStateCache increments _dailyStateGeneration');
 // fetchDailyStateWithAuth must target the correct Worker route
@@ -333,6 +336,7 @@ check(fetchDailyStateBlock.includes('requestGeneration === _dailyStateGeneration
 // daily-state cache must be invalidated when live-data refresh events fire
 check(csp.includes('function invalidateDailyStateCache'), 'connection-status-panel has invalidateDailyStateCache helper');
 check(scheduleRefreshBlock.includes('invalidateDailyStateCache()'), 'scheduleLiveDataRefresh calls invalidateDailyStateCache before remounting panels');
+check(schedulePanelRemountBlock.includes("document.querySelectorAll('[data-csp-panel]')") && !schedulePanelRemountBlock.includes('invalidateDailyStateCache()'), 'schedulePanelRemount remounts panels without invalidating daily-state cache');
 // _dailyStateInflight must be cleared in exactly one finally path
 const inflightNullCount = (fetchDailyStateBlock.match(/_dailyStateInflight\s*=\s*null/g) || []).length;
 check(inflightNullCount === 1, 'fetchDailyStateWithAuth clears _dailyStateInflight in exactly one path');

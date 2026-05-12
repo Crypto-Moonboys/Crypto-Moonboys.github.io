@@ -359,16 +359,13 @@
     // Use cached daily-state or globals for immediate render — do not block for a network fetch.
     var missedXp = missedXpAllTime(_dailyStateCache || null);
     var missedXpDisplay = missedXp !== null ? esc(String(missedXp)) : 'syncing…';
-    // If no confirmed data yet, fire background fetch and patch the element when ready.
+    // If no confirmed data yet, fire background fetch and remount once confirmed.
     if (missedXp === null) {
       var patchGeneration = _dailyStateGeneration;
       fetchDailyStateWithAuth().then(function (confirmedState) {
         if (patchGeneration !== _dailyStateGeneration) return;
         if (confirmedState && confirmedState.missed_xp_all_time != null) {
-          var val = Number(confirmedState.missed_xp_all_time) || 0;
-          document.querySelectorAll('.csp-item-val[data-csp-missed-xp]').forEach(function (el) {
-            el.textContent = String(val);
-          });
+          schedulePanelRemount();
         }
       }).catch(function () {});
     }
@@ -582,6 +579,14 @@
       invalidateDailyStateCache();
       document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
     }, 120);
+  }
+
+  function schedulePanelRemount() {
+    if (_liveDataRefreshTimer) clearTimeout(_liveDataRefreshTimer);
+    _liveDataRefreshTimer = setTimeout(function () {
+      _liveDataRefreshTimer = null;
+      document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
+    }, 0);
   }
 
   function listenForUpdates() {
