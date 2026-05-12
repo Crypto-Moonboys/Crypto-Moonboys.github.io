@@ -60,6 +60,7 @@
   var _progressionInflight = null;
   var _dailyStateCache = null;
   var _dailyStateInflight = null;
+  var _dailyStateGeneration = 0;
   var _apiOnlineCache = null;
   var _liveDataRefreshTimer = null;
   // Unsubscribe token for MOONBOYS_STATE subscriber (avoids leak if re-initialised)
@@ -221,6 +222,7 @@
   function fetchDailyStateWithAuth() {
     if (_dailyStateCache !== null) return Promise.resolve(_dailyStateCache);
     if (_dailyStateInflight !== null) return _dailyStateInflight;
+    var requestGeneration = _dailyStateGeneration;
 
     _dailyStateInflight = (async function () {
       try {
@@ -239,7 +241,7 @@
             signal: ac.signal,
           });
           var payload = await res.json().catch(function () { return null; });
-          if (res.ok && payload && payload.ok === true) {
+          if (res.ok && payload && payload.ok === true && requestGeneration === _dailyStateGeneration) {
             _dailyStateCache = payload;
             return payload;
           }
@@ -359,7 +361,9 @@
     var missedXpDisplay = missedXp !== null ? esc(String(missedXp)) : 'syncing…';
     // If no confirmed data yet, fire background fetch and patch the element when ready.
     if (missedXp === null) {
+      var patchGeneration = _dailyStateGeneration;
       fetchDailyStateWithAuth().then(function (confirmedState) {
+        if (patchGeneration !== _dailyStateGeneration) return;
         if (confirmedState && confirmedState.missed_xp_all_time != null) {
           var val = Number(confirmedState.missed_xp_all_time) || 0;
           document.querySelectorAll('.csp-item-val[data-csp-missed-xp]').forEach(function (el) {
@@ -567,6 +571,7 @@
 
   function invalidateDailyStateCache() {
     _dailyStateCache = null;
+    _dailyStateGeneration++;
   }
 
   function scheduleLiveDataRefresh() {
