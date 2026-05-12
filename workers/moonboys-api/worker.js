@@ -2,6 +2,7 @@ import { GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blo
 import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
 import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from './blocktopia/db.js';
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
+import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction } from './shared/faction-canon.js';
 /**
  * Moonboys API — Cloudflare Worker entrypoint
  *
@@ -201,7 +202,6 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;');
 }
 
-const FACTION_UNALIGNED = 'unaligned';
 const FACTION_SWITCH_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const FACTION_CONFIG = {
   // Canonical 9-faction keys — mirrors LIVE_FACTIONS in battle-chamber-factions.js
@@ -276,23 +276,6 @@ const FACTION_CONFIG = {
     xpMultiplier: 1,
   },
 };
-
-function normalizeFaction(value) {
-  const cleaned = String(value || '').trim().toLowerCase();
-  // All 9 canonical Battle Chamber faction keys
-  const CANONICAL_FACTIONS = [
-    'hard-fork-rockers', 'rugpull-miners', 'graffpunks', 'blockchain-furies',
-    'crypto-moongirls', 'blockstars', 'all-city-bulls', 'nomad-bears', 'crypto-stoned-boys',
-  ];
-  if (CANONICAL_FACTIONS.includes(cleaned)) return cleaned;
-  // Legacy aliases → canonical keys
-  if (cleaned === 'diamondhands' || cleaned === 'diamond_hands' || cleaned === 'diamond-hands') return 'hard-fork-rockers';
-  if (cleaned === 'hodlwarriors' || cleaned === 'hodl_warriors' || cleaned === 'hodl-warriors') return 'rugpull-miners';
-  if (cleaned === 'rugpullminors' || cleaned === 'rugpull_minors' || cleaned === 'rugpull-minors') return 'rugpull-miners';
-  if (cleaned === 'graff-punks' || cleaned === 'graff_punks') return 'graffpunks';
-  if (cleaned === 'unaligned') return FACTION_UNALIGNED;
-  return null;
-}
 
 function factionMeta(faction) {
   const key = normalizeFaction(faction) || FACTION_UNALIGNED;
@@ -853,17 +836,7 @@ const BATTLE_CHAMBER_EVENT_TYPES = new Set([
   'manual_safe_event',
 ]);
 
-const BATTLE_CHAMBER_FACTIONS = Object.freeze([
-  'hard-fork-rockers',
-  'rugpull-miners',
-  'graffpunks',
-  'blockchain-furies',
-  'crypto-moongirls',
-  'blockstars',
-  'all-city-bulls',
-  'nomad-bears',
-  'crypto-stoned-boys',
-]);
+const BATTLE_CHAMBER_FACTIONS = CANONICAL_FACTION_KEYS;
 
 const BATTLE_CHAMBER_FACTION_LABELS = Object.freeze({
   'hard-fork-rockers': 'Hard Fork Rockers',
@@ -875,20 +848,6 @@ const BATTLE_CHAMBER_FACTION_LABELS = Object.freeze({
   'all-city-bulls': 'All City Bulls',
   'nomad-bears': 'Nomad Bears',
   'crypto-stoned-boys': 'Crypto Stoned Boys',
-});
-
-const BATTLE_CHAMBER_FACTION_ALIASES = Object.freeze({
-  'diamond-hands': 'hard-fork-rockers',
-  diamond_hands: 'hard-fork-rockers',
-  diamondhands: 'hard-fork-rockers',
-  'hodl-warriors': 'rugpull-miners',
-  hodl_warriors: 'rugpull-miners',
-  hodlwarriors: 'rugpull-miners',
-  'rugpull-minors': 'rugpull-miners',
-  rugpull_minors: 'rugpull-miners',
-  rugpullminors: 'rugpull-miners',
-  'graff-punks': 'graffpunks',
-  graff_punks: 'graffpunks',
 });
 
 const BATTLE_CHAMBER_CLAMP_MAX = 5000;
@@ -1018,9 +977,8 @@ async function ensureBattleChamberTables(db) {
 // Battle Chamber uses canonical 9-faction keys while legacy faction progression
 // routes still rely on normalizeFaction() for backward-compatible aliases.
 function normalizeBattleChamberFaction(value) {
-  const raw = String(value || '').trim().toLowerCase();
-  const fromAlias = BATTLE_CHAMBER_FACTION_ALIASES[raw] || raw;
-  return BATTLE_CHAMBER_FACTIONS.includes(fromAlias) ? fromAlias : null;
+  const normalized = normalizeFaction(value);
+  return BATTLE_CHAMBER_FACTIONS.includes(normalized) ? normalized : null;
 }
 
 function getBattleChamberPeriodKey(periodType, nowMs = Date.now()) {
