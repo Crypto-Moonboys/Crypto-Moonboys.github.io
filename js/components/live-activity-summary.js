@@ -306,9 +306,9 @@
       var current = Number.isFinite(Number(m.current)) ? Math.max(0, Number(m.current)) : 0;
       var target = Number.isFinite(Number(m.target)) && Number(m.target) > 0 ? Number(m.target) : 1;
       return '<div class="las-mission-row ' + (m.done ? 'is-complete' : '') + '">' +
-        '<span class="las-mission-title" aria-label="Mission title">' + esc(m.title) + '</span>' +
-        '<span class="las-mission-progress" aria-label="Mission progress">' + esc(String(current)) + '/' + esc(String(target)) + '</span>' +
-        '<span class="las-mission-reward" aria-label="Mission reward">' + (m.reward ? esc(m.reward) : (m.done ? 'COMPLETE' : 'LIVE')) + '</span>' +
+        '<span class="las-mission-title">' + esc(m.title) + '</span>' +
+        '<span class="las-mission-progress">' + esc(String(current)) + '/' + esc(String(target)) + '</span>' +
+        '<span class="las-mission-reward">' + (m.reward ? esc(m.reward) : (m.done ? 'COMPLETE' : 'LIVE')) + '</span>' +
       '</div>';
     }).join('');
   }

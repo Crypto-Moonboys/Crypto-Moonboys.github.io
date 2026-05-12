@@ -280,7 +280,7 @@
     // Compact rail rule: show one short personal activity line only.
     var latestLine = latestRows.length ? latestRows[0] : null;
     var latestActivityText = latestLine ? latestLine.text : 'No synced activity yet.';
-    var latestActivityTag = latestLine && latestLine.tag ? latestLine.tag : 'Now';
+    var latestActivityTag = latestLine && latestLine.tag ? latestLine.tag : 'Status';
     var missedXp = missedXpAllTime();
 
     if (!linked) {
