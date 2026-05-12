@@ -771,8 +771,8 @@
     injectStyles();
     document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
 
-    // Bus listeners are used ONLY to append log entries; they never trigger
-    // full remounts or refresh() calls.
+    // Bus listeners are log-only: they append activity entries and do not
+    // patch sync/faction UI rows, trigger remounts, or call refresh().
     listenForActivity();
     if (!_singleton.opsActionsBound) {
       _singleton.opsActionsBound = true;
