@@ -174,14 +174,10 @@
         if (res.ok && payload && payload.ok === true && payload.progression) {
           var prog = payload.progression;
           var incomingXp = Math.max(0, Math.floor(Number(prog.arcade_xp_total) || 0));
-          // Only apply the API value if it is at least as high as the current
-          // cached/live value.  This prevents a stale API response from rolling
-          // back XP that has already been updated by in-session bus events.
-          if (incomingXp >= _state.xp) {
-            setState({ xp: incomingXp, linked: true, source: 'server', syncedAt: Date.now() });
-          } else {
-            setState({ linked: true, source: 'server', syncedAt: Date.now() });
-          }
+          // Server is authoritative during hydration: always apply the server-confirmed
+          // XP value regardless of what is cached in localStorage.  Stale local XP
+          // must not overrule the server on page load.
+          setState({ xp: incomingXp, linked: true, source: 'server', syncedAt: Date.now() });
         }
       } catch (_) {}
 

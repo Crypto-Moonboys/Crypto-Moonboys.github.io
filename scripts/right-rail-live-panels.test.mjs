@@ -23,6 +23,11 @@ const bridge = read('js/battle-chamber-faction-bridge.js');
 const worker = read('workers/moonboys-api/worker.js');
 const dailyDigestRoutes = read('workers/moonboys-api/routes/daily-digest.js');
 const workerAndDailyDigest = worker + '\n' + dailyDigestRoutes;
+const globalHeader = read('js/components/global-player-header.js');
+const homeWidgets = read('js/home-widgets.js');
+const telegramCommunity = read('js/telegram-community.js');
+const leaderboardClient = read('js/leaderboard-client.js');
+const moonboysState = read('js/core/moonboys-state.js');
 
 function hasScript(html, src) {
   return html.includes(`src="${src}"`) || html.includes(`src='${src}'`);
@@ -175,7 +180,7 @@ check(las.includes('data-wtf-state="error"') && las.includes('Daily WTF: Signal 
 check(las.includes('Get Ready') && las.includes('Starts in'), 'upcoming WTF state renders compact preparation card');
 check(las.includes('Check In') && las.includes('data-wtf-checkin') && las.includes('Ends in'), 'active WTF state renders Check In CTA for linked users');
 check(las.includes('No Daily WTF signals generated for today') && las.includes('Get Ready'), 'no-event WTF fallback remains actionable');
-check(las.includes('FACTION_MISSION_FALLBACKS') && las.includes('fallbackDailyMissions') && las.includes('gp_chaos_3'), 'faction mission definitions render when live progress data is absent');
+check(las.includes('_QUARANTINED_FACTION_MISSION_FALLBACKS') && !las.includes('fallbackDailyMissions'), 'faction mission fallbacks are quarantined and not rendered as live faction data');
 check(las.includes('Link Telegram') && las.includes('Telegram sync inactive'), 'unlinked users see a Link Telegram CTA');
 check(las.includes('var state = window.MOONBOYS_WTF_EVENTS || null') && las.includes('wtfHTML(linked)'), 'faction ops mount path reads existing window.MOONBOYS_WTF_EVENTS state and does not rely only on future events');
 
@@ -247,6 +252,62 @@ check(bridge.includes("method: 'POST'") && bridge.includes('body: JSON.stringify
 check(!csp.includes('FALLBACK_REQUIRED_XP = 51') && csp.includes('FALLBACK_REQUIRED_XP = 50'), 'Block Topia fallback XP threshold was not changed');
 check(!/Score\s*=\s*Arcade XP/.test(csp + las + siteShell), 'leaderboard score and Arcade XP labels remain separate');
 check(!/token reward|NFT reward|passive income|financial reward/i.test(csp + las + siteShell), 'no token/NFT/passive/financial reward wording was added');
+
+console.log('\n[9] Honest live data — new enforcement checks');
+
+// Issue 1: site-shell.js must not contain "Live identity below"
+check(!siteShell.includes('Live identity below'), 'site-shell.js does not contain fake "Live identity below" placeholder');
+check(siteShell.includes('Telegram not linked'), 'site-shell.js uses honest "Telegram not linked" default for hud-player-name');
+
+// Issue 2: live-activity-summary.js must not render hardcoded fallback missions as live ops
+check(!las.includes('fallbackDailyMissions'), 'live-activity-summary.js does not have a fallbackDailyMissions function that renders as live faction data');
+check(las.includes('_QUARANTINED_FACTION_MISSION_FALLBACKS'), 'faction mission fallbacks are quarantined and clearly labelled as such');
+check(las.includes('No live faction missions reported'), 'live-activity-summary.js renders honest empty state when no real mission data');
+check(!las.includes('{ factionKey: factionKey, missions: fallback'), 'normaliseMissionList does not return hardcoded fallback missions');
+
+// Issue 3: Missed XP panel must not default to 0 before confirmed data
+check(csp.includes('return null;'), 'missedXpAllTime returns null (not 0) when no confirmed data is available');
+check(csp.includes("syncing\u2026") || csp.includes('syncing\\u2026'), 'connection-status-panel shows "syncing…" for unconfirmed Missed XP');
+check(!csp.includes('return 0;\n  }') || (function() {
+  // Ensure the remaining `return 0` is not the bottom-of-function fallback
+  const idx = csp.lastIndexOf('return 0;');
+  return idx === -1 || !csp.slice(idx - 50, idx).includes('function missedXpAllTime');
+}()), 'missedXpAllTime no longer hard-returns 0 when globals are absent');
+
+// Issue 4: Daily WTF fallback is labelled syncing/fallback
+check(las.includes('Syncing schedule'), 'Daily WTF fallback card is labelled "Syncing schedule" not presented as confirmed live');
+check(las.includes('Fallback schedule'), 'Daily WTF fallback card includes a "Fallback schedule" label for the local estimate');
+
+// Issue 5: LIVE SYNC badge requires fresh signed auth
+check(csp.includes('RELINK'), 'connection-status-panel has a RELINK badge state for linked-but-expired-auth');
+check(csp.includes('getSignedTelegramAuth'), 'connection-status-panel checks getSignedTelegramAuth before showing LIVE SYNC');
+check(csp.includes('csp-badge--relink'), 'RELINK badge has its own CSS class');
+check(csp.includes('Auth expired'), 'RELINK badge copy includes "Auth expired" to explain the state');
+
+// Issue 6: Server XP always wins during hydration
+check(!moonboysState.includes('if (incomingXp >= _state.xp)'), 'moonboys-state.js does not guard server XP with >= local XP on hydration');
+check(moonboysState.includes('Server is authoritative during hydration'), 'moonboys-state.js documents that server XP is authoritative on hydration');
+
+// Issue 7: global-player-header.js must not auto-create [data-las-panel] unless opted in
+check(globalHeader.includes("data-auto-las-panel"), 'global-player-header.js gates autoMountActivityPanel behind data-auto-las-panel opt-in');
+check(globalHeader.includes("document.body.dataset.autoLasPanel !== 'true'"), 'global-player-header.js skips auto-mount unless body data attribute is set');
+check(!globalHeader.includes("setTimeout(autoMountActivityPanel") || globalHeader.includes("data-auto-las-panel"), 'autoMountActivityPanel is either removed or properly gated from bootstrap');
+
+// Issue 8: Home widgets do not label disabled feeds as live
+check(homeWidgets.includes('not yet available') || homeWidgets.includes('not live yet') || homeWidgets.includes('coming soon'), 'home-widgets.js uses honest copy when live feed is disabled');
+check(!homeWidgets.includes('Recent activity is generated from synced arcade'), 'home-widgets.js does not use misleading "is generated" copy when LIVE_FEED is false');
+
+// Issue 9: Telegram community does not use "Active" for non-presence state
+check(!telegramCommunity.includes('>✅ Active<'), 'telegram-community.js does not use "Active" for profile-found/faction-linked state');
+check(telegramCommunity.includes('>✅ Linked<'), 'telegram-community.js uses "Linked" instead of "Active" for profile card badge');
+
+// Issue 10: leaderboard fetch errors are distinguishable from empty leaderboard
+check(leaderboardClient.includes('error: true') && leaderboardClient.includes('entries: null'), 'fetchLeaderboard returns structured error object on fetch failure');
+check(!leaderboardClient.includes('return [];\n  }'), 'fetchLeaderboard does not return empty [] on catch (ambiguous with real empty leaderboard)');
+
+// dashboard.html remains wiki/editorial only (existing check extended)
+check(!dashboard.includes('missed_xp') && !dashboard.includes('missed_xp_all_time'), 'dashboard.html does not contain missed XP player data (wiki/editorial only)');
+check(!dashboard.includes('data-las-panel') && !dashboard.includes('data-csp-panel'), 'dashboard.html does not contain live player feed panels');
 
 const failed = checks.filter((c) => !c.ok);
 if (failed.length) {

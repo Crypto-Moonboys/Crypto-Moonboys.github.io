@@ -1,8 +1,21 @@
 /**
  * Crypto Moonboys — Connection Status Panel
  * ==========================================
- * Shared UX clarity component. Shows the current player's sync state across
- * all pages: Telegram link, Arcade XP, Block Topia gate, faction, API health.
+ * Compact player live-feed panel and header badge.
+ *
+ * Panel (data-csp-panel) shows: Arcade XP, Block Topia access, Missed XP,
+ * latest personal activity row, and optional public Battle Chamber feed.
+ * The panel does NOT show faction/season/API health rows — those live in
+ * the Faction Daily Ops panel (live-activity-summary.js).
+ *
+ * Header badge states:
+ *   LIVE SYNC          — linked + fresh signed Telegram auth confirmed
+ *   RELINK             — linked in localStorage but signed auth expired/missing
+ *   Telegram Sync Required — not linked
+ *
+ * Missed XP display: reads from page globals (MOONBOYS_WTF_EVENTS,
+ * MOONBOYS_ROGUELITE_DAILY_STATE).  Shows "syncing…" until at least one
+ * source reports a confirmed value — never shows 0 before data is loaded.
  *
  * Usage — full panel:
  *   <div id="my-status-panel" data-csp-panel></div>
@@ -222,7 +235,9 @@
     var daily = window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
     if (state && state.missed_xp_all_time != null) return Number(state.missed_xp_all_time) || 0;
     if (daily && daily.missed_xp_all_time != null) return Number(daily.missed_xp_all_time) || 0;
-    return 0;
+    // Neither source has confirmed data yet — return null so the panel can show "syncing…"
+    // instead of a misleading 0.
+    return null;
   }
 
   function latestActivityRows() {
@@ -288,6 +303,7 @@
         '</div>';
     }
     var missedXp = missedXpAllTime();
+    var missedXpDisplay = missedXp !== null ? esc(String(missedXp)) : 'syncing\u2026';
 
     return '' +
       '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
@@ -298,7 +314,7 @@
         '<div class="csp-grid csp-grid--live">' +
           '<div class="csp-item"><div class="csp-item-label">Arcade XP</div><div class="csp-item-val" data-csp-xp>' + esc(String(arcadeXp)) + '</div></div>' +
           '<div class="csp-item csp-item--wide"><div class="csp-item-label">Block Topia</div><div class="csp-item-val" data-csp-bt-access>' + blocktopia + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Missed XP</div><div class="csp-item-val">' + esc(String(missedXp)) + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Missed XP</div><div class="csp-item-val" data-csp-missed-xp>' + missedXpDisplay + '</div></div>' +
         '</div>' +
         '<div class="csp-feed csp-feed--latest"><div class="csp-feed-row csp-feed-row--latest"><span class="csp-feed-label">Latest:</span><span class="csp-feed-text">' + esc(latestActivityText) + '</span></div></div>' +
         (publicRows.length
@@ -312,12 +328,19 @@
     if (!linked) {
       return '<a href="/gkniftyheads-incubator.html" class="csp-badge csp-badge--unlinked" aria-label="Telegram Sync Required"><span class="csp-pulse csp-pulse--warn"></span><span><strong>Telegram Sync Required</strong><small>Link to activate live systems</small></span></a>';
     }
+    // Check for fresh signed auth — LIVE SYNC requires confirmed auth, not just localStorage linked state.
+    var gate = getIdentity();
+    var freshAuth = gate && typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+    if (!freshAuth) {
+      // Linked in localStorage but auth is expired or missing — show RELINK state.
+      var relinkName = getDisplayName() || 'Player';
+      return '<a href="/gkniftyheads-incubator.html" class="csp-badge csp-badge--relink" aria-label="Re-link required"><span class="csp-pulse csp-pulse--warn"></span><span class="csp-badge-stack"><strong>RELINK</strong><small>' + esc(relinkName) + ' · Auth expired</small></span></a>';
+    }
     var name = getDisplayName();
     var progression = await fetchRequiredXp();
     var arcadeXp = getArcadeXp();
     var requiredXp = progression.requiredXp;
     var unlocked = arcadeXp >= requiredXp;
-    var status = getFactionStatus();
     var faction = factionLabel();
     var shortFaction = faction.length > 18 ? faction.slice(0, 17) + '…' : faction;
     var apiOnline = await checkApiOnline();
@@ -388,6 +411,7 @@
       '.csp-badge-chip--good{color:#3fb950;border-color:rgba(63,185,80,.35)}.csp-badge-chip--warn{color:#f7c948;border-color:rgba(247,201,72,.35)}',
       '.csp-badge--linked{background:rgba(86,220,255,.1);border:1px solid rgba(86,220,255,.35);color:#c8f0ff;box-shadow:0 0 12px rgba(86,220,255,.12)}',
       '.csp-badge--unlinked{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.35);color:#ffd0cd;text-decoration:none}',
+      '.csp-badge--relink{background:rgba(247,201,72,.08);border:1px solid rgba(247,201,72,.45);color:#f7e29a;text-decoration:none}',
       /* Loading placeholder */
       '.csp-loading{color:var(--color-text-muted,#8b949e);font-size:.82rem;padding:10px 0}',
     ].join('\n');
