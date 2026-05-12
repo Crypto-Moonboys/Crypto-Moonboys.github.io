@@ -644,9 +644,10 @@
       ? '<div class="las-chain-options"><strong>Unlocked chain options</strong>' + state.chain_options.slice(0, 3).map(function (o) { return '<span>' + esc(o.title || o.display_title || o.name || o.id || 'Chain option') + '</span>'; }).join('') + '</div>'
       : '';
     var statusLabel = wtfStatusLabel(status, completedOnly);
+    var completedPrefix = completedOnly ? 'COMPLETE ' : '';
     return '<div class="las-signal-card" data-wtf-state="' + esc(status) + '">' +
       '<span class="las-pill ' + pillClass + '">' + esc(statusLabel) + '</span>' +
-      '<strong>Daily WTF: ' + (completedOnly ? 'COMPLETE' : '') + (completedOnly ? ' ' : '') + esc(title) + '</strong>' +
+      '<strong>Daily WTF: ' + completedPrefix + esc(title) + '</strong>' +
       '<div class="las-countdown" data-wtf-countdown>' + esc(timerLabel) + ' ' + countdownText(state.countdown_seconds) + '</div>' +
       buttons + options +
       '</div>';
