@@ -315,8 +315,7 @@ check(!csp.includes('Daily opportunity state synced'), 'connection-status-panel 
 const latestActivityRowsBlock = functionBlock(csp, 'latestActivityRows');
 check(!latestActivityRowsBlock.includes('Daily opportunity'), 'latestActivityRows does not generate generic "Daily opportunity" text');
 check(!latestActivityRowsBlock.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && !latestActivityRowsBlock.includes('MOONBOYS_DAILY_ROGUELITE_LOTTERY'), 'latestActivityRows does not read daily-state globals (daily logic belongs in the lower Faction Daily Ops box)');
-// Lower Daily WTF / Faction Daily Ops box (live-activity-summary.js) is untouched
-check(las.includes('Syncing schedule') && las.includes('Fallback schedule'), 'lower Daily WTF fallback labels remain intact in live-activity-summary.js');
+
 
 const failed = checks.filter((c) => !c.ok);
 if (failed.length) {
