@@ -346,13 +346,11 @@
     var arcadeXp = getArcadeXp();
     var requiredXp = progression.requiredXp;
     var unlocked = arcadeXp >= requiredXp;
-    var faction = factionLabel();
-    var shortFaction = faction.length > 18 ? faction.slice(0, 17) + '…' : faction;
     var apiOnline = await checkApiOnline();
     return '' +
       '<span class="csp-badge csp-badge--linked" aria-label="Live sync active">' +
         '<span class="csp-pulse"></span>' +
-        '<span class="csp-badge-stack"><strong>LIVE SYNC</strong><small>' + esc(name || 'Player') + ' · XP <span data-csp-badge-xp>' + arcadeXp + '</span> · ' + esc(shortFaction) + '</small></span>' +
+        '<span class="csp-badge-stack"><strong>LIVE SYNC</strong><small>' + esc(name || 'Player') + ' · XP <span data-csp-badge-xp>' + arcadeXp + '</span></small></span>' +
         '<span class="csp-badge-chip" data-csp-badge-bt>' + blocktopiaBadgeLabel(unlocked) + '</span>' +
         '<span class="csp-badge-chip ' + (apiOnline ? 'csp-badge-chip--good' : 'csp-badge-chip--warn') + '">' + (apiOnline ? 'API' : 'API?') + '</span>' +
       '</span>';
