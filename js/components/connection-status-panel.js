@@ -17,7 +17,7 @@
  * MOONBOYS_ROGUELITE_DAILY_STATE) and the session daily-state cache first.
  * Renders immediately with the confirmed value when available; otherwise shows
  * "syncing…" and fires POST /roguelite/daily-state in the background
- * (fresh/restorable signed Telegram auth required), then patches the element
+ * (fresh/restorable signed Telegram auth required), then remounts the panel
  * when the fetch confirms missed_xp_all_time — never blocks the panel render
  * for a network round-trip and never shows 0 before data is confirmed.
  *
@@ -582,6 +582,8 @@
   }
 
   function schedulePanelRemount() {
+    // Share the same timer as scheduleLiveDataRefresh so a newer refresh intent
+    // (invalidate+remount or remount-only) supersedes any pending older one.
     if (_liveDataRefreshTimer) clearTimeout(_liveDataRefreshTimer);
     _liveDataRefreshTimer = setTimeout(function () {
       _liveDataRefreshTimer = null;
