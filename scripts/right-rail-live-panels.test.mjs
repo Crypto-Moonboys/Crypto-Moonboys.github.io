@@ -106,23 +106,23 @@ check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requi
 
 console.log('\n[4] Panel separation');
 check(siteShell.includes('PLAYER LIVE FEED') && siteShell.includes('FACTION DAILY OPS'), 'right rail boxes are titled PLAYER LIVE FEED and FACTION DAILY OPS');
-check(csp.includes('Recent Personal Activity') && csp.includes('No synced activity yet. Play an arcade run or complete a faction task.'), 'player panel owns user/sync/progression/recent activity data');
+check(csp.includes('Latest Activity') && csp.includes('Missed XP'), 'player live feed is compact and keeps key personal fields');
+check(!csp.includes('<div class="csp-item-label">Faction</div>') && !csp.includes('<div class="csp-item-label">Season</div>') && !csp.includes('<div class="csp-item-label">API Sync</div>'), 'player live feed does not repeat faction/season/API rows');
 const ownBattleBlock = functionBlock(csp, 'isOwnBattleActivity');
 const latestActivityBlock = functionBlock(csp, 'latestActivityRows');
 check(csp.includes('isOwnBattleActivity') && csp.includes('getTelegramId()') && csp.includes('activity.filter(isOwnBattleActivity)'), 'player feed filters Battle Chamber activity to the linked player when possible');
 check(!ownBattleBlock.includes('getDisplayName()') && !ownBattleBlock.includes('display_name'), 'personal Battle Chamber matching does not rely on display name when Telegram identifiers are required');
 check(!latestActivityBlock.includes("tag: 'Global'") && !latestActivityBlock.includes('global feed active'), 'global/unmatched Battle Chamber rows are not rendered inside Recent Personal Activity');
 check(csp.includes('Latest Public Battle Chamber Activity') && csp.includes("tag: 'Public'") && csp.includes('latestGlobalBattleRows'), 'global Battle Chamber feed is rendered only under a public/global heading');
-check(csp.includes('No synced activity yet. Play an arcade run or complete a faction task.'), 'personal feed keeps personal action empty-state copy');
-check(csp.includes('No public Battle Chamber activity yet.'), 'public feed has public-specific empty-state copy');
-check(csp.includes("buildFeedHTML(latestGlobalBattleRows(), 'No public Battle Chamber activity yet.')"), 'public feed empty state does not reuse the personal action copy');
+check(!csp.includes('No public Battle Chamber activity yet.') && !csp.includes("buildFeedHTML(latestGlobalBattleRows(), 'No public Battle Chamber activity yet.')"), 'public Battle Chamber box is hidden when empty');
+check(csp.includes('(publicRows.length') && csp.includes('buildFeedHTML(publicRows)'), 'public Battle Chamber section only renders when there are public rows');
 check((las.includes("Today\\'s Missions") || las.includes("Today's Missions")) && las.includes('Daily WTF Signal') && las.includes('Missed Opportunities'), 'faction panel owns missions/events/missed signals');
 check(!las.includes('data-csp-xp') && !las.includes('data-csp-panel'), 'faction ops panel does not repeat the Arcade XP block');
 check(!siteShell.includes('id="hud-player-name">Guest'), 'right rail no longer renders a duplicate Guest/Telegram name block');
 check(!siteShell.includes('Live linked avatar'), 'HUD player-name logic does not replace the name with literal Live linked avatar');
 check(las.includes('p.progress != null') && las.includes('p.target != null') && las.includes('p.complete === true'), 'mission normalization reads saved progress, target, and complete fields from bridge cache');
-check(las.includes('esc(String(current))') && las.includes('esc(String(target))') && las.includes("m.done ? 'COMPLETE'"), 'mission renderer displays saved progress counters and completed check state');
-check(las.includes('Number.isFinite(Number(m.current))') && las.includes('Number.isFinite(Number(m.target))') && las.includes('var pct = Math.max(0, Math.min(100'), 'mission progress percentage guards against NaN widths');
+check(las.includes('esc(String(current))') && las.includes('esc(String(target))') && las.includes('las-mission-row'), 'mission renderer displays compact title/progress/reward rows');
+check(las.includes('Number.isFinite(Number(m.current))') && las.includes('Number.isFinite(Number(m.target))') && !las.includes('las-mission-card') && !las.includes('las-mission-top') && !las.includes('las-mission-obj') && !las.includes('las-progress'), 'mission cards do not render large objective paragraphs or progress bars in right rail');
 check(csp.includes('scheduleLiveDataRefresh') && csp.includes('_liveDataRefreshTimer') && csp.includes('setTimeout(function ()'), 'connection status panel debounces live-data refreshes');
 for (const evt of ['battle-chamber:faction-data-ready','battle-chamber:activity-ready','moonboys:wtf-events-ready','moonboys:wtf-event-checkin','moonboys:wtf-event-complete','moonboys:roguelite-options-unlocked','moonboys:faction-status','moonboys:faction-boost']) {
   check(csp.includes(evt), `connection status panel listens for ${evt}`);
@@ -137,7 +137,10 @@ check(las.includes('data-wtf-checkin') && las.includes('checkInWtfEvent'), 'fact
 check(las.includes('getWtfProofSource') && las.includes('VALID_WTF_COMPLETION_SOURCES'), 'faction ops panel gates completion behind valid proof sources');
 check(!las.includes("completeWtfEvent(eventId, 'right_rail_ops', 'faction_daily_ops')") && !las.includes('right_rail_ops'), 'right rail does not call completeWtfEvent with invalid right_rail_ops proof source');
 check(las.includes('data-completion-source') && las.includes('data-source-id') && las.includes('Complete with proof'), 'complete CTA only renders with proof source and source id attributes');
-check(las.includes('Complete objective in Arcade / Missions first') && las.includes('wtfRequirementText'), 'right rail shows instruction copy when no proof source is available');
+check(las.includes('Daily WTF:') && las.includes('Starts in') && las.includes('Ends in') && las.includes('Get Ready'), 'Daily WTF rail is compact with title/timer/action');
+check(!las.includes('Live now - Daily WTF signals open every 4 hours') && !las.includes('Get ready - Daily WTF signals open every 4 hours across the UTC day.'), 'Daily WTF rail removes verbose legacy subcopy');
+check(las.includes('function wtfStatusLabel(status, completedOnly)') && las.includes("if (completedOnly || status === 'completed') return 'COMPLETE';") && las.includes("if (status === 'waiting') return 'WAITING';"), 'Daily WTF rail has explicit status-label mapping for completed/missed/waiting');
+check(las.includes('var statusLabel = wtfStatusLabel(status, completedOnly);') && !las.includes("var statusLabel = status === 'active' || status === 'checked in' ? 'Active' : 'Upcoming';"), 'Daily WTF status labels are derived from the status-label helper, not upcoming-only fallback');
 check(wtf.includes('setTransientState') && wtf.includes('Loading Daily WTF signal…'), 'Daily WTF system publishes a loading state before fetch resolves');
 check(wtf.includes('window.MOONBOYS_DAILY_WTF') && wtf.includes('makeFallbackSchedule,'), 'Daily WTF global API exposes makeFallbackSchedule for shared fallback rendering');
 check(wtf.includes('Signal feed unavailable; deterministic local schedule rendered') && wtf.includes('makeFallbackSchedule'), 'Daily WTF system has a deterministic fallback instead of leaving schedule loading forever');
@@ -147,7 +150,7 @@ check(wtf.includes('scheduleApiBaseRetry') && wtf.includes('api_base_missing') &
 check(wtf.includes('apiBaseRetryAttempt') && wtf.includes('if (apiBaseRetryAttempt >= API_BASE_RETRY_DELAYS_MS.length) return;'), 'api_base_missing retry attempts are capped');
 check(wtf.includes('resetApiBaseRetryState') && wtf.includes('if (payload && payload.ok) resetApiBaseRetryState();'), 'successful Daily WTF refresh resets api-base retry state');
 check(wtf.includes('normalizeEvent') && wtf.includes('start_at: event.start_at || event.starts_at') && wtf.includes('end_at: event.end_at || event.ends_at'), 'Daily WTF system normalizes Worker event field aliases');
-check(las.includes('data-wtf-state="loading"') && las.includes('Loading Daily WTF signal...'), 'faction ops panel renders an explicit loading state');
+check(las.includes('data-wtf-state="loading"') && las.includes('Daily WTF: Loading signal'), 'faction ops panel renders an explicit loading state');
 check(las.includes('WTF_LOADING_STALL_MS = 8000') && las.includes('buildDeterministicWtfFallbackState') && las.includes('data-wtf-state="fallback"'), 'faction ops panel renders deterministic fallback after loading stall timeout');
 check(las.includes('scheduleWtfLoadingFallbackRepaint') && las.includes('wtfLoadingRepaintTimer') && las.includes('setTimeout(function ()') && las.includes('refresh();'), 'loading state schedules a one-shot repaint so fallback appears without ready events');
 check(las.includes('clearWtfLoadingRepaintTimer') && las.includes('clearTimeout(_singleton.wtfLoadingRepaintTimer)'), 'loading repaint timer is cleared when real Daily WTF state resolves');
@@ -159,17 +162,17 @@ check(las.includes('var requestOptions = auth') && las.includes(': {};'), 'unlin
 check(las.includes('var emergencyState = getEmergencyStateIfUsable();') && las.includes("if ((!state || state.status === 'error') && emergencyState)"), 'right-rail applies recovered emergency state before rendering unavailable card');
 check(las.includes('hasUsablePrimaryWtfState(getWtfState())') && las.includes('_singleton.wtfEmergencyState = null;') && las.includes('_singleton.wtfEmergencyRecoveredAt = 0;'), 'right-rail clears emergency recovered state only after primary state becomes usable');
 check(las.includes('WTF_EMERGENCY_STATE_TTL_MS') && las.includes('getEmergencyStateIfUsable') && las.includes('(Date.now() - recoveredAt) > WTF_EMERGENCY_STATE_TTL_MS'), 'right-rail keeps emergency state stable across ticks while primary stays broken, with bounded TTL');
-check(las.includes('Signal feed fallback active. Daily WTF signals open every 4 hours.') && las.includes('Next Daily WTF Signal'), 'fallback WTF card includes actionable fallback copy and deterministic signal title');
+check(las.includes('Daily WTF:') && las.includes('data-wtf-state="fallback"'), 'fallback WTF card stays compact');
 check(las.includes('scheduleWtfHelperRetry') && las.includes('wtfHelperRetryAttempts') && las.includes('WTF_HELPER_RETRY_MAX'), 'right-rail handles delayed fallback-helper availability with capped retries');
 check(!las.includes('Fallback helper unavailable. Unable to construct a local Daily WTF schedule right now.'), 'right-rail does not expose technical helper-unavailable copy to users');
-check(las.includes('Daily WTF signal feed is reconnecting. Play Arcade while the next signal loads.') && las.includes('Signal feed unavailable. Play Arcade and check Battle Chamber again shortly.'), 'right-rail uses friendly reconnect/unavailable copy for users');
-check(las.includes('data-wtf-state="error"') && las.includes('href="/games/"') && las.includes('Play Arcade'), 'right-rail fallback and error cards always include a CTA');
+check(!las.includes('Daily WTF signals open every 4 hours across the UTC day') && !las.includes('Objective:'), 'Daily WTF rail omits oversized explanatory/objective copy');
+check(las.includes('data-wtf-state="error"') && las.includes('href="/games/"') && las.includes('Get Ready'), 'right-rail fallback and error cards always include compact CTA');
 check(las.includes("if (state.status === 'error') {") && las.includes('maybeKickEmergencyWtfRecovery();') && las.includes("if ((!state || state.status === 'error') && emergencyState)"), 'unavailable card is recoverable and does not persist when recovered next_event state exists');
 check(las.includes('tomorrowStart = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate() + 1))') && las.includes('nextFromTomorrow') && las.includes('Date.parse(next.start_at) - current.getTime()'), 'right-rail fallback looks ahead to tomorrow midnight signal and computes countdown after final daily window');
-check(las.includes('data-wtf-state="error"') && las.includes('Signal feed unavailable.'), 'faction ops panel renders a controlled feed failure state');
-check(las.includes('Get Ready') && las.includes('Daily WTF signals open every 4 hours across the UTC day'), 'upcoming WTF state renders title/countdown preparation copy');
-check(las.includes('Check In') && las.includes('data-wtf-checkin') && las.includes('90-minute timer'), 'active WTF state renders Check In CTA for linked users');
-check(las.includes('No Daily WTF signals generated for today') && las.includes('Play Arcade'), 'no-event WTF fallback remains actionable');
+check(las.includes('data-wtf-state="error"') && las.includes('Daily WTF: Signal unavailable'), 'faction ops panel renders a controlled compact feed failure state');
+check(las.includes('Get Ready') && las.includes('Starts in'), 'upcoming WTF state renders compact preparation card');
+check(las.includes('Check In') && las.includes('data-wtf-checkin') && las.includes('Ends in'), 'active WTF state renders Check In CTA for linked users');
+check(las.includes('No Daily WTF signals generated for today') && las.includes('Get Ready'), 'no-event WTF fallback remains actionable');
 check(las.includes('FACTION_MISSION_FALLBACKS') && las.includes('fallbackDailyMissions') && las.includes('gp_chaos_3'), 'faction mission definitions render when live progress data is absent');
 check(las.includes('Link Telegram') && las.includes('Telegram sync inactive'), 'unlinked users see a Link Telegram CTA');
 check(las.includes('var state = window.MOONBOYS_WTF_EVENTS || null') && las.includes('wtfHTML(linked)'), 'faction ops mount path reads existing window.MOONBOYS_WTF_EVENTS state and does not rely only on future events');
@@ -181,7 +184,8 @@ const setTransientBlock = functionBlock(wtf, 'setTransientState');
 const refreshBlock = functionBlock(wtf, 'refresh');
 const tickerBlock = functionBlock(wtf, 'startCountdownTicker');
 check(wtfStatusBlock.indexOf('state.next_event') < wtfStatusBlock.indexOf('state.completed_today'), 'upcoming/next WTF signal has render priority over completed_today');
-check(wtfHtmlBlock.includes('completedOnly = completed && !active && !next') && wtfHtmlBlock.includes("completedOnly ? 'COMPLETE ' : ''"), 'completed tick only appears when no active or next signal exists');
+check(wtfHtmlBlock.includes('completedOnly = completed && !active && !next') && wtfHtmlBlock.includes("var completedPrefix = completedOnly ? 'COMPLETE ' : '';"), 'completed tick only appears when no active or next signal exists');
+check(las.includes("if (completedOnly || status === 'completed') return 'COMPLETE';"), 'completed Daily WTF status maps to COMPLETE');
 
 const mojibakeMarkers = ['Ã', 'Â', '�', 'â‚¬', 'â€œ', 'â€', 'Å“'];
 for (const marker of mojibakeMarkers) {
@@ -195,15 +199,17 @@ check(wtf.includes("dispatch('moonboys:wtf-events-ready', window.MOONBOYS_WTF_EV
 check(refreshBlock.includes('payload = await fetchTodayEvents()') && refreshBlock.includes('finalState = fallbackFromError') && refreshBlock.includes("setTransientState('error', 'Signal feed unavailable.')"), 'refresh always resolves to worker payload, fallback, or explicit unavailable state');
 check(wtf.includes('triggerBoundaryRefresh') && tickerBlock.includes('state.countdown_seconds === 0') && tickerBlock.includes('triggerBoundaryRefresh()'), 'countdown boundary triggers immediate refresh so upcoming cannot stay at 00:00:00');
 check(las.includes("window.addEventListener('moonboys:wtf-countdown-tick', updateWtfCountdownUI)") && !las.includes('setInterval(updateWtfCountdownUI'), 'right rail uses one countdown update mechanism');
+const addToLogBlock = functionBlock(las, 'addToLog');
+check(!addToLogBlock.includes("document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });"), 'addToLog does not force full right-rail remount when visible log UI is absent');
 
 console.log('\n[6] Missed perks');
 check(las.includes('missed_history_count') && las.includes('missed_today'), 'missed count and daily missed summary can render');
-check(las.includes('The city kept moving while you were away.'), 'missed opportunities copy is present');
-check(las.includes('Daily WTF signals open every 4 hours. Daily options reset at UTC midnight. Missed history does not reset.'), 'daily reset copy and missed history persistence copy are separate and present');
+check(!las.includes('The city kept moving while you were away.'), 'missed opportunities does not include oversized away copy');
+check(!las.includes('Daily WTF signals open every 4 hours. Daily options reset at UTC midnight. Missed history does not reset.'), 'right rail omits oversized reset/explainer copy');
 // All-time missed XP visibility in right-rail PLAYER LIVE FEED
 check(las.includes('missed_xp_all_time'), 'right rail reads missed_xp_all_time for all-time missed XP display');
 check(las.includes('Missed XP:'), 'right rail renders "Missed XP:" label for all-time missed XP');
-check(las.includes('Missed opportunities are tracked over time.'), 'right rail includes "Missed opportunities are tracked over time." copy');
+check(!las.includes('Missed opportunities are tracked over time.'), 'right rail omits repeated missed-opportunities explanatory paragraph');
 check(las.includes('MOONBOYS_ROGUELITE_DAILY_STATE'), 'right rail reads missed_xp_all_time from roguelite daily state as fallback');
 check(!las.includes('state.missed_xp_all_time || rogueliteState.missed_xp_all_time'), 'right rail does not use truthy fallback for missed_xp_all_time');
 check(!las.includes('state.missed_xp_today || rogueliteState.missed_xp_today'), 'right rail does not use truthy fallback for missed_xp_today');

@@ -80,12 +80,6 @@
     return gate.getTelegramId();
   }
 
-  function getSyncState() {
-    var gate = getIdentity();
-    if (!gate || typeof gate.getSyncState !== 'function') return null;
-    return gate.getSyncState();
-  }
-
   function getFactionStatus() {
     var fa = getFactionApi();
     if (!fa) return null;
@@ -100,32 +94,6 @@
     var fa = getFactionApi();
     var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(status.faction) : null;
     return meta ? (meta.icon + ' ' + meta.label) : status.faction;
-  }
-
-  /**
-   * Derives a human-readable sync label from getSyncState() output.
-   * Checks all known representations of auth_expired and missing_auth_payload
-   * so the label is correct regardless of which field the identity layer populates.
-   */
-  function syncLabel(state) {
-    if (!state || !state.linked) return 'Telegram not linked \u2014 run /gklink';
-    if (state.good) return 'Ready';
-    var expired =
-      state.auth_expired === true ||
-      state.status === 'auth_expired' ||
-      state.reason === 'auth_expired';
-    if (expired) return 'Auth expired — relink';
-    var pending =
-      state.status === 'missing_auth_payload' ||
-      state.reason === 'missing_auth_payload';
-    if (pending) return 'Pending';
-    return 'Error';
-  }
-
-  function syncBadgeClass(state) {
-    if (!state || !state.linked) return 'csp-badge--warn';
-    if (state.good) return 'csp-badge--good';
-    return 'csp-badge--bad';
   }
 
   // ── Async data ─────────────────────────────────────────────────────────
@@ -249,6 +217,14 @@
     return row.title || row.event_text || row.event || row.action || row.event_type || 'Latest Battle Chamber proof synced';
   }
 
+  function missedXpAllTime() {
+    var state = window.MOONBOYS_WTF_EVENTS || null;
+    var daily = window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
+    if (state && state.missed_xp_all_time != null) return Number(state.missed_xp_all_time) || 0;
+    if (daily && daily.missed_xp_all_time != null) return Number(daily.missed_xp_all_time) || 0;
+    return 0;
+  }
+
   function latestActivityRows() {
     var rows = [];
     var activity = Array.isArray(window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY) ? window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY : [];
@@ -294,17 +270,18 @@
   async function buildPanelHTML() {
     var linked = isLinked();
     var name = getDisplayName();
-    var state = getSyncState();
     var progression = await fetchRequiredXp();
     var arcadeXp = getArcadeXp();
     var requiredXp = progression.requiredXp;
-    var apiOnline = await checkApiOnline();
-    var status = getFactionStatus();
-    var faction = factionLabel();
-    var sync = syncLabel(state);
-    var syncClass = syncBadgeClass(state);
     var blocktopia = blocktopiaAccessHTML(linked, arcadeXp, requiredXp);
-    var season = status && (status.season || status.current_season || status.season_key) ? (status.season || status.current_season || status.season_key) : 'Season lock not reported';
+    var playerHref = '/games/leaderboard.html';
+    var publicRows = latestGlobalBattleRows();
+    var latestRows = latestActivityRows();
+    // Compact rail rule: show one short personal activity line only.
+    var latestLine = latestRows.length ? latestRows[0] : null;
+    var latestActivityText = latestLine ? latestLine.text : 'No synced activity yet — play Arcade.';
+    var latestActivityTag = latestLine && latestLine.tag ? latestLine.tag : 'Status';
+    var missedXp = missedXpAllTime();
 
     if (!linked) {
       return '' +
@@ -318,17 +295,17 @@
       '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
         '<div class="csp-live-head">' +
           '<span class="csp-avatar-mini" aria-hidden="true">👾</span>' +
-          '<div class="csp-live-identity"><strong>' + esc(name || 'Telegram Player') + '</strong><span><b class="csp-live-pill csp-live-pill--good">LIVE LINKED</b> <b class="csp-live-pill ' + esc(syncClass) + '">' + esc(sync) + '</b></span></div>' +
+          '<div class="csp-live-identity"><strong><a class="csp-player-link" href="' + esc(playerHref) + '">' + esc(name || 'Telegram Player') + '</a></strong><span><b class="csp-live-pill csp-live-pill--good">LIVE LINKED</b></span></div>' +
         '</div>' +
         '<div class="csp-grid csp-grid--live">' +
           '<div class="csp-item"><div class="csp-item-label">Arcade XP</div><div class="csp-item-val" data-csp-xp>' + esc(String(arcadeXp)) + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Faction</div><div class="csp-item-val" data-csp-faction data-csp-faction-key="' + esc(normaliseFactionKey(status) || '') + '">' + esc(faction) + '</div></div>' +
           '<div class="csp-item csp-item--wide"><div class="csp-item-label">Block Topia</div><div class="csp-item-val" data-csp-bt-access>' + blocktopia + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Season</div><div class="csp-item-val">' + esc(season) + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">API Sync</div><div class="csp-item-val ' + (apiOnline ? 'csp-val-good' : 'csp-val-locked') + '">' + (apiOnline ? '● Online' : 'Core API unavailable') + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Missed XP</div><div class="csp-item-val">' + esc(String(missedXp)) + '</div></div>' +
         '</div>' +
-        '<div class="csp-feed"><div class="csp-feed-title">Recent Personal Activity</div>' + buildFeedHTML(latestActivityRows()) + '</div>' +
-        '<div class="csp-feed"><div class="csp-feed-title">Latest Public Battle Chamber Activity</div>' + buildFeedHTML(latestGlobalBattleRows(), 'No public Battle Chamber activity yet.') + '</div>' +
+        '<div class="csp-feed"><div class="csp-feed-title">Latest Activity</div><div class="csp-feed-row"><span class="csp-feed-tag">' + esc(latestActivityTag) + '</span><span>' + esc(latestActivityText) + '</span></div></div>' +
+        (publicRows.length
+          ? ('<div class="csp-feed"><div class="csp-feed-title">Latest Public Battle Chamber Activity</div>' + buildFeedHTML(publicRows) + '</div>')
+          : '') +
       '</div>';
   }
 
