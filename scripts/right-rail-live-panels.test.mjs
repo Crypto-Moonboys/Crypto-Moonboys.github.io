@@ -374,6 +374,27 @@ check(buildPanelHTMLBlock.includes('var patchGeneration = _dailyStateGeneration;
 // Missed XP still must not default to hard 0 after fetch refactor
 check(!/return\s+0\s*;/.test(functionBlock(csp, 'missedXpAllTime')), 'missedXpAllTime still does not default to hard 0 after background-fetch refactor');
 
+console.log('\n[13] Dead-code drift prevention');
+// connection-status-panel: removed faction helpers must not return
+check(!csp.includes('function getFactionApi('), 'connection-status-panel does not define getFactionApi helper');
+check(!csp.includes('function getFactionStatus('), 'connection-status-panel does not define getFactionStatus helper');
+check(!csp.includes('function factionLabel('), 'connection-status-panel does not define factionLabel helper');
+check(!csp.includes('function normaliseFactionKey('), 'connection-status-panel does not define normaliseFactionKey helper');
+// The subscriber must not patch [data-csp-faction] (faction text no longer in header badge or panel)
+check(!csp.includes('data-csp-faction'), 'connection-status-panel subscriber does not patch [data-csp-faction] elements');
+// Header badge must not include faction or unaligned text
+const buildBadgeHTMLBlock = functionBlock(csp, 'buildBadgeHTML');
+check(!buildBadgeHTMLBlock.includes('faction') && !buildBadgeHTMLBlock.includes('unaligned'), 'buildBadgeHTML does not render faction or unaligned text in the header badge');
+
+// live-activity-summary: removed sync/faction/log helpers must not return
+check(!las.includes('function syncSummary('), 'live-activity-summary does not define syncSummary helper');
+check(!las.includes('function updateSyncUI('), 'live-activity-summary does not define updateSyncUI helper');
+check(!las.includes('function updateFactionUI('), 'live-activity-summary does not define updateFactionUI helper');
+check(!las.includes('function factionSummary('), 'live-activity-summary does not define factionSummary helper');
+check(!las.includes('function buildLogHTML('), 'live-activity-summary does not define buildLogHTML helper');
+// Compact ops panel must not render Core API / Sync rows
+check(!las.includes('data-las-sync'), 'live-activity-summary does not render [data-las-sync] rows in compact ops');
+check(!las.includes('data-las-faction'), 'live-activity-summary does not render [data-las-faction] rows in compact ops');
 
 const failed = checks.filter((c) => !c.ok);
 if (failed.length) {

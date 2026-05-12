@@ -34,7 +34,6 @@
  *
  * Depends on (all optional — graceful fallback):
  *   window.MOONBOYS_IDENTITY  (identity-gate.js)
- *   window.MOONBOYS_FACTION   (faction-alignment.js)
  *   window.MOONBOYS_API       (api-config.js)
  *
  * XP labels:
@@ -77,7 +76,6 @@
   }
 
   function getIdentity() { return window.MOONBOYS_IDENTITY || null; }
-  function getFactionApi() { return window.MOONBOYS_FACTION || null; }
 
   function getApiBase() {
     var cfg = window.MOONBOYS_API || {};
@@ -101,12 +99,6 @@
     return gate.getTelegramId();
   }
 
-  function getFactionStatus() {
-    var fa = getFactionApi();
-    if (!fa) return null;
-    return fa.getCachedStatus() || { faction: 'unaligned', faction_xp: 0 };
-  }
-
   async function getSignedTelegramAuthWithRestore() {
     var gate = getIdentity();
     if (!gate) return null;
@@ -116,16 +108,6 @@
     var restored = await gate.restoreLinkedTelegramAuth().catch(function () { return null; });
     if (restored && restored.ok && restored.telegram_auth) return restored.telegram_auth;
     return typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
-  }
-
-  function factionLabel() {
-    var status = getFactionStatus();
-    if (!status || !status.faction || status.faction === 'unaligned') {
-      return 'No faction selected yet';
-    }
-    var fa = getFactionApi();
-    var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(status.faction) : null;
-    return meta ? (meta.icon + ' ' + meta.label) : status.faction;
   }
 
   // ── Async data ─────────────────────────────────────────────────────────
@@ -260,11 +242,6 @@
   }
 
   // ── Render ─────────────────────────────────────────────────────────────
-
-  function normaliseFactionKey(status) {
-    if (!status || !status.faction || status.faction === 'unaligned') return null;
-    return String(status.faction);
-  }
 
   function blocktopiaAccessHTML(linked, arcadeXp, requiredXp) {
     if (!linked) return '<span class="csp-val-locked">Telegram sync required</span>';
@@ -609,7 +586,7 @@
     });
 
     // Subscribe to MOONBOYS_STATE for instant inline updates.
-    // XP, faction, and Block Topia access state are patched without remounting
+    // XP and Block Topia access state are patched without remounting
     // the entire panel — no API re-fetch, no full DOM replacement.
     if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
       if (_stateUnsub) { try { _stateUnsub(); } catch (_) {} }
@@ -625,12 +602,6 @@
           var xpNode = badge.querySelector('[data-csp-badge-xp]');
           if (xpNode) xpNode.textContent = String(state.xp);
         }
-
-        // ── Faction text ──────────────────────────────────────────────────────
-        var factionText = factionLabel();
-        document.querySelectorAll('.csp-item-val[data-csp-faction]').forEach(function (el) {
-          el.textContent = factionText;
-        });
 
         // ── Block Topia access state ──────────────────────────────────────────
         var requiredXp = (_progressionCache && _progressionCache.requiredXp) || FALLBACK_REQUIRED_XP;

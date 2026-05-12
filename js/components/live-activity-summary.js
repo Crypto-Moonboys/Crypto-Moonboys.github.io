@@ -43,9 +43,6 @@
   var STYLE_ID = 'las-styles';
   var LOG_MAX = 6; // max recent activity entries to show
 
-  // Unsubscribe token for MOONBOYS_STATE subscriber (avoids leak if re-bootstrapped)
-  var _stateUnsub = null;
-
   //  True singleton: survive script re-execution (dynamic injection / re-mount) 
   // All shared mutable state lives on window.__MOONBOYS_LAS_SINGLETON so that a
   // second execution of this IIFE reuses the existing log array and listener
@@ -140,103 +137,7 @@
     return fa.getCachedStatus() || { faction: 'unaligned', faction_xp: 0 };
   }
 
-  //  Sync / identity summary 
-  // Four distinct cases  never collapsed:
-  //   1. Identity layer missing   "Identity system unavailable"
-  //   2. Identity present, not linked  "Telegram not linked  run /gklink"
-  //   3. Linked, not yet synced   "Sync in progress"
-  //   4. Linked + valid           "Sync ready"
-
-  function syncSummary() {
-    var gate = window.MOONBOYS_IDENTITY;
-
-    // Case 1: identity layer not loaded
-    if (!gate || typeof gate.getSyncState !== 'function') {
-      return { text: 'Identity system unavailable', good: false };
-    }
-
-    var state = gate.getSyncState();
-
-    // Case 2: identity present but Telegram not linked
-    if (!state || !state.linked) {
-      return { text: 'Telegram not linked - run /gklink', good: false };
-    }
-
-    // Case 4: linked and fully synced
-    if (state.good) {
-      return { text: 'Sync ready', good: true };
-    }
-
-    // Case 3: linked but auth not yet resolved (pending, expired, etc.)
-    return { text: 'Sync in progress', good: false };
-  }
-
-  //  Faction summary 
-
-  function factionSummary(status) {
-    if (!status || !status.faction || status.faction === 'unaligned') {
-      return 'No faction selected';
-    }
-    var fa = window.MOONBOYS_FACTION;
-    var meta = fa && typeof fa.getVisualMeta === 'function' ? fa.getVisualMeta(status.faction) : null;
-    return meta ? (meta.icon + ' ' + meta.label) : String(status.faction);
-  }
-
-  //  Inline DOM patchers 
-  // These are the ONLY way UI rows update after initial mount.
-  // No remount, no refresh() call  only targeted textContent / className patches.
-
-  /**
-   * Patches all rendered faction rows across every mounted LAS panel.
-   * Called from the MOONBOYS_STATE subscriber whenever state changes.
-   * @param {string|null|undefined} faction - faction key (e.g. 'bulls', 'bears')
-   *   or falsy to fall back to MOONBOYS_FACTION.getCachedStatus().
-   */
-  function updateFactionUI(faction) {
-    var factionText = factionSummary(faction ? { faction: faction } : getFactionStatus());
-    document.querySelectorAll('[data-las-panel] [data-las-faction]').forEach(function (el) {
-      el.textContent = factionText;
-    });
-  }
-
-  /**
-   * Patches all rendered sync rows across every mounted LAS panel.
-   *
-   * @param {Object|null|undefined} syncPayload - state.sync from MOONBOYS_STATE.
-   *   When non-null, its `.state` string drives the display text so the row
-   *   reflects the most-recent bus event without any additional identity reads.
-   *   When absent (initial render before the first sync:state event fires) it
-   *   falls back to syncSummary() which reads from MOONBOYS_IDENTITY.
-   *
-   * Sole call site: MOONBOYS_STATE.subscribe()  state.sync is populated by the
-   * bus.on('sync:state') bridge in moonboys-state.js.
-   */
-  function updateSyncUI(syncPayload) {
-    var sync;
-    if (syncPayload && typeof syncPayload.state === 'string') {
-      var s = syncPayload.state;
-      var good = s === 'good' || s === 'xp_awarded' || s === 'accepted_no_xp';
-      var text = good ? 'Sync ready'
-        : s === 'bad' ? 'Sync issue detected'
-        : 'Sync in progress';
-      sync = { text: text, good: good };
-    } else {
-      sync = syncSummary();
-    }
-    document.querySelectorAll('[data-las-panel] [data-las-sync]').forEach(function (el) {
-      el.textContent = sync.text;
-      el.className = 'las-val ' + (sync.good ? 'las-val--good' : 'las-val--warn');
-    });
-  }
-
   //  Build HTML 
-
-  function buildLogHTML() {
-    if (!_activityLog.length) return '';
-    var rows = _activityLog.map(buildLogRowHTML).join('');
-    return '<div class="las-event-log" aria-label="Recent activity" data-las-log>' + rows + '</div>';
-  }
-
 
   // FACTION_MISSION_FALLBACKS is quarantined: these are locally-invented placeholders
   // that must NOT be rendered as live faction data. Kept for reference only.
@@ -869,17 +770,6 @@
   function bootstrap() {
     injectStyles();
     document.querySelectorAll('[data-las-panel]').forEach(function (el) { mount(el); });
-
-    // MOONBOYS_STATE is the single source of truth for all UI rows.
-    // state.sync is populated by the bus.on('sync:state') bridge in
-    // moonboys-state.js, so both faction and sync update through one path.
-    if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.subscribe === 'function') {
-      if (_stateUnsub) { try { _stateUnsub(); } catch (_) {} }
-      _stateUnsub = window.MOONBOYS_STATE.subscribe(function (state) {
-        updateFactionUI(state.faction);
-        updateSyncUI(state.sync);
-      });
-    }
 
     // Bus listeners are used ONLY to append log entries; they never trigger
     // full remounts or refresh() calls.
