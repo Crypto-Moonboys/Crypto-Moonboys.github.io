@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 
 const bootstrap = readFileSync('js/arcade/games/block-topia-quest-maze/bootstrap.js', 'utf8');
 const fxSystem = readFileSync('js/arcade/games/block-topia-quest-maze/fx-system.js', 'utf8');
@@ -12,9 +13,9 @@ const pngMagic = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 function walkFiles(dir) {
   if (!existsSync(dir)) return [];
-  return readdirSync(dir).flatMap((entry) => {
-    const fullPath = `${dir}/${entry}`;
-    return statSync(fullPath).isDirectory() ? walkFiles(fullPath) : [fullPath];
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const fullPath = path.join(dir, entry.name);
+    return entry.isDirectory() ? walkFiles(fullPath) : [fullPath];
   });
 }
 
@@ -72,6 +73,11 @@ const generatedManifestAssets = manifest.assets.filter((asset) => asset.status =
 const shaByCategory = new Map();
 for (const asset of generatedManifestAssets) {
   assert.ok(asset.encodedOutput, `${asset.id} generated record must include encodedOutput`);
+  assert.equal(
+    asset.encodedOutput.replace(/\.base64$/u, ''),
+    asset.output,
+    `${asset.id} encodedOutput must hydrate to asset.output`,
+  );
   assert.ok(existsSync(asset.encodedOutput), `${asset.id} encodedOutput must exist: ${asset.encodedOutput}`);
 
   const decoded = Buffer.from(readFileSync(asset.encodedOutput, 'utf8').replace(/\s+/gu, ''), 'base64');

@@ -51,6 +51,7 @@ jobs:
               throw new Error(`Decoded file is not a PNG: ${encodedFile}`);
             }
             fs.writeFileSync(pngPath, buffer);
+            fs.unlinkSync(encodedFile);
             console.log(`Hydrated ${pngPath}`);
           }
 
