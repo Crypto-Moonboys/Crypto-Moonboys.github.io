@@ -46,6 +46,7 @@
 
   /* Layout dimensions */
   --right-panel-w: 270px;
+  --paperclip-right-panel-gap: 50px;
 }
 
 /* ── PREFERS-REDUCED-MOTION ──────────────────────────────────── */
@@ -5182,7 +5183,7 @@ body.page-game .arcade-top-logo {
 
 @media (min-width: 1361px) {
   body.page-has-right-panel .site-paperclip-agent {
-    right: calc(var(--right-panel-w) + 50px);
+    right: calc(var(--right-panel-w) + var(--paperclip-right-panel-gap));
   }
 }
 
