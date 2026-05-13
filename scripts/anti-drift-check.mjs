@@ -38,7 +38,8 @@ const FORBIDDEN_PATHS = [
   ['workers', 'moonboys-api', 'blocktopia', ['covert', 'js'].join('.')].join('/'),
   [['HERMES', 'AGENT', 'RUNTIME', 'HANDOVER.md'].join('_')][0],
   [['HERMES', 'NPC', 'AGENT', 'AUDIT', 'REPORT.md'].join('_')][0],
-  // These root source documents are intentional canonical project references.
+  // These root source documents are intentional canonical project references:
+  // Crypto_Moonboys_Master_Source_of_Truth_v1.md and city_block_topia_dev_build_deck.md.
   // They are allowed because Paperclip and future site-brain documentation need stable root paths.
   // Anti-drift: old block-topia room file that was replaced by MinimalCityRoom.js
   ['server', 'block-topia', 'src', 'rooms', ['City', 'Room.js'].join('')].join('/'),
