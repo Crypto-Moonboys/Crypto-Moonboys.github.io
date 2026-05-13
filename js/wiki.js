@@ -182,6 +182,98 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+function normalizeText(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function isGenericSummaryTag(tag) {
+  const key = normalizeText(tag).toLowerCase();
+  return ['crypto', 'moonboys', 'wiki', 'crypto moonboys', 'cryptomoonboys'].includes(key);
+}
+
+const COMPRESSED_SUMMARY_MIN_LENGTH = 18;
+const COMPRESSED_SUMMARY_MIN_WIKI_KEYWORDS = 2;
+
+function looksCompressedSlugText(text) {
+  const v = normalizeText(text).toLowerCase();
+  if (!v) return true;
+  const looksUrlOrPathLike =
+    /^(https?:\/\/|\/)/.test(v)
+    || v.includes('://')
+    || /\.html?$/.test(v);
+  if (looksUrlOrPathLike) return true;
+
+  const hasWhitespace = /\s/.test(v);
+  const plainSlugLike = /^[a-z0-9_-]+$/.test(v);
+  if (hasWhitespace || !plainSlugLike) return false;
+
+  const compact = v.replace(/[^a-z0-9]/g, '');
+  const wikiKeywordHits = ['crypto', 'moonboys', 'wiki'].filter(k => compact.includes(k)).length;
+
+  // Heuristic: very long, no-space slug text that repeats wiki-brand keywords
+  // is usually index/keyword-bag noise rather than a readable summary.
+  return compact.length >= COMPRESSED_SUMMARY_MIN_LENGTH
+    && wikiKeywordHits >= COMPRESSED_SUMMARY_MIN_WIKI_KEYWORDS;
+}
+
+function humanizePathSlug(url) {
+  const raw = String(url || '').replace(/[?#].*$/, '').trim();
+  if (!raw) return '';
+  const leaf = raw.split('/').filter(Boolean).pop() || '';
+  const noExt = leaf.replace(/\.html?$/i, '');
+  if (!noExt) return '';
+  return noExt
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function formatCategoryLabel(category) {
+  return normalizeText(category)
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, m => m.toUpperCase());
+}
+
+function formatRankSignal(value) {
+  const rank = Number(value);
+  if (!Number.isFinite(rank)) return '';
+  return Number.isInteger(rank)
+    ? rank.toLocaleString()
+    : rank.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function getArticleSummary(item) {
+  const candidates = [
+    item && item.summary,
+    item && item.desc,
+    item && item.description,
+    item && item.excerpt,
+    item && item.meta_description,
+    item && item.og_description
+  ];
+
+  for (const raw of candidates) {
+    const text = normalizeText(raw);
+    if (!text) continue;
+    if (!looksCompressedSlugText(text)) return text;
+  }
+
+  const title = normalizeText(item && item.title)
+    || formatCategoryLabel(item && item.category)
+    || humanizePathSlug(item && item.url)
+    || 'this topic';
+
+  const tags = Array.isArray(item && item.tags)
+    ? item.tags.map(t => normalizeText(t)).filter(Boolean).filter(t => !isGenericSummaryTag(t)).slice(0, 3)
+    : [];
+
+  if (tags.length) {
+    return `Explore this Crypto Moonboys Wiki article covering ${title}, with links to ${tags.join(', ')}.`;
+  }
+
+  return `Explore this Crypto Moonboys Wiki article covering ${title}.`;
+}
+
 /* ── SEARCH PAGE RENDERER ────────────────────────────────────────────────── */
 function renderSearchPage(query) {
   const container = document.getElementById('search-results-page');
@@ -217,14 +309,30 @@ function renderSearchPage(query) {
   container.innerHTML = items.map(item => {
     const href    = resolveWikiUrl(item.url);
     const title   = item.title || href;
-    const summary = item.summary ? `<p class="article-card-summary">${escapeHtml(item.summary)}</p>` : '';
-    const tags    = (item.tags || []).length
-      ? `<div class="article-card-tags">${item.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`
+    const summaryText = getArticleSummary(item);
+    const summary = `<p class="article-card-summary">${escapeHtml(summaryText)}</p>`;
+    const tags = Array.isArray(item.tags) ? item.tags.filter(Boolean) : [];
+    const topTags = tags.slice(0, 3);
+    const metaBits = [];
+    if (item.category) metaBits.push(`Category: ${formatCategoryLabel(item.category)}`);
+    const rankSignal = formatRankSignal(item.rank_score);
+    if (rankSignal) metaBits.push(`Rank signal: ${rankSignal}`);
+    if (topTags.length) {
+      metaBits.push(`Tags: ${topTags.join(', ')}`);
+    }
+    const meta = metaBits.length
+      ? `<div class="article-card-meta">${metaBits.map(bit => `<span class="article-card-meta-item">${escapeHtml(bit)}</span>`).join('')}</div>`
       : '';
+    const tagPills = topTags.length
+      ? `<div class="article-card-tags">${topTags.map(t => `<span class="article-card-tag">${escapeHtml(t)}</span>`).join('')}</div>`
+      : '';
+    const path = `<p class="article-card-path">${escapeHtml(href)}</p>`;
     return `<div class="article-card">
   <a href="${escapeHtml(href)}" class="article-card-title">${escapeHtml(title)}</a>
   ${summary}
-  ${tags}
+  ${meta}
+  ${tagPills}
+  ${path}
 </div>`;
   }).join('\n');
 }
