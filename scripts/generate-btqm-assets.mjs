@@ -45,7 +45,7 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log(`BTQM PixelLab asset generator\n\nUsage:\n  node scripts/generate-btqm-assets.mjs [--execute] [--category <name[,name]>]\n\nCategories:\n  ${supportedCategories.join(', ')}\n\nDry run is the default and never calls PixelLab. Real generation requires both --execute and PIXELLAB_API_KEY.`);
+  console.log(`BTQM PixelLab asset generator\n\nUsage:\n  node scripts/generate-btqm-assets.mjs [--execute] [--category <name[,name]>]\n\nCategories:\n  ${supportedCategories.join(', ')}\n\nDry run is the default and never calls PixelLab. Real generation requires --execute with PIXELLAB_API_KEY or PIXELLAB_SECRET.`);
 }
 
 function validateCategories(categories) {
@@ -86,6 +86,7 @@ function toManifestAsset(asset, status, styleGuide, details = {}) {
     promptHash: hashPrompt(asset, styleGuide),
     output: path.posix.join('art/btqm/generated', asset.output.split(path.sep).join(path.posix.sep)),
     size: asset.size,
+    ...(details.method ? { method: details.method } : {}),
     ...(details.imageUrl ? { imageUrl: details.imageUrl } : {}),
     ...(details.error ? { error: details.error } : {}),
   };
@@ -129,8 +130,8 @@ async function writeManifest(plan, assets) {
 }
 
 async function generateAssets(plan, assets) {
-  if (!process.env.PIXELLAB_API_KEY) {
-    throw new Error('Refusing to execute without PIXELLAB_API_KEY in the environment.');
+  if (!process.env.PIXELLAB_API_KEY && !process.env.PIXELLAB_SECRET) {
+    throw new Error('Refusing to execute without PIXELLAB_API_KEY or PIXELLAB_SECRET in the environment.');
   }
 
   const client = new PixelLabClient();
@@ -143,9 +144,8 @@ async function generateAssets(plan, assets) {
       await mkdir(path.dirname(absoluteOutput), { recursive: true });
       console.log(`Generating ${asset.id} -> ${path.relative(repoRoot, absoluteOutput)}`);
 
-      const result = await client.generateAsset(asset, plan.styleGuide || {});
-      await writeFile(absoluteOutput, result.imageBuffer);
-      manifestAssets.push(toManifestAsset(asset, 'generated', plan.styleGuide || {}, { imageUrl: result.imageUrl }));
+      const result = await client.generateAsset(asset, plan.styleGuide || {}, absoluteOutput);
+      manifestAssets.push(toManifestAsset(asset, 'generated', plan.styleGuide || {}, { method: result.method }));
     } catch (error) {
       failedCount += 1;
       manifestAssets.push(toManifestAsset(asset, 'failed', plan.styleGuide || {}, { error: error.message }));
@@ -186,7 +186,7 @@ async function main() {
   console.log(`\nWrote ${path.relative(repoRoot, manifestPath)} with ${manifest.assets.length} asset record(s).`);
 
   if (!options.execute) {
-    console.log('Dry run complete. No PixelLab API call was made. Pass --execute with PIXELLAB_API_KEY to generate images.');
+    console.log('Dry run complete. No PixelLab API call was made. Pass --execute with PIXELLAB_API_KEY or PIXELLAB_SECRET to generate images.');
   } else if (generationResult.failedCount > 0) {
     console.error(`${generationResult.failedCount} asset generation request(s) failed. Manifest was still written.`);
     process.exitCode = 1;

@@ -40,10 +40,19 @@ npm run btqm:assets:dry -- --category tilesets --category enemies,bosses
 
 ## Generate with PixelLab
 
-Do not commit API keys. Provide the key through the environment only, and pass `--execute` to opt into real API calls:
+Do not commit API keys. Provide the key through the environment only, and pass `--execute` to opt into real API calls. The PixelLab JavaScript SDK reads `PIXELLAB_SECRET`; this repo also accepts the already documented `PIXELLAB_API_KEY` name and maps it internally when constructing the SDK client.
+
+Unix shell:
 
 ```bash
 PIXELLAB_API_KEY=... npm run btqm:assets -- --execute
+```
+
+Windows CMD, scoped to a category such as icons:
+
+```cmd
+set "PIXELLAB_API_KEY=..."
+npm run btqm:assets -- --execute --category icons
 ```
 
 Generated files are written under:
