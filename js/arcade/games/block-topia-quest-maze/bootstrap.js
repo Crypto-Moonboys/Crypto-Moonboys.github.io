@@ -403,13 +403,32 @@ function getBtqmTileSpriteFrame(scene, zoneId, tile) {
   return { textureKey, frame: BTQM_TILESET_FRAMES.floor };
 }
 
+function getBtqmTileDebugFallback(scene, zoneId, tile) {
+  if (tile === 0) return 'tile_wall_' + zoneId;
+  if (tile === 2) return getBtqmTexture(scene, 'tile_enc_' + zoneId, 'object-encounter-marker');
+  if (tile === 3) return getBtqmTexture(scene, 'tile_boss_' + zoneId, 'object-boss-marker');
+  if (tile === 4) return getBtqmTexture(scene, 'tile_exit', 'object-exit-portal');
+  if (tile === 9) return getBtqmTexture(scene, 'tile_entry', 'object-entry-glyph');
+  return 'tile_floor_' + zoneId;
+}
+
+function addBtqmMapTileSprite(scene, zoneId, tile, x, y, size) {
+  const tileFrame = getBtqmTileSpriteFrame(scene, zoneId, tile);
+  const fallbackKey = getBtqmTileDebugFallback(scene, zoneId, tile);
+  const sprite = tileFrame
+    ? scene.add.image(x, y, tileFrame.textureKey, tileFrame.frame)
+    : scene.add.image(x, y, fallbackKey);
+  sprite.setDisplaySize(size, size);
+  return sprite;
+}
+
 function setBtqmTileSpriteTexture(scene, sprite, zoneId, tile, fallbackKey) {
   const tileFrame = getBtqmTileSpriteFrame(scene, zoneId, tile);
   if (tileFrame) {
     sprite.setTexture(tileFrame.textureKey, tileFrame.frame);
     return;
   }
-  sprite.setTexture(fallbackKey || ('tile_floor_' + zoneId));
+  sprite.setTexture(fallbackKey || getBtqmTileDebugFallback(scene, zoneId, tile));
 }
 
 function btqmSlug(value) {
@@ -1599,36 +1618,20 @@ class ZoneScene extends Phaser.Scene {
       }
     }
 
-    // ── Debug: tileset render signal ──────────────────────────────────────────
-    const _btqmActiveTilesetKey = getBtqmTilesetTexture(this, this.zoneId);
-    console.debug('[BTQM assets] tileset render active', { zoneId: this.zoneId, textureKey: _btqmActiveTilesetKey, frame: _btqmActiveTilesetKey ? BTQM_TILESET_FRAMES.floor : null, fallback: !_btqmActiveTilesetKey });
-
     // ── Render tile map ──────────────────────────────────────────────────────
     this.tileSprites = [];
     for (let r = 0; r < ROWS; r++) {
       this.tileSprites[r] = [];
       for (let c = 0; c < COLS; c++) {
         const tile = this.mapData[r][c];
-        const tileFrame = getBtqmTileSpriteFrame(this, this.zoneId, tile);
-        let texKey;
-        let frame = null;
-        if (tileFrame) {
-          texKey = tileFrame.textureKey;
-          frame = tileFrame.frame;
-        } else if (tile === 0) texKey = 'tile_wall_' + this.zoneId;
-        else if (tile === 2) texKey = getBtqmTexture(this, 'tile_enc_'  + this.zoneId, 'object-encounter-marker');
-        else if (tile === 3) texKey = getBtqmTexture(this, 'tile_boss_' + this.zoneId, 'object-boss-marker');
-        else if (tile === 4) texKey = getBtqmTexture(this, 'tile_exit', 'object-exit-portal');
-        else if (tile === 9) texKey = getBtqmTexture(this, 'tile_entry', 'object-entry-glyph');
-        else                 texKey = 'tile_floor_' + this.zoneId;
-
-        const sprite = this.add.image(
+        this.tileSprites[r][c] = addBtqmMapTileSprite(
+          this,
+          this.zoneId,
+          tile,
           c * TS + TS / 2,
           r * TS + TS / 2,
-          texKey,
-          frame
-        ).setDisplaySize(TS, TS);
-        this.tileSprites[r][c] = sprite;
+          TS
+        );
       }
     }
 
@@ -1868,7 +1871,7 @@ class ZoneScene extends Phaser.Scene {
                 setBtqmTileSpriteTexture(self, self.tileSprites[r][c], self.zoneId, 1, 'tile_floor_' + self.zoneId);
               }
               if (t === 4 && self.tileSprites[r] && self.tileSprites[r][c]) {
-                self.tileSprites[r][c].setTexture(getBtqmTexture(self, 'tile_exit', 'object-exit-portal'));
+                setBtqmTileSpriteTexture(self, self.tileSprites[r][c], self.zoneId, 4, getBtqmTexture(self, 'tile_exit', 'object-exit-portal'));
                 self.tweens.add({
                   targets: self.tileSprites[r][c],
                   alpha: 0.4, duration: 360, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'

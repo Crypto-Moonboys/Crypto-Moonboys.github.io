@@ -72,13 +72,19 @@ assert.match(bootstrap, /getBtqmBossTexture\(scene,\s*bossId\)\s*\|\|\s*fallback
 assert.match(bootstrap, /addBtqmBossSprite\(this,\s*enemyPanelX,\s*110,\s*enemyAssetId,\s*enemyTexKey\)/, 'combat scene should use generated boss sprites when available');
 assert.match(bootstrap, /addBtqmEnemySprite\(this,\s*enemyPanelX,\s*110,\s*enemyAssetId,\s*enemyTexKey\)/, 'combat scene should use generated enemy sprites when available');
 assert.match(bootstrap, /console\.warn\(\s*['"]\[BTQM assets\]/, 'missing assets should warn instead of crashing silently');
-assert.match(bootstrap, /getBtqmTileSpriteFrame\(this,\s*this\.zoneId,\s*tile\)/, 'zone map rendering should prefer generated tileset frames');
+assert.match(bootstrap, /function\s+addBtqmMapTileSprite\s*\(/, 'active zone map renderer must use a dedicated generated-tile sprite helper');
+assert.match(bootstrap, /this\.tileSprites\[r\]\[c\]\s*=\s*addBtqmMapTileSprite\([\s\S]*?this,[\s\S]*?this\.zoneId,[\s\S]*?tile,[\s\S]*?c \* TS \+ TS \/ 2,[\s\S]*?r \* TS \+ TS \/ 2,[\s\S]*?TS\s*\)/, 'first-load zone map loop must render through generated tileset sprites');
+assert.match(bootstrap, /const tileFrame = getBtqmTileSpriteFrame\(scene,\s*zoneId,\s*tile\)/, 'map tile sprite helper should prefer generated tileset frames');
+assert.match(bootstrap, /scene\.add\.image\(x,\s*y,\s*tileFrame\.textureKey,\s*tileFrame\.frame\)/, 'generated map tile rendering must pass the tileset frame to Phaser');
+assert.match(bootstrap, /function\s+getBtqmTileDebugFallback\s*\(/, 'debug tile textures must be isolated behind a fallback helper');
+assert.match(bootstrap, /if \(tile === 0\) return ['"]tile_wall_['"] \+ zoneId/, 'zone map rendering must preserve wall debug fallback');
+assert.match(bootstrap, /return ['"]tile_floor_['"] \+ zoneId/, 'zone map rendering must preserve floor debug fallback');
 assert.match(bootstrap, /setBtqmTileSpriteTexture\(self,\s*self\.tileSprites\[r\]\[c\],\s*self\.zoneId,\s*1,\s*['"]tile_floor_['"] \+ self\.zoneId\)/, 'cleared boss tiles should reset through generated tileset floor fallback helper');
 assert.match(bootstrap, /setBtqmTileSpriteTexture\(self,\s*self\.tileSprites\[cy\]\[cx\],\s*self\.zoneId,\s*1,\s*['"]tile_floor_['"] \+ self\.zoneId\)/, 'cleared encounter tiles should reset through generated tileset floor fallback helper');
+assert.match(bootstrap, /setBtqmTileSpriteTexture\(self,\s*self\.tileSprites\[r\]\[c\],\s*self\.zoneId,\s*4,\s*getBtqmTexture\(self,\s*['"]tile_exit['"],\s*['"]object-exit-portal['"]\)\)/, 'exit tile updates should preserve generated tileset exit frames');
 assert.match(bootstrap, /tileset has invalid zoneId/, 'runtime loader must warn and skip invalid tileset zone registrations');
 assert.match(bootstrap, /duplicate tileset zone registration/, 'runtime loader must warn and skip duplicate tileset zone registrations');
-assert.match(bootstrap, /else if \(tile === 0\) texKey = ['"]tile_wall_['"] \+ this\.zoneId/, 'zone map rendering must preserve wall debug fallback');
-assert.match(bootstrap, /else\s+texKey = ['"]tile_floor_['"] \+ this\.zoneId/, 'zone map rendering must preserve floor debug fallback');
+assert.doesNotMatch(bootstrap, /console\.(?:log|debug)\(/, 'BTQM runtime must not emit unconditional production log/debug signals');
 assert.match(bootstrap, /pixelArt:\s*true/, 'Phaser pixelArt rendering should be enabled');
 assert.match(bootstrap, /antialias:\s*false/, 'Phaser antialiasing should be disabled');
 assert.match(bootstrap, /roundPixels:\s*true/, 'Phaser should round pixels for crisp sprites');
@@ -86,13 +92,7 @@ assert.match(bootstrap, /roundPixels:\s*true/, 'Phaser should round pixels for c
 // ── Browser/smoke verification: BTQM first-load map rendering ────────────────
 // manifest loaded generated tilesets — verified above (generatedTilesetAssets.length === 6)
 // tilesets are allowlisted — verified above (safeCategories.has('tilesets'))
-// active map render used generated texture/frame at least once
-assert.match(bootstrap, /\[BTQM assets\] tileset render active/, 'map render must emit [BTQM assets] tileset render active log signal on first-load');
-assert.match(bootstrap, /\bzoneId\b/, 'tileset render active log must include zoneId');
-assert.match(bootstrap, /\btextureKey\b/, 'tileset render active log must include textureKey');
-assert.match(bootstrap, /\bframe\b/, 'tileset render active log must include frame');
-assert.match(bootstrap, /\bfallback\b/, 'tileset render active log must include fallback status');
-// fallback did not crash — verified above (setBtqmTileSpriteTexture fallback helpers present)
+// active map render uses generated texture/frame helpers; fallback did not crash — verified above
 assert.match(fxSystem, /fx-slash/, 'slash FX animation should be used at runtime when available');
 assert.match(fxSystem, /fx-crit/, 'crit FX animation should be used at runtime when available');
 assert.match(fxSystem, /fx-treasure/, 'treasure FX animation should be used at runtime when available');
