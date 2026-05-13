@@ -26,6 +26,37 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Hydrate generated BTQM PNG assets
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const root = 'art/btqm/generated';
+          const pngMagic = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+          function walk(dir) {
+            if (!fs.existsSync(dir)) return [];
+            return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+              const fullPath = path.join(dir, entry.name);
+              return entry.isDirectory() ? walk(fullPath) : [fullPath];
+            });
+          }
+
+          const encodedFiles = walk(root).filter((file) => file.endsWith('.png.base64'));
+          for (const encodedFile of encodedFiles) {
+            const pngPath = encodedFile.replace(/\.base64$/u, '');
+            const buffer = Buffer.from(fs.readFileSync(encodedFile, 'utf8').replace(/\s+/gu, ''), 'base64');
+            if (buffer.length < pngMagic.length || !buffer.subarray(0, pngMagic.length).equals(pngMagic)) {
+              throw new Error(`Decoded file is not a PNG: ${encodedFile}`);
+            }
+            fs.writeFileSync(pngPath, buffer);
+            console.log(`Hydrated ${pngPath}`);
+          }
+
+          console.log(`Hydrated ${encodedFiles.length} BTQM generated PNG asset(s).`);
+          NODE
+
       - name: Prune non-static backend directories
         # server/ and workers/ contain backend source code that is not served
         # by GitHub Pages.  Remove them before packaging the artifact so the
