@@ -5182,7 +5182,7 @@ body.page-game .arcade-top-logo {
 
 @media (min-width: 1361px) {
   body.page-has-right-panel .site-paperclip-agent {
-    right: 320px;
+    right: calc(var(--right-panel-w) + 50px);
   }
 }
 
@@ -5215,7 +5215,6 @@ body.page-game .arcade-top-logo {
 }
 
 @media (max-width: 900px) {
-  body.page-has-right-panel .site-paperclip-agent,
   .site-paperclip-agent {
     right: 14px;
     bottom: 72px;
