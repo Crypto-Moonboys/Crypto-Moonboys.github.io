@@ -46,12 +46,15 @@ assert.ok(manifestUrl, 'BTQM manifest URL constant must exist');
 assert.equal(manifestUrl[1], '/art/btqm/manifest.json', 'BTQM manifest URL must point at art/btqm/manifest.json');
 
 assert.match(bootstrap, /status\s*===\s*['"]generated['"]/, 'runtime loader must filter to generated assets only');
+assert.match(bootstrap, /function\s+isValidBtqmGeneratedAssetPath\s*\(/, 'runtime loader must validate generated asset paths before loading');
+assert.match(bootstrap, /function\s+isValidBtqmTileset\s*\(/, 'runtime loader must validate generated tileset dimensions before loading');
+assert.match(bootstrap, /function\s+isValidBtqmTilesetZoneId\s*\(/, 'runtime loader must validate generated tileset zone IDs before registration');
 
 const safeCategories = extractStringSet(bootstrap, 'BTQM_SAFE_ASSET_CATEGORIES');
-assertSetEquals(safeCategories, new Set(['icons', 'ui', 'objects', 'fx', 'player', 'enemies', 'bosses']), 'phase-2 category allowlist must include generated enemies and bosses');
-assert.ok(safeCategories.has('enemies'), 'enemies must be in the phase-2 runtime allowlist');
-assert.ok(safeCategories.has('bosses'), 'bosses must be in the phase-2 runtime allowlist');
-assert.ok(!safeCategories.has('tilesets'), 'tilesets must remain excluded from the runtime allowlist');
+assertSetEquals(safeCategories, new Set(['icons', 'ui', 'objects', 'fx', 'player', 'enemies', 'bosses', 'tilesets']), 'phase-3 category allowlist must include generated tilesets, enemies, and bosses');
+assert.ok(safeCategories.has('enemies'), 'enemies must be in the phase-3 runtime allowlist');
+assert.ok(safeCategories.has('bosses'), 'bosses must be in the phase-3 runtime allowlist');
+assert.ok(safeCategories.has('tilesets'), 'tilesets must be in the runtime allowlist');
 
 const fxSheets = extractStringSet(bootstrap, 'BTQM_FX_SHEET_IDS');
 assertSetEquals(fxSheets, new Set(['fx-slash', 'fx-crit', 'fx-poison', 'fx-bleed', 'fx-shield', 'fx-treasure']), 'phase-1 FX allowlist must exclude portal and boss-intro sheets');
@@ -69,6 +72,13 @@ assert.match(bootstrap, /getBtqmBossTexture\(scene,\s*bossId\)\s*\|\|\s*fallback
 assert.match(bootstrap, /addBtqmBossSprite\(this,\s*enemyPanelX,\s*110,\s*enemyAssetId,\s*enemyTexKey\)/, 'combat scene should use generated boss sprites when available');
 assert.match(bootstrap, /addBtqmEnemySprite\(this,\s*enemyPanelX,\s*110,\s*enemyAssetId,\s*enemyTexKey\)/, 'combat scene should use generated enemy sprites when available');
 assert.match(bootstrap, /console\.warn\(\s*['"]\[BTQM assets\]/, 'missing assets should warn instead of crashing silently');
+assert.match(bootstrap, /getBtqmTileSpriteFrame\(this,\s*this\.zoneId,\s*tile\)/, 'zone map rendering should prefer generated tileset frames');
+assert.match(bootstrap, /setBtqmTileSpriteTexture\(self,\s*self\.tileSprites\[r\]\[c\],\s*self\.zoneId,\s*1,\s*['"]tile_floor_['"] \+ self\.zoneId\)/, 'cleared boss tiles should reset through generated tileset floor fallback helper');
+assert.match(bootstrap, /setBtqmTileSpriteTexture\(self,\s*self\.tileSprites\[cy\]\[cx\],\s*self\.zoneId,\s*1,\s*['"]tile_floor_['"] \+ self\.zoneId\)/, 'cleared encounter tiles should reset through generated tileset floor fallback helper');
+assert.match(bootstrap, /tileset has invalid zoneId/, 'runtime loader must warn and skip invalid tileset zone registrations');
+assert.match(bootstrap, /duplicate tileset zone registration/, 'runtime loader must warn and skip duplicate tileset zone registrations');
+assert.match(bootstrap, /else if \(tile === 0\) texKey = ['"]tile_wall_['"] \+ this\.zoneId/, 'zone map rendering must preserve wall debug fallback');
+assert.match(bootstrap, /else\s+texKey = ['"]tile_floor_['"] \+ this\.zoneId/, 'zone map rendering must preserve floor debug fallback');
 assert.match(bootstrap, /pixelArt:\s*true/, 'Phaser pixelArt rendering should be enabled');
 assert.match(bootstrap, /antialias:\s*false/, 'Phaser antialiasing should be disabled');
 assert.match(bootstrap, /roundPixels:\s*true/, 'Phaser should round pixels for crisp sprites');
@@ -103,6 +113,18 @@ const trackedGeneratedFiles = execFileSync('git', ['ls-files', generatedAssetRoo
   .filter(Boolean);
 const committedBinaryAssets = trackedGeneratedFiles.filter((file) => binaryAssetExtensions.has(extensionForAssetCheck(file)));
 assert.deepEqual(committedBinaryAssets, [], 'BTQM generated assets must be text-reviewable; do not commit binary image/audio files under art/btqm/generated');
+
+
+const generatedTilesetAssets = manifest.assets.filter((asset) => asset.status === 'generated' && asset.category === 'tilesets');
+assert.equal(generatedTilesetAssets.length, 6, 'all generated tileset assets should be present');
+for (const asset of generatedTilesetAssets) {
+  assert.ok(asset.encodedOutput, `${asset.id} generated tileset record must include encodedOutput`);
+  assert.equal(
+    asset.encodedOutput.replace(/\.base64$/u, ''),
+    asset.output,
+    `${asset.id} encodedOutput must hydrate to asset.output`,
+  );
+}
 
 const generatedEnemyBossAssets = manifest.assets.filter((asset) => asset.status === 'generated' && ['enemies', 'bosses'].includes(asset.category));
 assert.equal(generatedEnemyBossAssets.filter((asset) => asset.category === 'enemies').length, 12, 'all generated enemy assets should be present');

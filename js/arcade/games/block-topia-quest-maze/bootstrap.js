@@ -192,9 +192,18 @@ const ENEMY_HIT_VOLUME = 0.02;
 
 const BTQM_ASSET_MANIFEST_URL = '/art/btqm/manifest.json';
 const BTQM_ASSET_KEY_PREFIX = 'btqm_generated_';
-const BTQM_SAFE_ASSET_CATEGORIES = new Set(['icons', 'ui', 'objects', 'fx', 'player', 'enemies', 'bosses']);
+const BTQM_SAFE_ASSET_CATEGORIES = new Set(['icons', 'ui', 'objects', 'fx', 'player', 'enemies', 'bosses', 'tilesets']);
 const BTQM_PLAYER_SHEET_IDS = new Set(['player-idle', 'player-walk', 'player-attack', 'player-hurt']);
 const BTQM_FX_SHEET_IDS = new Set(['fx-slash', 'fx-crit', 'fx-poison', 'fx-bleed', 'fx-shield', 'fx-treasure']);
+const BTQM_TILESET_FRAME_SIZE = 32;
+const BTQM_TILESET_FRAMES = {
+  floor: 0,
+  wall: 1,
+  encounter: 2,
+  boss: 3,
+  entry: 4,
+  exit: 5,
+};
 
 const BTQM_PLAYER_ANIMATIONS = {
   'player-idle': { key: 'btqm-player-idle', frameRate: 4, repeat: -1 },
@@ -224,13 +233,36 @@ function btqmAssetKey(id) {
 function getBtqmAssetRegistry(scene) {
   const existing = scene.registry.get('btqmAssets');
   if (existing) return existing;
-  const registry = { manifestLoaded: false, generated: {}, objectTextures: {}, playerSheets: {}, playerFrameCounts: {}, playerAnimations: {}, fxSheets: {}, fxFrameCounts: {}, fxAnimations: {}, enemySheets: {}, enemyFrameCounts: {}, enemyAnimations: {}, bossSheets: {}, bossFrameCounts: {}, bossAnimations: {}, ui: {}, icons: {} };
+  const registry = { manifestLoaded: false, generated: {}, objectTextures: {}, tilesets: {}, playerSheets: {}, playerFrameCounts: {}, playerAnimations: {}, fxSheets: {}, fxFrameCounts: {}, fxAnimations: {}, enemySheets: {}, enemyFrameCounts: {}, enemyAnimations: {}, bossSheets: {}, bossFrameCounts: {}, bossAnimations: {}, ui: {}, icons: {} };
   scene.registry.set('btqmAssets', registry);
   return registry;
 }
 
 function isBtqmGeneratedAsset(asset) {
   return !!(asset && asset.status === 'generated' && BTQM_SAFE_ASSET_CATEGORIES.has(asset.category));
+}
+
+function isValidBtqmGeneratedAssetPath(asset) {
+  const output = asset && typeof asset.output === 'string' ? asset.output : '';
+  return /^art\/btqm\/generated\/[a-z0-9/_-]+\.png$/i.test(output) &&
+    !output.includes('..') &&
+    !/[?#\\]/.test(output);
+}
+
+function getBtqmAssetUrl(asset) {
+  return '/' + asset.output.replace(/^\/+/, '');
+}
+
+function isValidBtqmTileset(asset) {
+  if (!asset || asset.category !== 'tilesets') return false;
+  const size = asset.size || {};
+  return size.width === 256 && size.height === 256 &&
+    size.width % BTQM_TILESET_FRAME_SIZE === 0 &&
+    size.height % BTQM_TILESET_FRAME_SIZE === 0;
+}
+
+function isValidBtqmTilesetZoneId(zoneId) {
+  return Number.isInteger(zoneId) && zoneId >= 0 && zoneId < ZONES.length;
 }
 
 function isValidBtqmPlayerSheet(asset) {
@@ -354,6 +386,32 @@ function getBtqmTexture(scene, fallbackKey, objectId) {
   return generatedKey && scene.textures.exists(generatedKey) ? generatedKey : fallbackKey;
 }
 
+function getBtqmTilesetTexture(scene, zoneId) {
+  const assets = getBtqmAssetRegistry(scene);
+  const generatedKey = assets.tilesets[zoneId];
+  return generatedKey && scene.textures.exists(generatedKey) ? generatedKey : null;
+}
+
+function getBtqmTileSpriteFrame(scene, zoneId, tile) {
+  const textureKey = getBtqmTilesetTexture(scene, zoneId);
+  if (!textureKey) return null;
+  if (tile === 0) return { textureKey, frame: BTQM_TILESET_FRAMES.wall };
+  if (tile === 2) return { textureKey, frame: BTQM_TILESET_FRAMES.encounter };
+  if (tile === 3) return { textureKey, frame: BTQM_TILESET_FRAMES.boss };
+  if (tile === 4) return { textureKey, frame: BTQM_TILESET_FRAMES.exit };
+  if (tile === 9) return { textureKey, frame: BTQM_TILESET_FRAMES.entry };
+  return { textureKey, frame: BTQM_TILESET_FRAMES.floor };
+}
+
+function setBtqmTileSpriteTexture(scene, sprite, zoneId, tile, fallbackKey) {
+  const tileFrame = getBtqmTileSpriteFrame(scene, zoneId, tile);
+  if (tileFrame) {
+    sprite.setTexture(tileFrame.textureKey, tileFrame.frame);
+    return;
+  }
+  sprite.setTexture(fallbackKey || ('tile_floor_' + zoneId));
+}
+
 function btqmSlug(value) {
   return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
@@ -435,8 +493,8 @@ function preloadBtqmGeneratedAssets(scene) {
     const assets = manifest && Array.isArray(manifest.assets) ? manifest.assets : [];
     registry.manifestLoaded = true;
     assets.filter(isBtqmGeneratedAsset).forEach((asset) => {
-      if (!asset.output) {
-        warnBtqmAsset('generated manifest entry has no output path; skipping.', asset.id);
+      if (!asset.output || !isValidBtqmGeneratedAssetPath(asset)) {
+        warnBtqmAsset('generated manifest entry has invalid output path; skipping.', asset.id);
         return;
       }
       const textureKey = btqmAssetKey(asset.id);
@@ -449,7 +507,7 @@ function preloadBtqmGeneratedAssets(scene) {
         }
         registry.playerSheets[asset.id] = textureKey;
         registry.playerFrameCounts[asset.id] = getBtqmFrameCount(asset);
-        scene.load.spritesheet(textureKey, '/' + asset.output.replace(/^\/+/, ''), { frameWidth: 32, frameHeight: 32 });
+        scene.load.spritesheet(textureKey, getBtqmAssetUrl(asset), { frameWidth: 32, frameHeight: 32 });
         return;
       }
 
@@ -460,7 +518,7 @@ function preloadBtqmGeneratedAssets(scene) {
         }
         registry.fxSheets[asset.id] = textureKey;
         registry.fxFrameCounts[asset.id] = getBtqmFrameCount(asset);
-        scene.load.spritesheet(textureKey, '/' + asset.output.replace(/^\/+/, ''), { frameWidth: 32, frameHeight: 32 });
+        scene.load.spritesheet(textureKey, getBtqmAssetUrl(asset), { frameWidth: 32, frameHeight: 32 });
         return;
       }
 
@@ -472,7 +530,7 @@ function preloadBtqmGeneratedAssets(scene) {
         const { frameWidth, frameHeight } = getBtqmSheetFrameSize(asset);
         registry.enemySheets[asset.id] = textureKey;
         registry.enemyFrameCounts[asset.id] = getBtqmSheetFrameCount(asset);
-        scene.load.spritesheet(textureKey, '/' + asset.output.replace(/^\/+/, ''), { frameWidth, frameHeight });
+        scene.load.spritesheet(textureKey, getBtqmAssetUrl(asset), { frameWidth, frameHeight });
         return;
       }
 
@@ -484,14 +542,32 @@ function preloadBtqmGeneratedAssets(scene) {
         const { frameWidth, frameHeight } = getBtqmSheetFrameSize(asset);
         registry.bossSheets[asset.id] = textureKey;
         registry.bossFrameCounts[asset.id] = getBtqmSheetFrameCount(asset);
-        scene.load.spritesheet(textureKey, '/' + asset.output.replace(/^\/+/, ''), { frameWidth, frameHeight });
+        scene.load.spritesheet(textureKey, getBtqmAssetUrl(asset), { frameWidth, frameHeight });
+        return;
+      }
+
+      if (asset.category === 'tilesets') {
+        if (!isValidBtqmTilesetZoneId(asset.zoneId)) {
+          warnBtqmAsset('tileset has invalid zoneId; keeping debug tile fallback.', asset.id);
+          return;
+        }
+        if (registry.tilesets[asset.zoneId]) {
+          warnBtqmAsset('duplicate tileset zone registration; keeping first generated tileset.', asset.id);
+          return;
+        }
+        if (!isValidBtqmTileset(asset)) {
+          warnBtqmAsset('tileset is not a valid 256px 32x32 sheet; keeping debug tile fallback.', asset.id);
+          return;
+        }
+        registry.tilesets[asset.zoneId] = textureKey;
+        scene.load.spritesheet(textureKey, getBtqmAssetUrl(asset), { frameWidth: BTQM_TILESET_FRAME_SIZE, frameHeight: BTQM_TILESET_FRAME_SIZE });
         return;
       }
 
       if (asset.category === 'objects') registry.objectTextures[asset.id] = textureKey;
       if (asset.category === 'ui') registry.ui[asset.id] = textureKey;
       if (asset.category === 'icons') registry.icons[asset.id] = textureKey;
-      scene.load.image(textureKey, '/' + asset.output.replace(/^\/+/, ''));
+      scene.load.image(textureKey, getBtqmAssetUrl(asset));
     });
   });
 
@@ -1529,8 +1605,13 @@ class ZoneScene extends Phaser.Scene {
       this.tileSprites[r] = [];
       for (let c = 0; c < COLS; c++) {
         const tile = this.mapData[r][c];
+        const tileFrame = getBtqmTileSpriteFrame(this, this.zoneId, tile);
         let texKey;
-        if      (tile === 0) texKey = 'tile_wall_' + this.zoneId;
+        let frame = null;
+        if (tileFrame) {
+          texKey = tileFrame.textureKey;
+          frame = tileFrame.frame;
+        } else if (tile === 0) texKey = 'tile_wall_' + this.zoneId;
         else if (tile === 2) texKey = getBtqmTexture(this, 'tile_enc_'  + this.zoneId, 'object-encounter-marker');
         else if (tile === 3) texKey = getBtqmTexture(this, 'tile_boss_' + this.zoneId, 'object-boss-marker');
         else if (tile === 4) texKey = getBtqmTexture(this, 'tile_exit', 'object-exit-portal');
@@ -1540,7 +1621,8 @@ class ZoneScene extends Phaser.Scene {
         const sprite = this.add.image(
           c * TS + TS / 2,
           r * TS + TS / 2,
-          texKey
+          texKey,
+          frame
         ).setDisplaySize(TS, TS);
         this.tileSprites[r][c] = sprite;
       }
@@ -1779,7 +1861,7 @@ class ZoneScene extends Phaser.Scene {
             for (let c = 0; c < self.mapData[0].length; c++) {
               const t = self.mapData[r][c];
               if (t === 3 && self.tileSprites[r] && self.tileSprites[r][c]) {
-                self.tileSprites[r][c].setTexture('tile_floor_' + self.zoneId);
+                setBtqmTileSpriteTexture(self, self.tileSprites[r][c], self.zoneId, 1, 'tile_floor_' + self.zoneId);
               }
               if (t === 4 && self.tileSprites[r] && self.tileSprites[r][c]) {
                 self.tileSprites[r][c].setTexture(getBtqmTexture(self, 'tile_exit', 'object-exit-portal'));
@@ -1797,7 +1879,7 @@ class ZoneScene extends Phaser.Scene {
           const cx = parseInt(parts[0], 10);
           const cy = parseInt(parts[1], 10);
           if (self.tileSprites[cy] && self.tileSprites[cy][cx]) {
-            self.tileSprites[cy][cx].setTexture('tile_floor_' + self.zoneId);
+            setBtqmTileSpriteTexture(self, self.tileSprites[cy][cx], self.zoneId, 1, 'tile_floor_' + self.zoneId);
           }
           self.showMessage('Victory! Enemy defeated.', 1500);
         }
