@@ -1240,11 +1240,11 @@ class TitleScene extends Phaser.Scene {
       errEl.style.display = 'none';
       overlay.style.display = 'none';
 
+      const hasMatchingPlayer = !!(player && player.name === name);
       const shouldResumeActiveRun = !!(
+        hasMatchingPlayer &&
         btqmRuntime.runActive &&
-        !btqmRuntime.runSubmitted &&
-        player &&
-        player.name === name
+        !btqmRuntime.runSubmitted
       );
 
       let p;
@@ -1646,9 +1646,8 @@ class ZoneScene extends Phaser.Scene {
   }
 
   exitZone() {
-    const allCleared = this.daily.zoneClears.every(Boolean);
     const nextZoneId = getFirstPlayableZone(this.player, this.daily);
-    const hasNextZone = !allCleared && !this.daily.zoneClears[nextZoneId];
+    const hasNextZone = !this.daily.zoneClears[nextZoneId];
     this.showMessage(
       hasNextZone
         ? '✨ Zone cleared!\nEntering next zone...'
