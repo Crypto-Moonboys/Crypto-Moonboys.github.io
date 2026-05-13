@@ -183,4 +183,15 @@ for (const asset of generatedManifestAssets) {
   shaByCategory.set(asset.category, categoryHashes);
 }
 
+assert.doesNotMatch(bootstrap, /BLOCK TOPIA QUEST MAZE/, 'old world-map title phrase ("BLOCK TOPIA QUEST MAZE") must not appear in BTQM runtime source');
+assert.doesNotMatch(bootstrap, /Select a zone/, 'old world-map subtitle ("Select a zone") must not appear in BTQM runtime source');
+assert.doesNotMatch(bootstrap, /class WorldScene/, 'WorldScene class must be removed from BTQM runtime');
+assert.doesNotMatch(bootstrap, /Returning to World Map/, 'old world-map return message must not appear in BTQM runtime source');
+assert.match(bootstrap, /const shouldResumeActiveRun = !!\(\s*hasMatchingPlayer\s*&&\s*btqmRuntime\.runActive\s*&&\s*!btqmRuntime\.runSubmitted/, 'title continue path must explicitly preserve active run state');
+assert.match(bootstrap, /if \(!player \|\| player\.name !== name\)\s*\{\s*p = createPlayer\(name\);\s*beginRun\(name\);/, 'new runs should still initialize btqm runtime state');
+assert.match(bootstrap, /if \(!shouldResumeActiveRun\)\s*\{\s*p\.hp = p\.maxHp;\s*beginRun\(p\.name\);/, 'continue should call beginRun only for non-active runs');
+assert.match(bootstrap, /if \(typeof window !== ['"]undefined['"]\) window\.running = true/, 'active ZoneScene gameplay entry must set window.running true');
+assert.match(bootstrap, /const hasNextZone = !this\.daily\.zoneClears\[nextZoneId\]/, 'zone clear flow must compute next-zone continuation without world map');
+assert.match(bootstrap, /this\.scene\.start\('ZoneScene', \{ zoneId: nextZoneId \}\)/, 'zone clear continuation should transition directly to next ZoneScene');
+
 console.log('BTQM runtime asset smoke checks passed.');

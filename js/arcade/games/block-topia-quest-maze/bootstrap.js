@@ -172,17 +172,6 @@ const ZONE_MAPS = [
   ],
 ];
 
-// ─── WORLD MAP POSITIONS & CONNECTIONS ───────────────────────────────────────
-const ZONE_POSITIONS = [
-  { x: 120, y: 360 },
-  { x: 280, y: 300 },
-  { x: 440, y: 360 },
-  { x: 160, y: 200 },
-  { x: 320, y: 150 },
-  { x: 480, y: 100 },
-];
-const ZONE_CONNECTIONS = [[0,1],[1,2],[1,3],[3,4],[4,5],[2,5]];
-
 const TILE_SIZE = 40;
 const GAME_ID = BTQM_CONFIG.id;
 const FULL_CLEAR_BONUS = 900;
@@ -1006,75 +995,7 @@ function genTiles(scene) {
   })();
 }
 
-// Generates zone-node textures for world map (locked, open, done variants)
-function genZoneNodeTextures(scene) {
-  // Locked node
-  (function() {
-    const g = scene.add.graphics();
-    g.fillStyle(0x333333, 1);
-    g.fillCircle(16, 16, 14);
-    g.fillStyle(0x222222, 0.8);
-    g.fillRect(8, 14, 16, 11);
-    g.lineStyle(3, 0x666666, 1);
-    g.strokeCircle(16, 11, 5);
-    g.fillStyle(0x555555, 1);
-    g.fillRect(13, 16, 6, 8);
-    g.generateTexture('zone_node_locked', 32, 32);
-    g.destroy();
-  })();
 
-  ZONES.forEach((zone, i) => {
-    // Open node
-    (function() {
-      const g = scene.add.graphics();
-      g.fillStyle(zone.accentColor, 0.8);
-      g.fillCircle(16, 16, 14);
-      g.fillStyle(0xffffff, 0.25);
-      g.fillCircle(11, 11, 5);
-      g.lineStyle(2, 0xffffff, 0.4);
-      g.strokeCircle(16, 16, 14);
-      g.generateTexture('zone_node_open_' + i, 32, 32);
-      g.destroy();
-    })();
-
-    // Done node (cleared)
-    (function() {
-      const g = scene.add.graphics();
-      g.fillStyle(zone.accentColor, 1);
-      g.fillCircle(16, 16, 14);
-      g.fillStyle(0xf39c12, 1);
-      g.fillCircle(16, 16, 9);
-      g.fillStyle(0xffd700, 1);
-      g.fillCircle(16, 16, 5);
-      g.lineStyle(2, 0xf39c12, 0.8);
-      g.strokeCircle(16, 16, 14);
-      g.generateTexture('zone_node_done_' + i, 32, 32);
-      g.destroy();
-    })();
-  });
-}
-
-// Generates a starfield world-map background texture
-function genWorldBg(scene) {
-  const g = scene.add.graphics();
-  g.fillStyle(0x030309, 1);
-  g.fillRect(0, 0, 640, 448);
-  for (let i = 0; i < 200; i++) {
-    const x = Phaser.Math.Between(0, 639);
-    const y = Phaser.Math.Between(0, 447);
-    g.fillStyle(0xffffff, Math.random() * 0.6 + 0.1);
-    g.fillRect(x, y, 1, 1);
-  }
-  // Nebula blobs
-  g.fillStyle(0x1a0a2e, 0.35);
-  g.fillCircle(150, 200, 60);
-  g.fillStyle(0x0a1a2e, 0.3);
-  g.fillCircle(450, 120, 80);
-  g.fillStyle(0x1a2e0a, 0.25);
-  g.fillCircle(300, 350, 50);
-  g.generateTexture('world_bg', 640, 448);
-  g.destroy();
-}
 
 // Generates all sprite textures: player, zone enemies, bosses
 function genSprites(scene) {
@@ -1170,8 +1091,6 @@ class BootScene extends Phaser.Scene {
   preload() {
     // Texture generation happens here (Phaser graphics are available in preload).
     // These debug textures remain the boot-safe fallback for every runtime asset.
-    genWorldBg(this);
-    genZoneNodeTextures(this);
     genTiles(this);
     genSprites(this);
     preloadBtqmGeneratedAssets(this);
@@ -1191,6 +1110,19 @@ class BootScene extends Phaser.Scene {
 
     this.scene.start('TitleScene');
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Returns the first accessible, uncleaned zone index for the current session.
+// Zone 0 is always accessible. Zone i > 0 requires either lifetimeClears > 0
+// or the previous zone to have been cleared today.
+// ─────────────────────────────────────────────────────────────────────────────
+function getFirstPlayableZone(player, daily) {
+  for (let i = 0; i < ZONES.length; i++) {
+    const accessible = i === 0 || (player && player.lifetimeClears > 0) || (daily.zoneClears[i - 1] === true);
+    if (accessible && !daily.zoneClears[i]) return i;
+  }
+  return 0; // all zones cleared today — restart from zone 0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1260,7 +1192,7 @@ class TitleScene extends Phaser.Scene {
     }).setOrigin(0.5, 0);
 
     // Controls help
-    this.add.text(320, 400, 'ARROWS/WASD — Move   ENTER/SPACE — Enter Zone   ESC — World Map', {
+    this.add.text(320, 400, 'ARROWS/WASD — Move   ENTER/SPACE — Enter Zone   ESC — Title Screen', {
       fontFamily: 'Courier New', fontSize: '10px', color: '#555555', align: 'center'
     }).setOrigin(0.5);
 
@@ -1308,20 +1240,45 @@ class TitleScene extends Phaser.Scene {
       errEl.style.display = 'none';
       overlay.style.display = 'none';
 
+      const hasMatchingPlayer = !!(player && player.name === name);
+      const shouldResumeActiveRun = !!(
+        hasMatchingPlayer &&
+        btqmRuntime.runActive &&
+        !btqmRuntime.runSubmitted
+      );
+
       let p;
       if (!player || player.name !== name) {
         p = createPlayer(name);
+        beginRun(name);
       } else {
         p = { ...player };
         p.name = name;
-        p.hp = p.maxHp;
+        if (!shouldResumeActiveRun) {
+          p.hp = p.maxHp;
+          beginRun(p.name);
+        } else {
+          btqmRuntime.playerName = p.name;
+        }
       }
       savePlayer(p);
       this.registry.set('player', p);
       try { ArcadeSync.setPlayer(p.name); } catch(e) {}
-      beginRun(p.name);
 
-      this.scene.start('WorldScene');
+      let zoneId = getFirstPlayableZone(p, daily);
+      if (shouldResumeActiveRun) {
+        const resumedZoneId = Number(this.registry.get('currentZone'));
+        if (
+          Number.isInteger(resumedZoneId) &&
+          resumedZoneId >= 0 &&
+          resumedZoneId < ZONES.length &&
+          !daily.zoneClears[resumedZoneId]
+        ) {
+          zoneId = resumedZoneId;
+        }
+      }
+      this.registry.set('currentZone', zoneId);
+      this.scene.start('ZoneScene', { zoneId });
     };
 
     // Remove old listeners to avoid duplicates if scene restarts
@@ -1342,270 +1299,6 @@ class TitleScene extends Phaser.Scene {
     // Hide overlay when scene shuts down
     const overlay = document.getElementById('btqm-name-overlay');
     if (overlay) overlay.style.display = 'none';
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SCENE: WorldScene — world map with 6 zone nodes
-// ─────────────────────────────────────────────────────────────────────────────
-class WorldScene extends Phaser.Scene {
-  constructor() { super('WorldScene'); }
-
-  create() {
-    this.player = this.registry.get('player');
-    this.daily  = this.registry.get('daily');
-    this.currentZone = this.registry.get('currentZone') || 0;
-    this.audio = ensureAudio();
-    this.audio.setMusicLayer('world');
-    this.fx = createFxSystem(this);
-
-    // Signal to the fullscreen shell that active gameplay has begun.
-    window.running = true;
-
-    // Background
-    this.add.image(320, 224, 'world_bg');
-
-    // Title bar
-    this.add.rectangle(320, 14, 500, 22, 0x000000, 0.7);
-    this.add.text(320, 14, '⚔  BLOCK TOPIA QUEST MAZE  ⚔', {
-      fontFamily: 'Courier New', fontSize: '13px', color: '#f39c12', fontStyle: 'bold'
-    }).setOrigin(0.5);
-
-    this.add.text(320, 33, 'Select a zone — ARROWS to navigate — ENTER to enter', {
-      fontFamily: 'Courier New', fontSize: '9px', color: '#888888'
-    }).setOrigin(0.5);
-
-    // Draw connection lines
-    const gfx = this.add.graphics();
-    ZONE_CONNECTIONS.forEach(([a, b]) => {
-      const pa = ZONE_POSITIONS[a];
-      const pb = ZONE_POSITIONS[b];
-      gfx.lineStyle(2, 0x444466, 0.5);
-      gfx.lineBetween(pa.x, pa.y, pb.x, pb.y);
-    });
-
-    // Zone nodes
-    this.zoneSprites = [];
-    ZONES.forEach((zone, i) => {
-      const pos = ZONE_POSITIONS[i];
-      const cleared    = this.daily.zoneClears[i];
-      const accessible = this.isZoneAccessible(i);
-
-      let texKey;
-      if (!accessible)    texKey = 'zone_node_locked';
-      else if (cleared)   texKey = 'zone_node_done_' + i;
-      else                texKey = 'zone_node_open_' + i;
-
-      const sprite = this.add.image(pos.x, pos.y, texKey).setDisplaySize(40, 40);
-
-      if (accessible) {
-        sprite.setInteractive({ useHandCursor: true });
-        sprite.on('pointerdown', () => {
-          this.currentZone = i;
-          this.registry.set('currentZone', i);
-          this.playerIcon.setPosition(pos.x, pos.y - 22);
-          this.drawSelIndicator();
-          this.updateZoneInfo();
-        });
-        sprite.on('pointerup', () => {
-          if (this.currentZone === i) this.enterZone(i);
-        });
-      }
-
-      this.zoneSprites.push(sprite);
-      if (accessible && !cleared) {
-        this.tweens.add({
-          targets: sprite,
-          scaleX: 1.08,
-          scaleY: 1.08,
-          duration: 320,
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut',
-        });
-      }
-
-      // Zone label
-      const labelColor = accessible ? '#dddddd' : '#444444';
-      this.add.text(pos.x, pos.y + 24, zone.name, {
-        fontFamily: 'Courier New', fontSize: '9px', color: labelColor
-      }).setOrigin(0.5, 0);
-
-      if (cleared) {
-        this.add.text(pos.x, pos.y + 34, '✓ CLEARED', {
-          fontFamily: 'Courier New', fontSize: '8px', color: '#2ecc71'
-        }).setOrigin(0.5, 0);
-      }
-    });
-
-    // Player icon on current zone
-    this.playerIcon = addBtqmPlayerSprite(
-      this,
-      ZONE_POSITIONS[this.currentZone].x,
-      ZONE_POSITIONS[this.currentZone].y - 22
-    ).setDisplaySize(20, 20).setDepth(5);
-    this.tweens.add({
-      targets: this.playerIcon,
-      y: this.playerIcon.y - 4,
-      duration: 360,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
-    });
-
-    // Selection ring
-    this.selIndicator = this.add.graphics().setDepth(4);
-    this.drawSelIndicator();
-
-    // HUD (bottom)
-    this.hudBg = this.add.rectangle(320, 437, 640, 22, 0x000000, 0.8);
-    this.hudText = this.add.text(320, 437, '', {
-      fontFamily: 'Courier New', fontSize: '11px', color: '#ffffff', align: 'center'
-    }).setOrigin(0.5).setDepth(10);
-    this.updateHud();
-
-    // Zone info text
-    this.zoneInfoBg = this.add.rectangle(320, 415, 600, 16, 0x000000, 0.7);
-    this.zoneInfoText = this.add.text(320, 415, '', {
-      fontFamily: 'Courier New', fontSize: '10px', color: '#74b9ff', align: 'center'
-    }).setOrigin(0.5).setDepth(10);
-    this.updateZoneInfo();
-
-    // Keyboard controls
-    this.cursors  = this.input.keyboard.createCursorKeys();
-    this.wasd     = this.input.keyboard.addKeys({ up:'W', down:'S', left:'A', right:'D' });
-    this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
-    this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-
-    this.navCooldown = 0;
-  }
-
-  isZoneAccessible(i) {
-    const player = this.registry.get('player');
-    if (i === 0) return true;
-    if (player && player.lifetimeClears > 0) return true;
-    // Chain: each zone requires the previous to be cleared today
-    return this.daily.zoneClears[i - 1] === true;
-  }
-
-  drawSelIndicator() {
-    this.selIndicator.clear();
-    const pos = ZONE_POSITIONS[this.currentZone];
-    this.selIndicator.lineStyle(2, 0xf39c12, 1);
-    this.selIndicator.strokeCircle(pos.x, pos.y, 24);
-    // Pulse tick marks
-    this.selIndicator.lineStyle(2, 0xf39c12, 0.6);
-    this.selIndicator.lineBetween(pos.x - 28, pos.y, pos.x - 24, pos.y);
-    this.selIndicator.lineBetween(pos.x + 24, pos.y, pos.x + 28, pos.y);
-    this.selIndicator.lineBetween(pos.x, pos.y - 28, pos.x, pos.y - 24);
-    this.selIndicator.lineBetween(pos.x, pos.y + 24, pos.x, pos.y + 28);
-  }
-
-  updateHud() {
-    const p = this.player;
-    const d = this.daily;
-    const cleared = d.zoneClears.filter(Boolean).length;
-    this.hudText.setText(
-      'LVL ' + p.level + '  HP ' + p.hp + '/' + p.maxHp +
-      '  GOLD ' + (p.gold || 0) + '  Potions ' + p.potions +
-      '  Skill ' + p.skillCharges + '  Daily ' + cleared + '/6'
-    );
-  }
-
-  updateZoneInfo() {
-    const z          = ZONES[this.currentZone];
-    const accessible = this.isZoneAccessible(this.currentZone);
-    const cleared    = this.daily.zoneClears[this.currentZone];
-    let info = z.name + ' — ' + z.subtitle;
-    if (!accessible)    info += '   [LOCKED — clear prev zone first]';
-    else if (cleared)   info += '   ✓ CLEARED today';
-    else                info += '   [ENTER to play]';
-    this.zoneInfoText.setText(info);
-  }
-
-  navigateToZone(targetZone) {
-    const connected = ZONE_CONNECTIONS.some(
-      ([a, b]) => (a === this.currentZone && b === targetZone) ||
-                  (b === this.currentZone && a === targetZone)
-    );
-    if (!connected) return;
-
-    this.currentZone = targetZone;
-    this.registry.set('currentZone', targetZone);
-
-    const pos = ZONE_POSITIONS[targetZone];
-    this.playerIcon.setPosition(pos.x, pos.y - 22);
-    this.drawSelIndicator();
-    this.updateZoneInfo();
-  }
-
-  enterZone(zoneId) {
-    if (!this.isZoneAccessible(zoneId)) {
-      this.zoneInfoText.setStyle({ color: '#e74c3c' });
-      this.time.delayedCall(800, () => {
-        this.zoneInfoText.setStyle({ color: '#74b9ff' });
-        this.updateZoneInfo();
-      });
-      return;
-    }
-    this.registry.set('currentZone', zoneId);
-    this.fx.sceneTransition(() => {
-      this.scene.start('ZoneScene', { zoneId });
-    });
-  }
-
-  update(time, delta) {
-    if (this.fx) {
-      this.fx.update(delta);
-      this.fx.maybeTriggerChaosEvent();
-    }
-    // Refresh player/daily in case we returned from a zone
-    this.player = this.registry.get('player');
-    this.daily  = this.registry.get('daily');
-
-    this.navCooldown -= delta;
-    if (this.navCooldown > 0) return;
-
-    const up    = this.cursors.up.isDown    || this.wasd.up.isDown;
-    const down  = this.cursors.down.isDown  || this.wasd.down.isDown;
-    const left  = this.cursors.left.isDown  || this.wasd.left.isDown;
-    const right = this.cursors.right.isDown || this.wasd.right.isDown;
-    const enter = Phaser.Input.Keyboard.JustDown(this.enterKey) ||
-                  Phaser.Input.Keyboard.JustDown(this.spaceKey);
-
-    if (enter) {
-      this.enterZone(this.currentZone);
-      this.navCooldown = 400;
-      return;
-    }
-
-    if (up || down || left || right) {
-      const connected = ZONE_CONNECTIONS
-        .filter(([a, b]) => a === this.currentZone || b === this.currentZone)
-        .map(([a, b]) => a === this.currentZone ? b : a);
-
-      const currPos = ZONE_POSITIONS[this.currentZone];
-      let best = null, bestScore = -Infinity;
-
-      connected.forEach(zi => {
-        const p = ZONE_POSITIONS[zi];
-        const dx = p.x - currPos.x;
-        const dy = p.y - currPos.y;
-        let score = 0;
-        if (up)    score = -dy - Math.abs(dx) * 0.3;
-        if (down)  score =  dy - Math.abs(dx) * 0.3;
-        if (left)  score = -dx - Math.abs(dy) * 0.3;
-        if (right) score =  dx - Math.abs(dy) * 0.3;
-        if (score > bestScore) { bestScore = score; best = zi; }
-      });
-
-      if (best !== null) {
-        this.navigateToZone(best);
-        this.navCooldown = 200;
-      }
-    }
-
-    this.updateHud();
   }
 }
 
@@ -1633,6 +1326,8 @@ class ZoneScene extends Phaser.Scene {
     this.exitEnabled  = !!this.daily.zoneClears[this.zoneId];
     this.inBattle     = false;
     this.msgTimer     = null;
+    if (typeof window !== 'undefined') window.running = true;
+    this.registry.set('currentZone', this.zoneId);
 
     const ROWS = this.mapData.length;       // 10
     const COLS = this.mapData[0].length;    // 15
@@ -1716,7 +1411,7 @@ class ZoneScene extends Phaser.Scene {
     this.updateHud();
 
     // Mini-map indicator
-    this.hudEscHint = this.add.text(320, 8, 'ESC → World Map', {
+    this.hudEscHint = this.add.text(320, 8, 'ESC → Title Screen', {
       fontFamily: 'Courier New', fontSize: '9px', color: '#555555',
       backgroundColor: 'rgba(0,0,0,0.6)', padding: { x: 4, y: 2 }
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(20);
@@ -1736,7 +1431,8 @@ class ZoneScene extends Phaser.Scene {
       if (!this.inBattle) {
         this.fx.sceneTransition(() => {
           this.scene.stop('ZoneScene');
-          this.scene.start('WorldScene');
+          if (typeof window !== 'undefined') window.running = false;
+          this.scene.start('TitleScene');
         });
       }
     });
@@ -1950,11 +1646,24 @@ class ZoneScene extends Phaser.Scene {
   }
 
   exitZone() {
-    this.showMessage('✨ Zone cleared!\nReturning to World Map...', 1400);
+    const nextZoneId = getFirstPlayableZone(this.player, this.daily);
+    const hasNextZone = !this.daily.zoneClears[nextZoneId];
+    this.showMessage(
+      hasNextZone
+        ? '✨ Zone cleared!\nEntering next zone...'
+        : '✨ Zone cleared!\nReturning to title screen...',
+      1400
+    );
     this.time.delayedCall(1500, () => {
       this.fx.sceneTransition(() => {
         this.scene.stop('ZoneScene');
-        this.scene.start('WorldScene');
+        if (hasNextZone) {
+          this.registry.set('currentZone', nextZoneId);
+          this.scene.start('ZoneScene', { zoneId: nextZoneId });
+          return;
+        }
+        if (typeof window !== 'undefined') window.running = false;
+        this.scene.start('TitleScene');
       });
     });
   }
@@ -2567,7 +2276,7 @@ export function bootstrapBlockTopiaQuestMaze(root) {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
       },
-      scene: [BootScene, TitleScene, WorldScene, ZoneScene, BattleScene],
+      scene: [BootScene, TitleScene, ZoneScene, BattleScene],
     });
 
     // Tag the Phaser-generated canvas so game-fullscreen.js detectMeta()
@@ -2635,7 +2344,7 @@ export function bootstrapBlockTopiaQuestMaze(root) {
   async function switchToTitleScene() {
     if (!phaserGame) return;
     _pausedByOverlay = [];
-    ['BattleScene', 'ZoneScene', 'WorldScene'].forEach(function (k) {
+    ['BattleScene', 'ZoneScene'].forEach(function (k) {
       if (phaserGame.scene.isActive(k) || phaserGame.scene.isPaused(k)) phaserGame.scene.stop(k);
     });
     if (!phaserGame.scene.isActive('TitleScene')) phaserGame.scene.start('TitleScene');
@@ -2654,7 +2363,7 @@ export function bootstrapBlockTopiaQuestMaze(root) {
 
   function pause() {
     if (!phaserGame || _pausedByOverlay.length) return;
-    ['BattleScene', 'ZoneScene', 'WorldScene'].forEach(function (k) {
+    ['BattleScene', 'ZoneScene'].forEach(function (k) {
       if (phaserGame.scene.isActive(k)) {
         phaserGame.scene.pause(k);
         _pausedByOverlay.push(k);
