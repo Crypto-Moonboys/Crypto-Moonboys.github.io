@@ -94,7 +94,7 @@ assert.match(bootstrap, /antialias:\s*false/, 'Phaser antialiasing should be dis
 assert.match(bootstrap, /roundPixels:\s*true/, 'Phaser should round pixels for crisp sprites');
 assert.match(btqmLivePage, /import\s*\{\s*mountGame\s*\}\s*from\s*['"]\/js\/arcade\/core\/game-shell\.js['"]/, 'BTQM live page should mount through game-shell');
 assert.match(btqmLivePage, /import\s*\{\s*bootstrapBlockTopiaQuestMaze\s*\}\s*from\s*['"]\/js\/arcade\/games\/block-topia-quest-maze\/bootstrap\.js['"]/, 'BTQM live page should import maintained BTQM bootstrap');
-assert.match(btqmLivePage, /mountGame\(\{\s*root:\s*document\.querySelector\(['"]\.game-card['"]\),\s*bootstrap:\s*bootstrapBlockTopiaQuestMaze\s*\}\)/, 'BTQM live page should mount the maintained BTQM bootstrap');
+assert.match(btqmLivePage, /mountGame\(\{\s*root:\s*document\.querySelector\(['"]\.game-card['"]\)\s*,\s*bootstrap:\s*bootstrapBlockTopiaQuestMaze\s*\}\)/, 'BTQM live page should mount the maintained BTQM bootstrap');
 assert.match(btqmLivePage, /id=['"]btqm-name-overlay['"]/, 'BTQM live page should include BTQM title/name overlay required by bootstrap');
 assert.match(btqmLivePage, /id=['"]btqm-daily-bar['"]/, 'BTQM live page should include BTQM daily status bar required by bootstrap');
 assert.doesNotMatch(btqmLivePage, /this\.canvas\s*=\s*document\.getElementById\(['"]btqm-canvas['"]\)/, 'BTQM live page should not run the legacy inline canvas renderer');
