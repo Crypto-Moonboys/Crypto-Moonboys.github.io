@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   validate-pr-body:
+    if: '!github.event.pull_request.draft'
     runs-on: ubuntu-latest
     steps:
       - name: Validate PR template sections

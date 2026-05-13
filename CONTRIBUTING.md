@@ -9,7 +9,7 @@
 
 - `npm test` must pass before merge.
 - Every PR must complete the pull request template. PRs with missing deploy/test scope must not be merged.
-- PR template completion is enforced by `.github/workflows/pr-template-check.yml`.
+- PR template completion is enforced by `.github/workflows/pr-template-check.yml`. Template validation is skipped for draft PRs and only applies once a PR is marked ready for review.
 
 ## Deployment and restart notes
 
