@@ -1,7 +1,7 @@
 {
   "version": 1,
   "game": "Block Topia Quest Maze",
-  "generatedAt": "2026-05-13T00:00:00.000Z",
+  "generatedAt": "2026-05-13T15:05:03.765Z",
   "dryRun": false,
   "sourcePrompts": "art/btqm/source-prompts.json",
   "outputRoot": "art/btqm/generated",
@@ -189,234 +189,306 @@
       "category": "enemies",
       "zoneId": 0,
       "name": "Paper Hand Goblin",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "251cabaf1f838971",
       "output": "art/btqm/generated/enemies/zone-0-paper-hand-goblin.png",
       "size": {
         "width": 96,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 359,
+      "sha256": "a44c0088e29c8d2532017683ad5e663cff9cb10f9843dd16c3be00d02d96967c",
+      "encodedOutput": "art/btqm/generated/enemies/zone-0-paper-hand-goblin.png.base64"
     },
     {
       "id": "enemy-fud-spreader",
       "category": "enemies",
       "zoneId": 0,
       "name": "FUD Spreader",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "41e45723d2b7c1fe",
       "output": "art/btqm/generated/enemies/zone-0-fud-spreader.png",
       "size": {
         "width": 96,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 349,
+      "sha256": "76fa02c1b91083ea7174b9c1745315f49f9d04af64b94646357c9552f1b08f4d",
+      "encodedOutput": "art/btqm/generated/enemies/zone-0-fud-spreader.png.base64"
     },
     {
       "id": "enemy-bear-soldier",
       "category": "enemies",
       "zoneId": 1,
       "name": "Bear Soldier",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "6f3f563e6ddf91d6",
       "output": "art/btqm/generated/enemies/zone-1-bear-soldier.png",
       "size": {
         "width": 96,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 334,
+      "sha256": "0b7d8b657d01c29af18edee11ce19ee6dc9dedeb8809932fa283e315c055516d",
+      "encodedOutput": "art/btqm/generated/enemies/zone-1-bear-soldier.png.base64"
     },
     {
       "id": "enemy-market-crasher",
       "category": "enemies",
       "zoneId": 1,
       "name": "Market Crasher",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "446d7fc12bfe54c5",
       "output": "art/btqm/generated/enemies/zone-1-market-crasher.png",
       "size": {
         "width": 96,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 381,
+      "sha256": "6451ed084405ee62ad89661af9605b74eaf633e7a3829ee033b67db6185da284",
+      "encodedOutput": "art/btqm/generated/enemies/zone-1-market-crasher.png.base64"
     },
     {
       "id": "enemy-fomo-ghost",
       "category": "enemies",
       "zoneId": 2,
       "name": "FOMO Ghost",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "71283cd0897b03e0",
       "output": "art/btqm/generated/enemies/zone-2-fomo-ghost.png",
       "size": {
         "width": 96,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 391,
+      "sha256": "07e3b099e6798ad16143c4656da081b909e206aad58458cb3f92b3f32d82acba",
+      "encodedOutput": "art/btqm/generated/enemies/zone-2-fomo-ghost.png.base64"
     },
     {
       "id": "enemy-panic-seller",
       "category": "enemies",
       "zoneId": 2,
       "name": "Panic Seller",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "fe9bd507ed81c179",
       "output": "art/btqm/generated/enemies/zone-2-panic-seller.png",
       "size": {
         "width": 96,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 352,
+      "sha256": "333265f4290683305522115c03e8a148678baf2f4f818ff2c958023f00a47fe7",
+      "encodedOutput": "art/btqm/generated/enemies/zone-2-panic-seller.png.base64"
     },
     {
       "id": "enemy-rug-puller",
       "category": "enemies",
       "zoneId": 3,
       "name": "Rug Puller",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "5d76fb090fa92716",
       "output": "art/btqm/generated/enemies/zone-3-rug-puller.png",
       "size": {
         "width": 96,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 356,
+      "sha256": "4035463cb2c3c9028e5cf1005f435cd6feb59dc36007c984f0511193a0b76f75",
+      "encodedOutput": "art/btqm/generated/enemies/zone-3-rug-puller.png.base64"
     },
     {
       "id": "enemy-exit-scammer",
       "category": "enemies",
       "zoneId": 3,
       "name": "Exit Scammer",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "19ffce1f31d2082d",
       "output": "art/btqm/generated/enemies/zone-3-exit-scammer.png",
       "size": {
         "width": 96,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 362,
+      "sha256": "7d1bf2824d9e136251d21b94d70bf16ad64ec255a2811c09fdbaca08c8332279",
+      "encodedOutput": "art/btqm/generated/enemies/zone-3-exit-scammer.png.base64"
     },
     {
       "id": "enemy-whale-minion",
       "category": "enemies",
       "zoneId": 4,
       "name": "Whale Minion",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "8f86a69b4d44e5a1",
       "output": "art/btqm/generated/enemies/zone-4-whale-minion.png",
       "size": {
         "width": 96,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 347,
+      "sha256": "9c3cf24635635807122c592d97a26778982c5c5658beb76a1c43b300c02f6076",
+      "encodedOutput": "art/btqm/generated/enemies/zone-4-whale-minion.png.base64"
     },
     {
       "id": "enemy-market-manipulator",
       "category": "enemies",
       "zoneId": 4,
       "name": "Market Manipulator",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "321aff49d611493a",
       "output": "art/btqm/generated/enemies/zone-4-market-manipulator.png",
       "size": {
         "width": 96,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 401,
+      "sha256": "0149ec2c4c4765aa63d33a2f4182ffff9416dde82d47b15a04ce4a59aa195fcf",
+      "encodedOutput": "art/btqm/generated/enemies/zone-4-market-manipulator.png.base64"
     },
     {
       "id": "enemy-ngmi-wraith",
       "category": "enemies",
       "zoneId": 5,
       "name": "NGMI Wraith",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "a4aa69686d335128",
       "output": "art/btqm/generated/enemies/zone-5-ngmi-wraith.png",
       "size": {
         "width": 96,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 428,
+      "sha256": "a8b1305563e85de5d636fb809c5544fddcf06e9748f6a8689fb5ff6350bbf11e",
+      "encodedOutput": "art/btqm/generated/enemies/zone-5-ngmi-wraith.png.base64"
     },
     {
       "id": "enemy-anti-moon-troll",
       "category": "enemies",
       "zoneId": 5,
       "name": "Anti-Moon Troll",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "dcee68362d8c2f38",
       "output": "art/btqm/generated/enemies/zone-5-anti-moon-troll.png",
       "size": {
         "width": 96,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 375,
+      "sha256": "3d5adfe3987f96f812986f4728e66727b0682d9472d768fcd9609f66b76f4daf",
+      "encodedOutput": "art/btqm/generated/enemies/zone-5-anti-moon-troll.png.base64"
     },
     {
       "id": "boss-paper-hand-king",
       "category": "bosses",
       "zoneId": 0,
       "name": "Paper Hand King",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "25291b907403fce5",
       "output": "art/btqm/generated/bosses/zone-0-paper-hand-king.png",
       "size": {
         "width": 192,
         "height": 48
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 672,
+      "sha256": "8c9f3cbad2f9057860b64feb239433c63faa1b6b607720ca467c63cb2d7c1f85",
+      "encodedOutput": "art/btqm/generated/bosses/zone-0-paper-hand-king.png.base64"
     },
     {
       "id": "boss-the-bear-lord",
       "category": "bosses",
       "zoneId": 1,
       "name": "The Bear Lord",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "1d5ceed3cf1e74e4",
       "output": "art/btqm/generated/bosses/zone-1-the-bear-lord.png",
       "size": {
         "width": 192,
         "height": 48
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 672,
+      "sha256": "96719e0dbe0c27f93a312881bb8c0ef65b488235ec375a4b88a0391a425cce5f",
+      "encodedOutput": "art/btqm/generated/bosses/zone-1-the-bear-lord.png.base64"
     },
     {
       "id": "boss-fomo-phantom-prime",
       "category": "bosses",
       "zoneId": 2,
       "name": "FOMO Phantom Prime",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "76944af3938e6295",
       "output": "art/btqm/generated/bosses/zone-2-fomo-phantom-prime.png",
       "size": {
         "width": 192,
         "height": 48
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 711,
+      "sha256": "1198cba79de162eea96e305ac8ab52bfd636c6b1967ec71289516f4f104c01a0",
+      "encodedOutput": "art/btqm/generated/bosses/zone-2-fomo-phantom-prime.png.base64"
     },
     {
       "id": "boss-the-rug-lord",
       "category": "bosses",
       "zoneId": 3,
       "name": "The Rug Lord",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "dba1f9bf5ec79687",
       "output": "art/btqm/generated/bosses/zone-3-the-rug-lord.png",
       "size": {
         "width": 192,
         "height": 48
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 609,
+      "sha256": "a7679e6cbc8d9f1459f23821a4547ed031f5ecb70b67b2dc86e369699bc9437f",
+      "encodedOutput": "art/btqm/generated/bosses/zone-3-the-rug-lord.png.base64"
     },
     {
       "id": "boss-the-whale-lord",
       "category": "bosses",
       "zoneId": 4,
       "name": "The Whale Lord",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "306446923992dcc5",
       "output": "art/btqm/generated/bosses/zone-4-the-whale-lord.png",
       "size": {
         "width": 192,
         "height": 48
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 641,
+      "sha256": "96aaf383b00dedaa8d74a4b74adb7177f68eed8d42cd56327382c0d2e6345501",
+      "encodedOutput": "art/btqm/generated/bosses/zone-4-the-whale-lord.png.base64"
     },
     {
       "id": "boss-ngmi-overlord",
       "category": "bosses",
       "zoneId": 5,
       "name": "NGMI Overlord",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "c58841bbecc8a1d8",
       "output": "art/btqm/generated/bosses/zone-5-ngmi-overlord.png",
       "size": {
         "width": 192,
         "height": 48
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 662,
+      "sha256": "f0581f6eeb815e094a7f3b18aa20ee8df723a0594e98af961e6b9fb289c4d431",
+      "encodedOutput": "art/btqm/generated/bosses/zone-5-ngmi-overlord.png.base64"
     },
     {
       "id": "ui-panel-frame",
@@ -746,25 +818,33 @@
       "id": "icons-status-effects",
       "category": "icons",
       "name": "Status effect icons",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "cf5619f693569e60",
       "output": "art/btqm/generated/icons/status-effect-icons.png",
       "size": {
         "width": 160,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 638,
+      "sha256": "77235e0d254f8e9c523c320a96ceb7160a40a71ece2a8b18a8e0e85ba0386031",
+      "encodedOutput": "art/btqm/generated/icons/status-effect-icons.png.base64"
     },
     {
       "id": "icons-zone-badges",
       "category": "icons",
       "name": "Zone badges",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "e92b912f6d7a2a79",
       "output": "art/btqm/generated/icons/zone-badges.png",
       "size": {
         "width": 192,
         "height": 32
-      }
+      },
+      "method": "generateImageBitforge",
+      "bytes": 739,
+      "sha256": "5e984a9c78f1c07c2edfbb83a701287cce16a01ff72997c63e5540748f7829c2",
+      "encodedOutput": "art/btqm/generated/icons/zone-badges.png.base64"
     }
   ]
 }
