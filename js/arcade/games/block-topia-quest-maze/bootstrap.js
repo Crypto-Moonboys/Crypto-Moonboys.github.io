@@ -190,6 +190,198 @@ const MISS_HIT_VOLUME = 0.02;
 const ENEMY_CRIT_VOLUME = 0.03;
 const ENEMY_HIT_VOLUME = 0.02;
 
+const BTQM_ASSET_MANIFEST_URL = '/art/btqm/manifest.json';
+const BTQM_ASSET_KEY_PREFIX = 'btqm_generated_';
+const BTQM_SAFE_ASSET_CATEGORIES = new Set(['icons', 'ui', 'objects', 'fx', 'player']);
+const BTQM_PLAYER_SHEET_IDS = new Set(['player-idle', 'player-walk', 'player-attack', 'player-hurt']);
+const BTQM_FX_SHEET_IDS = new Set(['fx-slash', 'fx-crit', 'fx-poison', 'fx-bleed', 'fx-shield', 'fx-treasure']);
+
+const BTQM_PLAYER_ANIMATIONS = {
+  'player-idle': { key: 'btqm-player-idle', frameRate: 4, repeat: -1 },
+  'player-walk': { key: 'btqm-player-walk', frameRate: 8, repeat: -1 },
+  'player-attack': { key: 'btqm-player-attack', frameRate: 10, repeat: 0 },
+  'player-hurt': { key: 'btqm-player-hurt', frameRate: 8, repeat: 0 },
+};
+
+const BTQM_FX_ANIMATIONS = {
+  'fx-slash': { key: 'btqm-fx-slash', frameRate: 16, repeat: 0 },
+  'fx-crit': { key: 'btqm-fx-crit', frameRate: 16, repeat: 0 },
+  'fx-poison': { key: 'btqm-fx-poison', frameRate: 12, repeat: 0 },
+  'fx-bleed': { key: 'btqm-fx-bleed', frameRate: 12, repeat: 0 },
+  'fx-shield': { key: 'btqm-fx-shield', frameRate: 12, repeat: 0 },
+  'fx-treasure': { key: 'btqm-fx-treasure', frameRate: 12, repeat: 0 },
+};
+
+function warnBtqmAsset(message, detail) {
+  if (detail) console.warn('[BTQM assets] ' + message, detail);
+  else console.warn('[BTQM assets] ' + message);
+}
+
+function btqmAssetKey(id) {
+  return BTQM_ASSET_KEY_PREFIX + String(id || '').replace(/[^a-z0-9_-]/gi, '_');
+}
+
+function getBtqmAssetRegistry(scene) {
+  const existing = scene.registry.get('btqmAssets');
+  if (existing) return existing;
+  const registry = { manifestLoaded: false, generated: {}, objectTextures: {}, playerSheets: {}, playerAnimations: {}, fxSheets: {}, fxFrameCounts: {}, fxAnimations: {}, ui: {}, icons: {} };
+  scene.registry.set('btqmAssets', registry);
+  return registry;
+}
+
+function isBtqmGeneratedAsset(asset) {
+  return !!(asset && asset.status === 'generated' && BTQM_SAFE_ASSET_CATEGORIES.has(asset.category));
+}
+
+function isValidBtqmPlayerSheet(asset) {
+  if (!asset || !BTQM_PLAYER_SHEET_IDS.has(asset.id)) return false;
+  const size = asset.size || {};
+  return size.height === 32 && size.width >= 32 && size.width % 32 === 0;
+}
+
+function getBtqmFrameCount(asset) {
+  const size = asset && asset.size ? asset.size : {};
+  return Math.floor((size.width || 0) / 32);
+}
+
+function isValidBtqmFxSheet(asset) {
+  if (!asset || !BTQM_FX_SHEET_IDS.has(asset.id)) return false;
+  const size = asset.size || {};
+  return size.height === 32 && size.width >= 32 && size.width % 32 === 0 && getBtqmFrameCount(asset) >= 1;
+}
+
+function markTextureNearest(scene, key) {
+  const texture = scene.textures && scene.textures.exists(key) ? scene.textures.get(key) : null;
+  if (texture && typeof texture.setFilter === 'function' && Phaser.Textures && Phaser.Textures.FilterMode) {
+    texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  }
+}
+
+function registerBtqmAnimations(scene) {
+  const assets = getBtqmAssetRegistry(scene);
+  Object.keys(assets.playerSheets).forEach((id) => {
+    const anim = BTQM_PLAYER_ANIMATIONS[id];
+    const textureKey = assets.playerSheets[id];
+    if (!anim || !textureKey || !scene.textures.exists(textureKey) || scene.anims.exists(anim.key)) return;
+    scene.anims.create({
+      key: anim.key,
+      frames: scene.anims.generateFrameNumbers(textureKey),
+      frameRate: anim.frameRate,
+      repeat: anim.repeat,
+    });
+    assets.playerAnimations[id] = anim.key;
+  });
+  Object.keys(assets.fxSheets).forEach((id) => {
+    const anim = BTQM_FX_ANIMATIONS[id];
+    const textureKey = assets.fxSheets[id];
+    const frameCount = assets.fxFrameCounts[id] || 0;
+    if (!anim || !textureKey || frameCount < 1 || !scene.textures.exists(textureKey) || scene.anims.exists(anim.key)) return;
+    scene.anims.create({
+      key: anim.key,
+      frames: scene.anims.generateFrameNumbers(textureKey, {
+        start: 0,
+        end: frameCount - 1,
+      }),
+      frameRate: anim.frameRate,
+      repeat: anim.repeat,
+    });
+    assets.fxAnimations[id] = anim.key;
+  });
+}
+
+function getBtqmTexture(scene, fallbackKey, objectId) {
+  const assets = getBtqmAssetRegistry(scene);
+  const generatedKey = objectId ? assets.objectTextures[objectId] : null;
+  return generatedKey && scene.textures.exists(generatedKey) ? generatedKey : fallbackKey;
+}
+
+function getBtqmPlayerTexture(scene) {
+  const assets = getBtqmAssetRegistry(scene);
+  const generatedKey = assets.playerSheets['player-idle'];
+  return generatedKey && scene.textures.exists(generatedKey) ? generatedKey : 'player';
+}
+
+function playBtqmPlayerAnim(scene, sprite, id, fallbackId) {
+  if (!sprite || !sprite.anims) return false;
+  const assets = getBtqmAssetRegistry(scene);
+  const animKey = assets.playerAnimations[id] || assets.playerAnimations[fallbackId];
+  if (!animKey || !scene.anims.exists(animKey)) return false;
+  sprite.play(animKey, true);
+  return true;
+}
+
+function addBtqmPlayerSprite(scene, x, y) {
+  const textureKey = getBtqmPlayerTexture(scene);
+  const sprite = scene.add.sprite(x, y, textureKey);
+  markTextureNearest(scene, textureKey);
+  playBtqmPlayerAnim(scene, sprite, 'player-idle');
+  return sprite;
+}
+
+function preloadBtqmGeneratedAssets(scene) {
+  const registry = getBtqmAssetRegistry(scene);
+  const handleBtqmAssetLoadError = (file) => {
+    const key = file && file.key ? file.key : '(unknown)';
+    if (key === 'btqm_asset_manifest') warnBtqmAsset('manifest missing; using debug texture fallback.');
+    else if (String(key).startsWith(BTQM_ASSET_KEY_PREFIX)) warnBtqmAsset('generated PNG missing; using debug texture fallback.', file.src || key);
+  };
+
+  scene.load.on('loaderror', handleBtqmAssetLoadError);
+  scene.events.once('shutdown', () => {
+    scene.load.off('loaderror', handleBtqmAssetLoadError);
+  });
+
+  scene.load.once('filecomplete-json-btqm_asset_manifest', () => {
+    const manifest = scene.cache.json.get('btqm_asset_manifest');
+    const assets = manifest && Array.isArray(manifest.assets) ? manifest.assets : [];
+    registry.manifestLoaded = true;
+    assets.filter(isBtqmGeneratedAsset).forEach((asset) => {
+      if (!asset.output) {
+        warnBtqmAsset('generated manifest entry has no output path; skipping.', asset.id);
+        return;
+      }
+      const textureKey = btqmAssetKey(asset.id);
+      registry.generated[asset.id] = textureKey;
+
+      if (asset.category === 'player') {
+        if (!isValidBtqmPlayerSheet(asset)) {
+          warnBtqmAsset('player sheet is not a valid 32px-high frame strip; keeping fallback.', asset.id);
+          return;
+        }
+        registry.playerSheets[asset.id] = textureKey;
+        scene.load.spritesheet(textureKey, '/' + asset.output.replace(/^\/+/, ''), { frameWidth: 32, frameHeight: 32 });
+        return;
+      }
+
+      if (asset.category === 'fx') {
+        if (!isValidBtqmFxSheet(asset)) {
+          warnBtqmAsset('FX sheet is not a valid 32px-high frame strip; keeping fallback.', asset.id);
+          return;
+        }
+        registry.fxSheets[asset.id] = textureKey;
+        registry.fxFrameCounts[asset.id] = getBtqmFrameCount(asset);
+        scene.load.spritesheet(textureKey, '/' + asset.output.replace(/^\/+/, ''), { frameWidth: 32, frameHeight: 32 });
+        return;
+      }
+
+      if (asset.category === 'objects') registry.objectTextures[asset.id] = textureKey;
+      if (asset.category === 'ui') registry.ui[asset.id] = textureKey;
+      if (asset.category === 'icons') registry.icons[asset.id] = textureKey;
+      scene.load.image(textureKey, '/' + asset.output.replace(/^\/+/, ''));
+    });
+  });
+
+  scene.load.json('btqm_asset_manifest', BTQM_ASSET_MANIFEST_URL);
+}
+
+function finalizeBtqmGeneratedAssets(scene) {
+  const assets = getBtqmAssetRegistry(scene);
+  Object.values(assets.generated).forEach((key) => {
+    if (scene.textures.exists(key)) markTextureNearest(scene, key);
+  });
+  registerBtqmAnimations(scene);
+}
+
 const btqmRuntime = {
   audio: null,
   runActive: false,
@@ -729,14 +921,17 @@ class BootScene extends Phaser.Scene {
   constructor() { super('BootScene'); }
 
   preload() {
-    // Texture generation happens here (Phaser graphics are available in preload)
+    // Texture generation happens here (Phaser graphics are available in preload).
+    // These debug textures remain the boot-safe fallback for every runtime asset.
     genWorldBg(this);
     genZoneNodeTextures(this);
     genTiles(this);
     genSprites(this);
+    preloadBtqmGeneratedAssets(this);
   }
 
   create() {
+    finalizeBtqmGeneratedAssets(this);
     const player = loadPlayer();
     const daily  = loadDailyState();
 
@@ -997,10 +1192,10 @@ class WorldScene extends Phaser.Scene {
     });
 
     // Player icon on current zone
-    this.playerIcon = this.add.image(
+    this.playerIcon = addBtqmPlayerSprite(
+      this,
       ZONE_POSITIONS[this.currentZone].x,
-      ZONE_POSITIONS[this.currentZone].y - 22,
-      'player'
+      ZONE_POSITIONS[this.currentZone].y - 22
     ).setDisplaySize(20, 20).setDepth(5);
     this.tweens.add({
       targets: this.playerIcon,
@@ -1212,10 +1407,10 @@ class ZoneScene extends Phaser.Scene {
         const tile = this.mapData[r][c];
         let texKey;
         if      (tile === 0) texKey = 'tile_wall_' + this.zoneId;
-        else if (tile === 2) texKey = 'tile_enc_'  + this.zoneId;
-        else if (tile === 3) texKey = 'tile_boss_' + this.zoneId;
-        else if (tile === 4) texKey = 'tile_exit';
-        else if (tile === 9) texKey = 'tile_entry';
+        else if (tile === 2) texKey = getBtqmTexture(this, 'tile_enc_'  + this.zoneId, 'object-encounter-marker');
+        else if (tile === 3) texKey = getBtqmTexture(this, 'tile_boss_' + this.zoneId, 'object-boss-marker');
+        else if (tile === 4) texKey = getBtqmTexture(this, 'tile_exit', 'object-exit-portal');
+        else if (tile === 9) texKey = getBtqmTexture(this, 'tile_entry', 'object-entry-glyph');
         else                 texKey = 'tile_floor_' + this.zoneId;
 
         const sprite = this.add.image(
@@ -1230,10 +1425,10 @@ class ZoneScene extends Phaser.Scene {
     // ── Player sprite ────────────────────────────────────────────────────────
     this.playerX = startX;
     this.playerY = startY;
-    this.playerSprite = this.add.image(
+    this.playerSprite = addBtqmPlayerSprite(
+      this,
       startX * TS + TS / 2,
-      startY * TS + TS / 2,
-      'player'
+      startY * TS + TS / 2
     ).setDisplaySize(TS - 8, TS - 8).setDepth(10);
 
     // Player shadow
@@ -1402,6 +1597,9 @@ class ZoneScene extends Phaser.Scene {
     const py = ny * TS + TS / 2;
     this.playerSprite.setPosition(px, py);
     this.playerShadow.setPosition(px, py + TS / 2 - 4);
+    if (playBtqmPlayerAnim(this, this.playerSprite, 'player-walk', 'player-idle')) {
+      this.time.delayedCall(130, () => playBtqmPlayerAnim(this, this.playerSprite, 'player-idle'));
+    }
     this.audio.playSfx('move');
     this.onStepOnTile(nx, ny, tile);
   }
@@ -1460,7 +1658,7 @@ class ZoneScene extends Phaser.Scene {
                 self.tileSprites[r][c].setTexture('tile_floor_' + self.zoneId);
               }
               if (t === 4 && self.tileSprites[r] && self.tileSprites[r][c]) {
-                self.tileSprites[r][c].setTexture('tile_exit');
+                self.tileSprites[r][c].setTexture(getBtqmTexture(self, 'tile_exit', 'object-exit-portal'));
                 self.tweens.add({
                   targets: self.tileSprites[r][c],
                   alpha: 0.4, duration: 360, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
@@ -1645,7 +1843,7 @@ class BattleScene extends Phaser.Scene {
 
     // ── Player panel (left side) ─────────────────────────────────────────────
     const playerPanelX = 110;
-    this.playerSprite  = this.add.image(playerPanelX, 110, 'player')
+    this.playerSprite = addBtqmPlayerSprite(this, playerPanelX, 110)
       .setDisplaySize(72, 72);
 
     this.tweens.add({
@@ -1856,6 +2054,7 @@ class BattleScene extends Phaser.Scene {
     const e = this.enemy;
 
     if (action === 'attack') {
+      playBtqmPlayerAnim(this, this.playerSprite, 'player-attack', 'player-idle');
       const dmg = randInt(8 + p.level * 2, 14 + p.level * 3);
       e.hp -= dmg;
       this.flashSprite(this.enemySprite, 0xff6666, 180);
@@ -1865,6 +2064,7 @@ class BattleScene extends Phaser.Scene {
 
     } else if (action === 'skill') {
       if (p.skillCharges <= 0) { this.playerTurn = true; this.setTurnIndicator(true); return; }
+      playBtqmPlayerAnim(this, this.playerSprite, 'player-attack', 'player-idle');
       p.skillCharges--;
       const dmg = randInt(20 + p.level * 4, 30 + p.level * 5);
       e.hp -= dmg;
@@ -1875,6 +2075,7 @@ class BattleScene extends Phaser.Scene {
       this.refreshButtons();
 
     } else if (action === 'faction') {
+      playBtqmPlayerAnim(this, this.playerSprite, 'player-attack', 'player-idle');
       if (Math.random() < 0.6) {
         const dmg = randInt(25 + p.level * 3, 38 + p.level * 4);
         e.hp -= dmg;
@@ -1928,6 +2129,7 @@ class BattleScene extends Phaser.Scene {
       return;
     }
 
+    this.time.delayedCall(320, () => playBtqmPlayerAnim(this, this.playerSprite, 'player-idle'));
     this.time.delayedCall(700, () => this.doEnemyTurn());
   }
 
@@ -1945,16 +2147,20 @@ class BattleScene extends Phaser.Scene {
     if (e.isBoss && Math.random() < 0.2) {
       eDmg = Math.round(e.atk * 1.5 + randInt(0, 5));
       logMsg = e.name + ' uses POWER SLAM for ' + eDmg + '!';
+      playBtqmPlayerAnim(this, this.playerSprite, 'player-hurt', 'player-idle');
       this.flashSprite(this.playerSprite, 0xff0000, 300);
       this.cameras.main.shake(300, 0.02);
       this.fx.criticalHit(this.playerSprite, eDmg, { x: this.playerSprite.x, y: this.playerSprite.y - 40 });
       this.audio.playSfx('crit', { volume: ENEMY_CRIT_VOLUME });
+      this.time.delayedCall(320, () => playBtqmPlayerAnim(this, this.playerSprite, 'player-idle'));
     } else {
       eDmg = Math.max(1, randInt(Math.floor(e.atk * 0.8), Math.ceil(e.atk * 1.2)));
       logMsg = e.name + ' attacks for ' + eDmg + '!';
+      playBtqmPlayerAnim(this, this.playerSprite, 'player-hurt', 'player-idle');
       this.flashSprite(this.playerSprite, 0xff4444, 180);
       this.fx.hitImpact(this.playerSprite, eDmg, { x: this.playerSprite.x, y: this.playerSprite.y - 40 });
       this.audio.playSfx('hit', { volume: ENEMY_HIT_VOLUME });
+      this.time.delayedCall(320, () => playBtqmPlayerAnim(this, this.playerSprite, 'player-idle'));
     }
 
     p.hp -= eDmg;
@@ -2107,6 +2313,8 @@ export function bootstrapBlockTopiaQuestMaze(root) {
       parent: canvasContainer || root,
       pixelArt: true,
       antialias: false,
+      antialiasGL: false,
+      roundPixels: true,
       backgroundColor: '#0a0a1a',
       scale: {
         mode: Phaser.Scale.FIT,
@@ -2117,7 +2325,10 @@ export function bootstrapBlockTopiaQuestMaze(root) {
 
     // Tag the Phaser-generated canvas so game-fullscreen.js detectMeta()
     // finds the btqmCanvas entry in GAME_META.
-    if (phaserGame.canvas) phaserGame.canvas.id = 'btqmCanvas';
+    if (phaserGame.canvas) {
+      phaserGame.canvas.id = 'btqmCanvas';
+      phaserGame.canvas.style.imageRendering = 'pixelated';
+    }
 
     // When the fullscreen overlay opens/closes, ask Phaser to refresh its scale
     // so input event coordinates remain accurate after the DOM moves.
