@@ -261,6 +261,10 @@ function isValidBtqmTileset(asset) {
     size.height % BTQM_TILESET_FRAME_SIZE === 0;
 }
 
+function isValidBtqmTilesetZoneId(zoneId) {
+  return Number.isInteger(zoneId) && zoneId >= 0 && zoneId < ZONES.length;
+}
+
 function isValidBtqmPlayerSheet(asset) {
   if (!asset || !BTQM_PLAYER_SHEET_IDS.has(asset.id)) return false;
   const size = asset.size || {};
@@ -399,6 +403,15 @@ function getBtqmTileSpriteFrame(scene, zoneId, tile) {
   return { textureKey, frame: BTQM_TILESET_FRAMES.floor };
 }
 
+function setBtqmTileSpriteTexture(scene, sprite, zoneId, tile, fallbackKey) {
+  const tileFrame = getBtqmTileSpriteFrame(scene, zoneId, tile);
+  if (tileFrame) {
+    sprite.setTexture(tileFrame.textureKey, tileFrame.frame);
+    return;
+  }
+  sprite.setTexture(fallbackKey || ('tile_floor_' + zoneId));
+}
+
 function btqmSlug(value) {
   return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
@@ -534,6 +547,14 @@ function preloadBtqmGeneratedAssets(scene) {
       }
 
       if (asset.category === 'tilesets') {
+        if (!isValidBtqmTilesetZoneId(asset.zoneId)) {
+          warnBtqmAsset('tileset has invalid zoneId; keeping debug tile fallback.', asset.id);
+          return;
+        }
+        if (registry.tilesets[asset.zoneId]) {
+          warnBtqmAsset('duplicate tileset zone registration; keeping first generated tileset.', asset.id);
+          return;
+        }
         if (!isValidBtqmTileset(asset)) {
           warnBtqmAsset('tileset is not a valid 256px 32x32 sheet; keeping debug tile fallback.', asset.id);
           return;
@@ -1840,7 +1861,7 @@ class ZoneScene extends Phaser.Scene {
             for (let c = 0; c < self.mapData[0].length; c++) {
               const t = self.mapData[r][c];
               if (t === 3 && self.tileSprites[r] && self.tileSprites[r][c]) {
-                self.tileSprites[r][c].setTexture('tile_floor_' + self.zoneId);
+                setBtqmTileSpriteTexture(self, self.tileSprites[r][c], self.zoneId, 1, 'tile_floor_' + self.zoneId);
               }
               if (t === 4 && self.tileSprites[r] && self.tileSprites[r][c]) {
                 self.tileSprites[r][c].setTexture(getBtqmTexture(self, 'tile_exit', 'object-exit-portal'));
@@ -1858,7 +1879,7 @@ class ZoneScene extends Phaser.Scene {
           const cx = parseInt(parts[0], 10);
           const cy = parseInt(parts[1], 10);
           if (self.tileSprites[cy] && self.tileSprites[cy][cx]) {
-            self.tileSprites[cy][cx].setTexture('tile_floor_' + self.zoneId);
+            setBtqmTileSpriteTexture(self, self.tileSprites[cy][cx], self.zoneId, 1, 'tile_floor_' + self.zoneId);
           }
           self.showMessage('Victory! Enemy defeated.', 1500);
         }
