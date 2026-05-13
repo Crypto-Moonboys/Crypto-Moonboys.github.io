@@ -224,7 +224,7 @@ function btqmAssetKey(id) {
 function getBtqmAssetRegistry(scene) {
   const existing = scene.registry.get('btqmAssets');
   if (existing) return existing;
-  const registry = { manifestLoaded: false, generated: {}, objectTextures: {}, playerSheets: {}, playerAnimations: {}, fxSheets: {}, fxAnimations: {}, ui: {}, icons: {} };
+  const registry = { manifestLoaded: false, generated: {}, objectTextures: {}, playerSheets: {}, playerAnimations: {}, fxSheets: {}, fxFrameCounts: {}, fxAnimations: {}, ui: {}, icons: {} };
   scene.registry.set('btqmAssets', registry);
   return registry;
 }
@@ -239,10 +239,15 @@ function isValidBtqmPlayerSheet(asset) {
   return size.height === 32 && size.width >= 32 && size.width % 32 === 0;
 }
 
+function getBtqmFrameCount(asset) {
+  const size = asset && asset.size ? asset.size : {};
+  return Math.floor((size.width || 0) / 32);
+}
+
 function isValidBtqmFxSheet(asset) {
   if (!asset || !BTQM_FX_SHEET_IDS.has(asset.id)) return false;
   const size = asset.size || {};
-  return size.height === 32 && size.width >= 32 && size.width % 32 === 0;
+  return size.height === 32 && size.width >= 32 && size.width % 32 === 0 && getBtqmFrameCount(asset) >= 1;
 }
 
 function markTextureNearest(scene, key) {
@@ -269,10 +274,14 @@ function registerBtqmAnimations(scene) {
   Object.keys(assets.fxSheets).forEach((id) => {
     const anim = BTQM_FX_ANIMATIONS[id];
     const textureKey = assets.fxSheets[id];
-    if (!anim || !textureKey || !scene.textures.exists(textureKey) || scene.anims.exists(anim.key)) return;
+    const frameCount = assets.fxFrameCounts[id] || 0;
+    if (!anim || !textureKey || frameCount < 1 || !scene.textures.exists(textureKey) || scene.anims.exists(anim.key)) return;
     scene.anims.create({
       key: anim.key,
-      frames: scene.anims.generateFrameNumbers(textureKey),
+      frames: scene.anims.generateFrameNumbers(textureKey, {
+        start: 0,
+        end: frameCount - 1,
+      }),
       frameRate: anim.frameRate,
       repeat: anim.repeat,
     });
@@ -311,11 +320,15 @@ function addBtqmPlayerSprite(scene, x, y) {
 
 function preloadBtqmGeneratedAssets(scene) {
   const registry = getBtqmAssetRegistry(scene);
-
-  scene.load.on('loaderror', (file) => {
+  const handleBtqmAssetLoadError = (file) => {
     const key = file && file.key ? file.key : '(unknown)';
     if (key === 'btqm_asset_manifest') warnBtqmAsset('manifest missing; using debug texture fallback.');
     else if (String(key).startsWith(BTQM_ASSET_KEY_PREFIX)) warnBtqmAsset('generated PNG missing; using debug texture fallback.', file.src || key);
+  };
+
+  scene.load.on('loaderror', handleBtqmAssetLoadError);
+  scene.events.once('shutdown', () => {
+    scene.load.off('loaderror', handleBtqmAssetLoadError);
   });
 
   scene.load.once('filecomplete-json-btqm_asset_manifest', () => {
@@ -346,6 +359,7 @@ function preloadBtqmGeneratedAssets(scene) {
           return;
         }
         registry.fxSheets[asset.id] = textureKey;
+        registry.fxFrameCounts[asset.id] = getBtqmFrameCount(asset);
         scene.load.spritesheet(textureKey, '/' + asset.output.replace(/^\/+/, ''), { frameWidth: 32, frameHeight: 32 });
         return;
       }
