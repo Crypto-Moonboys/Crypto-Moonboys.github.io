@@ -1,6 +1,29 @@
 import { BLOCKTOPIA_MULTIPLAYER_REQUIRED_XP } from '../../shared/block-topia/constants.js';
 
 let room = null;
+
+function exposeBlockTopiaRoom(activeRoom) {
+  if (!activeRoom || typeof window === "undefined") return;
+
+  window.__BLOCK_TOPIA_ROOM__ = activeRoom;
+  window.room = activeRoom;
+
+  if (activeRoom.__npcBrainHandlersAttached) return;
+  activeRoom.__npcBrainHandlersAttached = true;
+
+  if (typeof activeRoom.onMessage === "function") {
+    activeRoom.onMessage("npcReply", (data) => {
+      console.log("[BlockTopia NPC reply]", data);
+      window.dispatchEvent(new CustomEvent("blocktopia:npcReply", { detail: data }));
+    });
+
+    activeRoom.onMessage("npcSignal", (data) => {
+      console.log("[BlockTopia NPC signal]", data);
+      window.dispatchEvent(new CustomEvent("blocktopia:npcSignal", { detail: data }));
+    });
+  }
+}
+
 let client = null;
 let _reconnectOptions = null;
 let _reconnecting = false;
@@ -197,6 +220,7 @@ export async function connectMultiplayer({
       onStatus?.({ ws: 'connecting', joined: false, error: '', roomId });
       client = new window.Colyseus.Client(endpoint);
       room = await joinCityOnly(client, roomId, { name: playerName, telegram_auth: telegramAuth });
+    exposeBlockTopiaRoom(room);
 
       _reconnectionToken = room.reconnectionToken || null;
       _colyseusEndpoint = endpoint;
@@ -392,6 +416,7 @@ async function _tryWarmReconnect() {
     const reconRoom = await warmClient.reconnect(_reconnectionToken);
     client = warmClient;
     room = reconRoom;
+    exposeBlockTopiaRoom(room);
     _reconnectionToken = reconRoom.reconnectionToken || null;
 
     const capturedRef = room;
@@ -474,3 +499,25 @@ export async function reconnectMultiplayer() {
     _isConnecting = false;
   }
 }
+
+/**
+ * Temporary NPC brain test helper.
+ * Use in browser console after joining Block Topia:
+ *   window.testNpcChat("who are you?", "signal_rick")
+ */
+window.testNpcChat = function testNpcChat(message = "who are you?", npcId = "signal_rick") {
+  try {
+    const room = window.__BLOCK_TOPIA_ROOM__ || window.room || window.currentRoom;
+    if (!room || typeof room.send !== "function") {
+      console.warn("[BlockTopia NPC] No Colyseus room found on window.");
+      return false;
+    }
+
+    room.send("npcChat", { npcId, message });
+    console.log("[BlockTopia NPC] sent npcChat", { npcId, message });
+    return true;
+  } catch (error) {
+    console.error("[BlockTopia NPC] failed to send npcChat", error);
+    return false;
+  }
+};

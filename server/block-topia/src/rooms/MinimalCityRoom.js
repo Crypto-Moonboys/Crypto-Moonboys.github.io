@@ -237,6 +237,76 @@ export class MinimalCityRoom extends Room {
       this._markActivity(client.sessionId);
     });
 
+    this.onMessage('npcChat', async (client, data) => {
+      const player = this.playersBySession.get(client.sessionId);
+      if (!player || !player.ready) return;
+
+      const rawMessage = String(data?.message || data?.playerMessage || '').trim();
+      const playerMessage = rawMessage.slice(0, 280);
+      const npcId = String(data?.npcId || 'signal_rick')
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]/g, '_')
+        .slice(0, 64);
+
+      if (!playerMessage) return;
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+
+      try {
+        const response = await fetch('http://127.0.0.1:8899/npc/respond', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            playerId: player.id || client.sessionId,
+            npcId,
+            playerMessage,
+            useOpenAI: false
+          })
+        });
+
+        if (!response.ok) {
+          client.send('npcReply', {
+            ok: false,
+            npcId,
+            npc: 'System',
+            reply: 'The city signal is weak. Try again in a moment.'
+          });
+          return;
+        }
+
+        const result = await response.json();
+
+        client.send('npcReply', {
+          ok: true,
+          npcId: result.npc_id || npcId,
+          npc: result.npc || npcId,
+          role: result.role || '',
+          mode: result.mode || 'local',
+          reply: result.reply || 'The city gives no answer.'
+        });
+
+        this.broadcast('npcSignal', {
+          npcId: result.npc_id || npcId,
+          npc: result.npc || npcId,
+          player: player.name || 'Player',
+          mode: result.mode || 'local'
+        }, { except: client });
+      } catch (error) {
+        client.send('npcReply', {
+          ok: false,
+          npcId,
+          npc: 'System',
+          reply: 'The city signal is offline. Movement still works.'
+        });
+      } finally {
+        clearTimeout(timeout);
+      }
+
+      this._markActivity(client.sessionId);
+    });
+
     this.onMessage('attack', (client) => {
       const player = this.playersBySession.get(client.sessionId);
       if (this.completedSessions.has(client.sessionId)) return;
