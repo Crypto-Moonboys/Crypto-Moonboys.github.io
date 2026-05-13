@@ -6,6 +6,7 @@ import path from 'node:path';
 
 const bootstrap = readFileSync('js/arcade/games/block-topia-quest-maze/bootstrap.js', 'utf8');
 const fxSystem = readFileSync('js/arcade/games/block-topia-quest-maze/fx-system.js', 'utf8');
+const btqmLivePage = readFileSync('games/block-topia-quest-maze/index.html', 'utf8');
 const manifest = JSON.parse(readFileSync('art/btqm/manifest.json', 'utf8'));
 const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
 const deployPagesWorkflow = readFileSync('.github/workflows/deploy-pages.yml', 'utf8');
@@ -91,6 +92,13 @@ assert.doesNotMatch(bootstrap, /console\.(?:log|debug)\(/, 'BTQM runtime must no
 assert.match(bootstrap, /pixelArt:\s*true/, 'Phaser pixelArt rendering should be enabled');
 assert.match(bootstrap, /antialias:\s*false/, 'Phaser antialiasing should be disabled');
 assert.match(bootstrap, /roundPixels:\s*true/, 'Phaser should round pixels for crisp sprites');
+assert.match(btqmLivePage, /import\s*\{\s*mountGame\s*\}\s*from\s*['"]\/js\/arcade\/core\/game-shell\.js['"]/, 'BTQM live page should mount through game-shell');
+assert.match(btqmLivePage, /import\s*\{\s*bootstrapBlockTopiaQuestMaze\s*\}\s*from\s*['"]\/js\/arcade\/games\/block-topia-quest-maze\/bootstrap\.js['"]/, 'BTQM live page should import maintained BTQM bootstrap');
+assert.match(btqmLivePage, /mountGame\(\{\s*root:\s*document\.querySelector\(['"]\.game-card['"]\),\s*bootstrap:\s*bootstrapBlockTopiaQuestMaze\s*\}\)/, 'BTQM live page should mount the maintained BTQM bootstrap');
+assert.match(btqmLivePage, /id=['"]btqm-name-overlay['"]/, 'BTQM live page should include BTQM title/name overlay required by bootstrap');
+assert.match(btqmLivePage, /id=['"]btqm-daily-bar['"]/, 'BTQM live page should include BTQM daily status bar required by bootstrap');
+assert.doesNotMatch(btqmLivePage, /this\.canvas\s*=\s*document\.getElementById\(['"]btqm-canvas['"]\)/, 'BTQM live page should not run the legacy inline canvas renderer');
+assert.doesNotMatch(btqmLivePage, /const\s+game\s*=\s*new\s+Game\s*\(\s*\)\s*;/, 'BTQM live page should not instantiate the legacy inline Game class');
 
 // ── Browser/smoke verification: BTQM first-load map rendering ────────────────
 // manifest loaded generated tilesets — verified above (generatedTilesetAssets.length === 6)
