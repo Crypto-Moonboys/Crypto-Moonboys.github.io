@@ -562,8 +562,9 @@ window.testNpcChat = function testNpcChat(message = "who are you?", npcId = "sig
       #btNpcChat {
         position: fixed;
         right: 14px;
-        bottom: 14px;
-        width: min(360px, calc(100vw - 28px));
+        top: 210px;
+        bottom: auto;
+        width: min(340px, calc(100vw - 28px));
         z-index: 99999;
         color: #dff7ff;
         background: rgba(5, 10, 24, 0.92);
@@ -601,7 +602,7 @@ window.testNpcChat = function testNpcChat(message = "who are you?", npcId = "sig
         margin-bottom: 8px;
       }
       #btNpcLog {
-        max-height: 180px;
+        max-height: 140px;
         overflow: auto;
         margin-bottom: 8px;
         padding: 8px;
