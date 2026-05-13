@@ -1,7 +1,7 @@
 {
   "version": 1,
   "game": "Block Topia Quest Maze",
-  "generatedAt": "2026-05-13T06:39:16.678Z",
+  "generatedAt": "2026-05-13T06:52:06.991Z",
   "dryRun": true,
   "sourcePrompts": "art/btqm/source-prompts.json",
   "outputRoot": "art/btqm/generated",

@@ -66,6 +66,15 @@ function hashPrompt(asset, styleGuide) {
   return hash.digest('hex').slice(0, 16);
 }
 
+function resolveSafeOutputPath(assetOutput) {
+  const absoluteOutput = path.resolve(outputRoot, assetOutput);
+  const relative = path.relative(outputRoot, absoluteOutput);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error(`Unsafe asset output path: ${assetOutput}`);
+  }
+  return absoluteOutput;
+}
+
 function toManifestAsset(asset, status, styleGuide, details = {}) {
   return {
     id: asset.id,
@@ -126,23 +135,25 @@ async function generateAssets(plan, assets) {
 
   const client = new PixelLabClient();
   const manifestAssets = [];
+  let failedCount = 0;
 
   for (const asset of assets) {
-    const absoluteOutput = path.join(outputRoot, asset.output);
-    await mkdir(path.dirname(absoluteOutput), { recursive: true });
-    console.log(`Generating ${asset.id} -> ${path.relative(repoRoot, absoluteOutput)}`);
-
     try {
+      const absoluteOutput = resolveSafeOutputPath(asset.output);
+      await mkdir(path.dirname(absoluteOutput), { recursive: true });
+      console.log(`Generating ${asset.id} -> ${path.relative(repoRoot, absoluteOutput)}`);
+
       const result = await client.generateAsset(asset, plan.styleGuide || {});
       await writeFile(absoluteOutput, result.imageBuffer);
       manifestAssets.push(toManifestAsset(asset, 'generated', plan.styleGuide || {}, { imageUrl: result.imageUrl }));
     } catch (error) {
+      failedCount += 1;
       manifestAssets.push(toManifestAsset(asset, 'failed', plan.styleGuide || {}, { error: error.message }));
-      throw error;
+      console.error(`Failed ${asset.id}: ${error.message}`);
     }
   }
 
-  return manifestAssets;
+  return { manifestAssets, failedCount };
 }
 
 async function main() {
@@ -164,15 +175,21 @@ async function main() {
   await mkdir(outputRoot, { recursive: true });
   printPlan(assets, plan.styleGuide || {}, !options.execute);
 
-  const manifestAssets = options.execute
+  const generationResult = options.execute
     ? await generateAssets(plan, assets)
-    : assets.map((asset) => toManifestAsset(asset, 'planned', plan.styleGuide || {}));
+    : {
+        manifestAssets: assets.map((asset) => toManifestAsset(asset, 'planned', plan.styleGuide || {})),
+        failedCount: 0,
+      };
 
-  const manifest = await writeManifest(plan, manifestAssets);
+  const manifest = await writeManifest(plan, generationResult.manifestAssets);
   console.log(`\nWrote ${path.relative(repoRoot, manifestPath)} with ${manifest.assets.length} asset record(s).`);
 
   if (!options.execute) {
     console.log('Dry run complete. No PixelLab API call was made. Pass --execute with PIXELLAB_API_KEY to generate images.');
+  } else if (generationResult.failedCount > 0) {
+    console.error(`${generationResult.failedCount} asset generation request(s) failed. Manifest was still written.`);
+    process.exitCode = 1;
   }
 }
 
