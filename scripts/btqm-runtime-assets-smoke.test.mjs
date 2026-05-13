@@ -76,6 +76,9 @@ assert.match(bootstrap, /function\s+addBtqmMapTileSprite\s*\(/, 'active zone map
 assert.match(bootstrap, /this\.tileSprites\[r\]\[c\]\s*=\s*addBtqmMapTileSprite\([\s\S]*?this,[\s\S]*?this\.zoneId,[\s\S]*?tile,[\s\S]*?c \* TS \+ TS \/ 2,[\s\S]*?r \* TS \+ TS \/ 2,[\s\S]*?TS\s*\)/, 'first-load zone map loop must render through generated tileset sprites');
 assert.match(bootstrap, /const tileFrame = getBtqmTileSpriteFrame\(scene,\s*zoneId,\s*tile\)/, 'map tile sprite helper should prefer generated tileset frames');
 assert.match(bootstrap, /scene\.add\.image\(x,\s*y,\s*tileFrame\.textureKey,\s*tileFrame\.frame\)/, 'generated map tile rendering must pass the tileset frame to Phaser');
+assert.match(bootstrap, /if\s*\(tileFrame && typeof window !== ['"]undefined['"]\)\s*window\.BTQM_TILESET_RENDER_ACTIVE = true/, 'generated map tile rendering should only mark the runtime flag true when generated frames are drawn');
+assert.match(bootstrap, /if\s*\(typeof window !== ['"]undefined['"]\)\s*window\.BTQM_TILESET_RENDER_ACTIVE = false/, 'zone map render setup should reset the runtime flag before drawing visible tiles');
+assert.match(bootstrap, /sprite\.setTexture\(tileFrame\.textureKey,\s*tileFrame\.frame\)/, 'active tile update path should apply generated tileset frames directly to visible tile sprites');
 assert.match(bootstrap, /function\s+getBtqmTileDebugFallback\s*\(/, 'debug tile textures must be isolated behind a fallback helper');
 assert.match(bootstrap, /if \(tile === 0\) return ['"]tile_wall_['"] \+ zoneId/, 'zone map rendering must preserve wall debug fallback');
 assert.match(bootstrap, /return ['"]tile_floor_['"] \+ zoneId/, 'zone map rendering must preserve floor debug fallback');
