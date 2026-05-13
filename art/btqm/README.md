@@ -2,7 +2,7 @@
 
 This folder plans the 16-bit pixel art replacement pack for `games/block-topia-quest-maze/` and `js/arcade/games/block-topia-quest-maze/`.
 
-The current game still generates placeholder/debug textures at runtime. This pipeline prepares PixelLab prompts and a manifest so a later PR can wire the runtime to load real image assets.
+The game still generates placeholder/debug textures at runtime as fallbacks. This pipeline prepares PixelLab prompts and a manifest; phase-1 runtime integration now loads safe generated assets when manifest entries are marked `generated`.
 
 ## Files
 
@@ -67,6 +67,23 @@ The script updates:
 art/btqm/manifest.json
 ```
 
-## Notes for runtime integration
+## Runtime integration notes
 
-A later PR should replace the Phaser-generated textures in `js/arcade/games/block-topia-quest-maze/bootstrap.js` with manifest-driven image loading. Until then, these generated art assets are intentionally not used by the game runtime.
+Phase 1 wires the generated PixelLab pack into the live `Block Topia Quest Maze` Phaser runtime while keeping the existing generated/debug textures as the boot-safe fallback.
+
+Runtime behavior:
+
+- `js/arcade/games/block-topia-quest-maze/bootstrap.js` loads `/art/btqm/manifest.json` during `BootScene.preload()`.
+- Only manifest entries with `status: "generated"` are eligible for runtime loading.
+- Phase 1 is intentionally allowlisted to safe visual categories only: `icons`, `ui`, `objects`, `fx`, and validated `player` sheets.
+- `tilesets`, `enemies`, and `bosses` remain on existing Phaser-generated/debug textures until those sheets are explicitly validated in a later phase.
+- Missing manifest files or missing PNGs should only emit `[BTQM assets]` console warnings. The game should continue booting with fallback textures.
+- Player sheets are accepted only when they are 32px tall, at least one 32px frame wide, and evenly divisible into 32px frames.
+- FX sheets are accepted with the same 32px frame-strip validation and register animations for slash, crit, poison, bleed, shield, and treasure effects when present.
+- Phaser is configured for crisp pixel art (`pixelArt`, no antialiasing, rounded pixels, and `image-rendering: pixelated`).
+
+Focused smoke check:
+
+```bash
+npm run test:btqm-runtime-assets
+```

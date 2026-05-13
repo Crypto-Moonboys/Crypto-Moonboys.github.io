@@ -10,6 +10,23 @@ const COLORS = {
 const CHAOS_EVENT_PROBABILITY = 0.01;
 const CHAOS_EVENT_COOLDOWN_MS = 6000;
 
+
+function playGeneratedFx(scene, id, x, y, options) {
+  const registry = scene && scene.registry ? scene.registry.get('btqmAssets') : null;
+  const animKey = registry && registry.fxAnimations ? registry.fxAnimations[id] : null;
+  if (!animKey || !scene.anims || !scene.anims.exists(animKey)) return null;
+  const textureKey = registry.fxSheets ? registry.fxSheets[id] : null;
+  if (!textureKey || !scene.textures.exists(textureKey)) return null;
+  const opts = options || {};
+  const sprite = scene.add.sprite(x, y, textureKey)
+    .setDepth(opts.depth || 211)
+    .setScale(opts.scale || 1.5)
+    .setAlpha(opts.alpha == null ? 1 : opts.alpha);
+  sprite.play(animKey);
+  sprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => sprite.destroy());
+  return sprite;
+}
+
 export function createFxSystem(scene) {
   const camera = scene.cameras.main;
   const overlays = {
@@ -71,7 +88,10 @@ export function createFxSystem(scene) {
         ease: 'Quad.easeOut',
       });
     }
-    if (origin) floatingNumber(origin.x, origin.y, amount, '#ffffff', 1);
+    if (origin) {
+      playGeneratedFx(scene, 'fx-slash', origin.x, origin.y + 12, { scale: 1.35 });
+      floatingNumber(origin.x, origin.y, amount, '#ffffff', 1);
+    }
   }
 
   function criticalHit(sprite, amount, origin) {
@@ -86,10 +106,14 @@ export function createFxSystem(scene) {
         ease: 'Quad.easeOut',
       });
     }
-    if (origin) floatingNumber(origin.x, origin.y, amount, '#ff3b3b', 1.3);
+    if (origin) {
+      playGeneratedFx(scene, 'fx-crit', origin.x, origin.y + 12, { scale: 1.55 });
+      floatingNumber(origin.x, origin.y, amount, '#ff3b3b', 1.3);
+    }
   }
 
   function levelUp(x, y) {
+    playGeneratedFx(scene, 'fx-treasure', x, y, { scale: 1.6 });
     const particles = scene.add.particles(x, y, 'player', {
       speed: { min: 70, max: 220 },
       lifespan: 450,

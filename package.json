@@ -15,7 +15,8 @@
     "test:live-site": "node scripts/live-site-verify.mjs",
     "deploy:status": "node scripts/pages-deploy-status.mjs",
     "btqm:assets:dry": "node scripts/generate-btqm-assets.mjs",
-    "btqm:assets": "node scripts/generate-btqm-assets.mjs"
+    "btqm:assets": "node scripts/generate-btqm-assets.mjs",
+    "test:btqm-runtime-assets": "node scripts/btqm-runtime-assets-smoke.test.mjs"
   },
   "keywords": [],
   "author": "",
