@@ -46,6 +46,7 @@
 
   /* Layout dimensions */
   --right-panel-w: 270px;
+  --paperclip-right-panel-gap: 50px;
 }
 
 /* ── PREFERS-REDUCED-MOTION ──────────────────────────────────── */
@@ -5163,4 +5164,68 @@ body.page-game .arcade-top-logo {
   52% { transform: translate(0, 0);    opacity: 0.20; }
   53% { transform: translate(1px, 0);  opacity: 0.28; }
   54% { transform: translate(-1px, 0); opacity: 0.18; }
+}
+
+
+/* ── Global Paperclip/robot floating agent ─────────────────────── */
+.site-paperclip-agent {
+  position: fixed;
+  right: 18px;
+  bottom: 78px;
+  z-index: 1200;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #00ffcc;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+@media (min-width: 1361px) {
+  body.page-has-right-panel .site-paperclip-agent {
+    right: calc(var(--right-panel-w) + var(--paperclip-right-panel-gap));
+  }
+}
+
+.site-paperclip-agent__bot {
+  font-size: 42px;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px #00ffcc);
+  animation: sitePaperclipFloat 3s ease-in-out infinite;
+}
+
+.site-paperclip-agent__bubble {
+  font-size: 10px;
+  color: #00ffcc;
+  background: #001a14;
+  border: 1px solid #00ffcc;
+  padding: 3px 7px;
+  white-space: nowrap;
+  box-shadow: 0 0 10px rgba(0, 255, 204, 0.25);
+}
+
+.site-paperclip-agent:hover,
+.site-paperclip-agent:focus-visible {
+  transform: translateY(-2px);
+  filter: brightness(1.15);
+}
+
+@keyframes sitePaperclipFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@media (max-width: 900px) {
+  .site-paperclip-agent {
+    right: 14px;
+    bottom: 72px;
+  }
+
+  .site-paperclip-agent__bot {
+    font-size: 34px;
+  }
+
+  .site-paperclip-agent__bubble {
+    display: none;
+  }
 }

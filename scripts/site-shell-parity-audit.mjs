@@ -86,6 +86,19 @@ if (!shellJs) {
       fail(`site-shell.js missing ${label}: "${needle}"`);
     }
   }
+
+  console.log('\n[2b] site-shell.js Paperclip global marker');
+  const paperclipChecks = [
+    ["document.getElementById('site-paperclip-agent')", 'single-render guard'],
+    ["paperclip.href = '/paperclip.html'", 'Paperclip link target'],
+  ];
+  for (const [needle, label] of paperclipChecks) {
+    if (shellJs.includes(needle)) {
+      pass(`site-shell.js Paperclip: ${label} present`);
+    } else {
+      fail(`site-shell.js Paperclip: ${label} MISSING`);
+    }
+  }
 }
 
 // 3. Shell pages checks
