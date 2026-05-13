@@ -1648,11 +1648,7 @@ class ZoneScene extends Phaser.Scene {
   exitZone() {
     const allCleared = this.daily.zoneClears.every(Boolean);
     const nextZoneId = getFirstPlayableZone(this.player, this.daily);
-    const hasNextZone = !allCleared &&
-      Number.isInteger(nextZoneId) &&
-      nextZoneId >= 0 &&
-      nextZoneId < ZONES.length &&
-      !this.daily.zoneClears[nextZoneId];
+    const hasNextZone = !allCleared && !this.daily.zoneClears[nextZoneId];
     this.showMessage(
       hasNextZone
         ? '✨ Zone cleared!\nEntering next zone...'
