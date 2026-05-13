@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -6,6 +7,10 @@ import path from 'node:path';
 const bootstrap = readFileSync('js/arcade/games/block-topia-quest-maze/bootstrap.js', 'utf8');
 const fxSystem = readFileSync('js/arcade/games/block-topia-quest-maze/fx-system.js', 'utf8');
 const manifest = JSON.parse(readFileSync('art/btqm/manifest.json', 'utf8'));
+const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+const deployPagesWorkflow = readFileSync('.github/workflows/deploy-pages.yml', 'utf8');
+const gitignore = readFileSync('.gitignore', 'utf8');
+const hydrateScript = readFileSync('scripts/hydrate-btqm-generated-assets.mjs', 'utf8');
 
 const generatedAssetRoot = 'art/btqm/generated';
 const binaryAssetExtensions = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp3', '.wav']);
@@ -64,9 +69,29 @@ assert.match(fxSystem, /fx-treasure/, 'treasure FX animation should be used at r
 
 assert.equal(manifest.outputRoot, 'art/btqm/generated', 'BTQM manifest should point at generated asset root');
 assert.ok(Array.isArray(manifest.assets), 'BTQM manifest must include an assets array');
+assert.equal(
+  packageJson.scripts['btqm:assets:hydrate'],
+  'node scripts/hydrate-btqm-generated-assets.mjs',
+  'package.json must expose a local BTQM asset hydration command',
+);
+assert.match(
+  deployPagesWorkflow,
+  /node scripts\/hydrate-btqm-generated-assets\.mjs --clean-base64/,
+  'Pages deploy must hydrate BTQM PNGs through the shared script and clean encoded payloads from the artifact',
+);
+assert.match(
+  gitignore,
+  /art\/btqm\/generated\/\*\*\/\*\.png/,
+  'locally hydrated BTQM generated PNG files must be ignored',
+);
+assert.match(hydrateScript, /--clean-base64/, 'hydration script must support deploy cleanup mode');
+assert.match(hydrateScript, /endsWith\(['"]\.png\.base64['"]\)/, 'hydration script must walk encoded PNG payloads');
 
 const generatedFiles = walkFiles(generatedAssetRoot);
-const committedBinaryAssets = generatedFiles.filter((file) => binaryAssetExtensions.has(extensionForAssetCheck(file)));
+const trackedGeneratedFiles = execFileSync('git', ['ls-files', generatedAssetRoot], { encoding: 'utf8' })
+  .split('\n')
+  .filter(Boolean);
+const committedBinaryAssets = trackedGeneratedFiles.filter((file) => binaryAssetExtensions.has(extensionForAssetCheck(file)));
 assert.deepEqual(committedBinaryAssets, [], 'BTQM generated assets must be text-reviewable; do not commit binary image/audio files under art/btqm/generated');
 
 const generatedManifestAssets = manifest.assets.filter((asset) => asset.status === 'generated');

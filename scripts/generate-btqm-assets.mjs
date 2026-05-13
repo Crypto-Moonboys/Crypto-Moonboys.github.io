@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pixellabModule from '../lib/pixellab-client.js';
@@ -76,6 +76,7 @@ function resolveSafeOutputPath(assetOutput) {
 }
 
 function toManifestAsset(asset, status, styleGuide, details = {}) {
+  const output = path.posix.join('art/btqm/generated', asset.output.split(path.sep).join(path.posix.sep));
   return {
     id: asset.id,
     category: asset.category,
@@ -84,9 +85,12 @@ function toManifestAsset(asset, status, styleGuide, details = {}) {
     name: asset.name,
     status,
     promptHash: hashPrompt(asset, styleGuide),
-    output: path.posix.join('art/btqm/generated', asset.output.split(path.sep).join(path.posix.sep)),
+    output,
     size: asset.size,
     ...(details.method ? { method: details.method } : {}),
+    ...(details.bytes ? { bytes: details.bytes } : {}),
+    ...(details.sha256 ? { sha256: details.sha256 } : {}),
+    ...(details.encodedOutput ? { encodedOutput: details.encodedOutput } : {}),
     ...(details.imageUrl ? { imageUrl: details.imageUrl } : {}),
     ...(details.error ? { error: details.error } : {}),
   };
@@ -114,12 +118,12 @@ async function loadPromptPlan() {
   return plan;
 }
 
-async function writeManifest(plan, assets) {
+async function writeManifest(plan, assets, options = {}) {
   const manifest = {
     version: plan.version || 1,
     game: plan.game || 'Block Topia Quest Maze',
     generatedAt: new Date().toISOString(),
-    dryRun: assets.every((asset) => asset.status === 'planned'),
+    dryRun: Boolean(options.dryRun),
     sourcePrompts: 'art/btqm/source-prompts.json',
     outputRoot: 'art/btqm/generated',
     categories: supportedCategories,
@@ -127,6 +131,37 @@ async function writeManifest(plan, assets) {
   };
   await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   return manifest;
+}
+
+function assertPngBuffer(asset, buffer) {
+  const pngMagic = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  if (!Buffer.isBuffer(buffer) || !buffer.subarray(0, pngMagic.length).equals(pngMagic)) {
+    throw new Error(`${asset.id} did not generate a PNG payload.`);
+  }
+}
+
+async function writeEncodedPngPayload(asset, absoluteOutput, imageBuffer) {
+  const encodedOutput = `${absoluteOutput}.base64`;
+  let wroteEncoded = false;
+
+  try {
+    assertPngBuffer(asset, imageBuffer);
+    await writeFile(encodedOutput, `${imageBuffer.toString('base64')}\n`, 'utf8');
+    wroteEncoded = true;
+
+    return {
+      bytes: imageBuffer.length,
+      sha256: createHash('sha256').update(imageBuffer).digest('hex'),
+      encodedOutput: path.posix.join('art/btqm/generated', `${asset.output.split(path.sep).join(path.posix.sep)}.base64`),
+    };
+  } catch (error) {
+    if (!wroteEncoded) {
+      await rm(encodedOutput, { force: true }).catch(() => {});
+    }
+    throw error;
+  } finally {
+    await rm(absoluteOutput, { force: true }).catch(() => {});
+  }
 }
 
 async function generateAssets(plan, assets) {
@@ -145,7 +180,11 @@ async function generateAssets(plan, assets) {
       console.log(`Generating ${asset.id} -> ${path.relative(repoRoot, absoluteOutput)}`);
 
       const result = await client.generateAsset(asset, plan.styleGuide || {}, absoluteOutput);
-      manifestAssets.push(toManifestAsset(asset, 'generated', plan.styleGuide || {}, { method: result.method }));
+      const encodedDetails = await writeEncodedPngPayload(asset, absoluteOutput, result.imageBuffer);
+      manifestAssets.push(toManifestAsset(asset, 'generated', plan.styleGuide || {}, {
+        method: result.method,
+        ...encodedDetails,
+      }));
     } catch (error) {
       failedCount += 1;
       manifestAssets.push(toManifestAsset(asset, 'failed', plan.styleGuide || {}, { error: error.message }));
@@ -182,7 +221,7 @@ async function main() {
         failedCount: 0,
       };
 
-  const manifest = await writeManifest(plan, generationResult.manifestAssets);
+  const manifest = await writeManifest(plan, generationResult.manifestAssets, { dryRun: !options.execute });
   console.log(`\nWrote ${path.relative(repoRoot, manifestPath)} with ${manifest.assets.length} asset record(s).`);
 
   if (!options.execute) {

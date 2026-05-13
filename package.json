@@ -16,7 +16,8 @@
     "deploy:status": "node scripts/pages-deploy-status.mjs",
     "btqm:assets:dry": "node scripts/generate-btqm-assets.mjs",
     "btqm:assets": "node scripts/generate-btqm-assets.mjs",
-    "test:btqm-runtime-assets": "node scripts/btqm-runtime-assets-smoke.test.mjs"
+    "test:btqm-runtime-assets": "node scripts/btqm-runtime-assets-smoke.test.mjs",
+    "btqm:assets:hydrate": "node scripts/hydrate-btqm-generated-assets.mjs"
   },
   "keywords": [],
   "author": "",
