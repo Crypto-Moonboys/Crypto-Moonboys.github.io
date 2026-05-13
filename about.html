@@ -36,45 +36,6 @@
       margin-right: 8px;
     }
 
-    /* 16-bit Robot */
-    .robot-container {
-      position: absolute;
-      top: 30px;
-      right: 40px;
-      z-index: 10;
-      animation: float 3s ease-in-out infinite;
-    }
-    .robot {
-      font-size: 42px;
-      filter: drop-shadow(0 0 8px #00ffcc);
-      animation: glitch 1.5s infinite;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-12px); }
-    }
-    @keyframes glitch {
-      0% { transform: translate(0); }
-      20% { transform: translate(-2px, 2px); }
-      40% { transform: translate(-2px, -2px); }
-      60% { transform: translate(2px, 2px); }
-      80% { transform: translate(2px, -2px); }
-      100% { transform: translate(0); }
-    }
-    .robot-speak {
-      position: absolute;
-      top: -28px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #001a14;
-      color: #00ffcc;
-      font-size: 11px;
-      padding: 2px 8px;
-      border: 1px solid #00ffcc;
-      white-space: nowrap;
-      animation: speak 2.5s infinite;
-    }
-
     /* Better breathing room */
     .battle-page .section {
       padding-left: 32px;
@@ -98,11 +59,6 @@
 
     <!-- HERO SECTION -->
     <section class="page-hero wow-hero">
-      <div class="robot-container">
-        <div class="robot">🤖</div>
-        <div class="robot-speak">HELLO...</div>
-      </div>
-
       <div style="position: relative; z-index: 2; padding: 20px 40px 40px;">
         <h1 style="font-size: 3.2rem; line-height: 1.1;">
           THIS ISN’T<br>

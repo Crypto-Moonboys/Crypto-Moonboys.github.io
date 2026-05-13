@@ -332,7 +332,20 @@
   document.body.insertBefore(overlay, layout);
   document.body.insertBefore(header, overlay);
 
-  /* ── 9. Mark active sidebar link ────────────────────────────── */
+  /* ── 9. Global Paperclip agent (render exactly once) ────────── */
+  if (!document.getElementById('site-paperclip-agent')) {
+    var paperclip = document.createElement('a');
+    paperclip.id = 'site-paperclip-agent';
+    paperclip.className = 'site-paperclip-agent';
+    paperclip.href = '/paperclip.html';
+    paperclip.setAttribute('aria-label', 'Open Crypto Moonboys Paperclip brain');
+    paperclip.innerHTML =
+      '<span class="site-paperclip-agent__bubble">HELLO...</span>' +
+      '<span class="site-paperclip-agent__bot" aria-hidden="true">\uD83E\uDD16</span>';
+    document.body.appendChild(paperclip);
+  }
+
+  /* ── 10. Mark active sidebar link ───────────────────────────── */
   var pathname = window.location.pathname;
   var normPath = (pathname === '/' ? '/index.html' : pathname);
   var exactMatches = ['/index.html','/dashboard.html','/sam.html','/community.html','/how-to-play.html','/graph.html','/timeline.html','/search.html','/about.html','/gkniftyheads-incubator.html','/games/leaderboard.html'];
@@ -363,7 +376,7 @@
     if (homeLinks.length > 0) homeLinks[0].classList.add('active');
   }
 
-  /* ── 10. Hamburger / sidebar binding ────────────────────────── */
+  /* ── 11. Hamburger / sidebar binding ────────────────────────── */
   (function _bindSidebarNav() {
     var ham = document.getElementById('hamburger');
     var ov  = document.getElementById('sidebar-overlay');
