@@ -1,0 +1,698 @@
+{
+  "version": 1,
+  "game": "Block Topia Quest Maze",
+  "generatedAt": "2026-05-13T06:52:06.991Z",
+  "dryRun": true,
+  "sourcePrompts": "art/btqm/source-prompts.json",
+  "outputRoot": "art/btqm/generated",
+  "categories": [
+    "tilesets",
+    "player",
+    "enemies",
+    "bosses",
+    "ui",
+    "fx",
+    "objects",
+    "icons"
+  ],
+  "assets": [
+    {
+      "id": "tileset-hodl-or-fold-forest-ruins",
+      "category": "tilesets",
+      "zoneId": 0,
+      "zoneName": "HODL or FOLD",
+      "name": "Forest ruins tileset",
+      "status": "planned",
+      "promptHash": "1fd04268b798962b",
+      "output": "art/btqm/generated/tilesets/zone-0-hodl-or-fold-forest-ruins.png",
+      "size": {
+        "width": 256,
+        "height": 256
+      }
+    },
+    {
+      "id": "tileset-bear-market-siege-ice-cave",
+      "category": "tilesets",
+      "zoneId": 1,
+      "zoneName": "Bear Market Siege",
+      "name": "Ice cave tileset",
+      "status": "planned",
+      "promptHash": "81f934a6b163254c",
+      "output": "art/btqm/generated/tilesets/zone-1-bear-market-siege-ice-cave.png",
+      "size": {
+        "width": 256,
+        "height": 256
+      }
+    },
+    {
+      "id": "tileset-fomo-plague-purple-wasteland",
+      "category": "tilesets",
+      "zoneId": 2,
+      "zoneName": "FOMO Plague Escape",
+      "name": "Purple wasteland tileset",
+      "status": "planned",
+      "promptHash": "f3ac5886d30cb5a9",
+      "output": "art/btqm/generated/tilesets/zone-2-fomo-plague-purple-wasteland.png",
+      "size": {
+        "width": 256,
+        "height": 256
+      }
+    },
+    {
+      "id": "tileset-rug-pull-recovery-ruined-vault",
+      "category": "tilesets",
+      "zoneId": 3,
+      "zoneName": "Rug Pull Recovery",
+      "name": "Ruined vault tileset",
+      "status": "planned",
+      "promptHash": "1cf0d04be6355a9a",
+      "output": "art/btqm/generated/tilesets/zone-3-rug-pull-recovery-ruined-vault.png",
+      "size": {
+        "width": 256,
+        "height": 256
+      }
+    },
+    {
+      "id": "tileset-whale-lord-deep-sea-vault",
+      "category": "tilesets",
+      "zoneId": 4,
+      "zoneName": "Whale Lord's Challenge",
+      "name": "Deep sea vault tileset",
+      "status": "planned",
+      "promptHash": "801b9ae4f3a2a406",
+      "output": "art/btqm/generated/tilesets/zone-4-whale-lord-deep-sea-vault.png",
+      "size": {
+        "width": 256,
+        "height": 256
+      }
+    },
+    {
+      "id": "tileset-moon-mission-final-ascent",
+      "category": "tilesets",
+      "zoneId": 5,
+      "zoneName": "Moon Mission",
+      "name": "Final ascent tileset",
+      "status": "planned",
+      "promptHash": "c8d6312fbac4220e",
+      "output": "art/btqm/generated/tilesets/zone-5-moon-mission-final-ascent.png",
+      "size": {
+        "width": 256,
+        "height": 256
+      }
+    },
+    {
+      "id": "player-idle",
+      "category": "player",
+      "name": "Player idle spritesheet",
+      "status": "planned",
+      "promptHash": "3e7a1300ff2d07f1",
+      "output": "art/btqm/generated/player/player-idle-4f.png",
+      "size": {
+        "width": 128,
+        "height": 32
+      }
+    },
+    {
+      "id": "player-walk",
+      "category": "player",
+      "name": "Player walk spritesheet",
+      "status": "planned",
+      "promptHash": "a18171502fd99ed7",
+      "output": "art/btqm/generated/player/player-walk-4f.png",
+      "size": {
+        "width": 128,
+        "height": 32
+      }
+    },
+    {
+      "id": "player-attack",
+      "category": "player",
+      "name": "Player attack spritesheet",
+      "status": "planned",
+      "promptHash": "5b1bf4f8a6156ebe",
+      "output": "art/btqm/generated/player/player-attack-4f.png",
+      "size": {
+        "width": 128,
+        "height": 32
+      }
+    },
+    {
+      "id": "player-hurt",
+      "category": "player",
+      "name": "Player hurt spritesheet",
+      "status": "planned",
+      "promptHash": "bc02eb774158af95",
+      "output": "art/btqm/generated/player/player-hurt-3f.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "player-death",
+      "category": "player",
+      "name": "Player death spritesheet",
+      "status": "planned",
+      "promptHash": "deddb6d8f6e23982",
+      "output": "art/btqm/generated/player/player-death-5f.png",
+      "size": {
+        "width": 160,
+        "height": 32
+      }
+    },
+    {
+      "id": "player-victory",
+      "category": "player",
+      "name": "Player victory spritesheet",
+      "status": "planned",
+      "promptHash": "fd972ddc6ff56b12",
+      "output": "art/btqm/generated/player/player-victory-4f.png",
+      "size": {
+        "width": 128,
+        "height": 32
+      }
+    },
+    {
+      "id": "enemy-paper-hand-goblin",
+      "category": "enemies",
+      "zoneId": 0,
+      "name": "Paper Hand Goblin",
+      "status": "planned",
+      "promptHash": "251cabaf1f838971",
+      "output": "art/btqm/generated/enemies/zone-0-paper-hand-goblin.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "enemy-fud-spreader",
+      "category": "enemies",
+      "zoneId": 0,
+      "name": "FUD Spreader",
+      "status": "planned",
+      "promptHash": "41e45723d2b7c1fe",
+      "output": "art/btqm/generated/enemies/zone-0-fud-spreader.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "enemy-bear-soldier",
+      "category": "enemies",
+      "zoneId": 1,
+      "name": "Bear Soldier",
+      "status": "planned",
+      "promptHash": "6f3f563e6ddf91d6",
+      "output": "art/btqm/generated/enemies/zone-1-bear-soldier.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "enemy-market-crasher",
+      "category": "enemies",
+      "zoneId": 1,
+      "name": "Market Crasher",
+      "status": "planned",
+      "promptHash": "446d7fc12bfe54c5",
+      "output": "art/btqm/generated/enemies/zone-1-market-crasher.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "enemy-fomo-ghost",
+      "category": "enemies",
+      "zoneId": 2,
+      "name": "FOMO Ghost",
+      "status": "planned",
+      "promptHash": "71283cd0897b03e0",
+      "output": "art/btqm/generated/enemies/zone-2-fomo-ghost.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "enemy-panic-seller",
+      "category": "enemies",
+      "zoneId": 2,
+      "name": "Panic Seller",
+      "status": "planned",
+      "promptHash": "fe9bd507ed81c179",
+      "output": "art/btqm/generated/enemies/zone-2-panic-seller.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "enemy-rug-puller",
+      "category": "enemies",
+      "zoneId": 3,
+      "name": "Rug Puller",
+      "status": "planned",
+      "promptHash": "5d76fb090fa92716",
+      "output": "art/btqm/generated/enemies/zone-3-rug-puller.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "enemy-exit-scammer",
+      "category": "enemies",
+      "zoneId": 3,
+      "name": "Exit Scammer",
+      "status": "planned",
+      "promptHash": "19ffce1f31d2082d",
+      "output": "art/btqm/generated/enemies/zone-3-exit-scammer.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "enemy-whale-minion",
+      "category": "enemies",
+      "zoneId": 4,
+      "name": "Whale Minion",
+      "status": "planned",
+      "promptHash": "8f86a69b4d44e5a1",
+      "output": "art/btqm/generated/enemies/zone-4-whale-minion.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "enemy-market-manipulator",
+      "category": "enemies",
+      "zoneId": 4,
+      "name": "Market Manipulator",
+      "status": "planned",
+      "promptHash": "321aff49d611493a",
+      "output": "art/btqm/generated/enemies/zone-4-market-manipulator.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "enemy-ngmi-wraith",
+      "category": "enemies",
+      "zoneId": 5,
+      "name": "NGMI Wraith",
+      "status": "planned",
+      "promptHash": "a4aa69686d335128",
+      "output": "art/btqm/generated/enemies/zone-5-ngmi-wraith.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "enemy-anti-moon-troll",
+      "category": "enemies",
+      "zoneId": 5,
+      "name": "Anti-Moon Troll",
+      "status": "planned",
+      "promptHash": "dcee68362d8c2f38",
+      "output": "art/btqm/generated/enemies/zone-5-anti-moon-troll.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "boss-paper-hand-king",
+      "category": "bosses",
+      "zoneId": 0,
+      "name": "Paper Hand King",
+      "status": "planned",
+      "promptHash": "25291b907403fce5",
+      "output": "art/btqm/generated/bosses/zone-0-paper-hand-king.png",
+      "size": {
+        "width": 192,
+        "height": 48
+      }
+    },
+    {
+      "id": "boss-the-bear-lord",
+      "category": "bosses",
+      "zoneId": 1,
+      "name": "The Bear Lord",
+      "status": "planned",
+      "promptHash": "1d5ceed3cf1e74e4",
+      "output": "art/btqm/generated/bosses/zone-1-the-bear-lord.png",
+      "size": {
+        "width": 192,
+        "height": 48
+      }
+    },
+    {
+      "id": "boss-fomo-phantom-prime",
+      "category": "bosses",
+      "zoneId": 2,
+      "name": "FOMO Phantom Prime",
+      "status": "planned",
+      "promptHash": "76944af3938e6295",
+      "output": "art/btqm/generated/bosses/zone-2-fomo-phantom-prime.png",
+      "size": {
+        "width": 192,
+        "height": 48
+      }
+    },
+    {
+      "id": "boss-the-rug-lord",
+      "category": "bosses",
+      "zoneId": 3,
+      "name": "The Rug Lord",
+      "status": "planned",
+      "promptHash": "dba1f9bf5ec79687",
+      "output": "art/btqm/generated/bosses/zone-3-the-rug-lord.png",
+      "size": {
+        "width": 192,
+        "height": 48
+      }
+    },
+    {
+      "id": "boss-the-whale-lord",
+      "category": "bosses",
+      "zoneId": 4,
+      "name": "The Whale Lord",
+      "status": "planned",
+      "promptHash": "306446923992dcc5",
+      "output": "art/btqm/generated/bosses/zone-4-the-whale-lord.png",
+      "size": {
+        "width": 192,
+        "height": 48
+      }
+    },
+    {
+      "id": "boss-ngmi-overlord",
+      "category": "bosses",
+      "zoneId": 5,
+      "name": "NGMI Overlord",
+      "status": "planned",
+      "promptHash": "c58841bbecc8a1d8",
+      "output": "art/btqm/generated/bosses/zone-5-ngmi-overlord.png",
+      "size": {
+        "width": 192,
+        "height": 48
+      }
+    },
+    {
+      "id": "ui-panel-frame",
+      "category": "ui",
+      "name": "Dungeon panel frame",
+      "status": "planned",
+      "promptHash": "9b300e27cfa8a4b8",
+      "output": "art/btqm/generated/ui/panel-frame-9slice.png",
+      "size": {
+        "width": 96,
+        "height": 96
+      }
+    },
+    {
+      "id": "ui-button-states",
+      "category": "ui",
+      "name": "Button states",
+      "status": "planned",
+      "promptHash": "5b53a5f75e0a8f34",
+      "output": "art/btqm/generated/ui/button-states.png",
+      "size": {
+        "width": 192,
+        "height": 48
+      }
+    },
+    {
+      "id": "ui-hp-bar",
+      "category": "ui",
+      "name": "HP bar",
+      "status": "planned",
+      "promptHash": "91f63235afaa7cb5",
+      "output": "art/btqm/generated/ui/hp-bar.png",
+      "size": {
+        "width": 128,
+        "height": 16
+      }
+    },
+    {
+      "id": "ui-xp-bar",
+      "category": "ui",
+      "name": "XP bar",
+      "status": "planned",
+      "promptHash": "88bba44195395f8e",
+      "output": "art/btqm/generated/ui/xp-bar.png",
+      "size": {
+        "width": 128,
+        "height": 16
+      }
+    },
+    {
+      "id": "ui-relic-slots",
+      "category": "ui",
+      "name": "Relic slots",
+      "status": "planned",
+      "promptHash": "6a7f7ff539838ff6",
+      "output": "art/btqm/generated/ui/relic-slots.png",
+      "size": {
+        "width": 160,
+        "height": 32
+      }
+    },
+    {
+      "id": "ui-potion-slots",
+      "category": "ui",
+      "name": "Potion slots",
+      "status": "planned",
+      "promptHash": "657914750b092356",
+      "output": "art/btqm/generated/ui/potion-slots.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "ui-boss-intro-frame",
+      "category": "ui",
+      "name": "Boss intro frame",
+      "status": "planned",
+      "promptHash": "558a07f5a84bbc13",
+      "output": "art/btqm/generated/ui/boss-intro-frame.png",
+      "size": {
+        "width": 320,
+        "height": 80
+      }
+    },
+    {
+      "id": "fx-slash",
+      "category": "fx",
+      "name": "Slash FX",
+      "status": "planned",
+      "promptHash": "ba3ac6682fc65846",
+      "output": "art/btqm/generated/fx/slash-6f.png",
+      "size": {
+        "width": 192,
+        "height": 32
+      }
+    },
+    {
+      "id": "fx-crit",
+      "category": "fx",
+      "name": "Critical hit FX",
+      "status": "planned",
+      "promptHash": "e755202a5e48c9cd",
+      "output": "art/btqm/generated/fx/crit-6f.png",
+      "size": {
+        "width": 192,
+        "height": 32
+      }
+    },
+    {
+      "id": "fx-poison",
+      "category": "fx",
+      "name": "Poison FX",
+      "status": "planned",
+      "promptHash": "e626d2b6a186d5f5",
+      "output": "art/btqm/generated/fx/poison-6f.png",
+      "size": {
+        "width": 192,
+        "height": 32
+      }
+    },
+    {
+      "id": "fx-bleed",
+      "category": "fx",
+      "name": "Bleed FX",
+      "status": "planned",
+      "promptHash": "09c7a13574b91857",
+      "output": "art/btqm/generated/fx/bleed-6f.png",
+      "size": {
+        "width": 192,
+        "height": 32
+      }
+    },
+    {
+      "id": "fx-shield",
+      "category": "fx",
+      "name": "Shield FX",
+      "status": "planned",
+      "promptHash": "bce7bd215080eba2",
+      "output": "art/btqm/generated/fx/shield-6f.png",
+      "size": {
+        "width": 192,
+        "height": 32
+      }
+    },
+    {
+      "id": "fx-portal",
+      "category": "fx",
+      "name": "Portal FX",
+      "status": "planned",
+      "promptHash": "e6f8e817890ccf38",
+      "output": "art/btqm/generated/fx/portal-8f.png",
+      "size": {
+        "width": 256,
+        "height": 32
+      }
+    },
+    {
+      "id": "fx-treasure",
+      "category": "fx",
+      "name": "Treasure FX",
+      "status": "planned",
+      "promptHash": "552b680f226ecba1",
+      "output": "art/btqm/generated/fx/treasure-6f.png",
+      "size": {
+        "width": 192,
+        "height": 32
+      }
+    },
+    {
+      "id": "fx-boss-intro",
+      "category": "fx",
+      "name": "Boss intro FX",
+      "status": "planned",
+      "promptHash": "b0b3c42418e96345",
+      "output": "art/btqm/generated/fx/boss-intro-8f.png",
+      "size": {
+        "width": 256,
+        "height": 32
+      }
+    },
+    {
+      "id": "object-treasure-chest",
+      "category": "objects",
+      "name": "Treasure chest",
+      "status": "planned",
+      "promptHash": "89f0ca63bc42f6b6",
+      "output": "art/btqm/generated/objects/treasure-chest.png",
+      "size": {
+        "width": 96,
+        "height": 32
+      }
+    },
+    {
+      "id": "object-entry-glyph",
+      "category": "objects",
+      "name": "Entry glyph",
+      "status": "planned",
+      "promptHash": "ca42886d425e1d90",
+      "output": "art/btqm/generated/objects/entry-glyph.png",
+      "size": {
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "id": "object-exit-portal",
+      "category": "objects",
+      "name": "Exit portal",
+      "status": "planned",
+      "promptHash": "50a8ab69ccaedf5d",
+      "output": "art/btqm/generated/objects/exit-portal.png",
+      "size": {
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "id": "object-encounter-marker",
+      "category": "objects",
+      "name": "Encounter marker",
+      "status": "planned",
+      "promptHash": "1aabb73fe37ab060",
+      "output": "art/btqm/generated/objects/encounter-marker.png",
+      "size": {
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "id": "object-boss-marker",
+      "category": "objects",
+      "name": "Boss marker",
+      "status": "planned",
+      "promptHash": "2309d137f2400f64",
+      "output": "art/btqm/generated/objects/boss-marker.png",
+      "size": {
+        "width": 32,
+        "height": 32
+      }
+    },
+    {
+      "id": "icons-actions",
+      "category": "icons",
+      "name": "Action icons",
+      "status": "planned",
+      "promptHash": "7457968d439d0f7d",
+      "output": "art/btqm/generated/icons/action-icons.png",
+      "size": {
+        "width": 160,
+        "height": 32
+      }
+    },
+    {
+      "id": "icons-stats",
+      "category": "icons",
+      "name": "Stat icons",
+      "status": "planned",
+      "promptHash": "8971bd068c9155d3",
+      "output": "art/btqm/generated/icons/stat-icons.png",
+      "size": {
+        "width": 192,
+        "height": 32
+      }
+    },
+    {
+      "id": "icons-status-effects",
+      "category": "icons",
+      "name": "Status effect icons",
+      "status": "planned",
+      "promptHash": "cf5619f693569e60",
+      "output": "art/btqm/generated/icons/status-effect-icons.png",
+      "size": {
+        "width": 160,
+        "height": 32
+      }
+    },
+    {
+      "id": "icons-zone-badges",
+      "category": "icons",
+      "name": "Zone badges",
+      "status": "planned",
+      "promptHash": "e92b912f6d7a2a79",
+      "output": "art/btqm/generated/icons/zone-badges.png",
+      "size": {
+        "width": 192,
+        "height": 32
+      }
+    }
+  ]
+}

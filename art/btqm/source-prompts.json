@@ -1,0 +1,477 @@
+{
+  "version": 1,
+  "game": "Block Topia Quest Maze",
+  "styleGuide": {
+    "title": "16-bit crypto fantasy dungeon art pack",
+    "sharedPromptPrefix": "16-bit pixel art, crisp readable silhouette, orthographic RPG dungeon crawler, transparent background where appropriate, no text, no watermark, limited palette, chunky pixels, strong rim light, export as PNG, consistent Crypto Moonboys fantasy style",
+    "negativePrompt": "photorealistic, 3D render, smooth gradients, blurry, anti-aliased edges, modern UI text, watermark, logo text, signature, excessive detail, cropped subject",
+    "tileSize": 32,
+    "spriteFrameSize": 32,
+    "bossFrameSize": 48,
+    "uiScale": "pixel-perfect 9-slice friendly"
+  },
+  "assets": [
+    {
+      "id": "tileset-hodl-or-fold-forest-ruins",
+      "category": "tilesets",
+      "zoneId": 0,
+      "zoneName": "HODL or FOLD",
+      "name": "Forest ruins tileset",
+      "output": "tilesets/zone-0-hodl-or-fold-forest-ruins.png",
+      "size": { "width": 256, "height": 256 },
+      "prompt": "A 32x32 tile RPG tileset sheet for HODL or FOLD forest ruins: mossy green stone floor, dark vine-covered walls, cracked market-floor flagstones, paper-hand goblin camp details, red encounter danger tile, gold boss border tile, green entry glyph, cyan exit portal, ruined columns, hedge roots, tiny candles, treasure pile. Arrange as clean grid tiles with transparent margins where needed."
+    },
+    {
+      "id": "tileset-bear-market-siege-ice-cave",
+      "category": "tilesets",
+      "zoneId": 1,
+      "zoneName": "Bear Market Siege",
+      "name": "Ice cave tileset",
+      "output": "tilesets/zone-1-bear-market-siege-ice-cave.png",
+      "size": { "width": 256, "height": 256 },
+      "prompt": "A 32x32 tile RPG tileset sheet for Bear Market Siege ice cave: blue frozen floor, dark glacial walls, frosted cracks, bear claw scratches, icy encounter tile, gold boss chamber border, cold entry rune, cyan exit portal, stalagmites, snow piles, frozen treasure, blue torch crystals. Arrange as clean grid tiles."
+    },
+    {
+      "id": "tileset-fomo-plague-purple-wasteland",
+      "category": "tilesets",
+      "zoneId": 2,
+      "zoneName": "FOMO Plague Escape",
+      "name": "Purple wasteland tileset",
+      "output": "tilesets/zone-2-fomo-plague-purple-wasteland.png",
+      "size": { "width": 256, "height": 256 },
+      "prompt": "A 32x32 tile RPG tileset sheet for FOMO Plague purple wasteland: violet cracked dust floor, black-purple corrupted walls, panic haze stains, ghostly market arrows, toxic encounter tile, ornate gold boss border, sickly green entry glyph, cyan exit portal, plague puddles, bone scraps, ruined signposts, floating spores. Arrange as clean grid tiles."
+    },
+    {
+      "id": "tileset-rug-pull-recovery-ruined-vault",
+      "category": "tilesets",
+      "zoneId": 3,
+      "zoneName": "Rug Pull Recovery",
+      "name": "Ruined vault tileset",
+      "output": "tilesets/zone-3-rug-pull-recovery-ruined-vault.png",
+      "size": { "width": 256, "height": 256 },
+      "prompt": "A 32x32 tile RPG tileset sheet for Rug Pull Recovery ruined vault: orange-brown cracked vault floor, broken bank walls, torn red rugs, scattered coins, trapdoor seams, scam contract scraps, red encounter marker, gold boss border, green entry glyph, cyan exit portal, broken safe, treasure chest, rubble piles. Arrange as clean grid tiles."
+    },
+    {
+      "id": "tileset-whale-lord-deep-sea-vault",
+      "category": "tilesets",
+      "zoneId": 4,
+      "zoneName": "Whale Lord's Challenge",
+      "name": "Deep sea vault tileset",
+      "output": "tilesets/zone-4-whale-lord-deep-sea-vault.png",
+      "size": { "width": 256, "height": 256 },
+      "prompt": "A 32x32 tile RPG tileset sheet for Whale Lord deep sea vault: teal submerged stone floor, dark aquatic vault walls, coral growth, bubbles, whale sigils, pressure cracks, red encounter tile, gold boss border, green entry glyph, cyan exit portal, pearl treasure, seaweed, porthole vault door, glowing aqua crystals. Arrange as clean grid tiles."
+    },
+    {
+      "id": "tileset-moon-mission-final-ascent",
+      "category": "tilesets",
+      "zoneId": 5,
+      "zoneName": "Moon Mission",
+      "name": "Final ascent tileset",
+      "output": "tilesets/zone-5-moon-mission-final-ascent.png",
+      "size": { "width": 256, "height": 256 },
+      "prompt": "A 32x32 tile RPG tileset sheet for Moon Mission final ascent: dark lunar stone floor, starry void walls, rocket launch gantry plates, gold moon dust, red-gold encounter tile, radiant gold boss border, green entry beacon, cyan exit portal, moon rocks, satellite debris, rocket boosters, tiny stars. Arrange as clean grid tiles."
+    },
+    {
+      "id": "player-idle",
+      "category": "player",
+      "name": "Player idle spritesheet",
+      "output": "player/player-idle-4f.png",
+      "size": { "width": 128, "height": 32 },
+      "prompt": "Four-frame 32x32 spritesheet of the Crypto Moonboys hero idle animation: orange cap or helmet, blue jacket, warm skin, confident stance, tiny coin satchel, subtle breathing bob. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "player-walk",
+      "category": "player",
+      "name": "Player walk spritesheet",
+      "output": "player/player-walk-4f.png",
+      "size": { "width": 128, "height": 32 },
+      "prompt": "Four-frame 32x32 spritesheet of the Crypto Moonboys hero walking forward in a dungeon: orange cap or helmet, blue jacket, boots, satchel swinging, readable step cycle. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "player-attack",
+      "category": "player",
+      "name": "Player attack spritesheet",
+      "output": "player/player-attack-4f.png",
+      "size": { "width": 128, "height": 32 },
+      "prompt": "Four-frame 32x32 spritesheet of the Crypto Moonboys hero attacking with a bright crypto blade slash, orange cap, blue jacket, dynamic lunge, gold spark trail. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "player-hurt",
+      "category": "player",
+      "name": "Player hurt spritesheet",
+      "output": "player/player-hurt-3f.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 spritesheet of the Crypto Moonboys hero hurt reaction: recoil pose, red hit flash accents, dropped coin spark, still readable and not gory. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "player-death",
+      "category": "player",
+      "name": "Player death spritesheet",
+      "output": "player/player-death-5f.png",
+      "size": { "width": 160, "height": 32 },
+      "prompt": "Five-frame 32x32 spritesheet of the Crypto Moonboys hero defeat animation: collapsing into pixel smoke and scattered coins, no gore, final faded silhouette. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "player-victory",
+      "category": "player",
+      "name": "Player victory spritesheet",
+      "output": "player/player-victory-4f.png",
+      "size": { "width": 128, "height": 32 },
+      "prompt": "Four-frame 32x32 spritesheet of the Crypto Moonboys hero victory pose: raising moon flag and gold coin, celebratory sparkle, orange and blue outfit. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "enemy-paper-hand-goblin",
+      "category": "enemies",
+      "zoneId": 0,
+      "name": "Paper Hand Goblin",
+      "output": "enemies/zone-0-paper-hand-goblin.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 enemy spritesheet: Paper Hand Goblin, small green goblin made of folded paper hands, nervous eyes, ragged trader cape, twitchy idle and attack pose. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "enemy-fud-spreader",
+      "category": "enemies",
+      "zoneId": 0,
+      "name": "FUD Spreader",
+      "output": "enemies/zone-0-fud-spreader.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 enemy spritesheet: FUD Spreader, hunched forest imp with dark green cloak, orange warning eyes, whisper cloud, rumor scroll, mischievous caster pose. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "enemy-bear-soldier",
+      "category": "enemies",
+      "zoneId": 1,
+      "name": "Bear Soldier",
+      "output": "enemies/zone-1-bear-soldier.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 enemy spritesheet: Bear Soldier, armored blue ice bear warrior, frosted shield, claw weapon, heavy stance, icy breath. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "enemy-market-crasher",
+      "category": "enemies",
+      "zoneId": 1,
+      "name": "Market Crasher",
+      "output": "enemies/zone-1-market-crasher.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 enemy spritesheet: Market Crasher, jagged ice brute carrying a broken red down-arrow club, cracked blue armor, aggressive lunge. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "enemy-fomo-ghost",
+      "category": "enemies",
+      "zoneId": 2,
+      "name": "FOMO Ghost",
+      "output": "enemies/zone-2-fomo-ghost.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 enemy spritesheet: FOMO Ghost, translucent purple spirit with teal eyes, reaching hands, panic wisps, floating tattered chart fragments. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "enemy-panic-seller",
+      "category": "enemies",
+      "zoneId": 2,
+      "name": "Panic Seller",
+      "output": "enemies/zone-2-panic-seller.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 enemy spritesheet: Panic Seller, frantic purple wasteland rogue clutching falling red candles and coins, wild eyes, ragged hood, flailing attack. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "enemy-rug-puller",
+      "category": "enemies",
+      "zoneId": 3,
+      "name": "Rug Puller",
+      "output": "enemies/zone-3-rug-puller.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 enemy spritesheet: Rug Puller, sneaky orange vault thief dragging a red rug, masked face, coin pouch, trap-setting pose. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "enemy-exit-scammer",
+      "category": "enemies",
+      "zoneId": 3,
+      "name": "Exit Scammer",
+      "output": "enemies/zone-3-exit-scammer.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 enemy spritesheet: Exit Scammer, sly ruined-vault con artist with fake portal sign, orange cloak, gold grin, dagger hidden behind contract. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "enemy-whale-minion",
+      "category": "enemies",
+      "zoneId": 4,
+      "name": "Whale Minion",
+      "output": "enemies/zone-4-whale-minion.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 enemy spritesheet: Whale Minion, small teal whale-headed guard in deep sea vault armor, pearl spear, bubble trail, sturdy stance. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "enemy-market-manipulator",
+      "category": "enemies",
+      "zoneId": 4,
+      "name": "Market Manipulator",
+      "output": "enemies/zone-4-market-manipulator.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 enemy spritesheet: Market Manipulator, teal deep sea sorcerer controlling puppet chart strings, glowing cyan eyes, coral staff, sinister casting pose. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "enemy-ngmi-wraith",
+      "category": "enemies",
+      "zoneId": 5,
+      "name": "NGMI Wraith",
+      "output": "enemies/zone-5-ngmi-wraith.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 enemy spritesheet: NGMI Wraith, red and gold lunar shadow ghost, torn star cloak, glowing orange eyes, haunting swipe. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "enemy-anti-moon-troll",
+      "category": "enemies",
+      "zoneId": 5,
+      "name": "Anti-Moon Troll",
+      "output": "enemies/zone-5-anti-moon-troll.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 enemy spritesheet: Anti-Moon Troll, bulky lunar troll with cracked asteroid armor, red down-arrow hammer, skeptical scowl, heavy attack pose. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "boss-paper-hand-king",
+      "category": "bosses",
+      "zoneId": 0,
+      "name": "Paper Hand King",
+      "output": "bosses/zone-0-paper-hand-king.png",
+      "size": { "width": 192, "height": 48 },
+      "prompt": "Four-frame 48x48 boss spritesheet: Paper Hand King, large folded green paper monarch, white paper hands, leaf crown, anxious royal cape, commanding forest ruins stance. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "boss-the-bear-lord",
+      "category": "bosses",
+      "zoneId": 1,
+      "name": "The Bear Lord",
+      "output": "bosses/zone-1-the-bear-lord.png",
+      "size": { "width": 192, "height": 48 },
+      "prompt": "Four-frame 48x48 boss spritesheet: The Bear Lord, towering armored ice bear king with frozen crown, giant claw gauntlets, blue breath, glacial boss presence. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "boss-fomo-phantom-prime",
+      "category": "bosses",
+      "zoneId": 2,
+      "name": "FOMO Phantom Prime",
+      "output": "bosses/zone-2-fomo-phantom-prime.png",
+      "size": { "width": 192, "height": 48 },
+      "prompt": "Four-frame 48x48 boss spritesheet: FOMO Phantom Prime, massive purple spectral plague lord with teal eyes, many ghost hands, panic aura, corrupted market chart halo. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "boss-the-rug-lord",
+      "category": "bosses",
+      "zoneId": 3,
+      "name": "The Rug Lord",
+      "output": "bosses/zone-3-the-rug-lord.png",
+      "size": { "width": 192, "height": 48 },
+      "prompt": "Four-frame 48x48 boss spritesheet: The Rug Lord, huge orange ruined-vault mastermind wrapped in animated red rug cloak, gold crown, trapdoor staff, coin storm. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "boss-the-whale-lord",
+      "category": "bosses",
+      "zoneId": 4,
+      "name": "The Whale Lord",
+      "output": "bosses/zone-4-the-whale-lord.png",
+      "size": { "width": 192, "height": 48 },
+      "prompt": "Four-frame 48x48 boss spritesheet: The Whale Lord, enormous regal teal whale leviathan in deep sea vault armor, pearl crown, glowing cyan runes, tidal fin slam. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "boss-ngmi-overlord",
+      "category": "bosses",
+      "zoneId": 5,
+      "name": "NGMI Overlord",
+      "output": "bosses/zone-5-ngmi-overlord.png",
+      "size": { "width": 192, "height": 48 },
+      "prompt": "Four-frame 48x48 boss spritesheet: NGMI Overlord, final red-gold lunar tyrant with void armor, broken moon crown, anti-moon hammer, starfield cape, dramatic final ascent aura. Transparent background, frames aligned left to right."
+    },
+    {
+      "id": "ui-panel-frame",
+      "category": "ui",
+      "name": "Dungeon panel frame",
+      "output": "ui/panel-frame-9slice.png",
+      "size": { "width": 96, "height": 96 },
+      "prompt": "Pixel-perfect 9-slice UI panel frame for BTQM: dark navy glass, gold corner bolts, cyan magic edge highlights, fantasy arcade HUD style, no text. Transparent background."
+    },
+    {
+      "id": "ui-button-states",
+      "category": "ui",
+      "name": "Button states",
+      "output": "ui/button-states.png",
+      "size": { "width": 192, "height": 48 },
+      "prompt": "16-bit pixel UI button state spritesheet: normal gold, hover cyan glow, pressed dark gold, disabled gray, each 48x24, no text, clean rectangular fantasy arcade buttons. Transparent background."
+    },
+    {
+      "id": "ui-hp-bar",
+      "category": "ui",
+      "name": "HP bar",
+      "output": "ui/hp-bar.png",
+      "size": { "width": 128, "height": 16 },
+      "prompt": "Pixel art HP bar asset: dark beveled frame with red fill and tiny heart pip, 16-bit RPG battle HUD, no text, transparent background."
+    },
+    {
+      "id": "ui-xp-bar",
+      "category": "ui",
+      "name": "XP bar",
+      "output": "ui/xp-bar.png",
+      "size": { "width": 128, "height": 16 },
+      "prompt": "Pixel art XP bar asset: dark beveled frame with blue-cyan fill and tiny star pip, 16-bit RPG progression HUD, no text, transparent background."
+    },
+    {
+      "id": "ui-relic-slots",
+      "category": "ui",
+      "name": "Relic slots",
+      "output": "ui/relic-slots.png",
+      "size": { "width": 160, "height": 32 },
+      "prompt": "Five 32x32 pixel art relic slot frames, empty inventory sockets with gold trim, dark interior, cyan hover glint, no text. Transparent background, aligned left to right."
+    },
+    {
+      "id": "ui-potion-slots",
+      "category": "ui",
+      "name": "Potion slots",
+      "output": "ui/potion-slots.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three 32x32 pixel art potion slot frames with tiny red healing potion silhouettes, gold trim, dark interior, no text. Transparent background, aligned left to right."
+    },
+    {
+      "id": "ui-boss-intro-frame",
+      "category": "ui",
+      "name": "Boss intro frame",
+      "output": "ui/boss-intro-frame.png",
+      "size": { "width": 320, "height": 80 },
+      "prompt": "Wide pixel art boss intro banner frame: dark obsidian panel, gold jagged trim, red warning glow, cyan corner sparks, no text, transparent center-friendly background."
+    },
+    {
+      "id": "fx-slash",
+      "category": "fx",
+      "name": "Slash FX",
+      "output": "fx/slash-6f.png",
+      "size": { "width": 192, "height": 32 },
+      "prompt": "Six-frame 32x32 pixel art slash effect spritesheet: bright gold-white blade arc with orange sparks, transparent background, frames aligned left to right."
+    },
+    {
+      "id": "fx-crit",
+      "category": "fx",
+      "name": "Critical hit FX",
+      "output": "fx/crit-6f.png",
+      "size": { "width": 192, "height": 32 },
+      "prompt": "Six-frame 32x32 pixel art critical hit effect spritesheet: cyan and gold starburst impact, coin sparks, dramatic readable burst, transparent background."
+    },
+    {
+      "id": "fx-poison",
+      "category": "fx",
+      "name": "Poison FX",
+      "output": "fx/poison-6f.png",
+      "size": { "width": 192, "height": 32 },
+      "prompt": "Six-frame 32x32 pixel art poison status effect spritesheet: green bubbles, toxic droplets, small skull-shaped vapor, transparent background."
+    },
+    {
+      "id": "fx-bleed",
+      "category": "fx",
+      "name": "Bleed FX",
+      "output": "fx/bleed-6f.png",
+      "size": { "width": 192, "height": 32 },
+      "prompt": "Six-frame 32x32 pixel art bleed status effect spritesheet: stylized red pixel droplets and diagonal cuts, arcade-safe non-gory, transparent background."
+    },
+    {
+      "id": "fx-shield",
+      "category": "fx",
+      "name": "Shield FX",
+      "output": "fx/shield-6f.png",
+      "size": { "width": 192, "height": 32 },
+      "prompt": "Six-frame 32x32 pixel art shield effect spritesheet: blue-cyan hex shield shimmer, defensive sparkle, transparent background."
+    },
+    {
+      "id": "fx-portal",
+      "category": "fx",
+      "name": "Portal FX",
+      "output": "fx/portal-8f.png",
+      "size": { "width": 256, "height": 32 },
+      "prompt": "Eight-frame 32x32 pixel art portal animation spritesheet: cyan swirling dungeon exit portal, tiny star particles, transparent background."
+    },
+    {
+      "id": "fx-treasure",
+      "category": "fx",
+      "name": "Treasure FX",
+      "output": "fx/treasure-6f.png",
+      "size": { "width": 192, "height": 32 },
+      "prompt": "Six-frame 32x32 pixel art treasure sparkle spritesheet: gold coin burst, small gems, reward shine, transparent background."
+    },
+    {
+      "id": "fx-boss-intro",
+      "category": "fx",
+      "name": "Boss intro FX",
+      "output": "fx/boss-intro-8f.png",
+      "size": { "width": 256, "height": 32 },
+      "prompt": "Eight-frame 32x32 pixel art boss intro warning effect: red black shockwave, gold sparks, ominous screen shake streaks, transparent background."
+    },
+    {
+      "id": "object-treasure-chest",
+      "category": "objects",
+      "name": "Treasure chest",
+      "output": "objects/treasure-chest.png",
+      "size": { "width": 96, "height": 32 },
+      "prompt": "Three-frame 32x32 pixel art treasure chest spritesheet: closed, opening, open with gold coins and cyan glow, transparent background."
+    },
+    {
+      "id": "object-entry-glyph",
+      "category": "objects",
+      "name": "Entry glyph",
+      "output": "objects/entry-glyph.png",
+      "size": { "width": 32, "height": 32 },
+      "prompt": "Single 32x32 pixel art green entry glyph tile object, circular magic rune, soft glow, transparent background."
+    },
+    {
+      "id": "object-exit-portal",
+      "category": "objects",
+      "name": "Exit portal",
+      "output": "objects/exit-portal.png",
+      "size": { "width": 32, "height": 32 },
+      "prompt": "Single 32x32 pixel art cyan exit portal object, swirling center, star flecks, transparent background."
+    },
+    {
+      "id": "object-encounter-marker",
+      "category": "objects",
+      "name": "Encounter marker",
+      "output": "objects/encounter-marker.png",
+      "size": { "width": 32, "height": 32 },
+      "prompt": "Single 32x32 pixel art red encounter danger marker, diamond rune and warning sparks, transparent background, no text."
+    },
+    {
+      "id": "object-boss-marker",
+      "category": "objects",
+      "name": "Boss marker",
+      "output": "objects/boss-marker.png",
+      "size": { "width": 32, "height": 32 },
+      "prompt": "Single 32x32 pixel art gold boss marker, ornate crown border and red glow, transparent background, no text."
+    },
+    {
+      "id": "icons-actions",
+      "category": "icons",
+      "name": "Action icons",
+      "output": "icons/action-icons.png",
+      "size": { "width": 160, "height": 32 },
+      "prompt": "Five 32x32 pixel art RPG action icons aligned left to right: sword attack, cyan skill burst, moon faction emblem, red potion, fleeing boot, no text, transparent background."
+    },
+    {
+      "id": "icons-stats",
+      "category": "icons",
+      "name": "Stat icons",
+      "output": "icons/stat-icons.png",
+      "size": { "width": 192, "height": 32 },
+      "prompt": "Six 32x32 pixel art stat icons aligned left to right: heart HP, sword ATK, shield DEF, star XP, coin gold, potion, no text, transparent background."
+    },
+    {
+      "id": "icons-status-effects",
+      "category": "icons",
+      "name": "Status effect icons",
+      "output": "icons/status-effect-icons.png",
+      "size": { "width": 160, "height": 32 },
+      "prompt": "Five 32x32 pixel art status effect icons aligned left to right: poison bubble, bleed cut, shield buff, critical star, portal swirl, no text, transparent background."
+    },
+    {
+      "id": "icons-zone-badges",
+      "category": "icons",
+      "name": "Zone badges",
+      "output": "icons/zone-badges.png",
+      "size": { "width": 192, "height": 32 },
+      "prompt": "Six 32x32 pixel art zone badge icons aligned left to right: forest hand, ice bear, purple ghost, rug vault, teal whale, golden moon rocket, no text, transparent background."
+    }
+  ]
+}
