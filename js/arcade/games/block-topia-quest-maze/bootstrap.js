@@ -418,17 +418,45 @@ function addBtqmMapTileSprite(scene, zoneId, tile, x, y, size) {
   const sprite = tileFrame
     ? scene.add.image(x, y, tileFrame.textureKey, tileFrame.frame)
     : scene.add.image(x, y, fallbackKey);
+  if (tileFrame && typeof window !== 'undefined') window.BTQM_TILESET_RENDER_ACTIVE = true;
   sprite.setDisplaySize(size, size);
+  sprite.setDepth(tileFrame ? 2 : 1);
+  if (!tileFrame) {
+    const debugBg = scene.add.rectangle(x, y, size, size, 0x4d174f, 0.42).setDepth(0);
+    sprite.setData('btqmDebugBg', debugBg);
+    sprite.setTint(0xff66ff);
+  }
   return sprite;
 }
 
 function setBtqmTileSpriteTexture(scene, sprite, zoneId, tile, fallbackKey) {
+  if (!sprite) return;
   const tileFrame = getBtqmTileSpriteFrame(scene, zoneId, tile);
+  let debugBg = sprite.getData ? sprite.getData('btqmDebugBg') : null;
   if (tileFrame) {
     sprite.setTexture(tileFrame.textureKey, tileFrame.frame);
+    sprite.clearTint();
+    sprite.setDepth(2);
+    if (debugBg) debugBg.setVisible(false);
+    if (typeof window !== 'undefined') window.BTQM_TILESET_RENDER_ACTIVE = true;
     return;
   }
+  if (!debugBg || !debugBg.active) {
+    debugBg = scene.add.rectangle(
+      sprite.x,
+      sprite.y,
+      Math.max(1, Math.round(sprite.displayWidth || TILE_SIZE)),
+      Math.max(1, Math.round(sprite.displayHeight || TILE_SIZE)),
+      0x4d174f,
+      0.42
+    ).setDepth(0);
+    if (sprite.setData) sprite.setData('btqmDebugBg', debugBg);
+  } else {
+    debugBg.setVisible(true);
+  }
   sprite.setTexture(fallbackKey || getBtqmTileDebugFallback(scene, zoneId, tile));
+  sprite.setTint(0xff66ff);
+  sprite.setDepth(1);
 }
 
 function btqmSlug(value) {
@@ -1609,6 +1637,7 @@ class ZoneScene extends Phaser.Scene {
     const ROWS = this.mapData.length;       // 10
     const COLS = this.mapData[0].length;    // 15
     const TS   = TILE_SIZE;                 // 40
+    if (typeof window !== 'undefined') window.BTQM_TILESET_RENDER_ACTIVE = false;
 
     // Find player start
     let startX = 0, startY = 0;
