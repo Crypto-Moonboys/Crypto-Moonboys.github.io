@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "game": "Block Topia Quest Maze",
+  "generatedAt": "1970-01-01T00:00:00.000Z",
+  "dryRun": true,
+  "sourcePrompts": "art/btqm/source-prompts.json",
+  "outputRoot": "art/btqm/generated",
+  "categories": ["tilesets", "player", "enemies", "bosses", "ui", "fx", "objects", "icons"],
+  "assets": [
+    {
+      "id": "tileset-hodl-or-fold-forest-ruins",
+      "category": "tilesets",
+      "name": "Forest ruins tileset",
+      "status": "planned",
+      "promptHash": "example",
+      "output": "art/btqm/generated/tilesets/zone-0-hodl-or-fold-forest-ruins.png",
+      "size": { "width": 256, "height": 256 }
+    }
+  ]
+}
