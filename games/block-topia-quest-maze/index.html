@@ -75,6 +75,12 @@
       cursor: default;
     }
 
+    @supports not (aspect-ratio: 1 / 1) {
+      #btqm-canvas {
+        min-height: 448px;
+      }
+    }
+
     #btqm-canvas canvas {
       display: block;
       width: 100% !important;
@@ -158,6 +164,14 @@
       line-height: 1.4;
       color: #c7dbef;
       font-size: 13px;
+    }
+
+    .btqm-name-label {
+      display: block;
+      margin-bottom: 6px;
+      color: #cae7ff;
+      font-family: monospace;
+      font-size: 12px;
     }
 
     #btqm-name-input {
@@ -461,6 +475,7 @@
             <div id="btqm-name-panel">
               <h2>Block Topia Quest Maze</h2>
               <p id="btqm-daily-preview">Daily Quest</p>
+              <label class="btqm-name-label" for="btqm-name-input">Hero name</label>
               <input id="btqm-name-input" maxlength="20" placeholder="Hero name" autocomplete="nickname" aria-label="Hero name">
               <p id="btqm-name-err" role="alert">Enter a hero name between 2 and 20 characters.</p>
               <div class="btqm-name-actions">
@@ -472,7 +487,7 @@
         </div>
 
         <div id="btqm-controls">
-          <button id="startBtn" class="fullscreen-btn" type="button">Start</button>
+          <button id="startBtn" class="fullscreen-btn" type="button">Play Fullscreen</button>
           <button id="pauseBtn" class="fullscreen-btn" type="button">Pause</button>
           <button id="resetBtn" class="fullscreen-btn" type="button">Reset</button>
         </div>
