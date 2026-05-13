@@ -118,12 +118,12 @@ async function loadPromptPlan() {
   return plan;
 }
 
-async function writeManifest(plan, assets) {
+async function writeManifest(plan, assets, options = {}) {
   const manifest = {
     version: plan.version || 1,
     game: plan.game || 'Block Topia Quest Maze',
     generatedAt: new Date().toISOString(),
-    dryRun: assets.every((asset) => asset.status === 'planned'),
+    dryRun: Boolean(options.dryRun),
     sourcePrompts: 'art/btqm/source-prompts.json',
     outputRoot: 'art/btqm/generated',
     categories: supportedCategories,
@@ -141,16 +141,27 @@ function assertPngBuffer(asset, buffer) {
 }
 
 async function writeEncodedPngPayload(asset, absoluteOutput, imageBuffer) {
-  assertPngBuffer(asset, imageBuffer);
   const encodedOutput = `${absoluteOutput}.base64`;
-  await writeFile(encodedOutput, `${imageBuffer.toString('base64')}\n`, 'utf8');
-  await rm(absoluteOutput, { force: true });
+  let wroteEncoded = false;
 
-  return {
-    bytes: imageBuffer.length,
-    sha256: createHash('sha256').update(imageBuffer).digest('hex'),
-    encodedOutput: path.posix.join('art/btqm/generated', `${asset.output.split(path.sep).join(path.posix.sep)}.base64`),
-  };
+  try {
+    assertPngBuffer(asset, imageBuffer);
+    await writeFile(encodedOutput, `${imageBuffer.toString('base64')}\n`, 'utf8');
+    wroteEncoded = true;
+
+    return {
+      bytes: imageBuffer.length,
+      sha256: createHash('sha256').update(imageBuffer).digest('hex'),
+      encodedOutput: path.posix.join('art/btqm/generated', `${asset.output.split(path.sep).join(path.posix.sep)}.base64`),
+    };
+  } catch (error) {
+    if (!wroteEncoded) {
+      await rm(encodedOutput, { force: true }).catch(() => {});
+    }
+    throw error;
+  } finally {
+    await rm(absoluteOutput, { force: true }).catch(() => {});
+  }
 }
 
 async function generateAssets(plan, assets) {
@@ -176,8 +187,8 @@ async function generateAssets(plan, assets) {
       }));
     } catch (error) {
       failedCount += 1;
-      manifestAssets.push(toManifestAsset(asset, 'planned', plan.styleGuide || {}, { error: error.message }));
-      console.error(`Failed ${asset.id}; leaving planned: ${error.message}`);
+      manifestAssets.push(toManifestAsset(asset, 'failed', plan.styleGuide || {}, { error: error.message }));
+      console.error(`Failed ${asset.id}: ${error.message}`);
     }
   }
 
@@ -210,7 +221,7 @@ async function main() {
         failedCount: 0,
       };
 
-  const manifest = await writeManifest(plan, generationResult.manifestAssets);
+  const manifest = await writeManifest(plan, generationResult.manifestAssets, { dryRun: !options.execute });
   console.log(`\nWrote ${path.relative(repoRoot, manifestPath)} with ${manifest.assets.length} asset record(s).`);
 
   if (!options.execute) {
