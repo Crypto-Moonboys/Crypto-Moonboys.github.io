@@ -1297,7 +1297,7 @@ class TitleScene extends Phaser.Scene {
       continueBtn.style.display = 'none';
     }
 
-    overlay.style.display = 'block';
+    overlay.style.display = 'flex';
 
     const doStart = () => {
       const name = nameInput.value.trim();
