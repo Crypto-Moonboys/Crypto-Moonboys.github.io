@@ -1240,20 +1240,43 @@ class TitleScene extends Phaser.Scene {
       errEl.style.display = 'none';
       overlay.style.display = 'none';
 
+      const shouldResumeActiveRun = !!(
+        btqmRuntime.runActive &&
+        !btqmRuntime.runSubmitted &&
+        player &&
+        player.name === name
+      );
+
       let p;
       if (!player || player.name !== name) {
         p = createPlayer(name);
+        beginRun(name);
       } else {
         p = { ...player };
         p.name = name;
-        p.hp = p.maxHp;
+        if (!shouldResumeActiveRun) {
+          p.hp = p.maxHp;
+          beginRun(p.name);
+        } else {
+          btqmRuntime.playerName = p.name;
+        }
       }
       savePlayer(p);
       this.registry.set('player', p);
       try { ArcadeSync.setPlayer(p.name); } catch(e) {}
-      beginRun(p.name);
 
-      const zoneId = getFirstPlayableZone(p, daily);
+      let zoneId = getFirstPlayableZone(p, daily);
+      if (shouldResumeActiveRun) {
+        const resumedZoneId = Number(this.registry.get('currentZone'));
+        if (
+          Number.isInteger(resumedZoneId) &&
+          resumedZoneId >= 0 &&
+          resumedZoneId < ZONES.length &&
+          !daily.zoneClears[resumedZoneId]
+        ) {
+          zoneId = resumedZoneId;
+        }
+      }
       this.registry.set('currentZone', zoneId);
       this.scene.start('ZoneScene', { zoneId });
     };
@@ -1303,6 +1326,8 @@ class ZoneScene extends Phaser.Scene {
     this.exitEnabled  = !!this.daily.zoneClears[this.zoneId];
     this.inBattle     = false;
     this.msgTimer     = null;
+    if (typeof window !== 'undefined') window.running = true;
+    this.registry.set('currentZone', this.zoneId);
 
     const ROWS = this.mapData.length;       // 10
     const COLS = this.mapData[0].length;    // 15
@@ -1406,6 +1431,7 @@ class ZoneScene extends Phaser.Scene {
       if (!this.inBattle) {
         this.fx.sceneTransition(() => {
           this.scene.stop('ZoneScene');
+          if (typeof window !== 'undefined') window.running = false;
           this.scene.start('TitleScene');
         });
       }
@@ -1620,10 +1646,28 @@ class ZoneScene extends Phaser.Scene {
   }
 
   exitZone() {
-    this.showMessage('✨ Zone cleared!\nReturning to title screen...', 1400);
+    const allCleared = this.daily.zoneClears.every(Boolean);
+    const nextZoneId = getFirstPlayableZone(this.player, this.daily);
+    const hasNextZone = !allCleared &&
+      Number.isInteger(nextZoneId) &&
+      nextZoneId >= 0 &&
+      nextZoneId < ZONES.length &&
+      !this.daily.zoneClears[nextZoneId];
+    this.showMessage(
+      hasNextZone
+        ? '✨ Zone cleared!\nEntering next zone...'
+        : '✨ Zone cleared!\nReturning to title screen...',
+      1400
+    );
     this.time.delayedCall(1500, () => {
       this.fx.sceneTransition(() => {
         this.scene.stop('ZoneScene');
+        if (hasNextZone) {
+          this.registry.set('currentZone', nextZoneId);
+          this.scene.start('ZoneScene', { zoneId: nextZoneId });
+          return;
+        }
+        if (typeof window !== 'undefined') window.running = false;
         this.scene.start('TitleScene');
       });
     });
