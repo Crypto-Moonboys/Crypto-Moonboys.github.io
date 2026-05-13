@@ -1,7 +1,7 @@
 {
   "version": 1,
   "game": "Block Topia Quest Maze",
-  "generatedAt": "2026-05-13T15:05:03.765Z",
+  "generatedAt": "2026-05-13T16:45:27.620Z",
   "dryRun": false,
   "sourcePrompts": "art/btqm/source-prompts.json",
   "outputRoot": "art/btqm/generated",
@@ -22,13 +22,17 @@
       "zoneId": 0,
       "zoneName": "HODL or FOLD",
       "name": "Forest ruins tileset",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "1fd04268b798962b",
       "output": "art/btqm/generated/tilesets/zone-0-hodl-or-fold-forest-ruins.png",
       "size": {
         "width": 256,
         "height": 256
-      }
+      },
+      "method": "deterministicPixelTileset",
+      "bytes": 4939,
+      "sha256": "7f12cbf085feff5067a6fe33da165be4cf411ea2fe2edeaa2d2cb624445d2d31",
+      "encodedOutput": "art/btqm/generated/tilesets/zone-0-hodl-or-fold-forest-ruins.png.base64"
     },
     {
       "id": "tileset-bear-market-siege-ice-cave",
@@ -36,13 +40,17 @@
       "zoneId": 1,
       "zoneName": "Bear Market Siege",
       "name": "Ice cave tileset",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "81f934a6b163254c",
       "output": "art/btqm/generated/tilesets/zone-1-bear-market-siege-ice-cave.png",
       "size": {
         "width": 256,
         "height": 256
-      }
+      },
+      "method": "deterministicPixelTileset",
+      "bytes": 4939,
+      "sha256": "dbb98475844c2b08dbe16357679f40ebb9189a94035ecd404f586dd68108d701",
+      "encodedOutput": "art/btqm/generated/tilesets/zone-1-bear-market-siege-ice-cave.png.base64"
     },
     {
       "id": "tileset-fomo-plague-purple-wasteland",
@@ -50,13 +58,17 @@
       "zoneId": 2,
       "zoneName": "FOMO Plague Escape",
       "name": "Purple wasteland tileset",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "f3ac5886d30cb5a9",
       "output": "art/btqm/generated/tilesets/zone-2-fomo-plague-purple-wasteland.png",
       "size": {
         "width": 256,
         "height": 256
-      }
+      },
+      "method": "deterministicPixelTileset",
+      "bytes": 4859,
+      "sha256": "a1b24546b88cce8590b12368b42e377c95a625566608d4dfe6cb7fa9b4812769",
+      "encodedOutput": "art/btqm/generated/tilesets/zone-2-fomo-plague-purple-wasteland.png.base64"
     },
     {
       "id": "tileset-rug-pull-recovery-ruined-vault",
@@ -64,13 +76,17 @@
       "zoneId": 3,
       "zoneName": "Rug Pull Recovery",
       "name": "Ruined vault tileset",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "1cf0d04be6355a9a",
       "output": "art/btqm/generated/tilesets/zone-3-rug-pull-recovery-ruined-vault.png",
       "size": {
         "width": 256,
         "height": 256
-      }
+      },
+      "method": "deterministicPixelTileset",
+      "bytes": 4914,
+      "sha256": "f4a2963074e15b23fd0781bf1c9e1106e271d020771b96827ea0f18f4b85fc05",
+      "encodedOutput": "art/btqm/generated/tilesets/zone-3-rug-pull-recovery-ruined-vault.png.base64"
     },
     {
       "id": "tileset-whale-lord-deep-sea-vault",
@@ -78,13 +94,17 @@
       "zoneId": 4,
       "zoneName": "Whale Lord's Challenge",
       "name": "Deep sea vault tileset",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "801b9ae4f3a2a406",
       "output": "art/btqm/generated/tilesets/zone-4-whale-lord-deep-sea-vault.png",
       "size": {
         "width": 256,
         "height": 256
-      }
+      },
+      "method": "deterministicPixelTileset",
+      "bytes": 4951,
+      "sha256": "a49d164c950c38cb3500c89219642dd914c7634469782f048cfdad886f7f4821",
+      "encodedOutput": "art/btqm/generated/tilesets/zone-4-whale-lord-deep-sea-vault.png.base64"
     },
     {
       "id": "tileset-moon-mission-final-ascent",
@@ -92,13 +112,17 @@
       "zoneId": 5,
       "zoneName": "Moon Mission",
       "name": "Final ascent tileset",
-      "status": "planned",
+      "status": "generated",
       "promptHash": "c8d6312fbac4220e",
       "output": "art/btqm/generated/tilesets/zone-5-moon-mission-final-ascent.png",
       "size": {
         "width": 256,
         "height": 256
-      }
+      },
+      "method": "deterministicPixelTileset",
+      "bytes": 4905,
+      "sha256": "fd75b8ff15348485f4634e9afda2cbe0b05e37410ef54462338da3c3675178e7",
+      "encodedOutput": "art/btqm/generated/tilesets/zone-5-moon-mission-final-ascent.png.base64"
     },
     {
       "id": "player-idle",
