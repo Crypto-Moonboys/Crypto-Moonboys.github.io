@@ -183,4 +183,9 @@ for (const asset of generatedManifestAssets) {
   shaByCategory.set(asset.category, categoryHashes);
 }
 
+assert.doesNotMatch(bootstrap, /BLOCK TOPIA QUEST MAZE/, 'old world-map title ("BLOCK TOPIA QUEST MAZE" as one string) must not appear in BTQM runtime source');
+assert.doesNotMatch(bootstrap, /Select a zone/, 'old world-map subtitle ("Select a zone") must not appear in BTQM runtime source');
+assert.doesNotMatch(bootstrap, /class WorldScene/, 'WorldScene class must be removed from BTQM runtime');
+assert.doesNotMatch(bootstrap, /Returning to World Map/, 'old world-map return message must not appear in BTQM runtime source');
+
 console.log('BTQM runtime asset smoke checks passed.');
