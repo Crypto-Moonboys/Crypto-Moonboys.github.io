@@ -1601,7 +1601,7 @@ class ZoneScene extends Phaser.Scene {
 
     // ── Debug: tileset render signal ──────────────────────────────────────────
     const _btqmActiveTilesetKey = getBtqmTilesetTexture(this, this.zoneId);
-    console.log('[BTQM assets] tileset render active', { zoneId: this.zoneId, textureKey: _btqmActiveTilesetKey, frame: _btqmActiveTilesetKey ? BTQM_TILESET_FRAMES.floor : null, fallback: !_btqmActiveTilesetKey });
+    console.debug('[BTQM assets] tileset render active', { zoneId: this.zoneId, textureKey: _btqmActiveTilesetKey, frame: _btqmActiveTilesetKey ? BTQM_TILESET_FRAMES.floor : null, fallback: !_btqmActiveTilesetKey });
 
     // ── Render tile map ──────────────────────────────────────────────────────
     this.tileSprites = [];

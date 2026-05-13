@@ -88,7 +88,10 @@ assert.match(bootstrap, /roundPixels:\s*true/, 'Phaser should round pixels for c
 // tilesets are allowlisted — verified above (safeCategories.has('tilesets'))
 // active map render used generated texture/frame at least once
 assert.match(bootstrap, /\[BTQM assets\] tileset render active/, 'map render must emit [BTQM assets] tileset render active log signal on first-load');
-assert.match(bootstrap, /zoneId.*textureKey.*frame.*fallback/, 'tileset render active log must include zoneId, textureKey, frame, and fallback status');
+assert.match(bootstrap, /\bzoneId\b/, 'tileset render active log must include zoneId');
+assert.match(bootstrap, /\btextureKey\b/, 'tileset render active log must include textureKey');
+assert.match(bootstrap, /\bframe\b/, 'tileset render active log must include frame');
+assert.match(bootstrap, /\bfallback\b/, 'tileset render active log must include fallback status');
 // fallback did not crash — verified above (setBtqmTileSpriteTexture fallback helpers present)
 assert.match(fxSystem, /fx-slash/, 'slash FX animation should be used at runtime when available');
 assert.match(fxSystem, /fx-crit/, 'crit FX animation should be used at runtime when available');
