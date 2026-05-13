@@ -521,3 +521,173 @@ window.testNpcChat = function testNpcChat(message = "who are you?", npcId = "sig
     return false;
   }
 };
+
+/**
+ * Temporary in-game NPC chat UI.
+ * Uses the existing server-side npcChat bridge.
+ */
+(function installBlockTopiaNpcChatUi() {
+  if (typeof window === "undefined") return;
+  if (window.__BLOCK_TOPIA_NPC_CHAT_UI__) return;
+  window.__BLOCK_TOPIA_NPC_CHAT_UI__ = true;
+
+  function createUi() {
+    if (document.getElementById("btNpcChat")) return;
+
+    const box = document.createElement("div");
+    box.id = "btNpcChat";
+    box.innerHTML = `
+      <div class="bt-npc-head">
+        <strong>NPC Signal</strong>
+        <button type="button" id="btNpcToggle">−</button>
+      </div>
+      <div id="btNpcBody">
+        <select id="btNpcSelect">
+          <option value="signal_rick">Signal Rick</option>
+          <option value="block_guide">Block Guide</option>
+          <option value="xp_keeper">XP Keeper</option>
+          <option value="lore_rat">Lore Rat</option>
+          <option value="default_npc">Citizen</option>
+        </select>
+        <div id="btNpcLog"></div>
+        <form id="btNpcForm">
+          <input id="btNpcInput" maxlength="280" placeholder="Ask the city..." />
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    `;
+
+    const style = document.createElement("style");
+    style.textContent = `
+      #btNpcChat {
+        position: fixed;
+        right: 14px;
+        bottom: 14px;
+        width: min(360px, calc(100vw - 28px));
+        z-index: 99999;
+        color: #dff7ff;
+        background: rgba(5, 10, 24, 0.92);
+        border: 1px solid rgba(90, 220, 255, 0.45);
+        border-radius: 14px;
+        box-shadow: 0 0 24px rgba(0, 200, 255, 0.18);
+        font: 13px/1.35 system-ui, sans-serif;
+        overflow: hidden;
+      }
+      #btNpcChat .bt-npc-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 9px 10px;
+        background: rgba(0, 220, 255, 0.12);
+        border-bottom: 1px solid rgba(90, 220, 255, 0.25);
+      }
+      #btNpcToggle {
+        background: transparent;
+        color: #dff7ff;
+        border: 1px solid rgba(90, 220, 255, 0.45);
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      #btNpcBody { padding: 10px; }
+      #btNpcSelect, #btNpcInput, #btNpcForm button {
+        background: rgba(8, 16, 34, 0.95);
+        color: #dff7ff;
+        border: 1px solid rgba(90, 220, 255, 0.4);
+        border-radius: 10px;
+        padding: 8px;
+      }
+      #btNpcSelect {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+      #btNpcLog {
+        max-height: 180px;
+        overflow: auto;
+        margin-bottom: 8px;
+        padding: 8px;
+        background: rgba(0, 0, 0, 0.22);
+        border-radius: 10px;
+      }
+      .bt-npc-msg {
+        margin: 0 0 8px;
+      }
+      .bt-npc-msg b {
+        color: #ffe66d;
+      }
+      .bt-npc-user {
+        color: #9fe7ff;
+      }
+      #btNpcForm {
+        display: flex;
+        gap: 6px;
+      }
+      #btNpcInput {
+        flex: 1;
+        min-width: 0;
+      }
+      #btNpcForm button {
+        cursor: pointer;
+        color: #07101f;
+        background: #ffe600;
+        border-color: #ffe600;
+        font-weight: 700;
+      }
+      #btNpcChat.collapsed #btNpcBody {
+        display: none;
+      }
+    `;
+
+    document.head.appendChild(style);
+    document.body.appendChild(box);
+
+    const log = document.getElementById("btNpcLog");
+    const form = document.getElementById("btNpcForm");
+    const input = document.getElementById("btNpcInput");
+    const select = document.getElementById("btNpcSelect");
+    const toggle = document.getElementById("btNpcToggle");
+
+    function addLine(html) {
+      const row = document.createElement("div");
+      row.className = "bt-npc-msg";
+      row.innerHTML = html;
+      log.appendChild(row);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    toggle.addEventListener("click", () => {
+      box.classList.toggle("collapsed");
+      toggle.textContent = box.classList.contains("collapsed") ? "+" : "−";
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const message = input.value.trim();
+      const npcId = select.value;
+      if (!message) return;
+
+      addLine(`<span class="bt-npc-user">You:</span> ${message.replace(/[<>&]/g, "")}`);
+      input.value = "";
+
+      if (typeof window.testNpcChat !== "function") {
+        addLine(`<b>System:</b> NPC bridge is not ready yet.`);
+        return;
+      }
+
+      window.testNpcChat(message, npcId);
+    });
+
+    window.addEventListener("blocktopia:npcReply", (event) => {
+      const data = event.detail || {};
+      addLine(`<b>${data.npc || "NPC"}:</b> ${(data.reply || "No signal.").replace(/[<>&]/g, "")}`);
+    });
+
+    addLine(`<b>System:</b> NPC signal ready.`);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", createUi);
+  } else {
+    createUi();
+  }
+})();
