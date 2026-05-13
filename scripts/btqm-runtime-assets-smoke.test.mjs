@@ -48,17 +48,26 @@ assert.equal(manifestUrl[1], '/art/btqm/manifest.json', 'BTQM manifest URL must 
 assert.match(bootstrap, /status\s*===\s*['"]generated['"]/, 'runtime loader must filter to generated assets only');
 
 const safeCategories = extractStringSet(bootstrap, 'BTQM_SAFE_ASSET_CATEGORIES');
-assertSetEquals(safeCategories, new Set(['icons', 'ui', 'objects', 'fx', 'player']), 'phase-1 category allowlist must contain exactly the safe categories');
-assert.ok(!safeCategories.has('enemies'), 'enemies must not be in the phase-1 runtime allowlist');
-assert.ok(!safeCategories.has('bosses'), 'bosses must not be in the phase-1 runtime allowlist');
-assert.ok(!safeCategories.has('tilesets'), 'tilesets must not be in the phase-1 runtime allowlist');
+assertSetEquals(safeCategories, new Set(['icons', 'ui', 'objects', 'fx', 'player', 'enemies', 'bosses']), 'phase-2 category allowlist must include generated enemies and bosses');
+assert.ok(safeCategories.has('enemies'), 'enemies must be in the phase-2 runtime allowlist');
+assert.ok(safeCategories.has('bosses'), 'bosses must be in the phase-2 runtime allowlist');
+assert.ok(!safeCategories.has('tilesets'), 'tilesets must remain excluded from the runtime allowlist');
 
 const fxSheets = extractStringSet(bootstrap, 'BTQM_FX_SHEET_IDS');
 assertSetEquals(fxSheets, new Set(['fx-slash', 'fx-crit', 'fx-poison', 'fx-bleed', 'fx-shield', 'fx-treasure']), 'phase-1 FX allowlist must exclude portal and boss-intro sheets');
 
 assert.match(bootstrap, /handleBtqmAssetLoadError/, 'loaderror handler should be named so it can be unregistered');
 assert.match(bootstrap, /scene\.load\.off\(\s*['"]loaderror['"]\s*,\s*handleBtqmAssetLoadError\s*\)/, 'loaderror handler should be removed on shutdown');
-assert.match(bootstrap, /generateFrameNumbers\(textureKey,\s*{[\s\S]*start:\s*0,[\s\S]*end:\s*frameCount\s*-\s*1,[\s\S]*}\)/, 'FX animation registration should use explicit frame ranges');
+assert.match(bootstrap, /generateFrameNumbers\(textureKey,\s*{[\s\S]*start:\s*0,[\s\S]*end:\s*frameCount\s*-\s*1,[\s\S]*}\)/, 'animation registration should use explicit frame ranges');
+assert.match(bootstrap, /function\s+getBtqmEnemyTexture\s*\(/, 'enemy texture helper must exist');
+assert.match(bootstrap, /function\s+getBtqmBossTexture\s*\(/, 'boss texture helper must exist');
+assert.match(bootstrap, /function\s+addBtqmEnemySprite\s*\(/, 'enemy sprite helper must exist');
+assert.match(bootstrap, /function\s+addBtqmBossSprite\s*\(/, 'boss sprite helper must exist');
+assert.match(bootstrap, /isValidBtqmCharacterSheet/, 'enemy and boss sheets should be validated before animation registration');
+assert.match(bootstrap, /getBtqmEnemyTexture\(scene,\s*enemyId\)\s*\|\|\s*fallbackKey/, 'enemy sprite helper must preserve debug texture fallback');
+assert.match(bootstrap, /getBtqmBossTexture\(scene,\s*bossId\)\s*\|\|\s*fallbackKey/, 'boss sprite helper must preserve debug texture fallback');
+assert.match(bootstrap, /addBtqmBossSprite\(this,\s*enemyPanelX,\s*110,\s*enemyAssetId,\s*enemyTexKey\)/, 'combat scene should use generated boss sprites when available');
+assert.match(bootstrap, /addBtqmEnemySprite\(this,\s*enemyPanelX,\s*110,\s*enemyAssetId,\s*enemyTexKey\)/, 'combat scene should use generated enemy sprites when available');
 assert.match(bootstrap, /console\.warn\(\s*['"]\[BTQM assets\]/, 'missing assets should warn instead of crashing silently');
 assert.match(bootstrap, /pixelArt:\s*true/, 'Phaser pixelArt rendering should be enabled');
 assert.match(bootstrap, /antialias:\s*false/, 'Phaser antialiasing should be disabled');
@@ -88,11 +97,24 @@ assert.match(hydrateScript, /--clean-base64/, 'hydration script must support dep
 assert.match(hydrateScript, /endsWith\(['"]\.png\.base64['"]\)/, 'hydration script must walk encoded PNG payloads');
 
 const generatedFiles = walkFiles(generatedAssetRoot);
+assert.ok(generatedFiles.some((file) => file.endsWith('.png.base64')), 'generated asset payloads should remain committed as .png.base64 files');
 const trackedGeneratedFiles = execFileSync('git', ['ls-files', generatedAssetRoot], { encoding: 'utf8' })
   .split('\n')
   .filter(Boolean);
 const committedBinaryAssets = trackedGeneratedFiles.filter((file) => binaryAssetExtensions.has(extensionForAssetCheck(file)));
 assert.deepEqual(committedBinaryAssets, [], 'BTQM generated assets must be text-reviewable; do not commit binary image/audio files under art/btqm/generated');
+
+const generatedEnemyBossAssets = manifest.assets.filter((asset) => asset.status === 'generated' && ['enemies', 'bosses'].includes(asset.category));
+assert.equal(generatedEnemyBossAssets.filter((asset) => asset.category === 'enemies').length, 12, 'all generated enemy assets should be present');
+assert.equal(generatedEnemyBossAssets.filter((asset) => asset.category === 'bosses').length, 6, 'all generated boss assets should be present');
+for (const asset of generatedEnemyBossAssets) {
+  assert.ok(asset.encodedOutput, `${asset.id} generated enemy/boss record must include encodedOutput`);
+  assert.equal(
+    asset.encodedOutput.replace(/\.base64$/u, ''),
+    asset.output,
+    `${asset.id} encodedOutput must hydrate to asset.output`,
+  );
+}
 
 const generatedManifestAssets = manifest.assets.filter((asset) => asset.status === 'generated');
 const shaByCategory = new Map();

@@ -192,7 +192,7 @@ const ENEMY_HIT_VOLUME = 0.02;
 
 const BTQM_ASSET_MANIFEST_URL = '/art/btqm/manifest.json';
 const BTQM_ASSET_KEY_PREFIX = 'btqm_generated_';
-const BTQM_SAFE_ASSET_CATEGORIES = new Set(['icons', 'ui', 'objects', 'fx', 'player']);
+const BTQM_SAFE_ASSET_CATEGORIES = new Set(['icons', 'ui', 'objects', 'fx', 'player', 'enemies', 'bosses']);
 const BTQM_PLAYER_SHEET_IDS = new Set(['player-idle', 'player-walk', 'player-attack', 'player-hurt']);
 const BTQM_FX_SHEET_IDS = new Set(['fx-slash', 'fx-crit', 'fx-poison', 'fx-bleed', 'fx-shield', 'fx-treasure']);
 
@@ -224,7 +224,7 @@ function btqmAssetKey(id) {
 function getBtqmAssetRegistry(scene) {
   const existing = scene.registry.get('btqmAssets');
   if (existing) return existing;
-  const registry = { manifestLoaded: false, generated: {}, objectTextures: {}, playerSheets: {}, playerAnimations: {}, fxSheets: {}, fxFrameCounts: {}, fxAnimations: {}, ui: {}, icons: {} };
+  const registry = { manifestLoaded: false, generated: {}, objectTextures: {}, playerSheets: {}, playerFrameCounts: {}, playerAnimations: {}, fxSheets: {}, fxFrameCounts: {}, fxAnimations: {}, enemySheets: {}, enemyFrameCounts: {}, enemyAnimations: {}, bossSheets: {}, bossFrameCounts: {}, bossAnimations: {}, ui: {}, icons: {} };
   scene.registry.set('btqmAssets', registry);
   return registry;
 }
@@ -242,6 +242,29 @@ function isValidBtqmPlayerSheet(asset) {
 function getBtqmFrameCount(asset) {
   const size = asset && asset.size ? asset.size : {};
   return Math.floor((size.width || 0) / 32);
+}
+
+function getBtqmSheetFrameSize(asset) {
+  const size = asset && asset.size ? asset.size : {};
+  const manifestFrameWidth = asset && (asset.frameWidth || asset.frame?.width || size.frameWidth);
+  const manifestFrameHeight = asset && (asset.frameHeight || asset.frame?.height || size.frameHeight);
+  const frameHeight = Number(manifestFrameHeight || size.height || 0);
+  const frameWidth = Number(manifestFrameWidth || (frameHeight > 0 ? frameHeight : 32));
+  return { frameWidth, frameHeight };
+}
+
+function getBtqmSheetFrameCount(asset) {
+  const size = asset && asset.size ? asset.size : {};
+  const { frameWidth } = getBtqmSheetFrameSize(asset);
+  if (!frameWidth || frameWidth < 1) return 0;
+  return Math.floor((size.width || 0) / frameWidth);
+}
+
+function isValidBtqmCharacterSheet(asset, category) {
+  if (!asset || asset.category !== category) return false;
+  const size = asset.size || {};
+  const { frameWidth, frameHeight } = getBtqmSheetFrameSize(asset);
+  return frameHeight > 0 && frameWidth > 0 && size.height === frameHeight && size.width >= frameWidth && size.width % frameWidth === 0 && getBtqmSheetFrameCount(asset) >= 1;
 }
 
 function isValidBtqmFxSheet(asset) {
@@ -262,10 +285,14 @@ function registerBtqmAnimations(scene) {
   Object.keys(assets.playerSheets).forEach((id) => {
     const anim = BTQM_PLAYER_ANIMATIONS[id];
     const textureKey = assets.playerSheets[id];
-    if (!anim || !textureKey || !scene.textures.exists(textureKey) || scene.anims.exists(anim.key)) return;
+    const frameCount = assets.playerFrameCounts[id] || 0;
+    if (!anim || !textureKey || frameCount < 1 || !scene.textures.exists(textureKey) || scene.anims.exists(anim.key)) return;
     scene.anims.create({
       key: anim.key,
-      frames: scene.anims.generateFrameNumbers(textureKey),
+      frames: scene.anims.generateFrameNumbers(textureKey, {
+        start: 0,
+        end: frameCount - 1,
+      }),
       frameRate: anim.frameRate,
       repeat: anim.repeat,
     });
@@ -287,12 +314,84 @@ function registerBtqmAnimations(scene) {
     });
     assets.fxAnimations[id] = anim.key;
   });
+  Object.keys(assets.enemySheets).forEach((id) => {
+    const textureKey = assets.enemySheets[id];
+    const frameCount = assets.enemyFrameCounts[id] || 0;
+    const animKey = 'btqm-' + id + '-idle';
+    if (!textureKey || frameCount < 1 || !scene.textures.exists(textureKey) || scene.anims.exists(animKey)) return;
+    scene.anims.create({
+      key: animKey,
+      frames: scene.anims.generateFrameNumbers(textureKey, {
+        start: 0,
+        end: frameCount - 1,
+      }),
+      frameRate: 6,
+      repeat: -1,
+    });
+    assets.enemyAnimations[id] = animKey;
+  });
+  Object.keys(assets.bossSheets).forEach((id) => {
+    const textureKey = assets.bossSheets[id];
+    const frameCount = assets.bossFrameCounts[id] || 0;
+    const animKey = 'btqm-' + id + '-idle';
+    if (!textureKey || frameCount < 1 || !scene.textures.exists(textureKey) || scene.anims.exists(animKey)) return;
+    scene.anims.create({
+      key: animKey,
+      frames: scene.anims.generateFrameNumbers(textureKey, {
+        start: 0,
+        end: frameCount - 1,
+      }),
+      frameRate: 5,
+      repeat: -1,
+    });
+    assets.bossAnimations[id] = animKey;
+  });
 }
 
 function getBtqmTexture(scene, fallbackKey, objectId) {
   const assets = getBtqmAssetRegistry(scene);
   const generatedKey = objectId ? assets.objectTextures[objectId] : null;
   return generatedKey && scene.textures.exists(generatedKey) ? generatedKey : fallbackKey;
+}
+
+function btqmSlug(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+function getBtqmEnemyTexture(scene, enemyId) {
+  const assets = getBtqmAssetRegistry(scene);
+  const generatedKey = enemyId ? assets.enemySheets[enemyId] : null;
+  return generatedKey && scene.textures.exists(generatedKey) ? generatedKey : null;
+}
+
+function getBtqmBossTexture(scene, bossId) {
+  const assets = getBtqmAssetRegistry(scene);
+  const generatedKey = bossId ? assets.bossSheets[bossId] : null;
+  return generatedKey && scene.textures.exists(generatedKey) ? generatedKey : null;
+}
+
+function playBtqmGeneratedCharacterAnim(scene, sprite, animKey) {
+  if (!sprite || !sprite.anims || !animKey || !scene.anims.exists(animKey)) return false;
+  sprite.play(animKey, true);
+  return true;
+}
+
+function addBtqmEnemySprite(scene, x, y, enemyId, fallbackKey) {
+  const assets = getBtqmAssetRegistry(scene);
+  const textureKey = getBtqmEnemyTexture(scene, enemyId) || fallbackKey;
+  const sprite = scene.add.sprite(x, y, textureKey);
+  markTextureNearest(scene, textureKey);
+  playBtqmGeneratedCharacterAnim(scene, sprite, enemyId ? assets.enemyAnimations[enemyId] : null);
+  return sprite;
+}
+
+function addBtqmBossSprite(scene, x, y, bossId, fallbackKey) {
+  const assets = getBtqmAssetRegistry(scene);
+  const textureKey = getBtqmBossTexture(scene, bossId) || fallbackKey;
+  const sprite = scene.add.sprite(x, y, textureKey);
+  markTextureNearest(scene, textureKey);
+  playBtqmGeneratedCharacterAnim(scene, sprite, bossId ? assets.bossAnimations[bossId] : null);
+  return sprite;
 }
 
 function getBtqmPlayerTexture(scene) {
@@ -349,6 +448,7 @@ function preloadBtqmGeneratedAssets(scene) {
           return;
         }
         registry.playerSheets[asset.id] = textureKey;
+        registry.playerFrameCounts[asset.id] = getBtqmFrameCount(asset);
         scene.load.spritesheet(textureKey, '/' + asset.output.replace(/^\/+/, ''), { frameWidth: 32, frameHeight: 32 });
         return;
       }
@@ -361,6 +461,30 @@ function preloadBtqmGeneratedAssets(scene) {
         registry.fxSheets[asset.id] = textureKey;
         registry.fxFrameCounts[asset.id] = getBtqmFrameCount(asset);
         scene.load.spritesheet(textureKey, '/' + asset.output.replace(/^\/+/, ''), { frameWidth: 32, frameHeight: 32 });
+        return;
+      }
+
+      if (asset.category === 'enemies') {
+        if (!isValidBtqmCharacterSheet(asset, 'enemies')) {
+          warnBtqmAsset('enemy sheet is not a valid frame strip; keeping debug fallback.', asset.id);
+          return;
+        }
+        const { frameWidth, frameHeight } = getBtqmSheetFrameSize(asset);
+        registry.enemySheets[asset.id] = textureKey;
+        registry.enemyFrameCounts[asset.id] = getBtqmSheetFrameCount(asset);
+        scene.load.spritesheet(textureKey, '/' + asset.output.replace(/^\/+/, ''), { frameWidth, frameHeight });
+        return;
+      }
+
+      if (asset.category === 'bosses') {
+        if (!isValidBtqmCharacterSheet(asset, 'bosses')) {
+          warnBtqmAsset('boss sheet is not a valid frame strip; keeping debug fallback.', asset.id);
+          return;
+        }
+        const { frameWidth, frameHeight } = getBtqmSheetFrameSize(asset);
+        registry.bossSheets[asset.id] = textureKey;
+        registry.bossFrameCounts[asset.id] = getBtqmSheetFrameCount(asset);
+        scene.load.spritesheet(textureKey, '/' + asset.output.replace(/^\/+/, ''), { frameWidth, frameHeight });
         return;
       }
 
@@ -1809,7 +1933,12 @@ class BattleScene extends Phaser.Scene {
       : 'enemy_' + this.zoneId + '_' + (this.enemy.texIdx || 0);
     const enemySize = this.enemy.isBoss ? 120 : 88;
 
-    this.enemySprite = this.add.image(enemyPanelX, 110, enemyTexKey)
+    const enemyAssetId = this.enemy.isBoss
+      ? 'boss-' + btqmSlug(this.enemy.name)
+      : 'enemy-' + btqmSlug(this.enemy.name);
+    this.enemySprite = (this.enemy.isBoss
+      ? addBtqmBossSprite(this, enemyPanelX, 110, enemyAssetId, enemyTexKey)
+      : addBtqmEnemySprite(this, enemyPanelX, 110, enemyAssetId, enemyTexKey))
       .setDisplaySize(enemySize, enemySize);
 
     // Sprite idle bobbing
