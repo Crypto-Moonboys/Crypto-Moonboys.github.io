@@ -340,7 +340,7 @@
     paperclip.href = '/paperclip.html';
     paperclip.setAttribute('aria-label', 'Open Crypto Moonboys Paperclip brain');
     paperclip.innerHTML =
-      '<span class="site-paperclip-agent__bubble">HELLO...</span>' +
+      '<span class="site-paperclip-agent__bubble" aria-hidden="true">HELLO...</span>' +
       '<span class="site-paperclip-agent__bot" aria-hidden="true">\uD83E\uDD16</span>';
     document.body.appendChild(paperclip);
   }

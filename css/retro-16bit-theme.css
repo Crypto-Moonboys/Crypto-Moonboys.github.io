@@ -5180,8 +5180,10 @@ body.page-game .arcade-top-logo {
   transition: transform 0.15s ease, filter 0.15s ease;
 }
 
-body.page-has-right-panel .site-paperclip-agent {
-  right: 320px;
+@media (min-width: 1361px) {
+  body.page-has-right-panel .site-paperclip-agent {
+    right: 320px;
+  }
 }
 
 .site-paperclip-agent__bot {
