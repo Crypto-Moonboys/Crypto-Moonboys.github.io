@@ -1,9 +1,29 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 
 const bootstrap = readFileSync('js/arcade/games/block-topia-quest-maze/bootstrap.js', 'utf8');
 const fxSystem = readFileSync('js/arcade/games/block-topia-quest-maze/fx-system.js', 'utf8');
 const manifest = JSON.parse(readFileSync('art/btqm/manifest.json', 'utf8'));
+
+const generatedAssetRoot = 'art/btqm/generated';
+const binaryAssetExtensions = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp3', '.wav']);
+const pngMagic = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+function walkFiles(dir) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).flatMap((entry) => {
+    const fullPath = `${dir}/${entry}`;
+    return statSync(fullPath).isDirectory() ? walkFiles(fullPath) : [fullPath];
+  });
+}
+
+function extensionForAssetCheck(file) {
+  const lower = file.toLowerCase();
+  if (lower.endsWith('.png.base64')) return '.png.base64';
+  const match = lower.match(/\.(png|jpe?g|webp|gif|mp3|wav)$/u);
+  return match ? match[0] : '';
+}
 
 function extractStringSet(source, constantName) {
   const match = source.match(new RegExp(`const\\s+${constantName}\\s*=\\s*new\\s+Set\\s*\\(\\s*\\[([\\s\\S]*?)\\]\\s*\\)`));
@@ -43,5 +63,27 @@ assert.match(fxSystem, /fx-treasure/, 'treasure FX animation should be used at r
 
 assert.equal(manifest.outputRoot, 'art/btqm/generated', 'BTQM manifest should point at generated asset root');
 assert.ok(Array.isArray(manifest.assets), 'BTQM manifest must include an assets array');
+
+const generatedFiles = walkFiles(generatedAssetRoot);
+const committedBinaryAssets = generatedFiles.filter((file) => binaryAssetExtensions.has(extensionForAssetCheck(file)));
+assert.deepEqual(committedBinaryAssets, [], 'BTQM generated assets must be text-reviewable; do not commit binary image/audio files under art/btqm/generated');
+
+const generatedManifestAssets = manifest.assets.filter((asset) => asset.status === 'generated');
+const shaByCategory = new Map();
+for (const asset of generatedManifestAssets) {
+  assert.ok(asset.encodedOutput, `${asset.id} generated record must include encodedOutput`);
+  assert.ok(existsSync(asset.encodedOutput), `${asset.id} encodedOutput must exist: ${asset.encodedOutput}`);
+
+  const decoded = Buffer.from(readFileSync(asset.encodedOutput, 'utf8').replace(/\s+/gu, ''), 'base64');
+  assert.ok(decoded.subarray(0, pngMagic.length).equals(pngMagic), `${asset.id} encodedOutput must decode to PNG bytes`);
+  assert.equal(decoded.length, asset.bytes, `${asset.id} bytes must match decoded payload length`);
+  assert.equal(createHash('sha256').update(decoded).digest('hex'), asset.sha256, `${asset.id} sha256 must match decoded payload`);
+
+  const categoryHashes = shaByCategory.get(asset.category) || new Map();
+  const duplicateAssetId = categoryHashes.get(asset.sha256);
+  assert.ok(!duplicateAssetId, `${asset.category} generated assets must not duplicate sha256: ${duplicateAssetId} and ${asset.id}`);
+  categoryHashes.set(asset.sha256, asset.id);
+  shaByCategory.set(asset.category, categoryHashes);
+}
 
 console.log('BTQM runtime asset smoke checks passed.');

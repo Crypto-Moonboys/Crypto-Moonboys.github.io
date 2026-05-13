@@ -746,31 +746,25 @@
       "id": "icons-status-effects",
       "category": "icons",
       "name": "Status effect icons",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "cf5619f693569e60",
       "output": "art/btqm/generated/icons/status-effect-icons.png",
       "size": {
         "width": 160,
         "height": 32
-      },
-      "bytes": 461,
-      "sha256": "fe2e8414844942898d197b6955a525dd4e61236e844a28dc21aa06e3842ae1b0",
-      "encodedOutput": "art/btqm/generated/icons/status-effect-icons.png.base64"
+      }
     },
     {
       "id": "icons-zone-badges",
       "category": "icons",
       "name": "Zone badges",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "e92b912f6d7a2a79",
       "output": "art/btqm/generated/icons/zone-badges.png",
       "size": {
         "width": 192,
         "height": 32
-      },
-      "bytes": 517,
-      "sha256": "fe87ef988bfa9c9d358ba30dc5d6dc3c585b4d88df60eee364b5f6364c0654ce",
-      "encodedOutput": "art/btqm/generated/icons/zone-badges.png.base64"
+      }
     }
   ]
 }
