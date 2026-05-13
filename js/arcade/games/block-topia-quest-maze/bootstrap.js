@@ -1192,7 +1192,7 @@ class TitleScene extends Phaser.Scene {
     }).setOrigin(0.5, 0);
 
     // Controls help
-    this.add.text(320, 400, 'ARROWS/WASD — Move   ENTER/SPACE — Enter Zone   ESC — Main Menu', {
+    this.add.text(320, 400, 'ARROWS/WASD — Move   ENTER/SPACE — Enter Zone   ESC — Title Screen', {
       fontFamily: 'Courier New', fontSize: '10px', color: '#555555', align: 'center'
     }).setOrigin(0.5);
 
@@ -1386,7 +1386,7 @@ class ZoneScene extends Phaser.Scene {
     this.updateHud();
 
     // Mini-map indicator
-    this.hudEscHint = this.add.text(320, 8, 'ESC → Main Menu', {
+    this.hudEscHint = this.add.text(320, 8, 'ESC → Title Screen', {
       fontFamily: 'Courier New', fontSize: '9px', color: '#555555',
       backgroundColor: 'rgba(0,0,0,0.6)', padding: { x: 4, y: 2 }
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(20);
@@ -1620,7 +1620,7 @@ class ZoneScene extends Phaser.Scene {
   }
 
   exitZone() {
-    this.showMessage('✨ Zone cleared!\nReturning to menu...', 1400);
+    this.showMessage('✨ Zone cleared!\nReturning to title screen...', 1400);
     this.time.delayedCall(1500, () => {
       this.fx.sceneTransition(() => {
         this.scene.stop('ZoneScene');
