@@ -13,3 +13,5 @@ workers/**/.wrangler/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+# Locally hydrated BTQM generated PNGs; source-of-truth payloads are .png.base64.
+art/btqm/generated/**/*.png
