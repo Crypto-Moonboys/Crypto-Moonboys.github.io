@@ -92,10 +92,6 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   font-size: 0.86rem;
 }
 
-#overlay-panel-status {
-  display: none;
-}
-
 #overlay-ctrl-bar button:hover {
   background: rgba(255, 255, 255, 0.18);
 }
@@ -423,6 +419,8 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   margin-bottom: 0;
 }
 
+/* Crystal Quest is DOM/text-based and keeps its own card content flow; canvas-first
+   games hide HUD rows in fullscreen to maximize playable area. */
 #game-overlay .game-card:not(.crystal-quest-card) .hud {
   display: none !important;
 }

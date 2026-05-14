@@ -378,7 +378,10 @@
 
   function announcePanelState(message) {
     if (!panelStatusText) return;
-    panelStatusText.textContent = message;
+    panelStatusText.textContent = '';
+    setTimeout(function () {
+      panelStatusText.textContent = message;
+    }, 20);
   }
 
   function syncPanelLayoutState() {
@@ -1484,10 +1487,6 @@
       if (fullscreenOnlyMode) exitToArcadeHub();
       else closeOverlay();
     }
-  });
-
-  stage.addEventListener('click', function () {
-    if (_leftPanelOpen || _rightPanelOpen) closeOverlayPanels();
   });
 
   if (fullscreenOnlyMode && document.body) {

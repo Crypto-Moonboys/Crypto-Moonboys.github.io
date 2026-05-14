@@ -272,14 +272,46 @@ check(
   'game-fullscreen.js provides collapsible overlay panel toggles so side panels do not permanently squeeze gameplay',
 );
 check(
-  /#game-overlay\s+canvas:not\(#nextCanvas\)\s*\{[\s\S]*width:\s*auto\s*!important;[\s\S]*height:\s*min\(100%,\s*calc\(100dvh\s*-\s*var\(--overlay-toolbar-height\)\s*-\s*var\(--overlay-touch-height\)\s*-\s*var\(--overlay-stage-gap\)\)\)\s*!important;/u.test(fullscreenCssSrc),
-  'game-fullscreen.css gives fullscreen canvases dominant viewport-first sizing with dynamic viewport height budget',
+  /#game-overlay\s+canvas:not\(#nextCanvas\)\s*\{[\s\S]*width:\s*auto\s*!important;/u.test(fullscreenCssSrc),
+  'game-fullscreen.css fullscreen canvas rule keeps width auto for aspect-ratio-safe scaling',
 );
 check(
-  /#game-overlay\s+\.overlay-side\s*\{[\s\S]*position:\s*absolute;[\s\S]*pointer-events:\s*none;[\s\S]*\}/u.test(fullscreenCssSrc) &&
-    /#game-overlay\.overlay-side-open-left\s+\.overlay-side--left/u.test(fullscreenCssSrc) &&
-    /#game-overlay\.overlay-side-open-right\s+\.overlay-side--right/u.test(fullscreenCssSrc),
-  'game-fullscreen.css keeps side panels as overlay drawers that open on demand',
+  /#game-overlay\s+canvas:not\(#nextCanvas\)\s*\{[\s\S]*height:\s*min\(100%,\s*calc\(100dvh\s*-\s*var\(--overlay-toolbar-height\)\s*-\s*var\(--overlay-touch-height\)\s*-\s*var\(--overlay-stage-gap\)\)\)\s*!important;/u.test(fullscreenCssSrc),
+  'game-fullscreen.css fullscreen canvas rule uses viewport-first height budget variables',
+);
+check(
+  /#game-overlay\s+\.overlay-side\s*\{[\s\S]*position:\s*absolute;/u.test(fullscreenCssSrc),
+  'game-fullscreen.css keeps overlay-side positioned as drawer overlays',
+);
+check(
+  /#game-overlay\s+\.overlay-side\s*\{[\s\S]*pointer-events:\s*none;/u.test(fullscreenCssSrc),
+  'game-fullscreen.css keeps closed overlay drawers non-interactive by default',
+);
+check(
+  /#game-overlay\.overlay-side-open-left\s+\.overlay-side--left/u.test(fullscreenCssSrc),
+  'game-fullscreen.css provides left drawer open-state selector',
+);
+check(
+  /#game-overlay\.overlay-side-open-right\s+\.overlay-side--right/u.test(fullscreenCssSrc),
+  'game-fullscreen.css provides right drawer open-state selector',
+);
+check(
+  /#game-overlay\s+\.overlay-side\s*\{[\s\S]*opacity:\s*0;[\s\S]*\}/u.test(fullscreenCssSrc),
+  'game-fullscreen.css keeps closed drawers visually hidden until toggled open',
+);
+check(
+  /#game-overlay\.overlay-side-open-left\s+\.overlay-side--left[\s\S]*pointer-events:\s*auto;/u.test(fullscreenCssSrc) &&
+    /#game-overlay\.overlay-side-open-right\s+\.overlay-side--right[\s\S]*pointer-events:\s*auto;/u.test(fullscreenCssSrc),
+  'game-fullscreen.css restores drawer interactivity only in open states',
+);
+check(
+  /#game-overlay\s+\.overlay-side--left\s*\{[\s\S]*transform:\s*translateX\(calc\(-100%\s*-\s*10px\)\);/u.test(fullscreenCssSrc) &&
+    /#game-overlay\s+\.overlay-side--right\s*\{[\s\S]*transform:\s*translateX\(calc\(100%\s*\+\s*10px\)\);/u.test(fullscreenCssSrc),
+  'game-fullscreen.css defines off-canvas transforms for left and right drawers',
+);
+check(
+  /#game-overlay\s+\.overlay-side\s*\{[\s\S]*backdrop-filter:\s*blur\(4px\);/u.test(fullscreenCssSrc),
+  'game-fullscreen.css applies overlay drawer backdrop styling for readable panel content',
 );
 
 // ── Leaderboard worker GAME_KEY_ALIASES covers snake-run and breakout-bullrun ─
