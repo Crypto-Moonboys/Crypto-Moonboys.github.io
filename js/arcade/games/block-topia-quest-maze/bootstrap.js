@@ -1928,14 +1928,9 @@ class ZoneScene extends Phaser.Scene {
       };
       this.enemies.push(boss);
       this._scheduleMove(boss);
-
-      // Show boss intro
-      this.time.delayedCall(900, () => {
-        if (!this.scene.isActive('ZoneScene')) return;
-        this.scene.launch('BattleScene', {
-          enemy: { ...bDef, texIdx: 0 }, zoneId: this.zoneId, onClose: () => {},
-        });
-      });
+      // NOTE: Boss intro overlay removed from auto-launch path.
+      // BonusBattleScene is only entered when the user explicitly chooses it
+      // from the post-zone bonus battle choice (see _showBonusBattleChoice).
     }
   }
 
@@ -2146,9 +2141,104 @@ class ZoneScene extends Phaser.Scene {
         self._updateHud();
         if (!self.upgradeAdvanceScheduled) {
           self.upgradeAdvanceScheduled = true;
-          self.time.delayedCall(0, () => self._advanceZone());
+          self.time.delayedCall(0, () => self._showBonusBattleChoice());
         }
       });
+    });
+  }
+
+  _showBonusBattleChoice() {
+    // Show optional Bonus Battle choice after the upgrade picker is resolved.
+    // The main bomber path always continues; the battle mode is never entered
+    // automatically — only when the user explicitly selects it here.
+    const self = this;
+    const cx   = this.cameras.main.centerX;
+    const cy   = this.cameras.main.centerY;
+    const zone = this.zone;
+    const objs = [];
+
+    this.inUpgrade = true;
+
+    const bg = this.add.rectangle(cx, cy, 480, 200, 0x040c16, 0.97).setScrollFactor(0).setDepth(50);
+    objs.push(bg);
+
+    const title = this.add.text(cx, cy - 72, '⭐  BONUS BATTLE  (Optional)', {
+      fontFamily: 'Courier New', fontSize: '13px', color: '#f39c12', fontStyle: 'bold',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(51);
+    objs.push(title);
+
+    const sub = this.add.text(cx, cy - 50, 'Zone boss awaits — enter for bonus score, or continue bomber run.', {
+      fontFamily: 'Courier New', fontSize: '10px', color: '#888888', align: 'center',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(51);
+    objs.push(sub);
+
+    const destroy = () => {
+      objs.forEach((o) => { if (o && o.destroy) o.destroy(); });
+      self.inUpgrade = false;
+    };
+
+    // ── Continue button ──────────────────────────────────────────────────────
+    const contBtn = this.add.rectangle(cx - 110, cy + 10, 190, 48, 0x142040, 0.92)
+      .setScrollFactor(0).setDepth(51).setStrokeStyle(1, 0x59d8ff, 0.7);
+    const contTxt = this.add.text(cx - 110, cy + 10, '▶  Continue\nNext Bomber Zone', {
+      fontFamily: 'Courier New', fontSize: '11px', color: '#cae7ff', align: 'center',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(52);
+    objs.push(contBtn, contTxt);
+
+    contBtn.setInteractive({ useHandCursor: true });
+    contBtn.on('pointerdown', () => {
+      if (!self.inUpgrade) return;
+      destroy();
+      self._advanceZone();
+    });
+
+    // ── Bonus Battle button ──────────────────────────────────────────────────
+    const battleBtn = this.add.rectangle(cx + 110, cy + 10, 190, 48, 0x1e1004, 0.92)
+      .setScrollFactor(0).setDepth(51).setStrokeStyle(1, zone.accentColor, 0.7);
+    const battleTxt = this.add.text(cx + 110, cy + 10, '⚔  Bonus Battle\nOptional Challenge', {
+      fontFamily: 'Courier New', fontSize: '11px', color: '#e74c3c', align: 'center',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(52);
+    objs.push(battleBtn, battleTxt);
+
+    battleBtn.setInteractive({ useHandCursor: true });
+    battleBtn.on('pointerdown', () => {
+      if (!self.inUpgrade) return;
+      destroy();
+      self._enterBonusBattle();
+    });
+
+    // ── Keyboard shortcut: C=continue, B=battle ──────────────────────────────
+    const keyHandler = (e) => {
+      if (!self.inUpgrade) return;
+      if (e.key === 'b' || e.key === 'B') {
+        self.input.keyboard.off('keydown', keyHandler);
+        destroy();
+        self._enterBonusBattle();
+      } else if (e.key === 'c' || e.key === 'C' || e.key === 'Enter') {
+        self.input.keyboard.off('keydown', keyHandler);
+        destroy();
+        self._advanceZone();
+      }
+    };
+    this.input.keyboard.on('keydown', keyHandler);
+  }
+
+  _enterBonusBattle() {
+    // Launch BonusBattleScene as an optional side-mode.
+    // Preserves run score/state; returns to bomber progression on close.
+    const self     = this;
+    const zone     = this.zone;
+    const bDef     = zone.boss;
+    const enemyData = bDef ? { ...bDef, texIdx: 0 } : {};
+
+    this.scene.launch('BonusBattleScene', {
+      enemy:     enemyData,
+      zoneId:    this.zoneId,
+      onClose:   () => {
+        // Return to bomber progression regardless of battle outcome.
+        // Run score is preserved (btqmRuntime.score untouched).
+        self._advanceZone();
+      },
     });
   }
 
@@ -2196,11 +2286,13 @@ class ZoneScene extends Phaser.Scene {
 
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCENE: BattleScene — boss/enemy intro overlay (bomb-game edition)
+// SCENE: BonusBattleScene — optional bonus battle overlay (bomb-game edition)
+// Entered only when the user explicitly chooses "Bonus Battle" from the
+// post-zone choice screen. Never launched automatically from the bomber map.
 // Preserves generated-asset sprite call patterns required by asset pipeline.
 // ─────────────────────────────────────────────────────────────────────────────
-class BattleScene extends Phaser.Scene {
-  constructor() { super('BattleScene'); }
+class BonusBattleScene extends Phaser.Scene {
+  constructor() { super('BonusBattleScene'); }
 
   init(data) {
     this.enemyData   = data.enemy || {};
@@ -2222,11 +2314,16 @@ class BattleScene extends Phaser.Scene {
     border.lineStyle(2, this.zone.accentColor, 0.9);
     border.strokeRect(40, 40, 560, 368);
 
+    // Bonus mode badge — makes clear this is optional bonus play, not the main game
+    this.add.text(320, 42, '⭐  BONUS BATTLE MODE  ⭐', {
+      fontFamily: 'Courier New', fontSize: '10px', color: '#f39c12',
+    }).setOrigin(0.5);
+
     const isBoss = !!(this.enemyData && this.enemyData.isBoss);
 
     // Header
-    this.add.text(320, 58, isBoss ? '⚠  BOSS ENCOUNTERED  ⚠' : '⚠  ENEMY SPOTTED', {
-      fontFamily: 'Courier New', fontSize: '14px',
+    this.add.text(320, 62, isBoss ? '⚔  BONUS BOSS ENCOUNTER  ⚔' : '⚔  BONUS ENEMY ENCOUNTER', {
+      fontFamily: 'Courier New', fontSize: '13px',
       color: isBoss ? '#e74c3c' : '#f39c12', fontStyle: 'bold'
     }).setOrigin(0.5);
 
@@ -2270,9 +2367,9 @@ class BattleScene extends Phaser.Scene {
     this.add.text(272, 110, 'VS', { fontFamily: 'Courier New', fontSize: '20px', color: '#f39c12', fontStyle: 'bold' }).setOrigin(0.5);
 
     // Intro message
-    this.add.text(320, 250,
-      isBoss ? 'BOSS BATTLE INCOMING!\nDeploy bombs on the dungeon grid to defeat it!' :
-               'ENEMY SPOTTED!\nUse bombs to eliminate them and reach the exit!',
+    this.add.text(320, 254,
+      isBoss ? 'BONUS BOSS BATTLE!\nDeploy bombs on the dungeon grid to defeat it!' :
+               'BONUS ENEMY ENCOUNTER!\nUse bombs to eliminate them and reach the exit!',
       { fontFamily: 'Courier New', fontSize: '11px', color: '#cae7ff', align: 'center', lineSpacing: 4 }
     ).setOrigin(0.5);
 
@@ -2285,7 +2382,7 @@ class BattleScene extends Phaser.Scene {
     const dismiss = () => {
       if (this.fx) this.fx.destroy();
       if (this.onCloseCb) this.onCloseCb();
-      this.scene.stop('BattleScene');
+      this.scene.stop('BonusBattleScene');
     };
     this.time.delayedCall(2800, dismiss);
     this.input.once('pointerdown', dismiss);
@@ -2349,7 +2446,7 @@ export function bootstrapBlockTopiaQuestMaze(root) {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
       },
-      scene: [BootScene, TitleScene, ZoneScene, BattleScene],
+      scene: [BootScene, TitleScene, ZoneScene, BonusBattleScene],
     });
 
     // Tag the Phaser-generated canvas so game-fullscreen.js detectMeta()
@@ -2417,7 +2514,7 @@ export function bootstrapBlockTopiaQuestMaze(root) {
   async function switchToTitleScene() {
     if (!phaserGame) return;
     _pausedByOverlay = [];
-    ['BattleScene', 'ZoneScene'].forEach(function (k) {
+    ['BonusBattleScene', 'ZoneScene'].forEach(function (k) {
       if (phaserGame.scene.isActive(k) || phaserGame.scene.isPaused(k)) phaserGame.scene.stop(k);
     });
     if (!phaserGame.scene.isActive('TitleScene')) phaserGame.scene.start('TitleScene');
@@ -2436,7 +2533,7 @@ export function bootstrapBlockTopiaQuestMaze(root) {
 
   function pause() {
     if (!phaserGame || _pausedByOverlay.length) return;
-    ['BattleScene', 'ZoneScene'].forEach(function (k) {
+    ['BonusBattleScene', 'ZoneScene'].forEach(function (k) {
       if (phaserGame.scene.isActive(k)) {
         phaserGame.scene.pause(k);
         _pausedByOverlay.push(k);
