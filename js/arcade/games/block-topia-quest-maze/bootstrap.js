@@ -2382,7 +2382,7 @@ class BonusBattleScene extends Phaser.Scene {
     const dismiss = () => {
       if (this.fx) this.fx.destroy();
       if (this.onCloseCb) this.onCloseCb();
-    this.scene.stop('BonusBattleScene');
+      this.scene.stop('BonusBattleScene');
     };
     this.time.delayedCall(2800, dismiss);
     this.input.once('pointerdown', dismiss);
