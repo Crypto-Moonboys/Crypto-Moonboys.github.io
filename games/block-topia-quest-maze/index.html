@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Block Topia: Mega Bomb Roguelite — real-time bomb dungeon run with destructible grids, chain reactions, enemy roles, and boss encounters.">
+  <meta name="description" content="Block Topia Quest Maze — real-time bomb-maze dungeon run with destructible grids, chain reactions, enemy roles, and boss encounters.">
   <meta name="robots" content="index, follow">
-  <title>Block Topia: Mega Bomb Roguelite</title>
+  <title>Block Topia Quest Maze</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/game-fullscreen.css">
 <style>
@@ -33,28 +33,6 @@
       border-radius: 16px;
       padding: 16px;
       box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45);
-    }
-
-    #btqm-hud {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px;
-      margin-bottom: 10px;
-      font-family: monospace;
-      color: var(--maze-text);
-      font-size: 13px;
-    }
-
-    .btqm-hud-cell {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 10px;
-      padding: 7px 10px;
-    }
-
-    .btqm-hud-cell strong {
-      color: var(--maze-accent);
-      font-weight: 700;
     }
 
     #btqm-canvas-wrap {
@@ -196,39 +174,6 @@
       gap: 8px;
     }
 
-    #btqm-ui {
-      margin-top: 10px;
-      display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-      gap: 10px;
-    }
-
-    .btqm-panel {
-      background: rgba(5, 11, 23, 0.9);
-      border: 1px solid rgba(137, 169, 196, 0.3);
-      border-radius: 10px;
-      padding: 9px 11px;
-      min-height: 104px;
-      color: var(--maze-text);
-      font-family: monospace;
-      font-size: 13px;
-    }
-
-    #btqm-log {
-      white-space: pre-wrap;
-      line-height: 1.38;
-      color: #cae7ff;
-      max-height: 220px;
-      overflow: auto;
-    }
-
-    #btqm-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-    }
-
     .btqm-btn {
       appearance: none;
       border: 1px solid rgba(255, 255, 255, 0.2);
@@ -263,90 +208,6 @@
       box-shadow: 0 4px 12px rgba(89, 216, 255, 0.35);
     }
 
-    #btqm-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      z-index: 5;
-    }
-
-    #btqm-card {
-      pointer-events: auto;
-      width: min(560px, 92%);
-      background: rgba(4, 12, 22, 0.93);
-      border: 1px solid rgba(89, 216, 255, 0.5);
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
-      color: var(--maze-text);
-      font-family: monospace;
-      display: none;
-    }
-
-    #btqm-card h2 {
-      margin: 0 0 8px;
-      color: var(--maze-accent);
-      font-size: 22px;
-    }
-
-    #btqm-card p {
-      margin: 0 0 10px;
-      line-height: 1.4;
-      color: #c7dbef;
-      font-size: 13px;
-    }
-
-    #btqm-choice-list {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 7px;
-      margin-top: 9px;
-    }
-
-    .btqm-choice {
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.07);
-      padding: 8px;
-      color: #ddf0ff;
-      font-size: 12px;
-      cursor: pointer;
-      transition: border-color 140ms ease, transform 140ms ease, background 140ms ease;
-    }
-
-    .btqm-choice:hover {
-      border-color: var(--maze-cyan);
-      transform: translateY(-1px);
-      background: rgba(89, 216, 255, 0.13);
-    }
-
-    #btqm-banner {
-      position: absolute;
-      left: 50%;
-      top: 18px;
-      transform: translateX(-50%) translateY(-15px);
-      padding: 7px 14px;
-      border-radius: 8px;
-      background: rgba(4, 10, 22, 0.86);
-      border: 1px solid rgba(255, 255, 255, 0.24);
-      color: var(--maze-text);
-      font-family: monospace;
-      font-weight: 700;
-      font-size: 13px;
-      opacity: 0;
-      transition: transform 250ms ease, opacity 250ms ease;
-      pointer-events: none;
-      z-index: 6;
-    }
-
-    #btqm-banner.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
     #btqm-controls {
       margin-top: 12px;
       display: flex;
@@ -367,36 +228,9 @@
       box-shadow: 0 0 10px rgba(247, 171, 26, 0.5);
     }
 
-    #btqm-low-hp {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background: radial-gradient(circle, transparent 20%, rgba(240, 62, 87, 0.25) 100%);
-      opacity: 0;
-      transition: opacity 200ms ease;
-      z-index: 2;
-    }
-
-    #btqm-low-hp.on {
-      opacity: 1;
-      animation: hpPulse 650ms ease-in-out infinite;
-    }
-
-    @keyframes hpPulse {
-      0% { opacity: 0.2; }
-      50% { opacity: 0.55; }
-      100% { opacity: 0.2; }
-    }
-
     @media (max-width: 860px) {
-      #btqm-hud {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      #btqm-ui {
-        grid-template-columns: 1fr;
-      }
-      #btqm-choice-list {
-        grid-template-columns: 1fr;
+      #btqm-controls {
+        gap: 8px;
       }
     }
 
@@ -454,13 +288,13 @@
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="/index.html">Home</a><span class="sep">></span>
         <a href="/games/">Arcade</a><span class="sep">></span>
-        <span aria-current="page">Block Topia: Mega Bomb Roguelite</span>
+        <span aria-current="page">Block Topia Quest Maze</span>
       </nav>
       <div class="category-header">
         <span class="cat-big-icon" aria-hidden="true">💣</span>
         <div>
-          <h1 class="page-title">Block Topia: Mega Bomb Roguelite</h1>
-          <p style="color:var(--color-text-muted)">Real-time bomb-combat dungeon roguelite — destroy blocks, chain explosions, defeat enemies, survive boss arenas.</p>
+          <h1 class="page-title">Block Topia Quest Maze</h1>
+          <p style="color:var(--color-text-muted)">Real-time bomb-maze dungeon run — destroy blocks, chain explosions, defeat enemies, and survive each zone.</p>
         </div>
       </div>
       <div class="page-title-line" aria-hidden="true"></div>
@@ -470,14 +304,14 @@
         <div id="btqm-daily-bar" aria-live="polite">Today: loading quest progress…</div>
 
         <div id="btqm-canvas-wrap">
-          <div id="btqm-canvas" role="application" aria-label="Block Topia Mega Bomb Roguelite game"></div>
+          <div id="btqm-canvas" role="application" aria-label="Block Topia Quest Maze game"></div>
           <div id="btqm-name-overlay">
             <div id="btqm-name-panel">
-              <h2>Block Topia: Mega Bomb</h2>
+              <h2>Block Topia Quest Maze</h2>
               <p id="btqm-daily-preview">Daily Run</p>
-              <label class="btqm-name-label" for="btqm-name-input">Bomber name</label>
-              <input id="btqm-name-input" maxlength="20" placeholder="Bomber name" autocomplete="nickname" aria-label="Bomber name">
-              <p id="btqm-name-err" role="alert">Enter a bomber name between 2 and 20 characters.</p>
+              <label class="btqm-name-label" for="btqm-name-input">Player name</label>
+              <input id="btqm-name-input" maxlength="20" placeholder="Player name" autocomplete="nickname" aria-label="Player name">
+              <p id="btqm-name-err" role="alert">Enter a player name between 2 and 20 characters.</p>
               <div class="btqm-name-actions">
                 <button class="fullscreen-btn" id="btqm-start-btn" type="button">Start New Run</button>
                 <button class="fullscreen-btn" id="btqm-continue-btn" type="button">Continue</button>
