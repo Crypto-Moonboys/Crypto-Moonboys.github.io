@@ -1885,7 +1885,7 @@ class ZoneScene extends Phaser.Scene {
         role: def.role || 'basic-chaser',
         speed: def.speed || 700,
         name: def.name, scoreValue: def.scoreValue || BOMB_SCORE_KILL,
-        sprite: sp, dead: false, moveTimer: null, isBoss: false,
+        sprite: sp, dead: false, moveTimer: null, isBoss: false, axisPreference: 'x',
       };
       this.enemies.push(enemy);
       this._scheduleMove(enemy);
@@ -1909,7 +1909,7 @@ class ZoneScene extends Phaser.Scene {
         gx: bc, gy: br, hp: bDef.bombHp || 5,
         role: 'boss', speed: bDef.speed || 1200,
         name: bDef.name, scoreValue: bDef.scoreValue || 200,
-        sprite: bSp, dead: false, moveTimer: null, isBoss: true,
+        sprite: bSp, dead: false, moveTimer: null, isBoss: true, axisPreference: 'x',
       };
       this.enemies.push(boss);
       this._scheduleMove(boss);
