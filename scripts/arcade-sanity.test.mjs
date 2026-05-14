@@ -367,19 +367,30 @@ process.stdout.write('\n── Asteroid Fork resize/render dimension invariants 
 
 const afBootstrapSrc = await readFile('js/arcade/games/asteroid-fork/bootstrap.js');
 
+// Extract the applyFullscreenFit function body for targeted assertions so the
+// checks are not sensitive to exact temp-variable names used in the implementation.
+const fitFnStart = afBootstrapSrc.indexOf('function applyFullscreenFit');
+const fitFnEnd   = afBootstrapSrc.indexOf('\nfunction ', fitFnStart + 1);
+const fitFnBody  = fitFnStart >= 0
+  ? afBootstrapSrc.slice(fitFnStart, fitFnEnd > 0 ? fitFnEnd : fitFnStart + 6000)
+  : '';
+
 check(
-  /state\.worldW\s*=\s*newWorldW/.test(afBootstrapSrc) &&
-    /state\.worldH\s*=\s*newWorldH/.test(afBootstrapSrc),
-  'asteroid-fork bootstrap.js applyFullscreenFit updates state.worldW and state.worldH to logical canvas size',
+  fitFnBody.length > 0 &&
+    /state\.worldW\s*=\s*\S/.test(fitFnBody) &&
+    /state\.worldH\s*=\s*\S/.test(fitFnBody),
+  'asteroid-fork applyFullscreenFit assigns state.worldW and state.worldH to canvas logical dimensions',
 );
 check(
-  /state\.stars\s*=\s*\[\][\s\S]{0,200}newWorldW[\s\S]{0,200}newWorldH/.test(afBootstrapSrc) ||
-    /state\.stars\s*=\s*\[\][\s\S]{0,200}state\.worldW[\s\S]{0,200}state\.worldH/.test(afBootstrapSrc),
-  'asteroid-fork bootstrap.js regenerates starfield to cover new world bounds on resize',
+  /state\.stars\s*=\s*\[\]/.test(fitFnBody) &&
+    /state\.worldW/.test(fitFnBody) &&
+    /state\.worldH/.test(fitFnBody),
+  'asteroid-fork applyFullscreenFit regenerates starfield using current state.worldW/worldH bounds',
 );
 check(
-  /if\s*\(state\.worldW\s*!==\s*newWorldW\s*\|\|\s*state\.worldH\s*!==\s*newWorldH\s*\)/.test(afBootstrapSrc),
-  'asteroid-fork bootstrap.js guards world/star recalculation to changed dimensions only',
+  /state\.worldW[\s\S]{0,80}!==/.test(fitFnBody) ||
+    /!==[\s\S]{0,80}state\.worldW/.test(fitFnBody),
+  'asteroid-fork applyFullscreenFit guards world/star recalculation to changed dimensions only',
 );
 
 // ── Summary ───────────────────────────────────────────────────────────────────

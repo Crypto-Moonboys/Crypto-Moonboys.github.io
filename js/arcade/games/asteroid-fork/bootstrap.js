@@ -324,8 +324,13 @@ function applyFullscreenFit(state) {
     targetW = targetH * aspect;
   }
 
-  state.canvas.style.width = Math.floor(targetW) + 'px';
-  state.canvas.style.height = Math.floor(targetH) + 'px';
+  // Derive one integer logical size used consistently for CSS, canvas backing,
+  // and world bounds to avoid subpixel gaps from mixed floor/round rounding.
+  const logW = Math.floor(targetW);
+  const logH = Math.floor(targetH);
+
+  state.canvas.style.width = logW + 'px';
+  state.canvas.style.height = logH + 'px';
   state.canvas.style.maxWidth = 'none';
   state.canvas.style.maxHeight = 'none';
   state.canvas.style.display = 'block';
@@ -334,20 +339,54 @@ function applyFullscreenFit(state) {
 
   const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
   state.dpr = dpr;
-  state.canvas.width = Math.round(targetW * dpr);
-  state.canvas.height = Math.round(targetH * dpr);
+  state.canvas.width = Math.round(logW * dpr);
+  state.canvas.height = Math.round(logH * dpr);
 
   // Keep world bounds and starfield in sync with the logical canvas size.
   // This ensures the background, starfield, spawn positions, and wrap edges
   // all use the real current canvas dimensions rather than the stale defaults.
-  const newWorldW = Math.floor(targetW);
-  const newWorldH = Math.floor(targetH);
-  if (state.worldW !== newWorldW || state.worldH !== newWorldH) {
-    state.worldW = newWorldW;
-    state.worldH = newWorldH;
+  if (state.worldW !== logW || state.worldH !== logH) {
+    state.worldW = logW;
+    state.worldH = logH;
     state.stars = [];
     for (let i = 0; i < 140; i += 1) {
-      state.stars.push({ x: Math.random() * newWorldW, y: Math.random() * newWorldH, z: Math.random() });
+      state.stars.push({ x: Math.random() * state.worldW, y: Math.random() * state.worldH, z: Math.random() });
+    }
+
+    // Reconcile entity positions to the new world bounds so resizing while
+    // paused cannot leave objects outside the visible playfield.
+    // Title/game-over (not running): recentre the ship to the new world centre.
+    // Active/paused (running): wrap all entities into the new bounds.
+    if (state.ship) {
+      if (!state.running) {
+        state.ship.x = state.worldW * 0.5;
+        state.ship.y = state.worldH * 0.5;
+      } else {
+        state.ship.x = wrap(state.ship.x, state.worldW);
+        state.ship.y = wrap(state.ship.y, state.worldH);
+      }
+    }
+    if (state.running) {
+      for (const asteroid of state.asteroids) {
+        asteroid.x = wrap(asteroid.x, state.worldW);
+        asteroid.y = wrap(asteroid.y, state.worldH);
+      }
+      for (const enemy of state.enemies) {
+        enemy.x = wrap(enemy.x, state.worldW);
+        enemy.y = wrap(enemy.y, state.worldH);
+      }
+      for (const boss of state.bosses) {
+        boss.x = clamp(boss.x, 0, state.worldW);
+        boss.y = clamp(boss.y, 0, state.worldH);
+      }
+      for (const bullet of state.bullets) {
+        bullet.x = wrap(bullet.x, state.worldW);
+        bullet.y = wrap(bullet.y, state.worldH);
+      }
+      for (const bullet of state.enemyBullets) {
+        bullet.x = wrap(bullet.x, state.worldW);
+        bullet.y = wrap(bullet.y, state.worldH);
+      }
     }
   }
 }
