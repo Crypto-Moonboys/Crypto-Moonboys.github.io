@@ -272,7 +272,7 @@ check(
   'game-fullscreen.js provides collapsible overlay panel toggles so side panels do not permanently squeeze gameplay',
 );
 check(
-  /#game-overlay\s+canvas:not\(#nextCanvas\)\s*\{[\s\S]*width:\s*100%\s*!important;[\s\S]*max-height:\s*calc\(100dvh\s*-\s*var\(--overlay-toolbar-height\)\s*-\s*var\(--overlay-touch-height\)\s*-\s*var\(--overlay-stage-gap\)\)\s*!important;/u.test(fullscreenCssSrc),
+  /#game-overlay\s+canvas:not\(#nextCanvas\)\s*\{[\s\S]*width:\s*auto\s*!important;[\s\S]*height:\s*min\(100%,\s*calc\(100dvh\s*-\s*var\(--overlay-toolbar-height\)\s*-\s*var\(--overlay-touch-height\)\s*-\s*var\(--overlay-stage-gap\)\)\)\s*!important;/u.test(fullscreenCssSrc),
   'game-fullscreen.css gives fullscreen canvases dominant viewport-first sizing with dynamic viewport height budget',
 );
 check(

@@ -431,16 +431,15 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
        Override per-game ID rules via higher specificity + !important.
        JS sets aspect-ratio on canvases that don't have it via CSS. */
 #game-overlay canvas:not(#nextCanvas) {
-  width: 100% !important;
+  width: auto !important;
   max-width: 100% !important;
-  height: auto !important;
-  max-height: calc(100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
+  height: min(100%, calc(100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap))) !important;
   flex-shrink: 1;
 }
 
 @supports not (height: 1dvh) {
   #game-overlay canvas:not(#nextCanvas) {
-    max-height: calc(100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
+    height: min(100%, calc(100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap))) !important;
   }
 }
 
@@ -516,7 +515,7 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 }
 
 #game-overlay #tetCanvas {
-  width: min(100%, calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) / 2)) !important;
+  width: min(92vw, max(220px, calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) / 2))) !important;
   max-width: none !important;
   max-height: calc(100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
 }
@@ -528,21 +527,21 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
     max-height: calc(100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
   }
   #game-overlay #tetCanvas {
-    width: min(100%, calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) / 2)) !important;
+    width: min(92vw, max(220px, calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) / 2))) !important;
     max-height: calc(100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
   }
 }
 
 @media (max-width: 1099px) {
   #game-overlay #tetCanvas {
-    width: min(92vw, calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) / 2)) !important;
+    width: min(90vw, max(200px, calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) / 2))) !important;
   }
 }
 
 @supports not (height: 1dvh) {
   @media (max-width: 1099px) {
     #game-overlay #tetCanvas {
-      width: min(92vw, calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) / 2)) !important;
+      width: min(90vw, max(200px, calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) / 2))) !important;
     }
   }
 }
