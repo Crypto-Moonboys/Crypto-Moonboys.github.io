@@ -119,6 +119,8 @@
     return btn;
   }
 
+  var btnInfo  = makeCtrlBtn('overlay-btn-info',  'Toggle controls panel', '☰', 'Info');
+  var btnData  = makeCtrlBtn('overlay-btn-data',  'Toggle data panel', '📊', 'Data');
   var btnFS    = makeCtrlBtn('overlay-btn-fs',    'Toggle fullscreen', '⛶', 'FS');
   var btnStart = makeCtrlBtn('overlay-btn-start', 'Start game',        '▶', 'Start');
   var btnPause = makeCtrlBtn('overlay-btn-pause', 'Pause/Resume',      '⏸', 'Pause');
@@ -141,9 +143,22 @@
   fullscreenPromptBtn.textContent = 'Enter Fullscreen';
   fullscreenPrompt.appendChild(fullscreenPromptText);
   fullscreenPrompt.appendChild(fullscreenPromptBtn);
+  var panelStatus = document.createElement('div');
+  panelStatus.id = 'overlay-panel-status';
+  panelStatus.setAttribute('role', 'status');
+  panelStatus.setAttribute('aria-live', 'polite');
+  panelStatus.setAttribute('aria-atomic', 'true');
+  panelStatus.setAttribute('aria-describedby', 'overlay-panel-status-text');
+  var panelStatusText = document.createElement('span');
+  panelStatusText.id = 'overlay-panel-status-text';
+  panelStatusText.textContent = 'Panels collapsed for larger playfield.';
+  panelStatus.appendChild(panelStatusText);
 
   ctrlBar.appendChild(gameLabel);
   ctrlBar.appendChild(fullscreenPrompt);
+  ctrlBar.appendChild(panelStatus);
+  ctrlBar.appendChild(btnInfo);
+  ctrlBar.appendChild(btnData);
   ctrlBar.appendChild(btnFS);
   ctrlBar.appendChild(btnStart);
   ctrlBar.appendChild(btnPause);
@@ -157,6 +172,9 @@
 
   var sideLeft  = document.createElement('div');
   sideLeft.className = 'overlay-side overlay-side--left shell-scroll';
+  sideLeft.id = 'overlay-side-left';
+  sideLeft.setAttribute('role', 'region');
+  sideLeft.setAttribute('aria-label', 'Game controls and tips');
   sideLeft.setAttribute('data-shell-scroll', '');
 
   var stage = document.createElement('div');
@@ -164,6 +182,9 @@
 
   var sideRight = document.createElement('div');
   sideRight.className = 'overlay-side overlay-side--right shell-scroll';
+  sideRight.id = 'overlay-side-right';
+  sideRight.setAttribute('role', 'region');
+  sideRight.setAttribute('aria-label', 'Game data and sync');
   sideRight.setAttribute('data-shell-scroll', '');
 
   overlayBody.appendChild(sideLeft);
@@ -320,6 +341,8 @@
   var origNextSibling = null;
   var stageTarget     = null; // element actually moved into the overlay (btqm-game-area or game-card)
   var isOpen          = false;
+  var _leftPanelOpen  = false;
+  var _rightPanelOpen = false;
   var _gameStarted    = false; // true once the in-overlay Start button has been clicked at least once
   var scoreInterval   = null;
   // Cached overlay score display elements; set in buildLeftPanel / buildRightPanel.
@@ -346,6 +369,45 @@
   function dispatchUiState(name, detail) {
     if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
     window.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
+  }
+
+  btnInfo.setAttribute('aria-controls', 'overlay-side-left');
+  btnInfo.setAttribute('aria-expanded', 'false');
+  btnData.setAttribute('aria-controls', 'overlay-side-right');
+  btnData.setAttribute('aria-expanded', 'false');
+
+  function announcePanelState(message) {
+    if (!panelStatusText) return;
+    panelStatusText.textContent = message;
+  }
+
+  function syncPanelLayoutState() {
+    overlay.classList.toggle('overlay-side-open-left', _leftPanelOpen);
+    overlay.classList.toggle('overlay-side-open-right', _rightPanelOpen);
+    btnInfo.setAttribute('aria-expanded', _leftPanelOpen ? 'true' : 'false');
+    btnData.setAttribute('aria-expanded', _rightPanelOpen ? 'true' : 'false');
+  }
+
+  function closeOverlayPanels(options) {
+    var silent = !!(options && options.silent);
+    _leftPanelOpen = false;
+    _rightPanelOpen = false;
+    syncPanelLayoutState();
+    if (!silent) announcePanelState('Panels collapsed for larger playfield.');
+  }
+
+  function toggleOverlayPanel(side) {
+    if (side === 'left') {
+      _leftPanelOpen = !_leftPanelOpen;
+      if (_leftPanelOpen) _rightPanelOpen = false;
+      syncPanelLayoutState();
+      announcePanelState(_leftPanelOpen ? 'Controls panel opened.' : 'Controls panel collapsed.');
+      return;
+    }
+    _rightPanelOpen = !_rightPanelOpen;
+    if (_rightPanelOpen) _leftPanelOpen = false;
+    syncPanelLayoutState();
+    announcePanelState(_rightPanelOpen ? 'Data panel opened.' : 'Data panel collapsed.');
   }
 
   function ensureMicroFeed() {
@@ -1090,6 +1152,7 @@
     buildLeftPanel(meta);
     buildRightPanel(meta);
     buildTouchPad(meta);
+    closeOverlayPanels({ silent: true });
 
     // For BTQM, move only the inner game area — not the whole game-card — to avoid
     // a nested "box inside a box" layout.  All other games use game-card as before.
@@ -1217,6 +1280,7 @@
 
     overlay.classList.remove('active');
     document.body.classList.remove('overlay-open');
+    closeOverlayPanels({ silent: true });
 
     // Fire a resize event so Phaser restores its in-page sizing.
     setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 150);
@@ -1294,6 +1358,14 @@
 
   fullscreenPromptBtn.addEventListener('click', function () {
     requestOverlayFullscreen('blocked');
+  });
+
+  btnInfo.addEventListener('click', function () {
+    toggleOverlayPanel('left');
+  });
+
+  btnData.addEventListener('click', function () {
+    toggleOverlayPanel('right');
   });
 
   btnPause.addEventListener('click', function () {
@@ -1412,6 +1484,10 @@
       if (fullscreenOnlyMode) exitToArcadeHub();
       else closeOverlay();
     }
+  });
+
+  stage.addEventListener('click', function () {
+    if (_leftPanelOpen || _rightPanelOpen) closeOverlayPanels();
   });
 
   if (fullscreenOnlyMode && document.body) {

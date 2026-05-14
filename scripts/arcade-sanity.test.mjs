@@ -236,6 +236,7 @@ for (const relPath of FULLSCREEN_ONLY_GAME_PAGES) {
 }
 
 const fullscreenShellSrc = await readFile('js/game-fullscreen.js');
+const fullscreenCssSrc = await readFile('css/game-fullscreen.css');
 check(
   /overlayFullscreenOnly\s*===\s*['"]true['"]/u.test(fullscreenShellSrc),
   'game-fullscreen.js recognizes data-overlay-fullscreen-only flag',
@@ -255,6 +256,30 @@ check(
 check(
   /function\s+sanitizeOverlayExitHref\(href\)\s*\{[\s\S]*return\s+['"]\/games\/['"]/u.test(fullscreenShellSrc),
   'game-fullscreen.js keeps /games/ as the default overlay exit fallback',
+);
+check(
+  /overlay-panel-status/u.test(fullscreenShellSrc) &&
+    /setAttribute\('role',\s*'status'\)/u.test(fullscreenShellSrc) &&
+    /setAttribute\('aria-live',\s*'polite'\)/u.test(fullscreenShellSrc) &&
+    /setAttribute\('aria-atomic',\s*'true'\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js keeps collapsed panel status announcements accessible (role/status + polite live region)',
+);
+check(
+  /overlay-btn-info/u.test(fullscreenShellSrc) &&
+    /overlay-btn-data/u.test(fullscreenShellSrc) &&
+    /overlay-side-open-left/u.test(fullscreenShellSrc) &&
+    /overlay-side-open-right/u.test(fullscreenShellSrc),
+  'game-fullscreen.js provides collapsible overlay panel toggles so side panels do not permanently squeeze gameplay',
+);
+check(
+  /#game-overlay\s+canvas:not\(#nextCanvas\)\s*\{[\s\S]*width:\s*100%\s*!important;[\s\S]*max-height:\s*calc\(100dvh\s*-\s*var\(--overlay-toolbar-height\)\s*-\s*var\(--overlay-touch-height\)\s*-\s*var\(--overlay-stage-gap\)\)\s*!important;/u.test(fullscreenCssSrc),
+  'game-fullscreen.css gives fullscreen canvases dominant viewport-first sizing with dynamic viewport height budget',
+);
+check(
+  /#game-overlay\s+\.overlay-side\s*\{[\s\S]*position:\s*absolute;[\s\S]*pointer-events:\s*none;[\s\S]*\}/u.test(fullscreenCssSrc) &&
+    /#game-overlay\.overlay-side-open-left\s+\.overlay-side--left/u.test(fullscreenCssSrc) &&
+    /#game-overlay\.overlay-side-open-right\s+\.overlay-side--right/u.test(fullscreenCssSrc),
+  'game-fullscreen.css keeps side panels as overlay drawers that open on demand',
 );
 
 // ── Leaderboard worker GAME_KEY_ALIASES covers snake-run and breakout-bullrun ─
