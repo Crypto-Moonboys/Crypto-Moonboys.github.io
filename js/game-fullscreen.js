@@ -18,6 +18,9 @@
   var startBtn = document.getElementById('startBtn');
   var gameCard = document.querySelector('.game-card');
   var autoStartOnOpen = startBtn && startBtn.dataset && startBtn.dataset.overlayAutostart === 'true';
+  var fullscreenOnlyMode = startBtn && startBtn.dataset && startBtn.dataset.overlayFullscreenOnly === 'true';
+  var autoOpenOnLoad = fullscreenOnlyMode || (startBtn && startBtn.dataset && startBtn.dataset.overlayAutoOpen === 'true');
+  var overlayExitHref = (startBtn && startBtn.dataset && startBtn.dataset.overlayExitHref) ? String(startBtn.dataset.overlayExitHref).trim() : '/games/';
   var hidePauseControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHidePause === 'true';
   var hideStartControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHideStart === 'true';
   var singleStartFlow = startBtn && startBtn.dataset && startBtn.dataset.overlaySingleStart === 'true';
@@ -119,8 +122,21 @@
   var btnReset = makeCtrlBtn('overlay-btn-reset', 'Reset game',        '↺', 'Reset');
   var btnMute  = makeCtrlBtn('overlay-btn-mute',  'Mute/Unmute',       '🔊', 'Mute');
   var btnExit  = makeCtrlBtn('overlay-btn-exit',  'Exit fullscreen',   '✕', 'Exit');
+  var fullscreenPrompt = document.createElement('div');
+  fullscreenPrompt.id = 'overlay-fullscreen-prompt';
+  fullscreenPrompt.style.cssText = 'display:none;align-items:center;gap:8px;margin-left:10px;padding:6px 10px;border:1px solid rgba(255,255,255,.25);border-radius:10px;background:rgba(0,0,0,.35);font-size:12px;line-height:1.3;color:#fff';
+  var fullscreenPromptText = document.createElement('span');
+  fullscreenPromptText.textContent = 'Tap Enter Fullscreen for full gameplay.';
+  var fullscreenPromptBtn = document.createElement('button');
+  fullscreenPromptBtn.setAttribute('type', 'button');
+  fullscreenPromptBtn.className = 'interactive';
+  fullscreenPromptBtn.textContent = 'Enter Fullscreen';
+  fullscreenPromptBtn.style.cssText = 'padding:4px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;cursor:pointer';
+  fullscreenPrompt.appendChild(fullscreenPromptText);
+  fullscreenPrompt.appendChild(fullscreenPromptBtn);
 
   ctrlBar.appendChild(gameLabel);
+  ctrlBar.appendChild(fullscreenPrompt);
   ctrlBar.appendChild(btnFS);
   ctrlBar.appendChild(btnStart);
   ctrlBar.appendChild(btnPause);
@@ -206,6 +222,12 @@
   var _goExit    = null;
   var cachedFactionPanel = null;
 
+  function getOverlayExitHref() {
+    var href = (overlayExitHref || '/games/').trim();
+    if (!href) return '/games/';
+    return href;
+  }
+
   function showGameOverModal(score, opts) {
     opts = opts || {};
     var valEl = document.getElementById('game-over-score-val');
@@ -241,7 +263,8 @@
     if (cb) {
       cb();
     } else if (isOpen) {
-      closeOverlay();
+      if (fullscreenOnlyMode) exitToArcadeHub();
+      else closeOverlay();
     }
   });
 
@@ -985,7 +1008,35 @@
     }
   }
 
-  document.addEventListener('fullscreenchange', syncFSBtn);
+  function updateFullscreenPrompt(mode) {
+    if (!fullscreenOnlyMode || !isOpen || document.fullscreenElement) {
+      fullscreenPrompt.style.display = 'none';
+      return;
+    }
+    fullscreenPromptText.textContent = mode === 'blocked'
+      ? 'Fullscreen blocked by browser. Tap Enter Fullscreen to continue.'
+      : 'Tap Enter Fullscreen for full gameplay.';
+    fullscreenPrompt.style.display = 'inline-flex';
+  }
+
+  function requestOverlayFullscreen(promptMode) {
+    if (!overlay.requestFullscreen) {
+      updateFullscreenPrompt(promptMode || 'blocked');
+      return;
+    }
+    overlay.requestFullscreen()
+      .then(function () {
+        updateFullscreenPrompt();
+      })
+      .catch(function () {
+        updateFullscreenPrompt(promptMode || 'blocked');
+      });
+  }
+
+  document.addEventListener('fullscreenchange', function () {
+    syncFSBtn();
+    updateFullscreenPrompt();
+  });
 
   function triggerGameStart() {
     if (!isOpen) return;
@@ -1073,8 +1124,11 @@
     btnExit.focus();
 
     // Attempt browser Fullscreen API; silently ignore if denied (iOS Safari, etc.).
-    if (overlay.requestFullscreen) {
-      overlay.requestFullscreen().catch(function () {});
+    requestOverlayFullscreen('blocked');
+    if (fullscreenOnlyMode) {
+      setTimeout(function () {
+        if (!document.fullscreenElement) updateFullscreenPrompt('blocked');
+      }, 280);
     }
     document.dispatchEvent(new CustomEvent('arcade-overlay-open', {
       detail: { isOpen: true }
@@ -1082,6 +1136,41 @@
   }
 
   /* ── Close ───────────────────────────────────────────────────────── */
+
+  function pauseActiveGameForExit() {
+    var gamePauseBtn = document.getElementById('pauseBtn');
+    var invadersState = getInvadersOverlayState();
+    var isActivelyRunning = invadersState ? (invadersState.running && !invadersState.paused && !invadersState.gameOver) : !_isPaused;
+    if (gamePauseBtn && isActivelyRunning) {
+      gamePauseBtn.click();
+      _isPaused = true;
+      syncPauseBtn();
+      document.dispatchEvent(new CustomEvent('arcade-pause-change', {
+        detail: { paused: true }
+      }));
+    }
+  }
+
+  function redirectToArcadeHub() {
+    window.location.assign(getOverlayExitHref());
+  }
+
+  function exitToArcadeHub() {
+    pauseActiveGameForExit();
+    hideGameOverModal();
+    var redirected = false;
+    function go() {
+      if (redirected) return;
+      redirected = true;
+      redirectToArcadeHub();
+    }
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().then(go).catch(go);
+      setTimeout(go, 180);
+      return;
+    }
+    go();
+  }
 
   function closeOverlay() {
     if (!isOpen) return;
@@ -1096,19 +1185,7 @@
 
     // Pause the game if it's actively running before closing.
     // Only pause if we haven't already paused via the overlay btn.
-    var gamePauseBtn = document.getElementById('pauseBtn');
-    var invadersState = getInvadersOverlayState();
-    var isActivelyRunning = invadersState ? (invadersState.running && !invadersState.paused && !invadersState.gameOver) : !_isPaused;
-    if (gamePauseBtn && isActivelyRunning) {
-      // Clicking pauseBtn when game is running pauses it; if game isn't running
-      // the handler is a no-op (all games check `if (running)`), so safe to call.
-      gamePauseBtn.click();
-      _isPaused = true;
-      syncPauseBtn();
-      document.dispatchEvent(new CustomEvent('arcade-pause-change', {
-        detail: { paused: true }
-      }));
-    }
+    pauseActiveGameForExit();
 
     // Leave browser fullscreen if active.
     if (document.fullscreenElement) {
@@ -1174,7 +1251,13 @@
     if (isOpen) { _isPaused = false; syncPauseBtn(); }
   });
 
-  btnExit.addEventListener('click', closeOverlay);
+  btnExit.addEventListener('click', function () {
+    if (fullscreenOnlyMode) {
+      exitToArcadeHub();
+      return;
+    }
+    closeOverlay();
+  });
 
   // START button in the overlay ctrl bar: triggers the game's own startBtn
   // which is now inside the overlay stage.  Keyboard/touch input is ignored by
@@ -1188,8 +1271,14 @@
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(function () {});
     } else if (overlay.requestFullscreen) {
-      overlay.requestFullscreen().catch(function () {});
+      requestOverlayFullscreen('blocked');
+    } else {
+      updateFullscreenPrompt('blocked');
     }
+  });
+
+  fullscreenPromptBtn.addEventListener('click', function () {
+    requestOverlayFullscreen('blocked');
   });
 
   btnPause.addEventListener('click', function () {
@@ -1262,7 +1351,8 @@
     if (e.key === 'Escape' && isOpen) {
       e.stopPropagation();
       e.preventDefault();
-      closeOverlay();
+      if (fullscreenOnlyMode) exitToArcadeHub();
+      else closeOverlay();
       return;
     }
     if (e.key === 'Escape' && !isOpen) {
@@ -1303,8 +1393,26 @@
 
   // Tap / click on the dark backdrop (outside .overlay-body) closes overlay.
   overlay.addEventListener('click', function (e) {
-    if (e.target === overlay) closeOverlay();
+    if (e.target === overlay) {
+      if (fullscreenOnlyMode) exitToArcadeHub();
+      else closeOverlay();
+    }
   });
+
+  if (fullscreenOnlyMode && document.body) {
+    document.body.classList.add('arcade-fullscreen-only');
+    if (!document.getElementById('arcade-fullscreen-only-style')) {
+      var fsOnlyStyle = document.createElement('style');
+      fsOnlyStyle.id = 'arcade-fullscreen-only-style';
+      fsOnlyStyle.textContent = 'body.arcade-fullscreen-only:not(.overlay-open) .game-card{visibility:hidden !important;pointer-events:none !important;}';
+      document.head.appendChild(fsOnlyStyle);
+    }
+  }
+  if (autoOpenOnLoad) {
+    setTimeout(function () {
+      if (!isOpen) openOverlay();
+    }, 0);
+  }
 
   // If the browser's own fullscreen is dismissed (e.g. by pressing Esc),
   // keep the overlay open so gameplay isn't interrupted.
