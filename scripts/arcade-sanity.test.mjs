@@ -104,9 +104,10 @@ const REQUIRED_NAV_LINKS = [
   '/games/snake-run/',
   '/games/block-topia/',
 ];
+const EXCLUDED_FROM_FULLSCREEN_ONLY = ['/games/block-topia/'];
 
 const FULLSCREEN_ONLY_GAME_PAGES = REQUIRED_NAV_LINKS
-  .filter((link) => link !== '/games/block-topia/')
+  .filter((link) => !EXCLUDED_FROM_FULLSCREEN_ONLY.includes(link))
   .map((link) => `games/${link.replace(/^\/games\//, '').replace(/\/$/, '')}/index.html`);
 
 // ── Test runner ───────────────────────────────────────────────────────────────

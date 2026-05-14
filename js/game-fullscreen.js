@@ -16,15 +16,18 @@
   'use strict';
 
   var startBtn = document.getElementById('startBtn');
+  var startDataset = startBtn && startBtn.dataset;
   var gameCard = document.querySelector('.game-card');
-  var autoStartOnOpen = startBtn && startBtn.dataset && startBtn.dataset.overlayAutostart === 'true';
-  var fullscreenOnlyMode = startBtn && startBtn.dataset && startBtn.dataset.overlayFullscreenOnly === 'true';
-  var autoOpenOnLoad = fullscreenOnlyMode || (startBtn && startBtn.dataset && startBtn.dataset.overlayAutoOpen === 'true');
-  var overlayExitHref = (startBtn && startBtn.dataset && startBtn.dataset.overlayExitHref) ? String(startBtn.dataset.overlayExitHref).trim() : '/games/';
-  var hidePauseControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHidePause === 'true';
-  var hideStartControl = startBtn && startBtn.dataset && startBtn.dataset.overlayHideStart === 'true';
-  var singleStartFlow = startBtn && startBtn.dataset && startBtn.dataset.overlaySingleStart === 'true';
-  var manualOverlayStart = startBtn && startBtn.dataset && startBtn.dataset.overlayManualStart === 'true';
+  var autoStartOnOpen = startDataset && startDataset.overlayAutostart === 'true';
+  var fullscreenOnlyMode = startDataset && startDataset.overlayFullscreenOnly === 'true';
+  var autoOpenOnLoad = fullscreenOnlyMode || (startDataset && startDataset.overlayAutoOpen === 'true');
+  var overlayExitHref = (startDataset && startDataset.overlayExitHref) ? String(startDataset.overlayExitHref).trim() : '/games/';
+  var hidePauseControl = startDataset && startDataset.overlayHidePause === 'true';
+  var hideStartControl = startDataset && startDataset.overlayHideStart === 'true';
+  var singleStartFlow = startDataset && startDataset.overlaySingleStart === 'true';
+  var manualOverlayStart = startDataset && startDataset.overlayManualStart === 'true';
+  var FULLSCREEN_SETTLE_DELAY_MS = 280;
+  var FULLSCREEN_EXIT_TIMEOUT_MS = 180;
 
   // Only activate on pages that have both a Start button and a .game-card.
   if (!startBtn || !gameCard) return;
@@ -222,9 +225,7 @@
   var cachedFactionPanel = null;
 
   function getOverlayExitHref() {
-    var href = (overlayExitHref || '/games/').trim();
-    if (!href) return '/games/';
-    return href;
+    return (overlayExitHref || '/games/').trim();
   }
 
   function showGameOverModal(score, opts) {
@@ -1125,9 +1126,10 @@
     // Attempt browser Fullscreen API; silently ignore if denied (iOS Safari, etc.).
     requestOverlayFullscreen('blocked');
     if (fullscreenOnlyMode) {
+      // Allow fullscreen state to settle so blocked requests can surface a clear prompt.
       setTimeout(function () {
         if (!document.fullscreenElement) updateFullscreenPrompt('blocked');
-      }, 280);
+      }, FULLSCREEN_SETTLE_DELAY_MS);
     }
     document.dispatchEvent(new CustomEvent('arcade-overlay-open', {
       detail: { isOpen: true }
@@ -1165,7 +1167,8 @@
     }
     if (document.fullscreenElement && document.exitFullscreen) {
       document.exitFullscreen().then(go).catch(go);
-      setTimeout(go, 180);
+      // Fallback in case fullscreen exit promise stalls on specific browsers.
+      setTimeout(go, FULLSCREEN_EXIT_TIMEOUT_MS);
       return;
     }
     go();
