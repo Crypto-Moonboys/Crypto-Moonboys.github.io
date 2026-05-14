@@ -171,8 +171,7 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 
 /* 6. Side panels */
 #game-overlay .overlay-side {
-  width: clamp(220px, 24vw, 320px);
-  max-width: min(92vw, 360px);
+  width: min(92vw, clamp(220px, 24vw, 320px));
   overflow-y: auto;
   overflow-x: hidden;
   background: rgba(8, 13, 24, 0.96);
@@ -882,14 +881,14 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 /* D. Desktop standard */
 @media (min-width: 1100px) and (max-width: 1399px) {
   #game-overlay .overlay-side {
-    width: clamp(220px, 26vw, 320px);
+    width: min(92vw, clamp(220px, 26vw, 320px));
   }
 }
 
 /* E. Desktop ultra-wide */
 @media (min-width: 1400px) {
   #game-overlay .overlay-side {
-    width: clamp(240px, 24vw, 360px);
+    width: min(92vw, clamp(240px, 24vw, 360px));
   }
 }
 

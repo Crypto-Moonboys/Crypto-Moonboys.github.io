@@ -28,6 +28,7 @@
   var manualOverlayStart = startDataset && startDataset.overlayManualStart === 'true';
   var FULLSCREEN_SETTLE_DELAY_MS = 280;
   var FULLSCREEN_EXIT_TIMEOUT_MS = 180;
+  var ARIA_ANNOUNCEMENT_DELAY_MS = 20;
 
   // Only activate on pages that have both a Start button and a .game-card.
   if (!startBtn || !gameCard) return;
@@ -381,7 +382,7 @@
     panelStatusText.textContent = '';
     setTimeout(function () {
       panelStatusText.textContent = message;
-    }, 20);
+    }, ARIA_ANNOUNCEMENT_DELAY_MS);
   }
 
   function syncPanelLayoutState() {
