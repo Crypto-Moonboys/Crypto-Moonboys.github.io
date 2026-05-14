@@ -7,6 +7,7 @@ import path from 'node:path';
 const bootstrap = readFileSync('js/arcade/games/block-topia-quest-maze/bootstrap.js', 'utf8');
 const fxSystem = readFileSync('js/arcade/games/block-topia-quest-maze/fx-system.js', 'utf8');
 const btqmLivePage = readFileSync('games/block-topia-quest-maze/index.html', 'utf8');
+const fullscreenShell = readFileSync('js/game-fullscreen.js', 'utf8');
 const manifest = JSON.parse(readFileSync('art/btqm/manifest.json', 'utf8'));
 const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
 const deployPagesWorkflow = readFileSync('.github/workflows/deploy-pages.yml', 'utf8');
@@ -193,5 +194,11 @@ assert.match(bootstrap, /if \(!shouldResumeActiveRun\)\s*\{\s*p\.hp = p\.maxHp;\
 assert.match(bootstrap, /if \(typeof window !== ['"]undefined['"]\) window\.running = true/, 'active ZoneScene gameplay entry must set window.running true');
 assert.match(bootstrap, /const hasNextZone = !this\.daily\.zoneClears\[nextZoneId\]/, 'zone clear flow must compute next-zone continuation without world map');
 assert.match(bootstrap, /this\.scene\.start\('ZoneScene', \{ zoneId: nextZoneId \}\)/, 'zone clear continuation should transition directly to next ZoneScene');
+assert.match(bootstrap, /this\.spaceKey\.on\('down',\s*\(\)\s*=>\s*this\._handleBombAction\(\)\)/, 'keyboard SPACE should route through the shared BTQM bomb action handler');
+assert.match(bootstrap, /placeBomb\(\)\s*\{\s*self\._handleBombAction\(\);\s*\}/, 'test hook bomb placement should route through the shared BTQM bomb action handler');
+assert.match(bootstrap, /_handleBombAction\(\)\s*\{\s*if \(this\.runOver \|\| this\.inUpgrade\) return;\s*this\._placeBomb\(\);\s*\}/, 'shared BTQM bomb action handler must preserve runtime guards before placing bombs');
+assert.match(fullscreenShell, /btqmCanvas:\s*\{[\s\S]*touchScheme:\s*'dpad-bomb'/, 'fullscreen shell must expose a BTQM touch scheme with a bomb action');
+assert.match(fullscreenShell, /function\s+buildDpadBomb\(\)/, 'fullscreen shell must define a BTQM dpad+bomb touch builder');
+assert.match(fullscreenShell, /var bomb = makeTouchBtn\('💣 Bomb',\s*'touch-btn--fire touch-btn--wide'\);\s*bindTap\(bomb,\s*' '\);/, 'fullscreen shell BTQM touch builder must map the bomb button to SPACE');
 
 console.log('BTQM runtime asset smoke checks passed.');

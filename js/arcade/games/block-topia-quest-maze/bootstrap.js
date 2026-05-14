@@ -1503,7 +1503,7 @@ class ZoneScene extends Phaser.Scene {
     this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.escKey   = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
-    this.spaceKey.on('down', () => { if (!this.runOver && !this.inUpgrade) this._placeBomb(); });
+    this.spaceKey.on('down', () => this._handleBombAction());
     this.escKey.on('down', () => {
       if (!this.inUpgrade) {
         this.fx.sceneTransition(() => {
@@ -1536,7 +1536,7 @@ class ZoneScene extends Phaser.Scene {
         get bombs()   { return self.activeBombs.map(b => ({ x: b.gx, y: b.gy })); },
         get enemies() { return self.enemies.map(e => ({ x: e.gx, y: e.gy, hp: e.hp, role: e.role, dead: !!e.dead })); },
         get grid()    { return self.mapData; },
-        placeBomb()   { self._placeBomb(); },
+        placeBomb()   { self._handleBombAction(); },
         triggerBomb(i) { const b = self.activeBombs[i]; if (b) { if (b.timer) b.timer.remove(false); self._detonateBomb(b); } },
         endRun()      { self._triggerGameOver(); },
         __test: {
@@ -1600,6 +1600,9 @@ class ZoneScene extends Phaser.Scene {
             btqmRuntime.score = Math.max(0, Math.floor(value || 0));
             self._updateHud();
           },
+          triggerBombAction() {
+            self._handleBombAction();
+          },
           forceUpgradePicker() {
             self.inUpgrade = true;
             self._showUpgradePicker();
@@ -1657,6 +1660,11 @@ class ZoneScene extends Phaser.Scene {
     if (y < 0 || y >= this.mapData.length)    return;
     if (x < 0 || x >= this.mapData[0].length) return;
     this.mapData[y][x] = val;
+  }
+
+  _handleBombAction() {
+    if (this.runOver || this.inUpgrade) return;
+    this._placeBomb();
   }
 
   isBlockedCell(gx, gy, movingEnemy, options) {
