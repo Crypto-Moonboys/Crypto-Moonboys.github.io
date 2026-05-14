@@ -21,7 +21,7 @@
   var autoStartOnOpen = startDataset && startDataset.overlayAutostart === 'true';
   var fullscreenOnlyMode = startDataset && startDataset.overlayFullscreenOnly === 'true';
   var autoOpenOnLoad = fullscreenOnlyMode || (startDataset && startDataset.overlayAutoOpen === 'true');
-  var overlayExitHref = (startDataset && startDataset.overlayExitHref) ? String(startDataset.overlayExitHref).trim() : '/games/';
+  var overlayExitHref = (startDataset && startDataset.overlayExitHref) ? String(startDataset.overlayExitHref) : '';
   var hidePauseControl = startDataset && startDataset.overlayHidePause === 'true';
   var hideStartControl = startDataset && startDataset.overlayHideStart === 'true';
   var singleStartFlow = startDataset && startDataset.overlaySingleStart === 'true';
@@ -225,7 +225,8 @@
   var cachedFactionPanel = null;
 
   function getOverlayExitHref() {
-    return (overlayExitHref || '/games/').trim();
+    var href = String(overlayExitHref || '').trim();
+    return href || '/games/';
   }
 
   function showGameOverModal(score, opts) {

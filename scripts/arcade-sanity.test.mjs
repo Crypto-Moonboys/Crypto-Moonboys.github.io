@@ -104,6 +104,7 @@ const REQUIRED_NAV_LINKS = [
   '/games/snake-run/',
   '/games/block-topia/',
 ];
+// Block Topia has a separate shell/runtime and is intentionally excluded.
 const EXCLUDED_FROM_FULLSCREEN_ONLY = ['/games/block-topia/'];
 
 const FULLSCREEN_ONLY_GAME_PAGES = REQUIRED_NAV_LINKS
