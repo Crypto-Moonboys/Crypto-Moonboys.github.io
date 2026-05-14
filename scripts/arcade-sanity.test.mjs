@@ -287,10 +287,12 @@ check(
   'game-fullscreen.js makes closed right drawer inert and aria-hidden to block keyboard/AT access',
 );
 check(
-  // mobile breakpoint auto-close: closes drawers when viewport ≤ 480 px
+  // portrait mobile + landscape hidden-toggle breakpoints both trigger auto-close
   /MOBILE_BREAKPOINT_PX\s*=\s*480/u.test(fullscreenShellSrc) &&
+    /HIDDEN_TOGGLE_MQ_LANDSCAPE/u.test(fullscreenShellSrc) &&
+    /max-width:\s*900px.*max-height:\s*500px|max-height:\s*500px.*max-width:\s*900px/u.test(fullscreenShellSrc) &&
     /closeOverlayPanels\(\{\s*silent:\s*true\s*\}\)/u.test(fullscreenShellSrc) &&
-    (/mq\.addEventListener\('change'/u.test(fullscreenShellSrc) || /mq\.addListener\(/u.test(fullscreenShellSrc)),
+    /attachMq\(/u.test(fullscreenShellSrc),
   'game-fullscreen.js force-closes drawers when viewport enters mobile breakpoint to avoid orphaned open drawer with hidden controls',
 );
 check(

@@ -1511,25 +1511,39 @@
   // toggle buttons are hidden by CSS, so any open drawer would be stuck with
   // no visible close control.  Close both drawers when the breakpoint is crossed.
   var MOBILE_BREAKPOINT_PX = 480;
+  // CSS hides drawer toggles at two breakpoints; auto-close at both.
+  var HIDDEN_TOGGLE_MQ_PORTRAIT   = '(max-width: ' + MOBILE_BREAKPOINT_PX + 'px)';
+  var HIDDEN_TOGGLE_MQ_LANDSCAPE  = '(max-width: 900px) and (max-height: 500px)';
   (function () {
-    function checkMobileBreakpoint() {
-      if (window.innerWidth <= MOBILE_BREAKPOINT_PX && (_leftPanelOpen || _rightPanelOpen)) {
-        closeOverlayPanels({ silent: true });
+    function shouldForceCloseDrawers() {
+      if (!window.matchMedia) {
+        return window.innerWidth <= MOBILE_BREAKPOINT_PX ||
+               (window.innerWidth <= 900 && window.innerHeight <= 500);
+      }
+      return window.matchMedia(HIDDEN_TOGGLE_MQ_PORTRAIT).matches ||
+             window.matchMedia(HIDDEN_TOGGLE_MQ_LANDSCAPE).matches;
+    }
+    function onBreakpointChange(e) {
+      if (e.matches) closeOverlayPanels({ silent: true });
+    }
+    function attachMq(query) {
+      var mq = window.matchMedia(query);
+      if (typeof mq.addEventListener === 'function') {
+        mq.addEventListener('change', onBreakpointChange);
+      } else if (typeof mq.addListener === 'function') {
+        // Safari < 14 compatibility fallback
+        mq.addListener(onBreakpointChange);
       }
     }
     if (window.matchMedia) {
-      var mq = window.matchMedia('(max-width: ' + MOBILE_BREAKPOINT_PX + 'px)');
-      var handler = function (e) {
-        if (e.matches) closeOverlayPanels({ silent: true });
-      };
-      if (typeof mq.addEventListener === 'function') {
-        mq.addEventListener('change', handler);
-      } else if (typeof mq.addListener === 'function') {
-        // Safari < 14 compatibility fallback
-        mq.addListener(handler);
-      }
+      attachMq(HIDDEN_TOGGLE_MQ_PORTRAIT);
+      attachMq(HIDDEN_TOGGLE_MQ_LANDSCAPE);
     } else {
-      window.addEventListener('resize', checkMobileBreakpoint);
+      window.addEventListener('resize', function () {
+        if (shouldForceCloseDrawers() && (_leftPanelOpen || _rightPanelOpen)) {
+          closeOverlayPanels({ silent: true });
+        }
+      });
     }
   }());
 
