@@ -336,6 +336,20 @@ function applyFullscreenFit(state) {
   state.dpr = dpr;
   state.canvas.width = Math.round(targetW * dpr);
   state.canvas.height = Math.round(targetH * dpr);
+
+  // Keep world bounds and starfield in sync with the logical canvas size.
+  // This ensures the background, starfield, spawn positions, and wrap edges
+  // all use the real current canvas dimensions rather than the stale defaults.
+  const newWorldW = Math.floor(targetW);
+  const newWorldH = Math.floor(targetH);
+  if (state.worldW !== newWorldW || state.worldH !== newWorldH) {
+    state.worldW = newWorldW;
+    state.worldH = newWorldH;
+    state.stars = [];
+    for (let i = 0; i < 140; i += 1) {
+      state.stars.push({ x: Math.random() * newWorldW, y: Math.random() * newWorldH, z: Math.random() });
+    }
+  }
 }
 
 function registerResize(state) {

@@ -359,6 +359,29 @@ check(
   'leaderboard-worker.js calls verifyLeaderboardTelegramAuth before accepting scores',
 );
 
+// ── Asteroid Fork resize/render dimension invariants ─────────────────────────
+// Verifies that applyFullscreenFit updates state.worldW/worldH to match the
+// logical canvas size and regenerates stars, so the background and wrap logic
+// use the real current canvas dimensions after every resize or fullscreen change.
+process.stdout.write('\n── Asteroid Fork resize/render dimension invariants ──\n');
+
+const afBootstrapSrc = await readFile('js/arcade/games/asteroid-fork/bootstrap.js');
+
+check(
+  /state\.worldW\s*=\s*newWorldW/.test(afBootstrapSrc) &&
+    /state\.worldH\s*=\s*newWorldH/.test(afBootstrapSrc),
+  'asteroid-fork bootstrap.js applyFullscreenFit updates state.worldW and state.worldH to logical canvas size',
+);
+check(
+  /state\.stars\s*=\s*\[\][\s\S]{0,200}newWorldW[\s\S]{0,200}newWorldH/.test(afBootstrapSrc) ||
+    /state\.stars\s*=\s*\[\][\s\S]{0,200}state\.worldW[\s\S]{0,200}state\.worldH/.test(afBootstrapSrc),
+  'asteroid-fork bootstrap.js regenerates starfield to cover new world bounds on resize',
+);
+check(
+  /if\s*\(state\.worldW\s*!==\s*newWorldW\s*\|\|\s*state\.worldH\s*!==\s*newWorldH\s*\)/.test(afBootstrapSrc),
+  'asteroid-fork bootstrap.js guards world/star recalculation to changed dimensions only',
+);
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 process.stdout.write('\n');
 if (failures > 0) {
