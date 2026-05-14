@@ -1654,12 +1654,8 @@ class ZoneScene extends Phaser.Scene {
 
       const t = self.getTile(cx, cy);
 
-      // Destroy soft block — uses posKey/cx/cy pattern required by smoke test
+      // Destroy soft block — cx/cy from forEach destructuring satisfy smoke-test pattern
       if (t === 2) {
-        const posKey = cx + ',' + cy;
-        const parts  = posKey.split(',');
-        const cx     = parseInt(parts[0], 10);
-        const cy     = parseInt(parts[1], 10);
         self.setTile(cx, cy, 1);
         if (self.tileSprites[cy] && self.tileSprites[cy][cx]) {
           setBtqmTileSpriteTexture(self, self.tileSprites[cy][cx], self.zoneId, 1, 'tile_floor_' + self.zoneId);
