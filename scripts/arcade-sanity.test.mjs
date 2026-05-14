@@ -237,16 +237,24 @@ for (const relPath of FULLSCREEN_ONLY_GAME_PAGES) {
 
 const fullscreenShellSrc = await readFile('js/game-fullscreen.js');
 check(
-  fullscreenShellSrc.includes("overlayFullscreenOnly === 'true'"),
+  /overlayFullscreenOnly\s*===\s*['"]true['"]/u.test(fullscreenShellSrc),
   'game-fullscreen.js recognizes data-overlay-fullscreen-only flag',
 );
 check(
-  fullscreenShellSrc.includes("window.location.assign(getOverlayExitHref())"),
+  /window\.location\.assign\(getOverlayExitHref\(\)\)/u.test(fullscreenShellSrc),
   'game-fullscreen.js exits fullscreen flow by routing through overlay exit href',
 );
 check(
-  fullscreenShellSrc.includes("'/games/'"),
-  'game-fullscreen.js defaults exit routing to /games/',
+  /function\s+sanitizeOverlayExitHref\(href\)\s*\{[\s\S]*return\s+['"]\/games\/['"][\s\S]*value\.charAt\(0\)\s*!==\s*['"]\/['"][\s\S]*value\.slice\(0,\s*2\)\s*===\s*['"]\/\/['"][\s\S]*\}/u.test(fullscreenShellSrc),
+  'game-fullscreen.js sanitizes invalid overlay exit hrefs back to /games/',
+);
+check(
+  /function\s+getOverlayExitHref\(\)\s*\{\s*return\s+sanitizeOverlayExitHref\(overlayExitHref\);\s*\}/u.test(fullscreenShellSrc),
+  'game-fullscreen.js routes overlay exit href through sanitizeOverlayExitHref',
+);
+check(
+  /function\s+sanitizeOverlayExitHref\(href\)\s*\{[\s\S]*return\s+['"]\/games\/['"]/u.test(fullscreenShellSrc),
+  'game-fullscreen.js keeps /games/ as the default overlay exit fallback',
 );
 
 // ── Leaderboard worker GAME_KEY_ALIASES covers snake-run and breakout-bullrun ─

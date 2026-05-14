@@ -127,12 +127,17 @@
   var btnExit  = makeCtrlBtn('overlay-btn-exit',  'Exit fullscreen',   '✕', 'Exit');
   var fullscreenPrompt = document.createElement('div');
   fullscreenPrompt.id = 'overlay-fullscreen-prompt';
+  fullscreenPrompt.setAttribute('role', 'status');
+  fullscreenPrompt.setAttribute('aria-live', 'polite');
+  fullscreenPrompt.setAttribute('aria-atomic', 'true');
   var fullscreenPromptText = document.createElement('span');
+  fullscreenPromptText.id = 'overlay-fullscreen-prompt-text';
   fullscreenPromptText.textContent = 'Tap Enter Fullscreen for full gameplay.';
   var fullscreenPromptBtn = document.createElement('button');
   fullscreenPromptBtn.setAttribute('type', 'button');
   fullscreenPromptBtn.className = 'interactive';
   fullscreenPromptBtn.id = 'overlay-fullscreen-prompt-btn';
+  fullscreenPromptBtn.setAttribute('aria-describedby', 'overlay-fullscreen-prompt-text');
   fullscreenPromptBtn.textContent = 'Enter Fullscreen';
   fullscreenPrompt.appendChild(fullscreenPromptText);
   fullscreenPrompt.appendChild(fullscreenPromptBtn);
@@ -224,9 +229,16 @@
   var _goExit    = null;
   var cachedFactionPanel = null;
 
+  function sanitizeOverlayExitHref(href) {
+    var value = String(href || '').trim();
+    if (!value) return '/games/';
+    if (value.charAt(0) !== '/') return '/games/';
+    if (value.slice(0, 2) === '//') return '/games/';
+    return value;
+  }
+
   function getOverlayExitHref() {
-    var href = String(overlayExitHref || '').trim();
-    return href || '/games/';
+    return sanitizeOverlayExitHref(overlayExitHref);
   }
 
   function showGameOverModal(score, opts) {
