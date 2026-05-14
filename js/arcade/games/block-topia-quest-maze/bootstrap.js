@@ -1285,12 +1285,14 @@ class TitleScene extends Phaser.Scene {
       if (!player || player.name !== name) {
         p = createPlayer(name);
         beginRun(name);
+        normalizeBombRunHp(p);
       } else {
         p = { ...player };
         p.name = name;
         if (!shouldResumeActiveRun) {
           p.hp = p.maxHp;
           beginRun(p.name);
+          normalizeBombRunHp(p);
         } else {
           btqmRuntime.playerName = p.name;
         }
@@ -1362,6 +1364,13 @@ const UPGRADE_POOL = [
   { id: 'blast_resist', label: 'Blast Resistance',  apply: p => { p.blastResist= Math.min(0.8,((p.blastResist||0)+0.25)); btqmRuntime.upgradeCount++; } },
   { id: 'heal',         label: 'Restore 2 HP',      apply: p => { p.hp = Math.min(p.bombMaxHp||PLAYER_BOMB_MAX_HP, (p.hp||PLAYER_BOMB_HP)+2); } },
 ];
+
+function normalizeBombRunHp(player) {
+  player.bombMaxHp = PLAYER_BOMB_MAX_HP;
+  const nextHp = Number.isFinite(player.hp) ? Number(player.hp) : PLAYER_BOMB_HP;
+  player.hp = Math.max(1, Math.min(player.bombMaxHp, Math.floor(nextHp)));
+  if (player.hp > PLAYER_BOMB_HP) player.hp = PLAYER_BOMB_HP;
+}
 
 class ZoneScene extends Phaser.Scene {
   constructor() { super('ZoneScene'); }
@@ -1530,6 +1539,89 @@ class ZoneScene extends Phaser.Scene {
         placeBomb()   { self._placeBomb(); },
         triggerBomb(i) { const b = self.activeBombs[i]; if (b) { if (b.timer) b.timer.remove(false); self._detonateBomb(b); } },
         endRun()      { self._triggerGameOver(); },
+        __test: {
+          setPlayerCell(x, y) {
+            self.px = x;
+            self.py = y;
+            const sx = x * TILE_SIZE + TILE_SIZE / 2;
+            const sy = y * TILE_SIZE + TILE_SIZE / 2;
+            self.playerSprite.setPosition(sx, sy);
+            self.playerShadow.setPosition(sx, y * TILE_SIZE + TILE_SIZE - 6);
+          },
+          setTile(x, y, tile) {
+            self.setTile(x, y, tile);
+            if (self.tileSprites[y] && self.tileSprites[y][x]) {
+              setBtqmTileSpriteTexture(self, self.tileSprites[y][x], self.zoneId, tile, 'tile_floor_' + self.zoneId);
+            }
+          },
+          clearBombs() {
+            self.activeBombs.forEach((b) => {
+              if (b.timer) b.timer.remove(false);
+              if (b.sprite && b.sprite.destroy) b.sprite.destroy();
+            });
+            self.activeBombs = [];
+            self._updateHud();
+          },
+          clearEnemies() {
+            self.enemies.forEach((e) => {
+              if (e.moveTimer) e.moveTimer.remove(false);
+              if (e.sprite && e.sprite.destroy) e.sprite.destroy();
+            });
+            self.enemies = [];
+          },
+          activateExitByClear() {
+            self._onAllEnemiesCleared();
+          },
+          spawnEnemyAt(x, y, hp, role) {
+            const tex = 'enemy_' + self.zoneId + '_0';
+            const sprite = self.add.image(x * TILE_SIZE + TILE_SIZE / 2, y * TILE_SIZE + TILE_SIZE / 2, tex)
+              .setDisplaySize(TILE_SIZE - 12, TILE_SIZE - 12).setDepth(9);
+            const enemy = {
+              gx: x,
+              gy: y,
+              hp: Math.max(1, Math.floor(hp || 1)),
+              role: role || 'basic-chaser',
+              speed: 999999,
+              name: 'Test Enemy',
+              scoreValue: BOMB_SCORE_KILL,
+              sprite,
+              dead: false,
+              moveTimer: null,
+              isBoss: false,
+            };
+            self.enemies.push(enemy);
+            return enemy;
+          },
+          setBombCapacity(value) {
+            self.player.bombCount = Math.max(1, Math.floor(value || 1));
+            self._updateHud();
+          },
+          setScore(value) {
+            btqmRuntime.score = Math.max(0, Math.floor(value || 0));
+            self._updateHud();
+          },
+          forceUpgradePicker() {
+            self.inUpgrade = true;
+            self._showUpgradePicker();
+          },
+          enterExitIfOpen() {
+            const tile = self.getTile(self.px, self.py);
+            if (tile === 4 && self.exitEnabled) self._exitZone();
+          },
+          clickUpgrade(index) {
+            const btn = self.upgradeButtons && self.upgradeButtons[index];
+            if (btn && btn.emit) btn.emit('pointerdown');
+          },
+          getUpgradeState() {
+            return {
+              inUpgrade: !!self.inUpgrade,
+              upgradeChosen: !!self.upgradeChosen,
+              optionCount: self.upgradeButtons ? self.upgradeButtons.length : 0,
+              upgradeCount: btqmRuntime.upgradeCount || 0,
+              applyCount: self.upgradeApplyCount || 0,
+            };
+          },
+        },
       };
     }
   }
@@ -1565,6 +1657,20 @@ class ZoneScene extends Phaser.Scene {
     if (y < 0 || y >= this.mapData.length)    return;
     if (x < 0 || x >= this.mapData[0].length) return;
     this.mapData[y][x] = val;
+  }
+
+  isBlockedCell(gx, gy, movingEnemy, options) {
+    const opts = options || {};
+    if (gy < 0 || gy >= this.mapData.length) return true;
+    if (gx < 0 || gx >= this.mapData[0].length) return true;
+    const tile = this.getTile(gx, gy);
+    if (tile === 0 || tile === 2) return true;
+    const ignoreBomb = opts.ignoreBomb || null;
+    const hasBomb = this.activeBombs.some((b) => b !== ignoreBomb && b.gx === gx && b.gy === gy);
+    if (hasBomb) return true;
+    const hasEnemy = this.enemies.some((e) => e !== movingEnemy && !e.dead && e.gx === gx && e.gy === gy);
+    if (hasEnemy) return true;
+    return false;
   }
 
   _tryMove(dx, dy) {
@@ -1645,6 +1751,7 @@ class ZoneScene extends Phaser.Scene {
     if (this.fx) this.fx.explosionFlash(bomb.gx * TILE_SIZE + TILE_SIZE / 2, bomb.gy * TILE_SIZE + TILE_SIZE / 2);
 
     let didChain = false;
+    const killIsChain = !!bomb.chained;
     const TS = TILE_SIZE;
 
     cells.forEach(([cx, cy]) => {
@@ -1679,7 +1786,7 @@ class ZoneScene extends Phaser.Scene {
           enemy.hp--;
           if (enemy.hp <= 0) {
             enemy.dead = true;
-            self._killEnemy(enemy, didChain || bomb.chained);
+            self._killEnemy(enemy, killIsChain);
           } else if (enemy.sprite && enemy.sprite.active) {
             enemy.sprite.setTint(0xff3333);
             self.time.delayedCall(200, () => { if (enemy.sprite && enemy.sprite.active) enemy.sprite.clearTint(); });
@@ -1751,14 +1858,6 @@ class ZoneScene extends Phaser.Scene {
     const ROWS  = this.mapData.length;
     const COLS  = this.mapData[0].length;
     const TS    = TILE_SIZE;
-    const zoneColors = [
-      null,
-      { body: 0x2980b9, eye: 0xeaf4fc },
-      { body: 0x8e44ad, eye: 0x00ffcc },
-      { body: 0xd35400, eye: 0xffd700 },
-      { body: 0x16a085, eye: 0x00ffff },
-      { body: 0xc0392b, eye: 0xf39c12 },
-    ];
 
     // Gather open cells (away from player start and exit)
     const open = [];
@@ -1856,16 +1955,16 @@ class ZoneScene extends Phaser.Scene {
       DIRS.forEach(d => { if (!cands.some(c => c[0] === d[0] && c[1] === d[1])) cands.push(d); });
       for (const [dx, dy] of cands) {
         const nx = enemy.gx + dx, ny = enemy.gy + dy;
-        const t  = this.getTile(nx, ny);
-        const blocked = t === 0 || t === 2 || this.enemies.some(e => e !== enemy && !e.dead && e.gx === nx && e.gy === ny);
-        if (!blocked) { enemy.gx = nx; enemy.gy = ny; moved = true; break; }
+        if (!this.isBlockedCell(nx, ny, enemy)) {
+          enemy.gx = nx; enemy.gy = ny; moved = true; break;
+        }
       }
 
     } else if (enemy.role === 'fuse-hacker') {
       // Random move + maybe detonate nearby bomb
       const d  = DIRS[randInt(0, 3)];
       const nx = enemy.gx + d[0], ny = enemy.gy + d[1];
-      if (this.getTile(nx, ny) !== 0 && this.getTile(nx, ny) !== 2) {
+      if (!this.isBlockedCell(nx, ny, enemy)) {
         enemy.gx = nx; enemy.gy = ny; moved = true;
       }
       if (Math.random() < 0.28) {
@@ -1877,26 +1976,53 @@ class ZoneScene extends Phaser.Scene {
       }
 
     } else if (enemy.role === 'bomb-kicker') {
-      // Move toward player, kick bombs along path
-      const pdx = Math.sign(this.px - enemy.gx);
-      const pdy = Math.sign(this.py - enemy.gy);
-      const nx  = enemy.gx + pdx, ny = enemy.gy + pdy;
-      const kicked = this.activeBombs.find(b => b.gx === nx && b.gy === ny);
-      if (kicked) {
-        const nnx = nx + pdx * 2, nny = ny + pdy * 2;
-        if (this.getTile(nnx, nny) !== 0 && this.getTile(nnx, nny) !== 2) {
-          kicked.gx = nnx; kicked.gy = nny;
-          if (kicked.sprite && kicked.sprite.active) kicked.sprite.setPosition(nnx * TS + TS / 2, nny * TS + TS / 2);
+      // Move orthogonally toward player, kick bombs only orthogonally
+      const dxToPlayer = this.px - enemy.gx;
+      const dyToPlayer = this.py - enemy.gy;
+      const absX = Math.abs(dxToPlayer);
+      const absY = Math.abs(dyToPlayer);
+      let primary;
+      if (absX > absY) primary = [Math.sign(dxToPlayer), 0];
+      else if (absY > absX) primary = [0, Math.sign(dyToPlayer)];
+      else if (absX === 0 && absY === 0) primary = DIRS[randInt(0, 3)];
+      else if (Math.random() < 0.5) primary = [Math.sign(dxToPlayer), 0];
+      else primary = [0, Math.sign(dyToPlayer)];
+      const cands = [primary];
+      DIRS.forEach((d) => { if (!cands.some((c) => c[0] === d[0] && c[1] === d[1])) cands.push(d); });
+
+      for (const [dx, dy] of cands) {
+        const nx = enemy.gx + dx;
+        const ny = enemy.gy + dy;
+        const bombAtTarget = this.activeBombs.find((b) => b.gx === nx && b.gy === ny);
+        if (bombAtTarget) {
+          const kickX = nx + dx;
+          const kickY = ny + dy;
+          if (!this.isBlockedCell(kickX, kickY, enemy, { ignoreBomb: bombAtTarget })) {
+            bombAtTarget.gx = kickX;
+            bombAtTarget.gy = kickY;
+            if (bombAtTarget.sprite && bombAtTarget.sprite.active) {
+              bombAtTarget.sprite.setPosition(kickX * TS + TS / 2, kickY * TS + TS / 2);
+            }
+            enemy.gx = nx;
+            enemy.gy = ny;
+            moved = true;
+            break;
+          }
+          continue;
         }
-      } else if (this.getTile(nx, ny) !== 0 && this.getTile(nx, ny) !== 2) {
-        enemy.gx = nx; enemy.gy = ny; moved = true;
+        if (!this.isBlockedCell(nx, ny, enemy)) {
+          enemy.gx = nx;
+          enemy.gy = ny;
+          moved = true;
+          break;
+        }
       }
 
     } else {
       // Random
       const d  = DIRS[randInt(0, 3)];
       const nx = enemy.gx + d[0], ny = enemy.gy + d[1];
-      if (this.getTile(nx, ny) !== 0 && this.getTile(nx, ny) !== 2) {
+      if (!this.isBlockedCell(nx, ny, enemy)) {
         enemy.gx = nx; enemy.gy = ny; moved = true;
       }
     }
@@ -1959,15 +2085,20 @@ class ZoneScene extends Phaser.Scene {
     for (let i = pool.length - 1; i > 0; i--) { const j = randInt(0, i); [pool[i], pool[j]] = [pool[j], pool[i]]; }
     const picks = pool.slice(0, 3);
 
-    const COLS = this.mapData[0].length;
-    const ROWS = this.mapData.length;
-    const cx   = COLS * TILE_SIZE / 2;
-    const cy   = ROWS * TILE_SIZE / 2;
+    const cx = this.cameras.main.centerX;
+    const cy = this.cameras.main.centerY;
+    this.upgradeChosen = false;
+    this.upgradeAdvanceScheduled = false;
+    this.upgradeApplyCount = 0;
+    this.upgradeOverlayObjects = [];
+    this.upgradeButtons = [];
 
     const bg = this.add.rectangle(cx, cy, 460, 240, 0x040c16, 0.96).setScrollFactor(0).setDepth(40);
-    this.add.text(cx, cy - 95, 'ZONE CLEARED — Choose Upgrade', {
+    this.upgradeOverlayObjects.push(bg);
+    const title = this.add.text(cx, cy - 95, 'ZONE CLEARED — Choose Upgrade', {
       fontFamily: 'Courier New', fontSize: '14px', color: '#f39c12', fontStyle: 'bold'
     }).setOrigin(0.5).setScrollFactor(0).setDepth(41);
+    this.upgradeOverlayObjects.push(title);
 
     const self = this;
     picks.forEach((up, i) => {
@@ -1977,16 +2108,28 @@ class ZoneScene extends Phaser.Scene {
       const txt = self.add.text(bx, cy, up.label, {
         fontFamily: 'Courier New', fontSize: '11px', color: '#cae7ff', align: 'center', wordWrap: { width: 124 }
       }).setOrigin(0.5).setScrollFactor(0).setDepth(42);
+      self.upgradeOverlayObjects.push(btn, txt);
+      self.upgradeButtons.push(btn);
 
       btn.setInteractive({ useHandCursor: true });
       btn.on('pointerdown', () => {
+        if (self.upgradeChosen) return;
+        self.upgradeChosen = true;
+        self.upgradeApplyCount += 1;
+        self.upgradeButtons.forEach((button) => {
+          if (button && button.disableInteractive) button.disableInteractive();
+        });
         up.apply(p);
         savePlayer(p);
-        bg.destroy(); btn.destroy(); txt.destroy();
-        // Remove all upgrade overlay objects
+        self.upgradeOverlayObjects.forEach((obj) => { if (obj && obj.destroy) obj.destroy(); });
+        self.upgradeOverlayObjects = [];
+        self.upgradeButtons = [];
         self.inUpgrade = false;
         self._updateHud();
-        self._advanceZone();
+        if (!self.upgradeAdvanceScheduled) {
+          self.upgradeAdvanceScheduled = true;
+          self.time.delayedCall(0, () => self._advanceZone());
+        }
       });
     });
   }
