@@ -67,8 +67,8 @@
       tips: ['Plan 2 pieces ahead', 'I-piece for Tetris', 'Hard drop = bonus score']
     },
     btqmCanvas: {
-      label: '🧱 Block Topia', color: '#f39c12', touchScheme: 'dpad',
-      controls: ['↑↓←→ / WASD — Move', 'ENTER / SPACE — Enter zone', 'ESC — World map', '1 Attack  2 Skill  3 Moon  4 Potion  5 Flee'],
+      label: '🧱 Block Topia', color: '#f39c12', touchScheme: 'dpad-bomb',
+      controls: ['↑↓←→ / WASD — Move', 'SPACE / Bomb button — Place bomb', 'ESC — Return to title', 'Touch: D-pad + Bomb button in fullscreen'],
       tips: ['Defeat boss to unlock exit', 'Daily quests reset at UTC midnight', 'Clear all 6 zones = 2× score bonus']
     },
     questTitle: {
@@ -554,6 +554,16 @@
     return wrap;
   }
 
+  function buildDpadBomb() {
+    var wrap = el('div', 'touch-lr-row');
+    var dpad = buildDpad();
+    var bomb = makeTouchBtn('💣 Bomb', 'touch-btn--fire touch-btn--wide');
+    bindTap(bomb, ' ');
+    wrap.appendChild(dpad);
+    wrap.appendChild(bomb);
+    return wrap;
+  }
+
   function buildLrLaunch() {
     var wrap   = el('div', 'touch-lr');
     var row1   = el('div', 'touch-lr-row');
@@ -630,6 +640,7 @@
     if (!meta || !meta.touchScheme) return;
     var builders = {
       'dpad':      buildDpad,
+      'dpad-bomb': buildDpadBomb,
       'lr-launch': buildLrLaunch,
       'lr-fire':   buildLrFire,
       'asteroid':  buildAsteroid,

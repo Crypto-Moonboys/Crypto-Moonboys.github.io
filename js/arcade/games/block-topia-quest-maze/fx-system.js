@@ -213,6 +213,35 @@ export function createFxSystem(scene) {
     camera.shake(180, 0.006);
   }
 
+  // ── Bomb-game FX ─────────────────────────────────────────────────────────────
+
+  function explosionFlash(x, y) {
+    // White burst at explosion origin
+    tweenOverlay(overlays.whiteFlash, 0.35, 90);
+    const burst = scene.add.circle(x, y, 20, COLORS.gold, 0.75).setDepth(209);
+    scene.tweens.add({ targets: burst, scaleX: 2.2, scaleY: 2.2, alpha: 0, duration: 210, ease: 'Quad.easeOut', onComplete: () => burst.destroy() });
+  }
+
+  function chainReactionFlash() {
+    camera.shake(160, 0.01);
+    tweenOverlay(overlays.pulse, 0.22, 140, 'Sine.easeInOut');
+  }
+
+  function blockDestroy(x, y) {
+    const sparks = scene.add.particles(x, y, 'player', {
+      speed: { min: 40, max: 130 },
+      lifespan: 280,
+      scale: { start: 0.32, end: 0 },
+      quantity: 8,
+      tint: [COLORS.gold, 0x885500],
+      gravityY: 120,
+      blendMode: 'ADD',
+      emitting: false,
+    });
+    sparks.explode(8, x, y);
+    scene.time.delayedCall(400, () => sparks.destroy());
+  }
+
   function update(deltaMs) {
     if (wtfCooldown > 0) wtfCooldown = Math.max(0, wtfCooldown - deltaMs);
   }
@@ -232,6 +261,9 @@ export function createFxSystem(scene) {
     updateStateFx,
     setChainEnergy,
     maybeTriggerChaosEvent,
+    explosionFlash,
+    chainReactionFlash,
+    blockDestroy,
     update,
     destroy,
   };
