@@ -1368,8 +1368,7 @@ const UPGRADE_POOL = [
 function normalizeBombRunHp(player) {
   player.bombMaxHp = PLAYER_BOMB_MAX_HP;
   const nextHp = Number.isFinite(player.hp) ? Number(player.hp) : PLAYER_BOMB_HP;
-  player.hp = Math.max(1, Math.min(player.bombMaxHp, Math.floor(nextHp)));
-  if (player.hp > PLAYER_BOMB_HP) player.hp = PLAYER_BOMB_HP;
+  player.hp = Math.max(1, Math.min(PLAYER_BOMB_HP, Math.floor(nextHp)));
 }
 
 class ZoneScene extends Phaser.Scene {
@@ -1761,7 +1760,7 @@ class ZoneScene extends Phaser.Scene {
 
       const t = self.getTile(cx, cy);
 
-      // Destroy soft block — cx/cy from forEach destructuring satisfy smoke-test pattern
+      // Destroy soft block at blast cell
       if (t === 2) {
         self.setTile(cx, cy, 1);
         if (self.tileSprites[cy] && self.tileSprites[cy][cx]) {
@@ -1984,9 +1983,13 @@ class ZoneScene extends Phaser.Scene {
       let primary;
       if (absX > absY) primary = [Math.sign(dxToPlayer), 0];
       else if (absY > absX) primary = [0, Math.sign(dyToPlayer)];
-      else if (absX === 0 && absY === 0) primary = DIRS[randInt(0, 3)];
-      else if (Math.random() < 0.5) primary = [Math.sign(dxToPlayer), 0];
-      else primary = [0, Math.sign(dyToPlayer)];
+      else if (absX === 0 && absY === 0) primary = [1, 0];
+      else {
+        enemy.axisPreference = enemy.axisPreference === 'x' ? 'y' : 'x';
+        primary = enemy.axisPreference === 'x'
+          ? [Math.sign(dxToPlayer), 0]
+          : [0, Math.sign(dyToPlayer)];
+      }
       const cands = [primary];
       DIRS.forEach((d) => { if (!cands.some((c) => c[0] === d[0] && c[1] === d[1])) cands.push(d); });
 
