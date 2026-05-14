@@ -16,6 +16,8 @@
  *   3. bootstrap.js exports the expected adapter symbol
  *   4. game page index.html exists and has expected canvas/button elements
  *   5. game page links to arcade sidebar nav (all 8 arcade games)
+ *   6. fullscreen-only launch flag exists on every listed arcade game start button
+ *   7. fullscreen overlay exit routing targets /games/
  *
  * Existing sanity checks (Invaders 3008, Block Topia) are unchanged.
  *
@@ -102,6 +104,12 @@ const REQUIRED_NAV_LINKS = [
   '/games/snake-run/',
   '/games/block-topia/',
 ];
+// Block Topia has a separate shell/runtime and is intentionally excluded.
+const EXCLUDED_FROM_FULLSCREEN_ONLY = ['/games/block-topia/'];
+
+const FULLSCREEN_ONLY_GAME_PAGES = REQUIRED_NAV_LINKS
+  .filter((link) => !EXCLUDED_FROM_FULLSCREEN_ONLY.includes(link))
+  .map((link) => `games/${link.replace(/^\/games\//, '').replace(/\/$/, '')}/index.html`);
 
 // ── Test runner ───────────────────────────────────────────────────────────────
 
@@ -215,6 +223,39 @@ for (const game of GAMES) {
     `arcade-manifest.js id = '${game.canonicalId}' for ${game.name}`,
   );
 }
+
+// ── Fullscreen-only launch + exit routing invariants ──────────────────────────
+process.stdout.write('\n── Fullscreen-only launch + exit routing ──\n');
+
+for (const relPath of FULLSCREEN_ONLY_GAME_PAGES) {
+  const html = await readFile(relPath);
+  check(
+    /id=["']startBtn["'][^>]*data-overlay-fullscreen-only=["']true["']|data-overlay-fullscreen-only=["']true["'][^>]*id=["']startBtn["']/u.test(html),
+    `${relPath} sets #startBtn data-overlay-fullscreen-only="true"`,
+  );
+}
+
+const fullscreenShellSrc = await readFile('js/game-fullscreen.js');
+check(
+  /overlayFullscreenOnly\s*===\s*['"]true['"]/u.test(fullscreenShellSrc),
+  'game-fullscreen.js recognizes data-overlay-fullscreen-only flag',
+);
+check(
+  /window\.location\.assign\(getOverlayExitHref\(\)\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js exits fullscreen flow by routing through overlay exit href',
+);
+check(
+  /function\s+sanitizeOverlayExitHref\(href\)\s*\{[\s\S]*return\s+['"]\/games\/['"][\s\S]*value\.charAt\(0\)\s*!==\s*['"]\/['"][\s\S]*value\.slice\(0,\s*2\)\s*===\s*['"]\/\/['"][\s\S]*\}/u.test(fullscreenShellSrc),
+  'game-fullscreen.js sanitizes invalid overlay exit hrefs back to /games/',
+);
+check(
+  /function\s+getOverlayExitHref\(\)\s*\{\s*return\s+sanitizeOverlayExitHref\(overlayExitHref\);\s*\}/u.test(fullscreenShellSrc),
+  'game-fullscreen.js routes overlay exit href through sanitizeOverlayExitHref',
+);
+check(
+  /function\s+sanitizeOverlayExitHref\(href\)\s*\{[\s\S]*return\s+['"]\/games\/['"]/u.test(fullscreenShellSrc),
+  'game-fullscreen.js keeps /games/ as the default overlay exit fallback',
+);
 
 // ── Leaderboard worker GAME_KEY_ALIASES covers snake-run and breakout-bullrun ─
 process.stdout.write('\n── Leaderboard worker alias coverage ──\n');
