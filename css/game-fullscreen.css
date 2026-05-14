@@ -18,6 +18,9 @@
   align-items: stretch;
   justify-content: flex-start;
   overflow: hidden;
+  --overlay-toolbar-height: 34px;
+  --overlay-touch-height: 0px;
+  --overlay-stage-gap: 16px;
 }
 
 #game-overlay.active {
@@ -43,13 +46,13 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 
 /* 3. Control bar */
 #overlay-ctrl-bar {
-  height: 36px;
+  height: var(--overlay-toolbar-height);
   flex-shrink: 0;
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 4px;
-  padding: 0 10px;
+  gap: 3px;
+  padding: 0 8px;
   background: rgba(9, 12, 22, 0.95);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 9010;
@@ -66,8 +69,8 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 }
 
 #overlay-ctrl-bar button {
-  height: 26px;
-  padding: 0 8px;
+  height: 24px;
+  padding: 0 7px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 6px;
@@ -82,6 +85,11 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   gap: 3px;
   flex-shrink: 0;
   line-height: 1;
+}
+
+#overlay-btn-info .btn-icon,
+#overlay-btn-data .btn-icon {
+  font-size: 0.86rem;
 }
 
 #overlay-ctrl-bar button:hover {
@@ -136,6 +144,21 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   color: #fff !important;
 }
 
+#overlay-panel-status {
+  margin-left: 6px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 0.65rem;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.78);
+  max-width: 270px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* 5. Overlay body */
 #game-overlay .overlay-body {
   flex: 1;
@@ -143,29 +166,49 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   flex-direction: row;
   overflow: hidden;
   min-height: 0;
+  position: relative;
 }
 
 /* 6. Side panels */
 #game-overlay .overlay-side {
-  width: 200px;
-  flex-shrink: 0;
+  width: min(92vw, clamp(220px, 24vw, 320px));
   overflow-y: auto;
   overflow-x: hidden;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(8, 13, 24, 0.96);
   padding: 14px 12px;
-  max-height: 100%;
+  max-height: calc(100% - 16px);
   font-size: 0.78rem;
   color: var(--color-text-muted, #8b949e);
   box-sizing: border-box;
-  display: none;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  z-index: 6;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .2s ease, opacity .2s ease;
 }
 
 #game-overlay .overlay-side--left {
-  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  left: 8px;
+  transform: translateX(calc(-100% - 10px));
 }
 
 #game-overlay .overlay-side--right {
-  border-left: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  right: 8px;
+  transform: translateX(calc(100% + 10px));
+}
+
+#game-overlay.overlay-side-open-left .overlay-side--left,
+#game-overlay.overlay-side-open-right .overlay-side--right {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 #game-overlay .overlay-side .panel-title {
@@ -344,10 +387,11 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
+  padding: 8px;
   box-sizing: border-box;
   overflow: hidden;
   min-width: 0;
+  min-height: 0;
 }
 
 /* 8. game-card inside overlay — strip the card chrome */
@@ -363,14 +407,21 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   align-items: center;
   height: 100%;
   box-sizing: border-box;
-  gap: 8px;
+  gap: 4px;
+  justify-content: center;
 }
 
 /* 9. HUD strip inside overlay */
 #game-overlay .hud {
   width: 100%;
-  max-width: 960px;
+  max-width: none;
   margin-bottom: 0;
+}
+
+/* Crystal Quest is DOM/text-based and keeps its own card content flow; canvas-first
+   games hide HUD rows in fullscreen to maximize playable area. */
+#game-overlay .game-card:not(.crystal-quest-card) .hud {
+  display: none !important;
 }
 
 /* 10. Canvas scaling — fill available viewport space
@@ -379,14 +430,13 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 #game-overlay canvas:not(#nextCanvas) {
   width: auto !important;
   max-width: 100% !important;
-  height: auto !important;
-  max-height: calc(100dvh - 36px - 60px) !important;
+  height: min(100%, calc(100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap))) !important;
   flex-shrink: 1;
 }
 
 @supports not (height: 1dvh) {
   #game-overlay canvas:not(#nextCanvas) {
-    max-height: calc(100vh - 36px - 60px) !important;
+    height: min(100%, calc(100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap))) !important;
   }
 }
 
@@ -456,39 +506,39 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
      1408 = GRID_COLS*CELL (44*32), 832 = GRID_ROWS*CELL (26*32) — must stay in
      sync with the same constants in bootstrap.js updateViewport().
      The general canvas rule sets width/height:auto; this rule wins via specificity. */
-  width: min(100%, calc((100dvh - 36px - 140px) * 1408 / 832)) !important;
+  width: min(100%, calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 1408 / 832)) !important;
   max-width: none !important;
-  max-height: calc(100dvh - 36px - 140px) !important;
+  max-height: calc(100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
 }
 
 #game-overlay #tetCanvas {
-  width: min(calc((100dvh - 36px - 132px) / 2), max(220px, calc((100vw - 420px) * 0.72))) !important;
+  width: min(92vw, max(220px, calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) / 2))) !important;
   max-width: none !important;
-  max-height: calc(100dvh - 36px - 132px) !important;
+  max-height: calc(100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
 }
 
 @supports not (height: 1dvh) {
   /* Fallback for browsers without dvh — values mirror the dvh rule above. */
   #game-overlay #snakeCanvas {
-    width: min(100%, calc((100vh - 36px - 140px) * 1408 / 832)) !important;
-    max-height: calc(100vh - 36px - 140px) !important;
+    width: min(100%, calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 1408 / 832)) !important;
+    max-height: calc(100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
   }
   #game-overlay #tetCanvas {
-    width: min(calc((100vh - 36px - 132px) / 2), max(220px, calc((100vw - 420px) * 0.72))) !important;
-    max-height: calc(100vh - 36px - 132px) !important;
+    width: min(92vw, max(220px, calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) / 2))) !important;
+    max-height: calc(100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
   }
 }
 
 @media (max-width: 1099px) {
   #game-overlay #tetCanvas {
-    width: min(86vw, calc((100dvh - 36px - 132px) / 2)) !important;
+    width: min(90vw, max(200px, calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) / 2))) !important;
   }
 }
 
 @supports not (height: 1dvh) {
   @media (max-width: 1099px) {
     #game-overlay #tetCanvas {
-      width: min(86vw, calc((100vh - 36px - 132px) / 2)) !important;
+      width: min(90vw, max(200px, calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) / 2))) !important;
     }
   }
 }
@@ -658,19 +708,26 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 
 /* A. Mobile portrait */
 @media (max-width: 480px) {
+  #game-overlay {
+    --overlay-toolbar-height: 38px;
+    --overlay-stage-gap: 10px;
+  }
+
   #overlay-ctrl-bar {
-    height: 40px;
+    height: var(--overlay-toolbar-height);
   }
 
   #overlay-ctrl-bar button {
-    height: 32px;
+    height: 30px;
   }
 
   #overlay-ctrl-bar button .btn-label {
     display: none;
   }
 
-  #game-overlay .overlay-side {
+  #overlay-panel-status,
+  #overlay-btn-info,
+  #overlay-btn-data {
     display: none !important;
   }
 
@@ -682,6 +739,9 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
     display: flex;
     min-height: 80px;
     padding: 6px 8px;
+  }
+  #game-overlay {
+    --overlay-touch-height: 84px;
   }
 
   /* Slim HUD: replace boxed stat cards with compact inline arcade strip */
@@ -720,22 +780,16 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
     white-space: nowrap !important;
   }
 
-  #game-overlay canvas:not(#nextCanvas) {
-    /* 40px ctrl-bar + 80px touch-pad + ~24px slim HUD = 144px overhead */
-    max-height: calc(100dvh - 40px - 144px) !important;
-  }
-
-  @supports not (height: 1dvh) {
-    #game-overlay canvas:not(#nextCanvas) {
-      max-height: calc(100vh - 40px - 144px) !important;
-    }
+  #game-overlay .overlay-side {
+    max-width: min(95vw, 360px);
   }
 }
 
 /* B. Mobile landscape */
 @media (max-height: 500px) and (max-width: 900px) {
-  #game-overlay .overlay-side {
-    display: none !important;
+  #game-overlay {
+    --overlay-touch-height: 68px;
+    --overlay-stage-gap: 8px;
   }
 
   #game-overlay .overlay-touch-pad {
@@ -755,30 +809,26 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
     grid-template-rows: repeat(3, 38px);
   }
 
-  #game-overlay canvas:not(#nextCanvas) {
-    /* 36px ctrl-bar + 68px compact touch-pad = 104px overhead */
-    max-height: calc(100dvh - 36px - 68px) !important;
-  }
-
-  @supports not (height: 1dvh) {
-    #game-overlay canvas:not(#nextCanvas) {
-      max-height: calc(100vh - 36px - 68px) !important;
-    }
+  #overlay-panel-status,
+  #overlay-btn-info,
+  #overlay-btn-data {
+    display: none !important;
   }
 }
 
 /* C. Tablet */
 @media (min-width: 481px) and (max-width: 1099px) {
+  #game-overlay {
+    --overlay-toolbar-height: 38px;
+    --overlay-stage-gap: 12px;
+  }
+
   #overlay-ctrl-bar {
-    height: 40px;
+    height: var(--overlay-toolbar-height);
   }
 
   #overlay-ctrl-bar button {
     height: 32px;
-  }
-
-  #game-overlay .overlay-side {
-    display: none !important;
   }
 
   #game-overlay .overlay-touch-pad {
@@ -794,14 +844,8 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
     font-size: 0.95rem !important;
   }
 
-  #game-overlay canvas:not(#nextCanvas) {
-    max-height: calc(100dvh - 40px - 80px) !important;
-  }
-
-  @supports not (height: 1dvh) {
-    #game-overlay canvas:not(#nextCanvas) {
-      max-height: calc(100vh - 40px - 80px) !important;
-    }
+  #overlay-panel-status {
+    display: none !important;
   }
 }
 
@@ -811,59 +855,40 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   #game-overlay .overlay-touch-pad {
     display: flex;
   }
+  #game-overlay {
+    --overlay-touch-height: 88px;
+  }
 }
 
 /* Reduce canvas height on large coarse-pointer devices (iPad Pro landscape etc.)
    to leave room for the touch pad that now shows beyond the 1099px tablet breakpoint */
 @media (pointer: coarse) and (min-width: 1100px) {
-  #game-overlay canvas:not(#nextCanvas) {
-    max-height: calc(100dvh - 36px - 100px) !important;
+  #game-overlay {
+    --overlay-touch-height: 96px;
   }
+  #overlay-panel-status {
+    display: none !important;
+  }
+}
 
-  @supports not (height: 1dvh) {
-    #game-overlay canvas:not(#nextCanvas) {
-      max-height: calc(100vh - 36px - 100px) !important;
-    }
+@media (min-width: 1100px) {
+  #overlay-panel-status {
+    display: inline-flex;
+    align-items: center;
   }
 }
 
 /* D. Desktop standard */
 @media (min-width: 1100px) and (max-width: 1399px) {
-  #game-overlay .overlay-side--left,
-  #game-overlay .overlay-side--right {
-    display: flex;
-    flex-direction: column;
-    width: 180px;
-  }
-
-  #game-overlay canvas:not(#nextCanvas) {
-    max-height: calc(100dvh - 36px - 50px) !important;
-  }
-
-  @supports not (height: 1dvh) {
-    #game-overlay canvas:not(#nextCanvas) {
-      max-height: calc(100vh - 36px - 50px) !important;
-    }
+  #game-overlay .overlay-side {
+    width: min(92vw, clamp(220px, 26vw, 320px));
   }
 }
 
 /* E. Desktop ultra-wide */
 @media (min-width: 1400px) {
-  #game-overlay .overlay-side--left,
-  #game-overlay .overlay-side--right {
-    display: flex;
-    flex-direction: column;
-    width: 220px;
-  }
-
-  #game-overlay canvas:not(#nextCanvas) {
-    max-height: calc(100dvh - 36px - 50px) !important;
-  }
-
-  @supports not (height: 1dvh) {
-    #game-overlay canvas:not(#nextCanvas) {
-      max-height: calc(100vh - 36px - 50px) !important;
-    }
+  #game-overlay .overlay-side {
+    width: min(92vw, clamp(240px, 24vw, 360px));
   }
 }
 
@@ -1003,7 +1028,7 @@ body .hud .value {
    so the canvas never overflows vertically on short/wide viewports.
    640 / 448 = BTQM base aspect ratio. */
 #game-overlay #btqm-canvas {
-  width: min(100%, calc((100dvh - 36px - 20px) * 640 / 448));
+  width: min(100%, calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 640 / 448));
   height: auto;
   border: none !important;
   background: transparent !important;
@@ -1020,15 +1045,15 @@ body .hud .value {
 #game-overlay #btqm-canvas canvas {
   width: 100% !important;
   height: auto !important;
-  max-height: calc(100dvh - 36px - 20px) !important;
+  max-height: calc(100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
 }
 
 @supports not (height: 1dvh) {
   #game-overlay #btqm-canvas {
-    width: min(100%, calc((100vh - 36px - 20px) * 640 / 448));
+    width: min(100%, calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * 640 / 448));
   }
   #game-overlay #btqm-canvas canvas {
-    max-height: calc(100vh - 36px - 20px) !important;
+    max-height: calc(100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
   }
 }
 
