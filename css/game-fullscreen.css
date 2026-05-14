@@ -36,6 +36,11 @@ body.overlay-open {
   overflow: hidden;
 }
 
+body.arcade-fullscreen-only:not(.overlay-open) .game-card {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 /* 3. Control bar */
 #overlay-ctrl-bar {
   height: 36px;
@@ -107,6 +112,28 @@ body.overlay-open {
 #overlay-btn-exit:hover {
   background: rgba(255, 60, 60, 0.22);
   border-color: rgba(255, 80, 80, 0.55);
+}
+
+#overlay-fullscreen-prompt {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-left: 10px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 12px;
+  line-height: 1.3;
+  color: #fff;
+}
+
+#overlay-fullscreen-prompt-btn {
+  padding: 4px 8px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
 }
 
 /* 5. Overlay body */

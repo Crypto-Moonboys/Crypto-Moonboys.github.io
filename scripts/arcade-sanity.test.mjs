@@ -105,16 +105,9 @@ const REQUIRED_NAV_LINKS = [
   '/games/block-topia/',
 ];
 
-const FULLSCREEN_ONLY_GAME_PAGES = [
-  'games/invaders-3008/index.html',
-  'games/pac-chain/index.html',
-  'games/asteroid-fork/index.html',
-  'games/breakout-bullrun/index.html',
-  'games/tetris-block-topia/index.html',
-  'games/block-topia-quest-maze/index.html',
-  'games/crystal-quest/index.html',
-  'games/snake-run/index.html',
-];
+const FULLSCREEN_ONLY_GAME_PAGES = REQUIRED_NAV_LINKS
+  .filter((link) => link !== '/games/block-topia/')
+  .map((link) => `games/${link.replace(/^\/games\//, '').replace(/\/$/, '')}/index.html`);
 
 // ── Test runner ───────────────────────────────────────────────────────────────
 

@@ -124,14 +124,13 @@
   var btnExit  = makeCtrlBtn('overlay-btn-exit',  'Exit fullscreen',   '✕', 'Exit');
   var fullscreenPrompt = document.createElement('div');
   fullscreenPrompt.id = 'overlay-fullscreen-prompt';
-  fullscreenPrompt.style.cssText = 'display:none;align-items:center;gap:8px;margin-left:10px;padding:6px 10px;border:1px solid rgba(255,255,255,.25);border-radius:10px;background:rgba(0,0,0,.35);font-size:12px;line-height:1.3;color:#fff';
   var fullscreenPromptText = document.createElement('span');
   fullscreenPromptText.textContent = 'Tap Enter Fullscreen for full gameplay.';
   var fullscreenPromptBtn = document.createElement('button');
   fullscreenPromptBtn.setAttribute('type', 'button');
   fullscreenPromptBtn.className = 'interactive';
+  fullscreenPromptBtn.id = 'overlay-fullscreen-prompt-btn';
   fullscreenPromptBtn.textContent = 'Enter Fullscreen';
-  fullscreenPromptBtn.style.cssText = 'padding:4px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;cursor:pointer';
   fullscreenPrompt.appendChild(fullscreenPromptText);
   fullscreenPrompt.appendChild(fullscreenPromptBtn);
 
@@ -1401,12 +1400,6 @@
 
   if (fullscreenOnlyMode && document.body) {
     document.body.classList.add('arcade-fullscreen-only');
-    if (!document.getElementById('arcade-fullscreen-only-style')) {
-      var fsOnlyStyle = document.createElement('style');
-      fsOnlyStyle.id = 'arcade-fullscreen-only-style';
-      fsOnlyStyle.textContent = 'body.arcade-fullscreen-only:not(.overlay-open) .game-card{visibility:hidden !important;pointer-events:none !important;}';
-      document.head.appendChild(fsOnlyStyle);
-    }
   }
   if (autoOpenOnLoad) {
     setTimeout(function () {
