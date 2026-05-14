@@ -98,6 +98,15 @@ assert.match(btqmLivePage, /import\s*\{\s*bootstrapBlockTopiaQuestMaze\s*\}\s*fr
 assert.match(btqmLivePage, /mountGame\(\{\s*root:\s*document\.querySelector\(['"]\.game-card['"]\)\s*,\s*bootstrap:\s*bootstrapBlockTopiaQuestMaze\s*\}\)/, 'BTQM live page should mount the maintained BTQM bootstrap');
 assert.match(btqmLivePage, /id=['"]btqm-name-overlay['"]/, 'BTQM live page should include BTQM title/name overlay required by bootstrap');
 assert.match(btqmLivePage, /id=['"]btqm-daily-bar['"]/, 'BTQM live page should include BTQM daily status bar required by bootstrap');
+assert.doesNotMatch(btqmLivePage, /Mega Bomb/iu, 'BTQM live page must not expose retired Mega Bomb public naming');
+assert.doesNotMatch(btqmLivePage, /(?:id=['"]btqm-hud['"]|#btqm-hud\b)/u, 'BTQM live page must not keep the retired BTQM HUD markup');
+assert.doesNotMatch(btqmLivePage, /(?:id=['"]btqm-ui['"]|#btqm-ui\b)/u, 'BTQM live page must not keep the retired BTQM side-panel layout');
+assert.doesNotMatch(btqmLivePage, /(?:id=['"]btqm-log['"]|#btqm-log\b)/u, 'BTQM live page must not keep the retired BTQM log panel');
+assert.doesNotMatch(btqmLivePage, /(?:id=['"]btqm-actions['"]|#btqm-actions\b)/u, 'BTQM live page must not keep the retired BTQM action button tray');
+assert.doesNotMatch(btqmLivePage, /(?:id=['"]btqm-card['"]|#btqm-card\b)/u, 'BTQM live page must not keep the retired BTQM card overlay');
+assert.doesNotMatch(btqmLivePage, /(?:id=['"]btqm-choice-list['"]|#btqm-choice-list\b)/u, 'BTQM live page must not keep the retired BTQM choice list');
+assert.doesNotMatch(btqmLivePage, /(?:id=['"]btqm-banner['"]|#btqm-banner\b)/u, 'BTQM live page must not keep the retired BTQM banner overlay');
+assert.doesNotMatch(btqmLivePage, /(?:id=['"]btqm-low-hp['"]|#btqm-low-hp\b)/u, 'BTQM live page must not keep the retired BTQM low HP overlay');
 assert.doesNotMatch(btqmLivePage, /this\.canvas\s*=\s*document\.getElementById\(['"]btqm-canvas['"]\)/, 'BTQM live page should not run the legacy inline canvas renderer');
 assert.doesNotMatch(btqmLivePage, /const\s+game\s*=\s*new\s+Game\s*\(\s*\)\s*;/, 'BTQM live page should not instantiate the legacy inline Game class');
 
@@ -185,6 +194,7 @@ for (const asset of generatedManifestAssets) {
 }
 
 assert.doesNotMatch(bootstrap, /BLOCK TOPIA QUEST MAZE/, 'old world-map title phrase ("BLOCK TOPIA QUEST MAZE") must not appear in BTQM runtime source');
+assert.doesNotMatch(bootstrap, /MEGA BOMB|Mega Bomb/u, 'BTQM runtime must not expose retired Mega Bomb public naming');
 assert.doesNotMatch(bootstrap, /Select a zone/, 'old world-map subtitle ("Select a zone") must not appear in BTQM runtime source');
 assert.doesNotMatch(bootstrap, /class WorldScene/, 'WorldScene class must be removed from BTQM runtime');
 assert.doesNotMatch(bootstrap, /Returning to World Map/, 'old world-map return message must not appear in BTQM runtime source');

@@ -1,7 +1,7 @@
 /**
  * bootstrap.js — Block Topia Quest Maze game module
  *
- * Self-contained Phaser 3 RPG dungeon-crawler. Contains all game scenes,
+ * Self-contained Phaser 3 bomb-maze arcade module. Contains all game scenes,
  * constants, utilities, and the arcade bootstrap lifecycle.
  *
  * Exported entry point: bootstrapBlockTopiaQuestMaze(root)
@@ -1195,16 +1195,16 @@ class TitleScene extends Phaser.Scene {
     this.add.text(322, 82, 'BLOCK TOPIA', {
       fontFamily: 'Courier New', fontSize: '38px', color: '#7d3800', fontStyle: 'bold'
     }).setOrigin(0.5);
-    this.add.text(322, 124, 'MEGA BOMB', {
-      fontFamily: 'Courier New', fontSize: '38px', color: '#7d1a00', fontStyle: 'bold'
+    this.add.text(322, 124, 'QUEST MAZE', {
+      fontFamily: 'Courier New', fontSize: '34px', color: '#7d1a00', fontStyle: 'bold'
     }).setOrigin(0.5);
 
     // Title text
     this.add.text(320, 80, 'BLOCK TOPIA', {
       fontFamily: 'Courier New', fontSize: '38px', color: '#f39c12', fontStyle: 'bold'
     }).setOrigin(0.5);
-    this.add.text(320, 122, 'MEGA BOMB', {
-      fontFamily: 'Courier New', fontSize: '38px', color: '#ff6600', fontStyle: 'bold'
+    this.add.text(320, 122, 'QUEST MAZE', {
+      fontFamily: 'Courier New', fontSize: '34px', color: '#ff6600', fontStyle: 'bold'
     }).setOrigin(0.5);
 
     this.add.text(320, 160, 'A Crypto Moonboys Roguelite', {
@@ -1340,7 +1340,7 @@ class TitleScene extends Phaser.Scene {
 
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCENE: ZoneScene — real-time Bomberman-style dungeon
+// SCENE: ZoneScene — real-time bomb-maze dungeon
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Bomb gameplay constants
@@ -2330,7 +2330,7 @@ export function bootstrapBlockTopiaQuestMaze(root) {
     if (phaserGame) return;
 
     // ── Phaser game ──────────────────────────────────────────────────────────
-    // The host page provides <div id="btqm-canvas"> inside .btqm-game-area
+    // The host page provides <div id="btqm-canvas"> inside the game card
     // as the Phaser canvas parent. We resolve it relative to root for safety.
     const canvasContainer = root.querySelector('#btqm-canvas') ||
                             document.getElementById('btqm-canvas');
