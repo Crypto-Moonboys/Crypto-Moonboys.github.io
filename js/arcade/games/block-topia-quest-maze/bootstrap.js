@@ -2195,7 +2195,7 @@ class ZoneScene extends Phaser.Scene {
     // ── Bonus Battle button ──────────────────────────────────────────────────
     const battleBtn = this.add.rectangle(cx + 110, cy + 10, 190, 48, 0x1e1004, 0.92)
       .setScrollFactor(0).setDepth(51).setStrokeStyle(1, zone.accentColor, 0.7);
-    const battleTxt = this.add.text(cx + 110, cy + 10, '⚔  Bonus Battle\n+Bonus Score', {
+    const battleTxt = this.add.text(cx + 110, cy + 10, '⚔  Bonus Battle\nOptional Challenge', {
       fontFamily: 'Courier New', fontSize: '11px', color: '#e74c3c', align: 'center',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(52);
     objs.push(battleBtn, battleTxt);
