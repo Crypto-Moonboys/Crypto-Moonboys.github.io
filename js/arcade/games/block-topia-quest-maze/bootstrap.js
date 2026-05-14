@@ -31,144 +31,181 @@ const ZONES = [
     id: 0, name: 'HODL or FOLD', subtitle: 'The Market Floor',
     floorColor: 0x2d4a1e, wallColor: 0x1a2e11, bgColor: 0x0d1a07, accentColor: 0x4caf50,
     enemies: [
-      { name: 'Paper Hand Goblin', maxHp: 35, atk: 7,  def: 2, xp: 30,  gold: 8  },
-      { name: 'FUD Spreader',      maxHp: 45, atk: 9,  def: 3, xp: 40,  gold: 10 },
+      { name: 'Paper Hand Goblin', role: 'basic-chaser',        bombHp: 1, speed: 620, xp: 30,  gold: 8,  scoreValue: 50 },
+      { name: 'FUD Spreader',      role: 'corruption-spreader', bombHp: 1, speed: 980, xp: 40,  gold: 10, scoreValue: 60 },
     ],
-    boss: { name: 'Paper Hand King', maxHp: 120, atk: 14, def: 5, xp: 150, gold: 40 },
-    clearScore: 100,
+    boss: { name: 'Paper Hand King', role: 'boss', bombHp: 5, speed: 1200, xp: 150, gold: 40, scoreValue: 200, isBoss: true },
+    clearScore: 100, enemyCount: 4,
+    // kept for score helpers
+    maxHp: 35, atk: 7, def: 2,
   },
   {
     id: 1, name: 'Bear Market Siege', subtitle: 'The Frozen Cavern',
     floorColor: 0x1a2a4a, wallColor: 0x0d1929, bgColor: 0x060e1a, accentColor: 0x3498db,
     enemies: [
-      { name: 'Bear Soldier',    maxHp: 65, atk: 12, def: 6, xp: 60, gold: 18 },
-      { name: 'Market Crasher',  maxHp: 55, atk: 16, def: 3, xp: 70, gold: 20 },
+      { name: 'Bear Soldier',   role: 'shield-enemy', bombHp: 2, speed: 710, xp: 60,  gold: 18, scoreValue: 75 },
+      { name: 'Market Crasher', role: 'bomb-kicker',  bombHp: 1, speed: 820, xp: 70,  gold: 20, scoreValue: 65 },
     ],
-    boss: { name: 'The Bear Lord', maxHp: 200, atk: 22, def: 8, xp: 280, gold: 80 },
-    clearScore: 200,
+    boss: { name: 'Bear Lord', role: 'boss', bombHp: 5, speed: 1200, xp: 280, gold: 80, scoreValue: 200, isBoss: true },
+    clearScore: 200, enemyCount: 5,
+    maxHp: 65, atk: 12, def: 6,
   },
   {
     id: 2, name: 'FOMO Plague Escape', subtitle: 'The Panic Wastes',
     floorColor: 0x3d1454, wallColor: 0x230a30, bgColor: 0x0f0518, accentColor: 0x9b59b6,
     enemies: [
-      { name: 'FOMO Ghost',    maxHp: 70, atk: 13, def: 4, xp: 75, gold: 22 },
-      { name: 'Panic Seller',  maxHp: 80, atk: 15, def: 5, xp: 85, gold: 25 },
+      { name: 'FOMO Ghost',   role: 'fuse-hacker',  bombHp: 1, speed: 510, xp: 75,  gold: 22, scoreValue: 70 },
+      { name: 'Panic Seller', role: 'basic-chaser', bombHp: 1, speed: 560, xp: 85,  gold: 25, scoreValue: 55 },
     ],
-    boss: { name: 'FOMO Phantom Prime', maxHp: 260, atk: 28, def: 9, xp: 350, gold: 100 },
-    clearScore: 350,
+    boss: { name: 'FOMO Phantom Prime', role: 'boss', bombHp: 5, speed: 1200, xp: 350, gold: 100, scoreValue: 200, isBoss: true },
+    clearScore: 350, enemyCount: 6,
+    maxHp: 70, atk: 13, def: 4,
   },
   {
     id: 3, name: 'Rug Pull Recovery', subtitle: 'The Ruined Vaults',
     floorColor: 0x4a2a0a, wallColor: 0x2e1a06, bgColor: 0x120a03, accentColor: 0xe67e22,
     enemies: [
-      { name: 'Rug Puller',    maxHp: 90, atk: 17, def: 6, xp: 100, gold: 28 },
-      { name: 'Exit Scammer',  maxHp: 80, atk: 20, def: 4, xp: 95,  gold: 26 },
+      { name: 'Rug Puller',   role: 'bomb-kicker',  bombHp: 1, speed: 760, xp: 100, gold: 28, scoreValue: 65 },
+      { name: 'Exit Scammer', role: 'shield-enemy', bombHp: 2, speed: 660, xp: 95,  gold: 26, scoreValue: 80 },
     ],
-    boss: { name: 'The Rug Lord', maxHp: 320, atk: 30, def: 11, xp: 430, gold: 120 },
-    clearScore: 500,
+    boss: { name: 'Rug Architect', role: 'boss', bombHp: 5, speed: 1200, xp: 430, gold: 120, scoreValue: 200, isBoss: true },
+    clearScore: 500, enemyCount: 6,
+    maxHp: 90, atk: 17, def: 6,
   },
   {
     id: 4, name: "Whale Lord's Challenge", subtitle: 'The Deep Sea Vault',
     floorColor: 0x0a2a4a, wallColor: 0x061929, bgColor: 0x030c15, accentColor: 0x1abc9c,
     enemies: [
-      { name: 'Whale Minion',         maxHp: 120, atk: 20, def: 11, xp: 130, gold: 38 },
-      { name: 'Market Manipulator',   maxHp: 100, atk: 24, def: 8,  xp: 140, gold: 42 },
+      { name: 'Whale Minion',       role: 'basic-chaser',        bombHp: 1, speed: 510, xp: 130, gold: 38, scoreValue: 55 },
+      { name: 'Market Manipulator', role: 'corruption-spreader', bombHp: 1, speed: 910, xp: 140, gold: 42, scoreValue: 60 },
     ],
-    boss: { name: 'The Whale Lord', maxHp: 420, atk: 38, def: 16, xp: 580, gold: 160 },
-    clearScore: 750,
+    boss: { name: 'Whale Engine', role: 'boss', bombHp: 5, speed: 1200, xp: 580, gold: 160, scoreValue: 200, isBoss: true },
+    clearScore: 750, enemyCount: 7,
+    maxHp: 120, atk: 20, def: 11,
   },
   {
     id: 5, name: 'Moon Mission', subtitle: 'The Final Ascent',
     floorColor: 0x1a1a3a, wallColor: 0x0a0a1e, bgColor: 0x030309, accentColor: 0xf39c12,
     enemies: [
-      { name: 'NGMI Wraith',      maxHp: 140, atk: 26, def: 9,  xp: 150, gold: 48 },
-      { name: 'Anti-Moon Troll',  maxHp: 160, atk: 24, def: 13, xp: 145, gold: 45 },
+      { name: 'NGMI Wraith',     role: 'fuse-hacker',  bombHp: 1, speed: 460, xp: 150, gold: 48, scoreValue: 70 },
+      { name: 'Anti-Moon Troll', role: 'shield-enemy', bombHp: 2, speed: 610, xp: 145, gold: 45, scoreValue: 80 },
     ],
-    boss: { name: 'NGMI Overlord', maxHp: 550, atk: 45, def: 20, xp: 800, gold: 220 },
-    clearScore: 1000,
+    boss: { name: 'NGMI Overlord', role: 'boss', bombHp: 5, speed: 1200, xp: 800, gold: 220, scoreValue: 200, isBoss: true },
+    clearScore: 1000, enemyCount: 8,
+    maxHp: 140, atk: 26, def: 9,
   },
 ];
 
-// ─── ZONE MAPS (15 columns × 10 rows) ────────────────────────────────────────
-// Tile codes: 0=wall, 1=floor, 2=encounter, 3=boss, 4=exit, 9=start
+// ─── ZONE MAPS (21 cols × 15 rows) ─────────────────────────────────────────
+// Tile codes: 0=hard wall, 1=floor, 2=soft block, 4=exit, 9=start
 const ZONE_MAPS = [
   // Zone 0: HODL or FOLD
   [
-    [0,0,0,0,0,0,0,4,0,0,0,0,0,0,0],
-    [0,1,1,1,1,0,0,1,0,0,1,1,1,1,0],
-    [0,1,2,1,1,0,0,1,0,0,1,3,1,1,0],
-    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-    [0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
-    [0,1,1,1,1,0,0,1,0,0,1,1,1,1,0],
-    [0,1,2,1,1,0,0,1,0,0,1,2,1,1,0],
-    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-    [0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
-    [0,0,0,9,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,9,1,1,2,1,2,1,1,2,2,1,2,2,1,2,1,2,1,2,0],
+    [0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,2,0,1,0,1,0],
+    [0,1,1,1,2,2,1,2,1,1,1,1,2,1,2,1,1,2,2,2,0],
+    [0,1,0,2,0,1,0,2,0,2,0,2,0,2,0,1,0,1,0,1,0],
+    [0,1,1,1,1,1,2,1,1,1,1,1,2,1,1,2,2,1,1,2,0],
+    [0,1,0,2,0,2,0,2,0,1,0,1,0,2,0,1,0,2,0,1,0],
+    [0,2,1,1,2,1,2,2,1,2,2,2,1,2,2,1,2,1,1,2,0],
+    [0,2,0,1,0,1,0,1,0,1,0,1,0,1,0,2,0,2,0,1,0],
+    [0,2,2,1,1,1,2,2,1,2,1,1,2,1,2,1,2,1,1,2,0],
+    [0,2,0,1,0,1,0,2,0,2,0,1,0,2,0,2,0,2,0,2,0],
+    [0,1,2,2,1,2,1,1,2,2,1,2,2,2,1,2,2,1,1,1,0],
+    [0,2,0,1,0,2,0,1,0,2,0,2,0,1,0,1,0,1,0,1,0],
+    [0,2,2,2,1,2,1,1,2,2,1,1,1,2,2,2,1,1,1,4,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   ],
-  // Zone 1: Bear Market Siege — redesigned for full reachability
+  // Zone 1: Bear Market Siege
   [
-    [0,0,0,0,0,0,0,0,4,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-    [0,1,2,1,1,1,0,0,0,1,1,1,2,1,0],
-    [0,1,1,1,0,1,3,1,0,1,0,1,1,1,0],
-    [0,1,0,1,0,1,1,1,0,1,0,1,0,1,0],
-    [0,1,0,1,1,1,0,0,0,1,1,1,0,1,0],
-    [0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],
-    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-    [0,1,0,2,0,0,0,0,0,0,0,2,0,1,0],
-    [0,1,9,1,1,1,1,1,1,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,9,1,1,1,2,1,2,1,1,1,2,2,2,2,1,1,2,1,1,0],
+    [0,1,0,1,0,2,0,2,0,1,0,2,0,1,0,1,0,2,0,1,0],
+    [0,1,1,1,1,1,1,2,2,2,1,2,2,1,2,2,2,2,1,1,0],
+    [0,2,0,2,0,2,0,2,0,2,0,1,0,1,0,2,0,1,0,2,0],
+    [0,1,2,1,2,1,2,2,1,1,2,2,2,2,1,2,2,2,2,1,0],
+    [0,1,0,1,0,2,0,2,0,2,0,2,0,1,0,2,0,2,0,2,0],
+    [0,2,1,2,1,1,2,2,1,2,1,2,2,2,2,2,1,2,2,2,0],
+    [0,2,0,1,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0],
+    [0,1,2,2,2,2,2,1,1,1,2,1,1,2,2,1,1,1,1,1,0],
+    [0,2,0,1,0,1,0,2,0,1,0,1,0,1,0,2,0,1,0,1,0],
+    [0,1,1,2,1,2,1,1,2,2,2,2,2,2,1,1,2,1,1,1,0],
+    [0,1,0,1,0,2,0,2,0,1,0,2,0,2,0,2,0,1,0,1,0],
+    [0,1,1,2,1,1,1,1,2,2,2,2,2,2,1,1,2,1,1,4,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   ],
-  // Zone 2: FOMO Plague Escape — enc at (8,3) connected via col 7
+  // Zone 2: FOMO Plague Escape
   [
-    [0,0,4,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,0,0,1,1,1,1,1,0,0,1,0],
-    [0,1,0,1,1,1,1,0,0,0,1,1,1,1,0],
-    [0,1,2,0,0,0,1,1,2,0,0,0,0,1,0],
-    [0,1,1,1,0,0,1,0,0,0,1,1,1,1,0],
-    [0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
-    [0,1,1,1,0,0,1,3,0,0,1,1,1,1,0],
-    [0,1,0,0,0,1,1,0,0,1,0,0,2,1,0],
-    [0,1,1,1,1,1,0,0,0,1,1,1,1,1,0],
-    [0,0,0,0,0,9,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,9,1,1,2,1,1,2,1,1,1,2,2,2,1,2,2,2,1,1,0],
+    [0,1,0,1,0,2,0,1,0,2,0,1,0,1,0,2,0,1,0,2,0],
+    [0,1,1,1,1,2,2,1,1,2,2,1,2,1,2,1,1,1,2,2,0],
+    [0,2,0,1,0,2,0,1,0,2,0,1,0,1,0,2,0,2,0,1,0],
+    [0,2,2,2,1,2,1,2,2,2,1,1,2,2,1,2,2,2,1,2,0],
+    [0,2,0,2,0,1,0,1,0,2,0,2,0,1,0,1,0,2,0,2,0],
+    [0,1,2,1,1,2,2,2,2,2,2,2,1,2,1,1,1,2,1,2,0],
+    [0,1,0,1,0,1,0,2,0,2,0,2,0,1,0,2,0,2,0,2,0],
+    [0,2,2,1,2,2,2,2,2,2,1,1,2,2,2,2,2,1,2,2,0],
+    [0,1,0,2,0,2,0,1,0,2,0,1,0,2,0,1,0,1,0,2,0],
+    [0,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,1,1,1,1,0],
+    [0,1,0,2,0,1,0,2,0,2,0,2,0,1,0,2,0,1,0,1,0],
+    [0,2,1,1,1,2,1,1,2,2,1,2,1,1,1,2,2,1,1,4,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   ],
-  // Zone 3: Rug Pull Recovery — boss col connected to corridor
+  // Zone 3: Rug Pull Recovery
   [
-    [0,0,0,0,0,0,4,0,0,0,0,0,0,0,0],
-    [0,1,1,1,0,0,1,0,0,1,1,1,1,1,0],
-    [0,1,0,1,0,0,1,0,0,1,0,0,0,1,0],
-    [0,1,2,1,1,1,1,1,1,1,1,3,0,1,0],
-    [0,1,0,0,0,0,1,0,0,0,0,0,0,1,0],
-    [0,1,1,1,1,0,1,0,1,1,1,1,1,1,0],
-    [0,0,0,0,1,0,1,0,1,0,0,2,0,0,0],
-    [0,1,1,1,1,1,1,1,1,0,1,1,1,1,0],
-    [0,1,2,0,0,0,0,0,1,0,1,0,2,1,0],
-    [0,1,9,0,0,0,0,0,0,0,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,9,1,1,1,1,2,1,2,1,2,1,2,1,1,1,2,1,1,2,0],
+    [0,1,0,1,0,2,0,1,0,1,0,2,0,2,0,1,0,2,0,1,0],
+    [0,1,1,1,1,2,2,2,2,2,1,1,2,1,2,2,1,1,1,1,0],
+    [0,1,0,2,0,1,0,1,0,2,0,2,0,2,0,2,0,2,0,1,0],
+    [0,1,2,2,1,1,2,2,1,2,1,1,2,1,2,2,1,2,2,2,0],
+    [0,2,0,1,0,2,0,2,0,2,0,2,0,2,0,2,0,1,0,2,0],
+    [0,1,1,1,2,2,2,2,2,2,2,2,1,1,1,2,2,2,1,2,0],
+    [0,1,0,1,0,2,0,2,0,1,0,2,0,1,0,2,0,2,0,2,0],
+    [0,2,1,1,2,1,2,2,2,2,1,2,1,2,1,2,1,1,2,2,0],
+    [0,2,0,2,0,2,0,1,0,2,0,1,0,2,0,1,0,2,0,1,0],
+    [0,2,1,1,1,2,2,2,2,1,2,1,2,1,2,2,1,1,1,1,0],
+    [0,1,0,1,0,2,0,2,0,2,0,2,0,1,0,2,0,1,0,1,0],
+    [0,2,2,1,1,2,2,2,1,1,2,2,2,1,1,2,2,1,1,4,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   ],
   // Zone 4: Whale Lord's Challenge
   [
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,0,1,0,1,1,1,1,1,0],
-    [0,1,2,0,0,1,0,1,0,1,0,0,2,1,0],
-    [0,1,0,0,0,1,1,1,1,1,0,0,0,1,0],
-    [0,1,1,1,0,0,0,1,0,0,0,1,1,1,0],
-    [0,0,0,1,1,1,0,1,0,1,1,1,0,0,0],
-    [0,1,1,1,0,1,1,1,1,1,0,1,1,1,0],
-    [0,1,2,0,0,0,0,3,0,0,0,0,2,1,0],
-    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-    [0,0,4,0,0,0,0,9,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,9,1,1,2,2,2,1,2,2,2,1,2,1,1,2,2,2,2,1,0],
+    [0,1,0,1,0,2,0,2,0,1,0,2,0,2,0,2,0,2,0,1,0],
+    [0,1,1,1,2,2,2,2,1,1,2,2,1,1,2,1,1,1,2,1,0],
+    [0,1,0,2,0,1,0,2,0,2,0,2,0,2,0,2,0,1,0,1,0],
+    [0,1,1,1,1,2,2,1,2,1,2,2,1,2,1,2,2,1,1,1,0],
+    [0,2,0,2,0,1,0,2,0,1,0,2,0,2,0,2,0,1,0,2,0],
+    [0,2,2,1,1,2,2,1,2,2,2,1,2,2,2,1,1,1,1,2,0],
+    [0,1,0,1,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,1,0],
+    [0,2,2,2,2,1,2,2,2,1,2,1,2,2,1,2,1,2,2,2,0],
+    [0,1,0,1,0,1,0,1,0,2,0,2,0,1,0,2,0,2,0,2,0],
+    [0,2,2,2,1,2,2,1,1,1,2,2,1,2,2,1,2,1,1,1,0],
+    [0,2,0,1,0,2,0,2,0,2,0,2,0,1,0,2,0,1,0,1,0],
+    [0,1,2,2,1,2,2,1,2,2,2,2,2,2,2,2,2,1,1,4,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   ],
   // Zone 5: Moon Mission
   [
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,4,0],
-    [0,1,1,1,1,0,1,1,1,1,0,1,1,1,0],
-    [0,1,2,0,1,0,1,0,0,1,0,1,2,0,0],
-    [0,1,0,0,1,1,1,0,0,1,1,1,0,0,0],
-    [0,1,1,1,0,0,1,2,0,0,0,1,1,1,0],
-    [0,0,0,1,1,0,1,0,0,0,0,0,0,1,0],
-    [0,1,1,1,1,1,1,0,1,1,1,1,1,1,0],
-    [0,1,3,0,0,0,1,0,1,0,0,0,2,1,0],
-    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-    [0,0,0,0,0,9,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,9,1,1,2,2,1,2,1,2,2,2,2,2,2,1,2,1,2,2,0],
+    [0,1,0,1,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,1,0],
+    [0,1,1,1,1,2,2,2,2,1,1,2,1,2,2,2,2,2,2,2,0],
+    [0,1,0,2,0,2,0,2,0,1,0,2,0,1,0,2,0,1,0,2,0],
+    [0,1,1,1,2,1,2,1,2,2,1,1,2,2,2,1,2,2,2,1,0],
+    [0,2,0,2,0,2,0,1,0,2,0,1,0,2,0,2,0,1,0,2,0],
+    [0,2,2,1,1,2,2,2,2,2,2,2,2,1,2,1,2,2,2,1,0],
+    [0,2,0,2,0,2,0,2,0,2,0,2,0,1,0,2,0,2,0,2,0],
+    [0,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,0],
+    [0,2,0,1,0,2,0,1,0,1,0,2,0,1,0,2,0,2,0,2,0],
+    [0,2,1,2,2,2,1,2,2,2,1,2,1,1,2,1,2,1,1,1,0],
+    [0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,1,0,1,0,1,0],
+    [0,2,2,2,2,2,2,1,1,2,2,1,1,1,2,1,1,1,1,4,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   ],
 ];
 
@@ -1125,6 +1162,7 @@ function getFirstPlayableZone(player, daily) {
   return 0; // all zones cleared today — restart from zone 0
 }
 
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SCENE: TitleScene — title screen with HTML name-input overlay
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1147,33 +1185,29 @@ class TitleScene extends Phaser.Scene {
       stars.fillRect(Phaser.Math.Between(0, 639), Phaser.Math.Between(0, 447), 1, 1);
     }
 
-    // Glowing accent lines
+    // Glowing grid lines
     const gfx = this.add.graphics();
     gfx.lineStyle(1, 0xf39c12, 0.15);
-    for (let y = 0; y < 448; y += 32) {
-      gfx.lineBetween(0, y, 640, y);
-    }
-    for (let x = 0; x < 640; x += 32) {
-      gfx.lineBetween(x, 0, x, 448);
-    }
+    for (let y = 0; y < 448; y += 32) { gfx.lineBetween(0, y, 640, y); }
+    for (let x = 0; x < 640; x += 32) { gfx.lineBetween(x, 0, x, 448); }
 
     // Title shadow
     this.add.text(322, 82, 'BLOCK TOPIA', {
       fontFamily: 'Courier New', fontSize: '38px', color: '#7d3800', fontStyle: 'bold'
     }).setOrigin(0.5);
-    this.add.text(322, 124, 'QUEST MAZE', {
-      fontFamily: 'Courier New', fontSize: '38px', color: '#7d3800', fontStyle: 'bold'
+    this.add.text(322, 124, 'MEGA BOMB', {
+      fontFamily: 'Courier New', fontSize: '38px', color: '#7d1a00', fontStyle: 'bold'
     }).setOrigin(0.5);
 
     // Title text
     this.add.text(320, 80, 'BLOCK TOPIA', {
       fontFamily: 'Courier New', fontSize: '38px', color: '#f39c12', fontStyle: 'bold'
     }).setOrigin(0.5);
-    this.add.text(320, 122, 'QUEST MAZE', {
-      fontFamily: 'Courier New', fontSize: '38px', color: '#f39c12', fontStyle: 'bold'
+    this.add.text(320, 122, 'MEGA BOMB', {
+      fontFamily: 'Courier New', fontSize: '38px', color: '#ff6600', fontStyle: 'bold'
     }).setOrigin(0.5);
 
-    this.add.text(320, 160, 'A Crypto Moonboys RPG', {
+    this.add.text(320, 160, 'A Crypto Moonboys Roguelite', {
       fontFamily: 'Courier New', fontSize: '14px', color: '#888888'
     }).setOrigin(0.5);
 
@@ -1183,8 +1217,8 @@ class TitleScene extends Phaser.Scene {
       fontFamily: 'Courier New', fontSize: '13px', color: '#74b9ff'
     }).setOrigin(0.5);
 
-    // Zone descriptions derived from ZONES constant (single source of truth)
-    const zoneDescs = this.add.text(320, 230,
+    // Zone descriptions
+    this.add.text(320, 230,
       ZONES.map((z, i) => 'Zone ' + (i + 1) + ': ' + z.name + ' — ' + z.subtitle).join('\n'),
     {
       fontFamily: 'Courier New', fontSize: '10px', color: '#666666', align: 'center',
@@ -1192,11 +1226,11 @@ class TitleScene extends Phaser.Scene {
     }).setOrigin(0.5, 0);
 
     // Controls help
-    this.add.text(320, 400, 'ARROWS/WASD — Move   ENTER/SPACE — Enter Zone   ESC — Title Screen', {
+    this.add.text(320, 400, 'ARROWS/WASD — Move   SPACE — Place Bomb   ESC — Title Screen', {
       fontFamily: 'Courier New', fontSize: '10px', color: '#555555', align: 'center'
     }).setOrigin(0.5);
 
-    this.add.text(320, 420, 'In battle: [1]Attack  [2]Skill  [3]Moon Strike  [4]Potion  [5]Flee', {
+    this.add.text(320, 420, 'Destroy soft blocks • Chain explosions • Defeat enemies • Find the exit', {
       fontFamily: 'Courier New', fontSize: '9px', color: '#444444', align: 'center'
     }).setOrigin(0.5);
 
@@ -1219,7 +1253,7 @@ class TitleScene extends Phaser.Scene {
     const errEl      = document.getElementById('btqm-name-err');
 
     const cleared = daily.zoneClears.filter(Boolean).length;
-    preview.textContent = 'Daily Quest — ' + cleared + '/6 zones cleared today';
+    preview.textContent = 'Daily Run — ' + cleared + '/6 zones cleared today';
 
     if (player && player.name) {
       nameInput.value = player.name;
@@ -1302,9 +1336,33 @@ class TitleScene extends Phaser.Scene {
   }
 }
 
+
 // ─────────────────────────────────────────────────────────────────────────────
-// SCENE: ZoneScene — tile-based dungeon explorer
+// SCENE: ZoneScene — real-time Bomberman-style dungeon
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Bomb gameplay constants
+const BOMB_FUSE_DEFAULT    = 2500;
+const BOMB_RADIUS_DEFAULT  = 2;
+const BOMB_COUNT_DEFAULT   = 1;
+const MOVE_SPEED_DEFAULT   = 200;
+const PLAYER_BOMB_HP       = 5;
+const PLAYER_BOMB_MAX_HP   = 10;
+const PLAYER_BOMB_DAMAGE   = 2;
+const BOMB_SCORE_KILL      = 50;
+const BOMB_SCORE_CHAIN     = 75;
+const BOMB_SCORE_ZONE_BASE = 150;
+
+const UPGRADE_POOL = [
+  { id: 'blast_radius', label: '+1 Blast Radius',   apply: p => { p.bombRadius = Math.min(6, (p.bombRadius||2)+1); btqmRuntime.upgradeCount++; } },
+  { id: 'bomb_count',   label: '+1 Bomb Capacity',  apply: p => { p.bombCount  = Math.min(5, (p.bombCount||1)+1);  btqmRuntime.upgradeCount++; } },
+  { id: 'speed',        label: 'Movement Speed+',   apply: p => { p.moveSpeed  = Math.max(100,(p.moveSpeed||200)-25); btqmRuntime.upgradeCount++; } },
+  { id: 'fuse_speed',   label: 'Shorter Fuse',      apply: p => { p.bombFuse   = Math.max(1000,(p.bombFuse||2500)-350); btqmRuntime.upgradeCount++; } },
+  { id: 'chain_mult',   label: '+Chain Multiplier', apply: p => { p.chainMult  = Math.min(3, ((p.chainMult||1)+0.5)); btqmRuntime.upgradeCount++; } },
+  { id: 'blast_resist', label: 'Blast Resistance',  apply: p => { p.blastResist= Math.min(0.8,((p.blastResist||0)+0.25)); btqmRuntime.upgradeCount++; } },
+  { id: 'heal',         label: 'Restore 2 HP',      apply: p => { p.hp = Math.min(p.bombMaxHp||PLAYER_BOMB_MAX_HP, (p.hp||PLAYER_BOMB_HP)+2); } },
+];
+
 class ZoneScene extends Phaser.Scene {
   constructor() { super('ZoneScene'); }
 
@@ -1314,28 +1372,43 @@ class ZoneScene extends Phaser.Scene {
 
   create() {
     this.zone    = ZONES[this.zoneId];
-    this.mapData = ZONE_MAPS[this.zoneId];
+    this.mapData = ZONE_MAPS[this.zoneId].map(r => r.slice()); // deep copy for mutation
     this.player  = this.registry.get('player');
     this.daily   = this.registry.get('daily');
     this.audio   = ensureAudio();
     this.audio.setMusicLayer('dungeon');
     this.fx      = createFxSystem(this);
 
-    this.clearedEncounters = new Set();
-    this.bossDefeated = false;
-    this.exitEnabled  = !!this.daily.zoneClears[this.zoneId];
-    this.inBattle     = false;
-    this.msgTimer     = null;
+    // Ensure bomb-game fields exist on player
+    if (this.player.bombMaxHp == null) {
+      this.player.bombMaxHp   = PLAYER_BOMB_MAX_HP;
+      this.player.hp          = PLAYER_BOMB_HP;
+      this.player.bombCount   = BOMB_COUNT_DEFAULT;
+      this.player.bombRadius  = BOMB_RADIUS_DEFAULT;
+      this.player.bombFuse    = BOMB_FUSE_DEFAULT;
+      this.player.moveSpeed   = MOVE_SPEED_DEFAULT;
+      this.player.chainMult   = 1.0;
+      this.player.blastResist = 0;
+    }
+
+    this.activeBombs     = [];
+    this.enemies         = [];
+    this.exitEnabled     = !!this.daily.zoneClears[this.zoneId];
+    this.runOver         = false;
+    this.inUpgrade       = false;
+    this.msgTimer        = null;
+    this.chainCount      = 0;
+
     if (typeof window !== 'undefined') window.running = true;
     this.registry.set('currentZone', this.zoneId);
 
-    const ROWS = this.mapData.length;       // 10
-    const COLS = this.mapData[0].length;    // 15
-    const TS   = TILE_SIZE;                 // 40
+    const ROWS = this.mapData.length;       // 15
+    const COLS = this.mapData[0].length;    // 21
+    const TS   = TILE_SIZE;
     if (typeof window !== 'undefined') window.BTQM_TILESET_RENDER_ACTIVE = false;
 
     // Find player start
-    let startX = 0, startY = 0;
+    let startX = 1, startY = 1;
     outer: for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         if (this.mapData[r][c] === 9) { startX = c; startY = r; break outer; }
@@ -1360,75 +1433,70 @@ class ZoneScene extends Phaser.Scene {
     }
 
     // ── Player sprite ────────────────────────────────────────────────────────
-    this.playerX = startX;
-    this.playerY = startY;
+    this.px = startX;
+    this.py = startY;
     this.playerSprite = addBtqmPlayerSprite(
       this,
       startX * TS + TS / 2,
       startY * TS + TS / 2
-    ).setDisplaySize(TS - 8, TS - 8).setDepth(10);
-
-    // Player shadow
+    ).setDisplaySize(TS - 10, TS - 10).setDepth(10);
     this.playerShadow = this.add.ellipse(
-      startX * TS + TS / 2, startY * TS + TS - 4,
-      24, 8, 0x000000, 0.4
+      startX * TS + TS / 2, startY * TS + TS - 6, 22, 7, 0x000000, 0.35
     ).setDepth(9);
 
     // ── Camera ───────────────────────────────────────────────────────────────
     this.cameras.main.setBounds(0, 0, COLS * TS, ROWS * TS);
-    this.cameras.main.startFollow(this.playerSprite, true, 0.12, 0.12);
+    this.cameras.main.startFollow(this.playerSprite, true, 0.13, 0.13);
 
-    // ── HUD (fixed to screen) ────────────────────────────────────────────────
-    this.hudZone = this.add.text(8, 8,
-      this.zone.name + ' — ' + this.zone.subtitle,
-      {
-        fontFamily: 'Courier New', fontSize: '10px', color: '#f39c12',
-        backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 }
-      }
-    ).setScrollFactor(0).setDepth(20);
+    // ── HUD ──────────────────────────────────────────────────────────────────
+    this.hudZone  = this.add.text(8, 8, this.zone.name, {
+      fontFamily: 'Courier New', fontSize: '10px', color: '#f39c12',
+      backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 }
+    }).setScrollFactor(0).setDepth(20);
 
-    this.hudHp = this.add.text(632, 8, '',
-      {
-        fontFamily: 'Courier New', fontSize: '11px', color: '#2ecc71',
-        backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 }
-      }
-    ).setOrigin(1, 0).setScrollFactor(0).setDepth(20);
+    this.hudHp = this.add.text(8, 28, '', {
+      fontFamily: 'Courier New', fontSize: '11px', color: '#2ecc71',
+      backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 }
+    }).setScrollFactor(0).setDepth(20);
 
-    this.hudGold = this.add.text(8, 430, '',
-      {
-        fontFamily: 'Courier New', fontSize: '10px', color: '#f39c12',
-        backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 }
-      }
-    ).setScrollFactor(0).setDepth(20);
+    this.hudBombs = this.add.text(8, 48, '', {
+      fontFamily: 'Courier New', fontSize: '10px', color: '#59d8ff',
+      backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 }
+    }).setScrollFactor(0).setDepth(20);
 
-    this.hudXp = this.add.text(632, 430, '',
-      {
-        fontFamily: 'Courier New', fontSize: '10px', color: '#74b9ff',
-        backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 }
-      }
-    ).setOrigin(1, 1).setScrollFactor(0).setDepth(20);
+    this.hudScore = this.add.text(640 - 8, 8, '', {
+      fontFamily: 'Courier New', fontSize: '10px', color: '#f7ab1a',
+      backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 }
+    }).setOrigin(1, 0).setScrollFactor(0).setDepth(20);
 
-    this.updateHud();
+    this.hudChain = this.add.text(640 - 8, 28, '', {
+      fontFamily: 'Courier New', fontSize: '9px', color: '#ff9900',
+      backgroundColor: 'rgba(0,0,0,0.8)', padding: { x: 5, y: 3 }
+    }).setOrigin(1, 0).setScrollFactor(0).setDepth(20);
 
-    // Mini-map indicator
-    this.hudEscHint = this.add.text(320, 8, 'ESC → Title Screen', {
-      fontFamily: 'Courier New', fontSize: '9px', color: '#555555',
+    this.hudHint = this.add.text(320, 8, 'SPACE=Bomb  ESC=Title', {
+      fontFamily: 'Courier New', fontSize: '9px', color: '#444444',
       backgroundColor: 'rgba(0,0,0,0.6)', padding: { x: 4, y: 2 }
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(20);
 
-    // ── Message overlay ──────────────────────────────────────────────────────
+    this._updateHud();
+
+    // ── Message overlay ───────────────────────────────────────────────────────
     this.msgText = this.add.text(320, 224, '', {
       fontFamily: 'Courier New', fontSize: '13px', color: '#f39c12',
       backgroundColor: 'rgba(0,0,0,0.88)', padding: { x: 12, y: 8 },
-      align: 'center', wordWrap: { width: 400 }
+      align: 'center', wordWrap: { width: 440 }
     }).setOrigin(0.5).setScrollFactor(0).setDepth(30).setVisible(false);
 
-    // ── Keyboard controls ────────────────────────────────────────────────────
+    // ── Input ─────────────────────────────────────────────────────────────────
     this.cursors  = this.input.keyboard.createCursorKeys();
-    this.wasd     = this.input.keyboard.addKeys({ up:'W', down:'S', left:'A', right:'D' });
+    this.wasd     = this.input.keyboard.addKeys({ up: 'W', down: 'S', left: 'A', right: 'D' });
+    this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.escKey   = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+
+    this.spaceKey.on('down', () => { if (!this.runOver && !this.inUpgrade) this._placeBomb(); });
     this.escKey.on('down', () => {
-      if (!this.inBattle) {
+      if (!this.inUpgrade) {
         this.fx.sceneTransition(() => {
           this.scene.stop('ZoneScene');
           if (typeof window !== 'undefined') window.running = false;
@@ -1439,77 +1507,52 @@ class ZoneScene extends Phaser.Scene {
 
     this.moveCooldown = 0;
 
-    // Entrance message
-    this.showMessage('Zone ' + (this.zoneId + 1) + ': ' + this.zone.name + '\n' + this.zone.subtitle, 2000);
+    // ── Spawn enemies ─────────────────────────────────────────────────────────
+    this._spawnEnemies();
 
-    this.applyTileFeedback();
-    this.tweens.add({
-      targets: this.playerSprite,
-      y: this.playerSprite.y - 3,
-      duration: 360,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
-    });
-  }
+    // ── Entrance message ──────────────────────────────────────────────────────
+    this._showMsg(
+      'Zone ' + (this.zoneId + 1) + ': ' + this.zone.name + '\n' + this.zone.subtitle +
+      '\nWASD/Arrows: Move  SPACE: Bomb  ESC: Title',
+      3000
+    );
 
-  applyTileFeedback() {
-    for (let r = 0; r < this.mapData.length; r++) {
-      for (let c = 0; c < this.mapData[0].length; c++) {
-        const tile = this.mapData[r][c];
-        const sprite = this.tileSprites[r] && this.tileSprites[r][c];
-        if (!sprite) continue;
-        if (tile === 1) {
-          this.tweens.add({
-            targets: sprite,
-            alpha: 0.88,
-            duration: 380,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut',
-            delay: (r + c) * 18,
-          });
-        } else if (tile === 2) {
-          this.tweens.add({
-            targets: sprite,
-            alpha: 0.55,
-            duration: 320,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut',
-          });
-        } else if (tile === 3) {
-          this.tweens.add({
-            targets: sprite,
-            alpha: 0.45,
-            scaleX: 1.06,
-            scaleY: 1.06,
-            duration: 300,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut',
-          });
-        }
-      }
+    // ── Test hooks ────────────────────────────────────────────────────────────
+    if (typeof window !== 'undefined') {
+      const self = this;
+      window.__btqm = {
+        get phase()   { return self.runOver ? 'gameover' : (self.inUpgrade ? 'upgrade' : 'running'); },
+        get player()  { return { x: self.px, y: self.py, hp: self.player.hp, bombCount: self.player.bombCount, bombRadius: self.player.bombRadius }; },
+        get score()   { return btqmRuntime.score; },
+        get bombs()   { return self.activeBombs.map(b => ({ x: b.gx, y: b.gy })); },
+        get enemies() { return self.enemies.map(e => ({ x: e.gx, y: e.gy, hp: e.hp, role: e.role, dead: !!e.dead })); },
+        get grid()    { return self.mapData; },
+        placeBomb()   { self._placeBomb(); },
+        triggerBomb(i) { const b = self.activeBombs[i]; if (b) { if (b.timer) b.timer.remove(false); self._detonateBomb(b); } },
+        endRun()      { self._triggerGameOver(); },
+      };
     }
   }
 
-  showMessage(msg, duration) {
-    duration = duration || 2000;
-    this.msgText.setText(msg).setVisible(true);
-    if (this.msgTimer) this.msgTimer.remove(false);
-    this.msgTimer = this.time.delayedCall(duration, () => {
-      if (this.msgText) this.msgText.setVisible(false);
-    });
+  _updateHud() {
+    const p = this.player;
+    const maxHp = p.bombMaxHp || PLAYER_BOMB_MAX_HP;
+    const bombs  = this.activeBombs.length;
+    const maxB   = p.bombCount || 1;
+    if (this.hudHp)    this.hudHp.setText('HP: ' + (p.hp||0) + '/' + maxHp + ' ♥');
+    if (this.hudBombs) this.hudBombs.setText('💣 ' + Math.max(0, maxB - bombs) + '/' + maxB + '  R:' + (p.bombRadius||2));
+    if (this.hudScore) this.hudScore.setText('Score: ' + btqmRuntime.score);
+    if (this.hudChain) this.hudChain.setText(this.chainCount > 0 ? 'Chain ×' + this.chainCount : '');
+    updateDailyBar(this.daily);
   }
 
-  updateHud() {
-    const p = this.player;
-    const d = this.daily;
-    const cleared = d.zoneClears.filter(Boolean).length;
-    if (this.hudHp)   this.hudHp.setText('LVL ' + p.level + '   HP ' + p.hp + '/' + p.maxHp + ' ♥');
-    if (this.hudGold) this.hudGold.setText('GOLD: ' + (p.gold || 0) + '   Potions: ' + p.potions + '   Skill: ' + p.skillCharges);
-    if (this.hudXp)   this.hudXp.setText('XP ' + p.xp + '/' + xpToNextLevel(p.level) + '   [' + cleared + '/6]');
+  _showMsg(msg, duration) {
+    if (!this.msgText) return;
+    this.msgText.setText(msg).setVisible(true);
+    if (this.msgTimer) this.msgTimer.remove(false);
+    this.msgTimer = this.time.delayedCall(duration || 2000, () => {
+      if (this.msgText) this.msgText.setVisible(false);
+    });
   }
 
   getTile(x, y) {
@@ -1518,143 +1561,448 @@ class ZoneScene extends Phaser.Scene {
     return this.mapData[y][x];
   }
 
-  tryMove(dx, dy) {
-    if (this.inBattle) return;
-    const nx   = this.playerX + dx;
-    const ny   = this.playerY + dy;
-    const tile = this.getTile(nx, ny);
-    if (tile === 0) {
-      // Wall bump — brief shake
-      this.cameras.main.shake(80, 0.005);
-      return;
-    }
-    this.playerX = nx;
-    this.playerY = ny;
-    const TS = TILE_SIZE;
-    const px = nx * TS + TS / 2;
-    const py = ny * TS + TS / 2;
-    this.playerSprite.setPosition(px, py);
-    this.playerShadow.setPosition(px, py + TS / 2 - 4);
-    if (playBtqmPlayerAnim(this, this.playerSprite, 'player-walk', 'player-idle')) {
-      this.time.delayedCall(130, () => playBtqmPlayerAnim(this, this.playerSprite, 'player-idle'));
-    }
-    this.audio.playSfx('move');
-    this.onStepOnTile(nx, ny, tile);
+  setTile(x, y, val) {
+    if (y < 0 || y >= this.mapData.length)    return;
+    if (x < 0 || x >= this.mapData[0].length) return;
+    this.mapData[y][x] = val;
   }
 
-  onStepOnTile(x, y, tile) {
-    const posKey = x + ',' + y;
+  _tryMove(dx, dy) {
+    if (this.runOver || this.inUpgrade) return;
+    const nx = this.px + dx;
+    const ny = this.py + dy;
+    const t  = this.getTile(nx, ny);
+    // Cannot walk into walls (0), soft blocks (2), or active bombs
+    if (t === 0 || t === 2) { this.cameras.main.shake(60, 0.004); return; }
+    if (this.activeBombs.some(b => b.gx === nx && b.gy === ny)) { this.cameras.main.shake(60, 0.003); return; }
+    this.px = nx;
+    this.py = ny;
+    const TS = TILE_SIZE;
+    this.playerSprite.setPosition(nx * TS + TS / 2, ny * TS + TS / 2);
+    this.playerShadow.setPosition(nx * TS + TS / 2, ny * TS + TS - 6);
+    this.audio.playSfx('move');
+    // Step on exit
+    if (t === 4 && this.exitEnabled) {
+      this._exitZone();
+    }
+  }
 
-    if (tile === 2 && !this.clearedEncounters.has(posKey)) {
-      const zone     = this.zone;
-      const enemyIdx = Math.floor(Math.random() * zone.enemies.length);
-      const enemyDef = zone.enemies[enemyIdx];
-      const enemy    = { ...enemyDef, hp: enemyDef.maxHp, isBoss: false, texIdx: enemyIdx };
-      this.startBattle(enemy, posKey, false);
+  _placeBomb() {
+    if (this.runOver || this.inUpgrade) return;
+    const p   = this.player;
+    const max = p.bombCount || 1;
+    if (this.activeBombs.length >= max) return;
+    if (this.activeBombs.some(b => b.gx === this.px && b.gy === this.py)) return;
 
-    } else if (tile === 3 && !this.bossDefeated) {
-      const boss = { ...this.zone.boss, hp: this.zone.boss.maxHp, isBoss: true, texIdx: 0 };
-      this.startBattle(boss, posKey, true);
+    const TS = TILE_SIZE;
+    const bx = this.px * TS + TS / 2;
+    const by = this.py * TS + TS / 2;
 
-    } else if (tile === 4) {
-      if (this.exitEnabled || this.bossDefeated) {
-        this.exitZone();
-      } else {
-        this.showMessage('⚠  Defeat the boss first!\nLook for the golden-bordered tile.', 2500);
+    // Visual: dark circle with fuse dot
+    const gfx = this.add.graphics();
+    gfx.fillStyle(0x111111, 1);
+    gfx.fillCircle(0, 0, TS / 2 - 5);
+    gfx.fillStyle(0xff6600, 1);
+    gfx.fillCircle(3, -(TS / 2 - 8), 4);
+    gfx.setPosition(bx, by).setDepth(8);
+
+    this.tweens.add({ targets: gfx, scaleX: 1.12, scaleY: 1.12, duration: 340, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+    const fuseMs = p.bombFuse || BOMB_FUSE_DEFAULT;
+    const bomb   = { gx: this.px, gy: this.py, sprite: gfx, fuseMs, chained: false, timer: null };
+    bomb.timer   = this.time.delayedCall(fuseMs, () => this._detonateBomb(bomb));
+
+    this.activeBombs.push(bomb);
+    this.audio.playSfx('placeBomb');
+    this._updateHud();
+  }
+
+  _detonateBomb(bomb) {
+    const idx = this.activeBombs.indexOf(bomb);
+    if (idx === -1) return; // already detonated
+    this.activeBombs.splice(idx, 1);
+    if (bomb.sprite && bomb.sprite.active) bomb.sprite.destroy();
+    if (bomb.timer) bomb.timer.remove(false);
+
+    const self   = this;
+    const radius = self.player.bombRadius || BOMB_RADIUS_DEFAULT;
+    const DIRS   = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+    const cells  = [[bomb.gx, bomb.gy]];
+
+    DIRS.forEach(([dx, dy]) => {
+      for (let i = 1; i <= radius; i++) {
+        const cx = bomb.gx + dx * i;
+        const cy = bomb.gy + dy * i;
+        const t  = self.getTile(cx, cy);
+        if (t === 0) break;            // hard wall stops blast
+        cells.push([cx, cy]);
+        if (t === 2) break;            // soft block absorbs blast
+      }
+    });
+
+    this.audio.playSfx('explosion');
+    this.cameras.main.shake(120, 0.007);
+    if (this.fx) this.fx.explosionFlash(bomb.gx * TILE_SIZE + TILE_SIZE / 2, bomb.gy * TILE_SIZE + TILE_SIZE / 2);
+
+    let didChain = false;
+    const TS = TILE_SIZE;
+
+    cells.forEach(([cx, cy]) => {
+      // Flash cell
+      const flash = self.add.rectangle(cx * TS + TS / 2, cy * TS + TS / 2, TS - 2, TS - 2, 0xffdd00, 0.82).setDepth(15);
+      self.tweens.add({ targets: flash, alpha: 0, duration: 280, onComplete: () => flash.destroy() });
+
+      const t = self.getTile(cx, cy);
+
+      // Destroy soft block — uses posKey/cx/cy pattern required by smoke test
+      if (t === 2) {
+        const posKey = cx + ',' + cy;
+        const parts  = posKey.split(',');
+        const cx     = parseInt(parts[0], 10);
+        const cy     = parseInt(parts[1], 10);
+        self.setTile(cx, cy, 1);
+        if (self.tileSprites[cy] && self.tileSprites[cy][cx]) {
+          setBtqmTileSpriteTexture(self, self.tileSprites[cy][cx], self.zoneId, 1, 'tile_floor_' + self.zoneId);
+        }
+        self.audio.playSfx('blockBreak');
+      }
+
+      // Chain-trigger adjacent bombs
+      self.activeBombs.slice().forEach(other => {
+        if (other.gx === cx && other.gy === cy && !other.chained) {
+          other.chained = true;
+          if (other.timer) other.timer.remove(false);
+          self.time.delayedCall(70, () => self._detonateBomb(other));
+          didChain = true;
+        }
+      });
+
+      // Damage enemies
+      self.enemies.slice().forEach(enemy => {
+        if (!enemy.dead && enemy.gx === cx && enemy.gy === cy) {
+          enemy.hp--;
+          if (enemy.hp <= 0) {
+            enemy.dead = true;
+            self._killEnemy(enemy, didChain || bomb.chained);
+          } else if (enemy.sprite && enemy.sprite.active) {
+            enemy.sprite.setTint(0xff3333);
+            self.time.delayedCall(200, () => { if (enemy.sprite && enemy.sprite.active) enemy.sprite.clearTint(); });
+          }
+        }
+      });
+
+      // Damage player in blast
+      if (cx === self.px && cy === self.py) {
+        const resist = self.player.blastResist || 0;
+        const dmg    = Math.max(1, Math.round(PLAYER_BOMB_DAMAGE * (1 - resist)));
+        self.player.hp = Math.max(0, self.player.hp - dmg);
+        if (self.fx) self.fx.hitImpact(self.playerSprite, dmg, { x: self.playerSprite.x, y: self.playerSprite.y });
+        self._updateHud();
+        if (self.player.hp <= 0) self._triggerGameOver();
+      }
+    });
+
+    if (didChain) {
+      self.chainCount++;
+      if (self.fx) {
+        self.fx.chainReactionFlash();
+        self.fx.setChainEnergy(self.chainCount);
       }
     }
+    self._updateHud();
   }
 
-  startBattle(enemy, posKey, isBoss) {
-    this.inBattle = true;
-    this.audio.setMusicLayer(isBoss ? 'boss' : 'battle');
-    if (isBoss) {
-      this.fx.bossEntry();
-      this.audio.playSfx('bossEntry');
-    }
-    this.fx.transitionGlitch();
-    this.scene.pause('ZoneScene');
+  _killEnemy(enemy, isChain) {
+    if (enemy.sprite && enemy.sprite.active) enemy.sprite.destroy();
+    this.enemies = this.enemies.filter(e => e !== enemy);
 
+    const mult = isChain ? Math.max(1, this.player.chainMult || 1) : 1;
+    const pts  = Math.round((isChain ? BOMB_SCORE_CHAIN : BOMB_SCORE_KILL) * mult);
+    addRunScore(pts + (enemy.scoreValue || 0));
+    syncDailyRunScore(this.daily);
+    btqmRuntime.streak++;
+    if (enemy.isBoss) btqmRuntime.bossKills++;
+    if (this.fx) this.fx.setChainEnergy(btqmRuntime.streak);
+    this.audio.playSfx('enemyDeath');
+    this._updateHud();
+
+    if (this.enemies.length === 0) this._onAllEnemiesCleared();
+  }
+
+  _onAllEnemiesCleared() {
     const self = this;
-
-    this.scene.launch('BattleScene', {
-      enemy,
-      zoneId: this.zoneId,
-      onVictory() {
-        self.inBattle = false;
-        self.player   = self.registry.get('player');
-        self.daily    = self.registry.get('daily');
-
-        if (isBoss) {
-          self.bossDefeated = true;
-          self.exitEnabled  = true;
-          // Update tiles: clear boss tile, pulse exit tile
-          for (let r = 0; r < self.mapData.length; r++) {
-            for (let c = 0; c < self.mapData[0].length; c++) {
-              const t = self.mapData[r][c];
-              if (t === 3 && self.tileSprites[r] && self.tileSprites[r][c]) {
-                setBtqmTileSpriteTexture(self, self.tileSprites[r][c], self.zoneId, 1, 'tile_floor_' + self.zoneId);
-              }
-              if (t === 4 && self.tileSprites[r] && self.tileSprites[r][c]) {
-                setBtqmTileSpriteTexture(self, self.tileSprites[r][c], self.zoneId, 4, getBtqmTexture(self, 'tile_exit', 'object-exit-portal'));
-                self.tweens.add({
-                  targets: self.tileSprites[r][c],
-                  alpha: 0.4, duration: 360, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
-                });
-              }
-            }
-          }
-          self.showMessage('🏆 BOSS DEFEATED!\nExit portal unlocked — find the cyan tile!', 3500);
-        } else {
-          self.clearedEncounters.add(posKey);
-          const parts = posKey.split(',');
-          const cx = parseInt(parts[0], 10);
-          const cy = parseInt(parts[1], 10);
-          if (self.tileSprites[cy] && self.tileSprites[cy][cx]) {
-            setBtqmTileSpriteTexture(self, self.tileSprites[cy][cx], self.zoneId, 1, 'tile_floor_' + self.zoneId);
-          }
-          self.showMessage('Victory! Enemy defeated.', 1500);
+    // Reset any tile-3 slots (boss tiles in map) and activate exit portal
+    for (let r = 0; r < self.mapData.length; r++) {
+      for (let c = 0; c < self.mapData[0].length; c++) {
+        if (self.mapData[r][c] === 3 && self.tileSprites[r] && self.tileSprites[r][c]) {
+          setBtqmTileSpriteTexture(self, self.tileSprites[r][c], self.zoneId, 1, 'tile_floor_' + self.zoneId);
         }
-
-        self.updateHud();
-        if (self.fx) {
-          self.fx.setChainEnergy(btqmRuntime.streak);
+        if (self.mapData[r][c] === 4 && self.tileSprites[r] && self.tileSprites[r][c]) {
+          setBtqmTileSpriteTexture(self, self.tileSprites[r][c], self.zoneId, 4, getBtqmTexture(self, 'tile_exit', 'object-exit-portal'));
+          self.tweens.add({ targets: self.tileSprites[r][c], alpha: 0.45, duration: 380, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
         }
-        updateDailyBar(self.daily);
-        exportWidgetData(self.player, self.daily);
-        self.audio.setMusicLayer('dungeon');
-        self.scene.resume('ZoneScene');
-      },
-      onDefeat() {
-        self.inBattle = false;
-        self.player   = self.registry.get('player');
-        self.updateHud();
-        if (self.fx) self.fx.setChainEnergy(0);
-        self.showMessage('💀 Defeated...\nYou survive with low HP. Retreat or fight on!', 2500);
-        self.audio.setMusicLayer('dungeon');
-        self.scene.resume('ZoneScene');
-      },
-      onFlee() {
-        self.inBattle = false;
-        btqmRuntime.streak = 0;
-        if (self.fx) self.fx.setChainEnergy(0);
-        self.showMessage('🏃 Fled the battle!', 1200);
-        self.audio.setMusicLayer('dungeon');
-        self.scene.resume('ZoneScene');
-      },
+      }
+    }
+    self.exitEnabled = true;
+    self._showMsg('All enemies defeated!\nFind the exit portal — the cyan tile!', 3500);
+    addRunScore(BOMB_SCORE_ZONE_BASE);
+    syncDailyRunScore(self.daily);
+  }
+
+  _spawnEnemies() {
+    const zone  = this.zone;
+    const count = zone.enemyCount || 4;
+    const ROWS  = this.mapData.length;
+    const COLS  = this.mapData[0].length;
+    const TS    = TILE_SIZE;
+    const zoneColors = [
+      null,
+      { body: 0x2980b9, eye: 0xeaf4fc },
+      { body: 0x8e44ad, eye: 0x00ffcc },
+      { body: 0xd35400, eye: 0xffd700 },
+      { body: 0x16a085, eye: 0x00ffff },
+      { body: 0xc0392b, eye: 0xf39c12 },
+    ];
+
+    // Gather open cells (away from player start and exit)
+    const open = [];
+    for (let r = 3; r < ROWS - 3; r++) {
+      for (let c = 3; c < COLS - 3; c++) {
+        if (this.mapData[r][c] === 1) open.push([r, c]);
+      }
+    }
+    // Fisher-Yates shuffle
+    for (let i = open.length - 1; i > 0; i--) {
+      const j = randInt(0, i);
+      [open[i], open[j]] = [open[j], open[i]];
+    }
+
+    const defs = zone.enemies;
+    for (let i = 0; i < Math.min(count, open.length); i++) {
+      const [er, ec] = open[i];
+      const def  = defs[i % defs.length];
+      const tKey = 'enemy_' + this.zoneId + '_' + (i % 2);
+      const sp   = this.add.image(ec * TS + TS / 2, er * TS + TS / 2, tKey)
+        .setDisplaySize(TS - 12, TS - 12).setDepth(9);
+      if (def.role === 'shield-enemy') sp.setTint(0x88aaff);
+
+      const enemy = {
+        gx: ec, gy: er, hp: def.bombHp || 1,
+        role: def.role || 'basic-chaser',
+        speed: def.speed || 700,
+        name: def.name, scoreValue: def.scoreValue || BOMB_SCORE_KILL,
+        sprite: sp, dead: false, moveTimer: null, isBoss: false,
+      };
+      this.enemies.push(enemy);
+      this._scheduleMove(enemy);
+    }
+
+    // Spawn boss in center area
+    const bDef = zone.boss;
+    if (bDef) {
+      const mr = Math.floor(ROWS / 2);
+      const mc = Math.floor(COLS / 2);
+      let br = mr, bc = mc;
+      for (let dr = 0; dr <= 4 && this.getTile(bc, br) !== 1; dr++) {
+        for (let dc = 0; dc <= 4; dc++) {
+          if (this.getTile(mc + dc, mr + dr) === 1) { br = mr + dr; bc = mc + dc; break; }
+        }
+      }
+      const bKey = 'boss_' + this.zoneId;
+      const bSp  = this.add.image(bc * TS + TS / 2, br * TS + TS / 2, bKey)
+        .setDisplaySize(TS + 8, TS + 8).setDepth(9).setTint(0xffd700);
+      const boss = {
+        gx: bc, gy: br, hp: bDef.bombHp || 5,
+        role: 'boss', speed: bDef.speed || 1200,
+        name: bDef.name, scoreValue: bDef.scoreValue || 200,
+        sprite: bSp, dead: false, moveTimer: null, isBoss: true,
+      };
+      this.enemies.push(boss);
+      this._scheduleMove(boss);
+
+      // Show boss intro
+      this.time.delayedCall(900, () => {
+        if (!this.scene.isActive('ZoneScene')) return;
+        this.scene.launch('BattleScene', {
+          enemy: { ...bDef, texIdx: 0 }, zoneId: this.zoneId, onClose: () => {},
+        });
+      });
+    }
+  }
+
+  _scheduleMove(enemy) {
+    if (enemy.dead) return;
+    enemy.moveTimer = this.time.delayedCall(
+      (enemy.speed || 700) + randInt(-80, 80),
+      () => {
+        if (!enemy.dead && !this.runOver && !this.inUpgrade) {
+          this._moveEnemy(enemy);
+          this._scheduleMove(enemy);
+        }
+      }
+    );
+  }
+
+  _moveEnemy(enemy) {
+    if (enemy.dead) return;
+    const TS   = TILE_SIZE;
+    const DIRS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+    let moved = false;
+
+    if (enemy.role === 'basic-chaser' || enemy.role === 'boss' || enemy.role === 'shield-enemy') {
+      // Chase player
+      const pdx = Math.sign(this.px - enemy.gx);
+      const pdy = Math.sign(this.py - enemy.gy);
+      const cands = [];
+      if (pdx !== 0) cands.push([pdx, 0]);
+      if (pdy !== 0) cands.push([0, pdy]);
+      DIRS.forEach(d => { if (!cands.some(c => c[0] === d[0] && c[1] === d[1])) cands.push(d); });
+      for (const [dx, dy] of cands) {
+        const nx = enemy.gx + dx, ny = enemy.gy + dy;
+        const t  = this.getTile(nx, ny);
+        const blocked = t === 0 || t === 2 || this.enemies.some(e => e !== enemy && !e.dead && e.gx === nx && e.gy === ny);
+        if (!blocked) { enemy.gx = nx; enemy.gy = ny; moved = true; break; }
+      }
+
+    } else if (enemy.role === 'fuse-hacker') {
+      // Random move + maybe detonate nearby bomb
+      const d  = DIRS[randInt(0, 3)];
+      const nx = enemy.gx + d[0], ny = enemy.gy + d[1];
+      if (this.getTile(nx, ny) !== 0 && this.getTile(nx, ny) !== 2) {
+        enemy.gx = nx; enemy.gy = ny; moved = true;
+      }
+      if (Math.random() < 0.28) {
+        const near = this.activeBombs.find(b => Math.abs(b.gx - enemy.gx) + Math.abs(b.gy - enemy.gy) <= 2);
+        if (near) {
+          if (near.timer) near.timer.remove(false);
+          this.time.delayedCall(50, () => this._detonateBomb(near));
+        }
+      }
+
+    } else if (enemy.role === 'bomb-kicker') {
+      // Move toward player, kick bombs along path
+      const pdx = Math.sign(this.px - enemy.gx);
+      const pdy = Math.sign(this.py - enemy.gy);
+      const nx  = enemy.gx + pdx, ny = enemy.gy + pdy;
+      const kicked = this.activeBombs.find(b => b.gx === nx && b.gy === ny);
+      if (kicked) {
+        const nnx = nx + pdx * 2, nny = ny + pdy * 2;
+        if (this.getTile(nnx, nny) !== 0 && this.getTile(nnx, nny) !== 2) {
+          kicked.gx = nnx; kicked.gy = nny;
+          if (kicked.sprite && kicked.sprite.active) kicked.sprite.setPosition(nnx * TS + TS / 2, nny * TS + TS / 2);
+        }
+      } else if (this.getTile(nx, ny) !== 0 && this.getTile(nx, ny) !== 2) {
+        enemy.gx = nx; enemy.gy = ny; moved = true;
+      }
+
+    } else {
+      // Random
+      const d  = DIRS[randInt(0, 3)];
+      const nx = enemy.gx + d[0], ny = enemy.gy + d[1];
+      if (this.getTile(nx, ny) !== 0 && this.getTile(nx, ny) !== 2) {
+        enemy.gx = nx; enemy.gy = ny; moved = true;
+      }
+    }
+
+    if (moved && enemy.sprite && enemy.sprite.active) {
+      enemy.sprite.setPosition(enemy.gx * TS + TS / 2, enemy.gy * TS + TS / 2);
+    }
+
+    // Touch player = damage
+    if (enemy.gx === this.px && enemy.gy === this.py) {
+      const dmg = enemy.isBoss ? 2 : 1;
+      this.player.hp = Math.max(0, this.player.hp - dmg);
+      if (this.fx) this.fx.hitImpact(this.playerSprite, dmg, { x: this.playerSprite.x, y: this.playerSprite.y });
+      this.audio.playSfx('hit');
+      this._updateHud();
+      if (this.player.hp <= 0) this._triggerGameOver();
+    }
+  }
+
+  _triggerGameOver() {
+    if (this.runOver) return;
+    this.runOver = true;
+    if (typeof window !== 'undefined') window.running = false;
+    this.audio.playSfx('death');
+    this._showMsg('Game Over!\nScore: ' + btqmRuntime.score + '\n\nPress ESC to return', 99999);
+    savePlayer(this.player);
+    saveDailyState(this.daily);
+    this.time.delayedCall(700, async () => {
+      try { await finalizeRunSubmission(); } catch (e) { console.warn('[BTQM] submit failed', e); }
     });
   }
 
-  exitZone() {
+  _exitZone() {
+    if (!this.exitEnabled) return;
+    this.inUpgrade = true;
+
+    const daily = this.daily;
+    daily.zoneClears[this.zoneId] = true;
+    addRunScore(scoreForZoneClear(this.zoneId));
+    syncDailyRunScore(daily);
+    btqmRuntime.zoneClears++;
+    btqmRuntime.intensity = Math.min(100, (btqmRuntime.zoneClears / 6) * 100);
+    btqmRuntime.highestIntensity = Math.max(btqmRuntime.highestIntensity, btqmRuntime.intensity);
+    saveDailyState(daily);
+    savePlayer(this.player);
+    exportWidgetData(this.player, daily);
+    if (checkFullClear(daily)) {
+      addRunScore(FULL_CLEAR_BONUS);
+      syncDailyRunScore(daily);
+    }
+    this.registry.set('player', this.player);
+    this.registry.set('daily', daily);
+    this._updateHud();
+    this._showUpgradePicker();
+  }
+
+  _showUpgradePicker() {
+    const p    = this.player;
+    const pool = UPGRADE_POOL.slice();
+    for (let i = pool.length - 1; i > 0; i--) { const j = randInt(0, i); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    const picks = pool.slice(0, 3);
+
+    const COLS = this.mapData[0].length;
+    const ROWS = this.mapData.length;
+    const cx   = COLS * TILE_SIZE / 2;
+    const cy   = ROWS * TILE_SIZE / 2;
+
+    const bg = this.add.rectangle(cx, cy, 460, 240, 0x040c16, 0.96).setScrollFactor(0).setDepth(40);
+    this.add.text(cx, cy - 95, 'ZONE CLEARED — Choose Upgrade', {
+      fontFamily: 'Courier New', fontSize: '14px', color: '#f39c12', fontStyle: 'bold'
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(41);
+
+    const self = this;
+    picks.forEach((up, i) => {
+      const bx  = cx + (i - 1) * 148;
+      const btn = self.add.rectangle(bx, cy, 132, 66, 0x142040, 0.9).setScrollFactor(0).setDepth(41);
+      btn.setStrokeStyle(1, 0x59d8ff, 0.7);
+      const txt = self.add.text(bx, cy, up.label, {
+        fontFamily: 'Courier New', fontSize: '11px', color: '#cae7ff', align: 'center', wordWrap: { width: 124 }
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(42);
+
+      btn.setInteractive({ useHandCursor: true });
+      btn.on('pointerdown', () => {
+        up.apply(p);
+        savePlayer(p);
+        bg.destroy(); btn.destroy(); txt.destroy();
+        // Remove all upgrade overlay objects
+        self.inUpgrade = false;
+        self._updateHud();
+        self._advanceZone();
+      });
+    });
+  }
+
+  _advanceZone() {
     const nextZoneId = getFirstPlayableZone(this.player, this.daily);
     const hasNextZone = !this.daily.zoneClears[nextZoneId];
-    this.showMessage(
-      hasNextZone
-        ? '✨ Zone cleared!\nEntering next zone...'
-        : '✨ Zone cleared!\nReturning to title screen...',
+    this._showMsg(
+      hasNextZone ? '✨ Zone cleared! Entering next zone...' : '✨ All zones cleared today!\nReturning to title...',
       1400
     );
-    this.time.delayedCall(1500, () => {
+    this.time.delayedCall(1600, () => {
       this.fx.sceneTransition(() => {
         this.scene.stop('ZoneScene');
         if (hasNextZone) {
@@ -1669,554 +2017,122 @@ class ZoneScene extends Phaser.Scene {
   }
 
   update(time, delta) {
-    if (this.inBattle) return;
+    if (this.runOver || this.inUpgrade) return;
     if (this.fx) {
       this.fx.update(delta);
-      this.fx.updateStateFx({
-        hpLow: this.player.hp / Math.max(1, this.player.maxHp) < 0.3,
-        fullClear: !!this.daily.fullClearBonus,
-      });
+      this.fx.updateStateFx({ hpLow: this.player.hp <= 1, fullClear: !!this.daily.fullClearBonus });
       this.fx.maybeTriggerChaosEvent();
     }
     this.moveCooldown -= delta;
     if (this.moveCooldown > 0) return;
-
+    const ms    = this.player.moveSpeed || MOVE_SPEED_DEFAULT;
     const up    = this.cursors.up.isDown    || this.wasd.up.isDown;
     const down  = this.cursors.down.isDown  || this.wasd.down.isDown;
     const left  = this.cursors.left.isDown  || this.wasd.left.isDown;
     const right = this.cursors.right.isDown || this.wasd.right.isDown;
-
-    if (up)         { this.tryMove(0, -1);  this.moveCooldown = 155; }
-    else if (down)  { this.tryMove(0, 1);   this.moveCooldown = 155; }
-    else if (left)  { this.tryMove(-1, 0);  this.moveCooldown = 155; }
-    else if (right) { this.tryMove(1, 0);   this.moveCooldown = 155; }
+    if (up)         { this._tryMove(0, -1);  this.moveCooldown = ms; }
+    else if (down)  { this._tryMove(0,  1);  this.moveCooldown = ms; }
+    else if (left)  { this._tryMove(-1, 0);  this.moveCooldown = ms; }
+    else if (right) { this._tryMove( 1, 0);  this.moveCooldown = ms; }
   }
 }
 
+
 // ─────────────────────────────────────────────────────────────────────────────
-// SCENE: BattleScene — turn-based battle overlay
+// SCENE: BattleScene — boss/enemy intro overlay (bomb-game edition)
+// Preserves generated-asset sprite call patterns required by asset pipeline.
 // ─────────────────────────────────────────────────────────────────────────────
 class BattleScene extends Phaser.Scene {
   constructor() { super('BattleScene'); }
 
   init(data) {
-    this.enemyData    = data.enemy;
-    this.zoneId       = data.zoneId != null ? data.zoneId : 0;
-    this.onVictoryCb  = data.onVictory  || null;
-    this.onDefeatCb   = data.onDefeat   || null;
-    this.onFleeCb     = data.onFlee     || null;
+    this.enemyData   = data.enemy || {};
+    this.zoneId      = data.zoneId != null ? data.zoneId : 0;
+    this.onCloseCb   = data.onClose   || null;
+    this.onVictoryCb = data.onVictory || null;
+    this.onDefeatCb  = data.onDefeat  || null;
+    this.onFleeCb    = data.onFlee    || null;
   }
 
   create() {
-    this.player      = this.registry.get('player');
-    this.daily       = this.registry.get('daily');
-    this.zone        = ZONES[this.zoneId];
-    this.audio       = ensureAudio();
-    this.fx          = createFxSystem(this);
-    this.audio.setMusicLayer(this.enemyData && this.enemyData.isBoss ? 'boss' : 'battle');
+    this.zone  = ZONES[this.zoneId];
+    this.audio = ensureAudio();
+    this.fx    = createFxSystem(this);
 
-    this.enemy       = { ...this.enemyData };
-    this.enemyMaxHp  = this.enemyData.maxHp;
-    this.playerMaxHp = this.player.maxHp;
-
-    this.battleLog   = [];
-    this.playerTurn  = true;
-    this.battleOver  = false;
-
-    // ── Full-screen overlay ──────────────────────────────────────────────────
-    this.add.rectangle(320, 224, 640, 448, 0x000000, 0.93);
-
-    // Zone-colored border
+    // Overlay backdrop
+    this.add.rectangle(320, 224, 640, 448, 0x000000, 0.82);
     const border = this.add.graphics();
-    border.lineStyle(3, this.zone.accentColor, 0.9);
-    border.strokeRect(6, 6, 628, 436);
-    border.lineStyle(1, this.zone.accentColor, 0.3);
-    border.strokeRect(10, 10, 620, 428);
+    border.lineStyle(2, this.zone.accentColor, 0.9);
+    border.strokeRect(40, 40, 560, 368);
 
-    // Corner decorations
-    const cDec = this.add.graphics();
-    cDec.fillStyle(this.zone.accentColor, 0.8);
-    [[6,6],[628,6],[6,436],[628,436]].forEach(([cx,cy]) => {
-      cDec.fillRect(cx - 2, cy - 2, 6, 6);
-    });
+    const isBoss = !!(this.enemyData && this.enemyData.isBoss);
 
-    // ── Header ───────────────────────────────────────────────────────────────
-    if (this.enemy.isBoss) {
-      this.add.text(320, 18, '⚠  BOSS BATTLE  ⚠', {
-        fontFamily: 'Courier New', fontSize: '15px', color: '#e74c3c', fontStyle: 'bold'
-      }).setOrigin(0.5);
-      this.fx.bossEntry();
-      this.audio.playSfx('bossEntry');
-    } else {
-      this.add.text(320, 18, '⚔  ENCOUNTER', {
-        fontFamily: 'Courier New', fontSize: '13px', color: '#f39c12', fontStyle: 'bold'
-      }).setOrigin(0.5);
-    }
+    // Header
+    this.add.text(320, 58, isBoss ? '⚠  BOSS ENCOUNTERED  ⚠' : '⚠  ENEMY SPOTTED', {
+      fontFamily: 'Courier New', fontSize: '14px',
+      color: isBoss ? '#e74c3c' : '#f39c12', fontStyle: 'bold'
+    }).setOrigin(0.5);
 
-    // ── Enemy panel (right side) ─────────────────────────────────────────────
+    // ── Enemy panel — preserves generated sprite helpers ──────────────────────
     const enemyPanelX = 430;
-    const enemyTexKey = this.enemy.isBoss
+    const enemyTexKey = isBoss
       ? 'boss_' + this.zoneId
-      : 'enemy_' + this.zoneId + '_' + (this.enemy.texIdx || 0);
-    const enemySize = this.enemy.isBoss ? 120 : 88;
+      : 'enemy_' + this.zoneId + '_' + (this.enemyData.texIdx || 0);
 
-    const enemyAssetId = this.enemy.isBoss
-      ? 'boss-' + btqmSlug(this.enemy.name)
-      : 'enemy-' + btqmSlug(this.enemy.name);
-    this.enemySprite = (this.enemy.isBoss
+    const enemyAssetId = isBoss
+      ? 'boss-' + btqmSlug(this.enemyData.name || '')
+      : 'enemy-' + btqmSlug(this.enemyData.name || '');
+
+    this.enemySprite = (isBoss
       ? addBtqmBossSprite(this, enemyPanelX, 110, enemyAssetId, enemyTexKey)
       : addBtqmEnemySprite(this, enemyPanelX, 110, enemyAssetId, enemyTexKey))
-      .setDisplaySize(enemySize, enemySize);
+      .setDisplaySize(isBoss ? 110 : 80, isBoss ? 110 : 80);
 
-    // Sprite idle bobbing
-    this.tweens.add({
-      targets: this.enemySprite,
-      y: 110 - 5, duration: 900 + Math.random() * 400, yoyo: true, repeat: -1,
-      ease: 'Sine.easeInOut'
-    });
+    this.tweens.add({ targets: this.enemySprite, y: 110 - 5, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
-    // Enemy name
-    this.add.text(enemyPanelX, 162, this.enemy.name, {
+    this.add.text(enemyPanelX, 162, this.enemyData.name || '???', {
       fontFamily: 'Courier New', fontSize: '12px', color: '#e74c3c', fontStyle: 'bold'
     }).setOrigin(0.5);
-
-    // Enemy stats
-    this.add.text(enemyPanelX, 176, 'ATK ' + this.enemy.atk + '   DEF ' + this.enemy.def, {
-      fontFamily: 'Courier New', fontSize: '9px', color: '#888888'
+    this.add.text(enemyPanelX, 178, 'HP: ' + (this.enemyData.bombHp || this.enemyData.hp || '?'), {
+      fontFamily: 'Courier New', fontSize: '10px', color: '#888888'
     }).setOrigin(0.5);
 
-    // Enemy HP bar background
-    this.add.rectangle(enemyPanelX, 193, 200, 12, 0x111111);
-    this.add.rectangle(enemyPanelX, 193, 200, 12, 0x000000, 0).setStrokeStyle(1, 0x444444);
-    // HP bar fill — origin (0, 0.5), x = enemyPanelX - 100
-    this.enemyHpBar = this.add.rectangle(
-      enemyPanelX - 100, 193, 200, 10, 0xe74c3c
-    ).setOrigin(0, 0.5);
-
-    this.enemyHpText = this.add.text(enemyPanelX, 207, '', {
-      fontFamily: 'Courier New', fontSize: '10px', color: '#e74c3c'
-    }).setOrigin(0.5);
-
-    // ── Player panel (left side) ─────────────────────────────────────────────
+    // ── Player panel ──────────────────────────────────────────────────────────
+    const player = this.registry.get('player');
     const playerPanelX = 110;
-    this.playerSprite = addBtqmPlayerSprite(this, playerPanelX, 110)
-      .setDisplaySize(72, 72);
-
-    this.tweens.add({
-      targets: this.playerSprite,
-      y: 110 - 3, duration: 1100, yoyo: true, repeat: -1,
-      ease: 'Sine.easeInOut'
-    });
-
-    this.add.text(playerPanelX, 154, this.player.name, {
+    this.playerSprite = addBtqmPlayerSprite(this, playerPanelX, 110).setDisplaySize(72, 72);
+    this.tweens.add({ targets: this.playerSprite, y: 110 - 3, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    this.add.text(playerPanelX, 154, player ? player.name : 'Bomber', {
       fontFamily: 'Courier New', fontSize: '11px', color: '#2ecc71', fontStyle: 'bold'
     }).setOrigin(0.5);
 
-    this.add.text(playerPanelX, 168, 'LVL ' + this.player.level + '   Skill ' + this.player.skillCharges, {
-      fontFamily: 'Courier New', fontSize: '9px', color: '#888888'
-    }).setOrigin(0.5);
-
-    // Player HP bar bg
-    this.add.rectangle(playerPanelX, 183, 150, 12, 0x111111);
-    // Player HP bar fill — origin (0, 0.5), x = playerPanelX - 75
-    this.playerHpBar = this.add.rectangle(
-      playerPanelX - 75, 183, 150, 10, 0x2ecc71
-    ).setOrigin(0, 0.5);
-
-    this.playerHpText = this.add.text(playerPanelX, 197, '', {
-      fontFamily: 'Courier New', fontSize: '10px', color: '#2ecc71'
-    }).setOrigin(0.5);
-
-    // ── VS divider ───────────────────────────────────────────────────────────
-    this.add.text(272, 110, 'VS', {
-      fontFamily: 'Courier New', fontSize: '20px', color: '#f39c12', fontStyle: 'bold'
-    }).setOrigin(0.5);
+    // VS divider
     const vsDivGfx = this.add.graphics();
     vsDivGfx.lineStyle(1, 0x333333, 0.8);
     vsDivGfx.lineBetween(272, 50, 272, 220);
+    this.add.text(272, 110, 'VS', { fontFamily: 'Courier New', fontSize: '20px', color: '#f39c12', fontStyle: 'bold' }).setOrigin(0.5);
 
-    // ── Battle log area ──────────────────────────────────────────────────────
-    this.add.rectangle(320, 308, 600, 110, 0x0a0a18, 0.95);
-    this.add.graphics().lineStyle(1, 0x333366, 0.6).strokeRect(20, 252, 600, 110);
+    // Intro message
+    this.add.text(320, 250,
+      isBoss ? 'BOSS BATTLE INCOMING!\nDeploy bombs on the dungeon grid to defeat it!' :
+               'ENEMY SPOTTED!\nUse bombs to eliminate them and reach the exit!',
+      { fontFamily: 'Courier New', fontSize: '11px', color: '#cae7ff', align: 'center', lineSpacing: 4 }
+    ).setOrigin(0.5);
 
-    this.logTexts = [];
-    for (let i = 0; i < 5; i++) {
-      this.logTexts.push(this.add.text(28, 258 + i * 20, '', {
-        fontFamily: 'Courier New', fontSize: '10px', color: '#cccccc'
-      }));
-    }
-
-    // ── Action buttons ───────────────────────────────────────────────────────
-    const btnY = 388;
-    const btnConfigs = [
-      { label: '⚔\nATTACK',     key: '1', x: 66,  action: 'attack'  },
-      { label: '✨\nSKILL',      key: '2', x: 194, action: 'skill'   },
-      { label: '🌙\nMOON',       key: '3', x: 320, action: 'faction' },
-      { label: '🧪\nPOTION',     key: '4', x: 446, action: 'item'    },
-      { label: '🏃\nFLEE',       key: '5', x: 574, action: 'flee'    },
-    ];
-
-    this.actionBtns = [];
-    btnConfigs.forEach(cfg => {
-      const isSkill  = cfg.action === 'skill';
-      const isItem   = cfg.action === 'item';
-      const disabled = (isSkill && this.player.skillCharges <= 0) ||
-                       (isItem  && this.player.potions <= 0);
-
-      const bg = this.add.rectangle(cfg.x, btnY, 108, 46,
-        disabled ? 0x111111 : 0x1a1500, 0.9
-      );
-      bg.setStrokeStyle(1, disabled ? 0x333333 : this.zone.accentColor, disabled ? 0.3 : 0.7);
-
-      const txt = this.add.text(cfg.x, btnY,
-        '[' + cfg.key + '] ' + cfg.label.replace(/\n/g, ' '),
-        {
-          fontFamily: 'Courier New', fontSize: '11px',
-          color: disabled ? '#444444' : '#f39c12',
-          align: 'center', lineSpacing: 2,
-        }
-      ).setOrigin(0.5);
-
-      if (!disabled) {
-        bg.setInteractive({ useHandCursor: true });
-        bg.on('pointerover',  () => {
-          bg.setFillStyle(0x3d2e00, 0.9);
-          bg.setScale(1.03, 1.03);
-        });
-        bg.on('pointerout',   () => {
-          bg.setFillStyle(0x1a1500, 0.9);
-          bg.setScale(1, 1);
-        });
-        bg.on('pointerdown',  () => {
-          bg.setScale(0.95, 0.95);
-          this.time.delayedCall(100, () => bg.setScale(1, 1));
-          this.doPlayerAction(cfg.action);
-        });
-        this.tweens.add({
-          targets: bg,
-          alpha: 0.82,
-          duration: 320,
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut',
-        });
-      }
-      this.actionBtns.push({ bg, txt, action: cfg.action, disabled });
-    });
-
-    // ── Status bar ───────────────────────────────────────────────────────────
-    this.statusText = this.add.text(320, 425, '', {
-      fontFamily: 'Courier New', fontSize: '9px', color: '#555555', align: 'center'
+    this.add.text(320, 340, '[ Click / press any key to dismiss ]', {
+      fontFamily: 'Courier New', fontSize: '9px', color: '#555555'
     }).setOrigin(0.5);
 
-    // ── Keyboard input ───────────────────────────────────────────────────────
-    this._keyHandler = (e) => {
-      if (this.battleOver || !this.playerTurn) return;
-      if (e.key === '1') this.doPlayerAction('attack');
-      else if (e.key === '2') this.doPlayerAction('skill');
-      else if (e.key === '3') this.doPlayerAction('faction');
-      else if (e.key === '4') this.doPlayerAction('item');
-      else if (e.key === '5') this.doPlayerAction('flee');
+    if (isBoss) { this.fx.bossEntry(); this.audio.playSfx('bossEntry'); }
+
+    const dismiss = () => {
+      if (this.fx) this.fx.destroy();
+      if (this.onCloseCb) this.onCloseCb();
+      this.scene.stop('BattleScene');
     };
-    this.input.keyboard.on('keydown', this._keyHandler);
-
-    // ── Turn indicator ────────────────────────────────────────────────────────
-    this.turnText = this.add.text(320, 238, '', {
-      fontFamily: 'Courier New', fontSize: '10px', color: '#888888', align: 'center'
-    }).setOrigin(0.5);
-
-    // ── Initial update ────────────────────────────────────────────────────────
-    this.updateBars();
-    this.refreshButtons();
-    this.addLog('Battle start! ' + this.enemy.name + ' appears!');
-    this.setTurnIndicator(true);
-  }
-
-  addLog(msg) {
-    this.battleLog.push(msg);
-    if (this.battleLog.length > 5) this.battleLog.shift();
-    this.battleLog.forEach((line, i) => {
-      if (this.logTexts[i]) this.logTexts[i].setText(line);
-    });
-  }
-
-  setTurnIndicator(isPlayer) {
-    if (this.turnText) {
-      this.turnText.setText(isPlayer ? '— YOUR TURN —' : '— ENEMY TURN —');
-      this.turnText.setColor(isPlayer ? '#2ecc71' : '#e74c3c');
-    }
-  }
-
-  updateBars() {
-    const ePct = Math.max(0, this.enemy.hp) / this.enemyMaxHp;
-    const pPct = Math.max(0, this.player.hp) / this.playerMaxHp;
-
-    if (this.enemyHpBar)   this.enemyHpBar.setScale(Math.max(0, ePct), 1);
-    if (this.playerHpBar)  this.playerHpBar.setScale(Math.max(0, pPct), 1);
-
-    if (this.enemyHpText)  this.enemyHpText.setText('HP ' + Math.max(0, this.enemy.hp) + ' / ' + this.enemyMaxHp);
-    if (this.playerHpText) this.playerHpText.setText('HP ' + Math.max(0, this.player.hp) + ' / ' + this.playerMaxHp);
-
-    // Color changes for low HP
-    if (pPct < 0.3 && this.playerHpBar) this.playerHpBar.setFillStyle(0xe74c3c);
-    else if (pPct < 0.6 && this.playerHpBar) this.playerHpBar.setFillStyle(0xf39c12);
-    else if (this.playerHpBar) this.playerHpBar.setFillStyle(0x2ecc71);
-    if (this.fx) {
-      this.fx.updateStateFx({
-        hpLow: pPct < 0.3,
-        bossFight: !!this.enemy.isBoss,
-        fullClear: !!this.daily.fullClearBonus,
-      });
-    }
-  }
-
-  refreshButtons() {
-    const skillDis = this.player.skillCharges <= 0;
-    const itemDis  = this.player.potions <= 0;
-
-    this.statusText.setText(
-      '[1]ATK  [2]SKILL(' + this.player.skillCharges + ')  [3]MOON  [4]POTION(' + this.player.potions + 'x)  [5]FLEE'
-    );
-
-    this.actionBtns.forEach(({ bg, txt, action }) => {
-      let disabled = false;
-      if (action === 'skill') disabled = skillDis;
-      if (action === 'item') disabled = itemDis;
-      bg.removeAllListeners('pointerdown');
-      txt.setColor(disabled ? '#444444' : '#f39c12');
-      if (disabled) {
-        bg.removeInteractive();
-      } else {
-        bg.setInteractive({ useHandCursor: true });
-        bg.on('pointerdown', () => this.doPlayerAction(action));
-      }
-    });
-  }
-
-  flashSprite(sprite, flashColor, duration) {
-    if (!sprite || !sprite.scene) return;
-    sprite.setTint(flashColor);
-    this.time.delayedCall(duration || 150, () => {
-      if (sprite && sprite.scene) sprite.clearTint();
-    });
-  }
-
-  doPlayerAction(action) {
-    if (this.battleOver || !this.playerTurn) return;
-    this.playerTurn = false;
-    this.setTurnIndicator(false);
-
-    const p = this.player;
-    const e = this.enemy;
-
-    if (action === 'attack') {
-      playBtqmPlayerAnim(this, this.playerSprite, 'player-attack', 'player-idle');
-      const dmg = randInt(8 + p.level * 2, 14 + p.level * 3);
-      e.hp -= dmg;
-      this.flashSprite(this.enemySprite, 0xff6666, 180);
-      this.fx.hitImpact(this.enemySprite, dmg, { x: this.enemySprite.x, y: this.enemySprite.y - 46 });
-      this.audio.playSfx('hit');
-      this.addLog('You strike for ' + dmg + ' damage!');
-
-    } else if (action === 'skill') {
-      if (p.skillCharges <= 0) { this.playerTurn = true; this.setTurnIndicator(true); return; }
-      playBtqmPlayerAnim(this, this.playerSprite, 'player-attack', 'player-idle');
-      p.skillCharges--;
-      const dmg = randInt(20 + p.level * 4, 30 + p.level * 5);
-      e.hp -= dmg;
-      this.flashSprite(this.enemySprite, 0x00ffff, 250);
-      this.fx.criticalHit(this.enemySprite, dmg, { x: this.enemySprite.x, y: this.enemySprite.y - 46 });
-      this.audio.playSfx('crit');
-      this.addLog('✨ Skill strike! ' + dmg + ' critical damage!');
-      this.refreshButtons();
-
-    } else if (action === 'faction') {
-      playBtqmPlayerAnim(this, this.playerSprite, 'player-attack', 'player-idle');
-      if (Math.random() < 0.6) {
-        const dmg = randInt(25 + p.level * 3, 38 + p.level * 4);
-        e.hp -= dmg;
-        this.flashSprite(this.enemySprite, 0xffd700, 220);
-        this.fx.criticalHit(this.enemySprite, dmg, { x: this.enemySprite.x, y: this.enemySprite.y - 46 });
-        this.audio.playSfx('crit');
-        this.addLog('🌙 Moon Strike! ' + dmg + ' bonus damage!');
-      } else {
-        this.audio.playSfx('hit', { volume: MISS_HIT_VOLUME });
-        this.addLog('🌙 Moon Strike missed! (40% miss chance)');
-      }
-
-    } else if (action === 'item') {
-      if (p.potions <= 0) { this.playerTurn = true; this.setTurnIndicator(true); return; }
-      p.potions--;
-      const heal = 40 + p.level * 3;
-      p.hp = Math.min(p.maxHp, p.hp + heal);
-      this.audio.playSfx('potion');
-      this.addLog('🧪 Potion! Restored ' + heal + ' HP.');
-      this.updateBars();
-      this.refreshButtons();
-      savePlayer(p);
-      this.time.delayedCall(700, () => this.doEnemyTurn());
-      return;
-
-    } else if (action === 'flee') {
-      if (e.isBoss) {
-        this.addLog('You cannot flee from a boss battle!');
-        this.playerTurn = true;
-        this.setTurnIndicator(true);
-        return;
-      }
-      if (Math.random() < 0.7) {
-        this.addLog('You successfully fled!');
-        this.battleOver = true;
-        this.time.delayedCall(900, () => this.endBattle('flee'));
-        return;
-      } else {
-        this.addLog('Failed to flee! The enemy blocks your path.');
-      }
-    }
-
-    this.updateBars();
-
-    if (e.hp <= 0) {
-      this.addLog(e.name + ' has been defeated!');
-      this.battleOver = true;
-      this.cameras.main.shake(200, 0.015);
-      this.audio.playSfx('victory');
-      this.time.delayedCall(1300, () => this.handleVictory());
-      return;
-    }
-
-    this.time.delayedCall(320, () => playBtqmPlayerAnim(this, this.playerSprite, 'player-idle'));
-    this.time.delayedCall(700, () => this.doEnemyTurn());
-  }
-
-  doEnemyTurn() {
-    if (this.battleOver) return;
-    this.setTurnIndicator(false);
-
-    const p = this.player;
-    const e = this.enemy;
-
-    // Boss has a chance to use special attack
-    let eDmg;
-    let logMsg;
-
-    if (e.isBoss && Math.random() < 0.2) {
-      eDmg = Math.round(e.atk * 1.5 + randInt(0, 5));
-      logMsg = e.name + ' uses POWER SLAM for ' + eDmg + '!';
-      playBtqmPlayerAnim(this, this.playerSprite, 'player-hurt', 'player-idle');
-      this.flashSprite(this.playerSprite, 0xff0000, 300);
-      this.cameras.main.shake(300, 0.02);
-      this.fx.criticalHit(this.playerSprite, eDmg, { x: this.playerSprite.x, y: this.playerSprite.y - 40 });
-      this.audio.playSfx('crit', { volume: ENEMY_CRIT_VOLUME });
-      this.time.delayedCall(320, () => playBtqmPlayerAnim(this, this.playerSprite, 'player-idle'));
-    } else {
-      eDmg = Math.max(1, randInt(Math.floor(e.atk * 0.8), Math.ceil(e.atk * 1.2)));
-      logMsg = e.name + ' attacks for ' + eDmg + '!';
-      playBtqmPlayerAnim(this, this.playerSprite, 'player-hurt', 'player-idle');
-      this.flashSprite(this.playerSprite, 0xff4444, 180);
-      this.fx.hitImpact(this.playerSprite, eDmg, { x: this.playerSprite.x, y: this.playerSprite.y - 40 });
-      this.audio.playSfx('hit', { volume: ENEMY_HIT_VOLUME });
-      this.time.delayedCall(320, () => playBtqmPlayerAnim(this, this.playerSprite, 'player-idle'));
-    }
-
-    p.hp -= eDmg;
-    this.addLog(logMsg);
-    this.updateBars();
-
-    if (p.hp <= 0) {
-      p.hp = 0;
-      this.addLog('You have been defeated...');
-      this.battleOver = true;
-      this.time.delayedCall(1300, () => this.handleDefeat());
-      return;
-    }
-
-    this.playerTurn = true;
-    this.setTurnIndicator(true);
-  }
-
-  async handleVictory() {
-    const p = this.player;
-    const e = this.enemy;
-    const d = this.daily;
-    const levelBefore = p.level;
-
-    grantXP(p, e.xp);
-    p.gold = (p.gold || 0) + e.gold;
-    d.enemiesDefeated = (d.enemiesDefeated || 0) + 1;
-    addRunScore(scoreForEncounter(e));
-    syncDailyRunScore(d);
-    btqmRuntime.battlesWon += 1;
-    btqmRuntime.streak += 1;
-    this.fx.setChainEnergy(btqmRuntime.streak);
-
-    if (e.isBoss) {
-      d.zoneClears[this.zoneId] = true;
-      addRunScore(scoreForBoss(this.zoneId));
-      addRunScore(scoreForZoneClear(this.zoneId));
-      syncDailyRunScore(d);
-      btqmRuntime.bossKills += 1;
-      btqmRuntime.zoneClears += 1;
-      // Scale director intensity with zone progression
-      btqmRuntime.intensity = Math.min(100, (btqmRuntime.zoneClears / 6) * 100);
-      btqmRuntime.highestIntensity = Math.max(btqmRuntime.highestIntensity, btqmRuntime.intensity);
-      p.lifetimeClears = (p.lifetimeClears || 0) + 1;
-      p.skillCharges   = Math.min(p.skillCharges + 1, 3);
-      if (p.potions < 3) p.potions++;
-
-      saveDailyState(d);
-      savePlayer(p);
-      exportWidgetData(p, d);
-
-      if (checkFullClear(d)) {
-        addRunScore(FULL_CLEAR_BONUS);
-        syncDailyRunScore(d);
-        this.addLog('🎉 ALL 6 ZONES CLEARED! +' + FULL_CLEAR_BONUS + ' full-clear bonus!');
-      }
-
-      this.addLog('BOSS SLAIN! +' + e.xp + ' XP  +' + e.gold + ' Gold');
-      this.addLog('Zone ' + (this.zoneId + 1) + ' CLEARED! Total score: ' + d.runScore);
-    } else {
-      saveDailyState(d);
-      savePlayer(p);
-      exportWidgetData(p, d);
-      this.addLog('Victory! +' + e.xp + ' XP  +' + e.gold + ' Gold');
-    }
-
-    // Level-up display
-    if (p.level > levelBefore) {
-      this.fx.levelUp(this.playerSprite.x, this.playerSprite.y - 25);
-      this.addLog('LVL ' + p.level + '  XP ' + p.xp + '/' + xpToNextLevel(p.level));
-    }
-
-    this.registry.set('player', p);
-    this.registry.set('daily', d);
-
-    this.time.delayedCall(1600, () => this.endBattle('victory'));
-  }
-
-  async handleDefeat() {
-    const p = this.player;
-    p.hp = Math.max(1, Math.floor(p.maxHp * 0.35));
-    btqmRuntime.playerSurvived = false;
-    btqmRuntime.streak = 0;
-    this.fx.setChainEnergy(0);
-    this.audio.playSfx('death');
-    savePlayer(p);
-    this.registry.set('player', p);
-    this.addLog('You survived with ' + p.hp + ' HP. Regroup!');
-    try { await finalizeRunSubmission(); } catch (err) { console.warn('[BTQM] run-end submit failed', err); }
-    beginRun(p.name);
-    this.time.delayedCall(1200, () => this.endBattle('defeat'));
-  }
-
-  endBattle(result) {
-    this.input.keyboard.off('keydown', this._keyHandler);
-    if (this.fx) this.fx.destroy();
-    if (result === 'victory' && this.onVictoryCb) this.onVictoryCb();
-    else if (result === 'defeat' && this.onDefeatCb) this.onDefeatCb();
-    else if (result === 'flee'  && this.onFleeCb) this.onFleeCb();
-    this.scene.stop('BattleScene');
+    this.time.delayedCall(2800, dismiss);
+    this.input.once('pointerdown', dismiss);
+    this.input.keyboard.once('keydown', dismiss);
   }
 
   update(time, delta) {

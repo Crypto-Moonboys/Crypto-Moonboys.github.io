@@ -27,6 +27,13 @@ const SFX = {
   death: { kind: 'tone', type: 'sawtooth', freqStart: 140, freqEnd: 52, duration: 0.22, volume: 0.04 },
   victory: { kind: 'tone', type: 'triangle', freqStart: 280, freqEnd: 760, duration: 0.2, volume: 0.04 },
   bossEntry: { kind: 'tone', type: 'sawtooth', freqStart: 88, freqEnd: 58, duration: 0.2, volume: 0.05 },
+  // Bomb-game SFX
+  placeBomb:  { kind: 'tone', type: 'square',   freqStart: 180, freqEnd: 140, duration: 0.07, volume: 0.022 },
+  explosion:  { kind: 'tone', type: 'sawtooth', freqStart: 260, freqEnd: 55,  duration: 0.22, volume: 0.05 },
+  chainBoom:  { kind: 'tone', type: 'sawtooth', freqStart: 340, freqEnd: 80,  duration: 0.18, volume: 0.045 },
+  blockBreak: { kind: 'tone', type: 'square',   freqStart: 300, freqEnd: 200, duration: 0.08, volume: 0.02 },
+  enemyDeath: { kind: 'tone', type: 'triangle', freqStart: 460, freqEnd: 180, duration: 0.13, volume: 0.03 },
+  powerup:    { kind: 'tone', type: 'sine',     freqStart: 440, freqEnd: 880, duration: 0.18, volume: 0.03 },
 };
 
 function stopHandles(handles) {
