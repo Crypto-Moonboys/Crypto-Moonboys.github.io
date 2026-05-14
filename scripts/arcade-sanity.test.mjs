@@ -272,6 +272,28 @@ check(
   'game-fullscreen.js provides collapsible overlay panel toggles so side panels do not permanently squeeze gameplay',
 );
 check(
+  // closed → inert + aria-hidden="true"
+  /sideLeft\.setAttribute\('inert',\s*''\)/u.test(fullscreenShellSrc) &&
+    /sideLeft\.setAttribute\('aria-hidden',\s*'true'\)/u.test(fullscreenShellSrc) &&
+    /sideLeft\.removeAttribute\('inert'\)/u.test(fullscreenShellSrc) &&
+    /sideLeft\.setAttribute\('aria-hidden',\s*'false'\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js makes closed left drawer inert and aria-hidden to block keyboard/AT access',
+);
+check(
+  /sideRight\.setAttribute\('inert',\s*''\)/u.test(fullscreenShellSrc) &&
+    /sideRight\.setAttribute\('aria-hidden',\s*'true'\)/u.test(fullscreenShellSrc) &&
+    /sideRight\.removeAttribute\('inert'\)/u.test(fullscreenShellSrc) &&
+    /sideRight\.setAttribute\('aria-hidden',\s*'false'\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js makes closed right drawer inert and aria-hidden to block keyboard/AT access',
+);
+check(
+  // mobile breakpoint auto-close: closes drawers when viewport ≤ 480 px
+  /MOBILE_BREAKPOINT_PX\s*=\s*480/u.test(fullscreenShellSrc) &&
+    /closeOverlayPanels\(\{\s*silent:\s*true\s*\}\)/u.test(fullscreenShellSrc) &&
+    (/mq\.addEventListener\('change'/u.test(fullscreenShellSrc) || /mq\.addListener\(/u.test(fullscreenShellSrc)),
+  'game-fullscreen.js force-closes drawers when viewport enters mobile breakpoint to avoid orphaned open drawer with hidden controls',
+);
+check(
   /#game-overlay\s+canvas:not\(#nextCanvas\)\s*\{[\s\S]*width:\s*auto\s*!important;/u.test(fullscreenCssSrc),
   'game-fullscreen.css fullscreen canvas rule keeps width auto for aspect-ratio-safe scaling',
 );

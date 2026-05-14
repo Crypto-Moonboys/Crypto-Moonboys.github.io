@@ -390,6 +390,23 @@
     overlay.classList.toggle('overlay-side-open-right', _rightPanelOpen);
     btnInfo.setAttribute('aria-expanded', _leftPanelOpen ? 'true' : 'false');
     btnData.setAttribute('aria-expanded', _rightPanelOpen ? 'true' : 'false');
+    // Keep closed drawers out of the keyboard/AT focus tree so they cannot be
+    // tabbed into when visually hidden.  `inert` removes the subtree from the
+    // tab order and hides it from assistive technology.
+    if (_leftPanelOpen) {
+      sideLeft.removeAttribute('inert');
+      sideLeft.setAttribute('aria-hidden', 'false');
+    } else {
+      sideLeft.setAttribute('inert', '');
+      sideLeft.setAttribute('aria-hidden', 'true');
+    }
+    if (_rightPanelOpen) {
+      sideRight.removeAttribute('inert');
+      sideRight.setAttribute('aria-hidden', 'false');
+    } else {
+      sideRight.setAttribute('inert', '');
+      sideRight.setAttribute('aria-hidden', 'true');
+    }
   }
 
   function closeOverlayPanels(options) {
@@ -1489,6 +1506,32 @@
       else closeOverlay();
     }
   });
+
+  // When the viewport enters the mobile breakpoint (<= 480 px) the drawer
+  // toggle buttons are hidden by CSS, so any open drawer would be stuck with
+  // no visible close control.  Close both drawers when the breakpoint is crossed.
+  var MOBILE_BREAKPOINT_PX = 480;
+  (function () {
+    function checkMobileBreakpoint() {
+      if (window.innerWidth <= MOBILE_BREAKPOINT_PX && (_leftPanelOpen || _rightPanelOpen)) {
+        closeOverlayPanels({ silent: true });
+      }
+    }
+    if (window.matchMedia) {
+      var mq = window.matchMedia('(max-width: ' + MOBILE_BREAKPOINT_PX + 'px)');
+      var handler = function (e) {
+        if (e.matches) closeOverlayPanels({ silent: true });
+      };
+      if (typeof mq.addEventListener === 'function') {
+        mq.addEventListener('change', handler);
+      } else if (typeof mq.addListener === 'function') {
+        // Safari < 14 compatibility fallback
+        mq.addListener(handler);
+      }
+    } else {
+      window.addEventListener('resize', checkMobileBreakpoint);
+    }
+  }());
 
   if (fullscreenOnlyMode && document.body) {
     document.body.classList.add('arcade-fullscreen-only');
