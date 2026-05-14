@@ -1354,6 +1354,7 @@ const PLAYER_BOMB_DAMAGE   = 2;
 const BOMB_SCORE_KILL      = 50;
 const BOMB_SCORE_CHAIN     = 75;
 const BOMB_SCORE_ZONE_BASE = 150;
+const FUSE_HACKER_DETONATE_CHANCE = 0.28;
 
 const UPGRADE_POOL = [
   { id: 'blast_radius', label: '+1 Blast Radius',   apply: p => { p.bombRadius = Math.min(6, (p.bombRadius||2)+1); btqmRuntime.upgradeCount++; } },
@@ -1897,9 +1898,15 @@ class ZoneScene extends Phaser.Scene {
       const mr = Math.floor(ROWS / 2);
       const mc = Math.floor(COLS / 2);
       let br = mr, bc = mc;
-      for (let dr = 0; dr <= 4 && this.getTile(bc, br) !== 1; dr++) {
+      let foundBossTile = this.getTile(bc, br) === 1;
+      for (let dr = 0; dr <= 4 && !foundBossTile; dr++) {
         for (let dc = 0; dc <= 4; dc++) {
-          if (this.getTile(mc + dc, mr + dr) === 1) { br = mr + dr; bc = mc + dc; break; }
+          if (this.getTile(mc + dc, mr + dr) === 1) {
+            br = mr + dr;
+            bc = mc + dc;
+            foundBossTile = true;
+            break;
+          }
         }
       }
       const bKey = 'boss_' + this.zoneId;
@@ -1966,7 +1973,7 @@ class ZoneScene extends Phaser.Scene {
       if (!this.isBlockedCell(nx, ny, enemy)) {
         enemy.gx = nx; enemy.gy = ny; moved = true;
       }
-      if (Math.random() < 0.28) {
+      if (Math.random() < FUSE_HACKER_DETONATE_CHANCE) {
         const near = this.activeBombs.find(b => Math.abs(b.gx - enemy.gx) + Math.abs(b.gy - enemy.gy) <= 2);
         if (near) {
           if (near.timer) near.timer.remove(false);

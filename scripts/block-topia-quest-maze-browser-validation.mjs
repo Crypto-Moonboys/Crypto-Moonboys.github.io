@@ -67,7 +67,7 @@ function getBrowserExecutable() {
     if (existsSync(p)) return p;
   }
 
-  throw new Error("No Chrome, Chromium, or Edge executable found for playwright-core.");
+  throw new Error("No Chrome, Chromium, or Edge executable found. Please install one of these browsers to run validation tests.");
 }
 
 async function waitForPhase(page, phase, timeout = 8000) {
