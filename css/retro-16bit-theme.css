@@ -2484,15 +2484,15 @@ body.page-home .hud-box--feed .retro-hud-body {
 }
 
 /* ==========================================================================
-   LEFT SIDEBAR HUD UPGRADE — homepage neon frame treatment
-   Scope: body.page-home only.
+   LEFT SIDEBAR HUD UPGRADE — homepage + standard-shell neon frame treatment
+   Scope: body.page-home and body.page-standard-shell.
    Matches left sidebar section containers to right-panel retro-hud-box style:
    layered neon frame, segmented broken lines, corner brackets, title bar strip.
    Only file changed: css/retro-16bit-theme.css
    ========================================================================== */
 
 /* ── Sidebar section containers — full HUD box frame ───────── */
-body.page-home .sidebar-section {
+:is(body.page-home, body.page-standard-shell) .sidebar-section {
   position: relative;
   isolation: isolate;
   margin: 10px 8px !important;
@@ -2510,14 +2510,14 @@ body.page-home .sidebar-section {
 
 /* Kill the plain border-top between sections — gap is now handled by margin */
 /* Kill inherited stacked-section separators/spacing — gap is now handled by HUD box margin */
-body.page-home .sidebar-section + .sidebar-section {
+:is(body.page-home, body.page-standard-shell) .sidebar-section + .sidebar-section {
   border-top: 0 !important;
   margin-top: 0 !important;
   padding-top: 0 !important;
 }
 
 /* Nth-child color themes: cyan for 2nd, purple for 3rd (mirrors right-panel cadence) */
-body.page-home .sidebar-section:nth-child(2) {
+:is(body.page-home, body.page-standard-shell) .sidebar-section:nth-child(2) {
   box-shadow:
     6px 6px 0 rgba(0, 0, 0, 0.88),
     0 0 0 2px rgba(0, 229, 255, 0.82),
@@ -2526,7 +2526,7 @@ body.page-home .sidebar-section:nth-child(2) {
     inset 0 0 0 2px rgba(255, 45, 120, 0.20) !important;
   filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.50));
 }
-body.page-home .sidebar-section:nth-child(3) {
+:is(body.page-home, body.page-standard-shell) .sidebar-section:nth-child(3) {
   box-shadow:
     6px 6px 0 rgba(0, 0, 0, 0.88),
     0 0 0 2px rgba(190, 76, 247, 0.72),
@@ -2537,7 +2537,7 @@ body.page-home .sidebar-section:nth-child(3) {
 }
 
 /* ── Segmented / broken frame lines (top, bottom, left, right) ── */
-body.page-home .sidebar-section::before {
+:is(body.page-home, body.page-standard-shell) .sidebar-section::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -2565,7 +2565,7 @@ body.page-home .sidebar-section::before {
 }
 
 /* ── Corner bracket accents (all four corners) ───────────────── */
-body.page-home .sidebar-section::after {
+:is(body.page-home, body.page-standard-shell) .sidebar-section::after {
   content: "";
   position: absolute;
   inset: 5px;
@@ -2585,13 +2585,13 @@ body.page-home .sidebar-section::after {
 }
 
 /* Lift all direct children above the pseudo-element layers */
-body.page-home .sidebar-section > * {
+:is(body.page-home, body.page-standard-shell) .sidebar-section > * {
   position: relative;
   z-index: 5;
 }
 
 /* ── Sidebar heading — match retro-hud-title title-bar strip ─── */
-body.page-home .sidebar-heading {
+:is(body.page-home, body.page-standard-shell) .sidebar-heading {
   min-height: 36px;
   margin: 0 !important;
   padding: 10px 10px 9px !important;
@@ -2609,7 +2609,7 @@ body.page-home .sidebar-heading {
   align-items: center;
   gap: 6px;
 }
-body.page-home .sidebar-section:nth-child(2) .sidebar-heading {
+:is(body.page-home, body.page-standard-shell) .sidebar-section:nth-child(2) .sidebar-heading {
   background:
     repeating-linear-gradient(90deg, rgba(0, 229, 255, 0.18) 0 4px, rgba(255, 45, 120, 0.05) 4px 7px, transparent 7px 12px),
     linear-gradient(90deg, rgba(0, 229, 255, 0.28), rgba(0, 0, 0, 0)) !important;
@@ -2617,7 +2617,7 @@ body.page-home .sidebar-section:nth-child(2) .sidebar-heading {
   color: var(--ui-pink) !important;
   text-shadow: 0 0 8px var(--ui-pink), 2px 2px 0 #000 !important;
 }
-body.page-home .sidebar-section:nth-child(3) .sidebar-heading {
+:is(body.page-home, body.page-standard-shell) .sidebar-section:nth-child(3) .sidebar-heading {
   background:
     repeating-linear-gradient(90deg, rgba(190, 76, 247, 0.18) 0 4px, rgba(0, 229, 255, 0.05) 4px 7px, transparent 7px 12px),
     linear-gradient(90deg, rgba(190, 76, 247, 0.28), rgba(0, 0, 0, 0)) !important;
@@ -2627,7 +2627,7 @@ body.page-home .sidebar-section:nth-child(3) .sidebar-heading {
 }
 
 /* ── Sidebar nav body — subtle scanline backdrop ─────────────── */
-body.page-home .sidebar-nav {
+:is(body.page-home, body.page-standard-shell) .sidebar-nav {
   padding: 6px 0 8px;
   background:
     repeating-linear-gradient(0deg, rgba(0, 229, 255, 0.018) 0 2px, transparent 2px 6px),
@@ -2635,7 +2635,7 @@ body.page-home .sidebar-nav {
 }
 
 /* ── Sidebar nav links — compact HUD row treatment ───────────── */
-body.page-home .sidebar-nav a {
+:is(body.page-home, body.page-standard-shell) .sidebar-nav a {
   margin: 3px 8px !important;
   padding: 7px 9px !important;
   border-left: 3px solid transparent !important;
@@ -2643,8 +2643,8 @@ body.page-home .sidebar-nav a {
   font-size: 0.44rem !important;
   line-height: 1.55 !important;
 }
-body.page-home .sidebar-nav a:hover,
-body.page-home .sidebar-nav a.active {
+:is(body.page-home, body.page-standard-shell) .sidebar-nav a:hover,
+:is(body.page-home, body.page-standard-shell) .sidebar-nav a.active {
   background: rgba(0, 229, 255, 0.12) !important;
   border-left-color: var(--ui-pink) !important;
   color: #fff !important;
