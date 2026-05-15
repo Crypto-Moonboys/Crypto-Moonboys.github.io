@@ -346,6 +346,8 @@
   var _rightPanelOpen = false;
   var _gameStarted    = false; // true once the in-overlay Start button has been clicked at least once
   var scoreInterval   = null;
+  var overlayResizeTimer = null;
+  var dispatchingSyntheticResize = false;
   // Cached overlay score display elements; set in buildLeftPanel / buildRightPanel.
   var cachedLiveScore = null;
   var cachedLiveProjectedXp = null;
@@ -1132,7 +1134,36 @@
   document.addEventListener('fullscreenchange', function () {
     syncFSBtn();
     updateFullscreenPrompt();
+    if (isOpen) scheduleOverlayResizeSync('fullscreenchange');
   });
+
+  function emitOverlayResize(reason, options) {
+    var skipWindowResize = !!(options && options.skipWindowResize);
+    if (!skipWindowResize) {
+      dispatchingSyntheticResize = true;
+      window.dispatchEvent(new Event('resize'));
+      setTimeout(function () {
+        dispatchingSyntheticResize = false;
+      }, 0);
+    }
+    document.dispatchEvent(new CustomEvent('arcade-overlay-resize', {
+      detail: { reason: reason || 'resize', isOpen: isOpen }
+    }));
+  }
+
+  function scheduleOverlayResizeSync(reason, options) {
+    if (overlayResizeTimer) {
+      clearTimeout(overlayResizeTimer);
+      overlayResizeTimer = null;
+    }
+    emitOverlayResize(reason, options);
+    [120, 260, 520].forEach(function (delay) {
+      setTimeout(function () { emitOverlayResize(reason, options); }, delay);
+    });
+    overlayResizeTimer = setTimeout(function () {
+      overlayResizeTimer = null;
+    }, 560);
+  }
 
   function triggerGameStart() {
     if (!isOpen) return;
@@ -1194,6 +1225,9 @@
       if (!hasRatio && cv.width && cv.height) {
         cv.style.setProperty('aspect-ratio', cv.width + ' / ' + cv.height);
       }
+      if (cv.width && cv.height) {
+        cv.style.setProperty('--overlay-canvas-aspect', cv.width + ' / ' + cv.height);
+      }
     });
 
     // Move the target element into the overlay stage.
@@ -1205,7 +1239,7 @@
 
     // Fire a resize event so Phaser (and any other canvas-scaling logic) can
     // recalculate dimensions against the new fullscreen container.
-    setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 150);
+    scheduleOverlayResizeSync('open');
 
     // Start live score updater.
     scoreInterval = setInterval(updateScores, 500);
@@ -1304,7 +1338,7 @@
     closeOverlayPanels({ silent: true });
 
     // Fire a resize event so Phaser restores its in-page sizing.
-    setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 150);
+    scheduleOverlayResizeSync('close');
 
     // Return focus to the start button.
     startBtn.focus();
@@ -1546,6 +1580,17 @@
       });
     }
   }());
+
+  window.addEventListener('resize', function () {
+    if (!isOpen) return;
+    if (dispatchingSyntheticResize) return;
+    scheduleOverlayResizeSync('viewport-resize', { skipWindowResize: true });
+  });
+
+  window.addEventListener('orientationchange', function () {
+    if (!isOpen) return;
+    scheduleOverlayResizeSync('orientationchange');
+  });
 
   if (fullscreenOnlyMode && document.body) {
     document.body.classList.add('arcade-fullscreen-only');

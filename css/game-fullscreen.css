@@ -18,7 +18,7 @@
   align-items: stretch;
   justify-content: flex-start;
   overflow: hidden;
-  --overlay-toolbar-height: 34px;
+  --overlay-toolbar-height: 42px;
   --overlay-touch-height: 0px;
   --overlay-stage-gap: 16px;
 }
@@ -57,6 +57,9 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 9010;
   box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
 }
 
 #overlay-game-label {
@@ -69,22 +72,25 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 }
 
 #overlay-ctrl-bar button {
-  height: 24px;
-  padding: 0 7px;
+  min-height: 34px;
+  min-width: 40px;
+  padding: 0 10px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 6px;
   color: #fff;
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.12s, border-color 0.12s;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 3px;
   flex-shrink: 0;
   line-height: 1;
+  text-decoration: none;
 }
 
 #overlay-btn-info .btn-icon,
@@ -428,15 +434,17 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
        Override per-game ID rules via higher specificity + !important.
        JS sets aspect-ratio on canvases that don't have it via CSS. */
 #game-overlay canvas:not(#nextCanvas) {
-  width: auto !important;
-  max-width: 100% !important;
-  height: min(100%, calc(100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap))) !important;
+  width: min(100%, calc((100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * var(--overlay-canvas-aspect, 4 / 3))) !important;
+  max-width: none !important;
+  height: auto !important;
+  max-height: calc(100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
   flex-shrink: 1;
 }
 
 @supports not (height: 1dvh) {
   #game-overlay canvas:not(#nextCanvas) {
-    height: min(100%, calc(100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap))) !important;
+    width: min(100%, calc((100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) * var(--overlay-canvas-aspect, 4 / 3))) !important;
+    max-height: calc(100vh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
   }
 }
 
@@ -709,7 +717,7 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 /* A. Mobile portrait */
 @media (max-width: 480px) {
   #game-overlay {
-    --overlay-toolbar-height: 38px;
+    --overlay-toolbar-height: 44px;
     --overlay-stage-gap: 10px;
   }
 
@@ -718,10 +726,15 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   }
 
   #overlay-ctrl-bar button {
-    height: 30px;
+    min-height: 36px;
+    min-width: 42px;
+    padding: 0 8px;
   }
 
-  #overlay-ctrl-bar button .btn-label {
+  #overlay-btn-info .btn-label,
+  #overlay-btn-data .btn-label,
+  #overlay-btn-fs .btn-label,
+  #overlay-btn-mute .btn-label {
     display: none;
   }
 
@@ -781,15 +794,24 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   }
 
   #game-overlay .overlay-side {
-    max-width: min(95vw, 360px);
+    width: min(84vw, 280px);
+    max-width: min(95vw, 320px);
+    padding: 10px 9px;
   }
 }
 
 /* B. Mobile landscape */
 @media (max-height: 500px) and (max-width: 900px) {
   #game-overlay {
+    --overlay-toolbar-height: 40px;
     --overlay-touch-height: 68px;
     --overlay-stage-gap: 8px;
+  }
+
+  #overlay-ctrl-bar button {
+    min-height: 34px;
+    min-width: 38px;
+    padding: 0 8px;
   }
 
   #game-overlay .overlay-touch-pad {
@@ -814,12 +836,17 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   #overlay-btn-data {
     display: none !important;
   }
+
+  #game-overlay .overlay-side {
+    width: min(72vw, 260px);
+    padding: 8px;
+  }
 }
 
 /* C. Tablet */
 @media (min-width: 481px) and (max-width: 1099px) {
   #game-overlay {
-    --overlay-toolbar-height: 38px;
+    --overlay-toolbar-height: 40px;
     --overlay-stage-gap: 12px;
   }
 
@@ -828,7 +855,8 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   }
 
   #overlay-ctrl-bar button {
-    height: 32px;
+    min-height: 34px;
+    min-width: 38px;
   }
 
   #game-overlay .overlay-touch-pad {
@@ -846,6 +874,36 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 
   #overlay-panel-status {
     display: none !important;
+  }
+}
+
+@media (max-width: 900px) {
+  #game-overlay .overlay-side .fs-card {
+    padding: 8px 8px 5px;
+    margin-bottom: 7px;
+  }
+
+  #game-overlay .overlay-side .panel-title {
+    font-size: 0.58rem;
+    margin-bottom: 4px;
+  }
+
+  #game-overlay .overlay-side .game-name {
+    font-size: 0.8rem;
+    margin-bottom: 9px;
+  }
+
+  #game-overlay .overlay-side .ctrl-list li,
+  #game-overlay .overlay-side .tips-list li,
+  #game-overlay .overlay-side .panel-note,
+  #game-overlay .overlay-side .faction-player-row,
+  #game-overlay .overlay-side .faction-join-btn {
+    font-size: 0.66rem;
+  }
+
+  #game-overlay .overlay-side .score-val {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
   }
 }
 
@@ -1022,6 +1080,14 @@ body .hud .value {
   position: relative;
 }
 
+#game-overlay #btqm-canvas-wrap {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  border-width: 1px;
+  border-radius: 8px;
+}
+
 /* Phaser mount container — sized by its canvas content so the parent flex
    container (.btqm-game-area) can centre it correctly.
    Width is capped to the max width allowed by the height budget × aspect ratio
@@ -1046,6 +1112,11 @@ body .hud .value {
   width: 100% !important;
   height: auto !important;
   max-height: calc(100dvh - var(--overlay-toolbar-height) - var(--overlay-touch-height) - var(--overlay-stage-gap)) !important;
+}
+
+#game-overlay #btqm-name-panel {
+  max-height: min(92%, 360px);
+  overflow-y: auto;
 }
 
 @supports not (height: 1dvh) {
