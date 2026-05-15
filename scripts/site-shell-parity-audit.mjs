@@ -258,6 +258,14 @@ if (shouldShowRightPanelBlock.includes("if (p === '/dashboard.html') return fals
   fail('site-shell.js — shouldShowRightPanel lacks explicit dashboard exclusion');
 }
 
+// 6c. Dashboard left-nav parity: must use page-standard-shell for retro sidebar parity with home page.
+console.log('\n[6c] Dashboard left-nav parity class');
+if (dashboardHtml.includes('page-standard-shell')) {
+  pass('dashboard.html: has page-standard-shell (retro sidebar parity with home page)');
+} else {
+  fail('dashboard.html — missing page-standard-shell (add to body class for left-nav retro sidebar parity with home page; this class does NOT enable right-rail injection)');
+}
+
 // 7. DOM marker check: site-shell.js must contain all right-panel element markers
 console.log('\n[7] site-shell.js DOM marker check (static string check)');
 if (shellJs) {
