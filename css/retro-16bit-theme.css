@@ -5138,6 +5138,29 @@ body.page-game .arcade-top-logo {
   animation: arcadeLogoGlitch 6s steps(1) infinite;
 }
 
+body.page-game .roguelite-loop-panel {
+  display: block;
+  overflow: hidden;
+}
+
+body.page-has-right-panel .roguelite-loop-panel .roguelite-loop-image {
+  display: block;
+  width: calc(100% + 28px);
+  max-width: none;
+  margin: -10px -14px 12px;
+  height: auto;
+}
+
+body.page-game .roguelite-loop-content {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+body.page-game .roguelite-loop-copy {
+  flex: 1 1 auto;
+}
+
 @keyframes arcadeLogoGlitch {
   0%, 100%  { transform: translate(0, 0);          filter: none; }
   8%        { transform: translate(0, 0);          filter: none; }
