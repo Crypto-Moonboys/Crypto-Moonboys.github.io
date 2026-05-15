@@ -5143,7 +5143,7 @@ body.page-game .roguelite-loop-panel {
   overflow: hidden;
 }
 
-body.page-game .roguelite-loop-image {
+body.page-has-right-panel .roguelite-loop-panel .roguelite-loop-image {
   display: block;
   width: calc(100% + 28px);
   max-width: none;
