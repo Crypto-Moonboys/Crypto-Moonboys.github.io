@@ -234,6 +234,11 @@ for (const relPath of FULLSCREEN_ONLY_GAME_PAGES) {
     `${relPath} sets #startBtn data-overlay-fullscreen-only="true"`,
   );
 }
+const btqmIndexHtml = await readFile('games/block-topia-quest-maze/index.html');
+check(
+  /id=["']btqm-canvas-wrap["'][^>]*class=["'][^"']*\bbtqm-game-area\b[^"']*["']|class=["'][^"']*\bbtqm-game-area\b[^"']*["'][^>]*id=["']btqm-canvas-wrap["']/u.test(btqmIndexHtml),
+  'BTQM index keeps #btqm-canvas-wrap marked as .btqm-game-area for fullscreen stage targeting',
+);
 
 const fullscreenShellSrc = await readFile('js/game-fullscreen.js');
 const fullscreenCssSrc = await readFile('css/game-fullscreen.css');
@@ -296,12 +301,12 @@ check(
   'game-fullscreen.js force-closes drawers when viewport enters mobile breakpoint to avoid orphaned open drawer with hidden controls',
 );
 check(
-  /#game-overlay\s+canvas:not\(#nextCanvas\)\s*\{[\s\S]*width:\s*auto\s*!important;/u.test(fullscreenCssSrc),
-  'game-fullscreen.css fullscreen canvas rule keeps width auto for aspect-ratio-safe scaling',
+  /#game-overlay\s+canvas:not\(#nextCanvas\)\s*\{[\s\S]*width:\s*min\(100%,\s*calc\(\(100dvh\s*-\s*var\(--overlay-toolbar-height\)\s*-\s*var\(--overlay-touch-height\)\s*-\s*var\(--overlay-stage-gap\)\)\s*\*\s*var\(--overlay-canvas-aspect,\s*4\s*\/\s*3\)\)\)\s*!important;/u.test(fullscreenCssSrc),
+  'game-fullscreen.css fullscreen canvas rule uses viewport-height budget plus per-canvas aspect ratio variable',
 );
 check(
-  /#game-overlay\s+canvas:not\(#nextCanvas\)\s*\{[\s\S]*height:\s*min\(100%,\s*calc\(100dvh\s*-\s*var\(--overlay-toolbar-height\)\s*-\s*var\(--overlay-touch-height\)\s*-\s*var\(--overlay-stage-gap\)\)\)\s*!important;/u.test(fullscreenCssSrc),
-  'game-fullscreen.css fullscreen canvas rule uses viewport-first height budget variables',
+  /#game-overlay\s+canvas:not\(#nextCanvas\)\s*\{[\s\S]*max-height:\s*calc\(100dvh\s*-\s*var\(--overlay-toolbar-height\)\s*-\s*var\(--overlay-touch-height\)\s*-\s*var\(--overlay-stage-gap\)\)\s*!important;/u.test(fullscreenCssSrc),
+  'game-fullscreen.css fullscreen canvas rule enforces max-height viewport budget',
 );
 check(
   /#game-overlay\s+\.overlay-side\s*\{[\s\S]*position:\s*absolute;/u.test(fullscreenCssSrc),
@@ -336,6 +341,36 @@ check(
 check(
   /#game-overlay\s+\.overlay-side\s*\{[\s\S]*backdrop-filter:\s*blur\(4px\);/u.test(fullscreenCssSrc),
   'game-fullscreen.css applies overlay drawer backdrop styling for readable panel content',
+);
+check(
+  /#overlay-ctrl-bar\s+button\s*\{[\s\S]*min-height:\s*34px;[\s\S]*min-width:\s*40px;/u.test(fullscreenCssSrc),
+  'game-fullscreen.css keeps fullscreen toolbar controls at touch-usable minimum sizes',
+);
+check(
+  /@media\s*\(max-width:\s*480px\)[\s\S]*#overlay-btn-info\s+\.btn-label[\s\S]*#overlay-btn-data\s+\.btn-label[\s\S]*#overlay-btn-fs\s+\.btn-label[\s\S]*#overlay-btn-mute\s+\.btn-label[\s\S]*display:\s*none;/u.test(fullscreenCssSrc),
+  'game-fullscreen.css keeps primary toolbar labels on small screens while hiding only secondary labels',
+);
+check(
+  /@media\s*\(max-height:\s*500px\)\s*and\s*\(max-width:\s*900px\)[\s\S]*#game-overlay\s+\.overlay-side\s*\{[\s\S]*width:\s*min\(72vw,\s*260px\);/u.test(fullscreenCssSrc),
+  'game-fullscreen.css compacts drawer width in mobile landscape so playfield keeps priority',
+);
+check(
+  /@media\s*\(max-width:\s*900px\)[\s\S]*#game-overlay\s+\.overlay-side\s+\.fs-card\s*\{[\s\S]*padding:\s*8px\s+8px\s+5px;/u.test(fullscreenCssSrc),
+  'game-fullscreen.css compacts overlay cards on smaller viewports',
+);
+check(
+  /window\.addEventListener\('resize',\s*function\s*\(\)\s*\{[\s\S]*scheduleOverlayResizeSync\('viewport-resize',\s*\{\s*skipWindowResize:\s*true\s*\}\);/u.test(fullscreenShellSrc) &&
+    /window\.addEventListener\('orientationchange',\s*function\s*\(\)\s*\{[\s\S]*scheduleOverlayResizeSync\('orientationchange'\);/u.test(fullscreenShellSrc) &&
+    /document\.dispatchEvent\(new CustomEvent\('arcade-overlay-resize'/u.test(fullscreenShellSrc),
+  'game-fullscreen.js emits overlay resize lifecycle hooks for viewport resize/orientation changes',
+);
+const btqmBootstrapSrc = await readFile('js/arcade/games/block-topia-quest-maze/bootstrap.js');
+check(
+  /document\.addEventListener\('arcade-overlay-open',\s*onOverlayLifecycle\)/u.test(btqmBootstrapSrc) &&
+    /document\.addEventListener\('arcade-overlay-close',\s*onOverlayLifecycle\)/u.test(btqmBootstrapSrc) &&
+    /document\.addEventListener\('arcade-overlay-resize',\s*onOverlayLifecycle\)/u.test(btqmBootstrapSrc) &&
+    /window\.addEventListener\('orientationchange',\s*onViewportChange\)/u.test(btqmBootstrapSrc),
+  'BTQM bootstrap refreshes Phaser scale on overlay open/close/resize and orientation changes',
 );
 
 // ── Leaderboard worker GAME_KEY_ALIASES covers snake-run and breakout-bullrun ─

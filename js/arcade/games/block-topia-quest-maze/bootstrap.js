@@ -2420,6 +2420,41 @@ registerGameAdapter(BTQM_CONFIG, BTQM_ADAPTER, bootstrapBlockTopiaQuestMaze);
 export function bootstrapBlockTopiaQuestMaze(root) {
   let phaserGame = null;
   let _pausedByOverlay = [];
+  let _scaleRefreshTimers = [];
+  let _scaleRefreshDebounce = null;
+  const _cleanupFns = [];
+
+  function clearScaleRefreshTimers() {
+    _scaleRefreshTimers.forEach((timerId) => clearTimeout(timerId));
+    _scaleRefreshTimers = [];
+    if (_scaleRefreshDebounce) {
+      clearTimeout(_scaleRefreshDebounce);
+      _scaleRefreshDebounce = null;
+    }
+  }
+
+  function refreshPhaserScale() {
+    if (!phaserGame || !phaserGame.scale) return;
+    [0, 120, 280, 520].forEach((delay) => {
+      const timerId = setTimeout(() => {
+        if (!phaserGame || !phaserGame.scale) return;
+        try {
+          phaserGame.scale.refresh();
+        } catch (err) {
+          console.warn('[BTQM] scale refresh failed', err);
+        }
+      }, delay);
+      _scaleRefreshTimers.push(timerId);
+    });
+  }
+
+  function queueScaleRefresh() {
+    clearScaleRefreshTimers();
+    _scaleRefreshDebounce = setTimeout(() => {
+      _scaleRefreshDebounce = null;
+      refreshPhaserScale();
+    }, 24);
+  }
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
@@ -2456,18 +2491,31 @@ export function bootstrapBlockTopiaQuestMaze(root) {
       phaserGame.canvas.style.imageRendering = 'pixelated';
     }
 
-    // When the fullscreen overlay opens/closes, ask Phaser to refresh its scale
-    // so input event coordinates remain accurate after the DOM moves.
+    // Refresh scale whenever fullscreen shell or viewport geometry changes so
+    // title/start UI and gameplay remain correctly aligned after reflow.
     const overlayEl = document.getElementById('game-overlay');
+    const onOverlayLifecycle = () => queueScaleRefresh();
+    const onViewportChange = () => queueScaleRefresh();
+    document.addEventListener('arcade-overlay-open', onOverlayLifecycle);
+    document.addEventListener('arcade-overlay-close', onOverlayLifecycle);
+    document.addEventListener('arcade-overlay-resize', onOverlayLifecycle);
+    document.addEventListener('fullscreenchange', onOverlayLifecycle);
+    window.addEventListener('orientationchange', onViewportChange);
+    window.addEventListener('resize', onViewportChange);
+    _cleanupFns.push(() => document.removeEventListener('arcade-overlay-open', onOverlayLifecycle));
+    _cleanupFns.push(() => document.removeEventListener('arcade-overlay-close', onOverlayLifecycle));
+    _cleanupFns.push(() => document.removeEventListener('arcade-overlay-resize', onOverlayLifecycle));
+    _cleanupFns.push(() => document.removeEventListener('fullscreenchange', onOverlayLifecycle));
+    _cleanupFns.push(() => window.removeEventListener('orientationchange', onViewportChange));
+    _cleanupFns.push(() => window.removeEventListener('resize', onViewportChange));
     if (overlayEl) {
-      new MutationObserver(function () {
-        [150, 300, 600].forEach(function (delay) {
-          setTimeout(function () {
-            if (phaserGame && phaserGame.scale) phaserGame.scale.refresh();
-          }, delay);
-        });
-      }).observe(overlayEl, { attributes: true, attributeFilter: ['class'] });
+      const overlayObserver = new MutationObserver(function () {
+        queueScaleRefresh();
+      });
+      overlayObserver.observe(overlayEl, { attributes: true, attributeFilter: ['class'] });
+      _cleanupFns.push(() => overlayObserver.disconnect());
     }
+    queueScaleRefresh();
 
     // ── Fullscreen shell button hooks ────────────────────────────────────────
     // START — show name-entry overlay; restart TitleScene if already playing
@@ -2568,6 +2616,11 @@ export function bootstrapBlockTopiaQuestMaze(root) {
     if (phaserGame) {
       phaserGame.destroy(true);
       phaserGame = null;
+    }
+    clearScaleRefreshTimers();
+    while (_cleanupFns.length) {
+      const cleanup = _cleanupFns.pop();
+      try { cleanup && cleanup(); } catch (_) {}
     }
   }
   function getScore() {
