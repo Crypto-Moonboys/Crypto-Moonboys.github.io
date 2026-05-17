@@ -72,8 +72,8 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 }
 
 #overlay-ctrl-bar button {
-  min-height: 32px;
-  min-width: 36px;
+  min-height: 34px;
+  min-width: 40px;
   padding: 0 8px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -717,7 +717,7 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 /* A. Mobile portrait */
 @media (max-width: 480px) {
   #game-overlay {
-    --overlay-toolbar-height: 36px;
+    --overlay-toolbar-height: 40px;
     --overlay-stage-gap: 6px;
   }
 
@@ -726,8 +726,8 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   }
 
   #overlay-ctrl-bar button {
-    min-height: 32px;
-    min-width: 34px;
+    min-height: 40px;
+    min-width: 40px;
     padding: 0 6px;
   }
 
@@ -800,8 +800,8 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   }
 
   #game-overlay .touch-btn {
-    min-width: 34px;
-    min-height: 34px;
+    min-width: 40px;
+    min-height: 40px;
     font-size: 0.74rem;
   }
 
@@ -810,21 +810,21 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   }
 
   #game-overlay .touch-dpad {
-    grid-template-columns: repeat(3, 34px);
-    grid-template-rows: repeat(3, 34px);
+    grid-template-columns: repeat(3, 40px);
+    grid-template-rows: repeat(3, 40px);
   }
 }
 
 /* B. Mobile landscape */
 @media (max-height: 500px) and (max-width: 900px) {
   #game-overlay {
-    --overlay-toolbar-height: 34px;
+    --overlay-toolbar-height: 40px;
     --overlay-stage-gap: 6px;
   }
 
   #overlay-ctrl-bar button {
-    min-height: 30px;
-    min-width: 32px;
+    min-height: 40px;
+    min-width: 40px;
     padding: 0 6px;
   }
 
@@ -848,14 +848,14 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   }
 
   #game-overlay .touch-btn {
-    min-width: 32px;
-    min-height: 32px;
+    min-width: 40px;
+    min-height: 40px;
     font-size: 0.72rem;
   }
 
   #game-overlay .touch-dpad {
-    grid-template-columns: repeat(3, 32px);
-    grid-template-rows: repeat(3, 32px);
+    grid-template-columns: repeat(3, 40px);
+    grid-template-rows: repeat(3, 40px);
   }
 
   #overlay-panel-status {

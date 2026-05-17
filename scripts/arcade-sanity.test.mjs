@@ -343,7 +343,13 @@ check(
   'game-fullscreen.css applies overlay drawer backdrop styling for readable panel content',
 );
 check(
-  /#overlay-ctrl-bar\s+button\s*\{[\s\S]*min-height:\s*34px;[\s\S]*min-width:\s*40px;/u.test(fullscreenCssSrc),
+  (() => {
+    const ctrlBtnRuleMatch = fullscreenCssSrc.match(/#overlay-ctrl-bar\s+button\s*\{([^}]*)\}/u);
+    if (!ctrlBtnRuleMatch) return false;
+    const ruleBody = ctrlBtnRuleMatch[1];
+    return /(?:^|\n)\s*min-height:\s*34px;/u.test(ruleBody) &&
+      /(?:^|\n)\s*min-width:\s*40px;/u.test(ruleBody);
+  })(),
   'game-fullscreen.css keeps fullscreen toolbar controls at touch-usable minimum sizes',
 );
 check(
