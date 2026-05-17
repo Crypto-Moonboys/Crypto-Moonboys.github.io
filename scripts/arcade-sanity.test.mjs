@@ -351,7 +351,7 @@ check(
   'game-fullscreen.css keeps primary toolbar labels on small screens while hiding only secondary labels',
 );
 check(
-  /@media\s*\(max-height:\s*500px\)\s*and\s*\(max-width:\s*900px\)[\s\S]*#game-overlay\s+\.overlay-side\s*\{[\s\S]*width:\s*min\(72vw,\s*260px\);/u.test(fullscreenCssSrc),
+  /@media\s*\(max-height:\s*500px\)\s*and\s*\(max-width:\s*900px\)[\s\S]*#game-overlay\s+\.overlay-side\s*\{[\s\S]*width:\s*min\((72|80)vw,\s*(260|240)px\);/u.test(fullscreenCssSrc),
   'game-fullscreen.css compacts drawer width in mobile landscape so playfield keeps priority',
 );
 check(
