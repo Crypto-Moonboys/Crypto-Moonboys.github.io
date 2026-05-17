@@ -758,7 +758,9 @@
 
   function buildTouchPad(meta) {
     touchPad.innerHTML = '';
-    if (!meta || !meta.touchScheme) return;
+    var hasTouchControls = !!(meta && meta.touchScheme);
+    overlay.classList.toggle('overlay-has-touch', hasTouchControls);
+    if (!hasTouchControls) return;
     var builders = {
       'dpad':      buildDpad,
       'dpad-bomb': buildDpadBomb,
@@ -1334,6 +1336,7 @@
     }
 
     overlay.classList.remove('active');
+    overlay.classList.remove('overlay-has-touch');
     document.body.classList.remove('overlay-open');
     closeOverlayPanels({ silent: true });
 

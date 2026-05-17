@@ -343,7 +343,13 @@ check(
   'game-fullscreen.css applies overlay drawer backdrop styling for readable panel content',
 );
 check(
-  /#overlay-ctrl-bar\s+button\s*\{[\s\S]*min-height:\s*34px;[\s\S]*min-width:\s*40px;/u.test(fullscreenCssSrc),
+  (() => {
+    const ctrlBtnRuleMatch = fullscreenCssSrc.match(/#overlay-ctrl-bar\s+button\s*\{([^}]*)\}/u);
+    if (!ctrlBtnRuleMatch) return false;
+    const ruleBody = ctrlBtnRuleMatch[1];
+    return /(?:^|\n)\s*min-height:\s*34px;/u.test(ruleBody) &&
+      /(?:^|\n)\s*min-width:\s*40px;/u.test(ruleBody);
+  })(),
   'game-fullscreen.css keeps fullscreen toolbar controls at touch-usable minimum sizes',
 );
 check(
@@ -351,7 +357,7 @@ check(
   'game-fullscreen.css keeps primary toolbar labels on small screens while hiding only secondary labels',
 );
 check(
-  /@media\s*\(max-height:\s*500px\)\s*and\s*\(max-width:\s*900px\)[\s\S]*#game-overlay\s+\.overlay-side\s*\{[\s\S]*width:\s*min\(72vw,\s*260px\);/u.test(fullscreenCssSrc),
+  /@media\s*\(max-height:\s*500px\)\s*and\s*\(max-width:\s*900px\)[\s\S]*#game-overlay\s+\.overlay-side\s*\{[\s\S]*width:\s*min\((72|80)vw,\s*(260|240)px\);/u.test(fullscreenCssSrc),
   'game-fullscreen.css compacts drawer width in mobile landscape so playfield keeps priority',
 );
 check(

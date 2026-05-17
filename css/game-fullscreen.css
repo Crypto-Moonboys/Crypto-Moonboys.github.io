@@ -18,9 +18,9 @@
   align-items: stretch;
   justify-content: flex-start;
   overflow: hidden;
-  --overlay-toolbar-height: 42px;
+  --overlay-toolbar-height: 38px;
   --overlay-touch-height: 0px;
-  --overlay-stage-gap: 16px;
+  --overlay-stage-gap: 8px;
 }
 
 #game-overlay.active {
@@ -51,8 +51,8 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 3px;
-  padding: 0 8px;
+  gap: 2px;
+  padding: 0 6px;
   background: rgba(9, 12, 22, 0.95);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 9010;
@@ -74,12 +74,12 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 #overlay-ctrl-bar button {
   min-height: 34px;
   min-width: 40px;
-  padding: 0 10px;
+  padding: 0 8px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
+  border-radius: 5px;
   color: #fff;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -87,7 +87,7 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   flex-shrink: 0;
   line-height: 1;
   text-decoration: none;
@@ -393,7 +393,7 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  padding: 4px;
   box-sizing: border-box;
   overflow: hidden;
   min-width: 0;
@@ -413,7 +413,7 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   align-items: center;
   height: 100%;
   box-sizing: border-box;
-  gap: 4px;
+  gap: 2px;
   justify-content: center;
 }
 
@@ -556,31 +556,31 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   flex-shrink: 0;
   background: rgba(9, 12, 22, 0.9);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px 10px;
+  padding: 4px 6px;
   display: none;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   box-sizing: border-box;
 }
 
 /* D-pad grid */
 #game-overlay .touch-dpad {
   display: grid;
-  grid-template-columns: repeat(3, 48px);
-  grid-template-rows: repeat(3, 48px);
-  gap: 4px;
+  grid-template-columns: repeat(3, 40px);
+  grid-template-rows: repeat(3, 40px);
+  gap: 3px;
 }
 
 /* Shared touch button */
 #game-overlay .touch-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+  border-radius: 8px;
   color: #fff;
-  font-size: 0.9rem;
-  min-width: 48px;
-  min-height: 48px;
+  font-size: 0.82rem;
+  min-width: 40px;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -589,7 +589,7 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   -webkit-user-select: none;
   transition: background 0.08s;
   box-sizing: border-box;
-  padding: 0 8px;
+  padding: 0 6px;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
@@ -606,7 +606,7 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 }
 
 #game-overlay .touch-btn--wide {
-  min-width: 80px;
+  min-width: 68px;
 }
 
 #game-overlay .touch-btn--fire {
@@ -626,7 +626,7 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 #game-overlay .touch-lr-row,
@@ -634,7 +634,7 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 #game-overlay .touch-tetris-row {
   display: flex;
   flex-direction: row;
-  gap: 6px;
+  gap: 4px;
 }
 
 /* ===== GAME-OVER MODAL ===== */
@@ -717,8 +717,8 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 /* A. Mobile portrait */
 @media (max-width: 480px) {
   #game-overlay {
-    --overlay-toolbar-height: 44px;
-    --overlay-stage-gap: 10px;
+    --overlay-toolbar-height: 40px;
+    --overlay-stage-gap: 6px;
   }
 
   #overlay-ctrl-bar {
@@ -726,35 +726,35 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   }
 
   #overlay-ctrl-bar button {
-    min-height: 36px;
-    min-width: 42px;
-    padding: 0 8px;
+    min-height: 40px;
+    min-width: 40px;
+    padding: 0 6px;
   }
 
   #overlay-btn-info .btn-label,
   #overlay-btn-data .btn-label,
   #overlay-btn-fs .btn-label,
-  #overlay-btn-mute .btn-label {
+  #overlay-btn-mute .btn-label,
+  #overlay-btn-pause .btn-label,
+  #overlay-btn-reset .btn-label {
     display: none;
   }
 
-  #overlay-panel-status,
-  #overlay-btn-info,
-  #overlay-btn-data {
+  #overlay-panel-status {
     display: none !important;
   }
 
   #game-overlay .game-stage {
-    padding: 6px 4px 4px;
+    padding: 2px;
   }
 
-  #game-overlay .overlay-touch-pad {
+  #game-overlay.overlay-has-touch .overlay-touch-pad {
     display: flex;
-    min-height: 80px;
-    padding: 6px 8px;
+    min-height: 56px;
+    padding: 2px 6px;
   }
-  #game-overlay {
-    --overlay-touch-height: 84px;
+  #game-overlay.overlay-has-touch {
+    --overlay-touch-height: 58px;
   }
 
   /* Slim HUD: replace boxed stat cards with compact inline arcade strip */
@@ -794,9 +794,24 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   }
 
   #game-overlay .overlay-side {
-    width: min(84vw, 280px);
-    max-width: min(95vw, 320px);
-    padding: 10px 9px;
+    width: min(90vw, 260px);
+    max-width: min(95vw, 300px);
+    padding: 8px 8px;
+  }
+
+  #game-overlay .touch-btn {
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 0.74rem;
+  }
+
+  #game-overlay .touch-btn--wide {
+    min-width: 56px;
+  }
+
+  #game-overlay .touch-dpad {
+    grid-template-columns: repeat(3, 40px);
+    grid-template-rows: repeat(3, 40px);
   }
 }
 
@@ -804,50 +819,60 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 @media (max-height: 500px) and (max-width: 900px) {
   #game-overlay {
     --overlay-toolbar-height: 40px;
-    --overlay-touch-height: 68px;
-    --overlay-stage-gap: 8px;
+    --overlay-stage-gap: 6px;
   }
 
   #overlay-ctrl-bar button {
-    min-height: 34px;
-    min-width: 38px;
-    padding: 0 8px;
+    min-height: 40px;
+    min-width: 40px;
+    padding: 0 6px;
   }
 
-  #game-overlay .overlay-touch-pad {
+  #overlay-btn-info .btn-label,
+  #overlay-btn-data .btn-label,
+  #overlay-btn-fs .btn-label,
+  #overlay-btn-mute .btn-label,
+  #overlay-btn-pause .btn-label,
+  #overlay-btn-reset .btn-label {
+    display: none;
+  }
+
+  #game-overlay.overlay-has-touch .overlay-touch-pad {
     display: flex;
-    max-height: 68px;
-    padding: 4px 8px;
+    max-height: 52px;
+    padding: 2px 6px;
+  }
+
+  #game-overlay.overlay-has-touch {
+    --overlay-touch-height: 52px;
   }
 
   #game-overlay .touch-btn {
-    min-width: 38px;
-    min-height: 38px;
-    font-size: 0.8rem;
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 0.72rem;
   }
 
   #game-overlay .touch-dpad {
-    grid-template-columns: repeat(3, 38px);
-    grid-template-rows: repeat(3, 38px);
+    grid-template-columns: repeat(3, 40px);
+    grid-template-rows: repeat(3, 40px);
   }
 
-  #overlay-panel-status,
-  #overlay-btn-info,
-  #overlay-btn-data {
+  #overlay-panel-status {
     display: none !important;
   }
 
   #game-overlay .overlay-side {
-    width: min(72vw, 260px);
-    padding: 8px;
+    width: min(80vw, 240px);
+    padding: 7px;
   }
 }
 
 /* C. Tablet */
 @media (min-width: 481px) and (max-width: 1099px) {
   #game-overlay {
-    --overlay-toolbar-height: 40px;
-    --overlay-stage-gap: 12px;
+    --overlay-toolbar-height: 36px;
+    --overlay-stage-gap: 8px;
   }
 
   #overlay-ctrl-bar {
@@ -855,8 +880,15 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   }
 
   #overlay-ctrl-bar button {
-    min-height: 34px;
-    min-width: 38px;
+    min-height: 32px;
+    min-width: 34px;
+  }
+
+  #overlay-btn-info .btn-label,
+  #overlay-btn-data .btn-label,
+  #overlay-btn-fs .btn-label,
+  #overlay-btn-mute .btn-label {
+    display: none;
   }
 
   #game-overlay .overlay-touch-pad {
@@ -910,19 +942,19 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 /* Show touch pad on coarse-pointer devices (phones, tablets, iPads)
    regardless of screen width — applies to all touch-primary screens */
 @media (pointer: coarse) {
-  #game-overlay .overlay-touch-pad {
+  #game-overlay.overlay-has-touch .overlay-touch-pad {
     display: flex;
   }
-  #game-overlay {
-    --overlay-touch-height: 88px;
+  #game-overlay.overlay-has-touch {
+    --overlay-touch-height: 64px;
   }
 }
 
 /* Reduce canvas height on large coarse-pointer devices (iPad Pro landscape etc.)
    to leave room for the touch pad that now shows beyond the 1099px tablet breakpoint */
 @media (pointer: coarse) and (min-width: 1100px) {
-  #game-overlay {
-    --overlay-touch-height: 96px;
+  #game-overlay.overlay-has-touch {
+    --overlay-touch-height: 68px;
   }
   #overlay-panel-status {
     display: none !important;
