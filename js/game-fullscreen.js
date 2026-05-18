@@ -378,6 +378,7 @@
   var cachedPageModPanel  = null;
   var modPanelOrigParent  = null;
   var modPanelOrigNextSib = null;
+  var modPanelObserver    = null;
   var microNotifyDedup = new Map();
   var microNotifyCooldownMs = 2200;
   var maxMicroItems = 5;
@@ -444,6 +445,35 @@
     if (_rightPanelOpen) _leftPanelOpen = false;
     syncPanelLayoutState();
     announcePanelState(_rightPanelOpen ? 'Data panel opened.' : 'Data panel collapsed.');
+  }
+
+  function moveModifierPanelIntoOverlayDrawer() {
+    if (!isOpen) return;
+    var pageModPanel = document.getElementById('cm-modifier-panel');
+    if (!pageModPanel) return;
+    if (pageModPanel.parentNode !== sideRight) {
+      if (!modPanelOrigParent && pageModPanel.parentNode) {
+        modPanelOrigParent = pageModPanel.parentNode;
+        modPanelOrigNextSib = pageModPanel.nextSibling;
+      }
+      sideRight.appendChild(pageModPanel);
+    }
+    cachedPageModPanel = pageModPanel;
+  }
+
+  function stopModifierPanelObserver() {
+    if (!modPanelObserver) return;
+    modPanelObserver.disconnect();
+    modPanelObserver = null;
+  }
+
+  function startModifierPanelObserver() {
+    if (!isOpen || modPanelObserver) return;
+    if (typeof MutationObserver !== 'function') return;
+    modPanelObserver = new MutationObserver(function () {
+      moveModifierPanelIntoOverlayDrawer();
+    });
+    modPanelObserver.observe(document.body, { childList: true, subtree: true });
   }
 
   function ensureMicroFeed() {
@@ -910,16 +940,7 @@
     updateSyncSurfaceState(lastSubmissionState || getLinkedSyncState(), {});
     refreshFactionPanel();
 
-    // Move the on-page modifier panel (if present) into the overlay data
-    // drawer so the modifier card selection is reachable via the Data button
-    // but is not visible in the default fullscreen game view.
-    var pageModPanel = document.getElementById('cm-modifier-panel');
-    if (pageModPanel && pageModPanel.parentNode !== sideRight) {
-      modPanelOrigParent  = pageModPanel.parentNode;
-      modPanelOrigNextSib = pageModPanel.nextSibling;
-      sideRight.appendChild(pageModPanel);
-      cachedPageModPanel = pageModPanel;
-    }
+    moveModifierPanelIntoOverlayDrawer();
   }
 
   function updateScores() {
@@ -1260,6 +1281,7 @@
     // Build side panels and touch controls
     buildLeftPanel(meta);
     buildRightPanel(meta);
+    moveModifierPanelIntoOverlayDrawer();
     buildTouchPad(meta);
     closeOverlayPanels({ silent: true });
 
@@ -1293,6 +1315,7 @@
     // Show overlay.
     overlay.classList.add('active');
     document.body.classList.add('overlay-open');
+    startModifierPanelObserver();
 
     // Fire a resize event so Phaser (and any other canvas-scaling logic) can
     // recalculate dimensions against the new fullscreen container.
@@ -1382,6 +1405,8 @@
       document.exitFullscreen().catch(function () {});
     }
 
+    stopModifierPanelObserver();
+
     // Restore the moved element to its original location in the page.
     if (origParent && stageTarget) {
       origParent.insertBefore(stageTarget, origNextSibling);
@@ -1393,10 +1418,10 @@
     // Restore the on-page modifier panel to its original page position.
     if (cachedPageModPanel && modPanelOrigParent) {
       modPanelOrigParent.insertBefore(cachedPageModPanel, modPanelOrigNextSib);
-      modPanelOrigParent  = null;
-      modPanelOrigNextSib = null;
-      cachedPageModPanel  = null;
     }
+    cachedPageModPanel  = null;
+    modPanelOrigParent  = null;
+    modPanelOrigNextSib = null;
 
     overlay.classList.remove('active');
     overlay.classList.remove('overlay-has-touch');
@@ -1605,6 +1630,12 @@
       if (fullscreenOnlyMode) exitToArcadeHub();
       else closeOverlay();
     }
+  });
+
+  document.addEventListener('arcade-overlay-open', function () {
+    if (!isOpen) return;
+    moveModifierPanelIntoOverlayDrawer();
+    startModifierPanelObserver();
   });
 
   // When the viewport enters the mobile breakpoint (<= 480 px) the drawer

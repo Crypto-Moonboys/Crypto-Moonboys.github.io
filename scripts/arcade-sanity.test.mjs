@@ -382,18 +382,31 @@ check(
   'game-fullscreen.css hides page-level faction HUD while overlay is open (overlay faction card is used instead)',
 );
 check(
-  // JS moves #cm-modifier-panel into sideRight and tracks original position
-  /getElementById\('cm-modifier-panel'\)/u.test(fullscreenShellSrc) &&
-    /modPanelOrigParent/u.test(fullscreenShellSrc) &&
-    /modPanelOrigNextSib/u.test(fullscreenShellSrc) &&
-    /cachedPageModPanel/u.test(fullscreenShellSrc) &&
-    /sideRight\.appendChild\(pageModPanel\)/u.test(fullscreenShellSrc),
-  'game-fullscreen.js moves on-page modifier panel into overlay data drawer so modifier cards are only visible via the Data button',
+  /function\s+moveModifierPanelIntoOverlayDrawer\(\)\s*\{[\s\S]*getElementById\('cm-modifier-panel'\)[\s\S]*sideRight\.appendChild\(pageModPanel\)/u.test(fullscreenShellSrc) &&
+    /if\s*\(!modPanelOrigParent\s*&&\s*pageModPanel\.parentNode\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js defines reusable moveModifierPanelIntoOverlayDrawer() helper and records original parent/sibling only once',
 );
 check(
-  // JS restores #cm-modifier-panel on overlay close
-  /modPanelOrigParent\.insertBefore\(cachedPageModPanel/u.test(fullscreenShellSrc),
-  'game-fullscreen.js restores on-page modifier panel to original page position on overlay close',
+  /new\s+MutationObserver\(/u.test(fullscreenShellSrc) &&
+    /function\s+startModifierPanelObserver\(\)/u.test(fullscreenShellSrc) &&
+    /modPanelObserver\.observe\(document\.body,\s*\{\s*childList:\s*true,\s*subtree:\s*true\s*\}\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js includes async modifier mount handling via a MutationObserver while overlay is open',
+);
+check(
+  /addEventListener\('arcade-overlay-open',\s*function\s*\(\)\s*\{[\s\S]*moveModifierPanelIntoOverlayDrawer\(\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js reruns modifier docking after arcade-overlay-open to catch late-mounted panel state',
+);
+check(
+  /function\s+stopModifierPanelObserver\(\)\s*\{[\s\S]*modPanelObserver\.disconnect\(\)/u.test(fullscreenShellSrc) &&
+    /stopModifierPanelObserver\(\);/u.test(fullscreenShellSrc),
+  'game-fullscreen.js disconnects the modifier panel observer during overlay close cleanup',
+);
+check(
+  /modPanelOrigParent\.insertBefore\(cachedPageModPanel,\s*modPanelOrigNextSib\)/u.test(fullscreenShellSrc) &&
+    /cachedPageModPanel\s*=\s*null;/u.test(fullscreenShellSrc) &&
+    /modPanelOrigParent\s*=\s*null;/u.test(fullscreenShellSrc) &&
+    /modPanelOrigNextSib\s*=\s*null;/u.test(fullscreenShellSrc),
+  'game-fullscreen.js restores modifier panel to its original location on close and clears restore caches safely',
 );
 check(
   /window\.addEventListener\('resize',\s*function\s*\(\)\s*\{[\s\S]*scheduleOverlayResizeSync\('viewport-resize',\s*\{\s*skipWindowResize:\s*true\s*\}\);/u.test(fullscreenShellSrc) &&
