@@ -209,6 +209,6 @@ assert.match(bootstrap, /placeBomb\(\)\s*\{\s*self\._handleBombAction\(\);\s*\}/
 assert.match(bootstrap, /_handleBombAction\(\)\s*\{\s*if \(this\.runOver \|\| this\.inUpgrade\) return;\s*this\._placeBomb\(\);\s*\}/, 'shared BTQM bomb action handler must preserve runtime guards before placing bombs');
 assert.match(fullscreenShell, /btqmCanvas:\s*\{[\s\S]*touchScheme:\s*'dpad-bomb'/, 'fullscreen shell must expose a BTQM touch scheme with a bomb action');
 assert.match(fullscreenShell, /function\s+buildDpadBomb\(\)/, 'fullscreen shell must define a BTQM dpad+bomb touch builder');
-assert.match(fullscreenShell, /var bomb = makeTouchBtn\('💣 Bomb',\s*'touch-btn--fire touch-btn--wide'\);\s*bindTap\(bomb,\s*' '\);/, 'fullscreen shell BTQM touch builder must map the bomb button to SPACE');
+assert.match(fullscreenShell, /var bomb = makeTouchBtn\('💣',\s*'touch-btn--fire touch-btn--wide',\s*'Place bomb'\);\s*bindTap\(bomb,\s*' '\);/, 'fullscreen shell BTQM touch builder must map the bomb button to SPACE');
 
 console.log('BTQM runtime asset smoke checks passed.');
