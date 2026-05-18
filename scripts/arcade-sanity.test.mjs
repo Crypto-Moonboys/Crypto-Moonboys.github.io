@@ -280,33 +280,24 @@ check(
   'game-fullscreen.js provides dedicated collapsible overlay panel toggles so gameplay keeps priority',
 );
 check(
-  // closed → inert + aria-hidden="true"
-  /sideLeft\.setAttribute\('inert',\s*''\)/u.test(fullscreenShellSrc) &&
-    /sideLeft\.setAttribute\('aria-hidden',\s*'true'\)/u.test(fullscreenShellSrc) &&
-    /sideLeft\.removeAttribute\('inert'\)/u.test(fullscreenShellSrc) &&
-    /sideLeft\.setAttribute\('aria-hidden',\s*'false'\)/u.test(fullscreenShellSrc),
-  'game-fullscreen.js makes closed left drawer inert and aria-hidden to block keyboard/AT access',
+  /info:\s*\{\s*button:\s*btnInfo,\s*panel:\s*sideLeft/u.test(fullscreenShellSrc) &&
+    /config\.panel\.setAttribute\('inert',\s*''\)/u.test(fullscreenShellSrc) &&
+    /config\.panel\.setAttribute\('aria-hidden',\s*'true'\)/u.test(fullscreenShellSrc) &&
+    /config\.panel\.removeAttribute\('inert'\)/u.test(fullscreenShellSrc) &&
+    /config\.panel\.setAttribute\('aria-hidden',\s*'false'\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js keeps the info drawer under config-driven inert and aria-hidden management',
 );
 check(
-  /sideRight\.setAttribute\('inert',\s*''\)/u.test(fullscreenShellSrc) &&
-    /sideRight\.setAttribute\('aria-hidden',\s*'true'\)/u.test(fullscreenShellSrc) &&
-    /sideRight\.removeAttribute\('inert'\)/u.test(fullscreenShellSrc) &&
-    /sideRight\.setAttribute\('aria-hidden',\s*'false'\)/u.test(fullscreenShellSrc),
-  'game-fullscreen.js makes closed right drawer inert and aria-hidden to block keyboard/AT access',
+  /data:\s*\{\s*button:\s*btnData,\s*panel:\s*sideRight/u.test(fullscreenShellSrc),
+  'game-fullscreen.js maps the data drawer into the shared overlay panel config',
 );
 check(
-  /sideModifiers\.setAttribute\('inert',\s*''\)/u.test(fullscreenShellSrc) &&
-    /sideModifiers\.setAttribute\('aria-hidden',\s*'true'\)/u.test(fullscreenShellSrc) &&
-    /sideModifiers\.removeAttribute\('inert'\)/u.test(fullscreenShellSrc) &&
-    /sideModifiers\.setAttribute\('aria-hidden',\s*'false'\)/u.test(fullscreenShellSrc),
-  'game-fullscreen.js makes closed modifier drawer inert and aria-hidden to block keyboard/AT access',
+  /modifiers:\s*\{\s*button:\s*btnModifiers,\s*panel:\s*sideModifiers/u.test(fullscreenShellSrc),
+  'game-fullscreen.js maps the modifiers drawer into the shared overlay panel config',
 );
 check(
-  /sideFaction\.setAttribute\('inert',\s*''\)/u.test(fullscreenShellSrc) &&
-    /sideFaction\.setAttribute\('aria-hidden',\s*'true'\)/u.test(fullscreenShellSrc) &&
-    /sideFaction\.removeAttribute\('inert'\)/u.test(fullscreenShellSrc) &&
-    /sideFaction\.setAttribute\('aria-hidden',\s*'false'\)/u.test(fullscreenShellSrc),
-  'game-fullscreen.js makes closed faction drawer inert and aria-hidden to block keyboard/AT access',
+  /faction:\s*\{\s*button:\s*btnFaction,\s*panel:\s*sideFaction/u.test(fullscreenShellSrc),
+  'game-fullscreen.js maps the faction drawer into the shared overlay panel config',
 );
 check(
   // portrait mobile + landscape hidden-toggle breakpoints both trigger auto-close
