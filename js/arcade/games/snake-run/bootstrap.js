@@ -243,6 +243,7 @@ function createState(root) {
     metaLast: null,
     resizeHandler: null,
     fsHandler: null,
+    overlayResizeHandler: null,
     // Faction state — populated in resetRun()
     _srFactionId: 'unaligned',
     _srFxDef: null,
@@ -641,10 +642,14 @@ function updateViewport(state) {
   const GRID_W = GRID_COLS * CELL; // 1408 — authoritative playfield width
   const GRID_H = GRID_ROWS * CELL; // 832  — authoritative playfield height
   const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-  // Use the parent element's available width as the display-size source.
-  const rect = state.canvas.parentElement ? state.canvas.parentElement.getBoundingClientRect() : state.canvas.getBoundingClientRect();
+  // Use the stage bounds in fullscreen and parent bounds on-page.
+  const parentRect = state.canvas.parentElement ? state.canvas.parentElement.getBoundingClientRect() : state.canvas.getBoundingClientRect();
   const overlay = document.getElementById('game-overlay');
   const overlayOpen = !!(overlay && overlay.classList.contains('active'));
+  const stage = overlayOpen
+    ? (overlay.querySelector('.game-stage') || overlay.querySelector('.game-card') || state.canvas.parentElement)
+    : state.canvas.parentElement;
+  const rect = stage && stage.getBoundingClientRect ? stage.getBoundingClientRect() : parentRect;
   // Aspect ratio is the GRID (playfield) ratio, not the abstract world ratio.
   // This eliminates the unused dark margins that appeared when the grid
   // (1408×832) was rendered inside a 1600×900-ratio canvas.
@@ -656,11 +661,8 @@ function updateViewport(state) {
   let targetH = targetW / aspect;
 
   if (overlayOpen) {
-    // Constrain height to fit between the control-bar chrome and the HUD.
-    const hudHeight = state.root ? ((state.root.querySelector('.hud') || {}).offsetHeight || 0) : 0;
-    const chromeHeight = 36 + hudHeight + 28;
-    const vh = window.innerHeight || rect.height;
-    const maxH = Math.max(220, Math.floor(vh - chromeHeight));
+    // .game-stage already represents usable fullscreen play area.
+    const maxH = Math.max(220, Math.floor(rect.height - 8));
     if (targetH > maxH) {
       targetH = maxH;
       targetW = targetH * aspect;
@@ -696,7 +698,7 @@ function updateViewport(state) {
   state.view.scale = Math.min(dw / GRID_W, dh / GRID_H);
   state.view.width = dw;
   state.view.height = dh;
-  state.view.offsetX = (aw - dw) * 0.5;
+  state.view.offsetX = 0;
   state.view.offsetY = 0;
   state.view.dpr = dpr;
 }
@@ -705,16 +707,20 @@ function registerResize(state) {
   unregisterResize(state);
   state.resizeHandler = function () { updateViewport(state); };
   state.fsHandler = function () { setTimeout(function () { updateViewport(state); }, 20); };
+  state.overlayResizeHandler = function () { updateViewport(state); };
   window.addEventListener('resize', state.resizeHandler);
   document.addEventListener('fullscreenchange', state.fsHandler);
+  document.addEventListener('arcade-overlay-resize', state.overlayResizeHandler);
   updateViewport(state);
 }
 
 function unregisterResize(state) {
   if (state.resizeHandler) window.removeEventListener('resize', state.resizeHandler);
   if (state.fsHandler) document.removeEventListener('fullscreenchange', state.fsHandler);
+  if (state.overlayResizeHandler) document.removeEventListener('arcade-overlay-resize', state.overlayResizeHandler);
   state.resizeHandler = null;
   state.fsHandler = null;
+  state.overlayResizeHandler = null;
 }
 
 function handleDirectionInput(state, x, y) {

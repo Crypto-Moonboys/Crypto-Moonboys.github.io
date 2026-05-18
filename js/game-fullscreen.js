@@ -748,17 +748,15 @@
   }
 
   function buildLrLaunch() {
-    var wrap   = el('div', 'touch-lr');
-    var row1   = el('div', 'touch-lr-row');
+    var wrap   = el('div', 'touch-lr-row');
     var left   = makeTouchBtn('←', 'touch-btn--wide', 'Move left');
     var right  = makeTouchBtn('→', 'touch-btn--wide', 'Move right');
     var launch = makeTouchBtn('◎', 'touch-btn--wide', 'Launch');
     bindHold(left,  'ArrowLeft');
     bindHold(right, 'ArrowRight');
     bindTap(launch, ' ');
-    row1.appendChild(left);
-    row1.appendChild(right);
-    wrap.appendChild(row1);
+    wrap.appendChild(left);
+    wrap.appendChild(right);
     wrap.appendChild(launch);
     return wrap;
   }
@@ -778,8 +776,7 @@
   }
 
   function buildAsteroid() {
-    var wrap   = el('div', 'touch-asteroid');
-    var row1   = el('div', 'touch-asteroid-row');
+    var wrap   = el('div', 'touch-asteroid-row');
     var rotL   = makeTouchBtn('↺', '', 'Rotate left');
     var thrust = makeTouchBtn('▲', '', 'Thrust');
     var rotR   = makeTouchBtn('↻', '', 'Rotate right');
@@ -788,10 +785,9 @@
     bindHold(thrust, 'ArrowUp');
     bindHold(rotR,   'ArrowRight');
     bindTap(fire,    ' ');
-    row1.appendChild(rotL);
-    row1.appendChild(thrust);
-    row1.appendChild(rotR);
-    wrap.appendChild(row1);
+    wrap.appendChild(rotL);
+    wrap.appendChild(thrust);
+    wrap.appendChild(rotR);
     wrap.appendChild(fire);
     return wrap;
   }
