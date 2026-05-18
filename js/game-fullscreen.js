@@ -123,6 +123,8 @@
 
   var btnInfo  = makeCtrlBtn('overlay-btn-info',  'Toggle controls panel', '☰', 'Info');
   var btnData  = makeCtrlBtn('overlay-btn-data',  'Toggle data panel', '📊', 'Data');
+  var btnModifiers = makeCtrlBtn('overlay-btn-modifiers', 'Arcade Modifiers', '⚡', 'Modifiers');
+  var btnFaction = makeCtrlBtn('overlay-btn-faction', 'Faction / Clan', '🛡️', 'Faction');
   var btnFS    = makeCtrlBtn('overlay-btn-fs',    'Toggle fullscreen', '⛶', 'FS');
   var btnStart = makeCtrlBtn('overlay-btn-start', 'Start game',        '▶', 'Start');
   var btnPause = makeCtrlBtn('overlay-btn-pause', 'Pause/Resume',      '⏸', 'Pause');
@@ -161,6 +163,8 @@
   ctrlBar.appendChild(panelStatus);
   ctrlBar.appendChild(btnInfo);
   ctrlBar.appendChild(btnData);
+  ctrlBar.appendChild(btnModifiers);
+  ctrlBar.appendChild(btnFaction);
   ctrlBar.appendChild(btnFS);
   ctrlBar.appendChild(btnStart);
   ctrlBar.appendChild(btnPause);
@@ -189,12 +193,30 @@
   sideRight.setAttribute('aria-label', 'Game data and sync');
   sideRight.setAttribute('data-shell-scroll', '');
 
+  var sideModifiers = document.createElement('div');
+  sideModifiers.className = 'overlay-side overlay-side--right overlay-side--modifiers shell-scroll';
+  sideModifiers.id = 'overlay-side-modifiers';
+  sideModifiers.setAttribute('role', 'region');
+  sideModifiers.setAttribute('aria-label', 'Arcade modifiers');
+  sideModifiers.setAttribute('data-shell-scroll', '');
+
+  var sideFaction = document.createElement('div');
+  sideFaction.className = 'overlay-side overlay-side--right overlay-side--faction shell-scroll';
+  sideFaction.id = 'overlay-side-faction';
+  sideFaction.setAttribute('role', 'region');
+  sideFaction.setAttribute('aria-label', 'Faction and clan status');
+  sideFaction.setAttribute('data-shell-scroll', '');
+
   overlayBody.appendChild(sideLeft);
   overlayBody.appendChild(stage);
   overlayBody.appendChild(sideRight);
+  overlayBody.appendChild(sideModifiers);
+  overlayBody.appendChild(sideFaction);
   if (window.MOONBOYS_SCROLL_SHELL && typeof window.MOONBOYS_SCROLL_SHELL.mount === 'function') {
     window.MOONBOYS_SCROLL_SHELL.mount(sideLeft);
     window.MOONBOYS_SCROLL_SHELL.mount(sideRight);
+    window.MOONBOYS_SCROLL_SHELL.mount(sideModifiers);
+    window.MOONBOYS_SCROLL_SHELL.mount(sideFaction);
   }
 
   // Touch pad
@@ -251,6 +273,7 @@
   var _goRestart = null;
   var _goExit    = null;
   var cachedFactionPanel = null;
+  var modifierPanelHost = null;
 
   function sanitizeOverlayExitHref(href) {
     var value = String(href || '').trim();
@@ -347,8 +370,7 @@
   var origNextSibling = null;
   var stageTarget     = null; // element actually moved into the overlay (btqm-game-area or game-card)
   var isOpen          = false;
-  var _leftPanelOpen  = false;
-  var _rightPanelOpen = false;
+  var _activePanel    = '';
   var _gameStarted    = false; // true once the in-overlay Start button has been clicked at least once
   var scoreInterval   = null;
   var overlayResizeTimer = null;
@@ -372,8 +394,8 @@
   var ACTIVE_SUBMISSION_STATES = ['auto_submitting', 'score_accepted', 'xp_awarded', 'accepted_no_xp', 'rejected_no_xp'];
   // On-page modifier panel host tracking.
   // When the overlay opens, #cm-modifier-panel is moved from its page location
-  // into the overlay right-side data panel so modifier card selection is
-  // accessible via the Data button without occupying permanent page real estate.
+  // into the dedicated overlay modifiers panel so modifier card selection is
+  // accessible without occupying permanent page real estate.
   // On overlay close the element is restored to its original page position.
   var cachedPageModPanel  = null;
   var modPanelOrigParent  = null;
@@ -388,10 +410,17 @@
     window.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
   }
 
-  btnInfo.setAttribute('aria-controls', 'overlay-side-left');
-  btnInfo.setAttribute('aria-expanded', 'false');
-  btnData.setAttribute('aria-controls', 'overlay-side-right');
-  btnData.setAttribute('aria-expanded', 'false');
+  var OVERLAY_PANEL_CONFIG = {
+    info: { button: btnInfo, panel: sideLeft, label: 'Info' },
+    data: { button: btnData, panel: sideRight, label: 'Data' },
+    modifiers: { button: btnModifiers, panel: sideModifiers, label: 'Arcade Modifiers' },
+    faction: { button: btnFaction, panel: sideFaction, label: 'Faction / Clan' }
+  };
+  Object.keys(OVERLAY_PANEL_CONFIG).forEach(function (panelKey) {
+    var config = OVERLAY_PANEL_CONFIG[panelKey];
+    config.button.setAttribute('aria-controls', config.panel.id);
+    config.button.setAttribute('aria-expanded', 'false');
+  });
 
   function announcePanelState(message) {
     if (!panelStatusText) return;
@@ -402,64 +431,51 @@
   }
 
   function syncPanelLayoutState() {
-    overlay.classList.toggle('overlay-side-open-left', _leftPanelOpen);
-    overlay.classList.toggle('overlay-side-open-right', _rightPanelOpen);
-    btnInfo.setAttribute('aria-expanded', _leftPanelOpen ? 'true' : 'false');
-    btnData.setAttribute('aria-expanded', _rightPanelOpen ? 'true' : 'false');
-    // Keep closed drawers out of the keyboard/AT focus tree so they cannot be
-    // tabbed into when visually hidden.  `inert` removes the subtree from the
-    // tab order and hides it from assistive technology.
-    if (_leftPanelOpen) {
-      sideLeft.removeAttribute('inert');
-      sideLeft.setAttribute('aria-hidden', 'false');
-    } else {
-      sideLeft.setAttribute('inert', '');
-      sideLeft.setAttribute('aria-hidden', 'true');
-    }
-    if (_rightPanelOpen) {
-      sideRight.removeAttribute('inert');
-      sideRight.setAttribute('aria-hidden', 'false');
-    } else {
-      sideRight.setAttribute('inert', '');
-      sideRight.setAttribute('aria-hidden', 'true');
-    }
+    Object.keys(OVERLAY_PANEL_CONFIG).forEach(function (panelKey) {
+      var config = OVERLAY_PANEL_CONFIG[panelKey];
+      var panelOpen = _activePanel === panelKey;
+      config.panel.classList.toggle('is-open', panelOpen);
+      config.button.setAttribute('aria-expanded', panelOpen ? 'true' : 'false');
+      if (panelOpen) {
+        config.panel.removeAttribute('inert');
+        config.panel.setAttribute('aria-hidden', 'false');
+      } else {
+        config.panel.setAttribute('inert', '');
+        config.panel.setAttribute('aria-hidden', 'true');
+      }
+    });
   }
 
   function closeOverlayPanels(options) {
     var silent = !!(options && options.silent);
-    _leftPanelOpen = false;
-    _rightPanelOpen = false;
+    _activePanel = '';
     syncPanelLayoutState();
     if (!silent) announcePanelState('Panels collapsed for larger playfield.');
   }
 
-  function toggleOverlayPanel(side) {
-    if (side === 'left') {
-      _leftPanelOpen = !_leftPanelOpen;
-      if (_leftPanelOpen) _rightPanelOpen = false;
-      syncPanelLayoutState();
-      announcePanelState(_leftPanelOpen ? 'Controls panel opened.' : 'Controls panel collapsed.');
-      return;
-    }
-    _rightPanelOpen = !_rightPanelOpen;
-    if (_rightPanelOpen) _leftPanelOpen = false;
+  function toggleOverlayPanel(panelKey) {
+    var config = OVERLAY_PANEL_CONFIG[panelKey];
+    if (!config) return;
+    _activePanel = (_activePanel === panelKey) ? '' : panelKey;
     syncPanelLayoutState();
-    announcePanelState(_rightPanelOpen ? 'Data panel opened.' : 'Data panel collapsed.');
+    announcePanelState(_activePanel === panelKey ? (config.label + ' panel opened.') : (config.label + ' panel collapsed.'));
   }
 
   function moveModifierPanelIntoOverlayDrawer() {
     if (!isOpen) return;
     var pageModPanel = document.getElementById('cm-modifier-panel');
-    if (!pageModPanel) return;
-    if (pageModPanel.parentNode !== sideRight) {
+    if (!pageModPanel || !modifierPanelHost) return;
+    if (pageModPanel.parentNode !== modifierPanelHost) {
       if (!modPanelOrigParent && pageModPanel.parentNode) {
         modPanelOrigParent = pageModPanel.parentNode;
         modPanelOrigNextSib = pageModPanel.nextSibling;
       }
-      sideRight.appendChild(pageModPanel);
+      modifierPanelHost.innerHTML = '';
+      modifierPanelHost.appendChild(pageModPanel);
     }
     cachedPageModPanel = pageModPanel;
   }
+  syncPanelLayoutState();
 
   function stopModifierPanelObserver() {
     if (!modPanelObserver) return;
@@ -828,7 +844,7 @@
     var closeBtn = el('button', 'panel-close-btn', '×');
     closeBtn.setAttribute('type', 'button');
     closeBtn.setAttribute('aria-label', 'Close info panel');
-    closeBtn.addEventListener('click', function () { toggleOverlayPanel('left'); });
+    closeBtn.addEventListener('click', function () { toggleOverlayPanel('info'); });
     panelHead.appendChild(closeBtn);
     sideLeft.appendChild(panelHead);
     // Game card — title only
@@ -885,20 +901,16 @@
     });
   }
 
-  function buildRightPanel(meta) {
+  function buildRightPanel() {
     sideRight.innerHTML = '';
     var panelHead = el('div', 'panel-head');
     panelHead.appendChild(el('div', 'panel-heading', 'Data'));
     var closeBtn = el('button', 'panel-close-btn', '×');
     closeBtn.setAttribute('type', 'button');
     closeBtn.setAttribute('aria-label', 'Close data panel');
-    closeBtn.addEventListener('click', function () { toggleOverlayPanel('right'); });
+    closeBtn.addEventListener('click', function () { toggleOverlayPanel('data'); });
     panelHead.appendChild(closeBtn);
     sideRight.appendChild(panelHead);
-    var modifiersCard = el('div', 'fs-card');
-    modifiersCard.appendChild(el('div', 'panel-title', 'Arcade Modifiers'));
-    modifiersCard.appendChild(el('div', 'panel-note', 'Score acceptance + Telegram sync are required before projected Arcade XP becomes rewarded XP.'));
-    sideRight.appendChild(modifiersCard);
     // Score card — live score + projected XP + best score
     var scoreCard = el('div', 'fs-card');
     scoreCard.appendChild(el('div', 'panel-title', 'Live Score'));
@@ -929,18 +941,48 @@
     cachedSyncActions.id = 'overlay-sync-actions';
     syncCard.appendChild(cachedSyncActions);
     sideRight.appendChild(syncCard);
-    // Faction card — alignment + bonus + join actions
+    var xpCard = el('div', 'fs-card');
+    xpCard.appendChild(el('div', 'panel-title', 'Arcade XP'));
+    xpCard.appendChild(el('div', 'panel-note', 'Score acceptance + Telegram sync are required before projected Arcade XP becomes rewarded XP.'));
+    sideRight.appendChild(xpCard);
+    updateSyncSurfaceState(lastSubmissionState || getLinkedSyncState(), {});
+  }
+
+  function buildModifiersPanel() {
+    sideModifiers.innerHTML = '';
+    var panelHead = el('div', 'panel-head');
+    panelHead.appendChild(el('div', 'panel-heading', 'Arcade Modifiers'));
+    var closeBtn = el('button', 'panel-close-btn', '×');
+    closeBtn.setAttribute('type', 'button');
+    closeBtn.setAttribute('aria-label', 'Close Arcade Modifiers panel');
+    closeBtn.addEventListener('click', function () { toggleOverlayPanel('modifiers'); });
+    panelHead.appendChild(closeBtn);
+    sideModifiers.appendChild(panelHead);
+    modifierPanelHost = el('div', 'fs-card');
+    modifierPanelHost.id = 'overlay-modifier-panel-host';
+    modifierPanelHost.appendChild(el('div', 'panel-note', 'Loading modifier cards\u2026'));
+    sideModifiers.appendChild(modifierPanelHost);
+    moveModifierPanelIntoOverlayDrawer();
+  }
+
+  function buildFactionPanel() {
+    sideFaction.innerHTML = '';
+    var panelHead = el('div', 'panel-head');
+    panelHead.appendChild(el('div', 'panel-heading', 'Faction / Clan'));
+    var closeBtn = el('button', 'panel-close-btn', '×');
+    closeBtn.setAttribute('type', 'button');
+    closeBtn.setAttribute('aria-label', 'Close Faction / Clan panel');
+    closeBtn.addEventListener('click', function () { toggleOverlayPanel('faction'); });
+    panelHead.appendChild(closeBtn);
+    sideFaction.appendChild(panelHead);
     var factionCard = el('div', 'fs-card');
-    factionCard.appendChild(el('div', 'panel-title', 'Faction Alignment'));
+    factionCard.appendChild(el('div', 'panel-title', 'Faction / Clan Status'));
     cachedFactionPanel = el('div', 'panel-note panel-note--faction');
     cachedFactionPanel.id = 'overlay-faction-panel';
     cachedFactionPanel.innerHTML = 'Loading faction card\u2026';
     factionCard.appendChild(cachedFactionPanel);
-    sideRight.appendChild(factionCard);
-    updateSyncSurfaceState(lastSubmissionState || getLinkedSyncState(), {});
+    sideFaction.appendChild(factionCard);
     refreshFactionPanel();
-
-    moveModifierPanelIntoOverlayDrawer();
   }
 
   function updateScores() {
@@ -1280,7 +1322,9 @@
 
     // Build side panels and touch controls
     buildLeftPanel(meta);
-    buildRightPanel(meta);
+    buildRightPanel();
+    buildModifiersPanel();
+    buildFactionPanel();
     moveModifierPanelIntoOverlayDrawer();
     buildTouchPad(meta);
     closeOverlayPanels({ silent: true });
@@ -1422,6 +1466,7 @@
     cachedPageModPanel  = null;
     modPanelOrigParent  = null;
     modPanelOrigNextSib = null;
+    modifierPanelHost   = null;
 
     overlay.classList.remove('active');
     overlay.classList.remove('overlay-has-touch');
@@ -1507,11 +1552,19 @@
   });
 
   btnInfo.addEventListener('click', function () {
-    toggleOverlayPanel('left');
+    toggleOverlayPanel('info');
   });
 
   btnData.addEventListener('click', function () {
-    toggleOverlayPanel('right');
+    toggleOverlayPanel('data');
+  });
+
+  btnModifiers.addEventListener('click', function () {
+    toggleOverlayPanel('modifiers');
+  });
+
+  btnFaction.addEventListener('click', function () {
+    toggleOverlayPanel('faction');
   });
 
   btnPause.addEventListener('click', function () {
@@ -1584,6 +1637,10 @@
     if (e.key === 'Escape' && isOpen) {
       e.stopPropagation();
       e.preventDefault();
+      if (_activePanel) {
+        closeOverlayPanels();
+        return;
+      }
       if (fullscreenOnlyMode) exitToArcadeHub();
       else closeOverlay();
       return;
@@ -1632,6 +1689,13 @@
     }
   });
 
+  overlayBody.addEventListener('click', function (e) {
+    if (!_activePanel) return;
+    if (e.target.closest('.overlay-side')) return;
+    if (e.target.closest('#overlay-ctrl-bar')) return;
+    closeOverlayPanels();
+  });
+
   document.addEventListener('arcade-overlay-open', function () {
     if (!isOpen) return;
     moveModifierPanelIntoOverlayDrawer();
@@ -1671,7 +1735,7 @@
       attachMq(HIDDEN_TOGGLE_MQ_LANDSCAPE);
     } else {
       window.addEventListener('resize', function () {
-        if (shouldForceCloseDrawers() && (_leftPanelOpen || _rightPanelOpen)) {
+        if (shouldForceCloseDrawers() && _activePanel) {
           closeOverlayPanels({ silent: true });
         }
       });
