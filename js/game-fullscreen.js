@@ -112,6 +112,7 @@
     var btn = document.createElement('button');
     btn.id = id;
     btn.setAttribute('aria-label', ariaLabel);
+    btn.setAttribute('title', ariaLabel);
     btn.setAttribute('type', 'button');
     btn.classList.add('interactive');
     btn.innerHTML =
@@ -332,9 +333,13 @@
     if (muted) {
       if (icon) icon.textContent = '🔇';
       if (lbl)  lbl.textContent  = ' Unmute';
+      btnMute.setAttribute('aria-label', 'Unmute');
+      btnMute.setAttribute('title', 'Unmute');
     } else {
       if (icon) icon.textContent = '🔊';
       if (lbl)  lbl.textContent  = ' Mute';
+      btnMute.setAttribute('aria-label', 'Mute');
+      btnMute.setAttribute('title', 'Mute');
     }
   }
 
@@ -621,9 +626,11 @@
     );
   }
 
-  function makeTouchBtn(text, extraClass) {
+  function makeTouchBtn(text, extraClass, ariaLabel) {
     var btn = el('button', 'touch-btn' + (extraClass ? ' ' + extraClass : ''), text);
     btn.setAttribute('type', 'button');
+    btn.setAttribute('aria-label', ariaLabel || text);
+    btn.setAttribute('title', ariaLabel || text);
     return btn;
   }
 
@@ -663,11 +670,12 @@
     var wrap   = el('div', 'touch-dpad');
     var keys   = [null, 'ArrowUp', null, 'ArrowLeft', null, 'ArrowRight', null, 'ArrowDown', null];
     var labels = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→' };
+    var ariaLabels = { ArrowUp: 'Move up', ArrowDown: 'Move down', ArrowLeft: 'Move left', ArrowRight: 'Move right' };
     keys.forEach(function (key) {
       if (!key) {
         wrap.appendChild(el('div', 'touch-btn touch-btn--empty'));
       } else {
-        var btn = makeTouchBtn(labels[key]);
+        var btn = makeTouchBtn(labels[key], '', ariaLabels[key]);
         bindHold(btn, key);
         wrap.appendChild(btn);
       }
@@ -678,7 +686,7 @@
   function buildDpadBomb() {
     var wrap = el('div', 'touch-lr-row');
     var dpad = buildDpad();
-    var bomb = makeTouchBtn('💣 Bomb', 'touch-btn--fire touch-btn--wide');
+    var bomb = makeTouchBtn('💣', 'touch-btn--fire touch-btn--wide', 'Place bomb');
     bindTap(bomb, ' ');
     wrap.appendChild(dpad);
     wrap.appendChild(bomb);
@@ -688,9 +696,9 @@
   function buildLrLaunch() {
     var wrap   = el('div', 'touch-lr');
     var row1   = el('div', 'touch-lr-row');
-    var left   = makeTouchBtn('← Move',    'touch-btn--wide');
-    var right  = makeTouchBtn('Move →',    'touch-btn--wide');
-    var launch = makeTouchBtn('⎵ Launch',  'touch-btn--wide');
+    var left   = makeTouchBtn('←', 'touch-btn--wide', 'Move left');
+    var right  = makeTouchBtn('→', 'touch-btn--wide', 'Move right');
+    var launch = makeTouchBtn('◎', 'touch-btn--wide', 'Launch');
     bindHold(left,  'ArrowLeft');
     bindHold(right, 'ArrowRight');
     bindTap(launch, ' ');
@@ -703,9 +711,9 @@
 
   function buildLrFire() {
     var wrap  = el('div', 'touch-lr-row');
-    var left  = makeTouchBtn('← Move',   'touch-btn--wide');
-    var fire  = makeTouchBtn('🔫 Fire',  'touch-btn--fire');
-    var right = makeTouchBtn('Move →',   'touch-btn--wide');
+    var left  = makeTouchBtn('←', 'touch-btn--wide', 'Move left');
+    var fire  = makeTouchBtn('✦', 'touch-btn--fire', 'Fire');
+    var right = makeTouchBtn('→', 'touch-btn--wide', 'Move right');
     bindHold(left,  'ArrowLeft');
     bindHold(right, 'ArrowRight');
     bindTap(fire,   ' ');
@@ -718,10 +726,10 @@
   function buildAsteroid() {
     var wrap   = el('div', 'touch-asteroid');
     var row1   = el('div', 'touch-asteroid-row');
-    var rotL   = makeTouchBtn('↺ Left');
-    var thrust = makeTouchBtn('▲ Thrust');
-    var rotR   = makeTouchBtn('↻ Right');
-    var fire   = makeTouchBtn('🔫 Fire', 'touch-btn--fire');
+    var rotL   = makeTouchBtn('↺', '', 'Rotate left');
+    var thrust = makeTouchBtn('▲', '', 'Thrust');
+    var rotR   = makeTouchBtn('↻', '', 'Rotate right');
+    var fire   = makeTouchBtn('✦', 'touch-btn--fire', 'Fire');
     bindHold(rotL,   'ArrowLeft');
     bindHold(thrust, 'ArrowUp');
     bindHold(rotR,   'ArrowRight');
@@ -737,11 +745,11 @@
   function buildTetris() {
     var wrap     = el('div', 'touch-tetris');
     var row1     = el('div', 'touch-tetris-row');
-    var left     = makeTouchBtn('←');
-    var rotate   = makeTouchBtn('↻');
-    var right    = makeTouchBtn('→');
-    var softDrop = makeTouchBtn('↓');
-    var hardDrop = makeTouchBtn('⏬');
+    var left     = makeTouchBtn('←', '', 'Move left');
+    var rotate   = makeTouchBtn('↻', '', 'Rotate');
+    var right    = makeTouchBtn('→', '', 'Move right');
+    var softDrop = makeTouchBtn('↓', '', 'Soft drop');
+    var hardDrop = makeTouchBtn('⏬', '', 'Hard drop');
     bindHold(left,     'ArrowLeft');
     bindTap(rotate,    'ArrowUp');
     bindHold(right,    'ArrowRight');
@@ -777,6 +785,14 @@
 
   function buildLeftPanel(meta) {
     sideLeft.innerHTML = '';
+    var panelHead = el('div', 'panel-head');
+    panelHead.appendChild(el('div', 'panel-heading', 'Info'));
+    var closeBtn = el('button', 'panel-close-btn', '×');
+    closeBtn.setAttribute('type', 'button');
+    closeBtn.setAttribute('aria-label', 'Close info panel');
+    closeBtn.addEventListener('click', function () { toggleOverlayPanel('left'); });
+    panelHead.appendChild(closeBtn);
+    sideLeft.appendChild(panelHead);
     // Game card — title only
     var gameInfoCard = el('div', 'fs-card');
     var name = el('div', 'game-name', meta.label);
@@ -833,6 +849,18 @@
 
   function buildRightPanel(meta) {
     sideRight.innerHTML = '';
+    var panelHead = el('div', 'panel-head');
+    panelHead.appendChild(el('div', 'panel-heading', 'Data'));
+    var closeBtn = el('button', 'panel-close-btn', '×');
+    closeBtn.setAttribute('type', 'button');
+    closeBtn.setAttribute('aria-label', 'Close data panel');
+    closeBtn.addEventListener('click', function () { toggleOverlayPanel('right'); });
+    panelHead.appendChild(closeBtn);
+    sideRight.appendChild(panelHead);
+    var modifiersCard = el('div', 'fs-card');
+    modifiersCard.appendChild(el('div', 'panel-title', 'Arcade Modifiers'));
+    modifiersCard.appendChild(el('div', 'panel-note', 'Score acceptance + Telegram sync are required before projected Arcade XP becomes rewarded XP.'));
+    sideRight.appendChild(modifiersCard);
     // Score card — live score + projected XP + best score
     var scoreCard = el('div', 'fs-card');
     scoreCard.appendChild(el('div', 'panel-title', 'Live Score'));
@@ -1088,10 +1116,14 @@
       btnPause.classList.add('paused');
       if (icon) icon.textContent = '▶';
       if (lbl)  lbl.textContent  = ' Resume';
+      btnPause.setAttribute('aria-label', 'Resume');
+      btnPause.setAttribute('title', 'Resume');
     } else {
       btnPause.classList.remove('paused');
       if (icon) icon.textContent = '⏸';
       if (lbl)  lbl.textContent  = ' Pause';
+      btnPause.setAttribute('aria-label', 'Pause');
+      btnPause.setAttribute('title', 'Pause');
     }
   }
 
@@ -1102,9 +1134,13 @@
     if (inFS) {
       if (icon) icon.textContent = '⊠';
       if (lbl)  lbl.textContent  = ' Exit FS';
+      btnFS.setAttribute('aria-label', 'Exit fullscreen');
+      btnFS.setAttribute('title', 'Exit fullscreen');
     } else {
       if (icon) icon.textContent = '⛶';
       if (lbl)  lbl.textContent  = ' FS';
+      btnFS.setAttribute('aria-label', 'Enter fullscreen');
+      btnFS.setAttribute('title', 'Enter fullscreen');
     }
   }
 

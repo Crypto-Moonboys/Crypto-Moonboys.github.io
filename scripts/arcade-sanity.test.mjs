@@ -339,7 +339,7 @@ check(
   'game-fullscreen.css defines off-canvas transforms for left and right drawers',
 );
 check(
-  /#game-overlay\s+\.overlay-side\s*\{[\s\S]*backdrop-filter:\s*blur\(4px\);/u.test(fullscreenCssSrc),
+  /#game-overlay\s+\.overlay-side\s*\{[\s\S]*backdrop-filter:\s*blur\((4|8)px\);/u.test(fullscreenCssSrc),
   'game-fullscreen.css applies overlay drawer backdrop styling for readable panel content',
 );
 check(
@@ -348,16 +348,18 @@ check(
     if (!ctrlBtnRuleMatch) return false;
     const ruleBody = ctrlBtnRuleMatch[1];
     return /(?:^|\n)\s*min-height:\s*34px;/u.test(ruleBody) &&
-      /(?:^|\n)\s*min-width:\s*40px;/u.test(ruleBody);
+      /(?:^|\n)\s*min-width:\s*34px;/u.test(ruleBody) &&
+      /(?:^|\n)\s*background:\s*rgba\(255,\s*255,\s*255,\s*0\.04\);/u.test(ruleBody) &&
+      /(?:^|\n)\s*border-radius:\s*999px;/u.test(ruleBody);
   })(),
   'game-fullscreen.css keeps fullscreen toolbar controls at touch-usable minimum sizes',
 );
 check(
-  /@media\s*\(max-width:\s*480px\)[\s\S]*#overlay-btn-info\s+\.btn-label[\s\S]*#overlay-btn-data\s+\.btn-label[\s\S]*#overlay-btn-fs\s+\.btn-label[\s\S]*#overlay-btn-mute\s+\.btn-label[\s\S]*display:\s*none;/u.test(fullscreenCssSrc),
-  'game-fullscreen.css keeps primary toolbar labels on small screens while hiding only secondary labels',
+  /#overlay-ctrl-bar\s+\.btn-label\s*\{[\s\S]*display:\s*none\s*!important;/u.test(fullscreenCssSrc),
+  'game-fullscreen.css keeps fullscreen toolbar controls icon-only by hiding text labels globally',
 );
 check(
-  /@media\s*\(max-height:\s*500px\)\s*and\s*\(max-width:\s*900px\)[\s\S]*#game-overlay\s+\.overlay-side\s*\{[\s\S]*width:\s*min\((72|80)vw,\s*(260|240)px\);/u.test(fullscreenCssSrc),
+  /@media\s*\(max-height:\s*500px\)\s*and\s*\(max-width:\s*900px\)[\s\S]*#game-overlay\s+\.overlay-side\s*\{[\s\S]*width:\s*min\((72|80|88)vw,\s*(260|240|280)px\);/u.test(fullscreenCssSrc),
   'game-fullscreen.css compacts drawer width in mobile landscape so playfield keeps priority',
 );
 check(
