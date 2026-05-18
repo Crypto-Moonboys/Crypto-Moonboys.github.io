@@ -272,9 +272,12 @@ check(
 check(
   /overlay-btn-info/u.test(fullscreenShellSrc) &&
     /overlay-btn-data/u.test(fullscreenShellSrc) &&
-    /overlay-side-open-left/u.test(fullscreenShellSrc) &&
-    /overlay-side-open-right/u.test(fullscreenShellSrc),
-  'game-fullscreen.js provides collapsible overlay panel toggles so side panels do not permanently squeeze gameplay',
+    /overlay-btn-modifiers/u.test(fullscreenShellSrc) &&
+    /overlay-btn-faction/u.test(fullscreenShellSrc) &&
+    /overlay-side-modifiers/u.test(fullscreenShellSrc) &&
+    /overlay-side-faction/u.test(fullscreenShellSrc) &&
+    /_activePanel/u.test(fullscreenShellSrc),
+  'game-fullscreen.js provides dedicated collapsible overlay panel toggles so gameplay keeps priority',
 );
 check(
   // closed → inert + aria-hidden="true"
@@ -290,6 +293,20 @@ check(
     /sideRight\.removeAttribute\('inert'\)/u.test(fullscreenShellSrc) &&
     /sideRight\.setAttribute\('aria-hidden',\s*'false'\)/u.test(fullscreenShellSrc),
   'game-fullscreen.js makes closed right drawer inert and aria-hidden to block keyboard/AT access',
+);
+check(
+  /sideModifiers\.setAttribute\('inert',\s*''\)/u.test(fullscreenShellSrc) &&
+    /sideModifiers\.setAttribute\('aria-hidden',\s*'true'\)/u.test(fullscreenShellSrc) &&
+    /sideModifiers\.removeAttribute\('inert'\)/u.test(fullscreenShellSrc) &&
+    /sideModifiers\.setAttribute\('aria-hidden',\s*'false'\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js makes closed modifier drawer inert and aria-hidden to block keyboard/AT access',
+);
+check(
+  /sideFaction\.setAttribute\('inert',\s*''\)/u.test(fullscreenShellSrc) &&
+    /sideFaction\.setAttribute\('aria-hidden',\s*'true'\)/u.test(fullscreenShellSrc) &&
+    /sideFaction\.removeAttribute\('inert'\)/u.test(fullscreenShellSrc) &&
+    /sideFaction\.setAttribute\('aria-hidden',\s*'false'\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js makes closed faction drawer inert and aria-hidden to block keyboard/AT access',
 );
 check(
   // portrait mobile + landscape hidden-toggle breakpoints both trigger auto-close
@@ -317,20 +334,15 @@ check(
   'game-fullscreen.css keeps closed overlay drawers non-interactive by default',
 );
 check(
-  /#game-overlay\.overlay-side-open-left\s+\.overlay-side--left/u.test(fullscreenCssSrc),
-  'game-fullscreen.css provides left drawer open-state selector',
-);
-check(
-  /#game-overlay\.overlay-side-open-right\s+\.overlay-side--right/u.test(fullscreenCssSrc),
-  'game-fullscreen.css provides right drawer open-state selector',
+  /#game-overlay\s+\.overlay-side\.is-open/u.test(fullscreenCssSrc),
+  'game-fullscreen.css provides shared open-state selector for overlay drawers',
 );
 check(
   /#game-overlay\s+\.overlay-side\s*\{[\s\S]*opacity:\s*0;[\s\S]*\}/u.test(fullscreenCssSrc),
   'game-fullscreen.css keeps closed drawers visually hidden until toggled open',
 );
 check(
-  /#game-overlay\.overlay-side-open-left\s+\.overlay-side--left[\s\S]*pointer-events:\s*auto;/u.test(fullscreenCssSrc) &&
-    /#game-overlay\.overlay-side-open-right\s+\.overlay-side--right[\s\S]*pointer-events:\s*auto;/u.test(fullscreenCssSrc),
+  /#game-overlay\s+\.overlay-side\.is-open[\s\S]*pointer-events:\s*auto;/u.test(fullscreenCssSrc),
   'game-fullscreen.css restores drawer interactivity only in open states',
 );
 check(
@@ -382,9 +394,9 @@ check(
   'game-fullscreen.css hides page-level faction HUD while overlay is open (overlay faction card is used instead)',
 );
 check(
-  /function\s+moveModifierPanelIntoOverlayDrawer\(\)\s*\{[\s\S]*getElementById\('cm-modifier-panel'\)[\s\S]*sideRight\.appendChild\(pageModPanel\)/u.test(fullscreenShellSrc) &&
+  /function\s+moveModifierPanelIntoOverlayDrawer\(\)\s*\{[\s\S]*getElementById\('cm-modifier-panel'\)[\s\S]*modifierPanelHost\.appendChild\(pageModPanel\)/u.test(fullscreenShellSrc) &&
     /if\s*\(!modPanelOrigParent\s*&&\s*pageModPanel\.parentNode\)/u.test(fullscreenShellSrc),
-  'game-fullscreen.js defines reusable moveModifierPanelIntoOverlayDrawer() helper and records original parent/sibling only once',
+  'game-fullscreen.js defines reusable moveModifierPanelIntoOverlayDrawer() helper for the dedicated modifiers drawer and records original parent/sibling only once',
 );
 check(
   /new\s+MutationObserver\(/u.test(fullscreenShellSrc) &&

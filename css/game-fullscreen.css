@@ -240,8 +240,7 @@ body.overlay-open #faction-hud {
   transform: translateX(calc(100% + 10px));
 }
 
-#game-overlay.overlay-side-open-left .overlay-side--left,
-#game-overlay.overlay-side-open-right .overlay-side--right {
+#game-overlay .overlay-side.is-open {
   transform: translateX(0);
   opacity: 1;
   pointer-events: auto;
@@ -446,6 +445,14 @@ body.overlay-open #faction-hud {
   align-items: center;
   justify-content: center;
   padding: 0;
+}
+
+#game-overlay #overlay-modifier-panel-host {
+  padding: 0;
+}
+
+#game-overlay #cm-modifier-panel {
+  margin-top: 0;
 }
 
 /* 7. Game stage — centres the game-card */
@@ -794,6 +801,8 @@ body.overlay-open #faction-hud {
 
   #overlay-btn-info .btn-label,
   #overlay-btn-data .btn-label,
+  #overlay-btn-modifiers .btn-label,
+  #overlay-btn-faction .btn-label,
   #overlay-btn-fs .btn-label,
   #overlay-btn-mute .btn-label,
   #overlay-btn-pause .btn-label,
@@ -891,6 +900,8 @@ body.overlay-open #faction-hud {
 
   #overlay-btn-info .btn-label,
   #overlay-btn-data .btn-label,
+  #overlay-btn-modifiers .btn-label,
+  #overlay-btn-faction .btn-label,
   #overlay-btn-fs .btn-label,
   #overlay-btn-mute .btn-label,
   #overlay-btn-pause .btn-label,
@@ -947,6 +958,8 @@ body.overlay-open #faction-hud {
 
   #overlay-btn-info .btn-label,
   #overlay-btn-data .btn-label,
+  #overlay-btn-modifiers .btn-label,
+  #overlay-btn-faction .btn-label,
   #overlay-btn-fs .btn-label,
   #overlay-btn-mute .btn-label {
     display: none;
