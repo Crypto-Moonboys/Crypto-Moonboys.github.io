@@ -52,7 +52,7 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   flex-direction: row;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
+  padding: 0 8px;
   background: linear-gradient(to bottom, rgba(7, 10, 18, 0.58), rgba(7, 10, 18, 0.26));
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   z-index: 9010;
@@ -150,11 +150,18 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
 }
 
 #overlay-fullscreen-prompt-btn {
+  width: auto !important;
+  min-width: 132px !important;
+  min-height: 30px !important;
   padding: 4px 8px !important;
   border-radius: 8px !important;
   border: 1px solid rgba(255, 255, 255, 0.35) !important;
   background: rgba(255, 255, 255, 0.08) !important;
   color: #fff !important;
+  font-size: 0.72rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 #overlay-panel-status {
@@ -186,14 +193,14 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   overflow-x: hidden;
   background: rgba(8, 13, 24, 0.92);
   padding: 10px 10px;
-  max-height: min(62vh, calc(100% - (var(--overlay-toolbar-height) + 18px)));
+  max-height: min(62vh, calc(100% - 12px));
   font-size: 0.78rem;
   color: var(--color-text-muted, #8b949e);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   position: absolute;
-  top: calc(var(--overlay-toolbar-height) + 6px);
+  top: 6px;
   bottom: auto;
   z-index: 6;
   backdrop-filter: blur(8px);

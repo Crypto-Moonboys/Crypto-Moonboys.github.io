@@ -348,17 +348,15 @@ check(
     if (!ctrlBtnRuleMatch) return false;
     const ruleBody = ctrlBtnRuleMatch[1];
     return /(?:^|\n)\s*min-height:\s*34px;/u.test(ruleBody) &&
-      /(?:^|\n)\s*min-width:\s*34px;/u.test(ruleBody);
+      /(?:^|\n)\s*min-width:\s*34px;/u.test(ruleBody) &&
+      /(?:^|\n)\s*background:\s*rgba\(255,\s*255,\s*255,\s*0\.04\);/u.test(ruleBody) &&
+      /(?:^|\n)\s*border-radius:\s*999px;/u.test(ruleBody);
   })(),
   'game-fullscreen.css keeps fullscreen toolbar controls at touch-usable minimum sizes',
 );
 check(
   /#overlay-ctrl-bar\s+\.btn-label\s*\{[\s\S]*display:\s*none\s*!important;/u.test(fullscreenCssSrc),
   'game-fullscreen.css keeps fullscreen toolbar controls icon-only by hiding text labels globally',
-);
-check(
-  /#overlay-ctrl-bar\s+button\s*\{[\s\S]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.04\);[\s\S]*border-radius:\s*999px;/u.test(fullscreenCssSrc),
-  'game-fullscreen.css uses compact transparent HUD-style toolbar buttons (no bulky card buttons)',
 );
 check(
   /@media\s*\(max-height:\s*500px\)\s*and\s*\(max-width:\s*900px\)[\s\S]*#game-overlay\s+\.overlay-side\s*\{[\s\S]*width:\s*min\((72|80|88)vw,\s*(260|240|280)px\);/u.test(fullscreenCssSrc),
