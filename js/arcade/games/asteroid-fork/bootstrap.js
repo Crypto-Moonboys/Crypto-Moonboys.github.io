@@ -324,13 +324,14 @@ function applyFullscreenFit(state) {
   const logW = Math.floor(targetW);
   const logH = Math.floor(targetH);
 
-  state.canvas.style.width = logW + 'px';
-  state.canvas.style.height = logH + 'px';
-  state.canvas.style.maxWidth = 'none';
-  state.canvas.style.maxHeight = 'none';
+  state.canvas.style.setProperty('width', logW + 'px', 'important');
+  state.canvas.style.setProperty('height', logH + 'px', 'important');
+  state.canvas.style.setProperty('max-width', 'none', 'important');
+  state.canvas.style.setProperty('max-height', 'none', 'important');
   state.canvas.style.display = 'block';
   state.canvas.style.margin = '0 auto';
   state.canvas.style.aspectRatio = String(WORLD_W) + ' / ' + String(WORLD_H);
+  state.canvas.style.setProperty('--overlay-canvas-aspect', String(WORLD_W) + ' / ' + String(WORLD_H));
 
   const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
   state.dpr = dpr;
