@@ -367,6 +367,48 @@ check(
   'game-fullscreen.css compacts overlay cards on smaller viewports',
 );
 check(
+  // body.arcade-fullscreen-only:not(.overlay-open) #cm-modifier-panel — display:none
+  /body\.arcade-fullscreen-only:not\(\.overlay-open\)[^{]*#cm-modifier-panel[\s\S]*?display:\s*none/u.test(fullscreenCssSrc),
+  'game-fullscreen.css hides on-page modifier panel in arcade-fullscreen-only mode to prevent pre-overlay card flash',
+);
+check(
+  // body.arcade-fullscreen-only:not(.overlay-open) #faction-hud — display:none
+  /body\.arcade-fullscreen-only:not\(\.overlay-open\)[^{]*#faction-hud[\s\S]*?display:\s*none/u.test(fullscreenCssSrc),
+  'game-fullscreen.css hides on-page faction HUD in arcade-fullscreen-only mode to prevent pre-overlay flash',
+);
+check(
+  // body.overlay-open #faction-hud — display:none (overlay has its own faction card)
+  /body\.overlay-open\s[^{]*#faction-hud[\s\S]*?display:\s*none/u.test(fullscreenCssSrc),
+  'game-fullscreen.css hides page-level faction HUD while overlay is open (overlay faction card is used instead)',
+);
+check(
+  /function\s+moveModifierPanelIntoOverlayDrawer\(\)\s*\{[\s\S]*getElementById\('cm-modifier-panel'\)[\s\S]*sideRight\.appendChild\(pageModPanel\)/u.test(fullscreenShellSrc) &&
+    /if\s*\(!modPanelOrigParent\s*&&\s*pageModPanel\.parentNode\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js defines reusable moveModifierPanelIntoOverlayDrawer() helper and records original parent/sibling only once',
+);
+check(
+  /new\s+MutationObserver\(/u.test(fullscreenShellSrc) &&
+    /function\s+startModifierPanelObserver\(\)/u.test(fullscreenShellSrc) &&
+    /modPanelObserver\.observe\(document\.body,\s*\{\s*childList:\s*true,\s*subtree:\s*true\s*\}\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js includes async modifier mount handling via a MutationObserver while overlay is open',
+);
+check(
+  /addEventListener\('arcade-overlay-open',\s*function\s*\(\)\s*\{[\s\S]*moveModifierPanelIntoOverlayDrawer\(\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js reruns modifier docking after arcade-overlay-open to catch late-mounted panel state',
+);
+check(
+  /function\s+stopModifierPanelObserver\(\)\s*\{[\s\S]*modPanelObserver\.disconnect\(\)/u.test(fullscreenShellSrc) &&
+    /stopModifierPanelObserver\(\);/u.test(fullscreenShellSrc),
+  'game-fullscreen.js disconnects the modifier panel observer during overlay close cleanup',
+);
+check(
+  /modPanelOrigParent\.insertBefore\(cachedPageModPanel,\s*modPanelOrigNextSib\)/u.test(fullscreenShellSrc) &&
+    /cachedPageModPanel\s*=\s*null;/u.test(fullscreenShellSrc) &&
+    /modPanelOrigParent\s*=\s*null;/u.test(fullscreenShellSrc) &&
+    /modPanelOrigNextSib\s*=\s*null;/u.test(fullscreenShellSrc),
+  'game-fullscreen.js restores modifier panel to its original location on close and clears restore caches safely',
+);
+check(
   /window\.addEventListener\('resize',\s*function\s*\(\)\s*\{[\s\S]*scheduleOverlayResizeSync\('viewport-resize',\s*\{\s*skipWindowResize:\s*true\s*\}\);/u.test(fullscreenShellSrc) &&
     /window\.addEventListener\('orientationchange',\s*function\s*\(\)\s*\{[\s\S]*scheduleOverlayResizeSync\('orientationchange'\);/u.test(fullscreenShellSrc) &&
     /document\.dispatchEvent\(new CustomEvent\('arcade-overlay-resize'/u.test(fullscreenShellSrc),

@@ -370,6 +370,15 @@
   // While in these states, incoming sync:state events should not overwrite the
   // submission feedback with a generic identity-linked message.
   var ACTIVE_SUBMISSION_STATES = ['auto_submitting', 'score_accepted', 'xp_awarded', 'accepted_no_xp', 'rejected_no_xp'];
+  // On-page modifier panel host tracking.
+  // When the overlay opens, #cm-modifier-panel is moved from its page location
+  // into the overlay right-side data panel so modifier card selection is
+  // accessible via the Data button without occupying permanent page real estate.
+  // On overlay close the element is restored to its original page position.
+  var cachedPageModPanel  = null;
+  var modPanelOrigParent  = null;
+  var modPanelOrigNextSib = null;
+  var modPanelObserver    = null;
   var microNotifyDedup = new Map();
   var microNotifyCooldownMs = 2200;
   var maxMicroItems = 5;
@@ -436,6 +445,35 @@
     if (_rightPanelOpen) _leftPanelOpen = false;
     syncPanelLayoutState();
     announcePanelState(_rightPanelOpen ? 'Data panel opened.' : 'Data panel collapsed.');
+  }
+
+  function moveModifierPanelIntoOverlayDrawer() {
+    if (!isOpen) return;
+    var pageModPanel = document.getElementById('cm-modifier-panel');
+    if (!pageModPanel) return;
+    if (pageModPanel.parentNode !== sideRight) {
+      if (!modPanelOrigParent && pageModPanel.parentNode) {
+        modPanelOrigParent = pageModPanel.parentNode;
+        modPanelOrigNextSib = pageModPanel.nextSibling;
+      }
+      sideRight.appendChild(pageModPanel);
+    }
+    cachedPageModPanel = pageModPanel;
+  }
+
+  function stopModifierPanelObserver() {
+    if (!modPanelObserver) return;
+    modPanelObserver.disconnect();
+    modPanelObserver = null;
+  }
+
+  function startModifierPanelObserver() {
+    if (!isOpen || modPanelObserver) return;
+    if (typeof MutationObserver !== 'function') return;
+    modPanelObserver = new MutationObserver(function () {
+      moveModifierPanelIntoOverlayDrawer();
+    });
+    modPanelObserver.observe(document.body, { childList: true, subtree: true });
   }
 
   function ensureMicroFeed() {
@@ -901,6 +939,8 @@
     sideRight.appendChild(factionCard);
     updateSyncSurfaceState(lastSubmissionState || getLinkedSyncState(), {});
     refreshFactionPanel();
+
+    moveModifierPanelIntoOverlayDrawer();
   }
 
   function updateScores() {
@@ -1241,6 +1281,7 @@
     // Build side panels and touch controls
     buildLeftPanel(meta);
     buildRightPanel(meta);
+    moveModifierPanelIntoOverlayDrawer();
     buildTouchPad(meta);
     closeOverlayPanels({ silent: true });
 
@@ -1274,6 +1315,7 @@
     // Show overlay.
     overlay.classList.add('active');
     document.body.classList.add('overlay-open');
+    startModifierPanelObserver();
 
     // Fire a resize event so Phaser (and any other canvas-scaling logic) can
     // recalculate dimensions against the new fullscreen container.
@@ -1363,6 +1405,8 @@
       document.exitFullscreen().catch(function () {});
     }
 
+    stopModifierPanelObserver();
+
     // Restore the moved element to its original location in the page.
     if (origParent && stageTarget) {
       origParent.insertBefore(stageTarget, origNextSibling);
@@ -1370,6 +1414,14 @@
       origNextSibling = null;
       stageTarget     = null;
     }
+
+    // Restore the on-page modifier panel to its original page position.
+    if (cachedPageModPanel && modPanelOrigParent) {
+      modPanelOrigParent.insertBefore(cachedPageModPanel, modPanelOrigNextSib);
+    }
+    cachedPageModPanel  = null;
+    modPanelOrigParent  = null;
+    modPanelOrigNextSib = null;
 
     overlay.classList.remove('active');
     overlay.classList.remove('overlay-has-touch');
@@ -1578,6 +1630,12 @@
       if (fullscreenOnlyMode) exitToArcadeHub();
       else closeOverlay();
     }
+  });
+
+  document.addEventListener('arcade-overlay-open', function () {
+    if (!isOpen) return;
+    moveModifierPanelIntoOverlayDrawer();
+    startModifierPanelObserver();
   });
 
   // When the viewport enters the mobile breakpoint (<= 480 px) the drawer

@@ -44,6 +44,23 @@ body.arcade-fullscreen-only:not(.overlay-open) .game-card {
   pointer-events: none !important;
 }
 
+/* Prevent on-page modifier and faction panels from appearing as permanent
+   side columns or card stacks in fullscreen-only mode.
+
+   #cm-modifier-panel: hidden from the page during the pre-overlay window;
+   the JS shell moves it into the overlay data drawer when the overlay opens
+   so modifier card selection remains reachable via the Data button.
+
+   #faction-hud: hidden in fullscreen contexts — the overlay right panel
+   already contains its own faction alignment card (refreshed in real time),
+   so the page-level faction HUD is redundant and must not show as a
+   permanent panel beside the game canvas. */
+body.arcade-fullscreen-only:not(.overlay-open) #cm-modifier-panel,
+body.arcade-fullscreen-only:not(.overlay-open) #faction-hud,
+body.overlay-open #faction-hud {
+  display: none !important;
+}
+
 /* 3. Control bar */
 #overlay-ctrl-bar {
   height: var(--overlay-toolbar-height);
