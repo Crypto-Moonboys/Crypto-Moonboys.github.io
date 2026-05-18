@@ -370,6 +370,14 @@
   // While in these states, incoming sync:state events should not overwrite the
   // submission feedback with a generic identity-linked message.
   var ACTIVE_SUBMISSION_STATES = ['auto_submitting', 'score_accepted', 'xp_awarded', 'accepted_no_xp', 'rejected_no_xp'];
+  // On-page modifier panel host tracking.
+  // When the overlay opens, #cm-modifier-panel is moved from its page location
+  // into the overlay right-side data panel so modifier card selection is
+  // accessible via the Data button without occupying permanent page real estate.
+  // On overlay close the element is restored to its original page position.
+  var cachedPageModPanel  = null;
+  var modPanelOrigParent  = null;
+  var modPanelOrigNextSib = null;
   var microNotifyDedup = new Map();
   var microNotifyCooldownMs = 2200;
   var maxMicroItems = 5;
@@ -901,6 +909,17 @@
     sideRight.appendChild(factionCard);
     updateSyncSurfaceState(lastSubmissionState || getLinkedSyncState(), {});
     refreshFactionPanel();
+
+    // Move the on-page modifier panel (if present) into the overlay data
+    // drawer so the modifier card selection is reachable via the Data button
+    // but is not visible in the default fullscreen game view.
+    var pageModPanel = document.getElementById('cm-modifier-panel');
+    if (pageModPanel && pageModPanel.parentNode !== sideRight) {
+      modPanelOrigParent  = pageModPanel.parentNode;
+      modPanelOrigNextSib = pageModPanel.nextSibling;
+      sideRight.appendChild(pageModPanel);
+      cachedPageModPanel = pageModPanel;
+    }
   }
 
   function updateScores() {
@@ -1369,6 +1388,14 @@
       origParent      = null;
       origNextSibling = null;
       stageTarget     = null;
+    }
+
+    // Restore the on-page modifier panel to its original page position.
+    if (cachedPageModPanel && modPanelOrigParent) {
+      modPanelOrigParent.insertBefore(cachedPageModPanel, modPanelOrigNextSib);
+      modPanelOrigParent  = null;
+      modPanelOrigNextSib = null;
+      cachedPageModPanel  = null;
     }
 
     overlay.classList.remove('active');

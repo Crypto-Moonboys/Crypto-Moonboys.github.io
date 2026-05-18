@@ -367,6 +367,35 @@ check(
   'game-fullscreen.css compacts overlay cards on smaller viewports',
 );
 check(
+  // body.arcade-fullscreen-only:not(.overlay-open) #cm-modifier-panel — display:none
+  /body\.arcade-fullscreen-only:not\(\.overlay-open\)[^{]*#cm-modifier-panel[\s\S]*?display:\s*none/u.test(fullscreenCssSrc),
+  'game-fullscreen.css hides on-page modifier panel in arcade-fullscreen-only mode to prevent pre-overlay card flash',
+);
+check(
+  // body.arcade-fullscreen-only:not(.overlay-open) #faction-hud — display:none
+  /body\.arcade-fullscreen-only:not\(\.overlay-open\)[^{]*#faction-hud[\s\S]*?display:\s*none/u.test(fullscreenCssSrc),
+  'game-fullscreen.css hides on-page faction HUD in arcade-fullscreen-only mode to prevent pre-overlay flash',
+);
+check(
+  // body.overlay-open #faction-hud — display:none (overlay has its own faction card)
+  /body\.overlay-open\s[^{]*#faction-hud[\s\S]*?display:\s*none/u.test(fullscreenCssSrc),
+  'game-fullscreen.css hides page-level faction HUD while overlay is open (overlay faction card is used instead)',
+);
+check(
+  // JS moves #cm-modifier-panel into sideRight and tracks original position
+  /getElementById\('cm-modifier-panel'\)/u.test(fullscreenShellSrc) &&
+    /modPanelOrigParent/u.test(fullscreenShellSrc) &&
+    /modPanelOrigNextSib/u.test(fullscreenShellSrc) &&
+    /cachedPageModPanel/u.test(fullscreenShellSrc) &&
+    /sideRight\.appendChild\(pageModPanel\)/u.test(fullscreenShellSrc),
+  'game-fullscreen.js moves on-page modifier panel into overlay data drawer so modifier cards are only visible via the Data button',
+);
+check(
+  // JS restores #cm-modifier-panel on overlay close
+  /modPanelOrigParent\.insertBefore\(cachedPageModPanel/u.test(fullscreenShellSrc),
+  'game-fullscreen.js restores on-page modifier panel to original page position on overlay close',
+);
+check(
   /window\.addEventListener\('resize',\s*function\s*\(\)\s*\{[\s\S]*scheduleOverlayResizeSync\('viewport-resize',\s*\{\s*skipWindowResize:\s*true\s*\}\);/u.test(fullscreenShellSrc) &&
     /window\.addEventListener\('orientationchange',\s*function\s*\(\)\s*\{[\s\S]*scheduleOverlayResizeSync\('orientationchange'\);/u.test(fullscreenShellSrc) &&
     /document\.dispatchEvent\(new CustomEvent\('arcade-overlay-resize'/u.test(fullscreenShellSrc),
