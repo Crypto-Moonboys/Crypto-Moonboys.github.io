@@ -252,7 +252,7 @@ function createState(root) {
     upgrades: makeUpgrades(), director: createScalingDirector(), dailyVariation: getDailyVariation(), runStats: { bossesDefeated: 0, highestIntensity: 0 },
     modifier: null, modifierData: {}, activeEvent: null, warningBanner: { value: null },
     enemyBuffTimer: 0, gravityShiftTimer: 0, timeDistortionTimer: 0, empTimer: 0, screenPulse: 0, screenTint: 0, shakeTime: 0, shakePower: 0,
-    shootCd: 0, bombCd: 0, thrustSoundCd: 0, uiHandlers: null, resizeHandler: null, fsHandler: null, _droneCd: 0,
+    shootCd: 0, bombCd: 0, thrustSoundCd: 0, uiHandlers: null, resizeHandler: null, fsHandler: null, overlayResizeHandler: null, _droneCd: 0,
     phase: PHASE_COMBAT,
     phaseTimer: 0,
     upgradeChoices: [],
@@ -301,16 +301,11 @@ function applyFullscreenFit(state) {
     : card;
 
   const stageRect = stage.getBoundingClientRect();
-  const hud = card.querySelector('.hud');
-  const hudHeight = hud ? hud.getBoundingClientRect().height : 0;
-
-  let availableW = Math.max(320, Math.floor(stageRect.width - 16));
+  let availableW = Math.max(320, Math.floor(stageRect.width - 12));
   let availableH;
   if (overlayOpen) {
-    const touchPad = overlay.querySelector('.overlay-touch-pad');
-    const touchPadVisible = !!(touchPad && getComputedStyle(touchPad).display !== 'none');
-    const touchPadHeight = touchPadVisible ? touchPad.getBoundingClientRect().height : 0;
-    availableH = Math.max(220, Math.floor(stageRect.height - hudHeight - touchPadHeight - 16));
+    // .game-stage already excludes toolbar/touch chrome; avoid subtracting twice.
+    availableH = Math.max(220, Math.floor(stageRect.height - 12));
   } else {
     const viewportH = window.innerHeight || stageRect.height;
     availableH = Math.max(240, Math.floor(viewportH - 220));
@@ -395,16 +390,20 @@ function registerResize(state) {
   if (state.resizeHandler) return;
   state.resizeHandler = function () { applyFullscreenFit(state); };
   state.fsHandler = function () { applyFullscreenFit(state); };
+  state.overlayResizeHandler = function () { applyFullscreenFit(state); };
   window.addEventListener('resize', state.resizeHandler);
   document.addEventListener('fullscreenchange', state.fsHandler);
+  document.addEventListener('arcade-overlay-resize', state.overlayResizeHandler);
 }
 
 function unregisterResize(state) {
   if (!state.resizeHandler) return;
   window.removeEventListener('resize', state.resizeHandler);
   document.removeEventListener('fullscreenchange', state.fsHandler);
+  if (state.overlayResizeHandler) document.removeEventListener('arcade-overlay-resize', state.overlayResizeHandler);
   state.resizeHandler = null;
   state.fsHandler = null;
+  state.overlayResizeHandler = null;
 }
 
 function addParticle(state, x, y, vx, vy, life, size, color) {
