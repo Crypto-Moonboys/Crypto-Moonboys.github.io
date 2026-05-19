@@ -300,13 +300,20 @@ function applyFullscreenFit(state) {
     ? (overlay.querySelector('.game-stage') || overlay.querySelector('.game-card') || card)
     : card;
 
+  const safeMargin = 12;
   const stageRect = stage.getBoundingClientRect();
-  let availableW = Math.max(320, Math.floor(stageRect.width - 12));
+  let stageW = 0;
+  let stageH = 0;
+  let availableW;
   let availableH;
   if (overlayOpen) {
     // .game-stage already excludes toolbar/touch chrome; avoid subtracting twice.
-    availableH = Math.max(220, Math.floor(stageRect.height - 12));
+    stageW = Math.max(1, Math.floor(stageRect.width - safeMargin));
+    stageH = Math.max(1, Math.floor(stageRect.height - safeMargin));
+    availableW = stageW;
+    availableH = stageH;
   } else {
+    availableW = Math.max(320, Math.floor(stageRect.width - safeMargin));
     const viewportH = window.innerHeight || stageRect.height;
     availableH = Math.max(240, Math.floor(viewportH - 220));
   }
@@ -321,8 +328,16 @@ function applyFullscreenFit(state) {
 
   // Derive one integer logical size used consistently for CSS, canvas backing,
   // and world bounds to avoid subpixel gaps from mixed floor/round rounding.
-  const logW = Math.floor(targetW);
-  const logH = Math.floor(targetH);
+  let logW = Math.max(1, Math.floor(targetW));
+  let logH = Math.max(1, Math.floor(targetH));
+  if (overlayOpen) {
+    // Hard-cap logical canvas size to actual stage bounds (prevents clipping
+    // when drawers shrink stage width below legacy embedded minimums).
+    logW = Math.min(logW, stageW);
+    logH = Math.min(logH, stageH);
+    if (logW > Math.floor(logH * aspect)) logW = Math.max(1, Math.floor(logH * aspect));
+    if (logH > Math.floor(logW / aspect)) logH = Math.max(1, Math.floor(logW / aspect));
+  }
 
   state.canvas.style.setProperty('width', logW + 'px', 'important');
   state.canvas.style.setProperty('height', logH + 'px', 'important');
