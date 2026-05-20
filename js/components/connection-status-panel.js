@@ -568,15 +568,11 @@
           '<a href="/gkniftyheads-incubator.html" class="csp-live-cta">RELINK Telegram</a>' +
         '</div>';
     }
+    // Linked: compact live rows only — identity (avatar/name/pill) is rendered once by the shell portrait row.
+    // Faction data belongs exclusively to the Faction Daily Ops section.
     return '' +
       '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
-        '<div class="csp-live-head">' +
-          '<span class="csp-avatar-mini" aria-hidden="true">👾</span>' +
-          '<div class="csp-live-identity"><strong><a class="csp-player-link" href="' + esc(shared.playerHref) + '">' + esc(shared.name || 'Telegram Player') + '</a></strong><span><b class="csp-live-pill csp-live-pill--good">LIVE LINKED</b></span></div>' +
-        '</div>' +
         '<div class="csp-grid csp-grid--live">' +
-          '<div class="csp-item"><div class="csp-item-label">Telegram</div><div class="csp-item-val">LIVE LINKED</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Faction</div><div class="csp-item-val">' + esc((shared.faction.faction === 'unaligned' ? 'No faction selected' : (shared.faction.icon + ' ' + shared.faction.label))) + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Arcade XP</div><div class="csp-item-val" data-csp-xp>' + esc(String(shared.arcadeXp)) + '</div></div>' +
           '<div class="csp-item csp-item--wide"><div class="csp-item-label">Block Topia</div><div class="csp-item-val" data-csp-bt-access>' + shared.blocktopia + '</div></div>' +
         '</div>' +

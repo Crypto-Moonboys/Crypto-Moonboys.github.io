@@ -134,7 +134,7 @@ const liveFeedBlock = functionBlock(csp, 'buildPlayerLiveFeedHTML');
 const opsBlock = functionBlock(csp, 'buildFactionDailyOpsHTML');
 const wtfSectionBlock = functionBlock(csp, 'buildDailyWtfSignalHTML');
 const missedSectionBlock = functionBlock(csp, 'buildMissedOpportunitiesHTML');
-check(liveFeedBlock.includes('<div class="csp-item-label">Telegram</div>') && liveFeedBlock.includes('<div class="csp-item-label">Faction</div>') && liveFeedBlock.includes('<div class="csp-item-label">Arcade XP</div>') && liveFeedBlock.includes('<div class="csp-item-label">Block Topia</div>') && liveFeedBlock.includes('Latest:'), 'player live feed remains compact with Telegram/faction/Arcade XP/Block Topia/latest');
+check(liveFeedBlock.includes('<div class="csp-item-label">Arcade XP</div>') && liveFeedBlock.includes('<div class="csp-item-label">Block Topia</div>') && liveFeedBlock.includes('Latest:'), 'player live feed is compact with Arcade XP/Block Topia/latest only — no identity duplication');
 check(opsBlock.includes('<div class="csp-item-label">Faction XP</div>') && opsBlock.includes('<div class="csp-item-label">Contribution</div>') && opsBlock.includes('<div class="csp-item-label">Daily Ops Status</div>') && opsBlock.includes('<div class="csp-item-label">Completed Today</div>') && opsBlock.includes('<div class="csp-item-label">Missed Today</div>'), 'Faction Daily Ops section renders faction XP/contribution/status/completed/missed from shared state');
 check(wtfSectionBlock.includes('<div class="csp-item-label">Signal Status</div>') && wtfSectionBlock.includes('<div class="csp-item-label">Timer</div>') && wtfSectionBlock.includes('<div class="csp-item-label">Action</div>'), 'Daily WTF Signal section renders status/timer/action from shared state');
 check(wtfSectionBlock.includes('data-csp-wtf-countdown'), 'Daily WTF section renders a dedicated countdown data hook');
@@ -173,6 +173,27 @@ check(csp.includes('RIGHT_RAIL_SECTION_SELECTORS') && csp.includes('mountAllSect
 check(csp.includes("window.addEventListener('moonboys:wtf-countdown-tick', updateWtfCountdownUI);"), 'countdown tick is handled by a dedicated WTF timer updater');
 const cspCountdownTickBlock = functionBlock(csp, 'updateWtfCountdownUI');
 check(cspCountdownTickBlock.includes("document.querySelectorAll('[data-csp-wtf-countdown]')") && !cspCountdownTickBlock.includes('mountAllSections('), 'WTF countdown tick patches only timer nodes without remounting whole right rail');
+
+console.log('\n[4b] Identity/faction hierarchy — no duplication');
+// username appears once — only in the shell portrait row, not inside the Player Live Feed renderer
+check(!liveFeedBlock.includes('csp-avatar-mini') && !liveFeedBlock.includes('csp-live-identity'), 'player live feed renderer does not include duplicate avatar/name identity block');
+check(!liveFeedBlock.includes('<div class="csp-item-label">Faction</div>'), 'player live feed renderer does not include Faction row (faction belongs to Faction Daily Ops only)');
+check(!liveFeedBlock.includes('<div class="csp-item-label">Telegram</div>'), 'player live feed renderer does not include Telegram LIVE LINKED row');
+check(!liveFeedBlock.includes('csp-player-link') || liveFeedBlock.indexOf('csp-player-link') === liveFeedBlock.lastIndexOf('csp-player-link'), 'player live feed renderer does not embed username link (identity handled by shell)');
+// Faction Daily Ops owns the faction row
+check(opsBlock.includes('<div class="csp-item-label">Faction</div>'), 'Faction Daily Ops renderer includes Faction row as the single faction authority');
+// LIVE LINKED / RELINK shown once — in the shell portrait row, not inside the inner renderer
+check(!functionBlock(csp, 'buildPlayerLiveFeedHTML').includes('LIVE LINKED'), 'player live feed renderer does not output LIVE LINKED pill (shell portrait row is the single authority)');
+check(siteShell.includes('hud-live-pill') && siteShell.includes('LIVE LINKED'), 'shell portrait row renders LIVE LINKED pill once for the identity area');
+check(siteShell.includes('hud-live-pill--relink') && siteShell.includes('RELINK'), 'shell portrait row renders RELINK pill once when signed auth is expired');
+// Profile image in shell only
+check(!functionBlock(csp, 'buildPlayerLiveFeedHTML').includes('csp-avatar-mini'), 'player live feed renderer does not render a duplicate avatar');
+check(siteShell.includes('getTelegramPhotoUrl') && siteShell.includes('hud-player-avatar'), 'shell portrait area is the single authority for player profile image');
+check(siteShell.includes('hud-avatar-icon'), 'shell portrait area preserves fallback pixel avatar when no Telegram photo is available');
+// Multi-section right rail structure intact
+check(siteShell.includes('data-csp-panel') && siteShell.includes('data-csp-faction-ops') && siteShell.includes('data-csp-wtf-signal') && siteShell.includes('data-csp-missed'), 'multi-section right rail remains intact with all four section hooks');
+// One shared state authority
+check(csp.includes('buildSharedRailState') && csp.includes('RIGHT_RAIL_SECTION_SELECTORS'), 'one shared state authority drives all right-rail section renders');
 
 console.log('\n[5] WTF event visibility');
 check(las.includes('window.MOONBOYS_WTF_EVENTS'), 'faction ops panel reads window.MOONBOYS_WTF_EVENTS');
@@ -327,7 +348,7 @@ check(csp.includes('Auth expired'), 'RELINK badge copy includes "Auth expired" t
 const buildBadgeBlock = functionBlock(csp, 'buildBadgeHTML');
 check(buildBadgeBlock.includes('restoreLinkedTelegramAuth'), 'buildBadgeHTML attempts restoreLinkedTelegramAuth before rendering RELINK badge');
 check(csp.includes('Signed Telegram auth expired — relink required.') && csp.includes('RELINK Telegram'), 'player live feed shows explicit relink state + CTA when signed auth is unavailable');
-check(functionBlock(csp, 'buildPlayerLiveFeedHTML').includes('LIVE LINKED') && functionBlock(csp, 'buildSharedRailState').includes('getSignedTelegramAuthWithRestore'), 'player live feed shows LIVE LINKED only after signed/restorable auth check');
+check(functionBlock(csp, 'buildSharedRailState').includes('getSignedTelegramAuthWithRestore'), 'shared rail state checks signed/restorable auth before activating live mode');
 
 // Issue 6: Hydration is authoritative for cached state but cannot roll back live in-session XP
 check(moonboysState.includes('_liveXpRevision'), 'moonboys-state.js has a _liveXpRevision race guard to protect live in-session XP from hydration rollback');

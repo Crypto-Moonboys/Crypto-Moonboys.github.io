@@ -241,6 +241,23 @@
         }
       }
 
+      /* ── LIVE LINKED / RELINK pill (once, in shell portrait row) ─────── */
+      if (linked && nameEl && nameEl.parentNode) {
+        var freshAuth = typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+        var pillEl = document.createElement('span');
+        pillEl.className = 'hud-live-pill ' + (freshAuth ? 'hud-live-pill--linked' : 'hud-live-pill--relink');
+        pillEl.setAttribute('aria-label', freshAuth ? 'Live linked' : 'Relink required');
+        if (freshAuth) {
+          pillEl.textContent = 'LIVE LINKED';
+        } else {
+          var relinkA = document.createElement('a');
+          relinkA.href = '/gkniftyheads-incubator.html';
+          relinkA.textContent = 'RELINK';
+          pillEl.appendChild(relinkA);
+        }
+        nameEl.parentNode.appendChild(pillEl);
+      }
+
     }, 0);
   }
 
