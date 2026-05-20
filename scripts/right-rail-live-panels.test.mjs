@@ -320,6 +320,8 @@ check(csp.includes('csp-badge--relink'), 'RELINK badge has its own CSS class');
 check(csp.includes('Auth expired'), 'RELINK badge copy includes "Auth expired" to explain the state');
 const buildBadgeBlock = functionBlock(csp, 'buildBadgeHTML');
 check(buildBadgeBlock.includes('restoreLinkedTelegramAuth'), 'buildBadgeHTML attempts restoreLinkedTelegramAuth before rendering RELINK badge');
+check(csp.includes('Signed Telegram auth expired — relink required.') && csp.includes('RELINK Telegram'), 'player live feed shows explicit relink state + CTA when signed auth is unavailable');
+check(functionBlock(csp, 'buildPanelHTML').includes('LIVE LINKED') && functionBlock(csp, 'buildPanelHTML').includes('restoreLinkedTelegramAuth'), 'player live feed shows LIVE LINKED only after signed/restorable auth check');
 
 // Issue 6: Hydration is authoritative for cached state but cannot roll back live in-session XP
 check(moonboysState.includes('_liveXpRevision'), 'moonboys-state.js has a _liveXpRevision race guard to protect live in-session XP from hydration rollback');
@@ -369,9 +371,13 @@ check(!latestActivityRowsBlock.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && !la
 console.log('\n[12] Confirmed Missed XP fetch — non-blocking and cache-safe');
 const buildPanelHTMLBlock = functionBlock(csp, 'buildPanelHTML');
 const fetchDailyStateBlock = functionBlock(csp, 'fetchDailyStateWithAuth');
+const fetchPlayerStateBlock = functionBlock(csp, 'fetchPlayerStateWithAuth');
 const invalidateDailyStateCacheBlock = functionBlock(csp, 'invalidateDailyStateCache');
+const invalidatePlayerStateCacheBlock = functionBlock(csp, 'invalidatePlayerStateCache');
 const scheduleRefreshBlock = functionBlock(csp, 'scheduleLiveDataRefresh');
 const schedulePanelRemountBlock = functionBlock(csp, 'schedulePanelRemount');
+const contributionBlock = functionBlock(csp, 'getContribution');
+const invalidateAndRefreshBlock = functionBlock(csp, 'invalidateAndRefresh');
 // buildPanelHTML must not unconditionally await the fetch before checking globals
 check(!buildPanelHTMLBlock.includes('await fetchDailyStateWithAuth()'), 'buildPanelHTML does not block-await daily-state fetch before rendering');
 check(buildPanelHTMLBlock.includes('fetchDailyStateWithAuth().then'), 'buildPanelHTML fires daily-state fetch in background when Missed XP is unconfirmed');
@@ -397,6 +403,13 @@ check(!/return\s+0\s*;/.test(functionBlock(csp, 'missedXpAllTime')), 'missedXpAl
 const dailyCountsBlock = functionBlock(csp, 'getDailyCounts');
 check(dailyCountsBlock.includes('today_active') && dailyCountsBlock.includes('mission_opportunities') && dailyCountsBlock.includes('row.completed'), 'connection-status completed count derives from today_active.mission_opportunities[].completed');
 check(buildPanelHTMLBlock.includes("var completedDisplay = dailyCounts.completed == null ? 'syncing…'") && buildPanelHTMLBlock.includes("var missedTodayDisplay = dailyCounts.missed == null ? 'syncing…'"), 'connection-status shows syncing for missing completed/missed daily counts instead of fake 0');
+check(contributionBlock.includes('Object.prototype.hasOwnProperty.call(contributions, factionKey)') && contributionBlock.includes("return { value: '0', pending: false };"), 'confirmed player-state with missing faction contribution key renders 0 (not syncing)');
+check(contributionBlock.includes('if (!player) return { value: \'syncing…\', pending: true };'), 'contribution is pending only when player-state is unavailable');
+check(buildPanelHTMLBlock.includes('if (contribution.pending)') && buildPanelHTMLBlock.includes('fetchPlayerStateWithAuth().then') && buildPanelHTMLBlock.includes('if (confirmedState) {') && buildPanelHTMLBlock.includes('schedulePanelRemount();'), 'player-state remount path only schedules when contribution is actually pending');
+check(fetchPlayerStateBlock.includes('var requestGeneration = _playerStateGeneration;') && fetchPlayerStateBlock.includes('requestGeneration === _playerStateGeneration') && fetchPlayerStateBlock.includes('_playerStateCache = payload;'), 'fetchPlayerStateWithAuth guards cache assignment with player-state generation');
+check(invalidatePlayerStateCacheBlock.includes('_playerStateGeneration++'), 'invalidatePlayerStateCache increments _playerStateGeneration');
+check(invalidateAndRefreshBlock.includes('_playerStateGeneration++;'), 'invalidateAndRefresh increments _playerStateGeneration on identity refresh/relink');
+check(scheduleRefreshBlock.includes('invalidatePlayerStateCache()'), 'scheduleLiveDataRefresh invalidates player-state generation before remount');
 
 console.log('\n[13] Dead-code drift prevention');
 // connection-status-panel: removed faction helpers must not return

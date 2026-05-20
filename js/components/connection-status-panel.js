@@ -364,11 +364,17 @@
     var factionKey = faction && faction.faction ? faction.faction : 'unaligned';
     if (!factionKey || factionKey === 'unaligned') return { value: 'No faction selected', pending: false };
     var player = playerState || _playerStateCache || null;
-    var signal = player && player.faction_signal && player.faction_signal.contributions
-      ? player.faction_signal.contributions
-      : {};
-    if (signal[factionKey] == null) return { value: 'syncing…', pending: true };
-    var contribution = Math.max(0, Math.floor(Number(signal[factionKey]) || 0));
+    if (!player) return { value: 'syncing…', pending: true };
+    var signal = player && player.faction_signal ? player.faction_signal : null;
+    var contributions = signal && signal.contributions && typeof signal.contributions === 'object'
+      ? signal.contributions
+      : null;
+    // Confirmed player state may omit unearned faction keys; treat that as authoritative 0,
+    // not as a perpetual syncing state.
+    if (!contributions || !Object.prototype.hasOwnProperty.call(contributions, factionKey)) {
+      return { value: '0', pending: false };
+    }
+    var contribution = Math.max(0, Math.floor(Number(contributions[factionKey]) || 0));
     return { value: String(contribution), pending: false };
   }
 
@@ -455,6 +461,23 @@
           '<a href="/gkniftyheads-incubator.html" class="csp-live-cta">Link Telegram</a>' +
         '</div>';
     }
+    var gate = getIdentity();
+    var freshAuth = gate && typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+    if (!freshAuth && gate && typeof gate.restoreLinkedTelegramAuth === 'function') {
+      var restored = await gate.restoreLinkedTelegramAuth().catch(function () { return null; });
+      if (restored && restored.ok) {
+        freshAuth = typeof gate.getSignedTelegramAuth === 'function'
+          ? gate.getSignedTelegramAuth()
+          : (restored.telegram_auth || null);
+      }
+    }
+    if (!freshAuth) {
+      return '' +
+        '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
+          '<div class="csp-live-head"><span class="csp-pulse csp-pulse--warn"></span><div><strong>Player Live Feed</strong><span>Signed Telegram auth expired — relink required.</span></div></div>' +
+          '<a href="/gkniftyheads-incubator.html" class="csp-live-cta">RELINK Telegram</a>' +
+        '</div>';
+    }
     // Use cached daily-state or globals for immediate render — do not block for a network fetch.
     var missedXp = missedXpAllTime(_dailyStateCache || null);
     var missedXpDisplay = missedXp !== null ? esc(String(missedXp)) : 'syncing…';
@@ -493,7 +516,7 @@
           '<div class="csp-live-identity"><strong><a class="csp-player-link" href="' + esc(playerHref) + '">' + esc(name || 'Telegram Player') + '</a></strong><span><b class="csp-live-pill csp-live-pill--good">LIVE LINKED</b></span></div>' +
         '</div>' +
         '<div class="csp-grid csp-grid--live">' +
-          '<div class="csp-item"><div class="csp-item-label">Telegram</div><div class="csp-item-val">Linked</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Telegram</div><div class="csp-item-val">LIVE LINKED</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Faction</div><div class="csp-item-val">' + esc((faction.faction === 'unaligned' ? 'No faction selected' : (faction.icon + ' ' + faction.label))) + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Faction XP</div><div class="csp-item-val">' + esc(String(faction.faction_xp)) + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Contribution</div><div class="csp-item-val">' + esc(contributionDisplay) + '</div></div>' +
@@ -684,8 +707,10 @@
     _progressionInflight = null;
     _dailyStateCache = null;
     _dailyStateInflight = null;
+    _dailyStateGeneration++;
     _playerStateCache = null;
     _playerStateInflight = null;
+    _playerStateGeneration++;
     _apiOnlineCache = null;
     document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
     var badge = document.getElementById('moonboys-global-status-badge');
