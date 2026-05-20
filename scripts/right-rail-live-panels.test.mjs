@@ -411,7 +411,8 @@ check(factionAlignment.includes('getSignedTelegramAuthWithRestore'), 'faction al
 check(factionAlignment.includes('cachedTelegramId') && factionAlignment.includes('identityTelegramId') && factionAlignment.includes('cachedTelegramId !== identityTelegramId'), 'cached faction state is ignored when Telegram identity changes');
 check(factionAlignment.includes('clearCachedStatus'), 'faction alignment exposes cache-clear helper for relink/reset flows');
 check(las.includes('resolveFactionStatus(linked)') && las.includes('factionApi.loadStatus'), 'faction daily ops resolves faction through server-backed faction status before rendering');
-check(factionAlignment.includes('cooldown_ms_remaining: Number.isFinite(remainingMs) && remainingMs > 0 ? remainingMs : 0'), 'joinFaction stores cooldown_ms_remaining only when API returns true remaining value');
+check(factionAlignment.includes('var cooldownMs = Math.max(0, Number(data && data.cooldown_ms) || 0);'), 'joinFaction reads server cooldown_ms as an explicit duration value');
+check(factionAlignment.includes('cooldown_ms: cooldownMs') && factionAlignment.includes('cooldown_ms_remaining: 0'), 'joinFaction separates cooldown duration metadata from current remaining cooldown state');
 check(factionAlignment.includes('season_key: data.season_key || (priorStatus && priorStatus.season_key) || null'), 'earnFactionXp preserves season_key when endpoint omits it');
 
 console.log('\n[15] Right-rail recursion + non-blocking guards');

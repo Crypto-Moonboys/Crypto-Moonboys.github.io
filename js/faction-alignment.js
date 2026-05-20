@@ -174,14 +174,15 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ telegram_auth: auth, faction: target }),
     });
-    var remainingMs = Number(data && data.cooldown_ms_remaining);
+    var cooldownMs = Math.max(0, Number(data && data.cooldown_ms) || 0);
     var payload = {
       telegram_id: auth && auth.id != null ? String(auth.id) : getIdentityTelegramId(),
       faction: normalizeFaction(data.faction),
       faction_xp: Number(data.faction_xp) || 0,
       season_key: data.season_key || null,
       bonuses: data.bonuses || FACTIONS[normalizeFaction(data.faction)],
-      cooldown_ms_remaining: Number.isFinite(remainingMs) && remainingMs > 0 ? remainingMs : 0,
+      cooldown_ms: cooldownMs,
+      cooldown_ms_remaining: 0,
     };
     setCachedStatus(payload);
     dispatchUiState('moonboys:faction-boost', { faction: payload.faction, amount: 0, source: 'join', ts: Date.now() });
