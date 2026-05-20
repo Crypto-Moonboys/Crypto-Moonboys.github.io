@@ -191,6 +191,18 @@
       '    <div data-csp-panel></div>',
       '  </div>',
       '</div>',
+      '<div class="retro-hud-box hud-box--actions">',
+      '  <div class="retro-hud-title"><span class="retro-hud-title-icon" aria-hidden="true">\u2694</span> FACTION DAILY OPS</div>',
+      '  <div class="retro-hud-body"><div data-csp-faction-ops></div></div>',
+      '</div>',
+      '<div class="retro-hud-box hud-box--events">',
+      '  <div class="retro-hud-title"><span class="retro-hud-title-icon" aria-hidden="true">\u25CE</span> DAILY WTF SIGNAL</div>',
+      '  <div class="retro-hud-body"><div data-csp-wtf-signal></div></div>',
+      '</div>',
+      '<div class="retro-hud-box hud-box--missed">',
+      '  <div class="retro-hud-title"><span class="retro-hud-title-icon" aria-hidden="true">\u26A0</span> MISSED OPPORTUNITIES</div>',
+      '  <div class="retro-hud-body"><div data-csp-missed></div></div>',
+      '</div>',
     ].join('\n');
 
     /* Deferred HUD population */

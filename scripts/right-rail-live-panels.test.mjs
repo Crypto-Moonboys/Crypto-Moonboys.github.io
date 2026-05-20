@@ -127,22 +127,23 @@ check(!stateSubscribeBlock.includes("btNode.textContent = unlocked ? 'unlocked' 
 check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requiredXp)'), 'live Block Topia row updater reuses initial access markup helper');
 
 console.log('\n[4] Panel separation');
-check(siteShell.includes('PLAYER LIVE FEED') && !siteShell.includes('FACTION DAILY OPS'), 'right rail exposes only the PLAYER LIVE FEED live panel');
-check(!siteShell.includes('data-las-panel') && siteShell.includes('data-csp-panel'), 'right rail mounts connection-status panel only (no data-las-panel hook)');
-check(!siteShell.includes('hud-box--actions'), 'right rail does not include a separate actions/ops box');
-check(csp.includes('Latest:') && csp.includes('csp-feed-row--latest') && csp.includes('csp-feed-text') && csp.includes('Missed XP'), 'player live feed latest status is a compact muted row with bounded wrap');
-check(csp.includes('<div class="csp-item-label">Faction</div>') && csp.includes('<div class="csp-item-label">Faction XP</div>'), 'player live feed surfaces current faction and faction XP');
-check(csp.includes('<div class="csp-item-label">Completed Today</div>') && csp.includes('<div class="csp-item-label">Missed Today</div>'), 'player live feed surfaces completed/missed daily counts');
-check(csp.includes('<div class="csp-item-label">Telegram</div>') && csp.includes('<div class="csp-item-label">Contribution</div>'), 'player live feed surfaces Telegram linked status and contribution');
-check(csp.includes('<div class="csp-item-label">Daily Ops Status</div>') && csp.includes('<div class="csp-item-label">Daily WTF Signal</div>'), 'player live feed surfaces daily ops status and Daily WTF signal status');
+check(siteShell.includes('PLAYER LIVE FEED') && siteShell.includes('FACTION DAILY OPS') && siteShell.includes('DAILY WTF SIGNAL') && siteShell.includes('MISSED OPPORTUNITIES'), 'right rail restores multi-section live ecosystem headings');
+check(!siteShell.includes('data-las-panel') && siteShell.includes('data-csp-panel') && siteShell.includes('data-csp-faction-ops') && siteShell.includes('data-csp-wtf-signal') && siteShell.includes('data-csp-missed'), 'right rail mounts only shared connection-status-panel section hooks (no data-las-panel hook)');
+check(siteShell.includes('hud-box--actions') && siteShell.includes('hud-box--events') && siteShell.includes('hud-box--missed'), 'right rail includes separate visual boxes for ops/signal/missed sections');
+const liveFeedBlock = functionBlock(csp, 'buildPlayerLiveFeedHTML');
+const opsBlock = functionBlock(csp, 'buildFactionDailyOpsHTML');
+const wtfSectionBlock = functionBlock(csp, 'buildDailyWtfSignalHTML');
+const missedSectionBlock = functionBlock(csp, 'buildMissedOpportunitiesHTML');
+check(liveFeedBlock.includes('<div class="csp-item-label">Telegram</div>') && liveFeedBlock.includes('<div class="csp-item-label">Faction</div>') && liveFeedBlock.includes('<div class="csp-item-label">Arcade XP</div>') && liveFeedBlock.includes('<div class="csp-item-label">Block Topia</div>') && liveFeedBlock.includes('Latest:'), 'player live feed remains compact with Telegram/faction/Arcade XP/Block Topia/latest');
+check(opsBlock.includes('<div class="csp-item-label">Faction XP</div>') && opsBlock.includes('<div class="csp-item-label">Contribution</div>') && opsBlock.includes('<div class="csp-item-label">Daily Ops Status</div>') && opsBlock.includes('<div class="csp-item-label">Completed Today</div>') && opsBlock.includes('<div class="csp-item-label">Missed Today</div>'), 'Faction Daily Ops section renders faction XP/contribution/status/completed/missed from shared state');
+check(wtfSectionBlock.includes('<div class="csp-item-label">Signal Status</div>') && wtfSectionBlock.includes('<div class="csp-item-label">Timer</div>') && wtfSectionBlock.includes('<div class="csp-item-label">Action</div>'), 'Daily WTF Signal section renders status/timer/action from shared state');
+check(wtfSectionBlock.includes('data-csp-wtf-countdown'), 'Daily WTF section renders a dedicated countdown data hook');
+check(missedSectionBlock.includes('Missed XP (all-time)') && missedSectionBlock.includes('Missed Today') && missedSectionBlock.includes('Missed Count'), 'Missed Opportunities section renders all-time/today/count from shared state');
 const ownBattleBlock = functionBlock(csp, 'isOwnBattleActivity');
 const latestActivityBlock = functionBlock(csp, 'latestActivityRows');
 check(csp.includes('isOwnBattleActivity') && csp.includes('getTelegramId()') && csp.includes('activity.filter(isOwnBattleActivity)'), 'player feed filters Battle Chamber activity to the linked player when possible');
 check(!ownBattleBlock.includes('getDisplayName()') && !ownBattleBlock.includes('display_name'), 'personal Battle Chamber matching does not rely on display name when Telegram identifiers are required');
 check(!latestActivityBlock.includes("tag: 'Global'") && !latestActivityBlock.includes('global feed active'), 'global/unmatched Battle Chamber rows are not rendered inside Recent Personal Activity');
-check(csp.includes('Latest Public Battle Chamber Activity') && csp.includes("tag: 'Public'") && csp.includes('latestGlobalBattleRows'), 'global Battle Chamber feed is rendered only under a public/global heading');
-check(!csp.includes('No public Battle Chamber activity yet.') && !csp.includes("buildFeedHTML(latestGlobalBattleRows(), 'No public Battle Chamber activity yet.')"), 'public Battle Chamber box is hidden when empty');
-check(csp.includes('(publicRows.length') && csp.includes('buildFeedHTML(publicRows)'), 'public Battle Chamber section only renders when there are public rows');
 check((las.includes("Today\\'s Missions") || las.includes("Today's Missions")) && las.includes('Daily WTF Signal') && las.includes('Missed Opportunities'), 'faction panel owns missions/events/missed signals');
 check(las.includes('las-ops-snapshot') && las.includes('Daily Ops') && las.includes('Completed') && las.includes('Missed XP'), 'faction daily ops panel surfaces compact live faction snapshot rows');
 check(!las.includes('data-csp-xp') && !las.includes('data-csp-panel'), 'faction ops panel does not repeat the Arcade XP block');
@@ -155,7 +156,9 @@ check(las.includes('esc(String(current))') && las.includes('esc(String(target))'
 check(las.includes('Number.isFinite(Number(m.current))') && las.includes('Number.isFinite(Number(m.target))') && !las.includes('las-mission-card') && !las.includes('las-mission-top') && !las.includes('las-mission-obj') && !las.includes('las-progress'), 'mission cards do not render large objective paragraphs or progress bars in right rail');
 const viewDetailsCount = (las.match(/View details/g) || []).length;
 check(viewDetailsCount === 1, 'faction ops panel keeps only one compact "View details" link');
-check(las.includes("postJson('/roguelite/daily-state')") && las.includes("postJson('/player/state')"), 'right rail fetches server-backed daily-state and player state for linked users');
+check(csp.includes("'/roguelite/daily-state'") && csp.includes("'/player/state'"), 'single shared state authority fetches server-backed daily-state and player state');
+check(!las.includes("postJson('/roguelite/daily-state')") && !las.includes("postJson('/player/state')"), 'live-activity-summary does not independently own right-rail daily/player fetch loops');
+check(!functionBlock(csp, 'buildSharedRailState').includes('latestGlobalBattleRows()') && !functionBlock(csp, 'buildSharedRailState').includes('publicRows'), 'shared state does not compute unused publicRows/latestGlobalBattleRows when no visible section renders them');
 check(las.includes('missedHTML(panelState && panelState.dailyState ? panelState.dailyState : null)'), 'missed XP rendering prefers server-backed daily-state payload');
 check(csp.includes('scheduleLiveDataRefresh') && csp.includes('_liveDataRefreshTimer') && csp.includes('setTimeout(function ()'), 'connection status panel debounces live-data refreshes');
 check(csp.includes("if (detail && detail.source === 'load') return;"), 'connection status panel ignores load-sourced moonboys:faction-status refresh recursion');
@@ -166,7 +169,10 @@ for (const evt of ['battle-chamber:faction-data-ready','battle-chamber:activity-
 check(csp.includes('moonboys:sync-state') && csp.includes('moonboys:score-updated'), 'connection status panel refreshes on relink/reset and accepted-run sync events');
 check(las.includes("window.addEventListener('moonboys:sync-state', invalidateAndRefresh);") && las.includes("window.addEventListener('moonboys:score-updated', invalidateAndRefresh);"), 'faction daily ops panel refreshes on relink/reset and accepted-run sync events');
 check(bridge.includes("'moonboys:sync-state'") && bridge.includes("'moonboys:score-updated'") && bridge.includes('scheduleServerAuthorityRefresh'), 'battle chamber bridge refreshes server authority after sync and score events');
-check(csp.includes("document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); })"), 'recent personal activity remounts after live-data events so empty feed is not permanently stuck');
+check(csp.includes('RIGHT_RAIL_SECTION_SELECTORS') && csp.includes('mountAllSections'), 'shared renderer remounts all right-rail sections through one section selector set');
+check(csp.includes("window.addEventListener('moonboys:wtf-countdown-tick', updateWtfCountdownUI);"), 'countdown tick is handled by a dedicated WTF timer updater');
+const cspCountdownTickBlock = functionBlock(csp, 'updateWtfCountdownUI');
+check(cspCountdownTickBlock.includes("document.querySelectorAll('[data-csp-wtf-countdown]')") && !cspCountdownTickBlock.includes('mountAllSections('), 'WTF countdown tick patches only timer nodes without remounting whole right rail');
 
 console.log('\n[5] WTF event visibility');
 check(las.includes('window.MOONBOYS_WTF_EVENTS'), 'faction ops panel reads window.MOONBOYS_WTF_EVENTS');
@@ -321,7 +327,7 @@ check(csp.includes('Auth expired'), 'RELINK badge copy includes "Auth expired" t
 const buildBadgeBlock = functionBlock(csp, 'buildBadgeHTML');
 check(buildBadgeBlock.includes('restoreLinkedTelegramAuth'), 'buildBadgeHTML attempts restoreLinkedTelegramAuth before rendering RELINK badge');
 check(csp.includes('Signed Telegram auth expired — relink required.') && csp.includes('RELINK Telegram'), 'player live feed shows explicit relink state + CTA when signed auth is unavailable');
-check(functionBlock(csp, 'buildPanelHTML').includes('LIVE LINKED') && functionBlock(csp, 'buildPanelHTML').includes('restoreLinkedTelegramAuth'), 'player live feed shows LIVE LINKED only after signed/restorable auth check');
+check(functionBlock(csp, 'buildPlayerLiveFeedHTML').includes('LIVE LINKED') && functionBlock(csp, 'buildSharedRailState').includes('getSignedTelegramAuthWithRestore'), 'player live feed shows LIVE LINKED only after signed/restorable auth check');
 
 // Issue 6: Hydration is authoritative for cached state but cannot roll back live in-session XP
 check(moonboysState.includes('_liveXpRevision'), 'moonboys-state.js has a _liveXpRevision race guard to protect live in-session XP from hydration rollback');
@@ -369,7 +375,8 @@ check(!latestActivityRowsBlock.includes('Daily opportunity'), 'latestActivityRow
 check(!latestActivityRowsBlock.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && !latestActivityRowsBlock.includes('MOONBOYS_DAILY_ROGUELITE_LOTTERY'), 'latestActivityRows does not read daily-state globals (daily logic belongs in dedicated status rows)');
 
 console.log('\n[12] Confirmed Missed XP fetch — non-blocking and cache-safe');
-const buildPanelHTMLBlock = functionBlock(csp, 'buildPanelHTML');
+const buildPanelHTMLBlock = functionBlock(csp, 'buildFactionDailyOpsHTML');
+const buildSharedRailStateBlock = functionBlock(csp, 'buildSharedRailState');
 const fetchDailyStateBlock = functionBlock(csp, 'fetchDailyStateWithAuth');
 const fetchPlayerStateBlock = functionBlock(csp, 'fetchPlayerStateWithAuth');
 const invalidateDailyStateCacheBlock = functionBlock(csp, 'invalidateDailyStateCache');
@@ -378,12 +385,14 @@ const scheduleRefreshBlock = functionBlock(csp, 'scheduleLiveDataRefresh');
 const schedulePanelRemountBlock = functionBlock(csp, 'schedulePanelRemount');
 const contributionBlock = functionBlock(csp, 'getContribution');
 const invalidateAndRefreshBlock = functionBlock(csp, 'invalidateAndRefresh');
+const invalidateSharedRailStateBlock = functionBlock(csp, 'invalidateSharedRailState');
 // buildPanelHTML must not unconditionally await the fetch before checking globals
 check(!buildPanelHTMLBlock.includes('await fetchDailyStateWithAuth()'), 'buildPanelHTML does not block-await daily-state fetch before rendering');
-check(buildPanelHTMLBlock.includes('fetchDailyStateWithAuth().then'), 'buildPanelHTML fires daily-state fetch in background when Missed XP is unconfirmed');
+check(buildSharedRailStateBlock.includes('fetchDailyStateWithAuth().then'), 'shared right-rail state fires daily-state fetch in background when Missed XP is unconfirmed');
 check(!buildPanelHTMLBlock.includes("document.querySelectorAll('.csp-item-val[data-csp-missed-xp]')"), 'buildPanelHTML does not directly patch Missed XP DOM nodes from daily-state fetch callback');
-check(buildPanelHTMLBlock.includes('schedulePanelRemount()'), 'confirmed daily-state fetch triggers panel remount path');
+check(buildSharedRailStateBlock.includes('schedulePanelRemount()'), 'confirmed daily-state fetch triggers panel remount path');
 check(csp.includes('var _dailyStateGeneration = 0;'), 'connection-status-panel defines _dailyStateGeneration');
+check(csp.includes('var _sharedRailStateGeneration = 0;') && csp.includes('var _sharedRailStateInflightGeneration = -1;'), 'connection-status-panel tracks shared-state generation and inflight generation');
 check(invalidateDailyStateCacheBlock.includes('_dailyStateGeneration++'), 'invalidateDailyStateCache increments _dailyStateGeneration');
 // fetchDailyStateWithAuth must target the correct Worker route
 check(fetchDailyStateBlock.includes("'/roguelite/daily-state'"), 'fetchDailyStateWithAuth targets /roguelite/daily-state Worker route');
@@ -392,20 +401,25 @@ check(fetchDailyStateBlock.includes('requestGeneration === _dailyStateGeneration
 // daily-state cache must be invalidated when live-data refresh events fire
 check(csp.includes('function invalidateDailyStateCache'), 'connection-status-panel has invalidateDailyStateCache helper');
 check(scheduleRefreshBlock.includes('invalidateDailyStateCache()'), 'scheduleLiveDataRefresh calls invalidateDailyStateCache before remounting panels');
-check(schedulePanelRemountBlock.includes("document.querySelectorAll('[data-csp-panel]')") && !schedulePanelRemountBlock.includes('invalidateDailyStateCache()'), 'schedulePanelRemount remounts panels without invalidating daily-state cache');
+check(scheduleRefreshBlock.includes('invalidateSharedRailState();') && scheduleRefreshBlock.includes('mountAllSections();'), 'scheduleLiveDataRefresh clears shared cache+inflight before remounting all sections');
+check(invalidateAndRefreshBlock.includes('invalidateSharedRailState();') && invalidateAndRefreshBlock.includes('mountAllSections();'), 'invalidateAndRefresh clears shared cache+inflight before remounting all sections');
+check(schedulePanelRemountBlock.includes('mountAllSections()') && !schedulePanelRemountBlock.includes('invalidateDailyStateCache()'), 'schedulePanelRemount remounts panels without invalidating daily-state cache');
+check(schedulePanelRemountBlock.includes('invalidateSharedRailState();'), 'schedulePanelRemount clears shared cache+inflight before remounting sections');
+check(invalidateSharedRailStateBlock.includes('_sharedRailStateCache = null;') && invalidateSharedRailStateBlock.includes('_sharedRailStateInflight = null;') && invalidateSharedRailStateBlock.includes('_sharedRailStateGeneration++;'), 'shared-state invalidation clears cache/inflight and bumps generation');
+check(buildSharedRailStateBlock.includes('_sharedRailStateInflightGeneration === _sharedRailStateGeneration') && buildSharedRailStateBlock.includes('if (generation === _sharedRailStateGeneration)'), 'shared-state in-flight reuse/cache write are generation-guarded against stale promises');
 // _dailyStateInflight must be cleared in exactly one finally path
 const inflightNullCount = (fetchDailyStateBlock.match(/_dailyStateInflight\s*=\s*null/g) || []).length;
 check(inflightNullCount === 1, 'fetchDailyStateWithAuth clears _dailyStateInflight in exactly one path');
 check(fetchDailyStateBlock.includes('} finally {') && fetchDailyStateBlock.includes('_dailyStateInflight = null'), 'fetchDailyStateWithAuth clears _dailyStateInflight inside a finally block');
-check(buildPanelHTMLBlock.includes('var patchGeneration = _dailyStateGeneration;') && buildPanelHTMLBlock.includes('if (patchGeneration !== _dailyStateGeneration) return;'), 'buildPanelHTML guards Missed XP background patch by generation match');
+check(buildSharedRailStateBlock.includes('var patchGeneration = _dailyStateGeneration;') && buildSharedRailStateBlock.includes('if (patchGeneration !== _dailyStateGeneration) return;'), 'shared right-rail state guards Missed XP background patch by generation match');
 // Missed XP still must not default to hard 0 after fetch refactor
 check(!/return\s+0\s*;/.test(functionBlock(csp, 'missedXpAllTime')), 'missedXpAllTime still does not default to hard 0 after background-fetch refactor');
 const dailyCountsBlock = functionBlock(csp, 'getDailyCounts');
 check(dailyCountsBlock.includes('today_active') && dailyCountsBlock.includes('mission_opportunities') && dailyCountsBlock.includes('row.completed'), 'connection-status completed count derives from today_active.mission_opportunities[].completed');
-check(buildPanelHTMLBlock.includes("var completedDisplay = dailyCounts.completed == null ? 'syncing…'") && buildPanelHTMLBlock.includes("var missedTodayDisplay = dailyCounts.missed == null ? 'syncing…'"), 'connection-status shows syncing for missing completed/missed daily counts instead of fake 0');
+check(buildPanelHTMLBlock.includes("var completedDisplay = shared.dailyCounts && shared.dailyCounts.completed != null ? String(shared.dailyCounts.completed) : 'syncing…'") && buildPanelHTMLBlock.includes("var missedTodayDisplay = shared.dailyCounts && shared.dailyCounts.missed != null ? String(shared.dailyCounts.missed) : 'syncing…'"), 'connection-status shows syncing for missing completed/missed daily counts instead of fake 0');
 check(contributionBlock.includes('Object.prototype.hasOwnProperty.call(contributions, factionKey)') && contributionBlock.includes("return { value: '0', pending: false };"), 'confirmed player-state with missing faction contribution key renders 0 (not syncing)');
 check(contributionBlock.includes('if (!player) return { value: \'syncing…\', pending: true };'), 'contribution is pending only when player-state is unavailable');
-check(buildPanelHTMLBlock.includes('if (contribution.pending)') && buildPanelHTMLBlock.includes('fetchPlayerStateWithAuth().then') && buildPanelHTMLBlock.includes('if (confirmedState) {') && buildPanelHTMLBlock.includes('schedulePanelRemount();'), 'player-state remount path only schedules when contribution is actually pending');
+check(buildSharedRailStateBlock.includes('if (contribution.pending)') && buildSharedRailStateBlock.includes('fetchPlayerStateWithAuth().then') && buildSharedRailStateBlock.includes('if (confirmedState)') && buildSharedRailStateBlock.includes('schedulePanelRemount();'), 'player-state remount path only schedules when contribution is actually pending');
 check(fetchPlayerStateBlock.includes('var requestGeneration = _playerStateGeneration;') && fetchPlayerStateBlock.includes('requestGeneration === _playerStateGeneration') && fetchPlayerStateBlock.includes('_playerStateCache = payload;'), 'fetchPlayerStateWithAuth guards cache assignment with player-state generation');
 check(invalidatePlayerStateCacheBlock.includes('_playerStateGeneration++'), 'invalidatePlayerStateCache increments _playerStateGeneration');
 check(invalidateAndRefreshBlock.includes('_playerStateGeneration++;'), 'invalidateAndRefresh increments _playerStateGeneration on identity refresh/relink');
@@ -417,8 +431,8 @@ check(!hasFunctionDeclaration(csp, 'getFactionApi'), 'connection-status-panel do
 check(!hasFunctionDeclaration(csp, 'getFactionStatus'), 'connection-status-panel does not define getFactionStatus helper');
 check(!hasFunctionDeclaration(csp, 'factionLabel'), 'connection-status-panel does not define factionLabel helper');
 check(!hasFunctionDeclaration(csp, 'normaliseFactionKey'), 'connection-status-panel does not define normaliseFactionKey helper');
-// The subscriber must not patch [data-csp-faction] (faction text no longer in header badge or panel)
-check(!csp.includes('data-csp-faction'), 'connection-status-panel subscriber does not patch [data-csp-faction] elements');
+// The subscriber must not patch legacy [data-csp-faction] fields (distinct from section hook data-csp-faction-ops)
+check(!csp.includes('data-csp-faction]') && !csp.includes('querySelectorAll(\'[data-csp-faction]\')'), 'connection-status-panel subscriber does not patch legacy [data-csp-faction] elements');
 // Header badge must not include faction or unaligned rendered text (use specific rendered patterns)
 const buildBadgeHTMLBlock = functionBlock(csp, 'buildBadgeHTML');
 check(!buildBadgeHTMLBlock.includes('data-csp-faction') && !buildBadgeHTMLBlock.includes('No faction selected yet') && !buildBadgeHTMLBlock.includes('factionLabel'), 'buildBadgeHTML does not render faction data or call factionLabel in the header badge');
