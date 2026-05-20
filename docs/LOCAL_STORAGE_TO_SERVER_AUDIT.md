@@ -35,7 +35,7 @@
 | `MOONBOYS_TELEGRAM_AUTH` | `js/identity-gate.js` | Legacy auth key alias | Yes | Legacy — reads from both | No | E |
 | `moonboys_tg_sync_health` | `js/identity-gate.js` | Sync health metadata | Yes | Yes (session diagnostic) | No | D |
 | `moonboys_presence_hidden` | `js/arcade-leaderboard.js` | Presence visibility preference | Yes | Yes (UI preference) | No | D |
-| `moonboys_season_banner_dismissed` | `js/site-season-banner.js` | Banner dismiss state | Yes | Yes (UI preference) | No | D |
+| `moonboys_season_banner_dismissed` | `js/site-season-banner.js` (removed) | Legacy banner dismiss state for removed script | No (deprecated) | Legacy only | No | E |
 | `invaders3008_meta_v1` | `js/arcade/games/invaders/meta-system.js` | Invaders personal best / mastery | Yes (was) | Cache only after server hydration | Yes → `player_game_mastery_state` | A → C |
 | `asteroid_fork_meta_v1` | `js/arcade/games/asteroid-fork/meta-system.js` | Asteroid Fork personal best / mastery | Yes (was) | Cache only | Yes → `player_game_mastery_state` | A → C |
 | `snake_meta_v1` | `js/arcade/games/snake/meta-system.js` | Snake personal best / mastery | Yes (was) | Cache only | Yes → `player_game_mastery_state` | A → C |
@@ -56,7 +56,7 @@
 | `moonboys_tg_id`, `moonboys_tg_name`, `moonboys_tg_linked`, `moonboys_tg_auth` | Auth/identity infrastructure — must be local for browser session management |
 | `moonboys_tg_sync_health` | Session diagnostic only |
 | `moonboys_presence_hidden` | UI display preference (Part 11 — allowed) |
-| `moonboys_season_banner_dismissed` | UI display preference (Part 11 — allowed) |
+| `moonboys_season_banner_dismissed` | Deprecated key from removed `js/site-season-banner.js`; safe to ignore or clear |
 | `asteroidForkQa` | Dev QA flag, never affects server state |
 | All `*_last_run` and widget cache keys | Display-only cache; cleared by localStorage clear but restored on next play |
 

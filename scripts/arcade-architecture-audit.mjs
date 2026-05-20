@@ -279,11 +279,11 @@ const ALLOWED_SUBMITSCORE_PATTERNS = [
   /^workers\//,
 ];
 
-// Directories to skip entirely in check 6 (vendored code, legacy stubs, tests).
+// Directories skipped while recursively scanning check 6 paths.
+// (Current scan roots are "games/" and "js/", so this mainly excludes nested
+// node_modules copies and generic VCS metadata if encountered.)
 const SKIP_DIRS = new Set([
   '.git', 'node_modules',
-  'games/core',    // legacy stub directory
-  'games/js',      // legacy unused blocktopia files
 ]);
 
 function isSubmitScoreAllowed(relPath) {
