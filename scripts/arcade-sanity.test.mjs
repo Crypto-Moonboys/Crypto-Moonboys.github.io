@@ -446,6 +446,25 @@ check(
   workerSrc.includes('verifyLeaderboardTelegramAuth'),
   'leaderboard-worker.js calls verifyLeaderboardTelegramAuth before accepting scores',
 );
+check(
+  workerSrc.includes('resolveSubmissionIdentity') &&
+    workerSrc.includes("telegram_auth_required_for_telegram_id"),
+  'leaderboard-worker.js supports anonymous score submissions while rejecting unsigned telegram_id claims',
+);
+check(
+  workerSrc.includes('identity_mode') && workerSrc.includes('"anonymous"'),
+  'leaderboard-worker.js marks anonymous identity mode in accepted score responses',
+);
+check(
+  workerSrc.includes('if (telegramId)') &&
+    workerSrc.includes('anticheat:blocked:${telegramId}'),
+  'leaderboard-worker.js guards anti-cheat KV check inside if (telegramId) so null never queries the KV',
+);
+check(
+  workerSrc.includes('!e.telegram_id') &&
+    /String\(e\.telegram_id\).*===.*String\(newEntry\.telegram_id\)/.test(workerSrc),
+  'leaderboard-worker.js upsertEntry deduplicates authenticated entries by telegram_id and excludes anon rows when matching anon names',
+);
 
 // ── Asteroid Fork resize/render dimension invariants ─────────────────────────
 // Verifies that applyFullscreenFit updates state.worldW/worldH to match the

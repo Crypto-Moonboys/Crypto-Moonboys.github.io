@@ -254,15 +254,10 @@ function createLegacybootstrapCrystalQuest(root) {
     if (submitScoreBtn) submitScoreBtn.disabled = true;
   }
 
-  function canSubmitIdentity() {
-    if (!(window.MOONBOYS_IDENTITY && typeof window.MOONBOYS_IDENTITY.isTelegramLinked === 'function')) return false;
-    return !!window.MOONBOYS_IDENTITY.isTelegramLinked();
-  }
-
   function finalizeCompletedRun() {
     if (!run || !run.completed || run.submitted) return;
     ArcadeSync.setHighScore(GAME_ID, score);
-    if (canSubmitIdentity() && score > 0) {
+    if (score > 0) {
       submitScore(ArcadeSync.getPlayer(), score, GAME_ID);
     }
     run.submitted = true;
@@ -285,9 +280,7 @@ function createLegacybootstrapCrystalQuest(root) {
         _cqEmitBus('arcade:mission-progress', { gameId: GAME_ID, factionId: fId, ts: Date.now() });
       }
     } catch (_) {}
-    if (feedback)   feedback.textContent   = canSubmitIdentity()
-      ? 'ðŸ† Run complete. Score submitted to leaderboard.'
-      : 'ðŸ Run complete. Link identity to sync this score next run.';
+    if (feedback)   feedback.textContent   = 'Run complete. Score submitted to leaderboard.';
     if (statusLine) statusLine.textContent = 'Run sealed at score ' + score + '.';
   }
 

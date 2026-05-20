@@ -184,6 +184,21 @@ async function verifyLeaderboardTelegramAuth(body, env) {
   return { ok: true, telegramId };
 }
 
+async function resolveSubmissionIdentity(body, env) {
+  const hasSignedEvidence = !!(body && (body.telegram_auth != null || body.auth_evidence != null));
+  if (hasSignedEvidence) {
+    const authResult = await verifyLeaderboardTelegramAuth(body, env);
+    if (!authResult.ok) return authResult;
+    return { ok: true, authenticated: true, telegramId: authResult.telegramId };
+  }
+
+  if (body?.telegram_id != null && String(body.telegram_id).trim()) {
+    return { ok: false, error: 'telegram_auth_required_for_telegram_id', status: 403 };
+  }
+
+  return { ok: true, authenticated: false, telegramId: null };
+}
+
 // ── CORS helpers ─────────────────────────────────────────────────────────────
 
 function getAllowedOrigins(env) {
@@ -292,17 +307,16 @@ export default {
         );
       }
 
-      // ── CRIT-01: Verify Telegram identity via HMAC before trusting any ID ──
-      // body.telegram_id is never trusted directly. The verified ID is derived
-      // exclusively from the signed telegram_auth payload.
-      const authResult = await verifyLeaderboardTelegramAuth(body, env);
-      if (!authResult.ok) {
+      // Public leaderboard scores may be submitted anonymously.
+      // If telegram_auth is supplied, it must verify successfully.
+      const identity = await resolveSubmissionIdentity(body, env);
+      if (!identity.ok) {
         return new Response(
-          JSON.stringify({ error: authResult.error }),
-          { status: authResult.status, headers: corsHeaders }
+          JSON.stringify({ error: identity.error }),
+          { status: identity.status, headers: corsHeaders }
         );
       }
-      const telegramId = authResult.telegramId;
+      const telegramId = identity.telegramId;
 
       const { player, score, game } = body;
       const rawFaction = String(body.faction || "unaligned").toLowerCase().trim();
@@ -310,19 +324,23 @@ export default {
       const faction = CANONICAL_FACTION_SET.has(resolvedFaction) ? resolvedFaction : "unaligned";
       const submissionMode = String(body.score_type || "raw").toLowerCase();
 
-      // Anti-cheat gate — the anti-cheat worker writes anticheat:blocked:{id}
-      // into the SHARED KV namespace (same ID as leaderboard worker's LEADERBOARD binding).
+      // Anti-cheat gate — only applies to submissions with a verified Telegram ID.
+      // Anonymous submissions (telegramId === null) are not checked against the
+      // block list; there is no signed identity to block. This also prevents a
+      // null KV key (`anticheat:blocked:null`) from matching anything.
       // KEY FORMAT: anticheat:blocked:{telegram_id}
       // This prefix must match exactly what the anti-cheat worker writes in
       // workers/anti-cheat/worker.js. If the key format changes in either worker,
       // both must be updated together. See workers/leaderboard/wrangler.toml for the
       // shared KV namespace requirement documentation.
-      const blockStatus = await env.LEADERBOARD.get(`anticheat:blocked:${telegramId}`);
-      if (blockStatus) {
-        return new Response(
-          JSON.stringify({ error: "account_blocked", block_type: blockStatus }),
-          { status: 403, headers: corsHeaders }
-        );
+      if (telegramId) {
+        const blockStatus = await env.LEADERBOARD.get(`anticheat:blocked:${telegramId}`);
+        if (blockStatus) {
+          return new Response(
+            JSON.stringify({ error: "account_blocked", block_type: blockStatus }),
+            { status: 403, headers: corsHeaders }
+          );
+        }
       }
 
       if (typeof player !== "string" || player.trim().length < 1 || player.trim().length > 40) {
@@ -348,6 +366,12 @@ export default {
       const floorScore = Math.floor(parsedScore);
 
       if (submissionMode === "meta") {
+        if (!telegramId) {
+          return new Response(
+            JSON.stringify({ error: "telegram_sync_required" }),
+            { status: 403, headers: corsHeaders }
+          );
+        }
         const eventTs = Number(body.timestamp);
         const timestamp = Number.isFinite(eventTs) ? eventTs : Date.now();
         await updateMetaBoards(env, {
@@ -371,9 +395,15 @@ export default {
           getBoard(env, `yearly:${gameKey}`)
         ]);
 
-        const existingEntry = board.find((row) => String(row?.telegram_id || '') === telegramId) || null;
+        const existingEntry = telegramId
+          ? (board.find((row) => String(row?.telegram_id || '') === telegramId) || null)
+          : (board.find((row) =>
+            !row?.telegram_id &&
+            String(row?.player || '').toLowerCase() === playerName.toLowerCase()
+          ) || null);
         previousBest = Number(existingEntry?.score || 0);
-        const entry = { player: playerName, score: floorScore, telegram_id: telegramId, faction };
+        const entry = { player: playerName, score: floorScore, faction };
+        if (telegramId) entry.telegram_id = telegramId;
         const updatedBoard = upsertEntry(board, entry, PER_GAME_LEADERBOARD_SIZE);
         const updatedSeasonal = upsertEntry(sBoard, entry, PER_GAME_LEADERBOARD_SIZE);
         const updatedYearly = upsertEntry(yBoard, entry, PER_GAME_LEADERBOARD_SIZE);
@@ -391,8 +421,9 @@ export default {
       if (gameKey !== "global") {
         responsePayload.leaderboard = {
           game: gameKey,
-          telegram_id: telegramId,
+          telegram_id: telegramId || null,
           previous_best: previousBest,
+          identity_mode: telegramId ? "telegram" : "anonymous",
         };
       }
       return new Response(JSON.stringify(responsePayload), { headers: corsHeaders });
@@ -550,11 +581,13 @@ async function updateAllTimeBoard(env, seasonalBoard) {
 
   for (const candidate of candidates) {
     const qualifyingScore = Number(candidate.score) || 0;
-    const nameLower = String(candidate.player).toLowerCase();
+    const candidateIdentity = getAggregateIdentityKey(candidate);
+    if (!candidateIdentity) continue;
 
-    const existingIdx = allTimeList.findIndex(
-      e => typeof e.player === "string" && e.player.toLowerCase() === nameLower
-    );
+    const existingIdx = allTimeList.findIndex((entry) => {
+      const existingIdentity = getAggregateIdentityKey(entry);
+      return existingIdentity && existingIdentity === candidateIdentity;
+    });
 
     if (existingIdx !== -1) {
       // Update player's all-time entry if this season's score is higher
@@ -562,7 +595,9 @@ async function updateAllTimeBoard(env, seasonalBoard) {
         allTimeList[existingIdx] = {
           player:    candidate.player,
           score:     qualifyingScore,
-          breakdown: candidate.breakdown || {}
+          breakdown: candidate.breakdown || {},
+          identity_key: candidateIdentity,
+          ...(candidate.telegram_id ? { telegram_id: String(candidate.telegram_id) } : {})
         };
       }
     } else if (allTimeList.length < ALL_TIME_BOARD_SIZE) {
@@ -570,7 +605,9 @@ async function updateAllTimeBoard(env, seasonalBoard) {
       allTimeList.push({
         player:    candidate.player,
         score:     qualifyingScore,
-        breakdown: candidate.breakdown || {}
+        breakdown: candidate.breakdown || {},
+        identity_key: candidateIdentity,
+        ...(candidate.telegram_id ? { telegram_id: String(candidate.telegram_id) } : {})
       });
     } else {
       // Board full — only enter if score beats the current lowest entry
@@ -584,7 +621,9 @@ async function updateAllTimeBoard(env, seasonalBoard) {
         allTimeList[lowestIdx] = {
           player:    candidate.player,
           score:     qualifyingScore,
-          breakdown: candidate.breakdown || {}
+          breakdown: candidate.breakdown || {},
+          identity_key: candidateIdentity,
+          ...(candidate.telegram_id ? { telegram_id: String(candidate.telegram_id) } : {})
         };
       }
     }
@@ -628,32 +667,66 @@ async function recomputeAllBoards(env) {
   ]);
 }
 
+function getAggregateIdentityKey(entry) {
+  const telegramId = String(entry?.telegram_id || "").trim();
+  if (telegramId) return `tg:${telegramId}`;
+
+  const player = String(entry?.player || "").trim();
+  if (!player) return null;
+  return `anon:${player.toLowerCase()}`;
+}
+
 async function recomputeAggregate(env, key, boards) {
-  // Build player → per-game score map from the provided per-game boards
-  const playerMap = {};
+  // Build identity → per-game score map from the provided per-game boards.
+  // Identity key format:
+  //   tg:{telegram_id}         for authenticated rows
+  //   anon:{normalized_player} for anonymous rows
+  const identityMap = {};
   GAMES.forEach((g, i) => {
     boards[i].forEach((entry) => {
-      const name = String(entry.player || "");
-      if (!name) return;
-      if (!playerMap[name]) playerMap[name] = {};
-      playerMap[name][g] = Number(entry.score) || 0;
+      const identityKey = getAggregateIdentityKey(entry);
+      if (!identityKey) return;
+      if (!identityMap[identityKey]) {
+        identityMap[identityKey] = {
+          player: String(entry.player || "").trim(),
+          telegram_id: entry?.telegram_id ? String(entry.telegram_id) : null,
+          scores: {},
+        };
+      }
+
+      const profile = identityMap[identityKey];
+      const score = Number(entry.score) || 0;
+      if (score > (Number(profile.scores[g]) || 0)) profile.scores[g] = score;
+
+      const latestName = String(entry.player || "").trim();
+      if (latestName) profile.player = latestName;
     });
   });
 
   // main_score = sum(best per-game scores) + variety_bonus + SEASONAL_BONUS
-  const entries = Object.entries(playerMap).map(([name, scores]) => {
+  const entries = Object.entries(identityMap).map(([identityKey, profile]) => {
+    const scores = profile.scores || {};
     const gameTotal = GAMES.reduce((sum, g) => sum + (scores[g] || 0), 0);
     const variety   = GAMES.every(g => (scores[g] || 0) > 0) ? VARIETY_BONUS : 0;
     const main_score = gameTotal + variety + SEASONAL_BONUS;
     const breakdown  = {};
     GAMES.forEach(g => { breakdown[g] = scores[g] || 0; });
     breakdown.variety_bonus = variety;
-    return { player: name, score: main_score, breakdown };
+    return {
+      identity_key: identityKey,
+      player: profile.player || "Guest",
+      score: main_score,
+      breakdown,
+      ...(profile.telegram_id ? { telegram_id: profile.telegram_id } : {})
+    };
   });
 
   entries.sort((a, b) => {
     const diff = b.score - a.score;
-    return diff !== 0 ? diff : String(a.player).localeCompare(String(b.player));
+    if (diff !== 0) return diff;
+    const nameCmp = String(a.player).localeCompare(String(b.player));
+    if (nameCmp !== 0) return nameCmp;
+    return String(a.identity_key || "").localeCompare(String(b.identity_key || ""));
   });
 
   const ranked = entries.slice(0, GLOBAL_LEADERBOARD_SIZE).map((e, i) => ({ ...e, rank: i + 1 }));
@@ -797,25 +870,54 @@ async function getOrInitMeta(env) {
 
 /**
  * Insert or update one entry in a leaderboard list.
- * - Deduplicates by player name (case-insensitive).
- * - Keeps only the player's best (highest) score.
+ *
+ * Deduplication rules:
+ *   Authenticated entries (telegram_id present):
+ *     - Match exclusively by verified telegram_id.
+ *     - Name-based matching is intentionally skipped so a display-name change
+ *       updates the same row instead of creating a duplicate, and so two
+ *       unrelated users who happen to share a display name are never merged.
+ *     - An anonymous submission (no telegram_id) can never overwrite an
+ *       authenticated row, even when the player names match.
+ *   Anonymous entries (no telegram_id):
+ *     - Match only against other anonymous rows (rows that also lack telegram_id)
+ *       by player name, case-insensitively.
+ *     - Authenticated rows are excluded from anonymous name matching, so an
+ *       anonymous submission cannot hijack an authenticated player's record.
+ *
+ * - Keeps only the player's best (highest) score for each identity.
  * - Sorts descending by score with alphabetical tie-break.
  * - Trims to `limit` entries and stamps rank.
  */
 function upsertEntry(existing, newEntry, limit) {
   let list = Array.isArray(existing) ? existing.slice() : [];
 
-  const nameLower = newEntry.player.toLowerCase();
-  const idx = list.findIndex(
-    (e) => typeof e.player === "string" && e.player.toLowerCase() === nameLower
-  );
+  let idx = -1;
+  if (newEntry.telegram_id) {
+    // Authenticated entry: deduplicate by verified telegram_id.
+    idx = list.findIndex(
+      (e) => e.telegram_id && String(e.telegram_id) === String(newEntry.telegram_id)
+    );
+  } else {
+    // Anonymous entry: deduplicate by player name only among other anonymous rows.
+    const nameLower = newEntry.player.toLowerCase();
+    idx = list.findIndex(
+      (e) => !e.telegram_id &&
+        typeof e.player === "string" &&
+        e.player.toLowerCase() === nameLower
+    );
+  }
 
   if (idx !== -1) {
     if (newEntry.score > (Number(list[idx].score) || 0)) {
       list[idx] = { ...list[idx], ...newEntry };
     } else {
-      if (newEntry.telegram_id) list[idx].telegram_id = newEntry.telegram_id;
+      // Score didn't improve; update non-score metadata only.
       if (newEntry.faction) list[idx].faction = newEntry.faction;
+      // For authenticated entries: always keep the display name current
+      // so that Telegram username changes are reflected without requiring
+      // the user to beat their personal best.
+      if (newEntry.telegram_id && newEntry.player) list[idx].player = newEntry.player;
     }
   } else {
     list.push(newEntry);
