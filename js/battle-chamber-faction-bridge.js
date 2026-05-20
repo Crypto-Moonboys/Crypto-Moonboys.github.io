@@ -75,6 +75,28 @@ function getCurrentFactionKey() {
   }
 }
 
+function getCurrentFactionKeyFromStatus(status) {
+  var faction = status && status.faction ? String(status.faction).toLowerCase().trim() : '';
+  if (!faction || faction === 'unaligned') return null;
+  return LIVE_FACTION_KEYS.indexOf(faction) !== -1 ? faction : null;
+}
+
+async function resolveCurrentFactionKey() {
+  var current = getCurrentFactionKey();
+  if (current) return current;
+  try {
+    var identity = window.MOONBOYS_IDENTITY;
+    var linked = !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
+    if (!linked) return null;
+    var api = window.MOONBOYS_FACTION;
+    if (api && typeof api.loadStatus === 'function') {
+      var loaded = await api.loadStatus().catch(function () { return null; });
+      return getCurrentFactionKeyFromStatus(loaded);
+    }
+  } catch (_) {}
+  return null;
+}
+
 function getSignedTelegramAuthPayload() {
   try {
     var identity = window.MOONBOYS_IDENTITY;
@@ -326,7 +348,7 @@ function hydrateLocalFirst() {
 async function hydrateServerAuthority() {
   var apiBase = getApiBase();
   if (!apiBase) return false;
-  var currentFaction = getCurrentFactionKey();
+  var currentFaction = await resolveCurrentFactionKey();
   var endpoints = [
     fetchJson(apiBase + '/battle-chamber/factions/standings?period=weekly'),
     fetchJson(apiBase + '/battle-chamber/factions/standings?period=monthly'),
@@ -398,8 +420,61 @@ async function hydrate() {
   }
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function () { hydrate().catch(function () {}); });
-} else {
+var _serverRefreshTimer = null;
+var _serverRefreshInflight = null;
+
+function refreshServerAuthority() {
+  if (_serverRefreshInflight) return _serverRefreshInflight;
+  _serverRefreshInflight = hydrateServerAuthority()
+    .then(function (serverReady) {
+      if (serverReady) {
+        dispatchFactionDataReady();
+        dispatchActivityReady();
+      }
+      return serverReady;
+    })
+    .finally(function () {
+      _serverRefreshInflight = null;
+    });
+  return _serverRefreshInflight;
+}
+
+function scheduleServerAuthorityRefresh() {
+  if (_serverRefreshTimer) clearTimeout(_serverRefreshTimer);
+  _serverRefreshTimer = setTimeout(function () {
+    _serverRefreshTimer = null;
+    refreshServerAuthority().catch(function () {});
+  }, 140);
+}
+
+function bindRefreshEvents() {
+  [
+    'moonboys:sync-state',
+    'moonboys:faction-status',
+    'moonboys:faction-boost',
+    'moonboys:wtf-event-checkin',
+    'moonboys:wtf-event-complete',
+    'moonboys:roguelite-options-unlocked',
+    'moonboys:score-updated',
+  ].forEach(function (eventName) {
+    window.addEventListener(eventName, scheduleServerAuthorityRefresh);
+  });
+
+  var bus = window.MOONBOYS_EVENT_BUS;
+  if (bus && typeof bus.on === 'function') {
+    bus.on('faction:mission:complete', scheduleServerAuthorityRefresh);
+    bus.on('faction:update', scheduleServerAuthorityRefresh);
+    bus.on('sync:state', scheduleServerAuthorityRefresh);
+  }
+}
+
+function bootstrap() {
+  bindRefreshEvents();
   hydrate().catch(function () {});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootstrap);
+} else {
+  bootstrap();
 }

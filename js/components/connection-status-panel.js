@@ -276,6 +276,36 @@
     return null;
   }
 
+  function getFactionSnapshot() {
+    var factionApi = window.MOONBOYS_FACTION;
+    var fallbackFaction = 'unaligned';
+    var fallbackXp = 0;
+    if (window.MOONBOYS_STATE && typeof window.MOONBOYS_STATE.getState === 'function') {
+      var st = window.MOONBOYS_STATE.getState();
+      fallbackFaction = st && st.faction ? st.faction : fallbackFaction;
+    }
+    if (!factionApi) return { faction: fallbackFaction, faction_xp: fallbackXp, label: fallbackFaction, icon: '◌' };
+    var cached = typeof factionApi.getCachedStatus === 'function' ? (factionApi.getCachedStatus() || null) : null;
+    var factionKey = cached && cached.faction ? cached.faction : fallbackFaction;
+    var meta = typeof factionApi.getVisualMeta === 'function' ? factionApi.getVisualMeta(factionKey) : null;
+    return {
+      faction: factionKey,
+      faction_xp: Math.max(0, Math.floor(Number(cached && cached.faction_xp) || 0)),
+      label: meta && meta.label ? meta.label : factionKey,
+      icon: meta && meta.icon ? meta.icon : '◌',
+    };
+  }
+
+  function getDailyCounts(confirmedDailyState) {
+    var daily = confirmedDailyState || window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
+    return {
+      completed: daily && daily.completed_today != null ? Math.max(0, Math.floor(Number(daily.completed_today) || 0)) : null,
+      missed: daily && (daily.missed_events_today != null || daily.missed_today != null)
+        ? Math.max(0, Math.floor(Number(daily.missed_events_today != null ? daily.missed_events_today : daily.missed_today) || 0))
+        : null,
+    };
+  }
+
   function latestActivityRows() {
     var rows = [];
     var activity = Array.isArray(window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY) ? window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY : [];
@@ -326,6 +356,7 @@
     // Compact rail rule: show one short personal activity line only.
     var latestLine = latestRows.length ? latestRows[0] : null;
     var latestActivityText = latestLine ? latestLine.text : 'Play Arcade to create activity';
+    var faction = getFactionSnapshot();
     if (!linked) {
       return '' +
         '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
@@ -336,6 +367,9 @@
     // Use cached daily-state or globals for immediate render — do not block for a network fetch.
     var missedXp = missedXpAllTime(_dailyStateCache || null);
     var missedXpDisplay = missedXp !== null ? esc(String(missedXp)) : 'syncing…';
+    var dailyCounts = getDailyCounts(_dailyStateCache || null);
+    var completedDisplay = dailyCounts.completed == null ? 'syncing…' : esc(String(dailyCounts.completed));
+    var missedTodayDisplay = dailyCounts.missed == null ? 'syncing…' : esc(String(dailyCounts.missed));
     // If no confirmed data yet, fire background fetch and remount once confirmed.
     if (missedXp === null) {
       var patchGeneration = _dailyStateGeneration;
@@ -354,9 +388,13 @@
           '<div class="csp-live-identity"><strong><a class="csp-player-link" href="' + esc(playerHref) + '">' + esc(name || 'Telegram Player') + '</a></strong><span><b class="csp-live-pill csp-live-pill--good">LIVE LINKED</b></span></div>' +
         '</div>' +
         '<div class="csp-grid csp-grid--live">' +
+          '<div class="csp-item"><div class="csp-item-label">Faction</div><div class="csp-item-val">' + esc((faction.faction === 'unaligned' ? 'No faction selected' : (faction.icon + ' ' + faction.label))) + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Faction XP</div><div class="csp-item-val">' + esc(String(faction.faction_xp)) + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Arcade XP</div><div class="csp-item-val" data-csp-xp>' + esc(String(arcadeXp)) + '</div></div>' +
           '<div class="csp-item csp-item--wide"><div class="csp-item-label">Block Topia</div><div class="csp-item-val" data-csp-bt-access>' + blocktopia + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Missed XP</div><div class="csp-item-val" data-csp-missed-xp>' + missedXpDisplay + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Completed Today</div><div class="csp-item-val">' + completedDisplay + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Missed Today</div><div class="csp-item-val">' + missedTodayDisplay + '</div></div>' +
         '</div>' +
         '<div class="csp-feed csp-feed--latest"><div class="csp-feed-row csp-feed-row--latest"><span class="csp-feed-label">Latest:</span><span class="csp-feed-text">' + esc(latestActivityText) + '</span></div></div>' +
         (publicRows.length
@@ -553,6 +591,10 @@
     if (_liveDataRefreshTimer) clearTimeout(_liveDataRefreshTimer);
     _liveDataRefreshTimer = setTimeout(function () {
       _liveDataRefreshTimer = null;
+      var factionApi = window.MOONBOYS_FACTION;
+      if (isLinked() && factionApi && typeof factionApi.loadStatus === 'function') {
+        factionApi.loadStatus().catch(function () {});
+      }
       invalidateDailyStateCache();
       document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
     }, 120);
@@ -627,6 +669,8 @@
       'moonboys:roguelite-options-unlocked',
       'moonboys:faction-status',
       'moonboys:faction-boost',
+      'moonboys:sync-state',
+      'moonboys:score-updated',
     ].forEach(function (eventName) {
       window.addEventListener(eventName, scheduleLiveDataRefresh);
     });

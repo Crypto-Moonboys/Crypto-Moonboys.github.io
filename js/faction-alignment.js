@@ -70,6 +70,24 @@
     return gate && typeof gate.getTelegramAuth === 'function' ? gate.getTelegramAuth() : null;
   }
 
+  function getIdentityTelegramId() {
+    var gate = window.MOONBOYS_IDENTITY;
+    if (!gate || typeof gate.getTelegramId !== 'function') return null;
+    var id = gate.getTelegramId();
+    return id == null ? null : String(id);
+  }
+
+  async function getSignedTelegramAuthWithRestore() {
+    var gate = window.MOONBOYS_IDENTITY;
+    if (!gate) return null;
+    var freshAuth = typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+    if (freshAuth) return freshAuth;
+    if (typeof gate.restoreLinkedTelegramAuth !== 'function') return null;
+    var restored = await gate.restoreLinkedTelegramAuth().catch(function () { return null; });
+    if (restored && restored.ok && restored.telegram_auth) return restored.telegram_auth;
+    return typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+  }
+
   function isLinked() {
     var gate = window.MOONBOYS_IDENTITY;
     return !!(gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked());
@@ -82,6 +100,11 @@
       var parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== 'object') return null;
       parsed.faction = normalizeFaction(parsed.faction);
+      var cachedTelegramId = parsed.telegram_id == null ? null : String(parsed.telegram_id);
+      var identityTelegramId = getIdentityTelegramId();
+      if (identityTelegramId && cachedTelegramId && cachedTelegramId !== identityTelegramId) {
+        return null;
+      }
       return parsed;
     } catch {
       return null;
@@ -89,7 +112,18 @@
   }
 
   function setCachedStatus(status) {
-    try { localStorage.setItem(KEY, JSON.stringify(status || {})); } catch {}
+    try {
+      var next = Object.assign({}, status || {});
+      if (next.telegram_id == null) {
+        var identityTelegramId = getIdentityTelegramId();
+        if (identityTelegramId) next.telegram_id = identityTelegramId;
+      }
+      localStorage.setItem(KEY, JSON.stringify(next));
+    } catch {}
+  }
+
+  function clearCachedStatus() {
+    try { localStorage.removeItem(KEY); } catch {}
   }
 
   async function request(path, init) {
@@ -107,14 +141,16 @@
   }
 
   async function loadStatus() {
-    var auth = getAuth();
+    var auth = await getSignedTelegramAuthWithRestore();
     if (!auth) return getCachedStatus() || { faction: 'unaligned', faction_xp: 0, bonuses: FACTIONS.unaligned };
     var data = await request('/faction/status?telegram_auth=' + encodeURIComponent(JSON.stringify(auth)));
     var faction = normalizeFaction(data.faction);
     var bonuses = data.bonuses || {};
     var payload = {
+      telegram_id: auth && auth.id != null ? String(auth.id) : getIdentityTelegramId(),
       faction: faction,
       faction_xp: Number(data.faction_xp) || 0,
+      season_key: data.season_key || null,
       bonuses: {
         icon: bonuses.icon || FACTIONS[faction].icon,
         color: bonuses.color || FACTIONS[faction].color,
@@ -129,7 +165,7 @@
   }
 
   async function joinFaction(faction) {
-    var auth = getAuth();
+    var auth = await getSignedTelegramAuthWithRestore();
     if (!auth) throw new Error('Telegram auth required');
     var target = normalizeFaction(faction);
     if (target === 'unaligned') throw new Error('Invalid faction');
@@ -139,8 +175,10 @@
       body: JSON.stringify({ telegram_auth: auth, faction: target }),
     });
     var payload = {
+      telegram_id: auth && auth.id != null ? String(auth.id) : getIdentityTelegramId(),
       faction: normalizeFaction(data.faction),
       faction_xp: Number(data.faction_xp) || 0,
+      season_key: data.season_key || null,
       bonuses: data.bonuses || FACTIONS[normalizeFaction(data.faction)],
       cooldown_ms_remaining: Number(data.cooldown_ms) || 0,
     };
@@ -151,7 +189,7 @@
   }
 
   async function earnFactionXp(source, baseXp) {
-    var auth = getAuth();
+    var auth = await getSignedTelegramAuthWithRestore();
     if (!auth) return null;
     var data = await request('/faction/earn', {
       method: 'POST',
@@ -159,6 +197,7 @@
       body: JSON.stringify({ telegram_auth: auth, source: source || 'score_accept', base_xp: Math.max(0, Math.floor(Number(baseXp) || 0)) }),
     });
     var payload = {
+      telegram_id: auth && auth.id != null ? String(auth.id) : getIdentityTelegramId(),
       faction: normalizeFaction(data.faction),
       faction_xp: Number(data.faction_xp_total) || 0,
       bonuses: data.bonuses || FACTIONS[normalizeFaction(data.faction)],
@@ -210,6 +249,7 @@
     normalizeFaction: normalizeFaction,
     getVisualMeta: getVisualMeta,
     getCachedStatus: getCachedStatus,
+    clearCachedStatus: clearCachedStatus,
     loadStatus: loadStatus,
     joinFaction: joinFaction,
     earnFactionXp: earnFactionXp,

@@ -48,7 +48,17 @@
   // second execution of this IIFE reuses the existing log array and listener
   // registration flag rather than resetting them.
   if (!window.__MOONBOYS_LAS_SINGLETON) {
-    window.__MOONBOYS_LAS_SINGLETON = { activityLog: [], addToLog: null, listenersRegistered: false };
+    window.__MOONBOYS_LAS_SINGLETON = {
+      activityLog: [],
+      addToLog: null,
+      listenersRegistered: false,
+      panelStateCache: null,
+      panelStateInflight: null,
+      panelStateGeneration: 0,
+      factionStatusCache: null,
+      factionStatusInflight: null,
+      opsActionsBound: false,
+    };
   }
   var _singleton = window.__MOONBOYS_LAS_SINGLETON;
 
@@ -131,10 +141,99 @@
     return !!(gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked());
   }
 
+  function getIdentity() {
+    return window.MOONBOYS_IDENTITY || null;
+  }
+
+  async function getSignedTelegramAuthWithRestore() {
+    var gate = getIdentity();
+    if (!gate) return null;
+    var freshAuth = typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+    if (freshAuth) return freshAuth;
+    if (typeof gate.restoreLinkedTelegramAuth !== 'function') return null;
+    var restored = await gate.restoreLinkedTelegramAuth().catch(function () { return null; });
+    if (restored && restored.ok && restored.telegram_auth) return restored.telegram_auth;
+    return typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+  }
+
   function getFactionStatus() {
     var fa = window.MOONBOYS_FACTION;
     if (!fa) return null;
     return fa.getCachedStatus() || { faction: 'unaligned', faction_xp: 0 };
+  }
+
+  function invalidatePanelStateCache() {
+    _singleton.panelStateCache = null;
+    _singleton.panelStateInflight = null;
+    _singleton.panelStateGeneration = Number(_singleton.panelStateGeneration || 0) + 1;
+    _singleton.factionStatusCache = null;
+    _singleton.factionStatusInflight = null;
+  }
+
+  async function resolveFactionStatus(linked) {
+    var factionApi = window.MOONBOYS_FACTION;
+    var cached = getFactionStatus();
+    if (!linked || !factionApi || typeof factionApi.loadStatus !== 'function') return cached;
+    if (_singleton.factionStatusCache) return _singleton.factionStatusCache;
+    if (_singleton.factionStatusInflight) return _singleton.factionStatusInflight;
+    _singleton.factionStatusInflight = factionApi.loadStatus()
+      .then(function (status) {
+        _singleton.factionStatusCache = status || cached;
+        return _singleton.factionStatusCache;
+      })
+      .catch(function () {
+        _singleton.factionStatusCache = cached;
+        return cached;
+      })
+      .finally(function () {
+        _singleton.factionStatusInflight = null;
+      });
+    return _singleton.factionStatusInflight;
+  }
+
+  async function fetchPanelServerState(linked) {
+    if (!linked) return { linked: false, syncing: false, error: false, dailyState: null, playerState: null };
+    if (_singleton.panelStateCache) return _singleton.panelStateCache;
+    if (_singleton.panelStateInflight) return _singleton.panelStateInflight;
+    var generation = Number(_singleton.panelStateGeneration || 0);
+    _singleton.panelStateInflight = (async function () {
+      var apiBase = getApiBase();
+      if (!apiBase) return { linked: true, syncing: false, error: true, dailyState: null, playerState: null, reason: 'api_unavailable' };
+      var auth = await getSignedTelegramAuthWithRestore();
+      if (!auth) return { linked: true, syncing: true, error: false, dailyState: null, playerState: null, reason: 'auth_syncing' };
+      var headers = { 'Content-Type': 'application/json' };
+      function postJson(route) {
+        return fetch(apiBase + route, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({ telegram_auth: auth }),
+        }).then(function (res) {
+          return res.json().catch(function () { return null; }).then(function (payload) {
+            return { ok: !!res.ok, payload: payload };
+          });
+        }).catch(function () { return { ok: false, payload: null }; });
+      }
+      var results = await Promise.all([
+        postJson('/roguelite/daily-state'),
+        postJson('/player/state'),
+      ]);
+      var daily = results[0].ok && results[0].payload && results[0].payload.ok ? results[0].payload : null;
+      var player = results[1].ok && results[1].payload && results[1].payload.ok ? results[1].payload : null;
+      var state = {
+        linked: true,
+        syncing: false,
+        error: !(daily || player),
+        dailyState: daily,
+        playerState: player,
+      };
+      if (generation === Number(_singleton.panelStateGeneration || 0)) {
+        _singleton.panelStateCache = state;
+      }
+      return state;
+    })().finally(function () {
+      _singleton.panelStateInflight = null;
+    });
+    return _singleton.panelStateInflight;
   }
 
   //  Build HTML 
@@ -164,16 +263,19 @@
     return '';
   }
 
-  function normaliseMissionList() {
-    var faction = getFactionStatus();
+  function normaliseMissionList(factionStatus, panelState) {
+    var faction = factionStatus || getFactionStatus();
     var factionKey = faction && faction.faction && faction.faction !== 'unaligned' ? faction.faction : null;
-    if (!factionKey) return { factionKey: null, missions: [] };
+    if (!factionKey) return { factionKey: null, missions: [], status: panelState && panelState.syncing ? 'syncing' : 'empty' };
     var missionData = window.MOONBOYS_MISSION_DATA || {};
-    var data = missionData[factionKey] || {};
+    var data = missionData[factionKey] || null;
+    if (!data) {
+      return { factionKey: factionKey, missions: [], status: panelState && panelState.error ? 'error' : 'syncing' };
+    }
     var daily = Array.isArray(data.daily) ? data.daily : [];
     if (!daily.length) {
       // No real server-backed mission data — show honest empty state.
-      return { factionKey: factionKey, missions: [] };
+      return { factionKey: factionKey, missions: [], status: panelState && panelState.error ? 'error' : 'syncing' };
     }
     var completed = Array.isArray(data.completed) ? data.completed : [];
     var progress = data.progress && typeof data.progress === 'object' ? data.progress : {};
@@ -192,10 +294,14 @@
         reward: rewardText(m.reward || m.contribution || m.reward_preview || ''),
       };
     });
-    return { factionKey: factionKey, missions: missions };
+    return { factionKey: factionKey, missions: missions, status: 'ready' };
   }
 
-  function missionHTML(missions) {
+  function missionHTML(missionState, factionLabel) {
+    var missions = missionState && Array.isArray(missionState.missions) ? missionState.missions : [];
+    var safeLabel = factionLabel || 'Faction';
+    if (missionState && missionState.status === 'syncing') return '<div class="las-empty">' + esc(safeLabel) + ' daily ops syncing…</div>';
+    if (missionState && missionState.status === 'error') return '<div class="las-empty">' + esc(safeLabel) + ' daily ops unavailable right now. Try again shortly.</div>';
     if (!missions.length) return '<div class="las-empty">No live faction missions reported yet.</div>';
     return missions.map(function (m) {
       var current = Number.isFinite(Number(m.current)) ? Math.max(0, Number(m.current)) : 0;
@@ -548,9 +654,77 @@
       '</div>';
   }
 
-  function missedHTML() {
+  function factionLabel(factionKey) {
+    var fa = window.MOONBOYS_FACTION;
+    if (fa && typeof fa.getVisualMeta === 'function') {
+      var meta = fa.getVisualMeta(factionKey || 'unaligned');
+      if (meta && meta.label) return meta.label;
+    }
+    return factionKey ? String(factionKey) : 'No faction selected';
+  }
+
+  function latestFactionActivityText(factionKey) {
+    var rows = Array.isArray(window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY) ? window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY : [];
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (!row) continue;
+      var rowFaction = row.faction_id ? String(row.faction_id).toLowerCase() : '';
+      if (factionKey && rowFaction && rowFaction !== String(factionKey).toLowerCase()) continue;
+      return row.event_text || row.title || row.event || row.action || 'Faction activity synced';
+    }
+    return 'No faction activity synced yet.';
+  }
+
+  function opsSnapshotHTML(factionStatus, missionState, panelState) {
+    var linked = isLinked();
+    if (!linked) return '';
+    var factionKey = factionStatus && factionStatus.faction ? factionStatus.faction : 'unaligned';
+    var label = factionLabel(factionKey);
+    var playerState = panelState && panelState.playerState ? panelState.playerState : null;
+    var dailyState = panelState && panelState.dailyState ? panelState.dailyState : (window.MOONBOYS_ROGUELITE_DAILY_STATE || {});
+    var factionSignal = playerState && playerState.faction_signal && playerState.faction_signal.contributions
+      ? playerState.faction_signal.contributions
+      : {};
+    var contrib = factionKey && factionKey !== 'unaligned' && factionSignal[factionKey] != null
+      ? Math.max(0, Math.floor(Number(factionSignal[factionKey]) || 0))
+      : 0;
+    var completedToday = dailyState && dailyState.completed_today != null
+      ? Math.max(0, Math.floor(Number(dailyState.completed_today) || 0))
+      : (playerState && playerState.daily_missions && playerState.daily_missions.progress
+        ? Object.keys(playerState.daily_missions.progress).filter(function (key) {
+          var row = playerState.daily_missions.progress[key];
+          return !!(row && row.completed);
+        }).length
+        : 0);
+    var missedToday = dailyState && (dailyState.missed_events_today != null || dailyState.missed_today != null)
+      ? Math.max(0, Math.floor(Number(dailyState.missed_events_today != null ? dailyState.missed_events_today : dailyState.missed_today) || 0))
+      : 0;
+    var missedXpAllTime = dailyState && dailyState.missed_xp_all_time != null
+      ? Math.max(0, Math.floor(Number(dailyState.missed_xp_all_time) || 0))
+      : 0;
+    var opsStatus = missionState && missionState.status === 'syncing'
+      ? label + ' daily ops syncing…'
+      : missionState && missionState.status === 'error'
+        ? label + ' daily ops unavailable'
+        : missionState && missionState.missions && missionState.missions.length
+          ? 'Live missions synced'
+          : 'No live missions reported';
+    var latestActivity = latestFactionActivityText(factionKey && factionKey !== 'unaligned' ? factionKey : null);
+    return '<div class="las-ops-snapshot">' +
+      '<div class="las-row"><span class="las-label">Faction</span><span class="las-val">' + esc(label) + '</span></div>' +
+      '<div class="las-row"><span class="las-label">Faction XP</span><span class="las-val">' + esc(String(Math.max(0, Math.floor(Number(factionStatus && factionStatus.faction_xp) || 0)))) + '</span></div>' +
+      '<div class="las-row"><span class="las-label">Contribution</span><span class="las-val">' + esc(String(contrib)) + '</span></div>' +
+      '<div class="las-row"><span class="las-label">Daily Ops</span><span class="las-val">' + esc(opsStatus) + '</span></div>' +
+      '<div class="las-row"><span class="las-label">Completed</span><span class="las-val">' + esc(String(completedToday)) + ' today</span></div>' +
+      '<div class="las-row"><span class="las-label">Missed</span><span class="las-val">' + esc(String(missedToday)) + ' today</span></div>' +
+      '<div class="las-row"><span class="las-label">Missed XP</span><span class="las-val">' + esc(String(missedXpAllTime)) + ' all-time</span></div>' +
+      '<div class="las-row"><span class="las-label">Latest</span><span class="las-val">' + esc(latestActivity) + '</span></div>' +
+      '</div>';
+  }
+
+  function missedHTML(serverDailyState) {
     var state = getWtfState() || {};
-    var rogueliteState = window.MOONBOYS_ROGUELITE_DAILY_STATE || {};
+    var rogueliteState = serverDailyState || window.MOONBOYS_ROGUELITE_DAILY_STATE || {};
     var history = Array.isArray(window.MOONBOYS_ROGUELITE_MISSED_HISTORY) ? window.MOONBOYS_ROGUELITE_MISSED_HISTORY : [];
     var count = Number(
       state.missed_events_all_time != null ? state.missed_events_all_time :
@@ -580,7 +754,10 @@
 
   async function buildHTML() {
     var linked = isLinked();
-    var missionState = normaliseMissionList();
+    var factionStatus = await resolveFactionStatus(linked);
+    var panelState = await fetchPanelServerState(linked);
+    var missionState = normaliseMissionList(factionStatus, panelState);
+    var factionName = factionLabel(missionState.factionKey || (factionStatus && factionStatus.faction));
 
     if (!linked) {
       return '<div class="las-panel las-panel--ops" role="status" aria-label="Faction daily ops">' +
@@ -591,18 +768,27 @@
     }
 
     if (!missionState.factionKey) {
+      var noFactionSubcopy = panelState && panelState.syncing
+        ? 'Faction daily ops syncing…'
+        : (panelState && panelState.error ? 'Faction sync unavailable right now' : 'No faction selected');
+      var noFactionBody = panelState && panelState.syncing
+        ? 'Waiting for linked faction state from the server.'
+        : (panelState && panelState.error
+          ? 'Faction status could not be loaded from the server. Try refreshing after re-link.'
+          : 'Join a faction to unlock daily ops and faction signals.');
       return '<div class="las-panel las-panel--ops" role="status" aria-label="Faction daily ops">' +
-        '<div class="las-ops-head"><span class="las-live-dot las-live-dot--warn"></span><div><strong>Faction Daily Ops</strong><span>No faction selected</span></div></div>' +
-        '<p class="las-empty">Join a faction to unlock daily ops and faction signals.</p>' +
+        '<div class="las-ops-head"><span class="las-live-dot las-live-dot--warn"></span><div><strong>Faction Daily Ops</strong><span>' + esc(noFactionSubcopy) + '</span></div></div>' +
+        '<p class="las-empty">' + esc(noFactionBody) + '</p>' +
         '<a href="/community.html#battle-join-faction" class="las-link las-ops-cta">Join Faction</a>' +
       '</div>';
     }
 
     return '<div class="las-panel las-panel--ops" role="status" aria-label="Faction daily ops">' +
-      '<div class="las-ops-head"><span class="las-live-dot"></span><div><strong>Faction Daily Ops</strong><span>Compact mission feed</span></div></div>' +
-      '<div class="las-section-title">Today\'s Missions</div>' + missionHTML(missionState.missions) +
+      '<div class="las-ops-head"><span class="las-live-dot"></span><div><strong>Faction Daily Ops</strong><span>' + esc(factionName) + '</span></div></div>' +
+      opsSnapshotHTML(factionStatus, missionState, panelState) +
+      '<div class="las-section-title">Today\'s Missions</div>' + missionHTML(missionState, factionName) +
       '<div class="las-section-title">Daily WTF Signal</div>' + wtfHTML(linked) +
-      '<div class="las-section-title">Missed Opportunities</div>' + missedHTML() +
+      '<div class="las-section-title">Missed Opportunities</div>' + missedHTML(panelState && panelState.dailyState ? panelState.dailyState : null) +
       '<div class="las-row las-row--cta"><a class="las-link las-link--tiny" href="/community.html">View details</a></div>' +
     '</div>';
   }
@@ -634,6 +820,10 @@
       '.las-live-dot{width:8px;height:8px;border-radius:99px;background:#3fb950;box-shadow:0 0 10px #3fb950;animation:lasPulse 1.2s infinite}.las-live-dot--warn{background:#f7c948;box-shadow:0 0 10px #f7c948}',
       '@keyframes lasPulse{0%,100%{opacity:.55;transform:scale(.9)}50%{opacity:1;transform:scale(1.15)}}',
       '.las-section-title{margin-top:8px;padding-top:8px;border-top:1px solid rgba(86,220,255,.13);font-size:.63rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#56dcff}',
+      '.las-ops-snapshot{display:flex;flex-direction:column;gap:3px;padding:8px;border:1px solid rgba(86,220,255,.2);background:rgba(86,220,255,.05);border-radius:8px}',
+      '.las-ops-snapshot .las-row{margin:0;align-items:flex-start}',
+      '.las-ops-snapshot .las-label{min-width:92px;font-size:.62rem}',
+      '.las-ops-snapshot .las-val{font-size:.7rem;line-height:1.25}',
       '.las-empty{color:var(--color-text-muted,#8b949e);font-size:.74rem;line-height:1.45;margin:4px 0}',
       '.las-ops-cta{display:inline-flex;margin-top:4px;padding:7px 9px;border:1px solid rgba(0,229,255,.45);background:rgba(0,229,255,.08);font-weight:800;text-transform:uppercase;text-decoration:none}',
       '.las-mission-row,.las-signal-card,.las-missed-box{border:1px solid rgba(86,220,255,.18);background:rgba(86,220,255,.055);padding:7px 8px;border-radius:8px;box-shadow:inset 0 0 12px rgba(0,229,255,.04)}',
@@ -740,6 +930,10 @@
   }
 
   function bindOpsActions() {
+    function invalidateAndRefresh() {
+      invalidatePanelStateCache();
+      refresh();
+    }
     document.addEventListener('click', function (event) {
       var check = event.target && event.target.closest ? event.target.closest('[data-wtf-checkin]') : null;
       var complete = event.target && event.target.closest ? event.target.closest('[data-wtf-complete]') : null;
@@ -758,11 +952,22 @@
           : Promise.resolve(null);
       action.then(function () { refresh(); }).catch(function () {}).finally(function () { btn.disabled = false; });
     });
-    window.addEventListener('moonboys:wtf-events-ready', refresh);
-    window.addEventListener('moonboys:wtf-event-checkin', refresh);
-    window.addEventListener('moonboys:wtf-event-complete', refresh);
+    window.addEventListener('moonboys:wtf-events-ready', invalidateAndRefresh);
+    window.addEventListener('moonboys:wtf-event-checkin', invalidateAndRefresh);
+    window.addEventListener('moonboys:wtf-event-complete', invalidateAndRefresh);
     window.addEventListener('moonboys:wtf-countdown-tick', updateWtfCountdownUI);
-    window.addEventListener('battle-chamber:faction-data-ready', refresh);
+    window.addEventListener('battle-chamber:faction-data-ready', invalidateAndRefresh);
+    window.addEventListener('battle-chamber:activity-ready', invalidateAndRefresh);
+    window.addEventListener('moonboys:faction-status', invalidateAndRefresh);
+    window.addEventListener('moonboys:faction-boost', invalidateAndRefresh);
+    window.addEventListener('moonboys:sync-state', invalidateAndRefresh);
+    window.addEventListener('moonboys:score-updated', invalidateAndRefresh);
+    var bus = window.MOONBOYS_EVENT_BUS;
+    if (bus && typeof bus.on === 'function') {
+      bus.on('faction:mission:complete', invalidateAndRefresh);
+      bus.on('sync:state', invalidateAndRefresh);
+      bus.on('faction:update', invalidateAndRefresh);
+    }
   }
 
   //  Bootstrap 

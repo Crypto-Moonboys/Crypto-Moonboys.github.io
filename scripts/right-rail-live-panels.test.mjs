@@ -17,6 +17,7 @@ const incubatorLink = read('js/incubator-link.js');
 const siteShell = read('js/site-shell.js');
 const csp = read('js/components/connection-status-panel.js');
 const las = read('js/components/live-activity-summary.js');
+const factionAlignment = read('js/faction-alignment.js');
 const wtf = read('js/arcade/systems/daily-wtf-event-system.js');
 const xpBurst = read('js/components/xp-burst-animation.js');
 const bridge = read('js/battle-chamber-faction-bridge.js');
@@ -128,7 +129,8 @@ check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requi
 console.log('\n[4] Panel separation');
 check(siteShell.includes('PLAYER LIVE FEED') && siteShell.includes('FACTION DAILY OPS'), 'right rail boxes are titled PLAYER LIVE FEED and FACTION DAILY OPS');
 check(csp.includes('Latest:') && csp.includes('csp-feed-row--latest') && csp.includes('csp-feed-text') && csp.includes('Missed XP'), 'player live feed latest status is a compact muted row with bounded wrap');
-check(!csp.includes('<div class="csp-item-label">Faction</div>') && !csp.includes('<div class="csp-item-label">Season</div>') && !csp.includes('<div class="csp-item-label">API Sync</div>'), 'player live feed does not repeat faction/season/API rows');
+check(csp.includes('<div class="csp-item-label">Faction</div>') && csp.includes('<div class="csp-item-label">Faction XP</div>'), 'player live feed surfaces current faction and faction XP');
+check(csp.includes('<div class="csp-item-label">Completed Today</div>') && csp.includes('<div class="csp-item-label">Missed Today</div>'), 'player live feed surfaces completed/missed daily counts');
 const ownBattleBlock = functionBlock(csp, 'isOwnBattleActivity');
 const latestActivityBlock = functionBlock(csp, 'latestActivityRows');
 check(csp.includes('isOwnBattleActivity') && csp.includes('getTelegramId()') && csp.includes('activity.filter(isOwnBattleActivity)'), 'player feed filters Battle Chamber activity to the linked player when possible');
@@ -138,18 +140,26 @@ check(csp.includes('Latest Public Battle Chamber Activity') && csp.includes("tag
 check(!csp.includes('No public Battle Chamber activity yet.') && !csp.includes("buildFeedHTML(latestGlobalBattleRows(), 'No public Battle Chamber activity yet.')"), 'public Battle Chamber box is hidden when empty');
 check(csp.includes('(publicRows.length') && csp.includes('buildFeedHTML(publicRows)'), 'public Battle Chamber section only renders when there are public rows');
 check((las.includes("Today\\'s Missions") || las.includes("Today's Missions")) && las.includes('Daily WTF Signal') && las.includes('Missed Opportunities'), 'faction panel owns missions/events/missed signals');
+check(las.includes('las-ops-snapshot') && las.includes('Daily Ops') && las.includes('Completed') && las.includes('Missed XP'), 'faction daily ops panel surfaces compact live faction snapshot rows');
 check(!las.includes('data-csp-xp') && !las.includes('data-csp-panel'), 'faction ops panel does not repeat the Arcade XP block');
 check(!siteShell.includes('id="hud-player-name">Guest'), 'right rail no longer renders a duplicate Guest/Telegram name block');
 check(!siteShell.includes('Live linked avatar'), 'HUD player-name logic does not replace the name with literal Live linked avatar');
 check(las.includes('p.progress != null') && las.includes('p.target != null') && las.includes('p.complete === true'), 'mission normalization reads saved progress, target, and complete fields from bridge cache');
+check(las.includes("return '<div class=\"las-empty\">' + esc(safeLabel) + ' daily ops syncing…</div>';"), 'missing mission payload renders faction syncing state instead of false empty state');
+check(las.includes("return '<div class=\"las-empty\">' + esc(safeLabel) + ' daily ops unavailable right now. Try again shortly.</div>';"), 'missing mission payload error renders explicit unavailable state');
 check(las.includes('esc(String(current))') && las.includes('esc(String(target))') && las.includes('las-mission-row') && las.includes('las-mission-meta') && las.includes('las-mission-sep'), 'mission renderer displays compact title + progress · reward rows');
 check(las.includes('Number.isFinite(Number(m.current))') && las.includes('Number.isFinite(Number(m.target))') && !las.includes('las-mission-card') && !las.includes('las-mission-top') && !las.includes('las-mission-obj') && !las.includes('las-progress'), 'mission cards do not render large objective paragraphs or progress bars in right rail');
 const viewDetailsCount = (las.match(/View details/g) || []).length;
 check(viewDetailsCount === 1, 'faction ops panel keeps only one compact "View details" link');
+check(las.includes("postJson('/roguelite/daily-state')") && las.includes("postJson('/player/state')"), 'right rail fetches server-backed daily-state and player state for linked users');
+check(las.includes('missedHTML(panelState && panelState.dailyState ? panelState.dailyState : null)'), 'missed XP rendering prefers server-backed daily-state payload');
 check(csp.includes('scheduleLiveDataRefresh') && csp.includes('_liveDataRefreshTimer') && csp.includes('setTimeout(function ()'), 'connection status panel debounces live-data refreshes');
 for (const evt of ['battle-chamber:faction-data-ready','battle-chamber:activity-ready','moonboys:wtf-events-ready','moonboys:wtf-event-checkin','moonboys:wtf-event-complete','moonboys:roguelite-options-unlocked','moonboys:faction-status','moonboys:faction-boost']) {
   check(csp.includes(evt), `connection status panel listens for ${evt}`);
 }
+check(csp.includes('moonboys:sync-state') && csp.includes('moonboys:score-updated'), 'connection status panel refreshes on relink/reset and accepted-run sync events');
+check(las.includes("window.addEventListener('moonboys:sync-state', invalidateAndRefresh);") && las.includes("window.addEventListener('moonboys:score-updated', invalidateAndRefresh);"), 'faction daily ops panel refreshes on relink/reset and accepted-run sync events');
+check(bridge.includes("'moonboys:sync-state'") && bridge.includes("'moonboys:score-updated'") && bridge.includes('scheduleServerAuthorityRefresh'), 'battle chamber bridge refreshes server authority after sync and score events');
 check(csp.includes("document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); })"), 'recent personal activity remounts after live-data events so empty feed is not permanently stuck');
 
 console.log('\n[5] WTF event visibility');
@@ -390,6 +400,12 @@ check(!csp.includes('data-csp-faction'), 'connection-status-panel subscriber doe
 // Header badge must not include faction or unaligned rendered text (use specific rendered patterns)
 const buildBadgeHTMLBlock = functionBlock(csp, 'buildBadgeHTML');
 check(!buildBadgeHTMLBlock.includes('data-csp-faction') && !buildBadgeHTMLBlock.includes('No faction selected yet') && !buildBadgeHTMLBlock.includes('factionLabel'), 'buildBadgeHTML does not render faction data or call factionLabel in the header badge');
+
+console.log('\n[14] Server-authoritative faction sync guards');
+check(factionAlignment.includes('getSignedTelegramAuthWithRestore'), 'faction alignment uses signed-auth restore path before faction status fetch');
+check(factionAlignment.includes('cachedTelegramId') && factionAlignment.includes('identityTelegramId') && factionAlignment.includes('cachedTelegramId !== identityTelegramId'), 'cached faction state is ignored when Telegram identity changes');
+check(factionAlignment.includes('clearCachedStatus'), 'faction alignment exposes cache-clear helper for relink/reset flows');
+check(las.includes('resolveFactionStatus(linked)') && las.includes('factionApi.loadStatus'), 'faction daily ops resolves faction through server-backed faction status before rendering');
 
 // live-activity-summary: removed sync/faction/log helpers must not return
 check(!hasFunctionDeclaration(las, 'syncSummary'), 'live-activity-summary does not define syncSummary helper');
