@@ -741,10 +741,6 @@ function scoreForSurvival(startedAt) {
   return Math.min(900, Math.floor(sec * 1.2));
 }
 
-function canSubmitIdentity() {
-  return true;
-}
-
 async function finalizeRunSubmission(force) {
   if (!btqmRuntime.runActive && !force) return;
   if (btqmRuntime.runSubmitted) return;

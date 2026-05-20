@@ -254,10 +254,6 @@ function createLegacybootstrapCrystalQuest(root) {
     if (submitScoreBtn) submitScoreBtn.disabled = true;
   }
 
-  function canSubmitIdentity() {
-    return true;
-  }
-
   function finalizeCompletedRun() {
     if (!run || !run.completed || run.submitted) return;
     ArcadeSync.setHighScore(GAME_ID, score);

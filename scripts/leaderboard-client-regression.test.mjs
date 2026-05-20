@@ -46,37 +46,44 @@ async function test(name, fn) {
 // These guard against future edits accidentally removing the guard logic.
 
 const src = await readFile('js/leaderboard-client.js');
+const submitScoreStart = src.indexOf('export async function submitScore(');
+const submitMetaStart = src.indexOf('\nasync function submitMetaScore(', submitScoreStart);
+const submitScoreBody = submitScoreStart >= 0
+  ? src.slice(submitScoreStart, submitMetaStart > 0 ? submitMetaStart : submitScoreStart + 12000)
+  : '';
 
 await test('submitScore defines shared requestBody payload for global POST', async () => {
-  const submitScoreStart = src.indexOf('export async function submitScore(');
   assert(submitScoreStart !== -1, 'submitScore function not found in source');
   assert(
-    src.includes('const requestBody = {') && src.includes('player: resolvedPlayer') && src.includes('score,') && src.includes('game,'),
+    submitScoreBody.includes('const requestBody = {') &&
+      submitScoreBody.includes('player: resolvedPlayer') &&
+      submitScoreBody.includes('score,') &&
+      submitScoreBody.includes('game,'),
     'submitScore must build a shared requestBody with player/score/game for public submission',
   );
 });
 
 await test('submitScore only includes telegram_auth when signed auth is available', async () => {
   assert(
-    src.includes('if (hasSignedAuth) {') &&
-      src.includes('requestBody.telegram_auth = telegramAuth') &&
-      src.includes('if (effectiveTelegramId) requestBody.telegram_id = effectiveTelegramId'),
+    submitScoreBody.includes('if (hasSignedAuth) {') &&
+      submitScoreBody.includes('requestBody.telegram_auth = telegramAuth') &&
+      submitScoreBody.includes('if (effectiveTelegramId) requestBody.telegram_id = effectiveTelegramId'),
     'submitScore must add telegram_auth/telegram_id only inside signed-auth branch, using effectiveTelegramId',
   );
 });
 
 await test('submitScore missing-auth path marks unsigned public submit instead of aborting', async () => {
   assert(
-    src.includes('result.state = "public_submit_unsigned"') &&
-      src.includes('Submitting to public leaderboard without XP sync'),
+    submitScoreBody.includes('result.state = "public_submit_unsigned"') &&
+      submitScoreBody.includes('Submitting to public leaderboard without XP sync'),
     'missing signed auth should enter public_submit_unsigned path',
   );
 });
 
 await test('submitScore does not have pre-fetch return in missing-auth branch', async () => {
-  const publicUnsignedIdx = src.indexOf('result.state = "public_submit_unsigned"');
+  const publicUnsignedIdx = submitScoreBody.indexOf('result.state = "public_submit_unsigned"');
   assert(publicUnsignedIdx !== -1, 'public_submit_unsigned marker not found');
-  const fetchIdx = src.indexOf('await fetch(api', publicUnsignedIdx);
+  const fetchIdx = submitScoreBody.indexOf('await fetch(api', publicUnsignedIdx);
   assert(fetchIdx !== -1, 'submitScore fetch call must appear after unsigned branch');
 });
 
@@ -111,11 +118,11 @@ await test('submitMetaScore has guard against missing telegram_auth', async () =
 
 await test('submitMetaScore call site passes telegram_auth', async () => {
   // The call inside submitScore() that forwards to submitMetaScore() must include telegram_auth.
-  const submitScoreStart = src.indexOf('export async function submitScore(');
   assert(submitScoreStart !== -1, 'submitScore function not found');
-  const metaCallIdx = src.indexOf('await submitMetaScore(', submitScoreStart);
+  const metaCallIdx = submitScoreBody.indexOf('await submitMetaScore(');
   assert(metaCallIdx !== -1, 'submitMetaScore call not found inside submitScore()');
-  const metaCallBlock = src.slice(metaCallIdx, src.indexOf(');', metaCallIdx) + 2);
+  const callEnd = submitScoreBody.indexOf(');', metaCallIdx);
+  const metaCallBlock = submitScoreBody.slice(metaCallIdx, callEnd + 2);
   assert(
     metaCallBlock.includes('telegram_auth'),
     'submitMetaScore call site must forward telegram_auth: telegramAuth',
@@ -376,21 +383,47 @@ await test('Worker: anti-cheat block check is guarded by non-null telegramId', a
   );
 });
 
+await test('Worker: recomputeAggregate keys profiles by identity namespace, not display name', async () => {
+  const recomputeStart = workerLbSrc.indexOf('async function recomputeAggregate(');
+  assert(recomputeStart !== -1, 'recomputeAggregate not found in leaderboard-worker.js');
+  const recomputeEnd = workerLbSrc.indexOf('\nasync function ', recomputeStart + 1);
+  const recomputeBody = workerLbSrc.slice(recomputeStart, recomputeEnd > 0 ? recomputeEnd : recomputeStart + 5000);
+  assert(
+    recomputeBody.includes('identityMap') &&
+      recomputeBody.includes('getAggregateIdentityKey(entry)') &&
+      recomputeBody.includes('identity_key: identityKey') &&
+      recomputeBody.includes('anon:') &&
+      recomputeBody.includes('tg:'),
+    'recomputeAggregate must build aggregate rows by identity key namespace (tg:* / anon:*), not by player display name',
+  );
+});
+
+await test('Worker: aggregate entries preserve telegram_id metadata when identity is authenticated', async () => {
+  const recomputeStart = workerLbSrc.indexOf('async function recomputeAggregate(');
+  assert(recomputeStart !== -1, 'recomputeAggregate not found in leaderboard-worker.js');
+  const recomputeEnd = workerLbSrc.indexOf('\nasync function ', recomputeStart + 1);
+  const recomputeBody = workerLbSrc.slice(recomputeStart, recomputeEnd > 0 ? recomputeEnd : recomputeStart + 5000);
+  assert(
+    recomputeBody.includes("profile.telegram_id ? { telegram_id: profile.telegram_id } : {}"),
+    'aggregate entries should include telegram_id metadata for authenticated profiles',
+  );
+});
+
 await test('Client: effectiveTelegramId falls back to telegramAuth.id when local id is missing', async () => {
   assert(
-    src.includes('const effectiveTelegramId = hasSignedAuth') &&
-      src.includes('telegramAuth && String(telegramAuth.id || "").trim()'),
+    submitScoreBody.includes('const effectiveTelegramId = hasSignedAuth') &&
+      submitScoreBody.includes('telegramAuth && String(telegramAuth.id || "").trim()'),
     'submitScore must define effectiveTelegramId that derives from telegramAuth.id as fallback',
   );
 });
 
 await test('Client: requestBody uses effectiveTelegramId not raw telegramId', async () => {
   // Verify the request body block uses effectiveTelegramId.
-  const reqBodyIdx = src.indexOf('const requestBody = {');
+  const reqBodyIdx = submitScoreBody.indexOf('const requestBody = {');
   assert(reqBodyIdx !== -1, 'requestBody definition not found');
   // The `if (telegramId)` pattern must NOT appear after the requestBody block
   // (would mean it still uses the raw, potentially-null local id).
-  const afterReq = src.slice(reqBodyIdx, reqBodyIdx + 400);
+  const afterReq = submitScoreBody.slice(reqBodyIdx, reqBodyIdx + 500);
   assert(
     afterReq.includes('effectiveTelegramId') &&
       !afterReq.includes('if (telegramId) requestBody.telegram_id = telegramId'),
@@ -399,9 +432,10 @@ await test('Client: requestBody uses effectiveTelegramId not raw telegramId', as
 });
 
 await test('Client: meta sync call uses effectiveTelegramId', async () => {
-  const metaCallIdx = src.indexOf('await submitMetaScore(');
+  const metaCallIdx = submitScoreBody.indexOf('await submitMetaScore(');
   assert(metaCallIdx !== -1, 'submitMetaScore call not found in submitScore()');
-  const callBlock = src.slice(metaCallIdx, src.indexOf(');', metaCallIdx) + 2);
+  const callEnd = submitScoreBody.indexOf(');', metaCallIdx);
+  const callBlock = submitScoreBody.slice(metaCallIdx, callEnd + 2);
   assert(
     callBlock.includes('telegram_id: effectiveTelegramId'),
     'submitMetaScore call must pass effectiveTelegramId, not raw telegramId',
@@ -411,10 +445,10 @@ await test('Client: meta sync call uses effectiveTelegramId', async () => {
 await test('Client: no duplicate score_accepted emit after blocktopia else branch', async () => {
   // After the blocktopia XP sync block closes, there must not be an immediately
   // following emitArcadeSubmissionStatus with state:"score_accepted".
-  const blocktopiaCondIdx = src.indexOf('linked && hasSignedAuth && gameKey === "blocktopia"');
+  const blocktopiaCondIdx = submitScoreBody.indexOf('linked && hasSignedAuth && gameKey === "blocktopia"');
   assert(blocktopiaCondIdx !== -1, 'blocktopia XP sync block not found');
   // Extract ~600 chars after the condition to cover the end of the block
-  const afterBlock = src.slice(blocktopiaCondIdx, blocktopiaCondIdx + 1200);
+  const afterBlock = submitScoreBody.slice(blocktopiaCondIdx, blocktopiaCondIdx + 1200);
   // Check that the only score_accepted messages appear before the blocktopia block,
   // not duplicated in an else after it.
   const elseScoreAcceptedIdx = afterBlock.lastIndexOf('"score_accepted"');
@@ -432,14 +466,14 @@ await test('Client: no duplicate score_accepted emit after blocktopia else branc
 
 await test('Client: error copy does not claim submission was retried', async () => {
   assert(
-    !src.includes('Score submission retried as public when auth is restored'),
+    !submitScoreBody.includes('Score submission retried as public when auth is restored'),
     'error copy must not claim submission was retried unless an actual retry path is implemented',
   );
 });
 
 await test('Client: auth-expired error copy is accurate', async () => {
   assert(
-    src.includes('Telegram sync expired. Score submission failed; relink or refresh auth.'),
+    submitScoreBody.includes('Telegram sync expired. Score submission failed; relink or refresh auth.'),
     'auth-expired error copy must accurately describe the outcome (submission failed, not retried)',
   );
 });
@@ -453,6 +487,16 @@ await test('Crystal Quest: completion message is plain valid text (no mojibake)'
       !cqSrc.includes('\xc3\xb0\xc5\xb8') &&
       cqSrc.includes('Run complete. Score submitted to leaderboard.'),
     'Crystal Quest completion string must not contain mojibake and must contain valid plain-text copy',
+  );
+});
+
+await test('Crystal Quest and Block Topia bootstrap no longer include unused canSubmitIdentity helper', async () => {
+  const cqSrc = await readFile('js/arcade/games/crystal-quest/bootstrap.js');
+  const btqmSrc = await readFile('js/arcade/games/block-topia-quest-maze/bootstrap.js');
+  assert(
+    !cqSrc.includes('function canSubmitIdentity(') &&
+      !btqmSrc.includes('function canSubmitIdentity('),
+    'unused canSubmitIdentity helper should be removed from both bootstraps',
   );
 });
 
@@ -577,6 +621,106 @@ await test('BEH: effectiveTelegramId fallback derives id from telegramAuth.id', 
   // Signed auth present but telegramAuth.id is empty; return null
   assert(resolveEffectiveTelegramId(true, null, { id: '', hash: 'x', auth_date: 'y' }) === null,
     'must return null when both local id and auth.id are empty');
+});
+
+// ── Behavioral mock for aggregate identity-key recomputation ───────────────────
+
+function aggregateIdentityKeyBehavior(entry) {
+  const telegramId = String(entry?.telegram_id || '').trim();
+  if (telegramId) return `tg:${telegramId}`;
+  const player = String(entry?.player || '').trim();
+  if (!player) return null;
+  return `anon:${player.toLowerCase()}`;
+}
+
+function recomputeAggregateBehavior(gameEntriesByGame, games) {
+  const identityMap = {};
+  for (const game of games) {
+    const rows = gameEntriesByGame[game] || [];
+    for (const entry of rows) {
+      const identityKey = aggregateIdentityKeyBehavior(entry);
+      if (!identityKey) continue;
+      if (!identityMap[identityKey]) {
+        identityMap[identityKey] = {
+          identity_key: identityKey,
+          player: String(entry.player || '').trim(),
+          telegram_id: entry.telegram_id ? String(entry.telegram_id) : null,
+          scores: {},
+        };
+      }
+      const profile = identityMap[identityKey];
+      const score = Number(entry.score) || 0;
+      profile.scores[game] = Math.max(Number(profile.scores[game]) || 0, score);
+      const latestName = String(entry.player || '').trim();
+      if (latestName) profile.player = latestName;
+    }
+  }
+  return Object.values(identityMap).map((profile) => ({
+    identity_key: profile.identity_key,
+    player: profile.player,
+    telegram_id: profile.telegram_id,
+    total: games.reduce((sum, g) => sum + (Number(profile.scores[g]) || 0), 0),
+    scores: { ...profile.scores },
+  }));
+}
+
+await test('BEH aggregate: two Telegram users sharing display name remain separate aggregate entries', async () => {
+  const games = ['snake', 'tetris'];
+  const rows = recomputeAggregateBehavior({
+    snake: [
+      { player: 'Satoshi', score: 100, telegram_id: '111' },
+      { player: 'Satoshi', score: 200, telegram_id: '222' },
+    ],
+    tetris: [],
+  }, games);
+  assert(rows.length === 2, 'same display name with different telegram_id must remain separate aggregate rows');
+  assert(rows.some((r) => r.identity_key === 'tg:111' && r.total === 100), 'tg:111 aggregate row should exist with own total');
+  assert(rows.some((r) => r.identity_key === 'tg:222' && r.total === 200), 'tg:222 aggregate row should exist with own total');
+});
+
+await test('BEH aggregate: anonymous user with same name as Telegram user does not merge', async () => {
+  const games = ['snake', 'tetris'];
+  const rows = recomputeAggregateBehavior({
+    snake: [{ player: 'Moonboy', score: 300, telegram_id: '999' }],
+    tetris: [{ player: 'Moonboy', score: 50 }],
+  }, games);
+  assert(rows.length === 2, 'anonymous and telegram identities with same name must remain separate rows');
+  const tgRow = rows.find((r) => r.identity_key === 'tg:999');
+  const anonRow = rows.find((r) => r.identity_key === 'anon:moonboy');
+  assert(tgRow && tgRow.total === 300, 'telegram identity total must include only telegram rows');
+  assert(anonRow && anonRow.total === 50, 'anonymous identity total must include only anonymous rows');
+});
+
+await test('BEH aggregate: same Telegram user rename updates same aggregate identity', async () => {
+  const games = ['snake', 'tetris'];
+  const rows = recomputeAggregateBehavior({
+    snake: [{ player: 'OldAlias', score: 100, telegram_id: '123' }],
+    tetris: [{ player: 'NewAlias', score: 120, telegram_id: '123' }],
+  }, games);
+  assert(rows.length === 1, 'same telegram_id across renamed display names must remain one aggregate row');
+  const row = rows[0];
+  assert(row.identity_key === 'tg:123', 'aggregate identity key should be telegram-based');
+  assert(row.total === 220, 'aggregate total should sum scores across games for same telegram identity');
+  assert(row.player === 'NewAlias', 'latest display name metadata should be preserved');
+});
+
+await test('BEH aggregate: totals are keyed by identity, not display name', async () => {
+  const games = ['snake', 'tetris'];
+  const rows = recomputeAggregateBehavior({
+    snake: [
+      { player: 'Guest', score: 40 },
+      { player: 'Guest', score: 80, telegram_id: '777' },
+    ],
+    tetris: [
+      { player: 'Guest', score: 60 },
+      { player: 'Guest', score: 90, telegram_id: '777' },
+    ],
+  }, games);
+  const anon = rows.find((r) => r.identity_key === 'anon:guest');
+  const tg = rows.find((r) => r.identity_key === 'tg:777');
+  assert(anon && anon.total === 100, 'anonymous total should be 40 + 60');
+  assert(tg && tg.total === 170, 'telegram total should be 80 + 90');
+  assert(rows.length === 2, 'display-name collision should not collapse separate identities');
 });
 
 

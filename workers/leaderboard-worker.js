@@ -397,7 +397,10 @@ export default {
 
         const existingEntry = telegramId
           ? (board.find((row) => String(row?.telegram_id || '') === telegramId) || null)
-          : (board.find((row) => String(row?.player || '').toLowerCase() === playerName.toLowerCase()) || null);
+          : (board.find((row) =>
+            !row?.telegram_id &&
+            String(row?.player || '').toLowerCase() === playerName.toLowerCase()
+          ) || null);
         previousBest = Number(existingEntry?.score || 0);
         const entry = { player: playerName, score: floorScore, faction };
         if (telegramId) entry.telegram_id = telegramId;
@@ -578,11 +581,13 @@ async function updateAllTimeBoard(env, seasonalBoard) {
 
   for (const candidate of candidates) {
     const qualifyingScore = Number(candidate.score) || 0;
-    const nameLower = String(candidate.player).toLowerCase();
+    const candidateIdentity = getAggregateIdentityKey(candidate);
+    if (!candidateIdentity) continue;
 
-    const existingIdx = allTimeList.findIndex(
-      e => typeof e.player === "string" && e.player.toLowerCase() === nameLower
-    );
+    const existingIdx = allTimeList.findIndex((entry) => {
+      const existingIdentity = getAggregateIdentityKey(entry);
+      return existingIdentity && existingIdentity === candidateIdentity;
+    });
 
     if (existingIdx !== -1) {
       // Update player's all-time entry if this season's score is higher
@@ -590,7 +595,9 @@ async function updateAllTimeBoard(env, seasonalBoard) {
         allTimeList[existingIdx] = {
           player:    candidate.player,
           score:     qualifyingScore,
-          breakdown: candidate.breakdown || {}
+          breakdown: candidate.breakdown || {},
+          identity_key: candidateIdentity,
+          ...(candidate.telegram_id ? { telegram_id: String(candidate.telegram_id) } : {})
         };
       }
     } else if (allTimeList.length < ALL_TIME_BOARD_SIZE) {
@@ -598,7 +605,9 @@ async function updateAllTimeBoard(env, seasonalBoard) {
       allTimeList.push({
         player:    candidate.player,
         score:     qualifyingScore,
-        breakdown: candidate.breakdown || {}
+        breakdown: candidate.breakdown || {},
+        identity_key: candidateIdentity,
+        ...(candidate.telegram_id ? { telegram_id: String(candidate.telegram_id) } : {})
       });
     } else {
       // Board full — only enter if score beats the current lowest entry
@@ -612,7 +621,9 @@ async function updateAllTimeBoard(env, seasonalBoard) {
         allTimeList[lowestIdx] = {
           player:    candidate.player,
           score:     qualifyingScore,
-          breakdown: candidate.breakdown || {}
+          breakdown: candidate.breakdown || {},
+          identity_key: candidateIdentity,
+          ...(candidate.telegram_id ? { telegram_id: String(candidate.telegram_id) } : {})
         };
       }
     }
@@ -656,32 +667,66 @@ async function recomputeAllBoards(env) {
   ]);
 }
 
+function getAggregateIdentityKey(entry) {
+  const telegramId = String(entry?.telegram_id || "").trim();
+  if (telegramId) return `tg:${telegramId}`;
+
+  const player = String(entry?.player || "").trim();
+  if (!player) return null;
+  return `anon:${player.toLowerCase()}`;
+}
+
 async function recomputeAggregate(env, key, boards) {
-  // Build player → per-game score map from the provided per-game boards
-  const playerMap = {};
+  // Build identity → per-game score map from the provided per-game boards.
+  // Identity key format:
+  //   tg:{telegram_id}         for authenticated rows
+  //   anon:{normalized_player} for anonymous rows
+  const identityMap = {};
   GAMES.forEach((g, i) => {
     boards[i].forEach((entry) => {
-      const name = String(entry.player || "");
-      if (!name) return;
-      if (!playerMap[name]) playerMap[name] = {};
-      playerMap[name][g] = Number(entry.score) || 0;
+      const identityKey = getAggregateIdentityKey(entry);
+      if (!identityKey) return;
+      if (!identityMap[identityKey]) {
+        identityMap[identityKey] = {
+          player: String(entry.player || "").trim(),
+          telegram_id: entry?.telegram_id ? String(entry.telegram_id) : null,
+          scores: {},
+        };
+      }
+
+      const profile = identityMap[identityKey];
+      const score = Number(entry.score) || 0;
+      if (score > (Number(profile.scores[g]) || 0)) profile.scores[g] = score;
+
+      const latestName = String(entry.player || "").trim();
+      if (latestName) profile.player = latestName;
     });
   });
 
   // main_score = sum(best per-game scores) + variety_bonus + SEASONAL_BONUS
-  const entries = Object.entries(playerMap).map(([name, scores]) => {
+  const entries = Object.entries(identityMap).map(([identityKey, profile]) => {
+    const scores = profile.scores || {};
     const gameTotal = GAMES.reduce((sum, g) => sum + (scores[g] || 0), 0);
     const variety   = GAMES.every(g => (scores[g] || 0) > 0) ? VARIETY_BONUS : 0;
     const main_score = gameTotal + variety + SEASONAL_BONUS;
     const breakdown  = {};
     GAMES.forEach(g => { breakdown[g] = scores[g] || 0; });
     breakdown.variety_bonus = variety;
-    return { player: name, score: main_score, breakdown };
+    return {
+      identity_key: identityKey,
+      player: profile.player || "Guest",
+      score: main_score,
+      breakdown,
+      ...(profile.telegram_id ? { telegram_id: profile.telegram_id } : {})
+    };
   });
 
   entries.sort((a, b) => {
     const diff = b.score - a.score;
-    return diff !== 0 ? diff : String(a.player).localeCompare(String(b.player));
+    if (diff !== 0) return diff;
+    const nameCmp = String(a.player).localeCompare(String(b.player));
+    if (nameCmp !== 0) return nameCmp;
+    return String(a.identity_key || "").localeCompare(String(b.identity_key || ""));
   });
 
   const ranked = entries.slice(0, GLOBAL_LEADERBOARD_SIZE).map((e, i) => ({ ...e, rank: i + 1 }));
