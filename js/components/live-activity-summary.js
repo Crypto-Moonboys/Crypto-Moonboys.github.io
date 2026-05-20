@@ -189,14 +189,55 @@
     return true;
   }
 
+  function getSharedRailApi() {
+    var api = window.MOONBOYS_STATUS_PANEL || null;
+    if (!api || typeof api !== 'object') return null;
+    return api;
+  }
+
+  function panelStateFromShared(shared, linked) {
+    if (!linked) return { linked: false, syncing: false, error: false, dailyState: null, playerState: null };
+    if (!shared || typeof shared !== 'object') {
+      return {
+        linked: true,
+        syncing: true,
+        error: false,
+        dailyState: window.MOONBOYS_ROGUELITE_DAILY_STATE || null,
+        playerState: null,
+      };
+    }
+    return {
+      linked: true,
+      syncing: !!(shared.mode === 'relink' || shared.needsDailyState),
+      error: false,
+      dailyState: shared.dailyState || window.MOONBOYS_ROGUELITE_DAILY_STATE || null,
+      playerState: shared.playerState || null,
+    };
+  }
+
   function resolveFactionStatus(linked) {
     var factionApi = window.MOONBOYS_FACTION;
+    var sharedApi = getSharedRailApi();
+    var shared = sharedApi && typeof sharedApi.peekSharedRailState === 'function'
+      ? sharedApi.peekSharedRailState()
+      : null;
+    if (shared && shared.faction) return shared.faction;
     var cached = getFactionStatus();
     if (!linked || !factionApi || typeof factionApi.loadStatus !== 'function') return cached;
     return _singleton.factionStatusCache || cached;
   }
 
   function refreshFactionStatusFromServer(linked, opts) {
+    var sharedApi = getSharedRailApi();
+    if (linked && sharedApi && typeof sharedApi.getSharedRailState === 'function') {
+      return sharedApi.getSharedRailState({ force: !!(opts && opts.force) }).then(function (shared) {
+        if (shared && shared.faction) {
+          _singleton.factionStatusCache = shared.faction;
+          return shared.faction;
+        }
+        return resolveFactionStatus(linked);
+      }).catch(function () { return resolveFactionStatus(linked); });
+    }
     var factionApi = window.MOONBOYS_FACTION;
     var force = !!(opts && opts.force);
     if (!linked || !factionApi || typeof factionApi.loadStatus !== 'function') return Promise.resolve(resolveFactionStatus(linked));
@@ -220,51 +261,36 @@
 
   async function fetchPanelServerState(linked) {
     if (!linked) return { linked: false, syncing: false, error: false, dailyState: null, playerState: null };
+    var sharedApi = getSharedRailApi();
+    if (sharedApi && typeof sharedApi.getSharedRailState === 'function') {
+      var shared = await sharedApi.getSharedRailState({ force: false }).catch(function () { return null; });
+      var delegated = panelStateFromShared(shared, linked);
+      _singleton.panelStateCache = delegated;
+      return delegated;
+    }
     if (_singleton.panelStateCache) return _singleton.panelStateCache;
     if (_singleton.panelStateInflight) return _singleton.panelStateInflight;
     var generation = Number(_singleton.panelStateGeneration || 0);
-    _singleton.panelStateInflight = (async function () {
-      var apiBase = getApiBase();
-      if (!apiBase) return { linked: true, syncing: false, error: true, dailyState: null, playerState: null, reason: 'api_unavailable' };
-      var auth = await getSignedTelegramAuthWithRestore();
-      if (!auth) return { linked: true, syncing: true, error: false, dailyState: null, playerState: null, reason: 'auth_syncing' };
-      var headers = { 'Content-Type': 'application/json' };
-      function postJson(route) {
-        return fetch(apiBase + route, {
-          method: 'POST',
-          headers: headers,
-          body: JSON.stringify({ telegram_auth: auth }),
-        }).then(function (res) {
-          return res.json().catch(function () { return null; }).then(function (payload) {
-            return { ok: !!res.ok, payload: payload };
-          });
-        }).catch(function () { return { ok: false, payload: null }; });
-      }
-      var results = await Promise.all([
-        postJson('/roguelite/daily-state'),
-        postJson('/player/state'),
-      ]);
-      var daily = results[0].ok && results[0].payload && results[0].payload.ok ? results[0].payload : null;
-      var player = results[1].ok && results[1].payload && results[1].payload.ok ? results[1].payload : null;
-      var state = {
-        linked: true,
-        syncing: false,
-        error: !(daily || player),
-        dailyState: daily,
-        playerState: player,
-      };
-      if (generation === Number(_singleton.panelStateGeneration || 0)) {
-        _singleton.panelStateCache = state;
-      }
-      return state;
-    })().finally(function () {
-      _singleton.panelStateInflight = null;
-    });
+    _singleton.panelStateInflight = Promise.resolve(panelStateFromShared(null, linked))
+      .then(function (state) {
+        if (generation === Number(_singleton.panelStateGeneration || 0)) {
+          _singleton.panelStateCache = state;
+        }
+        return state;
+      })
+      .finally(function () {
+        _singleton.panelStateInflight = null;
+      });
     return _singleton.panelStateInflight;
   }
 
   function getPanelState(linked) {
     if (!linked) return { linked: false, syncing: false, error: false, dailyState: null, playerState: null };
+    var sharedApi = getSharedRailApi();
+    if (sharedApi && typeof sharedApi.peekSharedRailState === 'function') {
+      var shared = sharedApi.peekSharedRailState();
+      if (shared) return panelStateFromShared(shared, linked);
+    }
     if (_singleton.panelStateCache) return _singleton.panelStateCache;
     return {
       linked: true,
@@ -280,6 +306,18 @@
     var force = !!(opts && opts.force);
     var refreshed = false;
     var tasks = [];
+    var sharedApi = getSharedRailApi();
+    if (sharedApi && typeof sharedApi.getSharedRailState === 'function') {
+      tasks.push(sharedApi.getSharedRailState({ force: force }).then(function (shared) {
+        _singleton.panelStateCache = panelStateFromShared(shared, linked);
+        if (shared && shared.faction) _singleton.factionStatusCache = shared.faction;
+        refreshed = true;
+      }));
+      Promise.all(tasks).then(function () {
+        if (refreshed) refresh();
+      }).catch(function () {});
+      return;
+    }
     if (force || (!_singleton.panelStateCache && !_singleton.panelStateInflight)) {
       tasks.push(fetchPanelServerState(linked).then(function () { refreshed = true; }));
     }

@@ -272,8 +272,14 @@ if (shellJs) {
   const MARKER_CHECKS = [
     { needle: "rightPanel.id = 'homepage-right-panel'", label: '#homepage-right-panel' },
     { needle: 'data-csp-panel',            label: '[data-csp-panel]' },
+    { needle: 'data-csp-faction-ops',      label: '[data-csp-faction-ops]' },
+    { needle: 'data-csp-wtf-signal',       label: '[data-csp-wtf-signal]' },
+    { needle: 'data-csp-missed',           label: '[data-csp-missed]' },
     { needle: 'hud-player-avatar',         label: '#hud-player-avatar (player avatar box)' },
     { needle: 'hud-player-name',           label: '.hud-player-name (player name)' },
+    { needle: 'FACTION DAILY OPS',         label: 'Faction Daily Ops section title' },
+    { needle: 'DAILY WTF SIGNAL',          label: 'Daily WTF Signal section title' },
+    { needle: 'MISSED OPPORTUNITIES',      label: 'Missed Opportunities section title' },
     { needle: 'shouldShowRightPanel',      label: 'shouldShowRightPanel() helper' },
   ];
   for (const { needle, label } of MARKER_CHECKS) {
