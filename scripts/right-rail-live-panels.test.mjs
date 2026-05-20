@@ -139,6 +139,13 @@ check(opsBlock.includes('<div class="csp-item-label">Faction XP</div>') && opsBl
 check(wtfSectionBlock.includes('<div class="csp-item-label">Signal Status</div>') && wtfSectionBlock.includes('<div class="csp-item-label">Timer</div>') && wtfSectionBlock.includes('<div class="csp-item-label">Action</div>'), 'Daily WTF Signal section renders status/timer/action from shared state');
 check(wtfSectionBlock.includes('data-csp-wtf-countdown'), 'Daily WTF section renders a dedicated countdown data hook');
 check(missedSectionBlock.includes('Missed XP (all-time)') && missedSectionBlock.includes('Missed Today') && missedSectionBlock.includes('Missed Count'), 'Missed Opportunities section renders all-time/today/count from shared state');
+// New richer content checks
+check(opsBlock.includes('Play Arcade'), 'Faction Daily Ops contains Play Arcade action link');
+check(opsBlock.includes("Today's Missions") && opsBlock.includes('mission_opportunities'), "Faction Daily Ops renders Today's Missions section using mission_opportunities");
+check(!opsBlock.includes('Latest Activity'), 'Faction Daily Ops does not include Latest Activity (owned by Player Live Feed)');
+check(wtfSectionBlock.includes('active_event') && wtfSectionBlock.includes('next_event') && wtfSectionBlock.includes('upcoming_events'), 'Daily WTF Signal renders event title/name from active/next/upcoming event state');
+check(wtfSectionBlock.includes('csp-wtf-badge') && wtfSectionBlock.includes('ACTIVE') && wtfSectionBlock.includes('UPCOMING') && wtfSectionBlock.includes('COMPLETE') && wtfSectionBlock.includes('MISSED') && wtfSectionBlock.includes('SYNCING'), 'Daily WTF Signal renders status badge with ACTIVE/UPCOMING/COMPLETE/MISSED/SYNCING states');
+check(missedSectionBlock.includes('csp-missed-badge') && missedSectionBlock.includes('MISSED'), 'Missed Opportunities renders MISSED badge with warning-card style');
 const ownBattleBlock = functionBlock(csp, 'isOwnBattleActivity');
 const latestActivityBlock = functionBlock(csp, 'latestActivityRows');
 check(csp.includes('isOwnBattleActivity') && csp.includes('getTelegramId()') && csp.includes('activity.filter(isOwnBattleActivity)'), 'player feed filters Battle Chamber activity to the linked player when possible');
