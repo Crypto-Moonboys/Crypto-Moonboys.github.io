@@ -284,7 +284,7 @@ function createLegacybootstrapCrystalQuest(root) {
         _cqEmitBus('arcade:mission-progress', { gameId: GAME_ID, factionId: fId, ts: Date.now() });
       }
     } catch (_) {}
-    if (feedback)   feedback.textContent   = 'ðŸ† Run complete. Score submitted to leaderboard.';
+    if (feedback)   feedback.textContent   = 'Run complete. Score submitted to leaderboard.';
     if (statusLine) statusLine.textContent = 'Run sealed at score ' + score + '.';
   }
 

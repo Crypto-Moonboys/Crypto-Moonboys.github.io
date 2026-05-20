@@ -324,19 +324,23 @@ export default {
       const faction = CANONICAL_FACTION_SET.has(resolvedFaction) ? resolvedFaction : "unaligned";
       const submissionMode = String(body.score_type || "raw").toLowerCase();
 
-      // Anti-cheat gate — the anti-cheat worker writes anticheat:blocked:{id}
-      // into the SHARED KV namespace (same ID as leaderboard worker's LEADERBOARD binding).
+      // Anti-cheat gate — only applies to submissions with a verified Telegram ID.
+      // Anonymous submissions (telegramId === null) are not checked against the
+      // block list; there is no signed identity to block. This also prevents a
+      // null KV key (`anticheat:blocked:null`) from matching anything.
       // KEY FORMAT: anticheat:blocked:{telegram_id}
       // This prefix must match exactly what the anti-cheat worker writes in
       // workers/anti-cheat/worker.js. If the key format changes in either worker,
       // both must be updated together. See workers/leaderboard/wrangler.toml for the
       // shared KV namespace requirement documentation.
-      const blockStatus = await env.LEADERBOARD.get(`anticheat:blocked:${telegramId}`);
-      if (blockStatus) {
-        return new Response(
-          JSON.stringify({ error: "account_blocked", block_type: blockStatus }),
-          { status: 403, headers: corsHeaders }
-        );
+      if (telegramId) {
+        const blockStatus = await env.LEADERBOARD.get(`anticheat:blocked:${telegramId}`);
+        if (blockStatus) {
+          return new Response(
+            JSON.stringify({ error: "account_blocked", block_type: blockStatus }),
+            { status: 403, headers: corsHeaders }
+          );
+        }
       }
 
       if (typeof player !== "string" || player.trim().length < 1 || player.trim().length > 40) {
@@ -821,25 +825,54 @@ async function getOrInitMeta(env) {
 
 /**
  * Insert or update one entry in a leaderboard list.
- * - Deduplicates by player name (case-insensitive).
- * - Keeps only the player's best (highest) score.
+ *
+ * Deduplication rules:
+ *   Authenticated entries (telegram_id present):
+ *     - Match exclusively by verified telegram_id.
+ *     - Name-based matching is intentionally skipped so a display-name change
+ *       updates the same row instead of creating a duplicate, and so two
+ *       unrelated users who happen to share a display name are never merged.
+ *     - An anonymous submission (no telegram_id) can never overwrite an
+ *       authenticated row, even when the player names match.
+ *   Anonymous entries (no telegram_id):
+ *     - Match only against other anonymous rows (rows that also lack telegram_id)
+ *       by player name, case-insensitively.
+ *     - Authenticated rows are excluded from anonymous name matching, so an
+ *       anonymous submission cannot hijack an authenticated player's record.
+ *
+ * - Keeps only the player's best (highest) score for each identity.
  * - Sorts descending by score with alphabetical tie-break.
  * - Trims to `limit` entries and stamps rank.
  */
 function upsertEntry(existing, newEntry, limit) {
   let list = Array.isArray(existing) ? existing.slice() : [];
 
-  const nameLower = newEntry.player.toLowerCase();
-  const idx = list.findIndex(
-    (e) => typeof e.player === "string" && e.player.toLowerCase() === nameLower
-  );
+  let idx = -1;
+  if (newEntry.telegram_id) {
+    // Authenticated entry: deduplicate by verified telegram_id.
+    idx = list.findIndex(
+      (e) => e.telegram_id && String(e.telegram_id) === String(newEntry.telegram_id)
+    );
+  } else {
+    // Anonymous entry: deduplicate by player name only among other anonymous rows.
+    const nameLower = newEntry.player.toLowerCase();
+    idx = list.findIndex(
+      (e) => !e.telegram_id &&
+        typeof e.player === "string" &&
+        e.player.toLowerCase() === nameLower
+    );
+  }
 
   if (idx !== -1) {
     if (newEntry.score > (Number(list[idx].score) || 0)) {
       list[idx] = { ...list[idx], ...newEntry };
     } else {
-      if (newEntry.telegram_id) list[idx].telegram_id = newEntry.telegram_id;
+      // Score didn't improve; update non-score metadata only.
       if (newEntry.faction) list[idx].faction = newEntry.faction;
+      // For authenticated entries: always keep the display name current
+      // so that Telegram username changes are reflected without requiring
+      // the user to beat their personal best.
+      if (newEntry.telegram_id && newEntry.player) list[idx].player = newEntry.player;
     }
   } else {
     list.push(newEntry);

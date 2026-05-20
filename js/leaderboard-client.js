@@ -223,6 +223,14 @@ export async function submitScore(player, score, game = "global") {
     }
   }
 
+  // When signed auth is available, derive the effective Telegram ID from the
+  // auth payload if the local cached value is missing (e.g. cache cleared).
+  // This ensures the meta/XP sync path can run and the correct identity is
+  // attached to the request body.  For unsigned submissions the value is null.
+  const effectiveTelegramId = hasSignedAuth
+    ? (telegramId || (telegramAuth && String(telegramAuth.id || "").trim()) || null)
+    : null;
+
   emitArcadeSubmissionStatus({
     ...result,
     state: "auto_submitting",
@@ -236,7 +244,7 @@ export async function submitScore(player, score, game = "global") {
   };
   if (hasSignedAuth) {
     requestBody.telegram_auth = telegramAuth;
-    if (telegramId) requestBody.telegram_id = telegramId;
+    if (effectiveTelegramId) requestBody.telegram_id = effectiveTelegramId;
   }
 
   try {
@@ -264,7 +272,7 @@ export async function submitScore(player, score, game = "global") {
         ...result,
         state: authExpired && linked ? "auth_expired" : "sync_error",
         message: authExpired && linked
-          ? "Sync expired. Score submission retried as public when auth is restored."
+          ? "Telegram sync expired. Score submission failed; relink or refresh auth."
           : data.error || data.message || "Sync failed before acceptance confirmation.",
       });
     } else if (data && data.accepted === true) {
@@ -327,13 +335,9 @@ export async function submitScore(player, score, game = "global") {
           });
           if (authRequired) markSyncHealth("bad", "auth_expired");
         }
-      } else {
-        emitArcadeSubmissionStatus({
-          ...result,
-          state: "score_accepted",
-          message: "Score accepted for ranking.",
-        });
       }
+      // No second emit for non-blocktopia games: the score_accepted status was
+      // already emitted above when the accepted response was first processed.
     } else {
       emitArcadeDebug("leaderboard_not_accepted", {
         game: gameKey,
@@ -417,7 +421,7 @@ export async function submitScore(player, score, game = "global") {
     try {
       await submitMetaScore({
         player: resolvedPlayer,
-        telegram_id: telegramId,
+        telegram_id: effectiveTelegramId,
         game: metaResult.game,
         score: metaResult.meta_points,
         timestamp: metaResult.timestamp,
