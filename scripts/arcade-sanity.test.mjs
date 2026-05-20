@@ -392,6 +392,23 @@ check(
 );
 check(
   (() => {
+    // Canvas budget: on the narrowest common landscape phone (iPhone 5 / SE 1st gen = 568px wide),
+    // canvas width = viewportWidth - 2×(8px stage-padding + zoneMin).
+    // Require canvas ≥ 200px: zoneMin ≤ (568 - 200 - 16) / 2 = 176px.
+    // Also require zone clamp max ≤ 200px so canvas stays ≥ 200px even at the wide end
+    // on a 640px-wide phone (640 - 2×(8+200) = 224px).
+    const zoneWidthMatch = fullscreenCssSrc.match(
+      /@media\s*\(pointer:\s*coarse\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*?--overlay-touch-zone-width:\s*clamp\((\d+)px,\s*[\d.]+vw,\s*(\d+)px\)/u,
+    );
+    const clampMin = zoneWidthMatch ? parseInt(zoneWidthMatch[1], 10) : 999;
+    const clampMax = zoneWidthMatch ? parseInt(zoneWidthMatch[2], 10) : 999;
+    const canvasBudgetAt568 = 568 - 2 * (8 + clampMin);
+    return canvasBudgetAt568 >= 200 && clampMax <= 200;
+  })(),
+  'game-fullscreen.css landscape zone sizing leaves ≥ 200px canvas on a 568px-wide phone (clampMin ≤ 176px) and clampMax ≤ 200px so canvas is never crushed',
+);
+check(
+  (() => {
     const touchGamepadRules = fullscreenCssSrc.match(/#game-overlay\s+\.touch-gamepad\s*\{/gu) || [];
     const touchZoneRules = fullscreenCssSrc.match(/#game-overlay\s+\.touch-zone\s*\{/gu) || [];
     return touchGamepadRules.length === 1 && touchZoneRules.length === 1;
