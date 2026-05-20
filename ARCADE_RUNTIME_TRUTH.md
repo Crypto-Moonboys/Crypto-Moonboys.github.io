@@ -5,7 +5,7 @@
 
 Agents must read this file before editing any arcade code. There is exactly one
 active path per dimension. Dead paths have been deleted — if something is not in
-this document, it does not exist in the repo.
+this document, it is not part of the live Moonboys Arcade runtime paths.
 
 ---
 
@@ -176,7 +176,8 @@ There is **no** legacy card HUD, no V1 panel system, no separate data overlay.
 
 ## Per-Game Runtime Entry Files
 
-Each game page loads scripts in this order:
+All active pages load the shared shell stack (`/js/wiki.js`, `/js/game-fullscreen.js`,
+identity/state/faction components), then use one of the following mount paths.
 
 ```html
 <link rel="stylesheet" href="/css/wiki.css">
@@ -197,14 +198,25 @@ Each game page loads scripts in this order:
 <script data-cfasync="false" src="/js/components/telegram-sync-cta.js"></script>
 <script type="module">
   import { mountGame } from '/js/arcade/core/game-shell.js';
-  import { GAME_ADAPTER } from '/js/arcade/games/<id>/bootstrap.js';
+  import { bootstrapXxx } from '/js/arcade/games/<id>/bootstrap.js';
   import { mountModifierPanel } from '/js/arcade/systems/cross-game-modifier-ui.js';
   import { mountFactionHud } from '/js/arcade/ui/faction-hud.js';
-  mountGame({ root: document.querySelector('.game-card'), bootstrap: GAME_ADAPTER });
+  mountGame({ root: document.querySelector('.game-card'), bootstrap: bootstrapXxx });
   mountModifierPanel();
   mountFactionHud();
 </script>
 ```
+
+### Current live mounting patterns
+
+| Games | Pattern | Notes |
+|---|---|---|
+| invaders-3008, pac-chain, asteroid-fork, tetris-block-topia, crystal-quest, snake-run, block-topia-quest-maze | direct `mountGame()` + explicit `bootstrapXxx` import | Current default live path |
+| breakout-bullrun | `autoMountGame()` pilot via `data-game-id=\"breakout\"`, with manual fallback to `bootstrapBreakoutBullrun` | Uses `js/arcade/core/auto-mount-game.js` |
+
+`arcade-manifest.js` keeps `adapterExport` metadata for audit/manifest parity, but
+page runtime mounting currently resolves bootstrap functions, not adapter exports,
+on the live pages above.
 
 **Active runtime modules (one path each):**
 
@@ -249,14 +261,14 @@ The following were deleted in the 2026-05-20 cleanup. Do not re-add.
 | `games/template/` | Dev scaffold — not in manifest, not active |
 | `img/games/` | Dead asset directory (unreferenced `blocktopia-cover.svg`) |
 | `js/agent-hack.js` | UI hack utility — no live references |
-| `js/audio-manager.js` | Unimplemented audio system — no audio assets exist |
+| `js/audio-manager.js` | Legacy asset-audio manager removed; live games use synthesized audio in `js/arcade/core/audio.js` |
 | `js/bonus-engine.js` | Dead bonus popup engine — not wired to any game |
 | `js/btqm-widget.js` | Dead homepage widget — not wired to any page |
 | `js/particle-engine.js` | Dead particle system — not used by any game |
 | `js/site-season-banner.js` | Dead season banner — not used by any page |
 | `artifacts/` | Screenshot artifacts from past PRs — not live code |
 | `patches/` | Git patch files from past PRs — not live code |
-| `audio/` | Empty placeholder directory — audio system was never implemented |
+| `audio/` | Removed asset directory; no audio files/assets existed in it |
 | HexGL | Already retired before this cleanup; no code references existed |
 
 ---
