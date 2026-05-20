@@ -760,10 +760,6 @@ function createLegacybootstrapPacChain(root) {
     meta.milestones = milestones;
     try { localStorage.setItem(key, JSON.stringify(meta)); } catch (_) {}
   }
-  function canSubmitCompetitive() {
-    const identity = typeof window !== 'undefined' ? window.MOONBOYS_IDENTITY : null;
-    return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
-  }
   function resolveCompetitivePlayer() {
     const identity = typeof window !== 'undefined' ? window.MOONBOYS_IDENTITY : null;
     if (identity && typeof identity.getTelegramName === 'function') {
@@ -791,7 +787,7 @@ function createLegacybootstrapPacChain(root) {
     };
     persistMeta(summary);
     addBanner(state, 'Run rating: ' + summary.rating, 'event');
-    if (!state.submitDone && canSubmitCompetitive()) {
+    if (!state.submitDone) {
       state.submitDone = true;
       try { await submitScore(resolveCompetitivePlayer(), state.score, GAME_ID); } catch (_) {}
     }

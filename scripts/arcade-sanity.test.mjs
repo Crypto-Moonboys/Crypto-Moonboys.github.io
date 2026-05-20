@@ -446,6 +446,15 @@ check(
   workerSrc.includes('verifyLeaderboardTelegramAuth'),
   'leaderboard-worker.js calls verifyLeaderboardTelegramAuth before accepting scores',
 );
+check(
+  workerSrc.includes('resolveSubmissionIdentity') &&
+    workerSrc.includes("telegram_auth_required_for_telegram_id"),
+  'leaderboard-worker.js supports anonymous score submissions while rejecting unsigned telegram_id claims',
+);
+check(
+  workerSrc.includes('identity_mode') && workerSrc.includes('"anonymous"'),
+  'leaderboard-worker.js marks anonymous identity mode in accepted score responses',
+);
 
 // ── Asteroid Fork resize/render dimension invariants ─────────────────────────
 // Verifies that applyFullscreenFit updates state.worldW/worldH to match the

@@ -1,14 +1,14 @@
 /**
  * scripts/leaderboard-client-regression.test.mjs
  *
- * Regression tests for js/leaderboard-client.js auth hardening.
+ * Regression tests for js/leaderboard-client.js public + Telegram submit flow.
  *
- * Verifies the CRIT-01 client-side fixes:
- *  1. submitScore() POST body always includes telegram_auth
- *  2. submitScore() does NOT POST when linked but telegramAuth is null/incomplete
- *  3. submitScore() marks sync health as bad and emits relink_required when auth is missing
- *  4. submitMetaScore() POST body includes telegram_auth
- *  5. submitMetaScore() skips POST when telegram_auth is null/incomplete
+ * Verifies:
+ *  1. submitScore() always POSTs to global endpoint for public leaderboard flow
+ *  2. linked + signed auth includes telegram_auth in request body
+ *  3. linked without signed auth still POSTs anonymously (without telegram_auth)
+ *  4. ArcadeSync auth failure does not block basic score submission
+ *  5. submitMetaScore() remains Telegram-auth guarded
  *
  * Also validates source-level structure to catch regressions from future edits.
  *
@@ -47,48 +47,37 @@ async function test(name, fn) {
 
 const src = await readFile('js/leaderboard-client.js');
 
-await test('submitScore POST body contains telegram_auth field', async () => {
-  // Scope the check to inside submitScore()'s own fetch block, so changes to
-  // submitMetaScore() or its call site cannot produce a false pass.
+await test('submitScore defines shared requestBody payload for global POST', async () => {
   const submitScoreStart = src.indexOf('export async function submitScore(');
   assert(submitScoreStart !== -1, 'submitScore function not found in source');
-
-  const firstFetch = src.indexOf('await fetch(api', submitScoreStart);
-  assert(firstFetch !== -1, 'submitScore fetch(api) call not found');
-
-  const fetchBlock = src.slice(firstFetch, src.indexOf('const data = await res.json', firstFetch));
   assert(
-    fetchBlock.includes('telegram_auth: telegramAuth'),
-    'submitScore leaderboard POST body must include telegram_auth: telegramAuth',
+    src.includes('const requestBody = {') && src.includes('player: resolvedPlayer') && src.includes('score,') && src.includes('game,'),
+    'submitScore must build a shared requestBody with player/score/game for public submission',
   );
 });
 
-await test('submitScore has missing-auth guard before POST', async () => {
-  // Guard checks for !telegramAuth || !telegramAuth.hash || !telegramAuth.auth_date
-  // and emits both 'relink_required' status AND 'auth_expired' health reason.
+await test('submitScore only includes telegram_auth when signed auth is available', async () => {
   assert(
-    src.includes('!telegramAuth') && src.includes('auth_expired') && src.includes('relink_required'),
-    'Expected missing-auth guard with both auth_expired health marker and relink_required status in submitScore()',
+    src.includes('if (hasSignedAuth) {') &&
+      src.includes('requestBody.telegram_auth = telegramAuth') &&
+      src.includes('if (telegramId) requestBody.telegram_id = telegramId'),
+    'submitScore must add telegram_auth/telegram_id only inside signed-auth branch',
   );
 });
 
-await test('submitScore missing-auth guard sets result.state before returning', async () => {
-  // The result object returned to the caller must have state = "relink_required".
+await test('submitScore missing-auth path marks unsigned public submit instead of aborting', async () => {
   assert(
-    src.includes('result.state = "relink_required"'),
-    'submitScore() missing-auth guard must set result.state = "relink_required" before returning',
+    src.includes('result.state = "public_submit_unsigned"') &&
+      src.includes('Submitting to public leaderboard without XP sync'),
+    'missing signed auth should enter public_submit_unsigned path',
   );
 });
 
-await test('submitScore missing-auth guard returns before POSTing', async () => {
-  // The guard must contain an explicit return so no fetch is issued.
-  // Verify the guard block has "return result" before the first fetch() call.
-  const guardIdx = src.indexOf('!telegramAuth || !telegramAuth.hash');
-  assert(guardIdx !== -1, 'Missing-auth guard pattern not found in source');
-  const returnIdx = src.indexOf('return result', guardIdx);
-  const fetchIdx  = src.indexOf('await fetch(api', guardIdx);
-  assert(returnIdx !== -1, 'Expected "return result" inside missing-auth guard');
-  assert(returnIdx < fetchIdx, 'Guard return must appear before the fetch() call');
+await test('submitScore does not have pre-fetch return in missing-auth branch', async () => {
+  const publicUnsignedIdx = src.indexOf('result.state = "public_submit_unsigned"');
+  assert(publicUnsignedIdx !== -1, 'public_submit_unsigned marker not found');
+  const fetchIdx = src.indexOf('await fetch(api', publicUnsignedIdx);
+  assert(fetchIdx !== -1, 'submitScore fetch call must appear after unsigned branch');
 });
 
 await test('submitMetaScore signature includes telegram_auth parameter', async () => {
@@ -215,31 +204,39 @@ function makeValidAuth() {
  * Simulates the critical path inside submitScore() for the auth guard and POST.
  * Returns { outcome, fetchCalls, healthCalls, statusCalls }.
  */
-async function runSubmitScoreGuard(telegramAuth) {
+async function runSubmitScoreGuard({ linked = false, telegramAuth = null, authThrows = false } = {}) {
   const fetchCalls  = [];
   const healthCalls = [];
   const statusCalls = [];
 
-  const result = { state: 'local_only', accepted: false };
+  const result = { state: 'pending_submit', accepted: false, linked };
+  let hasSignedAuth = false;
+  let resolvedAuth = null;
 
-  // Mirror the guard added in leaderboard-client.js submitScore()
-  if (!telegramAuth || !telegramAuth.hash || !telegramAuth.auth_date) {
-    result.state = 'relink_required';
-    result.message = 'Telegram auth expired or missing. Run /gklink again to restore sync.';
-    healthCalls.push({ state: 'bad', reason: 'auth_expired' });
-    statusCalls.push({ state: 'relink_required' });
-    return { outcome: 'aborted', result, fetchCalls, healthCalls, statusCalls };
+  if (linked) {
+    if (authThrows) {
+      healthCalls.push({ state: 'bad', reason: 'auth_expired' });
+      statusCalls.push({ state: 'public_submit_unsigned' });
+    } else {
+      resolvedAuth = telegramAuth;
+      hasSignedAuth = !!(resolvedAuth && resolvedAuth.hash && resolvedAuth.auth_date);
+      if (!hasSignedAuth) {
+        result.state = 'public_submit_unsigned';
+        result.message = 'Telegram auth missing or expired. Submitting to public leaderboard without XP sync.';
+        healthCalls.push({ state: 'bad', reason: 'auth_expired' });
+        statusCalls.push({ state: 'public_submit_unsigned' });
+      }
+    }
   }
 
-  // Guard passed — would POST
+  // Always POST for public leaderboard.
   fetchCalls.push({
     body: {
       player: 'TestPlayer',
       score: 500,
       game: 'snake',
-      telegram_id: '123456789',
-      telegram_auth: telegramAuth,
       faction: 'unaligned',
+      ...(hasSignedAuth ? { telegram_id: '123456789', telegram_auth: resolvedAuth } : {}),
     },
   });
 
@@ -248,38 +245,38 @@ async function runSubmitScoreGuard(telegramAuth) {
 
 await test('BEH: linked user with valid telegram_auth POSTs with telegram_auth in body', async () => {
   const auth = makeValidAuth();
-  const { outcome, fetchCalls } = await runSubmitScoreGuard(auth);
+  const { outcome, fetchCalls } = await runSubmitScoreGuard({ linked: true, telegramAuth: auth });
   assert(outcome === 'posted', `expected posted, got ${outcome}`);
   assert(fetchCalls.length === 1, 'expected exactly one fetch call');
   assert(fetchCalls[0].body.telegram_auth !== undefined, 'POST body must include telegram_auth');
   assert(fetchCalls[0].body.telegram_auth === auth, 'telegram_auth in body must be the fetched auth object');
 });
 
-await test('BEH: linked user with null telegramAuth aborts and does NOT POST', async () => {
-  const { outcome, result, fetchCalls, healthCalls, statusCalls } = await runSubmitScoreGuard(null);
-  assert(outcome === 'aborted', `expected aborted, got ${outcome}`);
-  assert(fetchCalls.length === 0, 'must not make any fetch call when telegramAuth is null');
-  assert(result.state === 'relink_required', `returned result.state must be "relink_required", got "${result.state}"`);
+await test('BEH: linked user with null telegramAuth still POSTs without telegram_auth', async () => {
+  const { outcome, result, fetchCalls, healthCalls, statusCalls } = await runSubmitScoreGuard({ linked: true, telegramAuth: null });
+  assert(outcome === 'posted', `expected posted, got ${outcome}`);
+  assert(fetchCalls.length === 1, 'must still POST when telegramAuth is null');
+  assert(result.state === 'public_submit_unsigned', `returned result.state must be "public_submit_unsigned", got "${result.state}"`);
+  assert(fetchCalls[0].body.telegram_auth === undefined, 'unsigned fallback POST must omit telegram_auth');
+  assert(fetchCalls[0].body.telegram_id === undefined, 'unsigned fallback POST must omit telegram_id');
   assert(healthCalls.some(h => h.state === 'bad'), 'must mark sync health as bad');
-  assert(statusCalls.some(s => s.state === 'relink_required'), 'must emit relink_required status');
+  assert(statusCalls.some(s => s.state === 'public_submit_unsigned'), 'must emit unsigned fallback status');
 });
 
-await test('BEH: linked user with empty object telegramAuth aborts', async () => {
-  const { outcome, fetchCalls } = await runSubmitScoreGuard({});
-  assert(outcome === 'aborted', 'empty auth object should abort');
-  assert(fetchCalls.length === 0, 'must not POST when hash/auth_date are missing');
+await test('BEH: anonymous user POSTs without telegram auth fields', async () => {
+  const { outcome, fetchCalls } = await runSubmitScoreGuard({ linked: false, telegramAuth: null });
+  assert(outcome === 'posted', `expected posted, got ${outcome}`);
+  assert(fetchCalls.length === 1, 'anonymous submit must POST');
+  assert(fetchCalls[0].body.telegram_auth === undefined, 'anonymous POST must omit telegram_auth');
+  assert(fetchCalls[0].body.telegram_id === undefined, 'anonymous POST must omit telegram_id');
 });
 
-await test('BEH: linked user with telegramAuth missing hash aborts', async () => {
-  const { outcome, fetchCalls } = await runSubmitScoreGuard({ id: '123', auth_date: '1700000000' });
-  assert(outcome === 'aborted', 'missing hash should abort');
-  assert(fetchCalls.length === 0, 'must not POST when hash is missing');
-});
-
-await test('BEH: linked user with telegramAuth missing auth_date aborts', async () => {
-  const { outcome, fetchCalls } = await runSubmitScoreGuard({ id: '123', hash: 'a'.repeat(64) });
-  assert(outcome === 'aborted', 'missing auth_date should abort');
-  assert(fetchCalls.length === 0, 'must not POST when auth_date is missing');
+await test('BEH: ArcadeSync auth failure does not block public score submit', async () => {
+  const { outcome, fetchCalls, statusCalls } = await runSubmitScoreGuard({ linked: true, authThrows: true });
+  assert(outcome === 'posted', `expected posted, got ${outcome}`);
+  assert(fetchCalls.length === 1, 'auth exception should still result in one POST');
+  assert(fetchCalls[0].body.telegram_auth === undefined, 'auth exception fallback must omit telegram_auth');
+  assert(statusCalls.some(s => s.state === 'public_submit_unsigned'), 'auth exception should emit unsigned fallback status');
 });
 
 // ── Behavioral mock for submitMetaScore ──────────────────────────────────────

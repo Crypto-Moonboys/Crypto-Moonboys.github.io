@@ -216,10 +216,7 @@ function createLegacybootstrapTetris(root) {
   }
 
   function canSubmitCompetitive() {
-    if (typeof window === 'undefined') return false;
-    const identity = window.MOONBOYS_IDENTITY;
-    if (!identity || typeof identity.isTelegramLinked !== 'function') return false;
-    return !!identity.isTelegramLinked();
+    return true;
   }
 
   function resolveCompetitivePlayer() {
@@ -233,11 +230,6 @@ function createLegacybootstrapTetris(root) {
 
   function syncSubmitButton() {
     if (!submitBtn) return;
-    if (!canSubmitCompetitive()) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Submit (Link Telegram)';
-      return;
-    }
     if (!gameOver) {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Submit';
@@ -1097,14 +1089,6 @@ function createLegacybootstrapTetris(root) {
   async function submitRunScore() {
     if (!gameOver || submitInFlight || submittedRunScore) return;
 
-    if (!canSubmitCompetitive()) {
-      if (window.MOONBOYS_IDENTITY?.showSyncGateModal) {
-        window.MOONBOYS_IDENTITY.showSyncGateModal(true);
-      }
-      syncSubmitButton();
-      return;
-    }
-
     submitInFlight = true;
     syncSubmitButton();
     try {
@@ -1138,9 +1122,7 @@ function createLegacybootstrapTetris(root) {
       try { recordRunStats(runData); checkMilestones(runData); } catch (err) { console.error('[tetris] meta error:', err); }
     }
 
-    if (canSubmitCompetitive()) {
-      await submitRunScore();
-    }
+    await submitRunScore();
 
     // ── Faction war contribution ───────────────────────────────────────────
     try {

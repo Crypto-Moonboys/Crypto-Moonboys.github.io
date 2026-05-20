@@ -340,6 +340,34 @@ if (submitScoreViolations.length === 0) {
   }
 }
 
+// ── Check 7: every active game bootstrap imports and calls shared submitScore ─
+console.log('\n[7] Active game bootstraps use shared leaderboard submit path');
+const activeIds = Object.values(DIR_TO_ID);
+for (const id of activeIds) {
+  const entry = manifest.find(e => e.id === id);
+  if (!entry || !entry.bootstrapPath) {
+    fail('Manifest entry missing for active id "' + id + '"');
+    continue;
+  }
+  const bootstrapRel = entry.bootstrapPath.replace(/^\//, '');
+  const src = readText(bootstrapRel);
+  if (!src) {
+    fail('Bootstrap not found for "' + id + '": ' + entry.bootstrapPath);
+    continue;
+  }
+  const hasImport = /from\s+['"]\/js\/leaderboard-client\.js['"]/u.test(src) && /\bsubmitScore\b/u.test(src);
+  const hasCall = /\bsubmitScore\s*\(/u.test(src);
+  if (!hasImport) {
+    fail(id + ' bootstrap must import submitScore from /js/leaderboard-client.js');
+    continue;
+  }
+  if (!hasCall) {
+    fail(id + ' bootstrap must call submitScore(...) on run-end/game-over path');
+    continue;
+  }
+  pass(id + ' bootstrap imports and calls shared submitScore path');
+}
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log('\n─────────────────────────────────────────────');
 if (failures === 0 && warnings === 0) {

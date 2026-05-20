@@ -742,9 +742,7 @@ function scoreForSurvival(startedAt) {
 }
 
 function canSubmitIdentity() {
-  if (typeof window === 'undefined') return false;
-  const identity = window.MOONBOYS_IDENTITY;
-  return !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
+  return true;
 }
 
 async function finalizeRunSubmission(force) {
@@ -771,7 +769,7 @@ async function finalizeRunSubmission(force) {
   } catch (_) {}
   ArcadeSync.setPlayer(btqmRuntime.playerName || 'Guest');
   ArcadeSync.setHighScore(GAME_ID, finalScore);
-  if (!canSubmitIdentity() || finalScore <= 0) return;
+  if (finalScore <= 0) return;
   await submitScore(btqmRuntime.playerName || 'Guest', finalScore, GAME_ID);
 }
 

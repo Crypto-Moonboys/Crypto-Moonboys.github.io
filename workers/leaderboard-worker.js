@@ -184,6 +184,21 @@ async function verifyLeaderboardTelegramAuth(body, env) {
   return { ok: true, telegramId };
 }
 
+async function resolveSubmissionIdentity(body, env) {
+  const hasSignedEvidence = !!(body && (body.telegram_auth != null || body.auth_evidence != null));
+  if (hasSignedEvidence) {
+    const authResult = await verifyLeaderboardTelegramAuth(body, env);
+    if (!authResult.ok) return authResult;
+    return { ok: true, authenticated: true, telegramId: authResult.telegramId };
+  }
+
+  if (body?.telegram_id != null && String(body.telegram_id).trim()) {
+    return { ok: false, error: 'telegram_auth_required_for_telegram_id', status: 403 };
+  }
+
+  return { ok: true, authenticated: false, telegramId: null };
+}
+
 // ── CORS helpers ─────────────────────────────────────────────────────────────
 
 function getAllowedOrigins(env) {
@@ -292,17 +307,16 @@ export default {
         );
       }
 
-      // ── CRIT-01: Verify Telegram identity via HMAC before trusting any ID ──
-      // body.telegram_id is never trusted directly. The verified ID is derived
-      // exclusively from the signed telegram_auth payload.
-      const authResult = await verifyLeaderboardTelegramAuth(body, env);
-      if (!authResult.ok) {
+      // Public leaderboard scores may be submitted anonymously.
+      // If telegram_auth is supplied, it must verify successfully.
+      const identity = await resolveSubmissionIdentity(body, env);
+      if (!identity.ok) {
         return new Response(
-          JSON.stringify({ error: authResult.error }),
-          { status: authResult.status, headers: corsHeaders }
+          JSON.stringify({ error: identity.error }),
+          { status: identity.status, headers: corsHeaders }
         );
       }
-      const telegramId = authResult.telegramId;
+      const telegramId = identity.telegramId;
 
       const { player, score, game } = body;
       const rawFaction = String(body.faction || "unaligned").toLowerCase().trim();
@@ -348,6 +362,12 @@ export default {
       const floorScore = Math.floor(parsedScore);
 
       if (submissionMode === "meta") {
+        if (!telegramId) {
+          return new Response(
+            JSON.stringify({ error: "telegram_sync_required" }),
+            { status: 403, headers: corsHeaders }
+          );
+        }
         const eventTs = Number(body.timestamp);
         const timestamp = Number.isFinite(eventTs) ? eventTs : Date.now();
         await updateMetaBoards(env, {
@@ -371,9 +391,12 @@ export default {
           getBoard(env, `yearly:${gameKey}`)
         ]);
 
-        const existingEntry = board.find((row) => String(row?.telegram_id || '') === telegramId) || null;
+        const existingEntry = telegramId
+          ? (board.find((row) => String(row?.telegram_id || '') === telegramId) || null)
+          : (board.find((row) => String(row?.player || '').toLowerCase() === playerName.toLowerCase()) || null);
         previousBest = Number(existingEntry?.score || 0);
-        const entry = { player: playerName, score: floorScore, telegram_id: telegramId, faction };
+        const entry = { player: playerName, score: floorScore, faction };
+        if (telegramId) entry.telegram_id = telegramId;
         const updatedBoard = upsertEntry(board, entry, PER_GAME_LEADERBOARD_SIZE);
         const updatedSeasonal = upsertEntry(sBoard, entry, PER_GAME_LEADERBOARD_SIZE);
         const updatedYearly = upsertEntry(yBoard, entry, PER_GAME_LEADERBOARD_SIZE);
@@ -391,8 +414,9 @@ export default {
       if (gameKey !== "global") {
         responsePayload.leaderboard = {
           game: gameKey,
-          telegram_id: telegramId,
+          telegram_id: telegramId || null,
           previous_best: previousBest,
+          identity_mode: telegramId ? "telegram" : "anonymous",
         };
       }
       return new Response(JSON.stringify(responsePayload), { headers: corsHeaders });
