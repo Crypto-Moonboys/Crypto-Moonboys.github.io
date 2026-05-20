@@ -76,6 +76,7 @@
   ];
   var _sharedRailStateCache = null;
   var _sharedRailStateInflight = null;
+  var _sharedRailStateInflightGeneration = -1;
   var _sharedRailStateGeneration = 0;
   // Unsubscribe token for MOONBOYS_STATE subscriber (avoids leak if re-initialised)
   var _stateUnsub = null;
@@ -433,22 +434,6 @@
   }
 
 
-  function latestGlobalBattleRows() {
-    var activity = Array.isArray(window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY) ? window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY : [];
-    return activity.filter(function (row) { return row && !isOwnBattleActivity(row); }).slice(0, 2).map(function (row) {
-      return { tag: 'Public', text: battleActivityText(row) };
-    });
-  }
-
-  function buildFeedHTML(rows, emptyMessage) {
-    if (!rows.length) {
-      return '<div class="csp-feed-empty">' + esc(emptyMessage || 'No synced activity yet. Play an arcade run or complete a faction task.') + '</div>';
-    }
-    return rows.map(function (row) {
-      return '<div class="csp-feed-row"><span class="csp-feed-tag">' + esc(row.tag) + '</span><span>' + esc(row.text) + '</span></div>';
-    }).join('');
-  }
-
   function countdownText(seconds) {
     var total = Math.max(0, Math.floor(Number(seconds) || 0));
     var h = Math.floor(total / 3600);
@@ -477,10 +462,20 @@
     return state && typeof state === 'object' ? state : null;
   }
 
+  function invalidateSharedRailState() {
+    _sharedRailStateCache = null;
+    _sharedRailStateInflight = null;
+    _sharedRailStateInflightGeneration = -1;
+    _sharedRailStateGeneration++;
+  }
+
   async function buildSharedRailState(force) {
     if (!force && _sharedRailStateCache) return _sharedRailStateCache;
-    if (!force && _sharedRailStateInflight) return _sharedRailStateInflight;
+    if (!force && _sharedRailStateInflight && _sharedRailStateInflightGeneration === _sharedRailStateGeneration) {
+      return _sharedRailStateInflight;
+    }
     var generation = _sharedRailStateGeneration;
+    _sharedRailStateInflightGeneration = generation;
     _sharedRailStateInflight = (async function () {
       var linked = isLinked();
       var name = getDisplayName();
@@ -492,7 +487,6 @@
       var latestRows = latestActivityRows();
       var latestLine = latestRows.length ? latestRows[0] : null;
       var latestActivityText = latestLine ? latestLine.text : 'Play Arcade to create activity';
-      var publicRows = latestGlobalBattleRows();
       var shared = {
         mode: linked ? 'linked' : 'unlinked',
         linked: linked,
@@ -503,7 +497,6 @@
         requiredXp: requiredXp,
         blocktopia: blocktopiaAccessHTML(linked, arcadeXp, requiredXp),
         latestActivityText: latestActivityText,
-        publicRows: publicRows,
         dailyState: _dailyStateCache || null,
         playerState: _playerStateCache || null,
         wtfState: currentWtfState(),
@@ -555,6 +548,7 @@
       return shared;
     }).finally(function () {
       _sharedRailStateInflight = null;
+      _sharedRailStateInflightGeneration = -1;
     });
     return _sharedRailStateInflight;
   }
@@ -645,7 +639,7 @@
       '<div class="csp-panel csp-panel--wtf" role="status" aria-label="Daily WTF signal">' +
         '<div class="csp-grid csp-grid--live">' +
           '<div class="csp-item"><div class="csp-item-label">Signal Status</div><div class="csp-item-val">' + esc(shared.dailyWtfStatusDisplay || 'syncing…') + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Timer</div><div class="csp-item-val">' + esc(timer) + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Timer</div><div class="csp-item-val" data-csp-wtf-countdown>' + esc(timer) + '</div></div>' +
           '<div class="csp-item csp-item--wide"><div class="csp-item-label">Action</div><div class="csp-item-val">' + action + '</div></div>' +
         '</div>' +
       '</div>';
@@ -837,6 +831,21 @@
     allRailSectionElements().forEach(function (el) { mount(el); });
   }
 
+  function updateWtfCountdownUI() {
+    var state = currentWtfState();
+    var timer = 'syncing…';
+    if (state && typeof state === 'object' && state.status !== 'loading') {
+      if (state.countdown_seconds != null) {
+        timer = countdownText(state.countdown_seconds);
+      } else if (state.active_event || state.next_event || (Array.isArray(state.upcoming_events) && state.upcoming_events.length)) {
+        timer = '--:--:--';
+      }
+    }
+    document.querySelectorAll('[data-csp-wtf-countdown]').forEach(function (el) {
+      el.textContent = timer;
+    });
+  }
+
   /**
    * Mounts the compact header badge into a container element.
    * Uses the same render-token pattern as mount() to prevent stale writes.
@@ -886,9 +895,7 @@
     _playerStateInflight = null;
     _playerStateGeneration++;
     _apiOnlineCache = null;
-    _sharedRailStateCache = null;
-    _sharedRailStateInflight = null;
-    _sharedRailStateGeneration++;
+    invalidateSharedRailState();
     mountAllSections();
     var badge = document.getElementById('moonboys-global-status-badge');
     if (badge) mountBadge(badge);
@@ -917,7 +924,7 @@
       }
       invalidateDailyStateCache();
       invalidatePlayerStateCache();
-      _sharedRailStateGeneration++;
+      invalidateSharedRailState();
       mountAllSections();
     }, 120);
   }
@@ -940,9 +947,7 @@
     if (_liveDataRefreshTimer) clearTimeout(_liveDataRefreshTimer);
     _liveDataRefreshTimer = setTimeout(function () {
       _liveDataRefreshTimer = null;
-      _sharedRailStateCache = null;
-      _sharedRailStateInflight = null;
-      _sharedRailStateGeneration++;
+      invalidateSharedRailState();
       mountAllSections();
     }, 0);
   }
@@ -1010,6 +1015,7 @@
     ].forEach(function (eventName) {
       window.addEventListener(eventName, scheduleLiveDataRefresh);
     });
+    window.addEventListener('moonboys:wtf-countdown-tick', updateWtfCountdownUI);
     window.addEventListener('moonboys:faction-status', function (e) {
       var detail = e && e.detail ? e.detail : null;
       if (detail && detail.source === 'load') return;

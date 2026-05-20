@@ -137,6 +137,7 @@ const missedSectionBlock = functionBlock(csp, 'buildMissedOpportunitiesHTML');
 check(liveFeedBlock.includes('<div class="csp-item-label">Telegram</div>') && liveFeedBlock.includes('<div class="csp-item-label">Faction</div>') && liveFeedBlock.includes('<div class="csp-item-label">Arcade XP</div>') && liveFeedBlock.includes('<div class="csp-item-label">Block Topia</div>') && liveFeedBlock.includes('Latest:'), 'player live feed remains compact with Telegram/faction/Arcade XP/Block Topia/latest');
 check(opsBlock.includes('<div class="csp-item-label">Faction XP</div>') && opsBlock.includes('<div class="csp-item-label">Contribution</div>') && opsBlock.includes('<div class="csp-item-label">Daily Ops Status</div>') && opsBlock.includes('<div class="csp-item-label">Completed Today</div>') && opsBlock.includes('<div class="csp-item-label">Missed Today</div>'), 'Faction Daily Ops section renders faction XP/contribution/status/completed/missed from shared state');
 check(wtfSectionBlock.includes('<div class="csp-item-label">Signal Status</div>') && wtfSectionBlock.includes('<div class="csp-item-label">Timer</div>') && wtfSectionBlock.includes('<div class="csp-item-label">Action</div>'), 'Daily WTF Signal section renders status/timer/action from shared state');
+check(wtfSectionBlock.includes('data-csp-wtf-countdown'), 'Daily WTF section renders a dedicated countdown data hook');
 check(missedSectionBlock.includes('Missed XP (all-time)') && missedSectionBlock.includes('Missed Today') && missedSectionBlock.includes('Missed Count'), 'Missed Opportunities section renders all-time/today/count from shared state');
 const ownBattleBlock = functionBlock(csp, 'isOwnBattleActivity');
 const latestActivityBlock = functionBlock(csp, 'latestActivityRows');
@@ -157,6 +158,7 @@ const viewDetailsCount = (las.match(/View details/g) || []).length;
 check(viewDetailsCount === 1, 'faction ops panel keeps only one compact "View details" link');
 check(csp.includes("'/roguelite/daily-state'") && csp.includes("'/player/state'"), 'single shared state authority fetches server-backed daily-state and player state');
 check(!las.includes("postJson('/roguelite/daily-state')") && !las.includes("postJson('/player/state')"), 'live-activity-summary does not independently own right-rail daily/player fetch loops');
+check(!functionBlock(csp, 'buildSharedRailState').includes('latestGlobalBattleRows()') && !functionBlock(csp, 'buildSharedRailState').includes('publicRows'), 'shared state does not compute unused publicRows/latestGlobalBattleRows when no visible section renders them');
 check(las.includes('missedHTML(panelState && panelState.dailyState ? panelState.dailyState : null)'), 'missed XP rendering prefers server-backed daily-state payload');
 check(csp.includes('scheduleLiveDataRefresh') && csp.includes('_liveDataRefreshTimer') && csp.includes('setTimeout(function ()'), 'connection status panel debounces live-data refreshes');
 check(csp.includes("if (detail && detail.source === 'load') return;"), 'connection status panel ignores load-sourced moonboys:faction-status refresh recursion');
@@ -168,6 +170,9 @@ check(csp.includes('moonboys:sync-state') && csp.includes('moonboys:score-update
 check(las.includes("window.addEventListener('moonboys:sync-state', invalidateAndRefresh);") && las.includes("window.addEventListener('moonboys:score-updated', invalidateAndRefresh);"), 'faction daily ops panel refreshes on relink/reset and accepted-run sync events');
 check(bridge.includes("'moonboys:sync-state'") && bridge.includes("'moonboys:score-updated'") && bridge.includes('scheduleServerAuthorityRefresh'), 'battle chamber bridge refreshes server authority after sync and score events');
 check(csp.includes('RIGHT_RAIL_SECTION_SELECTORS') && csp.includes('mountAllSections'), 'shared renderer remounts all right-rail sections through one section selector set');
+check(csp.includes("window.addEventListener('moonboys:wtf-countdown-tick', updateWtfCountdownUI);"), 'countdown tick is handled by a dedicated WTF timer updater');
+const cspCountdownTickBlock = functionBlock(csp, 'updateWtfCountdownUI');
+check(cspCountdownTickBlock.includes("document.querySelectorAll('[data-csp-wtf-countdown]')") && !cspCountdownTickBlock.includes('mountAllSections('), 'WTF countdown tick patches only timer nodes without remounting whole right rail');
 
 console.log('\n[5] WTF event visibility');
 check(las.includes('window.MOONBOYS_WTF_EVENTS'), 'faction ops panel reads window.MOONBOYS_WTF_EVENTS');
@@ -380,12 +385,14 @@ const scheduleRefreshBlock = functionBlock(csp, 'scheduleLiveDataRefresh');
 const schedulePanelRemountBlock = functionBlock(csp, 'schedulePanelRemount');
 const contributionBlock = functionBlock(csp, 'getContribution');
 const invalidateAndRefreshBlock = functionBlock(csp, 'invalidateAndRefresh');
+const invalidateSharedRailStateBlock = functionBlock(csp, 'invalidateSharedRailState');
 // buildPanelHTML must not unconditionally await the fetch before checking globals
 check(!buildPanelHTMLBlock.includes('await fetchDailyStateWithAuth()'), 'buildPanelHTML does not block-await daily-state fetch before rendering');
 check(buildSharedRailStateBlock.includes('fetchDailyStateWithAuth().then'), 'shared right-rail state fires daily-state fetch in background when Missed XP is unconfirmed');
 check(!buildPanelHTMLBlock.includes("document.querySelectorAll('.csp-item-val[data-csp-missed-xp]')"), 'buildPanelHTML does not directly patch Missed XP DOM nodes from daily-state fetch callback');
 check(buildSharedRailStateBlock.includes('schedulePanelRemount()'), 'confirmed daily-state fetch triggers panel remount path');
 check(csp.includes('var _dailyStateGeneration = 0;'), 'connection-status-panel defines _dailyStateGeneration');
+check(csp.includes('var _sharedRailStateGeneration = 0;') && csp.includes('var _sharedRailStateInflightGeneration = -1;'), 'connection-status-panel tracks shared-state generation and inflight generation');
 check(invalidateDailyStateCacheBlock.includes('_dailyStateGeneration++'), 'invalidateDailyStateCache increments _dailyStateGeneration');
 // fetchDailyStateWithAuth must target the correct Worker route
 check(fetchDailyStateBlock.includes("'/roguelite/daily-state'"), 'fetchDailyStateWithAuth targets /roguelite/daily-state Worker route');
@@ -394,7 +401,12 @@ check(fetchDailyStateBlock.includes('requestGeneration === _dailyStateGeneration
 // daily-state cache must be invalidated when live-data refresh events fire
 check(csp.includes('function invalidateDailyStateCache'), 'connection-status-panel has invalidateDailyStateCache helper');
 check(scheduleRefreshBlock.includes('invalidateDailyStateCache()'), 'scheduleLiveDataRefresh calls invalidateDailyStateCache before remounting panels');
+check(scheduleRefreshBlock.includes('invalidateSharedRailState();') && scheduleRefreshBlock.includes('mountAllSections();'), 'scheduleLiveDataRefresh clears shared cache+inflight before remounting all sections');
+check(invalidateAndRefreshBlock.includes('invalidateSharedRailState();') && invalidateAndRefreshBlock.includes('mountAllSections();'), 'invalidateAndRefresh clears shared cache+inflight before remounting all sections');
 check(schedulePanelRemountBlock.includes('mountAllSections()') && !schedulePanelRemountBlock.includes('invalidateDailyStateCache()'), 'schedulePanelRemount remounts panels without invalidating daily-state cache');
+check(schedulePanelRemountBlock.includes('invalidateSharedRailState();'), 'schedulePanelRemount clears shared cache+inflight before remounting sections');
+check(invalidateSharedRailStateBlock.includes('_sharedRailStateCache = null;') && invalidateSharedRailStateBlock.includes('_sharedRailStateInflight = null;') && invalidateSharedRailStateBlock.includes('_sharedRailStateGeneration++;'), 'shared-state invalidation clears cache/inflight and bumps generation');
+check(buildSharedRailStateBlock.includes('_sharedRailStateInflightGeneration === _sharedRailStateGeneration') && buildSharedRailStateBlock.includes('if (generation === _sharedRailStateGeneration)'), 'shared-state in-flight reuse/cache write are generation-guarded against stale promises');
 // _dailyStateInflight must be cleared in exactly one finally path
 const inflightNullCount = (fetchDailyStateBlock.match(/_dailyStateInflight\s*=\s*null/g) || []).length;
 check(inflightNullCount === 1, 'fetchDailyStateWithAuth clears _dailyStateInflight in exactly one path');
