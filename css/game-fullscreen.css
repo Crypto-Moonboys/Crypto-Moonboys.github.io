@@ -1151,6 +1151,14 @@ body.overlay-open #faction-hud {
   }
 }
 
+/* Large coarse-pointer landscape still uses side-mounted split controls,
+   so it must not reserve any bottom touch height after the 1100px rule above. */
+@media (pointer: coarse) and (orientation: landscape) {
+  #game-overlay.overlay-touch-landscape {
+    --overlay-touch-height: 0px;
+  }
+}
+
 @media (min-width: 1100px) {
   #overlay-panel-status {
     display: block !important;

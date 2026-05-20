@@ -409,6 +409,23 @@ check(
 );
 check(
   (() => {
+    // Large coarse-pointer screens (iPad/tablet landscape) also match the split layout,
+    // so a later landscape override must restore --overlay-touch-height:0px after the
+    // min-width:1100 coarse-pointer rule sets 68px.
+    const coarseLarge68Pos = fullscreenCssSrc.search(
+      /@media\s*\(pointer:\s*coarse\)\s*and\s*\(min-width:\s*1100px\)[\s\S]*?#game-overlay\.overlay-has-touch\s*\{[\s\S]*?--overlay-touch-height:\s*68px/u,
+    );
+    const laterLandscapeZeroRelativePos = coarseLarge68Pos > -1
+      ? fullscreenCssSrc.slice(coarseLarge68Pos + 1).search(
+          /@media\s*\(pointer:\s*coarse\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*?#game-overlay\.overlay-touch-landscape\s*\{[\s\S]*?--overlay-touch-height:\s*0px/u,
+        )
+      : -1;
+    return coarseLarge68Pos > -1 && laterLandscapeZeroRelativePos > -1;
+  })(),
+  'game-fullscreen.css re-asserts landscape split --overlay-touch-height:0px after the large coarse-pointer 68px rule so side controls never reserve bottom canvas space',
+);
+check(
+  (() => {
     // Source-order tiebreaker: the landscape-split max-height:none override must appear
     // AFTER the mobile-landscape max-height:52px rule so it wins the cascade when both
     // @media queries match on the same device (phones in landscape).
