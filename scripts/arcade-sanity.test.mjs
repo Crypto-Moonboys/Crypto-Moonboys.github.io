@@ -371,9 +371,17 @@ check(
 );
 check(
   /@media\s*\(pointer:\s*coarse\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*#game-overlay\.overlay-touch-landscape\s*\{[\s\S]*--overlay-touch-height:\s*0px;/u.test(fullscreenCssSrc) &&
-    /@media\s*\(pointer:\s*coarse\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*#game-overlay\.overlay-touch-landscape\s+\.overlay-touch-pad\s*\{[\s\S]*position:\s*absolute;[\s\S]*top:\s*var\(--overlay-toolbar-height\);[\s\S]*bottom:\s*0;/u.test(fullscreenCssSrc) &&
+    /@media\s*\(pointer:\s*coarse\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*#game-overlay\.overlay-touch-landscape\s+\.overlay-touch-pad\s*\{[\s\S]*position:\s*absolute;[\s\S]*top:\s*var\(--overlay-toolbar-height\);[\s\S]*bottom:\s*0;[\s\S]*max-height:\s*none;/u.test(fullscreenCssSrc) &&
     /@media\s*\(pointer:\s*coarse\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*#game-overlay\.overlay-touch-landscape\s+\.game-stage\s*\{[\s\S]*padding-left:[\s\S]*padding-right:/u.test(fullscreenCssSrc),
-  'game-fullscreen.css uses coarse-pointer landscape split touch zones and removes bottom touch-height reservation while expanding stage with side safe-zones',
+  'game-fullscreen.css uses coarse-pointer landscape split touch zones, clears inherited touch-pad max-height, and removes bottom touch-height reservation while expanding stage with side safe-zones',
+);
+check(
+  (() => {
+    const touchGamepadRules = fullscreenCssSrc.match(/#game-overlay\s+\.touch-gamepad\s*\{/gu) || [];
+    const touchZoneRules = fullscreenCssSrc.match(/#game-overlay\s+\.touch-zone\s*\{/gu) || [];
+    return touchGamepadRules.length === 1 && touchZoneRules.length === 1;
+  })(),
+  'game-fullscreen.css keeps single consolidated base rules for .touch-gamepad and .touch-zone (no duplicate conflicting selectors)',
 );
 check(
   /@media\s*\(max-width:\s*480px\)[\s\S]*#game-overlay\.overlay-has-touch\s+\.overlay-touch-pad\s*\{[\s\S]*display:\s*flex;[\s\S]*\}/u.test(fullscreenCssSrc) &&

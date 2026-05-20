@@ -638,17 +638,20 @@ body.overlay-open #faction-hud {
 
 #game-overlay .touch-gamepad {
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 6px;
   width: 100%;
   max-width: min(100%, 560px);
   margin: 0 auto;
+  flex-wrap: nowrap;
   flex-shrink: 0;
 }
 
 #game-overlay .touch-zone {
-  display: inline-flex;
+  display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: 6px;
@@ -719,8 +722,7 @@ body.overlay-open #faction-hud {
 /* Touch layout wrappers */
 #game-overlay .touch-lr,
 #game-overlay .touch-asteroid,
-#game-overlay .touch-tetris,
-#game-overlay .touch-gamepad {
+#game-overlay .touch-tetris {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -731,8 +733,7 @@ body.overlay-open #faction-hud {
 
 #game-overlay .touch-lr-row,
 #game-overlay .touch-asteroid-row,
-#game-overlay .touch-tetris-row,
-#game-overlay .touch-zone {
+#game-overlay .touch-tetris-row {
   display: flex;
   flex-direction: row;
   gap: 6px;
@@ -933,6 +934,7 @@ body.overlay-open #faction-hud {
     bottom: 0;
     left: 0;
     right: 0;
+    max-height: none;
     padding: 0 calc(4px + env(safe-area-inset-right, 0px)) 0 calc(4px + env(safe-area-inset-left, 0px));
     background: transparent;
     border-top: 0;
