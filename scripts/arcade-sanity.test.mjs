@@ -370,6 +370,17 @@ check(
   'game-fullscreen.css compacts overlay cards on smaller viewports',
 );
 check(
+  /@media\s*\(pointer:\s*coarse\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*#game-overlay\.overlay-touch-landscape\s*\{[\s\S]*--overlay-touch-height:\s*0px;/u.test(fullscreenCssSrc) &&
+    /@media\s*\(pointer:\s*coarse\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*#game-overlay\.overlay-touch-landscape\s+\.overlay-touch-pad\s*\{[\s\S]*position:\s*absolute;[\s\S]*top:\s*var\(--overlay-toolbar-height\);[\s\S]*bottom:\s*0;/u.test(fullscreenCssSrc) &&
+    /@media\s*\(pointer:\s*coarse\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*#game-overlay\.overlay-touch-landscape\s+\.game-stage\s*\{[\s\S]*padding-left:[\s\S]*padding-right:/u.test(fullscreenCssSrc),
+  'game-fullscreen.css uses coarse-pointer landscape split touch zones and removes bottom touch-height reservation while expanding stage with side safe-zones',
+);
+check(
+  /@media\s*\(max-width:\s*480px\)[\s\S]*#game-overlay\.overlay-has-touch\s+\.overlay-touch-pad\s*\{[\s\S]*display:\s*flex;[\s\S]*\}/u.test(fullscreenCssSrc) &&
+    /@media\s*\(max-width:\s*480px\)[\s\S]*#game-overlay\.overlay-has-touch\s*\{[\s\S]*--overlay-touch-height:\s*58px;/u.test(fullscreenCssSrc),
+  'game-fullscreen.css preserves portrait bottom touch controls with explicit overlay touch-height budget',
+);
+check(
   // body.arcade-fullscreen-only:not(.overlay-open) #cm-modifier-panel — display:none
   /body\.arcade-fullscreen-only:not\(\.overlay-open\)[^{]*#cm-modifier-panel[\s\S]*?display:\s*none/u.test(fullscreenCssSrc),
   'game-fullscreen.css hides on-page modifier panel in arcade-fullscreen-only mode to prevent pre-overlay card flash',
@@ -416,6 +427,21 @@ check(
     /window\.addEventListener\('orientationchange',\s*function\s*\(\)\s*\{[\s\S]*scheduleOverlayResizeSync\('orientationchange'\);/u.test(fullscreenShellSrc) &&
     /document\.dispatchEvent\(new CustomEvent\('arcade-overlay-resize'/u.test(fullscreenShellSrc),
   'game-fullscreen.js emits overlay resize lifecycle hooks for viewport resize/orientation changes',
+);
+check(
+  /function\s+buildGamepadSplit\(\s*leftControls,\s*rightControls,\s*extraClass\s*\)\s*\{[\s\S]*touch-zone-left[\s\S]*touch-zone-right/u.test(fullscreenShellSrc) &&
+    /function\s+syncTouchLayoutMode\(\)\s*\{[\s\S]*overlay\.classList\.toggle\('overlay-touch-landscape',\s*splitLandscape\);[\s\S]*touchPad\.classList\.toggle\('touch-gamepad-split',\s*splitLandscape\);/u.test(fullscreenShellSrc) &&
+    /function\s+buildTouchPad\(\s*meta\s*\)\s*\{[\s\S]*syncTouchLayoutMode\(\);/u.test(fullscreenShellSrc),
+  'game-fullscreen.js supports left/right touch-zone grouping and toggles landscape split classes from touch-mode state',
+);
+check(
+  /function\s+buildDpad\(\)\s*\{[\s\S]*buildGamepadSplit\(/u.test(fullscreenShellSrc) &&
+    /function\s+buildDpadBomb\(\)\s*\{[\s\S]*buildGamepadSplit\(/u.test(fullscreenShellSrc) &&
+    /function\s+buildLrLaunch\(\)\s*\{[\s\S]*buildGamepadSplit\(/u.test(fullscreenShellSrc) &&
+    /function\s+buildLrFire\(\)\s*\{[\s\S]*buildGamepadSplit\(/u.test(fullscreenShellSrc) &&
+    /function\s+buildAsteroid\(\)\s*\{[\s\S]*buildGamepadSplit\(/u.test(fullscreenShellSrc) &&
+    /function\s+buildTetris\(\)\s*\{[\s\S]*buildGamepadSplit\(/u.test(fullscreenShellSrc),
+  'game-fullscreen.js touch builders map per-game controls through the shared left/right split-group helper',
 );
 const btqmBootstrapSrc = await readFile('js/arcade/games/block-topia-quest-maze/bootstrap.js');
 check(

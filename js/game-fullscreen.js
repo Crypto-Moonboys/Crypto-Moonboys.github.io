@@ -718,9 +718,49 @@
     });
   }
 
+  function appendTouchControls(target, controls) {
+    if (!controls) return;
+    if (Array.isArray(controls)) {
+      controls.forEach(function (control) {
+        if (control) target.appendChild(control);
+      });
+      return;
+    }
+    target.appendChild(controls);
+  }
+
+  function buildGamepadSplit(leftControls, rightControls, extraClass) {
+    var wrap = el('div', 'touch-gamepad' + (extraClass ? ' ' + extraClass : ''));
+    var leftZone = el('div', 'touch-zone touch-zone-left');
+    var rightZone = el('div', 'touch-zone touch-zone-right');
+    appendTouchControls(leftZone, leftControls);
+    appendTouchControls(rightZone, rightControls);
+    if (!leftZone.childNodes.length) leftZone.classList.add('touch-zone--empty');
+    if (!rightZone.childNodes.length) rightZone.classList.add('touch-zone--empty');
+    wrap.appendChild(leftZone);
+    wrap.appendChild(rightZone);
+    return wrap;
+  }
+
+  function isLandscapeTouchMode() {
+    var isCoarsePointer = false;
+    if (window.matchMedia) {
+      isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    }
+    if (!isCoarsePointer) return false;
+    if (window.matchMedia && window.matchMedia('(orientation: landscape)').matches) return true;
+    return window.innerWidth > window.innerHeight;
+  }
+
+  function syncTouchLayoutMode() {
+    var splitLandscape = overlay.classList.contains('overlay-has-touch') && isLandscapeTouchMode();
+    overlay.classList.toggle('overlay-touch-landscape', splitLandscape);
+    touchPad.classList.toggle('touch-gamepad-split', splitLandscape);
+  }
+
   /* ── Touch control builders ──────────────────────────────────────── */
 
-  function buildDpad() {
+  function buildDpadGrid() {
     var wrap   = el('div', 'touch-dpad');
     var keys   = [null, 'ArrowUp', null, 'ArrowLeft', null, 'ArrowRight', null, 'ArrowDown', null];
     var labels = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→' };
@@ -737,46 +777,50 @@
     return wrap;
   }
 
+  function buildDpad() {
+    return buildGamepadSplit(buildDpadGrid(), null, 'touch-gamepad--dpad');
+  }
+
   function buildDpadBomb() {
-    var wrap = el('div', 'touch-lr-row');
-    var dpad = buildDpad();
+    var dpad = buildDpadGrid();
     var bomb = makeTouchBtn('💣', 'touch-btn--fire touch-btn--wide', 'Place bomb');
     bindTap(bomb, ' ');
-    wrap.appendChild(dpad);
-    wrap.appendChild(bomb);
-    return wrap;
+    return buildGamepadSplit(dpad, bomb, 'touch-gamepad--dpad-bomb');
   }
 
   function buildLrLaunch() {
-    var wrap   = el('div', 'touch-lr-row');
+    var leftWrap = el('div', 'touch-lr-row');
+    var rightWrap = el('div', 'touch-lr-row');
     var left   = makeTouchBtn('←', 'touch-btn--wide', 'Move left');
     var right  = makeTouchBtn('→', 'touch-btn--wide', 'Move right');
     var launch = makeTouchBtn('◎', 'touch-btn--wide', 'Launch');
     bindHold(left,  'ArrowLeft');
     bindHold(right, 'ArrowRight');
     bindTap(launch, ' ');
-    wrap.appendChild(left);
-    wrap.appendChild(right);
-    wrap.appendChild(launch);
-    return wrap;
+    leftWrap.appendChild(left);
+    leftWrap.appendChild(right);
+    rightWrap.appendChild(launch);
+    return buildGamepadSplit(leftWrap, rightWrap, 'touch-gamepad--lr-launch');
   }
 
   function buildLrFire() {
-    var wrap  = el('div', 'touch-lr-row');
+    var leftWrap = el('div', 'touch-lr-row');
+    var rightWrap = el('div', 'touch-lr-row');
     var left  = makeTouchBtn('←', 'touch-btn--wide', 'Move left');
     var fire  = makeTouchBtn('✦', 'touch-btn--fire', 'Fire');
     var right = makeTouchBtn('→', 'touch-btn--wide', 'Move right');
     bindHold(left,  'ArrowLeft');
     bindHold(right, 'ArrowRight');
     bindTap(fire,   ' ');
-    wrap.appendChild(left);
-    wrap.appendChild(fire);
-    wrap.appendChild(right);
-    return wrap;
+    leftWrap.appendChild(left);
+    leftWrap.appendChild(right);
+    rightWrap.appendChild(fire);
+    return buildGamepadSplit(leftWrap, rightWrap, 'touch-gamepad--lr-fire');
   }
 
   function buildAsteroid() {
-    var wrap   = el('div', 'touch-asteroid-row');
+    var leftWrap = el('div', 'touch-asteroid-row');
+    var rightWrap = el('div', 'touch-asteroid-row');
     var rotL   = makeTouchBtn('↺', '', 'Rotate left');
     var thrust = makeTouchBtn('▲', '', 'Thrust');
     var rotR   = makeTouchBtn('↻', '', 'Rotate right');
@@ -785,16 +829,16 @@
     bindHold(thrust, 'ArrowUp');
     bindHold(rotR,   'ArrowRight');
     bindTap(fire,    ' ');
-    wrap.appendChild(rotL);
-    wrap.appendChild(thrust);
-    wrap.appendChild(rotR);
-    wrap.appendChild(fire);
-    return wrap;
+    leftWrap.appendChild(rotL);
+    leftWrap.appendChild(rotR);
+    rightWrap.appendChild(thrust);
+    rightWrap.appendChild(fire);
+    return buildGamepadSplit(leftWrap, rightWrap, 'touch-gamepad--asteroid');
   }
 
   function buildTetris() {
-    var wrap     = el('div', 'touch-tetris');
-    var row1     = el('div', 'touch-tetris-row');
+    var leftWrap = el('div', 'touch-tetris-row');
+    var rightWrap = el('div', 'touch-tetris-row');
     var left     = makeTouchBtn('←', '', 'Move left');
     var rotate   = makeTouchBtn('↻', '', 'Rotate');
     var right    = makeTouchBtn('→', '', 'Move right');
@@ -805,20 +849,22 @@
     bindHold(right,    'ArrowRight');
     bindHold(softDrop, 'ArrowDown');
     bindTap(hardDrop,  ' ');
-    row1.appendChild(left);
-    row1.appendChild(rotate);
-    row1.appendChild(right);
-    row1.appendChild(softDrop);
-    row1.appendChild(hardDrop);
-    wrap.appendChild(row1);
-    return wrap;
+    leftWrap.appendChild(left);
+    leftWrap.appendChild(rotate);
+    leftWrap.appendChild(right);
+    rightWrap.appendChild(softDrop);
+    rightWrap.appendChild(hardDrop);
+    return buildGamepadSplit(leftWrap, rightWrap, 'touch-gamepad--tetris');
   }
 
   function buildTouchPad(meta) {
     touchPad.innerHTML = '';
     var hasTouchControls = !!(meta && meta.touchScheme);
     overlay.classList.toggle('overlay-has-touch', hasTouchControls);
-    if (!hasTouchControls) return;
+    if (!hasTouchControls) {
+      syncTouchLayoutMode();
+      return;
+    }
     var builders = {
       'dpad':      buildDpad,
       'dpad-bomb': buildDpadBomb,
@@ -829,6 +875,7 @@
     };
     var fn = builders[meta.touchScheme];
     if (fn) touchPad.appendChild(fn());
+    syncTouchLayoutMode();
   }
 
   /* ── Side panel builders ─────────────────────────────────────────── */
@@ -1466,6 +1513,8 @@
 
     overlay.classList.remove('active');
     overlay.classList.remove('overlay-has-touch');
+    overlay.classList.remove('overlay-touch-landscape');
+    touchPad.classList.remove('touch-gamepad-split');
     document.body.classList.remove('overlay-open');
     closeOverlayPanels({ silent: true });
 
@@ -1741,11 +1790,13 @@
   window.addEventListener('resize', function () {
     if (!isOpen) return;
     if (dispatchingSyntheticResize) return;
+    syncTouchLayoutMode();
     scheduleOverlayResizeSync('viewport-resize', { skipWindowResize: true });
   });
 
   window.addEventListener('orientationchange', function () {
     if (!isOpen) return;
+    syncTouchLayoutMode();
     scheduleOverlayResizeSync('orientationchange');
   });
 
