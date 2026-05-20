@@ -322,7 +322,7 @@ check(csp.includes('Auth expired'), 'RELINK badge copy includes "Auth expired" t
 const buildBadgeBlock = functionBlock(csp, 'buildBadgeHTML');
 check(buildBadgeBlock.includes('restoreLinkedTelegramAuth'), 'buildBadgeHTML attempts restoreLinkedTelegramAuth before rendering RELINK badge');
 check(csp.includes('Signed Telegram auth expired — relink required.') && csp.includes('RELINK Telegram'), 'player live feed shows explicit relink state + CTA when signed auth is unavailable');
-check(functionBlock(csp, 'buildPanelHTML').includes('LIVE LINKED') && functionBlock(csp, 'buildPanelHTML').includes('restoreLinkedTelegramAuth'), 'player live feed shows LIVE LINKED only after signed/restorable auth check');
+check(functionBlock(csp, 'buildPlayerLiveFeedHTML').includes('LIVE LINKED') && functionBlock(csp, 'buildSharedRailState').includes('getSignedTelegramAuthWithRestore'), 'player live feed shows LIVE LINKED only after signed/restorable auth check');
 
 // Issue 6: Hydration is authoritative for cached state but cannot roll back live in-session XP
 check(moonboysState.includes('_liveXpRevision'), 'moonboys-state.js has a _liveXpRevision race guard to protect live in-session XP from hydration rollback');
@@ -370,7 +370,8 @@ check(!latestActivityRowsBlock.includes('Daily opportunity'), 'latestActivityRow
 check(!latestActivityRowsBlock.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && !latestActivityRowsBlock.includes('MOONBOYS_DAILY_ROGUELITE_LOTTERY'), 'latestActivityRows does not read daily-state globals (daily logic belongs in dedicated status rows)');
 
 console.log('\n[12] Confirmed Missed XP fetch — non-blocking and cache-safe');
-const buildPanelHTMLBlock = functionBlock(csp, 'buildPanelHTML');
+const buildPanelHTMLBlock = functionBlock(csp, 'buildFactionDailyOpsHTML');
+const buildSharedRailStateBlock = functionBlock(csp, 'buildSharedRailState');
 const fetchDailyStateBlock = functionBlock(csp, 'fetchDailyStateWithAuth');
 const fetchPlayerStateBlock = functionBlock(csp, 'fetchPlayerStateWithAuth');
 const invalidateDailyStateCacheBlock = functionBlock(csp, 'invalidateDailyStateCache');
@@ -381,9 +382,9 @@ const contributionBlock = functionBlock(csp, 'getContribution');
 const invalidateAndRefreshBlock = functionBlock(csp, 'invalidateAndRefresh');
 // buildPanelHTML must not unconditionally await the fetch before checking globals
 check(!buildPanelHTMLBlock.includes('await fetchDailyStateWithAuth()'), 'buildPanelHTML does not block-await daily-state fetch before rendering');
-check(buildPanelHTMLBlock.includes('fetchDailyStateWithAuth().then'), 'buildPanelHTML fires daily-state fetch in background when Missed XP is unconfirmed');
+check(buildSharedRailStateBlock.includes('fetchDailyStateWithAuth().then'), 'shared right-rail state fires daily-state fetch in background when Missed XP is unconfirmed');
 check(!buildPanelHTMLBlock.includes("document.querySelectorAll('.csp-item-val[data-csp-missed-xp]')"), 'buildPanelHTML does not directly patch Missed XP DOM nodes from daily-state fetch callback');
-check(buildPanelHTMLBlock.includes('schedulePanelRemount()'), 'confirmed daily-state fetch triggers panel remount path');
+check(buildSharedRailStateBlock.includes('schedulePanelRemount()'), 'confirmed daily-state fetch triggers panel remount path');
 check(csp.includes('var _dailyStateGeneration = 0;'), 'connection-status-panel defines _dailyStateGeneration');
 check(invalidateDailyStateCacheBlock.includes('_dailyStateGeneration++'), 'invalidateDailyStateCache increments _dailyStateGeneration');
 // fetchDailyStateWithAuth must target the correct Worker route
@@ -393,20 +394,20 @@ check(fetchDailyStateBlock.includes('requestGeneration === _dailyStateGeneration
 // daily-state cache must be invalidated when live-data refresh events fire
 check(csp.includes('function invalidateDailyStateCache'), 'connection-status-panel has invalidateDailyStateCache helper');
 check(scheduleRefreshBlock.includes('invalidateDailyStateCache()'), 'scheduleLiveDataRefresh calls invalidateDailyStateCache before remounting panels');
-check(schedulePanelRemountBlock.includes("document.querySelectorAll('[data-csp-panel]')") && !schedulePanelRemountBlock.includes('invalidateDailyStateCache()'), 'schedulePanelRemount remounts panels without invalidating daily-state cache');
+check(schedulePanelRemountBlock.includes('mountAllSections()') && !schedulePanelRemountBlock.includes('invalidateDailyStateCache()'), 'schedulePanelRemount remounts panels without invalidating daily-state cache');
 // _dailyStateInflight must be cleared in exactly one finally path
 const inflightNullCount = (fetchDailyStateBlock.match(/_dailyStateInflight\s*=\s*null/g) || []).length;
 check(inflightNullCount === 1, 'fetchDailyStateWithAuth clears _dailyStateInflight in exactly one path');
 check(fetchDailyStateBlock.includes('} finally {') && fetchDailyStateBlock.includes('_dailyStateInflight = null'), 'fetchDailyStateWithAuth clears _dailyStateInflight inside a finally block');
-check(buildPanelHTMLBlock.includes('var patchGeneration = _dailyStateGeneration;') && buildPanelHTMLBlock.includes('if (patchGeneration !== _dailyStateGeneration) return;'), 'buildPanelHTML guards Missed XP background patch by generation match');
+check(buildSharedRailStateBlock.includes('var patchGeneration = _dailyStateGeneration;') && buildSharedRailStateBlock.includes('if (patchGeneration !== _dailyStateGeneration) return;'), 'shared right-rail state guards Missed XP background patch by generation match');
 // Missed XP still must not default to hard 0 after fetch refactor
 check(!/return\s+0\s*;/.test(functionBlock(csp, 'missedXpAllTime')), 'missedXpAllTime still does not default to hard 0 after background-fetch refactor');
 const dailyCountsBlock = functionBlock(csp, 'getDailyCounts');
 check(dailyCountsBlock.includes('today_active') && dailyCountsBlock.includes('mission_opportunities') && dailyCountsBlock.includes('row.completed'), 'connection-status completed count derives from today_active.mission_opportunities[].completed');
-check(buildPanelHTMLBlock.includes("var completedDisplay = dailyCounts.completed == null ? 'syncing…'") && buildPanelHTMLBlock.includes("var missedTodayDisplay = dailyCounts.missed == null ? 'syncing…'"), 'connection-status shows syncing for missing completed/missed daily counts instead of fake 0');
+check(buildPanelHTMLBlock.includes("var completedDisplay = shared.dailyCounts && shared.dailyCounts.completed != null ? String(shared.dailyCounts.completed) : 'syncing…'") && buildPanelHTMLBlock.includes("var missedTodayDisplay = shared.dailyCounts && shared.dailyCounts.missed != null ? String(shared.dailyCounts.missed) : 'syncing…'"), 'connection-status shows syncing for missing completed/missed daily counts instead of fake 0');
 check(contributionBlock.includes('Object.prototype.hasOwnProperty.call(contributions, factionKey)') && contributionBlock.includes("return { value: '0', pending: false };"), 'confirmed player-state with missing faction contribution key renders 0 (not syncing)');
 check(contributionBlock.includes('if (!player) return { value: \'syncing…\', pending: true };'), 'contribution is pending only when player-state is unavailable');
-check(buildPanelHTMLBlock.includes('if (contribution.pending)') && buildPanelHTMLBlock.includes('fetchPlayerStateWithAuth().then') && buildPanelHTMLBlock.includes('if (confirmedState) {') && buildPanelHTMLBlock.includes('schedulePanelRemount();'), 'player-state remount path only schedules when contribution is actually pending');
+check(buildSharedRailStateBlock.includes('if (contribution.pending)') && buildSharedRailStateBlock.includes('fetchPlayerStateWithAuth().then') && buildSharedRailStateBlock.includes('if (confirmedState)') && buildSharedRailStateBlock.includes('schedulePanelRemount();'), 'player-state remount path only schedules when contribution is actually pending');
 check(fetchPlayerStateBlock.includes('var requestGeneration = _playerStateGeneration;') && fetchPlayerStateBlock.includes('requestGeneration === _playerStateGeneration') && fetchPlayerStateBlock.includes('_playerStateCache = payload;'), 'fetchPlayerStateWithAuth guards cache assignment with player-state generation');
 check(invalidatePlayerStateCacheBlock.includes('_playerStateGeneration++'), 'invalidatePlayerStateCache increments _playerStateGeneration');
 check(invalidateAndRefreshBlock.includes('_playerStateGeneration++;'), 'invalidateAndRefresh increments _playerStateGeneration on identity refresh/relink');
@@ -418,8 +419,8 @@ check(!hasFunctionDeclaration(csp, 'getFactionApi'), 'connection-status-panel do
 check(!hasFunctionDeclaration(csp, 'getFactionStatus'), 'connection-status-panel does not define getFactionStatus helper');
 check(!hasFunctionDeclaration(csp, 'factionLabel'), 'connection-status-panel does not define factionLabel helper');
 check(!hasFunctionDeclaration(csp, 'normaliseFactionKey'), 'connection-status-panel does not define normaliseFactionKey helper');
-// The subscriber must not patch [data-csp-faction] (faction text no longer in header badge or panel)
-check(!csp.includes('data-csp-faction'), 'connection-status-panel subscriber does not patch [data-csp-faction] elements');
+// The subscriber must not patch legacy [data-csp-faction] fields (distinct from section hook data-csp-faction-ops)
+check(!csp.includes('data-csp-faction]') && !csp.includes('querySelectorAll(\'[data-csp-faction]\')'), 'connection-status-panel subscriber does not patch legacy [data-csp-faction] elements');
 // Header badge must not include faction or unaligned rendered text (use specific rendered patterns)
 const buildBadgeHTMLBlock = functionBlock(csp, 'buildBadgeHTML');
 check(!buildBadgeHTMLBlock.includes('data-csp-faction') && !buildBadgeHTMLBlock.includes('No faction selected yet') && !buildBadgeHTMLBlock.includes('factionLabel'), 'buildBadgeHTML does not render faction data or call factionLabel in the header badge');
