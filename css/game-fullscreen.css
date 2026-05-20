@@ -1042,6 +1042,17 @@ body.overlay-open #faction-hud {
   }
 }
 
+/* B-override. Landscape-split tiebreaker — must come after the mobile-landscape B block above.
+   On devices where both @media (pointer:coarse)+(orientation:landscape) and
+   @media (max-height:500px)+(max-width:900px) match simultaneously, source order decides:
+   this re-asserts max-height:none so the absolute-positioned side-zone pad is never
+   collapsed to 52px by the B rule above. */
+@media (pointer: coarse) and (orientation: landscape) {
+  #game-overlay.overlay-touch-landscape .overlay-touch-pad {
+    max-height: none;
+  }
+}
+
 /* C. Tablet */
 @media (min-width: 481px) and (max-width: 1099px) {
   #game-overlay {

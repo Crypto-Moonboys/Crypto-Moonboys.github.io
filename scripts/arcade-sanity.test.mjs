@@ -409,6 +409,24 @@ check(
 );
 check(
   (() => {
+    // Source-order tiebreaker: the landscape-split max-height:none override must appear
+    // AFTER the mobile-landscape max-height:52px rule so it wins the cascade when both
+    // @media queries match on the same device (phones in landscape).
+    const mobileMaxHeight52Pos = fullscreenCssSrc.search(
+      /@media\s*\(max-height:\s*500px\)\s*and\s*\(max-width:\s*900px\)[\s\S]*?#game-overlay\.overlay-has-touch\s+\.overlay-touch-pad\s*\{[\s\S]*?max-height:\s*52px/u,
+    );
+    // Find the tiebreaker block: a second (pointer:coarse)+(landscape) block specifically
+    // containing overlay-touch-landscape .overlay-touch-pad { max-height: none }
+    // We search for it after the mobile-landscape block.
+    const tiebreakPos = mobileMaxHeight52Pos > -1
+      ? fullscreenCssSrc.indexOf('max-height: none', mobileMaxHeight52Pos + 1)
+      : -1;
+    return mobileMaxHeight52Pos > -1 && tiebreakPos > mobileMaxHeight52Pos;
+  })(),
+  'game-fullscreen.css landscape-split max-height:none tiebreaker appears after mobile-landscape max-height:52px so cascade override is guaranteed',
+);
+check(
+  (() => {
     const touchGamepadRules = fullscreenCssSrc.match(/#game-overlay\s+\.touch-gamepad\s*\{/gu) || [];
     const touchZoneRules = fullscreenCssSrc.match(/#game-overlay\s+\.touch-zone\s*\{/gu) || [];
     return touchGamepadRules.length === 1 && touchZoneRules.length === 1;
