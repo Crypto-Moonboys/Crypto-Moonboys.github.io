@@ -154,6 +154,8 @@ check(viewDetailsCount === 1, 'faction ops panel keeps only one compact "View de
 check(las.includes("postJson('/roguelite/daily-state')") && las.includes("postJson('/player/state')"), 'right rail fetches server-backed daily-state and player state for linked users');
 check(las.includes('missedHTML(panelState && panelState.dailyState ? panelState.dailyState : null)'), 'missed XP rendering prefers server-backed daily-state payload');
 check(csp.includes('scheduleLiveDataRefresh') && csp.includes('_liveDataRefreshTimer') && csp.includes('setTimeout(function ()'), 'connection status panel debounces live-data refreshes');
+check(csp.includes("if (detail && detail.source === 'load') return;"), 'connection status panel ignores load-sourced moonboys:faction-status refresh recursion');
+check(csp.includes('maybeRefreshFactionStatus') && csp.includes('FACTION_STATUS_LOAD_THROTTLE_MS') && csp.includes('_factionStatusInflight'), 'connection status panel throttles/inflight-guards faction status loads to avoid repeated /faction/status calls');
 for (const evt of ['battle-chamber:faction-data-ready','battle-chamber:activity-ready','moonboys:wtf-events-ready','moonboys:wtf-event-checkin','moonboys:wtf-event-complete','moonboys:roguelite-options-unlocked','moonboys:faction-status','moonboys:faction-boost']) {
   check(csp.includes(evt), `connection status panel listens for ${evt}`);
 }
@@ -388,6 +390,9 @@ check(fetchDailyStateBlock.includes('} finally {') && fetchDailyStateBlock.inclu
 check(buildPanelHTMLBlock.includes('var patchGeneration = _dailyStateGeneration;') && buildPanelHTMLBlock.includes('if (patchGeneration !== _dailyStateGeneration) return;'), 'buildPanelHTML guards Missed XP background patch by generation match');
 // Missed XP still must not default to hard 0 after fetch refactor
 check(!/return\s+0\s*;/.test(functionBlock(csp, 'missedXpAllTime')), 'missedXpAllTime still does not default to hard 0 after background-fetch refactor');
+const dailyCountsBlock = functionBlock(csp, 'getDailyCounts');
+check(dailyCountsBlock.includes('today_active') && dailyCountsBlock.includes('mission_opportunities') && dailyCountsBlock.includes('row.completed'), 'connection-status completed count derives from today_active.mission_opportunities[].completed');
+check(buildPanelHTMLBlock.includes("var completedDisplay = dailyCounts.completed == null ? 'syncing…'") && buildPanelHTMLBlock.includes("var missedTodayDisplay = dailyCounts.missed == null ? 'syncing…'"), 'connection-status shows syncing for missing completed/missed daily counts instead of fake 0');
 
 console.log('\n[13] Dead-code drift prevention');
 // connection-status-panel: removed faction helpers must not return
@@ -406,6 +411,17 @@ check(factionAlignment.includes('getSignedTelegramAuthWithRestore'), 'faction al
 check(factionAlignment.includes('cachedTelegramId') && factionAlignment.includes('identityTelegramId') && factionAlignment.includes('cachedTelegramId !== identityTelegramId'), 'cached faction state is ignored when Telegram identity changes');
 check(factionAlignment.includes('clearCachedStatus'), 'faction alignment exposes cache-clear helper for relink/reset flows');
 check(las.includes('resolveFactionStatus(linked)') && las.includes('factionApi.loadStatus'), 'faction daily ops resolves faction through server-backed faction status before rendering');
+check(factionAlignment.includes('cooldown_ms_remaining: Number.isFinite(remainingMs) && remainingMs > 0 ? remainingMs : 0'), 'joinFaction stores cooldown_ms_remaining only when API returns true remaining value');
+check(factionAlignment.includes('season_key: data.season_key || (priorStatus && priorStatus.season_key) || null'), 'earnFactionXp preserves season_key when endpoint omits it');
+
+console.log('\n[15] Right-rail recursion + non-blocking guards');
+const lasBuildHTMLBlock = functionBlock(las, 'buildHTML');
+check(!lasBuildHTMLBlock.includes('await fetchPanelServerState') && !lasBuildHTMLBlock.includes('await resolveFactionStatus') && lasBuildHTMLBlock.includes('scheduleBackgroundRefresh(linked);'), 'live-activity-summary renders immediately from cached/syncing state and fetches server state in background');
+check(lasBuildHTMLBlock.includes('var panelState = getPanelState(linked);'), 'live-activity-summary first paint uses cached/syncing panel state before async fetch resolves');
+check(las.includes("detail && detail.source === 'load'") && las.includes('shouldRefreshForLoadFactionEvent'), 'live-activity-summary filters load-sourced faction-status events to prevent recursive refresh');
+check(las.includes("payload && payload.source === 'load'") && las.includes('factionRefreshSuppressedUntil'), 'live-activity-summary filters load-sourced faction:update bus events with suppression/transition guard');
+check(las.includes('today_active') && las.includes('mission_opportunities') && las.includes('row.completed') && las.includes("var completedDisplay = completedToday == null ? 'syncing…'"), 'live-activity-summary derives completed count from mission_opportunities and shows syncing when unknown');
+check(bridge.includes('UNALIGNED_LOAD_TTL_MS') && bridge.includes('_lastUnalignedLoadCheckAt') && bridge.includes("detail.source === 'load' && (!detail.faction || detail.faction === 'unaligned')"), 'battle chamber bridge applies unaligned TTL and ignores load-sourced unaligned faction status to prevent polling loops');
 
 // live-activity-summary: removed sync/faction/log helpers must not return
 check(!hasFunctionDeclaration(las, 'syncSummary'), 'live-activity-summary does not define syncSummary helper');

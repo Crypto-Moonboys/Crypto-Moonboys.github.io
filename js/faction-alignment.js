@@ -174,13 +174,14 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ telegram_auth: auth, faction: target }),
     });
+    var remainingMs = Number(data && data.cooldown_ms_remaining);
     var payload = {
       telegram_id: auth && auth.id != null ? String(auth.id) : getIdentityTelegramId(),
       faction: normalizeFaction(data.faction),
       faction_xp: Number(data.faction_xp) || 0,
       season_key: data.season_key || null,
       bonuses: data.bonuses || FACTIONS[normalizeFaction(data.faction)],
-      cooldown_ms_remaining: Number(data.cooldown_ms) || 0,
+      cooldown_ms_remaining: Number.isFinite(remainingMs) && remainingMs > 0 ? remainingMs : 0,
     };
     setCachedStatus(payload);
     dispatchUiState('moonboys:faction-boost', { faction: payload.faction, amount: 0, source: 'join', ts: Date.now() });
@@ -191,6 +192,7 @@
   async function earnFactionXp(source, baseXp) {
     var auth = await getSignedTelegramAuthWithRestore();
     if (!auth) return null;
+    var priorStatus = getCachedStatus();
     var data = await request('/faction/earn', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -200,6 +202,7 @@
       telegram_id: auth && auth.id != null ? String(auth.id) : getIdentityTelegramId(),
       faction: normalizeFaction(data.faction),
       faction_xp: Number(data.faction_xp_total) || 0,
+      season_key: data.season_key || (priorStatus && priorStatus.season_key) || null,
       bonuses: data.bonuses || FACTIONS[normalizeFaction(data.faction)],
       cooldown_ms_remaining: 0,
     };

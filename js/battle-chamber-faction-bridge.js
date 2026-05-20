@@ -54,6 +54,9 @@ const LIVE_FACTION_KEYS = [
   'crypto-stoned-boys',
 ];
 var FETCH_TIMEOUT_MS = 6000;
+var UNALIGNED_LOAD_TTL_MS = 30000;
+var _lastUnalignedLoadCheckAt = 0;
+var _resolveFactionInflight = null;
 
 function getApiBase() {
   try {
@@ -84,14 +87,28 @@ function getCurrentFactionKeyFromStatus(status) {
 async function resolveCurrentFactionKey() {
   var current = getCurrentFactionKey();
   if (current) return current;
+  if (_resolveFactionInflight) return _resolveFactionInflight;
   try {
     var identity = window.MOONBOYS_IDENTITY;
     var linked = !!(identity && typeof identity.isTelegramLinked === 'function' && identity.isTelegramLinked());
     if (!linked) return null;
+    if ((Date.now() - _lastUnalignedLoadCheckAt) < UNALIGNED_LOAD_TTL_MS) return null;
     var api = window.MOONBOYS_FACTION;
     if (api && typeof api.loadStatus === 'function') {
-      var loaded = await api.loadStatus().catch(function () { return null; });
-      return getCurrentFactionKeyFromStatus(loaded);
+      _resolveFactionInflight = api.loadStatus()
+        .then(function (loaded) {
+          var resolved = getCurrentFactionKeyFromStatus(loaded);
+          if (!resolved) _lastUnalignedLoadCheckAt = Date.now();
+          return resolved;
+        })
+        .catch(function () {
+          _lastUnalignedLoadCheckAt = Date.now();
+          return null;
+        })
+        .finally(function () {
+          _resolveFactionInflight = null;
+        });
+      return _resolveFactionInflight;
     }
   } catch (_) {}
   return null;
@@ -450,7 +467,6 @@ function scheduleServerAuthorityRefresh() {
 function bindRefreshEvents() {
   [
     'moonboys:sync-state',
-    'moonboys:faction-status',
     'moonboys:faction-boost',
     'moonboys:wtf-event-checkin',
     'moonboys:wtf-event-complete',
@@ -459,11 +475,23 @@ function bindRefreshEvents() {
   ].forEach(function (eventName) {
     window.addEventListener(eventName, scheduleServerAuthorityRefresh);
   });
+  window.addEventListener('moonboys:faction-status', function (event) {
+    var detail = event && event.detail ? event.detail : null;
+    if (detail && detail.source === 'load' && (!detail.faction || detail.faction === 'unaligned')) return;
+    if (detail && detail.source === 'load') return;
+    _lastUnalignedLoadCheckAt = 0;
+    scheduleServerAuthorityRefresh();
+  });
 
   var bus = window.MOONBOYS_EVENT_BUS;
   if (bus && typeof bus.on === 'function') {
     bus.on('faction:mission:complete', scheduleServerAuthorityRefresh);
-    bus.on('faction:update', scheduleServerAuthorityRefresh);
+    bus.on('faction:update', function (payload) {
+      if (payload && payload.source === 'load' && (!payload.faction || payload.faction === 'unaligned')) return;
+      if (payload && payload.source === 'load') return;
+      _lastUnalignedLoadCheckAt = 0;
+      scheduleServerAuthorityRefresh();
+    });
     bus.on('sync:state', scheduleServerAuthorityRefresh);
   }
 }

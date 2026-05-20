@@ -57,6 +57,8 @@
       panelStateGeneration: 0,
       factionStatusCache: null,
       factionStatusInflight: null,
+      factionRefreshSuppressedUntil: 0,
+      lastFactionLoadSignature: '',
       opsActionsBound: false,
     };
   }
@@ -170,20 +172,45 @@
     _singleton.factionStatusInflight = null;
   }
 
-  async function resolveFactionStatus(linked) {
+  function factionStateSignature(detail) {
+    var faction = detail && detail.faction ? String(detail.faction) : '';
+    var xp = detail && detail.faction_xp != null ? Math.max(0, Math.floor(Number(detail.faction_xp) || 0)) : 0;
+    return faction + '|' + xp;
+  }
+
+  function shouldRefreshForLoadFactionEvent(detail) {
+    var signature = factionStateSignature(detail);
+    if (!signature) return false;
+    var cached = resolveFactionStatus(true);
+    var cachedSignature = factionStateSignature(cached || {});
+    if (cachedSignature && signature === cachedSignature) return false;
+    if (_singleton.lastFactionLoadSignature === signature) return false;
+    _singleton.lastFactionLoadSignature = signature;
+    return true;
+  }
+
+  function resolveFactionStatus(linked) {
     var factionApi = window.MOONBOYS_FACTION;
     var cached = getFactionStatus();
     if (!linked || !factionApi || typeof factionApi.loadStatus !== 'function') return cached;
-    if (_singleton.factionStatusCache) return _singleton.factionStatusCache;
+    return _singleton.factionStatusCache || cached;
+  }
+
+  function refreshFactionStatusFromServer(linked, opts) {
+    var factionApi = window.MOONBOYS_FACTION;
+    var force = !!(opts && opts.force);
+    if (!linked || !factionApi || typeof factionApi.loadStatus !== 'function') return Promise.resolve(resolveFactionStatus(linked));
+    if (!force && _singleton.factionStatusCache) return Promise.resolve(_singleton.factionStatusCache);
     if (_singleton.factionStatusInflight) return _singleton.factionStatusInflight;
+    _singleton.factionRefreshSuppressedUntil = Date.now() + 800;
     _singleton.factionStatusInflight = factionApi.loadStatus()
       .then(function (status) {
-        _singleton.factionStatusCache = status || cached;
+        _singleton.factionStatusCache = status || getFactionStatus();
         return _singleton.factionStatusCache;
       })
       .catch(function () {
-        _singleton.factionStatusCache = cached;
-        return cached;
+        _singleton.factionStatusCache = resolveFactionStatus(linked);
+        return _singleton.factionStatusCache;
       })
       .finally(function () {
         _singleton.factionStatusInflight = null;
@@ -234,6 +261,35 @@
       _singleton.panelStateInflight = null;
     });
     return _singleton.panelStateInflight;
+  }
+
+  function getPanelState(linked) {
+    if (!linked) return { linked: false, syncing: false, error: false, dailyState: null, playerState: null };
+    if (_singleton.panelStateCache) return _singleton.panelStateCache;
+    return {
+      linked: true,
+      syncing: true,
+      error: false,
+      dailyState: window.MOONBOYS_ROGUELITE_DAILY_STATE || null,
+      playerState: null,
+    };
+  }
+
+  function scheduleBackgroundRefresh(linked, opts) {
+    if (!linked) return;
+    var force = !!(opts && opts.force);
+    var refreshed = false;
+    var tasks = [];
+    if (force || (!_singleton.panelStateCache && !_singleton.panelStateInflight)) {
+      tasks.push(fetchPanelServerState(linked).then(function () { refreshed = true; }));
+    }
+    if (force || (!_singleton.factionStatusCache && !_singleton.factionStatusInflight)) {
+      tasks.push(refreshFactionStatusFromServer(linked, { force: force }).then(function () { refreshed = true; }));
+    }
+    if (!tasks.length) return;
+    Promise.all(tasks).then(function () {
+      if (refreshed) refresh();
+    }).catch(function () {});
   }
 
   //  Build HTML 
@@ -687,21 +743,31 @@
       : {};
     var contrib = factionKey && factionKey !== 'unaligned' && factionSignal[factionKey] != null
       ? Math.max(0, Math.floor(Number(factionSignal[factionKey]) || 0))
-      : 0;
-    var completedToday = dailyState && dailyState.completed_today != null
-      ? Math.max(0, Math.floor(Number(dailyState.completed_today) || 0))
-      : (playerState && playerState.daily_missions && playerState.daily_missions.progress
-        ? Object.keys(playerState.daily_missions.progress).filter(function (key) {
-          var row = playerState.daily_missions.progress[key];
-          return !!(row && row.completed);
-        }).length
-        : 0);
+      : null;
+    var missionRows = dailyState && dailyState.today_active && Array.isArray(dailyState.today_active.mission_opportunities)
+      ? dailyState.today_active.mission_opportunities
+      : null;
+    var completedToday = missionRows
+      ? missionRows.filter(function (row) { return !!(row && row.completed); }).length
+      : (dailyState && dailyState.completed_today != null
+        ? Math.max(0, Math.floor(Number(dailyState.completed_today) || 0))
+        : null);
+    if (completedToday == null && playerState && playerState.daily_missions && playerState.daily_missions.progress) {
+      completedToday = Object.keys(playerState.daily_missions.progress).filter(function (key) {
+        var row = playerState.daily_missions.progress[key];
+        return !!(row && row.completed);
+      }).length;
+    }
     var missedToday = dailyState && (dailyState.missed_events_today != null || dailyState.missed_today != null)
       ? Math.max(0, Math.floor(Number(dailyState.missed_events_today != null ? dailyState.missed_events_today : dailyState.missed_today) || 0))
-      : 0;
+      : null;
     var missedXpAllTime = dailyState && dailyState.missed_xp_all_time != null
       ? Math.max(0, Math.floor(Number(dailyState.missed_xp_all_time) || 0))
-      : 0;
+      : null;
+    var completedDisplay = completedToday == null ? 'syncing…' : (String(completedToday) + ' today');
+    var missedDisplay = missedToday == null ? 'syncing…' : (String(missedToday) + ' today');
+    var missedXpDisplay = missedXpAllTime == null ? 'syncing…' : (String(missedXpAllTime) + ' all-time');
+    var contribDisplay = contrib == null ? 'syncing…' : String(contrib);
     var opsStatus = missionState && missionState.status === 'syncing'
       ? label + ' daily ops syncing…'
       : missionState && missionState.status === 'error'
@@ -713,11 +779,11 @@
     return '<div class="las-ops-snapshot">' +
       '<div class="las-row"><span class="las-label">Faction</span><span class="las-val">' + esc(label) + '</span></div>' +
       '<div class="las-row"><span class="las-label">Faction XP</span><span class="las-val">' + esc(String(Math.max(0, Math.floor(Number(factionStatus && factionStatus.faction_xp) || 0)))) + '</span></div>' +
-      '<div class="las-row"><span class="las-label">Contribution</span><span class="las-val">' + esc(String(contrib)) + '</span></div>' +
+      '<div class="las-row"><span class="las-label">Contribution</span><span class="las-val">' + esc(contribDisplay) + '</span></div>' +
       '<div class="las-row"><span class="las-label">Daily Ops</span><span class="las-val">' + esc(opsStatus) + '</span></div>' +
-      '<div class="las-row"><span class="las-label">Completed</span><span class="las-val">' + esc(String(completedToday)) + ' today</span></div>' +
-      '<div class="las-row"><span class="las-label">Missed</span><span class="las-val">' + esc(String(missedToday)) + ' today</span></div>' +
-      '<div class="las-row"><span class="las-label">Missed XP</span><span class="las-val">' + esc(String(missedXpAllTime)) + ' all-time</span></div>' +
+      '<div class="las-row"><span class="las-label">Completed</span><span class="las-val">' + esc(completedDisplay) + '</span></div>' +
+      '<div class="las-row"><span class="las-label">Missed</span><span class="las-val">' + esc(missedDisplay) + '</span></div>' +
+      '<div class="las-row"><span class="las-label">Missed XP</span><span class="las-val">' + esc(missedXpDisplay) + '</span></div>' +
       '<div class="las-row"><span class="las-label">Latest</span><span class="las-val">' + esc(latestActivity) + '</span></div>' +
       '</div>';
   }
@@ -752,10 +818,11 @@
       '</div>';
   }
 
-  async function buildHTML() {
+  function buildHTML() {
     var linked = isLinked();
-    var factionStatus = await resolveFactionStatus(linked);
-    var panelState = await fetchPanelServerState(linked);
+    var factionStatus = resolveFactionStatus(linked);
+    var panelState = getPanelState(linked);
+    scheduleBackgroundRefresh(linked);
     var missionState = normaliseMissionList(factionStatus, panelState);
     var factionName = factionLabel(missionState.factionKey || (factionStatus && factionStatus.faction));
 
@@ -859,7 +926,7 @@
     var token = (Number(el.dataset.lasToken || 0) + 1);
     el.dataset.lasToken = String(token);
     el.innerHTML = '<div style="color:var(--color-text-muted,#8b949e);font-size:.82rem;padding:6px 0">Checking activity\u2026</div>';
-    var html = await buildHTML();
+    var html = buildHTML();
     if (String(el.dataset.lasToken) === String(token)) {
       el.innerHTML = html;
     }
@@ -958,7 +1025,14 @@
     window.addEventListener('moonboys:wtf-countdown-tick', updateWtfCountdownUI);
     window.addEventListener('battle-chamber:faction-data-ready', invalidateAndRefresh);
     window.addEventListener('battle-chamber:activity-ready', invalidateAndRefresh);
-    window.addEventListener('moonboys:faction-status', invalidateAndRefresh);
+    window.addEventListener('moonboys:faction-status', function (event) {
+      var detail = event && event.detail ? event.detail : null;
+      if (detail && detail.source === 'load') {
+        if (Date.now() < Number(_singleton.factionRefreshSuppressedUntil || 0)) return;
+        if (!shouldRefreshForLoadFactionEvent(detail)) return;
+      }
+      invalidateAndRefresh();
+    });
     window.addEventListener('moonboys:faction-boost', invalidateAndRefresh);
     window.addEventListener('moonboys:sync-state', invalidateAndRefresh);
     window.addEventListener('moonboys:score-updated', invalidateAndRefresh);
@@ -966,7 +1040,13 @@
     if (bus && typeof bus.on === 'function') {
       bus.on('faction:mission:complete', invalidateAndRefresh);
       bus.on('sync:state', invalidateAndRefresh);
-      bus.on('faction:update', invalidateAndRefresh);
+      bus.on('faction:update', function (payload) {
+        if (payload && payload.source === 'load') {
+          if (Date.now() < Number(_singleton.factionRefreshSuppressedUntil || 0)) return;
+          if (!shouldRefreshForLoadFactionEvent(payload)) return;
+        }
+        invalidateAndRefresh();
+      });
     }
   }
 

@@ -62,6 +62,9 @@
   var _dailyStateGeneration = 0;
   var _apiOnlineCache = null;
   var _liveDataRefreshTimer = null;
+  var _factionStatusInflight = null;
+  var _lastFactionStatusLoadAt = 0;
+  var FACTION_STATUS_LOAD_THROTTLE_MS = 8000;
   // Unsubscribe token for MOONBOYS_STATE subscriber (avoids leak if re-initialised)
   var _stateUnsub = null;
 
@@ -298,8 +301,16 @@
 
   function getDailyCounts(confirmedDailyState) {
     var daily = confirmedDailyState || window.MOONBOYS_ROGUELITE_DAILY_STATE || window.MOONBOYS_DAILY_ROGUELITE_LOTTERY || null;
+    var missionRows = daily && daily.today_active && Array.isArray(daily.today_active.mission_opportunities)
+      ? daily.today_active.mission_opportunities
+      : null;
+    var completedFromMissions = missionRows
+      ? missionRows.filter(function (row) { return !!(row && row.completed); }).length
+      : null;
     return {
-      completed: daily && daily.completed_today != null ? Math.max(0, Math.floor(Number(daily.completed_today) || 0)) : null,
+      completed: completedFromMissions != null
+        ? completedFromMissions
+        : (daily && daily.completed_today != null ? Math.max(0, Math.floor(Number(daily.completed_today) || 0)) : null),
       missed: daily && (daily.missed_events_today != null || daily.missed_today != null)
         ? Math.max(0, Math.floor(Number(daily.missed_events_today != null ? daily.missed_events_today : daily.missed_today) || 0))
         : null,
@@ -591,13 +602,24 @@
     if (_liveDataRefreshTimer) clearTimeout(_liveDataRefreshTimer);
     _liveDataRefreshTimer = setTimeout(function () {
       _liveDataRefreshTimer = null;
-      var factionApi = window.MOONBOYS_FACTION;
-      if (isLinked() && factionApi && typeof factionApi.loadStatus === 'function') {
-        factionApi.loadStatus().catch(function () {});
+      if (isLinked()) {
+        maybeRefreshFactionStatus();
       }
       invalidateDailyStateCache();
       document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
     }, 120);
+  }
+
+  function maybeRefreshFactionStatus() {
+    var factionApi = window.MOONBOYS_FACTION;
+    if (!factionApi || typeof factionApi.loadStatus !== 'function') return Promise.resolve(null);
+    if (_factionStatusInflight) return _factionStatusInflight;
+    if ((Date.now() - _lastFactionStatusLoadAt) < FACTION_STATUS_LOAD_THROTTLE_MS) return Promise.resolve(null);
+    _lastFactionStatusLoadAt = Date.now();
+    _factionStatusInflight = factionApi.loadStatus()
+      .catch(function () { return null; })
+      .finally(function () { _factionStatusInflight = null; });
+    return _factionStatusInflight;
   }
 
   function schedulePanelRemount() {
@@ -667,12 +689,16 @@
       'moonboys:wtf-event-checkin',
       'moonboys:wtf-event-complete',
       'moonboys:roguelite-options-unlocked',
-      'moonboys:faction-status',
       'moonboys:faction-boost',
       'moonboys:sync-state',
       'moonboys:score-updated',
     ].forEach(function (eventName) {
       window.addEventListener(eventName, scheduleLiveDataRefresh);
+    });
+    window.addEventListener('moonboys:faction-status', function (e) {
+      var detail = e && e.detail ? e.detail : null;
+      if (detail && detail.source === 'load') return;
+      scheduleLiveDataRefresh();
     });
   }
 
