@@ -1972,6 +1972,31 @@ body.page-home #homepage-right-panel .hud-player-info {
   gap: 5px;
 }
 
+body.page-home #homepage-right-panel .hud-live-pill {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  border: 1px solid rgba(63, 185, 80, 0.4);
+  color: #3fb950;
+  background: rgba(63, 185, 80, 0.12);
+}
+
+body.page-home #homepage-right-panel .hud-live-pill--relink {
+  color: #f7c948;
+  background: rgba(247, 201, 72, 0.08);
+  border-color: rgba(247, 201, 72, 0.45);
+}
+
+body.page-home #homepage-right-panel .hud-live-pill--relink a {
+  color: #f7c948;
+  text-decoration: none;
+}
+
 body.page-home #homepage-right-panel .hud-info-row {
   display: flex;
   align-items: baseline;
@@ -2995,6 +3020,31 @@ body.page-has-right-panel #homepage-right-panel .hud-player-info {
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
+
+body.page-has-right-panel #homepage-right-panel .hud-live-pill {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  border: 1px solid rgba(63, 185, 80, 0.4);
+  color: #3fb950;
+  background: rgba(63, 185, 80, 0.12);
+}
+
+body.page-has-right-panel #homepage-right-panel .hud-live-pill--relink {
+  color: #f7c948;
+  background: rgba(247, 201, 72, 0.08);
+  border-color: rgba(247, 201, 72, 0.45);
+}
+
+body.page-has-right-panel #homepage-right-panel .hud-live-pill--relink a {
+  color: #f7c948;
+  text-decoration: none;
 }
 
 body.page-has-right-panel #homepage-right-panel .hud-info-row {
