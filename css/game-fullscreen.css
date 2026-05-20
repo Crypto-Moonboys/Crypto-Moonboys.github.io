@@ -925,7 +925,7 @@ body.overlay-open #faction-hud {
 @media (pointer: coarse) and (orientation: landscape) {
   #game-overlay.overlay-touch-landscape {
     --overlay-touch-height: 0px;
-    --overlay-touch-zone-width: clamp(92px, 18vw, 140px);
+    --overlay-touch-zone-width: clamp(140px, 18vw, 160px);
   }
 
   #game-overlay.overlay-touch-landscape .overlay-touch-pad {
@@ -956,7 +956,7 @@ body.overlay-open #faction-hud {
   #game-overlay.overlay-touch-landscape .overlay-touch-pad.touch-gamepad-split .touch-zone {
     width: var(--overlay-touch-zone-width);
     max-width: 34vw;
-    min-width: 86px;
+    min-width: 140px;
     min-height: 52px;
     display: flex;
     align-items: center;

@@ -377,6 +377,21 @@ check(
 );
 check(
   (() => {
+    // D-pad is 3×42px cols + 2×4px gaps = 134px; require zone clamp min ≥ 140px and explicit min-width ≥ 134px
+    const zoneWidthMatch = fullscreenCssSrc.match(
+      /@media\s*\(pointer:\s*coarse\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*?--overlay-touch-zone-width:\s*clamp\((\d+)px/u,
+    );
+    const zoneMinWidthMatch = fullscreenCssSrc.match(
+      /@media\s*\(pointer:\s*coarse\)\s*and\s*\(orientation:\s*landscape\)[\s\S]*?touch-gamepad-split[\s\S]*?\.touch-zone\s*\{[\s\S]*?min-width:\s*(\d+)px/u,
+    );
+    const clampMin = zoneWidthMatch ? parseInt(zoneWidthMatch[1], 10) : 0;
+    const zoneMinWidth = zoneMinWidthMatch ? parseInt(zoneMinWidthMatch[1], 10) : 0;
+    return clampMin >= 140 && zoneMinWidth >= 134;
+  })(),
+  'game-fullscreen.css landscape touch-zone clamp min ≥ 140px and explicit min-width ≥ 134px so the fixed 134px D-pad never overflows into the playfield',
+);
+check(
+  (() => {
     const touchGamepadRules = fullscreenCssSrc.match(/#game-overlay\s+\.touch-gamepad\s*\{/gu) || [];
     const touchZoneRules = fullscreenCssSrc.match(/#game-overlay\s+\.touch-zone\s*\{/gu) || [];
     return touchGamepadRules.length === 1 && touchZoneRules.length === 1;
