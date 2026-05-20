@@ -191,24 +191,6 @@
       '    <div data-csp-panel></div>',
       '  </div>',
       '</div>',
-      '',
-      '<!-- ── NEXT ACTIONS ── -->',
-      '<div class="retro-hud-box hud-box--actions">',
-      '  <div class="retro-hud-title">',
-      '    <span class="retro-hud-title-icon" aria-hidden="true">\u25B6</span>',
-      '    FACTION DAILY OPS',
-      '    <span class="retro-hud-mascot" aria-hidden="true">\u26A1</span>',
-      '  </div>',
-      '  <div class="retro-hud-body">',
-      '    <ul class="hud-actions-list">',
-      '      <li class="hud-action-item">',
-      '        <a href="/games/" class="hud-action-link">\uD83C\uDFAE Play Arcade</a>',
-      '      </li>',
-      '    </ul>',
-      '    <div id="hud-actions-dynamic"></div>',
-      '    <div data-las-panel></div>',
-      '  </div>',
-      '</div>',
     ].join('\n');
 
     /* Deferred HUD population */
@@ -247,47 +229,7 @@
         }
       }
 
-      var actionsEl = document.getElementById('hud-actions-dynamic');
-      if (actionsEl) {
-        var factionApi = window.MOONBOYS_FACTION;
-        var factionStatus = factionApi && typeof factionApi.getCachedStatus === 'function' ? factionApi.getCachedStatus() : null;
-        var isUnaligned = factionStatus != null && (!factionStatus.faction || factionStatus.faction === 'unaligned');
-
-        var items = [];
-        if (!linked) {
-          items.push('<li class="hud-action-item hud-action--highlight"><a href="/gkniftyheads-incubator.html" class="hud-action-link">\uD83D\uDD17 Link Telegram</a></li>');
-        }
-        if (isUnaligned) {
-          items.push('<li class="hud-action-item"><a href="/community.html" class="hud-action-link">\u2694\uFE0F Join Faction</a></li>');
-        }
-        if (items.length > 0) {
-          actionsEl.innerHTML = '<ul class="hud-actions-list">' + items.join('') + '</ul>';
-        }
-      }
     }, 0);
-
-    /* Faction update listener */
-    (function _bindFactionUpdate() {
-      var bus = window.MOONBOYS_EVENT_BUS;
-      if (!bus || typeof bus.on !== 'function') return;
-      bus.on('faction:update', function (d) {
-        var actEl = document.getElementById('hud-actions-dynamic');
-        if (!actEl) return;
-        var gate2 = window.MOONBOYS_IDENTITY;
-        var linked2 = gate2 && typeof gate2.isTelegramLinked === 'function' ? gate2.isTelegramLinked() : false;
-        var newFaction = (d && d.faction) ? d.faction : null;
-        if (!newFaction) {
-          var fApi = window.MOONBOYS_FACTION;
-          var fStatus = fApi && typeof fApi.getCachedStatus === 'function' ? fApi.getCachedStatus() : null;
-          newFaction = fStatus ? fStatus.faction : null;
-        }
-        var nowUnaligned = newFaction != null && (!newFaction || newFaction === 'unaligned');
-        var items2 = [];
-        if (!linked2) items2.push('<li class="hud-action-item hud-action--highlight"><a href="/gkniftyheads-incubator.html" class="hud-action-link">\uD83D\uDD17 Link Telegram</a></li>');
-        if (nowUnaligned) items2.push('<li class="hud-action-item"><a href="/community.html" class="hud-action-link">\u2694\uFE0F Join Faction</a></li>');
-        actEl.innerHTML = items2.length > 0 ? '<ul class="hud-actions-list">' + items2.join('') + '</ul>' : '';
-      });
-    })();
   }
 
   /* ── 7. Back-to-top button ───────────────────────────────────── */

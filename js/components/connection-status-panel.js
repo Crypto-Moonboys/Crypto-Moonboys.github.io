@@ -3,10 +3,10 @@
  * ==========================================
  * Compact player live-feed panel and header badge.
  *
- * Panel (data-csp-panel) shows: Arcade XP, Block Topia access, Missed XP,
- * latest personal activity row, and optional public Battle Chamber feed.
- * The panel does NOT show faction/season/API health rows — those live in
- * the Faction Daily Ops panel (live-activity-summary.js).
+ * Panel (data-csp-panel) is the single right-rail live source for Telegram
+ * link status, faction/faction XP/contribution, Arcade XP, Block Topia access,
+ * missed XP, completed/missed today, daily ops status, Daily WTF signal status,
+ * latest activity, and optional public Battle Chamber feed.
  *
  * Header badge states:
  *   LIVE SYNC          — linked + fresh signed Telegram auth confirmed
@@ -60,6 +60,9 @@
   var _dailyStateCache = null;
   var _dailyStateInflight = null;
   var _dailyStateGeneration = 0;
+  var _playerStateCache = null;
+  var _playerStateInflight = null;
+  var _playerStateGeneration = 0;
   var _apiOnlineCache = null;
   var _liveDataRefreshTimer = null;
   var _factionStatusInflight = null;
@@ -244,6 +247,46 @@
     return _dailyStateInflight;
   }
 
+  function fetchPlayerStateWithAuth() {
+    if (_playerStateCache !== null) return Promise.resolve(_playerStateCache);
+    if (_playerStateInflight !== null) return _playerStateInflight;
+    var requestGeneration = _playerStateGeneration;
+
+    _playerStateInflight = (async function () {
+      try {
+        if (!isLinked()) return null;
+        var apiBase = getApiBase();
+        if (!apiBase) return null;
+        var telegramAuth = await getSignedTelegramAuthWithRestore();
+        if (!telegramAuth) return null;
+        var ac = new AbortController();
+        var timer = setTimeout(function () { ac.abort(); }, DAILY_STATE_FETCH_TIMEOUT_MS);
+        try {
+          var res = await fetch(apiBase + '/player/state', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegram_auth: telegramAuth }),
+            signal: ac.signal,
+          });
+          var payload = await res.json().catch(function () { return null; });
+          if (res.ok && payload && payload.ok === true && requestGeneration === _playerStateGeneration) {
+            _playerStateCache = payload;
+            return payload;
+          }
+          return null;
+        } catch (_) {
+          return null;
+        } finally {
+          clearTimeout(timer);
+        }
+      } finally {
+        _playerStateInflight = null;
+      }
+    }());
+
+    return _playerStateInflight;
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────
 
   function blocktopiaAccessHTML(linked, arcadeXp, requiredXp) {
@@ -317,6 +360,49 @@
     };
   }
 
+  function getContribution(faction, playerState) {
+    var factionKey = faction && faction.faction ? faction.faction : 'unaligned';
+    if (!factionKey || factionKey === 'unaligned') return { value: 'No faction selected', pending: false };
+    var player = playerState || _playerStateCache || null;
+    if (!player) return { value: 'syncing…', pending: true };
+    var signal = player && player.faction_signal ? player.faction_signal : null;
+    var contributions = signal && signal.contributions && typeof signal.contributions === 'object'
+      ? signal.contributions
+      : null;
+    // Confirmed player state may omit unearned faction keys; treat that as authoritative 0,
+    // not as a perpetual syncing state.
+    if (!contributions || !Object.prototype.hasOwnProperty.call(contributions, factionKey)) {
+      return { value: '0', pending: false };
+    }
+    var contribution = Math.max(0, Math.floor(Number(contributions[factionKey]) || 0));
+    return { value: String(contribution), pending: false };
+  }
+
+  function getDailyOpsStatus(faction, dailyState) {
+    var factionKey = faction && faction.faction ? faction.faction : 'unaligned';
+    if (!factionKey || factionKey === 'unaligned') return { value: 'No faction selected', pending: false };
+    if (!dailyState) return { value: 'syncing…', pending: true };
+    var missionRows = dailyState.today_active && Array.isArray(dailyState.today_active.mission_opportunities)
+      ? dailyState.today_active.mission_opportunities
+      : null;
+    if (!missionRows) return { value: 'syncing…', pending: true };
+    if (!missionRows.length) return { value: 'No live missions reported', pending: false };
+    var completed = missionRows.filter(function (row) { return !!(row && row.completed); }).length;
+    return { value: String(completed) + '/' + String(missionRows.length) + ' completed', pending: false };
+  }
+
+  function getDailyWtfSignalStatus() {
+    var state = window.MOONBOYS_WTF_EVENTS || null;
+    if (!state || typeof state !== 'object' || state.status === 'loading') return 'syncing…';
+    if (state.status === 'error') return 'Signal unavailable';
+    if (state.active_event && state.checked_in) return 'Active (checked in)';
+    if (state.active_event) return 'Active';
+    if (state.next_event || (Array.isArray(state.upcoming_events) && state.upcoming_events.length > 0)) return 'Upcoming';
+    if (Number(state.completed_today || 0) > 0) return 'Complete';
+    if (Number(state.missed_today || 0) > 0) return 'Missed / expired';
+    return 'Waiting';
+  }
+
   function latestActivityRows() {
     var rows = [];
     var activity = Array.isArray(window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY) ? window.MOONBOYS_BATTLE_CHAMBER_ACTIVITY : [];
@@ -375,18 +461,49 @@
           '<a href="/gkniftyheads-incubator.html" class="csp-live-cta">Link Telegram</a>' +
         '</div>';
     }
+    var gate = getIdentity();
+    var freshAuth = gate && typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+    if (!freshAuth && gate && typeof gate.restoreLinkedTelegramAuth === 'function') {
+      var restored = await gate.restoreLinkedTelegramAuth().catch(function () { return null; });
+      if (restored && restored.ok) {
+        freshAuth = typeof gate.getSignedTelegramAuth === 'function'
+          ? gate.getSignedTelegramAuth()
+          : (restored.telegram_auth || null);
+      }
+    }
+    if (!freshAuth) {
+      return '' +
+        '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
+          '<div class="csp-live-head"><span class="csp-pulse csp-pulse--warn"></span><div><strong>Player Live Feed</strong><span>Signed Telegram auth expired — relink required.</span></div></div>' +
+          '<a href="/gkniftyheads-incubator.html" class="csp-live-cta">RELINK Telegram</a>' +
+        '</div>';
+    }
     // Use cached daily-state or globals for immediate render — do not block for a network fetch.
     var missedXp = missedXpAllTime(_dailyStateCache || null);
     var missedXpDisplay = missedXp !== null ? esc(String(missedXp)) : 'syncing…';
     var dailyCounts = getDailyCounts(_dailyStateCache || null);
     var completedDisplay = dailyCounts.completed == null ? 'syncing…' : esc(String(dailyCounts.completed));
     var missedTodayDisplay = dailyCounts.missed == null ? 'syncing…' : esc(String(dailyCounts.missed));
-    // If no confirmed data yet, fire background fetch and remount once confirmed.
-    if (missedXp === null) {
+    var contribution = getContribution(faction, _playerStateCache || null);
+    var contributionDisplay = contribution.value;
+    var dailyOpsStatus = getDailyOpsStatus(faction, _dailyStateCache || null);
+    var dailyWtfStatusDisplay = getDailyWtfSignalStatus();
+    // If no confirmed server state yet, fire background fetches and remount once confirmed.
+    var needsDailyState = missedXp === null || dailyCounts.completed == null || dailyCounts.missed == null || dailyOpsStatus.pending;
+    if (needsDailyState) {
       var patchGeneration = _dailyStateGeneration;
       fetchDailyStateWithAuth().then(function (confirmedState) {
         if (patchGeneration !== _dailyStateGeneration) return;
-        if (confirmedState && confirmedState.missed_xp_all_time != null) {
+        if (confirmedState) {
+          schedulePanelRemount();
+        }
+      }).catch(function () {});
+    }
+    if (contribution.pending) {
+      var playerPatchGeneration = _playerStateGeneration;
+      fetchPlayerStateWithAuth().then(function (confirmedState) {
+        if (playerPatchGeneration !== _playerStateGeneration) return;
+        if (confirmedState) {
           schedulePanelRemount();
         }
       }).catch(function () {});
@@ -399,13 +516,17 @@
           '<div class="csp-live-identity"><strong><a class="csp-player-link" href="' + esc(playerHref) + '">' + esc(name || 'Telegram Player') + '</a></strong><span><b class="csp-live-pill csp-live-pill--good">LIVE LINKED</b></span></div>' +
         '</div>' +
         '<div class="csp-grid csp-grid--live">' +
+          '<div class="csp-item"><div class="csp-item-label">Telegram</div><div class="csp-item-val">LIVE LINKED</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Faction</div><div class="csp-item-val">' + esc((faction.faction === 'unaligned' ? 'No faction selected' : (faction.icon + ' ' + faction.label))) + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Faction XP</div><div class="csp-item-val">' + esc(String(faction.faction_xp)) + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Contribution</div><div class="csp-item-val">' + esc(contributionDisplay) + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Arcade XP</div><div class="csp-item-val" data-csp-xp>' + esc(String(arcadeXp)) + '</div></div>' +
           '<div class="csp-item csp-item--wide"><div class="csp-item-label">Block Topia</div><div class="csp-item-val" data-csp-bt-access>' + blocktopia + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Missed XP</div><div class="csp-item-val" data-csp-missed-xp>' + missedXpDisplay + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Completed Today</div><div class="csp-item-val">' + completedDisplay + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Missed Today</div><div class="csp-item-val">' + missedTodayDisplay + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Daily Ops Status</div><div class="csp-item-val">' + esc(dailyOpsStatus.value) + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Daily WTF Signal</div><div class="csp-item-val">' + esc(dailyWtfStatusDisplay) + '</div></div>' +
         '</div>' +
         '<div class="csp-feed csp-feed--latest"><div class="csp-feed-row csp-feed-row--latest"><span class="csp-feed-label">Latest:</span><span class="csp-feed-text">' + esc(latestActivityText) + '</span></div></div>' +
         (publicRows.length
@@ -586,6 +707,10 @@
     _progressionInflight = null;
     _dailyStateCache = null;
     _dailyStateInflight = null;
+    _dailyStateGeneration++;
+    _playerStateCache = null;
+    _playerStateInflight = null;
+    _playerStateGeneration++;
     _apiOnlineCache = null;
     document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
     var badge = document.getElementById('moonboys-global-status-badge');
@@ -598,6 +723,12 @@
     _dailyStateGeneration++;
   }
 
+  function invalidatePlayerStateCache() {
+    _playerStateCache = null;
+    // Intentionally keep inflight request alive; generation guard will ignore stale completion.
+    _playerStateGeneration++;
+  }
+
   function scheduleLiveDataRefresh() {
     if (_liveDataRefreshTimer) clearTimeout(_liveDataRefreshTimer);
     _liveDataRefreshTimer = setTimeout(function () {
@@ -606,6 +737,7 @@
         maybeRefreshFactionStatus();
       }
       invalidateDailyStateCache();
+      invalidatePlayerStateCache();
       document.querySelectorAll('[data-csp-panel]').forEach(function (el) { mount(el); });
     }, 120);
   }
