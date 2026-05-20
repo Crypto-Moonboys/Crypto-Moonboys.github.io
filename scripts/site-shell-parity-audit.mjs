@@ -272,10 +272,8 @@ if (shellJs) {
   const MARKER_CHECKS = [
     { needle: "rightPanel.id = 'homepage-right-panel'", label: '#homepage-right-panel' },
     { needle: 'data-csp-panel',            label: '[data-csp-panel]' },
-    { needle: 'data-las-panel',            label: '[data-las-panel]' },
     { needle: 'hud-player-avatar',         label: '#hud-player-avatar (player avatar box)' },
     { needle: 'hud-player-name',           label: '.hud-player-name (player name)' },
-    { needle: 'hud-actions-list',          label: '.hud-actions-list (Next Actions block)' },
     { needle: 'shouldShowRightPanel',      label: 'shouldShowRightPanel() helper' },
   ];
   for (const { needle, label } of MARKER_CHECKS) {
@@ -284,6 +282,16 @@ if (shellJs) {
     } else {
       fail(`site-shell.js marker: ${label} MISSING`);
     }
+  }
+  if (shellJs.includes('data-las-panel')) {
+    fail('site-shell.js marker: [data-las-panel] should be absent from runtime right rail');
+  } else {
+    pass('site-shell.js marker: [data-las-panel] absent from runtime right rail');
+  }
+  if (shellJs.includes('hud-actions-list')) {
+    fail('site-shell.js marker: .hud-actions-list should be absent from right rail shell');
+  } else {
+    pass('site-shell.js marker: .hud-actions-list absent from right rail shell');
   }
 }
 
