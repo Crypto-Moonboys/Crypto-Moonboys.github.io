@@ -279,11 +279,9 @@ const ALLOWED_SUBMITSCORE_PATTERNS = [
   /^workers\//,
 ];
 
-// Directories to skip entirely in check 6 (vendored code, legacy stubs, tests).
+// Directories to skip entirely in check 6 (vendored code, tests).
 const SKIP_DIRS = new Set([
   '.git', 'node_modules',
-  'games/core',    // legacy stub directory
-  'games/js',      // legacy unused blocktopia files
 ]);
 
 function isSubmitScoreAllowed(relPath) {
