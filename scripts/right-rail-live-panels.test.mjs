@@ -127,10 +127,14 @@ check(!stateSubscribeBlock.includes("btNode.textContent = unlocked ? 'unlocked' 
 check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requiredXp)'), 'live Block Topia row updater reuses initial access markup helper');
 
 console.log('\n[4] Panel separation');
-check(siteShell.includes('PLAYER LIVE FEED') && siteShell.includes('FACTION DAILY OPS'), 'right rail boxes are titled PLAYER LIVE FEED and FACTION DAILY OPS');
+check(siteShell.includes('PLAYER LIVE FEED') && !siteShell.includes('FACTION DAILY OPS'), 'right rail exposes only the PLAYER LIVE FEED live panel');
+check(!siteShell.includes('data-las-panel') && siteShell.includes('data-csp-panel'), 'right rail mounts connection-status panel only (no data-las-panel hook)');
+check(!siteShell.includes('hud-box--actions'), 'right rail does not include a separate actions/ops box');
 check(csp.includes('Latest:') && csp.includes('csp-feed-row--latest') && csp.includes('csp-feed-text') && csp.includes('Missed XP'), 'player live feed latest status is a compact muted row with bounded wrap');
 check(csp.includes('<div class="csp-item-label">Faction</div>') && csp.includes('<div class="csp-item-label">Faction XP</div>'), 'player live feed surfaces current faction and faction XP');
 check(csp.includes('<div class="csp-item-label">Completed Today</div>') && csp.includes('<div class="csp-item-label">Missed Today</div>'), 'player live feed surfaces completed/missed daily counts');
+check(csp.includes('<div class="csp-item-label">Telegram</div>') && csp.includes('<div class="csp-item-label">Contribution</div>'), 'player live feed surfaces Telegram linked status and contribution');
+check(csp.includes('<div class="csp-item-label">Daily Ops Status</div>') && csp.includes('<div class="csp-item-label">Daily WTF Signal</div>'), 'player live feed surfaces daily ops status and Daily WTF signal status');
 const ownBattleBlock = functionBlock(csp, 'isOwnBattleActivity');
 const latestActivityBlock = functionBlock(csp, 'latestActivityRows');
 check(csp.includes('isOwnBattleActivity') && csp.includes('getTelegramId()') && csp.includes('activity.filter(isOwnBattleActivity)'), 'player feed filters Battle Chamber activity to the linked player when possible');
@@ -360,7 +364,7 @@ check(setEmptyStateBlock.includes('No scores recorded yet'), 'arcade leaderboard
 check(!csp.includes('Daily opportunity state synced'), 'connection-status-panel does not contain "Daily opportunity state synced"');
 const latestActivityRowsBlock = functionBlock(csp, 'latestActivityRows');
 check(!latestActivityRowsBlock.includes('Daily opportunity'), 'latestActivityRows does not generate generic "Daily opportunity" text');
-check(!latestActivityRowsBlock.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && !latestActivityRowsBlock.includes('MOONBOYS_DAILY_ROGUELITE_LOTTERY'), 'latestActivityRows does not read daily-state globals (daily logic belongs in the lower Faction Daily Ops box)');
+check(!latestActivityRowsBlock.includes('MOONBOYS_ROGUELITE_DAILY_STATE') && !latestActivityRowsBlock.includes('MOONBOYS_DAILY_ROGUELITE_LOTTERY'), 'latestActivityRows does not read daily-state globals (daily logic belongs in dedicated status rows)');
 
 console.log('\n[12] Confirmed Missed XP fetch — non-blocking and cache-safe');
 const buildPanelHTMLBlock = functionBlock(csp, 'buildPanelHTML');
