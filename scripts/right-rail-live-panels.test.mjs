@@ -175,6 +175,10 @@ const cspCountdownTickBlock = functionBlock(csp, 'updateWtfCountdownUI');
 check(cspCountdownTickBlock.includes("document.querySelectorAll('[data-csp-wtf-countdown]')") && !cspCountdownTickBlock.includes('mountAllSections('), 'WTF countdown tick patches only timer nodes without remounting whole right rail');
 
 console.log('\n[4b] Identity/faction hierarchy — no duplication');
+const renderHudLivePillBlock = functionBlock(siteShell, 'renderHudLivePill');
+const clearHudLivePillBlock = functionBlock(siteShell, 'clearHudLivePill');
+const resolveHudSignedTelegramAuthBlock = functionBlock(siteShell, 'resolveHudSignedTelegramAuth');
+const bindHudIdentityRefreshBlock = functionBlock(siteShell, 'bindHudIdentityRefresh');
 // username appears once — only in the shell portrait row, not inside the Player Live Feed renderer
 check(!liveFeedBlock.includes('csp-avatar-mini') && !liveFeedBlock.includes('csp-live-identity'), 'player live feed renderer does not include duplicate avatar/name identity block');
 check(!liveFeedBlock.includes('<div class="csp-item-label">Faction</div>'), 'player live feed renderer does not include Faction row (faction belongs to Faction Daily Ops only)');
@@ -186,6 +190,11 @@ check(opsBlock.includes('<div class="csp-item-label">Faction</div>'), 'Faction D
 check(!functionBlock(csp, 'buildPlayerLiveFeedHTML').includes('LIVE LINKED'), 'player live feed renderer does not output LIVE LINKED pill (shell portrait row is the single authority)');
 check(siteShell.includes('hud-live-pill') && siteShell.includes('LIVE LINKED'), 'shell portrait row renders LIVE LINKED pill once for the identity area');
 check(siteShell.includes('hud-live-pill--relink') && siteShell.includes('RELINK'), 'shell portrait row renders RELINK pill once when signed auth is expired');
+check(resolveHudSignedTelegramAuthBlock.includes('gate.restoreLinkedTelegramAuth()') && renderHudLivePillBlock.includes('resolveHudSignedTelegramAuth(gate)'), 'shell attempts restoreLinkedTelegramAuth before rendering RELINK');
+check(clearHudLivePillBlock.includes("querySelector('.hud-live-pill')") && renderHudLivePillBlock.includes('clearHudLivePill(nameEl);'), 'shell replaces existing .hud-live-pill instead of appending duplicates');
+check(bindHudIdentityRefreshBlock.includes("window.addEventListener('moonboys:sync-state', scheduleHudIdentityRefresh);"), 'shell portrait pill refreshes on moonboys:sync-state');
+check(bindHudIdentityRefreshBlock.includes("window.addEventListener('moonboys:faction-status', scheduleHudIdentityRefresh);"), 'shell portrait pill refreshes on moonboys:faction-status');
+check(bindHudIdentityRefreshBlock.includes("window.addEventListener('storage'") && bindHudIdentityRefreshBlock.includes('moonboys_tg_') && bindHudIdentityRefreshBlock.includes('MOONBOYS_TELEGRAM_AUTH'), 'shell portrait pill refreshes on Telegram auth/link storage changes');
 // Profile image in shell only
 check(!functionBlock(csp, 'buildPlayerLiveFeedHTML').includes('csp-avatar-mini'), 'player live feed renderer does not render a duplicate avatar');
 check(siteShell.includes('getTelegramPhotoUrl') && siteShell.includes('hud-player-avatar'), 'shell portrait area is the single authority for player profile image');

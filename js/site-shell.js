@@ -205,16 +205,90 @@
       '</div>',
     ].join('\n');
 
-    /* Deferred HUD population */
-    setTimeout(function _hudPlayerInit() {
-      var gate = window.MOONBOYS_IDENTITY;
-      if (!gate) return;
-      var linked = typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked();
+    var _hudLivePillRestoreInflight = null;
+    var _hudIdentityRefreshTimer = null;
+    var _hudIdentityRefreshBound = false;
 
-      /* Populate #hud-player-name from live identity */
+    function clearHudLivePill(nameEl) {
+      if (!nameEl || !nameEl.parentNode) return;
+      var existingPill = nameEl.parentNode.querySelector('.hud-live-pill');
+      if (existingPill && existingPill.parentNode) {
+        existingPill.parentNode.removeChild(existingPill);
+      }
+    }
+
+    function renderHudAvatar(gate, avatarBox) {
+      if (!avatarBox) return;
+      var photoUrl = gate && typeof gate.getTelegramPhotoUrl === 'function' ? gate.getTelegramPhotoUrl() : null;
+      avatarBox.innerHTML = '';
+      if (photoUrl) {
+        var img = document.createElement('img');
+        img.src = photoUrl;
+        img.alt = '';
+        img.className = 'hud-avatar-img';
+        img.width = 36;
+        img.height = 36;
+        img.setAttribute('aria-hidden', 'true');
+        avatarBox.appendChild(img);
+        avatarBox.setAttribute('aria-label', 'Telegram avatar');
+        return;
+      }
+      avatarBox.innerHTML = '<span class="hud-avatar-icon" aria-hidden="true">\uD83D\uDC7E</span>';
+      avatarBox.setAttribute('aria-label', 'Player avatar');
+    }
+
+    function resolveHudSignedTelegramAuth(gate) {
+      if (!gate) return Promise.resolve(null);
+      var currentAuth = typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+      if (currentAuth) return Promise.resolve(currentAuth);
+      if (typeof gate.restoreLinkedTelegramAuth !== 'function') return Promise.resolve(null);
+      if (_hudLivePillRestoreInflight) return _hudLivePillRestoreInflight;
+      _hudLivePillRestoreInflight = Promise.resolve(gate.restoreLinkedTelegramAuth())
+        .then(function (restored) {
+          if (restored && restored.ok && restored.telegram_auth) return restored.telegram_auth;
+          return typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+        })
+        .catch(function () { return null; })
+        .finally(function () {
+          _hudLivePillRestoreInflight = null;
+        });
+      return _hudLivePillRestoreInflight;
+    }
+
+    async function renderHudLivePill(gate, nameEl) {
+      if (!nameEl || !nameEl.parentNode) return;
+      var pillHost = nameEl.parentNode;
+      var token = Number(pillHost.dataset.hudPillToken || 0) + 1;
+      pillHost.dataset.hudPillToken = String(token);
+      clearHudLivePill(nameEl);
+      var linked = !!(gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked());
+      if (!linked) return;
+      var freshAuth = gate && typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
+      if (!freshAuth && gate && typeof gate.restoreLinkedTelegramAuth === 'function') {
+        freshAuth = await resolveHudSignedTelegramAuth(gate);
+      }
+      if (pillHost.dataset.hudPillToken !== String(token)) return;
+      clearHudLivePill(nameEl);
+      var pillEl = document.createElement('span');
+      pillEl.className = 'hud-live-pill ' + (freshAuth ? 'hud-live-pill--linked' : 'hud-live-pill--relink');
+      pillEl.setAttribute('aria-label', freshAuth ? 'Live linked' : 'Relink required');
+      if (freshAuth) {
+        pillEl.textContent = 'LIVE LINKED';
+      } else {
+        var relinkA = document.createElement('a');
+        relinkA.href = '/gkniftyheads-incubator.html';
+        relinkA.textContent = 'RELINK';
+        pillEl.appendChild(relinkA);
+      }
+      pillHost.appendChild(pillEl);
+    }
+
+    function refreshHudIdentity() {
+      var gate = window.MOONBOYS_IDENTITY;
+      var linked = !!(gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked());
       var nameEl = document.getElementById('hud-player-name');
       if (nameEl) {
-        var telegramName = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
+        var telegramName = gate && typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : null;
         if (linked && telegramName) {
           nameEl.textContent = telegramName;
         } else if (linked) {
@@ -222,42 +296,36 @@
         } else {
           nameEl.textContent = 'Telegram not linked';
         }
+        renderHudLivePill(gate, nameEl);
       }
+      renderHudAvatar(gate, document.getElementById('hud-player-avatar'));
+    }
 
-      var avatarBox = document.getElementById('hud-player-avatar');
-      if (avatarBox) {
-        var photoUrl = typeof gate.getTelegramPhotoUrl === 'function' ? gate.getTelegramPhotoUrl() : null;
-        if (photoUrl) {
-          var img = document.createElement('img');
-          img.src = photoUrl;
-          img.alt = '';
-          img.className = 'hud-avatar-img';
-          img.width = 36; img.height = 36;
-          img.setAttribute('aria-hidden', 'true');
-          avatarBox.innerHTML = '';
-          avatarBox.appendChild(img);
-          avatarBox.removeAttribute('aria-label');
-          avatarBox.setAttribute('aria-label', 'Telegram avatar');
+    function scheduleHudIdentityRefresh() {
+      if (_hudIdentityRefreshTimer) clearTimeout(_hudIdentityRefreshTimer);
+      _hudIdentityRefreshTimer = setTimeout(function () {
+        _hudIdentityRefreshTimer = null;
+        refreshHudIdentity();
+      }, 0);
+    }
+
+    function bindHudIdentityRefresh() {
+      if (_hudIdentityRefreshBound) return;
+      _hudIdentityRefreshBound = true;
+      window.addEventListener('moonboys:sync-state', scheduleHudIdentityRefresh);
+      window.addEventListener('moonboys:faction-status', scheduleHudIdentityRefresh);
+      window.addEventListener('storage', function (e) {
+        var key = e && e.key ? String(e.key) : '';
+        if (/^(moonboys_tg_(id|name|linked|auth|sync_health)|MOONBOYS_TELEGRAM_AUTH)$/.test(key)) {
+          scheduleHudIdentityRefresh();
         }
-      }
+      });
+    }
 
-      /* ── LIVE LINKED / RELINK pill (once, in shell portrait row) ─────── */
-      if (linked && nameEl && nameEl.parentNode) {
-        var freshAuth = typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
-        var pillEl = document.createElement('span');
-        pillEl.className = 'hud-live-pill ' + (freshAuth ? 'hud-live-pill--linked' : 'hud-live-pill--relink');
-        pillEl.setAttribute('aria-label', freshAuth ? 'Live linked' : 'Relink required');
-        if (freshAuth) {
-          pillEl.textContent = 'LIVE LINKED';
-        } else {
-          var relinkA = document.createElement('a');
-          relinkA.href = '/gkniftyheads-incubator.html';
-          relinkA.textContent = 'RELINK';
-          pillEl.appendChild(relinkA);
-        }
-        nameEl.parentNode.appendChild(pillEl);
-      }
-
+    /* Deferred HUD population */
+    setTimeout(function _hudPlayerInit() {
+      bindHudIdentityRefresh();
+      scheduleHudIdentityRefresh();
     }, 0);
   }
 
