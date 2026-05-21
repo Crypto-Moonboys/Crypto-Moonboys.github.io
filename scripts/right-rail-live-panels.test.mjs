@@ -13,6 +13,7 @@ function check(condition, message) {
 const community = read('community.html');
 const games = read('games/index.html');
 const incubator = read('gkniftyheads-incubator.html');
+const blockTopiaPage = read('games/block-topia/index.html');
 const incubatorLink = read('js/incubator-link.js');
 const siteShell = read('js/site-shell.js');
 const csp = read('js/components/connection-status-panel.js');
@@ -134,9 +135,9 @@ const liveFeedBlock = functionBlock(csp, 'buildPlayerLiveFeedHTML');
 const opsBlock = functionBlock(csp, 'buildFactionDailyOpsHTML');
 const wtfSectionBlock = functionBlock(csp, 'buildDailyWtfSignalHTML');
 const missedSectionBlock = functionBlock(csp, 'buildMissedOpportunitiesHTML');
-check(liveFeedBlock.includes('<div class="csp-item-label">Arcade XP</div>') && liveFeedBlock.includes('<div class="csp-item-label">Block Topia</div>') && liveFeedBlock.includes('Latest:'), 'player live feed is compact with Arcade XP/Block Topia/latest only — no identity duplication');
-check(opsBlock.includes('<div class="csp-item-label">Faction XP</div>') && opsBlock.includes('<div class="csp-item-label">Contribution</div>') && opsBlock.includes('<div class="csp-item-label">Daily Ops Status</div>') && opsBlock.includes('<div class="csp-item-label">Completed Today</div>') && opsBlock.includes('<div class="csp-item-label">Missed Today</div>'), 'Faction Daily Ops section renders faction XP/contribution/status/completed/missed from shared state');
-check(wtfSectionBlock.includes('<div class="csp-item-label">Signal Status</div>') && wtfSectionBlock.includes('<div class="csp-item-label">Timer</div>') && wtfSectionBlock.includes('<div class="csp-item-label">Action</div>'), 'Daily WTF Signal section renders status/timer/action from shared state');
+check(liveFeedBlock.includes('csp-live-row') && !liveFeedBlock.includes('csp-grid') && liveFeedBlock.includes('Arcade XP') && liveFeedBlock.includes('Block Topia') && liveFeedBlock.includes('Latest:'), 'player live feed linked content stays compact rows with Arcade XP/Block Topia/latest — no csp-grid mini-cards');
+check(opsBlock.includes('csp-ops-row') && opsBlock.includes('Faction XP') && opsBlock.includes('Contribution') && opsBlock.includes('Daily Ops Status') && opsBlock.includes('Completed Today') && opsBlock.includes('Missed Today'), 'Faction Daily Ops section renders faction XP/contribution/status/completed/missed as compact ops rows');
+check(wtfSectionBlock.includes('csp-signal-card') && wtfSectionBlock.includes('csp-wtf-badge') && wtfSectionBlock.includes('Timer') && wtfSectionBlock.includes('Action') && !wtfSectionBlock.includes('csp-grid'), 'Daily WTF Signal section renders badge/timer/action as compact signal card module, not generic csp-grid');
 check(wtfSectionBlock.includes('data-csp-wtf-countdown'), 'Daily WTF section renders a dedicated countdown data hook');
 check(missedSectionBlock.includes('Missed XP (all-time)') && missedSectionBlock.includes('Missed Today') && missedSectionBlock.includes('Missed Count'), 'Missed Opportunities section renders all-time/today/count from shared state');
 // New richer content checks
@@ -194,11 +195,11 @@ const resolveHudSignedTelegramAuthBlock = functionBlock(siteShell, 'resolveHudSi
 const bindHudIdentityRefreshBlock = functionBlock(siteShell, 'bindHudIdentityRefresh');
 // username appears once — only in the shell portrait row, not inside the Player Live Feed renderer
 check(!liveFeedBlock.includes('csp-avatar-mini') && !liveFeedBlock.includes('csp-live-identity'), 'player live feed renderer does not include duplicate avatar/name identity block');
-check(!liveFeedBlock.includes('<div class="csp-item-label">Faction</div>'), 'player live feed renderer does not include Faction row (faction belongs to Faction Daily Ops only)');
-check(!liveFeedBlock.includes('<div class="csp-item-label">Telegram</div>'), 'player live feed renderer does not include Telegram LIVE LINKED row');
+check(!liveFeedBlock.includes('>Faction<') && !liveFeedBlock.includes('"Faction"') && !liveFeedBlock.includes("'Faction'"), 'player live feed renderer does not include Faction row (faction belongs to Faction Daily Ops only)');
+check(!liveFeedBlock.includes('>Telegram<'), 'player live feed renderer does not include Telegram LIVE LINKED row');
 check(!liveFeedBlock.includes('csp-player-link') || liveFeedBlock.indexOf('csp-player-link') === liveFeedBlock.lastIndexOf('csp-player-link'), 'player live feed renderer does not embed username link (identity handled by shell)');
 // Faction Daily Ops owns the faction row
-check(opsBlock.includes('<div class="csp-item-label">Faction</div>'), 'Faction Daily Ops renderer includes Faction row as the single faction authority');
+check(opsBlock.includes('csp-ops-row') && opsBlock.includes('>Faction<'), 'Faction Daily Ops renderer includes Faction row as the single faction authority');
 // LIVE LINKED / RELINK shown once — in the shell portrait row, not inside the inner renderer
 check(!functionBlock(csp, 'buildPlayerLiveFeedHTML').includes('LIVE LINKED'), 'player live feed renderer does not output LIVE LINKED pill (shell portrait row is the single authority)');
 check(siteShell.includes('hud-live-pill') && siteShell.includes('LIVE LINKED'), 'shell portrait row renders LIVE LINKED pill once for the identity area');
@@ -216,6 +217,31 @@ check(siteShell.includes('hud-avatar-icon'), 'shell portrait area preserves fall
 check(siteShell.includes('data-csp-panel') && siteShell.includes('data-csp-faction-ops') && siteShell.includes('data-csp-wtf-signal') && siteShell.includes('data-csp-missed'), 'multi-section right rail remains intact with all four section hooks');
 // One shared state authority
 check(csp.includes('buildSharedRailState') && csp.includes('RIGHT_RAIL_SECTION_SELECTORS'), 'one shared state authority drives all right-rail section renders');
+
+console.log('\n[4c] Visual composition — compact/passive inner renderers');
+// Inner linked renderers no longer output nested .csp-panel wrappers
+check(!opsBlock.includes('class="csp-panel') && !wtfSectionBlock.includes('class="csp-panel') && !missedSectionBlock.includes('class="csp-panel'), 'lower section renderers (ops/wtf/missed) do not use nested csp-panel card wrappers');
+// Player Live Feed linked state uses compact rows in right-rail context but keeps framing for standalone mounts
+check(liveFeedBlock.includes('var inRightRail') && liveFeedBlock.includes('if (inRightRail) return linkedRows;') && liveFeedBlock.includes('<div class="csp-panel csp-panel--live-feed"'), 'player live feed linked renderer branches by mount context: right rail frame-free, standalone framed');
+const buildSectionBlock = functionBlock(csp, 'buildSectionHTML');
+check(csp.includes('function isRightRailMount') && buildSectionBlock.includes('buildPlayerLiveFeedHTML(shared, { inRightRail: isRightRailMount(contextEl) })'), 'buildSectionHTML passes mount context so right-rail data-csp-panel renders frame-free while standalone stays framed');
+// Faction Daily Ops uses compact ops rows and mission list, not six-box grid
+check(opsBlock.includes('csp-section-rows') && opsBlock.includes('csp-ops-row') && !opsBlock.includes('csp-grid'), 'Faction Daily Ops linked state uses csp-section-rows/csp-ops-row, not six-box csp-grid layout');
+// WTF Signal uses csp-signal-card with badge/event/timer/action
+check(wtfSectionBlock.includes('csp-signal-card') && wtfSectionBlock.includes('csp-wtf-badge') && wtfSectionBlock.includes('data-csp-wtf-countdown'), 'Daily WTF Signal linked state uses csp-signal-card module with badge and countdown data hook');
+// Missed Opportunities uses csp-warning-card with MISSED badge and warning stats
+check(missedSectionBlock.includes('csp-warning-card') && missedSectionBlock.includes('csp-missed-badge') && missedSectionBlock.includes('MISSED'), 'Missed Opportunities linked state uses csp-warning-card module with MISSED badge and warning stats');
+// Lower unlinked/relink sections do not each render repeated big CTA buttons
+check(!opsBlock.includes('csp-live-cta') && !wtfSectionBlock.includes('csp-live-cta') && !missedSectionBlock.includes('csp-live-cta'), 'lower sections (ops/wtf/missed) do not render repeated big Link/RELINK CTA buttons');
+// Player Live Feed keeps the main Link/RELINK CTA
+check(liveFeedBlock.includes('csp-live-cta') && liveFeedBlock.includes('Link Telegram') && liveFeedBlock.includes('RELINK Telegram'), 'Player Live Feed retains the main Link Telegram / RELINK CTA for unlinked/relink states');
+// Standalone pages still mount data-csp-panel outside the right-rail shell
+check(incubator.includes('data-csp-panel') && !incubator.includes('homepage-right-panel'), 'gkniftyheads-incubator standalone data-csp-panel mount remains outside homepage-right-panel shell');
+check(blockTopiaPage.includes('data-csp-panel') && !blockTopiaPage.includes('homepage-right-panel'), 'games/block-topia standalone data-csp-panel mount remains outside homepage-right-panel shell');
+// Top comment reflects new architecture
+check(!csp.includes('data-csp-panel) is the single right-rail live source'), 'top comment no longer claims data-csp-panel is the only right-rail source');
+check(csp.includes('Standalon') && csp.includes('framed `.csp-panel` wrapper'), 'top comment documents standalone data-csp-panel framed exception');
+check(!csp.includes('csp-live-identity') && !csp.includes('.csp-avatar-mini{display:none}'), 'connection-status-panel removes misleading csp-live-identity/csp-avatar-mini drift');
 
 console.log('\n[5] WTF event visibility');
 check(las.includes('window.MOONBOYS_WTF_EVENTS'), 'faction ops panel reads window.MOONBOYS_WTF_EVENTS');
