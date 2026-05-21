@@ -3,10 +3,17 @@
  * ==========================================
  * Compact player live-feed panel and header badge.
  *
- * Panel (data-csp-panel) is the single right-rail live source for Telegram
- * link status, faction/faction XP/contribution, Arcade XP, Block Topia access,
- * missed XP, completed/missed today, daily ops status, Daily WTF signal status,
- * latest activity, and optional public Battle Chamber feed.
+ * One shared state authority (`buildSharedRailState`) drives multiple passive
+ * right-rail section renderers.  Each renderer populates its own `retro-hud-box`
+ * mount point (data-csp-panel, data-csp-faction-ops, data-csp-wtf-signal,
+ * data-csp-missed) with compact, frame-free content.  The outer retro-hud-box
+ * owns the card frame; inner renderers output lightweight wrappers only.
+ *
+ * Rendered content:
+ *   data-csp-panel        — Player Live Feed (Arcade XP, Block Topia, latest activity)
+ *   data-csp-faction-ops  — Faction Daily Ops (faction, XP, contribution, missions)
+ *   data-csp-wtf-signal   — Daily WTF Signal (badge, event, timer, action)
+ *   data-csp-missed       — Missed Opportunities (MISSED badge, XP, counts)
  *
  * Header badge states:
  *   LIVE SYNC          — linked + fresh signed Telegram auth confirmed
@@ -571,21 +578,19 @@
     // Linked: compact live rows only — identity (avatar/name/pill) is rendered once by the shell portrait row.
     // Faction data belongs exclusively to the Faction Daily Ops section.
     return '' +
-      '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
-        '<div class="csp-grid csp-grid--live">' +
-          '<div class="csp-item"><div class="csp-item-label">Arcade XP</div><div class="csp-item-val" data-csp-xp>' + esc(String(shared.arcadeXp)) + '</div></div>' +
-          '<div class="csp-item csp-item--wide"><div class="csp-item-label">Block Topia</div><div class="csp-item-val" data-csp-bt-access>' + shared.blocktopia + '</div></div>' +
-        '</div>' +
-        '<div class="csp-feed csp-feed--latest"><div class="csp-feed-row csp-feed-row--latest"><span class="csp-feed-label">Latest:</span><span class="csp-feed-text">' + esc(shared.latestActivityText) + '</span></div></div>' +
+      '<div class="csp-section-content" role="status" aria-label="Player live feed">' +
+        '<div class="csp-live-row"><span class="csp-live-row-label">Arcade XP</span><span class="csp-live-row-val" data-csp-xp>' + esc(String(shared.arcadeXp)) + '</span></div>' +
+        '<div class="csp-live-row"><span class="csp-live-row-label">Block Topia</span><span class="csp-live-row-val" data-csp-bt-access>' + shared.blocktopia + '</span></div>' +
+        '<div class="csp-live-row csp-live-row--latest"><span class="csp-feed-label">Latest:</span><span class="csp-feed-text">' + esc(shared.latestActivityText) + '</span></div>' +
       '</div>';
   }
 
   function buildFactionDailyOpsHTML(shared) {
     if (shared.mode === 'unlinked') {
-      return '<div class="csp-panel csp-panel--ops"><div class="csp-feed-empty">Link Telegram to unlock faction daily ops.</div><a href="/gkniftyheads-incubator.html" class="csp-live-cta">Link Telegram</a></div>';
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">Telegram sync required to unlock faction daily ops.</span></div>';
     }
     if (shared.mode === 'relink') {
-      return '<div class="csp-panel csp-panel--ops"><div class="csp-feed-empty">RELINK required to sync faction daily ops.</div><a href="/gkniftyheads-incubator.html" class="csp-live-cta">RELINK Telegram</a></div>';
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">RELINK required to sync faction daily ops.</span></div>';
     }
     var contributionDisplay = shared.contribution ? shared.contribution.value : 'syncing…';
     var completedDisplay = shared.dailyCounts && shared.dailyCounts.completed != null ? String(shared.dailyCounts.completed) : 'syncing…';
@@ -617,27 +622,25 @@
       ? 'Open Battle Chamber'
       : 'Join Faction';
     return '' +
-      '<div class="csp-panel csp-panel--ops" role="status" aria-label="Faction daily ops">' +
+      '<div class="csp-section-rows" role="status" aria-label="Faction daily ops">' +
         '<a class="csp-ops-arcade-cta" href="/games/">Play Arcade</a>' +
-        '<div class="csp-grid csp-grid--live">' +
-          '<div class="csp-item"><div class="csp-item-label">Faction</div><div class="csp-item-val">' + esc((shared.faction.faction === 'unaligned' ? 'No faction selected' : (shared.faction.icon + ' ' + shared.faction.label))) + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Faction XP</div><div class="csp-item-val">' + esc(String(shared.faction.faction_xp)) + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Contribution</div><div class="csp-item-val">' + esc(contributionDisplay) + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Daily Ops Status</div><div class="csp-item-val">' + esc(shared.dailyOpsStatus ? shared.dailyOpsStatus.value : 'syncing…') + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Completed Today</div><div class="csp-item-val">' + esc(completedDisplay) + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Missed Today</div><div class="csp-item-val">' + esc(missedTodayDisplay) + '</div></div>' +
-          '<div class="csp-item csp-item--wide"><div class="csp-item-label">Battle Chamber</div><div class="csp-item-val"><a class="csp-player-link" href="' + esc(actionHref) + '">' + esc(actionLabel) + '</a></div></div>' +
-        '</div>' +
+        '<div class="csp-ops-row"><span class="csp-ops-label">Faction</span><span class="csp-ops-val">' + esc((shared.faction.faction === 'unaligned' ? 'No faction selected' : (shared.faction.icon + ' ' + shared.faction.label))) + '</span></div>' +
+        '<div class="csp-ops-row"><span class="csp-ops-label">Faction XP</span><span class="csp-ops-val">' + esc(String(shared.faction.faction_xp)) + '</span></div>' +
+        '<div class="csp-ops-row"><span class="csp-ops-label">Contribution</span><span class="csp-ops-val">' + esc(contributionDisplay) + '</span></div>' +
+        '<div class="csp-ops-row"><span class="csp-ops-label">Daily Ops Status</span><span class="csp-ops-val">' + esc(shared.dailyOpsStatus ? shared.dailyOpsStatus.value : 'syncing…') + '</span></div>' +
+        '<div class="csp-ops-row"><span class="csp-ops-label">Completed Today</span><span class="csp-ops-val">' + esc(completedDisplay) + '</span></div>' +
+        '<div class="csp-ops-row"><span class="csp-ops-label">Missed Today</span><span class="csp-ops-val">' + esc(missedTodayDisplay) + '</span></div>' +
+        '<div class="csp-ops-row csp-ops-row--wide"><span class="csp-ops-label">Battle Chamber</span><span class="csp-ops-val"><a class="csp-player-link" href="' + esc(actionHref) + '">' + esc(actionLabel) + '</a></span></div>' +
         '<div class="csp-missions"><div class="csp-missions-hd">Today\'s Missions</div>' + missionsHTML + '</div>' +
       '</div>';
   }
 
   function buildDailyWtfSignalHTML(shared) {
     if (shared.mode === 'unlinked') {
-      return '<div class="csp-panel csp-panel--wtf"><div class="csp-feed-empty">Link Telegram to receive Daily WTF signals.</div><a href="/gkniftyheads-incubator.html" class="csp-live-cta">Link Telegram</a></div>';
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">Telegram sync required to receive Daily WTF signals.</span></div>';
     }
     if (shared.mode === 'relink') {
-      return '<div class="csp-panel csp-panel--wtf"><div class="csp-feed-empty">RELINK required to sync Daily WTF signal.</div><a href="/gkniftyheads-incubator.html" class="csp-live-cta">RELINK Telegram</a></div>';
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">RELINK required to sync Daily WTF signal.</span></div>';
     }
     var wtf = shared.wtfState;
     var timer = 'syncing…';
@@ -682,23 +685,20 @@
       action = '<a class="csp-player-link" href="/games/">Open Arcade</a>';
     }
     return '' +
-      '<div class="csp-panel csp-panel--wtf" role="status" aria-label="Daily WTF signal">' +
+      '<div class="csp-signal-card" role="status" aria-label="Daily WTF signal">' +
         '<div class="csp-wtf-badge ' + badgeClass + '">' + badgeLabel + '</div>' +
         (eventTitle ? '<div class="csp-wtf-event-title">' + esc(eventTitle) + '</div>' : '') +
-        '<div class="csp-grid csp-grid--live">' +
-          '<div class="csp-item"><div class="csp-item-label">Signal Status</div><div class="csp-item-val">' + esc(statusText) + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Timer</div><div class="csp-item-val" data-csp-wtf-countdown>' + esc(timer) + '</div></div>' +
-          '<div class="csp-item csp-item--wide"><div class="csp-item-label">Action</div><div class="csp-item-val">' + action + '</div></div>' +
-        '</div>' +
+        '<div class="csp-live-row"><span class="csp-live-row-label">Timer</span><span class="csp-live-row-val" data-csp-wtf-countdown>' + esc(timer) + '</span></div>' +
+        '<div class="csp-live-row"><span class="csp-live-row-label">Action</span><span class="csp-live-row-val">' + action + '</span></div>' +
       '</div>';
   }
 
   function buildMissedOpportunitiesHTML(shared) {
     if (shared.mode === 'unlinked') {
-      return '<div class="csp-panel csp-panel--missed"><div class="csp-feed-empty">Link Telegram to track missed opportunities.</div></div>';
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">Telegram sync required to track missed opportunities.</span></div>';
     }
     if (shared.mode === 'relink') {
-      return '<div class="csp-panel csp-panel--missed"><div class="csp-feed-empty">RELINK required to sync missed opportunities.</div></div>';
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">RELINK required to sync missed opportunities.</span></div>';
     }
     var wtf = shared.wtfState || {};
     var daily = shared.dailyState || null;
@@ -717,13 +717,11 @@
     var missedTodayDisplay = missedToday != null ? String(missedToday) : 'syncing…';
     var missedCountDisplay = missedCountAll != null ? String(missedCountAll) : 'syncing…';
     return '' +
-      '<div class="csp-panel csp-panel--missed csp-panel--missed-warn" role="status" aria-label="Missed opportunities">' +
+      '<div class="csp-warning-card" role="status" aria-label="Missed opportunities">' +
         '<div class="csp-missed-badge">MISSED</div>' +
-        '<div class="csp-grid csp-grid--live">' +
-          '<div class="csp-item"><div class="csp-item-label">Missed XP (all-time)</div><div class="csp-item-val csp-item-val--warn" data-csp-missed-xp>' + esc(missedXpDisplay) + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Missed Today</div><div class="csp-item-val csp-item-val--warn">' + esc(missedTodayDisplay) + '</div></div>' +
-          '<div class="csp-item"><div class="csp-item-label">Missed Count</div><div class="csp-item-val csp-item-val--warn">' + esc(missedCountDisplay) + '</div></div>' +
-        '</div>' +
+        '<div class="csp-live-row"><span class="csp-live-row-label">Missed XP (all-time)</span><span class="csp-live-row-val csp-live-row-val--warn" data-csp-missed-xp>' + esc(missedXpDisplay) + '</span></div>' +
+        '<div class="csp-live-row"><span class="csp-live-row-label">Missed Today</span><span class="csp-live-row-val csp-live-row-val--warn">' + esc(missedTodayDisplay) + '</span></div>' +
+        '<div class="csp-live-row"><span class="csp-live-row-label">Missed Count</span><span class="csp-live-row-val csp-live-row-val--warn">' + esc(missedCountDisplay) + '</span></div>' +
       '</div>';
   }
 
@@ -817,8 +815,8 @@
       '.csp-live-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}',
       '.csp-live-head strong{display:block;color:#fff;text-transform:uppercase;letter-spacing:.06em}',
       '.csp-live-head span{display:block;color:var(--color-text-muted,#8b949e);font-size:.72rem}',
-      '.csp-avatar-mini{width:34px;height:34px;border:1px solid rgba(0,229,255,.45);display:inline-flex!important;align-items:center;justify-content:center;background:rgba(0,229,255,.08);box-shadow:0 0 10px rgba(0,229,255,.18)}',
-      '.csp-live-identity{min-width:0}.csp-live-identity strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.csp-avatar-mini{display:none}',
+      /* csp-live-identity kept for any external references but no longer used by inner renderers */
       '.csp-live-pill{display:inline-flex!important;padding:2px 6px;border-radius:999px;border:1px solid rgba(86,220,255,.28);font-size:.58rem!important;letter-spacing:.04em;margin-top:4px}',
       '.csp-live-pill--good{color:#3fb950;background:rgba(63,185,80,.12);border-color:rgba(63,185,80,.4)}',
       '.csp-grid--live{grid-template-columns:1fr;gap:7px}',
@@ -835,6 +833,26 @@
       '.csp-pulse{width:8px;height:8px;border-radius:999px;background:#3fb950;box-shadow:0 0 10px #3fb950;display:inline-block;flex:0 0 auto;animation:cspPulse 1.2s infinite}',
       '.csp-pulse--warn{background:#f7c948;box-shadow:0 0 10px #f7c948}',
       '@keyframes cspPulse{0%,100%{opacity:.55;transform:scale(.9)}50%{opacity:1;transform:scale(1.15)}}',
+      /* Compact section content wrappers — inner renderers use these instead of csp-panel */
+      '.csp-section-content{font-size:.85rem;color:var(--color-text,#e6f0ff)}',
+      '.csp-section-content--locked{padding:4px 0}',
+      '.csp-locked-text{font-size:.72rem;color:var(--color-text-muted,#8b949e)}',
+      /* Compact HUD rows — Player Live Feed and signal/warning modules */
+      '.csp-live-row{display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding:4px 0;border-bottom:1px solid rgba(86,220,255,.08);font-size:.8rem}',
+      '.csp-live-row--latest{border-bottom:0;padding-top:6px;gap:4px;font-size:.72rem;color:var(--color-text-muted,#8b949e)}',
+      '.csp-live-row-label{flex:0 0 auto;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted,#8b949e)}',
+      '.csp-live-row-val{flex:1 1 auto;text-align:right;font-size:.84rem;font-weight:600;color:var(--color-text,#e6f0ff)}',
+      '.csp-live-row-val--warn{color:#f7c948}',
+      /* Compact ops rows — Faction Daily Ops */
+      '.csp-section-rows{font-size:.85rem;color:var(--color-text,#e6f0ff)}',
+      '.csp-ops-row{display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding:3px 0;border-bottom:1px solid rgba(86,220,255,.08);font-size:.8rem}',
+      '.csp-ops-row--wide{gap:6px}',
+      '.csp-ops-label{flex:0 0 auto;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted,#8b949e)}',
+      '.csp-ops-val{flex:1 1 auto;text-align:right;font-size:.84rem;font-weight:600;color:var(--color-text,#e6f0ff);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      /* Signal card — Daily WTF Signal */
+      '.csp-signal-card{font-size:.85rem;color:var(--color-text,#e6f0ff)}',
+      /* Warning card — Missed Opportunities */
+      '.csp-warning-card{font-size:.85rem;color:var(--color-text,#e6f0ff)}',
       /* Global header badge */
       '#moonboys-global-status-badge{display:flex;align-items:center;margin-left:auto}',
       '.csp-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 9px;border-radius:99px;font-size:.72rem;font-weight:700;white-space:nowrap;max-width:340px;overflow:hidden;text-overflow:ellipsis}',
@@ -872,7 +890,6 @@
       '.csp-wtf-event-title{font-size:.8rem;font-weight:600;color:#e6f0ff;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       /* Missed badge */
       '.csp-missed-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;background:rgba(248,81,73,.12);border:1px solid rgba(248,81,73,.45);color:#f85149}',
-      '.csp-panel--missed-warn{border-color:rgba(248,81,73,.35)}',
     ].join('\n');
     (document.head || document.documentElement).appendChild(style);
   }
@@ -1053,7 +1070,7 @@
         var linked = isLinked();
 
         // ── Arcade XP ─────────────────────────────────────────────────────────
-        document.querySelectorAll('.csp-item-val[data-csp-xp]').forEach(function (el) {
+        document.querySelectorAll('[data-csp-xp]').forEach(function (el) {
           el.textContent = linked ? String(state.xp) : '—';
         });
         var badge = document.getElementById('moonboys-global-status-badge');
@@ -1066,7 +1083,7 @@
         var requiredXp = (_progressionCache && _progressionCache.requiredXp) || FALLBACK_REQUIRED_XP;
         var unlocked = linked && state.xp >= requiredXp;
 
-        document.querySelectorAll('.csp-item-val[data-csp-bt-access]').forEach(function (el) {
+        document.querySelectorAll('[data-csp-bt-access]').forEach(function (el) {
           el.innerHTML = blocktopiaAccessHTML(linked, state.xp, requiredXp);
         });
 
