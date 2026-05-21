@@ -30,6 +30,7 @@ const homeWidgets = read('js/home-widgets.js');
 const telegramCommunity = read('js/telegram-community.js');
 const leaderboardClient = read('js/leaderboard-client.js');
 const moonboysState = read('js/core/moonboys-state.js');
+const retroTheme = read('css/retro-16bit-theme.css');
 
 function hasScript(html, src) {
   return html.includes(`src="${src}"`) || html.includes(`src='${src}'`);
@@ -147,22 +148,28 @@ check(!opsBlock.includes('Latest Activity'), 'Faction Daily Ops does not include
 check(wtfSectionBlock.includes('active_event') && wtfSectionBlock.includes('next_event') && wtfSectionBlock.includes('upcoming_events'), 'Daily WTF Signal renders event title/name from active/next/upcoming event state');
 check(wtfSectionBlock.includes('csp-wtf-badge') && wtfSectionBlock.includes('ACTIVE') && wtfSectionBlock.includes('UPCOMING') && wtfSectionBlock.includes('COMPLETE') && wtfSectionBlock.includes('MISSED') && wtfSectionBlock.includes('SYNCING') && wtfSectionBlock.includes('WAITING') && wtfSectionBlock.includes('UNAVAILABLE'), 'Daily WTF Signal renders status badge with ACTIVE/UPCOMING/COMPLETE/MISSED/SYNCING/WAITING/UNAVAILABLE states');
 check(missedSectionBlock.includes('csp-missed-badge') && missedSectionBlock.includes('MISSED'), 'Missed Opportunities renders MISSED badge with warning-card style');
-check(csp.includes('#homepage-right-panel .csp-live-row{') && csp.includes('font-size:.64rem') && csp.includes('line-height:1.16') && csp.includes('padding:2px 0'), 'compact live-row typography is scoped to #homepage-right-panel');
-check(csp.includes('#homepage-right-panel .csp-ops-row{') && csp.includes('font-size:.64rem') && csp.includes('line-height:1.16') && csp.includes('padding:2px 0'), 'compact ops-row typography is scoped to #homepage-right-panel');
+check(csp.includes('#homepage-right-panel .csp-live-row-val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}') && csp.includes('#homepage-right-panel .csp-ops-val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'), 'homepage right-rail compact overrides stay scoped to rail truncation only');
+check(!csp.includes('#homepage-right-panel .csp-live-row{align-items:center;gap:4px;padding:2px 0;font-size:.64rem;line-height:1.16}') && !csp.includes('#homepage-right-panel .csp-ops-row{align-items:center;gap:4px;padding:2px 0;font-size:.64rem;line-height:1.16}'), 'homepage right-rail no longer shrinks live/ops row typography below shared defaults');
 check(csp.includes('#homepage-right-panel .csp-live-row-val{') && csp.includes('overflow:hidden') && csp.includes('text-overflow:ellipsis') && csp.includes('white-space:nowrap'), 'right-rail live row values enforce nowrap ellipsis to prevent vertical wrapping');
 check(csp.includes('#homepage-right-panel .csp-ops-val{') && csp.includes('overflow:hidden') && csp.includes('text-overflow:ellipsis') && csp.includes('white-space:nowrap'), 'right-rail ops row values enforce nowrap ellipsis to prevent vertical wrapping');
-check(csp.includes('#homepage-right-panel .csp-feed-text{') && csp.includes('font-size:.62rem') && csp.includes('white-space:nowrap') && csp.includes('text-overflow:ellipsis'), 'right-rail latest/feed text uses compact one-line ellipsis styling');
-check(csp.includes('#homepage-right-panel .csp-mission-row{') && csp.includes('white-space:nowrap') && csp.includes('padding:2px 0') && csp.includes('font-size:.66rem'), 'right-rail mission rows are compact single-line entries');
+check(csp.includes('#homepage-right-panel .csp-feed-text{') && csp.includes('white-space:nowrap') && csp.includes('text-overflow:ellipsis') && !csp.includes('#homepage-right-panel .csp-feed-text{font-size:.62rem;line-height:1.16;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}'), 'right-rail latest/feed text keeps one-line scoped ellipsis without forced tiny font-size');
+check(csp.includes('#homepage-right-panel .csp-mission-row{white-space:nowrap}') && !csp.includes('#homepage-right-panel .csp-mission-row{align-items:center;gap:4px;padding:2px 0;font-size:.66rem;line-height:1.14;white-space:nowrap}'), 'right-rail mission rows keep scoped compact wrapping guard without forced tiny typography');
 check(csp.includes('.csp-live-row{') && csp.includes('font-size:.8rem') && !csp.includes('.csp-live-row{display:flex;align-items:center;justify-content:space-between;gap:4px;min-width:0;padding:2px 0;border-bottom:1px solid rgba(86,220,255,.08);font-size:.64rem'), 'global live-row base stays readable outside right rail (not forced tiny)');
 check(csp.includes('.csp-live-row-val{') && csp.includes('font-size:.84rem') && !csp.includes('.csp-live-row-val{flex:1 1 auto;min-width:0;text-align:right;font-size:.66rem;font-weight:600;line-height:1.16;color:var(--color-text,#e6f0ff);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'), 'global live-row values are not globally forced to tiny nowrap+ellipsis');
 check(csp.includes('.csp-mission-title{') && csp.includes('overflow:hidden') && csp.includes('text-overflow:ellipsis') && csp.includes('white-space:nowrap'), 'mission titles use one-line ellipsis to avoid oversized row height');
-check(csp.includes('#homepage-right-panel .csp-wtf-badge{') && csp.includes('font-size:.58rem') && csp.includes('padding:2px 8px'), 'WTF badge compact typography is scoped to right rail');
-check(csp.includes('#homepage-right-panel .csp-missed-badge{') && csp.includes('font-size:.58rem') && csp.includes('padding:2px 8px'), 'MISSED badge compact typography is scoped to right rail');
+check(!csp.includes('#homepage-right-panel .csp-wtf-badge{padding:2px 8px;font-size:.58rem;line-height:1.1;letter-spacing:.06em;margin-bottom:5px}') && !csp.includes('#homepage-right-panel .csp-missed-badge{padding:2px 8px;font-size:.58rem;line-height:1.1;letter-spacing:.06em;margin-bottom:5px}'), 'homepage right-rail no longer applies tiny WTF/MISSED badge typography overrides');
 const blocktopiaAccessBlock = functionBlock(csp, 'blocktopiaAccessHTML');
 check(blocktopiaAccessBlock.includes('Unlocked</span>') && blocktopiaAccessBlock.includes('Locked ') && blocktopiaAccessBlock.includes('requiredXp') && !blocktopiaAccessBlock.includes('Access unlocked') && !blocktopiaAccessBlock.includes('Arcade XP</span>'), 'Block Topia row uses compact right-rail copy (Unlocked / Locked x/y)');
 check(opsBlock.includes('csp-ops-label">Battle</span>') && opsBlock.includes("var actionLabel = 'Open';") && !opsBlock.includes('Battle Chamber') && !opsBlock.includes('Open Battle Chamber'), 'Battle Chamber row uses compact Battle/Open copy in the narrow right rail');
 check(wtfSectionBlock.includes('Ready</a>') && wtfSectionBlock.includes('Play</a>') && wtfSectionBlock.includes('Open</a>') && !wtfSectionBlock.includes('Get Ready') && !wtfSectionBlock.includes('Play Arcade') && !wtfSectionBlock.includes('Open Arcade'), 'Daily WTF action labels are compact (Ready/Play/Open)');
 check(missedSectionBlock.includes('csp-live-row-val csp-live-row-val--warn') && csp.includes('#homepage-right-panel .csp-live-row-val{') && csp.includes('white-space:nowrap'), 'Missed values use right-rail nowrap styling so numbers cannot stack vertically');
+check(
+  retroTheme.includes('body.page-home #main-wrapper,') &&
+  retroTheme.includes('body.page-home #content {') &&
+  !/\/\* Homepage mobile\/tablet content centering \+ overflow guard \*\/[\s\S]*?@media \(max-width: 900px\)\s*\{[\s\S]*?overflow-x:\s*(?:clip|hidden)\s*!important;/u.test(retroTheme),
+  'retro theme uses structural homepage mobile centering constraints instead of overflow clipping guards'
+);
+check(retroTheme.includes('body.page-home .home-hero,') && retroTheme.includes('body.page-home .category-grid,') && retroTheme.includes('margin-left: auto !important;') && retroTheme.includes('margin-right: auto !important;'), 'homepage mobile content cards/grids keep centered full-width constraints');
 // Fix checks: honest copy, no hard-coded faction name, badge not contradictory
 check(!opsBlock.includes('GraffPUNKS'), 'Faction Daily Ops syncing copy does not hard-code GraffPUNKS faction name');
 check(opsBlock.includes('shared.faction.label') && opsBlock.includes('daily ops syncing'), 'Faction Daily Ops syncing copy uses shared.faction.label for faction-aware pending message');

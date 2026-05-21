@@ -898,28 +898,12 @@
       '.csp-wtf-event-title{font-size:.8rem;line-height:1.24;font-weight:600;color:#e6f0ff;margin-bottom:8px}',
       /* Missed badge */
       '.csp-missed-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.65rem;line-height:1.18;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;background:rgba(248,81,73,.12);border:1px solid rgba(248,81,73,.45);color:#f85149}',
-      /* Right-rail compact typography/layout overrides */
-      '#homepage-right-panel .csp-feed-row{gap:4px;align-items:center;padding:3px 0;font-size:.62rem;line-height:1.16}',
-      '#homepage-right-panel .csp-feed-row--latest{padding:2px 0 0;gap:4px;font-size:.6rem;line-height:1.14}',
-      '#homepage-right-panel .csp-feed-label{font-size:.58rem;line-height:1.14}',
-      '#homepage-right-panel .csp-feed-text{font-size:.62rem;line-height:1.16;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}',
-      '#homepage-right-panel .csp-live-row{align-items:center;gap:4px;padding:2px 0;font-size:.64rem;line-height:1.16}',
-      '#homepage-right-panel .csp-live-row--latest{padding-top:3px;gap:4px;font-size:.6rem;line-height:1.14}',
-      '#homepage-right-panel .csp-live-row-label{font-size:.6rem;line-height:1.14;letter-spacing:.04em}',
-      '#homepage-right-panel .csp-live-row-val{font-size:.66rem;line-height:1.16;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '#homepage-right-panel .csp-ops-row{align-items:center;gap:4px;padding:2px 0;font-size:.64rem;line-height:1.16}',
-      '#homepage-right-panel .csp-ops-row--wide{gap:4px}',
-      '#homepage-right-panel .csp-ops-label{font-size:.6rem;line-height:1.14;letter-spacing:.04em}',
-      '#homepage-right-panel .csp-ops-val{font-size:.66rem;line-height:1.16;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '#homepage-right-panel .csp-missions{margin-top:7px;padding-top:6px}',
-      '#homepage-right-panel .csp-missions-hd{font-size:.6rem;letter-spacing:.06em;margin-bottom:4px;line-height:1.12}',
-      '#homepage-right-panel .csp-missions-empty{font-size:.62rem;line-height:1.16}',
-      '#homepage-right-panel .csp-mission-row{align-items:center;gap:4px;padding:2px 0;font-size:.66rem;line-height:1.14;white-space:nowrap}',
-      '#homepage-right-panel .csp-mission-status{font-size:.58rem;line-height:1.1}',
-      '#homepage-right-panel .csp-mission-title{font-size:.64rem;line-height:1.14;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}',
-      '#homepage-right-panel .csp-wtf-badge{padding:2px 8px;font-size:.58rem;line-height:1.1;letter-spacing:.06em;margin-bottom:5px}',
-      '#homepage-right-panel .csp-wtf-event-title{font-size:.64rem;line-height:1.16;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '#homepage-right-panel .csp-missed-badge{padding:2px 8px;font-size:.58rem;line-height:1.1;letter-spacing:.06em;margin-bottom:5px}',
+      /* Right-rail compact layout guard (keep base typography; scope truncation to rail only) */
+      '#homepage-right-panel .csp-feed-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}',
+      '#homepage-right-panel .csp-live-row-val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '#homepage-right-panel .csp-ops-val{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '#homepage-right-panel .csp-mission-row{white-space:nowrap}',
+      '#homepage-right-panel .csp-mission-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}',
     ].join('\n');
     (document.head || document.documentElement).appendChild(style);
   }
