@@ -308,8 +308,8 @@
 
   function blocktopiaAccessHTML(linked, arcadeXp, requiredXp) {
     if (!linked) return '<span class="csp-val-locked">Telegram sync required</span>';
-    if (arcadeXp >= requiredXp) return '<span class="csp-val-good">Access unlocked</span>';
-    return '<span class="csp-val-locked">Locked — ' + esc(String(arcadeXp)) + ' / ' + requiredXp + ' Arcade XP</span>';
+    if (arcadeXp >= requiredXp) return '<span class="csp-val-good">Unlocked</span>';
+    return '<span class="csp-val-locked">Locked ' + esc(String(arcadeXp)) + '/' + requiredXp + '</span>';
   }
 
   function blocktopiaBadgeLabel(unlocked) {
@@ -625,9 +625,7 @@
     var actionHref = shared.faction && shared.faction.faction && shared.faction.faction !== 'unaligned'
       ? '/community.html'
       : '/community.html#battle-join-faction';
-    var actionLabel = shared.faction && shared.faction.faction && shared.faction.faction !== 'unaligned'
-      ? 'Open Battle Chamber'
-      : 'Join Faction';
+    var actionLabel = 'Open';
     return '' +
       '<div class="csp-section-rows" role="status" aria-label="Faction daily ops">' +
         '<a class="csp-ops-arcade-cta" href="/games/">Play Arcade</a>' +
@@ -637,7 +635,7 @@
         '<div class="csp-ops-row"><span class="csp-ops-label">Daily Ops Status</span><span class="csp-ops-val">' + esc(shared.dailyOpsStatus ? shared.dailyOpsStatus.value : 'syncing…') + '</span></div>' +
         '<div class="csp-ops-row"><span class="csp-ops-label">Completed Today</span><span class="csp-ops-val">' + esc(completedDisplay) + '</span></div>' +
         '<div class="csp-ops-row"><span class="csp-ops-label">Missed Today</span><span class="csp-ops-val">' + esc(missedTodayDisplay) + '</span></div>' +
-        '<div class="csp-ops-row csp-ops-row--wide"><span class="csp-ops-label">Battle Chamber</span><span class="csp-ops-val"><a class="csp-player-link" href="' + esc(actionHref) + '">' + esc(actionLabel) + '</a></span></div>' +
+        '<div class="csp-ops-row csp-ops-row--wide"><span class="csp-ops-label">Battle</span><span class="csp-ops-val"><a class="csp-player-link" href="' + esc(actionHref) + '">' + esc(actionLabel) + '</a></span></div>' +
         '<div class="csp-missions"><div class="csp-missions-hd">Today\'s Missions</div>' + missionsHTML + '</div>' +
       '</div>';
   }
@@ -684,12 +682,12 @@
         eventTitle = evObj.title || evObj.name || evObj.label || '';
       }
     }
-    // Action button — honest copy only; Check In is not wired here so Open Arcade is used instead
-    var action = '<a class="csp-player-link" href="/games/">Get Ready</a>';
+    // Action button — compact right-rail copy only
+    var action = '<a class="csp-player-link" href="/games/">Ready</a>';
     if (wtf && wtf.active_event && wtf.checked_in) {
-      action = '<a class="csp-player-link" href="/games/">Play Arcade</a>';
+      action = '<a class="csp-player-link" href="/games/">Play</a>';
     } else if (wtf && wtf.active_event && !wtf.checked_in) {
-      action = '<a class="csp-player-link" href="/games/">Open Arcade</a>';
+      action = '<a class="csp-player-link" href="/games/">Open</a>';
     }
     return '' +
       '<div class="csp-signal-card" role="status" aria-label="Daily WTF signal">' +
@@ -833,10 +831,10 @@
       '.csp-feed{margin-top:10px;padding-top:9px;border-top:1px solid rgba(86,220,255,.16)}',
       '.csp-feed--latest{margin-top:8px;padding-top:8px}',
       '.csp-feed-title{font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#56dcff;margin-bottom:6px}',
-      '.csp-feed-row{display:flex;gap:6px;align-items:flex-start;padding:5px 0;border-bottom:1px solid rgba(86,220,255,.08);font-size:.72rem}',
-      '.csp-feed-row--latest{padding:2px 0 0;border-bottom:0;gap:4px;font-size:.66rem;line-height:1.3;color:var(--color-text-muted,#8b949e)}',
-      '.csp-feed-label{flex:0 0 auto;color:var(--color-text-muted,#8b949e);font-size:.62rem;font-weight:700;letter-spacing:.02em}',
-      '.csp-feed-text{flex:1 1 auto;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}',
+      '.csp-feed-row{display:flex;gap:6px;align-items:flex-start;padding:4px 0;border-bottom:1px solid rgba(86,220,255,.08);font-size:.72rem;line-height:1.22}',
+      '.csp-feed-row--latest{padding:3px 0 0;border-bottom:0;gap:5px;font-size:.68rem;line-height:1.2;color:var(--color-text-muted,#8b949e)}',
+      '.csp-feed-label{flex:0 0 auto;color:var(--color-text-muted,#8b949e);font-size:.62rem;font-weight:700;letter-spacing:.02em;line-height:1.18}',
+      '.csp-feed-text{flex:1 1 auto;min-width:0;font-size:.7rem;line-height:1.22;overflow-wrap:anywhere}',
       '.csp-feed-tag{flex:0 0 auto;color:#f7c948;font-weight:800;text-transform:uppercase;font-size:.58rem;border:1px solid rgba(247,201,72,.35);padding:1px 4px}',
       '.csp-feed-empty{color:var(--color-text-muted,#8b949e);font-size:.72rem;line-height:1.45}',
       '.csp-live-cta{display:inline-flex;margin-top:8px;padding:7px 9px;border:1px solid rgba(0,229,255,.45);color:#c8f0ff;text-decoration:none;background:rgba(0,229,255,.08);font-weight:800;text-transform:uppercase;font-size:.68rem}',
@@ -848,17 +846,17 @@
       '.csp-section-content--locked{padding:4px 0}',
       '.csp-locked-text{font-size:.72rem;color:var(--color-text-muted,#8b949e)}',
       /* Compact HUD rows — Player Live Feed and signal/warning modules */
-      '.csp-live-row{display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding:4px 0;border-bottom:1px solid rgba(86,220,255,.08);font-size:.8rem}',
-      '.csp-live-row--latest{border-bottom:0;padding-top:6px;gap:4px;font-size:.72rem;color:var(--color-text-muted,#8b949e)}',
-      '.csp-live-row-label{flex:0 0 auto;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted,#8b949e)}',
-      '.csp-live-row-val{flex:1 1 auto;text-align:right;font-size:.84rem;font-weight:600;color:var(--color-text,#e6f0ff)}',
+      '.csp-live-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0;padding:4px 0;border-bottom:1px solid rgba(86,220,255,.08);font-size:.8rem;line-height:1.24}',
+      '.csp-live-row--latest{border-bottom:0;padding-top:6px;gap:6px;font-size:.72rem;line-height:1.22;color:var(--color-text-muted,#8b949e)}',
+      '.csp-live-row-label{flex:0 0 auto;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted,#8b949e);line-height:1.2}',
+      '.csp-live-row-val{flex:1 1 auto;min-width:0;text-align:right;font-size:.84rem;font-weight:600;line-height:1.24;color:var(--color-text,#e6f0ff)}',
       '.csp-live-row-val--warn{color:#f7c948}',
       /* Compact ops rows — Faction Daily Ops */
       '.csp-section-rows{font-size:.85rem;color:var(--color-text,#e6f0ff)}',
-      '.csp-ops-row{display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding:3px 0;border-bottom:1px solid rgba(86,220,255,.08);font-size:.8rem}',
-      '.csp-ops-row--wide{gap:6px}',
-      '.csp-ops-label{flex:0 0 auto;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted,#8b949e)}',
-      '.csp-ops-val{flex:1 1 auto;text-align:right;font-size:.84rem;font-weight:600;color:var(--color-text,#e6f0ff);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.csp-ops-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0;padding:4px 0;border-bottom:1px solid rgba(86,220,255,.08);font-size:.8rem;line-height:1.24}',
+      '.csp-ops-row--wide{gap:8px}',
+      '.csp-ops-label{flex:0 0 auto;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted,#8b949e);line-height:1.2}',
+      '.csp-ops-val{flex:1 1 auto;min-width:0;text-align:right;font-size:.84rem;font-weight:600;line-height:1.24;color:var(--color-text,#e6f0ff)}',
       /* Signal card — Daily WTF Signal */
       '.csp-signal-card{font-size:.85rem;color:var(--color-text,#e6f0ff)}',
       /* Warning card — Missed Opportunities */
@@ -880,16 +878,16 @@
       '.csp-ops-arcade-cta:hover{background:rgba(86,220,255,.18)}',
       /* Today\'s Missions */
       '.csp-missions{margin-top:10px;padding-top:9px;border-top:1px solid rgba(86,220,255,.16)}',
-      '.csp-missions-hd{font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#56dcff;margin-bottom:6px}',
-      '.csp-missions-empty{color:var(--color-text-muted,#8b949e);font-size:.72rem;font-style:italic}',
-      '.csp-mission-row{display:flex;align-items:baseline;gap:5px;padding:3px 0;font-size:.78rem}',
-      '.csp-mission-status{flex:0 0 auto;font-size:.7rem}',
-      '.csp-mission-title{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.csp-missions-hd{font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#56dcff;margin-bottom:6px;line-height:1.2}',
+      '.csp-missions-empty{color:var(--color-text-muted,#8b949e);font-size:.72rem;font-style:italic;line-height:1.3}',
+      '.csp-mission-row{display:flex;align-items:baseline;gap:6px;min-width:0;padding:3px 0;font-size:.78rem;line-height:1.22}',
+      '.csp-mission-status{flex:0 0 auto;font-size:.7rem;line-height:1.14}',
+      '.csp-mission-title{flex:1 1 auto;min-width:0;font-size:.74rem;line-height:1.22;overflow-wrap:anywhere}',
       '.csp-mission--done .csp-mission-title{color:var(--color-text-muted,#8b949e);text-decoration:line-through}',
       '.csp-mission--done .csp-mission-status{color:#3fb950}',
       '.csp-mission--pending .csp-mission-status{color:#f7c948}',
       /* WTF status badge */
-      '.csp-wtf-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}',
+      '.csp-wtf-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.65rem;line-height:1.18;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}',
       '.csp-wtf-badge--active{background:rgba(63,185,80,.15);border:1px solid rgba(63,185,80,.5);color:#3fb950}',
       '.csp-wtf-badge--upcoming{background:rgba(86,220,255,.1);border:1px solid rgba(86,220,255,.4);color:#56dcff}',
       '.csp-wtf-badge--complete{background:rgba(100,100,255,.1);border:1px solid rgba(100,100,255,.35);color:#a5b4fc}',
@@ -897,9 +895,31 @@
       '.csp-wtf-badge--syncing{background:rgba(86,220,255,.05);border:1px solid rgba(86,220,255,.2);color:var(--color-text-muted,#8b949e)}',
       '.csp-wtf-badge--waiting{background:rgba(180,180,180,.06);border:1px solid rgba(180,180,180,.25);color:var(--color-text-muted,#8b949e)}',
       '.csp-wtf-badge--unavailable{background:rgba(248,81,73,.07);border:1px solid rgba(248,81,73,.3);color:#f85149}',
-      '.csp-wtf-event-title{font-size:.8rem;font-weight:600;color:#e6f0ff;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.csp-wtf-event-title{font-size:.8rem;line-height:1.24;font-weight:600;color:#e6f0ff;margin-bottom:8px}',
       /* Missed badge */
-      '.csp-missed-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;background:rgba(248,81,73,.12);border:1px solid rgba(248,81,73,.45);color:#f85149}',
+      '.csp-missed-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.65rem;line-height:1.18;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;background:rgba(248,81,73,.12);border:1px solid rgba(248,81,73,.45);color:#f85149}',
+      /* Right-rail compact typography/layout overrides */
+      '#homepage-right-panel .csp-feed-row{gap:4px;align-items:center;padding:3px 0;font-size:.62rem;line-height:1.16}',
+      '#homepage-right-panel .csp-feed-row--latest{padding:2px 0 0;gap:4px;font-size:.6rem;line-height:1.14}',
+      '#homepage-right-panel .csp-feed-label{font-size:.58rem;line-height:1.14}',
+      '#homepage-right-panel .csp-feed-text{font-size:.62rem;line-height:1.16;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}',
+      '#homepage-right-panel .csp-live-row{align-items:center;gap:4px;padding:2px 0;font-size:.64rem;line-height:1.16}',
+      '#homepage-right-panel .csp-live-row--latest{padding-top:3px;gap:4px;font-size:.6rem;line-height:1.14}',
+      '#homepage-right-panel .csp-live-row-label{font-size:.6rem;line-height:1.14;letter-spacing:.04em}',
+      '#homepage-right-panel .csp-live-row-val{font-size:.66rem;line-height:1.16;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '#homepage-right-panel .csp-ops-row{align-items:center;gap:4px;padding:2px 0;font-size:.64rem;line-height:1.16}',
+      '#homepage-right-panel .csp-ops-row--wide{gap:4px}',
+      '#homepage-right-panel .csp-ops-label{font-size:.6rem;line-height:1.14;letter-spacing:.04em}',
+      '#homepage-right-panel .csp-ops-val{font-size:.66rem;line-height:1.16;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '#homepage-right-panel .csp-missions{margin-top:7px;padding-top:6px}',
+      '#homepage-right-panel .csp-missions-hd{font-size:.6rem;letter-spacing:.06em;margin-bottom:4px;line-height:1.12}',
+      '#homepage-right-panel .csp-missions-empty{font-size:.62rem;line-height:1.16}',
+      '#homepage-right-panel .csp-mission-row{align-items:center;gap:4px;padding:2px 0;font-size:.66rem;line-height:1.14;white-space:nowrap}',
+      '#homepage-right-panel .csp-mission-status{font-size:.58rem;line-height:1.1}',
+      '#homepage-right-panel .csp-mission-title{font-size:.64rem;line-height:1.14;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}',
+      '#homepage-right-panel .csp-wtf-badge{padding:2px 8px;font-size:.58rem;line-height:1.1;letter-spacing:.06em;margin-bottom:5px}',
+      '#homepage-right-panel .csp-wtf-event-title{font-size:.64rem;line-height:1.16;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '#homepage-right-panel .csp-missed-badge{padding:2px 8px;font-size:.58rem;line-height:1.1;letter-spacing:.06em;margin-bottom:5px}',
     ].join('\n');
     (document.head || document.documentElement).appendChild(style);
   }
