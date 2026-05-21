@@ -163,7 +163,12 @@ check(blocktopiaAccessBlock.includes('Unlocked</span>') && blocktopiaAccessBlock
 check(opsBlock.includes('csp-ops-label">Battle</span>') && opsBlock.includes("var actionLabel = 'Open';") && !opsBlock.includes('Battle Chamber') && !opsBlock.includes('Open Battle Chamber'), 'Battle Chamber row uses compact Battle/Open copy in the narrow right rail');
 check(wtfSectionBlock.includes('Ready</a>') && wtfSectionBlock.includes('Play</a>') && wtfSectionBlock.includes('Open</a>') && !wtfSectionBlock.includes('Get Ready') && !wtfSectionBlock.includes('Play Arcade') && !wtfSectionBlock.includes('Open Arcade'), 'Daily WTF action labels are compact (Ready/Play/Open)');
 check(missedSectionBlock.includes('csp-live-row-val csp-live-row-val--warn') && csp.includes('#homepage-right-panel .csp-live-row-val{') && csp.includes('white-space:nowrap'), 'Missed values use right-rail nowrap styling so numbers cannot stack vertically');
-check(retroTheme.includes('body.page-home #main-wrapper,') && retroTheme.includes('body.page-home #content {') && retroTheme.includes('overflow-x: clip !important;'), 'retro theme adds homepage mobile wrapper/content overflow clipping guard');
+check(
+  retroTheme.includes('body.page-home #main-wrapper,') &&
+  retroTheme.includes('body.page-home #content {') &&
+  !/\/\* Homepage mobile\/tablet content centering \+ overflow guard \*\/[\s\S]*?@media \(max-width: 900px\)\s*\{[\s\S]*?overflow-x:\s*(?:clip|hidden)\s*!important;/u.test(retroTheme),
+  'retro theme uses structural homepage mobile centering constraints instead of overflow clipping guards'
+);
 check(retroTheme.includes('body.page-home .home-hero,') && retroTheme.includes('body.page-home .category-grid,') && retroTheme.includes('margin-left: auto !important;') && retroTheme.includes('margin-right: auto !important;'), 'homepage mobile content cards/grids keep centered full-width constraints');
 // Fix checks: honest copy, no hard-coded faction name, badge not contradictory
 check(!opsBlock.includes('GraffPUNKS'), 'Faction Daily Ops syncing copy does not hard-code GraffPUNKS faction name');

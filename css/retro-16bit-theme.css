@@ -5100,17 +5100,12 @@ body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
 
 /* Homepage mobile/tablet content centering + overflow guard */
 @media (max-width: 900px) {
-  body.page-home,
-  body.page-home #layout,
-  body.page-home #main-wrapper {
-    overflow-x: clip !important;
-  }
-
   body.page-home #main-wrapper,
   body.page-home #content {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+    box-sizing: border-box !important;
     margin-left: auto !important;
     margin-right: auto !important;
   }
@@ -5127,6 +5122,7 @@ body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+    box-sizing: border-box !important;
     margin-left: auto !important;
     margin-right: auto !important;
   }
