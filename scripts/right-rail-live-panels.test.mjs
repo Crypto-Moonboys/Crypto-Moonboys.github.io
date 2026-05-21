@@ -144,8 +144,14 @@ check(opsBlock.includes('Play Arcade'), 'Faction Daily Ops contains Play Arcade 
 check(opsBlock.includes("Today's Missions") && opsBlock.includes('mission_opportunities'), "Faction Daily Ops renders Today's Missions section using mission_opportunities");
 check(!opsBlock.includes('Latest Activity'), 'Faction Daily Ops does not include Latest Activity (owned by Player Live Feed)');
 check(wtfSectionBlock.includes('active_event') && wtfSectionBlock.includes('next_event') && wtfSectionBlock.includes('upcoming_events'), 'Daily WTF Signal renders event title/name from active/next/upcoming event state');
-check(wtfSectionBlock.includes('csp-wtf-badge') && wtfSectionBlock.includes('ACTIVE') && wtfSectionBlock.includes('UPCOMING') && wtfSectionBlock.includes('COMPLETE') && wtfSectionBlock.includes('MISSED') && wtfSectionBlock.includes('SYNCING'), 'Daily WTF Signal renders status badge with ACTIVE/UPCOMING/COMPLETE/MISSED/SYNCING states');
+check(wtfSectionBlock.includes('csp-wtf-badge') && wtfSectionBlock.includes('ACTIVE') && wtfSectionBlock.includes('UPCOMING') && wtfSectionBlock.includes('COMPLETE') && wtfSectionBlock.includes('MISSED') && wtfSectionBlock.includes('SYNCING') && wtfSectionBlock.includes('WAITING') && wtfSectionBlock.includes('UNAVAILABLE'), 'Daily WTF Signal renders status badge with ACTIVE/UPCOMING/COMPLETE/MISSED/SYNCING/WAITING/UNAVAILABLE states');
 check(missedSectionBlock.includes('csp-missed-badge') && missedSectionBlock.includes('MISSED'), 'Missed Opportunities renders MISSED badge with warning-card style');
+// Fix checks: honest copy, no hard-coded faction name, badge not contradictory
+check(!opsBlock.includes('GraffPUNKS'), 'Faction Daily Ops syncing copy does not hard-code GraffPUNKS faction name');
+check(opsBlock.includes('shared.faction.label') && opsBlock.includes('daily ops syncing'), 'Faction Daily Ops syncing copy uses shared.faction.label for faction-aware pending message');
+check(!wtfSectionBlock.includes("'Check In'") && !wtfSectionBlock.includes('"Check In"') && !wtfSectionBlock.includes('>Check In<'), 'Daily WTF Signal does not render fake Check In action (no real check-in handler wired)');
+// Badge derives from wtfState directly (not statusText string comparison) — verified by checking state fields drive badge, not human-readable text
+check(wtfSectionBlock.includes('wtf.status === \'error\'') && wtfSectionBlock.includes('wtf.active_event') && wtfSectionBlock.includes('wtf.next_event') && wtfSectionBlock.includes('wtf.completed_today') && wtfSectionBlock.includes('wtf.missed_today'), 'Daily WTF badge is derived directly from wtfState fields, not from human-readable statusText string');
 const ownBattleBlock = functionBlock(csp, 'isOwnBattleActivity');
 const latestActivityBlock = functionBlock(csp, 'latestActivityRows');
 check(csp.includes('isOwnBattleActivity') && csp.includes('getTelegramId()') && csp.includes('activity.filter(isOwnBattleActivity)'), 'player feed filters Battle Chamber activity to the linked player when possible');

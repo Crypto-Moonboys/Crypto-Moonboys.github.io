@@ -594,9 +594,12 @@
     var missionOpps = shared.dailyState && shared.dailyState.today_active && Array.isArray(shared.dailyState.today_active.mission_opportunities)
       ? shared.dailyState.today_active.mission_opportunities
       : null;
+    var factionSyncLabel = shared.faction && shared.faction.faction !== 'unaligned' && shared.faction.label
+      ? shared.faction.label + ' daily ops syncing\u2026'
+      : 'Daily ops syncing\u2026';
     var missionsHTML;
     if (missionOpps === null) {
-      missionsHTML = '<div class="csp-missions-empty">GraffPUNKS daily ops syncing\u2026</div>';
+      missionsHTML = '<div class="csp-missions-empty">' + esc(factionSyncLabel) + '</div>';
     } else if (!missionOpps.length) {
       missionsHTML = '<div class="csp-missions-empty">No live missions reported.</div>';
     } else {
@@ -645,18 +648,24 @@
         timer = '--:--:--';
       }
     }
-    // Status badge: ACTIVE / UPCOMING / COMPLETE / MISSED / SYNCING
-    var statusText = shared.dailyWtfStatusDisplay || 'syncing…';
-    var badgeClass = 'csp-wtf-badge--syncing';
-    if (statusText === 'Active (checked in)' || statusText === 'Active') badgeClass = 'csp-wtf-badge--active';
-    else if (statusText === 'Upcoming') badgeClass = 'csp-wtf-badge--upcoming';
-    else if (statusText === 'Complete') badgeClass = 'csp-wtf-badge--complete';
-    else if (statusText === 'Missed / expired') badgeClass = 'csp-wtf-badge--missed';
-    var badgeLabel = badgeClass === 'csp-wtf-badge--active' ? 'ACTIVE'
-      : badgeClass === 'csp-wtf-badge--upcoming' ? 'UPCOMING'
-      : badgeClass === 'csp-wtf-badge--complete' ? 'COMPLETE'
-      : badgeClass === 'csp-wtf-badge--missed' ? 'MISSED'
-      : 'SYNCING';
+    // Status badge: derive directly from wtfState, not from human-readable statusText,
+    // so badge and status row cannot contradict each other.
+    var badgeLabel, badgeClass;
+    if (!wtf || !wtf.status || wtf.status === 'loading') {
+      badgeLabel = 'SYNCING'; badgeClass = 'csp-wtf-badge--syncing';
+    } else if (wtf.status === 'error') {
+      badgeLabel = 'UNAVAILABLE'; badgeClass = 'csp-wtf-badge--unavailable';
+    } else if (wtf.active_event) {
+      badgeLabel = 'ACTIVE'; badgeClass = 'csp-wtf-badge--active';
+    } else if (wtf.next_event || (Array.isArray(wtf.upcoming_events) && wtf.upcoming_events.length > 0)) {
+      badgeLabel = 'UPCOMING'; badgeClass = 'csp-wtf-badge--upcoming';
+    } else if (Number(wtf.completed_today || 0) > 0) {
+      badgeLabel = 'COMPLETE'; badgeClass = 'csp-wtf-badge--complete';
+    } else if (Number(wtf.missed_today || 0) > 0) {
+      badgeLabel = 'MISSED'; badgeClass = 'csp-wtf-badge--missed';
+    } else {
+      badgeLabel = 'WAITING'; badgeClass = 'csp-wtf-badge--waiting';
+    }
     // Event title from active, next, or first upcoming event
     var eventTitle = '';
     if (wtf && typeof wtf === 'object') {
@@ -665,12 +674,12 @@
         eventTitle = evObj.title || evObj.name || evObj.label || '';
       }
     }
-    // Action button
+    // Action button — honest copy only; Check In is not wired here so Open Arcade is used instead
     var action = '<a class="csp-player-link" href="/games/">Get Ready</a>';
     if (wtf && wtf.active_event && wtf.checked_in) {
       action = '<a class="csp-player-link" href="/games/">Play Arcade</a>';
     } else if (wtf && wtf.active_event && !wtf.checked_in) {
-      action = '<a class="csp-player-link" href="/games/">Check In</a>';
+      action = '<a class="csp-player-link" href="/games/">Open Arcade</a>';
     }
     return '' +
       '<div class="csp-panel csp-panel--wtf" role="status" aria-label="Daily WTF signal">' +
@@ -858,6 +867,8 @@
       '.csp-wtf-badge--complete{background:rgba(100,100,255,.1);border:1px solid rgba(100,100,255,.35);color:#a5b4fc}',
       '.csp-wtf-badge--missed{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.4);color:#f85149}',
       '.csp-wtf-badge--syncing{background:rgba(86,220,255,.05);border:1px solid rgba(86,220,255,.2);color:var(--color-text-muted,#8b949e)}',
+      '.csp-wtf-badge--waiting{background:rgba(180,180,180,.06);border:1px solid rgba(180,180,180,.25);color:var(--color-text-muted,#8b949e)}',
+      '.csp-wtf-badge--unavailable{background:rgba(248,81,73,.07);border:1px solid rgba(248,81,73,.3);color:#f85149}',
       '.csp-wtf-event-title{font-size:.8rem;font-weight:600;color:#e6f0ff;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       /* Missed badge */
       '.csp-missed-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;background:rgba(248,81,73,.12);border:1px solid rgba(248,81,73,.45);color:#f85149}',
