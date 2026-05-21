@@ -5098,6 +5098,47 @@ body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
   }
 }
 
+/* Homepage mobile/tablet content centering + overflow guard */
+@media (max-width: 900px) {
+  body.page-home,
+  body.page-home #layout,
+  body.page-home #main-wrapper {
+    overflow-x: clip !important;
+  }
+
+  body.page-home #main-wrapper,
+  body.page-home #content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  body.page-home #content {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  body.page-home .home-hero,
+  body.page-home .home-widget,
+  body.page-home .category-grid,
+  body.page-home .article-grid {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body.page-home #content {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
+
 /* ==========================================================================
    SHELL CHROME STABLE SIZING — ID-SCOPED (highest specificity guard)
    Uses element IDs for header, sidebar, and right panel so that no
