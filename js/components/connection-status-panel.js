@@ -590,6 +590,26 @@
     var contributionDisplay = shared.contribution ? shared.contribution.value : 'syncing…';
     var completedDisplay = shared.dailyCounts && shared.dailyCounts.completed != null ? String(shared.dailyCounts.completed) : 'syncing…';
     var missedTodayDisplay = shared.dailyCounts && shared.dailyCounts.missed != null ? String(shared.dailyCounts.missed) : 'syncing…';
+    // Today's Missions section from confirmed daily-state
+    var missionOpps = shared.dailyState && shared.dailyState.today_active && Array.isArray(shared.dailyState.today_active.mission_opportunities)
+      ? shared.dailyState.today_active.mission_opportunities
+      : null;
+    var factionSyncLabel = shared.faction && shared.faction.faction !== 'unaligned' && shared.faction.label
+      ? shared.faction.label + ' daily ops syncing\u2026'
+      : 'Daily ops syncing\u2026';
+    var missionsHTML;
+    if (missionOpps === null) {
+      missionsHTML = '<div class="csp-missions-empty">' + esc(factionSyncLabel) + '</div>';
+    } else if (!missionOpps.length) {
+      missionsHTML = '<div class="csp-missions-empty">No live missions reported.</div>';
+    } else {
+      missionsHTML = missionOpps.map(function (m) {
+        var title = esc(m.title || m.name || m.label || m.mission_key || 'Mission');
+        var statusClass = m.completed ? 'csp-mission--done' : 'csp-mission--pending';
+        var statusLabel = m.completed ? '\u2713 ' : '\u2026 ';
+        return '<div class="csp-mission-row ' + statusClass + '"><span class="csp-mission-status">' + statusLabel + '</span><span class="csp-mission-title">' + title + '</span></div>';
+      }).join('');
+    }
     var actionHref = shared.faction && shared.faction.faction && shared.faction.faction !== 'unaligned'
       ? '/community.html'
       : '/community.html#battle-join-faction';
@@ -598,6 +618,7 @@
       : 'Join Faction';
     return '' +
       '<div class="csp-panel csp-panel--ops" role="status" aria-label="Faction daily ops">' +
+        '<a class="csp-ops-arcade-cta" href="/games/">Play Arcade</a>' +
         '<div class="csp-grid csp-grid--live">' +
           '<div class="csp-item"><div class="csp-item-label">Faction</div><div class="csp-item-val">' + esc((shared.faction.faction === 'unaligned' ? 'No faction selected' : (shared.faction.icon + ' ' + shared.faction.label))) + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Faction XP</div><div class="csp-item-val">' + esc(String(shared.faction.faction_xp)) + '</div></div>' +
@@ -605,9 +626,9 @@
           '<div class="csp-item"><div class="csp-item-label">Daily Ops Status</div><div class="csp-item-val">' + esc(shared.dailyOpsStatus ? shared.dailyOpsStatus.value : 'syncing…') + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Completed Today</div><div class="csp-item-val">' + esc(completedDisplay) + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Missed Today</div><div class="csp-item-val">' + esc(missedTodayDisplay) + '</div></div>' +
-          '<div class="csp-item csp-item--wide"><div class="csp-item-label">Latest Activity</div><div class="csp-item-val">' + esc(shared.latestActivityText) + '</div></div>' +
           '<div class="csp-item csp-item--wide"><div class="csp-item-label">Battle Chamber</div><div class="csp-item-val"><a class="csp-player-link" href="' + esc(actionHref) + '">' + esc(actionLabel) + '</a></div></div>' +
         '</div>' +
+        '<div class="csp-missions"><div class="csp-missions-hd">Today\'s Missions</div>' + missionsHTML + '</div>' +
       '</div>';
   }
 
@@ -627,14 +648,45 @@
         timer = '--:--:--';
       }
     }
+    // Status badge: derive directly from wtfState, not from human-readable statusText,
+    // so badge and status row cannot contradict each other.
+    var badgeLabel, badgeClass;
+    if (!wtf || !wtf.status || wtf.status === 'loading') {
+      badgeLabel = 'SYNCING'; badgeClass = 'csp-wtf-badge--syncing';
+    } else if (wtf.status === 'error') {
+      badgeLabel = 'UNAVAILABLE'; badgeClass = 'csp-wtf-badge--unavailable';
+    } else if (wtf.active_event) {
+      badgeLabel = 'ACTIVE'; badgeClass = 'csp-wtf-badge--active';
+    } else if (wtf.next_event || (Array.isArray(wtf.upcoming_events) && wtf.upcoming_events.length > 0)) {
+      badgeLabel = 'UPCOMING'; badgeClass = 'csp-wtf-badge--upcoming';
+    } else if (Number(wtf.completed_today || 0) > 0) {
+      badgeLabel = 'COMPLETE'; badgeClass = 'csp-wtf-badge--complete';
+    } else if (Number(wtf.missed_today || 0) > 0) {
+      badgeLabel = 'MISSED'; badgeClass = 'csp-wtf-badge--missed';
+    } else {
+      badgeLabel = 'WAITING'; badgeClass = 'csp-wtf-badge--waiting';
+    }
+    // Event title from active, next, or first upcoming event
+    var eventTitle = '';
+    if (wtf && typeof wtf === 'object') {
+      var evObj = wtf.active_event || wtf.next_event || (Array.isArray(wtf.upcoming_events) && wtf.upcoming_events.length ? wtf.upcoming_events[0] : null);
+      if (evObj && typeof evObj === 'object') {
+        eventTitle = evObj.title || evObj.name || evObj.label || '';
+      }
+    }
+    // Action button — honest copy only; Check In is not wired here so Open Arcade is used instead
     var action = '<a class="csp-player-link" href="/games/">Get Ready</a>';
     if (wtf && wtf.active_event && wtf.checked_in) {
       action = '<a class="csp-player-link" href="/games/">Play Arcade</a>';
+    } else if (wtf && wtf.active_event && !wtf.checked_in) {
+      action = '<a class="csp-player-link" href="/games/">Open Arcade</a>';
     }
     return '' +
       '<div class="csp-panel csp-panel--wtf" role="status" aria-label="Daily WTF signal">' +
+        '<div class="csp-wtf-badge ' + badgeClass + '">' + badgeLabel + '</div>' +
+        (eventTitle ? '<div class="csp-wtf-event-title">' + esc(eventTitle) + '</div>' : '') +
         '<div class="csp-grid csp-grid--live">' +
-          '<div class="csp-item"><div class="csp-item-label">Signal Status</div><div class="csp-item-val">' + esc(shared.dailyWtfStatusDisplay || 'syncing…') + '</div></div>' +
+          '<div class="csp-item"><div class="csp-item-label">Signal Status</div><div class="csp-item-val">' + esc(statusText) + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Timer</div><div class="csp-item-val" data-csp-wtf-countdown>' + esc(timer) + '</div></div>' +
           '<div class="csp-item csp-item--wide"><div class="csp-item-label">Action</div><div class="csp-item-val">' + action + '</div></div>' +
         '</div>' +
@@ -665,7 +717,8 @@
     var missedTodayDisplay = missedToday != null ? String(missedToday) : 'syncing…';
     var missedCountDisplay = missedCountAll != null ? String(missedCountAll) : 'syncing…';
     return '' +
-      '<div class="csp-panel csp-panel--missed" role="status" aria-label="Missed opportunities">' +
+      '<div class="csp-panel csp-panel--missed csp-panel--missed-warn" role="status" aria-label="Missed opportunities">' +
+        '<div class="csp-missed-badge">MISSED</div>' +
         '<div class="csp-grid csp-grid--live">' +
           '<div class="csp-item"><div class="csp-item-label">Missed XP (all-time)</div><div class="csp-item-val csp-item-val--warn" data-csp-missed-xp>' + esc(missedXpDisplay) + '</div></div>' +
           '<div class="csp-item"><div class="csp-item-label">Missed Today</div><div class="csp-item-val csp-item-val--warn">' + esc(missedTodayDisplay) + '</div></div>' +
@@ -794,6 +847,32 @@
       '.csp-badge--relink{background:rgba(247,201,72,.08);border:1px solid rgba(247,201,72,.45);color:#f7e29a;text-decoration:none}',
       /* Loading placeholder */
       '.csp-loading{color:var(--color-text-muted,#8b949e);font-size:.82rem;padding:10px 0}',
+      /* Faction ops Play Arcade CTA */
+      '.csp-ops-arcade-cta{display:inline-flex;margin-bottom:10px;padding:6px 12px;border:1px solid rgba(86,220,255,.5);color:#c8f0ff;text-decoration:none;background:rgba(86,220,255,.1);font-weight:800;text-transform:uppercase;font-size:.68rem;border-radius:6px}',
+      '.csp-ops-arcade-cta:hover{background:rgba(86,220,255,.18)}',
+      /* Today\'s Missions */
+      '.csp-missions{margin-top:10px;padding-top:9px;border-top:1px solid rgba(86,220,255,.16)}',
+      '.csp-missions-hd{font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#56dcff;margin-bottom:6px}',
+      '.csp-missions-empty{color:var(--color-text-muted,#8b949e);font-size:.72rem;font-style:italic}',
+      '.csp-mission-row{display:flex;align-items:baseline;gap:5px;padding:3px 0;font-size:.78rem}',
+      '.csp-mission-status{flex:0 0 auto;font-size:.7rem}',
+      '.csp-mission-title{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.csp-mission--done .csp-mission-title{color:var(--color-text-muted,#8b949e);text-decoration:line-through}',
+      '.csp-mission--done .csp-mission-status{color:#3fb950}',
+      '.csp-mission--pending .csp-mission-status{color:#f7c948}',
+      /* WTF status badge */
+      '.csp-wtf-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}',
+      '.csp-wtf-badge--active{background:rgba(63,185,80,.15);border:1px solid rgba(63,185,80,.5);color:#3fb950}',
+      '.csp-wtf-badge--upcoming{background:rgba(86,220,255,.1);border:1px solid rgba(86,220,255,.4);color:#56dcff}',
+      '.csp-wtf-badge--complete{background:rgba(100,100,255,.1);border:1px solid rgba(100,100,255,.35);color:#a5b4fc}',
+      '.csp-wtf-badge--missed{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.4);color:#f85149}',
+      '.csp-wtf-badge--syncing{background:rgba(86,220,255,.05);border:1px solid rgba(86,220,255,.2);color:var(--color-text-muted,#8b949e)}',
+      '.csp-wtf-badge--waiting{background:rgba(180,180,180,.06);border:1px solid rgba(180,180,180,.25);color:var(--color-text-muted,#8b949e)}',
+      '.csp-wtf-badge--unavailable{background:rgba(248,81,73,.07);border:1px solid rgba(248,81,73,.3);color:#f85149}',
+      '.csp-wtf-event-title{font-size:.8rem;font-weight:600;color:#e6f0ff;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      /* Missed badge */
+      '.csp-missed-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;background:rgba(248,81,73,.12);border:1px solid rgba(248,81,73,.45);color:#f85149}',
+      '.csp-panel--missed-warn{border-color:rgba(248,81,73,.35)}',
     ].join('\n');
     (document.head || document.documentElement).appendChild(style);
   }
