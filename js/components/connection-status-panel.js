@@ -682,7 +682,7 @@
         eventTitle = evObj.title || evObj.name || evObj.label || '';
       }
     }
-    // Action button — honest copy only; Check In is not wired here so Open Arcade is used instead
+    // Action button — compact right-rail copy only
     var action = '<a class="csp-player-link" href="/games/">Ready</a>';
     if (wtf && wtf.active_event && wtf.checked_in) {
       action = '<a class="csp-player-link" href="/games/">Play</a>';
