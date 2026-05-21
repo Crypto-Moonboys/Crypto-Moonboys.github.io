@@ -13,6 +13,7 @@ function check(condition, message) {
 const community = read('community.html');
 const games = read('games/index.html');
 const incubator = read('gkniftyheads-incubator.html');
+const blockTopiaPage = read('games/block-topia/index.html');
 const incubatorLink = read('js/incubator-link.js');
 const siteShell = read('js/site-shell.js');
 const csp = read('js/components/connection-status-panel.js');
@@ -134,7 +135,7 @@ const liveFeedBlock = functionBlock(csp, 'buildPlayerLiveFeedHTML');
 const opsBlock = functionBlock(csp, 'buildFactionDailyOpsHTML');
 const wtfSectionBlock = functionBlock(csp, 'buildDailyWtfSignalHTML');
 const missedSectionBlock = functionBlock(csp, 'buildMissedOpportunitiesHTML');
-check(liveFeedBlock.includes('csp-live-row') && !liveFeedBlock.includes('csp-grid') && liveFeedBlock.includes('Arcade XP') && liveFeedBlock.includes('Block Topia') && liveFeedBlock.includes('Latest:'), 'player live feed linked state uses compact csp-live-row rows with Arcade XP/Block Topia/latest — no csp-grid mini-cards');
+check(liveFeedBlock.includes('csp-live-row') && !liveFeedBlock.includes('csp-grid') && liveFeedBlock.includes('Arcade XP') && liveFeedBlock.includes('Block Topia') && liveFeedBlock.includes('Latest:'), 'player live feed linked content stays compact rows with Arcade XP/Block Topia/latest — no csp-grid mini-cards');
 check(opsBlock.includes('csp-ops-row') && opsBlock.includes('Faction XP') && opsBlock.includes('Contribution') && opsBlock.includes('Daily Ops Status') && opsBlock.includes('Completed Today') && opsBlock.includes('Missed Today'), 'Faction Daily Ops section renders faction XP/contribution/status/completed/missed as compact ops rows');
 check(wtfSectionBlock.includes('csp-signal-card') && wtfSectionBlock.includes('csp-wtf-badge') && wtfSectionBlock.includes('Timer') && wtfSectionBlock.includes('Action') && !wtfSectionBlock.includes('csp-grid'), 'Daily WTF Signal section renders badge/timer/action as compact signal card module, not generic csp-grid');
 check(wtfSectionBlock.includes('data-csp-wtf-countdown'), 'Daily WTF section renders a dedicated countdown data hook');
@@ -220,8 +221,10 @@ check(csp.includes('buildSharedRailState') && csp.includes('RIGHT_RAIL_SECTION_S
 console.log('\n[4c] Visual composition — compact/passive inner renderers');
 // Inner linked renderers no longer output nested .csp-panel wrappers
 check(!opsBlock.includes('class="csp-panel') && !wtfSectionBlock.includes('class="csp-panel') && !missedSectionBlock.includes('class="csp-panel'), 'lower section renderers (ops/wtf/missed) do not use nested csp-panel card wrappers');
-// Player Live Feed linked state uses compact rows
-check(liveFeedBlock.includes('csp-section-content') && liveFeedBlock.includes('csp-live-row'), 'player live feed linked state uses csp-section-content + csp-live-row compact format');
+// Player Live Feed linked state uses compact rows in right-rail context but keeps framing for standalone mounts
+check(liveFeedBlock.includes('var inRightRail') && liveFeedBlock.includes('if (inRightRail) return linkedRows;') && liveFeedBlock.includes('<div class="csp-panel csp-panel--live-feed"'), 'player live feed linked renderer branches by mount context: right rail frame-free, standalone framed');
+const buildSectionBlock = functionBlock(csp, 'buildSectionHTML');
+check(csp.includes('function isRightRailMount') && buildSectionBlock.includes('buildPlayerLiveFeedHTML(shared, { inRightRail: isRightRailMount(contextEl) })'), 'buildSectionHTML passes mount context so right-rail data-csp-panel renders frame-free while standalone stays framed');
 // Faction Daily Ops uses compact ops rows and mission list, not six-box grid
 check(opsBlock.includes('csp-section-rows') && opsBlock.includes('csp-ops-row') && !opsBlock.includes('csp-grid'), 'Faction Daily Ops linked state uses csp-section-rows/csp-ops-row, not six-box csp-grid layout');
 // WTF Signal uses csp-signal-card with badge/event/timer/action
@@ -232,9 +235,13 @@ check(missedSectionBlock.includes('csp-warning-card') && missedSectionBlock.incl
 check(!opsBlock.includes('csp-live-cta') && !wtfSectionBlock.includes('csp-live-cta') && !missedSectionBlock.includes('csp-live-cta'), 'lower sections (ops/wtf/missed) do not render repeated big Link/RELINK CTA buttons');
 // Player Live Feed keeps the main Link/RELINK CTA
 check(liveFeedBlock.includes('csp-live-cta') && liveFeedBlock.includes('Link Telegram') && liveFeedBlock.includes('RELINK Telegram'), 'Player Live Feed retains the main Link Telegram / RELINK CTA for unlinked/relink states');
+// Standalone pages still mount data-csp-panel outside the right-rail shell
+check(incubator.includes('data-csp-panel') && !incubator.includes('homepage-right-panel'), 'gkniftyheads-incubator standalone data-csp-panel mount remains outside homepage-right-panel shell');
+check(blockTopiaPage.includes('data-csp-panel') && !blockTopiaPage.includes('homepage-right-panel'), 'games/block-topia standalone data-csp-panel mount remains outside homepage-right-panel shell');
 // Top comment reflects new architecture
 check(!csp.includes('data-csp-panel) is the single right-rail live source'), 'top comment no longer claims data-csp-panel is the only right-rail source');
-check(csp.includes('One shared state authority') && csp.includes('multiple passive'), 'top comment reflects one shared state authority driving multiple passive section renderers');
+check(csp.includes('Standalon') && csp.includes('framed `.csp-panel` wrapper'), 'top comment documents standalone data-csp-panel framed exception');
+check(!csp.includes('csp-live-identity') && !csp.includes('.csp-avatar-mini{display:none}'), 'connection-status-panel removes misleading csp-live-identity/csp-avatar-mini drift');
 
 console.log('\n[5] WTF event visibility');
 check(las.includes('window.MOONBOYS_WTF_EVENTS'), 'faction ops panel reads window.MOONBOYS_WTF_EVENTS');

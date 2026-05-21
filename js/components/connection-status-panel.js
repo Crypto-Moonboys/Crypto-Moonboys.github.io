@@ -4,10 +4,10 @@
  * Compact player live-feed panel and header badge.
  *
  * One shared state authority (`buildSharedRailState`) drives multiple passive
- * right-rail section renderers.  Each renderer populates its own `retro-hud-box`
- * mount point (data-csp-panel, data-csp-faction-ops, data-csp-wtf-signal,
- * data-csp-missed) with compact, frame-free content.  The outer retro-hud-box
- * owns the card frame; inner renderers output lightweight wrappers only.
+ * section renderers.  Right-rail section mounts inside `#homepage-right-panel`
+ * render compact, frame-free inner content because the outer `retro-hud-box`
+ * already owns the card frame.  Standalone `data-csp-panel` mounts keep a
+ * framed `.csp-panel` wrapper for stable non-shell presentation.
  *
  * Rendered content:
  *   data-csp-panel        — Player Live Feed (Arcade XP, Block Topia, latest activity)
@@ -560,7 +560,7 @@
     return _sharedRailStateInflight;
   }
 
-  function buildPlayerLiveFeedHTML(shared) {
+  function buildPlayerLiveFeedHTML(shared, opts) {
     if (shared.mode === 'unlinked') {
       return '' +
         '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
@@ -575,13 +575,20 @@
           '<a href="/gkniftyheads-incubator.html" class="csp-live-cta">RELINK Telegram</a>' +
         '</div>';
     }
-    // Linked: compact live rows only — identity (avatar/name/pill) is rendered once by the shell portrait row.
-    // Faction data belongs exclusively to the Faction Daily Ops section.
-    return '' +
+    // Linked: inside the right rail, keep compact frame-free rows.
+    // Standalone data-csp-panel mounts keep a framed csp-panel wrapper.
+    var inRightRail = !!(opts && opts.inRightRail);
+    var linkedRows = '' +
       '<div class="csp-section-content" role="status" aria-label="Player live feed">' +
         '<div class="csp-live-row"><span class="csp-live-row-label">Arcade XP</span><span class="csp-live-row-val" data-csp-xp>' + esc(String(shared.arcadeXp)) + '</span></div>' +
         '<div class="csp-live-row"><span class="csp-live-row-label">Block Topia</span><span class="csp-live-row-val" data-csp-bt-access>' + shared.blocktopia + '</span></div>' +
         '<div class="csp-live-row csp-live-row--latest"><span class="csp-feed-label">Latest:</span><span class="csp-feed-text">' + esc(shared.latestActivityText) + '</span></div>' +
+      '</div>';
+    if (inRightRail) return linkedRows;
+    // Faction data belongs exclusively to the Faction Daily Ops section.
+    return '' +
+      '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
+        linkedRows +
       '</div>';
   }
 
@@ -733,12 +740,17 @@
     return 'live';
   }
 
-  async function buildSectionHTML(kind) {
+  function isRightRailMount(el) {
+    if (!el || typeof el.closest !== 'function') return false;
+    return !!(el.closest('#homepage-right-panel') || el.closest('.retro-hud-box'));
+  }
+
+  async function buildSectionHTML(kind, contextEl) {
     var shared = await buildSharedRailState(false);
     if (kind === 'ops') return buildFactionDailyOpsHTML(shared);
     if (kind === 'wtf') return buildDailyWtfSignalHTML(shared);
     if (kind === 'missed') return buildMissedOpportunitiesHTML(shared);
-    return buildPlayerLiveFeedHTML(shared);
+    return buildPlayerLiveFeedHTML(shared, { inRightRail: isRightRailMount(contextEl) });
   }
 
   async function buildPanelHTML() {
@@ -815,8 +827,6 @@
       '.csp-live-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}',
       '.csp-live-head strong{display:block;color:#fff;text-transform:uppercase;letter-spacing:.06em}',
       '.csp-live-head span{display:block;color:var(--color-text-muted,#8b949e);font-size:.72rem}',
-      '.csp-avatar-mini{display:none}',
-      /* csp-live-identity kept for any external references but no longer used by inner renderers */
       '.csp-live-pill{display:inline-flex!important;padding:2px 6px;border-radius:999px;border:1px solid rgba(86,220,255,.28);font-size:.58rem!important;letter-spacing:.04em;margin-top:4px}',
       '.csp-live-pill--good{color:#3fb950;background:rgba(63,185,80,.12);border-color:rgba(63,185,80,.4)}',
       '.csp-grid--live{grid-template-columns:1fr;gap:7px}',
@@ -912,7 +922,7 @@
     var token = (Number(el.dataset.cspToken || 0) + 1);
     el.dataset.cspToken = String(token);
     el.innerHTML = '<div class="csp-loading">Checking status…</div>';
-    var html = await buildSectionHTML(panelSectionKind(el));
+    var html = await buildSectionHTML(panelSectionKind(el), el);
     // Only commit the result if no newer render was launched after us.
     if (String(el.dataset.cspToken) === String(token)) {
       el.innerHTML = html;
