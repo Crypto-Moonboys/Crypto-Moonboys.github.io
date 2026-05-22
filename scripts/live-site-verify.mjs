@@ -863,7 +863,8 @@ async function testWikiSearch(page, url) {
 
   async function querySearch(q) {
     const resultsSelector = '#search-results-page';
-    const input = await page.$('#search-page-input, #search-input, #wiki-search-input, input[type="search"]');
+    const inputSelector = '#search-page-input';
+    const input = await page.$(inputSelector);
     const resultsContainer = await page.$(resultsSelector);
     if (!input) return { error: 'search input not found', results: [] };
     if (!resultsContainer) return { error: 'search results container not found', results: [] };
@@ -881,39 +882,52 @@ async function testWikiSearch(page, url) {
       );
     } catch (_) { /* continue with best-effort live interaction */ }
 
-    const beforeText = await resultsContainer.evaluate(el => el.textContent || '');
-    const inputId = await input.evaluate(el => el.id || '');
+    const beforeState = await resultsContainer.evaluate((el) => ({
+      text: el.textContent || '',
+      cardCount: el.querySelectorAll('.article-card').length,
+    }));
     await input.fill(q);
     await input.dispatchEvent('input');
-    if (inputId === 'search-input') {
-      await input.press('Enter');
-    }
 
     // Wait for results to render (up to 5 s).
     try {
       await page.waitForFunction(
-        ({ sel, previous }) => {
+        ({ sel, inputSel, query, previous }) => {
           const el = document.querySelector(sel);
           if (!el) return false;
+          const searchInput = document.querySelector(inputSel);
+          if (!searchInput) return false;
+          if ((searchInput.value || '').trim() !== query) return false;
           const text = el.textContent || '';
-          return text.trim().length > 0 && text !== previous;
+          if (!text.trim().length || /loading articles/i.test(text)) return false;
+          const cardCount = el.querySelectorAll('.article-card').length;
+          const emptyNode = el.querySelector('.search-empty');
+          if (emptyNode) return true;
+          return cardCount !== previous.cardCount || text !== previous.text;
         },
-        { sel: resultsSelector, previous: beforeText },
+        { sel: resultsSelector, inputSel: inputSelector, query: String(q || '').trim(), previous: beforeState },
         { timeout: 5000 },
       );
     } catch (_) { /* checked below */ }
-    const resultText = await page.evaluate((sel) => {
+    const resultState = await page.evaluate((sel) => {
       const el = document.querySelector(sel);
-      return el ? el.textContent : '';
+      if (!el) return { resultText: '', cardCount: 0, hasEmptyState: false, emptyText: '' };
+      const emptyNode = el.querySelector('.search-empty');
+      return {
+        resultText: el.textContent || '',
+        cardCount: el.querySelectorAll('.article-card').length,
+        hasEmptyState: Boolean(emptyNode),
+        emptyText: emptyNode ? (emptyNode.textContent || '').trim() : '',
+      };
     }, resultsSelector);
-    return { resultText };
+    return resultState;
   }
 
   // 1. GRAFFPUNKS RADIO → relevant result expected.
   const graffRadio = await querySearch('GRAFFPUNKS RADIO');
   if (graffRadio.error) {
     fail(`wiki search input not found: ${graffRadio.error}`, { url, suggested: 'Search page HTML may have changed selector' });
-  } else if (graffRadio.resultText && (
+  } else if (graffRadio.cardCount > 0 && graffRadio.resultText && (
     graffRadio.resultText.toLowerCase().includes('graffpunk') ||
     graffRadio.resultText.toLowerCase().includes('radio')
   )) {
@@ -930,7 +944,7 @@ async function testWikiSearch(page, url) {
   const graffSingle = await querySearch('GRAFFPUNKS');
   if (graffSingle.error) {
     fail(`wiki search input not found: ${graffSingle.error}`, { url, suggested: 'Search page HTML may have changed selector' });
-  } else if (graffSingle.resultText && graffSingle.resultText.toLowerCase().includes('graffpunk')) {
+  } else if (graffSingle.cardCount > 0 && graffSingle.resultText && graffSingle.resultText.toLowerCase().includes('graffpunk')) {
     pass('wiki search "GRAFFPUNKS" single-word query returns relevant result');
   } else {
     fail('wiki search "GRAFFPUNKS" single-word query did not return a relevant result', {
@@ -942,7 +956,7 @@ async function testWikiSearch(page, url) {
   // 3. Lowercase/punctuation variant — reload fresh page to reset state.
   await page.goto(`${BASE}/search.html`, { waitUntil: 'load', timeout: 20000 });
   const graffLower = await querySearch('graffpunks, radio!');
-  if (!graffLower.error && graffLower.resultText && (
+  if (!graffLower.error && graffLower.cardCount > 0 && graffLower.resultText && (
     graffLower.resultText.toLowerCase().includes('graffpunk') ||
     graffLower.resultText.toLowerCase().includes('radio')
   )) {
@@ -959,13 +973,16 @@ async function testWikiSearch(page, url) {
   const nonsense = await querySearch('xyzfoo123nonsense');
   if (!nonsense.error) {
     const t = (nonsense.resultText || '').trim();
-    const isEmpty = !t || t.includes('No results') || t.includes('0 results') || t.length < 30;
+    const emptyText = (nonsense.emptyText || '').trim();
+    const isEmpty = nonsense.cardCount === 0
+      && nonsense.hasEmptyState
+      && (/no articles found/i.test(emptyText) || /no results/i.test(emptyText) || !t);
     if (isEmpty) {
       pass('wiki search nonsense query returns zero/empty state');
     } else {
       fail('wiki search nonsense query returned non-empty results', {
         url,
-        suggested: 'Search returning unrelated results for nonsense query — check scoreResult filtering',
+        suggested: 'Search page should render only a true empty-state node with zero .article-card entries for nonsense queries',
       });
     }
   }
