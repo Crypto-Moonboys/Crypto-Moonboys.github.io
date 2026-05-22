@@ -109,6 +109,9 @@
  */
 
 import https from 'node:https';
+import path from 'node:path';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 // ── Config ────────────────────────────────────────────────────────────────────
@@ -142,6 +145,26 @@ const ARCADE_PAGES = [
   '/games/block-topia-quest-maze/',
   '/games/invaders-3008/',
 ];
+
+const ARCADE_PAGE_SOURCE_FILES = {
+  '/games/block-topia-quest-maze/': 'games/block-topia-quest-maze/index.html',
+  '/games/invaders-3008/': 'games/invaders-3008/index.html',
+};
+
+const ARCADE_HTML_DIAGNOSTIC_PATHS = {
+  '/games/block-topia-quest-maze/': [
+    '/js/site-shell.js',
+    '/js/api-config.js',
+    '/js/arcade/core/game-shell.js',
+    '/js/arcade/games/block-topia-quest-maze/bootstrap.js',
+  ],
+  '/games/invaders-3008/': [
+    '/js/site-shell.js',
+    '/js/api-config.js',
+    '/js/arcade/core/game-shell.js',
+    '/js/arcade/games/invaders/bootstrap.js',
+  ],
+};
 
 const PAGES = [
   ...RIGHT_PANEL_PAGES,
@@ -220,6 +243,8 @@ const CANONICAL_GAMES = [
   'SnakeRun 3008',
 ];
 
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
 // ── Result helpers ────────────────────────────────────────────────────────────
 let totalChecks = 0;
 let totalFailed = 0;
@@ -241,6 +266,17 @@ function fail(msg, { url = '', selector = '', suggested = '' } = {}) {
 
 function info(msg) {
   process.stdout.write(`    [INFO] ${msg}\n`);
+}
+
+function readLocalArcadeHtml(pathname) {
+  const rel = ARCADE_PAGE_SOURCE_FILES[pathname];
+  if (!rel) return { rel: '', html: '' };
+  const abs = path.join(REPO_ROOT, rel);
+  try {
+    return { rel, html: readFileSync(abs, 'utf8') };
+  } catch (_) {
+    return { rel, html: '' };
+  }
 }
 
 // ── HTTPS helpers ─────────────────────────────────────────────────────────────
@@ -362,12 +398,13 @@ async function testPage(page, pathname) {
   const isBtqmPage         = pathname === '/games/block-topia-quest-maze/';
   const isGamesHub         = pathname === '/games/';
   const isSearchPage       = pathname === '/search.html';
+  const isArcadePage       = ARCADE_PAGES.includes(pathname);
 
   const allCritical = [
-    ...SHELL_CRITICAL_JS_PATHS,
+    ...(isArcadePage ? [] : SHELL_CRITICAL_JS_PATHS),
     ...(isRightPanelPage || isStandaloneCsp ? RIGHT_RAIL_CRITICAL_JS_PATHS : []),
     ...(isSearchPage ? WIKI_SEARCH_CRITICAL_JS_PATHS : []),
-    ...(ARCADE_PAGES.includes(pathname) ? ARCADE_CRITICAL_JS_PATHS : []),
+    ...(isArcadePage ? ARCADE_CRITICAL_JS_PATHS : []),
     ...(isBtqmPage ? BTQM_CRITICAL_JS_PATHS : []),
   ];
 
@@ -379,6 +416,20 @@ async function testPage(page, pathname) {
   } catch (err) {
     fail(`page load failed: ${err.message}`, { url, suggested: 'Deployment not propagated or site offline' });
     return;
+  }
+
+  // Allow deferred/live script execution to settle before runtime assertions.
+  try {
+    await page.waitForFunction(
+      () => !!(window.MOONBOYS_API && typeof window.MOONBOYS_API === 'object'),
+      { timeout: 8000 },
+    );
+  } catch (_) { /* assertion below records if still missing */ }
+
+  if (isArcadePage) {
+    try {
+      await page.waitForTimeout(1500);
+    } catch (_) { /* no-op */ }
   }
 
   // Wait for the shell to inject the right panel (up to 8 s — live site has
@@ -477,6 +528,25 @@ async function testPage(page, pathname) {
     failedRequests.forEach(r => info(`failed request: ${r}`));
   } else {
     info('failed script requests: none');
+  }
+
+  if (isArcadePage) {
+    const liveHtml = await page.content();
+    const { rel: localRel, html: localHtml } = readLocalArcadeHtml(pathname);
+    const needles = ARCADE_HTML_DIAGNOSTIC_PATHS[pathname] || [];
+    info(`arcade HTML compare source: ${localRel || 'unknown local source file'}`);
+    for (const needle of needles) {
+      const inLocal = localHtml.includes(needle);
+      const inLive = liveHtml.includes(needle);
+      info(`arcade HTML token "${needle}" local=${inLocal ? 'yes' : 'no'} live=${inLive ? 'yes' : 'no'}`);
+      if (inLocal && !inLive) {
+        fail(`live HTML missing "${needle}" that exists in repo source`, {
+          url,
+          selector: needle,
+          suggested: 'Live deploy/cache mismatch or script transform drift on this page',
+        });
+      }
+    }
   }
 
   // ── Structural: shell always present ──────────────────────────────────
@@ -783,21 +853,43 @@ async function testWikiSearch(page, url) {
   process.stdout.write(`\n  [wiki-search] Checking live search behavior on /search.html…\n`);
 
   async function querySearch(q) {
-    const resultsSelector = '#search-results-page, #search-results, .search-results';
-    const input = await page.$('#search-input, input[type="search"], #wiki-search-input');
+    const resultsSelector = '#search-results-page';
+    const input = await page.$('#search-page-input, #search-input, #wiki-search-input, input[type="search"]');
     const resultsContainer = await page.$(resultsSelector);
     if (!input) return { error: 'search input not found', results: [] };
     if (!resultsContainer) return { error: 'search results container not found', results: [] };
-    await input.fill(q);
-    await input.press('Enter');
-    // Wait for results to render (up to 5 s).
+
     try {
       await page.waitForFunction(
         (sel) => {
           const el = document.querySelector(sel);
-          return el && el.textContent.trim().length > 0;
+          if (!el) return false;
+          const text = (el.textContent || '').trim();
+          return text.length > 0 && !/loading articles/i.test(text);
         },
         resultsSelector,
+        { timeout: 10000 },
+      );
+    } catch (_) { /* continue with best-effort live interaction */ }
+
+    const beforeText = await resultsContainer.evaluate(el => el.textContent || '');
+    const inputId = await input.evaluate(el => el.id || '');
+    await input.fill(q);
+    await input.dispatchEvent('input');
+    if (inputId === 'search-input') {
+      await input.press('Enter');
+    }
+
+    // Wait for results to render (up to 5 s).
+    try {
+      await page.waitForFunction(
+        ({ sel, previous }) => {
+          const el = document.querySelector(sel);
+          if (!el) return false;
+          const text = el.textContent || '';
+          return text.trim().length > 0 && text !== previous;
+        },
+        { sel: resultsSelector, previous: beforeText },
         { timeout: 5000 },
       );
     } catch (_) { /* checked below */ }
