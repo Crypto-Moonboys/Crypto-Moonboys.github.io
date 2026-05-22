@@ -503,6 +503,45 @@
 
   // ── Blocked account modal ────────────────────────────────────
 
+  function showStatusVerificationModal() {
+    injectStyles();
+    var VERIFY_ID = 'tg-status-verify-modal';
+    var existing = document.getElementById(VERIFY_ID);
+    if (existing) {
+      existing.style.display = 'flex';
+      existing.setAttribute('aria-hidden', 'false');
+      return;
+    }
+
+    var div = document.createElement('div');
+    div.id = VERIFY_ID;
+    div.className = 'tg-sync-gate-overlay';
+    div.setAttribute('role', 'alertdialog');
+    div.setAttribute('aria-modal', 'true');
+    div.setAttribute('aria-label', 'Status verification required');
+    div.setAttribute('aria-hidden', 'false');
+    div.innerHTML =
+      '<div class="tg-sync-gate-box">' +
+        '<button class="tg-sync-gate-close" aria-label="Close" id="tg-verify-close">✕</button>' +
+        '<div class="tg-sync-gate-icon" aria-hidden="true">⚠️</div>' +
+        '<p class="tg-sync-gate-title">Server check failed — try again.</p>' +
+        '<p class="tg-sync-gate-body">Telegram status could not be verified.</p>' +
+      '</div>';
+    document.body.appendChild(div);
+    div.style.display = 'flex';
+
+    div.querySelector('#tg-verify-close').addEventListener('click', function () {
+      div.style.display = 'none';
+      div.setAttribute('aria-hidden', 'true');
+    });
+    div.addEventListener('click', function (e) {
+      if (e.target === div) {
+        div.style.display = 'none';
+        div.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
   function showBlockedModal(reason) {
     injectStyles();
     var BLOCKED_ID = 'tg-blocked-gate-modal';
@@ -511,45 +550,6 @@
       existing.style.display = 'flex';
       existing.setAttribute('aria-hidden', 'false');
       return;
-    }
-
-    function showStatusVerificationModal() {
-      injectStyles();
-      var VERIFY_ID = 'tg-status-verify-modal';
-      var existing = document.getElementById(VERIFY_ID);
-      if (existing) {
-        existing.style.display = 'flex';
-        existing.setAttribute('aria-hidden', 'false');
-        return;
-      }
-
-      var div = document.createElement('div');
-      div.id = VERIFY_ID;
-      div.className = 'tg-sync-gate-overlay';
-      div.setAttribute('role', 'alertdialog');
-      div.setAttribute('aria-modal', 'true');
-      div.setAttribute('aria-label', 'Status verification required');
-      div.setAttribute('aria-hidden', 'false');
-      div.innerHTML =
-        '<div class="tg-sync-gate-box">' +
-          '<button class="tg-sync-gate-close" aria-label="Close" id="tg-verify-close">✕</button>' +
-          '<div class="tg-sync-gate-icon" aria-hidden="true">⚠️</div>' +
-          '<p class="tg-sync-gate-title">Server check failed — try again.</p>' +
-          '<p class="tg-sync-gate-body">Telegram status could not be verified.</p>' +
-        '</div>';
-      document.body.appendChild(div);
-      div.style.display = 'flex';
-
-      div.querySelector('#tg-verify-close').addEventListener('click', function () {
-        div.style.display = 'none';
-        div.setAttribute('aria-hidden', 'true');
-      });
-      div.addEventListener('click', function (e) {
-        if (e.target === div) {
-          div.style.display = 'none';
-          div.setAttribute('aria-hidden', 'true');
-        }
-      });
     }
 
     var div = document.createElement('div');
