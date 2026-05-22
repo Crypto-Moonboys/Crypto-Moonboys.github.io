@@ -13,6 +13,7 @@ const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
 const deployPagesWorkflow = readFileSync('.github/workflows/deploy-pages.yml', 'utf8');
 const gitignore = readFileSync('.gitignore', 'utf8');
 const hydrateScript = readFileSync('scripts/hydrate-btqm-generated-assets.mjs', 'utf8');
+const auditSummary = JSON.parse(execFileSync('node', ['scripts/btqm-generated-asset-usage-audit.mjs', '--json'], { encoding: 'utf8' }));
 
 const generatedAssetRoot = 'art/btqm/generated';
 const binaryAssetExtensions = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp3', '.wav']);
@@ -158,18 +159,6 @@ for (const asset of generatedTilesetAssets) {
   );
 }
 
-const generatedEnemyBossAssets = manifest.assets.filter((asset) => asset.status === 'generated' && ['enemies', 'bosses'].includes(asset.category));
-assert.equal(generatedEnemyBossAssets.filter((asset) => asset.category === 'enemies').length, 12, 'all generated enemy assets should be present');
-assert.equal(generatedEnemyBossAssets.filter((asset) => asset.category === 'bosses').length, 6, 'all generated boss assets should be present');
-for (const asset of generatedEnemyBossAssets) {
-  assert.ok(asset.encodedOutput, `${asset.id} generated enemy/boss record must include encodedOutput`);
-  assert.equal(
-    asset.encodedOutput.replace(/\.base64$/u, ''),
-    asset.output,
-    `${asset.id} encodedOutput must hydrate to asset.output`,
-  );
-}
-
 const generatedManifestAssets = manifest.assets.filter((asset) => asset.status === 'generated');
 const shaByCategory = new Map();
 for (const asset of generatedManifestAssets) {
@@ -192,6 +181,31 @@ for (const asset of generatedManifestAssets) {
   categoryHashes.set(asset.sha256, asset.id);
   shaByCategory.set(asset.category, categoryHashes);
 }
+
+assert.equal(auditSummary.loadedButUnusedAssets.length, 0, 'audit should not report generated BTQM payloads that are loaded but unused');
+assert.equal(auditSummary.missingPayloads.length, 0, 'audit should not report generated manifest records with missing payloads');
+assert.deepEqual(auditSummary.orphanPayloads, [], 'audit should not report orphan BTQM .png.base64 payloads');
+assert.equal(auditSummary.duplicateHashes.length, 0, 'audit should not report duplicate generated payload hashes within a category');
+
+const usedAssetCountsByCategory = auditSummary.usedAssets.reduce((counts, asset) => {
+  counts[asset.category] = (counts[asset.category] || 0) + 1;
+  return counts;
+}, {});
+assert.deepEqual(
+  usedAssetCountsByCategory,
+  { tilesets: 6, player: 1, enemies: 12, bosses: 3, fx: 3 },
+  'audit should keep only the BTQM generated assets that are visibly used by the current runtime',
+);
+assert.deepEqual(
+  auditSummary.usedAssets.filter((asset) => asset.category === 'bosses').map((asset) => asset.id).sort(),
+  ['boss-fomo-phantom-prime', 'boss-ngmi-overlord', 'boss-paper-hand-king'],
+  'only boss sheets that match current Bonus Battle boss names should remain generated',
+);
+assert.deepEqual(
+  manifest.assets.filter((asset) => asset.status === 'generated' && ['ui', 'icons', 'objects'].includes(asset.category)),
+  [],
+  'unused BTQM UI, icon, and object payloads should no longer remain generated',
+);
 
 assert.doesNotMatch(bootstrap, /BLOCK TOPIA QUEST MAZE/, 'old world-map title phrase ("BLOCK TOPIA QUEST MAZE") must not appear in BTQM runtime source');
 assert.doesNotMatch(bootstrap, /MEGA BOMB|Mega Bomb/u, 'BTQM runtime must not expose retired Mega Bomb public naming');
