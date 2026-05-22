@@ -587,14 +587,13 @@ async function testPage(page, pathname) {
   // ── Right-rail section headings ───────────────────────────────────────
   if (isRightPanelPage) {
     if (rp.exists) {
-      for (const [text, label] of [
-        ['PLAYER LIVE FEED',    'Player Live Feed section heading'],
-        ['FACTION DAILY OPS',   'Faction Daily Ops section heading'],
-        ['DAILY WTF SIGNAL',    'Daily WTF Signal section heading'],
-        ['MISSED OPPORTUNITIES','Missed Opportunities section heading'],
+      for (const { text, diagKey } of [
+        { text: 'PLAYER LIVE FEED',     diagKey: 'textPlayerLiveFeed' },
+        { text: 'FACTION DAILY OPS',    diagKey: 'textFactionOps' },
+        { text: 'DAILY WTF SIGNAL',     diagKey: 'textWtfSignal' },
+        { text: 'MISSED OPPORTUNITIES', diagKey: 'textMissed' },
       ]) {
-        if (diag[`text${text.split(' ').map(w => w[0] + w.slice(1).toLowerCase()).join('')}`] ||
-            diag.bodyText.includes(text)) {
+        if (diag[diagKey]) {
           pass(`right rail body text includes "${text}"`);
         } else {
           fail(`right rail body text MISSING "${text}"`, {
@@ -676,12 +675,12 @@ async function testPage(page, pathname) {
   if (diag.apiBaseState !== null) {
     if (diag.apiBaseState === 'configured' || diag.apiBaseState === 'production_fallback') {
       pass(`API base resolves on production (state: ${diag.apiBaseState}, url: ${diag.apiBaseUrl})`);
-      if (diag.apiBaseUrl === EXPECTED_API_BASE || diag.apiBaseUrl.startsWith('https://')) {
-        pass(`API base URL looks like a live endpoint: ${diag.apiBaseUrl}`);
+      if (diag.apiBaseUrl === EXPECTED_API_BASE) {
+        pass(`API base URL matches expected production endpoint: ${diag.apiBaseUrl}`);
       } else {
         fail(`API base URL unexpected: "${diag.apiBaseUrl}"`, {
           url,
-          suggested: `Expected ${EXPECTED_API_BASE} or similar — check api-config.js production fallback`,
+          suggested: `Expected exactly ${EXPECTED_API_BASE} — check api-config.js production fallback`,
         });
       }
     } else {
@@ -695,6 +694,14 @@ async function testPage(page, pathname) {
   if (diag.lbApiState !== null) {
     if (diag.lbApiState === 'configured' || diag.lbApiState === 'production_fallback') {
       pass(`Leaderboard API resolves on production (state: ${diag.lbApiState})`);
+      if (diag.lbApiUrl === EXPECTED_LEADERBOARD_URL) {
+        pass(`Leaderboard API URL matches expected production endpoint: ${diag.lbApiUrl}`);
+      } else {
+        fail(`Leaderboard API URL unexpected: "${diag.lbApiUrl}"`, {
+          url,
+          suggested: `Expected exactly ${EXPECTED_LEADERBOARD_URL} — check api-config.js leaderboard fallback`,
+        });
+      }
     } else {
       fail(`Leaderboard API not resolved on production (state: ${diag.lbApiState})`, {
         url,
@@ -776,9 +783,11 @@ async function testWikiSearch(page, url) {
   process.stdout.write(`\n  [wiki-search] Checking live search behavior on /search.html…\n`);
 
   async function querySearch(q) {
+    const resultsSelector = '#search-results-page, #search-results, .search-results';
     const input = await page.$('#search-input, input[type="search"], #wiki-search-input');
-    const resultsContainer = await page.$('#search-results-page, #search-results, .search-results');
+    const resultsContainer = await page.$(resultsSelector);
     if (!input) return { error: 'search input not found', results: [] };
+    if (!resultsContainer) return { error: 'search results container not found', results: [] };
     await input.fill(q);
     await input.press('Enter');
     // Wait for results to render (up to 5 s).
@@ -788,16 +797,14 @@ async function testWikiSearch(page, url) {
           const el = document.querySelector(sel);
           return el && el.textContent.trim().length > 0;
         },
-        '#search-results-page, #search-results, .search-results',
+        resultsSelector,
         { timeout: 5000 },
       );
     } catch (_) { /* checked below */ }
-    const resultText = await page.evaluate(() => {
-      const el = document.querySelector('#search-results-page') ||
-                 document.querySelector('#search-results') ||
-                 document.querySelector('.search-results');
+    const resultText = await page.evaluate((sel) => {
+      const el = document.querySelector(sel);
       return el ? el.textContent : '';
-    });
+    }, resultsSelector);
     return { resultText };
   }
 
