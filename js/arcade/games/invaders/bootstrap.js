@@ -1600,6 +1600,38 @@ function createLegacybootstrapInvaders(root) {
 
   // â”€â”€ Game over â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+  // POST-RUN LOOP AUDIT — Invaders 3008
+  //
+  // Game-over detection:  onGameOver() is called by the game loop when all lives
+  //   are lost or invaders reach the player row.
+  //
+  // Score submission:     await submitScore(playerName, score, GAME_ID)
+  //   — uses the shared post-run path in leaderboard-client.js.
+  //
+  // Public leaderboard:   submitScore() always attempts a public leaderboard POST
+  //   regardless of Telegram link state.
+  //
+  // Arcade XP queue:      submitScore() calls ArcadeSync queuePendingProgress
+  //   for unlinked users (always) and linked users on accepted runs.
+  //
+  // Local meta:           submitScore() calls ArcadeMeta trackGameResult for all
+  //   runs, updating daily/weekly/monthly/seasonal clout, loop-cycle previews,
+  //   rabbit-hole branches, and streak state locally.
+  //
+  // Telegram-linked users: When linked + signed auth, submitScore() attaches
+  //   telegram_auth to the POST, calls callFactionEarn(), and calls
+  //   ArcadeSync.syncPendingArcadeProgress() for server XP sync.
+  //
+  // Unlinked users:        Score goes to public leaderboard only.  No XP sync is
+  //   claimed; state is "local_cached_only".  Run is queued locally for future
+  //   sync after /gklink.
+  //
+  // API unavailable:       submitScore() sets state to "sync_pending" (linked) or
+  //   "local_cached_only" (unlinked) and queues via queuePendingProgress.  No
+  //   false "XP synced" is emitted.
+  //
+  // Retry queue:           Written to localStorage moonboys_arcade_pending_progress_v1.
+  //   Retried by ArcadeSync.syncPendingArcadeProgress() on next auth-available event.
   async function onGameOver() {
     running  = false;
     gameOver = true;

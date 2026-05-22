@@ -741,6 +741,41 @@ function scoreForSurvival(startedAt) {
   return Math.min(900, Math.floor(sec * 1.2));
 }
 
+// POST-RUN LOOP AUDIT — Block Topia Quest Maze (BTQM)
+//
+// Game-over detection:  finalizeRunSubmission() is called by the Phaser scene
+//   on player death or zone completion.  Guard: btqmRuntime.runSubmitted
+//   prevents re-submission per run.
+//
+// Score submission:     await submitScore(playerName, finalScore, GAME_ID)
+//   — uses the shared post-run path in leaderboard-client.js.
+//   Only called when finalScore > 0.
+//
+// Public leaderboard:   submitScore() always attempts a public leaderboard POST.
+//
+// Arcade XP queue:      submitScore() calls ArcadeSync queuePendingProgress
+//   for unlinked users (always) and linked users on accepted runs.
+//
+// Local meta:           submitScore() calls ArcadeMeta trackGameResult for all
+//   runs (daily/weekly/monthly/seasonal clout, rabbit-hole branches, streaks).
+//
+// BTQM special path:    When linked + signed auth + gameKey==="blocktopia",
+//   submitScore() additionally calls
+//   ArcadeSync.syncBlockTopiaProgressionOnAcceptedScore() to update Block Topia
+//   character XP via the dedicated /blocktopia/progression/mini-game endpoint.
+//
+// Telegram-linked users: Full sync including Block Topia XP conversion.
+//
+// Unlinked users:        Score goes to public leaderboard only; no XP sync
+//   claimed; run queued locally via queuePendingProgress.
+//
+// API unavailable:       submitScore() queues/pends; no false sync claimed.
+//   BTQM XP sync also pends if API unavailable.
+//
+// Retry queue:           localStorage moonboys_arcade_pending_progress_v1.
+//
+// BTQM special rules:   Generated assets, runtime tilesets, combat assets, and
+//   progression sync use BTQM-only paths and must not be altered by this module.
 async function finalizeRunSubmission(force) {
   if (!btqmRuntime.runActive && !force) return;
   if (btqmRuntime.runSubmitted) return;
