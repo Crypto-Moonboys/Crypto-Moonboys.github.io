@@ -864,10 +864,17 @@ async function testWikiSearch(page, url) {
   async function querySearch(q) {
     const resultsSelector = '#search-results-page';
     const inputSelector = '#search-page-input';
+    const defaultState = {
+      error: null,
+      resultText: '',
+      cardCount: 0,
+      hasEmptyState: false,
+      emptyText: '',
+    };
     const input = await page.$(inputSelector);
     const resultsContainer = await page.$(resultsSelector);
-    if (!input) return { error: 'search input not found', results: [] };
-    if (!resultsContainer) return { error: 'search results container not found', results: [] };
+    if (!input) return { ...defaultState, error: `search input not found: ${inputSelector}` };
+    if (!resultsContainer) return { ...defaultState, error: `search results container not found: ${resultsSelector}` };
 
     try {
       await page.waitForFunction(
@@ -920,13 +927,13 @@ async function testWikiSearch(page, url) {
         emptyText: emptyNode ? (emptyNode.textContent || '').trim() : '',
       };
     }, resultsSelector);
-    return resultState;
+    return { ...defaultState, ...resultState };
   }
 
   // 1. GRAFFPUNKS RADIO → relevant result expected.
   const graffRadio = await querySearch('GRAFFPUNKS RADIO');
   if (graffRadio.error) {
-    fail(`wiki search input not found: ${graffRadio.error}`, { url, suggested: 'Search page HTML may have changed selector' });
+    fail(`wiki search query failed: ${graffRadio.error}`, { url, suggested: 'Search page HTML may have changed selector' });
   } else if (graffRadio.cardCount > 0 && graffRadio.resultText && (
     graffRadio.resultText.toLowerCase().includes('graffpunk') ||
     graffRadio.resultText.toLowerCase().includes('radio')
@@ -943,7 +950,7 @@ async function testWikiSearch(page, url) {
   await page.goto(`${BASE}/search.html`, { waitUntil: 'load', timeout: 20000 });
   const graffSingle = await querySearch('GRAFFPUNKS');
   if (graffSingle.error) {
-    fail(`wiki search input not found: ${graffSingle.error}`, { url, suggested: 'Search page HTML may have changed selector' });
+    fail(`wiki search query failed: ${graffSingle.error}`, { url, suggested: 'Search page HTML may have changed selector' });
   } else if (graffSingle.cardCount > 0 && graffSingle.resultText && graffSingle.resultText.toLowerCase().includes('graffpunk')) {
     pass('wiki search "GRAFFPUNKS" single-word query returns relevant result');
   } else {
