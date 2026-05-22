@@ -42,7 +42,7 @@ assert.ok(
 );
 
 assert.ok(
-  /return\s*\{\s*queryScore:\s*0,\s*rankScore:\s*item\.rank_score,\s*finalScore:\s*item\.rank_score\s*\};/.test(scoreResultBlock) &&
+  /return\s*\{\s*queryScore:\s*0,\s*rankScore:\s*item\.rank_score,\s*matchedTokenCount:\s*0,\s*totalTokenCount:\s*0,\s*finalScore:\s*item\.rank_score\s*\};/.test(scoreResultBlock) &&
   /finalScore:\s*\(queryScore\s*\*\s*FINAL_QUERY_WEIGHT\)\s*\+\s*\(rankScore\s*\*\s*FINAL_RANK_WEIGHT\)/.test(scoreResultBlock),
   'scoreResult/rank_score contract must remain unchanged',
 );
