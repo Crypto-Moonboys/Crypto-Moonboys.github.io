@@ -1992,6 +1992,12 @@ body.page-home #homepage-right-panel .hud-live-pill--relink {
   border-color: rgba(247, 201, 72, 0.45);
 }
 
+body.page-home #homepage-right-panel .hud-live-pill--pending {
+  color: #56dcff;
+  background: rgba(86, 220, 255, 0.08);
+  border-color: rgba(86, 220, 255, 0.35);
+}
+
 body.page-home #homepage-right-panel .hud-live-pill--relink a {
   color: #f7c948;
   text-decoration: none;
@@ -3040,6 +3046,12 @@ body.page-has-right-panel #homepage-right-panel .hud-live-pill--relink {
   color: #f7c948;
   background: rgba(247, 201, 72, 0.08);
   border-color: rgba(247, 201, 72, 0.45);
+}
+
+body.page-has-right-panel #homepage-right-panel .hud-live-pill--pending {
+  color: #56dcff;
+  background: rgba(86, 220, 255, 0.08);
+  border-color: rgba(86, 220, 255, 0.35);
 }
 
 body.page-has-right-panel #homepage-right-panel .hud-live-pill--relink a {

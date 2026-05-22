@@ -41,13 +41,15 @@ export const ArcadeSync = {
     if (typeof cfg.getApiBaseInfo === "function") {
       return cfg.getApiBaseInfo({ mode });
     }
+    const hasExplicitBase = Object.prototype.hasOwnProperty.call(cfg, "BASE_URL");
+    const disabled = hasExplicitBase && cfg.BASE_URL == null;
     const fallback = cfg.BASE_URL ? String(cfg.BASE_URL).trim().replace(/\/$/, "") : "";
     return {
       url: fallback,
       available: !!fallback,
-      state: fallback ? "configured" : "config_required",
-      summary: fallback ? "Server confirmed" : "API config required",
-      detail: fallback ? "API configured for this context" : "Production API not configured for this context",
+      state: fallback ? "configured" : (disabled ? "disabled" : "config_required"),
+      summary: fallback ? "Server confirmed" : (disabled ? "Endpoint disabled" : "API config required"),
+      detail: fallback ? "API configured for this context" : (disabled ? "API endpoint disabled for this context" : "Production API not configured for this context"),
       source: fallback ? "window.MOONBOYS_API.BASE_URL" : null,
     };
   },
@@ -270,9 +272,10 @@ export const ArcadeSync = {
     const apiBase = apiInfo && apiInfo.url ? this.getApiBase("write") : null;
     if (!apiBase) {
       const reason = apiInfo && apiInfo.state ? apiInfo.state : "missing_api_base";
-      const error = new Error(reason === "config_required"
-        ? "API config required. Sync pending."
-        : "Server unavailable. Sync pending.");
+      const summary = apiInfo && apiInfo.summary
+        ? apiInfo.summary
+        : (reason === "disabled" ? "Endpoint disabled" : (reason === "config_required" ? "API config required" : "Server unavailable"));
+      const error = new Error(`${summary}. Sync pending.`);
       error.code = reason;
       throw error;
     }

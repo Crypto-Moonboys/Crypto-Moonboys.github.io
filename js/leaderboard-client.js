@@ -49,19 +49,24 @@ function getSharedStatusCopy() {
   return cfg.STATUS || {};
 }
 
+function hasOwn(obj, key) {
+  return !!(obj && Object.prototype.hasOwnProperty.call(obj, key));
+}
+
 function getLeaderboardApiInfo(mode = "read") {
   if (typeof window !== "undefined") {
     const cfg = window.MOONBOYS_API;
     if (cfg && typeof cfg.getLeaderboardApiInfo === "function") {
       return cfg.getLeaderboardApiInfo({ mode });
     }
+    const disabled = !!(cfg && hasOwn(cfg, "LEADERBOARD_URL") && cfg.LEADERBOARD_URL == null);
     const fallback = cfg && cfg.LEADERBOARD_URL ? String(cfg.LEADERBOARD_URL).replace(/\/$/, "") : "";
     return {
       url: fallback,
       available: !!fallback,
-      state: fallback ? "configured" : "config_required",
-      summary: fallback ? "Server confirmed" : "API config required",
-      detail: fallback ? "API configured for this context" : "Production API not configured for this context",
+      state: fallback ? "configured" : (disabled ? "disabled" : "config_required"),
+      summary: fallback ? "Server confirmed" : (disabled ? "Endpoint disabled" : "API config required"),
+      detail: fallback ? "API configured for this context" : (disabled ? "API endpoint disabled for this context" : "Production API not configured for this context"),
     };
   }
   return {
@@ -87,13 +92,14 @@ function getCoreApiInfo(mode = "write") {
   if (typeof cfg.getApiBaseInfo === "function") {
     return cfg.getApiBaseInfo({ mode });
   }
+  const disabled = hasOwn(cfg, "BASE_URL") && cfg.BASE_URL == null;
   const fallback = cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, "") : "";
   return {
     url: fallback,
     available: !!fallback,
-    state: fallback ? "configured" : "config_required",
-    summary: fallback ? "Server confirmed" : "API config required",
-    detail: fallback ? "API configured for this context" : "Production API not configured for this context",
+    state: fallback ? "configured" : (disabled ? "disabled" : "config_required"),
+    summary: fallback ? "Server confirmed" : (disabled ? "Endpoint disabled" : "API config required"),
+    detail: fallback ? "API configured for this context" : (disabled ? "API endpoint disabled for this context" : "Production API not configured for this context"),
   };
 }
 
@@ -104,15 +110,16 @@ function getApiUrl(mode = "read") {
 
 function getPendingApiMessage(apiInfo, localOnly = false) {
   const COPY = getSharedStatusCopy();
+  const summary = apiInfo && apiInfo.state === "disabled"
+    ? (COPY.ENDPOINT_DISABLED || "Endpoint disabled")
+    : (apiInfo && apiInfo.state === "config_required"
+      ? (COPY.API_CONFIG_REQUIRED || "API config required")
+      : (COPY.SERVER_UNAVAILABLE || "Server unavailable"));
   const pendingPrefix = `${COPY.SYNC_PENDING || "Sync pending"}.`;
   if (localOnly) {
-    return apiInfo && apiInfo.state === "config_required"
-      ? `${COPY.API_CONFIG_REQUIRED || "API config required"}. ${COPY.LOCAL_CACHED_ONLY || "Local cached only"}.`
-      : `${COPY.SERVER_UNAVAILABLE || "Server unavailable"}. ${COPY.LOCAL_CACHED_ONLY || "Local cached only"}.`;
+    return `${summary}. ${COPY.LOCAL_CACHED_ONLY || "Local cached only"}.`;
   }
-  return apiInfo && apiInfo.state === "config_required"
-    ? `${COPY.API_CONFIG_REQUIRED || "API config required"}. ${pendingPrefix}`
-    : `${COPY.SERVER_UNAVAILABLE || "Server unavailable"}. ${pendingPrefix}`;
+  return `${summary}. ${pendingPrefix}`;
 }
 
 /** Read the stored Telegram ID, preferring window.MOONBOYS_IDENTITY if loaded. */

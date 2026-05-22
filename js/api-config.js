@@ -142,8 +142,8 @@
         usingProductionFallback: false,
         source: explicit.source,
         state: 'disabled',
-        summary: 'API config required',
-        detail: 'Endpoint explicitly disabled for this page context',
+        summary: 'Endpoint disabled',
+        detail: 'API endpoint disabled for this context',
         context: context,
       };
     }
@@ -196,6 +196,8 @@
   api.CONTEXT = context;
   api.STATUS = Object.freeze({
     API_CONFIG_REQUIRED: 'API config required',
+    ENDPOINT_DISABLED: 'Endpoint disabled',
+    ENDPOINT_DISABLED_FOR_CONTEXT: 'API endpoint disabled for this context',
     SYNC_PENDING: 'Sync pending',
     SERVER_UNAVAILABLE: 'Server unavailable',
     PRODUCTION_API_NOT_CONFIGURED: 'Production API not configured for this context',

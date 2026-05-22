@@ -276,7 +276,7 @@
         ? apiCfg.getApiBaseInfo({ mode: 'write' })
         : { url: apiCfg.BASE_URL || '', state: apiCfg.BASE_URL ? 'configured' : 'config_required' };
       var hasWriteApi = !!(apiInfo && apiInfo.url);
-      pillEl.className = 'hud-live-pill ' + (!freshAuth ? 'hud-live-pill--relink' : (hasWriteApi ? 'hud-live-pill--linked' : 'hud-live-pill--relink'));
+      pillEl.className = 'hud-live-pill ' + (!freshAuth ? 'hud-live-pill--relink' : (hasWriteApi ? 'hud-live-pill--linked' : 'hud-live-pill--pending'));
       pillEl.setAttribute('aria-label', !freshAuth ? 'Relink required' : (hasWriteApi ? 'Live linked' : 'Sync pending'));
       if (freshAuth && hasWriteApi) {
         pillEl.textContent = 'LIVE LINKED';

@@ -19,6 +19,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -26,6 +27,29 @@ const ROOT = path.resolve(here, '..');
 
 async function readFile(relPath) {
   return fs.readFile(path.join(ROOT, relPath), 'utf8');
+}
+
+async function loadApiConfigForHost(hostname, overrides = {}) {
+  const source = await readFile('js/api-config.js');
+  const location = {
+    protocol: 'https:',
+    hostname,
+    origin: `https://${hostname}`,
+  };
+  const windowObj = {
+    location,
+    MOONBOYS_API: {},
+    ...overrides,
+  };
+  const context = {
+    window: windowObj,
+    location,
+    console: { log() {}, warn() {}, error() {}, info() {} },
+    Date,
+  };
+  context.globalThis = context;
+  vm.runInNewContext(source, context, { filename: 'js/api-config.js' });
+  return windowObj.MOONBOYS_API;
 }
 
 let passed = 0;
@@ -180,6 +204,44 @@ await test('api-config centralizes endpoint helpers and production-host fallback
   );
 });
 
+for (const hostname of ['cryptomoonboys.com', 'www.cryptomoonboys.com', 'crypto-moonboys.github.io']) {
+  await test(`api-config resolves production Worker base for ${hostname}`, async () => {
+    const api = await loadApiConfigForHost(hostname);
+    const info = api.getApiBaseInfo();
+    assert.equal(info.url, api.PRODUCTION_BASE_URL, `expected production base fallback for ${hostname}`);
+    assert.equal(info.state, 'production_fallback', `expected production_fallback state for ${hostname}`);
+  });
+
+  await test(`api-config resolves production leaderboard Worker for ${hostname}`, async () => {
+    const api = await loadApiConfigForHost(hostname);
+    const info = api.getLeaderboardApiInfo();
+    assert.equal(info.url, api.PRODUCTION_LEADERBOARD_URL, `expected production leaderboard fallback for ${hostname}`);
+    assert.equal(info.state, 'production_fallback', `expected production_fallback leaderboard state for ${hostname}`);
+  });
+}
+
+await test('api-config keeps local/dev contexts pending without explicit config', async () => {
+  const api = await loadApiConfigForHost('localhost');
+  const baseInfo = api.getApiBaseInfo();
+  const leaderboardInfo = api.getLeaderboardApiInfo();
+  assert.equal(baseInfo.url, '', 'localhost base API should stay empty without explicit config');
+  assert.equal(baseInfo.state, 'config_required', 'localhost base API should stay config_required without explicit config');
+  assert.equal(leaderboardInfo.url, '', 'localhost leaderboard API should stay empty without explicit config');
+  assert.equal(leaderboardInfo.state, 'config_required', 'localhost leaderboard API should stay config_required without explicit config');
+});
+
+await test('api-config exposes disabled-specific copy when endpoint is explicitly disabled', async () => {
+  const api = await loadApiConfigForHost('cryptomoonboys.com', {
+    MOONBOYS_API: { BASE_URL: null, LEADERBOARD_URL: null },
+  });
+  const baseInfo = api.getApiBaseInfo();
+  const leaderboardInfo = api.getLeaderboardApiInfo();
+  assert.equal(baseInfo.state, 'disabled', 'base API should report disabled state when BASE_URL is null');
+  assert.equal(baseInfo.summary, 'Endpoint disabled', 'base API should expose disabled summary');
+  assert.equal(leaderboardInfo.state, 'disabled', 'leaderboard API should report disabled state when LEADERBOARD_URL is null');
+  assert.equal(leaderboardInfo.detail, 'API endpoint disabled for this context', 'leaderboard API should expose disabled detail copy');
+});
+
 await test('feature modules no longer carry hardcoded production Worker fallbacks', async () => {
   assert(
     !src.includes('moonboys-leaderboard.sercullen.workers.dev') &&
@@ -301,9 +363,11 @@ async function runSubmitScoreGuard({ linked = false, telegramAuth = null, authTh
 
   if (!apiAvailable) {
     result.state = linked ? 'sync_pending' : 'local_cached_only';
-    result.message = apiState === 'config_required'
-      ? (linked ? 'API config required. Sync pending.' : 'API config required. Local cached only.')
-      : (linked ? 'Server unavailable. Sync pending.' : 'Server unavailable. Local cached only.');
+    result.message = apiState === 'disabled'
+      ? (linked ? 'Endpoint disabled. Sync pending.' : 'Endpoint disabled. Local cached only.')
+      : (apiState === 'config_required'
+        ? (linked ? 'API config required. Sync pending.' : 'API config required. Local cached only.')
+        : (linked ? 'Server unavailable. Sync pending.' : 'Server unavailable. Local cached only.'));
     statusCalls.push({ state: result.state });
     return { outcome: 'skipped', result, fetchCalls, healthCalls, statusCalls };
   }
@@ -381,6 +445,19 @@ await test('BEH: guest user without write API stays local-only and does not POST
   assert(fetchCalls.length === 0, 'guest no-config path must not POST to leaderboard worker');
   assert(result.state === 'local_cached_only', `expected local_cached_only, got ${result.state}`);
   assert(statusCalls.some(s => s.state === 'local_cached_only'), 'guest no-config path must emit local_cached_only');
+});
+
+await test('BEH: disabled write API reports disabled copy instead of server unavailable', async () => {
+  const { outcome, result, fetchCalls, statusCalls } = await runSubmitScoreGuard({
+    linked: true,
+    telegramAuth: makeValidAuth(),
+    apiAvailable: false,
+    apiState: 'disabled',
+  });
+  assert(outcome === 'skipped', `expected skipped, got ${outcome}`);
+  assert(fetchCalls.length === 0, 'disabled write path must not POST');
+  assert.equal(result.message, 'Endpoint disabled. Sync pending.', 'disabled write path should report disabled-specific pending copy');
+  assert(statusCalls.some(s => s.state === 'sync_pending'), 'disabled write path must still emit sync_pending');
 });
 
 // ── Behavioral mock for submitMetaScore ──────────────────────────────────────

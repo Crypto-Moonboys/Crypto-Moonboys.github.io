@@ -237,7 +237,7 @@ check(opsBlock.includes('csp-ops-row') && opsBlock.includes('>Faction<'), 'Facti
 check(!functionBlock(csp, 'buildPlayerLiveFeedHTML').includes('LIVE LINKED'), 'player live feed renderer does not output LIVE LINKED pill (shell portrait row is the single authority)');
 check(siteShell.includes('hud-live-pill') && siteShell.includes('LIVE LINKED'), 'shell portrait row renders LIVE LINKED pill once for the identity area');
 check(siteShell.includes('hud-live-pill--relink') && siteShell.includes('RELINK'), 'shell portrait row renders RELINK pill once when signed auth is expired');
-check(siteShell.includes('SYNC PENDING'), 'site-shell exposes SYNC PENDING pill when auth is fresh but API writes are not configured');
+check(siteShell.includes('hud-live-pill--pending') && siteShell.includes('SYNC PENDING'), 'site-shell exposes SYNC PENDING pill with a dedicated pending class when auth is fresh but API writes are not configured');
 check(resolveHudSignedTelegramAuthBlock.includes('gate.restoreLinkedTelegramAuth()') && renderHudLivePillBlock.includes('resolveHudSignedTelegramAuth(gate)'), 'shell attempts restoreLinkedTelegramAuth before rendering RELINK');
 check(clearHudLivePillBlock.includes("querySelector('.hud-live-pill')") && renderHudLivePillBlock.includes('clearHudLivePill(nameEl);'), 'shell replaces existing .hud-live-pill instead of appending duplicates');
 check(bindHudIdentityRefreshBlock.includes("window.addEventListener('moonboys:sync-state', scheduleHudIdentityRefresh);"), 'shell portrait pill refreshes on moonboys:sync-state');
@@ -430,10 +430,11 @@ check(csp.includes('csp-badge--relink'), 'RELINK badge has its own CSS class');
 check(csp.includes('Auth expired'), 'RELINK badge copy includes "Auth expired" to explain the state');
 const buildBadgeBlock = functionBlock(csp, 'buildBadgeHTML');
 check(buildBadgeBlock.includes('restoreLinkedTelegramAuth'), 'buildBadgeHTML attempts restoreLinkedTelegramAuth before rendering RELINK badge');
-check(buildBadgeBlock.includes('SYNC PENDING') && buildBadgeBlock.includes('API config required'), 'buildBadgeHTML renders explicit SYNC PENDING copy when API writes are unavailable');
+check(buildBadgeBlock.includes('csp-badge--pending') && buildBadgeBlock.includes('SYNC PENDING'), 'buildBadgeHTML uses a dedicated pending badge class when API writes are unavailable');
 check(csp.includes('Signed Telegram auth expired — relink required.') && csp.includes('RELINK Telegram'), 'player live feed shows explicit relink state + CTA when signed auth is unavailable');
-check(csp.includes('Sync pending') && csp.includes('Local cached only') && csp.includes('Sync pending — API config required.'), 'connection-status-panel labels local/dev no-config state as sync pending/local cached only');
+check(csp.includes('Sync pending') && csp.includes('Local cached only') && csp.includes('getSyncPendingLabel(shared.apiInfo)'), 'connection-status-panel labels local/dev no-config state as sync pending/local cached only');
 check(functionBlock(csp, 'buildSharedRailState').includes('getSignedTelegramAuthWithRestore'), 'shared rail state checks signed/restorable auth before activating live mode');
+check(csp.includes('Endpoint disabled') && csp.includes('API endpoint disabled for this context') && csp.includes('Sync pending — ') && csp.includes('getApiSummary'), 'connection-status-panel keeps disabled endpoint copy distinct from config-required/server-unavailable states');
 
 // Issue 6: Hydration is authoritative for cached state but cannot roll back live in-session XP
 check(moonboysState.includes('_liveXpRevision'), 'moonboys-state.js has a _liveXpRevision race guard to protect live in-session XP from hydration rollback');

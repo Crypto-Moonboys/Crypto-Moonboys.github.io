@@ -107,18 +107,44 @@
     return cfg.STATUS || {};
   }
 
+  function hasOwn(obj, key) {
+    return !!(obj && Object.prototype.hasOwnProperty.call(obj, key));
+  }
+
+  function getApiSummary(apiInfo) {
+    var copy = getSharedStatusCopy();
+    if (apiInfo && apiInfo.summary) return apiInfo.summary;
+    if (apiInfo && apiInfo.state === 'disabled') return copy.ENDPOINT_DISABLED || 'Endpoint disabled';
+    if (apiInfo && apiInfo.state === 'server_unavailable') return copy.SERVER_UNAVAILABLE || 'Server unavailable';
+    return copy.API_CONFIG_REQUIRED || 'API config required';
+  }
+
+  function getApiDetail(apiInfo) {
+    var copy = getSharedStatusCopy();
+    if (apiInfo && apiInfo.detail) return apiInfo.detail;
+    if (apiInfo && apiInfo.state === 'disabled') {
+      return copy.ENDPOINT_DISABLED_FOR_CONTEXT || 'API endpoint disabled for this context';
+    }
+    return copy.PRODUCTION_API_NOT_CONFIGURED || 'Production API not configured for this context';
+  }
+
+  function getSyncPendingLabel(apiInfo) {
+    return 'Sync pending — ' + getApiSummary(apiInfo) + '.';
+  }
+
   function getApiInfo(mode) {
     var cfg = window.MOONBOYS_API || {};
     if (typeof cfg.getApiBaseInfo === 'function') {
       return cfg.getApiBaseInfo({ mode: mode || 'write' });
     }
+    var disabled = hasOwn(cfg, 'BASE_URL') && cfg.BASE_URL == null;
     var fallback = cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
     return {
       url: fallback,
       available: !!fallback,
-      state: fallback ? 'configured' : 'config_required',
-      summary: fallback ? 'Server confirmed' : 'API config required',
-      detail: fallback ? 'API configured for this context' : 'Production API not configured for this context',
+      state: fallback ? 'configured' : (disabled ? 'disabled' : 'config_required'),
+      summary: fallback ? 'Server confirmed' : (disabled ? 'Endpoint disabled' : 'API config required'),
+      detail: fallback ? 'API configured for this context' : (disabled ? 'API endpoint disabled for this context' : 'Production API not configured for this context'),
     };
   }
 
@@ -250,8 +276,8 @@
       _apiOnlineCache = {
         ok: false,
         state: apiInfo && apiInfo.state ? apiInfo.state : 'config_required',
-        summary: copy.API_CONFIG_REQUIRED || 'API config required',
-        detail: apiInfo && apiInfo.detail ? apiInfo.detail : (copy.PRODUCTION_API_NOT_CONFIGURED || 'Production API not configured for this context'),
+        summary: getApiSummary(apiInfo),
+        detail: getApiDetail(apiInfo),
       };
       return _apiOnlineCache;
     }
@@ -663,8 +689,8 @@
         '</div>';
     }
     if (shared.mode === 'sync_pending') {
-      var apiSummary = shared.apiInfo && shared.apiInfo.summary ? shared.apiInfo.summary : 'API config required';
-      var apiDetail = shared.apiInfo && shared.apiInfo.detail ? shared.apiInfo.detail : 'Production API not configured for this context';
+      var apiSummary = getApiSummary(shared.apiInfo);
+      var apiDetail = getApiDetail(shared.apiInfo);
       return '' +
         '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
           '<div class="csp-live-head"><span class="csp-pulse csp-pulse--warn"></span><div><strong>Sync pending</strong><span>' + esc(apiSummary + ' — ' + apiDetail) + '</span></div></div>' +
@@ -697,7 +723,7 @@
       return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">RELINK required to sync faction daily ops.</span></div>';
     }
     if (shared.mode === 'sync_pending') {
-      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">Sync pending — API config required.</span></div>';
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">' + esc(getSyncPendingLabel(shared.apiInfo)) + '</span></div>';
     }
     var contributionDisplay = shared.contribution ? shared.contribution.value : 'syncing…';
     var completedDisplay = shared.dailyCounts && shared.dailyCounts.completed != null ? String(shared.dailyCounts.completed) : 'syncing…';
@@ -748,7 +774,7 @@
       return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">RELINK required to sync Daily WTF signal.</span></div>';
     }
     if (shared.mode === 'sync_pending') {
-      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">Sync pending — API config required.</span></div>';
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">' + esc(getSyncPendingLabel(shared.apiInfo)) + '</span></div>';
     }
     var wtf = shared.wtfState;
     var timer = 'syncing…';
@@ -809,7 +835,7 @@
       return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">RELINK required to sync missed opportunities.</span></div>';
     }
     if (shared.mode === 'sync_pending') {
-      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">Sync pending — API config required.</span></div>';
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">' + esc(getSyncPendingLabel(shared.apiInfo)) + '</span></div>';
     }
     var wtf = shared.wtfState || {};
     var daily = shared.dailyState || null;
@@ -887,9 +913,9 @@
     var apiOnline = await checkApiOnline();
     if (!apiOnline || apiOnline.ok !== true) {
       return '' +
-        '<span class="csp-badge csp-badge--relink" aria-label="Sync pending">' +
+        '<span class="csp-badge csp-badge--pending" aria-label="Sync pending">' +
           '<span class="csp-pulse csp-pulse--warn"></span>' +
-          '<span class="csp-badge-stack"><strong>SYNC PENDING</strong><small>' + esc((apiOnline && apiOnline.summary) || 'API config required') + '</small></span>' +
+          '<span class="csp-badge-stack"><strong>SYNC PENDING</strong><small>' + esc(getApiSummary(apiOnline)) + '</small></span>' +
           '<span class="csp-badge-chip csp-badge-chip--warn">API?</span>' +
         '</span>';
     }
@@ -986,6 +1012,7 @@
       '.csp-badge-chip--good{color:#3fb950;border-color:rgba(63,185,80,.35)}.csp-badge-chip--warn{color:#f7c948;border-color:rgba(247,201,72,.35)}',
       '.csp-badge--linked{background:rgba(86,220,255,.1);border:1px solid rgba(86,220,255,.35);color:#c8f0ff;box-shadow:0 0 12px rgba(86,220,255,.12)}',
       '.csp-badge--unlinked{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.35);color:#ffd0cd;text-decoration:none}',
+      '.csp-badge--pending{background:rgba(86,220,255,.08);border:1px solid rgba(86,220,255,.35);color:#c8f0ff;text-decoration:none}',
       '.csp-badge--relink{background:rgba(247,201,72,.08);border:1px solid rgba(247,201,72,.45);color:#f7e29a;text-decoration:none}',
       /* Loading placeholder */
       '.csp-loading{color:var(--color-text-muted,#8b949e);font-size:.82rem;padding:10px 0}',
