@@ -58,7 +58,9 @@
   var STYLE_ID = 'csp-styles';
 
   // ── Per-session cache ─────────────────────────────────────────────────
-  // _progressionCache: { requiredXp, confirmed } once resolved; null until then.
+  // _progressionCache: { requiredXp, confirmed:true } only after server confirmation.
+  // Unconfirmed fallback results are NOT cached so transient API failures do not
+  // permanently block the retry path; the next render/refresh call will retry.
   // Arcade XP is NOT cached here — it is read from MOONBOYS_STATE exclusively.
   // _progressionInflight: the in-flight Promise (shared by all concurrent callers).
   // Clearing both on invalidate ensures the next call starts fresh.
@@ -168,6 +170,7 @@
         apiBase = getApiBase();
       }
 
+      var result = fallback;
       if (telegramAuth && apiBase) {
         try {
           var res = await fetch(apiBase + '/blocktopia/progression', {
@@ -178,22 +181,22 @@
           var payload = await res.json().catch(function () { return {}; });
           if (res.ok && payload && payload.ok === true && payload.progression) {
             var prog = payload.progression;
-            _progressionCache = {
+            result = {
               requiredXp: Math.max(1, Math.floor(Number(prog.required_xp) || FALLBACK_REQUIRED_XP)),
               confirmed: true,
             };
-          } else {
-            _progressionCache = fallback;
           }
         } catch (_) {
-          _progressionCache = fallback;
+          // result remains fallback; not cached so the next call can retry
         }
-      } else {
-        _progressionCache = fallback;
       }
 
+      // Only cache server-confirmed progression. Unconfirmed fallback is returned
+      // for this call but not stored, so a transient API failure does not
+      // permanently block the retry path on the next render or refresh.
+      if (result.confirmed) _progressionCache = result;
       _progressionInflight = null;
-      return _progressionCache;
+      return result;
     }());
 
     return _progressionInflight;
