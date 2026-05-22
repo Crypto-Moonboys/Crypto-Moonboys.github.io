@@ -279,6 +279,31 @@ function getArticleSummary(item) {
   return `Explore this Crypto Moonboys Wiki article covering ${title}.`;
 }
 
+function selectSearchMatches(query, options) {
+  const q = String(query || '').trim();
+  const opts = options || {};
+  const allowPartialFallback = opts.allowPartialFallback !== false;
+  const limit = Number.isFinite(opts.limit) ? Math.max(0, opts.limit) : Infinity;
+
+  if (!q || !WIKI_INDEX.length || limit === 0) {
+    return { scored: [], usedPartialFallback: false };
+  }
+
+  const allScored = WIKI_INDEX.map(item => ({ item, ...scoreResult(item, q) }));
+  let scored = allScored.filter(r => r.matchedTokenCount > 0 && r.matchedTokenCount >= r.totalTokenCount);
+  let usedPartialFallback = false;
+
+  if (!scored.length && allowPartialFallback) {
+    usedPartialFallback = true;
+    scored = allScored.filter(r => r.queryScore > 0);
+  }
+
+  scored.sort(compareScoredResults);
+  if (Number.isFinite(limit)) scored = scored.slice(0, limit);
+
+  return { scored, usedPartialFallback };
+}
+
 /* ── SEARCH PAGE RENDERER ────────────────────────────────────────────────── */
 function renderSearchPage(query) {
   const container = document.getElementById('search-results-page');
@@ -295,14 +320,7 @@ function renderSearchPage(query) {
 
   let items;
   if (q) {
-    const allScored = WIKI_INDEX.map(item => ({ item, ...scoreResult(item, q) }));
-    // Prefer results where all query tokens matched
-    let scored = allScored.filter(r => r.matchedTokenCount > 0 && r.matchedTokenCount >= r.totalTokenCount);
-    // Partial fallback: if no all-token matches, show best partial matches (at least one token)
-    if (!scored.length) {
-      scored = allScored.filter(r => r.queryScore > 0);
-    }
-    scored.sort(compareScoredResults);
+    const { scored } = selectSearchMatches(q, { allowPartialFallback: true });
     items = scored.map(r => r.item);
     if (heading) heading.textContent = `Results for "${q}" (${items.length})`;
   } else {
@@ -444,11 +462,7 @@ async function _wikiInit() {
     if (!_dropdown) return;
     const v = String(val || '').trim();
     if (!v || !WIKI_INDEX.length) { _dropdown.innerHTML = ''; return; }
-    const scored = WIKI_INDEX
-      .map(item => ({ item, ...scoreResult(item, v) }))
-      .filter(r => r.queryScore > 0)
-      .sort(compareScoredResults)
-      .slice(0, 5);
+    const { scored } = selectSearchMatches(v, { allowPartialFallback: true, limit: 5 });
     if (!scored.length) { _dropdown.innerHTML = ''; return; }
     _dropdown.innerHTML = scored.map(r => {
       const href  = resolveWikiUrl(r.item.url);
