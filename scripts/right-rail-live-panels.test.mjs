@@ -122,11 +122,12 @@ console.log('\n[3] Top notice');
 check(csp.includes('LIVE SYNC') && csp.includes('Telegram Sync Required'), 'compact Telegram/XP live notice supports linked and unlinked states');
 check(csp.includes('csp-badge-stack') && csp.includes('csp-badge-chip'), 'top notice is compact and chip-based');
 check(csp.indexOf('LIVE SYNC') < csp.indexOf('async function buildPanelHTML') || csp.includes('async function buildBadgeHTML'), 'top notice is rendered by badge path, not the full panel');
-check(csp.includes('blocktopiaBadgeLabel(unlocked)') && csp.includes("return unlocked ? 'BT OPEN' : 'BT LOCK'"), 'initial badge uses shared BT OPEN / BT LOCK labels');
+check(csp.includes('blocktopiaBadgeLabel(blocktopiaStatus)') && csp.includes("return 'BT OPEN'") && csp.includes("return 'BT LOCK'") && csp.includes("return 'BT SYNC'"), 'initial badge uses shared BT OPEN / BT LOCK / BT SYNC labels');
 const stateSubscribeBlock = csp.slice(csp.indexOf('MOONBOYS_STATE.subscribe'), csp.indexOf('// ── Bootstrap'));
-check(stateSubscribeBlock.includes('blocktopiaBadgeLabel(unlocked)'), 'live XP subscription path reuses BT OPEN / BT LOCK labels');
+check(stateSubscribeBlock.includes('blocktopiaBadgeLabel(blocktopiaStatus)'), 'live XP subscription path reuses shared BT status labels');
 check(!stateSubscribeBlock.includes("btNode.textContent = unlocked ? 'unlocked' : 'locked'"), 'live badge updater does not flip back to old unlocked / locked labels');
-check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requiredXp)'), 'live Block Topia row updater reuses initial access markup helper');
+check(stateSubscribeBlock.includes("state.source === 'server'") && stateSubscribeBlock.includes('_progressionCache && _progressionCache.confirmed === true'), 'live Block Topia updater requires server-confirmed link/progression before confirmed unlock labels');
+check(stateSubscribeBlock.includes('blocktopiaAccessHTML(linked, state.xp, requiredXp, serverLinkedConfirmed, progressionConfirmed)'), 'live Block Topia row updater reuses initial access markup helper with confirmation flags');
 
 console.log('\n[4] Panel separation');
 check(siteShell.includes('PLAYER LIVE FEED') && siteShell.includes('FACTION DAILY OPS') && siteShell.includes('DAILY WTF SIGNAL') && siteShell.includes('MISSED OPPORTUNITIES'), 'right rail restores multi-section live ecosystem headings');
@@ -159,7 +160,12 @@ check(csp.includes('.csp-live-row-val{') && csp.includes('font-size:.84rem') && 
 check(csp.includes('.csp-mission-title{') && csp.includes('overflow:hidden') && csp.includes('text-overflow:ellipsis') && csp.includes('white-space:nowrap'), 'mission titles use one-line ellipsis to avoid oversized row height');
 check(!csp.includes('#homepage-right-panel .csp-wtf-badge{padding:2px 8px;font-size:.58rem;line-height:1.1;letter-spacing:.06em;margin-bottom:5px}') && !csp.includes('#homepage-right-panel .csp-missed-badge{padding:2px 8px;font-size:.58rem;line-height:1.1;letter-spacing:.06em;margin-bottom:5px}'), 'homepage right-rail no longer applies tiny WTF/MISSED badge typography overrides');
 const blocktopiaAccessBlock = functionBlock(csp, 'blocktopiaAccessHTML');
-check(blocktopiaAccessBlock.includes('Unlocked</span>') && blocktopiaAccessBlock.includes('Locked ') && blocktopiaAccessBlock.includes('requiredXp') && !blocktopiaAccessBlock.includes('Access unlocked') && !blocktopiaAccessBlock.includes('Arcade XP</span>'), 'Block Topia row uses compact right-rail copy (Unlocked / Locked x/y)');
+const blocktopiaAccessStateBlock = functionBlock(csp, 'resolveBlocktopiaAccessState');
+check(blocktopiaAccessStateBlock.includes("return 'link_check_required'") && blocktopiaAccessStateBlock.includes("return 'server_check_pending'") && blocktopiaAccessStateBlock.includes("return 'unlocked'") && blocktopiaAccessStateBlock.includes("return 'locked'"), 'Block Topia access state helper distinguishes link pending, server pending, unlocked, and locked states');
+check(blocktopiaAccessStateBlock.indexOf("return 'server_check_pending'") < blocktopiaAccessStateBlock.indexOf("return 'unlocked'"), 'local linked + XP alone cannot reach confirmed unlocked state before server checks');
+check(blocktopiaAccessBlock.includes('Link check required') && blocktopiaAccessBlock.includes('Server check pending') && blocktopiaAccessBlock.includes('Unlocked</span>') && blocktopiaAccessBlock.includes('Locked ') && !blocktopiaAccessBlock.includes('Access unlocked') && !blocktopiaAccessBlock.includes('Arcade XP</span>'), 'Block Topia row uses compact honest copy (Link check required / Server check pending / Unlocked / Locked x/y)');
+check(csp.includes("var progressionConfirmed = progression.confirmed === true;") && csp.includes('isServerLinkedConfirmed()') && csp.includes('resolveBlocktopiaAccessState(linked, arcadeXp, requiredXp, serverLinkedConfirmed, progressionConfirmed)'), 'server-confirmed linked + required XP path can render unlocked state');
+check(csp.includes("var fallback = { requiredXp: FALLBACK_REQUIRED_XP, confirmed: false };") && csp.includes("return 'server_check_pending'"), 'missing progression confirmation renders pending/sync-needed state instead of confirmed unlock');
 check(opsBlock.includes('csp-ops-label">Battle</span>') && opsBlock.includes("var actionLabel = 'Open';") && !opsBlock.includes('Battle Chamber') && !opsBlock.includes('Open Battle Chamber'), 'Battle Chamber row uses compact Battle/Open copy in the narrow right rail');
 check(wtfSectionBlock.includes('Ready</a>') && wtfSectionBlock.includes('Play</a>') && wtfSectionBlock.includes('Open</a>') && !wtfSectionBlock.includes('Get Ready') && !wtfSectionBlock.includes('Play Arcade') && !wtfSectionBlock.includes('Open Arcade'), 'Daily WTF action labels are compact (Ready/Play/Open)');
 check(missedSectionBlock.includes('csp-live-row-val csp-live-row-val--warn') && csp.includes('#homepage-right-panel .csp-live-row-val{') && csp.includes('white-space:nowrap'), 'Missed values use right-rail nowrap styling so numbers cannot stack vertically');
@@ -246,6 +252,7 @@ console.log('\n[4c] Visual composition — compact/passive inner renderers');
 check(!opsBlock.includes('class="csp-panel') && !wtfSectionBlock.includes('class="csp-panel') && !missedSectionBlock.includes('class="csp-panel'), 'lower section renderers (ops/wtf/missed) do not use nested csp-panel card wrappers');
 // Player Live Feed linked state uses compact rows in right-rail context but keeps framing for standalone mounts
 check(liveFeedBlock.includes('var inRightRail') && liveFeedBlock.includes('if (inRightRail) return linkedRows;') && liveFeedBlock.includes('<div class="csp-panel csp-panel--live-feed"'), 'player live feed linked renderer branches by mount context: right rail frame-free, standalone framed');
+check(liveFeedBlock.includes('csp-panel csp-panel--live-feed') && liveFeedBlock.includes('data-csp-bt-access') && liveFeedBlock.includes('csp-live-row-val'), 'standalone connection panel markup remains readable with Block Topia status row');
 const buildSectionBlock = functionBlock(csp, 'buildSectionHTML');
 check(csp.includes('function isRightRailMount') && buildSectionBlock.includes('buildPlayerLiveFeedHTML(shared, { inRightRail: isRightRailMount(contextEl) })'), 'buildSectionHTML passes mount context so right-rail data-csp-panel renders frame-free while standalone stays framed');
 // Faction Daily Ops uses compact ops rows and mission list, not six-box grid

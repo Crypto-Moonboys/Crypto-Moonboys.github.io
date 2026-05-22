@@ -58,7 +58,7 @@
   var STYLE_ID = 'csp-styles';
 
   // ── Per-session cache ─────────────────────────────────────────────────
-  // _progressionCache: { requiredXp } once resolved; null until then.
+  // _progressionCache: { requiredXp, confirmed } once resolved; null until then.
   // Arcade XP is NOT cached here — it is read from MOONBOYS_STATE exclusively.
   // _progressionInflight: the in-flight Promise (shared by all concurrent callers).
   // Clearing both on invalidate ensures the next call starts fresh.
@@ -152,7 +152,7 @@
     if (_progressionInflight !== null) return _progressionInflight;
 
     _progressionInflight = (async function () {
-      var fallback = { requiredXp: FALLBACK_REQUIRED_XP };
+      var fallback = { requiredXp: FALLBACK_REQUIRED_XP, confirmed: false };
       var gate = getIdentity();
       var telegramAuth = null;
       var apiBase = '';
@@ -180,6 +180,7 @@
             var prog = payload.progression;
             _progressionCache = {
               requiredXp: Math.max(1, Math.floor(Number(prog.required_xp) || FALLBACK_REQUIRED_XP)),
+              confirmed: true,
             };
           } else {
             _progressionCache = fallback;
@@ -203,6 +204,13 @@
     var ms = window.MOONBOYS_STATE;
     if (ms && typeof ms.getState === 'function') return ms.getState().xp;
     return (ms && typeof ms.xp === 'number') ? ms.xp : 0;
+  }
+
+  function isServerLinkedConfirmed() {
+    var ms = window.MOONBOYS_STATE;
+    if (!ms || typeof ms.getState !== 'function') return false;
+    var state = ms.getState() || null;
+    return !!(state && state.linked === true && state.source === 'server');
   }
 
 
@@ -306,14 +314,27 @@
 
   // ── Render ─────────────────────────────────────────────────────────────
 
-  function blocktopiaAccessHTML(linked, arcadeXp, requiredXp) {
+  function resolveBlocktopiaAccessState(linked, arcadeXp, requiredXp, serverLinkedConfirmed, progressionConfirmed) {
+    if (!linked) return 'unlinked';
+    if (!serverLinkedConfirmed) return 'link_check_required';
+    if (!progressionConfirmed) return 'server_check_pending';
+    if (arcadeXp >= requiredXp) return 'unlocked';
+    return 'locked';
+  }
+
+  function blocktopiaAccessHTML(linked, arcadeXp, requiredXp, serverLinkedConfirmed, progressionConfirmed) {
+    var status = resolveBlocktopiaAccessState(linked, arcadeXp, requiredXp, serverLinkedConfirmed, progressionConfirmed);
     if (!linked) return '<span class="csp-val-locked">Telegram sync required</span>';
-    if (arcadeXp >= requiredXp) return '<span class="csp-val-good">Unlocked</span>';
+    if (status === 'link_check_required') return '<span class="csp-val-locked">Link check required</span>';
+    if (status === 'server_check_pending') return '<span class="csp-val-locked">Server check pending</span>';
+    if (status === 'unlocked') return '<span class="csp-val-good">Unlocked</span>';
     return '<span class="csp-val-locked">Locked ' + esc(String(arcadeXp)) + '/' + requiredXp + '</span>';
   }
 
-  function blocktopiaBadgeLabel(unlocked) {
-    return unlocked ? 'BT OPEN' : 'BT LOCK';
+  function blocktopiaBadgeLabel(status) {
+    if (status === 'unlocked') return 'BT OPEN';
+    if (status === 'locked') return 'BT LOCK';
+    return 'BT SYNC';
   }
 
   function isOwnBattleActivity(row) {
@@ -489,6 +510,9 @@
       var progression = await fetchRequiredXp();
       var arcadeXp = getArcadeXp();
       var requiredXp = progression.requiredXp;
+      var progressionConfirmed = progression.confirmed === true;
+      var serverLinkedConfirmed = isServerLinkedConfirmed();
+      var blocktopiaStatus = resolveBlocktopiaAccessState(linked, arcadeXp, requiredXp, serverLinkedConfirmed, progressionConfirmed);
       var playerHref = '/games/leaderboard.html';
       var faction = getFactionSnapshot();
       var latestRows = latestActivityRows();
@@ -502,7 +526,10 @@
         faction: faction,
         arcadeXp: arcadeXp,
         requiredXp: requiredXp,
-        blocktopia: blocktopiaAccessHTML(linked, arcadeXp, requiredXp),
+        progressionConfirmed: progressionConfirmed,
+        serverLinkedConfirmed: serverLinkedConfirmed,
+        blocktopiaStatus: blocktopiaStatus,
+        blocktopia: blocktopiaAccessHTML(linked, arcadeXp, requiredXp, serverLinkedConfirmed, progressionConfirmed),
         latestActivityText: latestActivityText,
         dailyState: _dailyStateCache || null,
         playerState: _playerStateCache || null,
@@ -782,13 +809,15 @@
     var progression = await fetchRequiredXp();
     var arcadeXp = getArcadeXp();
     var requiredXp = progression.requiredXp;
-    var unlocked = arcadeXp >= requiredXp;
+    var progressionConfirmed = progression.confirmed === true;
+    var serverLinkedConfirmed = isServerLinkedConfirmed();
+    var blocktopiaStatus = resolveBlocktopiaAccessState(linked, arcadeXp, requiredXp, serverLinkedConfirmed, progressionConfirmed);
     var apiOnline = await checkApiOnline();
     return '' +
       '<span class="csp-badge csp-badge--linked" aria-label="Live sync active">' +
         '<span class="csp-pulse"></span>' +
         '<span class="csp-badge-stack"><strong>LIVE SYNC</strong><small>' + esc(name || 'Player') + ' · XP <span data-csp-badge-xp>' + arcadeXp + '</span></small></span>' +
-        '<span class="csp-badge-chip" data-csp-badge-bt>' + blocktopiaBadgeLabel(unlocked) + '</span>' +
+        '<span class="csp-badge-chip" data-csp-badge-bt>' + blocktopiaBadgeLabel(blocktopiaStatus) + '</span>' +
         '<span class="csp-badge-chip ' + (apiOnline ? 'csp-badge-chip--good' : 'csp-badge-chip--warn') + '">' + (apiOnline ? 'API' : 'API?') + '</span>' +
       '</span>';
   }
@@ -1095,15 +1124,17 @@
 
         // ── Block Topia access state ──────────────────────────────────────────
         var requiredXp = (_progressionCache && _progressionCache.requiredXp) || FALLBACK_REQUIRED_XP;
-        var unlocked = linked && state.xp >= requiredXp;
+        var progressionConfirmed = !!(_progressionCache && _progressionCache.confirmed === true);
+        var serverLinkedConfirmed = !!(state && state.linked === true && state.source === 'server');
+        var blocktopiaStatus = resolveBlocktopiaAccessState(linked, state.xp, requiredXp, serverLinkedConfirmed, progressionConfirmed);
 
         document.querySelectorAll('[data-csp-bt-access]').forEach(function (el) {
-          el.innerHTML = blocktopiaAccessHTML(linked, state.xp, requiredXp);
+          el.innerHTML = blocktopiaAccessHTML(linked, state.xp, requiredXp, serverLinkedConfirmed, progressionConfirmed);
         });
 
         if (badge) {
           var btNode = badge.querySelector('[data-csp-badge-bt]');
-          if (btNode) btNode.textContent = blocktopiaBadgeLabel(unlocked);
+          if (btNode) btNode.textContent = blocktopiaBadgeLabel(blocktopiaStatus);
         }
       });
     }
