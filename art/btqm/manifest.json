@@ -143,46 +143,37 @@
       "id": "player-walk",
       "category": "player",
       "name": "Player walk spritesheet",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "a18171502fd99ed7",
       "output": "art/btqm/generated/player/player-walk-4f.png",
       "size": {
         "width": 128,
         "height": 32
-      },
-      "bytes": 303,
-      "sha256": "3fbbf951191dde7efdae953680e8570db19aa6ff2542fa9cb48b28a405aa2640",
-      "encodedOutput": "art/btqm/generated/player/player-walk-4f.png.base64"
+      }
     },
     {
       "id": "player-attack",
       "category": "player",
       "name": "Player attack spritesheet",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "5b1bf4f8a6156ebe",
       "output": "art/btqm/generated/player/player-attack-4f.png",
       "size": {
         "width": 128,
         "height": 32
-      },
-      "bytes": 343,
-      "sha256": "2f262e3df32bed035ec0ca19098123fb34f22ee895cb645b393759e90f94ba74",
-      "encodedOutput": "art/btqm/generated/player/player-attack-4f.png.base64"
+      }
     },
     {
       "id": "player-hurt",
       "category": "player",
       "name": "Player hurt spritesheet",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "bc02eb774158af95",
       "output": "art/btqm/generated/player/player-hurt-3f.png",
       "size": {
         "width": 96,
         "height": 32
-      },
-      "bytes": 292,
-      "sha256": "db0dc79fbb050b30fd755e27be9700d555a0449a815e2f43629f03a206047189",
-      "encodedOutput": "art/btqm/generated/player/player-hurt-3f.png.base64"
+      }
     },
     {
       "id": "player-death",
@@ -434,17 +425,13 @@
       "category": "bosses",
       "zoneId": 1,
       "name": "The Bear Lord",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "1d5ceed3cf1e74e4",
       "output": "art/btqm/generated/bosses/zone-1-the-bear-lord.png",
       "size": {
         "width": 192,
         "height": 48
-      },
-      "method": "generateImageBitforge",
-      "bytes": 672,
-      "sha256": "96719e0dbe0c27f93a312881bb8c0ef65b488235ec375a4b88a0391a425cce5f",
-      "encodedOutput": "art/btqm/generated/bosses/zone-1-the-bear-lord.png.base64"
+      }
     },
     {
       "id": "boss-fomo-phantom-prime",
@@ -468,34 +455,26 @@
       "category": "bosses",
       "zoneId": 3,
       "name": "The Rug Lord",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "dba1f9bf5ec79687",
       "output": "art/btqm/generated/bosses/zone-3-the-rug-lord.png",
       "size": {
         "width": 192,
         "height": 48
-      },
-      "method": "generateImageBitforge",
-      "bytes": 609,
-      "sha256": "a7679e6cbc8d9f1459f23821a4547ed031f5ecb70b67b2dc86e369699bc9437f",
-      "encodedOutput": "art/btqm/generated/bosses/zone-3-the-rug-lord.png.base64"
+      }
     },
     {
       "id": "boss-the-whale-lord",
       "category": "bosses",
       "zoneId": 4,
       "name": "The Whale Lord",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "306446923992dcc5",
       "output": "art/btqm/generated/bosses/zone-4-the-whale-lord.png",
       "size": {
         "width": 192,
         "height": 48
-      },
-      "method": "generateImageBitforge",
-      "bytes": 641,
-      "sha256": "96aaf383b00dedaa8d74a4b74adb7177f68eed8d42cd56327382c0d2e6345501",
-      "encodedOutput": "art/btqm/generated/bosses/zone-4-the-whale-lord.png.base64"
+      }
     },
     {
       "id": "boss-ngmi-overlord",
@@ -518,106 +497,85 @@
       "id": "ui-panel-frame",
       "category": "ui",
       "name": "Dungeon panel frame",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "9b300e27cfa8a4b8",
       "output": "art/btqm/generated/ui/panel-frame-9slice.png",
       "size": {
         "width": 96,
         "height": 96
-      },
-      "bytes": 261,
-      "sha256": "eb9388e56c2a7d3efaa4ad1e87d6bb51b581f2d4018b6b557a6476dc8cfdcebc",
-      "encodedOutput": "art/btqm/generated/ui/panel-frame-9slice.png.base64"
+      }
     },
     {
       "id": "ui-button-states",
       "category": "ui",
       "name": "Button states",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "5b53a5f75e0a8f34",
       "output": "art/btqm/generated/ui/button-states.png",
       "size": {
         "width": 192,
         "height": 48
-      },
-      "bytes": 313,
-      "sha256": "ef1bf915c0e4bada183d404cd2852f07deb3b32e8a9fd023faf1fdc7e0ca2b43",
-      "encodedOutput": "art/btqm/generated/ui/button-states.png.base64"
+      }
     },
     {
       "id": "ui-hp-bar",
       "category": "ui",
       "name": "HP bar",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "91f63235afaa7cb5",
       "output": "art/btqm/generated/ui/hp-bar.png",
       "size": {
         "width": 128,
         "height": 16
-      },
-      "bytes": 148,
-      "sha256": "a868bf2acd369c95a0bf068bb595cb0a0e323e06334e3d359b8b7bb0d1968fd3",
-      "encodedOutput": "art/btqm/generated/ui/hp-bar.png.base64"
+      }
     },
     {
       "id": "ui-xp-bar",
       "category": "ui",
       "name": "XP bar",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "88bba44195395f8e",
       "output": "art/btqm/generated/ui/xp-bar.png",
       "size": {
         "width": 128,
         "height": 16
-      },
-      "bytes": 150,
-      "sha256": "2000ebd7c53227a4b049bfa34fe55ec61a6df677f93904980f94c00af1de7ffb",
-      "encodedOutput": "art/btqm/generated/ui/xp-bar.png.base64"
+      }
     },
     {
       "id": "ui-relic-slots",
       "category": "ui",
       "name": "Relic slots",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "6a7f7ff539838ff6",
       "output": "art/btqm/generated/ui/relic-slots.png",
       "size": {
         "width": 160,
         "height": 32
-      },
-      "bytes": 366,
-      "sha256": "bcac67554e5a29527ca51971b4f69a31e48eba38670f6818bd599322e91d727d",
-      "encodedOutput": "art/btqm/generated/ui/relic-slots.png.base64"
+      }
     },
     {
       "id": "ui-potion-slots",
       "category": "ui",
       "name": "Potion slots",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "657914750b092356",
       "output": "art/btqm/generated/ui/potion-slots.png",
       "size": {
         "width": 96,
         "height": 32
-      },
-      "bytes": 322,
-      "sha256": "793a44fcd41c226a77143a72f153e7ad70c9f44e093c3cc601d1a52c8b660921",
-      "encodedOutput": "art/btqm/generated/ui/potion-slots.png.base64"
+      }
     },
     {
       "id": "ui-boss-intro-frame",
       "category": "ui",
       "name": "Boss intro frame",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "558a07f5a84bbc13",
       "output": "art/btqm/generated/ui/boss-intro-frame.png",
       "size": {
         "width": 320,
         "height": 80
-      },
-      "bytes": 377,
-      "sha256": "e5a3873affa5c72331fc3777f3aa4057c0e96446b4987ba3c67c63250382eadf",
-      "encodedOutput": "art/btqm/generated/ui/boss-intro-frame.png.base64"
+      }
     },
     {
       "id": "fx-slash",
@@ -653,46 +611,37 @@
       "id": "fx-poison",
       "category": "fx",
       "name": "Poison FX",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "e626d2b6a186d5f5",
       "output": "art/btqm/generated/fx/poison-6f.png",
       "size": {
         "width": 192,
         "height": 32
-      },
-      "bytes": 218,
-      "sha256": "66e6b4f3d6f0a5cd70d39e9be6b26c3595ea171db551440b0c7612d51aa56c48",
-      "encodedOutput": "art/btqm/generated/fx/poison-6f.png.base64"
+      }
     },
     {
       "id": "fx-bleed",
       "category": "fx",
       "name": "Bleed FX",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "09c7a13574b91857",
       "output": "art/btqm/generated/fx/bleed-6f.png",
       "size": {
         "width": 192,
         "height": 32
-      },
-      "bytes": 229,
-      "sha256": "52593680930148f52815adaf4ae139ea9543b60ee91c423a5b0f0610db63ff28",
-      "encodedOutput": "art/btqm/generated/fx/bleed-6f.png.base64"
+      }
     },
     {
       "id": "fx-shield",
       "category": "fx",
       "name": "Shield FX",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "bce7bd215080eba2",
       "output": "art/btqm/generated/fx/shield-6f.png",
       "size": {
         "width": 192,
         "height": 32
-      },
-      "bytes": 240,
-      "sha256": "9538395b9f6bd6bd15a4626ae3f183653d7bd574aa948b91221e059ea45fd114",
-      "encodedOutput": "art/btqm/generated/fx/shield-6f.png.base64"
+      }
     },
     {
       "id": "fx-portal",
@@ -737,138 +686,109 @@
       "id": "object-treasure-chest",
       "category": "objects",
       "name": "Treasure chest",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "89f0ca63bc42f6b6",
       "output": "art/btqm/generated/objects/treasure-chest.png",
       "size": {
         "width": 96,
         "height": 32
-      },
-      "bytes": 162,
-      "sha256": "257e7650707900b1846c30fd510575c718f5da0f1c3e09c4189db5972d342e9e",
-      "encodedOutput": "art/btqm/generated/objects/treasure-chest.png.base64"
+      }
     },
     {
       "id": "object-entry-glyph",
       "category": "objects",
       "name": "Entry glyph",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "ca42886d425e1d90",
       "output": "art/btqm/generated/objects/entry-glyph.png",
       "size": {
         "width": 32,
         "height": 32
-      },
-      "bytes": 170,
-      "sha256": "2d9c8ef9e0cf183d7da7220ab7b90ba744600ec2bdef0ad2883b7264a9ecc893",
-      "encodedOutput": "art/btqm/generated/objects/entry-glyph.png.base64"
+      }
     },
     {
       "id": "object-exit-portal",
       "category": "objects",
       "name": "Exit portal",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "50a8ab69ccaedf5d",
       "output": "art/btqm/generated/objects/exit-portal.png",
       "size": {
         "width": 32,
         "height": 32
-      },
-      "bytes": 188,
-      "sha256": "8d8c33135788b41baa2754fc746ee6c8adccff3d88d33036ee3deb5be5ed3829",
-      "encodedOutput": "art/btqm/generated/objects/exit-portal.png.base64"
+      }
     },
     {
       "id": "object-encounter-marker",
       "category": "objects",
       "name": "Encounter marker",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "1aabb73fe37ab060",
       "output": "art/btqm/generated/objects/encounter-marker.png",
       "size": {
         "width": 32,
         "height": 32
-      },
-      "bytes": 231,
-      "sha256": "32eac82fe6de99ae2a0a97670ec3d88ee86b6798ac478cf93078ed67ff10581c",
-      "encodedOutput": "art/btqm/generated/objects/encounter-marker.png.base64"
+      }
     },
     {
       "id": "object-boss-marker",
       "category": "objects",
       "name": "Boss marker",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "2309d137f2400f64",
       "output": "art/btqm/generated/objects/boss-marker.png",
       "size": {
         "width": 32,
         "height": 32
-      },
-      "bytes": 184,
-      "sha256": "783b96be2dba2f0f6fdce83df975c722d1af5e475de12c999fb635ad0f9b1e70",
-      "encodedOutput": "art/btqm/generated/objects/boss-marker.png.base64"
+      }
     },
     {
       "id": "icons-actions",
       "category": "icons",
       "name": "Action icons",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "7457968d439d0f7d",
       "output": "art/btqm/generated/icons/action-icons.png",
       "size": {
         "width": 160,
         "height": 32
-      },
-      "bytes": 461,
-      "sha256": "fe2e8414844942898d197b6955a525dd4e61236e844a28dc21aa06e3842ae1b0",
-      "encodedOutput": "art/btqm/generated/icons/action-icons.png.base64"
+      }
     },
     {
       "id": "icons-stats",
       "category": "icons",
       "name": "Stat icons",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "8971bd068c9155d3",
       "output": "art/btqm/generated/icons/stat-icons.png",
       "size": {
         "width": 192,
         "height": 32
-      },
-      "bytes": 517,
-      "sha256": "fe87ef988bfa9c9d358ba30dc5d6dc3c585b4d88df60eee364b5f6364c0654ce",
-      "encodedOutput": "art/btqm/generated/icons/stat-icons.png.base64"
+      }
     },
     {
       "id": "icons-status-effects",
       "category": "icons",
       "name": "Status effect icons",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "cf5619f693569e60",
       "output": "art/btqm/generated/icons/status-effect-icons.png",
       "size": {
         "width": 160,
         "height": 32
-      },
-      "method": "generateImageBitforge",
-      "bytes": 638,
-      "sha256": "77235e0d254f8e9c523c320a96ceb7160a40a71ece2a8b18a8e0e85ba0386031",
-      "encodedOutput": "art/btqm/generated/icons/status-effect-icons.png.base64"
+      }
     },
     {
       "id": "icons-zone-badges",
       "category": "icons",
       "name": "Zone badges",
-      "status": "generated",
+      "status": "planned",
       "promptHash": "e92b912f6d7a2a79",
       "output": "art/btqm/generated/icons/zone-badges.png",
       "size": {
         "width": 192,
         "height": 32
-      },
-      "method": "generateImageBitforge",
-      "bytes": 739,
-      "sha256": "5e984a9c78f1c07c2edfbb83a701287cce16a01ff72997c63e5540748f7829c2",
-      "encodedOutput": "art/btqm/generated/icons/zone-badges.png.base64"
+      }
     }
   ]
 }
