@@ -290,10 +290,14 @@ function renderSearchPage(query) {
 
   let items;
   if (q) {
-    const scored = WIKI_INDEX
-      .map(item => ({ item, ...scoreResult(item, q) }))
-      .filter(r => r.queryScore > 0)
-      .sort(compareScoredResults);
+    const allScored = WIKI_INDEX.map(item => ({ item, ...scoreResult(item, q) }));
+    // Prefer results where all query tokens matched
+    let scored = allScored.filter(r => r.matchedTokenCount > 0 && r.matchedTokenCount >= r.totalTokenCount);
+    // Partial fallback: if no all-token matches, show best partial matches (at least one token)
+    if (!scored.length) {
+      scored = allScored.filter(r => r.queryScore > 0);
+    }
+    scored.sort(compareScoredResults);
     items = scored.map(r => r.item);
     if (heading) heading.textContent = `Results for "${q}" (${items.length})`;
   } else {
@@ -475,16 +479,74 @@ function scoreResult(item, query) {
     return { queryScore: 0, rankScore: item.rank_score, finalScore: item.rank_score };
   }
 
-  let queryScore = 0;
+  // Tokenize: normalize case, strip punctuation, split on whitespace
+  const tokens = q.replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  const normQ  = tokens.join(' ');
 
-  if (item.title.toLowerCase().includes(q)) queryScore += 40;
-  if ((item.tags || []).join(' ').toLowerCase().includes(q)) queryScore += 30;
+  // Build normalized searchable text for each field
+  const titleLower    = (item.title || '').toLowerCase();
+  const tagsStr       = (item.tags || []).join(' ').toLowerCase();
+  const categoryLower = (item.category || '').toLowerCase();
+  const slugLower     = (item.url || '').toLowerCase()
+    .replace(/^\/wiki\//, '').replace(/\.html$/i, '').replace(/[-_]/g, ' ');
+  const descLower     = [
+    item.desc || '', item.description || '', item.excerpt || '',
+    item.summary || '', item.meta_description || ''
+  ].join(' ').toLowerCase();
+  const si            = item.search_index || {};
+  const siTokenStr    = (si.tokens || []).join(' ').toLowerCase();
+  const kwBagStr      = (si.keyword_bag || []).join(' ').toLowerCase();
+  const normTitleStr  = (si.normalized_title || '').toLowerCase();
+
+  let queryScore = 0;
+  let matchedTokenCount = 0;
+
+  // Exact full-phrase bonus for multi-word queries
+  if (tokens.length > 1) {
+    const normTitle = titleLower.replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ');
+    if (normTitle.includes(normQ) || normTitleStr.includes(normQ)) queryScore += 30;
+  }
+
+  // Per-token scoring: each token is matched independently across all fields
+  for (const token of tokens) {
+    let tokenMatched = false;
+
+    if (titleLower.includes(token) || normTitleStr.includes(token)) {
+      queryScore += 40;
+      tokenMatched = true;
+    }
+    if (tagsStr.includes(token) || siTokenStr.includes(token)) {
+      queryScore += 30;
+      tokenMatched = true;
+    }
+    if (slugLower.includes(token)) {
+      queryScore += 20;
+      tokenMatched = true;
+    }
+    if (categoryLower.includes(token)) {
+      queryScore += 15;
+      tokenMatched = true;
+    }
+    if (descLower.includes(token)) {
+      queryScore += 15;
+      tokenMatched = true;
+    }
+    // Keyword bag (body-text proxy): only match tokens >= 3 chars to avoid stop-word flood
+    if (token.length >= 3 && kwBagStr.includes(token)) {
+      queryScore += 10;
+      tokenMatched = true;
+    }
+
+    if (tokenMatched) matchedTokenCount++;
+  }
 
   const rankScore = Number(item.rank_score || 0);
 
   return {
     queryScore,
     rankScore,
+    matchedTokenCount,
+    totalTokenCount: tokens.length,
     finalScore: (queryScore * FINAL_QUERY_WEIGHT) + (rankScore * FINAL_RANK_WEIGHT)
   };
 }
