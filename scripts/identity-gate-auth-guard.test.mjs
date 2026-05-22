@@ -158,4 +158,118 @@ async function waitTick() {
   assert.equal(allowed, true, 'soft mode should allow intentionally display-only views without Telegram link');
 }
 
+// protected mode + malformed JSON does not call onAllowed()
+{
+  let allowed = false;
+  const { api, byId } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+    },
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => { throw new SyntaxError('Unexpected end of JSON input'); },
+    }),
+  });
+  api.requireLinkedAccount(() => {
+    allowed = true;
+  });
+  await waitTick();
+  assert.equal(allowed, false, 'protected gate must fail closed when JSON parse fails');
+  const verifyModal = byId.get('tg-status-verify-modal');
+  assert.ok(verifyModal, 'status verification failure modal should render for malformed JSON');
+}
+
+// protected mode + missing API base does not call onAllowed(), shows unavailable copy
+{
+  let allowed = false;
+  const { api, byId, windowObj } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+    },
+    fetchImpl: async () => ({ ok: true, json: async () => ({}) }),
+  });
+  windowObj.MOONBOYS_API = {};
+  api.requireLinkedAccount(() => {
+    allowed = true;
+  });
+  await waitTick();
+  assert.equal(allowed, false, 'protected gate must fail closed when API base is missing');
+  const verifyModal = byId.get('tg-status-verify-modal');
+  assert.ok(verifyModal, 'status verification unavailable modal should render when base is missing');
+  assert.ok(
+    verifyModal.innerHTML.includes('Status verification unavailable.'),
+    'modal should say "Status verification unavailable." not "Server check failed" when base is missing',
+  );
+  assert.ok(
+    verifyModal.innerHTML.includes('Refresh or reconnect Telegram.'),
+    'modal body should instruct user to reconnect Telegram when config is missing',
+  );
+}
+
+// display mode still allows fallback when JSON parse fails
+{
+  let allowed = false;
+  const { api } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+    },
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => { throw new SyntaxError('Unexpected end of JSON input'); },
+    }),
+  });
+  api.requireLinkedAccount(() => {
+    allowed = true;
+  }, { mode: 'display' });
+  await waitTick();
+  assert.equal(allowed, true, 'display mode should allow fallback even when JSON parse fails');
+}
+
+// valid not-blocked JSON still calls onAllowed()
+{
+  let allowed = false;
+  const { api } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+    },
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({ anticheat: { is_blocked: false } }),
+    }),
+  });
+  api.requireLinkedAccount(() => {
+    allowed = true;
+  });
+  await waitTick();
+  assert.equal(allowed, true, 'valid not-blocked status response must call onAllowed()');
+}
+
+// blocked JSON shows blocked modal and does not call onAllowed()
+{
+  let allowed = false;
+  const { api, byId } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+    },
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({
+        anticheat: { is_blocked: true, blocked_reason: 'Suspicious activity.' },
+      }),
+    }),
+  });
+  api.requireLinkedAccount(() => {
+    allowed = true;
+  });
+  await waitTick();
+  assert.equal(allowed, false, 'blocked account must not call onAllowed()');
+  const blockedModal = byId.get('tg-blocked-gate-modal');
+  assert.ok(blockedModal, 'blocked modal should render for blocked account');
+}
+
 console.log('Identity gate auth guard regression checks passed.');

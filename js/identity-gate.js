@@ -474,7 +474,7 @@
       if (softMode) {
         allow();
       } else {
-        showStatusVerificationModal();
+        showStatusVerificationModal(true);
       }
       return;
     }
@@ -482,7 +482,10 @@
     fetch(base + '/telegram/user/status?telegram_id=' + encodeURIComponent(telegramId))
       .then(function (r) {
         if (!r || !r.ok) throw new Error('status_http_' + (r && r.status ? r.status : '0'));
-        return r.json().catch(function () { return {}; });
+        return r.json().catch(function (e) {
+          if (softMode) return {};
+          throw e;
+        });
       })
       .then(function (data) {
         if (data && data.anticheat && data.anticheat.is_blocked === true) {
@@ -503,7 +506,7 @@
 
   // ── Blocked account modal ────────────────────────────────────
 
-  function showStatusVerificationModal() {
+  function showStatusVerificationModal(isConfigMissing) {
     injectStyles();
     var VERIFY_ID = 'tg-status-verify-modal';
     var existing = document.getElementById(VERIFY_ID);
@@ -512,6 +515,13 @@
       existing.setAttribute('aria-hidden', 'false');
       return;
     }
+
+    var titleText = isConfigMissing
+      ? 'Status verification unavailable.'
+      : 'Server check failed — try again.';
+    var bodyText = isConfigMissing
+      ? 'Telegram status could not be verified. Refresh or reconnect Telegram.'
+      : 'Telegram status could not be verified.';
 
     var div = document.createElement('div');
     div.id = VERIFY_ID;
@@ -524,8 +534,8 @@
       '<div class="tg-sync-gate-box">' +
         '<button class="tg-sync-gate-close" aria-label="Close" id="tg-verify-close">✕</button>' +
         '<div class="tg-sync-gate-icon" aria-hidden="true">⚠️</div>' +
-        '<p class="tg-sync-gate-title">Server check failed — try again.</p>' +
-        '<p class="tg-sync-gate-body">Telegram status could not be verified.</p>' +
+        '<p class="tg-sync-gate-title">' + titleText + '</p>' +
+        '<p class="tg-sync-gate-body">' + bodyText + '</p>' +
       '</div>';
     document.body.appendChild(div);
     div.style.display = 'flex';
