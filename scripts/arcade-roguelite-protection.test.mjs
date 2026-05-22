@@ -11,7 +11,7 @@
  *   - Unlinked users are never incorrectly shown as XP synced
  *   - Sync-state labels: public score, pending, and XP sync are separated
  *   - ArcadeSync.normalizeGame maps all 8 canonical game-directory IDs
- *   - Pending XP queue key is consistent across sync and leaderboard-client modules
+ *   - Pending XP queue key is defined only in arcade-sync and consumed through import
  *   - Post-run audit comment blocks are present in each bootstrap (documentation)
  */
 
@@ -130,10 +130,19 @@ for (const alias of [
   assertContains(arcadeSync, `"${alias}"`, `ArcadeSync.normalizeGame must map canonical game ID: ${alias}`);
 }
 
-// ── Pending queue key must be consistent between arcade-sync and leaderboard-client
+// ── Pending queue key must remain centralized in arcade-sync.js ───────────────
 
 assertContains(arcadeSync, 'moonboys_arcade_pending_progress_v1', 'arcade-sync.js must define the pending queue key');
-assertContains(leaderboard, 'arcade-sync.js', 'leaderboard-client.js must import from arcade-sync.js');
+assert.match(
+  leaderboard,
+  /import\s+\{\s*ArcadeSync\s*\}\s+from\s+['"]\/js\/arcade-sync\.js['"]/,
+  'leaderboard-client.js must import ArcadeSync from arcade-sync.js instead of duplicating queue configuration',
+);
+assert.doesNotMatch(
+  leaderboard,
+  /moonboys_arcade_pending_progress_v1/,
+  'leaderboard-client.js must not duplicate the pending queue key literal; use ArcadeSync.PENDING_KEY',
+);
 
 // ── Unlinked users must never have XP falsely claimed as synced ───────────────
 //
@@ -159,8 +168,17 @@ for (const stateLabel of [
 
 // ── API unavailable must queue/pend, not claim sync ───────────────────────────
 
+assert.match(
+  leaderboard,
+  /if \(!api\) \{[\s\S]*?result\.state = linked \? "sync_pending" : "local_cached_only";/,
+  'missing leaderboard API branch must choose sync_pending for linked users and local_cached_only for unlinked users',
+);
+assertOrdered(
+  leaderboard,
+  ['if (!api)', 'result.state = linked ? "sync_pending" : "local_cached_only";', 'const shouldQueuePending', 'ArcadeSync.queuePendingProgress'],
+  'API-unavailable branch must fall through to the shared pending queue decision instead of claiming sync',
+);
 assertContains(leaderboard, '"sync_pending"', 'leaderboard-client.js must use sync_pending state when API unavailable for linked users');
-assertContains(leaderboard, 'ArcadeSync.queuePendingProgress', 'ArcadeSync.queuePendingProgress must remain in the API-unavailable path');
 
 // ── Signed auth required before XP sync claim ────────────────────────────────
 
