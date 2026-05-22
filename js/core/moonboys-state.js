@@ -143,21 +143,28 @@
     _hydrated = true;
 
     var gate = window.MOONBOYS_IDENTITY || null;
-    var apiBase = (window.MOONBOYS_API && window.MOONBOYS_API.BASE_URL) || '';
+    var apiCfg = window.MOONBOYS_API || null;
+    var apiBase = apiCfg && typeof apiCfg.getApiBase === 'function'
+      ? apiCfg.getApiBase({ mode: 'write' })
+      : ((apiCfg && apiCfg.BASE_URL) || '');
 
     if (!gate || !apiBase) return Promise.resolve(getState());
 
     return (async function () {
       var telegramAuth = null;
 
-      if (typeof gate.getSignedTelegramAuth === 'function') {
-        telegramAuth = gate.getSignedTelegramAuth();
-      }
-      if (!telegramAuth && typeof gate.restoreLinkedTelegramAuth === 'function') {
-        try {
-          var restored = await gate.restoreLinkedTelegramAuth();
-          telegramAuth = restored && restored.ok ? restored.telegram_auth : null;
-        } catch (_) {}
+      if (typeof gate.getFreshTelegramAuth === 'function') {
+        telegramAuth = await gate.getFreshTelegramAuth();
+      } else {
+        if (typeof gate.getSignedTelegramAuth === 'function') {
+          telegramAuth = gate.getSignedTelegramAuth();
+        }
+        if (!telegramAuth && typeof gate.restoreLinkedTelegramAuth === 'function') {
+          try {
+            var restored = await gate.restoreLinkedTelegramAuth();
+            telegramAuth = restored && restored.ok ? restored.telegram_auth : null;
+          } catch (_) {}
+        }
       }
 
       if (!telegramAuth) {

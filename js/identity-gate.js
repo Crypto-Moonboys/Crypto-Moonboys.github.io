@@ -90,6 +90,9 @@
 
   function getApiBase() {
     var cfg = window.MOONBOYS_API || {};
+    if (typeof cfg.getApiBase === 'function') {
+      return cfg.getApiBase({ mode: 'write' }) || '';
+    }
     return cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
   }
 
@@ -306,6 +309,22 @@
     if (!telegramId) return null;
     if (String(telegramId) !== String(auth.id)) return null;
     return auth;
+  }
+
+  function getFreshTelegramAuth(options) {
+    var opts = options && typeof options === 'object' ? options : {};
+    var force = !!opts.force;
+    var currentAuth = force ? null : getSignedTelegramAuth();
+    if (currentAuth) return Promise.resolve(currentAuth);
+    if (!isTelegramLinked()) return Promise.resolve(null);
+    return Promise.resolve(restoreLinkedTelegramAuth(force ? { force: true } : {}))
+      .then(function (restored) {
+        if (restored && restored.ok && restored.telegram_auth) return restored.telegram_auth;
+        return getSignedTelegramAuth();
+      })
+      .catch(function () {
+        return null;
+      });
   }
 
   function restoreLinkedTelegramAuth(options) {
@@ -775,6 +794,8 @@
     getTelegramAuth:      getTelegramAuth,
     /** Last verified signed Telegram auth payload when fresh and ID-matched; otherwise null. */
     getSignedTelegramAuth:getSignedTelegramAuth,
+    /** Fresh signed Telegram auth payload, restoring linked auth first when needed. */
+    getFreshTelegramAuth: getFreshTelegramAuth,
     /** Recover a fresh signed Telegram auth payload from backend-linked identity state when possible. */
     restoreLinkedTelegramAuth: restoreLinkedTelegramAuth,
     /** Telegram auth payload presence/expiry details for consistent gating. */

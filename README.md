@@ -43,6 +43,14 @@ This repository should track only live routes, wired runtime systems, and active
 - Block Topia entry requires a Telegram-linked account and at least 50 Arcade XP.
 - The authoritative gate value comes from `/blocktopia/progression` and is configured in `workers/moonboys-api/blocktopia/config.js`.
 
+## Frontend API + Telegram Auth Contract
+
+- `js/api-config.js` is the canonical frontend API source of truth for `MOONBOYS_API.BASE_URL`, `MOONBOYS_API.LEADERBOARD_URL`, runtime context detection, and production fallback policy.
+- Production fallback is allowed only on the live production hosts. Local/dev/preview contexts must provide explicit API config or stay read-only / pending.
+- Protected frontend writes must use fresh signed Telegram auth via `window.MOONBOYS_IDENTITY.getFreshTelegramAuth()` or the equivalent signed+restore path. Stale `getTelegramAuth()` cache alone is not proof of competitive write eligibility.
+- Public score submission and competitive XP/progression sync are different states. Public leaderboard acceptance must never be presented as confirmed Arcade XP / faction / competitive progression success.
+- `ENV.BUILD_DATE` means an explicitly injected/static build timestamp only. Per-page-load timestamps must use `ENV.RUNTIME_LOADED_AT` and must not be shown as a build date.
+
 ## Block Topia Live Runtime
 
 `/games/block-topia/` is the current gated 2-player Colyseus survival/mission prototype.

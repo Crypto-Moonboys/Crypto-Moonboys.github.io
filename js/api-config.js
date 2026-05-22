@@ -1,31 +1,228 @@
 /**
  * Crypto Moonboys Wiki — API Configuration
  * =========================================
- * Centralized configuration for all Moonboys engagement and data services.
+ * Canonical frontend API configuration and runtime context detection.
  *
- * This file controls:
- * - Backend API connectivity (comments, likes, votes, leaderboard, feed)
- * - Gravatar avatar generation
- * - CoinGecko price data
- * - Feature toggles
- * - Environment metadata for debugging and versioning
+ * This file is the single source of truth for:
+ * - Worker API base URLs
+ * - Production fallback policy
+ * - Runtime environment metadata
+ * - Shared frontend status copy for API/auth sync messaging
  *
- * When BASE_URL is set to null, all backend-driven features gracefully
- * fall back to placeholder content. Once a live endpoint is provided,
- * all engagement features automatically activate.
+ * Rules:
+ * - Production fallback is allowed only on the live production hosts.
+ * - Local/dev/staging previews must opt in with explicit config instead of
+ *   silently drifting to the production Worker.
+ * - `BASE_URL = null` or `LEADERBOARD_URL = null` explicitly disables that
+ *   endpoint for the current page/runtime.
  */
+(function () {
+  'use strict';
 
-window.MOONBOYS_API = window.MOONBOYS_API || {};
-if (!window.MOONBOYS_API.BASE_URL) {
-  window.MOONBOYS_API.BASE_URL = "https://moonboys-api.sercullen.workers.dev";
-}
-// Centralised leaderboard URL — consumed by js/leaderboard-client.js.
-// Always set this here so leaderboard-client.js does not need a hardcoded fallback.
-if (!window.MOONBOYS_API.LEADERBOARD_URL) {
-  window.MOONBOYS_API.LEADERBOARD_URL = "https://moonboys-leaderboard.sercullen.workers.dev";
-}
+  if (typeof window === 'undefined') return;
 
-Object.assign(window.MOONBOYS_API, {
+  var api = window.MOONBOYS_API && typeof window.MOONBOYS_API === 'object'
+    ? window.MOONBOYS_API
+    : {};
+  var PRODUCTION_BASE_URL = 'https://moonboys-api.sercullen.workers.dev';
+  var PRODUCTION_LEADERBOARD_URL = 'https://moonboys-leaderboard.sercullen.workers.dev';
+  var PRODUCTION_HOSTS = Object.freeze([
+    'cryptomoonboys.com',
+    'www.cryptomoonboys.com',
+    'crypto-moonboys.github.io',
+  ]);
+
+  function hasOwn(obj, key) {
+    return !!(obj && Object.prototype.hasOwnProperty.call(obj, key));
+  }
+
+  function normalizeUrl(value) {
+    if (value == null) return '';
+    var normalized = String(value).trim().replace(/\/$/, '');
+    return normalized || '';
+  }
+
+  function resolveExplicitUrl(kind) {
+    var candidates = kind === 'leaderboard'
+      ? [
+          { present: hasOwn(api, 'LEADERBOARD_URL'), value: api.LEADERBOARD_URL, source: 'window.MOONBOYS_API.LEADERBOARD_URL' },
+          { present: typeof window.LEADERBOARD_API_URL !== 'undefined', value: window.LEADERBOARD_API_URL, source: 'window.LEADERBOARD_API_URL' },
+        ]
+      : [
+          { present: hasOwn(api, 'BASE_URL'), value: api.BASE_URL, source: 'window.MOONBOYS_API.BASE_URL' },
+          { present: !!(window.API_CONFIG && hasOwn(window.API_CONFIG, 'BASE_URL')), value: window.API_CONFIG && window.API_CONFIG.BASE_URL, source: 'window.API_CONFIG.BASE_URL' },
+          { present: !!(window.MOONBOYS_CONFIG && hasOwn(window.MOONBOYS_CONFIG, 'API_BASE')), value: window.MOONBOYS_CONFIG && window.MOONBOYS_CONFIG.API_BASE, source: 'window.MOONBOYS_CONFIG.API_BASE' },
+        ];
+
+    for (var i = 0; i < candidates.length; i += 1) {
+      var candidate = candidates[i];
+      if (!candidate.present) continue;
+      if (candidate.value == null) {
+        return {
+          url: '',
+          explicit: true,
+          disabled: true,
+          source: candidate.source,
+        };
+      }
+      var url = normalizeUrl(candidate.value);
+      if (!url) continue;
+      return {
+        url: url,
+        explicit: true,
+        disabled: false,
+        source: candidate.source,
+      };
+    }
+
+    return {
+      url: '',
+      explicit: false,
+      disabled: false,
+      source: null,
+    };
+  }
+
+  function detectContext() {
+    var loc = window.location || {};
+    var protocol = String(loc.protocol || '').toLowerCase();
+    var hostname = String(loc.hostname || '').toLowerCase();
+    var localHosts = {
+      localhost: true,
+      '127.0.0.1': true,
+      '0.0.0.0': true,
+      '::1': true,
+      '[::1]': true,
+    };
+    var isLocalPreview = protocol === 'file:' || !!localHosts[hostname] || /\.local$/i.test(hostname);
+    var isProduction = PRODUCTION_HOSTS.indexOf(hostname) !== -1;
+    var name = isProduction ? 'production' : (isLocalPreview ? 'local-preview' : 'preview');
+    return {
+      name: name,
+      protocol: protocol || null,
+      hostname: hostname || null,
+      origin: normalizeUrl(loc.origin || ''),
+      isProduction: isProduction,
+      isLocalPreview: isLocalPreview,
+    };
+  }
+
+  var context = detectContext();
+  var explicitBaseConfig = resolveExplicitUrl('base');
+  var explicitLeaderboardConfig = resolveExplicitUrl('leaderboard');
+
+  function getEndpointInfo(kind, options) {
+    var explicit = kind === 'leaderboard' ? explicitLeaderboardConfig : explicitBaseConfig;
+    var productionUrl = kind === 'leaderboard' ? PRODUCTION_LEADERBOARD_URL : PRODUCTION_BASE_URL;
+    var allowProductionFallback = options && hasOwn(options, 'allowProductionFallback')
+      ? !!options.allowProductionFallback
+      : context.isProduction;
+    if (explicit.url) {
+      return {
+        endpoint: kind,
+        url: explicit.url,
+        available: true,
+        explicit: true,
+        disabled: false,
+        usingProductionFallback: false,
+        source: explicit.source,
+        state: 'configured',
+        summary: 'Server confirmed',
+        detail: 'API configured for this context',
+        context: context,
+      };
+    }
+    if (explicit.disabled) {
+      return {
+        endpoint: kind,
+        url: '',
+        available: false,
+        explicit: true,
+        disabled: true,
+        usingProductionFallback: false,
+        source: explicit.source,
+        state: 'disabled',
+        summary: 'Endpoint disabled',
+        detail: 'API endpoint disabled for this context',
+        context: context,
+      };
+    }
+    if (allowProductionFallback) {
+      return {
+        endpoint: kind,
+        url: productionUrl,
+        available: true,
+        explicit: false,
+        disabled: false,
+        usingProductionFallback: true,
+        source: 'production_fallback',
+        state: 'production_fallback',
+        summary: 'Server confirmed',
+        detail: 'Using centralized production API fallback',
+        context: context,
+      };
+    }
+    return {
+      endpoint: kind,
+      url: '',
+      available: false,
+      explicit: false,
+      disabled: false,
+      usingProductionFallback: false,
+      source: null,
+      state: 'config_required',
+      summary: 'API config required',
+      detail: 'Production API not configured for this context',
+      context: context,
+    };
+  }
+
+  function getBuildDate() {
+    var candidates = [
+      window.MOONBOYS_BUILD_DATE,
+      api.ENV && api.ENV.BUILD_DATE,
+    ];
+    for (var i = 0; i < candidates.length; i += 1) {
+      var value = candidates[i];
+      if (typeof value !== 'string') continue;
+      var trimmed = value.trim();
+      if (trimmed) return trimmed;
+    }
+    return null;
+  }
+
+  api.PRODUCTION_BASE_URL = PRODUCTION_BASE_URL;
+  api.PRODUCTION_LEADERBOARD_URL = PRODUCTION_LEADERBOARD_URL;
+  api.CONTEXT = context;
+  api.STATUS = Object.freeze({
+    API_CONFIG_REQUIRED: 'API config required',
+    ENDPOINT_DISABLED: 'Endpoint disabled',
+    ENDPOINT_DISABLED_FOR_CONTEXT: 'API endpoint disabled for this context',
+    SYNC_PENDING: 'Sync pending',
+    SERVER_UNAVAILABLE: 'Server unavailable',
+    PRODUCTION_API_NOT_CONFIGURED: 'Production API not configured for this context',
+    LOCAL_CACHED_ONLY: 'Local cached only',
+    PUBLIC_SCORE_SUBMITTED: 'Public score submitted',
+    COMPETITIVE_XP_SYNCED: 'Competitive XP synced',
+    SIGNED_AUTH_MISSING: 'Signed Telegram auth missing',
+    SERVER_CONFIRMED: 'Server confirmed',
+  });
+  api.getApiBaseInfo = function (options) {
+    return getEndpointInfo('base', options);
+  };
+  api.getLeaderboardApiInfo = function (options) {
+    return getEndpointInfo('leaderboard', options);
+  };
+  api.getApiBase = function (options) {
+    return getEndpointInfo('base', options).url;
+  };
+  api.getLeaderboardUrl = function (options) {
+    return getEndpointInfo('leaderboard', options).url;
+  };
+  api.BASE_URL = api.getApiBase() || null;
+  api.LEADERBOARD_URL = api.getLeaderboardUrl() || null;
+
+  Object.assign(api, {
 
   /* ── Backend API ─────────────────────────────────────────── */
   /* ── Identity Sync Gate ──────────────────────────────────── */
@@ -99,11 +296,14 @@ Object.assign(window.MOONBOYS_API, {
   ],
 
   /* ── Environment Metadata ───────────────────────────────── */
-  // Useful for debugging, analytics, and future multi-environment setups.
+  // BUILD_DATE is reserved for an explicitly injected/static build timestamp.
+  // RUNTIME_LOADED_AT is the per-page-load runtime timestamp.
   ENV: {
-    NAME: 'production',
+    NAME: context.name,
     VERSION: '1.0.0',
-    BUILD_DATE: new Date().toISOString(),
+    BUILD_DATE: getBuildDate(),
+    BUILD_DATE_SOURCE: getBuildDate() ? 'injected' : 'unavailable',
+    RUNTIME_LOADED_AT: new Date().toISOString(),
     PLATFORM: 'github-pages',
     BACKEND: 'cloudflare-workers'
   },
@@ -119,4 +319,7 @@ Object.assign(window.MOONBOYS_API, {
     ENABLE_MISSIONS: true,
     ENABLE_BATTLE_LAYER: true
   }
-});
+  });
+
+  window.MOONBOYS_API = api;
+}());
