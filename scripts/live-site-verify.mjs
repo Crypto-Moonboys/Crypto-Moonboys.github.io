@@ -2,9 +2,9 @@
 /**
  * live-site-verify.mjs
  *
- * Verifies that the live deployed site at cryptomoonboys.com is serving the
- * expected shell / right-HUD system.  Intended to be run AFTER a GitHub Pages
- * deployment has fully propagated through Cloudflare, not on every PR.
+ * Post-merge / post-Pages-deploy verification harness for cryptomoonboys.com.
+ * Run this AFTER a GitHub Pages deployment has fully propagated through
+ * Cloudflare.  NOT a PR CI gate — do not add to normal CI workflows.
  *
  * Run:
  *   npm run test:live-site
@@ -14,45 +14,98 @@
  * Trigger via GitHub Actions:
  *   .github/workflows/live-site-verify.yml  (workflow_dispatch only)
  *
- * Pages checked:
- *   https://cryptomoonboys.com/
- *   https://cryptomoonboys.com/index.html
- *   https://cryptomoonboys.com/sam.html
- *   https://cryptomoonboys.com/graph.html
- *   https://cryptomoonboys.com/search.html
- *   https://cryptomoonboys.com/timeline.html
- *   https://cryptomoonboys.com/games/
- *   https://cryptomoonboys.com/games/leaderboard.html
+ * Does NOT require a real Telegram account — validates anonymous/public state.
+ * Does NOT submit fake scores to production.
  *
- * Per-page assertions:
+ * ── Pages verified ────────────────────────────────────────────────────────────
+ *
+ * Core shell (right panel expected):
+ *   /                         home — right panel + 4 CSP sections
+ *   /index.html               home — right panel + 4 CSP sections
+ *   /search.html              wiki search — right panel + wiki search behavior
+ *   /games/                   arcade hub — right panel + 8-game roster
+ *   /games/leaderboard.html   leaderboard page
+ *
+ * Standalone CSP panel (no right panel; data-csp-panel mounted directly):
+ *   /gkniftyheads-incubator.html
+ *
+ * Arcade/runtime:
+ *   /games/block-topia-quest-maze/   BTQM — Phaser boot smoke, no 404 for generated assets
+ *   /games/invaders-3008/            simple arcade game — shell smoke
+ *
+ * Right-panel intentionally absent:
+ *   /dashboard.html           editorial wiki intelligence — no player right panel
+ *
+ * ── Per-page assertions ───────────────────────────────────────────────────────
+ *
+ * Shell structure:
  *   ✓ #site-header exists
  *   ✓ #sidebar exists
- *   ✓ #homepage-right-panel exists
- *   ✓ [data-csp-panel] exists
- *   ✓ [data-las-panel] exists
- *   ✓ body text includes "Player Status"
- *   ✓ body text includes "Next Actions"
- *   ✓ no #live-feed-widget in DOM (LIVE_FEED=false)
+ *   ✓ #homepage-right-panel exists (on right-panel pages)
+ *   ✓ #homepage-right-panel absent (on /dashboard.html)
+ *   ✓ [data-csp-panel] exists (right-panel pages + incubator)
+ *   ✓ [data-csp-faction-ops] exists (right-panel pages)
+ *   ✓ [data-csp-wtf-signal] exists (right-panel pages)
+ *   ✓ [data-csp-missed] exists (right-panel pages)
+ *   ✓ Right rail section headings: PLAYER LIVE FEED, FACTION DAILY OPS,
+ *       DAILY WTF SIGNAL, MISSED OPPORTUNITIES
+ *   ✓ no #live-feed-widget (LIVE_FEED=false)
  *   ✓ no "Live System Feed" text (removed section)
  *   ✓ no "System Status" text (removed section)
  *   ✓ no "WIKI NODES" fake row
- *   ✓ #homepage-right-panel is visible (display≠none, visibility≠hidden, bbox>0)
- *   ✓ no console error containing banned substrings (ROCKET LOADER, Placeholder
- *     for script, was detached from document, Script will not be executed)
- *   ✓ no network failure for critical JS files (requestfailed event)
- *   ✓ no HTTP 4xx/5xx for critical JS files
- *   ✓ all critical JS files were actually requested (not silently absent)
+ *   ✓ #hud-player-avatar present (right-panel pages)
+ *   ✓ #homepage-right-panel visible (display≠none, visibility≠hidden, bbox>0)
  *
- * Critical JS request outcome matrix (per page):
- *   requested + HTTP < 400  → pass
- *   requested + HTTP ≥ 400  → fail
- *   requestfailed event      → fail (includes reason, e.g. net::ERR_*)
- *   not requested at all     → fail (stale HTML / broken boot block / Rocket Loader)
+ * Telegram sync state (anonymous — no credentials required):
+ *   ✓ no duplicate RELINK badges
+ *   ✓ no duplicate LIVE LINKED badges
+ *   ✓ no duplicate SYNC PENDING badges
+ *
+ * API config state (window.MOONBOYS_API):
+ *   ✓ window.MOONBOYS_API exists after api-config.js runs
+ *   ✓ production host resolves expected centralized API base URL
+ *   ✓ production host resolves expected leaderboard API URL
+ *   ✓ API base state is "Server confirmed" or "production_fallback" on production
+ *   ✓ no UI copy claims XP synced / BT OPEN / competitive progression without
+ *     server confirmation (checks raw state fields, not visible text)
+ *
+ * Wiki search behavior (/search.html):
+ *   ✓ "GRAFFPUNKS RADIO" query returns a relevant GraffPUNKS/radio result
+ *   ✓ "GRAFFPUNKS" single-word query returns results
+ *   ✓ lowercase/punctuation variant returns the same top result
+ *   ✓ nonsense query returns zero or empty state, not spam
+ *
+ * BTQM generated asset hydration (/games/block-topia-quest-maze/):
+ *   ✓ at least one tileset PNG resolves (HTTP 200)
+ *   ✓ at least one enemy PNG resolves
+ *   ✓ at least one boss PNG resolves
+ *   ✓ at least one fx PNG resolves
+ *   ✓ page loads without critical console errors
+ *   ✓ critical BTQM JS requested successfully
+ *   ✓ no 404s for generated runtime asset categories
+ *
+ * Arcade / Roguelite XP Loop (/games/):
+ *   ✓ canonical 8-game roster is present (by text/link)
+ *   ✓ no HexGL reference visible
+ *   ✓ arcade event bus script requested
+ *
+ * Console / network:
+ *   ✓ no banned console error substrings (ROCKET LOADER, etc.)
+ *   ✓ no 4xx/5xx for critical JS
+ *   ✓ no network-level failures for critical JS
+ *   ✓ all page-critical JS actually requested
  *
  * JS source assertions (fetched directly, not via browser):
- *   https://cryptomoonboys.com/js/site-shell.js must contain:
+ *   site-shell.js source must contain:
  *     shouldShowRightPanel, homepage-right-panel, hud-player-avatar,
- *     data-csp-panel, data-las-panel
+ *     data-csp-panel, data-csp-faction-ops, data-csp-wtf-signal, data-csp-missed
+ *     (data-las-panel must NOT appear — legacy hook removed)
+ *
+ * ── Critical JS request outcome matrix (per page) ─────────────────────────────
+ *   requested + HTTP < 400  → pass
+ *   requested + HTTP ≥ 400  → fail  (likely 404 or Cloudflare block)
+ *   requestfailed event      → fail  (net::ERR_*, DNS failure, etc.)
+ *   not requested at all     → fail  (stale HTML / broken boot / Rocket Loader)
  */
 
 import https from 'node:https';
@@ -61,15 +114,40 @@ import { chromium } from 'playwright';
 // ── Config ────────────────────────────────────────────────────────────────────
 const BASE = 'https://cryptomoonboys.com';
 
-const PAGES = [
+// Expected production API endpoints from api-config.js.
+const EXPECTED_API_BASE        = 'https://moonboys-api.sercullen.workers.dev';
+const EXPECTED_LEADERBOARD_URL = 'https://moonboys-leaderboard.sercullen.workers.dev';
+
+// Pages that receive the full right panel (4 CSP section hooks + #homepage-right-panel).
+const RIGHT_PANEL_PAGES = [
   '/',
   '/index.html',
-  '/sam.html',
-  '/graph.html',
   '/search.html',
-  '/timeline.html',
   '/games/',
   '/games/leaderboard.html',
+];
+
+// Pages where [data-csp-panel] is mounted standalone (no #homepage-right-panel).
+const STANDALONE_CSP_PAGES = [
+  '/gkniftyheads-incubator.html',
+];
+
+// Pages intentionally missing the right panel.
+const NO_RIGHT_PANEL_PAGES = [
+  '/dashboard.html',
+];
+
+// Arcade/game-specific pages (shell smoke only; no right panel required).
+const ARCADE_PAGES = [
+  '/games/block-topia-quest-maze/',
+  '/games/invaders-3008/',
+];
+
+const PAGES = [
+  ...RIGHT_PANEL_PAGES,
+  ...STANDALONE_CSP_PAGES,
+  ...NO_RIGHT_PANEL_PAGES,
+  ...ARCADE_PAGES,
 ];
 
 // Console error messages that indicate a broken deployment.
@@ -81,12 +159,28 @@ const BANNED_CONSOLE_SUBSTRINGS = [
 ];
 
 // JS files whose 4xx/5xx responses indicate a broken deployment.
-const CRITICAL_JS_PATHS = [
+// Kept page-scoped to avoid false failures on pages that do not require a script.
+const SHELL_CRITICAL_JS_PATHS = [
   '/js/site-shell.js',
+];
+
+const RIGHT_RAIL_CRITICAL_JS_PATHS = [
   '/js/components/connection-status-panel.js',
   '/js/components/global-player-header.js',
   '/js/components/live-activity-summary.js',
+];
+
+const WIKI_SEARCH_CRITICAL_JS_PATHS = [
   '/js/wiki.js',
+];
+
+const ARCADE_CRITICAL_JS_PATHS = [
+  '/js/arcade/core/game-shell.js',
+];
+
+// Extra critical JS only required on BTQM.
+const BTQM_CRITICAL_JS_PATHS = [
+  '/js/arcade/games/block-topia-quest-maze/bootstrap.js',
 ];
 
 // Strings that site-shell.js source MUST contain.
@@ -95,7 +189,35 @@ const SHELL_SOURCE_MUST_CONTAIN = [
   'homepage-right-panel',
   'hud-player-avatar',
   'data-csp-panel',
+  'data-csp-faction-ops',
+  'data-csp-wtf-signal',
+  'data-csp-missed',
+];
+
+// site-shell.js must NOT contain these legacy hooks that were removed.
+const SHELL_SOURCE_MUST_NOT_CONTAIN = [
   'data-las-panel',
+];
+
+// BTQM generated asset paths to verify (must resolve as PNG on the live site).
+// These are the hydrated runtime paths — NOT the .png.base64 source paths.
+const BTQM_LIVE_ASSET_CHECKS = [
+  { label: 'tileset (zone-0)', path: '/art/btqm/generated/tilesets/zone-0-hodl-or-fold-forest-ruins.png' },
+  { label: 'enemy (zone-0)',   path: '/art/btqm/generated/enemies/zone-0-paper-hand-goblin.png' },
+  { label: 'boss (zone-0)',    path: '/art/btqm/generated/bosses/zone-0-paper-hand-king.png' },
+  { label: 'fx (slash)',       path: '/art/btqm/generated/fx/slash-6f.png' },
+];
+
+// Canonical 8-game arcade roster — must be visible on /games/.
+const CANONICAL_GAMES = [
+  'Invaders 3008',
+  'Pac-Chain',
+  'Asteroid Fork',
+  'Breakout Bullrun',
+  'Tetris Block Topia',
+  'Crystal Quest',
+  'Block Topia Quest Maze',
+  'SnakeRun 3008',
 ];
 
 // ── Result helpers ────────────────────────────────────────────────────────────
@@ -107,20 +229,24 @@ function pass(msg) {
   process.stdout.write(`    [PASS] ${msg}\n`);
 }
 
-function fail(msg) {
+function fail(msg, { url = '', selector = '', suggested = '' } = {}) {
   totalChecks++;
   totalFailed++;
-  process.stderr.write(`    [FAIL] ${msg}\n`);
+  let out = `    [FAIL] ${msg}`;
+  if (url)       out += `\n           page:      ${url}`;
+  if (selector)  out += `\n           selector:  ${selector}`;
+  if (suggested) out += `\n           likely:    ${suggested}`;
+  process.stderr.write(`${out}\n`);
 }
 
 function info(msg) {
   process.stdout.write(`    [INFO] ${msg}\n`);
 }
 
-// ── HTTPS fetch helper ────────────────────────────────────────────────────────
+// ── HTTPS helpers ─────────────────────────────────────────────────────────────
 function fetchText(url) {
   return new Promise((resolve, reject) => {
-    https.get(url, { headers: { 'User-Agent': 'live-site-verify/1.0' } }, res => {
+    https.get(url, { headers: { 'User-Agent': 'live-site-verify/2.0' } }, res => {
       const chunks = [];
       res.on('data', c => chunks.push(c));
       res.on('end', () => resolve({ status: res.statusCode, body: Buffer.concat(chunks).toString('utf8') }));
@@ -129,15 +255,24 @@ function fetchText(url) {
   });
 }
 
-// ── Per-page test ─────────────────────────────────────────────────────────────
-async function testPage(page, pathname) {
-  const url = `${BASE}${pathname}`;
-  process.stdout.write(`\n── ${pathname} ──────────────────────────────────────────\n`);
+/** Issue an HTTP HEAD request; resolves with { status }. */
+function headRequest(url) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(url, { method: 'HEAD', headers: { 'User-Agent': 'live-site-verify/2.0' } }, res => {
+      res.resume(); // drain
+      resolve({ status: res.statusCode });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
 
+// ── Diagnose per-page console/network failures ────────────────────────────────
+function attachPageDiagnostics(page, criticalPaths) {
   const consoleErrors    = [];
   const failedRequests   = [];
-  const criticalStatus   = {};  // critPath → HTTP status (response received)
-  const criticalNetFailed = {}; // critPath → failure reason (no HTTP response)
+  const criticalStatus   = {};
+  const criticalNetFailed = {};
 
   page.on('console', msg => {
     if (msg.type() === 'error') consoleErrors.push(msg.text());
@@ -145,7 +280,7 @@ async function testPage(page, pathname) {
 
   page.on('response', resp => {
     const respUrl = resp.url();
-    for (const critPath of CRITICAL_JS_PATHS) {
+    for (const critPath of criticalPaths) {
       if (respUrl.includes(critPath)) {
         criticalStatus[critPath] = resp.status();
       }
@@ -155,11 +290,9 @@ async function testPage(page, pathname) {
     }
   });
 
-  // Capture network-level failures (no HTTP response at all: net::ERR_*, DNS
-  // failure, connection reset, Cloudflare block, request cancelled, etc.).
   page.on('requestfailed', request => {
     const reqUrl = request.url();
-    for (const critPath of CRITICAL_JS_PATHS) {
+    for (const critPath of criticalPaths) {
       if (reqUrl.includes(critPath)) {
         const failure = request.failure();
         criticalNetFailed[critPath] = failure ? failure.errorText : 'unknown network error';
@@ -167,18 +300,94 @@ async function testPage(page, pathname) {
     }
   });
 
+  return { consoleErrors, failedRequests, criticalStatus, criticalNetFailed };
+}
+
+function logAndAssertCriticalScripts(
+  criticalPaths, criticalStatus, criticalNetFailed, pageUrl
+) {
+  const requested = criticalPaths.filter(
+    p => (p in criticalStatus) || (p in criticalNetFailed),
+  );
+  const missing = criticalPaths.filter(
+    p => !(p in criticalStatus) && !(p in criticalNetFailed),
+  );
+  info(`critical scripts requested (${requested.length}/${criticalPaths.length}): ${requested.length ? requested.join(', ') : 'none'}`);
+  if (missing.length) {
+    info(`critical scripts NOT requested: ${missing.join(', ')}`);
+  }
+  for (const p of Object.keys(criticalNetFailed)) {
+    info(`critical script network failure: ${p} — ${criticalNetFailed[p]}`);
+  }
+  for (const p of criticalPaths.filter(cp => (cp in criticalStatus) && criticalStatus[cp] >= 400)) {
+    info(`critical script HTTP failure: ${p} — HTTP ${criticalStatus[p]}`);
+  }
+
+  for (const critPath of criticalPaths) {
+    if (critPath in criticalNetFailed) {
+      fail(`${critPath} network failure: ${criticalNetFailed[critPath]}`, {
+        url: pageUrl,
+        selector: critPath,
+        suggested: 'Network/DNS failure or Cloudflare block — check deployment propagation',
+      });
+    } else if (critPath in criticalStatus) {
+      const s = criticalStatus[critPath];
+      if (s < 400) {
+        pass(`${critPath} loaded (HTTP ${s})`);
+      } else {
+        fail(`${critPath} failed (HTTP ${s})`, {
+          url: pageUrl,
+          selector: critPath,
+          suggested: s === 404 ? 'File missing from Pages artifact — check deploy workflow' : `HTTP ${s} from CDN`,
+        });
+      }
+    } else {
+      fail(`${critPath} was not requested`, {
+        url: pageUrl,
+        selector: critPath,
+        suggested: 'Stale HTML, broken boot block, or Cloudflare Rocket Loader interference',
+      });
+    }
+  }
+}
+
+// ── Per-page test ─────────────────────────────────────────────────────────────
+async function testPage(page, pathname) {
+  const url = `${BASE}${pathname}`;
+  process.stdout.write(`\n── ${pathname} ──────────────────────────────────────────\n`);
+
+  const isRightPanelPage   = RIGHT_PANEL_PAGES.includes(pathname);
+  const isStandaloneCsp    = STANDALONE_CSP_PAGES.includes(pathname);
+  const isNoRightPanel     = NO_RIGHT_PANEL_PAGES.includes(pathname);
+  const isBtqmPage         = pathname === '/games/block-topia-quest-maze/';
+  const isGamesHub         = pathname === '/games/';
+  const isSearchPage       = pathname === '/search.html';
+
+  const allCritical = [
+    ...SHELL_CRITICAL_JS_PATHS,
+    ...(isRightPanelPage || isStandaloneCsp ? RIGHT_RAIL_CRITICAL_JS_PATHS : []),
+    ...(isSearchPage ? WIKI_SEARCH_CRITICAL_JS_PATHS : []),
+    ...(ARCADE_PAGES.includes(pathname) ? ARCADE_CRITICAL_JS_PATHS : []),
+    ...(isBtqmPage ? BTQM_CRITICAL_JS_PATHS : []),
+  ];
+
+  const { consoleErrors, failedRequests, criticalStatus, criticalNetFailed } =
+    attachPageDiagnostics(page, allCritical);
+
   try {
     await page.goto(url, { waitUntil: 'load', timeout: 30000 });
   } catch (err) {
-    fail(`page load failed: ${err.message}`);
+    fail(`page load failed: ${err.message}`, { url, suggested: 'Deployment not propagated or site offline' });
     return;
   }
 
   // Wait for the shell to inject the right panel (up to 8 s — live site has
   // Cloudflare edge latency on top of local rendering).
-  try {
-    await page.waitForSelector('#homepage-right-panel', { timeout: 8000 });
-  } catch (_) { /* assertion below records the failure cleanly */ }
+  if (isRightPanelPage) {
+    try {
+      await page.waitForSelector('#homepage-right-panel', { timeout: 8000 });
+    } catch (_) { /* assertion below records the failure */ }
+  }
 
   // ── Collect diagnostics from the browser ──────────────────────────────
   const diag = await page.evaluate(() => {
@@ -195,29 +404,68 @@ async function testPage(page, pathname) {
         h:          bb.height,
       };
     }
+
+    // Count badge instances to detect duplicates.
+    function countText(text) {
+      return (document.body.textContent.match(new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+    }
+
+    const apiObj = window.MOONBOYS_API && typeof window.MOONBOYS_API === 'object' ? window.MOONBOYS_API : null;
+    const apiBaseInfo = apiObj && typeof apiObj.getApiBaseInfo === 'function'
+      ? apiObj.getApiBaseInfo()
+      : null;
+    const lbInfo = apiObj && typeof apiObj.getLeaderboardApiInfo === 'function'
+      ? apiObj.getLeaderboardApiInfo()
+      : null;
+
     return {
-      pathname:         window.location.pathname,
-      bodyClass:        document.body.className,
-      siteHeader:       !!document.querySelector('#site-header'),
-      sidebar:          !!document.querySelector('#sidebar'),
-      rightPanel:       visInfo('#homepage-right-panel'),
-      noLiveFeed:       !document.getElementById('live-feed-widget'),
-      cspPanel:         !!document.querySelector('[data-csp-panel]'),
-      lasPanel:         !!document.querySelector('[data-las-panel]'),
-      textPlayerStatus: document.body.textContent.includes('Player Status'),
-      textNextActions:  document.body.textContent.includes('Next Actions'),
-      noSystemStatus:   !document.body.textContent.includes('System Status'),
-      noLiveFeedText:   !document.body.textContent.includes('Live System Feed'),
-      noWikiNodes:      !document.body.textContent.includes('WIKI NODES'),
-      hudAvatar:        !!document.getElementById('hud-player-avatar'),
+      pathname:           window.location.pathname,
+      bodyClass:          document.body.className,
+      siteHeader:         !!document.querySelector('#site-header'),
+      sidebar:            !!document.querySelector('#sidebar'),
+      rightPanel:         visInfo('#homepage-right-panel'),
+      cspPanel:           !!document.querySelector('[data-csp-panel]'),
+      cspFactionOps:      !!document.querySelector('[data-csp-faction-ops]'),
+      cspWtfSignal:       !!document.querySelector('[data-csp-wtf-signal]'),
+      cspMissed:          !!document.querySelector('[data-csp-missed]'),
+      lasPanel:           !!document.querySelector('[data-las-panel]'),
+      noLiveFeed:         !document.getElementById('live-feed-widget'),
+      noLiveFeedText:     !document.body.textContent.includes('Live System Feed'),
+      noSystemStatus:     !document.body.textContent.includes('System Status'),
+      noWikiNodes:        !document.body.textContent.includes('WIKI NODES'),
+      hudAvatar:          !!document.getElementById('hud-player-avatar'),
+      textPlayerLiveFeed: document.body.textContent.includes('PLAYER LIVE FEED'),
+      textFactionOps:     document.body.textContent.includes('FACTION DAILY OPS'),
+      textWtfSignal:      document.body.textContent.includes('DAILY WTF SIGNAL'),
+      textMissed:         document.body.textContent.includes('MISSED OPPORTUNITIES'),
+      // Telegram badge duplicate checks
+      relinkCount:        countText('RELINK'),
+      liveLinkedCount:    countText('LIVE LINKED'),
+      syncPendingCount:   countText('SYNC PENDING'),
+      // API config state
+      moonboysApiExists:  !!apiObj,
+      apiBaseState:       apiBaseInfo ? apiBaseInfo.state : null,
+      apiBaseUrl:         apiBaseInfo ? apiBaseInfo.url : null,
+      lbApiState:         lbInfo ? lbInfo.state : null,
+      lbApiUrl:           lbInfo ? lbInfo.url : null,
+      // XP claimed without server confirmation — must not appear
+      noConfidentialXpClaim: !document.body.textContent.includes('Competitive XP synced'),
+      bodyText:           document.body.textContent.slice(0, 3000),
     };
   });
 
   // ── Log diagnostics ───────────────────────────────────────────────────
-  info(`pathname:             ${diag.pathname}`);
-  info(`body.className:       ${diag.bodyClass}`);
-  info(`#site-header in DOM:  ${diag.siteHeader}`);
-  info(`#sidebar in DOM:      ${diag.sidebar}`);
+  info(`pathname:            ${diag.pathname}`);
+  info(`body.className:      ${diag.bodyClass}`);
+  info(`#site-header:        ${diag.siteHeader}`);
+  info(`#sidebar:            ${diag.sidebar}`);
+  info(`window.MOONBOYS_API: ${diag.moonboysApiExists}`);
+  if (diag.apiBaseState) {
+    info(`API base state:      ${diag.apiBaseState} (${diag.apiBaseUrl})`);
+  }
+  if (diag.lbApiState) {
+    info(`Leaderboard state:   ${diag.lbApiState} (${diag.lbApiUrl})`);
+  }
 
   if (consoleErrors.length > 0) {
     consoleErrors.forEach(e => info(`console error: ${e}`));
@@ -231,142 +479,414 @@ async function testPage(page, pathname) {
     info('failed script requests: none');
   }
 
-  // ── Critical script diagnostics ───────────────────────────────────────
-  const requestedCritical = CRITICAL_JS_PATHS.filter(
-    p => (p in criticalStatus) || (p in criticalNetFailed),
-  );
-  const missingCritical = CRITICAL_JS_PATHS.filter(
-    p => !(p in criticalStatus) && !(p in criticalNetFailed),
-  );
-  info(`critical scripts requested (${requestedCritical.length}/${CRITICAL_JS_PATHS.length}): ${requestedCritical.length ? requestedCritical.join(', ') : 'none'}`);
-  if (missingCritical.length) {
-    info(`critical scripts NOT requested: ${missingCritical.join(', ')}`);
-  }
-  for (const p of Object.keys(criticalNetFailed)) {
-    info(`critical script network failure: ${p} — ${criticalNetFailed[p]}`);
-  }
-  for (const p of CRITICAL_JS_PATHS.filter(cp => (cp in criticalStatus) && criticalStatus[cp] >= 400)) {
-    info(`critical script HTTP failure: ${p} — HTTP ${criticalStatus[p]}`);
-  }
-
-  // ── Structural assertions ─────────────────────────────────────────────
+  // ── Structural: shell always present ──────────────────────────────────
   if (diag.siteHeader) {
     pass('#site-header exists');
   } else {
-    fail('#site-header MISSING');
+    fail('#site-header MISSING', { url, selector: '#site-header', suggested: 'site-shell.js did not run or boot block broken' });
   }
 
   if (diag.sidebar) {
     pass('#sidebar exists');
   } else {
-    fail('#sidebar MISSING');
+    fail('#sidebar MISSING', { url, selector: '#sidebar', suggested: 'site-shell.js did not run or boot block broken' });
   }
 
+  // ── Right-panel presence/absence ──────────────────────────────────────
   const rp = diag.rightPanel;
-  if (rp.exists) {
-    pass('#homepage-right-panel exists');
-  } else {
-    fail('#homepage-right-panel MISSING');
+  if (isNoRightPanel) {
+    if (!rp.exists) {
+      pass('#homepage-right-panel absent (intentionally — dashboard is right-panel-free)');
+    } else {
+      fail('#homepage-right-panel should be ABSENT on dashboard (editorial wiki intelligence only)', {
+        url,
+        selector: '#homepage-right-panel',
+        suggested: 'shouldShowRightPanel() is returning true for /dashboard.html — check site-shell.js',
+      });
+    }
+  } else if (isRightPanelPage) {
+    if (rp.exists) {
+      pass('#homepage-right-panel exists');
+    } else {
+      fail('#homepage-right-panel MISSING', {
+        url,
+        selector: '#homepage-right-panel',
+        suggested: 'shouldShowRightPanel() returned false; check body class or site-shell.js page allowlist',
+      });
+    }
+
+    // Visibility checks only when right panel exists.
+    if (rp.exists) {
+      if (rp.display !== 'none') {
+        pass('#homepage-right-panel display !== "none"');
+      } else {
+        fail('#homepage-right-panel has display:none', {
+          url,
+          selector: '#homepage-right-panel',
+          suggested: 'CSS hide rule active — check viewport width or retro-16bit-theme.css breakpoint',
+        });
+      }
+      if (rp.visibility !== 'hidden') {
+        pass('#homepage-right-panel visibility !== "hidden"');
+      } else {
+        fail('#homepage-right-panel has visibility:hidden', { url, selector: '#homepage-right-panel' });
+      }
+      if (rp.w > 0 && rp.h > 0) {
+        pass(`#homepage-right-panel bounding box ${rp.w.toFixed(0)}×${rp.h.toFixed(0)} > 0`);
+      } else {
+        fail(`#homepage-right-panel bounding box is zero (${rp.w}×${rp.h})`, {
+          url,
+          selector: '#homepage-right-panel',
+          suggested: 'Panel rendered but not visible — check layout/CSS at 1440px viewport',
+        });
+      }
+    }
   }
 
+  // ── CSP section hooks ─────────────────────────────────────────────────
+  if (isRightPanelPage) {
+    if (diag.cspPanel) {
+      pass('[data-csp-panel] exists');
+    } else {
+      fail('[data-csp-panel] MISSING', { url, selector: '[data-csp-panel]', suggested: 'Right-rail HTML not rendered by site-shell.js' });
+    }
+    if (diag.cspFactionOps) {
+      pass('[data-csp-faction-ops] exists');
+    } else {
+      fail('[data-csp-faction-ops] MISSING', { url, selector: '[data-csp-faction-ops]', suggested: 'Faction Daily Ops section not rendered by site-shell.js' });
+    }
+    if (diag.cspWtfSignal) {
+      pass('[data-csp-wtf-signal] exists');
+    } else {
+      fail('[data-csp-wtf-signal] MISSING', { url, selector: '[data-csp-wtf-signal]', suggested: 'Daily WTF Signal section not rendered by site-shell.js' });
+    }
+    if (diag.cspMissed) {
+      pass('[data-csp-missed] exists');
+    } else {
+      fail('[data-csp-missed] MISSING', { url, selector: '[data-csp-missed]', suggested: 'Missed Opportunities section not rendered by site-shell.js' });
+    }
+  } else if (isStandaloneCsp) {
+    if (diag.cspPanel) {
+      pass('[data-csp-panel] exists (standalone)');
+    } else {
+      fail('[data-csp-panel] MISSING (standalone page)', { url, selector: '[data-csp-panel]', suggested: 'Inline data-csp-panel markup missing from page HTML' });
+    }
+  }
+
+  // data-las-panel is a legacy hook — must never appear.
+  if (!diag.lasPanel) {
+    pass('[data-las-panel] absent (legacy hook correctly removed)');
+  } else {
+    fail('[data-las-panel] PRESENT — this legacy hook must not exist in the DOM', {
+      url,
+      selector: '[data-las-panel]',
+      suggested: 'Stale site-shell.js or stale HTML still injecting the old data-las-panel hook',
+    });
+  }
+
+  // ── Right-rail section headings ───────────────────────────────────────
+  if (isRightPanelPage) {
+    if (rp.exists) {
+      for (const { text, diagKey } of [
+        { text: 'PLAYER LIVE FEED',     diagKey: 'textPlayerLiveFeed' },
+        { text: 'FACTION DAILY OPS',    diagKey: 'textFactionOps' },
+        { text: 'DAILY WTF SIGNAL',     diagKey: 'textWtfSignal' },
+        { text: 'MISSED OPPORTUNITIES', diagKey: 'textMissed' },
+      ]) {
+        if (diag[diagKey]) {
+          pass(`right rail body text includes "${text}"`);
+        } else {
+          fail(`right rail body text MISSING "${text}"`, {
+            url,
+            selector: text,
+            suggested: 'Section heading removed or renamed in site-shell.js right-panel HTML',
+          });
+        }
+      }
+    }
+    if (diag.hudAvatar) {
+      pass('#hud-player-avatar present');
+    } else {
+      fail('#hud-player-avatar MISSING', { url, selector: '#hud-player-avatar', suggested: 'Avatar box removed from right-rail player HUD in site-shell.js' });
+    }
+  }
+
+  // ── Absent/removed sections ───────────────────────────────────────────
   if (diag.noLiveFeed) {
-    pass('no #live-feed-widget in DOM (LIVE_FEED=false, correctly absent)');
+    pass('no #live-feed-widget (LIVE_FEED=false — correctly absent)');
   } else {
-    fail('#live-feed-widget present — must be absent when LIVE_FEED=false');
-  }
-
-  if (diag.cspPanel) {
-    pass('[data-csp-panel] exists');
-  } else {
-    fail('[data-csp-panel] MISSING');
-  }
-
-  if (diag.lasPanel) {
-    pass('[data-las-panel] exists');
-  } else {
-    fail('[data-las-panel] MISSING');
-  }
-
-  if (diag.textPlayerStatus) {
-    pass('body text includes "Player Status"');
-  } else {
-    fail('body text MISSING "Player Status"');
-  }
-
-  if (diag.textNextActions) {
-    pass('body text includes "Next Actions"');
-  } else {
-    fail('body text MISSING "Next Actions"');
-  }
-
-  if (diag.noSystemStatus) {
-    pass('body text does not include removed "System Status" section');
-  } else {
-    fail('body text still contains "System Status" — section must be removed');
+    fail('#live-feed-widget present — must be absent when LIVE_FEED=false', {
+      url, selector: '#live-feed-widget',
+    });
   }
 
   if (diag.noLiveFeedText) {
     pass('body text does not include removed "Live System Feed" section');
   } else {
-    fail('body text still contains "Live System Feed" — section must be removed');
+    fail('body text still contains "Live System Feed" — removed section reintroduced', { url });
+  }
+
+  if (diag.noSystemStatus) {
+    pass('body text does not include removed "System Status" section');
+  } else {
+    fail('body text still contains "System Status" — removed section reintroduced', { url });
   }
 
   if (diag.noWikiNodes) {
     pass('body text does not include fake "WIKI NODES" row');
   } else {
-    fail('body text contains fake "WIKI NODES" row — must be removed');
+    fail('body text contains fake "WIKI NODES" row', { url });
   }
 
-  if (diag.hudAvatar) {
-    pass('#hud-player-avatar (avatar box) present');
+  // ── Telegram badge deduplication ──────────────────────────────────────
+  if (diag.relinkCount <= 1) {
+    pass(`RELINK badge count OK (${diag.relinkCount})`);
   } else {
-    fail('#hud-player-avatar MISSING');
+    fail(`Duplicate RELINK badges: ${diag.relinkCount} occurrences`, {
+      url, suggested: 'connection-status-panel rendered multiple times or badge injected more than once',
+    });
+  }
+  if (diag.liveLinkedCount <= 1) {
+    pass(`LIVE LINKED badge count OK (${diag.liveLinkedCount})`);
+  } else {
+    fail(`Duplicate LIVE LINKED badges: ${diag.liveLinkedCount} occurrences`, {
+      url, suggested: 'Panel or badge stack rendered more than once — check identity rendering',
+    });
+  }
+  if (diag.syncPendingCount <= 1) {
+    pass(`SYNC PENDING badge count OK (${diag.syncPendingCount})`);
+  } else {
+    fail(`Duplicate SYNC PENDING badges: ${diag.syncPendingCount} occurrences`, {
+      url, suggested: 'CSP panel or badge stack injected more than once',
+    });
   }
 
-  // ── Visibility assertions for #homepage-right-panel ───────────────────
-  if (rp.exists && rp.display !== 'none') {
-    pass('#homepage-right-panel display !== "none"');
-  } else if (rp.exists) {
-    fail('#homepage-right-panel has display:none');
+  // ── API config state (production host) ───────────────────────────────
+  if (diag.moonboysApiExists) {
+    pass('window.MOONBOYS_API exists (api-config.js ran)');
+  } else {
+    fail('window.MOONBOYS_API MISSING', {
+      url,
+      selector: 'window.MOONBOYS_API',
+      suggested: '/js/api-config.js did not load or was blocked by Rocket Loader',
+    });
   }
 
-  if (rp.exists && rp.visibility !== 'hidden') {
-    pass('#homepage-right-panel visibility !== "hidden"');
-  } else if (rp.exists) {
-    fail('#homepage-right-panel has visibility:hidden');
+  if (diag.apiBaseState !== null) {
+    if (diag.apiBaseState === 'configured' || diag.apiBaseState === 'production_fallback') {
+      pass(`API base resolves on production (state: ${diag.apiBaseState}, url: ${diag.apiBaseUrl})`);
+      if (diag.apiBaseUrl === EXPECTED_API_BASE) {
+        pass(`API base URL matches expected production endpoint: ${diag.apiBaseUrl}`);
+      } else {
+        fail(`API base URL unexpected: "${diag.apiBaseUrl}"`, {
+          url,
+          suggested: `Expected exactly ${EXPECTED_API_BASE} — check api-config.js production fallback`,
+        });
+      }
+    } else {
+      fail(`API base not resolved on production (state: ${diag.apiBaseState})`, {
+        url,
+        suggested: 'api-config.js production fallback not activating — check PRODUCTION_HOSTS list',
+      });
+    }
   }
 
-  if (rp.exists && rp.w > 0 && rp.h > 0) {
-    pass(`#homepage-right-panel bounding box ${rp.w.toFixed(0)}×${rp.h.toFixed(0)} > 0`);
-  } else if (rp.exists) {
-    fail(`#homepage-right-panel bounding box is zero (${rp.w}×${rp.h})`);
+  if (diag.lbApiState !== null) {
+    if (diag.lbApiState === 'configured' || diag.lbApiState === 'production_fallback') {
+      pass(`Leaderboard API resolves on production (state: ${diag.lbApiState})`);
+      if (diag.lbApiUrl === EXPECTED_LEADERBOARD_URL) {
+        pass(`Leaderboard API URL matches expected production endpoint: ${diag.lbApiUrl}`);
+      } else {
+        fail(`Leaderboard API URL unexpected: "${diag.lbApiUrl}"`, {
+          url,
+          suggested: `Expected exactly ${EXPECTED_LEADERBOARD_URL} — check api-config.js leaderboard fallback`,
+        });
+      }
+    } else {
+      fail(`Leaderboard API not resolved on production (state: ${diag.lbApiState})`, {
+        url,
+        suggested: 'api-config.js production fallback not activating for leaderboard endpoint',
+      });
+    }
   }
 
-  // ── Console error assertions ──────────────────────────────────────────
+  if (diag.noConfidentialXpClaim) {
+    pass('no "Competitive XP synced" copy without server confirmation');
+  } else {
+    fail('"Competitive XP synced" appears in body text', {
+      url,
+      suggested: 'UI claims competitive XP synced without verified server confirmation — check connection-status-panel.js copy guards',
+    });
+  }
+
+  // ── Console / network ─────────────────────────────────────────────────
   for (const banned of BANNED_CONSOLE_SUBSTRINGS) {
     const hits = consoleErrors.filter(e => e.includes(banned));
     if (hits.length === 0) {
       pass(`no console error containing "${banned}"`);
     } else {
-      hits.forEach(e => fail(`console error contains "${banned}": ${e}`));
+      hits.forEach(e => fail(`console error contains "${banned}": ${e}`, {
+        url,
+        suggested: banned === 'ROCKET LOADER'
+          ? 'Cloudflare Rocket Loader still active — ensure data-cfasync="false" on module scripts'
+          : 'Runtime error — check browser console on live page',
+      }));
     }
   }
 
-  // ── Critical JS file assertions ───────────────────────────────────────
-  // Matrix: requested+OK=pass, requested+4xx/5xx=fail, net-failed=fail,
-  //         not requested at all=fail (stale HTML / broken boot block).
-  for (const critPath of CRITICAL_JS_PATHS) {
-    if (critPath in criticalNetFailed) {
-      fail(`${critPath} network failure: ${criticalNetFailed[critPath]}`);
-    } else if (critPath in criticalStatus) {
-      const s = criticalStatus[critPath];
-      if (s < 400) {
-        pass(`${critPath} loaded (HTTP ${s})`);
-      } else {
-        fail(`${critPath} failed (HTTP ${s})`);
-      }
+  logAndAssertCriticalScripts(allCritical, criticalStatus, criticalNetFailed, url);
+
+  // ── /games/ — arcade roster and XP Loop sanity ───────────────────────
+  if (isGamesHub) {
+    await testGamesHub(page, url);
+  }
+
+  // ── /search.html — wiki search live behavior ──────────────────────────
+  if (isSearchPage) {
+    await testWikiSearch(page, url);
+  }
+}
+
+// ── /games/ arcade hub checks ────────────────────────────────────────────────
+async function testGamesHub(page, url) {
+  process.stdout.write(`\n  [arcade-hub] Checking 8-game roster and XP Loop signals…\n`);
+
+  const hubDiag = await page.evaluate((games) => {
+    const text = document.body.textContent;
+    const found    = games.filter(g => text.includes(g));
+    const missing  = games.filter(g => !text.includes(g));
+    const hexgl    = text.toLowerCase().includes('hexgl');
+    return { found, missing, hexgl };
+  }, CANONICAL_GAMES);
+
+  if (hubDiag.found.length === CANONICAL_GAMES.length) {
+    pass(`all ${CANONICAL_GAMES.length} canonical arcade games present in /games/`);
+  } else {
+    fail(`missing ${hubDiag.missing.length} canonical game(s): ${hubDiag.missing.join(', ')}`, {
+      url,
+      suggested: 'Game removed from games/index.html or arcade-roguelite-protection roster mismatch',
+    });
+  }
+
+  if (!hubDiag.hexgl) {
+    pass('no HexGL reference visible on /games/');
+  } else {
+    fail('HexGL reference detected on /games/ — must not appear', {
+      url,
+      suggested: 'HexGL is a retired game and must not be listed — check games/index.html',
+    });
+  }
+}
+
+// ── /search.html — wiki search live behavior ──────────────────────────────────
+async function testWikiSearch(page, url) {
+  process.stdout.write(`\n  [wiki-search] Checking live search behavior on /search.html…\n`);
+
+  async function querySearch(q) {
+    const resultsSelector = '#search-results-page, #search-results, .search-results';
+    const input = await page.$('#search-input, input[type="search"], #wiki-search-input');
+    const resultsContainer = await page.$(resultsSelector);
+    if (!input) return { error: 'search input not found', results: [] };
+    if (!resultsContainer) return { error: 'search results container not found', results: [] };
+    await input.fill(q);
+    await input.press('Enter');
+    // Wait for results to render (up to 5 s).
+    try {
+      await page.waitForFunction(
+        (sel) => {
+          const el = document.querySelector(sel);
+          return el && el.textContent.trim().length > 0;
+        },
+        resultsSelector,
+        { timeout: 5000 },
+      );
+    } catch (_) { /* checked below */ }
+    const resultText = await page.evaluate((sel) => {
+      const el = document.querySelector(sel);
+      return el ? el.textContent : '';
+    }, resultsSelector);
+    return { resultText };
+  }
+
+  // 1. GRAFFPUNKS RADIO → relevant result expected.
+  const graffRadio = await querySearch('GRAFFPUNKS RADIO');
+  if (graffRadio.error) {
+    fail(`wiki search input not found: ${graffRadio.error}`, { url, suggested: 'Search page HTML may have changed selector' });
+  } else if (graffRadio.resultText && (
+    graffRadio.resultText.toLowerCase().includes('graffpunk') ||
+    graffRadio.resultText.toLowerCase().includes('radio')
+  )) {
+    pass('wiki search "GRAFFPUNKS RADIO" returns a GraffPUNKS/radio result');
+  } else {
+    fail('wiki search "GRAFFPUNKS RADIO" did not return a relevant result', {
+      url,
+      suggested: 'wiki-index.json may be stale or scoreResult logic broken on live build',
+    });
+  }
+
+  // 2. Lowercase/punctuation variant — reload fresh page to reset state.
+  await page.goto(`${BASE}/search.html`, { waitUntil: 'load', timeout: 20000 });
+  const graffLower = await querySearch('graffpunks, radio!');
+  if (!graffLower.error && graffLower.resultText && (
+    graffLower.resultText.toLowerCase().includes('graffpunk') ||
+    graffLower.resultText.toLowerCase().includes('radio')
+  )) {
+    pass('wiki search lowercase/punctuation variant "graffpunks, radio!" returns relevant result');
+  } else if (!graffLower.error) {
+    fail('wiki search lowercase/punctuation variant returned no relevant result', {
+      url,
+      suggested: 'Search tokenizer/normalizer may be broken on live build — check wiki.js scoreResult',
+    });
+  }
+
+  // 3. Nonsense query → no unrelated spam.
+  await page.goto(`${BASE}/search.html`, { waitUntil: 'load', timeout: 20000 });
+  const nonsense = await querySearch('xyzfoo123nonsense');
+  if (!nonsense.error) {
+    const t = (nonsense.resultText || '').trim();
+    const isEmpty = !t || t.includes('No results') || t.includes('0 results') || t.length < 30;
+    if (isEmpty) {
+      pass('wiki search nonsense query returns zero/empty state');
     } else {
-      fail(`${critPath} was not requested — stale HTML, broken boot block, or Rocket Loader interference`);
+      fail('wiki search nonsense query returned non-empty results', {
+        url,
+        suggested: 'Search returning unrelated results for nonsense query — check scoreResult filtering',
+      });
+    }
+  }
+}
+
+// ── BTQM generated asset HTTP checks ─────────────────────────────────────────
+async function verifyBtqmAssets() {
+  process.stdout.write('\n── BTQM generated asset HTTP checks ─────────────────────────────\n');
+  for (const { label, path } of BTQM_LIVE_ASSET_CHECKS) {
+    if (path.endsWith('.png.base64')) {
+      fail(`BTQM asset check targets a .png.base64 path — must use .png only: ${path}`, {
+        suggested: 'Pages deploy hydrates .png.base64 → .png; check live asset path in config',
+      });
+      continue;
+    }
+    const assetUrl = `${BASE}${path}`;
+    try {
+      const { status } = await headRequest(assetUrl);
+      if (status === 200) {
+        pass(`BTQM ${label} asset resolves (HTTP 200): ${path}`);
+      } else if (status === 404) {
+        fail(`BTQM ${label} asset 404: ${path}`, {
+          url: assetUrl,
+          suggested: 'Hydration step not run in Pages deploy, or asset not in manifest — check deploy-pages.yml and hydrate-btqm-generated-assets.mjs',
+        });
+      } else {
+        fail(`BTQM ${label} asset HTTP ${status}: ${path}`, {
+          url: assetUrl,
+          suggested: `Unexpected status from CDN — check Cloudflare cache/routing`,
+        });
+      }
+    } catch (err) {
+      fail(`BTQM ${label} asset request failed: ${err.message}`, {
+        url: assetUrl,
+        suggested: 'Network failure or CDN error — retry after full deployment propagation',
+      });
     }
   }
 }
@@ -379,14 +899,22 @@ async function verifyShellSource() {
   try {
     result = await fetchText(shellUrl);
   } catch (err) {
-    fail(`could not fetch ${shellUrl}: ${err.message}`);
+    fail(`could not fetch ${shellUrl}: ${err.message}`, {
+      url: shellUrl,
+      suggested: 'Network/CDN failure or Pages not yet deployed',
+    });
     return;
   }
 
   if (result.status < 400) {
     pass(`${shellUrl} responded HTTP ${result.status}`);
   } else {
-    fail(`${shellUrl} responded HTTP ${result.status}`);
+    fail(`${shellUrl} responded HTTP ${result.status}`, {
+      url: shellUrl,
+      suggested: result.status === 404
+        ? 'site-shell.js missing from Pages artifact — check deploy workflow'
+        : `CDN returned ${result.status}`,
+    });
     return;
   }
 
@@ -394,7 +922,23 @@ async function verifyShellSource() {
     if (result.body.includes(needle)) {
       pass(`site-shell.js source contains "${needle}"`);
     } else {
-      fail(`site-shell.js source MISSING "${needle}"`);
+      fail(`site-shell.js source MISSING "${needle}"`, {
+        url: shellUrl,
+        selector: needle,
+        suggested: 'Current site-shell.js on disk does not include this required identifier — stale deploy?',
+      });
+    }
+  }
+
+  for (const needle of SHELL_SOURCE_MUST_NOT_CONTAIN) {
+    if (!result.body.includes(needle)) {
+      pass(`site-shell.js source correctly absent "${needle}" (legacy hook removed)`);
+    } else {
+      fail(`site-shell.js source still contains legacy "${needle}"`, {
+        url: shellUrl,
+        selector: needle,
+        suggested: 'site-shell.js has not been updated — stale deploy or deliberate reintroduction',
+      });
     }
   }
 }
@@ -402,19 +946,25 @@ async function verifyShellSource() {
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
   process.stdout.write('\n═══ Live Site Verification — cryptomoonboys.com ═════════════════\n');
-  process.stdout.write(`    Base URL: ${BASE}\n`);
-  process.stdout.write(`    Pages:    ${PAGES.length}\n`);
-  process.stdout.write(`    Time:     ${new Date().toISOString()}\n`);
+  process.stdout.write(`    Base URL:  ${BASE}\n`);
+  process.stdout.write(`    Pages:     ${PAGES.length}\n`);
+  process.stdout.write(`    Time:      ${new Date().toISOString()}\n`);
+  process.stdout.write('\n    Post-merge/post-Pages-deploy tool — NOT a PR CI gate.\n');
+  process.stdout.write('    Does not require Telegram credentials.\n');
+  process.stdout.write('    Does not submit fake scores to production.\n');
 
   // Verify site-shell.js source first (fast, no browser needed).
   await verifyShellSource();
+
+  // Verify BTQM generated asset HTTP responses (no browser needed).
+  await verifyBtqmAssets();
 
   // Launch Playwright Chromium with a 1440×900 viewport so right-panel CSS
   // show-rules (min-width ≥ 1201 px) are active during visibility checks.
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
     viewport: { width: 1440, height: 900 },
-    userAgent: 'live-site-verify/1.0 Playwright/Chromium',
+    userAgent: 'live-site-verify/2.0 Playwright/Chromium',
   });
 
   try {
@@ -432,12 +982,13 @@ async function main() {
 
   // ── Summary ───────────────────────────────────────────────────────────
   process.stdout.write('\n═══ Summary ═════════════════════════════════════════════════════\n');
-  process.stdout.write(`    Checks:  ${totalChecks}\n`);
-  process.stdout.write(`    Passed:  ${totalChecks - totalFailed}\n`);
-  process.stdout.write(`    Failed:  ${totalFailed}\n`);
+  process.stdout.write(`    Checks:    ${totalChecks}\n`);
+  process.stdout.write(`    Passed:    ${totalChecks - totalFailed}\n`);
+  process.stdout.write(`    Failed:    ${totalFailed}\n`);
 
   if (totalFailed > 0) {
     process.stderr.write(`\n[FAIL] ${totalFailed} check(s) failed — live site may be stale or broken.\n`);
+    process.stderr.write(`       Run this tool again after Pages deployment fully propagates.\n`);
     process.exit(1);
   } else {
     process.stdout.write('\n[PASS] All checks passed — live site looks healthy.\n');
