@@ -39,6 +39,35 @@ function makeSandbox() {
   return sandbox;
 }
 
+async function selectMatches(indexData, query, options = {}) {
+  const sandbox = {
+    console,
+    URL,
+    URLSearchParams,
+    fetch: async () => ({ ok: true, status: 200, json: async () => indexData }),
+    history: { replaceState() {} },
+    document: {
+      readyState: 'loading',
+      addEventListener() {},
+      getElementById() { return null; },
+      querySelectorAll() { return []; },
+      querySelector() { return null; }
+    },
+    window: {
+      location: {
+        pathname: '/search.html',
+        search: '',
+        href: 'https://example.test/search.html'
+      }
+    }
+  };
+
+  vm.createContext(sandbox);
+  vm.runInContext(wikiJs, sandbox, { filename: 'wiki.js' });
+  await sandbox.loadWikiIndex();
+  return sandbox.selectSearchMatches(query, options);
+}
+
 async function renderSearchResults(indexData, query) {
   const elements = {
     'search-results-page': { innerHTML: '' },
@@ -78,8 +107,10 @@ async function renderSearchResults(indexData, query) {
 
 const sb = makeSandbox();
 const scoreResult = sb.scoreResult;
+const selectSearchMatches = sb.selectSearchMatches;
 
 assert.equal(typeof scoreResult, 'function', 'scoreResult must be callable from sandbox');
+assert.equal(typeof selectSearchMatches, 'function', 'selectSearchMatches must be callable from sandbox');
 
 // ── Test fixtures ─────────────────────────────────────────────────────────────
 
@@ -123,6 +154,20 @@ const bitcoinArticle = {
     normalized_title: 'bitcoin crypto moonboys wiki',
     tokens: ['bitcoin', 'crypto', 'moonboys', 'wiki'],
     keyword_bag: ['bitcoin', 'crypto', 'digital', 'currency']
+  }
+};
+
+const graffpunksStopwordOnly = {
+  title: 'GraffPUNKS and the Alley Echoes — Crypto Moonboys Wiki',
+  desc: 'A short profile of GraffPUNKS culture.',
+  url: '/wiki/graffpunks-alley-echoes.html',
+  tags: ['graffpunks', 'alley'],
+  category: 'characters',
+  rank_score: 200,
+  search_index: {
+    normalized_title: 'graffpunks and the alley echoes crypto moonboys wiki',
+    tokens: ['graffpunks', 'and', 'the', 'alley', 'echoes', 'crypto', 'moonboys', 'wiki'],
+    keyword_bag: ['graffpunks', 'alley', 'echoes']
   }
 };
 
@@ -225,7 +270,16 @@ const bitcoinArticle = {
     'Fallback branch should still report the rendered partial result count');
 }
 
-// ── 10. Real wiki-index: GRAFFPUNKS RADIO finds relevant articles ──────────────
+// ── 10. Partial fallback excludes stopword-only weak matches on long queries ───
+{
+  const { scored } = await selectMatches([graffpunksStopwordOnly], 'graffpunks radio rebellion and the', {
+    allowPartialFallback: true
+  });
+  assert.equal(scored.length, 0,
+    'Long query partial fallback must not pass results that only match one meaningful token plus stopwords');
+}
+
+// ── 11. Real wiki-index: GRAFFPUNKS RADIO finds relevant articles ──────────────
 {
   const wikiIndex = JSON.parse(
     await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
@@ -256,7 +310,7 @@ const bitcoinArticle = {
   );
 }
 
-// ── 11. Real wiki-index: GRAFFPUNKS alone finds GraffPUNKS articles ──────────
+// ── 12. Real wiki-index: GRAFFPUNKS alone finds GraffPUNKS articles ──────────
 {
   const wikiIndex = JSON.parse(
     await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
@@ -274,6 +328,79 @@ const bitcoinArticle = {
   const hasGraffpunksMain = matches.some(r => r.url.includes('graffpunks'));
   assert.ok(hasGraffpunksMain,
     'GRAFFPUNKS must find articles with graffpunks in URL');
+}
+
+// ── 13. Header autocomplete: GRAFFPUNKS RADIO returns relevant article ────────
+{
+  const wikiIndex = JSON.parse(
+    await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
+  );
+  const { scored } = await selectMatches(wikiIndex, 'GRAFFPUNKS RADIO', {
+    allowPartialFallback: true,
+    limit: 5
+  });
+
+  assert.ok(scored.length > 0, 'Header autocomplete should return suggestions for GRAFFPUNKS RADIO');
+  const hasRadioArticle = scored.some(r =>
+    r.item.url.toLowerCase().includes('graffpunk') &&
+    (r.item.url.toLowerCase().includes('radio') || String(r.item.title || '').toLowerCase().includes('radio'))
+  );
+  assert.ok(hasRadioArticle, 'Header autocomplete should include the GraffPUNKS radio article');
+}
+
+// ── 14. Full search and header autocomplete agree on top ordering ──────────────
+{
+  const wikiIndex = JSON.parse(
+    await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
+  );
+  const keyQueries = ['GRAFFPUNKS RADIO', 'bitcoin'];
+
+  for (const query of keyQueries) {
+    const full = await selectMatches(wikiIndex, query, { allowPartialFallback: true });
+    const header = await selectMatches(wikiIndex, query, {
+      allowPartialFallback: true,
+      limit: 5
+    });
+
+    if (!full.scored.length) continue;
+    assert.equal(
+      header.scored[0] && header.scored[0].item.url,
+      full.scored[0].item.url,
+      `Header and full search should share top result for query: ${query}`
+    );
+  }
+}
+
+// ── 15. Header autocomplete handles lowercase/punctuation variants ─────────────
+{
+  const wikiIndex = JSON.parse(
+    await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
+  );
+  const lower = await selectMatches(wikiIndex, 'graffpunks radio', {
+    allowPartialFallback: true,
+    limit: 5
+  });
+  const punct = await selectMatches(wikiIndex, 'GRAFFPUNKS, RADIO!', {
+    allowPartialFallback: true,
+    limit: 5
+  });
+
+  const lowerTop = lower.scored[0] && lower.scored[0].item.url;
+  const punctTop = punct.scored[0] && punct.scored[0].item.url;
+  assert.equal(lowerTop, punctTop,
+    'Header autocomplete top result should be stable for lowercase/punctuation variants');
+}
+
+// ── 16. Header autocomplete returns no suggestions for nonsense ────────────────
+{
+  const wikiIndex = JSON.parse(
+    await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
+  );
+  const { scored } = await selectMatches(wikiIndex, 'zzzxqv-no-hit-000999', {
+    allowPartialFallback: true,
+    limit: 5
+  });
+  assert.equal(scored.length, 0, 'Nonsense query should return no header autocomplete suggestions');
 }
 
 console.log('wiki-search.test: PASS');
