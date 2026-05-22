@@ -4,6 +4,15 @@
  * These checks intentionally use source-level assertions so CI fails if an
  * active arcade game stops using submitScore() or if submitScore() stops
  * feeding the shared ArcadeMeta/ArcadeSync/faction path after accepted runs.
+ *
+ * Additional checks added by the XP Loop audit (2026-05):
+ *   - All 8 canonical games are present in ACTIVE_GAMES
+ *   - No HexGL game IDs or bootstrap paths appear in active game files or manifest
+ *   - Unlinked users are never incorrectly shown as XP synced
+ *   - Sync-state labels: public score, pending, and XP sync are separated
+ *   - ArcadeSync.normalizeGame maps all 8 canonical game-directory IDs
+ *   - Pending XP queue key is consistent across sync and leaderboard-client modules
+ *   - Post-run audit comment blocks are present in each bootstrap (documentation)
  */
 
 import assert from 'node:assert/strict';
@@ -93,6 +102,79 @@ assertContains(hub, "if (!Number.isFinite(timestamp) || timestamp <= 0) return '
 assertContains(hub, 'protected browser-driven roguelite post-run loop', 'games/index.html must state frontend-driven shared loop truth');
 for (const label of ['Active daily cycle', 'Weekly faction target', 'Monthly clout target', 'Seasonal preview target', 'Next best action']) {
   assertContains(hub, label, `roguelite-loop-board must show ${label}`);
+}
+
+// ── No HexGL references in active game files or manifest ──────────────────────
+
+const manifest = await read('js/arcade/arcade-manifest.js');
+assert.doesNotMatch(manifest, /hexgl/i, 'arcade-manifest.js must not reference HexGL');
+
+for (const [name, relPath] of ACTIVE_GAMES) {
+  const source = await read(relPath);
+  assert.doesNotMatch(source, /hexgl/i, `${name} bootstrap must not reference HexGL`);
+}
+
+// ── Canonical game IDs: all 8 game-directory names must map via normalizeGame ─
+
+const arcadeSync = await read('js/arcade-sync.js');
+for (const alias of [
+  'invaders-3008',
+  'pac-chain',
+  'asteroid-fork',
+  'breakout-bullrun',
+  'tetris-block-topia',
+  'crystal-quest',
+  'block-topia-quest-maze',
+  'snake-run',
+]) {
+  assertContains(arcadeSync, `"${alias}"`, `ArcadeSync.normalizeGame must map canonical game ID: ${alias}`);
+}
+
+// ── Pending queue key must be consistent between arcade-sync and leaderboard-client
+
+assertContains(arcadeSync, 'moonboys_arcade_pending_progress_v1', 'arcade-sync.js must define the pending queue key');
+assertContains(leaderboard, 'arcade-sync.js', 'leaderboard-client.js must import from arcade-sync.js');
+
+// ── Unlinked users must never have XP falsely claimed as synced ───────────────
+//
+// The leaderboard-client must not emit a state of "xp_synced" or "xp_confirmed"
+// for unlinked users, and the "local_cached_only" state must be present for the
+// unlinked non-api path.
+
+assertContains(leaderboard, '"local_cached_only"', 'leaderboard-client.js must use local_cached_only state for unlinked users');
+assert.doesNotMatch(leaderboard, /xp_synced|xp_confirmed/, 'leaderboard-client.js must not use a false "xp_synced" or "xp_confirmed" state label');
+
+// ── Sync-state separation: public score submit vs competitive XP sync ─────────
+//
+// These three distinct states must all be present so callers can distinguish
+// between a public-only score post and a server-confirmed competitive XP sync.
+
+for (const stateLabel of [
+  '"public_submit_unsigned"',
+  '"public_score_submitted"',
+  '"score_accepted"',
+]) {
+  assertContains(leaderboard, stateLabel, `leaderboard-client.js must expose separate sync state: ${stateLabel}`);
+}
+
+// ── API unavailable must queue/pend, not claim sync ───────────────────────────
+
+assertContains(leaderboard, '"sync_pending"', 'leaderboard-client.js must use sync_pending state when API unavailable for linked users');
+assertContains(leaderboard, 'ArcadeSync.queuePendingProgress', 'ArcadeSync.queuePendingProgress must remain in the API-unavailable path');
+
+// ── Signed auth required before XP sync claim ────────────────────────────────
+
+assertContains(leaderboard, 'hasSignedAuth', 'leaderboard-client.js must guard XP sync paths with hasSignedAuth');
+assertContains(leaderboard, 'shouldSyncMeta = linked && hasSignedAuth', 'meta sync must only run when linked AND signed auth is present');
+
+// ── Post-run audit comment blocks present in each bootstrap ──────────────────
+
+for (const [name, relPath] of ACTIVE_GAMES) {
+  const source = await read(relPath);
+  assertContains(source, 'POST-RUN LOOP AUDIT', `${name} bootstrap must include post-run loop audit comment block`);
+  assertContains(source, 'Arcade XP queue:', `${name} bootstrap audit block must document Arcade XP queue path`);
+  assertContains(source, 'Unlinked users:', `${name} bootstrap audit block must document unlinked user behavior`);
+  assertContains(source, 'Retry queue:', `${name} bootstrap audit block must document retry queue`);
 }
 
 console.log('Arcade roguelite protection checks passed.');

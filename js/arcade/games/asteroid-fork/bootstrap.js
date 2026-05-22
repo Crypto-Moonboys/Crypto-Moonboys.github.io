@@ -1546,6 +1546,35 @@ function renderFrame(state) {
   ctx.restore();
 }
 
+// POST-RUN LOOP AUDIT — Asteroid Fork
+//
+// Game-over detection:  handleGameOverIfNeeded() runs each render tick.
+//   Triggers when state.gameOver===true and state.submitted===false.
+//   state.gameOver is set by the physics loop when lives reach zero or
+//   a boss collision kills the ship.
+//
+// Score submission:     submitScore(ArcadeSync.getPlayer(), score, GAME_ID).catch(()=>{})
+//   — fire-and-forget from a synchronous render tick (cannot await here).
+//   Uses the shared post-run path in leaderboard-client.js.
+//
+// Public leaderboard:   submitScore() always attempts a public leaderboard POST.
+//
+// Arcade XP queue:      submitScore() calls ArcadeSync queuePendingProgress
+//   for unlinked users (always) and linked users on accepted runs.
+//
+// Local meta:           submitScore() calls ArcadeMeta trackGameResult for all
+//   runs (daily/weekly/monthly/seasonal clout, rabbit-hole branches, streaks).
+//
+// Telegram-linked users: When linked + signed auth, submitScore() attaches
+//   telegram_auth, calls callFactionEarn(), and calls
+//   ArcadeSync.syncPendingArcadeProgress() for server XP sync.
+//
+// Unlinked users:        Score goes to public leaderboard only; no XP sync
+//   claimed; run queued locally via queuePendingProgress.
+//
+// API unavailable:       submitScore() queues/pends; no false sync claimed.
+//
+// Retry queue:           localStorage moonboys_arcade_pending_progress_v1.
 function handleGameOverIfNeeded(context) {
   const state = context.state;
   if (!state.gameOver || state.submitted) return;

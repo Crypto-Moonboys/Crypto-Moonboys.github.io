@@ -947,6 +947,33 @@ function createLegacyBootstrapBreakoutBullrun(root) {
 
   // ── Game over ─────────────────────────────────────────────────────────────
 
+  // POST-RUN LOOP AUDIT — Breakout Bullrun
+  //
+  // Game-over detection:  onGameOver() is called when all lives are lost.
+  //   Guard: `if (gameOver) return` prevents re-entry.
+  //
+  // Score submission:     await submitScore(playerName, score, GAME_ID)
+  //   — uses the shared post-run path in leaderboard-client.js.
+  //   Only called when score > 0.
+  //
+  // Public leaderboard:   submitScore() always attempts a public leaderboard POST.
+  //
+  // Arcade XP queue:      submitScore() calls ArcadeSync queuePendingProgress
+  //   for unlinked users (always) and linked users on accepted runs.
+  //
+  // Local meta:           submitScore() calls ArcadeMeta trackGameResult for all
+  //   runs (daily/weekly/monthly/seasonal clout, rabbit-hole branches, streaks).
+  //
+  // Telegram-linked users: When linked + signed auth, submitScore() attaches
+  //   telegram_auth, calls callFactionEarn(), and calls
+  //   ArcadeSync.syncPendingArcadeProgress() for server XP sync.
+  //
+  // Unlinked users:        Score goes to public leaderboard only; no XP sync
+  //   claimed; run queued locally via queuePendingProgress.
+  //
+  // API unavailable:       submitScore() queues/pends; no false sync claimed.
+  //
+  // Retry queue:           localStorage moonboys_arcade_pending_progress_v1.
   async function onGameOver() {
     if (gameOver) return;
     running  = false;
