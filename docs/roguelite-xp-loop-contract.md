@@ -40,7 +40,7 @@ Every game's post-run path calls `submitScore(player, score, gameId)` from
 2. GET player identity / linked state  — from MOONBOYS_IDENTITY
 3. Attempt Telegram auth restore       — ArcadeSync.getTelegramAuth()
 4. POST public leaderboard score       — leaderboard worker
-   ├─ accepted === true                → mark sync health good
+   ├─ accepted === true                → mark sync health good when signed auth exists
    ├─ accepted === false               → state "rejected_no_xp"
    └─ HTTP error / network fail        → state "sync_error" or "auth_expired"
 5. If linked + signed auth + accepted:
@@ -75,21 +75,22 @@ These are **distinct outcomes**. A caller must never conflate them.
 | State label | Meaning |
 |---|---|
 | `"pending_submit"` | Initial state; submission not yet attempted |
-| `"local_cached_only"` | Unlinked user; no remote submission possible |
-| `"public_submit_unsigned"` | Linked user but signed auth missing; public POST skipped; XP pending |
-| `"auto_submitting"` | API POST in flight |
-| `"score_accepted"` | Leaderboard accepted the score; linked + signed auth present |
-| `"public_score_submitted"` | Leaderboard accepted score but linked user lacks signed auth; no XP sync |
+| `"local_cached_only"` | No leaderboard API is configured/available; run is retained locally/cache-side only |
+| `"public_submit_unsigned"` | Linked user but signed auth missing; unsigned public leaderboard POST is still attempted when the leaderboard API is available; XP/meta sync is gated |
+| `"auto_submitting"` | Leaderboard API POST in flight |
+| `"score_accepted"` | Leaderboard accepted the score with signed auth present, or accepted a non-linked public score; this is not an XP-sync claim by itself |
+| `"public_score_submitted"` | Leaderboard accepted an unsigned public score from a linked user; no XP/meta sync claim |
 | `"rejected_no_xp"` | Leaderboard did not accept; no XP conversion |
 | `"sync_error"` | Network or server error |
 | `"auth_expired"` | Telegram auth expired; re-link required |
-| `"sync_pending"` | Linked user but API unavailable; run queued for retry |
+| `"sync_pending"` | Linked user but API/config state prevents immediate sync; run remains pending/local unless/until a later accepted queue write exists |
+| `"progression_synced"` | Pending queue flush completed and shared arcade progression sync returned a non-skipped response |
 | `"xp_awarded"` | (Block Topia only) Accepted score converted to BT XP |
 | `"accepted_no_xp"` | (Block Topia only) Score accepted but XP sync did not complete |
 
 **Never use `xp_synced`, `xp_confirmed`, or similar labels for unlinked users.**
 Only `"score_accepted"` + a successful `syncPendingArcadeProgress` response
-with `accepted` entries constitutes a confirmed competitive XP sync.
+with accepted entries constitutes a confirmed competitive XP sync.
 
 ---
 
@@ -104,20 +105,28 @@ with `accepted` entries constitutes a confirmed competitive XP sync.
 
 ### Linked user with signed auth missing (expired)
 
-1. Leaderboard POST is attempted **without** `telegram_auth` (public-only).
-2. State is set to `"public_submit_unsigned"`.
-3. Run is not queued in the pending XP queue (no auth = no XP conversion pending).
-4. User is shown a prompt to refresh their Telegram link.
+1. Leaderboard POST is attempted **without** `telegram_auth` (public-only) when
+   the leaderboard API is configured.
+2. State is set to `"public_submit_unsigned"` before the public POST attempt.
+3. If the unsigned public POST is accepted, state can advance to
+   `"public_score_submitted"` and the accepted run can be written to the
+   pending XP queue for later authenticated sync.
+4. No faction earn, meta server sync, pending queue flush, or BTQM XP conversion
+   is attempted until signed auth is restored.
+5. User is shown a prompt to refresh their Telegram link.
 
 ### Unlinked user
 
 1. No `telegram_auth` is attached to any request.
-2. Public leaderboard POST proceeds with display name only.
-3. State is set to `"local_cached_only"` when the API is available.
-4. Run is always queued via `ArcadeSync.queuePendingProgress` for future sync.
-5. **No XP sync, faction earn, or meta server sync is attempted.**
+2. If the leaderboard API is configured, public leaderboard POST proceeds with
+   display name only.
+3. If the leaderboard API is missing/disabled/unavailable, state is set to
+   `"local_cached_only"` and no remote public score submission is attempted.
+4. Run is always queued via `ArcadeSync.queuePendingProgress` for possible
+   future sync after Telegram linking.
+5. **No XP sync, faction earn, or meta server sync is attempted while unlinked.**
 6. After `/gklink` completes, `ArcadeSync.syncPendingArcadeProgress` is called
-   immediately to flush all queued runs.
+   immediately to flush queued runs with signed auth.
 
 ---
 
