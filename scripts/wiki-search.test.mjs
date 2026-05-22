@@ -157,6 +157,20 @@ const bitcoinArticle = {
   }
 };
 
+const graffpunksStopwordOnly = {
+  title: 'GraffPUNKS and the Alley Echoes — Crypto Moonboys Wiki',
+  desc: 'A short profile of GraffPUNKS culture.',
+  url: '/wiki/graffpunks-alley-echoes.html',
+  tags: ['graffpunks', 'alley'],
+  category: 'characters',
+  rank_score: 200,
+  search_index: {
+    normalized_title: 'graffpunks and the alley echoes crypto moonboys wiki',
+    tokens: ['graffpunks', 'and', 'the', 'alley', 'echoes', 'crypto', 'moonboys', 'wiki'],
+    keyword_bag: ['graffpunks', 'alley', 'echoes']
+  }
+};
+
 // ── 1. GRAFFPUNKS RADIO finds the radio article ───────────────────────────────
 {
   const r = scoreResult(graffpunks247Radio, 'GRAFFPUNKS RADIO');
@@ -256,7 +270,16 @@ const bitcoinArticle = {
     'Fallback branch should still report the rendered partial result count');
 }
 
-// ── 10. Real wiki-index: GRAFFPUNKS RADIO finds relevant articles ──────────────
+// ── 10. Partial fallback excludes stopword-only weak matches on long queries ───
+{
+  const { scored } = await selectMatches([graffpunksStopwordOnly], 'graffpunks radio rebellion and the', {
+    allowPartialFallback: true
+  });
+  assert.equal(scored.length, 0,
+    'Long query partial fallback must not pass results that only match one meaningful token plus stopwords');
+}
+
+// ── 11. Real wiki-index: GRAFFPUNKS RADIO finds relevant articles ──────────────
 {
   const wikiIndex = JSON.parse(
     await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
@@ -287,7 +310,7 @@ const bitcoinArticle = {
   );
 }
 
-// ── 11. Real wiki-index: GRAFFPUNKS alone finds GraffPUNKS articles ──────────
+// ── 12. Real wiki-index: GRAFFPUNKS alone finds GraffPUNKS articles ──────────
 {
   const wikiIndex = JSON.parse(
     await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
@@ -307,7 +330,7 @@ const bitcoinArticle = {
     'GRAFFPUNKS must find articles with graffpunks in URL');
 }
 
-// ── 12. Header autocomplete: GRAFFPUNKS RADIO returns relevant article ────────
+// ── 13. Header autocomplete: GRAFFPUNKS RADIO returns relevant article ────────
 {
   const wikiIndex = JSON.parse(
     await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
@@ -325,7 +348,7 @@ const bitcoinArticle = {
   assert.ok(hasRadioArticle, 'Header autocomplete should include the GraffPUNKS radio article');
 }
 
-// ── 13. Full search and header autocomplete agree on top ordering ──────────────
+// ── 14. Full search and header autocomplete agree on top ordering ──────────────
 {
   const wikiIndex = JSON.parse(
     await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
@@ -348,7 +371,7 @@ const bitcoinArticle = {
   }
 }
 
-// ── 14. Header autocomplete handles lowercase/punctuation variants ─────────────
+// ── 15. Header autocomplete handles lowercase/punctuation variants ─────────────
 {
   const wikiIndex = JSON.parse(
     await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
@@ -368,7 +391,7 @@ const bitcoinArticle = {
     'Header autocomplete top result should be stable for lowercase/punctuation variants');
 }
 
-// ── 15. Header autocomplete returns no suggestions for nonsense ────────────────
+// ── 16. Header autocomplete returns no suggestions for nonsense ────────────────
 {
   const wikiIndex = JSON.parse(
     await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')

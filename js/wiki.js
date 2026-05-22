@@ -295,15 +295,22 @@ function selectSearchMatches(query, options) {
   const opts = options || {};
   const allowPartialFallback = opts.allowPartialFallback !== false;
   const limit = Number.isFinite(opts.limit) ? Math.max(0, opts.limit) : Infinity;
-  const meaningfulQueryTokenCount = tokenizeSearchQuery(q)
-    .filter(token => token.length >= 3 && !SEARCH_TEXT_STOP_WORDS.has(token))
-    .length;
+  const meaningfulQueryTokens = tokenizeSearchQuery(q)
+    .filter(token => token.length >= 3 && !SEARCH_TEXT_STOP_WORDS.has(token));
+  const meaningfulQueryTokenCount = meaningfulQueryTokens.length;
 
   if (!q || !WIKI_INDEX.length || limit === 0) {
     return { scored: [], usedPartialFallback: false };
   }
 
-  const allScored = WIKI_INDEX.map(item => ({ item, ...scoreResult(item, q) }));
+  const meaningfulQuery = meaningfulQueryTokens.join(' ');
+  const allScored = WIKI_INDEX.map(item => {
+    const baseScore = scoreResult(item, q);
+    const meaningfulMatchedTokenCount = meaningfulQuery
+      ? scoreResult(item, meaningfulQuery).matchedTokenCount
+      : 0;
+    return { item, ...baseScore, meaningfulMatchedTokenCount };
+  });
   let scored = allScored.filter(r => r.matchedTokenCount > 0 && r.matchedTokenCount >= r.totalTokenCount);
   let usedPartialFallback = false;
 
@@ -311,7 +318,7 @@ function selectSearchMatches(query, options) {
     usedPartialFallback = true;
     scored = allScored.filter(r => r.queryScore > 0);
     if (meaningfulQueryTokenCount >= 3) {
-      scored = scored.filter(r => r.matchedTokenCount >= 2);
+      scored = scored.filter(r => r.meaningfulMatchedTokenCount >= 2);
     }
   }
 
