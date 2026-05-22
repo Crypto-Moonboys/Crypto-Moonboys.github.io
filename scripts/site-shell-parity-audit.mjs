@@ -78,6 +78,7 @@ if (!shellJs) {
     ['Search the wiki\u2026', 'canonical search placeholder'],
     ['Battle Chamber', 'Battle Chamber link'],
     ['Navigation', 'canonical Navigation heading'],
+    ['No password account \\u00B7 Telegram link for competitive systems \\u00B7 Bot-maintained', 'updated no-password competitive-link footer note'],
   ];
   for (const [needle, label] of contentChecks) {
     if (shellJs.includes(needle)) {
@@ -85,6 +86,11 @@ if (!shellJs) {
     } else {
       fail(`site-shell.js missing ${label}: "${needle}"`);
     }
+  }
+  if (shellJs.includes('No login')) {
+    fail('site-shell.js must not claim "No login" now that Telegram linking is required for competitive systems');
+  } else {
+    pass('site-shell.js does not include outdated "No login" footer claim');
   }
 
   console.log('\n[2b] site-shell.js Paperclip global marker');

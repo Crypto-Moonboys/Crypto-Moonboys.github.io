@@ -149,7 +149,7 @@
     '</div>',
     '<div class="footer-bottom">',
     '  <p>\u00A9 2026 Crypto Moonboys Wiki \u00B7 Not financial advice.</p>',
-    '  <p><span class="no-login-note">\uD83D\uDD12 No sign-up \u00B7 No login \u00B7 Bot-maintained</span></p>',
+    '  <p><span class="no-login-note">\uD83D\uDD12 No password account \u00B7 Telegram link for competitive systems \u00B7 Bot-maintained</span></p>',
     '</div>',
   ].join('\n');
 

@@ -637,7 +637,7 @@ ${membersHtml}
       </div>
       <div class="footer-bottom">
         <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
-        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
+        <p><span class="no-login-note">🔒 No password account · Telegram link for competitive systems · Bot-maintained</span></p>
       </div>
     </footer>
   </div>

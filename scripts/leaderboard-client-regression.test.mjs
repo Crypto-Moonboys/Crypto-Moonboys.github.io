@@ -75,8 +75,17 @@ await test('submitScore only includes telegram_auth when signed auth is availabl
 await test('submitScore missing-auth path marks unsigned public submit instead of aborting', async () => {
   assert(
     submitScoreBody.includes('result.state = "public_submit_unsigned"') &&
-      submitScoreBody.includes('Submitting to public leaderboard without XP sync'),
+      submitScoreBody.includes('Public score submitted. XP sync pending — Telegram auth refresh needed.'),
     'missing signed auth should enter public_submit_unsigned path',
+  );
+});
+
+await test('submitScore unsigned fallback copy avoids false competitive/XP success claims', async () => {
+  assert(
+    submitScoreBody.includes('state: linked && !hasSignedAuth ? "public_score_submitted" : "score_accepted"') &&
+      submitScoreBody.includes('Public score submitted. XP sync pending — Telegram auth refresh needed.') &&
+      !submitScoreBody.includes('competitive progression succeeded'),
+    'unsigned accepted state must explicitly report public submit + pending XP sync only',
   );
 });
 
@@ -126,6 +135,31 @@ await test('submitMetaScore call site passes telegram_auth', async () => {
   assert(
     metaCallBlock.includes('telegram_auth'),
     'submitMetaScore call site must forward telegram_auth: telegramAuth',
+  );
+});
+
+await test('callFactionEarn uses restored signed Telegram auth path', async () => {
+  assert(
+    src.includes('const telegramAuth = await ArcadeSync.getTelegramAuth();') &&
+      !src.includes('const telegramAuth = gate.getTelegramAuth();'),
+    'faction earn must use ArcadeSync.getTelegramAuth() (signed/restored), not stale gate.getTelegramAuth()',
+  );
+});
+
+await test('faction earn only runs when linked + signed auth are present', async () => {
+  assert(
+    submitScoreBody.includes('if (linked && hasSignedAuth) {') &&
+      submitScoreBody.includes('const factionEarn = await callFactionEarn("score_accept", score);'),
+    'faction earn side-effect must be gated by linked + signed auth',
+  );
+});
+
+await test('pending progression sync requires signed auth and avoids false synced emits when skipped', async () => {
+  assert(
+    submitScoreBody.includes('const shouldSyncPending = linked && hasSignedAuth && pendingBeforeSync > 0;') &&
+      submitScoreBody.includes('if (!syncSummary?.skipped) {') &&
+      submitScoreBody.includes('state: "progression_synced"'),
+    'pending sync must require signed auth and only emit progression_synced on non-skipped sync',
   );
 });
 
