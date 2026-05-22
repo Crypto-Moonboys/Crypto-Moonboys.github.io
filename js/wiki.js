@@ -66,6 +66,17 @@ const SEARCH_TEXT_STOP_WORDS = new Set([
   'was', 'were', 'with'
 ]);
 
+function tokenizeSearchQuery(query) {
+  const q = String(query || '').toLowerCase().trim();
+  if (!q) return [];
+  return q
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .filter(Boolean);
+}
+
 /* ── CATEGORY INDEX ──────────────────────────────────────────────────────── */
 const CATEGORY_LIST = [
   'Cryptocurrencies','Concepts','Technology','Tools & Platforms','Lore',
@@ -284,6 +295,9 @@ function selectSearchMatches(query, options) {
   const opts = options || {};
   const allowPartialFallback = opts.allowPartialFallback !== false;
   const limit = Number.isFinite(opts.limit) ? Math.max(0, opts.limit) : Infinity;
+  const meaningfulQueryTokenCount = tokenizeSearchQuery(q)
+    .filter(token => token.length >= 3 && !SEARCH_TEXT_STOP_WORDS.has(token))
+    .length;
 
   if (!q || !WIKI_INDEX.length || limit === 0) {
     return { scored: [], usedPartialFallback: false };
@@ -296,6 +310,9 @@ function selectSearchMatches(query, options) {
   if (!scored.length && allowPartialFallback) {
     usedPartialFallback = true;
     scored = allScored.filter(r => r.queryScore > 0);
+    if (meaningfulQueryTokenCount >= 3) {
+      scored = scored.filter(r => r.matchedTokenCount >= 2);
+    }
   }
 
   scored.sort(compareScoredResults);
@@ -505,7 +522,7 @@ function scoreResult(item, query) {
   }
 
   // Tokenize: normalize case, strip punctuation, split on whitespace
-  const tokens = q.replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  const tokens = tokenizeSearchQuery(q);
   const normQ  = tokens.join(' ');
 
   // Build normalized searchable text for each field
