@@ -158,18 +158,28 @@ const BANNED_CONSOLE_SUBSTRINGS = [
   'Script will not be executed',
 ];
 
-// JS files whose 4xx/5xx responses indicate a broken deployment (global, all pages).
-const CRITICAL_JS_PATHS = [
+// JS files whose 4xx/5xx responses indicate a broken deployment.
+// Kept page-scoped to avoid false failures on pages that do not require a script.
+const SHELL_CRITICAL_JS_PATHS = [
   '/js/site-shell.js',
+];
+
+const RIGHT_RAIL_CRITICAL_JS_PATHS = [
   '/js/components/connection-status-panel.js',
   '/js/components/global-player-header.js',
   '/js/components/live-activity-summary.js',
+];
+
+const WIKI_SEARCH_CRITICAL_JS_PATHS = [
   '/js/wiki.js',
 ];
 
-// Extra critical JS only required on game pages.
-const BTQM_CRITICAL_JS_PATHS = [
+const ARCADE_CRITICAL_JS_PATHS = [
   '/js/arcade/core/game-shell.js',
+];
+
+// Extra critical JS only required on BTQM.
+const BTQM_CRITICAL_JS_PATHS = [
   '/js/arcade/games/block-topia-quest-maze/bootstrap.js',
 ];
 
@@ -353,9 +363,13 @@ async function testPage(page, pathname) {
   const isGamesHub         = pathname === '/games/';
   const isSearchPage       = pathname === '/search.html';
 
-  const allCritical = isBtqmPage
-    ? [...CRITICAL_JS_PATHS, ...BTQM_CRITICAL_JS_PATHS]
-    : CRITICAL_JS_PATHS;
+  const allCritical = [
+    ...SHELL_CRITICAL_JS_PATHS,
+    ...(isRightPanelPage || isStandaloneCsp ? RIGHT_RAIL_CRITICAL_JS_PATHS : []),
+    ...(isSearchPage ? WIKI_SEARCH_CRITICAL_JS_PATHS : []),
+    ...(ARCADE_PAGES.includes(pathname) ? ARCADE_CRITICAL_JS_PATHS : []),
+    ...(isBtqmPage ? BTQM_CRITICAL_JS_PATHS : []),
+  ];
 
   const { consoleErrors, failedRequests, criticalStatus, criticalNetFailed } =
     attachPageDiagnostics(page, allCritical);

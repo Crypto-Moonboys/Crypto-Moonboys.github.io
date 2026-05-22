@@ -22,12 +22,13 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT    = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SCRIPT  = path.join(ROOT, 'scripts', 'live-site-verify.mjs');
 const source  = readFileSync(SCRIPT, 'utf8');
 const pkgJson = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+const { ARCADE_MANIFEST } = await import(pathToFileURL(path.join(ROOT, 'js', 'arcade', 'arcade-manifest.js')).href);
 
 // ── 1. Syntax check ───────────────────────────────────────────────────────────
 execFileSync(process.execPath, ['--check', SCRIPT], { encoding: 'utf8' });
@@ -143,22 +144,16 @@ assert.ok(
 );
 console.log('PASS: no Telegram credentials required');
 
-// ── 9. 8-game canonical roster is present and complete ────────────────────────
+// ── 9. Canonical roster is manifest-backed and complete ───────────────────────
 const canonicalGamesBlock = source.match(/CANONICAL_GAMES\s*=\s*\[[\s\S]*?\];/);
 assert.ok(canonicalGamesBlock, 'CANONICAL_GAMES constant must be present');
-const expectedGames = [
-  'Invaders 3008',
-  'Pac-Chain',
-  'Asteroid Fork',
-  'Breakout Bullrun',
-  'Tetris Block Topia',
-  'Crystal Quest',
-  'Block Topia Quest Maze',
-  'SnakeRun 3008',
-];
+assert.equal(ARCADE_MANIFEST.length, 8, 'ARCADE_MANIFEST must contain exactly 8 live games');
+const expectedGames = ARCADE_MANIFEST.map(entry => entry.label.replace(/^[^\p{L}\p{N}]+/u, '').trim());
+const canonicalGames = [...canonicalGamesBlock[0].matchAll(/'([^']+)'/g)].map(match => match[1]);
+assert.equal(canonicalGames.length, 8, 'CANONICAL_GAMES must contain exactly 8 labels');
 for (const name of expectedGames) {
   assert.ok(
-    canonicalGamesBlock[0].includes(name),
+    canonicalGames.includes(name),
     `CANONICAL_GAMES must include: ${name}`,
   );
   console.log(`PASS: canonical game present: ${name}`);
