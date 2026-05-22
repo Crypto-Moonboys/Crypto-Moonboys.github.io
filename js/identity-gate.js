@@ -449,38 +449,56 @@
    * Requires BOTH Step 1 (Telegram auth) AND Step 2 (bot link completed).
    * Also checks the anti-cheat status: if the account is blocked, the action is
    * rejected with a clear message instead of calling onAllowed().
-   * If the user is linked and not blocked, calls onAllowed() immediately.
-   * Otherwise opens the sync gate modal with bot activation instructions.
+   * Fail-safe default: protected mode fails closed whenever status verification fails.
+   * Optional display/soft mode allows intentionally non-protected display paths to render.
    */
-  function requireLinkedAccount(onAllowed) {
+  function requireLinkedAccount(onAllowed, options) {
+    var opts = options && typeof options === 'object' ? options : {};
+    var mode = opts.mode ? String(opts.mode).toLowerCase() : 'protected';
+    var softMode = !!opts.soft || mode === 'display';
+    var allow = typeof onAllowed === 'function' ? onAllowed : function () {};
+
     if (!isTelegramLinked()) {
-      showSyncGateModal(true);
+      if (softMode) {
+        allow();
+      } else {
+        showSyncGateModal(true);
+      }
       return;
     }
 
     var telegramId = getTelegramId();
     var base = (window.MOONBOYS_API || {}).BASE_URL || null;
 
-    // If we have an API base and a telegram ID, verify the account is not blocked.
-    if (base && telegramId) {
-      fetch(base + '/telegram/user/status?telegram_id=' + encodeURIComponent(telegramId))
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (data) {
-          if (data && data.anticheat && data.anticheat.is_blocked === true) {
-            var reason = data.anticheat.blocked_reason || 'Competitive activity violation detected.';
-            showBlockedModal(reason);
-          } else {
-            onAllowed();
-          }
-        })
-        .catch(function () {
-          // If the status check fails (network error etc.), allow the action
-          // to avoid false positives from transient failures.
-          onAllowed();
-        });
-    } else {
-      onAllowed();
+    if (!base || !telegramId) {
+      if (softMode) {
+        allow();
+      } else {
+        showStatusVerificationModal();
+      }
+      return;
     }
+
+    fetch(base + '/telegram/user/status?telegram_id=' + encodeURIComponent(telegramId))
+      .then(function (r) {
+        if (!r || !r.ok) throw new Error('status_http_' + (r && r.status ? r.status : '0'));
+        return r.json().catch(function () { return {}; });
+      })
+      .then(function (data) {
+        if (data && data.anticheat && data.anticheat.is_blocked === true) {
+          var reason = data.anticheat.blocked_reason || 'Competitive activity violation detected.';
+          showBlockedModal(reason);
+          return;
+        }
+        allow();
+      })
+      .catch(function () {
+        if (softMode) {
+          allow();
+          return;
+        }
+        showStatusVerificationModal();
+      });
   }
 
   // ── Blocked account modal ────────────────────────────────────
@@ -493,6 +511,45 @@
       existing.style.display = 'flex';
       existing.setAttribute('aria-hidden', 'false');
       return;
+    }
+
+    function showStatusVerificationModal() {
+      injectStyles();
+      var VERIFY_ID = 'tg-status-verify-modal';
+      var existing = document.getElementById(VERIFY_ID);
+      if (existing) {
+        existing.style.display = 'flex';
+        existing.setAttribute('aria-hidden', 'false');
+        return;
+      }
+
+      var div = document.createElement('div');
+      div.id = VERIFY_ID;
+      div.className = 'tg-sync-gate-overlay';
+      div.setAttribute('role', 'alertdialog');
+      div.setAttribute('aria-modal', 'true');
+      div.setAttribute('aria-label', 'Status verification required');
+      div.setAttribute('aria-hidden', 'false');
+      div.innerHTML =
+        '<div class="tg-sync-gate-box">' +
+          '<button class="tg-sync-gate-close" aria-label="Close" id="tg-verify-close">✕</button>' +
+          '<div class="tg-sync-gate-icon" aria-hidden="true">⚠️</div>' +
+          '<p class="tg-sync-gate-title">Server check failed — try again.</p>' +
+          '<p class="tg-sync-gate-body">Telegram status could not be verified.</p>' +
+        '</div>';
+      document.body.appendChild(div);
+      div.style.display = 'flex';
+
+      div.querySelector('#tg-verify-close').addEventListener('click', function () {
+        div.style.display = 'none';
+        div.setAttribute('aria-hidden', 'true');
+      });
+      div.addEventListener('click', function (e) {
+        if (e.target === div) {
+          div.style.display = 'none';
+          div.setAttribute('aria-hidden', 'true');
+        }
+      });
     }
 
     var div = document.createElement('div');

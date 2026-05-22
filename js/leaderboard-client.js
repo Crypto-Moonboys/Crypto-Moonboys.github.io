@@ -124,8 +124,8 @@ async function callFactionEarn(source, baseXp) {
   if (typeof window === "undefined") return null;
   const cfg = window.MOONBOYS_API || {};
   const gate = window.MOONBOYS_IDENTITY;
-  if (!cfg.BASE_URL || !gate || typeof gate.getTelegramAuth !== "function") return null;
-  const telegramAuth = gate.getTelegramAuth();
+  if (!cfg.BASE_URL || !gate || typeof gate.isTelegramLinked !== "function" || !gate.isTelegramLinked()) return null;
+  const telegramAuth = await ArcadeSync.getTelegramAuth();
   if (!telegramAuth || !telegramAuth.hash || !telegramAuth.auth_date) return null;
   const res = await fetch(String(cfg.BASE_URL).replace(/\/$/, "") + "/faction/earn", {
     method: "POST",
@@ -212,14 +212,14 @@ export async function submitScore(player, score, game = "global") {
 
     if (!hasSignedAuth) {
       result.state = "public_submit_unsigned";
-      result.message = "Telegram auth missing or expired. Submitting to public leaderboard without XP sync.";
+      result.message = "Public score submitted. XP sync pending — Telegram auth refresh needed.";
       markSyncHealth("bad", "auth_expired");
       emitArcadeSubmissionStatus({
         ...result,
         state: "public_submit_unsigned",
         message: result.message,
       });
-      emitMicroNotification("Telegram sync expired. Score still submitted publicly.", "warning");
+      emitMicroNotification("Public score submitted. Telegram auth refresh needed for XP sync.", "warning");
     }
   }
 
@@ -284,23 +284,27 @@ export async function submitScore(player, score, game = "global") {
       emitMicroNotification(`${resolvedPlayer} score accepted (${score}).`, "success");
       emitArcadeSubmissionStatus({
         ...result,
-        state: "score_accepted",
-        message: "Score accepted for ranking.",
+        state: linked && !hasSignedAuth ? "public_score_submitted" : "score_accepted",
+        message: linked && !hasSignedAuth
+          ? "Public score submitted. XP sync pending — Telegram auth refresh needed."
+          : "Score accepted for ranking.",
       });
-      try {
-        const factionEarn = await callFactionEarn("score_accept", score);
-        dispatchUiState("moonboys:faction-boost", {
-          source: "score_accept",
-          faction: factionEarn && factionEarn.faction ? String(factionEarn.faction) : getCurrentFactionKey(),
-          amount: Number(factionEarn && (factionEarn.faction_xp_awarded ?? factionEarn.faction_xp_delta ?? factionEarn.base_xp) || 0),
-          ts: Date.now(),
-        });
-        emitMicroNotification("Faction influence increased.", "success");
-        if (typeof window !== "undefined" && window.MOONBOYS_FACTION && typeof window.MOONBOYS_FACTION.loadStatus === "function") {
-          window.MOONBOYS_FACTION.loadStatus().catch(() => null);
+      if (linked && hasSignedAuth) {
+        try {
+          const factionEarn = await callFactionEarn("score_accept", score);
+          dispatchUiState("moonboys:faction-boost", {
+            source: "score_accept",
+            faction: factionEarn && factionEarn.faction ? String(factionEarn.faction) : getCurrentFactionKey(),
+            amount: Number(factionEarn && (factionEarn.faction_xp_awarded ?? factionEarn.faction_xp_delta ?? factionEarn.base_xp) || 0),
+            ts: Date.now(),
+          });
+          emitMicroNotification("Faction influence increased.", "success");
+          if (typeof window !== "undefined" && window.MOONBOYS_FACTION && typeof window.MOONBOYS_FACTION.loadStatus === "function") {
+            window.MOONBOYS_FACTION.loadStatus().catch(() => null);
+          }
+        } catch (error) {
+          console.warn("[leaderboard-client] Faction earn sync failed:", error);
         }
-      } catch (error) {
-        console.warn("[leaderboard-client] Faction earn sync failed:", error);
       }
       if (linked && hasSignedAuth && gameKey === "blocktopia") {
         try {
@@ -433,7 +437,7 @@ export async function submitScore(player, score, game = "global") {
   }
 
   const pendingBeforeSync = ArcadeSync.getPendingCount();
-  const shouldSyncPending = linked && pendingBeforeSync > 0;
+  const shouldSyncPending = linked && hasSignedAuth && pendingBeforeSync > 0;
   emitArcadeDebug("pending_sync_decision", {
     game: gameKey,
     score,
@@ -441,7 +445,7 @@ export async function submitScore(player, score, game = "global") {
     accepted: result.accepted,
     pendingBeforeSync,
     shouldSyncPending,
-    reason: shouldSyncPending ? "linked_with_pending_queue" : (!linked ? "not_linked" : "empty_queue"),
+    reason: shouldSyncPending ? "linked_with_signed_auth_and_pending_queue" : (!linked ? "not_linked" : (!hasSignedAuth ? "missing_signed_auth" : "empty_queue")),
   });
   emitArcadeDebug("sync_trigger_check", {
     game: gameKey,
@@ -469,14 +473,16 @@ export async function submitScore(player, score, game = "global") {
         skipped: !!syncSummary?.skipped,
         reason: syncSummary?.reason || null,
       });
-      emitArcadeSubmissionStatus({
-        ...result,
-        state: "progression_synced",
-        syncedRuns: Number(syncSummary?.synced) || 0,
-        pendingRuns: Number(syncSummary?.remaining) || 0,
-        message: "Accepted run synced to shared arcade progression.",
-      });
-      if ((Number(syncSummary?.synced) || 0) > 0) {
+      if (!syncSummary?.skipped) {
+        emitArcadeSubmissionStatus({
+          ...result,
+          state: "progression_synced",
+          syncedRuns: Number(syncSummary?.synced) || 0,
+          pendingRuns: Number(syncSummary?.remaining) || 0,
+          message: "Accepted run synced to shared arcade progression.",
+        });
+      }
+      if (!syncSummary?.skipped && (Number(syncSummary?.synced) || 0) > 0) {
         emitMicroNotification(`Progress synced (${syncSummary.synced} run${syncSummary.synced === 1 ? "" : "s"}).`, "success");
       }
     } catch (syncErr) {
@@ -494,7 +500,7 @@ export async function submitScore(player, score, game = "global") {
       linked,
       accepted: result.accepted,
       pendingBeforeSync,
-      reason: !linked ? "not_linked" : "empty_queue",
+      reason: !linked ? "not_linked" : (!hasSignedAuth ? "missing_signed_auth" : "empty_queue"),
     });
   }
 

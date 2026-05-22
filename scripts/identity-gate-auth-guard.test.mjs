@@ -1,0 +1,161 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+
+const source = fs.readFileSync('js/identity-gate.js', 'utf8');
+
+function createDomStub() {
+  const byId = new Map();
+
+  function makeNode(tagName = 'div') {
+    const listeners = new Map();
+    const node = {
+      tagName: String(tagName || 'div').toUpperCase(),
+      id: '',
+      className: '',
+      style: {},
+      attributes: {},
+      innerHTML: '',
+      children: [],
+      parentNode: null,
+      setAttribute(name, value) {
+        this.attributes[name] = String(value);
+      },
+      appendChild(child) {
+        if (!child || typeof child !== 'object') return child;
+        child.parentNode = this;
+        this.children.push(child);
+        if (child.id) byId.set(child.id, child);
+        return child;
+      },
+      addEventListener(type, handler) {
+        listeners.set(type, handler);
+      },
+      querySelector() {
+        return {
+          addEventListener() {},
+          focus() {},
+        };
+      },
+    };
+    return node;
+  }
+
+  const document = {
+    readyState: 'complete',
+    head: makeNode('head'),
+    body: makeNode('body'),
+    createElement(tagName) {
+      return makeNode(tagName);
+    },
+    getElementById(id) {
+      return byId.get(id) || null;
+    },
+    addEventListener() {},
+  };
+  return { document, byId };
+}
+
+function createLocalStorage(seed = {}) {
+  const store = new Map(Object.entries(seed).map(([k, v]) => [k, String(v)]));
+  return {
+    getItem(key) {
+      return store.has(key) ? store.get(key) : null;
+    },
+    setItem(key, value) {
+      store.set(key, String(value));
+    },
+    removeItem(key) {
+      store.delete(key);
+    },
+  };
+}
+
+async function bootstrapIdentity({ storageSeed, fetchImpl }) {
+  const { document, byId } = createDomStub();
+  const localStorage = createLocalStorage(storageSeed);
+  const windowObj = {
+    MOONBOYS_API: { BASE_URL: 'https://api.example.test' },
+  };
+  const context = {
+    window: windowObj,
+    document,
+    localStorage,
+    fetch: fetchImpl,
+    CustomEvent: class CustomEvent {
+      constructor(type, init = {}) {
+        this.type = type;
+        this.detail = init.detail || {};
+      }
+    },
+    setTimeout,
+    clearTimeout,
+    console: { log() {}, warn() {}, error() {}, info() {} },
+  };
+  context.globalThis = context;
+  vm.runInNewContext(source, context, { filename: 'js/identity-gate.js' });
+  return { api: windowObj.MOONBOYS_IDENTITY, byId, windowObj };
+}
+
+async function waitTick() {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+{
+  let allowed = false;
+  const { api, byId } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+    },
+    fetchImpl: async () => {
+      throw new Error('network_down');
+    },
+  });
+  api.requireLinkedAccount(() => {
+    allowed = true;
+  });
+  await waitTick();
+  assert.equal(allowed, false, 'protected gate must fail closed when status check fails');
+  const verifyModal = byId.get('tg-status-verify-modal');
+  assert.ok(verifyModal, 'status verification failure modal should render');
+  assert.ok(
+    verifyModal.innerHTML.includes('Server check failed — try again.') &&
+      verifyModal.innerHTML.includes('Telegram status could not be verified.'),
+    'failure modal should include clear verification retry copy',
+  );
+}
+
+{
+  let allowed = false;
+  const { api } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+    },
+    fetchImpl: async () => {
+      throw new Error('network_down');
+    },
+  });
+  api.requireLinkedAccount(() => {
+    allowed = true;
+  }, { mode: 'display' });
+  await waitTick();
+  assert.equal(allowed, true, 'display mode should permit non-protected fallback when status check fails');
+}
+
+{
+  let allowed = false;
+  const { api } = await bootstrapIdentity({
+    storageSeed: {},
+    fetchImpl: async () => ({ ok: true, json: async () => ({}) }),
+  });
+  api.requireLinkedAccount(() => {
+    allowed = true;
+  }, { soft: true });
+  await waitTick();
+  assert.equal(allowed, true, 'soft mode should allow intentionally display-only views without Telegram link');
+}
+
+console.log('Identity gate auth guard regression checks passed.');
