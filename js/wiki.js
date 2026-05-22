@@ -60,6 +60,11 @@ let ENTITY_GRAPH = null;
  */
 const FINAL_QUERY_WEIGHT = 2.5;
 const FINAL_RANK_WEIGHT = 1;
+const SEARCH_TEXT_STOP_WORDS = new Set([
+  'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from',
+  'in', 'into', 'is', 'it', 'of', 'on', 'or', 'that', 'the', 'to',
+  'was', 'were', 'with'
+]);
 
 /* ── CATEGORY INDEX ──────────────────────────────────────────────────────── */
 const CATEGORY_LIST = [
@@ -476,7 +481,13 @@ function scoreResult(item, query) {
   const q = String(query || '').toLowerCase().trim();
 
   if (!q) {
-    return { queryScore: 0, rankScore: item.rank_score, finalScore: item.rank_score };
+    return {
+      queryScore: 0,
+      rankScore: item.rank_score,
+      matchedTokenCount: 0,
+      totalTokenCount: 0,
+      finalScore: item.rank_score
+    };
   }
 
   // Tokenize: normalize case, strip punctuation, split on whitespace
@@ -510,6 +521,7 @@ function scoreResult(item, query) {
   // Per-token scoring: each token is matched independently across all fields
   for (const token of tokens) {
     let tokenMatched = false;
+    const canUseTextCorpusMatch = token.length >= 3 && !SEARCH_TEXT_STOP_WORDS.has(token);
 
     if (titleLower.includes(token) || normTitleStr.includes(token)) {
       queryScore += 40;
@@ -527,12 +539,12 @@ function scoreResult(item, query) {
       queryScore += 15;
       tokenMatched = true;
     }
-    if (descLower.includes(token)) {
+    if (canUseTextCorpusMatch && descLower.includes(token)) {
       queryScore += 15;
       tokenMatched = true;
     }
-    // Keyword bag (body-text proxy): only match tokens >= 3 chars to avoid stop-word flood
-    if (token.length >= 3 && kwBagStr.includes(token)) {
+    // Keyword bag (body-text proxy): only match non-stopwords >= 3 chars to avoid flood
+    if (canUseTextCorpusMatch && kwBagStr.includes(token)) {
       queryScore += 10;
       tokenMatched = true;
     }

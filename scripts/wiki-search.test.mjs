@@ -39,6 +39,43 @@ function makeSandbox() {
   return sandbox;
 }
 
+async function renderSearchResults(indexData, query) {
+  const elements = {
+    'search-results-page': { innerHTML: '' },
+    'search-heading': { textContent: '' }
+  };
+  const sandbox = {
+    console,
+    URL,
+    URLSearchParams,
+    fetch: async () => ({ ok: true, status: 200, json: async () => indexData }),
+    history: { replaceState() {} },
+    document: {
+      readyState: 'loading',
+      addEventListener() {},
+      querySelectorAll() { return []; },
+      querySelector() { return null; },
+      getElementById(id) { return elements[id] || null; }
+    },
+    window: {
+      location: {
+        pathname: '/search.html',
+        search: '',
+        href: 'https://example.test/search.html'
+      }
+    }
+  };
+
+  vm.createContext(sandbox);
+  vm.runInContext(wikiJs, sandbox, { filename: 'wiki.js' });
+  await sandbox.loadWikiIndex();
+  sandbox.renderSearchPage(query);
+  return {
+    html: elements['search-results-page'].innerHTML,
+    heading: elements['search-heading'].textContent
+  };
+}
+
 const sb = makeSandbox();
 const scoreResult = sb.scoreResult;
 
@@ -112,12 +149,10 @@ const bitcoinArticle = {
   const r = scoreResult(graffpunksMain, 'GRAFFPUNKS');
   assert.ok(r.queryScore > 0,
     'Single-word GRAFFPUNKS must still find the main GraffPUNKS article');
-  assert.ok(r.queryScore > 0,
-    'Single-word GRAFFPUNKS must still find graffpunks-247-radio article');
 
   const r2 = scoreResult(graffpunks247Radio, 'GRAFFPUNKS');
   assert.ok(r2.queryScore > 0,
-    'Single-word GRAFFPUNKS must still find graffpunks-247-radio');
+    'Single-word GRAFFPUNKS must still find graffpunks-247-radio article');
 }
 
 // ── 4. Lowercase query produces same score as uppercase ───────────────────────
@@ -164,13 +199,33 @@ const bitcoinArticle = {
   const r = scoreResult(graffpunks247Radio, '');
   assert.equal(r.queryScore, 0,
     'Empty query must return queryScore: 0');
+  assert.equal(r.matchedTokenCount, 0,
+    'Empty query must return matchedTokenCount: 0');
+  assert.equal(r.totalTokenCount, 0,
+    'Empty query must return totalTokenCount: 0');
   assert.equal(r.rankScore, graffpunks247Radio.rank_score,
     'Empty query must return correct rankScore');
   assert.equal(r.finalScore, graffpunks247Radio.rank_score,
     'Empty query: finalScore must equal rank_score');
 }
 
-// ── 9. Real wiki-index: GRAFFPUNKS RADIO finds relevant articles ──────────────
+// ── 9. Search page falls back to partial matches when all-token matches are empty ──────────────
+{
+  const onlyPartial = {
+    ...graffpunksMain,
+    search_index: {
+      ...graffpunksMain.search_index,
+      keyword_bag: ['graffpunks', 'street', 'art']
+    }
+  };
+  const { html, heading } = await renderSearchResults([onlyPartial], 'graffpunks radio');
+  assert.ok(html.includes('GraffPUNKS — Crypto Moonboys Wiki'),
+    'Search page must render partial matches when no result matches all tokens');
+  assert.equal(heading, 'Results for "graffpunks radio" (1)',
+    'Fallback branch should still report the rendered partial result count');
+}
+
+// ── 10. Real wiki-index: GRAFFPUNKS RADIO finds relevant articles ──────────────
 {
   const wikiIndex = JSON.parse(
     await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
@@ -201,7 +256,7 @@ const bitcoinArticle = {
   );
 }
 
-// ── 10. Real wiki-index: GRAFFPUNKS alone finds GraffPUNKS articles ──────────
+// ── 11. Real wiki-index: GRAFFPUNKS alone finds GraffPUNKS articles ──────────
 {
   const wikiIndex = JSON.parse(
     await fs.readFile(path.join(ROOT, 'js', 'wiki-index.json'), 'utf8')
