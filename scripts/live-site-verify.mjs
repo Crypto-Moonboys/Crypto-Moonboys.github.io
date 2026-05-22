@@ -206,6 +206,14 @@ const BTQM_CRITICAL_JS_PATHS = [
   '/js/arcade/games/block-topia-quest-maze/bootstrap.js',
 ];
 
+// Standalone arcade pages can require page-specific bootstrap modules.
+// Keep this map path-scoped so adding new standalone pages is easy.
+const ARCADE_PAGE_CRITICAL_BOOTSTRAP_PATHS = {
+  '/games/invaders-3008/': [
+    '/js/arcade/games/invaders/bootstrap.js',
+  ],
+};
+
 // Strings that site-shell.js source MUST contain.
 const SHELL_SOURCE_MUST_CONTAIN = [
   'shouldShowRightPanel',
@@ -405,6 +413,7 @@ async function testPage(page, pathname) {
     ...(isRightPanelPage || isStandaloneCsp ? RIGHT_RAIL_CRITICAL_JS_PATHS : []),
     ...(isSearchPage ? WIKI_SEARCH_CRITICAL_JS_PATHS : []),
     ...(isArcadePage ? ARCADE_CRITICAL_JS_PATHS : []),
+    ...(ARCADE_PAGE_CRITICAL_BOOTSTRAP_PATHS[pathname] || []),
     ...(isBtqmPage ? BTQM_CRITICAL_JS_PATHS : []),
   ];
 
@@ -916,7 +925,21 @@ async function testWikiSearch(page, url) {
     });
   }
 
-  // 2. Lowercase/punctuation variant — reload fresh page to reset state.
+  // 2. GRAFFPUNKS (single-word) → relevant result expected.
+  await page.goto(`${BASE}/search.html`, { waitUntil: 'load', timeout: 20000 });
+  const graffSingle = await querySearch('GRAFFPUNKS');
+  if (graffSingle.error) {
+    fail(`wiki search input not found: ${graffSingle.error}`, { url, suggested: 'Search page HTML may have changed selector' });
+  } else if (graffSingle.resultText && graffSingle.resultText.toLowerCase().includes('graffpunk')) {
+    pass('wiki search "GRAFFPUNKS" single-word query returns relevant result');
+  } else {
+    fail('wiki search "GRAFFPUNKS" single-word query did not return a relevant result', {
+      url,
+      suggested: 'wiki-index.json may be stale or scoreResult logic broken on live build',
+    });
+  }
+
+  // 3. Lowercase/punctuation variant — reload fresh page to reset state.
   await page.goto(`${BASE}/search.html`, { waitUntil: 'load', timeout: 20000 });
   const graffLower = await querySearch('graffpunks, radio!');
   if (!graffLower.error && graffLower.resultText && (
@@ -931,7 +954,7 @@ async function testWikiSearch(page, url) {
     });
   }
 
-  // 3. Nonsense query → no unrelated spam.
+  // 4. Nonsense query → no unrelated spam.
   await page.goto(`${BASE}/search.html`, { waitUntil: 'load', timeout: 20000 });
   const nonsense = await querySearch('xyzfoo123nonsense');
   if (!nonsense.error) {
