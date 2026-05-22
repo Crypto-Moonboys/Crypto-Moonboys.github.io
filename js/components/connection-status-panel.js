@@ -102,9 +102,30 @@
 
   function getIdentity() { return window.MOONBOYS_IDENTITY || null; }
 
-  function getApiBase() {
+  function getSharedStatusCopy() {
     var cfg = window.MOONBOYS_API || {};
-    return cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
+    return cfg.STATUS || {};
+  }
+
+  function getApiInfo(mode) {
+    var cfg = window.MOONBOYS_API || {};
+    if (typeof cfg.getApiBaseInfo === 'function') {
+      return cfg.getApiBaseInfo({ mode: mode || 'write' });
+    }
+    var fallback = cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
+    return {
+      url: fallback,
+      available: !!fallback,
+      state: fallback ? 'configured' : 'config_required',
+      summary: fallback ? 'Server confirmed' : 'API config required',
+      detail: fallback ? 'API configured for this context' : 'Production API not configured for this context',
+    };
+  }
+
+  function getApiBase(mode) {
+    var info = getApiInfo(mode);
+    if (info && info.url) return String(info.url).replace(/\/$/, '');
+    return '';
   }
 
   function isLinked() {
@@ -127,6 +148,9 @@
   async function getSignedTelegramAuthWithRestore() {
     var gate = getIdentity();
     if (!gate) return null;
+    if (typeof gate.getFreshTelegramAuth === 'function') {
+      return gate.getFreshTelegramAuth();
+    }
     var freshAuth = typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
     if (freshAuth) return freshAuth;
     if (typeof gate.restoreLinkedTelegramAuth !== 'function') return null;
@@ -219,16 +243,43 @@
 
   async function checkApiOnline() {
     if (_apiOnlineCache !== null) return _apiOnlineCache;
-    var apiBase = getApiBase();
-    if (!apiBase) { _apiOnlineCache = false; return false; }
+    var apiInfo = getApiInfo('write');
+    var copy = getSharedStatusCopy();
+    var apiBase = apiInfo && apiInfo.url ? getApiBase('write') : '';
+    if (!apiBase) {
+      _apiOnlineCache = {
+        ok: false,
+        state: apiInfo && apiInfo.state ? apiInfo.state : 'config_required',
+        summary: copy.API_CONFIG_REQUIRED || 'API config required',
+        detail: apiInfo && apiInfo.detail ? apiInfo.detail : (copy.PRODUCTION_API_NOT_CONFIGURED || 'Production API not configured for this context'),
+      };
+      return _apiOnlineCache;
+    }
     var ac = new AbortController();
     var timer = setTimeout(function () { ac.abort(); }, 4000);
     try {
       // GET /health — the worker only implements GET; HEAD falls through to 404.
       var res = await fetch(apiBase + '/health', { method: 'GET', signal: ac.signal });
-      _apiOnlineCache = res.status < 500;
+      _apiOnlineCache = res.status < 500
+        ? {
+            ok: true,
+            state: 'server_confirmed',
+            summary: copy.SERVER_CONFIRMED || 'Server confirmed',
+            detail: 'Core API reachable',
+          }
+        : {
+            ok: false,
+            state: 'server_unavailable',
+            summary: copy.SERVER_UNAVAILABLE || 'Server unavailable',
+            detail: copy.LOCAL_CACHED_ONLY || 'Local cached only',
+          };
     } catch (_) {
-      _apiOnlineCache = false;
+      _apiOnlineCache = {
+        ok: false,
+        state: 'server_unavailable',
+        summary: copy.SERVER_UNAVAILABLE || 'Server unavailable',
+        detail: copy.LOCAL_CACHED_ONLY || 'Local cached only',
+      };
     } finally {
       clearTimeout(timer);
     }
@@ -548,6 +599,12 @@
         shared.mode = 'relink';
         return shared;
       }
+      var apiInfo = getApiInfo('write');
+      shared.apiInfo = apiInfo;
+      if (!apiInfo || !apiInfo.url) {
+        shared.mode = 'sync_pending';
+        return shared;
+      }
 
       var missedXp = missedXpAllTime(shared.dailyState);
       var dailyCounts = getDailyCounts(shared.dailyState);
@@ -605,6 +662,16 @@
           '<a href="/gkniftyheads-incubator.html" class="csp-live-cta">RELINK Telegram</a>' +
         '</div>';
     }
+    if (shared.mode === 'sync_pending') {
+      var apiSummary = shared.apiInfo && shared.apiInfo.summary ? shared.apiInfo.summary : 'API config required';
+      var apiDetail = shared.apiInfo && shared.apiInfo.detail ? shared.apiInfo.detail : 'Production API not configured for this context';
+      return '' +
+        '<div class="csp-panel csp-panel--live-feed" role="status" aria-label="Player live feed">' +
+          '<div class="csp-live-head"><span class="csp-pulse csp-pulse--warn"></span><div><strong>Sync pending</strong><span>' + esc(apiSummary + ' — ' + apiDetail) + '</span></div></div>' +
+          '<div class="csp-live-row"><span class="csp-live-row-label">Arcade XP</span><span class="csp-live-row-val" data-csp-xp>' + esc(String(shared.arcadeXp)) + '</span></div>' +
+          '<div class="csp-live-row"><span class="csp-live-row-label">Status</span><span class="csp-live-row-val">' + esc('Local cached only') + '</span></div>' +
+        '</div>';
+    }
     // Linked: inside the right rail, keep compact frame-free rows.
     // Standalone data-csp-panel mounts keep a framed csp-panel wrapper.
     var inRightRail = !!(opts && opts.inRightRail);
@@ -628,6 +695,9 @@
     }
     if (shared.mode === 'relink') {
       return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">RELINK required to sync faction daily ops.</span></div>';
+    }
+    if (shared.mode === 'sync_pending') {
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">Sync pending — API config required.</span></div>';
     }
     var contributionDisplay = shared.contribution ? shared.contribution.value : 'syncing…';
     var completedDisplay = shared.dailyCounts && shared.dailyCounts.completed != null ? String(shared.dailyCounts.completed) : 'syncing…';
@@ -676,6 +746,9 @@
     }
     if (shared.mode === 'relink') {
       return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">RELINK required to sync Daily WTF signal.</span></div>';
+    }
+    if (shared.mode === 'sync_pending') {
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">Sync pending — API config required.</span></div>';
     }
     var wtf = shared.wtfState;
     var timer = 'syncing…';
@@ -734,6 +807,9 @@
     }
     if (shared.mode === 'relink') {
       return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">RELINK required to sync missed opportunities.</span></div>';
+    }
+    if (shared.mode === 'sync_pending') {
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">Sync pending — API config required.</span></div>';
     }
     var wtf = shared.wtfState || {};
     var daily = shared.dailyState || null;
@@ -808,6 +884,15 @@
       var relinkName = getDisplayName() || 'Player';
       return '<a href="/gkniftyheads-incubator.html" class="csp-badge csp-badge--relink" aria-label="Re-link required"><span class="csp-pulse csp-pulse--warn"></span><span class="csp-badge-stack"><strong>RELINK</strong><small>' + esc(relinkName) + ' · Auth expired</small></span></a>';
     }
+    var apiOnline = await checkApiOnline();
+    if (!apiOnline || apiOnline.ok !== true) {
+      return '' +
+        '<span class="csp-badge csp-badge--relink" aria-label="Sync pending">' +
+          '<span class="csp-pulse csp-pulse--warn"></span>' +
+          '<span class="csp-badge-stack"><strong>SYNC PENDING</strong><small>' + esc((apiOnline && apiOnline.summary) || 'API config required') + '</small></span>' +
+          '<span class="csp-badge-chip csp-badge-chip--warn">API?</span>' +
+        '</span>';
+    }
     var name = getDisplayName();
     var progression = await fetchRequiredXp();
     var arcadeXp = getArcadeXp();
@@ -815,13 +900,12 @@
     var progressionConfirmed = progression.confirmed === true;
     var serverLinkedConfirmed = isServerLinkedConfirmed();
     var blocktopiaStatus = resolveBlocktopiaAccessState(linked, arcadeXp, requiredXp, serverLinkedConfirmed, progressionConfirmed);
-    var apiOnline = await checkApiOnline();
     return '' +
       '<span class="csp-badge csp-badge--linked" aria-label="Live sync active">' +
         '<span class="csp-pulse"></span>' +
         '<span class="csp-badge-stack"><strong>LIVE SYNC</strong><small>' + esc(name || 'Player') + ' · XP <span data-csp-badge-xp>' + arcadeXp + '</span></small></span>' +
         '<span class="csp-badge-chip" data-csp-badge-bt>' + blocktopiaBadgeLabel(blocktopiaStatus) + '</span>' +
-        '<span class="csp-badge-chip ' + (apiOnline ? 'csp-badge-chip--good' : 'csp-badge-chip--warn') + '">' + (apiOnline ? 'API' : 'API?') + '</span>' +
+        '<span class="csp-badge-chip csp-badge-chip--good">API</span>' +
       '</span>';
   }
 

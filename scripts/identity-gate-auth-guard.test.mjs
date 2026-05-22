@@ -248,6 +248,51 @@ async function waitTick() {
   assert.equal(allowed, true, 'valid not-blocked status response must call onAllowed()');
 }
 
+// shared fresh-auth helper restores linked auth and returns the signed payload
+{
+  const restoredAuth = { id: '123', hash: 'signed', auth_date: String(Math.floor(Date.now() / 1000)) };
+  const { api } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+      moonboys_tg_auth: JSON.stringify({ id: '123' }),
+    },
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({
+        linked: true,
+        telegram_id: '123',
+        telegram_auth: restoredAuth,
+      }),
+    }),
+  });
+  const fresh = await api.getFreshTelegramAuth();
+  assert.equal(fresh && fresh.id, restoredAuth.id, 'getFreshTelegramAuth should restore the expected Telegram id');
+  assert.equal(fresh && fresh.hash, restoredAuth.hash, 'getFreshTelegramAuth should restore the expected signed hash');
+  assert.equal(fresh && fresh.auth_date, restoredAuth.auth_date, 'getFreshTelegramAuth should restore the expected auth_date');
+}
+
+// shared fresh-auth helper fails closed when API base is missing
+{
+  const { api, windowObj } = await bootstrapIdentity({
+    storageSeed: {
+      moonboys_tg_id: '123',
+      moonboys_tg_linked: '1',
+    },
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({
+        linked: true,
+        telegram_id: '123',
+        telegram_auth: { id: '123', hash: 'signed', auth_date: String(Math.floor(Date.now() / 1000)) },
+      }),
+    }),
+  });
+  windowObj.MOONBOYS_API = {};
+  const fresh = await api.getFreshTelegramAuth();
+  assert.equal(fresh, null, 'getFreshTelegramAuth must fail closed when API config is missing');
+}
+
 // blocked JSON shows blocked modal and does not call onAllowed()
 {
   let allowed = false;

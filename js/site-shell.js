@@ -239,6 +239,9 @@
 
     function resolveHudSignedTelegramAuth(gate) {
       if (!gate) return Promise.resolve(null);
+      if (typeof gate.getFreshTelegramAuth === 'function') {
+        return Promise.resolve(gate.getFreshTelegramAuth());
+      }
       var currentAuth = typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
       if (currentAuth) return Promise.resolve(currentAuth);
       if (typeof gate.restoreLinkedTelegramAuth !== 'function') return Promise.resolve(null);
@@ -264,16 +267,21 @@
       var linked = !!(gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked());
       if (!linked) return;
       var freshAuth = gate && typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
-      if (!freshAuth && gate && typeof gate.restoreLinkedTelegramAuth === 'function') {
-        freshAuth = await resolveHudSignedTelegramAuth(gate);
-      }
+      if (!freshAuth && gate) freshAuth = await resolveHudSignedTelegramAuth(gate);
       if (pillHost.dataset.hudPillToken !== String(token)) return;
       clearHudLivePill(nameEl);
       var pillEl = document.createElement('span');
-      pillEl.className = 'hud-live-pill ' + (freshAuth ? 'hud-live-pill--linked' : 'hud-live-pill--relink');
-      pillEl.setAttribute('aria-label', freshAuth ? 'Live linked' : 'Relink required');
-      if (freshAuth) {
+      var apiCfg = window.MOONBOYS_API || {};
+      var apiInfo = typeof apiCfg.getApiBaseInfo === 'function'
+        ? apiCfg.getApiBaseInfo({ mode: 'write' })
+        : { url: apiCfg.BASE_URL || '', state: apiCfg.BASE_URL ? 'configured' : 'config_required' };
+      var hasWriteApi = !!(apiInfo && apiInfo.url);
+      pillEl.className = 'hud-live-pill ' + (!freshAuth ? 'hud-live-pill--relink' : (hasWriteApi ? 'hud-live-pill--linked' : 'hud-live-pill--relink'));
+      pillEl.setAttribute('aria-label', !freshAuth ? 'Relink required' : (hasWriteApi ? 'Live linked' : 'Sync pending'));
+      if (freshAuth && hasWriteApi) {
         pillEl.textContent = 'LIVE LINKED';
+      } else if (freshAuth) {
+        pillEl.textContent = 'SYNC PENDING';
       } else {
         var relinkA = document.createElement('a');
         relinkA.href = '/gkniftyheads-incubator.html';

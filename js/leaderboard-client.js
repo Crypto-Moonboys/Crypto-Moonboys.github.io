@@ -8,11 +8,6 @@ import { ArcadeSync } from '/js/arcade-sync.js';
 import '/js/arcade-meta-ui.js';
 import '/js/arcade-retention-engine.js';
 
-// Fallback leaderboard URL — used only when window.MOONBOYS_API.LEADERBOARD_URL is not set.
-// The primary source of truth is window.MOONBOYS_API.LEADERBOARD_URL (set in js/api-config.js).
-// Update this constant only if the worker is permanently renamed.
-const PRODUCTION_LEADERBOARD_URL = "https://moonboys-leaderboard.sercullen.workers.dev";
-
 // localStorage key shared with identity-gate.js
 const TG_ID_KEY = "moonboys_tg_id";
 const LEADERBOARD_DEBUG_BUILD = "leaderboard-client-debug-v2";
@@ -48,16 +43,76 @@ function markSyncHealth(state, reason = "") {
   dispatchUiState("moonboys:sync-state", { state, reason });
 }
 
+function getSharedStatusCopy() {
+  if (typeof window === "undefined") return {};
+  const cfg = window.MOONBOYS_API || {};
+  return cfg.STATUS || {};
+}
 
-function getApiUrl() {
+function getLeaderboardApiInfo(mode = "read") {
   if (typeof window !== "undefined") {
-    // Primary: use the centralised MOONBOYS_API config (set by js/api-config.js)
     const cfg = window.MOONBOYS_API;
-    if (cfg && cfg.LEADERBOARD_URL) return String(cfg.LEADERBOARD_URL).replace(/\/$/, "");
-    // Legacy override: direct window.LEADERBOARD_API_URL
-    if (window.LEADERBOARD_API_URL) return String(window.LEADERBOARD_API_URL).replace(/\/$/, "");
+    if (cfg && typeof cfg.getLeaderboardApiInfo === "function") {
+      return cfg.getLeaderboardApiInfo({ mode });
+    }
+    const fallback = cfg && cfg.LEADERBOARD_URL ? String(cfg.LEADERBOARD_URL).replace(/\/$/, "") : "";
+    return {
+      url: fallback,
+      available: !!fallback,
+      state: fallback ? "configured" : "config_required",
+      summary: fallback ? "Server confirmed" : "API config required",
+      detail: fallback ? "API configured for this context" : "Production API not configured for this context",
+    };
   }
-  return PRODUCTION_LEADERBOARD_URL;
+  return {
+    url: "",
+    available: false,
+    state: "config_required",
+    summary: "API config required",
+    detail: "Production API not configured for this context",
+  };
+}
+
+function getCoreApiInfo(mode = "write") {
+  if (typeof window === "undefined") {
+    return {
+      url: "",
+      available: false,
+      state: "config_required",
+      summary: "API config required",
+      detail: "Production API not configured for this context",
+    };
+  }
+  const cfg = window.MOONBOYS_API || {};
+  if (typeof cfg.getApiBaseInfo === "function") {
+    return cfg.getApiBaseInfo({ mode });
+  }
+  const fallback = cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, "") : "";
+  return {
+    url: fallback,
+    available: !!fallback,
+    state: fallback ? "configured" : "config_required",
+    summary: fallback ? "Server confirmed" : "API config required",
+    detail: fallback ? "API configured for this context" : "Production API not configured for this context",
+  };
+}
+
+function getApiUrl(mode = "read") {
+  const info = getLeaderboardApiInfo(mode);
+  return info && info.url ? String(info.url).replace(/\/$/, "") : "";
+}
+
+function getPendingApiMessage(apiInfo, localOnly = false) {
+  const COPY = getSharedStatusCopy();
+  const pendingPrefix = `${COPY.SYNC_PENDING || "Sync pending"}.`;
+  if (localOnly) {
+    return apiInfo && apiInfo.state === "config_required"
+      ? `${COPY.API_CONFIG_REQUIRED || "API config required"}. ${COPY.LOCAL_CACHED_ONLY || "Local cached only"}.`
+      : `${COPY.SERVER_UNAVAILABLE || "Server unavailable"}. ${COPY.LOCAL_CACHED_ONLY || "Local cached only"}.`;
+  }
+  return apiInfo && apiInfo.state === "config_required"
+    ? `${COPY.API_CONFIG_REQUIRED || "API config required"}. ${pendingPrefix}`
+    : `${COPY.SERVER_UNAVAILABLE || "Server unavailable"}. ${pendingPrefix}`;
 }
 
 /** Read the stored Telegram ID, preferring window.MOONBOYS_IDENTITY if loaded. */
@@ -122,12 +177,12 @@ function getCurrentFactionKey() {
 
 async function callFactionEarn(source, baseXp) {
   if (typeof window === "undefined") return null;
-  const cfg = window.MOONBOYS_API || {};
+  const apiInfo = getCoreApiInfo("write");
   const gate = window.MOONBOYS_IDENTITY;
-  if (!cfg.BASE_URL || !gate || typeof gate.isTelegramLinked !== "function" || !gate.isTelegramLinked()) return null;
+  if (!apiInfo.url || !gate || typeof gate.isTelegramLinked !== "function" || !gate.isTelegramLinked()) return null;
   const telegramAuth = await ArcadeSync.getTelegramAuth();
   if (!telegramAuth || !telegramAuth.hash || !telegramAuth.auth_date) return null;
-  const res = await fetch(String(cfg.BASE_URL).replace(/\/$/, "") + "/faction/earn", {
+  const res = await fetch(String(apiInfo.url).replace(/\/$/, "") + "/faction/earn", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -178,6 +233,7 @@ export async function submitScore(player, score, game = "global") {
   };
 
   const linked = isTelegramLinked();
+  const COPY = getSharedStatusCopy();
   result.linked = linked;
   emitArcadeDebug("leaderboard_submit_start", {
     game: gameKey,
@@ -194,7 +250,8 @@ export async function submitScore(player, score, game = "global") {
   let shouldSyncMeta = false;
   let telegramAuth = null;
   let hasSignedAuth = false;
-  const api = getApiUrl();
+  const apiInfo = getLeaderboardApiInfo("write");
+  const api = getApiUrl("write");
 
   if (linked) {
     try {
@@ -212,7 +269,7 @@ export async function submitScore(player, score, game = "global") {
 
     if (!hasSignedAuth) {
       result.state = "public_submit_unsigned";
-      result.message = "Public score submitted. XP sync pending — Telegram auth refresh needed.";
+      result.message = `${COPY.PUBLIC_SCORE_SUBMITTED || "Public score submitted"}. XP sync pending — Telegram auth refresh needed.`;
       markSyncHealth("bad", "auth_expired");
       emitArcadeSubmissionStatus({
         ...result,
@@ -231,11 +288,6 @@ export async function submitScore(player, score, game = "global") {
     ? (telegramId || (telegramAuth && String(telegramAuth.id || "").trim()) || null)
     : null;
 
-  emitArcadeSubmissionStatus({
-    ...result,
-    state: "auto_submitting",
-    message: "Auto-submitting score...",
-  });
   const requestBody = {
     player: resolvedPlayer,
     score,
@@ -247,35 +299,51 @@ export async function submitScore(player, score, game = "global") {
     if (effectiveTelegramId) requestBody.telegram_id = effectiveTelegramId;
   }
 
-  try {
-    const res = await fetch(api, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody)
+  if (!api) {
+    result.state = linked ? "sync_pending" : "local_cached_only";
+    result.message = getPendingApiMessage(apiInfo, !linked);
+    if (linked) markSyncHealth("bad", apiInfo && apiInfo.state ? apiInfo.state : "api_unavailable");
+    emitArcadeSubmissionStatus({
+      ...result,
+      state: result.state,
+      message: result.message,
     });
-    const data = await res.json().catch(() => ({}));
-    emitArcadeDebug("leaderboard_result", {
-      game: gameKey,
-      score,
-      httpStatus: res.status,
-      accepted: data && data.accepted === true,
-      bodyState: data && (data.state || data.error || data.message || null),
-      linked,
-      hasSignedAuth,
+    emitMicroNotification(result.message, "warning");
+  } else {
+    emitArcadeSubmissionStatus({
+      ...result,
+      state: "auto_submitting",
+      message: "Auto-submitting score...",
     });
-    if (!res.ok) {
-      result.state = "sync_error";
-      const errText = String(data.error || data.message || "").toLowerCase();
-      const authExpired = (res.status === 401 || res.status === 403 || errText.includes("expired") || errText.includes("auth"));
-      if (authExpired && linked) markSyncHealth("bad", "auth_expired");
-      emitArcadeSubmissionStatus({
-        ...result,
-        state: authExpired && linked ? "auth_expired" : "sync_error",
-        message: authExpired && linked
-          ? "Telegram sync expired. Score submission failed; relink or refresh auth."
-          : data.error || data.message || "Sync failed before acceptance confirmation.",
+    try {
+      const res = await fetch(api, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody)
       });
-    } else if (data && data.accepted === true) {
+      const data = await res.json().catch(() => ({}));
+      emitArcadeDebug("leaderboard_result", {
+        game: gameKey,
+        score,
+        httpStatus: res.status,
+        accepted: data && data.accepted === true,
+        bodyState: data && (data.state || data.error || data.message || null),
+        linked,
+        hasSignedAuth,
+      });
+      if (!res.ok) {
+        result.state = "sync_error";
+        const errText = String(data.error || data.message || "").toLowerCase();
+        const authExpired = (res.status === 401 || res.status === 403 || errText.includes("expired") || errText.includes("auth"));
+        if (authExpired && linked) markSyncHealth("bad", "auth_expired");
+        emitArcadeSubmissionStatus({
+          ...result,
+          state: authExpired && linked ? "auth_expired" : "sync_error",
+          message: authExpired && linked
+            ? "Telegram sync expired. Score submission failed; relink or refresh auth."
+            : data.error || data.message || "Sync failed before acceptance confirmation.",
+        });
+      } else if (data && data.accepted === true) {
       if (linked && hasSignedAuth) markSyncHealth("good", "accepted_score");
       shouldSyncMeta = linked && hasSignedAuth;
       result.accepted = true;
@@ -286,7 +354,7 @@ export async function submitScore(player, score, game = "global") {
         ...result,
         state: linked && !hasSignedAuth ? "public_score_submitted" : "score_accepted",
         message: linked && !hasSignedAuth
-          ? "Public score submitted. XP sync pending — Telegram auth refresh needed."
+          ? `${COPY.PUBLIC_SCORE_SUBMITTED || "Public score submitted"}. XP sync pending — Telegram auth refresh needed.`
           : "Score accepted for ranking.",
       });
       if (linked && hasSignedAuth) {
@@ -330,12 +398,15 @@ export async function submitScore(player, score, game = "global") {
           console.error("[leaderboard-client] Block Topia progression sync failed:", err);
           var errText = String((err && err.message) || err || "").toLowerCase();
           var authRequired = errText.includes("auth") || errText.includes("telegram");
+          var apiPending = errText.includes("api config required") || errText.includes("server unavailable");
           emitArcadeSubmissionStatus({
             ...result,
-            state: authRequired ? "auth_expired" : "accepted_no_xp",
+            state: authRequired ? "auth_expired" : (apiPending ? "sync_pending" : "accepted_no_xp"),
             message: authRequired
               ? "Sync expired. Run /gklink again to refresh your Telegram link."
-              : "Score accepted for ranking, but Block Topia XP sync did not complete.",
+              : (apiPending
+                ? getPendingApiMessage(getCoreApiInfo("write"))
+                : "Score accepted for ranking, but Block Topia XP sync did not complete."),
           });
           if (authRequired) markSyncHealth("bad", "auth_expired");
         }
@@ -354,19 +425,20 @@ export async function submitScore(player, score, game = "global") {
         state: "rejected_no_xp",
         message: "Score not accepted for XP conversion.",
       });
+      }
+    } catch (err) {
+      console.error("[leaderboard-client] Score submission failed:", err);
+      const errText = String((err && err.message) || err || "").toLowerCase();
+      const authExpired = linked && (errText.includes("auth") || errText.includes("expired"));
+      if (authExpired) markSyncHealth("bad", "auth_expired");
+      emitArcadeSubmissionStatus({
+        ...result,
+        state: authExpired ? "auth_expired" : "sync_error",
+        message: authExpired
+          ? "Sync expired. Run /gklink again to refresh your Telegram link."
+          : "Sync failed. Retry sync to submit this run.",
+      });
     }
-  } catch (err) {
-    console.error("[leaderboard-client] Score submission failed:", err);
-    const errText = String((err && err.message) || err || "").toLowerCase();
-    const authExpired = linked && (errText.includes("auth") || errText.includes("expired"));
-    if (authExpired) markSyncHealth("bad", "auth_expired");
-    emitArcadeSubmissionStatus({
-      ...result,
-      state: authExpired ? "auth_expired" : "sync_error",
-      message: authExpired
-        ? "Sync expired. Run /gklink again to refresh your Telegram link."
-        : "Sync failed. Retry sync to submit this run.",
-    });
   }
 
   let metaResult = null;
@@ -479,7 +551,15 @@ export async function submitScore(player, score, game = "global") {
           state: "progression_synced",
           syncedRuns: Number(syncSummary?.synced) || 0,
           pendingRuns: Number(syncSummary?.remaining) || 0,
-          message: "Accepted run synced to shared arcade progression.",
+          message: `Accepted run synced to shared arcade progression. ${COPY.COMPETITIVE_XP_SYNCED || "Competitive XP synced"}.`,
+        });
+      } else if (syncSummary?.reason === "config_required" || syncSummary?.reason === "disabled") {
+        emitArcadeSubmissionStatus({
+          ...result,
+          state: "sync_pending",
+          syncedRuns: Number(syncSummary?.synced) || 0,
+          pendingRuns: Number(syncSummary?.remaining) || 0,
+          message: getPendingApiMessage(getCoreApiInfo("write")),
         });
       }
       if (!syncSummary?.skipped && (Number(syncSummary?.synced) || 0) > 0) {
@@ -529,7 +609,15 @@ async function submitMetaScore({ player, telegram_id, game, score, timestamp, te
 
 export async function fetchLeaderboard(game = "global", options = {}) {
   const mode = options && options.mode ? String(options.mode).toLowerCase() : "raw";
-  const api = getApiUrl();
+  const apiInfo = getLeaderboardApiInfo("read");
+  const api = getApiUrl("read");
+  if (!api) {
+    return {
+      error: true,
+      message: apiInfo && apiInfo.state ? apiInfo.state : "api_config_required",
+      entries: null,
+    };
+  }
   try {
     const res = await fetch(`${api}?game=${encodeURIComponent(game)}&mode=${encodeURIComponent(mode)}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

@@ -6,7 +6,6 @@ export const ArcadeSync = {
   PENDING_KEY: "moonboys_arcade_pending_progress_v1",
   PENDING_MAX: 250,
   PENDING_BATCH: 25,
-  PRODUCTION_API_BASE: "https://moonboys-api.sercullen.workers.dev",
 
   getProjectedXpFromScore(score) {
     const safeScore = Number(score);
@@ -19,6 +18,9 @@ export const ArcadeSync = {
     if (typeof window === "undefined") return null;
     const gate = window.MOONBOYS_IDENTITY;
     if (!gate) return null;
+    if (typeof gate.getFreshTelegramAuth === "function") {
+      return await gate.getFreshTelegramAuth();
+    }
     if (typeof gate.getSignedTelegramAuth !== "function") return null;
     let signed = await gate.getSignedTelegramAuth();
     if (signed && signed.hash && signed.auth_date) return signed;
@@ -33,24 +35,30 @@ export const ArcadeSync = {
     return signed || null;
   },
 
-  getApiBase() {
+  getApiInfo(mode = "write") {
     if (typeof window === "undefined") return null;
-    const candidates = [
-      { key: "window.MOONBOYS_API.BASE_URL", value: window.MOONBOYS_API && window.MOONBOYS_API.BASE_URL },
-      { key: "window.API_CONFIG.BASE_URL", value: window.API_CONFIG && window.API_CONFIG.BASE_URL },
-      { key: "window.MOONBOYS_CONFIG.API_BASE", value: window.MOONBOYS_CONFIG && window.MOONBOYS_CONFIG.API_BASE },
-      { key: "fallback:production", value: this.PRODUCTION_API_BASE },
-    ];
-
-    for (const candidate of candidates) {
-      if (!candidate.value) continue;
-      const resolved = String(candidate.value).trim().replace(/\/$/, "");
-      if (!resolved) continue;
-      this.emitDebug("api_base_resolved", { apiBase: resolved, source: candidate.key });
-      return resolved;
+    const cfg = window.MOONBOYS_API || {};
+    if (typeof cfg.getApiBaseInfo === "function") {
+      return cfg.getApiBaseInfo({ mode });
     }
+    const fallback = cfg.BASE_URL ? String(cfg.BASE_URL).trim().replace(/\/$/, "") : "";
+    return {
+      url: fallback,
+      available: !!fallback,
+      state: fallback ? "configured" : "config_required",
+      summary: fallback ? "Server confirmed" : "API config required",
+      detail: fallback ? "API configured for this context" : "Production API not configured for this context",
+      source: fallback ? "window.MOONBOYS_API.BASE_URL" : null,
+    };
+  },
 
-    return null;
+  getApiBase(mode = "write") {
+    const info = this.getApiInfo(mode);
+    if (!info || !info.url) return null;
+    const resolved = String(info.url).trim().replace(/\/$/, "");
+    if (!resolved) return null;
+    this.emitDebug("api_base_resolved", { apiBase: resolved, source: info.source || info.state || "unknown", state: info.state || null, mode });
+    return resolved;
   },
 
   getPlayer() {
@@ -186,10 +194,12 @@ export const ArcadeSync = {
       return { synced: 0, remaining: 0, skipped: true, reason: "empty_queue" };
     }
 
-    const apiBase = this.getApiBase();
+    const apiInfo = this.getApiInfo("write");
+    const apiBase = apiInfo && apiInfo.url ? this.getApiBase("write") : null;
     if (!apiBase) {
-      this.emitDebug("sync_skip", { reason: "missing_api_base", pending: pending.length });
-      return { synced: 0, remaining: pending.length, skipped: true, reason: "missing_api_base" };
+      const reason = apiInfo && apiInfo.state ? apiInfo.state : "missing_api_base";
+      this.emitDebug("sync_skip", { reason, pending: pending.length });
+      return { synced: 0, remaining: pending.length, skipped: true, reason };
     }
     const telegram_auth = await this.getTelegramAuth();
     if (!telegram_auth || !telegram_auth.hash || !telegram_auth.auth_date) {
@@ -256,8 +266,16 @@ export const ArcadeSync = {
   async syncBlockTopiaProgressionOnAcceptedScore(score, game = "blocktopia") {
     const safeScore = Number(score);
     if (!Number.isFinite(safeScore) || safeScore < 0) return null;
-    const apiBase = this.getApiBase();
-    if (!apiBase) return null;
+    const apiInfo = this.getApiInfo("write");
+    const apiBase = apiInfo && apiInfo.url ? this.getApiBase("write") : null;
+    if (!apiBase) {
+      const reason = apiInfo && apiInfo.state ? apiInfo.state : "missing_api_base";
+      const error = new Error(reason === "config_required"
+        ? "API config required. Sync pending."
+        : "Server unavailable. Sync pending.");
+      error.code = reason;
+      throw error;
+    }
 
     const telegram_auth = await this.getTelegramAuth();
     if (!telegram_auth || !telegram_auth.hash || !telegram_auth.auth_date) {

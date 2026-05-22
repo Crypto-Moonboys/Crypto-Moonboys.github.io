@@ -46,6 +46,7 @@ async function test(name, fn) {
 // These guard against future edits accidentally removing the guard logic.
 
 const src = await readFile('js/leaderboard-client.js');
+const arcadeSyncSrc = await readFile('js/arcade-sync.js');
 const submitScoreStart = src.indexOf('export async function submitScore(');
 const submitMetaStart = src.indexOf('\nasync function submitMetaScore(', submitScoreStart);
 const submitScoreBody = submitScoreStart >= 0
@@ -75,7 +76,8 @@ await test('submitScore only includes telegram_auth when signed auth is availabl
 await test('submitScore missing-auth path marks unsigned public submit instead of aborting', async () => {
   assert(
     submitScoreBody.includes('result.state = "public_submit_unsigned"') &&
-      submitScoreBody.includes('Public score submitted. XP sync pending — Telegram auth refresh needed.'),
+      submitScoreBody.includes('COPY.PUBLIC_SCORE_SUBMITTED') &&
+      submitScoreBody.includes('XP sync pending — Telegram auth refresh needed.'),
     'missing signed auth should enter public_submit_unsigned path',
   );
 });
@@ -83,7 +85,8 @@ await test('submitScore missing-auth path marks unsigned public submit instead o
 await test('submitScore unsigned fallback copy avoids false competitive/XP success claims', async () => {
   assert(
     submitScoreBody.includes('state: linked && !hasSignedAuth ? "public_score_submitted" : "score_accepted"') &&
-      submitScoreBody.includes('Public score submitted. XP sync pending — Telegram auth refresh needed.') &&
+      submitScoreBody.includes('COPY.PUBLIC_SCORE_SUBMITTED') &&
+      submitScoreBody.includes('XP sync pending — Telegram auth refresh needed.') &&
       !submitScoreBody.includes('competitive progression succeeded'),
     'unsigned accepted state must explicitly report public submit + pending XP sync only',
   );
@@ -167,6 +170,32 @@ await test('pending progression sync requires signed auth and avoids false synce
 
 const cfg = await readFile('js/api-config.js');
 
+await test('api-config centralizes endpoint helpers and production-host fallback policy', async () => {
+  assert(
+    cfg.includes('getApiBaseInfo') &&
+      cfg.includes('getLeaderboardApiInfo') &&
+      cfg.includes('context.isProduction') &&
+      cfg.includes("'crypto-moonboys.github.io'"),
+    'api-config.js must expose shared endpoint helpers and gate production fallback to live hosts',
+  );
+});
+
+await test('feature modules no longer carry hardcoded production Worker fallbacks', async () => {
+  assert(
+    !src.includes('moonboys-leaderboard.sercullen.workers.dev') &&
+      !arcadeSyncSrc.includes('moonboys-api.sercullen.workers.dev'),
+    'leaderboard-client.js and arcade-sync.js must consume shared api-config helpers instead of hardcoded Worker URLs',
+  );
+});
+
+await test('api-config no longer labels runtime timestamp as BUILD_DATE', async () => {
+  assert(
+    !cfg.includes('BUILD_DATE: new Date().toISOString()') &&
+      cfg.includes('RUNTIME_LOADED_AT: new Date().toISOString()'),
+    'api-config.js must reserve BUILD_DATE for injected/static data and use RUNTIME_LOADED_AT for per-page-load timestamps',
+  );
+});
+
 await test('FEATURES.LEADERBOARD is false (moonboys-api engagement endpoint not live)', async () => {
   assert(
     /LEADERBOARD\s*:\s*false/.test(cfg),
@@ -245,7 +274,7 @@ function makeValidAuth() {
  * Simulates the critical path inside submitScore() for the auth guard and POST.
  * Returns { outcome, fetchCalls, healthCalls, statusCalls }.
  */
-async function runSubmitScoreGuard({ linked = false, telegramAuth = null, authThrows = false } = {}) {
+async function runSubmitScoreGuard({ linked = false, telegramAuth = null, authThrows = false, apiAvailable = true, apiState = 'configured' } = {}) {
   const fetchCalls  = [];
   const healthCalls = [];
   const statusCalls = [];
@@ -268,6 +297,15 @@ async function runSubmitScoreGuard({ linked = false, telegramAuth = null, authTh
         statusCalls.push({ state: 'public_submit_unsigned' });
       }
     }
+  }
+
+  if (!apiAvailable) {
+    result.state = linked ? 'sync_pending' : 'local_cached_only';
+    result.message = apiState === 'config_required'
+      ? (linked ? 'API config required. Sync pending.' : 'API config required. Local cached only.')
+      : (linked ? 'Server unavailable. Sync pending.' : 'Server unavailable. Local cached only.');
+    statusCalls.push({ state: result.state });
+    return { outcome: 'skipped', result, fetchCalls, healthCalls, statusCalls };
   }
 
   // Always POST for public leaderboard.
@@ -318,6 +356,31 @@ await test('BEH: ArcadeSync auth failure does not block public score submit', as
   assert(fetchCalls.length === 1, 'auth exception should still result in one POST');
   assert(fetchCalls[0].body.telegram_auth === undefined, 'auth exception fallback must omit telegram_auth');
   assert(statusCalls.some(s => s.state === 'public_submit_unsigned'), 'auth exception should emit unsigned fallback status');
+});
+
+await test('BEH: linked user without write API stays pending and does not POST', async () => {
+  const { outcome, result, fetchCalls, statusCalls } = await runSubmitScoreGuard({
+    linked: true,
+    telegramAuth: makeValidAuth(),
+    apiAvailable: false,
+    apiState: 'config_required',
+  });
+  assert(outcome === 'skipped', `expected skipped, got ${outcome}`);
+  assert(fetchCalls.length === 0, 'linked no-config write path must not POST to leaderboard worker');
+  assert(result.state === 'sync_pending', `expected sync_pending, got ${result.state}`);
+  assert(statusCalls.some(s => s.state === 'sync_pending'), 'linked no-config write path must emit sync_pending');
+});
+
+await test('BEH: guest user without write API stays local-only and does not POST', async () => {
+  const { outcome, result, fetchCalls, statusCalls } = await runSubmitScoreGuard({
+    linked: false,
+    apiAvailable: false,
+    apiState: 'config_required',
+  });
+  assert(outcome === 'skipped', `expected skipped, got ${outcome}`);
+  assert(fetchCalls.length === 0, 'guest no-config path must not POST to leaderboard worker');
+  assert(result.state === 'local_cached_only', `expected local_cached_only, got ${result.state}`);
+  assert(statusCalls.some(s => s.state === 'local_cached_only'), 'guest no-config path must emit local_cached_only');
 });
 
 // ── Behavioral mock for submitMetaScore ──────────────────────────────────────

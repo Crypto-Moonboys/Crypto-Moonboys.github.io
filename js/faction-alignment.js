@@ -1,8 +1,6 @@
 (function () {
   'use strict';
 
-  var cfg = window.MOONBOYS_API || {};
-  var BASE = cfg.BASE_URL || '';
   var KEY = 'moonboys_faction_status_v1';
 
   var LIVE_FACTION_ORDER = Object.freeze([
@@ -65,11 +63,6 @@
     return 'unaligned';
   }
 
-  function getAuth() {
-    var gate = window.MOONBOYS_IDENTITY;
-    return gate && typeof gate.getTelegramAuth === 'function' ? gate.getTelegramAuth() : null;
-  }
-
   function getIdentityTelegramId() {
     var gate = window.MOONBOYS_IDENTITY;
     if (!gate || typeof gate.getTelegramId !== 'function') return null;
@@ -80,6 +73,9 @@
   async function getSignedTelegramAuthWithRestore() {
     var gate = window.MOONBOYS_IDENTITY;
     if (!gate) return null;
+    if (typeof gate.getFreshTelegramAuth === 'function') {
+      return gate.getFreshTelegramAuth();
+    }
     var freshAuth = typeof gate.getSignedTelegramAuth === 'function' ? gate.getSignedTelegramAuth() : null;
     if (freshAuth) return freshAuth;
     if (typeof gate.restoreLinkedTelegramAuth !== 'function') return null;
@@ -91,6 +87,14 @@
   function isLinked() {
     var gate = window.MOONBOYS_IDENTITY;
     return !!(gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked());
+  }
+
+  function getApiBase() {
+    var cfg = window.MOONBOYS_API || {};
+    if (typeof cfg.getApiBase === 'function') {
+      return cfg.getApiBase({ mode: 'write' }) || '';
+    }
+    return cfg.BASE_URL ? String(cfg.BASE_URL).replace(/\/$/, '') : '';
   }
 
   function getCachedStatus() {
@@ -127,8 +131,9 @@
   }
 
   async function request(path, init) {
-    if (!BASE) throw new Error('API unavailable');
-    var res = await fetch(BASE + path, init || {});
+    var base = getApiBase();
+    if (!base) throw new Error('API unavailable');
+    var res = await fetch(base + path, init || {});
     var data = await res.json().catch(function () { return {}; });
     if (!res.ok) {
       var error = new Error((data && data.message) || data.error || ('HTTP ' + res.status));
