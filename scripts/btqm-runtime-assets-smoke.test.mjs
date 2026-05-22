@@ -13,7 +13,7 @@ const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
 const deployPagesWorkflow = readFileSync('.github/workflows/deploy-pages.yml', 'utf8');
 const gitignore = readFileSync('.gitignore', 'utf8');
 const hydrateScript = readFileSync('scripts/hydrate-btqm-generated-assets.mjs', 'utf8');
-const auditSummary = JSON.parse(execFileSync('node', ['scripts/btqm-generated-asset-usage-audit.mjs', '--json'], { encoding: 'utf8' }));
+const auditSummary = JSON.parse(execFileSync(process.execPath, ['scripts/btqm-generated-asset-usage-audit.mjs', '--json'], { encoding: 'utf8' }));
 
 const generatedAssetRoot = 'art/btqm/generated';
 const binaryAssetExtensions = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp3', '.wav']);

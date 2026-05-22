@@ -22,7 +22,12 @@ function printHelp() {
     'BTQM generated asset usage audit',
     '',
     'Usage:',
-    '  node scripts/btqm-generated-asset-usage-audit.mjs [--json]',
+    '  node scripts/btqm-generated-asset-usage-audit.mjs [--json] [--help|-h]',
+    '',
+    'Options:',
+    '  --json  Print machine-readable JSON summary',
+    '  --help  Show this help output',
+    '  -h      Alias for --help',
     '',
     'Reports:',
     '  - used generated assets',
@@ -178,16 +183,19 @@ function main() {
     .sort();
   const orphanPayloads = encodedPayloadFiles.filter((file) => !manifestGeneratedPayloads.has(file));
 
-  const duplicateHashes = [];
   const categoryHashes = new Map();
   for (const asset of generatedAssets) {
     if (!asset.sha256) continue;
     const categoryMap = categoryHashes.get(asset.category) || new Map();
-    const firstAsset = categoryMap.get(asset.sha256);
-    if (firstAsset) duplicateHashes.push({ category: asset.category, sha256: asset.sha256, assetIds: [firstAsset, asset.id] });
-    else categoryMap.set(asset.sha256, asset.id);
+    const assetIds = categoryMap.get(asset.sha256) || [];
+    assetIds.push(asset.id);
+    categoryMap.set(asset.sha256, assetIds);
     categoryHashes.set(asset.category, categoryMap);
   }
+  const duplicateHashes = [...categoryHashes.entries()]
+    .flatMap(([category, hashes]) => [...hashes.entries()].map(([sha256, assetIds]) => ({ category, sha256, assetIds })))
+    .filter((entry) => entry.assetIds.length > 1)
+    .sort((a, b) => a.category.localeCompare(b.category) || a.sha256.localeCompare(b.sha256));
 
   const summary = {
     generatedAssetCount: generatedAssetSummaries.length,
