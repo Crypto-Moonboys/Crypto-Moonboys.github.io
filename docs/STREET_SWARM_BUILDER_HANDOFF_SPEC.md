@@ -22,7 +22,7 @@ Builder access must eventually require a server-issued proof tied to the existin
 
 ---
 
-# Current Existing Flow
+## Current Existing Flow
 
 Current flow already works for Telegram identity linking.
 
@@ -50,7 +50,7 @@ This remains the source of truth.
 
 ---
 
-# Required New Capability
+## Required New Capability
 
 After successful Telegram link confirmation, the website/auth system must be able to generate a future app-readable builder verification handoff.
 
@@ -72,7 +72,7 @@ It must NOT:
 
 ---
 
-# Allowed Future Handoff Types
+## Allowed Future Handoff Types
 
 Any of the following are acceptable:
 
@@ -110,14 +110,14 @@ App imports it locally.
 
 ---
 
-# Required Security Rules
+## Required Security Rules
 
 Future proof/token MUST:
 
 - be server-issued
 - be signed
 - expire
-- be revokable
+- be revocable
 - be tied to linked Telegram identity
 - not expose reward authority
 - not expose XP authority
@@ -130,7 +130,7 @@ The app must stay fail-closed if validation fails.
 
 ---
 
-# Important Doctrine
+## Important Doctrine
 
 Street Swarm Open Runtime access is NOT:
 
@@ -148,7 +148,7 @@ Telegram identity remains the root identity layer.
 
 ---
 
-# Current Status
+## Current Status
 
 Current implementation status:
 
@@ -163,7 +163,7 @@ This is intentional.
 
 ---
 
-# Future PR Scope
+## Future PR Scope
 
 Future implementation PR should:
 
@@ -177,7 +177,7 @@ Future implementation PR should:
 
 ---
 
-# Non-Goals
+## Non-Goals
 
 This system must NOT:
 
