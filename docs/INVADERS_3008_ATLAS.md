@@ -1,41 +1,17 @@
-# Invaders 3008 Sprite Atlas Map
+# Invaders 3008 Presentation Mode
 
-Runtime file: `js/arcade/games/invaders/asset-system.js`.
+Invaders 3008 now uses **primitive-only runtime rendering** for gameplay visuals.
 
-The renderer draws a sprite only when the image is loaded and the named crop fits inside the sheet. If either condition fails, the original primitive rendering is used. These coordinates are presentation-only and must not be used for collision, timing, hitboxes, scoring, waves, or layout. Dark contact-sheet backgrounds are keyed transparent at runtime, and sprites are centered/aspect-fit inside the existing gameplay draw box.
+## Why
 
-## Sheet Paths
+Runtime contact-sheet slicing was causing cramped, inconsistent visuals and artefacts from production panels. To preserve gameplay behavior while fixing presentation quality, all runtime atlas draws were removed.
 
-- enemies: `/games/invaders-3008/assets/enemies/enemy-sheet.png`
-- bosses: `/games/invaders-3008/assets/bosses/boss-sheet.png`
-- fx: `/games/invaders-3008/assets/fx/projectile-fx-sheet.png`
-- ships: `/games/invaders-3008/assets/ships/player-ship-sheet.png`
-- ui: `/games/invaders-3008/assets/ui/remaining-game-assets.png`
+## Current runtime rule
 
-## Enemy Sheet
+- `js/arcade/games/invaders/render-system.js` must not import or use runtime sheet/atlas crop paths.
+- Player, enemies, bosses, bullets, pickups, mini-enemies, and lives render through coherent primitive paths.
+- If clean transparent runtime sprites are introduced in the future, they must be production-safe standalone assets (no labels/panels/background hacks), and classes without safe assets must remain on full primitive fallback.
 
-The enemy sheet is `576x464`, laid out as four 144px-wide columns and four 116px-tall production cells. The runtime uses explicit tight crops around the art, not the full cells, so labels and empty production padding are not drawn into gameplay.
+## Non-goals
 
-| type | x | y | w | h |
-| --- | ---: | ---: | ---: | ---: |
-| basic | 34 | 24 | 82 | 64 |
-| fast | 166 | 29 | 106 | 56 |
-| tank | 312 | 22 | 116 | 70 |
-| shooter | 463 | 25 | 90 | 68 |
-| shield | 35 | 137 | 86 | 70 |
-| bomber | 160 | 138 | 104 | 70 |
-| hunter | 315 | 140 | 100 | 70 |
-| zigzag | 461 | 140 | 96 | 70 |
-| splitter | 35 | 255 | 82 | 66 |
-| healer | 161 | 254 | 106 | 68 |
-| sniper | 306 | 272 | 124 | 38 |
-| kamikaze | 456 | 256 | 108 | 68 |
-| cloaked | 43 | 371 | 74 | 66 |
-| golden | 174 | 366 | 98 | 68 |
-| cursed | 448 | 366 | 108 | 74 |
-| mini_boss | 315 | 140 | 100 | 70 |
-
-## Other Sheets
-
-- Boss, ship, and safe FX maps use hand-selected art-only crops from the `576x464` production sheets. Pickup, small bullet, and asteroid contact-sheet rows remain on primitive fallback because their source art includes text/labels or does not provide clean standalone crops.
-- In dev tools, inspect `window.__INVADERS_3008_ATLAS__.getDebugInfo()` to see load status and all rect maps.
+This presentation change does not alter gameplay sizing, hitboxes, timing, bullets, wave logic, score, HP, movement, or fullscreen shell behavior.
