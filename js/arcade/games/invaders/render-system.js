@@ -31,6 +31,10 @@ export function createRenderer(ctx, W, H) {
     return assets.draw(ctx, sheetName, rectName, x, y, w, h, options);
   }
 
+  function drawAtlasSpriteCentered(sheetName, rectName, cx, cy, targetW, targetH, options) {
+    return assets.drawCentered(ctx, sheetName, rectName, cx, cy, targetW, targetH, options);
+  }
+
   function drawHitTint(x, y, w, h, hitFrac) {
     if (hitFrac <= 0) return;
     ctx.save();
@@ -44,7 +48,7 @@ export function createRenderer(ctx, W, H) {
 
   function drawShip(player) {
     const { x, y, w, h, shielded } = player;
-    const drewSprite = drawSprite('ships', 'player', x - 6, y - 12, w + 12, h + 16, {
+    const drewSprite = drawAtlasSpriteCentered('ships', 'player', x + w / 2, y + h / 2, w + 18, h + 18, {
       glowColor: '#2ec5ff',
       glowBlur: 8,
     });
@@ -339,13 +343,15 @@ export function createRenderer(ctx, W, H) {
     const hpRatio = clamp(inv.hp / inv.maxHp, 0, 1);
     const alpha = inv.type === 'cloaked' && inv.cloakAlpha !== undefined ? inv.cloakAlpha : 1;
     const spriteType = inv.type || 'basic';
-    const drewSprite = drawSprite('enemies', spriteType, inv.x - 4, inv.y - 6, inv.w + 8, inv.h + 10, {
+    const spriteCx = inv.x + inv.w / 2;
+    const spriteCy = inv.y + inv.h / 2;
+    const drewSprite = drawAtlasSpriteCentered('enemies', spriteType, spriteCx, spriteCy, inv.w + 10, inv.h + 8, {
       alpha,
       glowColor: inv.type === 'golden' ? '#f7c948' : undefined,
       glowBlur: inv.type === 'golden' ? 10 : 0,
     });
     if (drewSprite) {
-      drawHitTint(inv.x - 4, inv.y - 6, inv.w + 8, inv.h + 10, hf);
+      drawHitTint(inv.x, inv.y, inv.w, inv.h, hf);
       if (hpRatio < 1 && (inv.type === 'tank' || inv.type === 'splitter')) {
         ctx.fillStyle = '#111';
         ctx.fillRect(inv.x, inv.y + inv.h + 1, inv.w, 3);
@@ -413,12 +419,12 @@ export function createRenderer(ctx, W, H) {
     const bodyColor   = isHit ? '#ffd3d3' : isShooting ? '#ff2f2f' : baseColor;
 
     const bossSprite = b.archetypeId || 'default';
-    const drewSprite = drawSprite('bosses', bossSprite, b.x, b.y - 3, b.w, b.h + 6, {
+    const drewSprite = drawAtlasSpriteCentered('bosses', bossSprite, b.x + b.w / 2, b.y + b.h / 2, b.w, b.h, {
       glowColor: baseColor,
       glowBlur: phase === 3 ? 24 : 14,
     });
     if (drewSprite) {
-      drawHitTint(b.x, b.y - 3, b.w, b.h + 6, isHit ? 1 : 0);
+      drawHitTint(b.x, b.y, b.w, b.h, isHit ? 1 : 0);
       if (isShooting) {
         ctx.save();
         ctx.globalAlpha = 0.25;
@@ -588,14 +594,6 @@ export function createRenderer(ctx, W, H) {
     for (const p of powerupItems) {
       const col = POWERUP_COLORS[p.type] || '#fff';
       ctx.save();
-      const spriteName = 'powerup' + String(p.type || '').slice(0, 1).toUpperCase() + String(p.type || '').slice(1);
-      if (drawSprite('fx', spriteName, p.x - p.r, p.y - p.r, p.r * 2, p.r * 2, {
-        glowColor: col,
-        glowBlur: 8,
-      })) {
-        ctx.restore();
-        continue;
-      }
       ctx.fillStyle    = col;
       ctx.strokeStyle  = '#fff';
       ctx.lineWidth    = 1.5;
@@ -688,10 +686,6 @@ export function createRenderer(ctx, W, H) {
   function drawDrone(player, droneAngle) {
     const cx = player.x + player.w / 2 + Math.cos(droneAngle) * 44;
     const cy = player.y + player.h / 2 + Math.sin(droneAngle) * 28;
-    if (drawSprite('ships', 'drone', cx - 10, cy - 8, 20, 16, {
-      glowColor: '#f7c948',
-      glowBlur: 8,
-    })) return;
     ctx.save();
     ctx.shadowBlur  = 10;
     ctx.shadowColor = '#f7c948';
@@ -857,10 +851,6 @@ export function createRenderer(ctx, W, H) {
   function drawAsteroids(asteroids) {
     if (!asteroids || !asteroids.length) return;
     for (const a of asteroids) {
-      if (drawSprite('fx', 'asteroid', a.x - a.r, a.y - a.r, a.r * 2, a.r * 2, {
-        glowColor: '#888',
-        glowBlur: 4,
-      })) continue;
       ctx.save();
       ctx.fillStyle   = '#555566';
       ctx.shadowBlur  = 4;
@@ -909,7 +899,7 @@ export function createRenderer(ctx, W, H) {
   function drawMiniEnemies(miniEnemies) {
     if (!miniEnemies || !miniEnemies.length) return;
     for (const m of miniEnemies) {
-      if (drawSprite('enemies', m.type || 'mini_boss', m.x - 4, m.y - 6, m.w + 8, m.h + 10, {
+      if (drawAtlasSpriteCentered('enemies', m.type || 'mini_boss', m.x + m.w / 2, m.y + m.h / 2, m.w + 8, m.h + 8, {
         glowColor: '#ff8c00',
         glowBlur: 8,
       })) {
@@ -1314,19 +1304,14 @@ export function createRenderer(ctx, W, H) {
     ctx.fillStyle   = '#2ec5ff';
     for (const b of s.bullets) {
       if (b.isBomb) continue;
-      if (!drawSprite('fx', 'playerBullet', b.x - 2, b.y - 2, b.w + 4, b.h + 4, {
-        glowColor: '#2ec5ff',
-        glowBlur: 8,
-      })) {
-        ctx.fillRect(b.x, b.y, b.w, b.h);
-      }
+      ctx.fillRect(b.x, b.y, b.w, b.h);
     }
     ctx.shadowBlur  = 0;
     ctx.restore();
     for (const b of s.bullets) {
       if (!b.isBomb) continue;
       ctx.save();
-      if (!drawSprite('fx', 'bomb', b.x, b.y, b.w, b.h, {
+      if (!drawAtlasSpriteCentered('fx', 'bomb', b.x + b.w / 2, b.y + b.h / 2, b.w, b.h, {
         glowColor: '#ff6b2b',
         glowBlur: 22,
       })) {
@@ -1346,12 +1331,7 @@ export function createRenderer(ctx, W, H) {
     ctx.shadowColor = '#ff4fd1';
     ctx.fillStyle   = '#ff4fd1';
     for (const b of s.invBullets) {
-      if (!drawSprite('fx', 'enemyBullet', b.x - 3, b.y - 2, b.w + 6, b.h + 4, {
-        glowColor: '#ff4fd1',
-        glowBlur: 6,
-      })) {
-        ctx.fillRect(b.x, b.y, b.w, b.h);
-      }
+      ctx.fillRect(b.x, b.y, b.w, b.h);
     }
     ctx.shadowBlur  = 0;
     ctx.restore();
@@ -1387,10 +1367,7 @@ export function createRenderer(ctx, W, H) {
     ctx.font      = '16px system-ui';
     ctx.textAlign = 'right';
     for (let i = 0; i < s.lives; i++) {
-      const lx = W - 23 - i * 22;
-      if (!drawSprite('ships', 'life', lx, H - 24, 18, 18)) {
-        ctx.fillText('\u25b2', W - 10 - i * 22, H - 8);
-      }
+      ctx.fillText('\u25b2', W - 10 - i * 22, H - 8);
     }
 
     // Upgrade screen overlay (drawn on top of the frozen game state)

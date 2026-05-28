@@ -130,8 +130,14 @@ assert.ok(renderSysSrc.includes('function draw('),
   'render-system.js createRenderer must return a draw() method');
 assert.ok(renderSysSrc.includes("from './asset-system.js'"),
   "render-system.js must import the atlas asset system");
-assert.ok(renderSysSrc.includes('drawSprite('),
-  'render-system.js must use guarded sprite drawing');
+assert.ok(/function drawShip[\s\S]*?drawAtlasSpriteCentered\(/.test(renderSysSrc),
+  'render-system.js must call drawAtlasSpriteCentered(...) from drawShip()');
+assert.ok(/function drawInvader[\s\S]*?drawAtlasSpriteCentered\('enemies'/.test(renderSysSrc),
+  'render-system.js must call drawAtlasSpriteCentered(...) for routed enemy sprites');
+assert.ok(/function drawBoss[\s\S]*?drawAtlasSpriteCentered\('bosses'/.test(renderSysSrc),
+  'render-system.js must call drawAtlasSpriteCentered(...) for routed boss sprites');
+assert.ok(/function draw\(s\)[\s\S]*?drawAtlasSpriteCentered\('fx', 'bomb'/.test(renderSysSrc),
+  'render-system.js must call drawAtlasSpriteCentered(...) for the routed bomb sprite');
 
 // Drawing primitives present
 for (const fn of ['drawShip', 'drawBoss', 'drawBunkers', 'drawBackground',
@@ -155,8 +161,17 @@ for (const type of ['basic', 'fast', 'tank', 'shooter', 'shield', 'bomber', 'hun
 }
 assert.ok(assetSysSrc.includes('rectFitsImage'),
   'asset-system.js must validate crop bounds before drawing');
+assert.ok(assetSysSrc.includes('createColorKeyCanvas'),
+  'asset-system.js must remove dark production-sheet backgrounds before drawing sprites');
 assert.ok(!/drawImage\([^,\n]+,\s*dx,\s*dy,\s*dw,\s*dh\)/.test(assetSysSrc),
   'asset-system.js must not draw whole sheets directly onto sprites');
+for (const unsafe of ['powerupRapid', 'powerupSpread', 'powerupShield', 'powerupMultiplier',
+                      'powerupSlow', 'asteroid: rect']) {
+  assert.ok(!assetSysSrc.includes(unsafe),
+    'asset-system.js must not route unsafe labelled contact-sheet crop: ' + unsafe);
+}
+assert.ok(!renderSysSrc.includes("drawAtlasSpriteCentered('fx', 'asteroid'"),
+  'render-system.js must keep asteroids on primitive fallback until a clean sprite exists');
 
 // ── index.html ────────────────────────────────────────────────────────────────
 
