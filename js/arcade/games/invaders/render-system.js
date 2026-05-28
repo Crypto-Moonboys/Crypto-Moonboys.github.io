@@ -342,13 +342,7 @@ export function createRenderer(ctx, W, H) {
       default:         drawInvaderBasic(inv.x, inv.y, inv.w, inv.h, hf);
     }
     drawHitTint(inv.x, inv.y, inv.w, inv.h, hf);
-    if (hpRatio < 1 && (inv.type === 'tank' || inv.type === 'splitter')) {
-      ctx.fillStyle = '#111';
-      ctx.fillRect(inv.x, inv.y + inv.h + 1, inv.w, 3);
-      ctx.fillStyle = hpRatio > 0.5 ? '#3fb950' : '#f7c948';
-      ctx.fillRect(inv.x, inv.y + inv.h + 1, inv.w * hpRatio, 3);
-    }
-    if (sf > 0) {
+    if (sf > 0 && inv.type !== 'shield') {
       ctx.save();
       ctx.strokeStyle = 'rgba(46,197,255,' + (0.35 + sf * 0.45) + ')';
       ctx.lineWidth   = 2;
