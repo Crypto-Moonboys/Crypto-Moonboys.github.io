@@ -18,31 +18,30 @@ const rect = (x, y, w, h) => ({ x, y, w, h });
 
 export const INVADERS_ATLAS_RECTS = {
   enemies: {
-    basic: rect(0, 0, 144, 88),
-    fast: rect(144, 0, 144, 88),
-    tank: rect(288, 0, 144, 88),
-    shooter: rect(432, 0, 144, 88),
-    shield: rect(0, 116, 144, 88),
-    bomber: rect(144, 116, 144, 88),
-    hunter: rect(288, 116, 144, 88),
-    zigzag: rect(432, 116, 144, 88),
-    splitter: rect(0, 232, 144, 88),
-    healer: rect(144, 232, 144, 88),
-    sniper: rect(288, 232, 144, 88),
-    kamikaze: rect(432, 232, 144, 88),
-    cloaked: rect(0, 348, 144, 88),
-    golden: rect(144, 348, 144, 88),
-    cursed: rect(432, 348, 144, 88),
-    mini_boss: rect(288, 116, 144, 88),
+    basic: rect(34, 24, 82, 64),
+    fast: rect(166, 29, 106, 56),
+    tank: rect(312, 22, 116, 70),
+    shooter: rect(463, 25, 90, 68),
+    shield: rect(35, 137, 86, 70),
+    bomber: rect(160, 138, 104, 70),
+    hunter: rect(315, 140, 100, 70),
+    zigzag: rect(461, 140, 96, 70),
+    splitter: rect(35, 255, 82, 66),
+    healer: rect(161, 254, 106, 68),
+    sniper: rect(306, 272, 124, 38),
+    kamikaze: rect(456, 256, 108, 68),
+    cloaked: rect(43, 371, 74, 66),
+    golden: rect(174, 366, 98, 68),
+    cursed: rect(448, 366, 108, 74),
+    mini_boss: rect(315, 140, 100, 70),
   },
   bosses: {
-    theWall: rect(4, 46, 126, 40),
-    theSplitter: rect(14, 110, 52, 54),
-    theSniper: rect(12, 178, 122, 42),
-    theSwarmKing: rect(14, 240, 58, 60),
-    theGlitchCore: rect(14, 308, 112, 48),
-    theBomber: rect(12, 374, 136, 58),
-    default: rect(12, 426, 88, 36),
+    theWall: rect(8, 48, 126, 38),
+    theSplitter: rect(17, 119, 46, 44),
+    theSniper: rect(12, 185, 130, 34),
+    theSwarmKing: rect(21, 244, 48, 38),
+    theGlitchCore: rect(22, 318, 100, 28),
+    default: rect(18, 430, 84, 30),
   },
   ships: {
     player: rect(92, 24, 110, 34),
@@ -50,17 +49,9 @@ export const INVADERS_ATLAS_RECTS = {
     life: rect(302, 264, 236, 44),
   },
   fx: {
-    playerBullet: rect(12, 70, 92, 34),
-    enemyBullet: rect(296, 66, 76, 62),
     bomb: rect(506, 70, 44, 48),
-    powerupRapid: rect(24, 296, 28, 28),
-    powerupSpread: rect(58, 296, 28, 28),
-    powerupShield: rect(430, 198, 48, 54),
-    powerupMultiplier: rect(218, 292, 84, 34),
-    powerupSlow: rect(372, 292, 116, 58),
     hitFlash: rect(364, 198, 114, 66),
     particle: rect(264, 404, 110, 32),
-    asteroid: rect(24, 146, 86, 86),
   },
   ui: {
     upgradeCommon: rect(386, 118, 50, 78),
@@ -77,11 +68,36 @@ function canUseImage() {
 function loadSheet(src) {
   if (!canUseImage()) return { image: null, status: 'unsupported', src };
   const sheet = { image: new Image(), status: 'loading', src };
-  sheet.image.onload = () => { sheet.status = 'loaded'; };
+  sheet.image.onload = () => {
+    sheet.source = createColorKeyCanvas(sheet.image);
+    sheet.status = 'loaded';
+  };
   sheet.image.onerror = () => { sheet.status = 'error'; };
   sheet.image.decoding = 'async';
   sheet.image.src = src;
   return sheet;
+}
+
+function createColorKeyCanvas(image) {
+  if (typeof document === 'undefined') return image;
+  const canvas = document.createElement('canvas');
+  const width = image.naturalWidth || image.width || 0;
+  const height = image.naturalHeight || image.height || 0;
+  if (!width || !height) return image;
+  canvas.width = width;
+  canvas.height = height;
+  const canvasCtx = canvas.getContext('2d', { willReadFrequently: true });
+  if (!canvasCtx) return image;
+  canvasCtx.drawImage(image, 0, 0);
+  const pixels = canvasCtx.getImageData(0, 0, width, height);
+  const data = pixels.data;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i] <= 10 && data[i + 1] <= 10 && data[i + 2] <= 12) {
+      data[i + 3] = 0;
+    }
+  }
+  canvasCtx.putImageData(pixels, 0, 0);
+  return canvas;
 }
 
 function rectFitsImage(image, crop) {
@@ -115,9 +131,18 @@ export function createInvadersAssetSystem(paths = INVADERS_ASSET_PATHS, maps = I
       ctx.shadowBlur = options.glowBlur || 0;
       ctx.shadowColor = options.glowColor;
     }
-    ctx.drawImage(image, crop.x, crop.y, crop.w, crop.h, dx, dy, dw, dh);
+    ctx.drawImage(sheet.source || image, crop.x, crop.y, crop.w, crop.h, dx, dy, dw, dh);
     ctx.restore();
     return true;
+  }
+
+  function drawCentered(ctx, sheetName, rectName, cx, cy, targetW, targetH, options = {}) {
+    const crop = getRect(sheetName, rectName);
+    if (!crop) return false;
+    const scale = Math.min(targetW / crop.w, targetH / crop.h);
+    const dw = crop.w * scale;
+    const dh = crop.h * scale;
+    return draw(ctx, sheetName, rectName, cx - dw / 2, cy - dh / 2, dw, dh, options);
   }
 
   function getDebugInfo() {
@@ -140,7 +165,7 @@ export function createInvadersAssetSystem(paths = INVADERS_ASSET_PATHS, maps = I
     };
   }
 
-  const api = { draw, getRect, getDebugInfo, maps, paths, sheets };
+  const api = { draw, drawCentered, getRect, getDebugInfo, maps, paths, sheets };
   if (typeof window !== 'undefined') {
     window.__INVADERS_3008_ATLAS__ = api;
   }
