@@ -9,7 +9,6 @@ import { POWERUP_COLORS, POWERUP_ICONS, POWERUP_DURATION } from './powerup-syste
 import { WAVE_BOSS, BUNKER_BLOCK_W, BUNKER_BLOCK_H } from './invader-system.js';
 import { UPGRADE_DEFS, UPGRADE_COLORS, RARITY_COLORS } from './upgrade-system.js';
 import { BOSS_ARCHETYPE_DEFS } from './boss-archetypes.js';
-import { createInvadersAssetSystem } from './asset-system.js';
 
 // Boss phase colour palette — shared between drawBoss() and the phase label.
 const BOSS_PHASE_COLORS = ['#ff4444', '#ff8800', '#ff0055'];
@@ -25,16 +24,6 @@ export function createRenderer(ctx, W, H) {
 
   function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
 
-  const assets = createInvadersAssetSystem();
-
-  function drawSprite(sheetName, rectName, x, y, w, h, options) {
-    return assets.draw(ctx, sheetName, rectName, x, y, w, h, options);
-  }
-
-  function drawAtlasSpriteCentered(sheetName, rectName, cx, cy, targetW, targetH, options) {
-    return assets.drawCentered(ctx, sheetName, rectName, cx, cy, targetW, targetH, options);
-  }
-
   function drawHitTint(x, y, w, h, hitFrac) {
     if (hitFrac <= 0) return;
     ctx.save();
@@ -48,28 +37,22 @@ export function createRenderer(ctx, W, H) {
 
   function drawShip(player) {
     const { x, y, w, h, shielded } = player;
-    const drewSprite = drawAtlasSpriteCentered('ships', 'player', x + w / 2, y + h / 2, w + 18, h + 18, {
-      glowColor: '#2ec5ff',
-      glowBlur: 8,
-    });
-    if (!drewSprite) {
-      ctx.fillStyle = '#2ec5ff';
-      ctx.beginPath();
-      ctx.moveTo(x + w / 2, y);
-      ctx.lineTo(x + w,     y + h);
-      ctx.lineTo(x,         y + h);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = '#a8eaff';
-      ctx.beginPath();
-      ctx.arc(x + w / 2, y + h * 0.55, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#f7c948';
-      ctx.fillRect(x + w / 2 - 4, y + h - 6, 8, 6);
-      ctx.fillStyle = '#1a9acc';
-      ctx.fillRect(x,         y + h - 8, 8, 4);
-      ctx.fillRect(x + w - 8, y + h - 8, 8, 4);
-    }
+    ctx.fillStyle = '#2ec5ff';
+    ctx.beginPath();
+    ctx.moveTo(x + w / 2, y);
+    ctx.lineTo(x + w,     y + h);
+    ctx.lineTo(x,         y + h);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#a8eaff';
+    ctx.beginPath();
+    ctx.arc(x + w / 2, y + h * 0.55, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#f7c948';
+    ctx.fillRect(x + w / 2 - 4, y + h - 6, 8, 6);
+    ctx.fillStyle = '#1a9acc';
+    ctx.fillRect(x,         y + h - 8, 8, 4);
+    ctx.fillRect(x + w - 8, y + h - 8, 8, 4);
     if (shielded) {
       ctx.save();
       ctx.strokeStyle = 'rgba(63,185,80,0.7)';
@@ -341,52 +324,40 @@ export function createRenderer(ctx, W, H) {
     const hf      = clamp(inv.hitTimer / 0.12, 0, 1);
     const sf      = inv.maxShieldHp > 0 ? inv.shieldHp / inv.maxShieldHp : 0;
     const hpRatio = clamp(inv.hp / inv.maxHp, 0, 1);
-    const alpha = inv.type === 'cloaked' && inv.cloakAlpha !== undefined ? inv.cloakAlpha : 1;
-    const spriteType = inv.type || 'basic';
-    const spriteCx = inv.x + inv.w / 2;
-    const spriteCy = inv.y + inv.h / 2;
-    const drewSprite = drawAtlasSpriteCentered('enemies', spriteType, spriteCx, spriteCy, inv.w + 10, inv.h + 8, {
-      alpha,
-      glowColor: inv.type === 'golden' ? '#f7c948' : undefined,
-      glowBlur: inv.type === 'golden' ? 10 : 0,
-    });
-    if (drewSprite) {
-      drawHitTint(inv.x, inv.y, inv.w, inv.h, hf);
-      if (hpRatio < 1 && (inv.type === 'tank' || inv.type === 'splitter')) {
-        ctx.fillStyle = '#111';
-        ctx.fillRect(inv.x, inv.y + inv.h + 1, inv.w, 3);
-        ctx.fillStyle = hpRatio > 0.5 ? '#3fb950' : '#f7c948';
-        ctx.fillRect(inv.x, inv.y + inv.h + 1, inv.w * hpRatio, 3);
-      }
-      if (sf > 0) {
-        ctx.save();
-        ctx.strokeStyle = 'rgba(46,197,255,' + (0.35 + sf * 0.45) + ')';
-        ctx.lineWidth   = 2;
-        ctx.shadowBlur  = 8;
-        ctx.shadowColor = '#2ec5ff';
-        ctx.beginPath();
-        ctx.arc(inv.x + inv.w / 2, inv.y + inv.h / 2, inv.w * 0.65, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-      }
-    } else {
-      switch (inv.type) {
-        case 'fast':     drawInvaderFast(inv.x, inv.y, inv.w, inv.h, hf); break;
-        case 'tank':     drawInvaderTank(inv.x, inv.y, inv.w, inv.h, hf, hpRatio); break;
-        case 'shooter':  drawInvaderShooter(inv.x, inv.y, inv.w, inv.h, hf); break;
-        case 'shield':   drawInvaderShield(inv.x, inv.y, inv.w, inv.h, hf, sf); break;
-        case 'bomber':   drawInvaderBomber(inv.x, inv.y, inv.w, inv.h, hf); break;
-        case 'hunter':   drawInvaderHunter(inv.x, inv.y, inv.w, inv.h, hf); break;
-        case 'zigzag':   drawInvaderZigzag(inv.x, inv.y, inv.w, inv.h, hf); break;
-        case 'splitter': drawInvaderSplitter(inv.x, inv.y, inv.w, inv.h, hf, hpRatio); break;
-        case 'healer':   drawInvaderHealer(inv.x, inv.y, inv.w, inv.h, hf); break;
-        case 'sniper':   drawInvaderSniper(inv.x, inv.y, inv.w, inv.h, hf); break;
-        case 'kamikaze': drawInvaderKamikaze(inv.x, inv.y, inv.w, inv.h, hf); break;
-        case 'cloaked':  drawInvaderCloaked(inv.x, inv.y, inv.w, inv.h, hf, inv.cloakAlpha); break;
-        case 'golden':   drawInvaderGolden(inv.x, inv.y, inv.w, inv.h, hf, elapsed); break;
-        case 'cursed':   drawInvaderCursed(inv.x, inv.y, inv.w, inv.h, hf); break;
-        default:         drawInvaderBasic(inv.x, inv.y, inv.w, inv.h, hf);
-      }
+    switch (inv.type) {
+      case 'fast':     drawInvaderFast(inv.x, inv.y, inv.w, inv.h, hf); break;
+      case 'tank':     drawInvaderTank(inv.x, inv.y, inv.w, inv.h, hf, hpRatio); break;
+      case 'shooter':  drawInvaderShooter(inv.x, inv.y, inv.w, inv.h, hf); break;
+      case 'shield':   drawInvaderShield(inv.x, inv.y, inv.w, inv.h, hf, sf); break;
+      case 'bomber':   drawInvaderBomber(inv.x, inv.y, inv.w, inv.h, hf); break;
+      case 'hunter':   drawInvaderHunter(inv.x, inv.y, inv.w, inv.h, hf); break;
+      case 'zigzag':   drawInvaderZigzag(inv.x, inv.y, inv.w, inv.h, hf); break;
+      case 'splitter': drawInvaderSplitter(inv.x, inv.y, inv.w, inv.h, hf, hpRatio); break;
+      case 'healer':   drawInvaderHealer(inv.x, inv.y, inv.w, inv.h, hf); break;
+      case 'sniper':   drawInvaderSniper(inv.x, inv.y, inv.w, inv.h, hf); break;
+      case 'kamikaze': drawInvaderKamikaze(inv.x, inv.y, inv.w, inv.h, hf); break;
+      case 'cloaked':  drawInvaderCloaked(inv.x, inv.y, inv.w, inv.h, hf, inv.cloakAlpha); break;
+      case 'golden':   drawInvaderGolden(inv.x, inv.y, inv.w, inv.h, hf, elapsed); break;
+      case 'cursed':   drawInvaderCursed(inv.x, inv.y, inv.w, inv.h, hf); break;
+      default:         drawInvaderBasic(inv.x, inv.y, inv.w, inv.h, hf);
+    }
+    drawHitTint(inv.x, inv.y, inv.w, inv.h, hf);
+    if (hpRatio < 1 && (inv.type === 'tank' || inv.type === 'splitter')) {
+      ctx.fillStyle = '#111';
+      ctx.fillRect(inv.x, inv.y + inv.h + 1, inv.w, 3);
+      ctx.fillStyle = hpRatio > 0.5 ? '#3fb950' : '#f7c948';
+      ctx.fillRect(inv.x, inv.y + inv.h + 1, inv.w * hpRatio, 3);
+    }
+    if (sf > 0) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(46,197,255,' + (0.35 + sf * 0.45) + ')';
+      ctx.lineWidth   = 2;
+      ctx.shadowBlur  = 8;
+      ctx.shadowColor = '#2ec5ff';
+      ctx.beginPath();
+      ctx.arc(inv.x + inv.w / 2, inv.y + inv.h / 2, inv.w * 0.65, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
     }
     // Mutation indicator: small coloured ring
     if (inv.mutations && inv.mutations.length > 0) {
@@ -418,66 +389,58 @@ export function createRenderer(ctx, W, H) {
     const baseColor   = archetype ? archetype.color : phaseColors[(phase || 1) - 1];
     const bodyColor   = isHit ? '#ffd3d3' : isShooting ? '#ff2f2f' : baseColor;
 
-    const bossSprite = b.archetypeId || 'default';
-    const drewSprite = drawAtlasSpriteCentered('bosses', bossSprite, b.x + b.w / 2, b.y + b.h / 2, b.w, b.h, {
-      glowColor: baseColor,
-      glowBlur: phase === 3 ? 24 : 14,
-    });
-    if (drewSprite) {
-      drawHitTint(b.x, b.y, b.w, b.h, isHit ? 1 : 0);
-      if (isShooting) {
-        ctx.save();
-        ctx.globalAlpha = 0.25;
-        ctx.fillStyle = '#ff2f2f';
-        ctx.fillRect(b.x, b.y - 3, b.w, b.h + 6);
-        ctx.restore();
-      }
+    ctx.save();
+    ctx.shadowBlur  = phase === 3 ? 28 : 18;
+    ctx.shadowColor = baseColor;
+    ctx.fillStyle   = bodyColor;
+
+    // theWall: heavier rectangular shape
+    if (b.archetypeId === 'theWall') {
+      ctx.beginPath();
+      ctx.rect(b.x, b.y, b.w, b.h);
+      ctx.fill();
+      ctx.fillStyle = isHit ? '#ffd3d3' : '#555';
+      ctx.fillRect(b.x + 6, b.y + 6, b.w - 12, b.h - 12);
+    } else if (b.archetypeId === 'theGlitchCore') {
+      // Glitch: jittery polygon
+      ctx.beginPath();
+      const jitter = () => (Math.random() - 0.5) * 6;
+      ctx.moveTo(cx + jitter(),         b.y + jitter());
+      ctx.lineTo(b.x + b.w + jitter(),  b.y + b.h / 2 + jitter());
+      ctx.lineTo(cx + jitter(),         b.y + b.h + jitter());
+      ctx.lineTo(b.x + jitter(),        b.y + b.h / 2 + jitter());
+      ctx.closePath();
+      ctx.fill();
     } else {
+      // Default hexagonal body
+      ctx.beginPath();
+      ctx.moveTo(cx - b.w / 2 + cut, b.y);
+      ctx.lineTo(cx + b.w / 2 - cut, b.y);
+      ctx.lineTo(cx + b.w / 2,       b.y + cut);
+      ctx.lineTo(cx + b.w / 2,       b.y + b.h - cut);
+      ctx.lineTo(cx + b.w / 2 - cut, b.y + b.h);
+      ctx.lineTo(cx - b.w / 2 + cut, b.y + b.h);
+      ctx.lineTo(cx - b.w / 2,       b.y + b.h - cut);
+      ctx.lineTo(cx - b.w / 2,       b.y + cut);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    // Eyes
+    ctx.fillStyle  = '#fff';
+    ctx.beginPath(); ctx.arc(cx - 16, b.y + 14, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 16, b.y + 14, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle  = archetype ? archetype.color : '#ff0000';
+    ctx.beginPath(); ctx.arc(cx - 16, b.y + 14, 3.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 16, b.y + 14, 3.5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    drawHitTint(b.x, b.y, b.w, b.h, isHit ? 1 : 0);
+    if (isShooting) {
       ctx.save();
-      ctx.shadowBlur  = phase === 3 ? 28 : 18;
-      ctx.shadowColor = baseColor;
-      ctx.fillStyle   = bodyColor;
-
-      // theWall: heavier rectangular shape
-      if (b.archetypeId === 'theWall') {
-        ctx.beginPath();
-        ctx.rect(b.x, b.y, b.w, b.h);
-        ctx.fill();
-        ctx.fillStyle = isHit ? '#ffd3d3' : '#555';
-        ctx.fillRect(b.x + 6, b.y + 6, b.w - 12, b.h - 12);
-      } else if (b.archetypeId === 'theGlitchCore') {
-        // Glitch: jittery polygon
-        ctx.beginPath();
-        const jitter = () => (Math.random() - 0.5) * 6;
-        ctx.moveTo(cx + jitter(),         b.y + jitter());
-        ctx.lineTo(b.x + b.w + jitter(),  b.y + b.h / 2 + jitter());
-        ctx.lineTo(cx + jitter(),         b.y + b.h + jitter());
-        ctx.lineTo(b.x + jitter(),        b.y + b.h / 2 + jitter());
-        ctx.closePath();
-        ctx.fill();
-      } else {
-        // Default hexagonal body
-        ctx.beginPath();
-        ctx.moveTo(cx - b.w / 2 + cut, b.y);
-        ctx.lineTo(cx + b.w / 2 - cut, b.y);
-        ctx.lineTo(cx + b.w / 2,       b.y + cut);
-        ctx.lineTo(cx + b.w / 2,       b.y + b.h - cut);
-        ctx.lineTo(cx + b.w / 2 - cut, b.y + b.h);
-        ctx.lineTo(cx - b.w / 2 + cut, b.y + b.h);
-        ctx.lineTo(cx - b.w / 2,       b.y + b.h - cut);
-        ctx.lineTo(cx - b.w / 2,       b.y + cut);
-        ctx.closePath();
-        ctx.fill();
-      }
-      ctx.shadowBlur = 0;
-
-      // Eyes
-      ctx.fillStyle  = '#fff';
-      ctx.beginPath(); ctx.arc(cx - 16, b.y + 14, 7, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(cx + 16, b.y + 14, 7, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle  = archetype ? archetype.color : '#ff0000';
-      ctx.beginPath(); ctx.arc(cx - 16, b.y + 14, 3.5, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(cx + 16, b.y + 14, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = '#ff2f2f';
+      ctx.fillRect(b.x, b.y - 3, b.w, b.h + 6);
       ctx.restore();
     }
 
@@ -899,16 +862,6 @@ export function createRenderer(ctx, W, H) {
   function drawMiniEnemies(miniEnemies) {
     if (!miniEnemies || !miniEnemies.length) return;
     for (const m of miniEnemies) {
-      if (drawAtlasSpriteCentered('enemies', m.type || 'mini_boss', m.x + m.w / 2, m.y + m.h / 2, m.w + 8, m.h + 8, {
-        glowColor: '#ff8c00',
-        glowBlur: 8,
-      })) {
-        ctx.fillStyle = '#333';
-        ctx.fillRect(m.x, m.y - 8, m.w, 4);
-        ctx.fillStyle = '#ff8c00';
-        ctx.fillRect(m.x, m.y - 8, m.w * clamp(m.hp / m.maxHp, 0, 1), 4);
-        continue;
-      }
       ctx.save();
       ctx.fillStyle   = m.hitTimer > 0 ? '#ffd0a0' : '#ff8c00';
       ctx.shadowBlur  = 10;
@@ -1311,17 +1264,12 @@ export function createRenderer(ctx, W, H) {
     for (const b of s.bullets) {
       if (!b.isBomb) continue;
       ctx.save();
-      if (!drawAtlasSpriteCentered('fx', 'bomb', b.x + b.w / 2, b.y + b.h / 2, b.w, b.h, {
-        glowColor: '#ff6b2b',
-        glowBlur: 22,
-      })) {
-        ctx.fillStyle   = '#ff6b2b';
-        ctx.shadowBlur  = 22;
-        ctx.shadowColor = '#ff6b2b';
-        ctx.beginPath();
-        ctx.arc(b.x + b.w / 2, b.y + b.h / 2, b.w / 2, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      ctx.fillStyle   = '#ff6b2b';
+      ctx.shadowBlur  = 22;
+      ctx.shadowColor = '#ff6b2b';
+      ctx.beginPath();
+      ctx.arc(b.x + b.w / 2, b.y + b.h / 2, b.w / 2, 0, Math.PI * 2);
+      ctx.fill();
       ctx.shadowBlur = 0;
       ctx.restore();
     }

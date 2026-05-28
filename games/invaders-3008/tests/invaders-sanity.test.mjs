@@ -12,6 +12,7 @@
  *  - invader-system.js exports expected symbols
  *  - powerup-system.js exports expected symbols
  *  - render-system.js exports createRenderer
+ *  - render-system.js keeps primitive-only presentation (no runtime atlas)
  * HTML
  *  - canvas + control buttons exist
  *  - game-fullscreen.js loaded
@@ -40,18 +41,16 @@ const bootstrapPath    = path.join(INVADERS_DIR, 'bootstrap.js');
 const invaderSysPath   = path.join(INVADERS_DIR, 'invader-system.js');
 const powerupSysPath   = path.join(INVADERS_DIR, 'powerup-system.js');
 const renderSysPath    = path.join(INVADERS_DIR, 'render-system.js');
-const assetSysPath     = path.join(INVADERS_DIR, 'asset-system.js');
 const indexPath        = path.resolve(here, '../index.html');
 const blockTopiaPath   = path.resolve(here, '../../block-topia/main.js');
 const gameFsPath       = path.resolve(here, '../../../js/game-fullscreen.js');
 
-const [bootstrapSrc, invaderSysSrc, powerupSysSrc, renderSysSrc, assetSysSrc, indexHtml, btStat, gameFsSrc] =
+const [bootstrapSrc, invaderSysSrc, powerupSysSrc, renderSysSrc, indexHtml, btStat, gameFsSrc] =
   await Promise.all([
     fs.readFile(bootstrapPath,  'utf8'),
     fs.readFile(invaderSysPath, 'utf8'),
     fs.readFile(powerupSysPath, 'utf8'),
     fs.readFile(renderSysPath,  'utf8'),
-    fs.readFile(assetSysPath,   'utf8'),
     fs.readFile(indexPath,      'utf8'),
     fs.stat(blockTopiaPath),
     fs.readFile(gameFsPath,     'utf8'),
@@ -128,16 +127,12 @@ assert.ok(renderSysSrc.includes('export function createRenderer'),
   'render-system.js must export createRenderer');
 assert.ok(renderSysSrc.includes('function draw('),
   'render-system.js createRenderer must return a draw() method');
-assert.ok(renderSysSrc.includes("from './asset-system.js'"),
-  "render-system.js must import the atlas asset system");
-assert.ok(/function drawShip[\s\S]*?drawAtlasSpriteCentered\(/.test(renderSysSrc),
-  'render-system.js must call drawAtlasSpriteCentered(...) from drawShip()');
-assert.ok(/function drawInvader[\s\S]*?drawAtlasSpriteCentered\('enemies'/.test(renderSysSrc),
-  'render-system.js must call drawAtlasSpriteCentered(...) for routed enemy sprites');
-assert.ok(/function drawBoss[\s\S]*?drawAtlasSpriteCentered\('bosses'/.test(renderSysSrc),
-  'render-system.js must call drawAtlasSpriteCentered(...) for routed boss sprites');
-assert.ok(/function draw\(s\)[\s\S]*?drawAtlasSpriteCentered\('fx', 'bomb'/.test(renderSysSrc),
-  'render-system.js must call drawAtlasSpriteCentered(...) for the routed bomb sprite');
+assert.ok(!renderSysSrc.includes("from './asset-system.js'"),
+  'render-system.js must not import runtime contact-sheet atlas assets');
+assert.ok(!renderSysSrc.includes('createInvadersAssetSystem('),
+  'render-system.js must not initialize runtime contact-sheet asset systems');
+assert.ok(!renderSysSrc.includes('drawAtlasSpriteCentered('),
+  'render-system.js must not draw runtime atlas sprites');
 
 // Drawing primitives present
 for (const fn of ['drawShip', 'drawBoss', 'drawBunkers', 'drawBackground',
@@ -149,29 +144,6 @@ for (const fn of ['drawShip', 'drawBoss', 'drawBunkers', 'drawBackground',
 // No game-state mutation in renderer
 assert.ok(!renderSysSrc.includes('lives--') && !renderSysSrc.includes('score +='),
   'render-system.js must not mutate game state');
-
-// Atlas integration guards: named crops only, never full-sheet drawImage.
-assert.ok(assetSysSrc.includes('INVADERS_ATLAS_RECTS'),
-  'asset-system.js must define INVADERS_ATLAS_RECTS');
-for (const type of ['basic', 'fast', 'tank', 'shooter', 'shield', 'bomber', 'hunter',
-                    'zigzag', 'splitter', 'healer', 'sniper', 'kamikaze', 'cloaked',
-                    'golden', 'cursed']) {
-  assert.ok(assetSysSrc.includes(type + ': rect('),
-    'asset-system.js must map enemy sprite: ' + type);
-}
-assert.ok(assetSysSrc.includes('rectFitsImage'),
-  'asset-system.js must validate crop bounds before drawing');
-assert.ok(assetSysSrc.includes('createColorKeyCanvas'),
-  'asset-system.js must remove dark production-sheet backgrounds before drawing sprites');
-assert.ok(!/drawImage\([^,\n]+,\s*dx,\s*dy,\s*dw,\s*dh\)/.test(assetSysSrc),
-  'asset-system.js must not draw whole sheets directly onto sprites');
-for (const unsafe of ['powerupRapid', 'powerupSpread', 'powerupShield', 'powerupMultiplier',
-                      'powerupSlow', 'asteroid: rect']) {
-  assert.ok(!assetSysSrc.includes(unsafe),
-    'asset-system.js must not route unsafe labelled contact-sheet crop: ' + unsafe);
-}
-assert.ok(!renderSysSrc.includes("drawAtlasSpriteCentered('fx', 'asteroid'"),
-  'render-system.js must keep asteroids on primitive fallback until a clean sprite exists');
 
 // ── index.html ────────────────────────────────────────────────────────────────
 
