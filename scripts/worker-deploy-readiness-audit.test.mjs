@@ -89,6 +89,70 @@ preview_id = "real_kv_preview"
 await withFixture(
   {
     deployStatus: {
+      'workers/sample-live-single': { status: 'live-deployable', deploy: true },
+    },
+    workers: {
+      'sample-live-single': `
+name = "sample-live-single"
+[[kv_namespaces]]
+binding = "CACHE"
+id = 'YOUR_CACHE_KV_ID'
+preview_id = 'real_kv_preview'
+`,
+    },
+  },
+  async (fixtureRoot) => {
+    const result = runAudit(fixtureRoot);
+    assert.equal(result.ok, false, 'live-deployable workers must fail when single-quoted binding values contain placeholders');
+    assert.ok(result.output.includes("id='YOUR_CACHE_KV_ID'"), 'expected single-quoted placeholder value in audit output');
+  },
+);
+
+await withFixture(
+  {
+    deployStatus: {
+      'workers/sample-live-empty-double': { status: 'live-deployable', deploy: true },
+    },
+    workers: {
+      'sample-live-empty-double': `
+name = "sample-live-empty-double"
+[[d1_databases]]
+binding = "DB"
+database_id = ""
+`,
+    },
+  },
+  async (fixtureRoot) => {
+    const result = runAudit(fixtureRoot);
+    assert.equal(result.ok, false, 'live-deployable workers must fail when double-quoted binding values are empty');
+    assert.ok(result.output.includes('database_id=""'), 'expected empty double-quoted binding in audit output');
+  },
+);
+
+await withFixture(
+  {
+    deployStatus: {
+      'workers/sample-live-empty-single': { status: 'live-deployable', deploy: true },
+    },
+    workers: {
+      'sample-live-empty-single': `
+name = "sample-live-empty-single"
+[[d1_databases]]
+binding = "DB"
+database_id = ''
+`,
+    },
+  },
+  async (fixtureRoot) => {
+    const result = runAudit(fixtureRoot);
+    assert.equal(result.ok, false, 'live-deployable workers must fail when single-quoted binding values are empty');
+    assert.ok(result.output.includes("database_id=''"), 'expected empty single-quoted binding in audit output');
+  },
+);
+
+await withFixture(
+  {
+    deployStatus: {
       'workers/sample-blocked': { status: 'stub-blocked', deploy: false, reason: 'intentional placeholders' },
     },
     workers: {
@@ -96,7 +160,7 @@ await withFixture(
 name = "sample-blocked"
 [[kv_namespaces]]
 binding = "CACHE"
-id = "YOUR_CACHE_KV_ID"
+id = 'YOUR_CACHE_KV_ID'
 preview_id = "YOUR_CACHE_KV_ID"
 `,
     },

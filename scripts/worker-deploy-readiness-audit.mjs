@@ -69,19 +69,34 @@ function isBindingValueField(key) {
   return key === 'id' || key.endsWith('_id') || key === 'bucket_name';
 }
 
+function parseTomlQuotedValue(rawValue) {
+  const value = rawValue.trim();
+  if (value.length < 2) return null;
+  if (value.startsWith('"') && value.endsWith('"')) {
+    return { quote: '"', value: value.slice(1, -1) };
+  }
+  if (value.startsWith('\'') && value.endsWith('\'')) {
+    return { quote: '\'', value: value.slice(1, -1) };
+  }
+  return null;
+}
+
 function detectPlaceholders(tomlContent) {
   const found = [];
   const lines = tomlContent.split('\n');
   for (const line of lines) {
     const lineWithoutComments = stripTomlComment(line).trim();
     if (!lineWithoutComments) continue;
-    const match = lineWithoutComments.match(/^([A-Za-z0-9_]+)\s*=\s*"(.*)"\s*$/);
+    const match = lineWithoutComments.match(/^([A-Za-z0-9_]+)\s*=\s*(.+)\s*$/);
     if (!match) continue;
-    const [, key, value] = match;
+    const [, key, rawValue] = match;
     if (!isBindingValueField(key)) continue;
+    const parsed = parseTomlQuotedValue(rawValue);
+    if (!parsed) continue;
+    const { quote, value } = parsed;
     const isPlaceholder = value === '' || PLACEHOLDER_VALUE_PATTERNS.some(pattern => pattern.test(value));
     if (isPlaceholder) {
-      const token = `${key}="${value}"`;
+      const token = `${key}=${quote}${value}${quote}`;
       if (!found.includes(token)) {
         found.push(token);
       }
