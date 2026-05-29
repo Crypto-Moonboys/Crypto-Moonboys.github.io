@@ -2698,15 +2698,14 @@ export default {
     // ── POST /admin/blocktopia/grant-xp ───────────────────────────────────
     // Admin-only tooling endpoint for Block Topia test/ops XP + gems grants.
     if (path === '/admin/blocktopia/grant-xp' && request.method === 'POST') {
-      const configuredSecret = String(env.ADMIN_SECRET || '').trim();
-      if (!configuredSecret) return err('Admin tooling is not configured', 503);
-      if (readAdminSecret(request) !== configuredSecret) return err('Unauthorized', 401);
-
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
 
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
       const telegramId = String(body?.telegram_id || '').trim();
-      const adminTelegramId = String(body?.admin_telegram_id || '').trim();
+      const adminTelegramId = String(verified.telegramId || '').trim();
       const hasXpInput = body && Object.prototype.hasOwnProperty.call(body, 'xp');
       const hasGemsInput = body && Object.prototype.hasOwnProperty.call(body, 'gems');
       const rawXp = hasXpInput ? Number(body?.xp) : null;
@@ -2715,9 +2714,6 @@ export default {
 
       if (!telegramId || !/^\d{5,20}$/.test(telegramId)) {
         return err('Valid target telegram_id is required', 400);
-      }
-      if (!adminTelegramId || !/^\d{5,20}$/.test(adminTelegramId)) {
-        return err('Valid admin_telegram_id is required', 400);
       }
       if (!isAdminTelegramUser(adminTelegramId, env)) {
         return err('Forbidden: admin not allowed', 403);
@@ -2797,23 +2793,19 @@ export default {
     // Admin-only tooling endpoint to grant Arcade XP (arcade_progression_state.arcade_xp_total).
     // This is the value checked by the Block Topia multiplayer gate.
     if (path === '/admin/arcade/grant-xp' && request.method === 'POST') {
-      const configuredSecret = String(env.ADMIN_SECRET || '').trim();
-      if (!configuredSecret) return err('Admin tooling is not configured', 503);
-      if (readAdminSecret(request) !== configuredSecret) return err('Unauthorized', 401);
-
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
 
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
       const telegramId = String(body?.telegram_id || '').trim();
-      const adminTelegramId = String(body?.admin_telegram_id || '').trim();
+      const adminTelegramId = String(verified.telegramId || '').trim();
       const rawXp = body && Object.prototype.hasOwnProperty.call(body, 'xp') ? Number(body.xp) : null;
       const reason = String(body?.reason || '').trim().slice(0, 280);
 
       if (!telegramId || !/^\d{5,20}$/.test(telegramId)) {
         return err('Valid target telegram_id is required', 400);
-      }
-      if (!adminTelegramId || !/^\d{5,20}$/.test(adminTelegramId)) {
-        return err('Valid admin_telegram_id is required', 400);
       }
       if (!isAdminTelegramUser(adminTelegramId, env)) {
         return err('Forbidden: admin not allowed', 403);
