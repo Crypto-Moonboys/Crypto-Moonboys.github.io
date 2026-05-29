@@ -103,6 +103,7 @@ await test('env override: single custom origin is reflected', async () => {
   const custom = 'https://staging.example.com';
   const res = await workerHealth(custom, { CORS_ALLOWED_ORIGINS: custom });
   assert.equal(res.headers.get('Access-Control-Allow-Origin'), custom);
+  assert.equal(res.headers.get('Vary'), 'Origin');
 });
 
 await test('env override: production origins are NOT reflected when override is set to different value', async () => {
@@ -111,6 +112,7 @@ await test('env override: production origins are NOT reflected when override is 
     const res = await workerHealth(origin, { CORS_ALLOWED_ORIGINS: custom });
     assert.equal(res.headers.get('Access-Control-Allow-Origin'), null,
       `Production origin '${origin}' must not be reflected when override is '${custom}'`);
+    assert.equal(res.headers.get('Vary'), 'Origin');
   }
 });
 
