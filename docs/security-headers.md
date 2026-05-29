@@ -34,6 +34,8 @@ responses.
 Requests from browser origins are only accepted from the allowlist:
 
 - `https://cryptomoonboys.com`
+- `https://www.cryptomoonboys.com`
+- `https://crypto-moonboys.github.io`
 
 Set the `CORS_ALLOWED_ORIGINS` environment variable (comma-separated) to override
 for staging environments.
