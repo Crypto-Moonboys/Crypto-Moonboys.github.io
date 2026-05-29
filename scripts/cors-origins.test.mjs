@@ -267,6 +267,61 @@ for (const { path: workerPath, name } of narrowedWorkers) {
   });
 }
 
+// ── 11. DEPLOY_STATUS.json: stub-blocked workers must not be marked deployable ─
+
+console.log('\n[11] DEPLOY_STATUS.json: stub-blocked workers are not marked deploy:true');
+
+const deployStatusRaw = await read('workers/DEPLOY_STATUS.json');
+const deployStatus = JSON.parse(deployStatusRaw);
+
+for (const [folder, entry] of Object.entries(deployStatus)) {
+  if (entry.status === 'stub-blocked') {
+    await test(`${folder} is stub-blocked and deploy:false in DEPLOY_STATUS.json`, () => {
+      assert.equal(entry.deploy, false,
+        `${folder} is marked stub-blocked but deploy is not false`);
+    });
+  }
+  if (entry.status === 'live-deployable') {
+    await test(`${folder} is live-deployable and deploy:true in DEPLOY_STATUS.json`, () => {
+      assert.equal(entry.deploy, true,
+        `${folder} is marked live-deployable but deploy is not true`);
+    });
+  }
+}
+
+// ── 12. WORKER_DEPLOY_TRUTH_MAP.md: stub-blocked workers not listed as deployable ─
+
+console.log('\n[12] WORKER_DEPLOY_TRUTH_MAP.md: stub-blocked workers not presented as deployable');
+
+const truthMapSrc = await read('docs/WORKER_DEPLOY_TRUTH_MAP.md');
+
+const stubBlockedFolders = Object.entries(deployStatus)
+  .filter(([, e]) => e.status === 'stub-blocked')
+  .map(([folder]) => folder);
+
+for (const folder of stubBlockedFolders) {
+  const workerName = folder.split('/').pop();
+  await test(`${folder} — truth map shows stub-blocked, not live-deployable`, () => {
+    // The truth map must contain stub-blocked marker for this worker
+    assert.ok(
+      truthMapSrc.includes('stub-blocked') && truthMapSrc.includes(workerName),
+      `${folder} must appear in truth map as stub-blocked`,
+    );
+    // The truth map must not list it under "Deploy now? Yes"
+    // Verify the row containing this worker name does not say "Yes" in the deploy column
+    // (it should say **No**)
+    const lines = truthMapSrc.split('\n');
+    const workerRow = lines.find(l => l.includes(`workers/${workerName}`) && l.includes('stub-blocked'));
+    assert.ok(workerRow, `${folder} must have a table row marked stub-blocked in truth map`);
+    const cells = workerRow.split('|').map(cell => cell.trim()).filter(Boolean);
+    const deployNowCell = cells[6] || '';
+    assert.ok(
+      /^\*{0,2}No\*{0,2}$/.test(deployNowCell),
+      `${folder} stub-blocked row must say No in the Deploy now? column. Found row: ${workerRow?.trim()}`,
+    );
+  });
+}
+
 // ── summary ───────────────────────────────────────────────────────────────────
 
 console.log('\n─── Result ──────────────────────────────────────────────────────');

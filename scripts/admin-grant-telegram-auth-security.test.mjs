@@ -404,3 +404,101 @@ function seedLinkedUser(db, telegramId, { username = 'moonboy_admin' } = {}) {
 }
 
 console.log('Admin grant Telegram auth security tests PASSED.');
+
+// ── Final admin/security regression sweep ────────────────────────────────────
+// Explicitly labels the security invariants locked by PRs #661–#665.
+// Each block is a direct assertion against the Worker source or runtime behaviour.
+
+console.log('\n─── Regression sweep: security invariants ───────────────────────');
+
+{
+  // moonboys-api CORS must not advertise X-Admin-Secret to browsers.
+  const apiSrc = await readFile(new URL('../workers/moonboys-api/worker.js', import.meta.url), 'utf8');
+  const corsHeadersMatch = apiSrc.match(/['"]Access-Control-Allow-Headers['"]\s*:\s*['"]([^'"]+)['"]/);
+  assert.ok(corsHeadersMatch, 'moonboys-api must declare Access-Control-Allow-Headers');
+  assert.equal(
+    corsHeadersMatch[1].toLowerCase().includes('x-admin-secret'),
+    false,
+    `moonboys-api Access-Control-Allow-Headers must not advertise X-Admin-Secret. Found: ${corsHeadersMatch[1]}`,
+  );
+  console.log('  [PASS] moonboys-api CORS does not advertise X-Admin-Secret');
+}
+
+{
+  // blocktopia-district must still advertise X-Admin-Secret (browser-facing admin PUT routes).
+  const districtSrc = await readFile(new URL('../workers/blocktopia-district/worker.js', import.meta.url), 'utf8');
+  const corsHeadersMatch = districtSrc.match(/['"]Access-Control-Allow-Headers['"]\s*:\s*['"]([^'"]+)['"]/);
+  assert.ok(corsHeadersMatch, 'blocktopia-district must declare Access-Control-Allow-Headers');
+  assert.ok(
+    corsHeadersMatch[1].toLowerCase().includes('x-admin-secret'),
+    `blocktopia-district must advertise X-Admin-Secret for browser admin PUT routes. Found: ${corsHeadersMatch[1]}`,
+  );
+  console.log('  [PASS] blocktopia-district CORS still advertises X-Admin-Secret for browser admin routes');
+}
+
+{
+  // /telegram/link requires X-Admin-Secret — verify at runtime (no token, no secret → 401).
+  const db = new MockD1();
+  const validTelegramAuth = buildTelegramAuth(ADMIN_ID);
+  const noSecretRes = await request('/telegram/link', {
+    body: { telegram_id: ADMIN_ID, telegram_auth: validTelegramAuth },
+    env: makeEnv(db),
+  });
+  assert.equal(noSecretRes.status, 401, '/telegram/link must reject requests without X-Admin-Secret');
+  console.log('  [PASS] /telegram/link still requires X-Admin-Secret');
+}
+
+{
+  // Admin XP grants require valid allowlisted signed Telegram auth — not just X-Admin-Secret.
+  const db = new MockD1();
+  const secretOnlyRes = await request('/admin/blocktopia/grant-xp', {
+    body: { telegram_id: TARGET_ID, xp: 10 },
+    headers: { 'X-Admin-Secret': ADMIN_SECRET },
+    env: makeEnv(db),
+  });
+  assert.equal(secretOnlyRes.status, 401, 'admin grant must reject X-Admin-Secret-only requests');
+  console.log('  [PASS] moonboys-api admin XP grant rejects X-Admin-Secret-only requests');
+
+  const noAuthRes = await request('/admin/arcade/grant-xp', {
+    body: { telegram_id: TARGET_ID, xp: 10 },
+    env: makeEnv(db),
+  });
+  assert.equal(noAuthRes.status, 401, 'admin grant must require telegram_auth');
+  console.log('  [PASS] moonboys-api admin XP grant requires signed Telegram auth');
+}
+
+{
+  // /telegram/user/status must not mint signed auth from a bare telegram_id lookup.
+  const db = new MockD1();
+  seedLinkedUser(db, ADMIN_ID);
+
+  const bareGetRes = await request(`/telegram/user/status?telegram_id=${ADMIN_ID}`, {
+    method: 'GET',
+    env: makeEnv(db),
+  });
+  const bareGetJson = await readJson(bareGetRes);
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(bareGetJson, 'telegram_auth'),
+    false,
+    'GET /telegram/user/status must not include telegram_auth from bare telegram_id',
+  );
+  console.log('  [PASS] /telegram/user/status does not mint signed auth from bare telegram_id');
+
+  // Restore must preserve evidence auth_date (no roll-forward).
+  const evidence = buildTelegramAuth(ADMIN_ID);
+  const restoreRes = await request('/telegram/user/status', {
+    body: { telegram_auth: evidence },
+    env: makeEnv(db),
+  });
+  const restoreJson = await readJson(restoreRes);
+  assert.equal(restoreRes.status, 200, 'restore with valid evidence must succeed');
+  assert.equal(
+    String(restoreJson.telegram_auth?.auth_date),
+    String(evidence.auth_date),
+    '/telegram/user/status restore must preserve evidence auth_date, not roll it forward',
+  );
+  console.log('  [PASS] /telegram/user/status restore preserves evidence auth_date (no roll-forward)');
+}
+
+console.log('─────────────────────────────────────────────────────────────────\n');
+console.log('Regression sweep PASSED.');

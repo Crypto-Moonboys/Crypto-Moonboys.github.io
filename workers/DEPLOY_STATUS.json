@@ -1,0 +1,63 @@
+{
+  "workers/moonboys-api": {
+    "status": "live-deployable",
+    "deploy": true,
+    "required_bindings": ["DB (D1: wikicoms)"],
+    "required_secrets": ["TELEGRAM_BOT_TOKEN", "TELEGRAM_BOT_USERNAME", "ADMIN_TELEGRAM_IDS", "ADMIN_SECRET", "TELEGRAM_GROUP_CHAT_ID"],
+    "deploy_command": "cd workers/moonboys-api && npx wrangler deploy",
+    "notes": "Production moonboys-api. Requires D1 wikicoms and all Telegram secrets. Deploy independently of Block Topia server."
+  },
+  "workers/anti-cheat": {
+    "status": "live-deployable",
+    "deploy": true,
+    "required_bindings": ["LEADERBOARD (KV: a621c334d9ac439ebaf5f35dd31dddd5)", "DB (D1: wikicoms)"],
+    "required_secrets": ["ADMIN_SECRET"],
+    "deploy_command": "cd workers/anti-cheat && npx wrangler deploy",
+    "notes": "Shares LEADERBOARD KV ID with workers/leaderboard. ADMIN_SECRET must match moonboys-api."
+  },
+  "workers/leaderboard": {
+    "status": "live-deployable",
+    "deploy": true,
+    "required_bindings": ["LEADERBOARD (KV: a621c334d9ac439ebaf5f35dd31dddd5)", "DB (D1: wikicoms)"],
+    "required_secrets": ["TELEGRAM_BOT_TOKEN"],
+    "deploy_command": "cd workers/leaderboard && npx wrangler deploy",
+    "notes": "Uses shared leaderboard-worker.js. KV ID must stay in sync with anti-cheat worker."
+  },
+  "workers/block-topia": {
+    "status": "needs-binding-setup",
+    "deploy": false,
+    "required_bindings": ["R2_BUCKET (R2: bucket_name must be set)"],
+    "required_secrets": [],
+    "deploy_command": "cd workers/block-topia && npx wrangler deploy",
+    "reason": "R2 bucket_name must be confirmed as the correct live bucket before deploying",
+    "notes": "No placeholder IDs but R2 bucket_name should be verified against the live Cloudflare account before first deploy."
+  },
+  "workers/blocktopia-leaderboard": {
+    "status": "stub-blocked",
+    "deploy": false,
+    "required_bindings": ["DISTRICTS (KV)", "SEASONS (KV)", "CACHE (KV)"],
+    "required_secrets": ["ADMIN_SECRET", "TELEGRAM_BOT_TOKEN"],
+    "reason": "placeholder KV bindings remain: YOUR_DISTRICTS_KV_ID, YOUR_SEASONS_KV_ID, YOUR_CACHE_KV_ID"
+  },
+  "workers/blocktopia-engagement": {
+    "status": "stub-blocked",
+    "deploy": false,
+    "required_bindings": ["COMMUNITY_FEED (KV)", "CACHE (KV)"],
+    "required_secrets": ["ADMIN_SECRET"],
+    "reason": "placeholder KV bindings remain: YOUR_COMMUNITY_FEED_KV_ID, YOUR_CACHE_KV_ID"
+  },
+  "workers/blocktopia-district": {
+    "status": "stub-blocked",
+    "deploy": false,
+    "required_bindings": ["DISTRICTS (KV)", "NPC_MEMORY (KV)", "SEASONS (KV)", "CACHE (KV)"],
+    "required_secrets": ["ADMIN_SECRET"],
+    "reason": "placeholder KV bindings remain: YOUR_DISTRICTS_KV_ID, YOUR_NPC_MEMORY_KV_ID, YOUR_SEASONS_KV_ID, YOUR_CACHE_KV_ID"
+  },
+  "workers/blocktopia-realtime": {
+    "status": "stub-blocked",
+    "deploy": false,
+    "required_bindings": ["COMMUNITY_FEED (KV)", "CACHE (KV)"],
+    "required_secrets": ["ADMIN_SECRET"],
+    "reason": "placeholder KV bindings remain: YOUR_COMMUNITY_FEED_KV_ID, YOUR_CACHE_KV_ID"
+  }
+}
