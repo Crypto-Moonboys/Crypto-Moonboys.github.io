@@ -5,7 +5,7 @@
  * check, distance guard, and rate guard) from MinimalCityRoom.js to prove that:
  *   - adjacent moves succeed
  *   - non-passable tile moves fail
- *   - out-of-bounds moves fail
+ *   - extreme out-of-bounds requests are clamped then still rejected by distance guard
  *   - multi-tile teleport jumps fail
  *   - rapid-fire moves fail (rate guard)
  *   - unready players cannot move
@@ -17,11 +17,16 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const roomSrc = await fs.readFile(
   path.join(ROOT, 'server/block-topia/src/rooms/MinimalCityRoom.js'),
+  'utf8',
+);
+const mainSrc = await fs.readFile(
+  path.join(ROOT, 'games/block-topia/main.js'),
   'utf8',
 );
 
@@ -163,12 +168,7 @@ console.log('\n─── Block Topia Movement Hardening Regression Tests ──�
 // ── 2. Adjacent tile move succeeds ────────────────────────────────────────────
 {
   const s = makeState();
-  // x=0 rows are always road (x % 5 === 0) — always passable
   addPlayer(s, 'p1', 0, 0);
-  const r = applyMove(s, 'p1', { x: 0, y: 5 }, Date.now()); // (0,5) → y%5===0 road
-  // Only succeeds if the step delta is ≤ MAX_MOVE_DELTA in both axes.
-  // Here we move exactly 1 tile up/down to an adjacent passable tile.
-  const tgt = s.playersBySession.get('p1');
   // Find two adjacent passable tiles from spawn (0,0) to test with
   let foundAdj = false;
   for (const [dx, dy] of [[1,0],[0,1],[0,-1],[-1,0]]) {
@@ -212,20 +212,14 @@ console.log('\n─── Block Topia Movement Hardening Regression Tests ──�
   if (!found) fail('non-passable tile test', 'no impassable adjacent tile found in map');
 }
 
-// ── 4. Out-of-bounds move fails ───────────────────────────────────────────────
+// ── 4. Extreme out-of-bounds is clamped then rejected by distance guard ───────
 {
   const s = makeState();
   addPlayer(s, 'oob', 0, 0);
-  // Clamping means x=-1 becomes x=0 which is passable, but the player is already at 0,0
-  // so that collapses to a zero-delta move (ok). Test a large jump that is clamped but
-  // also exceeds MAX_MOVE_DELTA before clamping catches it.
-  const r = applyMove(s, 'oob', { x: -100, y: -100 }, Date.now());
-  // After clamping, x=0,y=0 == player position (delta 0) → ok (player stays put).
-  // The important rejection case is a large positive jump beyond the map AND beyond delta.
+  // Large positive jump is clamped to map edge and still rejected as too_far.
   const r2 = applyMove(s, 'oob', { x: 999, y: 999 }, Date.now());
-  // Clamped to (19,19); from (0,0) that's delta > MAX_MOVE_DELTA → too_far
   check(r2.ok === false && r2.reason === 'too_far',
-    'jump to (999,999) clamped to map edge is rejected as too_far', JSON.stringify(r2));
+    "direct far room.send('move', { x: 999, y: 999 }) is rejected as too_far", JSON.stringify(r2));
 }
 
 // ── 5. Multi-tile teleport fails ──────────────────────────────────────────────
@@ -284,6 +278,268 @@ console.log('\n─── Block Topia Movement Hardening Regression Tests ──�
   check(rD.ok === true,
     `rate guard: move at t0+${CD_MS}ms (= cooldown) is accepted`, JSON.stringify(rD));
 }
+
+  // ── 7. Frontend click-to-move steps and cancellation behavior ──────────────────
+  {
+    let fakeNow = 10_000;
+    class FakeCanvas {}
+    const windowListeners = new Map();
+    let frameId = 0;
+    const frameCallbacks = new Map();
+    const noop = () => {};
+    const fakeCtx = new Proxy({}, {
+      get(_target, prop) {
+        if (prop === 'createLinearGradient') {
+          return () => ({ addColorStop: noop });
+        }
+        return noop;
+      },
+      set() {
+        return true;
+      },
+    });
+    function emitWindow(type, event) {
+      const listeners = windowListeners.get(type) || [];
+      for (const listener of listeners) listener(event);
+    }
+    const fakeCanvas = {
+      parentElement: {
+        getBoundingClientRect() {
+          return { width: 960, height: 720 };
+        },
+      },
+      style: {},
+      addEventListener(type, listener) {
+        this._listeners = this._listeners || new Map();
+        const list = this._listeners.get(type) || [];
+        list.push(listener);
+        this._listeners.set(type, list);
+      },
+      removeEventListener(type, listener) {
+        const list = this._listeners?.get(type) || [];
+        this._listeners?.set(type, list.filter((entry) => entry !== listener));
+      },
+      emit(type, event) {
+        const list = this._listeners?.get(type) || [];
+        for (const listener of list) listener(event);
+      },
+      getBoundingClientRect() {
+        return { left: 0, top: 0, width: 960, height: 720 };
+      },
+      getContext() {
+        return fakeCtx;
+      },
+      setAttribute: noop,
+    };
+    const fakeDocument = {
+      body: { appendChild: noop },
+      getElementById() {
+        return null;
+      },
+      createElement() {
+        return fakeCanvas;
+      },
+    };
+    const context = vm.createContext({
+      console,
+      Math,
+      Number,
+      Boolean,
+      String,
+      Array,
+      Object,
+      Set,
+      Map,
+      JSON,
+      Date: { now: () => fakeNow },
+      performance: { now: () => fakeNow },
+      setTimeout,
+      clearTimeout,
+      HTMLCanvasElement: FakeCanvas,
+      requestAnimationFrame: (cb) => {
+        frameId += 1;
+        frameCallbacks.set(frameId, cb);
+        return frameId;
+      },
+      cancelAnimationFrame: (id) => {
+        frameCallbacks.delete(id);
+      },
+      window: {
+        devicePixelRatio: 1,
+        addEventListener(type, listener) {
+          const list = windowListeners.get(type) || [];
+          list.push(listener);
+          windowListeners.set(type, list);
+        },
+        removeEventListener(type, listener) {
+          const list = windowListeners.get(type) || [];
+          windowListeners.set(type, list.filter((entry) => entry !== listener));
+        },
+      },
+      document: fakeDocument,
+    });
+    context.window.document = fakeDocument;
+    context.window.HTMLCanvasElement = FakeCanvas;
+    context.window.requestAnimationFrame = context.requestAnimationFrame;
+    context.window.cancelAnimationFrame = context.cancelAnimationFrame;
+
+    vm.runInContext(mainSrc, context, { filename: 'main.js' });
+    const api = context.window.BlockTopiaMap;
+    assert.ok(api, 'BlockTopiaMap API should initialize.');
+    api.mount({ canvas: fakeCanvas });
+    api.setInputEnabled(true);
+    api.setConnectionStatus({ ws: 'connected', joined: true, roomId: 'city' });
+    api.setLocalPlayer({ x: 1, y: 1, sessionId: 'p1', ready: true });
+
+    const sentMoves = [];
+    api.setPositionBroadcastSink(({ x, y }) => {
+      sentMoves.push({ x, y, at: fakeNow });
+      return true;
+    });
+
+    const GRID_SIZE = 20;
+    const TILE_WIDTH = 64;
+    const TILE_HEIGHT = 32;
+    const MAP_SAFE_MARGIN_RATIO = 0.08;
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+    function computeIsoBounds(scale) {
+      const tw = TILE_WIDTH * scale;
+      const th = TILE_HEIGHT * scale;
+      let minX = Number.POSITIVE_INFINITY;
+      let minY = Number.POSITIVE_INFINITY;
+      let maxX = Number.NEGATIVE_INFINITY;
+      let maxY = Number.NEGATIVE_INFINITY;
+      for (let y = 0; y < GRID_SIZE; y += 1) {
+        for (let x = 0; x < GRID_SIZE; x += 1) {
+          const sx = (x - y) * (tw / 2);
+          const sy = (x + y) * (th / 2);
+          minX = Math.min(minX, sx - tw / 2);
+          maxX = Math.max(maxX, sx + tw / 2);
+          minY = Math.min(minY, sy);
+          maxY = Math.max(maxY, sy + th);
+        }
+      }
+      return { minX, maxX, minY, maxY, width: maxX - minX, height: maxY - minY };
+    }
+    function tileToPointer(x, y) {
+      const viewWidth = 960;
+      const viewHeight = 720;
+      const baseBounds = computeIsoBounds(1);
+      const safeMarginX = viewWidth * MAP_SAFE_MARGIN_RATIO;
+      const safeMarginY = viewHeight * MAP_SAFE_MARGIN_RATIO;
+      const fitWidth = Math.max(64, viewWidth - safeMarginX * 2);
+      const fitHeight = Math.max(64, viewHeight - safeMarginY * 2);
+      const cameraScale = clamp(Math.min(fitWidth / baseBounds.width, fitHeight / baseBounds.height), 0.35, 1.25);
+      const scaledBounds = computeIsoBounds(cameraScale);
+      const cameraX = Math.floor((viewWidth - scaledBounds.width) / 2 - scaledBounds.minX);
+      const cameraY = Math.floor((viewHeight - scaledBounds.height) / 2 - scaledBounds.minY);
+      const tw = TILE_WIDTH * cameraScale;
+      const th = TILE_HEIGHT * cameraScale;
+      const sx = (x - y) * (tw / 2) + cameraX;
+      const sy = (x + y) * (th / 2) + cameraY;
+      return { clientX: sx, clientY: sy + th / 2 };
+    }
+    function runNextFrame() {
+      const nextId = frameCallbacks.keys().next().value;
+      if (!nextId) return false;
+      const cb = frameCallbacks.get(nextId);
+      frameCallbacks.delete(nextId);
+      cb();
+      return true;
+    }
+
+    const farClick = tileToPointer(18, 18);
+    fakeCanvas.emit('pointerdown', farClick);
+    check(sentMoves.length === 1 && Math.abs(sentMoves[0].x - 1) <= 1 && Math.abs(sentMoves[0].y - 1) <= 1,
+      'click-to-move far target emits adjacent first step, not far tile', JSON.stringify(sentMoves[0]));
+    check(!(sentMoves[0].x === 18 && sentMoves[0].y === 18),
+      'click-to-move does not send direct far coordinate');
+
+    // Ack first step and confirm paced follow-up stepping.
+    fakeNow += 20;
+    api.setLocalPlayer({ x: sentMoves[0].x, y: sentMoves[0].y, sessionId: 'p1', ready: true });
+    runNextFrame();
+    check(sentMoves.length === 1, 'queued path waits for move cooldown before next send');
+    fakeNow += 110;
+    runNextFrame();
+    check(sentMoves.length === 2, 'queued path sends next adjacent step after cooldown');
+    check(sentMoves[1].at - sentMoves[0].at >= 110, 'click/path step sends respect cooldown interval');
+
+    // Manual movement should cancel queued click path.
+    const beforeManual = sentMoves.length;
+    fakeNow += 110;
+    emitWindow('keydown', { key: 'ArrowRight', preventDefault() {} });
+    const afterManual = sentMoves.length;
+    check(afterManual === beforeManual + 1, 'manual WASD/arrow move is sent');
+    fakeNow += 110;
+    runNextFrame();
+    check(sentMoves.length === afterManual, 'manual input cancels queued click movement');
+
+    // Manual movement should also honor cooldown pacing.
+    api.setLocalPlayer({ x: 10, y: 10, sessionId: 'p1', ready: true });
+    fakeNow += 300;
+    const beforeManualSpam = sentMoves.length;
+    emitWindow('keydown', { key: 'ArrowRight', preventDefault() {} });
+    emitWindow('keydown', { key: 'ArrowRight', preventDefault() {} });
+    check(sentMoves.length === beforeManualSpam + 1, 'manual movement does not spam faster than cooldown');
+
+    // Target reached should clear queued movement.
+    api.setLocalPlayer({ x: 5, y: 5, sessionId: 'p1', ready: true });
+    fakeNow += 110;
+    fakeCanvas.emit('pointerdown', tileToPointer(6, 5));
+    const reachedStep = sentMoves[sentMoves.length - 1];
+    api.setLocalPlayer({ x: reachedStep.x, y: reachedStep.y, sessionId: 'p1', ready: true });
+    const reachedCount = sentMoves.length;
+    fakeNow += 220;
+    runNextFrame();
+    check(sentMoves.length === reachedCount, 'queued click movement stops when target is reached');
+
+    // Blocked (non-passable) click target should not enqueue movement.
+    const forcedRoad = new Set(['1,1', '2,1', '1,2', '18,18', '17,18', '18,17']);
+    let blockedTarget = null;
+    for (let y = 0; y < GRID_SIZE && !blockedTarget; y += 1) {
+      for (let x = 0; x < GRID_SIZE; x += 1) {
+        const hash = ((x + 17) * 928371 + (y + 31) * 192847 + x * y * 11939) % 1000;
+        const lineRoad = x % 5 === 0 || y % 5 === 0;
+        const diagonalRoad = (x + y) % 7 === 0;
+        const terrain = forcedRoad.has(`${x},${y}`) ? 'road' : (lineRoad || diagonalRoad) ? 'road' : (hash < 125 ? 'block' : 'grass');
+        if (terrain === 'block') blockedTarget = { x, y };
+      }
+    }
+    assert.ok(blockedTarget, 'expected to find blocked tile');
+    api.setLocalPlayer({ x: 5, y: 5, sessionId: 'p1', ready: true });
+    const beforeBlocked = sentMoves.length;
+    fakeNow += 300;
+    fakeCanvas.emit('pointerdown', tileToPointer(blockedTarget.x, blockedTarget.y));
+    runNextFrame();
+    check(sentMoves.length === beforeBlocked, 'click-to-move stops when next target is non-passable');
+
+    // Connection loss should clear queued movement.
+    api.setLocalPlayer({ x: 1, y: 1, sessionId: 'p1', ready: true });
+    fakeNow += 300;
+    const beforeDisconnect = sentMoves.length;
+    fakeCanvas.emit('pointerdown', tileToPointer(17, 17));
+    check(sentMoves.length === beforeDisconnect + 1, 'queued click movement starts before disconnect');
+    api.setConnectionStatus({ ws: 'offline', joined: false, roomId: '' });
+    fakeNow += 300;
+    runNextFrame();
+    check(sentMoves.length === beforeDisconnect + 1, 'queued click movement cancels on connection loss');
+
+    // Input disable should clear queued movement.
+    api.setConnectionStatus({ ws: 'connected', joined: true, roomId: 'city' });
+    api.setInputEnabled(true);
+    fakeNow += 110;
+    fakeCanvas.emit('pointerdown', tileToPointer(16, 16));
+    const beforeDisable = sentMoves.length;
+    api.setInputEnabled(false);
+    fakeNow += 300;
+    runNextFrame();
+    check(sentMoves.length === beforeDisable, 'queued click movement cancels when input disabled');
+
+    api.destroy();
+  }
 
 // ── Source-level guard assertions ─────────────────────────────────────────────
 

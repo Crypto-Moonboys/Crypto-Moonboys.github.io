@@ -8,6 +8,7 @@ const ATTACK_RANGE = 1.3;
 // starts at 750ms and is updated via player state payloads).  ATTACK_INPUT_COOLDOWN_MS is
 // used only as the floor so the UI never fires faster than the server minimum (MIN_ATTACK_COOLDOWN_MS = 350).
 const ATTACK_INPUT_COOLDOWN_MS = 350;
+const MOVE_INPUT_INTERVAL_MS = 110;
 const EXTRACT_INTENT_THROTTLE_MS = 1000;
 const MISSION_COMPLETE_MSG = 'MISSION COMPLETE - extraction successful';
 const MISSION_COMPLETE_TOAST_MS = 1200;
@@ -46,6 +47,10 @@ const runtime = {
   lastExtractIntentAt: 0,
   flashes: [],
   attackCooldownUntil: 0,
+  moveCooldownUntil: 0,
+  queuedMoveTarget: null,
+  queuedMovePath: [],
+  queuedMovePending: null,
   inputEnabled: false,
   mission: {
     startedAt: 0,
@@ -207,6 +212,133 @@ function isPassable(x, y) {
   return Boolean(tile && tile.terrain !== 'block');
 }
 
+function clearQueuedClickMove() {
+  runtime.queuedMoveTarget = null;
+  runtime.queuedMovePath = [];
+  runtime.queuedMovePending = null;
+}
+
+function isAdjacentMove(fromX, fromY, toX, toY) {
+  return Math.abs(toX - fromX) <= 1 && Math.abs(toY - fromY) <= 1 && (toX !== fromX || toY !== fromY);
+}
+
+function buildMovePath(startX, startY, targetX, targetY) {
+  if (!isPassable(startX, startY) || !isPassable(targetX, targetY)) return [];
+  if (startX === targetX && startY === targetY) return [];
+
+  const offsets = [
+    [1, 0], [-1, 0], [0, 1], [0, -1],
+    [1, 1], [1, -1], [-1, 1], [-1, -1],
+  ];
+  const visited = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(false));
+  const prev = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
+  const queue = [{ x: startX, y: startY }];
+  visited[startY][startX] = true;
+  let head = 0;
+
+  while (head < queue.length) {
+    const current = queue[head++];
+    if (current.x === targetX && current.y === targetY) break;
+    for (const [dx, dy] of offsets) {
+      const nx = current.x + dx;
+      const ny = current.y + dy;
+      if (nx < 0 || ny < 0 || nx >= GRID_SIZE || ny >= GRID_SIZE) continue;
+      if (visited[ny][nx] || !isPassable(nx, ny)) continue;
+      visited[ny][nx] = true;
+      prev[ny][nx] = current;
+      queue.push({ x: nx, y: ny });
+    }
+  }
+
+  if (!visited[targetY][targetX]) return [];
+  const path = [];
+  let cursor = { x: targetX, y: targetY };
+  while (cursor && !(cursor.x === startX && cursor.y === startY)) {
+    path.push(cursor);
+    cursor = prev[cursor.y][cursor.x];
+  }
+  path.reverse();
+  return path;
+}
+
+function queueClickMove(targetX, targetY) {
+  if (!Number.isFinite(targetX) || !Number.isFinite(targetY)) {
+    clearQueuedClickMove();
+    return;
+  }
+  const tx = clamp(Math.floor(targetX), 0, GRID_SIZE - 1);
+  const ty = clamp(Math.floor(targetY), 0, GRID_SIZE - 1);
+  const sx = clamp(Math.floor(runtime.localPlayer.x), 0, GRID_SIZE - 1);
+  const sy = clamp(Math.floor(runtime.localPlayer.y), 0, GRID_SIZE - 1);
+  const path = buildMovePath(sx, sy, tx, ty);
+  if (!path.length) {
+    clearQueuedClickMove();
+    return;
+  }
+  runtime.queuedMoveTarget = { x: tx, y: ty };
+  runtime.queuedMovePath = path;
+  runtime.queuedMovePending = null;
+}
+
+function trySendMove(nextX, nextY, now = Date.now()) {
+  if (!Number.isFinite(nextX) || !Number.isFinite(nextY)) return false;
+  if (now < runtime.moveCooldownUntil) return false;
+  if (runtime.positionSink) {
+    const sent = runtime.positionSink({ x: nextX, y: nextY, sessionId: runtime.localPlayer.sessionId });
+    if (sent === false) return false;
+    runtime.moveCooldownUntil = now + MOVE_INPUT_INTERVAL_MS;
+    return true;
+  }
+  if (!isPassable(nextX, nextY)) return false;
+  runtime.localPlayer.x = nextX;
+  runtime.localPlayer.y = nextY;
+  runtime.moveCooldownUntil = now + MOVE_INPUT_INTERVAL_MS;
+  return true;
+}
+
+function flushQueuedClickMove(now = Date.now()) {
+  if (!runtime.inputEnabled || !runtime.queuedMoveTarget) return;
+  if (!runtime.positionSink && runtime.connectionStatus?.joined === false) return;
+  if (runtime.connectionStatus?.ws && runtime.connectionStatus.ws !== 'connected') return;
+
+  const currentX = clamp(Math.floor(runtime.localPlayer.x), 0, GRID_SIZE - 1);
+  const currentY = clamp(Math.floor(runtime.localPlayer.y), 0, GRID_SIZE - 1);
+  const target = runtime.queuedMoveTarget;
+  if (!target) return;
+  if (currentX === target.x && currentY === target.y) {
+    clearQueuedClickMove();
+    return;
+  }
+
+  if (runtime.queuedMovePending) {
+    if (currentX === runtime.queuedMovePending.x && currentY === runtime.queuedMovePending.y) {
+      runtime.queuedMovePending = null;
+    } else {
+      return;
+    }
+  }
+
+  while (runtime.queuedMovePath.length && runtime.queuedMovePath[0].x === currentX && runtime.queuedMovePath[0].y === currentY) {
+    runtime.queuedMovePath.shift();
+  }
+  if (!runtime.queuedMovePath.length || !isAdjacentMove(currentX, currentY, runtime.queuedMovePath[0].x, runtime.queuedMovePath[0].y)) {
+    runtime.queuedMovePath = buildMovePath(currentX, currentY, target.x, target.y);
+  }
+  if (!runtime.queuedMovePath.length) {
+    clearQueuedClickMove();
+    return;
+  }
+
+  const next = runtime.queuedMovePath[0];
+  if (!isPassable(next.x, next.y)) {
+    clearQueuedClickMove();
+    return;
+  }
+  if (!trySendMove(next.x, next.y, now)) return;
+  runtime.queuedMovePath.shift();
+  runtime.queuedMovePending = { x: next.x, y: next.y };
+}
+
 function computeIsoBounds(scale) {
   const tw = TILE_WIDTH * scale;
   const th = TILE_HEIGHT * scale;
@@ -272,16 +404,10 @@ function pickTile(screenX, screenY) {
 }
 
 function moveLocal(dx, dy) {
+  clearQueuedClickMove();
   const nextX = runtime.localPlayer.x + dx;
   const nextY = runtime.localPlayer.y + dy;
-  if (runtime.positionSink) {
-    runtime.positionSink({ x: nextX, y: nextY, sessionId: runtime.localPlayer.sessionId });
-    return;
-  }
-  if (isPassable(nextX, nextY)) {
-    runtime.localPlayer.x = nextX;
-    runtime.localPlayer.y = nextY;
-  }
+  trySendMove(nextX, nextY);
 }
 
 function onKeyDown(event) {
@@ -387,15 +513,8 @@ function onPointerDown(event) {
   const py = event.clientY - rect.top;
   const tile = pickTile(px, py);
   if (!tile) return;
-
-  if (runtime.positionSink) {
-    runtime.positionSink({ x: tile.x, y: tile.y, sessionId: runtime.localPlayer.sessionId });
-    return;
-  }
-  if (isPassable(tile.x, tile.y)) {
-    runtime.localPlayer.x = tile.x;
-    runtime.localPlayer.y = tile.y;
-  }
+  queueClickMove(tile.x, tile.y);
+  flushQueuedClickMove();
 }
 
 function drawBackground() {
@@ -729,6 +848,7 @@ function render() {
 }
 
 function renderFrame() {
+  flushQueuedClickMove();
   render();
   if (mounted) animationFrameId = requestAnimationFrame(renderFrame);
 }
@@ -813,6 +933,9 @@ function destroy() {
 function setConnectionStatus(status = {}) {
   runtime.connectionStatus = { ...runtime.connectionStatus, ...status };
   if (typeof status.joined === 'boolean') runtime.remotePlayer.connected = status.joined;
+  if (runtime.connectionStatus.joined !== true || runtime.connectionStatus.ws !== 'connected') {
+    clearQueuedClickMove();
+  }
 }
 
 function setLocalPlayer(payload = {}) {
@@ -1054,6 +1177,7 @@ window.BlockTopiaMap = {
   setInputEnabled(enabled) {
     runtime.inputEnabled = Boolean(enabled);
     if (runtime.inputEnabled) ensureMissionStart();
+    else clearQueuedClickMove();
   },
   isStartOverlayRequired() {
     return shouldShowStartOverlay();
@@ -1066,6 +1190,7 @@ window.BlockTopiaMap = {
   },
   setPositionBroadcastSink(fn) {
     runtime.positionSink = typeof fn === 'function' ? fn : null;
+    if (!runtime.positionSink) clearQueuedClickMove();
   },
   setAttackSink(fn) {
     runtime.attackSink = typeof fn === 'function' ? fn : null;
