@@ -32,7 +32,7 @@ function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin':  origin,
     'Access-Control-Allow-Methods': ALLOWED_METHODS,
-    'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Secret',
+    'Access-Control-Allow-Headers': 'Content-Type',
   };
 }
 

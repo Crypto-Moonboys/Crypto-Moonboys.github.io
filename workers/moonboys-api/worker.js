@@ -105,7 +105,7 @@ function buildCorsHeaders(request, env) {
     : DEFAULT_CORS_ALLOWED_ORIGINS;
   const headers = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Secret, x-admin-secret',
+    'Access-Control-Allow-Headers': 'Content-Type',
     'Vary': 'Origin',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',

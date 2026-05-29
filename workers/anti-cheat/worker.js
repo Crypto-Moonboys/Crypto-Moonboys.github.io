@@ -86,7 +86,7 @@ function buildCorsHeaders(request, env) {
   return {
     'Access-Control-Allow-Origin':  allowedOrigin,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Secret',
+    'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
