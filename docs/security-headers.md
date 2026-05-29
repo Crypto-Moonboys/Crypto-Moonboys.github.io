@@ -31,9 +31,11 @@ responses.
 
 ### Allowed Origins
 
-Requests from browser origins are only accepted from the allowlist:
+Requests with an `Origin` header are only reflected when the origin is in the allowlist:
 
 - `https://cryptomoonboys.com`
+- `https://www.cryptomoonboys.com`
+- `https://crypto-moonboys.github.io`
 
 Set the `CORS_ALLOWED_ORIGINS` environment variable (comma-separated) to override
 for staging environments.
