@@ -300,6 +300,45 @@ function readAdminSecret(request) {
     || '';
 }
 
+async function timingSafeEqualString(left, right) {
+  const encoder = new TextEncoder();
+  const leftBytes = encoder.encode(String(left || ''));
+  const rightBytes = encoder.encode(String(right || ''));
+  if (leftBytes.length !== rightBytes.length) return false;
+  if (crypto.subtle && typeof crypto.subtle.timingSafeEqual === 'function') {
+    return crypto.subtle.timingSafeEqual(leftBytes, rightBytes);
+  }
+  let diff = 0;
+  for (let i = 0; i < leftBytes.length; i += 1) diff |= leftBytes[i] ^ rightBytes[i];
+  return diff === 0;
+}
+
+async function isAuthorizedByAdminSecret(request, env) {
+  const configuredSecret = String(env.ADMIN_SECRET || '').trim();
+  const headerSecret = readAdminSecret(request);
+  if (!configuredSecret || !headerSecret) return false;
+  return timingSafeEqualString(headerSecret, configuredSecret);
+}
+
+async function createTelegramLinkToken(db, telegramId) {
+  const normalizedTelegramId = String(telegramId || '').trim();
+  if (!/^\d{1,20}$/.test(normalizedTelegramId)) {
+    throw new Error('telegram_id invalid');
+  }
+
+  await db.prepare(
+    `UPDATE telegram_link_tokens SET is_used = 1 WHERE telegram_id = ? AND is_used = 0`
+  ).bind(normalizedTelegramId).run();
+
+  const token = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+  await db.prepare(
+    `INSERT INTO telegram_link_tokens (token, telegram_id, expires_at) VALUES (?, ?, ?)`
+  ).bind(token, normalizedTelegramId, expiresAt).run();
+
+  return { token, expires_at: expiresAt };
+}
+
 async function writeBlockTopiaAdminGrantAudit(db, {
   telegramId,
   adminTelegramId,
@@ -3001,49 +3040,48 @@ export default {
     }
 
     // ── POST /telegram/link ────────────────────────────────────────────────
-    // Body: { telegram_id }
+    // Internal/admin only. Body: { telegram_id }
     // Invalidates outstanding tokens and generates a new one-time token
     // stored in telegram_link_tokens (15-minute TTL).
     // Rejects if the user's anti-cheat state is blocked.
     if (path === '/telegram/link' && request.method === 'POST') {
+      if (!(await isAuthorizedByAdminSecret(request, env))) {
+        logApiFailure('telegram_link_token_mint_denied', {
+          hasAdminSecret: !!String(env.ADMIN_SECRET || '').trim(),
+          hasHeaderSecret: !!readAdminSecret(request),
+        });
+        return err('Unauthorized', 401);
+      }
+
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON'); }
       const { telegram_id } = body || {};
-      if (!telegram_id) return err('telegram_id required');
+      const telegramId = String(telegram_id || '').trim();
+      if (!/^\d{1,20}$/.test(telegramId)) return err('telegram_id invalid');
 
       // Anti-cheat gate: reject competitive link action if account is blocked.
       try {
         const acState = await env.DB.prepare(
           `SELECT is_blocked FROM telegram_anticheat_state WHERE telegram_id = ?`
-        ).bind(String(telegram_id)).first();
+        ).bind(telegramId).first();
         if (acState && acState.is_blocked === 1) {
           return err('Account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.', 403);
         }
       } catch (error) {
         logApiFailure('telegram_link_anticheat_check_failed', {
-          telegramId: String(telegram_id),
+          telegramId,
           message: error?.message || String(error),
         });
       }
 
-      // Invalidate any existing unused tokens for this user
-      await env.DB.prepare(
-        `UPDATE telegram_link_tokens SET is_used = 1 WHERE telegram_id = ? AND is_used = 0`
-      ).bind(String(telegram_id)).run().catch((error) => {
-        logApiFailure('telegram_link_token_invalidate_failed', {
-          telegramId: String(telegram_id),
+      try {
+        const linkToken = await createTelegramLinkToken(env.DB, telegramId);
+        return json({ ok: true, ...linkToken });
+      } catch (error) {
+        logApiFailure('telegram_link_token_create_failed', {
+          telegramId,
           message: error?.message || String(error),
         });
-      });
-
-      const token     = crypto.randomUUID();
-      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-      try {
-        await env.DB.prepare(
-          `INSERT INTO telegram_link_tokens (token, telegram_id, expires_at) VALUES (?, ?, ?)`
-        ).bind(token, String(telegram_id), expiresAt).run();
-        return json({ ok: true, token, expires_at: expiresAt });
-      } catch {
         return err('Failed to generate link token', 500);
       }
     }
