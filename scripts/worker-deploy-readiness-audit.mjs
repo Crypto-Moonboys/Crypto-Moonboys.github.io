@@ -23,26 +23,67 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = process.env.WORKER_AUDIT_ROOT
+  ? path.resolve(process.env.WORKER_AUDIT_ROOT)
+  : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEPLOY_STATUS_PATH = path.join(ROOT, 'workers', 'DEPLOY_STATUS.json');
 const WORKERS_DIR = path.join(ROOT, 'workers');
 
 // ── placeholder detection ─────────────────────────────────────────────────────
 
-const PLACEHOLDER_PATTERNS = [
-  /\bYOUR_[A-Z0-9_]+/,
-  /\byour-[a-z0-9-]+/,
-  /^id\s*=\s*""\s*$/m,
-  /^preview_id\s*=\s*""\s*$/m,
+const PLACEHOLDER_VALUE_PATTERNS = [
+  /\bYOUR_[A-Z0-9_]+\b/,
+  /\byour-[a-z0-9-]+\b/,
 ];
+
+function stripTomlComment(line) {
+  let inSingle = false;
+  let inDouble = false;
+  let escaped = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (inDouble && ch === '\\') {
+      escaped = true;
+      continue;
+    }
+    if (!inDouble && ch === '\'') {
+      inSingle = !inSingle;
+      continue;
+    }
+    if (!inSingle && ch === '"') {
+      inDouble = !inDouble;
+      continue;
+    }
+    if (!inSingle && !inDouble && ch === '#') {
+      return line.slice(0, i);
+    }
+  }
+  return line;
+}
+
+function isBindingValueField(key) {
+  return key === 'id' || key.endsWith('_id') || key === 'bucket_name';
+}
 
 function detectPlaceholders(tomlContent) {
   const found = [];
-  for (const pattern of PLACEHOLDER_PATTERNS) {
-    const matches = tomlContent.match(new RegExp(pattern.source, pattern.flags + 'g'));
-    if (matches) {
-      for (const m of matches) {
-        if (!found.includes(m)) found.push(m);
+  const lines = tomlContent.split('\n');
+  for (const line of lines) {
+    const lineWithoutComments = stripTomlComment(line).trim();
+    if (!lineWithoutComments) continue;
+    const match = lineWithoutComments.match(/^([A-Za-z0-9_]+)\s*=\s*"(.*)"\s*$/);
+    if (!match) continue;
+    const [, key, value] = match;
+    if (!isBindingValueField(key)) continue;
+    const isPlaceholder = value === '' || PLACEHOLDER_VALUE_PATTERNS.some(pattern => pattern.test(value));
+    if (isPlaceholder) {
+      const token = `${key}="${value}"`;
+      if (!found.includes(token)) {
+        found.push(token);
       }
     }
   }

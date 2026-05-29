@@ -313,9 +313,11 @@ for (const folder of stubBlockedFolders) {
     const lines = truthMapSrc.split('\n');
     const workerRow = lines.find(l => l.includes(`workers/${workerName}`) && l.includes('stub-blocked'));
     assert.ok(workerRow, `${folder} must have a table row marked stub-blocked in truth map`);
+    const cells = workerRow.split('|').map(cell => cell.trim()).filter(Boolean);
+    const deployNowCell = cells[6] || '';
     assert.ok(
-      workerRow.includes('**No**') || workerRow.includes('No'),
-      `${folder} stub-blocked row must say No for deploy-now. Found row: ${workerRow?.trim()}`,
+      /^\*{0,2}No\*{0,2}$/.test(deployNowCell),
+      `${folder} stub-blocked row must say No in the Deploy now? column. Found row: ${workerRow?.trim()}`,
     );
   });
 }

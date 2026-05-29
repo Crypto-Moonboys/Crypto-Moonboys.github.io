@@ -64,7 +64,7 @@ wrangler secret put TELEGRAM_BOT_TOKEN
 
 > ⚠️ The `LEADERBOARD` KV namespace ID must remain in sync with `workers/anti-cheat`.
 > Both workers must reference `a621c334d9ac439ebaf5f35dd31dddd5`.
-> See `docs/deployment-checklist.md` for the deployment order requirement.
+> Verify both `wrangler.toml` files before deploying either Worker.
 
 ## Blocked Workers — do not deploy
 
