@@ -107,8 +107,6 @@
 
   function authErrorMessage(ctx) {
     if (!ctx.linked) return 'Denied: Telegram account is not linked yet. Run /gklink first.';
-    if (!ctx.hasAuthPayload) return 'Denied: linked account found, but signed Telegram auth payload is missing. Re-auth with Telegram.';
-    if (ctx.authExpired) return 'Denied: Telegram auth payload expired. Re-auth with Telegram and retry.';
     if (!ctx.telegramId) return 'Denied: Telegram ID is missing from local identity state. Re-auth with Telegram.';
     return '';
   }

@@ -28,6 +28,18 @@ class MockStatement {
 
   async first() {
     const sql = this.normalizedSql();
+    if (sql.includes('FROM telegram_users WHERE telegram_id = ?')) {
+      const telegramId = String(this.args[0]);
+      return this.db.telegramUsers.get(telegramId) || null;
+    }
+    if (sql.includes('FROM telegram_anticheat_state WHERE telegram_id = ?')) {
+      const telegramId = String(this.args[0]);
+      return this.db.anticheat.get(telegramId) || null;
+    }
+    if (sql.includes('FROM telegram_activity_log') && sql.includes("action = 'link_confirmed'")) {
+      const telegramId = String(this.args[0]);
+      return this.db.linkConfirmed.get(telegramId) || null;
+    }
     if (sql.includes('SELECT arcade_xp_total FROM arcade_progression_state')) {
       const telegramId = String(this.args[0]);
       const row = this.db.arcadeProgression.get(telegramId);
@@ -91,6 +103,9 @@ class MockStatement {
 
 class MockD1 {
   constructor() {
+    this.telegramUsers = new Map();
+    this.anticheat = new Map();
+    this.linkConfirmed = new Map();
     this.blocktopiaProgression = new Map();
     this.arcadeProgression = new Map();
     this.auditEvents = [];
@@ -129,7 +144,10 @@ function buildTelegramAuth(id, { ageSeconds = 0, tamperHash = false } = {}) {
     auth_date: authDate,
   };
   const hash = signTelegramAuth(base);
-  return { ...base, hash: tamperHash ? `${hash.slice(0, 63)}0` : hash };
+  if (!tamperHash) return { ...base, hash };
+  const last = hash.slice(-1).toLowerCase();
+  const replacement = last === '0' ? '1' : '0';
+  return { ...base, hash: `${hash.slice(0, -1)}${replacement}` };
 }
 
 async function request(path, { method = 'POST', body, headers = {}, env } = {}) {
@@ -143,6 +161,20 @@ async function request(path, { method = 'POST', body, headers = {}, env } = {}) 
 
 async function readJson(response) {
   return JSON.parse(await response.text());
+}
+
+function seedLinkedUser(db, telegramId, { username = 'moonboy_admin' } = {}) {
+  const id = String(telegramId);
+  db.telegramUsers.set(id, {
+    telegram_id: id,
+    username,
+    first_name: 'Admin',
+    last_name: null,
+    xp: 0,
+    level: 1,
+    created_at: '2026-01-01T00:00:00.000Z',
+  });
+  db.linkConfirmed.set(id, { action: 'link_confirmed', created_at: '2026-01-01T00:00:00.000Z' });
 }
 
 {
@@ -169,6 +201,64 @@ async function readJson(response) {
     env: makeEnv(db),
   });
   assert.equal(expired.status, 401, 'expired telegram_auth must fail for admin grant');
+}
+
+{
+  const db = new MockD1();
+  seedLinkedUser(db, ADMIN_ID);
+
+  const getStatus = await request(`/telegram/user/status?telegram_id=${ADMIN_ID}`, {
+    method: 'GET',
+    env: makeEnv(db),
+  });
+  assert.equal(getStatus.status, 200, 'status GET should still resolve linked profile by telegram_id');
+  const getStatusJson = await readJson(getStatus);
+  assert.equal(getStatusJson.linked, true, 'linked profile should remain discoverable');
+  assert.equal(getStatusJson.telegram_auth, null, 'status GET must not mint signed auth from bare telegram_id');
+
+  const postStatus = await request('/telegram/user/status', {
+    body: { telegram_id: ADMIN_ID },
+    env: makeEnv(db),
+  });
+  assert.equal(postStatus.status, 200, 'status POST by telegram_id can return profile state');
+  const postStatusJson = await readJson(postStatus);
+  assert.equal(postStatusJson.linked, true, 'status POST should still report linked state');
+  assert.equal(postStatusJson.telegram_auth, null, 'status POST without restore evidence must not mint signed auth');
+
+  const abuseAttempt = await request('/admin/arcade/grant-xp', {
+    body: {
+      telegram_auth: postStatusJson.telegram_auth,
+      telegram_id: TARGET_ID,
+      xp: 10,
+    },
+    env: makeEnv(db),
+  });
+  assert.equal(abuseAttempt.status, 401, 'grant route must reject tokenless auth from public status lookup');
+}
+
+{
+  const db = new MockD1();
+  seedLinkedUser(db, ADMIN_ID);
+  const restoreEvidence = buildTelegramAuth(ADMIN_ID);
+  const restore = await request('/telegram/user/status', {
+    body: { telegram_auth: restoreEvidence },
+    env: makeEnv(db),
+  });
+  assert.equal(restore.status, 200, 'status restore with signed evidence should succeed');
+  const restoreJson = await readJson(restore);
+  assert.equal(restoreJson.linked, true);
+  assert.equal(restoreJson.telegram_auth && String(restoreJson.telegram_auth.id), ADMIN_ID, 'restore should return signed auth for proven owner');
+  assert.ok(restoreJson.telegram_auth && restoreJson.telegram_auth.hash, 'restore should return signed hash');
+
+  const arcadeGrant = await request('/admin/arcade/grant-xp', {
+    body: {
+      telegram_auth: restoreJson.telegram_auth,
+      telegram_id: TARGET_ID,
+      xp: 10,
+    },
+    env: makeEnv(db),
+  });
+  assert.equal(arcadeGrant.status, 200, 'restored signed auth should work for allowlisted admin grant');
 }
 
 {
@@ -223,6 +313,7 @@ async function readJson(response) {
   assert(!source.includes('X-Admin-Secret'), 'admin frontend must not send X-Admin-Secret');
   assert(!source.includes('arcade-admin-secret'), 'admin frontend must not reference arcade-admin-secret field');
   assert(!source.includes('bt-admin-secret'), 'admin frontend must not reference bt-admin-secret field');
+  assert(!source.includes('if (ctx.authExpired) return'), 'frontend should attempt forced refresh before rejecting stale cached auth');
 }
 
 {

@@ -3357,7 +3357,10 @@ export default {
         }
 
         const linked = Boolean(linkEvent || blockTopiaProgression);
-        const signedAuthPayload = linked
+        const canRestoreSignedAuth = request.method === 'POST'
+          && !!restoreEvidence
+          && String(restoreEvidence.telegramId || '') === String(user.telegram_id || '');
+        const signedAuthPayload = (linked && canRestoreSignedAuth)
           ? await buildSignedTelegramAuthPayload({
             id: String(user.telegram_id),
             username: user.username || null,
