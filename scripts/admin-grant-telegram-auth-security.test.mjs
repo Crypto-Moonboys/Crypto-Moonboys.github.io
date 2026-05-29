@@ -188,6 +188,16 @@ function seedLinkedUser(db, telegramId, { username = 'moonboy_admin' } = {}) {
 
 {
   const db = new MockD1();
+  const res = await request('/admin/blocktopia/grant-xp', {
+    body: { telegram_id: TARGET_ID, xp: 10 },
+    headers: { 'X-Admin-Secret': ADMIN_SECRET },
+    env: makeEnv(db),
+  });
+  assert.equal(res.status, 401, 'admin grant must reject X-Admin-Secret-only browser requests');
+}
+
+{
+  const db = new MockD1();
   const malformedAuth = buildTelegramAuth(ADMIN_ID, { tamperHash: true });
   const malformed = await request('/admin/blocktopia/grant-xp', {
     body: { telegram_auth: malformedAuth, telegram_id: TARGET_ID, xp: 10 },

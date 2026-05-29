@@ -10,6 +10,8 @@
  *  6. Block Topia server CORS_ORIGIN env override still replaces the default list.
  *  7. Block Topia server allows localhost in non-production (IS_PRODUCTION = false) mode.
  *  8. js/api-config.js PRODUCTION_HOSTS recognises all 3 production hostnames.
+ *  9. blocktopia-district worker source still advertises X-Admin-Secret (browser-facing admin PUT routes).
+ * 10. Other narrowed workers (anti-cheat, leaderboard, engagement, realtime) do not advertise X-Admin-Secret.
  */
 
 import assert from 'node:assert/strict';
@@ -81,6 +83,19 @@ async function workerHealth(origin, env = {}) {
   return worker.fetch(req, env);
 }
 
+async function workerPreflight(origin, requestHeaders = 'Content-Type', env = {}) {
+  const headers = {
+    Origin: origin,
+    'Access-Control-Request-Method': 'POST',
+    'Access-Control-Request-Headers': requestHeaders,
+  };
+  const req = new Request('https://api.cryptomoonboys.com/admin/blocktopia/grant-xp', {
+    method: 'OPTIONS',
+    headers,
+  });
+  return worker.fetch(req, env);
+}
+
 for (const origin of PRODUCTION_ORIGINS) {
   await test(`worker.fetch reflects allowed origin: ${origin}`, async () => {
     const res = await workerHealth(origin);
@@ -92,6 +107,25 @@ for (const origin of PRODUCTION_ORIGINS) {
 await test('worker.fetch does NOT reflect unknown origin', async () => {
   const res = await workerHealth('https://evil.example.com');
   assert.equal(res.headers.get('Access-Control-Allow-Origin'), null);
+  assert.equal(res.headers.get('Vary'), 'Origin');
+});
+
+await test('worker CORS allow-headers keeps Content-Type and removes admin-secret names', async () => {
+  const res = await workerHealth(PRODUCTION_ORIGINS[0]);
+  const allowHeaders = String(res.headers.get('Access-Control-Allow-Headers') || '');
+  const normalized = allowHeaders.toLowerCase();
+  assert.ok(normalized.includes('content-type'), `Content-Type must remain allowed. Found: ${allowHeaders}`);
+  assert.equal(normalized.includes('x-admin-secret'), false, `x-admin-secret must not be browser-allowed. Found: ${allowHeaders}`);
+});
+
+await test('worker OPTIONS preflight still works for Content-Type application/json requests', async () => {
+  const res = await workerPreflight(PRODUCTION_ORIGINS[0], 'Content-Type');
+  assert.equal(res.status, 204);
+  const allowHeaders = String(res.headers.get('Access-Control-Allow-Headers') || '');
+  assert.ok(
+    allowHeaders.toLowerCase().includes('content-type'),
+    `OPTIONS preflight must allow Content-Type. Found: ${allowHeaders}`,
+  );
   assert.equal(res.headers.get('Vary'), 'Origin');
 });
 
@@ -174,7 +208,7 @@ await test('server/index.js guards localhost allowance with !IS_PRODUCTION', () 
   );
 });
 
-// ── 7. js/api-config.js PRODUCTION_HOSTS ──────────────────────────────────────
+// ── 8. js/api-config.js PRODUCTION_HOSTS ──────────────────────────────────────
 
 console.log('\n[7] js/api-config.js PRODUCTION_HOSTS recognises all 3 production hostnames');
 
@@ -189,6 +223,47 @@ for (const host of PRODUCTION_HOSTS) {
   await test(`api-config.js PRODUCTION_HOSTS includes '${host}'`, () => {
     assert.ok(configHosts.includes(host),
       `PRODUCTION_HOSTS is missing '${host}'. Found: ${JSON.stringify(configHosts)}`);
+  });
+}
+
+// ── 9. Worker CORS allow-headers: per-worker audit ───────────────────────────
+
+console.log('\n[9] Per-worker CORS allow-headers audit');
+
+const districtSrc = await read('workers/blocktopia-district/worker.js');
+
+await test('blocktopia-district CORS advertises X-Admin-Secret (browser-facing admin PUT routes)', () => {
+  const allowHeadersMatch = districtSrc.match(/['"]Access-Control-Allow-Headers['"]\s*:\s*['"]([^'"]+)['"]/);
+  assert.ok(allowHeadersMatch, 'Access-Control-Allow-Headers not found in blocktopia-district/worker.js');
+  const allowHeaders = allowHeadersMatch[1].toLowerCase();
+  assert.ok(
+    allowHeaders.includes('x-admin-secret'),
+    `blocktopia-district must advertise X-Admin-Secret for browser admin PUT routes. Found: ${allowHeadersMatch[1]}`,
+  );
+  assert.ok(
+    allowHeaders.includes('content-type'),
+    `blocktopia-district must still allow Content-Type. Found: ${allowHeadersMatch[1]}`,
+  );
+});
+
+const narrowedWorkers = [
+  { path: 'workers/anti-cheat/worker.js', name: 'anti-cheat' },
+  { path: 'workers/blocktopia-leaderboard/worker.js', name: 'blocktopia-leaderboard' },
+  { path: 'workers/blocktopia-engagement/worker.js', name: 'blocktopia-engagement' },
+  { path: 'workers/blocktopia-realtime/worker.js', name: 'blocktopia-realtime' },
+];
+
+for (const { path: workerPath, name } of narrowedWorkers) {
+  const src = await read(workerPath);
+  await test(`${name} CORS does not advertise X-Admin-Secret (no browser-facing secret-only admin routes)`, () => {
+    const allowHeadersMatch = src.match(/['"]Access-Control-Allow-Headers['"]\s*:\s*['"]([^'"]+)['"]/);
+    assert.ok(allowHeadersMatch, `Access-Control-Allow-Headers not found in ${workerPath}`);
+    const allowHeaders = allowHeadersMatch[1].toLowerCase();
+    assert.equal(
+      allowHeaders.includes('x-admin-secret'),
+      false,
+      `${name} must not advertise X-Admin-Secret in browser CORS. Found: ${allowHeadersMatch[1]}`,
+    );
   });
 }
 
