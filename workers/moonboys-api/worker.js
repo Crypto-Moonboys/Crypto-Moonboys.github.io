@@ -3379,7 +3379,7 @@ export default {
             first_name: user.first_name || null,
             last_name: user.last_name || null,
             photo_url: null,
-          }, env.TELEGRAM_BOT_TOKEN)
+          }, env.TELEGRAM_BOT_TOKEN, restoreEvidence?.authPayload?.auth_date)
           : null;
 
         return json({

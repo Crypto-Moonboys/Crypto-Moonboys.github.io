@@ -299,6 +299,23 @@ function seedLinkedUser(db, telegramId, { username = 'moonboy_admin' } = {}) {
   assert.equal(restoreJson.linked, true);
   assert.equal(restoreJson.telegram_auth && String(restoreJson.telegram_auth.id), ADMIN_ID, 'restore should return signed auth for proven owner');
   assert.ok(restoreJson.telegram_auth && restoreJson.telegram_auth.hash, 'restore should return signed hash');
+  assert.equal(
+    String(restoreJson.telegram_auth && restoreJson.telegram_auth.auth_date),
+    String(restoreEvidence.auth_date),
+    'restore must preserve evidence auth_date instead of extending token lifetime',
+  );
+
+  const rerestore = await request('/telegram/user/status', {
+    body: { telegram_auth: restoreJson.telegram_auth },
+    env: makeEnv(db),
+  });
+  assert.equal(rerestore.status, 200, 'restore can revalidate currently valid evidence');
+  const rerestoreJson = await readJson(rerestore);
+  assert.equal(
+    String(rerestoreJson.telegram_auth && rerestoreJson.telegram_auth.auth_date),
+    String(restoreJson.telegram_auth && restoreJson.telegram_auth.auth_date),
+    'restore must not roll auth_date forward on repeated restore',
+  );
 
   const arcadeGrant = await request('/admin/arcade/grant-xp', {
     body: {
