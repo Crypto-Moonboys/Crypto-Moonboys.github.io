@@ -106,6 +106,7 @@ function buildCorsHeaders(request, env) {
   const headers = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Secret, x-admin-secret',
+    'Vary': 'Origin',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'X-Frame-Options': 'DENY',

@@ -4,11 +4,12 @@
  * Verifies that:
  *  1. moonboys-api Worker DEFAULT_CORS_ALLOWED_ORIGINS contains all 3 production HTTPS origins.
  *  2. moonboys-api runtime fetch() reflects each allowed origin and does NOT reflect unknown origins.
- *  3. moonboys-api CORS_ALLOWED_ORIGINS env override still replaces the default list.
- *  4. Block Topia server default ALLOWED_ORIGINS contains all 3 production HTTPS origins.
- *  5. Block Topia server CORS_ORIGIN env override still replaces the default list.
- *  6. Block Topia server allows localhost in non-production (IS_PRODUCTION = false) mode.
- *  7. js/api-config.js PRODUCTION_HOSTS recognises all 3 production hostnames.
+ *  3. moonboys-api runtime CORS responses include Vary: Origin to prevent cache mixups.
+ *  4. moonboys-api CORS_ALLOWED_ORIGINS env override still replaces the default list.
+ *  5. Block Topia server default ALLOWED_ORIGINS contains all 3 production HTTPS origins.
+ *  6. Block Topia server CORS_ORIGIN env override still replaces the default list.
+ *  7. Block Topia server allows localhost in non-production (IS_PRODUCTION = false) mode.
+ *  8. js/api-config.js PRODUCTION_HOSTS recognises all 3 production hostnames.
  */
 
 import assert from 'node:assert/strict';
@@ -84,12 +85,14 @@ for (const origin of PRODUCTION_ORIGINS) {
   await test(`worker.fetch reflects allowed origin: ${origin}`, async () => {
     const res = await workerHealth(origin);
     assert.equal(res.headers.get('Access-Control-Allow-Origin'), origin);
+    assert.equal(res.headers.get('Vary'), 'Origin');
   });
 }
 
 await test('worker.fetch does NOT reflect unknown origin', async () => {
   const res = await workerHealth('https://evil.example.com');
   assert.equal(res.headers.get('Access-Control-Allow-Origin'), null);
+  assert.equal(res.headers.get('Vary'), 'Origin');
 });
 
 // ── 3. Worker CORS_ALLOWED_ORIGINS env override ───────────────────────────────
