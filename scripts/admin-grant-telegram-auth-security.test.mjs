@@ -214,7 +214,11 @@ function seedLinkedUser(db, telegramId, { username = 'moonboy_admin' } = {}) {
   assert.equal(getStatus.status, 200, 'status GET should still resolve linked profile by telegram_id');
   const getStatusJson = await readJson(getStatus);
   assert.equal(getStatusJson.linked, true, 'linked profile should remain discoverable');
-  assert.equal(getStatusJson.telegram_auth, null, 'status GET must not mint signed auth from bare telegram_id');
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(getStatusJson, 'telegram_auth'),
+    false,
+    'status GET must not include signed auth from bare telegram_id',
+  );
 
   const postStatus = await request('/telegram/user/status', {
     body: { telegram_id: ADMIN_ID },
@@ -223,7 +227,53 @@ function seedLinkedUser(db, telegramId, { username = 'moonboy_admin' } = {}) {
   assert.equal(postStatus.status, 200, 'status POST by telegram_id can return profile state');
   const postStatusJson = await readJson(postStatus);
   assert.equal(postStatusJson.linked, true, 'status POST should still report linked state');
-  assert.equal(postStatusJson.telegram_auth, null, 'status POST without restore evidence must not mint signed auth');
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(postStatusJson, 'telegram_auth'),
+    false,
+    'status POST without restore evidence must not include signed auth',
+  );
+
+  const malformedRestore = await request('/telegram/user/status', {
+    body: { telegram_id: ADMIN_ID, telegram_auth: { id: ADMIN_ID, auth_date: String(Math.floor(Date.now() / 1000)) } },
+    env: makeEnv(db),
+  });
+  assert.equal(malformedRestore.status, 200, 'status POST with malformed restore evidence should fail closed');
+  const malformedRestoreJson = await readJson(malformedRestore);
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(malformedRestoreJson, 'telegram_auth'),
+    false,
+    'malformed restore evidence must not return signed auth',
+  );
+
+  const expiredRestore = await request('/telegram/user/status', {
+    body: { telegram_id: ADMIN_ID, telegram_auth: buildTelegramAuth(ADMIN_ID, { ageSeconds: 60 * 60 * 24 * 30 }) },
+    env: makeEnv(db),
+  });
+  assert.equal(expiredRestore.status, 200, 'status POST with expired restore evidence should fail closed');
+  const expiredRestoreJson = await readJson(expiredRestore);
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(expiredRestoreJson, 'telegram_auth'),
+    false,
+    'expired restore evidence must not return signed auth',
+  );
+
+  const invalidRestore = await request('/telegram/user/status', {
+    body: { telegram_id: ADMIN_ID, telegram_auth: { ...buildTelegramAuth(ADMIN_ID), hash: 'invalid-signature' } },
+    env: makeEnv(db),
+  });
+  assert.equal(invalidRestore.status, 200, 'status POST with invalid restore evidence should fail closed');
+  const invalidRestoreJson = await readJson(invalidRestore);
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(invalidRestoreJson, 'telegram_auth'),
+    false,
+    'invalid restore evidence must not return signed auth',
+  );
+
+  const mismatchedRestore = await request('/telegram/user/status', {
+    body: { telegram_id: NON_ADMIN_ID, telegram_auth: buildTelegramAuth(ADMIN_ID) },
+    env: makeEnv(db),
+  });
+  assert.equal(mismatchedRestore.status, 401, 'mismatched restore evidence must be rejected');
 
   const abuseAttempt = await request('/admin/arcade/grant-xp', {
     body: {

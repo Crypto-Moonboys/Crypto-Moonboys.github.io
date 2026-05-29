@@ -542,6 +542,7 @@ async function verifyTelegramAuthEvidenceForRestore(body, env) {
   const now = Math.floor(Date.now() / 1000);
   if (!Number.isFinite(authDateSeconds)) return null;
   if (authDateSeconds - now > 300) return null;
+  if (now - authDateSeconds > TELEGRAM_AUTH_MAX_AGE) return null;
   let valid = false;
   try {
     valid = await verifyTelegramAuth({
@@ -3297,10 +3298,21 @@ export default {
       const restoreEvidence = request.method === 'POST'
         ? await verifyTelegramAuthEvidenceForRestore(requestBody, env)
         : null;
-      const telegramId = String(
+      const requestedTelegramId = String(
         url.searchParams.get('telegram_id')
-        || restoreEvidence?.telegramId
         || requestBody?.telegram_id
+        || ''
+      ).trim();
+      if (
+        restoreEvidence?.telegramId
+        && requestedTelegramId
+        && String(restoreEvidence.telegramId) !== requestedTelegramId
+      ) {
+        return err('Telegram auth does not match requested user', 401);
+      }
+      const telegramId = String(
+        restoreEvidence?.telegramId
+        || requestedTelegramId
         || ''
       ).trim();
       if (!telegramId) {
@@ -3381,7 +3393,7 @@ export default {
           link_confirmed: linked,
           ok: true,
           link_source: linkEvent ? 'telegram_activity_log' : (blockTopiaProgression ? 'blocktopia_progression' : null),
-          telegram_auth: signedAuthPayload,
+          ...(signedAuthPayload ? { telegram_auth: signedAuthPayload } : {}),
           recovery: {
             attempted: request.method === 'POST',
             restored_from: restoreEvidence ? 'signed_browser_auth' : (url.searchParams.get('telegram_id') ? 'telegram_id' : null),
