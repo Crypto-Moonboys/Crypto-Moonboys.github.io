@@ -42,6 +42,13 @@ must(/this\.state\.objectiveTarget\s*=\s*Math\.max\(\s*1\s*,\s*this\._scaledKill
 must(/this\.state\.hackProgressTarget\s*=\s*Math\.max\(\s*10\s*,\s*baseHackTarget\s*-\s*\(scannerBonus\s*\*\s*6\)\s*\)/, 'Scanner should reduce signal hack target in real completion logic.');
 
 must(/if\s*\(\s*!player\s*\|\|\s*!player\.ready\s*\)\s*return/, 'Move should be blocked until player is ready.');
+must(/const\s+MAX_MOVE_DELTA\s*=\s*1/, 'MAX_MOVE_DELTA must be defined as 1 tile (adjacent-only movement).');
+must(/const\s+MOVE_COOLDOWN_MS\s*=\s*\d+/, 'MOVE_COOLDOWN_MS must be defined for rate-guard.');
+must(/this\.lastMoveAtBySession\s*=\s*new\s+Map\(\)/, 'lastMoveAtBySession must be initialised in onCreate.');
+must(/Math\.abs\(x\s*-\s*player\.x\)\s*>\s*MAX_MOVE_DELTA\s*\|\|\s*Math\.abs\(y\s*-\s*player\.y\)\s*>\s*MAX_MOVE_DELTA/, 'Move distance must be validated against MAX_MOVE_DELTA (anti-teleport).');
+must(/now\s*-\s*lastMoveAt\s*<\s*MOVE_COOLDOWN_MS/, 'Move rate guard must compare against MOVE_COOLDOWN_MS.');
+must(/lastMoveAtBySession\.delete\(sessionId\)/, 'lastMoveAtBySession must be cleaned up in _removePlayerBySession.');
+must(/lastMoveAtBySession\.clear\(\)/, 'lastMoveAtBySession must be cleared on level advance.');
 must(/if\s*\(\s*!player\s*\|\|\s*!player\.ready\s*\|\|\s*player\.hp\s*<=\s*0\s*\)\s*return/, 'Attack should require ready and alive player.');
 must(/if\s*\(\s*this\.state\.worldPhase\s*!==\s*PHASE_EVENT_ACTIVE\s*\)\s*return/, 'Combat should stay phase gated to EVENT_ACTIVE.');
 must(/if\s*\(\s*!target\?\.ready\s*\)\s*return/, 'NPC damage should ignore not-ready players.');
