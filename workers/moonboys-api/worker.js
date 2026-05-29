@@ -542,6 +542,7 @@ async function verifyTelegramAuthEvidenceForRestore(body, env) {
   const now = Math.floor(Date.now() / 1000);
   if (!Number.isFinite(authDateSeconds)) return null;
   if (authDateSeconds - now > 300) return null;
+  if (now - authDateSeconds > TELEGRAM_AUTH_MAX_AGE) return null;
   let valid = false;
   try {
     valid = await verifyTelegramAuth({
@@ -2698,15 +2699,14 @@ export default {
     // ── POST /admin/blocktopia/grant-xp ───────────────────────────────────
     // Admin-only tooling endpoint for Block Topia test/ops XP + gems grants.
     if (path === '/admin/blocktopia/grant-xp' && request.method === 'POST') {
-      const configuredSecret = String(env.ADMIN_SECRET || '').trim();
-      if (!configuredSecret) return err('Admin tooling is not configured', 503);
-      if (readAdminSecret(request) !== configuredSecret) return err('Unauthorized', 401);
-
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
 
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
       const telegramId = String(body?.telegram_id || '').trim();
-      const adminTelegramId = String(body?.admin_telegram_id || '').trim();
+      const adminTelegramId = String(verified.telegramId || '').trim();
       const hasXpInput = body && Object.prototype.hasOwnProperty.call(body, 'xp');
       const hasGemsInput = body && Object.prototype.hasOwnProperty.call(body, 'gems');
       const rawXp = hasXpInput ? Number(body?.xp) : null;
@@ -2715,9 +2715,6 @@ export default {
 
       if (!telegramId || !/^\d{5,20}$/.test(telegramId)) {
         return err('Valid target telegram_id is required', 400);
-      }
-      if (!adminTelegramId || !/^\d{5,20}$/.test(adminTelegramId)) {
-        return err('Valid admin_telegram_id is required', 400);
       }
       if (!isAdminTelegramUser(adminTelegramId, env)) {
         return err('Forbidden: admin not allowed', 403);
@@ -2797,23 +2794,19 @@ export default {
     // Admin-only tooling endpoint to grant Arcade XP (arcade_progression_state.arcade_xp_total).
     // This is the value checked by the Block Topia multiplayer gate.
     if (path === '/admin/arcade/grant-xp' && request.method === 'POST') {
-      const configuredSecret = String(env.ADMIN_SECRET || '').trim();
-      if (!configuredSecret) return err('Admin tooling is not configured', 503);
-      if (readAdminSecret(request) !== configuredSecret) return err('Unauthorized', 401);
-
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
 
+      const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verified.error) return err(verified.error, verified.status || 401);
+
       const telegramId = String(body?.telegram_id || '').trim();
-      const adminTelegramId = String(body?.admin_telegram_id || '').trim();
+      const adminTelegramId = String(verified.telegramId || '').trim();
       const rawXp = body && Object.prototype.hasOwnProperty.call(body, 'xp') ? Number(body.xp) : null;
       const reason = String(body?.reason || '').trim().slice(0, 280);
 
       if (!telegramId || !/^\d{5,20}$/.test(telegramId)) {
         return err('Valid target telegram_id is required', 400);
-      }
-      if (!adminTelegramId || !/^\d{5,20}$/.test(adminTelegramId)) {
-        return err('Valid admin_telegram_id is required', 400);
       }
       if (!isAdminTelegramUser(adminTelegramId, env)) {
         return err('Forbidden: admin not allowed', 403);
@@ -3305,10 +3298,21 @@ export default {
       const restoreEvidence = request.method === 'POST'
         ? await verifyTelegramAuthEvidenceForRestore(requestBody, env)
         : null;
-      const telegramId = String(
+      const requestedTelegramId = String(
         url.searchParams.get('telegram_id')
-        || restoreEvidence?.telegramId
         || requestBody?.telegram_id
+        || ''
+      ).trim();
+      if (
+        restoreEvidence?.telegramId
+        && requestedTelegramId
+        && String(restoreEvidence.telegramId) !== requestedTelegramId
+      ) {
+        return err('Telegram auth does not match requested user', 401);
+      }
+      const telegramId = String(
+        restoreEvidence?.telegramId
+        || requestedTelegramId
         || ''
       ).trim();
       if (!telegramId) {
@@ -3365,14 +3369,17 @@ export default {
         }
 
         const linked = Boolean(linkEvent || blockTopiaProgression);
-        const signedAuthPayload = linked
+        const canRestoreSignedAuth = request.method === 'POST'
+          && !!restoreEvidence
+          && String(restoreEvidence.telegramId || '') === String(user.telegram_id || '');
+        const signedAuthPayload = (linked && canRestoreSignedAuth)
           ? await buildSignedTelegramAuthPayload({
             id: String(user.telegram_id),
             username: user.username || null,
             first_name: user.first_name || null,
             last_name: user.last_name || null,
             photo_url: null,
-          }, env.TELEGRAM_BOT_TOKEN)
+          }, env.TELEGRAM_BOT_TOKEN, restoreEvidence?.authPayload?.auth_date)
           : null;
 
         return json({
@@ -3386,7 +3393,7 @@ export default {
           link_confirmed: linked,
           ok: true,
           link_source: linkEvent ? 'telegram_activity_log' : (blockTopiaProgression ? 'blocktopia_progression' : null),
-          telegram_auth: signedAuthPayload,
+          ...(signedAuthPayload ? { telegram_auth: signedAuthPayload } : {}),
           recovery: {
             attempted: request.method === 'POST',
             restored_from: restoreEvidence ? 'signed_browser_auth' : (url.searchParams.get('telegram_id') ? 'telegram_id' : null),
