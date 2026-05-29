@@ -31,7 +31,7 @@ responses.
 
 ### Allowed Origins
 
-Requests from browser origins are only accepted from the allowlist:
+Requests with an `Origin` header are only reflected when the origin is in the allowlist:
 
 - `https://cryptomoonboys.com`
 - `https://www.cryptomoonboys.com`

@@ -103,15 +103,17 @@ function buildCorsHeaders(request, env) {
   const allowed = env && env.CORS_ALLOWED_ORIGINS
     ? String(env.CORS_ALLOWED_ORIGINS).split(',').map(s => s.trim()).filter(Boolean)
     : DEFAULT_CORS_ALLOWED_ORIGINS;
-  const allowedOrigin = allowed.includes(origin) ? origin : (allowed[0] || 'null');
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
+  const headers = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Secret, x-admin-secret',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'X-Frame-Options': 'DENY',
   };
+  if (origin && allowed.includes(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin;
+  }
+  return headers;
 }
 
 // ── Shared utilities ──────────────────────────────────────────────────────────
