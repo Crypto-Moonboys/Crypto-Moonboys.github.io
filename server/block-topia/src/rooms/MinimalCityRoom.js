@@ -59,6 +59,8 @@ const PHASE_MISSION_COMPLETE = 'MISSION_COMPLETE';
 const OBJECTIVE_PATROL_SWEEP = 'PATROL_SWEEP';
 const OBJECTIVE_SIGNAL_HACK = 'SIGNAL_HACK';
 const MIN_ATTACK_COOLDOWN_MS = 350;
+const MAX_MOVE_DELTA = 1;
+const MOVE_COOLDOWN_MS = 100;
 const EXTRACTION_SAFE_DISTANCE = 3;
 const UPGRADE_POOL = [
   { id: 'street_medic', name: 'Street Medic', description: '+25 max HP and full heal next level' },
@@ -205,6 +207,7 @@ export class MinimalCityRoom extends Room {
     this.autoDispose = false;
     this.playersBySession = new Map();
     this.lastAttackAtBySession = new Map();
+    this.lastMoveAtBySession = new Map();
     this.lastNpcDamageAtByNpcAndTarget = new Map();
     this.lastNpcDamageAtByTarget = new Map();
     this.spawnProtectedUntilBySession = new Map();
@@ -232,8 +235,17 @@ export class MinimalCityRoom extends Room {
       const y = Math.max(0, Math.min(MAP_HEIGHT - 1, Math.floor(nextY)));
       if (!this._isPassable(x, y)) return;
 
+      // Distance guard: reject jumps beyond adjacent tile (anti-teleport)
+      if (Math.abs(x - player.x) > MAX_MOVE_DELTA || Math.abs(y - player.y) > MAX_MOVE_DELTA) return;
+
+      // Rate guard: reject movement that arrives too quickly to be humanly possible
+      const now = Date.now();
+      const lastMoveAt = this.lastMoveAtBySession.get(client.sessionId) || 0;
+      if (now - lastMoveAt < MOVE_COOLDOWN_MS) return;
+
       player.x = x;
       player.y = y;
+      this.lastMoveAtBySession.set(client.sessionId, now);
       this._markActivity(client.sessionId);
     });
 
@@ -488,6 +500,7 @@ export class MinimalCityRoom extends Room {
     this.playersBySession.delete(sessionId);
     this.completedSessions.delete(sessionId);
     this.lastAttackAtBySession.delete(sessionId);
+    this.lastMoveAtBySession.delete(sessionId);
     this.spawnProtectedUntilBySession.delete(sessionId);
     this.lastNpcDamageAtByTarget.delete(sessionId);
     this.pendingRespawnBySession.delete(sessionId);
@@ -678,6 +691,7 @@ export class MinimalCityRoom extends Room {
     this.runGeneration += 1;
     this.completedSessions.clear();
     this.lastAttackAtBySession.clear();
+    this.lastMoveAtBySession.clear();
     this.lastNpcDamageAtByTarget.clear();
     this.lastNpcDamageAtByNpcAndTarget.clear();
     this.pendingRespawnBySession.clear();
