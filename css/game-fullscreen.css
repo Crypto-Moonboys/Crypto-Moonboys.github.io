@@ -1338,10 +1338,12 @@ body.conflict-active #game-overlay {
   overflow: auto;
 }
 
-#game-overlay .game-stage:has(.crystal-quest-card) {
-  overflow: hidden !important;
-  align-items: center;
-  padding: 12px;
+@supports selector(:has(*)) {
+  #game-overlay .game-stage:has(.crystal-quest-card) {
+    overflow: hidden !important;
+    align-items: center;
+    padding: 12px;
+  }
 }
 
 @media (max-width: 980px) {
@@ -1351,9 +1353,11 @@ body.conflict-active #game-overlay {
     overflow-y: auto !important;
   }
 
-  #game-overlay .game-stage:has(.crystal-quest-card) {
-    overflow-y: auto !important;
-    align-items: flex-start;
+  @supports selector(:has(*)) {
+    #game-overlay .game-stage:has(.crystal-quest-card) {
+      overflow-y: auto !important;
+      align-items: flex-start;
+    }
   }
 }
 

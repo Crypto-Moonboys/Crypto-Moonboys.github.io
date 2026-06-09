@@ -433,7 +433,7 @@ function createLegacybootstrapCrystalQuest(root) {
     }
     if (submitScoreStatus) {
       submitScoreStatus.textContent = run && run.completed
-        ? 'Score submission finalized automatically.'
+        ? 'Vault sealed - auto-submit triggered.'
         : 'Auto-submit arms when the vault seals.';
     }
   }
