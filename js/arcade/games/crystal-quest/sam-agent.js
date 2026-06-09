@@ -8,7 +8,7 @@ export function createSamAgent(options) {
   var root = options && options.root;
   var messageEl = options && options.messageEl;
 
-  var STATES = ['idle', 'scanning', 'correct', 'error', 'hype', 'warning'];
+  var STATES = ['idle', 'scanning', 'correct', 'error', 'hype', 'warning', 'complete'];
 
   // ── Message pools per event ────────────────────────────────────────────────
   var MESSAGES = {
@@ -19,14 +19,14 @@ export function createSamAgent(options) {
       'Lore grid initialised. All sectors clear.',
     ],
     scanning: [
-      'Quest armed. Track the signal.',
+      'Vault scanner online. Track the signal.',
       'Wiki trail detected. Begin lore hunt.',
       'Sector scan initiated. Crystals inbound.',
       'Run locked. The wiki holds your answers.',
       'Signal acquired. Follow the trail, hunter.',
     ],
     correct: [
-      'Signal confirmed. Crystal secured.',
+      'Signal confirmed. Crystal Secured.',
       'Lore lock verified. Moving to next signal.',
       'Knowledge fragment captured.',
       'Encyclopedia entry confirmed. Well played.',
@@ -67,15 +67,15 @@ export function createSamAgent(options) {
       'Skip reserve empty. All missions are mandatory.',
     ],
     runStart: [
-      'Crystal run armed. Hunt begins now.',
+      'Signal Vault armed. Hunt begins now.',
       'Session seeded. The wiki awaits, hunter.',
       'Lore trail activated. Find every crystal.',
       'Run locked in. Follow the signal across the wiki.',
     ],
     runComplete: [
-      '✅ Run complete. All crystals accounted for.',
-      '💎 Lore harvest complete. Submit your score.',
-      '🏆 Signal chain closed. Leaderboard awaits.',
+      'Vault Sealed. All crystals accounted for.',
+      'Lore harvest complete. Vault integrity restored.',
+      'Signal chain closed. Leaderboard path already synced.',
     ],
     packUnlock: [
       '📦 New lore pack loaded. Deeper signals ahead.',
@@ -147,8 +147,8 @@ export function createSamAgent(options) {
         setState('correct', nextMsg(MESSAGES.correct));
       }
     },
-    onWrong: function () {
-      setState('error', nextMsg(MESSAGES.error));
+    onWrong: function (message) {
+      setState('error', message || nextMsg(MESSAGES.error));
     },
     onSkip: function (skipsLeft) {
       if (skipsLeft <= 0) {
@@ -160,7 +160,7 @@ export function createSamAgent(options) {
       }
     },
     onRunComplete: function () {
-      setState('idle', nextMsg(MESSAGES.runComplete));
+      setState('complete', nextMsg(MESSAGES.runComplete));
     },
     onPackUnlock: function () {
       setState('scanning', nextMsg(MESSAGES.packUnlock));

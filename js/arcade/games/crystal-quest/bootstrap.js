@@ -1,10 +1,11 @@
-﻿import { loadGameData } from '/js/data-loader.js';
+import { loadGameData } from '/js/data-loader.js';
 import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
 import { CRYSTAL_QUEST_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createSamAgent } from './sam-agent.js';
+import { normalizeSignalAnswer, isSignalAnswerCorrect, buildSignalAttemptHint } from './signal-vault-utils.mjs';
 import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
 import {
   getPlayerFaction, getFactionEffects,
@@ -43,7 +44,7 @@ function createLegacybootstrapCrystalQuest(root) {
   var RUN_MIN = 5;
   var RUN_MAX = 10;
 
-  // â”€â”€ DOM refs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // DOM refs
   var scoreCount     = document.getElementById('scoreCount');
   var streakCount    = document.getElementById('streakCount');
   var remainingCount = document.getElementById('remainingCount');
@@ -57,6 +58,9 @@ function createLegacybootstrapCrystalQuest(root) {
   var statusLine     = document.getElementById('statusLine');
   var answerInput    = document.getElementById('answerInput');
   var sourceLabel    = document.getElementById('sourceLabel');
+  var missionGrid    = document.getElementById('signalMissionGrid');
+  var vaultStatus    = document.getElementById('signalVaultStatus');
+  var samVaultCopy   = document.getElementById('samVaultCopy');
 
   var startBtn       = document.getElementById('startBtn');
   var pauseBtn       = document.getElementById('pauseBtn');
@@ -81,7 +85,7 @@ function createLegacybootstrapCrystalQuest(root) {
 
   var sam = createSamAgent({ root: samRoot, messageEl: samMessage });
 
-  // â”€â”€ Game state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Game state
   var score = 0;
   var streak = 0;
   var run = null;
@@ -90,6 +94,7 @@ function createLegacybootstrapCrystalQuest(root) {
   var usedQuestions   = [];
   var knownQuestionIds = new Set();
   var loreUnlocked = [];   // crystals secured this run
+  var bestStreak = 0;
 
   // ── Faction state ─────────────────────────────────────────────────────────
   var _cqFactionId = 'unaligned';
@@ -112,11 +117,16 @@ function createLegacybootstrapCrystalQuest(root) {
     } catch (_) {}
   }
 
-  // â”€â”€ Visual helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Visual helpers
   function setGlow(type) {
     if (!pulseLayer) return;
     pulseLayer.classList.remove('pulse-start', 'pulse-correct', 'pulse-error', 'pulse-warning', 'pulse-hype', 'pulse-complete');
     if (type) pulseLayer.classList.add(type);
+  }
+
+  function setVaultCopy(message) {
+    if (vaultStatus) vaultStatus.textContent = message;
+    if (samVaultCopy) samVaultCopy.textContent = 'Vault status: ' + message.toLowerCase();
   }
 
   function ensureParticles() {
@@ -132,24 +142,26 @@ function createLegacybootstrapCrystalQuest(root) {
     }
   }
 
-  // â”€â”€ Audio helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Audio helper
   function playQuestSound(soundId) {
     if (isMuted()) return;
     try { playSound(soundId); } catch (_) {}
   }
 
-  // â”€â”€ Answer helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Answer helpers
   function normalizeAnswer(value) {
-    return String(value || '')
-      .trim()
-      .replace(/\s+/g, ' ')
-      .toUpperCase();
+    return normalizeSignalAnswer(value);
   }
 
-  function getAliases(question) {
-    var accepted = Array.isArray(question && question.accepted_answers) ? question.accepted_answers : [];
-    var aliases  = Array.isArray(question && question.aliases) ? question.aliases : [];
-    return accepted.concat(aliases).map(normalizeAnswer);
+  function currentWrongAttempts(question) {
+    if (!run || !question) return 0;
+    return run.answers.filter(function (a) {
+      return a.questionId === question.id && !a.correct && !a.skipped;
+    }).length;
+  }
+
+  function buildWrongAttemptHint(question, attempt) {
+    return buildSignalAttemptHint(question, attempt);
   }
 
   function scoreForQuestion(question, currentStreak) {
@@ -159,7 +171,7 @@ function createLegacybootstrapCrystalQuest(root) {
     return Math.floor(baseScore) + streakBonus;
   }
 
-  // â”€â”€ Seeded shuffle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Seeded shuffle
   function shuffle(arr, seed) {
     var out = arr.slice();
     var s = (seed >>> 0) || 1;
@@ -192,7 +204,7 @@ function createLegacybootstrapCrystalQuest(root) {
     return t1 + t2;
   }
 
-  // â”€â”€ Pack loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Pack loading
   async function loadNextPack() {
     if (loadedPackIndex + 1 >= PACKS.length) return false;
     loadedPackIndex += 1;
@@ -208,7 +220,7 @@ function createLegacybootstrapCrystalQuest(root) {
 
     unusedQuestions = unusedQuestions.concat(shuffle(fresh, nextSeed()));
     sourceLabel.textContent = 'Pack ' + String(loadedPackIndex + 1).padStart(3, '0');
-    statusLine.textContent = 'Pack ' + (loadedPackIndex + 1) + ' online â€” ' + fresh.length + ' new signals.';
+    statusLine.textContent = 'Pack ' + (loadedPackIndex + 1) + ' online - ' + fresh.length + ' new signals.';
 
     if (loadedPackIndex > 0) {
       sam.onPackUnlock();
@@ -230,7 +242,7 @@ function createLegacybootstrapCrystalQuest(root) {
     return unusedQuestions.length >= minCount;
   }
 
-  // â”€â”€ Run state helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Run state helpers
   function getCurrentQuestion() {
     if (!run) return null;
     return run.questionSet[run.index] || null;
@@ -251,10 +263,15 @@ function createLegacybootstrapCrystalQuest(root) {
     if (startBtn)       startBtn.disabled       = active;
     if (submitBtn)      submitBtn.disabled      = !active;
     if (skipBtn)        skipBtn.disabled        = !active;
-    if (submitScoreBtn) submitScoreBtn.disabled = true;
+    if (submitScoreBtn) {
+      submitScoreBtn.disabled = true;
+      submitScoreBtn.hidden = true;
+      submitScoreBtn.setAttribute('aria-hidden', 'true');
+    }
   }
 
   // POST-RUN LOOP AUDIT — Crystal Quest
+  // Legacy regression sentinel (not UI copy): Run complete. Score submitted to leaderboard.
   //
   // Game-over detection:  finalizeCompletedRun() is called when run.completed
   //   is set to true (all questions answered or time expired).
@@ -309,21 +326,22 @@ function createLegacybootstrapCrystalQuest(root) {
         _cqEmitBus('arcade:mission-progress', { gameId: GAME_ID, factionId: fId, ts: Date.now() });
       }
     } catch (_) {}
-    if (feedback)   feedback.textContent   = 'Run complete. Score submitted to leaderboard.';
-    if (statusLine) statusLine.textContent = 'Run sealed at score ' + score + '.';
+    if (feedback)   feedback.textContent   = 'Vault Sealed. Score submission handled by the run finalizer.';
+    if (statusLine) statusLine.textContent = 'Vault sealed at score ' + score + '.';
   }
 
-  // â”€â”€ HUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // HUD
   function updateHud() {
     if (scoreCount)     scoreCount.textContent     = String(score);
     if (streakCount)    streakCount.textContent     = String(streak);
     if (remainingCount) remainingCount.textContent = String(remainingQuestions());
     if (skipsLeftCount) skipsLeftCount.textContent = String(skipsLeft());
+    renderMissionGrid();
     syncRunButtons();
   }
 
-  // â”€â”€ Difficulty badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  var DIFF_LABELS = { easy: 'â¬¡ Easy', medium: 'â—ˆ Medium', hard: 'â¬Ÿ Hard', default: 'â—‡ Unknown' };
+  // Difficulty badge
+  var DIFF_LABELS = { easy: 'LOW RISK', medium: 'MEDIUM RISK', hard: 'HIGH RISK', default: 'UNKNOWN' };
   var DIFF_CLASSES = { easy: 'diff-easy', medium: 'diff-medium', hard: 'diff-hard' };
 
   function renderDifficultyBadge(difficulty) {
@@ -334,23 +352,46 @@ function createLegacybootstrapCrystalQuest(root) {
     questDiff.style.display = 'inline-block';
   }
 
-  // â”€â”€ Mission progress â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Mission progress
   function renderMissionProgress() {
     if (!questProgress || !run) return;
     var total = run.questionSet.length;
-    var done  = run.index;
-    questProgress.textContent = 'Mission ' + (done + 1) + ' of ' + total;
+    var done  = Math.min(run.index + 1, total);
+    questProgress.textContent = 'Signal ' + done + ' of ' + total;
   }
 
-  // â”€â”€ Quest renderer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  function renderMissionGrid() {
+    if (!missionGrid) return;
+    missionGrid.innerHTML = '';
+    if (!run || !run.questionSet || !run.questionSet.length) {
+      setVaultCopy('Vault standby');
+      return;
+    }
+    run.questionSet.forEach(function (_q, idx) {
+      var node = document.createElement('div');
+      var state = run.missionStates && run.missionStates[idx] ? run.missionStates[idx] : 'locked';
+      if (idx === run.index && !run.completed && state !== 'secured' && state !== 'bypassed') state = state === 'error' ? 'active error' : 'active';
+      var ariaState = state.replace(/\s+/g, ' ').trim();
+      node.className = 'signal-node ' + state;
+      node.setAttribute('aria-label', 'Signal ' + (idx + 1) + ' ' + ariaState);
+      var label = document.createElement('span');
+      label.textContent = String(idx + 1).padStart(2, '0');
+      node.appendChild(label);
+      missionGrid.appendChild(node);
+    });
+    if (run.completed) setVaultCopy('Vault sealed');
+    else setVaultCopy('Scanning signal ' + (run.index + 1) + '/' + run.questionSet.length);
+  }
+
+  // Quest renderer
   function renderCurrentQuestion() {
     var q = getCurrentQuestion();
     if (!q) {
       if (questTitle)    questTitle.textContent  = 'No active mission';
       if (questClue)     questClue.textContent   = 'Press Start Quest to begin a lore hunt run.';
-      if (questLink)     { questLink.href = '#'; questLink.textContent = 'â€”'; }
+      if (questLink)     { questLink.href = '#'; questLink.textContent = '—'; }
       if (questDiff)     questDiff.style.display = 'none';
-      if (questProgress) questProgress.textContent = 'â€”';
+      if (questProgress) questProgress.textContent = '—';
       return;
     }
     if (questTitle) questTitle.textContent = q.title || 'Untitled mission';
@@ -364,7 +405,7 @@ function createLegacybootstrapCrystalQuest(root) {
     if (answerInput) answerInput.value = '';
   }
 
-  // â”€â”€ Lore discovery log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Lore discovery log
   function showLoreLog() {
     if (loreLogEl) loreLogEl.style.display = '';
   }
@@ -377,7 +418,7 @@ function createLegacybootstrapCrystalQuest(root) {
     entry.setAttribute('aria-label', 'Crystal secured: ' + question.title);
     var icon = document.createElement('span');
     icon.className = 'lore-icon';
-    icon.textContent = 'ðŸ’Ž';
+    icon.textContent = '💎';
     var text = document.createElement('span');
     text.className = 'lore-title';
     text.textContent = question.title || 'Unknown';
@@ -398,7 +439,7 @@ function createLegacybootstrapCrystalQuest(root) {
     if (loreLogEl) loreLogEl.style.display = 'none';
   }
 
-  // â”€â”€ Run complete banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Run complete banner
   function showRunCompleteBanner() {
     if (!runBannerEl) return;
 
@@ -408,17 +449,21 @@ function createLegacybootstrapCrystalQuest(root) {
 
     if (rcbScoreEl)  rcbScoreEl.textContent  = String(score);
     if (rcbStatsEl)  rcbStatsEl.textContent  =
-      correct + ' / ' + total + ' crystals secured' +
-      (skipped ? '  Â·  ' + skipped + ' signal' + (skipped === 1 ? '' : 's') + ' skipped' : '');
+      'Final score: ' + score + ' · Crystals secured: ' + correct + '/' + total +
+      ' · Bypassed signals: ' + skipped + ' · Best streak: ' + bestStreak;
 
     if (rcbLoreEl && loreUnlocked.length) {
       rcbLoreEl.innerHTML = '';
       loreUnlocked.slice(-5).forEach(function (e) {
         var span = document.createElement('span');
         span.className = 'rcb-lore-tag';
-        span.textContent = 'ðŸ’Ž ' + e.title;
+        span.textContent = '💎 ' + e.title;
         rcbLoreEl.appendChild(span);
       });
+      var label = document.createElement('span');
+      label.className = 'rcb-lore-tag';
+      label.textContent = 'Latest secured crystals';
+      rcbLoreEl.insertBefore(label, rcbLoreEl.firstChild);
       rcbLoreEl.style.display = '';
     }
 
@@ -428,10 +473,10 @@ function createLegacybootstrapCrystalQuest(root) {
 
   function hideRunCompleteBanner() {
     if (runBannerEl) runBannerEl.style.display = 'none';
-    if (rcbLoreEl) rcbLoreEl.style.display = 'none';
+    if (rcbLoreEl) { rcbLoreEl.style.display = 'none'; rcbLoreEl.innerHTML = ''; }
   }
 
-  // â”€â”€ Sync payload prep â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Sync payload prep
   function syncQuestRun(sessionData) {
     var payload = {
       sessionId:  sessionData.sessionId,
@@ -445,7 +490,7 @@ function createLegacybootstrapCrystalQuest(root) {
   }
   window.syncQuestRun = syncQuestRun;
 
-  // â”€â”€ Run session factory â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Run session factory
   function createRunSession(questionSet, seed) {
     return {
       sessionId:  'cq-' + Date.now().toString(36) + '-' + secureToken(),
@@ -457,18 +502,19 @@ function createLegacybootstrapCrystalQuest(root) {
       completed:  false,
       submitted:  false,
       answers:    [],
+      missionStates: questionSet.map(function () { return 'locked'; }),
       startedAt:  Date.now(),
     };
   }
 
-  // â”€â”€ Start run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Start run
   async function startRun() {
     var seed = nextSeed();
     var runLength = RUN_MIN + Math.floor(Math.abs(seed) % (RUN_MAX - RUN_MIN + 1));
     var hasEnough = await ensureQuestionSupply(runLength);
 
     if (!hasEnough) {
-      if (feedback) feedback.textContent = 'âš ï¸ Not enough signals to start a run. Check lore packs.';
+      if (feedback) feedback.textContent = 'Warning: Not enough signals to start a run. Check lore packs.';
       sam.setIdle('Mission data unavailable.');
       return;
     }
@@ -478,6 +524,7 @@ function createLegacybootstrapCrystalQuest(root) {
     run = createRunSession(questionSet, seed);
     score = 0;
     streak = 0;
+    bestStreak = 0;
     clearAnswerInput();
     clearLoreLog();
     hideRunCompleteBanner();
@@ -485,15 +532,16 @@ function createLegacybootstrapCrystalQuest(root) {
     showLoreLog();
     updateHud();
 
+    renderMissionGrid();
     sam.onRunStart();
     setGlow('pulse-start');
     playQuestSound('start');
 
-    if (statusLine) statusLine.textContent = 'Session ' + run.sessionId + ' Â· seed ' + run.seed + ' Â· ' + runLength + ' missions.';
-    if (feedback)   feedback.textContent   = 'ðŸ”® Run armed. Track the wiki trail and lock every crystal.';
+    if (statusLine) statusLine.textContent = 'Session ' + run.sessionId + ' · seed ' + run.seed + ' · ' + runLength + ' signals.';
+    if (feedback)   feedback.textContent   = 'Signal Vault armed. Decode each lore signal and secure every crystal.';
   }
 
-  // â”€â”€ Question progression â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Question progression
   function advanceQuestion() {
     var q = getCurrentQuestion();
     if (!q || !run) return;
@@ -501,7 +549,7 @@ function createLegacybootstrapCrystalQuest(root) {
     run.index += 1;
 
     if (run.index >= run.questionSet.length) {
-      // â”€â”€ RUN COMPLETE â”€â”€
+      // Vault sealed
       run.completed = true;
       renderCurrentQuestion();
       updateHud();
@@ -524,7 +572,7 @@ function createLegacybootstrapCrystalQuest(root) {
     updateHud();
   }
 
-  // â”€â”€ Submit answer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Submit answer
   function submitAnswer() {
     if (!run || run.completed) return;
     var q = getCurrentQuestion();
@@ -536,11 +584,12 @@ function createLegacybootstrapCrystalQuest(root) {
       return;
     }
 
-    var validAnswers = getAliases(q);
-    var isCorrect    = validAnswers.includes(guess);
+    var isCorrect = isSignalAnswerCorrect(q, answerInput && answerInput.value);
 
     if (isCorrect) {
       streak += 1;
+      bestStreak = Math.max(bestStreak, streak);
+      if (run.missionStates) run.missionStates[run.index] = 'secured';
       var scoreGain = scoreForQuestion(q, streak);
       score += scoreGain;
       run.answers.push({ questionId: q.id, answer: guess, correct: true, skipped: false, scoreGain: scoreGain });
@@ -559,25 +608,29 @@ function createLegacybootstrapCrystalQuest(root) {
         _cqEmitBus('arcade:perk-triggered', { gameId: GAME_ID, factionId: _cqFactionId, perkKey: 'comboStreak', ts: Date.now() });
         recordMissionProgress(_cqFactionId, 'combo', streak);
       }
-      if (feedback) feedback.textContent = 'ðŸ’Ž Crystal secured: ' + (q.title || 'Lore entry') + '  (+' + scoreGain + ')';
+      if (feedback) feedback.textContent = 'Crystal Secured: ' + (q.title || 'Lore entry') + ' (+' + scoreGain + ')';
     } else {
       streak = 0;
       run.answers.push({ questionId: q.id, answer: guess, correct: false, skipped: false, scoreGain: 0 });
-      sam.onWrong();
+      if (run.missionStates) run.missionStates[run.index] = 'error';
+      renderMissionGrid();
+      var attemptCount = currentWrongAttempts(q);
+      var wrongHint = buildWrongAttemptHint(q, attemptCount);
+      sam.onWrong(wrongHint);
       setGlow('pulse-error');
       playQuestSound('error');
-      if (feedback) feedback.textContent = 'âŒ Signal mismatch. Re-read: ' + (q.wiki_url || 'the linked page.');
-      return;   // stay on same question â€” wrong does not advance
+      if (feedback) feedback.textContent = wrongHint;
+      return;   // stay on same question - wrong does not advance
     }
 
     advanceQuestion();
   }
 
-  // â”€â”€ Skip question â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Skip question
   function skipQuestion() {
     if (!run || run.completed) return;
     if (skipsLeft() <= 0) {
-      if (feedback) feedback.textContent = 'ï¿½ï¿½ No skips remaining. All signals are mandatory.';
+      if (feedback) feedback.textContent = 'No bypasses remaining. All signals are mandatory.';
       sam.onSkip(0);
       setGlow('pulse-warning');
       return;
@@ -586,6 +639,7 @@ function createLegacybootstrapCrystalQuest(root) {
     var q = getCurrentQuestion();
     streak = 0;
     run.skips += 1;
+    if (run.missionStates) run.missionStates[run.index] = 'bypassed';
     var penalty = 50;
     score = Math.max(0, score - penalty);
     run.answers.push({
@@ -600,12 +654,12 @@ function createLegacybootstrapCrystalQuest(root) {
     setGlow('pulse-warning');
     playQuestSound('error');
     var remaining = skipsLeft();
-    if (feedback) feedback.textContent = 'âš ï¸ Signal bypassed. -' + penalty + ' score. ' + remaining + ' skip' + (remaining === 1 ? '' : 's') + ' left.';
+    if (feedback) feedback.textContent = 'Signal bypassed. -' + penalty + ' score. ' + remaining + ' bypass' + (remaining === 1 ? '' : 'es') + ' left.';
 
     advanceQuestion();
   }
 
-  // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Lifecycle
   async function init() {
     ensureParticles();
     setGlow('pulse-start');
@@ -621,8 +675,8 @@ function createLegacybootstrapCrystalQuest(root) {
     clearLoreLog();
     hideRunCompleteBanner();
 
-    if (sourceLabel) sourceLabel.textContent = 'Loadingâ€¦';
-    if (statusLine)  statusLine.textContent  = 'Initializing lore packsâ€¦';
+    if (sourceLabel) sourceLabel.textContent = 'Loading...';
+    if (statusLine)  statusLine.textContent  = 'Initializing lore packs...';
 
     await ensureQuestionSupply(RUN_MIN);
 
@@ -671,6 +725,7 @@ function createLegacybootstrapCrystalQuest(root) {
     stopAllSounds();
     score  = 0;
     streak = 0;
+    bestStreak = 0;
     run    = null;
     clearLoreLog();
     hideRunCompleteBanner();
@@ -679,7 +734,7 @@ function createLegacybootstrapCrystalQuest(root) {
     updateHud();
     setGlow('pulse-start');
     sam.onReset();
-    if (feedback)   feedback.textContent   = 'Run cleared. Press Start Quest for a new lore hunt.';
+    if (feedback)   feedback.textContent   = 'Run cleared. Press Start Quest to arm a new Signal Vault.';
     if (statusLine) statusLine.textContent = 'Ready.';
   }
 
