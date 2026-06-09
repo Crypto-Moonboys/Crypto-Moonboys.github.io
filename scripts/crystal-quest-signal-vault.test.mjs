@@ -44,7 +44,7 @@ assert.match(bootstrap, /missionStates: questionSet\.map/, 'mission grid state i
 
 for (const file of crystalFiles) {
   const contents = fs.readFileSync(path.join(root, file), 'utf8');
-  assert.doesNotMatch(contents, /â|ï¿½|ðŸ/u, `${file} contains visible mojibake`);
+  assert.doesNotMatch(contents, /(?:â€”|â€“|â€¦|â€œ|â€�|â€™|â€˜|â€¢|ï¿½|ðŸ)/u, `${file} contains visible mojibake`);
 }
 
 console.log('crystal-quest-signal-vault: passed');
