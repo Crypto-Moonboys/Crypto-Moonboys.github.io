@@ -32,3 +32,41 @@ export function buildSignalAttemptHint(question, attempt) {
   }
   return 'Signal mismatch. Strong hint: inspect the page title, clue wording, and accepted lore keyword before decoding again.';
 }
+
+export function isCloseSignalAnswerMatch(question, answer) {
+  var normalized = normalizeSignalAnswer(answer);
+  if (!normalized) return false;
+  var accepted = getAcceptedSignalAnswers(question);
+  for (var i = 0; i < accepted.length; i++) {
+    var target = accepted[i];
+    if (!target || target === normalized) continue;
+    var delta = Math.abs(target.length - normalized.length);
+    var maxDistance = target.length <= 6 ? 1 : 2;
+    if (delta > maxDistance) continue;
+    if (boundedEditDistance(normalized, target, maxDistance) <= maxDistance) return true;
+  }
+  return false;
+}
+
+function boundedEditDistance(a, b, limit) {
+  var previous = [];
+  for (var j = 0; j <= b.length; j++) previous[j] = j;
+
+  for (var i = 1; i <= a.length; i++) {
+    var current = [i];
+    var rowMin = current[0];
+    for (var k = 1; k <= b.length; k++) {
+      var cost = a.charAt(i - 1) === b.charAt(k - 1) ? 0 : 1;
+      var value = Math.min(
+        previous[k] + 1,
+        current[k - 1] + 1,
+        previous[k - 1] + cost
+      );
+      current[k] = value;
+      if (value < rowMin) rowMin = value;
+    }
+    if (rowMin > limit) return limit + 1;
+    previous = current;
+  }
+  return previous[b.length];
+}

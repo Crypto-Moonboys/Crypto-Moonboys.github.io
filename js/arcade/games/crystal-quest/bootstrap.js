@@ -5,7 +5,7 @@ import { CRYSTAL_QUEST_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createSamAgent } from './sam-agent.js';
-import { normalizeSignalAnswer, isSignalAnswerCorrect, buildSignalAttemptHint } from './signal-vault-utils.mjs';
+import { normalizeSignalAnswer, isSignalAnswerCorrect, isCloseSignalAnswerMatch, buildSignalAttemptHint } from './signal-vault-utils.mjs';
 import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
 import {
   getPlayerFaction, getFactionEffects,
@@ -61,6 +61,16 @@ function createLegacybootstrapCrystalQuest(root) {
   var missionGrid    = document.getElementById('signalMissionGrid');
   var vaultStatus    = document.getElementById('signalVaultStatus');
   var samVaultCopy   = document.getElementById('samVaultCopy');
+  var wikiTrailToggle  = document.getElementById('wikiTrailToggle');
+  var wikiTrailPanel   = document.getElementById('wikiTrailPanel');
+  var wikiTrailTitle   = document.getElementById('wikiTrailTitle');
+  var wikiTrailClue    = document.getElementById('wikiTrailClue');
+  var wikiTrailUrl     = document.getElementById('wikiTrailUrl');
+  var wikiTrailDiff    = document.getElementById('wikiTrailDifficulty');
+  var wikiTrailHint    = document.getElementById('wikiTrailHint');
+  var wikiTrailPreviewTitle = document.getElementById('wikiTrailPreviewTitle');
+  var wikiTrailPreviewBody  = document.getElementById('wikiTrailPreviewBody');
+  var wikiTrailFullLink     = document.getElementById('wikiTrailFullLink');
 
   var startBtn       = document.getElementById('startBtn');
   var pauseBtn       = document.getElementById('pauseBtn');
@@ -95,6 +105,7 @@ function createLegacybootstrapCrystalQuest(root) {
   var knownQuestionIds = new Set();
   var loreUnlocked = [];   // crystals secured this run
   var bestStreak = 0;
+  var wikiTrailPreviewRequestId = 0;
 
   // ── Faction state ─────────────────────────────────────────────────────────
   var _cqFactionId = 'unaligned';
@@ -146,6 +157,127 @@ function createLegacybootstrapCrystalQuest(root) {
   function playQuestSound(soundId) {
     if (isMuted()) return;
     try { playSound(soundId); } catch (_) {}
+  }
+
+
+  // Wiki Trail helpers
+  function isLocalWikiPath(url) {
+    return typeof url === 'string' && /^\/wiki\/[a-z0-9][a-z0-9-]*\.html(?:[?#].*)?$/i.test(url);
+  }
+
+  function setWikiTrailFallback(message) {
+    if (wikiTrailPreviewTitle) wikiTrailPreviewTitle.textContent = 'Preview unavailable';
+    if (wikiTrailPreviewBody) wikiTrailPreviewBody.textContent = message || 'Open the full wiki page to inspect the signal trail.';
+  }
+
+  function setWikiTrailPreviewPlaceholder(message) {
+    if (wikiTrailPreviewTitle) wikiTrailPreviewTitle.textContent = 'Safe preview';
+    if (wikiTrailPreviewBody) wikiTrailPreviewBody.textContent = message || 'Open Wiki Trail to load a safe local preview.';
+  }
+
+  function isWikiTrailOpen() {
+    return !!(wikiTrailPanel && !wikiTrailPanel.hasAttribute('hidden'));
+  }
+
+  function isWikiTrailPreviewCurrent(requestId, questionId, wikiUrl) {
+    var active = getCurrentQuestion();
+    return requestId === wikiTrailPreviewRequestId &&
+      !!active &&
+      active.id === questionId &&
+      active.wiki_url === wikiUrl &&
+      isWikiTrailOpen();
+  }
+
+  function renderWikiTrailHint(question) {
+    if (!wikiTrailHint) return;
+    if (!run || !question) {
+      wikiTrailHint.textContent = 'Hint state: start a run to unlock signal hints.';
+      return;
+    }
+    var attempt = currentWrongAttempts(question);
+    var tier = attempt <= 0 ? 'No wrong attempts yet' : 'Wrong-attempt tier ' + attempt;
+    var hint = attempt <= 0
+      ? 'Decode once for a soft hint; more exact-wording help unlocks after misses.'
+      : buildWrongAttemptHint(question, attempt);
+    wikiTrailHint.textContent = tier + ': ' + hint;
+  }
+
+  function extractWikiPreview(html) {
+    var doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+    doc.querySelectorAll('script, style, noscript, iframe, object, embed').forEach(function (node) { node.remove(); });
+    var heading = doc.querySelector('main h1, h1, .page-title, title');
+    var title = heading ? heading.textContent.replace(/\s+/g, ' ').trim() : 'Wiki signal preview';
+    var body = '';
+    var nodes = doc.querySelectorAll('main p, article p, .lore-paragraph, main li, article li, p, li');
+    for (var i = 0; i < nodes.length; i++) {
+      var text = nodes[i].textContent.replace(/\s+/g, ' ').trim();
+      if (text && text.length >= 40 && !/^home\b|^navigation\b/i.test(text)) {
+        body = text;
+        break;
+      }
+    }
+    if (!body) body = 'Open the full wiki page to continue the signal hunt.';
+    if (body.length > 360) body = body.slice(0, 357).trim() + '...';
+    return { title: title || 'Wiki signal preview', body: body };
+  }
+
+  async function loadWikiTrailPreview(question) {
+    if (!wikiTrailPreviewTitle || !wikiTrailPreviewBody || !question) return;
+    var url = question.wiki_url;
+    var questionId = question.id;
+    var requestId = ++wikiTrailPreviewRequestId;
+    if (!isLocalWikiPath(url) || typeof fetch !== 'function' || typeof DOMParser === 'undefined') {
+      setWikiTrailFallback('Preview unavailable here. Use the full wiki page link to follow the signal trail.');
+      return;
+    }
+    wikiTrailPreviewTitle.textContent = 'Loading preview...';
+    wikiTrailPreviewBody.textContent = 'Scanning the local wiki trail without leaving the run.';
+    try {
+      var response = await fetch(url, { credentials: 'same-origin' });
+      if (!response || !response.ok) throw new Error('preview fetch failed');
+      var preview = extractWikiPreview(await response.text());
+      if (!isWikiTrailPreviewCurrent(requestId, questionId, url)) return;
+      wikiTrailPreviewTitle.textContent = preview.title;
+      wikiTrailPreviewBody.textContent = preview.body;
+    } catch (_) {
+      if (!isWikiTrailPreviewCurrent(requestId, questionId, url)) return;
+      setWikiTrailFallback('Could not load the inline preview. The full wiki page link still works.');
+    }
+  }
+
+  function renderWikiTrailPanel() {
+    var q = getCurrentQuestion();
+    if (!q) {
+      wikiTrailPreviewRequestId += 1;
+      if (wikiTrailTitle) wikiTrailTitle.textContent = 'No active signal';
+      if (wikiTrailClue) wikiTrailClue.textContent = 'Start a Crystal Quest run to open an in-game wiki trail.';
+      if (wikiTrailUrl) wikiTrailUrl.textContent = '—';
+      if (wikiTrailDiff) wikiTrailDiff.textContent = 'Difficulty: —';
+      if (wikiTrailFullLink) {
+        wikiTrailFullLink.removeAttribute('href');
+        wikiTrailFullLink.setAttribute('aria-disabled', 'true');
+        wikiTrailFullLink.setAttribute('tabindex', '-1');
+      }
+      renderWikiTrailHint(null);
+      setWikiTrailPreviewPlaceholder('Open Wiki Trail to load a safe local preview.');
+      return;
+    }
+    if (wikiTrailTitle) wikiTrailTitle.textContent = q.title || 'Untitled mission';
+    if (wikiTrailClue) wikiTrailClue.textContent = q.clue || 'No clue available.';
+    if (wikiTrailUrl) wikiTrailUrl.textContent = q.wiki_url || '#';
+    if (wikiTrailDiff) wikiTrailDiff.textContent = 'Difficulty: ' + (q.difficulty || 'unknown');
+    if (wikiTrailFullLink) {
+      wikiTrailFullLink.setAttribute('href', q.wiki_url || '#');
+      wikiTrailFullLink.removeAttribute('aria-disabled');
+      wikiTrailFullLink.removeAttribute('tabindex');
+    }
+    renderWikiTrailHint(q);
+    if (!isWikiTrailOpen()) {
+      wikiTrailPreviewRequestId += 1;
+      setWikiTrailPreviewPlaceholder('Open Wiki Trail to load a safe local preview.');
+      return;
+    }
+    loadWikiTrailPreview(q);
   }
 
   // Answer helpers
@@ -392,6 +524,7 @@ function createLegacybootstrapCrystalQuest(root) {
       if (questLink)     { questLink.href = '#'; questLink.textContent = '—'; }
       if (questDiff)     questDiff.style.display = 'none';
       if (questProgress) questProgress.textContent = '—';
+      renderWikiTrailPanel();
       return;
     }
     if (questTitle) questTitle.textContent = q.title || 'Untitled mission';
@@ -399,6 +532,7 @@ function createLegacybootstrapCrystalQuest(root) {
     if (questLink)  { questLink.href = q.wiki_url || '#'; questLink.textContent = q.wiki_url || '#'; }
     renderDifficultyBadge(q.difficulty);
     renderMissionProgress();
+    renderWikiTrailPanel();
   }
 
   function clearAnswerInput() {
@@ -616,6 +750,10 @@ function createLegacybootstrapCrystalQuest(root) {
       renderMissionGrid();
       var attemptCount = currentWrongAttempts(q);
       var wrongHint = buildWrongAttemptHint(q, attemptCount);
+      if (isCloseSignalAnswerMatch(q, answerInput && answerInput.value)) {
+        wrongHint = 'Close signal match — check exact wording. ' + wrongHint;
+      }
+      renderWikiTrailHint(q);
       sam.onWrong(wrongHint);
       setGlow('pulse-error');
       playQuestSound('error');
@@ -702,6 +840,13 @@ function createLegacybootstrapCrystalQuest(root) {
     if (resetBtn)       resetBtn.onclick       = reset;
     if (submitScoreBtn) submitScoreBtn.onclick = null;
     if (pauseBtn)       pauseBtn.onclick       = pause;
+    if (wikiTrailToggle) wikiTrailToggle.onclick = function () {
+      if (!wikiTrailPanel) return;
+      var hidden = wikiTrailPanel.hasAttribute('hidden');
+      wikiTrailPanel.toggleAttribute('hidden', !hidden);
+      wikiTrailToggle.setAttribute('aria-expanded', hidden ? 'true' : 'false');
+      if (hidden) renderWikiTrailPanel();
+    };
 
     if (answerInput) {
       answerInput.addEventListener('keydown', function (e) {
@@ -746,6 +891,7 @@ function createLegacybootstrapCrystalQuest(root) {
     if (submitBtn)      submitBtn.onclick      = null;
     if (skipBtn)        skipBtn.onclick        = null;
     if (submitScoreBtn) submitScoreBtn.onclick = null;
+    if (wikiTrailToggle) wikiTrailToggle.onclick = null;
   }
 
   function getScore() { return score; }

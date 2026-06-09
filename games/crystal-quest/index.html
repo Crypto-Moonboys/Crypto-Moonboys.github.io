@@ -127,6 +127,24 @@
     .rcb-lore{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
     .rcb-lore-tag{font-size:.78rem;background:rgba(122,220,255,.1);border:1px solid rgba(122,220,255,.2);border-radius:20px;padding:3px 9px;color:#aed9ff;white-space:nowrap}
 
+
+    .wiki-trail-toggle{margin-top:10px;align-self:flex-start}
+    .wiki-trail-panel{margin-top:12px;border:1px solid rgba(122,220,255,.28);border-radius:14px;background:rgba(8,15,32,.88);box-shadow:0 12px 30px rgba(0,0,0,.24);padding:14px;color:var(--color-text,#fff)}
+    .wiki-trail-panel[hidden]{display:none}
+    .wiki-trail-header{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+    .wiki-trail-kicker{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:#7adcff;font-weight:800}
+    .wiki-trail-title{font-size:1.05rem;font-weight:800;margin:2px 0 0;color:#fff}
+    .wiki-trail-full-link{color:#f7ab1a;font-weight:800;text-decoration:none}
+    .wiki-trail-full-link:hover{text-decoration:underline}
+    .wiki-trail-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,.45fr);gap:12px}
+    .wiki-trail-card{border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.04);padding:12px}
+    .wiki-trail-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--color-text-muted,#9fb0c7);font-weight:800;margin-bottom:4px}
+    .wiki-trail-value{margin:0;color:#dcecff;line-height:1.45;word-break:break-word}
+    .wiki-trail-hint{border-color:rgba(247,171,26,.35);background:rgba(247,171,26,.08)}
+    .wiki-trail-preview-title{margin:0 0 6px;font-weight:800;color:#fff}
+    .wiki-trail-preview-body{margin:0;color:#cfe1f8;line-height:1.5}
+    @media(max-width:760px){.wiki-trail-grid{grid-template-columns:1fr}}
+
     @media(max-width:860px){.sam-terminal{grid-template-columns:1fr}.sam-head{max-width:260px;justify-self:center}.sam-panel::before,.sam-panel::after{display:none}}
     @media(max-width:720px){.meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
@@ -254,6 +272,37 @@
               <button class="btn alt" id="skipBtn" type="button">Bypass Signal</button>
               <button class="btn warn" id="submitScoreBtn" type="button" hidden aria-hidden="true">Submit Score</button>
             </div>
+
+            <button class="btn alt wiki-trail-toggle" id="wikiTrailToggle" type="button" aria-expanded="false" aria-controls="wikiTrailPanel">Open Wiki Trail</button>
+            <section id="wikiTrailPanel" class="wiki-trail-panel" hidden aria-label="Crystal Quest Wiki Trail" aria-live="polite">
+              <div class="wiki-trail-header">
+                <div>
+                  <div class="wiki-trail-kicker">Wiki Trail</div>
+                  <div id="wikiTrailTitle" class="wiki-trail-title">No active signal</div>
+                </div>
+                <a id="wikiTrailFullLink" class="wiki-trail-full-link" target="_blank" rel="noopener noreferrer" aria-disabled="true" tabindex="-1">Open full wiki page</a>
+              </div>
+              <div class="wiki-trail-grid">
+                <div class="wiki-trail-card">
+                  <div class="wiki-trail-label">Current clue</div>
+                  <p id="wikiTrailClue" class="wiki-trail-value">Start a run to open an in-game wiki trail.</p>
+                </div>
+                <div class="wiki-trail-card">
+                  <div class="wiki-trail-label">Signal metadata</div>
+                  <p id="wikiTrailDifficulty" class="wiki-trail-value">Difficulty: —</p>
+                  <p id="wikiTrailUrl" class="wiki-trail-value">—</p>
+                </div>
+                <div class="wiki-trail-card wiki-trail-hint">
+                  <div class="wiki-trail-label">Hint state</div>
+                  <p id="wikiTrailHint" class="wiki-trail-value">Hint state: start a run to unlock signal hints.</p>
+                </div>
+                <div class="wiki-trail-card">
+                  <div class="wiki-trail-label">Safe preview</div>
+                  <p id="wikiTrailPreviewTitle" class="wiki-trail-preview-title">Preview unavailable</p>
+                  <p id="wikiTrailPreviewBody" class="wiki-trail-preview-body">Start a run to load a safe local wiki preview.</p>
+                </div>
+              </div>
+            </section>
             <p id="feedback" class="small" style="margin-top:12px">Start a run to arm the Signal Vault.</p>
             <p class="status"><span id="sourceLabel">Loading…</span> · <span id="statusLine">Initializing...</span></p>
           </div>
