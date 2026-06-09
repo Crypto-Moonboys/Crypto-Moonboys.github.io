@@ -81,6 +81,10 @@ function createLegacybootstrapCrystalQuest(root) {
   var submitScoreStatus = document.getElementById('submitScoreStatus');
 
   var pulseLayer     = document.getElementById('crystalPulseLayer');
+  var effectsLayer   = document.getElementById('crystalQuestEffectsLayer');
+  var rootEl         = root || document.querySelector('.crystal-quest-card');
+  var signalGridPanel = missionGrid && missionGrid.closest ? missionGrid.closest('.signal-grid-panel') : null;
+  var samHead        = document.querySelector('.crystal-quest-card .sam-head');
 
   var samRoot    = document.getElementById('samAgent');
   var samMessage = document.getElementById('samMessage');
@@ -108,6 +112,8 @@ function createLegacybootstrapCrystalQuest(root) {
   var loreUnlocked = [];   // crystals secured this run
   var bestStreak = 0;
   var wikiTrailPreviewRequestId = 0;
+  var transientSignalEffect = null;
+  var effectCleanupTimers = [];
 
   // ── Faction state ─────────────────────────────────────────────────────────
   var _cqFactionId = 'unaligned';
@@ -148,10 +154,97 @@ function createLegacybootstrapCrystalQuest(root) {
     return;
   }
 
+  function queueEffectCleanup(fn, delay) {
+    var timer = window.setTimeout(function () {
+      effectCleanupTimers = effectCleanupTimers.filter(function (id) { return id !== timer; });
+      fn();
+    }, delay);
+    effectCleanupTimers.push(timer);
+    return timer;
+  }
+
+  function clearEffectTimers() {
+    effectCleanupTimers.forEach(function (timer) { window.clearTimeout(timer); });
+    effectCleanupTimers = [];
+  }
+
+  function setTransientSignalEffect(type, index, duration) {
+    if (!run || typeof index !== 'number') return;
+    transientSignalEffect = { type: type, index: index, expires: Date.now() + duration };
+    queueEffectCleanup(function () {
+      if (transientSignalEffect && transientSignalEffect.type === type && transientSignalEffect.index === index) {
+        transientSignalEffect = null;
+        renderMissionGrid();
+      }
+    }, duration + 40);
+  }
+
+  function addTemporaryClass(el, className, duration) {
+    if (!el) return;
+    el.classList.add(className);
+    queueEffectCleanup(function () { el.classList.remove(className); }, duration);
+  }
+
+  function appendEffectNode(kind, parts, duration) {
+    if (!effectsLayer) return;
+    var effect = document.createElement('div');
+    effect.className = 'cq-effect cq-effect-' + kind;
+    parts.forEach(function (className) {
+      var part = document.createElement('span');
+      part.className = className;
+      effect.appendChild(part);
+    });
+    effectsLayer.appendChild(effect);
+    queueEffectCleanup(function () { effect.remove(); }, duration);
+  }
+
+  function triggerQuestEffect(kind, options) {
+    var opts = options || {};
+    var duration = opts.duration || 700;
+    if (rootEl) rootEl.dataset.cqLastEffect = kind;
+    if (kind === 'correct') {
+      appendEffectNode('correct', ['cq-crystal-burst', 'cq-radial-shockwave', 'cq-signal-line-pulse'], duration);
+      addTemporaryClass(rootEl, 'cq-effect-correct', duration);
+      addTemporaryClass(rootEl, 'cq-hud-flash', 520);
+      addTemporaryClass(signalGridPanel, 'cq-grid-line-pulse', 560);
+    } else if (kind === 'wrong') {
+      appendEffectNode('wrong', ['cq-glitch-slice'], 420);
+      addTemporaryClass(rootEl, 'cq-effect-wrong', 360);
+      addTemporaryClass(samRoot, 'sam-warning-flicker', 520);
+      addTemporaryClass(samHead, 'sam-warning-flicker', 520);
+    } else if (kind === 'skip') {
+      appendEffectNode('skip', ['cq-bypass-arc'], 560);
+      addTemporaryClass(rootEl, 'cq-effect-skip', 520);
+      addTemporaryClass(rootEl, 'cq-hud-flash', 420);
+    } else if (kind === 'streak') {
+      appendEffectNode('streak', ['cq-energy-surge', 'cq-signal-line-pulse'], 860);
+      addTemporaryClass(rootEl, 'cq-streak-surge', 840);
+      addTemporaryClass(signalGridPanel, 'cq-grid-line-pulse', 760);
+    } else if (kind === 'vault') {
+      appendEffectNode('vault', ['cq-radial-shockwave', 'cq-signal-line-pulse'], 1100);
+      addTemporaryClass(rootEl, 'cq-effect-vault-sealed', 1300);
+      addTemporaryClass(signalGridPanel, 'cq-grid-line-pulse', 1100);
+    }
+  }
+
   // Audio helper
   function playQuestSound(soundId) {
     if (isMuted()) return;
-    try { playSound(soundId); } catch (_) {}
+    var generatedTones = {
+      correct: { kind: 'chord', tones: [
+        { type: 'sine', freqStart: 660, freqEnd: 880, duration: 0.08, volume: 0.035, delay: 0 },
+        { type: 'triangle', freqStart: 990, freqEnd: 1320, duration: 0.12, volume: 0.032, delay: 0.04 },
+      ] },
+      error: { kind: 'tone', type: 'sawtooth', freqStart: 170, freqEnd: 72, duration: 0.16, volume: 0.042 },
+      skip: { kind: 'tone', type: 'triangle', freqStart: 330, freqEnd: 590, duration: 0.13, volume: 0.034 },
+      complete: { kind: 'chord', tones: [
+        { type: 'sine', freqStart: 523, freqEnd: 523, duration: 0.12, volume: 0.036, delay: 0 },
+        { type: 'sine', freqStart: 784, freqEnd: 784, duration: 0.14, volume: 0.034, delay: 0.09 },
+        { type: 'triangle', freqStart: 1175, freqEnd: 1175, duration: 0.18, volume: 0.03, delay: 0.18 },
+      ] },
+      start: { kind: 'tone', type: 'sine', freqStart: 420, freqEnd: 840, duration: 0.1, volume: 0.028 },
+    };
+    try { playSound(soundId, generatedTones[soundId]); } catch (_) {}
   }
 
 
@@ -540,7 +633,18 @@ function createLegacybootstrapCrystalQuest(root) {
       var state = run.missionStates && run.missionStates[idx] ? run.missionStates[idx] : 'locked';
       if (idx === run.index && !run.completed && state !== 'secured' && state !== 'bypassed') state = state === 'error' ? 'active error' : 'active';
       var ariaState = state.replace(/\s+/g, ' ').trim();
-      node.className = 'signal-node ' + state;
+      var nodeClasses = ['signal-node'].concat(state.split(/\s+/));
+      if (transientSignalEffect && transientSignalEffect.index === idx && transientSignalEffect.expires > Date.now()) {
+        if (transientSignalEffect.type === 'correct') nodeClasses.push('signal-node-secured-burst');
+        if (transientSignalEffect.type === 'wrong') nodeClasses.push('signal-node-error-pulse');
+        if (transientSignalEffect.type === 'skip') nodeClasses.push('signal-node-bypass-crack');
+        if (transientSignalEffect.type === 'streak') nodeClasses.push('signal-node-streak-surge');
+      }
+      if (run.completed && state === 'secured') {
+        nodeClasses.push('cq-vault-seal-step');
+        node.style.animationDelay = String(Math.min(idx * 80, 720)) + 'ms';
+      }
+      node.className = nodeClasses.join(' ');
       node.setAttribute('aria-label', 'Signal ' + (idx + 1) + ' ' + ariaState);
       node.setAttribute('role', 'listitem');
       var label = document.createElement('span');
@@ -698,6 +802,10 @@ function createLegacybootstrapCrystalQuest(root) {
     score = 0;
     streak = 0;
     bestStreak = 0;
+    clearEffectTimers();
+    transientSignalEffect = null;
+    if (effectsLayer) effectsLayer.innerHTML = '';
+    if (rootEl) rootEl.classList.remove('cq-effect-correct', 'cq-effect-wrong', 'cq-effect-skip', 'cq-streak-surge', 'cq-effect-vault-sealed', 'cq-hud-flash');
     clearAnswerInput();
     clearLoreLog();
     hideRunCompleteBanner();
@@ -728,7 +836,8 @@ function createLegacybootstrapCrystalQuest(root) {
       updateHud();
       sam.onRunComplete();
       setGlow('pulse-complete');
-      playQuestSound('correct');
+      triggerQuestEffect('vault', { duration: 1200 });
+      playQuestSound('complete');
       showRunCompleteBanner();
       syncQuestRun({
         sessionId: run.sessionId,
@@ -773,11 +882,15 @@ function createLegacybootstrapCrystalQuest(root) {
       } else {
         setGlow('pulse-correct');
       }
+      setTransientSignalEffect('correct', run.index, 680);
+      triggerQuestEffect('correct', { duration: 700 });
       playQuestSound('correct');
       // Apply cross-game score multiplier
       if (_cqModScoreMult !== 1) score = Math.round(score - scoreGain + scoreGain * _cqModScoreMult);
       // Emit combo milestone
       if (streak === 3 || streak === 5) {
+        setTransientSignalEffect('streak', run.index, 880);
+        triggerQuestEffect('streak', { duration: 880 });
         _cqEmitBus('arcade:perk-triggered', { gameId: GAME_ID, factionId: _cqFactionId, perkKey: 'comboStreak', ts: Date.now() });
         recordMissionProgress(_cqFactionId, 'combo', streak);
       }
@@ -795,6 +908,9 @@ function createLegacybootstrapCrystalQuest(root) {
       renderWikiTrailHint(q);
       sam.onWrong(wrongHint);
       setGlow('pulse-error');
+      setTransientSignalEffect('wrong', run.index, 520);
+      renderMissionGrid();
+      triggerQuestEffect('wrong', { duration: 520 });
       playQuestSound('error');
       if (feedback) feedback.textContent = wrongHint;
       return;   // stay on same question - wrong does not advance
@@ -829,7 +945,9 @@ function createLegacybootstrapCrystalQuest(root) {
 
     sam.onSkip(skipsLeft());
     setGlow('pulse-warning');
-    playQuestSound('error');
+    setTransientSignalEffect('skip', run.index, 620);
+    triggerQuestEffect('skip', { duration: 620 });
+    playQuestSound('skip');
     var remaining = skipsLeft();
     if (feedback) feedback.textContent = 'Signal bypassed. -' + penalty + ' score. ' + remaining + ' bypass' + (remaining === 1 ? '' : 'es') + ' left.';
 
@@ -839,6 +957,9 @@ function createLegacybootstrapCrystalQuest(root) {
   // Lifecycle
   async function init() {
     ensureParticles();
+    clearEffectTimers();
+    if (effectsLayer) effectsLayer.innerHTML = '';
+    transientSignalEffect = null;
     setGlow('pulse-start');
     sam.setIdle();
 
@@ -915,6 +1036,9 @@ function createLegacybootstrapCrystalQuest(root) {
 
   function reset() {
     stopAllSounds();
+    clearEffectTimers();
+    transientSignalEffect = null;
+    if (effectsLayer) effectsLayer.innerHTML = '';
     score  = 0;
     streak = 0;
     bestStreak = 0;
@@ -933,6 +1057,9 @@ function createLegacybootstrapCrystalQuest(root) {
 
   function destroy() {
     stopAllSounds();
+    clearEffectTimers();
+    transientSignalEffect = null;
+    if (effectsLayer) effectsLayer.innerHTML = '';
     if (startBtn)       startBtn.onclick       = null;
     if (pauseBtn)       pauseBtn.onclick       = null;
     if (resetBtn)       resetBtn.onclick       = null;
