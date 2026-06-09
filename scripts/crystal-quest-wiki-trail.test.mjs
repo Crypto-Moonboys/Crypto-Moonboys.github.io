@@ -15,7 +15,11 @@ const packs = [
 
 assert.match(html, /id="wikiTrailToggle"[^>]*>Open Wiki Trail<\/button>/, 'Wiki Trail toggle exists near the answer controls');
 assert.match(html, /id="wikiTrailPanel"[^>]*aria-label="Crystal Quest Wiki Trail"/, 'Wiki Trail panel exists');
-assert.match(html, /id="wikiTrailFullLink"[^>]*>Open full wiki page<\/a>/, 'full wiki link remains available inside panel');
+const fullLinkMarkup = html.match(/<a id="wikiTrailFullLink"[^>]*>Open full wiki page<\/a>/)?.[0] || '';
+assert.ok(fullLinkMarkup, 'full wiki link remains available inside panel');
+assert.doesNotMatch(fullLinkMarkup, /\shref=/, 'disabled full wiki link starts without href');
+assert.match(fullLinkMarkup, /aria-disabled="true"/, 'disabled full wiki link starts aria-disabled');
+assert.match(fullLinkMarkup, /tabindex="-1"/, 'disabled full wiki link starts unfocusable');
 assert.match(html, /id="questLink"/, 'original questLink remains available');
 
 assert.match(bootstrap, /function renderWikiTrailPanel\(\)[\s\S]*wikiTrailTitle\.textContent = q\.title/, 'panel renders current mission title');
@@ -23,6 +27,13 @@ assert.match(bootstrap, /wikiTrailClue\.textContent = q\.clue/, 'panel renders c
 assert.match(bootstrap, /wikiTrailUrl\.textContent = q\.wiki_url/, 'panel renders wiki URL');
 assert.match(bootstrap, /wikiTrailDiff\.textContent = 'Difficulty: ' \+ \(q\.difficulty/, 'panel renders difficulty');
 assert.match(bootstrap, /renderCurrentQuestion\(\)[\s\S]*renderWikiTrailPanel\(\)/, 'Wiki Trail updates when the run renders the active question');
+assert.match(bootstrap, /wikiTrailFullLink\.removeAttribute\('href'\);[\s\S]*wikiTrailFullLink\.setAttribute\('aria-disabled', 'true'\);[\s\S]*wikiTrailFullLink\.setAttribute\('tabindex', '-1'\);/, 'no active signal disables full wiki link without href and with tabindex -1');
+assert.match(bootstrap, /wikiTrailFullLink\.setAttribute\('href', q\.wiki_url \|\| '#'\);[\s\S]*wikiTrailFullLink\.removeAttribute\('aria-disabled'\);[\s\S]*wikiTrailFullLink\.removeAttribute\('tabindex'\);/, 'active signal restores full wiki link href and focusability');
+assert.match(bootstrap, /if \(!isWikiTrailOpen\(\)\) \{[\s\S]*setWikiTrailPreviewPlaceholder\('Open Wiki Trail to load a safe local preview\.'\);[\s\S]*return;[\s\S]*\}[\s\S]*loadWikiTrailPreview\(q\);/, 'hidden Wiki Trail panel shows placeholder and does not trigger preview fetch');
+assert.match(bootstrap, /if \(hidden\) renderWikiTrailPanel\(\);/, 'opening the panel triggers preview rendering for the active question');
+assert.match(bootstrap, /var requestId = \+\+wikiTrailPreviewRequestId;/, 'preview loading uses a request token');
+assert.match(bootstrap, /function isWikiTrailPreviewCurrent\(requestId, questionId, wikiUrl\)[\s\S]*active\.id === questionId[\s\S]*active\.wiki_url === wikiUrl[\s\S]*isWikiTrailOpen\(\)/, 'stale preview guard checks active question, wiki URL, and open panel');
+assert.match(bootstrap, /if \(!isWikiTrailPreviewCurrent\(requestId, questionId, url\)\) return;[\s\S]*wikiTrailPreviewTitle\.textContent = preview\.title;[\s\S]*wikiTrailPreviewBody\.textContent = preview\.body;/, 'stale async preview responses cannot overwrite current preview text');
 assert.match(bootstrap, /await fetch\(url, \{ credentials: 'same-origin' \}\)/, 'preview fetch is same-origin');
 assert.match(bootstrap, /doc\.querySelectorAll\('script, style, noscript, iframe, object, embed'\)/, 'unsafe preview elements are stripped');
 assert.match(bootstrap, /textContent = preview\.body/, 'preview uses textContent instead of injecting HTML');

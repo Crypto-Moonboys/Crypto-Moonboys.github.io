@@ -105,6 +105,7 @@ function createLegacybootstrapCrystalQuest(root) {
   var knownQuestionIds = new Set();
   var loreUnlocked = [];   // crystals secured this run
   var bestStreak = 0;
+  var wikiTrailPreviewRequestId = 0;
 
   // ── Faction state ─────────────────────────────────────────────────────────
   var _cqFactionId = 'unaligned';
@@ -169,6 +170,24 @@ function createLegacybootstrapCrystalQuest(root) {
     if (wikiTrailPreviewBody) wikiTrailPreviewBody.textContent = message || 'Open the full wiki page to inspect the signal trail.';
   }
 
+  function setWikiTrailPreviewPlaceholder(message) {
+    if (wikiTrailPreviewTitle) wikiTrailPreviewTitle.textContent = 'Safe preview';
+    if (wikiTrailPreviewBody) wikiTrailPreviewBody.textContent = message || 'Open Wiki Trail to load a safe local preview.';
+  }
+
+  function isWikiTrailOpen() {
+    return !!(wikiTrailPanel && !wikiTrailPanel.hasAttribute('hidden'));
+  }
+
+  function isWikiTrailPreviewCurrent(requestId, questionId, wikiUrl) {
+    var active = getCurrentQuestion();
+    return requestId === wikiTrailPreviewRequestId &&
+      !!active &&
+      active.id === questionId &&
+      active.wiki_url === wikiUrl &&
+      isWikiTrailOpen();
+  }
+
   function renderWikiTrailHint(question) {
     if (!wikiTrailHint) return;
     if (!run || !question) {
@@ -203,8 +222,10 @@ function createLegacybootstrapCrystalQuest(root) {
   }
 
   async function loadWikiTrailPreview(question) {
-    if (!wikiTrailPreviewTitle || !wikiTrailPreviewBody) return;
-    var url = question && question.wiki_url;
+    if (!wikiTrailPreviewTitle || !wikiTrailPreviewBody || !question) return;
+    var url = question.wiki_url;
+    var questionId = question.id;
+    var requestId = ++wikiTrailPreviewRequestId;
     if (!isLocalWikiPath(url) || typeof fetch !== 'function' || typeof DOMParser === 'undefined') {
       setWikiTrailFallback('Preview unavailable here. Use the full wiki page link to follow the signal trail.');
       return;
@@ -215,9 +236,11 @@ function createLegacybootstrapCrystalQuest(root) {
       var response = await fetch(url, { credentials: 'same-origin' });
       if (!response || !response.ok) throw new Error('preview fetch failed');
       var preview = extractWikiPreview(await response.text());
+      if (!isWikiTrailPreviewCurrent(requestId, questionId, url)) return;
       wikiTrailPreviewTitle.textContent = preview.title;
       wikiTrailPreviewBody.textContent = preview.body;
     } catch (_) {
+      if (!isWikiTrailPreviewCurrent(requestId, questionId, url)) return;
       setWikiTrailFallback('Could not load the inline preview. The full wiki page link still works.');
     }
   }
@@ -225,13 +248,18 @@ function createLegacybootstrapCrystalQuest(root) {
   function renderWikiTrailPanel() {
     var q = getCurrentQuestion();
     if (!q) {
+      wikiTrailPreviewRequestId += 1;
       if (wikiTrailTitle) wikiTrailTitle.textContent = 'No active signal';
       if (wikiTrailClue) wikiTrailClue.textContent = 'Start a Crystal Quest run to open an in-game wiki trail.';
       if (wikiTrailUrl) wikiTrailUrl.textContent = '—';
       if (wikiTrailDiff) wikiTrailDiff.textContent = 'Difficulty: —';
-      if (wikiTrailFullLink) { wikiTrailFullLink.href = '#'; wikiTrailFullLink.setAttribute('aria-disabled', 'true'); }
+      if (wikiTrailFullLink) {
+        wikiTrailFullLink.removeAttribute('href');
+        wikiTrailFullLink.setAttribute('aria-disabled', 'true');
+        wikiTrailFullLink.setAttribute('tabindex', '-1');
+      }
       renderWikiTrailHint(null);
-      setWikiTrailFallback('Start a run to load a safe local wiki preview.');
+      setWikiTrailPreviewPlaceholder('Open Wiki Trail to load a safe local preview.');
       return;
     }
     if (wikiTrailTitle) wikiTrailTitle.textContent = q.title || 'Untitled mission';
@@ -239,10 +267,16 @@ function createLegacybootstrapCrystalQuest(root) {
     if (wikiTrailUrl) wikiTrailUrl.textContent = q.wiki_url || '#';
     if (wikiTrailDiff) wikiTrailDiff.textContent = 'Difficulty: ' + (q.difficulty || 'unknown');
     if (wikiTrailFullLink) {
-      wikiTrailFullLink.href = q.wiki_url || '#';
+      wikiTrailFullLink.setAttribute('href', q.wiki_url || '#');
       wikiTrailFullLink.removeAttribute('aria-disabled');
+      wikiTrailFullLink.removeAttribute('tabindex');
     }
     renderWikiTrailHint(q);
+    if (!isWikiTrailOpen()) {
+      wikiTrailPreviewRequestId += 1;
+      setWikiTrailPreviewPlaceholder('Open Wiki Trail to load a safe local preview.');
+      return;
+    }
     loadWikiTrailPreview(q);
   }
 
