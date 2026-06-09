@@ -5154,7 +5154,7 @@ export default {
       let swarmsyRes;
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
         try {
           swarmsyRes = await fetch(SWARMSY_NPC_URL, {
             method: 'POST',
