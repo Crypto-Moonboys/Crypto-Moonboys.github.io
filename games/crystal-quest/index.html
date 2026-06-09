@@ -10,13 +10,13 @@
   <link rel="stylesheet" href="/css/game-fullscreen.css">
 <style>
     /* ── Core layout ── */
-    .game-card{position:relative;overflow:hidden;background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px}
-    .quest-box{position:relative;background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:14px;padding:16px;margin-top:14px;transition:box-shadow .3s ease,border-color .3s ease}
+    .game-card{position:relative;overflow:hidden;background:rgba(255,255,255,.03);border:1px solid var(--color-border,#333);border-radius:16px;padding:18px;max-width:100%;box-sizing:border-box}
+    .quest-box{position:relative;background:rgba(255,255,255,.04);border:1px solid var(--color-border,#333);border-radius:14px;padding:16px;margin-top:14px;transition:box-shadow .3s ease,border-color .3s ease;max-width:100%;box-sizing:border-box}
     .quest-box.glow{box-shadow:0 0 0 1px rgba(122,220,255,.28),0 0 28px rgba(122,220,255,.13)}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .input{flex:1 1 240px;padding:.9rem 1rem;border-radius:12px;border:1px solid var(--color-border,#333);background:#0b1020;color:#fff;font-size:1rem;transition:border-color .2s ease}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;max-width:100%}
+    .input{flex:1 1 240px;min-width:0;max-width:100%;box-sizing:border-box;padding:.9rem 1rem;border-radius:12px;border:1px solid var(--color-border,#333);background:#0b1020;color:#fff;font-size:1rem;transition:border-color .2s ease}
     .input:focus{outline:none;border-color:#4c9cff}
-    .btn{padding:.85rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer;transition:transform .15s ease,opacity .2s ease,box-shadow .2s ease}
+    .btn{min-height:44px;padding:.85rem 1.1rem;border:none;border-radius:12px;background:#f7ab1a;color:#111;font-weight:700;cursor:pointer;transition:transform .15s ease,opacity .2s ease,box-shadow .2s ease;touch-action:manipulation}
     .btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.3)}
     .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
     .btn.alt{background:rgba(255,255,255,.1);color:#fff}
@@ -92,8 +92,8 @@
     .signal-grid-panel{position:relative;margin:0 0 14px;padding:14px;border:1px solid rgba(122,220,255,.2);border-radius:16px;background:linear-gradient(135deg,rgba(10,26,46,.78),rgba(23,9,42,.55));box-shadow:inset 0 0 28px rgba(122,220,255,.06)}
     .signal-grid-panel::before{content:"";position:absolute;inset:0;border-radius:16px;background:linear-gradient(90deg,transparent 0 48%,rgba(122,220,255,.08) 49% 51%,transparent 52%),linear-gradient(0deg,transparent 0 48%,rgba(122,220,255,.06) 49% 51%,transparent 52%);background-size:34px 34px;opacity:.45;pointer-events:none}
     .signal-grid-title{position:relative;display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:.78rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9bd7ff;margin-bottom:10px}
-    .signal-grid{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(54px,1fr));gap:10px}
-    .signal-node{position:relative;min-height:50px;border:1px solid rgba(122,220,255,.24);border-radius:14px;background:radial-gradient(circle at 50% 25%,rgba(122,220,255,.2),rgba(8,13,28,.92) 58%);color:#bcecff;font-weight:900;letter-spacing:.08em;display:grid;place-items:center;overflow:hidden;box-shadow:0 0 0 rgba(122,220,255,0);transition:transform .18s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease}
+    .signal-grid{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(48px,1fr));gap:10px;min-width:0}
+    .signal-node{position:relative;min-height:50px;min-width:0;border:1px solid rgba(122,220,255,.24);border-radius:14px;background:radial-gradient(circle at 50% 25%,rgba(122,220,255,.2),rgba(8,13,28,.92) 58%);color:#bcecff;font-weight:900;letter-spacing:.08em;display:grid;place-items:center;overflow:hidden;box-shadow:0 0 0 rgba(122,220,255,0);transition:transform .18s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease}
     .signal-node::before{content:"";position:absolute;width:18px;height:18px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);background:rgba(122,220,255,.78);box-shadow:0 0 18px rgba(122,220,255,.7)}
     .signal-node span{position:relative;z-index:1;transform:translateY(14px);font-size:.68rem;color:rgba(236,250,255,.82)}
     .signal-node.active{border-color:#7af7ff;box-shadow:0 0 22px rgba(122,247,255,.34);animation:nodePulse 1.15s ease-in-out infinite}
@@ -119,25 +119,25 @@
     .lore-pts{flex-shrink:0;color:#4be38f;font-weight:700;font-size:.82rem}
 
     /* ── Run-complete banner ── */
-    .run-complete-banner{border:1px solid #4be38f;border-radius:14px;padding:16px 18px;margin-top:14px;background:rgba(75,227,143,.07);animation:rcbIn .4s ease}
+    .run-complete-banner{border:1px solid #4be38f;border-radius:14px;padding:16px 18px;margin-top:14px;background:rgba(75,227,143,.07);animation:rcbIn .4s ease;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
     @keyframes rcbIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
     .rcb-header{font-size:1.05rem;font-weight:700;color:#4be38f;margin-bottom:8px}
-    .rcb-score{font-size:2rem;font-weight:900;color:#fff;letter-spacing:.02em;margin-bottom:4px}
+    .rcb-score{font-size:clamp(1.5rem,8vw,2rem);font-weight:900;color:#fff;letter-spacing:.02em;margin-bottom:4px}
     .rcb-stats{font-size:.86rem;color:var(--color-text-muted);margin-bottom:10px}
     .rcb-lore{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
     .rcb-lore-tag{font-size:.78rem;background:rgba(122,220,255,.1);border:1px solid rgba(122,220,255,.2);border-radius:20px;padding:3px 9px;color:#aed9ff;white-space:nowrap}
 
 
     .wiki-trail-toggle{margin-top:10px;align-self:flex-start}
-    .wiki-trail-panel{margin-top:12px;border:1px solid rgba(122,220,255,.28);border-radius:14px;background:rgba(8,15,32,.88);box-shadow:0 12px 30px rgba(0,0,0,.24);padding:14px;color:var(--color-text,#fff)}
+    .wiki-trail-panel{margin-top:12px;border:1px solid rgba(122,220,255,.28);border-radius:14px;background:rgba(8,15,32,.88);box-shadow:0 12px 30px rgba(0,0,0,.24);padding:14px;color:var(--color-text,#fff);max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
     .wiki-trail-panel[hidden]{display:none}
     .wiki-trail-header{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
     .wiki-trail-kicker{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:#7adcff;font-weight:800}
     .wiki-trail-title{font-size:1.05rem;font-weight:800;margin:2px 0 0;color:#fff}
-    .wiki-trail-full-link{color:#f7ab1a;font-weight:800;text-decoration:none}
+    .wiki-trail-full-link{color:#f7ab1a;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
     .wiki-trail-full-link:hover{text-decoration:underline}
-    .wiki-trail-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,.45fr);gap:12px}
-    .wiki-trail-card{border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.04);padding:12px}
+    .wiki-trail-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,.45fr);gap:12px;min-width:0}
+    .wiki-trail-card{min-width:0;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.04);padding:12px}
     .wiki-trail-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--color-text-muted,#9fb0c7);font-weight:800;margin-bottom:4px}
     .wiki-trail-value{margin:0;color:#dcecff;line-height:1.45;word-break:break-word}
     .wiki-trail-hint{border-color:rgba(247,171,26,.35);background:rgba(247,171,26,.08)}
@@ -146,7 +146,9 @@
     @media(max-width:760px){.wiki-trail-grid{grid-template-columns:1fr}}
 
     @media(max-width:860px){.sam-terminal{grid-template-columns:1fr}.sam-head{max-width:260px;justify-self:center}.sam-panel::before,.sam-panel::after{display:none}}
-    @media(max-width:720px){.meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:720px){.meta{grid-template-columns:repeat(2,minmax(0,1fr))}.quest-progress{margin-left:0;width:100%}}
+    @media(max-width:560px){.game-card{padding:12px;border-radius:12px}.quest-box,.signal-grid-panel,.wiki-trail-panel{padding:12px}.meta{gap:8px}.signal-grid-title{align-items:flex-start;flex-direction:column}.signal-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.signal-node{min-height:44px}.sam-head{max-width:210px}.row{align-items:stretch}.row .btn,.wiki-trail-toggle{flex:1 1 100%;width:100%}.input{flex:1 1 100%;width:100%;font-size:16px}.wiki-trail-header{align-items:flex-start}.wiki-trail-full-link{width:100%;justify-content:center;border:1px solid rgba(247,171,26,.28);border-radius:10px;padding:0 .75rem}.rcb-lore-tag{white-space:normal}}
+    @media(max-width:380px){.meta{grid-template-columns:1fr}.signal-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
   </style>
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
@@ -215,7 +217,7 @@
 
           <div class="signal-grid-panel" aria-label="Signal Vault mission grid">
             <div class="signal-grid-title"><span>Signal Vault Mission Grid</span><span id="signalVaultStatus">Vault standby</span></div>
-            <div id="signalMissionGrid" class="signal-grid" aria-live="polite"></div>
+            <div id="signalMissionGrid" class="signal-grid" aria-live="polite" role="list"></div>
           </div>
 
           <div class="sam-terminal">
@@ -267,7 +269,7 @@
               <button id="pauseBtn" type="button" style="display:none">Pause</button>
             </div>
             <div class="row">
-              <input id="answerInput" class="input" type="text" placeholder="Enter the hidden answer…" autocomplete="off" autocorrect="off" spellcheck="false">
+              <input id="answerInput" class="input" type="text" placeholder="Enter the hidden answer…" autocomplete="off" autocorrect="off" spellcheck="false" aria-describedby="feedback statusLine">
               <button class="btn" id="submitBtn" type="button">Decode Signal</button>
               <button class="btn alt" id="skipBtn" type="button">Bypass Signal</button>
               <button class="btn warn" id="submitScoreBtn" type="button" hidden aria-hidden="true">Submit Score</button>
@@ -303,8 +305,8 @@
                 </div>
               </div>
             </section>
-            <p id="feedback" class="small" style="margin-top:12px">Start a run to arm the Signal Vault.</p>
-            <p class="status"><span id="sourceLabel">Loading…</span> · <span id="statusLine">Initializing...</span></p>
+            <p id="feedback" class="small" style="margin-top:12px" aria-live="polite">Start a run to arm the Signal Vault.</p>
+            <p class="status" aria-live="polite"><span id="sourceLabel">Loading…</span> · <span id="statusLine">Initializing...</span></p>
           </div>
 
         </div><!-- /.layer-top -->
