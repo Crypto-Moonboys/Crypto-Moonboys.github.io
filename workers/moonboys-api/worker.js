@@ -5147,37 +5147,60 @@ export default {
         return json({ success: false, error: 'npc_bridge_not_configured' }, 503);
       }
 
-      // 7. Forward to SWARMSY — 10-second hard timeout, safe error on failure.
+      // 7. Forward to SWARMSY with one retry for transient fetch/JSON failures.
       const SWARMSY_NPC_URL = 'https://swarmsy.cryptomoonboys.com/api/swarmsy/public/npc-chat';
+      const NPC_CHAT_BRIDGE_TIMEOUT_MS = 55000;
+      const NPC_CHAT_BRIDGE_MAX_ATTEMPTS = 2;
       const swarmsyBody = JSON.stringify({ npcId, message, pagePath, origin });
 
       let swarmsyRes;
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+      let upstreamPayload;
+      for (let attempt = 1; attempt <= NPC_CHAT_BRIDGE_MAX_ATTEMPTS; attempt++) {
         try {
-          swarmsyRes = await fetch(SWARMSY_NPC_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-SWARMSY-BRIDGE-TOKEN': bridgeToken,
-            },
-            body: swarmsyBody,
-            signal: controller.signal,
-          });
-        } finally {
-          clearTimeout(timeoutId);
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), NPC_CHAT_BRIDGE_TIMEOUT_MS);
+          try {
+            swarmsyRes = await fetch(SWARMSY_NPC_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-SWARMSY-BRIDGE-TOKEN': bridgeToken,
+              },
+              body: swarmsyBody,
+              signal: controller.signal,
+            });
+          } finally {
+            clearTimeout(timeoutId);
+          }
+
+          upstreamPayload = await swarmsyRes.json();
+          break;
+        } catch {
+          swarmsyRes = null;
+          upstreamPayload = null;
         }
-      } catch {
+      }
+
+      if (!swarmsyRes || upstreamPayload === undefined) {
         return json({ success: false, error: 'swarmsy_bridge_unavailable' }, 502);
       }
 
+      const scrubBridgeToken = (value) => {
+        if (typeof value === 'string') return value.split(bridgeToken).join('[redacted]');
+        if (Array.isArray(value)) return value.map((item) => scrubBridgeToken(item));
+        if (value && typeof value === 'object') {
+          return Object.fromEntries(
+            Object.entries(value).map(([key, item]) => [
+              key.split(bridgeToken).join('[redacted]'),
+              scrubBridgeToken(item),
+            ]),
+          );
+        }
+        return value;
+      };
+
       // 8. Relay SWARMSY JSON response and status code — never expose internals.
-      let upstreamPayload;
-      try { upstreamPayload = await swarmsyRes.json(); } catch {
-        return json({ success: false, error: 'swarmsy_bridge_unavailable' }, 502);
-      }
-      return json(upstreamPayload, swarmsyRes.status);
+      return json(scrubBridgeToken(upstreamPayload), swarmsyRes.status);
     }
 
     return err('Not found', 404);
