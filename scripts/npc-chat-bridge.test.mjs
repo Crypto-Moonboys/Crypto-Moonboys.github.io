@@ -160,11 +160,11 @@ await test('SWARMSY_NPC_URL does not contain /admin/', () => {
 
 await test('NPC chat bridge retry constants are defined', () => {
   assert.ok(
-    workerSrc.includes('const NPC_CHAT_BRIDGE_TIMEOUT_MS = 55000'),
-    'NPC_CHAT_BRIDGE_TIMEOUT_MS must be 55000',
+    /const\s+NPC_CHAT_BRIDGE_TIMEOUT_MS\s*=\s*25000\b/.test(workerSrc),
+    'NPC_CHAT_BRIDGE_TIMEOUT_MS must be 25000',
   );
   assert.ok(
-    workerSrc.includes('const NPC_CHAT_BRIDGE_MAX_ATTEMPTS = 2'),
+    /const\s+NPC_CHAT_BRIDGE_MAX_ATTEMPTS\s*=\s*2\b/.test(workerSrc),
     'NPC_CHAT_BRIDGE_MAX_ATTEMPTS must be 2',
   );
 });

@@ -5149,7 +5149,7 @@ export default {
 
       // 7. Forward to SWARMSY with one retry for transient fetch/JSON failures.
       const SWARMSY_NPC_URL = 'https://swarmsy.cryptomoonboys.com/api/swarmsy/public/npc-chat';
-      const NPC_CHAT_BRIDGE_TIMEOUT_MS = 55000;
+      const NPC_CHAT_BRIDGE_TIMEOUT_MS = 25000;
       const NPC_CHAT_BRIDGE_MAX_ATTEMPTS = 2;
       const swarmsyBody = JSON.stringify({ npcId, message, pagePath, origin });
 
@@ -5177,7 +5177,7 @@ export default {
           break;
         } catch {
           swarmsyRes = null;
-          upstreamPayload = null;
+          upstreamPayload = undefined;
         }
       }
 
