@@ -94,6 +94,8 @@ function createLegacybootstrapCrystalQuest(root) {
   var rcbLoreEl      = document.getElementById('rcbLore');
 
   var sam = createSamAgent({ root: samRoot, messageEl: samMessage });
+  var boundAnswerKeydown = null;
+  var boundDocumentKeydown = null;
 
   // Game state
   var score = 0;
@@ -177,6 +179,29 @@ function createLegacybootstrapCrystalQuest(root) {
 
   function isWikiTrailOpen() {
     return !!(wikiTrailPanel && !wikiTrailPanel.hasAttribute('hidden'));
+  }
+
+  function closeWikiTrail() {
+    if (!wikiTrailPanel || !wikiTrailToggle || !isWikiTrailOpen()) return false;
+    wikiTrailPanel.setAttribute('hidden', '');
+    wikiTrailToggle.setAttribute('aria-expanded', 'false');
+    wikiTrailToggle.textContent = 'Open Wiki Trail';
+    wikiTrailPreviewRequestId += 1;
+    setWikiTrailPreviewPlaceholder('Open Wiki Trail to load a safe local preview.');
+    return true;
+  }
+
+  function openWikiTrail() {
+    if (!wikiTrailPanel || !wikiTrailToggle) return;
+    wikiTrailPanel.removeAttribute('hidden');
+    wikiTrailToggle.setAttribute('aria-expanded', 'true');
+    wikiTrailToggle.textContent = 'Close Wiki Trail';
+    renderWikiTrailPanel();
+  }
+
+  function toggleWikiTrail() {
+    if (isWikiTrailOpen()) closeWikiTrail();
+    else openWikiTrail();
   }
 
   function isWikiTrailPreviewCurrent(requestId, questionId, wikiUrl) {
@@ -392,9 +417,22 @@ function createLegacybootstrapCrystalQuest(root) {
 
   function syncRunButtons() {
     var active = !!(run && run.started && !run.completed);
-    if (startBtn)       startBtn.disabled       = active;
-    if (submitBtn)      submitBtn.disabled      = !active;
-    if (skipBtn)        skipBtn.disabled        = !active;
+    if (startBtn) {
+      startBtn.disabled = active;
+      startBtn.setAttribute('aria-disabled', active ? 'true' : 'false');
+    }
+    if (submitBtn) {
+      submitBtn.disabled = !active;
+      submitBtn.setAttribute('aria-disabled', active ? 'false' : 'true');
+    }
+    if (skipBtn) {
+      skipBtn.disabled = !active;
+      skipBtn.setAttribute('aria-disabled', active ? 'false' : 'true');
+    }
+    if (answerInput) {
+      answerInput.disabled = !active;
+      answerInput.setAttribute('aria-disabled', active ? 'false' : 'true');
+    }
     if (submitScoreBtn) {
       submitScoreBtn.disabled = true;
       submitScoreBtn.hidden = true;
@@ -506,6 +544,7 @@ function createLegacybootstrapCrystalQuest(root) {
       var ariaState = state.replace(/\s+/g, ' ').trim();
       node.className = 'signal-node ' + state;
       node.setAttribute('aria-label', 'Signal ' + (idx + 1) + ' ' + ariaState);
+      node.setAttribute('role', 'listitem');
       var label = document.createElement('span');
       label.textContent = String(idx + 1).padStart(2, '0');
       node.appendChild(label);
@@ -519,11 +558,13 @@ function createLegacybootstrapCrystalQuest(root) {
   function renderCurrentQuestion() {
     var q = getCurrentQuestion();
     if (!q) {
-      if (questTitle)    questTitle.textContent  = 'No active mission';
-      if (questClue)     questClue.textContent   = 'Press Start Quest to begin a lore hunt run.';
+      var sealed = !!(run && run.completed);
+      if (questTitle)    questTitle.textContent  = sealed ? 'Vault sealed' : 'No active mission';
+      if (questClue)     questClue.textContent   = sealed ? 'Vault sealed. Run complete.' : 'Run not started. Press Start Quest to begin a lore hunt run.';
       if (questLink)     { questLink.href = '#'; questLink.textContent = '—'; }
       if (questDiff)     questDiff.style.display = 'none';
-      if (questProgress) questProgress.textContent = '—';
+      if (questProgress) questProgress.textContent = sealed ? 'Vault sealed' : 'Run not started';
+      if (feedback && !sealed) feedback.textContent = 'Run not started. Press Start Quest to arm the Signal Vault.';
       renderWikiTrailPanel();
       return;
     }
@@ -840,22 +881,28 @@ function createLegacybootstrapCrystalQuest(root) {
     if (resetBtn)       resetBtn.onclick       = reset;
     if (submitScoreBtn) submitScoreBtn.onclick = null;
     if (pauseBtn)       pauseBtn.onclick       = pause;
-    if (wikiTrailToggle) wikiTrailToggle.onclick = function () {
-      if (!wikiTrailPanel) return;
-      var hidden = wikiTrailPanel.hasAttribute('hidden');
-      wikiTrailPanel.toggleAttribute('hidden', !hidden);
-      wikiTrailToggle.setAttribute('aria-expanded', hidden ? 'true' : 'false');
-      if (hidden) renderWikiTrailPanel();
-    };
+    if (wikiTrailToggle) wikiTrailToggle.onclick = toggleWikiTrail;
 
-    if (answerInput) {
-      answerInput.addEventListener('keydown', function (e) {
+    if (!boundAnswerKeydown) {
+      boundAnswerKeydown = function (e) {
         if (e.key === 'Enter' && run && !run.completed) {
           e.preventDefault();
           submitAnswer();
         }
-      });
+      };
     }
+    if (answerInput) answerInput.addEventListener('keydown', boundAnswerKeydown);
+
+    if (!boundDocumentKeydown) {
+      boundDocumentKeydown = function (e) {
+        if (e.key === 'Escape' && isWikiTrailOpen()) {
+          e.preventDefault();
+          closeWikiTrail();
+          if (wikiTrailToggle) wikiTrailToggle.focus();
+        }
+      };
+    }
+    document.addEventListener('keydown', boundDocumentKeydown);
   }
 
   function start() {
@@ -879,7 +926,8 @@ function createLegacybootstrapCrystalQuest(root) {
     updateHud();
     setGlow('pulse-start');
     sam.onReset();
-    if (feedback)   feedback.textContent   = 'Run cleared. Press Start Quest to arm a new Signal Vault.';
+    closeWikiTrail();
+    if (feedback)   feedback.textContent   = 'Run not started. Run cleared; press Start Quest to arm a new Signal Vault.';
     if (statusLine) statusLine.textContent = 'Ready.';
   }
 
@@ -892,6 +940,8 @@ function createLegacybootstrapCrystalQuest(root) {
     if (skipBtn)        skipBtn.onclick        = null;
     if (submitScoreBtn) submitScoreBtn.onclick = null;
     if (wikiTrailToggle) wikiTrailToggle.onclick = null;
+    if (answerInput && boundAnswerKeydown) answerInput.removeEventListener('keydown', boundAnswerKeydown);
+    if (boundDocumentKeydown) document.removeEventListener('keydown', boundDocumentKeydown);
   }
 
   function getScore() { return score; }
