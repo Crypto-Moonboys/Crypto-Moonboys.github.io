@@ -5,7 +5,7 @@ import { CRYSTAL_QUEST_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
 import { playSound, stopAllSounds, isMuted } from '/js/arcade/core/audio.js';
 import { createSamAgent } from './sam-agent.js';
-import { normalizeSignalAnswer, getAcceptedSignalAnswers, isSignalAnswerCorrect, buildSignalAttemptHint } from './signal-vault-utils.mjs';
+import { normalizeSignalAnswer, isSignalAnswerCorrect, buildSignalAttemptHint } from './signal-vault-utils.mjs';
 import { getActiveModifiers, hasEffect, getStatEffect } from '/js/arcade/systems/cross-game-modifier-system.js';
 import {
   getPlayerFaction, getFactionEffects,
@@ -151,10 +151,6 @@ function createLegacybootstrapCrystalQuest(root) {
   // Answer helpers
   function normalizeAnswer(value) {
     return normalizeSignalAnswer(value);
-  }
-
-  function getAliases(question) {
-    return getAcceptedSignalAnswers(question);
   }
 
   function currentWrongAttempts(question) {
@@ -375,8 +371,9 @@ function createLegacybootstrapCrystalQuest(root) {
       var node = document.createElement('div');
       var state = run.missionStates && run.missionStates[idx] ? run.missionStates[idx] : 'locked';
       if (idx === run.index && !run.completed && state !== 'secured' && state !== 'bypassed') state = state === 'error' ? 'active error' : 'active';
+      var ariaState = state.replace(/\s+/g, ' ').trim();
       node.className = 'signal-node ' + state;
-      node.setAttribute('aria-label', 'Signal ' + (idx + 1) + ' ' + state.replace(/ /g, ' '));
+      node.setAttribute('aria-label', 'Signal ' + (idx + 1) + ' ' + ariaState);
       var label = document.createElement('span');
       label.textContent = String(idx + 1).padStart(2, '0');
       node.appendChild(label);
@@ -617,10 +614,12 @@ function createLegacybootstrapCrystalQuest(root) {
       run.answers.push({ questionId: q.id, answer: guess, correct: false, skipped: false, scoreGain: 0 });
       if (run.missionStates) run.missionStates[run.index] = 'error';
       renderMissionGrid();
-      sam.onWrong(buildWrongAttemptHint(q, currentWrongAttempts(q)));
+      var attemptCount = currentWrongAttempts(q);
+      var wrongHint = buildWrongAttemptHint(q, attemptCount);
+      sam.onWrong(wrongHint);
       setGlow('pulse-error');
       playQuestSound('error');
-      if (feedback) feedback.textContent = buildWrongAttemptHint(q, currentWrongAttempts(q));
+      if (feedback) feedback.textContent = wrongHint;
       return;   // stay on same question - wrong does not advance
     }
 
