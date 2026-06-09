@@ -9,6 +9,7 @@ const packagePath = 'package.json';
 const html = fs.readFileSync(path.join(root, htmlPath), 'utf8');
 const bootstrap = fs.readFileSync(path.join(root, bootPath), 'utf8');
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, packagePath), 'utf8'));
+const fullscreenCss = fs.readFileSync(path.join(root, 'css/game-fullscreen.css'), 'utf8');
 
 const requiredControls = [
   'signalMissionGrid',
@@ -43,6 +44,17 @@ assert.match(html, /id="feedback"[^>]*aria-live="polite"/, 'feedback line is liv
 assert.match(html, /id="answerInput"[^>]*aria-describedby="feedback statusLine"/, 'answer input references feedback/status copy');
 assert.match(html, /id="wikiTrailToggle"[^>]*aria-expanded="false"[^>]*aria-controls="wikiTrailPanel"/, 'Wiki Trail toggle exposes expanded state and controls target');
 assert.match(html, /id="wikiTrailFullLink"[^>]*aria-disabled="true"[^>]*tabindex="-1"/, 'disabled full wiki link starts non-focusable');
+assert.match(html, /class="cq-hud-strip"[^>]*role="group"[^>]*aria-label="Crystal Quest HUD"/, 'labelled HUD strip has an explicit group role');
+assert.match(html, /class="cq-cockpit"[^>]*role="group"[^>]*aria-label="Crystal Quest mission cockpit"/, 'labelled cockpit has an explicit group role');
+assert.match(html, /@media\(max-width:720px\)\{[\s\S]*\.cq-cockpit\{grid-template-columns:1fr\}[\s\S]*\.sam-head\{grid-column:1 \/ -1;max-width:none\}/, 'phone cockpit resets SAM hardware to the single column');
+
+assert.doesNotMatch(html, /id="submitScoreBtn"/, 'manual Submit Score button is removed from active play markup');
+assert.match(html, /id="submitScoreStatus"[^>]*class="score-submit-status"/, 'score submission is represented as a compact status badge');
+assert.match(bootstrap, /\? 'Vault sealed - auto-submit triggered\.'/, 'post-run status copy is neutral about async auto-submit');
+assert.doesNotMatch(bootstrap, /Score submission finalized automatically|Score accepted|Score awarded|Score synced/, 'post-run status copy does not imply confirmed submission success');
+assert.doesNotMatch(html, /<div id="crystalParticles"/, 'Crystal Quest no longer renders a particle layer');
+assert.match(html, /#crystalParticles,\.crystal-particle\{[^}]*display:none!important[^}]*overflow:hidden!important[^}]*max-height:0!important[^}]*animation:none!important/, 'particle fallback CSS cannot create bottom overflow');
+assert.match(bootstrap, /function ensureParticles\(\) \{[\s\S]*No DOM particles are created[\s\S]*return;[\s\S]*\}/, 'particle creation helper is disabled');
 
 assert.match(bootstrap, /function closeWikiTrail\(\)[\s\S]*wikiTrailPanel\.setAttribute\('hidden', ''\);[\s\S]*wikiTrailToggle\.setAttribute\('aria-expanded', 'false'\);/, 'closeWikiTrail hides panel and syncs aria-expanded');
 assert.match(bootstrap, /function openWikiTrail\(\)[\s\S]*wikiTrailPanel\.removeAttribute\('hidden'\);[\s\S]*wikiTrailToggle\.setAttribute\('aria-expanded', 'true'\);/, 'openWikiTrail reveals panel and syncs aria-expanded');
@@ -64,6 +76,12 @@ assert.match(bootstrap, /Signal bypassed\./, 'bypassed signal state is explicit'
 assert.match(bootstrap, /Vault Sealed/, 'vault-sealed state is explicit');
 assert.doesNotMatch(bootstrap, /accepted_answers[^\n]*(textContent|innerHTML)|textContent[^\n]*accepted_answers|innerHTML[^\n]*accepted_answers/, 'accepted answers are not rendered directly into player-facing HTML');
 
+
+assert.match(fullscreenCss, /#game-overlay \.crystal-quest-card \{[\s\S]*max-height: calc\(100vh - 96px\) !important;[\s\S]*overflow: hidden !important;/, 'desktop overlay clamps Crystal Quest to a no-scroll terminal card');
+assert.match(fullscreenCss, /#game-overlay \.crystal-quest-card \.layer-top \{[\s\S]*max-height: calc\(100vh - 118px\) !important;[\s\S]*overflow: hidden !important;/, 'desktop overlay clamps the Crystal Quest active play layer');
+assert.match(fullscreenCss, /#game-overlay \.crystal-quest-card \.wiki-trail-panel \{[\s\S]*overflow: auto;/, 'Wiki Trail scroll is internal when needed');
+assert.match(fullscreenCss, /@supports selector\(:has\(\*\)\) \{[\s\S]*#game-overlay \.game-stage:has\(\.crystal-quest-card\) \{[\s\S]*overflow: hidden !important;[\s\S]*\n\s*\}\n\}/, 'desktop overlay :has() stage rule is guarded by @supports');
+assert.match(fullscreenCss, /@media \(max-width: 980px\) \{[\s\S]*@supports selector\(:has\(\*\)\) \{[\s\S]*#game-overlay \.game-stage:has\(\.crystal-quest-card\) \{[\s\S]*overflow-y: auto !important;[\s\S]*\n\s*\}\n\s*\}/, 'narrow overlay :has() stage rule is guarded by @supports');
 assert.match(html, /var GAME_ROOT_SELECTOR = '\.crystal-quest-card';/, 'fullscreen DOM audit targets Crystal Quest root');
 assert.match(html, /if \(roots\.length > 1\) issues\.push\('Duplicate Crystal Quest roots: ' \+ roots\.length\);/, 'fullscreen DOM audit detects duplicate Crystal Quest roots');
 assert.match(html, /if \(fsControls\.length > 1\) issues\.push\('Duplicate overlay ctrl bars: ' \+ fsControls\.length\);/, 'fullscreen DOM audit detects duplicate overlay control bars');

@@ -42,7 +42,9 @@ const bootstrap = fs.readFileSync(path.join(root, 'js/arcade/games/crystal-quest
 assert.match(bootstrap, /var MAX_SKIPS = 2;/, 'skip limit remains capped at two bypasses');
 assert.match(bootstrap, /function skipsLeft\(\)[\s\S]*MAX_SKIPS - run\.skips/, 'skip counter still derives from MAX_SKIPS');
 assert.match(bootstrap, /run\.completed = true;[\s\S]*syncQuestRun\([\s\S]*finalizeCompletedRun\(\)/, 'run completion still uses sync payload and finalize path');
-assert.match(bootstrap, /submitScoreBtn\.hidden = true;/, 'manual score button is hidden by the Crystal Quest UI state sync');
+assert.match(bootstrap, /submitScoreBtn\.hidden = true;/, 'manual score button is hidden by the Crystal Quest UI state sync if legacy markup exists');
+assert.doesNotMatch(fs.readFileSync(path.join(root, 'games/crystal-quest/index.html'), 'utf8'), /id="submitScoreBtn"/, 'manual Submit Score button is not visible in active play markup');
+assert.match(bootstrap, /submitScore\(ArcadeSync\.getPlayer\(\), score, GAME_ID\)/, 'score submission contract remains present');
 assert.match(bootstrap, /missionStates: questionSet\.map/, 'mission grid state is initialized per question');
 assert.match(bootstrap, /function syncQuestRun/, 'Crystal Quest keeps syncQuestRun path');
 assert.match(bootstrap, /function finalizeCompletedRun/, 'Crystal Quest keeps finalizeCompletedRun path');

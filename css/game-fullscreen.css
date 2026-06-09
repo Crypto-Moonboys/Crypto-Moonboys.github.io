@@ -1284,53 +1284,83 @@ body.conflict-active #game-overlay {
 }
 
 /* ===== CRYSTAL QUEST (text-based quiz game) FULLSCREEN OVERRIDES =====
-   Crystal Quest has no canvas — it is a text input/quiz game.
-   The standard canvas-game overlay rules must be relaxed so the answer
-   input, submit button, and mission content stay visible and usable.
+   Compact arcade-terminal HUD rules are scoped to Crystal Quest only.
+   The desktop overlay must fit the active play controls without page scroll;
+   Wiki Trail can scroll internally when opened.
    ===================================================================== */
 
-/* 1. Game card: bounded width, scrollable, auto height (not stretched) */
 #game-overlay .crystal-quest-card {
-  max-width: 760px !important;
+  max-width: min(1120px, calc(100vw - 32px)) !important;
   width: 100% !important;
   height: auto !important;
-  max-height: 100%;
-  overflow-y: auto;
-  align-self: flex-start;
+  max-height: calc(100vh - 96px) !important;
+  overflow: hidden !important;
+  align-self: center;
   align-items: stretch;
-  padding: 14px 16px !important;
+  padding: 10px 12px !important;
 }
 
-/* 2. Layer-top must fill the constrained card width */
 #game-overlay .crystal-quest-card .layer-top {
   width: 100%;
+  max-height: calc(100vh - 118px) !important;
+  overflow: hidden !important;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
 }
 
-/* 3. Control rows — show answer input, submit, skip, start, reset buttons.
-      Override the blanket ".game-card .row { display: none }" rule that
-      hides button rows for canvas games (where the overlay ctrl bar takes over). */
+#game-overlay .crystal-quest-card .cq-cockpit {
+  min-height: 0;
+}
+
 #game-overlay .crystal-quest-card .row {
   display: flex !important;
   width: 100%;
   align-self: stretch;
   justify-content: flex-start;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 7px;
 }
 
-/* 4. quest-box must stay visible (not suppressed by any box rule) */
 #game-overlay .crystal-quest-card .quest-box {
   display: block !important;
 }
 
-/* 5. Allow the game stage to scroll vertically so tall quiz content is reachable */
-#game-overlay .game-stage:has(.crystal-quest-card) {
-  overflow-y: auto;
-  align-items: flex-start;
-  padding-top: 16px;
+#game-overlay .crystal-quest-card #crystalParticles,
+#game-overlay .crystal-quest-card .crystal-particle {
+  display: none !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  animation: none !important;
 }
 
-/* 6. Responsive: on narrow screens tighten the padding */
+#game-overlay .crystal-quest-card .wiki-trail-panel {
+  max-height: min(30vh, 220px);
+  overflow: auto;
+}
+
+@supports selector(:has(*)) {
+  #game-overlay .game-stage:has(.crystal-quest-card) {
+    overflow: hidden !important;
+    align-items: center;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 980px) {
+  #game-overlay .crystal-quest-card,
+  #game-overlay .crystal-quest-card .layer-top {
+    max-height: calc(100vh - 76px) !important;
+    overflow-y: auto !important;
+  }
+
+  @supports selector(:has(*)) {
+    #game-overlay .game-stage:has(.crystal-quest-card) {
+      overflow-y: auto !important;
+      align-items: flex-start;
+    }
+  }
+}
+
 @media (max-width: 600px) {
   #game-overlay .crystal-quest-card {
     padding: 10px 10px !important;
