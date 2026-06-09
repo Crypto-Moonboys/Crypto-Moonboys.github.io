@@ -206,13 +206,15 @@
             <strong style="color: #00ffcc;">Choose NPC</strong><br>
             <span class="paperclip-hint">Paperclip for site/lore guidance. Sparky for SWARMSY/project help.</span>
           </div>
-          <label>
-            <span class="sr-only">NPC</span>
-            <select class="paperclip-npc-select" data-paperclip-npc>
-              <option value="paperclip">Paperclip</option>
-              <option value="sparky">Sparky</option>
-            </select>
-          </label>
+          <select
+            id="paperclip-npc-select"
+            class="paperclip-npc-select"
+            data-paperclip-npc
+            aria-label="Choose NPC"
+          >
+            <option value="paperclip">Paperclip</option>
+            <option value="sparky">Sparky</option>
+          </select>
         </div>
 
         <div class="paperclip-log" data-paperclip-log aria-live="polite" aria-label="Paperclip chat messages">

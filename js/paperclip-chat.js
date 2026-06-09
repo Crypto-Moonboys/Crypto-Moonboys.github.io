@@ -59,9 +59,6 @@
       return window.MOONBOYS_API.getApiBase();
     }
     if (window.API_CONFIG && window.API_CONFIG.BASE_URL) return String(window.API_CONFIG.BASE_URL).replace(/\/$/, '');
-    if (window.MOONBOYS_API && window.MOONBOYS_API.PRODUCTION_BASE_URL) {
-      return String(window.MOONBOYS_API.PRODUCTION_BASE_URL).replace(/\/$/, '');
-    }
     return '';
   }
 
