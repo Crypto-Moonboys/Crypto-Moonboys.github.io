@@ -5,6 +5,7 @@ import {
   normalizeSignalAnswer,
   getAcceptedSignalAnswers,
   isSignalAnswerCorrect,
+  isCloseSignalAnswerMatch,
   buildSignalAttemptHint,
 } from '../js/arcade/games/crystal-quest/signal-vault-utils.mjs';
 
@@ -26,6 +27,8 @@ assert.equal(normalizeSignalAnswer("satoshi's signal"), 'satoshissignal');
 assert.equal(isSignalAnswerCorrect(question, 'moon boy prime'), true);
 assert.equal(isSignalAnswerCorrect(question, 'CRYSTAL QUEST SIGNAL'), true);
 assert.equal(isSignalAnswerCorrect(question, 'vault-signal'), true);
+assert.equal(isCloseSignalAnswerMatch(question, 'moon boy prim'), true);
+assert.equal(isCloseSignalAnswerMatch(question, 'totally wrong'), false);
 assert.deepEqual(
   getAcceptedSignalAnswers({ accepted_answers: ['A-B'], aliases: ['A_B'] }),
   ['ab', 'ab'],
@@ -41,6 +44,8 @@ assert.match(bootstrap, /function skipsLeft\(\)[\s\S]*MAX_SKIPS - run\.skips/, '
 assert.match(bootstrap, /run\.completed = true;[\s\S]*syncQuestRun\([\s\S]*finalizeCompletedRun\(\)/, 'run completion still uses sync payload and finalize path');
 assert.match(bootstrap, /submitScoreBtn\.hidden = true;/, 'manual score button is hidden by the Crystal Quest UI state sync');
 assert.match(bootstrap, /missionStates: questionSet\.map/, 'mission grid state is initialized per question');
+assert.match(bootstrap, /function syncQuestRun/, 'Crystal Quest keeps syncQuestRun path');
+assert.match(bootstrap, /function finalizeCompletedRun/, 'Crystal Quest keeps finalizeCompletedRun path');
 
 for (const file of crystalFiles) {
   const contents = fs.readFileSync(path.join(root, file), 'utf8');
