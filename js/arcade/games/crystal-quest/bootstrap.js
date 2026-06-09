@@ -897,12 +897,14 @@ function createLegacybootstrapCrystalQuest(root) {
       boundDocumentKeydown = function (e) {
         if (e.key === 'Escape' && isWikiTrailOpen()) {
           e.preventDefault();
+          e.stopPropagation();
+          if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
           closeWikiTrail();
           if (wikiTrailToggle) wikiTrailToggle.focus();
         }
       };
     }
-    document.addEventListener('keydown', boundDocumentKeydown);
+    document.addEventListener('keydown', boundDocumentKeydown, true);
   }
 
   function start() {
@@ -941,7 +943,7 @@ function createLegacybootstrapCrystalQuest(root) {
     if (submitScoreBtn) submitScoreBtn.onclick = null;
     if (wikiTrailToggle) wikiTrailToggle.onclick = null;
     if (answerInput && boundAnswerKeydown) answerInput.removeEventListener('keydown', boundAnswerKeydown);
-    if (boundDocumentKeydown) document.removeEventListener('keydown', boundDocumentKeydown);
+    if (boundDocumentKeydown) document.removeEventListener('keydown', boundDocumentKeydown, true);
   }
 
   function getScore() { return score; }

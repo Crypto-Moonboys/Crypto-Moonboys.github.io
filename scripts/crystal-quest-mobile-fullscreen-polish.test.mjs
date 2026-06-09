@@ -5,8 +5,10 @@ import path from 'node:path';
 const root = process.cwd();
 const htmlPath = 'games/crystal-quest/index.html';
 const bootPath = 'js/arcade/games/crystal-quest/bootstrap.js';
+const packagePath = 'package.json';
 const html = fs.readFileSync(path.join(root, htmlPath), 'utf8');
 const bootstrap = fs.readFileSync(path.join(root, bootPath), 'utf8');
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, packagePath), 'utf8'));
 
 const requiredControls = [
   'signalMissionGrid',
@@ -44,13 +46,13 @@ assert.match(html, /id="wikiTrailFullLink"[^>]*aria-disabled="true"[^>]*tabindex
 
 assert.match(bootstrap, /function closeWikiTrail\(\)[\s\S]*wikiTrailPanel\.setAttribute\('hidden', ''\);[\s\S]*wikiTrailToggle\.setAttribute\('aria-expanded', 'false'\);/, 'closeWikiTrail hides panel and syncs aria-expanded');
 assert.match(bootstrap, /function openWikiTrail\(\)[\s\S]*wikiTrailPanel\.removeAttribute\('hidden'\);[\s\S]*wikiTrailToggle\.setAttribute\('aria-expanded', 'true'\);/, 'openWikiTrail reveals panel and syncs aria-expanded');
-assert.match(bootstrap, /e\.key === 'Escape' && isWikiTrailOpen\(\)[\s\S]*closeWikiTrail\(\);/, 'Escape closes Wiki Trail without routing through reset');
+assert.match(bootstrap, /e\.key === 'Escape' && isWikiTrailOpen\(\)[\s\S]*e\.preventDefault\(\);[\s\S]*e\.stopPropagation\(\);[\s\S]*stopImmediatePropagation[\s\S]*closeWikiTrail\(\);/, 'Escape closes Wiki Trail before fullscreen overlay Escape handling can run');
 assert.doesNotMatch(bootstrap, /e\.key === 'Escape'[\s\S]{0,220}reset\(/, 'Escape handler does not reset the run');
 assert.match(bootstrap, /e\.key === 'Enter' && run && !run\.completed[\s\S]*submitAnswer\(\);/, 'Enter-to-decode path is preserved');
 assert.match(bootstrap, /answerInput\.addEventListener\('keydown', boundAnswerKeydown\)/, 'answer key handler remains attached to the input');
-assert.match(bootstrap, /document\.addEventListener\('keydown', boundDocumentKeydown\)/, 'document Escape handler is attached');
+assert.match(bootstrap, /document\.addEventListener\('keydown', boundDocumentKeydown, true\)/, 'document Escape handler is attached in capture phase');
 assert.match(bootstrap, /answerInput\.removeEventListener\('keydown', boundAnswerKeydown\)/, 'answer key handler is cleaned up on destroy');
-assert.match(bootstrap, /document\.removeEventListener\('keydown', boundDocumentKeydown\)/, 'document Escape handler is cleaned up on destroy');
+assert.match(bootstrap, /document\.removeEventListener\('keydown', boundDocumentKeydown, true\)/, 'capture-phase document Escape handler is cleaned up on destroy');
 assert.match(bootstrap, /answerInput\.disabled = !active;[\s\S]*answerInput\.setAttribute\('aria-disabled', active \? 'false' : 'true'\);/, 'answer input disabled state tracks active run state');
 assert.match(bootstrap, /submitBtn\.disabled = !active;[\s\S]*skipBtn\.disabled = !active;/, 'Decode and Bypass buttons remain disabled until a signal is active');
 
@@ -74,6 +76,12 @@ assert.match(bootstrap, /run\.completed = true;[\s\S]*syncQuestRun\([\s\S]*final
 assert.match(bootstrap, /function syncQuestRun\(sessionData\)/, 'syncQuestRun function remains present');
 assert.match(bootstrap, /function finalizeCompletedRun\(\)/, 'finalizeCompletedRun function remains present');
 assert.match(bootstrap, /submitScore\(ArcadeSync\.getPlayer\(\), score, GAME_ID\)/, 'score submission contract remains present');
+
+assert.ok(packageJson.scripts['test:crystal-quest'], 'package.json exposes narrow Crystal Quest focused test script');
+assert.match(packageJson.scripts['test:crystal-quest'], /node scripts\/crystal-quest-signal-vault\.test\.mjs/, 'Crystal Quest focused test script runs Signal Vault regression');
+assert.match(packageJson.scripts['test:crystal-quest'], /node scripts\/crystal-quest-wiki-trail\.test\.mjs/, 'Crystal Quest focused test script runs Wiki Trail regression');
+assert.match(packageJson.scripts['test:crystal-quest'], /node scripts\/crystal-quest-mobile-fullscreen-polish\.test\.mjs/, 'Crystal Quest focused test script runs mobile/fullscreen polish regression');
+assert.match(packageJson.scripts.test, /npm run test:crystal-quest/, 'npm test includes the Crystal Quest focused regressions');
 
 const mojibakeMarkers = /(?:â€”|â€“|â€¦|â€œ|â€�|â€™|â€˜|â€¢|ï¿½|ðŸ)/u;
 for (const file of [htmlPath, bootPath]) {
