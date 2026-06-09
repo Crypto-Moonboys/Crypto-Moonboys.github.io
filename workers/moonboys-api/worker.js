@@ -5104,6 +5104,82 @@ export default {
     });
     if (blockTopiaResponse) return blockTopiaResponse;
 
+    // ── POST /public/npc-chat ───────────────────────────────────────────────
+    // Public NPC chat bridge — forwards visitor messages to SWARMSY.
+    // No Telegram login required; rate-limiting and trust enforcement are
+    // handled by SWARMSY.  The bridge token is never sent to the browser.
+    if (path === '/public/npc-chat') {
+      if (request.method !== 'POST') {
+        return new Response(JSON.stringify({ error: 'method_not_allowed' }), {
+          status: 405,
+          headers: { 'Content-Type': 'application/json', Allow: 'POST, OPTIONS', ...CORS_HEADERS },
+        });
+      }
+
+      // 1. Parse body — return 400 for malformed JSON.
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+
+      // 2. Validate npcId.
+      const VALID_NPC_IDS = ['paperclip', 'sparky'];
+      const npcId = String(body?.npcId || '').toLowerCase().trim();
+      if (!VALID_NPC_IDS.includes(npcId)) {
+        return err('npcId must be "paperclip" or "sparky"', 400);
+      }
+
+      // 3. Validate message — non-empty string, clamped to 2000 chars.
+      const rawMessage = String(body?.message ?? '');
+      if (!rawMessage.trim()) {
+        return err('message is required', 400);
+      }
+      const message = rawMessage.slice(0, 2000);
+
+      // 4. pagePath — safe default, length-limited.
+      const pagePath = String(body?.pagePath || '/paperclip.html').slice(0, 256);
+
+      // 5. Origin of the inbound browser request.
+      const origin = request.headers.get('Origin') || '';
+
+      // 6. SWARMSY_BRIDGE_TOKEN must be present — return 503 with safe error, not a
+      //    stack trace.  Never expose the token value in any response.
+      const bridgeToken = String(env.SWARMSY_BRIDGE_TOKEN || '').trim();
+      if (!bridgeToken) {
+        return json({ success: false, error: 'npc_bridge_not_configured' }, 503);
+      }
+
+      // 7. Forward to SWARMSY — 10-second hard timeout, safe error on failure.
+      const SWARMSY_NPC_URL = 'https://swarmsy.cryptomoonboys.com/api/swarmsy/public/npc-chat';
+      const swarmsyBody = JSON.stringify({ npcId, message, pagePath, origin });
+
+      let swarmsyRes;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        try {
+          swarmsyRes = await fetch(SWARMSY_NPC_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-SWARMSY-BRIDGE-TOKEN': bridgeToken,
+            },
+            body: swarmsyBody,
+            signal: controller.signal,
+          });
+        } finally {
+          clearTimeout(timeoutId);
+        }
+      } catch {
+        return json({ success: false, error: 'swarmsy_bridge_unavailable' }, 502);
+      }
+
+      // 8. Relay SWARMSY JSON response and status code — never expose internals.
+      let upstreamPayload;
+      try { upstreamPayload = await swarmsyRes.json(); } catch {
+        return json({ success: false, error: 'swarmsy_bridge_unavailable' }, 502);
+      }
+      return json(upstreamPayload, swarmsyRes.status);
+    }
+
     return err('Not found', 404);
   },
   async scheduled(event, env, _ctx) {

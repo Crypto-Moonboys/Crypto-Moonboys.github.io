@@ -7,42 +7,236 @@
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    .paperclip-panel {
+      max-width: 920px;
+      margin: 40px auto;
+      padding: 36px 28px;
+      border: 1px solid rgba(0, 255, 204, 0.28);
+      border-radius: 14px;
+      background: rgba(0, 16, 24, 0.78);
+      box-shadow: 0 0 28px rgba(0, 255, 204, 0.08);
+    }
+
+    .paperclip-eyebrow {
+      color: #00ffcc;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      margin-bottom: 10px;
+    }
+
+    .paperclip-title {
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      color: #00ffcc;
+      margin: 0 0 18px;
+      line-height: 1.05;
+    }
+
+    .paperclip-copy {
+      font-size: 1.05rem;
+      line-height: 1.72;
+      color: rgba(255, 255, 255, 0.88);
+      max-width: 760px;
+      margin-bottom: 22px;
+    }
+
+    .paperclip-status {
+      display: grid;
+      gap: 10px;
+      margin: 24px 0;
+      padding: 18px 20px;
+      border: 1px solid rgba(0, 255, 204, 0.24);
+      border-radius: 10px;
+      background: rgba(0, 255, 204, 0.055);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .paperclip-status strong {
+      color: #00ffcc;
+    }
+
+    .paperclip-chat {
+      display: grid;
+      gap: 16px;
+      margin-top: 26px;
+    }
+
+    .paperclip-chat-header {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .paperclip-npc-select {
+      min-width: 190px;
+      border: 1px solid rgba(0, 255, 204, 0.35);
+      background: rgba(0, 0, 0, 0.6);
+      color: #00ffcc;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .paperclip-log {
+      min-height: 260px;
+      max-height: 520px;
+      overflow-y: auto;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.38);
+    }
+
+    .paperclip-message {
+      margin: 0 0 14px;
+      padding: 13px 15px;
+      border-radius: 12px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .paperclip-message[data-role="user"] {
+      margin-left: auto;
+      max-width: 78%;
+      border: 1px solid rgba(0, 255, 204, 0.32);
+      background: rgba(0, 255, 204, 0.08);
+    }
+
+    .paperclip-message[data-role="assistant"] {
+      max-width: 86%;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.055);
+    }
+
+    .paperclip-meta {
+      display: block;
+      margin-bottom: 7px;
+      color: #00ffcc;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .paperclip-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .paperclip-input {
+      width: 100%;
+      min-height: 110px;
+      resize: vertical;
+      padding: 14px 15px;
+      border: 1px solid rgba(0, 255, 204, 0.3);
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.48);
+      color: #fff;
+      font: inherit;
+    }
+
+    .paperclip-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .paperclip-send {
+      border: 1px solid rgba(0, 255, 204, 0.45);
+      border-radius: 999px;
+      background: #00ffcc;
+      color: #03110f;
+      padding: 11px 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .paperclip-send:disabled {
+      cursor: not-allowed;
+      opacity: 0.58;
+    }
+
+    .paperclip-hint {
+      color: rgba(255, 255, 255, 0.62);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .paperclip-error {
+      display: none;
+      color: #ff8f8f;
+      font-size: 0.94rem;
+      line-height: 1.5;
+    }
+
+    .paperclip-error[data-visible="true"] {
+      display: block;
+    }
+  </style>
 </head>
 <body class="page-paperclip page-has-right-panel">
 
 <main id="content" role="main">
   <div class="battle-page">
 
-    <section class="section" style="max-width: 720px; margin: 40px auto; padding: 40px 32px;">
-      <h1 style="font-size: 2.4rem; color: #00ffcc; margin-bottom: 24px;">🤖 Paperclip Brain</h1>
+    <section class="section paperclip-panel" aria-labelledby="paperclip-title">
+      <div class="paperclip-eyebrow">SWARMSY public bridge</div>
+      <h1 id="paperclip-title" class="paperclip-title">Paperclip Brain</h1>
 
-      <p style="font-size: 1.1rem; line-height: 1.75; margin-bottom: 18px;">
-        Paperclip is the planned Crypto Moonboys site brain — a guide for the wiki,
-        lore, arcade systems, factions, and world state.
+      <p class="paperclip-copy">
+        Paperclip is the Crypto Moonboys site brain. Sparky is the SWARMSY project helper.
+        Both are designed to route public questions through the private SWARMSY control panel,
+        assigned workspaces, documents, and NPC settings.
       </p>
 
-      <p style="font-size: 1.1rem; line-height: 1.75; margin-bottom: 18px;">
-        It will be grounded in the Crypto Moonboys Master Source of Truth and the live wiki pages.
-      </p>
-
-      <div style="background: rgba(0,255,200,0.06); border: 1px solid rgba(0,255,204,0.3);
-                  padding: 20px 24px; margin: 28px 0; border-radius: 8px;">
-        <strong style="color: #00ffcc;">Status: Coming online.</strong><br>
-        <span style="font-size: 0.95rem; line-height: 1.6; opacity: 0.85;">
-          Full chat mode is not live yet. The Paperclip brain is not a live AI assistant at this time.
-          For now, use Search to explore the wiki.
+      <div class="paperclip-status" aria-live="polite">
+        <strong>Status: Live bridge page ready.</strong>
+        <span>
+          This page does not contain private prompts, secrets, workspace keys, or admin URLs.
+          It calls the public API bridge, which then talks to the private SWARMSY server.
         </span>
       </div>
 
-      <p style="font-size: 0.95rem; line-height: 1.7; color: #aaa; margin-bottom: 28px;">
-        <strong style="color: #00ffcc;">Future source stack:</strong><br>
-        Master Source of Truth + wiki pages + wiki index / entity graph.
-      </p>
+      <div class="paperclip-chat" data-paperclip-chat>
+        <div class="paperclip-chat-header">
+          <div>
+            <strong style="color: #00ffcc;">Choose NPC</strong><br>
+            <span class="paperclip-hint">Paperclip for site/lore guidance. Sparky for SWARMSY/project help.</span>
+          </div>
+          <select
+            id="paperclip-npc-select"
+            class="paperclip-npc-select"
+            data-paperclip-npc
+            aria-label="Choose NPC"
+          >
+            <option value="paperclip">Paperclip</option>
+            <option value="sparky">Sparky</option>
+          </select>
+        </div>
 
-      <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px;">
+        <div class="paperclip-log" data-paperclip-log aria-live="polite" aria-label="Paperclip chat messages">
+          <div class="paperclip-message" data-role="assistant">
+            <span class="paperclip-meta">Paperclip</span>
+            Ask about Crypto Moonboys, lore, games, factions, NFTs, or the SWARMSY project. I will route the question through the live SWARMSY bridge when the backend endpoint is available.
+          </div>
+        </div>
+
+        <form class="paperclip-form" data-paperclip-form>
+          <textarea class="paperclip-input" data-paperclip-input aria-label="Message" maxlength="2000" placeholder="Ask Paperclip or Sparky..."></textarea>
+          <div class="paperclip-actions">
+            <button class="paperclip-send" type="submit" data-paperclip-send>Send message</button>
+            <span class="paperclip-hint" data-paperclip-state>Ready.</span>
+          </div>
+          <div class="paperclip-error" data-paperclip-error></div>
+        </form>
+      </div>
+
+      <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-top: 28px;">
         <a href="/search.html" class="btn btn-primary">Search the Wiki</a>
-        <a href="/Crypto_Moonboys_Master_Source_of_Truth_v1.md"
-           class="btn btn-secondary">Find Master Source of Truth</a>
+        <a href="/Crypto_Moonboys_Master_Source_of_Truth_v1.md" class="btn btn-secondary">Find Master Source of Truth</a>
       </div>
     </section>
 
@@ -60,6 +254,7 @@
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
+<script data-cfasync="false" src="/js/paperclip-chat.js"></script>
 
 </body>
 </html>

@@ -51,3 +51,14 @@ migrations_dir = "migrations"
 #
 # ANTI_CHEAT_WORKER_URL is a non-secret var above.
 # LEADERBOARD_API_URL is a non-secret var above.
+
+# ── SWARMSY public NPC bridge secret ─────────────────────────────────────────
+# Required for POST /public/npc-chat (Paperclip / Sparky live chat bridge).
+# Set via Wrangler CLI — never commit the token value to source control:
+#
+#   wrangler secret put SWARMSY_BRIDGE_TOKEN
+#
+# SWARMSY_BRIDGE_TOKEN — ****** forwarded as X-SWARMSY-BRIDGE-TOKEN to
+#   https://swarmsy.cryptomoonboys.com/api/swarmsy/public/npc-chat.
+#   The token is never exposed in HTTP responses or Worker source code.
+#   If the secret is absent the route returns 503 { success:false, error:"npc_bridge_not_configured" }.
