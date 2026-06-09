@@ -11,7 +11,7 @@
  *  7. Invalid npcId (not paperclip/sparky) returns 400.
  *  8. Empty message returns 400.
  *  9. Missing SWARMSY_BRIDGE_TOKEN returns 503 with safe error (no stack trace).
- * 10. SWARMSY fetch failure returns 502 with safe error.
+ * 10. SWARMSY fetch/non-JSON failures are retried once, then fail safely.
  * 11. SWARMSY success is relayed with the upstream status code.
  * 12. Message is clamped to 2000 characters (>2000 char input is truncated).
  * 13. pagePath defaults to /paperclip.html when absent.
@@ -63,6 +63,21 @@ function makeMockFetch(statusCode, responseBody) {
 
 function makeAbortingFetch() {
   return async () => { throw new Error('AbortError'); };
+}
+
+function makeSequenceFetch(steps) {
+  let index = 0;
+  const calls = [];
+  const fetchMock = async (url, init) => {
+    calls.push({ url, init });
+    const step = steps[Math.min(index, steps.length - 1)];
+    index++;
+    if (step instanceof Error) throw step;
+    if (typeof step === 'function') return step(url, init);
+    return step;
+  };
+  fetchMock.calls = calls;
+  return fetchMock;
 }
 
 function makeEnv(overrides = {}) {
@@ -141,6 +156,17 @@ await test('SWARMSY_NPC_URL does not contain /admin/', () => {
   if (urlMatch) {
     assert.ok(!urlMatch[1].includes('/admin/'), 'SWARMSY_NPC_URL must not be an admin URL');
   }
+});
+
+await test('NPC chat bridge retry constants are defined', () => {
+  assert.ok(
+    /const\s+NPC_CHAT_BRIDGE_TIMEOUT_MS\s*=\s*25000\b/.test(workerSrc),
+    'NPC_CHAT_BRIDGE_TIMEOUT_MS must be 25000',
+  );
+  assert.ok(
+    /const\s+NPC_CHAT_BRIDGE_MAX_ATTEMPTS\s*=\s*2\b/.test(workerSrc),
+    'NPC_CHAT_BRIDGE_MAX_ATTEMPTS must be 2',
+  );
 });
 
 // ── 4–13. Runtime behaviour tests ─────────────────────────────────────────────
@@ -223,19 +249,61 @@ await test('[9] 503 response does not contain token value', async () => {
   assert.ok(!text.includes(BRIDGE_TOKEN), 'Bridge token must not appear in 503 response body');
 });
 
-await test('[10] SWARMSY fetch failure (network error) returns 502', async () => {
-  globalThis.fetch = makeAbortingFetch();
+await test('[10] First SWARMSY fetch throws, second succeeds -> 200', async () => {
+  const swarmsyPayload = { success: true, reply: 'Recovered after retry' };
+  globalThis.fetch = makeSequenceFetch([
+    new Error('network fail'),
+    new Response(JSON.stringify(swarmsyPayload), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }),
+  ]);
+  const res = await callNpcChat(worker, { npcId: 'paperclip', message: 'hello' });
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.success, true);
+  assert.equal(body.reply, 'Recovered after retry');
+  assert.equal(globalThis.fetch.calls.length, 2, 'Expected exactly two SWARMSY attempts');
+});
+
+await test('[10] First SWARMSY response is non-JSON, second succeeds -> 200', async () => {
+  const swarmsyPayload = { success: true, reply: 'Recovered after parse failure' };
+  globalThis.fetch = makeSequenceFetch([
+    new Response('not json', { status: 200, headers: { 'Content-Type': 'text/plain' } }),
+    new Response(JSON.stringify(swarmsyPayload), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }),
+  ]);
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: 'test' });
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.success, true);
+  assert.equal(body.reply, 'Recovered after parse failure');
+  assert.equal(globalThis.fetch.calls.length, 2, 'Expected exactly two SWARMSY attempts');
+});
+
+await test('[10] Both SWARMSY attempts fail -> 502', async () => {
+  globalThis.fetch = makeSequenceFetch([
+    new Error('first fail'),
+    new Error('second fail'),
+  ]);
   const res = await callNpcChat(worker, { npcId: 'paperclip', message: 'hello' });
   assert.equal(res.status, 502);
   const body = await res.json();
   assert.equal(body.success, false);
   assert.equal(body.error, 'swarmsy_bridge_unavailable');
+  assert.equal(globalThis.fetch.calls.length, 2, 'Expected exactly two SWARMSY attempts');
 });
 
-await test('[10] SWARMSY non-JSON upstream returns 502', async () => {
-  globalThis.fetch = async () => new Response('not json', { status: 200, headers: { 'Content-Type': 'text/plain' } });
+await test('[10] Both SWARMSY attempts return non-JSON -> 502', async () => {
+  globalThis.fetch = makeSequenceFetch([
+    new Response('not json 1', { status: 200, headers: { 'Content-Type': 'text/plain' } }),
+    new Response('not json 2', { status: 200, headers: { 'Content-Type': 'text/plain' } }),
+  ]);
   const res = await callNpcChat(worker, { npcId: 'sparky', message: 'test' });
   assert.equal(res.status, 502);
+  assert.equal(globalThis.fetch.calls.length, 2, 'Expected exactly two SWARMSY attempts');
 });
 
 await test('[11] SWARMSY 200 success is relayed with status 200', async () => {
@@ -287,6 +355,17 @@ await test('[14] Bridge token is never present in any success response body', as
   const res = await callNpcChat(worker, { npcId: 'paperclip', message: 'hello' });
   const text = await res.text();
   assert.ok(!text.includes(BRIDGE_TOKEN), 'Bridge token must not appear in success response body');
+});
+
+await test('[14] Bridge token is scrubbed if an upstream response accidentally echoes it', async () => {
+  globalThis.fetch = makeMockFetch(200, {
+    success: true,
+    reply: `token echo: ${BRIDGE_TOKEN}`,
+    nested: { [BRIDGE_TOKEN]: BRIDGE_TOKEN },
+  });
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hello' });
+  const text = await res.text();
+  assert.ok(!text.includes(BRIDGE_TOKEN), 'Bridge token must not appear in relayed response body');
 });
 
 await test('[14] Bridge token is never present in 502 response body', async () => {
