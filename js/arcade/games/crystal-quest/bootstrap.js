@@ -78,9 +78,9 @@ function createLegacybootstrapCrystalQuest(root) {
   var submitBtn      = document.getElementById('submitBtn');
   var skipBtn        = document.getElementById('skipBtn');
   var submitScoreBtn = document.getElementById('submitScoreBtn');
+  var submitScoreStatus = document.getElementById('submitScoreStatus');
 
   var pulseLayer     = document.getElementById('crystalPulseLayer');
-  var particleLayer  = document.getElementById('crystalParticles');
 
   var samRoot    = document.getElementById('samAgent');
   var samMessage = document.getElementById('samMessage');
@@ -143,16 +143,9 @@ function createLegacybootstrapCrystalQuest(root) {
   }
 
   function ensureParticles() {
-    if (!particleLayer || particleLayer.childElementCount) return;
-    for (var i = 0; i < 28; i++) {
-      var dot = document.createElement('span');
-      dot.className = 'crystal-particle';
-      dot.style.left = Math.floor(Math.random() * 100) + '%';
-      dot.style.animationDelay = (Math.random() * 5).toFixed(2) + 's';
-      dot.style.animationDuration = (2.4 + Math.random() * 3.6).toFixed(2) + 's';
-      dot.style.opacity = (0.15 + Math.random() * 0.7).toFixed(2);
-      particleLayer.appendChild(dot);
-    }
+    // Crystal Quest arcade-terminal redesign intentionally disables floating dots.
+    // No DOM particles are created, which prevents decorative bottom overflow in fullscreen.
+    return;
   }
 
   // Audio helper
@@ -437,6 +430,11 @@ function createLegacybootstrapCrystalQuest(root) {
       submitScoreBtn.disabled = true;
       submitScoreBtn.hidden = true;
       submitScoreBtn.setAttribute('aria-hidden', 'true');
+    }
+    if (submitScoreStatus) {
+      submitScoreStatus.textContent = run && run.completed
+        ? 'Score submission finalized automatically.'
+        : 'Auto-submit arms when the vault seals.';
     }
   }
 
