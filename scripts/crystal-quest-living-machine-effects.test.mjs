@@ -21,6 +21,16 @@ assert.match(combinedCrystalCss, /\.cq-effect\{[^}]*position:absolute/, 'individ
 assert.doesNotMatch(html, /id="crystalParticles"|class="crystal-particle"/, 'old floating particle layer is not reintroduced in Crystal Quest markup');
 assert.match(combinedCrystalCss, /#crystalParticles,\.crystal-particle\{[^}]*display:none!important[^}]*overflow:hidden!important[^}]*max-height:0!important[^}]*animation:none!important/, 'legacy loose particle selectors remain disabled if stale markup appears');
 
+
+assert.match(bootstrap, /var ROOT_TEMPORARY_EFFECT_CLASSES = \[([\s\S]*?'cq-effect-correct'[\s\S]*?'cq-effect-wrong'[\s\S]*?'cq-effect-skip'[\s\S]*?'cq-effect-vault-sealed'[\s\S]*?'cq-streak-surge'[\s\S]*?'cq-hud-flash'[\s\S]*?)\];/, 'root temporary effect class registry covers every root/card effect class');
+assert.match(bootstrap, /var GRID_TEMPORARY_EFFECT_CLASSES = \['cq-grid-line-pulse'\];/, 'grid temporary effect class registry covers grid pulse classes');
+assert.match(bootstrap, /var SAM_TEMPORARY_EFFECT_CLASSES = \['sam-warning-flicker'\];/, 'SAM temporary effect class registry covers warning flicker classes');
+assert.match(bootstrap, /function removeTemporaryEffectClasses\(\) \{[\s\S]*rootEl\.classList\.remove\.apply\(rootEl\.classList, ROOT_TEMPORARY_EFFECT_CLASSES\)[\s\S]*signalGridPanel\.classList\.remove\.apply\(signalGridPanel\.classList, GRID_TEMPORARY_EFFECT_CLASSES\)[\s\S]*samRoot\.classList\.remove\.apply\(samRoot\.classList, SAM_TEMPORARY_EFFECT_CLASSES\)[\s\S]*samHead\.classList\.remove\.apply\(samHead\.classList, SAM_TEMPORARY_EFFECT_CLASSES\)/, 'cleanup helper removes temporary effect classes from root, grid, SAM panel, and SAM hardware');
+assert.match(bootstrap, /function clearEffectTimers\(\) \{\n\s*removeTemporaryEffectClasses\(\);[\s\S]*effectCleanupTimers\.forEach[\s\S]*window\.clearTimeout[\s\S]*effectCleanupTimers = \[\];\n\s*removeTemporaryEffectClasses\(\);\n\s*\}/, 'clearEffectTimers removes temporary classes before and after canceling timeouts');
+assert.match(bootstrap, /async function startRun\(\) \{[\s\S]*clearEffectTimers\(\);/, 'new runs clear temporary effect classes so animations can restart');
+assert.match(bootstrap, /function reset\(\) \{[\s\S]*clearEffectTimers\(\);/, 'reset clears temporary effect classes so animations can restart');
+assert.match(bootstrap, /function destroy\(\) \{[\s\S]*clearEffectTimers\(\);/, 'destroy clears temporary effect classes and timers');
+
 assert.match(bootstrap, /function triggerQuestEffect\(kind, options\)/, 'central Crystal Quest effect helper exists');
 assert.match(bootstrap, /function setTransientSignalEffect\(type, index, duration\)/, 'transient signal-node helper exists');
 assert.match(bootstrap, /triggerQuestEffect\('correct',[\s\S]*signal-node-secured-burst|signal-node-secured-burst[\s\S]*triggerQuestEffect\('correct'/, 'correct answer path triggers crystal burst node state');
@@ -32,7 +42,10 @@ assert.match(bootstrap, /playQuestSound\('correct'\)/, 'correct answer plays a b
 assert.match(bootstrap, /playQuestSound\('error'\)/, 'wrong answer plays an error tone');
 assert.match(bootstrap, /playQuestSound\('skip'\)/, 'skip path plays a bypass tone');
 assert.match(bootstrap, /playQuestSound\('complete'\)/, 'vault sealed path plays a completion tone');
-assert.match(bootstrap, /if \(isMuted\(\)\) return;[\s\S]*playSound\(soundId, generatedTones\[soundId\]\)/, 'generated Web Audio tones obey existing mute state and arcade audio helper');
+assert.match(bootstrap, /var CRYSTAL_QUEST_GENERATED_TONES = \{[\s\S]*function playQuestSound\(soundId\)/, 'generated tone definitions are hoisted outside playQuestSound');
+const playQuestSoundBody = bootstrap.match(/function playQuestSound\(soundId\) \{([\s\S]*?)\n  \}/)?.[1] || '';
+assert.doesNotMatch(playQuestSoundBody, /var generatedTones|kind: 'chord'|kind: 'tone'/, 'playQuestSound does not recreate generated tone definitions per call');
+assert.match(playQuestSoundBody, /if \(isMuted\(\)\) return;[\s\S]*playSound\(soundId, CRYSTAL_QUEST_GENERATED_TONES\[soundId\]\)/, 'generated Web Audio tones obey existing mute state and arcade audio helper');
 
 assert.match(combinedCrystalCss, /cqTerminalBreath/, 'terminal shell has subtle breathing animation');
 assert.match(combinedCrystalCss, /cqBorderFlow/, 'terminal border has moving light animation');

@@ -114,6 +114,16 @@ function createLegacybootstrapCrystalQuest(root) {
   var wikiTrailPreviewRequestId = 0;
   var transientSignalEffect = null;
   var effectCleanupTimers = [];
+  var ROOT_TEMPORARY_EFFECT_CLASSES = [
+    'cq-effect-correct',
+    'cq-effect-wrong',
+    'cq-effect-skip',
+    'cq-effect-vault-sealed',
+    'cq-streak-surge',
+    'cq-hud-flash',
+  ];
+  var GRID_TEMPORARY_EFFECT_CLASSES = ['cq-grid-line-pulse'];
+  var SAM_TEMPORARY_EFFECT_CLASSES = ['sam-warning-flicker'];
 
   // ── Faction state ─────────────────────────────────────────────────────────
   var _cqFactionId = 'unaligned';
@@ -163,9 +173,18 @@ function createLegacybootstrapCrystalQuest(root) {
     return timer;
   }
 
+  function removeTemporaryEffectClasses() {
+    if (rootEl) rootEl.classList.remove.apply(rootEl.classList, ROOT_TEMPORARY_EFFECT_CLASSES);
+    if (signalGridPanel) signalGridPanel.classList.remove.apply(signalGridPanel.classList, GRID_TEMPORARY_EFFECT_CLASSES);
+    if (samRoot) samRoot.classList.remove.apply(samRoot.classList, SAM_TEMPORARY_EFFECT_CLASSES);
+    if (samHead) samHead.classList.remove.apply(samHead.classList, SAM_TEMPORARY_EFFECT_CLASSES);
+  }
+
   function clearEffectTimers() {
+    removeTemporaryEffectClasses();
     effectCleanupTimers.forEach(function (timer) { window.clearTimeout(timer); });
     effectCleanupTimers = [];
+    removeTemporaryEffectClasses();
   }
 
   function setTransientSignalEffect(type, index, duration) {
@@ -227,24 +246,25 @@ function createLegacybootstrapCrystalQuest(root) {
     }
   }
 
+  var CRYSTAL_QUEST_GENERATED_TONES = {
+    correct: { kind: 'chord', tones: [
+      { type: 'sine', freqStart: 660, freqEnd: 880, duration: 0.08, volume: 0.035, delay: 0 },
+      { type: 'triangle', freqStart: 990, freqEnd: 1320, duration: 0.12, volume: 0.032, delay: 0.04 },
+    ] },
+    error: { kind: 'tone', type: 'sawtooth', freqStart: 170, freqEnd: 72, duration: 0.16, volume: 0.042 },
+    skip: { kind: 'tone', type: 'triangle', freqStart: 330, freqEnd: 590, duration: 0.13, volume: 0.034 },
+    complete: { kind: 'chord', tones: [
+      { type: 'sine', freqStart: 523, freqEnd: 523, duration: 0.12, volume: 0.036, delay: 0 },
+      { type: 'sine', freqStart: 784, freqEnd: 784, duration: 0.14, volume: 0.034, delay: 0.09 },
+      { type: 'triangle', freqStart: 1175, freqEnd: 1175, duration: 0.18, volume: 0.03, delay: 0.18 },
+    ] },
+    start: { kind: 'tone', type: 'sine', freqStart: 420, freqEnd: 840, duration: 0.1, volume: 0.028 },
+  };
+
   // Audio helper
   function playQuestSound(soundId) {
     if (isMuted()) return;
-    var generatedTones = {
-      correct: { kind: 'chord', tones: [
-        { type: 'sine', freqStart: 660, freqEnd: 880, duration: 0.08, volume: 0.035, delay: 0 },
-        { type: 'triangle', freqStart: 990, freqEnd: 1320, duration: 0.12, volume: 0.032, delay: 0.04 },
-      ] },
-      error: { kind: 'tone', type: 'sawtooth', freqStart: 170, freqEnd: 72, duration: 0.16, volume: 0.042 },
-      skip: { kind: 'tone', type: 'triangle', freqStart: 330, freqEnd: 590, duration: 0.13, volume: 0.034 },
-      complete: { kind: 'chord', tones: [
-        { type: 'sine', freqStart: 523, freqEnd: 523, duration: 0.12, volume: 0.036, delay: 0 },
-        { type: 'sine', freqStart: 784, freqEnd: 784, duration: 0.14, volume: 0.034, delay: 0.09 },
-        { type: 'triangle', freqStart: 1175, freqEnd: 1175, duration: 0.18, volume: 0.03, delay: 0.18 },
-      ] },
-      start: { kind: 'tone', type: 'sine', freqStart: 420, freqEnd: 840, duration: 0.1, volume: 0.028 },
-    };
-    try { playSound(soundId, generatedTones[soundId]); } catch (_) {}
+    try { playSound(soundId, CRYSTAL_QUEST_GENERATED_TONES[soundId]); } catch (_) {}
   }
 
 
@@ -805,7 +825,6 @@ function createLegacybootstrapCrystalQuest(root) {
     clearEffectTimers();
     transientSignalEffect = null;
     if (effectsLayer) effectsLayer.innerHTML = '';
-    if (rootEl) rootEl.classList.remove('cq-effect-correct', 'cq-effect-wrong', 'cq-effect-skip', 'cq-streak-surge', 'cq-effect-vault-sealed', 'cq-hud-flash');
     clearAnswerInput();
     clearLoreLog();
     hideRunCompleteBanner();
