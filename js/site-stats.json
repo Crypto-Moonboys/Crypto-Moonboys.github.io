@@ -1,16 +1,16 @@
 {
-  "article_count": 226,
-  "entity_count": 226,
+  "article_count": 247,
+  "entity_count": 247,
   "category_count": 15,
-  "totalArticles": 226,
-  "totalEntities": 226,
+  "totalArticles": 247,
+  "totalEntities": 247,
   "totalCategories": 15,
-  "total_articles": 226,
-  "total_entities": 226,
+  "total_articles": 247,
+  "total_entities": 247,
   "total_categories": 15,
   "canonical_hub": "/search.html",
   "excluded_legacy_paths": [
     "/wiki/index.html"
   ],
-  "last_updated": "2026-04-10T05:02:28.706Z"
+  "last_updated": "2026-06-10T22:32:39.082Z"
 }
