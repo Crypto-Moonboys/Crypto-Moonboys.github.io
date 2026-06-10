@@ -8,7 +8,7 @@
  *  4. Non-POST requests return 405.
  *  5. Invalid JSON body returns 400.
  *  6. Missing npcId defaults to sparky for old cached clients.
- *  7. Public paperclip/invalid npcId values return 400.
+ *  7. Sparky succeeds, legacy paperclip maps to sparky, invalid npcId returns 400.
  *  8. Empty message returns 400.
  *  9. Missing SWARMSY_BRIDGE_TOKEN returns 503 with safe error (no stack trace).
  * 10. SWARMSY fetch/non-JSON failures are retried once, then fail safely.
@@ -169,9 +169,9 @@ await test('NPC chat bridge retry constants are defined', () => {
   );
 });
 
-await test('Worker public npc validation is Sparky-only', () => {
-  assert.ok(workerSrc.includes("npcId !== 'sparky'"), 'worker.js must restrict public npc chat to sparky');
-  assert.ok(!workerSrc.includes("['paperclip', 'sparky']"), 'worker.js must not allow paperclip publicly');
+await test('Worker public npc validation maps legacy paperclip to Sparky', () => {
+  assert.ok(/requestedNpcId\s*={2,3}\s*['"]paperclip['"]\s*\?\s*['"]sparky['"]/.test(workerSrc), 'worker.js must map legacy paperclip to sparky');
+  assert.ok(/npcId\s*!==\s*['"]sparky['"]/.test(workerSrc), 'worker.js must reject non-sparky normalized npc ids');
 });
 
 // ── 4–13. Runtime behaviour tests ─────────────────────────────────────────────
@@ -212,15 +212,37 @@ await test('[6] Missing npcId defaults to sparky and succeeds', async () => {
   assert.equal(capturedBody?.npcId, 'sparky', 'missing npcId must forward as sparky');
 });
 
-await test('[7] Invalid npcId (not sparky) returns 400', async () => {
-  globalThis.fetch = makeMockFetch(200, { success: true, reply: 'hi' });
-  const res = await callNpcChat(worker, { npcId: 'admin', message: 'hello' });
-  assert.equal(res.status, 400);
+await test('[7] Explicit sparky npcId succeeds', async () => {
+  let capturedBody = null;
+  globalThis.fetch = async (_url, init) => {
+    capturedBody = JSON.parse(init.body);
+    return new Response(JSON.stringify({ success: true, reply: 'hi' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hello' });
+  assert.equal(res.status, 200);
+  assert.equal(capturedBody?.npcId, 'sparky', 'sparky npcId must forward as sparky');
 });
 
-await test('[7] paperclip is no longer accepted publicly', async () => {
-  globalThis.fetch = makeMockFetch(200, { success: true, reply: 'hi' });
+await test('[7] Legacy paperclip npcId is accepted and forwarded as sparky', async () => {
+  let capturedBody = null;
+  globalThis.fetch = async (_url, init) => {
+    capturedBody = JSON.parse(init.body);
+    return new Response(JSON.stringify({ success: true, reply: 'hi' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
   const res = await callNpcChat(worker, { npcId: 'paperclip', message: 'hello' });
+  assert.equal(res.status, 200);
+  assert.equal(capturedBody?.npcId, 'sparky', 'legacy paperclip npcId must forward as sparky');
+});
+
+await test('[7] Invalid npcId (admin) returns 400', async () => {
+  globalThis.fetch = makeMockFetch(200, { success: true, reply: 'hi' });
+  const res = await callNpcChat(worker, { npcId: 'admin', message: 'hello' });
   assert.equal(res.status, 400);
   const body = await res.json();
   assert.ok(String(body.error || '').includes('sparky'), 'Expected safe sparky-only error');

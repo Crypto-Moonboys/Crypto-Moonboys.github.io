@@ -379,7 +379,7 @@
   document.body.insertBefore(overlay, layout);
   document.body.insertBefore(header, overlay);
 
-  /* ── 9. Global Sparky agent (render exactly once) ───────────── */
+  /* ── 9. Global Sparky agent (retains site-paperclip-agent id/class for CSS/back-compat) ── */
   if (!document.getElementById('site-paperclip-agent')) {
     var paperclip = document.createElement('a');
     paperclip.id = 'site-paperclip-agent';

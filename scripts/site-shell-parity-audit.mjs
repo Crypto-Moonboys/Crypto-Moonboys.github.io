@@ -94,11 +94,11 @@ if (!shellJs) {
   }
 
   console.log('\n[2b] site-shell.js Sparky global marker');
-  const paperclipChecks = [
+  const sparkyCompatibilityChecks = [
     ["document.getElementById('site-paperclip-agent')", 'single-render guard'],
     ["paperclip.href = '/paperclip.html'", 'Sparky compatibility link target'],
   ];
-  for (const [needle, label] of paperclipChecks) {
+  for (const [needle, label] of sparkyCompatibilityChecks) {
     if (shellJs.includes(needle)) {
       pass(`site-shell.js Sparky: ${label} present`);
     } else {
