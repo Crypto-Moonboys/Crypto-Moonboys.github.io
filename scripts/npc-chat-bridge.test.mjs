@@ -14,7 +14,7 @@
  * 10. SWARMSY fetch/non-JSON failures are retried once, then fail safely.
  * 11. SWARMSY success is relayed with the upstream status code.
  * 12. Message is clamped to 2000 characters (>2000 char input is truncated).
- * 13. pagePath defaults to /paperclip.html when absent.
+ * 13. pagePath defaults to /swarmsy.html when absent.
  * 14. Bridge token is never present in any response body.
  * 15. paperclip-chat.js calls /public/npc-chat through window.MOONBOYS_API.getApiBase().
  */
@@ -378,7 +378,7 @@ await test('[12] Message >2000 chars is accepted (clamped silently)', async () =
   assert.notEqual(res.status, 400, `Expected non-400 for long message, got ${res.status}`);
 });
 
-await test('[13] Missing pagePath defaults to /paperclip.html in forwarded body', async () => {
+await test('[13] Missing pagePath defaults to /swarmsy.html in forwarded body', async () => {
   let capturedBody = null;
   globalThis.fetch = async (_url, init) => {
     capturedBody = JSON.parse(init.body);
@@ -388,7 +388,7 @@ await test('[13] Missing pagePath defaults to /paperclip.html in forwarded body'
     });
   };
   await callNpcChat(worker, { npcId: 'sparky', message: 'hi' });
-  assert.equal(capturedBody?.pagePath, '/paperclip.html', 'pagePath must default to /paperclip.html');
+  assert.equal(capturedBody?.pagePath, '/swarmsy.html', 'pagePath must default to /swarmsy.html');
 });
 
 await test('[14] Bridge token is never present in any success response body', async () => {

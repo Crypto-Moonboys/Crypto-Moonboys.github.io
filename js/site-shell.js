@@ -379,17 +379,17 @@
   document.body.insertBefore(overlay, layout);
   document.body.insertBefore(header, overlay);
 
-  /* ── 9. Global Sparky agent (retains site-paperclip-agent id/class for CSS/back-compat) ── */
+  /* ── 9. Global SWARMSY Sparky agent (legacy site-paperclip-agent id/class are styling hooks only) ── */
   if (!document.getElementById('site-paperclip-agent')) {
-    var paperclip = document.createElement('a');
-    paperclip.id = 'site-paperclip-agent';
-    paperclip.className = 'site-paperclip-agent';
-    paperclip.href = '/paperclip.html';
-    paperclip.setAttribute('aria-label', 'Open Crypto Moonboys Sparky helper');
-    paperclip.innerHTML =
+    var sparkyAgent = document.createElement('a');
+    sparkyAgent.id = 'site-paperclip-agent';
+    sparkyAgent.className = 'site-paperclip-agent';
+    sparkyAgent.href = '/swarmsy.html';
+    sparkyAgent.setAttribute('aria-label', 'Open SWARMSY Sparky assistant');
+    sparkyAgent.innerHTML =
       '<span class="site-paperclip-agent__bubble" aria-hidden="true">HELLO...</span>' +
-      '<span class="site-paperclip-agent__bot" aria-hidden="true">\uD83E\uDD16</span>';
-    document.body.appendChild(paperclip);
+      '<span class="site-paperclip-agent__bot" aria-hidden="true"><img src="/SPARKY%20FLOATING%20CLIP.png" alt="" aria-hidden="true"></span>';
+    document.body.appendChild(sparkyAgent);
   }
 
   /* ── 10. Mark active sidebar link ───────────────────────────── */

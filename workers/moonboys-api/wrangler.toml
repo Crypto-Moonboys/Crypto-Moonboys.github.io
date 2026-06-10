@@ -53,7 +53,7 @@ migrations_dir = "migrations"
 # LEADERBOARD_API_URL is a non-secret var above.
 
 # ── SWARMSY public NPC bridge secret ─────────────────────────────────────────
-# Required for POST /public/npc-chat (Paperclip / Sparky live chat bridge).
+# Required for POST /public/npc-chat (Sparky live chat bridge).
 # Set via Wrangler CLI — never commit the token value to source control:
 #
 #   wrangler secret put SWARMSY_BRIDGE_TOKEN
