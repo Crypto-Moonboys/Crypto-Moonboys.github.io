@@ -109,11 +109,55 @@
     ]
   },
   {
+    "entity_id": "589_xrpl",
+    "canonical_title": "589 on XRPL — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/589-xrpl.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "589",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/589-xrpl.html"
+    ],
+    "alias_candidates": [
+      "589 xrpl",
+      "589 xrpl crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "666_xrpl",
+    "canonical_title": "666 on XRPL — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/666-xrpl.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "666",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/666-xrpl.html"
+    ],
+    "alias_candidates": [
+      "666 xrpl",
+      "666 xrpl crypto moonboys wiki"
+    ]
+  },
+  {
     "entity_id": "alcor_exchange",
     "canonical_title": "Alcor Exchange — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/alcor-exchange.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "alcor exchange crypto moonboys wiki"
+    ],
     "tags": [
       "alcor",
       "exchange",
@@ -125,8 +169,7 @@
       "/wiki/alcor-exchange.html"
     ],
     "alias_candidates": [
-      "alcor exchange",
-      "alcor exchange crypto moonboys wiki"
+      "alcor exchange"
     ]
   },
   {
@@ -263,7 +306,9 @@
     "canonical_title": "AtomicAssets — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/atomicassets.html",
     "category": "characters",
-    "aliases": [],
+    "aliases": [
+      "atomicassets crypto moonboys wiki"
+    ],
     "tags": [
       "atomicassets",
       "crypto",
@@ -274,8 +319,7 @@
       "/wiki/atomicassets.html"
     ],
     "alias_candidates": [
-      "atomicassets",
-      "atomicassets crypto moonboys wiki"
+      "atomicassets"
     ]
   },
   {
@@ -283,7 +327,9 @@
     "canonical_title": "AtomicHub — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/atomichub.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "atomichub crypto moonboys wiki"
+    ],
     "tags": [
       "atomichub",
       "crypto",
@@ -294,8 +340,7 @@
       "/wiki/atomichub.html"
     ],
     "alias_candidates": [
-      "atomichub",
-      "atomichub crypto moonboys wiki"
+      "atomichub"
     ]
   },
   {
@@ -382,6 +427,27 @@
     ],
     "source_urls": [
       "/wiki/bear-market-siege.html"
+    ]
+  },
+  {
+    "entity_id": "bear_xrpl",
+    "canonical_title": "BEAR on XRPL — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/bear-xrpl.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "bear",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/bear-xrpl.html"
+    ],
+    "alias_candidates": [
+      "bear xrpl",
+      "bear xrpl crypto moonboys wiki"
     ]
   },
   {
@@ -928,7 +994,9 @@
     "canonical_title": "DeFi Mining — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/defi-mining.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "defi mining crypto moonboys wiki"
+    ],
     "tags": [
       "defi",
       "mining",
@@ -940,8 +1008,7 @@
       "/wiki/defi-mining.html"
     ],
     "alias_candidates": [
-      "defi mining",
-      "defi mining crypto moonboys wiki"
+      "defi mining"
     ]
   },
   {
@@ -1029,6 +1096,27 @@
     ],
     "alias_candidates": [
       "dream sovereign"
+    ]
+  },
+  {
+    "entity_id": "drop_xrpl",
+    "canonical_title": "DROP on XRPL — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/drop-xrpl.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "drop",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/drop-xrpl.html"
+    ],
+    "alias_candidates": [
+      "drop xrpl",
+      "drop xrpl crypto moonboys wiki"
     ]
   },
   {
@@ -1136,11 +1224,33 @@
     ]
   },
   {
+    "entity_id": "exyboy",
+    "canonical_title": "EXYBOY — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/exyboy.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "exyboy",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/exyboy.html"
+    ],
+    "alias_candidates": [
+      "exyboy",
+      "exyboy crypto moonboys wiki"
+    ]
+  },
+  {
     "entity_id": "fgl_token",
     "canonical_title": "FGL Token — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/fgl-token.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "fgl token crypto moonboys wiki"
+    ],
     "tags": [
       "fgl",
       "token",
@@ -1152,8 +1262,7 @@
       "/wiki/fgl-token.html"
     ],
     "alias_candidates": [
-      "fgl token",
-      "fgl token crypto moonboys wiki"
+      "fgl token"
     ]
   },
   {
@@ -2216,6 +2325,27 @@
     ]
   },
   {
+    "entity_id": "jelly_xrpl",
+    "canonical_title": "JELLY on XRPL — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/jelly-xrpl.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "jelly",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/jelly-xrpl.html"
+    ],
+    "alias_candidates": [
+      "jelly xrpl",
+      "jelly xrpl crypto moonboys wiki"
+    ]
+  },
+  {
     "entity_id": "jillian_godsil",
     "canonical_title": "Jillian Godsil — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/jillian-godsil.html",
@@ -2796,7 +2926,9 @@
     "canonical_title": "NeftyBlocks — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/neftyblocks.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "neftyblocks crypto moonboys wiki"
+    ],
     "tags": [
       "neftyblocks",
       "crypto",
@@ -2807,8 +2939,7 @@
       "/wiki/neftyblocks.html"
     ],
     "alias_candidates": [
-      "neftyblocks",
-      "neftyblocks crypto moonboys wiki"
+      "neftyblocks"
     ]
   },
   {
@@ -2837,7 +2968,9 @@
     "canonical_title": "NFTHive — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/nfthive.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "nfthive crypto moonboys wiki"
+    ],
     "tags": [
       "nfthive",
       "crypto",
@@ -2848,8 +2981,7 @@
       "/wiki/nfthive.html"
     ],
     "alias_candidates": [
-      "nfthive",
-      "nfthive crypto moonboys wiki"
+      "nfthive"
     ]
   },
   {
@@ -2946,7 +3078,9 @@
     "canonical_title": "Nifty Wizards — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/nifty-wizards.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "nifty wizards crypto moonboys wiki"
+    ],
     "tags": [
       "nifty",
       "wizards",
@@ -2958,8 +3092,7 @@
       "/wiki/nifty-wizards.html"
     ],
     "alias_candidates": [
-      "nifty wizards",
-      "nifty wizards crypto moonboys wiki"
+      "nifty wizards"
     ]
   },
   {
@@ -3074,6 +3207,27 @@
     ]
   },
   {
+    "entity_id": "opulence_xrpl",
+    "canonical_title": "Opulence on XRPL — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/opulence-xrpl.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "opulence",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/opulence-xrpl.html"
+    ],
+    "alias_candidates": [
+      "opulence xrpl",
+      "opulence xrpl crypto moonboys wiki"
+    ]
+  },
+  {
     "entity_id": "paper_hands",
     "canonical_title": "Paper Hands — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/paper-hands.html",
@@ -3117,6 +3271,26 @@
     ]
   },
   {
+    "entity_id": "phnix",
+    "canonical_title": "PHNIX — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/phnix.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "phnix",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/phnix.html"
+    ],
+    "alias_candidates": [
+      "phnix",
+      "phnix crypto moonboys wiki"
+    ]
+  },
+  {
     "entity_id": "phygital_prints",
     "canonical_title": "Phygital Prints — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/phygital-prints.html",
@@ -3143,7 +3317,9 @@
     "canonical_title": "Pixel Journey — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/pixel-journey.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "pixel journey crypto moonboys wiki"
+    ],
     "tags": [
       "pixel",
       "journey",
@@ -3155,8 +3331,7 @@
       "/wiki/pixel-journey.html"
     ],
     "alias_candidates": [
-      "pixel journey",
-      "pixel journey crypto moonboys wiki"
+      "pixel journey"
     ]
   },
   {
@@ -3164,7 +3339,9 @@
     "canonical_title": "Pixil Mini — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/pixil-mini.html",
     "category": "characters",
-    "aliases": [],
+    "aliases": [
+      "pixil mini crypto moonboys wiki"
+    ],
     "tags": [
       "pixil",
       "mini",
@@ -3176,8 +3353,7 @@
       "/wiki/pixil-mini.html"
     ],
     "alias_candidates": [
-      "pixil mini",
-      "pixil mini crypto moonboys wiki"
+      "pixil mini"
     ]
   },
   {
@@ -3242,6 +3418,48 @@
     ],
     "alias_candidates": [
       "pmsl token"
+    ]
+  },
+  {
+    "entity_id": "pmsl_xrpl",
+    "canonical_title": "PMSL on XRPL — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/pmsl-xrpl.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "pmsl",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/pmsl-xrpl.html"
+    ],
+    "alias_candidates": [
+      "pmsl xrpl",
+      "pmsl xrpl crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "profit_xrpl",
+    "canonical_title": "PROFIT on XRPL — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/profit-xrpl.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "profit",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/profit-xrpl.html"
+    ],
+    "alias_candidates": [
+      "profit xrpl",
+      "profit xrpl crypto moonboys wiki"
     ]
   },
   {
@@ -3462,7 +3680,9 @@
     "canonical_title": "Rust2Riches — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/rust2riches.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "rust2riches crypto moonboys wiki"
+    ],
     "tags": [
       "rust2riches",
       "crypto",
@@ -3473,8 +3693,7 @@
       "/wiki/rust2riches.html"
     ],
     "alias_candidates": [
-      "rust2riches",
-      "rust2riches crypto moonboys wiki"
+      "rust2riches"
     ]
   },
   {
@@ -3626,6 +3845,27 @@
     ],
     "alias_candidates": [
       "seeding rights"
+    ]
+  },
+  {
+    "entity_id": "sigma_xrpl",
+    "canonical_title": "SIGMA on XRPL — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/sigma-xrpl.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "sigma",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/sigma-xrpl.html"
+    ],
+    "alias_candidates": [
+      "sigma xrpl",
+      "sigma xrpl crypto moonboys wiki"
     ]
   },
   {
@@ -3929,7 +4169,9 @@
     "canonical_title": "Storm Struggle — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/storm-struggle.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "storm struggle crypto moonboys wiki"
+    ],
     "tags": [
       "storm",
       "struggle",
@@ -3941,8 +4183,7 @@
       "/wiki/storm-struggle.html"
     ],
     "alias_candidates": [
-      "storm struggle",
-      "storm struggle crypto moonboys wiki"
+      "storm struggle"
     ]
   },
   {
@@ -4013,11 +4254,33 @@
     ]
   },
   {
+    "entity_id": "tabby",
+    "canonical_title": "Tabby — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/tabby.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "tabby",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/tabby.html"
+    ],
+    "alias_candidates": [
+      "tabby",
+      "tabby crypto moonboys wiki"
+    ]
+  },
+  {
     "entity_id": "tacoswap",
     "canonical_title": "TacoSwap — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/tacoswap.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "tacoswap crypto moonboys wiki"
+    ],
     "tags": [
       "tacoswap",
       "crypto",
@@ -4028,8 +4291,27 @@
       "/wiki/tacoswap.html"
     ],
     "alias_candidates": [
-      "tacoswap",
-      "tacoswap crypto moonboys wiki"
+      "tacoswap"
+    ]
+  },
+  {
+    "entity_id": "tagzcoin",
+    "canonical_title": "TAGZcoin — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/tagzcoin.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "tagzcoin",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/tagzcoin.html"
+    ],
+    "alias_candidates": [
+      "tagzcoin",
+      "tagzcoin crypto moonboys wiki"
     ]
   },
   {
@@ -4219,7 +4501,9 @@
     "canonical_title": "The CleanupCentr — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/the-cleanupcentr.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "CleanupCentr — Crypto Moonboys Wiki"
+    ],
     "tags": [
       "cleanupcentr",
       "crypto",
@@ -4230,7 +4514,6 @@
       "/wiki/the-cleanupcentr.html"
     ],
     "alias_candidates": [
-      "CleanupCentr — Crypto Moonboys Wiki",
       "cleanupcentr crypto moonboys wiki",
       "the cleanupcentr"
     ]
@@ -5004,6 +5287,27 @@
     ]
   },
   {
+    "entity_id": "toto_xrpl",
+    "canonical_title": "TOTO on XRPL — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/toto-xrpl.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "toto",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/toto-xrpl.html"
+    ],
+    "alias_candidates": [
+      "toto xrpl",
+      "toto xrpl crypto moonboys wiki"
+    ]
+  },
+  {
     "entity_id": "trevor_fung",
     "canonical_title": "Trevor Fung — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/trevor-fung.html",
@@ -5093,7 +5397,9 @@
     "canonical_title": "WAX Blockchain — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/wax-blockchain.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "wax blockchain crypto moonboys wiki"
+    ],
     "tags": [
       "wax",
       "blockchain",
@@ -5105,8 +5411,7 @@
       "/wiki/wax-blockchain.html"
     ],
     "alias_candidates": [
-      "wax blockchain",
-      "wax blockchain crypto moonboys wiki"
+      "wax blockchain"
     ]
   },
   {
@@ -5114,7 +5419,9 @@
     "canonical_title": "WAX DEXs & DeFi — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/wax-dexs-defi.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "wax dexs defi"
+    ],
     "tags": [
       "wax",
       "dexs",
@@ -5125,9 +5432,6 @@
     ],
     "source_urls": [
       "/wiki/wax-dexs-defi.html"
-    ],
-    "alias_candidates": [
-      "wax dexs defi"
     ]
   },
   {
@@ -5156,7 +5460,9 @@
     "canonical_title": "WAX PEPE — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/wax-pepe.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "wax pepe crypto moonboys wiki"
+    ],
     "tags": [
       "wax",
       "pepe",
@@ -5168,8 +5474,7 @@
       "/wiki/wax-pepe.html"
     ],
     "alias_candidates": [
-      "wax pepe",
-      "wax pepe crypto moonboys wiki"
+      "wax pepe"
     ]
   },
   {
@@ -5198,7 +5503,9 @@
     "canonical_title": "WAXP Exchange — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/waxp-exchange.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "waxp exchange crypto moonboys wiki"
+    ],
     "tags": [
       "waxp",
       "exchange",
@@ -5210,8 +5517,7 @@
       "/wiki/waxp-exchange.html"
     ],
     "alias_candidates": [
-      "waxp exchange",
-      "waxp exchange crypto moonboys wiki"
+      "waxp exchange"
     ]
   },
   {
@@ -5263,7 +5569,10 @@
     "canonical_title": "WUFFI / $WUF — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/wuffi.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "wuffi",
+      "wuffi wuf crypto moonboys wiki"
+    ],
     "tags": [
       "wuffi",
       "wuf",
@@ -5273,10 +5582,86 @@
     ],
     "source_urls": [
       "/wiki/wuffi.html"
+    ]
+  },
+  {
+    "entity_id": "xmeme",
+    "canonical_title": "XMEME — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/xmeme.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "xmeme",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/xmeme.html"
     ],
     "alias_candidates": [
-      "wuffi",
-      "wuffi wuf crypto moonboys wiki"
+      "xmeme",
+      "xmeme crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "xoge",
+    "canonical_title": "XOGE — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/xoge.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "xoge",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/xoge.html"
+    ],
+    "alias_candidates": [
+      "xoge",
+      "xoge crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "xrp",
+    "canonical_title": "XRP — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/xrp.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "xrp",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/xrp.html"
+    ],
+    "alias_candidates": [
+      "xrp crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "xrp_army",
+    "canonical_title": "XRP Army / ARMY — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/xrp-army.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "xrp",
+      "army",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/xrp-army.html"
+    ],
+    "alias_candidates": [
+      "xrp army",
+      "xrp army crypto moonboys wiki"
     ]
   },
   {
@@ -5343,6 +5728,111 @@
     ],
     "alias_candidates": [
       "xrp kids nbg updates"
+    ]
+  },
+  {
+    "entity_id": "xrp_ledger",
+    "canonical_title": "XRP Ledger — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/xrp-ledger.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "xrp",
+      "ledger",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/xrp-ledger.html"
+    ],
+    "alias_candidates": [
+      "xrp ledger",
+      "xrp ledger crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "xrp_meme_coins",
+    "canonical_title": "XRP Meme Coins — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/xrp-meme-coins.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "xrp",
+      "meme",
+      "coins",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/xrp-meme-coins.html"
+    ],
+    "alias_candidates": [
+      "xrp meme coins"
+    ]
+  },
+  {
+    "entity_id": "xrpl_dex",
+    "canonical_title": "XRPL DEX — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/xrpl-dex.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "xrpl",
+      "dex",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/xrpl-dex.html"
+    ],
+    "alias_candidates": [
+      "xrpl dex",
+      "xrpl dex crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "xrpl_tokens",
+    "canonical_title": "XRPL Tokens — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/xrpl-tokens.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "xrpl",
+      "tokens",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/xrpl-tokens.html"
+    ],
+    "alias_candidates": [
+      "xrpl tokens",
+      "xrpl tokens crypto moonboys wiki"
+    ]
+  },
+  {
+    "entity_id": "xrpl_trust_lines",
+    "canonical_title": "XRPL Trust Lines — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/xrpl-trust-lines.html",
+    "category": "tokens",
+    "aliases": [],
+    "tags": [
+      "xrpl",
+      "trust",
+      "lines",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/xrpl-trust-lines.html"
+    ],
+    "alias_candidates": [
+      "xrpl trust lines"
     ]
   }
 ]
