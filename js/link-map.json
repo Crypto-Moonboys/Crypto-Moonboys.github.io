@@ -11,6 +11,7 @@
       "/wiki/1m-free-nfts-programme.html",
       "/wiki/blockchain.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
       "/wiki/genesis-spray-drop.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks-nfts.html",
@@ -27,7 +28,8 @@
       "/wiki/tokens.html",
       "/wiki/triple-fork-event.html",
       "/wiki/web3.html",
-      "/wiki/xrp-kids-genesis-nfts.html"
+      "/wiki/xrp-kids-genesis-nfts.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/1m-free-nfts-program.html": {
@@ -97,7 +99,8 @@
       "/wiki/the-sacred-chain.html",
       "/wiki/tokens.html",
       "/wiki/wax-blockchain.html",
-      "/wiki/xrp-kids-genesis-nfts.html"
+      "/wiki/xrp-kids-genesis-nfts.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/1m-free-nfts.html": {
@@ -150,7 +153,54 @@
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
       "/wiki/tokens.html",
-      "/wiki/triple-fork-event.html"
+      "/wiki/triple-fork-event.html",
+      "/wiki/xrp.html"
+    ]
+  },
+  "/wiki/589-xrpl.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
+    ]
+  },
+  "/wiki/666-xrpl.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
     ]
   },
   "/wiki/alcor-exchange.html": {
@@ -333,7 +383,8 @@
       "/wiki/ethereum-eth.html",
       "/wiki/meme-coins.html",
       "/wiki/solana-sol.html",
-      "/wiki/the-bitcoin-kid-army.html"
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/atomicassets.html": {
@@ -452,6 +503,7 @@
       "/wiki/whale-lords.html"
     ],
     "suggested_links": [
+      "/wiki/bear-xrpl.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars-ecosystem.html",
@@ -459,6 +511,31 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/the-whale-lords.html"
+    ]
+  },
+  "/wiki/bear-xrpl.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-market-siege.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/the-bear-market-siege.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
     ]
   },
   "/wiki/billy-the-goat-kid.html": {
@@ -567,7 +644,8 @@
       "/wiki/grit.html",
       "/wiki/hodl-wars.html",
       "/wiki/the-graffpunks.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/trevor-fung.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/bitcoin-hodl-via-kid.html": {
@@ -593,6 +671,7 @@
       "/wiki/metaverse-battles.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/triple-fork-event.html",
+      "/wiki/xrp-army.html",
       "/wiki/xrp-kids-genesis-nfts.html",
       "/wiki/xrp-kids-nbg-updates.html",
       "/wiki/xrp-kids.html"
@@ -650,7 +729,8 @@
       "/wiki/tokens.html",
       "/wiki/xrp-kids-genesis-nfts.html",
       "/wiki/xrp-kids-nbg-updates.html",
-      "/wiki/xrp-kids.html"
+      "/wiki/xrp-kids.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/bitcoin-nbg-via-kid.html": {
@@ -818,7 +898,8 @@
       "/wiki/the-gkniftyheads.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
-      "/wiki/tokens.html"
+      "/wiki/tokens.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/blockchain-fork-via-hard.html": {
@@ -939,7 +1020,8 @@
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/the-satoshi-scroll.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/wax-blockchain.html",
+      "/wiki/xrp-ledger.html"
     ]
   },
   "/wiki/bone-idol-ink.html": {
@@ -1016,7 +1098,9 @@
       "/wiki/the-sacred-chain.html",
       "/wiki/tokenomics.html",
       "/wiki/tokens.html",
-      "/wiki/xrp-kids-genesis-nfts.html"
+      "/wiki/xrp-kids-genesis-nfts.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-tokens.html"
     ]
   },
   "/wiki/canvas-clash.html": {
@@ -1099,7 +1183,8 @@
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
       "/wiki/tokens.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/wax-blockchain.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/croydon-tower-blocks.html": {
@@ -1168,7 +1253,8 @@
       "/wiki/substack-posts-on-graffpunkssubstackcom.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
-      "/wiki/tokens.html"
+      "/wiki/tokens.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/crypto-wallets.html": {
@@ -1386,6 +1472,31 @@
       "/wiki/crypto-moonboys.html"
     ]
   },
+  "/wiki/drop-xrpl.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/genesis-spray-drop.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
+    ]
+  },
   "/wiki/elder-codex-7.html": {
     "existing_links": [
       "/wiki/block-topia.html",
@@ -1507,6 +1618,38 @@
       "/wiki/crypto-wallets.html",
       "/wiki/ethereum-eth.html",
       "/wiki/meme-coins.html"
+    ]
+  },
+  "/wiki/exyboy.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/fgl-token.html",
+      "/wiki/gk-token.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/lfgk-token.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/nbg-token.html",
+      "/wiki/nbgx-token.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-token.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/punk-token.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-ledger.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
     ]
   },
   "/wiki/fgl-token.html": {
@@ -1642,7 +1785,8 @@
       "/wiki/graffpunks-247-blockchain-radio-station.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-blockchain-furies.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/wax-blockchain.html",
+      "/wiki/xrp-army.html"
     ]
   },
   "/wiki/forklord-you.html": {
@@ -1782,7 +1926,8 @@
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/queen-sarah-pfly.html",
       "/wiki/the-graffpunks.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/trevor-fung.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/games-hodl-via-fork.html": {
@@ -1938,7 +2083,8 @@
       "/wiki/staking.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
-      "/wiki/tokens.html"
+      "/wiki/tokens.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/genesis-kernel.html": {
@@ -1976,6 +2122,7 @@
     "suggested_links": [
       "/wiki/1m-free-nfts-drop.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
       "/wiki/genesis-kernel.html",
       "/wiki/genesis-spray.html",
       "/wiki/xrp-kids-genesis-nfts.html"
@@ -2161,7 +2308,8 @@
       "/wiki/stake-for-gk-tokens.html",
       "/wiki/staking-for-gk-tokens.html",
       "/wiki/tokens.html",
-      "/wiki/xrp-kids-genesis-nfts.html"
+      "/wiki/xrp-kids-genesis-nfts.html",
+      "/wiki/xrpl-tokens.html"
     ]
   },
   "/wiki/gk.html": {
@@ -2267,7 +2415,8 @@
       "/wiki/the-gkniftyheads.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/wax-blockchain.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/graffiti-kings.html": {
@@ -2668,7 +2817,8 @@
       "/wiki/substack-posts-on-graffpunkssubstackcom.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
-      "/wiki/xrp-kids-genesis-nfts.html"
+      "/wiki/xrp-kids-genesis-nfts.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/graffpunks-ecosystem.html": {
@@ -2714,7 +2864,8 @@
       "/wiki/street-kingdoms.html",
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
       "/wiki/substack-posts-on-graffpunkssubstackcom.html",
-      "/wiki/the-graffpunks.html"
+      "/wiki/the-graffpunks.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/graffpunks-hodl-via-radio.html": {
@@ -2862,7 +3013,8 @@
       "/wiki/staking.html",
       "/wiki/the-graffpunks.html",
       "/wiki/tokens.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/trevor-fung.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/graffpunks-tokens-via-radio.html": {
@@ -2936,7 +3088,8 @@
       "/wiki/the-sacred-chain.html",
       "/wiki/tokens.html",
       "/wiki/trevor-fung.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/wax-blockchain.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/great-datapocalypse-of-2789.html": {
@@ -3045,7 +3198,8 @@
       "/wiki/the-high-hats.html",
       "/wiki/the-sacred-chain.html",
       "/wiki/tokens.html",
-      "/wiki/triple-fork-event.html"
+      "/wiki/triple-fork-event.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/harrison-rift.html": {
@@ -3167,7 +3321,9 @@
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/the-sacred-chain.html",
-      "/wiki/triple-fork-event.html"
+      "/wiki/triple-fork-event.html",
+      "/wiki/xrp-army.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/hodl-wars-ecosystem.html": {
@@ -3247,7 +3403,8 @@
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
       "/wiki/tokens.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/trevor-fung.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/hodl-wars.html": {
@@ -3280,7 +3437,8 @@
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
       "/wiki/tokens.html",
-      "/wiki/xrp-kids.html"
+      "/wiki/xrp-kids.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/hodl-x-warriors.html": {
@@ -3358,6 +3516,29 @@
       "/wiki/hodl-wars.html",
       "/wiki/metaverse-battles.html",
       "/wiki/nbg.html"
+    ]
+  },
+  "/wiki/jelly-xrpl.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
     ]
   },
   "/wiki/jillian-godsil.html": {
@@ -3476,7 +3657,8 @@
     "existing_links": [],
     "suggested_links": [
       "/wiki/crypto-moonboys.html",
-      "/wiki/nbg.html"
+      "/wiki/nbg.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/kids-nfts-via-free.html": {
@@ -3488,7 +3670,8 @@
   "/wiki/kids-token-via-xrp.html": {
     "existing_links": [],
     "suggested_links": [
-      "/wiki/crypto-moonboys.html"
+      "/wiki/crypto-moonboys.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/kids-tokens-via-gk.html": {
@@ -3514,7 +3697,8 @@
       "/wiki/hodl-wars.html",
       "/wiki/metaverse-battles.html",
       "/wiki/the-graffpunks.html",
-      "/wiki/xrp-kids.html"
+      "/wiki/xrp-kids.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/leake-street-tunnel.html": {
@@ -3740,7 +3924,8 @@
     "existing_links": [],
     "suggested_links": [
       "/wiki/crypto-moonboys.html",
-      "/wiki/memecoins.html"
+      "/wiki/memecoins.html",
+      "/wiki/xrp-meme-coins.html"
     ]
   },
   "/wiki/memecoins.html": {
@@ -3762,7 +3947,9 @@
       "/wiki/nfts.html",
       "/wiki/stake-for-gk-tokens.html",
       "/wiki/staking-for-gk-tokens.html",
-      "/wiki/wax-pepe.html"
+      "/wiki/wax-pepe.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrpl-tokens.html"
     ]
   },
   "/wiki/metaverse-battles.html": {
@@ -3993,7 +4180,8 @@
       "/wiki/tokenomics.html",
       "/wiki/tokens.html",
       "/wiki/wax-blockchain.html",
-      "/wiki/xrp-kids.html"
+      "/wiki/xrp-kids.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/nbg-tokens-via-gk.html": {
@@ -4015,10 +4203,14 @@
     "suggested_links": [
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts.html",
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
       "/wiki/block-topia.html",
       "/wiki/burn-to-earn.html",
       "/wiki/charlie-buster.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
       "/wiki/fgl-token.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gk-token.html",
@@ -4034,25 +4226,35 @@
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-wars.html",
+      "/wiki/jelly-xrpl.html",
       "/wiki/lfgk-token.html",
       "/wiki/midevil-hero-arena.html",
       "/wiki/nbg-token.html",
       "/wiki/nbgx-token.html",
       "/wiki/null-the-prophet.html",
+      "/wiki/opulence-xrpl.html",
       "/wiki/pmsl-token.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
       "/wiki/punk-token.html",
       "/wiki/punk.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/queen-sarah-pfly.html",
       "/wiki/sacred-chain.html",
+      "/wiki/sigma-xrpl.html",
       "/wiki/staking.html",
       "/wiki/the-chain-scribes.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
       "/wiki/tokenomics.html",
       "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
       "/wiki/wax-blockchain.html",
-      "/wiki/xrp-kids.html"
+      "/wiki/xrp-kids.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
     ]
   },
   "/wiki/nbgx-token.html": {
@@ -4125,7 +4327,8 @@
       "/wiki/the-sacred-chain.html",
       "/wiki/tokenomics.html",
       "/wiki/tokens.html",
-      "/wiki/xrp-kids.html"
+      "/wiki/xrp-kids.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/neftyblocks-midevilpunks-collection.html": {
@@ -4149,6 +4352,7 @@
     "suggested_links": [
       "/wiki/1m-free-nfts-drop.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
       "/wiki/genesis-spray-drop.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
@@ -4182,7 +4386,8 @@
       "/wiki/stake-for-gk-tokens.html",
       "/wiki/staking-for-gk-tokens.html",
       "/wiki/tokens.html",
-      "/wiki/xrp-kids-genesis-nfts.html"
+      "/wiki/xrp-kids-genesis-nfts.html",
+      "/wiki/xrpl-tokens.html"
     ]
   },
   "/wiki/nfts-token-via-free.html": {
@@ -4227,7 +4432,8 @@
       "/wiki/staking-for-gk-tokens.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/wax-blockchain.html",
-      "/wiki/xrp-kids-genesis-nfts.html"
+      "/wiki/xrp-kids-genesis-nfts.html",
+      "/wiki/xrpl-tokens.html"
     ]
   },
   "/wiki/ngmi-chronicles.html": {
@@ -4333,7 +4539,8 @@
       "/wiki/nbg.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
       "/wiki/no-ball-games-nbg-collection.html",
-      "/wiki/street-kingdoms.html"
+      "/wiki/street-kingdoms.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/null-the-prophet.html": {
@@ -4403,6 +4610,29 @@
       "/wiki/xrp-kids-genesis-nfts.html"
     ]
   },
+  "/wiki/opulence-xrpl.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
+    ]
+  },
   "/wiki/paper-hands.html": {
     "existing_links": [
       "/wiki/diamond-hands.html",
@@ -4437,6 +4667,18 @@
       "/wiki/hodl-wars.html",
       "/wiki/nbg.html",
       "/wiki/triple-fork-event.html"
+    ]
+  },
+  "/wiki/phnix.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/tokens.html",
+      "/wiki/xrp-ledger.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/phygital-prints.html": {
@@ -4554,6 +4796,7 @@
       "/wiki/lfgk-token.html",
       "/wiki/nbg-token.html",
       "/wiki/nbgx-token.html",
+      "/wiki/pmsl-xrpl.html",
       "/wiki/pmsl.html",
       "/wiki/punk-token.html",
       "/wiki/punk.html",
@@ -4561,6 +4804,39 @@
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
       "/wiki/tokens.html"
+    ]
+  },
+  "/wiki/pmsl-xrpl.html": {
+    "existing_links": [
+      "/wiki/pmsl.html"
+    ],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/fgl-token.html",
+      "/wiki/gk-token.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/lfgk-token.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/nbg-token.html",
+      "/wiki/nbgx-token.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-token.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/punk-token.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-ledger.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
     ]
   },
   "/wiki/pmsl.html": {
@@ -4606,6 +4882,7 @@
       "/wiki/nbgx-token.html",
       "/wiki/null-the-prophet.html",
       "/wiki/pmsl-token.html",
+      "/wiki/pmsl-xrpl.html",
       "/wiki/punk-token.html",
       "/wiki/punk.html",
       "/wiki/sacred-chain.html",
@@ -4615,7 +4892,31 @@
       "/wiki/substack-posts-on-graffpunkssubstackcom.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
-      "/wiki/tokens.html"
+      "/wiki/tokens.html",
+      "/wiki/xrp.html"
+    ]
+  },
+  "/wiki/profit-xrpl.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
     ]
   },
   "/wiki/punk-coin.html": {
@@ -4630,7 +4931,8 @@
       "/wiki/hodl-wars.html",
       "/wiki/punk-token.html",
       "/wiki/punk.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/wax-blockchain.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/punk-token.html": {
@@ -4701,7 +5003,8 @@
       "/wiki/the-sacred-chain.html",
       "/wiki/tokenomics.html",
       "/wiki/tokens.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/trevor-fung.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/punk.html": {
@@ -4741,7 +5044,8 @@
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
       "/wiki/substack-posts-on-graffpunkssubstackcom.html",
       "/wiki/the-graffpunks.html",
-      "/wiki/tokens.html"
+      "/wiki/tokens.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/pyralith.html": {
@@ -4891,7 +5195,8 @@
       "/wiki/the-sacred-chain.html",
       "/wiki/tokens.html",
       "/wiki/trevor-fung.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/wax-blockchain.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/rug-pull-wars.html": {
@@ -5097,6 +5402,29 @@
       "/wiki/web3.html"
     ]
   },
+  "/wiki/sigma-xrpl.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
+    ]
+  },
   "/wiki/sister-halcyon.html": {
     "existing_links": [
       "/wiki/battlemech-blast.html",
@@ -5284,7 +5612,8 @@
       "/wiki/nfts.html",
       "/wiki/staking-for-gk-tokens.html",
       "/wiki/tokens.html",
-      "/wiki/web3.html"
+      "/wiki/web3.html",
+      "/wiki/xrpl-tokens.html"
     ]
   },
   "/wiki/staking-for-gk-tokens.html": {
@@ -5301,7 +5630,8 @@
       "/wiki/stake-for-gk-tokens.html",
       "/wiki/staking.html",
       "/wiki/tokens.html",
-      "/wiki/web3.html"
+      "/wiki/web3.html",
+      "/wiki/xrpl-tokens.html"
     ]
   },
   "/wiki/staking.html": {
@@ -5352,7 +5682,9 @@
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
       "/wiki/tokens.html",
-      "/wiki/trevor-fung.html"
+      "/wiki/trevor-fung.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-tokens.html"
     ]
   },
   "/wiki/stikfamwars.html": {
@@ -5443,6 +5775,17 @@
       "/wiki/the-sacred-chain.html"
     ]
   },
+  "/wiki/tabby.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/tokens.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html"
+    ]
+  },
   "/wiki/tacoswap.html": {
     "existing_links": [
       "/wiki/alcor-exchange.html"
@@ -5470,6 +5813,19 @@
       "/wiki/tokens.html",
       "/wiki/wax-blockchain.html",
       "/wiki/wax-dexs-defi.html"
+    ]
+  },
+  "/wiki/tagzcoin.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/punk-coin.html",
+      "/wiki/tokens.html",
+      "/wiki/xrp-ledger.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/the-allcity-bulls.html": {
@@ -5511,6 +5867,7 @@
     "existing_links": [],
     "suggested_links": [
       "/wiki/bear-market-siege.html",
+      "/wiki/bear-xrpl.html",
       "/wiki/crypto-moonboys.html"
     ]
   },
@@ -5541,7 +5898,8 @@
       "/wiki/sacred-chain.html",
       "/wiki/the-gkniftyheads.html",
       "/wiki/the-sacred-chain.html",
-      "/wiki/triple-fork-event.html"
+      "/wiki/triple-fork-event.html",
+      "/wiki/xrp-army.html"
     ]
   },
   "/wiki/the-blockchain-furies.html": {
@@ -6160,7 +6518,31 @@
       "/wiki/nfts-non-fungible-tokens.html",
       "/wiki/nfts.html",
       "/wiki/stake-for-gk-tokens.html",
-      "/wiki/staking-for-gk-tokens.html"
+      "/wiki/staking-for-gk-tokens.html",
+      "/wiki/xrpl-tokens.html"
+    ]
+  },
+  "/wiki/toto-xrpl.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/tokens.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
     ]
   },
   "/wiki/trevor-fung.html": {
@@ -6199,7 +6581,8 @@
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
       "/wiki/tokens.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/wax-blockchain.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/triple-fork-event.html": {
@@ -6229,7 +6612,8 @@
       "/wiki/the-gkniftyheads.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/tokens.html",
-      "/wiki/wax-blockchain.html"
+      "/wiki/wax-blockchain.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/wagmi-prophecy.html": {
@@ -6373,7 +6757,8 @@
       "/wiki/tokenomics.html",
       "/wiki/tokens.html",
       "/wiki/wax-blockchain.html",
-      "/wiki/waxp-exchange.html"
+      "/wiki/waxp-exchange.html",
+      "/wiki/xrp-meme-coins.html"
     ]
   },
   "/wiki/waxp-exchange.html": {
@@ -6488,6 +6873,48 @@
       "/wiki/tokens.html"
     ]
   },
+  "/wiki/xmeme.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/tokens.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html"
+    ]
+  },
+  "/wiki/xoge.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/crypto-moonboys.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/tokens.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html"
+    ]
+  },
+  "/wiki/xrp-army.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/fgl-token.html",
+      "/wiki/gk-token.html",
+      "/wiki/lfgk-token.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/nbg-token.html",
+      "/wiki/nbgx-token.html",
+      "/wiki/pmsl-token.html",
+      "/wiki/punk-token.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/tokens.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html"
+    ]
+  },
   "/wiki/xrp-kids-genesis-nfts.html": {
     "existing_links": [
       "/wiki/charlie-buster.html",
@@ -6513,7 +6940,8 @@
       "/wiki/no-ball-games-nbg-collection.html",
       "/wiki/one-million-free-nfts.html",
       "/wiki/xrp-kids-nbg-updates.html",
-      "/wiki/xrp-kids.html"
+      "/wiki/xrp-kids.html",
+      "/wiki/xrp.html"
     ]
   },
   "/wiki/xrp-kids-nbg-updates.html": {
@@ -6524,19 +6952,33 @@
       "/wiki/xrp-kids.html"
     ],
     "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
       "/wiki/atomichub-graffpunks-collection.html",
+      "/wiki/bear-xrpl.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
       "/wiki/games4punks-telegram-games.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/hard-fork-games-event.html",
       "/wiki/hard-fork-games-game.html",
       "/wiki/hard-fork-games.html",
+      "/wiki/jelly-xrpl.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
       "/wiki/no-ball-games-nbg-collection.html",
       "/wiki/no-ball-games-nbg.html",
-      "/wiki/xrp-kids-genesis-nfts.html"
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-kids-genesis-nfts.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
     ]
   },
   "/wiki/xrp-kids.html": {
@@ -6548,11 +6990,15 @@
       "/wiki/genesis-kernel.html"
     ],
     "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
       "/wiki/alfie-blaze.html",
       "/wiki/atomichub-graffpunks-collection.html",
+      "/wiki/bear-xrpl.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/blockchain-technology.html",
       "/wiki/blockchain.html",
+      "/wiki/drop-xrpl.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-24-7.html",
@@ -6562,21 +7008,221 @@
       "/wiki/hard-fork-games-game.html",
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
+      "/wiki/jelly-xrpl.html",
       "/wiki/nbg.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
       "/wiki/no-ball-games-nbg-collection.html",
       "/wiki/null-the-prophet.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
       "/wiki/punk-token.html",
       "/wiki/punk.html",
       "/wiki/sacred-chain.html",
+      "/wiki/sigma-xrpl.html",
       "/wiki/spirit-borns.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
       "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
       "/wiki/wax-blockchain.html",
       "/wiki/xrp-kids-genesis-nfts.html",
-      "/wiki/xrp-kids-nbg-updates.html"
+      "/wiki/xrp-kids-nbg-updates.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
+    ]
+  },
+  "/wiki/xrp-ledger.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
+      "/wiki/1m-free-nfts-programme.html",
+      "/wiki/1m-free-nfts.html",
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/fgl-token.html",
+      "/wiki/gk-token.html",
+      "/wiki/gk-tokens.html",
+      "/wiki/graffpunks-nfts.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/lfgk-token.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/nbg-token.html",
+      "/wiki/nbgx-token.html",
+      "/wiki/nfts-non-fungible-tokens.html",
+      "/wiki/nfts.html",
+      "/wiki/one-million-free-nfts.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-token.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/punk-token.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/stake-for-gk-tokens.html",
+      "/wiki/staking-for-gk-tokens.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-kids-genesis-nfts.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
+    ]
+  },
+  "/wiki/xrp-meme-coins.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/bitcoin-kid-army.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/fgl-token.html",
+      "/wiki/gk-token.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/lfgk-token.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/nbg-token.html",
+      "/wiki/nbgx-token.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/phnix.html",
+      "/wiki/pmsl-token.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/punk-token.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/tabby.html",
+      "/wiki/tagzcoin.html",
+      "/wiki/the-bitcoin-kid-army.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-army.html",
+      "/wiki/xrp-ledger.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
+    ]
+  },
+  "/wiki/xrp.html": {
+    "existing_links": [
+      "/wiki/xrp-ledger.html"
+    ],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/exyboy.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/pmsl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/tagzcoin.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
+    ]
+  },
+  "/wiki/xrpl-dex.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-ledger.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-tokens.html",
+      "/wiki/xrpl-trust-lines.html"
+    ]
+  },
+  "/wiki/xrpl-tokens.html": {
+    "existing_links": [
+      "/wiki/xrp-ledger.html"
+    ],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/exyboy.html",
+      "/wiki/gk-tokens.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/nfts-non-fungible-tokens.html",
+      "/wiki/nfts.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/pmsl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/punk-coin.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/stake-for-gk-tokens.html",
+      "/wiki/staking-for-gk-tokens.html",
+      "/wiki/tagzcoin.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-army.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-trust-lines.html"
+    ]
+  },
+  "/wiki/xrpl-trust-lines.html": {
+    "existing_links": [],
+    "suggested_links": [
+      "/wiki/589-xrpl.html",
+      "/wiki/666-xrpl.html",
+      "/wiki/bear-xrpl.html",
+      "/wiki/crypto-moonboys.html",
+      "/wiki/drop-xrpl.html",
+      "/wiki/jelly-xrpl.html",
+      "/wiki/meme-coins.html",
+      "/wiki/memecoins.html",
+      "/wiki/opulence-xrpl.html",
+      "/wiki/pmsl-xrpl.html",
+      "/wiki/profit-xrpl.html",
+      "/wiki/sigma-xrpl.html",
+      "/wiki/tokens.html",
+      "/wiki/toto-xrpl.html",
+      "/wiki/xrp-ledger.html",
+      "/wiki/xrp-meme-coins.html",
+      "/wiki/xrp.html",
+      "/wiki/xrpl-dex.html",
+      "/wiki/xrpl-tokens.html"
     ]
   }
 }

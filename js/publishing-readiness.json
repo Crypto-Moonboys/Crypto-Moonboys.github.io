@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-06-10T22:34:15.702Z",
+  "generated_at": "2026-06-10T23:41:19.930Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
-    "total_entries": 247,
+    "total_entries": 270,
     "ready_by_platform": {
       "fandom": 45,
-      "telegram": 166,
+      "telegram": 179,
       "substack": 11,
       "paragraph": 25
     }
@@ -1093,6 +1093,21 @@
       }
     },
     {
+      "url": "/wiki/wuffi.html",
+      "readable_title": "WUFFI / $WUF",
+      "readiness_score": 43,
+      "summary_quality": 76,
+      "authority_score": 31,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/memecoins.html",
       "readable_title": "Meme Coins",
       "readiness_score": 42,
@@ -1208,6 +1223,21 @@
       "platform_readiness": {
         "fandom": false,
         "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/alien-worlds-tlm.html",
+      "readable_title": "Alien Worlds / TLM",
+      "readiness_score": 41,
+      "summary_quality": 76,
+      "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
         "substack": false,
         "paragraph": false
       }
@@ -1483,6 +1513,21 @@
       }
     },
     {
+      "url": "/wiki/wax-blockchain.html",
+      "readable_title": "WAX Blockchain",
+      "readiness_score": 40,
+      "summary_quality": 71,
+      "authority_score": 27,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/1m-free-nfts-programme.html",
       "readable_title": "1M Free NFTs Programme",
       "readiness_score": 39,
@@ -1708,6 +1753,21 @@
       }
     },
     {
+      "url": "/wiki/fgl-token.html",
+      "readable_title": "FGL Token",
+      "readiness_score": 38,
+      "summary_quality": 63,
+      "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/graffpunks-ecosystem.html",
       "readable_title": "GraffPUNKS Ecosystem",
       "readiness_score": 38,
@@ -1768,6 +1828,51 @@
       }
     },
     {
+      "url": "/wiki/pixel-journey.html",
+      "readable_title": "Pixel Journey",
+      "readiness_score": 38,
+      "summary_quality": 64,
+      "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/storm-struggle.html",
+      "readable_title": "Storm Struggle",
+      "readiness_score": 38,
+      "summary_quality": 65,
+      "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/the-cleanupcentr.html",
+      "readable_title": "The CleanupCentr",
+      "readiness_score": 38,
+      "summary_quality": 63,
+      "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/the-information-mercenaries.html",
       "readable_title": "The INFORMATION MERCENARIES",
       "readiness_score": 38,
@@ -1803,6 +1908,21 @@
       "readiness_score": 37,
       "summary_quality": 59,
       "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/defi-mining.html",
+      "readable_title": "DeFi Mining",
+      "readiness_score": 37,
+      "summary_quality": 62,
+      "authority_score": 24,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -1918,6 +2038,21 @@
       }
     },
     {
+      "url": "/wiki/pixil-mini.html",
+      "readable_title": "Pixil Mini",
+      "readiness_score": 37,
+      "summary_quality": 60,
+      "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/playable-nft-murals.html",
       "readable_title": "Playable NFT Murals",
       "readiness_score": 37,
@@ -1968,6 +2103,51 @@
       "readiness_score": 37,
       "summary_quality": 59,
       "authority_score": 25,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/alcor-exchange.html",
+      "readable_title": "Alcor Exchange",
+      "readiness_score": 36,
+      "summary_quality": 58,
+      "authority_score": 23,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/atomicassets.html",
+      "readable_title": "AtomicAssets",
+      "readiness_score": 36,
+      "summary_quality": 60,
+      "authority_score": 24,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/atomichub.html",
+      "readable_title": "AtomicHub",
+      "readiness_score": 36,
+      "summary_quality": 58,
+      "authority_score": 23,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2113,6 +2293,66 @@
       }
     },
     {
+      "url": "/wiki/neftyblocks.html",
+      "readable_title": "NeftyBlocks",
+      "readiness_score": 36,
+      "summary_quality": 60,
+      "authority_score": 23,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/nfthive.html",
+      "readable_title": "NFTHive",
+      "readiness_score": 36,
+      "summary_quality": 59,
+      "authority_score": 24,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/nifty-wizards.html",
+      "readable_title": "Nifty Wizards",
+      "readiness_score": 36,
+      "summary_quality": 59,
+      "authority_score": 23,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/rust2riches.html",
+      "readable_title": "Rust2Riches",
+      "readiness_score": 36,
+      "summary_quality": 58,
+      "authority_score": 23,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/stake-for-gk-tokens.html",
       "readable_title": "Stake for $GK Tokens",
       "readiness_score": 36,
@@ -2123,6 +2363,21 @@
       "platform_readiness": {
         "fandom": false,
         "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/tacoswap.html",
+      "readable_title": "TacoSwap",
+      "readiness_score": 36,
+      "summary_quality": 58,
+      "authority_score": 23,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
         "substack": false,
         "paragraph": false
       }
@@ -2143,12 +2398,27 @@
       }
     },
     {
-      "url": "/wiki/alien-worlds-tlm.html",
-      "readable_title": "Alien Worlds / TLM",
-      "readiness_score": 35,
-      "summary_quality": 76,
-      "authority_score": 25,
-      "trust_score": 32,
+      "url": "/wiki/wax-dexs-defi.html",
+      "readable_title": "WAX DEXs & DeFi",
+      "readiness_score": 36,
+      "summary_quality": 58,
+      "authority_score": 24,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/wax-pepe.html",
+      "readable_title": "WAX PEPE",
+      "readiness_score": 36,
+      "summary_quality": 59,
+      "authority_score": 23,
+      "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
         "fandom": false,
@@ -2298,6 +2568,21 @@
       "readiness_score": 35,
       "summary_quality": 51,
       "authority_score": 28,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/wax-nft-marketplaces.html",
+      "readable_title": "WAX NFT Marketplaces",
+      "readiness_score": 35,
+      "summary_quality": 58,
+      "authority_score": 21,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -2473,12 +2758,12 @@
       }
     },
     {
-      "url": "/wiki/wuffi.html",
-      "readable_title": "WUFFI / $WUF",
+      "url": "/wiki/waxp-exchange.html",
+      "readable_title": "WAXP Exchange",
       "readiness_score": 34,
-      "summary_quality": 76,
-      "authority_score": 24,
-      "trust_score": 32,
+      "summary_quality": 53,
+      "authority_score": 21,
+      "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
         "fandom": false,
@@ -2494,21 +2779,6 @@
       "summary_quality": 50,
       "authority_score": 22,
       "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/wax-blockchain.html",
-      "readable_title": "WAX Blockchain",
-      "readiness_score": 33,
-      "summary_quality": 71,
-      "authority_score": 23,
-      "trust_score": 32,
       "narrative_strength": 0,
       "platform_readiness": {
         "fandom": false,
@@ -2593,21 +2863,6 @@
       }
     },
     {
-      "url": "/wiki/storm-struggle.html",
-      "readable_title": "Storm Struggle",
-      "readiness_score": 31,
-      "summary_quality": 65,
-      "authority_score": 21,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/substack-posts-on-graffpunkssubstackcom.html",
       "readable_title": "Substack Posts on graffpunks.substack.com",
       "readiness_score": 31,
@@ -2638,207 +2893,12 @@
       }
     },
     {
-      "url": "/wiki/defi-mining.html",
-      "readable_title": "DeFi Mining",
-      "readiness_score": 30,
-      "summary_quality": 62,
-      "authority_score": 21,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/fgl-token.html",
-      "readable_title": "FGL Token",
-      "readiness_score": 30,
-      "summary_quality": 63,
-      "authority_score": 21,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/pixel-journey.html",
-      "readable_title": "Pixel Journey",
-      "readiness_score": 30,
-      "summary_quality": 64,
-      "authority_score": 21,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/the-cleanupcentr.html",
-      "readable_title": "The CleanupCentr",
-      "readiness_score": 30,
-      "summary_quality": 63,
-      "authority_score": 21,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": true,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/alcor-exchange.html",
-      "readable_title": "Alcor Exchange",
-      "readiness_score": 29,
-      "summary_quality": 58,
-      "authority_score": 20,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/atomicassets.html",
-      "readable_title": "AtomicAssets",
-      "readiness_score": 29,
-      "summary_quality": 60,
-      "authority_score": 21,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/atomichub.html",
-      "readable_title": "AtomicHub",
-      "readiness_score": 29,
-      "summary_quality": 58,
-      "authority_score": 20,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/graffpunks-247-blockchain-radio-station.html",
       "readable_title": "GraffPUNKS 24/7 Blockchain Radio Station",
       "readiness_score": 29,
       "summary_quality": 36,
       "authority_score": 20,
       "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/neftyblocks.html",
-      "readable_title": "NeftyBlocks",
-      "readiness_score": 29,
-      "summary_quality": 60,
-      "authority_score": 20,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/nfthive.html",
-      "readable_title": "NFTHive",
-      "readiness_score": 29,
-      "summary_quality": 59,
-      "authority_score": 20,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/nifty-wizards.html",
-      "readable_title": "Nifty Wizards",
-      "readiness_score": 29,
-      "summary_quality": 59,
-      "authority_score": 20,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/pixil-mini.html",
-      "readable_title": "Pixil Mini",
-      "readiness_score": 29,
-      "summary_quality": 60,
-      "authority_score": 21,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/wax-dexs-defi.html",
-      "readable_title": "WAX DEXs & DeFi",
-      "readiness_score": 29,
-      "summary_quality": 58,
-      "authority_score": 20,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/wax-nft-marketplaces.html",
-      "readable_title": "WAX NFT Marketplaces",
-      "readiness_score": 29,
-      "summary_quality": 58,
-      "authority_score": 20,
-      "trust_score": 32,
       "narrative_strength": 0,
       "platform_readiness": {
         "fandom": false,
@@ -2938,57 +2998,12 @@
       }
     },
     {
-      "url": "/wiki/rust2riches.html",
-      "readable_title": "Rust2Riches",
-      "readiness_score": 28,
-      "summary_quality": 58,
-      "authority_score": 19,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/spraycode-writcode.html",
       "readable_title": "Spraycode &amp; Writcode",
       "readiness_score": 28,
       "summary_quality": 36,
       "authority_score": 17,
       "trust_score": 57,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/tacoswap.html",
-      "readable_title": "TacoSwap",
-      "readiness_score": 28,
-      "summary_quality": 58,
-      "authority_score": 19,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/wax-pepe.html",
-      "readable_title": "WAX PEPE",
-      "readiness_score": 28,
-      "summary_quality": 59,
-      "authority_score": 19,
-      "trust_score": 32,
       "narrative_strength": 0,
       "platform_readiness": {
         "fandom": false,
@@ -3223,21 +3238,6 @@
       }
     },
     {
-      "url": "/wiki/waxp-exchange.html",
-      "readable_title": "WAXP Exchange",
-      "readiness_score": 26,
-      "summary_quality": 53,
-      "authority_score": 17,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/bitcoin-btc.html",
       "readable_title": "Bitcoin (BTC)",
       "readiness_score": 25,
@@ -3439,6 +3439,21 @@
       "summary_quality": 28,
       "authority_score": 13,
       "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xrp-ledger.html",
+      "readable_title": "XRP Ledger",
+      "readiness_score": 25,
+      "summary_quality": 49,
+      "authority_score": 17,
+      "trust_score": 32,
       "narrative_strength": 0,
       "platform_readiness": {
         "fandom": false,
@@ -3709,6 +3724,336 @@
       "summary_quality": 24,
       "authority_score": 9,
       "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/pmsl-xrpl.html",
+      "readable_title": "PMSL on XRPL",
+      "readiness_score": 22,
+      "summary_quality": 39,
+      "authority_score": 14,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xrp-meme-coins.html",
+      "readable_title": "XRP Meme Coins",
+      "readiness_score": 22,
+      "summary_quality": 40,
+      "authority_score": 14,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xrp.html",
+      "readable_title": "XRP",
+      "readiness_score": 22,
+      "summary_quality": 40,
+      "authority_score": 14,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xrpl-tokens.html",
+      "readable_title": "XRPL Tokens",
+      "readiness_score": 22,
+      "summary_quality": 40,
+      "authority_score": 14,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xrp-army.html",
+      "readable_title": "XRP Army / ARMY",
+      "readiness_score": 21,
+      "summary_quality": 38,
+      "authority_score": 13,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/exyboy.html",
+      "readable_title": "EXYBOY",
+      "readiness_score": 20,
+      "summary_quality": 34,
+      "authority_score": 12,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/tagzcoin.html",
+      "readable_title": "TAGZcoin",
+      "readiness_score": 20,
+      "summary_quality": 32,
+      "authority_score": 12,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/bear-xrpl.html",
+      "readable_title": "BEAR on XRPL",
+      "readiness_score": 12,
+      "summary_quality": 6,
+      "authority_score": 7,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/drop-xrpl.html",
+      "readable_title": "DROP on XRPL",
+      "readiness_score": 12,
+      "summary_quality": 6,
+      "authority_score": 7,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/phnix.html",
+      "readable_title": "PHNIX",
+      "readiness_score": 12,
+      "summary_quality": 6,
+      "authority_score": 7,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xrpl-dex.html",
+      "readable_title": "XRPL DEX",
+      "readiness_score": 12,
+      "summary_quality": 6,
+      "authority_score": 7,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xrpl-trust-lines.html",
+      "readable_title": "XRPL Trust Lines",
+      "readiness_score": 12,
+      "summary_quality": 6,
+      "authority_score": 8,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/589-xrpl.html",
+      "readable_title": "589 on XRPL",
+      "readiness_score": 11,
+      "summary_quality": 5,
+      "authority_score": 7,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/666-xrpl.html",
+      "readable_title": "666 on XRPL",
+      "readiness_score": 11,
+      "summary_quality": 5,
+      "authority_score": 7,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/jelly-xrpl.html",
+      "readable_title": "JELLY on XRPL",
+      "readiness_score": 11,
+      "summary_quality": 5,
+      "authority_score": 7,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/opulence-xrpl.html",
+      "readable_title": "Opulence on XRPL",
+      "readiness_score": 11,
+      "summary_quality": 5,
+      "authority_score": 7,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/profit-xrpl.html",
+      "readable_title": "PROFIT on XRPL",
+      "readiness_score": 11,
+      "summary_quality": 5,
+      "authority_score": 7,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/sigma-xrpl.html",
+      "readable_title": "SIGMA on XRPL",
+      "readiness_score": 11,
+      "summary_quality": 5,
+      "authority_score": 7,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/tabby.html",
+      "readable_title": "Tabby",
+      "readiness_score": 11,
+      "summary_quality": 5,
+      "authority_score": 7,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/toto-xrpl.html",
+      "readable_title": "TOTO on XRPL",
+      "readiness_score": 11,
+      "summary_quality": 5,
+      "authority_score": 7,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xmeme.html",
+      "readable_title": "XMEME",
+      "readiness_score": 11,
+      "summary_quality": 5,
+      "authority_score": 7,
+      "trust_score": 32,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xoge.html",
+      "readable_title": "XOGE",
+      "readiness_score": 11,
+      "summary_quality": 5,
+      "authority_score": 7,
+      "trust_score": 32,
       "narrative_strength": 0,
       "platform_readiness": {
         "fandom": false,
