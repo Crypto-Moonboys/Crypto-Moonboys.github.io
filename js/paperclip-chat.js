@@ -1,5 +1,5 @@
 /*
- * Crypto Moonboys — Paperclip/Sparky public chat client.
+ * Crypto Moonboys — Sparky public chat client.
  * Calls the public Moonboys API bridge only. Does not expose SWARMSY admin URLs,
  * bridge tokens, private prompts, or workspace keys in browser code.
  */
@@ -11,18 +11,15 @@
   var root = document.querySelector('[data-paperclip-chat]');
   if (!root) return;
 
+  var SPARKY_NPC_ID = 'sparky';
+  var SPARKY_LABEL = 'Sparky';
+
   var form = root.querySelector('[data-paperclip-form]');
   var input = root.querySelector('[data-paperclip-input]');
-  var npcSelect = root.querySelector('[data-paperclip-npc]');
   var log = root.querySelector('[data-paperclip-log]');
   var sendButton = root.querySelector('[data-paperclip-send]');
   var state = root.querySelector('[data-paperclip-state]');
   var errorBox = root.querySelector('[data-paperclip-error]');
-
-  var NPC_LABELS = {
-    paperclip: 'Paperclip',
-    sparky: 'Sparky',
-  };
 
   function setState(message) {
     if (state) state.textContent = message || '';
@@ -68,18 +65,11 @@
     return base.replace(/\/$/, '') + '/public/npc-chat';
   }
 
-  function selectedNpcId() {
-    var npcId = String((npcSelect && npcSelect.value) || 'paperclip').toLowerCase();
-    return NPC_LABELS[npcId] ? npcId : 'paperclip';
-  }
-
   async function sendMessage(event) {
     event.preventDefault();
     setError('');
 
     var message = safeText(input && input.value).trim();
-    var npcId = selectedNpcId();
-    var npcLabel = NPC_LABELS[npcId] || 'Paperclip';
     var endpoint = endpointUrl();
 
     if (!message) {
@@ -87,14 +77,14 @@
       return;
     }
     if (!endpoint) {
-      setError('Moonboys API bridge is not configured for this page.');
+      setError('Moonboys Sparky bridge is not configured for this page.');
       return;
     }
 
     appendMessage('user', 'You', message);
     if (input) input.value = '';
     if (sendButton) sendButton.disabled = true;
-    setState('Contacting ' + npcLabel + ' through SWARMSY...');
+    setState('Contacting Sparky through SWARMSY...');
 
     try {
       var response = await fetch(endpoint, {
@@ -103,7 +93,7 @@
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          npcId: npcId,
+          npcId: SPARKY_NPC_ID,
           message: message,
           pagePath: window.location.pathname || '/paperclip.html',
         }),
@@ -118,16 +108,16 @@
 
       if (!response.ok || !payload || payload.success !== true) {
         var bridgeError = payload && (payload.reply || payload.error);
-        throw new Error(bridgeError || 'The Paperclip bridge is not available yet.');
+        throw new Error(bridgeError || 'The Sparky bridge is not available yet.');
       }
 
-      appendMessage('assistant', payload.displayName || npcLabel, payload.reply || 'No reply returned.');
+      appendMessage('assistant', SPARKY_LABEL, payload.reply || 'No reply returned.');
       setState(payload.sourceSummary ? 'Answered with SWARMSY context.' : 'Answered.');
     } catch (error) {
-      var messageText = error && error.message ? error.message : 'Paperclip could not answer right now.';
-      appendMessage('assistant', npcLabel, messageText);
+      var messageText = error && error.message ? error.message : 'Sparky could not answer right now.';
+      appendMessage('assistant', SPARKY_LABEL, messageText);
       setError(messageText);
-      setState('Bridge unavailable.');
+      setState('Sparky bridge unavailable.');
     } finally {
       if (sendButton) sendButton.disabled = false;
       if (input) input.focus();
@@ -135,5 +125,6 @@
   }
 
   if (form) form.addEventListener('submit', sendMessage);
+  if (input && !input.getAttribute('placeholder')) input.setAttribute('placeholder', 'Ask Sparky...');
   setState(endpointUrl() ? 'Ready.' : 'API bridge config required.');
 })();

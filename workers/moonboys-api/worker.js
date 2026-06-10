@@ -5120,11 +5120,12 @@ export default {
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
 
-      // 2. Validate npcId.
-      const VALID_NPC_IDS = ['paperclip', 'sparky'];
-      const npcId = String(body?.npcId || '').toLowerCase().trim();
-      if (!VALID_NPC_IDS.includes(npcId)) {
-        return err('npcId must be "paperclip" or "sparky"', 400);
+      // 2. Validate npcId. Public chat is Sparky-only. Missing npcId and
+      //    legacy Paperclip clients are mapped to Sparky for rollout compatibility.
+      const requestedNpcId = body?.npcId == null ? 'sparky' : String(body.npcId).toLowerCase().trim();
+      const npcId = requestedNpcId === 'paperclip' ? 'sparky' : requestedNpcId;
+      if (npcId !== 'sparky') {
+        return err('npcId must be "sparky"', 400);
       }
 
       // 3. Validate message — non-empty string, clamped to 2000 chars.

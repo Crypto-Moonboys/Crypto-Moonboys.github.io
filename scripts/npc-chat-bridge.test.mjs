@@ -7,8 +7,8 @@
  *  3. The SWARMSY bridge URL is not an admin URL and does not expose admin paths.
  *  4. Non-POST requests return 405.
  *  5. Invalid JSON body returns 400.
- *  6. Missing npcId returns 400.
- *  7. Invalid npcId (not paperclip/sparky) returns 400.
+ *  6. Missing npcId defaults to sparky for old cached clients.
+ *  7. Sparky succeeds, legacy paperclip maps to sparky, invalid npcId returns 400.
  *  8. Empty message returns 400.
  *  9. Missing SWARMSY_BRIDGE_TOKEN returns 503 with safe error (no stack trace).
  * 10. SWARMSY fetch/non-JSON failures are retried once, then fail safely.
@@ -169,6 +169,11 @@ await test('NPC chat bridge retry constants are defined', () => {
   );
 });
 
+await test('Worker public npc validation maps legacy paperclip to Sparky', () => {
+  assert.ok(/requestedNpcId\s*={2,3}\s*['"]paperclip['"]\s*\?\s*['"]sparky['"]/.test(workerSrc), 'worker.js must map legacy paperclip to sparky');
+  assert.ok(/npcId\s*!==\s*['"]sparky['"]/.test(workerSrc), 'worker.js must reject non-sparky normalized npc ids');
+});
+
 // ── 4–13. Runtime behaviour tests ─────────────────────────────────────────────
 
 console.log('\n[4–13] Runtime behaviour: validation, error handling, relay');
@@ -193,18 +198,54 @@ await test('[5] Invalid JSON body returns 400', async () => {
   assert.equal(res.status, 400);
 });
 
-await test('[6] Missing npcId returns 400', async () => {
-  globalThis.fetch = makeMockFetch(200, { success: true, reply: 'hi' });
+await test('[6] Missing npcId defaults to sparky and succeeds', async () => {
+  let capturedBody = null;
+  globalThis.fetch = async (_url, init) => {
+    capturedBody = JSON.parse(init.body);
+    return new Response(JSON.stringify({ success: true, reply: 'hi' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
   const res = await callNpcChat(worker, { message: 'hello' });
-  assert.equal(res.status, 400);
-  const body = await res.json();
-  assert.ok(body.error, 'Expected error field');
+  assert.equal(res.status, 200);
+  assert.equal(capturedBody?.npcId, 'sparky', 'missing npcId must forward as sparky');
 });
 
-await test('[7] Invalid npcId (not paperclip/sparky) returns 400', async () => {
+await test('[7] Explicit sparky npcId succeeds', async () => {
+  let capturedBody = null;
+  globalThis.fetch = async (_url, init) => {
+    capturedBody = JSON.parse(init.body);
+    return new Response(JSON.stringify({ success: true, reply: 'hi' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hello' });
+  assert.equal(res.status, 200);
+  assert.equal(capturedBody?.npcId, 'sparky', 'sparky npcId must forward as sparky');
+});
+
+await test('[7] Legacy paperclip npcId is accepted and forwarded as sparky', async () => {
+  let capturedBody = null;
+  globalThis.fetch = async (_url, init) => {
+    capturedBody = JSON.parse(init.body);
+    return new Response(JSON.stringify({ success: true, reply: 'hi' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+  const res = await callNpcChat(worker, { npcId: 'paperclip', message: 'hello' });
+  assert.equal(res.status, 200);
+  assert.equal(capturedBody?.npcId, 'sparky', 'legacy paperclip npcId must forward as sparky');
+});
+
+await test('[7] Invalid npcId (admin) returns 400', async () => {
   globalThis.fetch = makeMockFetch(200, { success: true, reply: 'hi' });
   const res = await callNpcChat(worker, { npcId: 'admin', message: 'hello' });
   assert.equal(res.status, 400);
+  const body = await res.json();
+  assert.ok(String(body.error || '').includes('sparky'), 'Expected safe sparky-only error');
 });
 
 await test('[7] Invalid npcId (empty string) returns 400', async () => {
@@ -215,7 +256,7 @@ await test('[7] Invalid npcId (empty string) returns 400', async () => {
 
 await test('[8] Empty message returns 400', async () => {
   globalThis.fetch = makeMockFetch(200, { success: true, reply: 'hi' });
-  const res = await callNpcChat(worker, { npcId: 'paperclip', message: '   ' });
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: '   ' });
   assert.equal(res.status, 400);
 });
 
@@ -229,7 +270,7 @@ await test('[9] Missing SWARMSY_BRIDGE_TOKEN returns 503', async () => {
   globalThis.fetch = makeMockFetch(200, { success: true, reply: 'hi' });
   const res = await callNpcChat(
     worker,
-    { npcId: 'paperclip', message: 'hello' },
+    { npcId: 'sparky', message: 'hello' },
     { env: makeEnv({ SWARMSY_BRIDGE_TOKEN: '' }) },
   );
   assert.equal(res.status, 503);
@@ -242,7 +283,7 @@ await test('[9] 503 response does not contain token value', async () => {
   globalThis.fetch = makeMockFetch(200, { success: true });
   const res = await callNpcChat(
     worker,
-    { npcId: 'paperclip', message: 'hello' },
+    { npcId: 'sparky', message: 'hello' },
     { env: makeEnv({ SWARMSY_BRIDGE_TOKEN: '' }) },
   );
   const text = await res.text();
@@ -258,7 +299,7 @@ await test('[10] First SWARMSY fetch throws, second succeeds -> 200', async () =
       headers: { 'Content-Type': 'application/json' },
     }),
   ]);
-  const res = await callNpcChat(worker, { npcId: 'paperclip', message: 'hello' });
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hello' });
   assert.equal(res.status, 200);
   const body = await res.json();
   assert.equal(body.success, true);
@@ -288,7 +329,7 @@ await test('[10] Both SWARMSY attempts fail -> 502', async () => {
     new Error('first fail'),
     new Error('second fail'),
   ]);
-  const res = await callNpcChat(worker, { npcId: 'paperclip', message: 'hello' });
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hello' });
   assert.equal(res.status, 502);
   const body = await res.json();
   assert.equal(body.success, false);
@@ -307,13 +348,13 @@ await test('[10] Both SWARMSY attempts return non-JSON -> 502', async () => {
 });
 
 await test('[11] SWARMSY 200 success is relayed with status 200', async () => {
-  const swarmsyPayload = { success: true, reply: 'Hello from Paperclip', displayName: 'Paperclip' };
+  const swarmsyPayload = { success: true, reply: 'Hello from Sparky', displayName: 'Sparky' };
   globalThis.fetch = makeMockFetch(200, swarmsyPayload);
-  const res = await callNpcChat(worker, { npcId: 'paperclip', message: 'hi' });
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hi' });
   assert.equal(res.status, 200);
   const body = await res.json();
   assert.equal(body.success, true);
-  assert.equal(body.reply, 'Hello from Paperclip');
+  assert.equal(body.reply, 'Hello from Sparky');
 });
 
 await test('[11] SWARMSY 429 (rate limit) is relayed with status 429', async () => {
@@ -324,7 +365,7 @@ await test('[11] SWARMSY 429 (rate limit) is relayed with status 429', async () 
 
 await test('[11] SWARMSY 500 is relayed with status 500', async () => {
   globalThis.fetch = makeMockFetch(500, { success: false, error: 'internal' });
-  const res = await callNpcChat(worker, { npcId: 'paperclip', message: 'hi' });
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hi' });
   assert.equal(res.status, 500);
 });
 
@@ -332,7 +373,7 @@ await test('[12] Message >2000 chars is accepted (clamped silently)', async () =
   // A >2000 char message should pass validation (not return 400) because clamping happens.
   globalThis.fetch = makeMockFetch(200, { success: true, reply: 'clamp ok' });
   const longMsg = 'x'.repeat(3000);
-  const res = await callNpcChat(worker, { npcId: 'paperclip', message: longMsg });
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: longMsg });
   // Should not be 400 (message present, just long)
   assert.notEqual(res.status, 400, `Expected non-400 for long message, got ${res.status}`);
 });
@@ -346,13 +387,13 @@ await test('[13] Missing pagePath defaults to /paperclip.html in forwarded body'
       headers: { 'Content-Type': 'application/json' },
     });
   };
-  await callNpcChat(worker, { npcId: 'paperclip', message: 'hi' });
+  await callNpcChat(worker, { npcId: 'sparky', message: 'hi' });
   assert.equal(capturedBody?.pagePath, '/paperclip.html', 'pagePath must default to /paperclip.html');
 });
 
 await test('[14] Bridge token is never present in any success response body', async () => {
   globalThis.fetch = makeMockFetch(200, { success: true, reply: 'hi' });
-  const res = await callNpcChat(worker, { npcId: 'paperclip', message: 'hello' });
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hello' });
   const text = await res.text();
   assert.ok(!text.includes(BRIDGE_TOKEN), 'Bridge token must not appear in success response body');
 });
@@ -370,7 +411,7 @@ await test('[14] Bridge token is scrubbed if an upstream response accidentally e
 
 await test('[14] Bridge token is never present in 502 response body', async () => {
   globalThis.fetch = makeAbortingFetch();
-  const res = await callNpcChat(worker, { npcId: 'paperclip', message: 'hello' });
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hello' });
   const text = await res.text();
   assert.ok(!text.includes(BRIDGE_TOKEN), 'Bridge token must not appear in 502 response body');
 });
@@ -390,6 +431,12 @@ await test('paperclip-chat.js resolves API base via window.MOONBOYS_API.getApiBa
     chatJsSrc.includes('MOONBOYS_API') && chatJsSrc.includes('getApiBase'),
     'paperclip-chat.js must use window.MOONBOYS_API.getApiBase()',
   );
+});
+
+await test('paperclip-chat.js always sends npcId sparky', () => {
+  assert.ok(chatJsSrc.includes("SPARKY_NPC_ID = 'sparky'"), 'paperclip-chat.js must define sparky npc id');
+  assert.ok(!chatJsSrc.includes('NPC_LABELS'), 'paperclip-chat.js must not keep dual NPC labels');
+  assert.ok(!chatJsSrc.includes('selectedNpcId'), 'paperclip-chat.js must not keep NPC selector logic');
 });
 
 await test('paperclip-chat.js does not hardcode any SWARMSY admin URL', () => {

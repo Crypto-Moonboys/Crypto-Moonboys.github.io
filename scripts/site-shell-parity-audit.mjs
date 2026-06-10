@@ -93,16 +93,16 @@ if (!shellJs) {
     pass('site-shell.js does not include outdated "No login" footer claim');
   }
 
-  console.log('\n[2b] site-shell.js Paperclip global marker');
-  const paperclipChecks = [
+  console.log('\n[2b] site-shell.js Sparky global marker');
+  const sparkyCompatibilityChecks = [
     ["document.getElementById('site-paperclip-agent')", 'single-render guard'],
-    ["paperclip.href = '/paperclip.html'", 'Paperclip link target'],
+    ["paperclip.href = '/paperclip.html'", 'Sparky compatibility link target'],
   ];
-  for (const [needle, label] of paperclipChecks) {
+  for (const [needle, label] of sparkyCompatibilityChecks) {
     if (shellJs.includes(needle)) {
-      pass(`site-shell.js Paperclip: ${label} present`);
+      pass(`site-shell.js Sparky: ${label} present`);
     } else {
-      fail(`site-shell.js Paperclip: ${label} MISSING`);
+      fail(`site-shell.js Sparky: ${label} MISSING`);
     }
   }
 }

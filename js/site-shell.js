@@ -379,13 +379,13 @@
   document.body.insertBefore(overlay, layout);
   document.body.insertBefore(header, overlay);
 
-  /* ── 9. Global Paperclip agent (render exactly once) ────────── */
+  /* ── 9. Global Sparky agent (retains site-paperclip-agent id/class for CSS/back-compat) ── */
   if (!document.getElementById('site-paperclip-agent')) {
     var paperclip = document.createElement('a');
     paperclip.id = 'site-paperclip-agent';
     paperclip.className = 'site-paperclip-agent';
     paperclip.href = '/paperclip.html';
-    paperclip.setAttribute('aria-label', 'Open Crypto Moonboys Paperclip brain');
+    paperclip.setAttribute('aria-label', 'Open Crypto Moonboys Sparky helper');
     paperclip.innerHTML =
       '<span class="site-paperclip-agent__bubble" aria-hidden="true">HELLO...</span>' +
       '<span class="site-paperclip-agent__bot" aria-hidden="true">\uD83E\uDD16</span>';
