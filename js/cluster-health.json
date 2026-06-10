@@ -1,61 +1,61 @@
 {
-  "generated_at": "2026-05-03T06:08:49.607Z",
+  "generated_at": "2026-06-10T22:34:15.275Z",
   "summary": {
     "total_clusters": 4,
-    "total_pages": 226
+    "total_pages": 247
   },
   "clusters": [
     {
       "cluster_id": "tokens",
       "page_count": 29,
-      "avg_internal_links": 26.24,
-      "total_internal_links": 761,
-      "avg_rank_score": 244.86,
-      "avg_authority_score": 19.31,
-      "avg_content_quality": 49.1,
-      "avg_word_count": 986.62,
-      "centrality_score": 130.48,
-      "content_depth_score": 25.44,
-      "health_score": 51.11
+      "avg_internal_links": 11.48,
+      "total_internal_links": 333,
+      "avg_rank_score": 222.17,
+      "avg_authority_score": 14.76,
+      "avg_content_quality": 41.86,
+      "avg_word_count": 768.52,
+      "centrality_score": 48.52,
+      "content_depth_score": 21.48,
+      "health_score": 29.11
     },
     {
       "cluster_id": "characters",
-      "page_count": 74,
-      "avg_internal_links": 19.95,
-      "total_internal_links": 1476,
-      "avg_rank_score": 346.86,
-      "avg_authority_score": 24.35,
-      "avg_content_quality": 81.82,
-      "avg_word_count": 2621.59,
-      "centrality_score": 133.11,
-      "content_depth_score": 44.48,
-      "health_score": 50.05
+      "page_count": 77,
+      "avg_internal_links": 4.84,
+      "total_internal_links": 373,
+      "avg_rank_score": 317.6,
+      "avg_authority_score": 15.44,
+      "avg_content_quality": 75.58,
+      "avg_word_count": 2354.82,
+      "centrality_score": 141.7,
+      "content_depth_score": 40.87,
+      "health_score": 26.63
     },
     {
       "cluster_id": "factions",
-      "page_count": 122,
-      "avg_internal_links": 17.84,
-      "total_internal_links": 2176,
-      "avg_rank_score": 244.54,
-      "avg_authority_score": 22.35,
-      "avg_content_quality": 70.96,
-      "avg_word_count": 1073.53,
-      "centrality_score": 174.7,
-      "content_depth_score": 33.81,
-      "health_score": 42.68
+      "page_count": 140,
+      "avg_internal_links": 2.91,
+      "total_internal_links": 408,
+      "avg_rank_score": 215.56,
+      "avg_authority_score": 12.3,
+      "avg_content_quality": 63.91,
+      "avg_word_count": 869.31,
+      "centrality_score": 175.6,
+      "content_depth_score": 30.22,
+      "health_score": 19.2
     },
     {
       "cluster_id": "core",
       "page_count": 1,
-      "avg_internal_links": 19,
-      "total_internal_links": 19,
-      "avg_rank_score": 166,
-      "avg_authority_score": 18,
-      "avg_content_quality": 38,
-      "avg_word_count": 301,
-      "centrality_score": 0,
-      "content_depth_score": 17.2,
-      "health_score": 37.71
+      "avg_internal_links": 0,
+      "total_internal_links": 0,
+      "avg_rank_score": 109,
+      "avg_authority_score": 0,
+      "avg_content_quality": 14,
+      "avg_word_count": 9,
+      "centrality_score": 8,
+      "content_depth_score": 5.64,
+      "health_score": 4.67
     }
   ]
 }
