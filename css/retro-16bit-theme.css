@@ -46,7 +46,7 @@
 
   /* Layout dimensions */
   --right-panel-w: 270px;
-  --paperclip-right-panel-gap: 50px;
+  --sparky-right-panel-gap: 50px;
 }
 
 /* ── PREFERS-REDUCED-MOTION ──────────────────────────────────── */
@@ -5296,7 +5296,7 @@ body.page-game .roguelite-loop-copy {
 }
 
 
-/* ── Global Paperclip/robot floating agent ─────────────────────── */
+/* ── Global SWARMSY Sparky floating agent (legacy class names are styling hooks only) ─────────────────────── */
 .site-paperclip-agent {
   position: fixed;
   right: 18px;
@@ -5312,15 +5312,27 @@ body.page-game .roguelite-loop-copy {
 
 @media (min-width: 1361px) {
   body.page-has-right-panel .site-paperclip-agent {
-    right: calc(var(--right-panel-w) + var(--paperclip-right-panel-gap));
+    right: calc(var(--right-panel-w) + var(--sparky-right-panel-gap));
   }
 }
 
 .site-paperclip-agent__bot {
-  font-size: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
   line-height: 1;
   filter: drop-shadow(0 0 8px #00ffcc);
-  animation: sitePaperclipFloat 3s ease-in-out infinite;
+  animation: siteSparkyFloat 3s ease-in-out infinite;
+}
+
+.site-paperclip-agent__bot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: auto;
 }
 
 .site-paperclip-agent__bubble {
@@ -5339,7 +5351,7 @@ body.page-game .roguelite-loop-copy {
   filter: brightness(1.15);
 }
 
-@keyframes sitePaperclipFloat {
+@keyframes siteSparkyFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
@@ -5351,7 +5363,8 @@ body.page-game .roguelite-loop-copy {
   }
 
   .site-paperclip-agent__bot {
-    font-size: 34px;
+    width: 46px;
+    height: 46px;
   }
 
   .site-paperclip-agent__bubble {

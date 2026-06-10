@@ -95,7 +95,7 @@
         body: JSON.stringify({
           npcId: SPARKY_NPC_ID,
           message: message,
-          pagePath: window.location.pathname || '/paperclip.html',
+          pagePath: window.location.pathname || '/swarmsy.html',
         }),
       });
 

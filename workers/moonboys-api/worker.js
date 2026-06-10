@@ -5121,7 +5121,7 @@ export default {
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
 
       // 2. Validate npcId. Public chat is Sparky-only. Missing npcId and
-      //    legacy Paperclip clients are mapped to Sparky for rollout compatibility.
+      //    legacy assistant clients are mapped to Sparky for rollout compatibility.
       const requestedNpcId = body?.npcId == null ? 'sparky' : String(body.npcId).toLowerCase().trim();
       const npcId = requestedNpcId === 'paperclip' ? 'sparky' : requestedNpcId;
       if (npcId !== 'sparky') {
@@ -5136,7 +5136,7 @@ export default {
       const message = rawMessage.slice(0, 2000);
 
       // 4. pagePath — safe default, length-limited.
-      const pagePath = String(body?.pagePath || '/paperclip.html').slice(0, 256);
+      const pagePath = String(body?.pagePath || '/swarmsy.html').slice(0, 256);
 
       // 5. Origin of the inbound browser request.
       const origin = request.headers.get('Origin') || '';

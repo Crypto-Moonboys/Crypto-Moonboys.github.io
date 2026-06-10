@@ -40,7 +40,7 @@ const FORBIDDEN_PATHS = [
   [['HERMES', 'NPC', 'AGENT', 'AUDIT', 'REPORT.md'].join('_')][0],
   // Crypto_Moonboys_Master_Source_of_Truth_v1.md and city_block_topia_dev_build_deck.md
   // are intentionally omitted from FORBIDDEN_PATHS because they are canonical root
-  // project references, and Paperclip / future site-brain documentation need stable root paths.
+  // project references, and Sparky / future site-brain documentation need stable root paths.
   // Anti-drift: old block-topia room file that was replaced by MinimalCityRoom.js
   ['server', 'block-topia', 'src', 'rooms', ['City', 'Room.js'].join('')].join('/'),
 ];

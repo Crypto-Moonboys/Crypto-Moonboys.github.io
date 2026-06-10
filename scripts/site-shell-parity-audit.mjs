@@ -96,7 +96,9 @@ if (!shellJs) {
   console.log('\n[2b] site-shell.js Sparky global marker');
   const sparkyCompatibilityChecks = [
     ["document.getElementById('site-paperclip-agent')", 'single-render guard'],
-    ["paperclip.href = '/paperclip.html'", 'Sparky compatibility link target'],
+    ["sparkyAgent.href = '/swarmsy.html'", 'SWARMSY link target'],
+    ["/SPARKY%20FLOATING%20CLIP.png", 'SWARMSY/Sparky floating PNG asset'],
+    ["Open SWARMSY Sparky assistant", 'SWARMSY aria label'],
   ];
   for (const [needle, label] of sparkyCompatibilityChecks) {
     if (shellJs.includes(needle)) {
@@ -104,6 +106,12 @@ if (!shellJs) {
     } else {
       fail(`site-shell.js Sparky: ${label} MISSING`);
     }
+  }
+  const retiredPaperclipPath = '/paper' + 'clip.html';
+  if (shellJs.includes(retiredPaperclipPath)) {
+    fail(`site-shell.js must not link the floating assistant to ${retiredPaperclipPath}`);
+  } else {
+    pass(`site-shell.js does not link the floating assistant to ${retiredPaperclipPath}`);
   }
 }
 
