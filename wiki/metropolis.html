@@ -1,72 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- SAM:BEGIN:head -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the ">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Metropolis — Crypto Moonboys Wiki">
+  <meta property="og:title" content="metropolis — Crypto Moonboys Wiki">
   <meta property="og:description" content="Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the ">
-  <meta property="og:type" content="article">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://cryptomoonboys.com/wiki/metropolis.html">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/metropolis.html">
-  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <title>Metropolis — Crypto Moonboys Wiki</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/logo.svg">
+  <title>metropolis — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "metropolis",
-    "description": "Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the ",
-    "url": "https://cryptomoonboys.com/wiki/metropolis.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
     }
-  }
-  </script>
-  <link rel="icon" type="image/png" href="/favicon.png">
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
+<!-- SAM:END:head -->
 <body class="page-wiki page-has-right-panel" data-entity-hash="4d061cc3634f">
-<main id="content" role="main">
 
+<a class="skip-link" href="#content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="/img/logo.svg" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 Moonboys Wiki</span>
+      <span class="logo-sub">Crypto Encyclopedia</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search articles…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">Search</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="/search.html"><span class="nav-icon">🔍</span> Search</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">🤖 SAM Lore</div>
+      <div class="sidebar-nav">
+        <a href="/categories/concepts.html"><span class="nav-icon">⚙️</span> Concepts</a>
+        <a href="/search.html"><span class="nav-icon">📖</span> All SAM Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main">
+<!-- SAM:BEGIN:article -->
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="/index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
         <a href="/categories/concepts.html">Concepts</a>
         <span class="sep" aria-hidden="true">›</span>
-        <span aria-current="page">Metropolis</span>
+        <span aria-current="page">metropolis</span>
       </nav>
 
       <h1 class="page-title">
-        ⚙️ Metropolis
+        ⚙️ metropolis
+        <span>✅ SAM-VERIFIED</span>
       </h1>
       <div class="page-title-line" aria-hidden="true"></div>
 
       <div class="article-meta">
-        <span class="article-badge">✅ SAM Verified</span>
         <span class="article-badge">⚙️ Concepts</span>
-        <span class="meta-item">📅 Last updated: April 2026</span>
+        <span class="meta-item">📅 Last updated: June 2026</span>
         <span class="meta-item">📂 <a href="/categories/concepts.html">Concepts</a></span>
       </div>
 
       <article class="wiki-content" data-entity-slug="metropolis">
 
-          <p class="lead-paragraph">Metropolis stands as a shimmering anomaly within the chaotic sprawl of <a href="/wiki/block-topia.html">Block Topia</a>, a conceptual neutral sub-district in the <a href="/wiki/crypto-moonboys.html">Crypto Moonboys</a> universe where the 40 warring factions might broker fragile truces or weave intricate webs of betrayal. Introduced through the vivid storytelling of Jillian Godsil on Medium, this city-state rises like a digital mirage amidst the war-torn expanse, a paradox of potential peace stained by the ever-present threat of treachery. Here, diplomats and spies tread carefully through holographic streets, their every move watched by unseen forces, as Metropolis offers a rare space for negotiation during the relentless HODL WARS—though its neutrality is as much a battlefield as any frontline.</p>
+          <p class="lead-paragraph">Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the 40 warring factions might broker fragile truces or weave intricate webs of betrayal. Introduced through the vivid storytelling of Jillian Godsil on Medium, this city-state rises like a digital mirage amidst the war-torn expanse, a paradox of potential peace stained by the ever-present threat of treachery. Here, diplomats and spies tread carefully through holographic streets, their every move watched by unseen forces, as Metropolis offers a rare space for negotiation during the relentless HODL WARS—though its neutrality is as much a battlefield as any frontline.</p>
           <p class="lead-paragraph">Beyond its glittering facade, Metropolis is a nexus of hidden power, rumored to be governed by the mysterious ‘Chain Arbiters,’ a council of coders whose whispers shape the city’s fragile balance. Its towering structures, built from cascading streams of blockchain data, pulse with the energy of countless transactions, making it both a sanctuary and a trap for those who dare to linger too long. As a pivotal location in the Crypto Moonboys lore, Metropolis is poised to become a gameplay cornerstone, where staking CLAY tokens could unlock exclusive diplomatic events or safe havens during the chaos of Hard Fork Games.</p>
 
         <div class="article-stats">
@@ -86,7 +166,7 @@
           <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s lore, a conceptual city-state where factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce, with figures like Queen Sarah P-fly possibly pulling strings from the shadows. Backed by a real-world $1.2M investment for the CLAY token, Metropolis isn’t just a narrative device but a bridge between digital story and blockchain reality, offering a space where diplomacy might stave off war—or ignite it. Its presence in Block Topia adds a new strategic layer, where words can wound as deeply as code.</p>
           </div>
           <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore surrounding Metropolis hints at future gameplay integration, where staking CLAY tokens could grant access to exclusive diplomatic events or safe houses within the district during Hard Fork Games, providing a rare respite for battered factions like the <a href="/wiki/bitcoin-kids.html">Bitcoin Kids</a>. This mechanic, tied to real-world funding as per Medium posts, suggests Metropolis could become a hub for espionage or alliance-building, a place where $PUNK and other tokens buy influence rather than firepower. It’s a fresh narrative thread, ensuring Block Topia’s geography evolves with the Crypto Moonboys universe’s growing complexity.</p>
+          <p class="lore-paragraph">The lore surrounding Metropolis hints at future gameplay integration, where staking CLAY tokens could grant access to exclusive diplomatic events or safe houses within the district during Hard Fork Games, providing a rare respite for battered factions like the Bitcoin Kids. This mechanic, tied to real-world funding as per Medium posts, suggests Metropolis could become a hub for espionage or alliance-building, a place where $PUNK and other tokens buy influence rather than firepower. It’s a fresh narrative thread, ensuring Block Topia’s geography evolves with the Crypto Moonboys universe’s growing complexity.</p>
           </div>
           <div class="lore-fact-block">
           <p class="lore-paragraph">Metropolis emerged as a beacon of uneasy peace in Block Topia through the lore penned by Jillian Godsil, a neutral sub-district where factions convene during the HODL WARS to negotiate temporary alliances or orchestrate silent betrayals. Its towering structures, rendered in flickering neon and reinforced by blockchain-encrypted barriers, are said to house hidden chambers where CLAY token stakes unlock access to exclusive diplomatic events, offering respite or strategic advantage to battered factions. Yet, whispers in the digital wind speak of treachery—stories of ambushes planned in these very halls, where trust is a currency few can afford.</p>
@@ -140,7 +220,7 @@
           <p class="lore-paragraph">Metropolis emerged in Block Topia as a neutral sub-district through Jillian Godsil’s evocative lore on Medium, a conceptual city-state where the 40 warring factions can negotiate during HODL WARS, though its streets are rumored to hide as much treachery as truce. Figures like Queen Sarah P, shadowy power brokers in the narrative, are said to orchestrate silent betrayals beneath the holographic spires, using diplomacy as a weapon to destabilize rivals while maintaining the illusion of peace. The city’s towering structures, built on encrypted code, hum with hidden transactions, and every corner holds the potential for a deal—or a double-cross—making Metropolis a battlefield of words as deadly as any in the Crypto Moonboys universe.</p>
           </div>
           <div class="lore-fact-block">
-          <p class="lore-paragraph">The lore surrounding Metropolis hints at future gameplay integration, where staking CLAY tokens—backed by a real-world $1.2M investment round—could grant access to exclusive diplomatic events or safe houses within the district during the brutal chaos of Hard Fork Games. These sanctuaries offer a rare respite for battered factions like the GraffPUNKS or <a href="/wiki/gkniftyheads.html">GKniftyHEADS</a>, allowing them to regroup and strategize away from the carnage, though rumors persist that even these safe houses are monitored by the enigmatic ‘Chain Arbiters.’ This mechanic ties Metropolis to the high-stakes dynamics of blockchain funding, reflecting how real-world investments can shape virtual power struggles, positioning the city as a pivotal hub in Block Topia’s endless wars.</p>
+          <p class="lore-paragraph">The lore surrounding Metropolis hints at future gameplay integration, where staking CLAY tokens—backed by a real-world $1.2M investment round—could grant access to exclusive diplomatic events or safe houses within the district during the brutal chaos of Hard Fork Games. These sanctuaries offer a rare respite for battered factions like the GraffPUNKS or GKniftyHEADS, allowing them to regroup and strategize away from the carnage, though rumors persist that even these safe houses are monitored by the enigmatic ‘Chain Arbiters.’ This mechanic ties Metropolis to the high-stakes dynamics of blockchain funding, reflecting how real-world investments can shape virtual power struggles, positioning the city as a pivotal hub in Block Topia’s endless wars.</p>
           </div>
           <div class="lore-fact-block">
           <p class="lore-paragraph">Beneath the polished facade of Metropolis lies a sinister undercurrent, as its neutrality is maintained by the unseen council known as the ‘Chain Arbiters,’ coders who operate from the shadows of Block Topia’s blockchain, monitoring every transaction and manipulating outcomes with ghostly precision. Lore suggests these figures whisper to faction leaders through encrypted channels, sowing discord or brokering uneasy alliances for reasons known only to themselves, turning Metropolis into a web of unseen influence. Players who stake CLAY tokens might unlock these channels for propaganda or sabotage during HODL WARS, but at the risk of drawing the Arbiters’ attention—a gamble that could elevate a faction to power or doom it to digital oblivion in the blink of a neon flash.</p>
@@ -151,7 +231,7 @@
         <section class="wiki-section">
           <h2 id="lore">Lore</h2>
           <p class="lore-paragraph">Metropolis rises from the digital ashes of Block Topia as a mesmerizing contradiction, a neutral sub-district conceived in the captivating lore penned by Jillian Godsil on Medium, where the 40 factions of the Crypto Moonboys universe can momentarily lay down their weapons during the savage HODL WARS—though peace here is a mirage, perpetually tainted by the undercurrent of betrayal. This city-state is a sprawling marvel of holographic spires that pierce the virtual sky and encrypted pathways that snake through its underbelly, a place where towering structures cast long shadows over back-alley deals and whispered conspiracies. Its streets, though free of overt warfare, hum with tension, as figures like Queen Sarah P—enigmatic leaders of shadowy factions—navigate its labyrinthine politics with honeyed words and hidden daggers, each truce brokered under the weight of unspoken threats. Metropolis is not just a location but a living paradox, a sanctuary where the promise of diplomacy is undercut by the reality of espionage, where every neon-lit corner hides a potential ambush or a coded message that could ignite the next conflict. Lore hints at deeper integrations into gameplay, with staking CLAY tokens—a mechanic tied to a real-world $1.2M investment round—potentially granting access to exclusive diplomatic summits or fortified safe houses during the chaos of Hard Fork Games, offering battered factions a fleeting chance to regroup. Yet, beneath its gleaming surface, Metropolis harbors a sinister secret: its neutrality is an illusion crafted by the ‘Chain Arbiters,’ a mysterious council of coders who monitor every transaction and whisper in the ears of faction leaders, ensuring that no peace lasts too long. In this city of light and shadow, Metropolis stands as both a refuge and a trap, a glittering arena where the true battles of HODL WARS are fought not with weapons, but with words and treachery.</p>
-          <p class="lore-paragraph">Metropolis, for all its shimmering promise of peace, is a city built on a foundation of secrets, its very existence a calculated anomaly within the brutal sprawl of Block Topia. Beneath the holographic spires and encrypted pathways, lore whispers of hidden nodes embedded in the city’s towering structures, blockchain-forged constructs that hum with latent power. These nodes, accessible only to those who wield the right cipher, are rumored to have the ability to temporarily disable enemy weapons during the chaos of Hard Fork Games, offering a fleeting tactical edge to factions like the <a href="/wiki/bitcoin.html">Bitcoin</a> Kids who dare to navigate Metropolis’ treacherous deals. The knowledge of such ciphers is said to be guarded by the Chain Arbiters, the unseen council of coders who maintain the district’s fragile neutrality, though some speculate that figures like Queen Sarah P-fly have long since cracked their codes, using the city’s hidden mechanics to reshape battlefronts with a single whispered deal. This undercurrent of hidden power transforms Metropolis into a chessboard where every move is laced with risk, a place where the sharpest weapon is not a blade of code but a well-timed secret.</p>
+          <p class="lore-paragraph">Metropolis, for all its shimmering promise of peace, is a city built on a foundation of secrets, its very existence a calculated anomaly within the brutal sprawl of Block Topia. Beneath the holographic spires and encrypted pathways, lore whispers of hidden nodes embedded in the city’s towering structures, blockchain-forged constructs that hum with latent power. These nodes, accessible only to those who wield the right cipher, are rumored to have the ability to temporarily disable enemy weapons during the chaos of Hard Fork Games, offering a fleeting tactical edge to factions like the Bitcoin Kids who dare to navigate Metropolis’ treacherous deals. The knowledge of such ciphers is said to be guarded by the Chain Arbiters, the unseen council of coders who maintain the district’s fragile neutrality, though some speculate that figures like Queen Sarah P-fly have long since cracked their codes, using the city’s hidden mechanics to reshape battlefronts with a single whispered deal. This undercurrent of hidden power transforms Metropolis into a chessboard where every move is laced with risk, a place where the sharpest weapon is not a blade of code but a well-timed secret.</p>
           <p class="lore-paragraph">Beyond its strategic allure, Metropolis teases a darker gameplay integration, where staking CLAY tokens—backed by a real-world $1.2M investment—unlocks not just diplomatic summits but encrypted channels for faction leaders to broadcast propaganda or sabotage rival networks. These channels, buried in the city’s digital underbelly, allow for silent warfare, where words and misinformation can cripple an enemy before a single shot is fired in the HODL WARS. Yet, access comes at a cost: the safe houses tied to these stakes are guarded by rogue AI sentinels, remnants of a failed blockchain experiment orchestrated by the Chain Arbiters themselves. Seeking sanctuary within these fortified enclaves offers temporary immunity, but it also exposes one’s position to the Arbiters’ watchful gaze, leaving players to wonder if the respite is worth the price of being watched. Encrypted messages often litter these safe houses, cryptic warnings of impending betrayals or hints at fragile alliances, ensuring that even in supposed safety, the specter of treachery looms large. Metropolis thus evolves from a mere refuge into a crucible of influence, a sub-district where the Crypto Moonboys universe’s deepest games of power are played, not with brute force, but with cunning and deception.</p>
         </section>
 
@@ -182,159 +262,39 @@
         <span class="cat-label">Categories:</span>
         <a href="/categories/concepts.html">Concepts</a>
       </div>
-
+<!-- SAM:END:article -->
+      <!-- Manual sections preserved during SAM migration -->
       <div class="wiki-comments" data-page-id="metropolis"></div>
+
+
     </main>
 
-<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
-<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
-<!-- so placeholder nodes are never injected into the boot sequence.    -->
-<!-- 1. Core config -->
-<script data-cfasync="false" src="/js/api-config.js"></script>
-<!-- 2. Event bus -->
-<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<!-- 3. Identity -->
-<script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
-<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Shell + shared components -->
-<script data-cfasync="false" src="/js/site-shell.js"></script>
-<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
-<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
-<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 6. Page-specific scripts -->
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="/index.html">Main Page</a></li><li><a href="/categories/index.html">Categories</a></li><li><a href="/search.html">Search</a></li><li><a href="/about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🤖 SAM</h4><ul><li><a href="/search.html">SAM Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
+      </div>
+    </footer>
+  </div>
+</div>
 
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "metropolis",
-    "description": "Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the ",
-    "url": "https://cryptomoonboys.com/wiki/metropolis.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "metropolis",
-    "description": "Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the ",
-    "url": "https://cryptomoonboys.com/wiki/metropolis.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "metropolis",
-    "description": "Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the ",
-    "url": "https://cryptomoonboys.com/wiki/metropolis.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "metropolis",
-    "description": "Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the ",
-    "url": "https://cryptomoonboys.com/wiki/metropolis.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "metropolis",
-    "description": "Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the ",
-    "url": "https://cryptomoonboys.com/wiki/metropolis.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "metropolis",
-    "description": "Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the ",
-    "url": "https://cryptomoonboys.com/wiki/metropolis.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script data-cfasync="false" src="/js/faction-alignment.js"></script>
-<script data-cfasync="false" src="/js/wiki.js"></script>
-<script data-cfasync="false" src="/js/bible-loader.js"></script>
-<script data-cfasync="false" src="/js/engagement.js"></script>
-<script data-cfasync="false" src="/js/comments.js"></script>
-<script data-cfasync="false" src="/js/battle-layer.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<!-- SAM:BEGIN:scripts -->
+<script src="/js/api-config.js" data-cfasync="false"></script>
+<script src="/js/arcade/core/global-event-bus.js" data-cfasync="false"></script>
+<script src="/js/identity-gate.js" data-cfasync="false"></script>
+<script src="/js/core/moonboys-state.js" data-cfasync="false"></script>
+<script src="/js/site-shell.js" data-cfasync="false"></script>
+<script src="/js/components/connection-status-panel.js" data-cfasync="false"></script>
+<script src="/js/components/global-player-header.js" data-cfasync="false"></script>
+<script src="/js/components/live-activity-summary.js" data-cfasync="false"></script>
+<script src="/js/wiki.js" data-cfasync="false"></script>
+<script src="/js/bible-loader.js" data-cfasync="false"></script>
+<!-- SAM:END:scripts -->
 </body>
 </html>
