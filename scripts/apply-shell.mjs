@@ -204,10 +204,20 @@ function extractPageScripts(html, relPath) {
   return pageScripts;
 }
 
+/* ── Redirect page detection ───────────────────────────────────── */
+function isRedirectPage(html) {
+  return html.includes('http-equiv="refresh"') || html.includes("http-equiv='refresh'");
+}
+
 /* ── Build output HTML ─────────────────────────────────────────── */
 function transform(html, relPath) {
   // Strip BOM
   html = html.replace(/^\uFEFF/, '');
+
+  // Skip redirect pages — preserve them exactly as-is
+  if (isRedirectPage(html)) {
+    return html;
+  }
 
   const headBlock = extractHead(html);
   const bodyAttrs = extractBodyAttrs(html);

@@ -58,6 +58,20 @@ const wikiFiles = fs.readdirSync(WIKI_DIR)
 console.log('\n─── Wiki Shell Guard ───────────────────────────────────────────\n');
 console.log(`Scanning ${wikiFiles.length} wiki pages for required runtime scripts...\n`);
 
+// Boot scripts that must not appear more than once per page
+const CANONICAL_BOOT_SRCS = [
+  '/js/api-config.js',
+  '/js/arcade/core/global-event-bus.js',
+  '/js/identity-gate.js',
+  '/js/core/moonboys-state.js',
+  '/js/site-shell.js',
+  '/js/components/connection-status-panel.js',
+  '/js/components/global-player-header.js',
+  '/js/components/live-activity-summary.js',
+  '/js/wiki.js',
+  '/js/bible-loader.js',
+];
+
 const failingPages = [];
 
 for (const fname of wikiFiles) {
@@ -69,11 +83,34 @@ for (const fname of wikiFiles) {
     continue;
   }
 
+  // Check all required scripts are present
   const missing = REQUIRED_SCRIPTS.filter(src => !html.includes(src));
   if (missing.length > 0) {
     failingPages.push({ fname, missing });
     for (const src of missing) {
       fail(`wiki/${fname} — missing required script: ${src}`);
+    }
+  }
+
+  // Check data-cfasync="false" on canonical boot scripts
+  for (const src of CANONICAL_BOOT_SRCS) {
+    const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const cfPattern = new RegExp(
+      `<script[^>]*data-cfasync=["']false["'][^>]*src=["']${escaped}["']|` +
+      `<script[^>]*src=["']${escaped}["'][^>]*data-cfasync=["']false["']`
+    );
+    if (html.includes(src) && !cfPattern.test(html)) {
+      fail(`wiki/${fname} — script missing data-cfasync="false": ${src}`);
+    }
+  }
+
+  // Check for duplicate boot script src tags
+  for (const src of CANONICAL_BOOT_SRCS) {
+    const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const srcPattern = new RegExp(`src=["']${escaped}["']`, 'g');
+    const count = (html.match(srcPattern) || []).length;
+    if (count > 1) {
+      fail(`wiki/${fname} — duplicate script (${count}×): ${src}`);
     }
   }
 }
@@ -101,17 +138,7 @@ if (!fs.existsSync(dropXrplPath)) {
     }
   }
   // data-cfasync check on canonical boot scripts
-  const canonicalBoot = [
-    '/js/api-config.js',
-    '/js/arcade/core/global-event-bus.js',
-    '/js/identity-gate.js',
-    '/js/core/moonboys-state.js',
-    '/js/site-shell.js',
-    '/js/components/connection-status-panel.js',
-    '/js/components/global-player-header.js',
-    '/js/components/live-activity-summary.js',
-  ];
-  const cfMissing = canonicalBoot.filter(src => {
+  const cfMissing = CANONICAL_BOOT_SRCS.filter(src => {
     const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const pattern = new RegExp(
       `<script[^>]*data-cfasync=["']false["'][^>]*src=["']${escaped}["']|` +
@@ -124,6 +151,19 @@ if (!fs.existsSync(dropXrplPath)) {
   } else {
     for (const src of cfMissing) {
       fail(`/wiki/drop-xrpl.html — canonical boot script missing data-cfasync="false": ${src}`);
+    }
+  }
+  // Duplicate script check on drop-xrpl.html specifically
+  const dropDupes = CANONICAL_BOOT_SRCS.filter(src => {
+    const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const count = (dropHtml.match(new RegExp(`src=["']${escaped}["']`, 'g')) || []).length;
+    return count > 1;
+  });
+  if (dropDupes.length === 0) {
+    pass('/wiki/drop-xrpl.html — no duplicate boot scripts');
+  } else {
+    for (const src of dropDupes) {
+      fail(`/wiki/drop-xrpl.html — duplicate script: ${src}`);
     }
   }
   // page-has-right-panel class
