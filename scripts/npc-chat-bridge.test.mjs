@@ -18,6 +18,7 @@
  * 14. Bridge token is never present in any response body.
  * 15. sparky-chat.js calls /public/npc-chat through window.MOONBOYS_API.getApiBase().
  * 16. /sparky.html loads sparky-chat.js (not paperclip-chat.js); sparky-chat.js has no Paperclip persona wording.
+ * 17. js/paperclip-chat.js does not exist; no public HTML page loads it.
  */
 
 import assert from 'node:assert/strict';
@@ -600,6 +601,38 @@ await test('js/sparky-chat.js contains no Paperclip persona wording', () => {
   // data-paperclip-* attributes and class names were the public-facing Paperclip hooks
   assert.ok(!chatJsSrc.includes('data-paperclip-'), 'sparky-chat.js must not use data-paperclip-* attribute selectors');
   assert.ok(!chatJsSrc.includes("'paperclip-"), "sparky-chat.js must not reference paperclip-* CSS class names");
+});
+
+await test('js/paperclip-chat.js has been deleted from the repo', async () => {
+  let exists = false;
+  try {
+    await fs.access(path.join(ROOT, 'js', 'paperclip-chat.js'));
+    exists = true;
+  } catch {
+    exists = false;
+  }
+  assert.ok(!exists, 'js/paperclip-chat.js must not exist — it was the legacy Paperclip chat client');
+});
+
+await test('no public HTML page loads /js/paperclip-chat.js', async () => {
+  async function* walkHtml(dir) {
+    for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
+        yield* walkHtml(full);
+      } else if (entry.isFile() && entry.name.endsWith('.html')) {
+        yield full;
+      }
+    }
+  }
+  const offenders = [];
+  for await (const htmlFile of walkHtml(ROOT)) {
+    const src = await fs.readFile(htmlFile, 'utf8');
+    if (src.includes('paperclip-chat.js')) {
+      offenders.push(path.relative(ROOT, htmlFile));
+    }
+  }
+  assert.deepEqual(offenders, [], `These HTML files must not load paperclip-chat.js: ${offenders.join(', ')}`);
 });
 
 await test('Worker 502 response includes safe Sparky reply text', () => {
