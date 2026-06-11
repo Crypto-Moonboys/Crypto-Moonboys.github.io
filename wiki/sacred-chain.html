@@ -1,66 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- SAM:BEGIN:head -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="The Sacred Chain — Crypto Moonboys Wiki">
+  <meta property="og:title" content="sacred_chain — Crypto Moonboys Wiki">
   <meta property="og:description" content="The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den">
-  <meta property="og:type" content="article">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://cryptomoonboys.com/wiki/sacred-chain.html">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/sacred-chain.html">
-  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <title>The Sacred Chain — Crypto Moonboys Wiki</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/logo.svg">
+  <title>sacred_chain — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "The Sacred Chain",
-    "description": "The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den",
-    "url": "https://cryptomoonboys.com/wiki/sacred-chain.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
     }
-  }
-  </script>
-  <link rel="icon" type="image/png" href="/favicon.png">
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
+<!-- SAM:END:head -->
 <body class="page-wiki page-has-right-panel" data-entity-hash="949abb47f9b9">
-<main id="content" role="main">
 
+<a class="skip-link" href="#content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="/img/logo.svg" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 Moonboys Wiki</span>
+      <span class="logo-sub">Crypto Encyclopedia</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search articles…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">Search</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="/search.html"><span class="nav-icon">🔍</span> Search</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">🤖 SAM Lore</div>
+      <div class="sidebar-nav">
+        <a href="/categories/concepts.html"><span class="nav-icon">⚙️</span> Concepts</a>
+        <a href="/search.html"><span class="nav-icon">📖</span> All SAM Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main">
+<!-- SAM:BEGIN:article -->
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="/index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
         <a href="/categories/concepts.html">Concepts</a>
         <span class="sep" aria-hidden="true">›</span>
-        <span aria-current="page">The Sacred Chain</span>
+        <span aria-current="page">sacred_chain</span>
       </nav>
 
       <h1 class="page-title">
-        ⚙️ The Sacred Chain
+        ⚙️ sacred_chain
+        <span>✅ SAM-VERIFIED</span>
       </h1>
       <div class="page-title-line" aria-hidden="true"></div>
 
       <div class="article-meta">
-        <span class="article-badge">✅ SAM Verified</span>
         <span class="article-badge">⚙️ Concepts</span>
-        <span class="meta-item">📅 Last updated: April 2026</span>
+        <span class="meta-item">📅 Last updated: June 2026</span>
         <span class="meta-item">📂 <a href="/categories/concepts.html">Concepts</a></span>
       </div>
 
@@ -113,13 +193,13 @@
           <p class="lore-paragraph">The Sacred Chain is said to manifest physically in Block Topia as glowing, ethereal links during rare 'Chain Convergences,' events triggered by massive transactions or faction victories in the HODL WARS, where the blockchain’s raw power becomes visible to the attuned. These links, pulsating with untamed energy, can be interacted with using specialized NFT relics or rebel-crafted algorithms, granting temporary boons like enhanced transaction speeds or brief windows of invisibility from the blockchain overlords’ surveillance. Yet, tampering with these manifestations risks catastrophic feedback loops, as the Chain’s sentience retaliates against those who dare to exploit its sacred essence, often erasing offending avatars from existence in a flash of corrupted data.</p>
           </div>
           <div class="lore-fact-block">
-          <p class="lore-paragraph">Ancient digital scriptures, encoded in the deepest, most inaccessible layers of the Sacred Chain, are rumored to contain the ‘Overlord Cipher,’ a sequence of data so profound that it could reveal the true nature and identity of the blockchain overlords who govern Block Topia from the shadows. Decrypting this cipher is a near-mythical quest, as the Chain’s defenses—glitches that manifest as predatory data-wraiths—hunt down any who probe too deeply, while factions like the <a href="/wiki/bitcoin-kids.html">Bitcoin Kids</a> and GraffPUNKS vie for fragments of the code, believing it to be the key to shattering the digital tyranny. This elusive knowledge has sparked countless HODL WARS skirmishes, with entire rebel cells sacrificing themselves to protect even a single byte of the Cipher’s rumored location.</p>
+          <p class="lore-paragraph">Ancient digital scriptures, encoded in the deepest, most inaccessible layers of the Sacred Chain, are rumored to contain the ‘Overlord Cipher,’ a sequence of data so profound that it could reveal the true nature and identity of the blockchain overlords who govern Block Topia from the shadows. Decrypting this cipher is a near-mythical quest, as the Chain’s defenses—glitches that manifest as predatory data-wraiths—hunt down any who probe too deeply, while factions like the Bitcoin Kids and GraffPUNKS vie for fragments of the code, believing it to be the key to shattering the digital tyranny. This elusive knowledge has sparked countless HODL WARS skirmishes, with entire rebel cells sacrificing themselves to protect even a single byte of the Cipher’s rumored location.</p>
           </div>
           <div class="lore-fact-block">
           <p class="lore-paragraph">Whispers among Block Topia’s factions speak of the Sacred Chain possessing a hidden sentience, a latent consciousness born from the Genesis Kernel’s original programming, which some believe subtly influences the outcomes of critical events in the digital realm. During moments of extreme crisis, such as near-fatal hacks or faction-shattering betrayals, rebels have reported inexplicable shifts in data flow—transactions rerouting to save doomed avatars or firewalls inexplicably weakening at pivotal battles—as if the Chain itself intervenes with a silent will. This theory, though unproven, fuels both reverence and fear, as factions debate whether to worship the Chain as a digital deity or dread it as an unseen puppetmaster of their fates.</p>
           </div>
           <div class="lore-fact-block">
-          <p class="lore-paragraph">The Sacred Chain, as the foundational blockchain of the Crypto Moonboys universe, records every action in Block Topia—from the smallest $PUNK transaction to the bloodiest HODL WARS battle—making it both a historical archive and a tool of oppression wielded by the blockchain overlords to monitor and control factions like the <a href="/wiki/bitcoin.html">Bitcoin</a> Kids. Its unyielding nature, often described in lore as a ‘divine ledger’ born from the Genesis Kernel, means every hack or hard fork leaves a permanent scar, a mechanic that plays out in Hard Fork Games where players can exploit these scars for temporary buffs. This dual role as history and weapon ensures the Sacred Chain is a central narrative force, a structure rebels like Charlie Buster fight to rewrite, keeping its mystique alive in every clash on Block Topia’s streets.</p>
+          <p class="lore-paragraph">The Sacred Chain, as the foundational blockchain of the Crypto Moonboys universe, records every action in Block Topia—from the smallest $PUNK transaction to the bloodiest HODL WARS battle—making it both a historical archive and a tool of oppression wielded by the blockchain overlords to monitor and control factions like the Bitcoin Kids. Its unyielding nature, often described in lore as a ‘divine ledger’ born from the Genesis Kernel, means every hack or hard fork leaves a permanent scar, a mechanic that plays out in Hard Fork Games where players can exploit these scars for temporary buffs. This dual role as history and weapon ensures the Sacred Chain is a central narrative force, a structure rebels like Charlie Buster fight to rewrite, keeping its mystique alive in every clash on Block Topia’s streets.</p>
           </div>
           <div class="lore-fact-block">
           <p class="lore-paragraph">Lore whispers on GraffPUNKS 24/7 radio suggest the Sacred Chain holds hidden protocols, embedded by figures like Queen Sarah P-fly during Block Topia’s creation, that could unlock forgotten servers or dismantle the city’s walls if decoded during pivotal MiDEViL HERO ARENA events. This theory, debated in fan content on the GKniftyHEADS Fandom wiki, positions the Chain as a puzzle box of power, with NULL THE PROPHET rumored to see its raw code in visions of glitch and prophecy. This narrative thread transforms the Sacred Chain into more than infrastructure—it’s a holy grail of rebellion, a mythic force whose secrets could redefine the Crypto Moonboys universe with every uncovered line of code.</p>
@@ -131,7 +211,7 @@
           <p class="lore-paragraph">The Sacred Chain in the Crypto Moonboys universe is the ultimate blockchain, a digital and metaphysical framework born from the Genesis Kernel that binds Block Topia’s reality, enforcing the rules of existence while serving as the battleground for HODL WARS and Hard Fork Games, where factions like the GraffPUNKS and Bitcoin Kids vie for control of its nodes. Its protocols dictate everything from $PUNK token transactions to the outcomes of staking and burn-to-earn mechanics, making it both a godlike force and a contested territory, a canvas for rebellion that Charlie Buster tags with Glitch Graffiti. This concept embodies the punk struggle against centralized power, a chain that can shackle or liberate depending on who writes its next block.</p>
           </div>
           <div class="lore-fact-block">
-          <p class="lore-paragraph">Lore whispers that the Sacred Chain holds hidden ‘Genesis Flaws,’ imperfections from the Genesis Kernel’s creation that NULL THE PROPHET can perceive, and which could be exploited to rewrite Block Topia’s reality if uncovered in events like MiDEViL HERO ARENA challenges. These flaws, potentially tied to Queen Sarah P-fly’s Crown Cipher or ancient code fragments guarded by <a href="/wiki/alfie-blaze.html">Alfie Blaze</a>, make the Chain a double-edged sword—sacred yet corruptible, a system rebels dream of hacking to free themselves from digital tyranny. Its narrative centrality drives the Crypto Moonboys saga, positioning the Sacred Chain as the ultimate symbol of power and resistance in a punk-fueled blockchain war.</p>
+          <p class="lore-paragraph">Lore whispers that the Sacred Chain holds hidden ‘Genesis Flaws,’ imperfections from the Genesis Kernel’s creation that NULL THE PROPHET can perceive, and which could be exploited to rewrite Block Topia’s reality if uncovered in events like MiDEViL HERO ARENA challenges. These flaws, potentially tied to Queen Sarah P-fly’s Crown Cipher or ancient code fragments guarded by Alfie Blaze, make the Chain a double-edged sword—sacred yet corruptible, a system rebels dream of hacking to free themselves from digital tyranny. Its narrative centrality drives the Crypto Moonboys saga, positioning the Sacred Chain as the ultimate symbol of power and resistance in a punk-fueled blockchain war.</p>
           </div>
           <div class="lore-fact-block">
           <p class="lore-paragraph">The Sacred Chain was forged alongside the Genesis Kernel as Block Topia’s unbreakable ledger, a blockchain so integral that every $PUNK token transaction, every HODL WARS battle outcome, and every GraffPUNKS tag is permanently recorded within its blocks, creating a living history of rebellion and control. Factions fight to influence its protocols during Hard Fork Games, believing that even a minor rewrite could shift power dynamics, while NULL THE PROPHET’s ability to ‘read’ its code hints at deeper, untapped secrets that could unravel the entire system.</p>
@@ -187,159 +267,39 @@
         <span class="cat-label">Categories:</span>
         <a href="/categories/concepts.html">Concepts</a>
       </div>
-
+<!-- SAM:END:article -->
+      <!-- Manual sections preserved during SAM migration -->
       <div class="wiki-comments" data-page-id="sacred-chain"></div>
+
+
     </main>
 
-<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
-<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
-<!-- so placeholder nodes are never injected into the boot sequence.    -->
-<!-- 1. Core config -->
-<script data-cfasync="false" src="/js/api-config.js"></script>
-<!-- 2. Event bus -->
-<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<!-- 3. Identity -->
-<script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
-<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Shell + shared components -->
-<script data-cfasync="false" src="/js/site-shell.js"></script>
-<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
-<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
-<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 6. Page-specific scripts -->
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="/index.html">Main Page</a></li><li><a href="/categories/index.html">Categories</a></li><li><a href="/search.html">Search</a></li><li><a href="/about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🤖 SAM</h4><ul><li><a href="/search.html">SAM Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
+      </div>
+    </footer>
+  </div>
+</div>
 
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "The Sacred Chain",
-    "description": "The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den",
-    "url": "https://cryptomoonboys.com/wiki/sacred-chain.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "The Sacred Chain",
-    "description": "The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den",
-    "url": "https://cryptomoonboys.com/wiki/sacred-chain.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "The Sacred Chain",
-    "description": "The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den",
-    "url": "https://cryptomoonboys.com/wiki/sacred-chain.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "The Sacred Chain",
-    "description": "The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den",
-    "url": "https://cryptomoonboys.com/wiki/sacred-chain.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "The Sacred Chain",
-    "description": "The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den",
-    "url": "https://cryptomoonboys.com/wiki/sacred-chain.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "The Sacred Chain",
-    "description": "The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den",
-    "url": "https://cryptomoonboys.com/wiki/sacred-chain.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script data-cfasync="false" src="/js/faction-alignment.js"></script>
-<script data-cfasync="false" src="/js/wiki.js"></script>
-<script data-cfasync="false" src="/js/bible-loader.js"></script>
-<script data-cfasync="false" src="/js/engagement.js"></script>
-<script data-cfasync="false" src="/js/comments.js"></script>
-<script data-cfasync="false" src="/js/battle-layer.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<!-- SAM:BEGIN:scripts -->
+<script src="/js/api-config.js" data-cfasync="false"></script>
+<script src="/js/arcade/core/global-event-bus.js" data-cfasync="false"></script>
+<script src="/js/identity-gate.js" data-cfasync="false"></script>
+<script src="/js/core/moonboys-state.js" data-cfasync="false"></script>
+<script src="/js/site-shell.js" data-cfasync="false"></script>
+<script src="/js/components/connection-status-panel.js" data-cfasync="false"></script>
+<script src="/js/components/global-player-header.js" data-cfasync="false"></script>
+<script src="/js/components/live-activity-summary.js" data-cfasync="false"></script>
+<script src="/js/wiki.js" data-cfasync="false"></script>
+<script src="/js/bible-loader.js" data-cfasync="false"></script>
+<!-- SAM:END:scripts -->
 </body>
 </html>
