@@ -1,66 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- SAM:BEGIN:head -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disrup">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="GraffPUNKS — Crypto Moonboys Wiki">
+  <meta property="og:title" content="graffpunks — Crypto Moonboys Wiki">
   <meta property="og:description" content="The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disrup">
-  <meta property="og:type" content="article">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://cryptomoonboys.com/wiki/graffpunks.html">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/graffpunks.html">
-  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <title>GraffPUNKS — Crypto Moonboys Wiki</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/logo.svg">
+  <title>graffpunks — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "GraffPUNKS",
-    "description": "The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disrup",
-    "url": "https://cryptomoonboys.com/wiki/graffpunks.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
     }
-  }
-  </script>
-  <link rel="icon" type="image/png" href="/favicon.png">
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
+<!-- SAM:END:head -->
 <body class="page-wiki page-has-right-panel" data-entity-hash="95fee6a0f31a">
-<main id="content" role="main">
 
+<a class="skip-link" href="#content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="/img/logo.svg" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 Moonboys Wiki</span>
+      <span class="logo-sub">Crypto Encyclopedia</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search articles…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">Search</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="/search.html"><span class="nav-icon">🔍</span> Search</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">🤖 SAM Lore</div>
+      <div class="sidebar-nav">
+        <a href="/categories/lore.html"><span class="nav-icon">⚔️</span> Lore</a>
+        <a href="/search.html"><span class="nav-icon">📖</span> All SAM Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main">
+<!-- SAM:BEGIN:article -->
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="/index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
         <a href="/categories/lore.html">Lore</a>
         <span class="sep" aria-hidden="true">›</span>
-        <span aria-current="page">GraffPUNKS</span>
+        <span aria-current="page">graffpunks</span>
       </nav>
 
       <h1 class="page-title">
-        ⚔️ GraffPUNKS
+        ⚔️ graffpunks
+        <span>✅ SAM-VERIFIED</span>
       </h1>
       <div class="page-title-line" aria-hidden="true"></div>
 
       <div class="article-meta">
-        <span class="article-badge">✅ SAM Verified</span>
         <span class="article-badge">⚔️ Lore</span>
-        <span class="meta-item">📅 Last updated: April 2026</span>
+        <span class="meta-item">📅 Last updated: June 2026</span>
         <span class="meta-item">📂 <a href="/categories/lore.html">Lore</a></span>
       </div>
 
@@ -92,7 +172,7 @@
           <p class="lore-paragraph">The GraffPUNKS’ digital rebellion began with their first NFT drop, known as the 'Genesis Spray,' a collection of tokenized street art that crashed servers on WAX due to overwhelming demand, marking their explosive entry into the Crypto Moonboys universe. This event, celebrated in lore as the moment the Sacred Chain felt its first tremor of defiance, set the tone for their role in the HODL WARS, where every tag and token became a battle cry against Block Topia’s overlords. It’s a foundational story that ties GraffPUNKS to real-world street art roots via Darren Cullen, resonating with every player who stakes $PUNK in the name of freedom.</p>
           </div>
           <div class="lore-fact-block">
-          <p class="lore-paragraph">Hidden within the GraffPUNKS’ multi-chain operations is a secretive initiative called 'CipherCanvas,' a protocol that embeds encrypted messages of resistance within their NFT artworks. These messages, decipherable only by true Moonboys who hold specific tokens like NBG or PMSL, often contain coordinates for virtual meetups or plans for Hard Fork Games strikes, making GraffPUNKS a hub of underground strategy. This mechanic, inspired by the real-world subversive art of Graffiti Kings, connects them to characters like <a href="/wiki/alfie-blaze.html">Alfie Blaze</a>, whose Bitcoin Kids rely on such covert tactics to survive Block Topia’s walls.</p>
+          <p class="lore-paragraph">Hidden within the GraffPUNKS’ multi-chain operations is a secretive initiative called 'CipherCanvas,' a protocol that embeds encrypted messages of resistance within their NFT artworks. These messages, decipherable only by true Moonboys who hold specific tokens like NBG or PMSL, often contain coordinates for virtual meetups or plans for Hard Fork Games strikes, making GraffPUNKS a hub of underground strategy. This mechanic, inspired by the real-world subversive art of Graffiti Kings, connects them to characters like Alfie Blaze, whose Bitcoin Kids rely on such covert tactics to survive Block Topia’s walls.</p>
           </div>
           <div class="lore-fact-block">
           <p class="lore-paragraph">The GraffPUNKS’ digital rebellion began with their first NFT drop, known as the 'Genesis Spray,' a collection of tokenized street art that crashed servers on WAX due to overwhelming demand, marking their explosive entry into the Crypto Moonboys universe. This event, chronicled on graffpunks.live, not only established their dominance in the blockchain art space but also set the tone for their role in HODL WARS, where owning a Genesis Spray NFT grants players unique buffs like temporary invisibility to enemy algorithms. The drop’s impact reverberates through lore as a moment when art became warfare, inspiring countless avatars to join the GraffPUNKS’ fight against Block Topia’s overlords, and remains a benchmark for the power of community-driven rebellion in the digital age.</p>
@@ -104,7 +184,7 @@
           <p class="lore-paragraph">The GraffPUNKS 24/7 blockchain radio, accessible via platforms like radiojar.com, serves as the faction’s sonic backbone, broadcasting underground beats laced with subversive messages that players can decode for in-game advantages during HODL WARS. Inspired by Trevor Fung’s real-world rave legacy, the station is more than entertainment—it’s a lifeline for rebels like Alfie Blaze’s Bitcoin Kids, offering intel on faction movements or token burns through hidden frequencies. Lore suggests the radio operates from a rogue server in Block Topia, untouchable by overlords, making it a symbol of the GraffPUNKS’ unyielding spirit and a constant reminder that their rebellion is as much about culture as it is about combat, resonating with fans who tune in for both music and mission.</p>
           </div>
           <div class="lore-fact-block">
-          <p class="lore-paragraph">GraffPUNKS’ connection to the <a href="/wiki/1m-free-nfts-programme.html">1M free NFTs programme</a>, a cornerstone of their ethos as detailed on graffpunks.live, mirrors their real-world roots in accessible street art, flooding Block Topia with free tokenized tags that anyone can claim. This initiative disrupts the in-game economy, empowering new players to join the fight without financial barriers, and often sparks faction wars over who controls the most ‘free tags’ during Hard Fork Games. The programme’s lore ties it to Darren Cullen’s vision of art as a universal weapon, ensuring the GraffPUNKS remain a faction of the people, a narrative thread that deepens their appeal and cements their role as the heart of the Crypto Moonboys’ grassroots uprising.</p>
+          <p class="lore-paragraph">GraffPUNKS’ connection to the 1M free NFTs programme, a cornerstone of their ethos as detailed on graffpunks.live, mirrors their real-world roots in accessible street art, flooding Block Topia with free tokenized tags that anyone can claim. This initiative disrupts the in-game economy, empowering new players to join the fight without financial barriers, and often sparks faction wars over who controls the most ‘free tags’ during Hard Fork Games. The programme’s lore ties it to Darren Cullen’s vision of art as a universal weapon, ensuring the GraffPUNKS remain a faction of the people, a narrative thread that deepens their appeal and cements their role as the heart of the Crypto Moonboys’ grassroots uprising.</p>
           </div>
           <div class="lore-fact-block">
           <p class="lore-paragraph">The GraffPUNKS’ digital rebellion began with their first NFT drop, known as the 'Genesis Spray,' a collection of tokenized street art that crashed servers on WAX due to overwhelming demand, marking their explosive entry into the Crypto Moonboys universe. This event, now etched into Block Topia lore, symbolized their mission to disrupt the blockchain overlords’ control, turning art into a currency of resistance that even the Sacred Chain couldn’t suppress. It’s a defining moment that continues to inspire new rebels during HODL WARS, proving that creativity can rival raw power in the fight for digital freedom.</p>
@@ -113,7 +193,7 @@
           <p class="lore-paragraph">Hidden within the GraffPUNKS’ multi-chain operations is a secretive initiative called 'CipherCanvas,' a protocol that embeds encrypted messages of resistance into their NFTs, accessible only during specific Hard Fork Games events. These messages, often tied to $PUNK token rewards, have guided factions like the Bitcoin Kids to hidden nodes in Block Topia, turning art into strategy. This mechanic, born from the real-world graffiti ethos of hidden tags, showcases how the GraffPUNKS use their cultural roots to outsmart the system, making them a constant threat to the status quo.</p>
           </div>
           <div class="lore-fact-block">
-          <p class="lore-paragraph">A newly highlighted aspect of GraffPUNKS lore reveals their role in launching the <a href="/wiki/1m-free-nfts.html">1M free NFTs</a> programme, a radical act of democratization that flooded Block Topia with accessible digital art, arming even the smallest players with tools to fight in the HODL WARS. This initiative, detailed on graffpunks.live/free-nfts, mirrors the real-world punk ethos of accessibility, ensuring that rebellion isn’t just for the elite but for anyone willing to stake a claim on the Sacred Chain. It’s a move that has reshaped faction dynamics, swelling GraffPUNKS’ influence across the 40 factions and cementing their reputation as champions of the underdog.</p>
+          <p class="lore-paragraph">A newly highlighted aspect of GraffPUNKS lore reveals their role in launching the 1M free NFTs programme, a radical act of democratization that flooded Block Topia with accessible digital art, arming even the smallest players with tools to fight in the HODL WARS. This initiative, detailed on graffpunks.live/free-nfts, mirrors the real-world punk ethos of accessibility, ensuring that rebellion isn’t just for the elite but for anyone willing to stake a claim on the Sacred Chain. It’s a move that has reshaped faction dynamics, swelling GraffPUNKS’ influence across the 40 factions and cementing their reputation as champions of the underdog.</p>
           </div>
           <div class="lore-fact-block">
           <p class="lore-paragraph">The GraffPUNKS’ digital rebellion began with their first NFT drop, known as the 'Genesis Spray,' a collection of tokenized street art that crashed servers on WAX due to overwhelming demand, marking their explosive entry into the Crypto Moonboys universe. This event, celebrated in lore as the moment the blockchain felt the sting of art, set the tone for their role in the HODL WARS, where their NFTs aren’t just collectibles but tools of disruption, echoing the real-world impact of Graffiti Kings and solidifying their status as cultural insurgents in Block Topia.</p>
@@ -455,159 +535,39 @@
         <span class="cat-label">Categories:</span>
         <a href="/categories/lore.html">Lore</a>
       </div>
-
+<!-- SAM:END:article -->
+      <!-- Manual sections preserved during SAM migration -->
       <div class="wiki-comments" data-page-id="graffpunks"></div>
+
+
     </main>
 
-<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
-<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
-<!-- so placeholder nodes are never injected into the boot sequence.    -->
-<!-- 1. Core config -->
-<script data-cfasync="false" src="/js/api-config.js"></script>
-<!-- 2. Event bus -->
-<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<!-- 3. Identity -->
-<script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
-<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Shell + shared components -->
-<script data-cfasync="false" src="/js/site-shell.js"></script>
-<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
-<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
-<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 6. Page-specific scripts -->
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="/index.html">Main Page</a></li><li><a href="/categories/index.html">Categories</a></li><li><a href="/search.html">Search</a></li><li><a href="/about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🤖 SAM</h4><ul><li><a href="/search.html">SAM Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
+      </div>
+    </footer>
+  </div>
+</div>
 
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "GraffPUNKS",
-    "description": "The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disrup",
-    "url": "https://cryptomoonboys.com/wiki/graffpunks.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "GraffPUNKS",
-    "description": "The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disrup",
-    "url": "https://cryptomoonboys.com/wiki/graffpunks.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "GraffPUNKS",
-    "description": "The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disrup",
-    "url": "https://cryptomoonboys.com/wiki/graffpunks.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "GraffPUNKS",
-    "description": "The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disrup",
-    "url": "https://cryptomoonboys.com/wiki/graffpunks.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "GraffPUNKS",
-    "description": "The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disrup",
-    "url": "https://cryptomoonboys.com/wiki/graffpunks.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "GraffPUNKS",
-    "description": "The GraffPUNKS are the pulsating core of the Crypto Moonboys universe, a faction that embodies the gritty, rebellious spirit of street art fused with the disrup",
-    "url": "https://cryptomoonboys.com/wiki/graffpunks.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script data-cfasync="false" src="/js/faction-alignment.js"></script>
-<script data-cfasync="false" src="/js/wiki.js"></script>
-<script data-cfasync="false" src="/js/bible-loader.js"></script>
-<script data-cfasync="false" src="/js/engagement.js"></script>
-<script data-cfasync="false" src="/js/comments.js"></script>
-<script data-cfasync="false" src="/js/battle-layer.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<!-- SAM:BEGIN:scripts -->
+<script src="/js/api-config.js" data-cfasync="false"></script>
+<script src="/js/arcade/core/global-event-bus.js" data-cfasync="false"></script>
+<script src="/js/identity-gate.js" data-cfasync="false"></script>
+<script src="/js/core/moonboys-state.js" data-cfasync="false"></script>
+<script src="/js/site-shell.js" data-cfasync="false"></script>
+<script src="/js/components/connection-status-panel.js" data-cfasync="false"></script>
+<script src="/js/components/global-player-header.js" data-cfasync="false"></script>
+<script src="/js/components/live-activity-summary.js" data-cfasync="false"></script>
+<script src="/js/wiki.js" data-cfasync="false"></script>
+<script src="/js/bible-loader.js" data-cfasync="false"></script>
+<!-- SAM:END:scripts -->
 </body>
 </html>
