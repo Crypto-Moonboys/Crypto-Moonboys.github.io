@@ -187,13 +187,37 @@ function extractPageScripts(html, relPath) {
     }
   }
 
+  // For wiki pages: ensure bible-loader.js is present after wiki.js
+  if (relPath && relPath.startsWith('wiki/')) {
+    const hasBibleLoader = pageScripts.some(s => /src=['"]\/js\/bible-loader\.js['"]/.test(s));
+    if (!hasBibleLoader) {
+      // Insert immediately after wiki.js
+      const wikiJsIdx = pageScripts.findIndex(s => /src=['"]\/js\/wiki\.js['"]/.test(s));
+      if (wikiJsIdx !== -1) {
+        pageScripts.splice(wikiJsIdx + 1, 0, '<script data-cfasync="false" src="/js/bible-loader.js"></script>');
+      } else {
+        pageScripts.push('<script data-cfasync="false" src="/js/bible-loader.js"></script>');
+      }
+    }
+  }
+
   return pageScripts;
+}
+
+/* ── Redirect page detection ───────────────────────────────────── */
+function isRedirectPage(html) {
+  return html.includes('http-equiv="refresh"') || html.includes("http-equiv='refresh'");
 }
 
 /* ── Build output HTML ─────────────────────────────────────────── */
 function transform(html, relPath) {
   // Strip BOM
   html = html.replace(/^\uFEFF/, '');
+
+  // Skip redirect pages — preserve them exactly as-is
+  if (isRedirectPage(html)) {
+    return html;
+  }
 
   const headBlock = extractHead(html);
   const bodyAttrs = extractBodyAttrs(html);
