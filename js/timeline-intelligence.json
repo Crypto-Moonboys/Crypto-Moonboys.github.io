@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T23:41:19.737Z",
+  "generated_at": "2026-06-11T00:22:33.748Z",
   "phase": "phase_5",
   "schema_version": "1.0",
   "summary": {
@@ -2142,6 +2142,10 @@
           "title": "The Bitcoin Kid Army — Crypto Moonboys Wiki"
         },
         {
+          "url": "/wiki/xrp-army.html",
+          "title": "XRP Army / ARMY — Crypto Moonboys Wiki"
+        },
+        {
           "url": "/wiki/bitcoin-kids.html",
           "title": "Bitcoin Kids — Crypto Moonboys Wiki"
         },
@@ -2172,10 +2176,6 @@
         {
           "url": "/wiki/block-topia.html",
           "title": "Block Topia — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/null-the-prophet.html",
-          "title": "NULL THE PROPHET — Crypto Moonboys Wiki"
         }
       ],
       "is_event_page": false,
@@ -5602,6 +5602,10 @@
           "title": "Bitcoin Kid Army — Crypto Moonboys Wiki"
         },
         {
+          "url": "/wiki/xrp-army.html",
+          "title": "XRP Army / ARMY — Crypto Moonboys Wiki"
+        },
+        {
           "url": "/wiki/graffpunks.html",
           "title": "GraffPUNKS — Crypto Moonboys Wiki"
         },
@@ -5628,10 +5632,6 @@
         {
           "url": "/wiki/punk-token.html",
           "title": "$PUNK Token — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/charlie-buster.html",
-          "title": "Charlie Buster — Crypto Moonboys Wiki"
         }
       ],
       "is_event_page": false,
@@ -6566,6 +6566,10 @@
       "narrative_weight": 0,
       "related_entities": [
         {
+          "url": "/wiki/xrp-meme-coins.html",
+          "title": "XRP Meme Coins — Crypto Moonboys Wiki"
+        },
+        {
           "url": "/wiki/meme-coins.html",
           "title": "Meme Coins — Crypto Moonboys Wiki"
         },
@@ -6600,10 +6604,6 @@
         {
           "url": "/wiki/charlie-buster.html",
           "title": "Charlie Buster — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/hodl-warriors.html",
-          "title": "HODL Warriors — Crypto Moonboys Wiki"
         }
       ],
       "is_event_page": false,
@@ -6622,6 +6622,10 @@
         {
           "url": "/wiki/memecoins.html",
           "title": "Meme Coins — Crypto Moonboys Wiki"
+        },
+        {
+          "url": "/wiki/xrp-meme-coins.html",
+          "title": "XRP Meme Coins — Crypto Moonboys Wiki"
         },
         {
           "url": "/wiki/graffpunks.html",
@@ -6654,10 +6658,6 @@
         {
           "url": "/wiki/charlie-buster.html",
           "title": "Charlie Buster — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/hodl-warriors.html",
-          "title": "HODL Warriors — Crypto Moonboys Wiki"
         }
       ],
       "is_event_page": false,
@@ -9644,6 +9644,10 @@
       "narrative_weight": 0,
       "related_entities": [
         {
+          "url": "/wiki/bear-xrpl.html",
+          "title": "BEAR on XRPL — Crypto Moonboys Wiki"
+        },
+        {
           "url": "/wiki/the-bear-market-siege.html",
           "title": "The Bear Market Siege — Crypto Moonboys Wiki"
         },
@@ -9678,10 +9682,6 @@
         {
           "url": "/wiki/charlie-buster.html",
           "title": "Charlie Buster — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/hodl-warriors.html",
-          "title": "HODL Warriors — Crypto Moonboys Wiki"
         }
       ],
       "is_event_page": false,
@@ -9700,6 +9700,10 @@
         {
           "url": "/wiki/bear-market-siege.html",
           "title": "The Bear Market Siege — Crypto Moonboys Wiki"
+        },
+        {
+          "url": "/wiki/bear-xrpl.html",
+          "title": "BEAR on XRPL — Crypto Moonboys Wiki"
         },
         {
           "url": "/wiki/graffpunks.html",
@@ -9732,10 +9736,6 @@
         {
           "url": "/wiki/charlie-buster.html",
           "title": "Charlie Buster — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/hodl-warriors.html",
-          "title": "HODL Warriors — Crypto Moonboys Wiki"
         }
       ],
       "is_event_page": false,
@@ -9754,6 +9754,10 @@
         {
           "url": "/wiki/bitcoin-kid-army.html",
           "title": "Bitcoin Kid Army — Crypto Moonboys Wiki"
+        },
+        {
+          "url": "/wiki/xrp-army.html",
+          "title": "XRP Army / ARMY — Crypto Moonboys Wiki"
         },
         {
           "url": "/wiki/bitcoin-kids.html",
@@ -9786,10 +9790,6 @@
         {
           "url": "/wiki/block-topia.html",
           "title": "Block Topia — Crypto Moonboys Wiki"
-        },
-        {
-          "url": "/wiki/null-the-prophet.html",
-          "title": "NULL THE PROPHET — Crypto Moonboys Wiki"
         }
       ],
       "is_event_page": false,

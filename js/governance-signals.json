@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T23:41:19.835Z",
+  "generated_at": "2026-06-11T00:22:33.607Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
@@ -7,13 +7,13 @@
     "by_governance_action": {
       "prioritize": 5,
       "review": 17,
-      "watch": 225,
-      "defer": 23
+      "watch": 248,
+      "defer": 0
     },
     "by_trust_band": {
       "high": 36,
-      "medium": 211,
-      "low": 23
+      "medium": 234,
+      "low": 0
     }
   },
   "entries": [
@@ -1568,6 +1568,26 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/589-xrpl.html",
+      "title": "589 on XRPL — Crypto Moonboys Wiki",
+      "governance_priority_score": 26,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/666-xrpl.html",
+      "title": "666 on XRPL — Crypto Moonboys Wiki",
+      "governance_priority_score": 26,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/alcor-exchange.html",
       "title": "Alcor Exchange — Crypto Moonboys Wiki",
       "governance_priority_score": 26,
@@ -1608,6 +1628,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/bear-xrpl.html",
+      "title": "BEAR on XRPL — Crypto Moonboys Wiki",
+      "governance_priority_score": 26,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/billy-the-goat-kid.html",
       "title": "Billy the Goat Kid — Crypto Moonboys Wiki",
       "governance_priority_score": 26,
@@ -1640,6 +1670,16 @@
     {
       "url": "/wiki/darren-cullen-ser.html",
       "title": "Darren Cullen (SER) — Crypto Moonboys Wiki",
+      "governance_priority_score": 26,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/drop-xrpl.html",
+      "title": "DROP on XRPL — Crypto Moonboys Wiki",
       "governance_priority_score": 26,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -1708,6 +1748,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/jelly-xrpl.html",
+      "title": "JELLY on XRPL — Crypto Moonboys Wiki",
+      "governance_priority_score": 26,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/lfgk.html",
       "title": "$LFGK — Crypto Moonboys Wiki",
       "governance_priority_score": 26,
@@ -1738,6 +1788,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/opulence-xrpl.html",
+      "title": "Opulence on XRPL — Crypto Moonboys Wiki",
+      "governance_priority_score": 26,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/paper-hands.html",
       "title": "Paper Hands — Crypto Moonboys Wiki",
       "governance_priority_score": 26,
@@ -1758,8 +1818,38 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/pmsl-xrpl.html",
+      "title": "PMSL on XRPL — Crypto Moonboys Wiki",
+      "governance_priority_score": 26,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/profit-xrpl.html",
+      "title": "PROFIT on XRPL — Crypto Moonboys Wiki",
+      "governance_priority_score": 26,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/rust2riches.html",
       "title": "Rust2Riches — Crypto Moonboys Wiki",
+      "governance_priority_score": 26,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/sigma-xrpl.html",
+      "title": "SIGMA on XRPL — Crypto Moonboys Wiki",
       "governance_priority_score": 26,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -1798,6 +1888,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/toto-xrpl.html",
+      "title": "TOTO on XRPL — Crypto Moonboys Wiki",
+      "governance_priority_score": 26,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/wax-nft-marketplaces.html",
       "title": "WAX NFT Marketplaces — Crypto Moonboys Wiki",
       "governance_priority_score": 26,
@@ -1828,8 +1928,38 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/xrp-army.html",
+      "title": "XRP Army / ARMY — Crypto Moonboys Wiki",
+      "governance_priority_score": 26,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/xrp-ledger.html",
+      "title": "XRP Ledger — Crypto Moonboys Wiki",
+      "governance_priority_score": 26,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/1m-free-nfts-program.html",
       "title": "1M Free NFTs Program — Crypto Moonboys Wiki",
+      "governance_priority_score": 25,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/exyboy.html",
+      "title": "EXYBOY — Crypto Moonboys Wiki",
       "governance_priority_score": 25,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -1890,6 +2020,16 @@
     {
       "url": "/wiki/snipey-d-man-sirus.html",
       "title": "Snipey 'D-Man' Sirus — Crypto Moonboys Wiki",
+      "governance_priority_score": 25,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/tagzcoin.html",
+      "title": "TAGZcoin — Crypto Moonboys Wiki",
       "governance_priority_score": 25,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -1988,6 +2128,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/phnix.html",
+      "title": "PHNIX — Crypto Moonboys Wiki",
+      "governance_priority_score": 24,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/samael-exe.html",
       "title": "Samael.exe — Crypto Moonboys Wiki",
       "governance_priority_score": 24,
@@ -2008,6 +2158,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/tabby.html",
+      "title": "Tabby — Crypto Moonboys Wiki",
+      "governance_priority_score": 24,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/the-bear-market-siege.html",
       "title": "The Bear Market Siege — Crypto Moonboys Wiki",
       "governance_priority_score": 24,
@@ -2020,6 +2180,46 @@
     {
       "url": "/wiki/the-wagmi-prophecy.html",
       "title": "The WAGMI Prophecy — Crypto Moonboys Wiki",
+      "governance_priority_score": 24,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/xmeme.html",
+      "title": "XMEME — Crypto Moonboys Wiki",
+      "governance_priority_score": 24,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/xoge.html",
+      "title": "XOGE — Crypto Moonboys Wiki",
+      "governance_priority_score": 24,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/xrp.html",
+      "title": "XRP — Crypto Moonboys Wiki",
+      "governance_priority_score": 24,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
+      "url": "/wiki/xrpl-tokens.html",
+      "title": "XRPL Tokens — Crypto Moonboys Wiki",
       "governance_priority_score": 24,
       "trust_band": "medium",
       "authority_band": "weak",
@@ -2238,6 +2438,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/xrp-meme-coins.html",
+      "title": "XRP Meme Coins — Crypto Moonboys Wiki",
+      "governance_priority_score": 23,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/atomichub-graffpunks-collection.html",
       "title": "AtomicHub Graffpunks Collection — Crypto Moonboys Wiki",
       "governance_priority_score": 22,
@@ -2448,6 +2658,16 @@
       "governance_action": "watch"
     },
     {
+      "url": "/wiki/xrpl-dex.html",
+      "title": "XRPL DEX — Crypto Moonboys Wiki",
+      "governance_priority_score": 22,
+      "trust_band": "medium",
+      "authority_band": "weak",
+      "narrative_importance": 0,
+      "editorial_risk": 0,
+      "governance_action": "watch"
+    },
+    {
       "url": "/wiki/1m-free-nfts.html",
       "title": "1M Free NFTs — Crypto Moonboys Wiki",
       "governance_priority_score": 21,
@@ -2488,234 +2708,14 @@
       "governance_action": "watch"
     },
     {
-      "url": "/wiki/xrp-ledger.html",
-      "title": "XRP Ledger — Crypto Moonboys Wiki",
-      "governance_priority_score": 16,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/pmsl-xrpl.html",
-      "title": "PMSL on XRPL — Crypto Moonboys Wiki",
-      "governance_priority_score": 15,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/xrp-army.html",
-      "title": "XRP Army / ARMY — Crypto Moonboys Wiki",
-      "governance_priority_score": 15,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/xrp-meme-coins.html",
-      "title": "XRP Meme Coins — Crypto Moonboys Wiki",
-      "governance_priority_score": 15,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/xrp.html",
-      "title": "XRP — Crypto Moonboys Wiki",
-      "governance_priority_score": 15,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/xrpl-tokens.html",
-      "title": "XRPL Tokens — Crypto Moonboys Wiki",
-      "governance_priority_score": 15,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/exyboy.html",
-      "title": "EXYBOY — Crypto Moonboys Wiki",
-      "governance_priority_score": 14,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/tagzcoin.html",
-      "title": "TAGZcoin — Crypto Moonboys Wiki",
-      "governance_priority_score": 14,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
       "url": "/wiki/xrpl-trust-lines.html",
       "title": "XRPL Trust Lines — Crypto Moonboys Wiki",
-      "governance_priority_score": 13,
-      "trust_band": "low",
+      "governance_priority_score": 20,
+      "trust_band": "medium",
       "authority_band": "weak",
       "narrative_importance": 0,
       "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/589-xrpl.html",
-      "title": "589 on XRPL — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/666-xrpl.html",
-      "title": "666 on XRPL — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/bear-xrpl.html",
-      "title": "BEAR on XRPL — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/drop-xrpl.html",
-      "title": "DROP on XRPL — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/jelly-xrpl.html",
-      "title": "JELLY on XRPL — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/opulence-xrpl.html",
-      "title": "Opulence on XRPL — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/phnix.html",
-      "title": "PHNIX — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/profit-xrpl.html",
-      "title": "PROFIT on XRPL — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/sigma-xrpl.html",
-      "title": "SIGMA on XRPL — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/tabby.html",
-      "title": "Tabby — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/toto-xrpl.html",
-      "title": "TOTO on XRPL — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/xmeme.html",
-      "title": "XMEME — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/xoge.html",
-      "title": "XOGE — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
-    },
-    {
-      "url": "/wiki/xrpl-dex.html",
-      "title": "XRPL DEX — Crypto Moonboys Wiki",
-      "governance_priority_score": 12,
-      "trust_band": "low",
-      "authority_band": "weak",
-      "narrative_importance": 0,
-      "editorial_risk": 0,
-      "governance_action": "defer"
+      "governance_action": "watch"
     }
   ]
 }
