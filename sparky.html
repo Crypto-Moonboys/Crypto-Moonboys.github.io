@@ -180,6 +180,36 @@
     .paperclip-error[data-visible="true"] {
       display: block;
     }
+
+    .sparky-login-required {
+      display: grid;
+      gap: 14px;
+      margin-top: 26px;
+      padding: 20px;
+      border: 1px solid rgba(255, 208, 0, 0.36);
+      border-radius: 12px;
+      background: rgba(255, 208, 0, 0.08);
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    .sparky-login-required[data-authenticated="true"] {
+      display: none;
+    }
+
+    .sparky-login-required strong {
+      color: #ffd000;
+    }
+
+    .sparky-login-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .sparky-telegram-widget {
+      min-height: 32px;
+    }
   </style>
 </head>
 <body class="page-paperclip page-has-right-panel">
@@ -193,19 +223,28 @@
 
       <p class="paperclip-copy">
         Sparky is the Crypto Moonboys / SWARMSY project helper for public questions about the
-        project, site, lore, games, factions, NFTs, and related docs. Sparky connects to the
-        private SWARMSY control panel through the public API bridge.
+        project, site, lore, games, factions, NFTs, and related docs. Sparky requires Telegram
+        login before chat messages can be sent, then connects through the public API bridge.
       </p>
 
       <div class="paperclip-status" aria-live="polite">
         <strong>Status: Live bridge page ready.</strong>
         <span>
-          This page does not contain private prompts, secrets, workspace keys, or admin URLs.
+          This page does not contain sealed instructions, secrets, workspace keys, or admin URLs.
           It calls the public API bridge, which then talks to the private SWARMSY server.
         </span>
       </div>
 
-      <div class="paperclip-chat" data-paperclip-chat>
+      <div class="sparky-login-required" data-sparky-login-panel role="region" aria-live="polite">
+        <strong>Log in with Telegram to use Sparky AI Chat.</strong>
+        <span>Use the site’s Telegram login/sync flow. The login widget calls the existing <code>/telegram/auth</code> route, and linked users can refresh sync from the bot.</span>
+        <div class="sparky-login-actions">
+          <div class="sparky-telegram-widget" data-sparky-telegram-login></div>
+          <a class="btn btn-secondary" href="https://t.me/WIKICOMSBOT?start=gklink" target="_blank" rel="noopener noreferrer">Sync with @WIKICOMSBOT</a>
+        </div>
+      </div>
+
+      <div class="paperclip-chat" data-paperclip-chat data-requires-telegram-auth="true" aria-disabled="true">
         <div class="paperclip-chat-header">
           <div>
             <strong style="color: #00ffcc;">Chat with Sparky</strong><br>
@@ -221,10 +260,10 @@
         </div>
 
         <form class="paperclip-form" data-paperclip-form>
-          <textarea class="paperclip-input" data-paperclip-input aria-label="Message" maxlength="2000" placeholder="Ask Sparky..."></textarea>
+          <textarea class="paperclip-input" data-paperclip-input aria-label="Message" maxlength="2000" placeholder="Ask Sparky..." disabled></textarea>
           <div class="paperclip-actions">
-            <button class="paperclip-send" type="submit" data-paperclip-send>Send message</button>
-            <span class="paperclip-hint" data-paperclip-state>Ready.</span>
+            <button class="paperclip-send" type="submit" data-paperclip-send disabled>Send message</button>
+            <span class="paperclip-hint" data-paperclip-state>Telegram login required.</span>
           </div>
           <div class="paperclip-error" data-paperclip-error></div>
         </form>

@@ -23,12 +23,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { webcrypto } from 'node:crypto';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (rel) => fs.readFile(path.join(ROOT, rel), 'utf8');
 
 const BASE_URL = 'https://moonboys-api.test';
 const BRIDGE_TOKEN = 'test-swarmsy-bridge-token-abc123';
+const TELEGRAM_BOT_TOKEN = '123456:test-telegram-bot-token';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -81,15 +83,48 @@ function makeSequenceFetch(steps) {
 }
 
 function makeEnv(overrides = {}) {
-  return { SWARMSY_BRIDGE_TOKEN: BRIDGE_TOKEN, ...overrides };
+  return { SWARMSY_BRIDGE_TOKEN: BRIDGE_TOKEN, TELEGRAM_BOT_TOKEN, ...overrides };
 }
 
-async function callNpcChat(worker, body, { env = makeEnv(), method = 'POST', origin = 'https://cryptomoonboys.com' } = {}) {
+async function signTelegramAuth(fields, botToken = TELEGRAM_BOT_TOKEN) {
+  const { hash, ...unsignedFields } = fields;
+  const checkString = Object.keys(unsignedFields)
+    .filter((key) => unsignedFields[key] != null)
+    .sort()
+    .map((key) => `${key}=${unsignedFields[key]}`)
+    .join('\n');
+  const secretKeyBytes = await webcrypto.subtle.digest('SHA-256', new TextEncoder().encode(botToken));
+  const hmacKey = await webcrypto.subtle.importKey(
+    'raw', secretKeyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+  );
+  const sigBytes = await webcrypto.subtle.sign('HMAC', hmacKey, new TextEncoder().encode(checkString));
+  return Array.from(new Uint8Array(sigBytes)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function makeTelegramAuth() {
+  const payload = {
+    id: '123456789',
+    first_name: 'Test',
+    username: 'moonboy_test',
+    auth_date: String(Math.floor(Date.now() / 1000)),
+  };
+  payload.hash = await signTelegramAuth(payload);
+  return payload;
+}
+
+async function withDefaultTelegramAuth(body, includeAuth) {
+  if (includeAuth === false || !body || typeof body === 'string') return body;
+  if (body.telegram_auth) return body;
+  return { ...body, telegram_auth: await makeTelegramAuth() };
+}
+
+async function callNpcChat(worker, body, { env = makeEnv(), method = 'POST', origin = 'https://cryptomoonboys.com', auth = true } = {}) {
   const headers = { 'Content-Type': 'application/json', Origin: origin };
+  const requestBody = await withDefaultTelegramAuth(body, auth);
   const req = new Request(`${BASE_URL}/public/npc-chat`, {
     method,
     headers,
-    body: method === 'POST' ? (typeof body === 'string' ? body : JSON.stringify(body)) : undefined,
+    body: method === 'POST' ? (typeof requestBody === 'string' ? requestBody : JSON.stringify(requestBody)) : undefined,
   });
   return worker.fetch(req, env);
 }
@@ -169,6 +204,34 @@ await test('NPC chat bridge retry constants are defined', () => {
   );
 });
 
+await test('Worker public npc route verifies Telegram auth before forwarding', () => {
+  assert.ok(
+    workerSrc.includes('verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth)') &&
+    workerSrc.includes("error: 'telegram_login_required'") &&
+    workerSrc.includes("Log in with Telegram to use Sparky AI Chat."),
+    'worker.js must enforce Telegram auth and return the required 401 JSON',
+  );
+});
+
+await test('Worker public npc route short-circuits unauthenticated requests before calling verifier', () => {
+  // The npc-chat route must check for Telegram auth evidence and return 401
+  // immediately — without calling verifyTelegramIdentityFromBody — when no
+  // evidence at all is present, preventing log noise from scanners/visitors.
+  assert.ok(
+    workerSrc.includes('hasTelegramAuthEvidence'),
+    'worker.js must contain hasTelegramAuthEvidence short-circuit guard',
+  );
+  // The short-circuit return must appear before the verifyTelegramIdentityFromBody call
+  // within the npc-chat block.
+  const npcChatBlockStart = workerSrc.indexOf("path === '/public/npc-chat'");
+  assert.ok(npcChatBlockStart !== -1, '/public/npc-chat block must exist');
+  const shortCircuitIdx = workerSrc.indexOf('hasTelegramAuthEvidence', npcChatBlockStart);
+  const verifierCallIdx = workerSrc.indexOf('verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth)', npcChatBlockStart);
+  assert.ok(shortCircuitIdx !== -1, 'hasTelegramAuthEvidence must be present in /public/npc-chat block');
+  assert.ok(verifierCallIdx !== -1, 'verifyTelegramIdentityFromBody call must be present in /public/npc-chat block');
+  assert.ok(shortCircuitIdx < verifierCallIdx, 'short-circuit guard must appear before verifyTelegramIdentityFromBody call');
+});
+
 await test('Worker public npc validation maps legacy paperclip to Sparky', () => {
   assert.ok(/requestedNpcId\s*={2,3}\s*['"]paperclip['"]\s*\?\s*['"]sparky['"]/.test(workerSrc), 'worker.js must map legacy paperclip to sparky');
   assert.ok(/npcId\s*!==\s*['"]sparky['"]/.test(workerSrc), 'worker.js must reject non-sparky normalized npc ids');
@@ -176,7 +239,7 @@ await test('Worker public npc validation maps legacy paperclip to Sparky', () =>
 
 // ── 4–13. Runtime behaviour tests ─────────────────────────────────────────────
 
-console.log('\n[4–13] Runtime behaviour: validation, error handling, relay');
+console.log('\n[4–14] Runtime behaviour: validation, error handling, relay');
 
 await test('[4] Non-POST (GET) returns 405', async () => {
   globalThis.fetch = makeMockFetch(200, { success: true, reply: 'hi' });
@@ -196,6 +259,40 @@ await test('[5] Invalid JSON body returns 400', async () => {
   globalThis.fetch = makeMockFetch(200, { success: true, reply: 'hi' });
   const res = await callNpcChat(worker, 'not-valid-json{{{', {});
   assert.equal(res.status, 400);
+});
+
+await test('[5] Missing Telegram auth returns 401 without calling SWARMSY', async () => {
+  let fetchCalls = 0;
+  globalThis.fetch = async () => {
+    fetchCalls++;
+    return new Response(JSON.stringify({ success: true, reply: 'should not call' }), { status: 200 });
+  };
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hello' }, { auth: false });
+  assert.equal(res.status, 401);
+  const body = await res.json();
+  assert.deepEqual(body, {
+    success: false,
+    error: 'telegram_login_required',
+    reply: 'Log in with Telegram to use Sparky AI Chat.',
+  });
+  assert.equal(fetchCalls, 0, 'Unauthenticated request must not be forwarded to SWARMSY');
+});
+
+await test('[5] Invalid Telegram auth returns 401 without calling SWARMSY', async () => {
+  let fetchCalls = 0;
+  globalThis.fetch = async () => {
+    fetchCalls++;
+    return new Response(JSON.stringify({ success: true, reply: 'should not call' }), { status: 200 });
+  };
+  const res = await callNpcChat(worker, {
+    npcId: 'sparky',
+    message: 'hello',
+    telegram_auth: { id: '123456789', auth_date: String(Math.floor(Date.now() / 1000)), hash: '0'.repeat(64) },
+  });
+  assert.equal(res.status, 401);
+  const body = await res.json();
+  assert.equal(body.error, 'telegram_login_required');
+  assert.equal(fetchCalls, 0, 'Invalid Telegram auth must not be forwarded to SWARMSY');
 });
 
 await test('[6] Missing npcId defaults to sparky and succeeds', async () => {
@@ -224,6 +321,21 @@ await test('[7] Explicit sparky npcId succeeds', async () => {
   const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hello' });
   assert.equal(res.status, 200);
   assert.equal(capturedBody?.npcId, 'sparky', 'sparky npcId must forward as sparky');
+});
+
+await test('[7] Authenticated request forwards Telegram id but not Telegram auth payload', async () => {
+  let capturedBody = null;
+  globalThis.fetch = async (_url, init) => {
+    capturedBody = JSON.parse(init.body);
+    return new Response(JSON.stringify({ success: true, reply: 'hi' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hello' });
+  assert.equal(res.status, 200);
+  assert.equal(capturedBody?.telegram_id, '123456789', 'verified telegram id must be forwarded for upstream trust context');
+  assert.equal(capturedBody?.telegram_auth, undefined, 'signed Telegram auth payload must not be relayed to SWARMSY');
 });
 
 await test('[7] Legacy paperclip npcId is accepted and forwarded as sparky', async () => {
@@ -451,6 +563,19 @@ await test('paperclip-chat.js does not reference SWARMSY_BRIDGE_TOKEN', () => {
     !chatJsSrc.includes('SWARMSY_BRIDGE_TOKEN'),
     'paperclip-chat.js must not reference SWARMSY_BRIDGE_TOKEN',
   );
+});
+
+await test('paperclip-chat.js requires signed Telegram auth before fetch', () => {
+  assert.ok(chatJsSrc.includes('resolveTelegramAuth'), 'chat client must resolve Telegram auth');
+  assert.ok(chatJsSrc.includes('getFreshTelegramAuth'), 'chat client must use the shared fresh Telegram auth helper');
+  assert.ok(chatJsSrc.includes('Telegram login required to use Sparky.'), 'chat client must show the required missing-auth message');
+  const missingAuthIndex = chatJsSrc.indexOf('if (!telegramAuth)');
+  const fetchIndex = chatJsSrc.indexOf('fetch(endpoint');
+  assert.ok(missingAuthIndex !== -1 && fetchIndex !== -1 && missingAuthIndex < fetchIndex, 'missing auth guard must run before endpoint fetch');
+});
+
+await test('paperclip-chat.js includes telegram_auth in authenticated POST body', () => {
+  assert.ok(chatJsSrc.includes('telegram_auth: telegramAuth'), 'chat client must send signed Telegram auth proof to the Worker');
 });
 
 // ── restore global fetch ───────────────────────────────────────────────────────

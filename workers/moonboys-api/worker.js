@@ -5105,9 +5105,9 @@ export default {
     if (blockTopiaResponse) return blockTopiaResponse;
 
     // ── POST /public/npc-chat ───────────────────────────────────────────────
-    // Public NPC chat bridge — forwards visitor messages to SWARMSY.
-    // No Telegram login required; rate-limiting and trust enforcement are
-    // handled by SWARMSY.  The bridge token is never sent to the browser.
+    // Public NPC chat bridge — forwards Telegram-authenticated visitor messages to SWARMSY.
+    // Telegram auth is enforced here so unauthenticated curl/browser clients cannot
+    // bypass the frontend. The bridge token is never sent to the browser.
     if (path === '/public/npc-chat') {
       if (request.method !== 'POST') {
         return new Response(JSON.stringify({ error: 'method_not_allowed' }), {
@@ -5120,7 +5120,33 @@ export default {
       let body;
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
 
-      // 2. Validate npcId. Public chat is Sparky-only. Missing npcId and
+      // 2. Require verified Telegram auth before any Sparky/SWARMSY relay.
+      // Short-circuit the common unauthenticated case (no auth evidence at all) without
+      // invoking the verifier so scanners and unauthenticated visitors do not generate
+      // log noise from verifyTelegramIdentityFromBody's failure events.
+      const hasTelegramAuthEvidence = body != null && (
+        body.telegram_auth !== undefined ||
+        body.id != null ||
+        body.auth_date != null ||
+        body.hash != null
+      );
+      if (!hasTelegramAuthEvidence) {
+        return json({
+          success: false,
+          error: 'telegram_login_required',
+          reply: 'Log in with Telegram to use Sparky AI Chat.',
+        }, 401);
+      }
+      const verifiedTelegram = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+      if (verifiedTelegram?.error) {
+        return json({
+          success: false,
+          error: 'telegram_login_required',
+          reply: 'Log in with Telegram to use Sparky AI Chat.',
+        }, 401);
+      }
+
+      // 3. Validate npcId. Public chat is Sparky-only. Missing npcId and
       //    legacy assistant clients are mapped to Sparky for rollout compatibility.
       const requestedNpcId = body?.npcId == null ? 'sparky' : String(body.npcId).toLowerCase().trim();
       const npcId = requestedNpcId === 'paperclip' ? 'sparky' : requestedNpcId;
@@ -5128,31 +5154,37 @@ export default {
         return err('npcId must be "sparky"', 400);
       }
 
-      // 3. Validate message — non-empty string, clamped to 2000 chars.
+      // 4. Validate message — non-empty string, clamped to 2000 chars.
       const rawMessage = String(body?.message ?? '');
       if (!rawMessage.trim()) {
         return err('message is required', 400);
       }
       const message = rawMessage.slice(0, 2000);
 
-      // 4. pagePath — safe default, length-limited.
+      // 5. pagePath — safe default, length-limited.
       const pagePath = String(body?.pagePath || '/swarmsy.html').slice(0, 256);
 
-      // 5. Origin of the inbound browser request.
+      // 6. Origin of the inbound browser request.
       const origin = request.headers.get('Origin') || '';
 
-      // 6. SWARMSY_BRIDGE_TOKEN must be present — return 503 with safe error, not a
+      // 7. SWARMSY_BRIDGE_TOKEN must be present — return 503 with safe error, not a
       //    stack trace.  Never expose the token value in any response.
       const bridgeToken = String(env.SWARMSY_BRIDGE_TOKEN || '').trim();
       if (!bridgeToken) {
         return json({ success: false, error: 'npc_bridge_not_configured' }, 503);
       }
 
-      // 7. Forward to SWARMSY with one retry for transient fetch/JSON failures.
+      // 8. Forward to SWARMSY with one retry for transient fetch/JSON failures.
       const SWARMSY_NPC_URL = 'https://swarmsy.cryptomoonboys.com/api/swarmsy/public/npc-chat';
       const NPC_CHAT_BRIDGE_TIMEOUT_MS = 25000;
       const NPC_CHAT_BRIDGE_MAX_ATTEMPTS = 2;
-      const swarmsyBody = JSON.stringify({ npcId, message, pagePath, origin });
+      const swarmsyBody = JSON.stringify({
+        npcId,
+        message,
+        pagePath,
+        origin,
+        telegram_id: verifiedTelegram.telegramId,
+      });
 
       let swarmsyRes;
       let upstreamPayload;
@@ -5200,7 +5232,7 @@ export default {
         return value;
       };
 
-      // 8. Relay SWARMSY JSON response and status code — never expose internals.
+      // 9. Relay SWARMSY JSON response and status code — never expose internals.
       return json(scrubBridgeToken(upstreamPayload), swarmsyRes.status);
     }
 
