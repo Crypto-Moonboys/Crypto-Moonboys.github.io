@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-06-10T23:41:19.880Z",
+  "generated_at": "2026-06-11T00:22:33.650Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
     "total_entries": 270,
     "expand": 0,
     "reinforce": 32,
-    "monitor": 208,
-    "hold": 30
+    "monitor": 216,
+    "hold": 22
   },
   "entries": [
     {
@@ -1397,6 +1397,24 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/589-xrpl.html",
+      "title": "589 on XRPL — Crypto Moonboys Wiki",
+      "momentum_score": 40,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/666-xrpl.html",
+      "title": "666 on XRPL — Crypto Moonboys Wiki",
+      "momentum_score": 40,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
       "url": "/wiki/alcor-exchange.html",
       "title": "Alcor Exchange — Crypto Moonboys Wiki",
       "momentum_score": 40,
@@ -1433,6 +1451,15 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/bear-xrpl.html",
+      "title": "BEAR on XRPL — Crypto Moonboys Wiki",
+      "momentum_score": 40,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
       "url": "/wiki/billy-the-goat-kid.html",
       "title": "Billy the Goat Kid — Crypto Moonboys Wiki",
       "momentum_score": 40,
@@ -1448,6 +1475,15 @@
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 109,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/drop-xrpl.html",
+      "title": "DROP on XRPL — Crypto Moonboys Wiki",
+      "momentum_score": 40,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
       "recommendation": "monitor"
     },
     {
@@ -1505,6 +1541,15 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/jelly-xrpl.html",
+      "title": "JELLY on XRPL — Crypto Moonboys Wiki",
+      "momentum_score": 40,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
       "url": "/wiki/lfgk.html",
       "title": "$LFGK — Crypto Moonboys Wiki",
       "momentum_score": 40,
@@ -1532,6 +1577,15 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/opulence-xrpl.html",
+      "title": "Opulence on XRPL — Crypto Moonboys Wiki",
+      "momentum_score": 40,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
       "url": "/wiki/paper-hands.html",
       "title": "Paper Hands — Crypto Moonboys Wiki",
       "momentum_score": 40,
@@ -1547,6 +1601,15 @@
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 107,
+      "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/profit-xrpl.html",
+      "title": "PROFIT on XRPL — Crypto Moonboys Wiki",
+      "momentum_score": 40,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
       "recommendation": "monitor"
     },
     {
@@ -1586,6 +1649,15 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/toto-xrpl.html",
+      "title": "TOTO on XRPL — Crypto Moonboys Wiki",
+      "momentum_score": 40,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "monitor"
+    },
+    {
       "url": "/wiki/wax-pepe.html",
       "title": "WAX PEPE — Crypto Moonboys Wiki",
       "momentum_score": 40,
@@ -1620,6 +1692,15 @@
       "editorial_activity_score": 0,
       "predicted_priority": 108,
       "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/exyboy.html",
+      "title": "EXYBOY — Crypto Moonboys Wiki",
+      "momentum_score": 39,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "hold"
     },
     {
       "url": "/wiki/gang-signs-card-game.html",
@@ -1658,6 +1739,15 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/pmsl-xrpl.html",
+      "title": "PMSL on XRPL — Crypto Moonboys Wiki",
+      "momentum_score": 39,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "hold"
+    },
+    {
       "url": "/wiki/queen-sarah-p-fly.html",
       "title": "Queen Sarah P-fly — Crypto Moonboys Wiki",
       "momentum_score": 39,
@@ -1676,6 +1766,15 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/sigma-xrpl.html",
+      "title": "SIGMA on XRPL — Crypto Moonboys Wiki",
+      "momentum_score": 39,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "hold"
+    },
+    {
       "url": "/wiki/snipey-d-man-sirus.html",
       "title": "Snipey 'D-Man' Sirus — Crypto Moonboys Wiki",
       "momentum_score": 39,
@@ -1683,6 +1782,15 @@
       "editorial_activity_score": 0,
       "predicted_priority": 111,
       "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/tagzcoin.html",
+      "title": "TAGZcoin — Crypto Moonboys Wiki",
+      "momentum_score": 39,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "hold"
     },
     {
       "url": "/wiki/the-gkniftyheads.html",
@@ -1705,6 +1813,24 @@
     {
       "url": "/wiki/waxp-exchange.html",
       "title": "WAXP Exchange — Crypto Moonboys Wiki",
+      "momentum_score": 39,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "hold"
+    },
+    {
+      "url": "/wiki/xrp-army.html",
+      "title": "XRP Army / ARMY — Crypto Moonboys Wiki",
+      "momentum_score": 39,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "hold"
+    },
+    {
+      "url": "/wiki/xrp-ledger.html",
+      "title": "XRP Ledger — Crypto Moonboys Wiki",
       "momentum_score": 39,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
@@ -1757,6 +1883,15 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/phnix.html",
+      "title": "PHNIX — Crypto Moonboys Wiki",
+      "momentum_score": 38,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "hold"
+    },
+    {
       "url": "/wiki/spraycode-writcode.html",
       "title": "Spraycode &amp; Writcode — Crypto Moonboys Wiki",
       "momentum_score": 38,
@@ -1764,6 +1899,51 @@
       "editorial_activity_score": 0,
       "predicted_priority": 121,
       "recommendation": "monitor"
+    },
+    {
+      "url": "/wiki/tabby.html",
+      "title": "Tabby — Crypto Moonboys Wiki",
+      "momentum_score": 38,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "hold"
+    },
+    {
+      "url": "/wiki/xmeme.html",
+      "title": "XMEME — Crypto Moonboys Wiki",
+      "momentum_score": 38,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "hold"
+    },
+    {
+      "url": "/wiki/xoge.html",
+      "title": "XOGE — Crypto Moonboys Wiki",
+      "momentum_score": 38,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "hold"
+    },
+    {
+      "url": "/wiki/xrp.html",
+      "title": "XRP — Crypto Moonboys Wiki",
+      "momentum_score": 38,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "hold"
+    },
+    {
+      "url": "/wiki/xrpl-tokens.html",
+      "title": "XRPL Tokens — Crypto Moonboys Wiki",
+      "momentum_score": 38,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "hold"
     },
     {
       "url": "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -2009,6 +2189,15 @@
       "recommendation": "monitor"
     },
     {
+      "url": "/wiki/xrp-meme-coins.html",
+      "title": "XRP Meme Coins — Crypto Moonboys Wiki",
+      "momentum_score": 37,
+      "authority_trend": "stable",
+      "editorial_activity_score": 0,
+      "predicted_priority": 0,
+      "recommendation": "hold"
+    },
+    {
       "url": "/wiki/atomichub-graffpunks-collection.html",
       "title": "AtomicHub Graffpunks Collection — Crypto Moonboys Wiki",
       "momentum_score": 36,
@@ -2234,198 +2423,9 @@
       "recommendation": "monitor"
     },
     {
-      "url": "/wiki/xrp-ledger.html",
-      "title": "XRP Ledger — Crypto Moonboys Wiki",
-      "momentum_score": 33,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/pmsl-xrpl.html",
-      "title": "PMSL on XRPL — Crypto Moonboys Wiki",
-      "momentum_score": 32,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/xrp-meme-coins.html",
-      "title": "XRP Meme Coins — Crypto Moonboys Wiki",
-      "momentum_score": 32,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/xrp.html",
-      "title": "XRP — Crypto Moonboys Wiki",
-      "momentum_score": 32,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/xrpl-tokens.html",
-      "title": "XRPL Tokens — Crypto Moonboys Wiki",
-      "momentum_score": 32,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/exyboy.html",
-      "title": "EXYBOY — Crypto Moonboys Wiki",
-      "momentum_score": 31,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/tagzcoin.html",
-      "title": "TAGZcoin — Crypto Moonboys Wiki",
-      "momentum_score": 31,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/xrp-army.html",
-      "title": "XRP Army / ARMY — Crypto Moonboys Wiki",
-      "momentum_score": 31,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/589-xrpl.html",
-      "title": "589 on XRPL — Crypto Moonboys Wiki",
-      "momentum_score": 29,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/666-xrpl.html",
-      "title": "666 on XRPL — Crypto Moonboys Wiki",
-      "momentum_score": 29,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/bear-xrpl.html",
-      "title": "BEAR on XRPL — Crypto Moonboys Wiki",
-      "momentum_score": 29,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/drop-xrpl.html",
-      "title": "DROP on XRPL — Crypto Moonboys Wiki",
-      "momentum_score": 29,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/jelly-xrpl.html",
-      "title": "JELLY on XRPL — Crypto Moonboys Wiki",
-      "momentum_score": 29,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/opulence-xrpl.html",
-      "title": "Opulence on XRPL — Crypto Moonboys Wiki",
-      "momentum_score": 29,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/phnix.html",
-      "title": "PHNIX — Crypto Moonboys Wiki",
-      "momentum_score": 29,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/profit-xrpl.html",
-      "title": "PROFIT on XRPL — Crypto Moonboys Wiki",
-      "momentum_score": 29,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/sigma-xrpl.html",
-      "title": "SIGMA on XRPL — Crypto Moonboys Wiki",
-      "momentum_score": 29,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/tabby.html",
-      "title": "Tabby — Crypto Moonboys Wiki",
-      "momentum_score": 29,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/toto-xrpl.html",
-      "title": "TOTO on XRPL — Crypto Moonboys Wiki",
-      "momentum_score": 29,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/xmeme.html",
-      "title": "XMEME — Crypto Moonboys Wiki",
-      "momentum_score": 29,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
-      "url": "/wiki/xoge.html",
-      "title": "XOGE — Crypto Moonboys Wiki",
-      "momentum_score": 29,
-      "authority_trend": "stable",
-      "editorial_activity_score": 0,
-      "predicted_priority": 0,
-      "recommendation": "hold"
-    },
-    {
       "url": "/wiki/xrpl-dex.html",
       "title": "XRPL DEX — Crypto Moonboys Wiki",
-      "momentum_score": 29,
+      "momentum_score": 35,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 0,
@@ -2434,7 +2434,7 @@
     {
       "url": "/wiki/xrpl-trust-lines.html",
       "title": "XRPL Trust Lines — Crypto Moonboys Wiki",
-      "momentum_score": 29,
+      "momentum_score": 34,
       "authority_trend": "stable",
       "editorial_activity_score": 0,
       "predicted_priority": 0,

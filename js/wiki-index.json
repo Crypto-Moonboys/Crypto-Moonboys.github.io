@@ -16642,14 +16642,24 @@
     "title": "XRP Ledger — Crypto Moonboys Wiki",
     "desc": "Crypto Moonboys wiki guide to the XRP Ledger, XRPL accounts, XRP, trust lines, issued tokens, DEX trading, NFTs and meme-token culture.",
     "url": "/wiki/xrp-ledger.html",
-    "tags": [],
+    "tags": [
+      "xrp",
+      "ledger",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
     "category": "factions",
-    "aliases": [],
-    "rank_score": 167,
+    "aliases": [
+      {
+        "title": "xrp ledger crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 175,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
+      "alias_count": 1,
+      "tag_count": 5,
       "mention_count": 0,
       "category": "factions",
       "category_priority": 7,
@@ -16671,9 +16681,9 @@
       "category_points": 35,
       "word_count_points": 20,
       "keyword_bag_points": 21,
-      "content_quality_points": 53,
+      "content_quality_points": 61,
       "authority_points": 8,
-      "final_rank_score": 167,
+      "final_rank_score": 175,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -16707,6 +16717,182 @@
         "meme",
         "token",
         "culture"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "EXYBOY — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to EXYBOY, an XRP / XRPL meme-token project reference with trust-line, DEX, issuer and community research notes.",
+    "url": "/wiki/exyboy.html",
+    "tags": [
+      "exyboy",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "exyboy crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 171,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 316,
+      "keyword_bag_size": 22,
+      "heading_count": 7,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 6,
+      "section_count": 6,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 53,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 16,
+      "keyword_bag_points": 22,
+      "content_quality_points": 60,
+      "authority_points": 8,
+      "final_rank_score": 171,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "exyboy crypto moonboys wiki",
+      "tokens": [
+        "exyboy",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "exyboy",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "xrpl",
+        "meme",
+        "token",
+        "project",
+        "reference",
+        "with",
+        "trust",
+        "line",
+        "dex",
+        "issuer",
+        "and",
+        "community",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "TAGZcoin — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to TAGZcoin, an XRP meme coin and XRPL community-token listing with issuer, trust-line and DEX research notes.",
+    "url": "/wiki/tagzcoin.html",
+    "tags": [
+      "tagzcoin",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "tagzcoin crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 170,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 303,
+      "keyword_bag_size": 22,
+      "heading_count": 7,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 6,
+      "section_count": 6,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 53,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 15,
+      "keyword_bag_points": 22,
+      "content_quality_points": 60,
+      "authority_points": 8,
+      "final_rank_score": 170,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "tagzcoin crypto moonboys wiki",
+      "tokens": [
+        "tagzcoin",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "tagzcoin",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "coin",
+        "and",
+        "xrpl",
+        "community",
+        "token",
+        "listing",
+        "with",
+        "issuer",
+        "trust",
+        "line",
+        "dex",
+        "research",
+        "notes"
       ]
     },
     "link_score": {
@@ -16975,6 +17161,199 @@
     }
   },
   {
+    "title": "TOTO on XRPL — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to TOTO on XRPL, an XRP meme-token entry with animal-brand culture, issuer checks, trust-line and liquidity research notes.",
+    "url": "/wiki/toto-xrpl.html",
+    "tags": [
+      "toto",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "toto xrpl"
+      },
+      {
+        "title": "toto xrpl crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 163,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 196,
+      "keyword_bag_size": 25,
+      "heading_count": 6,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 5,
+      "section_count": 5,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 49,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 10,
+      "keyword_bag_points": 25,
+      "content_quality_points": 60,
+      "authority_points": 8,
+      "final_rank_score": 163,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "toto on xrpl crypto moonboys wiki",
+      "tokens": [
+        "toto",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "toto",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "with",
+        "animal",
+        "brand",
+        "culture",
+        "issuer",
+        "checks",
+        "trust",
+        "line",
+        "and",
+        "liquidity",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "589 on XRPL — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to 589 on XRPL, an XRP meme-token entry with number lore, issuer checks, trust-line and liquidity research notes.",
+    "url": "/wiki/589-xrpl.html",
+    "tags": [
+      "589",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "589 xrpl"
+      },
+      {
+        "title": "589 xrpl crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 162,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 204,
+      "keyword_bag_size": 24,
+      "heading_count": 6,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 5,
+      "section_count": 5,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 49,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 10,
+      "keyword_bag_points": 24,
+      "content_quality_points": 60,
+      "authority_points": 8,
+      "final_rank_score": 162,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "589 on xrpl crypto moonboys wiki",
+      "tokens": [
+        "589",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "589",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "with",
+        "number",
+        "lore",
+        "issuer",
+        "checks",
+        "trust",
+        "line",
+        "and",
+        "liquidity",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
     "title": "Alfie 'Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
     "desc": "Alfie",
     "url": "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -17047,6 +17426,576 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 18,
       "authority": 3.5
+    }
+  },
+  {
+    "title": "666 on XRPL — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to 666 on XRPL, an XRP meme-token entry with number symbolism, issuer checks, trust-line and liquidity research notes.",
+    "url": "/wiki/666-xrpl.html",
+    "tags": [
+      "666",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "666 xrpl"
+      },
+      {
+        "title": "666 xrpl crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 161,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 187,
+      "keyword_bag_size": 24,
+      "heading_count": 6,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 5,
+      "section_count": 5,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 49,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 9,
+      "keyword_bag_points": 24,
+      "content_quality_points": 60,
+      "authority_points": 8,
+      "final_rank_score": 161,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "666 on xrpl crypto moonboys wiki",
+      "tokens": [
+        "666",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "666",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "with",
+        "number",
+        "symbolism",
+        "issuer",
+        "checks",
+        "trust",
+        "line",
+        "and",
+        "liquidity",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "JELLY on XRPL — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to JELLY on XRPL, an XRP meme-token entry with liquidity, wobble-market, issuer and trust-line research notes.",
+    "url": "/wiki/jelly-xrpl.html",
+    "tags": [
+      "jelly",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "jelly xrpl"
+      },
+      {
+        "title": "jelly xrpl crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 158,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 213,
+      "keyword_bag_size": 23,
+      "heading_count": 6,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 5,
+      "section_count": 5,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 45,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 11,
+      "keyword_bag_points": 23,
+      "content_quality_points": 56,
+      "authority_points": 8,
+      "final_rank_score": 158,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "jelly on xrpl crypto moonboys wiki",
+      "tokens": [
+        "jelly",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "jelly",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "with",
+        "liquidity",
+        "wobble",
+        "market",
+        "issuer",
+        "and",
+        "trust",
+        "line",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "Opulence on XRPL — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to Opulence on XRPL, an XRP meme-token entry with luxury branding, issuer, trust-line and liquidity research notes.",
+    "url": "/wiki/opulence-xrpl.html",
+    "tags": [
+      "opulence",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "opulence xrpl"
+      },
+      {
+        "title": "opulence xrpl crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 158,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 226,
+      "keyword_bag_size": 23,
+      "heading_count": 6,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 5,
+      "section_count": 5,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 45,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 11,
+      "keyword_bag_points": 23,
+      "content_quality_points": 56,
+      "authority_points": 8,
+      "final_rank_score": 158,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "opulence on xrpl crypto moonboys wiki",
+      "tokens": [
+        "opulence",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "opulence",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "with",
+        "luxury",
+        "branding",
+        "issuer",
+        "trust",
+        "line",
+        "and",
+        "liquidity",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "PROFIT on XRPL — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to PROFIT on XRPL, an XRP meme-token entry focused on trading culture, issuer checks, liquidity and trust-line research.",
+    "url": "/wiki/profit-xrpl.html",
+    "tags": [
+      "profit",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "profit xrpl"
+      },
+      {
+        "title": "profit xrpl crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 158,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 223,
+      "keyword_bag_size": 23,
+      "heading_count": 6,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 5,
+      "section_count": 5,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 45,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 11,
+      "keyword_bag_points": 23,
+      "content_quality_points": 56,
+      "authority_points": 8,
+      "final_rank_score": 158,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "profit on xrpl crypto moonboys wiki",
+      "tokens": [
+        "profit",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "profit",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "focused",
+        "trading",
+        "culture",
+        "issuer",
+        "checks",
+        "liquidity",
+        "and",
+        "trust",
+        "line",
+        "research"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "BEAR on XRPL — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to BEAR on XRPL, an XRP meme-token entry with market-cycle, issuer, trust-line and DEX research notes.",
+    "url": "/wiki/bear-xrpl.html",
+    "tags": [
+      "bear",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "bear xrpl"
+      },
+      {
+        "title": "bear xrpl crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 157,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 209,
+      "keyword_bag_size": 23,
+      "heading_count": 6,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 5,
+      "section_count": 5,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 45,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 10,
+      "keyword_bag_points": 23,
+      "content_quality_points": 56,
+      "authority_points": 8,
+      "final_rank_score": 157,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "bear on xrpl crypto moonboys wiki",
+      "tokens": [
+        "bear",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "bear",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "with",
+        "market",
+        "cycle",
+        "issuer",
+        "trust",
+        "line",
+        "and",
+        "dex",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "DROP on XRPL — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to DROP on XRPL, an XRP meme-token entry with DEX, trust-line, issuer and liquidity research notes.",
+    "url": "/wiki/drop-xrpl.html",
+    "tags": [
+      "drop",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "drop xrpl"
+      },
+      {
+        "title": "drop xrpl crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 156,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 195,
+      "keyword_bag_size": 22,
+      "heading_count": 6,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 5,
+      "section_count": 5,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 45,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 10,
+      "keyword_bag_points": 22,
+      "content_quality_points": 56,
+      "authority_points": 8,
+      "final_rank_score": 156,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "drop on xrpl crypto moonboys wiki",
+      "tokens": [
+        "drop",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "drop",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "with",
+        "dex",
+        "trust",
+        "line",
+        "issuer",
+        "and",
+        "liquidity",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
     }
   },
   {
@@ -17130,6 +18079,361 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
+    }
+  },
+  {
+    "title": "PMSL on XRPL — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to PMSL as an XRPL/XRP community token reference, connected to existing PMSL lore and XRP meme-token culture.",
+    "url": "/wiki/pmsl-xrpl.html",
+    "tags": [
+      "pmsl",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "pmsl xrpl"
+      },
+      {
+        "title": "pmsl xrpl crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 154,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 174,
+      "keyword_bag_size": 20,
+      "heading_count": 5,
+      "list_count": 1,
+      "internal_link_count": 2,
+      "paragraph_count": 4,
+      "section_count": 4,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 41,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 9,
+      "keyword_bag_points": 20,
+      "content_quality_points": 52,
+      "authority_points": 8,
+      "final_rank_score": 154,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "pmsl on xrpl crypto moonboys wiki",
+      "tokens": [
+        "pmsl",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "pmsl",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "as",
+        "an",
+        "xrp",
+        "community",
+        "token",
+        "reference",
+        "connected",
+        "existing",
+        "lore",
+        "and",
+        "meme",
+        "culture"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "XOGE — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to XOGE, an XRP meme-token entry with dog-coin culture, XRPL issuer, trust-line and liquidity research notes.",
+    "url": "/wiki/xoge.html",
+    "tags": [
+      "xoge",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "xoge crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 154,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 210,
+      "keyword_bag_size": 23,
+      "heading_count": 6,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 5,
+      "section_count": 5,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 45,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 11,
+      "keyword_bag_points": 23,
+      "content_quality_points": 52,
+      "authority_points": 8,
+      "final_rank_score": 154,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "xoge crypto moonboys wiki",
+      "tokens": [
+        "xoge",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "xoge",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "with",
+        "dog",
+        "coin",
+        "culture",
+        "xrpl",
+        "issuer",
+        "trust",
+        "line",
+        "and",
+        "liquidity",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "PHNIX — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to PHNIX, an XRP meme-token listing with XRPL issuer, trust-line, DEX and community research notes.",
+    "url": "/wiki/phnix.html",
+    "tags": [
+      "phnix",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "phnix crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 153,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 232,
+      "keyword_bag_size": 21,
+      "heading_count": 6,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 5,
+      "section_count": 5,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 45,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 12,
+      "keyword_bag_points": 21,
+      "content_quality_points": 52,
+      "authority_points": 8,
+      "final_rank_score": 153,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "phnix crypto moonboys wiki",
+      "tokens": [
+        "phnix",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "phnix",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "listing",
+        "with",
+        "xrpl",
+        "issuer",
+        "trust",
+        "line",
+        "dex",
+        "and",
+        "community",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "XMEME — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to XMEME, an XRP meme-token entry focused on XRP meme culture, issuer checks, trust lines and liquidity research.",
+    "url": "/wiki/xmeme.html",
+    "tags": [
+      "xmeme",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "xmeme crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 152,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 213,
+      "keyword_bag_size": 21,
+      "heading_count": 6,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 5,
+      "section_count": 5,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 45,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 11,
+      "keyword_bag_points": 21,
+      "content_quality_points": 52,
+      "authority_points": 8,
+      "final_rank_score": 152,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "xmeme crypto moonboys wiki",
+      "tokens": [
+        "xmeme",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "xmeme",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "focused",
+        "on",
+        "culture",
+        "issuer",
+        "checks",
+        "trust",
+        "lines",
+        "and",
+        "liquidity",
+        "research"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
     }
   },
   {
@@ -17307,6 +18611,187 @@
     }
   },
   {
+    "title": "SIGMA on XRPL — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to SIGMA on XRPL, an XRP meme-token entry with identity, issuer, trust-line and liquidity research notes.",
+    "url": "/wiki/sigma-xrpl.html",
+    "tags": [
+      "sigma",
+      "xrpl",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "sigma xrpl"
+      },
+      {
+        "title": "sigma xrpl crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 151,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 174,
+      "keyword_bag_size": 22,
+      "heading_count": 5,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 4,
+      "section_count": 4,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 41,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 9,
+      "keyword_bag_points": 22,
+      "content_quality_points": 52,
+      "authority_points": 8,
+      "final_rank_score": 151,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "sigma on xrpl crypto moonboys wiki",
+      "tokens": [
+        "sigma",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "sigma",
+        "on",
+        "xrpl",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "with",
+        "identity",
+        "issuer",
+        "trust",
+        "line",
+        "and",
+        "liquidity",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "Tabby — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to Tabby, an XRP meme-token entry with XRPL trust-line, issuer, DEX and community research notes.",
+    "url": "/wiki/tabby.html",
+    "tags": [
+      "tabby",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "tokens",
+    "aliases": [
+      {
+        "title": "tabby crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 151,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "tokens",
+      "category_priority": 6,
+      "has_description": true,
+      "article_word_count": 203,
+      "keyword_bag_size": 21,
+      "heading_count": 6,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 5,
+      "section_count": 5,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 45,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 30,
+      "word_count_points": 10,
+      "keyword_bag_points": 21,
+      "content_quality_points": 52,
+      "authority_points": 8,
+      "final_rank_score": 151,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "tabby crypto moonboys wiki",
+      "tokens": [
+        "tabby",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "tabby",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "an",
+        "xrp",
+        "meme",
+        "token",
+        "entry",
+        "with",
+        "xrpl",
+        "trust",
+        "line",
+        "issuer",
+        "dex",
+        "and",
+        "community",
+        "research",
+        "notes"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
     "title": "XRP Kids NBG Updates — Crypto Moonboys Wiki",
     "desc": "Updates to XRP Kids No Ball Games collection on xrp.cafe and xrpl.to",
     "url": "/wiki/xrp-kids-nbg-updates.html",
@@ -17388,6 +18873,261 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 21,
       "authority": 3.5
+    }
+  },
+  {
+    "title": "XRP Meme Coins — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to XRP meme coins on the XRP Ledger, including ARMY, TAGZcoin, PHNIX, Tabby and XRPL meme-token risk.",
+    "url": "/wiki/xrp-meme-coins.html",
+    "tags": [
+      "xrp",
+      "meme",
+      "coins",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 150,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 202,
+      "keyword_bag_size": 20,
+      "heading_count": 5,
+      "list_count": 1,
+      "internal_link_count": 0,
+      "paragraph_count": 4,
+      "section_count": 4,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 41,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 10,
+      "keyword_bag_points": 20,
+      "content_quality_points": 47,
+      "authority_points": 8,
+      "final_rank_score": 150,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "xrp meme coins crypto moonboys wiki",
+      "tokens": [
+        "xrp",
+        "meme",
+        "coins",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "xrp",
+        "meme",
+        "coins",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "on",
+        "the",
+        "ledger",
+        "including",
+        "army",
+        "tagzcoin",
+        "phnix",
+        "tabby",
+        "and",
+        "xrpl",
+        "token",
+        "risk"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "XRPL Tokens — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to XRPL tokens, trust lines, issuers, DEX markets and XRP meme coin research.",
+    "url": "/wiki/xrpl-tokens.html",
+    "tags": [
+      "xrpl",
+      "tokens",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "xrpl tokens crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 150,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 222,
+      "keyword_bag_size": 17,
+      "heading_count": 5,
+      "list_count": 1,
+      "internal_link_count": 1,
+      "paragraph_count": 4,
+      "section_count": 4,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 41,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 11,
+      "keyword_bag_points": 17,
+      "content_quality_points": 49,
+      "authority_points": 8,
+      "final_rank_score": 150,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "xrpl tokens crypto moonboys wiki",
+      "tokens": [
+        "xrpl",
+        "tokens",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "xrpl",
+        "tokens",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "trust",
+        "lines",
+        "issuers",
+        "dex",
+        "markets",
+        "and",
+        "xrp",
+        "meme",
+        "coin",
+        "research"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    }
+  },
+  {
+    "title": "XRP — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to XRP, the native asset of the XRP Ledger and a major centre of XRPL community culture.",
+    "url": "/wiki/xrp.html",
+    "tags": [
+      "xrp",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "xrp crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 148,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 188,
+      "keyword_bag_size": 18,
+      "heading_count": 5,
+      "list_count": 1,
+      "internal_link_count": 1,
+      "paragraph_count": 6,
+      "section_count": 4,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 41,
+      "authority_score": 8
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 9,
+      "keyword_bag_points": 18,
+      "content_quality_points": 48,
+      "authority_points": 8,
+      "final_rank_score": 148,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "xrp crypto moonboys wiki",
+      "tokens": [
+        "xrp",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "xrp",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "the",
+        "native",
+        "asset",
+        "of",
+        "ledger",
+        "and",
+        "a",
+        "major",
+        "centre",
+        "xrpl",
+        "community",
+        "culture"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
     }
   },
   {
@@ -17476,74 +19216,80 @@
     }
   },
   {
-    "title": "XRP Meme Coins — Crypto Moonboys Wiki",
-    "desc": "Crypto Moonboys wiki guide to XRP meme coins on the XRP Ledger, including ARMY, TAGZcoin, PHNIX, Tabby and XRPL meme-token risk.",
-    "url": "/wiki/xrp-meme-coins.html",
-    "tags": [],
+    "title": "XRP Army / ARMY — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to XRP Army and ARMY, XRP community identity and XRP meme-token culture.",
+    "url": "/wiki/xrp-army.html",
+    "tags": [
+      "xrp",
+      "army",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
     "category": "factions",
-    "aliases": [],
-    "rank_score": 144,
+    "aliases": [
+      {
+        "title": "xrp army"
+      },
+      {
+        "title": "xrp army crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 145,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
+      "alias_count": 2,
+      "tag_count": 5,
       "mention_count": 0,
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
-      "article_word_count": 202,
-      "keyword_bag_size": 20,
+      "article_word_count": 217,
+      "keyword_bag_size": 13,
       "heading_count": 5,
       "list_count": 1,
       "internal_link_count": 0,
       "paragraph_count": 4,
       "section_count": 4,
       "lore_paragraph_count": 0,
-      "content_quality_score": 41,
+      "content_quality_score": 37,
       "authority_score": 8
     },
     "rank_diagnostics": {
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 35,
-      "word_count_points": 10,
-      "keyword_bag_points": 20,
-      "content_quality_points": 41,
+      "word_count_points": 11,
+      "keyword_bag_points": 13,
+      "content_quality_points": 48,
       "authority_points": 8,
-      "final_rank_score": 144,
+      "final_rank_score": 145,
       "authority_graph_points": 0
     },
     "search_index": {
-      "normalized_title": "xrp meme coins crypto moonboys wiki",
+      "normalized_title": "xrp army army crypto moonboys wiki",
       "tokens": [
         "xrp",
-        "meme",
-        "coins",
+        "army",
+        "army",
         "crypto",
         "moonboys",
         "wiki"
       ],
       "keyword_bag": [
         "xrp",
-        "meme",
-        "coins",
+        "army",
         "crypto",
         "moonboys",
         "wiki",
         "guide",
         "to",
-        "on",
-        "the",
-        "ledger",
-        "including",
-        "army",
-        "tagzcoin",
-        "phnix",
-        "tabby",
         "and",
-        "xrpl",
+        "community",
+        "identity",
+        "meme",
         "token",
-        "risk"
+        "culture"
       ]
     },
     "link_score": {
@@ -17634,85 +19380,6 @@
     }
   },
   {
-    "title": "PMSL on XRPL — Crypto Moonboys Wiki",
-    "desc": "Crypto Moonboys wiki guide to PMSL as an XRPL/XRP community token reference, connected to existing PMSL lore and XRP meme-token culture.",
-    "url": "/wiki/pmsl-xrpl.html",
-    "tags": [],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 143,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 174,
-      "keyword_bag_size": 20,
-      "heading_count": 5,
-      "list_count": 1,
-      "internal_link_count": 2,
-      "paragraph_count": 4,
-      "section_count": 4,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 41,
-      "authority_score": 8
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 9,
-      "keyword_bag_points": 20,
-      "content_quality_points": 41,
-      "authority_points": 8,
-      "final_rank_score": 143,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "pmsl on xrpl crypto moonboys wiki",
-      "tokens": [
-        "pmsl",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "pmsl",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "as",
-        "an",
-        "xrp",
-        "community",
-        "token",
-        "reference",
-        "connected",
-        "existing",
-        "lore",
-        "and",
-        "meme",
-        "culture"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
     "title": "Medium Articles by @sercullen — Crypto Moonboys Wiki",
     "desc": "New articles or updates from @sercullen on Medium",
     "url": "/wiki/medium-articles-by-sercullen.html",
@@ -17789,81 +19456,6 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
-  },
-  {
-    "title": "XRPL Tokens — Crypto Moonboys Wiki",
-    "desc": "Crypto Moonboys wiki guide to XRPL tokens, trust lines, issuers, DEX markets and XRP meme coin research.",
-    "url": "/wiki/xrpl-tokens.html",
-    "tags": [],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 142,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 222,
-      "keyword_bag_size": 17,
-      "heading_count": 5,
-      "list_count": 1,
-      "internal_link_count": 1,
-      "paragraph_count": 4,
-      "section_count": 4,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 41,
-      "authority_score": 8
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 11,
-      "keyword_bag_points": 17,
-      "content_quality_points": 41,
-      "authority_points": 8,
-      "final_rank_score": 142,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "xrpl tokens crypto moonboys wiki",
-      "tokens": [
-        "xrpl",
-        "tokens",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "xrpl",
-        "tokens",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "trust",
-        "lines",
-        "issuers",
-        "dex",
-        "markets",
-        "and",
-        "xrp",
-        "meme",
-        "coin",
-        "research"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
     }
   },
   {
@@ -17947,81 +19539,6 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 13,
       "authority": 3.5
-    }
-  },
-  {
-    "title": "XRP — Crypto Moonboys Wiki",
-    "desc": "Crypto Moonboys wiki guide to XRP, the native asset of the XRP Ledger and a major centre of XRPL community culture.",
-    "url": "/wiki/xrp.html",
-    "tags": [],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 141,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 188,
-      "keyword_bag_size": 18,
-      "heading_count": 5,
-      "list_count": 1,
-      "internal_link_count": 1,
-      "paragraph_count": 6,
-      "section_count": 4,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 41,
-      "authority_score": 8
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 9,
-      "keyword_bag_points": 18,
-      "content_quality_points": 41,
-      "authority_points": 8,
-      "final_rank_score": 141,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "xrp crypto moonboys wiki",
-      "tokens": [
-        "xrp",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "xrp",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "the",
-        "native",
-        "asset",
-        "of",
-        "ledger",
-        "and",
-        "a",
-        "major",
-        "centre",
-        "xrpl",
-        "community",
-        "culture"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
     }
   },
   {
@@ -18817,78 +20334,6 @@
     }
   },
   {
-    "title": "XRP Army / ARMY — Crypto Moonboys Wiki",
-    "desc": "Crypto Moonboys wiki guide to XRP Army and ARMY, XRP community identity and XRP meme-token culture.",
-    "url": "/wiki/xrp-army.html",
-    "tags": [],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 134,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 217,
-      "keyword_bag_size": 13,
-      "heading_count": 5,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 4,
-      "section_count": 4,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 37,
-      "authority_score": 8
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 11,
-      "keyword_bag_points": 13,
-      "content_quality_points": 37,
-      "authority_points": 8,
-      "final_rank_score": 134,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "xrp army army crypto moonboys wiki",
-      "tokens": [
-        "xrp",
-        "army",
-        "army",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "xrp",
-        "army",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "and",
-        "community",
-        "identity",
-        "meme",
-        "token",
-        "culture"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
     "title": "Leake Street Tunnel — Crypto Moonboys Wiki",
     "desc": "Iconic graffiti hub in lore",
     "url": "/wiki/leake-street-tunnel.html",
@@ -19344,77 +20789,6 @@
     }
   },
   {
-    "title": "EXYBOY — Crypto Moonboys Wiki",
-    "desc": "Crypto Moonboys wiki guide to EXYBOY as an XRP/XRPL meme-token project reference.",
-    "url": "/wiki/exyboy.html",
-    "tags": [],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 123,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 130,
-      "keyword_bag_size": 14,
-      "heading_count": 4,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 3,
-      "section_count": 3,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 29,
-      "authority_score": 8
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 7,
-      "keyword_bag_points": 14,
-      "content_quality_points": 29,
-      "authority_points": 8,
-      "final_rank_score": 123,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "exyboy crypto moonboys wiki",
-      "tokens": [
-        "exyboy",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "exyboy",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "as",
-        "an",
-        "xrp",
-        "xrpl",
-        "meme",
-        "token",
-        "project",
-        "reference"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
     "title": "The Sacred Chain — Crypto Moonboys Wiki",
     "desc": "Spiritual blockchain realm",
     "url": "/wiki/the-sacred-chain.html",
@@ -19567,76 +20941,6 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
-    }
-  },
-  {
-    "title": "TAGZcoin — Crypto Moonboys Wiki",
-    "desc": "Crypto Moonboys wiki guide to TAGZcoin, an XRP meme coin listed on Coinranking",
-    "url": "/wiki/tagzcoin.html",
-    "tags": [],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 116,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 129,
-      "keyword_bag_size": 13,
-      "heading_count": 4,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 3,
-      "section_count": 3,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 24,
-      "authority_score": 8
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 6,
-      "keyword_bag_points": 13,
-      "content_quality_points": 24,
-      "authority_points": 8,
-      "final_rank_score": 116,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "tagzcoin crypto moonboys wiki",
-      "tokens": [
-        "tagzcoin",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "tagzcoin",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "an",
-        "xrp",
-        "meme",
-        "coin",
-        "listed",
-        "on",
-        "coinranking"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
     }
   },
   {
@@ -22219,14 +23523,21 @@
     "title": "XRPL Trust Lines — Crypto Moonboys Wiki",
     "desc": "",
     "url": "/wiki/xrpl-trust-lines.html",
-    "tags": [],
+    "tags": [
+      "xrpl",
+      "trust",
+      "lines",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
     "category": "tokens",
     "aliases": [],
-    "rank_score": 76,
+    "rank_score": 82,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 0,
-      "tag_count": 0,
+      "tag_count": 6,
       "mention_count": 0,
       "category": "tokens",
       "category_priority": 6,
@@ -22248,9 +23559,9 @@
       "category_points": 30,
       "word_count_points": 6,
       "keyword_bag_points": 6,
-      "content_quality_points": 10,
+      "content_quality_points": 16,
       "authority_points": 4,
-      "final_rank_score": 76,
+      "final_rank_score": 82,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -22281,602 +23592,27 @@
     }
   },
   {
-    "title": "BEAR on XRPL — Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/bear-xrpl.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 70,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": false,
-      "article_word_count": 83,
-      "keyword_bag_size": 6,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 30,
-      "word_count_points": 4,
-      "keyword_bag_points": 6,
-      "content_quality_points": 10,
-      "authority_points": 0,
-      "final_rank_score": 70,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "bear on xrpl crypto moonboys wiki",
-      "tokens": [
-        "bear",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "bear",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "DROP on XRPL — Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/drop-xrpl.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 70,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": false,
-      "article_word_count": 79,
-      "keyword_bag_size": 6,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 30,
-      "word_count_points": 4,
-      "keyword_bag_points": 6,
-      "content_quality_points": 10,
-      "authority_points": 0,
-      "final_rank_score": 70,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "drop on xrpl crypto moonboys wiki",
-      "tokens": [
-        "drop",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "drop",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "589 on XRPL — Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/589-xrpl.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 69,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": false,
-      "article_word_count": 67,
-      "keyword_bag_size": 6,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 30,
-      "word_count_points": 3,
-      "keyword_bag_points": 6,
-      "content_quality_points": 10,
-      "authority_points": 0,
-      "final_rank_score": 69,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "589 on xrpl crypto moonboys wiki",
-      "tokens": [
-        "589",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "589",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "666 on XRPL — Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/666-xrpl.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 69,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": false,
-      "article_word_count": 66,
-      "keyword_bag_size": 6,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 30,
-      "word_count_points": 3,
-      "keyword_bag_points": 6,
-      "content_quality_points": 10,
-      "authority_points": 0,
-      "final_rank_score": 69,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "666 on xrpl crypto moonboys wiki",
-      "tokens": [
-        "666",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "666",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "JELLY on XRPL — Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/jelly-xrpl.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 69,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": false,
-      "article_word_count": 68,
-      "keyword_bag_size": 6,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 30,
-      "word_count_points": 3,
-      "keyword_bag_points": 6,
-      "content_quality_points": 10,
-      "authority_points": 0,
-      "final_rank_score": 69,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "jelly on xrpl crypto moonboys wiki",
-      "tokens": [
-        "jelly",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "jelly",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "Opulence on XRPL — Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/opulence-xrpl.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 69,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": false,
-      "article_word_count": 65,
-      "keyword_bag_size": 6,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 30,
-      "word_count_points": 3,
-      "keyword_bag_points": 6,
-      "content_quality_points": 10,
-      "authority_points": 0,
-      "final_rank_score": 69,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "opulence on xrpl crypto moonboys wiki",
-      "tokens": [
-        "opulence",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "opulence",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "PROFIT on XRPL — Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/profit-xrpl.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 69,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": false,
-      "article_word_count": 68,
-      "keyword_bag_size": 6,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 30,
-      "word_count_points": 3,
-      "keyword_bag_points": 6,
-      "content_quality_points": 10,
-      "authority_points": 0,
-      "final_rank_score": 69,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "profit on xrpl crypto moonboys wiki",
-      "tokens": [
-        "profit",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "profit",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "SIGMA on XRPL — Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/sigma-xrpl.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 69,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": false,
-      "article_word_count": 66,
-      "keyword_bag_size": 6,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 30,
-      "word_count_points": 3,
-      "keyword_bag_points": 6,
-      "content_quality_points": 10,
-      "authority_points": 0,
-      "final_rank_score": 69,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "sigma on xrpl crypto moonboys wiki",
-      "tokens": [
-        "sigma",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "sigma",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "TOTO on XRPL — Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/toto-xrpl.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 69,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": false,
-      "article_word_count": 66,
-      "keyword_bag_size": 6,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 30,
-      "word_count_points": 3,
-      "keyword_bag_points": 6,
-      "content_quality_points": 10,
-      "authority_points": 0,
-      "final_rank_score": 69,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "toto on xrpl crypto moonboys wiki",
-      "tokens": [
-        "toto",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "toto",
-        "on",
-        "xrpl",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
     "title": "XRPL DEX — Crypto Moonboys Wiki",
     "desc": "",
     "url": "/wiki/xrpl-dex.html",
-    "tags": [],
+    "tags": [
+      "xrpl",
+      "dex",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
     "category": "tokens",
-    "aliases": [],
-    "rank_score": 69,
+    "aliases": [
+      {
+        "title": "xrpl dex crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 77,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
+      "alias_count": 1,
+      "tag_count": 5,
       "mention_count": 0,
       "category": "tokens",
       "category_priority": 6,
@@ -22898,9 +23634,9 @@
       "category_points": 30,
       "word_count_points": 4,
       "keyword_bag_points": 5,
-      "content_quality_points": 10,
+      "content_quality_points": 18,
       "authority_points": 0,
-      "final_rank_score": 69,
+      "final_rank_score": 77,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -22915,250 +23651,6 @@
       "keyword_bag": [
         "xrpl",
         "dex",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "PHNIX — Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/phnix.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 68,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": false,
-      "article_word_count": 83,
-      "keyword_bag_size": 4,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 30,
-      "word_count_points": 4,
-      "keyword_bag_points": 4,
-      "content_quality_points": 10,
-      "authority_points": 0,
-      "final_rank_score": 68,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "phnix crypto moonboys wiki",
-      "tokens": [
-        "phnix",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "phnix",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "Tabby — Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/tabby.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 67,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": false,
-      "article_word_count": 68,
-      "keyword_bag_size": 4,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 30,
-      "word_count_points": 3,
-      "keyword_bag_points": 4,
-      "content_quality_points": 10,
-      "authority_points": 0,
-      "final_rank_score": 67,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "tabby crypto moonboys wiki",
-      "tokens": [
-        "tabby",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "tabby",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "XMEME — Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/xmeme.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 67,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": false,
-      "article_word_count": 64,
-      "keyword_bag_size": 4,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 30,
-      "word_count_points": 3,
-      "keyword_bag_points": 4,
-      "content_quality_points": 10,
-      "authority_points": 0,
-      "final_rank_score": 67,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "xmeme crypto moonboys wiki",
-      "tokens": [
-        "xmeme",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "xmeme",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
-    }
-  },
-  {
-    "title": "XOGE — Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/xoge.html",
-    "tags": [],
-    "category": "tokens",
-    "aliases": [],
-    "rank_score": 67,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "tokens",
-      "category_priority": 6,
-      "has_description": false,
-      "article_word_count": 64,
-      "keyword_bag_size": 4,
-      "heading_count": 3,
-      "list_count": 1,
-      "internal_link_count": 0,
-      "paragraph_count": 2,
-      "section_count": 2,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 30,
-      "word_count_points": 3,
-      "keyword_bag_points": 4,
-      "content_quality_points": 10,
-      "authority_points": 0,
-      "final_rank_score": 67,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "xoge crypto moonboys wiki",
-      "tokens": [
-        "xoge",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "xoge",
         "crypto",
         "moonboys",
         "wiki"

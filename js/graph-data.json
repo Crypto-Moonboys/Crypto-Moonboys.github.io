@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T23:41:19.246Z",
+  "generated_at": "2026-06-11T00:22:33.119Z",
   "nodes": [
     {
       "id": "/wiki/1m-free-nfts-drop.html",
@@ -46,16 +46,16 @@
       "title": "589 on XRPL — Crypto Moonboys Wiki",
       "url": "/wiki/589-xrpl.html",
       "category": "tokens",
-      "rank_score": 69,
-      "authority_score": 0
+      "rank_score": 162,
+      "authority_score": 8
     },
     {
       "id": "/wiki/666-xrpl.html",
       "title": "666 on XRPL — Crypto Moonboys Wiki",
       "url": "/wiki/666-xrpl.html",
       "category": "tokens",
-      "rank_score": 69,
-      "authority_score": 0
+      "rank_score": 161,
+      "authority_score": 8
     },
     {
       "id": "/wiki/alcor-exchange.html",
@@ -166,8 +166,8 @@
       "title": "BEAR on XRPL — Crypto Moonboys Wiki",
       "url": "/wiki/bear-xrpl.html",
       "category": "tokens",
-      "rank_score": 70,
-      "authority_score": 0
+      "rank_score": 157,
+      "authority_score": 8
     },
     {
       "id": "/wiki/billy-the-goat-kid.html",
@@ -414,8 +414,8 @@
       "title": "DROP on XRPL — Crypto Moonboys Wiki",
       "url": "/wiki/drop-xrpl.html",
       "category": "tokens",
-      "rank_score": 70,
-      "authority_score": 0
+      "rank_score": 156,
+      "authority_score": 8
     },
     {
       "id": "/wiki/elder-codex-7.html",
@@ -462,7 +462,7 @@
       "title": "EXYBOY — Crypto Moonboys Wiki",
       "url": "/wiki/exyboy.html",
       "category": "factions",
-      "rank_score": 123,
+      "rank_score": 171,
       "authority_score": 8
     },
     {
@@ -870,8 +870,8 @@
       "title": "JELLY on XRPL — Crypto Moonboys Wiki",
       "url": "/wiki/jelly-xrpl.html",
       "category": "tokens",
-      "rank_score": 69,
-      "authority_score": 0
+      "rank_score": 158,
+      "authority_score": 8
     },
     {
       "id": "/wiki/jillian-godsil.html",
@@ -1198,8 +1198,8 @@
       "title": "Opulence on XRPL — Crypto Moonboys Wiki",
       "url": "/wiki/opulence-xrpl.html",
       "category": "tokens",
-      "rank_score": 69,
-      "authority_score": 0
+      "rank_score": 158,
+      "authority_score": 8
     },
     {
       "id": "/wiki/paper-hands.html",
@@ -1222,8 +1222,8 @@
       "title": "PHNIX — Crypto Moonboys Wiki",
       "url": "/wiki/phnix.html",
       "category": "tokens",
-      "rank_score": 68,
-      "authority_score": 0
+      "rank_score": 153,
+      "authority_score": 8
     },
     {
       "id": "/wiki/phygital-prints.html",
@@ -1270,7 +1270,7 @@
       "title": "PMSL on XRPL — Crypto Moonboys Wiki",
       "url": "/wiki/pmsl-xrpl.html",
       "category": "factions",
-      "rank_score": 143,
+      "rank_score": 154,
       "authority_score": 8
     },
     {
@@ -1286,8 +1286,8 @@
       "title": "PROFIT on XRPL — Crypto Moonboys Wiki",
       "url": "/wiki/profit-xrpl.html",
       "category": "tokens",
-      "rank_score": 69,
-      "authority_score": 0
+      "rank_score": 158,
+      "authority_score": 8
     },
     {
       "id": "/wiki/punk-coin.html",
@@ -1438,8 +1438,8 @@
       "title": "SIGMA on XRPL — Crypto Moonboys Wiki",
       "url": "/wiki/sigma-xrpl.html",
       "category": "tokens",
-      "rank_score": 69,
-      "authority_score": 0
+      "rank_score": 151,
+      "authority_score": 8
     },
     {
       "id": "/wiki/sister-halcyon.html",
@@ -1590,8 +1590,8 @@
       "title": "Tabby — Crypto Moonboys Wiki",
       "url": "/wiki/tabby.html",
       "category": "tokens",
-      "rank_score": 67,
-      "authority_score": 0
+      "rank_score": 151,
+      "authority_score": 8
     },
     {
       "id": "/wiki/tacoswap.html",
@@ -1606,7 +1606,7 @@
       "title": "TAGZcoin — Crypto Moonboys Wiki",
       "url": "/wiki/tagzcoin.html",
       "category": "factions",
-      "rank_score": 116,
+      "rank_score": 170,
       "authority_score": 8
     },
     {
@@ -1958,8 +1958,8 @@
       "title": "TOTO on XRPL — Crypto Moonboys Wiki",
       "url": "/wiki/toto-xrpl.html",
       "category": "tokens",
-      "rank_score": 69,
-      "authority_score": 0
+      "rank_score": 163,
+      "authority_score": 8
     },
     {
       "id": "/wiki/trevor-fung.html",
@@ -2070,23 +2070,23 @@
       "title": "XMEME — Crypto Moonboys Wiki",
       "url": "/wiki/xmeme.html",
       "category": "tokens",
-      "rank_score": 67,
-      "authority_score": 0
+      "rank_score": 152,
+      "authority_score": 8
     },
     {
       "id": "/wiki/xoge.html",
       "title": "XOGE — Crypto Moonboys Wiki",
       "url": "/wiki/xoge.html",
       "category": "tokens",
-      "rank_score": 67,
-      "authority_score": 0
+      "rank_score": 154,
+      "authority_score": 8
     },
     {
       "id": "/wiki/xrp-army.html",
       "title": "XRP Army / ARMY — Crypto Moonboys Wiki",
       "url": "/wiki/xrp-army.html",
       "category": "factions",
-      "rank_score": 134,
+      "rank_score": 145,
       "authority_score": 8
     },
     {
@@ -2118,7 +2118,7 @@
       "title": "XRP Ledger — Crypto Moonboys Wiki",
       "url": "/wiki/xrp-ledger.html",
       "category": "factions",
-      "rank_score": 167,
+      "rank_score": 175,
       "authority_score": 8
     },
     {
@@ -2126,7 +2126,7 @@
       "title": "XRP Meme Coins — Crypto Moonboys Wiki",
       "url": "/wiki/xrp-meme-coins.html",
       "category": "factions",
-      "rank_score": 144,
+      "rank_score": 150,
       "authority_score": 8
     },
     {
@@ -2134,7 +2134,7 @@
       "title": "XRP — Crypto Moonboys Wiki",
       "url": "/wiki/xrp.html",
       "category": "factions",
-      "rank_score": 141,
+      "rank_score": 148,
       "authority_score": 8
     },
     {
@@ -2142,7 +2142,7 @@
       "title": "XRPL DEX — Crypto Moonboys Wiki",
       "url": "/wiki/xrpl-dex.html",
       "category": "tokens",
-      "rank_score": 69,
+      "rank_score": 77,
       "authority_score": 0
     },
     {
@@ -2150,7 +2150,7 @@
       "title": "XRPL Tokens — Crypto Moonboys Wiki",
       "url": "/wiki/xrpl-tokens.html",
       "category": "factions",
-      "rank_score": 142,
+      "rank_score": 150,
       "authority_score": 8
     },
     {
@@ -2158,7 +2158,7 @@
       "title": "XRPL Trust Lines — Crypto Moonboys Wiki",
       "url": "/wiki/xrpl-trust-lines.html",
       "category": "tokens",
-      "rank_score": 76,
+      "rank_score": 82,
       "authority_score": 4
     }
   ],
@@ -2172,14 +2172,14 @@
     {
       "source": "/wiki/1m-free-nfts-drop.html",
       "target": "/wiki/1m-free-nfts-program.html",
-      "score": 75,
-      "weight": 0.75
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/1m-free-nfts-drop.html",
       "target": "/wiki/1m-free-nfts.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/1m-free-nfts-drop.html",
@@ -2208,8 +2208,8 @@
     {
       "source": "/wiki/1m-free-nfts-program.html",
       "target": "/wiki/1m-free-nfts.html",
-      "score": 66,
-      "weight": 0.66
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/1m-free-nfts-program.html",
@@ -2219,9 +2219,9 @@
     },
     {
       "source": "/wiki/1m-free-nfts-program.html",
-      "target": "/wiki/pmsl.html",
-      "score": 62,
-      "weight": 0.62
+      "target": "/wiki/one-million-free-nfts.html",
+      "score": 61,
+      "weight": 0.61
     },
     {
       "source": "/wiki/1m-free-nfts-programme.html",
@@ -2268,8 +2268,8 @@
     {
       "source": "/wiki/1m-free-nfts.html",
       "target": "/wiki/1m-free-nfts-program.html",
-      "score": 69,
-      "weight": 0.69
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/1m-free-nfts.html",
@@ -2279,9 +2279,9 @@
     },
     {
       "source": "/wiki/1m-free-nfts.html",
-      "target": "/wiki/xrp-kids-genesis-nfts.html",
-      "score": 56,
-      "weight": 0.56
+      "target": "/wiki/pmsl.html",
+      "score": 54,
+      "weight": 0.54
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
@@ -2316,62 +2316,62 @@
     {
       "source": "/wiki/589-xrpl.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/589-xrpl.html",
       "target": "/wiki/ethereum.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/589-xrpl.html",
+      "target": "/wiki/solana.html",
       "score": 67,
       "weight": 0.67
     },
     {
       "source": "/wiki/589-xrpl.html",
-      "target": "/wiki/solana.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/589-xrpl.html",
       "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/589-xrpl.html",
-      "target": "/wiki/666-xrpl.html",
-      "score": 50,
-      "weight": 0.5
+      "target": "/wiki/jelly-xrpl.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/666-xrpl.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/666-xrpl.html",
       "target": "/wiki/ethereum.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/666-xrpl.html",
+      "target": "/wiki/solana.html",
       "score": 67,
       "weight": 0.67
     },
     {
       "source": "/wiki/666-xrpl.html",
-      "target": "/wiki/solana.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/666-xrpl.html",
       "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/666-xrpl.html",
-      "target": "/wiki/589-xrpl.html",
-      "score": 50,
-      "weight": 0.5
+      "target": "/wiki/jelly-xrpl.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/alcor-exchange.html",
@@ -2495,15 +2495,15 @@
     },
     {
       "source": "/wiki/alfie-the-bitcoin-kid-blaze.html",
-      "target": "/wiki/hodl-wars.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
       "score": 85,
       "weight": 0.85
     },
     {
       "source": "/wiki/alfie-the-bitcoin-kid-blaze.html",
-      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 84,
-      "weight": 0.84
+      "target": "/wiki/hodl-wars.html",
+      "score": 85,
+      "weight": 0.85
     },
     {
       "source": "/wiki/alfie-the-bitcoin-kid-blaze.html",
@@ -2562,8 +2562,8 @@
     {
       "source": "/wiki/altcoins.html",
       "target": "/wiki/bitcoin.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/altcoins.html",
@@ -2711,12 +2711,6 @@
     },
     {
       "source": "/wiki/battlemech-blast.html",
-      "target": "/wiki/pmsl.html",
-      "score": 61,
-      "weight": 0.61
-    },
-    {
-      "source": "/wiki/battlemech-blast.html",
       "target": "/wiki/the-rugpull-miners.html",
       "score": 61,
       "weight": 0.61
@@ -2732,6 +2726,12 @@
       "target": "/wiki/the-squeaky-pinks.html",
       "score": 61,
       "weight": 0.61
+    },
+    {
+      "source": "/wiki/battlemech-blast.html",
+      "target": "/wiki/hard-fork-games.html",
+      "score": 60,
+      "weight": 0.6
     },
     {
       "source": "/wiki/bear-market-siege.html",
@@ -2766,32 +2766,32 @@
     {
       "source": "/wiki/bear-xrpl.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/bear-xrpl.html",
       "target": "/wiki/ethereum.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/bear-xrpl.html",
+      "target": "/wiki/solana.html",
       "score": 67,
       "weight": 0.67
     },
     {
       "source": "/wiki/bear-xrpl.html",
-      "target": "/wiki/solana.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/bear-xrpl.html",
       "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/bear-xrpl.html",
-      "target": "/wiki/589-xrpl.html",
-      "score": 50,
-      "weight": 0.5
+      "target": "/wiki/jelly-xrpl.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/billy-the-goat-kid.html",
@@ -2856,32 +2856,32 @@
     {
       "source": "/wiki/bitcoin-btc.html",
       "target": "/wiki/bitcoin.html",
-      "score": 88,
-      "weight": 0.88
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/bitcoin-btc.html",
       "target": "/wiki/ethereum.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/bitcoin-btc.html",
       "target": "/wiki/solana.html",
-      "score": 70,
-      "weight": 0.7
-    },
-    {
-      "source": "/wiki/bitcoin-btc.html",
-      "target": "/wiki/moon-mission.html",
       "score": 69,
       "weight": 0.69
     },
     {
       "source": "/wiki/bitcoin-btc.html",
-      "target": "/wiki/web3.html",
-      "score": 48,
-      "weight": 0.48
+      "target": "/wiki/moon-mission.html",
+      "score": 66,
+      "weight": 0.66
+    },
+    {
+      "source": "/wiki/bitcoin-btc.html",
+      "target": "/wiki/jelly-xrpl.html",
+      "score": 47,
+      "weight": 0.47
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
@@ -2898,8 +2898,8 @@
     {
       "source": "/wiki/bitcoin-kid-army.html",
       "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 72,
-      "weight": 0.72
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/bitcoin-kid-army.html",
@@ -2993,15 +2993,15 @@
     },
     {
       "source": "/wiki/bitcoin.html",
-      "target": "/wiki/bitcoin-btc.html",
-      "score": 61,
-      "weight": 0.61
+      "target": "/wiki/blockchain.html",
+      "score": 62,
+      "weight": 0.62
     },
     {
       "source": "/wiki/bitcoin.html",
-      "target": "/wiki/blockchain.html",
-      "score": 61,
-      "weight": 0.61
+      "target": "/wiki/rug-pull-wars.html",
+      "score": 60,
+      "weight": 0.6
     },
     {
       "source": "/wiki/block-node-defenders.html",
@@ -3072,20 +3072,20 @@
     {
       "source": "/wiki/blockchain-technology.html",
       "target": "/wiki/ethereum.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/blockchain-technology.html",
       "target": "/wiki/solana.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/blockchain-technology.html",
       "target": "/wiki/moon-mission.html",
-      "score": 69,
-      "weight": 0.69
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/blockchain-technology.html",
@@ -3096,8 +3096,8 @@
     {
       "source": "/wiki/blockchain.html",
       "target": "/wiki/bitcoin.html",
-      "score": 88,
-      "weight": 0.88
+      "score": 89,
+      "weight": 0.89
     },
     {
       "source": "/wiki/blockchain.html",
@@ -3210,8 +3210,8 @@
     {
       "source": "/wiki/canvas-clash.html",
       "target": "/wiki/hard-fork-games.html",
-      "score": 59,
-      "weight": 0.59
+      "score": 58,
+      "weight": 0.58
     },
     {
       "source": "/wiki/charlie-buster.html",
@@ -3282,26 +3282,26 @@
     {
       "source": "/wiki/crypto-exchanges.html",
       "target": "/wiki/ethereum.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/crypto-exchanges.html",
       "target": "/wiki/solana.html",
-      "score": 70,
-      "weight": 0.7
-    },
-    {
-      "source": "/wiki/crypto-exchanges.html",
-      "target": "/wiki/moon-mission.html",
       "score": 69,
       "weight": 0.69
     },
     {
       "source": "/wiki/crypto-exchanges.html",
+      "target": "/wiki/moon-mission.html",
+      "score": 66,
+      "weight": 0.66
+    },
+    {
+      "source": "/wiki/crypto-exchanges.html",
       "target": "/wiki/exchanges.html",
-      "score": 53,
-      "weight": 0.53
+      "score": 52,
+      "weight": 0.52
     },
     {
       "source": "/wiki/crypto-moonboys.html",
@@ -3492,26 +3492,26 @@
     {
       "source": "/wiki/defi-decentralised-finance.html",
       "target": "/wiki/ethereum.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/defi-decentralised-finance.html",
       "target": "/wiki/defi.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/defi-decentralised-finance.html",
       "target": "/wiki/solana.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/defi-decentralised-finance.html",
       "target": "/wiki/moon-mission.html",
-      "score": 69,
-      "weight": 0.69
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/defi-mining.html",
@@ -3552,8 +3552,8 @@
     {
       "source": "/wiki/defi.html",
       "target": "/wiki/bitcoin.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/defi.html",
@@ -3570,8 +3570,8 @@
     {
       "source": "/wiki/defi.html",
       "target": "/wiki/defi-decentralised-finance.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/delicious-again-pete.html",
@@ -3696,32 +3696,32 @@
     {
       "source": "/wiki/drop-xrpl.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/drop-xrpl.html",
       "target": "/wiki/ethereum.html",
+      "score": 71,
+      "weight": 0.71
+    },
+    {
+      "source": "/wiki/drop-xrpl.html",
+      "target": "/wiki/solana.html",
       "score": 67,
       "weight": 0.67
     },
     {
       "source": "/wiki/drop-xrpl.html",
-      "target": "/wiki/solana.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/drop-xrpl.html",
       "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/drop-xrpl.html",
-      "target": "/wiki/589-xrpl.html",
-      "score": 50,
-      "weight": 0.5
+      "target": "/wiki/jelly-xrpl.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/elder-codex-7.html",
@@ -3768,8 +3768,8 @@
     {
       "source": "/wiki/ethereum-ecosystem.html",
       "target": "/wiki/bitcoin.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/ethereum-ecosystem.html",
@@ -3780,14 +3780,14 @@
     {
       "source": "/wiki/ethereum-ecosystem.html",
       "target": "/wiki/altcoins.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/ethereum-eth.html",
       "target": "/wiki/ethereum.html",
-      "score": 89,
-      "weight": 0.89
+      "score": 88,
+      "weight": 0.88
     },
     {
       "source": "/wiki/ethereum-eth.html",
@@ -3798,14 +3798,14 @@
     {
       "source": "/wiki/ethereum-eth.html",
       "target": "/wiki/solana.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/ethereum-eth.html",
       "target": "/wiki/moon-mission.html",
-      "score": 69,
-      "weight": 0.69
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/ethereum-eth.html",
@@ -3816,8 +3816,8 @@
     {
       "source": "/wiki/ethereum.html",
       "target": "/wiki/bitcoin.html",
-      "score": 91,
-      "weight": 0.91
+      "score": 92,
+      "weight": 0.92
     },
     {
       "source": "/wiki/ethereum.html",
@@ -3852,8 +3852,8 @@
     {
       "source": "/wiki/exchanges.html",
       "target": "/wiki/bitcoin.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/exchanges.html",
@@ -3876,32 +3876,32 @@
     {
       "source": "/wiki/exyboy.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/exyboy.html",
       "target": "/wiki/pmsl.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/exyboy.html",
+      "target": "/wiki/genesis-spray.html",
+      "score": 52,
+      "weight": 0.52
+    },
+    {
+      "source": "/wiki/exyboy.html",
+      "target": "/wiki/rave-relics.html",
       "score": 51,
       "weight": 0.51
     },
     {
       "source": "/wiki/exyboy.html",
-      "target": "/wiki/genesis-spray.html",
-      "score": 50,
-      "weight": 0.5
-    },
-    {
-      "source": "/wiki/exyboy.html",
-      "target": "/wiki/nbg-token.html",
-      "score": 49,
-      "weight": 0.49
-    },
-    {
-      "source": "/wiki/exyboy.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 49,
-      "weight": 0.49
+      "target": "/wiki/sacred-chain.html",
+      "score": 51,
+      "weight": 0.51
     },
     {
       "source": "/wiki/fgl-token.html",
@@ -3942,8 +3942,8 @@
     {
       "source": "/wiki/fomo-plague.html",
       "target": "/wiki/bitcoin.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/fomo-plague.html",
@@ -4067,6 +4067,12 @@
     },
     {
       "source": "/wiki/games4punks-telegram-games.html",
+      "target": "/wiki/no-ball-games-nbg.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/games4punks-telegram-games.html",
       "target": "/wiki/hard-fork-games-event.html",
       "score": 67,
       "weight": 0.67
@@ -4074,12 +4080,6 @@
     {
       "source": "/wiki/games4punks-telegram-games.html",
       "target": "/wiki/games4punks-telegram.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/games4punks-telegram-games.html",
-      "target": "/wiki/hard-fork-games-game.html",
       "score": 66,
       "weight": 0.66
     },
@@ -4302,14 +4302,14 @@
     {
       "source": "/wiki/gk-tokens.html",
       "target": "/wiki/stake-for-gk-tokens.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/gk-tokens.html",
       "target": "/wiki/staking-for-gk-tokens.html",
-      "score": 63,
-      "weight": 0.63
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/gk-tokens.html",
@@ -5040,8 +5040,8 @@
     {
       "source": "/wiki/hard-fork-games-game.html",
       "target": "/wiki/no-ball-games-nbg.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/hard-fork-games.html",
@@ -5058,8 +5058,8 @@
     {
       "source": "/wiki/hard-fork-games.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/hard-fork-games.html",
@@ -5070,8 +5070,8 @@
     {
       "source": "/wiki/hard-fork-games.html",
       "target": "/wiki/no-ball-games-nbg.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/harrison-rift.html",
@@ -5279,7 +5279,7 @@
     },
     {
       "source": "/wiki/hodl-wars.html",
-      "target": "/wiki/hard-fork-games.html",
+      "target": "/wiki/nbg-token.html",
       "score": 58,
       "weight": 0.58
     },
@@ -5376,32 +5376,32 @@
     {
       "source": "/wiki/jelly-xrpl.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/jelly-xrpl.html",
       "target": "/wiki/ethereum.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/jelly-xrpl.html",
+      "target": "/wiki/solana.html",
       "score": 67,
       "weight": 0.67
     },
     {
       "source": "/wiki/jelly-xrpl.html",
-      "target": "/wiki/solana.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/jelly-xrpl.html",
       "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/jelly-xrpl.html",
-      "target": "/wiki/589-xrpl.html",
-      "score": 50,
-      "weight": 0.5
+      "target": "/wiki/opulence-xrpl.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/jillian-godsil.html",
@@ -5856,32 +5856,32 @@
     {
       "source": "/wiki/meme-coins.html",
       "target": "/wiki/bitcoin.html",
-      "score": 73,
-      "weight": 0.73
-    },
-    {
-      "source": "/wiki/meme-coins.html",
-      "target": "/wiki/ethereum.html",
-      "score": 73,
-      "weight": 0.73
-    },
-    {
-      "source": "/wiki/meme-coins.html",
-      "target": "/wiki/solana.html",
-      "score": 70,
-      "weight": 0.7
-    },
-    {
-      "source": "/wiki/meme-coins.html",
-      "target": "/wiki/moon-mission.html",
       "score": 69,
       "weight": 0.69
     },
     {
       "source": "/wiki/meme-coins.html",
+      "target": "/wiki/ethereum.html",
+      "score": 69,
+      "weight": 0.69
+    },
+    {
+      "source": "/wiki/meme-coins.html",
+      "target": "/wiki/solana.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/meme-coins.html",
+      "target": "/wiki/moon-mission.html",
+      "score": 66,
+      "weight": 0.66
+    },
+    {
+      "source": "/wiki/meme-coins.html",
       "target": "/wiki/memecoins.html",
-      "score": 61,
-      "weight": 0.61
+      "score": 57,
+      "weight": 0.57
     },
     {
       "source": "/wiki/memecoins.html",
@@ -5898,8 +5898,8 @@
     {
       "source": "/wiki/memecoins.html",
       "target": "/wiki/bitcoin.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/memecoins.html",
@@ -5909,7 +5909,7 @@
     },
     {
       "source": "/wiki/memecoins.html",
-      "target": "/wiki/ethereum-ecosystem.html",
+      "target": "/wiki/altcoins.html",
       "score": 62,
       "weight": 0.62
     },
@@ -6066,8 +6066,8 @@
     {
       "source": "/wiki/moon-mission.html",
       "target": "/wiki/bitcoin.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/moon-mission.html",
@@ -6089,7 +6089,7 @@
     },
     {
       "source": "/wiki/moon-mission.html",
-      "target": "/wiki/rug-pull-wars.html",
+      "target": "/wiki/fomo-plague.html",
       "score": 66,
       "weight": 0.66
     },
@@ -6293,13 +6293,13 @@
     },
     {
       "source": "/wiki/nfthive.html",
-      "target": "/wiki/genesis-spray.html",
+      "target": "/wiki/alcor-exchange.html",
       "score": 52,
       "weight": 0.52
     },
     {
       "source": "/wiki/nfthive.html",
-      "target": "/wiki/pmsl.html",
+      "target": "/wiki/genesis-spray.html",
       "score": 52,
       "weight": 0.52
     },
@@ -6372,8 +6372,8 @@
     {
       "source": "/wiki/ngmi-chronicles.html",
       "target": "/wiki/bitcoin.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/ngmi-chronicles.html",
@@ -6486,8 +6486,8 @@
     {
       "source": "/wiki/no-ball-games-nbg-collection.html",
       "target": "/wiki/no-ball-games-nbg.html",
-      "score": 99,
-      "weight": 0.99
+      "score": 103,
+      "weight": 1
     },
     {
       "source": "/wiki/no-ball-games-nbg-collection.html",
@@ -6588,14 +6588,14 @@
     {
       "source": "/wiki/one-million-free-nfts.html",
       "target": "/wiki/1m-free-nfts-program.html",
-      "score": 59,
-      "weight": 0.59
+      "score": 60,
+      "weight": 0.6
     },
     {
       "source": "/wiki/one-million-free-nfts.html",
       "target": "/wiki/1m-free-nfts.html",
-      "score": 57,
-      "weight": 0.57
+      "score": 58,
+      "weight": 0.58
     },
     {
       "source": "/wiki/one-million-free-nfts.html",
@@ -6606,32 +6606,32 @@
     {
       "source": "/wiki/opulence-xrpl.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/opulence-xrpl.html",
       "target": "/wiki/ethereum.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/opulence-xrpl.html",
+      "target": "/wiki/solana.html",
       "score": 67,
       "weight": 0.67
     },
     {
       "source": "/wiki/opulence-xrpl.html",
-      "target": "/wiki/solana.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/opulence-xrpl.html",
       "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/opulence-xrpl.html",
-      "target": "/wiki/589-xrpl.html",
-      "score": 50,
-      "weight": 0.5
+      "target": "/wiki/jelly-xrpl.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/paper-hands.html",
@@ -6642,8 +6642,8 @@
     {
       "source": "/wiki/paper-hands.html",
       "target": "/wiki/bitcoin.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/paper-hands.html",
@@ -6696,32 +6696,32 @@
     {
       "source": "/wiki/phnix.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/phnix.html",
       "target": "/wiki/ethereum.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/phnix.html",
       "target": "/wiki/solana.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/phnix.html",
+      "target": "/wiki/moon-mission.html",
       "score": 66,
       "weight": 0.66
     },
     {
       "source": "/wiki/phnix.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/phnix.html",
-      "target": "/wiki/web3.html",
-      "score": 45,
-      "weight": 0.45
+      "target": "/wiki/tabby.html",
+      "score": 47,
+      "weight": 0.47
     },
     {
       "source": "/wiki/phygital-prints.html",
@@ -6858,8 +6858,8 @@
     {
       "source": "/wiki/pmsl-token.html",
       "target": "/wiki/pmsl.html",
-      "score": 62,
-      "weight": 0.62
+      "score": 63,
+      "weight": 0.63
     },
     {
       "source": "/wiki/pmsl-token.html",
@@ -6876,32 +6876,32 @@
     {
       "source": "/wiki/pmsl-xrpl.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/pmsl-xrpl.html",
       "target": "/wiki/pmsl.html",
-      "score": 59,
-      "weight": 0.59
+      "score": 61,
+      "weight": 0.61
     },
     {
       "source": "/wiki/pmsl-xrpl.html",
       "target": "/wiki/xrpl-tokens.html",
+      "score": 55,
+      "weight": 0.55
+    },
+    {
+      "source": "/wiki/pmsl-xrpl.html",
+      "target": "/wiki/genesis-spray.html",
       "score": 52,
       "weight": 0.52
     },
     {
       "source": "/wiki/pmsl-xrpl.html",
-      "target": "/wiki/genesis-spray.html",
-      "score": 50,
-      "weight": 0.5
-    },
-    {
-      "source": "/wiki/pmsl-xrpl.html",
-      "target": "/wiki/nbg-token.html",
-      "score": 49,
-      "weight": 0.49
+      "target": "/wiki/rave-relics.html",
+      "score": 51,
+      "weight": 0.51
     },
     {
       "source": "/wiki/pmsl.html",
@@ -6936,42 +6936,42 @@
     {
       "source": "/wiki/profit-xrpl.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/profit-xrpl.html",
       "target": "/wiki/ethereum.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/profit-xrpl.html",
       "target": "/wiki/solana.html",
-      "score": 66,
-      "weight": 0.66
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/profit-xrpl.html",
       "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/profit-xrpl.html",
-      "target": "/wiki/589-xrpl.html",
-      "score": 50,
-      "weight": 0.5
+      "target": "/wiki/jelly-xrpl.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/punk-coin.html",
-      "target": "/wiki/ethereum.html",
+      "target": "/wiki/bitcoin.html",
       "score": 70,
       "weight": 0.7
     },
     {
       "source": "/wiki/punk-coin.html",
-      "target": "/wiki/bitcoin.html",
+      "target": "/wiki/ethereum.html",
       "score": 69,
       "weight": 0.69
     },
@@ -6989,7 +6989,7 @@
     },
     {
       "source": "/wiki/punk-coin.html",
-      "target": "/wiki/web3.html",
+      "target": "/wiki/phnix.html",
       "score": 47,
       "weight": 0.47
     },
@@ -7212,8 +7212,8 @@
     {
       "source": "/wiki/rug-pull-wars.html",
       "target": "/wiki/bitcoin.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/rug-pull-wars.html",
@@ -7446,8 +7446,8 @@
     {
       "source": "/wiki/satoshi-scroll.html",
       "target": "/wiki/bitcoin.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/satoshi-scroll.html",
@@ -7506,32 +7506,32 @@
     {
       "source": "/wiki/sigma-xrpl.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/sigma-xrpl.html",
       "target": "/wiki/ethereum.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/sigma-xrpl.html",
+      "target": "/wiki/solana.html",
       "score": 67,
       "weight": 0.67
     },
     {
       "source": "/wiki/sigma-xrpl.html",
-      "target": "/wiki/solana.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/sigma-xrpl.html",
       "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/sigma-xrpl.html",
-      "target": "/wiki/589-xrpl.html",
-      "score": 50,
-      "weight": 0.5
+      "target": "/wiki/jelly-xrpl.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/sister-halcyon.html",
@@ -7656,8 +7656,8 @@
     {
       "source": "/wiki/solana-sol.html",
       "target": "/wiki/solana.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/solana-sol.html",
@@ -7668,8 +7668,8 @@
     {
       "source": "/wiki/solana-sol.html",
       "target": "/wiki/ethereum.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/solana-sol.html",
@@ -7679,15 +7679,15 @@
     },
     {
       "source": "/wiki/solana-sol.html",
-      "target": "/wiki/web3.html",
+      "target": "/wiki/phnix.html",
       "score": 47,
       "weight": 0.47
     },
     {
       "source": "/wiki/solana.html",
       "target": "/wiki/bitcoin.html",
-      "score": 85,
-      "weight": 0.85
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/solana.html",
@@ -7842,14 +7842,14 @@
     {
       "source": "/wiki/stake-for-gk-tokens.html",
       "target": "/wiki/staking-for-gk-tokens.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/stake-for-gk-tokens.html",
       "target": "/wiki/gk-tokens.html",
-      "score": 69,
-      "weight": 0.69
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/stake-for-gk-tokens.html",
@@ -7872,14 +7872,14 @@
     {
       "source": "/wiki/staking-for-gk-tokens.html",
       "target": "/wiki/stake-for-gk-tokens.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/staking-for-gk-tokens.html",
       "target": "/wiki/gk-tokens.html",
-      "score": 62,
-      "weight": 0.62
+      "score": 63,
+      "weight": 0.63
     },
     {
       "source": "/wiki/staking-for-gk-tokens.html",
@@ -7889,9 +7889,9 @@
     },
     {
       "source": "/wiki/staking-for-gk-tokens.html",
-      "target": "/wiki/gk-token.html",
-      "score": 53,
-      "weight": 0.53
+      "target": "/wiki/xrpl-tokens.html",
+      "score": 54,
+      "weight": 0.54
     },
     {
       "source": "/wiki/staking.html",
@@ -8076,32 +8076,32 @@
     {
       "source": "/wiki/tabby.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/tabby.html",
       "target": "/wiki/ethereum.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/tabby.html",
       "target": "/wiki/solana.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/tabby.html",
+      "target": "/wiki/moon-mission.html",
       "score": 66,
       "weight": 0.66
     },
     {
       "source": "/wiki/tabby.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/tabby.html",
-      "target": "/wiki/web3.html",
-      "score": 45,
-      "weight": 0.45
+      "target": "/wiki/phnix.html",
+      "score": 47,
+      "weight": 0.47
     },
     {
       "source": "/wiki/tacoswap.html",
@@ -8136,32 +8136,32 @@
     {
       "source": "/wiki/tagzcoin.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 76,
+      "weight": 0.76
     },
     {
       "source": "/wiki/tagzcoin.html",
       "target": "/wiki/pmsl.html",
+      "score": 53,
+      "weight": 0.53
+    },
+    {
+      "source": "/wiki/tagzcoin.html",
+      "target": "/wiki/genesis-spray.html",
+      "score": 52,
+      "weight": 0.52
+    },
+    {
+      "source": "/wiki/tagzcoin.html",
+      "target": "/wiki/rave-relics.html",
       "score": 51,
       "weight": 0.51
     },
     {
       "source": "/wiki/tagzcoin.html",
-      "target": "/wiki/genesis-spray.html",
-      "score": 50,
-      "weight": 0.5
-    },
-    {
-      "source": "/wiki/tagzcoin.html",
-      "target": "/wiki/nbg-token.html",
-      "score": 49,
-      "weight": 0.49
-    },
-    {
-      "source": "/wiki/tagzcoin.html",
-      "target": "/wiki/rave-relics.html",
-      "score": 49,
-      "weight": 0.49
+      "target": "/wiki/sacred-chain.html",
+      "score": 51,
+      "weight": 0.51
     },
     {
       "source": "/wiki/the-allcity-bulls.html",
@@ -8304,8 +8304,8 @@
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
@@ -8615,21 +8615,21 @@
     },
     {
       "source": "/wiki/the-fomo-plague.html",
-      "target": "/wiki/ethereum.html",
+      "target": "/wiki/bitcoin.html",
       "score": 70,
       "weight": 0.7
     },
     {
       "source": "/wiki/the-fomo-plague.html",
-      "target": "/wiki/bitcoin.html",
+      "target": "/wiki/ethereum.html",
       "score": 69,
       "weight": 0.69
     },
     {
       "source": "/wiki/the-fomo-plague.html",
       "target": "/wiki/solana.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/the-fomo-plague.html",
@@ -8640,8 +8640,8 @@
     {
       "source": "/wiki/the-fomo-plague.html",
       "target": "/wiki/fomo-plague.html",
-      "score": 57,
-      "weight": 0.57
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/the-gasless-ghosts.html",
@@ -8742,8 +8742,8 @@
     {
       "source": "/wiki/the-great-dip.html",
       "target": "/wiki/bitcoin.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/the-great-dip.html",
@@ -9138,8 +9138,8 @@
     {
       "source": "/wiki/the-satoshi-scroll.html",
       "target": "/wiki/solana.html",
-      "score": 68,
-      "weight": 0.68
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/the-satoshi-scroll.html",
@@ -9150,8 +9150,8 @@
     {
       "source": "/wiki/the-satoshi-scroll.html",
       "target": "/wiki/satoshi-scroll.html",
-      "score": 62,
-      "weight": 0.62
+      "score": 61,
+      "weight": 0.61
     },
     {
       "source": "/wiki/the-shard-mothers-of-manhattan.html",
@@ -9402,8 +9402,8 @@
     {
       "source": "/wiki/tokenomics.html",
       "target": "/wiki/bitcoin.html",
-      "score": 79,
-      "weight": 0.79
+      "score": 80,
+      "weight": 0.8
     },
     {
       "source": "/wiki/tokenomics.html",
@@ -9425,13 +9425,13 @@
     },
     {
       "source": "/wiki/tokens.html",
-      "target": "/wiki/ethereum.html",
+      "target": "/wiki/bitcoin.html",
       "score": 70,
       "weight": 0.7
     },
     {
       "source": "/wiki/tokens.html",
-      "target": "/wiki/bitcoin.html",
+      "target": "/wiki/ethereum.html",
       "score": 69,
       "weight": 0.69
     },
@@ -9449,39 +9449,39 @@
     },
     {
       "source": "/wiki/tokens.html",
-      "target": "/wiki/web3.html",
+      "target": "/wiki/phnix.html",
       "score": 47,
       "weight": 0.47
     },
     {
       "source": "/wiki/toto-xrpl.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/toto-xrpl.html",
       "target": "/wiki/ethereum.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/toto-xrpl.html",
+      "target": "/wiki/solana.html",
       "score": 67,
       "weight": 0.67
     },
     {
       "source": "/wiki/toto-xrpl.html",
-      "target": "/wiki/solana.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/toto-xrpl.html",
       "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/toto-xrpl.html",
-      "target": "/wiki/589-xrpl.html",
-      "score": 50,
-      "weight": 0.5
+      "target": "/wiki/jelly-xrpl.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/trevor-fung.html",
@@ -9677,15 +9677,15 @@
     },
     {
       "source": "/wiki/wax-nft-marketplaces.html",
-      "target": "/wiki/wax-pepe.html",
+      "target": "/wiki/alcor-exchange.html",
       "score": 57,
       "weight": 0.57
     },
     {
       "source": "/wiki/wax-nft-marketplaces.html",
-      "target": "/wiki/alcor-exchange.html",
-      "score": 56,
-      "weight": 0.56
+      "target": "/wiki/wax-pepe.html",
+      "score": 57,
+      "weight": 0.57
     },
     {
       "source": "/wiki/wax-nft-marketplaces.html",
@@ -9738,8 +9738,8 @@
     {
       "source": "/wiki/waxp-exchange.html",
       "target": "/wiki/alcor-exchange.html",
-      "score": 54,
-      "weight": 0.54
+      "score": 55,
+      "weight": 0.55
     },
     {
       "source": "/wiki/waxp-exchange.html",
@@ -9798,8 +9798,8 @@
     {
       "source": "/wiki/web3.html",
       "target": "/wiki/bitcoin.html",
-      "score": 82,
-      "weight": 0.82
+      "score": 83,
+      "weight": 0.83
     },
     {
       "source": "/wiki/web3.html",
@@ -9810,8 +9810,8 @@
     {
       "source": "/wiki/web3.html",
       "target": "/wiki/blockchain.html",
-      "score": 61,
-      "weight": 0.61
+      "score": 62,
+      "weight": 0.62
     },
     {
       "source": "/wiki/whale-lords.html",
@@ -9876,92 +9876,92 @@
     {
       "source": "/wiki/xmeme.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/xmeme.html",
       "target": "/wiki/ethereum.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/xmeme.html",
       "target": "/wiki/solana.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/xmeme.html",
+      "target": "/wiki/moon-mission.html",
       "score": 66,
       "weight": 0.66
     },
     {
       "source": "/wiki/xmeme.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/xmeme.html",
-      "target": "/wiki/web3.html",
-      "score": 45,
-      "weight": 0.45
+      "target": "/wiki/phnix.html",
+      "score": 47,
+      "weight": 0.47
     },
     {
       "source": "/wiki/xoge.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 70,
+      "weight": 0.7
     },
     {
       "source": "/wiki/xoge.html",
       "target": "/wiki/ethereum.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 69,
+      "weight": 0.69
     },
     {
       "source": "/wiki/xoge.html",
       "target": "/wiki/solana.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/xoge.html",
+      "target": "/wiki/moon-mission.html",
       "score": 66,
       "weight": 0.66
     },
     {
       "source": "/wiki/xoge.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/xoge.html",
-      "target": "/wiki/web3.html",
-      "score": 45,
-      "weight": 0.45
+      "target": "/wiki/phnix.html",
+      "score": 47,
+      "weight": 0.47
     },
     {
       "source": "/wiki/xrp-army.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 74,
-      "weight": 0.74
-    },
-    {
-      "source": "/wiki/xrp-army.html",
-      "target": "/wiki/the-bitcoin-kid-army.html",
-      "score": 55,
-      "weight": 0.55
-    },
-    {
-      "source": "/wiki/xrp-army.html",
-      "target": "/wiki/xrp-kids-genesis-nfts.html",
-      "score": 52,
-      "weight": 0.52
-    },
-    {
-      "source": "/wiki/xrp-army.html",
-      "target": "/wiki/xrp-kids-nbg-updates.html",
-      "score": 52,
-      "weight": 0.52
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/xrp-army.html",
       "target": "/wiki/xrp-ledger.html",
-      "score": 52,
-      "weight": 0.52
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/xrp-army.html",
+      "target": "/wiki/xrp-meme-coins.html",
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/xrp-army.html",
+      "target": "/wiki/xrp.html",
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/xrp-army.html",
+      "target": "/wiki/the-bitcoin-kid-army.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/xrp-kids-genesis-nfts.html",
@@ -9983,15 +9983,15 @@
     },
     {
       "source": "/wiki/xrp-kids-genesis-nfts.html",
-      "target": "/wiki/1m-free-nfts-drop.html",
-      "score": 53,
-      "weight": 0.53
+      "target": "/wiki/xrp-army.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/xrp-kids-genesis-nfts.html",
-      "target": "/wiki/nbg-token.html",
-      "score": 52,
-      "weight": 0.52
+      "target": "/wiki/xrp-ledger.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/xrp-kids-nbg-updates.html",
@@ -10008,20 +10008,20 @@
     {
       "source": "/wiki/xrp-kids-nbg-updates.html",
       "target": "/wiki/nbg-token.html",
-      "score": 59,
-      "weight": 0.59
+      "score": 58,
+      "weight": 0.58
     },
     {
       "source": "/wiki/xrp-kids-nbg-updates.html",
-      "target": "/wiki/no-ball-games-nbg-collection.html",
-      "score": 55,
-      "weight": 0.55
+      "target": "/wiki/xrp-army.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/xrp-kids-nbg-updates.html",
-      "target": "/wiki/no-ball-games-nbg.html",
-      "score": 53,
-      "weight": 0.53
+      "target": "/wiki/xrp-ledger.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/xrp-kids.html",
@@ -10056,182 +10056,182 @@
     {
       "source": "/wiki/xrp-ledger.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/xrp-ledger.html",
       "target": "/wiki/xrp-army.html",
-      "score": 52,
-      "weight": 0.52
-    },
-    {
-      "source": "/wiki/xrp-ledger.html",
-      "target": "/wiki/xrp-kids-genesis-nfts.html",
-      "score": 52,
-      "weight": 0.52
-    },
-    {
-      "source": "/wiki/xrp-ledger.html",
-      "target": "/wiki/xrp-kids-nbg-updates.html",
-      "score": 52,
-      "weight": 0.52
+      "score": 57,
+      "weight": 0.57
     },
     {
       "source": "/wiki/xrp-ledger.html",
       "target": "/wiki/xrp-meme-coins.html",
-      "score": 52,
-      "weight": 0.52
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/xrp-ledger.html",
+      "target": "/wiki/xrp.html",
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/xrp-ledger.html",
+      "target": "/wiki/xrp-kids-genesis-nfts.html",
+      "score": 54,
+      "weight": 0.54
     },
     {
       "source": "/wiki/xrp-meme-coins.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/xrp-meme-coins.html",
       "target": "/wiki/xrp-army.html",
-      "score": 52,
-      "weight": 0.52
-    },
-    {
-      "source": "/wiki/xrp-meme-coins.html",
-      "target": "/wiki/xrp-kids-genesis-nfts.html",
-      "score": 52,
-      "weight": 0.52
-    },
-    {
-      "source": "/wiki/xrp-meme-coins.html",
-      "target": "/wiki/xrp-kids-nbg-updates.html",
-      "score": 52,
-      "weight": 0.52
+      "score": 57,
+      "weight": 0.57
     },
     {
       "source": "/wiki/xrp-meme-coins.html",
       "target": "/wiki/xrp-ledger.html",
-      "score": 52,
-      "weight": 0.52
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/xrp-meme-coins.html",
+      "target": "/wiki/xrp.html",
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/xrp-meme-coins.html",
+      "target": "/wiki/xrp-kids-genesis-nfts.html",
+      "score": 54,
+      "weight": 0.54
     },
     {
       "source": "/wiki/xrp.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/xrp.html",
       "target": "/wiki/xrp-army.html",
-      "score": 52,
-      "weight": 0.52
-    },
-    {
-      "source": "/wiki/xrp.html",
-      "target": "/wiki/xrp-kids-genesis-nfts.html",
-      "score": 52,
-      "weight": 0.52
-    },
-    {
-      "source": "/wiki/xrp.html",
-      "target": "/wiki/xrp-kids-nbg-updates.html",
-      "score": 52,
-      "weight": 0.52
+      "score": 57,
+      "weight": 0.57
     },
     {
       "source": "/wiki/xrp.html",
       "target": "/wiki/xrp-ledger.html",
-      "score": 52,
-      "weight": 0.52
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/xrp.html",
+      "target": "/wiki/xrp-meme-coins.html",
+      "score": 57,
+      "weight": 0.57
+    },
+    {
+      "source": "/wiki/xrp.html",
+      "target": "/wiki/xrp-kids-genesis-nfts.html",
+      "score": 54,
+      "weight": 0.54
     },
     {
       "source": "/wiki/xrpl-dex.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/xrpl-dex.html",
       "target": "/wiki/ethereum.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/xrpl-dex.html",
+      "target": "/wiki/solana.html",
       "score": 67,
       "weight": 0.67
     },
     {
       "source": "/wiki/xrpl-dex.html",
-      "target": "/wiki/solana.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/xrpl-dex.html",
       "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/xrpl-dex.html",
-      "target": "/wiki/589-xrpl.html",
-      "score": 50,
-      "weight": 0.5
+      "target": "/wiki/jelly-xrpl.html",
+      "score": 56,
+      "weight": 0.56
     },
     {
       "source": "/wiki/xrpl-tokens.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 74,
-      "weight": 0.74
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/xrpl-tokens.html",
       "target": "/wiki/pmsl-xrpl.html",
-      "score": 52,
-      "weight": 0.52
+      "score": 55,
+      "weight": 0.55
     },
     {
       "source": "/wiki/xrpl-tokens.html",
       "target": "/wiki/stake-for-gk-tokens.html",
-      "score": 52,
-      "weight": 0.52
+      "score": 54,
+      "weight": 0.54
     },
     {
       "source": "/wiki/xrpl-tokens.html",
       "target": "/wiki/staking-for-gk-tokens.html",
-      "score": 52,
-      "weight": 0.52
+      "score": 54,
+      "weight": 0.54
     },
     {
       "source": "/wiki/xrpl-tokens.html",
       "target": "/wiki/gk-tokens.html",
-      "score": 51,
-      "weight": 0.51
+      "score": 53,
+      "weight": 0.53
     },
     {
       "source": "/wiki/xrpl-trust-lines.html",
       "target": "/wiki/bitcoin.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 72,
+      "weight": 0.72
     },
     {
       "source": "/wiki/xrpl-trust-lines.html",
       "target": "/wiki/ethereum.html",
+      "score": 68,
+      "weight": 0.68
+    },
+    {
+      "source": "/wiki/xrpl-trust-lines.html",
+      "target": "/wiki/solana.html",
       "score": 67,
       "weight": 0.67
     },
     {
       "source": "/wiki/xrpl-trust-lines.html",
-      "target": "/wiki/solana.html",
-      "score": 66,
-      "weight": 0.66
-    },
-    {
-      "source": "/wiki/xrpl-trust-lines.html",
       "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
+      "score": 65,
+      "weight": 0.65
     },
     {
       "source": "/wiki/xrpl-trust-lines.html",
-      "target": "/wiki/589-xrpl.html",
-      "score": 50,
-      "weight": 0.5
+      "target": "/wiki/jelly-xrpl.html",
+      "score": 56,
+      "weight": 0.56
     }
   ]
 }

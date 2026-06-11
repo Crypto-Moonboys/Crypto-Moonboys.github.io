@@ -110,11 +110,11 @@
       ]
     },
     "589_xrpl": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "589 xrpl",
         "589 xrpl crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "589 on XRPL — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/589-xrpl.html",
       "category": "tokens",
@@ -131,11 +131,11 @@
       ]
     },
     "666_xrpl": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "666 xrpl",
         "666 xrpl crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "666 on XRPL — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/666-xrpl.html",
       "category": "tokens",
@@ -432,11 +432,11 @@
       ]
     },
     "bear_xrpl": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "bear xrpl",
         "bear xrpl crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "BEAR on XRPL — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/bear-xrpl.html",
       "category": "tokens",
@@ -1104,11 +1104,11 @@
       ]
     },
     "drop_xrpl": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "drop xrpl",
         "drop xrpl crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "DROP on XRPL — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/drop-xrpl.html",
       "category": "tokens",
@@ -1233,10 +1233,11 @@
     },
     "exyboy": {
       "alias_candidates": [
-        "exyboy",
+        "exyboy"
+      ],
+      "aliases": [
         "exyboy crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "EXYBOY — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/exyboy.html",
       "category": "factions",
@@ -2337,11 +2338,11 @@
       ]
     },
     "jelly_xrpl": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "jelly xrpl",
         "jelly xrpl crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "JELLY on XRPL — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/jelly-xrpl.html",
       "category": "tokens",
@@ -3224,11 +3225,11 @@
       ]
     },
     "opulence_xrpl": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "opulence xrpl",
         "opulence xrpl crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "Opulence on XRPL — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/opulence-xrpl.html",
       "category": "tokens",
@@ -3289,10 +3290,11 @@
     },
     "phnix": {
       "alias_candidates": [
-        "phnix",
+        "phnix"
+      ],
+      "aliases": [
         "phnix crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "PHNIX — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/phnix.html",
       "category": "tokens",
@@ -3438,11 +3440,11 @@
       ]
     },
     "pmsl_xrpl": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "pmsl xrpl",
         "pmsl xrpl crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "PMSL on XRPL — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/pmsl-xrpl.html",
       "category": "factions",
@@ -3459,11 +3461,11 @@
       ]
     },
     "profit_xrpl": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "profit xrpl",
         "profit xrpl crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "PROFIT on XRPL — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/profit-xrpl.html",
       "category": "tokens",
@@ -3868,11 +3870,11 @@
       ]
     },
     "sigma_xrpl": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "sigma xrpl",
         "sigma xrpl crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "SIGMA on XRPL — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/sigma-xrpl.html",
       "category": "tokens",
@@ -4279,10 +4281,11 @@
     },
     "tabby": {
       "alias_candidates": [
-        "tabby",
+        "tabby"
+      ],
+      "aliases": [
         "tabby crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "Tabby — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/tabby.html",
       "category": "tokens",
@@ -4320,10 +4323,11 @@
     },
     "tagzcoin": {
       "alias_candidates": [
-        "tagzcoin",
+        "tagzcoin"
+      ],
+      "aliases": [
         "tagzcoin crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "TAGZcoin — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/tagzcoin.html",
       "category": "factions",
@@ -5312,11 +5316,11 @@
       ]
     },
     "toto_xrpl": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "toto xrpl",
         "toto xrpl crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "TOTO on XRPL — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/toto-xrpl.html",
       "category": "tokens",
@@ -5614,10 +5618,11 @@
     },
     "xmeme": {
       "alias_candidates": [
-        "xmeme",
+        "xmeme"
+      ],
+      "aliases": [
         "xmeme crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "XMEME — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/xmeme.html",
       "category": "tokens",
@@ -5634,10 +5639,11 @@
     },
     "xoge": {
       "alias_candidates": [
-        "xoge",
+        "xoge"
+      ],
+      "aliases": [
         "xoge crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "XOGE — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/xoge.html",
       "category": "tokens",
@@ -5653,10 +5659,10 @@
       ]
     },
     "xrp": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "xrp crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "XRP — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/xrp.html",
       "category": "factions",
@@ -5672,11 +5678,11 @@
       ]
     },
     "xrp_army": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "xrp army",
         "xrp army crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "XRP Army / ARMY — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/xrp-army.html",
       "category": "factions",
@@ -5760,10 +5766,11 @@
     },
     "xrp_ledger": {
       "alias_candidates": [
-        "xrp ledger",
+        "xrp ledger"
+      ],
+      "aliases": [
         "xrp ledger crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "XRP Ledger — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/xrp-ledger.html",
       "category": "factions",
@@ -5802,10 +5809,11 @@
     },
     "xrpl_dex": {
       "alias_candidates": [
-        "xrpl dex",
+        "xrpl dex"
+      ],
+      "aliases": [
         "xrpl dex crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "XRPL DEX — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/xrpl-dex.html",
       "category": "tokens",
@@ -5823,10 +5831,11 @@
     },
     "xrpl_tokens": {
       "alias_candidates": [
-        "xrpl tokens",
+        "xrpl tokens"
+      ],
+      "aliases": [
         "xrpl tokens crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "XRPL Tokens — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/xrpl-tokens.html",
       "category": "factions",
@@ -5864,5 +5873,5 @@
       ]
     }
   },
-  "updated_at": "2026-06-10T23:41:17Z"
+  "updated_at": "2026-06-11T00:22:31Z"
 }

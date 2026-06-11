@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-06-10T23:41:19.504Z",
+  "generated_at": "2026-06-11T00:22:33.374Z",
   "phase": "phase_5",
   "schema_version": "1.0",
   "summary": {
     "total_entries": 270,
-    "avg_authority_score": 27,
-    "avg_trust_score": 58,
+    "avg_authority_score": 28,
+    "avg_trust_score": 60,
     "high_authority_count": 22,
     "high_trust_count": 36,
     "narrative_present_count": 36
@@ -20,7 +20,7 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/diamond-hands.html",
@@ -31,7 +31,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/ethereum.html",
@@ -42,7 +42,7 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/hodl-warriors.html",
@@ -53,7 +53,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/hodl-wars.html",
@@ -64,7 +64,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/moon-mission.html",
@@ -75,7 +75,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/solana.html",
@@ -86,7 +86,7 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffpunks.html",
@@ -97,7 +97,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/block-topia.html",
@@ -108,7 +108,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/bitcoin-kids.html",
@@ -119,7 +119,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/null-the-prophet.html",
@@ -130,7 +130,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/punk-token.html",
@@ -141,7 +141,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/queen-sarah-pfly.html",
@@ -152,7 +152,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/charlie-buster.html",
@@ -163,7 +163,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/alfie-blaze.html",
@@ -174,7 +174,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/burn-to-earn.html",
@@ -185,7 +185,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/nbgx.html",
@@ -196,7 +196,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/staking.html",
@@ -207,7 +207,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/pmsl.html",
@@ -218,7 +218,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/nbg.html",
@@ -229,7 +229,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffpunks-24-7.html",
@@ -240,7 +240,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/rave-relics.html",
@@ -251,7 +251,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/midevilpunks.html",
@@ -262,7 +262,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/genesis-spray.html",
@@ -273,7 +273,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/gkniftyheads.html",
@@ -284,7 +284,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/nbg-token.html",
@@ -295,7 +295,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffitikings.html",
@@ -306,7 +306,7 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/sacred-chain.html",
@@ -317,7 +317,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/xrp-kids.html",
@@ -328,7 +328,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/games4punks-telegram.html",
@@ -339,7 +339,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/gang-signs.html",
@@ -350,7 +350,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffpunks-247-radio.html",
@@ -361,7 +361,7 @@
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/darren-cullen.html",
@@ -372,7 +372,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/ian-harrison.html",
@@ -383,7 +383,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/jillian-godsil.html",
@@ -394,7 +394,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/trevor-fung.html",
@@ -405,7 +405,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/hard-fork-games.html",
@@ -416,7 +416,7 @@
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/metropolis.html",
@@ -427,7 +427,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/midevil-hero-arena.html",
@@ -438,7 +438,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/hodl-x-warriors.html",
@@ -449,7 +449,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/samaelexe.html",
@@ -460,7 +460,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-nice-easy-bois.html",
@@ -471,7 +471,7 @@
       "entity_mentions": 3,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/blockchain.html",
@@ -482,7 +482,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/exchanges.html",
@@ -493,7 +493,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/wallets.html",
@@ -504,7 +504,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/bitcoin-x-kids.html",
@@ -515,7 +515,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/crypto-moonboys.html",
@@ -526,7 +526,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/memecoins.html",
@@ -537,7 +537,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-crypto-moongirls.html",
@@ -548,7 +548,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/waxp.html",
@@ -559,7 +559,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/sneakar.html",
@@ -570,7 +570,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/nfts.html",
@@ -581,7 +581,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/rune-tag.html",
@@ -592,7 +592,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/satorebel.html",
@@ -603,7 +603,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/sister-halcyon.html",
@@ -614,7 +614,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-crypto-stoned-boys.html",
@@ -625,7 +625,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/wuffi.html",
@@ -636,7 +636,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/jonny-laurence-nelson-tag-records.html",
@@ -647,7 +647,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/nifty-crowns.html",
@@ -658,7 +658,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/patchwork.html",
@@ -669,7 +669,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/pyralith.html",
@@ -680,7 +680,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/quell.html",
@@ -691,7 +691,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/street-kingdoms.html",
@@ -702,7 +702,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-princess.html",
@@ -713,7 +713,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-whitewasher.html",
@@ -724,7 +724,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/bear-market-siege.html",
@@ -735,7 +735,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/defi.html",
@@ -746,7 +746,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffpunks-24-7-radio.html",
@@ -757,7 +757,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-chain-scribes.html",
@@ -768,7 +768,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-finance-guild.html",
@@ -779,7 +779,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-gasless-ghosts.html",
@@ -790,7 +790,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/thorne-the-architect.html",
@@ -801,7 +801,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/tokenomics.html",
@@ -812,7 +812,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/web3.html",
@@ -823,7 +823,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/forkborn-collective.html",
@@ -834,7 +834,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-blockstars.html",
@@ -845,7 +845,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-ducky-boys.html",
@@ -856,7 +856,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-evm-punks.html",
@@ -867,7 +867,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-hard-fork-rockers.html",
@@ -878,7 +878,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-high-hats.html",
@@ -889,7 +889,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-moonlords.html",
@@ -900,7 +900,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-nomad-bears.html",
@@ -911,7 +911,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-og-pixel-saints.html",
@@ -922,7 +922,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-rugpull-miners.html",
@@ -933,7 +933,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-salvagers.html",
@@ -944,7 +944,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-shard-mothers-of-manhattan.html",
@@ -955,7 +955,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/wagmi-prophecy.html",
@@ -966,7 +966,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/whale-lords.html",
@@ -977,7 +977,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/canvas-clash.html",
@@ -988,7 +988,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/elder-codex-7.html",
@@ -999,7 +999,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/fomo-plague.html",
@@ -1010,7 +1010,7 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/gk.html",
@@ -1021,7 +1021,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffpunks-ecosystem.html",
@@ -1032,7 +1032,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/harrison-rift.html",
@@ -1043,7 +1043,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/iris-7.html",
@@ -1054,7 +1054,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/lady-ink.html",
@@ -1065,7 +1065,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/spraycode-writcode-mechanics.html",
@@ -1076,7 +1076,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-allcity-bulls.html",
@@ -1087,7 +1087,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-bally-boys.html",
@@ -1098,7 +1098,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-blockchain-furies.html",
@@ -1109,7 +1109,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-code-alchemists.html",
@@ -1120,7 +1120,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-squeaky-pinks.html",
@@ -1131,7 +1131,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-tuskon-ogs.html",
@@ -1142,7 +1142,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/wax-blockchain.html",
@@ -1153,7 +1153,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/loopfiend.html",
@@ -1164,7 +1164,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/m1ntr-k1ll.html",
@@ -1175,7 +1175,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/satoshi-scroll.html",
@@ -1186,7 +1186,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/spirit-borns.html",
@@ -1197,7 +1197,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/squeaky-pinks-enforcers.html",
@@ -1208,7 +1208,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-aztec-raiders.html",
@@ -1219,7 +1219,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-bitcoin-kid-army.html",
@@ -1230,7 +1230,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-information-mercenaries.html",
@@ -1241,7 +1241,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/alien-worlds-tlm.html",
@@ -1252,7 +1252,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/altcoins.html",
@@ -1263,7 +1263,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/ava-chen.html",
@@ -1274,7 +1274,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/block-node-defenders.html",
@@ -1285,7 +1285,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/delicious-again-pete.html",
@@ -1296,7 +1296,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/dragan-volkov.html",
@@ -1307,7 +1307,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/ethereum-ecosystem.html",
@@ -1318,7 +1318,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/fgl-token.html",
@@ -1329,7 +1329,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/forklord-you.html",
@@ -1340,7 +1340,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/forksplit.html",
@@ -1351,7 +1351,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/grit42.html",
@@ -1362,7 +1362,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/phygital-prints.html",
@@ -1373,7 +1373,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/pixel-journey.html",
@@ -1384,7 +1384,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/pixil-mini.html",
@@ -1395,7 +1395,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/punk.html",
@@ -1406,7 +1406,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/seeding-rights.html",
@@ -1417,7 +1417,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/storm-struggle.html",
@@ -1428,7 +1428,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-cleanupcentr.html",
@@ -1439,7 +1439,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/thera-9.html",
@@ -1450,7 +1450,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/1m-free-nfts-drop.html",
@@ -1461,7 +1461,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/1m-free-nfts-programme.html",
@@ -1472,7 +1472,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
@@ -1483,7 +1483,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/atomicassets.html",
@@ -1494,7 +1494,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/defi-mining.html",
@@ -1505,7 +1505,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/grit.html",
@@ -1516,7 +1516,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/hodl-wars-ecosystem.html",
@@ -1527,7 +1527,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/jodie-zoom-2000.html",
@@ -1538,7 +1538,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/metaverse-battles.html",
@@ -1549,7 +1549,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/nfthive.html",
@@ -1560,7 +1560,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/sarah-pu51fly.html",
@@ -1571,7 +1571,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-graffpunks.html",
@@ -1582,7 +1582,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/wax-dexs-defi.html",
@@ -1593,7 +1593,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/alcor-exchange.html",
@@ -1604,7 +1604,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/aleema-child-of-the-shard.html",
@@ -1615,7 +1615,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/atomichub.html",
@@ -1626,7 +1626,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/battlemech-blast.html",
@@ -1637,7 +1637,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/genesis-kernel.html",
@@ -1648,7 +1648,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffiti-kings.html",
@@ -1659,7 +1659,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffpunks-collection.html",
@@ -1670,7 +1670,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/hex-tagger-prime.html",
@@ -1681,7 +1681,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/lfgk.html",
@@ -1692,7 +1692,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/nbgx-token.html",
@@ -1703,7 +1703,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/neftyblocks.html",
@@ -1714,7 +1714,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/nifty-wizards.html",
@@ -1725,7 +1725,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/playable-nft-murals.html",
@@ -1736,7 +1736,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/rust2riches.html",
@@ -1747,7 +1747,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/tacoswap.html",
@@ -1758,7 +1758,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-great-dip.html",
@@ -1769,7 +1769,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/triple-fork-event.html",
@@ -1780,7 +1780,7 @@
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/wax-pepe.html",
@@ -1791,7 +1791,40 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/589-xrpl.html",
+      "title": "589 on XRPL — Crypto Moonboys Wiki",
+      "authority_score": 22,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/666-xrpl.html",
+      "title": "666 on XRPL — Crypto Moonboys Wiki",
+      "authority_score": 22,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/bear-xrpl.html",
+      "title": "BEAR on XRPL — Crypto Moonboys Wiki",
+      "authority_score": 22,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/billy-the-goat-kid.html",
@@ -1802,7 +1835,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/bit-cap-5000.html",
@@ -1813,7 +1846,18 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/drop-xrpl.html",
+      "title": "DROP on XRPL — Crypto Moonboys Wiki",
+      "authority_score": 22,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffiti-queens-in-decentraland.html",
@@ -1824,7 +1868,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/hodl-wars-game.html",
@@ -1835,7 +1879,18 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/jelly-xrpl.html",
+      "title": "JELLY on XRPL — Crypto Moonboys Wiki",
+      "authority_score": 22,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/ngmi-chronicles.html",
@@ -1846,7 +1901,18 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/opulence-xrpl.html",
+      "title": "Opulence on XRPL — Crypto Moonboys Wiki",
+      "authority_score": 22,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/paper-hands.html",
@@ -1857,7 +1923,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/pmsl-token.html",
@@ -1868,7 +1934,18 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/profit-xrpl.html",
+      "title": "PROFIT on XRPL — Crypto Moonboys Wiki",
+      "authority_score": 22,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/substack-posts-on-graffpunkssubstackcom.html",
@@ -1879,7 +1956,18 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/toto-xrpl.html",
+      "title": "TOTO on XRPL — Crypto Moonboys Wiki",
+      "authority_score": 22,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/bone-idol-ink.html",
@@ -1890,7 +1978,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/darren-cullen-ser.html",
@@ -1901,7 +1989,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/gkniftyheads-phase-one-two-three.html",
@@ -1912,7 +2000,29 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/pmsl-xrpl.html",
+      "title": "PMSL on XRPL — Crypto Moonboys Wiki",
+      "authority_score": 21,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/sigma-xrpl.html",
+      "title": "SIGMA on XRPL — Crypto Moonboys Wiki",
+      "authority_score": 21,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/wax-nft-marketplaces.html",
@@ -1923,7 +2033,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/waxp-exchange.html",
@@ -1934,7 +2044,29 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/xrp-army.html",
+      "title": "XRP Army / ARMY — Crypto Moonboys Wiki",
+      "authority_score": 21,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 2,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/xrp-ledger.html",
+      "title": "XRP Ledger — Crypto Moonboys Wiki",
+      "authority_score": 21,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/1m-free-nfts-program.html",
@@ -1945,7 +2077,18 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/exyboy.html",
+      "title": "EXYBOY — Crypto Moonboys Wiki",
+      "authority_score": 20,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/gang-signs-card-game.html",
@@ -1956,7 +2099,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffpunks-247-blockchain-radio-station.html",
@@ -1967,7 +2110,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/queen-sarah-p-fly.html",
@@ -1978,7 +2121,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/rug-pull-wars.html",
@@ -1989,7 +2132,18 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/tagzcoin.html",
+      "title": "TAGZcoin — Crypto Moonboys Wiki",
+      "authority_score": 20,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/2025-metaverse-launch-party.html",
@@ -2000,7 +2154,7 @@
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/maidstone-base.html",
@@ -2011,7 +2165,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/snipey-d-man-sirus.html",
@@ -2022,7 +2176,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-gkniftyheads.html",
@@ -2033,7 +2187,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/bitcoin-kid-army.html",
@@ -2044,7 +2198,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/croydon-tower-blocks.html",
@@ -2055,7 +2209,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/no-ball-games-nbg.html",
@@ -2066,7 +2220,73 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/phnix.html",
+      "title": "PHNIX — Crypto Moonboys Wiki",
+      "authority_score": 18,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/tabby.html",
+      "title": "Tabby — Crypto Moonboys Wiki",
+      "authority_score": 18,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/xmeme.html",
+      "title": "XMEME — Crypto Moonboys Wiki",
+      "authority_score": 18,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/xoge.html",
+      "title": "XOGE — Crypto Moonboys Wiki",
+      "authority_score": 18,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/xrp.html",
+      "title": "XRP — Crypto Moonboys Wiki",
+      "authority_score": 18,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/xrpl-tokens.html",
+      "title": "XRPL Tokens — Crypto Moonboys Wiki",
+      "authority_score": 18,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/decentraland-events.html",
@@ -2077,7 +2297,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/gk-token.html",
@@ -2088,7 +2308,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/gk-tokens.html",
@@ -2099,7 +2319,7 @@
       "entity_mentions": 1,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/lfgk-token.html",
@@ -2110,7 +2330,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/spraycode-writcode.html",
@@ -2121,18 +2341,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/xrp-ledger.html",
-      "title": "XRP Ledger — Crypto Moonboys Wiki",
-      "authority_score": 17,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/alfie-bitcoin-kid-blaze.html",
@@ -2143,7 +2352,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/crypto-wallets.html",
@@ -2154,7 +2363,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/lfgk-rewards.html",
@@ -2165,7 +2374,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/samael-exe.html",
@@ -2176,7 +2385,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-bear-market-siege.html",
@@ -2187,7 +2396,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-wagmi-prophecy.html",
@@ -2198,7 +2407,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/bitcoin-btc.html",
@@ -2209,7 +2418,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/blockchain-technology.html",
@@ -2220,7 +2429,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/crypto-exchanges.html",
@@ -2231,7 +2440,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/darren-cullen-ser-real.html",
@@ -2242,7 +2451,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/ethereum-eth.html",
@@ -2253,7 +2462,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/great-datapocalypse-of-2789.html",
@@ -2264,7 +2473,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/meme-coins.html",
@@ -2275,7 +2484,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/no-ball-games-nbg-collection.html",
@@ -2286,7 +2495,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/solana-sol.html",
@@ -2297,7 +2506,7 @@
       "entity_mentions": 2,
       "narrative_presence": true,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-fomo-plague.html",
@@ -2308,7 +2517,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-grids.html",
@@ -2319,7 +2528,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-sacred-chain.html",
@@ -2330,7 +2539,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-satoshi-scroll.html",
@@ -2341,7 +2550,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/the-whale-lords.html",
@@ -2352,7 +2561,7 @@
       "entity_mentions": 2,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/xrp-kids-nbg-updates.html",
@@ -2363,7 +2572,18 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/xrp-meme-coins.html",
+      "title": "XRP Meme Coins — Crypto Moonboys Wiki",
+      "authority_score": 15,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 0,
+      "narrative_presence": false,
+      "category": "factions",
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/medium-articles-by-gkniftyheads.html",
@@ -2374,7 +2594,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/medium-articles-by-graffpunks.html",
@@ -2385,7 +2605,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/medium-articles-by-hodlwarriors.html",
@@ -2396,7 +2616,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/medium-articles-by-sercullen.html",
@@ -2407,7 +2627,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/neftyblocks-midevilpunks-collection.html",
@@ -2418,18 +2638,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/pmsl-xrpl.html",
-      "title": "PMSL on XRPL — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/smart-nft-mechanics.html",
@@ -2440,7 +2649,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/stake-for-gk-tokens.html",
@@ -2451,7 +2660,7 @@
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/xrp-kids-genesis-nfts.html",
@@ -2462,40 +2671,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/xrp-meme-coins.html",
-      "title": "XRP Meme Coins — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/xrp.html",
-      "title": "XRP — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/xrpl-tokens.html",
-      "title": "XRPL Tokens — Crypto Moonboys Wiki",
-      "authority_score": 14,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/atomichub-graffpunks-collection.html",
@@ -2506,7 +2682,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/games4punks-telegram-games.html",
@@ -2517,7 +2693,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffiti-queens-exhibition.html",
@@ -2528,7 +2704,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffpunks-24-7-blockchain-radio-station.html",
@@ -2539,7 +2715,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/leake-street-tunnel.html",
@@ -2550,7 +2726,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/nfts-non-fungible-tokens.html",
@@ -2561,7 +2737,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/punk-coin.html",
@@ -2572,7 +2748,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/staking-for-gk-tokens.html",
@@ -2583,7 +2759,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/substack-posts-on-graffpunks-substack-com.html",
@@ -2594,7 +2770,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/tokens.html",
@@ -2605,18 +2781,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/xrp-army.html",
-      "title": "XRP Army / ARMY — Crypto Moonboys Wiki",
-      "authority_score": 13,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/defi-decentralised-finance.html",
@@ -2627,7 +2792,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/dream-sovereign.html",
@@ -2638,18 +2803,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/exyboy.html",
-      "title": "EXYBOY — Crypto Moonboys Wiki",
-      "authority_score": 12,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffiti-nexus.html",
@@ -2660,7 +2814,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffpunks-247.html",
@@ -2671,7 +2825,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffpunks-network.html",
@@ -2682,7 +2836,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffpunks-nfts.html",
@@ -2693,7 +2847,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/hard-fork-games-event.html",
@@ -2704,7 +2858,7 @@
       "entity_mentions": 0,
       "narrative_presence": true,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/hard-fork-games-game.html",
@@ -2715,7 +2869,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/head-tags.html",
@@ -2726,7 +2880,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/nine-armies.html",
@@ -2737,7 +2891,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/stikfamwars.html",
@@ -2748,18 +2902,7 @@
       "entity_mentions": 1,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/tagzcoin.html",
-      "title": "TAGZcoin — Crypto Moonboys Wiki",
-      "authority_score": 12,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
@@ -2770,7 +2913,18 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "core",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
+    },
+    {
+      "url": "/wiki/xrpl-dex.html",
+      "title": "XRPL DEX — Crypto Moonboys Wiki",
+      "authority_score": 11,
+      "trust_score": 57,
+      "inbound_links": 0,
+      "entity_mentions": 1,
+      "narrative_presence": false,
+      "category": "tokens",
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/1m-free-nfts.html",
@@ -2781,7 +2935,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/genesis-spray-drop.html",
@@ -2792,7 +2946,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/midevil-hero-arena-game.html",
@@ -2803,7 +2957,7 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "characters",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/one-million-free-nfts.html",
@@ -2814,172 +2968,18 @@
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "factions",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     },
     {
       "url": "/wiki/xrpl-trust-lines.html",
       "title": "XRPL Trust Lines — Crypto Moonboys Wiki",
       "authority_score": 8,
-      "trust_score": 32,
+      "trust_score": 57,
       "inbound_links": 0,
       "entity_mentions": 0,
       "narrative_presence": false,
       "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/589-xrpl.html",
-      "title": "589 on XRPL — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/666-xrpl.html",
-      "title": "666 on XRPL — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/bear-xrpl.html",
-      "title": "BEAR on XRPL — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/drop-xrpl.html",
-      "title": "DROP on XRPL — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/jelly-xrpl.html",
-      "title": "JELLY on XRPL — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/opulence-xrpl.html",
-      "title": "Opulence on XRPL — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/phnix.html",
-      "title": "PHNIX — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/profit-xrpl.html",
-      "title": "PROFIT on XRPL — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/sigma-xrpl.html",
-      "title": "SIGMA on XRPL — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/tabby.html",
-      "title": "Tabby — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/toto-xrpl.html",
-      "title": "TOTO on XRPL — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/xmeme.html",
-      "title": "XMEME — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/xoge.html",
-      "title": "XOGE — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
-    },
-    {
-      "url": "/wiki/xrpl-dex.html",
-      "title": "XRPL DEX — Crypto Moonboys Wiki",
-      "authority_score": 7,
-      "trust_score": 32,
-      "inbound_links": 0,
-      "entity_mentions": 0,
-      "narrative_presence": false,
-      "category": "tokens",
-      "last_updated": "2026-06-10"
+      "last_updated": "2026-06-11"
     }
   ]
 }

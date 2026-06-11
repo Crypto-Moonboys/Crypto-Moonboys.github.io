@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-06-10T23:41:19.930Z",
+  "generated_at": "2026-06-11T00:22:33.701Z",
   "phase": "phase_6",
   "schema_version": "1.0",
   "summary": {
     "total_entries": 270,
     "ready_by_platform": {
       "fandom": 45,
-      "telegram": 179,
+      "telegram": 193,
       "substack": 11,
       "paragraph": 25
     }
@@ -2788,6 +2788,51 @@
       }
     },
     {
+      "url": "/wiki/xrp-ledger.html",
+      "readable_title": "XRP Ledger",
+      "readiness_score": 33,
+      "summary_quality": 49,
+      "authority_score": 21,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/589-xrpl.html",
+      "readable_title": "589 on XRPL",
+      "readiness_score": 32,
+      "summary_quality": 43,
+      "authority_score": 22,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/666-xrpl.html",
+      "readable_title": "666 on XRPL",
+      "readiness_score": 32,
+      "summary_quality": 43,
+      "authority_score": 22,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/bitcoin-kid-army.html",
       "readable_title": "Bitcoin Kid Army",
       "readiness_score": 32,
@@ -2818,6 +2863,21 @@
       }
     },
     {
+      "url": "/wiki/exyboy.html",
+      "readable_title": "EXYBOY",
+      "readiness_score": 32,
+      "summary_quality": 47,
+      "authority_score": 20,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/no-ball-games-nbg.html",
       "readable_title": "No Ball Games (NBG)",
       "readiness_score": 32,
@@ -2828,6 +2888,36 @@
       "platform_readiness": {
         "fandom": false,
         "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/tagzcoin.html",
+      "readable_title": "TAGZcoin",
+      "readiness_score": 32,
+      "summary_quality": 47,
+      "authority_score": 20,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/toto-xrpl.html",
+      "readable_title": "TOTO on XRPL",
+      "readiness_score": 32,
+      "summary_quality": 43,
+      "authority_score": 22,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
         "substack": false,
         "paragraph": false
       }
@@ -2848,6 +2938,51 @@
       }
     },
     {
+      "url": "/wiki/bear-xrpl.html",
+      "readable_title": "BEAR on XRPL",
+      "readiness_score": 31,
+      "summary_quality": 41,
+      "authority_score": 22,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/drop-xrpl.html",
+      "readable_title": "DROP on XRPL",
+      "readiness_score": 31,
+      "summary_quality": 41,
+      "authority_score": 22,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/jelly-xrpl.html",
+      "readable_title": "JELLY on XRPL",
+      "readiness_score": 31,
+      "summary_quality": 41,
+      "authority_score": 22,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/maidstone-base.html",
       "readable_title": "Maidstone Base",
       "readiness_score": 31,
@@ -2858,6 +2993,36 @@
       "platform_readiness": {
         "fandom": false,
         "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/opulence-xrpl.html",
+      "readable_title": "Opulence on XRPL",
+      "readiness_score": 31,
+      "summary_quality": 42,
+      "authority_score": 22,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/profit-xrpl.html",
+      "readable_title": "PROFIT on XRPL",
+      "readiness_score": 31,
+      "summary_quality": 41,
+      "authority_score": 22,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
         "substack": false,
         "paragraph": false
       }
@@ -2893,11 +3058,161 @@
       }
     },
     {
+      "url": "/wiki/phnix.html",
+      "readable_title": "PHNIX",
+      "readiness_score": 30,
+      "summary_quality": 42,
+      "authority_score": 18,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/pmsl-xrpl.html",
+      "readable_title": "PMSL on XRPL",
+      "readiness_score": 30,
+      "summary_quality": 39,
+      "authority_score": 21,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/sigma-xrpl.html",
+      "readable_title": "SIGMA on XRPL",
+      "readiness_score": 30,
+      "summary_quality": 39,
+      "authority_score": 21,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/tabby.html",
+      "readable_title": "Tabby",
+      "readiness_score": 30,
+      "summary_quality": 41,
+      "authority_score": 18,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xmeme.html",
+      "readable_title": "XMEME",
+      "readiness_score": 30,
+      "summary_quality": 41,
+      "authority_score": 18,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xoge.html",
+      "readable_title": "XOGE",
+      "readiness_score": 30,
+      "summary_quality": 41,
+      "authority_score": 18,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xrp-army.html",
+      "readable_title": "XRP Army / ARMY",
+      "readiness_score": 30,
+      "summary_quality": 38,
+      "authority_score": 21,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": true,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xrp.html",
+      "readable_title": "XRP",
+      "readiness_score": 30,
+      "summary_quality": 40,
+      "authority_score": 18,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xrpl-tokens.html",
+      "readable_title": "XRPL Tokens",
+      "readiness_score": 30,
+      "summary_quality": 40,
+      "authority_score": 18,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
       "url": "/wiki/graffpunks-247-blockchain-radio-station.html",
       "readable_title": "GraffPUNKS 24/7 Blockchain Radio Station",
       "readiness_score": 29,
       "summary_quality": 36,
       "authority_score": 20,
+      "trust_score": 57,
+      "narrative_strength": 0,
+      "platform_readiness": {
+        "fandom": false,
+        "telegram": false,
+        "substack": false,
+        "paragraph": false
+      }
+    },
+    {
+      "url": "/wiki/xrp-meme-coins.html",
+      "readable_title": "XRP Meme Coins",
+      "readiness_score": 29,
+      "summary_quality": 40,
+      "authority_score": 15,
       "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
@@ -3448,21 +3763,6 @@
       }
     },
     {
-      "url": "/wiki/xrp-ledger.html",
-      "readable_title": "XRP Ledger",
-      "readiness_score": 25,
-      "summary_quality": 49,
-      "authority_score": 17,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/defi-decentralised-finance.html",
       "readable_title": "DeFi (Decentralised Finance)",
       "readiness_score": 24,
@@ -3733,162 +4033,12 @@
       }
     },
     {
-      "url": "/wiki/pmsl-xrpl.html",
-      "readable_title": "PMSL on XRPL",
-      "readiness_score": 22,
-      "summary_quality": 39,
-      "authority_score": 14,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/xrp-meme-coins.html",
-      "readable_title": "XRP Meme Coins",
-      "readiness_score": 22,
-      "summary_quality": 40,
-      "authority_score": 14,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/xrp.html",
-      "readable_title": "XRP",
-      "readiness_score": 22,
-      "summary_quality": 40,
-      "authority_score": 14,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/xrpl-tokens.html",
-      "readable_title": "XRPL Tokens",
-      "readiness_score": 22,
-      "summary_quality": 40,
-      "authority_score": 14,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/xrp-army.html",
-      "readable_title": "XRP Army / ARMY",
-      "readiness_score": 21,
-      "summary_quality": 38,
-      "authority_score": 13,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/exyboy.html",
-      "readable_title": "EXYBOY",
-      "readiness_score": 20,
-      "summary_quality": 34,
-      "authority_score": 12,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/tagzcoin.html",
-      "readable_title": "TAGZcoin",
-      "readiness_score": 20,
-      "summary_quality": 32,
-      "authority_score": 12,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/bear-xrpl.html",
-      "readable_title": "BEAR on XRPL",
-      "readiness_score": 12,
-      "summary_quality": 6,
-      "authority_score": 7,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/drop-xrpl.html",
-      "readable_title": "DROP on XRPL",
-      "readiness_score": 12,
-      "summary_quality": 6,
-      "authority_score": 7,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/phnix.html",
-      "readable_title": "PHNIX",
-      "readiness_score": 12,
-      "summary_quality": 6,
-      "authority_score": 7,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
       "url": "/wiki/xrpl-dex.html",
       "readable_title": "XRPL DEX",
-      "readiness_score": 12,
+      "readiness_score": 19,
       "summary_quality": 6,
-      "authority_score": 7,
-      "trust_score": 32,
+      "authority_score": 11,
+      "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
         "fandom": false,
@@ -3900,160 +4050,10 @@
     {
       "url": "/wiki/xrpl-trust-lines.html",
       "readable_title": "XRPL Trust Lines",
-      "readiness_score": 12,
+      "readiness_score": 18,
       "summary_quality": 6,
       "authority_score": 8,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/589-xrpl.html",
-      "readable_title": "589 on XRPL",
-      "readiness_score": 11,
-      "summary_quality": 5,
-      "authority_score": 7,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/666-xrpl.html",
-      "readable_title": "666 on XRPL",
-      "readiness_score": 11,
-      "summary_quality": 5,
-      "authority_score": 7,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/jelly-xrpl.html",
-      "readable_title": "JELLY on XRPL",
-      "readiness_score": 11,
-      "summary_quality": 5,
-      "authority_score": 7,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/opulence-xrpl.html",
-      "readable_title": "Opulence on XRPL",
-      "readiness_score": 11,
-      "summary_quality": 5,
-      "authority_score": 7,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/profit-xrpl.html",
-      "readable_title": "PROFIT on XRPL",
-      "readiness_score": 11,
-      "summary_quality": 5,
-      "authority_score": 7,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/sigma-xrpl.html",
-      "readable_title": "SIGMA on XRPL",
-      "readiness_score": 11,
-      "summary_quality": 5,
-      "authority_score": 7,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/tabby.html",
-      "readable_title": "Tabby",
-      "readiness_score": 11,
-      "summary_quality": 5,
-      "authority_score": 7,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/toto-xrpl.html",
-      "readable_title": "TOTO on XRPL",
-      "readiness_score": 11,
-      "summary_quality": 5,
-      "authority_score": 7,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/xmeme.html",
-      "readable_title": "XMEME",
-      "readiness_score": 11,
-      "summary_quality": 5,
-      "authority_score": 7,
-      "trust_score": 32,
-      "narrative_strength": 0,
-      "platform_readiness": {
-        "fandom": false,
-        "telegram": false,
-        "substack": false,
-        "paragraph": false
-      }
-    },
-    {
-      "url": "/wiki/xoge.html",
-      "readable_title": "XOGE",
-      "readiness_score": 11,
-      "summary_quality": 5,
-      "authority_score": 7,
-      "trust_score": 32,
+      "trust_score": 57,
       "narrative_strength": 0,
       "platform_readiness": {
         "fandom": false,

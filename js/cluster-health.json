@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T23:41:19.685Z",
+  "generated_at": "2026-06-11T00:22:33.552Z",
   "summary": {
     "total_clusters": 4,
     "total_pages": 270
@@ -23,26 +23,26 @@
       "page_count": 44,
       "avg_internal_links": 7.57,
       "total_internal_links": 333,
-      "avg_rank_score": 170,
-      "avg_authority_score": 9.82,
-      "avg_content_quality": 31,
-      "avg_word_count": 531.84,
+      "avg_rank_score": 196.27,
+      "avg_authority_score": 12.18,
+      "avg_content_quality": 41.52,
+      "avg_word_count": 572.25,
       "centrality_score": 57.18,
-      "content_depth_score": 15.83,
-      "health_score": 20.25
+      "content_depth_score": 20.38,
+      "health_score": 22.57
     },
     {
       "cluster_id": "factions",
       "page_count": 148,
       "avg_internal_links": 2.78,
       "total_internal_links": 412,
-      "avg_rank_score": 212.36,
+      "avg_rank_score": 213.39,
       "avg_authority_score": 12.07,
-      "avg_content_quality": 62.53,
-      "avg_word_count": 833.59,
+      "avg_content_quality": 62.89,
+      "avg_word_count": 836.03,
       "centrality_score": 181.84,
-      "content_depth_score": 29.51,
-      "health_score": 18.75
+      "content_depth_score": 29.67,
+      "health_score": 18.82
     },
     {
       "cluster_id": "core",
