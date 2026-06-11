@@ -213,6 +213,25 @@ await test('Worker public npc route verifies Telegram auth before forwarding', (
   );
 });
 
+await test('Worker public npc route short-circuits unauthenticated requests before calling verifier', () => {
+  // The npc-chat route must check for Telegram auth evidence and return 401
+  // immediately — without calling verifyTelegramIdentityFromBody — when no
+  // evidence at all is present, preventing log noise from scanners/visitors.
+  assert.ok(
+    workerSrc.includes('hasTelegramAuthEvidence'),
+    'worker.js must contain hasTelegramAuthEvidence short-circuit guard',
+  );
+  // The short-circuit return must appear before the verifyTelegramIdentityFromBody call
+  // within the npc-chat block.
+  const npcChatBlockStart = workerSrc.indexOf("path === '/public/npc-chat'");
+  assert.ok(npcChatBlockStart !== -1, '/public/npc-chat block must exist');
+  const shortCircuitIdx = workerSrc.indexOf('hasTelegramAuthEvidence', npcChatBlockStart);
+  const verifierCallIdx = workerSrc.indexOf('verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth)', npcChatBlockStart);
+  assert.ok(shortCircuitIdx !== -1, 'hasTelegramAuthEvidence must be present in /public/npc-chat block');
+  assert.ok(verifierCallIdx !== -1, 'verifyTelegramIdentityFromBody call must be present in /public/npc-chat block');
+  assert.ok(shortCircuitIdx < verifierCallIdx, 'short-circuit guard must appear before verifyTelegramIdentityFromBody call');
+});
+
 await test('Worker public npc validation maps legacy paperclip to Sparky', () => {
   assert.ok(/requestedNpcId\s*={2,3}\s*['"]paperclip['"]\s*\?\s*['"]sparky['"]/.test(workerSrc), 'worker.js must map legacy paperclip to sparky');
   assert.ok(/npcId\s*!==\s*['"]sparky['"]/.test(workerSrc), 'worker.js must reject non-sparky normalized npc ids');

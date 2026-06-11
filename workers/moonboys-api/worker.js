@@ -5121,6 +5121,22 @@ export default {
       try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
 
       // 2. Require verified Telegram auth before any Sparky/SWARMSY relay.
+      // Short-circuit the common unauthenticated case (no auth evidence at all) without
+      // invoking the verifier so scanners and unauthenticated visitors do not generate
+      // log noise from verifyTelegramIdentityFromBody's failure events.
+      const hasTelegramAuthEvidence = body != null && (
+        body.telegram_auth !== undefined ||
+        body.id != null ||
+        body.auth_date != null ||
+        body.hash != null
+      );
+      if (!hasTelegramAuthEvidence) {
+        return json({
+          success: false,
+          error: 'telegram_login_required',
+          reply: 'Log in with Telegram to use Sparky AI Chat.',
+        }, 401);
+      }
       const verifiedTelegram = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
       if (verifiedTelegram?.error) {
         return json({
