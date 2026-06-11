@@ -1,9 +1,4 @@
 <!DOCTYPE html>
-<!--
-  Compatibility note: this page intentionally reuses paperclip-* CSS classes
-  and data-paperclip-* hooks so it shares the existing styling and
-  js/paperclip-chat.js Sparky client.
--->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -13,7 +8,7 @@
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" type="image/png" href="/favicon.png">
   <style>
-    .paperclip-panel {
+    .sparky-panel {
       max-width: 920px;
       margin: 40px auto;
       padding: 36px 28px;
@@ -23,7 +18,7 @@
       box-shadow: 0 0 28px rgba(0, 255, 204, 0.08);
     }
 
-    .paperclip-eyebrow {
+    .sparky-eyebrow {
       color: #00ffcc;
       letter-spacing: 0.18em;
       text-transform: uppercase;
@@ -31,14 +26,14 @@
       margin-bottom: 10px;
     }
 
-    .paperclip-title {
+    .sparky-title {
       font-size: clamp(2rem, 5vw, 3.1rem);
       color: #00ffcc;
       margin: 0 0 18px;
       line-height: 1.05;
     }
 
-    .paperclip-copy {
+    .sparky-copy {
       font-size: 1.05rem;
       line-height: 1.72;
       color: rgba(255, 255, 255, 0.88);
@@ -46,7 +41,7 @@
       margin-bottom: 22px;
     }
 
-    .paperclip-status {
+    .sparky-status {
       display: grid;
       gap: 10px;
       margin: 24px 0;
@@ -57,17 +52,17 @@
       color: rgba(255, 255, 255, 0.9);
     }
 
-    .paperclip-status strong {
+    .sparky-status strong {
       color: #00ffcc;
     }
 
-    .paperclip-chat {
+    .sparky-chat {
       display: grid;
       gap: 16px;
       margin-top: 26px;
     }
 
-    .paperclip-chat-header {
+    .sparky-chat-header {
       display: flex;
       gap: 12px;
       align-items: center;
@@ -75,7 +70,7 @@
       flex-wrap: wrap;
     }
 
-    .paperclip-npc-select {
+    .sparky-npc-select {
       min-width: 190px;
       border: 1px solid rgba(0, 255, 204, 0.35);
       background: rgba(0, 0, 0, 0.6);
@@ -84,7 +79,7 @@
       padding: 10px 12px;
     }
 
-    .paperclip-log {
+    .sparky-log {
       min-height: 260px;
       max-height: 520px;
       overflow-y: auto;
@@ -94,7 +89,7 @@
       background: rgba(0, 0, 0, 0.38);
     }
 
-    .paperclip-message {
+    .sparky-message {
       margin: 0 0 14px;
       padding: 13px 15px;
       border-radius: 12px;
@@ -103,20 +98,20 @@
       overflow-wrap: anywhere;
     }
 
-    .paperclip-message[data-role="user"] {
+    .sparky-message[data-role="user"] {
       margin-left: auto;
       max-width: 78%;
       border: 1px solid rgba(0, 255, 204, 0.32);
       background: rgba(0, 255, 204, 0.08);
     }
 
-    .paperclip-message[data-role="assistant"] {
+    .sparky-message[data-role="assistant"] {
       max-width: 86%;
       border: 1px solid rgba(255, 255, 255, 0.14);
       background: rgba(255, 255, 255, 0.055);
     }
 
-    .paperclip-meta {
+    .sparky-meta {
       display: block;
       margin-bottom: 7px;
       color: #00ffcc;
@@ -125,12 +120,12 @@
       text-transform: uppercase;
     }
 
-    .paperclip-form {
+    .sparky-form {
       display: grid;
       gap: 12px;
     }
 
-    .paperclip-input {
+    .sparky-input {
       width: 100%;
       min-height: 110px;
       resize: vertical;
@@ -142,14 +137,14 @@
       font: inherit;
     }
 
-    .paperclip-actions {
+    .sparky-actions {
       display: flex;
       gap: 12px;
       align-items: center;
       flex-wrap: wrap;
     }
 
-    .paperclip-send {
+    .sparky-send {
       border: 1px solid rgba(0, 255, 204, 0.45);
       border-radius: 999px;
       background: #00ffcc;
@@ -159,25 +154,25 @@
       cursor: pointer;
     }
 
-    .paperclip-send:disabled {
+    .sparky-send:disabled {
       cursor: not-allowed;
       opacity: 0.58;
     }
 
-    .paperclip-hint {
+    .sparky-hint {
       color: rgba(255, 255, 255, 0.62);
       font-size: 0.9rem;
       line-height: 1.5;
     }
 
-    .paperclip-error {
+    .sparky-error {
       display: none;
       color: #ff8f8f;
       font-size: 0.94rem;
       line-height: 1.5;
     }
 
-    .paperclip-error[data-visible="true"] {
+    .sparky-error[data-visible="true"] {
       display: block;
     }
 
@@ -212,22 +207,22 @@
     }
   </style>
 </head>
-<body class="page-paperclip page-has-right-panel">
+<body class="page-sparky page-has-right-panel">
 
 <main id="content" role="main">
   <div class="battle-page">
 
-    <section class="section paperclip-panel" aria-labelledby="paperclip-title">
-      <div class="paperclip-eyebrow">SWARMSY public bridge</div>
-      <h1 id="paperclip-title" class="paperclip-title">Sparky</h1>
+    <section class="section sparky-panel" aria-labelledby="sparky-title">
+      <div class="sparky-eyebrow">SWARMSY public bridge</div>
+      <h1 id="sparky-title" class="sparky-title">Sparky</h1>
 
-      <p class="paperclip-copy">
+      <p class="sparky-copy">
         Sparky is the Crypto Moonboys / SWARMSY project helper for public questions about the
         project, site, lore, games, factions, NFTs, and related docs. Sparky requires Telegram
         login before chat messages can be sent, then connects through the public API bridge.
       </p>
 
-      <div class="paperclip-status" aria-live="polite">
+      <div class="sparky-status" aria-live="polite">
         <strong>Status: Live bridge page ready.</strong>
         <span>
           This page does not contain sealed instructions, secrets, workspace keys, or admin URLs.
@@ -244,28 +239,28 @@
         </div>
       </div>
 
-      <div class="paperclip-chat" data-paperclip-chat data-requires-telegram-auth="true" aria-disabled="true">
-        <div class="paperclip-chat-header">
+      <div class="sparky-chat" data-sparky-chat data-requires-telegram-auth="true" aria-disabled="true">
+        <div class="sparky-chat-header">
           <div>
             <strong style="color: #00ffcc;">Chat with Sparky</strong><br>
-            <span class="paperclip-hint">Ask for Crypto Moonboys and SWARMSY project help through the public bridge.</span>
+            <span class="sparky-hint">Ask for Crypto Moonboys and SWARMSY project help through the public bridge.</span>
           </div>
         </div>
 
-        <div class="paperclip-log" data-paperclip-log aria-live="polite" aria-label="Sparky chat messages">
-          <div class="paperclip-message" data-role="assistant">
-            <span class="paperclip-meta">Sparky</span>
+        <div class="sparky-log" data-sparky-log aria-live="polite" aria-label="Sparky chat messages">
+          <div class="sparky-message" data-role="assistant">
+            <span class="sparky-meta">Sparky</span>
             Ask Sparky about Crypto Moonboys, lore, games, factions, NFTs, or the SWARMSY project. Questions route through the public API bridge to the private SWARMSY control panel when the backend endpoint is available.
           </div>
         </div>
 
-        <form class="paperclip-form" data-paperclip-form>
-          <textarea class="paperclip-input" data-paperclip-input aria-label="Message" maxlength="2000" placeholder="Ask Sparky..." disabled></textarea>
-          <div class="paperclip-actions">
-            <button class="paperclip-send" type="submit" data-paperclip-send disabled>Send message</button>
-            <span class="paperclip-hint" data-paperclip-state>Telegram login required.</span>
+        <form class="sparky-form" data-sparky-form>
+          <textarea class="sparky-input" data-sparky-input aria-label="Message" maxlength="2000" placeholder="Ask Sparky..." disabled></textarea>
+          <div class="sparky-actions">
+            <button class="sparky-send" type="submit" data-sparky-send disabled>Send message</button>
+            <span class="sparky-hint" data-sparky-state>Telegram login required.</span>
           </div>
-          <div class="paperclip-error" data-paperclip-error></div>
+          <div class="sparky-error" data-sparky-error></div>
         </form>
       </div>
 
@@ -289,7 +284,7 @@
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
-<script data-cfasync="false" src="/js/paperclip-chat.js"></script>
+<script data-cfasync="false" src="/js/sparky-chat.js"></script>
 
 </body>
 </html>

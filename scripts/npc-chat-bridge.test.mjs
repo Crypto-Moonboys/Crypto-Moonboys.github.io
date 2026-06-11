@@ -16,7 +16,8 @@
  * 12. Message is clamped to 2000 characters (>2000 char input is truncated).
  * 13. pagePath defaults to /swarmsy.html when absent.
  * 14. Bridge token is never present in any response body.
- * 15. paperclip-chat.js calls /public/npc-chat through window.MOONBOYS_API.getApiBase().
+ * 15. sparky-chat.js calls /public/npc-chat through window.MOONBOYS_API.getApiBase().
+ * 16. /sparky.html loads sparky-chat.js (not paperclip-chat.js); sparky-chat.js has no Paperclip persona wording.
  */
 
 import assert from 'node:assert/strict';
@@ -528,44 +529,44 @@ await test('[14] Bridge token is never present in 502 response body', async () =
   assert.ok(!text.includes(BRIDGE_TOKEN), 'Bridge token must not appear in 502 response body');
 });
 
-// ── 15. paperclip-chat.js calls /public/npc-chat ─────────────────────────────
+// ── 15. sparky-chat.js calls /public/npc-chat ────────────────────────────────
 
-console.log('\n[15] paperclip-chat.js calls /public/npc-chat through MOONBOYS_API.getApiBase()');
+console.log('\n[15] sparky-chat.js calls /public/npc-chat through MOONBOYS_API.getApiBase()');
 
-const chatJsSrc = await read('js/paperclip-chat.js');
+const chatJsSrc = await read('js/sparky-chat.js');
 
-await test('paperclip-chat.js references /public/npc-chat endpoint', () => {
-  assert.ok(chatJsSrc.includes('/public/npc-chat'), 'paperclip-chat.js must reference /public/npc-chat');
+await test('sparky-chat.js references /public/npc-chat endpoint', () => {
+  assert.ok(chatJsSrc.includes('/public/npc-chat'), 'sparky-chat.js must reference /public/npc-chat');
 });
 
-await test('paperclip-chat.js resolves API base via window.MOONBOYS_API.getApiBase()', () => {
+await test('sparky-chat.js resolves API base via window.MOONBOYS_API.getApiBase()', () => {
   assert.ok(
     chatJsSrc.includes('MOONBOYS_API') && chatJsSrc.includes('getApiBase'),
-    'paperclip-chat.js must use window.MOONBOYS_API.getApiBase()',
+    'sparky-chat.js must use window.MOONBOYS_API.getApiBase()',
   );
 });
 
-await test('paperclip-chat.js always sends npcId sparky', () => {
-  assert.ok(chatJsSrc.includes("SPARKY_NPC_ID = 'sparky'"), 'paperclip-chat.js must define sparky npc id');
-  assert.ok(!chatJsSrc.includes('NPC_LABELS'), 'paperclip-chat.js must not keep dual NPC labels');
-  assert.ok(!chatJsSrc.includes('selectedNpcId'), 'paperclip-chat.js must not keep NPC selector logic');
+await test('sparky-chat.js always sends npcId sparky', () => {
+  assert.ok(chatJsSrc.includes("SPARKY_NPC_ID = 'sparky'"), 'sparky-chat.js must define sparky npc id');
+  assert.ok(!chatJsSrc.includes('NPC_LABELS'), 'sparky-chat.js must not keep dual NPC labels');
+  assert.ok(!chatJsSrc.includes('selectedNpcId'), 'sparky-chat.js must not keep NPC selector logic');
 });
 
-await test('paperclip-chat.js does not hardcode any SWARMSY admin URL', () => {
+await test('sparky-chat.js does not hardcode any SWARMSY admin URL', () => {
   assert.ok(
     !chatJsSrc.includes('swarmsy.cryptomoonboys.com'),
-    'paperclip-chat.js must not directly reference swarmsy.cryptomoonboys.com',
+    'sparky-chat.js must not directly reference swarmsy.cryptomoonboys.com',
   );
 });
 
-await test('paperclip-chat.js does not reference SWARMSY_BRIDGE_TOKEN', () => {
+await test('sparky-chat.js does not reference SWARMSY_BRIDGE_TOKEN', () => {
   assert.ok(
     !chatJsSrc.includes('SWARMSY_BRIDGE_TOKEN'),
-    'paperclip-chat.js must not reference SWARMSY_BRIDGE_TOKEN',
+    'sparky-chat.js must not reference SWARMSY_BRIDGE_TOKEN',
   );
 });
 
-await test('paperclip-chat.js requires signed Telegram auth before fetch', () => {
+await test('sparky-chat.js requires signed Telegram auth before fetch', () => {
   assert.ok(chatJsSrc.includes('resolveTelegramAuth'), 'chat client must resolve Telegram auth');
   assert.ok(chatJsSrc.includes('getFreshTelegramAuth'), 'chat client must use the shared fresh Telegram auth helper');
   assert.ok(chatJsSrc.includes('Telegram login required to use Sparky.'), 'chat client must show the required missing-auth message');
@@ -574,8 +575,73 @@ await test('paperclip-chat.js requires signed Telegram auth before fetch', () =>
   assert.ok(missingAuthIndex !== -1 && fetchIndex !== -1 && missingAuthIndex < fetchIndex, 'missing auth guard must run before endpoint fetch');
 });
 
-await test('paperclip-chat.js includes telegram_auth in authenticated POST body', () => {
+await test('sparky-chat.js includes telegram_auth in authenticated POST body', () => {
   assert.ok(chatJsSrc.includes('telegram_auth: telegramAuth'), 'chat client must send signed Telegram auth proof to the Worker');
+});
+
+// ── 16. sparky.html / sparky-chat.js naming correctness ──────────────────────
+
+console.log('\n[16] sparky.html loads sparky-chat.js; sparky-chat.js is free of Paperclip persona wording');
+
+const sparkyHtmlSrc = await read('sparky.html');
+
+await test('/sparky.html loads /js/sparky-chat.js, not paperclip-chat.js', () => {
+  assert.ok(
+    sparkyHtmlSrc.includes('/js/sparky-chat.js'),
+    '/sparky.html must load /js/sparky-chat.js',
+  );
+  assert.ok(
+    !sparkyHtmlSrc.includes('paperclip-chat.js'),
+    '/sparky.html must not load paperclip-chat.js',
+  );
+});
+
+await test('js/sparky-chat.js contains no Paperclip persona wording', () => {
+  // data-paperclip-* attributes and class names were the public-facing Paperclip hooks
+  assert.ok(!chatJsSrc.includes('data-paperclip-'), 'sparky-chat.js must not use data-paperclip-* attribute selectors');
+  assert.ok(!chatJsSrc.includes("'paperclip-"), "sparky-chat.js must not reference paperclip-* CSS class names");
+});
+
+await test('Worker 502 response includes safe Sparky reply text', () => {
+  assert.ok(
+    workerSrc.includes('Sparky is connected to Telegram, but the SWARMSY bridge is unavailable right now.'),
+    'worker.js 502 response must include the safe Sparky reply message',
+  );
+});
+
+await test('Worker logs structured error on SWARMSY fetch failure', () => {
+  assert.ok(
+    workerSrc.includes('swarmsy_bridge_error'),
+    'worker.js must log swarmsy_bridge_error on SWARMSY fetch/parse failure',
+  );
+  assert.ok(
+    workerSrc.includes("'network_timeout'"),
+    'worker.js must classify actual timeout aborts as network_timeout',
+  );
+  assert.ok(
+    workerSrc.includes("'fetch_failure'"),
+    'worker.js must classify non-timeout fetch errors as fetch_failure',
+  );
+  assert.ok(
+    workerSrc.includes("'non_json_response'"),
+    'worker.js must classify upstream JSON parse failures as non_json_response',
+  );
+});
+
+await test('[10] Bridge failure 502 includes safe reply field', async () => {
+  globalThis.fetch = makeSequenceFetch([
+    new Error('fail 1'),
+    new Error('fail 2'),
+  ]);
+  const res = await callNpcChat(worker, { npcId: 'sparky', message: 'hello' });
+  assert.equal(res.status, 502);
+  const body = await res.json();
+  assert.equal(body.error, 'swarmsy_bridge_unavailable');
+  assert.equal(
+    body.reply,
+    'Sparky is connected to Telegram, but the SWARMSY bridge is unavailable right now.',
+    '502 must include safe reply text for the frontend',
+  );
 });
 
 // ── restore global fetch ───────────────────────────────────────────────────────

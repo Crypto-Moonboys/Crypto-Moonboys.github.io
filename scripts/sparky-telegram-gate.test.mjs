@@ -26,7 +26,7 @@ async function test(label, fn) {
 
 const swarmsyHtml = await read('swarmsy.html');
 const sparkyHtml = await read('sparky.html');
-const chatJs = await read('js/paperclip-chat.js');
+const chatJs = await read('js/sparky-chat.js');
 const browserCorpus = `${swarmsyHtml}\n${sparkyHtml}\n${chatJs}`;
 
 console.log('\n[Sparky Telegram gate] Frontend/static assertions');
@@ -57,11 +57,11 @@ await test('/sparky.html unauthenticated state shows Telegram login required pan
 
 await test('/sparky.html ships chat disabled until JS verifies Telegram auth', () => {
   assert.ok(sparkyHtml.includes('data-requires-telegram-auth="true"'), 'chat root must declare Telegram requirement');
-  assert.match(sparkyHtml, /data-paperclip-input[^>]*disabled/, 'message textarea must be disabled in static unauthenticated state');
-  assert.match(sparkyHtml, /data-paperclip-send[^>]*disabled/, 'send button must be disabled in static unauthenticated state');
+  assert.match(sparkyHtml, /data-sparky-input[^>]*disabled/, 'message textarea must be disabled in static unauthenticated state');
+  assert.match(sparkyHtml, /data-sparky-send[^>]*disabled/, 'send button must be disabled in static unauthenticated state');
 });
 
-await test('paperclip-chat.js does not POST when Telegram auth is missing', () => {
+await test('sparky-chat.js does not POST when Telegram auth is missing', () => {
   const missingAuthIndex = chatJs.indexOf('if (!telegramAuth)');
   const fetchIndex = chatJs.indexOf('fetch(endpoint');
   assert.ok(missingAuthIndex !== -1, 'missing-auth guard not found');
@@ -70,7 +70,7 @@ await test('paperclip-chat.js does not POST when Telegram auth is missing', () =
   assert.ok(chatJs.includes('Telegram login required to use Sparky.'), 'missing required user-facing error message');
 });
 
-await test('paperclip-chat.js sends signed Telegram auth proof for authenticated chat', () => {
+await test('sparky-chat.js sends signed Telegram auth proof for authenticated chat', () => {
   assert.ok(chatJs.includes('getFreshTelegramAuth'), 'chat client must use shared Telegram identity state');
   assert.ok(chatJs.includes('telegram_auth: telegramAuth'), 'chat client must include signed auth proof in the POST body');
 });
