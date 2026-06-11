@@ -5190,9 +5190,13 @@ export default {
       let upstreamPayload;
       for (let attempt = 1; attempt <= NPC_CHAT_BRIDGE_MAX_ATTEMPTS; attempt++) {
         let fetchSucceeded = false;
+        let timedOut = false;
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), NPC_CHAT_BRIDGE_TIMEOUT_MS);
+          const timeoutId = setTimeout(() => {
+            timedOut = true;
+            controller.abort();
+          }, NPC_CHAT_BRIDGE_TIMEOUT_MS);
           try {
             swarmsyRes = await fetch(SWARMSY_NPC_URL, {
               method: 'POST',
@@ -5213,7 +5217,9 @@ export default {
         } catch (swarmsyError) {
           logApiFailure('swarmsy_bridge_error', {
             attempt,
-            errorType: fetchSucceeded ? 'non_json_response' : 'network_timeout',
+            errorType: fetchSucceeded
+              ? 'non_json_response'
+              : (timedOut && swarmsyError?.name === 'AbortError' ? 'network_timeout' : 'fetch_failure'),
             upstreamStatus: fetchSucceeded && swarmsyRes ? swarmsyRes.status : null,
             message: swarmsyError?.message || String(swarmsyError),
           });

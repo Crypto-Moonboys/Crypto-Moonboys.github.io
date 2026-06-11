@@ -615,8 +615,16 @@ await test('Worker logs structured error on SWARMSY fetch failure', () => {
     'worker.js must log swarmsy_bridge_error on SWARMSY fetch/parse failure',
   );
   assert.ok(
-    workerSrc.includes("errorType: fetchSucceeded ? 'non_json_response' : 'network_timeout'"),
-    'worker.js must distinguish network timeout from non-JSON upstream response',
+    workerSrc.includes("'network_timeout'"),
+    'worker.js must classify actual timeout aborts as network_timeout',
+  );
+  assert.ok(
+    workerSrc.includes("'fetch_failure'"),
+    'worker.js must classify non-timeout fetch errors as fetch_failure',
+  );
+  assert.ok(
+    workerSrc.includes("'non_json_response'"),
+    'worker.js must classify upstream JSON parse failures as non_json_response',
   );
 });
 
