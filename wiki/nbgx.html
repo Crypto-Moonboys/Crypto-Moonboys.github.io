@@ -1,72 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- SAM:BEGIN:head -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="NBGX prowls the Crypto Moonboys universe as a shadowy counterpart to the dominant NBG token, a specialized currency forged in the rebellious crucible of GraffPU">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="NBGX — Crypto Moonboys Wiki">
+  <meta property="og:title" content="nbgx — Crypto Moonboys Wiki">
   <meta property="og:description" content="NBGX prowls the Crypto Moonboys universe as a shadowy counterpart to the dominant NBG token, a specialized currency forged in the rebellious crucible of GraffPU">
-  <meta property="og:type" content="article">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://cryptomoonboys.com/wiki/nbgx.html">
   <meta property="og:url" content="https://cryptomoonboys.com/wiki/nbgx.html">
-  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <title>NBGX — Crypto Moonboys Wiki</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/logo.svg">
+  <title>nbgx — Crypto Moonboys Wiki</title>
   <link rel="stylesheet" href="/css/wiki.css">
   <link rel="stylesheet" href="/css/battle-layer.css">
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "nbgx",
-    "description": "NBGX prowls the Crypto Moonboys universe as a shadowy counterpart to the dominant NBG token, a specialized currency forged in the rebellious crucible of GraffPU",
-    "url": "https://cryptomoonboys.com/wiki/nbgx.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <style>
+    .wiki-section {
+      margin: 1.6em 0;
     }
-  }
-  </script>
-  <link rel="icon" type="image/png" href="/favicon.png">
+    .lore-paragraph {
+      line-height: 1.75;
+      margin: 0 0 1em 0;
+    }
+    .lead-paragraph {
+      font-size: 1.06em;
+      line-height: 1.8;
+      margin: 0 0 1em 0;
+    }
+    .lore-facts-stack {
+      display: block;
+    }
+    .lore-fact-block {
+      margin: 0 0 1.2em 0;
+      padding: 1em 1.1em;
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid #5b8cff;
+      border-radius: 6px;
+    }
+    .sources-list {
+      padding-left: 1.4em;
+    }
+    .sources-list li {
+      margin-bottom: 0.3em;
+      word-break: break-all;
+    }
+    .article-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1em;
+      font-size: 0.85em;
+      color: #555;
+      margin-top: 0.5em;
+    }
+  </style>
 </head>
+<!-- SAM:END:head -->
 <body class="page-wiki page-has-right-panel" data-entity-hash="6e2c91b1ed33">
-<main id="content" role="main">
 
+<a class="skip-link" href="#content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="/img/logo.svg" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 Moonboys Wiki</span>
+      <span class="logo-sub">Crypto Encyclopedia</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search articles…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">Search</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="/search.html"><span class="nav-icon">🔍</span> Search</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">🤖 SAM Lore</div>
+      <div class="sidebar-nav">
+        <a href="/categories/cryptocurrencies.html"><span class="nav-icon">🪙</span> Cryptocurrencies</a>
+        <a href="/search.html"><span class="nav-icon">📖</span> All SAM Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main">
+<!-- SAM:BEGIN:article -->
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="/index.html">Home</a>
         <span class="sep" aria-hidden="true">›</span>
         <a href="/categories/cryptocurrencies.html">Cryptocurrencies</a>
         <span class="sep" aria-hidden="true">›</span>
-        <span aria-current="page">NBGX</span>
+        <span aria-current="page">nbgx</span>
       </nav>
 
       <h1 class="page-title">
-        🪙 NBGX
+        🪙 nbgx
+        <span>✅ SAM-VERIFIED</span>
       </h1>
       <div class="page-title-line" aria-hidden="true"></div>
 
       <div class="article-meta">
-        <span class="article-badge">✅ SAM Verified</span>
         <span class="article-badge">🪙 Cryptocurrencies</span>
-        <span class="meta-item">📅 Last updated: April 2026</span>
+        <span class="meta-item">📅 Last updated: June 2026</span>
         <span class="meta-item">📂 <a href="/categories/cryptocurrencies.html">Cryptocurrencies</a></span>
       </div>
 
       <article class="wiki-content" data-entity-slug="nbgx">
 
-          <p class="lead-paragraph">NBGX prowls the Crypto Moonboys universe as a shadowy counterpart to the dominant NBG token, a specialized currency forged in the rebellious crucible of GraffPUNKS’ vision for a decentralized future, circulating across the multi-chain expanse of WAX, XRPL, SOL, and <a href="/wiki/bitcoin.html">Bitcoin</a> Cash. Unlike its more ubiquitous sibling, NBGX carves a niche as a tool for the daring, fueling clandestine mechanics and exclusive rewards that cater to <a href="/wiki/block-topia.html">Block Topia</a>’s most audacious players and factions.</p>
+          <p class="lead-paragraph">NBGX prowls the Crypto Moonboys universe as a shadowy counterpart to the dominant NBG token, a specialized currency forged in the rebellious crucible of GraffPUNKS’ vision for a decentralized future, circulating across the multi-chain expanse of WAX, XRPL, SOL, and Bitcoin Cash. Unlike its more ubiquitous sibling, NBGX carves a niche as a tool for the daring, fueling clandestine mechanics and exclusive rewards that cater to Block Topia’s most audacious players and factions.</p>
           <p class="lead-paragraph">Often tied to underground dealings and high-stakes trades, it is whispered to be a counterbalance to NBG’s mainstream dominance, a token for those who operate in the shadows of the HODL WARS. In the gritty underbelly of Block Topia, NBGX is the currency of influence, used to unlock hidden ‘Punk Vaults’ or barter power during secretive faction summits. Its rumored ties to the XRP Kids suggest a deeper connection to rebellion against blockchain restrictions, making it a key asset for experimental strategies and premium Hard Fork Games challenges.</p>
           <p class="lead-paragraph">NBGX isn’t just wealth—it’s a whispered promise of forbidden knowledge and untapped power, reserved for those willing to risk everything to wield it.</p>
 
@@ -108,7 +188,7 @@
           <p class="lore-paragraph">NBGX, as a secondary token to NBG, is rumored in Block Topia lore to be used exclusively for the blockchain overlords’ most critical operations, such as funding their elite armies or powering hidden algorithms within the Transaction Spire, a detail hinted at on graffpunks.live. Its scarcity makes it a rare prize in HODL WARS, where players who capture NBGX often gain access to temporary buffs or intel on overlord movements, though holding it risks drawing the wrath of powerful enemies. This exclusivity embeds NBGX into the Crypto Moonboys narrative as a token of both power and peril, a currency that symbolizes the unreachable heights of Block Topia’s oppressive hierarchy.</p>
           </div>
           <div class="lore-fact-block">
-          <p class="lore-paragraph">Rebels like the <a href="/wiki/bitcoin-kids.html">Bitcoin Kids</a> speculate that NBGX may contain embedded code tied to the Genesis Kernel, with lore suggesting that cracking its encryption could reveal critical weaknesses in the overlords’ systems, a tantalizing possibility explored in official sources. This potential makes NBGX a prime target during Hard Fork Games, where players risk everything to steal even a single token, hoping to unlock secrets that could turn the tide of rebellion. The token’s mysterious nature fuels community theories about its true purpose, positioning NBGX as a narrative mcguffin in the broader struggle for Block Topia’s liberation.</p>
+          <p class="lore-paragraph">Rebels like the Bitcoin Kids speculate that NBGX may contain embedded code tied to the Genesis Kernel, with lore suggesting that cracking its encryption could reveal critical weaknesses in the overlords’ systems, a tantalizing possibility explored in official sources. This potential makes NBGX a prime target during Hard Fork Games, where players risk everything to steal even a single token, hoping to unlock secrets that could turn the tide of rebellion. The token’s mysterious nature fuels community theories about its true purpose, positioning NBGX as a narrative mcguffin in the broader struggle for Block Topia’s liberation.</p>
           </div>
           <div class="lore-fact-block">
           <p class="lore-paragraph">Unlike NBG, NBGX’s circulation in Block Topia is tightly controlled, often dropped only during major events or as rewards for defeating high-level overlord champions in MiDEViL HERO ARENA, a mechanic that adds to its mystique as noted in lore fragments. This controlled distribution mirrors the overlords’ obsession with order, yet each NBGX token that falls into rebel hands—often through daring raids by GraffPUNKS—becomes a small victory against the system, celebrated in community stories. Its rarity and power ensure that NBGX remains a coveted asset in the Crypto Moonboys universe, a digital trophy that embodies the steep cost of challenging authority.</p>
@@ -246,7 +326,7 @@
           <p class="lore-paragraph">Lore on community platforms like Fandom speculates that NBGX holds hidden potential, with rumors of it unlocking secret mechanics during catastrophic hard forks or token burns in Block Topia, though official sources remain cryptic. Players whisper of past events where mass NBGX stakes triggered server-wide buffs, suggesting it’s more than just currency—it’s a coded key. This mystery fuels its allure, making NBGX a token of intrigue and danger, a perfect fit for the Crypto Moonboys universe’s anarchic economy.</p>
           </div>
           <div class="lore-fact-block">
-          <p class="lore-paragraph">NBGX’s role in Hard Fork Games often makes it a target for factions like the Bitcoin Kids, with heists aimed at stealing NBGX caches to destabilize rival economies, a tactic hinted at in graffpunks.live subpages. Its volatility can turn a small theft into a faction’s downfall, as seen in lore where <a href="/wiki/alfie-blaze.html">Alfie Blaze</a>’s hacks flood markets with stolen NBGX, crashing values. This economic warfare ensures NBGX isn’t just a token but a weapon, weaving risk into every corner of Block Topia’s digital streets.</p>
+          <p class="lore-paragraph">NBGX’s role in Hard Fork Games often makes it a target for factions like the Bitcoin Kids, with heists aimed at stealing NBGX caches to destabilize rival economies, a tactic hinted at in graffpunks.live subpages. Its volatility can turn a small theft into a faction’s downfall, as seen in lore where Alfie Blaze’s hacks flood markets with stolen NBGX, crashing values. This economic warfare ensures NBGX isn’t just a token but a weapon, weaving risk into every corner of Block Topia’s digital streets.</p>
           </div>
           <div class="lore-fact-block">
           <p class="lore-paragraph">NBGX, listed among the core tokens of the Crypto Moonboys universe, emerges as a potential variant of NBG, suggesting a specialized role in Block Topia’s economic or gameplay systems like staking or burn-to-earn during HODL WARS. Its connection to NBG hints at a deeper purpose, perhaps as a currency for elite transactions or rare drops in MiDEViL HERO ARENA, used by factions like GraffPUNKS for strategic advantage. This ambiguity makes NBGX a token of intrigue, a narrative thread waiting to be pulled as lore expands in the unified universe.</p>
@@ -361,159 +441,39 @@
         <span class="cat-label">Categories:</span>
         <a href="/categories/cryptocurrencies.html">Cryptocurrencies</a>
       </div>
-
+<!-- SAM:END:article -->
+      <!-- Manual sections preserved during SAM migration -->
       <div class="wiki-comments" data-page-id="nbgx"></div>
+
+
     </main>
 
-<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
-<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
-<!-- so placeholder nodes are never injected into the boot sequence.    -->
-<!-- 1. Core config -->
-<script data-cfasync="false" src="/js/api-config.js"></script>
-<!-- 2. Event bus -->
-<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<!-- 3. Identity -->
-<script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
-<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Shell + shared components -->
-<script data-cfasync="false" src="/js/site-shell.js"></script>
-<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
-<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
-<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 6. Page-specific scripts -->
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="/index.html">Main Page</a></li><li><a href="/categories/index.html">Categories</a></li><li><a href="/search.html">Search</a></li><li><a href="/about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🤖 SAM</h4><ul><li><a href="/search.html">SAM Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
+      </div>
+    </footer>
+  </div>
+</div>
 
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "nbgx",
-    "description": "NBGX prowls the Crypto Moonboys universe as a shadowy counterpart to the dominant NBG token, a specialized currency forged in the rebellious crucible of GraffPU",
-    "url": "https://cryptomoonboys.com/wiki/nbgx.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "nbgx",
-    "description": "NBGX prowls the Crypto Moonboys universe as a shadowy counterpart to the dominant NBG token, a specialized currency forged in the rebellious crucible of GraffPU",
-    "url": "https://cryptomoonboys.com/wiki/nbgx.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "nbgx",
-    "description": "NBGX prowls the Crypto Moonboys universe as a shadowy counterpart to the dominant NBG token, a specialized currency forged in the rebellious crucible of GraffPU",
-    "url": "https://cryptomoonboys.com/wiki/nbgx.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "nbgx",
-    "description": "NBGX prowls the Crypto Moonboys universe as a shadowy counterpart to the dominant NBG token, a specialized currency forged in the rebellious crucible of GraffPU",
-    "url": "https://cryptomoonboys.com/wiki/nbgx.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "nbgx",
-    "description": "NBGX prowls the Crypto Moonboys universe as a shadowy counterpart to the dominant NBG token, a specialized currency forged in the rebellious crucible of GraffPU",
-    "url": "https://cryptomoonboys.com/wiki/nbgx.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "nbgx",
-    "description": "NBGX prowls the Crypto Moonboys universe as a shadowy counterpart to the dominant NBG token, a specialized currency forged in the rebellious crucible of GraffPU",
-    "url": "https://cryptomoonboys.com/wiki/nbgx.html",
-    "author": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Crypto Moonboys",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png"
-      }
-    }
-  }
-  </script>
-<script data-cfasync="false" src="/js/faction-alignment.js"></script>
-<script data-cfasync="false" src="/js/wiki.js"></script>
-<script data-cfasync="false" src="/js/bible-loader.js"></script>
-<script data-cfasync="false" src="/js/engagement.js"></script>
-<script data-cfasync="false" src="/js/comments.js"></script>
-<script data-cfasync="false" src="/js/battle-layer.js"></script>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<!-- SAM:BEGIN:scripts -->
+<script src="/js/api-config.js" data-cfasync="false"></script>
+<script src="/js/arcade/core/global-event-bus.js" data-cfasync="false"></script>
+<script src="/js/identity-gate.js" data-cfasync="false"></script>
+<script src="/js/core/moonboys-state.js" data-cfasync="false"></script>
+<script src="/js/site-shell.js" data-cfasync="false"></script>
+<script src="/js/components/connection-status-panel.js" data-cfasync="false"></script>
+<script src="/js/components/global-player-header.js" data-cfasync="false"></script>
+<script src="/js/components/live-activity-summary.js" data-cfasync="false"></script>
+<script src="/js/wiki.js" data-cfasync="false"></script>
+<script src="/js/bible-loader.js" data-cfasync="false"></script>
+<!-- SAM:END:scripts -->
 </body>
 </html>
