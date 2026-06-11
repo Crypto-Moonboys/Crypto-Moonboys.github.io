@@ -5189,6 +5189,7 @@ export default {
       let swarmsyRes;
       let upstreamPayload;
       for (let attempt = 1; attempt <= NPC_CHAT_BRIDGE_MAX_ATTEMPTS; attempt++) {
+        let fetchSucceeded = false;
         try {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), NPC_CHAT_BRIDGE_TIMEOUT_MS);
@@ -5206,16 +5207,27 @@ export default {
             clearTimeout(timeoutId);
           }
 
+          fetchSucceeded = true;
           upstreamPayload = await swarmsyRes.json();
           break;
-        } catch {
+        } catch (swarmsyError) {
+          logApiFailure('swarmsy_bridge_error', {
+            attempt,
+            errorType: fetchSucceeded ? 'non_json_response' : 'network_timeout',
+            upstreamStatus: fetchSucceeded && swarmsyRes ? swarmsyRes.status : null,
+            message: swarmsyError?.message || String(swarmsyError),
+          });
           swarmsyRes = null;
           upstreamPayload = undefined;
         }
       }
 
       if (!swarmsyRes || upstreamPayload === undefined) {
-        return json({ success: false, error: 'swarmsy_bridge_unavailable' }, 502);
+        return json({
+          success: false,
+          error: 'swarmsy_bridge_unavailable',
+          reply: 'Sparky is connected to Telegram, but the SWARMSY bridge is unavailable right now.',
+        }, 502);
       }
 
       const scrubBridgeToken = (value) => {
