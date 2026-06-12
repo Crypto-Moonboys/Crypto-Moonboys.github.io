@@ -1,0 +1,453 @@
+/* ============================================================
+   waxonedge.css
+   WAXONEDGE — WAX Analytics Dashboard
+   Dark Crypto Moonboys style, read-only, no trading actions.
+   ============================================================ */
+
+/* ── Page layout ─────────────────────────────────────────────── */
+.woe-page {
+  padding: 24px 20px 60px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.woe-page-header {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.woe-page-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--neon-cyan, #00e5ff);
+  letter-spacing: .04em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.woe-page-subtitle {
+  font-size: .85rem;
+  color: var(--color-text-muted);
+  margin: 4px 0 0;
+}
+
+.woe-readonly-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(57, 255, 20, 0.08);
+  border: 1px solid rgba(57, 255, 20, 0.35);
+  color: var(--neon-green, #39ff14);
+  border-radius: 4px;
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* ── Global search bar ───────────────────────────────────────── */
+.woe-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.woe-search-bar label {
+  font-size: .8rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.woe-search-input {
+  flex: 1;
+  max-width: 520px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius, 6px);
+  color: var(--color-text);
+  font-size: .9rem;
+  padding: 8px 14px;
+  outline: none;
+  transition: border-color .15s;
+}
+
+.woe-search-input:focus {
+  border-color: var(--neon-cyan, #00e5ff);
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.15);
+}
+
+/* ── Section headings ────────────────────────────────────────── */
+.woe-section {
+  margin-bottom: 40px;
+}
+
+.woe-section-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-accent, #ffd600);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+  letter-spacing: .03em;
+}
+
+.woe-section-count {
+  font-size: .75rem;
+  color: var(--color-text-muted);
+  font-weight: 400;
+  margin-left: auto;
+}
+
+.woe-section-links {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+/* ── Source status cards ─────────────────────────────────────── */
+.woe-sources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.woe-source-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--color-surface, #161b22);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius, 6px);
+  padding: 12px 14px;
+  transition: border-color .15s;
+}
+
+.woe-source-card:hover {
+  border-color: var(--neon-cyan, #00e5ff);
+}
+
+.woe-status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+  transition: background .3s;
+}
+
+.woe-status-pending  { background: var(--color-text-muted, #8b949e); }
+.woe-status-checking { background: #f7c948; animation: woe-blink .8s step-start infinite; }
+.woe-status-ok       { background: var(--neon-green, #39ff14); box-shadow: 0 0 6px rgba(57,255,20,.6); }
+.woe-status-error    { background: var(--color-red,  #ff7b72); }
+
+@keyframes woe-blink {
+  50% { opacity: 0; }
+}
+
+.woe-source-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.woe-source-info strong {
+  font-size: .85rem;
+  color: var(--color-text);
+}
+
+.woe-source-desc {
+  font-size: .75rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.woe-source-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+/* ── Tables ──────────────────────────────────────────────────── */
+.woe-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius, 6px);
+  border: 1px solid var(--color-border);
+}
+
+.woe-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .85rem;
+}
+
+.woe-table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-2, #1c2333);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.woe-table th[data-col] {
+  cursor: pointer;
+}
+
+.woe-table th[data-col]:hover {
+  color: var(--neon-cyan, #00e5ff);
+}
+
+.woe-table th[data-sort="asc"]::after  { content: ' ▲'; font-size: .6rem; }
+.woe-table th[data-sort="desc"]::after { content: ' ▼'; font-size: .6rem; }
+
+.woe-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+  color: var(--color-text);
+}
+
+.woe-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.woe-table tbody tr:hover td {
+  background: rgba(0, 229, 255, 0.04);
+}
+
+.woe-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono, monospace);
+  font-size: .82rem;
+}
+
+.woe-pos { color: var(--neon-green, #39ff14); }
+.woe-neg { color: var(--color-red,  #ff7b72); }
+
+/* ── Table filter inputs ─────────────────────────────────────── */
+.woe-table-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.woe-filter-input {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius, 6px);
+  color: var(--color-text);
+  font-size: .82rem;
+  padding: 5px 10px;
+  width: 260px;
+  outline: none;
+}
+
+.woe-filter-input:focus {
+  border-color: var(--neon-cyan, #00e5ff);
+}
+
+/* ── Loading / error states ──────────────────────────────────── */
+.woe-loading {
+  text-align: center;
+  padding: 28px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.woe-error {
+  color: var(--color-red, #ff7b72);
+}
+
+.woe-warn {
+  color: #f7c948;
+}
+
+/* ── Risk flags panel ────────────────────────────────────────── */
+.woe-risk-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.woe-flag {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius, 6px);
+  font-size: .85rem;
+  border: 1px solid transparent;
+}
+
+.woe-flag-ok {
+  background: rgba(57, 255, 20, 0.06);
+  border-color: rgba(57, 255, 20, 0.25);
+  color: var(--neon-green, #39ff14);
+}
+
+.woe-flag-info {
+  background: rgba(0, 229, 255, 0.06);
+  border-color: rgba(0, 229, 255, 0.2);
+  color: var(--neon-cyan, #00e5ff);
+}
+
+.woe-flag-warn {
+  background: rgba(247, 201, 72, 0.08);
+  border-color: rgba(247, 201, 72, 0.3);
+  color: #f7c948;
+}
+
+.woe-flag-alert {
+  background: rgba(255, 123, 114, 0.08);
+  border-color: rgba(255, 123, 114, 0.3);
+  color: var(--color-red, #ff7b72);
+}
+
+.woe-flag-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* ── Holder placeholder ──────────────────────────────────────── */
+.woe-placeholder {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius, 6px);
+  padding: 24px;
+}
+
+.woe-placeholder-icon {
+  font-size: 1.8rem;
+  display: block;
+  margin-bottom: 12px;
+  color: var(--color-accent, #ffd600);
+}
+
+.woe-placeholder p {
+  color: var(--color-text-muted);
+  font-size: .85rem;
+  margin: 0 0 8px;
+}
+
+.woe-holder-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.woe-input {
+  background: var(--color-surface-2, #1c2333);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius, 6px);
+  color: var(--color-text);
+  font-size: .85rem;
+  padding: 7px 12px;
+  outline: none;
+  width: 220px;
+}
+
+.woe-input:focus {
+  border-color: var(--neon-cyan, #00e5ff);
+}
+
+.woe-btn-lookup {
+  background: var(--color-surface-2, #1c2333);
+  border: 1px solid var(--neon-cyan, #00e5ff);
+  border-radius: var(--radius, 6px);
+  color: var(--neon-cyan, #00e5ff);
+  font-size: .82rem;
+  font-weight: 700;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+
+.woe-btn-lookup:hover {
+  background: var(--neon-cyan, #00e5ff);
+  color: #000;
+}
+
+.woe-holder-result {
+  margin-top: 14px;
+  font-size: .85rem;
+}
+
+.woe-holder-result-card {
+  background: var(--color-surface-2, #1c2333);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius, 6px);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--color-text);
+}
+
+/* ── Explorer / chain links ──────────────────────────────────── */
+.woe-explorer-link,
+.woe-chain-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: .75rem;
+  color: var(--neon-cyan, #00e5ff);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 3px;
+  padding: 2px 7px;
+  text-decoration: none;
+  transition: background .12s, color .12s;
+  white-space: nowrap;
+}
+
+.woe-explorer-link:hover,
+.woe-chain-link:hover {
+  background: var(--neon-cyan, #00e5ff);
+  color: #000;
+  text-decoration: none;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .woe-page {
+    padding: 14px 12px 48px;
+  }
+  .woe-page-title {
+    font-size: 1.2rem;
+  }
+  .woe-sources-grid {
+    grid-template-columns: 1fr;
+  }
+  .woe-filter-input,
+  .woe-input {
+    width: 100%;
+  }
+  .woe-holder-form {
+    flex-direction: column;
+  }
+}
