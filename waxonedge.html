@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="WAXONEDGE — read-only WAX token, pair, pool, holder, and DEX analytics dashboard powered by Alcor Exchange and WAX chain data.">
+  <meta name="description" content="WAXONEDGE — read-only WAX token, pair, pool, account-balance, and DEX analytics dashboard powered by Alcor Exchange and WAX chain data.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="WAXONEDGE — WAX Analytics Dashboard | Crypto Moonboys">
   <meta property="og:description" content="Read-only WAX token, pair, pool, and DEX analytics. Powered by Alcor Exchange and WAX chain public APIs.">
@@ -30,7 +30,7 @@
       <div>
         <h1 class="woe-page-title">◈ WAXONEDGE</h1>
         <p class="woe-page-subtitle">
-          WAX token · pair · pool · holder · DEX analytics &mdash; read-only dashboard
+          WAX token · pair · pool · account balance · DEX analytics &mdash; read-only dashboard
         </p>
       </div>
       <span class="woe-readonly-badge">✓ Read-Only</span>
@@ -105,9 +105,9 @@
               <th data-col="sym">Symbol</th>
               <th data-col="contr">Contract</th>
               <th data-col="usd" data-numeric="true">USD Price</th>
-              <th data-col="vol" data-numeric="true">24h Volume</th>
-              <th data-col="liq" data-numeric="true">Liquidity</th>
-              <th data-col="mkts" data-numeric="true">Markets</th>
+              <th data-col="sys" data-numeric="true">WAX Price</th>
+              <th data-col="dec" data-numeric="true">Decimals</th>
+              <th data-col="pairs" data-numeric="true">Pairs</th>
             </tr>
           </thead>
           <tbody id="woe-tokens-body">
@@ -182,9 +182,9 @@
           >NeftyBlocks GitHub ↗</a>
         </div>
       </div>
-      <p style="font-size:.8rem;color:var(--color-text-muted);margin-bottom:10px;">
-        Pool data sourced from <code>swap.nefty</code> contract tables via WAX Chain RPC
-        (<code>get_table_rows</code>). Read-only.
+      <p id="woe-nefty-meta" style="font-size:.8rem;color:var(--color-text-muted);margin-bottom:10px;">
+        Detecting <code>swap.nefty</code> table names via <code>get_abi</code> before any
+        read-only <code>get_table_rows</code> query.
       </p>
       <div class="woe-table-filter-row">
         <input
@@ -214,14 +214,14 @@
       </div>
     </section>
 
-    <!-- ── Holder lookup (read-only query) ─────────────────────── -->
+    <!-- ── Account token balance lookup (read-only query) ───────── -->
     <section class="woe-section" aria-labelledby="woe-holders-heading">
       <div class="woe-section-heading">
-        <span id="woe-holders-heading">◈ Holder Data</span>
-        <span class="woe-section-count">WAX Hyperion read-only query</span>
+        <span id="woe-holders-heading">◈ Account Token Balance Lookup</span>
+        <span class="woe-section-count">WAX Hyperion account query</span>
       </div>
       <div id="woe-holders-panel">
-        <p style="color:var(--color-text-muted);font-size:.85rem;">Loading holder panel…</p>
+        <p style="color:var(--color-text-muted);font-size:.85rem;">Loading account balance panel…</p>
       </div>
     </section>
 

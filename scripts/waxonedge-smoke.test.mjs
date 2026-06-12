@@ -20,6 +20,12 @@
  * 13. waxonedge.html contains the read-only badge
  * 14. waxonedge-sources.js exports the swap.nefty contract name
  * 15. waxonedge-sources.js includes the WaxBlock explorer link for swap.nefty
+ * 16. waxonedge-sources.js uses the Alcor v2 API base
+ * 17. waxonedge-sources.js defines /pairs and /analytics/global paths
+ * 18. waxonedge.js uses Alcor v2 ticker fields last_price and change24
+ * 19. holder lookup copy does not claim holder distribution data
+ * 20. swap.nefty uses get_abi detection before table reads
+ * 21. rpcPost uses the configured WAX RPC fallback array
  */
 
 import assert from 'node:assert/strict';
@@ -113,6 +119,26 @@ ok('waxonedge-sources.js references swap.nefty contract',
   sourcesJs.includes('swap.nefty'));
 ok('waxonedge-sources.js includes WaxBlock link for swap.nefty',
   sourcesJs.includes('waxblock.io/account/swap.nefty'));
+ok('waxonedge-sources.js uses Alcor api/v2 base',
+  sourcesJs.includes('https://wax.alcor.exchange/api/v2'));
+ok('waxonedge-sources.js defines /pairs path',
+  sourcesJs.includes("pairs: '/pairs'") || sourcesJs.includes("healthPath: '/pairs'"));
+ok('waxonedge-sources.js defines /analytics/global path',
+  sourcesJs.includes("analyticsGlobal: '/analytics/global'") || sourcesJs.includes("healthPath: '/analytics/global'"));
+
+const waxonedgeJs = exists('js/waxonedge.js') ? read('js/waxonedge.js') : '';
+ok('waxonedge.js uses last_price ticker field',
+  waxonedgeJs.includes('last_price'));
+ok('waxonedge.js uses change24 ticker field',
+  waxonedgeJs.includes('change24'));
+ok('holder lookup copy does not claim holder distribution',
+  !html.includes('Holder Data') &&
+  !html.includes('Holder distribution') &&
+  !waxonedgeJs.includes('Holder distribution'));
+ok('waxonedge.js performs swap.nefty ABI lookup',
+  waxonedgeJs.includes('get_abi') || waxonedgeJs.includes('getAbi'));
+ok('waxonedge.js uses configured WAX RPC fallbacks',
+  waxonedgeJs.includes('WAXONEDGE_WAX_RPC_FALLBACKS'));
 
 // ── Summary ──────────────────────────────────────────────────────
 console.log('\nwaxonedge-smoke.test: ' + passed + ' passed, ' + failed + ' failed');

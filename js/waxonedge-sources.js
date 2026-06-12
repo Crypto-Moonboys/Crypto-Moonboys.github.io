@@ -11,10 +11,10 @@
 (function () {
   'use strict';
 
-  /** Alcor Exchange public WAX REST API (tokens, markets, tickers, trades, charts) */
-  var ALCOR_API = 'https://wax.alcor.exchange/api';
+  /** Alcor Exchange public WAX REST API v2 */
+  var ALCOR_API = 'https://wax.alcor.exchange/api/v2';
 
-  /** WAX Hyperion history v2 (transfers, actions, token holders) */
+  /** WAX Hyperion history v2 (transfers, actions, account-token balances) */
   var HYPERION_API = 'https://wax.eosusa.io/v2';
 
   /** WAX Chain RPC — get_table_rows, get_abi, etc. */
@@ -49,11 +49,11 @@
       docsUrl: 'https://wax.alcor.exchange',
     },
     {
-      id: 'alcor-markets',
-      label: 'Alcor Markets',
-      description: 'WAX trading pairs and order books',
+      id: 'alcor-pairs',
+      label: 'Alcor Pairs',
+      description: 'WAX pair registry and pool definitions',
       baseUrl: ALCOR_API,
-      healthPath: '/markets',
+      healthPath: '/pairs',
       docsUrl: 'https://wax.alcor.exchange',
     },
     {
@@ -62,6 +62,14 @@
       description: 'Live price tickers for all WAX pairs',
       baseUrl: ALCOR_API,
       healthPath: '/tickers',
+      docsUrl: 'https://wax.alcor.exchange',
+    },
+    {
+      id: 'alcor-analytics',
+      label: 'Alcor Analytics',
+      description: 'Global WAX DEX analytics snapshot',
+      baseUrl: ALCOR_API,
+      healthPath: '/analytics/global',
       docsUrl: 'https://wax.alcor.exchange',
     },
     {
@@ -93,13 +101,10 @@
 
   /** Alcor API endpoint paths */
   var ALCOR_PATHS = {
-    tokens:  '/tokens',
-    markets: '/markets',
+    tokens: '/tokens',
+    pairs: '/pairs',
     tickers: '/tickers',
-    /** Single-market trades: /markets/{id}/deals */
-    marketDeals: function (id) { return '/markets/' + id + '/deals'; },
-    /** Single-market chart: /markets/{id}/charts */
-    marketCharts: function (id) { return '/markets/' + id + '/charts'; },
+    analyticsGlobal: '/analytics/global',
   };
 
   /** WAX Chain RPC paths */
