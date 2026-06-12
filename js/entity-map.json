@@ -68,9 +68,9 @@
       "/wiki/one-million-free-nfts.html"
     ],
     "brand": {
-      "brand_family": "oneMillionFreeNfts",
+      "brand_family": "one-million-free-nfts",
       "concept_type": "program",
-      "canonical_concept_id": "oneMillionFreeNfts:program",
+      "canonical_concept_id": "one-million-free-nfts:program",
       "canonical_slug": "1m-free-nfts-program",
       "parent_concept": null
     },
@@ -1830,7 +1830,7 @@
       "concept_type": "faction",
       "canonical_concept_id": "graffpunks:faction",
       "canonical_slug": "graffpunks",
-      "parent_concept": "graffpunks"
+      "parent_concept": "gkniftyheads"
     },
     "alias_candidates": [
       "graffpunks"
@@ -1962,7 +1962,9 @@
     "canonical_title": "graffpunks_network — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/graffpunks-network.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "graffpunks network crypto moonboys wiki"
+    ],
     "tags": [
       "graffpunks",
       "network",
@@ -1973,10 +1975,7 @@
     "source_urls": [
       "/wiki/graffpunks-network.html"
     ],
-    "brand": null,
-    "alias_candidates": [
-      "graffpunks network crypto moonboys wiki"
-    ]
+    "brand": null
   },
   {
     "entity_id": "graffpunks_nfts",
@@ -2887,7 +2886,9 @@
     "canonical_title": "nbg_token — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/nbg-token.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "nbg token crypto moonboys wiki"
+    ],
     "tags": [
       "nbg",
       "token",
@@ -2904,10 +2905,7 @@
       "canonical_concept_id": "nbg:token",
       "canonical_slug": "nbg-token",
       "parent_concept": null
-    },
-    "alias_candidates": [
-      "nbg token crypto moonboys wiki"
-    ]
+    }
   },
   {
     "entity_id": "nbgx",

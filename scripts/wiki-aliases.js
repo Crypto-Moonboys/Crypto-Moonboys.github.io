@@ -9,7 +9,7 @@
  * source of truth.
  */
 
-const { _ALIAS_TO_CANONICAL: ALIAS_TO_CANONICAL } = require('./wiki-brand-taxonomy.js');
+const { ALIAS_TO_CANONICAL } = require('./wiki-brand-taxonomy.js');
 
 function normalizeSlug(slug) {
   return String(slug || '')

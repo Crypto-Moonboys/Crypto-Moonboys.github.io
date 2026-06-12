@@ -318,7 +318,7 @@ function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts, 
   // Only include authority / reinforcement boosts when there is an organic relationship
   if (organicScore === 0) return null;
 
-  // 7–10 – authority boosts for the target page (Phase 10 + Phase 21)
+  // 8–11 – authority boosts for the target page (Phase 10 + Phase 21)
   const { rank_score_boost, authority_score_boost, graph_centrality_boost, content_depth_boost } = tgtBoosts;
 
   let score = organicScore;

@@ -148,5 +148,34 @@ for (const entry of wikiIndex) {
   }
 }
 
+// ── parent_concept hierarchy (no self-parent cycles) ─────────────────────
+
+const graffpunksFactionMeta = classifyWikiSlug('graffpunks');
+assert.ok(graffpunksFactionMeta, 'graffpunks faction should have brand metadata');
+assert.notEqual(graffpunksFactionMeta.parent_concept, 'graffpunks', 'graffpunks top-level faction must not self-parent');
+// graffpunks parent is gkniftyheads (brand.parent)
+assert.equal(graffpunksFactionMeta.parent_concept, 'gkniftyheads', 'graffpunks faction parent should be gkniftyheads');
+
+const nbgBrandMeta = classifyWikiSlug('nbg');
+assert.ok(nbgBrandMeta, 'nbg brand should have brand metadata');
+assert.notEqual(nbgBrandMeta.parent_concept, 'nbg', 'nbg top-level brand must not self-parent');
+
+// Sibling concepts (non-top-level) should point to the brand canonical
+const graffpunksRadioMeta = classifyWikiSlug('graffpunks-24-7-radio');
+assert.ok(graffpunksRadioMeta, 'graffpunks radio should have brand metadata');
+assert.equal(graffpunksRadioMeta.parent_concept, 'graffpunks', 'radio sibling should point to graffpunks brand canonical');
+
+const nbgTokenMeta = classifyWikiSlug('nbg-token');
+assert.ok(nbgTokenMeta, 'nbg-token should have brand metadata');
+// nbg has no brand-level canonical, so parent_concept is null for all nbg concepts
+assert.equal(nbgTokenMeta.parent_concept, null, 'nbg-token parent_concept should be null when brand has no canonical');
+
+// ── brand_family uses stable lowercase/kebab-case id ─────────────────────
+
+const oneMFreeNftsMeta = classifyWikiSlug('1m-free-nfts-program');
+assert.ok(oneMFreeNftsMeta, '1m-free-nfts-program should have brand metadata');
+assert.equal(oneMFreeNftsMeta.brand_family, 'one-million-free-nfts', 'oneMillionFreeNfts brand_family must emit kebab-case id');
+assert.equal(oneMFreeNftsMeta.canonical_concept_id, 'one-million-free-nfts:program', 'canonical_concept_id must use kebab-case brand id');
+
 console.log('wiki alias canonicalization checks passed.');
 

@@ -99,7 +99,7 @@
       "concept_type": "faction",
       "canonical_concept_id": "graffpunks:faction",
       "canonical_slug": "graffpunks",
-      "parent_concept": "graffpunks"
+      "parent_concept": "gkniftyheads"
     }
   },
   {
@@ -2684,6 +2684,99 @@
     "brand": null
   },
   {
+    "title": "graffpunks_network — Crypto Moonboys Wiki",
+    "desc": "The GraffPUNKS Network surges through the Crypto Moonboys universe as a digital war cry, a social media fortress on platforms like Facebook where the anarchic s",
+    "url": "/wiki/graffpunks-network.html",
+    "tags": [
+      "graffpunks",
+      "network",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "graffpunks network crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 445,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 4460,
+      "keyword_bag_size": 24,
+      "heading_count": 6,
+      "list_count": 3,
+      "internal_link_count": 0,
+      "paragraph_count": 62,
+      "section_count": 5,
+      "lore_paragraph_count": 57,
+      "content_quality_score": 107,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 223,
+      "keyword_bag_points": 24,
+      "content_quality_points": 115,
+      "authority_points": 18,
+      "final_rank_score": 445,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "graffpunks network crypto moonboys wiki",
+      "tokens": [
+        "graffpunks",
+        "network",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "graffpunks",
+        "network",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "surges",
+        "through",
+        "universe",
+        "as",
+        "a",
+        "digital",
+        "war",
+        "cry",
+        "social",
+        "media",
+        "fortress",
+        "on",
+        "platforms",
+        "like",
+        "facebook",
+        "where",
+        "anarchic",
+        "s"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 16,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 16,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
     "title": "hard_fork_games — Crypto Moonboys Wiki",
     "desc": "Hard Fork Games represent a pivotal competitive mechanic in the Crypto Moonboys universe, a high-stakes system where players and factions battle to earn the cov",
     "url": "/wiki/hard-fork-games.html",
@@ -2776,100 +2869,27 @@
     "brand": null
   },
   {
-    "title": "graffpunks_network — Crypto Moonboys Wiki",
-    "desc": "The GraffPUNKS Network surges through the Crypto Moonboys universe as a digital war cry, a social media fortress on platforms like Facebook where the anarchic s",
-    "url": "/wiki/graffpunks-network.html",
-    "tags": [],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 437,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 4460,
-      "keyword_bag_size": 24,
-      "heading_count": 6,
-      "list_count": 3,
-      "internal_link_count": 0,
-      "paragraph_count": 62,
-      "section_count": 5,
-      "lore_paragraph_count": 57,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 223,
-      "keyword_bag_points": 24,
-      "content_quality_points": 107,
-      "authority_points": 18,
-      "final_rank_score": 437,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "graffpunks network crypto moonboys wiki",
-      "tokens": [
-        "graffpunks",
-        "network",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffpunks",
-        "network",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "surges",
-        "through",
-        "universe",
-        "as",
-        "a",
-        "digital",
-        "war",
-        "cry",
-        "social",
-        "media",
-        "fortress",
-        "on",
-        "platforms",
-        "like",
-        "facebook",
-        "where",
-        "anarchic",
-        "s"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 16,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 16,
-      "authority": 0
-    },
-    "brand": null
-  },
-  {
     "title": "nbg_token — Crypto Moonboys Wiki",
     "desc": "NBG flickers as a token of veiled significance within the Crypto Moonboys universe, a currency that flows through the shadowy veins of Block Topia’s multi-chain",
     "url": "/wiki/nbg-token.html",
-    "tags": [],
+    "tags": [
+      "nbg",
+      "token",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
     "category": "factions",
-    "aliases": [],
-    "rank_score": 437,
+    "aliases": [
+      {
+        "title": "nbg token crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 445,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 0,
+      "alias_count": 1,
+      "tag_count": 5,
       "mention_count": 0,
       "category": "factions",
       "category_priority": 7,
@@ -2891,9 +2911,9 @@
       "category_points": 35,
       "word_count_points": 222,
       "keyword_bag_points": 25,
-      "content_quality_points": 107,
+      "content_quality_points": 115,
       "authority_points": 18,
-      "final_rank_score": 437,
+      "final_rank_score": 445,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -11205,9 +11225,9 @@
       "authority": 0
     },
     "brand": {
-      "brand_family": "oneMillionFreeNfts",
+      "brand_family": "one-million-free-nfts",
       "concept_type": "program",
-      "canonical_concept_id": "oneMillionFreeNfts:program",
+      "canonical_concept_id": "one-million-free-nfts:program",
       "canonical_slug": "1m-free-nfts-program",
       "parent_concept": null
     }

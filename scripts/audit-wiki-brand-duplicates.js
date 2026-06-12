@@ -17,7 +17,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { BRAND_CANON, classifyWikiSlug, isTrueAliasSlug } = require('./wiki-brand-taxonomy.js');
+const { BRAND_CANON } = require('./wiki-brand-taxonomy.js');
 
 const ROOT        = path.resolve(__dirname, '..');
 const WIKI_DIR    = path.join(ROOT, 'wiki');
@@ -91,17 +91,17 @@ function run() {
       const inGraph       = graphUrls.has(canonicalUrl);
 
       const cluster = {
-        brand:             brandKey,
+        brand:             brand.id || brandKey,
         concept_type:      conceptType,
         canonical_slug:    canonicalSlug,
         canonical_url:     canonicalUrl,
-        canonical_concept_id: `${brandKey}:${conceptType}`,
+        canonical_concept_id: `${brand.id || brandKey}:${conceptType}`,
         aliases:           aliasSlugList,
         kept_separate:     siblings,
         in_wiki_index:     inIndex,
         in_entity_map:     inEntityMap,
         in_entity_graph:   inGraph,
-        reason:            `same brand (${brandKey}), same concept type (${conceptType})`,
+        reason:            `same brand (${brand.id || brandKey}), same concept type (${conceptType})`,
       };
 
       clusters.push(cluster);
@@ -118,8 +118,8 @@ function run() {
     if (redirectSlugs.has(slug)) continue;
     // Only flag slugs that look like they might be brand-related by checking
     // if any known brand key appears in the slug.
-    const brandKeys = Object.keys(BRAND_CANON);
-    const looksLikeBrand = brandKeys.some(k => slug.includes(k.toLowerCase().replace(/([A-Z])/g, '-$1').toLowerCase()));
+    const brandIds = Object.values(BRAND_CANON).map(b => b.id).filter(Boolean);
+    const looksLikeBrand = brandIds.some(id => slug.includes(id));
 
     unknownClusters.push({
       slug,

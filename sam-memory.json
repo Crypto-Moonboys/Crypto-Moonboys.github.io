@@ -1856,10 +1856,10 @@
       ]
     },
     "graffpunks_network": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "graffpunks network crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "graffpunks_network — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/graffpunks-network.html",
       "category": "factions",
@@ -2722,10 +2722,10 @@
       ]
     },
     "nbg_token": {
-      "alias_candidates": [
+      "alias_candidates": [],
+      "aliases": [
         "nbg token crypto moonboys wiki"
       ],
-      "aliases": [],
       "canonical_title": "nbg_token — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/nbg-token.html",
       "category": "factions",
@@ -5677,5 +5677,5 @@
       ]
     }
   },
-  "updated_at": "2026-06-12T17:14:57Z"
+  "updated_at": "2026-06-12T17:40:13Z"
 }

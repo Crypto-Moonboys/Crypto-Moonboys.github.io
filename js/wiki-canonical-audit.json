@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-12T17:15:06.752Z",
+  "generated_at": "2026-06-12T17:40:14.483Z",
   "summary": {
-    "generated_at": "2026-06-12T17:15:06.752Z",
+    "generated_at": "2026-06-12T17:40:14.483Z",
     "total_wiki_slugs": 377,
     "total_redirect_slugs": 104,
     "brand_clusters": 11,
@@ -191,11 +191,11 @@
       "reason": "same brand (nbg), same concept type (mechanic)"
     },
     {
-      "brand": "oneMillionFreeNfts",
+      "brand": "one-million-free-nfts",
       "concept_type": "program",
       "canonical_slug": "1m-free-nfts-program",
       "canonical_url": "/wiki/1m-free-nfts-program.html",
-      "canonical_concept_id": "oneMillionFreeNfts:program",
+      "canonical_concept_id": "one-million-free-nfts:program",
       "aliases": [
         "1m-free-nfts-programme",
         "one-million-free-nfts"
@@ -204,7 +204,7 @@
       "in_wiki_index": true,
       "in_entity_map": true,
       "in_entity_graph": true,
-      "reason": "same brand (oneMillionFreeNfts), same concept type (program)"
+      "reason": "same brand (one-million-free-nfts), same concept type (program)"
     }
   ],
   "unknown_slugs": [

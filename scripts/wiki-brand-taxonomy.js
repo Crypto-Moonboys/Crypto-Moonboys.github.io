@@ -18,6 +18,7 @@
 
 const BRAND_CANON = {
   graffpunks: {
+    id: 'graffpunks',
     parent: 'gkniftyheads',
     type: 'faction',
     canonical: 'graffpunks',
@@ -51,6 +52,7 @@ const BRAND_CANON = {
   },
 
   hodl: {
+    id: 'hodl',
     concepts: {
       faction: {
         canonical: 'hodl-warriors',
@@ -64,6 +66,7 @@ const BRAND_CANON = {
   },
 
   nbg: {
+    id: 'nbg',
     concepts: {
       brand: {
         canonical: 'nbg',
@@ -81,6 +84,7 @@ const BRAND_CANON = {
   },
 
   oneMillionFreeNfts: {
+    id: 'one-million-free-nfts',
     concepts: {
       program: {
         canonical: '1m-free-nfts-program',
@@ -111,13 +115,18 @@ function _buildAliasMap() {
 function _buildCanonicalMeta() {
   const meta = {};
   for (const [brandKey, brand] of Object.entries(BRAND_CANON)) {
+    const brandFamily = brand.id || brandKey;
     for (const [conceptType, concept] of Object.entries(brand.concepts)) {
+      // Avoid self-parent cycle: if this concept IS the brand top-level canonical,
+      // use brand.parent (if defined) or null instead of brand.canonical.
+      const isTopLevel = brand.canonical && concept.canonical === brand.canonical;
+      const parentConcept = isTopLevel ? (brand.parent || null) : (brand.canonical || null);
       const entry = {
-        brand_family: brandKey,
+        brand_family: brandFamily,
         concept_type: conceptType,
-        canonical_concept_id: `${brandKey}:${conceptType}`,
+        canonical_concept_id: `${brandFamily}:${conceptType}`,
         canonical_slug: concept.canonical,
-        parent_concept: brand.canonical || null,
+        parent_concept: parentConcept,
       };
       meta[concept.canonical] = entry;
       for (const alias of (concept.aliases || [])) {
@@ -128,7 +137,7 @@ function _buildCanonicalMeta() {
   return meta;
 }
 
-const _ALIAS_TO_CANONICAL = _buildAliasMap();
+const ALIAS_TO_CANONICAL = Object.freeze(_buildAliasMap());
 const _CANONICAL_META = _buildCanonicalMeta();
 
 // ---------------------------------------------------------------------------
@@ -149,7 +158,7 @@ function normalizeSlug(slug) {
  */
 function canonicalConceptForSlug(slug) {
   const normalized = normalizeSlug(slug);
-  return _ALIAS_TO_CANONICAL[normalized] || normalized;
+  return ALIAS_TO_CANONICAL[normalized] || normalized;
 }
 
 /**
@@ -161,7 +170,7 @@ function classifyWikiSlug(slug) {
   // Check the slug directly first (handles canonicals and known aliases)
   if (_CANONICAL_META[normalized]) return _CANONICAL_META[normalized];
   // Then try after alias resolution
-  const canonical = _ALIAS_TO_CANONICAL[normalized];
+  const canonical = ALIAS_TO_CANONICAL[normalized];
   if (canonical && _CANONICAL_META[canonical]) return _CANONICAL_META[canonical];
   return null;
 }
@@ -185,7 +194,7 @@ function canonicalizeWikiUrl(url) {
 function isTrueAliasSlug(slug) {
   const normalized = normalizeSlug(slug);
   if (!normalized) return false;
-  return Object.prototype.hasOwnProperty.call(_ALIAS_TO_CANONICAL, normalized);
+  return Object.prototype.hasOwnProperty.call(ALIAS_TO_CANONICAL, normalized);
 }
 
 /**
@@ -198,11 +207,10 @@ function getConceptType(slug) {
 
 module.exports = {
   BRAND_CANON,
+  ALIAS_TO_CANONICAL,
   classifyWikiSlug,
   canonicalConceptForSlug,
   canonicalizeWikiUrl,
   isTrueAliasSlug,
   getConceptType,
-  // expose internal map so wiki-aliases.js can derive its own ALIAS_TO_CANONICAL
-  _ALIAS_TO_CANONICAL,
 };
