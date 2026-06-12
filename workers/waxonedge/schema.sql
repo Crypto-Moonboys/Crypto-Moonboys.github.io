@@ -1,5 +1,11 @@
 -- WAXONEDGE D1 schema draft
 -- This is a scaffold only. Do not deploy until Cloudflare D1 binding is confirmed.
+--
+-- Precision policy:
+-- On-chain quantities, token prices, liquidity, volume, market cap, FDV, holder
+-- percentages, and candle OHLC/volume are stored as decimal strings in TEXT
+-- columns. This avoids SQLite REAL binary-float drift. Adapter code should
+-- preserve source precision and only convert for display/calculation at the edge.
 
 CREATE TABLE IF NOT EXISTS waxonedge_sync_runs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,8 +25,8 @@ CREATE TABLE IF NOT EXISTS waxonedge_tokens (
   decimals INTEGER,
   total_supply TEXT,
   max_supply TEXT,
-  price_wax REAL,
-  price_usd REAL,
+  price_wax TEXT,
+  price_usd TEXT,
   updated_at TEXT NOT NULL,
   PRIMARY KEY (contract, symbol)
 );
@@ -35,11 +41,11 @@ CREATE TABLE IF NOT EXISTS waxonedge_pairs (
   token_a_symbol TEXT,
   token_b_contract TEXT,
   token_b_symbol TEXT,
-  price REAL,
-  change_24h REAL,
-  volume_24h REAL,
-  liquidity_wax REAL,
-  liquidity_usd REAL,
+  price TEXT,
+  change_24h TEXT,
+  volume_24h TEXT,
+  liquidity_wax TEXT,
+  liquidity_usd TEXT,
   reserve_a TEXT,
   reserve_b TEXT,
   updated_at TEXT NOT NULL,
@@ -60,13 +66,13 @@ CREATE TABLE IF NOT EXISTS waxonedge_token_stats (
   symbol TEXT NOT NULL,
   holder_count INTEGER,
   circulating_supply TEXT,
-  volume_24h REAL,
-  volume_7d REAL,
-  volume_30d REAL,
-  market_cap_wax REAL,
-  market_cap_usd REAL,
-  fdv_wax REAL,
-  fdv_usd REAL,
+  volume_24h TEXT,
+  volume_7d TEXT,
+  volume_30d TEXT,
+  market_cap_wax TEXT,
+  market_cap_usd TEXT,
+  fdv_wax TEXT,
+  fdv_usd TEXT,
   updated_at TEXT NOT NULL,
   PRIMARY KEY (contract, symbol)
 );
@@ -76,7 +82,7 @@ CREATE TABLE IF NOT EXISTS waxonedge_holders (
   symbol TEXT NOT NULL,
   account TEXT NOT NULL,
   balance TEXT NOT NULL,
-  percentage REAL,
+  percentage TEXT,
   snapshot_at TEXT NOT NULL,
   PRIMARY KEY (contract, symbol, account, snapshot_at)
 );
@@ -89,11 +95,11 @@ CREATE TABLE IF NOT EXISTS waxonedge_chart_candles (
   pair_id TEXT NOT NULL,
   interval TEXT NOT NULL,
   bucket_time TEXT NOT NULL,
-  open REAL,
-  high REAL,
-  low REAL,
-  close REAL,
-  volume REAL,
+  open TEXT,
+  high TEXT,
+  low TEXT,
+  close TEXT,
+  volume TEXT,
   updated_at TEXT NOT NULL,
   PRIMARY KEY (source, pair_id, interval, bucket_time)
 );
