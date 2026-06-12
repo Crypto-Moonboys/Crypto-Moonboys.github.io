@@ -825,6 +825,99 @@
   text-decoration: none;
 }
 
+/* ── Wide button ─────────────────────────────────────────────── */
+.woe-wide-btn {
+  cursor: pointer;
+  border-color: rgba(0, 229, 255, 0.35);
+  color: rgba(0, 229, 255, 0.85);
+  background: #0a1216;
+  font-family: inherit;
+}
+
+.woe-wide-btn:hover,
+.woe-wide-btn:focus {
+  border-color: var(--neon-cyan, #00e5ff);
+  color: var(--neon-cyan, #00e5ff);
+  background: #0e1418;
+}
+
+/* ── Scanner-first empty state ───────────────────────────────── */
+.woe-scanner-first-state {
+  padding: 22px 16px;
+  color: var(--color-text-muted);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.woe-scanner-first-icon {
+  font-size: 1.8rem;
+  color: var(--neon-cyan, #00e5ff);
+  display: block;
+}
+
+.woe-scanner-first-state p {
+  margin: 0;
+  font-size: .88rem;
+  color: #c8d8e4;
+  line-height: 1.5;
+}
+
+.woe-scanner-first-hint {
+  font-size: .76rem !important;
+  color: var(--color-text-muted) !important;
+}
+
+/* ── Wide / fullscreen analytics terminal mode ───────────────── */
+/*
+ * body.woe-wide-mode: hide the sidebar and let the WaxOnEdge page
+ * fill the full viewport width like an analytics terminal.
+ */
+body.woe-wide-mode #sidebar,
+body.woe-wide-mode #site-header {
+  display: none !important;
+}
+
+body.woe-wide-mode #layout {
+  min-height: 100vh;
+}
+
+body.woe-wide-mode #main-wrapper {
+  width: 100%;
+}
+
+body.woe-wide-mode #content {
+  padding: 0;
+}
+
+body.woe-wide-mode .woe-page {
+  max-width: none;
+  padding: 14px 18px 60px;
+}
+
+body.woe-wide-mode .woe-og-bar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+
+body.woe-wide-mode .woe-detail-grid {
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+}
+
+body.woe-wide-mode .woe-chart-panel {
+  min-height: 440px;
+}
+
+body.woe-wide-mode .woe-chart-svg {
+  height: 400px;
+}
+
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .woe-page {

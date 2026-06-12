@@ -925,25 +925,58 @@
     };
   }
 
+  var WAX_NATIVE_KEY = tokenKey('eosio.token', 'WAX');
+
   function pickDefaultSelection() {
     var requested = getSelectionFromLocation();
     if (requested.key && findTokenRecord(state.tokenMap, requested.contract, requested.symbol)) {
       return requested;
     }
 
-    var firstWithPairs = state.tokens.find(function (tok) {
-      var key = tokenKey(tok.contract, tok.symbol || tok.id);
-      return key && state.pairIndex.tokenPairCounts[key];
+    // Build a set of token keys that appear as the base token (tokenA) in a
+    // real Alcor market with a market ID — these are chartable DEX tokens.
+    var alcorBaseKeys = {};
+    state.alcorMarkets.forEach(function (market) {
+      if (market.tokenA && market.tokenA.key && market.marketId) {
+        alcorBaseKeys[market.tokenA.key] = true;
+      }
     });
-    var first = firstWithPairs || state.tokens[0];
-    if (!first) return { symbol: '', contract: '', key: '' };
-    var symbol = normalizeSymbol(first.symbol || first.id);
-    var contract = normalizeContract(first.contract);
-    return {
-      symbol: symbol,
-      contract: contract,
-      key: tokenKey(contract, symbol),
-    };
+
+    // Prefer: a non-WAX token that is the base side of at least one Alcor
+    // market (real ticker + chartable market).
+    var firstWithAlcorMarket = null;
+    for (var i = 0; i < state.tokens.length; i++) {
+      var tok = state.tokens[i];
+      var key = tokenKey(tok.contract, tok.symbol || tok.id);
+      if (key && key !== WAX_NATIVE_KEY && alcorBaseKeys[key]) {
+        firstWithAlcorMarket = tok;
+        break;
+      }
+    }
+    if (firstWithAlcorMarket) {
+      var sym = normalizeSymbol(firstWithAlcorMarket.symbol || firstWithAlcorMarket.id);
+      var con = normalizeContract(firstWithAlcorMarket.contract);
+      return { symbol: sym, contract: con, key: tokenKey(con, sym) };
+    }
+
+    // Fallback: first non-WAX token that has any pair count.
+    var firstWithPairs = null;
+    for (var j = 0; j < state.tokens.length; j++) {
+      var candidate = state.tokens[j];
+      var candidateKey = tokenKey(candidate.contract, candidate.symbol || candidate.id);
+      if (candidateKey && candidateKey !== WAX_NATIVE_KEY && state.pairIndex.tokenPairCounts[candidateKey]) {
+        firstWithPairs = candidate;
+        break;
+      }
+    }
+    if (firstWithPairs) {
+      var fsym = normalizeSymbol(firstWithPairs.symbol || firstWithPairs.id);
+      var fcon = normalizeContract(firstWithPairs.contract);
+      return { symbol: fsym, contract: fcon, key: tokenKey(fcon, fsym) };
+    }
+
+    // No valid token is ready — show the scanner-first empty state.
+    return { symbol: '', contract: '', key: '' };
   }
 
   function updateSelectionUrl(selection, pushState) {
@@ -1481,10 +1514,18 @@
 
   function renderSelectedToken() {
     if (!state.selected.key) {
-      setHtml('woe-token-summary', '<p class="woe-loading">No token selected.</p>');
-      setHtml('woe-token-stats', '<div class="woe-loading">Select a token from the scanner to load analytics.</div>');
-      setHtml('woe-chart-panel', '<p class="woe-loading">Select a token to load chart data.</p>');
-      setHtml('woe-matrix-body', '<tr><td colspan="14" class="woe-loading">Select a token to inspect its indexed pools and pairs.</td></tr>');
+      setHtml('woe-token-summary',
+        '<div class="woe-scanner-first-state">' +
+          '<span class="woe-scanner-first-icon" aria-hidden="true">◫</span>' +
+          '<p>Select a token from the scanner below to load analytics.</p>' +
+          '<p class="woe-scanner-first-hint">Use <code>?token=SYMBOL&amp;contract=CONTRACT</code> in the URL to deep-link to a specific token.</p>' +
+        '</div>');
+      setText('woe-detail-status', 'Select a token from the scanner below');
+      setHtml('woe-token-stats', '');
+      setHtml('woe-chart-panel',
+        '<div class="woe-chart-empty">Select a token from the scanner below to load analytics.</div>');
+      setHtml('woe-matrix-body',
+        '<tr><td colspan="14" class="woe-loading">Select a token to inspect its indexed pools and pairs.</td></tr>');
       return;
     }
 
@@ -1568,9 +1609,48 @@
     });
   }
 
+  /* ── Wide / fullscreen analytics terminal mode ──────────────── */
+
+  var WOE_WIDE_CLASS = 'woe-wide-mode';
+
+  function isWideMode() {
+    return document.body && document.body.classList.contains(WOE_WIDE_CLASS);
+  }
+
+  function applyWideMode(enabled) {
+    if (!document.body) return;
+    if (enabled) {
+      document.body.classList.add(WOE_WIDE_CLASS);
+    } else {
+      document.body.classList.remove(WOE_WIDE_CLASS);
+    }
+    var btn = document.getElementById('woe-wide-toggle');
+    if (btn) btn.textContent = enabled ? '⊠ EXIT WIDE' : '⊞ WIDE';
+    try { localStorage.setItem('woe_wide_mode', enabled ? '1' : '0'); } catch (_) {}
+  }
+
+  function toggleWideMode() {
+    applyWideMode(!isWideMode());
+  }
+
+  function restoreWideMode() {
+    try {
+      if (localStorage.getItem('woe_wide_mode') === '1') {
+        applyWideMode(true);
+      }
+    } catch (_) {}
+  }
+
   /* ── Boot ───────────────────────────────────────────────────── */
 
   function boot() {
+    restoreWideMode();
+    var wideBtn = document.getElementById('woe-wide-toggle');
+    if (wideBtn && !wideBtn.dataset.bound) {
+      wideBtn.dataset.bound = 'true';
+      wideBtn.addEventListener('click', toggleWideMode);
+    }
+
     renderSourceCards();
     pingAllSources();
     attachGlobalSearch();
