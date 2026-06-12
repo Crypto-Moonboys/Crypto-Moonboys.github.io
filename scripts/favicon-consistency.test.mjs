@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 const ROOT = process.cwd();
-const REQUIRED = '<link rel="icon" type="image/png" href="/favicon.png">';
+const REQUIRED_FAVICON_TAG = /<link\b(?=[^>]*\brel=["']icon["'])(?=[^>]*\bhref=["']\/favicon\.png["'])(?=[^>]*\btype=["']image\/png["'])[^>]*>/i;
 const failures = [];
 
 function walk(dir) {
@@ -17,7 +17,7 @@ function walk(dir) {
     }
     if (!entry.isFile() || !rel.endsWith('.html')) continue;
     const html = fs.readFileSync(full, 'utf8');
-    if (!html.includes(REQUIRED)) {
+    if (!REQUIRED_FAVICON_TAG.test(html)) {
       failures.push(`${rel}: missing standardized favicon tag`);
     }
     if (html.includes('href="/favicon.ico"')) {
