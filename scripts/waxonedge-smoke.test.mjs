@@ -120,7 +120,7 @@ ok('waxonedge-sources.js references swap.nefty contract',
 ok('waxonedge-sources.js includes WaxBlock link for swap.nefty',
   sourcesJs.includes('waxblock.io/account/swap.nefty'));
 ok('waxonedge-sources.js uses Alcor api/v2 base',
-  sourcesJs.includes('https://wax.alcor.exchange/api/v2'));
+  sourcesJs.includes("var ALCOR_API = 'https://wax.alcor.exchange/api/v2';"));
 ok('waxonedge-sources.js defines /pairs path',
   sourcesJs.includes("pairs: '/pairs'") || sourcesJs.includes("healthPath: '/pairs'"));
 ok('waxonedge-sources.js defines /analytics/global path',
