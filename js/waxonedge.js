@@ -1302,7 +1302,8 @@
   }
 
   function isTokenAnalyticsRoute() {
-    return /\/analytics\/token\/?/.test(window.location.pathname || '');
+    var path = window.location.pathname || '';
+    return /^\/analytics\/token(?:\/|$)/.test(path);
   }
 
   function attachTokenSelectionLinks() {

@@ -118,6 +118,9 @@ ok('waxonedge.js keeps direct browser fetches as diagnostic fallback',
 ok('waxonedge.js uses configured WAX RPC fallbacks', js.includes('WAXONEDGE_WAX_RPC_FALLBACKS'));
 ok('waxonedge.js performs swap.nefty ABI lookup', js.includes('get_abi') || js.includes('getAbi'));
 ok('waxonedge.js includes query-string token detail state', js.includes('token=') && js.includes('contract='));
+ok('waxonedge.js uses path-segment-safe token analytics route detection',
+  js.includes("return /^\\/analytics\\/token(?:\\/|$)/.test(path);") &&
+  !js.includes('/\\/analytics\\/token\\/?/.test'));
 ok('waxonedge.js fetches Alcor chart candles from /markets/:id/charts for diagnostic fallback', js.includes('/charts') && js.includes('/markets'));
 ok('waxonedge.js keeps Lightweight Charts support', js.includes('window.LightweightCharts') && js.includes('tv.createChart'));
 
@@ -187,8 +190,8 @@ ok('wide mode toggle updates aria-pressed',
   js.includes("btn.setAttribute('aria-pressed', enabled ? 'true' : 'false')"));
 ok('wide mode localStorage zero disables default wide mode',
   js.includes("localStorage.getItem('woe_wide_mode') === '0'") && js.includes('applyWideMode(false)'));
-ok('default wide mode remains enabled in markup for first-time users',
-  html.includes('woe-wide-mode') &&
+ok('default wide mode remains enabled in scanner body class',
+  /<body[^>]*class="[^"]*\bwoe-wide-mode\b[^"]*"/.test(html) &&
   html.includes('aria-pressed="true"'));
 
 for (const label of [
