@@ -369,7 +369,7 @@
   function backendSourceMeta(source) {
     var key = normalizeContract(source || '');
     var map = {
-      alcor: { label: 'alcor', meta: 'Alcor REST /pairs + /tickers', sort: 1, explorer: 'https://wax.alcor.exchange', explorerLabel: 'Alcor' },
+      alcor: { label: 'Alcor API', meta: 'Alcor REST /pairs + /tickers', sort: 1, explorer: 'https://wax.alcor.exchange', explorerLabel: 'Alcor' },
       'swap.alcor': { label: 'swap.alcor', meta: 'swap.alcor ABI-indexed pools', sort: 2, explorer: 'https://waxblock.io/account/swap.alcor', explorerLabel: 'WaxBlock' },
       'swap.taco': { label: 'swap.taco', meta: 'swap.taco ABI-indexed pairs', sort: 3, explorer: 'https://waxblock.io/account/swap.taco', explorerLabel: 'WaxBlock' },
       'swap.nefty': { label: 'swap.nefty', meta: 'swap.nefty ABI-indexed pairs', sort: 4, explorer: 'https://waxblock.io/account/swap.nefty', explorerLabel: 'WaxBlock' },

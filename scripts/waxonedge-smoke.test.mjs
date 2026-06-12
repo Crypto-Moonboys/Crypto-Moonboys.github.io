@@ -65,7 +65,9 @@ ok('waxonedge clean-route alias preserves hash routing', aliasHtml.includes("win
 
 ok('waxonedge.html includes terminal top bar', html.includes('woe-og-bar'));
 ok('waxonedge.html removes visible scanner chrome buttons',
-  !/>Bubbles</.test(html) &&
+  !html.includes('woe-og-nav') &&
+  !html.includes('woe-og-actions') &&
+  !html.includes('woe-readonly-badge') &&
   !html.includes('Read-Only') &&
   !html.includes('Exit Wide') &&
   !html.includes('id="woe-wide-toggle"'));
