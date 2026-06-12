@@ -169,6 +169,56 @@ ok('waxonedge.js updates the top bar WAX price block',
 );
 ok('waxonedge.css includes active token row styling', css.includes('.woe-row-active'));
 
+// ── New: default token selection guards ─────────────────────────────
+ok(
+  'waxonedge.js defines WAX_NATIVE_KEY constant to skip eosio.token/WAX in default selection',
+  js.includes('WAX_NATIVE_KEY') && js.includes('eosio.token') && js.includes("'WAX'"),
+);
+ok(
+  'waxonedge.js skips WAX_NATIVE_KEY when picking default token',
+  js.includes('key !== WAX_NATIVE_KEY'),
+);
+ok(
+  'waxonedge.js prefers tokens that are tokenA in an Alcor market (alcorBaseKeys)',
+  js.includes('alcorBaseKeys'),
+);
+
+// ── New: scanner-first empty state ──────────────────────────────────
+ok(
+  'waxonedge.js shows scanner-first empty state message when no token selected',
+  js.includes('Select a token from the scanner below to load analytics.'),
+);
+ok(
+  'waxonedge.js uses woe-scanner-first-state class for empty state',
+  js.includes('woe-scanner-first-state'),
+);
+ok(
+  'waxonedge.css defines scanner-first empty state styles',
+  css.includes('.woe-scanner-first-state'),
+);
+
+// ── New: wide / fullscreen mode ──────────────────────────────────────
+ok(
+  'waxonedge.html includes wide mode toggle button',
+  html.includes('id="woe-wide-toggle"'),
+);
+ok(
+  'waxonedge.js implements toggleWideMode and woe-wide-mode class',
+  js.includes('toggleWideMode') && js.includes('woe-wide-mode'),
+);
+ok(
+  'waxonedge.js restores wide mode from localStorage on boot',
+  js.includes('restoreWideMode'),
+);
+ok(
+  'waxonedge.css includes wide mode layout overrides',
+  css.includes('body.woe-wide-mode'),
+);
+ok(
+  'waxonedge.css wide mode hides sidebar in terminal mode',
+  css.includes('body.woe-wide-mode #sidebar'),
+);
+
 console.log('\nwaxonedge-smoke.test: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) {
   process.exit(1);
