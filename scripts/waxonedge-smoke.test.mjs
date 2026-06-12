@@ -103,6 +103,10 @@ ok('waxonedge.js uses configured WAX RPC fallbacks', js.includes('WAXONEDGE_WAX_
 ok('waxonedge.js performs swap.nefty ABI lookup', js.includes('get_abi') || js.includes('getAbi'));
 ok('waxonedge.js includes query-string token detail state', js.includes('token=') && js.includes('contract='));
 ok('waxonedge.js fetches Alcor chart candles from /markets/:id/charts', js.includes('/charts') && js.includes('/markets'));
+ok('waxonedge.js calls /api/waxonedge/bootstrap before direct diagnostic fallback',
+  js.includes("waxonedgeApi('/bootstrap')") && js.includes('loadDiagnosticFallback'));
+ok('waxonedge.js names direct browser fetches as diagnostic fallback',
+  js.includes('loadDiagnosticFallback') && js.includes('Backend bootstrap unavailable'));
 
 ok('holder lookup copy does not claim holder distribution',
   !html.includes('Holder Data') &&

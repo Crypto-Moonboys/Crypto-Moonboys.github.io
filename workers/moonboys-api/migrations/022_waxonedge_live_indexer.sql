@@ -1,11 +1,5 @@
--- WAXONEDGE D1 schema draft
--- This is a scaffold only. Do not deploy until Cloudflare D1 binding is confirmed.
---
--- Precision policy:
--- On-chain quantities, token prices, liquidity, volume, market cap, FDV, holder
--- percentages, and candle OHLC/volume are stored as decimal strings in TEXT
--- columns. This avoids binary floating-point drift. Adapter code should
--- preserve source precision and only convert for display/calculation at the edge.
+-- Migration 022: WaxOnEdge live indexer tables
+-- Decimal/on-chain analytics values are TEXT to avoid SQLite REAL precision drift.
 
 CREATE TABLE IF NOT EXISTS waxonedge_sync_runs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,12 +27,17 @@ CREATE TABLE IF NOT EXISTS waxonedge_tokens (
   max_supply TEXT,
   price_wax TEXT,
   price_usd TEXT,
+  pair_count INTEGER NOT NULL DEFAULT 0,
+  icon_url TEXT,
   updated_at TEXT NOT NULL,
   PRIMARY KEY (contract, symbol)
 );
 
 CREATE INDEX IF NOT EXISTS idx_waxonedge_tokens_symbol
   ON waxonedge_tokens (symbol);
+
+CREATE INDEX IF NOT EXISTS idx_waxonedge_tokens_pair_count
+  ON waxonedge_tokens (pair_count, updated_at);
 
 CREATE TABLE IF NOT EXISTS waxonedge_pairs (
   source TEXT NOT NULL,
@@ -54,6 +53,7 @@ CREATE TABLE IF NOT EXISTS waxonedge_pairs (
   liquidity_usd TEXT,
   reserve_a TEXT,
   reserve_b TEXT,
+  fee_bps TEXT,
   updated_at TEXT NOT NULL,
   PRIMARY KEY (source, pair_id)
 );
@@ -75,15 +75,6 @@ CREATE TABLE IF NOT EXISTS waxonedge_token_stats (
   volume_24h TEXT,
   volume_7d TEXT,
   volume_30d TEXT,
-  liquidity_wax TEXT,
-  liquidity_usd TEXT,
-  tvl_wax TEXT,
-  tvl_usd TEXT,
-  selected_price_wax TEXT,
-  selected_price_usd TEXT,
-  selected_pair_source TEXT,
-  selected_pair_id TEXT,
-  burned_amount TEXT,
   market_cap_wax TEXT,
   market_cap_usd TEXT,
   fdv_wax TEXT,
@@ -99,6 +90,7 @@ CREATE TABLE IF NOT EXISTS waxonedge_holders (
   balance TEXT NOT NULL,
   percentage TEXT,
   snapshot_at TEXT NOT NULL,
+  source TEXT NOT NULL DEFAULT 'indexed_snapshot',
   PRIMARY KEY (contract, symbol, account, snapshot_at)
 );
 

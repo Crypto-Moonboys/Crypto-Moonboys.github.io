@@ -13,7 +13,8 @@
    WAXONEDGE_ALCOR_API, WAXONEDGE_WAX_RPC, WAXONEDGE_WAX_RPC_FALLBACKS,
    WAXONEDGE_NEFTY_CONTRACT, WAXONEDGE_WAXBLOCK_BASE,
    WAXONEDGE_SOURCES, WAXONEDGE_ALCOR_PATHS, WAXONEDGE_RPC_PATHS,
-   WAXONEDGE_NEFTY_TABLES, WAXONEDGE_HYPERION, WAXONEDGE_HYPERION_PATHS
+   WAXONEDGE_NEFTY_TABLES, WAXONEDGE_HYPERION, WAXONEDGE_HYPERION_PATHS,
+   LightweightCharts
 */
 
 (function () {
@@ -21,6 +22,7 @@
 
   var UNAVAILABLE_TEXT = 'Unavailable';
   var INDEXED_BACKEND_TEXT = 'Requires indexed backend';
+  var SOURCE_NOT_INDEXED_TEXT = 'Source not indexed yet';
 
   var state = {
     tokens: [],
@@ -38,6 +40,12 @@
     chainStatPending: {},
     chartCache: {},
     chartPending: {},
+    backend: {
+      ok: false,
+      mode: 'pending',
+      updatedAt: null,
+      warnings: [],
+    },
   };
 
   /* ── Utilities ──────────────────────────────────────────────── */
@@ -322,6 +330,190 @@
     });
   }
 
+  function waxonedgeApi(path) {
+    return apiFetch('/api/waxonedge' + path, 12000);
+  }
+
+  function backendSourceMeta(source) {
+    var key = normalizeContract(source || '');
+    var map = {
+      alcor: { label: 'Alcor API', meta: 'Alcor REST /pairs + /tickers', sort: 1, explorer: 'https://wax.alcor.exchange', explorerLabel: 'Alcor' },
+      'swap.alcor': { label: 'Alcor', meta: 'swap.alcor ABI-indexed pools', sort: 2, explorer: 'https://waxblock.io/account/swap.alcor', explorerLabel: 'WaxBlock' },
+      'swap.taco': { label: 'Taco', meta: 'swap.taco ABI-indexed pairs', sort: 3, explorer: 'https://waxblock.io/account/swap.taco', explorerLabel: 'WaxBlock' },
+      'swap.nefty': { label: 'NeftyBlocks', meta: 'swap.nefty ABI-indexed pairs', sort: 4, explorer: 'https://waxblock.io/account/swap.nefty', explorerLabel: 'WaxBlock' },
+      'swap.box': { label: 'BOX', meta: 'swap.box ABI-indexed pairs', sort: 5, explorer: 'https://waxblock.io/account/swap.box', explorerLabel: 'WaxBlock' },
+    };
+    return map[key] || { label: source || 'Source', meta: 'Indexed backend adapter', sort: 10, explorer: 'https://waxblock.io/account/' + encodeURIComponent(source || ''), explorerLabel: 'WaxBlock' };
+  }
+
+  function mapBackendToken(row) {
+    return {
+      id: row.symbol,
+      symbol: row.symbol,
+      contract: row.contract,
+      decimals: row.decimals,
+      total_supply: row.total_supply,
+      max_supply: row.max_supply,
+      system_price: row.price_wax,
+      usd_price: row.price_usd,
+      pair_count: row.pair_count,
+      icon_url: row.icon_url,
+      updated_at: row.updated_at,
+      volume_24h: row.volume_24h,
+      volume_7d: row.volume_7d,
+      volume_30d: row.volume_30d,
+      liquidity_wax: row.liquidity_wax,
+      liquidity_usd: row.liquidity_usd,
+      tvl_wax: row.tvl_wax,
+      tvl_usd: row.tvl_usd,
+      selected_pair_source: row.selected_pair_source,
+      selected_pair_id: row.selected_pair_id,
+    };
+  }
+
+  function assetFromAmount(amount, symbol) {
+    if (amount == null || amount === '') return '';
+    return String(amount) + (symbol ? ' ' + normalizeSymbol(symbol) : '');
+  }
+
+  function mapBackendPair(row) {
+    var sourceMeta = backendSourceMeta(row.source);
+    return {
+      id: row.pair_id,
+      fee: row.fee_bps,
+      pool1: {
+        contract: row.token_a_contract,
+        symbol: row.token_a_symbol,
+        quantity: assetFromAmount(row.reserve_a, row.token_a_symbol),
+      },
+      pool2: {
+        contract: row.token_b_contract,
+        symbol: row.token_b_symbol,
+        quantity: assetFromAmount(row.reserve_b, row.token_b_symbol),
+      },
+      source: sourceMeta.label,
+      sourceMeta: sourceMeta.meta,
+      sourceSort: sourceMeta.sort,
+      adapter: row.source || sourceMeta.label,
+      explorerUrl: sourceMeta.explorer,
+      explorerLabel: sourceMeta.explorerLabel,
+      currentPrice: row.price,
+      currentPriceText: row.price != null ? String(row.price) + (row.token_b_symbol ? ' ' + normalizeSymbol(row.token_b_symbol) : '') : UNAVAILABLE_TEXT,
+      change24: row.change_24h,
+      volume24: row.volume_24h,
+      volume24Text: row.volume_24h != null ? String(row.volume_24h) + (row.token_a_symbol ? ' ' + normalizeSymbol(row.token_a_symbol) : '') : UNAVAILABLE_TEXT,
+      volume7dText: INDEXED_BACKEND_TEXT,
+      volume30dText: INDEXED_BACKEND_TEXT,
+      liquidityWax: row.liquidity_wax,
+      liquidityUsd: row.liquidity_usd,
+      liquidityText: formatDualMetric(asNum(row.liquidity_wax), asNum(row.liquidity_usd)),
+      pooledTokenAText: assetFromAmount(row.reserve_a, row.token_a_symbol) || UNAVAILABLE_TEXT,
+      pooledTokenBText: assetFromAmount(row.reserve_b, row.token_b_symbol) || UNAVAILABLE_TEXT,
+    };
+  }
+
+  function mapBackendTicker(row) {
+    return {
+      market_id: row.pair_id,
+      last_price: row.price,
+      change24: row.change_24h,
+      base_volume: row.volume_24h,
+    };
+  }
+
+  function markBackendSourceStatus(sourceState) {
+    var sourceMap = sourceState || {};
+    [
+      ['alcor-tokens', 'alcor_tokens'],
+      ['alcor-pairs', 'alcor_pairs'],
+      ['alcor-tickers', 'alcor_tickers'],
+      ['alcor-analytics', 'alcor_global'],
+      ['swap-alcor', 'swap_alcor_pools'],
+      ['swap-taco', 'swap_taco_pairs'],
+      ['nefty-contract', 'swap_nefty_pairs'],
+      ['swap-box', 'swap_box_pairs'],
+    ].forEach(function (pair) {
+      var item = sourceMap[pair[1]];
+      if (item) setStatus('src-dot-' + pair[0], item.indexed ? 'ok' : 'error');
+    });
+    setStatus('src-dot-wax-rpc', (
+      (sourceMap.swap_alcor_abi && sourceMap.swap_alcor_abi.indexed) ||
+      (sourceMap.swap_taco_abi && sourceMap.swap_taco_abi.indexed) ||
+      (sourceMap.swap_nefty_abi && sourceMap.swap_nefty_abi.indexed) ||
+      (sourceMap.swap_box_abi && sourceMap.swap_box_abi.indexed)
+    ) ? 'ok' : 'checking');
+    setStatus('src-dot-hyperion', 'checking');
+  }
+
+  function applyBackendBootstrap(payload) {
+    var data = payload && payload.data;
+    if (!payload || !payload.ok || !data) return false;
+    var raw = data.raw || {};
+    var backendTokens = Array.isArray(data.tokens) ? data.tokens.map(mapBackendToken) : [];
+    var backendPairs = Array.isArray(data.pairs) ? data.pairs.map(mapBackendPair) : [];
+    var backendTickers = Array.isArray(data.pairs) ? data.pairs.map(mapBackendTicker) : [];
+
+    state.tokens = Array.isArray(raw.alcor_tokens) && raw.alcor_tokens.length ? raw.alcor_tokens : backendTokens;
+    state.pairs = backendPairs;
+    state.tickers = backendTickers;
+    state.globalAnalytics = raw.alcor_global && typeof raw.alcor_global === 'object' ? raw.alcor_global : null;
+    state.neftyMarkets = [];
+    state.neftyDetectedTables = Array.isArray(raw.nefty_detected_tables) ? raw.nefty_detected_tables : [];
+    state.neftyTableUsed = '';
+    state.backend = {
+      ok: true,
+      mode: 'backend',
+      updatedAt: payload.updated_at || data.sources?.alcor_tokens?.updated_at || null,
+      warnings: Array.isArray(payload.warnings) ? payload.warnings : [],
+    };
+    markBackendSourceStatus(data.sources);
+    return true;
+  }
+
+  function renderLoadedData() {
+    state.tokenMap = buildTokenMap(state.tokens);
+    state.pairIndex = buildPairIndex(state.pairs);
+    state.alcorMarkets = buildAlcorMarkets(state.pairs, state.tickers);
+    updateTopBarWaxPrice();
+    updateRiskFlags();
+    var initialSelection = pickDefaultSelection();
+    renderTokens();
+    if (initialSelection.key) state.selected = initialSelection;
+    renderSelectedToken();
+    ensureSelectedTokenData();
+  }
+
+  function loadDiagnosticFallback() {
+    state.backend = {
+      ok: false,
+      mode: 'diagnostic-fallback',
+      updatedAt: null,
+      warnings: ['Backend bootstrap unavailable; using direct public source diagnostics.'],
+    };
+    pingAllSources();
+    var alcorApi = window.WAXONEDGE_ALCOR_API || 'https://wax.alcor.exchange/api/v2';
+    var alcorPaths = window.WAXONEDGE_ALCOR_PATHS || {};
+    var tokenUrl = alcorApi + (alcorPaths.tokens || '/tokens');
+    var pairsUrl = alcorApi + (alcorPaths.pairs || '/pairs');
+    var tickerUrl = alcorApi + (alcorPaths.tickers || '/tickers');
+    var analyticsUrl = alcorApi + (alcorPaths.analyticsGlobal || '/analytics/global');
+
+    return Promise.all([
+      apiFetch(tokenUrl),
+      apiFetch(pairsUrl),
+      apiFetch(tickerUrl),
+      apiFetch(analyticsUrl),
+      loadNeftyAdapter(),
+    ]).then(function (results) {
+      state.tokens = Array.isArray(results[0]) ? results[0] : [];
+      state.pairs = Array.isArray(results[1]) ? results[1] : [];
+      state.tickers = Array.isArray(results[2]) ? results[2] : [];
+      state.globalAnalytics = results[3] && typeof results[3] === 'object' ? results[3] : null;
+      state.neftyMarkets = Array.isArray(results[4]) ? results[4] : [];
+      renderLoadedData();
+    });
+  }
+
   /** WAX RPC POST helper with sequential fallbacks. */
   function rpcPost(path, body) {
     return new Promise(function (resolve) {
@@ -397,6 +589,8 @@
 
     add(pair && pair.base_token);
     add(pair && pair.quote_token);
+    add(pair && pair.base);
+    add(pair && pair.target);
     add(pair && pair.pool1);
     add(pair && pair.pool2);
     add(pair && pair.token0);
@@ -456,6 +650,8 @@
       if (ticker == null) return;
       var marketId = ticker.market_id != null ? String(ticker.market_id) : '';
       if (marketId) index.byMarketId[marketId] = ticker;
+      var tickerId = ticker.ticker_id != null ? String(ticker.ticker_id) : '';
+      if (tickerId) index.byMarketId[tickerId] = ticker;
       var symbol = normalizePairLabel(ticker.symbol || pairLabel(ticker.base_currency, ticker.target_currency));
       if (symbol) index.bySymbol[symbol] = ticker;
     });
@@ -556,33 +752,34 @@
       var volume24Text = volume24 != null
         ? fmtNum(volume24) + (tokenA.symbol ? ' ' + tokenA.symbol : '')
         : UNAVAILABLE_TEXT;
+      var sourceInfo = pair && pair.adapter ? backendSourceMeta(pair.adapter) : null;
 
       markets.push({
-        adapter: 'alcor',
-        source: 'Alcor',
-        sourceMeta: 'Alcor /pairs + /tickers',
-        sourceSort: 1,
+        adapter: pair && pair.adapter ? pair.adapter : 'alcor',
+        source: pair && pair.source ? pair.source : 'Alcor',
+        sourceMeta: pair && pair.sourceMeta ? pair.sourceMeta : 'Alcor /pairs + /tickers',
+        sourceSort: pair && pair.sourceSort != null ? pair.sourceSort : (sourceInfo ? sourceInfo.sort : 1),
         marketId: marketId,
         rankMetric: liquidity.usd != null ? liquidity.usd : (volume24 != null ? volume24 : 0),
         feeTier: formatFeeTier(pair && pair.fee),
         tokenA: tokenA,
         tokenB: tokenB,
-        liquidityWax: liquidity.wax,
-        liquidityUsd: liquidity.usd,
-        liquidityText: formatDualMetric(liquidity.wax, liquidity.usd),
+        liquidityWax: pair && pair.liquidityWax != null ? asNum(pair.liquidityWax) : liquidity.wax,
+        liquidityUsd: pair && pair.liquidityUsd != null ? asNum(pair.liquidityUsd) : liquidity.usd,
+        liquidityText: pair && pair.liquidityText ? pair.liquidityText : formatDualMetric(liquidity.wax, liquidity.usd),
         currentPrice: lastPrice,
         currentPriceText: currentPriceText,
         change24: change24,
         volume24: volume24,
         volume24Text: volume24Text,
-        volume7dText: UNAVAILABLE_TEXT,
-        volume30dText: UNAVAILABLE_TEXT,
-        pooledTokenAText: tokenA.quantity || UNAVAILABLE_TEXT,
-        pooledTokenBText: tokenB.quantity || UNAVAILABLE_TEXT,
-        explorerUrl: marketId
+        volume7dText: pair && pair.volume7dText ? pair.volume7dText : UNAVAILABLE_TEXT,
+        volume30dText: pair && pair.volume30dText ? pair.volume30dText : UNAVAILABLE_TEXT,
+        pooledTokenAText: pair && pair.pooledTokenAText ? pair.pooledTokenAText : (tokenA.quantity || UNAVAILABLE_TEXT),
+        pooledTokenBText: pair && pair.pooledTokenBText ? pair.pooledTokenBText : (tokenB.quantity || UNAVAILABLE_TEXT),
+        explorerUrl: pair && pair.explorerUrl ? pair.explorerUrl : (marketId
           ? 'https://wax.alcor.exchange/trade/' + encodeURIComponent(marketId)
-          : 'https://wax.alcor.exchange',
-        explorerLabel: marketId ? 'Alcor market ↗' : 'Alcor ↗',
+          : 'https://wax.alcor.exchange'),
+        explorerLabel: pair && pair.explorerLabel ? pair.explorerLabel + ' ->' : (marketId ? 'Alcor market ->' : 'Alcor ->'),
       });
     });
 
@@ -1037,6 +1234,7 @@
     });
 
     var primaryAlcorMarket = alcorMarkets[0] || null;
+    var chartMarket = state.backend.mode === 'backend' ? null : primaryAlcorMarket;
     var primaryVolumeMarket = alcorMarkets.find(function (market) {
       return market.tokenA && market.tokenA.key === selection.key && market.volume24 != null;
     }) || null;
@@ -1075,6 +1273,7 @@
       token: tokenRecord,
       markets: relevantMarkets,
       primaryAlcorMarket: primaryAlcorMarket,
+      chartMarket: chartMarket,
       primaryVolumeMarket: primaryVolumeMarket,
       pairLiquidityWax: pairLiquidityWax,
       pairLiquidityUsd: pairLiquidityUsd,
@@ -1162,6 +1361,47 @@
     if (hasOwn(state.chartCache, marketId)) return Promise.resolve(state.chartCache[marketId]);
     if (state.chartPending[marketId]) return Promise.resolve(null);
 
+    if (state.backend.mode === 'backend') {
+      var backendChartKey = marketId;
+      var chartContract = state.selected.contract;
+      var chartSymbol = state.selected.symbol;
+      state.chartPending[backendChartKey] = true;
+      return waxonedgeApi('/token/' + encodeURIComponent(chartContract) + '/' + encodeURIComponent(chartSymbol) + '/chart')
+        .then(function (payload) {
+          var chartData = payload && payload.ok && payload.data ? payload.data : {};
+          var candleRows = Array.isArray(chartData.candles) ? chartData.candles : [];
+          var candles = candleRows.map(function (row) {
+            return {
+              time: new Date(row.bucket_time || row.time).getTime(),
+              open: asNum(row.open),
+              high: asNum(row.high),
+              low: asNum(row.low),
+              close: asNum(row.close),
+              volume: asNum(row.volume),
+            };
+          }).filter(function (candle) {
+            return candle.time && candle.close != null;
+          });
+          state.chartCache[backendChartKey] = {
+            marketId: backendChartKey,
+            source: chartData.chart_source || null,
+            unavailable: chartData.unavailable || null,
+            candles: candles,
+          };
+          return state.chartCache[backendChartKey];
+        }).catch(function () {
+          state.chartCache[backendChartKey] = {
+            marketId: backendChartKey,
+            source: null,
+            unavailable: SOURCE_NOT_INDEXED_TEXT,
+            candles: [],
+          };
+          return state.chartCache[backendChartKey];
+        }).finally(function () {
+          delete state.chartPending[backendChartKey];
+        });
+    }
+
     state.chartPending[marketId] = true;
     var alcorApi = window.WAXONEDGE_ALCOR_API || 'https://wax.alcor.exchange/api/v2';
     var paths = window.WAXONEDGE_ALCOR_PATHS || {};
@@ -1177,8 +1417,15 @@
         marketId: marketId,
         candles: candles,
       };
-      delete state.chartPending[marketId];
       return state.chartCache[marketId];
+    }).catch(function () {
+      state.chartCache[marketId] = {
+        marketId: marketId,
+        candles: [],
+      };
+      return state.chartCache[marketId];
+    }).finally(function () {
+      delete state.chartPending[marketId];
     });
   }
 
@@ -1216,6 +1463,62 @@
     return volumes;
   }
 
+  function renderLightweightCandles(containerId, candles) {
+    var host = document.getElementById(containerId);
+    var tv = window.LightweightCharts;
+    if (!host || !tv || typeof tv.createChart !== 'function') return false;
+    var candleSeriesFactory = tv.CandlestickSeries || null;
+    var data = candles.map(function (candle) {
+      return {
+        time: Math.floor(candle.time / 1000),
+        open: candle.open != null ? candle.open : candle.close,
+        high: candle.high != null ? candle.high : candle.close,
+        low: candle.low != null ? candle.low : candle.close,
+        close: candle.close,
+      };
+    });
+    if (!data.length) return false;
+    host.innerHTML = '';
+    var chart = tv.createChart(host, {
+      autoSize: true,
+      height: 320,
+      layout: {
+        background: { type: 'solid', color: 'transparent' },
+        textColor: '#dbe7f3',
+      },
+      grid: {
+        vertLines: { color: 'rgba(148, 163, 184, 0.14)' },
+        horzLines: { color: 'rgba(148, 163, 184, 0.14)' },
+      },
+      rightPriceScale: {
+        borderColor: 'rgba(148, 163, 184, 0.25)',
+      },
+      timeScale: {
+        borderColor: 'rgba(148, 163, 184, 0.25)',
+      },
+    });
+    var series = candleSeriesFactory && typeof chart.addSeries === 'function'
+      ? chart.addSeries(candleSeriesFactory, {
+        upColor: '#00e6b0',
+        downColor: '#ff4d6d',
+        borderUpColor: '#00e6b0',
+        borderDownColor: '#ff4d6d',
+        wickUpColor: '#00e6b0',
+        wickDownColor: '#ff4d6d',
+      })
+      : chart.addCandlestickSeries({
+        upColor: '#00e6b0',
+        downColor: '#ff4d6d',
+        borderUpColor: '#00e6b0',
+        borderDownColor: '#ff4d6d',
+        wickUpColor: '#00e6b0',
+        wickDownColor: '#ff4d6d',
+      });
+    series.setData(data);
+    chart.timeScale().fitContent();
+    return true;
+  }
+
   function renderTokenSummary(context) {
     var token = context.token;
     var summaryHtml = '<h2 class="woe-token-summary-title">' + escHtml(token.symbol || context.selection.symbol || 'Token') + '</h2>' +
@@ -1244,7 +1547,7 @@
     var chainStat = state.chainStatCache[selection.key] || null;
     var supply = chainStat && chainStat.supply ? chainStat.supply : null;
     var maxSupply = chainStat && chainStat.maxSupply ? chainStat.maxSupply : null;
-    var chartBundle = context.primaryAlcorMarket ? state.chartCache[context.primaryAlcorMarket.marketId] : null;
+    var chartBundle = context.chartMarket ? state.chartCache[context.chartMarket.marketId] : state.chartCache['backend:' + selection.key];
     var historicalVolumes = computeHistoricalVolumes(chartBundle);
     var canUsePrimaryVolume = context.primaryVolumeMarket && context.primaryVolumeMarket.tokenA && context.primaryVolumeMarket.tokenA.key === selection.key;
     var canUseChartVolumes = context.primaryAlcorMarket && context.primaryAlcorMarket.tokenA && context.primaryAlcorMarket.tokenA.key === selection.key;
@@ -1301,11 +1604,46 @@
   }
 
   function renderChart(context) {
-    var market = context.primaryAlcorMarket;
+    var backendChartMeta = '';
+    if (state.backend.mode === 'backend') {
+      var backendKey = 'backend:' + context.selection.key;
+      var backendBundle = state.chartCache[backendKey];
+      if (state.chartPending[backendKey] && !backendBundle) {
+        setHtml('woe-chart-panel', '<p class="woe-loading">Checking indexed chart candles for the best available source.</p>');
+        setText('woe-chart-meta', 'Selecting chart source by indexed candles, volume, and liquidity');
+        return;
+      }
+      if (!backendBundle || !Array.isArray(backendBundle.candles) || backendBundle.candles.length === 0) {
+        setHtml('woe-chart-panel',
+          '<div class="woe-chart-empty">Source not indexed yet. No fake chart candles are shown.</div>');
+        setText('woe-chart-meta', 'Requires indexed backend candles');
+        return;
+      }
+      var backendSource = backendBundle.source || {};
+      var backendMarket = {
+        marketId: backendSource.pair_id || backendSource.pairId || backendKey,
+        tokenA: {
+          contract: backendSource.token_a_contract || context.selection.contract,
+          symbol: backendSource.token_a_symbol || context.selection.symbol,
+        },
+        tokenB: {
+          contract: backendSource.token_b_contract || '',
+          symbol: backendSource.token_b_symbol || '',
+        },
+        currentPriceText: UNAVAILABLE_TEXT,
+        change24: null,
+      };
+      backendChartMeta = backendSource.source
+        ? 'Indexed candles from ' + backendSource.source + ' #' + backendMarket.marketId
+        : 'Indexed backend candles';
+      return renderChartBundle(backendBundle, backendMarket, backendChartMeta);
+    }
+
+    var market = context.chartMarket;
     if (!market || !market.marketId) {
       setHtml('woe-chart-panel',
-        '<div class="woe-chart-empty">No Alcor market is available for this token yet, so a chart cannot be rendered.</div>');
-      setText('woe-chart-meta', 'Primary Alcor market candles when available');
+        '<div class="woe-chart-empty">Source not indexed yet. No fake chart candles are shown.</div>');
+      setText('woe-chart-meta', 'Best chartable indexed pair when available');
       return;
     }
 
@@ -1323,71 +1661,13 @@
       return;
     }
 
+    return renderChartBundle(bundle, market, 'Alcor /markets/' + market.marketId + '/charts - 30 day window');
+  }
+
+  function renderChartBundle(bundle, market, chartMetaLabel) {
     var candles = bundle.candles.slice(-30);
-    var width = 760;
-    var height = 320;
-    var leftPad = 44;
-    var rightPad = 12;
-    var topPad = 12;
-    var bottomPad = 70;
-    var plotWidth = width - leftPad - rightPad;
-    var plotHeight = height - topPad - bottomPad;
-    var volumeHeight = 52;
-    var closes = candles.map(function (c) { return c.close; });
-    var highs = candles.map(function (c) { return c.high != null ? c.high : c.close; });
-    var lows = candles.map(function (c) { return c.low != null ? c.low : c.close; });
-    var minPrice = Math.min.apply(null, lows);
-    var maxPrice = Math.max.apply(null, highs);
-    var priceRange = Math.max(maxPrice - minPrice, 0.0000001);
-    var maxVolume = Math.max.apply(null, candles.map(function (c) { return c.volume || 0; }).concat([1]));
-    var step = candles.length > 1 ? plotWidth / (candles.length - 1) : plotWidth;
-
-    function xAt(index) {
-      return leftPad + (step * index);
-    }
-
-    function yAt(price) {
-      return topPad + ((maxPrice - price) / priceRange) * plotHeight;
-    }
-
-    var points = candles.map(function (candle, index) {
-      return xAt(index).toFixed(2) + ',' + yAt(candle.close).toFixed(2);
-    }).join(' ');
-    var areaPath = candles.map(function (candle, index) {
-      return (index === 0 ? 'M' : 'L') + xAt(index).toFixed(2) + ' ' + yAt(candle.close).toFixed(2);
-    }).join(' ') +
-      ' L ' + xAt(candles.length - 1).toFixed(2) + ' ' + (topPad + plotHeight).toFixed(2) +
-      ' L ' + xAt(0).toFixed(2) + ' ' + (topPad + plotHeight).toFixed(2) + ' Z';
-
-    var gridLines = [0, 0.25, 0.5, 0.75, 1].map(function (ratio) {
-      var y = topPad + (plotHeight * ratio);
-      return '<line class="woe-chart-grid" x1="' + leftPad + '" y1="' + y.toFixed(2) + '" x2="' + (width - rightPad) + '" y2="' + y.toFixed(2) + '"></line>';
-    }).join('');
-
-    var priceLabels = [maxPrice, maxPrice - (priceRange / 2), minPrice].map(function (price, index) {
-      var y = index === 0 ? topPad + 4 : index === 1 ? topPad + (plotHeight / 2) : topPad + plotHeight;
-      return '<text class="woe-chart-axis" x="' + (width - rightPad) + '" y="' + y.toFixed(2) + '" text-anchor="end">' + escHtml(fmtPrice(price)) + '</text>';
-    }).join('');
-
-    var xLabels = [
-      { x: leftPad, label: fmtDate(candles[0].time) },
-      { x: leftPad + (plotWidth / 2), label: fmtDate(candles[Math.floor(candles.length / 2)].time) },
-      { x: width - rightPad, label: fmtDate(candles[candles.length - 1].time) },
-    ].map(function (entry) {
-      return '<text class="woe-chart-axis" x="' + entry.x.toFixed(2) + '" y="' + (height - 18) + '" text-anchor="middle">' + escHtml(entry.label) + '</text>';
-    }).join('');
-
-    var barWidth = Math.max(4, Math.floor(plotWidth / Math.max(candles.length, 12)) - 2);
-    var bars = candles.map(function (candle, index) {
-      var volume = candle.volume || 0;
-      var barHeight = Math.max(2, (volume / maxVolume) * volumeHeight);
-      var barY = topPad + plotHeight + 10 + (volumeHeight - barHeight);
-      var cls = candle.open != null && candle.close < candle.open ? 'woe-chart-bar-down' : '';
-      return '<rect class="woe-chart-bar ' + cls + '" x="' + (xAt(index) - (barWidth / 2)).toFixed(2) + '" y="' + barY.toFixed(2) + '"' +
-        ' width="' + barWidth + '" height="' + barHeight.toFixed(2) + '"></rect>';
-    }).join('');
-
     var historicalVolumes = computeHistoricalVolumes(bundle);
+    var chartHostId = 'woe-lightweight-chart-' + String(bundle.marketId || market.marketId || 'chart').replace(/[^a-z0-9_-]/gi, '-');
     var summaryHtml = '<div class="woe-chart-summary">' +
       '<span><strong>Market:</strong> #' + escHtml(market.marketId) + ' (' + escHtml(describeToken(market.tokenA)) + ' / ' + escHtml(describeToken(market.tokenB)) + ')</span>' +
       '<span><strong>Last:</strong> ' + escHtml(market.currentPriceText) + '</span>' +
@@ -1395,30 +1675,27 @@
       '<span><strong>30d candles:</strong> ' + escHtml(String(candles.length)) + '</span>' +
       '<span><strong>7d volume:</strong> ' + escHtml(historicalVolumes && historicalVolumes.sevenDay != null ? fmtNum(historicalVolumes.sevenDay) + ' ' + (market.tokenA.symbol || '') : UNAVAILABLE_TEXT) + '</span>' +
     '</div>';
-
-    var svgHtml = '<svg class="woe-chart-svg" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="30 day token price chart">' +
-      gridLines +
-      '<path class="woe-chart-price-fill" d="' + areaPath + '"></path>' +
-      '<polyline class="woe-chart-price-line" points="' + points + '"></polyline>' +
-      bars +
-      priceLabels +
-      xLabels +
-    '</svg>';
-
-    setHtml('woe-chart-panel', summaryHtml + svgHtml);
-    setText('woe-chart-meta', 'Alcor /markets/' + market.marketId + '/charts · 30 day window');
+    setHtml('woe-chart-panel', summaryHtml + '<div id="' + escHtml(chartHostId) + '" class="woe-lightweight-chart" role="img" aria-label="Indexed OHLCV candlestick chart"></div>');
+    if (!renderLightweightCandles(chartHostId, candles)) {
+      setHtml('woe-chart-panel', summaryHtml + '<div class="woe-chart-empty">Source not indexed yet. Lightweight Charts renderer unavailable, and no fallback fake chart is shown.</div>');
+    }
+    setText('woe-chart-meta', chartMetaLabel);
   }
 
   function renderMatrix(context) {
     var rows = context.markets;
     var matrixMeta = [];
-    matrixMeta.push('Adapters active: Alcor + swap.nefty');
-    if (state.neftyDetectedTables.length > 0) {
-      matrixMeta.push('swap.nefty ABI tables: ' + state.neftyDetectedTables.join(', '));
+    if (state.backend.mode === 'backend') {
+      matrixMeta.push('Adapters active: Alcor API + swap.alcor + swap.taco + swap.nefty + swap.box');
     } else {
+      matrixMeta.push('Diagnostic fallback active - backend adapter status unavailable');
+    }
+    if (state.backend.mode === 'backend' && state.neftyDetectedTables.length > 0) {
+      matrixMeta.push('swap.nefty ABI tables: ' + state.neftyDetectedTables.join(', '));
+    } else if (state.backend.mode === 'backend') {
       matrixMeta.push('swap.nefty ABI tables unavailable');
     }
-    if (state.neftyTableUsed) {
+    if (state.backend.mode === 'backend' && state.neftyTableUsed) {
       matrixMeta.push('reading table: ' + state.neftyTableUsed);
     }
     setText('woe-matrix-meta', matrixMeta.join(' · '));
@@ -1540,8 +1817,12 @@
     if (!state.selected.key) return;
     var context = getSelectedTokenContext();
     ensureSelectedChainStat(context.selection);
-    if (context.primaryAlcorMarket && context.primaryAlcorMarket.marketId) {
-      loadChartData(context.primaryAlcorMarket.marketId).then(function () {
+    if (state.backend.mode === 'backend') {
+      loadChartData('backend:' + context.selection.key).then(function () {
+        if (state.selected.key === context.selection.key) renderSelectedToken();
+      });
+    } else if (context.chartMarket && context.chartMarket.marketId) {
+      loadChartData(context.chartMarket.marketId).then(function () {
         if (state.selected.key === context.selection.key) renderSelectedToken();
       });
     }
@@ -1652,7 +1933,6 @@
     }
 
     renderSourceCards();
-    pingAllSources();
     attachGlobalSearch();
     renderHolderPlaceholder();
     attachTableSort('woe-table-tokens');
@@ -1660,38 +1940,12 @@
     attachTableFilter('woe-filter-tokens', 'woe-table-tokens');
     attachTableFilter('woe-filter-matrix', 'woe-table-matrix');
 
-    var alcorApi = window.WAXONEDGE_ALCOR_API || 'https://wax.alcor.exchange/api/v2';
-    var alcorPaths = window.WAXONEDGE_ALCOR_PATHS || {};
-    var tokenUrl = alcorApi + (alcorPaths.tokens || '/tokens');
-    var pairsUrl = alcorApi + (alcorPaths.pairs || '/pairs');
-    var tickerUrl = alcorApi + (alcorPaths.tickers || '/tickers');
-    var analyticsUrl = alcorApi + (alcorPaths.analyticsGlobal || '/analytics/global');
-
-    Promise.all([
-      apiFetch(tokenUrl),
-      apiFetch(pairsUrl),
-      apiFetch(tickerUrl),
-      apiFetch(analyticsUrl),
-      loadNeftyAdapter(),
-    ]).then(function (results) {
-      state.tokens = Array.isArray(results[0]) ? results[0] : [];
-      state.pairs = Array.isArray(results[1]) ? results[1] : [];
-      state.tickers = Array.isArray(results[2]) ? results[2] : [];
-      state.globalAnalytics = results[3] && typeof results[3] === 'object' ? results[3] : null;
-      state.neftyMarkets = Array.isArray(results[4]) ? results[4] : [];
-      state.tokenMap = buildTokenMap(state.tokens);
-      state.pairIndex = buildPairIndex(state.pairs);
-      state.alcorMarkets = buildAlcorMarkets(state.pairs, state.tickers);
-      updateTopBarWaxPrice();
-
-      updateRiskFlags();
-      var initialSelection = pickDefaultSelection();
-      renderTokens();
-      if (initialSelection.key) {
-        state.selected = initialSelection;
+    waxonedgeApi('/bootstrap').then(function (payload) {
+      if (applyBackendBootstrap(payload)) {
+        renderLoadedData();
+        return;
       }
-      renderSelectedToken();
-      ensureSelectedTokenData();
+      return loadDiagnosticFallback();
     });
 
     window.addEventListener('popstate', function () {
