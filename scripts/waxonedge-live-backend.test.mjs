@@ -146,6 +146,15 @@ ok('frontend renders indexed candles with TradingView Lightweight Charts, not sy
   frontend.includes('tv.createChart') &&
   frontend.includes('CandlestickSeries') &&
   !frontend.includes('TradingView.widget'));
+ok('frontend only labels 24h volume when selected token is base/tokenA',
+  frontend.includes('function isSelectedTokenBaseMarket(market, selection)') &&
+  frontend.includes('market.volume24 != null && isSelectedTokenBaseMarket(market, selection)') &&
+  frontend.includes('context.primaryVolumeMarket.volume24 != null && isSelectedTokenBaseMarket(context.primaryVolumeMarket, selection)'));
+ok('frontend only labels historical candle volume when chart source tokenA matches selection',
+  frontend.includes('function chartBundleHasSelectedBaseVolume(chartBundle, context)') &&
+  frontend.includes('var canUseHistoricalVolumes = chartBundleHasSelectedBaseVolume(chartBundle, context)') &&
+  frontend.includes('canUseHistoricalVolumes && historicalVolumes && historicalVolumes.sevenDay != null') &&
+  frontend.includes('canUseHistoricalVolumes && historicalVolumes && historicalVolumes.thirtyDay != null'));
 ok('frontend fallback mode does not claim indexed backend adapters',
   frontend.includes('Diagnostic fallback active - backend adapter status unavailable') &&
   frontend.includes("if (state.backend.mode === 'backend')") &&

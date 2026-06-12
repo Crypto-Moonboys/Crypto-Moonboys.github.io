@@ -1377,7 +1377,7 @@
     var strongestMarket = relevantMarkets[0] || null;
     var chartMarket = state.backend.mode === 'backend' ? null : primaryAlcorMarket;
     var primaryVolumeMarket = relevantMarkets.find(function (market) {
-      return market.volume24 != null;
+      return market.volume24 != null && isSelectedTokenBaseMarket(market, selection);
     }) || null;
 
     var tokenLockedAmount = 0;
@@ -1431,6 +1431,20 @@
       maxSupply: parseAsset(statRow.max_supply),
       issuer: statRow.issuer || '',
     };
+  }
+
+  function isSelectedTokenBaseMarket(market, selection) {
+    if (!market || !selection || !selection.key || !market.tokenA) return false;
+    var tokenAKey = market.tokenA.key || tokenKey(market.tokenA.contract, market.tokenA.symbol);
+    return tokenAKey === selection.key;
+  }
+
+  function chartBundleHasSelectedBaseVolume(chartBundle, context) {
+    if (!chartBundle || !context || !context.selection) return false;
+    if (context.chartMarket) return isSelectedTokenBaseMarket(context.chartMarket, context.selection);
+    var source = chartBundle.source || chartBundle.chart_source || null;
+    if (!source) return false;
+    return tokenKey(source.token_a_contract, source.token_a_symbol) === context.selection.key;
   }
 
   function ensureSelectedChainStat(selection) {
@@ -1691,6 +1705,7 @@
     var maxSupply = chainStat && chainStat.maxSupply ? chainStat.maxSupply : null;
     var chartBundle = context.chartMarket ? state.chartCache[context.chartMarket.marketId] : state.chartCache['backend:' + selection.key];
     var historicalVolumes = computeHistoricalVolumes(chartBundle);
+    var canUseHistoricalVolumes = chartBundleHasSelectedBaseVolume(chartBundle, context);
     var currentPriceWax = token.systemPrice;
     var currentPriceUsd = token.usdPrice;
     var sourceNames = uniqueList(context.markets.map(function (market) {
@@ -1727,7 +1742,7 @@
     statsHtml += statRow('24h price change', context.strongestMarket && context.strongestMarket.change24 != null
       ? '<span class="' + escHtml(pctClass(context.strongestMarket.change24)) + '">' + escHtml(fmtPct(context.strongestMarket.change24)) + '</span>'
       : availabilityHtml());
-    statsHtml += statRow('24h volume', context.primaryVolumeMarket && context.primaryVolumeMarket.volume24 != null
+    statsHtml += statRow('24h volume', context.primaryVolumeMarket && context.primaryVolumeMarket.volume24 != null && isSelectedTokenBaseMarket(context.primaryVolumeMarket, selection)
       ? escHtml(context.primaryVolumeMarket.volume24Text)
       : availabilityHtml());
     statsHtml += statRow('Total liquidity', context.pairLiquidityWax != null || context.pairLiquidityUsd != null
@@ -1745,10 +1760,10 @@
     statsHtml += statRow('TVL', context.tokenTvlWax != null || context.tokenTvlUsd != null
       ? escHtml(formatDualMetric(context.tokenTvlWax, context.tokenTvlUsd))
       : availabilityHtml());
-    statsHtml += statRow('7d volume', historicalVolumes && historicalVolumes.sevenDay != null
+    statsHtml += statRow('7d volume', canUseHistoricalVolumes && historicalVolumes && historicalVolumes.sevenDay != null
       ? escHtml(fmtNum(historicalVolumes.sevenDay) + ' ' + selection.symbol)
       : availabilityHtml());
-    statsHtml += statRow('30d volume', historicalVolumes && historicalVolumes.thirtyDay != null
+    statsHtml += statRow('30d volume', canUseHistoricalVolumes && historicalVolumes && historicalVolumes.thirtyDay != null
       ? escHtml(fmtNum(historicalVolumes.thirtyDay) + ' ' + selection.symbol)
       : availabilityHtml());
     statsHtml += statRow('Market cap', availabilityHtml(), { muted: true });
@@ -1799,12 +1814,14 @@
       var backendMarket = {
         marketId: backendSource.pair_id || backendSource.pairId || backendKey,
         tokenA: {
-          contract: backendSource.token_a_contract || context.selection.contract,
-          symbol: backendSource.token_a_symbol || context.selection.symbol,
+          contract: backendSource.token_a_contract || '',
+          symbol: backendSource.token_a_symbol || '',
+          key: tokenKey(backendSource.token_a_contract, backendSource.token_a_symbol),
         },
         tokenB: {
           contract: backendSource.token_b_contract || '',
           symbol: backendSource.token_b_symbol || '',
+          key: tokenKey(backendSource.token_b_contract, backendSource.token_b_symbol),
         },
         currentPriceText: UNAVAILABLE_TEXT,
         change24: null,
