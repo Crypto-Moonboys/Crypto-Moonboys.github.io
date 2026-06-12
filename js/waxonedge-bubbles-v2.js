@@ -300,7 +300,7 @@
             var dx = x - other.x;
             var dy = y - other.y;
             var min = (r + other.r) * 0.78;
-            return Math.sqrt((dx * dx) + (dy * dy)) < min;
+            return ((dx * dx) + (dy * dy)) < (min * min);
           });
           if (!collides) {
             point = { x: x, y: y };
@@ -332,6 +332,11 @@
     }).slice(0, 99);
   }
 
+  function getActiveTokenKey() {
+    var params = new URLSearchParams(window.location.search || '');
+    return tokenKey(params.get('contract'), params.get('token'));
+  }
+
   function renderRail(records, controls) {
     var totalLiquidityWax = records.reduce(function (sum, record) { return sum + (record.liquidityWax || 0); }, 0);
     var totalVolume = records.reduce(function (sum, record) { return sum + (record.volume24 || 0); }, 0);
@@ -339,12 +344,28 @@
     records.forEach(function (record) {
       Object.keys(record.sources || {}).forEach(function (source) { sources[source] = true; });
     });
-    return '<div class="woe-v2-rail" aria-label="Visible bubble market summary">' +
+    return '<div class="woe-v2-rail" role="group" aria-label="Visible bubble market summary">' +
       '<div><span>View</span><strong>Top ' + escHtml(String(records.length)) + '</strong><em>' + escHtml(metricLabel(controls.metric)) + '</em></div>' +
       '<div><span>Liquidity</span><strong>' + escHtml(fmtNum(totalLiquidityWax)) + ' WAX</strong><em>visible tokens</em></div>' +
       '<div><span>24h Volume</span><strong>' + escHtml(fmtNum(totalVolume)) + '</strong><em>reported rows</em></div>' +
       '<div><span>Sources</span><strong>' + escHtml(String(Object.keys(sources).length)) + '</strong><em>' + escHtml(Object.keys(sources).map(sourceLabel).slice(0, 3).join(' / ') || 'pending') + '</em></div>' +
     '</div>';
+  }
+
+  function beginBoardWrite() {
+    state.rendering = true;
+  }
+
+  function endBoardWrite() {
+    window.setTimeout(function () {
+      state.rendering = false;
+    }, 0);
+  }
+
+  function commitBoardHtml(board, html) {
+    beginBoardWrite();
+    board.innerHTML = html;
+    endBoardWrite();
   }
 
   function renderBubbles() {
@@ -353,10 +374,8 @@
     var controls = readControls();
     var records = getVisibleRecords(controls);
     if (!records.length) {
-      state.rendering = true;
       board.classList.add('woe-v2-board');
-      board.innerHTML = '<div class="woe-v2-map-shell"><div class="woe-chart-empty">No indexed tokens match the current filters.</div></div>';
-      state.rendering = false;
+      commitBoardHtml(board, '<div class="woe-v2-map-shell"><div class="woe-chart-empty">No indexed tokens match the current filters.</div></div>');
       return;
     }
 
@@ -369,13 +388,14 @@
       return { record: record, index: index, ratio: ratio, size: size };
     });
     var height = buildLayout(decorated, board);
+    var activeKey = getActiveTokenKey();
     var bubbleHtml = decorated.map(function (item) {
       var record = item.record;
       var change = asNum(record.change24);
-      var active = tokenKey(new URLSearchParams(window.location.search || '').get('contract'), new URLSearchParams(window.location.search || '').get('token')) === record.key;
+      var active = activeKey === record.key;
       var pairSource = record.strongestPair && record.strongestPair.source ? sourceLabel(record.strongestPair.source) : 'No pair';
       return '<button class="woe-bubble-token woe-v2-bubble ' + escHtml(classForChange(record)) + (active ? ' woe-v2-bubble-active' : '') + '" type="button"' +
-        ' data-token="' + escHtml(record.symbol) + '" data-contract="' + escHtml(record.contract) + '"' +
+        ' data-bound="true" data-token="' + escHtml(record.symbol) + '" data-contract="' + escHtml(record.contract) + '"' +
         ' style="--bubble-size:' + escHtml(String(item.size)) + 'px;--bubble-glow:' + escHtml(String(Math.round(16 + item.ratio * 46))) + 'px;--x:' + escHtml(item.x.toFixed(3)) + ';--y:' + escHtml(item.y.toFixed(3)) + ';--delay:' + escHtml(String((item.index % 9) * -0.7)) + 's;"' +
         ' title="' + escHtml(record.symbol + ' @ ' + record.contract + ' · ' + bubbleSubtitle(record, controls.metric)) + '">' +
           '<span class="woe-bubble-rank">#' + escHtml(String(item.index + 1)) + '</span>' +
@@ -388,15 +408,13 @@
         '</button>';
     }).join('');
 
-    state.rendering = true;
     board.classList.add('woe-v2-board');
     board.setAttribute('aria-label', 'WaxOnEdge visual bubble map for indexed WAX tokens');
-    board.innerHTML = '<div class="woe-v2-map-shell">' +
+    commitBoardHtml(board, '<div class="woe-v2-map-shell">' +
       renderRail(records, controls) +
       '<div class="woe-v2-map-note">Bubble size follows ' + escHtml(metricLabel(controls.metric)) + '. Colour follows indexed 24h change where available. Missing data is left as unavailable.</div>' +
       '<div class="woe-v2-bubble-cloud" style="--cloud-height:' + escHtml(String(height)) + 'px;">' + bubbleHtml + '</div>' +
-    '</div>';
-    state.rendering = false;
+    '</div>');
   }
 
   function navigateToToken(symbol, contract) {
@@ -426,6 +444,7 @@
       var bubble = event.target && event.target.closest ? event.target.closest('.woe-v2-bubble') : null;
       if (!bubble) return;
       event.preventDefault();
+      event.stopPropagation();
       navigateToToken(bubble.getAttribute('data-token'), bubble.getAttribute('data-contract'));
     });
   }
