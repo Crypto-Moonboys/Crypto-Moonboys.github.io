@@ -212,8 +212,8 @@ function buildAliases(samEntity, canonicalSlug) {
   };
 
   if (samEntity) {
-    (samEntity.aliases || []).forEach(pushAlias);
-    (samEntity.alias_candidates || []).forEach(pushAlias);
+    (samEntity.aliases || []).forEach(value => pushAlias(value));
+    (samEntity.alias_candidates || []).forEach(value => pushAlias(value));
   }
 
   for (const aliasSlug of getAliasesForCanonicalSlug(canonicalSlug)) {

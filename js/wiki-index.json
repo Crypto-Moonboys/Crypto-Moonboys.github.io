@@ -13,19 +13,26 @@
     "aliases": [
       {
         "title": "graffpunks crypto moonboys wiki"
+      },
+      {
+        "title": "Graffpunks Network"
+      },
+      {
+        "title": "Graffpunks Network",
+        "url": "/wiki/graffpunks-network.html"
       }
     ],
-    "rank_score": 787,
+    "rank_score": 794,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 1,
+      "alias_count": 3,
       "tag_count": 4,
       "mention_count": 0,
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
       "article_word_count": 11330,
-      "keyword_bag_size": 22,
+      "keyword_bag_size": 23,
       "heading_count": 7,
       "list_count": 4,
       "internal_link_count": 0,
@@ -40,10 +47,10 @@
       "description_points": 10,
       "category_points": 40,
       "word_count_points": 567,
-      "keyword_bag_points": 22,
-      "content_quality_points": 110,
+      "keyword_bag_points": 23,
+      "content_quality_points": 116,
       "authority_points": 18,
-      "final_rank_score": 787,
+      "final_rank_score": 794,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -76,7 +83,8 @@
         "art",
         "fused",
         "with",
-        "disrup"
+        "disrup",
+        "network"
       ]
     },
     "link_score": {
@@ -192,12 +200,19 @@
     "aliases": [
       {
         "title": "hodl wars crypto moonboys wiki"
+      },
+      {
+        "title": "Hodl Wars Game"
+      },
+      {
+        "title": "Hodl Wars Game",
+        "url": "/wiki/hodl-wars-game.html"
       }
     ],
-    "rank_score": 731,
+    "rank_score": 737,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 1,
+      "alias_count": 3,
       "tag_count": 5,
       "mention_count": 0,
       "category": "factions",
@@ -220,9 +235,9 @@
       "category_points": 35,
       "word_count_points": 214,
       "keyword_bag_points": 25,
-      "content_quality_points": 115,
+      "content_quality_points": 121,
       "authority_points": 312,
-      "final_rank_score": 731,
+      "final_rank_score": 737,
       "authority_graph_points": 294
     },
     "search_index": {
@@ -468,19 +483,26 @@
     "aliases": [
       {
         "title": "hodl warriors crypto moonboys wiki"
+      },
+      {
+        "title": "Hodl X Warriors"
+      },
+      {
+        "title": "Hodl X Warriors",
+        "url": "/wiki/hodl-x-warriors.html"
       }
     ],
-    "rank_score": 698,
+    "rank_score": 705,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 1,
+      "alias_count": 3,
       "tag_count": 5,
       "mention_count": 0,
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
       "article_word_count": 3557,
-      "keyword_bag_size": 25,
+      "keyword_bag_size": 26,
       "heading_count": 7,
       "list_count": 4,
       "internal_link_count": 0,
@@ -495,10 +517,10 @@
       "description_points": 10,
       "category_points": 40,
       "word_count_points": 178,
-      "keyword_bag_points": 25,
-      "content_quality_points": 115,
+      "keyword_bag_points": 26,
+      "content_quality_points": 121,
       "authority_points": 310,
-      "final_rank_score": 698,
+      "final_rank_score": 705,
       "authority_graph_points": 292
     },
     "search_index": {
@@ -535,7 +557,8 @@
         "of",
         "hard",
         "fork",
-        "game"
+        "game",
+        "x"
       ]
     },
     "link_score": {
@@ -544,102 +567,6 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 33,
       "authority": 292
-    }
-  },
-  {
-    "title": "queen_sarah_pfly — Crypto Moonboys Wiki",
-    "desc": "Queen Sarah P-fly reigns as a cryptic monarch in the Crypto Moonboys and GraffPUNKS universe, a figure of immense power and unfathomable motives whose presence",
-    "url": "/wiki/queen-sarah-pfly.html",
-    "tags": [
-      "queen",
-      "sarah",
-      "pfly",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "queen sarah pfly"
-      }
-    ],
-    "rank_score": 695,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 9293,
-      "keyword_bag_size": 26,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 112,
-      "section_count": 6,
-      "lore_paragraph_count": 108,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 465,
-      "keyword_bag_points": 26,
-      "content_quality_points": 116,
-      "authority_points": 18,
-      "final_rank_score": 695,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "queen sarah pfly crypto moonboys wiki",
-      "tokens": [
-        "queen",
-        "sarah",
-        "pfly",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "queen",
-        "sarah",
-        "pfly",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "p",
-        "fly",
-        "reigns",
-        "as",
-        "a",
-        "cryptic",
-        "monarch",
-        "in",
-        "the",
-        "and",
-        "graffpunks",
-        "universe",
-        "figure",
-        "of",
-        "immense",
-        "power",
-        "unfathomable",
-        "motives",
-        "whose",
-        "presence"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 44,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 44,
-      "authority": 0
     }
   },
   {
@@ -730,6 +657,98 @@
       "outbound_count": 67,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 67,
+      "authority": 0
+    }
+  },
+  {
+    "title": "queen_sarah_pfly — Crypto Moonboys Wiki",
+    "desc": "Queen Sarah P-fly reigns as a cryptic monarch in the Crypto Moonboys and GraffPUNKS universe, a figure of immense power and unfathomable motives whose presence",
+    "url": "/wiki/queen-sarah-pfly.html",
+    "tags": [
+      "queen",
+      "sarah",
+      "pfly",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [],
+    "rank_score": 692,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 9293,
+      "keyword_bag_size": 26,
+      "heading_count": 7,
+      "list_count": 4,
+      "internal_link_count": 0,
+      "paragraph_count": 112,
+      "section_count": 6,
+      "lore_paragraph_count": 108,
+      "content_quality_score": 107,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 465,
+      "keyword_bag_points": 26,
+      "content_quality_points": 113,
+      "authority_points": 18,
+      "final_rank_score": 692,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "queen sarah pfly crypto moonboys wiki",
+      "tokens": [
+        "queen",
+        "sarah",
+        "pfly",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "queen",
+        "sarah",
+        "pfly",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "p",
+        "fly",
+        "reigns",
+        "as",
+        "a",
+        "cryptic",
+        "monarch",
+        "in",
+        "the",
+        "and",
+        "graffpunks",
+        "universe",
+        "figure",
+        "of",
+        "immense",
+        "power",
+        "unfathomable",
+        "motives",
+        "whose",
+        "presence"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 44,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 44,
       "authority": 0
     }
   },
@@ -1530,12 +1549,19 @@
     "aliases": [
       {
         "title": "nbg crypto moonboys wiki"
+      },
+      {
+        "title": "Nbg Token"
+      },
+      {
+        "title": "Nbg Token",
+        "url": "/wiki/nbg-token.html"
       }
     ],
-    "rank_score": 576,
+    "rank_score": 582,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 1,
+      "alias_count": 3,
       "tag_count": 4,
       "mention_count": 0,
       "category": "characters",
@@ -1558,9 +1584,9 @@
       "category_points": 40,
       "word_count_points": 350,
       "keyword_bag_points": 24,
-      "content_quality_points": 114,
+      "content_quality_points": 120,
       "authority_points": 18,
-      "final_rank_score": 576,
+      "final_rank_score": 582,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -1693,6 +1719,108 @@
     }
   },
   {
+    "title": "graffpunks_24_7 — Crypto Moonboys Wiki",
+    "desc": "GraffPUNKS 24/7 reverberates through the Crypto Moonboys universe as more than a mere blockchain radio station—it is the defiant heartbeat of rebellion, broadca",
+    "url": "/wiki/graffpunks-24-7.html",
+    "tags": [
+      "graffpunks",
+      "24",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "graffpunks 24 crypto moonboys wiki"
+      },
+      {
+        "title": "Graffpunks 247"
+      },
+      {
+        "title": "Graffpunks 247",
+        "url": "/wiki/graffpunks-247.html"
+      }
+    ],
+    "rank_score": 497,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 3,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 5241,
+      "keyword_bag_size": 26,
+      "heading_count": 7,
+      "list_count": 4,
+      "internal_link_count": 0,
+      "paragraph_count": 54,
+      "section_count": 6,
+      "lore_paragraph_count": 49,
+      "content_quality_score": 107,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 262,
+      "keyword_bag_points": 26,
+      "content_quality_points": 121,
+      "authority_points": 18,
+      "final_rank_score": 497,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "graffpunks 24 7 crypto moonboys wiki",
+      "tokens": [
+        "graffpunks",
+        "24",
+        "7",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "graffpunks",
+        "24",
+        "7",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "reverberates",
+        "through",
+        "the",
+        "universe",
+        "as",
+        "more",
+        "than",
+        "a",
+        "mere",
+        "blockchain",
+        "radio",
+        "station",
+        "it",
+        "is",
+        "defiant",
+        "heartbeat",
+        "of",
+        "rebellion",
+        "broadca",
+        "247"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 49,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 49,
+      "authority": 0
+    }
+  },
+  {
     "title": "Moon Mission — Crypto Moonboys Wiki",
     "desc": "The ultimate quest of HODL Warriors — the prophesied journey to infinite gains. When Lambo?",
     "url": "/wiki/moon-mission.html",
@@ -1776,100 +1904,6 @@
       "existing_outbound_count": 6,
       "suggested_outbound_count": 25,
       "authority": 295
-    }
-  },
-  {
-    "title": "graffpunks_24_7 — Crypto Moonboys Wiki",
-    "desc": "GraffPUNKS 24/7 reverberates through the Crypto Moonboys universe as more than a mere blockchain radio station—it is the defiant heartbeat of rebellion, broadca",
-    "url": "/wiki/graffpunks-24-7.html",
-    "tags": [
-      "graffpunks",
-      "24",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "graffpunks 24 crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 490,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 5241,
-      "keyword_bag_size": 25,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 54,
-      "section_count": 6,
-      "lore_paragraph_count": 49,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 262,
-      "keyword_bag_points": 25,
-      "content_quality_points": 115,
-      "authority_points": 18,
-      "final_rank_score": 490,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "graffpunks 24 7 crypto moonboys wiki",
-      "tokens": [
-        "graffpunks",
-        "24",
-        "7",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffpunks",
-        "24",
-        "7",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "reverberates",
-        "through",
-        "the",
-        "universe",
-        "as",
-        "more",
-        "than",
-        "a",
-        "mere",
-        "blockchain",
-        "radio",
-        "station",
-        "it",
-        "is",
-        "defiant",
-        "heartbeat",
-        "of",
-        "rebellion",
-        "broadca"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 49,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 49,
-      "authority": 0
     }
   },
   {
@@ -1979,15 +2013,12 @@
     "aliases": [
       {
         "title": "midevilpunks crypto moonboys wiki"
-      },
-      {
-        "title": "midevilpunks"
       }
     ],
-    "rank_score": 473,
+    "rank_score": 470,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 2,
+      "alias_count": 1,
       "tag_count": 4,
       "mention_count": 0,
       "category": "factions",
@@ -2010,9 +2041,9 @@
       "category_points": 35,
       "word_count_points": 244,
       "keyword_bag_points": 25,
-      "content_quality_points": 117,
+      "content_quality_points": 114,
       "authority_points": 22,
-      "final_rank_score": 473,
+      "final_rank_score": 470,
       "authority_graph_points": 4
     },
     "search_index": {
@@ -2332,194 +2363,6 @@
     }
   },
   {
-    "title": "nbg_token — Crypto Moonboys Wiki",
-    "desc": "NBG flickers as a token of veiled significance within the Crypto Moonboys universe, a currency that flows through the shadowy veins of Block Topia’s multi-chain",
-    "url": "/wiki/nbg-token.html",
-    "tags": [
-      "nbg",
-      "token",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "nbg token crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 445,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 4442,
-      "keyword_bag_size": 25,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 57,
-      "section_count": 6,
-      "lore_paragraph_count": 52,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 222,
-      "keyword_bag_points": 25,
-      "content_quality_points": 115,
-      "authority_points": 18,
-      "final_rank_score": 445,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "nbg token crypto moonboys wiki",
-      "tokens": [
-        "nbg",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "nbg",
-        "token",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "flickers",
-        "as",
-        "a",
-        "of",
-        "veiled",
-        "significance",
-        "within",
-        "the",
-        "universe",
-        "currency",
-        "that",
-        "flows",
-        "through",
-        "shadowy",
-        "veins",
-        "block",
-        "topia",
-        "s",
-        "multi",
-        "chain"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 41,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 41,
-      "authority": 0
-    }
-  },
-  {
-    "title": "graffitikings — Crypto Moonboys Wiki",
-    "desc": "Graffiti Kings stands as the real-world cultural cornerstone of the Crypto Moonboys universe, a London-based street art collective founded by Darren Cullen (SER",
-    "url": "/wiki/graffitikings.html",
-    "tags": [
-      "graffitikings",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "graffitikings crypto moonboys wiki"
-      },
-      {
-        "title": "graffitikings"
-      }
-    ],
-    "rank_score": 444,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 4189,
-      "keyword_bag_size": 26,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 60,
-      "section_count": 6,
-      "lore_paragraph_count": 55,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 209,
-      "keyword_bag_points": 26,
-      "content_quality_points": 117,
-      "authority_points": 22,
-      "final_rank_score": 444,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "graffitikings crypto moonboys wiki",
-      "tokens": [
-        "graffitikings",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffitikings",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "graffiti",
-        "kings",
-        "stands",
-        "as",
-        "the",
-        "real",
-        "world",
-        "cultural",
-        "cornerstone",
-        "of",
-        "universe",
-        "a",
-        "london",
-        "based",
-        "street",
-        "art",
-        "collective",
-        "founded",
-        "by",
-        "darren",
-        "cullen",
-        "ser"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 37,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 30,
-      "authority": 3.5
-    }
-  },
-  {
     "title": "gang_signs — Crypto Moonboys Wiki",
     "desc": "Gang Signs erupts from the chaotic underbelly of the Crypto Moonboys universe as a digital card game that channels the raw, unfiltered energy of Block Topia’s n",
     "url": "/wiki/gang-signs.html",
@@ -2611,6 +2454,98 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 30,
       "authority": 0
+    }
+  },
+  {
+    "title": "graffitikings — Crypto Moonboys Wiki",
+    "desc": "Graffiti Kings stands as the real-world cultural cornerstone of the Crypto Moonboys universe, a London-based street art collective founded by Darren Cullen (SER",
+    "url": "/wiki/graffitikings.html",
+    "tags": [
+      "graffitikings",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "graffitikings crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 441,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 4,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 4189,
+      "keyword_bag_size": 26,
+      "heading_count": 7,
+      "list_count": 4,
+      "internal_link_count": 0,
+      "paragraph_count": 60,
+      "section_count": 6,
+      "lore_paragraph_count": 55,
+      "content_quality_score": 107,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 209,
+      "keyword_bag_points": 26,
+      "content_quality_points": 114,
+      "authority_points": 22,
+      "final_rank_score": 441,
+      "authority_graph_points": 4
+    },
+    "search_index": {
+      "normalized_title": "graffitikings crypto moonboys wiki",
+      "tokens": [
+        "graffitikings",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "graffitikings",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "graffiti",
+        "kings",
+        "stands",
+        "as",
+        "the",
+        "real",
+        "world",
+        "cultural",
+        "cornerstone",
+        "of",
+        "universe",
+        "a",
+        "london",
+        "based",
+        "street",
+        "art",
+        "collective",
+        "founded",
+        "by",
+        "darren",
+        "cullen",
+        "ser"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 37,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 30,
+      "authority": 3.5
     }
   },
   {
@@ -2879,190 +2814,6 @@
       "outbound_count": 29,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 29,
-      "authority": 0
-    }
-  },
-  {
-    "title": "graffpunks_network — Crypto Moonboys Wiki",
-    "desc": "The GraffPUNKS Network surges through the Crypto Moonboys universe as a digital war cry, a social media fortress on platforms like Facebook where the anarchic s",
-    "url": "/wiki/graffpunks-network.html",
-    "tags": [
-      "graffpunks",
-      "network",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "graffpunks network crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 440,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 4363,
-      "keyword_bag_size": 24,
-      "heading_count": 6,
-      "list_count": 3,
-      "internal_link_count": 0,
-      "paragraph_count": 59,
-      "section_count": 5,
-      "lore_paragraph_count": 54,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 218,
-      "keyword_bag_points": 24,
-      "content_quality_points": 115,
-      "authority_points": 18,
-      "final_rank_score": 440,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "graffpunks network crypto moonboys wiki",
-      "tokens": [
-        "graffpunks",
-        "network",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffpunks",
-        "network",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "surges",
-        "through",
-        "universe",
-        "as",
-        "a",
-        "digital",
-        "war",
-        "cry",
-        "social",
-        "media",
-        "fortress",
-        "on",
-        "platforms",
-        "like",
-        "facebook",
-        "where",
-        "anarchic",
-        "s"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 16,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 16,
-      "authority": 0
-    }
-  },
-  {
-    "title": "graffpunks_247_radio — Crypto Moonboys Wiki",
-    "desc": "GraffPUNKS 24/7 is the unrelenting sonic heartbeat of rebellion in the Crypto Moonboys universe, a blockchain radio station that pumps underground beats and cod",
-    "url": "/wiki/graffpunks-247-radio.html",
-    "tags": [
-      "graffpunks",
-      "247",
-      "radio",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 427,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 4000,
-      "keyword_bag_size": 26,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 45,
-      "section_count": 6,
-      "lore_paragraph_count": 40,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 200,
-      "keyword_bag_points": 26,
-      "content_quality_points": 113,
-      "authority_points": 18,
-      "final_rank_score": 427,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "graffpunks 247 radio crypto moonboys wiki",
-      "tokens": [
-        "graffpunks",
-        "247",
-        "radio",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffpunks",
-        "247",
-        "radio",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "24",
-        "7",
-        "is",
-        "the",
-        "unrelenting",
-        "sonic",
-        "heartbeat",
-        "of",
-        "rebellion",
-        "in",
-        "universe",
-        "a",
-        "blockchain",
-        "station",
-        "that",
-        "pumps",
-        "underground",
-        "beats",
-        "and",
-        "cod"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 50,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 50,
       "authority": 0
     }
   },
@@ -3446,15 +3197,12 @@
     "aliases": [
       {
         "title": "sacred chain crypto moonboys wiki"
-      },
-      {
-        "title": "sacred chain"
       }
     ],
-    "rank_score": 392,
+    "rank_score": 389,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 2,
+      "alias_count": 1,
       "tag_count": 5,
       "mention_count": 0,
       "category": "factions",
@@ -3477,9 +3225,9 @@
       "category_points": 35,
       "word_count_points": 167,
       "keyword_bag_points": 24,
-      "content_quality_points": 118,
+      "content_quality_points": 115,
       "authority_points": 18,
-      "final_rank_score": 392,
+      "final_rank_score": 389,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -3615,99 +3363,6 @@
       "outbound_count": 38,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 38,
-      "authority": 0
-    }
-  },
-  {
-    "title": "hodl_x_warriors — Crypto Moonboys Wiki",
-    "desc": "HODL X Warriors stand as the ultimate embodiment of digital combat prowess in the Crypto Moonboys universe, elite tokenized avatars earned exclusively through t",
-    "url": "/wiki/hodl-x-warriors.html",
-    "tags": [
-      "hodl",
-      "warriors",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "hodl warriors crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 386,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 3187,
-      "keyword_bag_size": 24,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 43,
-      "section_count": 6,
-      "lore_paragraph_count": 37,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 159,
-      "keyword_bag_points": 24,
-      "content_quality_points": 115,
-      "authority_points": 18,
-      "final_rank_score": 386,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "hodl x warriors crypto moonboys wiki",
-      "tokens": [
-        "hodl",
-        "x",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "hodl",
-        "x",
-        "warriors",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "stand",
-        "as",
-        "the",
-        "ultimate",
-        "embodiment",
-        "of",
-        "digital",
-        "combat",
-        "prowess",
-        "in",
-        "universe",
-        "elite",
-        "tokenized",
-        "avatars",
-        "earned",
-        "exclusively",
-        "through",
-        "t"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 19,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 19,
       "authority": 0
     }
   },
@@ -3999,18 +3654,26 @@
       "wiki"
     ],
     "category": "factions",
-    "aliases": [],
-    "rank_score": 327,
+    "aliases": [
+      {
+        "title": "Graffpunks 247 Radio"
+      },
+      {
+        "title": "Graffpunks 247 Radio",
+        "url": "/wiki/graffpunks-247-radio.html"
+      }
+    ],
+    "rank_score": 334,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 0,
+      "alias_count": 2,
       "tag_count": 6,
       "mention_count": 0,
       "category": "factions",
       "category_priority": 7,
       "has_description": true,
       "article_word_count": 2194,
-      "keyword_bag_size": 24,
+      "keyword_bag_size": 25,
       "heading_count": 6,
       "list_count": 3,
       "internal_link_count": 0,
@@ -4025,10 +3688,10 @@
       "description_points": 10,
       "category_points": 35,
       "word_count_points": 110,
-      "keyword_bag_points": 24,
-      "content_quality_points": 113,
+      "keyword_bag_points": 25,
+      "content_quality_points": 119,
       "authority_points": 15,
-      "final_rank_score": 327,
+      "final_rank_score": 334,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -4066,7 +3729,8 @@
         "topia",
         "broadcasting",
         "subversive",
-        "beats"
+        "beats",
+        "247"
       ]
     },
     "link_score": {
@@ -7558,96 +7222,6 @@
     }
   },
   {
-    "title": "1m_free_nfts_programme — Crypto Moonboys Wiki",
-    "desc": "The 1M Free NFTs Programme is a massive initiative in the Crypto Moonboys universe, distributing a million free NFTs to players and collectors, tied to the Graf",
-    "url": "/wiki/1m-free-nfts-programme.html",
-    "tags": [
-      "1m",
-      "free",
-      "nfts",
-      "programme",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 251,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 7,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 1061,
-      "keyword_bag_size": 22,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 15,
-      "section_count": 6,
-      "lore_paragraph_count": 11,
-      "content_quality_score": 87,
-      "authority_score": 12
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 53,
-      "keyword_bag_points": 22,
-      "content_quality_points": 94,
-      "authority_points": 12,
-      "final_rank_score": 251,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "1m free nfts programme crypto moonboys wiki",
-      "tokens": [
-        "1m",
-        "free",
-        "nfts",
-        "programme",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "1m",
-        "free",
-        "nfts",
-        "programme",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "is",
-        "a",
-        "massive",
-        "initiative",
-        "in",
-        "universe",
-        "distributing",
-        "million",
-        "to",
-        "players",
-        "and",
-        "collectors",
-        "tied",
-        "graf"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 35,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 35,
-      "authority": 0
-    }
-  },
-  {
     "title": "The High Hats — Crypto Moonboys Wiki",
     "desc": "The High Hats are the unseen puppet masters of Block Topia, an elite faction of manipulators who orchestrate the city’s most pivotal events from the deepest sha",
     "url": "/wiki/the-high-hats.html",
@@ -11014,101 +10588,6 @@
     }
   },
   {
-    "title": "hodl_wars_game — Crypto Moonboys Wiki",
-    "desc": "HODL WARS is a playable NFT game and live saga (per DB-5) in the Crypto Moonboys universe, where players engage in faction-based conflicts within Block Topia to",
-    "url": "/wiki/hodl-wars-game.html",
-    "tags": [
-      "hodl",
-      "wars",
-      "game",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 232,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 630,
-      "keyword_bag_size": 29,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 12,
-      "section_count": 6,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 79,
-      "authority_score": 12
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 32,
-      "keyword_bag_points": 29,
-      "content_quality_points": 85,
-      "authority_points": 16,
-      "final_rank_score": 232,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "hodl wars game crypto moonboys wiki",
-      "tokens": [
-        "hodl",
-        "wars",
-        "game",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "hodl",
-        "wars",
-        "game",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "a",
-        "playable",
-        "nft",
-        "and",
-        "live",
-        "saga",
-        "per",
-        "db",
-        "5",
-        "in",
-        "the",
-        "universe",
-        "where",
-        "players",
-        "engage",
-        "faction",
-        "based",
-        "conflicts",
-        "within",
-        "block",
-        "topia",
-        "to"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 38,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 31,
-      "authority": 3.5
-    }
-  },
-  {
     "title": "M1nTr K1ll — Crypto Moonboys Wiki",
     "desc": "M1nTr K1ll is a shadowy digital assassin in the Crypto Moonboys universe, a master of stealth and lethal precision who strikes from the unseen corners of Block",
     "url": "/wiki/m1ntr-k1ll.html",
@@ -11295,100 +10774,6 @@
     }
   },
   {
-    "title": "graffpunks_247 — Crypto Moonboys Wiki",
-    "desc": "GraffPUNKS 24/7 is the pulsating heart of cultural resistance in the Crypto Moonboys universe, a blockchain radio station that broadcasts defiant beats and subv",
-    "url": "/wiki/graffpunks-247.html",
-    "tags": [
-      "graffpunks",
-      "247",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "graffpunks 247 crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 231,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 814,
-      "keyword_bag_size": 26,
-      "heading_count": 6,
-      "list_count": 3,
-      "internal_link_count": 0,
-      "paragraph_count": 13,
-      "section_count": 5,
-      "lore_paragraph_count": 9,
-      "content_quality_score": 79,
-      "authority_score": 12
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 41,
-      "keyword_bag_points": 26,
-      "content_quality_points": 87,
-      "authority_points": 12,
-      "final_rank_score": 231,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "graffpunks 247 crypto moonboys wiki",
-      "tokens": [
-        "graffpunks",
-        "247",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffpunks",
-        "247",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "24",
-        "7",
-        "is",
-        "the",
-        "pulsating",
-        "heart",
-        "of",
-        "cultural",
-        "resistance",
-        "in",
-        "universe",
-        "a",
-        "blockchain",
-        "radio",
-        "station",
-        "that",
-        "broadcasts",
-        "defiant",
-        "beats",
-        "and",
-        "subv"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 16,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 16,
-      "authority": 0
-    }
-  },
-  {
     "title": "The AZTEC RAIDERS — Crypto Moonboys Wiki",
     "desc": "The AZTEC RAIDERS are ancient-inspired invaders who tear through the digital wastelands of Block Topia with unrelenting ferocity, embodying the brutal spirit of",
     "url": "/wiki/the-aztec-raiders.html",
@@ -11482,103 +10867,6 @@
     }
   },
   {
-    "title": "canvas_clash — Crypto Moonboys Wiki",
-    "desc": "The Canvas Clash is a legendary uprising etched into the annals of Block Topia, a digital rebellion led by GKniftyHEADS under the GraffPUNKS banner, where unera",
-    "url": "/wiki/canvas-clash.html",
-    "tags": [
-      "canvas",
-      "clash",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "canvas clash crypto moonboys wiki"
-      },
-      {
-        "title": "canvas clash"
-      }
-    ],
-    "rank_score": 228,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 619,
-      "keyword_bag_size": 26,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 11,
-      "section_count": 6,
-      "lore_paragraph_count": 7,
-      "content_quality_score": 79,
-      "authority_score": 12
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 31,
-      "keyword_bag_points": 26,
-      "content_quality_points": 90,
-      "authority_points": 16,
-      "final_rank_score": 228,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "canvas clash crypto moonboys wiki",
-      "tokens": [
-        "canvas",
-        "clash",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "canvas",
-        "clash",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "is",
-        "a",
-        "legendary",
-        "uprising",
-        "etched",
-        "into",
-        "annals",
-        "of",
-        "block",
-        "topia",
-        "digital",
-        "rebellion",
-        "led",
-        "by",
-        "gkniftyheads",
-        "under",
-        "graffpunks",
-        "banner",
-        "where",
-        "unera"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 36,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 29,
-      "authority": 3.5
-    }
-  },
-  {
     "title": "The INFORMATION MERCENARIES — Crypto Moonboys Wiki",
     "desc": "The INFORMATION MERCENARIES are the shadowy data brokers of Block Topia, a cunning faction that thrives in the flickering undercurrents of the metaverse, tradin",
     "url": "/wiki/the-information-mercenaries.html",
@@ -11667,6 +10955,200 @@
       "outbound_count": 20,
       "existing_outbound_count": 7,
       "suggested_outbound_count": 13,
+      "authority": 3.5
+    }
+  },
+  {
+    "title": "1m_free_nfts_program — Crypto Moonboys Wiki",
+    "desc": "The 1M Free NFTs Programme is a massive initiative in the Crypto Moonboys universe, distributing one million free NFTs to players and collectors in Block Topia",
+    "url": "/wiki/1m-free-nfts-program.html",
+    "tags": [
+      "1m",
+      "free",
+      "nfts",
+      "program",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "1m Free Nfts Programme"
+      },
+      {
+        "title": "1m Free Nfts Programme",
+        "url": "/wiki/1m-free-nfts-programme.html"
+      }
+    ],
+    "rank_score": 226,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 7,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 666,
+      "keyword_bag_size": 24,
+      "heading_count": 6,
+      "list_count": 3,
+      "internal_link_count": 0,
+      "paragraph_count": 12,
+      "section_count": 5,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 79,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 33,
+      "keyword_bag_points": 24,
+      "content_quality_points": 92,
+      "authority_points": 12,
+      "final_rank_score": 226,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "1m free nfts program crypto moonboys wiki",
+      "tokens": [
+        "1m",
+        "free",
+        "nfts",
+        "program",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "1m",
+        "free",
+        "nfts",
+        "program",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "programme",
+        "is",
+        "a",
+        "massive",
+        "initiative",
+        "in",
+        "universe",
+        "distributing",
+        "one",
+        "million",
+        "to",
+        "players",
+        "and",
+        "collectors",
+        "block",
+        "topia"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 30,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 30,
+      "authority": 0
+    }
+  },
+  {
+    "title": "canvas_clash — Crypto Moonboys Wiki",
+    "desc": "The Canvas Clash is a legendary uprising etched into the annals of Block Topia, a digital rebellion led by GKniftyHEADS under the GraffPUNKS banner, where unera",
+    "url": "/wiki/canvas-clash.html",
+    "tags": [
+      "canvas",
+      "clash",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "canvas clash crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 225,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 619,
+      "keyword_bag_size": 26,
+      "heading_count": 7,
+      "list_count": 4,
+      "internal_link_count": 0,
+      "paragraph_count": 11,
+      "section_count": 6,
+      "lore_paragraph_count": 7,
+      "content_quality_score": 79,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 31,
+      "keyword_bag_points": 26,
+      "content_quality_points": 87,
+      "authority_points": 16,
+      "final_rank_score": 225,
+      "authority_graph_points": 4
+    },
+    "search_index": {
+      "normalized_title": "canvas clash crypto moonboys wiki",
+      "tokens": [
+        "canvas",
+        "clash",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "canvas",
+        "clash",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "is",
+        "a",
+        "legendary",
+        "uprising",
+        "etched",
+        "into",
+        "annals",
+        "of",
+        "block",
+        "topia",
+        "digital",
+        "rebellion",
+        "led",
+        "by",
+        "gkniftyheads",
+        "under",
+        "graffpunks",
+        "banner",
+        "where",
+        "unera"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 36,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 29,
       "authority": 3.5
     }
   },
@@ -12026,100 +11508,6 @@
     }
   },
   {
-    "title": "harrison_rift — Crypto Moonboys Wiki",
-    "desc": "The Harrison Rift marks a seismic fracture in the Crypto Moonboys universe, a fictional hard fork event inspired by storyteller Ian Harrison, where a splinter f",
-    "url": "/wiki/harrison-rift.html",
-    "tags": [
-      "harrison",
-      "rift",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "harrison rift crypto moonboys wiki"
-      },
-      {
-        "title": "harrison rift"
-      }
-    ],
-    "rank_score": 222,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 639,
-      "keyword_bag_size": 23,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 12,
-      "section_count": 6,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 75,
-      "authority_score": 12
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 32,
-      "keyword_bag_points": 23,
-      "content_quality_points": 86,
-      "authority_points": 16,
-      "final_rank_score": 222,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "harrison rift crypto moonboys wiki",
-      "tokens": [
-        "harrison",
-        "rift",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "harrison",
-        "rift",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "marks",
-        "a",
-        "seismic",
-        "fracture",
-        "in",
-        "universe",
-        "fictional",
-        "hard",
-        "fork",
-        "event",
-        "inspired",
-        "by",
-        "storyteller",
-        "ian",
-        "where",
-        "splinter",
-        "f"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 21,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 14,
-      "authority": 3.5
-    }
-  },
-  {
     "title": "Storm Struggle — Crypto Moonboys Wiki",
     "desc": "Crypto Moonboys wiki guide to Storm Struggle, a WAX-connected StruggleVerse game project with vehicles, jobs, properties, pets, racing, arena systems and partner assets.",
     "url": "/wiki/storm-struggle.html",
@@ -12396,98 +11784,6 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
-    }
-  },
-  {
-    "title": "1m_free_nfts_program — Crypto Moonboys Wiki",
-    "desc": "The 1M Free NFTs Programme is a massive initiative in the Crypto Moonboys universe, distributing one million free NFTs to players and collectors in Block Topia",
-    "url": "/wiki/1m-free-nfts-program.html",
-    "tags": [
-      "1m",
-      "free",
-      "nfts",
-      "program",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 220,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 7,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 666,
-      "keyword_bag_size": 24,
-      "heading_count": 6,
-      "list_count": 3,
-      "internal_link_count": 0,
-      "paragraph_count": 12,
-      "section_count": 5,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 79,
-      "authority_score": 12
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 33,
-      "keyword_bag_points": 24,
-      "content_quality_points": 86,
-      "authority_points": 12,
-      "final_rank_score": 220,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "1m free nfts program crypto moonboys wiki",
-      "tokens": [
-        "1m",
-        "free",
-        "nfts",
-        "program",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "1m",
-        "free",
-        "nfts",
-        "program",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "programme",
-        "is",
-        "a",
-        "massive",
-        "initiative",
-        "in",
-        "universe",
-        "distributing",
-        "one",
-        "million",
-        "to",
-        "players",
-        "and",
-        "collectors",
-        "block",
-        "topia"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 30,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 30,
-      "authority": 0
     }
   },
   {
@@ -13127,6 +12423,97 @@
       "outbound_count": 18,
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
+      "authority": 3.5
+    }
+  },
+  {
+    "title": "harrison_rift — Crypto Moonboys Wiki",
+    "desc": "The Harrison Rift marks a seismic fracture in the Crypto Moonboys universe, a fictional hard fork event inspired by storyteller Ian Harrison, where a splinter f",
+    "url": "/wiki/harrison-rift.html",
+    "tags": [
+      "harrison",
+      "rift",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "harrison rift crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 219,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 639,
+      "keyword_bag_size": 23,
+      "heading_count": 7,
+      "list_count": 4,
+      "internal_link_count": 0,
+      "paragraph_count": 12,
+      "section_count": 6,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 75,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 32,
+      "keyword_bag_points": 23,
+      "content_quality_points": 83,
+      "authority_points": 16,
+      "final_rank_score": 219,
+      "authority_graph_points": 4
+    },
+    "search_index": {
+      "normalized_title": "harrison rift crypto moonboys wiki",
+      "tokens": [
+        "harrison",
+        "rift",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "harrison",
+        "rift",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "marks",
+        "a",
+        "seismic",
+        "fracture",
+        "in",
+        "universe",
+        "fictional",
+        "hard",
+        "fork",
+        "event",
+        "inspired",
+        "by",
+        "storyteller",
+        "ian",
+        "where",
+        "splinter",
+        "f"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 21,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 14,
       "authority": 3.5
     }
   },
