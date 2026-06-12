@@ -80,11 +80,21 @@
 
   function sourceLabel(value) {
     var source = String(value || '').toLowerCase();
-    if (source.indexOf('taco') !== -1) return 'Taco';
-    if (source.indexOf('nefty') !== -1) return 'Nefty';
-    if (source.indexOf('box') !== -1) return 'BOX';
-    if (source.indexOf('alcor') !== -1) return source === 'alcor' ? 'Alcor' : 'swap.alcor';
+    if (source === 'alcor') return 'alcor';
+    if (source === 'swap.alcor') return 'swap.alcor';
+    if (source === 'swap.taco') return 'swap.taco';
+    if (source === 'swap.nefty') return 'swap.nefty';
+    if (source === 'swap.box') return 'swap.box';
+    if (source.indexOf('taco') !== -1) return 'swap.taco';
+    if (source.indexOf('nefty') !== -1) return 'swap.nefty';
+    if (source.indexOf('box') !== -1) return 'swap.box';
+    if (source.indexOf('alcor') !== -1) return source === 'alcor' ? 'alcor' : 'swap.alcor';
     return source || 'source';
+  }
+
+  function pairSourceKey(pair) {
+    var source = pair && (pair.source || pair.adapter || pair.rawSource || pair.raw_source);
+    return String(source || '').trim().toLowerCase();
   }
 
   function metricLabel(metric) {
@@ -204,7 +214,8 @@
         if (liq.usd != null) rec.pairLiquidityUsd += liq.usd;
         var vol = asNum(pair.volume_24h);
         if (vol != null) rec.pairVolume24 += vol;
-        if (pair.source) rec.sources[String(pair.source).toLowerCase()] = true;
+        var sourceKey = pairSourceKey(pair);
+        if (sourceKey) rec.sources[sourceKey] = true;
         rec.strongestPair = strongerPair(rec.strongestPair, pair);
         rec.computedPairCount += 1;
       });
