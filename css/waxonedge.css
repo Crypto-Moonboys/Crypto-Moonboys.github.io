@@ -11,6 +11,86 @@
   margin: 0 auto;
 }
 
+.woe-scanner-page .woe-page {
+  min-height: 100vh;
+}
+
+.woe-scanner-page .woe-scanner-only {
+  min-height: calc(100vh - 142px);
+  margin-top: 14px;
+}
+
+.woe-scanner-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.woe-scanner-heading h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(1.4rem, 3vw, 2.7rem);
+  line-height: 1.05;
+}
+
+.woe-scanner-page .woe-bubble-board {
+  min-height: calc(100vh - 280px);
+}
+
+.woe-token-analytics-page .woe-page {
+  max-width: none;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.woe-analytics-hero {
+  margin-top: 14px;
+}
+
+.woe-analytics-titlebar {
+  margin-bottom: 10px;
+}
+
+.woe-analytics-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 30vw) minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.woe-analytics-stats-panel,
+.woe-analytics-chart-panel {
+  min-height: 640px;
+}
+
+.woe-analytics-stats-panel {
+  background: #070b0f;
+}
+
+.woe-analytics-chart-panel {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    #070b10;
+  background-size: 56px 56px;
+}
+
+.woe-token-analytics-page .woe-chart-panel {
+  min-height: 560px;
+}
+
+.woe-token-analytics-page .woe-lightweight-chart {
+  min-height: 500px;
+}
+
+.woe-analytics-pairs,
+.woe-analytics-pair-proof {
+  margin-top: 12px;
+}
+
 body.page-waxonedge #sidebar,
 body.page-waxonedge #site-header,
 body.page-waxonedge .site-paperclip-agent {
@@ -48,6 +128,8 @@ body.page-waxonedge #content {
   align-items: center;
   gap: 12px;
   min-width: 0;
+  color: inherit;
+  text-decoration: none;
 }
 
 .woe-og-brand-mark {
@@ -1559,9 +1641,18 @@ body.page-waxonedge #content {
     grid-template-columns: 1fr;
   }
   .woe-hero-terminal,
+  .woe-analytics-grid,
   .woe-toolbar,
   .woe-pair-detail-grid {
     grid-template-columns: 1fr;
+  }
+  .woe-analytics-stats-panel,
+  .woe-analytics-chart-panel {
+    min-height: auto;
+  }
+  .woe-token-analytics-page .woe-chart-panel,
+  .woe-token-analytics-page .woe-lightweight-chart {
+    min-height: 360px;
   }
   .woe-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

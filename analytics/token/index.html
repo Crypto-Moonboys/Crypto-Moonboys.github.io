@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="WaxOnEdge fullscreen token analytics powered by indexed Cloudflare Worker and D1 data.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="WaxOnEdge Token Analytics | Crypto Moonboys">
+  <meta property="og:description" content="Token stats, indexed pair liquidity, chart status, and multi-DEX pair proof for WAX tokens.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cryptomoonboys.com/analytics/token/">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <link rel="canonical" href="https://cryptomoonboys.com/analytics/token/">
+  <title>WaxOnEdge Token Analytics | Crypto Moonboys</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/retro-16bit-theme.css">
+  <link rel="stylesheet" href="/css/waxonedge.css">
+  <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body class="page-waxonedge page-standard-shell woe-wide-mode woe-token-analytics-page">
+
+<main id="content" role="main">
+  <div class="woe-page woe-analytics-page" id="woe-token-analytics">
+    <header class="woe-og-bar woe-terminal-header">
+      <a class="woe-og-brand" href="/waxonedge.html" aria-label="Back to WaxOnEdge bubble scanner">
+        <span class="woe-og-brand-mark" aria-hidden="true">WE</span>
+        <div>
+          <h1 class="woe-page-title">WAXONEDGE</h1>
+          <p class="woe-page-subtitle">Token analytics</p>
+        </div>
+      </a>
+      <nav class="woe-og-nav" aria-label="WAXONEDGE analytics navigation">
+        <a href="/waxonedge.html">Bubbles</a>
+        <a href="#woe-chart-heading" aria-current="page">Chart</a>
+        <a href="#woe-token-pairs-heading">Pairs</a>
+      </nav>
+      <div class="woe-og-wax-block">
+        <span class="woe-og-block-label">WAX Price</span>
+        <strong id="woe-topbar-wax-price">$ --</strong>
+        <span id="woe-topbar-wax-price-meta">Waiting for live data...</span>
+      </div>
+      <div class="woe-og-actions" aria-label="Read-only project tools">
+        <span class="woe-readonly-badge">Read-Only</span>
+        <button id="woe-wide-toggle" class="woe-og-action woe-wide-btn" type="button" title="Toggle focused terminal width" aria-pressed="true">Exit Wide</button>
+      </div>
+    </header>
+
+    <section class="woe-analytics-hero" id="woe-token-detail" aria-labelledby="woe-detail-heading">
+      <div class="woe-section-heading woe-analytics-titlebar">
+        <span id="woe-detail-heading">Token Analytics</span>
+        <span class="woe-section-count" id="woe-detail-status">Loading token route...</span>
+      </div>
+      <div class="woe-analytics-grid">
+        <aside class="woe-detail-card woe-detail-stats-card woe-analytics-stats-panel" aria-labelledby="woe-detail-stats-heading">
+          <div class="woe-detail-card-heading">
+            <span id="woe-detail-stats-heading">Stats</span>
+            <span class="woe-detail-card-meta" id="woe-detail-meta">Backend indexed data</span>
+          </div>
+          <div id="woe-token-summary" class="woe-token-summary">
+            <div class="woe-scanner-first-state">
+              <span class="woe-scanner-first-icon" aria-hidden="true">+</span>
+              <p>Loading token analytics...</p>
+            </div>
+          </div>
+          <div id="woe-token-stats" class="woe-stats-grid" aria-live="polite"></div>
+        </aside>
+        <section class="woe-detail-card woe-detail-chart-card woe-analytics-chart-panel" aria-labelledby="woe-chart-heading">
+          <div class="woe-detail-card-heading">
+            <span id="woe-chart-heading">Indexed Pair Chart</span>
+            <span class="woe-detail-card-meta" id="woe-chart-meta">Selecting strongest chartable WAX liquidity pair</span>
+          </div>
+          <div id="woe-chart-panel" class="woe-chart-panel" aria-live="polite">
+            <div class="woe-chart-empty">Checking indexed candles.</div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="woe-section woe-analytics-pairs" aria-labelledby="woe-token-pairs-heading">
+      <div class="woe-section-heading">
+        <span id="woe-token-pairs-heading">All Indexed DEX Pairs</span>
+        <span class="woe-section-count" id="woe-matrix-count">Loading...</span>
+      </div>
+      <p id="woe-matrix-meta" class="woe-detail-note">Multi-source rows are normalized from active backend DEX adapters for this token.</p>
+      <div class="woe-table-filter-row">
+        <input id="woe-filter-matrix" class="woe-filter-input" type="search" placeholder="Filter token pairs..." autocomplete="off" aria-label="Filter token pair matrix">
+      </div>
+      <div class="woe-table-wrap">
+        <table class="woe-table" id="woe-table-matrix" aria-label="Token pair matrix">
+          <thead>
+            <tr>
+              <th data-col="rank" data-numeric="true">Rank</th>
+              <th data-col="source">Source / DEX</th>
+              <th data-col="pair">Pair</th>
+              <th data-col="other">Other Token</th>
+              <th data-col="value">Other Value</th>
+              <th data-col="liq" data-numeric="true">Liquidity / TVL</th>
+              <th data-col="waxliq" data-numeric="true">WAX Liquidity</th>
+              <th data-col="price">Current Price</th>
+              <th data-col="chg" data-numeric="true">24h Change</th>
+              <th data-col="vol24" data-numeric="true">24h Volume</th>
+              <th data-col="reserves">Reserves</th>
+              <th data-col="chart">Chart</th>
+              <th>Explorer</th>
+            </tr>
+          </thead>
+          <tbody id="woe-matrix-body">
+            <tr><td colspan="13" class="woe-loading">Loading indexed token pairs...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="woe-section woe-analytics-pair-proof" id="woe-pair-detail" aria-labelledby="woe-pair-detail-heading">
+      <div class="woe-section-heading">
+        <span id="woe-pair-detail-heading">Pair Detail</span>
+        <span class="woe-section-count" id="woe-pair-detail-status">Click a pair row</span>
+      </div>
+      <div id="woe-pair-detail-panel" class="woe-pair-detail-panel">
+        <div class="woe-chart-empty">Pair proof opens here from the pair matrix.</div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script data-cfasync="false" src="/js/api-config.js"></script>
+<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+<script data-cfasync="false" src="/js/identity-gate.js"></script>
+<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+<script data-cfasync="false" src="/js/site-shell.js"></script>
+<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+<script data-cfasync="false" src="/js/waxonedge-sources.js"></script>
+<script data-cfasync="false" src="https://unpkg.com/lightweight-charts@5.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<script data-cfasync="false" src="/js/waxonedge.js"></script>
+
+</body>
+</html>

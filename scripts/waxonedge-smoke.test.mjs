@@ -38,6 +38,7 @@ function ok(label, condition, detail) {
 
 ok('waxonedge.html exists', exists('waxonedge.html'));
 ok('waxonedge/index.html clean-route alias exists', exists('waxonedge/index.html'));
+ok('analytics/token/index.html token analytics route exists', exists('analytics/token/index.html'));
 ok('css/waxonedge.css exists', exists('css/waxonedge.css'));
 ok('css/waxonedge-bubbles-v2.css exists', exists('css/waxonedge-bubbles-v2.css'));
 ok('js/waxonedge.js exists', exists('js/waxonedge.js'));
@@ -45,6 +46,7 @@ ok('js/waxonedge-sources.js exists', exists('js/waxonedge-sources.js'));
 ok('js/waxonedge-bubbles-v2.js exists', exists('js/waxonedge-bubbles-v2.js'));
 
 const html = exists('waxonedge.html') ? read('waxonedge.html') : '';
+const tokenHtml = exists('analytics/token/index.html') ? read('analytics/token/index.html') : '';
 const aliasHtml = exists('waxonedge/index.html') ? read('waxonedge/index.html') : '';
 const css = exists('css/waxonedge.css') ? read('css/waxonedge.css') : '';
 const v2Css = exists('css/waxonedge-bubbles-v2.css') ? read('css/waxonedge-bubbles-v2.css') : '';
@@ -63,7 +65,7 @@ ok('waxonedge clean-route alias preserves hash routing', aliasHtml.includes("win
 
 ok('waxonedge.html includes terminal top bar', html.includes('woe-og-bar'));
 ok('waxonedge.html includes bubble terminal nav labels',
-  html.includes('Bubbles') && html.includes('Top 99 Tokens') && html.includes('Top Pairs') && html.includes('Token Detail'));
+  html.includes('Bubbles') && !html.includes('Top 99 Tokens') && !html.includes('Top Pairs') && !html.includes('Token Detail'));
 ok('waxonedge.html includes WAX price block', html.includes('id="woe-topbar-wax-price"'));
 ok('waxonedge.html waits for live WAX price data by default', html.includes('Waiting for live data...'));
 ok('waxonedge.html includes read-only terminal action area', html.includes('Read-Only') && html.includes('woe-wide-toggle'));
@@ -116,6 +118,9 @@ ok('waxonedge.js keeps direct browser fetches as diagnostic fallback',
 ok('waxonedge.js uses configured WAX RPC fallbacks', js.includes('WAXONEDGE_WAX_RPC_FALLBACKS'));
 ok('waxonedge.js performs swap.nefty ABI lookup', js.includes('get_abi') || js.includes('getAbi'));
 ok('waxonedge.js includes query-string token detail state', js.includes('token=') && js.includes('contract='));
+ok('waxonedge.js uses path-segment-safe token analytics route detection',
+  js.includes("return /^\\/analytics\\/token(?:\\/|$)/.test(path);") &&
+  !js.includes('/\\/analytics\\/token\\/?/.test'));
 ok('waxonedge.js fetches Alcor chart candles from /markets/:id/charts for diagnostic fallback', js.includes('/charts') && js.includes('/markets'));
 ok('waxonedge.js keeps Lightweight Charts support', js.includes('window.LightweightCharts') && js.includes('tv.createChart'));
 
@@ -133,26 +138,37 @@ ok('waxonedge-bubbles-v2.js parses active selection once per render',
   v2Js.includes('function getActiveTokenKey') && v2Js.includes('var activeKey = getActiveTokenKey();'));
 ok('waxonedge-bubbles-v2.js exposes accessible rail group label',
   v2Js.includes('role="group"') && v2Js.includes('Visible bubble market summary'));
+ok('waxonedge-bubbles-v2.js routes bubble clicks to fullscreen token analytics',
+  v2Js.includes("'/analytics/token/?token='") &&
+  v2Js.includes('window.location.href = buildTokenAnalyticsHref') &&
+  !v2Js.includes("url.hash = 'woe-token-detail'"));
 
-ok('waxonedge.html includes KPI strip', html.includes('woe-kpi-grid') && html.includes('Indexed Tokens') && html.includes('Indexed Pairs'));
-ok('waxonedge.html includes source status strip', html.includes('Source Status') && html.includes('id="woe-sources-grid"'));
+ok('waxonedge.html is scanner-only and omits dominant KPI/source strips',
+  !html.includes('woe-kpi-grid') &&
+  !html.includes('id="woe-sources-grid"') &&
+  !html.includes('Source Status'));
 ok('waxonedge.html includes bubble board container', html.includes('id="woe-bubble-board"'));
-ok('waxonedge.html includes top token card grid', html.includes('id="woe-token-rank-grid"'));
-ok('waxonedge.html includes token detail section', html.includes('id="woe-token-detail"'));
-ok('waxonedge.html includes selected token pair matrix', html.includes('id="woe-table-matrix"'));
-ok('waxonedge.html includes pair detail panel', html.includes('id="woe-pair-detail-panel"'));
-ok('waxonedge.html includes all-pairs matrix', html.includes('id="woe-table-pairs"'));
-ok('bubble scanner is placed before token detail',
-  html.indexOf('id="woe-bubble-board"') > -1 &&
-  html.indexOf('id="woe-bubble-board"') < html.indexOf('id="woe-token-detail"'));
+ok('waxonedge.html does not expose old detail/table sections by default',
+  !html.includes('id="woe-token-rank-grid"') &&
+  !html.includes('id="woe-token-detail"') &&
+  !html.includes('id="woe-table-matrix"') &&
+  !html.includes('id="woe-pair-detail-panel"') &&
+  !html.includes('id="woe-table-pairs"') &&
+  !html.includes('id="woe-account-lookup"'));
+ok('analytics token page contains fullscreen stats/chart/pairs structure',
+  tokenHtml.includes('woe-token-analytics-page') &&
+  tokenHtml.includes('id="woe-token-detail"') &&
+  tokenHtml.includes('id="woe-chart-panel"') &&
+  tokenHtml.includes('id="woe-table-matrix"') &&
+  tokenHtml.includes('id="woe-pair-detail-panel"'));
 
 ok('waxonedge.js renders visual token bubbles', js.includes('function renderBubbles') && js.includes('woe-bubble-token'));
 ok('waxonedge.js sizes bubbles from liquidity, volume, or pair count',
   js.includes('metricValueForToken') && js.includes("metric === 'volume'") && js.includes("metric === 'pairs'"));
 ok('waxonedge.js colors bubbles from 24h change', js.includes('woe-bubble-up') && js.includes('woe-bubble-down'));
 ok('waxonedge.js derives source badges from indexed pair rows', js.includes('function getTokenSources') && js.includes('sourceBadgesHtml'));
-ok('waxonedge.js renders Top 99 Tokens', js.includes('getRankedTokenRecords().slice(0, 99)'));
-ok('waxonedge.js renders global pair matrix', js.includes('function renderGlobalPairMatrix') && js.includes('woe-pairs-body'));
+ok('waxonedge.js still builds Top 99 scanner records for bubble sizing', js.includes('getRankedTokenRecords().slice(0, 99)'));
+ok('waxonedge.js keeps pair matrix renderer for token analytics route', js.includes('function renderMatrix') && js.includes('woe-matrix-body'));
 ok('waxonedge.js renders pair detail on row click', js.includes('function renderPairDetail') && js.includes('woe-pair-detail-link'));
 ok('waxonedge.js no longer auto-selects a default token-first view',
   js.includes("return { symbol: '', contract: '', key: '' };"));
@@ -174,8 +190,8 @@ ok('wide mode toggle updates aria-pressed',
   js.includes("btn.setAttribute('aria-pressed', enabled ? 'true' : 'false')"));
 ok('wide mode localStorage zero disables default wide mode',
   js.includes("localStorage.getItem('woe_wide_mode') === '0'") && js.includes('applyWideMode(false)'));
-ok('default wide mode remains enabled in markup for first-time users',
-  html.includes('body class="page-waxonedge page-standard-shell woe-wide-mode"') &&
+ok('default wide mode remains enabled in scanner body class',
+  /<body[^>]*class="[^"]*\bwoe-wide-mode\b[^"]*"/.test(html) &&
   html.includes('aria-pressed="true"'));
 
 for (const label of [
@@ -197,14 +213,16 @@ ok('waxonedge.js explicitly marks unindexed chart states', js.includes('Source n
 ok('waxonedge.js does not present market cap from issued supply fallback', !js.includes('Issued supply basis'));
 ok('holder lookup copy does not claim holder distribution',
   !html.includes('Holder Data') &&
+  !tokenHtml.includes('Holder Data') &&
   !html.includes('Holder distribution') &&
+  !tokenHtml.includes('Holder distribution') &&
   !js.includes('Holder distribution'));
-ok('account lookup input has an accessible label',
-  js.includes('aria-label="WAX account for token balance lookup"'));
+ok('account lookup panel is not exposed on scanner or token analytics pages',
+  !html.includes('woe-account-lookup') && !tokenHtml.includes('woe-account-lookup'));
 
 ok('waxonedge.css includes terminal shell and detail layout styles',
   css.includes('.woe-og-bar') &&
-  css.includes('.woe-detail-grid') &&
+  css.includes('.woe-analytics-grid') &&
   css.includes('.woe-chart-panel'));
 ok('waxonedge.css includes bubble dashboard styling', css.includes('.woe-bubble-board') && css.includes('.woe-bubble-token'));
 ok('waxonedge.css includes source strip styling', css.includes('.woe-source-strip') && css.includes('.woe-source-pill'));
@@ -212,6 +230,8 @@ ok('waxonedge.css includes pair detail styling', css.includes('.woe-pair-detail-
 ok('waxonedge.css includes dense matrix/icon styling',
   css.includes('.woe-icon-placeholder') &&
   css.includes('#woe-table-matrix'));
+ok('waxonedge.css includes scanner-only and token analytics page layouts',
+  css.includes('.woe-scanner-page') && css.includes('.woe-token-analytics-page') && css.includes('.woe-analytics-chart-panel'));
 ok('waxonedge.css hides/minimizes sidebar for WaxOnEdge by default',
   css.includes('body.page-waxonedge #sidebar'));
 ok('waxonedge.css includes wide mode layout overrides', css.includes('body.woe-wide-mode'));

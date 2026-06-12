@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="WAXONEDGE - visual WAX token, pair, pool, and multi-DEX analytics dashboard powered by indexed Cloudflare Worker and D1 data.">
+  <meta name="description" content="WAXONEDGE - visual WAX token bubble scanner powered by indexed Cloudflare Worker and D1 data.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="WAXONEDGE - WAX Bubble Analytics | Crypto Moonboys">
-  <meta property="og:description" content="Visual WAX token bubbles, indexed pair liquidity, source status, and DEX analytics powered by the WaxOnEdge backend.">
+  <meta property="og:title" content="WAXONEDGE - WAX Bubble Scanner | Crypto Moonboys">
+  <meta property="og:description" content="Scan WAX token bubbles, indexed liquidity, volume, and source coverage from the WaxOnEdge backend.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cryptomoonboys.com/waxonedge.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <link rel="canonical" href="https://cryptomoonboys.com/waxonedge.html">
-  <title>WAXONEDGE - WAX Bubble Analytics | Crypto Moonboys</title>
+  <title>WAXONEDGE - WAX Bubble Scanner | Crypto Moonboys</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
@@ -21,23 +21,20 @@
   <link rel="stylesheet" href="/css/waxonedge-bubbles-v2.css">
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
-<body class="page-waxonedge page-standard-shell woe-wide-mode">
+<body class="page-waxonedge page-standard-shell woe-wide-mode woe-scanner-page">
 
 <main id="content" role="main">
   <div class="woe-page" id="woe-home">
     <header class="woe-og-bar woe-terminal-header">
-      <div class="woe-og-brand">
+      <a class="woe-og-brand" href="/waxonedge.html" aria-label="WaxOnEdge scanner home">
         <span class="woe-og-brand-mark" aria-hidden="true">WE</span>
         <div>
           <h1 class="woe-page-title">WAXONEDGE</h1>
-          <p class="woe-page-subtitle">WAX bubble scanner and indexed DEX liquidity terminal</p>
+          <p class="woe-page-subtitle">WAX bubble scanner</p>
         </div>
-      </div>
+      </a>
       <nav class="woe-og-nav" aria-label="WAXONEDGE page navigation">
-        <a href="#woe-bubbles-heading">Bubbles</a>
-        <a href="#woe-tokens-heading">Top 99 Tokens</a>
-        <a href="#woe-pairs-heading">Top Pairs</a>
-        <a href="#woe-token-detail">Token Detail</a>
+        <a href="#woe-bubbles-heading" aria-current="page">Bubbles</a>
       </nav>
       <div class="woe-og-wax-block">
         <span class="woe-og-block-label">WAX Price</span>
@@ -50,35 +47,15 @@
       </div>
     </header>
 
-    <section class="woe-hero-terminal" aria-labelledby="woe-bubbles-heading">
-      <div class="woe-hero-copy">
+    <section class="woe-section woe-bubble-section woe-scanner-only" aria-labelledby="woe-bubbles-heading">
+      <div class="woe-scanner-heading">
         <span class="woe-kicker">Indexed Cloudflare/D1 feed</span>
-        <h2 id="woe-bubbles-heading">Bubble Token Dashboard</h2>
+        <h2 id="woe-bubbles-heading">Bubble Token Scanner</h2>
       </div>
-      <div class="woe-kpi-grid" aria-label="WaxOnEdge live metrics">
-        <div class="woe-kpi"><span>WAX Price</span><strong id="woe-kpi-wax-price">$ --</strong></div>
-        <div class="woe-kpi"><span>Indexed Tokens</span><strong id="woe-kpi-token-count">--</strong></div>
-        <div class="woe-kpi"><span>Indexed Pairs</span><strong id="woe-kpi-pair-count">--</strong></div>
-        <div class="woe-kpi"><span>Aggregates</span><strong id="woe-kpi-aggregate-count">--</strong></div>
-        <div class="woe-kpi"><span>Last Sync</span><strong id="woe-kpi-last-sync">--</strong></div>
-      </div>
-    </section>
-
-    <section class="woe-source-strip-section" aria-labelledby="woe-sources-heading">
-      <div class="woe-section-heading woe-compact-heading">
-        <span id="woe-sources-heading">Source Status</span>
-        <span class="woe-section-count" id="woe-source-status-meta">Live adapter status from bootstrap</span>
-      </div>
-      <div class="woe-source-strip" id="woe-sources-grid" role="list" aria-label="Data source status">
-        <p class="woe-loading">Loading source status...</p>
-      </div>
-    </section>
-
-    <section class="woe-section woe-bubble-section" aria-labelledby="woe-scanner-controls">
       <div class="woe-toolbar" id="woe-scanner-controls">
         <div class="woe-search-group">
           <label for="woe-global-search">Search</label>
-          <input id="woe-global-search" class="woe-search-input" type="search" placeholder="Filter symbols, contracts, pairs, sources..." autocomplete="off" aria-label="Filter dashboard">
+          <input id="woe-global-search" class="woe-search-input" type="search" placeholder="Filter symbols, contracts, sources..." autocomplete="off" aria-label="Filter token bubbles">
         </div>
         <div class="woe-search-group">
           <label for="woe-bubble-metric">Bubble Size</label>
@@ -102,139 +79,6 @@
       </div>
       <div id="woe-bubble-board" class="woe-bubble-board" aria-live="polite">
         <p class="woe-loading">Loading token bubbles...</p>
-      </div>
-    </section>
-
-    <section class="woe-section woe-token-rank-section" aria-labelledby="woe-tokens-heading">
-      <div class="woe-section-heading">
-        <span id="woe-tokens-heading">Top 99 Tokens</span>
-        <span class="woe-section-count" id="woe-tokens-count">Loading...</span>
-      </div>
-      <div id="woe-token-rank-grid" class="woe-token-rank-grid" aria-live="polite">
-        <p class="woe-loading">Loading ranked tokens...</p>
-      </div>
-    </section>
-
-    <section class="woe-section" id="woe-token-detail" aria-labelledby="woe-detail-heading">
-      <div class="woe-section-heading">
-        <span id="woe-detail-heading">Token Detail</span>
-        <span class="woe-section-count" id="woe-detail-status">Click a bubble or token row</span>
-      </div>
-      <p class="woe-detail-note">
-        Backend-indexed token detail. Values appear only when computed from real indexed liquidity, volume, supply, or candle data.
-      </p>
-      <div class="woe-detail-grid">
-        <section class="woe-detail-card woe-detail-stats-card" aria-labelledby="woe-detail-stats-heading">
-          <div class="woe-detail-card-heading">
-            <span id="woe-detail-stats-heading">Token Metrics</span>
-            <span class="woe-detail-card-meta" id="woe-detail-meta">No token selected</span>
-          </div>
-          <div id="woe-token-summary" class="woe-token-summary">
-            <div class="woe-scanner-first-state">
-              <span class="woe-scanner-first-icon" aria-hidden="true">+</span>
-              <p>Select a token bubble to load indexed analytics.</p>
-            </div>
-          </div>
-          <div id="woe-token-stats" class="woe-stats-grid" aria-live="polite"></div>
-        </section>
-        <section class="woe-detail-card woe-detail-chart-card" aria-labelledby="woe-chart-heading">
-          <div class="woe-detail-card-heading">
-            <span id="woe-chart-heading">Selected Pair Chart</span>
-            <span class="woe-detail-card-meta" id="woe-chart-meta">Best indexed WAX liquidity pair</span>
-          </div>
-          <div id="woe-chart-panel" class="woe-chart-panel" aria-live="polite">
-            <div class="woe-chart-empty">Select a token to check indexed candles.</div>
-          </div>
-        </section>
-      </div>
-    </section>
-
-    <section class="woe-section" aria-labelledby="woe-token-pairs-heading">
-      <div class="woe-section-heading">
-        <span id="woe-token-pairs-heading">Selected Token Pairs</span>
-        <span class="woe-section-count" id="woe-matrix-count">No token selected</span>
-      </div>
-      <p id="woe-matrix-meta" class="woe-detail-note">Multi-source rows are normalized from active backend DEX adapters after token selection.</p>
-      <div class="woe-table-filter-row">
-        <input id="woe-filter-matrix" class="woe-filter-input" type="search" placeholder="Filter selected token pairs..." autocomplete="off" aria-label="Filter selected token pair matrix">
-      </div>
-      <div class="woe-table-wrap">
-        <table class="woe-table" id="woe-table-matrix" aria-label="Selected token pair matrix">
-          <thead>
-            <tr>
-              <th data-col="rank" data-numeric="true">Rank</th>
-              <th data-col="source">Source / DEX</th>
-              <th data-col="pair">Pair</th>
-              <th data-col="other">Other Token</th>
-              <th data-col="value">Other Value</th>
-              <th data-col="liq" data-numeric="true">Liquidity / TVL</th>
-              <th data-col="waxliq" data-numeric="true">WAX Liquidity</th>
-              <th data-col="price">Current Price</th>
-              <th data-col="chg" data-numeric="true">24h Change</th>
-              <th data-col="vol24" data-numeric="true">24h Volume</th>
-              <th data-col="reserves">Reserves</th>
-              <th data-col="chart">Chart</th>
-              <th>Explorer</th>
-            </tr>
-          </thead>
-          <tbody id="woe-matrix-body">
-            <tr><td colspan="13" class="woe-loading">Select a token to inspect its indexed pairs.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="woe-section" id="woe-pair-detail" aria-labelledby="woe-pair-detail-heading">
-      <div class="woe-section-heading">
-        <span id="woe-pair-detail-heading">Pair Detail</span>
-        <span class="woe-section-count" id="woe-pair-detail-status">Click a pair row</span>
-      </div>
-      <div id="woe-pair-detail-panel" class="woe-pair-detail-panel">
-        <div class="woe-chart-empty">Pair details open here from the pair matrix.</div>
-      </div>
-    </section>
-
-    <section class="woe-section" aria-labelledby="woe-pairs-heading">
-      <div class="woe-section-heading">
-        <span id="woe-pairs-heading">Top Pairs</span>
-        <span class="woe-section-count" id="woe-pairs-count">Loading...</span>
-      </div>
-      <div class="woe-table-filter-row">
-        <input id="woe-filter-pairs" class="woe-filter-input" type="search" placeholder="Filter all indexed pairs..." autocomplete="off" aria-label="Filter all pair matrix">
-      </div>
-      <div class="woe-table-wrap">
-        <table class="woe-table" id="woe-table-pairs" aria-label="All indexed pair matrix">
-          <thead>
-            <tr>
-              <th data-col="rank" data-numeric="true">Rank</th>
-              <th data-col="source">Source / DEX</th>
-              <th data-col="pair">Pair</th>
-              <th data-col="tokenA">Token A</th>
-              <th data-col="tokenB">Token B</th>
-              <th data-col="liq" data-numeric="true">Liquidity / TVL</th>
-              <th data-col="waxliq" data-numeric="true">WAX Liquidity</th>
-              <th data-col="price">Current Price</th>
-              <th data-col="chg" data-numeric="true">24h Change</th>
-              <th data-col="vol24" data-numeric="true">24h Volume</th>
-              <th data-col="reserves">Reserves</th>
-              <th data-col="chart">Chart</th>
-              <th>Explorer</th>
-            </tr>
-          </thead>
-          <tbody id="woe-pairs-body">
-            <tr><td colspan="13" class="woe-loading">Loading indexed pairs...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="woe-section woe-account-compact" id="woe-account-lookup" aria-labelledby="woe-holders-heading">
-      <div class="woe-section-heading">
-        <span id="woe-holders-heading">Account Token Balance Lookup</span>
-        <span class="woe-section-count">Read-only Hyperion query</span>
-      </div>
-      <div id="woe-holders-panel">
-        <p class="woe-loading">Loading account balance panel...</p>
       </div>
     </section>
   </div>
