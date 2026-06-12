@@ -156,7 +156,8 @@ ok('frontend only labels historical candle volume when chart source tokenA match
   frontend.includes('canUseHistoricalVolumes && historicalVolumes && historicalVolumes.sevenDay != null') &&
   frontend.includes('canUseHistoricalVolumes && historicalVolumes && historicalVolumes.thirtyDay != null'));
 ok('frontend fallback mode does not claim indexed backend adapters',
-  frontend.includes('Diagnostic fallback active - backend adapter status unavailable') &&
+  frontend.includes('Diagnostic fallback active') &&
+  frontend.includes('Backend adapter status unavailable') &&
   frontend.includes("if (state.backend.mode === 'backend')") &&
   !frontend.includes('Adapters active: Alcor API + swap.alcor + swap.taco + swap.nefty + swap.box'));
 ok('frontend source panel names all core backend adapters',
@@ -176,9 +177,11 @@ ok('Node/Wrangler versions are aligned on Node 22',
   packageJson.devDependencies.wrangler === '^4.100.0');
 ok('frontend default state still avoids eosio.token/WAX dead detail', frontend.includes('WAX_NATIVE_KEY') && frontend.includes('key === WAX_NATIVE_KEY'));
 ok('frontend dashboard-first polish is present',
-  html.includes('woe-dashboard-shell') &&
+  html.includes('woe-bubble-board') &&
+  html.includes('woe-token-rank-grid') &&
   frontend.includes('renderDashboard()') &&
-  frontend.includes('selectedPair && liquidity > 0 && volume > 0'));
+  frontend.includes("state.filters.bubbleMetric === 'volume'") &&
+  frontend.includes('hasRealSignal'));
 ok('frontend has no wallet/swap/liquidity action buttons',
   !/(>|\bvalue=["'])(Connect Wallet|Add Liquidity|Remove Liquidity|Trade on Swap)(<|["'])/.test(frontend + html));
 
