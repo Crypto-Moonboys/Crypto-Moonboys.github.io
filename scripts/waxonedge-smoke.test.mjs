@@ -39,18 +39,24 @@ function ok(label, condition, detail) {
 ok('waxonedge.html exists', exists('waxonedge.html'));
 ok('waxonedge/index.html clean-route alias exists', exists('waxonedge/index.html'));
 ok('css/waxonedge.css exists', exists('css/waxonedge.css'));
+ok('css/waxonedge-bubbles-v2.css exists', exists('css/waxonedge-bubbles-v2.css'));
 ok('js/waxonedge.js exists', exists('js/waxonedge.js'));
 ok('js/waxonedge-sources.js exists', exists('js/waxonedge-sources.js'));
+ok('js/waxonedge-bubbles-v2.js exists', exists('js/waxonedge-bubbles-v2.js'));
 
 const html = exists('waxonedge.html') ? read('waxonedge.html') : '';
 const aliasHtml = exists('waxonedge/index.html') ? read('waxonedge/index.html') : '';
 const css = exists('css/waxonedge.css') ? read('css/waxonedge.css') : '';
+const v2Css = exists('css/waxonedge-bubbles-v2.css') ? read('css/waxonedge-bubbles-v2.css') : '';
 const js = exists('js/waxonedge.js') ? read('js/waxonedge.js') : '';
 const sourcesJs = exists('js/waxonedge-sources.js') ? read('js/waxonedge-sources.js') : '';
+const v2Js = exists('js/waxonedge-bubbles-v2.js') ? read('js/waxonedge-bubbles-v2.js') : '';
 
 ok('waxonedge.html references /css/waxonedge.css', html.includes('/css/waxonedge.css'));
+ok('waxonedge.html references /css/waxonedge-bubbles-v2.css', html.includes('/css/waxonedge-bubbles-v2.css'));
 ok('waxonedge.html references /js/waxonedge.js', html.includes('/js/waxonedge.js'));
 ok('waxonedge.html references /js/waxonedge-sources.js', html.includes('/js/waxonedge-sources.js'));
+ok('waxonedge.html references /js/waxonedge-bubbles-v2.js', html.includes('/js/waxonedge-bubbles-v2.js'));
 ok('waxonedge clean-route alias redirects to /waxonedge.html', aliasHtml.includes('url=/waxonedge.html'));
 ok('waxonedge clean-route alias preserves query-string routing', aliasHtml.includes("window.location.search || ''"));
 ok('waxonedge clean-route alias preserves hash routing', aliasHtml.includes("window.location.hash || ''"));
@@ -89,6 +95,13 @@ try {
   ok('js/waxonedge-sources.js passes node --check', false, error.message);
 }
 
+try {
+  execFileSync(process.execPath, ['--check', path.join(ROOT, 'js/waxonedge-bubbles-v2.js')], { encoding: 'utf8' });
+  ok('js/waxonedge-bubbles-v2.js passes node --check', true);
+} catch (error) {
+  ok('js/waxonedge-bubbles-v2.js passes node --check', false, error.message);
+}
+
 ok('waxonedge-sources.js references swap.nefty contract', sourcesJs.includes('swap.nefty'));
 ok('waxonedge-sources.js includes WaxBlock link for swap.nefty', sourcesJs.includes('waxblock.io/account/swap.nefty'));
 ok('waxonedge-sources.js uses Alcor api/v2 base', sourcesJs.includes("var ALCOR_API = 'https://wax.alcor.exchange/api/v2';"));
@@ -105,6 +118,21 @@ ok('waxonedge.js performs swap.nefty ABI lookup', js.includes('get_abi') || js.i
 ok('waxonedge.js includes query-string token detail state', js.includes('token=') && js.includes('contract='));
 ok('waxonedge.js fetches Alcor chart candles from /markets/:id/charts for diagnostic fallback', js.includes('/charts') && js.includes('/markets'));
 ok('waxonedge.js keeps Lightweight Charts support', js.includes('window.LightweightCharts') && js.includes('tv.createChart'));
+
+ok('waxonedge-bubbles-v2.js uses backend bootstrap endpoint',
+  v2Js.includes("var API_PATH = '/api/waxonedge/bootstrap';"));
+ok('waxonedge-bubbles-v2.js renders v2 visual bubble map',
+  v2Js.includes('function renderBubbles') && v2Js.includes('woe-v2-bubble') && v2Js.includes('woe-v2-bubble-cloud'));
+ok('waxonedge-bubbles-v2.js supports liquidity, volume, and pair-count sizing',
+  v2Js.includes("metric === 'volume'") && v2Js.includes("metric === 'pairs'") && v2Js.includes('liquidityWax'));
+ok('waxonedge-bubbles-v2.js suppresses self-triggered observer loops',
+  v2Js.includes('function commitBoardHtml') && v2Js.includes('window.setTimeout(function ()') && v2Js.includes('state.rendering = false'));
+ok('waxonedge-bubbles-v2.js marks v2 bubbles as bound for the base click binder',
+  v2Js.includes('data-bound="true"'));
+ok('waxonedge-bubbles-v2.js parses active selection once per render',
+  v2Js.includes('function getActiveTokenKey') && v2Js.includes('var activeKey = getActiveTokenKey();'));
+ok('waxonedge-bubbles-v2.js exposes accessible rail group label',
+  v2Js.includes('role="group"') && v2Js.includes('Visible bubble market summary'));
 
 ok('waxonedge.html includes KPI strip', html.includes('woe-kpi-grid') && html.includes('Indexed Tokens') && html.includes('Indexed Pairs'));
 ok('waxonedge.html includes source status strip', html.includes('Source Status') && html.includes('id="woe-sources-grid"'));
@@ -189,6 +217,13 @@ ok('waxonedge.css hides/minimizes sidebar for WaxOnEdge by default',
 ok('waxonedge.css includes wide mode layout overrides', css.includes('body.woe-wide-mode'));
 ok('waxonedge.css wide mode hides sidebar in terminal mode', css.includes('body.woe-wide-mode #sidebar'));
 ok('waxonedge.css includes active token styling', css.includes('.woe-token-rank-active') || css.includes('.woe-row-active'));
+
+ok('waxonedge-bubbles-v2.css includes v2 board and cloud styling',
+  v2Css.includes('.woe-v2-board') && v2Css.includes('.woe-v2-bubble-cloud'));
+ok('waxonedge-bubbles-v2.css includes v2 bubble styling',
+  v2Css.includes('.woe-v2-bubble') && v2Css.includes('.woe-v2-bubble-active'));
+ok('waxonedge-bubbles-v2.css includes responsive and reduced-motion support',
+  v2Css.includes('@media (max-width: 980px)') && v2Css.includes('@media (prefers-reduced-motion: reduce)'));
 
 ok('waxonedge.js renders source/token icon placeholders',
   js.includes('iconPlaceholderHtml') &&
