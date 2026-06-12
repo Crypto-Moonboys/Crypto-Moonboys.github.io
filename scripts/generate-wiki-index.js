@@ -233,18 +233,24 @@ function buildAliases(samEntity, canonicalSlug) {
 
 function mergeAliases(...lists) {
   const merged = [];
-  const seen = new Set();
+  const seenByTitle = new Map();
   for (const list of lists) {
     for (const alias of list || []) {
       if (!alias || typeof alias !== 'object') continue;
       const title = String(alias.title || '').trim();
       if (!title) continue;
+      const normalizedTitle = normalize(title);
+      if (!normalizedTitle) continue;
       const url = String(alias.url || '').trim();
-      const key = `${normalize(title)}|${url.toLowerCase()}`;
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
+      const existingIndex = seenByTitle.get(normalizedTitle);
+      if (typeof existingIndex === 'number') {
+        const existing = merged[existingIndex];
+        if (url && !existing.url) existing.url = url;
+        continue;
+      }
       const value = { title };
       if (url) value.url = url;
+      seenByTitle.set(normalizedTitle, merged.length);
       merged.push(value);
     }
   }
@@ -497,7 +503,7 @@ function run() {
       : [];
 
     const keywords = Array.from(new Set([...htmlKeywords, ...memoryTags]));
-    let aliases = buildAliases(samEntity, canonicalSlug);
+    let aliases = mergeAliases(buildAliases(samEntity, canonicalSlug));
     if (isAliasSlug(slug) || slug !== canonicalSlug) {
       aliases = mergeAliases(aliases, [{ title: titleFromSlug(slug), url }]);
     }
