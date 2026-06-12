@@ -33,11 +33,13 @@ function ok(label, condition, detail) {
 }
 
 ok('waxonedge.html exists', exists('waxonedge.html'));
+ok('waxonedge/index.html clean-route alias exists', exists('waxonedge/index.html'));
 ok('css/waxonedge.css exists', exists('css/waxonedge.css'));
 ok('js/waxonedge.js exists', exists('js/waxonedge.js'));
 ok('js/waxonedge-sources.js exists', exists('js/waxonedge-sources.js'));
 
 const html = exists('waxonedge.html') ? read('waxonedge.html') : '';
+const aliasHtml = exists('waxonedge/index.html') ? read('waxonedge/index.html') : '';
 const css = exists('css/waxonedge.css') ? read('css/waxonedge.css') : '';
 const js = exists('js/waxonedge.js') ? read('js/waxonedge.js') : '';
 const sourcesJs = exists('js/waxonedge-sources.js') ? read('js/waxonedge-sources.js') : '';
@@ -45,6 +47,9 @@ const sourcesJs = exists('js/waxonedge-sources.js') ? read('js/waxonedge-sources
 ok('waxonedge.html references /css/waxonedge.css', html.includes('/css/waxonedge.css'));
 ok('waxonedge.html references /js/waxonedge.js', html.includes('/js/waxonedge.js'));
 ok('waxonedge.html references /js/waxonedge-sources.js', html.includes('/js/waxonedge-sources.js'));
+ok('waxonedge clean-route alias redirects to /waxonedge.html', aliasHtml.includes('url=/waxonedge.html'));
+ok('waxonedge clean-route alias preserves query-string routing', aliasHtml.includes("window.location.search || ''"));
+ok('waxonedge clean-route alias preserves hash routing', aliasHtml.includes("window.location.hash || ''"));
 ok('waxonedge.html includes OG WaxOnEdge top bar', html.includes('woe-og-bar'));
 ok('waxonedge.html includes OG nav labels', html.includes('HOME') && html.includes('SPOT') && html.includes('MARKETS') && html.includes('ANALYTICS'));
 ok('waxonedge.html includes WAX price block', html.includes('id="woe-topbar-wax-price"'));
