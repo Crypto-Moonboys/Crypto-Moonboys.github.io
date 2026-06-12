@@ -64,11 +64,23 @@ ok('waxonedge clean-route alias preserves query-string routing', aliasHtml.inclu
 ok('waxonedge clean-route alias preserves hash routing', aliasHtml.includes("window.location.hash || ''"));
 
 ok('waxonedge.html includes terminal top bar', html.includes('woe-og-bar'));
-ok('waxonedge.html includes bubble terminal nav labels',
-  html.includes('Bubbles') && !html.includes('Top 99 Tokens') && !html.includes('Top Pairs') && !html.includes('Token Detail'));
+ok('waxonedge.html removes visible scanner chrome buttons',
+  !html.includes('woe-og-nav') &&
+  !html.includes('woe-og-actions') &&
+  !html.includes('woe-readonly-badge') &&
+  !html.includes('Read-Only') &&
+  !html.includes('Exit Wide') &&
+  !html.includes('id="woe-wide-toggle"'));
 ok('waxonedge.html includes WAX price block', html.includes('id="woe-topbar-wax-price"'));
 ok('waxonedge.html waits for live WAX price data by default', html.includes('Waiting for live data...'));
-ok('waxonedge.html includes read-only terminal action area', html.includes('Read-Only') && html.includes('woe-wide-toggle'));
+ok('analytics token page removes unnecessary header nav/actions',
+  !tokenHtml.includes('woe-og-nav') &&
+  !tokenHtml.includes('href="/waxonedge.html">Bubbles</a>') &&
+  !tokenHtml.includes('href="#woe-chart-heading"') &&
+  !tokenHtml.includes('href="#woe-token-pairs-heading"') &&
+  !tokenHtml.includes('Read-Only') &&
+  !tokenHtml.includes('Exit Wide') &&
+  !tokenHtml.includes('id="woe-wide-toggle"'));
 
 const FORBIDDEN_LABELS = ['Swap', 'Add Liquidity', 'Remove Liquidity', 'Connect Wallet', 'Trade on Swap', 'Static read-only MVP'];
 for (const label of FORBIDDEN_LABELS) {
@@ -81,7 +93,7 @@ for (const label of FORBIDDEN_LABELS) {
 
 ok('waxonedge.html has canonical favicon tag', html.includes('<link rel="icon" type="image/png" href="/favicon.png">'));
 ok('waxonedge.html does not reference old domain crypto-moonboys.github.io', !/crypto-moonboys\.github\.io/.test(html));
-ok('waxonedge.html contains read-only badge', /Read-Only|read-only|woe-readonly-badge/.test(html));
+ok('waxonedge.html does not expose read-only badge chrome', !/Read-Only|woe-readonly-badge/.test(html));
 
 try {
   execFileSync(process.execPath, ['--check', path.join(ROOT, 'js/waxonedge.js')], { encoding: 'utf8' });
@@ -130,6 +142,14 @@ ok('waxonedge-bubbles-v2.js renders v2 visual bubble map',
   v2Js.includes('function renderBubbles') && v2Js.includes('woe-v2-bubble') && v2Js.includes('woe-v2-bubble-cloud'));
 ok('waxonedge-bubbles-v2.js supports liquidity, volume, and pair-count sizing',
   v2Js.includes("metric === 'volume'") && v2Js.includes("metric === 'pairs'") && v2Js.includes('liquidityWax'));
+ok('waxonedge-bubbles-v2.js preserves distinct indexed source keys',
+  v2Js.includes('function pairSourceKey(pair)') &&
+  v2Js.includes('pair.source || pair.adapter || pair.rawSource || pair.raw_source') &&
+  v2Js.includes("if (source === 'alcor') return 'alcor';") &&
+  v2Js.includes("if (source === 'swap.alcor') return 'swap.alcor';") &&
+  v2Js.includes("if (source === 'swap.taco') return 'swap.taco';") &&
+  v2Js.includes("if (source === 'swap.nefty') return 'swap.nefty';") &&
+  v2Js.includes("if (source === 'swap.box') return 'swap.box';"));
 ok('waxonedge-bubbles-v2.js suppresses self-triggered observer loops',
   v2Js.includes('function commitBoardHtml') && v2Js.includes('window.setTimeout(function ()') && v2Js.includes('state.rendering = false'));
 ok('waxonedge-bubbles-v2.js marks v2 bubbles as bound for the base click binder',
@@ -167,6 +187,11 @@ ok('waxonedge.js sizes bubbles from liquidity, volume, or pair count',
   js.includes('metricValueForToken') && js.includes("metric === 'volume'") && js.includes("metric === 'pairs'"));
 ok('waxonedge.js colors bubbles from 24h change', js.includes('woe-bubble-up') && js.includes('woe-bubble-down'));
 ok('waxonedge.js derives source badges from indexed pair rows', js.includes('function getTokenSources') && js.includes('sourceBadgesHtml'));
+ok('waxonedge.js maps backend source labels without collapsing swap adapters into Alcor',
+  js.includes("'swap.alcor': { label: 'swap.alcor'") &&
+  js.includes("'swap.taco': { label: 'swap.taco'") &&
+  js.includes("'swap.nefty': { label: 'swap.nefty'") &&
+  js.includes("'swap.box': { label: 'swap.box'"));
 ok('waxonedge.js still builds Top 99 scanner records for bubble sizing', js.includes('getRankedTokenRecords().slice(0, 99)'));
 ok('waxonedge.js keeps pair matrix renderer for token analytics route', js.includes('function renderMatrix') && js.includes('woe-matrix-body'));
 ok('waxonedge.js renders pair detail on row click', js.includes('function renderPairDetail') && js.includes('woe-pair-detail-link'));
@@ -191,8 +216,7 @@ ok('wide mode toggle updates aria-pressed',
 ok('wide mode localStorage zero disables default wide mode',
   js.includes("localStorage.getItem('woe_wide_mode') === '0'") && js.includes('applyWideMode(false)'));
 ok('default wide mode remains enabled in scanner body class',
-  /<body[^>]*class="[^"]*\bwoe-wide-mode\b[^"]*"/.test(html) &&
-  html.includes('aria-pressed="true"'));
+  /<body[^>]*class="[^"]*\bwoe-wide-mode\b[^"]*"/.test(html));
 
 for (const label of [
   'Selected price source',
@@ -252,7 +276,7 @@ ok('waxonedge.js renders source/token icon placeholders',
 ok('waxonedge.js updates the top bar WAX price block',
   js.includes('updateTopBarWaxPrice') &&
   js.includes('woe-topbar-wax-price'));
-ok('waxonedge.html includes wide mode toggle button', html.includes('id="woe-wide-toggle"'));
+ok('waxonedge.html omits wide mode toggle button chrome', !html.includes('id="woe-wide-toggle"'));
 ok('waxonedge.js implements toggleWideMode and woe-wide-mode class',
   js.includes('toggleWideMode') && js.includes('woe-wide-mode'));
 ok('waxonedge.js restores wide mode from localStorage on boot', js.includes('restoreWideMode'));

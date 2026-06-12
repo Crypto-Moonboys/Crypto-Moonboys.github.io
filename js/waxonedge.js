@@ -257,10 +257,15 @@
 
   function getDexShortLabel(label) {
     var normalized = String(label || '').toLowerCase();
-    if (normalized.indexOf('taco') !== -1) return 'Taco';
-    if (normalized.indexOf('nefty') !== -1) return 'Nefty';
-    if (normalized.indexOf('box') !== -1) return 'BOX';
-    if (normalized.indexOf('alcor') !== -1) return 'Alcor';
+    if (normalized === 'alcor') return 'alcor';
+    if (normalized === 'swap.alcor') return 'swap.alcor';
+    if (normalized === 'swap.taco') return 'swap.taco';
+    if (normalized === 'swap.nefty') return 'swap.nefty';
+    if (normalized === 'swap.box') return 'swap.box';
+    if (normalized.indexOf('taco') !== -1) return 'swap.taco';
+    if (normalized.indexOf('nefty') !== -1) return 'swap.nefty';
+    if (normalized.indexOf('box') !== -1) return 'swap.box';
+    if (normalized.indexOf('alcor') !== -1) return 'alcor';
     return label || 'DEX';
   }
 
@@ -365,10 +370,10 @@
     var key = normalizeContract(source || '');
     var map = {
       alcor: { label: 'Alcor API', meta: 'Alcor REST /pairs + /tickers', sort: 1, explorer: 'https://wax.alcor.exchange', explorerLabel: 'Alcor' },
-      'swap.alcor': { label: 'Alcor', meta: 'swap.alcor ABI-indexed pools', sort: 2, explorer: 'https://waxblock.io/account/swap.alcor', explorerLabel: 'WaxBlock' },
-      'swap.taco': { label: 'Taco', meta: 'swap.taco ABI-indexed pairs', sort: 3, explorer: 'https://waxblock.io/account/swap.taco', explorerLabel: 'WaxBlock' },
-      'swap.nefty': { label: 'NeftyBlocks', meta: 'swap.nefty ABI-indexed pairs', sort: 4, explorer: 'https://waxblock.io/account/swap.nefty', explorerLabel: 'WaxBlock' },
-      'swap.box': { label: 'BOX', meta: 'swap.box ABI-indexed pairs', sort: 5, explorer: 'https://waxblock.io/account/swap.box', explorerLabel: 'WaxBlock' },
+      'swap.alcor': { label: 'swap.alcor', meta: 'swap.alcor ABI-indexed pools', sort: 2, explorer: 'https://waxblock.io/account/swap.alcor', explorerLabel: 'WaxBlock' },
+      'swap.taco': { label: 'swap.taco', meta: 'swap.taco ABI-indexed pairs', sort: 3, explorer: 'https://waxblock.io/account/swap.taco', explorerLabel: 'WaxBlock' },
+      'swap.nefty': { label: 'swap.nefty', meta: 'swap.nefty ABI-indexed pairs', sort: 4, explorer: 'https://waxblock.io/account/swap.nefty', explorerLabel: 'WaxBlock' },
+      'swap.box': { label: 'swap.box', meta: 'swap.box ABI-indexed pairs', sort: 5, explorer: 'https://waxblock.io/account/swap.box', explorerLabel: 'WaxBlock' },
     };
     return map[key] || { label: source || 'Source', meta: 'Indexed backend adapter', sort: 10, explorer: 'https://waxblock.io/account/' + encodeURIComponent(source || ''), explorerLabel: 'WaxBlock' };
   }
