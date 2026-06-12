@@ -6,34 +6,135 @@
 
 /* ── Page layout ─────────────────────────────────────────────── */
 .woe-page {
-  padding: 24px 20px 60px;
-  max-width: 1280px;
+  padding: 18px 16px 60px;
+  max-width: 1360px;
   margin: 0 auto;
 }
 
-.woe-page-header {
+.woe-og-bar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 28px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--color-border);
+  gap: 14px 18px;
+  margin-bottom: 22px;
+  padding: 12px 14px;
+  border: 1px solid #1a2a30;
+  background:
+    linear-gradient(180deg, rgba(18, 26, 31, 0.96), rgba(7, 10, 12, 0.98)),
+    #080b0d;
+  box-shadow:
+    inset 0 1px 0 rgba(170, 236, 255, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.36);
+}
+
+.woe-og-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.woe-og-brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(0, 229, 255, 0.28);
+  background: linear-gradient(180deg, rgba(0, 229, 255, 0.15), rgba(0, 0, 0, 0.1));
+  color: var(--neon-cyan, #00e5ff);
+  font-size: 1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.woe-og-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.woe-og-nav a,
+.woe-og-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid #22363d;
+  background: #10171b;
+  color: #d8f8ff;
+  text-decoration: none;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  transition: border-color .15s, color .15s, background .15s;
+}
+
+.woe-og-nav a:hover,
+.woe-og-nav a:focus,
+.woe-og-action:hover,
+.woe-og-action:focus {
+  border-color: rgba(0, 229, 255, 0.48);
+  color: var(--neon-cyan, #00e5ff);
+  background: #0e1418;
+}
+
+.woe-og-wax-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 128px;
+  padding: 8px 12px;
+  border: 1px solid #22363d;
+  background: #091114;
+  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.05);
+}
+
+.woe-og-block-label {
+  color: var(--color-text-muted);
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+#woe-topbar-wax-price {
+  color: #91fff2;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+#woe-topbar-wax-price-meta {
+  color: var(--color-text-muted);
+  font-size: .72rem;
+}
+
+.woe-og-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .woe-page-title {
-  font-size: 1.6rem;
+  font-size: 1.28rem;
   font-weight: 800;
   color: var(--neon-cyan, #00e5ff);
-  letter-spacing: .04em;
+  letter-spacing: .08em;
   line-height: 1.1;
   margin: 0;
 }
 
 .woe-page-subtitle {
-  font-size: .85rem;
+  font-size: .74rem;
   color: var(--color-text-muted);
-  margin: 4px 0 0;
+  margin: 3px 0 0;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 
 .woe-readonly-badge {
@@ -43,7 +144,7 @@
   background: rgba(57, 255, 20, 0.08);
   border: 1px solid rgba(57, 255, 20, 0.35);
   color: var(--neon-green, #39ff14);
-  border-radius: 4px;
+  border-radius: 0;
   font-size: .72rem;
   font-weight: 700;
   padding: 3px 10px;
@@ -56,26 +157,34 @@
 .woe-search-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 24px;
+  gap: 10px 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding: 10px 12px;
+  border: 1px solid #18242a;
+  background: #0b1013;
 }
 
 .woe-search-bar label {
-  font-size: .8rem;
-  color: var(--color-text-muted);
+  font-size: .72rem;
+  color: #cdd6dd;
   white-space: nowrap;
   flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-weight: 700;
 }
 
 .woe-search-input {
   flex: 1;
-  max-width: 520px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius, 6px);
+  min-width: 260px;
+  max-width: 580px;
+  background: #060a0d;
+  border: 1px solid #22363d;
+  border-radius: 0;
   color: var(--color-text);
-  font-size: .9rem;
-  padding: 8px 14px;
+  font-size: .86rem;
+  padding: 9px 12px;
   outline: none;
   transition: border-color .15s;
 }
@@ -87,21 +196,22 @@
 
 /* ── Section headings ────────────────────────────────────────── */
 .woe-section {
-  margin-bottom: 40px;
+  margin-bottom: 28px;
 }
 
 .woe-section-heading {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
-  font-size: 1rem;
+  gap: 8px 10px;
+  font-size: .94rem;
   font-weight: 700;
-  color: var(--color-accent, #ffd600);
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 8px;
-  margin-bottom: 14px;
-  letter-spacing: .03em;
+  color: #e6f7ff;
+  border-bottom: 1px solid #1c2b31;
+  padding-bottom: 9px;
+  margin-bottom: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
 }
 
 .woe-section-count {
@@ -120,35 +230,38 @@
 
 .woe-detail-note {
   color: var(--color-text-muted);
-  font-size: .82rem;
+  font-size: .78rem;
   line-height: 1.5;
-  margin: -4px 0 14px;
+  margin: -2px 0 12px;
 }
 
 /* ── Token analytics detail ───────────────────────────────────── */
 .woe-detail-grid {
   display: grid;
-  grid-template-columns: minmax(280px, 400px) minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: minmax(290px, 360px) minmax(0, 1fr);
+  gap: 12px;
   align-items: stretch;
 }
 
 .woe-detail-card {
-  background: linear-gradient(180deg, rgba(28, 35, 51, 0.94), rgba(14, 18, 28, 0.98));
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  padding: 16px;
+  background: linear-gradient(180deg, rgba(14, 20, 24, 0.98), rgba(7, 10, 12, 0.98));
+  border: 1px solid #1a2a30;
+  border-radius: 0;
+  padding: 12px;
   min-height: 100%;
+  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.04);
 }
 
 .woe-detail-card-heading {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   color: var(--color-text);
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
 }
 
 .woe-detail-card-meta {
@@ -159,21 +272,24 @@
 }
 
 .woe-token-summary {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid #18242a;
 }
 
 .woe-token-summary-title {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.45rem;
   color: var(--neon-cyan, #00e5ff);
   line-height: 1.15;
+  letter-spacing: .06em;
 }
 
 .woe-token-summary-subtitle {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   color: var(--color-text-muted);
-  font-size: .82rem;
-  line-height: 1.45;
+  font-size: .76rem;
+  line-height: 1.5;
 }
 
 .woe-token-summary-subtitle code {
@@ -183,32 +299,40 @@
 .woe-stats-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: 0;
+  border: 1px solid #18242a;
+  background: #06090b;
 }
 
 .woe-stat-row {
   display: grid;
   grid-template-columns: minmax(124px, 42%) minmax(0, 1fr);
-  gap: 12px;
+  gap: 10px;
   align-items: start;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  padding: 9px 10px;
+  background: #0b1013;
+  border-bottom: 1px solid #141d22;
+  padding: 7px 9px;
+}
+
+.woe-stat-row:nth-child(even) {
+  background: #0f1519;
 }
 
 .woe-stat-label {
-  color: var(--color-text);
+  color: #ffffff;
   font-weight: 700;
-  font-size: .82rem;
+  font-size: .76rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
 }
 
 .woe-stat-value {
-  color: var(--neon-cyan, #00e5ff);
-  font-size: .82rem;
+  color: #74fff1;
+  font-size: .78rem;
   text-align: right;
-  line-height: 1.4;
+  line-height: 1.35;
   word-break: break-word;
+  font-variant-numeric: tabular-nums;
 }
 
 .woe-stat-value.woe-stat-muted {
@@ -218,14 +342,20 @@
 .woe-chart-panel {
   min-height: 360px;
   background:
-    linear-gradient(180deg, rgba(0, 229, 255, 0.03), rgba(0, 0, 0, 0)),
-    rgba(8, 12, 19, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
-  padding: 12px;
+    linear-gradient(180deg, rgba(0, 229, 255, 0.04), rgba(0, 0, 0, 0) 22%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    #05090b;
+  background-size: auto, 62px 100%, 100% 56px, auto;
+  border: 1px solid #1b2c32;
+  border-radius: 0;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 229, 255, 0.04),
+    inset 0 16px 24px rgba(255, 255, 255, 0.01);
 }
 
 .woe-chart-svg {
@@ -237,14 +367,16 @@
 .woe-chart-summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 16px;
-  margin-bottom: 10px;
-  color: var(--color-text-muted);
-  font-size: .76rem;
+  gap: 8px 14px;
+  margin-bottom: 8px;
+  color: #b4bfc8;
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
 }
 
 .woe-chart-summary strong {
-  color: var(--color-text);
+  color: #ffffff;
 }
 
 .woe-chart-empty {
@@ -290,18 +422,17 @@
 .woe-sources-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 12px;
-  margin-bottom: 32px;
+  gap: 10px;
 }
 
 .woe-source-card {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: var(--color-surface, #161b22);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius, 6px);
-  padding: 12px 14px;
+  background: #0b1013;
+  border: 1px solid #18242a;
+  border-radius: 0;
+  padding: 10px 12px;
   transition: border-color .15s;
 }
 
@@ -356,26 +487,27 @@
 /* ── Tables ──────────────────────────────────────────────────── */
 .woe-table-wrap {
   overflow-x: auto;
-  border-radius: var(--radius, 6px);
-  border: 1px solid var(--color-border);
+  border-radius: 0;
+  border: 1px solid #18242a;
+  background: #06090b;
 }
 
 .woe-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: .85rem;
+  font-size: .8rem;
 }
 
 .woe-table th {
   text-align: left;
-  padding: 8px 12px;
-  font-size: .75rem;
+  padding: 8px 10px;
+  font-size: .68rem;
   font-weight: 700;
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: .05em;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface-2, #1c2333);
+  letter-spacing: .09em;
+  border-bottom: 1px solid #18242a;
+  background: #0d1317;
   white-space: nowrap;
   user-select: none;
 }
@@ -392,8 +524,8 @@
 .woe-table th[data-sort="desc"]::after { content: ' ▼'; font-size: .6rem; }
 
 .woe-table td {
-  padding: 7px 12px;
-  border-bottom: 1px solid var(--color-border);
+  padding: 8px 10px;
+  border-bottom: 1px solid #141d22;
   vertical-align: middle;
   color: var(--color-text);
 }
@@ -403,11 +535,11 @@
 }
 
 .woe-table tbody tr:hover td {
-  background: rgba(0, 229, 255, 0.04);
+  background: rgba(0, 229, 255, 0.05);
 }
 
 .woe-table tbody tr.woe-row-active td {
-  background: rgba(0, 229, 255, 0.08);
+  background: rgba(0, 229, 255, 0.09);
 }
 
 .woe-num {
@@ -435,6 +567,78 @@
   font-style: italic;
 }
 
+.woe-icon-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #22363d;
+  background: linear-gradient(180deg, rgba(21, 30, 35, 0.98), rgba(8, 12, 14, 0.98));
+  color: #d6faff;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.woe-source-cell,
+.woe-token-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.woe-source-cell-copy,
+.woe-token-cell-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.woe-source-cell-copy strong,
+.woe-token-cell-symbol {
+  color: #ffffff;
+  font-size: .77rem;
+  line-height: 1.25;
+}
+
+.woe-token-cell-contract {
+  color: var(--color-text-muted);
+  font-size: .7rem;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+#woe-table-matrix {
+  border-collapse: separate;
+  border-spacing: 0 5px;
+}
+
+#woe-table-matrix thead th {
+  border-bottom: 1px solid #18242a;
+}
+
+#woe-table-matrix td {
+  background: #0b1013;
+  border-top: 1px solid #18242a;
+  border-bottom: 1px solid #18242a;
+}
+
+#woe-table-matrix tbody tr td:first-child {
+  border-left: 1px solid #18242a;
+}
+
+#woe-table-matrix tbody tr td:last-child {
+  border-right: 1px solid #18242a;
+}
+
+#woe-table-matrix tbody tr:hover td {
+  background: #10181c;
+}
+
 /* ── Table filter inputs ─────────────────────────────────────── */
 .woe-table-filter-row {
   display: flex;
@@ -444,12 +648,12 @@
 }
 
 .woe-filter-input {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius, 6px);
+  background: #060a0d;
+  border: 1px solid #22363d;
+  border-radius: 0;
   color: var(--color-text);
-  font-size: .82rem;
-  padding: 5px 10px;
+  font-size: .78rem;
+  padding: 7px 10px;
   width: 260px;
   outline: none;
 }
@@ -485,9 +689,9 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 10px 14px;
-  border-radius: var(--radius, 6px);
-  font-size: .85rem;
+  padding: 9px 12px;
+  border-radius: 0;
+  font-size: .8rem;
   border: 1px solid transparent;
 }
 
@@ -522,22 +726,22 @@
 
 /* ── Holder placeholder ──────────────────────────────────────── */
 .woe-placeholder {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius, 6px);
-  padding: 24px;
+  background: #0b1013;
+  border: 1px solid #18242a;
+  border-radius: 0;
+  padding: 18px;
 }
 
 .woe-placeholder-icon {
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   display: block;
-  margin-bottom: 12px;
-  color: var(--color-accent, #ffd600);
+  margin-bottom: 10px;
+  color: var(--neon-cyan, #00e5ff);
 }
 
 .woe-placeholder p {
   color: var(--color-text-muted);
-  font-size: .85rem;
+  font-size: .8rem;
   margin: 0 0 8px;
 }
 
@@ -549,11 +753,11 @@
 }
 
 .woe-input {
-  background: var(--color-surface-2, #1c2333);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius, 6px);
+  background: #060a0d;
+  border: 1px solid #22363d;
+  border-radius: 0;
   color: var(--color-text);
-  font-size: .85rem;
+  font-size: .8rem;
   padding: 7px 12px;
   outline: none;
   width: 220px;
@@ -564,15 +768,17 @@
 }
 
 .woe-btn-lookup {
-  background: var(--color-surface-2, #1c2333);
+  background: #10171b;
   border: 1px solid var(--neon-cyan, #00e5ff);
-  border-radius: var(--radius, 6px);
+  border-radius: 0;
   color: var(--neon-cyan, #00e5ff);
-  font-size: .82rem;
+  font-size: .74rem;
   font-weight: 700;
   padding: 7px 16px;
   cursor: pointer;
   transition: background .15s, color .15s;
+  text-transform: uppercase;
+  letter-spacing: .08em;
 }
 
 .woe-btn-lookup:hover {
@@ -586,9 +792,9 @@
 }
 
 .woe-holder-result-card {
-  background: var(--color-surface-2, #1c2333);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius, 6px);
+  background: #0f1519;
+  border: 1px solid #18242a;
+  border-radius: 0;
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -602,11 +808,11 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: .75rem;
+  font-size: .7rem;
   color: var(--neon-cyan, #00e5ff);
-  border: 1px solid rgba(0, 229, 255, 0.3);
-  border-radius: 3px;
-  padding: 2px 7px;
+  border: 1px solid rgba(0, 229, 255, 0.24);
+  border-radius: 0;
+  padding: 3px 7px;
   text-decoration: none;
   transition: background .12s, color .12s;
   white-space: nowrap;
@@ -622,10 +828,27 @@
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .woe-page {
-    padding: 14px 12px 48px;
+    padding: 12px 10px 44px;
   }
   .woe-page-title {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
+  }
+  .woe-og-bar {
+    padding: 10px;
+  }
+  .woe-og-brand {
+    align-items: flex-start;
+  }
+  .woe-og-nav,
+  .woe-og-actions {
+    width: 100%;
+  }
+  .woe-og-nav a,
+  .woe-og-action {
+    flex: 1 1 calc(50% - 8px);
+  }
+  .woe-og-wax-block {
+    width: 100%;
   }
   .woe-detail-grid {
     grid-template-columns: 1fr;
@@ -646,10 +869,15 @@
     grid-template-columns: 1fr;
   }
   .woe-filter-input,
-  .woe-input {
+  .woe-input,
+  .woe-search-input {
     width: 100%;
+    max-width: none;
   }
   .woe-holder-form {
     flex-direction: column;
+  }
+  #woe-table-matrix {
+    border-spacing: 0 3px;
   }
 }

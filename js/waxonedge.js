@@ -26,6 +26,7 @@
     tokens: [],
     pairs: [],
     tickers: [],
+    globalAnalytics: null,
     pairIndex: { tokenPairCounts: {}, marketIdsBySymbol: {} },
     tokenMap: { byKey: {}, bySymbol: {} },
     alcorMarkets: [],
@@ -192,6 +193,40 @@
     if (fee == null) return UNAVAILABLE_TEXT;
     if (fee > 1) return fee + ' bps';
     return (fee * 100).toFixed(2) + '%';
+  }
+
+  function getShortLabel(label, fallback) {
+    var clean = String(label || fallback || '?').trim();
+    return clean ? clean.slice(0, 2).toUpperCase() : '??';
+  }
+
+  function iconPlaceholderHtml(label, variant) {
+    var variantClass = variant ? ' woe-icon-placeholder-' + variant : '';
+    return '<span class="woe-icon-placeholder' + variantClass + '" aria-hidden="true">' + escHtml(getShortLabel(label)) + '</span>';
+  }
+
+  function tokenCellHtml(side) {
+    var symbol = side && side.symbol ? side.symbol : 'Unknown';
+    var contractHtml = side && side.contract
+      ? escHtml(side.contract)
+      : availabilityHtml();
+    return '<div class="woe-token-cell">' +
+      iconPlaceholderHtml(symbol, 'token') +
+      '<div class="woe-token-cell-copy">' +
+        '<strong class="woe-token-cell-symbol">' + escHtml(symbol) + '</strong>' +
+        '<span class="woe-token-cell-contract">' + contractHtml + '</span>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function sourceCellHtml(market) {
+    return '<div class="woe-source-cell">' +
+      iconPlaceholderHtml(market && market.source, 'source') +
+      '<div class="woe-source-cell-copy">' +
+        '<strong>' + escHtml(market && market.source ? market.source : 'Source') + '</strong>' +
+        '<span class="woe-unavailable">' + escHtml(market && market.sourceMeta ? market.sourceMeta : '') + '</span>' +
+      '</div>' +
+    '</div>';
   }
 
   function getSymbolValue(symbolField) {
@@ -1364,10 +1399,10 @@
       var liquiditySort = market.liquidityUsd != null ? market.liquidityUsd : (market.liquidityWax != null ? market.liquidityWax : 0);
       return '<tr>' +
         '<td data-col="rank" data-sortval="' + escHtml(String(index + 1)) + '" class="woe-num">' + escHtml(String(index + 1)) + '</td>' +
-        '<td data-col="source">' + escHtml(market.source) + '<br><span class="woe-unavailable">' + escHtml(market.sourceMeta) + '</span></td>' +
+        '<td data-col="source">' + sourceCellHtml(market) + '</td>' +
         '<td data-col="fee">' + (market.feeTier === UNAVAILABLE_TEXT ? availabilityHtml() : escHtml(market.feeTier)) + '</td>' +
-        '<td data-col="tokenA">' + escHtml(describeToken(market.tokenA)) + '</td>' +
-        '<td data-col="tokenB">' + escHtml(describeToken(market.tokenB)) + '</td>' +
+        '<td data-col="tokenA">' + tokenCellHtml(market.tokenA) + '</td>' +
+        '<td data-col="tokenB">' + tokenCellHtml(market.tokenB) + '</td>' +
         '<td data-col="liq" data-sortval="' + escHtml(String(liquiditySort || 0)) + '" class="woe-num">' + (market.liquidityText === UNAVAILABLE_TEXT ? availabilityHtml() : escHtml(market.liquidityText)) + '</td>' +
         '<td data-col="price" data-sortval="' + escHtml(String(market.currentPrice || 0)) + '" class="woe-num">' + (market.currentPriceText === UNAVAILABLE_TEXT ? availabilityHtml() : escHtml(market.currentPriceText)) + '</td>' +
         '<td data-col="chg" data-sortval="' + escHtml(String(market.change24 || 0)) + '" class="woe-num ' + changeClass + '">' + (market.change24 != null ? escHtml(fmtPct(market.change24)) : availabilityHtml()) + '</td>' +
@@ -1384,6 +1419,61 @@
     setText('woe-matrix-count', rows.length + ' row(s)');
     attachTableSort('woe-table-matrix');
     attachTableFilter('woe-filter-matrix', 'woe-table-matrix');
+  }
+
+  function getFirstNumeric(obj, paths) {
+    if (!obj || !Array.isArray(paths)) return null;
+    for (var i = 0; i < paths.length; i++) {
+      var current = obj;
+      var parts = paths[i].split('.');
+      for (var j = 0; j < parts.length; j++) {
+        if (current == null) break;
+        current = current[parts[j]];
+      }
+      var parsed = asNum(current);
+      if (parsed != null) return parsed;
+    }
+    return null;
+  }
+
+  function updateTopBarWaxPrice() {
+    var waxPriceEl = document.getElementById('woe-topbar-wax-price');
+    var waxMetaEl = document.getElementById('woe-topbar-wax-price-meta');
+    if (!waxPriceEl || !waxMetaEl) return;
+
+    var analytics = state.globalAnalytics || null;
+    var analyticsUsd = getFirstNumeric(analytics, [
+      'wax_price_usd',
+      'wax_usd',
+      'wax.usd',
+      'price_usd',
+      'prices.wax_usd',
+    ]);
+    var analyticsWax = getFirstNumeric(analytics, [
+      'wax_price_wax',
+      'wax_wax',
+      'wax.wax',
+      'price_wax',
+      'prices.wax_wax',
+    ]);
+    var waxToken = findTokenRecord(state.tokenMap, 'eosio.token', 'WAX');
+    var usdPrice = analyticsUsd != null ? analyticsUsd : (waxToken && waxToken.usdPrice != null ? waxToken.usdPrice : null);
+    var waxPrice = analyticsWax != null ? analyticsWax : (waxToken && waxToken.systemPrice != null ? waxToken.systemPrice : null);
+
+    if (usdPrice == null && waxPrice == null) {
+      waxPriceEl.textContent = '$ --';
+      waxMetaEl.textContent = 'No live WAX price returned yet';
+      return;
+    }
+
+    waxPriceEl.textContent = usdPrice != null ? '$' + fmtPrice(usdPrice) : fmtPrice(waxPrice) + ' WAX';
+    if (usdPrice != null && waxPrice != null) {
+      waxMetaEl.textContent = fmtPrice(waxPrice) + ' WAX · read-only public feed';
+    } else if (usdPrice != null) {
+      waxMetaEl.textContent = 'USD quote · read-only public feed';
+    } else {
+      waxMetaEl.textContent = 'WAX quote · read-only public feed';
+    }
   }
 
   function renderSelectedToken() {
@@ -1492,20 +1582,24 @@
     var tokenUrl = alcorApi + (alcorPaths.tokens || '/tokens');
     var pairsUrl = alcorApi + (alcorPaths.pairs || '/pairs');
     var tickerUrl = alcorApi + (alcorPaths.tickers || '/tickers');
+    var analyticsUrl = alcorApi + (alcorPaths.analyticsGlobal || '/analytics/global');
 
     Promise.all([
       apiFetch(tokenUrl),
       apiFetch(pairsUrl),
       apiFetch(tickerUrl),
+      apiFetch(analyticsUrl).catch(function () { return null; }),
       loadNeftyAdapter(),
     ]).then(function (results) {
       state.tokens = Array.isArray(results[0]) ? results[0] : [];
       state.pairs = Array.isArray(results[1]) ? results[1] : [];
       state.tickers = Array.isArray(results[2]) ? results[2] : [];
-      state.neftyMarkets = Array.isArray(results[3]) ? results[3] : [];
+      state.globalAnalytics = results[3] && typeof results[3] === 'object' ? results[3] : null;
+      state.neftyMarkets = Array.isArray(results[4]) ? results[4] : [];
       state.tokenMap = buildTokenMap(state.tokens);
       state.pairIndex = buildPairIndex(state.pairs);
       state.alcorMarkets = buildAlcorMarkets(state.pairs, state.tickers);
+      updateTopBarWaxPrice();
 
       updateRiskFlags();
       var initialSelection = pickDefaultSelection();

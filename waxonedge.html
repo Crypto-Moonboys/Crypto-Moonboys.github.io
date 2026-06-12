@@ -23,99 +23,36 @@
 <body class="page-waxonedge page-standard-shell">
 
 <main id="content" role="main">
-  <div class="woe-page">
+  <div class="woe-page" id="woe-home">
 
-    <!-- ── Page header ─────────────────────────────────────────── -->
-    <div class="woe-page-header">
-      <div>
-        <h1 class="woe-page-title">◈ WAXONEDGE</h1>
-        <p class="woe-page-subtitle">
-          WAX token · pair · pool · account balance · DEX analytics &mdash; read-only dashboard
-        </p>
-      </div>
-      <span class="woe-readonly-badge">✓ Read-Only</span>
-    </div>
-
-    <!-- ── Global search ───────────────────────────────────────── -->
-    <div class="woe-search-bar">
-      <label for="woe-global-search">Search all tables:</label>
-      <input
-        id="woe-global-search"
-        class="woe-search-input"
-        type="search"
-        placeholder="Filter tokens, pairs, pools…"
-        autocomplete="off"
-        aria-label="Filter all dashboard tables"
-      >
-    </div>
-
-    <!-- ── Data source status ──────────────────────────────────── -->
-    <section class="woe-section" aria-labelledby="woe-sources-heading">
-      <div class="woe-section-heading">
-        <span id="woe-sources-heading">▦ Data Sources</span>
-        <span class="woe-section-count">Live status checks on page load</span>
-      </div>
-      <div class="woe-sources-grid" id="woe-sources-grid" role="list" aria-label="Data source status">
-        <p style="color:var(--color-text-muted);font-size:.85rem;">Loading source status…</p>
-      </div>
-    </section>
-
-    <!-- ── Risk flags ──────────────────────────────────────────── -->
-    <section class="woe-section" aria-labelledby="woe-risk-heading">
-      <div class="woe-section-heading">
-        <span id="woe-risk-heading">⚠ Risk Flags</span>
-        <span class="woe-section-count">Computed from live data — informational only</span>
-      </div>
-      <div class="woe-risk-panel" id="woe-risk-flags" role="status" aria-live="polite">
-        <div class="woe-flag woe-flag-info">
-          <span class="woe-flag-icon">ℹ</span>
-          <span>Risk flags will appear here once token and ticker data are loaded.</span>
+    <!-- ── OG WaxOnEdge bar ────────────────────────────────────── -->
+    <div class="woe-og-bar">
+      <div class="woe-og-brand">
+        <span class="woe-og-brand-mark" aria-hidden="true">◈</span>
+        <div>
+          <h1 class="woe-page-title">WAXONEDGE</h1>
+          <p class="woe-page-subtitle">
+            Read-only WAX token, pair, pool, and account balance analytics
+          </p>
         </div>
       </div>
-    </section>
-
-    <!-- ── Token table ─────────────────────────────────────────── -->
-    <section class="woe-section" aria-labelledby="woe-tokens-heading">
-      <div class="woe-section-heading">
-        <span id="woe-tokens-heading">◫ WAX Tokens</span>
-        <span class="woe-section-count" id="woe-tokens-count">Loading…</span>
-        <div class="woe-section-links">
-          <a
-            href="https://wax.alcor.exchange"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="woe-explorer-link"
-          >Alcor Exchange ↗</a>
-        </div>
+      <nav class="woe-og-nav" aria-label="WAXONEDGE page navigation">
+        <a href="#woe-home">HOME</a>
+        <a href="#woe-tokens-heading">SPOT</a>
+        <a href="#woe-matrix-heading">MARKETS</a>
+        <a href="#woe-detail-heading">ANALYTICS</a>
+      </nav>
+      <div class="woe-og-wax-block">
+        <span class="woe-og-block-label">WAX PRICE</span>
+        <strong id="woe-topbar-wax-price">$ --</strong>
+        <span id="woe-topbar-wax-price-meta">Waiting for live data…</span>
       </div>
-      <div class="woe-table-filter-row">
-        <input
-          id="woe-filter-tokens"
-          class="woe-filter-input"
-          type="search"
-          placeholder="Filter tokens…"
-          autocomplete="off"
-          aria-label="Filter token table"
-        >
+      <div class="woe-og-actions" aria-label="Read-only project tools">
+        <span class="woe-readonly-badge">✓ Read-Only</span>
+        <a class="woe-og-action" href="#woe-token-detail">PROJECT</a>
+        <a class="woe-og-action" href="#woe-account-lookup">ACCOUNT</a>
       </div>
-      <div class="woe-table-wrap">
-        <table class="woe-table" id="woe-table-tokens" aria-label="WAX tokens">
-          <thead>
-            <tr>
-              <th data-col="sym">Symbol</th>
-              <th data-col="contr">Contract</th>
-              <th data-col="usd" data-numeric="true">USD Price</th>
-              <th data-col="sys" data-numeric="true">WAX Price</th>
-              <th data-col="dec" data-numeric="true">Decimals</th>
-              <th data-col="pairs" data-numeric="true">Pairs</th>
-            </tr>
-          </thead>
-          <tbody id="woe-tokens-body">
-            <tr><td colspan="6" class="woe-loading">Loading tokens…</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+    </div>
 
     <!-- ── Token analytics detail ──────────────────────────────── -->
     <section class="woe-section" id="woe-token-detail" aria-labelledby="woe-detail-heading">
@@ -213,14 +150,95 @@
       </div>
     </section>
 
+    <!-- ── Global search ───────────────────────────────────────── -->
+    <div class="woe-search-bar">
+      <label for="woe-global-search">Search all tables:</label>
+      <input
+        id="woe-global-search"
+        class="woe-search-input"
+        type="search"
+        placeholder="Filter tokens, pairs, pools…"
+        autocomplete="off"
+        aria-label="Filter all dashboard tables"
+      >
+    </div>
+
+    <!-- ── Token table ─────────────────────────────────────────── -->
+    <section class="woe-section" aria-labelledby="woe-tokens-heading">
+      <div class="woe-section-heading">
+        <span id="woe-tokens-heading">◫ WAX Tokens</span>
+        <span class="woe-section-count" id="woe-tokens-count">Loading…</span>
+        <div class="woe-section-links">
+          <a
+            href="https://wax.alcor.exchange"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="woe-explorer-link"
+          >Alcor Exchange ↗</a>
+        </div>
+      </div>
+      <div class="woe-table-filter-row">
+        <input
+          id="woe-filter-tokens"
+          class="woe-filter-input"
+          type="search"
+          placeholder="Filter tokens…"
+          autocomplete="off"
+          aria-label="Filter token table"
+        >
+      </div>
+      <div class="woe-table-wrap">
+        <table class="woe-table" id="woe-table-tokens" aria-label="WAX tokens">
+          <thead>
+            <tr>
+              <th data-col="sym">Symbol</th>
+              <th data-col="contr">Contract</th>
+              <th data-col="usd" data-numeric="true">USD Price</th>
+              <th data-col="sys" data-numeric="true">WAX Price</th>
+              <th data-col="dec" data-numeric="true">Decimals</th>
+              <th data-col="pairs" data-numeric="true">Pairs</th>
+            </tr>
+          </thead>
+          <tbody id="woe-tokens-body">
+            <tr><td colspan="6" class="woe-loading">Loading tokens…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- ── Account token balance lookup (read-only query) ───────── -->
-    <section class="woe-section" aria-labelledby="woe-holders-heading">
+    <section class="woe-section" id="woe-account-lookup" aria-labelledby="woe-holders-heading">
       <div class="woe-section-heading">
         <span id="woe-holders-heading">◈ Account Token Balance Lookup</span>
         <span class="woe-section-count">WAX Hyperion account query</span>
       </div>
       <div id="woe-holders-panel">
         <p style="color:var(--color-text-muted);font-size:.85rem;">Loading account balance panel…</p>
+      </div>
+    </section>
+
+    <!-- ── Data source status ──────────────────────────────────── -->
+    <section class="woe-section" aria-labelledby="woe-sources-heading">
+      <div class="woe-section-heading">
+        <span id="woe-sources-heading">▦ Data Sources</span>
+        <span class="woe-section-count">Live status checks on page load</span>
+      </div>
+      <div class="woe-sources-grid" id="woe-sources-grid" role="list" aria-label="Data source status">
+        <p style="color:var(--color-text-muted);font-size:.85rem;">Loading source status…</p>
+      </div>
+    </section>
+
+    <!-- ── Risk flags ──────────────────────────────────────────── -->
+    <section class="woe-section" aria-labelledby="woe-risk-heading">
+      <div class="woe-section-heading">
+        <span id="woe-risk-heading">⚠ Risk Flags</span>
+        <span class="woe-section-count">Computed from live data — informational only</span>
+      </div>
+      <div class="woe-risk-panel" id="woe-risk-flags" role="status" aria-live="polite">
+        <div class="woe-flag woe-flag-info">
+          <span class="woe-flag-icon">ℹ</span>
+          <span>Risk flags will appear here once token and ticker data are loaded.</span>
+        </div>
       </div>
     </section>
 

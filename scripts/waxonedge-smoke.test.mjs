@@ -45,6 +45,10 @@ const sourcesJs = exists('js/waxonedge-sources.js') ? read('js/waxonedge-sources
 ok('waxonedge.html references /css/waxonedge.css', html.includes('/css/waxonedge.css'));
 ok('waxonedge.html references /js/waxonedge.js', html.includes('/js/waxonedge.js'));
 ok('waxonedge.html references /js/waxonedge-sources.js', html.includes('/js/waxonedge-sources.js'));
+ok('waxonedge.html includes OG WaxOnEdge top bar', html.includes('woe-og-bar'));
+ok('waxonedge.html includes OG nav labels', html.includes('HOME') && html.includes('SPOT') && html.includes('MARKETS') && html.includes('ANALYTICS'));
+ok('waxonedge.html includes WAX price block', html.includes('id="woe-topbar-wax-price"'));
+ok('waxonedge.html includes project/account action area', html.includes('PROJECT') && html.includes('ACCOUNT'));
 
 const FORBIDDEN_LABELS = ['Swap', 'Add Liquidity', 'Remove Liquidity', 'Connect Wallet', 'Trade on Swap'];
 for (const label of FORBIDDEN_LABELS) {
@@ -131,7 +135,28 @@ ok('waxonedge.js explicitly marks indexed-backend-only metrics', js.includes('Re
 ok('waxonedge.html explains data honesty in detail note',
   html.includes('Requires indexed backend') || html.includes('Unavailable'),
 );
-ok('waxonedge.css includes token detail layout styles', css.includes('.woe-detail-grid') && css.includes('.woe-chart-panel'));
+ok('token detail section is placed above source status section',
+  html.indexOf('id="woe-token-detail"') > -1 &&
+  html.indexOf('id="woe-token-detail"') < html.indexOf('id="woe-sources-grid"'),
+);
+ok('waxonedge.css includes OG shell and detail layout styles',
+  css.includes('.woe-og-bar') &&
+  css.includes('.woe-detail-grid') &&
+  css.includes('.woe-chart-panel'),
+);
+ok('waxonedge.css includes dense matrix/icon styling',
+  css.includes('.woe-icon-placeholder') &&
+  css.includes('#woe-table-matrix'),
+);
+ok('waxonedge.js renders source/token icon placeholders',
+  js.includes('iconPlaceholderHtml') &&
+  js.includes('sourceCellHtml') &&
+  js.includes('tokenCellHtml'),
+);
+ok('waxonedge.js updates the top bar WAX price block',
+  js.includes('updateTopBarWaxPrice') &&
+  js.includes('woe-topbar-wax-price'),
+);
 ok('waxonedge.css includes active token row styling', css.includes('.woe-row-active'));
 
 console.log('\nwaxonedge-smoke.test: ' + passed + ' passed, ' + failed + ' failed');
