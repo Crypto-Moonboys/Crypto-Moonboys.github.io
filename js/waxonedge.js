@@ -473,31 +473,26 @@
   }
 
   function computeLiquidityFromSides(sideA, sideB) {
-    var waxValue = 0;
-    var usdValue = 0;
-    var hasWax = false;
-    var hasUsd = false;
-
-    function add(side) {
-      if (!side || side.amount == null) return;
-      var priceRecord = getKnownPrice(side);
-      if (!priceRecord) return;
-      if (priceRecord.systemPrice != null) {
-        waxValue += side.amount * priceRecord.systemPrice;
-        hasWax = true;
-      }
-      if (priceRecord.usdPrice != null) {
-        usdValue += side.amount * priceRecord.usdPrice;
-        hasUsd = true;
-      }
-    }
-
-    add(sideA);
-    add(sideB);
+    var priceA = sideA ? getKnownPrice(sideA) : null;
+    var priceB = sideB ? getKnownPrice(sideB) : null;
+    var hasAmounts = !!(
+      sideA && sideA.amount != null &&
+      sideB && sideB.amount != null
+    );
+    var hasWax = !!(
+      hasAmounts &&
+      priceA && priceA.systemPrice != null &&
+      priceB && priceB.systemPrice != null
+    );
+    var hasUsd = !!(
+      hasAmounts &&
+      priceA && priceA.usdPrice != null &&
+      priceB && priceB.usdPrice != null
+    );
 
     return {
-      wax: hasWax ? waxValue : null,
-      usd: hasUsd ? usdValue : null,
+      wax: hasWax ? (sideA.amount * priceA.systemPrice) + (sideB.amount * priceB.systemPrice) : null,
+      usd: hasUsd ? (sideA.amount * priceA.usdPrice) + (sideB.amount * priceB.usdPrice) : null,
     };
   }
 
@@ -511,6 +506,18 @@
       }
     });
     return hasAny ? total : null;
+  }
+
+  function sumMetricStrict(rows, field) {
+    if (!Array.isArray(rows) || rows.length === 0) return null;
+    var total = 0;
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i][field] == null || isNaN(rows[i][field])) {
+        return null;
+      }
+      total += rows[i][field];
+    }
+    return total;
   }
 
   function buildAlcorMarkets(pairsData, tickersData) {
@@ -1003,23 +1010,30 @@
 
     var tokenLockedAmount = 0;
     var hasTokenLockedAmount = false;
+    var tokenLockedAmountComplete = relevantMarkets.length > 0;
     relevantMarkets.forEach(function (market) {
+      var marketHasTokenAmount = false;
       if (market.tokenA && market.tokenA.key === selection.key && market.tokenA.amount != null) {
         tokenLockedAmount += market.tokenA.amount;
         hasTokenLockedAmount = true;
+        marketHasTokenAmount = true;
       }
       if (market.tokenB && market.tokenB.key === selection.key && market.tokenB.amount != null) {
         tokenLockedAmount += market.tokenB.amount;
         hasTokenLockedAmount = true;
+        marketHasTokenAmount = true;
+      }
+      if (marketContainsToken(market, selection.key) && !marketHasTokenAmount) {
+        tokenLockedAmountComplete = false;
       }
     });
 
-    var pairLiquidityWax = sumMetric(relevantMarkets, 'liquidityWax');
-    var pairLiquidityUsd = sumMetric(relevantMarkets, 'liquidityUsd');
-    var tokenTvlWax = hasTokenLockedAmount && tokenRecord.systemPrice != null
+    var pairLiquidityWax = sumMetricStrict(relevantMarkets, 'liquidityWax');
+    var pairLiquidityUsd = sumMetricStrict(relevantMarkets, 'liquidityUsd');
+    var tokenTvlWax = hasTokenLockedAmount && tokenLockedAmountComplete && tokenRecord.systemPrice != null
       ? tokenLockedAmount * tokenRecord.systemPrice
       : null;
-    var tokenTvlUsd = hasTokenLockedAmount && tokenRecord.usdPrice != null
+    var tokenTvlUsd = hasTokenLockedAmount && tokenLockedAmountComplete && tokenRecord.usdPrice != null
       ? tokenLockedAmount * tokenRecord.usdPrice
       : null;
 
@@ -1132,10 +1146,6 @@
       };
       delete state.chartPending[marketId];
       return state.chartCache[marketId];
-    }).catch(function () {
-      delete state.chartPending[marketId];
-      state.chartCache[marketId] = null;
-      return null;
     });
   }
 
@@ -1204,14 +1214,9 @@
     var chartBundle = context.primaryAlcorMarket ? state.chartCache[context.primaryAlcorMarket.marketId] : null;
     var historicalVolumes = computeHistoricalVolumes(chartBundle);
     var canUsePrimaryVolume = context.primaryVolumeMarket && context.primaryVolumeMarket.tokenA && context.primaryVolumeMarket.tokenA.key === selection.key;
+    var canUseChartVolumes = context.primaryAlcorMarket && context.primaryAlcorMarket.tokenA && context.primaryAlcorMarket.tokenA.key === selection.key;
     var currentPriceWax = token.systemPrice;
     var currentPriceUsd = token.usdPrice;
-    var marketCapWax = supply && supply.amount != null && currentPriceWax != null
-      ? supply.amount * currentPriceWax
-      : null;
-    var marketCapUsd = supply && supply.amount != null && currentPriceUsd != null
-      ? supply.amount * currentPriceUsd
-      : null;
     var fdvWax = maxSupply && maxSupply.amount != null && currentPriceWax != null
       ? maxSupply.amount * currentPriceWax
       : null;
@@ -1248,15 +1253,13 @@
     statsHtml += statRow('24h volume', canUsePrimaryVolume && context.primaryVolumeMarket.volume24 != null
       ? escHtml(context.primaryVolumeMarket.volume24Text)
       : availabilityHtml());
-    statsHtml += statRow('7d volume', canUsePrimaryVolume && historicalVolumes && historicalVolumes.sevenDay != null
+    statsHtml += statRow('7d volume', canUseChartVolumes && historicalVolumes && historicalVolumes.sevenDay != null
       ? escHtml(fmtNum(historicalVolumes.sevenDay) + ' ' + selection.symbol)
       : availabilityHtml());
-    statsHtml += statRow('30d volume', canUsePrimaryVolume && historicalVolumes && historicalVolumes.thirtyDay != null
+    statsHtml += statRow('30d volume', canUseChartVolumes && historicalVolumes && historicalVolumes.thirtyDay != null
       ? escHtml(fmtNum(historicalVolumes.thirtyDay) + ' ' + selection.symbol)
       : availabilityHtml());
-    statsHtml += statRow('Market cap', marketCapWax != null || marketCapUsd != null
-      ? escHtml(formatDualMetric(marketCapWax, marketCapUsd)) + '<br><span class="woe-unavailable">Issued supply basis</span>'
-      : availabilityHtml());
+    statsHtml += statRow('Market cap', availabilityHtml(INDEXED_BACKEND_TEXT), { muted: true });
     statsHtml += statRow('Fully diluted valuation', fdvWax != null || fdvUsd != null
       ? escHtml(formatDualMetric(fdvWax, fdvUsd))
       : availabilityHtml());
@@ -1512,7 +1515,7 @@
         '<p>Look up the tokens currently held by a WAX account via the Hyperion API.</p>' +
         '<p>Enter an account name below to read the balances returned by <code>/state/get_tokens</code>.</p>' +
         '<div class="woe-holder-form">' +
-          '<input id="woe-holder-account" class="woe-input" type="text" placeholder="Account (e.g. cryptomoonboy)" autocomplete="off">' +
+          '<input id="woe-holder-account" class="woe-input" type="text" placeholder="Account (e.g. cryptomoonboy)" autocomplete="off" aria-label="WAX account for token balance lookup">' +
           '<button id="woe-holder-lookup" class="woe-btn-lookup">Look up balances</button>' +
         '</div>' +
         '<div id="woe-holder-result" class="woe-holder-result"></div>' +
@@ -1588,7 +1591,7 @@
       apiFetch(tokenUrl),
       apiFetch(pairsUrl),
       apiFetch(tickerUrl),
-      apiFetch(analyticsUrl).catch(function () { return null; }),
+      apiFetch(analyticsUrl),
       loadNeftyAdapter(),
     ]).then(function (results) {
       state.tokens = Array.isArray(results[0]) ? results[0] : [];

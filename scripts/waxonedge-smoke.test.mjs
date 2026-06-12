@@ -48,6 +48,7 @@ ok('waxonedge.html references /js/waxonedge-sources.js', html.includes('/js/waxo
 ok('waxonedge.html includes OG WaxOnEdge top bar', html.includes('woe-og-bar'));
 ok('waxonedge.html includes OG nav labels', html.includes('HOME') && html.includes('SPOT') && html.includes('MARKETS') && html.includes('ANALYTICS'));
 ok('waxonedge.html includes WAX price block', html.includes('id="woe-topbar-wax-price"'));
+ok('waxonedge.html waits for live WAX price data by default', html.includes('Waiting for live data…'));
 ok('waxonedge.html includes project/account action area', html.includes('PROJECT') && html.includes('ACCOUNT'));
 
 const FORBIDDEN_LABELS = ['Swap', 'Add Liquidity', 'Remove Liquidity', 'Connect Wallet', 'Trade on Swap'];
@@ -132,8 +133,12 @@ for (const label of [
 
 ok('waxonedge.js explicitly marks unavailable historical metrics', js.includes('Unavailable'));
 ok('waxonedge.js explicitly marks indexed-backend-only metrics', js.includes('Requires indexed backend'));
+ok('waxonedge.js does not present market cap from issued supply fallback', !js.includes('Issued supply basis'));
 ok('waxonedge.html explains data honesty in detail note',
   html.includes('Requires indexed backend') || html.includes('Unavailable'),
+);
+ok('account lookup input has an accessible label',
+  js.includes('aria-label="WAX account for token balance lookup"'),
 );
 ok('token detail section is placed above source status section',
   html.indexOf('id="woe-token-detail"') > -1 &&
