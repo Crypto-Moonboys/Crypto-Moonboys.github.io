@@ -48,14 +48,16 @@
         "1m free nfts program"
       ],
       "aliases": [
-        "1m Free Nfts Programme"
+        "1m Free Nfts Programme",
+        "One Million Free Nfts"
       ],
       "canonical_title": "1m_free_nfts_program — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/1m-free-nfts-program.html",
       "category": "factions",
       "source_urls": [
         "/wiki/1m-free-nfts-program.html",
-        "/wiki/1m-free-nfts-programme.html"
+        "/wiki/1m-free-nfts-programme.html",
+        "/wiki/one-million-free-nfts.html"
       ],
       "status": "canonical",
       "tags": [
@@ -1736,42 +1738,19 @@
       ],
       "aliases": [
         "graffpunks crypto moonboys wiki",
-        "Graffpunks Network"
+        "Graffpunks Network",
+        "The Graffpunks"
       ],
       "canonical_title": "graffpunks — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/graffpunks.html",
       "category": "characters",
       "source_urls": [
-        "/wiki/graffpunks-network.html",
-        "/wiki/graffpunks.html"
+        "/wiki/graffpunks.html",
+        "/wiki/the-graffpunks.html"
       ],
       "status": "canonical",
       "tags": [
         "graffpunks",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "graffpunks_24_7": {
-      "alias_candidates": [
-        "graffpunks 24 7"
-      ],
-      "aliases": [
-        "graffpunks 24 crypto moonboys wiki",
-        "Graffpunks 247"
-      ],
-      "canonical_title": "graffpunks_24_7 — Crypto Moonboys Wiki",
-      "canonical_url": "/wiki/graffpunks-24-7.html",
-      "category": "characters",
-      "source_urls": [
-        "/wiki/graffpunks-24-7.html",
-        "/wiki/graffpunks-247.html"
-      ],
-      "status": "canonical",
-      "tags": [
-        "graffpunks",
-        "24",
         "crypto",
         "moonboys",
         "wiki"
@@ -1807,43 +1786,26 @@
         "graffpunks 24 7 radio"
       ],
       "aliases": [
-        "Graffpunks 247 Radio"
+        "Graffpunks 247 Radio",
+        "Graffpunks 24 7",
+        "Graffpunks 247",
+        "Graffpunks 247 Blockchain Radio Station"
       ],
       "canonical_title": "graffpunks_24_7_radio — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/graffpunks-24-7-radio.html",
       "category": "factions",
       "source_urls": [
         "/wiki/graffpunks-24-7-radio.html",
-        "/wiki/graffpunks-247-radio.html"
+        "/wiki/graffpunks-24-7.html",
+        "/wiki/graffpunks-247-blockchain-radio-station.html",
+        "/wiki/graffpunks-247-radio.html",
+        "/wiki/graffpunks-247.html"
       ],
       "status": "canonical",
       "tags": [
         "graffpunks",
         "24",
         "radio",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "graffpunks_247_blockchain_radio_station": {
-      "alias_candidates": [],
-      "aliases": [
-        "graffpunks 247 blockchain radio station"
-      ],
-      "canonical_title": "GraffPUNKS 24/7 Blockchain Radio Station — Crypto Moonboys Wiki",
-      "canonical_url": "/wiki/graffpunks-247-blockchain-radio-station.html",
-      "category": "factions",
-      "source_urls": [
-        "/wiki/graffpunks-247-blockchain-radio-station.html"
-      ],
-      "status": "canonical",
-      "tags": [
-        "graffpunks",
-        "24",
-        "blockchain",
-        "radio",
-        "station",
         "crypto",
         "moonboys",
         "wiki"
@@ -1888,6 +1850,26 @@
       "tags": [
         "graffpunks",
         "ecosystem",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
+    "graffpunks_network": {
+      "alias_candidates": [],
+      "aliases": [
+        "graffpunks network crypto moonboys wiki"
+      ],
+      "canonical_title": "graffpunks_network — Crypto Moonboys Wiki",
+      "canonical_url": "/wiki/graffpunks-network.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/graffpunks-network.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "graffpunks",
+        "network",
         "crypto",
         "moonboys",
         "wiki"
@@ -2652,27 +2634,6 @@
         "wiki"
       ]
     },
-    "midevil_hero_arena": {
-      "alias_candidates": [
-        "midevil hero arena"
-      ],
-      "aliases": [],
-      "canonical_title": "midevil_hero_arena — Crypto Moonboys Wiki",
-      "canonical_url": "/wiki/midevil-hero-arena.html",
-      "category": "characters",
-      "source_urls": [
-        "/wiki/midevil-hero-arena.html"
-      ],
-      "status": "canonical",
-      "tags": [
-        "midevil",
-        "hero",
-        "arena",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
     "midevil_hero_arena_game": {
       "alias_candidates": [
         "midevil hero arena game"
@@ -2700,12 +2661,14 @@
         "midevilpunks"
       ],
       "aliases": [
-        "midevilpunks crypto moonboys wiki"
+        "midevilpunks crypto moonboys wiki",
+        "Midevil Hero Arena"
       ],
       "canonical_title": "midevilpunks — Crypto Moonboys Wiki",
       "canonical_url": "/wiki/midevilpunks.html",
       "category": "factions",
       "source_urls": [
+        "/wiki/midevil-hero-arena.html",
         "/wiki/midevilpunks.html"
       ],
       "status": "canonical",
@@ -2748,12 +2711,31 @@
       "canonical_url": "/wiki/nbg.html",
       "category": "characters",
       "source_urls": [
-        "/wiki/nbg-token.html",
         "/wiki/nbg.html"
       ],
       "status": "canonical",
       "tags": [
         "nbg",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
+    "nbg_token": {
+      "alias_candidates": [],
+      "aliases": [
+        "nbg token crypto moonboys wiki"
+      ],
+      "canonical_title": "nbg_token — Crypto Moonboys Wiki",
+      "canonical_url": "/wiki/nbg-token.html",
+      "category": "factions",
+      "source_urls": [
+        "/wiki/nbg-token.html"
+      ],
+      "status": "canonical",
+      "tags": [
+        "nbg",
+        "token",
         "crypto",
         "moonboys",
         "wiki"
@@ -3061,28 +3043,6 @@
       "tags": [
         "null",
         "prophet",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "one_million_free_nfts": {
-      "alias_candidates": [
-        "one million free nfts"
-      ],
-      "aliases": [],
-      "canonical_title": "one_million_free_nfts — Crypto Moonboys Wiki",
-      "canonical_url": "/wiki/one-million-free-nfts.html",
-      "category": "factions",
-      "source_urls": [
-        "/wiki/one-million-free-nfts.html"
-      ],
-      "status": "canonical",
-      "tags": [
-        "one",
-        "million",
-        "free",
-        "nfts",
         "crypto",
         "moonboys",
         "wiki"
@@ -4616,27 +4576,6 @@
         "wiki"
       ]
     },
-    "the_graffpunks": {
-      "alias_candidates": [
-        "the graffpunks"
-      ],
-      "aliases": [
-        "graffpunks crypto moonboys wiki"
-      ],
-      "canonical_title": "The GRAFFPUNKS — Crypto Moonboys Wiki",
-      "canonical_url": "/wiki/the-graffpunks.html",
-      "category": "factions",
-      "source_urls": [
-        "/wiki/the-graffpunks.html"
-      ],
-      "status": "canonical",
-      "tags": [
-        "graffpunks",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
     "the_great_dip": {
       "alias_candidates": [
         "great dip crypto moonboys wiki",
@@ -5738,5 +5677,5 @@
       ]
     }
   },
-  "updated_at": "2026-06-12T09:33:09Z"
+  "updated_at": "2026-06-12T17:40:13Z"
 }

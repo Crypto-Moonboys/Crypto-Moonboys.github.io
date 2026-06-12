@@ -1,14 +1,15 @@
 'use strict';
 
-const ALIAS_TO_CANONICAL = {
-  '1m-free-nfts-programme': '1m-free-nfts-program',
-  'graffpunks-247': 'graffpunks-24-7',
-  'graffpunks-247-radio': 'graffpunks-24-7-radio',
-  'graffpunks-network': 'graffpunks',
-  'hodl-x-warriors': 'hodl-warriors',
-  'hodl-wars-game': 'hodl-wars',
-  'nbg-token': 'nbg',
-};
+/**
+ * wiki-aliases.js
+ *
+ * Alias → canonical slug resolution backed by the brand taxonomy.
+ * Unsafe collapses (different concept types in the same brand) are NOT
+ * included here — see scripts/wiki-brand-taxonomy.js for the authoritative
+ * source of truth.
+ */
+
+const { ALIAS_TO_CANONICAL } = require('./wiki-brand-taxonomy.js');
 
 function normalizeSlug(slug) {
   return String(slug || '')

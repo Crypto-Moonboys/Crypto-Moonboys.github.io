@@ -111,6 +111,10 @@ const SCORE_EVENT_TAG      = 20;
 const SCORE_LOCATION_TAG   = 15;
 const SCORE_ENTITY_TAG     = 8;
 const SCORE_LINK_OVERLAP   = 3;
+// same_brand_concept: pages in the same brand family but different concept types
+// are linked as related concepts (not merged).  Score is below same_category so
+// they appear as "also related" rather than "same page group".
+const SCORE_SAME_BRAND_CONCEPT = 25;
 
 // Authority boost caps (applied only when base relationship score > 0)
 // rank_score_boost: floor(rank_score / 100), capped at 10
@@ -245,13 +249,14 @@ function contentTags(entityEntry) {
 /**
  * Compute organic score + reasons for a (source, target) pair.
  * tgtBoosts contains pre-computed authority boost fields for the target URL.
+ * srcBrand / tgtBrand are brand metadata objects (or null) from wiki-index.
  * Returns null if organic relationship score === 0 (no real relationship).
  *
  * @returns {{ score, organicScore, reasons, rank_score_boost,
  *             authority_score_boost, graph_centrality_boost,
  *             content_depth_boost } | null}
  */
-function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts) {
+function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts, srcBrand, tgtBrand) {
   let organicScore = 0;
   const reasons = [];
 
@@ -298,10 +303,22 @@ function computeRelationship(srcEntry, tgtEntry, srcLinks, tgtLinks, tgtBoosts) 
     reasons.push(`link_overlap:${overlapCount}`);
   }
 
+  // 7 – same brand family, different concept type → related concept pages
+  //   e.g. graffpunks (faction) ↔ graffpunks-24-7-radio (radio)
+  //   These must NOT be merged, but they ARE genuinely related.
+  if (
+    srcBrand && tgtBrand &&
+    srcBrand.brand_family && srcBrand.brand_family === tgtBrand.brand_family &&
+    srcBrand.concept_type !== tgtBrand.concept_type
+  ) {
+    organicScore += SCORE_SAME_BRAND_CONCEPT;
+    reasons.push(`same_brand_concept:${srcBrand.brand_family}`);
+  }
+
   // Only include authority / reinforcement boosts when there is an organic relationship
   if (organicScore === 0) return null;
 
-  // 7–10 – authority boosts for the target page (Phase 10 + Phase 21)
+  // 8–11 – authority boosts for the target page (Phase 10 + Phase 21)
   const { rank_score_boost, authority_score_boost, graph_centrality_boost, content_depth_boost } = tgtBoosts;
 
   let score = organicScore;
@@ -615,7 +632,10 @@ function main() {
         rank_score_boost: 0, authority_score_boost: 0, graph_centrality_boost: 0, content_depth_boost: 0,
       };
 
-      const rel = computeRelationship(srcEntity, tgtEntity, srcLinks, tgtLinks, tgtBoosts);
+      const srcBrand = (wikiByUrl[srcUrl] && wikiByUrl[srcUrl].brand) || null;
+      const tgtBrand = (wikiByUrl[tgtUrl] && wikiByUrl[tgtUrl].brand) || null;
+
+      const rel = computeRelationship(srcEntity, tgtEntity, srcLinks, tgtLinks, tgtBoosts, srcBrand, tgtBrand);
       if (!rel) continue;
 
       // Compute reinforcement boosts from prior graph state (Phase 11).
