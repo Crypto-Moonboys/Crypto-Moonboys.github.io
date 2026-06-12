@@ -4,7 +4,7 @@
 -- Precision policy:
 -- On-chain quantities, token prices, liquidity, volume, market cap, FDV, holder
 -- percentages, and candle OHLC/volume are stored as decimal strings in TEXT
--- columns. This avoids SQLite REAL binary-float drift. Adapter code should
+-- columns. This avoids binary floating-point drift. Adapter code should
 -- preserve source precision and only convert for display/calculation at the edge.
 
 CREATE TABLE IF NOT EXISTS waxonedge_sync_runs (
