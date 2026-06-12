@@ -364,6 +364,12 @@
   display: block;
 }
 
+.woe-lightweight-chart {
+  width: 100%;
+  min-height: 320px;
+  height: 320px;
+}
+
 .woe-chart-summary {
   display: flex;
   flex-wrap: wrap;

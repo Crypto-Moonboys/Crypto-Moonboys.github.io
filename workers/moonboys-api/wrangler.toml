@@ -1,10 +1,17 @@
 name = "moonboys-api"
 main = "worker.js"
 compatibility_date = "2026-04-12"
+workers_dev = true
+preview_urls = true
+
+routes = [
+  { pattern = "cryptomoonboys.com/api/waxonedge/*", zone_name = "cryptomoonboys.com" }
+]
 
 [triggers]
-# Daily Telegram digest delivery at 09:00 UTC, plus 5-minute group announcement checks.
-crons = ["0 9 * * *", "*/5 * * * *"]
+# Daily Telegram digest delivery at 09:00 UTC, five-minute Telegram checks,
+# plus one-minute WaxOnEdge sync. WaxOnEdge 5m/15m/2h sub-cadences are computed in worker.js.
+crons = ["* * * * *", "*/5 * * * *", "0 9 * * *"]
 
 # Non-secret production defaults used by worker.js. These may be overridden
 # in the Cloudflare dashboard if the deployed worker URLs change.

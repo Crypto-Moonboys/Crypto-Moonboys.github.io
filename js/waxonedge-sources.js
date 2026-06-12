@@ -26,8 +26,16 @@
     'https://wax.cryptolions.io',
   ];
 
+  /** Core WAX DEX contracts indexed by the backend */
+  var CORE_DEX_CONTRACTS = {
+    alcor: 'swap.alcor',
+    taco: 'swap.taco',
+    nefty: 'swap.nefty',
+    box: 'swap.box',
+  };
+
   /** swap.nefty DEX contract on WAX */
-  var NEFTY_CONTRACT = 'swap.nefty';
+  var NEFTY_CONTRACT = CORE_DEX_CONTRACTS.nefty;
 
   /** WaxBlock explorer base URL */
   var WAXBLOCK_BASE = 'https://waxblock.io';
@@ -89,13 +97,40 @@
       docsUrl: 'https://wax.greymass.com',
     },
     {
+      id: 'swap-alcor',
+      label: 'swap.alcor',
+      description: 'Alcor on-chain V3 pool contract, ABI-first indexed by backend',
+      baseUrl: WAX_RPC,
+      healthPath: '/v1/chain/get_info',
+      explorerLink: WAXBLOCK_BASE + '/account/' + CORE_DEX_CONTRACTS.alcor,
+      docsUrl: 'https://alcor.exchange',
+    },
+    {
+      id: 'swap-taco',
+      label: 'swap.taco',
+      description: 'Taco WAX pool contract, ABI-first indexed by backend',
+      baseUrl: WAX_RPC,
+      healthPath: '/v1/chain/get_info',
+      explorerLink: WAXBLOCK_BASE + '/account/' + CORE_DEX_CONTRACTS.taco,
+      docsUrl: 'https://waxp.exchange/swap',
+    },
+    {
       id: 'nefty-contract',
       label: 'swap.nefty',
-      description: 'NeftyBlocks DEX contract on WAX chain',
+      description: 'NeftyBlocks DEX contract, ABI-first indexed by backend',
       baseUrl: WAX_RPC,
       healthPath: '/v1/chain/get_info',
       explorerLink: NEFTY_WAXBLOCK_LINK,
       docsUrl: 'https://github.com/neftyblocks',
+    },
+    {
+      id: 'swap-box',
+      label: 'swap.box',
+      description: 'BOX / Defibox WAX pool contract, ABI-first indexed by backend',
+      baseUrl: WAX_RPC,
+      healthPath: '/v1/chain/get_info',
+      explorerLink: WAXBLOCK_BASE + '/account/' + CORE_DEX_CONTRACTS.box,
+      docsUrl: 'https://waxp.exchange/swap',
     },
   ];
 
@@ -142,6 +177,7 @@
   window.WAXONEDGE_HYPERION   = HYPERION_API;
   window.WAXONEDGE_WAX_RPC    = WAX_RPC;
   window.WAXONEDGE_WAX_RPC_FALLBACKS = WAX_RPC_FALLBACKS;
+  window.WAXONEDGE_CORE_DEX_CONTRACTS = CORE_DEX_CONTRACTS;
   window.WAXONEDGE_NEFTY_CONTRACT    = NEFTY_CONTRACT;
   window.WAXONEDGE_WAXBLOCK_BASE     = WAXBLOCK_BASE;
   window.WAXONEDGE_NEFTY_WAXBLOCK_LINK = NEFTY_WAXBLOCK_LINK;

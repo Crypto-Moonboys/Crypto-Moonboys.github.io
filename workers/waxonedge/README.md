@@ -1,6 +1,8 @@
 # WAXONEDGE Cloudflare Worker Scaffold
 
-This directory is a non-deployed scaffold for the real WAXONEDGE indexer/API layer.
+This directory is the historical non-deployed scaffold for the WAXONEDGE indexer/API layer.
+The live implementation is now wired through `workers/moonboys-api` using the existing
+production `wikicoms` D1 binding and `/api/waxonedge/*` routes.
 
 It exists to stop the rebuild from drifting into static frontend guesses. The current production site can remain static, but the OG WaxOnEdge experience requires a cached/indexed backend.
 
@@ -15,7 +17,8 @@ Cloudflare Worker with:
 
 ## Deployment rule
 
-Do not deploy this scaffold until real Cloudflare project names, D1 binding names, routes, and source rate limits are confirmed.
+Do not deploy this scaffold. Extend `workers/moonboys-api/routes/waxonedge.js` unless
+Cloudflare routing is intentionally split into a dedicated Worker later.
 
 ## Worker binding draft
 

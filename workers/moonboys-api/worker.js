@@ -3,6 +3,7 @@ import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
 import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from './blocktopia/db.js';
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
+import { handleWaxOnEdgeRoute, runWaxOnEdgeScheduledSync } from './routes/waxonedge.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
 /**
  * Moonboys API — Cloudflare Worker entrypoint
@@ -48,6 +49,16 @@ import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFaction
  *   POST /roguelite/mark-missed
  *   POST /telegram/daily-digest/run
  *   POST /telegram/group-announcements/run
+ *   GET  /api/waxonedge/bootstrap
+ *   GET  /api/waxonedge/summary
+ *   GET  /api/waxonedge/tokens/top
+ *   GET  /api/waxonedge/pairs/top
+ *   GET  /api/waxonedge/token/:contract/:symbol
+ *   GET  /api/waxonedge/token/:contract/:symbol/pairs
+ *   GET  /api/waxonedge/token/:contract/:symbol/chart
+ *   GET  /api/waxonedge/token/:contract/:symbol/holders
+ *   GET  /api/waxonedge/token/:contract/:symbol/trades
+ *   GET  /api/waxonedge/sync-status
  *
  * Telegram bot commands (POST /telegram/webhook):
  *   /gkstart /gkhelp /gklink /gkstatus /gkseason /gkleaderboard /gkquests /gkfaction /gkunlink
@@ -2677,6 +2688,10 @@ export default {
       return json({ ok: true, message: 'SAM active and monitoring the wiki.' });
     }
 
+    if (path === '/api/waxonedge' || path.startsWith('/api/waxonedge/')) {
+      return handleWaxOnEdgeRoute(request, env, CORS_HEADERS);
+    }
+
 
     // ── POST /admin/blocktopia/access ─────────────────────────────────────
     // Admin access probe for hidden tooling UIs.
@@ -5258,9 +5273,27 @@ export default {
   },
   async scheduled(event, env, _ctx) {
     const cron = String(event?.cron || '');
+    const cronNow = new Date();
     const shouldRunDigest = !cron || cron === '0 9 * * *';
     const shouldRunDailySummary = !cron || cron === '0 9 * * *';
-    const shouldRunTimedEvents = !cron || cron === '*/5 * * * *';
+    const shouldRunTimedEvents = !cron || cron === '*/5 * * * *' || (cron === '* * * * *' && cronNow.getUTCMinutes() % 5 === 0);
+    const shouldRunWaxOnEdge = !cron || cron === '* * * * *';
+
+    if (shouldRunWaxOnEdge) {
+      const waxOnEdgeSummary = await runWaxOnEdgeScheduledSync(env, cron).catch((error) => ({
+        ok: false,
+        error: error?.message || String(error),
+      }));
+      if (!waxOnEdgeSummary?.ok) {
+        logApiFailure('waxonedge_scheduled_failed', waxOnEdgeSummary);
+      } else {
+        logApiEvent('waxonedge_scheduled_complete', {
+          cron,
+          results: waxOnEdgeSummary.results?.length || 0,
+          skipped: !!waxOnEdgeSummary.skipped,
+        });
+      }
+    }
 
     if (shouldRunDigest) {
       const summary = await runTelegramDailyDigest(env, {

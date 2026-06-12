@@ -49,6 +49,8 @@ ok('schema defines pairs table', schema.includes('CREATE TABLE IF NOT EXISTS wax
 ok('schema defines token stats table', schema.includes('CREATE TABLE IF NOT EXISTS waxonedge_token_stats'));
 ok('schema defines holders table', schema.includes('CREATE TABLE IF NOT EXISTS waxonedge_holders'));
 ok('schema defines chart candles table', schema.includes('CREATE TABLE IF NOT EXISTS waxonedge_chart_candles'));
+ok('schema defines snapshots table', schema.includes('CREATE TABLE IF NOT EXISTS waxonedge_snapshots'));
+ok('schema defines trades table', schema.includes('CREATE TABLE IF NOT EXISTS waxonedge_trades'));
 ok('schema documents decimal TEXT precision policy', schema.includes('Precision policy') && schema.includes('decimal strings in TEXT'));
 ok('schema avoids REAL column types', !hasRealColumn(schema));
 ok('schema stores token prices as TEXT', schema.includes('price_wax TEXT') && schema.includes('price_usd TEXT'));
