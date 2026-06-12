@@ -36,6 +36,14 @@
     neftyDetectedTables: [],
     neftyTableUsed: '',
     selected: { symbol: '', contract: '', key: '' },
+    selectedPair: null,
+    summary: {},
+    sources: {},
+    filters: {
+      query: '',
+      source: '',
+      bubbleMetric: 'liquidity',
+    },
     chainStatCache: {},
     chainStatPending: {},
     chartCache: {},
@@ -356,6 +364,12 @@
       max_supply: row.max_supply,
       system_price: row.price_wax,
       usd_price: row.price_usd,
+      selected_price_wax: row.selected_price_wax,
+      selected_price_usd: row.selected_price_usd,
+      holder_count: row.holder_count,
+      circulating_supply: row.circulating_supply,
+      fdv_wax: row.fdv_wax,
+      fdv_usd: row.fdv_usd,
       pair_count: row.pair_count,
       icon_url: row.icon_url,
       updated_at: row.updated_at,
@@ -394,6 +408,7 @@
       source: sourceMeta.label,
       sourceMeta: sourceMeta.meta,
       sourceSort: sourceMeta.sort,
+      rawSource: row.source,
       adapter: row.source || sourceMeta.label,
       explorerUrl: sourceMeta.explorer,
       explorerLabel: sourceMeta.explorerLabel,
@@ -466,6 +481,8 @@
       updatedAt: payload.updated_at || data.sources?.alcor_tokens?.updated_at || null,
       warnings: Array.isArray(payload.warnings) ? payload.warnings : [],
     };
+    state.summary = data.summary || {};
+    state.sources = data.sources || {};
     markBackendSourceStatus(data.sources);
     return true;
   }
@@ -475,9 +492,13 @@
     state.pairIndex = buildPairIndex(state.pairs);
     state.alcorMarkets = buildAlcorMarkets(state.pairs, state.tickers);
     updateTopBarWaxPrice();
+    renderDashboardMetrics();
+    renderSourceStrip();
     updateRiskFlags();
     var initialSelection = pickDefaultSelection();
+    renderBubbles();
     renderTokens();
+    renderGlobalPairMatrix();
     if (initialSelection.key) state.selected = initialSelection;
     renderSelectedToken();
     ensureSelectedTokenData();
@@ -568,6 +589,23 @@
         decimals: tok.decimals != null ? tok.decimals : null,
         systemPrice: asNum(tok.system_price),
         usdPrice: asNum(tok.usd_price),
+        selectedPriceWax: asNum(tok.selected_price_wax),
+        selectedPriceUsd: asNum(tok.selected_price_usd),
+        pairCount: asNum(tok.pair_count),
+        volume24: asNum(tok.volume_24h),
+        volume7d: asNum(tok.volume_7d),
+        volume30d: asNum(tok.volume_30d),
+        liquidityWax: asNum(tok.liquidity_wax),
+        liquidityUsd: asNum(tok.liquidity_usd),
+        tvlWax: asNum(tok.tvl_wax),
+        tvlUsd: asNum(tok.tvl_usd),
+        holderCount: asNum(tok.holder_count),
+        circulatingSupply: asNum(tok.circulating_supply),
+        fdvWax: asNum(tok.fdv_wax),
+        fdvUsd: asNum(tok.fdv_usd),
+        selectedPairSource: tok.selected_pair_source || '',
+        selectedPairId: tok.selected_pair_id || '',
+        updatedAt: tok.updated_at || '',
         raw: tok,
       };
       map.byKey[key] = record;
@@ -913,6 +951,97 @@
     sources.forEach(function (src) { pingSource(src); });
   }
 
+  function sourceStateForId(src) {
+    var sourceMap = state.sources || {};
+    var keys = {
+      'alcor-tokens': 'alcor_tokens',
+      'alcor-pairs': 'alcor_pairs',
+      'alcor-tickers': 'alcor_tickers',
+      'alcor-analytics': 'alcor_global',
+      'swap-alcor': 'swap_alcor_pools',
+      'swap-taco': 'swap_taco_pairs',
+      'nefty-contract': 'swap_nefty_pairs',
+      'swap-box': 'swap_box_pairs',
+    };
+    return sourceMap[keys[src.id] || src.id] || null;
+  }
+
+  function renderSourceStrip() {
+    var sources = window.WAXONEDGE_SOURCES || [];
+    var coreIds = ['alcor-pairs', 'swap-alcor', 'swap-taco', 'nefty-contract', 'swap-box', 'alcor-tickers'];
+    var html = sources.filter(function (src) {
+      return coreIds.indexOf(src.id) !== -1;
+    }).map(function (src) {
+      var item = sourceStateForId(src);
+      var indexed = item ? !!item.indexed : false;
+      var stateName = indexed ? 'ok' : (state.backend.mode === 'backend' ? 'error' : 'checking');
+      var rowCount = item && item.row_count != null ? String(item.row_count) + ' rows' : (indexed ? 'indexed' : 'pending');
+      return '<div class="woe-source-pill" role="listitem">' +
+        '<span class="woe-status-dot woe-status-' + escHtml(stateName) + '" id="src-dot-' + escHtml(src.id) + '" title="' + escHtml(stateName) + '"></span>' +
+        '<strong>' + escHtml(src.label) + '</strong>' +
+        '<span>' + escHtml(rowCount) + '</span>' +
+      '</div>';
+    }).join('');
+    setHtml('woe-sources-grid', html || '<p class="woe-loading">Source status unavailable.</p>');
+  }
+
+  function metricValueForToken(record, metric) {
+    if (!record) return 0;
+    if (metric === 'volume') return record.volume24 || 0;
+    if (metric === 'pairs') return record.pairCount || 0;
+    return record.liquidityUsd || record.tvlUsd || record.liquidityWax || record.tvlWax || record.volume24 || record.pairCount || 0;
+  }
+
+  function getTokenSources(selectionKey) {
+    var found = {};
+    getAllMarkets().forEach(function (market) {
+      if (!marketContainsToken(market, selectionKey)) return;
+      var source = market.adapter || market.rawSource || market.source || '';
+      if (source) found[String(source).toLowerCase()] = true;
+    });
+    return Object.keys(found).sort();
+  }
+
+  function strongestMarketForToken(selectionKey) {
+    var rows = getAllMarkets().filter(function (market) {
+      return marketContainsToken(market, selectionKey);
+    }).sort(function (a, b) {
+      var bw = b.liquidityWax != null ? b.liquidityWax : 0;
+      var aw = a.liquidityWax != null ? a.liquidityWax : 0;
+      if (bw !== aw) return bw - aw;
+      return (b.rankMetric || 0) - (a.rankMetric || 0);
+    });
+    return rows[0] || null;
+  }
+
+  function getMarketPairName(market) {
+    return pairLabel(market && market.tokenA && market.tokenA.symbol, market && market.tokenB && market.tokenB.symbol) || ('Pair #' + (market && market.marketId ? market.marketId : '?'));
+  }
+
+  function getOtherToken(market, selectionKey) {
+    if (!market) return null;
+    if (market.tokenA && market.tokenA.key === selectionKey) return market.tokenB || null;
+    if (market.tokenB && market.tokenB.key === selectionKey) return market.tokenA || null;
+    return market.tokenB || market.tokenA || null;
+  }
+
+  function sourceBadgesHtml(sources) {
+    if (!sources || sources.length === 0) return '<span class="woe-mini-badge">No rows</span>';
+    return sources.slice(0, 5).map(function (source) {
+      return '<span class="woe-mini-badge">' + escHtml(source) + '</span>';
+    }).join('');
+  }
+
+  function renderDashboardMetrics() {
+    var summary = state.summary || {};
+    setText('woe-kpi-token-count', String(summary.token_count != null ? summary.token_count : state.tokens.length || '--'));
+    setText('woe-kpi-pair-count', String(summary.pair_count != null ? summary.pair_count : state.pairs.length || '--'));
+    setText('woe-kpi-aggregate-count', String(summary.token_aggregate_count != null ? summary.token_aggregate_count : '--'));
+    setText('woe-kpi-last-sync', state.backend.updatedAt ? new Date(state.backend.updatedAt).toLocaleString() : '--');
+    var topPrice = document.getElementById('woe-topbar-wax-price');
+    if (topPrice) setText('woe-kpi-wax-price', topPrice.textContent || '$ --');
+  }
+
   /* ── Client-side sort/filter helpers ────────────────────────── */
 
   var sortState = {};
@@ -980,15 +1109,38 @@
     if (!input || input.dataset.bound === 'true') return;
     input.dataset.bound = 'true';
     input.addEventListener('input', function () {
-      var q = input.value.toLowerCase().trim();
-      ['woe-table-tokens', 'woe-table-matrix'].forEach(function (tableId) {
+      state.filters.query = input.value.toLowerCase().trim();
+      renderBubbles();
+      renderTokens();
+      ['woe-table-pairs', 'woe-table-matrix'].forEach(function (tableId) {
         var table = document.getElementById(tableId);
         if (!table) return;
         table.querySelectorAll('tbody tr').forEach(function (row) {
-          row.style.display = q === '' || row.textContent.toLowerCase().includes(q) ? '' : 'none';
+          row.style.display = state.filters.query === '' || row.textContent.toLowerCase().includes(state.filters.query) ? '' : 'none';
         });
       });
     });
+  }
+
+  function attachDashboardControls() {
+    var metric = document.getElementById('woe-bubble-metric');
+    if (metric && metric.dataset.bound !== 'true') {
+      metric.dataset.bound = 'true';
+      metric.addEventListener('change', function () {
+        state.filters.bubbleMetric = metric.value || 'liquidity';
+        renderBubbles();
+        renderTokens();
+      });
+    }
+    var source = document.getElementById('woe-source-filter');
+    if (source && source.dataset.bound !== 'true') {
+      source.dataset.bound = 'true';
+      source.addEventListener('change', function () {
+        state.filters.source = source.value || '';
+        renderBubbles();
+        renderTokens();
+      });
+    }
   }
 
   /* ── Tokens scanner ─────────────────────────────────────────── */
@@ -999,7 +1151,7 @@
   }
 
   function attachTokenSelectionLinks() {
-    document.querySelectorAll('.woe-token-detail-link').forEach(function (link) {
+    document.querySelectorAll('.woe-token-detail-link, .woe-bubble-token').forEach(function (link) {
       if (link.dataset.bound === 'true') return;
       link.dataset.bound = 'true';
       link.addEventListener('click', function (event) {
@@ -1055,6 +1207,102 @@
   }
 
   /* ── Risk flags panel ────────────────────────────────────────── */
+
+  function getRankedTokenRecords() {
+    var q = state.filters.query;
+    var sourceFilter = state.filters.source;
+    return (state.tokens || []).map(function (tok) {
+      return findTokenRecord(state.tokenMap, tok.contract, tok.symbol || tok.id) || tok;
+    }).filter(function (record) {
+      var symbol = normalizeSymbol(record.symbol || record.id);
+      var contract = normalizeContract(record.contract);
+      var key = tokenKey(contract, symbol);
+      if (!key || key === WAX_NATIVE_KEY) return false;
+      var sources = getTokenSources(key);
+      if (sourceFilter && sources.indexOf(sourceFilter) === -1) return false;
+      if (!q) return true;
+      return (symbol + ' ' + contract + ' ' + sources.join(' ')).toLowerCase().indexOf(q) !== -1;
+    }).sort(function (a, b) {
+      return metricValueForToken(b, state.filters.bubbleMetric) - metricValueForToken(a, state.filters.bubbleMetric);
+    });
+  }
+
+  function renderBubbles() {
+    var tokens = getRankedTokenRecords().slice(0, 99);
+    if (tokens.length === 0) {
+      setHtml('woe-bubble-board', '<div class="woe-chart-empty">No indexed tokens match the current filters.</div>');
+      return;
+    }
+    var maxMetric = tokens.reduce(function (max, record) {
+      return Math.max(max, metricValueForToken(record, state.filters.bubbleMetric));
+    }, 1);
+    var html = tokens.map(function (record, index) {
+      var symbol = normalizeSymbol(record.symbol || record.id);
+      var contract = normalizeContract(record.contract);
+      var key = tokenKey(contract, symbol);
+      var sources = getTokenSources(key);
+      var market = strongestMarketForToken(key);
+      var metric = metricValueForToken(record, state.filters.bubbleMetric);
+      var ratio = Math.max(0.08, Math.min(1, metric / maxMetric));
+      var size = Math.round(72 + (ratio * 104));
+      var glow = Math.round(12 + (ratio * 34));
+      var change = market && market.change24 != null ? market.change24 : null;
+      var colorClass = change == null ? 'woe-bubble-flat' : (change >= 0 ? 'woe-bubble-up' : 'woe-bubble-down');
+      var subtitle = state.filters.bubbleMetric === 'volume'
+        ? fmtNum(record.volume24 || 0) + ' vol'
+        : state.filters.bubbleMetric === 'pairs'
+          ? String(record.pairCount || sources.length || 0) + ' pairs'
+          : formatDualMetric(record.liquidityWax || record.tvlWax, record.liquidityUsd || record.tvlUsd);
+      return '<button class="woe-bubble-token ' + colorClass + '" type="button"' +
+        ' data-token="' + escHtml(symbol) + '" data-contract="' + escHtml(contract) + '"' +
+        ' style="--bubble-size:' + escHtml(String(size)) + 'px;--bubble-glow:' + escHtml(String(glow)) + 'px;"' +
+        ' title="' + escHtml(symbol + ' @ ' + contract) + '">' +
+          '<span class="woe-bubble-rank">#' + escHtml(String(index + 1)) + '</span>' +
+          '<strong>' + escHtml(symbol) + '</strong>' +
+          '<span class="woe-bubble-metric">' + escHtml(subtitle) + '</span>' +
+          '<span class="woe-bubble-change ' + escHtml(pctClass(change)) + '">' + escHtml(change != null ? fmtPct(change) : 'No 24h') + '</span>' +
+          '<span class="woe-bubble-badges">' + sourceBadgesHtml(sources) + '</span>' +
+        '</button>';
+    }).join('');
+    setHtml('woe-bubble-board', html);
+    attachTokenSelectionLinks();
+  }
+
+  function renderTokens() {
+    var tokensData = getRankedTokenRecords().slice(0, 99);
+    if (!Array.isArray(tokensData) || tokensData.length === 0) {
+      setHtml('woe-token-rank-grid', '<div class="woe-chart-empty">No tokens match the current filters.</div>');
+      return;
+    }
+
+    var selectedKey = state.selected.key;
+    var rows = tokensData.map(function (record, index) {
+      var sym = record.symbol || record.id || '?';
+      var contr = record.contract || '';
+      var key = tokenKey(contr, sym);
+      var sources = getTokenSources(key);
+      var market = strongestMarketForToken(key);
+      var change = market && market.change24 != null ? market.change24 : null;
+      var activeClass = key && key === selectedKey ? ' woe-token-rank-active' : '';
+      var symbolLink = '<a class="woe-token-detail-link" href="' + escHtml(buildTokenHref(sym, contr)) + '"' +
+        ' data-token="' + escHtml(sym) + '"' +
+        ' data-contract="' + escHtml(contr) + '">' + escHtml(sym) + '</a>';
+      return '<article class="woe-token-rank-card' + activeClass + '">' +
+        '<span class="woe-token-rank-number">#' + escHtml(String(index + 1)) + '</span>' +
+        '<div><strong>' + symbolLink + '</strong><span>' + escHtml(contr || UNAVAILABLE_TEXT) + '</span></div>' +
+        '<div class="woe-token-rank-metrics">' +
+          '<span>' + escHtml(formatDualMetric(record.selectedPriceWax || record.systemPrice, record.selectedPriceUsd || record.usdPrice, 'WAX', '$')) + '</span>' +
+          '<span class="' + escHtml(pctClass(change)) + '">' + escHtml(change != null ? fmtPct(change) : UNAVAILABLE_TEXT) + '</span>' +
+          '<span>' + escHtml(fmtNum(record.volume24 || 0)) + ' vol</span>' +
+        '</div>' +
+        '<div class="woe-token-rank-badges">' + sourceBadgesHtml(sources) + '</div>' +
+      '</article>';
+    }).join('');
+
+    setHtml('woe-token-rank-grid', rows);
+    setText('woe-tokens-count', 'Top ' + tokensData.length);
+    attachTokenSelectionLinks();
+  }
 
   function updateRiskFlags() {
     var tokensData = state.tokens;
@@ -1173,6 +1421,14 @@
     }
 
     // No valid token is ready — show the scanner-first empty state.
+    return { symbol: '', contract: '', key: '' };
+  }
+
+  function pickDefaultSelection() {
+    var requested = getSelectionFromLocation();
+    if (requested.key && findTokenRecord(state.tokenMap, requested.contract, requested.symbol)) {
+      return requested;
+    }
     return { symbol: '', contract: '', key: '' };
   }
 
@@ -1523,7 +1779,7 @@
     var token = context.token;
     var summaryHtml = '<h2 class="woe-token-summary-title">' + escHtml(token.symbol || context.selection.symbol || 'Token') + '</h2>' +
       '<p class="woe-token-summary-subtitle">' +
-        'Static analytics detail for <code>' + escHtml(token.contract || context.selection.contract || 'unknown-contract') + '</code>. ' +
+        'Indexed analytics detail for <code>' + escHtml(token.contract || context.selection.contract || 'unknown-contract') + '</code>. ' +
         'Click another token in the scanner or share this state with <code>?token=</code> + <code>&amp;contract=</code>.' +
       '</p>';
     setHtml('woe-token-summary', summaryHtml);
@@ -1596,6 +1852,73 @@
       ? escHtml(fmtNum(historicalVolumes.thirtyDay) + ' ' + selection.symbol)
       : availabilityHtml());
     statsHtml += statRow('Market cap', availabilityHtml(INDEXED_BACKEND_TEXT), { muted: true });
+    statsHtml += statRow('Fully diluted valuation', fdvWax != null || fdvUsd != null
+      ? escHtml(formatDualMetric(fdvWax, fdvUsd))
+      : availabilityHtml());
+
+    setHtml('woe-token-stats', statsHtml);
+  }
+
+  function renderTokenSummary(context) {
+    var token = context.token;
+    var sources = getTokenSources(context.selection.key);
+    var summaryHtml = '<h2 class="woe-token-summary-title">' + escHtml(token.symbol || context.selection.symbol || 'Token') + '</h2>' +
+      '<p class="woe-token-summary-subtitle">' +
+        '<code>' + escHtml(token.contract || context.selection.contract || 'unknown-contract') + '</code>' +
+        '<span class="woe-token-rank-badges">' + sourceBadgesHtml(sources) + '</span>' +
+      '</p>';
+    setHtml('woe-token-summary', summaryHtml);
+    setText('woe-detail-status', context.selection.symbol + ' @ ' + context.selection.contract);
+
+    var strongest = strongestMarketForToken(context.selection.key);
+    var metaParts = [context.markets.length + ' indexed pair row(s)'];
+    if (strongest && strongest.marketId) metaParts.push('strongest WAX pair #' + strongest.marketId);
+    setText('woe-detail-meta', metaParts.join(' / '));
+  }
+
+  function renderTokenStats(context) {
+    var token = context.token;
+    var selection = context.selection;
+    var chainStat = state.chainStatCache[selection.key] || null;
+    var supply = chainStat && chainStat.supply ? chainStat.supply : null;
+    var maxSupply = chainStat && chainStat.maxSupply ? chainStat.maxSupply : null;
+    var currentPriceWax = token.selectedPriceWax != null ? token.selectedPriceWax : token.systemPrice;
+    var currentPriceUsd = token.selectedPriceUsd != null ? token.selectedPriceUsd : token.usdPrice;
+    var selectedPriceSource = token.selectedPairSource || (context.primaryAlcorMarket ? context.primaryAlcorMarket.adapter : '');
+    var strongest = strongestMarketForToken(selection.key);
+    var sources = getTokenSources(selection.key);
+    var fdvWax = token.fdvWax != null ? token.fdvWax : (maxSupply && maxSupply.amount != null && currentPriceWax != null ? maxSupply.amount * currentPriceWax : null);
+    var fdvUsd = token.fdvUsd != null ? token.fdvUsd : (maxSupply && maxSupply.amount != null && currentPriceUsd != null ? maxSupply.amount * currentPriceUsd : null);
+
+    function statRow(label, value, options) {
+      var valueClass = options && options.muted ? ' woe-stat-muted' : '';
+      return '<div class="woe-stat-row">' +
+        '<div class="woe-stat-label">' + escHtml(label) + '</div>' +
+        '<div class="woe-stat-value' + valueClass + '">' + value + '</div>' +
+      '</div>';
+    }
+
+    var statsHtml = '';
+    statsHtml += statRow('Token', escHtml(selection.symbol + ' @ ' + selection.contract));
+    statsHtml += statRow('Selected price', currentPriceWax != null || currentPriceUsd != null
+      ? escHtml(formatDualMetric(currentPriceWax, currentPriceUsd, 'WAX', '$'))
+      : availabilityHtml());
+    statsHtml += statRow('Selected price source', selectedPriceSource ? escHtml(selectedPriceSource) : availabilityHtml());
+    statsHtml += statRow('24h change', strongest && strongest.change24 != null
+      ? '<span class="' + escHtml(pctClass(strongest.change24)) + '">' + escHtml(fmtPct(strongest.change24)) + '</span>'
+      : availabilityHtml());
+    statsHtml += statRow('24h volume', token.volume24 != null ? escHtml(fmtNum(token.volume24)) : availabilityHtml());
+    statsHtml += statRow('Total indexed liquidity', token.liquidityWax != null || token.liquidityUsd != null || token.tvlWax != null || token.tvlUsd != null
+      ? escHtml(formatDualMetric(token.liquidityWax || token.tvlWax, token.liquidityUsd || token.tvlUsd))
+      : availabilityHtml());
+    statsHtml += statRow('Cumulated pair liquidity', context.pairLiquidityWax != null || context.pairLiquidityUsd != null
+      ? escHtml(formatDualMetric(context.pairLiquidityWax, context.pairLiquidityUsd))
+      : availabilityHtml());
+    statsHtml += statRow('Source count', escHtml(String(sources.length)));
+    statsHtml += statRow('Strongest WAX liquidity pair', strongest
+      ? escHtml(getMarketPairName(strongest) + ' / ' + (strongest.adapter || strongest.source || 'source') + ' / ' + formatDualMetric(strongest.liquidityWax, strongest.liquidityUsd))
+      : availabilityHtml(SOURCE_NOT_INDEXED_TEXT));
+    statsHtml += statRow('Total token supply', supply && supply.raw ? escHtml(supply.raw) : availabilityHtml());
     statsHtml += statRow('Fully diluted valuation', fdvWax != null || fdvUsd != null
       ? escHtml(formatDualMetric(fdvWax, fdvUsd))
       : availabilityHtml());
@@ -1734,6 +2057,117 @@
     attachTableFilter('woe-filter-matrix', 'woe-table-matrix');
   }
 
+  function pairRowHtml(market, index, selectionKey) {
+    var changeClass = pctClass(market.change24);
+    var liquiditySort = market.liquidityUsd != null ? market.liquidityUsd : (market.liquidityWax != null ? market.liquidityWax : 0);
+    var other = selectionKey ? getOtherToken(market, selectionKey) : null;
+    var otherRecord = other ? findTokenRecord(state.tokenMap, other.contract, other.symbol) : null;
+    var pairName = getMarketPairName(market);
+    var chartStatus = state.backend.mode === 'backend' ? SOURCE_NOT_INDEXED_TEXT : (market.marketId ? 'Indexed Alcor candles' : SOURCE_NOT_INDEXED_TEXT);
+    var pairKey = encodeURIComponent((market.adapter || market.source || '') + '::' + (market.marketId || index));
+    var reserves = [market.pooledTokenAText, market.pooledTokenBText].filter(function (value) {
+      return value && value !== UNAVAILABLE_TEXT;
+    }).join(' / ') || UNAVAILABLE_TEXT;
+    var otherValue = otherRecord && (otherRecord.systemPrice != null || otherRecord.usdPrice != null)
+      ? formatDualMetric(otherRecord.systemPrice, otherRecord.usdPrice, 'WAX', '$')
+      : UNAVAILABLE_TEXT;
+    return '<tr class="woe-pair-row" data-pair-key="' + escHtml(pairKey) + '">' +
+      '<td data-col="rank" data-sortval="' + escHtml(String(index + 1)) + '" class="woe-num">' + escHtml(String(index + 1)) + '</td>' +
+      '<td data-col="source">' + sourceCellHtml(market) + '</td>' +
+      '<td data-col="pair"><button class="woe-pair-detail-link" type="button" data-pair-key="' + escHtml(pairKey) + '">' + escHtml(pairName) + '</button></td>' +
+      (selectionKey
+        ? '<td data-col="other">' + tokenCellHtml(other) + '</td><td data-col="value">' + (otherValue === UNAVAILABLE_TEXT ? availabilityHtml() : escHtml(otherValue)) + '</td>'
+        : '<td data-col="tokenA">' + tokenCellHtml(market.tokenA) + '</td><td data-col="tokenB">' + tokenCellHtml(market.tokenB) + '</td>') +
+      '<td data-col="liq" data-sortval="' + escHtml(String(liquiditySort || 0)) + '" class="woe-num">' + (market.liquidityText === UNAVAILABLE_TEXT ? availabilityHtml() : escHtml(market.liquidityText)) + '</td>' +
+      '<td data-col="waxliq" data-sortval="' + escHtml(String(market.liquidityWax || 0)) + '" class="woe-num">' + (market.liquidityWax != null ? escHtml(fmtNum(market.liquidityWax) + ' WAX') : availabilityHtml()) + '</td>' +
+      '<td data-col="price" data-sortval="' + escHtml(String(market.currentPrice || 0)) + '" class="woe-num">' + (market.currentPriceText === UNAVAILABLE_TEXT ? availabilityHtml() : escHtml(market.currentPriceText)) + '</td>' +
+      '<td data-col="chg" data-sortval="' + escHtml(String(market.change24 || 0)) + '" class="woe-num ' + changeClass + '">' + (market.change24 != null ? escHtml(fmtPct(market.change24)) : availabilityHtml()) + '</td>' +
+      '<td data-col="vol24" data-sortval="' + escHtml(String(market.volume24 || 0)) + '" class="woe-num">' + (market.volume24Text === UNAVAILABLE_TEXT ? availabilityHtml() : escHtml(market.volume24Text)) + '</td>' +
+      '<td data-col="reserves">' + (reserves === UNAVAILABLE_TEXT ? availabilityHtml() : escHtml(reserves)) + '</td>' +
+      '<td data-col="chart">' + escHtml(chartStatus) + '</td>' +
+      '<td><a href="' + escHtml(market.explorerUrl) + '" target="_blank" rel="noopener noreferrer" class="woe-chain-link">' + escHtml(market.explorerLabel) + '</a></td>' +
+    '</tr>';
+  }
+
+  function attachPairDetailLinks() {
+    document.querySelectorAll('.woe-pair-detail-link').forEach(function (button) {
+      if (button.dataset.bound === 'true') return;
+      button.dataset.bound = 'true';
+      button.addEventListener('click', function () {
+        var pairKey = button.getAttribute('data-pair-key');
+        var rows = getAllMarkets();
+        var market = rows.find(function (candidate, index) {
+          return encodeURIComponent((candidate.adapter || candidate.source || '') + '::' + (candidate.marketId || index)) === pairKey;
+        });
+        if (market) renderPairDetail(market);
+      });
+    });
+  }
+
+  function renderPairDetail(market) {
+    state.selectedPair = market;
+    setText('woe-pair-detail-status', getMarketPairName(market) + ' / ' + (market.adapter || market.source || 'source'));
+    var chartCopy = state.backend.mode === 'backend' ? 'Source not indexed yet' : (market.marketId ? 'Pair chart indexed through Alcor market candles when selected as token chart.' : 'Source not indexed yet');
+    var html = '<div class="woe-pair-detail-grid">' +
+      '<div class="woe-pair-detail-main">' +
+        '<h3>' + escHtml(getMarketPairName(market)) + '</h3>' +
+        '<p>' + escHtml(market.adapter || market.source || 'Source') + ' / Pair #' + escHtml(market.marketId || UNAVAILABLE_TEXT) + '</p>' +
+        '<div class="woe-stats-grid">' +
+          '<div class="woe-stat-row"><div class="woe-stat-label">Token A</div><div class="woe-stat-value">' + escHtml(describeToken(market.tokenA)) + '</div></div>' +
+          '<div class="woe-stat-row"><div class="woe-stat-label">Token B</div><div class="woe-stat-value">' + escHtml(describeToken(market.tokenB)) + '</div></div>' +
+          '<div class="woe-stat-row"><div class="woe-stat-label">Reserves</div><div class="woe-stat-value">' + escHtml((market.pooledTokenAText || UNAVAILABLE_TEXT) + ' / ' + (market.pooledTokenBText || UNAVAILABLE_TEXT)) + '</div></div>' +
+          '<div class="woe-stat-row"><div class="woe-stat-label">Liquidity</div><div class="woe-stat-value">' + escHtml(market.liquidityText || UNAVAILABLE_TEXT) + '</div></div>' +
+          '<div class="woe-stat-row"><div class="woe-stat-label">WAX Liquidity</div><div class="woe-stat-value">' + (market.liquidityWax != null ? escHtml(fmtNum(market.liquidityWax) + ' WAX') : availabilityHtml()) + '</div></div>' +
+          '<div class="woe-stat-row"><div class="woe-stat-label">24h Volume</div><div class="woe-stat-value">' + escHtml(market.volume24Text || UNAVAILABLE_TEXT) + '</div></div>' +
+          '<div class="woe-stat-row"><div class="woe-stat-label">24h Change</div><div class="woe-stat-value ' + escHtml(pctClass(market.change24)) + '">' + escHtml(market.change24 != null ? fmtPct(market.change24) : UNAVAILABLE_TEXT) + '</div></div>' +
+          '<div class="woe-stat-row"><div class="woe-stat-label">Selected Price</div><div class="woe-stat-value">' + escHtml(market.currentPriceText || UNAVAILABLE_TEXT) + '</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="woe-pair-chart-state">' + escHtml(chartCopy) + '</div>' +
+    '</div>';
+    setHtml('woe-pair-detail-panel', html);
+    var detail = document.getElementById('woe-pair-detail');
+    if (detail && typeof detail.scrollIntoView === 'function') detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderMatrix(context) {
+    var rows = context.markets;
+    setText('woe-matrix-meta', state.backend.mode === 'backend'
+      ? 'Selected token pairs across alcor, swap.alcor, swap.taco, swap.nefty, swap.box.'
+      : 'Diagnostic fallback active.');
+
+    if (!rows || rows.length === 0) {
+      setHtml('woe-matrix-body', '<tr><td colspan="13" class="woe-loading">No indexed pairs detected for this token.</td></tr>');
+      setText('woe-matrix-count', '0 rows');
+      return;
+    }
+
+    setHtml('woe-matrix-body', rows.map(function (market, index) {
+      return pairRowHtml(market, index, context.selection.key);
+    }).join(''));
+    setText('woe-matrix-count', rows.length + ' row(s)');
+    attachPairDetailLinks();
+    attachTableSort('woe-table-matrix');
+    attachTableFilter('woe-filter-matrix', 'woe-table-matrix');
+  }
+
+  function renderGlobalPairMatrix() {
+    var rows = getAllMarkets().slice().sort(function (a, b) {
+      return (b.rankMetric || 0) - (a.rankMetric || 0);
+    }).slice(0, 250);
+    if (!rows.length) {
+      setHtml('woe-pairs-body', '<tr><td colspan="13" class="woe-loading">No indexed pair rows are available.</td></tr>');
+      return;
+    }
+    setHtml('woe-pairs-body', rows.map(function (market, index) {
+      return pairRowHtml(market, index, '');
+    }).join(''));
+    setText('woe-pairs-count', rows.length + ' indexed pair row(s)');
+    attachPairDetailLinks();
+    attachTableSort('woe-table-pairs');
+    attachTableFilter('woe-filter-pairs', 'woe-table-pairs');
+  }
+
   function getFirstNumeric(obj, paths) {
     if (!obj || !Array.isArray(paths)) return null;
     for (var i = 0; i < paths.length; i++) {
@@ -1776,10 +2210,12 @@
     if (usdPrice == null && waxPrice == null) {
       waxPriceEl.textContent = '$ --';
       waxMetaEl.textContent = 'No live WAX price returned yet';
+      setText('woe-kpi-wax-price', '$ --');
       return;
     }
 
     waxPriceEl.textContent = usdPrice != null ? '$' + fmtPrice(usdPrice) : fmtPrice(waxPrice) + ' WAX';
+    setText('woe-kpi-wax-price', waxPriceEl.textContent);
     if (usdPrice != null && waxPrice != null) {
       waxMetaEl.textContent = fmtPrice(waxPrice) + ' WAX · read-only public feed';
     } else if (usdPrice != null) {
@@ -1794,15 +2230,15 @@
       setHtml('woe-token-summary',
         '<div class="woe-scanner-first-state">' +
           '<span class="woe-scanner-first-icon" aria-hidden="true">◫</span>' +
-          '<p>Select a token from the scanner below to load analytics.</p>' +
-          '<p class="woe-scanner-first-hint">Use <code>?token=SYMBOL&amp;contract=CONTRACT</code> in the URL to deep-link to a specific token.</p>' +
+          '<p>Select a token bubble to load indexed analytics.</p>' +
+          '<p class="woe-scanner-first-hint">Deep links still work with <code>?token=SYMBOL&amp;contract=CONTRACT</code>.</p>' +
         '</div>');
-      setText('woe-detail-status', 'Select a token from the scanner below');
+      setText('woe-detail-status', 'Click a bubble or token row');
       setHtml('woe-token-stats', '');
       setHtml('woe-chart-panel',
-        '<div class="woe-chart-empty">Select a token from the scanner below to load analytics.</div>');
+        '<div class="woe-chart-empty">Select a token to check indexed candles.</div>');
       setHtml('woe-matrix-body',
-        '<tr><td colspan="14" class="woe-loading">Select a token to inspect its indexed pools and pairs.</td></tr>');
+        '<tr><td colspan="13" class="woe-loading">Select a token to inspect its indexed pairs.</td></tr>');
       return;
     }
 
@@ -1934,10 +2370,9 @@
 
     renderSourceCards();
     attachGlobalSearch();
+    attachDashboardControls();
     renderHolderPlaceholder();
-    attachTableSort('woe-table-tokens');
     attachTableSort('woe-table-matrix');
-    attachTableFilter('woe-filter-tokens', 'woe-table-tokens');
     attachTableFilter('woe-filter-matrix', 'woe-table-matrix');
 
     waxonedgeApi('/bootstrap').then(function (payload) {
