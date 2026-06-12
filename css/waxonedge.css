@@ -118,6 +118,174 @@
   flex-wrap: wrap;
 }
 
+.woe-detail-note {
+  color: var(--color-text-muted);
+  font-size: .82rem;
+  line-height: 1.5;
+  margin: -4px 0 14px;
+}
+
+/* ── Token analytics detail ───────────────────────────────────── */
+.woe-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 400px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.woe-detail-card {
+  background: linear-gradient(180deg, rgba(28, 35, 51, 0.94), rgba(14, 18, 28, 0.98));
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 16px;
+  min-height: 100%;
+}
+
+.woe-detail-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.woe-detail-card-meta {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-size: .75rem;
+  font-weight: 400;
+}
+
+.woe-token-summary {
+  margin-bottom: 14px;
+}
+
+.woe-token-summary-title {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--neon-cyan, #00e5ff);
+  line-height: 1.15;
+}
+
+.woe-token-summary-subtitle {
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+  font-size: .82rem;
+  line-height: 1.45;
+}
+
+.woe-token-summary-subtitle code {
+  font-size: .8rem;
+}
+
+.woe-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.woe-stat-row {
+  display: grid;
+  grid-template-columns: minmax(124px, 42%) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 9px 10px;
+}
+
+.woe-stat-label {
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: .82rem;
+}
+
+.woe-stat-value {
+  color: var(--neon-cyan, #00e5ff);
+  font-size: .82rem;
+  text-align: right;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.woe-stat-value.woe-stat-muted {
+  color: var(--color-text-muted);
+}
+
+.woe-chart-panel {
+  min-height: 360px;
+  background:
+    linear-gradient(180deg, rgba(0, 229, 255, 0.03), rgba(0, 0, 0, 0)),
+    rgba(8, 12, 19, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.woe-chart-svg {
+  width: 100%;
+  height: 320px;
+  display: block;
+}
+
+.woe-chart-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-bottom: 10px;
+  color: var(--color-text-muted);
+  font-size: .76rem;
+}
+
+.woe-chart-summary strong {
+  color: var(--color-text);
+}
+
+.woe-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--color-text-muted);
+  text-align: center;
+  font-size: .86rem;
+  line-height: 1.6;
+}
+
+.woe-chart-axis {
+  font-size: 11px;
+  fill: var(--color-text-muted, #8b949e);
+}
+
+.woe-chart-price-line {
+  fill: none;
+  stroke: var(--neon-cyan, #00e5ff);
+  stroke-width: 2.25;
+}
+
+.woe-chart-price-fill {
+  fill: rgba(0, 229, 255, 0.12);
+}
+
+.woe-chart-grid {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1;
+}
+
+.woe-chart-bar {
+  fill: rgba(57, 255, 20, 0.38);
+}
+
+.woe-chart-bar.woe-chart-bar-down {
+  fill: rgba(255, 123, 114, 0.42);
+}
+
 /* ── Source status cards ─────────────────────────────────────── */
 .woe-sources-grid {
   display: grid;
@@ -238,6 +406,10 @@
   background: rgba(0, 229, 255, 0.04);
 }
 
+.woe-table tbody tr.woe-row-active td {
+  background: rgba(0, 229, 255, 0.08);
+}
+
 .woe-num {
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -245,8 +417,23 @@
   font-size: .82rem;
 }
 
+.woe-token-detail-link {
+  color: var(--neon-cyan, #00e5ff);
+  text-decoration: none;
+}
+
+.woe-token-detail-link:hover,
+.woe-token-detail-link:focus {
+  text-decoration: underline;
+}
+
 .woe-pos { color: var(--neon-green, #39ff14); }
 .woe-neg { color: var(--color-red,  #ff7b72); }
+
+.woe-unavailable {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
 
 /* ── Table filter inputs ─────────────────────────────────────── */
 .woe-table-filter-row {
@@ -439,6 +626,21 @@
   }
   .woe-page-title {
     font-size: 1.2rem;
+  }
+  .woe-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .woe-detail-card-meta,
+  .woe-section-count,
+  .woe-section-links {
+    margin-left: 0;
+  }
+  .woe-stat-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .woe-stat-value {
+    text-align: left;
   }
   .woe-sources-grid {
     grid-template-columns: 1fr;

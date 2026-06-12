@@ -105,6 +105,7 @@
     pairs: '/pairs',
     tickers: '/tickers',
     analyticsGlobal: '/analytics/global',
+    markets: '/markets',
   };
 
   /** WAX Chain RPC paths */

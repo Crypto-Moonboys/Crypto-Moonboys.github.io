@@ -117,11 +117,46 @@
       </div>
     </section>
 
-    <!-- ── Pair table ──────────────────────────────────────────── -->
-    <section class="woe-section" aria-labelledby="woe-pairs-heading">
+    <!-- ── Token analytics detail ──────────────────────────────── -->
+    <section class="woe-section" id="woe-token-detail" aria-labelledby="woe-detail-heading">
       <div class="woe-section-heading">
-        <span id="woe-pairs-heading">⇄ Trading Pairs</span>
-        <span class="woe-section-count" id="woe-pairs-count">Loading…</span>
+        <span id="woe-detail-heading">◉ Token Analytics Detail</span>
+        <span class="woe-section-count" id="woe-detail-status">Select a token from the scanner or use <code>?token=</code> + <code>&amp;contract=</code>.</span>
+      </div>
+      <p class="woe-detail-note">
+        Static read-only MVP. Holder count and some historical metrics may show
+        <strong>Unavailable</strong> or <strong>Requires indexed backend</strong> until a dedicated indexer exists.
+      </p>
+      <div class="woe-detail-grid">
+        <section class="woe-detail-card woe-detail-stats-card" aria-labelledby="woe-detail-stats-heading">
+          <div class="woe-detail-card-heading">
+            <span id="woe-detail-stats-heading">Chart and stats</span>
+            <span class="woe-detail-card-meta" id="woe-detail-meta">No token selected</span>
+          </div>
+          <div id="woe-token-summary" class="woe-token-summary">
+            <p class="woe-loading">Waiting for token selection…</p>
+          </div>
+          <div id="woe-token-stats" class="woe-stats-grid" aria-live="polite">
+            <div class="woe-loading">Token stats will render here.</div>
+          </div>
+        </section>
+        <section class="woe-detail-card woe-detail-chart-card" aria-labelledby="woe-chart-heading">
+          <div class="woe-detail-card-heading">
+            <span id="woe-chart-heading">Chart</span>
+            <span class="woe-detail-card-meta" id="woe-chart-meta">Primary Alcor market candles when available</span>
+          </div>
+          <div id="woe-chart-panel" class="woe-chart-panel" aria-live="polite">
+            <p class="woe-loading">Select a token to load chart data.</p>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ── Source-normalized token matrix ──────────────────────── -->
+    <section class="woe-section" aria-labelledby="woe-matrix-heading">
+      <div class="woe-section-heading">
+        <span id="woe-matrix-heading">▤ Pool / Pair Matrix</span>
+        <span class="woe-section-count" id="woe-matrix-count">Waiting for token selection…</span>
         <div class="woe-section-links">
           <a
             href="https://wax.alcor.exchange"
@@ -129,44 +164,6 @@
             rel="noopener noreferrer"
             class="woe-explorer-link"
           >Alcor Exchange ↗</a>
-        </div>
-      </div>
-      <div class="woe-table-filter-row">
-        <input
-          id="woe-filter-pairs"
-          class="woe-filter-input"
-          type="search"
-          placeholder="Filter pairs…"
-          autocomplete="off"
-          aria-label="Filter pair table"
-        >
-      </div>
-      <div class="woe-table-wrap">
-        <table class="woe-table" id="woe-table-pairs" aria-label="WAX trading pairs">
-          <thead>
-            <tr>
-              <th data-col="pair">Pair</th>
-              <th data-col="last" data-numeric="true">Last</th>
-              <th data-col="bid"  data-numeric="true">Bid</th>
-              <th data-col="ask"  data-numeric="true">Ask</th>
-              <th data-col="vol"  data-numeric="true">24h Volume</th>
-              <th data-col="chg"  data-numeric="true">24h Change</th>
-              <th>Explorer</th>
-            </tr>
-          </thead>
-          <tbody id="woe-pairs-body">
-            <tr><td colspan="7" class="woe-loading">Loading pairs…</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ── swap.nefty pools panel ──────────────────────────────── -->
-    <section class="woe-section" aria-labelledby="woe-nefty-heading">
-      <div class="woe-section-heading">
-        <span id="woe-nefty-heading">⬡ swap.nefty Pools</span>
-        <span class="woe-section-count" id="woe-nefty-count">Loading…</span>
-        <div class="woe-section-links">
           <a
             href="https://waxblock.io/account/swap.nefty"
             target="_blank"
@@ -174,41 +171,43 @@
             class="woe-explorer-link"
             aria-label="View swap.nefty on WaxBlock explorer"
           >⬡ WaxBlock ↗</a>
-          <a
-            href="https://github.com/neftyblocks"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="woe-explorer-link"
-          >NeftyBlocks GitHub ↗</a>
         </div>
       </div>
-      <p id="woe-nefty-meta" style="font-size:.8rem;color:var(--color-text-muted);margin-bottom:10px;">
-        Detecting <code>swap.nefty</code> table names via <code>get_abi</code> before any
-        read-only <code>get_table_rows</code> query.
+      <p id="woe-matrix-meta" class="woe-detail-note">
+        Adapter model is source-normalized for Alcor + <code>swap.nefty</code> now, with room for future WAX DEX adapters.
       </p>
       <div class="woe-table-filter-row">
         <input
-          id="woe-filter-nefty"
+          id="woe-filter-matrix"
           class="woe-filter-input"
           type="search"
-          placeholder="Filter pools…"
+          placeholder="Filter selected token pools and pairs…"
           autocomplete="off"
-          aria-label="Filter swap.nefty pool table"
+          aria-label="Filter token pool and pair matrix"
         >
       </div>
       <div class="woe-table-wrap">
-        <table class="woe-table" id="woe-table-nefty" aria-label="swap.nefty liquidity pools">
+        <table class="woe-table" id="woe-table-matrix" aria-label="Selected token pool and pair matrix">
           <thead>
             <tr>
-              <th data-col="id"   data-numeric="true">Pool ID</th>
-              <th data-col="tok0">Token A</th>
-              <th data-col="tok1">Token B</th>
-              <th data-col="res0" data-numeric="true">Reserve A</th>
-              <th data-col="res1" data-numeric="true">Reserve B</th>
+              <th data-col="rank" data-numeric="true">Rank</th>
+              <th data-col="source">Source / DEX</th>
+              <th data-col="fee">Fee Tier</th>
+              <th data-col="tokenA">Token A</th>
+              <th data-col="tokenB">Token B</th>
+              <th data-col="liq" data-numeric="true">Liquidity / TVL</th>
+              <th data-col="price">Current Price</th>
+              <th data-col="chg" data-numeric="true">24h Change</th>
+              <th data-col="vol24" data-numeric="true">24h Volume</th>
+              <th data-col="vol7">7d Volume</th>
+              <th data-col="vol30">30d Volume</th>
+              <th data-col="poolA">Pooled Token A</th>
+              <th data-col="poolB">Pooled Token B</th>
+              <th>Explorer</th>
             </tr>
           </thead>
-          <tbody id="woe-nefty-body">
-            <tr><td colspan="5" class="woe-loading">Loading swap.nefty pool data…</td></tr>
+          <tbody id="woe-matrix-body">
+            <tr><td colspan="14" class="woe-loading">Select a token to inspect its indexed pools and pairs.</td></tr>
           </tbody>
         </table>
       </div>

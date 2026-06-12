@@ -1,36 +1,11 @@
 /**
  * waxonedge-smoke.test.mjs
  *
- * Smoke tests for the WAXONEDGE read-only analytics dashboard.
- *
- * Verifies:
- *  1. /waxonedge.html exists
- *  2. /css/waxonedge.css exists
- *  3. /js/waxonedge.js exists
- *  4. /js/waxonedge-sources.js exists
- *  5. waxonedge.html references /css/waxonedge.css
- *  6. waxonedge.html references /js/waxonedge.js
- *  7. waxonedge.html references /js/waxonedge-sources.js
- *  8. waxonedge.html contains NO forbidden trading-action labels:
- *       "Swap", "Add Liquidity", "Remove Liquidity", "Connect Wallet"
- *  9. waxonedge.html has the canonical favicon tag
- * 10. waxonedge.js passes node --check (syntax valid)
- * 11. waxonedge-sources.js passes node --check (syntax valid)
- * 12. waxonedge.html does NOT reference the old crypto-moonboys.github.io domain
- * 13. waxonedge.html contains the read-only badge
- * 14. waxonedge-sources.js exports the swap.nefty contract name
- * 15. waxonedge-sources.js includes the WaxBlock explorer link for swap.nefty
- * 16. waxonedge-sources.js uses the Alcor v2 API base
- * 17. waxonedge-sources.js defines /pairs and /analytics/global paths
- * 18. waxonedge.js uses Alcor v2 ticker fields last_price and change24
- * 19. holder lookup copy does not claim holder distribution data
- * 20. swap.nefty uses get_abi detection before table reads
- * 21. rpcPost uses the configured WAX RPC fallback array
+ * Structural smoke tests for the WAXONEDGE read-only analytics dashboard.
  */
 
-import assert from 'node:assert/strict';
-import { execFileSync }   from 'node:child_process';
-import { readFileSync, existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -57,25 +32,21 @@ function ok(label, condition, detail) {
   }
 }
 
-// ── 1-4. Files exist ─────────────────────────────────────────────
-ok('waxonedge.html exists',          exists('waxonedge.html'));
-ok('css/waxonedge.css exists',       exists('css/waxonedge.css'));
-ok('js/waxonedge.js exists',         exists('js/waxonedge.js'));
+ok('waxonedge.html exists', exists('waxonedge.html'));
+ok('css/waxonedge.css exists', exists('css/waxonedge.css'));
+ok('js/waxonedge.js exists', exists('js/waxonedge.js'));
 ok('js/waxonedge-sources.js exists', exists('js/waxonedge-sources.js'));
 
-// ── Load HTML for content checks ─────────────────────────────────
 const html = exists('waxonedge.html') ? read('waxonedge.html') : '';
+const css = exists('css/waxonedge.css') ? read('css/waxonedge.css') : '';
+const js = exists('js/waxonedge.js') ? read('js/waxonedge.js') : '';
+const sourcesJs = exists('js/waxonedge-sources.js') ? read('js/waxonedge-sources.js') : '';
 
-// ── 5-7. Script and CSS references ───────────────────────────────
-ok('waxonedge.html references /css/waxonedge.css',
-  html.includes('/css/waxonedge.css'));
-ok('waxonedge.html references /js/waxonedge.js',
-  html.includes('/js/waxonedge.js'));
-ok('waxonedge.html references /js/waxonedge-sources.js',
-  html.includes('/js/waxonedge-sources.js'));
+ok('waxonedge.html references /css/waxonedge.css', html.includes('/css/waxonedge.css'));
+ok('waxonedge.html references /js/waxonedge.js', html.includes('/js/waxonedge.js'));
+ok('waxonedge.html references /js/waxonedge-sources.js', html.includes('/js/waxonedge-sources.js'));
 
-// ── 8. No forbidden trading-action labels ────────────────────────
-const FORBIDDEN_LABELS = ['Swap', 'Add Liquidity', 'Remove Liquidity', 'Connect Wallet'];
+const FORBIDDEN_LABELS = ['Swap', 'Add Liquidity', 'Remove Liquidity', 'Connect Wallet', 'Trade on Swap'];
 for (const label of FORBIDDEN_LABELS) {
   ok(
     'waxonedge.html does NOT contain forbidden label: "' + label + '"',
@@ -84,63 +55,85 @@ for (const label of FORBIDDEN_LABELS) {
   );
 }
 
-// ── 9. Canonical favicon ─────────────────────────────────────────
-ok('waxonedge.html has canonical favicon tag',
-  html.includes('<link rel="icon" type="image/png" href="/favicon.png">'));
+ok(
+  'waxonedge.html has canonical favicon tag',
+  html.includes('<link rel="icon" type="image/png" href="/favicon.png">'),
+);
 
-// ── 10-11. Syntax checks ──────────────────────────────────────────
 try {
   execFileSync(process.execPath, ['--check', path.join(ROOT, 'js/waxonedge.js')], { encoding: 'utf8' });
   ok('js/waxonedge.js passes node --check', true);
-} catch (e) {
-  ok('js/waxonedge.js passes node --check', false, e.message);
+} catch (error) {
+  ok('js/waxonedge.js passes node --check', false, error.message);
 }
 
 try {
   execFileSync(process.execPath, ['--check', path.join(ROOT, 'js/waxonedge-sources.js')], { encoding: 'utf8' });
   ok('js/waxonedge-sources.js passes node --check', true);
-} catch (e) {
-  ok('js/waxonedge-sources.js passes node --check', false, e.message);
+} catch (error) {
+  ok('js/waxonedge-sources.js passes node --check', false, error.message);
 }
 
-// ── 12. No old domain ────────────────────────────────────────────
-// Use escaped-dot regex (same pattern as anti-drift-check.mjs) so the check
-// is precise to the exact hostname rather than a loose substring match.
-ok('waxonedge.html does not reference old domain crypto-moonboys.github.io',
-  !/crypto-moonboys\.github\.io/.test(html));
+ok(
+  'waxonedge.html does not reference old domain crypto-moonboys.github.io',
+  !/crypto-moonboys\.github\.io/.test(html),
+);
 
-// ── 13. Read-only badge present ──────────────────────────────────
-ok('waxonedge.html contains read-only badge',
-  html.includes('Read-Only') || html.includes('read-only') || html.includes('woe-readonly-badge'));
+ok('waxonedge.html contains read-only badge', /Read-Only|read-only|woe-readonly-badge/.test(html));
+ok('waxonedge-sources.js references swap.nefty contract', sourcesJs.includes('swap.nefty'));
+ok('waxonedge-sources.js includes WaxBlock link for swap.nefty', sourcesJs.includes('waxblock.io/account/swap.nefty'));
+ok('waxonedge-sources.js uses Alcor api/v2 base', sourcesJs.includes("var ALCOR_API = 'https://wax.alcor.exchange/api/v2';"));
+ok('waxonedge-sources.js defines /pairs path', sourcesJs.includes("pairs: '/pairs'") || sourcesJs.includes("healthPath: '/pairs'"));
+ok('waxonedge-sources.js defines /analytics/global path', sourcesJs.includes("analyticsGlobal: '/analytics/global'") || sourcesJs.includes("healthPath: '/analytics/global'"));
+ok('waxonedge-sources.js defines /markets helper path for chart fetches', sourcesJs.includes("markets: '/markets'"));
 
-// ── 14-15. waxonedge-sources.js swap.nefty content ───────────────
-const sourcesJs = exists('js/waxonedge-sources.js') ? read('js/waxonedge-sources.js') : '';
-ok('waxonedge-sources.js references swap.nefty contract',
-  sourcesJs.includes('swap.nefty'));
-ok('waxonedge-sources.js includes WaxBlock link for swap.nefty',
-  sourcesJs.includes('waxblock.io/account/swap.nefty'));
-ok('waxonedge-sources.js uses Alcor api/v2 base',
-  sourcesJs.includes("var ALCOR_API = 'https://wax.alcor.exchange/api/v2';"));
-ok('waxonedge-sources.js defines /pairs path',
-  sourcesJs.includes("pairs: '/pairs'") || sourcesJs.includes("healthPath: '/pairs'"));
-ok('waxonedge-sources.js defines /analytics/global path',
-  sourcesJs.includes("analyticsGlobal: '/analytics/global'") || sourcesJs.includes("healthPath: '/analytics/global'"));
+ok('waxonedge.js uses last_price ticker field', js.includes('last_price'));
+ok('waxonedge.js uses change24 ticker field', js.includes('change24'));
+ok('waxonedge.js uses configured WAX RPC fallbacks', js.includes('WAXONEDGE_WAX_RPC_FALLBACKS'));
+ok('waxonedge.js performs swap.nefty ABI lookup', js.includes('get_abi') || js.includes('getAbi'));
+ok('waxonedge.js includes query-string token detail state', js.includes('token=') && js.includes('contract='));
+ok('waxonedge.js fetches Alcor chart candles from /markets/:id/charts', js.includes('/charts') && js.includes('/markets'));
 
-const waxonedgeJs = exists('js/waxonedge.js') ? read('js/waxonedge.js') : '';
-ok('waxonedge.js uses last_price ticker field',
-  waxonedgeJs.includes('last_price'));
-ok('waxonedge.js uses change24 ticker field',
-  waxonedgeJs.includes('change24'));
 ok('holder lookup copy does not claim holder distribution',
   !html.includes('Holder Data') &&
   !html.includes('Holder distribution') &&
-  !waxonedgeJs.includes('Holder distribution'));
-ok('waxonedge.js performs swap.nefty ABI lookup',
-  waxonedgeJs.includes('get_abi') || waxonedgeJs.includes('getAbi'));
-ok('waxonedge.js uses configured WAX RPC fallbacks',
-  waxonedgeJs.includes('WAXONEDGE_WAX_RPC_FALLBACKS'));
+  !js.includes('Holder distribution'),
+);
 
-// ── Summary ──────────────────────────────────────────────────────
+ok('token detail section exists', html.includes('id="woe-token-detail"'));
+ok('token summary container exists', html.includes('id="woe-token-summary"'));
+ok('stats grid container exists', html.includes('id="woe-token-stats"'));
+ok('chart container exists', html.includes('id="woe-chart-panel"'));
+ok('pool/pair matrix exists', html.includes('id="woe-table-matrix"'));
+ok('source/DEX column exists', html.includes('Source / DEX'));
+ok('chart and stats heading exists', html.includes('Chart and stats'));
+
+for (const label of [
+  'Holder count',
+  'Decimals',
+  'Total token supply',
+  'Circulating supply',
+  'TVL',
+  'Cumulated pair liquidity',
+  'Current price in WAX and USD',
+  '24h price change',
+  '24h volume',
+  '7d volume',
+  '30d volume',
+  'Market cap',
+  'Fully diluted valuation',
+]) {
+  ok('token stats label exists: ' + label, js.includes(label) || html.includes(label));
+}
+
+ok('waxonedge.js explicitly marks unavailable historical metrics', js.includes('Unavailable'));
+ok('waxonedge.js explicitly marks indexed-backend-only metrics', js.includes('Requires indexed backend'));
+ok('waxonedge.html explains data honesty in detail note',
+  html.includes('Requires indexed backend') || html.includes('Unavailable'),
+);
+ok('waxonedge.css includes token detail layout styles', css.includes('.woe-detail-grid') && css.includes('.woe-chart-panel'));
+ok('waxonedge.css includes active token row styling', css.includes('.woe-row-active'));
+
 console.log('\nwaxonedge-smoke.test: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) {
   process.exit(1);
