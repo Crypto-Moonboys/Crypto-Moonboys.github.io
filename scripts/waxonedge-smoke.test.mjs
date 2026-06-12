@@ -141,9 +141,11 @@ ok('waxonedge-bubbles-v2.js uses backend bootstrap endpoint',
 ok('waxonedge-bubbles-v2.js renders v2 visual bubble map',
   v2Js.includes('function renderBubbles') && v2Js.includes('woe-v2-bubble') && v2Js.includes('woe-v2-bubble-cloud'));
 ok('waxonedge-bubbles-v2.js supports liquidity, volume, and pair-count sizing',
-  v2Js.includes("metric === 'volume'") && v2Js.includes("metric === 'pairs'") && v2Js.includes('liquidityWax'));
+  v2Js.includes("metric === 'volume'") && v2Js.includes("metric === 'pairs'") && v2Js.includes('liquidityWax') && v2Js.includes('volume24: asNum(token.volume_24h_wax)'));
 ok('waxonedge-bubbles-v2.js preserves distinct indexed source keys',
   v2Js.includes('function pairSourceKey(pair)') &&
+  v2Js.includes('function tokenSourceKeys(token)') &&
+  v2Js.includes('token.source_keys || token.sourceKeys || token.sources') &&
   v2Js.includes('pair.source || pair.adapter || pair.rawSource || pair.raw_source') &&
   v2Js.includes("if (source === 'alcor') return 'alcor';") &&
   v2Js.includes("if (source === 'swap.alcor') return 'swap.alcor';") &&
@@ -186,7 +188,12 @@ ok('waxonedge.js renders visual token bubbles', js.includes('function renderBubb
 ok('waxonedge.js sizes bubbles from liquidity, volume, or pair count',
   js.includes('metricValueForToken') && js.includes("metric === 'volume'") && js.includes("metric === 'pairs'"));
 ok('waxonedge.js colors bubbles from 24h change', js.includes('woe-bubble-up') && js.includes('woe-bubble-down'));
+ok('waxonedge.js prefers aggregate 24h change for scanner bubbles',
+  js.includes('var change = record.change24 != null ? record.change24 : (market && market.change24 != null ? market.change24 : null);'));
 ok('waxonedge.js derives source badges from indexed pair rows', js.includes('function getTokenSources') && js.includes('sourceBadgesHtml'));
+ok('waxonedge.js derives scanner source badges from aggregate source keys first',
+  js.includes('tokenRecord.sourceKeys') &&
+  js.includes('if (aggregateSources.length) return aggregateSources.slice().sort();'));
 ok('waxonedge.js maps backend source labels without collapsing swap adapters into Alcor',
   js.includes("'swap.alcor': { label: 'swap.alcor'") &&
   js.includes("'swap.taco': { label: 'swap.taco'") &&
@@ -197,6 +204,28 @@ ok('waxonedge.js keeps pair matrix renderer for token analytics route', js.inclu
 ok('waxonedge.js renders pair detail on row click', js.includes('function renderPairDetail') && js.includes('woe-pair-detail-link'));
 ok('waxonedge.js no longer auto-selects a default token-first view',
   js.includes("return { symbol: '', contract: '', key: '' };"));
+ok('waxonedge.js fetches selected-token detail, pairs, and chart endpoints',
+  js.includes('tokenDetailCache') &&
+  js.includes('tokenPairCache') &&
+  js.includes('tokenChartCache') &&
+  js.includes('function loadSelectedTokenDetail(selection)') &&
+  js.includes('function loadSelectedTokenPairs(selection)') &&
+  js.includes('function loadSelectedTokenChart(selection)') &&
+  js.includes("selectedTokenApiPath(selection, 'pairs')") &&
+  js.includes("loadChartData('backend:' + selection.key)"));
+ok('waxonedge.js uses selected-token pair cache for matrix/proof rows',
+  js.includes('function getMarketsForSelection(selection)') &&
+  js.includes('state.tokenPairCache[selection.key]') &&
+  js.includes('var rows = state.selected && state.selected.key ? getMarketsForSelection(state.selected) : getAllMarkets();'));
+ok('renderTokenStats uses backend detail stats as canonical source',
+  js.includes('function isCanonicalAggregateValid(stats)') &&
+  js.includes('var stats = context.stats || {};') &&
+  js.includes('var canonicalValid = isCanonicalAggregateValid(stats);') &&
+  js.includes('var currentPriceWax = canonicalValid ? asNum(stats.selected_price_wax) : null;') &&
+  js.includes('var currentPriceUsd = canonicalValid ? asNum(stats.selected_price_usd) : null;') &&
+  js.includes('var volume24 = canonicalValid ? asNum(stats.volume_24h_wax) : null;') &&
+  js.includes('var liquidityWax = canonicalValid ? asNum(stats.liquidity_wax) : null;') &&
+  !js.includes('var currentPriceWax = token.systemPrice'));
 
 ok('waxonedge.js has exactly one pickDefaultSelection definition',
   countMatches(js, /function pickDefaultSelection\s*\(/g) === 1);
@@ -223,7 +252,7 @@ for (const label of [
   'Current price in WAX and USD',
   '24h price change',
   '24h volume',
-  'Total liquidity',
+  'Total indexed liquidity',
   'Cumulated pair liquidity',
   'Source count',
   'Strongest pair',

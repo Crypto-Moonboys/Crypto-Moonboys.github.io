@@ -1,0 +1,15 @@
+ALTER TABLE waxonedge_pairs ADD COLUMN volume_24h_wax TEXT;
+ALTER TABLE waxonedge_pairs ADD COLUMN volume_24h_usd TEXT;
+ALTER TABLE waxonedge_token_stats ADD COLUMN volume_24h_wax TEXT;
+ALTER TABLE waxonedge_token_stats ADD COLUMN volume_24h_usd TEXT;
+ALTER TABLE waxonedge_token_stats ADD COLUMN change_24h TEXT;
+ALTER TABLE waxonedge_token_stats ADD COLUMN source_count INTEGER;
+ALTER TABLE waxonedge_token_stats ADD COLUMN indexed_pair_count INTEGER;
+ALTER TABLE waxonedge_token_stats ADD COLUMN source_keys TEXT;
+ALTER TABLE waxonedge_token_stats ADD COLUMN aggregate_complete INTEGER;
+ALTER TABLE waxonedge_token_stats ADD COLUMN aggregate_sources_required TEXT;
+ALTER TABLE waxonedge_token_stats ADD COLUMN aggregate_sources_present TEXT;
+ALTER TABLE waxonedge_token_stats ADD COLUMN aggregate_sources_processed TEXT;
+ALTER TABLE waxonedge_token_stats ADD COLUMN aggregate_sources_failed TEXT;
+ALTER TABLE waxonedge_token_stats ADD COLUMN aggregate_truncated INTEGER;
+ALTER TABLE waxonedge_token_stats ADD COLUMN aggregate_sources_truncated TEXT;

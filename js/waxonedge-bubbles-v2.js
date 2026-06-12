@@ -97,6 +97,14 @@
     return String(source || '').trim().toLowerCase();
   }
 
+  function tokenSourceKeys(token) {
+    var raw = token && (token.source_keys || token.sourceKeys || token.sources);
+    if (Array.isArray(raw)) return raw.map(pairSourceKey).filter(Boolean);
+    return String(raw || '').split(',').map(function (source) {
+      return String(source || '').trim().toLowerCase();
+    }).filter(Boolean);
+  }
+
   function metricLabel(metric) {
     if (metric === 'volume') return '24h volume';
     if (metric === 'pairs') return 'pair count';
@@ -161,22 +169,25 @@
       var contract = normalizeContract(token.contract);
       var key = tokenKey(contract, symbol);
       if (!key) return;
+      var aggregateSources = tokenSourceKeys(token);
+      var sources = {};
+      aggregateSources.forEach(function (source) { sources[source] = true; });
       byKey[key] = {
         key: key,
         symbol: symbol,
         contract: contract,
-        pairCount: asNum(token.pair_count) || 0,
+        pairCount: asNum(token.indexed_pair_count) || asNum(token.pair_count) || 0,
         computedPairCount: 0,
         pairLiquidityWax: 0,
         pairLiquidityUsd: 0,
         pairVolume24: 0,
         liquidityWax: asNum(token.liquidity_wax || token.tvl_wax),
         liquidityUsd: asNum(token.liquidity_usd || token.tvl_usd),
-        volume24: asNum(token.volume_24h),
+        volume24: asNum(token.volume_24h_wax),
         selectedPriceWax: asNum(token.selected_price_wax || token.price_wax || token.system_price),
         selectedPriceUsd: asNum(token.selected_price_usd || token.price_usd || token.usd_price),
-        change24: null,
-        sources: {},
+        change24: asNum(token.change_24h),
+        sources: sources,
         strongestPair: null,
       };
     });
@@ -227,7 +238,7 @@
       if (rec.liquidityWax == null && rec.pairLiquidityWax > 0) rec.liquidityWax = rec.pairLiquidityWax;
       if (rec.liquidityUsd == null && rec.pairLiquidityUsd > 0) rec.liquidityUsd = rec.pairLiquidityUsd;
       if (rec.volume24 == null && rec.pairVolume24 > 0) rec.volume24 = rec.pairVolume24;
-      if (rec.strongestPair) {
+      if (rec.strongestPair && rec.change24 == null) {
         var pairChange = asNum(rec.strongestPair.change_24h);
         if (pairChange != null) rec.change24 = pairChange;
       }
