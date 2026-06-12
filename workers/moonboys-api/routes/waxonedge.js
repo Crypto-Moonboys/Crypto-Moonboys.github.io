@@ -5,9 +5,18 @@ const WAX_RPC = 'https://wax.greymass.com';
 const UNAVAILABLE = 'Unavailable';
 const REQUIRES_INDEXED_BACKEND = 'Requires indexed backend';
 const SOURCE_NOT_INDEXED = 'Source not indexed yet';
-const MAX_SYNC_ROWS = 250;
-const MAX_CHAIN_POOL_ROWS = 500;
+const CHAIN_TABLE_PAGE_LIMIT = 1000;
+const MAX_CHAIN_TABLE_PAGES = 20;
 const MIN_TRUSTED_WAX_LIQUIDITY = 10;
+const WAXONEDGE_AGGREGATE_SOURCES = Object.freeze([
+  'alcor',
+  'swap.alcor',
+  'swap.taco',
+  'swap.nefty',
+  'swap.box',
+]);
+const TOKEN_PAIR_PAGE_LIMIT = 100;
+const TOKEN_PAIR_MAX_PAGE_LIMIT = 250;
 
 const CORE_DEX_ADAPTERS = Object.freeze([
   {
@@ -52,6 +61,35 @@ const PREFERRED_QUOTES = Object.freeze([
   tokenKey('btc.ptokens', 'PBTC'),
   tokenKey('eth.ptokens', 'PETH'),
 ]);
+
+function aggregateSourceKey(source) {
+  return String(source || '').trim().toLowerCase();
+}
+
+function sourceCoverageFromKeys(sourceKeys) {
+  const keys = new Set(Array.isArray(sourceKeys) ? sourceKeys.map(aggregateSourceKey).filter(Boolean) : []);
+  return {
+    alcor: keys.has('alcor'),
+    swap_alcor: keys.has('swap.alcor'),
+    swap_taco: keys.has('swap.taco'),
+    swap_nefty: keys.has('swap.nefty'),
+    swap_box: keys.has('swap.box'),
+  };
+}
+
+function parseSourceKeys(value) {
+  if (Array.isArray(value)) return value.map(aggregateSourceKey).filter(Boolean);
+  return String(value || '')
+    .split(',')
+    .map(aggregateSourceKey)
+    .filter(Boolean);
+}
+
+function clampInteger(value, fallback, min, max) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
 
 function waxonedgeJson(payload, status = 200, corsHeaders = {}) {
   return new Response(JSON.stringify(payload), {
@@ -312,6 +350,7 @@ function normalizePair(pair, tickerByMarketId, priceIndex, syncedAt) {
   const price = safeDecimal(ticker.last_price ?? ticker.last ?? pair.last_price ?? pair.price);
   const change24 = safeDecimal(ticker.change24 ?? ticker.price_change_percent ?? ticker.change_24h);
   const volume24 = safeDecimal(ticker.base_volume ?? ticker.volume24 ?? ticker.volume_24h);
+  const volume24Raw = asNumber(volume24);
   const reserveA = safeDecimal(tokenA.amount ?? ticker.base_amm_liquidity);
   const reserveB = safeDecimal(tokenB.amount ?? ticker.target_amm_liquidity);
 
@@ -319,6 +358,9 @@ function normalizePair(pair, tickerByMarketId, priceIndex, syncedAt) {
   let liquidityUsd = null;
   const priceA = priceIndex.get(tokenKey(tokenA.contract, tokenA.symbol));
   const priceB = priceIndex.get(tokenKey(tokenB.contract, tokenB.symbol));
+  const normalizedVolume = normalizeTokenAVolume(volume24Raw, tokenA, tokenB, price, priceIndex);
+  const volume24Wax = normalizedVolume.wax;
+  const volume24Usd = normalizedVolume.usd;
   if (tokenA.amount != null && tokenB.amount != null && priceA?.priceWax != null && priceB?.priceWax != null) {
     liquidityWax = safeDecimal((tokenA.amount * priceA.priceWax) + (tokenB.amount * priceB.priceWax));
   }
@@ -348,6 +390,8 @@ function normalizePair(pair, tickerByMarketId, priceIndex, syncedAt) {
     price,
     change_24h: change24,
     volume_24h: volume24,
+    volume_24h_wax: volume24Wax,
+    volume_24h_usd: volume24Usd,
     liquidity_wax: liquidityWax,
     liquidity_usd: liquidityUsd,
     reserve_a: reserveA,
@@ -401,6 +445,45 @@ function pairPriceWaxForToken(pair, contract, symbol) {
   return null;
 }
 
+function hasRealPairReserves(pair) {
+  const reserveA = asNumber(pair.reserve_a);
+  const reserveB = asNumber(pair.reserve_b);
+  return reserveA != null && reserveA > 0 && reserveB != null && reserveB > 0;
+}
+
+function hasWaxQuoteForToken(pair, contract, symbol) {
+  const key = tokenKey(contract, symbol);
+  const tokenAKey = tokenKey(pair.token_a_contract, pair.token_a_symbol);
+  const tokenBKey = tokenKey(pair.token_b_contract, pair.token_b_symbol);
+  const waxKey = tokenKey('eosio.token', 'WAX');
+  return (key === tokenAKey && tokenBKey === waxKey) || (key === tokenBKey && tokenAKey === waxKey);
+}
+
+function isWaxToken(contract, symbol) {
+  return tokenKey(contract, symbol) === tokenKey('eosio.token', 'WAX');
+}
+
+function normalizeTokenAVolume(volume24Raw, tokenA, tokenB, pairPrice, priceIndex) {
+  if (volume24Raw == null) return { wax: null, usd: null };
+  const priceA = priceIndex.get(tokenKey(tokenA.contract, tokenA.symbol));
+  const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+  let volumeWax = priceA?.priceWax != null ? volume24Raw * priceA.priceWax : null;
+  if (volumeWax == null && isWaxToken(tokenA.contract, tokenA.symbol)) {
+    volumeWax = volume24Raw;
+  } else if (volumeWax == null && isWaxToken(tokenB.contract, tokenB.symbol)) {
+    const price = asNumber(pairPrice);
+    if (price != null && price > 0) volumeWax = volume24Raw * price;
+  }
+  let volumeUsd = priceA?.priceUsd != null ? volume24Raw * priceA.priceUsd : null;
+  if (volumeUsd == null && volumeWax != null && waxUsd != null) {
+    volumeUsd = volumeWax * waxUsd;
+  }
+  return {
+    wax: safeDecimal(volumeWax),
+    usd: safeDecimal(volumeUsd),
+  };
+}
+
 function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
   let tokenA = null;
   let tokenB = null;
@@ -432,6 +515,11 @@ function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
   if (!pairId) return null;
   const price = tokenA.amount > 0 ? safeDecimal(tokenB.amount / tokenA.amount) : null;
   const liquidity = liquidityFromSides(tokenA, tokenB, priceIndex);
+  const volume24 = safeDecimal(row.volume_24h ?? row.volume24);
+  const volume24Raw = asNumber(volume24);
+  const normalizedVolume = normalizeTokenAVolume(volume24Raw, tokenA, tokenB, price, priceIndex);
+  const volume24Wax = normalizedVolume.wax;
+  const volume24Usd = normalizedVolume.usd;
   return {
     source: adapter.source,
     pair_id: String(pairId),
@@ -441,7 +529,9 @@ function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
     token_b_symbol: tokenB.symbol,
     price,
     change_24h: null,
-    volume_24h: safeDecimal(row.volume_24h ?? row.volume24),
+    volume_24h: volume24,
+    volume_24h_wax: volume24Wax,
+    volume_24h_usd: volume24Usd,
     liquidity_wax: liquidity.liquidityWax,
     liquidity_usd: liquidity.liquidityUsd,
     reserve_a: safeDecimal(tokenA.amount),
@@ -458,15 +548,32 @@ async function getAbiTableNames(contract) {
     : [];
 }
 
-async function fetchTableRows(contract, table, limit = MAX_CHAIN_POOL_ROWS) {
-  const data = await rpcPost('/v1/chain/get_table_rows', {
-    code: contract,
-    scope: contract,
-    table,
-    json: true,
-    limit,
-  });
-  return Array.isArray(data?.rows) ? data.rows : [];
+async function fetchTableRows(contract, table, limit = CHAIN_TABLE_PAGE_LIMIT) {
+  const rows = [];
+  let lowerBound = '';
+  let nextKey = '';
+  let truncated = false;
+  let pageCount = 0;
+  for (let page = 0; page < MAX_CHAIN_TABLE_PAGES; page += 1) {
+    const data = await rpcPost('/v1/chain/get_table_rows', {
+      code: contract,
+      scope: contract,
+      table,
+      json: true,
+      lower_bound: lowerBound,
+      limit,
+    });
+    pageCount += 1;
+    if (Array.isArray(data?.rows)) rows.push(...data.rows);
+    nextKey = data?.next_key || '';
+    if (!data?.more || !nextKey) break;
+    if (page === MAX_CHAIN_TABLE_PAGES - 1) {
+      truncated = true;
+      break;
+    }
+    lowerBound = nextKey;
+  }
+  return { rows, truncated, next_key: nextKey, page_count: pageCount };
 }
 
 async function upsertPairs(db, pairs) {
@@ -474,8 +581,9 @@ async function upsertPairs(db, pairs) {
   const statements = pairs.map((pair) => db.prepare(
     `INSERT INTO waxonedge_pairs
      (source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
-      price, change_24h, volume_24h, liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd, liquidity_wax, liquidity_usd,
+      reserve_a, reserve_b, fee_bps, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(source, pair_id) DO UPDATE SET
        token_a_contract = excluded.token_a_contract,
        token_a_symbol = excluded.token_a_symbol,
@@ -484,6 +592,8 @@ async function upsertPairs(db, pairs) {
        price = excluded.price,
        change_24h = excluded.change_24h,
        volume_24h = excluded.volume_24h,
+       volume_24h_wax = excluded.volume_24h_wax,
+       volume_24h_usd = excluded.volume_24h_usd,
        liquidity_wax = excluded.liquidity_wax,
        liquidity_usd = excluded.liquidity_usd,
        reserve_a = excluded.reserve_a,
@@ -493,7 +603,8 @@ async function upsertPairs(db, pairs) {
   ).bind(
     pair.source, pair.pair_id, pair.token_a_contract, pair.token_a_symbol,
     pair.token_b_contract, pair.token_b_symbol, pair.price, pair.change_24h,
-    pair.volume_24h, pair.liquidity_wax, pair.liquidity_usd, pair.reserve_a,
+    pair.volume_24h, pair.volume_24h_wax, pair.volume_24h_usd,
+    pair.liquidity_wax, pair.liquidity_usd, pair.reserve_a,
     pair.reserve_b, pair.fee_bps, pair.updated_at,
   ));
   for (let i = 0; i < statements.length; i += 50) {
@@ -544,14 +655,12 @@ async function syncAlcorMarketData(env, reason) {
     const pairCounts = buildPairCounts(pairRows);
     const normalizedTokens = tokenRows
       .map((token) => normalizeToken(token, pairCounts, syncedAt))
-      .filter(Boolean)
-      .slice(0, MAX_SYNC_ROWS);
+      .filter(Boolean);
     const priceIndex = buildTokenPriceIndex(tokens);
     const tickerIndex = buildTickerIndex(tickers);
     const normalizedPairs = pairRows
       .map((pair) => normalizePair(pair, tickerIndex, priceIndex, syncedAt))
-      .filter(Boolean)
-      .slice(0, MAX_SYNC_ROWS);
+      .filter(Boolean);
 
     const tokenStatements = normalizedTokens.map((token) => db.prepare(
       `INSERT INTO waxonedge_tokens
@@ -574,9 +683,11 @@ async function syncAlcorMarketData(env, reason) {
     await upsertPairs(db, normalizedPairs);
 
     await recordSyncRun(db, reason || 'alcor_market_data', 'success', startedAt);
+    await recordSyncRun(db, 'alcor', 'success', startedAt);
     return { ok: true, tokens: normalizedTokens.length, pairs: normalizedPairs.length };
   } catch (error) {
     await recordSyncRun(db, reason || 'alcor_market_data', 'failed', startedAt, error?.message || String(error)).catch(() => {});
+    await recordSyncRun(db, 'alcor', 'failed', startedAt, error?.message || String(error)).catch(() => {});
     return { ok: false, error: error?.message || String(error) };
   }
 }
@@ -611,16 +722,25 @@ async function syncCoreDexAdapters(env) {
         results.push({ source: adapter.source, ok: true, skipped: true, error });
         continue;
       }
-      const rows = await fetchTableRows(adapter.contract, adapter.table, MAX_CHAIN_POOL_ROWS);
+      const tableResult = await fetchTableRows(adapter.contract, adapter.table, CHAIN_TABLE_PAGE_LIMIT);
+      const rows = tableResult.rows;
       await writeSnapshot(env.DB, `${adapter.source}_${adapter.table}`, {
         contract: adapter.contract,
         table: adapter.table,
         rows,
+        truncated: tableResult.truncated,
+        next_key: tableResult.next_key,
+        page_count: tableResult.page_count,
       }, syncedAt);
+      if (tableResult.truncated) {
+        const error = `ABI table pagination truncated at ${tableResult.page_count} page(s); next_key=${tableResult.next_key || 'unknown'}`;
+        await recordSyncRun(env.DB, adapter.source, 'failed', adapterStartedAt, error);
+        results.push({ source: adapter.source, ok: false, truncated: true, error });
+        continue;
+      }
       const pairs = rows
         .map((row) => normalizeCoreDexPair(adapter, row, priceIndex, syncedAt))
-        .filter(Boolean)
-        .slice(0, MAX_SYNC_ROWS);
+        .filter(Boolean);
       await env.DB.prepare(`DELETE FROM waxonedge_pairs WHERE source = ?`).bind(adapter.source).run();
       await upsertPairs(env.DB, pairs);
       await recordSyncRun(env.DB, adapter.source, 'success', adapterStartedAt);
@@ -630,15 +750,54 @@ async function syncCoreDexAdapters(env) {
       results.push({ source: adapter.source, ok: false, error: error?.message || String(error) });
     }
   }
-  await aggregateTokenAnalytics(env).catch((error) => recordSyncRun(env.DB, 'token_aggregates', 'failed', startedAt, error?.message || String(error)));
   return { ok: results.every((result) => result.ok), results };
+}
+
+async function getAggregateRunStatus(db) {
+  const rows = await db.prepare(
+    `SELECT source, status, error
+     FROM waxonedge_sync_runs latest
+     WHERE source IN (${WAXONEDGE_AGGREGATE_SOURCES.map(() => '?').join(',')})
+       AND started_at = (
+         SELECT MAX(started_at)
+         FROM waxonedge_sync_runs
+         WHERE source = latest.source
+       )`
+  ).bind(...WAXONEDGE_AGGREGATE_SOURCES).all().catch(() => ({ results: [] }));
+  const latest = new Map();
+  for (const row of rows.results || []) {
+    const source = aggregateSourceKey(row.source);
+    if (!latest.has(source)) latest.set(source, row);
+  }
+  const processed = [];
+  const failed = [];
+  const truncatedSources = [];
+  for (const source of WAXONEDGE_AGGREGATE_SOURCES) {
+    const row = latest.get(source);
+    if (row && row.status === 'success') {
+      processed.push(source);
+    } else {
+      failed.push(source);
+    }
+    if (row && /truncated/i.test(String(row.error || ''))) truncatedSources.push(source);
+  }
+  return {
+    required: WAXONEDGE_AGGREGATE_SOURCES.slice(),
+    processed,
+    failed,
+    truncated: truncatedSources.length > 0,
+    truncatedSources,
+    complete: failed.length === 0 && truncatedSources.length === 0,
+  };
 }
 
 async function aggregateTokenAnalytics(env) {
   const startedAt = nowIso();
+  const runStatus = await getAggregateRunStatus(env.DB);
   const pairRows = await env.DB.prepare(
     `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
-            price, change_24h, volume_24h, liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
+            price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+            liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
      FROM waxonedge_pairs`
   ).all();
   const waxToken = await env.DB.prepare(
@@ -646,6 +805,7 @@ async function aggregateTokenAnalytics(env) {
   ).first().catch(() => null);
   const waxUsd = asNumber(waxToken?.price_usd);
   const aggregates = new Map();
+  const requiredSources = runStatus.required;
   function ensure(contract, symbol) {
     const key = tokenKey(contract, symbol);
     if (!key) return null;
@@ -659,12 +819,16 @@ async function aggregateTokenAnalytics(env) {
         hasLiquidityUsd: false,
         volume24: 0,
         hasVolume24: false,
+        pairCount: 0,
+        sources: new Set(),
         selected: null,
       });
     }
     return aggregates.get(key);
   }
   for (const pair of pairRows.results || []) {
+    const source = aggregateSourceKey(pair.source);
+    if (!WAXONEDGE_AGGREGATE_SOURCES.includes(source)) continue;
     const sides = [
       { contract: pair.token_a_contract, symbol: pair.token_a_symbol },
       { contract: pair.token_b_contract, symbol: pair.token_b_symbol },
@@ -672,6 +836,8 @@ async function aggregateTokenAnalytics(env) {
     for (const side of sides) {
       const agg = ensure(side.contract, side.symbol);
       if (!agg) continue;
+      agg.pairCount += 1;
+      agg.sources.add(source);
       const liquidityWax = asNumber(pair.liquidity_wax);
       const liquidityUsd = asNumber(pair.liquidity_usd);
       if (liquidityWax != null) {
@@ -682,21 +848,40 @@ async function aggregateTokenAnalytics(env) {
         agg.liquidityUsd += liquidityUsd;
         agg.hasLiquidityUsd = true;
       }
-      const volume24 = asNumber(pair.volume_24h);
-      if (volume24 != null && tokenKey(side.contract, side.symbol) === tokenKey(pair.token_a_contract, pair.token_a_symbol)) {
-        agg.volume24 += volume24;
+      const volume24Wax = asNumber(pair.volume_24h_wax);
+      if (volume24Wax != null) {
+        agg.volume24 += volume24Wax;
         agg.hasVolume24 = true;
       }
       const priceWax = pairPriceWaxForToken(pair, side.contract, side.symbol);
-      if (priceWax != null && liquidityWax != null && liquidityWax >= MIN_TRUSTED_WAX_LIQUIDITY) {
-        const score = liquidityWax + (volume24 || 0);
+      if (
+        priceWax != null &&
+        liquidityWax != null &&
+        liquidityWax >= MIN_TRUSTED_WAX_LIQUIDITY &&
+        hasRealPairReserves(pair) &&
+        hasWaxQuoteForToken(pair, side.contract, side.symbol)
+      ) {
+        const score = liquidityWax;
+        const volumeScore = volume24Wax || 0;
         if (!agg.selected || score > agg.selected.score) {
           agg.selected = {
             score,
+            volumeScore,
             priceWax,
             priceUsd: waxUsd != null ? priceWax * waxUsd : null,
-            source: pair.source,
+            source,
             pairId: pair.pair_id,
+            change24: asNumber(pair.change_24h),
+          };
+        } else if (agg.selected && score === agg.selected.score && volumeScore > agg.selected.volumeScore) {
+          agg.selected = {
+            score,
+            volumeScore,
+            priceWax,
+            priceUsd: waxUsd != null ? priceWax * waxUsd : null,
+            source,
+            pairId: pair.pair_id,
+            change24: asNumber(pair.change_24h),
           };
         }
       }
@@ -704,34 +889,66 @@ async function aggregateTokenAnalytics(env) {
   }
   const statements = [];
   for (const agg of aggregates.values()) {
+    const presentSources = requiredSources.filter((source) => agg.sources.has(source));
+    const sourceKeys = Array.from(agg.sources).sort();
     statements.push(env.DB.prepare(
       `INSERT INTO waxonedge_token_stats
-       (contract, symbol, volume_24h, liquidity_wax, liquidity_usd, tvl_wax, tvl_usd,
-        selected_price_wax, selected_price_usd, selected_pair_source, selected_pair_id, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       (contract, symbol, volume_24h, volume_24h_wax, volume_24h_usd,
+        liquidity_wax, liquidity_usd, tvl_wax, tvl_usd, change_24h,
+        selected_price_wax, selected_price_usd, selected_pair_source, selected_pair_id,
+        source_count, indexed_pair_count, source_keys, aggregate_complete,
+        aggregate_sources_required, aggregate_sources_present, aggregate_sources_processed,
+        aggregate_sources_failed, aggregate_truncated, aggregate_sources_truncated, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(contract, symbol) DO UPDATE SET
          volume_24h = excluded.volume_24h,
+         volume_24h_wax = excluded.volume_24h_wax,
+         volume_24h_usd = excluded.volume_24h_usd,
          liquidity_wax = excluded.liquidity_wax,
          liquidity_usd = excluded.liquidity_usd,
          tvl_wax = excluded.tvl_wax,
          tvl_usd = excluded.tvl_usd,
+         change_24h = excluded.change_24h,
          selected_price_wax = excluded.selected_price_wax,
          selected_price_usd = excluded.selected_price_usd,
          selected_pair_source = excluded.selected_pair_source,
          selected_pair_id = excluded.selected_pair_id,
+         source_count = excluded.source_count,
+         indexed_pair_count = excluded.indexed_pair_count,
+         source_keys = excluded.source_keys,
+         aggregate_complete = excluded.aggregate_complete,
+         aggregate_sources_required = excluded.aggregate_sources_required,
+         aggregate_sources_present = excluded.aggregate_sources_present,
+         aggregate_sources_processed = excluded.aggregate_sources_processed,
+         aggregate_sources_failed = excluded.aggregate_sources_failed,
+         aggregate_truncated = excluded.aggregate_truncated,
+         aggregate_sources_truncated = excluded.aggregate_sources_truncated,
          updated_at = excluded.updated_at`
     ).bind(
       agg.contract,
       agg.symbol,
       agg.hasVolume24 ? safeDecimal(agg.volume24) : null,
+      agg.hasVolume24 ? safeDecimal(agg.volume24) : null,
+      agg.hasVolume24 && waxUsd != null ? safeDecimal(agg.volume24 * waxUsd) : null,
       agg.hasLiquidityWax ? safeDecimal(agg.liquidityWax) : null,
       agg.hasLiquidityUsd ? safeDecimal(agg.liquidityUsd) : null,
       agg.hasLiquidityWax ? safeDecimal(agg.liquidityWax) : null,
       agg.hasLiquidityUsd ? safeDecimal(agg.liquidityUsd) : null,
+      agg.selected?.change24 != null ? safeDecimal(agg.selected.change24) : null,
       agg.selected ? safeDecimal(agg.selected.priceWax) : null,
       agg.selected?.priceUsd != null ? safeDecimal(agg.selected.priceUsd) : null,
       agg.selected?.source || null,
       agg.selected?.pairId || null,
+      sourceKeys.length,
+      agg.pairCount,
+      sourceKeys.join(','),
+      runStatus.complete ? 1 : 0,
+      requiredSources.join(','),
+      presentSources.join(','),
+      runStatus.processed.join(','),
+      runStatus.failed.join(','),
+      runStatus.truncated ? 1 : 0,
+      runStatus.truncatedSources.join(','),
       nowIso(),
     ));
     if (agg.selected) {
@@ -759,8 +976,8 @@ async function aggregateTokenAnalytics(env) {
   for (let i = 0; i < statements.length; i += 50) {
     await env.DB.batch(statements.slice(i, i + 50));
   }
-  await recordSyncRun(env.DB, 'token_aggregates', 'success', startedAt);
-  return { ok: true, tokens: aggregates.size };
+  await recordSyncRun(env.DB, 'token_aggregates', runStatus.complete ? 'success' : 'failed', startedAt, runStatus.complete ? null : 'Aggregate incomplete: one or more configured sources failed or truncated');
+  return { ok: runStatus.complete, tokens: aggregates.size, runStatus };
 }
 
 async function syncNeftyAbi(env) {
@@ -817,10 +1034,14 @@ async function listTopTokens(db) {
   const rows = await db.prepare(
     `SELECT t.contract, t.symbol, t.decimals, t.total_supply, t.max_supply, t.price_wax, t.price_usd,
             t.pair_count, t.icon_url, t.updated_at,
-            s.volume_24h, s.volume_7d, s.volume_30d, s.liquidity_wax, s.liquidity_usd,
-            s.tvl_wax, s.tvl_usd, s.selected_price_wax, s.selected_price_usd,
+            s.volume_24h, s.volume_24h_wax, s.volume_24h_usd, s.volume_7d, s.volume_30d,
+            s.liquidity_wax, s.liquidity_usd,
+            s.tvl_wax, s.tvl_usd, s.change_24h, s.selected_price_wax, s.selected_price_usd,
             s.selected_pair_source, s.selected_pair_id, s.holder_count, s.circulating_supply,
-            s.burned_amount, s.market_cap_wax, s.market_cap_usd, s.fdv_wax, s.fdv_usd
+            s.burned_amount, s.market_cap_wax, s.market_cap_usd, s.fdv_wax, s.fdv_usd,
+            s.source_count, s.indexed_pair_count, s.source_keys, s.aggregate_complete,
+            s.aggregate_sources_required, s.aggregate_sources_present, s.aggregate_sources_processed,
+            s.aggregate_sources_failed, s.aggregate_truncated, s.aggregate_sources_truncated
      FROM waxonedge_tokens t
      LEFT JOIN waxonedge_token_stats s
        ON s.contract = t.contract AND s.symbol = t.symbol
@@ -833,31 +1054,43 @@ async function listTopTokens(db) {
 async function listTopPairs(db) {
   const rows = await db.prepare(
     `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
-            price, change_24h, volume_24h, liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
+            price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+            liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
      FROM waxonedge_pairs
-     ORDER BY CAST(COALESCE(volume_24h, '0') AS NUMERIC) DESC, updated_at DESC
+     ORDER BY CAST(COALESCE(volume_24h_wax, '0') AS NUMERIC) DESC, updated_at DESC
      LIMIT 250`
   ).all();
   return rows.results || [];
 }
 
-async function listTokenPairs(db, contract, symbol) {
+async function listTokenPairs(db, contract, symbol, options = {}) {
+  const limit = clampInteger(options.limit, TOKEN_PAIR_PAGE_LIMIT, 1, TOKEN_PAIR_MAX_PAGE_LIMIT);
+  const offset = clampInteger(options.cursor, 0, 0, Number.MAX_SAFE_INTEGER);
   const rows = await db.prepare(
     `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
-            price, change_24h, volume_24h, liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
+            price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+            liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
      FROM waxonedge_pairs
      WHERE (token_a_contract = ? AND token_a_symbol = ?)
         OR (token_b_contract = ? AND token_b_symbol = ?)
-     ORDER BY CAST(COALESCE(volume_24h, '0') AS NUMERIC) DESC, updated_at DESC
-     LIMIT 250`
-  ).bind(contract, symbol, contract, symbol).all();
-  return rows.results || [];
+     ORDER BY CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC,
+              CAST(COALESCE(volume_24h_wax, '0') AS NUMERIC) DESC,
+              updated_at DESC
+     LIMIT ? OFFSET ?`
+  ).bind(contract, symbol, contract, symbol, limit + 1, offset).all();
+  const pageRows = rows.results || [];
+  const hasMore = pageRows.length > limit;
+  return {
+    rows: pageRows.slice(0, limit),
+    next_cursor: hasMore ? String(offset + limit) : null,
+    complete: !hasMore,
+  };
 }
 
 async function listBestChartCandles(db, contract, symbol) {
   const best = await db.prepare(
     `SELECT p.source, p.pair_id, p.token_a_contract, p.token_a_symbol, p.token_b_contract, p.token_b_symbol,
-            p.volume_24h, p.liquidity_wax, p.liquidity_usd, COUNT(c.bucket_time) AS candle_count
+            p.volume_24h, p.volume_24h_wax, p.liquidity_wax, p.liquidity_usd, COUNT(c.bucket_time) AS candle_count
      FROM waxonedge_pairs p
      JOIN waxonedge_chart_candles c
        ON c.source = p.source AND c.pair_id = p.pair_id
@@ -866,8 +1099,8 @@ async function listBestChartCandles(db, contract, symbol) {
        AND c.interval = '1D'
      GROUP BY p.source, p.pair_id
      HAVING candle_count > 0
-     ORDER BY CAST(COALESCE(p.volume_24h, '0') AS NUMERIC) DESC,
-              CAST(COALESCE(p.liquidity_wax, '0') AS NUMERIC) DESC,
+     ORDER BY CAST(COALESCE(p.liquidity_wax, '0') AS NUMERIC) DESC,
+              CAST(COALESCE(p.volume_24h_wax, '0') AS NUMERIC) DESC,
               candle_count DESC
      LIMIT 1`
   ).bind(contract, symbol, contract, symbol).first().catch(() => null);
@@ -894,17 +1127,25 @@ async function listBestChartCandles(db, contract, symbol) {
 
 async function getToken(db, contract, symbol) {
   const token = await db.prepare(
-    `SELECT contract, symbol, decimals, total_supply, max_supply, price_wax, price_usd, pair_count, icon_url, updated_at
+    `SELECT contract, symbol, decimals, total_supply, max_supply, updated_at
      FROM waxonedge_tokens WHERE contract = ? AND symbol = ? LIMIT 1`
   ).bind(contract, symbol).first();
   const stats = await db.prepare(
-    `SELECT holder_count, circulating_supply, volume_24h, volume_7d, volume_30d,
+    `SELECT holder_count, circulating_supply, volume_24h, volume_24h_wax, volume_24h_usd,
+            volume_7d, volume_30d,
             market_cap_wax, market_cap_usd, fdv_wax, fdv_usd, liquidity_wax,
             liquidity_usd, tvl_wax, tvl_usd, selected_price_wax, selected_price_usd,
-            selected_pair_source, selected_pair_id, burned_amount, updated_at
+            change_24h, selected_pair_source, selected_pair_id, burned_amount, source_count,
+            indexed_pair_count, source_keys, aggregate_complete, aggregate_sources_required,
+            aggregate_sources_present, aggregate_sources_processed, aggregate_sources_failed,
+            aggregate_truncated, aggregate_sources_truncated, updated_at
      FROM waxonedge_token_stats WHERE contract = ? AND symbol = ? LIMIT 1`
   ).bind(contract, symbol).first().catch(() => null);
-  return { token, stats };
+  return {
+    token,
+    stats,
+    source_coverage: sourceCoverageFromKeys(parseSourceKeys(stats?.source_keys)),
+  };
 }
 
 async function getLatestSync(db) {
@@ -1026,7 +1267,12 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       const contract = normalizeContract(decodeURIComponent(tokenMatch[1]));
       const symbol = normalizeSymbol(decodeURIComponent(tokenMatch[2]));
       const child = tokenMatch[3] || '';
-      if (child === 'pairs') return ok(await listTokenPairs(env.DB, contract, symbol), [], null, corsHeaders);
+      if (child === 'pairs') {
+        return ok(await listTokenPairs(env.DB, contract, symbol, {
+          cursor: url.searchParams.get('cursor'),
+          limit: url.searchParams.get('limit'),
+        }), [], null, corsHeaders);
+      }
       if (child === 'chart') {
         const chart = await listBestChartCandles(env.DB, contract, symbol);
         return ok(chart, chart.unavailable ? [SOURCE_NOT_INDEXED] : [], null, corsHeaders);
@@ -1052,9 +1298,19 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
   const minute = tick.getUTCMinutes();
   const hour = tick.getUTCHours();
   const isMinuteCron = cron === '* * * * *';
-  if (!cron || isMinuteCron) tasks.push(syncAlcorMarketData(env, 'alcor_minute_market_data'));
-  if (!cron || cron === '*/5 * * * *' || (isMinuteCron && minute % 5 === 0)) {
-    tasks.push(syncAlcorMarketData(env, 'alcor_five_minute_market_data'), syncCoreDexAdapters(env), syncNeftyAbi(env));
+  const shouldRunFullIndex = !cron || cron === '*/5 * * * *' || (isMinuteCron && minute % 5 === 0);
+  if (shouldRunFullIndex) {
+    tasks.push((async () => {
+      const [alcor, core, nefty] = await Promise.all([
+        syncAlcorMarketData(env, 'alcor_five_minute_market_data'),
+        syncCoreDexAdapters(env),
+        syncNeftyAbi(env),
+      ]);
+      const aggregates = await aggregateTokenAnalytics(env);
+      return { ok: alcor.ok && core.ok && nefty.ok && aggregates.ok, alcor, core, nefty, aggregates };
+    })());
+  } else if (isMinuteCron) {
+    tasks.push(syncAlcorMarketData(env, 'alcor_minute_market_data'));
   }
   if (!cron || cron === '*/15 * * * *' || (isMinuteCron && minute % 15 === 0)) tasks.push(syncSupplyInputs(env));
   if (!cron || cron === '0 */2 * * *' || (isMinuteCron && minute === 0 && hour % 2 === 0)) {
