@@ -45,11 +45,16 @@ ok('schema defines pairs table', schema.includes('CREATE TABLE IF NOT EXISTS wax
 ok('schema defines token stats table', schema.includes('CREATE TABLE IF NOT EXISTS waxonedge_token_stats'));
 ok('schema defines holders table', schema.includes('CREATE TABLE IF NOT EXISTS waxonedge_holders'));
 ok('schema defines chart candles table', schema.includes('CREATE TABLE IF NOT EXISTS waxonedge_chart_candles'));
+ok('schema documents decimal TEXT precision policy', schema.includes('Precision policy') && schema.includes('decimal strings in TEXT'));
+ok('schema avoids SQLite REAL for analytics values', !/\bREAL\b/.test(schema));
+ok('schema stores token prices as TEXT', schema.includes('price_wax TEXT') && schema.includes('price_usd TEXT'));
+ok('schema stores pair volume/liquidity as TEXT', schema.includes('volume_24h TEXT') && schema.includes('liquidity_usd TEXT'));
+ok('schema stores candle OHLC as TEXT', schema.includes('open TEXT') && schema.includes('close TEXT'));
 
 ok('worker returns unavailable instead of fake data', worker.includes('Requires indexed backend') && worker.includes('unavailable('));
-ok('worker exposes summary endpoint', worker.includes("/api/waxonedge/summary"));
-ok('worker exposes top tokens endpoint', worker.includes("/api/waxonedge/tokens/top"));
-ok('worker exposes top pairs endpoint', worker.includes("/api/waxonedge/pairs/top"));
+ok('worker exposes summary endpoint', worker.includes('/api/waxonedge/summary'));
+ok('worker exposes top tokens endpoint', worker.includes('/api/waxonedge/tokens/top'));
+ok('worker exposes top pairs endpoint', worker.includes('/api/waxonedge/pairs/top'));
 ok('worker does not implement fake scheduled sync', worker.includes('Sync implementation pending confirmed source adapters'));
 ok('worker uses compact JSON (no pretty-print)', !worker.includes('JSON.stringify(payload, null, 2)'));
 ok('worker 404 uses notFound helper', worker.includes('notFound(') && !worker.includes("'Not found'"));
