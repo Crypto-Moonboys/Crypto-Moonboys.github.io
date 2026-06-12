@@ -1,6 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const CONFIG = require('../js/ranking-config.js');
+const {
+  canonicalizeSlug,
+  canonicalizeWikiUrl,
+  isAliasSlug,
+  getAliasesForCanonicalSlug,
+  titleFromSlug
+} = require('./wiki-aliases.js');
 
 const ROOT = path.join(__dirname, '..');
 const WIKI_DIR = path.join(ROOT, 'wiki');
@@ -188,31 +195,66 @@ function detectCategory(filePath, html, samEntity) {
   return 'misc';
 }
 
-function buildAliases(samEntity) {
-  if (!samEntity) return [];
-
+function buildAliases(samEntity, canonicalSlug) {
   const aliases = [];
   const seen = new Set();
 
-  const pushAlias = (value) => {
+  const pushAlias = (value, url = '') => {
     const title = String(value || '').trim();
     if (!title) return;
-    const key = normalize(title);
+    const aliasUrl = String(url || '').trim();
+    const key = `${normalize(title)}|${aliasUrl.toLowerCase()}`;
     if (!key || seen.has(key)) return;
     seen.add(key);
-    aliases.push({ title });
+    const entry = { title };
+    if (aliasUrl) entry.url = aliasUrl;
+    aliases.push(entry);
   };
 
-  (samEntity.aliases || []).forEach(pushAlias);
-  (samEntity.alias_candidates || []).forEach(pushAlias);
+  if (samEntity) {
+    (samEntity.aliases || []).forEach(value => pushAlias(value));
+    (samEntity.alias_candidates || []).forEach(value => pushAlias(value));
+  }
 
-  const canonicalTitle = cleanupCanonicalTitle(samEntity.canonical_title || '');
+  for (const aliasSlug of getAliasesForCanonicalSlug(canonicalSlug)) {
+    const aliasUrl = `/wiki/${aliasSlug}.html`;
+    const aliasPath = path.join(ROOT, aliasUrl.replace(/^\//, ''));
+    pushAlias(titleFromSlug(aliasSlug), fs.existsSync(aliasPath) ? aliasUrl : '');
+  }
+
+  const canonicalTitle = cleanupCanonicalTitle((samEntity && samEntity.canonical_title) || '');
   if (canonicalTitle) {
     const normalizedCanonical = normalize(canonicalTitle);
     return aliases.filter(alias => normalize(alias.title) !== normalizedCanonical);
   }
 
   return aliases;
+}
+
+function mergeAliases(...lists) {
+  const merged = [];
+  const seenByTitle = new Map();
+  for (const list of lists) {
+    for (const alias of list || []) {
+      if (!alias || typeof alias !== 'object') continue;
+      const title = String(alias.title || '').trim();
+      if (!title) continue;
+      const normalizedTitle = normalize(title);
+      if (!normalizedTitle) continue;
+      const url = String(alias.url || '').trim();
+      const existingIndex = seenByTitle.get(normalizedTitle);
+      if (typeof existingIndex === 'number') {
+        const existing = merged[existingIndex];
+        if (url && !existing.url) existing.url = url;
+        continue;
+      }
+      const value = { title };
+      if (url) value.url = url;
+      seenByTitle.set(normalizedTitle, merged.length);
+      merged.push(value);
+    }
+  }
+  return merged;
 }
 
 function buildContentSignals(html, title, description, keywords, aliases = []) {
@@ -427,7 +469,7 @@ function run() {
   const samMemory = loadSamMemory();
   const linkGraph = loadLinkGraph();
   const files = walk(WIKI_DIR);
-  const index = [];
+  const canonicalEntries = new Map();
 
   files.forEach(filePath => {
     const relative = path.relative(ROOT, filePath).replace(/\\/g, '/');
@@ -447,8 +489,11 @@ function run() {
     const htmlKeywords = extractKeywords(html);
     const url = '/' + relative;
     const slug = slugFromUrl(url);
+    const canonicalSlug = canonicalizeSlug(slug);
+    const canonicalUrl = canonicalizeWikiUrl(url);
 
     const samEntity =
+      samMemory.entitiesBySlug[canonicalSlug] ||
       samMemory.entitiesBySlug[slug] ||
       samMemory.entitiesByTitle[normalize(cleanupCanonicalTitle(title))] ||
       null;
@@ -458,13 +503,16 @@ function run() {
       : [];
 
     const keywords = Array.from(new Set([...htmlKeywords, ...memoryTags]));
-    const aliases = buildAliases(samEntity);
+    let aliases = mergeAliases(buildAliases(samEntity, canonicalSlug));
+    if (isAliasSlug(slug) || slug !== canonicalSlug) {
+      aliases = mergeAliases(aliases, [{ title: titleFromSlug(slug), url }]);
+    }
 
     const rankSignals = buildRankSignals(html, filePath, title, description, keywords, aliases, samEntity);
     const rankScore = computeRankScore(rankSignals);
     const rankDiagnostics = buildRankDiagnostics(rankSignals, rankScore);
     const searchIndex = buildSearchIndex(title, description, keywords, aliases);
-    const linkScore = buildLinkScore(url, linkGraph);
+    const linkScore = buildLinkScore(canonicalUrl, linkGraph);
 
     // ── Phase 4: fold graph authority into rank_diagnostics ──────────────
     const authorityGraphPoints = Math.round(linkScore.authority);
@@ -480,10 +528,10 @@ function run() {
     };
     // ─────────────────────────────────────────────────────────────────────
 
-    index.push({
+    const candidate = {
       title,
       desc: description,
-      url,
+      url: canonicalUrl,
       tags: keywords,
       category: rankSignals.category,
       aliases,
@@ -491,8 +539,54 @@ function run() {
       rank_signals: rankSignals,
       rank_diagnostics: updatedRankDiagnostics,
       search_index: searchIndex,
-      link_score: linkScore
+      link_score: linkScore,
+      _slug: slug,
+      _canonicalSlug: canonicalSlug
+    };
+
+    const existing = canonicalEntries.get(canonicalSlug);
+    if (!existing) {
+      canonicalEntries.set(canonicalSlug, candidate);
+      return;
+    }
+
+    const existingIsCanonical = existing._slug === canonicalSlug;
+    const candidateIsCanonical = slug === canonicalSlug;
+    const shouldReplace = candidateIsCanonical && !existingIsCanonical;
+
+    if (shouldReplace) {
+      canonicalEntries.set(canonicalSlug, {
+        ...candidate,
+        aliases: mergeAliases(candidate.aliases, existing.aliases)
+      });
+      return;
+    }
+
+    canonicalEntries.set(canonicalSlug, {
+      ...existing,
+      aliases: mergeAliases(existing.aliases, candidate.aliases)
     });
+  });
+
+  const index = [...canonicalEntries.values()].map(entry => {
+    const canonicalTitle = cleanupCanonicalTitle(entry.title);
+    const normalizedCanonicalTitle = normalize(canonicalTitle);
+    const aliases = (entry.aliases || [])
+      .filter(alias => normalize(alias.title) !== normalizedCanonicalTitle)
+      .filter(alias => alias.url !== entry.url);
+    return {
+      title: entry.title,
+      desc: entry.desc,
+      url: entry.url,
+      tags: entry.tags,
+      category: entry.category,
+      aliases,
+      rank_score: entry.rank_score,
+      rank_signals: entry.rank_signals,
+      rank_diagnostics: entry.rank_diagnostics,
+      search_index: entry.search_index,
+      link_score: entry.link_score
+    };
   });
 
   index.sort((a, b) => {

@@ -19,6 +19,10 @@ function exists(rel) {
   return existsSync(path.join(ROOT, rel));
 }
 
+function countMatches(text, pattern) {
+  return (text.match(pattern) || []).length;
+}
+
 let passed = 0;
 let failed = 0;
 
@@ -93,13 +97,14 @@ ok('waxonedge-sources.js defines /analytics/global path', sourcesJs.includes("an
 ok('waxonedge-sources.js defines /markets helper path for chart fetches', sourcesJs.includes("markets: '/markets'"));
 
 ok('waxonedge.js calls /api/waxonedge/bootstrap before diagnostic fallback',
-  js.includes("waxonedgeApi('/bootstrap')") && js.includes('loadDiagnosticFallback'));
+  /waxonedgeApi\('\/bootstrap'\)\.then[\s\S]*return loadDiagnosticFallback\(\)/.test(js));
 ok('waxonedge.js keeps direct browser fetches as diagnostic fallback',
   js.includes('loadDiagnosticFallback') && js.includes('Backend bootstrap unavailable'));
 ok('waxonedge.js uses configured WAX RPC fallbacks', js.includes('WAXONEDGE_WAX_RPC_FALLBACKS'));
 ok('waxonedge.js performs swap.nefty ABI lookup', js.includes('get_abi') || js.includes('getAbi'));
 ok('waxonedge.js includes query-string token detail state', js.includes('token=') && js.includes('contract='));
 ok('waxonedge.js fetches Alcor chart candles from /markets/:id/charts for diagnostic fallback', js.includes('/charts') && js.includes('/markets'));
+ok('waxonedge.js keeps Lightweight Charts support', js.includes('window.LightweightCharts') && js.includes('tv.createChart'));
 
 ok('waxonedge.html includes KPI strip', html.includes('woe-kpi-grid') && html.includes('Indexed Tokens') && html.includes('Indexed Pairs'));
 ok('waxonedge.html includes source status strip', html.includes('Source Status') && html.includes('id="woe-sources-grid"'));
@@ -124,17 +129,38 @@ ok('waxonedge.js renders pair detail on row click', js.includes('function render
 ok('waxonedge.js no longer auto-selects a default token-first view',
   js.includes("return { symbol: '', contract: '', key: '' };"));
 
+ok('waxonedge.js has exactly one pickDefaultSelection definition',
+  countMatches(js, /function pickDefaultSelection\s*\(/g) === 1);
+ok('waxonedge.js has exactly one renderMatrix definition',
+  countMatches(js, /function renderMatrix\s*\(/g) === 1);
+ok('waxonedge.js defines shared stable pair key helper',
+  js.includes('function getPairKey(market)') &&
+  js.includes("market.marketId || market.pairId || market.pair_id || market.id") &&
+  js.includes("tokenAKey + '|' + tokenBKey"));
+ok('pairRowHtml uses getPairKey without render-time index fallback',
+  js.includes('var pairKey = getPairKey(market);') &&
+  !js.includes('market.marketId || index'));
+ok('attachPairDetailLinks resolves pairs with shared getPairKey',
+  js.includes('return getPairKey(candidate) === pairKey;'));
+ok('wide mode toggle updates aria-pressed',
+  js.includes("btn.setAttribute('aria-pressed', enabled ? 'true' : 'false')"));
+ok('wide mode localStorage zero disables default wide mode',
+  js.includes("localStorage.getItem('woe_wide_mode') === '0'") && js.includes('applyWideMode(false)'));
+ok('default wide mode remains enabled in markup for first-time users',
+  html.includes('body class="page-waxonedge page-standard-shell woe-wide-mode"') &&
+  html.includes('aria-pressed="true"'));
+
 for (const label of [
-  'Selected price',
   'Selected price source',
-  '24h change',
+  'Current price in WAX and USD',
+  '24h price change',
   '24h volume',
-  'Total indexed liquidity',
+  'Total liquidity',
   'Cumulated pair liquidity',
   'Source count',
-  'Strongest WAX liquidity pair',
+  'Strongest pair',
 ]) {
-  ok('new token stats label exists: ' + label, js.includes(label) || html.includes(label));
+  ok('token stats label exists: ' + label, js.includes(label) || html.includes(label));
 }
 
 ok('waxonedge.js explicitly marks unavailable states', js.includes('Unavailable'));
