@@ -8,6 +8,7 @@ const {
   getAliasesForCanonicalSlug,
   titleFromSlug
 } = require('./wiki-aliases.js');
+const { classifyWikiSlug } = require('./wiki-brand-taxonomy.js');
 
 const ROOT = path.join(__dirname, '..');
 const WIKI_DIR = path.join(ROOT, 'wiki');
@@ -463,6 +464,18 @@ function buildRankDiagnostics(signals, rankScore) {
   };
 }
 
+function buildBrandMeta(slug) {
+  const meta = classifyWikiSlug(slug);
+  if (!meta) return null;
+  return {
+    brand_family: meta.brand_family,
+    concept_type: meta.concept_type,
+    canonical_concept_id: meta.canonical_concept_id,
+    canonical_slug: meta.canonical_slug,
+    parent_concept: meta.parent_concept || null
+  };
+}
+
 function run() {
   console.log('Generating wiki index...');
 
@@ -540,6 +553,7 @@ function run() {
       rank_diagnostics: updatedRankDiagnostics,
       search_index: searchIndex,
       link_score: linkScore,
+      brand: buildBrandMeta(canonicalSlug),
       _slug: slug,
       _canonicalSlug: canonicalSlug
     };
@@ -585,7 +599,8 @@ function run() {
       rank_signals: entry.rank_signals,
       rank_diagnostics: entry.rank_diagnostics,
       search_index: entry.search_index,
-      link_score: entry.link_score
+      link_score: entry.link_score,
+      brand: entry.brand || null
     };
   });
 

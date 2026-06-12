@@ -16,6 +16,7 @@
     "source_urls": [
       "/wiki/1m-free-nfts.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "1m free nfts"
     ]
@@ -38,6 +39,7 @@
     "source_urls": [
       "/wiki/1m-free-nfts-drop.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "1m free nfts drop"
     ]
@@ -48,7 +50,8 @@
     "canonical_url": "/wiki/1m-free-nfts-program.html",
     "category": "factions",
     "aliases": [
-      "1m Free Nfts Programme"
+      "1m Free Nfts Programme",
+      "One Million Free Nfts"
     ],
     "tags": [
       "1m",
@@ -61,8 +64,16 @@
     ],
     "source_urls": [
       "/wiki/1m-free-nfts-program.html",
-      "/wiki/1m-free-nfts-programme.html"
+      "/wiki/1m-free-nfts-programme.html",
+      "/wiki/one-million-free-nfts.html"
     ],
+    "brand": {
+      "brand_family": "oneMillionFreeNfts",
+      "concept_type": "program",
+      "canonical_concept_id": "oneMillionFreeNfts:program",
+      "canonical_slug": "1m-free-nfts-program",
+      "parent_concept": null
+    },
     "alias_candidates": [
       "1m free nfts program"
     ]
@@ -85,6 +96,7 @@
     "source_urls": [
       "/wiki/2025-metaverse-launch-party.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "2025 metaverse launch party"
     ]
@@ -107,7 +119,8 @@
     ],
     "source_urls": [
       "/wiki/589-xrpl.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "666_xrpl",
@@ -127,7 +140,8 @@
     ],
     "source_urls": [
       "/wiki/666-xrpl.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "alcor_exchange",
@@ -147,6 +161,7 @@
     "source_urls": [
       "/wiki/alcor-exchange.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "alcor exchange"
     ]
@@ -168,6 +183,7 @@
     "source_urls": [
       "/wiki/aleema-child-of-the-shard.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "aleema child of the shard"
     ]
@@ -190,6 +206,7 @@
     "source_urls": [
       "/wiki/alfie-bitcoin-kid-blaze.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "alfie bitcoin kid blaze"
     ]
@@ -212,6 +229,7 @@
     "source_urls": [
       "/wiki/alfie-blaze.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "alfie blaze"
     ]
@@ -234,6 +252,7 @@
     "source_urls": [
       "/wiki/alfie-the-bitcoin-kid-blaze.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "alfie the bitcoin kid blaze"
     ]
@@ -255,6 +274,7 @@
     "source_urls": [
       "/wiki/alien-worlds-tlm.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "alien worlds tlm"
     ]
@@ -276,6 +296,7 @@
     "source_urls": [
       "/wiki/altcoins.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "altcoins"
     ]
@@ -297,6 +318,7 @@
     "source_urls": [
       "/wiki/atomicassets.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "atomicassets"
     ]
@@ -318,6 +340,7 @@
     "source_urls": [
       "/wiki/atomichub.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "atomichub"
     ]
@@ -339,6 +362,7 @@
     "source_urls": [
       "/wiki/atomichub-graffpunks-collection.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "atomichub graffpunks collection"
     ]
@@ -361,6 +385,7 @@
     "source_urls": [
       "/wiki/ava-chen.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "ava chen"
     ]
@@ -383,6 +408,7 @@
     "source_urls": [
       "/wiki/battlemech-blast.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "battlemech blast"
     ]
@@ -406,7 +432,8 @@
     ],
     "source_urls": [
       "/wiki/bear-market-siege.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "bear_xrpl",
@@ -426,7 +453,8 @@
     ],
     "source_urls": [
       "/wiki/bear-xrpl.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "billy_the_goat_kid",
@@ -445,6 +473,7 @@
     "source_urls": [
       "/wiki/billy-the-goat-kid.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "billy the goat kid"
     ]
@@ -466,6 +495,7 @@
     "source_urls": [
       "/wiki/bit-cap-5000.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "bit cap 5000"
     ]
@@ -488,7 +518,8 @@
     ],
     "source_urls": [
       "/wiki/bitcoin.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "bitcoin_btc",
@@ -509,6 +540,7 @@
     "source_urls": [
       "/wiki/bitcoin-btc.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "bitcoin btc"
     ]
@@ -530,6 +562,7 @@
     "source_urls": [
       "/wiki/bitcoin-kid-army.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "bitcoin kid army"
     ]
@@ -552,6 +585,7 @@
     "source_urls": [
       "/wiki/bitcoin-kids.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "bitcoin kids"
     ]
@@ -574,6 +608,7 @@
     "source_urls": [
       "/wiki/bitcoin-x-kids.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "bitcoin x kids"
     ]
@@ -595,6 +630,7 @@
     "source_urls": [
       "/wiki/block-node-defenders.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "block node defenders"
     ]
@@ -617,6 +653,7 @@
     "source_urls": [
       "/wiki/block-topia.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "block topia"
     ]
@@ -639,7 +676,8 @@
     ],
     "source_urls": [
       "/wiki/blockchain.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "blockchain_technology",
@@ -660,6 +698,7 @@
     "source_urls": [
       "/wiki/blockchain-technology.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "blockchain technology"
     ]
@@ -681,6 +720,7 @@
     "source_urls": [
       "/wiki/bone-idol-ink.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "bone idol ink"
     ]
@@ -703,6 +743,7 @@
     "source_urls": [
       "/wiki/burn-to-earn.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "burn to earn"
     ]
@@ -725,6 +766,7 @@
     "source_urls": [
       "/wiki/canvas-clash.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "canvas clash"
     ]
@@ -747,6 +789,7 @@
     "source_urls": [
       "/wiki/charlie-buster.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "charlie buster"
     ]
@@ -768,6 +811,7 @@
     "source_urls": [
       "/wiki/croydon-tower-blocks.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "croydon tower blocks"
     ]
@@ -790,6 +834,7 @@
     "source_urls": [
       "/wiki/crypto-exchanges.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "crypto exchanges"
     ]
@@ -810,6 +855,7 @@
     "source_urls": [
       "/wiki/crypto-moonboys.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "crypto moonboys"
     ]
@@ -832,6 +878,7 @@
     "source_urls": [
       "/wiki/crypto-wallets.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "crypto wallets"
     ]
@@ -854,6 +901,7 @@
     "source_urls": [
       "/wiki/darren-cullen.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "darren cullen"
     ]
@@ -875,6 +923,7 @@
     "source_urls": [
       "/wiki/darren-cullen-ser.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "darren cullen ser"
     ]
@@ -897,6 +946,7 @@
     "source_urls": [
       "/wiki/darren-cullen-ser-real.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "darren cullen ser real"
     ]
@@ -919,6 +969,7 @@
     "source_urls": [
       "/wiki/decentraland-events.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "decentraland events"
     ]
@@ -941,7 +992,8 @@
     ],
     "source_urls": [
       "/wiki/defi.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "defi_decentralised_finance",
@@ -962,6 +1014,7 @@
     "source_urls": [
       "/wiki/defi-decentralised-finance.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "defi decentralised finance"
     ]
@@ -984,6 +1037,7 @@
     "source_urls": [
       "/wiki/defi-mining.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "defi mining"
     ]
@@ -1005,6 +1059,7 @@
     "source_urls": [
       "/wiki/delicious-again-pete.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "delicious again pete"
     ]
@@ -1027,6 +1082,7 @@
     "source_urls": [
       "/wiki/diamond-hands.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "diamond hands"
     ]
@@ -1049,6 +1105,7 @@
     "source_urls": [
       "/wiki/dragan-volkov.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "dragan volkov"
     ]
@@ -1071,6 +1128,7 @@
     "source_urls": [
       "/wiki/dream-sovereign.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "dream sovereign"
     ]
@@ -1093,7 +1151,8 @@
     ],
     "source_urls": [
       "/wiki/drop-xrpl.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "elder_codex_7",
@@ -1113,6 +1172,7 @@
     "source_urls": [
       "/wiki/elder-codex-7.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "elder codex 7"
     ]
@@ -1135,7 +1195,8 @@
     ],
     "source_urls": [
       "/wiki/ethereum.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "ethereum_ecosystem",
@@ -1155,7 +1216,8 @@
     ],
     "source_urls": [
       "/wiki/ethereum-ecosystem.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "ethereum_eth",
@@ -1176,6 +1238,7 @@
     "source_urls": [
       "/wiki/ethereum-eth.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "ethereum eth"
     ]
@@ -1197,7 +1260,8 @@
     ],
     "source_urls": [
       "/wiki/exchanges.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "exyboy",
@@ -1216,6 +1280,7 @@
     "source_urls": [
       "/wiki/exyboy.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "exyboy"
     ]
@@ -1238,6 +1303,7 @@
     "source_urls": [
       "/wiki/fgl-token.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "fgl token"
     ]
@@ -1261,6 +1327,7 @@
     "source_urls": [
       "/wiki/fomo-plague.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "fomo plague crypto moonboys wiki"
     ]
@@ -1283,6 +1350,7 @@
     "source_urls": [
       "/wiki/forkborn-collective.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "forkborn collective"
     ]
@@ -1305,6 +1373,7 @@
     "source_urls": [
       "/wiki/forklord-you.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "forklord you"
     ]
@@ -1326,6 +1395,7 @@
     "source_urls": [
       "/wiki/forksplit.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "forksplit"
     ]
@@ -1348,6 +1418,7 @@
     "source_urls": [
       "/wiki/games4punks-telegram.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "games4punks telegram"
     ]
@@ -1369,6 +1440,7 @@
     "source_urls": [
       "/wiki/games4punks-telegram-games.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "games4punks telegram games"
     ]
@@ -1391,6 +1463,7 @@
     "source_urls": [
       "/wiki/gang-signs.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "gang signs"
     ]
@@ -1413,6 +1486,7 @@
     "source_urls": [
       "/wiki/gang-signs-card-game.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "gang signs card game"
     ]
@@ -1435,6 +1509,7 @@
     "source_urls": [
       "/wiki/genesis-kernel.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "genesis kernel"
     ]
@@ -1457,6 +1532,7 @@
     "source_urls": [
       "/wiki/genesis-spray.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "genesis spray"
     ]
@@ -1478,6 +1554,7 @@
     "source_urls": [
       "/wiki/genesis-spray-drop.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "genesis spray drop"
     ]
@@ -1498,7 +1575,8 @@
     ],
     "source_urls": [
       "/wiki/gk.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "gk_token",
@@ -1518,6 +1596,7 @@
     "source_urls": [
       "/wiki/gk-token.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "gk token"
     ]
@@ -1540,6 +1619,7 @@
     "source_urls": [
       "/wiki/gk-tokens.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "gk tokens"
     ]
@@ -1561,6 +1641,7 @@
     "source_urls": [
       "/wiki/gkniftyheads.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "gkniftyheads"
     ]
@@ -1584,6 +1665,7 @@
     "source_urls": [
       "/wiki/gkniftyheads-phase-one-two-three.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "gkniftyheads phase one two three"
     ]
@@ -1606,6 +1688,7 @@
     "source_urls": [
       "/wiki/graffiti-kings.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "graffiti kings"
     ]
@@ -1628,6 +1711,7 @@
     "source_urls": [
       "/wiki/graffiti-nexus.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "graffiti nexus"
     ]
@@ -1649,6 +1733,7 @@
     "source_urls": [
       "/wiki/graffiti-queens-exhibition.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "graffiti queens exhibition"
     ]
@@ -1670,6 +1755,7 @@
     "source_urls": [
       "/wiki/graffiti-queens-in-decentraland.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "graffiti queens in decentraland"
     ]
@@ -1692,6 +1778,7 @@
     "source_urls": [
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "graffiti queens in decentraland ecosystem"
     ]
@@ -1713,6 +1800,7 @@
     "source_urls": [
       "/wiki/graffitikings.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "graffitikings"
     ]
@@ -1724,7 +1812,8 @@
     "category": "characters",
     "aliases": [
       "graffpunks crypto moonboys wiki",
-      "Graffpunks Network"
+      "Graffpunks Network",
+      "The Graffpunks"
     ],
     "tags": [
       "graffpunks",
@@ -1733,35 +1822,18 @@
       "wiki"
     ],
     "source_urls": [
-      "/wiki/graffpunks-network.html",
-      "/wiki/graffpunks.html"
+      "/wiki/graffpunks.html",
+      "/wiki/the-graffpunks.html"
     ],
+    "brand": {
+      "brand_family": "graffpunks",
+      "concept_type": "faction",
+      "canonical_concept_id": "graffpunks:faction",
+      "canonical_slug": "graffpunks",
+      "parent_concept": "graffpunks"
+    },
     "alias_candidates": [
       "graffpunks"
-    ]
-  },
-  {
-    "entity_id": "graffpunks_24_7",
-    "canonical_title": "graffpunks_24_7 — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/graffpunks-24-7.html",
-    "category": "characters",
-    "aliases": [
-      "graffpunks 24 crypto moonboys wiki",
-      "Graffpunks 247"
-    ],
-    "tags": [
-      "graffpunks",
-      "24",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/graffpunks-24-7.html",
-      "/wiki/graffpunks-247.html"
-    ],
-    "alias_candidates": [
-      "graffpunks 24 7"
     ]
   },
   {
@@ -1785,6 +1857,7 @@
     "source_urls": [
       "/wiki/graffpunks-24-7-blockchain-radio-station.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "graffpunks 24 7 blockchain radio station"
     ]
@@ -1795,7 +1868,10 @@
     "canonical_url": "/wiki/graffpunks-24-7-radio.html",
     "category": "factions",
     "aliases": [
-      "Graffpunks 247 Radio"
+      "Graffpunks 247 Radio",
+      "Graffpunks 24 7",
+      "Graffpunks 247",
+      "Graffpunks 247 Blockchain Radio Station"
     ],
     "tags": [
       "graffpunks",
@@ -1807,32 +1883,20 @@
     ],
     "source_urls": [
       "/wiki/graffpunks-24-7-radio.html",
-      "/wiki/graffpunks-247-radio.html"
+      "/wiki/graffpunks-24-7.html",
+      "/wiki/graffpunks-247-blockchain-radio-station.html",
+      "/wiki/graffpunks-247-radio.html",
+      "/wiki/graffpunks-247.html"
     ],
+    "brand": {
+      "brand_family": "graffpunks",
+      "concept_type": "radio",
+      "canonical_concept_id": "graffpunks:radio",
+      "canonical_slug": "graffpunks-24-7-radio",
+      "parent_concept": "graffpunks"
+    },
     "alias_candidates": [
       "graffpunks 24 7 radio"
-    ]
-  },
-  {
-    "entity_id": "graffpunks_247_blockchain_radio_station",
-    "canonical_title": "GraffPUNKS 24/7 Blockchain Radio Station — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/graffpunks-247-blockchain-radio-station.html",
-    "category": "factions",
-    "aliases": [
-      "graffpunks 247 blockchain radio station"
-    ],
-    "tags": [
-      "graffpunks",
-      "24",
-      "blockchain",
-      "radio",
-      "station",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/graffpunks-247-blockchain-radio-station.html"
     ]
   },
   {
@@ -1853,6 +1917,13 @@
     "source_urls": [
       "/wiki/graffpunks-collection.html"
     ],
+    "brand": {
+      "brand_family": "graffpunks",
+      "concept_type": "collection",
+      "canonical_concept_id": "graffpunks:collection",
+      "canonical_slug": "graffpunks-collection",
+      "parent_concept": "graffpunks"
+    },
     "alias_candidates": [
       "graffpunks collection"
     ]
@@ -1875,8 +1946,36 @@
     "source_urls": [
       "/wiki/graffpunks-ecosystem.html"
     ],
+    "brand": {
+      "brand_family": "graffpunks",
+      "concept_type": "ecosystem",
+      "canonical_concept_id": "graffpunks:ecosystem",
+      "canonical_slug": "graffpunks-ecosystem",
+      "parent_concept": "graffpunks"
+    },
     "alias_candidates": [
       "graffpunks ecosystem"
+    ]
+  },
+  {
+    "entity_id": "graffpunks_network",
+    "canonical_title": "graffpunks_network — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/graffpunks-network.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "graffpunks",
+      "network",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/graffpunks-network.html"
+    ],
+    "brand": null,
+    "alias_candidates": [
+      "graffpunks network crypto moonboys wiki"
     ]
   },
   {
@@ -1897,6 +1996,7 @@
     "source_urls": [
       "/wiki/graffpunks-nfts.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "graffpunks nfts"
     ]
@@ -1918,6 +2018,7 @@
     "source_urls": [
       "/wiki/great-datapocalypse-of-2789.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "great datapocalypse of 2789"
     ]
@@ -1939,6 +2040,7 @@
     "source_urls": [
       "/wiki/grit.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "grit"
     ]
@@ -1960,6 +2062,7 @@
     "source_urls": [
       "/wiki/grit42.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "grit42"
     ]
@@ -1981,6 +2084,7 @@
     "source_urls": [
       "/wiki/hard-fork-games.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "hard fork games"
     ]
@@ -2003,6 +2107,7 @@
     "source_urls": [
       "/wiki/hard-fork-games-event.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "hard fork games event"
     ]
@@ -2026,7 +2131,8 @@
     ],
     "source_urls": [
       "/wiki/hard-fork-games-game.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "harrison_rift",
@@ -2046,6 +2152,7 @@
     "source_urls": [
       "/wiki/harrison-rift.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "harrison rift"
     ]
@@ -2068,6 +2175,7 @@
     "source_urls": [
       "/wiki/head-tags.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "head tags"
     ]
@@ -2089,6 +2197,7 @@
     "source_urls": [
       "/wiki/hex-tagger-prime.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "hex tagger prime"
     ]
@@ -2113,6 +2222,13 @@
       "/wiki/hodl-warriors.html",
       "/wiki/hodl-x-warriors.html"
     ],
+    "brand": {
+      "brand_family": "hodl",
+      "concept_type": "faction",
+      "canonical_concept_id": "hodl:faction",
+      "canonical_slug": "hodl-warriors",
+      "parent_concept": null
+    },
     "alias_candidates": [
       "hodl warriors"
     ]
@@ -2137,6 +2253,13 @@
       "/wiki/hodl-wars-game.html",
       "/wiki/hodl-wars.html"
     ],
+    "brand": {
+      "brand_family": "hodl",
+      "concept_type": "game",
+      "canonical_concept_id": "hodl:game",
+      "canonical_slug": "hodl-wars",
+      "parent_concept": null
+    },
     "alias_candidates": [
       "hodl wars"
     ]
@@ -2158,6 +2281,7 @@
     "source_urls": [
       "/wiki/hodl-wars-ecosystem.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "hodl wars ecosystem"
     ]
@@ -2180,6 +2304,7 @@
     "source_urls": [
       "/wiki/ian-harrison.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "ian harrison"
     ]
@@ -2201,6 +2326,7 @@
     "source_urls": [
       "/wiki/iris-7.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "iris 7"
     ]
@@ -2223,7 +2349,8 @@
     ],
     "source_urls": [
       "/wiki/jelly-xrpl.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "jillian_godsil",
@@ -2243,6 +2370,7 @@
     "source_urls": [
       "/wiki/jillian-godsil.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "jillian godsil"
     ]
@@ -2264,6 +2392,7 @@
     "source_urls": [
       "/wiki/jodie-zoom-2000.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "jodie zoom 2000"
     ]
@@ -2289,7 +2418,8 @@
     ],
     "source_urls": [
       "/wiki/jonny-laurence-nelson-tag-records.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "lady_ink",
@@ -2309,6 +2439,7 @@
     "source_urls": [
       "/wiki/lady-ink.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "lady ink"
     ]
@@ -2330,6 +2461,7 @@
     "source_urls": [
       "/wiki/leake-street-tunnel.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "leake street tunnel"
     ]
@@ -2351,6 +2483,7 @@
     "source_urls": [
       "/wiki/lfgk.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "lfgk"
     ]
@@ -2373,6 +2506,7 @@
     "source_urls": [
       "/wiki/lfgk-rewards.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "lfgk rewards"
     ]
@@ -2395,6 +2529,7 @@
     "source_urls": [
       "/wiki/lfgk-token.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "lfgk token"
     ]
@@ -2416,6 +2551,7 @@
     "source_urls": [
       "/wiki/loopfiend.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "loopfiend"
     ]
@@ -2438,6 +2574,7 @@
     "source_urls": [
       "/wiki/m1ntr-k1ll.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "m1ntr k1ll"
     ]
@@ -2460,6 +2597,7 @@
     "source_urls": [
       "/wiki/maidstone-base.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "maidstone base"
     ]
@@ -2481,6 +2619,7 @@
     "source_urls": [
       "/wiki/medium-articles-by-gkniftyheads.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "medium articles by gkniftyheads"
     ]
@@ -2502,6 +2641,7 @@
     "source_urls": [
       "/wiki/medium-articles-by-graffpunks.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "medium articles by graffpunks"
     ]
@@ -2523,6 +2663,7 @@
     "source_urls": [
       "/wiki/medium-articles-by-hodlwarriors.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "medium articles by hodlwarriors"
     ]
@@ -2544,6 +2685,7 @@
     "source_urls": [
       "/wiki/medium-articles-by-sercullen.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "medium articles by sercullen"
     ]
@@ -2567,6 +2709,7 @@
     "source_urls": [
       "/wiki/meme-coins.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "meme coins"
     ]
@@ -2589,7 +2732,8 @@
     ],
     "source_urls": [
       "/wiki/memecoins.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "metaverse_battles",
@@ -2609,6 +2753,7 @@
     "source_urls": [
       "/wiki/metaverse-battles.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "metaverse battles"
     ]
@@ -2630,29 +2775,9 @@
     "source_urls": [
       "/wiki/metropolis.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "metropolis"
-    ]
-  },
-  {
-    "entity_id": "midevil_hero_arena",
-    "canonical_title": "midevil_hero_arena — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/midevil-hero-arena.html",
-    "category": "characters",
-    "aliases": [],
-    "tags": [
-      "midevil",
-      "hero",
-      "arena",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/midevil-hero-arena.html"
-    ],
-    "alias_candidates": [
-      "midevil hero arena"
     ]
   },
   {
@@ -2673,6 +2798,7 @@
     "source_urls": [
       "/wiki/midevil-hero-arena-game.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "midevil hero arena game"
     ]
@@ -2683,7 +2809,8 @@
     "canonical_url": "/wiki/midevilpunks.html",
     "category": "factions",
     "aliases": [
-      "midevilpunks crypto moonboys wiki"
+      "midevilpunks crypto moonboys wiki",
+      "Midevil Hero Arena"
     ],
     "tags": [
       "midevilpunks",
@@ -2692,8 +2819,16 @@
       "wiki"
     ],
     "source_urls": [
+      "/wiki/midevil-hero-arena.html",
       "/wiki/midevilpunks.html"
     ],
+    "brand": {
+      "brand_family": "graffpunks",
+      "concept_type": "game",
+      "canonical_concept_id": "graffpunks:game",
+      "canonical_slug": "midevilpunks",
+      "parent_concept": "graffpunks"
+    },
     "alias_candidates": [
       "midevilpunks"
     ]
@@ -2716,6 +2851,7 @@
     "source_urls": [
       "/wiki/moon-mission.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "moon mission"
     ]
@@ -2736,8 +2872,41 @@
       "wiki"
     ],
     "source_urls": [
-      "/wiki/nbg-token.html",
       "/wiki/nbg.html"
+    ],
+    "brand": {
+      "brand_family": "nbg",
+      "concept_type": "brand",
+      "canonical_concept_id": "nbg:brand",
+      "canonical_slug": "nbg",
+      "parent_concept": null
+    }
+  },
+  {
+    "entity_id": "nbg_token",
+    "canonical_title": "nbg_token — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/nbg-token.html",
+    "category": "factions",
+    "aliases": [],
+    "tags": [
+      "nbg",
+      "token",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/nbg-token.html"
+    ],
+    "brand": {
+      "brand_family": "nbg",
+      "concept_type": "token",
+      "canonical_concept_id": "nbg:token",
+      "canonical_slug": "nbg-token",
+      "parent_concept": null
+    },
+    "alias_candidates": [
+      "nbg token crypto moonboys wiki"
     ]
   },
   {
@@ -2757,6 +2926,13 @@
     "source_urls": [
       "/wiki/nbgx.html"
     ],
+    "brand": {
+      "brand_family": "nbg",
+      "concept_type": "mechanic",
+      "canonical_concept_id": "nbg:mechanic",
+      "canonical_slug": "nbgx",
+      "parent_concept": null
+    },
     "alias_candidates": [
       "nbgx"
     ]
@@ -2779,6 +2955,7 @@
     "source_urls": [
       "/wiki/nbgx-token.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "nbgx token"
     ]
@@ -2800,6 +2977,7 @@
     "source_urls": [
       "/wiki/neftyblocks.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "neftyblocks"
     ]
@@ -2821,6 +2999,7 @@
     "source_urls": [
       "/wiki/neftyblocks-midevilpunks-collection.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "neftyblocks midevilpunks collection"
     ]
@@ -2842,6 +3021,7 @@
     "source_urls": [
       "/wiki/nfthive.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "nfthive"
     ]
@@ -2865,7 +3045,8 @@
     ],
     "source_urls": [
       "/wiki/nfts.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "nfts_non_fungible_tokens",
@@ -2887,6 +3068,7 @@
     "source_urls": [
       "/wiki/nfts-non-fungible-tokens.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "nfts non fungible tokens"
     ]
@@ -2909,6 +3091,7 @@
     "source_urls": [
       "/wiki/ngmi-chronicles.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "ngmi chronicles"
     ]
@@ -2931,6 +3114,7 @@
     "source_urls": [
       "/wiki/nifty-crowns.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "nifty crowns"
     ]
@@ -2953,6 +3137,7 @@
     "source_urls": [
       "/wiki/nifty-wizards.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "nifty wizards"
     ]
@@ -2975,6 +3160,7 @@
     "source_urls": [
       "/wiki/nine-armies.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "nine armies"
     ]
@@ -2997,6 +3183,7 @@
     "source_urls": [
       "/wiki/no-ball-games-nbg.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "no ball games nbg"
     ]
@@ -3020,6 +3207,7 @@
     "source_urls": [
       "/wiki/no-ball-games-nbg-collection.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "no ball games nbg collection"
     ]
@@ -3042,30 +3230,9 @@
     "source_urls": [
       "/wiki/null-the-prophet.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "null the prophet"
-    ]
-  },
-  {
-    "entity_id": "one_million_free_nfts",
-    "canonical_title": "one_million_free_nfts — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/one-million-free-nfts.html",
-    "category": "factions",
-    "aliases": [],
-    "tags": [
-      "one",
-      "million",
-      "free",
-      "nfts",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/one-million-free-nfts.html"
-    ],
-    "alias_candidates": [
-      "one million free nfts"
     ]
   },
   {
@@ -3086,7 +3253,8 @@
     ],
     "source_urls": [
       "/wiki/opulence-xrpl.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "paper_hands",
@@ -3106,6 +3274,7 @@
     "source_urls": [
       "/wiki/paper-hands.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "paper hands"
     ]
@@ -3127,6 +3296,7 @@
     "source_urls": [
       "/wiki/patchwork.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "patchwork"
     ]
@@ -3148,6 +3318,7 @@
     "source_urls": [
       "/wiki/phnix.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "phnix"
     ]
@@ -3170,6 +3341,7 @@
     "source_urls": [
       "/wiki/phygital-prints.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "phygital prints"
     ]
@@ -3192,6 +3364,7 @@
     "source_urls": [
       "/wiki/pixel-journey.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "pixel journey"
     ]
@@ -3214,6 +3387,7 @@
     "source_urls": [
       "/wiki/pixil-mini.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "pixil mini"
     ]
@@ -3235,6 +3409,7 @@
     "source_urls": [
       "/wiki/playable-nft-murals.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "playable nft murals"
     ]
@@ -3256,6 +3431,7 @@
     "source_urls": [
       "/wiki/pmsl.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "pmsl"
     ]
@@ -3278,6 +3454,7 @@
     "source_urls": [
       "/wiki/pmsl-token.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "pmsl token"
     ]
@@ -3300,7 +3477,8 @@
     ],
     "source_urls": [
       "/wiki/pmsl-xrpl.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "profit_xrpl",
@@ -3320,7 +3498,8 @@
     ],
     "source_urls": [
       "/wiki/profit-xrpl.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "punk",
@@ -3339,6 +3518,7 @@
     "source_urls": [
       "/wiki/punk.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "punk"
     ]
@@ -3361,6 +3541,7 @@
     "source_urls": [
       "/wiki/punk-coin.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "punk coin"
     ]
@@ -3383,6 +3564,7 @@
     "source_urls": [
       "/wiki/punk-token.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "punk token"
     ]
@@ -3404,6 +3586,7 @@
     "source_urls": [
       "/wiki/pyralith.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "pyralith"
     ]
@@ -3425,6 +3608,7 @@
     "source_urls": [
       "/wiki/queen-sarah-p-fly.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "queen sarah p fly"
     ]
@@ -3446,6 +3630,7 @@
     "source_urls": [
       "/wiki/queen-sarah-pfly.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "queen sarah pfly"
     ]
@@ -3467,6 +3652,7 @@
     "source_urls": [
       "/wiki/quell.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "quell"
     ]
@@ -3489,6 +3675,7 @@
     "source_urls": [
       "/wiki/rave-relics.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "rave relics"
     ]
@@ -3510,6 +3697,7 @@
     "source_urls": [
       "/wiki/rug-pull-wars.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "rug pull wars"
     ]
@@ -3532,6 +3720,7 @@
     "source_urls": [
       "/wiki/rune-tag.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "rune tag"
     ]
@@ -3553,6 +3742,7 @@
     "source_urls": [
       "/wiki/rust2riches.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "rust2riches"
     ]
@@ -3575,6 +3765,7 @@
     "source_urls": [
       "/wiki/sacred-chain.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "sacred chain"
     ]
@@ -3598,6 +3789,7 @@
     "source_urls": [
       "/wiki/samael-exe.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "samael exe"
     ]
@@ -3620,7 +3812,8 @@
     ],
     "source_urls": [
       "/wiki/samaelexe.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "sarah_pu51fly",
@@ -3640,6 +3833,7 @@
     "source_urls": [
       "/wiki/sarah-pu51fly.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "sarah pu51fly"
     ]
@@ -3661,6 +3855,7 @@
     "source_urls": [
       "/wiki/satorebel.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "satorebel"
     ]
@@ -3684,6 +3879,7 @@
     "source_urls": [
       "/wiki/satoshi-scroll.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "satoshi scroll crypto moonboys wiki"
     ]
@@ -3706,6 +3902,7 @@
     "source_urls": [
       "/wiki/seeding-rights.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "seeding rights"
     ]
@@ -3728,7 +3925,8 @@
     ],
     "source_urls": [
       "/wiki/sigma-xrpl.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "sister_halcyon",
@@ -3748,6 +3946,7 @@
     "source_urls": [
       "/wiki/sister-halcyon.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "sister halcyon"
     ]
@@ -3769,6 +3968,7 @@
     "source_urls": [
       "/wiki/smart-nft-mechanics.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "smart nft mechanics"
     ]
@@ -3790,6 +3990,7 @@
     "source_urls": [
       "/wiki/sneakar.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "sneakar"
     ]
@@ -3811,6 +4012,7 @@
     "source_urls": [
       "/wiki/snipey-d-man-sirus.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "snipey d man sirus"
     ]
@@ -3833,7 +4035,8 @@
     ],
     "source_urls": [
       "/wiki/solana.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "solana_sol",
@@ -3854,6 +4057,7 @@
     "source_urls": [
       "/wiki/solana-sol.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "solana sol"
     ]
@@ -3876,6 +4080,7 @@
     "source_urls": [
       "/wiki/spirit-borns.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "spirit borns"
     ]
@@ -3898,7 +4103,8 @@
     ],
     "source_urls": [
       "/wiki/spraycode-writcode.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "spraycode_writcode_mechanics",
@@ -3919,7 +4125,8 @@
     ],
     "source_urls": [
       "/wiki/spraycode-writcode-mechanics.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "squeaky_pinks_enforcers",
@@ -3938,6 +4145,7 @@
     "source_urls": [
       "/wiki/squeaky-pinks-enforcers.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "squeaky pinks enforcers"
     ]
@@ -3959,6 +4167,7 @@
     "source_urls": [
       "/wiki/stake-for-gk-tokens.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "stake for gk tokens"
     ]
@@ -3980,6 +4189,7 @@
     "source_urls": [
       "/wiki/staking.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "staking"
     ]
@@ -4001,6 +4211,7 @@
     "source_urls": [
       "/wiki/staking-for-gk-tokens.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "staking for gk tokens"
     ]
@@ -4022,6 +4233,7 @@
     "source_urls": [
       "/wiki/stikfamwars.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "stikfamwars"
     ]
@@ -4044,6 +4256,7 @@
     "source_urls": [
       "/wiki/storm-struggle.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "storm struggle"
     ]
@@ -4066,6 +4279,7 @@
     "source_urls": [
       "/wiki/street-kingdoms.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "street kingdoms"
     ]
@@ -4090,6 +4304,7 @@
     "source_urls": [
       "/wiki/substack-posts-on-graffpunks-substack-com.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "substack posts on graffpunks substack com"
     ]
@@ -4113,7 +4328,8 @@
     ],
     "source_urls": [
       "/wiki/substack-posts-on-graffpunkssubstackcom.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "tabby",
@@ -4132,6 +4348,7 @@
     "source_urls": [
       "/wiki/tabby.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "tabby"
     ]
@@ -4153,6 +4370,7 @@
     "source_urls": [
       "/wiki/tacoswap.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "tacoswap"
     ]
@@ -4174,6 +4392,7 @@
     "source_urls": [
       "/wiki/tagzcoin.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "tagzcoin"
     ]
@@ -4196,6 +4415,7 @@
     "source_urls": [
       "/wiki/the-allcity-bulls.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "allcity bulls crypto moonboys wiki",
       "the allcity bulls"
@@ -4219,6 +4439,7 @@
     "source_urls": [
       "/wiki/the-aztec-raiders.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "aztec raiders crypto moonboys wiki",
       "the aztec raiders"
@@ -4242,6 +4463,7 @@
     "source_urls": [
       "/wiki/the-bally-boys.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "bally boys crypto moonboys wiki",
       "the bally boys"
@@ -4267,6 +4489,7 @@
     "source_urls": [
       "/wiki/the-bear-market-siege.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "the bear market siege"
     ]
@@ -4288,6 +4511,7 @@
     "source_urls": [
       "/wiki/the-bitcoin-kid-army.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "the bitcoin kid army"
     ]
@@ -4310,6 +4534,7 @@
     "source_urls": [
       "/wiki/the-blockchain-furies.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "blockchain furies crypto moonboys wiki",
       "the blockchain furies"
@@ -4332,6 +4557,7 @@
     "source_urls": [
       "/wiki/the-blockstars.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "blockstars crypto moonboys wiki",
       "the blockstars"
@@ -4355,6 +4581,7 @@
     "source_urls": [
       "/wiki/the-chain-scribes.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "chain scribes crypto moonboys wiki",
       "the chain scribes"
@@ -4377,6 +4604,7 @@
     "source_urls": [
       "/wiki/the-cleanupcentr.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "cleanupcentr crypto moonboys wiki",
       "the cleanupcentr"
@@ -4400,6 +4628,7 @@
     "source_urls": [
       "/wiki/the-code-alchemists.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "code alchemists crypto moonboys wiki",
       "the code alchemists"
@@ -4423,6 +4652,7 @@
     "source_urls": [
       "/wiki/the-crypto-moongirls.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "the crypto moongirls"
     ]
@@ -4446,6 +4676,7 @@
     "source_urls": [
       "/wiki/the-crypto-stoned-boys.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "the crypto stoned boys"
     ]
@@ -4468,6 +4699,7 @@
     "source_urls": [
       "/wiki/the-ducky-boys.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "ducky boys crypto moonboys wiki",
       "the ducky boys"
@@ -4491,6 +4723,7 @@
     "source_urls": [
       "/wiki/the-evm-punks.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "evm punks crypto moonboys wiki",
       "the evm punks"
@@ -4514,6 +4747,7 @@
     "source_urls": [
       "/wiki/the-finance-guild.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "finance guild crypto moonboys wiki",
       "the finance guild"
@@ -4538,6 +4772,7 @@
     "source_urls": [
       "/wiki/the-fomo-plague.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "fomo plague crypto moonboys wiki",
       "the fomo plague"
@@ -4561,6 +4796,7 @@
     "source_urls": [
       "/wiki/the-gasless-ghosts.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "gasless ghosts crypto moonboys wiki",
       "the gasless ghosts"
@@ -4583,29 +4819,9 @@
     "source_urls": [
       "/wiki/the-gkniftyheads.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "the gkniftyheads"
-    ]
-  },
-  {
-    "entity_id": "the_graffpunks",
-    "canonical_title": "The GRAFFPUNKS — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/the-graffpunks.html",
-    "category": "factions",
-    "aliases": [
-      "graffpunks crypto moonboys wiki"
-    ],
-    "tags": [
-      "graffpunks",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/the-graffpunks.html"
-    ],
-    "alias_candidates": [
-      "the graffpunks"
     ]
   },
   {
@@ -4626,6 +4842,7 @@
     "source_urls": [
       "/wiki/the-great-dip.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "great dip crypto moonboys wiki",
       "the great dip"
@@ -4648,6 +4865,7 @@
     "source_urls": [
       "/wiki/the-grids.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "grids crypto moonboys wiki",
       "the grids"
@@ -4672,6 +4890,7 @@
     "source_urls": [
       "/wiki/the-hard-fork-rockers.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "the hard fork rockers"
     ]
@@ -4694,6 +4913,7 @@
     "source_urls": [
       "/wiki/the-high-hats.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "high hats crypto moonboys wiki",
       "the high hats"
@@ -4717,6 +4937,7 @@
     "source_urls": [
       "/wiki/the-information-mercenaries.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "information mercenaries crypto moonboys wiki",
       "the information mercenaries"
@@ -4739,6 +4960,7 @@
     "source_urls": [
       "/wiki/the-moonlords.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "moonlords crypto moonboys wiki",
       "the moonlords"
@@ -4765,7 +4987,8 @@
     ],
     "source_urls": [
       "/wiki/the-nice-easy-bois.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "the_nomad_bears",
@@ -4785,6 +5008,7 @@
     "source_urls": [
       "/wiki/the-nomad-bears.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "nomad bears crypto moonboys wiki",
       "the nomad bears"
@@ -4809,6 +5033,7 @@
     "source_urls": [
       "/wiki/the-og-pixel-saints.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "the og pixel saints"
     ]
@@ -4830,6 +5055,7 @@
     "source_urls": [
       "/wiki/the-princess.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "princess crypto moonboys wiki",
       "the princess"
@@ -4853,6 +5079,7 @@
     "source_urls": [
       "/wiki/the-rugpull-miners.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "rugpull miners crypto moonboys wiki",
       "the rugpull miners"
@@ -4876,6 +5103,7 @@
     "source_urls": [
       "/wiki/the-sacred-chain.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "the sacred chain"
     ]
@@ -4897,6 +5125,7 @@
     "source_urls": [
       "/wiki/the-salvagers.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "salvagers crypto moonboys wiki",
       "the salvagers"
@@ -4921,6 +5150,7 @@
     "source_urls": [
       "/wiki/the-satoshi-scroll.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "satoshi scroll crypto moonboys wiki",
       "the satoshi scroll"
@@ -4945,6 +5175,7 @@
     "source_urls": [
       "/wiki/the-shard-mothers-of-manhattan.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "the shard mothers of manhattan"
     ]
@@ -4967,6 +5198,7 @@
     "source_urls": [
       "/wiki/the-squeaky-pinks.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "squeaky pinks crypto moonboys wiki",
       "the squeaky pinks"
@@ -4990,6 +5222,7 @@
     "source_urls": [
       "/wiki/the-tuskon-ogs.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "the tuskon ogs",
       "tuskon ogs crypto moonboys wiki"
@@ -5014,6 +5247,7 @@
     "source_urls": [
       "/wiki/the-wagmi-prophecy.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "the wagmi prophecy",
       "wagmi prophecy crypto moonboys wiki"
@@ -5038,6 +5272,7 @@
     "source_urls": [
       "/wiki/the-whale-lords.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "the whale lords",
       "whale lords crypto moonboys wiki"
@@ -5060,6 +5295,7 @@
     "source_urls": [
       "/wiki/the-whitewasher.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "the whitewasher",
       "whitewasher crypto moonboys wiki"
@@ -5082,6 +5318,7 @@
     "source_urls": [
       "/wiki/thera-9.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "thera 9"
     ]
@@ -5104,6 +5341,7 @@
     "source_urls": [
       "/wiki/thorne-the-architect.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "thorne the architect"
     ]
@@ -5125,6 +5363,7 @@
     "source_urls": [
       "/wiki/tokenomics.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "tokenomics"
     ]
@@ -5146,6 +5385,7 @@
     "source_urls": [
       "/wiki/tokens.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "tokens"
     ]
@@ -5168,7 +5408,8 @@
     ],
     "source_urls": [
       "/wiki/toto-xrpl.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "trevor_fung",
@@ -5188,6 +5429,7 @@
     "source_urls": [
       "/wiki/trevor-fung.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "trevor fung"
     ]
@@ -5209,6 +5451,7 @@
     "source_urls": [
       "/wiki/triple-fork-event.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "triple fork event"
     ]
@@ -5232,6 +5475,7 @@
     "source_urls": [
       "/wiki/wagmi-prophecy.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "wagmi prophecy crypto moonboys wiki"
     ]
@@ -5253,7 +5497,8 @@
     ],
     "source_urls": [
       "/wiki/wallets.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "wax_blockchain",
@@ -5273,6 +5518,7 @@
     "source_urls": [
       "/wiki/wax-blockchain.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "wax blockchain"
     ]
@@ -5295,7 +5541,8 @@
     ],
     "source_urls": [
       "/wiki/wax-dexs-defi.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "wax_nft_marketplaces",
@@ -5314,6 +5561,7 @@
     "source_urls": [
       "/wiki/wax-nft-marketplaces.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "wax nft marketplaces"
     ]
@@ -5336,6 +5584,7 @@
     "source_urls": [
       "/wiki/wax-pepe.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "wax pepe"
     ]
@@ -5357,6 +5606,7 @@
     "source_urls": [
       "/wiki/waxp.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "waxp"
     ]
@@ -5379,6 +5629,7 @@
     "source_urls": [
       "/wiki/waxp-exchange.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "waxp exchange"
     ]
@@ -5400,6 +5651,7 @@
     "source_urls": [
       "/wiki/web3.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "web3"
     ]
@@ -5423,6 +5675,7 @@
     "source_urls": [
       "/wiki/whale-lords.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "whale lords crypto moonboys wiki"
     ]
@@ -5445,7 +5698,8 @@
     ],
     "source_urls": [
       "/wiki/wuffi.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "xmeme",
@@ -5464,6 +5718,7 @@
     "source_urls": [
       "/wiki/xmeme.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "xmeme"
     ]
@@ -5485,6 +5740,7 @@
     "source_urls": [
       "/wiki/xoge.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "xoge"
     ]
@@ -5505,7 +5761,8 @@
     ],
     "source_urls": [
       "/wiki/xrp.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "xrp_army",
@@ -5525,7 +5782,8 @@
     ],
     "source_urls": [
       "/wiki/xrp-army.html"
-    ]
+    ],
+    "brand": null
   },
   {
     "entity_id": "xrp_kids",
@@ -5545,6 +5803,7 @@
     "source_urls": [
       "/wiki/xrp-kids.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "xrp kids"
     ]
@@ -5567,6 +5826,7 @@
     "source_urls": [
       "/wiki/xrp-kids-genesis-nfts.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "xrp kids genesis nfts"
     ]
@@ -5589,6 +5849,7 @@
     "source_urls": [
       "/wiki/xrp-kids-nbg-updates.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "xrp kids nbg updates"
     ]
@@ -5611,6 +5872,7 @@
     "source_urls": [
       "/wiki/xrp-ledger.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "xrp ledger"
     ]
@@ -5632,6 +5894,7 @@
     "source_urls": [
       "/wiki/xrp-meme-coins.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "xrp meme coins"
     ]
@@ -5654,6 +5917,7 @@
     "source_urls": [
       "/wiki/xrpl-dex.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "xrpl dex"
     ]
@@ -5676,6 +5940,7 @@
     "source_urls": [
       "/wiki/xrpl-tokens.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "xrpl tokens"
     ]
@@ -5697,6 +5962,7 @@
     "source_urls": [
       "/wiki/xrpl-trust-lines.html"
     ],
+    "brand": null,
     "alias_candidates": [
       "xrpl trust lines"
     ]

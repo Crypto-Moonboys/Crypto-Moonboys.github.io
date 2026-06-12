@@ -1,0 +1,2228 @@
+{
+  "generated_at": "2026-06-12T17:15:06.752Z",
+  "summary": {
+    "generated_at": "2026-06-12T17:15:06.752Z",
+    "total_wiki_slugs": 377,
+    "total_redirect_slugs": 104,
+    "brand_clusters": 11,
+    "unknown_slugs": 252,
+    "needs_review": 252
+  },
+  "clusters": [
+    {
+      "brand": "graffpunks",
+      "concept_type": "faction",
+      "canonical_slug": "graffpunks",
+      "canonical_url": "/wiki/graffpunks.html",
+      "canonical_concept_id": "graffpunks:faction",
+      "aliases": [
+        "the-graffpunks"
+      ],
+      "kept_separate": [
+        "graffpunks-24-7-radio",
+        "graffpunks-collection",
+        "graffpunks-ecosystem",
+        "midevilpunks"
+      ],
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "in_entity_graph": true,
+      "reason": "same brand (graffpunks), same concept type (faction)"
+    },
+    {
+      "brand": "graffpunks",
+      "concept_type": "radio",
+      "canonical_slug": "graffpunks-24-7-radio",
+      "canonical_url": "/wiki/graffpunks-24-7-radio.html",
+      "canonical_concept_id": "graffpunks:radio",
+      "aliases": [
+        "graffpunks-247-radio",
+        "graffpunks-24-7",
+        "graffpunks-247",
+        "graffpunks-247-blockchain-radio-station"
+      ],
+      "kept_separate": [
+        "graffpunks",
+        "graffpunks-collection",
+        "graffpunks-ecosystem",
+        "midevilpunks"
+      ],
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "in_entity_graph": true,
+      "reason": "same brand (graffpunks), same concept type (radio)"
+    },
+    {
+      "brand": "graffpunks",
+      "concept_type": "collection",
+      "canonical_slug": "graffpunks-collection",
+      "canonical_url": "/wiki/graffpunks-collection.html",
+      "canonical_concept_id": "graffpunks:collection",
+      "aliases": [],
+      "kept_separate": [
+        "graffpunks",
+        "graffpunks-24-7-radio",
+        "graffpunks-ecosystem",
+        "midevilpunks"
+      ],
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "in_entity_graph": true,
+      "reason": "same brand (graffpunks), same concept type (collection)"
+    },
+    {
+      "brand": "graffpunks",
+      "concept_type": "ecosystem",
+      "canonical_slug": "graffpunks-ecosystem",
+      "canonical_url": "/wiki/graffpunks-ecosystem.html",
+      "canonical_concept_id": "graffpunks:ecosystem",
+      "aliases": [],
+      "kept_separate": [
+        "graffpunks",
+        "graffpunks-24-7-radio",
+        "graffpunks-collection",
+        "midevilpunks"
+      ],
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "in_entity_graph": true,
+      "reason": "same brand (graffpunks), same concept type (ecosystem)"
+    },
+    {
+      "brand": "graffpunks",
+      "concept_type": "game",
+      "canonical_slug": "midevilpunks",
+      "canonical_url": "/wiki/midevilpunks.html",
+      "canonical_concept_id": "graffpunks:game",
+      "aliases": [
+        "midevil-hero-arena"
+      ],
+      "kept_separate": [
+        "graffpunks",
+        "graffpunks-24-7-radio",
+        "graffpunks-collection",
+        "graffpunks-ecosystem"
+      ],
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "in_entity_graph": true,
+      "reason": "same brand (graffpunks), same concept type (game)"
+    },
+    {
+      "brand": "hodl",
+      "concept_type": "faction",
+      "canonical_slug": "hodl-warriors",
+      "canonical_url": "/wiki/hodl-warriors.html",
+      "canonical_concept_id": "hodl:faction",
+      "aliases": [
+        "hodl-x-warriors"
+      ],
+      "kept_separate": [
+        "hodl-wars"
+      ],
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "in_entity_graph": true,
+      "reason": "same brand (hodl), same concept type (faction)"
+    },
+    {
+      "brand": "hodl",
+      "concept_type": "game",
+      "canonical_slug": "hodl-wars",
+      "canonical_url": "/wiki/hodl-wars.html",
+      "canonical_concept_id": "hodl:game",
+      "aliases": [
+        "hodl-wars-game"
+      ],
+      "kept_separate": [
+        "hodl-warriors"
+      ],
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "in_entity_graph": true,
+      "reason": "same brand (hodl), same concept type (game)"
+    },
+    {
+      "brand": "nbg",
+      "concept_type": "brand",
+      "canonical_slug": "nbg",
+      "canonical_url": "/wiki/nbg.html",
+      "canonical_concept_id": "nbg:brand",
+      "aliases": [],
+      "kept_separate": [
+        "nbg-token",
+        "nbgx"
+      ],
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "in_entity_graph": true,
+      "reason": "same brand (nbg), same concept type (brand)"
+    },
+    {
+      "brand": "nbg",
+      "concept_type": "token",
+      "canonical_slug": "nbg-token",
+      "canonical_url": "/wiki/nbg-token.html",
+      "canonical_concept_id": "nbg:token",
+      "aliases": [],
+      "kept_separate": [
+        "nbg",
+        "nbgx"
+      ],
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "in_entity_graph": true,
+      "reason": "same brand (nbg), same concept type (token)"
+    },
+    {
+      "brand": "nbg",
+      "concept_type": "mechanic",
+      "canonical_slug": "nbgx",
+      "canonical_url": "/wiki/nbgx.html",
+      "canonical_concept_id": "nbg:mechanic",
+      "aliases": [],
+      "kept_separate": [
+        "nbg",
+        "nbg-token"
+      ],
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "in_entity_graph": true,
+      "reason": "same brand (nbg), same concept type (mechanic)"
+    },
+    {
+      "brand": "oneMillionFreeNfts",
+      "concept_type": "program",
+      "canonical_slug": "1m-free-nfts-program",
+      "canonical_url": "/wiki/1m-free-nfts-program.html",
+      "canonical_concept_id": "oneMillionFreeNfts:program",
+      "aliases": [
+        "1m-free-nfts-programme",
+        "one-million-free-nfts"
+      ],
+      "kept_separate": [],
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "in_entity_graph": true,
+      "reason": "same brand (oneMillionFreeNfts), same concept type (program)"
+    }
+  ],
+  "unknown_slugs": [
+    {
+      "slug": "1m-free-nfts-drop",
+      "url": "/wiki/1m-free-nfts-drop.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "1m-free-nfts",
+      "url": "/wiki/1m-free-nfts.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "2025-metaverse-launch-party",
+      "url": "/wiki/2025-metaverse-launch-party.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "589-xrpl",
+      "url": "/wiki/589-xrpl.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "666-xrpl",
+      "url": "/wiki/666-xrpl.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "alcor-exchange",
+      "url": "/wiki/alcor-exchange.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "aleema-child-of-the-shard",
+      "url": "/wiki/aleema-child-of-the-shard.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "alfie-bitcoin-kid-blaze",
+      "url": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "alfie-blaze",
+      "url": "/wiki/alfie-blaze.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "alfie-the-bitcoin-kid-blaze",
+      "url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "alien-worlds-tlm",
+      "url": "/wiki/alien-worlds-tlm.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "altcoins",
+      "url": "/wiki/altcoins.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "atomicassets",
+      "url": "/wiki/atomicassets.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "atomichub-graffpunks-collection",
+      "url": "/wiki/atomichub-graffpunks-collection.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "atomichub",
+      "url": "/wiki/atomichub.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "ava-chen",
+      "url": "/wiki/ava-chen.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "battlemech-blast",
+      "url": "/wiki/battlemech-blast.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "bear-market-siege",
+      "url": "/wiki/bear-market-siege.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "bear-xrpl",
+      "url": "/wiki/bear-xrpl.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "billy-the-goat-kid",
+      "url": "/wiki/billy-the-goat-kid.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "bit-cap-5000",
+      "url": "/wiki/bit-cap-5000.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "bitcoin-btc",
+      "url": "/wiki/bitcoin-btc.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "bitcoin-graffpunks",
+      "url": "/wiki/bitcoin-graffpunks.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": false,
+      "in_entity_map": false,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "bitcoin-kid-army",
+      "url": "/wiki/bitcoin-kid-army.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "bitcoin-kids",
+      "url": "/wiki/bitcoin-kids.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "bitcoin-x-kids",
+      "url": "/wiki/bitcoin-x-kids.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "bitcoin",
+      "url": "/wiki/bitcoin.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "block-node-defenders",
+      "url": "/wiki/block-node-defenders.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "block-topia",
+      "url": "/wiki/block-topia.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "blockchain-technology",
+      "url": "/wiki/blockchain-technology.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "blockchain",
+      "url": "/wiki/blockchain.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "bone-idol-ink",
+      "url": "/wiki/bone-idol-ink.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "burn-to-earn",
+      "url": "/wiki/burn-to-earn.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "canvas-clash",
+      "url": "/wiki/canvas-clash.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "charlie-buster",
+      "url": "/wiki/charlie-buster.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "croydon-tower-blocks",
+      "url": "/wiki/croydon-tower-blocks.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "crypto-exchanges",
+      "url": "/wiki/crypto-exchanges.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "crypto-moonboys",
+      "url": "/wiki/crypto-moonboys.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "crypto-wallets",
+      "url": "/wiki/crypto-wallets.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "darren-cullen-ser-real",
+      "url": "/wiki/darren-cullen-ser-real.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "darren-cullen-ser",
+      "url": "/wiki/darren-cullen-ser.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "darren-cullen",
+      "url": "/wiki/darren-cullen.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "decentraland-events",
+      "url": "/wiki/decentraland-events.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "defi-decentralised-finance",
+      "url": "/wiki/defi-decentralised-finance.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "defi-mining",
+      "url": "/wiki/defi-mining.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "defi",
+      "url": "/wiki/defi.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "delicious-again-pete",
+      "url": "/wiki/delicious-again-pete.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "diamond-hands",
+      "url": "/wiki/diamond-hands.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "dragan-volkov",
+      "url": "/wiki/dragan-volkov.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "dream-sovereign",
+      "url": "/wiki/dream-sovereign.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "drop-xrpl",
+      "url": "/wiki/drop-xrpl.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "elder-codex-7",
+      "url": "/wiki/elder-codex-7.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "ethereum-ecosystem",
+      "url": "/wiki/ethereum-ecosystem.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "ethereum-eth",
+      "url": "/wiki/ethereum-eth.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "ethereum",
+      "url": "/wiki/ethereum.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "exchanges",
+      "url": "/wiki/exchanges.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "exyboy",
+      "url": "/wiki/exyboy.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "fgl-token",
+      "url": "/wiki/fgl-token.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "fomo-plague",
+      "url": "/wiki/fomo-plague.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "forkborn-collective",
+      "url": "/wiki/forkborn-collective.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "forklord-you",
+      "url": "/wiki/forklord-you.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "forksplit",
+      "url": "/wiki/forksplit.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "games-graffpunks",
+      "url": "/wiki/games-graffpunks.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": false,
+      "in_entity_map": false,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "games4punks-telegram-games",
+      "url": "/wiki/games4punks-telegram-games.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "games4punks-telegram",
+      "url": "/wiki/games4punks-telegram.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "gang-signs-card-game",
+      "url": "/wiki/gang-signs-card-game.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "gang-signs",
+      "url": "/wiki/gang-signs.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "genesis-kernel",
+      "url": "/wiki/genesis-kernel.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "genesis-spray-drop",
+      "url": "/wiki/genesis-spray-drop.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "genesis-spray",
+      "url": "/wiki/genesis-spray.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "gk-token",
+      "url": "/wiki/gk-token.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "gk-tokens",
+      "url": "/wiki/gk-tokens.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "gk",
+      "url": "/wiki/gk.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "gkniftyheads-phase-one-two-three",
+      "url": "/wiki/gkniftyheads-phase-one-two-three.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "gkniftyheads",
+      "url": "/wiki/gkniftyheads.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "graffiti-kings",
+      "url": "/wiki/graffiti-kings.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "graffiti-nexus",
+      "url": "/wiki/graffiti-nexus.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "graffiti-queens-exhibition",
+      "url": "/wiki/graffiti-queens-exhibition.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "graffiti-queens-in-decentraland-ecosystem",
+      "url": "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "graffiti-queens-in-decentraland",
+      "url": "/wiki/graffiti-queens-in-decentraland.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "graffitikings",
+      "url": "/wiki/graffitikings.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "graffpunks-24-7-blockchain-radio-station",
+      "url": "/wiki/graffpunks-24-7-blockchain-radio-station.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "graffpunks-network",
+      "url": "/wiki/graffpunks-network.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "graffpunks-nfts",
+      "url": "/wiki/graffpunks-nfts.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "graffpunks-token",
+      "url": "/wiki/graffpunks-token.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": false,
+      "in_entity_map": false,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "great-datapocalypse-of-2789",
+      "url": "/wiki/great-datapocalypse-of-2789.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "grit",
+      "url": "/wiki/grit.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "grit42",
+      "url": "/wiki/grit42.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "hard-fork-games-event",
+      "url": "/wiki/hard-fork-games-event.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "hard-fork-games-game",
+      "url": "/wiki/hard-fork-games-game.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "hard-fork-games",
+      "url": "/wiki/hard-fork-games.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "harrison-rift",
+      "url": "/wiki/harrison-rift.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "head-tags",
+      "url": "/wiki/head-tags.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "hex-tagger-prime",
+      "url": "/wiki/hex-tagger-prime.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "hodl-wars-ecosystem",
+      "url": "/wiki/hodl-wars-ecosystem.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "ian-harrison",
+      "url": "/wiki/ian-harrison.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "iris-7",
+      "url": "/wiki/iris-7.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "jelly-xrpl",
+      "url": "/wiki/jelly-xrpl.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "jillian-godsil",
+      "url": "/wiki/jillian-godsil.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "jodie-zoom-2000",
+      "url": "/wiki/jodie-zoom-2000.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "jonny-laurence-nelson-tag-records",
+      "url": "/wiki/jonny-laurence-nelson-tag-records.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "lady-ink",
+      "url": "/wiki/lady-ink.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "leake-street-tunnel",
+      "url": "/wiki/leake-street-tunnel.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "lfgk-rewards",
+      "url": "/wiki/lfgk-rewards.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "lfgk-token",
+      "url": "/wiki/lfgk-token.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "lfgk",
+      "url": "/wiki/lfgk.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "loopfiend",
+      "url": "/wiki/loopfiend.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "m1ntr-k1ll",
+      "url": "/wiki/m1ntr-k1ll.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "maidstone-base",
+      "url": "/wiki/maidstone-base.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "medium-articles-by-gkniftyheads",
+      "url": "/wiki/medium-articles-by-gkniftyheads.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "medium-articles-by-graffpunks",
+      "url": "/wiki/medium-articles-by-graffpunks.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "medium-articles-by-hodlwarriors",
+      "url": "/wiki/medium-articles-by-hodlwarriors.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "medium-articles-by-sercullen",
+      "url": "/wiki/medium-articles-by-sercullen.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "meme-coins",
+      "url": "/wiki/meme-coins.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "memecoins",
+      "url": "/wiki/memecoins.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "metaverse-battles",
+      "url": "/wiki/metaverse-battles.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "metropolis",
+      "url": "/wiki/metropolis.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "midevil-hero-arena-game",
+      "url": "/wiki/midevil-hero-arena-game.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "moon-mission",
+      "url": "/wiki/moon-mission.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "nbgx-token",
+      "url": "/wiki/nbgx-token.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "neftyblocks-midevilpunks-collection",
+      "url": "/wiki/neftyblocks-midevilpunks-collection.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "neftyblocks",
+      "url": "/wiki/neftyblocks.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "nfthive",
+      "url": "/wiki/nfthive.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "nfts-non-fungible-tokens",
+      "url": "/wiki/nfts-non-fungible-tokens.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "nfts",
+      "url": "/wiki/nfts.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "ngmi-chronicles",
+      "url": "/wiki/ngmi-chronicles.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "nifty-crowns",
+      "url": "/wiki/nifty-crowns.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "nifty-wizards",
+      "url": "/wiki/nifty-wizards.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "nine-armies",
+      "url": "/wiki/nine-armies.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "no-ball-games-nbg-collection",
+      "url": "/wiki/no-ball-games-nbg-collection.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "no-ball-games-nbg",
+      "url": "/wiki/no-ball-games-nbg.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "null-the-prophet",
+      "url": "/wiki/null-the-prophet.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "opulence-xrpl",
+      "url": "/wiki/opulence-xrpl.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "paper-hands",
+      "url": "/wiki/paper-hands.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "patchwork",
+      "url": "/wiki/patchwork.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "phnix",
+      "url": "/wiki/phnix.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "phygital-prints",
+      "url": "/wiki/phygital-prints.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "pixel-journey",
+      "url": "/wiki/pixel-journey.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "pixil-mini",
+      "url": "/wiki/pixil-mini.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "playable-nft-murals",
+      "url": "/wiki/playable-nft-murals.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "pmsl-token",
+      "url": "/wiki/pmsl-token.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "pmsl-xrpl",
+      "url": "/wiki/pmsl-xrpl.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "pmsl",
+      "url": "/wiki/pmsl.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "profit-xrpl",
+      "url": "/wiki/profit-xrpl.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "punk-coin",
+      "url": "/wiki/punk-coin.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "punk-token",
+      "url": "/wiki/punk-token.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "punk",
+      "url": "/wiki/punk.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "pyralith",
+      "url": "/wiki/pyralith.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "queen-sarah-p-fly",
+      "url": "/wiki/queen-sarah-p-fly.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "queen-sarah-pfly",
+      "url": "/wiki/queen-sarah-pfly.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "quell",
+      "url": "/wiki/quell.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "rave-relics",
+      "url": "/wiki/rave-relics.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "rug-pull-wars",
+      "url": "/wiki/rug-pull-wars.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "rune-tag",
+      "url": "/wiki/rune-tag.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "rust2riches",
+      "url": "/wiki/rust2riches.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "sacred-chain",
+      "url": "/wiki/sacred-chain.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "samael-exe",
+      "url": "/wiki/samael-exe.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "samaelexe",
+      "url": "/wiki/samaelexe.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "sarah-pu51fly",
+      "url": "/wiki/sarah-pu51fly.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "satorebel",
+      "url": "/wiki/satorebel.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "satoshi-scroll",
+      "url": "/wiki/satoshi-scroll.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "seeding-rights",
+      "url": "/wiki/seeding-rights.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "sigma-xrpl",
+      "url": "/wiki/sigma-xrpl.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "sister-halcyon",
+      "url": "/wiki/sister-halcyon.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "smart-nft-mechanics",
+      "url": "/wiki/smart-nft-mechanics.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "sneakar",
+      "url": "/wiki/sneakar.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "snipey-d-man-sirus",
+      "url": "/wiki/snipey-d-man-sirus.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "solana-sol",
+      "url": "/wiki/solana-sol.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "solana",
+      "url": "/wiki/solana.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "spirit-borns",
+      "url": "/wiki/spirit-borns.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "spraycode-writcode-mechanics",
+      "url": "/wiki/spraycode-writcode-mechanics.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "spraycode-writcode",
+      "url": "/wiki/spraycode-writcode.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "squeaky-pinks-enforcers",
+      "url": "/wiki/squeaky-pinks-enforcers.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "stake-for-gk-tokens",
+      "url": "/wiki/stake-for-gk-tokens.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "staking-for-gk-tokens",
+      "url": "/wiki/staking-for-gk-tokens.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "staking",
+      "url": "/wiki/staking.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "stikfamwars",
+      "url": "/wiki/stikfamwars.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "storm-struggle",
+      "url": "/wiki/storm-struggle.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "street-kingdoms",
+      "url": "/wiki/street-kingdoms.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "substack-posts-on-graffpunks-substack-com",
+      "url": "/wiki/substack-posts-on-graffpunks-substack-com.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "substack-posts-on-graffpunkssubstackcom",
+      "url": "/wiki/substack-posts-on-graffpunkssubstackcom.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "tabby",
+      "url": "/wiki/tabby.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "tacoswap",
+      "url": "/wiki/tacoswap.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "tagzcoin",
+      "url": "/wiki/tagzcoin.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-allcity-bulls",
+      "url": "/wiki/the-allcity-bulls.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-aztec-raiders",
+      "url": "/wiki/the-aztec-raiders.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-bally-boys",
+      "url": "/wiki/the-bally-boys.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-bear-market-siege",
+      "url": "/wiki/the-bear-market-siege.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-bitcoin-kid-army",
+      "url": "/wiki/the-bitcoin-kid-army.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-blockchain-furies",
+      "url": "/wiki/the-blockchain-furies.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-blockstars",
+      "url": "/wiki/the-blockstars.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-chain-scribes",
+      "url": "/wiki/the-chain-scribes.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-cleanupcentr",
+      "url": "/wiki/the-cleanupcentr.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-code-alchemists",
+      "url": "/wiki/the-code-alchemists.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-crypto-moongirls",
+      "url": "/wiki/the-crypto-moongirls.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-crypto-stoned-boys",
+      "url": "/wiki/the-crypto-stoned-boys.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-ducky-boys",
+      "url": "/wiki/the-ducky-boys.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-evm-punks",
+      "url": "/wiki/the-evm-punks.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-finance-guild",
+      "url": "/wiki/the-finance-guild.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-fomo-plague",
+      "url": "/wiki/the-fomo-plague.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-gasless-ghosts",
+      "url": "/wiki/the-gasless-ghosts.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-gkniftyheads",
+      "url": "/wiki/the-gkniftyheads.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-great-dip",
+      "url": "/wiki/the-great-dip.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-grids",
+      "url": "/wiki/the-grids.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-hard-fork-rockers",
+      "url": "/wiki/the-hard-fork-rockers.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-high-hats",
+      "url": "/wiki/the-high-hats.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-information-mercenaries",
+      "url": "/wiki/the-information-mercenaries.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-moonlords",
+      "url": "/wiki/the-moonlords.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-nice-easy-bois",
+      "url": "/wiki/the-nice-easy-bois.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-nomad-bears",
+      "url": "/wiki/the-nomad-bears.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-og-pixel-saints",
+      "url": "/wiki/the-og-pixel-saints.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-princess",
+      "url": "/wiki/the-princess.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-rugpull-miners",
+      "url": "/wiki/the-rugpull-miners.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-sacred-chain",
+      "url": "/wiki/the-sacred-chain.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-salvagers",
+      "url": "/wiki/the-salvagers.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-satoshi-scroll",
+      "url": "/wiki/the-satoshi-scroll.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-shard-mothers-of-manhattan",
+      "url": "/wiki/the-shard-mothers-of-manhattan.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-squeaky-pinks",
+      "url": "/wiki/the-squeaky-pinks.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-tuskon-ogs",
+      "url": "/wiki/the-tuskon-ogs.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-wagmi-prophecy",
+      "url": "/wiki/the-wagmi-prophecy.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-whale-lords",
+      "url": "/wiki/the-whale-lords.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "the-whitewasher",
+      "url": "/wiki/the-whitewasher.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "thera-9",
+      "url": "/wiki/thera-9.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "thorne-the-architect",
+      "url": "/wiki/thorne-the-architect.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "tokenomics",
+      "url": "/wiki/tokenomics.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "tokens",
+      "url": "/wiki/tokens.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "toto-xrpl",
+      "url": "/wiki/toto-xrpl.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "trevor-fung",
+      "url": "/wiki/trevor-fung.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "triple-fork-event",
+      "url": "/wiki/triple-fork-event.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "wagmi-prophecy",
+      "url": "/wiki/wagmi-prophecy.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "wallets",
+      "url": "/wiki/wallets.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "wax-blockchain",
+      "url": "/wiki/wax-blockchain.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "wax-dexs-defi",
+      "url": "/wiki/wax-dexs-defi.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "wax-nft-marketplaces",
+      "url": "/wiki/wax-nft-marketplaces.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "wax-pepe",
+      "url": "/wiki/wax-pepe.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "waxp-exchange",
+      "url": "/wiki/waxp-exchange.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "waxp",
+      "url": "/wiki/waxp.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "web3",
+      "url": "/wiki/web3.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "whale-lords",
+      "url": "/wiki/whale-lords.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "wuffi",
+      "url": "/wiki/wuffi.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "xmeme",
+      "url": "/wiki/xmeme.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "xoge",
+      "url": "/wiki/xoge.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "xrp-army",
+      "url": "/wiki/xrp-army.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "xrp-kids-genesis-nfts",
+      "url": "/wiki/xrp-kids-genesis-nfts.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "xrp-kids-nbg-updates",
+      "url": "/wiki/xrp-kids-nbg-updates.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
+    },
+    {
+      "slug": "xrp-kids",
+      "url": "/wiki/xrp-kids.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "xrp-ledger",
+      "url": "/wiki/xrp-ledger.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "xrp-meme-coins",
+      "url": "/wiki/xrp-meme-coins.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "xrp",
+      "url": "/wiki/xrp.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "xrpl-dex",
+      "url": "/wiki/xrpl-dex.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "xrpl-tokens",
+      "url": "/wiki/xrpl-tokens.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    },
+    {
+      "slug": "xrpl-trust-lines",
+      "url": "/wiki/xrpl-trust-lines.html",
+      "status": "NEEDS_BRAND_REVIEW",
+      "in_wiki_index": true,
+      "in_entity_map": true,
+      "note": "Slug is outside all known brand families; review before adding to taxonomy"
+    }
+  ]
+}

@@ -15,24 +15,95 @@ const {
   titleFromSlug,
 } = require('./wiki-aliases.js');
 
+const {
+  classifyWikiSlug,
+  isTrueAliasSlug,
+  getConceptType,
+} = require('./wiki-brand-taxonomy.js');
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const wikiIndexPath = path.join(ROOT, 'js', 'wiki-index.json');
 const wikiIndex = JSON.parse(fs.readFileSync(wikiIndexPath, 'utf8'));
 
-assert.equal(canonicalizeSlug('graffpunks-247'), 'graffpunks-24-7');
-assert.equal(canonicalizeSlug('  HODL-WARS-GAME  '), 'hodl-wars');
-assert.equal(canonicalizeSlug('nbg'), 'nbg');
+// ── Safe alias collapses (same brand, same concept type) ──────────────────
 
-assert.equal(canonicalizeWikiUrl('/wiki/graffpunks-247.html'), '/wiki/graffpunks-24-7.html');
-assert.equal(canonicalizeWikiUrl('/wiki/graffpunks-247?from=search#card'), '/wiki/graffpunks-24-7.html');
+assert.equal(canonicalizeSlug('graffpunks-247-radio'), 'graffpunks-24-7-radio');
+assert.equal(canonicalizeSlug('graffpunks-247'), 'graffpunks-24-7-radio');
+assert.equal(canonicalizeSlug('graffpunks-24-7'), 'graffpunks-24-7-radio');
+assert.equal(canonicalizeSlug('graffpunks-247-blockchain-radio-station'), 'graffpunks-24-7-radio');
+assert.equal(canonicalizeSlug('the-graffpunks'), 'graffpunks');
+assert.equal(canonicalizeSlug('  HODL-WARS-GAME  '), 'hodl-wars');
+assert.equal(canonicalizeSlug('hodl-x-warriors'), 'hodl-warriors');
+assert.equal(canonicalizeSlug('midevil-hero-arena'), 'midevilpunks');
+assert.equal(canonicalizeSlug('1m-free-nfts-programme'), '1m-free-nfts-program');
+assert.equal(canonicalizeSlug('one-million-free-nfts'), '1m-free-nfts-program');
+
+// ── Unsafe collapses must NOT happen (different concept types) ────────────
+
+assert.equal(canonicalizeSlug('graffpunks-collection'), 'graffpunks-collection', 'collection must stay separate from faction');
+assert.equal(canonicalizeSlug('midevilpunks'), 'midevilpunks', 'game must stay separate from graffpunks faction');
+assert.equal(canonicalizeSlug('graffpunks-24-7-radio'), 'graffpunks-24-7-radio', 'radio must stay separate from graffpunks faction');
+assert.equal(canonicalizeSlug('nbg-token'), 'nbg-token', 'token must stay separate from nbg brand');
+assert.equal(canonicalizeSlug('nbgx'), 'nbgx', 'nbgx must stay separate from nbg brand');
+assert.equal(canonicalizeSlug('nbg'), 'nbg');
+assert.equal(canonicalizeSlug('hodl-warriors'), 'hodl-warriors', 'faction must stay separate from hodl-wars game');
+assert.equal(canonicalizeSlug('hodl-wars'), 'hodl-wars', 'game must stay separate from hodl-warriors faction');
+
+// ── URL canonicalization ──────────────────────────────────────────────────
+
+assert.equal(canonicalizeWikiUrl('/wiki/graffpunks-247.html'), '/wiki/graffpunks-24-7-radio.html');
+assert.equal(canonicalizeWikiUrl('/wiki/graffpunks-247?from=search#card'), '/wiki/graffpunks-24-7-radio.html');
+assert.equal(canonicalizeWikiUrl('/wiki/graffpunks-247-radio.html'), '/wiki/graffpunks-24-7-radio.html');
+assert.equal(canonicalizeWikiUrl('/wiki/the-graffpunks.html'), '/wiki/graffpunks.html');
 assert.equal(canonicalizeWikiUrl('/search.html?q=graffpunks-247'), '/search.html?q=graffpunks-247');
+
+// ── isAliasSlug / isTrueAliasSlug ────────────────────────────────────────
 
 assert.equal(isAliasSlug('hodl-wars-game'), true);
 assert.equal(isAliasSlug('hodl-wars'), false);
+assert.equal(isAliasSlug('nbg-token'), false, 'nbg-token is not an alias; it is a separate concept');
+assert.equal(isTrueAliasSlug('graffpunks-247'), true);
+assert.equal(isTrueAliasSlug('graffpunks-collection'), false, 'collection is a separate concept, not an alias');
+assert.equal(isTrueAliasSlug('midevilpunks'), false, 'game is a separate concept, not an alias');
+
+// ── getAliasesForCanonicalSlug ────────────────────────────────────────────
 
 assert.deepEqual(getAliasesForCanonicalSlug('hodl-wars'), ['hodl-wars-game']);
+assert.deepEqual(
+  getAliasesForCanonicalSlug('graffpunks-24-7-radio').sort(),
+  ['graffpunks-24-7', 'graffpunks-247', 'graffpunks-247-blockchain-radio-station', 'graffpunks-247-radio'],
+);
+assert.deepEqual(getAliasesForCanonicalSlug('graffpunks').sort(), ['the-graffpunks']);
+
+// ── Concept types via taxonomy ────────────────────────────────────────────
+
+assert.equal(getConceptType('graffpunks'), 'faction');
+assert.equal(getConceptType('graffpunks-24-7-radio'), 'radio');
+assert.equal(getConceptType('graffpunks-collection'), 'collection');
+assert.equal(getConceptType('midevilpunks'), 'game');
+assert.equal(getConceptType('hodl-warriors'), 'faction');
+assert.equal(getConceptType('hodl-wars'), 'game');
+assert.equal(getConceptType('nbg'), 'brand');
+assert.equal(getConceptType('nbg-token'), 'token');
+assert.equal(getConceptType('nbgx'), 'mechanic');
+
+// ── classifyWikiSlug works through aliases ────────────────────────────────
+
+const radioMeta = classifyWikiSlug('graffpunks-247');
+assert.ok(radioMeta, 'graffpunks-247 should resolve to brand metadata via alias');
+assert.equal(radioMeta.concept_type, 'radio');
+assert.equal(radioMeta.canonical_slug, 'graffpunks-24-7-radio');
+assert.equal(radioMeta.brand_family, 'graffpunks');
+
+// ── titleFromSlug ─────────────────────────────────────────────────────────
+
 assert.equal(titleFromSlug('graffpunks-24-7'), 'Graffpunks 24 7');
 
+// ── wiki-index invariants ─────────────────────────────────────────────────
+
+// Every entry mapped by ALIAS_TO_CANONICAL must have:
+//   • exactly one canonical wiki-index entry for the canonical URL
+//   • no separate wiki-index entry for the alias URL
 for (const [aliasSlug, canonicalSlug] of Object.entries(ALIAS_TO_CANONICAL)) {
   const aliasUrl = `/wiki/${aliasSlug}.html`;
   const canonicalUrl = `/wiki/${canonicalSlug}.html`;
@@ -48,6 +119,25 @@ for (const [aliasSlug, canonicalSlug] of Object.entries(ALIAS_TO_CANONICAL)) {
   );
 }
 
+// Concept pages that must remain as separate canonical search cards
+const mustBeSeparate = [
+  ['/wiki/graffpunks.html', '/wiki/graffpunks-collection.html'],
+  ['/wiki/graffpunks.html', '/wiki/midevilpunks.html'],
+  ['/wiki/graffpunks.html', '/wiki/graffpunks-24-7-radio.html'],
+  ['/wiki/nbg.html', '/wiki/nbg-token.html'],
+  ['/wiki/nbg.html', '/wiki/nbgx.html'],
+  ['/wiki/hodl-warriors.html', '/wiki/hodl-wars.html'],
+];
+
+for (const [urlA, urlB] of mustBeSeparate) {
+  const entryA = wikiIndex.find(e => e.url === urlA);
+  const entryB = wikiIndex.find(e => e.url === urlB);
+  assert.ok(entryA, `expected separate wiki-index entry for ${urlA}`);
+  assert.ok(entryB, `expected separate wiki-index entry for ${urlB}`);
+  assert.notEqual(entryA.url, entryB.url, `${urlA} and ${urlB} must not be collapsed into the same entry`);
+}
+
+// No duplicate alias titles within a single entry
 for (const entry of wikiIndex) {
   const seen = new Set();
   for (const alias of entry.aliases || []) {
@@ -59,3 +149,4 @@ for (const entry of wikiIndex) {
 }
 
 console.log('wiki alias canonicalization checks passed.');
+

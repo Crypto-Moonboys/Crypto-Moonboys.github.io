@@ -239,7 +239,8 @@ for (const entry of wikiIndex) {
     category: entry.category || 'Lore',
     aliases: approvedAliases,
     tags,
-    source_urls: sourceUrls.sort()
+    source_urls: sourceUrls.sort(),
+    brand: entry.brand || null
   });
 }
 

@@ -15,14 +15,17 @@
         "title": "graffpunks crypto moonboys wiki"
       },
       {
-        "title": "Graffpunks Network",
-        "url": "/wiki/graffpunks-network.html"
+        "title": "Graffpunks Network"
+      },
+      {
+        "title": "The Graffpunks",
+        "url": "/wiki/the-graffpunks.html"
       }
     ],
-    "rank_score": 791,
+    "rank_score": 794,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 2,
+      "alias_count": 3,
       "tag_count": 4,
       "mention_count": 0,
       "category": "characters",
@@ -45,9 +48,9 @@
       "category_points": 40,
       "word_count_points": 567,
       "keyword_bag_points": 23,
-      "content_quality_points": 113,
+      "content_quality_points": 116,
       "authority_points": 18,
-      "final_rank_score": 791,
+      "final_rank_score": 794,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -90,6 +93,13 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 64,
       "authority": 0
+    },
+    "brand": {
+      "brand_family": "graffpunks",
+      "concept_type": "faction",
+      "canonical_concept_id": "graffpunks:faction",
+      "canonical_slug": "graffpunks",
+      "parent_concept": "graffpunks"
     }
   },
   {
@@ -180,7 +190,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 44,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "hodl_wars — Crypto Moonboys Wiki",
@@ -277,6 +288,13 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 35,
       "authority": 294
+    },
+    "brand": {
+      "brand_family": "hodl",
+      "concept_type": "game",
+      "canonical_concept_id": "hodl:game",
+      "canonical_slug": "hodl-wars",
+      "parent_concept": null
     }
   },
   {
@@ -368,7 +386,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 45,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "null_the_prophet — Crypto Moonboys Wiki",
@@ -460,7 +479,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 51,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "hodl_warriors — Crypto Moonboys Wiki",
@@ -558,6 +578,13 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 33,
       "authority": 292
+    },
+    "brand": {
+      "brand_family": "hodl",
+      "concept_type": "faction",
+      "canonical_concept_id": "hodl:faction",
+      "canonical_slug": "hodl-warriors",
+      "parent_concept": null
     }
   },
   {
@@ -649,7 +676,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 67,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "queen_sarah_pfly — Crypto Moonboys Wiki",
@@ -741,7 +769,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 44,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "charlie_buster — Crypto Moonboys Wiki",
@@ -830,7 +859,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 47,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "alfie_blaze — Crypto Moonboys Wiki",
@@ -903,7 +933,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 33,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Ethereum (ETH) — Crypto Moonboys Wiki",
@@ -993,7 +1024,8 @@
       "existing_outbound_count": 3,
       "suggested_outbound_count": 25,
       "authority": 313.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
@@ -1071,7 +1103,8 @@
       "existing_outbound_count": 5,
       "suggested_outbound_count": 23,
       "authority": 314.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "burn_to_earn — Crypto Moonboys Wiki",
@@ -1166,7 +1199,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 51,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Solana (SOL) — Crypto Moonboys Wiki",
@@ -1250,7 +1284,8 @@
       "existing_outbound_count": 3,
       "suggested_outbound_count": 27,
       "authority": 313.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "nbgx — Crypto Moonboys Wiki",
@@ -1339,6 +1374,13 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 42,
       "authority": 0
+    },
+    "brand": {
+      "brand_family": "nbg",
+      "concept_type": "mechanic",
+      "canonical_concept_id": "nbg:mechanic",
+      "canonical_slug": "nbgx",
+      "parent_concept": null
     }
   },
   {
@@ -1434,7 +1476,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 48,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "pmsl — Crypto Moonboys Wiki",
@@ -1524,7 +1567,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 53,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "nbg — Crypto Moonboys Wiki",
@@ -1542,8 +1586,7 @@
         "title": "nbg crypto moonboys wiki"
       },
       {
-        "title": "Nbg Token",
-        "url": "/wiki/nbg-token.html"
+        "title": "Nbg Token"
       }
     ],
     "rank_score": 579,
@@ -1618,6 +1661,13 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 44,
       "authority": 0
+    },
+    "brand": {
+      "brand_family": "nbg",
+      "concept_type": "brand",
+      "canonical_concept_id": "nbg:brand",
+      "canonical_slug": "nbg",
+      "parent_concept": null
     }
   },
   {
@@ -1704,106 +1754,8 @@
       "existing_outbound_count": 6,
       "suggested_outbound_count": 27,
       "authority": 297
-    }
-  },
-  {
-    "title": "graffpunks_24_7 — Crypto Moonboys Wiki",
-    "desc": "GraffPUNKS 24/7 reverberates through the Crypto Moonboys universe as more than a mere blockchain radio station—it is the defiant heartbeat of rebellion, broadca",
-    "url": "/wiki/graffpunks-24-7.html",
-    "tags": [
-      "graffpunks",
-      "24",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "graffpunks 24 crypto moonboys wiki"
-      },
-      {
-        "title": "Graffpunks 247",
-        "url": "/wiki/graffpunks-247.html"
-      }
-    ],
-    "rank_score": 494,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 5241,
-      "keyword_bag_size": 26,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 54,
-      "section_count": 6,
-      "lore_paragraph_count": 49,
-      "content_quality_score": 107,
-      "authority_score": 18
     },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 262,
-      "keyword_bag_points": 26,
-      "content_quality_points": 118,
-      "authority_points": 18,
-      "final_rank_score": 494,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "graffpunks 24 7 crypto moonboys wiki",
-      "tokens": [
-        "graffpunks",
-        "24",
-        "7",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffpunks",
-        "24",
-        "7",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "reverberates",
-        "through",
-        "the",
-        "universe",
-        "as",
-        "more",
-        "than",
-        "a",
-        "mere",
-        "blockchain",
-        "radio",
-        "station",
-        "it",
-        "is",
-        "defiant",
-        "heartbeat",
-        "of",
-        "rebellion",
-        "broadca",
-        "247"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 49,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 49,
-      "authority": 0
-    }
+    "brand": null
   },
   {
     "title": "Moon Mission — Crypto Moonboys Wiki",
@@ -1889,7 +1841,8 @@
       "existing_outbound_count": 6,
       "suggested_outbound_count": 25,
       "authority": 295
-    }
+    },
+    "brand": null
   },
   {
     "title": "rave_relics — Crypto Moonboys Wiki",
@@ -1982,7 +1935,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 25,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "midevilpunks — Crypto Moonboys Wiki",
@@ -1998,12 +1952,16 @@
     "aliases": [
       {
         "title": "midevilpunks crypto moonboys wiki"
+      },
+      {
+        "title": "Midevil Hero Arena",
+        "url": "/wiki/midevil-hero-arena.html"
       }
     ],
-    "rank_score": 473,
+    "rank_score": 476,
     "rank_signals": {
       "is_canonical": true,
-      "alias_count": 1,
+      "alias_count": 2,
       "tag_count": 4,
       "mention_count": 0,
       "category": "factions",
@@ -2026,9 +1984,9 @@
       "category_points": 35,
       "word_count_points": 247,
       "keyword_bag_points": 25,
-      "content_quality_points": 114,
+      "content_quality_points": 117,
       "authority_points": 22,
-      "final_rank_score": 473,
+      "final_rank_score": 476,
       "authority_graph_points": 4
     },
     "search_index": {
@@ -2073,6 +2031,13 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 28,
       "authority": 3.5
+    },
+    "brand": {
+      "brand_family": "graffpunks",
+      "concept_type": "game",
+      "canonical_concept_id": "graffpunks:game",
+      "canonical_slug": "midevilpunks",
+      "parent_concept": "graffpunks"
     }
   },
   {
@@ -2166,7 +2131,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 39,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "stikfamwars — Crypto Moonboys Wiki",
@@ -2254,7 +2220,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 1,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "gang_signs — Crypto Moonboys Wiki",
@@ -2348,7 +2315,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 30,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "genesis_spray — Crypto Moonboys Wiki",
@@ -2439,7 +2407,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 51,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "graffitikings — Crypto Moonboys Wiki",
@@ -2531,7 +2500,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 30,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "gkniftyheads — Crypto Moonboys Wiki",
@@ -2619,7 +2589,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 56,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "games4punks_telegram — Crypto Moonboys Wiki",
@@ -2709,7 +2680,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 29,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "hard_fork_games — Crypto Moonboys Wiki",
@@ -2800,6 +2772,180 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 32,
       "authority": 0
+    },
+    "brand": null
+  },
+  {
+    "title": "graffpunks_network — Crypto Moonboys Wiki",
+    "desc": "The GraffPUNKS Network surges through the Crypto Moonboys universe as a digital war cry, a social media fortress on platforms like Facebook where the anarchic s",
+    "url": "/wiki/graffpunks-network.html",
+    "tags": [],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 437,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 0,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 4460,
+      "keyword_bag_size": 24,
+      "heading_count": 6,
+      "list_count": 3,
+      "internal_link_count": 0,
+      "paragraph_count": 62,
+      "section_count": 5,
+      "lore_paragraph_count": 57,
+      "content_quality_score": 107,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 223,
+      "keyword_bag_points": 24,
+      "content_quality_points": 107,
+      "authority_points": 18,
+      "final_rank_score": 437,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "graffpunks network crypto moonboys wiki",
+      "tokens": [
+        "graffpunks",
+        "network",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "graffpunks",
+        "network",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "surges",
+        "through",
+        "universe",
+        "as",
+        "a",
+        "digital",
+        "war",
+        "cry",
+        "social",
+        "media",
+        "fortress",
+        "on",
+        "platforms",
+        "like",
+        "facebook",
+        "where",
+        "anarchic",
+        "s"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 16,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 16,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
+    "title": "nbg_token — Crypto Moonboys Wiki",
+    "desc": "NBG flickers as a token of veiled significance within the Crypto Moonboys universe, a currency that flows through the shadowy veins of Block Topia’s multi-chain",
+    "url": "/wiki/nbg-token.html",
+    "tags": [],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 437,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 0,
+      "tag_count": 0,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 4442,
+      "keyword_bag_size": 25,
+      "heading_count": 7,
+      "list_count": 4,
+      "internal_link_count": 0,
+      "paragraph_count": 57,
+      "section_count": 6,
+      "lore_paragraph_count": 52,
+      "content_quality_score": 107,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 222,
+      "keyword_bag_points": 25,
+      "content_quality_points": 107,
+      "authority_points": 18,
+      "final_rank_score": 437,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "nbg token crypto moonboys wiki",
+      "tokens": [
+        "nbg",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "nbg",
+        "token",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "flickers",
+        "as",
+        "a",
+        "of",
+        "veiled",
+        "significance",
+        "within",
+        "the",
+        "universe",
+        "currency",
+        "that",
+        "flows",
+        "through",
+        "shadowy",
+        "veins",
+        "block",
+        "topia",
+        "s",
+        "multi",
+        "chain"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 41,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 41,
+      "authority": 0
+    },
+    "brand": {
+      "brand_family": "nbg",
+      "concept_type": "token",
+      "canonical_concept_id": "nbg:token",
+      "canonical_slug": "nbg-token",
+      "parent_concept": null
     }
   },
   {
@@ -2889,7 +3035,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 32,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "metropolis — Crypto Moonboys Wiki",
@@ -2978,7 +3125,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 23,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "darren_cullen — Crypto Moonboys Wiki",
@@ -3072,7 +3220,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 35,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "ian_harrison — Crypto Moonboys Wiki",
@@ -3165,7 +3314,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 31,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "sacred_chain — Crypto Moonboys Wiki",
@@ -3257,7 +3407,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 38,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "trevor_fung — Crypto Moonboys Wiki",
@@ -3349,7 +3500,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 38,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "jillian_godsil — Crypto Moonboys Wiki",
@@ -3441,100 +3593,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 37,
       "authority": 0
-    }
-  },
-  {
-    "title": "midevil_hero_arena — Crypto Moonboys Wiki",
-    "desc": "MiDEViL HERO ARENA is a brutal, electrifying play-to-earn game in the Crypto Moonboys universe, a digital coliseum carved into the heart of Block Topia where av",
-    "url": "/wiki/midevil-hero-arena.html",
-    "tags": [
-      "midevil",
-      "hero",
-      "arena",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 378,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 2995,
-      "keyword_bag_size": 27,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 37,
-      "section_count": 6,
-      "lore_paragraph_count": 32,
-      "content_quality_score": 107,
-      "authority_score": 18
     },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 150,
-      "keyword_bag_points": 27,
-      "content_quality_points": 113,
-      "authority_points": 18,
-      "final_rank_score": 378,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "midevil hero arena crypto moonboys wiki",
-      "tokens": [
-        "midevil",
-        "hero",
-        "arena",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "midevil",
-        "hero",
-        "arena",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "a",
-        "brutal",
-        "electrifying",
-        "play",
-        "to",
-        "earn",
-        "game",
-        "in",
-        "the",
-        "universe",
-        "digital",
-        "coliseum",
-        "carved",
-        "into",
-        "heart",
-        "of",
-        "block",
-        "topia",
-        "where",
-        "av"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 40,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 40,
-      "authority": 0
-    }
+    "brand": null
   },
   {
     "title": "sneakar — Crypto Moonboys Wiki",
@@ -3624,6 +3684,123 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 44,
       "authority": 0
+    },
+    "brand": null
+  },
+  {
+    "title": "graffpunks_24_7_radio — Crypto Moonboys Wiki",
+    "desc": "GraffPUNKS 24/7 is a blockchain radio station within the Crypto Moonboys universe, a cultural and tactical hub in Block Topia broadcasting subversive beats and",
+    "url": "/wiki/graffpunks-24-7-radio.html",
+    "tags": [
+      "graffpunks",
+      "24",
+      "radio",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "Graffpunks 247 Radio",
+        "url": "/wiki/graffpunks-247-radio.html"
+      },
+      {
+        "title": "Graffpunks 24 7",
+        "url": "/wiki/graffpunks-24-7.html"
+      },
+      {
+        "title": "Graffpunks 247",
+        "url": "/wiki/graffpunks-247.html"
+      },
+      {
+        "title": "Graffpunks 247 Blockchain Radio Station",
+        "url": "/wiki/graffpunks-247-blockchain-radio-station.html"
+      }
+    ],
+    "rank_score": 340,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 4,
+      "tag_count": 6,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 2194,
+      "keyword_bag_size": 25,
+      "heading_count": 6,
+      "list_count": 3,
+      "internal_link_count": 0,
+      "paragraph_count": 29,
+      "section_count": 5,
+      "lore_paragraph_count": 25,
+      "content_quality_score": 107,
+      "authority_score": 15
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 110,
+      "keyword_bag_points": 25,
+      "content_quality_points": 125,
+      "authority_points": 15,
+      "final_rank_score": 340,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "graffpunks 24 7 radio crypto moonboys wiki",
+      "tokens": [
+        "graffpunks",
+        "24",
+        "7",
+        "radio",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "graffpunks",
+        "24",
+        "7",
+        "radio",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "is",
+        "a",
+        "blockchain",
+        "station",
+        "within",
+        "the",
+        "universe",
+        "cultural",
+        "and",
+        "tactical",
+        "hub",
+        "in",
+        "block",
+        "topia",
+        "broadcasting",
+        "subversive",
+        "beats",
+        "247"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 50,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 50,
+      "authority": 0
+    },
+    "brand": {
+      "brand_family": "graffpunks",
+      "concept_type": "radio",
+      "canonical_concept_id": "graffpunks:radio",
+      "canonical_slug": "graffpunks-24-7-radio",
+      "parent_concept": "graffpunks"
     }
   },
   {
@@ -3717,104 +3894,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 18,
       "authority": 3.5
-    }
-  },
-  {
-    "title": "graffpunks_24_7_radio — Crypto Moonboys Wiki",
-    "desc": "GraffPUNKS 24/7 is a blockchain radio station within the Crypto Moonboys universe, a cultural and tactical hub in Block Topia broadcasting subversive beats and",
-    "url": "/wiki/graffpunks-24-7-radio.html",
-    "tags": [
-      "graffpunks",
-      "24",
-      "radio",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "Graffpunks 247 Radio",
-        "url": "/wiki/graffpunks-247-radio.html"
-      }
-    ],
-    "rank_score": 331,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 2194,
-      "keyword_bag_size": 25,
-      "heading_count": 6,
-      "list_count": 3,
-      "internal_link_count": 0,
-      "paragraph_count": 29,
-      "section_count": 5,
-      "lore_paragraph_count": 25,
-      "content_quality_score": 107,
-      "authority_score": 15
     },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 110,
-      "keyword_bag_points": 25,
-      "content_quality_points": 116,
-      "authority_points": 15,
-      "final_rank_score": 331,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "graffpunks 24 7 radio crypto moonboys wiki",
-      "tokens": [
-        "graffpunks",
-        "24",
-        "7",
-        "radio",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffpunks",
-        "24",
-        "7",
-        "radio",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "is",
-        "a",
-        "blockchain",
-        "station",
-        "within",
-        "the",
-        "universe",
-        "cultural",
-        "and",
-        "tactical",
-        "hub",
-        "in",
-        "block",
-        "topia",
-        "broadcasting",
-        "subversive",
-        "beats",
-        "247"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 50,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 50,
-      "authority": 0
-    }
+    "brand": null
   },
   {
     "title": "bitcoin_x_kids — Crypto Moonboys Wiki",
@@ -3912,7 +3993,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 34,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "$WAXP — Crypto Moonboys Wiki",
@@ -3994,7 +4076,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 18,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "crypto_moonboys — Crypto Moonboys Wiki",
@@ -4083,7 +4166,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 37,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Rune Tag — Crypto Moonboys Wiki",
@@ -4180,7 +4264,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 16,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "SatoRebel — Crypto Moonboys Wiki",
@@ -4271,7 +4356,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 17,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Samael.exe — Crypto Moonboys Wiki",
@@ -4371,7 +4457,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 17,
       "authority": 5.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Sister Halcyon — Crypto Moonboys Wiki",
@@ -4465,7 +4552,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Patchwork — Crypto Moonboys Wiki",
@@ -4557,7 +4645,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The Princess — Crypto Moonboys Wiki",
@@ -4648,7 +4737,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 16,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The NICE &amp; EASY BOIS — Crypto Moonboys Wiki",
@@ -4756,7 +4846,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 10,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Quell — Crypto Moonboys Wiki",
@@ -4846,7 +4937,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 17,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The CRYPTO MOONGIRLS — Crypto Moonboys Wiki",
@@ -4943,7 +5035,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Jonny &amp; Laurence Nelson (TAG Records) — Crypto Moonboys Wiki",
@@ -5045,7 +5138,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 16,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The Whitewasher — Crypto Moonboys Wiki",
@@ -5138,7 +5232,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "PYRALITH — Crypto Moonboys Wiki",
@@ -5229,7 +5324,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 17,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Street Kingdoms — Crypto Moonboys Wiki",
@@ -5321,7 +5417,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 17,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "dream_sovereign — Crypto Moonboys Wiki",
@@ -5413,7 +5510,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 1,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Thorne The Architect — Crypto Moonboys Wiki",
@@ -5505,7 +5603,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "genesis_kernel — Crypto Moonboys Wiki",
@@ -5595,7 +5694,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 35,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "The FINANCE GUILD — Crypto Moonboys Wiki",
@@ -5690,7 +5790,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Tokenomics — Crypto Moonboys Wiki",
@@ -5773,7 +5874,8 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 17,
       "authority": 2
-    }
+    },
+    "brand": null
   },
   {
     "title": "The CHAIN SCRIBES — Crypto Moonboys Wiki",
@@ -5866,7 +5968,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 13,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Crypto Wallets — Crypto Moonboys Wiki",
@@ -5950,7 +6053,8 @@
       "existing_outbound_count": 5,
       "suggested_outbound_count": 12,
       "authority": 4.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Web3 — Crypto Moonboys Wiki",
@@ -6030,7 +6134,8 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 18,
       "authority": 2
-    }
+    },
+    "brand": null
   },
   {
     "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
@@ -6114,7 +6219,8 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 29,
       "authority": 4
-    }
+    },
+    "brand": null
   },
   {
     "title": "Squeaky Pinks Enforcers — Crypto Moonboys Wiki",
@@ -6204,7 +6310,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The Bitcoin Kid Army — Crypto Moonboys Wiki",
@@ -6292,7 +6399,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 25,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The GASLESS GHOSTS — Crypto Moonboys Wiki",
@@ -6383,7 +6491,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 20,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Crypto Exchanges — Crypto Moonboys Wiki",
@@ -6468,7 +6577,8 @@
       "existing_outbound_count": 3,
       "suggested_outbound_count": 13,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Blockchain Technology — Crypto Moonboys Wiki",
@@ -6553,7 +6663,8 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 22,
       "authority": 4
-    }
+    },
+    "brand": null
   },
   {
     "title": "Meme Coins — Crypto Moonboys Wiki",
@@ -6643,7 +6754,8 @@
       "existing_outbound_count": 4,
       "suggested_outbound_count": 16,
       "authority": 4
-    }
+    },
+    "brand": null
   },
   {
     "title": "Alien Worlds / TLM — Crypto Moonboys Wiki",
@@ -6729,7 +6841,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "The HARD FORK ROCKERS — Crypto Moonboys Wiki",
@@ -6826,7 +6939,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 18,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Forkborn Collective — Crypto Moonboys Wiki",
@@ -6920,7 +7034,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The MOONLORDS — Crypto Moonboys Wiki",
@@ -7015,7 +7130,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The OG PIXEL SAINTS — Crypto Moonboys Wiki",
@@ -7112,7 +7228,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "WUFFI / $WUF — Crypto Moonboys Wiki",
@@ -7201,7 +7318,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "The High Hats — Crypto Moonboys Wiki",
@@ -7297,7 +7415,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The EVM PUNKS — Crypto Moonboys Wiki",
@@ -7393,7 +7512,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The DUCKY BOYS — Crypto Moonboys Wiki",
@@ -7489,7 +7609,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 9,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The Nomad Bears — Crypto Moonboys Wiki",
@@ -7583,7 +7704,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The RUGPULL MINERS — Crypto Moonboys Wiki",
@@ -7677,7 +7799,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Block Node Defenders — Crypto Moonboys Wiki",
@@ -7767,7 +7890,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The SALVAGERS — Crypto Moonboys Wiki",
@@ -7858,7 +7982,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 12,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Delicious Again Pete — Crypto Moonboys Wiki",
@@ -7950,7 +8075,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 16,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The CRYPTO STONED BOYS — Crypto Moonboys Wiki",
@@ -8051,7 +8177,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 13,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The SHARD MOTHERS of MANHATTAN — Crypto Moonboys Wiki",
@@ -8149,7 +8276,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The BLOCKSTARS — Crypto Moonboys Wiki",
@@ -8240,7 +8368,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 8,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "head_tags — Crypto Moonboys Wiki",
@@ -8333,7 +8462,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 1,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Lady-INK — Crypto Moonboys Wiki",
@@ -8428,7 +8558,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The CODE ALCHEMISTS — Crypto Moonboys Wiki",
@@ -8524,7 +8655,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "HODL Wars Ecosystem — Crypto Moonboys Wiki",
@@ -8622,7 +8754,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "The AllCity Bulls — Crypto Moonboys Wiki",
@@ -8719,7 +8852,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 10,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Jodie ZOOM 2000 — Crypto Moonboys Wiki",
@@ -8811,7 +8945,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The BLOCKCHAIN FURIES — Crypto Moonboys Wiki",
@@ -8904,7 +9039,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "DeFi (Decentralised Finance) — Crypto Moonboys Wiki",
@@ -8985,7 +9121,8 @@
       "existing_outbound_count": 3,
       "suggested_outbound_count": 16,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "$GK — Crypto Moonboys Wiki",
@@ -9075,7 +9212,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 28,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "GraffPUNKS Ecosystem — Crypto Moonboys Wiki",
@@ -9172,6 +9310,13 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
+    },
+    "brand": {
+      "brand_family": "graffpunks",
+      "concept_type": "ecosystem",
+      "canonical_concept_id": "graffpunks:ecosystem",
+      "canonical_slug": "graffpunks-ecosystem",
+      "parent_concept": "graffpunks"
     }
   },
   {
@@ -9264,7 +9409,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 12,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The TUSKON OGS — Crypto Moonboys Wiki",
@@ -9361,7 +9507,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "genesis_spray_drop — Crypto Moonboys Wiki",
@@ -9451,7 +9598,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 5,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Alfie 'The Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
@@ -9543,7 +9691,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 25,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "WAX Blockchain — Crypto Moonboys Wiki",
@@ -9630,7 +9779,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "1M Free NFTs Drop — Crypto Moonboys Wiki",
@@ -9722,7 +9872,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 28,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Elder Codex-7 — Crypto Moonboys Wiki",
@@ -9821,7 +9972,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The BALLY BOYS — Crypto Moonboys Wiki",
@@ -9916,7 +10068,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 9,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The Squeaky Pinks — Crypto Moonboys Wiki",
@@ -10010,7 +10163,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Spraycode &amp; Writcode Mechanics — Crypto Moonboys Wiki",
@@ -10108,7 +10262,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "graffiti_nexus — Crypto Moonboys Wiki",
@@ -10200,7 +10355,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 4,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Loopfiend — Crypto Moonboys Wiki",
@@ -10293,7 +10449,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 17,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Spirit Borns — Crypto Moonboys Wiki",
@@ -10386,7 +10543,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 10,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Triple Fork Event — Crypto Moonboys Wiki",
@@ -10475,7 +10633,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 26,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "HEX-TAGGER PRIME — Crypto Moonboys Wiki",
@@ -10567,7 +10726,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 17,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "M1nTr K1ll — Crypto Moonboys Wiki",
@@ -10660,7 +10820,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 10,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Aleema (Child of the Shard) — Crypto Moonboys Wiki",
@@ -10753,7 +10914,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 16,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The AZTEC RAIDERS — Crypto Moonboys Wiki",
@@ -10846,7 +11008,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 7,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The INFORMATION MERCENARIES — Crypto Moonboys Wiki",
@@ -10938,6 +11101,115 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 13,
       "authority": 3.5
+    },
+    "brand": null
+  },
+  {
+    "title": "1m_free_nfts_program — Crypto Moonboys Wiki",
+    "desc": "The 1M Free NFTs Programme is a massive initiative in the Crypto Moonboys universe, distributing one million free NFTs to players and collectors in Block Topia",
+    "url": "/wiki/1m-free-nfts-program.html",
+    "tags": [
+      "1m",
+      "free",
+      "nfts",
+      "program",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "1m Free Nfts Programme",
+        "url": "/wiki/1m-free-nfts-programme.html"
+      },
+      {
+        "title": "One Million Free Nfts",
+        "url": "/wiki/one-million-free-nfts.html"
+      }
+    ],
+    "rank_score": 226,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 7,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 666,
+      "keyword_bag_size": 24,
+      "heading_count": 6,
+      "list_count": 3,
+      "internal_link_count": 0,
+      "paragraph_count": 12,
+      "section_count": 5,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 79,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 33,
+      "keyword_bag_points": 24,
+      "content_quality_points": 92,
+      "authority_points": 12,
+      "final_rank_score": 226,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "1m free nfts program crypto moonboys wiki",
+      "tokens": [
+        "1m",
+        "free",
+        "nfts",
+        "program",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "1m",
+        "free",
+        "nfts",
+        "program",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "programme",
+        "is",
+        "a",
+        "massive",
+        "initiative",
+        "in",
+        "universe",
+        "distributing",
+        "one",
+        "million",
+        "to",
+        "players",
+        "and",
+        "collectors",
+        "block",
+        "topia"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 30,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 30,
+      "authority": 0
+    },
+    "brand": {
+      "brand_family": "oneMillionFreeNfts",
+      "concept_type": "program",
+      "canonical_concept_id": "oneMillionFreeNfts:program",
+      "canonical_slug": "1m-free-nfts-program",
+      "parent_concept": null
     }
   },
   {
@@ -11032,7 +11304,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 29,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Playable NFT Murals — Crypto Moonboys Wiki",
@@ -11122,7 +11395,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 25,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Ethereum (ETH) Ecosystem — Crypto Moonboys Wiki",
@@ -11217,7 +11491,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Graffiti Queens in Decentraland — Crypto Moonboys Wiki",
@@ -11306,104 +11581,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
-  },
-  {
-    "title": "1m_free_nfts_program — Crypto Moonboys Wiki",
-    "desc": "The 1M Free NFTs Programme is a massive initiative in the Crypto Moonboys universe, distributing one million free NFTs to players and collectors in Block Topia",
-    "url": "/wiki/1m-free-nfts-program.html",
-    "tags": [
-      "1m",
-      "free",
-      "nfts",
-      "program",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "1m Free Nfts Programme",
-        "url": "/wiki/1m-free-nfts-programme.html"
-      }
-    ],
-    "rank_score": 223,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 7,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 666,
-      "keyword_bag_size": 24,
-      "heading_count": 6,
-      "list_count": 3,
-      "internal_link_count": 0,
-      "paragraph_count": 12,
-      "section_count": 5,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 79,
-      "authority_score": 12
     },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 33,
-      "keyword_bag_points": 24,
-      "content_quality_points": 89,
-      "authority_points": 12,
-      "final_rank_score": 223,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "1m free nfts program crypto moonboys wiki",
-      "tokens": [
-        "1m",
-        "free",
-        "nfts",
-        "program",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "1m",
-        "free",
-        "nfts",
-        "program",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "programme",
-        "is",
-        "a",
-        "massive",
-        "initiative",
-        "in",
-        "universe",
-        "distributing",
-        "one",
-        "million",
-        "to",
-        "players",
-        "and",
-        "collectors",
-        "block",
-        "topia"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 30,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 30,
-      "authority": 0
-    }
+    "brand": null
   },
   {
     "title": "Altcoins — Crypto Moonboys Wiki",
@@ -11484,7 +11663,8 @@
       "existing_outbound_count": 3,
       "suggested_outbound_count": 18,
       "authority": 1.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Storm Struggle — Crypto Moonboys Wiki",
@@ -11576,7 +11756,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "battlemech_blast — Crypto Moonboys Wiki",
@@ -11670,7 +11851,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 39,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Bit-Cap 5000 — Crypto Moonboys Wiki",
@@ -11763,7 +11945,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Forksplit — Crypto Moonboys Wiki",
@@ -11855,100 +12038,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 10,
       "authority": 3.5
-    }
-  },
-  {
-    "title": "one_million_free_nfts — Crypto Moonboys Wiki",
-    "desc": "The 1M Free NFTs Programme stands as a defiant cornerstone of rebellion in the Crypto Moonboys universe, a revolutionary initiative driven by the GraffPUNKS to",
-    "url": "/wiki/one-million-free-nfts.html",
-    "tags": [
-      "one",
-      "million",
-      "free",
-      "nfts",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 220,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 7,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 642,
-      "keyword_bag_size": 25,
-      "heading_count": 6,
-      "list_count": 3,
-      "internal_link_count": 0,
-      "paragraph_count": 12,
-      "section_count": 5,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 79,
-      "authority_score": 12
     },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 32,
-      "keyword_bag_points": 25,
-      "content_quality_points": 86,
-      "authority_points": 12,
-      "final_rank_score": 220,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "one million free nfts crypto moonboys wiki",
-      "tokens": [
-        "one",
-        "million",
-        "free",
-        "nfts",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "one",
-        "million",
-        "free",
-        "nfts",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "1m",
-        "programme",
-        "stands",
-        "as",
-        "a",
-        "defiant",
-        "cornerstone",
-        "of",
-        "rebellion",
-        "in",
-        "universe",
-        "revolutionary",
-        "initiative",
-        "driven",
-        "by",
-        "graffpunks",
-        "to"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 9,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 9,
-      "authority": 0
-    }
+    "brand": null
   },
   {
     "title": "Pixel Journey — Crypto Moonboys Wiki",
@@ -12035,7 +12126,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "The CleanupCentr — Crypto Moonboys Wiki",
@@ -12125,7 +12217,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Thera-9 — Crypto Moonboys Wiki",
@@ -12219,7 +12312,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 13,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Ava Chen — Crypto Moonboys Wiki",
@@ -12312,7 +12406,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 10,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Grit42 — Crypto Moonboys Wiki",
@@ -12403,7 +12498,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "harrison_rift — Crypto Moonboys Wiki",
@@ -12494,7 +12590,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Dragan Volkov — Crypto Moonboys Wiki",
@@ -12587,7 +12684,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 10,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "FGL Token — Crypto Moonboys Wiki",
@@ -12678,7 +12776,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Billy the Goat Kid — Crypto Moonboys Wiki",
@@ -12770,7 +12869,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Forklord You — Crypto Moonboys Wiki",
@@ -12862,7 +12962,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 13,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Seeding Rights — Crypto Moonboys Wiki",
@@ -12954,7 +13055,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 13,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Phygital Prints — Crypto Moonboys Wiki",
@@ -13046,7 +13148,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 24,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Pixil Mini — Crypto Moonboys Wiki",
@@ -13136,7 +13239,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "DeFi Mining — Crypto Moonboys Wiki",
@@ -13226,7 +13330,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "AtomicAssets — Crypto Moonboys Wiki",
@@ -13312,7 +13417,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "WAX DEXs & DeFi — Crypto Moonboys Wiki",
@@ -13403,7 +13509,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "GRIT — Crypto Moonboys Wiki",
@@ -13492,7 +13599,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 10,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Metaverse Battles — Crypto Moonboys Wiki",
@@ -13583,7 +13691,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 36,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Bone Idol Ink — Crypto Moonboys Wiki",
@@ -13671,7 +13780,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 18,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "NFTHive — Crypto Moonboys Wiki",
@@ -13760,7 +13870,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Sarah PU51FLY — Crypto Moonboys Wiki",
@@ -13851,7 +13962,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 19,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The Bear Market Siege — Crypto Moonboys Wiki",
@@ -13946,7 +14058,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 26,
       "authority": 5.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Darren Cullen (SER) — Crypto Moonboys Wiki",
@@ -14042,7 +14155,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 22,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "GKniftyHEADS Phase One Two Three — Crypto Moonboys Wiki",
@@ -14137,86 +14251,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
-    }
-  },
-  {
-    "title": "The GRAFFPUNKS — Crypto Moonboys Wiki",
-    "desc": "Street-art rebels and blockchain music revolutionaries",
-    "url": "/wiki/the-graffpunks.html",
-    "tags": [
-      "graffpunks",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "graffpunks crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 205,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 693,
-      "keyword_bag_size": 12,
-      "heading_count": 6,
-      "list_count": 1,
-      "internal_link_count": 5,
-      "paragraph_count": 17,
-      "section_count": 5,
-      "lore_paragraph_count": 16,
-      "content_quality_score": 68,
-      "authority_score": 14
     },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 35,
-      "keyword_bag_points": 12,
-      "content_quality_points": 75,
-      "authority_points": 18,
-      "final_rank_score": 205,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "the graffpunks crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "graffpunks",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "graffpunks",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "street",
-        "art",
-        "rebels",
-        "and",
-        "blockchain",
-        "music",
-        "revolutionaries"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 45,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 38,
-      "authority": 3.5
-    }
+    "brand": null
   },
   {
     "title": "WAX NFT Marketplaces — Crypto Moonboys Wiki",
@@ -14298,7 +14334,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Gang Signs (Card Game) — Crypto Moonboys Wiki",
@@ -14392,7 +14429,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 25,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "NeftyBlocks — Crypto Moonboys Wiki",
@@ -14476,7 +14514,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Alcor Exchange — Crypto Moonboys Wiki",
@@ -14562,7 +14601,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Nifty Wizards — Crypto Moonboys Wiki",
@@ -14648,7 +14688,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Queen Sarah P-fly — Crypto Moonboys Wiki",
@@ -14741,7 +14782,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 27,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The Great Dip — Crypto Moonboys Wiki",
@@ -14829,7 +14871,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 27,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "$LFGK — Crypto Moonboys Wiki",
@@ -14919,7 +14962,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 43,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "AtomicHub — Crypto Moonboys Wiki",
@@ -15006,7 +15050,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "NBGX Token — Crypto Moonboys Wiki",
@@ -15100,7 +15145,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 19,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "WAX PEPE — Crypto Moonboys Wiki",
@@ -15184,7 +15230,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Graffiti Kings — Crypto Moonboys Wiki",
@@ -15276,7 +15323,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 36,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Rug Pull Wars — Crypto Moonboys Wiki",
@@ -15363,7 +15411,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 25,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Rust2Riches — Crypto Moonboys Wiki",
@@ -15447,7 +15496,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "The WAGMI Prophecy — Crypto Moonboys Wiki",
@@ -15533,7 +15583,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 24,
       "authority": 5.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The Whale Lords — Crypto Moonboys Wiki",
@@ -15626,7 +15677,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 26,
       "authority": 5.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "GraffPUNKS Collection — Crypto Moonboys Wiki",
@@ -15715,6 +15767,13 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 39,
       "authority": 3.5
+    },
+    "brand": {
+      "brand_family": "graffpunks",
+      "concept_type": "collection",
+      "canonical_concept_id": "graffpunks:collection",
+      "canonical_slug": "graffpunks-collection",
+      "parent_concept": "graffpunks"
     }
   },
   {
@@ -15799,7 +15858,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "2025 Metaverse Launch Party — Crypto Moonboys Wiki",
@@ -15890,7 +15950,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 33,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "NGMI Chronicles — Crypto Moonboys Wiki",
@@ -15977,7 +16038,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 25,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Snipey 'D-Man' Sirus — Crypto Moonboys Wiki",
@@ -16051,7 +16113,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 9,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "PMSL Token — Crypto Moonboys Wiki",
@@ -16140,7 +16203,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 17,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The FOMO Plague — Crypto Moonboys Wiki",
@@ -16235,7 +16299,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 21,
       "authority": 5.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Paper Hands — Crypto Moonboys Wiki",
@@ -16322,7 +16387,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 24,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The Satoshi Scroll — Crypto Moonboys Wiki",
@@ -16411,7 +16477,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 32,
       "authority": 5.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "WAXP Exchange — Crypto Moonboys Wiki",
@@ -16492,7 +16559,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "No Ball Games (NBG) — Crypto Moonboys Wiki",
@@ -16573,7 +16641,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 18,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Bitcoin Kid Army — Crypto Moonboys Wiki",
@@ -16651,7 +16720,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 19,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Croydon Tower Blocks — Crypto Moonboys Wiki",
@@ -16730,7 +16800,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "XRP Ledger — Crypto Moonboys Wiki",
@@ -16819,7 +16890,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "EXYBOY — Crypto Moonboys Wiki",
@@ -16907,7 +16979,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "TAGZcoin — Crypto Moonboys Wiki",
@@ -16995,7 +17068,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Substack Posts on graffpunks.substack.com — Crypto Moonboys Wiki",
@@ -17089,7 +17163,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 26,
       "authority": 5.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The GKniftyHEADS — Crypto Moonboys Wiki",
@@ -17173,7 +17248,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 16,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Maidstone Base — Crypto Moonboys Wiki",
@@ -17252,7 +17328,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 13,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "TOTO on XRPL — Crypto Moonboys Wiki",
@@ -17349,7 +17426,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "589 on XRPL — Crypto Moonboys Wiki",
@@ -17445,7 +17523,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Alfie 'Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
@@ -17520,7 +17599,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 18,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "666 on XRPL — Crypto Moonboys Wiki",
@@ -17616,7 +17696,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "JELLY on XRPL — Crypto Moonboys Wiki",
@@ -17711,7 +17792,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Opulence on XRPL — Crypto Moonboys Wiki",
@@ -17806,7 +17888,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "PROFIT on XRPL — Crypto Moonboys Wiki",
@@ -17901,7 +17984,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "BEAR on XRPL — Crypto Moonboys Wiki",
@@ -17996,7 +18080,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "DROP on XRPL — Crypto Moonboys Wiki",
@@ -18090,7 +18175,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Darren Cullen (SER) - Real — Crypto Moonboys Wiki",
@@ -18173,7 +18259,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "PMSL on XRPL — Crypto Moonboys Wiki",
@@ -18265,7 +18352,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "XOGE — Crypto Moonboys Wiki",
@@ -18354,7 +18442,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "PHNIX — Crypto Moonboys Wiki",
@@ -18441,7 +18530,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "XMEME — Crypto Moonboys Wiki",
@@ -18528,95 +18618,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
-  },
-  {
-    "title": "GraffPUNKS 24/7 Blockchain Radio Station — Crypto Moonboys Wiki",
-    "desc": "Online radio station for GraffPUNKS community",
-    "url": "/wiki/graffpunks-247-blockchain-radio-station.html",
-    "tags": [
-      "graffpunks",
-      "24",
-      "blockchain",
-      "radio",
-      "station",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "graffpunks 247 blockchain radio station"
-      }
-    ],
-    "rank_score": 151,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 8,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 124,
-      "keyword_bag_size": 13,
-      "heading_count": 6,
-      "list_count": 2,
-      "internal_link_count": 3,
-      "paragraph_count": 4,
-      "section_count": 5,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 36,
-      "authority_score": 14
     },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 6,
-      "keyword_bag_points": 13,
-      "content_quality_points": 47,
-      "authority_points": 20,
-      "final_rank_score": 151,
-      "authority_graph_points": 6
-    },
-    "search_index": {
-      "normalized_title": "graffpunks 24 7 blockchain radio station crypto moonboys wiki",
-      "tokens": [
-        "graffpunks",
-        "24",
-        "7",
-        "blockchain",
-        "radio",
-        "station",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffpunks",
-        "24",
-        "7",
-        "blockchain",
-        "radio",
-        "station",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "online",
-        "for",
-        "community",
-        "247"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 1,
-      "outbound_count": 30,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 23,
-      "authority": 5.5
-    }
+    "brand": null
   },
   {
     "title": "Great Datapocalypse of 2789 — Crypto Moonboys Wiki",
@@ -18702,7 +18705,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 16,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "SIGMA on XRPL — Crypto Moonboys Wiki",
@@ -18796,7 +18800,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Tabby — Crypto Moonboys Wiki",
@@ -18883,7 +18888,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "XRP Kids NBG Updates — Crypto Moonboys Wiki",
@@ -18967,7 +18973,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 21,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "XRP Meme Coins — Crypto Moonboys Wiki",
@@ -19053,7 +19060,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "XRPL Tokens — Crypto Moonboys Wiki",
@@ -19138,7 +19146,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "XRP — Crypto Moonboys Wiki",
@@ -19222,7 +19231,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "No Ball Games (NBG) Collection — Crypto Moonboys Wiki",
@@ -19307,7 +19317,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "XRP Army / ARMY — Crypto Moonboys Wiki",
@@ -19392,7 +19403,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "NeftyBlocks Midevilpunks Collection — Crypto Moonboys Wiki",
@@ -19471,7 +19483,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Medium Articles by @sercullen — Crypto Moonboys Wiki",
@@ -19550,7 +19563,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Spraycode &amp; Writcode — Crypto Moonboys Wiki",
@@ -19633,7 +19647,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 13,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "$LFGK Token — Crypto Moonboys Wiki",
@@ -19713,7 +19728,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "SMArT NFT Mechanics — Crypto Moonboys Wiki",
@@ -19792,7 +19808,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 9,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Decentraland Events — Crypto Moonboys Wiki",
@@ -19871,7 +19888,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 10,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "XRP KIDs Genesis NFTs — Crypto Moonboys Wiki",
@@ -19951,7 +19969,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 24,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "$GK Tokens — Crypto Moonboys Wiki",
@@ -20033,7 +20052,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 29,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Medium Articles by @GKniftyHEADS — Crypto Moonboys Wiki",
@@ -20112,7 +20132,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Medium Articles by @GRAFFPUNKS — Crypto Moonboys Wiki",
@@ -20191,7 +20212,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 23,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Medium Articles by @HODLWARRIORS — Crypto Moonboys Wiki",
@@ -20270,7 +20292,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 9,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Stake for $GK Tokens — Crypto Moonboys Wiki",
@@ -20348,7 +20371,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 17,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "$GK Token — Crypto Moonboys Wiki",
@@ -20425,7 +20449,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 25,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Leake Street Tunnel — Crypto Moonboys Wiki",
@@ -20502,7 +20527,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 12,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Graffiti Queens Exhibition — Crypto Moonboys Wiki",
@@ -20578,7 +20604,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 10,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "$LFGK Rewards — Crypto Moonboys Wiki",
@@ -20654,7 +20681,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "AtomicHub Graffpunks Collection — Crypto Moonboys Wiki",
@@ -20729,7 +20757,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 23,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Staking for $GK Tokens — Crypto Moonboys Wiki",
@@ -20806,7 +20835,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "GAMES4PUNKS Telegram Games — Crypto Moonboys Wiki",
@@ -20880,7 +20910,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 12,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The Sacred Chain — Crypto Moonboys Wiki",
@@ -20958,7 +20989,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 12,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Hard Fork Games Event — Crypto Moonboys Wiki",
@@ -21035,7 +21067,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 15,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "THE GRIDS — Crypto Moonboys Wiki",
@@ -21109,7 +21142,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 5,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Graffiti Queens In Decentraland Ecosystem — Crypto Moonboys Wiki",
@@ -21186,7 +21220,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Tokens — Crypto Moonboys Wiki",
@@ -21263,7 +21298,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 9,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "GraffPUNKS 24/7 Blockchain Radio Station — Crypto Moonboys Wiki",
@@ -21348,7 +21384,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 18,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "PUNK Coin — Crypto Moonboys Wiki",
@@ -21421,7 +21458,8 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 12,
       "authority": 3.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The Bear Market Siege — Crypto Moonboys Wiki",
@@ -21502,7 +21540,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 1,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Substack Posts on graffpunks.substack.com — Crypto Moonboys Wiki",
@@ -21585,7 +21624,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 15,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "NFTs (Non-Fungible Tokens) — Crypto Moonboys Wiki",
@@ -21664,7 +21704,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 12,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Samael.exe — Crypto Moonboys Wiki",
@@ -21741,7 +21782,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 1,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The WAGMI Prophecy — Crypto Moonboys Wiki",
@@ -21819,7 +21861,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 1,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Crypto Wallets — Crypto Moonboys Wiki",
@@ -21893,7 +21936,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 1,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "MiDEViL Hero Arena (Game) — Crypto Moonboys Wiki",
@@ -21968,7 +22012,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 5,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "GraffPUNKS NFTs — Crypto Moonboys Wiki",
@@ -22041,7 +22086,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 24,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "The Whale Lords — Crypto Moonboys Wiki",
@@ -22119,7 +22165,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 1,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Hard Fork Games — Crypto Moonboys Wiki",
@@ -22197,7 +22244,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 11,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Meme Coins — Crypto Moonboys Wiki",
@@ -22274,7 +22322,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 2,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Nine Armies — Crypto Moonboys Wiki",
@@ -22347,7 +22396,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 1,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "The FOMO Plague — Crypto Moonboys Wiki",
@@ -22425,7 +22475,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 2,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "The Satoshi Scroll — Crypto Moonboys Wiki",
@@ -22503,7 +22554,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 2,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "1M Free NFTs — Crypto Moonboys Wiki",
@@ -22575,7 +22627,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 9,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
@@ -22651,7 +22704,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 8,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Blockchain Technology — Crypto Moonboys Wiki",
@@ -22727,7 +22781,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 5,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Ethereum (ETH) — Crypto Moonboys Wiki",
@@ -22803,7 +22858,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 2,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Solana (SOL) — Crypto Moonboys Wiki",
@@ -22879,7 +22935,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 2,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "DeFi (Decentralised Finance) — Crypto Moonboys Wiki",
@@ -22955,7 +23012,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 3,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "Crypto Exchanges — Crypto Moonboys Wiki",
@@ -23029,7 +23087,8 @@
       "existing_outbound_count": 1,
       "suggested_outbound_count": 2,
       "authority": 0.5
-    }
+    },
+    "brand": null
   },
   {
     "title": "XRPL Trust Lines — Crypto Moonboys Wiki",
@@ -23101,7 +23160,8 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   },
   {
     "title": "XRPL DEX — Crypto Moonboys Wiki",
@@ -23174,6 +23234,7 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    }
+    },
+    "brand": null
   }
 ]
