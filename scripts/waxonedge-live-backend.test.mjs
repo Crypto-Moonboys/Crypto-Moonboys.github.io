@@ -129,8 +129,8 @@ ok('frontend calls /api/waxonedge/bootstrap first', frontend.includes("waxonedge
 ok('frontend direct source fetch is diagnostic fallback', frontend.includes('loadDiagnosticFallback') && frontend.includes('Backend bootstrap unavailable'));
 ok('frontend does not use Alcor chart fallback in backend mode',
   frontend.includes("loadChartData('backend:' + context.selection.key)") &&
-  frontend.includes('Requires indexed backend candles') &&
-  frontend.includes('No fake chart candles are shown'));
+  frontend.includes('renderChartUnavailable(context') &&
+  frontend.includes('No fake candles are shown'));
 ok('frontend backend chart request captures selection before async call and clears pending',
   frontend.includes('var backendChartKey = marketId') &&
   frontend.includes('var chartContract = state.selected.contract') &&
@@ -149,7 +149,7 @@ ok('frontend renders indexed candles with TradingView Lightweight Charts, not sy
 ok('frontend fallback mode does not claim indexed backend adapters',
   frontend.includes('Diagnostic fallback active - backend adapter status unavailable') &&
   frontend.includes("if (state.backend.mode === 'backend')") &&
-  frontend.includes('Adapters active: Alcor API + swap.alcor + swap.taco + swap.nefty + swap.box'));
+  !frontend.includes('Adapters active: Alcor API + swap.alcor + swap.taco + swap.nefty + swap.box'));
 ok('frontend source panel names all core backend adapters',
   ['swap-alcor', 'swap-taco', 'nefty-contract', 'swap-box'].every((id) => frontendSources.includes(id)));
 ok('frontend maps backend adapter source labels',
@@ -165,7 +165,11 @@ ok('Node/Wrangler versions are aligned on Node 22',
   packageLock.packages[''].engines.node === '>=22' &&
   packageJson.devDependencies &&
   packageJson.devDependencies.wrangler === '^4.100.0');
-ok('frontend default state still avoids eosio.token/WAX dead detail', frontend.includes('WAX_NATIVE_KEY') && frontend.includes('key !== WAX_NATIVE_KEY'));
+ok('frontend default state still avoids eosio.token/WAX dead detail', frontend.includes('WAX_NATIVE_KEY') && frontend.includes('key === WAX_NATIVE_KEY'));
+ok('frontend dashboard-first polish is present',
+  html.includes('woe-dashboard-shell') &&
+  frontend.includes('renderDashboard()') &&
+  frontend.includes('selectedPair && liquidity > 0 && volume > 0'));
 ok('frontend has no wallet/swap/liquidity action buttons',
   !/(>|\bvalue=["'])(Connect Wallet|Add Liquidity|Remove Liquidity|Trade on Swap)(<|["'])/.test(frontend + html));
 

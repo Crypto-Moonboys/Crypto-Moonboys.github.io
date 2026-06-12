@@ -6,9 +6,24 @@
 
 /* ── Page layout ─────────────────────────────────────────────── */
 .woe-page {
-  padding: 18px 16px 60px;
-  max-width: 1360px;
+  padding: 14px 16px 60px;
+  max-width: 1720px;
   margin: 0 auto;
+}
+
+body.page-waxonedge #sidebar,
+body.page-waxonedge #site-header,
+body.page-waxonedge .site-paperclip-agent {
+  display: none !important;
+}
+
+body.page-waxonedge #layout,
+body.page-waxonedge #main-wrapper,
+body.page-waxonedge #content {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .woe-og-bar {
@@ -364,6 +379,183 @@
   display: block;
 }
 
+.woe-dashboard-shell {
+  margin: 0 0 24px;
+  border: 1px solid rgba(0, 229, 255, 0.22);
+  background:
+    linear-gradient(180deg, rgba(9, 17, 21, 0.98), rgba(4, 8, 11, 0.98)),
+    #05090c;
+  box-shadow:
+    inset 0 1px 0 rgba(145, 255, 242, 0.08),
+    0 0 36px rgba(0, 229, 255, 0.07);
+  padding: 14px;
+}
+
+.woe-dashboard-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 560px);
+  gap: 14px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+
+.woe-kicker {
+  color: var(--neon-green, #39ff14);
+  font-size: .66rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+
+.woe-dashboard-hero h2 {
+  color: #eaffff;
+  font-size: clamp(1.2rem, 2vw, 2rem);
+  line-height: 1.15;
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.woe-dashboard-copy {
+  color: #93a7af;
+  max-width: 900px;
+  line-height: 1.55;
+  margin: 10px 0 0;
+}
+
+.woe-adapter-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.woe-adapter-pill,
+.woe-dex-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  border: 1px solid rgba(0, 229, 255, 0.28);
+  background: rgba(0, 229, 255, 0.08);
+  color: #dffcff;
+  padding: 3px 9px;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.1);
+}
+
+.woe-adapter-pill.is-indexed {
+  border-color: rgba(57, 255, 20, 0.42);
+  background: rgba(57, 255, 20, 0.08);
+  color: var(--neon-green, #39ff14);
+}
+
+.woe-adapter-pill.is-pending {
+  color: #94a3ad;
+}
+
+.woe-dashboard-metrics {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.woe-dashboard-card,
+.woe-dashboard-panel {
+  border: 1px solid #172a31;
+  background: rgba(8, 14, 18, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.035);
+}
+
+.woe-dashboard-card {
+  padding: 10px;
+  min-height: 72px;
+}
+
+.woe-dashboard-card span,
+.woe-chart-placeholder-grid span {
+  display: block;
+  color: #7f949e;
+  font-size: .64rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+
+.woe-dashboard-card strong {
+  display: block;
+  color: #ebffff;
+  font-size: .92rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.woe-dashboard-panels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.woe-dashboard-panel {
+  padding: 12px;
+}
+
+.woe-dashboard-panel h3 {
+  color: var(--neon-cyan, #00e5ff);
+  font-size: .78rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+
+.woe-mini-list {
+  display: grid;
+  gap: 7px;
+}
+
+.woe-mini-row {
+  display: grid;
+  grid-template-columns: 36px minmax(76px, 1fr) minmax(80px, 1fr) minmax(82px, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-height: 34px;
+  padding: 7px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.025);
+  color: #dbe7f3;
+  text-decoration: none;
+}
+
+.woe-mini-row strong,
+.woe-mini-row em {
+  overflow-wrap: anywhere;
+}
+
+.woe-mini-row em {
+  color: var(--neon-green, #39ff14);
+  font-style: normal;
+  text-align: right;
+}
+
+.woe-mini-rank {
+  color: #71828b;
+  font-weight: 800;
+}
+
+.woe-featured-token-card {
+  display: grid;
+  gap: 8px;
+  color: #dbe7f3;
+}
+
+.woe-featured-token-card strong {
+  color: #ebffff;
+  font-size: 1rem;
+}
+
 .woe-lightweight-chart {
   width: 100%;
   min-height: 320px;
@@ -394,6 +586,42 @@
   text-align: center;
   font-size: .86rem;
   line-height: 1.6;
+}
+
+.woe-chart-placeholder-card {
+  min-height: 320px;
+  border: 1px dashed rgba(0, 229, 255, 0.26);
+  background:
+    radial-gradient(circle at 22% 24%, rgba(0, 229, 255, 0.08), transparent 28%),
+    rgba(3, 8, 11, 0.82);
+  padding: 18px;
+  display: grid;
+  align-content: center;
+  gap: 14px;
+}
+
+.woe-chart-placeholder-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.woe-chart-placeholder-grid div {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 10px;
+}
+
+.woe-chart-placeholder-grid strong {
+  color: #eaffff;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.woe-chart-placeholder-card p {
+  color: #91a5ad;
+  margin: 0;
+  line-height: 1.5;
 }
 
 .woe-chart-axis {
@@ -493,6 +721,7 @@
 /* ── Tables ──────────────────────────────────────────────────── */
 .woe-table-wrap {
   overflow-x: auto;
+  max-width: 100%;
   border-radius: 0;
   border: 1px solid #18242a;
   background: #06090b;
@@ -621,6 +850,8 @@
 #woe-table-matrix {
   border-collapse: separate;
   border-spacing: 0 5px;
+  min-width: 1320px;
+  table-layout: fixed;
 }
 
 #woe-table-matrix thead th {
@@ -631,6 +862,11 @@
   background: #0b1013;
   border-top: 1px solid #18242a;
   border-bottom: 1px solid #18242a;
+  white-space: normal;
+  vertical-align: middle;
+  padding-top: 11px;
+  padding-bottom: 11px;
+  line-height: 1.35;
 }
 
 #woe-table-matrix tbody tr td:first-child {
@@ -643,6 +879,20 @@
 
 #woe-table-matrix tbody tr:hover td {
   background: #10181c;
+}
+
+.woe-dex-badge {
+  justify-content: center;
+  min-width: 72px;
+  color: #91fff2;
+}
+
+.woe-source-adapter,
+.woe-source-meta {
+  display: block;
+  color: #8398a2;
+  font-size: .7rem;
+  line-height: 1.35;
 }
 
 /* ── Table filter inputs ─────────────────────────────────────── */
@@ -978,5 +1228,40 @@ body.woe-wide-mode .woe-chart-svg {
   }
   #woe-table-matrix {
     border-spacing: 0 3px;
+  }
+}
+
+@media (max-width: 1120px) {
+  .woe-dashboard-hero,
+  .woe-dashboard-panels {
+    grid-template-columns: 1fr;
+  }
+  .woe-adapter-strip {
+    justify-content: flex-start;
+  }
+  .woe-dashboard-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .woe-dashboard-shell {
+    padding: 10px;
+  }
+  .woe-dashboard-metrics,
+  .woe-dashboard-panels,
+  .woe-chart-placeholder-grid {
+    grid-template-columns: 1fr;
+  }
+  .woe-dashboard-card {
+    min-height: 62px;
+  }
+  .woe-mini-row {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+  .woe-mini-row span:not(.woe-mini-rank),
+  .woe-mini-row em {
+    grid-column: 2;
+    text-align: left;
   }
 }

@@ -51,7 +51,7 @@ ok('waxonedge clean-route alias redirects to /waxonedge.html', aliasHtml.include
 ok('waxonedge clean-route alias preserves query-string routing', aliasHtml.includes("window.location.search || ''"));
 ok('waxonedge clean-route alias preserves hash routing', aliasHtml.includes("window.location.hash || ''"));
 ok('waxonedge.html includes OG WaxOnEdge top bar', html.includes('woe-og-bar'));
-ok('waxonedge.html includes OG nav labels', html.includes('HOME') && html.includes('SPOT') && html.includes('MARKETS') && html.includes('ANALYTICS'));
+ok('waxonedge.html includes OG nav labels', html.includes('DASHBOARD') && html.includes('SPOT') && html.includes('MARKETS') && html.includes('ANALYTICS') && html.includes('BACK TO WIKI'));
 ok('waxonedge.html includes WAX price block', html.includes('id="woe-topbar-wax-price"'));
 ok('waxonedge.html waits for live WAX price data by default', html.includes('Waiting for live data…'));
 ok('waxonedge.html includes project/account action area', html.includes('PROJECT') && html.includes('ACCOUNT'));
@@ -180,12 +180,24 @@ ok(
 );
 ok(
   'waxonedge.js skips WAX_NATIVE_KEY when picking default token',
-  js.includes('key !== WAX_NATIVE_KEY'),
+  js.includes('key === WAX_NATIVE_KEY'),
 );
 ok(
-  'waxonedge.js prefers tokens that are tokenA in an Alcor market (alcorBaseKeys)',
-  js.includes('alcorBaseKeys'),
+  'waxonedge.js only auto-selects tokens with real indexed strength',
+  js.includes('selected_pair_id') &&
+  js.includes('liquidity > 0') &&
+  js.includes('volume > 0') &&
+  js.includes('usefulRows.length > 0'),
 );
+ok('waxonedge.html renders dashboard-first indexed panels',
+  html.includes('woe-dashboard-shell') &&
+  html.includes('Top Tokens') &&
+  html.includes('Top Pairs') &&
+  html.includes('Featured Indexed Token'));
+ok('waxonedge.html removes old static MVP wording',
+  !html.includes('Static read-only MVP'));
+ok('waxonedge.css hides shared shell helper overlays on WaxOnEdge',
+  css.includes('body.page-waxonedge .site-paperclip-agent'));
 
 // ── New: scanner-first empty state ──────────────────────────────────
 ok(
