@@ -45,6 +45,7 @@ const aggregateMigration = read('workers/moonboys-api/migrations/023_waxonedge_t
 const frontend = read('js/waxonedge.js');
 const frontendSources = read('js/waxonedge-sources.js');
 const html = read('waxonedge.html');
+const tokenHtml = read('analytics/token/index.html');
 
 for (const table of [
   'waxonedge_sync_runs',
@@ -141,7 +142,7 @@ ok('frontend renders backend candle bundles without context.chartMarket',
   frontend.includes('return renderChartBundle(backendBundle, backendMarket, backendChartMeta)') &&
   frontend.includes('function renderChartBundle(bundle, market, chartMetaLabel)'));
 ok('frontend renders indexed candles with TradingView Lightweight Charts, not symbol widgets',
-  html.includes('lightweight-charts@5.2.0') &&
+  tokenHtml.includes('lightweight-charts@5.2.0') &&
   frontend.includes('window.LightweightCharts') &&
   frontend.includes('tv.createChart') &&
   frontend.includes('CandlestickSeries') &&
@@ -166,7 +167,7 @@ ok('frontend maps backend adapter source labels',
   frontend.includes('backendSourceMeta') &&
   ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'].every((source) => frontend.includes(source)));
 ok('frontend has no fake all-DEX claims',
-  !/all\s+DEXs|all\s+DEXes|every\s+DEX/i.test(frontend + html + route));
+  !/all\s+DEXs|all\s+DEXes|every\s+DEX/i.test(frontend + html + tokenHtml + route));
 ok('Node/Wrangler versions are aligned on Node 22',
   ci.includes('node-version: 22') &&
   packageJson.engines &&
@@ -176,14 +177,16 @@ ok('Node/Wrangler versions are aligned on Node 22',
   packageJson.devDependencies &&
   packageJson.devDependencies.wrangler === '^4.100.0');
 ok('frontend default state still avoids eosio.token/WAX dead detail', frontend.includes('WAX_NATIVE_KEY') && frontend.includes('key === WAX_NATIVE_KEY'));
-ok('frontend dashboard-first polish is present',
+ok('frontend scanner front door and token analytics route are present',
   html.includes('woe-bubble-board') &&
-  html.includes('woe-token-rank-grid') &&
-  frontend.includes('renderDashboard()') &&
+  !html.includes('woe-token-rank-grid') &&
+  tokenHtml.includes('woe-token-analytics-page') &&
+  tokenHtml.includes('woe-analytics-chart-panel') &&
+  frontend.includes("'/analytics/token/?token='") &&
   frontend.includes("state.filters.bubbleMetric === 'volume'") &&
   frontend.includes('hasRealSignal'));
 ok('frontend has no wallet/swap/liquidity action buttons',
-  !/(>|\bvalue=["'])(Connect Wallet|Add Liquidity|Remove Liquidity|Trade on Swap)(<|["'])/.test(frontend + html));
+  !/(>|\bvalue=["'])(Connect Wallet|Add Liquidity|Remove Liquidity|Trade on Swap)(<|["'])/.test(frontend + html + tokenHtml));
 
 try {
   execFileSync(process.execPath, ['--check', path.join(ROOT, 'workers/moonboys-api/routes/waxonedge.js')], { encoding: 'utf8' });

@@ -337,6 +337,11 @@
     return tokenKey(params.get('contract'), params.get('token'));
   }
 
+  function buildTokenAnalyticsHref(symbol, contract) {
+    return '/analytics/token/?token=' + encodeURIComponent(normalizeSymbol(symbol)) +
+      '&contract=' + encodeURIComponent(normalizeContract(contract));
+  }
+
   function renderRail(records, controls) {
     var totalLiquidityWax = records.reduce(function (sum, record) { return sum + (record.liquidityWax || 0); }, 0);
     var totalVolume = records.reduce(function (sum, record) { return sum + (record.volume24 || 0); }, 0);
@@ -419,21 +424,7 @@
 
   function navigateToToken(symbol, contract) {
     if (!symbol || !contract) return;
-    var url = new URL(window.location.href);
-    url.searchParams.set('token', symbol);
-    url.searchParams.set('contract', contract);
-    url.hash = 'woe-token-detail';
-    window.history.pushState({}, '', url.toString());
-    if (typeof PopStateEvent === 'function') {
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    } else {
-      window.dispatchEvent(new Event('popstate'));
-    }
-    renderBubbles();
-    var detail = document.getElementById('woe-token-detail');
-    if (detail && typeof detail.scrollIntoView === 'function') {
-      detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    window.location.href = buildTokenAnalyticsHref(symbol, contract);
   }
 
   function attachBoardDelegates() {

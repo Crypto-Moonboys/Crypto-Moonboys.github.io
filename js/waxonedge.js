@@ -1297,8 +1297,12 @@
   /* ── Tokens scanner ─────────────────────────────────────────── */
 
   function buildTokenHref(symbol, contract) {
-    var basePath = window.location.pathname || '/waxonedge.html';
-    return basePath + '?token=' + encodeURIComponent(symbol) + '&contract=' + encodeURIComponent(contract) + '#woe-token-detail';
+    return '/analytics/token/?token=' + encodeURIComponent(normalizeSymbol(symbol)) +
+      '&contract=' + encodeURIComponent(normalizeContract(contract));
+  }
+
+  function isTokenAnalyticsRoute() {
+    return /\/analytics\/token\/?/.test(window.location.pathname || '');
   }
 
   function attachTokenSelectionLinks() {
@@ -1306,12 +1310,16 @@
       if (link.dataset.bound === 'true') return;
       link.dataset.bound = 'true';
       link.addEventListener('click', function (event) {
-        event.preventDefault();
-        selectToken(link.getAttribute('data-token'), link.getAttribute('data-contract'), true);
-        var detail = document.getElementById('woe-token-detail');
-        if (detail && typeof detail.scrollIntoView === 'function') {
-          detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var token = link.getAttribute('data-token');
+        var contract = link.getAttribute('data-contract');
+        var href = buildTokenHref(token, contract);
+        if (!isTokenAnalyticsRoute()) {
+          event.preventDefault();
+          window.location.href = href;
+          return;
         }
+        event.preventDefault();
+        selectToken(token, contract, true);
       });
     });
   }
@@ -1514,6 +1522,15 @@
     var params = new URLSearchParams(window.location.search || '');
     var symbol = normalizeSymbol(params.get('token'));
     var contract = normalizeContract(params.get('contract'));
+    if ((!symbol || !contract) && isTokenAnalyticsRoute()) {
+      var parts = (window.location.pathname || '').split('/').filter(Boolean);
+      var slug = parts.length >= 3 ? parts[2] : '';
+      var slugMatch = slug.match(/^([^_]+)_(.+)$/);
+      if (slugMatch) {
+        symbol = normalizeSymbol(slugMatch[1]);
+        contract = normalizeContract(slugMatch[2]);
+      }
+    }
     return {
       symbol: symbol,
       contract: contract,
