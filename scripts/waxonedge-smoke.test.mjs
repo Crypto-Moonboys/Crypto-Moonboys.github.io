@@ -135,6 +135,28 @@ ok('waxonedge.js uses path-segment-safe token analytics route detection',
   !js.includes('/\\/analytics\\/token\\/?/.test'));
 ok('waxonedge.js fetches Alcor chart candles from /markets/:id/charts for diagnostic fallback', js.includes('/charts') && js.includes('/markets'));
 ok('waxonedge.js keeps Lightweight Charts support', js.includes('window.LightweightCharts') && js.includes('tv.createChart'));
+ok('waxonedge.js loads selected-token backend detail and pair endpoints',
+  js.includes('function selectedTokenApiPath(selection, child)') &&
+  js.includes("waxonedgeApi(detailPath)") &&
+  js.includes("waxonedgeApi(pairsPath)") &&
+  js.includes("selectedTokenApiPath(selection, 'pairs')"));
+ok('waxonedge.js caches selected-token detail and pair rows',
+  js.includes('tokenDetailCache: {}') &&
+  js.includes('tokenPairCache: {}') &&
+  js.includes('state.tokenDetailCache[selection.key] = mapTokenDetailPayload') &&
+  js.includes('state.tokenPairCache[selection.key] = mapBackendPairRowsToMarkets(pairRows)'));
+ok('waxonedge.js selected token context prefers token-specific pair cache over bootstrap pairs',
+  js.includes('function getMarketsForSelection(selection)') &&
+  js.includes('var cached = state.tokenPairCache && state.tokenPairCache[selection.key]') &&
+  js.includes('if (Array.isArray(cached)) return cached.slice();') &&
+  js.includes('var relevantMarkets = getMarketsForSelection(selection).sort'));
+ok('waxonedge.js ensureSelectedTokenData loads selected-token backend rows before rerender',
+  js.includes('loadSelectedTokenBackendRows(selection).then(function ()') &&
+  js.includes('if (state.selected.key === selection.key) renderSelectedToken();'));
+ok('waxonedge.js uses token aggregate selected price and liquidity stats when available',
+  js.includes('token.selectedPriceWax != null ? token.selectedPriceWax : token.systemPrice') &&
+  js.includes("getTokenMetric(token, 'volume_24h')") &&
+  js.includes("getTokenMetric(token, 'liquidity_wax')"));
 
 ok('waxonedge-bubbles-v2.js uses backend bootstrap endpoint',
   v2Js.includes("var API_PATH = '/api/waxonedge/bootstrap';"));
@@ -150,6 +172,11 @@ ok('waxonedge-bubbles-v2.js preserves distinct indexed source keys',
   v2Js.includes("if (source === 'swap.taco') return 'swap.taco';") &&
   v2Js.includes("if (source === 'swap.nefty') return 'swap.nefty';") &&
   v2Js.includes("if (source === 'swap.box') return 'swap.box';"));
+ok('waxonedge-bubbles-v2.js seeds source badges from token-level source summary before pair fallback',
+  v2Js.includes('function tokenSourceKeys(token)') &&
+  v2Js.includes('token.source_keys || token.sources || token.sourceKeys') &&
+  v2Js.includes('tokenSourceKeys(token).forEach(function (source)') &&
+  v2Js.includes('pairCount: asNum(token.indexed_pair_count) || asNum(token.pair_count) || 0'));
 ok('waxonedge-bubbles-v2.js suppresses self-triggered observer loops',
   v2Js.includes('function commitBoardHtml') && v2Js.includes('window.setTimeout(function ()') && v2Js.includes('state.rendering = false'));
 ok('waxonedge-bubbles-v2.js marks v2 bubbles as bound for the base click binder',
@@ -194,6 +221,9 @@ ok('waxonedge.js maps backend source labels without collapsing swap adapters int
   js.includes("'swap.box': { label: 'swap.box'"));
 ok('waxonedge.js still builds Top 99 scanner records for bubble sizing', js.includes('getRankedTokenRecords().slice(0, 99)'));
 ok('waxonedge.js keeps pair matrix renderer for token analytics route', js.includes('function renderMatrix') && js.includes('woe-matrix-body'));
+ok('waxonedge.js token matrix uses selected-token cached markets through context.markets',
+  js.includes('var rows = context.markets;') &&
+  js.includes('state.tokenPairCache[selection.key] = mapBackendPairRowsToMarkets(pairRows)'));
 ok('waxonedge.js renders pair detail on row click', js.includes('function renderPairDetail') && js.includes('woe-pair-detail-link'));
 ok('waxonedge.js no longer auto-selects a default token-first view',
   js.includes("return { symbol: '', contract: '', key: '' };"));

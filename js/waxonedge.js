@@ -48,6 +48,10 @@
     chainStatPending: {},
     chartCache: {},
     chartPending: {},
+    tokenDetailCache: {},
+    tokenPairCache: {},
+    tokenHolderCache: {},
+    tokenBackendPending: {},
     backend: {
       ok: false,
       mode: 'pending',
@@ -110,6 +114,10 @@
     if (!el) return;
     el.className = 'woe-status-dot woe-status-' + stateName;
     el.title = stateName;
+  }
+
+  function hasElement(id) {
+    return !!document.getElementById(id);
   }
 
   function asNum(value) {
@@ -366,6 +374,14 @@
     return apiFetch('/api/waxonedge' + path, 12000);
   }
 
+  function selectedTokenApiPath(selection, child) {
+    if (!selection || !selection.contract || !selection.symbol) return '';
+    return '/token/' +
+      encodeURIComponent(selection.contract) + '/' +
+      encodeURIComponent(selection.symbol) +
+      (child ? '/' + child : '');
+  }
+
   function backendSourceMeta(source) {
     var key = normalizeContract(source || '');
     var map = {
@@ -406,6 +422,8 @@
       tvl_usd: row.tvl_usd,
       selected_pair_source: row.selected_pair_source,
       selected_pair_id: row.selected_pair_id,
+      indexed_pair_count: row.indexed_pair_count,
+      source_keys: row.source_keys,
     };
   }
 
@@ -445,6 +463,7 @@
       volume30dText: INDEXED_BACKEND_TEXT,
       liquidityWax: row.liquidity_wax,
       liquidityUsd: row.liquidity_usd,
+      rankMetric: asNum(row.liquidity_wax) != null ? asNum(row.liquidity_wax) : (asNum(row.volume_24h) || 0),
       liquidityText: formatDualMetric(asNum(row.liquidity_wax), asNum(row.liquidity_usd)),
       pooledTokenAText: assetFromAmount(row.reserve_a, row.token_a_symbol) || UNAVAILABLE_TEXT,
       pooledTokenBText: assetFromAmount(row.reserve_b, row.token_b_symbol) || UNAVAILABLE_TEXT,
@@ -458,6 +477,26 @@
       change24: row.change_24h,
       base_volume: row.volume_24h,
     };
+  }
+
+  function mapBackendPairRowsToMarkets(pairRows) {
+    var mappedPairs = (pairRows || []).map(mapBackendPair);
+    var mappedTickers = (pairRows || []).map(mapBackendTicker);
+    return buildAlcorMarkets(mappedPairs, mappedTickers).sort(function (a, b) {
+      return (b.liquidityWax || 0) - (a.liquidityWax || 0) ||
+        (b.volume24 || 0) - (a.volume24 || 0) ||
+        (b.rankMetric || 0) - (a.rankMetric || 0);
+    });
+  }
+
+  function mapTokenDetailPayload(detailPayload, selection) {
+    var detail = detailPayload || {};
+    var token = detail.token || {};
+    var stats = detail.stats || {};
+    return mapBackendToken(Object.assign({
+      contract: selection.contract,
+      symbol: selection.symbol,
+    }, token, stats));
   }
 
   function markBackendSourceStatus(sourceState) {
@@ -651,11 +690,13 @@
     renderDashboard();
     var initialSelection = pickDefaultSelection();
     renderBubbles();
-    renderTokens();
-    renderGlobalPairMatrix();
+    if (hasElement('woe-token-rank-grid')) renderTokens();
+    if (hasElement('woe-pairs-body')) renderGlobalPairMatrix();
     if (initialSelection.key) state.selected = initialSelection;
-    renderSelectedToken();
-    ensureSelectedTokenData();
+    if (hasElement('woe-token-detail')) {
+      renderSelectedToken();
+      ensureSelectedTokenData();
+    }
   }
 
   function loadDiagnosticFallback() {
@@ -1150,6 +1191,19 @@
 
   function getTokenSources(selectionKey) {
     var found = {};
+    var token = state.tokenMap && state.tokenMap.byKey ? state.tokenMap.byKey[selectionKey] : null;
+    var rawSources = token && token.raw && (token.raw.source_keys || token.raw.sources || token.raw.sourceKeys);
+    if (Array.isArray(rawSources)) {
+      rawSources.forEach(function (source) {
+        source = String(source || '').trim().toLowerCase();
+        if (source) found[source] = true;
+      });
+    } else if (rawSources) {
+      String(rawSources).split(',').forEach(function (source) {
+        source = source.trim().toLowerCase();
+        if (source) found[source] = true;
+      });
+    }
     getAllMarkets().forEach(function (market) {
       if (!marketContainsToken(market, selectionKey)) return;
       var source = market.adapter || market.rawSource || market.source || '';
@@ -1592,19 +1646,64 @@
     return state.alcorMarkets.concat(state.neftyMarkets);
   }
 
+  function loadSelectedTokenBackendRows(selection) {
+    if (!selection || !selection.key) return Promise.resolve();
+    if (state.tokenBackendPending[selection.key]) return state.tokenBackendPending[selection.key];
+    if (state.tokenPairCache[selection.key] && state.tokenDetailCache[selection.key]) {
+      return Promise.resolve();
+    }
+
+    var detailPath = selectedTokenApiPath(selection, '');
+    var pairsPath = selectedTokenApiPath(selection, 'pairs');
+    if (!detailPath || !pairsPath) return Promise.resolve();
+
+    state.tokenBackendPending[selection.key] = Promise.all([
+      waxonedgeApi(detailPath),
+      waxonedgeApi(pairsPath),
+    ]).then(function (results) {
+      var detailPayload = results[0];
+      var pairsPayload = results[1];
+
+      if (detailPayload && detailPayload.ok && detailPayload.data) {
+        state.tokenDetailCache[selection.key] = mapTokenDetailPayload(detailPayload.data, selection);
+      }
+
+      var pairRows = pairsPayload && pairsPayload.ok && Array.isArray(pairsPayload.data)
+        ? pairsPayload.data
+        : [];
+      state.tokenPairCache[selection.key] = mapBackendPairRowsToMarkets(pairRows);
+    }).catch(function () {
+      if (!state.tokenPairCache[selection.key]) state.tokenPairCache[selection.key] = [];
+    }).finally(function () {
+      delete state.tokenBackendPending[selection.key];
+    });
+
+    return state.tokenBackendPending[selection.key];
+  }
+
+  function getMarketsForSelection(selection) {
+    var cached = state.tokenPairCache && state.tokenPairCache[selection.key];
+    if (Array.isArray(cached)) return cached.slice();
+
+    return getAllMarkets().filter(function (market) {
+      return marketContainsToken(market, selection.key);
+    });
+  }
+
   function getSelectedTokenContext() {
     var selection = state.selected;
-    var tokenRecord = findTokenRecord(state.tokenMap, selection.contract, selection.symbol) || {
+    var tokenRecord = state.tokenDetailCache[selection.key] ||
+      findTokenRecord(state.tokenMap, selection.contract, selection.symbol) || {
       symbol: selection.symbol,
       contract: selection.contract,
       decimals: null,
       systemPrice: null,
       usdPrice: null,
     };
-    var relevantMarkets = getAllMarkets().filter(function (market) {
-      return marketContainsToken(market, selection.key);
-    }).sort(function (a, b) {
-      return (b.rankMetric || 0) - (a.rankMetric || 0);
+    var relevantMarkets = getMarketsForSelection(selection).sort(function (a, b) {
+      return (b.liquidityWax || 0) - (a.liquidityWax || 0) ||
+        (b.volume24 || 0) - (a.volume24 || 0) ||
+        (b.rankMetric || 0) - (a.rankMetric || 0);
     });
 
     var alcorMarkets = relevantMarkets.filter(function (market) {
@@ -1944,8 +2043,11 @@
     var chartBundle = context.chartMarket ? state.chartCache[context.chartMarket.marketId] : state.chartCache['backend:' + selection.key];
     var historicalVolumes = computeHistoricalVolumes(chartBundle);
     var canUseHistoricalVolumes = chartBundleHasSelectedBaseVolume(chartBundle, context);
-    var currentPriceWax = token.systemPrice;
-    var currentPriceUsd = token.usdPrice;
+    var currentPriceWax = token.selectedPriceWax != null ? token.selectedPriceWax : token.systemPrice;
+    var currentPriceUsd = token.selectedPriceUsd != null ? token.selectedPriceUsd : token.usdPrice;
+    var aggregateVolume24 = getTokenMetric(token, 'volume_24h');
+    var aggregateLiquidityWax = getTokenMetric(token, 'liquidity_wax') || getTokenMetric(token, 'tvl_wax');
+    var aggregateLiquidityUsd = getTokenMetric(token, 'liquidity_usd') || getTokenMetric(token, 'tvl_usd');
     var sourceNames = uniqueList(context.markets.map(function (market) {
       return getDexShortLabel(market.source || market.adapter || '');
     }));
@@ -1980,12 +2082,16 @@
     statsHtml += statRow('24h price change', context.strongestMarket && context.strongestMarket.change24 != null
       ? '<span class="' + escHtml(pctClass(context.strongestMarket.change24)) + '">' + escHtml(fmtPct(context.strongestMarket.change24)) + '</span>'
       : availabilityHtml());
-    statsHtml += statRow('24h volume', context.primaryVolumeMarket && context.primaryVolumeMarket.volume24 != null && isSelectedTokenBaseMarket(context.primaryVolumeMarket, selection)
+    statsHtml += statRow('24h volume', aggregateVolume24 != null
+      ? escHtml(fmtNum(aggregateVolume24) + ' ' + selection.symbol)
+      : (context.primaryVolumeMarket && context.primaryVolumeMarket.volume24 != null && isSelectedTokenBaseMarket(context.primaryVolumeMarket, selection)
       ? escHtml(context.primaryVolumeMarket.volume24Text)
-      : availabilityHtml());
-    statsHtml += statRow('Total liquidity', context.pairLiquidityWax != null || context.pairLiquidityUsd != null
+      : availabilityHtml()));
+    statsHtml += statRow('Total liquidity', aggregateLiquidityWax != null || aggregateLiquidityUsd != null
+      ? escHtml(formatDualMetric(aggregateLiquidityWax, aggregateLiquidityUsd))
+      : (context.pairLiquidityWax != null || context.pairLiquidityUsd != null
       ? escHtml(formatDualMetric(context.pairLiquidityWax, context.pairLiquidityUsd))
-      : availabilityHtml());
+      : availabilityHtml()));
     statsHtml += statRow('Cumulated pair liquidity', context.pairLiquidityWax != null || context.pairLiquidityUsd != null
       ? escHtml(formatDualMetric(context.pairLiquidityWax, context.pairLiquidityUsd))
       : availabilityHtml());
@@ -2314,16 +2420,26 @@
 
   function ensureSelectedTokenData() {
     if (!state.selected.key) return;
-    var context = getSelectedTokenContext();
-    ensureSelectedChainStat(context.selection);
+    var selection = state.selected;
+    ensureSelectedChainStat(selection);
+
     if (state.backend.mode === 'backend') {
-      loadChartData('backend:' + context.selection.key).then(function () {
-        if (state.selected.key === context.selection.key) renderSelectedToken();
+      loadSelectedTokenBackendRows(selection).then(function () {
+        if (state.selected.key === selection.key) renderSelectedToken();
       });
-    } else if (context.chartMarket && context.chartMarket.marketId) {
-      loadChartData(context.chartMarket.marketId).then(function () {
-        if (state.selected.key === context.selection.key) renderSelectedToken();
+    }
+
+    if (state.backend.mode === 'backend') {
+      loadChartData('backend:' + selection.key).then(function () {
+        if (state.selected.key === selection.key) renderSelectedToken();
       });
+    } else {
+      var context = getSelectedTokenContext();
+      if (context.chartMarket && context.chartMarket.marketId) {
+        loadChartData(context.chartMarket.marketId).then(function () {
+          if (state.selected.key === selection.key) renderSelectedToken();
+        });
+      }
     }
   }
 
@@ -2456,9 +2572,11 @@
       var selection = getSelectionFromLocation();
       if (!selection.key) return;
       state.selected = selection;
-      renderTokens();
-      renderSelectedToken();
-      ensureSelectedTokenData();
+      if (hasElement('woe-token-rank-grid')) renderTokens();
+      if (hasElement('woe-token-detail')) {
+        renderSelectedToken();
+        ensureSelectedTokenData();
+      }
     });
   }
 

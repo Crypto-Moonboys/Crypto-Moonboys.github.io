@@ -820,7 +820,13 @@ async function listTopTokens(db) {
             s.volume_24h, s.volume_7d, s.volume_30d, s.liquidity_wax, s.liquidity_usd,
             s.tvl_wax, s.tvl_usd, s.selected_price_wax, s.selected_price_usd,
             s.selected_pair_source, s.selected_pair_id, s.holder_count, s.circulating_supply,
-            s.burned_amount, s.market_cap_wax, s.market_cap_usd, s.fdv_wax, s.fdv_usd
+            s.burned_amount, s.market_cap_wax, s.market_cap_usd, s.fdv_wax, s.fdv_usd,
+            (SELECT COUNT(*) FROM waxonedge_pairs p
+             WHERE (p.token_a_contract = t.contract AND p.token_a_symbol = t.symbol)
+                OR (p.token_b_contract = t.contract AND p.token_b_symbol = t.symbol)) AS indexed_pair_count,
+            (SELECT GROUP_CONCAT(DISTINCT p.source) FROM waxonedge_pairs p
+             WHERE (p.token_a_contract = t.contract AND p.token_a_symbol = t.symbol)
+                OR (p.token_b_contract = t.contract AND p.token_b_symbol = t.symbol)) AS source_keys
      FROM waxonedge_tokens t
      LEFT JOIN waxonedge_token_stats s
        ON s.contract = t.contract AND s.symbol = t.symbol
@@ -848,8 +854,9 @@ async function listTokenPairs(db, contract, symbol) {
      FROM waxonedge_pairs
      WHERE (token_a_contract = ? AND token_a_symbol = ?)
         OR (token_b_contract = ? AND token_b_symbol = ?)
-     ORDER BY CAST(COALESCE(volume_24h, '0') AS NUMERIC) DESC, updated_at DESC
-     LIMIT 250`
+     ORDER BY CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC,
+              CAST(COALESCE(volume_24h, '0') AS NUMERIC) DESC,
+              updated_at DESC`
   ).bind(contract, symbol, contract, symbol).all();
   return rows.results || [];
 }
@@ -866,8 +873,8 @@ async function listBestChartCandles(db, contract, symbol) {
        AND c.interval = '1D'
      GROUP BY p.source, p.pair_id
      HAVING candle_count > 0
-     ORDER BY CAST(COALESCE(p.volume_24h, '0') AS NUMERIC) DESC,
-              CAST(COALESCE(p.liquidity_wax, '0') AS NUMERIC) DESC,
+     ORDER BY CAST(COALESCE(p.liquidity_wax, '0') AS NUMERIC) DESC,
+              CAST(COALESCE(p.volume_24h, '0') AS NUMERIC) DESC,
               candle_count DESC
      LIMIT 1`
   ).bind(contract, symbol, contract, symbol).first().catch(() => null);

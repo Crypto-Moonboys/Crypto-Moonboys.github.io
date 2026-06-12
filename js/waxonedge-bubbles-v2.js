@@ -97,6 +97,17 @@
     return String(source || '').trim().toLowerCase();
   }
 
+  function tokenSourceKeys(token) {
+    var raw = token && (token.source_keys || token.sources || token.sourceKeys);
+    if (Array.isArray(raw)) {
+      return raw.map(function (source) { return String(source || '').trim().toLowerCase(); }).filter(Boolean);
+    }
+    return String(raw || '')
+      .split(',')
+      .map(function (source) { return source.trim().toLowerCase(); })
+      .filter(Boolean);
+  }
+
   function metricLabel(metric) {
     if (metric === 'volume') return '24h volume';
     if (metric === 'pairs') return 'pair count';
@@ -165,7 +176,7 @@
         key: key,
         symbol: symbol,
         contract: contract,
-        pairCount: asNum(token.pair_count) || 0,
+        pairCount: asNum(token.indexed_pair_count) || asNum(token.pair_count) || 0,
         computedPairCount: 0,
         pairLiquidityWax: 0,
         pairLiquidityUsd: 0,
@@ -179,6 +190,9 @@
         sources: {},
         strongestPair: null,
       };
+      tokenSourceKeys(token).forEach(function (source) {
+        byKey[key].sources[source] = true;
+      });
     });
 
     pairs.forEach(function (pair) {

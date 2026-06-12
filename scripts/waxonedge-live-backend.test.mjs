@@ -120,8 +120,18 @@ ok('aggregate migration adds real indexed metric columns as TEXT',
 ok('route selects chart source only from indexed candle rows',
   route.includes('async function listBestChartCandles') &&
   route.includes('JOIN waxonedge_chart_candles') &&
-  route.includes('ORDER BY CAST(COALESCE(p.volume_24h') &&
-  route.includes('CAST(COALESCE(p.liquidity_wax'));
+  route.includes("ORDER BY CAST(COALESCE(p.liquidity_wax, '0') AS NUMERIC) DESC") &&
+  route.includes("CAST(COALESCE(p.volume_24h, '0') AS NUMERIC) DESC"));
+ok('route exposes selected-token pairs ordered by WAX liquidity before volume',
+  route.includes('async function listTokenPairs') &&
+  route.includes("child === 'pairs'") &&
+  route.includes("ORDER BY CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC") &&
+  route.includes("CAST(COALESCE(volume_24h, '0') AS NUMERIC) DESC") &&
+  !route.includes("ORDER BY CAST(COALESCE(volume_24h, '0') AS NUMERIC) DESC, updated_at DESC\n     LIMIT 250"));
+ok('bootstrap tokens include token-level source summary for scanner badges',
+  route.includes('AS indexed_pair_count') &&
+  route.includes('GROUP_CONCAT(DISTINCT p.source') &&
+  route.includes('AS source_keys'));
 ok('route has no unused bootstrap source key mirror',
   !route.includes('CORE_BOOTSTRAP_SOURCE_KEYS'));
 ok('route does not fake holder distribution', route.includes('Holder distribution requires indexed balance snapshots') && route.includes('REQUIRES_INDEXED_BACKEND'));
@@ -129,7 +139,7 @@ ok('route marks chart/trades unavailable unless indexed', route.includes('SOURCE
 ok('frontend calls /api/waxonedge/bootstrap first', frontend.includes("waxonedgeApi('/bootstrap')"));
 ok('frontend direct source fetch is diagnostic fallback', frontend.includes('loadDiagnosticFallback') && frontend.includes('Backend bootstrap unavailable'));
 ok('frontend does not use Alcor chart fallback in backend mode',
-  frontend.includes("loadChartData('backend:' + context.selection.key)") &&
+  frontend.includes("loadChartData('backend:' + selection.key)") &&
   frontend.includes('renderChartUnavailable(context') &&
   frontend.includes('No fake candles are shown'));
 ok('frontend backend chart request captures selection before async call and clears pending',
@@ -141,6 +151,17 @@ ok('frontend backend chart request captures selection before async call and clea
 ok('frontend renders backend candle bundles without context.chartMarket',
   frontend.includes('return renderChartBundle(backendBundle, backendMarket, backendChartMeta)') &&
   frontend.includes('function renderChartBundle(bundle, market, chartMetaLabel)'));
+ok('frontend token analytics loads selected-token detail and pair endpoints',
+  frontend.includes('function selectedTokenApiPath(selection, child)') &&
+  frontend.includes('function loadSelectedTokenBackendRows(selection)') &&
+  frontend.includes("waxonedgeApi(detailPath)") &&
+  frontend.includes("waxonedgeApi(pairsPath)") &&
+  frontend.includes("selectedTokenApiPath(selection, 'pairs')"));
+ok('frontend token analytics prefers selected-token pair cache over bootstrap pair sample',
+  frontend.includes('function getMarketsForSelection(selection)') &&
+  frontend.includes('var cached = state.tokenPairCache && state.tokenPairCache[selection.key]') &&
+  frontend.includes('if (Array.isArray(cached)) return cached.slice();') &&
+  frontend.includes('var relevantMarkets = getMarketsForSelection(selection).sort'));
 ok('frontend renders indexed candles with TradingView Lightweight Charts, not symbol widgets',
   tokenHtml.includes('lightweight-charts@5.2.0') &&
   frontend.includes('window.LightweightCharts') &&
