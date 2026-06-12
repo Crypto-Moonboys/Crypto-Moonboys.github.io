@@ -11,90 +11,146 @@ const JSON_HEADERS = {
 };
 
 function json(payload, status = 200) {
-  return new Response(JSON.stringify(payload, null, 2), {
+  return new Response(JSON.stringify(payload), {
     status,
     headers: JSON_HEADERS,
   });
 }
 
-function unavailable(message = 'Requires indexed backend') {
-  return json({
-    ok: false,
-    source: 'waxonedge-indexer',
-    updated_at: null,
-    data: null,
-    warnings: [message],
-  }, 503);
-}
-
-function ok(data, warnings = [], updatedAt = null) {
-  return json({
-    ok: true,
+function envelope({ ok, data = null, warnings = [], updatedAt = null, error = null }) {
+  const payload = {
+    ok,
     source: 'waxonedge-indexer',
     updated_at: updatedAt,
     data,
     warnings,
-  });
+  };
+
+  if (error) payload.error = error;
+  return payload;
+}
+
+function unavailable(message = 'Requires indexed backend', status = 503) {
+  return json(envelope({
+    ok: false,
+    warnings: [message],
+  }), status);
+}
+
+function ok(data, warnings = [], updatedAt = null) {
+  return json(envelope({
+    ok: true,
+    data,
+    warnings,
+    updatedAt,
+  }));
+}
+
+function methodNotAllowed(method) {
+  return json(envelope({
+    ok: false,
+    warnings: ['Method not allowed'],
+    error: 'Method not allowed: ' + method,
+  }), 405);
+}
+
+function notFound(path) {
+  return json(envelope({
+    ok: false,
+    data: {
+      supported_routes: [
+        '/api/waxonedge/summary',
+        '/api/waxonedge/tokens/top',
+        '/api/waxonedge/pairs/top',
+        '/api/waxonedge/sync-status',
+      ],
+    },
+    warnings: ['Endpoint not found'],
+    error: 'Not found: ' + path,
+  }), 404);
+}
+
+function dbUnavailable(error, context) {
+  const detail = error && error.message ? error.message : String(error || 'unknown D1 error');
+  return unavailable(context + ': ' + detail, 503);
 }
 
 async function readSummary(env) {
   if (!env.WAXONEDGE_DB) return unavailable('WAXONEDGE_DB binding is not configured');
 
-  const tokenCount = await env.WAXONEDGE_DB.prepare(
-    'SELECT COUNT(*) AS count FROM waxonedge_tokens',
-  ).first();
-  const pairCount = await env.WAXONEDGE_DB.prepare(
-    'SELECT COUNT(*) AS count FROM waxonedge_pairs',
-  ).first();
-  const latestSync = await env.WAXONEDGE_DB.prepare(
-    'SELECT source, status, finished_at, error FROM waxonedge_sync_runs ORDER BY started_at DESC LIMIT 10',
-  ).all();
+  try {
+    const tokenCount = await env.WAXONEDGE_DB.prepare(
+      'SELECT COUNT(*) AS count FROM waxonedge_tokens',
+    ).first();
+    const pairCount = await env.WAXONEDGE_DB.prepare(
+      'SELECT COUNT(*) AS count FROM waxonedge_pairs',
+    ).first();
+    const latestSync = await env.WAXONEDGE_DB.prepare(
+      'SELECT source, status, finished_at, error FROM waxonedge_sync_runs ORDER BY started_at DESC LIMIT 10',
+    ).all();
 
-  return ok({
-    token_count: tokenCount ? tokenCount.count : 0,
-    pair_count: pairCount ? pairCount.count : 0,
-    latest_sync: latestSync && latestSync.results ? latestSync.results : [],
-  });
+    return ok({
+      token_count: tokenCount ? tokenCount.count : 0,
+      pair_count: pairCount ? pairCount.count : 0,
+      latest_sync: latestSync && latestSync.results ? latestSync.results : [],
+    });
+  } catch (error) {
+    return dbUnavailable(error, 'Summary unavailable until D1 schema is applied');
+  }
 }
 
 async function readTopTokens(env) {
-  if (!env.WAXONEDGE_DB) return unavailable('WAXONEDGE_DB binding is not configured');
+  if (!env.WAXONEDGE_DB) {
+    return unavailable('WAXONEDGE_DB binding is not configured');
+  }
 
-  const rows = await env.WAXONEDGE_DB.prepare(
-    `SELECT contract, symbol, decimals, total_supply, max_supply, price_wax, price_usd, updated_at
-     FROM waxonedge_tokens
-     ORDER BY updated_at DESC
-     LIMIT 250`,
-  ).all();
+  try {
+    const rows = await env.WAXONEDGE_DB.prepare(
+      `SELECT contract, symbol, decimals, total_supply, max_supply, price_wax, price_usd, updated_at
+       FROM waxonedge_tokens
+       ORDER BY updated_at DESC
+       LIMIT 250`,
+    ).all();
 
-  return ok(rows && rows.results ? rows.results : []);
+    return ok(rows && rows.results ? rows.results : []);
+  } catch (error) {
+    return dbUnavailable(error, 'Top tokens unavailable until D1 schema is applied');
+  }
 }
 
 async function readTopPairs(env) {
   if (!env.WAXONEDGE_DB) return unavailable('WAXONEDGE_DB binding is not configured');
 
-  const rows = await env.WAXONEDGE_DB.prepare(
-    `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
-            price, change_24h, volume_24h, liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
-     FROM waxonedge_pairs
-     ORDER BY COALESCE(volume_24h, 0) DESC
-     LIMIT 250`,
-  ).all();
+  try {
+    const rows = await env.WAXONEDGE_DB.prepare(
+      `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+              price, change_24h, volume_24h, liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
+       FROM waxonedge_pairs
+       ORDER BY COALESCE(volume_24h, 0) DESC
+       LIMIT 250`,
+    ).all();
 
-  return ok(rows && rows.results ? rows.results : []);
+    return ok(rows && rows.results ? rows.results : []);
+  } catch (error) {
+    return dbUnavailable(error, 'Top pairs unavailable until D1 schema is applied');
+  }
 }
 
 async function readSyncStatus(env) {
   if (!env.WAXONEDGE_DB) return unavailable('WAXONEDGE_DB binding is not configured');
 
-  const rows = await env.WAXONEDGE_DB.prepare(
-    `SELECT source, status, started_at, finished_at, error
-     FROM waxonedge_sync_runs
-     ORDER BY started_at DESC
-     LIMIT 50`,
-  ).all();
+  try {
+    const rows = await env.WAXONEDGE_DB.prepare(
+      `SELECT source, status, started_at, finished_at, error
+       FROM waxonedge_sync_runs
+       ORDER BY started_at DESC
+       LIMIT 50`,
+    ).all();
 
-  return ok(rows && rows.results ? rows.results : []);
+    return ok(rows && rows.results ? rows.results : []);
+  } catch (error) {
+    return dbUnavailable(error, 'Sync status unavailable until D1 schema is applied');
+  }
 }
 
 function route(request, env) {
@@ -102,7 +158,7 @@ function route(request, env) {
   const path = url.pathname.replace(/\/+$/, '') || '/';
 
   if (request.method !== 'GET') {
-    return json({ ok: false, error: 'Method not allowed' }, 405);
+    return methodNotAllowed(request.method);
   }
 
   if (path === '/api/waxonedge/summary') return readSummary(env);
@@ -114,34 +170,29 @@ function route(request, env) {
     return unavailable('Token detail endpoint requires indexed backend implementation');
   }
 
-  return json({
-    ok: false,
-    error: 'Not found',
-    supported_routes: [
-      '/api/waxonedge/summary',
-      '/api/waxonedge/tokens/top',
-      '/api/waxonedge/pairs/top',
-      '/api/waxonedge/sync-status',
-    ],
-  }, 404);
+  return notFound(path);
+}
+
+async function recordSkippedSchedule(env) {
+  try {
+    await env.WAXONEDGE_DB.prepare(
+      'INSERT INTO waxonedge_sync_runs (source, status, started_at, finished_at, error) VALUES (?, ?, ?, ?, ?)',
+    ).bind(
+      'scheduler',
+      'skipped',
+      new Date().toISOString(),
+      new Date().toISOString(),
+      'Sync implementation pending confirmed source adapters',
+    ).run();
+  } catch (_error) {
+    // Safe during early D1 bring-up before schema migration.
+  }
 }
 
 export default {
   fetch: route,
   async scheduled(_event, env, ctx) {
-    // Placeholder only. Real sync jobs must be added source by source after
-    // endpoint/table behavior and rate limits are confirmed.
     if (!env.WAXONEDGE_DB) return;
-    ctx.waitUntil(
-      env.WAXONEDGE_DB.prepare(
-        'INSERT INTO waxonedge_sync_runs (source, status, started_at, finished_at, error) VALUES (?, ?, ?, ?, ?)',
-      ).bind(
-        'scheduler',
-        'skipped',
-        new Date().toISOString(),
-        new Date().toISOString(),
-        'Sync implementation pending confirmed source adapters',
-      ).run(),
-    );
+    ctx.waitUntil(recordSkippedSchedule(env));
   },
 };

@@ -51,6 +51,11 @@ ok('worker exposes summary endpoint', worker.includes("/api/waxonedge/summary"))
 ok('worker exposes top tokens endpoint', worker.includes("/api/waxonedge/tokens/top"));
 ok('worker exposes top pairs endpoint', worker.includes("/api/waxonedge/pairs/top"));
 ok('worker does not implement fake scheduled sync', worker.includes('Sync implementation pending confirmed source adapters'));
+ok('worker uses compact JSON (no pretty-print)', !worker.includes('JSON.stringify(payload, null, 2)'));
+ok('worker 404 uses notFound helper', worker.includes('notFound(') && !worker.includes("'Not found'"));
+ok('worker 405 uses methodNotAllowed helper', worker.includes('methodNotAllowed(') && worker.includes('return methodNotAllowed(request.method)'));
+ok('worker read functions wrapped in try/catch', worker.includes('} catch (error) {') && worker.includes('dbUnavailable('));
+ok('worker scheduled placeholder guarded by try/catch', worker.includes('recordSkippedSchedule') && worker.includes('} catch (_error) {'));
 
 console.log('\nwaxonedge-indexer-blueprint.test: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
