@@ -228,7 +228,7 @@ ok('source cursor checkpointing processes large adapters in bounded pages',
   route.includes('sync_cycle_id: activeCycleId') &&
   !route.includes('async function markSourceComplete'));
 ok('source cursor progresses across bounded Worker runs',
-  route.includes('requestBudget: CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE') &&
+  route.includes('requestBudget: options.requestBudget || coreDexRpcBudgetPerSource(env)') &&
   route.includes('request_count: tableResult.request_count') &&
   route.includes('Resuming stale running state from saved cursor') &&
   route.includes('Partial source sync checkpoint saved after') &&
@@ -287,7 +287,7 @@ ok('chunks_completed zero remains zero',
 ok('source pagination can index tokens beyond the first source page',
   route.includes('lower_bound: lowerBound') &&
   route.includes('data?.next_key') &&
-  route.includes('maxPages: CORE_DEX_PAGES_PER_INVOCATION') &&
+  route.includes('maxPages: options.maxPages || coreDexPagesPerInvocation(env)') &&
   route.includes('cursor: complete ?') &&
   route.includes('row_count: nextRowCount') &&
   !route.includes('first 250'));
@@ -299,18 +299,22 @@ ok('aggregate gating requires same-cycle complete source states',
   route.includes("await upsertSourceIndexState(env.DB, 'token_aggregates'"));
 ok('token aggregates can record partial_success after partial source sync',
   route.includes("partialSources.push(source)") &&
-  route.includes('partialSuccess: sameCycle && failed.length === 0 && partialSources.length > 0') &&
-  route.includes("const aggregateStatus = runStatus.complete ? 'success' : (runStatus.partialSuccess && aggregates.size > 0 ? 'partial_success' : 'failed')") &&
+  route.includes('partialSuccess: processed.length > 0') &&
+  route.includes("const aggregateStatus = runStatus.complete ? 'success' : (aggregates.size > 0 ? 'partial_success' : 'failed')") &&
+  route.includes('sourceErrorSummary') &&
   route.includes("await recordSyncRun(env.DB, 'token_aggregates', aggregateStatus") &&
   route.includes("status: aggregateStatus"));
+ok('aggregate rebuild becomes partial_success when usable rows exist despite source errors',
+  route.includes('sourceErrorSummary: failed.length ?') &&
+  route.includes("Aggregate failed: no usable source rows or D1 write failed") &&
+  route.includes("aggregates.size > 0 ? 'partial_success' : 'failed'") &&
+  !route.includes('one or more configured sources had true errors'));
 ok('partial_success aggregate after latest pair sync can count as fresh',
   route.includes("status IN ('success', 'partial_success')") &&
   route.includes("status IN ('success', 'partial')") &&
   route.includes('fresh_after_latest_pair_sync: aggregateFresh') &&
-  route.includes("const alcor = await syncAlcorMarketData(env, 'alcor_minute_market_data')") &&
-  route.includes('const aggregates = await aggregateTokenAnalytics(env);') &&
-  route.includes('const candleBackfill = await planWaxOnEdgeCandleBackfill(env);') &&
-  route.includes('return { ok: alcor.ok && aggregates.ok && candleBackfill.ok, alcor, aggregates, candleBackfill };'));
+  route.includes('tasks.push(aggregateTokenAnalytics(env))') &&
+  route.includes('const needsAggregateRefresh = await aggregateNeedsRefreshAfterPairSync(env.DB)'));
 ok('aggregate rebuild runs after latest pair sync if freshness drifts',
   route.includes('async function aggregateNeedsRefreshAfterPairSync') &&
   route.includes('latestAggregateRunRow(db)') &&
@@ -335,9 +339,40 @@ ok('regression guard for live source-sync failures',
   route.includes('writeCompactDexSnapshot(env.DB, adapter') &&
   route.includes('syncCycleId') &&
   route.includes('Partial source sync checkpoint saved') &&
-  route.includes('Too many subrequests') === false);
-ok('scheduled full index runs sources in parallel and aggregates after statuses are known',
-  route.includes('const syncCycleId = await getActiveSourceCycleId(env.DB);') &&
+  route.includes('isSubrequestBudgetError'));
+ok('free-safe cron only runs one heavy WaxOnEdge workload per invocation',
+  route.includes('const freeSafeMode = waxonedgeFreeSafeMode(env)') &&
+  route.includes('if (isMinuteCron && freeSafeMode)') &&
+  route.includes('const rotationSlot = minute % 5') &&
+  route.includes('tasks.push(syncAlcorMarketData(env, \'alcor_minute_market_data\'))') &&
+  route.includes('tasks.push(aggregateTokenAnalytics(env))') &&
+  route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env))') &&
+  route.includes('tasks.push(syncSupplyInputs(env))') &&
+  route.includes('selectCoreDexAdapterForCron(minute)') &&
+  route.includes('!freeSafeMode && (!cron || cron === \'*/15 * * * *\'') &&
+  route.includes('!freeSafeMode && (!cron || isMinuteCron || shouldRunFullIndex)'));
+ok('free-safe source sync runs one DEX source chunk with conservative budgets',
+  route.includes('WAXONEDGE_FREE_SAFE_MODE_DEFAULT = true') &&
+  route.includes('FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION = 1') &&
+  route.includes('FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE = 1') &&
+  route.includes('source: adapter.source') &&
+  route.includes('maxPages: FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION') &&
+  route.includes('requestBudget: FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE'));
+ok('free-safe mode does not permanently prevent supply sync',
+  route.includes('const rotationSlot = minute % 5') &&
+  route.includes('} else {') &&
+  route.includes('tasks.push(syncSupplyInputs(env))') &&
+  route.includes('!freeSafeMode && (!cron || cron === \'*/15 * * * *\'') &&
+  route.indexOf('tasks.push(syncSupplyInputs(env))') > route.indexOf('tasks.push(planWaxOnEdgeCandleBackfill(env))'));
+ok('free-safe supply sync runs as isolated cron workload',
+  route.includes('if (isMinuteCron && freeSafeMode)') &&
+  route.includes('tasks.push(syncAlcorMarketData(env, \'alcor_minute_market_data\'))') &&
+  route.includes('tasks.push(aggregateTokenAnalytics(env))') &&
+  route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env))') &&
+  route.includes('tasks.push(syncSupplyInputs(env))') &&
+  !route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env));\n      tasks.push(syncSupplyInputs(env))'));
+ok('scheduled full index can still run legacy combined workflow when free-safe is disabled',
+  route.includes('} else if (shouldRunFullIndex) {') &&
   route.includes('const [alcor, core, nefty] = await Promise.all') &&
   route.lastIndexOf('const aggregates = await aggregateTokenAnalytics(env);') > route.indexOf('const [alcor, core, nefty] = await Promise.all'));
 ok('aggregate backfill can run as a focused cron/admin pathway',
@@ -359,7 +394,9 @@ ok('candle backfill has honest planned status without fake candle inserts',
   !route.includes('fallback candle'));
 ok('candle backfill writes only real Alcor 1D candles in bounded chunks',
   route.includes('/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D') &&
-  route.includes('CANDLE_BACKFILL_PAIR_LIMIT') &&
+  route.includes('DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT = 24') &&
+  route.includes('FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT = 2') &&
+  route.includes('candleBackfillPairLimit(env)') &&
   route.includes('CANDLE_BACKFILL_LOOKBACK_DAYS') &&
   route.includes('const nowSeconds = Math.floor(Date.now() / 1000)') &&
   route.includes('const from = nowSeconds - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60)') &&
@@ -374,15 +411,15 @@ ok('candle_backfill cron actually attempts candidate pairs',
   route.includes("cron === 'waxonedge-candle-backfill'") &&
   route.includes('const candleBackfill = await planWaxOnEdgeCandleBackfill(env);') &&
   route.includes('const candidateRows = candidates.results || []') &&
-  route.includes('const attemptedPairCount = candidateRows.length') &&
+  route.includes('let attemptedPairCount = 0') &&
   route.includes('for (const pair of candidateRows)') &&
   route.includes('attempted_pair_count: totalAttemptedPairCount'));
 ok('candle_backfill does not remain planned forever after scheduled run',
-  route.includes("const status = complete && failedPairCount === 0") &&
+  route.includes("const status = budgetExhausted") &&
+  route.includes("'budget_limited'") &&
   route.includes("attemptedPairCount > 0 ? 'partial'") &&
   route.includes("status === 'planned' ? CANDLE_BACKFILL_PLAN : null") &&
-  route.includes("const candleBackfill = await planWaxOnEdgeCandleBackfill(env);") &&
-  route.includes('return { ok: alcor.ok && aggregates.ok && candleBackfill.ok, alcor, aggregates, candleBackfill };'));
+  route.includes("const candleBackfill = await planWaxOnEdgeCandleBackfill(env);"));
 ok('Alcor chart URL uses 10-digit UNIX seconds instead of millisecond timestamps',
   route.includes('const nowSeconds = Math.floor(Date.now() / 1000)') &&
   route.includes('const to = nowSeconds') &&
@@ -409,17 +446,49 @@ ok('candle normalization still falls back only for nullish alternate fields',
   !route.includes('item.time || item.t || item.timestamp') &&
   !route.includes('bar.time || bar.t'));
 ok('candle backfill advances cursor by attempted pairs and records failures',
-  route.includes('const attemptedPairCount = candidateRows.length') &&
+  route.includes('let attemptedPairCount = 0') &&
+  route.includes('attemptedPairCount += 1') &&
   route.includes('failedPairCount += 1') &&
   route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + attemptedPairCount)') &&
   route.includes('attempted_pair_count: totalAttemptedPairCount') &&
   route.includes('failed_pair_count: totalFailedPairCount') &&
   route.includes('last_error: lastError') &&
   !route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + processedPairCount)'));
+ok('candle batch stops before budget exhaustion and reports budget separately',
+  route.includes('DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT = 24') &&
+  route.includes('FREE_SAFE_CANDLE_SUBREQUEST_BUDGET = 2') &&
+  route.includes('const requestBudget = candleSubrequestBudget(env)') &&
+  route.includes('if (attemptedPairCount >= requestBudget)') &&
+  route.includes('budgetExhausted = true') &&
+  route.includes("status = budgetExhausted") &&
+  route.includes('budget_exhausted: budgetExhausted'));
+ok('candle backfill limit respects free-safe and paid mode',
+  route.includes('function candleBackfillPairLimit(env)') &&
+  route.includes('waxonedgeFreeSafeMode(env) ? FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT : DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT') &&
+  route.includes('function candleSubrequestBudget(env)') &&
+  route.includes('waxonedgeFreeSafeMode(env) ? FREE_SAFE_CANDLE_SUBREQUEST_BUDGET : DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT') &&
+  !route.includes('const CANDLE_BACKFILL_PAIR_LIMIT = FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT'));
+ok('candle_backfill budget_limited is benign progress for stale health',
+  route.includes("['planned', 'partial_success', 'skipped', 'budget_limited'].includes(row.status)") &&
+  route.includes('budget_exhausted: !!candleBackfillSnapshot.data?.budget_exhausted'));
+ok('budget exhaustion does not inflate failed_pair_count for every candidate',
+  route.includes('if (isSubrequestBudgetError(error))') &&
+  route.includes('budgetExhausted = true') &&
+  route.includes('break') &&
+  route.indexOf('if (isSubrequestBudgetError(error))') < route.indexOf('failedPairCount += 1') &&
+  route.includes('const totalFailedPairCount = (asNumber(previousSnapshot.data?.failed_pair_count) || 0) + failedPairCount'));
+ok('404 candle pair is skipped as unsupported without retrying forever',
+  route.includes('function isNotFoundError(error)') &&
+  route.includes('if (isNotFoundError(error))') &&
+  route.includes('unsupportedPairCount += 1') &&
+  route.includes('unsupportedReason = `no_chart_endpoint: alcor pair ${pair.pair_id} returned 404`') &&
+  route.includes('continue') &&
+  route.includes('unsupported_pair_count: totalUnsupportedPairCount'));
 ok('candle backfill cumulative counters separate cursor from success/failure counts',
   route.includes('const totalAttemptedPairCount = (asNumber(previousSnapshot.data?.attempted_pair_count) || 0) + attemptedPairCount') &&
   route.includes('const totalProcessedPairCount = (asNumber(previousSnapshot.data?.processed_pair_count) || 0) + processedPairCount') &&
   route.includes('const totalFailedPairCount = (asNumber(previousSnapshot.data?.failed_pair_count) || 0) + failedPairCount') &&
+  route.includes('const totalUnsupportedPairCount = (asNumber(previousSnapshot.data?.unsupported_pair_count) || 0) + unsupportedPairCount') &&
   route.includes('processed_pair_count: totalProcessedPairCount') &&
   route.includes('cursor: complete ?') &&
   !route.includes('processed_pair_count: nextCursor'));
@@ -503,6 +572,8 @@ ok('indexer health reports partial source progress and candle backfill status',
   route.includes('processed_pair_count') &&
   route.includes('attempted_pair_count') &&
   route.includes('failed_pair_count') &&
+  route.includes('unsupported_pair_count') &&
+  route.includes('budget_exhausted') &&
   route.includes('candles_written') &&
   route.includes('last_error'));
 ok('selected-pair health counts are scoped to indexed tokens',
@@ -510,6 +581,11 @@ ok('selected-pair health counts are scoped to indexed tokens',
   route.includes('JOIN waxonedge_token_stats s ON s.contract = t.contract AND s.symbol = t.symbol') &&
   route.includes('WHERE s.selected_pair_source IS NOT NULL AND s.selected_pair_id IS NOT NULL') &&
   route.includes('tokens_without_selected_pair: Math.max(0, totalTokens - tokensWithSelectedPair)'));
+ok('selected price health counts are scoped to indexed tokens',
+  route.includes('FROM waxonedge_tokens t') &&
+  route.includes('JOIN waxonedge_token_stats s ON s.contract = t.contract AND s.symbol = t.symbol') &&
+  route.includes('WHERE s.selected_price_wax IS NOT NULL OR s.selected_price_usd IS NOT NULL') &&
+  route.includes('tokens_without_selected_price: Math.max(0, totalTokens - tokensWithSelectedPrice)'));
 ok('token detail avoids unbounded all-priced-token scan',
   route.includes('function collectTokenPriceKeysForPairs') &&
   route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, pairRows)') &&
