@@ -97,10 +97,16 @@ for (const endpoint of [
   '/tokens/top',
   '/pairs/top',
   '/sync-status',
+  '/indexer-health',
 ]) {
   ok('route exposes ' + endpoint, route.includes(endpoint));
 }
 ok('route exposes token detail family', route.includes('const tokenMatch = path.match'));
+ok('route exposes token debug diagnostics without raw wallet/swap actions',
+  route.includes("child === 'debug'") &&
+  route.includes('function getTokenDebug') &&
+  route.includes('function diagnoseTokenAggregate') &&
+  !route.includes('/swapRoutes'));
 
 ok('route syncs Alcor public API sources',
   route.includes('/tokens') && route.includes('/pairs') && route.includes('/tickers') && route.includes('/analytics/global'));
@@ -196,7 +202,7 @@ ok('aggregate completeness is source-run completeness, separate from token sourc
   route.includes('FROM waxonedge_source_index_state') &&
   route.includes('sameCycle') &&
   route.includes('runStatus.complete ? 1 : 0') &&
-  route.includes('sourceKeys.join') &&
+  route.includes('detailStats.source_keys') &&
   !route.includes('missingSources.length === 0 ? 1 : 0'));
 ok('truncated source pagination marks aggregate incomplete',
   route.includes('truncated: /truncated/i.test') &&
@@ -219,6 +225,13 @@ ok('source cursor checkpointing processes large adapters in bounded pages',
   route.includes('let activeCycleId = syncCycleId ||') &&
   route.includes('sync_cycle_id: activeCycleId') &&
   !route.includes('async function markSourceComplete'));
+ok('source pagination can index tokens beyond the first source page',
+  route.includes('lower_bound: lowerBound') &&
+  route.includes('data?.next_key') &&
+  route.includes('maxPages: CORE_DEX_PAGES_PER_INVOCATION') &&
+  route.includes('cursor: complete ?') &&
+  route.includes('row_count: nextRowCount') &&
+  !route.includes('first 250'));
 ok('aggregate gating requires same-cycle complete source states',
   route.includes('FROM waxonedge_source_index_state') &&
   route.includes('sameCycle') &&
@@ -236,12 +249,26 @@ ok('regression guard for live source-sync failures',
 ok('scheduled full index runs sources in parallel and aggregates after statuses are known',
   route.includes('const syncCycleId = await getActiveSourceCycleId(env.DB);') &&
   route.includes('const [alcor, core, nefty] = await Promise.all') &&
-  route.indexOf('const aggregates = await aggregateTokenAnalytics(env);') > route.indexOf('const [alcor, core, nefty] = await Promise.all'));
+  route.lastIndexOf('const aggregates = await aggregateTokenAnalytics(env);') > route.indexOf('const [alcor, core, nefty] = await Promise.all'));
+ok('aggregate backfill can run as a focused cron/admin pathway',
+  route.includes('export async function runWaxOnEdgeAggregateBackfill') &&
+  route.includes("cron === 'waxonedge-backfill'") &&
+  route.includes('const aggregates = await aggregateTokenAnalytics(env);') &&
+  route.includes('backfill: true'));
 ok('aggregate selected price uses strongest real WAX quote liquidity',
   route.includes('hasWaxQuoteForToken(pair, side.contract, side.symbol)') &&
   route.includes('hasRealPairReserves(pair)') &&
   route.includes('score = liquidityWax') &&
   route.includes('MIN_TRUSTED_WAX_LIQUIDITY'));
+ok('aggregate rebuild persists all computable token metrics from indexed pairs',
+  route.includes('const detailStats = deriveTokenPairMetrics') &&
+  route.includes('detailStats.selected_price_wax') &&
+  route.includes('detailStats.selected_price_usd') &&
+  route.includes('detailStats.liquidity_wax') &&
+  route.includes('detailStats.tvl_wax') &&
+  route.includes('detailStats.fdv_wax') &&
+  route.includes('fdv_wax = excluded.fdv_wax') &&
+  route.includes('fdv_usd = excluded.fdv_usd'));
 ok('route selects chart source only from indexed candle rows',
   route.includes('async function listBestChartCandles') &&
   route.includes('JOIN waxonedge_chart_candles') &&
@@ -271,9 +298,35 @@ ok('token detail derives partial aggregate metrics from indexed pair rows',
   route.includes('strongest_pair') &&
   route.includes('unavailable_reasons') &&
   route.includes('Pair liquidity indexed; holder/candle metrics pending'));
+ok('indexer health reports systemic dead-token and source health counts',
+  route.includes('async function getIndexerHealth') &&
+  route.includes('total_indexed_tokens') &&
+  route.includes('tokens_with_selected_price') &&
+  route.includes('tokens_without_selected_price') &&
+  route.includes('tokens_with_indexed_pairs') &&
+  route.includes('tokens_with_zero_indexed_pairs') &&
+  route.includes('tokens_with_liquidity') &&
+  route.includes('tokens_with_24h_volume') &&
+  route.includes('tokens_with_chart_candles') &&
+  route.includes('per_source_row_counts') &&
+  route.includes('stale_sync_rows') &&
+  route.includes('last_success_at') &&
+  route.includes('dead_token_reason_counts'));
+ok('indexer health pair-token counts are scoped to indexed tokens',
+  route.includes('FROM waxonedge_tokens t') &&
+  route.includes('SELECT COUNT(*) AS count FROM pair_tokens') &&
+  route.includes('JOIN pair_tokens pt') &&
+  route.includes('FROM scoped_pairs p') &&
+  !route.includes('SELECT token_a_contract AS contract, token_a_symbol AS symbol FROM waxonedge_pairs'));
+ok('indexer health and debug chart readiness only count 1D candles',
+  (route.match(/c\.interval = '1D'/g) || []).length >= 2 &&
+  route.includes('WITH candle_tokens AS') &&
+  route.includes('JOIN waxonedge_chart_candles c ON c.source = p.source AND c.pair_id = p.pair_id') &&
+  route.includes('tokens_with_chart_candles') &&
+  route.includes('tokens_with_chart_candidate_but_no_candles'));
 ok('token detail avoids unbounded all-priced-token scan',
   route.includes('function collectTokenPriceKeysForPairs') &&
-  route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, pairRows.results || [])') &&
+  route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, pairRows)') &&
   !route.includes('WHERE price_wax IS NOT NULL OR price_usd IS NOT NULL'));
 {
   const wufStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
@@ -384,6 +437,47 @@ ok('token detail avoids unbounded all-priced-token scan',
     priceKeys.includes('abc.token::ABC') &&
     priceKeys.includes('usdt.alcor::USDT') &&
     !priceKeys.includes('random.token::RANDOM'));
+  const deadDiagnostics = __waxonedgeTestHooks.diagnoseTokenAggregate(
+    'dead.token',
+    'DEAD',
+    {},
+    [],
+    0,
+    false,
+  );
+  ok('dead token diagnostics return clear unavailable reasons',
+    deadDiagnostics.reasons.includes('no indexed pairs found') &&
+    deadDiagnostics.reasons.includes('chart candles missing') &&
+    deadDiagnostics.reasons.includes('aggregate rebuild not run after pair sync') &&
+    deadDiagnostics.facts.indexed_pair_count === 0);
+  const derivedLiquidityDiagnostics = __waxonedgeTestHooks.diagnoseTokenAggregate(
+    'wuffi',
+    'WUF',
+    {
+      selected_price_wax: '0.002',
+      selected_price_usd: '0.000012',
+      strongest_pair: { liquidity_wax: '2000' },
+    },
+    [
+      {
+        source: 'swap.nefty',
+        pair_id: 'WAXWUFB',
+        token_a_contract: 'eosio.token',
+        token_a_symbol: 'WAX',
+        token_b_contract: 'wuffi',
+        token_b_symbol: 'WUF',
+        liquidity_wax: null,
+        reserve_a: '1000',
+        reserve_b: '500000',
+      },
+    ],
+    1,
+    true,
+  );
+  ok('dead token diagnostics use derived strongest liquidity fallback',
+    Number(derivedLiquidityDiagnostics.facts.strongest_liquidity_wax) === 2000 &&
+    !derivedLiquidityDiagnostics.reasons.includes('liquidity found but below threshold') &&
+    !derivedLiquidityDiagnostics.reasons.includes('pairs found but no usable reserves'));
 }
 ok('route has no unused bootstrap source key mirror',
   !route.includes('CORE_BOOTSTRAP_SOURCE_KEYS'));
