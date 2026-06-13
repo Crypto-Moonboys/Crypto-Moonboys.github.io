@@ -13,7 +13,12 @@ const SOURCE_STALE_MINUTES = 30;
 const MIN_TRUSTED_WAX_LIQUIDITY = 10;
 const CANDLE_BACKFILL_SOURCE = 'candle_backfill';
 const CANDLE_BACKFILL_PLAN = 'Alcor 1D candle backfill planned; no fake candles are inserted.';
-const CANDLE_BACKFILL_PAIR_LIMIT = 8;
+const WAXONEDGE_FREE_SAFE_MODE_DEFAULT = true;
+const FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION = 1;
+const FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE = 1;
+const FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT = 2;
+const FREE_SAFE_CANDLE_SUBREQUEST_BUDGET = 2;
+const CANDLE_BACKFILL_PAIR_LIMIT = FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT;
 const CANDLE_BACKFILL_LOOKBACK_DAYS = 120;
 const STUCK_CURSOR_RETRY_LIMIT = 3;
 const WAXONEDGE_AGGREGATE_SOURCES = Object.freeze([
@@ -31,6 +36,38 @@ const LARGE_SNAPSHOT_SOURCES = Object.freeze([
   'swap.nefty_pairs',
   'swap.box_pairs',
 ]);
+
+function waxonedgeFreeSafeMode(env) {
+  return String(env?.WAXONEDGE_FREE_SAFE_MODE ?? WAXONEDGE_FREE_SAFE_MODE_DEFAULT).toLowerCase() !== 'false';
+}
+
+function coreDexPagesPerInvocation(env) {
+  return waxonedgeFreeSafeMode(env) ? FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION : CORE_DEX_PAGES_PER_INVOCATION;
+}
+
+function coreDexRpcBudgetPerSource(env) {
+  return waxonedgeFreeSafeMode(env) ? FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE : CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE;
+}
+
+function candleBackfillPairLimit(env) {
+  return waxonedgeFreeSafeMode(env) ? FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT : CANDLE_BACKFILL_PAIR_LIMIT;
+}
+
+function candleSubrequestBudget(env) {
+  return waxonedgeFreeSafeMode(env) ? FREE_SAFE_CANDLE_SUBREQUEST_BUDGET : CANDLE_BACKFILL_PAIR_LIMIT;
+}
+
+function isSubrequestBudgetError(error) {
+  return /too many subrequests|subrequest/i.test(String(error?.message || error || ''));
+}
+
+function isNotFoundError(error) {
+  return /^404\b|not found/i.test(String(error?.message || error || ''));
+}
+
+function selectCoreDexAdapterForCron(minute) {
+  return CORE_DEX_ADAPTERS[Math.floor(Math.max(0, minute) / 4) % CORE_DEX_ADAPTERS.length];
+}
 
 const CORE_DEX_ADAPTERS = Object.freeze([
   {
@@ -885,7 +922,7 @@ async function getActiveSourceCycleId(db) {
   return rows.results?.[0]?.sync_cycle_id || `woe-${Date.now()}`;
 }
 
-async function syncCoreDexAdapters(env, syncCycleId = '') {
+async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
   const startedAt = nowIso();
   const priceRows = await env.DB.prepare(
     `SELECT contract, symbol, price_wax, price_usd FROM waxonedge_tokens`
@@ -899,7 +936,10 @@ async function syncCoreDexAdapters(env, syncCycleId = '') {
   }
   const results = [];
   const syncedAt = nowIso();
-  for (const adapter of CORE_DEX_ADAPTERS) {
+  const adapters = options.source
+    ? CORE_DEX_ADAPTERS.filter((adapter) => adapter.source === options.source)
+    : CORE_DEX_ADAPTERS;
+  for (const adapter of adapters) {
     const adapterStartedAt = nowIso();
     let activeCycleId = syncCycleId || '';
     try {
@@ -958,8 +998,8 @@ async function syncCoreDexAdapters(env, syncCycleId = '') {
       const tableResult = await fetchTableRows(adapter.contract, adapter.table, {
         limit: CHAIN_TABLE_PAGE_LIMIT,
         lowerBound: state.cursor || '',
-        maxPages: CORE_DEX_PAGES_PER_INVOCATION,
-        requestBudget: CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE,
+        maxPages: options.maxPages || coreDexPagesPerInvocation(env),
+        requestBudget: options.requestBudget || coreDexRpcBudgetPerSource(env),
       });
       const rows = tableResult.rows;
       const pairs = rows
@@ -1061,7 +1101,7 @@ async function syncCoreDexAdapters(env, syncCycleId = '') {
       results.push({ source: adapter.source, ok: false, error: error?.message || String(error) });
     }
   }
-  return { ok: results.every((result) => result.ok), complete: results.every((result) => result.complete || result.skipped), results };
+  return { ok: results.every((result) => result.ok), complete: results.every((result) => result.complete || result.skipped), free_safe_mode: waxonedgeFreeSafeMode(env), results };
 }
 
 async function getAggregateRunStatus(db) {
@@ -1106,7 +1146,8 @@ async function getAggregateRunStatus(db) {
     truncated: truncatedSources.length > 0,
     truncatedSources,
     complete: sameCycle && failed.length === 0 && partialSources.length === 0 && truncatedSources.length === 0,
-    partialSuccess: sameCycle && failed.length === 0 && partialSources.length > 0,
+    partialSuccess: processed.length > 0 && (!sameCycle || failed.length > 0 || partialSources.length > 0 || truncatedSources.length > 0),
+    sourceErrorSummary: failed.length ? `source_errors: ${failed.join(', ')}` : null,
   };
 }
 
@@ -1324,10 +1365,10 @@ async function aggregateTokenAnalytics(env) {
   for (let i = 0; i < statements.length; i += 50) {
     await env.DB.batch(statements.slice(i, i + 50));
   }
-  const aggregateStatus = runStatus.complete ? 'success' : (runStatus.partialSuccess && aggregates.size > 0 ? 'partial_success' : 'failed');
+  const aggregateStatus = runStatus.complete ? 'success' : (aggregates.size > 0 ? 'partial_success' : 'failed');
   const aggregateError = aggregateStatus === 'failed'
-    ? 'Aggregate failed: no usable source rows or one or more configured sources had true errors'
-    : (aggregateStatus === 'partial_success' ? `Aggregate partial_success: waiting for ${runStatus.partialSources.join(', ')} to finish source cursors` : null);
+    ? 'Aggregate failed: no usable source rows or D1 write failed'
+    : (aggregateStatus === 'partial_success' ? `Aggregate partial_success: ${[runStatus.partialSources.length ? `waiting for ${runStatus.partialSources.join(', ')} to finish source cursors` : null, runStatus.sourceErrorSummary].filter(Boolean).join('; ')}` : null);
   await upsertSourceIndexState(env.DB, 'token_aggregates', {
     sync_cycle_id: runStatus.syncCycleId || '',
     cursor: '',
@@ -2048,7 +2089,11 @@ async function getIndexerHealth(db) {
     countScalar(db, `SELECT COUNT(*) AS count FROM waxonedge_tokens`),
     countScalar(db, `${pairTokenCte} SELECT COUNT(*) AS count FROM pair_tokens`),
     countScalar(db, `${candleTokenCte} SELECT COUNT(*) AS count FROM candle_tokens`),
-    countScalar(db, `SELECT COUNT(*) AS count FROM waxonedge_token_stats WHERE selected_price_wax IS NOT NULL OR selected_price_usd IS NOT NULL`),
+    countScalar(db,
+      `SELECT COUNT(*) AS count
+       FROM waxonedge_tokens t
+       JOIN waxonedge_token_stats s ON s.contract = t.contract AND s.symbol = t.symbol
+       WHERE s.selected_price_wax IS NOT NULL OR s.selected_price_usd IS NOT NULL`),
     countScalar(db, `SELECT COUNT(*) AS count FROM waxonedge_token_stats WHERE liquidity_wax IS NOT NULL OR liquidity_usd IS NOT NULL OR tvl_wax IS NOT NULL OR tvl_usd IS NOT NULL`),
     countScalar(db, `SELECT COUNT(*) AS count FROM waxonedge_token_stats WHERE volume_24h_wax IS NOT NULL OR volume_24h_usd IS NOT NULL OR volume_24h IS NOT NULL`),
     countScalar(db,
@@ -2216,6 +2261,9 @@ async function getIndexerHealth(db) {
       processed_pair_count: asNumber(candleBackfillSnapshot.data?.processed_pair_count) || asNumber(candleBackfillState?.page_count) || 0,
       attempted_pair_count: asNumber(candleBackfillSnapshot.data?.attempted_pair_count) || 0,
       failed_pair_count: asNumber(candleBackfillSnapshot.data?.failed_pair_count) || 0,
+      unsupported_pair_count: asNumber(candleBackfillSnapshot.data?.unsupported_pair_count) || 0,
+      budget_exhausted: !!candleBackfillSnapshot.data?.budget_exhausted,
+      unsupported_reason: candleBackfillSnapshot.data?.unsupported_reason || null,
       candles_written: asNumber(candleBackfillSnapshot.data?.candles_written) || 0,
       cursor: candleBackfillState?.cursor || '',
       last_error: candleBackfillSnapshot.data?.last_error || candleBackfillState?.error || null,
@@ -2323,24 +2371,46 @@ async function planWaxOnEdgeCandleBackfill(env) {
        AND pair_id != ''
      ORDER BY CAST(pair_id AS NUMERIC), pair_id
      LIMIT ? OFFSET ?`
-  ).bind(CANDLE_BACKFILL_PAIR_LIMIT, cursorOffset).all().catch(() => ({ results: [] }));
+  ).bind(candleBackfillPairLimit(env), cursorOffset).all().catch(() => ({ results: [] }));
   const candidateRows = candidates.results || [];
-  const attemptedPairCount = candidateRows.length;
+  let attemptedPairCount = 0;
   let processedPairCount = 0;
   let failedPairCount = 0;
+  let unsupportedPairCount = 0;
   let candlesWritten = 0;
   let lastError = null;
+  let unsupportedReason = null;
+  let budgetExhausted = false;
+  const requestBudget = candleSubrequestBudget(env);
   const nowSeconds = Math.floor(Date.now() / 1000);
   const to = nowSeconds;
   const from = nowSeconds - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60);
   for (const pair of candidateRows) {
+    if (attemptedPairCount >= requestBudget) {
+      budgetExhausted = true;
+      lastError = `Budget exhausted before next candle pair; attempted ${attemptedPairCount} of ${candidateRows.length}`;
+      break;
+    }
     try {
       const url = `${ALCOR_API}/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D&from=${from}&to=${to}`;
       const data = await fetchJson(url, { timeoutMs: 12000 });
+      attemptedPairCount += 1;
       const candles = normalizeAlcorChartCandles(data);
       candlesWritten += await writeChartCandles(env.DB, 'alcor', String(pair.pair_id), '1D', candles);
       processedPairCount += 1;
     } catch (error) {
+      if (isSubrequestBudgetError(error)) {
+        budgetExhausted = true;
+        lastError = error?.message || String(error);
+        break;
+      }
+      attemptedPairCount += 1;
+      if (isNotFoundError(error)) {
+        unsupportedPairCount += 1;
+        unsupportedReason = `no_chart_endpoint: alcor pair ${pair.pair_id} returned 404`;
+        lastError = unsupportedReason;
+        continue;
+      }
       failedPairCount += 1;
       lastError = error?.message || String(error);
     }
@@ -2349,13 +2419,16 @@ async function planWaxOnEdgeCandleBackfill(env) {
   const totalAttemptedPairCount = (asNumber(previousSnapshot.data?.attempted_pair_count) || 0) + attemptedPairCount;
   const totalProcessedPairCount = (asNumber(previousSnapshot.data?.processed_pair_count) || 0) + processedPairCount;
   const totalFailedPairCount = (asNumber(previousSnapshot.data?.failed_pair_count) || 0) + failedPairCount;
+  const totalUnsupportedPairCount = (asNumber(previousSnapshot.data?.unsupported_pair_count) || 0) + unsupportedPairCount;
   const totalCandlesWritten = (asNumber(previousSnapshot.data?.candles_written) || 0) + candlesWritten;
   const complete = candidatePairCount > 0 && nextCursor >= candidatePairCount;
   const existingCandleCount = await countScalar(env.DB,
     `SELECT COUNT(*) AS count FROM waxonedge_chart_candles WHERE interval = '1D'`);
-  const status = complete && failedPairCount === 0
+  const status = budgetExhausted
+    ? 'budget_limited'
+    : (complete && failedPairCount === 0
     ? 'success'
-    : (attemptedPairCount > 0 ? 'partial' : (lastError ? 'failed' : 'planned'));
+    : (attemptedPairCount > 0 ? 'partial' : (lastError ? 'failed' : 'planned')));
   const error = lastError || (status === 'planned' ? CANDLE_BACKFILL_PLAN : null);
   await upsertSourceIndexState(env.DB, CANDLE_BACKFILL_SOURCE, {
     sync_cycle_id: `candle-${new Date().toISOString().slice(0, 10)}`,
@@ -2375,6 +2448,9 @@ async function planWaxOnEdgeCandleBackfill(env) {
     processed_pair_count: totalProcessedPairCount,
     attempted_pair_count: totalAttemptedPairCount,
     failed_pair_count: totalFailedPairCount,
+    unsupported_pair_count: totalUnsupportedPairCount,
+    budget_exhausted: budgetExhausted,
+    unsupported_reason: unsupportedReason,
     candles_written: totalCandlesWritten,
     latest_1d_candle_count: existingCandleCount,
     cursor: complete ? '' : String(nextCursor),
@@ -2390,6 +2466,9 @@ async function planWaxOnEdgeCandleBackfill(env) {
     processed_pair_count: totalProcessedPairCount,
     attempted_pair_count: totalAttemptedPairCount,
     failed_pair_count: totalFailedPairCount,
+    unsupported_pair_count: totalUnsupportedPairCount,
+    budget_exhausted: budgetExhausted,
+    unsupported_reason: unsupportedReason,
     candles_written: totalCandlesWritten,
     indexed_1d_candle_count: existingCandleCount,
     cursor: complete ? '' : String(nextCursor),
@@ -2566,13 +2645,14 @@ export async function runWaxOnEdgeCandleBackfillPlan(env) {
 
 export async function runWaxOnEdgeScheduledSync(env, cron = '') {
   if (!env.DB) return { ok: false, error: 'DB binding is not configured' };
+  const freeSafeMode = waxonedgeFreeSafeMode(env);
   if (cron === 'waxonedge-backfill') {
     const aggregates = await aggregateTokenAnalytics(env);
-    return { ok: aggregates.ok, backfill: true, aggregates };
+    return { ok: aggregates.ok, backfill: true, free_safe_mode: freeSafeMode, aggregates };
   }
   if (cron === 'waxonedge-candle-backfill') {
     const candleBackfill = await planWaxOnEdgeCandleBackfill(env);
-    return { ok: candleBackfill.ok, candle_backfill: true, candleBackfill };
+    return { ok: candleBackfill.ok, candle_backfill: true, free_safe_mode: freeSafeMode, candleBackfill };
   }
   const tasks = [];
   const tick = new Date();
@@ -2580,7 +2660,27 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
   const hour = tick.getUTCHours();
   const isMinuteCron = cron === '* * * * *';
   const shouldRunFullIndex = !cron || cron === '*/5 * * * *' || (isMinuteCron && minute % 5 === 0);
-  if (shouldRunFullIndex) {
+  if (isMinuteCron && freeSafeMode) {
+    const rotationSlot = minute % 4;
+    if (rotationSlot === 0) {
+      tasks.push(syncAlcorMarketData(env, 'alcor_minute_market_data'));
+    } else if (rotationSlot === 1) {
+      tasks.push((async () => {
+        const syncCycleId = await getActiveSourceCycleId(env.DB);
+        const adapter = selectCoreDexAdapterForCron(minute);
+        const core = await syncCoreDexAdapters(env, syncCycleId, {
+          source: adapter.source,
+          maxPages: FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION,
+          requestBudget: FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE,
+        });
+        return { ok: core.ok, syncCycleId, source: adapter.source, core };
+      })());
+    } else if (rotationSlot === 2) {
+      tasks.push(aggregateTokenAnalytics(env));
+    } else {
+      tasks.push(planWaxOnEdgeCandleBackfill(env));
+    }
+  } else if (shouldRunFullIndex) {
     tasks.push((async () => {
       const syncCycleId = await getActiveSourceCycleId(env.DB);
       const [alcor, core, nefty] = await Promise.all([
@@ -2600,8 +2700,8 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
       return { ok: alcor.ok && aggregates.ok && candleBackfill.ok, alcor, aggregates, candleBackfill };
     })());
   }
-  if (!cron || cron === '*/15 * * * *' || (isMinuteCron && minute % 15 === 0)) tasks.push(syncSupplyInputs(env));
-  if (!cron || cron === '0 */2 * * *' || (isMinuteCron && minute === 0 && hour % 2 === 0)) {
+  if (!freeSafeMode && (!cron || cron === '*/15 * * * *' || (isMinuteCron && minute % 15 === 0))) tasks.push(syncSupplyInputs(env));
+  if (!freeSafeMode && (!cron || cron === '0 */2 * * *' || (isMinuteCron && minute === 0 && hour % 2 === 0))) {
     const startedAt = nowIso();
     tasks.push(recordSyncRun(env.DB, 'holders', 'skipped', startedAt, REQUIRES_INDEXED_BACKEND).then(() => ({
       ok: true,
@@ -2611,7 +2711,7 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
   if (!tasks.length) return { ok: true, skipped: true };
   const results = await Promise.all(tasks);
   let postSyncAggregate = null;
-  if (!cron || isMinuteCron || shouldRunFullIndex) {
+  if (!freeSafeMode && (!cron || isMinuteCron || shouldRunFullIndex)) {
     const needsAggregateRefresh = await aggregateNeedsRefreshAfterPairSync(env.DB);
     if (needsAggregateRefresh) postSyncAggregate = await aggregateTokenAnalytics(env);
   }
@@ -2619,5 +2719,6 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
     ok: results.every((result) => result?.ok) && (!postSyncAggregate || postSyncAggregate.ok),
     results,
     post_sync_aggregate: postSyncAggregate,
+    free_safe_mode: freeSafeMode,
   };
 }
