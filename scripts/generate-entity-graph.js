@@ -74,6 +74,7 @@
 
 const fs   = require('fs');
 const path = require('path');
+const { loadBlockedUrls } = require('./wiki-publish-gate.js');
 
 const ROOT            = path.resolve(__dirname, '..');
 const ENTITY_MAP_PATH = path.join(ROOT, 'js', 'entity-map.json');
@@ -501,6 +502,18 @@ function main() {
   const linkMap    = JSON.parse(fs.readFileSync(LINK_MAP_PATH,   'utf8'));
   const linkGraph  = JSON.parse(fs.readFileSync(LINK_GRAPH_PATH, 'utf8'));
 
+  // Filter out any blocked URLs from the publish gate so they never enter graph nodes
+  const blockedUrlsForGraph = loadBlockedUrls();
+  const filteredEntityMap = blockedUrlsForGraph.size > 0
+    ? entityMap.filter(e => !blockedUrlsForGraph.has(e.canonical_url))
+    : entityMap;
+  const filteredWikiIndex = blockedUrlsForGraph.size > 0
+    ? wikiIndex.filter(w => !blockedUrlsForGraph.has(w.url))
+    : wikiIndex;
+  if (filteredEntityMap.length < entityMap.length) {
+    console.log(`[entity-graph] Publish gate: excluded ${entityMap.length - filteredEntityMap.length} blocked entities.`);
+  }
+
   // ---------------------------------------------------------------------------
   // Load prior graph and build reinforcement data structures (Phase 11)
   // ---------------------------------------------------------------------------
@@ -535,13 +548,13 @@ function main() {
 
   // Build url → entity-map entry lookup
   const entityByUrl = {};
-  for (const e of entityMap) {
+  for (const e of filteredEntityMap) {
     if (e.canonical_url) entityByUrl[e.canonical_url] = e;
   }
 
   // Build url → wiki-index entry lookup
   const wikiByUrl = {};
-  for (const w of wikiIndex) {
+  for (const w of filteredWikiIndex) {
     if (w.url) wikiByUrl[w.url] = w;
   }
 

@@ -9,6 +9,7 @@ const {
   titleFromSlug
 } = require('./wiki-aliases.js');
 const { classifyWikiSlug } = require('./wiki-brand-taxonomy.js');
+const { loadBlockedUrls } = require('./wiki-publish-gate.js');
 
 const ROOT = path.join(__dirname, '..');
 const WIKI_DIR = path.join(ROOT, 'wiki');
@@ -479,6 +480,13 @@ function buildBrandMeta(slug) {
 function run() {
   console.log('Generating wiki index...');
 
+  // Load blocked URLs from the publish gate audit.
+  // Run 'node scripts/wiki-publish-gate.js' first to regenerate js/wiki-publish-audit.json.
+  const blockedUrls = loadBlockedUrls();
+  if (blockedUrls.size > 0) {
+    console.log(`[wiki-index] Publish gate: ${blockedUrls.size} blocked URLs will be excluded.`);
+  }
+
   const samMemory = loadSamMemory();
   const linkGraph = loadLinkGraph();
   const files = walk(WIKI_DIR);
@@ -488,6 +496,10 @@ function run() {
     const relative = path.relative(ROOT, filePath).replace(/\\/g, '/');
 
     if (relative === 'wiki/index.html') return;
+
+    // Skip pages blocked by the brand-canon publish gate
+    const pageUrl = '/' + relative;
+    if (blockedUrls.has(pageUrl)) return;
 
     const html = fs.readFileSync(filePath, 'utf8');
 

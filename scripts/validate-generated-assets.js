@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { loadBlockedUrls } = require('./wiki-publish-gate.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const WIKI_INDEX_PATH = path.join(ROOT, 'js', 'wiki-index.json');
@@ -12,6 +13,7 @@ const SITEMAP_PATH = path.join(ROOT, 'sitemap.xml');
 const SEARCH_PATH = path.join(ROOT, 'search.html');
 const CATEGORY_INDEX_PATH = path.join(ROOT, 'categories', 'index.html');
 const HOME_PATH = path.join(ROOT, 'index.html');
+const AUDIT_PATH = path.join(ROOT, 'js', 'wiki-publish-audit.json');
 
 const PHASE5_6_PATHS = {
   'js/authority-trust.json':      path.join(ROOT, 'js', 'authority-trust.json'),
@@ -202,6 +204,30 @@ function validateCorePages() {
 
 const PHASE5_6_REQUIRED_KEYS = ['generated_at', 'phase', 'schema_version', 'summary', 'entries'];
 
+function validatePublishAudit() {
+  assert(fs.existsSync(AUDIT_PATH), 'js/wiki-publish-audit.json is missing. Run: node scripts/wiki-publish-gate.js');
+
+  const audit = readJson(AUDIT_PATH);
+  assert(audit && typeof audit === 'object' && !Array.isArray(audit), 'js/wiki-publish-audit.json must be an object');
+  assert(Array.isArray(audit.blocked), 'js/wiki-publish-audit.json must have a blocked array');
+  assert(Array.isArray(audit.approved), 'js/wiki-publish-audit.json must have an approved array');
+  assert(audit.summary && typeof audit.summary === 'object', 'js/wiki-publish-audit.json must have a summary object');
+
+  // Ensure no blocked pages leaked into wiki-index.json
+  const blockedUrls = loadBlockedUrls();
+  if (blockedUrls.size > 0) {
+    const wikiIndex = readJson(WIKI_INDEX_PATH);
+    for (const entry of wikiIndex) {
+      assert(
+        !blockedUrls.has(entry.url),
+        `Blocked page leaked into wiki-index.json: ${entry.url} — regenerate with wiki-publish-gate.js + generate-wiki-index.js`
+      );
+    }
+  }
+
+  console.log(`js/wiki-publish-audit.json validated (${audit.approved.length} approved, ${audit.blocked.length} blocked) ✅`);
+}
+
 function validatePhase5And6() {
   for (const [relPath, absPath] of Object.entries(PHASE5_6_PATHS)) {
     ensureFile(absPath);
@@ -253,6 +279,7 @@ function main() {
   validateSiteStats();
   validateSitemap();
   validateCorePages();
+  validatePublishAudit();
   validatePhase5And6();
 
   console.log('All generated asset checks passed ✅');

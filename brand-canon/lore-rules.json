@@ -1,0 +1,43 @@
+{
+  "rules": [
+    {
+      "id": "no-via-bridges",
+      "description": "Do not create 'via' pages from keyword bridges.",
+      "pattern": "*-via-*",
+      "action": "BLOCK",
+      "reason": "Algorithmic page soup. 'via' pages are generated from keyword combinations and are not real brand/lore concepts."
+    },
+    {
+      "id": "no-generic-standalone-pages",
+      "description": "Do not create pages for generic words unless they are official project concepts.",
+      "generic_words": ["bitcoin", "free", "token", "tokens", "games", "fork", "blockchain", "crypto", "nft", "nfts"],
+      "exception": "Only allowed as part of an official named concept (e.g. 'bitcoin-kids', 'bitcoin-btc', 'nbg-token').",
+      "action": "REVIEW",
+      "reason": "Generic words with no brand anchor are not useful wiki entries."
+    },
+    {
+      "id": "no-concept-crossover",
+      "description": "Different brand concept types must remain as separate canonical pages.",
+      "examples": [
+        "GraffPUNKS faction != GraffPUNKS radio != GraffPUNKS NFT collection != MidevilPunks game",
+        "NBG brand != NBG Token != NBGX",
+        "HODL Warriors faction != HODL Wars game"
+      ],
+      "action": "BLOCK",
+      "reason": "Cross-concept pages conflate distinct brand identities."
+    },
+    {
+      "id": "min-word-count",
+      "description": "Pages must have at least 250 meaningful words.",
+      "threshold": 250,
+      "action": "BLOCK",
+      "reason": "Thin pages with little content do not serve readers and inflate the index."
+    },
+    {
+      "id": "no-needs-brand-review",
+      "description": "Pages tagged NEEDS_BRAND_REVIEW must not be published.",
+      "action": "REVIEW",
+      "reason": "Unclassified pages may be duplicates or synthetic content."
+    }
+  ]
+}

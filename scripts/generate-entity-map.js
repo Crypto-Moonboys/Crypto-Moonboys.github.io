@@ -16,6 +16,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { loadBlockedUrls } = require('./wiki-publish-gate.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const WIKI_INDEX_PATH = path.join(ROOT, 'js', 'wiki-index.json');
@@ -194,9 +195,18 @@ if (!fs.existsSync(WIKI_INDEX_PATH)) {
 const wikiIndex = JSON.parse(fs.readFileSync(WIKI_INDEX_PATH, 'utf8'));
 console.log(`Loaded ${wikiIndex.length} canonical entries from js/wiki-index.json`);
 
+// Filter out any blocked URLs that may have leaked from a prior index run
+const blockedUrlsForMap = loadBlockedUrls();
+const filteredIndex = blockedUrlsForMap.size > 0
+  ? wikiIndex.filter(e => !blockedUrlsForMap.has(e.url))
+  : wikiIndex;
+if (filteredIndex.length < wikiIndex.length) {
+  console.log(`[entity-map] Publish gate: excluded ${wikiIndex.length - filteredIndex.length} blocked entries.`);
+}
+
 const entityRecords = [];
 
-for (const entry of wikiIndex) {
+for (const entry of filteredIndex) {
   if (!entry || typeof entry !== 'object') continue;
 
   const canonicalUrl = normalizeWikiUrl(entry.url);

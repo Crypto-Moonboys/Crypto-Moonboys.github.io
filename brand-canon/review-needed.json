@@ -1,0 +1,4 @@
+{
+  "_comment": "Slugs that need manual brand review before they can be approved or blocked. These are held in NEEDS_BRAND_REVIEW status.",
+  "review_needed_slugs": []
+}
