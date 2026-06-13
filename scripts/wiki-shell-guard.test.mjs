@@ -17,7 +17,7 @@
  *   /js/wiki.js
  *   /js/bible-loader.js
  *
- * Explicitly verifies /wiki/drop-xrpl.html as the canonical regression anchor.
+ * Explicitly verifies /wiki/graffpunks.html as the canonical regression anchor.
  */
 
 import fs from 'node:fs';
@@ -115,26 +115,26 @@ for (const fname of wikiFiles) {
   }
 }
 
-// ── Regression anchor: drop-xrpl.html must pass explicitly ──────
-console.log('\n─── Regression anchor: /wiki/drop-xrpl.html ───────────────────\n');
-const dropXrplPath = path.join(WIKI_DIR, 'drop-xrpl.html');
-if (!fs.existsSync(dropXrplPath)) {
-  fail('/wiki/drop-xrpl.html — file not found');
+// ── Regression anchor: graffpunks.html must pass explicitly ──────
+console.log('\n─── Regression anchor: /wiki/graffpunks.html ───────────────────\n');
+const anchorPath = path.join(WIKI_DIR, 'graffpunks.html');
+if (!fs.existsSync(anchorPath)) {
+  fail('/wiki/graffpunks.html — file not found');
 } else {
-  const dropHtml = fs.readFileSync(dropXrplPath, 'utf8');
-  // Content check — must still have DROP/XRPL article body
-  if (dropHtml.includes('DROP') && dropHtml.includes('XRPL')) {
-    pass('/wiki/drop-xrpl.html — article content preserved (DROP/XRPL present)');
+  const anchorHtml = fs.readFileSync(anchorPath, 'utf8');
+  // Content check — must still have Graffpunks article body
+  if (anchorHtml.includes('Graffpunks') || anchorHtml.includes('GRAFFPUNKS')) {
+    pass('/wiki/graffpunks.html — article content preserved (Graffpunks present)');
   } else {
-    fail('/wiki/drop-xrpl.html — article content missing (DROP/XRPL not found)');
+    fail('/wiki/graffpunks.html — article content missing (Graffpunks not found)');
   }
   // Shell check — all required scripts present
-  const dropMissing = REQUIRED_SCRIPTS.filter(src => !dropHtml.includes(src));
-  if (dropMissing.length === 0) {
-    pass('/wiki/drop-xrpl.html — all required live right-rail scripts present');
+  const anchorMissing = REQUIRED_SCRIPTS.filter(src => !anchorHtml.includes(src));
+  if (anchorMissing.length === 0) {
+    pass('/wiki/graffpunks.html — all required live right-rail scripts present');
   } else {
-    for (const src of dropMissing) {
-      fail(`/wiki/drop-xrpl.html — missing: ${src}`);
+    for (const src of anchorMissing) {
+      fail(`/wiki/graffpunks.html — missing: ${src}`);
     }
   }
   // data-cfasync check on canonical boot scripts
@@ -144,33 +144,33 @@ if (!fs.existsSync(dropXrplPath)) {
       `<script[^>]*data-cfasync=["']false["'][^>]*src=["']${escaped}["']|` +
       `<script[^>]*src=["']${escaped}["'][^>]*data-cfasync=["']false["']`
     );
-    return !pattern.test(dropHtml);
+    return !pattern.test(anchorHtml);
   });
   if (cfMissing.length === 0) {
-    pass('/wiki/drop-xrpl.html — all canonical boot scripts have data-cfasync="false"');
+    pass('/wiki/graffpunks.html — all canonical boot scripts have data-cfasync="false"');
   } else {
     for (const src of cfMissing) {
-      fail(`/wiki/drop-xrpl.html — canonical boot script missing data-cfasync="false": ${src}`);
+      fail(`/wiki/graffpunks.html — canonical boot script missing data-cfasync="false": ${src}`);
     }
   }
-  // Duplicate script check on drop-xrpl.html specifically
-  const dropDupes = CANONICAL_BOOT_SRCS.filter(src => {
+  // Duplicate script check on graffpunks.html specifically
+  const anchorDupes = CANONICAL_BOOT_SRCS.filter(src => {
     const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const count = (dropHtml.match(new RegExp(`src=["']${escaped}["']`, 'g')) || []).length;
+    const count = (anchorHtml.match(new RegExp(`src=["']${escaped}["']`, 'g')) || []).length;
     return count > 1;
   });
-  if (dropDupes.length === 0) {
-    pass('/wiki/drop-xrpl.html — no duplicate boot scripts');
+  if (anchorDupes.length === 0) {
+    pass('/wiki/graffpunks.html — no duplicate boot scripts');
   } else {
-    for (const src of dropDupes) {
-      fail(`/wiki/drop-xrpl.html — duplicate script: ${src}`);
+    for (const src of anchorDupes) {
+      fail(`/wiki/graffpunks.html — duplicate script: ${src}`);
     }
   }
   // page-has-right-panel class
-  if (dropHtml.includes('page-has-right-panel')) {
-    pass('/wiki/drop-xrpl.html — page-has-right-panel class present');
+  if (anchorHtml.includes('page-has-right-panel')) {
+    pass('/wiki/graffpunks.html — page-has-right-panel class present');
   } else {
-    fail('/wiki/drop-xrpl.html — missing page-has-right-panel class');
+    fail('/wiki/graffpunks.html — missing page-has-right-panel class');
   }
 }
 
