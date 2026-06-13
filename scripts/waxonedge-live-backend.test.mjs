@@ -466,11 +466,47 @@ ok('daily OHLC and volume are derived from ordered real trades',
   alcorDailyCandles[0].low === '0.005' &&
   alcorDailyCandles[0].close === '0.005' &&
   alcorDailyCandles[0].volume === '21');
+const newestFirstDailyCandles = __waxonedgeTestHooks.buildDailyCandlesFromTradeRows([
+  { source: 'alcormarket', pair_id: '29', traded_at: '2026-06-12T03:00:00.000Z', raw_json: JSON.stringify({ unit_price: 3000000 }), volume: '1' },
+  { source: 'alcormarket', pair_id: '29', traded_at: '2026-06-12T01:00:00.000Z', raw_json: JSON.stringify({ unit_price: 1000000 }), volume: '1' },
+  { source: 'alcormarket', pair_id: '29', traded_at: '2026-06-12T02:00:00.000Z', raw_json: JSON.stringify({ unit_price: 5000000 }), volume: '1' },
+], { source: 'alcor' });
+ok('trade query selects newest rows while builder sorts ascending for OHLC',
+  route.includes('ORDER BY traded_at DESC') &&
+  route.includes('LIMIT 5000') &&
+  route.includes('.sort((a, b) => a.millis - b.millis)') &&
+  !route.includes('ORDER BY traded_at ASC') &&
+  newestFirstDailyCandles[0].open === '0.01' &&
+  newestFirstDailyCandles[0].high === '0.05' &&
+  newestFirstDailyCandles[0].low === '0.01' &&
+  newestFirstDailyCandles[0].close === '0.03');
 ok('no internal candle is produced without trade or swap rows',
   __waxonedgeTestHooks.buildDailyCandlesFromTradeRows([], { source: 'alcor' }).length === 0);
 ok('WaxOnEdge source names map alcormarket to Moonboys alcor rows',
   __waxonedgeTestHooks.moonboysCandleSource('alcormarket') === 'alcor' &&
   __waxonedgeTestHooks.referenceCandleSource('alcor') === 'alcormarket');
+const cachedRawJsonRow = {
+  source: 'alcormarket',
+  traded_at: null,
+  raw_json: JSON.stringify({ unit_price: 456000000, volume: 12, created_at: '2026-06-12T04:00:00.000Z' }),
+};
+const originalJsonParse = JSON.parse;
+let rawJsonParseCount = 0;
+try {
+  JSON.parse = (...args) => {
+    rawJsonParseCount += 1;
+    return originalJsonParse(...args);
+  };
+  __waxonedgeTestHooks.tradeTimestampMillis(cachedRawJsonRow);
+  __waxonedgeTestHooks.priceFromIndexedTradeRow(cachedRawJsonRow, 'alcor');
+  __waxonedgeTestHooks.volumeFromIndexedTradeRow(cachedRawJsonRow);
+} finally {
+  JSON.parse = originalJsonParse;
+}
+ok('trade raw_json is cached per row across timestamp, price, and volume helpers',
+  rawJsonParseCount === 1 &&
+  route.includes('TRADE_RAW_JSON_CACHE') &&
+  route.includes('Object.defineProperty(row, TRADE_RAW_JSON_CACHE'));
 ok('candle backfill advances cursor by attempted pairs and records failures',
   route.includes('let attemptedPairCount = 0') &&
   route.includes('attemptedPairCount += 1') &&
@@ -518,6 +554,14 @@ ok('unsupported external endpoint handling does not block internal candle builde
   route.indexOf('buildInternalDailyCandlesForPair(env.DB, pair)') < route.indexOf('if (isNotFoundError(error))') &&
   route.includes('trade_rows_not_indexed_count') &&
   route.includes('candles_built_from_trade_rows'));
+ok('external chart unsupported diagnostic is separate from internal unsupported totals',
+  route.includes('let externalUnsupportedPairCount = 0') &&
+  route.includes('externalUnsupportedPairCount += 1') &&
+  route.includes('const totalExternalUnsupportedPairCount =') &&
+  route.includes('trade_rows_not_usable_for_ohlcv_count') &&
+  route.includes('unsupported_pair_count_total') &&
+  route.includes('external_chart_endpoint_unsupported: totalExternalUnsupportedPairCount') &&
+  !route.includes('external_chart_endpoint_unsupported: totalUnsupportedPairCount'));
 ok('candle backfill cumulative counters separate cursor from success/failure counts',
   route.includes('const totalAttemptedPairCount = (asNumber(previousSnapshot.data?.attempted_pair_count) || 0) + attemptedPairCount') &&
   route.includes('const totalProcessedPairCount = (asNumber(previousSnapshot.data?.processed_pair_count) || 0) + processedPairCount') &&

@@ -36,6 +36,7 @@ const LARGE_SNAPSHOT_SOURCES = Object.freeze([
   'swap.nefty_pairs',
   'swap.box_pairs',
 ]);
+const TRADE_RAW_JSON_CACHE = Symbol('waxonedgeTradeRawJson');
 
 function waxonedgeFreeSafeMode(env) {
   return String(env?.WAXONEDGE_FREE_SAFE_MODE ?? WAXONEDGE_FREE_SAFE_MODE_DEFAULT).toLowerCase() !== 'false';
@@ -2351,9 +2352,10 @@ async function getIndexerHealth(db, env = {}) {
       processed_pair_count: asNumber(candleBackfillSnapshot.data?.processed_pair_count) || asNumber(candleBackfillState?.page_count) || 0,
       attempted_pair_count: asNumber(candleBackfillSnapshot.data?.attempted_pair_count) || 0,
       failed_pair_count: asNumber(candleBackfillSnapshot.data?.failed_pair_count) || 0,
-      unsupported_pair_count: asNumber(candleBackfillSnapshot.data?.unsupported_pair_count) || 0,
+      unsupported_pair_count: asNumber(candleBackfillSnapshot.data?.unsupported_pair_count_total ?? candleBackfillSnapshot.data?.unsupported_pair_count) || 0,
       external_chart_endpoint_unsupported: asNumber(candleBackfillSnapshot.data?.external_chart_endpoint_unsupported) || 0,
       trade_rows_not_indexed: asNumber(candleBackfillSnapshot.data?.trade_rows_not_indexed_count) || 0,
+      trade_rows_not_usable_for_ohlcv: asNumber(candleBackfillSnapshot.data?.trade_rows_not_usable_for_ohlcv_count) || 0,
       swap_rows_not_indexed: asNumber(candleBackfillSnapshot.data?.swap_rows_not_indexed_count) || 0,
       candles_built_from_trade_rows: asNumber(candleBackfillSnapshot.data?.candles_built_from_trade_rows) || 0,
       budget_exhausted: !!candleBackfillSnapshot.data?.budget_exhausted,
@@ -2415,13 +2417,20 @@ function normalizeAlcorChartCandles(data) {
 }
 
 function parseTradeRawJson(row) {
-  if (!row?.raw_json) return {};
+  if (!row || typeof row !== 'object' || !row.raw_json) return {};
+  if (Object.prototype.hasOwnProperty.call(row, TRADE_RAW_JSON_CACHE)) return row[TRADE_RAW_JSON_CACHE];
+  let parsed = {};
   try {
-    const parsed = JSON.parse(row.raw_json);
-    return parsed && typeof parsed === 'object' ? parsed : {};
+    const value = JSON.parse(row.raw_json);
+    parsed = value && typeof value === 'object' ? value : {};
   } catch {
-    return {};
+    parsed = {};
   }
+  Object.defineProperty(row, TRADE_RAW_JSON_CACHE, {
+    value: parsed,
+    configurable: true,
+  });
+  return parsed;
 }
 
 function tradeTimestampMillis(row) {
@@ -2520,7 +2529,7 @@ async function loadIndexedTradeRowsForPair(db, source, pairId) {
      WHERE pair_id = ?
        AND (source = ? OR source = ?)
        AND traded_at >= ?
-     ORDER BY traded_at ASC
+     ORDER BY traded_at DESC
      LIMIT 5000`
   ).bind(String(pairId), moonboysSource, referenceSource, startIso).all().catch(() => ({ results: [] }));
   return rows.results || [];
@@ -2614,7 +2623,9 @@ async function planWaxOnEdgeCandleBackfill(env) {
   let processedPairCount = 0;
   let failedPairCount = 0;
   let unsupportedPairCount = 0;
+  let externalUnsupportedPairCount = 0;
   let tradeRowsNotIndexedCount = 0;
+  let tradeRowsNotUsableForOhlcvCount = 0;
   let swapRowsNotIndexedCount = 0;
   let candlesBuiltFromTradeRowsCount = 0;
   let candlesWritten = 0;
@@ -2643,6 +2654,7 @@ async function planWaxOnEdgeCandleBackfill(env) {
         lastError = 'swap rows not indexed yet';
       } else if (result.reason === 'trade_rows_not_usable_for_ohlcv') {
         unsupportedPairCount += 1;
+        tradeRowsNotUsableForOhlcvCount += 1;
         unsupportedReason = `trade_rows_not_usable_for_ohlcv: ${pair.source} pair ${pair.pair_id}`;
         lastError = unsupportedReason;
       }
@@ -2654,6 +2666,7 @@ async function planWaxOnEdgeCandleBackfill(env) {
       }
       if (isNotFoundError(error)) {
         unsupportedPairCount += 1;
+        externalUnsupportedPairCount += 1;
         unsupportedReason = `no_chart_endpoint: alcor pair ${pair.pair_id} returned 404`;
         lastError = unsupportedReason;
         continue;
@@ -2667,7 +2680,9 @@ async function planWaxOnEdgeCandleBackfill(env) {
   const totalProcessedPairCount = (asNumber(previousSnapshot.data?.processed_pair_count) || 0) + processedPairCount;
   const totalFailedPairCount = (asNumber(previousSnapshot.data?.failed_pair_count) || 0) + failedPairCount;
   const totalUnsupportedPairCount = (asNumber(previousSnapshot.data?.unsupported_pair_count) || 0) + unsupportedPairCount;
+  const totalExternalUnsupportedPairCount = (asNumber(previousSnapshot.data?.external_chart_endpoint_unsupported) || 0) + externalUnsupportedPairCount;
   const totalTradeRowsNotIndexedCount = (asNumber(previousSnapshot.data?.trade_rows_not_indexed_count) || 0) + tradeRowsNotIndexedCount;
+  const totalTradeRowsNotUsableForOhlcvCount = (asNumber(previousSnapshot.data?.trade_rows_not_usable_for_ohlcv_count) || 0) + tradeRowsNotUsableForOhlcvCount;
   const totalSwapRowsNotIndexedCount = (asNumber(previousSnapshot.data?.swap_rows_not_indexed_count) || 0) + swapRowsNotIndexedCount;
   const totalCandlesBuiltFromTradeRowsCount = (asNumber(previousSnapshot.data?.candles_built_from_trade_rows) || 0) + candlesBuiltFromTradeRowsCount;
   const totalCandlesWritten = (asNumber(previousSnapshot.data?.candles_written) || 0) + candlesWritten;
@@ -2699,10 +2714,12 @@ async function planWaxOnEdgeCandleBackfill(env) {
     attempted_pair_count: totalAttemptedPairCount,
     failed_pair_count: totalFailedPairCount,
     unsupported_pair_count: totalUnsupportedPairCount,
+    unsupported_pair_count_total: totalUnsupportedPairCount,
     trade_rows_not_indexed_count: totalTradeRowsNotIndexedCount,
+    trade_rows_not_usable_for_ohlcv_count: totalTradeRowsNotUsableForOhlcvCount,
     swap_rows_not_indexed_count: totalSwapRowsNotIndexedCount,
     candles_built_from_trade_rows: totalCandlesBuiltFromTradeRowsCount,
-    external_chart_endpoint_unsupported: totalUnsupportedPairCount,
+    external_chart_endpoint_unsupported: totalExternalUnsupportedPairCount,
     budget_exhausted: budgetExhausted,
     unsupported_reason: unsupportedReason,
     candles_written: totalCandlesWritten,
@@ -2721,10 +2738,12 @@ async function planWaxOnEdgeCandleBackfill(env) {
     attempted_pair_count: totalAttemptedPairCount,
     failed_pair_count: totalFailedPairCount,
     unsupported_pair_count: totalUnsupportedPairCount,
+    unsupported_pair_count_total: totalUnsupportedPairCount,
     trade_rows_not_indexed_count: totalTradeRowsNotIndexedCount,
+    trade_rows_not_usable_for_ohlcv_count: totalTradeRowsNotUsableForOhlcvCount,
     swap_rows_not_indexed_count: totalSwapRowsNotIndexedCount,
     candles_built_from_trade_rows: totalCandlesBuiltFromTradeRowsCount,
-    external_chart_endpoint_unsupported: totalUnsupportedPairCount,
+    external_chart_endpoint_unsupported: totalExternalUnsupportedPairCount,
     budget_exhausted: budgetExhausted,
     unsupported_reason: unsupportedReason,
     candles_written: totalCandlesWritten,
@@ -2895,6 +2914,8 @@ export const __waxonedgeTestHooks = {
   diagnoseTokenAggregate,
   buildDailyCandlesFromTradeRows,
   priceFromIndexedTradeRow,
+  tradeTimestampMillis,
+  volumeFromIndexedTradeRow,
   normalizeCandleInterval,
   moonboysCandleSource,
   referenceCandleSource,
