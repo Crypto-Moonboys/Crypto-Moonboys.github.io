@@ -15,6 +15,7 @@ const CANDLE_BACKFILL_SOURCE = 'candle_backfill';
 const CANDLE_BACKFILL_PLAN = 'Alcor 1D candle backfill planned; no fake candles are inserted.';
 const CANDLE_BACKFILL_PAIR_LIMIT = 8;
 const CANDLE_BACKFILL_LOOKBACK_DAYS = 120;
+const STUCK_CURSOR_RETRY_LIMIT = 3;
 const WAXONEDGE_AGGREGATE_SOURCES = Object.freeze([
   'alcor',
   'swap.alcor',
@@ -179,6 +180,16 @@ function safeDecimal(value) {
   if (typeof value === 'number' && Number.isFinite(value)) return String(value);
   const text = String(value).trim();
   return /^[-+]?\d+(\.\d+)?(e[-+]?\d+)?$/i.test(text) ? text : null;
+}
+
+function incrementNumericCursor(cursor) {
+  const text = String(cursor || '').trim();
+  if (!/^\d+$/.test(text)) return '';
+  try {
+    return String(BigInt(text) + 1n);
+  } catch {
+    return '';
+  }
 }
 
 function asNumber(value) {
@@ -347,6 +358,9 @@ async function writeCompactDexSnapshot(db, adapter, metadata, fetchedAt) {
     current_cursor: metadata.current_cursor ?? metadata.cursor ?? '',
     cursor_changed_at: metadata.cursor_changed_at || null,
     chunks_completed: metadata.chunks_completed || 0,
+    retry_count: metadata.retry_count || 0,
+    skipped_cursor_count: metadata.skipped_cursor_count || 0,
+    skipped_cursor_reason: metadata.skipped_cursor_reason || null,
     error: metadata.error || null,
     cursor: metadata.cursor || '',
     sync_cycle_id: metadata.sync_cycle_id || '',
@@ -954,19 +968,38 @@ async function syncCoreDexAdapters(env, syncCycleId = '') {
       await upsertPairs(env.DB, pairs);
       const complete = tableResult.complete ? 1 : 0;
       const status = complete ? 'success' : 'partial';
-      const error = complete ? null : `Partial source sync checkpoint saved after ${tableResult.page_count} page(s) and ${tableResult.request_count} table row request(s); next_key=${tableResult.next_key || 'unknown'}`;
+      let error = complete ? null : `Partial source sync checkpoint saved after ${tableResult.page_count} page(s) and ${tableResult.request_count} table row request(s); next_key=${tableResult.next_key || 'unknown'}`;
       const previousSnapshot = await readSnapshot(env.DB, `${adapter.source}_${adapter.table}`);
       const previousCursor = state.cursor || '';
-      const currentCursor = complete ? '' : (tableResult.next_key || '');
-      const cursorChanged = previousCursor !== currentCursor;
+      const reportedCursor = complete ? '' : (tableResult.next_key || '');
+      const cursorChanged = previousCursor !== reportedCursor;
+      const previousRetryCount = asNumber(previousSnapshot.data?.retry_count) || 0;
+      const retryCount = (!complete && reportedCursor && !cursorChanged) ? previousRetryCount + 1 : 0;
+      const previousSkippedCursorCount = asNumber(previousSnapshot.data?.skipped_cursor_count) || 0;
+      let skippedCursorCount = previousSkippedCursorCount;
+      let skippedCursorReason = previousSnapshot.data?.skipped_cursor_reason || null;
+      let savedCursor = reportedCursor;
+      if (!complete && reportedCursor && retryCount >= STUCK_CURSOR_RETRY_LIMIT) {
+        const advancedCursor = incrementNumericCursor(reportedCursor);
+        if (advancedCursor) {
+          savedCursor = advancedCursor;
+          skippedCursorCount += 1;
+          skippedCursorReason = `stuck_cursor: ${adapter.source} cursor ${reportedCursor} repeated ${retryCount} time(s); next cron will resume at ${advancedCursor}`;
+          error = `${error}; ${skippedCursorReason}`;
+        } else {
+          skippedCursorReason = `stuck_cursor: ${adapter.source} cursor ${reportedCursor} repeated ${retryCount} time(s); unable to auto-advance non-numeric cursor`;
+          error = `${error}; ${skippedCursorReason}`;
+        }
+      }
       const previousCursorChangedAt = previousSnapshot.data?.cursor_changed_at || state.updated_at || state.started_at || adapterStartedAt;
-      const cursorChangedAt = cursorChanged ? nowIso() : previousCursorChangedAt;
-      const chunksCompleted = (asNumber(previousSnapshot.data?.chunks_completed) || 0) + 1;
+      const effectiveCursorChanged = previousCursor !== savedCursor;
+      const cursorChangedAt = effectiveCursorChanged ? nowIso() : previousCursorChangedAt;
+      const chunksCompleted = (asNumber(previousSnapshot.data?.chunks_completed) ?? 0) + 1;
       const nextPageCount = (state.page_count || 0) + tableResult.page_count;
       const nextRowCount = (state.row_count || 0) + rows.length;
       await upsertSourceIndexState(env.DB, adapter.source, {
         sync_cycle_id: activeCycleId,
-        cursor: complete ? '' : tableResult.next_key,
+        cursor: complete ? '' : savedCursor,
         page_count: nextPageCount,
         row_count: nextRowCount,
         complete,
@@ -980,14 +1013,17 @@ async function syncCoreDexAdapters(env, syncCycleId = '') {
         page_count: nextPageCount,
         truncated: 0,
         error,
-        cursor: complete ? '' : tableResult.next_key,
+        cursor: complete ? '' : savedCursor,
         sync_cycle_id: activeCycleId,
         status,
         request_count: tableResult.request_count,
         previous_cursor: previousCursor,
-        current_cursor: currentCursor,
+        current_cursor: savedCursor,
         cursor_changed_at: cursorChangedAt,
         chunks_completed: chunksCompleted,
+        retry_count: retryCount,
+        skipped_cursor_count: skippedCursorCount,
+        skipped_cursor_reason: skippedCursorReason,
       }, syncedAt);
       if (complete) {
         await recordSyncRun(env.DB, adapter.source, 'success', adapterStartedAt);
@@ -1002,7 +1038,11 @@ async function syncCoreDexAdapters(env, syncCycleId = '') {
         complete: !!complete,
         status,
         request_count: tableResult.request_count,
-        cursor: complete ? '' : tableResult.next_key,
+        cursor: complete ? '' : savedCursor,
+        reported_cursor: reportedCursor,
+        retry_count: retryCount,
+        skipped_cursor_count: skippedCursorCount,
+        skipped_cursor_reason: skippedCursorReason,
         cycle: activeCycleId,
       });
     } catch (error) {
@@ -1921,6 +1961,16 @@ async function latestPairSyncRunRow(db) {
   ).bind(...WAXONEDGE_AGGREGATE_SOURCES).first().catch(() => null);
 }
 
+async function aggregateNeedsRefreshAfterPairSync(db) {
+  const [aggregate, pairSync] = await Promise.all([
+    latestAggregateRunRow(db),
+    latestPairSyncRunRow(db),
+  ]);
+  if (!pairSync?.finished_at) return false;
+  if (!aggregate?.finished_at) return true;
+  return Date.parse(aggregate.finished_at) < Date.parse(pairSync.finished_at);
+}
+
 async function sourceRowCounts(db) {
   const counts = {};
   for (const source of WAXONEDGE_AGGREGATE_SOURCES) counts[source] = 0;
@@ -2008,9 +2058,12 @@ async function getIndexerHealth(db) {
     readSourceIndexState(db, CANDLE_BACKFILL_SOURCE),
     readSnapshot(db, CANDLE_BACKFILL_SOURCE),
   ]);
-  const staleSyncRows = sourceStates
+  const staleSyncRows = await Promise.all(sourceStates
     .filter(sourceStateStale)
-    .map((row) => ({
+    .map(async (row) => {
+      const adapter = CORE_DEX_ADAPTERS.find((entry) => entry.source === aggregateSourceKey(row.source));
+      const snapshot = adapter ? await readSnapshot(db, `${adapter.source}_${adapter.table}`) : { data: null };
+      return {
       source: row.source,
       status: row.status,
       complete: asNumber(row.complete) === 1,
@@ -2018,6 +2071,10 @@ async function getIndexerHealth(db) {
       age_minutes: minutesSince(row.updated_at || row.started_at),
       error: row.error || null,
       cursor: row.cursor || '',
+      retry_count: asNumber(snapshot.data?.retry_count) || 0,
+      skipped_cursor_count: asNumber(snapshot.data?.skipped_cursor_count) || 0,
+      skipped_cursor_reason: snapshot.data?.skipped_cursor_reason || null,
+      };
     }));
   const aggregateFresh = !!lastAggregateSuccess?.finished_at &&
     (!latestPairSuccess?.finished_at || Date.parse(lastAggregateSuccess.finished_at) >= Date.parse(latestPairSuccess.finished_at));
@@ -2031,6 +2088,14 @@ async function getIndexerHealth(db) {
       const stuckForMinutes = Number.isFinite(measuredStuckForMinutes) ? measuredStuckForMinutes : 0;
       const cursor = row.cursor || '';
       const previousCursor = snapshot.data?.previous_cursor || '';
+      const retryCount = asNumber(snapshot.data?.retry_count) || 0;
+      const skippedCursorCount = asNumber(snapshot.data?.skipped_cursor_count) || 0;
+      const skippedCursorReason = snapshot.data?.skipped_cursor_reason || null;
+      const nextAction = asNumber(row.complete) === 1
+        ? 'complete'
+        : (skippedCursorReason
+          ? 'stuck cursor skipped; continue from saved cursor'
+          : (stuckForMinutes > SOURCE_STALE_MINUTES ? 'resume from saved cursor or reset stuck source' : 'continue from saved cursor'));
       return {
       source: row.source,
       status: row.status,
@@ -2039,8 +2104,11 @@ async function getIndexerHealth(db) {
       current_cursor: cursor,
       cursor_changed_at: cursorChangedAt,
       chunks_completed: asNumber(snapshot.data?.chunks_completed) ?? asNumber(row.page_count) ?? 0,
+      retry_count: retryCount,
+      skipped_cursor_count: skippedCursorCount,
+      skipped_cursor_reason: skippedCursorReason,
       stuck_for_minutes: stuckForMinutes,
-      next_action: asNumber(row.complete) === 1 ? 'complete' : (stuckForMinutes > SOURCE_STALE_MINUTES ? 'resume from saved cursor or reset stuck source' : 'continue from saved cursor'),
+      next_action: nextAction,
       cursor,
       page_count: asNumber(row.page_count) || 0,
       row_count: asNumber(row.row_count) || 0,
@@ -2240,6 +2308,7 @@ async function planWaxOnEdgeCandleBackfill(env) {
        AND pair_id IS NOT NULL
        AND pair_id != ''`);
   const state = await readSourceIndexState(env.DB, CANDLE_BACKFILL_SOURCE);
+  const previousSnapshot = await readSnapshot(env.DB, CANDLE_BACKFILL_SOURCE);
   const cursorOffset = clampInteger(state?.cursor || 0, 0, 0, Number.MAX_SAFE_INTEGER);
   const candidates = await env.DB.prepare(
     `SELECT source, pair_id
@@ -2272,6 +2341,10 @@ async function planWaxOnEdgeCandleBackfill(env) {
     }
   }
   const nextCursor = Math.min(candidatePairCount, cursorOffset + attemptedPairCount);
+  const totalAttemptedPairCount = (asNumber(previousSnapshot.data?.attempted_pair_count) || 0) + attemptedPairCount;
+  const totalProcessedPairCount = (asNumber(previousSnapshot.data?.processed_pair_count) || 0) + processedPairCount;
+  const totalFailedPairCount = (asNumber(previousSnapshot.data?.failed_pair_count) || 0) + failedPairCount;
+  const totalCandlesWritten = (asNumber(previousSnapshot.data?.candles_written) || 0) + candlesWritten;
   const complete = candidatePairCount > 0 && nextCursor >= candidatePairCount;
   const existingCandleCount = await countScalar(env.DB,
     `SELECT COUNT(*) AS count FROM waxonedge_chart_candles WHERE interval = '1D'`);
@@ -2294,10 +2367,10 @@ async function planWaxOnEdgeCandleBackfill(env) {
     source: CANDLE_BACKFILL_SOURCE,
     status,
     candidate_pair_count: candidatePairCount,
-    processed_pair_count: nextCursor,
-    attempted_pair_count: attemptedPairCount,
-    failed_pair_count: failedPairCount,
-    candles_written: candlesWritten,
+    processed_pair_count: totalProcessedPairCount,
+    attempted_pair_count: totalAttemptedPairCount,
+    failed_pair_count: totalFailedPairCount,
+    candles_written: totalCandlesWritten,
     latest_1d_candle_count: existingCandleCount,
     cursor: complete ? '' : String(nextCursor),
     last_error: lastError,
@@ -2309,10 +2382,10 @@ async function planWaxOnEdgeCandleBackfill(env) {
     ok: status !== 'failed',
     status,
     candidate_pair_count: candidatePairCount,
-    processed_pair_count: nextCursor,
-    attempted_pair_count: attemptedPairCount,
-    failed_pair_count: failedPairCount,
-    candles_written: candlesWritten,
+    processed_pair_count: totalProcessedPairCount,
+    attempted_pair_count: totalAttemptedPairCount,
+    failed_pair_count: totalFailedPairCount,
+    candles_written: totalCandlesWritten,
     indexed_1d_candle_count: existingCandleCount,
     cursor: complete ? '' : String(nextCursor),
     last_error: lastError,
@@ -2518,7 +2591,8 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
     tasks.push((async () => {
       const alcor = await syncAlcorMarketData(env, 'alcor_minute_market_data');
       const aggregates = await aggregateTokenAnalytics(env);
-      return { ok: alcor.ok && aggregates.ok, alcor, aggregates };
+      const candleBackfill = await planWaxOnEdgeCandleBackfill(env);
+      return { ok: alcor.ok && aggregates.ok && candleBackfill.ok, alcor, aggregates, candleBackfill };
     })());
   }
   if (!cron || cron === '*/15 * * * *' || (isMinuteCron && minute % 15 === 0)) tasks.push(syncSupplyInputs(env));
@@ -2531,5 +2605,14 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
   }
   if (!tasks.length) return { ok: true, skipped: true };
   const results = await Promise.all(tasks);
-  return { ok: results.every((result) => result?.ok), results };
+  let postSyncAggregate = null;
+  if (!cron || isMinuteCron || shouldRunFullIndex) {
+    const needsAggregateRefresh = await aggregateNeedsRefreshAfterPairSync(env.DB);
+    if (needsAggregateRefresh) postSyncAggregate = await aggregateTokenAnalytics(env);
+  }
+  return {
+    ok: results.every((result) => result?.ok) && (!postSyncAggregate || postSyncAggregate.ok),
+    results,
+    post_sync_aggregate: postSyncAggregate,
+  };
 }

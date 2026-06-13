@@ -232,18 +232,37 @@ ok('source cursor progresses across bounded Worker runs',
   route.includes('request_count: tableResult.request_count') &&
   route.includes('Resuming stale running state from saved cursor') &&
   route.includes('Partial source sync checkpoint saved after') &&
-  route.includes("cursor: complete ? '' : tableResult.next_key") &&
+  route.includes("cursor: complete ? '' : savedCursor") &&
   route.includes('previous_cursor') &&
   route.includes('current_cursor') &&
   route.includes('cursor_changed_at') &&
   route.includes('chunks_completed'));
+ok('stale partial swap.taco resumes from saved cursor without wiping rows',
+  route.includes("referenceSource: 'taco'") &&
+  route.includes('lowerBound: state.cursor ||') &&
+  route.includes('const previousCursor = state.cursor ||') &&
+  route.includes("cursor: complete ? '' : savedCursor") &&
+  route.includes('const isNewCycle = !state || state.sync_cycle_id !== activeCycleId || state.status === \'failed\''));
+ok('repeated stuck Taco cursor is detected and safely skipped by one numeric cursor',
+  route.includes('const STUCK_CURSOR_RETRY_LIMIT = 3') &&
+  route.includes('function incrementNumericCursor(cursor)') &&
+  route.includes('BigInt(text) + 1n') &&
+  route.includes('retryCount >= STUCK_CURSOR_RETRY_LIMIT') &&
+  route.includes('savedCursor = advancedCursor') &&
+  route.includes('skipped_cursor_count') &&
+  route.includes('skipped_cursor_reason') &&
+  route.includes('stuck_cursor: ${adapter.source} cursor ${reportedCursor} repeated ${retryCount} time(s); next cron will resume at ${advancedCursor}'));
 ok('swap.alcor and swap.taco cursor progress is visible in health',
   route.includes('source_progress') &&
   route.includes('previous_cursor: previousCursor') &&
   route.includes('current_cursor: cursor') &&
   route.includes('stuck_for_minutes') &&
   route.includes('const stuckForMinutes = Number.isFinite(measuredStuckForMinutes) ? measuredStuckForMinutes : 0') &&
-  route.includes("next_action: asNumber(row.complete) === 1 ? 'complete'") &&
+  route.includes('retry_count: retryCount') &&
+  route.includes('skipped_cursor_count: skippedCursorCount') &&
+  route.includes('skipped_cursor_reason: skippedCursorReason') &&
+  route.includes("nextAction = asNumber(row.complete) === 1") &&
+  route.includes('next_action: nextAction') &&
   route.includes('resume from saved cursor or reset stuck source'));
 ok('missing cursorChangedAt returns numeric zero stuck minutes',
   route.includes('const measuredStuckForMinutes =') &&
@@ -278,7 +297,16 @@ ok('partial_success aggregate after latest pair sync can count as fresh',
   route.includes('fresh_after_latest_pair_sync: aggregateFresh') &&
   route.includes("const alcor = await syncAlcorMarketData(env, 'alcor_minute_market_data')") &&
   route.includes('const aggregates = await aggregateTokenAnalytics(env);') &&
-  route.includes('return { ok: alcor.ok && aggregates.ok, alcor, aggregates };'));
+  route.includes('const candleBackfill = await planWaxOnEdgeCandleBackfill(env);') &&
+  route.includes('return { ok: alcor.ok && aggregates.ok && candleBackfill.ok, alcor, aggregates, candleBackfill };'));
+ok('aggregate rebuild runs after latest pair sync if freshness drifts',
+  route.includes('async function aggregateNeedsRefreshAfterPairSync') &&
+  route.includes('latestAggregateRunRow(db)') &&
+  route.includes('latestPairSyncRunRow(db)') &&
+  route.includes('Date.parse(aggregate.finished_at) < Date.parse(pairSync.finished_at)') &&
+  route.includes('const needsAggregateRefresh = await aggregateNeedsRefreshAfterPairSync(env.DB)') &&
+  route.includes('postSyncAggregate = await aggregateTokenAnalytics(env)') &&
+  route.includes('post_sync_aggregate: postSyncAggregate'));
 ok('bootstrap compact source metadata does not mark missing snapshots complete',
   route.includes('row_count: tableSnapshot.data?.row_count || (Array.isArray(tableSnapshot.data?.rows) ? tableSnapshot.data.rows.length : 0)') &&
   route.includes('complete: !!tableSnapshot.data && (tableSnapshot.data?.truncated ? false : !tableSnapshot.data?.cursor)'));
@@ -321,6 +349,19 @@ ok('candle backfill writes only real Alcor 1D candles in bounded chunks',
   route.includes("writeChartCandles(env.DB, 'alcor', String(pair.pair_id), '1D', candles)") &&
   route.includes('cursor: complete ?') &&
   route.includes('candles_written'));
+ok('candle_backfill cron actually attempts candidate pairs',
+  route.includes("cron === 'waxonedge-candle-backfill'") &&
+  route.includes('const candleBackfill = await planWaxOnEdgeCandleBackfill(env);') &&
+  route.includes('const candidateRows = candidates.results || []') &&
+  route.includes('const attemptedPairCount = candidateRows.length') &&
+  route.includes('for (const pair of candidateRows)') &&
+  route.includes('attempted_pair_count: totalAttemptedPairCount'));
+ok('candle_backfill does not remain planned forever after scheduled run',
+  route.includes("const status = complete && failedPairCount === 0") &&
+  route.includes("attemptedPairCount > 0 ? 'partial'") &&
+  route.includes("status === 'planned' ? CANDLE_BACKFILL_PLAN : null") &&
+  route.includes("const candleBackfill = await planWaxOnEdgeCandleBackfill(env);") &&
+  route.includes('return { ok: alcor.ok && aggregates.ok && candleBackfill.ok, alcor, aggregates, candleBackfill };'));
 ok('Alcor chart URL uses 10-digit UNIX seconds instead of millisecond timestamps',
   route.includes('const nowSeconds = Math.floor(Date.now() / 1000)') &&
   route.includes('const to = nowSeconds') &&
@@ -350,10 +391,17 @@ ok('candle backfill advances cursor by attempted pairs and records failures',
   route.includes('const attemptedPairCount = candidateRows.length') &&
   route.includes('failedPairCount += 1') &&
   route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + attemptedPairCount)') &&
-  route.includes('attempted_pair_count: attemptedPairCount') &&
-  route.includes('failed_pair_count: failedPairCount') &&
+  route.includes('attempted_pair_count: totalAttemptedPairCount') &&
+  route.includes('failed_pair_count: totalFailedPairCount') &&
   route.includes('last_error: lastError') &&
   !route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + processedPairCount)'));
+ok('candle backfill cumulative counters separate cursor from success/failure counts',
+  route.includes('const totalAttemptedPairCount = (asNumber(previousSnapshot.data?.attempted_pair_count) || 0) + attemptedPairCount') &&
+  route.includes('const totalProcessedPairCount = (asNumber(previousSnapshot.data?.processed_pair_count) || 0) + processedPairCount') &&
+  route.includes('const totalFailedPairCount = (asNumber(previousSnapshot.data?.failed_pair_count) || 0) + failedPairCount') &&
+  route.includes('processed_pair_count: totalProcessedPairCount') &&
+  route.includes('cursor: complete ?') &&
+  !route.includes('processed_pair_count: nextCursor'));
 ok('aggregate selected price uses strongest real WAX quote liquidity',
   route.includes('hasWaxQuoteForToken(pair, side.contract, side.symbol)') &&
   route.includes('hasRealPairReserves(pair)') &&
