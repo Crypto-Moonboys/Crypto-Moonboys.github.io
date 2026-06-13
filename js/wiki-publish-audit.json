@@ -1,5 +1,5 @@
 {
-  "_generated": "2026-06-13T03:06:56.128Z",
+  "_generated": "2026-06-13T19:45:06.471Z",
   "summary": {
     "total": 207,
     "approved": 207,
@@ -351,7 +351,7 @@
       "file": "dream-sovereign.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1155
+      "word_count": 1345
     },
     {
       "slug": "elder-codex-7",
@@ -470,14 +470,14 @@
       "file": "games4punks-telegram.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4473
+      "word_count": 4562
     },
     {
       "slug": "gang-signs",
       "file": "gang-signs.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4205
+      "word_count": 4293
     },
     {
       "slug": "gang-signs-card-game",
@@ -491,7 +491,7 @@
       "file": "genesis-kernel.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1181
+      "word_count": 1269
     },
     {
       "slug": "genesis-spray",
@@ -505,7 +505,7 @@
       "file": "genesis-spray-drop.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 846
+      "word_count": 928
     },
     {
       "slug": "gk",
@@ -540,7 +540,7 @@
       "file": "graffiti-nexus.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 702
+      "word_count": 733
     },
     {
       "slug": "graffiti-queens-in-decentraland",
@@ -554,7 +554,7 @@
       "file": "graffitikings.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4190
+      "word_count": 4327
     },
     {
       "slug": "graffpunks",
@@ -603,7 +603,7 @@
       "file": "hard-fork-games.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4378
+      "word_count": 4526
     },
     {
       "slug": "harrison-rift",
@@ -617,7 +617,7 @@
       "file": "head-tags.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 915
+      "word_count": 986
     },
     {
       "slug": "hex-tagger-prime",
@@ -638,7 +638,7 @@
       "file": "hodl-wars.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4263
+      "word_count": 4418
     },
     {
       "slug": "ian-harrison",
@@ -736,7 +736,7 @@
       "file": "metropolis.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 3913
+      "word_count": 4056
     },
     {
       "slug": "midevil-hero-arena",
@@ -750,7 +750,7 @@
       "file": "midevilpunks.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4835
+      "word_count": 4986
     },
     {
       "slug": "moon-mission",
@@ -820,7 +820,7 @@
       "file": "nifty-crowns.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2175
+      "word_count": 2308
     },
     {
       "slug": "nifty-wizards",
@@ -911,7 +911,7 @@
       "file": "punk.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 3874
+      "word_count": 4013
     },
     {
       "slug": "punk-token",
@@ -1030,7 +1030,7 @@
       "file": "sneakar.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2480
+      "word_count": 2548
     },
     {
       "slug": "snipey-d-man-sirus",
@@ -1079,7 +1079,7 @@
       "file": "stikfamwars.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4616
+      "word_count": 4788
     },
     {
       "slug": "storm-struggle",
@@ -1450,7 +1450,7 @@
       "file": "xrp-kids.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 4506
+      "word_count": 4646
     },
     {
       "slug": "xrp-ledger",
