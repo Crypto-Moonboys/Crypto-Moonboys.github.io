@@ -242,8 +242,17 @@ ok('swap.alcor and swap.taco cursor progress is visible in health',
   route.includes('previous_cursor: previousCursor') &&
   route.includes('current_cursor: cursor') &&
   route.includes('stuck_for_minutes') &&
+  route.includes('const stuckForMinutes = Number.isFinite(measuredStuckForMinutes) ? measuredStuckForMinutes : 0') &&
   route.includes("next_action: asNumber(row.complete) === 1 ? 'complete'") &&
   route.includes('resume from saved cursor or reset stuck source'));
+ok('missing cursorChangedAt returns numeric zero stuck minutes',
+  route.includes('const measuredStuckForMinutes =') &&
+  route.includes('minutesSince(cursorChangedAt)') &&
+  route.includes('Number.isFinite(measuredStuckForMinutes) ? measuredStuckForMinutes : 0') &&
+  !route.includes('stuck_for_minutes: minutesSince(cursorChangedAt)'));
+ok('chunks_completed zero remains zero',
+  route.includes('chunks_completed: asNumber(snapshot.data?.chunks_completed) ?? asNumber(row.page_count) ?? 0') &&
+  !route.includes('chunks_completed: asNumber(snapshot.data?.chunks_completed) || asNumber(row.page_count) || 0'));
 ok('source pagination can index tokens beyond the first source page',
   route.includes('lower_bound: lowerBound') &&
   route.includes('data?.next_key') &&
@@ -303,10 +312,48 @@ ok('candle backfill writes only real Alcor 1D candles in bounded chunks',
   route.includes('/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D') &&
   route.includes('CANDLE_BACKFILL_PAIR_LIMIT') &&
   route.includes('CANDLE_BACKFILL_LOOKBACK_DAYS') &&
+  route.includes('const nowSeconds = Math.floor(Date.now() / 1000)') &&
+  route.includes('const from = nowSeconds - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60)') &&
+  route.includes('from=${from}&to=${to}') &&
+  !route.includes('const to = Date.now()') &&
+  !route.includes('24 * 60 * 60 * 1000') &&
   route.includes('if (ts == null || o == null || h == null || l == null || c == null || v == null) return;') &&
   route.includes("writeChartCandles(env.DB, 'alcor', String(pair.pair_id), '1D', candles)") &&
   route.includes('cursor: complete ?') &&
   route.includes('candles_written'));
+ok('Alcor chart URL uses 10-digit UNIX seconds instead of millisecond timestamps',
+  route.includes('const nowSeconds = Math.floor(Date.now() / 1000)') &&
+  route.includes('const to = nowSeconds') &&
+  route.includes('const from = nowSeconds - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60)') &&
+  !route.includes('const from = to - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60 * 1000)'));
+ok('candle normalization preserves real zero OHLCV values',
+  route.includes('item.open ?? item.o') &&
+  route.includes('item.high ?? item.h') &&
+  route.includes('item.low ?? item.l') &&
+  route.includes('item.close ?? item.c') &&
+  route.includes('item.volume ?? item.v') &&
+  route.includes('bar.open ?? bar.o') &&
+  route.includes('bar.high ?? bar.h') &&
+  route.includes('bar.low ?? bar.l') &&
+  route.includes('bar.close ?? bar.c') &&
+  route.includes('bar.volume ?? bar.v') &&
+  route.includes('data.o?.[i]') &&
+  !route.includes('item.volume || item.v') &&
+  !route.includes('bar.volume || bar.v'));
+ok('candle normalization still falls back only for nullish alternate fields',
+  route.includes('item.time ?? item.t ?? item.timestamp') &&
+  route.includes('item.open ?? item.o') &&
+  route.includes('bar.time ?? bar.t') &&
+  !route.includes('item.time || item.t || item.timestamp') &&
+  !route.includes('bar.time || bar.t'));
+ok('candle backfill advances cursor by attempted pairs and records failures',
+  route.includes('const attemptedPairCount = candidateRows.length') &&
+  route.includes('failedPairCount += 1') &&
+  route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + attemptedPairCount)') &&
+  route.includes('attempted_pair_count: attemptedPairCount') &&
+  route.includes('failed_pair_count: failedPairCount') &&
+  route.includes('last_error: lastError') &&
+  !route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + processedPairCount)'));
 ok('aggregate selected price uses strongest real WAX quote liquidity',
   route.includes('hasWaxQuoteForToken(pair, side.contract, side.symbol)') &&
   route.includes('hasRealPairReserves(pair)') &&
@@ -385,6 +432,8 @@ ok('indexer health reports partial source progress and candle backfill status',
   route.includes('latest_1d_candle_count') &&
   route.includes('chart_candles_indexed_count: chartCandleCount1d') &&
   route.includes('processed_pair_count') &&
+  route.includes('attempted_pair_count') &&
+  route.includes('failed_pair_count') &&
   route.includes('candles_written') &&
   route.includes('last_error'));
 ok('selected-pair health counts are scoped to indexed tokens',

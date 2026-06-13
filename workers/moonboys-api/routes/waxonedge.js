@@ -2027,7 +2027,8 @@ async function getIndexerHealth(db) {
       const adapter = CORE_DEX_ADAPTERS.find((entry) => entry.source === aggregateSourceKey(row.source));
       const snapshot = adapter ? await readSnapshot(db, `${adapter.source}_${adapter.table}`) : { data: null };
       const cursorChangedAt = snapshot.data?.cursor_changed_at || row.updated_at || row.started_at || null;
-      const stuckForMinutes = ['partial', 'running'].includes(row.status) ? minutesSince(cursorChangedAt) : 0;
+      const measuredStuckForMinutes = ['partial', 'running'].includes(row.status) ? minutesSince(cursorChangedAt) : 0;
+      const stuckForMinutes = Number.isFinite(measuredStuckForMinutes) ? measuredStuckForMinutes : 0;
       const cursor = row.cursor || '';
       const previousCursor = snapshot.data?.previous_cursor || '';
       return {
@@ -2037,7 +2038,7 @@ async function getIndexerHealth(db) {
       previous_cursor: previousCursor,
       current_cursor: cursor,
       cursor_changed_at: cursorChangedAt,
-      chunks_completed: asNumber(snapshot.data?.chunks_completed) || asNumber(row.page_count) || 0,
+      chunks_completed: asNumber(snapshot.data?.chunks_completed) ?? asNumber(row.page_count) ?? 0,
       stuck_for_minutes: stuckForMinutes,
       next_action: asNumber(row.complete) === 1 ? 'complete' : (stuckForMinutes > SOURCE_STALE_MINUTES ? 'resume from saved cursor or reset stuck source' : 'continue from saved cursor'),
       cursor,
@@ -2140,6 +2141,8 @@ async function getIndexerHealth(db) {
       status: candleBackfillState?.status || 'not_started',
       candidate_pair_count: asNumber(candleBackfillSnapshot.data?.candidate_pair_count) || asNumber(candleBackfillState?.row_count) || 0,
       processed_pair_count: asNumber(candleBackfillSnapshot.data?.processed_pair_count) || asNumber(candleBackfillState?.page_count) || 0,
+      attempted_pair_count: asNumber(candleBackfillSnapshot.data?.attempted_pair_count) || 0,
+      failed_pair_count: asNumber(candleBackfillSnapshot.data?.failed_pair_count) || 0,
       candles_written: asNumber(candleBackfillSnapshot.data?.candles_written) || 0,
       cursor: candleBackfillState?.cursor || '',
       last_error: candleBackfillSnapshot.data?.last_error || candleBackfillState?.error || null,
@@ -2177,20 +2180,20 @@ function normalizeAlcorChartCandles(data) {
         add(item[0], item[1], item[2], item[3], item[4], item[5]);
       } else if (item && typeof item === 'object') {
         add(
-          item.time || item.t || item.timestamp,
-          item.open || item.o,
-          item.high || item.h,
-          item.low || item.l,
-          item.close || item.c,
-          item.volume || item.v,
+          item.time ?? item.t ?? item.timestamp,
+          item.open ?? item.o,
+          item.high ?? item.h,
+          item.low ?? item.l,
+          item.close ?? item.c,
+          item.volume ?? item.v,
         );
       }
     }
   } else if (data && Array.isArray(data.bars)) {
-    for (const bar of data.bars) add(bar.time || bar.t, bar.open || bar.o, bar.high || bar.h, bar.low || bar.l, bar.close || bar.c, bar.volume || bar.v);
+    for (const bar of data.bars) add(bar.time ?? bar.t, bar.open ?? bar.o, bar.high ?? bar.h, bar.low ?? bar.l, bar.close ?? bar.c, bar.volume ?? bar.v);
   } else if (data && Array.isArray(data.t)) {
     for (let i = 0; i < data.t.length; i += 1) {
-      add(data.t[i], data.o && data.o[i], data.h && data.h[i], data.l && data.l[i], data.c && data.c[i], data.v && data.v[i]);
+      add(data.t[i], data.o?.[i], data.h?.[i], data.l?.[i], data.c?.[i], data.v?.[i]);
     }
   }
   return candles.sort((a, b) => Date.parse(a.bucket_time) - Date.parse(b.bucket_time));
@@ -2247,12 +2250,16 @@ async function planWaxOnEdgeCandleBackfill(env) {
      ORDER BY CAST(pair_id AS NUMERIC), pair_id
      LIMIT ? OFFSET ?`
   ).bind(CANDLE_BACKFILL_PAIR_LIMIT, cursorOffset).all().catch(() => ({ results: [] }));
+  const candidateRows = candidates.results || [];
+  const attemptedPairCount = candidateRows.length;
   let processedPairCount = 0;
+  let failedPairCount = 0;
   let candlesWritten = 0;
   let lastError = null;
-  const to = Date.now();
-  const from = to - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
-  for (const pair of candidates.results || []) {
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  const to = nowSeconds;
+  const from = nowSeconds - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60);
+  for (const pair of candidateRows) {
     try {
       const url = `${ALCOR_API}/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D&from=${from}&to=${to}`;
       const data = await fetchJson(url, { timeoutMs: 12000 });
@@ -2260,16 +2267,17 @@ async function planWaxOnEdgeCandleBackfill(env) {
       candlesWritten += await writeChartCandles(env.DB, 'alcor', String(pair.pair_id), '1D', candles);
       processedPairCount += 1;
     } catch (error) {
+      failedPairCount += 1;
       lastError = error?.message || String(error);
     }
   }
-  const nextCursor = Math.min(candidatePairCount, cursorOffset + processedPairCount);
+  const nextCursor = Math.min(candidatePairCount, cursorOffset + attemptedPairCount);
   const complete = candidatePairCount > 0 && nextCursor >= candidatePairCount;
   const existingCandleCount = await countScalar(env.DB,
     `SELECT COUNT(*) AS count FROM waxonedge_chart_candles WHERE interval = '1D'`);
-  const status = lastError && processedPairCount === 0
-    ? 'failed'
-    : (complete ? 'success' : (processedPairCount > 0 ? 'partial' : 'planned'));
+  const status = complete && failedPairCount === 0
+    ? 'success'
+    : (attemptedPairCount > 0 ? 'partial' : (lastError ? 'failed' : 'planned'));
   const error = lastError || (status === 'planned' ? CANDLE_BACKFILL_PLAN : null);
   await upsertSourceIndexState(env.DB, CANDLE_BACKFILL_SOURCE, {
     sync_cycle_id: `candle-${new Date().toISOString().slice(0, 10)}`,
@@ -2287,6 +2295,8 @@ async function planWaxOnEdgeCandleBackfill(env) {
     status,
     candidate_pair_count: candidatePairCount,
     processed_pair_count: nextCursor,
+    attempted_pair_count: attemptedPairCount,
+    failed_pair_count: failedPairCount,
     candles_written: candlesWritten,
     latest_1d_candle_count: existingCandleCount,
     cursor: complete ? '' : String(nextCursor),
@@ -2300,6 +2310,8 @@ async function planWaxOnEdgeCandleBackfill(env) {
     status,
     candidate_pair_count: candidatePairCount,
     processed_pair_count: nextCursor,
+    attempted_pair_count: attemptedPairCount,
+    failed_pair_count: failedPairCount,
     candles_written: candlesWritten,
     indexed_1d_candle_count: existingCandleCount,
     cursor: complete ? '' : String(nextCursor),
