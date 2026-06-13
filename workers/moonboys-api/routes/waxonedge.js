@@ -12,7 +12,7 @@ const CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE = 3;
 const SOURCE_STALE_MINUTES = 30;
 const MIN_TRUSTED_WAX_LIQUIDITY = 10;
 const CANDLE_BACKFILL_SOURCE = 'candle_backfill';
-const CANDLE_BACKFILL_PLAN = 'Alcor 1D candle backfill planned; no fake candles are inserted.';
+const CANDLE_BACKFILL_PLAN = 'Internal 1D kline backfill planned from indexed trade rows; no fake candles are inserted.';
 const WAXONEDGE_FREE_SAFE_MODE_DEFAULT = true;
 const DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT = 24;
 const FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION = 1;
@@ -63,6 +63,25 @@ function isSubrequestBudgetError(error) {
 
 function isNotFoundError(error) {
   return /^404\b|not found/i.test(String(error?.message || error || ''));
+}
+
+function normalizeCandleInterval(value) {
+  const text = String(value || '1D').trim().toLowerCase();
+  if (text === '1d' || text === 'd') return '1D';
+  if (text === '1m') return '1m';
+  return text.toUpperCase();
+}
+
+function referenceCandleSource(source) {
+  const key = aggregateSourceKey(source);
+  if (key === 'alcor') return 'alcormarket';
+  return key;
+}
+
+function moonboysCandleSource(source) {
+  const key = String(source || '').trim().toLowerCase();
+  if (key === 'alcormarket' || key === 'alcordexmain') return 'alcor';
+  return aggregateSourceKey(key);
 }
 
 function selectCoreDexAdapterForCron(minute) {
@@ -1529,6 +1548,71 @@ async function listBestChartCandles(db, contract, symbol) {
   };
 }
 
+function reverseStoredCandle(candle) {
+  function reciprocal(value) {
+    const n = asNumber(value);
+    return n && n !== 0 ? safeDecimal(1 / n) : null;
+  }
+  const reversedOpen = reciprocal(candle.open);
+  const reversedHigh = reciprocal(candle.low);
+  const reversedLow = reciprocal(candle.high);
+  const reversedClose = reciprocal(candle.close);
+  if (!reversedOpen || !reversedHigh || !reversedLow || !reversedClose) return candle;
+  return {
+    ...candle,
+    open: reversedOpen,
+    high: reversedHigh,
+    low: reversedLow,
+    close: reversedClose,
+  };
+}
+
+async function listChartCandlesBySource(db, query) {
+  const source = moonboysCandleSource(query.src || query.source);
+  const pairId = safeString(query.pair_id || query.pairId);
+  const interval = normalizeCandleInterval(query.duration || query.interval);
+  const countBack = clampInteger(query.countBack || query.limit, 120, 1, 1000);
+  if (!source || !pairId) {
+    return { chart_source: null, candles: [], unavailable: 'src and pair_id are required' };
+  }
+  const startAt = asNumber(query.startAt);
+  const endAt = asNumber(query.endAt);
+  const startIso = startAt == null ? null : new Date(startAt).toISOString();
+  const endIso = endAt == null ? null : new Date(endAt).toISOString();
+  const filters = ['source = ?', 'pair_id = ?', 'interval = ?'];
+  const params = [source, pairId, interval];
+  if (startIso) {
+    filters.push('bucket_time >= ?');
+    params.push(startIso);
+  }
+  if (endIso) {
+    filters.push('bucket_time <= ?');
+    params.push(endIso);
+  }
+  params.push(countBack);
+  const rows = await db.prepare(
+    `SELECT source, pair_id, interval, bucket_time, open, high, low, close, volume
+     FROM waxonedge_chart_candles
+     WHERE ${filters.join(' AND ')}
+     ORDER BY bucket_time DESC
+     LIMIT ?`
+  ).bind(...params).all();
+  let candles = (rows.results || []).reverse();
+  if (String(query.is_reversed || query.isReversed || '').toLowerCase() === 'true') {
+    candles = candles.map(reverseStoredCandle);
+  }
+  return {
+    chart_source: {
+      source,
+      reference_src: referenceCandleSource(source),
+      pair_id: pairId,
+      interval,
+    },
+    candles,
+    unavailable: candles.length ? null : SOURCE_NOT_INDEXED,
+  };
+}
+
 function buildDbTokenPriceIndex(rows) {
   const index = new Map();
   for (const row of rows || []) {
@@ -2030,7 +2114,7 @@ async function sourceRowCounts(db) {
   return counts;
 }
 
-async function getIndexerHealth(db) {
+async function getIndexerHealth(db, env = {}) {
   const pairTokenCte = `
     WITH pair_tokens AS (
       SELECT t.contract, t.symbol
@@ -2224,6 +2308,12 @@ async function getIndexerHealth(db) {
   };
   return {
     generated_at: nowIso(),
+    runtime_config: {
+      free_safe_mode: waxonedgeFreeSafeMode(env),
+      active_candle_backfill_pair_limit: candleBackfillPairLimit(env),
+      active_source_page_limit: coreDexPagesPerInvocation(env),
+      active_cron_rotation_mode: 'isolated-heavy-workloads',
+    },
     totals: {
       total_indexed_tokens: totalTokens,
       tokens_with_selected_price: tokensWithSelectedPrice,
@@ -2262,6 +2352,10 @@ async function getIndexerHealth(db) {
       attempted_pair_count: asNumber(candleBackfillSnapshot.data?.attempted_pair_count) || 0,
       failed_pair_count: asNumber(candleBackfillSnapshot.data?.failed_pair_count) || 0,
       unsupported_pair_count: asNumber(candleBackfillSnapshot.data?.unsupported_pair_count) || 0,
+      external_chart_endpoint_unsupported: asNumber(candleBackfillSnapshot.data?.external_chart_endpoint_unsupported) || 0,
+      trade_rows_not_indexed: asNumber(candleBackfillSnapshot.data?.trade_rows_not_indexed_count) || 0,
+      swap_rows_not_indexed: asNumber(candleBackfillSnapshot.data?.swap_rows_not_indexed_count) || 0,
+      candles_built_from_trade_rows: asNumber(candleBackfillSnapshot.data?.candles_built_from_trade_rows) || 0,
       budget_exhausted: !!candleBackfillSnapshot.data?.budget_exhausted,
       unsupported_reason: candleBackfillSnapshot.data?.unsupported_reason || null,
       candles_written: asNumber(candleBackfillSnapshot.data?.candles_written) || 0,
@@ -2318,6 +2412,149 @@ function normalizeAlcorChartCandles(data) {
     }
   }
   return candles.sort((a, b) => Date.parse(a.bucket_time) - Date.parse(b.bucket_time));
+}
+
+function parseTradeRawJson(row) {
+  if (!row?.raw_json) return {};
+  try {
+    const parsed = JSON.parse(row.raw_json);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function tradeTimestampMillis(row) {
+  const raw = parseTradeRawJson(row);
+  const value = row?.traded_at ?? raw.traded_at ?? raw.created_at ?? raw.updated_at_time ?? raw.timestamp ?? raw.time;
+  if (value == null || value === '') return null;
+  if (typeof value === 'number' || /^\d+(\.\d+)?$/.test(String(value))) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return null;
+    return numeric > 1000000000000 ? numeric : numeric * 1000;
+  }
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function priceFromIndexedTradeRow(row, source = '') {
+  const raw = parseTradeRawJson(row);
+  const unitPrice = raw.unit_price ?? row?.unit_price;
+  const sourceKey = moonboysCandleSource(source || row?.source);
+  if (sourceKey === 'alcor' && unitPrice != null && unitPrice !== '') {
+    const n = asNumber(unitPrice);
+    if (n != null) return n / 100000000;
+  }
+  const price = row?.price ?? raw.price ?? raw.execution_price ?? raw.rate;
+  const n = asNumber(price);
+  if (n == null) return null;
+  return n;
+}
+
+function volumeFromIndexedTradeRow(row) {
+  const raw = parseTradeRawJson(row);
+  const value = row?.volume ?? raw.volume ?? raw.tokenWaxVolume ?? raw.volumeB ?? raw.volumeA ?? row?.amount ?? raw.amount;
+  const n = asNumber(value);
+  return n == null ? null : n;
+}
+
+function utcDayBucketIso(millis) {
+  if (!Number.isFinite(millis)) return null;
+  const date = new Date(millis);
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())).toISOString();
+}
+
+function buildDailyCandlesFromTradeRows(rows, options = {}) {
+  const source = options.source || '';
+  const trades = (rows || [])
+    .map((row) => {
+      const millis = tradeTimestampMillis(row);
+      const price = priceFromIndexedTradeRow(row, source);
+      const volume = volumeFromIndexedTradeRow(row);
+      return { millis, price, volume: volume ?? 0 };
+    })
+    .filter((trade) => Number.isFinite(trade.millis) && trade.price != null)
+    .sort((a, b) => a.millis - b.millis);
+  const days = new Map();
+  for (const trade of trades) {
+    const bucket = utcDayBucketIso(trade.millis);
+    if (!bucket) continue;
+    if (!days.has(bucket)) {
+      days.set(bucket, {
+        bucket_time: bucket,
+        open: trade.price,
+        high: trade.price,
+        low: trade.price,
+        close: trade.price,
+        volume: 0,
+        trade_count: 0,
+      });
+    }
+    const candle = days.get(bucket);
+    candle.high = Math.max(candle.high, trade.price);
+    candle.low = Math.min(candle.low, trade.price);
+    candle.close = trade.price;
+    candle.volume += trade.volume;
+    candle.trade_count += 1;
+  }
+  return [...days.values()].map((candle) => ({
+    bucket_time: candle.bucket_time,
+    open: safeDecimal(candle.open),
+    high: safeDecimal(candle.high),
+    low: safeDecimal(candle.low),
+    close: safeDecimal(candle.close),
+    volume: safeDecimal(candle.volume),
+    trade_count: candle.trade_count,
+  })).filter((candle) =>
+    candle.open != null && candle.high != null && candle.low != null && candle.close != null && candle.volume != null);
+}
+
+async function loadIndexedTradeRowsForPair(db, source, pairId) {
+  const moonboysSource = moonboysCandleSource(source);
+  const referenceSource = referenceCandleSource(moonboysSource);
+  const startMillis = Date.now() - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
+  const startIso = new Date(startMillis).toISOString();
+  const rows = await db.prepare(
+    `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json
+     FROM waxonedge_trades
+     WHERE pair_id = ?
+       AND (source = ? OR source = ?)
+       AND traded_at >= ?
+     ORDER BY traded_at ASC
+     LIMIT 5000`
+  ).bind(String(pairId), moonboysSource, referenceSource, startIso).all().catch(() => ({ results: [] }));
+  return rows.results || [];
+}
+
+async function buildInternalDailyCandlesForPair(db, pair) {
+  const source = moonboysCandleSource(pair.source);
+  const pairId = String(pair.pair_id || pair.pairId || '');
+  if (!source || !pairId) return { ok: false, reason: 'missing_pair_identity', candles_written: 0, candle_count: 0 };
+  const rows = await loadIndexedTradeRowsForPair(db, source, pairId);
+  if (!rows.length) {
+    return {
+      ok: true,
+      reason: source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed',
+      candles_written: 0,
+      candle_count: 0,
+    };
+  }
+  const candles = buildDailyCandlesFromTradeRows(rows, { source });
+  if (!candles.length) {
+    return {
+      ok: true,
+      reason: 'trade_rows_not_usable_for_ohlcv',
+      candles_written: 0,
+      candle_count: 0,
+    };
+  }
+  const candlesWritten = await writeChartCandles(db, source, pairId, '1D', candles);
+  return {
+    ok: true,
+    reason: 'candles_built_from_trade_rows',
+    candles_written: candlesWritten,
+    candle_count: candles.length,
+  };
 }
 
 async function writeChartCandles(db, source, pairId, interval, candles) {
@@ -2377,34 +2614,44 @@ async function planWaxOnEdgeCandleBackfill(env) {
   let processedPairCount = 0;
   let failedPairCount = 0;
   let unsupportedPairCount = 0;
+  let tradeRowsNotIndexedCount = 0;
+  let swapRowsNotIndexedCount = 0;
+  let candlesBuiltFromTradeRowsCount = 0;
   let candlesWritten = 0;
   let lastError = null;
   let unsupportedReason = null;
   let budgetExhausted = false;
   const requestBudget = candleSubrequestBudget(env);
-  const nowSeconds = Math.floor(Date.now() / 1000);
-  const to = nowSeconds;
-  const from = nowSeconds - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60);
   for (const pair of candidateRows) {
     if (attemptedPairCount >= requestBudget) {
       budgetExhausted = true;
       lastError = `Budget exhausted before next candle pair; attempted ${attemptedPairCount} of ${candidateRows.length}`;
       break;
     }
+    attemptedPairCount += 1;
     try {
-      const url = `${ALCOR_API}/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D&from=${from}&to=${to}`;
-      const data = await fetchJson(url, { timeoutMs: 12000 });
-      attemptedPairCount += 1;
-      const candles = normalizeAlcorChartCandles(data);
-      candlesWritten += await writeChartCandles(env.DB, 'alcor', String(pair.pair_id), '1D', candles);
-      processedPairCount += 1;
+      const result = await buildInternalDailyCandlesForPair(env.DB, pair);
+      candlesWritten += result.candles_written || 0;
+      if (result.reason === 'candles_built_from_trade_rows') {
+        candlesBuiltFromTradeRowsCount += 1;
+        processedPairCount += 1;
+      } else if (result.reason === 'trade_rows_not_indexed') {
+        tradeRowsNotIndexedCount += 1;
+        lastError = 'trade rows not indexed yet';
+      } else if (result.reason === 'swap_rows_not_indexed') {
+        swapRowsNotIndexedCount += 1;
+        lastError = 'swap rows not indexed yet';
+      } else if (result.reason === 'trade_rows_not_usable_for_ohlcv') {
+        unsupportedPairCount += 1;
+        unsupportedReason = `trade_rows_not_usable_for_ohlcv: ${pair.source} pair ${pair.pair_id}`;
+        lastError = unsupportedReason;
+      }
     } catch (error) {
       if (isSubrequestBudgetError(error)) {
         budgetExhausted = true;
         lastError = error?.message || String(error);
         break;
       }
-      attemptedPairCount += 1;
       if (isNotFoundError(error)) {
         unsupportedPairCount += 1;
         unsupportedReason = `no_chart_endpoint: alcor pair ${pair.pair_id} returned 404`;
@@ -2420,6 +2667,9 @@ async function planWaxOnEdgeCandleBackfill(env) {
   const totalProcessedPairCount = (asNumber(previousSnapshot.data?.processed_pair_count) || 0) + processedPairCount;
   const totalFailedPairCount = (asNumber(previousSnapshot.data?.failed_pair_count) || 0) + failedPairCount;
   const totalUnsupportedPairCount = (asNumber(previousSnapshot.data?.unsupported_pair_count) || 0) + unsupportedPairCount;
+  const totalTradeRowsNotIndexedCount = (asNumber(previousSnapshot.data?.trade_rows_not_indexed_count) || 0) + tradeRowsNotIndexedCount;
+  const totalSwapRowsNotIndexedCount = (asNumber(previousSnapshot.data?.swap_rows_not_indexed_count) || 0) + swapRowsNotIndexedCount;
+  const totalCandlesBuiltFromTradeRowsCount = (asNumber(previousSnapshot.data?.candles_built_from_trade_rows) || 0) + candlesBuiltFromTradeRowsCount;
   const totalCandlesWritten = (asNumber(previousSnapshot.data?.candles_written) || 0) + candlesWritten;
   const complete = candidatePairCount > 0 && nextCursor >= candidatePairCount;
   const existingCandleCount = await countScalar(env.DB,
@@ -2449,6 +2699,10 @@ async function planWaxOnEdgeCandleBackfill(env) {
     attempted_pair_count: totalAttemptedPairCount,
     failed_pair_count: totalFailedPairCount,
     unsupported_pair_count: totalUnsupportedPairCount,
+    trade_rows_not_indexed_count: totalTradeRowsNotIndexedCount,
+    swap_rows_not_indexed_count: totalSwapRowsNotIndexedCount,
+    candles_built_from_trade_rows: totalCandlesBuiltFromTradeRowsCount,
+    external_chart_endpoint_unsupported: totalUnsupportedPairCount,
     budget_exhausted: budgetExhausted,
     unsupported_reason: unsupportedReason,
     candles_written: totalCandlesWritten,
@@ -2467,6 +2721,10 @@ async function planWaxOnEdgeCandleBackfill(env) {
     attempted_pair_count: totalAttemptedPairCount,
     failed_pair_count: totalFailedPairCount,
     unsupported_pair_count: totalUnsupportedPairCount,
+    trade_rows_not_indexed_count: totalTradeRowsNotIndexedCount,
+    swap_rows_not_indexed_count: totalSwapRowsNotIndexedCount,
+    candles_built_from_trade_rows: totalCandlesBuiltFromTradeRowsCount,
+    external_chart_endpoint_unsupported: totalUnsupportedPairCount,
     budget_exhausted: budgetExhausted,
     unsupported_reason: unsupportedReason,
     candles_written: totalCandlesWritten,
@@ -2585,12 +2843,16 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
     }
     if (path === `${WAXONEDGE_API_PREFIX}/tokens/top`) return ok(await listTopTokens(env.DB), [], null, corsHeaders);
     if (path === `${WAXONEDGE_API_PREFIX}/pairs/top`) return ok(await listTopPairs(env.DB), [], null, corsHeaders);
+    if (path === `${WAXONEDGE_API_PREFIX}/candles`) {
+      const chart = await listChartCandlesBySource(env.DB, Object.fromEntries(url.searchParams.entries()));
+      return ok(chart, chart.unavailable ? [chart.unavailable] : [], null, corsHeaders);
+    }
     if (path === `${WAXONEDGE_API_PREFIX}/sync-status`) {
       const [latest_sync, source_index_state] = await Promise.all([getLatestSync(env.DB), getSourceIndexStates(env.DB)]);
       return ok({ latest_sync, source_index_state }, [], null, corsHeaders);
     }
     if (path === `${WAXONEDGE_API_PREFIX}/indexer-health`) {
-      return ok(await getIndexerHealth(env.DB), [], null, corsHeaders);
+      return ok(await getIndexerHealth(env.DB, env), [], null, corsHeaders);
     }
 
     const tokenMatch = path.match(/^\/api\/waxonedge\/token\/([^/]+)\/([^/]+)(?:\/([^/]+))?$/);
@@ -2631,6 +2893,12 @@ export const __waxonedgeTestHooks = {
   deriveTokenPairMetrics,
   collectTokenPriceKeysForPairs,
   diagnoseTokenAggregate,
+  buildDailyCandlesFromTradeRows,
+  priceFromIndexedTradeRow,
+  normalizeCandleInterval,
+  moonboysCandleSource,
+  referenceCandleSource,
+  candleBackfillPairLimit,
 };
 
 export async function runWaxOnEdgeAggregateBackfill(env) {
