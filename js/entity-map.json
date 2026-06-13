@@ -63,9 +63,7 @@
       "wiki"
     ],
     "source_urls": [
-      "/wiki/1m-free-nfts-program.html",
-      "/wiki/1m-free-nfts-programme.html",
-      "/wiki/one-million-free-nfts.html"
+      "/wiki/1m-free-nfts-program.html"
     ],
     "brand": {
       "brand_family": "one-million-free-nfts",
@@ -1500,8 +1498,7 @@
       "wiki"
     ],
     "source_urls": [
-      "/wiki/graffpunks.html",
-      "/wiki/the-graffpunks.html"
+      "/wiki/graffpunks.html"
     ],
     "brand": {
       "brand_family": "graffpunks",
@@ -1756,7 +1753,8 @@
       "wiki"
     ],
     "source_urls": [
-      "/wiki/hodl-warriors.html"
+      "/wiki/hodl-warriors.html",
+      "/wiki/hodl-x-warriors.html"
     ],
     "brand": {
       "brand_family": "hodl",
@@ -2108,7 +2106,6 @@
       "wiki"
     ],
     "source_urls": [
-      "/wiki/midevil-hero-arena.html",
       "/wiki/midevilpunks.html"
     ],
     "brand": {

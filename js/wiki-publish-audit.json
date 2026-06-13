@@ -1,8 +1,8 @@
 {
-  "_generated": "2026-06-13T19:45:06.471Z",
+  "_generated": "2026-06-13T19:47:33.150Z",
   "summary": {
-    "total": 207,
-    "approved": 207,
+    "total": 195,
+    "approved": 195,
     "blocked": 0,
     "needs_review": 0,
     "blocked_synthetic_slug": 0,
@@ -30,13 +30,6 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 745
-    },
-    {
-      "slug": "1m-free-nfts-programme",
-      "file": "1m-free-nfts-programme.html",
-      "status": "APPROVED_CANON_PAGE",
-      "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 1008
     },
     {
       "slug": "2025-metaverse-launch-party",
@@ -249,13 +242,6 @@
       "word_count": 1413
     },
     {
-      "slug": "blockchain-graffpunks",
-      "file": "blockchain-graffpunks.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
-    },
-    {
       "slug": "bone-idol-ink",
       "file": "bone-idol-ink.html",
       "status": "APPROVED_CANON_PAGE",
@@ -403,20 +389,6 @@
       "word_count": 512
     },
     {
-      "slug": "fork",
-      "file": "fork.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
-    },
-    {
-      "slug": "fork-graffpunks",
-      "file": "fork-graffpunks.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
-    },
-    {
       "slug": "forkborn-collective",
       "file": "forkborn-collective.html",
       "status": "APPROVED_CANON_PAGE",
@@ -438,32 +410,11 @@
       "word_count": 534
     },
     {
-      "slug": "free",
-      "file": "free.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
-    },
-    {
-      "slug": "games",
-      "file": "games.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
-    },
-    {
       "slug": "games-graffpunks",
       "file": "games-graffpunks.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 995
-    },
-    {
-      "slug": "games-nfts",
-      "file": "games-nfts.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
     },
     {
       "slug": "games4punks-telegram",
@@ -513,13 +464,6 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 788
-    },
-    {
-      "slug": "gk-graffpunks",
-      "file": "gk-graffpunks.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
     },
     {
       "slug": "gkniftyheads",
@@ -641,6 +585,13 @@
       "word_count": 4418
     },
     {
+      "slug": "hodl-x-warriors",
+      "file": "hodl-x-warriors.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 3392
+    },
+    {
       "slug": "ian-harrison",
       "file": "ian-harrison.html",
       "status": "APPROVED_CANON_PAGE",
@@ -674,13 +625,6 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 998
-    },
-    {
-      "slug": "kid",
-      "file": "kid.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
     },
     {
       "slug": "lady-ink",
@@ -737,13 +681,6 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 4056
-    },
-    {
-      "slug": "midevil-hero-arena",
-      "file": "midevil-hero-arena.html",
-      "status": "APPROVED_CANON_PAGE",
-      "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 2861
     },
     {
       "slug": "midevilpunks",
@@ -842,13 +779,6 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 9517
-    },
-    {
-      "slug": "one-million-free-nfts",
-      "file": "one-million-free-nfts.html",
-      "status": "APPROVED_CANON_PAGE",
-      "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 611
     },
     {
       "slug": "paper-hands",
@@ -1215,13 +1145,6 @@
       "word_count": 1080
     },
     {
-      "slug": "the-graffpunks",
-      "file": "the-graffpunks.html",
-      "status": "APPROVED_CANON_PAGE",
-      "reason": "Manually approved in brand-canon/approved-pages.json.",
-      "word_count": 664
-    },
-    {
       "slug": "the-great-dip",
       "file": "the-great-dip.html",
       "status": "APPROVED_CANON_PAGE",
@@ -1241,13 +1164,6 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 937
-    },
-    {
-      "slug": "the-hodl-warriors",
-      "file": "the-hodl-warriors.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
     },
     {
       "slug": "the-information-mercenaries",

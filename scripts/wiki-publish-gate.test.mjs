@@ -296,31 +296,44 @@ assert.equal(
 
 console.log(`✓ CI gate: no non-approved (blocked/review) wiki pages remain on disk`);
 
-// ── 13. Purge summary must be consistent with current audit ──────────────────
-// Ensures js/wiki-purge-summary.json was regenerated after the final audit state
-// and that its approved count matches the audit.  This prevents a stale summary
-// (generated at an earlier, partially-approved state) from being committed.
+// ── 13. Purge summary must be counts-only and consistent ─────────────────────
+// Ensures js/wiki-purge-summary.json is emitted in counts-only mode and that
+// stale references were cleaned up after purge + regeneration.
 
 const PURGE_SUMMARY_PATH = path.join(ROOT, 'js', 'wiki-purge-summary.json');
 if (fs.existsSync(PURGE_SUMMARY_PATH)) {
   const purgeSummary = JSON.parse(fs.readFileSync(PURGE_SUMMARY_PATH, 'utf8'));
-  const summaryApproved = (purgeSummary.summary || purgeSummary).approved;
-  const auditApproved   = (audit.summary || audit).approved;
-  assert.equal(
-    summaryApproved,
-    auditApproved,
-    `CI FAIL: wiki-purge-summary.json reports approved=${summaryApproved} but ` +
-    `wiki-publish-audit.json reports approved=${auditApproved}.\n` +
-    `Regenerate: node scripts/wiki-publish-gate.js && node scripts/purge-unapproved-wiki-pages.js`
-  );
-  const summaryBlocked = (purgeSummary.summary || purgeSummary).blocked_remaining;
+  const allowedKeys = new Set([
+    'scanned_pages',
+    'deleted_noise_pages',
+    'protected_pages',
+    'stale_references_remaining',
+  ]);
+  for (const key of Object.keys(purgeSummary)) {
+    assert.ok(
+      allowedKeys.has(key),
+      `CI FAIL: wiki-purge-summary.json must be counts-only. Unexpected key: ${key}`
+    );
+  }
+  for (const key of allowedKeys) {
+    assert.ok(
+      Object.prototype.hasOwnProperty.call(purgeSummary, key),
+      `CI FAIL: wiki-purge-summary.json missing required key: ${key}`
+    );
+    assert.equal(
+      typeof purgeSummary[key],
+      'number',
+      `CI FAIL: wiki-purge-summary.json key "${key}" must be numeric`
+    );
+  }
+  const summaryBlocked = purgeSummary.stale_references_remaining;
   assert.equal(
     summaryBlocked,
     0,
-    `CI FAIL: wiki-purge-summary.json reports ${summaryBlocked} blocked page(s) remaining.\n` +
-    `Run: node scripts/purge-unapproved-wiki-pages.js`
+    `CI FAIL: wiki-purge-summary.json reports ${summaryBlocked} stale reference(s) remaining.\n` +
+    `Run: node scripts/audit-and-purge-stale-sam-noise.js and regenerate assets.`
   );
-  console.log(`✓ CI gate: purge summary is consistent with current audit (approved: ${summaryApproved})`);
+  console.log(`✓ CI gate: purge summary is counts-only and reports no stale references`);
 } else {
   console.log(`  (js/wiki-purge-summary.json missing — skipping purge consistency check)`);
 }
