@@ -312,6 +312,18 @@ ok('indexer health reports systemic dead-token and source health counts',
   route.includes('stale_sync_rows') &&
   route.includes('last_success_at') &&
   route.includes('dead_token_reason_counts'));
+ok('indexer health pair-token counts are scoped to indexed tokens',
+  route.includes('FROM waxonedge_tokens t') &&
+  route.includes('SELECT COUNT(*) AS count FROM pair_tokens') &&
+  route.includes('JOIN pair_tokens pt') &&
+  route.includes('FROM scoped_pairs p') &&
+  !route.includes('SELECT token_a_contract AS contract, token_a_symbol AS symbol FROM waxonedge_pairs'));
+ok('indexer health and debug chart readiness only count 1D candles',
+  (route.match(/c\.interval = '1D'/g) || []).length >= 2 &&
+  route.includes('WITH candle_tokens AS') &&
+  route.includes('JOIN waxonedge_chart_candles c ON c.source = p.source AND c.pair_id = p.pair_id') &&
+  route.includes('tokens_with_chart_candles') &&
+  route.includes('tokens_with_chart_candidate_but_no_candles'));
 ok('token detail avoids unbounded all-priced-token scan',
   route.includes('function collectTokenPriceKeysForPairs') &&
   route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, pairRows)') &&
@@ -438,6 +450,34 @@ ok('token detail avoids unbounded all-priced-token scan',
     deadDiagnostics.reasons.includes('chart candles missing') &&
     deadDiagnostics.reasons.includes('aggregate rebuild not run after pair sync') &&
     deadDiagnostics.facts.indexed_pair_count === 0);
+  const derivedLiquidityDiagnostics = __waxonedgeTestHooks.diagnoseTokenAggregate(
+    'wuffi',
+    'WUF',
+    {
+      selected_price_wax: '0.002',
+      selected_price_usd: '0.000012',
+      strongest_pair: { liquidity_wax: '2000' },
+    },
+    [
+      {
+        source: 'swap.nefty',
+        pair_id: 'WAXWUFB',
+        token_a_contract: 'eosio.token',
+        token_a_symbol: 'WAX',
+        token_b_contract: 'wuffi',
+        token_b_symbol: 'WUF',
+        liquidity_wax: null,
+        reserve_a: '1000',
+        reserve_b: '500000',
+      },
+    ],
+    1,
+    true,
+  );
+  ok('dead token diagnostics use derived strongest liquidity fallback',
+    Number(derivedLiquidityDiagnostics.facts.strongest_liquidity_wax) === 2000 &&
+    !derivedLiquidityDiagnostics.reasons.includes('liquidity found but below threshold') &&
+    !derivedLiquidityDiagnostics.reasons.includes('pairs found but no usable reserves'));
 }
 ok('route has no unused bootstrap source key mirror',
   !route.includes('CORE_BOOTSTRAP_SOURCE_KEYS'));

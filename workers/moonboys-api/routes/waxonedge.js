@@ -1665,7 +1665,10 @@ function diagnoseTokenAggregate(contract, symbol, metrics, pairRows, chartCandle
   const liquidityValues = pairRows
     .map((pair) => asNumber(pair.liquidity_wax))
     .filter((value) => value != null);
-  const strongestLiquidityWax = liquidityValues.length ? Math.max(...liquidityValues) : null;
+  const derivedStrongestLiquidityWax = asNumber(metrics?.strongest_pair?.liquidity_wax);
+  const strongestLiquidityWax = liquidityValues.length
+    ? Math.max(...liquidityValues)
+    : derivedStrongestLiquidityWax;
   if (!pairRows.length) {
     reasons.push('no indexed pairs found');
   } else if (!usableReservePairs.length) {
@@ -1741,8 +1744,9 @@ async function getTokenDebug(db, contract, symbol) {
     `SELECT COUNT(*) AS count
      FROM waxonedge_chart_candles c
      JOIN waxonedge_pairs p ON p.source = c.source AND p.pair_id = c.pair_id
-     WHERE (p.token_a_contract = ? AND p.token_a_symbol = ?)
-        OR (p.token_b_contract = ? AND p.token_b_symbol = ?)`,
+     WHERE c.interval = '1D'
+       AND ((p.token_a_contract = ? AND p.token_a_symbol = ?)
+        OR (p.token_b_contract = ? AND p.token_b_symbol = ?))`,
     [contract, symbol, contract, symbol]);
   const [lastAggregateSuccess, latestPairSuccess] = await Promise.all([
     latestSyncRow(db, 'token_aggregates', 'success'),
@@ -1834,19 +1838,43 @@ async function sourceRowCounts(db) {
 async function getIndexerHealth(db) {
   const pairTokenCte = `
     WITH pair_tokens AS (
-      SELECT token_a_contract AS contract, token_a_symbol AS symbol FROM waxonedge_pairs
-      UNION
-      SELECT token_b_contract AS contract, token_b_symbol AS symbol FROM waxonedge_pairs
+      SELECT t.contract, t.symbol
+      FROM waxonedge_tokens t
+      WHERE EXISTS (
+        SELECT 1 FROM waxonedge_pairs p
+        WHERE (p.token_a_contract = t.contract AND p.token_a_symbol = t.symbol)
+           OR (p.token_b_contract = t.contract AND p.token_b_symbol = t.symbol)
+      )
     )`;
   const candleTokenCte = `
     WITH candle_tokens AS (
-      SELECT p.token_a_contract AS contract, p.token_a_symbol AS symbol
+      SELECT t.contract, t.symbol
+      FROM waxonedge_tokens t
+      WHERE EXISTS (
+        SELECT 1
+        FROM waxonedge_pairs p
+        JOIN waxonedge_chart_candles c ON c.source = p.source AND c.pair_id = p.pair_id
+        WHERE c.interval = '1D'
+          AND ((p.token_a_contract = t.contract AND p.token_a_symbol = t.symbol)
+            OR (p.token_b_contract = t.contract AND p.token_b_symbol = t.symbol))
+      )
+    )`;
+  const pairTokenRowsCte = `
+    WITH pair_tokens AS (
+      SELECT t.contract, t.symbol
+      FROM waxonedge_tokens t
+      WHERE EXISTS (
+        SELECT 1 FROM waxonedge_pairs p
+        WHERE (p.token_a_contract = t.contract AND p.token_a_symbol = t.symbol)
+           OR (p.token_b_contract = t.contract AND p.token_b_symbol = t.symbol)
+      )
+    ),
+    scoped_pairs AS (
+      SELECT p.*
       FROM waxonedge_pairs p
-      JOIN waxonedge_chart_candles c ON c.source = p.source AND c.pair_id = p.pair_id
-      UNION
-      SELECT p.token_b_contract AS contract, p.token_b_symbol AS symbol
-      FROM waxonedge_pairs p
-      JOIN waxonedge_chart_candles c ON c.source = p.source AND c.pair_id = p.pair_id
+      JOIN pair_tokens pt
+        ON (p.token_a_contract = pt.contract AND p.token_a_symbol = pt.symbol)
+        OR (p.token_b_contract = pt.contract AND p.token_b_symbol = pt.symbol)
     )`;
   const [
     totalTokens,
@@ -1896,42 +1924,42 @@ async function getIndexerHealth(db) {
   const deadReasons = {
     no_indexed_pairs_found: Math.max(0, totalTokens - tokensWithPairs),
     pairs_found_but_no_usable_reserves: await countScalar(db, `
-      ${pairTokenCte}
+      ${pairTokenRowsCte}
       SELECT COUNT(*) AS count
       FROM pair_tokens pt
       WHERE NOT EXISTS (
-        SELECT 1 FROM waxonedge_pairs p
+        SELECT 1 FROM scoped_pairs p
         WHERE ((p.token_a_contract = pt.contract AND p.token_a_symbol = pt.symbol)
             OR (p.token_b_contract = pt.contract AND p.token_b_symbol = pt.symbol))
           AND CAST(COALESCE(p.reserve_a, '0') AS NUMERIC) > 0
           AND CAST(COALESCE(p.reserve_b, '0') AS NUMERIC) > 0
       )`),
     reserves_found_but_no_wax_quote: await countScalar(db, `
-      ${pairTokenCte}
+      ${pairTokenRowsCte}
       SELECT COUNT(*) AS count
       FROM pair_tokens pt
       WHERE EXISTS (
-        SELECT 1 FROM waxonedge_pairs p
+        SELECT 1 FROM scoped_pairs p
         WHERE ((p.token_a_contract = pt.contract AND p.token_a_symbol = pt.symbol)
             OR (p.token_b_contract = pt.contract AND p.token_b_symbol = pt.symbol))
           AND CAST(COALESCE(p.reserve_a, '0') AS NUMERIC) > 0
           AND CAST(COALESCE(p.reserve_b, '0') AS NUMERIC) > 0
       )
       AND NOT EXISTS (
-        SELECT 1 FROM waxonedge_pairs p
+        SELECT 1 FROM scoped_pairs p
         WHERE ((p.token_a_contract = pt.contract AND p.token_a_symbol = pt.symbol)
             OR (p.token_b_contract = pt.contract AND p.token_b_symbol = pt.symbol))
           AND ((p.token_a_contract = 'eosio.token' AND p.token_a_symbol = 'WAX')
             OR (p.token_b_contract = 'eosio.token' AND p.token_b_symbol = 'WAX'))
       )`),
     wax_quote_found_but_price_calculation_failed: await countScalar(db, `
-      ${pairTokenCte}
+      ${pairTokenRowsCte}
       SELECT COUNT(*) AS count
       FROM pair_tokens pt
       JOIN waxonedge_token_stats s ON s.contract = pt.contract AND s.symbol = pt.symbol
       WHERE (s.selected_price_wax IS NULL AND s.selected_price_usd IS NULL)
         AND EXISTS (
-          SELECT 1 FROM waxonedge_pairs p
+          SELECT 1 FROM scoped_pairs p
           WHERE ((p.token_a_contract = pt.contract AND p.token_a_symbol = pt.symbol)
               OR (p.token_b_contract = pt.contract AND p.token_b_symbol = pt.symbol))
             AND ((p.token_a_contract = 'eosio.token' AND p.token_a_symbol = 'WAX')
