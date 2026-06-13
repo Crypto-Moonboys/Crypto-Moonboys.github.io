@@ -204,9 +204,10 @@ ok('aggregate completeness is source-run completeness, separate from token sourc
   route.includes('runStatus.complete ? 1 : 0') &&
   route.includes('detailStats.source_keys') &&
   !route.includes('missingSources.length === 0 ? 1 : 0'));
-ok('truncated source pagination marks aggregate incomplete',
+ok('partial source pagination marks aggregate incomplete without hard failure',
   route.includes('truncated: /truncated/i.test') &&
-  route.includes("status: 'failed'") &&
+  route.includes("status = complete ? 'success' : 'partial'") &&
+  route.includes("await recordSyncRun(env.DB, adapter.source, 'partial'") &&
   route.includes('runStatus.truncated ? 1 : 0') &&
   route.includes('runStatus.truncatedSources.join'));
 ok('large source snapshot safety avoids overlarge D1 raw row blobs',
@@ -217,14 +218,21 @@ ok('large source snapshot safety avoids overlarge D1 raw row blobs',
   !/writeSnapshot\(env\.DB, `\$\{adapter\.source\}_\$\{adapter\.table\}`,[\s\S]*rows,/.test(route));
 ok('source cursor checkpointing processes large adapters in bounded pages',
   route.includes('CORE_DEX_PAGES_PER_INVOCATION') &&
+  route.includes('CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE') &&
   route.includes('async function readSourceIndexState') &&
   route.includes('async function upsertSourceIndexState') &&
   route.includes('lowerBound: state.cursor ||') &&
   route.includes('cursor: complete ?') &&
-  route.includes("status = complete ? 'success' : 'running'") &&
+  route.includes("status = complete ? 'success' : 'partial'") &&
   route.includes('let activeCycleId = syncCycleId ||') &&
   route.includes('sync_cycle_id: activeCycleId') &&
   !route.includes('async function markSourceComplete'));
+ok('source cursor progresses across bounded Worker runs',
+  route.includes('requestBudget: CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE') &&
+  route.includes('request_count: tableResult.request_count') &&
+  route.includes('Resuming stale running state from saved cursor') &&
+  route.includes('Partial source sync checkpoint saved after') &&
+  route.includes("cursor: complete ? '' : tableResult.next_key"));
 ok('source pagination can index tokens beyond the first source page',
   route.includes('lower_bound: lowerBound') &&
   route.includes('data?.next_key') &&
@@ -236,8 +244,14 @@ ok('aggregate gating requires same-cycle complete source states',
   route.includes('FROM waxonedge_source_index_state') &&
   route.includes('sameCycle') &&
   route.includes('row.sync_cycle_id === syncCycleId') &&
-  route.includes('complete: sameCycle && failed.length === 0 && truncatedSources.length === 0') &&
+  route.includes('complete: sameCycle && failed.length === 0 && partialSources.length === 0 && truncatedSources.length === 0') &&
   route.includes("await upsertSourceIndexState(env.DB, 'token_aggregates'"));
+ok('token aggregates can record partial_success after partial source sync',
+  route.includes("partialSources.push(source)") &&
+  route.includes('partialSuccess: sameCycle && failed.length === 0 && partialSources.length > 0') &&
+  route.includes("const aggregateStatus = runStatus.complete ? 'success' : (runStatus.partialSuccess && aggregates.size > 0 ? 'partial_success' : 'failed')") &&
+  route.includes("await recordSyncRun(env.DB, 'token_aggregates', aggregateStatus") &&
+  route.includes("status: aggregateStatus"));
 ok('bootstrap compact source metadata does not mark missing snapshots complete',
   route.includes('row_count: tableSnapshot.data?.row_count || (Array.isArray(tableSnapshot.data?.rows) ? tableSnapshot.data.rows.length : 0)') &&
   route.includes('complete: !!tableSnapshot.data && (tableSnapshot.data?.truncated ? false : !tableSnapshot.data?.cursor)'));
@@ -255,6 +269,14 @@ ok('aggregate backfill can run as a focused cron/admin pathway',
   route.includes("cron === 'waxonedge-backfill'") &&
   route.includes('const aggregates = await aggregateTokenAnalytics(env);') &&
   route.includes('backfill: true'));
+ok('candle backfill has honest planned status without fake candle inserts',
+  route.includes('CANDLE_BACKFILL_SOURCE') &&
+  route.includes('export async function runWaxOnEdgeCandleBackfillPlan') &&
+  route.includes("cron === 'waxonedge-candle-backfill'") &&
+  route.includes('candidate_pair_count') &&
+  route.includes('no_fake_candles: true') &&
+  route.includes('CANDLE_BACKFILL_PLAN') &&
+  !route.includes('INSERT INTO waxonedge_chart_candles'));
 ok('aggregate selected price uses strongest real WAX quote liquidity',
   route.includes('hasWaxQuoteForToken(pair, side.contract, side.symbol)') &&
   route.includes('hasRealPairReserves(pair)') &&
@@ -324,6 +346,14 @@ ok('indexer health and debug chart readiness only count 1D candles',
   route.includes('JOIN waxonedge_chart_candles c ON c.source = p.source AND c.pair_id = p.pair_id') &&
   route.includes('tokens_with_chart_candles') &&
   route.includes('tokens_with_chart_candidate_but_no_candles'));
+ok('indexer health reports partial source progress and candle backfill status',
+  route.includes('source_progress') &&
+  route.includes('stale_running') &&
+  route.includes("status: lastAggregateSuccess?.status || 'failed'") &&
+  route.includes('fresh_after_latest_pair_sync: aggregateFresh') &&
+  route.includes('candle_backfill') &&
+  route.includes('latest_1d_candle_count') &&
+  route.includes('chart_candles_indexed_count: chartCandleCount1d'));
 ok('token detail avoids unbounded all-priced-token scan',
   route.includes('function collectTokenPriceKeysForPairs') &&
   route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, pairRows)') &&
@@ -483,6 +513,16 @@ ok('route has no unused bootstrap source key mirror',
   !route.includes('CORE_BOOTSTRAP_SOURCE_KEYS'));
 ok('route does not fake holder distribution', route.includes('Holder distribution requires indexed balance snapshots') && route.includes('REQUIRES_INDEXED_BACKEND'));
 ok('route marks chart/trades unavailable unless indexed', route.includes('SOURCE_NOT_INDEXED') && route.includes("child === 'chart'") && route.includes("child === 'trades'"));
+ok('token debug explains missing candles, stale aggregates, and partial source sync',
+  route.includes('sync_diagnostics') &&
+  route.includes('selected_price_exists') &&
+  route.includes('selected_pair_exists') &&
+  route.includes('pair_rows_exist') &&
+  route.includes('source_sync_partial') &&
+  route.includes('aggregate_stale') &&
+  route.includes('has_1d_candles') &&
+  route.includes("nextAction = 'waiting for candle backfill'") &&
+  route.includes("nextAction = 'source cursor still partial'"));
 ok('frontend calls /api/waxonedge/bootstrap first', frontend.includes("waxonedgeApi('/bootstrap')"));
 ok('frontend direct source fetch is diagnostic fallback', frontend.includes('loadDiagnosticFallback') && frontend.includes('Backend bootstrap unavailable'));
 ok('frontend does not use Alcor chart fallback in backend mode',
