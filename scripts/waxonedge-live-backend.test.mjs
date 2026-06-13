@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -51,6 +51,7 @@ const frontend = read('js/waxonedge.js');
 const frontendSources = read('js/waxonedge-sources.js');
 const html = read('waxonedge.html');
 const tokenHtml = read('analytics/token/index.html');
+const { __waxonedgeTestHooks } = await import(pathToFileURL(path.join(ROOT, 'workers/moonboys-api/routes/waxonedge.js')).href);
 const referenceAudit = read('docs/waxonedge-real-reference-audit.md');
 
 for (const table of [
@@ -262,6 +263,75 @@ ok('token detail endpoint returns canonical stats and source coverage',
   route.includes('aggregate_sources_processed') &&
   route.includes('aggregate_sources_failed') &&
   route.includes('aggregate_sources_truncated'));
+ok('token detail derives partial aggregate metrics from indexed pair rows',
+  route.includes('function deriveTokenPairMetrics') &&
+  route.includes('selected_price_source') &&
+  route.includes('cumulated_pair_liquidity_wax') &&
+  route.includes('strongest_pair') &&
+  route.includes('unavailable_reasons') &&
+  route.includes('Pair liquidity indexed; holder/candle metrics pending'));
+{
+  const wufStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
+    {
+      contract: 'wuffi',
+      symbol: 'WUF',
+      total_supply: '8846134110430.9018',
+    },
+    {
+      aggregate_complete: 0,
+      aggregate_truncated: 0,
+    },
+    [
+      {
+        source: 'swap.nefty',
+        pair_id: 'WAXWUFB',
+        token_a_contract: 'eosio.token',
+        token_a_symbol: 'WAX',
+        token_b_contract: 'wuffi',
+        token_b_symbol: 'WUF',
+        price: '500',
+        change_24h: null,
+        volume_24h_wax: '50',
+        liquidity_wax: '2000',
+        liquidity_usd: '12',
+        reserve_a: '1000',
+        reserve_b: '500000',
+      },
+      {
+        source: 'swap.taco',
+        pair_id: 'WUFABC',
+        token_a_contract: 'wuffi',
+        token_a_symbol: 'WUF',
+        token_b_contract: 'abc.token',
+        token_b_symbol: 'ABC',
+        price: '0.001',
+        change_24h: null,
+        volume_24h_wax: '10',
+        liquidity_wax: '100',
+        liquidity_usd: '0.6',
+        reserve_a: '100000',
+        reserve_b: '100',
+      },
+    ],
+    [
+      { contract: 'eosio.token', symbol: 'WAX', price_wax: '1', price_usd: '0.006' },
+      { contract: 'abc.token', symbol: 'ABC', price_wax: '2', price_usd: '0.012' },
+    ],
+  );
+  ok('WUF-style partial aggregate keeps useful indexed pair stats',
+    wufStats.aggregate_status === 'Pair liquidity indexed; holder/candle metrics pending' &&
+    wufStats.selected_pair_source === 'swap.nefty' &&
+    wufStats.selected_pair_id === 'WAXWUFB' &&
+    wufStats.selected_price_source.includes('swap.nefty') &&
+    wufStats.indexed_pair_count === 2 &&
+    wufStats.source_count === 2 &&
+    Number(wufStats.liquidity_wax) === 2100 &&
+    Number(wufStats.cumulated_pair_liquidity_wax) === 2100 &&
+    Number(wufStats.volume_24h_wax) === 60 &&
+    wufStats.change_24h == null &&
+    Number(wufStats.fdv_wax) > 0 &&
+    wufStats.unavailable_reasons.price_change_24h === 'Requires indexed 24h price-change data');
+}
 ok('route has no unused bootstrap source key mirror',
   !route.includes('CORE_BOOTSTRAP_SOURCE_KEYS'));
 ok('route does not fake holder distribution', route.includes('Holder distribution requires indexed balance snapshots') && route.includes('REQUIRES_INDEXED_BACKEND'));
@@ -292,10 +362,11 @@ ok('frontend token stats use canonical selected-token detail stats',
   frontend.includes('function loadSelectedTokenDetail(selection)') &&
   frontend.includes('function loadSelectedTokenPairs(selection)') &&
   frontend.includes('function loadSelectedTokenChart(selection)') &&
-  frontend.includes('function isCanonicalAggregateValid(stats)') &&
   frontend.includes('var stats = context.stats || {};') &&
-  frontend.includes('var currentPriceWax = canonicalValid ? asNum(stats.selected_price_wax) : null;') &&
-  frontend.includes('var volume24 = canonicalValid ? asNum(stats.volume_24h_wax) : null;') &&
+  frontend.includes('var currentPriceWax = asNum(stats.selected_price_wax);') &&
+  frontend.includes('var volume24 = asNum(stats.volume_24h_wax);') &&
+  frontend.includes('stats.aggregate_status') &&
+  frontend.includes('tokenStatReason(stats') &&
   !frontend.includes('var currentPriceWax = token.systemPrice'));
 ok('frontend selected-token pairs endpoint loads paginated proof rows',
   frontend.includes("selectedTokenApiPath(selection, 'pairs') + '?limit=100'") &&

@@ -1360,6 +1360,223 @@ async function listBestChartCandles(db, contract, symbol) {
   };
 }
 
+function buildDbTokenPriceIndex(rows) {
+  const index = new Map();
+  for (const row of rows || []) {
+    index.set(tokenKey(row.contract, row.symbol), {
+      priceWax: asNumber(row.price_wax),
+      priceUsd: asNumber(row.price_usd),
+    });
+  }
+  return index;
+}
+
+function pairTokenSide(pair, contract, symbol) {
+  const key = tokenKey(contract, symbol);
+  const tokenAKey = tokenKey(pair.token_a_contract, pair.token_a_symbol);
+  const tokenBKey = tokenKey(pair.token_b_contract, pair.token_b_symbol);
+  if (key === tokenAKey) {
+    return {
+      side: 'a',
+      token: { contract: pair.token_a_contract, symbol: pair.token_a_symbol, reserve: asNumber(pair.reserve_a) },
+      quote: { contract: pair.token_b_contract, symbol: pair.token_b_symbol, reserve: asNumber(pair.reserve_b) },
+    };
+  }
+  if (key === tokenBKey) {
+    return {
+      side: 'b',
+      token: { contract: pair.token_b_contract, symbol: pair.token_b_symbol, reserve: asNumber(pair.reserve_b) },
+      quote: { contract: pair.token_a_contract, symbol: pair.token_a_symbol, reserve: asNumber(pair.reserve_a) },
+    };
+  }
+  return null;
+}
+
+function priceWaxFromIndexedPair(pair, contract, symbol, priceIndex) {
+  const directWaxPrice = pairPriceWaxForToken(pair, contract, symbol);
+  if (directWaxPrice != null) return directWaxPrice;
+  const side = pairTokenSide(pair, contract, symbol);
+  if (!side) return null;
+  const quotePriceWax = priceIndex.get(tokenKey(side.quote.contract, side.quote.symbol))?.priceWax;
+  const pairPrice = asNumber(pair.price);
+  if (quotePriceWax == null || pairPrice == null || pairPrice <= 0) return null;
+  if (side.side === 'a') return pairPrice * quotePriceWax;
+  return quotePriceWax / pairPrice;
+}
+
+function liquidityWaxFromIndexedPair(pair, priceIndex) {
+  const indexed = asNumber(pair.liquidity_wax);
+  if (indexed != null) return indexed;
+  const reserveA = asNumber(pair.reserve_a);
+  const reserveB = asNumber(pair.reserve_b);
+  if (reserveA == null || reserveB == null) return null;
+  if (isWaxToken(pair.token_a_contract, pair.token_a_symbol)) return reserveA * 2;
+  if (isWaxToken(pair.token_b_contract, pair.token_b_symbol)) return reserveB * 2;
+  const priceA = priceIndex.get(tokenKey(pair.token_a_contract, pair.token_a_symbol))?.priceWax;
+  const priceB = priceIndex.get(tokenKey(pair.token_b_contract, pair.token_b_symbol))?.priceWax;
+  if (priceA == null || priceB == null) return null;
+  return (reserveA * priceA) + (reserveB * priceB);
+}
+
+function liquidityUsdFromWax(liquidityWax, pair, priceIndex) {
+  const indexed = asNumber(pair.liquidity_usd);
+  if (indexed != null) return indexed;
+  const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+  return liquidityWax != null && waxUsd != null ? liquidityWax * waxUsd : null;
+}
+
+function volumeWaxFromIndexedPair(pair, priceIndex) {
+  const indexed = asNumber(pair.volume_24h_wax);
+  if (indexed != null) return indexed;
+  const volume24Raw = asNumber(pair.volume_24h);
+  if (volume24Raw == null) return null;
+  const tokenA = {
+    contract: pair.token_a_contract,
+    symbol: pair.token_a_symbol,
+  };
+  const tokenB = {
+    contract: pair.token_b_contract,
+    symbol: pair.token_b_symbol,
+  };
+  return asNumber(normalizeTokenAVolume(volume24Raw, tokenA, tokenB, pair.price, priceIndex).wax);
+}
+
+function selectedPairLabel(pair) {
+  if (!pair) return null;
+  const a = normalizeSymbol(pair.token_a_symbol);
+  const b = normalizeSymbol(pair.token_b_symbol);
+  const pairName = a && b ? `${a}/${b}` : null;
+  return [pair.source, pair.pair_id ? `#${pair.pair_id}` : null, pairName].filter(Boolean).join(' ');
+}
+
+function reasonMapForTokenMetrics(metrics) {
+  const reasons = {};
+  if (metrics.selected_price_wax == null) reasons.selected_price = metrics.selected_pair_id ? 'Source indexed; price unavailable' : 'No priced indexed pair';
+  if (metrics.change_24h == null) reasons.price_change_24h = 'Requires indexed 24h price-change data';
+  if (metrics.volume_24h_wax == null) reasons.volume_24h = 'Requires indexed pair or ticker volume';
+  if (metrics.liquidity_wax == null && metrics.liquidity_usd == null) reasons.liquidity = 'Requires valued indexed pair reserves';
+  if (metrics.holder_count == null) reasons.holder_count = REQUIRES_INDEXED_BACKEND;
+  if (metrics.circulating_supply == null) reasons.circulating_supply = 'Requires indexed circulating supply';
+  if (metrics.volume_7d == null) reasons.volume_7d = 'Requires indexed candle or trade history';
+  if (metrics.volume_30d == null) reasons.volume_30d = 'Requires indexed candle or trade history';
+  if (metrics.market_cap_wax == null && metrics.market_cap_usd == null) reasons.market_cap = metrics.selected_price_wax != null ? 'Circulating supply not indexed' : 'Price unavailable';
+  if (metrics.fdv_wax == null && metrics.fdv_usd == null) reasons.fdv = 'Requires total supply and selected price';
+  return reasons;
+}
+
+function deriveTokenPairMetrics(token, stats, pairRows, priceRows) {
+  const contract = normalizeContract(token?.contract || stats?.contract);
+  const symbol = normalizeSymbol(token?.symbol || stats?.symbol);
+  const priceIndex = buildDbTokenPriceIndex(priceRows);
+  const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+  const metrics = { ...(stats || {}) };
+  const sources = new Set(parseSourceKeys(stats?.source_keys));
+  let pairCount = 0;
+  let liquidityWaxTotal = 0;
+  let liquidityUsdTotal = 0;
+  let volumeWaxTotal = 0;
+  let hasLiquidityWax = false;
+  let hasLiquidityUsd = false;
+  let hasVolumeWax = false;
+  let selected = null;
+
+  for (const pair of pairRows || []) {
+    if (!pairTokenSide(pair, contract, symbol)) continue;
+    if (!hasRealPairReserves(pair)) continue;
+    pairCount += 1;
+    const source = aggregateSourceKey(pair.source);
+    if (source) sources.add(source);
+    const liquidityWax = liquidityWaxFromIndexedPair(pair, priceIndex);
+    const liquidityUsd = liquidityUsdFromWax(liquidityWax, pair, priceIndex);
+    const volumeWax = volumeWaxFromIndexedPair(pair, priceIndex);
+    const priceWax = priceWaxFromIndexedPair(pair, contract, symbol, priceIndex);
+    const directWax = hasWaxQuoteForToken(pair, contract, symbol);
+    if (liquidityWax != null) {
+      liquidityWaxTotal += liquidityWax;
+      hasLiquidityWax = true;
+    }
+    if (liquidityUsd != null) {
+      liquidityUsdTotal += liquidityUsd;
+      hasLiquidityUsd = true;
+    }
+    if (volumeWax != null) {
+      volumeWaxTotal += volumeWax;
+      hasVolumeWax = true;
+    }
+    const trusted = liquidityWax != null && liquidityWax >= MIN_TRUSTED_WAX_LIQUIDITY;
+    const tier = priceWax != null
+      ? (directWax && trusted ? 3 : (directWax ? 2 : 1))
+      : 0;
+    const candidate = {
+      pair,
+      tier,
+      trusted,
+      directWax,
+      priceWax,
+      priceUsd: priceWax != null && waxUsd != null ? priceWax * waxUsd : null,
+      liquidityWax: liquidityWax ?? null,
+      liquidityUsd: liquidityUsd ?? null,
+      volumeWax: volumeWax ?? null,
+      change24: asNumber(pair.change_24h),
+    };
+    const selectedLiquidity = selected?.liquidityWax ?? -1;
+    const selectedVolume = selected?.volumeWax ?? -1;
+    if (
+      !selected ||
+      candidate.tier > selected.tier ||
+      (candidate.tier === selected.tier && (candidate.liquidityWax ?? -1) > selectedLiquidity) ||
+      (candidate.tier === selected.tier && (candidate.liquidityWax ?? -1) === selectedLiquidity && (candidate.volumeWax ?? -1) > selectedVolume)
+    ) {
+      selected = candidate;
+    }
+  }
+
+  const totalSupply = asNumber(token?.total_supply ?? token?.max_supply);
+  const selectedPriceWax = selected?.priceWax ?? asNumber(metrics.selected_price_wax);
+  const selectedPriceUsd = selected?.priceUsd ?? asNumber(metrics.selected_price_usd) ?? (selectedPriceWax != null && waxUsd != null ? selectedPriceWax * waxUsd : null);
+  const fdvWax = asNumber(metrics.fdv_wax) ?? (totalSupply != null && selectedPriceWax != null ? totalSupply * selectedPriceWax : null);
+  const fdvUsd = asNumber(metrics.fdv_usd) ?? (totalSupply != null && selectedPriceUsd != null ? totalSupply * selectedPriceUsd : null);
+  const liquidityWax = hasLiquidityWax ? liquidityWaxTotal : asNumber(metrics.liquidity_wax);
+  const liquidityUsd = hasLiquidityUsd ? liquidityUsdTotal : asNumber(metrics.liquidity_usd);
+  const volumeWax = hasVolumeWax ? volumeWaxTotal : asNumber(metrics.volume_24h_wax ?? metrics.volume_24h);
+  const volumeUsd = volumeWax != null && waxUsd != null ? volumeWax * waxUsd : asNumber(metrics.volume_24h_usd);
+
+  metrics.selected_price_wax = safeDecimal(selectedPriceWax);
+  metrics.selected_price_usd = safeDecimal(selectedPriceUsd);
+  metrics.selected_pair_source = selected?.pair?.source || metrics.selected_pair_source || null;
+  metrics.selected_pair_id = selected?.pair?.pair_id || metrics.selected_pair_id || null;
+  metrics.selected_pair_label = selectedPairLabel(selected?.pair) || null;
+  metrics.selected_price_source = metrics.selected_pair_label || (metrics.selected_pair_source && metrics.selected_pair_id ? `${metrics.selected_pair_source} #${metrics.selected_pair_id}` : null);
+  metrics.change_24h = selected ? (selected.change24 != null ? safeDecimal(selected.change24) : null) : safeDecimal(metrics.change_24h);
+  metrics.price_change_24h = metrics.change_24h;
+  metrics.volume_24h = safeDecimal(volumeWax);
+  metrics.volume_24h_wax = safeDecimal(volumeWax);
+  metrics.volume_24h_usd = safeDecimal(volumeUsd);
+  metrics.liquidity_wax = safeDecimal(liquidityWax);
+  metrics.liquidity_usd = safeDecimal(liquidityUsd);
+  metrics.cumulated_pair_liquidity_wax = safeDecimal(liquidityWax);
+  metrics.cumulated_pair_liquidity_usd = safeDecimal(liquidityUsd);
+  metrics.tvl_wax = safeDecimal(asNumber(metrics.tvl_wax) ?? liquidityWax);
+  metrics.tvl_usd = safeDecimal(asNumber(metrics.tvl_usd) ?? liquidityUsd);
+  metrics.source_count = sources.size || asNumber(metrics.source_count) || null;
+  metrics.indexed_pair_count = pairCount || asNumber(metrics.indexed_pair_count) || null;
+  metrics.source_keys = Array.from(sources).sort().join(',');
+  metrics.fdv_wax = safeDecimal(fdvWax);
+  metrics.fdv_usd = safeDecimal(fdvUsd);
+  metrics.strongest_pair = selected ? {
+    source: selected.pair.source,
+    pair_id: selected.pair.pair_id,
+    label: metrics.selected_pair_label,
+    liquidity_wax: safeDecimal(selected.liquidityWax),
+    liquidity_usd: safeDecimal(selected.liquidityUsd),
+  } : null;
+  metrics.aggregate_status = pairCount > 0
+    ? (asNumber(metrics.aggregate_complete) === 1 ? 'Canonical aggregate complete' : (hasLiquidityWax || hasLiquidityUsd ? 'Pair liquidity indexed; holder/candle metrics pending' : 'Indexed pairs found; advanced metrics partial'))
+    : (asNumber(metrics.aggregate_truncated) === 1 ? 'Aggregate truncated; final metrics unavailable' : 'Aggregate incomplete; final metrics unavailable');
+  metrics.unavailable_reasons = reasonMapForTokenMetrics(metrics);
+  return metrics;
+}
+
 async function getToken(db, contract, symbol) {
   const token = await db.prepare(
     `SELECT contract, symbol, decimals, total_supply, max_supply, updated_at
@@ -1376,10 +1593,26 @@ async function getToken(db, contract, symbol) {
             aggregate_truncated, aggregate_sources_truncated, updated_at
      FROM waxonedge_token_stats WHERE contract = ? AND symbol = ? LIMIT 1`
   ).bind(contract, symbol).first().catch(() => null);
+  const [pairRows, priceRows] = await Promise.all([
+    db.prepare(
+      `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+              price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+              liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
+       FROM waxonedge_pairs
+       WHERE (token_a_contract = ? AND token_a_symbol = ?)
+          OR (token_b_contract = ? AND token_b_symbol = ?)`
+    ).bind(contract, symbol, contract, symbol).all().catch(() => ({ results: [] })),
+    db.prepare(
+      `SELECT contract, symbol, price_wax, price_usd
+       FROM waxonedge_tokens
+       WHERE price_wax IS NOT NULL OR price_usd IS NOT NULL`
+    ).all().catch(() => ({ results: [] })),
+  ]);
+  const detailStats = deriveTokenPairMetrics(token || { contract, symbol }, stats || {}, pairRows.results || [], priceRows.results || []);
   return {
     token,
-    stats,
-    source_coverage: sourceCoverageFromKeys(parseSourceKeys(stats?.source_keys)),
+    stats: detailStats,
+    source_coverage: sourceCoverageFromKeys(parseSourceKeys(detailStats?.source_keys)),
   };
 }
 
@@ -1543,6 +1776,10 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
     return unavailable(error?.message || String(error), 503, corsHeaders);
   }
 }
+
+export const __waxonedgeTestHooks = {
+  deriveTokenPairMetrics,
+};
 
 export async function runWaxOnEdgeScheduledSync(env, cron = '') {
   if (!env.DB) return { ok: false, error: 'DB binding is not configured' };
