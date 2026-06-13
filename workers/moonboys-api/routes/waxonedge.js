@@ -29,45 +29,69 @@ const CORE_DEX_ADAPTERS = Object.freeze([
   {
     source: 'swap.alcor',
     label: 'Alcor',
+    referenceSource: 'alcorv2',
+    dexCode: 'a2',
+    poolType: 'poolsv3',
     contract: 'swap.alcor',
     table: 'pools',
     normalizer: 'tokenA-tokenB',
+    feeScale: 100,
     explorer: 'https://waxblock.io/account/swap.alcor',
   },
   {
     source: 'swap.taco',
     label: 'Taco',
+    referenceSource: 'taco',
+    dexCode: 't',
+    poolType: 'pools',
     contract: 'swap.taco',
     table: 'pairs',
     normalizer: 'pool1-pool2',
+    defaultFeeBps: 30,
     explorer: 'https://waxblock.io/account/swap.taco',
   },
   {
     source: 'swap.nefty',
     label: 'NeftyBlocks',
+    referenceSource: 'neftyblocks',
+    dexCode: 'n',
+    poolType: 'pools',
     contract: 'swap.nefty',
     table: 'pairs',
     normalizer: 'reserve0-reserve1',
+    defaultFeeBps: 30,
     explorer: 'https://waxblock.io/account/swap.nefty',
   },
   {
     source: 'swap.box',
     label: 'BOX',
+    referenceSource: 'defibox',
+    dexCode: 'd',
+    poolType: 'pools',
     contract: 'swap.box',
     table: 'pairs',
     normalizer: 'box-pairs',
+    defaultFeeBps: 30,
     explorer: 'https://waxblock.io/account/swap.box',
   },
 ]);
 
-const PREFERRED_QUOTES = Object.freeze([
-  tokenKey('eosio.token', 'WAX'),
-  tokenKey('usdt.alcor', 'USDT'),
-  tokenKey('eth.token', 'WAXUSDT'),
-  tokenKey('eth.token', 'WAXUSDC'),
-  tokenKey('btc.ptokens', 'PBTC'),
-  tokenKey('eth.ptokens', 'PETH'),
+const REFERENCE_QUOTE_TOKENS = Object.freeze([
+  ['usdt.alcor', 'USDT'],
+  ['eth.token', 'WAXUSDT'],
+  ['eth.token', 'WAXUSDC'],
+  ['eth.token', 'WAXDAI'],
+  ['eth.token', 'WAXBUSD'],
+  ['eth.token', 'WAXWBTC'],
+  ['s.architect', 'ARBTC'],
+  ['eth.token', 'WAXRBTC'],
+  ['eth.token', 'WAXWETH'],
+  ['eosio.token', 'WAX'],
 ]);
+
+const PREFERRED_QUOTES = Object.freeze(
+  REFERENCE_QUOTE_TOKENS.map(([contract, symbol]) => tokenKey(contract, symbol)),
+);
 
 function aggregateSourceKey(source) {
   return String(source || '').trim().toLowerCase();
@@ -509,7 +533,20 @@ function normalizeTokenAVolume(volume24Raw, tokenA, tokenB, pairPrice, priceInde
   };
 }
 
+function isFalseLike(value) {
+  return value === false || value === 0 || String(value).toLowerCase() === 'false';
+}
+
+function adapterFeeBps(adapter, row) {
+  const rawFee = asNumber(row.fee ?? row.marketFee ?? row.pool_fee);
+  if (rawFee != null) {
+    return safeDecimal(adapter.feeScale ? rawFee / adapter.feeScale : rawFee);
+  }
+  return adapter.defaultFeeBps != null ? safeDecimal(adapter.defaultFeeBps) : null;
+}
+
 function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
+  if (isFalseLike(row.active)) return null;
   let tokenA = null;
   let tokenB = null;
   if (adapter.normalizer === 'tokenA-tokenB') {
@@ -561,7 +598,7 @@ function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
     liquidity_usd: liquidity.liquidityUsd,
     reserve_a: safeDecimal(tokenA.amount),
     reserve_b: safeDecimal(tokenB.amount),
-    fee_bps: safeDecimal(row.fee ?? row.marketFee),
+    fee_bps: adapterFeeBps(adapter, row),
     updated_at: syncedAt,
   };
 }

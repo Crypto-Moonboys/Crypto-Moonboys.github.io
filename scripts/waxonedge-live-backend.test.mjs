@@ -35,6 +35,7 @@ ok('moonboys-api WaxOnEdge migration exists', exists('workers/moonboys-api/migra
 ok('moonboys-api WaxOnEdge aggregate migration exists', exists('workers/moonboys-api/migrations/023_waxonedge_token_aggregate_stats.sql'));
 ok('moonboys-api WaxOnEdge aggregate source coverage migration exists', exists('workers/moonboys-api/migrations/024_waxonedge_aggregate_source_coverage.sql'));
 ok('moonboys-api WaxOnEdge source index state migration exists', exists('workers/moonboys-api/migrations/025_waxonedge_source_index_state.sql'));
+ok('WaxOnEdge real reference audit exists', exists('docs/waxonedge-real-reference-audit.md'));
 
 const route = read('workers/moonboys-api/routes/waxonedge.js');
 const worker = read('workers/moonboys-api/worker.js');
@@ -50,6 +51,7 @@ const frontend = read('js/waxonedge.js');
 const frontendSources = read('js/waxonedge-sources.js');
 const html = read('waxonedge.html');
 const tokenHtml = read('analytics/token/index.html');
+const referenceAudit = read('docs/waxonedge-real-reference-audit.md');
 
 for (const table of [
   'waxonedge_sync_runs',
@@ -104,6 +106,37 @@ ok('route syncs Alcor public API sources',
 ok('route declares all core WAX DEX adapters',
   route.includes('CORE_DEX_ADAPTERS') &&
   ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'].every((source) => route.includes(source)));
+ok('route maps core adapters to public WaxOnEdge reference source labels and DEX codes',
+  route.includes("referenceSource: 'alcorv2'") &&
+  route.includes("dexCode: 'a2'") &&
+  route.includes("poolType: 'poolsv3'") &&
+  route.includes("referenceSource: 'taco'") &&
+  route.includes("dexCode: 't'") &&
+  route.includes("referenceSource: 'neftyblocks'") &&
+  route.includes("dexCode: 'n'") &&
+  route.includes("referenceSource: 'defibox'") &&
+  route.includes("dexCode: 'd'"));
+ok('route uses public WaxOnEdge table and reserve mappings for core adapters',
+  route.includes("table: 'pools'") &&
+  route.includes("normalizer: 'tokenA-tokenB'") &&
+  route.includes("table: 'pairs'") &&
+  route.includes("normalizer: 'pool1-pool2'") &&
+  route.includes("normalizer: 'reserve0-reserve1'") &&
+  route.includes("normalizer: 'box-pairs'") &&
+  route.includes('row.token0?.contract') &&
+  route.includes('row.reserve0'));
+ok('route handles reference fee semantics and inactive Nefty rows',
+  route.includes('function adapterFeeBps') &&
+  route.includes('adapter.feeScale ? rawFee / adapter.feeScale : rawFee') &&
+  route.includes('defaultFeeBps: 30') &&
+  route.includes('function isFalseLike') &&
+  route.includes('if (isFalseLike(row.active)) return null') &&
+  route.includes('fee_bps: adapterFeeBps(adapter, row)'));
+ok('route quote priority mirrors public WaxOnEdge pair direction list',
+  route.includes('REFERENCE_QUOTE_TOKENS') &&
+  ['USDT', 'WAXUSDT', 'WAXUSDC', 'WAXDAI', 'WAXBUSD', 'WAXWBTC', 'ARBTC', 'WAXRBTC', 'WAXWETH', 'WAX'].every((symbol) => route.includes("'" + symbol + "'")) &&
+  route.includes('PREFERRED_QUOTES = Object.freeze') &&
+  route.includes('REFERENCE_QUOTE_TOKENS.map'));
 ok('route performs ABI-first table detection for core adapters',
   route.includes('async function getAbiTableNames') &&
   route.includes('/v1/chain/get_abi') &&
@@ -308,6 +341,23 @@ ok('frontend scanner front door and token analytics route are present',
   frontend.includes('hasRealSignal'));
 ok('frontend has no wallet/swap/liquidity action buttons',
   !/(>|\bvalue=["'])(Connect Wallet|Add Liquidity|Remove Liquidity|Trade on Swap)(<|["'])/.test(frontend + html + tokenHtml));
+ok('real reference audit documents license and endpoint comparison',
+  referenceAudit.includes('MIT licenses') &&
+  referenceAudit.includes('/candles') &&
+  referenceAudit.includes('/trades') &&
+  referenceAudit.includes('/lastVolumes') &&
+  referenceAudit.includes('/lastPriceChanges') &&
+  referenceAudit.includes('/swapRoutes'));
+ok('real reference audit documents adapter table mappings',
+  ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box', 'alcordexmain', 'swap.adex', 'dapp.fusion'].every((source) => referenceAudit.includes(source)) &&
+  ['tokenA', 'tokenB', 'pool1', 'pool2', 'reserve0', 'reserve1', 'liquidity_token', 'active'].every((field) => referenceAudit.includes(field)));
+ok('real reference audit documents candle and volume parity gaps honestly',
+  ['klines_${src}_${pair_id}', 'reverseCandles', 'countBack', 'volumeA', 'volumeB', 'previous-close opens'].every((term) => referenceAudit.includes(term)) &&
+  referenceAudit.includes('does not fully reproduce concentrated liquidity pricing') &&
+  referenceAudit.includes('never fabricates missing candles'));
+ok('real reference audit keeps swap execution out of this analytics PR',
+  referenceAudit.includes('Wallet swap execution and route-building are out of scope') &&
+  referenceAudit.includes('does not add wallet transaction flows'));
 
 try {
   execFileSync(process.execPath, ['--check', path.join(ROOT, 'workers/moonboys-api/routes/waxonedge.js')], { encoding: 'utf8' });
