@@ -7,7 +7,8 @@
  * Proves:
  *  - Specific synthetic "via" pages are classified as BLOCKED_SYNTHETIC_SLUG
  *  - Real brand/lore pages remain APPROVED_CANON_PAGE
- *  - Blocked pages do not appear in wiki-index.json, entity-map.json, or entity-graph.json
+ *  - BLOCKED_* and NEEDS_BRAND_REVIEW pages do not appear in wiki-index.json, entity-map.json, or entity-graph.json
+ *  - Non-approved URLs do not leak through alias.url, source_urls, or graph targets
  *  - The audit file exists and lists blocked pages with reasons
  *  - Build fails (non-zero exit) if new synthetic pages are introduced without approval
  */
@@ -25,27 +26,35 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // ── Load generated assets ─────────────────────────────────────────────────────
 
-const AUDIT_PATH      = path.join(ROOT, 'js', 'wiki-publish-audit.json');
-const WIKI_INDEX_PATH = path.join(ROOT, 'js', 'wiki-index.json');
-const ENTITY_MAP_PATH = path.join(ROOT, 'js', 'entity-map.json');
+const AUDIT_PATH        = path.join(ROOT, 'js', 'wiki-publish-audit.json');
+const WIKI_INDEX_PATH   = path.join(ROOT, 'js', 'wiki-index.json');
+const ENTITY_MAP_PATH   = path.join(ROOT, 'js', 'entity-map.json');
 const ENTITY_GRAPH_PATH = path.join(ROOT, 'js', 'entity-graph.json');
 
 assert.ok(fs.existsSync(AUDIT_PATH),      'js/wiki-publish-audit.json must exist — run: node scripts/wiki-publish-gate.js');
 assert.ok(fs.existsSync(WIKI_INDEX_PATH), 'js/wiki-index.json must exist');
 
-const audit      = JSON.parse(fs.readFileSync(AUDIT_PATH, 'utf8'));
-const wikiIndex  = JSON.parse(fs.readFileSync(WIKI_INDEX_PATH, 'utf8'));
-const entityMap  = fs.existsSync(ENTITY_MAP_PATH)  ? JSON.parse(fs.readFileSync(ENTITY_MAP_PATH,  'utf8')) : [];
+const audit       = JSON.parse(fs.readFileSync(AUDIT_PATH, 'utf8'));
+const wikiIndex   = JSON.parse(fs.readFileSync(WIKI_INDEX_PATH, 'utf8'));
+const entityMap   = fs.existsSync(ENTITY_MAP_PATH)   ? JSON.parse(fs.readFileSync(ENTITY_MAP_PATH,   'utf8')) : [];
 const entityGraph = fs.existsSync(ENTITY_GRAPH_PATH) ? JSON.parse(fs.readFileSync(ENTITY_GRAPH_PATH, 'utf8')) : {};
 
 const canon = gate.loadBrandCanon();
 
+// Build sets of approved and non-approved URLs from the audit file.
+const approvedUrlSet    = new Set([...(audit.approved || [])].map(e => `/wiki/${e.slug}.html`));
+const blockedUrlSet     = new Set([...(audit.blocked  || [])].map(e => `/wiki/${e.slug}.html`));
+const reviewUrlSet      = new Set([...(audit.review   || [])].map(e => `/wiki/${e.slug}.html`));
+const nonApprovedUrlSet = new Set([...blockedUrlSet, ...reviewUrlSet]);
+
+const wikiIndexUrls = new Set(wikiIndex.map(e => e.url));
+
 // Helper: find entry in audit by slug
 function auditEntry(slug) {
   return [
-    ...(audit.approved  || []),
-    ...(audit.blocked   || []),
-    ...(audit.review    || []),
+    ...(audit.approved || []),
+    ...(audit.blocked  || []),
+    ...(audit.review   || []),
   ].find(e => e.slug === slug) || null;
 }
 
@@ -102,7 +111,6 @@ assert.ok(typeof audit.summary.approved === 'number', 'audit.summary.approved mu
 assert.ok(typeof audit.summary.blocked === 'number',  'audit.summary.blocked must be a number');
 assert.ok(audit.blocked.length > 0, 'audit.blocked must contain at least one entry');
 
-// Each blocked entry must have a reason
 for (const entry of audit.blocked) {
   assert.ok(typeof entry.slug === 'string' && entry.slug.length > 0, `blocked entry missing slug: ${JSON.stringify(entry)}`);
   assert.ok(typeof entry.reason === 'string' && entry.reason.length > 0, `blocked entry for ${entry.slug} missing reason`);
@@ -126,71 +134,82 @@ for (const slug of syntheticSlugs) {
 
 console.log(`✓ Audit file correctly lists all synthetic pages with BLOCKED_SYNTHETIC_SLUG status`);
 
-// ── 5. Blocked pages must NOT appear in wiki-index.json ──────────────────────
+// ── 5. Non-approved pages must NOT appear in wiki-index.json (entry.url) ─────
 
-const blockedUrlSet = new Set(audit.blocked.map(e => `/wiki/${e.slug}.html`));
-const wikiIndexUrls = new Set(wikiIndex.map(e => e.url));
-
-for (const blockedUrl of blockedUrlSet) {
+for (const nonApprovedUrl of nonApprovedUrlSet) {
   assert.ok(
-    !wikiIndexUrls.has(blockedUrl),
-    `Blocked page leaked into wiki-index.json: ${blockedUrl}`
+    !wikiIndexUrls.has(nonApprovedUrl),
+    `Non-approved page leaked into wiki-index.json: ${nonApprovedUrl}`
   );
 }
 
-// Specifically test the named synthetic pages
-for (const slug of syntheticSlugs) {
+// Regression: specific named slugs
+for (const slug of [...syntheticSlugs, 'graffpunks-24-7', 'graffpunks-247', 'hodl-wars-game']) {
   const url = `/wiki/${slug}.html`;
-  assert.ok(!wikiIndexUrls.has(url), `wiki-index.json must not contain blocked page: ${url}`);
+  assert.ok(!wikiIndexUrls.has(url), `wiki-index.json must not contain non-approved page: ${url}`);
 }
 
-console.log(`✓ No blocked pages appear in wiki-index.json`);
+console.log(`✓ No non-approved pages appear in wiki-index.json`);
 
-// ── 6. Blocked pages must NOT appear in entity-map.json ──────────────────────
+// ── 6. Non-approved URLs must NOT appear as alias.url in wiki-index.json ──────
+
+for (const entry of wikiIndex) {
+  for (const alias of (entry.aliases || [])) {
+    if (alias && typeof alias === 'object' && alias.url) {
+      assert.ok(
+        !nonApprovedUrlSet.has(alias.url),
+        `Non-approved URL leaked into wiki-index.json as alias.url for "${entry.url}": ${alias.url}`
+      );
+    }
+  }
+}
+
+console.log(`✓ No non-approved URLs appear as alias.url in wiki-index.json`);
+
+// ── 7. Non-approved pages must NOT appear in entity-map.json ─────────────────
 
 if (entityMap.length > 0) {
-  const entityMapUrls = new Set(entityMap.map(e => e.canonical_url));
-  for (const blockedUrl of blockedUrlSet) {
+  for (const record of entityMap) {
     assert.ok(
-      !entityMapUrls.has(blockedUrl),
-      `Blocked page leaked into entity-map.json: ${blockedUrl}`
+      !nonApprovedUrlSet.has(record.canonical_url),
+      `Non-approved URL leaked into entity-map.json as canonical_url: ${record.canonical_url}`
     );
+    for (const srcUrl of (record.source_urls || [])) {
+      assert.ok(
+        !nonApprovedUrlSet.has(srcUrl),
+        `Non-approved URL leaked into entity-map.json source_urls for "${record.canonical_url}": ${srcUrl}`
+      );
+    }
   }
-  for (const slug of syntheticSlugs) {
-    const url = `/wiki/${slug}.html`;
-    assert.ok(!entityMapUrls.has(url), `entity-map.json must not contain blocked page: ${url}`);
-  }
-  console.log(`✓ No blocked pages appear in entity-map.json`);
+  console.log(`✓ No non-approved pages or URLs appear in entity-map.json`);
 } else {
   console.log(`  (entity-map.json empty or missing — skipping entity-map check)`);
 }
 
-// ── 7. Blocked pages must NOT appear as graph nodes in entity-graph.json ─────
+// ── 8. Non-approved pages must NOT appear in entity-graph.json ───────────────
 
 if (Object.keys(entityGraph).length > 0) {
-  for (const blockedUrl of blockedUrlSet) {
+  for (const [nodeUrl, nodeData] of Object.entries(entityGraph)) {
     assert.ok(
-      !Object.prototype.hasOwnProperty.call(entityGraph, blockedUrl),
-      `Blocked page leaked into entity-graph.json as a node: ${blockedUrl}`
+      !nonApprovedUrlSet.has(nodeUrl),
+      `Non-approved URL leaked into entity-graph.json as a node key: ${nodeUrl}`
     );
+    for (const rel of (nodeData.related_pages || [])) {
+      assert.ok(
+        !nonApprovedUrlSet.has(rel.target_url),
+        `Non-approved URL leaked into entity-graph.json as related_pages target_url for "${nodeUrl}": ${rel.target_url}`
+      );
+    }
   }
-  for (const slug of syntheticSlugs) {
-    const url = `/wiki/${slug}.html`;
-    assert.ok(
-      !Object.prototype.hasOwnProperty.call(entityGraph, url),
-      `entity-graph.json must not contain blocked page as a node: ${url}`
-    );
-  }
-  console.log(`✓ No blocked pages appear as nodes in entity-graph.json`);
+  console.log(`✓ No non-approved pages appear as nodes or targets in entity-graph.json`);
 } else {
   console.log(`  (entity-graph.json empty or missing — skipping entity-graph check)`);
 }
 
-// ── 8. Real brand pages DO appear in wiki-index.json ─────────────────────────
+// ── 9. Real brand pages DO appear in wiki-index.json ─────────────────────────
 
 for (const slug of approvedSlugs) {
   const url = `/wiki/${slug}.html`;
-  // Some real pages may not exist as files on disk; only test those that do
   const filePath = path.join(ROOT, 'wiki', `${slug}.html`);
   if (!fs.existsSync(filePath)) continue;
   assert.ok(
@@ -201,31 +220,33 @@ for (const slug of approvedSlugs) {
 
 console.log(`✓ All real brand pages that exist on disk appear in wiki-index.json`);
 
-// ── 9. Hard CI gate: fail if new synthetic (via) pages are on disk but not blocked ──
+// ── 10. Hard CI gate: no non-approved pages on disk have leaked into wiki-index ─
 
 const WIKI_DIR = path.join(ROOT, 'wiki');
 const wikiFiles = fs.readdirSync(WIKI_DIR).filter(f => f.endsWith('.html'));
-const newSyntheticLeaks = [];
+const leakedUrls = [];
 
 for (const file of wikiFiles) {
   const slug = file.replace(/\.html$/, '');
+  const url  = `/wiki/${file}`;
   const result = gate.classifySlug(slug, canon);
-  if (result.status === gate.STATUS.BLOCKED_SYNTHETIC_SLUG) {
-    const url = `/wiki/${file}`;
+  // Any non-approved status must not appear in the index
+  if (result.status !== gate.STATUS.APPROVED_CANON_PAGE &&
+      result.status !== gate.STATUS.APPROVED_ALIAS_REDIRECT) {
     if (wikiIndexUrls.has(url)) {
-      newSyntheticLeaks.push(url);
+      leakedUrls.push(`${url} [${result.status}]`);
     }
   }
 }
 
 assert.equal(
-  newSyntheticLeaks.length,
+  leakedUrls.length,
   0,
-  `CI FAIL: ${newSyntheticLeaks.length} synthetic page(s) have leaked into wiki-index.json without approval:\n  ${newSyntheticLeaks.join('\n  ')}\n` +
-  `Add to brand-canon/approved-pages.json to override, or remove the pages.`
+  `CI FAIL: ${leakedUrls.length} non-approved page(s) have leaked into wiki-index.json:\n  ${leakedUrls.join('\n  ')}\n` +
+  `Add to brand-canon/approved-pages.json to approve, or remove the pages.`
 );
 
-console.log(`✓ CI gate: no new synthetic pages have leaked into wiki-index.json`);
+console.log(`✓ CI gate: no non-approved pages have leaked into wiki-index.json`);
 
 // ── Done ──────────────────────────────────────────────────────────────────────
 

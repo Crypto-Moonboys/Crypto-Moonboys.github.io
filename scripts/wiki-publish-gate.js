@@ -305,15 +305,50 @@ function classifyPage(slug, html, canon) {
 
 /**
  * Return the set of approved canonical URLs (e.g. '/wiki/graffpunks.html')
- * from the audit file. Used by generate-wiki-index / entity-map / entity-graph
- * to filter out blocked pages without re-running a full scan.
+ * from the audit file.  Only APPROVED_CANON_PAGE and APPROVED_ALIAS_REDIRECT
+ * entries are included.  Everything else is excluded from public discovery assets.
  *
- * Falls back to an empty Set if the audit file does not exist yet.
+ * Fails fast if the audit file does not exist.
+ * Pass { allowMissing: true } only for first-run bootstrap contexts.
+ *
+ * @param {{ allowMissing?: boolean }} [opts]
  */
-function loadApprovedUrls() {
-  if (!fs.existsSync(AUDIT_OUTPUT)) return new Set();
+function loadApprovedUrls(opts) {
+  if (!fs.existsSync(AUDIT_OUTPUT)) {
+    if (opts && opts.allowMissing) return new Set();
+    console.error(
+      '[wiki-publish-gate] ERROR: js/wiki-publish-audit.json not found.\n' +
+      '  Run "node scripts/wiki-publish-gate.js" first to generate the audit file,\n' +
+      '  then re-run this script. Aborting to prevent non-approved pages leaking into generated assets.'
+    );
+    process.exit(1);
+  }
   const audit = JSON.parse(fs.readFileSync(AUDIT_OUTPUT, 'utf8'));
   return new Set((audit.approved || []).map(e => `/wiki/${e.slug}.html`));
+}
+
+/**
+ * Return the set of ALL non-approved URLs from the audit file.
+ * This includes BLOCKED_* and NEEDS_BRAND_REVIEW entries.
+ * Used by validate-generated-assets.js to assert no non-approved URL appears
+ * in any public discovery asset.
+ *
+ * @param {{ allowMissing?: boolean }} [opts]
+ */
+function loadNonApprovedUrls(opts) {
+  if (!fs.existsSync(AUDIT_OUTPUT)) {
+    if (opts && opts.allowMissing) return new Set();
+    console.error(
+      '[wiki-publish-gate] ERROR: js/wiki-publish-audit.json not found.\n' +
+      '  Run "node scripts/wiki-publish-gate.js" first.'
+    );
+    process.exit(1);
+  }
+  const audit = JSON.parse(fs.readFileSync(AUDIT_OUTPUT, 'utf8'));
+  return new Set([
+    ...(audit.blocked || []).map(e => `/wiki/${e.slug}.html`),
+    ...(audit.review  || []).map(e => `/wiki/${e.slug}.html`),
+  ]);
 }
 
 /**
@@ -425,6 +460,7 @@ module.exports = {
   loadBrandCanon,
   loadApprovedUrls,
   loadBlockedUrls,
+  loadNonApprovedUrls,
   run,
 };
 

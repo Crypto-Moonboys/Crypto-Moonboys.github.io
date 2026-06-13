@@ -74,7 +74,7 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { loadBlockedUrls } = require('./wiki-publish-gate.js');
+const { loadApprovedUrls } = require('./wiki-publish-gate.js');
 
 const ROOT            = path.resolve(__dirname, '..');
 const ENTITY_MAP_PATH = path.join(ROOT, 'js', 'entity-map.json');
@@ -502,16 +502,17 @@ function main() {
   const linkMap    = JSON.parse(fs.readFileSync(LINK_MAP_PATH,   'utf8'));
   const linkGraph  = JSON.parse(fs.readFileSync(LINK_GRAPH_PATH, 'utf8'));
 
-  // Filter out any blocked URLs from the publish gate so they never enter graph nodes
-  const blockedUrlsForGraph = loadBlockedUrls();
-  const filteredEntityMap = blockedUrlsForGraph.size > 0
-    ? entityMap.filter(e => !blockedUrlsForGraph.has(e.canonical_url))
+  // Filter to approved-only URLs (approved-only gate).
+  // NEEDS_BRAND_REVIEW and BLOCKED_* pages must never enter graph nodes or targets.
+  const approvedUrlsForGraph = loadApprovedUrls();
+  const filteredEntityMap = approvedUrlsForGraph.size > 0
+    ? entityMap.filter(e => approvedUrlsForGraph.has(e.canonical_url))
     : entityMap;
-  const filteredWikiIndex = blockedUrlsForGraph.size > 0
-    ? wikiIndex.filter(w => !blockedUrlsForGraph.has(w.url))
+  const filteredWikiIndex = approvedUrlsForGraph.size > 0
+    ? wikiIndex.filter(w => approvedUrlsForGraph.has(w.url))
     : wikiIndex;
   if (filteredEntityMap.length < entityMap.length) {
-    console.log(`[entity-graph] Publish gate: excluded ${entityMap.length - filteredEntityMap.length} blocked entities.`);
+    console.log(`[entity-graph] Publish gate: included ${filteredEntityMap.length} approved entities (excluded ${entityMap.length - filteredEntityMap.length}).`);
   }
 
   // ---------------------------------------------------------------------------
@@ -525,11 +526,10 @@ function main() {
   if (fs.existsSync(PRIOR_GRAPH_PATH)) {
     const priorGraph = JSON.parse(fs.readFileSync(PRIOR_GRAPH_PATH, 'utf8'));
     for (const [srcUrl, data] of Object.entries(priorGraph)) {
-      // Sort by base_score (organic relationship quality) when available, falling
-      // back to score.  Using the organic-only base_score for top-N selection
-      // ensures the priorRelInbound and priorRelatedSets sets are stable across
-      // successive runs: reinforcement boosts never shift which neighbours are
-      // considered "top-N", so the feedback loop converges deterministically.
+      // Skip prior-graph entries for non-approved URLs so stale blocked/review
+      // nodes cannot reintroduce themselves through the reinforcement feedback loop.
+      if (approvedUrlsForGraph.size > 0 && !approvedUrlsForGraph.has(srcUrl)) continue;
+
       const relPages = data.related_pages || [];
       const sorted = relPages.slice().sort((a, b) => {
         const bBase = b.base_score !== undefined ? b.base_score : b.score;
@@ -538,8 +538,12 @@ function main() {
         return a.target_url.localeCompare(b.target_url);
       });
       const topRel = sorted.slice(0, PRIOR_GRAPH_TOP_N);
-      priorRelatedSets[srcUrl] = new Set(topRel.map(r => r.target_url));
-      for (const rel of topRel) {
+      // Filter out non-approved target URLs from reinforcement sets.
+      const approvedTopRel = approvedUrlsForGraph.size > 0
+        ? topRel.filter(r => approvedUrlsForGraph.has(r.target_url))
+        : topRel;
+      priorRelatedSets[srcUrl] = new Set(approvedTopRel.map(r => r.target_url));
+      for (const rel of approvedTopRel) {
         if (!priorRelInbound[rel.target_url]) priorRelInbound[rel.target_url] = new Set();
         priorRelInbound[rel.target_url].add(srcUrl);
       }

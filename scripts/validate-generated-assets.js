@@ -3,7 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { loadBlockedUrls } = require('./wiki-publish-gate.js');
+const { loadNonApprovedUrls } = require('./wiki-publish-gate.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const WIKI_INDEX_PATH = path.join(ROOT, 'js', 'wiki-index.json');
@@ -13,6 +13,8 @@ const SITEMAP_PATH = path.join(ROOT, 'sitemap.xml');
 const SEARCH_PATH = path.join(ROOT, 'search.html');
 const CATEGORY_INDEX_PATH = path.join(ROOT, 'categories', 'index.html');
 const HOME_PATH = path.join(ROOT, 'index.html');
+const ENTITY_GRAPH_PATH = path.join(ROOT, 'js', 'entity-graph.json');
+
 const AUDIT_PATH = path.join(ROOT, 'js', 'wiki-publish-audit.json');
 
 const PHASE5_6_PATHS = {
@@ -213,19 +215,64 @@ function validatePublishAudit() {
   assert(Array.isArray(audit.approved), 'js/wiki-publish-audit.json must have an approved array');
   assert(audit.summary && typeof audit.summary === 'object', 'js/wiki-publish-audit.json must have a summary object');
 
-  // Ensure no blocked pages leaked into wiki-index.json
-  const blockedUrls = loadBlockedUrls();
-  if (blockedUrls.size > 0) {
+  // Build the set of all non-approved URLs (BLOCKED_* + NEEDS_BRAND_REVIEW).
+  // None of these may appear anywhere in public discovery assets.
+  const nonApprovedUrls = loadNonApprovedUrls();
+
+  if (nonApprovedUrls.size > 0) {
+    // ── wiki-index.json ──────────────────────────────────────────────────────
     const wikiIndex = readJson(WIKI_INDEX_PATH);
     for (const entry of wikiIndex) {
       assert(
-        !blockedUrls.has(entry.url),
-        `Blocked page leaked into wiki-index.json: ${entry.url} — regenerate with wiki-publish-gate.js + generate-wiki-index.js`
+        !nonApprovedUrls.has(entry.url),
+        `Non-approved page leaked into wiki-index.json as entry.url: ${entry.url}`
       );
+      for (const alias of (entry.aliases || [])) {
+        if (alias && typeof alias === 'object' && alias.url) {
+          assert(
+            !nonApprovedUrls.has(alias.url),
+            `Non-approved URL leaked into wiki-index.json as alias.url for "${entry.url}": ${alias.url}`
+          );
+        }
+      }
+    }
+
+    // ── entity-map.json ──────────────────────────────────────────────────────
+    if (fs.existsSync(ENTITY_MAP_PATH)) {
+      const entityMap = readJson(ENTITY_MAP_PATH);
+      for (const record of entityMap) {
+        assert(
+          !nonApprovedUrls.has(record.canonical_url),
+          `Non-approved URL leaked into entity-map.json as canonical_url: ${record.canonical_url}`
+        );
+        for (const srcUrl of (record.source_urls || [])) {
+          assert(
+            !nonApprovedUrls.has(srcUrl),
+            `Non-approved URL leaked into entity-map.json source_urls for "${record.canonical_url}": ${srcUrl}`
+          );
+        }
+      }
+    }
+
+    // ── entity-graph.json ────────────────────────────────────────────────────
+    if (fs.existsSync(ENTITY_GRAPH_PATH)) {
+      const entityGraph = readJson(ENTITY_GRAPH_PATH);
+      for (const [nodeUrl, nodeData] of Object.entries(entityGraph)) {
+        assert(
+          !nonApprovedUrls.has(nodeUrl),
+          `Non-approved URL leaked into entity-graph.json as a node key: ${nodeUrl}`
+        );
+        for (const rel of (nodeData.related_pages || [])) {
+          assert(
+            !nonApprovedUrls.has(rel.target_url),
+            `Non-approved URL leaked into entity-graph.json as related_pages target_url for "${nodeUrl}": ${rel.target_url}`
+          );
+        }
+      }
     }
   }
 
-  console.log(`js/wiki-publish-audit.json validated (${audit.approved.length} approved, ${audit.blocked.length} blocked) ✅`);
+  console.log(`js/wiki-publish-audit.json validated (${audit.approved.length} approved, ${audit.blocked.length} blocked, ${(audit.review || []).length} review) ✅`);
 }
 
 function validatePhase5And6() {
