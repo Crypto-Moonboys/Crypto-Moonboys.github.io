@@ -34,6 +34,7 @@ ok('moonboys-api WaxOnEdge route module exists', exists('workers/moonboys-api/ro
 ok('moonboys-api WaxOnEdge migration exists', exists('workers/moonboys-api/migrations/022_waxonedge_live_indexer.sql'));
 ok('moonboys-api WaxOnEdge aggregate migration exists', exists('workers/moonboys-api/migrations/023_waxonedge_token_aggregate_stats.sql'));
 ok('moonboys-api WaxOnEdge aggregate source coverage migration exists', exists('workers/moonboys-api/migrations/024_waxonedge_aggregate_source_coverage.sql'));
+ok('moonboys-api WaxOnEdge source index state migration exists', exists('workers/moonboys-api/migrations/025_waxonedge_source_index_state.sql'));
 
 const route = read('workers/moonboys-api/routes/waxonedge.js');
 const worker = read('workers/moonboys-api/worker.js');
@@ -44,6 +45,7 @@ const packageLock = JSON.parse(read('package-lock.json'));
 const migration = read('workers/moonboys-api/migrations/022_waxonedge_live_indexer.sql');
 const aggregateMigration = read('workers/moonboys-api/migrations/023_waxonedge_token_aggregate_stats.sql');
 const sourceCoverageMigration = read('workers/moonboys-api/migrations/024_waxonedge_aggregate_source_coverage.sql');
+const sourceStateMigration = read('workers/moonboys-api/migrations/025_waxonedge_source_index_state.sql');
 const frontend = read('js/waxonedge.js');
 const frontendSources = read('js/waxonedge-sources.js');
 const html = read('waxonedge.html');
@@ -61,6 +63,9 @@ for (const table of [
 ]) {
   ok('migration defines ' + table, migration.includes('CREATE TABLE IF NOT EXISTS ' + table));
 }
+ok('source state migration defines resumable checkpoint table',
+  sourceStateMigration.includes('CREATE TABLE IF NOT EXISTS waxonedge_source_index_state') &&
+  ['source TEXT PRIMARY KEY', 'sync_cycle_id TEXT', 'cursor TEXT', 'page_count INTEGER DEFAULT 0', 'row_count INTEGER DEFAULT 0', 'complete INTEGER DEFAULT 0', 'truncated INTEGER DEFAULT 0', 'status TEXT', 'error TEXT', 'started_at TEXT', 'updated_at TEXT'].every((column) => sourceStateMigration.includes(column)));
 
 ok('migration avoids SQLite REAL for analytics precision', !hasRealColumn(migration));
 ok('migration stores price/volume/liquidity as TEXT',
@@ -114,8 +119,8 @@ ok('bootstrap exposes core adapter statuses and token aggregate count',
   route.includes("const key = adapter.source.replaceAll('.', '_')") &&
   route.includes('coreSources[`${key}_${adapter.table}`]'));
 ok('scheduled sync indexes core adapters, not only Alcor',
-  route.includes('syncCoreDexAdapters(env)') &&
-  route.includes('syncAlcorMarketData(env, \'alcor_five_minute_market_data\')'));
+  route.includes('syncCoreDexAdapters(env, syncCycleId)') &&
+  route.includes("syncAlcorMarketData(env, 'alcor_five_minute_market_data', syncCycleId)"));
 ok('aggregate migration adds real indexed metric columns as TEXT',
   ['liquidity_wax TEXT', 'liquidity_usd TEXT', 'tvl_wax TEXT', 'tvl_usd TEXT', 'selected_price_wax TEXT', 'selected_price_usd TEXT', 'selected_pair_source TEXT'].every((column) => aggregateMigration.includes(column)) &&
   !hasRealColumn(aggregateMigration));
@@ -154,16 +159,48 @@ ok('backend persists selected-pair 24h change from aggregate stats only',
   route.includes('change_24h, selected_pair_source'));
 ok('aggregate completeness is source-run completeness, separate from token source coverage',
   route.includes('async function getAggregateRunStatus') &&
-  route.includes('SELECT MAX(started_at)') &&
+  route.includes('FROM waxonedge_source_index_state') &&
+  route.includes('sameCycle') &&
   route.includes('runStatus.complete ? 1 : 0') &&
   route.includes('sourceKeys.join') &&
   !route.includes('missingSources.length === 0 ? 1 : 0'));
 ok('truncated source pagination marks aggregate incomplete',
-  route.includes('tableResult.truncated') &&
-  route.includes("recordSyncRun(env.DB, adapter.source, 'failed'") &&
+  route.includes('truncated: /truncated/i.test') &&
+  route.includes("status: 'failed'") &&
   route.includes('runStatus.truncated ? 1 : 0') &&
   route.includes('runStatus.truncatedSources.join'));
+ok('large source snapshot safety avoids overlarge D1 raw row blobs',
+  route.includes('LARGE_SNAPSHOT_SOURCES') &&
+  route.includes('Refusing oversized raw DEX snapshot') &&
+  route.includes('async function writeCompactDexSnapshot') &&
+  route.includes('compact: true') &&
+  !/writeSnapshot\(env\.DB, `\$\{adapter\.source\}_\$\{adapter\.table\}`,[\s\S]*rows,/.test(route));
+ok('source cursor checkpointing processes large adapters in bounded pages',
+  route.includes('CORE_DEX_PAGES_PER_INVOCATION') &&
+  route.includes('async function readSourceIndexState') &&
+  route.includes('async function upsertSourceIndexState') &&
+  route.includes('lowerBound: state.cursor ||') &&
+  route.includes('cursor: complete ?') &&
+  route.includes("status = complete ? 'success' : 'running'") &&
+  route.includes('let activeCycleId = syncCycleId ||') &&
+  route.includes('sync_cycle_id: activeCycleId') &&
+  !route.includes('async function markSourceComplete'));
+ok('aggregate gating requires same-cycle complete source states',
+  route.includes('FROM waxonedge_source_index_state') &&
+  route.includes('sameCycle') &&
+  route.includes('row.sync_cycle_id === syncCycleId') &&
+  route.includes('complete: sameCycle && failed.length === 0 && truncatedSources.length === 0') &&
+  route.includes("await upsertSourceIndexState(env.DB, 'token_aggregates'"));
+ok('bootstrap compact source metadata does not mark missing snapshots complete',
+  route.includes('row_count: tableSnapshot.data?.row_count || (Array.isArray(tableSnapshot.data?.rows) ? tableSnapshot.data.rows.length : 0)') &&
+  route.includes('complete: !!tableSnapshot.data && (tableSnapshot.data?.truncated ? false : !tableSnapshot.data?.cursor)'));
+ok('regression guard for live source-sync failures',
+  route.includes('writeCompactDexSnapshot(env.DB, adapter') &&
+  route.includes('syncCycleId') &&
+  route.includes('Partial source sync checkpoint saved') &&
+  route.includes('Too many subrequests') === false);
 ok('scheduled full index runs sources in parallel and aggregates after statuses are known',
+  route.includes('const syncCycleId = await getActiveSourceCycleId(env.DB);') &&
   route.includes('const [alcor, core, nefty] = await Promise.all') &&
   route.indexOf('const aggregates = await aggregateTokenAnalytics(env);') > route.indexOf('const [alcor, core, nefty] = await Promise.all'));
 ok('aggregate selected price uses strongest real WAX quote liquidity',
