@@ -21,18 +21,39 @@
   <link rel="stylesheet" href="/css/waxonedge-bubbles-v2.css">
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
-<body class="page-waxonedge page-standard-shell woe-wide-mode woe-scanner-page">
+<body class="page-waxonedge page-standard-shell woe-wide-mode woe-scanner-page woe-antbubbles-page">
 
 <main id="content" role="main">
-  <div class="woe-page" id="woe-home">
-    <header class="woe-og-bar woe-terminal-header">
+  <div class="woe-page woe-ab-shell" id="woe-home">
+    <header class="woe-og-bar woe-terminal-header woe-ab-topbar">
       <a class="woe-og-brand" href="/waxonedge.html" aria-label="WaxOnEdge scanner home">
-        <span class="woe-og-brand-mark" aria-hidden="true">WE</span>
+        <span class="woe-og-brand-mark woe-ab-brand-mark" aria-hidden="true">●</span>
         <div>
-          <h1 class="woe-page-title">WAXONEDGE</h1>
-          <p class="woe-page-subtitle">WAX bubble scanner</p>
+          <h1 class="woe-page-title">WAX<span>ONEDGE</span></h1>
+          <p class="woe-page-subtitle">Powered by WaxOnEdge multi-DEX indexer</p>
         </div>
       </a>
+      <div class="woe-ab-chain-badge">WAX</div>
+      <nav class="woe-ab-segments" aria-label="Bubble metric">
+        <button class="is-active" type="button" data-woe-metric="change">% Change</button>
+        <button type="button" data-woe-metric="price">Price</button>
+        <button type="button" data-woe-metric="volume">Volume</button>
+        <button type="button" data-woe-metric="tvl">TVL</button>
+        <button type="button" data-woe-metric="mcap">Mkt Cap</button>
+      </nav>
+      <nav class="woe-ab-segments woe-ab-timeframes" aria-label="Bubble timeframe">
+        <button class="is-active" type="button" data-woe-timeframe="24h">24h</button>
+        <button type="button" data-woe-timeframe="7d">7D</button>
+        <button type="button" data-woe-timeframe="30d">30D</button>
+      </nav>
+      <div class="woe-ab-search">
+        <input id="woe-global-search" type="search" placeholder="Search symbol, contract, source..." autocomplete="off" aria-label="Search WaxOnEdge bubbles">
+      </div>
+      <div class="woe-ab-live">
+        <span id="woe-ab-live-dot" class="woe-ab-live-dot is-waiting"></span>
+        <span id="woe-ab-live-text">CONNECTING</span>
+      </div>
+      <div id="woe-ab-last-updated" class="woe-ab-updated">Waiting for sync</div>
       <div class="woe-og-wax-block">
         <span class="woe-og-block-label">WAX Price</span>
         <strong id="woe-topbar-wax-price">$ --</strong>
@@ -40,42 +61,16 @@
       </div>
     </header>
 
-    <section class="woe-section woe-bubble-section woe-scanner-only" aria-labelledby="woe-bubbles-heading">
-      <div class="woe-scanner-heading">
-        <span class="woe-kicker">Indexed Cloudflare/D1 feed</span>
-        <h2 id="woe-bubbles-heading">Bubble Token Scanner</h2>
-      </div>
-      <div class="woe-toolbar" id="woe-scanner-controls">
-        <div class="woe-search-group">
-          <label for="woe-global-search">Search</label>
-          <input id="woe-global-search" class="woe-search-input" type="search" placeholder="Filter symbols, contracts, sources..." autocomplete="off" aria-label="Filter token bubbles">
-        </div>
-        <div class="woe-search-group">
-          <label for="woe-bubble-metric">Bubble Size</label>
-          <select id="woe-bubble-metric" class="woe-select" aria-label="Bubble size metric">
-            <option value="liquidity">Liquidity / TVL</option>
-            <option value="volume">24h Volume</option>
-            <option value="pairs">Pair Count</option>
-          </select>
-        </div>
-        <div class="woe-search-group">
-          <label for="woe-source-filter">Source</label>
-          <select id="woe-source-filter" class="woe-select" aria-label="Filter by indexed source">
-            <option value="">All Sources</option>
-            <option value="alcor">alcor</option>
-            <option value="swap.alcor">swap.alcor</option>
-            <option value="swap.taco">swap.taco</option>
-            <option value="swap.nefty">swap.nefty</option>
-            <option value="swap.box">swap.box</option>
-          </select>
-        </div>
-      </div>
+    <section class="woe-section woe-bubble-section woe-scanner-only woe-ab-board-section" aria-labelledby="woe-bubbles-heading">
+      <h2 id="woe-bubbles-heading" class="woe-ab-sr">WaxOnEdge AntBubbles-style scanner</h2>
       <div id="woe-bubble-board" class="woe-bubble-board" aria-live="polite">
         <p class="woe-loading">Loading token bubbles...</p>
       </div>
+      <footer id="woe-ab-stats" class="woe-ab-stats" aria-live="polite"></footer>
     </section>
   </div>
 </main>
+<div id="woe-ab-modal" class="woe-ab-modal" hidden></div>
 
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
@@ -85,9 +80,6 @@
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<script data-cfasync="false" src="/js/waxonedge-sources.js"></script>
-<script data-cfasync="false" src="https://unpkg.com/lightweight-charts@5.2.0/dist/lightweight-charts.standalone.production.js"></script>
-<script data-cfasync="false" src="/js/waxonedge.js"></script>
 <script data-cfasync="false" src="/js/waxonedge-bubbles-v2.js"></script>
 
 </body>

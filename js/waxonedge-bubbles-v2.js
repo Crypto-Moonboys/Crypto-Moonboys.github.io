@@ -1,23 +1,52 @@
 /**
  * waxonedge-bubbles-v2.js
  *
- * Visual scanner layer for WaxOnEdge. This file is read-only: it fetches the
- * same backend bootstrap payload as the main dashboard and replaces the bubble
- * board with a higher-density, AntBubbles-style market map.
+ * AntBubbles-style canvas scanner for WaxOnEdge. This is a visual reference
+ * port only: token data comes from the Moonboys WaxOnEdge multi-DEX backend.
  */
 (function () {
   'use strict';
 
-  var API_PATH = '/api/waxonedge/bootstrap';
+  var BOOTSTRAP_API = '/api/waxonedge/bootstrap';
+  var HEALTH_API = '/api/waxonedge/indexer-health';
   var WAX_KEY = tokenKey('eosio.token', 'WAX');
+  var TOP_LIMIT = 100;
+  var METRIC_LABELS = {
+    change: '% Change',
+    price: 'Price',
+    volume: 'Volume',
+    tvl: 'TVL',
+    mcap: 'Mkt Cap / FDV',
+  };
+  var TIMEFRAME_LABELS = { '24h': '24h', '7d': '7D', '30d': '30D' };
+  var SOURCE_ORDER = ['alcor', 'swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'];
+  var imageCache = new Map();
+  var bubbleCanvasCache = new Map();
+
   var state = {
-    bootstrapped: false,
     payload: null,
+    health: null,
     records: [],
     pairs: [],
-    rendering: false,
-    observer: null,
-    resizeTimer: null,
+    visible: [],
+    nodes: [],
+    metric: 'change',
+    timeframe: '24h',
+    query: '',
+    hovered: null,
+    dragging: null,
+    selected: null,
+    canvas: null,
+    ctx: null,
+    board: null,
+    tooltip: null,
+    modal: null,
+    raf: 0,
+    lastFrame: 0,
+    lastUpdated: null,
+    connected: false,
+    detailCache: {},
+    chartCache: {},
   };
 
   function escHtml(value) {
@@ -47,10 +76,22 @@
     return Number.isFinite(n) ? n : null;
   }
 
+  function sourceRows(value) {
+    if (Array.isArray(value)) return value;
+    if (Array.isArray(value && value.value)) return value.value;
+    if (Array.isArray(value && value.data)) return value.data;
+    if (Array.isArray(value && value.results)) return value.results;
+    return [];
+  }
+
+  function payloadData(envelope) {
+    return envelope && envelope.data ? envelope.data : (envelope || {});
+  }
+
   function fmtNum(value, decimals) {
     var n = asNum(value);
     var d = decimals == null ? 2 : decimals;
-    if (n == null) return '—';
+    if (n == null) return 'Unavailable';
     if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(d) + 'B';
     if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(d) + 'M';
     if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(d) + 'K';
@@ -59,7 +100,7 @@
 
   function fmtPrice(value) {
     var n = asNum(value);
-    if (n == null) return '—';
+    if (n == null) return 'Unavailable';
     if (Math.abs(n) >= 1000) return n.toFixed(2);
     if (Math.abs(n) >= 1) return n.toFixed(4);
     if (Math.abs(n) >= 0.0001) return n.toFixed(6);
@@ -68,18 +109,12 @@
 
   function fmtPct(value) {
     var n = asNum(value);
-    if (n == null) return 'No 24h';
+    if (n == null) return 'Unavailable';
     return (n > 0 ? '+' : '') + n.toFixed(2) + '%';
   }
 
-  function pctClass(value) {
-    var n = asNum(value);
-    if (n == null) return '';
-    return n > 0 ? 'woe-pos' : n < 0 ? 'woe-neg' : '';
-  }
-
   function sourceLabel(value) {
-    var source = String(value || '').toLowerCase();
+    var source = String(value || '').trim().toLowerCase();
     if (source === 'alcor') return 'alcor';
     if (source === 'swap.alcor') return 'swap.alcor';
     if (source === 'swap.taco') return 'swap.taco';
@@ -93,46 +128,12 @@
   }
 
   function pairSourceKey(pair) {
-    var source = pair && (pair.source || pair.adapter || pair.rawSource || pair.raw_source);
-    return String(source || '').trim().toLowerCase();
+    return sourceLabel(pair && (pair.source || pair.adapter || pair.rawSource || pair.raw_source));
   }
 
-  function tokenSourceKeys(token) {
-    var raw = token && (token.source_keys || token.sourceKeys || token.sources);
-    if (Array.isArray(raw)) return raw.map(pairSourceKey).filter(Boolean);
-    return String(raw || '').split(',').map(function (source) {
-      return String(source || '').trim().toLowerCase();
-    }).filter(Boolean);
-  }
-
-  function metricLabel(metric) {
-    if (metric === 'volume') return '24h volume';
-    if (metric === 'pairs') return 'pair count';
-    return 'liquidity / TVL';
-  }
-
-  function sourceRows(value) {
-    if (Array.isArray(value)) return value;
-    if (Array.isArray(value && value.value)) return value.value;
-    if (Array.isArray(value && value.data)) return value.data;
-    if (Array.isArray(value && value.results)) return value.results;
-    return [];
-  }
-
-  function getPayloadData(envelope) {
-    if (!envelope) return null;
-    return envelope.data || envelope;
-  }
-
-  function readControls() {
-    var search = document.getElementById('woe-global-search');
-    var metric = document.getElementById('woe-bubble-metric');
-    var source = document.getElementById('woe-source-filter');
-    return {
-      query: String(search && search.value || '').trim().toLowerCase(),
-      metric: String(metric && metric.value || 'liquidity'),
-      source: String(source && source.value || '').trim().toLowerCase(),
-    };
+  function parseSourceKeys(value) {
+    if (Array.isArray(value)) return value.map(sourceLabel).filter(Boolean);
+    return String(value || '').split(',').map(sourceLabel).filter(Boolean);
   }
 
   function pairKeys(pair) {
@@ -142,24 +143,80 @@
     ].filter(Boolean);
   }
 
-  function pairLiquidity(pair) {
-    return {
-      wax: asNum(pair.liquidity_wax),
-      usd: asNum(pair.liquidity_usd),
-    };
+  function pairLabel(pair) {
+    if (!pair) return 'Unavailable';
+    var a = normalizeSymbol(pair.token_a_symbol);
+    var b = normalizeSymbol(pair.token_b_symbol);
+    return (a && b ? a + '/' + b : 'Pair') + (pair.pair_id ? ' #' + pair.pair_id : '');
   }
 
-  function strongerPair(a, b) {
+  function betterPair(a, b) {
     if (!a) return b;
     if (!b) return a;
-    var aLiq = pairLiquidity(a).wax || pairLiquidity(a).usd || 0;
-    var bLiq = pairLiquidity(b).wax || pairLiquidity(b).usd || 0;
-    if (bLiq !== aLiq) return bLiq > aLiq ? b : a;
-    return (asNum(b.volume_24h) || 0) > (asNum(a.volume_24h) || 0) ? b : a;
+    var av = asNum(a.liquidity_wax) || asNum(a.liquidity_usd) || asNum(a.volume_24h_wax) || 0;
+    var bv = asNum(b.liquidity_wax) || asNum(b.liquidity_usd) || asNum(b.volume_24h_wax) || 0;
+    return bv > av ? b : a;
+  }
+
+  function tokenSearchText(record) {
+    return [
+      record.symbol,
+      record.contract,
+      record.selectedSource,
+      record.selectedPair,
+      record.strongestPairLabel,
+      record.sources.join(' '),
+    ].join(' ').toLowerCase();
+  }
+
+  function valueForMetric(record, metric, timeframe) {
+    if (metric === 'change') {
+      var change = timeframe === '24h' ? record.change24 : record['change' + timeframe];
+      return change != null ? Math.abs(change) : (record.volume24Usd || record.volume24Wax || record.liquidityUsd || record.liquidityWax || record.indexedPairCount || 0);
+    }
+    if (metric === 'price') return record.liquidityUsd || record.volume24Usd || record.liquidityWax || record.sourceCount || 1;
+    if (metric === 'volume') {
+      if (timeframe === '7d') return record.volume7dUsd || record.volume7dWax || 0;
+      if (timeframe === '30d') return record.volume30dUsd || record.volume30dWax || 0;
+      return record.volume24Usd || record.volume24Wax || 0;
+    }
+    if (metric === 'tvl') return record.tvlUsd || record.liquidityUsd || record.tvlWax || record.liquidityWax || 0;
+    if (metric === 'mcap') return record.marketCapUsd || record.fdvUsd || record.marketCapWax || record.fdvWax || 0;
+    return 0;
+  }
+
+  function displayValue(record) {
+    if (state.metric === 'change') {
+      var change = state.timeframe === '24h' ? record.change24 : record['change' + state.timeframe];
+      return fmtPct(change);
+    }
+    if (state.metric === 'price') {
+      if (record.selectedPriceUsd != null) return '$' + fmtPrice(record.selectedPriceUsd);
+      if (record.selectedPriceWax != null) return fmtPrice(record.selectedPriceWax) + ' WAX';
+      return 'Price unavailable';
+    }
+    if (state.metric === 'volume') {
+      if (state.timeframe === '7d') return record.volume7dUsd != null ? '$' + fmtNum(record.volume7dUsd) : '7D unavailable';
+      if (state.timeframe === '30d') return record.volume30dUsd != null ? '$' + fmtNum(record.volume30dUsd) : '30D unavailable';
+      if (record.volume24Usd != null) return '$' + fmtNum(record.volume24Usd);
+      if (record.volume24Wax != null) return fmtNum(record.volume24Wax) + ' WAX';
+      return 'Volume unavailable';
+    }
+    if (state.metric === 'tvl') {
+      if (record.tvlUsd != null || record.liquidityUsd != null) return '$' + fmtNum(record.tvlUsd || record.liquidityUsd);
+      if (record.tvlWax != null || record.liquidityWax != null) return fmtNum(record.tvlWax || record.liquidityWax) + ' WAX';
+      return 'TVL unavailable';
+    }
+    if (state.metric === 'mcap') {
+      if (record.marketCapUsd != null) return '$' + fmtNum(record.marketCapUsd) + ' mcap';
+      if (record.fdvUsd != null) return '$' + fmtNum(record.fdvUsd) + ' FDV';
+      return 'Mkt cap unavailable';
+    }
+    return 'Unavailable';
   }
 
   function normalizeRecords(payload) {
-    var data = getPayloadData(payload) || {};
+    var data = payloadData(payload);
     var tokens = sourceRows(data.tokens);
     var pairs = sourceRows(data.pairs);
     var byKey = {};
@@ -168,372 +225,680 @@
       var symbol = normalizeSymbol(token.symbol || token.id);
       var contract = normalizeContract(token.contract);
       var key = tokenKey(contract, symbol);
-      if (!key) return;
-      var aggregateSources = tokenSourceKeys(token);
-      var sources = {};
-      aggregateSources.forEach(function (source) { sources[source] = true; });
+      if (!key || key === WAX_KEY) return;
+      var sources = parseSourceKeys(token.source_keys || token.sourceKeys || token.sources);
       byKey[key] = {
+        id: key,
         key: key,
         symbol: symbol,
         contract: contract,
-        pairCount: asNum(token.indexed_pair_count) || asNum(token.pair_count) || 0,
-        computedPairCount: 0,
-        pairLiquidityWax: 0,
-        pairLiquidityUsd: 0,
-        pairVolume24: 0,
-        liquidityWax: asNum(token.liquidity_wax || token.tvl_wax),
-        liquidityUsd: asNum(token.liquidity_usd || token.tvl_usd),
-        volume24: asNum(token.volume_24h_wax),
-        selectedPriceWax: asNum(token.selected_price_wax || token.price_wax || token.system_price),
-        selectedPriceUsd: asNum(token.selected_price_usd || token.price_usd || token.usd_price),
+        logoUrl: token.icon_url || token.logo || token.image || '',
+        selectedPriceWax: asNum(token.selected_price_wax || token.price_wax),
+        selectedPriceUsd: asNum(token.selected_price_usd || token.price_usd),
         change24: asNum(token.change_24h),
+        change7d: null,
+        change30d: null,
+        volume24Wax: asNum(token.volume_24h_wax || token.volume_24h),
+        volume24Usd: asNum(token.volume_24h_usd),
+        volume7dWax: asNum(token.volume_7d_wax),
+        volume7dUsd: asNum(token.volume_7d_usd),
+        volume30dWax: asNum(token.volume_30d_wax),
+        volume30dUsd: asNum(token.volume_30d_usd),
+        liquidityWax: asNum(token.liquidity_wax),
+        liquidityUsd: asNum(token.liquidity_usd),
+        tvlWax: asNum(token.tvl_wax),
+        tvlUsd: asNum(token.tvl_usd),
+        marketCapWax: asNum(token.market_cap_wax),
+        marketCapUsd: asNum(token.market_cap_usd),
+        fdvWax: asNum(token.fdv_wax),
+        fdvUsd: asNum(token.fdv_usd),
+        supply: token.circulating_supply || token.total_supply || '',
+        selectedPair: token.selected_pair_id || '',
+        selectedSource: sourceLabel(token.selected_pair_source),
+        sourceCount: asNum(token.source_count) || sources.length || 0,
+        indexedPairCount: asNum(token.indexed_pair_count || token.pair_count) || 0,
+        computedPairCount: 0,
+        sourcesMap: sources.reduce(function (acc, source) { acc[source] = true; return acc; }, {}),
         sources: sources,
         strongestPair: null,
+        strongestPairLabel: '',
+        unavailableReasons: parseSourceKeys(token.unavailable_reasons).join(', '),
       };
     });
 
     pairs.forEach(function (pair) {
-      var keys = pairKeys(pair);
-      keys.forEach(function (key) {
+      pairKeys(pair).forEach(function (key) {
+        if (key === WAX_KEY) return;
         if (!byKey[key]) {
-          var sideAKey = tokenKey(pair.token_a_contract, pair.token_a_symbol);
-          var side = key === sideAKey
-            ? { contract: pair.token_a_contract, symbol: pair.token_a_symbol }
-            : { contract: pair.token_b_contract, symbol: pair.token_b_symbol };
+          var sideA = key === tokenKey(pair.token_a_contract, pair.token_a_symbol);
           byKey[key] = {
+            id: key,
             key: key,
-            symbol: normalizeSymbol(side.symbol),
-            contract: normalizeContract(side.contract),
-            pairCount: 0,
-            computedPairCount: 0,
-            pairLiquidityWax: 0,
-            pairLiquidityUsd: 0,
-            pairVolume24: 0,
-            liquidityWax: null,
-            liquidityUsd: null,
-            volume24: null,
+            symbol: normalizeSymbol(sideA ? pair.token_a_symbol : pair.token_b_symbol),
+            contract: normalizeContract(sideA ? pair.token_a_contract : pair.token_b_contract),
+            logoUrl: '',
             selectedPriceWax: null,
             selectedPriceUsd: null,
             change24: null,
-            sources: {},
+            change7d: null,
+            change30d: null,
+            volume24Wax: null,
+            volume24Usd: null,
+            volume7dWax: null,
+            volume7dUsd: null,
+            volume30dWax: null,
+            volume30dUsd: null,
+            liquidityWax: null,
+            liquidityUsd: null,
+            tvlWax: null,
+            tvlUsd: null,
+            marketCapWax: null,
+            marketCapUsd: null,
+            fdvWax: null,
+            fdvUsd: null,
+            supply: '',
+            selectedPair: '',
+            selectedSource: '',
+            sourceCount: 0,
+            indexedPairCount: 0,
+            computedPairCount: 0,
+            sourcesMap: {},
+            sources: [],
             strongestPair: null,
+            strongestPairLabel: '',
+            unavailableReasons: '',
           };
         }
-        var rec = byKey[key];
-        var liq = pairLiquidity(pair);
-        if (liq.wax != null) rec.pairLiquidityWax += liq.wax;
-        if (liq.usd != null) rec.pairLiquidityUsd += liq.usd;
-        var vol = asNum(pair.volume_24h);
-        if (vol != null) rec.pairVolume24 += vol;
-        var sourceKey = pairSourceKey(pair);
-        if (sourceKey) rec.sources[sourceKey] = true;
-        rec.strongestPair = strongerPair(rec.strongestPair, pair);
-        rec.computedPairCount += 1;
+        var record = byKey[key];
+        var source = pairSourceKey(pair);
+        if (source) record.sourcesMap[source] = true;
+        record.computedPairCount += 1;
+        record.strongestPair = betterPair(record.strongestPair, pair);
+        if (record.change24 == null) record.change24 = asNum(pair.change_24h);
+        if (record.liquidityWax == null && asNum(pair.liquidity_wax) != null) record.liquidityWax = asNum(pair.liquidity_wax);
+        if (record.liquidityUsd == null && asNum(pair.liquidity_usd) != null) record.liquidityUsd = asNum(pair.liquidity_usd);
+        if (record.volume24Wax == null && asNum(pair.volume_24h_wax || pair.volume_24h) != null) record.volume24Wax = asNum(pair.volume_24h_wax || pair.volume_24h);
+        if (record.volume24Usd == null && asNum(pair.volume_24h_usd) != null) record.volume24Usd = asNum(pair.volume_24h_usd);
       });
     });
 
-    Object.keys(byKey).forEach(function (key) {
-      var rec = byKey[key];
-      if (rec.computedPairCount > rec.pairCount) rec.pairCount = rec.computedPairCount;
-      if (rec.liquidityWax == null && rec.pairLiquidityWax > 0) rec.liquidityWax = rec.pairLiquidityWax;
-      if (rec.liquidityUsd == null && rec.pairLiquidityUsd > 0) rec.liquidityUsd = rec.pairLiquidityUsd;
-      if (rec.volume24 == null && rec.pairVolume24 > 0) rec.volume24 = rec.pairVolume24;
-      if (rec.strongestPair && rec.change24 == null) {
-        var pairChange = asNum(rec.strongestPair.change_24h);
-        if (pairChange != null) rec.change24 = pairChange;
-      }
+    return Object.keys(byKey).map(function (key) {
+      var record = byKey[key];
+      record.sources = Object.keys(record.sourcesMap).sort(function (a, b) {
+        return SOURCE_ORDER.indexOf(a) - SOURCE_ORDER.indexOf(b);
+      });
+      record.sourceCount = Math.max(record.sourceCount || 0, record.sources.length);
+      record.indexedPairCount = Math.max(record.indexedPairCount || 0, record.computedPairCount || 0);
+      record.strongestPairLabel = record.strongestPair
+        ? sourceLabel(record.strongestPair.source) + ' ' + pairLabel(record.strongestPair)
+        : (record.selectedSource && record.selectedPair ? record.selectedSource + ' #' + record.selectedPair : 'Unavailable');
+      record.searchText = tokenSearchText(record);
+      record.score = (record.selectedPriceWax != null || record.selectedPriceUsd != null ? 500000 : 0) +
+        (record.indexedPairCount > 0 ? 250000 : 0) +
+        (record.selectedPair ? 125000 : 0) +
+        Math.log10(1 + (record.liquidityUsd || record.liquidityWax || 0)) * 1000 +
+        Math.log10(1 + (record.volume24Usd || record.volume24Wax || 0)) * 700;
+      return record;
+    }).filter(function (record) {
+      return record.key !== WAX_KEY && (record.indexedPairCount > 0 || record.selectedPriceWax != null || record.selectedPriceUsd != null);
     });
-
-    return {
-      records: Object.keys(byKey).map(function (key) { return byKey[key]; }),
-      pairs: pairs,
-    };
   }
 
-  function metricValue(record, metric) {
-    if (metric === 'volume') return record.volume24 || 0;
-    if (metric === 'pairs') return record.pairCount || Object.keys(record.sources || {}).length || 0;
-    return record.liquidityUsd || record.liquidityWax || record.volume24 || record.pairCount || 0;
-  }
-
-  function recordMatches(record, controls) {
-    if (!record || !record.key || record.key === WAX_KEY) return false;
-    var sources = Object.keys(record.sources || {});
-    if (controls.source && sources.indexOf(controls.source) === -1) return false;
-    if (!controls.query) return true;
-    return [record.symbol, record.contract, record.key, sources.join(' ')].join(' ').toLowerCase().indexOf(controls.query) !== -1;
-  }
-
-  function sourceBadges(record) {
-    var sources = Object.keys(record.sources || {}).sort();
-    if (!sources.length) return '<span class="woe-mini-badge">No source</span>';
-    var shown = sources.slice(0, 4).map(function (source) {
-      return '<span class="woe-mini-badge">' + escHtml(sourceLabel(source)) + '</span>';
-    }).join('');
-    if (sources.length > 4) shown += '<span class="woe-mini-badge">+' + escHtml(String(sources.length - 4)) + '</span>';
-    return shown;
-  }
-
-  function bubbleSubtitle(record, metric) {
-    if (metric === 'volume') return fmtNum(record.volume24 || 0) + ' vol';
-    if (metric === 'pairs') return String(record.pairCount || 0) + ' pairs';
-    if (record.liquidityUsd != null || record.liquidityWax != null) {
-      var pieces = [];
-      if (record.liquidityWax != null) pieces.push(fmtNum(record.liquidityWax) + ' WAX');
-      if (record.liquidityUsd != null) pieces.push('$' + fmtNum(record.liquidityUsd));
-      return pieces.join(' · ');
+  function rankedRecords() {
+    var query = state.query.toLowerCase();
+    var base = state.records.filter(function (record) {
+      if (!query) return true;
+      return record.searchText.indexOf(query) !== -1;
+    }).sort(function (a, b) {
+      var av = valueForMetric(a, state.metric, state.timeframe);
+      var bv = valueForMetric(b, state.metric, state.timeframe);
+      if (bv !== av) return bv - av;
+      return b.score - a.score;
+    });
+    if (!query) {
+      base = base.filter(function (record) {
+        return record.indexedPairCount > 0 && (record.liquidityWax || record.liquidityUsd || record.volume24Wax || record.volume24Usd || record.selectedPriceWax || record.selectedPriceUsd);
+      });
     }
-    return 'Liquidity unavailable';
+    return base.slice(0, TOP_LIMIT).map(function (record, index) {
+      record.rank = index + 1;
+      return record;
+    });
   }
 
-  function tokenPriceLine(record) {
-    if (record.selectedPriceUsd != null) return '$' + fmtPrice(record.selectedPriceUsd);
-    if (record.selectedPriceWax != null) return fmtPrice(record.selectedPriceWax) + ' WAX';
-    return 'Price unavailable';
+  function computeRadii(records, width, height) {
+    var values = records.map(function (record) {
+      return Math.abs(valueForMetric(record, state.metric, state.timeframe) || 0);
+    });
+    var positives = values.filter(function (value) { return value > 0; }).sort(function (a, b) { return a - b; });
+    var p95 = positives.length ? positives[Math.max(0, Math.floor(positives.length * 0.95) - 1)] : 1;
+    var max = Math.max.apply(Math, values.concat([1]));
+    var mobile = width < 680;
+    var minR = mobile ? 18 : 25;
+    var maxR = Math.max(minR + 10, Math.min(mobile ? 72 : 132, Math.sqrt(width * height * (mobile ? 0.085 : 0.055) / Math.PI)));
+    return records.map(function (record, index) {
+      var value = values[index];
+      var norm = value <= 0 ? 0.06 : Math.pow(value / Math.max(p95, 1), state.metric === 'change' || state.metric === 'price' ? 0.5 : 0.33);
+      if (value > p95 && max > p95) norm = 0.84 + (Math.log(value / p95) / Math.log(max / p95)) * 0.16;
+      norm = Math.max(0.06, Math.min(1, norm));
+      return Math.round(minR + norm * (maxR - minR));
+    });
   }
 
-  function classForChange(record) {
-    var n = asNum(record.change24);
-    if (n == null) return 'woe-bubble-flat';
-    return n >= 0 ? 'woe-bubble-up' : 'woe-bubble-down';
+  function syncNodes() {
+    if (!state.canvas) return;
+    var rect = state.canvas.getBoundingClientRect();
+    var width = Math.max(320, rect.width);
+    var height = Math.max(320, rect.height);
+    state.visible = rankedRecords();
+    var radii = computeRadii(state.visible, width, height);
+    var existing = {};
+    state.nodes.forEach(function (node) { existing[node.id] = node; });
+    state.nodes = state.visible.map(function (record, index) {
+      var old = existing[record.id];
+      var angle = index * 2.399963;
+      var spiral = Math.sqrt(index + 1) * 24;
+      var node = old || {
+        id: record.id,
+        x: width / 2 + Math.cos(angle) * spiral,
+        y: height / 2 + Math.sin(angle) * spiral,
+        vx: 0,
+        vy: 0,
+      };
+      node.record = record;
+      node.radius = old ? old.radius : radii[index];
+      node.targetRadius = radii[index];
+      node.rank = index + 1;
+      node.match = !state.query || record.searchText.indexOf(state.query.toLowerCase()) !== -1;
+      return node;
+    });
+    setStatus();
+    updateStats();
   }
 
-  function buildLayout(items, board) {
-    var width = Math.max(920, Math.floor((board && board.clientWidth) || 1180) - 48);
-    var height = Math.max(620, Math.min(960, Math.round(width * 0.58)));
-    var placed = [];
-    var centerX = width / 2;
-    var centerY = height / 2;
-    var golden = Math.PI * (3 - Math.sqrt(5));
-
-    items.forEach(function (item, index) {
-      var r = item.size / 2;
-      var point = null;
-      if (index === 0) {
-        point = { x: centerX, y: centerY };
-      } else {
-        for (var step = 0; step < 1300; step += 1) {
-          var angle = (index * golden) + (step * 0.42);
-          var radius = 24 + Math.sqrt(step) * 20 + index * 1.7;
-          var x = centerX + Math.cos(angle) * radius;
-          var y = centerY + Math.sin(angle) * radius * 0.68;
-          if (x - r < 12 || x + r > width - 12 || y - r < 12 || y + r > height - 12) continue;
-          var collides = placed.some(function (other) {
-            var dx = x - other.x;
-            var dy = y - other.y;
-            var min = (r + other.r) * 0.78;
-            return ((dx * dx) + (dy * dy)) < (min * min);
-          });
-          if (!collides) {
-            point = { x: x, y: y };
-            break;
+  function forceSimulationEquivalent(width, height) {
+    var nodes = state.nodes;
+    var cx = width / 2;
+    var cy = height / 2;
+    for (var tick = 0; tick < 2; tick += 1) {
+      nodes.forEach(function (node, index) {
+        node.radius += (node.targetRadius - node.radius) * 0.1;
+        node.vx += (cx - node.x) * 0.0025;
+        node.vy += (cy - node.y) * 0.0025;
+        var ring = Math.sqrt(index + 1) * 3;
+        node.vx += Math.cos(index * 1.7 + Date.now() / 9000) * ring * 0.0008;
+        node.vy += Math.sin(index * 1.3 + Date.now() / 11000) * ring * 0.0008;
+      });
+      for (var i = 0; i < nodes.length; i += 1) {
+        for (var j = i + 1; j < nodes.length; j += 1) {
+          var a = nodes[i];
+          var b = nodes[j];
+          var dx = b.x - a.x;
+          var dy = b.y - a.y;
+          var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          var min = a.radius + b.radius + 4;
+          if (dist < min) {
+            var push = (min - dist) / dist * 0.04;
+            var px = dx * push;
+            var py = dy * push;
+            a.vx -= px; a.vy -= py;
+            b.vx += px; b.vy += py;
           }
         }
       }
-      if (!point) {
-        var fallbackAngle = index * golden;
-        var fallbackRadius = 80 + (index % 14) * 34;
-        point = {
-          x: Math.min(width - r - 12, Math.max(r + 12, centerX + Math.cos(fallbackAngle) * fallbackRadius)),
-          y: Math.min(height - r - 12, Math.max(r + 12, centerY + Math.sin(fallbackAngle) * fallbackRadius * 0.7)),
-        };
+    }
+    nodes.forEach(function (node) {
+      if (state.dragging === node) return;
+      node.vx *= 0.88;
+      node.vy *= 0.88;
+      node.x += node.vx;
+      node.y += node.vy;
+      node.x = Math.max(node.radius + 8, Math.min(width - node.radius - 8, node.x));
+      node.y = Math.max(node.radius + 8, Math.min(height - node.radius - 8, node.y));
+    });
+  }
+
+  function signal(record) {
+    var change = state.metric === 'change' && state.timeframe !== '24h' ? record['change' + state.timeframe] : record.change24;
+    return asNum(change);
+  }
+
+  function ringColor(record) {
+    var change = signal(record);
+    if (change == null) return '#f89422';
+    if (change > 5) return '#00ff55';
+    if (change > 0) return '#00cc66';
+    if (change < -5) return '#ff284f';
+    if (change < 0) return '#cc1122';
+    return '#f89422';
+  }
+
+  function loadImage(url) {
+    if (!url) return Promise.resolve(null);
+    if (imageCache.has(url)) return Promise.resolve(imageCache.get(url));
+    return new Promise(function (resolve) {
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function () { imageCache.set(url, img); resolve(img); requestDraw(); };
+      img.onerror = function () { imageCache.set(url, null); resolve(null); };
+      img.src = url;
+    });
+  }
+
+  function textFit(ctx, text, maxWidth, baseSize, minSize) {
+    var size = baseSize;
+    do {
+      ctx.font = '800 ' + size + 'px Inter, Arial, sans-serif';
+      if (ctx.measureText(text).width <= maxWidth || size <= minSize) return size;
+      size -= 1;
+    } while (size > minSize);
+    return minSize;
+  }
+
+  function drawBubbleOffscreen(node, dpr) {
+    var record = node.record;
+    var r = Math.round(node.radius);
+    var img = imageCache.get(record.logoUrl);
+    var key = [r, state.metric, state.timeframe, displayValue(record), record.symbol, ringColor(record), img ? 1 : 0, dpr].join('|');
+    var cached = bubbleCanvasCache.get(record.id);
+    if (cached && cached.key === key) return cached.canvas;
+    var pad = 5;
+    var size = (r * 2) + (pad * 2);
+    var canvas = document.createElement('canvas');
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    var ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.translate(r + pad, r + pad);
+    var fill = signal(record) == null ? '#141414' : (signal(record) >= 0 ? '#001b0e' : '#1a0005');
+    var light = signal(record) == null ? '#302618' : (signal(record) >= 0 ? '#004d20' : '#4d0010');
+    var grad = ctx.createRadialGradient(-r * 0.25, -r * 0.28, 1, 0, 0, r);
+    grad.addColorStop(0, light);
+    grad.addColorStop(0.72, fill);
+    grad.addColorStop(1, ringColor(record));
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.lineWidth = Math.max(1, r * 0.045);
+    ctx.strokeStyle = ringColor(record);
+    ctx.shadowColor = ringColor(record);
+    ctx.shadowBlur = Math.max(8, r * 0.25);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.86, 0, Math.PI * 2);
+    ctx.clip();
+    var showText = r > 27;
+    if (img && r > 18) {
+      var logoSize = showText ? Math.max(18, Math.min(r * 0.72, 54)) : r * 1.15;
+      ctx.drawImage(img, -logoSize / 2, showText ? -r * 0.55 : -logoSize / 2, logoSize, logoSize);
+    } else {
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '900 ' + Math.max(10, r * 0.35) + 'px Inter, Arial, sans-serif';
+      ctx.fillText(record.symbol.slice(0, r > 30 ? 5 : 2), 0, showText ? -r * 0.28 : 0);
+    }
+    if (showText) {
+      var symSize = textFit(ctx, record.symbol, r * 1.48, Math.min(30, Math.max(11, r * 0.31)), 8);
+      ctx.font = '900 ' + symSize + 'px Inter, Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#fff';
+      ctx.fillText(record.symbol, 0, img ? r * 0.05 : -r * 0.02);
+      if (r > 36) {
+        ctx.font = '700 ' + Math.max(8, Math.min(15, r * 0.16)) + 'px Inter, Arial, sans-serif';
+        ctx.fillStyle = ringColor(record);
+        ctx.fillText(displayValue(record).slice(0, 18), 0, r * 0.34);
       }
-      placed.push({ x: point.x, y: point.y, r: r });
-      item.x = (point.x / width) * 100;
-      item.y = (point.y / height) * 100;
+      if (r > 50) {
+        ctx.font = '600 ' + Math.max(7, Math.min(12, r * 0.12)) + 'px Inter, Arial, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,.72)';
+        ctx.fillText('#' + node.rank + ' ' + record.sourceCount + ' src', 0, r * 0.56);
+      }
+    }
+    ctx.restore();
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.22, -r * 0.34, r * 0.34, r * 0.13, -0.45, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,.30)';
+    ctx.fill();
+    bubbleCanvasCache.set(record.id, { key: key, canvas: canvas });
+    return canvas;
+  }
+
+  function draw() {
+    if (!state.canvas || !state.ctx) return;
+    var canvas = state.canvas;
+    var ctx = state.ctx;
+    var rect = canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    var width = Math.max(320, rect.width);
+    var height = Math.max(320, rect.height);
+    if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      syncNodes();
+    } else {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    forceSimulationEquivalent(width, height);
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, width, height);
+    var grid = 64;
+    ctx.strokeStyle = 'rgba(255,255,255,.035)';
+    ctx.lineWidth = 1;
+    for (var gx = 0; gx < width; gx += grid) {
+      ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, height); ctx.stroke();
+    }
+    for (var gy = 0; gy < height; gy += grid) {
+      ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(width, gy); ctx.stroke();
+    }
+    state.nodes.forEach(function (node) {
+      var alpha = state.query && !node.match ? 0.16 : 1;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      var bubble = drawBubbleOffscreen(node, dpr);
+      var r = Math.round(node.radius);
+      ctx.drawImage(bubble, node.x - r - 5, node.y - r - 5, r * 2 + 10, r * 2 + 10);
+      if (state.hovered === node) {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r + 5, 0, Math.PI * 2);
+        ctx.strokeStyle = '#f89422';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      ctx.restore();
     });
-
-    return height;
+    state.raf = window.requestAnimationFrame(draw);
   }
 
-  function getVisibleRecords(controls) {
-    return state.records.filter(function (record) {
-      return recordMatches(record, controls);
-    }).sort(function (a, b) {
-      return metricValue(b, controls.metric) - metricValue(a, controls.metric);
-    }).slice(0, 99);
+  function requestDraw() {
+    if (!state.raf) state.raf = window.requestAnimationFrame(draw);
   }
 
-  function getActiveTokenKey() {
-    var params = new URLSearchParams(window.location.search || '');
-    return tokenKey(params.get('contract'), params.get('token'));
+  function canvasPoint(event) {
+    var rect = state.canvas.getBoundingClientRect();
+    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
   }
 
-  function buildTokenAnalyticsHref(symbol, contract) {
-    return '/analytics/token/?token=' + encodeURIComponent(normalizeSymbol(symbol)) +
-      '&contract=' + encodeURIComponent(normalizeContract(contract));
+  function findNodeAt(point) {
+    for (var i = state.nodes.length - 1; i >= 0; i -= 1) {
+      var node = state.nodes[i];
+      var dx = point.x - node.x;
+      var dy = point.y - node.y;
+      if ((dx * dx) + (dy * dy) <= node.radius * node.radius) return node;
+    }
+    return null;
   }
 
-  function renderRail(records, controls) {
-    var totalLiquidityWax = records.reduce(function (sum, record) { return sum + (record.liquidityWax || 0); }, 0);
-    var totalVolume = records.reduce(function (sum, record) { return sum + (record.volume24 || 0); }, 0);
-    var sources = {};
-    records.forEach(function (record) {
-      Object.keys(record.sources || {}).forEach(function (source) { sources[source] = true; });
-    });
-    return '<div class="woe-v2-rail" role="group" aria-label="Visible bubble market summary">' +
-      '<div><span>View</span><strong>Top ' + escHtml(String(records.length)) + '</strong><em>' + escHtml(metricLabel(controls.metric)) + '</em></div>' +
-      '<div><span>Liquidity</span><strong>' + escHtml(fmtNum(totalLiquidityWax)) + ' WAX</strong><em>visible tokens</em></div>' +
-      '<div><span>24h Volume</span><strong>' + escHtml(fmtNum(totalVolume)) + '</strong><em>reported rows</em></div>' +
-      '<div><span>Sources</span><strong>' + escHtml(String(Object.keys(sources).length)) + '</strong><em>' + escHtml(Object.keys(sources).map(sourceLabel).slice(0, 3).join(' / ') || 'pending') + '</em></div>' +
-    '</div>';
-  }
-
-  function beginBoardWrite() {
-    state.rendering = true;
-  }
-
-  function endBoardWrite() {
-    window.setTimeout(function () {
-      state.rendering = false;
-    }, 0);
-  }
-
-  function commitBoardHtml(board, html) {
-    beginBoardWrite();
-    board.innerHTML = html;
-    endBoardWrite();
-  }
-
-  function renderBubbles() {
-    var board = document.getElementById('woe-bubble-board');
-    if (!board || !state.records.length) return;
-    var controls = readControls();
-    var records = getVisibleRecords(controls);
-    if (!records.length) {
-      board.classList.add('woe-v2-board');
-      commitBoardHtml(board, '<div class="woe-v2-map-shell"><div class="woe-chart-empty">No indexed tokens match the current filters.</div></div>');
+  function moveTooltip(node, event) {
+    if (!state.tooltip) return;
+    if (!node) {
+      state.tooltip.hidden = true;
       return;
     }
-
-    var max = records.reduce(function (best, record) {
-      return Math.max(best, metricValue(record, controls.metric));
-    }, 1);
-    var decorated = records.map(function (record, index) {
-      var ratio = Math.max(0.08, Math.min(1, metricValue(record, controls.metric) / max));
-      var size = Math.round(62 + Math.pow(ratio, 0.55) * 128);
-      return { record: record, index: index, ratio: ratio, size: size };
-    });
-    var height = buildLayout(decorated, board);
-    var activeKey = getActiveTokenKey();
-    var bubbleHtml = decorated.map(function (item) {
-      var record = item.record;
-      var change = asNum(record.change24);
-      var active = activeKey === record.key;
-      var pairSource = record.strongestPair && record.strongestPair.source ? sourceLabel(record.strongestPair.source) : 'No pair';
-      return '<button class="woe-bubble-token woe-v2-bubble ' + escHtml(classForChange(record)) + (active ? ' woe-v2-bubble-active' : '') + '" type="button"' +
-        ' data-bound="true" data-token="' + escHtml(record.symbol) + '" data-contract="' + escHtml(record.contract) + '"' +
-        ' style="--bubble-size:' + escHtml(String(item.size)) + 'px;--bubble-glow:' + escHtml(String(Math.round(16 + item.ratio * 46))) + 'px;--x:' + escHtml(item.x.toFixed(3)) + ';--y:' + escHtml(item.y.toFixed(3)) + ';--delay:' + escHtml(String((item.index % 9) * -0.7)) + 's;"' +
-        ' title="' + escHtml(record.symbol + ' @ ' + record.contract + ' · ' + bubbleSubtitle(record, controls.metric)) + '">' +
-          '<span class="woe-bubble-rank">#' + escHtml(String(item.index + 1)) + '</span>' +
-          '<strong>' + escHtml(record.symbol) + '</strong>' +
-          '<span class="woe-bubble-price">' + escHtml(tokenPriceLine(record)) + '</span>' +
-          '<span class="woe-bubble-metric">' + escHtml(bubbleSubtitle(record, controls.metric)) + '</span>' +
-          '<span class="woe-bubble-change ' + escHtml(pctClass(change)) + '">' + escHtml(fmtPct(change)) + '</span>' +
-          '<span class="woe-v2-pair-source">' + escHtml(pairSource) + ' · ' + escHtml(String(record.pairCount || 0)) + ' pairs</span>' +
-          '<span class="woe-bubble-badges">' + sourceBadges(record) + '</span>' +
-        '</button>';
-    }).join('');
-
-    board.classList.add('woe-v2-board');
-    board.setAttribute('aria-label', 'WaxOnEdge visual bubble map for indexed WAX tokens');
-    commitBoardHtml(board, '<div class="woe-v2-map-shell">' +
-      renderRail(records, controls) +
-      '<div class="woe-v2-map-note">Bubble size follows ' + escHtml(metricLabel(controls.metric)) + '. Colour follows indexed 24h change where available. Missing data is left as unavailable.</div>' +
-      '<div class="woe-v2-bubble-cloud" style="--cloud-height:' + escHtml(String(height)) + 'px;">' + bubbleHtml + '</div>' +
-    '</div>');
+    var record = node.record;
+    state.tooltip.hidden = false;
+    state.tooltip.style.left = event.clientX + 14 + 'px';
+    state.tooltip.style.top = event.clientY + 14 + 'px';
+    state.tooltip.innerHTML = '<strong>' + escHtml(record.symbol) + '</strong>' +
+      '<span>' + escHtml(record.contract) + '</span>' +
+      '<span>' + escHtml(displayValue(record)) + ' / ' + escHtml(fmtPct(record.change24)) + '</span>' +
+      '<span>' + escHtml(record.sourceCount + ' source(s), ' + record.indexedPairCount + ' pair(s)') + '</span>' +
+      '<span>' + escHtml(record.strongestPairLabel) + '</span>';
   }
 
-  function navigateToToken(symbol, contract) {
-    if (!symbol || !contract) return;
-    window.location.href = buildTokenAnalyticsHref(symbol, contract);
-  }
-
-  function attachBoardDelegates() {
-    var board = document.getElementById('woe-bubble-board');
-    if (!board || board.dataset.v2Delegates === 'true') return;
-    board.dataset.v2Delegates = 'true';
-    board.addEventListener('click', function (event) {
-      var bubble = event.target && event.target.closest ? event.target.closest('.woe-v2-bubble') : null;
-      if (!bubble) return;
-      event.preventDefault();
-      event.stopPropagation();
-      navigateToToken(bubble.getAttribute('data-token'), bubble.getAttribute('data-contract'));
-    });
-  }
-
-  function attachControlDelegates() {
-    ['woe-global-search', 'woe-bubble-metric', 'woe-source-filter'].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (!el || el.dataset.v2Bound === 'true') return;
-      el.dataset.v2Bound = 'true';
-      var eventName = id === 'woe-global-search' ? 'input' : 'change';
-      el.addEventListener(eventName, function () {
-        window.setTimeout(renderBubbles, 0);
-        window.setTimeout(renderBubbles, 80);
-      });
-    });
-  }
-
-  function enhanceSourceStrip(payload) {
-    var data = getPayloadData(payload) || {};
-    var sources = data.sources || {};
-    var aggregateCount = data.summary && data.summary.token_aggregate_count;
-    var meta = document.getElementById('woe-source-status-meta');
-    if (meta) {
-      var indexedCount = Object.keys(sources).filter(function (key) { return sources[key] && sources[key].indexed; }).length;
-      meta.textContent = indexedCount + ' indexed source snapshot(s) · ' + (aggregateCount == null ? '0' : aggregateCount) + ' aggregate token row(s)';
+  function onPointerMove(event) {
+    if (!state.canvas) return;
+    var point = canvasPoint(event);
+    if (state.dragging) {
+      state.dragging.x = point.x;
+      state.dragging.y = point.y;
+      state.dragging.vx = 0;
+      state.dragging.vy = 0;
+      return;
     }
+    var node = findNodeAt(point);
+    state.hovered = node;
+    state.canvas.style.cursor = node ? 'pointer' : 'default';
+    moveTooltip(node, event);
   }
 
-  function startObserver() {
-    var board = document.getElementById('woe-bubble-board');
-    if (!board || state.observer || typeof MutationObserver === 'undefined') return;
-    state.observer = new MutationObserver(function () {
-      if (state.rendering || !state.bootstrapped) return;
-      window.clearTimeout(board.__woeV2RenderTimer);
-      board.__woeV2RenderTimer = window.setTimeout(renderBubbles, 60);
+  function onPointerDown(event) {
+    var node = findNodeAt(canvasPoint(event));
+    if (!node) return;
+    state.dragging = node;
+    state.dragging.startedAt = Date.now();
+    state.dragging.startX = node.x;
+    state.dragging.startY = node.y;
+    state.canvas.setPointerCapture(event.pointerId);
+  }
+
+  function onPointerUp(event) {
+    var node = state.dragging;
+    state.dragging = null;
+    if (!node) return;
+    var moved = Math.hypot(node.x - node.startX, node.y - node.startY);
+    if (moved < 8 && Date.now() - node.startedAt < 500) openTokenModal(node.record);
+    try { state.canvas.releasePointerCapture(event.pointerId); } catch (_) {}
+  }
+
+  function apiJson(path) {
+    return fetch(path, { headers: { Accept: 'application/json' }, cache: 'no-store' }).then(function (response) {
+      if (!response.ok) throw new Error(path + ' failed: ' + response.status);
+      return response.json();
     });
-    state.observer.observe(board, { childList: true });
   }
 
-  function handleResize() {
-    window.clearTimeout(state.resizeTimer);
-    state.resizeTimer = window.setTimeout(renderBubbles, 120);
+  function setStatus() {
+    var dot = document.getElementById('woe-ab-live-dot');
+    var text = document.getElementById('woe-ab-live-text');
+    var updated = document.getElementById('woe-ab-last-updated');
+    if (dot) dot.className = 'woe-ab-live-dot ' + (state.connected ? 'is-live' : 'is-waiting');
+    if (text) text.textContent = state.connected ? 'LIVE' : 'CONNECTING';
+    if (updated) updated.textContent = state.lastUpdated ? new Date(state.lastUpdated).toLocaleTimeString() : 'Waiting for sync';
   }
 
-  function fetchBootstrap() {
-    return fetch(API_PATH, { headers: { Accept: 'application/json' }, cache: 'no-store' })
-      .then(function (response) {
-        if (!response.ok) throw new Error('WaxOnEdge bootstrap failed: ' + response.status);
-        return response.json();
+  function updateStats() {
+    var bar = document.getElementById('woe-ab-stats');
+    if (!bar) return;
+    var records = state.visible || [];
+    var gainers = records.filter(function (r) { return asNum(r.change24) > 0; }).length;
+    var losers = records.filter(function (r) { return asNum(r.change24) < 0; }).length;
+    var volume = records.reduce(function (sum, r) { return sum + (r.volume24Usd || r.volume24Wax || 0); }, 0);
+    var topGainer = records.reduce(function (best, r) { return !best || (r.change24 || -Infinity) > (best.change24 || -Infinity) ? r : best; }, null);
+    var topLoser = records.reduce(function (best, r) { return !best || (r.change24 || Infinity) < (best.change24 || Infinity) ? r : best; }, null);
+    var sources = {};
+    records.forEach(function (r) { r.sources.forEach(function (s) { sources[s] = true; }); });
+    var candleStatus = state.health && state.health.candle_backfill
+      ? (state.health.candle_backfill.latest_1d_candle_count || 0) + ' 1D candles'
+      : 'candles pending';
+    bar.innerHTML = '<span>' + escHtml(String(records.length)) + ' tokens</span>' +
+      '<span class="woe-ab-up">▲ ' + escHtml(String(gainers)) + '</span>' +
+      '<span class="woe-ab-down">▼ ' + escHtml(String(losers)) + '</span>' +
+      '<span>Vol 24h <strong>' + escHtml(fmtNum(volume)) + '</strong></span>' +
+      '<span>Top <strong class="woe-ab-up">' + escHtml(topGainer ? topGainer.symbol + ' ' + fmtPct(topGainer.change24) : 'Unavailable') + '</strong></span>' +
+      '<span>Bot <strong class="woe-ab-down">' + escHtml(topLoser ? topLoser.symbol + ' ' + fmtPct(topLoser.change24) : 'Unavailable') + '</strong></span>' +
+      '<span>Sources <strong>' + escHtml(String(Object.keys(sources).length)) + '</strong></span>' +
+      '<span>' + escHtml(candleStatus) + '</span>' +
+      '<span class="woe-ab-credit">Powered by WaxOnEdge multi-DEX indexer</span>';
+  }
+
+  function stat(label, value) {
+    return '<div><span>' + escHtml(label) + '</span><strong>' + escHtml(value == null || value === '' ? 'Unavailable' : value) + '</strong></div>';
+  }
+
+  function modalShell(record, body) {
+    if (!state.modal) return;
+    state.modal.hidden = false;
+    state.modal.innerHTML = '<div class="woe-ab-modal-backdrop" data-close-modal="true"></div>' +
+      '<section class="woe-ab-modal-panel" role="dialog" aria-modal="true" aria-label="' + escHtml(record.symbol) + ' token detail">' +
+        '<button class="woe-ab-modal-close" type="button" data-close-modal="true" aria-label="Close">×</button>' +
+        body +
+      '</section>';
+  }
+
+  function chartHtml(record, chart) {
+    var candles = chart && Array.isArray(chart.candles) ? chart.candles : [];
+    if (!candles.length) {
+      return '<div class="woe-ab-chart-empty">Trade history/candles not indexed yet. No fake candles are shown.</div>';
+    }
+    var points = candles.slice(-60).map(function (candle) {
+      return asNum(candle.close);
+    }).filter(function (n) { return n != null; });
+    if (points.length < 2) return '<div class="woe-ab-chart-empty">Stored candles are present but not enough to draw a chart.</div>';
+    var min = Math.min.apply(Math, points);
+    var max = Math.max.apply(Math, points);
+    var span = max - min || 1;
+    var d = points.map(function (price, index) {
+      var x = (index / Math.max(1, points.length - 1)) * 100;
+      var y = 92 - ((price - min) / span) * 76;
+      return (index ? 'L' : 'M') + x.toFixed(2) + ' ' + y.toFixed(2);
+    }).join(' ');
+    return '<svg class="woe-ab-chart-svg" viewBox="0 0 100 100" role="img" aria-label="Stored WaxOnEdge candle close chart">' +
+      '<path d="' + escHtml(d) + '" fill="none" stroke="' + escHtml(signal(record) == null || signal(record) >= 0 ? '#00cc66' : '#ff284f') + '" stroke-width="2" vector-effect="non-scaling-stroke"/>' +
+      '</svg>';
+  }
+
+  function renderModal(record) {
+    var detail = state.detailCache[record.key];
+    var chart = state.chartCache[record.key];
+    var stats = detail && detail.stats ? detail.stats : {};
+    var detailSources = detail && detail.source_coverage ? detail.source_coverage : null;
+    var unavailable = stats.unavailable_reasons || record.unavailableReasons || '';
+    var pairs = detail && Array.isArray(detail.pairs) ? detail.pairs : [];
+    var pairRows = pairs.slice(0, 8).map(function (pair) {
+      return '<tr><td>' + escHtml(sourceLabel(pair.source)) + '</td><td>' + escHtml(pairLabel(pair)) + '</td><td>' + escHtml(fmtNum(pair.liquidity_wax || pair.liquidity_usd)) + '</td></tr>';
+    }).join('');
+    modalShell(record,
+      '<header class="woe-ab-modal-head">' +
+        '<div class="woe-ab-token-avatar">' + escHtml(record.symbol.slice(0, 3)) + '</div>' +
+        '<div><h2>' + escHtml(record.symbol) + '</h2><p>' + escHtml(record.contract) + '</p></div>' +
+      '</header>' +
+      '<div class="woe-ab-modal-grid">' +
+        '<section class="woe-ab-modal-stats">' +
+          stat('Current price', record.selectedPriceUsd != null ? '$' + fmtPrice(record.selectedPriceUsd) : (record.selectedPriceWax != null ? fmtPrice(record.selectedPriceWax) + ' WAX' : 'Unavailable')) +
+          stat('24h change', fmtPct(record.change24)) +
+          stat('24h volume', record.volume24Usd != null ? '$' + fmtNum(record.volume24Usd) : (record.volume24Wax != null ? fmtNum(record.volume24Wax) + ' WAX' : 'Unavailable')) +
+          stat('Indexed liquidity', record.liquidityUsd != null ? '$' + fmtNum(record.liquidityUsd) : (record.liquidityWax != null ? fmtNum(record.liquidityWax) + ' WAX' : 'Unavailable')) +
+          stat('Source count', String(record.sourceCount || 0)) +
+          stat('Indexed pair count', String(record.indexedPairCount || 0)) +
+          stat('Strongest pair', record.strongestPairLabel) +
+          stat('Selected source', record.selectedSource || 'Unavailable') +
+          stat('FDV / market cap', record.marketCapUsd != null ? '$' + fmtNum(record.marketCapUsd) : (record.fdvUsd != null ? '$' + fmtNum(record.fdvUsd) + ' FDV' : 'Unavailable')) +
+          stat('Supply', record.supply || 'Unavailable') +
+        '</section>' +
+        '<section class="woe-ab-modal-chart">' + chartHtml(record, chart) + '</section>' +
+      '</div>' +
+      '<div class="woe-ab-source-row">' + record.sources.map(function (s) { return '<span>' + escHtml(sourceLabel(s)) + '</span>'; }).join('') + '</div>' +
+      '<div class="woe-ab-modal-note">' + escHtml(unavailable || (detailSources ? 'Multi-DEX aggregate loaded from WaxOnEdge backend.' : 'Loading backend detail/debug data.')) + '</div>' +
+      '<table class="woe-ab-pair-table"><tbody>' + (pairRows || '<tr><td colspan="3">Pair/source list unavailable in modal. Open analytics for full proof rows.</td></tr>') + '</tbody></table>' +
+      '<a class="woe-ab-open-analytics" href="/analytics/token/?token=' + encodeURIComponent(record.symbol) + '&contract=' + encodeURIComponent(record.contract) + '">Open fullscreen analytics</a>');
+  }
+
+  function openTokenModal(record) {
+    state.selected = record;
+    renderModal(record);
+    var detailPath = '/api/waxonedge/token/' + encodeURIComponent(record.contract) + '/' + encodeURIComponent(record.symbol) + '/debug';
+    var chartPath = '/api/waxonedge/token/' + encodeURIComponent(record.contract) + '/' + encodeURIComponent(record.symbol) + '/chart';
+    Promise.all([
+      state.detailCache[record.key] ? Promise.resolve(null) : apiJson(detailPath).then(function (payload) { state.detailCache[record.key] = payloadData(payload); }).catch(function () {}),
+      state.chartCache[record.key] ? Promise.resolve(null) : apiJson(chartPath).then(function (payload) { state.chartCache[record.key] = payloadData(payload); }).catch(function () {}),
+    ]).then(function () {
+      if (state.selected && state.selected.key === record.key) renderModal(record);
+    });
+  }
+
+  function closeModal() {
+    state.selected = null;
+    if (state.modal) state.modal.hidden = true;
+  }
+
+  function attachControls() {
+    document.querySelectorAll('[data-woe-metric]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        state.metric = button.getAttribute('data-woe-metric') || 'change';
+        document.querySelectorAll('[data-woe-metric]').forEach(function (el) { el.classList.toggle('is-active', el === button); });
+        syncNodes();
       });
-  }
-
-  function init() {
-    attachBoardDelegates();
-    attachControlDelegates();
-    startObserver();
-    fetchBootstrap().then(function (payload) {
-      var normalized = normalizeRecords(payload);
-      state.payload = payload;
-      state.records = normalized.records;
-      state.pairs = normalized.pairs;
-      state.bootstrapped = true;
-      enhanceSourceStrip(payload);
-      renderBubbles();
-      window.setTimeout(renderBubbles, 500);
-      window.setTimeout(renderBubbles, 1500);
-    }).catch(function () {
-      // The base WaxOnEdge script already owns the diagnostic fallback. This
-      // enhancement layer stays silent when the backend is unavailable.
     });
-    window.addEventListener('resize', handleResize);
+    document.querySelectorAll('[data-woe-timeframe]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        state.timeframe = button.getAttribute('data-woe-timeframe') || '24h';
+        document.querySelectorAll('[data-woe-timeframe]').forEach(function (el) { el.classList.toggle('is-active', el === button); });
+        syncNodes();
+      });
+    });
+    var search = document.getElementById('woe-global-search');
+    if (search) search.addEventListener('input', function () {
+      state.query = String(search.value || '').trim().toLowerCase();
+      syncNodes();
+    });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  function updateWaxPrice(payload) {
+    var data = payloadData(payload);
+    var price = data.sources && data.sources.alcor_global && data.sources.alcor_global.indexed && data.raw && data.raw.alcor_global
+      ? asNum(data.raw.alcor_global.usd_price || data.raw.alcor_global.wax_usd || data.raw.alcor_global.price)
+      : null;
+    var priceEl = document.getElementById('woe-topbar-wax-price');
+    var metaEl = document.getElementById('woe-topbar-wax-price-meta');
+    if (priceEl) priceEl.textContent = price == null ? '$ --' : '$' + fmtPrice(price);
+    if (metaEl) metaEl.textContent = 'Indexed from Alcor, Taco, Nefty, BOX';
   }
+
+  function initCanvas() {
+    state.board = document.getElementById('woe-bubble-board');
+    if (!state.board) return;
+    state.board.innerHTML = '<canvas id="woe-ab-canvas" class="woe-ab-canvas" aria-label="AntBubbles style WaxOnEdge token scanner"></canvas>' +
+      '<div id="woe-ab-tooltip" class="woe-ab-tooltip" hidden></div>';
+    state.canvas = document.getElementById('woe-ab-canvas');
+    state.ctx = state.canvas.getContext('2d');
+    state.tooltip = document.getElementById('woe-ab-tooltip');
+    state.modal = document.getElementById('woe-ab-modal');
+    state.canvas.addEventListener('pointermove', onPointerMove);
+    state.canvas.addEventListener('pointerdown', onPointerDown);
+    state.canvas.addEventListener('pointerup', onPointerUp);
+    state.canvas.addEventListener('pointerleave', function () { state.hovered = null; moveTooltip(null); });
+    if (state.modal) {
+      state.modal.addEventListener('click', function (event) {
+        if (event.target && event.target.getAttribute && event.target.getAttribute('data-close-modal') === 'true') closeModal();
+      });
+    }
+    window.addEventListener('resize', function () { window.clearTimeout(state.resizeTimer); state.resizeTimer = window.setTimeout(syncNodes, 120); });
+  }
+
+  function load() {
+    attachControls();
+    initCanvas();
+    Promise.all([
+      apiJson(BOOTSTRAP_API),
+      apiJson(HEALTH_API).catch(function () { return null; }),
+    ]).then(function (results) {
+      state.payload = results[0];
+      state.health = results[1] ? payloadData(results[1]) : null;
+      state.records = normalizeRecords(state.payload);
+      state.pairs = sourceRows(payloadData(state.payload).pairs);
+      state.connected = true;
+      state.lastUpdated = payloadData(state.payload).updated_at || new Date().toISOString();
+      updateWaxPrice(state.payload);
+      syncNodes();
+      setStatus();
+      state.nodes.forEach(function (node) { loadImage(node.record.logoUrl); });
+      requestDraw();
+    }).catch(function (error) {
+      state.connected = false;
+      setStatus();
+      if (state.board) state.board.innerHTML = '<div class="woe-ab-empty">WaxOnEdge backend unavailable. No fake token data is shown.</div>';
+      // eslint-disable-next-line no-console
+      console.warn(error);
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load);
+  else load();
 }());
