@@ -109,30 +109,27 @@ assert.ok(audit.summary && typeof audit.summary === 'object', 'audit.summary mus
 assert.ok(typeof audit.summary.total === 'number',    'audit.summary.total must be a number');
 assert.ok(typeof audit.summary.approved === 'number', 'audit.summary.approved must be a number');
 assert.ok(typeof audit.summary.blocked === 'number',  'audit.summary.blocked must be a number');
-assert.ok(audit.blocked.length > 0, 'audit.blocked must contain at least one entry');
-
-for (const entry of audit.blocked) {
-  assert.ok(typeof entry.slug === 'string' && entry.slug.length > 0, `blocked entry missing slug: ${JSON.stringify(entry)}`);
-  assert.ok(typeof entry.reason === 'string' && entry.reason.length > 0, `blocked entry for ${entry.slug} missing reason`);
-  assert.ok(typeof entry.status === 'string', `blocked entry for ${entry.slug} missing status`);
-}
+// After purge, blocked and review must be empty — their files no longer exist on disk.
+assert.equal(audit.blocked.length, 0, `Post-purge audit must have 0 blocked entries, found: ${audit.blocked.map(e=>e.slug).join(', ')}`);
+assert.equal(audit.review.length,  0, `Post-purge audit must have 0 review entries, found: ${audit.review.map(e=>e.slug).join(', ')}`);
 
 console.log(`✓ Audit file is valid (${audit.approved.length} approved, ${audit.blocked.length} blocked, ${audit.review.length} review)`);
 
-// ── 4. Audit lists synthetic pages as blocked with reasons ───────────────────
+// ── 4. Classifier correctly identifies synthetic slugs as BLOCKED ─────────────
+// (The files are purged from disk, so the audit won't contain them.
+//  We verify the gate classifier still works correctly via classifySlug.)
 
 for (const slug of syntheticSlugs) {
-  const entry = auditEntry(slug);
-  assert.ok(entry !== null, `Audit file must contain an entry for ${slug}`);
+  const result = gate.classifySlug(slug, canon);
   assert.equal(
-    entry.status,
+    result.status,
     gate.STATUS.BLOCKED_SYNTHETIC_SLUG,
-    `Audit entry for ${slug} must be BLOCKED_SYNTHETIC_SLUG, got ${entry.status}`
+    `classifySlug(${slug}) must return BLOCKED_SYNTHETIC_SLUG, got ${result.status}: ${result.reason}`
   );
-  assert.ok(entry.reason && entry.reason.length > 0, `Audit entry for ${slug} must have a reason`);
+  assert.ok(result.reason && result.reason.length > 0, `classifySlug(${slug}) must return a reason`);
 }
 
-console.log(`✓ Audit file correctly lists all synthetic pages with BLOCKED_SYNTHETIC_SLUG status`);
+console.log(`✓ Classifier correctly identifies all synthetic slugs as BLOCKED_SYNTHETIC_SLUG`);
 
 // ── 5. Non-approved pages must NOT appear in wiki-index.json (entry.url) ─────
 
@@ -247,6 +244,57 @@ assert.equal(
 );
 
 console.log(`✓ CI gate: no non-approved pages have leaked into wiki-index.json`);
+
+// ── 11. Hard CI gate: banned synthetic patterns must NOT exist on disk ────────
+
+const BANNED_DISK_PATTERNS = [
+  /^.+-via-.+\.html$/,
+  /^.+-token-via-.+\.html$/,
+  /^.+-tokens-via-.+\.html$/,
+  /^.+-nfts-via-.+\.html$/,
+  /^.+-graffpunks-via-.+\.html$/,
+  /^.+-hodl-via-.+\.html$/,
+  /^.+-kid-via-.+\.html$/,
+];
+
+const bannedOnDisk = wikiFiles.filter(file =>
+  BANNED_DISK_PATTERNS.some(re => re.test(file))
+);
+
+assert.equal(
+  bannedOnDisk.length,
+  0,
+  `CI FAIL: ${bannedOnDisk.length} banned synthetic wiki file(s) still exist on disk:\n` +
+  `  ${bannedOnDisk.join('\n  ')}\n` +
+  `Run: node scripts/purge-unapproved-wiki-pages.js`
+);
+
+console.log(`✓ CI gate: no banned synthetic (*-via-* etc.) files exist on disk`);
+
+// ── 12. Hard CI gate: no blocked or review pages must remain on disk ──────────
+// Uses the audit (produced by classifyPage, which reads HTML content) as ground
+// truth, so alias redirects detected by content are not mis-flagged.
+
+const auditApprovedSet = new Set((audit.approved || []).map(e => e.slug));
+const nonApprovedOnDisk = [];
+for (const file of wikiFiles) {
+  const slug = file.replace(/\.html$/, '');
+  if (!auditApprovedSet.has(slug)) {
+    // Slug is not in the audit approved list — it's blocked, review, or unscanned.
+    // This is a CI failure: junk files must not exist on disk.
+    nonApprovedOnDisk.push(file);
+  }
+}
+
+assert.equal(
+  nonApprovedOnDisk.length,
+  0,
+  `CI FAIL: ${nonApprovedOnDisk.length} non-approved wiki page(s) still exist on disk:\n` +
+  `  ${nonApprovedOnDisk.join('\n  ')}\n` +
+  `Run: node scripts/purge-unapproved-wiki-pages.js`
+);
+
+console.log(`✓ CI gate: no non-approved (blocked/review) wiki pages remain on disk`);
 
 // ── Done ──────────────────────────────────────────────────────────────────────
 

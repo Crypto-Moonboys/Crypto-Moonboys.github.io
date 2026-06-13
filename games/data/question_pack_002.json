@@ -4,21 +4,6 @@
   "source": "crystal-maze-seed",
   "quests": [
     {
-      "id": "free_nbg_via_nfts_q4",
-      "title": "Secret File: Free NBG Via NFTS",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Free NBG Via NFTS. Enter the name used to title this article.",
-      "wiki_url": "/wiki/free-nbg-via-nfts.html",
-      "accepted_answers": [
-        "FREE NBG"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "alfie_the_bitcoin_kid_blaze_q4",
       "title": "Secret File: Alfie The Bitcoin Kid Blaze",
       "difficulty": "hard",
@@ -64,66 +49,6 @@
       }
     },
     {
-      "id": "kids_tokens_via_gk_q3",
-      "title": "Deep Dive: Kids Tokens Via GK",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Kids Tokens Via GK is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/kids-tokens-via-gk.html",
-      "accepted_answers": [
-        "KIDS TOKENS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "blockchain_tokens_via_gk_q1",
-      "title": "Archives: Blockchain Tokens Via GK",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Blockchain Tokens Via GK. Name the exact subject documented there.",
-      "wiki_url": "/wiki/blockchain-tokens-via-gk.html",
-      "accepted_answers": [
-        "BLOCKCHAIN TOKENS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "bitcoin_graffpunks_via_kid_q3",
-      "title": "Deep Dive: Bitcoin Graffpunks Via Kid",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Bitcoin Graffpunks Via Kid is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/bitcoin-graffpunks-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "fork_nbg_via_games_q2",
-      "title": "Keyword Hunt: Fork NBG Via Games",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Fork NBG Via Games. What is its canonical name?",
-      "wiki_url": "/wiki/fork-nbg-via-games.html",
-      "accepted_answers": [
-        "FORK NBG VIA GAMES"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "1m_free_nfts_programme_q1",
       "title": "Archives: 1m Free NFTS Programme",
       "difficulty": "easy",
@@ -151,96 +76,6 @@
         "xp": 100,
         "score": 120,
         "punk": 5
-      }
-    },
-    {
-      "id": "bitcoin_nbg_via_kid_q1",
-      "title": "Archives: Bitcoin NBG Via Kid",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Bitcoin NBG Via Kid. Name the exact subject documented there.",
-      "wiki_url": "/wiki/bitcoin-nbg-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN NBG"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "games_nfts_via_free_q3",
-      "title": "Deep Dive: Games NFTS Via Free",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Games NFTS Via Free is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/games-nfts-via-free.html",
-      "accepted_answers": [
-        "GAMES NFTS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "free_tokens_via_nfts_q4",
-      "title": "Secret File: Free Tokens Via NFTS",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Free Tokens Via NFTS. Enter the name used to title this article.",
-      "wiki_url": "/wiki/free-tokens-via-nfts.html",
-      "accepted_answers": [
-        "FREE TOKENS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "hodl_nbg_via_warriors_q4",
-      "title": "Secret File: HODL NBG Via Warriors",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details HODL NBG Via Warriors. Enter the name used to title this article.",
-      "wiki_url": "/wiki/hodl-nbg-via-warriors.html",
-      "accepted_answers": [
-        "HODL NBG VIA WARRIORS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "kids_token_via_xrp_q3",
-      "title": "Deep Dive: Kids Token Via Xrp",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Kids Token Via Xrp is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/kids-token-via-xrp.html",
-      "accepted_answers": [
-        "KIDS TOKEN VIA XRP"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "blockchain_graffpunks_via_radio_q4",
-      "title": "Secret File: Blockchain Graffpunks Via Radio",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Blockchain Graffpunks Via Radio. Enter the name used to title this article.",
-      "wiki_url": "/wiki/blockchain-graffpunks-via-radio.html",
-      "accepted_answers": [
-        "BLOCKCHAIN GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
       }
     },
     {
@@ -289,21 +124,6 @@
       }
     },
     {
-      "id": "graffpunks_token_via_radio_q4",
-      "title": "Secret File: Graffpunks Token Via Radio",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Graffpunks Token Via Radio. Enter the name used to title this article.",
-      "wiki_url": "/wiki/graffpunks-token-via-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS TOKEN"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "bitcoin_kids_q2",
       "title": "Keyword Hunt: Bitcoin Kids",
       "difficulty": "medium",
@@ -349,126 +169,6 @@
       }
     },
     {
-      "id": "free_kids_via_nfts_q4",
-      "title": "Secret File: Free Kids Via NFTS",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Free Kids Via NFTS. Enter the name used to title this article.",
-      "wiki_url": "/wiki/free-kids-via-nfts.html",
-      "accepted_answers": [
-        "FREE KIDS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "bitcoin_kid_via_alfie_q3",
-      "title": "Deep Dive: Bitcoin Kid Via Alfie",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Bitcoin Kid Via Alfie is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/bitcoin-kid-via-alfie.html",
-      "accepted_answers": [
-        "BITCOIN KID"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "medium_articles_by_graffpunks_q3",
-      "title": "Deep Dive: Medium Articles By Graffpunks",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Medium Articles By Graffpunks is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/medium-articles-by-graffpunks.html",
-      "accepted_answers": [
-        "MEDIUM ARTICLES BY GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "lfgk_token_q3",
-      "title": "Deep Dive: Lfgk Token",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Lfgk Token is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/lfgk-token.html",
-      "accepted_answers": [
-        "LFGK TOKEN"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "hodl_kid_via_bitcoin_q2",
-      "title": "Keyword Hunt: HODL Kid Via Bitcoin",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on HODL Kid Via Bitcoin. What is its canonical name?",
-      "wiki_url": "/wiki/hodl-kid-via-bitcoin.html",
-      "accepted_answers": [
-        "HODL KID"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "games_graffpunks_via_collection_q2",
-      "title": "Keyword Hunt: Games Graffpunks Via Collection",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Games Graffpunks Via Collection. What is its canonical name?",
-      "wiki_url": "/wiki/games-graffpunks-via-collection.html",
-      "accepted_answers": [
-        "GAMES GRAFFPUNKS VIA COLLECTION"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "fork_nfts_via_free_q1",
-      "title": "Archives: Fork NFTS Via Free",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Fork NFTS Via Free. Name the exact subject documented there.",
-      "wiki_url": "/wiki/fork-nfts-via-free.html",
-      "accepted_answers": [
-        "FORK NFTS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "blockchain_hodl_via_graffpunks_q4",
-      "title": "Secret File: Blockchain HODL Via Graffpunks",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Blockchain HODL Via Graffpunks. Enter the name used to title this article.",
-      "wiki_url": "/wiki/blockchain-hodl-via-graffpunks.html",
-      "accepted_answers": [
-        "BLOCKCHAIN HODL"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "queen_sarah_pfly_q4",
       "title": "Secret File: Queen Sarah Pfly",
       "difficulty": "hard",
@@ -481,111 +181,6 @@
         "xp": 160,
         "score": 180,
         "punk": 8
-      }
-    },
-    {
-      "id": "games_graffpunks_via_collection_q3",
-      "title": "Deep Dive: Games Graffpunks Via Collection",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Games Graffpunks Via Collection is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/games-graffpunks-via-collection.html",
-      "accepted_answers": [
-        "GAMES GRAFFPUNKS VIA COLLECTION"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "blockchain_hodl_via_graffpunks_q2",
-      "title": "Keyword Hunt: Blockchain HODL Via Graffpunks",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Blockchain HODL Via Graffpunks. What is its canonical name?",
-      "wiki_url": "/wiki/blockchain-hodl-via-graffpunks.html",
-      "accepted_answers": [
-        "BLOCKCHAIN HODL"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "neftyblocks_midevilpunks_collection_q3",
-      "title": "Deep Dive: Neftyblocks Midevilpunks Collection",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Neftyblocks Midevilpunks Collection is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/neftyblocks-midevilpunks-collection.html",
-      "accepted_answers": [
-        "NEFTYBLOCKS MIDEVILPUNKS COLLECTION"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "hard_fork_games_event_q3",
-      "title": "Deep Dive: Hard Fork Games Event",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Hard Fork Games Event is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/hard-fork-games-event.html",
-      "accepted_answers": [
-        "HARD FORK GAMES EVENT"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "great_datapocalypse_of_2789_q1",
-      "title": "Archives: Great Datapocalypse Of 2789",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Great Datapocalypse Of 2789. Name the exact subject documented there.",
-      "wiki_url": "/wiki/great-datapocalypse-of-2789.html",
-      "accepted_answers": [
-        "GREAT DATAPOCALYPSE OF 2789"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "hard_fork_games_event_q1",
-      "title": "Archives: Hard Fork Games Event",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Hard Fork Games Event. Name the exact subject documented there.",
-      "wiki_url": "/wiki/hard-fork-games-event.html",
-      "accepted_answers": [
-        "HARD FORK GAMES EVENT"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "hodl_nfts_via_free_q2",
-      "title": "Keyword Hunt: HODL NFTS Via Free",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on HODL NFTS Via Free. What is its canonical name?",
-      "wiki_url": "/wiki/hodl-nfts-via-free.html",
-      "accepted_answers": [
-        "HODL NFTS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
       }
     },
     {
@@ -619,21 +214,6 @@
       }
     },
     {
-      "id": "graffpunks_24_7_q1",
-      "title": "Archives: Graffpunks 24 7",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Graffpunks 24 7. Name the exact subject documented there.",
-      "wiki_url": "/wiki/graffpunks-24-7.html",
-      "accepted_answers": [
-        "GRAFFPUNKS 24 7"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
       "id": "free_q3",
       "title": "Deep Dive: Free",
       "difficulty": "medium",
@@ -649,51 +229,6 @@
       }
     },
     {
-      "id": "graffpunks_nbg_q3",
-      "title": "Deep Dive: Graffpunks NBG",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Graffpunks NBG is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/graffpunks-nbg.html",
-      "accepted_answers": [
-        "GRAFFPUNKS NBG"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "neftyblocks_midevilpunks_collection_q4",
-      "title": "Secret File: Neftyblocks Midevilpunks Collection",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Neftyblocks Midevilpunks Collection. Enter the name used to title this article.",
-      "wiki_url": "/wiki/neftyblocks-midevilpunks-collection.html",
-      "accepted_answers": [
-        "NEFTYBLOCKS MIDEVILPUNKS COLLECTION"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "fork_gk_via_hard_q4",
-      "title": "Secret File: Fork GK Via Hard",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Fork GK Via Hard. Enter the name used to title this article.",
-      "wiki_url": "/wiki/fork-gk-via-hard.html",
-      "accepted_answers": [
-        "FORK GK"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "atomichub_graffpunks_collection_q3",
       "title": "Deep Dive: Atomichub Graffpunks Collection",
       "difficulty": "medium",
@@ -701,21 +236,6 @@
       "wiki_url": "/wiki/atomichub-graffpunks-collection.html",
       "accepted_answers": [
         "ATOMICHUB GRAFFPUNKS COLLECTION"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "bitcoin_token_via_kid_q3",
-      "title": "Deep Dive: Bitcoin Token Via Kid",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Bitcoin Token Via Kid is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/bitcoin-token-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN TOKEN"
       ],
       "rewards": {
         "xp": 200,
@@ -814,81 +334,6 @@
       }
     },
     {
-      "id": "lfgk_token_q4",
-      "title": "Secret File: Lfgk Token",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Lfgk Token. Enter the name used to title this article.",
-      "wiki_url": "/wiki/lfgk-token.html",
-      "accepted_answers": [
-        "LFGK TOKEN"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "graffpunks_hodl_via_radio_q1",
-      "title": "Archives: Graffpunks HODL Via Radio",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Graffpunks HODL Via Radio. Name the exact subject documented there.",
-      "wiki_url": "/wiki/graffpunks-hodl-via-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS HODL"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "games_nbg_via_fork_q2",
-      "title": "Keyword Hunt: Games NBG Via Fork",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Games NBG Via Fork. What is its canonical name?",
-      "wiki_url": "/wiki/games-nbg-via-fork.html",
-      "accepted_answers": [
-        "GAMES NBG"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "games_tokens_via_fork_q1",
-      "title": "Archives: Games Tokens Via Fork",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Games Tokens Via Fork. Name the exact subject documented there.",
-      "wiki_url": "/wiki/games-tokens-via-fork.html",
-      "accepted_answers": [
-        "GAMES TOKENS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "kids_token_via_xrp_q1",
-      "title": "Archives: Kids Token Via Xrp",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Kids Token Via Xrp. Name the exact subject documented there.",
-      "wiki_url": "/wiki/kids-token-via-xrp.html",
-      "accepted_answers": [
-        "KIDS TOKEN VIA XRP"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
       "id": "diamond_hands_q1",
       "title": "Archives: Diamond Hands",
       "difficulty": "easy",
@@ -911,21 +356,6 @@
       "wiki_url": "/wiki/bitcoin-tokens.html",
       "accepted_answers": [
         "BITCOIN TOKENS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "fork_nfts_via_free_q2",
-      "title": "Keyword Hunt: Fork NFTS Via Free",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Fork NFTS Via Free. What is its canonical name?",
-      "wiki_url": "/wiki/fork-nfts-via-free.html",
-      "accepted_answers": [
-        "FORK NFTS"
       ],
       "rewards": {
         "xp": 140,
@@ -979,21 +409,6 @@
       }
     },
     {
-      "id": "great_datapocalypse_of_2789_q4",
-      "title": "Secret File: Great Datapocalypse Of 2789",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Great Datapocalypse Of 2789. Enter the name used to title this article.",
-      "wiki_url": "/wiki/great-datapocalypse-of-2789.html",
-      "accepted_answers": [
-        "GREAT DATAPOCALYPSE OF 2789"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "one_million_free_nfts_q3",
       "title": "Deep Dive: One Million Free NFTS",
       "difficulty": "medium",
@@ -1024,36 +439,6 @@
       }
     },
     {
-      "id": "medium_articles_by_graffpunks_q2",
-      "title": "Keyword Hunt: Medium Articles By Graffpunks",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Medium Articles By Graffpunks. What is its canonical name?",
-      "wiki_url": "/wiki/medium-articles-by-graffpunks.html",
-      "accepted_answers": [
-        "MEDIUM ARTICLES BY GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "kids_nbg_via_xrp_q3",
-      "title": "Deep Dive: Kids NBG Via Xrp",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Kids NBG Via Xrp is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/kids-nbg-via-xrp.html",
-      "accepted_answers": [
-        "KIDS NBG VIA XRP"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "punk_q4",
       "title": "Secret File: Punk",
       "difficulty": "hard",
@@ -1061,21 +446,6 @@
       "wiki_url": "/wiki/punk.html",
       "accepted_answers": [
         "PUNK"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "graffpunks_24_7_blockchain_radio_station_q4",
-      "title": "Secret File: Graffpunks 24 7 Blockchain Radio Station",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Graffpunks 24 7 Blockchain Radio Station. Enter the name used to title this article.",
-      "wiki_url": "/wiki/graffpunks-24-7-blockchain-radio-station.html",
-      "accepted_answers": [
-        "GRAFFPUNKS 24 7 BLOCKCHAIN RADIO STATION"
       ],
       "rewards": {
         "xp": 160,
@@ -1099,21 +469,6 @@
       }
     },
     {
-      "id": "fork_tokens_via_hard_q4",
-      "title": "Secret File: Fork Tokens Via Hard",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Fork Tokens Via Hard. Enter the name used to title this article.",
-      "wiki_url": "/wiki/fork-tokens-via-hard.html",
-      "accepted_answers": [
-        "FORK TOKENS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "burn_to_earn_q4",
       "title": "Secret File: Burn To Earn",
       "difficulty": "hard",
@@ -1126,21 +481,6 @@
         "xp": 160,
         "score": 180,
         "punk": 8
-      }
-    },
-    {
-      "id": "ethereum_eth_q1",
-      "title": "Archives: Ethereum ETH",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Ethereum ETH. Name the exact subject documented there.",
-      "wiki_url": "/wiki/ethereum-eth.html",
-      "accepted_answers": [
-        "ETHEREUM ETH"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
       }
     },
     {
@@ -1189,66 +529,6 @@
       }
     },
     {
-      "id": "bitcoin_kid_via_alfie_q2",
-      "title": "Keyword Hunt: Bitcoin Kid Via Alfie",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Bitcoin Kid Via Alfie. What is its canonical name?",
-      "wiki_url": "/wiki/bitcoin-kid-via-alfie.html",
-      "accepted_answers": [
-        "BITCOIN KID"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "bitcoin_nbg_via_kid_q3",
-      "title": "Deep Dive: Bitcoin NBG Via Kid",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Bitcoin NBG Via Kid is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/bitcoin-nbg-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN NBG"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "no_ball_games_nbg_collection_q4",
-      "title": "Secret File: No Ball Games NBG Collection",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details No Ball Games NBG Collection. Enter the name used to title this article.",
-      "wiki_url": "/wiki/no-ball-games-nbg-collection.html",
-      "accepted_answers": [
-        "NO BALL GAMES NBG COLLECTION"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "bitcoin_tokens_via_kid_q2",
-      "title": "Keyword Hunt: Bitcoin Tokens Via Kid",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Bitcoin Tokens Via Kid. What is its canonical name?",
-      "wiki_url": "/wiki/bitcoin-tokens-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN TOKENS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "bitcoin_kid_army_q3",
       "title": "Deep Dive: Bitcoin Kid Army",
       "difficulty": "medium",
@@ -1256,21 +536,6 @@
       "wiki_url": "/wiki/bitcoin-kid-army.html",
       "accepted_answers": [
         "BITCOIN KID ARMY"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "fork_free_via_hard_q3",
-      "title": "Deep Dive: Fork Free Via Hard",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Fork Free Via Hard is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/fork-free-via-hard.html",
-      "accepted_answers": [
-        "FORK FREE"
       ],
       "rewards": {
         "xp": 200,
@@ -1324,21 +589,6 @@
       }
     },
     {
-      "id": "fork_games_via_hard_q2",
-      "title": "Keyword Hunt: Fork Games Via Hard",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Fork Games Via Hard. What is its canonical name?",
-      "wiki_url": "/wiki/fork-games-via-hard.html",
-      "accepted_answers": [
-        "FORK GAMES"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "graffitikings_q1",
       "title": "Archives: Graffitikings",
       "difficulty": "easy",
@@ -1361,81 +611,6 @@
       "wiki_url": "/wiki/nfts.html",
       "accepted_answers": [
         "NFTS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "graffpunks_nfts_via_free_q2",
-      "title": "Keyword Hunt: Graffpunks NFTS Via Free",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Graffpunks NFTS Via Free. What is its canonical name?",
-      "wiki_url": "/wiki/graffpunks-nfts-via-free.html",
-      "accepted_answers": [
-        "GRAFFPUNKS NFTS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "ethereum_eth_q4",
-      "title": "Secret File: Ethereum ETH",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Ethereum ETH. Enter the name used to title this article.",
-      "wiki_url": "/wiki/ethereum-eth.html",
-      "accepted_answers": [
-        "ETHEREUM ETH"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "free_graffpunks_via_nfts_q3",
-      "title": "Deep Dive: Free Graffpunks Via NFTS",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Free Graffpunks Via NFTS is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/free-graffpunks-via-nfts.html",
-      "accepted_answers": [
-        "FREE GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "nbg_token_via_ball_q4",
-      "title": "Secret File: NBG Token Via Ball",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details NBG Token Via Ball. Enter the name used to title this article.",
-      "wiki_url": "/wiki/nbg-token-via-ball.html",
-      "accepted_answers": [
-        "NBG TOKEN"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "graffpunks_nfts_q1",
-      "title": "Archives: Graffpunks NFTS",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Graffpunks NFTS. Name the exact subject documented there.",
-      "wiki_url": "/wiki/graffpunks-nfts.html",
-      "accepted_answers": [
-        "GRAFFPUNKS NFTS"
       ],
       "rewards": {
         "xp": 100,
@@ -1489,21 +664,6 @@
       }
     },
     {
-      "id": "gk_token_q3",
-      "title": "Deep Dive: GK Token",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, GK Token is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/gk-token.html",
-      "accepted_answers": [
-        "GK TOKEN"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "hard_fork_games_q2",
       "title": "Keyword Hunt: Hard Fork Games",
       "difficulty": "medium",
@@ -1519,21 +679,6 @@
       }
     },
     {
-      "id": "graffiti_queens_exhibition_q3",
-      "title": "Deep Dive: Graffiti Queens Exhibition",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Graffiti Queens Exhibition is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/graffiti-queens-exhibition.html",
-      "accepted_answers": [
-        "GRAFFITI QUEENS EXHIBITION"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "bitcoin_btc_q4",
       "title": "Secret File: Bitcoin BTC",
       "difficulty": "hard",
@@ -1546,36 +691,6 @@
         "xp": 160,
         "score": 180,
         "punk": 8
-      }
-    },
-    {
-      "id": "bitcoin_hodl_via_kid_q3",
-      "title": "Deep Dive: Bitcoin HODL Via Kid",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Bitcoin HODL Via Kid is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/bitcoin-hodl-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN HODL"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "graffpunks_247_q1",
-      "title": "Archives: Graffpunks 247",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Graffpunks 247. Name the exact subject documented there.",
-      "wiki_url": "/wiki/graffpunks-247.html",
-      "accepted_answers": [
-        "GRAFFPUNKS 247"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
       }
     },
     {
@@ -1624,21 +739,6 @@
       }
     },
     {
-      "id": "graffpunks_nbg_q4",
-      "title": "Secret File: Graffpunks NBG",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Graffpunks NBG. Enter the name used to title this article.",
-      "wiki_url": "/wiki/graffpunks-nbg.html",
-      "accepted_answers": [
-        "GRAFFPUNKS NBG"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "gang_signs_card_game_q1",
       "title": "Archives: Gang Signs Card Game",
       "difficulty": "easy",
@@ -1651,21 +751,6 @@
         "xp": 100,
         "score": 120,
         "punk": 5
-      }
-    },
-    {
-      "id": "fork_free_via_hard_q4",
-      "title": "Secret File: Fork Free Via Hard",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Fork Free Via Hard. Enter the name used to title this article.",
-      "wiki_url": "/wiki/fork-free-via-hard.html",
-      "accepted_answers": [
-        "FORK FREE"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
       }
     },
     {
@@ -1684,36 +769,6 @@
       }
     },
     {
-      "id": "nine_armies_q1",
-      "title": "Archives: Nine Armies",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Nine Armies. Name the exact subject documented there.",
-      "wiki_url": "/wiki/nine-armies.html",
-      "accepted_answers": [
-        "NINE ARMIES"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "nbg_tokens_via_gk_q4",
-      "title": "Secret File: NBG Tokens Via GK",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details NBG Tokens Via GK. Enter the name used to title this article.",
-      "wiki_url": "/wiki/nbg-tokens-via-gk.html",
-      "accepted_answers": [
-        "NBG TOKENS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "darren_cullen_ser_q1",
       "title": "Archives: Darren Cullen Ser",
       "difficulty": "easy",
@@ -1721,21 +776,6 @@
       "wiki_url": "/wiki/darren-cullen-ser.html",
       "accepted_answers": [
         "DARREN CULLEN SER"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "graffpunks_token_via_radio_q1",
-      "title": "Archives: Graffpunks Token Via Radio",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Graffpunks Token Via Radio. Name the exact subject documented there.",
-      "wiki_url": "/wiki/graffpunks-token-via-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS TOKEN"
       ],
       "rewards": {
         "xp": 100,
@@ -1804,36 +844,6 @@
       }
     },
     {
-      "id": "graffpunks_247_q3",
-      "title": "Deep Dive: Graffpunks 247",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Graffpunks 247 is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/graffpunks-247.html",
-      "accepted_answers": [
-        "GRAFFPUNKS 247"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "meme_coins_q4",
-      "title": "Secret File: Meme Coins",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Meme Coins. Enter the name used to title this article.",
-      "wiki_url": "/wiki/meme-coins.html",
-      "accepted_answers": [
-        "MEME COINS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "pmsl_q3",
       "title": "Deep Dive: Pmsl",
       "difficulty": "medium",
@@ -1849,21 +859,6 @@
       }
     },
     {
-      "id": "bitcoin_free_via_nfts_q4",
-      "title": "Secret File: Bitcoin Free Via NFTS",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Bitcoin Free Via NFTS. Enter the name used to title this article.",
-      "wiki_url": "/wiki/bitcoin-free-via-nfts.html",
-      "accepted_answers": [
-        "BITCOIN FREE"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "atomichub_graffpunks_collection_q1",
       "title": "Archives: Atomichub Graffpunks Collection",
       "difficulty": "easy",
@@ -1871,36 +866,6 @@
       "wiki_url": "/wiki/atomichub-graffpunks-collection.html",
       "accepted_answers": [
         "ATOMICHUB GRAFFPUNKS COLLECTION"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "graffpunks_kids_via_radio_q1",
-      "title": "Archives: Graffpunks Kids Via Radio",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Graffpunks Kids Via Radio. Name the exact subject documented there.",
-      "wiki_url": "/wiki/graffpunks-kids-via-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS KIDS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "graffpunks_hodl_q1",
-      "title": "Archives: Graffpunks HODL",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Graffpunks HODL. Name the exact subject documented there.",
-      "wiki_url": "/wiki/graffpunks-hodl.html",
-      "accepted_answers": [
-        "GRAFFPUNKS HODL"
       ],
       "rewards": {
         "xp": 100,
@@ -1924,21 +889,6 @@
       }
     },
     {
-      "id": "graffpunks_247_blockchain_radio_station_q4",
-      "title": "Secret File: Graffpunks 247 Blockchain Radio Station",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Graffpunks 247 Blockchain Radio Station. Enter the name used to title this article.",
-      "wiki_url": "/wiki/graffpunks-247-blockchain-radio-station.html",
-      "accepted_answers": [
-        "GRAFFPUNKS 247 BLOCKCHAIN RADIO STATION"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "bitcoin_nfts_q3",
       "title": "Deep Dive: Bitcoin NFTS",
       "difficulty": "medium",
@@ -1951,21 +901,6 @@
         "xp": 200,
         "score": 240,
         "punk": 12
-      }
-    },
-    {
-      "id": "games_gk_via_fork_q2",
-      "title": "Keyword Hunt: Games GK Via Fork",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Games GK Via Fork. What is its canonical name?",
-      "wiki_url": "/wiki/games-gk-via-fork.html",
-      "accepted_answers": [
-        "GAMES GK"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
       }
     },
     {
@@ -1984,111 +919,6 @@
       }
     },
     {
-      "id": "hodl_wars_game_q1",
-      "title": "Archives: HODL Wars Game",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for HODL Wars Game. Name the exact subject documented there.",
-      "wiki_url": "/wiki/hodl-wars-game.html",
-      "accepted_answers": [
-        "HODL WARS GAME"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "graffpunks_kids_via_radio_q2",
-      "title": "Keyword Hunt: Graffpunks Kids Via Radio",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Graffpunks Kids Via Radio. What is its canonical name?",
-      "wiki_url": "/wiki/graffpunks-kids-via-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS KIDS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "kid_nfts_via_free_q2",
-      "title": "Keyword Hunt: Kid NFTS Via Free",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Kid NFTS Via Free. What is its canonical name?",
-      "wiki_url": "/wiki/kid-nfts-via-free.html",
-      "accepted_answers": [
-        "KID NFTS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "blockchain_nbg_via_ball_q3",
-      "title": "Deep Dive: Blockchain NBG Via Ball",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Blockchain NBG Via Ball is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/blockchain-nbg-via-ball.html",
-      "accepted_answers": [
-        "BLOCKCHAIN NBG"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "bitcoin_free_via_nfts_q3",
-      "title": "Deep Dive: Bitcoin Free Via NFTS",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Bitcoin Free Via NFTS is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/bitcoin-free-via-nfts.html",
-      "accepted_answers": [
-        "BITCOIN FREE"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "gk_token_via_tokens_q1",
-      "title": "Archives: GK Token Via Tokens",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for GK Token Via Tokens. Name the exact subject documented there.",
-      "wiki_url": "/wiki/gk-token-via-tokens.html",
-      "accepted_answers": [
-        "GK TOKEN"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "graffpunks_token_q4",
-      "title": "Secret File: Graffpunks Token",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Graffpunks Token. Enter the name used to title this article.",
-      "wiki_url": "/wiki/graffpunks-token.html",
-      "accepted_answers": [
-        "GRAFFPUNKS TOKEN"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "lfgk_q4",
       "title": "Secret File: Lfgk",
       "difficulty": "hard",
@@ -2101,36 +931,6 @@
         "xp": 160,
         "score": 180,
         "punk": 8
-      }
-    },
-    {
-      "id": "kids_nfts_via_free_q3",
-      "title": "Deep Dive: Kids NFTS Via Free",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Kids NFTS Via Free is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/kids-nfts-via-free.html",
-      "accepted_answers": [
-        "KIDS NFTS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "gk_nfts_via_tokens_q3",
-      "title": "Deep Dive: GK NFTS Via Tokens",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, GK NFTS Via Tokens is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/gk-nfts-via-tokens.html",
-      "accepted_answers": [
-        "GK NFTS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
       }
     },
     {
@@ -2164,21 +964,6 @@
       }
     },
     {
-      "id": "hard_fork_games_game_q3",
-      "title": "Deep Dive: Hard Fork Games Game",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Hard Fork Games Game is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/hard-fork-games-game.html",
-      "accepted_answers": [
-        "HARD FORK GAMES GAME"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "billy_the_goat_kid_q3",
       "title": "Deep Dive: Billy The Goat Kid",
       "difficulty": "medium",
@@ -2194,36 +979,6 @@
       }
     },
     {
-      "id": "fork_graffpunks_via_hard_q2",
-      "title": "Keyword Hunt: Fork Graffpunks Via Hard",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Fork Graffpunks Via Hard. What is its canonical name?",
-      "wiki_url": "/wiki/fork-graffpunks-via-hard.html",
-      "accepted_answers": [
-        "FORK GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "hodl_warriors_army_q2",
-      "title": "Keyword Hunt: HODL Warriors Army",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on HODL Warriors Army. What is its canonical name?",
-      "wiki_url": "/wiki/hodl-warriors-army.html",
-      "accepted_answers": [
-        "HODL WARRIORS ARMY"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "graffiti_queens_in_decentraland_q4",
       "title": "Secret File: Graffiti Queens In Decentraland",
       "difficulty": "hard",
@@ -2236,21 +991,6 @@
         "xp": 160,
         "score": 180,
         "punk": 8
-      }
-    },
-    {
-      "id": "graffpunks_hodl_q2",
-      "title": "Keyword Hunt: Graffpunks HODL",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Graffpunks HODL. What is its canonical name?",
-      "wiki_url": "/wiki/graffpunks-hodl.html",
-      "accepted_answers": [
-        "GRAFFPUNKS HODL"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
       }
     },
     {
@@ -2314,51 +1054,6 @@
       }
     },
     {
-      "id": "blockchain_fork_via_hard_q3",
-      "title": "Deep Dive: Blockchain Fork Via Hard",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Blockchain Fork Via Hard is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/blockchain-fork-via-hard.html",
-      "accepted_answers": [
-        "BLOCKCHAIN FORK"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "gk_hodl_via_tokens_q3",
-      "title": "Deep Dive: GK HODL Via Tokens",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, GK HODL Via Tokens is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/gk-hodl-via-tokens.html",
-      "accepted_answers": [
-        "GK HODL"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "graffpunks_24_7_blockchain_radio_station_q2",
-      "title": "Keyword Hunt: Graffpunks 24 7 Blockchain Radio Station",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Graffpunks 24 7 Blockchain Radio Station. What is its canonical name?",
-      "wiki_url": "/wiki/graffpunks-24-7-blockchain-radio-station.html",
-      "accepted_answers": [
-        "GRAFFPUNKS 24 7 BLOCKCHAIN RADIO STATION"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "pyralith_q4",
       "title": "Secret File: Pyralith",
       "difficulty": "hard",
@@ -2419,21 +1114,6 @@
       }
     },
     {
-      "id": "free_nfts_via_1m_q4",
-      "title": "Secret File: Free NFTS Via 1m",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Free NFTS Via 1m. Enter the name used to title this article.",
-      "wiki_url": "/wiki/free-nfts-via-1m.html",
-      "accepted_answers": [
-        "FREE NFTS VIA 1M"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "1m_free_nfts_q3",
       "title": "Deep Dive: 1m Free NFTS",
       "difficulty": "medium",
@@ -2446,36 +1126,6 @@
         "xp": 200,
         "score": 240,
         "punk": 12
-      }
-    },
-    {
-      "id": "nbg_token_via_ball_q1",
-      "title": "Archives: NBG Token Via Ball",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for NBG Token Via Ball. Name the exact subject documented there.",
-      "wiki_url": "/wiki/nbg-token-via-ball.html",
-      "accepted_answers": [
-        "NBG TOKEN"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "blockchain_gk_via_tokens_q1",
-      "title": "Archives: Blockchain GK Via Tokens",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Blockchain GK Via Tokens. Name the exact subject documented there.",
-      "wiki_url": "/wiki/blockchain-gk-via-tokens.html",
-      "accepted_answers": [
-        "BLOCKCHAIN GK"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
       }
     },
     {
@@ -2524,66 +1174,6 @@
       }
     },
     {
-      "id": "gk_graffpunks_via_radio_q1",
-      "title": "Archives: GK Graffpunks Via Radio",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for GK Graffpunks Via Radio. Name the exact subject documented there.",
-      "wiki_url": "/wiki/gk-graffpunks-via-radio.html",
-      "accepted_answers": [
-        "GK GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "hodl_warriors_army_q1",
-      "title": "Archives: HODL Warriors Army",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for HODL Warriors Army. Name the exact subject documented there.",
-      "wiki_url": "/wiki/hodl-warriors-army.html",
-      "accepted_answers": [
-        "HODL WARRIORS ARMY"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "nfts_non_fungible_tokens_q3",
-      "title": "Deep Dive: NFTS Non Fungible Tokens",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, NFTS Non Fungible Tokens is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/nfts-non-fungible-tokens.html",
-      "accepted_answers": [
-        "NFTS NON FUNGIBLE TOKENS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "blockchain_gk_via_tokens_q3",
-      "title": "Deep Dive: Blockchain GK Via Tokens",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Blockchain GK Via Tokens is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/blockchain-gk-via-tokens.html",
-      "accepted_answers": [
-        "BLOCKCHAIN GK"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "darren_cullen_q3",
       "title": "Deep Dive: Darren Cullen",
       "difficulty": "medium",
@@ -2591,21 +1181,6 @@
       "wiki_url": "/wiki/darren-cullen.html",
       "accepted_answers": [
         "DARREN CULLEN"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "punk_coin_q3",
-      "title": "Deep Dive: Punk Coin",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Punk Coin is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/punk-coin.html",
-      "accepted_answers": [
-        "PUNK COIN"
       ],
       "rewards": {
         "xp": 200,
@@ -2689,111 +1264,6 @@
       }
     },
     {
-      "id": "games_tokens_via_fork_q2",
-      "title": "Keyword Hunt: Games Tokens Via Fork",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Games Tokens Via Fork. What is its canonical name?",
-      "wiki_url": "/wiki/games-tokens-via-fork.html",
-      "accepted_answers": [
-        "GAMES TOKENS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "bitcoin_fork_via_hard_q2",
-      "title": "Keyword Hunt: Bitcoin Fork Via Hard",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Bitcoin Fork Via Hard. What is its canonical name?",
-      "wiki_url": "/wiki/bitcoin-fork-via-hard.html",
-      "accepted_answers": [
-        "BITCOIN FORK"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "decentraland_events_q4",
-      "title": "Secret File: Decentraland Events",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Decentraland Events. Enter the name used to title this article.",
-      "wiki_url": "/wiki/decentraland-events.html",
-      "accepted_answers": [
-        "DECENTRALAND EVENTS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "nbg_token_via_ball_q2",
-      "title": "Keyword Hunt: NBG Token Via Ball",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on NBG Token Via Ball. What is its canonical name?",
-      "wiki_url": "/wiki/nbg-token-via-ball.html",
-      "accepted_answers": [
-        "NBG TOKEN"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "hodl_warriors_army_q3",
-      "title": "Deep Dive: HODL Warriors Army",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, HODL Warriors Army is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/hodl-warriors-army.html",
-      "accepted_answers": [
-        "HODL WARRIORS ARMY"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "blockchain_kid_via_bitcoin_q4",
-      "title": "Secret File: Blockchain Kid Via Bitcoin",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Blockchain Kid Via Bitcoin. Enter the name used to title this article.",
-      "wiki_url": "/wiki/blockchain-kid-via-bitcoin.html",
-      "accepted_answers": [
-        "BLOCKCHAIN KID"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "medium_articles_by_gkniftyheads_q4",
-      "title": "Secret File: Medium Articles By Gkniftyheads",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Medium Articles By Gkniftyheads. Enter the name used to title this article.",
-      "wiki_url": "/wiki/medium-articles-by-gkniftyheads.html",
-      "accepted_answers": [
-        "MEDIUM ARTICLES BY GKNIFTYHEADS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "bitcoin_x_kids_q4",
       "title": "Secret File: Bitcoin X Kids",
       "difficulty": "hard",
@@ -2869,66 +1339,6 @@
       }
     },
     {
-      "id": "decentraland_events_q3",
-      "title": "Deep Dive: Decentraland Events",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Decentraland Events is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/decentraland-events.html",
-      "accepted_answers": [
-        "DECENTRALAND EVENTS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "bitcoin_kid_via_alfie_q4",
-      "title": "Secret File: Bitcoin Kid Via Alfie",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Bitcoin Kid Via Alfie. Enter the name used to title this article.",
-      "wiki_url": "/wiki/bitcoin-kid-via-alfie.html",
-      "accepted_answers": [
-        "BITCOIN KID"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "fork_token_via_hard_q4",
-      "title": "Secret File: Fork Token Via Hard",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Fork Token Via Hard. Enter the name used to title this article.",
-      "wiki_url": "/wiki/fork-token-via-hard.html",
-      "accepted_answers": [
-        "FORK TOKEN"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "games_gk_via_fork_q1",
-      "title": "Archives: Games GK Via Fork",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Games GK Via Fork. Name the exact subject documented there.",
-      "wiki_url": "/wiki/games-gk-via-fork.html",
-      "accepted_answers": [
-        "GAMES GK"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
       "id": "bit_cap_5000_q3",
       "title": "Deep Dive: Bit Cap 5000",
       "difficulty": "medium",
@@ -2941,36 +1351,6 @@
         "xp": 200,
         "score": 240,
         "punk": 12
-      }
-    },
-    {
-      "id": "bitcoin_hodl_via_kid_q1",
-      "title": "Archives: Bitcoin HODL Via Kid",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Bitcoin HODL Via Kid. Name the exact subject documented there.",
-      "wiki_url": "/wiki/bitcoin-hodl-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN HODL"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "hard_fork_games_event_q2",
-      "title": "Keyword Hunt: Hard Fork Games Event",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Hard Fork Games Event. What is its canonical name?",
-      "wiki_url": "/wiki/hard-fork-games-event.html",
-      "accepted_answers": [
-        "HARD FORK GAMES EVENT"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
       }
     },
     {
@@ -3016,36 +1396,6 @@
         "xp": 200,
         "score": 240,
         "punk": 12
-      }
-    },
-    {
-      "id": "games_graffpunks_via_collection_q1",
-      "title": "Archives: Games Graffpunks Via Collection",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Games Graffpunks Via Collection. Name the exact subject documented there.",
-      "wiki_url": "/wiki/games-graffpunks-via-collection.html",
-      "accepted_answers": [
-        "GAMES GRAFFPUNKS VIA COLLECTION"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "nbg_tokens_via_gk_q1",
-      "title": "Archives: NBG Tokens Via GK",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for NBG Tokens Via GK. Name the exact subject documented there.",
-      "wiki_url": "/wiki/nbg-tokens-via-gk.html",
-      "accepted_answers": [
-        "NBG TOKENS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
       }
     },
     {
@@ -3109,36 +1459,6 @@
       }
     },
     {
-      "id": "bitcoin_graffpunks_via_kid_q1",
-      "title": "Archives: Bitcoin Graffpunks Via Kid",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Bitcoin Graffpunks Via Kid. Name the exact subject documented there.",
-      "wiki_url": "/wiki/bitcoin-graffpunks-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "blockchain_nfts_via_free_q3",
-      "title": "Deep Dive: Blockchain NFTS Via Free",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Blockchain NFTS Via Free is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/blockchain-nfts-via-free.html",
-      "accepted_answers": [
-        "BLOCKCHAIN NFTS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "games_graffpunks_q1",
       "title": "Archives: Games Graffpunks",
       "difficulty": "easy",
@@ -3146,36 +1466,6 @@
       "wiki_url": "/wiki/games-graffpunks.html",
       "accepted_answers": [
         "GAMES GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "hodl_tokens_via_warriors_q3",
-      "title": "Deep Dive: HODL Tokens Via Warriors",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, HODL Tokens Via Warriors is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/hodl-tokens-via-warriors.html",
-      "accepted_answers": [
-        "HODL TOKENS VIA WARRIORS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "darren_cullen_ser_real_q1",
-      "title": "Archives: Darren Cullen Ser Real",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Darren Cullen Ser Real. Name the exact subject documented there.",
-      "wiki_url": "/wiki/darren-cullen-ser-real.html",
-      "accepted_answers": [
-        "DARREN CULLEN SER REAL"
       ],
       "rewards": {
         "xp": 100,
@@ -3211,21 +1501,6 @@
         "xp": 200,
         "score": 240,
         "punk": 12
-      }
-    },
-    {
-      "id": "graffpunks_247_radio_q1",
-      "title": "Archives: Graffpunks 247 Radio",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Graffpunks 247 Radio. Name the exact subject documented there.",
-      "wiki_url": "/wiki/graffpunks-247-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS 247 RADIO"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
       }
     },
     {
@@ -3289,21 +1564,6 @@
       }
     },
     {
-      "id": "hodl_kids_via_warriors_q2",
-      "title": "Keyword Hunt: HODL Kids Via Warriors",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on HODL Kids Via Warriors. What is its canonical name?",
-      "wiki_url": "/wiki/hodl-kids-via-warriors.html",
-      "accepted_answers": [
-        "HODL KIDS VIA WARRIORS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "ethereum_q2",
       "title": "Keyword Hunt: Ethereum",
       "difficulty": "medium",
@@ -3334,51 +1594,6 @@
       }
     },
     {
-      "id": "gk_tokens_q3",
-      "title": "Deep Dive: GK Tokens",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, GK Tokens is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/gk-tokens.html",
-      "accepted_answers": [
-        "GK TOKENS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "hodl_x_warriors_q1",
-      "title": "Archives: HODL X Warriors",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for HODL X Warriors. Name the exact subject documented there.",
-      "wiki_url": "/wiki/hodl-x-warriors.html",
-      "accepted_answers": [
-        "HODL X WARRIORS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "fork_nbg_via_games_q3",
-      "title": "Deep Dive: Fork NBG Via Games",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Fork NBG Via Games is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/fork-nbg-via-games.html",
-      "accepted_answers": [
-        "FORK NBG VIA GAMES"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "moon_mission_q3",
       "title": "Deep Dive: Moon Mission",
       "difficulty": "medium",
@@ -3391,21 +1606,6 @@
         "xp": 200,
         "score": 240,
         "punk": 12
-      }
-    },
-    {
-      "id": "bitcoin_blockchain_via_kid_q2",
-      "title": "Keyword Hunt: Bitcoin Blockchain Via Kid",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Bitcoin Blockchain Via Kid. What is its canonical name?",
-      "wiki_url": "/wiki/bitcoin-blockchain-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN BLOCKCHAIN"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
       }
     },
     {
@@ -3436,21 +1636,6 @@
         "xp": 100,
         "score": 120,
         "punk": 5
-      }
-    },
-    {
-      "id": "great_datapocalypse_of_2789_q3",
-      "title": "Deep Dive: Great Datapocalypse Of 2789",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Great Datapocalypse Of 2789 is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/great-datapocalypse-of-2789.html",
-      "accepted_answers": [
-        "GREAT DATAPOCALYPSE OF 2789"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
       }
     },
     {
@@ -3529,36 +1714,6 @@
       }
     },
     {
-      "id": "graffpunks_24_7_q4",
-      "title": "Secret File: Graffpunks 24 7",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Graffpunks 24 7. Enter the name used to title this article.",
-      "wiki_url": "/wiki/graffpunks-24-7.html",
-      "accepted_answers": [
-        "GRAFFPUNKS 24 7"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "graffpunks_kid_q3",
-      "title": "Deep Dive: Graffpunks Kid",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Graffpunks Kid is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/graffpunks-kid.html",
-      "accepted_answers": [
-        "GRAFFPUNKS KID"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "aleema_child_of_the_shard_q2",
       "title": "Keyword Hunt: Aleema Child Of The Shard",
       "difficulty": "medium",
@@ -3566,66 +1721,6 @@
       "wiki_url": "/wiki/aleema-child-of-the-shard.html",
       "accepted_answers": [
         "ALEEMA CHILD OF THE SHARD"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "fork_token_via_hard_q3",
-      "title": "Deep Dive: Fork Token Via Hard",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Fork Token Via Hard is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/fork-token-via-hard.html",
-      "accepted_answers": [
-        "FORK TOKEN"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "medium_articles_by_gkniftyheads_q2",
-      "title": "Keyword Hunt: Medium Articles By Gkniftyheads",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Medium Articles By Gkniftyheads. What is its canonical name?",
-      "wiki_url": "/wiki/medium-articles-by-gkniftyheads.html",
-      "accepted_answers": [
-        "MEDIUM ARTICLES BY GKNIFTYHEADS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "crypto_exchanges_q3",
-      "title": "Deep Dive: Crypto Exchanges",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Crypto Exchanges is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/crypto-exchanges.html",
-      "accepted_answers": [
-        "CRYPTO EXCHANGES"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "decentraland_events_q2",
-      "title": "Keyword Hunt: Decentraland Events",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Decentraland Events. What is its canonical name?",
-      "wiki_url": "/wiki/decentraland-events.html",
-      "accepted_answers": [
-        "DECENTRALAND EVENTS"
       ],
       "rewards": {
         "xp": 140,
@@ -3646,51 +1741,6 @@
         "xp": 160,
         "score": 180,
         "punk": 8
-      }
-    },
-    {
-      "id": "games4punks_telegram_games_q3",
-      "title": "Deep Dive: Games4punks Telegram Games",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Games4punks Telegram Games is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/games4punks-telegram-games.html",
-      "accepted_answers": [
-        "GAMES4PUNKS TELEGRAM GAMES"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "gk_tokens_via_fungible_q2",
-      "title": "Keyword Hunt: GK Tokens Via Fungible",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on GK Tokens Via Fungible. What is its canonical name?",
-      "wiki_url": "/wiki/gk-tokens-via-fungible.html",
-      "accepted_answers": [
-        "GK TOKENS VIA FUNGIBLE"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "games_token_via_fork_q1",
-      "title": "Archives: Games Token Via Fork",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Games Token Via Fork. Name the exact subject documented there.",
-      "wiki_url": "/wiki/games-token-via-fork.html",
-      "accepted_answers": [
-        "GAMES TOKEN"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
       }
     },
     {
@@ -3724,36 +1774,6 @@
       }
     },
     {
-      "id": "hodl_kids_via_warriors_q4",
-      "title": "Secret File: HODL Kids Via Warriors",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details HODL Kids Via Warriors. Enter the name used to title this article.",
-      "wiki_url": "/wiki/hodl-kids-via-warriors.html",
-      "accepted_answers": [
-        "HODL KIDS VIA WARRIORS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "meme_coins_q3",
-      "title": "Deep Dive: Meme Coins",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Meme Coins is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/meme-coins.html",
-      "accepted_answers": [
-        "MEME COINS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "fork_graffpunks_q4",
       "title": "Secret File: Fork Graffpunks",
       "difficulty": "hard",
@@ -3784,21 +1804,6 @@
       }
     },
     {
-      "id": "blockchain_tokens_via_gk_q2",
-      "title": "Keyword Hunt: Blockchain Tokens Via GK",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Blockchain Tokens Via GK. What is its canonical name?",
-      "wiki_url": "/wiki/blockchain-tokens-via-gk.html",
-      "accepted_answers": [
-        "BLOCKCHAIN TOKENS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "hodl_warriors_q3",
       "title": "Deep Dive: HODL Warriors",
       "difficulty": "medium",
@@ -3814,21 +1819,6 @@
       }
     },
     {
-      "id": "kids_nfts_via_free_q4",
-      "title": "Secret File: Kids NFTS Via Free",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Kids NFTS Via Free. Enter the name used to title this article.",
-      "wiki_url": "/wiki/kids-nfts-via-free.html",
-      "accepted_answers": [
-        "KIDS NFTS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "midevilpunks_q1",
       "title": "Archives: Midevilpunks",
       "difficulty": "easy",
@@ -3841,36 +1831,6 @@
         "xp": 100,
         "score": 120,
         "punk": 5
-      }
-    },
-    {
-      "id": "games_kids_via_fork_q2",
-      "title": "Keyword Hunt: Games Kids Via Fork",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Games Kids Via Fork. What is its canonical name?",
-      "wiki_url": "/wiki/games-kids-via-fork.html",
-      "accepted_answers": [
-        "GAMES KIDS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "graffpunks_network_q2",
-      "title": "Keyword Hunt: Graffpunks Network",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Graffpunks Network. What is its canonical name?",
-      "wiki_url": "/wiki/graffpunks-network.html",
-      "accepted_answers": [
-        "GRAFFPUNKS NETWORK"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
       }
     },
     {
@@ -3896,21 +1856,6 @@
       "wiki_url": "/wiki/metropolis.html",
       "accepted_answers": [
         "METROPOLIS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "blockchain_gk_via_tokens_q2",
-      "title": "Keyword Hunt: Blockchain GK Via Tokens",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Blockchain GK Via Tokens. What is its canonical name?",
-      "wiki_url": "/wiki/blockchain-gk-via-tokens.html",
-      "accepted_answers": [
-        "BLOCKCHAIN GK"
       ],
       "rewards": {
         "xp": 140,
@@ -3964,36 +1909,6 @@
       }
     },
     {
-      "id": "bitcoin_token_via_kid_q4",
-      "title": "Secret File: Bitcoin Token Via Kid",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Bitcoin Token Via Kid. Enter the name used to title this article.",
-      "wiki_url": "/wiki/bitcoin-token-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN TOKEN"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "bitcoin_token_via_kid_q1",
-      "title": "Archives: Bitcoin Token Via Kid",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Bitcoin Token Via Kid. Name the exact subject documented there.",
-      "wiki_url": "/wiki/bitcoin-token-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN TOKEN"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
       "id": "graffiti_nexus_q2",
       "title": "Keyword Hunt: Graffiti Nexus",
       "difficulty": "medium",
@@ -4006,96 +1921,6 @@
         "xp": 140,
         "score": 160,
         "punk": 7
-      }
-    },
-    {
-      "id": "bitcoin_blockchain_via_kid_q3",
-      "title": "Deep Dive: Bitcoin Blockchain Via Kid",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Bitcoin Blockchain Via Kid is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/bitcoin-blockchain-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN BLOCKCHAIN"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "gk_hodl_via_tokens_q2",
-      "title": "Keyword Hunt: GK HODL Via Tokens",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on GK HODL Via Tokens. What is its canonical name?",
-      "wiki_url": "/wiki/gk-hodl-via-tokens.html",
-      "accepted_answers": [
-        "GK HODL"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "kid_kids_via_bitcoin_q2",
-      "title": "Keyword Hunt: Kid Kids Via Bitcoin",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Kid Kids Via Bitcoin. What is its canonical name?",
-      "wiki_url": "/wiki/kid-kids-via-bitcoin.html",
-      "accepted_answers": [
-        "KID KIDS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "bitcoin_games_via_kid_q4",
-      "title": "Secret File: Bitcoin Games Via Kid",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Bitcoin Games Via Kid. Enter the name used to title this article.",
-      "wiki_url": "/wiki/bitcoin-games-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN GAMES"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "nine_armies_q4",
-      "title": "Secret File: Nine Armies",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Nine Armies. Enter the name used to title this article.",
-      "wiki_url": "/wiki/nine-armies.html",
-      "accepted_answers": [
-        "NINE ARMIES"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "midevil_hero_arena_game_q4",
-      "title": "Secret File: Midevil Hero Arena Game",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Midevil Hero Arena Game. Enter the name used to title this article.",
-      "wiki_url": "/wiki/midevil-hero-arena-game.html",
-      "accepted_answers": [
-        "MIDEVIL HERO ARENA GAME"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
       }
     },
     {
@@ -4144,51 +1969,6 @@
       }
     },
     {
-      "id": "fork_gk_via_hard_q3",
-      "title": "Deep Dive: Fork GK Via Hard",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Fork GK Via Hard is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/fork-gk-via-hard.html",
-      "accepted_answers": [
-        "FORK GK"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "free_games_via_nfts_q4",
-      "title": "Secret File: Free Games Via NFTS",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Free Games Via NFTS. Enter the name used to title this article.",
-      "wiki_url": "/wiki/free-games-via-nfts.html",
-      "accepted_answers": [
-        "FREE GAMES"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "lfgk_rewards_q3",
-      "title": "Deep Dive: Lfgk Rewards",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Lfgk Rewards is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/lfgk-rewards.html",
-      "accepted_answers": [
-        "LFGK REWARDS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "2025_metaverse_launch_party_q4",
       "title": "Secret File: 2025 Metaverse Launch Party",
       "difficulty": "hard",
@@ -4201,51 +1981,6 @@
         "xp": 160,
         "score": 180,
         "punk": 8
-      }
-    },
-    {
-      "id": "gk_kid_via_bitcoin_q1",
-      "title": "Archives: GK Kid Via Bitcoin",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for GK Kid Via Bitcoin. Name the exact subject documented there.",
-      "wiki_url": "/wiki/gk-kid-via-bitcoin.html",
-      "accepted_answers": [
-        "GK KID"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "fork_kid_via_bitcoin_q4",
-      "title": "Secret File: Fork Kid Via Bitcoin",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Fork Kid Via Bitcoin. Enter the name used to title this article.",
-      "wiki_url": "/wiki/fork-kid-via-bitcoin.html",
-      "accepted_answers": [
-        "FORK KID"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "graffpunks_nbg_q2",
-      "title": "Keyword Hunt: Graffpunks NBG",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Graffpunks NBG. What is its canonical name?",
-      "wiki_url": "/wiki/graffpunks-nbg.html",
-      "accepted_answers": [
-        "GRAFFPUNKS NBG"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
       }
     },
     {
@@ -4291,36 +2026,6 @@
         "xp": 100,
         "score": 120,
         "punk": 5
-      }
-    },
-    {
-      "id": "blockchain_games_via_fork_q2",
-      "title": "Keyword Hunt: Blockchain Games Via Fork",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Blockchain Games Via Fork. What is its canonical name?",
-      "wiki_url": "/wiki/blockchain-games-via-fork.html",
-      "accepted_answers": [
-        "BLOCKCHAIN GAMES"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "free_hodl_via_nfts_q3",
-      "title": "Deep Dive: Free HODL Via NFTS",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Free HODL Via NFTS is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/free-hodl-via-nfts.html",
-      "accepted_answers": [
-        "FREE HODL"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
       }
     },
     {
@@ -4399,111 +2104,6 @@
       }
     },
     {
-      "id": "fork_free_via_hard_q2",
-      "title": "Keyword Hunt: Fork Free Via Hard",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Fork Free Via Hard. What is its canonical name?",
-      "wiki_url": "/wiki/fork-free-via-hard.html",
-      "accepted_answers": [
-        "FORK FREE"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "graffpunks_tokens_via_radio_q1",
-      "title": "Archives: Graffpunks Tokens Via Radio",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Graffpunks Tokens Via Radio. Name the exact subject documented there.",
-      "wiki_url": "/wiki/graffpunks-tokens-via-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS TOKENS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "bitcoin_kid_via_alfie_q1",
-      "title": "Archives: Bitcoin Kid Via Alfie",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Bitcoin Kid Via Alfie. Name the exact subject documented there.",
-      "wiki_url": "/wiki/bitcoin-kid-via-alfie.html",
-      "accepted_answers": [
-        "BITCOIN KID"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "gk_token_q4",
-      "title": "Secret File: GK Token",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details GK Token. Enter the name used to title this article.",
-      "wiki_url": "/wiki/gk-token.html",
-      "accepted_answers": [
-        "GK TOKEN"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "blockchain_hodl_via_graffpunks_q3",
-      "title": "Deep Dive: Blockchain HODL Via Graffpunks",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Blockchain HODL Via Graffpunks is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/blockchain-hodl-via-graffpunks.html",
-      "accepted_answers": [
-        "BLOCKCHAIN HODL"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "kids_tokens_via_gk_q1",
-      "title": "Archives: Kids Tokens Via GK",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Kids Tokens Via GK. Name the exact subject documented there.",
-      "wiki_url": "/wiki/kids-tokens-via-gk.html",
-      "accepted_answers": [
-        "KIDS TOKENS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "gk_nfts_via_tokens_q1",
-      "title": "Archives: GK NFTS Via Tokens",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for GK NFTS Via Tokens. Name the exact subject documented there.",
-      "wiki_url": "/wiki/gk-nfts-via-tokens.html",
-      "accepted_answers": [
-        "GK NFTS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
       "id": "memecoins_q4",
       "title": "Secret File: Memecoins",
       "difficulty": "hard",
@@ -4576,51 +2176,6 @@
         "xp": 200,
         "score": 240,
         "punk": 12
-      }
-    },
-    {
-      "id": "blockchain_free_via_nfts_q2",
-      "title": "Keyword Hunt: Blockchain Free Via NFTS",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Blockchain Free Via NFTS. What is its canonical name?",
-      "wiki_url": "/wiki/blockchain-free-via-nfts.html",
-      "accepted_answers": [
-        "BLOCKCHAIN FREE"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "games_nfts_via_free_q2",
-      "title": "Keyword Hunt: Games NFTS Via Free",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Games NFTS Via Free. What is its canonical name?",
-      "wiki_url": "/wiki/games-nfts-via-free.html",
-      "accepted_answers": [
-        "GAMES NFTS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "nine_armies_q2",
-      "title": "Keyword Hunt: Nine Armies",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Nine Armies. What is its canonical name?",
-      "wiki_url": "/wiki/nine-armies.html",
-      "accepted_answers": [
-        "NINE ARMIES"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
       }
     },
     {
@@ -4699,21 +2254,6 @@
       }
     },
     {
-      "id": "kids_nbg_via_xrp_q1",
-      "title": "Archives: Kids NBG Via Xrp",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Kids NBG Via Xrp. Name the exact subject documented there.",
-      "wiki_url": "/wiki/kids-nbg-via-xrp.html",
-      "accepted_answers": [
-        "KIDS NBG VIA XRP"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
       "id": "no_ball_games_nbg_q3",
       "title": "Deep Dive: No Ball Games NBG",
       "difficulty": "medium",
@@ -4726,36 +2266,6 @@
         "xp": 200,
         "score": 240,
         "punk": 12
-      }
-    },
-    {
-      "id": "hodl_token_via_warriors_q3",
-      "title": "Deep Dive: HODL Token Via Warriors",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, HODL Token Via Warriors is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/hodl-token-via-warriors.html",
-      "accepted_answers": [
-        "HODL TOKEN VIA WARRIORS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "bitcoin_nbg_via_kid_q2",
-      "title": "Keyword Hunt: Bitcoin NBG Via Kid",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Bitcoin NBG Via Kid. What is its canonical name?",
-      "wiki_url": "/wiki/bitcoin-nbg-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN NBG"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
       }
     },
     {
@@ -4774,21 +2284,6 @@
       }
     },
     {
-      "id": "medium_articles_by_graffpunks_q1",
-      "title": "Archives: Medium Articles By Graffpunks",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Medium Articles By Graffpunks. Name the exact subject documented there.",
-      "wiki_url": "/wiki/medium-articles-by-graffpunks.html",
-      "accepted_answers": [
-        "MEDIUM ARTICLES BY GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
       "id": "1m_free_nfts_program_q4",
       "title": "Secret File: 1m Free NFTS Program",
       "difficulty": "hard",
@@ -4801,21 +2296,6 @@
         "xp": 160,
         "score": 180,
         "punk": 8
-      }
-    },
-    {
-      "id": "graffpunks_24_7_q3",
-      "title": "Deep Dive: Graffpunks 24 7",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Graffpunks 24 7 is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/graffpunks-24-7.html",
-      "accepted_answers": [
-        "GRAFFPUNKS 24 7"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
       }
     },
     {
@@ -4864,51 +2344,6 @@
       }
     },
     {
-      "id": "medium_articles_by_gkniftyheads_q3",
-      "title": "Deep Dive: Medium Articles By Gkniftyheads",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Medium Articles By Gkniftyheads is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/medium-articles-by-gkniftyheads.html",
-      "accepted_answers": [
-        "MEDIUM ARTICLES BY GKNIFTYHEADS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "free_kids_via_nfts_q3",
-      "title": "Deep Dive: Free Kids Via NFTS",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Free Kids Via NFTS is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/free-kids-via-nfts.html",
-      "accepted_answers": [
-        "FREE KIDS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "free_nbg_via_nfts_q3",
-      "title": "Deep Dive: Free NBG Via NFTS",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Free NBG Via NFTS is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/free-nbg-via-nfts.html",
-      "accepted_answers": [
-        "FREE NBG"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "bitcoin_q2",
       "title": "Keyword Hunt: Bitcoin",
       "difficulty": "medium",
@@ -4924,21 +2359,6 @@
       }
     },
     {
-      "id": "graffpunks_kids_via_radio_q3",
-      "title": "Deep Dive: Graffpunks Kids Via Radio",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Graffpunks Kids Via Radio is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/graffpunks-kids-via-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS KIDS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "patchwork_q3",
       "title": "Deep Dive: Patchwork",
       "difficulty": "medium",
@@ -4951,21 +2371,6 @@
         "xp": 200,
         "score": 240,
         "punk": 12
-      }
-    },
-    {
-      "id": "hodl_token_via_warriors_q1",
-      "title": "Archives: HODL Token Via Warriors",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for HODL Token Via Warriors. Name the exact subject documented there.",
-      "wiki_url": "/wiki/hodl-token-via-warriors.html",
-      "accepted_answers": [
-        "HODL TOKEN VIA WARRIORS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
       }
     },
     {
@@ -4991,36 +2396,6 @@
       "wiki_url": "/wiki/phygital-prints.html",
       "accepted_answers": [
         "PHYGITAL PRINTS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "graffpunks_tokens_via_radio_q3",
-      "title": "Deep Dive: Graffpunks Tokens Via Radio",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Graffpunks Tokens Via Radio is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/graffpunks-tokens-via-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS TOKENS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "blockchain_fork_via_hard_q1",
-      "title": "Archives: Blockchain Fork Via Hard",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Blockchain Fork Via Hard. Name the exact subject documented there.",
-      "wiki_url": "/wiki/blockchain-fork-via-hard.html",
-      "accepted_answers": [
-        "BLOCKCHAIN FORK"
       ],
       "rewards": {
         "xp": 100,
@@ -5059,21 +2434,6 @@
       }
     },
     {
-      "id": "kids_nfts_via_free_q2",
-      "title": "Keyword Hunt: Kids NFTS Via Free",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Kids NFTS Via Free. What is its canonical name?",
-      "wiki_url": "/wiki/kids-nfts-via-free.html",
-      "accepted_answers": [
-        "KIDS NFTS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "bitcoin_graffpunks_q2",
       "title": "Keyword Hunt: Bitcoin Graffpunks",
       "difficulty": "medium",
@@ -5081,36 +2441,6 @@
       "wiki_url": "/wiki/bitcoin-graffpunks.html",
       "accepted_answers": [
         "BITCOIN GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "gk_kids_via_tokens_q2",
-      "title": "Keyword Hunt: GK Kids Via Tokens",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on GK Kids Via Tokens. What is its canonical name?",
-      "wiki_url": "/wiki/gk-kids-via-tokens.html",
-      "accepted_answers": [
-        "GK KIDS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "gk_token_via_tokens_q2",
-      "title": "Keyword Hunt: GK Token Via Tokens",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on GK Token Via Tokens. What is its canonical name?",
-      "wiki_url": "/wiki/gk-token-via-tokens.html",
-      "accepted_answers": [
-        "GK TOKEN"
       ],
       "rewards": {
         "xp": 140,
@@ -5131,21 +2461,6 @@
         "xp": 140,
         "score": 160,
         "punk": 7
-      }
-    },
-    {
-      "id": "nbg_nfts_via_free_q4",
-      "title": "Secret File: NBG NFTS Via Free",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details NBG NFTS Via Free. Enter the name used to title this article.",
-      "wiki_url": "/wiki/nbg-nfts-via-free.html",
-      "accepted_answers": [
-        "NBG NFTS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
       }
     },
     {
@@ -5179,66 +2494,6 @@
       }
     },
     {
-      "id": "graffpunks_hodl_via_radio_q2",
-      "title": "Keyword Hunt: Graffpunks HODL Via Radio",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Graffpunks HODL Via Radio. What is its canonical name?",
-      "wiki_url": "/wiki/graffpunks-hodl-via-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS HODL"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "games_nbg_via_fork_q3",
-      "title": "Deep Dive: Games NBG Via Fork",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Games NBG Via Fork is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/games-nbg-via-fork.html",
-      "accepted_answers": [
-        "GAMES NBG"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "graffpunks_hodl_via_radio_q3",
-      "title": "Deep Dive: Graffpunks HODL Via Radio",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Graffpunks HODL Via Radio is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/graffpunks-hodl-via-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS HODL"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "kid_tokens_via_bitcoin_q1",
-      "title": "Archives: Kid Tokens Via Bitcoin",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Kid Tokens Via Bitcoin. Name the exact subject documented there.",
-      "wiki_url": "/wiki/kid-tokens-via-bitcoin.html",
-      "accepted_answers": [
-        "KID TOKENS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
       "id": "diamond_hands_q2",
       "title": "Keyword Hunt: Diamond Hands",
       "difficulty": "medium",
@@ -5254,21 +2509,6 @@
       }
     },
     {
-      "id": "graffiti_queens_exhibition_q4",
-      "title": "Secret File: Graffiti Queens Exhibition",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Graffiti Queens Exhibition. Enter the name used to title this article.",
-      "wiki_url": "/wiki/graffiti-queens-exhibition.html",
-      "accepted_answers": [
-        "GRAFFITI QUEENS EXHIBITION"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "punk_q1",
       "title": "Archives: Punk",
       "difficulty": "easy",
@@ -5276,36 +2516,6 @@
       "wiki_url": "/wiki/punk.html",
       "accepted_answers": [
         "PUNK"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "kid_token_via_bitcoin_q3",
-      "title": "Deep Dive: Kid Token Via Bitcoin",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Kid Token Via Bitcoin is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/kid-token-via-bitcoin.html",
-      "accepted_answers": [
-        "KID TOKEN"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "decentraland_events_q1",
-      "title": "Archives: Decentraland Events",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Decentraland Events. Name the exact subject documented there.",
-      "wiki_url": "/wiki/decentraland-events.html",
-      "accepted_answers": [
-        "DECENTRALAND EVENTS"
       ],
       "rewards": {
         "xp": 100,
@@ -5389,36 +2599,6 @@
       }
     },
     {
-      "id": "free_tokens_via_nfts_q2",
-      "title": "Keyword Hunt: Free Tokens Via NFTS",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Free Tokens Via NFTS. What is its canonical name?",
-      "wiki_url": "/wiki/free-tokens-via-nfts.html",
-      "accepted_answers": [
-        "FREE TOKENS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "gk_nbg_via_tokens_q4",
-      "title": "Secret File: GK NBG Via Tokens",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details GK NBG Via Tokens. Enter the name used to title this article.",
-      "wiki_url": "/wiki/gk-nbg-via-tokens.html",
-      "accepted_answers": [
-        "GK NBG"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "harrison_rift_q4",
       "title": "Secret File: Harrison Rift",
       "difficulty": "hard",
@@ -5449,21 +2629,6 @@
       }
     },
     {
-      "id": "fork_graffpunks_via_hard_q3",
-      "title": "Deep Dive: Fork Graffpunks Via Hard",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Fork Graffpunks Via Hard is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/fork-graffpunks-via-hard.html",
-      "accepted_answers": [
-        "FORK GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "jillian_godsil_q4",
       "title": "Secret File: Jillian Godsil",
       "difficulty": "hard",
@@ -5476,21 +2641,6 @@
         "xp": 160,
         "score": 180,
         "punk": 8
-      }
-    },
-    {
-      "id": "graffpunks_247_blockchain_radio_station_q1",
-      "title": "Archives: Graffpunks 247 Blockchain Radio Station",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Graffpunks 247 Blockchain Radio Station. Name the exact subject documented there.",
-      "wiki_url": "/wiki/graffpunks-247-blockchain-radio-station.html",
-      "accepted_answers": [
-        "GRAFFPUNKS 247 BLOCKCHAIN RADIO STATION"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
       }
     },
     {
@@ -5551,36 +2701,6 @@
         "xp": 200,
         "score": 240,
         "punk": 12
-      }
-    },
-    {
-      "id": "fork_graffpunks_via_hard_q4",
-      "title": "Secret File: Fork Graffpunks Via Hard",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Fork Graffpunks Via Hard. Enter the name used to title this article.",
-      "wiki_url": "/wiki/fork-graffpunks-via-hard.html",
-      "accepted_answers": [
-        "FORK GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "medium_articles_by_hodlwarriors_q1",
-      "title": "Archives: Medium Articles By Hodlwarriors",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Medium Articles By Hodlwarriors. Name the exact subject documented there.",
-      "wiki_url": "/wiki/medium-articles-by-hodlwarriors.html",
-      "accepted_answers": [
-        "MEDIUM ARTICLES BY HODLWARRIORS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
       }
     },
     {
@@ -5689,36 +2809,6 @@
       }
     },
     {
-      "id": "fork_kids_via_hard_q1",
-      "title": "Archives: Fork Kids Via Hard",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Fork Kids Via Hard. Name the exact subject documented there.",
-      "wiki_url": "/wiki/fork-kids-via-hard.html",
-      "accepted_answers": [
-        "FORK KIDS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "hodl_tokens_via_warriors_q2",
-      "title": "Keyword Hunt: HODL Tokens Via Warriors",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on HODL Tokens Via Warriors. What is its canonical name?",
-      "wiki_url": "/wiki/hodl-tokens-via-warriors.html",
-      "accepted_answers": [
-        "HODL TOKENS VIA WARRIORS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "croydon_tower_blocks_q1",
       "title": "Archives: Croydon Tower Blocks",
       "difficulty": "easy",
@@ -5731,21 +2821,6 @@
         "xp": 100,
         "score": 120,
         "punk": 5
-      }
-    },
-    {
-      "id": "graffpunks_24_7_blockchain_radio_station_q3",
-      "title": "Deep Dive: Graffpunks 24 7 Blockchain Radio Station",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Graffpunks 24 7 Blockchain Radio Station is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/graffpunks-24-7-blockchain-radio-station.html",
-      "accepted_answers": [
-        "GRAFFPUNKS 24 7 BLOCKCHAIN RADIO STATION"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
       }
     },
     {
@@ -5794,21 +2869,6 @@
       }
     },
     {
-      "id": "free_kids_via_nfts_q1",
-      "title": "Archives: Free Kids Via NFTS",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Free Kids Via NFTS. Name the exact subject documented there.",
-      "wiki_url": "/wiki/free-kids-via-nfts.html",
-      "accepted_answers": [
-        "FREE KIDS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
       "id": "genesis_kernel_q2",
       "title": "Keyword Hunt: Genesis Kernel",
       "difficulty": "medium",
@@ -5821,21 +2881,6 @@
         "xp": 140,
         "score": 160,
         "punk": 7
-      }
-    },
-    {
-      "id": "blockchain_games_via_fork_q4",
-      "title": "Secret File: Blockchain Games Via Fork",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Blockchain Games Via Fork. Enter the name used to title this article.",
-      "wiki_url": "/wiki/blockchain-games-via-fork.html",
-      "accepted_answers": [
-        "BLOCKCHAIN GAMES"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
       }
     },
     {
@@ -5914,21 +2959,6 @@
       }
     },
     {
-      "id": "graffpunks_network_q4",
-      "title": "Secret File: Graffpunks Network",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Graffpunks Network. Enter the name used to title this article.",
-      "wiki_url": "/wiki/graffpunks-network.html",
-      "accepted_answers": [
-        "GRAFFPUNKS NETWORK"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "bitcoin_btc_q2",
       "title": "Keyword Hunt: Bitcoin BTC",
       "difficulty": "medium",
@@ -5941,36 +2971,6 @@
         "xp": 140,
         "score": 160,
         "punk": 7
-      }
-    },
-    {
-      "id": "hard_fork_games_event_q4",
-      "title": "Secret File: Hard Fork Games Event",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Hard Fork Games Event. Enter the name used to title this article.",
-      "wiki_url": "/wiki/hard-fork-games-event.html",
-      "accepted_answers": [
-        "HARD FORK GAMES EVENT"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "hodl_token_via_warriors_q4",
-      "title": "Secret File: HODL Token Via Warriors",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details HODL Token Via Warriors. Enter the name used to title this article.",
-      "wiki_url": "/wiki/hodl-token-via-warriors.html",
-      "accepted_answers": [
-        "HODL TOKEN VIA WARRIORS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
       }
     },
     {
@@ -6004,21 +3004,6 @@
       }
     },
     {
-      "id": "hodl_kids_via_warriors_q3",
-      "title": "Deep Dive: HODL Kids Via Warriors",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, HODL Kids Via Warriors is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/hodl-kids-via-warriors.html",
-      "accepted_answers": [
-        "HODL KIDS VIA WARRIORS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "burn_to_earn_q3",
       "title": "Deep Dive: Burn To Earn",
       "difficulty": "medium",
@@ -6046,66 +3031,6 @@
         "xp": 160,
         "score": 180,
         "punk": 8
-      }
-    },
-    {
-      "id": "free_graffpunks_via_nfts_q4",
-      "title": "Secret File: Free Graffpunks Via NFTS",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Free Graffpunks Via NFTS. Enter the name used to title this article.",
-      "wiki_url": "/wiki/free-graffpunks-via-nfts.html",
-      "accepted_answers": [
-        "FREE GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "blockchain_games_via_fork_q3",
-      "title": "Deep Dive: Blockchain Games Via Fork",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Blockchain Games Via Fork is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/blockchain-games-via-fork.html",
-      "accepted_answers": [
-        "BLOCKCHAIN GAMES"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "free_gk_via_nfts_q2",
-      "title": "Keyword Hunt: Free GK Via NFTS",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Free GK Via NFTS. What is its canonical name?",
-      "wiki_url": "/wiki/free-gk-via-nfts.html",
-      "accepted_answers": [
-        "FREE GK"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "midevil_hero_arena_game_q3",
-      "title": "Deep Dive: Midevil Hero Arena Game",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Midevil Hero Arena Game is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/midevil-hero-arena-game.html",
-      "accepted_answers": [
-        "MIDEVIL HERO ARENA GAME"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
       }
     },
     {
@@ -6169,21 +3094,6 @@
       }
     },
     {
-      "id": "bitcoin_hodl_via_kid_q4",
-      "title": "Secret File: Bitcoin HODL Via Kid",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Bitcoin HODL Via Kid. Enter the name used to title this article.",
-      "wiki_url": "/wiki/bitcoin-hodl-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN HODL"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "nbgx_q4",
       "title": "Secret File: NBGX",
       "difficulty": "hard",
@@ -6196,21 +3106,6 @@
         "xp": 160,
         "score": 180,
         "punk": 8
-      }
-    },
-    {
-      "id": "punk_coin_q1",
-      "title": "Archives: Punk Coin",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Punk Coin. Name the exact subject documented there.",
-      "wiki_url": "/wiki/punk-coin.html",
-      "accepted_answers": [
-        "PUNK COIN"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
       }
     },
     {
@@ -6229,21 +3124,6 @@
       }
     },
     {
-      "id": "bitcoin_free_via_nfts_q2",
-      "title": "Keyword Hunt: Bitcoin Free Via NFTS",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Bitcoin Free Via NFTS. What is its canonical name?",
-      "wiki_url": "/wiki/bitcoin-free-via-nfts.html",
-      "accepted_answers": [
-        "BITCOIN FREE"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "fomo_plague_q1",
       "title": "Archives: FOMO Plague",
       "difficulty": "easy",
@@ -6256,21 +3136,6 @@
         "xp": 100,
         "score": 120,
         "punk": 5
-      }
-    },
-    {
-      "id": "leake_street_tunnel_q4",
-      "title": "Secret File: Leake Street Tunnel",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Leake Street Tunnel. Enter the name used to title this article.",
-      "wiki_url": "/wiki/leake-street-tunnel.html",
-      "accepted_answers": [
-        "LEAKE STREET TUNNEL"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
       }
     },
     {
@@ -6319,51 +3184,6 @@
       }
     },
     {
-      "id": "bitcoin_blockchain_via_kid_q4",
-      "title": "Secret File: Bitcoin Blockchain Via Kid",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Bitcoin Blockchain Via Kid. Enter the name used to title this article.",
-      "wiki_url": "/wiki/bitcoin-blockchain-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN BLOCKCHAIN"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "hodl_x_warriors_q2",
-      "title": "Keyword Hunt: HODL X Warriors",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on HODL X Warriors. What is its canonical name?",
-      "wiki_url": "/wiki/hodl-x-warriors.html",
-      "accepted_answers": [
-        "HODL X WARRIORS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "blockchain_technology_q1",
-      "title": "Archives: Blockchain Technology",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Blockchain Technology. Name the exact subject documented there.",
-      "wiki_url": "/wiki/blockchain-technology.html",
-      "accepted_answers": [
-        "BLOCKCHAIN TECHNOLOGY"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
       "id": "graffpunks_collection_q4",
       "title": "Secret File: Graffpunks Collection",
       "difficulty": "hard",
@@ -6371,81 +3191,6 @@
       "wiki_url": "/wiki/graffpunks-collection.html",
       "accepted_answers": [
         "GRAFFPUNKS COLLECTION"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "free_games_via_nfts_q3",
-      "title": "Deep Dive: Free Games Via NFTS",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Free Games Via NFTS is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/free-games-via-nfts.html",
-      "accepted_answers": [
-        "FREE GAMES"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "nbg_tokens_via_gk_q3",
-      "title": "Deep Dive: NBG Tokens Via GK",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, NBG Tokens Via GK is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/nbg-tokens-via-gk.html",
-      "accepted_answers": [
-        "NBG TOKENS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "nfts_token_via_free_q3",
-      "title": "Deep Dive: NFTS Token Via Free",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, NFTS Token Via Free is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/nfts-token-via-free.html",
-      "accepted_answers": [
-        "NFTS TOKEN"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "graffpunks_token_q2",
-      "title": "Keyword Hunt: Graffpunks Token",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Graffpunks Token. What is its canonical name?",
-      "wiki_url": "/wiki/graffpunks-token.html",
-      "accepted_answers": [
-        "GRAFFPUNKS TOKEN"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "graffpunks_tokens_via_radio_q4",
-      "title": "Secret File: Graffpunks Tokens Via Radio",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Graffpunks Tokens Via Radio. Enter the name used to title this article.",
-      "wiki_url": "/wiki/graffpunks-tokens-via-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS TOKENS"
       ],
       "rewards": {
         "xp": 160,
@@ -6481,81 +3226,6 @@
         "xp": 100,
         "score": 120,
         "punk": 5
-      }
-    },
-    {
-      "id": "graffpunks_24_7_q2",
-      "title": "Keyword Hunt: Graffpunks 24 7",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Graffpunks 24 7. What is its canonical name?",
-      "wiki_url": "/wiki/graffpunks-24-7.html",
-      "accepted_answers": [
-        "GRAFFPUNKS 24 7"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "bitcoin_free_via_nfts_q1",
-      "title": "Archives: Bitcoin Free Via NFTS",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Bitcoin Free Via NFTS. Name the exact subject documented there.",
-      "wiki_url": "/wiki/bitcoin-free-via-nfts.html",
-      "accepted_answers": [
-        "BITCOIN FREE"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "free_kid_via_nfts_q4",
-      "title": "Secret File: Free Kid Via NFTS",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Free Kid Via NFTS. Enter the name used to title this article.",
-      "wiki_url": "/wiki/free-kid-via-nfts.html",
-      "accepted_answers": [
-        "FREE KID"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "bitcoin_nfts_via_free_q4",
-      "title": "Secret File: Bitcoin NFTS Via Free",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Bitcoin NFTS Via Free. Enter the name used to title this article.",
-      "wiki_url": "/wiki/bitcoin-nfts-via-free.html",
-      "accepted_answers": [
-        "BITCOIN NFTS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "graffiti_queens_exhibition_q2",
-      "title": "Keyword Hunt: Graffiti Queens Exhibition",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Graffiti Queens Exhibition. What is its canonical name?",
-      "wiki_url": "/wiki/graffiti-queens-exhibition.html",
-      "accepted_answers": [
-        "GRAFFITI QUEENS EXHIBITION"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
       }
     },
     {
@@ -6604,21 +3274,6 @@
       }
     },
     {
-      "id": "medium_articles_by_hodlwarriors_q3",
-      "title": "Deep Dive: Medium Articles By Hodlwarriors",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Medium Articles By Hodlwarriors is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/medium-articles-by-hodlwarriors.html",
-      "accepted_answers": [
-        "MEDIUM ARTICLES BY HODLWARRIORS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "diamond_hands_q3",
       "title": "Deep Dive: Diamond Hands",
       "difficulty": "medium",
@@ -6626,21 +3281,6 @@
       "wiki_url": "/wiki/diamond-hands.html",
       "accepted_answers": [
         "DIAMOND HANDS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "graffpunks_nbg_via_radio_q3",
-      "title": "Deep Dive: Graffpunks NBG Via Radio",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Graffpunks NBG Via Radio is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/graffpunks-nbg-via-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS NBG"
       ],
       "rewards": {
         "xp": 200,
@@ -6694,36 +3334,6 @@
       }
     },
     {
-      "id": "bitcoin_graffpunks_via_kid_q4",
-      "title": "Secret File: Bitcoin Graffpunks Via Kid",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Bitcoin Graffpunks Via Kid. Enter the name used to title this article.",
-      "wiki_url": "/wiki/bitcoin-graffpunks-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN GRAFFPUNKS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "free_kids_via_nfts_q2",
-      "title": "Keyword Hunt: Free Kids Via NFTS",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Free Kids Via NFTS. What is its canonical name?",
-      "wiki_url": "/wiki/free-kids-via-nfts.html",
-      "accepted_answers": [
-        "FREE KIDS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "bitcoin_graffpunks_q3",
       "title": "Deep Dive: Bitcoin Graffpunks",
       "difficulty": "medium",
@@ -6754,36 +3364,6 @@
       }
     },
     {
-      "id": "fork_token_via_hard_q1",
-      "title": "Archives: Fork Token Via Hard",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Fork Token Via Hard. Name the exact subject documented there.",
-      "wiki_url": "/wiki/fork-token-via-hard.html",
-      "accepted_answers": [
-        "FORK TOKEN"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "kids_tokens_via_gk_q2",
-      "title": "Keyword Hunt: Kids Tokens Via GK",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Kids Tokens Via GK. What is its canonical name?",
-      "wiki_url": "/wiki/kids-tokens-via-gk.html",
-      "accepted_answers": [
-        "KIDS TOKENS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "charlie_buster_q1",
       "title": "Archives: Charlie Buster",
       "difficulty": "easy",
@@ -6799,21 +3379,6 @@
       }
     },
     {
-      "id": "blockchain_fork_via_hard_q4",
-      "title": "Secret File: Blockchain Fork Via Hard",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Blockchain Fork Via Hard. Enter the name used to title this article.",
-      "wiki_url": "/wiki/blockchain-fork-via-hard.html",
-      "accepted_answers": [
-        "BLOCKCHAIN FORK"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
       "id": "playable_nft_murals_q3",
       "title": "Deep Dive: Playable NFT Murals",
       "difficulty": "medium",
@@ -6826,21 +3391,6 @@
         "xp": 200,
         "score": 240,
         "punk": 12
-      }
-    },
-    {
-      "id": "fork_tokens_via_hard_q1",
-      "title": "Archives: Fork Tokens Via Hard",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Fork Tokens Via Hard. Name the exact subject documented there.",
-      "wiki_url": "/wiki/fork-tokens-via-hard.html",
-      "accepted_answers": [
-        "FORK TOKENS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
       }
     },
     {
@@ -6874,51 +3424,6 @@
       }
     },
     {
-      "id": "blockchain_free_via_nfts_q4",
-      "title": "Secret File: Blockchain Free Via NFTS",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Blockchain Free Via NFTS. Enter the name used to title this article.",
-      "wiki_url": "/wiki/blockchain-free-via-nfts.html",
-      "accepted_answers": [
-        "BLOCKCHAIN FREE"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
-      }
-    },
-    {
-      "id": "medium_articles_by_hodlwarriors_q2",
-      "title": "Keyword Hunt: Medium Articles By Hodlwarriors",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Medium Articles By Hodlwarriors. What is its canonical name?",
-      "wiki_url": "/wiki/medium-articles-by-hodlwarriors.html",
-      "accepted_answers": [
-        "MEDIUM ARTICLES BY HODLWARRIORS"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "kids_token_via_xrp_q2",
-      "title": "Keyword Hunt: Kids Token Via Xrp",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Kids Token Via Xrp. What is its canonical name?",
-      "wiki_url": "/wiki/kids-token-via-xrp.html",
-      "accepted_answers": [
-        "KIDS TOKEN VIA XRP"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "1m_free_nfts_drop_q3",
       "title": "Deep Dive: 1m Free NFTS Drop",
       "difficulty": "medium",
@@ -6949,21 +3454,6 @@
       }
     },
     {
-      "id": "medium_articles_by_sercullen_q1",
-      "title": "Archives: Medium Articles By Sercullen",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Medium Articles By Sercullen. Name the exact subject documented there.",
-      "wiki_url": "/wiki/medium-articles-by-sercullen.html",
-      "accepted_answers": [
-        "MEDIUM ARTICLES BY SERCULLEN"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
       "id": "ethereum_q1",
       "title": "Archives: Ethereum",
       "difficulty": "easy",
@@ -6976,21 +3466,6 @@
         "xp": 100,
         "score": 120,
         "punk": 5
-      }
-    },
-    {
-      "id": "graffpunks_kid_q4",
-      "title": "Secret File: Graffpunks Kid",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Graffpunks Kid. Enter the name used to title this article.",
-      "wiki_url": "/wiki/graffpunks-kid.html",
-      "accepted_answers": [
-        "GRAFFPUNKS KID"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
       }
     },
     {
@@ -7024,21 +3499,6 @@
       }
     },
     {
-      "id": "games_kid_via_bitcoin_q2",
-      "title": "Keyword Hunt: Games Kid Via Bitcoin",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Games Kid Via Bitcoin. What is its canonical name?",
-      "wiki_url": "/wiki/games-kid-via-bitcoin.html",
-      "accepted_answers": [
-        "GAMES KID"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "pyralith_q1",
       "title": "Archives: Pyralith",
       "difficulty": "easy",
@@ -7054,36 +3514,6 @@
       }
     },
     {
-      "id": "hodl_wars_game_q3",
-      "title": "Deep Dive: HODL Wars Game",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, HODL Wars Game is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/hodl-wars-game.html",
-      "accepted_answers": [
-        "HODL WARS GAME"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "hard_fork_games_game_q2",
-      "title": "Keyword Hunt: Hard Fork Games Game",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Hard Fork Games Game. What is its canonical name?",
-      "wiki_url": "/wiki/hard-fork-games-game.html",
-      "accepted_answers": [
-        "HARD FORK GAMES GAME"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "jillian_godsil_q2",
       "title": "Keyword Hunt: Jillian Godsil",
       "difficulty": "medium",
@@ -7096,21 +3526,6 @@
         "xp": 140,
         "score": 160,
         "punk": 7
-      }
-    },
-    {
-      "id": "blockchain_token_via_graffpunks_q4",
-      "title": "Secret File: Blockchain Token Via Graffpunks",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Blockchain Token Via Graffpunks. Enter the name used to title this article.",
-      "wiki_url": "/wiki/blockchain-token-via-graffpunks.html",
-      "accepted_answers": [
-        "BLOCKCHAIN TOKEN"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
       }
     },
     {
@@ -7141,51 +3556,6 @@
         "xp": 160,
         "score": 180,
         "punk": 8
-      }
-    },
-    {
-      "id": "graffpunks_nbg_via_radio_q1",
-      "title": "Archives: Graffpunks NBG Via Radio",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Graffpunks NBG Via Radio. Name the exact subject documented there.",
-      "wiki_url": "/wiki/graffpunks-nbg-via-radio.html",
-      "accepted_answers": [
-        "GRAFFPUNKS NBG"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "gk_token_q2",
-      "title": "Keyword Hunt: GK Token",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on GK Token. What is its canonical name?",
-      "wiki_url": "/wiki/gk-token.html",
-      "accepted_answers": [
-        "GK TOKEN"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
-      "id": "crypto_wallets_q3",
-      "title": "Deep Dive: Crypto Wallets",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Crypto Wallets is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/crypto-wallets.html",
-      "accepted_answers": [
-        "CRYPTO WALLETS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
       }
     },
     {
@@ -7249,51 +3619,6 @@
       }
     },
     {
-      "id": "games_kids_via_fork_q1",
-      "title": "Archives: Games Kids Via Fork",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Games Kids Via Fork. Name the exact subject documented there.",
-      "wiki_url": "/wiki/games-kids-via-fork.html",
-      "accepted_answers": [
-        "GAMES KIDS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "graffpunks_kid_via_bitcoin_q1",
-      "title": "Archives: Graffpunks Kid Via Bitcoin",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Graffpunks Kid Via Bitcoin. Name the exact subject documented there.",
-      "wiki_url": "/wiki/graffpunks-kid-via-bitcoin.html",
-      "accepted_answers": [
-        "GRAFFPUNKS KID"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "bitcoin_gk_via_kid_q2",
-      "title": "Keyword Hunt: Bitcoin GK Via Kid",
-      "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Bitcoin GK Via Kid. What is its canonical name?",
-      "wiki_url": "/wiki/bitcoin-gk-via-kid.html",
-      "accepted_answers": [
-        "BITCOIN GK"
-      ],
-      "rewards": {
-        "xp": 140,
-        "score": 160,
-        "punk": 7
-      }
-    },
-    {
       "id": "graffitikings_q3",
       "title": "Deep Dive: Graffitikings",
       "difficulty": "medium",
@@ -7324,36 +3649,6 @@
       }
     },
     {
-      "id": "kid_nfts_via_free_q3",
-      "title": "Deep Dive: Kid NFTS Via Free",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Kid NFTS Via Free is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/kid-nfts-via-free.html",
-      "accepted_answers": [
-        "KID NFTS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "hodl_nfts_via_free_q1",
-      "title": "Archives: HODL NFTS Via Free",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for HODL NFTS Via Free. Name the exact subject documented there.",
-      "wiki_url": "/wiki/hodl-nfts-via-free.html",
-      "accepted_answers": [
-        "HODL NFTS"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
       "id": "bitcoin_kid_army_q1",
       "title": "Archives: Bitcoin Kid Army",
       "difficulty": "easy",
@@ -7369,21 +3664,6 @@
       }
     },
     {
-      "id": "kid_nbg_via_bitcoin_q3",
-      "title": "Deep Dive: Kid NBG Via Bitcoin",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Kid NBG Via Bitcoin is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/kid-nbg-via-bitcoin.html",
-      "accepted_answers": [
-        "KID NBG"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
       "id": "bitcoin_x_kids_q3",
       "title": "Deep Dive: Bitcoin X Kids",
       "difficulty": "medium",
@@ -7391,36 +3671,6 @@
       "wiki_url": "/wiki/bitcoin-x-kids.html",
       "accepted_answers": [
         "BITCOIN X KIDS"
-      ],
-      "rewards": {
-        "xp": 200,
-        "score": 240,
-        "punk": 12
-      }
-    },
-    {
-      "id": "crypto_exchanges_q1",
-      "title": "Archives: Crypto Exchanges",
-      "difficulty": "easy",
-      "clue": "Visit the Moonboys wiki page for Crypto Exchanges. Name the exact subject documented there.",
-      "wiki_url": "/wiki/crypto-exchanges.html",
-      "accepted_answers": [
-        "CRYPTO EXCHANGES"
-      ],
-      "rewards": {
-        "xp": 100,
-        "score": 120,
-        "punk": 5
-      }
-    },
-    {
-      "id": "darren_cullen_ser_real_q3",
-      "title": "Deep Dive: Darren Cullen Ser Real",
-      "difficulty": "medium",
-      "clue": "Deep in the wiki archives, Darren Cullen Ser Real is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/darren-cullen-ser-real.html",
-      "accepted_answers": [
-        "DARREN CULLEN SER REAL"
       ],
       "rewards": {
         "xp": 200,
@@ -7441,21 +3691,6 @@
         "xp": 140,
         "score": 160,
         "punk": 7
-      }
-    },
-    {
-      "id": "kid_nfts_via_free_q4",
-      "title": "Secret File: Kid NFTS Via Free",
-      "difficulty": "hard",
-      "clue": "A secret Moonboys file details Kid NFTS Via Free. Enter the name used to title this article.",
-      "wiki_url": "/wiki/kid-nfts-via-free.html",
-      "accepted_answers": [
-        "KID NFTS"
-      ],
-      "rewards": {
-        "xp": 160,
-        "score": 180,
-        "punk": 8
       }
     },
     {

@@ -1,13 +1,13 @@
 {
-  "_generated": "2026-06-13T02:42:23.233Z",
+  "_generated": "2026-06-13T02:49:34.544Z",
   "summary": {
-    "total": 377,
-    "approved": 52,
-    "blocked": 170,
-    "needs_review": 155,
-    "blocked_synthetic_slug": 89,
-    "blocked_thin_page": 65,
-    "blocked_duplicate_concept": 16
+    "total": 207,
+    "approved": 207,
+    "blocked": 0,
+    "needs_review": 0,
+    "blocked_synthetic_slug": 0,
+    "blocked_thin_page": 0,
+    "blocked_duplicate_concept": 0
   },
   "approved": [
     {
@@ -228,6 +228,13 @@
       "word_count": 1699
     },
     {
+      "slug": "block-node-defenders",
+      "file": "block-node-defenders.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1029
+    },
+    {
       "slug": "block-topia",
       "file": "block-topia.html",
       "status": "APPROVED_CANON_PAGE",
@@ -235,11 +242,165 @@
       "word_count": 10230
     },
     {
+      "slug": "blockchain",
+      "file": "blockchain.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1413
+    },
+    {
       "slug": "blockchain-graffpunks",
       "file": "blockchain-graffpunks.html",
       "status": "APPROVED_ALIAS_REDIRECT",
       "reason": "http-equiv refresh or data-wiki-stub redirect page.",
       "word_count": 0
+    },
+    {
+      "slug": "bone-idol-ink",
+      "file": "bone-idol-ink.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 513
+    },
+    {
+      "slug": "burn-to-earn",
+      "file": "burn-to-earn.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 7143
+    },
+    {
+      "slug": "canvas-clash",
+      "file": "canvas-clash.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 586
+    },
+    {
+      "slug": "charlie-buster",
+      "file": "charlie-buster.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 8526
+    },
+    {
+      "slug": "croydon-tower-blocks",
+      "file": "croydon-tower-blocks.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 288
+    },
+    {
+      "slug": "crypto-moonboys",
+      "file": "crypto-moonboys.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1801
+    },
+    {
+      "slug": "darren-cullen",
+      "file": "darren-cullen.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 3192
+    },
+    {
+      "slug": "darren-cullen-ser",
+      "file": "darren-cullen-ser.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 412
+    },
+    {
+      "slug": "defi",
+      "file": "defi.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1311
+    },
+    {
+      "slug": "defi-mining",
+      "file": "defi-mining.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 798
+    },
+    {
+      "slug": "delicious-again-pete",
+      "file": "delicious-again-pete.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 899
+    },
+    {
+      "slug": "diamond-hands",
+      "file": "diamond-hands.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 627
+    },
+    {
+      "slug": "dragan-volkov",
+      "file": "dragan-volkov.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 495
+    },
+    {
+      "slug": "dream-sovereign",
+      "file": "dream-sovereign.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1155
+    },
+    {
+      "slug": "elder-codex-7",
+      "file": "elder-codex-7.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 573
+    },
+    {
+      "slug": "ethereum",
+      "file": "ethereum.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 2131
+    },
+    {
+      "slug": "ethereum-ecosystem",
+      "file": "ethereum-ecosystem.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 640
+    },
+    {
+      "slug": "exchanges",
+      "file": "exchanges.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1437
+    },
+    {
+      "slug": "exyboy",
+      "file": "exyboy.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 302
+    },
+    {
+      "slug": "fgl-token",
+      "file": "fgl-token.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 858
+    },
+    {
+      "slug": "fomo-plague",
+      "file": "fomo-plague.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 512
     },
     {
       "slug": "fork",
@@ -256,6 +417,27 @@
       "word_count": 0
     },
     {
+      "slug": "forkborn-collective",
+      "file": "forkborn-collective.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1011
+    },
+    {
+      "slug": "forklord-you",
+      "file": "forklord-you.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 503
+    },
+    {
+      "slug": "forksplit",
+      "file": "forksplit.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 534
+    },
+    {
       "slug": "free",
       "file": "free.html",
       "status": "APPROVED_ALIAS_REDIRECT",
@@ -270,11 +452,67 @@
       "word_count": 0
     },
     {
+      "slug": "games-graffpunks",
+      "file": "games-graffpunks.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 995
+    },
+    {
       "slug": "games-nfts",
       "file": "games-nfts.html",
       "status": "APPROVED_ALIAS_REDIRECT",
       "reason": "http-equiv refresh or data-wiki-stub redirect page.",
       "word_count": 0
+    },
+    {
+      "slug": "games4punks-telegram",
+      "file": "games4punks-telegram.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 4473
+    },
+    {
+      "slug": "gang-signs",
+      "file": "gang-signs.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 4205
+    },
+    {
+      "slug": "gang-signs-card-game",
+      "file": "gang-signs-card-game.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 438
+    },
+    {
+      "slug": "genesis-kernel",
+      "file": "genesis-kernel.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1181
+    },
+    {
+      "slug": "genesis-spray",
+      "file": "genesis-spray.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 4341
+    },
+    {
+      "slug": "genesis-spray-drop",
+      "file": "genesis-spray-drop.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 846
+    },
+    {
+      "slug": "gk",
+      "file": "gk.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 788
     },
     {
       "slug": "gk-graffpunks",
@@ -289,6 +527,34 @@
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 4355
+    },
+    {
+      "slug": "graffiti-kings",
+      "file": "graffiti-kings.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 417
+    },
+    {
+      "slug": "graffiti-nexus",
+      "file": "graffiti-nexus.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 702
+    },
+    {
+      "slug": "graffiti-queens-in-decentraland",
+      "file": "graffiti-queens-in-decentraland.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 612
+    },
+    {
+      "slug": "graffitikings",
+      "file": "graffitikings.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 4190
     },
     {
       "slug": "graffpunks",
@@ -319,6 +585,48 @@
       "word_count": 708
     },
     {
+      "slug": "grit",
+      "file": "grit.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 487
+    },
+    {
+      "slug": "grit42",
+      "file": "grit42.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 517
+    },
+    {
+      "slug": "hard-fork-games",
+      "file": "hard-fork-games.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 4378
+    },
+    {
+      "slug": "harrison-rift",
+      "file": "harrison-rift.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 605
+    },
+    {
+      "slug": "head-tags",
+      "file": "head-tags.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 915
+    },
+    {
+      "slug": "hex-tagger-prime",
+      "file": "hex-tagger-prime.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 603
+    },
+    {
       "slug": "hodl-warriors",
       "file": "hodl-warriors.html",
       "status": "APPROVED_CANON_PAGE",
@@ -333,6 +641,41 @@
       "word_count": 4263
     },
     {
+      "slug": "ian-harrison",
+      "file": "ian-harrison.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 3150
+    },
+    {
+      "slug": "iris-7",
+      "file": "iris-7.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 746
+    },
+    {
+      "slug": "jillian-godsil",
+      "file": "jillian-godsil.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 3121
+    },
+    {
+      "slug": "jodie-zoom-2000",
+      "file": "jodie-zoom-2000.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 778
+    },
+    {
+      "slug": "jonny-laurence-nelson-tag-records",
+      "file": "jonny-laurence-nelson-tag-records.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 998
+    },
+    {
       "slug": "kid",
       "file": "kid.html",
       "status": "APPROVED_ALIAS_REDIRECT",
@@ -340,11 +683,81 @@
       "word_count": 0
     },
     {
+      "slug": "lady-ink",
+      "file": "lady-ink.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 762
+    },
+    {
+      "slug": "lfgk",
+      "file": "lfgk.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 406
+    },
+    {
+      "slug": "loopfiend",
+      "file": "loopfiend.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 597
+    },
+    {
+      "slug": "m1ntr-k1ll",
+      "file": "m1ntr-k1ll.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 579
+    },
+    {
+      "slug": "maidstone-base",
+      "file": "maidstone-base.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 281
+    },
+    {
+      "slug": "memecoins",
+      "file": "memecoins.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 1225
+    },
+    {
+      "slug": "metaverse-battles",
+      "file": "metaverse-battles.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 569
+    },
+    {
+      "slug": "metropolis",
+      "file": "metropolis.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 3913
+    },
+    {
+      "slug": "midevil-hero-arena",
+      "file": "midevil-hero-arena.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 2861
+    },
+    {
       "slug": "midevilpunks",
       "file": "midevilpunks.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 4835
+    },
+    {
+      "slug": "moon-mission",
+      "file": "moon-mission.html",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
+      "word_count": 621
     },
     {
       "slug": "nbg",
@@ -368,2290 +781,685 @@
       "word_count": 7140
     },
     {
-      "slug": "the-hodl-warriors",
-      "file": "the-hodl-warriors.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
-    }
-  ],
-  "blocked": [
-    {
-      "slug": "bitcoin-blockchain-via-kid",
-      "file": "bitcoin-blockchain-via-kid.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "bitcoin-fork-via-hard",
-      "file": "bitcoin-fork-via-hard.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "bitcoin-free-via-nfts",
-      "file": "bitcoin-free-via-nfts.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "bitcoin-games-via-kid",
-      "file": "bitcoin-games-via-kid.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "bitcoin-gk-via-kid",
-      "file": "bitcoin-gk-via-kid.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "bitcoin-graffpunks-via-kid",
-      "file": "bitcoin-graffpunks-via-kid.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: graffpunks-via pages are keyword bridge pages that conflate brand concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "bitcoin-hodl-via-kid",
-      "file": "bitcoin-hodl-via-kid.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "bitcoin-kid-via-alfie",
-      "file": "bitcoin-kid-via-alfie.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "bitcoin-nbg-via-kid",
-      "file": "bitcoin-nbg-via-kid.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "bitcoin-nfts-via-free",
-      "file": "bitcoin-nfts-via-free.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "bitcoin-token-via-kid",
-      "file": "bitcoin-token-via-kid.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "bitcoin-tokens-via-kid",
-      "file": "bitcoin-tokens-via-kid.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "blockchain-fork-via-hard",
-      "file": "blockchain-fork-via-hard.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "blockchain-free-via-nfts",
-      "file": "blockchain-free-via-nfts.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "blockchain-games-via-fork",
-      "file": "blockchain-games-via-fork.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "blockchain-gk-via-tokens",
-      "file": "blockchain-gk-via-tokens.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "blockchain-graffpunks-via-radio",
-      "file": "blockchain-graffpunks-via-radio.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: graffpunks-via pages are keyword bridge pages that conflate brand concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "blockchain-hodl-via-graffpunks",
-      "file": "blockchain-hodl-via-graffpunks.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "blockchain-kid-via-bitcoin",
-      "file": "blockchain-kid-via-bitcoin.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "blockchain-nbg-via-ball",
-      "file": "blockchain-nbg-via-ball.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "blockchain-nfts-via-free",
-      "file": "blockchain-nfts-via-free.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "blockchain-technology",
-      "file": "blockchain-technology.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 5 meaningful words (minimum: 250).",
-      "word_count": 5
-    },
-    {
-      "slug": "blockchain-token-via-graffpunks",
-      "file": "blockchain-token-via-graffpunks.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "blockchain-tokens-via-gk",
-      "file": "blockchain-tokens-via-gk.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "crypto-exchanges",
-      "file": "crypto-exchanges.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 5 meaningful words (minimum: 250).",
-      "word_count": 5
-    },
-    {
-      "slug": "crypto-wallets",
-      "file": "crypto-wallets.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 5 meaningful words (minimum: 250).",
-      "word_count": 5
-    },
-    {
-      "slug": "darren-cullen-ser-real",
-      "file": "darren-cullen-ser-real.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 154 meaningful words (minimum: 250).",
-      "word_count": 154
-    },
-    {
-      "slug": "decentraland-events",
-      "file": "decentraland-events.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 77 meaningful words (minimum: 250).",
-      "word_count": 77
-    },
-    {
-      "slug": "defi-decentralised-finance",
-      "file": "defi-decentralised-finance.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 6 meaningful words (minimum: 250).",
-      "word_count": 6
-    },
-    {
-      "slug": "drop-xrpl",
-      "file": "drop-xrpl.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 188 meaningful words (minimum: 250).",
-      "word_count": 188
-    },
-    {
-      "slug": "ethereum-eth",
-      "file": "ethereum-eth.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 5 meaningful words (minimum: 250).",
-      "word_count": 5
-    },
-    {
-      "slug": "fork-free-via-hard",
-      "file": "fork-free-via-hard.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "fork-games-via-hard",
-      "file": "fork-games-via-hard.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "fork-gk-via-hard",
-      "file": "fork-gk-via-hard.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "fork-graffpunks-via-hard",
-      "file": "fork-graffpunks-via-hard.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: graffpunks-via pages are keyword bridge pages that conflate brand concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "fork-hodl-via-hard",
-      "file": "fork-hodl-via-hard.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "fork-kid-via-bitcoin",
-      "file": "fork-kid-via-bitcoin.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "fork-kids-via-hard",
-      "file": "fork-kids-via-hard.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "fork-nbg-via-games",
-      "file": "fork-nbg-via-games.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "fork-nfts-via-free",
-      "file": "fork-nfts-via-free.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "fork-token-via-hard",
-      "file": "fork-token-via-hard.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "fork-tokens-via-hard",
-      "file": "fork-tokens-via-hard.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "free-games-via-nfts",
-      "file": "free-games-via-nfts.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "free-gk-via-nfts",
-      "file": "free-gk-via-nfts.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "free-graffpunks-via-nfts",
-      "file": "free-graffpunks-via-nfts.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: graffpunks-via pages are keyword bridge pages that conflate brand concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "free-hodl-via-nfts",
-      "file": "free-hodl-via-nfts.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "free-kid-via-nfts",
-      "file": "free-kid-via-nfts.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "free-kids-via-nfts",
-      "file": "free-kids-via-nfts.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "free-nbg-via-nfts",
-      "file": "free-nbg-via-nfts.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "free-nfts-via-1m",
-      "file": "free-nfts-via-1m.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "free-token-via-nfts",
-      "file": "free-token-via-nfts.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "free-tokens-via-nfts",
-      "file": "free-tokens-via-nfts.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "games-gk-via-fork",
-      "file": "games-gk-via-fork.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "games-graffpunks-via-collection",
-      "file": "games-graffpunks-via-collection.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: graffpunks-via pages are keyword bridge pages that conflate brand concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "games-hodl-via-fork",
-      "file": "games-hodl-via-fork.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "games-kid-via-bitcoin",
-      "file": "games-kid-via-bitcoin.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "games-kids-via-fork",
-      "file": "games-kids-via-fork.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "games-nbg-via-fork",
-      "file": "games-nbg-via-fork.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "games-nfts-via-free",
-      "file": "games-nfts-via-free.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "games-token-via-fork",
-      "file": "games-token-via-fork.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "games-tokens-via-fork",
-      "file": "games-tokens-via-fork.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "games4punks-telegram-games",
-      "file": "games4punks-telegram-games.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 59 meaningful words (minimum: 250).",
-      "word_count": 59
-    },
-    {
-      "slug": "gk-graffpunks-via-radio",
-      "file": "gk-graffpunks-via-radio.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: graffpunks-via pages are keyword bridge pages that conflate brand concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "gk-hodl-via-tokens",
-      "file": "gk-hodl-via-tokens.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "gk-kid-via-bitcoin",
-      "file": "gk-kid-via-bitcoin.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "gk-kids-via-tokens",
-      "file": "gk-kids-via-tokens.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "gk-nbg-via-tokens",
-      "file": "gk-nbg-via-tokens.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "gk-nfts-via-tokens",
-      "file": "gk-nfts-via-tokens.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "gk-token",
-      "file": "gk-token.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 80 meaningful words (minimum: 250).",
-      "word_count": 80
-    },
-    {
-      "slug": "gk-token-via-tokens",
-      "file": "gk-token-via-tokens.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "gk-tokens",
-      "file": "gk-tokens.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 81 meaningful words (minimum: 250).",
-      "word_count": 81
-    },
-    {
-      "slug": "gk-tokens-via-fungible",
-      "file": "gk-tokens-via-fungible.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "gkniftyheads-phase-one-two-three",
-      "file": "gkniftyheads-phase-one-two-three.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"gkniftyheads\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffiti-queens-exhibition",
-      "file": "graffiti-queens-exhibition.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 81 meaningful words (minimum: 250).",
-      "word_count": 81
-    },
-    {
-      "slug": "graffiti-queens-in-decentraland-ecosystem",
-      "file": "graffiti-queens-in-decentraland-ecosystem.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 8 meaningful words (minimum: 250).",
-      "word_count": 8
-    },
-    {
-      "slug": "graffpunks-24-7",
-      "file": "graffpunks-24-7.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-24-7-blockchain-radio-station",
-      "file": "graffpunks-24-7-blockchain-radio-station.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-247",
-      "file": "graffpunks-247.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-247-blockchain-radio-station",
-      "file": "graffpunks-247-blockchain-radio-station.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-247-radio",
-      "file": "graffpunks-247-radio.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-hodl",
-      "file": "graffpunks-hodl.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-hodl-via-radio",
-      "file": "graffpunks-hodl-via-radio.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-kid",
-      "file": "graffpunks-kid.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-kid-via-bitcoin",
-      "file": "graffpunks-kid-via-bitcoin.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-kids-via-radio",
-      "file": "graffpunks-kids-via-radio.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-nbg",
-      "file": "graffpunks-nbg.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-nbg-via-radio",
-      "file": "graffpunks-nbg-via-radio.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-network",
-      "file": "graffpunks-network.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-nfts",
-      "file": "graffpunks-nfts.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-nfts-via-free",
-      "file": "graffpunks-nfts-via-free.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-token",
-      "file": "graffpunks-token.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-token-via-radio",
-      "file": "graffpunks-token-via-radio.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-tokens-via-radio",
-      "file": "graffpunks-tokens-via-radio.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "great-datapocalypse-of-2789",
-      "file": "great-datapocalypse-of-2789.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 117 meaningful words (minimum: 250).",
-      "word_count": 117
-    },
-    {
-      "slug": "hard-fork-games-event",
-      "file": "hard-fork-games-event.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 63 meaningful words (minimum: 250).",
-      "word_count": 63
-    },
-    {
-      "slug": "hard-fork-games-game",
-      "file": "hard-fork-games-game.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 6 meaningful words (minimum: 250).",
-      "word_count": 6
-    },
-    {
-      "slug": "hodl-kid-via-bitcoin",
-      "file": "hodl-kid-via-bitcoin.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
-      "word_count": 0
-    },
-    {
-      "slug": "hodl-kids-via-warriors",
-      "file": "hodl-kids-via-warriors.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "hodl-nbg-via-warriors",
-      "file": "hodl-nbg-via-warriors.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "hodl-nfts-via-free",
-      "file": "hodl-nfts-via-free.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "hodl-token-via-warriors",
-      "file": "hodl-token-via-warriors.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "hodl-tokens-via-warriors",
-      "file": "hodl-tokens-via-warriors.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "hodl-warriors-army",
-      "file": "hodl-warriors-army.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"hodl\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "hodl-wars-ecosystem",
-      "file": "hodl-wars-ecosystem.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"hodl\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "hodl-wars-game",
-      "file": "hodl-wars-game.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"hodl\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "hodl-x-warriors",
-      "file": "hodl-x-warriors.html",
-      "status": "BLOCKED_DUPLICATE_CONCEPT",
-      "reason": "Slug starts with brand ID \"hodl\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
-      "word_count": 0
-    },
-    {
-      "slug": "jelly-xrpl",
-      "file": "jelly-xrpl.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 201 meaningful words (minimum: 250).",
-      "word_count": 201
-    },
-    {
-      "slug": "kid-kids-via-bitcoin",
-      "file": "kid-kids-via-bitcoin.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "kid-nbg-via-bitcoin",
-      "file": "kid-nbg-via-bitcoin.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "kid-nfts-via-free",
-      "file": "kid-nfts-via-free.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "kid-token-via-bitcoin",
-      "file": "kid-token-via-bitcoin.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "kid-tokens-via-bitcoin",
-      "file": "kid-tokens-via-bitcoin.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "kids-nbg-via-xrp",
-      "file": "kids-nbg-via-xrp.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
-      "word_count": 0
-    },
-    {
-      "slug": "kids-nfts-via-free",
-      "file": "kids-nfts-via-free.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "kids-token-via-xrp",
-      "file": "kids-token-via-xrp.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "kids-tokens-via-gk",
-      "file": "kids-tokens-via-gk.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "leake-street-tunnel",
-      "file": "leake-street-tunnel.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 77 meaningful words (minimum: 250).",
-      "word_count": 77
-    },
-    {
-      "slug": "lfgk-rewards",
-      "file": "lfgk-rewards.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 54 meaningful words (minimum: 250).",
-      "word_count": 54
-    },
-    {
-      "slug": "lfgk-token",
-      "file": "lfgk-token.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 76 meaningful words (minimum: 250).",
-      "word_count": 76
-    },
-    {
-      "slug": "medium-articles-by-gkniftyheads",
-      "file": "medium-articles-by-gkniftyheads.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 79 meaningful words (minimum: 250).",
-      "word_count": 79
-    },
-    {
-      "slug": "medium-articles-by-graffpunks",
-      "file": "medium-articles-by-graffpunks.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 81 meaningful words (minimum: 250).",
-      "word_count": 81
-    },
-    {
-      "slug": "medium-articles-by-hodlwarriors",
-      "file": "medium-articles-by-hodlwarriors.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 81 meaningful words (minimum: 250).",
-      "word_count": 81
-    },
-    {
-      "slug": "medium-articles-by-sercullen",
-      "file": "medium-articles-by-sercullen.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 83 meaningful words (minimum: 250).",
-      "word_count": 83
-    },
-    {
-      "slug": "meme-coins",
-      "file": "meme-coins.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 5 meaningful words (minimum: 250).",
-      "word_count": 5
-    },
-    {
-      "slug": "midevil-hero-arena-game",
-      "file": "midevil-hero-arena-game.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 7 meaningful words (minimum: 250).",
-      "word_count": 7
-    },
-    {
-      "slug": "nbg-nfts-via-free",
-      "file": "nbg-nfts-via-free.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "nbg-token-via-ball",
-      "file": "nbg-token-via-ball.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "nbg-tokens-via-gk",
-      "file": "nbg-tokens-via-gk.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "neftyblocks-midevilpunks-collection",
-      "file": "neftyblocks-midevilpunks-collection.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 83 meaningful words (minimum: 250).",
-      "word_count": 83
-    },
-    {
-      "slug": "nfts-non-fungible-tokens",
-      "file": "nfts-non-fungible-tokens.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 6 meaningful words (minimum: 250).",
-      "word_count": 6
-    },
-    {
-      "slug": "nfts-token-via-free",
-      "file": "nfts-token-via-free.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "nfts-tokens-via-free",
-      "file": "nfts-tokens-via-free.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "nine-armies",
-      "file": "nine-armies.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 5 meaningful words (minimum: 250).",
-      "word_count": 5
-    },
-    {
-      "slug": "no-ball-games-nbg-collection",
-      "file": "no-ball-games-nbg-collection.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 94 meaningful words (minimum: 250).",
-      "word_count": 94
-    },
-    {
-      "slug": "opulence-xrpl",
-      "file": "opulence-xrpl.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 217 meaningful words (minimum: 250).",
-      "word_count": 217
-    },
-    {
-      "slug": "phnix",
-      "file": "phnix.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 217 meaningful words (minimum: 250).",
-      "word_count": 217
-    },
-    {
-      "slug": "pmsl-xrpl",
-      "file": "pmsl-xrpl.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 163 meaningful words (minimum: 250).",
-      "word_count": 163
-    },
-    {
-      "slug": "profit-xrpl",
-      "file": "profit-xrpl.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 214 meaningful words (minimum: 250).",
-      "word_count": 214
-    },
-    {
-      "slug": "punk-coin",
-      "file": "punk-coin.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 108 meaningful words (minimum: 250).",
-      "word_count": 108
-    },
-    {
-      "slug": "samael-exe",
-      "file": "samael-exe.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 4 meaningful words (minimum: 250).",
-      "word_count": 4
-    },
-    {
-      "slug": "sigma-xrpl",
-      "file": "sigma-xrpl.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 160 meaningful words (minimum: 250).",
-      "word_count": 160
-    },
-    {
-      "slug": "smart-nft-mechanics",
-      "file": "smart-nft-mechanics.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 93 meaningful words (minimum: 250).",
-      "word_count": 93
-    },
-    {
-      "slug": "solana-sol",
-      "file": "solana-sol.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 5 meaningful words (minimum: 250).",
-      "word_count": 5
-    },
-    {
-      "slug": "spraycode-writcode",
-      "file": "spraycode-writcode.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 84 meaningful words (minimum: 250).",
-      "word_count": 84
-    },
-    {
-      "slug": "stake-for-gk-tokens",
-      "file": "stake-for-gk-tokens.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 85 meaningful words (minimum: 250).",
-      "word_count": 85
-    },
-    {
-      "slug": "staking-for-gk-tokens",
-      "file": "staking-for-gk-tokens.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 62 meaningful words (minimum: 250).",
-      "word_count": 62
-    },
-    {
-      "slug": "substack-posts-on-graffpunks-substack-com",
-      "file": "substack-posts-on-graffpunks-substack-com.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 7 meaningful words (minimum: 250).",
-      "word_count": 7
-    },
-    {
-      "slug": "substack-posts-on-graffpunkssubstackcom",
-      "file": "substack-posts-on-graffpunkssubstackcom.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 98 meaningful words (minimum: 250).",
-      "word_count": 98
-    },
-    {
-      "slug": "tabby",
-      "file": "tabby.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 196 meaningful words (minimum: 250).",
-      "word_count": 196
-    },
-    {
-      "slug": "the-bear-market-siege",
-      "file": "the-bear-market-siege.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 7 meaningful words (minimum: 250).",
-      "word_count": 7
-    },
-    {
-      "slug": "the-fomo-plague",
-      "file": "the-fomo-plague.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 6 meaningful words (minimum: 250).",
-      "word_count": 6
-    },
-    {
-      "slug": "the-gkniftyheads",
-      "file": "the-gkniftyheads.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 199 meaningful words (minimum: 250).",
-      "word_count": 199
-    },
-    {
-      "slug": "the-grids",
-      "file": "the-grids.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 44 meaningful words (minimum: 250).",
-      "word_count": 44
-    },
-    {
-      "slug": "the-sacred-chain",
-      "file": "the-sacred-chain.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 58 meaningful words (minimum: 250).",
-      "word_count": 58
-    },
-    {
-      "slug": "the-satoshi-scroll",
-      "file": "the-satoshi-scroll.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 6 meaningful words (minimum: 250).",
-      "word_count": 6
-    },
-    {
-      "slug": "the-wagmi-prophecy",
-      "file": "the-wagmi-prophecy.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 6 meaningful words (minimum: 250).",
-      "word_count": 6
-    },
-    {
-      "slug": "the-whale-lords",
-      "file": "the-whale-lords.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 6 meaningful words (minimum: 250).",
-      "word_count": 6
-    },
-    {
-      "slug": "token-tokens-via-gk",
-      "file": "token-tokens-via-gk.html",
-      "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
-      "word_count": 0
-    },
-    {
-      "slug": "tokens",
-      "file": "tokens.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 39 meaningful words (minimum: 250).",
-      "word_count": 39
-    },
-    {
-      "slug": "toto-xrpl",
-      "file": "toto-xrpl.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 187 meaningful words (minimum: 250).",
-      "word_count": 187
-    },
-    {
-      "slug": "xmeme",
-      "file": "xmeme.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 201 meaningful words (minimum: 250).",
-      "word_count": 201
-    },
-    {
-      "slug": "xoge",
-      "file": "xoge.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 204 meaningful words (minimum: 250).",
-      "word_count": 204
-    },
-    {
-      "slug": "xrp",
-      "file": "xrp.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 176 meaningful words (minimum: 250).",
-      "word_count": 176
-    },
-    {
-      "slug": "xrp-army",
-      "file": "xrp-army.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 204 meaningful words (minimum: 250).",
-      "word_count": 204
-    },
-    {
-      "slug": "xrp-kids-genesis-nfts",
-      "file": "xrp-kids-genesis-nfts.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 76 meaningful words (minimum: 250).",
-      "word_count": 76
-    },
-    {
-      "slug": "xrp-kids-nbg-updates",
-      "file": "xrp-kids-nbg-updates.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 99 meaningful words (minimum: 250).",
-      "word_count": 99
-    },
-    {
-      "slug": "xrp-meme-coins",
-      "file": "xrp-meme-coins.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 193 meaningful words (minimum: 250).",
-      "word_count": 193
-    },
-    {
-      "slug": "xrpl-dex",
-      "file": "xrpl-dex.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 82 meaningful words (minimum: 250).",
-      "word_count": 82
-    },
-    {
-      "slug": "xrpl-tokens",
-      "file": "xrpl-tokens.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 212 meaningful words (minimum: 250).",
-      "word_count": 212
-    },
-    {
-      "slug": "xrpl-trust-lines",
-      "file": "xrpl-trust-lines.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 111 meaningful words (minimum: 250).",
-      "word_count": 111
-    }
-  ],
-  "review": [
-    {
-      "slug": "block-node-defenders",
-      "file": "block-node-defenders.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 1029
-    },
-    {
-      "slug": "blockchain",
-      "file": "blockchain.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "\"blockchain\" is a generic word with no brand anchor. Needs review to confirm it refers to an official project concept.",
-      "word_count": 1413
-    },
-    {
-      "slug": "bone-idol-ink",
-      "file": "bone-idol-ink.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 513
-    },
-    {
-      "slug": "burn-to-earn",
-      "file": "burn-to-earn.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 7143
-    },
-    {
-      "slug": "canvas-clash",
-      "file": "canvas-clash.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 586
-    },
-    {
-      "slug": "charlie-buster",
-      "file": "charlie-buster.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 8526
-    },
-    {
-      "slug": "croydon-tower-blocks",
-      "file": "croydon-tower-blocks.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 288
-    },
-    {
-      "slug": "crypto-moonboys",
-      "file": "crypto-moonboys.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 1801
-    },
-    {
-      "slug": "darren-cullen",
-      "file": "darren-cullen.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 3192
-    },
-    {
-      "slug": "darren-cullen-ser",
-      "file": "darren-cullen-ser.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 412
-    },
-    {
-      "slug": "defi",
-      "file": "defi.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 1311
-    },
-    {
-      "slug": "defi-mining",
-      "file": "defi-mining.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 798
-    },
-    {
-      "slug": "delicious-again-pete",
-      "file": "delicious-again-pete.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 899
-    },
-    {
-      "slug": "diamond-hands",
-      "file": "diamond-hands.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 627
-    },
-    {
-      "slug": "dragan-volkov",
-      "file": "dragan-volkov.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 495
-    },
-    {
-      "slug": "dream-sovereign",
-      "file": "dream-sovereign.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 1155
-    },
-    {
-      "slug": "elder-codex-7",
-      "file": "elder-codex-7.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 573
-    },
-    {
-      "slug": "ethereum",
-      "file": "ethereum.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 2131
-    },
-    {
-      "slug": "ethereum-ecosystem",
-      "file": "ethereum-ecosystem.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 640
-    },
-    {
-      "slug": "exchanges",
-      "file": "exchanges.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 1437
-    },
-    {
-      "slug": "exyboy",
-      "file": "exyboy.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 302
-    },
-    {
-      "slug": "fgl-token",
-      "file": "fgl-token.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 858
-    },
-    {
-      "slug": "fomo-plague",
-      "file": "fomo-plague.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 512
-    },
-    {
-      "slug": "forkborn-collective",
-      "file": "forkborn-collective.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 1011
-    },
-    {
-      "slug": "forklord-you",
-      "file": "forklord-you.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 503
-    },
-    {
-      "slug": "forksplit",
-      "file": "forksplit.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 534
-    },
-    {
-      "slug": "games-graffpunks",
-      "file": "games-graffpunks.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 995
-    },
-    {
-      "slug": "games4punks-telegram",
-      "file": "games4punks-telegram.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 4473
-    },
-    {
-      "slug": "gang-signs",
-      "file": "gang-signs.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 4205
-    },
-    {
-      "slug": "gang-signs-card-game",
-      "file": "gang-signs-card-game.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 438
-    },
-    {
-      "slug": "genesis-kernel",
-      "file": "genesis-kernel.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 1181
-    },
-    {
-      "slug": "genesis-spray",
-      "file": "genesis-spray.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 4341
-    },
-    {
-      "slug": "genesis-spray-drop",
-      "file": "genesis-spray-drop.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 846
-    },
-    {
-      "slug": "gk",
-      "file": "gk.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 788
-    },
-    {
-      "slug": "graffiti-kings",
-      "file": "graffiti-kings.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 417
-    },
-    {
-      "slug": "graffiti-nexus",
-      "file": "graffiti-nexus.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 702
-    },
-    {
-      "slug": "graffiti-queens-in-decentraland",
-      "file": "graffiti-queens-in-decentraland.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 612
-    },
-    {
-      "slug": "graffitikings",
-      "file": "graffitikings.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 4190
-    },
-    {
-      "slug": "grit",
-      "file": "grit.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 487
-    },
-    {
-      "slug": "grit42",
-      "file": "grit42.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 517
-    },
-    {
-      "slug": "hard-fork-games",
-      "file": "hard-fork-games.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 4378
-    },
-    {
-      "slug": "harrison-rift",
-      "file": "harrison-rift.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 605
-    },
-    {
-      "slug": "head-tags",
-      "file": "head-tags.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 915
-    },
-    {
-      "slug": "hex-tagger-prime",
-      "file": "hex-tagger-prime.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 603
-    },
-    {
-      "slug": "ian-harrison",
-      "file": "ian-harrison.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 3150
-    },
-    {
-      "slug": "iris-7",
-      "file": "iris-7.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 746
-    },
-    {
-      "slug": "jillian-godsil",
-      "file": "jillian-godsil.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 3121
-    },
-    {
-      "slug": "jodie-zoom-2000",
-      "file": "jodie-zoom-2000.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 778
-    },
-    {
-      "slug": "jonny-laurence-nelson-tag-records",
-      "file": "jonny-laurence-nelson-tag-records.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 998
-    },
-    {
-      "slug": "lady-ink",
-      "file": "lady-ink.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 762
-    },
-    {
-      "slug": "lfgk",
-      "file": "lfgk.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 406
-    },
-    {
-      "slug": "loopfiend",
-      "file": "loopfiend.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 597
-    },
-    {
-      "slug": "m1ntr-k1ll",
-      "file": "m1ntr-k1ll.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 579
-    },
-    {
-      "slug": "maidstone-base",
-      "file": "maidstone-base.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 281
-    },
-    {
-      "slug": "memecoins",
-      "file": "memecoins.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 1225
-    },
-    {
-      "slug": "metaverse-battles",
-      "file": "metaverse-battles.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 569
-    },
-    {
-      "slug": "metropolis",
-      "file": "metropolis.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 3913
-    },
-    {
-      "slug": "midevil-hero-arena",
-      "file": "midevil-hero-arena.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 2861
-    },
-    {
-      "slug": "moon-mission",
-      "file": "moon-mission.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 621
-    },
-    {
       "slug": "nbgx-token",
       "file": "nbgx-token.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 404
     },
     {
       "slug": "neftyblocks",
       "file": "neftyblocks.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 704
     },
     {
       "slug": "nfthive",
       "file": "nfthive.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 693
     },
     {
       "slug": "nfts",
       "file": "nfts.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "\"nfts\" is a generic word with no brand anchor. Needs review to confirm it refers to an official project concept.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1344
     },
     {
       "slug": "ngmi-chronicles",
       "file": "ngmi-chronicles.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 614
     },
     {
       "slug": "nifty-crowns",
       "file": "nifty-crowns.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 2175
     },
     {
       "slug": "nifty-wizards",
       "file": "nifty-wizards.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 676
     },
     {
       "slug": "no-ball-games-nbg",
       "file": "no-ball-games-nbg.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 293
     },
     {
       "slug": "null-the-prophet",
       "file": "null-the-prophet.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 9517
     },
     {
       "slug": "one-million-free-nfts",
       "file": "one-million-free-nfts.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 611
     },
     {
       "slug": "paper-hands",
       "file": "paper-hands.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 563
     },
     {
       "slug": "patchwork",
       "file": "patchwork.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1172
     },
     {
       "slug": "phygital-prints",
       "file": "phygital-prints.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 568
     },
     {
       "slug": "pixel-journey",
       "file": "pixel-journey.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 899
     },
     {
       "slug": "pixil-mini",
       "file": "pixil-mini.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 720
     },
     {
       "slug": "playable-nft-murals",
       "file": "playable-nft-murals.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 599
     },
     {
       "slug": "pmsl",
       "file": "pmsl.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 6997
     },
     {
       "slug": "pmsl-token",
       "file": "pmsl-token.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 407
     },
     {
       "slug": "punk",
       "file": "punk.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 3874
     },
     {
       "slug": "punk-token",
       "file": "punk-token.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 9060
     },
     {
       "slug": "pyralith",
       "file": "pyralith.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1120
     },
     {
       "slug": "queen-sarah-p-fly",
       "file": "queen-sarah-p-fly.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 429
     },
     {
       "slug": "queen-sarah-pfly",
       "file": "queen-sarah-pfly.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 8929
     },
     {
       "slug": "quell",
       "file": "quell.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1147
     },
     {
       "slug": "rave-relics",
       "file": "rave-relics.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 4857
     },
     {
       "slug": "rug-pull-wars",
       "file": "rug-pull-wars.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 609
     },
     {
       "slug": "rune-tag",
       "file": "rune-tag.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1179
     },
     {
       "slug": "rust2riches",
       "file": "rust2riches.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 610
     },
     {
       "slug": "sacred-chain",
       "file": "sacred-chain.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 3233
     },
     {
       "slug": "samaelexe",
       "file": "samaelexe.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1102
     },
     {
       "slug": "sarah-pu51fly",
       "file": "sarah-pu51fly.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 435
     },
     {
       "slug": "satorebel",
       "file": "satorebel.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1185
     },
     {
       "slug": "satoshi-scroll",
       "file": "satoshi-scroll.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 491
     },
     {
       "slug": "seeding-rights",
       "file": "seeding-rights.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 571
     },
     {
       "slug": "sister-halcyon",
       "file": "sister-halcyon.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1173
     },
     {
       "slug": "sneakar",
       "file": "sneakar.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 2480
     },
     {
       "slug": "snipey-d-man-sirus",
       "file": "snipey-d-man-sirus.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 596
     },
     {
       "slug": "solana",
       "file": "solana.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1932
     },
     {
       "slug": "spirit-borns",
       "file": "spirit-borns.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 874
     },
     {
       "slug": "spraycode-writcode-mechanics",
       "file": "spraycode-writcode-mechanics.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 709
     },
     {
       "slug": "squeaky-pinks-enforcers",
       "file": "squeaky-pinks-enforcers.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1143
     },
     {
       "slug": "staking",
       "file": "staking.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 6936
     },
     {
       "slug": "stikfamwars",
       "file": "stikfamwars.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 4616
     },
     {
       "slug": "storm-struggle",
       "file": "storm-struggle.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 852
     },
     {
       "slug": "street-kingdoms",
       "file": "street-kingdoms.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1141
     },
     {
       "slug": "tacoswap",
       "file": "tacoswap.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 603
     },
     {
       "slug": "tagzcoin",
       "file": "tagzcoin.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 292
     },
     {
       "slug": "the-allcity-bulls",
       "file": "the-allcity-bulls.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 829
     },
     {
       "slug": "the-aztec-raiders",
       "file": "the-aztec-raiders.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 818
     },
     {
       "slug": "the-bally-boys",
       "file": "the-bally-boys.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 828
     },
     {
       "slug": "the-bitcoin-kid-army",
       "file": "the-bitcoin-kid-army.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1122
     },
     {
       "slug": "the-blockchain-furies",
       "file": "the-blockchain-furies.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 892
     },
     {
       "slug": "the-blockstars",
       "file": "the-blockstars.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 906
     },
     {
       "slug": "the-chain-scribes",
       "file": "the-chain-scribes.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1087
     },
     {
       "slug": "the-cleanupcentr",
       "file": "the-cleanupcentr.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 845
     },
     {
       "slug": "the-code-alchemists",
       "file": "the-code-alchemists.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 861
     },
     {
       "slug": "the-crypto-moongirls",
       "file": "the-crypto-moongirls.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1100
     },
     {
       "slug": "the-crypto-stoned-boys",
       "file": "the-crypto-stoned-boys.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 838
     },
     {
       "slug": "the-ducky-boys",
       "file": "the-ducky-boys.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 945
     },
     {
       "slug": "the-evm-punks",
       "file": "the-evm-punks.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 910
     },
     {
       "slug": "the-finance-guild",
       "file": "the-finance-guild.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1011
     },
     {
       "slug": "the-gasless-ghosts",
       "file": "the-gasless-ghosts.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1080
     },
     {
       "slug": "the-graffpunks",
       "file": "the-graffpunks.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 664
     },
     {
       "slug": "the-great-dip",
       "file": "the-great-dip.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 621
     },
     {
       "slug": "the-hard-fork-rockers",
       "file": "the-hard-fork-rockers.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 953
     },
     {
       "slug": "the-high-hats",
       "file": "the-high-hats.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 937
+    },
+    {
+      "slug": "the-hodl-warriors",
+      "file": "the-hodl-warriors.html",
+      "status": "APPROVED_ALIAS_REDIRECT",
+      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
+      "word_count": 0
     },
     {
       "slug": "the-information-mercenaries",
       "file": "the-information-mercenaries.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 714
     },
     {
       "slug": "the-moonlords",
       "file": "the-moonlords.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 947
     },
     {
       "slug": "the-nice-easy-bois",
       "file": "the-nice-easy-bois.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 991
     },
     {
       "slug": "the-nomad-bears",
       "file": "the-nomad-bears.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 941
     },
     {
       "slug": "the-og-pixel-saints",
       "file": "the-og-pixel-saints.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 965
     },
     {
       "slug": "the-princess",
       "file": "the-princess.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1175
     },
     {
       "slug": "the-rugpull-miners",
       "file": "the-rugpull-miners.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 939
     },
     {
       "slug": "the-salvagers",
       "file": "the-salvagers.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 947
     },
     {
       "slug": "the-shard-mothers-of-manhattan",
       "file": "the-shard-mothers-of-manhattan.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 933
     },
     {
       "slug": "the-squeaky-pinks",
       "file": "the-squeaky-pinks.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 682
     },
     {
       "slug": "the-tuskon-ogs",
       "file": "the-tuskon-ogs.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 769
     },
     {
       "slug": "the-whitewasher",
       "file": "the-whitewasher.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1137
     },
     {
       "slug": "thera-9",
       "file": "thera-9.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 517
     },
     {
       "slug": "thorne-the-architect",
       "file": "thorne-the-architect.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1137
     },
     {
       "slug": "tokenomics",
       "file": "tokenomics.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1527
     },
     {
       "slug": "trevor-fung",
       "file": "trevor-fung.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 3183
     },
     {
       "slug": "triple-fork-event",
       "file": "triple-fork-event.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 937
     },
     {
       "slug": "wagmi-prophecy",
       "file": "wagmi-prophecy.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 560
     },
     {
       "slug": "wallets",
       "file": "wallets.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1288
     },
     {
       "slug": "wax-blockchain",
       "file": "wax-blockchain.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1095
     },
     {
       "slug": "wax-dexs-defi",
       "file": "wax-dexs-defi.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 622
     },
     {
       "slug": "wax-nft-marketplaces",
       "file": "wax-nft-marketplaces.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 641
     },
     {
       "slug": "wax-pepe",
       "file": "wax-pepe.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 686
     },
     {
       "slug": "waxp",
       "file": "waxp.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1958
     },
     {
       "slug": "waxp-exchange",
       "file": "waxp-exchange.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 543
     },
     {
       "slug": "web3",
       "file": "web3.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1528
     },
     {
       "slug": "whale-lords",
       "file": "whale-lords.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 563
     },
     {
       "slug": "wuffi",
       "file": "wuffi.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 1253
     },
     {
       "slug": "xrp-kids",
       "file": "xrp-kids.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 4506
     },
     {
       "slug": "xrp-ledger",
       "file": "xrp-ledger.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "status": "APPROVED_CANON_PAGE",
+      "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 388
     }
-  ]
+  ],
+  "blocked": [],
+  "review": []
 }
