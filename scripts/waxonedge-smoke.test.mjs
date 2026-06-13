@@ -217,14 +217,15 @@ ok('waxonedge.js uses selected-token pair cache for matrix/proof rows',
   js.includes('function getMarketsForSelection(selection)') &&
   js.includes('state.tokenPairCache[selection.key]') &&
   js.includes('var rows = state.selected && state.selected.key ? getMarketsForSelection(state.selected) : getAllMarkets();'));
-ok('renderTokenStats uses backend detail stats as canonical source',
+ok('renderTokenStats uses backend detail stats without aggregate-complete gating',
   js.includes('function isCanonicalAggregateValid(stats)') &&
   js.includes('var stats = context.stats || {};') &&
-  js.includes('var canonicalValid = isCanonicalAggregateValid(stats);') &&
-  js.includes('var currentPriceWax = canonicalValid ? asNum(stats.selected_price_wax) : null;') &&
-  js.includes('var currentPriceUsd = canonicalValid ? asNum(stats.selected_price_usd) : null;') &&
-  js.includes('var volume24 = canonicalValid ? asNum(stats.volume_24h_wax) : null;') &&
-  js.includes('var liquidityWax = canonicalValid ? asNum(stats.liquidity_wax) : null;') &&
+  js.includes('var currentPriceWax = asNum(stats.selected_price_wax);') &&
+  js.includes('var currentPriceUsd = asNum(stats.selected_price_usd);') &&
+  js.includes('var volume24 = asNum(stats.volume_24h_wax);') &&
+  js.includes('var liquidityWax = asNum(stats.liquidity_wax);') &&
+  js.includes('stats.aggregate_status') &&
+  js.includes('tokenStatReason(stats') &&
   !js.includes('var currentPriceWax = token.systemPrice'));
 
 ok('waxonedge.js has exactly one pickDefaultSelection definition',

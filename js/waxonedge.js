@@ -1689,6 +1689,17 @@
     return complete === 1 && truncated !== 1;
   }
 
+  function tokenStatReason(stats, key) {
+    var reasons = stats && stats.unavailable_reasons && typeof stats.unavailable_reasons === 'object'
+      ? stats.unavailable_reasons
+      : {};
+    return reasons[key] || '';
+  }
+
+  function tokenAvailabilityHtml(stats, key, fallback) {
+    return availabilityHtml(tokenStatReason(stats, key) || fallback);
+  }
+
   function getSelectedTokenContext() {
     var selection = state.selected;
     var detail = state.tokenDetailCache[selection.key] || null;
@@ -2087,31 +2098,40 @@
     var token = context.token;
     var selection = context.selection;
     var stats = context.stats || {};
-    var canonicalValid = isCanonicalAggregateValid(stats);
     var chainStat = state.chainStatCache[selection.key] || null;
     var supply = chainStat && chainStat.supply ? chainStat.supply : null;
     var chartBundle = context.chartMarket ? state.chartCache[context.chartMarket.marketId] : state.chartCache['backend:' + selection.key];
     var historicalVolumes = computeHistoricalVolumes(chartBundle);
     var canUseHistoricalVolumes = chartBundleHasSelectedBaseVolume(chartBundle, context);
-    var currentPriceWax = canonicalValid ? asNum(stats.selected_price_wax) : null;
-    var currentPriceUsd = canonicalValid ? asNum(stats.selected_price_usd) : null;
-    var selectedSource = canonicalValid && stats.selected_pair_source ? getDexShortLabel(stats.selected_pair_source) : UNAVAILABLE_TEXT;
-    var strongestPair = canonicalValid && stats.selected_pair_source && stats.selected_pair_id
-      ? getDexShortLabel(stats.selected_pair_source) + ' #' + stats.selected_pair_id
-      : UNAVAILABLE_TEXT;
-    var sourceCount = canonicalValid ? asNum(stats.source_count) : null;
-    var indexedPairCount = canonicalValid ? asNum(stats.indexed_pair_count) : null;
-    var volume24 = canonicalValid ? asNum(stats.volume_24h_wax) : null;
-    var liquidityWax = canonicalValid ? asNum(stats.liquidity_wax) : null;
-    var liquidityUsd = canonicalValid ? asNum(stats.liquidity_usd) : null;
-    var tvlWax = canonicalValid ? asNum(stats.tvl_wax) : null;
-    var tvlUsd = canonicalValid ? asNum(stats.tvl_usd) : null;
+    var currentPriceWax = asNum(stats.selected_price_wax);
+    var currentPriceUsd = asNum(stats.selected_price_usd);
+    var selectedSource = stats.selected_price_source ||
+      (stats.selected_pair_source && stats.selected_pair_id ? getDexShortLabel(stats.selected_pair_source) + ' #' + stats.selected_pair_id : '');
+    var strongestPairData = stats.strongest_pair && typeof stats.strongest_pair === 'object' ? stats.strongest_pair : null;
+    var strongestPair = strongestPairData && strongestPairData.label
+      ? strongestPairData.label
+      : (stats.selected_pair_source && stats.selected_pair_id ? getDexShortLabel(stats.selected_pair_source) + ' #' + stats.selected_pair_id : '');
+    var sourceCount = asNum(stats.source_count);
+    var indexedPairCount = asNum(stats.indexed_pair_count);
+    var volume24 = asNum(stats.volume_24h_wax);
+    var liquidityWax = asNum(stats.liquidity_wax);
+    var liquidityUsd = asNum(stats.liquidity_usd);
+    var cumulatedLiquidityWax = asNum(stats.cumulated_pair_liquidity_wax != null ? stats.cumulated_pair_liquidity_wax : stats.liquidity_wax);
+    var cumulatedLiquidityUsd = asNum(stats.cumulated_pair_liquidity_usd != null ? stats.cumulated_pair_liquidity_usd : stats.liquidity_usd);
+    var tvlWax = asNum(stats.tvl_wax);
+    var tvlUsd = asNum(stats.tvl_usd);
     var fdvWax = asNum(stats.fdv_wax);
     var fdvUsd = asNum(stats.fdv_usd);
-    var change24 = asNum(stats.change_24h);
-    var aggregateStatus = canonicalValid
-      ? 'Canonical aggregate complete'
-      : (asNum(stats.aggregate_truncated != null ? stats.aggregate_truncated : stats.aggregate_sources_truncated) === 1 ? 'Aggregate truncated; final metrics unavailable' : 'Aggregate incomplete; final metrics unavailable');
+    var marketCapWax = asNum(stats.market_cap_wax);
+    var marketCapUsd = asNum(stats.market_cap_usd);
+    var change24 = asNum(stats.price_change_24h != null ? stats.price_change_24h : stats.change_24h);
+    var aggregateStatus = stats.aggregate_status ||
+      (isCanonicalAggregateValid(stats)
+        ? 'Canonical aggregate complete'
+        : (asNum(stats.aggregate_truncated != null ? stats.aggregate_truncated : stats.aggregate_sources_truncated) === 1 ? 'Aggregate truncated; final metrics unavailable' : 'Indexed pairs found; advanced metrics partial'));
+    var totalSupplyText = supply && supply.raw
+      ? supply.raw
+      : (token && token.raw && token.raw.total_supply != null ? String(token.raw.total_supply) + ' ' + selection.symbol : '');
 
     function statRow(label, value, options) {
       var valueClass = options && options.muted ? ' woe-stat-muted' : '';
@@ -2123,43 +2143,45 @@
 
     var statsHtml = '';
     statsHtml += statRow('Token', escHtml(selection.symbol + ' @ ' + selection.contract));
-    statsHtml += statRow('Aggregate status', escHtml(aggregateStatus), { muted: !canonicalValid });
-    statsHtml += statRow('Selected price source', escHtml(selectedSource));
+    statsHtml += statRow('Aggregate status', escHtml(aggregateStatus), { muted: !isCanonicalAggregateValid(stats) });
+    statsHtml += statRow('Selected price source', selectedSource ? escHtml(selectedSource) : tokenAvailabilityHtml(stats, 'selected_price'));
     statsHtml += statRow('Current price in WAX and USD', currentPriceWax != null || currentPriceUsd != null
       ? escHtml(formatDualMetric(currentPriceWax, currentPriceUsd, 'WAX', '$'))
-      : availabilityHtml());
+      : tokenAvailabilityHtml(stats, 'selected_price'));
     statsHtml += statRow('24h price change', change24 != null
       ? '<span class="' + escHtml(pctClass(change24)) + '">' + escHtml(fmtPct(change24)) + '</span>'
-      : availabilityHtml());
+      : tokenAvailabilityHtml(stats, 'price_change_24h'));
     statsHtml += statRow('24h volume', volume24 != null
       ? escHtml(fmtNum(volume24) + ' WAX')
-      : availabilityHtml());
+      : tokenAvailabilityHtml(stats, 'volume_24h'));
     statsHtml += statRow('Total indexed liquidity', liquidityWax != null || liquidityUsd != null
       ? escHtml(formatDualMetric(liquidityWax, liquidityUsd))
-      : availabilityHtml());
-    statsHtml += statRow('Cumulated pair liquidity', liquidityWax != null || liquidityUsd != null
-      ? escHtml(formatDualMetric(liquidityWax, liquidityUsd))
-      : availabilityHtml());
+      : tokenAvailabilityHtml(stats, 'liquidity'));
+    statsHtml += statRow('Cumulated pair liquidity', cumulatedLiquidityWax != null || cumulatedLiquidityUsd != null
+      ? escHtml(formatDualMetric(cumulatedLiquidityWax, cumulatedLiquidityUsd))
+      : tokenAvailabilityHtml(stats, 'liquidity'));
     statsHtml += statRow('Source count', sourceCount != null ? escHtml(String(sourceCount)) : availabilityHtml());
     statsHtml += statRow('Indexed pair count', indexedPairCount != null ? escHtml(String(indexedPairCount)) : availabilityHtml());
-    statsHtml += statRow('Strongest pair', escHtml(strongestPair));
-    statsHtml += statRow('Holder count', availabilityHtml(), { muted: true });
+    statsHtml += statRow('Strongest pair', strongestPair ? escHtml(strongestPair) : tokenAvailabilityHtml(stats, 'selected_price'));
+    statsHtml += statRow('Holder count', stats.holder_count != null ? escHtml(String(stats.holder_count)) : tokenAvailabilityHtml(stats, 'holder_count'), { muted: stats.holder_count == null });
     statsHtml += statRow('Decimals', token.decimals != null ? escHtml(String(token.decimals)) : availabilityHtml());
-    statsHtml += statRow('Total token supply', supply && supply.raw ? escHtml(supply.raw) : availabilityHtml());
-    statsHtml += statRow('Circulating supply', availabilityHtml(), { muted: true });
-    statsHtml += statRow('TVL', tvlWax != null || tvlUsd != null
+    statsHtml += statRow('Total token supply', totalSupplyText ? escHtml(totalSupplyText) : availabilityHtml());
+    statsHtml += statRow('Circulating supply', stats.circulating_supply != null ? escHtml(String(stats.circulating_supply) + ' ' + selection.symbol) : tokenAvailabilityHtml(stats, 'circulating_supply'), { muted: stats.circulating_supply == null });
+    statsHtml += statRow('Indexed liquidity TVL', tvlWax != null || tvlUsd != null
       ? escHtml(formatDualMetric(tvlWax, tvlUsd))
-      : availabilityHtml());
+      : tokenAvailabilityHtml(stats, 'liquidity'));
     statsHtml += statRow('7d volume', canUseHistoricalVolumes && historicalVolumes && historicalVolumes.sevenDay != null
       ? escHtml(fmtNum(historicalVolumes.sevenDay) + ' ' + selection.symbol)
-      : availabilityHtml());
+      : tokenAvailabilityHtml(stats, 'volume_7d'));
     statsHtml += statRow('30d volume', canUseHistoricalVolumes && historicalVolumes && historicalVolumes.thirtyDay != null
       ? escHtml(fmtNum(historicalVolumes.thirtyDay) + ' ' + selection.symbol)
-      : availabilityHtml());
-    statsHtml += statRow('Market cap', availabilityHtml(), { muted: true });
+      : tokenAvailabilityHtml(stats, 'volume_30d'));
+    statsHtml += statRow('Market cap', marketCapWax != null || marketCapUsd != null
+      ? escHtml(formatDualMetric(marketCapWax, marketCapUsd))
+      : tokenAvailabilityHtml(stats, 'market_cap'), { muted: marketCapWax == null && marketCapUsd == null });
     statsHtml += statRow('Fully diluted valuation', fdvWax != null || fdvUsd != null
       ? escHtml(formatDualMetric(fdvWax, fdvUsd))
-      : availabilityHtml());
+      : tokenAvailabilityHtml(stats, 'fdv'));
 
     setHtml('woe-token-stats', statsHtml);
   }
