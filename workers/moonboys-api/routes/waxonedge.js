@@ -7,6 +7,7 @@ const REQUIRES_INDEXED_BACKEND = 'Requires indexed backend';
 const SOURCE_NOT_INDEXED = 'Source not indexed yet';
 const CHAIN_TABLE_PAGE_LIMIT = 1000;
 const MAX_CHAIN_TABLE_PAGES = 20;
+const CORE_DEX_PAGES_PER_INVOCATION = 3;
 const MIN_TRUSTED_WAX_LIQUIDITY = 10;
 const WAXONEDGE_AGGREGATE_SOURCES = Object.freeze([
   'alcor',
@@ -17,6 +18,12 @@ const WAXONEDGE_AGGREGATE_SOURCES = Object.freeze([
 ]);
 const TOKEN_PAIR_PAGE_LIMIT = 100;
 const TOKEN_PAIR_MAX_PAGE_LIMIT = 250;
+const LARGE_SNAPSHOT_SOURCES = Object.freeze([
+  'swap.alcor_pools',
+  'swap.taco_pairs',
+  'swap.nefty_pairs',
+  'swap.box_pairs',
+]);
 
 const CORE_DEX_ADAPTERS = Object.freeze([
   {
@@ -284,6 +291,9 @@ async function recordSyncRun(db, source, status, startedAt, error = null) {
 }
 
 async function writeSnapshot(db, source, payload, fetchedAt) {
+  if (LARGE_SNAPSHOT_SOURCES.includes(source) && Array.isArray(payload?.rows)) {
+    throw new Error(`Refusing oversized raw DEX snapshot for ${source}; write compact metadata instead`);
+  }
   await db.prepare(
     `INSERT INTO waxonedge_snapshots (source, fetched_at, payload_json)
      VALUES (?, ?, ?)
@@ -291,6 +301,21 @@ async function writeSnapshot(db, source, payload, fetchedAt) {
        fetched_at = excluded.fetched_at,
        payload_json = excluded.payload_json`
   ).bind(source, fetchedAt, JSON.stringify(payload)).run();
+}
+
+async function writeCompactDexSnapshot(db, adapter, metadata, fetchedAt) {
+  await writeSnapshot(db, `${adapter.source}_${adapter.table}`, {
+    contract: adapter.contract,
+    table: adapter.table,
+    row_count: metadata.row_count || 0,
+    page_count: metadata.page_count || 0,
+    fetched_at: fetchedAt,
+    truncated: !!metadata.truncated,
+    error: metadata.error || null,
+    cursor: metadata.cursor || '',
+    sync_cycle_id: metadata.sync_cycle_id || '',
+    compact: true,
+  }, fetchedAt);
 }
 
 async function readSnapshot(db, source) {
@@ -548,13 +573,16 @@ async function getAbiTableNames(contract) {
     : [];
 }
 
-async function fetchTableRows(contract, table, limit = CHAIN_TABLE_PAGE_LIMIT) {
+async function fetchTableRows(contract, table, options = {}) {
+  const limit = options.limit || CHAIN_TABLE_PAGE_LIMIT;
+  const maxPages = options.maxPages || MAX_CHAIN_TABLE_PAGES;
   const rows = [];
-  let lowerBound = '';
+  let lowerBound = options.lowerBound || '';
   let nextKey = '';
   let truncated = false;
   let pageCount = 0;
-  for (let page = 0; page < MAX_CHAIN_TABLE_PAGES; page += 1) {
+  let complete = false;
+  for (let page = 0; page < maxPages; page += 1) {
     const data = await rpcPost('/v1/chain/get_table_rows', {
       code: contract,
       scope: contract,
@@ -566,14 +594,17 @@ async function fetchTableRows(contract, table, limit = CHAIN_TABLE_PAGE_LIMIT) {
     pageCount += 1;
     if (Array.isArray(data?.rows)) rows.push(...data.rows);
     nextKey = data?.next_key || '';
-    if (!data?.more || !nextKey) break;
-    if (page === MAX_CHAIN_TABLE_PAGES - 1) {
+    if (!data?.more || !nextKey) {
+      complete = true;
+      break;
+    }
+    if (page === maxPages - 1) {
       truncated = true;
       break;
     }
     lowerBound = nextKey;
   }
-  return { rows, truncated, next_key: nextKey, page_count: pageCount };
+  return { rows, truncated, complete, next_key: nextKey, page_count: pageCount };
 }
 
 async function upsertPairs(db, pairs) {
@@ -634,7 +665,7 @@ function buildTickerIndex(tickers) {
   return index;
 }
 
-async function syncAlcorMarketData(env, reason) {
+async function syncAlcorMarketData(env, reason, syncCycleId = '') {
   const db = env.DB;
   const startedAt = nowIso();
   try {
@@ -684,15 +715,123 @@ async function syncAlcorMarketData(env, reason) {
 
     await recordSyncRun(db, reason || 'alcor_market_data', 'success', startedAt);
     await recordSyncRun(db, 'alcor', 'success', startedAt);
+    if (syncCycleId) {
+      await upsertSourceIndexState(db, 'alcor', {
+        sync_cycle_id: syncCycleId,
+        cursor: '',
+        page_count: 1,
+        row_count: normalizedPairs.length,
+        complete: 1,
+        truncated: 0,
+        status: 'success',
+        error: null,
+        started_at: startedAt,
+      }).catch(() => {});
+    }
     return { ok: true, tokens: normalizedTokens.length, pairs: normalizedPairs.length };
   } catch (error) {
     await recordSyncRun(db, reason || 'alcor_market_data', 'failed', startedAt, error?.message || String(error)).catch(() => {});
     await recordSyncRun(db, 'alcor', 'failed', startedAt, error?.message || String(error)).catch(() => {});
+    if (syncCycleId) {
+      await upsertSourceIndexState(db, 'alcor', {
+        sync_cycle_id: syncCycleId,
+        complete: 0,
+        truncated: 0,
+        status: 'failed',
+        error: error?.message || String(error),
+        started_at: startedAt,
+      }).catch(() => {});
+    }
     return { ok: false, error: error?.message || String(error) };
   }
 }
 
-async function syncCoreDexAdapters(env) {
+async function readSourceIndexState(db, source) {
+  return db.prepare(
+    `SELECT source, sync_cycle_id, cursor, page_count, row_count, complete, truncated,
+            status, error, started_at, updated_at
+     FROM waxonedge_source_index_state
+     WHERE source = ? LIMIT 1`
+  ).bind(source).first().catch(() => null);
+}
+
+async function upsertSourceIndexState(db, source, patch) {
+  const now = nowIso();
+  const existing = await readSourceIndexState(db, source);
+  const next = {
+    sync_cycle_id: patch.sync_cycle_id ?? existing?.sync_cycle_id ?? '',
+    cursor: patch.cursor ?? existing?.cursor ?? '',
+    page_count: patch.page_count ?? existing?.page_count ?? 0,
+    row_count: patch.row_count ?? existing?.row_count ?? 0,
+    complete: patch.complete ?? existing?.complete ?? 0,
+    truncated: patch.truncated ?? existing?.truncated ?? 0,
+    status: patch.status ?? existing?.status ?? 'pending',
+    error: patch.error ?? existing?.error ?? null,
+    started_at: patch.started_at ?? existing?.started_at ?? now,
+    updated_at: patch.updated_at ?? now,
+  };
+  await db.prepare(
+    `INSERT INTO waxonedge_source_index_state
+     (source, sync_cycle_id, cursor, page_count, row_count, complete, truncated, status, error, started_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(source) DO UPDATE SET
+       sync_cycle_id = excluded.sync_cycle_id,
+       cursor = excluded.cursor,
+       page_count = excluded.page_count,
+       row_count = excluded.row_count,
+       complete = excluded.complete,
+       truncated = excluded.truncated,
+       status = excluded.status,
+       error = excluded.error,
+       started_at = excluded.started_at,
+       updated_at = excluded.updated_at`
+  ).bind(
+    source,
+    next.sync_cycle_id,
+    next.cursor,
+    next.page_count,
+    next.row_count,
+    next.complete,
+    next.truncated,
+    next.status,
+    next.error ? String(next.error).slice(0, 1000) : null,
+    next.started_at,
+    next.updated_at,
+  ).run();
+  return { source, ...next };
+}
+
+async function getActiveSourceCycleId(db) {
+  const rows = await db.prepare(
+    `SELECT sync_cycle_id
+     FROM waxonedge_source_index_state
+     WHERE source IN (${CORE_DEX_ADAPTERS.map(() => '?').join(',')})
+       AND complete = 0
+       AND sync_cycle_id IS NOT NULL
+       AND sync_cycle_id != ''
+     ORDER BY updated_at DESC
+     LIMIT 1`
+  ).bind(...CORE_DEX_ADAPTERS.map((adapter) => adapter.source)).all().catch(() => ({ results: [] }));
+  return rows.results?.[0]?.sync_cycle_id || `woe-${Date.now()}`;
+}
+
+async function markSourceComplete(db, source, syncCycleId, details = {}) {
+  const state = await upsertSourceIndexState(db, source, {
+    sync_cycle_id: syncCycleId,
+    cursor: '',
+    complete: details.truncated ? 0 : 1,
+    truncated: details.truncated ? 1 : 0,
+    status: details.truncated ? 'failed' : 'success',
+    error: details.error || null,
+    row_count: details.row_count ?? 0,
+    page_count: details.page_count ?? 0,
+    started_at: details.started_at || nowIso(),
+  });
+  await recordSyncRun(db, source, state.status, state.started_at, state.error);
+  return state;
+}
+
+async function syncCoreDexAdapters(env, syncCycleId = '') {
   const startedAt = nowIso();
   const priceRows = await env.DB.prepare(
     `SELECT contract, symbol, price_wax, price_usd FROM waxonedge_tokens`
@@ -709,6 +848,27 @@ async function syncCoreDexAdapters(env) {
   for (const adapter of CORE_DEX_ADAPTERS) {
     const adapterStartedAt = nowIso();
     try {
+      const activeCycleId = syncCycleId || await getActiveSourceCycleId(env.DB);
+      let state = await readSourceIndexState(env.DB, adapter.source);
+      if (state?.complete === 1 && state.sync_cycle_id === activeCycleId) {
+        results.push({ source: adapter.source, ok: true, complete: true, skipped: true, cycle: activeCycleId });
+        continue;
+      }
+      const isNewCycle = !state || state.sync_cycle_id !== activeCycleId || state.status === 'failed';
+      if (isNewCycle) {
+        await env.DB.prepare(`DELETE FROM waxonedge_pairs WHERE source = ?`).bind(adapter.source).run();
+        state = await upsertSourceIndexState(env.DB, adapter.source, {
+          sync_cycle_id: activeCycleId,
+          cursor: '',
+          page_count: 0,
+          row_count: 0,
+          complete: 0,
+          truncated: 0,
+          status: 'running',
+          error: null,
+          started_at: adapterStartedAt,
+        });
+      }
       const tables = await getAbiTableNames(adapter.contract);
       await writeSnapshot(env.DB, `${adapter.source}_abi`, {
         contract: adapter.contract,
@@ -719,75 +879,117 @@ async function syncCoreDexAdapters(env) {
       if (!tables.includes(adapter.table)) {
         const error = `ABI table not found: ${adapter.table}`;
         await recordSyncRun(env.DB, adapter.source, 'skipped', adapterStartedAt, error);
+        await upsertSourceIndexState(env.DB, adapter.source, {
+          sync_cycle_id: activeCycleId,
+          complete: 0,
+          truncated: 0,
+          status: 'failed',
+          error,
+          started_at: state.started_at || adapterStartedAt,
+        });
         results.push({ source: adapter.source, ok: true, skipped: true, error });
         continue;
       }
-      const tableResult = await fetchTableRows(adapter.contract, adapter.table, CHAIN_TABLE_PAGE_LIMIT);
+      const tableResult = await fetchTableRows(adapter.contract, adapter.table, {
+        limit: CHAIN_TABLE_PAGE_LIMIT,
+        lowerBound: state.cursor || '',
+        maxPages: CORE_DEX_PAGES_PER_INVOCATION,
+      });
       const rows = tableResult.rows;
-      await writeSnapshot(env.DB, `${adapter.source}_${adapter.table}`, {
-        contract: adapter.contract,
-        table: adapter.table,
-        rows,
-        truncated: tableResult.truncated,
-        next_key: tableResult.next_key,
-        page_count: tableResult.page_count,
-      }, syncedAt);
-      if (tableResult.truncated) {
-        const error = `ABI table pagination truncated at ${tableResult.page_count} page(s); next_key=${tableResult.next_key || 'unknown'}`;
-        await recordSyncRun(env.DB, adapter.source, 'failed', adapterStartedAt, error);
-        results.push({ source: adapter.source, ok: false, truncated: true, error });
-        continue;
-      }
       const pairs = rows
         .map((row) => normalizeCoreDexPair(adapter, row, priceIndex, syncedAt))
         .filter(Boolean);
-      await env.DB.prepare(`DELETE FROM waxonedge_pairs WHERE source = ?`).bind(adapter.source).run();
       await upsertPairs(env.DB, pairs);
-      await recordSyncRun(env.DB, adapter.source, 'success', adapterStartedAt);
-      results.push({ source: adapter.source, ok: true, pairs: pairs.length });
+      const nextPageCount = (state.page_count || 0) + tableResult.page_count;
+      const nextRowCount = (state.row_count || 0) + rows.length;
+      const complete = tableResult.complete ? 1 : 0;
+      const status = complete ? 'success' : 'running';
+      const error = complete ? null : `Partial source sync checkpoint saved after ${tableResult.page_count} page(s); next_key=${tableResult.next_key || 'unknown'}`;
+      await upsertSourceIndexState(env.DB, adapter.source, {
+        sync_cycle_id: activeCycleId,
+        cursor: complete ? '' : tableResult.next_key,
+        page_count: nextPageCount,
+        row_count: nextRowCount,
+        complete,
+        truncated: 0,
+        status,
+        error,
+        started_at: state.started_at || adapterStartedAt,
+      });
+      await writeCompactDexSnapshot(env.DB, adapter, {
+        row_count: nextRowCount,
+        page_count: nextPageCount,
+        truncated: 0,
+        error,
+        cursor: complete ? '' : tableResult.next_key,
+        sync_cycle_id: activeCycleId,
+      }, syncedAt);
+      if (complete) {
+        await recordSyncRun(env.DB, adapter.source, 'success', adapterStartedAt);
+      } else {
+        await recordSyncRun(env.DB, adapter.source, 'running', adapterStartedAt, error);
+      }
+      results.push({
+        source: adapter.source,
+        ok: true,
+        pairs: pairs.length,
+        rows: rows.length,
+        complete: !!complete,
+        cursor: complete ? '' : tableResult.next_key,
+        cycle: activeCycleId,
+      });
     } catch (error) {
       await recordSyncRun(env.DB, adapter.source, 'failed', adapterStartedAt, error?.message || String(error)).catch(() => {});
+      await upsertSourceIndexState(env.DB, adapter.source, {
+        sync_cycle_id: syncCycleId || '',
+        complete: 0,
+        truncated: /truncated/i.test(String(error?.message || error)) ? 1 : 0,
+        status: 'failed',
+        error: error?.message || String(error),
+        started_at: adapterStartedAt,
+      }).catch(() => {});
       results.push({ source: adapter.source, ok: false, error: error?.message || String(error) });
     }
   }
-  return { ok: results.every((result) => result.ok), results };
+  return { ok: results.every((result) => result.ok), complete: results.every((result) => result.complete || result.skipped), results };
 }
 
 async function getAggregateRunStatus(db) {
   const rows = await db.prepare(
-    `SELECT source, status, error
-     FROM waxonedge_sync_runs latest
-     WHERE source IN (${WAXONEDGE_AGGREGATE_SOURCES.map(() => '?').join(',')})
-       AND started_at = (
-         SELECT MAX(started_at)
-         FROM waxonedge_sync_runs
-         WHERE source = latest.source
-       )`
+    `SELECT source, sync_cycle_id, complete, truncated, status, error
+     FROM waxonedge_source_index_state
+     WHERE source IN (${WAXONEDGE_AGGREGATE_SOURCES.map(() => '?').join(',')})`
   ).bind(...WAXONEDGE_AGGREGATE_SOURCES).all().catch(() => ({ results: [] }));
-  const latest = new Map();
+  const states = new Map();
   for (const row of rows.results || []) {
     const source = aggregateSourceKey(row.source);
-    if (!latest.has(source)) latest.set(source, row);
+    if (!states.has(source)) states.set(source, row);
   }
+  const cycleIds = WAXONEDGE_AGGREGATE_SOURCES
+    .map((source) => states.get(source)?.sync_cycle_id)
+    .filter(Boolean);
+  const syncCycleId = cycleIds[0] || '';
+  const sameCycle = !!syncCycleId && cycleIds.length === WAXONEDGE_AGGREGATE_SOURCES.length && cycleIds.every((id) => id === syncCycleId);
   const processed = [];
   const failed = [];
   const truncatedSources = [];
   for (const source of WAXONEDGE_AGGREGATE_SOURCES) {
-    const row = latest.get(source);
-    if (row && row.status === 'success') {
+    const row = states.get(source);
+    if (row && row.status === 'success' && asNumber(row.complete) === 1 && row.sync_cycle_id === syncCycleId) {
       processed.push(source);
     } else {
       failed.push(source);
     }
-    if (row && /truncated/i.test(String(row.error || ''))) truncatedSources.push(source);
+    if (row && (asNumber(row.truncated) === 1 || /truncated/i.test(String(row.error || '')))) truncatedSources.push(source);
   }
   return {
     required: WAXONEDGE_AGGREGATE_SOURCES.slice(),
+    syncCycleId,
     processed,
     failed,
     truncated: truncatedSources.length > 0,
     truncatedSources,
-    complete: failed.length === 0 && truncatedSources.length === 0,
+    complete: sameCycle && failed.length === 0 && truncatedSources.length === 0,
   };
 }
 
@@ -977,6 +1179,17 @@ async function aggregateTokenAnalytics(env) {
     await env.DB.batch(statements.slice(i, i + 50));
   }
   await recordSyncRun(env.DB, 'token_aggregates', runStatus.complete ? 'success' : 'failed', startedAt, runStatus.complete ? null : 'Aggregate incomplete: one or more configured sources failed or truncated');
+  await upsertSourceIndexState(env.DB, 'token_aggregates', {
+    sync_cycle_id: runStatus.syncCycleId || '',
+    cursor: '',
+    page_count: 1,
+    row_count: aggregates.size,
+    complete: runStatus.complete ? 1 : 0,
+    truncated: runStatus.truncated ? 1 : 0,
+    status: runStatus.complete ? 'success' : 'failed',
+    error: runStatus.complete ? null : 'Aggregate incomplete: one or more configured sources failed or truncated',
+    started_at: startedAt,
+  }).catch(() => {});
   return { ok: runStatus.complete, tokens: aggregates.size, runStatus };
 }
 
@@ -1158,15 +1371,26 @@ async function getLatestSync(db) {
   return rows.results || [];
 }
 
+async function getSourceIndexStates(db) {
+  const rows = await db.prepare(
+    `SELECT source, sync_cycle_id, cursor, page_count, row_count, complete, truncated,
+            status, error, started_at, updated_at
+     FROM waxonedge_source_index_state
+     ORDER BY updated_at DESC`
+  ).all().catch(() => ({ results: [] }));
+  return rows.results || [];
+}
+
 async function handleBootstrap(env, corsHeaders) {
   const coreSnapshotReads = CORE_DEX_ADAPTERS.flatMap((adapter) => [
     readSnapshot(env.DB, `${adapter.source}_abi`),
     readSnapshot(env.DB, `${adapter.source}_${adapter.table}`),
   ]);
-  const [tokens, pairs, syncStatus, alcorTokens, alcorPairs, alcorTickers, alcorGlobal, ...coreSnapshots] = await Promise.all([
+  const [tokens, pairs, syncStatus, sourceStates, alcorTokens, alcorPairs, alcorTickers, alcorGlobal, ...coreSnapshots] = await Promise.all([
     listTopTokens(env.DB),
     listTopPairs(env.DB),
     getLatestSync(env.DB),
+    getSourceIndexStates(env.DB),
     readSnapshot(env.DB, 'alcor_tokens'),
     readSnapshot(env.DB, 'alcor_pairs'),
     readSnapshot(env.DB, 'alcor_tickers'),
@@ -1191,7 +1415,10 @@ async function handleBootstrap(env, corsHeaders) {
       indexed: !!tableSnapshot.data,
       contract: adapter.contract,
       table: adapter.table,
-      row_count: Array.isArray(tableSnapshot.data?.rows) ? tableSnapshot.data.rows.length : 0,
+      row_count: tableSnapshot.data?.row_count || 0,
+      page_count: tableSnapshot.data?.page_count || 0,
+      complete: tableSnapshot.data?.truncated ? false : !tableSnapshot.data?.cursor,
+      compact: tableSnapshot.data?.compact === true,
     };
     rawCore[`${key}_detected_tables`] = abiSnapshot.data?.detected_tables || [];
   });
@@ -1218,6 +1445,7 @@ async function handleBootstrap(env, corsHeaders) {
     tokens,
     pairs,
     sync_status: syncStatus,
+    source_index_state: sourceStates,
     sources: {
       alcor_tokens: { updated_at: alcorTokens.fetched_at, indexed: !!alcorTokens.data },
       alcor_pairs: { updated_at: alcorPairs.fetched_at, indexed: !!alcorPairs.data },
@@ -1255,12 +1483,15 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
   try {
     if (path === `${WAXONEDGE_API_PREFIX}/bootstrap`) return handleBootstrap(env, corsHeaders);
     if (path === `${WAXONEDGE_API_PREFIX}/summary`) {
-      const [tokens, pairs, syncStatus] = await Promise.all([listTopTokens(env.DB), listTopPairs(env.DB), getLatestSync(env.DB)]);
-      return ok({ token_count: tokens.length, pair_count: pairs.length, latest_sync: syncStatus.slice(0, 10) }, [], null, corsHeaders);
+      const [tokens, pairs, syncStatus, sourceStates] = await Promise.all([listTopTokens(env.DB), listTopPairs(env.DB), getLatestSync(env.DB), getSourceIndexStates(env.DB)]);
+      return ok({ token_count: tokens.length, pair_count: pairs.length, latest_sync: syncStatus.slice(0, 10), source_index_state: sourceStates }, [], null, corsHeaders);
     }
     if (path === `${WAXONEDGE_API_PREFIX}/tokens/top`) return ok(await listTopTokens(env.DB), [], null, corsHeaders);
     if (path === `${WAXONEDGE_API_PREFIX}/pairs/top`) return ok(await listTopPairs(env.DB), [], null, corsHeaders);
-    if (path === `${WAXONEDGE_API_PREFIX}/sync-status`) return ok(await getLatestSync(env.DB), [], null, corsHeaders);
+    if (path === `${WAXONEDGE_API_PREFIX}/sync-status`) {
+      const [latest_sync, source_index_state] = await Promise.all([getLatestSync(env.DB), getSourceIndexStates(env.DB)]);
+      return ok({ latest_sync, source_index_state }, [], null, corsHeaders);
+    }
 
     const tokenMatch = path.match(/^\/api\/waxonedge\/token\/([^/]+)\/([^/]+)(?:\/([^/]+))?$/);
     if (tokenMatch) {
@@ -1301,13 +1532,14 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
   const shouldRunFullIndex = !cron || cron === '*/5 * * * *' || (isMinuteCron && minute % 5 === 0);
   if (shouldRunFullIndex) {
     tasks.push((async () => {
+      const syncCycleId = await getActiveSourceCycleId(env.DB);
       const [alcor, core, nefty] = await Promise.all([
-        syncAlcorMarketData(env, 'alcor_five_minute_market_data'),
-        syncCoreDexAdapters(env),
+        syncAlcorMarketData(env, 'alcor_five_minute_market_data', syncCycleId),
+        syncCoreDexAdapters(env, syncCycleId),
         syncNeftyAbi(env),
       ]);
       const aggregates = await aggregateTokenAnalytics(env);
-      return { ok: alcor.ok && core.ok && nefty.ok && aggregates.ok, alcor, core, nefty, aggregates };
+      return { ok: alcor.ok && core.ok && nefty.ok && aggregates.ok, syncCycleId, alcor, core, nefty, aggregates };
     })());
   } else if (isMinuteCron) {
     tasks.push(syncAlcorMarketData(env, 'alcor_minute_market_data'));
