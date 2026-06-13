@@ -973,11 +973,14 @@ async function syncCoreDexAdapters(env, syncCycleId = '') {
       const previousCursor = state.cursor || '';
       const reportedCursor = complete ? '' : (tableResult.next_key || '');
       const cursorChanged = previousCursor !== reportedCursor;
-      const previousRetryCount = asNumber(previousSnapshot.data?.retry_count) || 0;
+      const sameSnapshotCycle = previousSnapshot.data?.sync_cycle_id === activeCycleId;
+      const previousRetryCount = sameSnapshotCycle ? (asNumber(previousSnapshot.data?.retry_count) || 0) : 0;
       const retryCount = (!complete && reportedCursor && !cursorChanged) ? previousRetryCount + 1 : 0;
-      const previousSkippedCursorCount = asNumber(previousSnapshot.data?.skipped_cursor_count) || 0;
+      const previousSkippedCursorCount = sameSnapshotCycle && !cursorChanged
+        ? (asNumber(previousSnapshot.data?.skipped_cursor_count) || 0)
+        : 0;
       let skippedCursorCount = previousSkippedCursorCount;
-      let skippedCursorReason = previousSnapshot.data?.skipped_cursor_reason || null;
+      let skippedCursorReason = null;
       let savedCursor = reportedCursor;
       if (!complete && reportedCursor && retryCount >= STUCK_CURSOR_RETRY_LIMIT) {
         const advancedCursor = incrementNumericCursor(reportedCursor);
@@ -1966,9 +1969,11 @@ async function aggregateNeedsRefreshAfterPairSync(db) {
     latestAggregateRunRow(db),
     latestPairSyncRunRow(db),
   ]);
-  if (!pairSync?.finished_at) return false;
-  if (!aggregate?.finished_at) return true;
-  return Date.parse(aggregate.finished_at) < Date.parse(pairSync.finished_at);
+  const pairSyncFinishedAt = Date.parse(pairSync?.finished_at || '');
+  if (!Number.isFinite(pairSyncFinishedAt)) return false;
+  const aggregateFinishedAt = Date.parse(aggregate?.finished_at || '');
+  if (!Number.isFinite(aggregateFinishedAt)) return true;
+  return aggregateFinishedAt < pairSyncFinishedAt;
 }
 
 async function sourceRowCounts(db) {

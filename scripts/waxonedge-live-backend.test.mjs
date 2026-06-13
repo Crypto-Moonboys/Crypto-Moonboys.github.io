@@ -247,11 +247,23 @@ ok('repeated stuck Taco cursor is detected and safely skipped by one numeric cur
   route.includes('const STUCK_CURSOR_RETRY_LIMIT = 3') &&
   route.includes('function incrementNumericCursor(cursor)') &&
   route.includes('BigInt(text) + 1n') &&
+  route.includes('const sameSnapshotCycle = previousSnapshot.data?.sync_cycle_id === activeCycleId') &&
   route.includes('retryCount >= STUCK_CURSOR_RETRY_LIMIT') &&
   route.includes('savedCursor = advancedCursor') &&
   route.includes('skipped_cursor_count') &&
   route.includes('skipped_cursor_reason') &&
   route.includes('stuck_cursor: ${adapter.source} cursor ${reportedCursor} repeated ${retryCount} time(s); next cron will resume at ${advancedCursor}'));
+ok('skipped cursor diagnostics clear when cursor advances or sync cycle changes',
+  route.includes('const sameSnapshotCycle = previousSnapshot.data?.sync_cycle_id === activeCycleId') &&
+  route.includes('const previousRetryCount = sameSnapshotCycle ?') &&
+  route.includes('const previousSkippedCursorCount = sameSnapshotCycle && !cursorChanged') &&
+  route.includes('let skippedCursorReason = null') &&
+  !route.includes('let skippedCursorReason = previousSnapshot.data?.skipped_cursor_reason || null'));
+ok('skipped cursor count resets when progress resumes',
+  route.includes('const previousSkippedCursorCount = sameSnapshotCycle && !cursorChanged') &&
+  route.includes('? (asNumber(previousSnapshot.data?.skipped_cursor_count) || 0)') &&
+  route.includes(': 0') &&
+  route.includes('const effectiveCursorChanged = previousCursor !== savedCursor'));
 ok('swap.alcor and swap.taco cursor progress is visible in health',
   route.includes('source_progress') &&
   route.includes('previous_cursor: previousCursor') &&
@@ -303,10 +315,19 @@ ok('aggregate rebuild runs after latest pair sync if freshness drifts',
   route.includes('async function aggregateNeedsRefreshAfterPairSync') &&
   route.includes('latestAggregateRunRow(db)') &&
   route.includes('latestPairSyncRunRow(db)') &&
-  route.includes('Date.parse(aggregate.finished_at) < Date.parse(pairSync.finished_at)') &&
+  route.includes("const pairSyncFinishedAt = Date.parse(pairSync?.finished_at || '')") &&
+  route.includes('if (!Number.isFinite(pairSyncFinishedAt)) return false') &&
+  route.includes("const aggregateFinishedAt = Date.parse(aggregate?.finished_at || '')") &&
+  route.includes('if (!Number.isFinite(aggregateFinishedAt)) return true') &&
+  route.includes('return aggregateFinishedAt < pairSyncFinishedAt') &&
   route.includes('const needsAggregateRefresh = await aggregateNeedsRefreshAfterPairSync(env.DB)') &&
   route.includes('postSyncAggregate = await aggregateTokenAnalytics(env)') &&
   route.includes('post_sync_aggregate: postSyncAggregate'));
+ok('aggregate refresh timestamp parsing covers invalid and ordered timestamp cases',
+  route.includes('if (!Number.isFinite(pairSyncFinishedAt)) return false') &&
+  route.includes('if (!Number.isFinite(aggregateFinishedAt)) return true') &&
+  route.includes('return aggregateFinishedAt < pairSyncFinishedAt') &&
+  !route.includes('return Date.parse(aggregate.finished_at) < Date.parse(pairSync.finished_at)'));
 ok('bootstrap compact source metadata does not mark missing snapshots complete',
   route.includes('row_count: tableSnapshot.data?.row_count || (Array.isArray(tableSnapshot.data?.rows) ? tableSnapshot.data.rows.length : 0)') &&
   route.includes('complete: !!tableSnapshot.data && (tableSnapshot.data?.truncated ? false : !tableSnapshot.data?.cursor)'));
