@@ -1371,6 +1371,43 @@ function buildDbTokenPriceIndex(rows) {
   return index;
 }
 
+function collectTokenPriceKeysForPairs(pairRows) {
+  const keys = new Map();
+  function add(contract, symbol) {
+    const normalizedContract = normalizeContract(contract);
+    const normalizedSymbol = normalizeSymbol(symbol);
+    const key = tokenKey(normalizedContract, normalizedSymbol);
+    if (key && !keys.has(key)) {
+      keys.set(key, { contract: normalizedContract, symbol: normalizedSymbol });
+    }
+  }
+  add('eosio.token', 'WAX');
+  for (const [contract, symbol] of REFERENCE_QUOTE_TOKENS) add(contract, symbol);
+  for (const pair of pairRows || []) {
+    add(pair.token_a_contract, pair.token_a_symbol);
+    add(pair.token_b_contract, pair.token_b_symbol);
+  }
+  return Array.from(keys.values());
+}
+
+async function loadTokenPriceRowsForPairs(db, pairRows) {
+  const keys = collectTokenPriceKeysForPairs(pairRows);
+  if (!keys.length) return [];
+  const rows = [];
+  for (let i = 0; i < keys.length; i += 50) {
+    const chunk = keys.slice(i, i + 50);
+    const where = chunk.map(() => '(contract = ? AND symbol = ?)').join(' OR ');
+    const params = chunk.flatMap((key) => [key.contract, key.symbol]);
+    const result = await db.prepare(
+      `SELECT contract, symbol, price_wax, price_usd
+       FROM waxonedge_tokens
+       WHERE ${where}`
+    ).bind(...params).all().catch(() => ({ results: [] }));
+    rows.push(...(result.results || []));
+  }
+  return rows;
+}
+
 function pairTokenSide(pair, contract, symbol) {
   const key = tokenKey(contract, symbol);
   const tokenAKey = tokenKey(pair.token_a_contract, pair.token_a_symbol);
@@ -1451,7 +1488,7 @@ function selectedPairLabel(pair) {
 
 function reasonMapForTokenMetrics(metrics) {
   const reasons = {};
-  if (metrics.selected_price_wax == null) reasons.selected_price = metrics.selected_pair_id ? 'Source indexed; price unavailable' : 'No priced indexed pair';
+  if (metrics.selected_price_wax == null) reasons.selected_price = metrics.selected_pair_id ? 'Source indexed; price unavailable' : 'No indexed pair has enough price data yet';
   if (metrics.change_24h == null) reasons.price_change_24h = 'Requires indexed 24h price-change data';
   if (metrics.volume_24h_wax == null) reasons.volume_24h = 'Requires indexed pair or ticker volume';
   if (metrics.liquidity_wax == null && metrics.liquidity_usd == null) reasons.liquidity = 'Requires valued indexed pair reserves';
@@ -1547,7 +1584,7 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows) {
   metrics.selected_pair_id = selected?.pair?.pair_id || metrics.selected_pair_id || null;
   metrics.selected_pair_label = selectedPairLabel(selected?.pair) || null;
   metrics.selected_price_source = metrics.selected_pair_label || (metrics.selected_pair_source && metrics.selected_pair_id ? `${metrics.selected_pair_source} #${metrics.selected_pair_id}` : null);
-  metrics.change_24h = selected ? (selected.change24 != null ? safeDecimal(selected.change24) : null) : safeDecimal(metrics.change_24h);
+  metrics.change_24h = selected?.change24 != null ? safeDecimal(selected.change24) : safeDecimal(metrics.change_24h);
   metrics.price_change_24h = metrics.change_24h;
   metrics.volume_24h = safeDecimal(volumeWax);
   metrics.volume_24h_wax = safeDecimal(volumeWax);
@@ -1593,22 +1630,16 @@ async function getToken(db, contract, symbol) {
             aggregate_truncated, aggregate_sources_truncated, updated_at
      FROM waxonedge_token_stats WHERE contract = ? AND symbol = ? LIMIT 1`
   ).bind(contract, symbol).first().catch(() => null);
-  const [pairRows, priceRows] = await Promise.all([
-    db.prepare(
-      `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
-              price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
-              liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
-       FROM waxonedge_pairs
-       WHERE (token_a_contract = ? AND token_a_symbol = ?)
-          OR (token_b_contract = ? AND token_b_symbol = ?)`
-    ).bind(contract, symbol, contract, symbol).all().catch(() => ({ results: [] })),
-    db.prepare(
-      `SELECT contract, symbol, price_wax, price_usd
-       FROM waxonedge_tokens
-       WHERE price_wax IS NOT NULL OR price_usd IS NOT NULL`
-    ).all().catch(() => ({ results: [] })),
-  ]);
-  const detailStats = deriveTokenPairMetrics(token || { contract, symbol }, stats || {}, pairRows.results || [], priceRows.results || []);
+  const pairRows = await db.prepare(
+    `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+            price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+            liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
+     FROM waxonedge_pairs
+     WHERE (token_a_contract = ? AND token_a_symbol = ?)
+        OR (token_b_contract = ? AND token_b_symbol = ?)`
+  ).bind(contract, symbol, contract, symbol).all().catch(() => ({ results: [] }));
+  const priceRows = await loadTokenPriceRowsForPairs(db, pairRows.results || []);
+  const detailStats = deriveTokenPairMetrics(token || { contract, symbol }, stats || {}, pairRows.results || [], priceRows);
   return {
     token,
     stats: detailStats,
@@ -1779,6 +1810,7 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
 
 export const __waxonedgeTestHooks = {
   deriveTokenPairMetrics,
+  collectTokenPriceKeysForPairs,
 };
 
 export async function runWaxOnEdgeScheduledSync(env, cron = '') {

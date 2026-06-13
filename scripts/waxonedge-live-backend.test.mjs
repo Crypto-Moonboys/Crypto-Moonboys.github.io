@@ -265,11 +265,16 @@ ok('token detail endpoint returns canonical stats and source coverage',
   route.includes('aggregate_sources_truncated'));
 ok('token detail derives partial aggregate metrics from indexed pair rows',
   route.includes('function deriveTokenPairMetrics') &&
+  route.includes('function loadTokenPriceRowsForPairs') &&
   route.includes('selected_price_source') &&
   route.includes('cumulated_pair_liquidity_wax') &&
   route.includes('strongest_pair') &&
   route.includes('unavailable_reasons') &&
   route.includes('Pair liquidity indexed; holder/candle metrics pending'));
+ok('token detail avoids unbounded all-priced-token scan',
+  route.includes('function collectTokenPriceKeysForPairs') &&
+  route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, pairRows.results || [])') &&
+  !route.includes('WHERE price_wax IS NOT NULL OR price_usd IS NOT NULL'));
 {
   const wufStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
     {
@@ -331,6 +336,54 @@ ok('token detail derives partial aggregate metrics from indexed pair rows',
     wufStats.change_24h == null &&
     Number(wufStats.fdv_wax) > 0 &&
     wufStats.unavailable_reasons.price_change_24h === 'Requires indexed 24h price-change data');
+  const preservedChangeStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
+    {
+      contract: 'wuffi',
+      symbol: 'WUF',
+      total_supply: '8846134110430.9018',
+    },
+    {
+      aggregate_complete: 0,
+      change_24h: '1.23',
+    },
+    [
+      {
+        source: 'swap.nefty',
+        pair_id: 'WAXWUFB',
+        token_a_contract: 'eosio.token',
+        token_a_symbol: 'WAX',
+        token_b_contract: 'wuffi',
+        token_b_symbol: 'WUF',
+        price: '500',
+        change_24h: null,
+        volume_24h_wax: '50',
+        liquidity_wax: '2000',
+        reserve_a: '1000',
+        reserve_b: '500000',
+      },
+    ],
+    [
+      { contract: 'eosio.token', symbol: 'WAX', price_wax: '1', price_usd: '0.006' },
+    ],
+  );
+  ok('token detail preserves aggregate change_24h when selected pair change is missing',
+    preservedChangeStats.selected_pair_id === 'WAXWUFB' &&
+    preservedChangeStats.change_24h === '1.23' &&
+    preservedChangeStats.price_change_24h === '1.23');
+  const priceKeys = __waxonedgeTestHooks.collectTokenPriceKeysForPairs([
+    {
+      token_a_contract: 'wuffi',
+      token_a_symbol: 'WUF',
+      token_b_contract: 'abc.token',
+      token_b_symbol: 'ABC',
+    },
+  ]).map((entry) => entry.contract + '::' + entry.symbol);
+  ok('token detail price lookup key set is bounded to WAX, preferred quotes, and selected pair tokens',
+    priceKeys.includes('eosio.token::WAX') &&
+    priceKeys.includes('wuffi::WUF') &&
+    priceKeys.includes('abc.token::ABC') &&
+    priceKeys.includes('usdt.alcor::USDT') &&
+    !priceKeys.includes('random.token::RANDOM'));
 }
 ok('route has no unused bootstrap source key mirror',
   !route.includes('CORE_BOOTSTRAP_SOURCE_KEYS'));
