@@ -1,0 +1,45 @@
+{
+  "_comment": "Slug patterns that are always blocked from the wiki index/map/graph unless the slug appears in approved-pages.json. More specific patterns MUST come before the generic '*-via-*' fallback so their specific reason strings are used.",
+  "blocked_patterns": [
+    {
+      "pattern": "*-token-via-*",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
+      "examples": ["graffpunks-token-via-radio", "hodl-token-via-warriors", "bitcoin-token-via-kid"]
+    },
+    {
+      "pattern": "*-tokens-via-*",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
+      "examples": ["bitcoin-tokens-via-kid", "blockchain-tokens-via-gk"]
+    },
+    {
+      "pattern": "*-nfts-via-*",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
+      "examples": ["bitcoin-nfts-via-free", "blockchain-nfts-via-free", "free-graffpunks-via-nfts"]
+    },
+    {
+      "pattern": "*-graffpunks-via-*",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: graffpunks-via pages are keyword bridge pages that conflate brand concepts.",
+      "examples": ["bitcoin-graffpunks-via-kid", "blockchain-graffpunks-via-radio"]
+    },
+    {
+      "pattern": "*-hodl-via-*",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
+      "examples": ["bitcoin-hodl-via-kid", "blockchain-hodl-via-graffpunks"]
+    },
+    {
+      "pattern": "*-kid-via-*",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
+      "examples": ["fork-kid-via-bitcoin", "blockchain-kid-via-bitcoin"]
+    },
+    {
+      "pattern": "*-via-*",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
+      "examples": [
+        "bitcoin-graffpunks-via-kid",
+        "free-graffpunks-via-nfts",
+        "graffpunks-token-via-radio",
+        "hodl-token-via-warriors"
+      ]
+    }
+  ]
+}

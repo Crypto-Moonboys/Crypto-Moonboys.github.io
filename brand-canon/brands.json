@@ -1,0 +1,71 @@
+{
+  "brands": [
+    {
+      "id": "graffpunks",
+      "display_name": "GraffPUNKS",
+      "parent": "gkniftyheads",
+      "canonical_page": "graffpunks",
+      "concept_types": {
+        "faction": "graffpunks",
+        "radio": "graffpunks-24-7-radio",
+        "collection": "graffpunks-collection",
+        "ecosystem": "graffpunks-ecosystem",
+        "game": "midevilpunks"
+      },
+      "note": "GraffPUNKS faction is NOT the same as GraffPUNKS radio, NFT collection, or game."
+    },
+    {
+      "id": "nbg",
+      "display_name": "NBG",
+      "canonical_page": "nbg",
+      "concept_types": {
+        "brand": "nbg",
+        "token": "nbg-token",
+        "mechanic": "nbgx"
+      },
+      "note": "NBG brand is NOT the same as NBG Token or NBGX."
+    },
+    {
+      "id": "hodl",
+      "display_name": "HODL Warriors",
+      "canonical_page": "hodl-warriors",
+      "concept_types": {
+        "faction": "hodl-warriors",
+        "game": "hodl-wars"
+      },
+      "note": "HODL Warriors faction is NOT the same as HODL Wars game."
+    },
+    {
+      "id": "bitcoin-kids",
+      "display_name": "Bitcoin Kids",
+      "canonical_page": "bitcoin-kids",
+      "concept_types": {
+        "faction": "bitcoin-kids"
+      }
+    },
+    {
+      "id": "gkniftyheads",
+      "display_name": "GK NiftyHeads",
+      "canonical_page": "gkniftyheads",
+      "concept_types": {
+        "brand": "gkniftyheads"
+      }
+    },
+    {
+      "id": "1m-free-nfts",
+      "display_name": "1M Free NFTs",
+      "canonical_page": "1m-free-nfts-program",
+      "concept_types": {
+        "program": "1m-free-nfts-program"
+      }
+    },
+    {
+      "id": "midevilpunks",
+      "display_name": "MidevilPunks",
+      "canonical_page": "midevilpunks",
+      "concept_types": {
+        "game": "midevilpunks"
+      }
+    }
+  ]
+}

@@ -9,6 +9,7 @@ const {
   titleFromSlug
 } = require('./wiki-aliases.js');
 const { classifyWikiSlug } = require('./wiki-brand-taxonomy.js');
+const { loadApprovedUrls } = require('./wiki-publish-gate.js');
 
 const ROOT = path.join(__dirname, '..');
 const WIKI_DIR = path.join(ROOT, 'wiki');
@@ -479,6 +480,15 @@ function buildBrandMeta(slug) {
 function run() {
   console.log('Generating wiki index...');
 
+  // Load approved URLs from the publish gate audit (approved-only gate).
+  // Only APPROVED_CANON_PAGE and APPROVED_ALIAS_REDIRECT pages enter the index.
+  // NEEDS_BRAND_REVIEW and all BLOCKED_* statuses are excluded.
+  // Run 'node scripts/wiki-publish-gate.js' first to regenerate js/wiki-publish-audit.json.
+  const approvedUrls = loadApprovedUrls();
+  if (approvedUrls.size > 0) {
+    console.log(`[wiki-index] Publish gate: only ${approvedUrls.size} approved URLs will be indexed.`);
+  }
+
   const samMemory = loadSamMemory();
   const linkGraph = loadLinkGraph();
   const files = walk(WIKI_DIR);
@@ -488,6 +498,10 @@ function run() {
     const relative = path.relative(ROOT, filePath).replace(/\\/g, '/');
 
     if (relative === 'wiki/index.html') return;
+
+    // Skip pages not approved by the brand-canon publish gate (approved-only)
+    const pageUrl = '/' + relative;
+    if (!approvedUrls.has(pageUrl)) return;
 
     const html = fs.readFileSync(filePath, 'utf8');
 
@@ -587,7 +601,16 @@ function run() {
     const normalizedCanonicalTitle = normalize(canonicalTitle);
     const aliases = (entry.aliases || [])
       .filter(alias => normalize(alias.title) !== normalizedCanonicalTitle)
-      .filter(alias => alias.url !== entry.url);
+      .filter(alias => alias.url !== entry.url)
+      // Strip URL from any alias whose URL is not in the approved set so that
+      // non-approved URLs cannot leak through alias metadata into search/panels.
+      .map(alias => {
+        if (alias.url && !approvedUrls.has(alias.url)) {
+          const { url: _stripped, ...rest } = alias; // eslint-disable-line no-unused-vars
+          return rest;
+        }
+        return alias;
+      });
     return {
       title: entry.title,
       desc: entry.desc,

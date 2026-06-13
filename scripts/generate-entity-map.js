@@ -16,6 +16,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { loadApprovedUrls } = require('./wiki-publish-gate.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const WIKI_INDEX_PATH = path.join(ROOT, 'js', 'wiki-index.json');
@@ -194,9 +195,19 @@ if (!fs.existsSync(WIKI_INDEX_PATH)) {
 const wikiIndex = JSON.parse(fs.readFileSync(WIKI_INDEX_PATH, 'utf8'));
 console.log(`Loaded ${wikiIndex.length} canonical entries from js/wiki-index.json`);
 
+// Filter to only approved URLs (approved-only gate).
+// NEEDS_BRAND_REVIEW and BLOCKED_* entries are excluded from entity records.
+const approvedUrlsForMap = loadApprovedUrls();
+const filteredIndex = approvedUrlsForMap.size > 0
+  ? wikiIndex.filter(e => approvedUrlsForMap.has(e.url))
+  : wikiIndex;
+if (filteredIndex.length < wikiIndex.length) {
+  console.log(`[entity-map] Publish gate: included ${filteredIndex.length} approved entries (excluded ${wikiIndex.length - filteredIndex.length}).`);
+}
+
 const entityRecords = [];
 
-for (const entry of wikiIndex) {
+for (const entry of filteredIndex) {
   if (!entry || typeof entry !== 'object') continue;
 
   const canonicalUrl = normalizeWikiUrl(entry.url);
@@ -228,6 +239,9 @@ for (const entry of wikiIndex) {
       if (!alias || typeof alias !== 'object' || !alias.url) continue;
       const aliasUrl = normalizeWikiUrl(alias.url);
       if (!isAllowedCanonicalUrl(aliasUrl)) continue;
+      // Only approved URLs may appear in source_urls — non-approved URLs must
+      // not leak through alias metadata as a backdoor into entity records.
+      if (!approvedUrlsForMap.has(aliasUrl)) continue;
       if (!sourceUrls.includes(aliasUrl)) sourceUrls.push(aliasUrl);
     }
   }
