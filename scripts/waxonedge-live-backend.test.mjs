@@ -232,7 +232,27 @@ ok('source cursor progresses across bounded Worker runs',
   route.includes('request_count: tableResult.request_count') &&
   route.includes('Resuming stale running state from saved cursor') &&
   route.includes('Partial source sync checkpoint saved after') &&
-  route.includes("cursor: complete ? '' : tableResult.next_key"));
+  route.includes("cursor: complete ? '' : tableResult.next_key") &&
+  route.includes('previous_cursor') &&
+  route.includes('current_cursor') &&
+  route.includes('cursor_changed_at') &&
+  route.includes('chunks_completed'));
+ok('swap.alcor and swap.taco cursor progress is visible in health',
+  route.includes('source_progress') &&
+  route.includes('previous_cursor: previousCursor') &&
+  route.includes('current_cursor: cursor') &&
+  route.includes('stuck_for_minutes') &&
+  route.includes('const stuckForMinutes = Number.isFinite(measuredStuckForMinutes) ? measuredStuckForMinutes : 0') &&
+  route.includes("next_action: asNumber(row.complete) === 1 ? 'complete'") &&
+  route.includes('resume from saved cursor or reset stuck source'));
+ok('missing cursorChangedAt returns numeric zero stuck minutes',
+  route.includes('const measuredStuckForMinutes =') &&
+  route.includes('minutesSince(cursorChangedAt)') &&
+  route.includes('Number.isFinite(measuredStuckForMinutes) ? measuredStuckForMinutes : 0') &&
+  !route.includes('stuck_for_minutes: minutesSince(cursorChangedAt)'));
+ok('chunks_completed zero remains zero',
+  route.includes('chunks_completed: asNumber(snapshot.data?.chunks_completed) ?? asNumber(row.page_count) ?? 0') &&
+  !route.includes('chunks_completed: asNumber(snapshot.data?.chunks_completed) || asNumber(row.page_count) || 0'));
 ok('source pagination can index tokens beyond the first source page',
   route.includes('lower_bound: lowerBound') &&
   route.includes('data?.next_key') &&
@@ -252,6 +272,13 @@ ok('token aggregates can record partial_success after partial source sync',
   route.includes("const aggregateStatus = runStatus.complete ? 'success' : (runStatus.partialSuccess && aggregates.size > 0 ? 'partial_success' : 'failed')") &&
   route.includes("await recordSyncRun(env.DB, 'token_aggregates', aggregateStatus") &&
   route.includes("status: aggregateStatus"));
+ok('partial_success aggregate after latest pair sync can count as fresh',
+  route.includes("status IN ('success', 'partial_success')") &&
+  route.includes("status IN ('success', 'partial')") &&
+  route.includes('fresh_after_latest_pair_sync: aggregateFresh') &&
+  route.includes("const alcor = await syncAlcorMarketData(env, 'alcor_minute_market_data')") &&
+  route.includes('const aggregates = await aggregateTokenAnalytics(env);') &&
+  route.includes('return { ok: alcor.ok && aggregates.ok, alcor, aggregates };'));
 ok('bootstrap compact source metadata does not mark missing snapshots complete',
   route.includes('row_count: tableSnapshot.data?.row_count || (Array.isArray(tableSnapshot.data?.rows) ? tableSnapshot.data.rows.length : 0)') &&
   route.includes('complete: !!tableSnapshot.data && (tableSnapshot.data?.truncated ? false : !tableSnapshot.data?.cursor)'));
@@ -276,7 +303,57 @@ ok('candle backfill has honest planned status without fake candle inserts',
   route.includes('candidate_pair_count') &&
   route.includes('no_fake_candles: true') &&
   route.includes('CANDLE_BACKFILL_PLAN') &&
-  !route.includes('INSERT INTO waxonedge_chart_candles'));
+  route.includes('normalizeAlcorChartCandles') &&
+  route.includes('writeChartCandles') &&
+  route.includes('INSERT INTO waxonedge_chart_candles') &&
+  !route.includes('synthesized candle') &&
+  !route.includes('fallback candle'));
+ok('candle backfill writes only real Alcor 1D candles in bounded chunks',
+  route.includes('/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D') &&
+  route.includes('CANDLE_BACKFILL_PAIR_LIMIT') &&
+  route.includes('CANDLE_BACKFILL_LOOKBACK_DAYS') &&
+  route.includes('const nowSeconds = Math.floor(Date.now() / 1000)') &&
+  route.includes('const from = nowSeconds - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60)') &&
+  route.includes('from=${from}&to=${to}') &&
+  !route.includes('const to = Date.now()') &&
+  !route.includes('24 * 60 * 60 * 1000') &&
+  route.includes('if (ts == null || o == null || h == null || l == null || c == null || v == null) return;') &&
+  route.includes("writeChartCandles(env.DB, 'alcor', String(pair.pair_id), '1D', candles)") &&
+  route.includes('cursor: complete ?') &&
+  route.includes('candles_written'));
+ok('Alcor chart URL uses 10-digit UNIX seconds instead of millisecond timestamps',
+  route.includes('const nowSeconds = Math.floor(Date.now() / 1000)') &&
+  route.includes('const to = nowSeconds') &&
+  route.includes('const from = nowSeconds - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60)') &&
+  !route.includes('const from = to - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60 * 1000)'));
+ok('candle normalization preserves real zero OHLCV values',
+  route.includes('item.open ?? item.o') &&
+  route.includes('item.high ?? item.h') &&
+  route.includes('item.low ?? item.l') &&
+  route.includes('item.close ?? item.c') &&
+  route.includes('item.volume ?? item.v') &&
+  route.includes('bar.open ?? bar.o') &&
+  route.includes('bar.high ?? bar.h') &&
+  route.includes('bar.low ?? bar.l') &&
+  route.includes('bar.close ?? bar.c') &&
+  route.includes('bar.volume ?? bar.v') &&
+  route.includes('data.o?.[i]') &&
+  !route.includes('item.volume || item.v') &&
+  !route.includes('bar.volume || bar.v'));
+ok('candle normalization still falls back only for nullish alternate fields',
+  route.includes('item.time ?? item.t ?? item.timestamp') &&
+  route.includes('item.open ?? item.o') &&
+  route.includes('bar.time ?? bar.t') &&
+  !route.includes('item.time || item.t || item.timestamp') &&
+  !route.includes('bar.time || bar.t'));
+ok('candle backfill advances cursor by attempted pairs and records failures',
+  route.includes('const attemptedPairCount = candidateRows.length') &&
+  route.includes('failedPairCount += 1') &&
+  route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + attemptedPairCount)') &&
+  route.includes('attempted_pair_count: attemptedPairCount') &&
+  route.includes('failed_pair_count: failedPairCount') &&
+  route.includes('last_error: lastError') &&
+  !route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + processedPairCount)'));
 ok('aggregate selected price uses strongest real WAX quote liquidity',
   route.includes('hasWaxQuoteForToken(pair, side.contract, side.symbol)') &&
   route.includes('hasRealPairReserves(pair)') &&
@@ -353,7 +430,17 @@ ok('indexer health reports partial source progress and candle backfill status',
   route.includes('fresh_after_latest_pair_sync: aggregateFresh') &&
   route.includes('candle_backfill') &&
   route.includes('latest_1d_candle_count') &&
-  route.includes('chart_candles_indexed_count: chartCandleCount1d'));
+  route.includes('chart_candles_indexed_count: chartCandleCount1d') &&
+  route.includes('processed_pair_count') &&
+  route.includes('attempted_pair_count') &&
+  route.includes('failed_pair_count') &&
+  route.includes('candles_written') &&
+  route.includes('last_error'));
+ok('selected-pair health counts are scoped to indexed tokens',
+  route.includes('FROM waxonedge_tokens t') &&
+  route.includes('JOIN waxonedge_token_stats s ON s.contract = t.contract AND s.symbol = t.symbol') &&
+  route.includes('WHERE s.selected_pair_source IS NOT NULL AND s.selected_pair_id IS NOT NULL') &&
+  route.includes('tokens_without_selected_pair: Math.max(0, totalTokens - tokensWithSelectedPair)'));
 ok('token detail avoids unbounded all-priced-token scan',
   route.includes('function collectTokenPriceKeysForPairs') &&
   route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, pairRows)') &&
