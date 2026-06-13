@@ -14,11 +14,11 @@ const MIN_TRUSTED_WAX_LIQUIDITY = 10;
 const CANDLE_BACKFILL_SOURCE = 'candle_backfill';
 const CANDLE_BACKFILL_PLAN = 'Alcor 1D candle backfill planned; no fake candles are inserted.';
 const WAXONEDGE_FREE_SAFE_MODE_DEFAULT = true;
+const DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT = 24;
 const FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION = 1;
 const FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE = 1;
 const FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT = 2;
 const FREE_SAFE_CANDLE_SUBREQUEST_BUDGET = 2;
-const CANDLE_BACKFILL_PAIR_LIMIT = FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT;
 const CANDLE_BACKFILL_LOOKBACK_DAYS = 120;
 const STUCK_CURSOR_RETRY_LIMIT = 3;
 const WAXONEDGE_AGGREGATE_SOURCES = Object.freeze([
@@ -50,11 +50,11 @@ function coreDexRpcBudgetPerSource(env) {
 }
 
 function candleBackfillPairLimit(env) {
-  return waxonedgeFreeSafeMode(env) ? FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT : CANDLE_BACKFILL_PAIR_LIMIT;
+  return waxonedgeFreeSafeMode(env) ? FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT : DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT;
 }
 
 function candleSubrequestBudget(env) {
-  return waxonedgeFreeSafeMode(env) ? FREE_SAFE_CANDLE_SUBREQUEST_BUDGET : CANDLE_BACKFILL_PAIR_LIMIT;
+  return waxonedgeFreeSafeMode(env) ? FREE_SAFE_CANDLE_SUBREQUEST_BUDGET : DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT;
 }
 
 function isSubrequestBudgetError(error) {
@@ -1980,7 +1980,7 @@ function sourceStateStale(row) {
   const age = minutesSince(row.updated_at || row.started_at);
   if (row.status === 'failed' || asNumber(row.truncated) === 1) return true;
   if (['partial', 'running'].includes(row.status)) return age != null && age > SOURCE_STALE_MINUTES;
-  return asNumber(row.complete) !== 1 && !['planned', 'partial_success', 'skipped'].includes(row.status);
+  return asNumber(row.complete) !== 1 && !['planned', 'partial_success', 'skipped', 'budget_limited'].includes(row.status);
 }
 
 async function latestAggregateRunRow(db) {
@@ -2661,7 +2661,7 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
   const isMinuteCron = cron === '* * * * *';
   const shouldRunFullIndex = !cron || cron === '*/5 * * * *' || (isMinuteCron && minute % 5 === 0);
   if (isMinuteCron && freeSafeMode) {
-    const rotationSlot = minute % 4;
+    const rotationSlot = minute % 5;
     if (rotationSlot === 0) {
       tasks.push(syncAlcorMarketData(env, 'alcor_minute_market_data'));
     } else if (rotationSlot === 1) {
@@ -2677,8 +2677,10 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
       })());
     } else if (rotationSlot === 2) {
       tasks.push(aggregateTokenAnalytics(env));
-    } else {
+    } else if (rotationSlot === 3) {
       tasks.push(planWaxOnEdgeCandleBackfill(env));
+    } else {
+      tasks.push(syncSupplyInputs(env));
     }
   } else if (shouldRunFullIndex) {
     tasks.push((async () => {

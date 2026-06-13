@@ -343,10 +343,11 @@ ok('regression guard for live source-sync failures',
 ok('free-safe cron only runs one heavy WaxOnEdge workload per invocation',
   route.includes('const freeSafeMode = waxonedgeFreeSafeMode(env)') &&
   route.includes('if (isMinuteCron && freeSafeMode)') &&
-  route.includes('const rotationSlot = minute % 4') &&
+  route.includes('const rotationSlot = minute % 5') &&
   route.includes('tasks.push(syncAlcorMarketData(env, \'alcor_minute_market_data\'))') &&
   route.includes('tasks.push(aggregateTokenAnalytics(env))') &&
   route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env))') &&
+  route.includes('tasks.push(syncSupplyInputs(env))') &&
   route.includes('selectCoreDexAdapterForCron(minute)') &&
   route.includes('!freeSafeMode && (!cron || cron === \'*/15 * * * *\'') &&
   route.includes('!freeSafeMode && (!cron || isMinuteCron || shouldRunFullIndex)'));
@@ -357,6 +358,19 @@ ok('free-safe source sync runs one DEX source chunk with conservative budgets',
   route.includes('source: adapter.source') &&
   route.includes('maxPages: FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION') &&
   route.includes('requestBudget: FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE'));
+ok('free-safe mode does not permanently prevent supply sync',
+  route.includes('const rotationSlot = minute % 5') &&
+  route.includes('} else {') &&
+  route.includes('tasks.push(syncSupplyInputs(env))') &&
+  route.includes('!freeSafeMode && (!cron || cron === \'*/15 * * * *\'') &&
+  route.indexOf('tasks.push(syncSupplyInputs(env))') > route.indexOf('tasks.push(planWaxOnEdgeCandleBackfill(env))'));
+ok('free-safe supply sync runs as isolated cron workload',
+  route.includes('if (isMinuteCron && freeSafeMode)') &&
+  route.includes('tasks.push(syncAlcorMarketData(env, \'alcor_minute_market_data\'))') &&
+  route.includes('tasks.push(aggregateTokenAnalytics(env))') &&
+  route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env))') &&
+  route.includes('tasks.push(syncSupplyInputs(env))') &&
+  !route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env));\n      tasks.push(syncSupplyInputs(env))'));
 ok('scheduled full index can still run legacy combined workflow when free-safe is disabled',
   route.includes('} else if (shouldRunFullIndex) {') &&
   route.includes('const [alcor, core, nefty] = await Promise.all') &&
@@ -380,6 +394,7 @@ ok('candle backfill has honest planned status without fake candle inserts',
   !route.includes('fallback candle'));
 ok('candle backfill writes only real Alcor 1D candles in bounded chunks',
   route.includes('/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D') &&
+  route.includes('DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT = 24') &&
   route.includes('FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT = 2') &&
   route.includes('candleBackfillPairLimit(env)') &&
   route.includes('CANDLE_BACKFILL_LOOKBACK_DAYS') &&
@@ -440,12 +455,22 @@ ok('candle backfill advances cursor by attempted pairs and records failures',
   route.includes('last_error: lastError') &&
   !route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + processedPairCount)'));
 ok('candle batch stops before budget exhaustion and reports budget separately',
+  route.includes('DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT = 24') &&
   route.includes('FREE_SAFE_CANDLE_SUBREQUEST_BUDGET = 2') &&
   route.includes('const requestBudget = candleSubrequestBudget(env)') &&
   route.includes('if (attemptedPairCount >= requestBudget)') &&
   route.includes('budgetExhausted = true') &&
   route.includes("status = budgetExhausted") &&
   route.includes('budget_exhausted: budgetExhausted'));
+ok('candle backfill limit respects free-safe and paid mode',
+  route.includes('function candleBackfillPairLimit(env)') &&
+  route.includes('waxonedgeFreeSafeMode(env) ? FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT : DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT') &&
+  route.includes('function candleSubrequestBudget(env)') &&
+  route.includes('waxonedgeFreeSafeMode(env) ? FREE_SAFE_CANDLE_SUBREQUEST_BUDGET : DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT') &&
+  !route.includes('const CANDLE_BACKFILL_PAIR_LIMIT = FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT'));
+ok('candle_backfill budget_limited is benign progress for stale health',
+  route.includes("['planned', 'partial_success', 'skipped', 'budget_limited'].includes(row.status)") &&
+  route.includes('budget_exhausted: !!candleBackfillSnapshot.data?.budget_exhausted'));
 ok('budget exhaustion does not inflate failed_pair_count for every candidate',
   route.includes('if (isSubrequestBudgetError(error))') &&
   route.includes('budgetExhausted = true') &&
