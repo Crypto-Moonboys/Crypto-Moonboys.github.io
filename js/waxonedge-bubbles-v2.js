@@ -20,8 +20,11 @@
   };
   var TIMEFRAME_LABELS = { '24h': '24h', '7d': '7D', '30d': '30D' };
   var SOURCE_ORDER = ['alcor', 'swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'];
+  var IMAGE_CACHE_LIMIT = 160;
+  var BUBBLE_CANVAS_CACHE_LIMIT = 240;
   var imageCache = new Map();
   var bubbleCanvasCache = new Map();
+  var reducedMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 
   var state = {
     payload: null,
@@ -42,9 +45,12 @@
     tooltip: null,
     modal: null,
     raf: 0,
+    resizeTimer: 0,
     lastFrame: 0,
     lastUpdated: null,
     connected: false,
+    lastFocusedBeforeModal: null,
+    modalKeydownHandler: null,
     detailCache: {},
     chartCache: {},
   };
@@ -131,9 +137,37 @@
     return sourceLabel(pair && (pair.source || pair.adapter || pair.rawSource || pair.raw_source));
   }
 
+  function sourceRank(source) {
+    var index = SOURCE_ORDER.indexOf(source);
+    return index === -1 ? SOURCE_ORDER.length : index;
+  }
+
+  function compareSources(a, b) {
+    var ar = sourceRank(a);
+    var br = sourceRank(b);
+    if (ar !== br) return ar - br;
+    return String(a || '').localeCompare(String(b || ''));
+  }
+
   function parseSourceKeys(value) {
     if (Array.isArray(value)) return value.map(sourceLabel).filter(Boolean);
     return String(value || '').split(',').map(sourceLabel).filter(Boolean);
+  }
+
+  function capMap(map, limit) {
+    while (map.size > limit) {
+      var oldest = map.keys().next();
+      if (oldest.done) break;
+      map.delete(oldest.value);
+    }
+  }
+
+  function prefersReducedMotion() {
+    return !!(reducedMotionQuery && reducedMotionQuery.matches);
+  }
+
+  function shouldAnimate() {
+    return !document.hidden && !prefersReducedMotion();
   }
 
   function pairKeys(pair) {
@@ -324,9 +358,7 @@
 
     return Object.keys(byKey).map(function (key) {
       var record = byKey[key];
-      record.sources = Object.keys(record.sourcesMap).sort(function (a, b) {
-        return SOURCE_ORDER.indexOf(a) - SOURCE_ORDER.indexOf(b);
-      });
+      record.sources = Object.keys(record.sourcesMap).sort(compareSources);
       record.sourceCount = Math.max(record.sourceCount || 0, record.sources.length);
       record.indexedPairCount = Math.max(record.indexedPairCount || 0, record.computedPairCount || 0);
       record.strongestPairLabel = record.strongestPair
@@ -414,15 +446,18 @@
     });
     setStatus();
     updateStats();
+    requestDraw();
   }
 
   function forceSimulationEquivalent(width, height) {
     var nodes = state.nodes;
     var cx = width / 2;
     var cy = height / 2;
+    var animate = shouldAnimate();
     for (var tick = 0; tick < 2; tick += 1) {
       nodes.forEach(function (node, index) {
         node.radius += (node.targetRadius - node.radius) * 0.1;
+        if (!animate) return;
         node.vx += (cx - node.x) * 0.0025;
         node.vy += (cy - node.y) * 0.0025;
         var ring = Math.sqrt(index + 1) * 3;
@@ -475,12 +510,17 @@
 
   function loadImage(url) {
     if (!url) return Promise.resolve(null);
-    if (imageCache.has(url)) return Promise.resolve(imageCache.get(url));
+    if (imageCache.has(url)) {
+      var cached = imageCache.get(url);
+      imageCache.delete(url);
+      imageCache.set(url, cached);
+      return Promise.resolve(cached);
+    }
     return new Promise(function (resolve) {
       var img = new Image();
       img.crossOrigin = 'anonymous';
-      img.onload = function () { imageCache.set(url, img); resolve(img); requestDraw(); };
-      img.onerror = function () { imageCache.set(url, null); resolve(null); };
+      img.onload = function () { imageCache.set(url, img); capMap(imageCache, IMAGE_CACHE_LIMIT); resolve(img); requestDraw(); };
+      img.onerror = function () { imageCache.set(url, null); capMap(imageCache, IMAGE_CACHE_LIMIT); resolve(null); };
       img.src = url;
     });
   }
@@ -501,7 +541,11 @@
     var img = imageCache.get(record.logoUrl);
     var key = [r, state.metric, state.timeframe, displayValue(record), record.symbol, ringColor(record), img ? 1 : 0, dpr].join('|');
     var cached = bubbleCanvasCache.get(record.id);
-    if (cached && cached.key === key) return cached.canvas;
+    if (cached && cached.key === key) {
+      bubbleCanvasCache.delete(record.id);
+      bubbleCanvasCache.set(record.id, cached);
+      return cached.canvas;
+    }
     var pad = 5;
     var size = (r * 2) + (pad * 2);
     var canvas = document.createElement('canvas');
@@ -565,11 +609,14 @@
     ctx.fillStyle = 'rgba(255,255,255,.30)';
     ctx.fill();
     bubbleCanvasCache.set(record.id, { key: key, canvas: canvas });
+    capMap(bubbleCanvasCache, BUBBLE_CANVAS_CACHE_LIMIT);
     return canvas;
   }
 
   function draw() {
+    state.raf = 0;
     if (!state.canvas || !state.ctx) return;
+    if (document.hidden) return;
     var canvas = state.canvas;
     var ctx = state.ctx;
     var rect = canvas.getBoundingClientRect();
@@ -613,7 +660,7 @@
       }
       ctx.restore();
     });
-    state.raf = window.requestAnimationFrame(draw);
+    if (shouldAnimate()) state.raf = window.requestAnimationFrame(draw);
   }
 
   function requestDraw() {
@@ -683,8 +730,16 @@
     state.dragging = null;
     if (!node) return;
     var moved = Math.hypot(node.x - node.startX, node.y - node.startY);
-    if (moved < 8 && Date.now() - node.startedAt < 500) openTokenModal(node.record);
+    if (moved < 8 && Date.now() - node.startedAt < 500) openTokenModal(node.record, state.canvas);
     try { state.canvas.releasePointerCapture(event.pointerId); } catch (_) {}
+  }
+
+  function onCanvasKeydown(event) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    var node = state.hovered || state.nodes[0];
+    if (!node) return;
+    event.preventDefault();
+    openTokenModal(node.record, state.canvas);
   }
 
   function apiJson(path) {
@@ -740,6 +795,13 @@
         '<button class="woe-ab-modal-close" type="button" data-close-modal="true" aria-label="Close">×</button>' +
         body +
       '</section>';
+    window.setTimeout(function () {
+      if (!state.modal || state.modal.hidden || state.modal.contains(document.activeElement)) return;
+      var closeButton = state.modal.querySelector('.woe-ab-modal-close');
+      var heading = state.modal.querySelector('h2');
+      if (closeButton && closeButton.focus) closeButton.focus();
+      else if (heading && heading.focus) heading.focus();
+    }, 0);
   }
 
   function chartHtml(record, chart) {
@@ -800,8 +862,20 @@
       '<a class="woe-ab-open-analytics" href="/analytics/token/?token=' + encodeURIComponent(record.symbol) + '&contract=' + encodeURIComponent(record.contract) + '">Open fullscreen analytics</a>');
   }
 
-  function openTokenModal(record) {
+  function onModalKeydown(event) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeModal();
+    }
+  }
+
+  function openTokenModal(record, opener) {
+    state.lastFocusedBeforeModal = opener || document.activeElement || state.canvas;
     state.selected = record;
+    if (!state.modalKeydownHandler) {
+      state.modalKeydownHandler = onModalKeydown;
+      document.addEventListener('keydown', state.modalKeydownHandler);
+    }
     renderModal(record);
     var detailPath = '/api/waxonedge/token/' + encodeURIComponent(record.contract) + '/' + encodeURIComponent(record.symbol) + '/debug';
     var chartPath = '/api/waxonedge/token/' + encodeURIComponent(record.contract) + '/' + encodeURIComponent(record.symbol) + '/chart';
@@ -816,6 +890,15 @@
   function closeModal() {
     state.selected = null;
     if (state.modal) state.modal.hidden = true;
+    if (state.modalKeydownHandler) {
+      document.removeEventListener('keydown', state.modalKeydownHandler);
+      state.modalKeydownHandler = null;
+    }
+    var focusTarget = state.lastFocusedBeforeModal && document.contains(state.lastFocusedBeforeModal)
+      ? state.lastFocusedBeforeModal
+      : state.canvas;
+    state.lastFocusedBeforeModal = null;
+    if (focusTarget && focusTarget.focus) focusTarget.focus();
   }
 
   function attachControls() {
@@ -823,6 +906,7 @@
       button.addEventListener('click', function () {
         state.metric = button.getAttribute('data-woe-metric') || 'change';
         document.querySelectorAll('[data-woe-metric]').forEach(function (el) { el.classList.toggle('is-active', el === button); });
+        bubbleCanvasCache.clear();
         syncNodes();
       });
     });
@@ -830,6 +914,7 @@
       button.addEventListener('click', function () {
         state.timeframe = button.getAttribute('data-woe-timeframe') || '24h';
         document.querySelectorAll('[data-woe-timeframe]').forEach(function (el) { el.classList.toggle('is-active', el === button); });
+        bubbleCanvasCache.clear();
         syncNodes();
       });
     });
@@ -848,13 +933,15 @@
     var priceEl = document.getElementById('woe-topbar-wax-price');
     var metaEl = document.getElementById('woe-topbar-wax-price-meta');
     if (priceEl) priceEl.textContent = price == null ? '$ --' : '$' + fmtPrice(price);
-    if (metaEl) metaEl.textContent = 'Indexed from Alcor, Taco, Nefty, BOX';
+    if (metaEl) metaEl.textContent = price == null
+      ? (state.connected ? 'WAX price unavailable' : 'Connecting to WaxOnEdge indexer')
+      : 'WAX price from WaxOnEdge indexer';
   }
 
   function initCanvas() {
     state.board = document.getElementById('woe-bubble-board');
     if (!state.board) return;
-    state.board.innerHTML = '<canvas id="woe-ab-canvas" class="woe-ab-canvas" aria-label="AntBubbles style WaxOnEdge token scanner"></canvas>' +
+    state.board.innerHTML = '<canvas id="woe-ab-canvas" class="woe-ab-canvas" tabindex="0" role="application" aria-label="WaxOnEdge multi-DEX bubble scanner. Use Enter to open the highlighted token and Escape to close token details."></canvas>' +
       '<div id="woe-ab-tooltip" class="woe-ab-tooltip" hidden></div>';
     state.canvas = document.getElementById('woe-ab-canvas');
     state.ctx = state.canvas.getContext('2d');
@@ -863,6 +950,7 @@
     state.canvas.addEventListener('pointermove', onPointerMove);
     state.canvas.addEventListener('pointerdown', onPointerDown);
     state.canvas.addEventListener('pointerup', onPointerUp);
+    state.canvas.addEventListener('keydown', onCanvasKeydown);
     state.canvas.addEventListener('pointerleave', function () { state.hovered = null; moveTooltip(null); });
     if (state.modal) {
       state.modal.addEventListener('click', function (event) {
@@ -870,6 +958,20 @@
       });
     }
     window.addEventListener('resize', function () { window.clearTimeout(state.resizeTimer); state.resizeTimer = window.setTimeout(syncNodes, 120); });
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) requestDraw();
+    });
+    if (reducedMotionQuery) {
+      var onMotionChange = function () {
+        state.nodes.forEach(function (node) {
+          node.vx = 0;
+          node.vy = 0;
+        });
+        requestDraw();
+      };
+      if (reducedMotionQuery.addEventListener) reducedMotionQuery.addEventListener('change', onMotionChange);
+      else if (reducedMotionQuery.addListener) reducedMotionQuery.addListener(onMotionChange);
+    }
   }
 
   function load() {

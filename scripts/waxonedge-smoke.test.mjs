@@ -161,6 +161,10 @@ ok('waxonedge-bubbles-v2.js preserves distinct indexed source keys',
   v2Js.includes('function pairSourceKey(pair)') &&
   v2Js.includes('token.source_keys || token.sourceKeys || token.sources') &&
   v2Js.includes('pair.source || pair.adapter || pair.rawSource || pair.raw_source') &&
+  v2Js.includes('function sourceRank(source)') &&
+  v2Js.includes('return index === -1 ? SOURCE_ORDER.length : index') &&
+  v2Js.includes('localeCompare') &&
+  v2Js.includes('sort(compareSources)') &&
   v2Js.includes("if (source === 'alcor') return 'alcor';") &&
   v2Js.includes("if (source === 'swap.alcor') return 'swap.alcor';") &&
   v2Js.includes("if (source === 'swap.taco') return 'swap.taco';") &&
@@ -198,6 +202,41 @@ ok('waxonedge-bubbles-v2.js opens an Ant-style token modal with multi-DEX stats'
   v2Js.includes('Indexed pair count') &&
   v2Js.includes('Strongest pair') &&
   v2Js.includes('Open fullscreen analytics'));
+ok('waxonedge-bubbles-v2.js makes the canvas keyboard focusable and opens modal from keyboard',
+  v2Js.includes('tabindex="0"') &&
+  v2Js.includes('role="application"') &&
+  v2Js.includes('WaxOnEdge multi-DEX bubble scanner') &&
+  v2Js.includes('function onCanvasKeydown') &&
+  v2Js.includes("event.key !== 'Enter'") &&
+  v2Js.includes("event.key !== ' '") &&
+  v2Js.includes('openTokenModal(node.record, state.canvas)'));
+ok('waxonedge-bubbles-v2.js handles modal Escape, focus entry, and focus restoration',
+  v2Js.includes('function onModalKeydown') &&
+  v2Js.includes("event.key === 'Escape'") &&
+  v2Js.includes('document.addEventListener(\'keydown\', state.modalKeydownHandler)') &&
+  v2Js.includes('document.removeEventListener(\'keydown\', state.modalKeydownHandler)') &&
+  v2Js.includes('state.lastFocusedBeforeModal') &&
+  v2Js.includes('closeButton.focus') &&
+  v2Js.includes('focusTarget.focus'));
+ok('waxonedge-bubbles-v2.js caps image and offscreen bubble canvas caches',
+  v2Js.includes('var IMAGE_CACHE_LIMIT = 160') &&
+  v2Js.includes('var BUBBLE_CANVAS_CACHE_LIMIT = 240') &&
+  v2Js.includes('function capMap(map, limit)') &&
+  v2Js.includes('capMap(imageCache, IMAGE_CACHE_LIMIT)') &&
+  v2Js.includes('capMap(bubbleCanvasCache, BUBBLE_CANVAS_CACHE_LIMIT)') &&
+  v2Js.includes('bubbleCanvasCache.clear()'));
+ok('waxonedge-bubbles-v2.js pauses animation when hidden and respects reduced motion',
+  v2Js.includes("window.matchMedia('(prefers-reduced-motion: reduce)'") &&
+  v2Js.includes('function shouldAnimate()') &&
+  v2Js.includes('!document.hidden && !prefersReducedMotion()') &&
+  v2Js.includes('if (document.hidden) return') &&
+  v2Js.includes('document.addEventListener(\'visibilitychange\'') &&
+  v2Js.includes('reducedMotionQuery.addEventListener'));
+ok('waxonedge-bubbles-v2.js keeps WAX price meta honest',
+  v2Js.includes('WAX price unavailable') &&
+  v2Js.includes('Connecting to WaxOnEdge indexer') &&
+  v2Js.includes('WAX price from WaxOnEdge indexer') &&
+  !v2Js.includes('Indexed from Alcor, Taco, Nefty, BOX'));
 
 ok('waxonedge.html is scanner-only and omits dominant KPI/source strips',
   !html.includes('woe-kpi-grid') &&
@@ -339,6 +378,11 @@ ok('waxonedge-bubbles-v2.css includes token modal and tooltip styling',
   v2Css.includes('.woe-ab-source-row'));
 ok('waxonedge-bubbles-v2.css includes responsive scanner support',
   v2Css.includes('@media (max-width: 920px)') && v2Css.includes('@media (max-width: 620px)'));
+ok('waxonedge-bubbles-v2.css includes focus-visible and reduced-motion scanner support',
+  v2Css.includes('.woe-ab-canvas:focus-visible') &&
+  v2Css.includes('@media (prefers-reduced-motion: reduce)') &&
+  v2Css.includes('.woe-ab-pulse') &&
+  v2Css.includes('animation: none'));
 
 ok('waxonedge.js renders source/token icon placeholders',
   js.includes('iconPlaceholderHtml') &&

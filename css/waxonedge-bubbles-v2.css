@@ -258,6 +258,12 @@
   touch-action: none;
 }
 
+.woe-ab-canvas:focus-visible {
+  outline: 2px solid #f89422;
+  outline-offset: -4px;
+  box-shadow: inset 0 0 0 2px rgba(248, 148, 34, .35);
+}
+
 .woe-ab-empty {
   display: grid;
   place-items: center;
@@ -510,6 +516,19 @@
 @keyframes woe-ab-pulse {
   0%, 100% { opacity: .75; transform: scale(.9); }
   50% { opacity: 1; transform: scale(1.2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .woe-ab-pulse {
+    animation: none;
+  }
+
+  .woe-ab-canvas,
+  .woe-ab-modal-panel,
+  .woe-ab-tooltip {
+    transition: none;
+    scroll-behavior: auto;
+  }
 }
 
 @media (max-width: 920px) {
