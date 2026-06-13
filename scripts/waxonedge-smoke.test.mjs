@@ -155,6 +155,7 @@ ok('waxonedge-bubbles-v2.js supports Ant-style metric and timeframe modes',
   v2Js.includes("tvl: 'TVL'") &&
   v2Js.includes("mcap: 'Mkt Cap / FDV'") &&
   v2Js.includes("var TIMEFRAME_LABELS = { '24h': '24h', '7d': '7D', '30d': '30D'") &&
+  v2Js.includes("if (metric === 'price') return record.selectedPriceUsd || record.selectedPriceWax || 0") &&
   v2Js.includes("if (timeframe === '7d')") &&
   v2Js.includes("if (timeframe === '30d')"));
 ok('waxonedge-bubbles-v2.js preserves distinct indexed source keys',

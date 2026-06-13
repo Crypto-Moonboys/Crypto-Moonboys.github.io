@@ -208,7 +208,7 @@
       var change = timeframe === '24h' ? record.change24 : record['change' + timeframe];
       return change != null ? Math.abs(change) : (record.volume24Usd || record.volume24Wax || record.liquidityUsd || record.liquidityWax || record.indexedPairCount || 0);
     }
-    if (metric === 'price') return record.liquidityUsd || record.volume24Usd || record.liquidityWax || record.sourceCount || 1;
+    if (metric === 'price') return record.selectedPriceUsd || record.selectedPriceWax || 0;
     if (metric === 'volume') {
       if (timeframe === '7d') return record.volume7dUsd || record.volume7dWax || 0;
       if (timeframe === '30d') return record.volume30dUsd || record.volume30dWax || 0;
