@@ -1,13 +1,13 @@
 {
-  "_generated": "2026-06-13T01:26:03.184Z",
+  "_generated": "2026-06-13T01:49:00.347Z",
   "summary": {
     "total": 377,
-    "approved": 56,
-    "blocked": 157,
-    "needs_review": 164,
+    "approved": 52,
+    "blocked": 170,
+    "needs_review": 155,
     "blocked_synthetic_slug": 89,
-    "blocked_thin_page": 68,
-    "blocked_duplicate_concept": 0
+    "blocked_thin_page": 65,
+    "blocked_duplicate_concept": 16
   },
   "approved": [
     {
@@ -319,39 +319,11 @@
       "word_count": 708
     },
     {
-      "slug": "graffpunks-hodl",
-      "file": "graffpunks-hodl.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-kid",
-      "file": "graffpunks-kid.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
-    },
-    {
-      "slug": "graffpunks-nbg",
-      "file": "graffpunks-nbg.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
-    },
-    {
       "slug": "hodl-warriors",
       "file": "hodl-warriors.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 3392
-    },
-    {
-      "slug": "hodl-warriors-army",
-      "file": "hodl-warriors-army.html",
-      "status": "APPROVED_ALIAS_REDIRECT",
-      "reason": "http-equiv refresh or data-wiki-stub redirect page.",
-      "word_count": 0
     },
     {
       "slug": "hodl-wars",
@@ -408,147 +380,147 @@
       "slug": "bitcoin-blockchain-via-kid",
       "file": "bitcoin-blockchain-via-kid.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "bitcoin-fork-via-hard",
       "file": "bitcoin-fork-via-hard.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "bitcoin-free-via-nfts",
       "file": "bitcoin-free-via-nfts.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "bitcoin-games-via-kid",
       "file": "bitcoin-games-via-kid.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "bitcoin-gk-via-kid",
       "file": "bitcoin-gk-via-kid.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "bitcoin-graffpunks-via-kid",
       "file": "bitcoin-graffpunks-via-kid.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: graffpunks-via pages are keyword bridge pages that conflate brand concepts.",
       "word_count": 0
     },
     {
       "slug": "bitcoin-hodl-via-kid",
       "file": "bitcoin-hodl-via-kid.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "bitcoin-kid-via-alfie",
       "file": "bitcoin-kid-via-alfie.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "bitcoin-nbg-via-kid",
       "file": "bitcoin-nbg-via-kid.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "bitcoin-nfts-via-free",
       "file": "bitcoin-nfts-via-free.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "bitcoin-token-via-kid",
       "file": "bitcoin-token-via-kid.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "bitcoin-tokens-via-kid",
       "file": "bitcoin-tokens-via-kid.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "blockchain-fork-via-hard",
       "file": "blockchain-fork-via-hard.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "blockchain-free-via-nfts",
       "file": "blockchain-free-via-nfts.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "blockchain-games-via-fork",
       "file": "blockchain-games-via-fork.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "blockchain-gk-via-tokens",
       "file": "blockchain-gk-via-tokens.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "blockchain-graffpunks-via-radio",
       "file": "blockchain-graffpunks-via-radio.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: graffpunks-via pages are keyword bridge pages that conflate brand concepts.",
       "word_count": 0
     },
     {
       "slug": "blockchain-hodl-via-graffpunks",
       "file": "blockchain-hodl-via-graffpunks.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "blockchain-kid-via-bitcoin",
       "file": "blockchain-kid-via-bitcoin.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "blockchain-nbg-via-ball",
       "file": "blockchain-nbg-via-ball.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "blockchain-nfts-via-free",
       "file": "blockchain-nfts-via-free.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
@@ -562,14 +534,14 @@
       "slug": "blockchain-token-via-graffpunks",
       "file": "blockchain-token-via-graffpunks.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "blockchain-tokens-via-gk",
       "file": "blockchain-tokens-via-gk.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
@@ -625,210 +597,210 @@
       "slug": "fork-free-via-hard",
       "file": "fork-free-via-hard.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "fork-games-via-hard",
       "file": "fork-games-via-hard.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "fork-gk-via-hard",
       "file": "fork-gk-via-hard.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "fork-graffpunks-via-hard",
       "file": "fork-graffpunks-via-hard.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: graffpunks-via pages are keyword bridge pages that conflate brand concepts.",
       "word_count": 0
     },
     {
       "slug": "fork-hodl-via-hard",
       "file": "fork-hodl-via-hard.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "fork-kid-via-bitcoin",
       "file": "fork-kid-via-bitcoin.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "fork-kids-via-hard",
       "file": "fork-kids-via-hard.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "fork-nbg-via-games",
       "file": "fork-nbg-via-games.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "fork-nfts-via-free",
       "file": "fork-nfts-via-free.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "fork-token-via-hard",
       "file": "fork-token-via-hard.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "fork-tokens-via-hard",
       "file": "fork-tokens-via-hard.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "free-games-via-nfts",
       "file": "free-games-via-nfts.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "free-gk-via-nfts",
       "file": "free-gk-via-nfts.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "free-graffpunks-via-nfts",
       "file": "free-graffpunks-via-nfts.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: graffpunks-via pages are keyword bridge pages that conflate brand concepts.",
       "word_count": 0
     },
     {
       "slug": "free-hodl-via-nfts",
       "file": "free-hodl-via-nfts.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "free-kid-via-nfts",
       "file": "free-kid-via-nfts.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "free-kids-via-nfts",
       "file": "free-kids-via-nfts.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "free-nbg-via-nfts",
       "file": "free-nbg-via-nfts.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "free-nfts-via-1m",
       "file": "free-nfts-via-1m.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "free-token-via-nfts",
       "file": "free-token-via-nfts.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "free-tokens-via-nfts",
       "file": "free-tokens-via-nfts.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "games-gk-via-fork",
       "file": "games-gk-via-fork.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "games-graffpunks-via-collection",
       "file": "games-graffpunks-via-collection.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: graffpunks-via pages are keyword bridge pages that conflate brand concepts.",
       "word_count": 0
     },
     {
       "slug": "games-hodl-via-fork",
       "file": "games-hodl-via-fork.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "games-kid-via-bitcoin",
       "file": "games-kid-via-bitcoin.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "games-kids-via-fork",
       "file": "games-kids-via-fork.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "games-nbg-via-fork",
       "file": "games-nbg-via-fork.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "games-nfts-via-free",
       "file": "games-nfts-via-free.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "games-token-via-fork",
       "file": "games-token-via-fork.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "games-tokens-via-fork",
       "file": "games-tokens-via-fork.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
@@ -842,42 +814,42 @@
       "slug": "gk-graffpunks-via-radio",
       "file": "gk-graffpunks-via-radio.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: graffpunks-via pages are keyword bridge pages that conflate brand concepts.",
       "word_count": 0
     },
     {
       "slug": "gk-hodl-via-tokens",
       "file": "gk-hodl-via-tokens.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "gk-kid-via-bitcoin",
       "file": "gk-kid-via-bitcoin.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "gk-kids-via-tokens",
       "file": "gk-kids-via-tokens.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "gk-nbg-via-tokens",
       "file": "gk-nbg-via-tokens.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "gk-nfts-via-tokens",
       "file": "gk-nfts-via-tokens.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
@@ -891,7 +863,7 @@
       "slug": "gk-token-via-tokens",
       "file": "gk-token-via-tokens.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
@@ -905,7 +877,14 @@
       "slug": "gk-tokens-via-fungible",
       "file": "gk-tokens-via-fungible.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
+      "word_count": 0
+    },
+    {
+      "slug": "gkniftyheads-phase-one-two-three",
+      "file": "gkniftyheads-phase-one-two-three.html",
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"gkniftyheads\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
       "word_count": 0
     },
     {
@@ -923,73 +902,129 @@
       "word_count": 8
     },
     {
+      "slug": "graffpunks-24-7",
+      "file": "graffpunks-24-7.html",
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
+      "word_count": 0
+    },
+    {
       "slug": "graffpunks-24-7-blockchain-radio-station",
       "file": "graffpunks-24-7-blockchain-radio-station.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 8 meaningful words (minimum: 250).",
-      "word_count": 8
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
+      "word_count": 0
+    },
+    {
+      "slug": "graffpunks-247",
+      "file": "graffpunks-247.html",
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
+      "word_count": 0
     },
     {
       "slug": "graffpunks-247-blockchain-radio-station",
       "file": "graffpunks-247-blockchain-radio-station.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 117 meaningful words (minimum: 250).",
-      "word_count": 117
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
+      "word_count": 0
+    },
+    {
+      "slug": "graffpunks-247-radio",
+      "file": "graffpunks-247-radio.html",
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
+      "word_count": 0
+    },
+    {
+      "slug": "graffpunks-hodl",
+      "file": "graffpunks-hodl.html",
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
+      "word_count": 0
     },
     {
       "slug": "graffpunks-hodl-via-radio",
       "file": "graffpunks-hodl-via-radio.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: hodl-via pages are keyword bridge pages.",
+      "word_count": 0
+    },
+    {
+      "slug": "graffpunks-kid",
+      "file": "graffpunks-kid.html",
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
       "word_count": 0
     },
     {
       "slug": "graffpunks-kid-via-bitcoin",
       "file": "graffpunks-kid-via-bitcoin.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "graffpunks-kids-via-radio",
       "file": "graffpunks-kids-via-radio.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
+      "word_count": 0
+    },
+    {
+      "slug": "graffpunks-nbg",
+      "file": "graffpunks-nbg.html",
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
       "word_count": 0
     },
     {
       "slug": "graffpunks-nbg-via-radio",
       "file": "graffpunks-nbg-via-radio.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
+      "word_count": 0
+    },
+    {
+      "slug": "graffpunks-network",
+      "file": "graffpunks-network.html",
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
       "word_count": 0
     },
     {
       "slug": "graffpunks-nfts",
       "file": "graffpunks-nfts.html",
-      "status": "BLOCKED_THIN_PAGE",
-      "reason": "Page has only 5 meaningful words (minimum: 250).",
-      "word_count": 5
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
+      "word_count": 0
     },
     {
       "slug": "graffpunks-nfts-via-free",
       "file": "graffpunks-nfts-via-free.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
+      "word_count": 0
+    },
+    {
+      "slug": "graffpunks-token",
+      "file": "graffpunks-token.html",
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"graffpunks\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
       "word_count": 0
     },
     {
       "slug": "graffpunks-token-via-radio",
       "file": "graffpunks-token-via-radio.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "graffpunks-tokens-via-radio",
       "file": "graffpunks-tokens-via-radio.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
@@ -1017,42 +1052,70 @@
       "slug": "hodl-kid-via-bitcoin",
       "file": "hodl-kid-via-bitcoin.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: kid-via pages are keyword bridge pages.",
       "word_count": 0
     },
     {
       "slug": "hodl-kids-via-warriors",
       "file": "hodl-kids-via-warriors.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "hodl-nbg-via-warriors",
       "file": "hodl-nbg-via-warriors.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "hodl-nfts-via-free",
       "file": "hodl-nfts-via-free.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "hodl-token-via-warriors",
       "file": "hodl-token-via-warriors.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "hodl-tokens-via-warriors",
       "file": "hodl-tokens-via-warriors.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
+      "word_count": 0
+    },
+    {
+      "slug": "hodl-warriors-army",
+      "file": "hodl-warriors-army.html",
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"hodl\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
+      "word_count": 0
+    },
+    {
+      "slug": "hodl-wars-ecosystem",
+      "file": "hodl-wars-ecosystem.html",
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"hodl\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
+      "word_count": 0
+    },
+    {
+      "slug": "hodl-wars-game",
+      "file": "hodl-wars-game.html",
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"hodl\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
+      "word_count": 0
+    },
+    {
+      "slug": "hodl-x-warriors",
+      "file": "hodl-x-warriors.html",
+      "status": "BLOCKED_DUPLICATE_CONCEPT",
+      "reason": "Slug starts with brand ID \"hodl\" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.",
       "word_count": 0
     },
     {
@@ -1066,63 +1129,63 @@
       "slug": "kid-kids-via-bitcoin",
       "file": "kid-kids-via-bitcoin.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "kid-nbg-via-bitcoin",
       "file": "kid-nbg-via-bitcoin.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "kid-nfts-via-free",
       "file": "kid-nfts-via-free.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "kid-token-via-bitcoin",
       "file": "kid-token-via-bitcoin.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "kid-tokens-via-bitcoin",
       "file": "kid-tokens-via-bitcoin.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "kids-nbg-via-xrp",
       "file": "kids-nbg-via-xrp.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: 'via' pages are generated from keyword bridges and are not real brand/lore concepts.",
       "word_count": 0
     },
     {
       "slug": "kids-nfts-via-free",
       "file": "kids-nfts-via-free.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "kids-token-via-xrp",
       "file": "kids-token-via-xrp.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "kids-tokens-via-gk",
       "file": "kids-tokens-via-gk.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
@@ -1192,21 +1255,21 @@
       "slug": "nbg-nfts-via-free",
       "file": "nbg-nfts-via-free.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: nfts-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "nbg-token-via-ball",
       "file": "nbg-token-via-ball.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "nbg-tokens-via-gk",
       "file": "nbg-tokens-via-gk.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
@@ -1227,14 +1290,14 @@
       "slug": "nfts-token-via-free",
       "file": "nfts-token-via-free.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
       "slug": "nfts-tokens-via-free",
       "file": "nfts-tokens-via-free.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
@@ -1416,7 +1479,7 @@
       "slug": "token-tokens-via-gk",
       "file": "token-tokens-via-gk.html",
       "status": "BLOCKED_SYNTHETIC_SLUG",
-      "reason": "Matches blocked pattern \"*-via-*\". Algorithmic keyword-bridge slug.",
+      "reason": "BLOCKED_SYNTHETIC_SLUG: tokens-via pages are keyword-combination spam.",
       "word_count": 0
     },
     {
@@ -1516,7 +1579,7 @@
       "slug": "blockchain",
       "file": "blockchain.html",
       "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "reason": "\"blockchain\" is a generic word with no brand anchor. Needs review to confirm it refers to an official project concept.",
       "word_count": 1413
     },
     {
@@ -1744,13 +1807,6 @@
       "word_count": 788
     },
     {
-      "slug": "gkniftyheads-phase-one-two-three",
-      "file": "gkniftyheads-phase-one-two-three.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 463
-    },
-    {
       "slug": "graffiti-kings",
       "file": "graffiti-kings.html",
       "status": "NEEDS_BRAND_REVIEW",
@@ -1777,41 +1833,6 @@
       "status": "NEEDS_BRAND_REVIEW",
       "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
       "word_count": 4190
-    },
-    {
-      "slug": "graffpunks-24-7",
-      "file": "graffpunks-24-7.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 5019
-    },
-    {
-      "slug": "graffpunks-247",
-      "file": "graffpunks-247.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 783
-    },
-    {
-      "slug": "graffpunks-247-radio",
-      "file": "graffpunks-247-radio.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 3843
-    },
-    {
-      "slug": "graffpunks-network",
-      "file": "graffpunks-network.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 4385
-    },
-    {
-      "slug": "graffpunks-token",
-      "file": "graffpunks-token.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 1076
     },
     {
       "slug": "grit",
@@ -1854,27 +1875,6 @@
       "status": "NEEDS_BRAND_REVIEW",
       "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
       "word_count": 603
-    },
-    {
-      "slug": "hodl-wars-ecosystem",
-      "file": "hodl-wars-ecosystem.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 732
-    },
-    {
-      "slug": "hodl-wars-game",
-      "file": "hodl-wars-game.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 604
-    },
-    {
-      "slug": "hodl-x-warriors",
-      "file": "hodl-x-warriors.html",
-      "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
-      "word_count": 3299
     },
     {
       "slug": "ian-harrison",
@@ -2006,7 +2006,7 @@
       "slug": "nfts",
       "file": "nfts.html",
       "status": "NEEDS_BRAND_REVIEW",
-      "reason": "Slug not found in brand-canon/approved-pages.json. Needs manual brand review.",
+      "reason": "\"nfts\" is a generic word with no brand anchor. Needs review to confirm it refers to an official project concept.",
       "word_count": 1344
     },
     {

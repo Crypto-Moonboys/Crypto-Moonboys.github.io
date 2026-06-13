@@ -60,12 +60,53 @@ function loadBrandCanon() {
   const blockedPatternsConfig = loadJson(path.join(BRAND_CANON_DIR, 'blocked-patterns.json')) || {};
   const approvedPagesConfig   = loadJson(path.join(BRAND_CANON_DIR, 'approved-pages.json'))   || {};
   const reviewNeededConfig    = loadJson(path.join(BRAND_CANON_DIR, 'review-needed.json'))     || {};
+  const brandsConfig          = loadJson(path.join(BRAND_CANON_DIR, 'brands.json'))            || {};
+  const loreRulesConfig       = loadJson(path.join(BRAND_CANON_DIR, 'lore-rules.json'))        || {};
 
-  const blockedPatterns = (blockedPatternsConfig.blocked_patterns || []).map(p => p.pattern);
-  const approvedSlugs   = new Set(approvedPagesConfig.approved_slugs || []);
-  const reviewSlugs     = new Set(reviewNeededConfig.review_needed_slugs || []);
+  // Pre-compile blocked-pattern regexes once to avoid recompilation on every slug check.
+  const blockedPatterns = (blockedPatternsConfig.blocked_patterns || []).map(entry => ({
+    pattern: entry.pattern,
+    reason:  entry.reason || `Matches blocked pattern "${entry.pattern}".`,
+    regex:   patternToRegex(entry.pattern),
+  }));
 
-  return { blockedPatterns, approvedSlugs, reviewSlugs };
+  // Normalize approved/review slugs on load so a malformed entry can't silently fail to match.
+  const approvedSlugs = new Set(
+    (approvedPagesConfig.approved_slugs || []).map(normalizeSlug).filter(Boolean)
+  );
+  const reviewSlugs = new Set(
+    (reviewNeededConfig.review_needed_slugs || []).map(normalizeSlug).filter(Boolean)
+  );
+
+  // Extract brand IDs and their canonical/concept-type slugs from brands.json.
+  // Auto-approve every canonical_page and concept_types value so the gate never
+  // accidentally blocks pages that brands.json already identifies as canonical.
+  const brandIds = [];
+  for (const brand of (brandsConfig.brands || [])) {
+    if (brand.id) brandIds.push(normalizeSlug(brand.id));
+
+    if (brand.canonical_page) {
+      const s = normalizeSlug(brand.canonical_page);
+      if (s) approvedSlugs.add(s);
+    }
+    for (const conceptSlug of Object.values(brand.concept_types || {})) {
+      const s = normalizeSlug(conceptSlug);
+      if (s) approvedSlugs.add(s);
+    }
+  }
+
+  // Extract generic words from lore-rules.json for the no-generic-standalone-pages rule.
+  const genericWords = new Set();
+  for (const rule of (loreRulesConfig.rules || [])) {
+    if (rule.id === 'no-generic-standalone-pages') {
+      for (const word of (rule.generic_words || [])) {
+        const w = normalizeSlug(word);
+        if (w) genericWords.add(w);
+      }
+    }
+  }
+
+  return { blockedPatterns, approvedSlugs, reviewSlugs, brandIds, genericWords };
 }
 
 // ── Slug utilities ────────────────────────────────────────────────────────────
@@ -89,12 +130,14 @@ function patternToRegex(pattern) {
 }
 
 /**
- * Returns the first matching blocked-pattern entry for a slug, or null.
+ * Returns the first matching compiled blocked-pattern entry for a slug, or null.
+ * Expects blockedPatterns to be the pre-compiled array from loadBrandCanon()
+ * (each element has { pattern, reason, regex }).
  */
 function findBlockedPattern(slug, blockedPatterns) {
-  for (const pattern of blockedPatterns) {
-    if (patternToRegex(pattern).test(slug)) {
-      return pattern;
+  for (const entry of blockedPatterns) {
+    if (entry.regex.test(slug)) {
+      return entry;
     }
   }
   return null;
@@ -153,12 +196,34 @@ function classifySlug(slug, canon) {
     return { status: STATUS.NEEDS_BRAND_REVIEW, reason: 'Manually listed in brand-canon/review-needed.json.' };
   }
 
-  // Blocked slug patterns
+  // Blocked slug patterns (pre-compiled regexes; more-specific patterns come first)
   const matchedPattern = findBlockedPattern(normalized, canon.blockedPatterns);
   if (matchedPattern) {
     return {
       status: STATUS.BLOCKED_SYNTHETIC_SLUG,
-      reason: `Matches blocked pattern "${matchedPattern}". Algorithmic keyword-bridge slug.`,
+      reason: matchedPattern.reason || `Matches blocked pattern "${matchedPattern.pattern}". Algorithmic keyword-bridge slug.`,
+    };
+  }
+
+  // Duplicate-concept check: if the slug starts with a known brand ID (from brands.json)
+  // but is NOT in the approved set, it is attempting to create a second page for a concept
+  // that brands.json already covers with a distinct canonical slug.
+  const matchedBrandId = (canon.brandIds || []).find(
+    id => normalized === id || normalized.startsWith(id + '-')
+  );
+  if (matchedBrandId) {
+    return {
+      status: STATUS.BLOCKED_DUPLICATE_CONCEPT,
+      reason: `Slug starts with brand ID "${matchedBrandId}" but is not the canonical page for any of that brand's concept types. Possible duplicate concept page.`,
+    };
+  }
+
+  // Generic standalone word check (lore-rules no-generic-standalone-pages rule).
+  // Exact generic words without a brand anchor are held for review, not blocked.
+  if (canon.genericWords && canon.genericWords.has(normalized)) {
+    return {
+      status: STATUS.NEEDS_BRAND_REVIEW,
+      reason: `"${normalized}" is a generic word with no brand anchor. Needs review to confirm it refers to an official project concept.`,
     };
   }
 
@@ -253,9 +318,22 @@ function loadApprovedUrls() {
 
 /**
  * Return the set of blocked canonical URLs from the audit file.
+ * Fails fast if the audit file does not exist so that generate-wiki-index / entity pipelines
+ * cannot silently run out-of-order and re-introduce blocked pages.
+ * Pass { allowMissing: true } only in contexts where a missing audit is acceptable (e.g. first-run bootstrap).
+ *
+ * @param {{ allowMissing?: boolean }} [opts]
  */
-function loadBlockedUrls() {
-  if (!fs.existsSync(AUDIT_OUTPUT)) return new Set();
+function loadBlockedUrls(opts) {
+  if (!fs.existsSync(AUDIT_OUTPUT)) {
+    if (opts && opts.allowMissing) return new Set();
+    console.error(
+      '[wiki-publish-gate] ERROR: js/wiki-publish-audit.json not found.\n' +
+      '  Run "node scripts/wiki-publish-gate.js" first to generate the audit file,\n' +
+      '  then re-run this script. Aborting to prevent blocked pages leaking into generated assets.'
+    );
+    process.exit(1);
+  }
   const audit = JSON.parse(fs.readFileSync(AUDIT_OUTPUT, 'utf8'));
   return new Set((audit.blocked || []).map(e => `/wiki/${e.slug}.html`));
 }
