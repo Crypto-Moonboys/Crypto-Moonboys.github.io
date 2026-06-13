@@ -23,7 +23,7 @@
       "title": "Deep Dive: Games NFTS",
       "difficulty": "medium",
       "clue": "Deep in the wiki archives, Games NFTS is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/games-nfts.html",
+      "wiki_url": "/wiki/games-graffpunks.html",
       "accepted_answers": [
         "GAMES NFTS"
       ],
@@ -218,7 +218,7 @@
       "title": "Deep Dive: Free",
       "difficulty": "medium",
       "clue": "Deep in the wiki archives, Free is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/free.html",
+      "wiki_url": "/wiki/1m-free-nfts-program.html",
       "accepted_answers": [
         "FREE"
       ],
@@ -248,7 +248,7 @@
       "title": "Archives: Games NFTS",
       "difficulty": "easy",
       "clue": "Visit the Moonboys wiki page for Games NFTS. Name the exact subject documented there.",
-      "wiki_url": "/wiki/games-nfts.html",
+      "wiki_url": "/wiki/games-graffpunks.html",
       "accepted_answers": [
         "GAMES NFTS"
       ],
@@ -938,7 +938,7 @@
       "title": "Archives: GK Graffpunks",
       "difficulty": "easy",
       "clue": "Visit the Moonboys wiki page for GK Graffpunks. Name the exact subject documented there.",
-      "wiki_url": "/wiki/gk-graffpunks.html",
+      "wiki_url": "/wiki/graffitikings.html",
       "accepted_answers": [
         "GK GRAFFPUNKS"
       ],
@@ -1028,7 +1028,7 @@
       "title": "Secret File: Fork",
       "difficulty": "hard",
       "clue": "A secret Moonboys file details Fork. Enter the name used to title this article.",
-      "wiki_url": "/wiki/fork.html",
+      "wiki_url": "/wiki/forksplit.html",
       "accepted_answers": [
         "FORK"
       ],
@@ -1418,7 +1418,7 @@
       "title": "Keyword Hunt: Games NFTS",
       "difficulty": "medium",
       "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Games NFTS. What is its canonical name?",
-      "wiki_url": "/wiki/games-nfts.html",
+      "wiki_url": "/wiki/games-graffpunks.html",
       "accepted_answers": [
         "GAMES NFTS"
       ],
@@ -1523,7 +1523,7 @@
       "title": "Archives: Kid",
       "difficulty": "easy",
       "clue": "Visit the Moonboys wiki page for Kid. Name the exact subject documented there.",
-      "wiki_url": "/wiki/kid.html",
+      "wiki_url": "/wiki/bitcoin-kids.html",
       "accepted_answers": [
         "KID"
       ],
@@ -1778,7 +1778,7 @@
       "title": "Secret File: Fork Graffpunks",
       "difficulty": "hard",
       "clue": "A secret Moonboys file details Fork Graffpunks. Enter the name used to title this article.",
-      "wiki_url": "/wiki/fork-graffpunks.html",
+      "wiki_url": "/wiki/graffpunks-ecosystem.html",
       "accepted_answers": [
         "FORK GRAFFPUNKS"
       ],
@@ -2483,7 +2483,7 @@
       "title": "Archives: Games",
       "difficulty": "easy",
       "clue": "Visit the Moonboys wiki page for Games. Name the exact subject documented there.",
-      "wiki_url": "/wiki/games.html",
+      "wiki_url": "/wiki/hard-fork-games.html",
       "accepted_answers": [
         "GAMES"
       ],
@@ -2693,7 +2693,7 @@
       "title": "Deep Dive: Games",
       "difficulty": "medium",
       "clue": "Deep in the wiki archives, Games is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/games.html",
+      "wiki_url": "/wiki/hard-fork-games.html",
       "accepted_answers": [
         "GAMES"
       ],
@@ -2903,7 +2903,7 @@
       "title": "Deep Dive: Kid",
       "difficulty": "medium",
       "clue": "Deep in the wiki archives, Kid is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/kid.html",
+      "wiki_url": "/wiki/bitcoin-kids.html",
       "accepted_answers": [
         "KID"
       ],
@@ -2933,7 +2933,7 @@
       "title": "Secret File: Blockchain Graffpunks",
       "difficulty": "hard",
       "clue": "A secret Moonboys file details Blockchain Graffpunks. Enter the name used to title this article.",
-      "wiki_url": "/wiki/blockchain-graffpunks.html",
+      "wiki_url": "/wiki/graffpunks-ecosystem.html",
       "accepted_answers": [
         "BLOCKCHAIN GRAFFPUNKS"
       ],
@@ -3218,7 +3218,7 @@
       "title": "Archives: Fork",
       "difficulty": "easy",
       "clue": "Visit the Moonboys wiki page for Fork. Name the exact subject documented there.",
-      "wiki_url": "/wiki/fork.html",
+      "wiki_url": "/wiki/forksplit.html",
       "accepted_answers": [
         "FORK"
       ],
@@ -3248,7 +3248,7 @@
       "title": "Secret File: Kid",
       "difficulty": "hard",
       "clue": "A secret Moonboys file details Kid. Enter the name used to title this article.",
-      "wiki_url": "/wiki/kid.html",
+      "wiki_url": "/wiki/bitcoin-kids.html",
       "accepted_answers": [
         "KID"
       ],
@@ -3323,7 +3323,7 @@
       "title": "Secret File: Free",
       "difficulty": "hard",
       "clue": "A secret Moonboys file details Free. Enter the name used to title this article.",
-      "wiki_url": "/wiki/free.html",
+      "wiki_url": "/wiki/1m-free-nfts-program.html",
       "accepted_answers": [
         "FREE"
       ],
