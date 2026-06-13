@@ -296,6 +296,61 @@ assert.equal(
 
 console.log(`✓ CI gate: no non-approved (blocked/review) wiki pages remain on disk`);
 
+// ── 13. Purge summary must be consistent with current audit ──────────────────
+// Ensures js/wiki-purge-summary.json was regenerated after the final audit state
+// and that its approved count matches the audit.  This prevents a stale summary
+// (generated at an earlier, partially-approved state) from being committed.
+
+const PURGE_SUMMARY_PATH = path.join(ROOT, 'js', 'wiki-purge-summary.json');
+if (fs.existsSync(PURGE_SUMMARY_PATH)) {
+  const purgeSummary = JSON.parse(fs.readFileSync(PURGE_SUMMARY_PATH, 'utf8'));
+  const summaryApproved = (purgeSummary.summary || purgeSummary).approved;
+  const auditApproved   = (audit.summary || audit).approved;
+  assert.equal(
+    summaryApproved,
+    auditApproved,
+    `CI FAIL: wiki-purge-summary.json reports approved=${summaryApproved} but ` +
+    `wiki-publish-audit.json reports approved=${auditApproved}.\n` +
+    `Regenerate: node scripts/wiki-publish-gate.js && node scripts/purge-unapproved-wiki-pages.js`
+  );
+  const summaryBlocked = (purgeSummary.summary || purgeSummary).blocked_remaining;
+  assert.equal(
+    summaryBlocked,
+    0,
+    `CI FAIL: wiki-purge-summary.json reports ${summaryBlocked} blocked page(s) remaining.\n` +
+    `Run: node scripts/purge-unapproved-wiki-pages.js`
+  );
+  console.log(`✓ CI gate: purge summary is consistent with current audit (approved: ${summaryApproved})`);
+} else {
+  console.log(`  (js/wiki-purge-summary.json missing — skipping purge consistency check)`);
+}
+
+// ── 14. Entity-graph related_pages per node must be bounded ──────────────────
+// Ensures js/entity-graph.json was generated with the MAX_OUTPUT_RELATED_PER_PAGE
+// cap (currently 20) so it cannot balloon when many pages are approved at once.
+
+const ENTITY_GRAPH_MAX_RELATED = 20;
+if (Object.keys(entityGraph).length > 0) {
+  let overflowNodes = [];
+  for (const [nodeUrl, nodeData] of Object.entries(entityGraph)) {
+    const count = (nodeData.related_pages || []).length;
+    if (count > ENTITY_GRAPH_MAX_RELATED) {
+      overflowNodes.push(`${nodeUrl} (${count})`);
+    }
+  }
+  assert.equal(
+    overflowNodes.length,
+    0,
+    `CI FAIL: ${overflowNodes.length} entity-graph node(s) exceed the ${ENTITY_GRAPH_MAX_RELATED}-entry ` +
+    `related_pages cap:\n  ${overflowNodes.join('\n  ')}\n` +
+    `Regenerate: node scripts/generate-entity-graph.js`
+  );
+  const totalRelated = Object.values(entityGraph).reduce((s, v) => s + (v.related_pages || []).length, 0);
+  console.log(`✓ CI gate: entity-graph related_pages bounded (≤${ENTITY_GRAPH_MAX_RELATED}/node, ${totalRelated} total)`);
+} else {
+  console.log(`  (entity-graph.json empty or missing — skipping size-bound check)`);
+}
+
 // ── Done ──────────────────────────────────────────────────────────────────────
 
 console.log('\n✅ wiki-publish-gate.test.mjs — all checks passed');

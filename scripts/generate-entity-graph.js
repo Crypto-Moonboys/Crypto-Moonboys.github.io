@@ -172,6 +172,11 @@ const CONTENT_DEPTH_MAX            = 8;   // hard cap
 // avoids noise from low-relevance relationships.
 const PRIOR_GRAPH_TOP_N = 15;
 
+// Hard cap on the number of related_pages written per node in the output graph.
+// Prevents unbounded growth when the approved page count is large.  Only the
+// top-scored (already sorted desc by final_score) entries are kept.
+const MAX_OUTPUT_RELATED_PER_PAGE = 20;
+
 // reinforcement_boost: floor(prior_top_N_inbound_count / divisor), capped at max
 //   Measures how many other pages already list this target in their top-N related.
 const REINFORCE_DIVISOR = 20;
@@ -708,7 +713,7 @@ function main() {
       return a.target_url.localeCompare(b.target_url);
     });
 
-    graph[srcUrl] = { related_pages: relatedPages };
+    graph[srcUrl] = { related_pages: relatedPages.slice(0, MAX_OUTPUT_RELATED_PER_PAGE) };
   }
 
   // Sort output keys alphabetically for determinism
