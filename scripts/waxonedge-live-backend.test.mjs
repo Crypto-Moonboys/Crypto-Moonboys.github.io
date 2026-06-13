@@ -181,13 +181,19 @@ ok('source cursor checkpointing processes large adapters in bounded pages',
   route.includes('async function upsertSourceIndexState') &&
   route.includes('lowerBound: state.cursor ||') &&
   route.includes('cursor: complete ?') &&
-  route.includes("status = complete ? 'success' : 'running'"));
+  route.includes("status = complete ? 'success' : 'running'") &&
+  route.includes('let activeCycleId = syncCycleId ||') &&
+  route.includes('sync_cycle_id: activeCycleId') &&
+  !route.includes('async function markSourceComplete'));
 ok('aggregate gating requires same-cycle complete source states',
   route.includes('FROM waxonedge_source_index_state') &&
   route.includes('sameCycle') &&
   route.includes('row.sync_cycle_id === syncCycleId') &&
   route.includes('complete: sameCycle && failed.length === 0 && truncatedSources.length === 0') &&
   route.includes("await upsertSourceIndexState(env.DB, 'token_aggregates'"));
+ok('bootstrap compact source metadata does not mark missing snapshots complete',
+  route.includes('row_count: tableSnapshot.data?.row_count || (Array.isArray(tableSnapshot.data?.rows) ? tableSnapshot.data.rows.length : 0)') &&
+  route.includes('complete: !!tableSnapshot.data && (tableSnapshot.data?.truncated ? false : !tableSnapshot.data?.cursor)'));
 ok('regression guard for live source-sync failures',
   route.includes('writeCompactDexSnapshot(env.DB, adapter') &&
   route.includes('syncCycleId') &&

@@ -815,22 +815,6 @@ async function getActiveSourceCycleId(db) {
   return rows.results?.[0]?.sync_cycle_id || `woe-${Date.now()}`;
 }
 
-async function markSourceComplete(db, source, syncCycleId, details = {}) {
-  const state = await upsertSourceIndexState(db, source, {
-    sync_cycle_id: syncCycleId,
-    cursor: '',
-    complete: details.truncated ? 0 : 1,
-    truncated: details.truncated ? 1 : 0,
-    status: details.truncated ? 'failed' : 'success',
-    error: details.error || null,
-    row_count: details.row_count ?? 0,
-    page_count: details.page_count ?? 0,
-    started_at: details.started_at || nowIso(),
-  });
-  await recordSyncRun(db, source, state.status, state.started_at, state.error);
-  return state;
-}
-
 async function syncCoreDexAdapters(env, syncCycleId = '') {
   const startedAt = nowIso();
   const priceRows = await env.DB.prepare(
@@ -847,8 +831,9 @@ async function syncCoreDexAdapters(env, syncCycleId = '') {
   const syncedAt = nowIso();
   for (const adapter of CORE_DEX_ADAPTERS) {
     const adapterStartedAt = nowIso();
+    let activeCycleId = syncCycleId || '';
     try {
-      const activeCycleId = syncCycleId || await getActiveSourceCycleId(env.DB);
+      activeCycleId = activeCycleId || await getActiveSourceCycleId(env.DB);
       let state = await readSourceIndexState(env.DB, adapter.source);
       if (state?.complete === 1 && state.sync_cycle_id === activeCycleId) {
         results.push({ source: adapter.source, ok: true, complete: true, skipped: true, cycle: activeCycleId });
@@ -941,7 +926,7 @@ async function syncCoreDexAdapters(env, syncCycleId = '') {
     } catch (error) {
       await recordSyncRun(env.DB, adapter.source, 'failed', adapterStartedAt, error?.message || String(error)).catch(() => {});
       await upsertSourceIndexState(env.DB, adapter.source, {
-        sync_cycle_id: syncCycleId || '',
+        sync_cycle_id: activeCycleId,
         complete: 0,
         truncated: /truncated/i.test(String(error?.message || error)) ? 1 : 0,
         status: 'failed',
@@ -1415,9 +1400,9 @@ async function handleBootstrap(env, corsHeaders) {
       indexed: !!tableSnapshot.data,
       contract: adapter.contract,
       table: adapter.table,
-      row_count: tableSnapshot.data?.row_count || 0,
+      row_count: tableSnapshot.data?.row_count || (Array.isArray(tableSnapshot.data?.rows) ? tableSnapshot.data.rows.length : 0),
       page_count: tableSnapshot.data?.page_count || 0,
-      complete: tableSnapshot.data?.truncated ? false : !tableSnapshot.data?.cursor,
+      complete: !!tableSnapshot.data && (tableSnapshot.data?.truncated ? false : !tableSnapshot.data?.cursor),
       compact: tableSnapshot.data?.compact === true,
     };
     rawCore[`${key}_detected_tables`] = abiSnapshot.data?.detected_tables || [];
