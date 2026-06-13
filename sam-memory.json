@@ -55,9 +55,7 @@
       "canonical_url": "/wiki/1m-free-nfts-program.html",
       "category": "factions",
       "source_urls": [
-        "/wiki/1m-free-nfts-program.html",
-        "/wiki/1m-free-nfts-programme.html",
-        "/wiki/one-million-free-nfts.html"
+        "/wiki/1m-free-nfts-program.html"
       ],
       "status": "canonical",
       "tags": [
@@ -1436,8 +1434,7 @@
       "canonical_url": "/wiki/graffpunks.html",
       "category": "characters",
       "source_urls": [
-        "/wiki/graffpunks.html",
-        "/wiki/the-graffpunks.html"
+        "/wiki/graffpunks.html"
       ],
       "status": "canonical",
       "tags": [
@@ -1657,7 +1654,8 @@
       "canonical_url": "/wiki/hodl-warriors.html",
       "category": "characters",
       "source_urls": [
-        "/wiki/hodl-warriors.html"
+        "/wiki/hodl-warriors.html",
+        "/wiki/hodl-x-warriors.html"
       ],
       "status": "canonical",
       "tags": [
@@ -1985,7 +1983,6 @@
       "canonical_url": "/wiki/midevilpunks.html",
       "category": "factions",
       "source_urls": [
-        "/wiki/midevil-hero-arena.html",
         "/wiki/midevilpunks.html"
       ],
       "status": "canonical",
@@ -4140,5 +4137,5 @@
       ]
     }
   },
-  "updated_at": "2026-06-13T03:07:04Z"
+  "updated_at": "2026-06-13T19:47:33Z"
 }
