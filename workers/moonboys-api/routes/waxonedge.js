@@ -950,7 +950,7 @@ async function syncCoreDexAdapters(env, syncCycleId = '') {
       const nextRowCount = (state.row_count || 0) + rows.length;
       const complete = tableResult.complete ? 1 : 0;
       const status = complete ? 'success' : 'partial';
-      const error = complete ? null : `Partial source sync checkpoint saved after ${tableResult.page_count} page(s) and ${tableResult.request_count} RPC request(s); next_key=${tableResult.next_key || 'unknown'}`;
+      const error = complete ? null : `Partial source sync checkpoint saved after ${tableResult.page_count} page(s) and ${tableResult.request_count} table row request(s); next_key=${tableResult.next_key || 'unknown'}`;
       await upsertSourceIndexState(env.DB, adapter.source, {
         sync_cycle_id: activeCycleId,
         cursor: complete ? '' : tableResult.next_key,
