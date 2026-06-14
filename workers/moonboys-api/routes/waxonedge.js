@@ -263,13 +263,13 @@ async function probeWaxonedgeLiveIndexer(env, fetchImpl = globalThis.fetch) {
       };
     }
     const service = safeString(payload?.service);
-    const usesFakeLiveData = payload?.uses_fake_live_data === true;
-    const browserHyperionFetch = payload?.browser_hyperion_fetch === true;
-    const emitsFakeTokenUpdates = payload?.emits_fake_token_updates === true;
+    const usesFakeLiveDataSafe = payload?.uses_fake_live_data === false;
+    const browserHyperionFetchSafe = payload?.browser_hyperion_fetch === false;
+    const emitsFakeTokenUpdatesSafe = payload?.emits_fake_token_updates === false;
     const validIdentity = service === 'waxonedge-live-indexer' &&
-      usesFakeLiveData === false &&
-      browserHyperionFetch === false &&
-      emitsFakeTokenUpdates === false;
+      usesFakeLiveDataSafe &&
+      browserHyperionFetchSafe &&
+      emitsFakeTokenUpdatesSafe;
     if (!response.ok && response.status !== 503) {
       return {
         ...base,
@@ -5010,7 +5010,6 @@ async function getIndexerHealth(db, env = {}) {
       browser_hyperion_fetch: false,
       token_key_format: 'contract::symbol',
     },
-    live_indexer_probe: liveIndexerProbe,
     totals: {
       total_indexed_tokens: totalTokens,
       tokens_with_selected_price: tokensWithSelectedPrice,

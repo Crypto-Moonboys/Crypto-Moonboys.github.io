@@ -95,8 +95,9 @@ ok('wrangler has WaxOnEdge minute cron and daily digest cron',
   wrangler.includes('"* * * * *"') &&
   wrangler.includes('"0 9 * * *"'));
 ok('wrangler documents WaxOnEdge live indexer probe env without committing shared secret',
-  wrangler.includes('WAXONEDGE_LIVE_INDEXER_URL = "http://127.0.0.1:8789"') &&
+  wrangler.includes('# WAXONEDGE_LIVE_INDEXER_URL = "http://127.0.0.1:8789"') &&
   wrangler.includes('wrangler secret put WAXONEDGE_LIVE_SHARED_SECRET') &&
+  !/^\s*WAXONEDGE_LIVE_INDEXER_URL\s*=\s*"http:\/\/127\.0\.0\.1:8789"/m.test(wrangler) &&
   !/WAXONEDGE_LIVE_SHARED_SECRET\s*=/.test(wrangler));
 ok('worker computes WaxOnEdge 5/15 minute and holder-snapshot sub-cadences',
   route.includes('minute % 5 === 0') &&
@@ -662,6 +663,7 @@ ok('indexer health exposes live update contract metadata',
   route.includes('live_indexer: waxonedgeLiveIndexerConfig(env)') &&
   route.includes('live_indexer_probe: liveIndexerProbe') &&
   route.includes('probeWaxonedgeLiveIndexer(env)') &&
+  !route.includes('token_key_format: \'contract::symbol\',\n    },\n    live_indexer_probe: liveIndexerProbe') &&
   route.includes('const WAXONEDGE_LIVE_SECRET_HEADER'));
 {
   const noConfig = __waxonedgeTestHooks.waxonedgeLiveIndexerConfig({});
@@ -687,6 +689,11 @@ ok('indexer health exposes live update contract metadata',
   const notConfigured = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({}, async () => {
     throw new Error('fetch should not run');
   });
+  const emptyConfigured = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: '',
+  }, async () => {
+    throw new Error('fetch should not run');
+  });
   const unsafeConfigured = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
     WAXONEDGE_LIVE_INDEXER_URL: 'https://user:pass@live.example',
   }, async () => {
@@ -696,6 +703,9 @@ ok('indexer health exposes live update contract metadata',
     notConfigured.configured === false &&
     notConfigured.reachable === false &&
     notConfigured.status === 'not_configured' &&
+    emptyConfigured.configured === false &&
+    emptyConfigured.reachable === false &&
+    emptyConfigured.status === 'not_configured' &&
     unsafeConfigured.configured === false &&
     unsafeConfigured.reachable === false &&
     unsafeConfigured.status === 'not_configured');
@@ -727,6 +737,51 @@ ok('indexer health exposes live update contract metadata',
     probe.secret_configured === true &&
     probe.secret_leaked === false &&
     JSON.stringify(probe).includes('do-not-leak') === false);
+}
+{
+  const probeWithPayload = (payload) => __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+  }, async () => new Response(JSON.stringify({
+    service: 'waxonedge-live-indexer',
+    status: 'not_connected',
+    ...payload,
+  }), { status: 200 }));
+  const missingFakeFlag = await probeWithPayload({
+    browser_hyperion_fetch: false,
+    emits_fake_token_updates: false,
+  });
+  const missingBrowserFlag = await probeWithPayload({
+    uses_fake_live_data: false,
+    emits_fake_token_updates: false,
+  });
+  const missingTokenFlag = await probeWithPayload({
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: false,
+  });
+  const stringFalse = await probeWithPayload({
+    uses_fake_live_data: 'false',
+    browser_hyperion_fetch: false,
+    emits_fake_token_updates: false,
+  });
+  const numericZero = await probeWithPayload({
+    uses_fake_live_data: 0,
+    browser_hyperion_fetch: false,
+    emits_fake_token_updates: false,
+  });
+  const explicitTrue = await probeWithPayload({
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: false,
+    emits_fake_token_updates: true,
+  });
+  ok('Worker live indexer probe requires explicit boolean false no-fake flags',
+    missingFakeFlag.reachable === false &&
+    missingBrowserFlag.reachable === false &&
+    missingTokenFlag.reachable === false &&
+    stringFalse.reachable === false &&
+    numericZero.reachable === false &&
+    explicitTrue.reachable === false &&
+    [missingFakeFlag, missingBrowserFlag, missingTokenFlag, stringFalse, numericZero, explicitTrue]
+      .every((probe) => probe.status === 'probe_failed' && /identity/.test(probe.last_error || '')));
 }
 {
   const wrongService = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
