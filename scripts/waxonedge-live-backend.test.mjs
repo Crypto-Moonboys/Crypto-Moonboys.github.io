@@ -662,7 +662,8 @@ ok('indexer health exposes live update contract metadata',
   route.includes('browser_hyperion_fetch: false') &&
   route.includes('live_indexer: waxonedgeLiveIndexerConfig(env)') &&
   route.includes('live_indexer_probe: liveIndexerProbe') &&
-  route.includes('probeWaxonedgeLiveIndexer(env)') &&
+  route.includes('cachedProbeWaxonedgeLiveIndexer(env)') &&
+  route.includes("redirect: 'manual'") &&
   !route.includes('token_key_format: \'contract::symbol\',\n    },\n    live_indexer_probe: liveIndexerProbe') &&
   route.includes('const WAXONEDGE_LIVE_SECRET_HEADER'));
 {
@@ -737,6 +738,108 @@ ok('indexer health exposes live update contract metadata',
     probe.secret_configured === true &&
     probe.secret_leaked === false &&
     JSON.stringify(probe).includes('do-not-leak') === false);
+}
+{
+  let requestedUrl = '';
+  let redirectMode = '';
+  let receivedSecret = '';
+  const redirected = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+  }, async (url, options) => {
+    requestedUrl = url;
+    redirectMode = options.redirect;
+    receivedSecret = options.headers['x-waxonedge-live-secret'];
+    return new Response('', {
+      status: 302,
+      headers: { Location: 'https://evil.example/health' },
+    });
+  });
+  ok('Worker live indexer probe does not follow redirects or leak secret across origins',
+    requestedUrl === 'https://live-indexer.example.internal/health' &&
+    redirectMode === 'manual' &&
+    receivedSecret === 'do-not-leak' &&
+    redirected.configured === true &&
+    redirected.reachable === false &&
+    redirected.status === 'probe_failed' &&
+    redirected.last_error === 'live indexer health redirected' &&
+    JSON.stringify(redirected).includes('do-not-leak') === false);
+}
+{
+  const redirects = await Promise.all([301, 302, 307, 308].map((status) =>
+    __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
+      WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+    }, async () => new Response('', { status, headers: { Location: 'https://other.example/health' } }))));
+  ok('Worker live indexer probe treats all redirect status codes as failed probes',
+    redirects.every((probe) =>
+      probe.configured === true &&
+      probe.reachable === false &&
+      probe.status === 'probe_failed' &&
+      probe.last_error === 'live indexer health redirected'));
+}
+{
+  const goodHealth = {
+    service: 'waxonedge-live-indexer',
+    status: 'not_connected',
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: false,
+    emits_fake_token_updates: false,
+  };
+  let fetchCount = 0;
+  const fetcher = async () => {
+    fetchCount += 1;
+    return new Response(JSON.stringify(goodHealth), { status: 200 });
+  };
+  __waxonedgeTestHooks.resetWaxonedgeLiveIndexerProbeCache();
+  const first = await __waxonedgeTestHooks.cachedProbeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+  }, fetcher, 1000);
+  const second = await __waxonedgeTestHooks.cachedProbeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+  }, fetcher, 2000);
+  const afterTtl = await __waxonedgeTestHooks.cachedProbeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+  }, fetcher, 32000);
+  ok('Worker live indexer probe cache reuses sanitized result within TTL and refreshes after TTL',
+    fetchCount === 2 &&
+    first.reachable === true &&
+    second.reachable === true &&
+    afterTtl.reachable === true &&
+    JSON.stringify(second).includes('do-not-leak') === false);
+}
+{
+  const goodHealth = {
+    service: 'waxonedge-live-indexer',
+    status: 'not_connected',
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: false,
+    emits_fake_token_updates: false,
+  };
+  const urls = [];
+  __waxonedgeTestHooks.resetWaxonedgeLiveIndexerProbeCache();
+  await __waxonedgeTestHooks.cachedProbeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer-a.example.internal',
+  }, async (url) => {
+    urls.push(url);
+    return new Response(JSON.stringify(goodHealth), { status: 200 });
+  }, 1000);
+  await __waxonedgeTestHooks.cachedProbeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer-b.example.internal',
+  }, async (url) => {
+    urls.push(url);
+    return new Response(JSON.stringify(goodHealth), { status: 200 });
+  }, 2000);
+  ok('Worker live indexer probe cache key changes when configured URL changes',
+    urls.length === 2 &&
+    urls[0] === 'https://live-indexer-a.example.internal/health' &&
+    urls[1] === 'https://live-indexer-b.example.internal/health' &&
+    __waxonedgeTestHooks.liveIndexerProbeCacheKey({
+      WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer-a.example.internal',
+      WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+    }) === 'https://live-indexer-a.example.internal|secret:1');
 }
 {
   const probeWithPayload = (payload) => __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
