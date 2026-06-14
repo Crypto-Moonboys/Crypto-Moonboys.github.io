@@ -48,6 +48,7 @@ const aggregateMigration = read('workers/moonboys-api/migrations/023_waxonedge_t
 const sourceCoverageMigration = read('workers/moonboys-api/migrations/024_waxonedge_aggregate_source_coverage.sql');
 const sourceStateMigration = read('workers/moonboys-api/migrations/025_waxonedge_source_index_state.sql');
 const frontend = read('js/waxonedge.js');
+const frontendBubbles = read('js/waxonedge-bubbles-v2.js');
 const frontendSources = read('js/waxonedge-sources.js');
 const html = read('waxonedge.html');
 const tokenHtml = read('analytics/token/index.html');
@@ -694,6 +695,82 @@ ok('aggregate source list includes swap.adex and dapp.fusion without dropping ex
       base_token: { quantity: '0.00000000 WAX', contract: 'eosio.token' },
       quote_token: { quantity: '250.0000 FOO', contract: 'foo.token' },
     }, priceIndex, '2026-06-14T00:00:00.000Z') === null);
+}
+{
+  const priceIndex = new Map([
+    ['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }],
+    ['foo.token::FOO', { priceWax: 0.4, priceUsd: 0.0024 }],
+  ]);
+  const parsedWax = __waxonedgeTestHooks.parseAsset('100.00000000 WAX');
+  const parsedFoo = __waxonedgeTestHooks.parseAsset('250.0000 FOO');
+  const rawWaxSide = __waxonedgeTestHooks.getTokenSideInfo({
+    amount: '10000000000',
+    decimals: 8,
+    symbol: '8,WAX',
+    contract: 'eosio.token',
+  });
+  const decimalWaxSide = __waxonedgeTestHooks.getTokenSideInfo({
+    amount: '100.5',
+    decimals: 8,
+    symbol: '8,WAX',
+    contract: 'eosio.token',
+  });
+  const zeroDecimalSide = __waxonedgeTestHooks.getTokenSideInfo({
+    amount: '250',
+    decimals: 0,
+    symbol: '0,FOO',
+    contract: 'foo.token',
+  });
+  ok('WaxOnEdge reserve parser applies token precision exactly once',
+    parsedWax.amount === 100 &&
+    parsedFoo.amount === 250 &&
+    rawWaxSide.amount === 100 &&
+    decimalWaxSide.amount === 100.5 &&
+    zeroDecimalSide.amount === 250);
+  const normalLiquidity = __waxonedgeTestHooks.liquidityFromSides(
+    { contract: 'eosio.token', symbol: 'WAX', amount: 100 },
+    { contract: 'foo.token', symbol: 'FOO', amount: 250 },
+    priceIndex,
+  );
+  ok('WaxOnEdge TVL derives from scaled reserves and real WAX/USD price',
+    normalLiquidity.liquidityWax === '200' &&
+    normalLiquidity.liquidityUsd === '1.2');
+  const legacyHugePair = {
+    source: 'swap.adex',
+    pair_id: '29',
+    token_a_contract: 'eosio.token',
+    token_a_symbol: 'WAX',
+    token_b_contract: 'foo.token',
+    token_b_symbol: 'FOO',
+    reserve_a: '100',
+    reserve_b: '250',
+    liquidity_wax: '999999999999',
+    liquidity_usd: '999999999999',
+  };
+  ok('aggregate TVL prefers reserve-derived liquidity over stale impossible stored liquidity',
+    __waxonedgeTestHooks.liquidityWaxFromIndexedPair(legacyHugePair, priceIndex) === 200 &&
+    __waxonedgeTestHooks.liquidityUsdFromWax(200, legacyHugePair, priceIndex) === 1.2);
+  const impossibleReservePair = {
+    source: 'swap.adex',
+    pair_id: '30',
+    token_a_contract: 'eosio.token',
+    token_a_symbol: 'WAX',
+    token_b_contract: 'foo.token',
+    token_b_symbol: 'FOO',
+    reserve_a: '100000000000',
+    reserve_b: '250',
+  };
+  ok('impossible pair TVL is unavailable instead of clipped or displayed as real',
+    __waxonedgeTestHooks.liquidityWaxFromIndexedPair(impossibleReservePair, priceIndex) === null &&
+    __waxonedgeTestHooks.isReasonablePairTvlUsd(1798450000000) === false &&
+    route.includes('tvl_precision_diagnostics') &&
+    route.includes('MAX_REASONABLE_PAIR_TVL_USD') &&
+    route.includes('impossible_tvl_rows_skipped'));
+  ok('bubble scanner displays backend TVL without independent frontend rescaling',
+    frontendBubbles.includes("return record.tvlUsd != null ? record.tvlUsd : record.tvlWax") &&
+    frontendBubbles.includes("return '$' + fmtNum(record.tvlUsd)") &&
+    !/record\.tvlUsd\s*[*/]\s*(?:1e\d+|1000|1000000|100000000)/.test(frontendBubbles) &&
+    !/record\.tvlWax\s*[*/]\s*(?:1e\d+|1000|1000000|100000000)/.test(frontendBubbles));
 }
 {
   const priceIndex = new Map([

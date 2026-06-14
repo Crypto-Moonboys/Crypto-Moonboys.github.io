@@ -11,6 +11,7 @@ const CORE_DEX_PAGES_PER_INVOCATION = 3;
 const CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE = 3;
 const SOURCE_STALE_MINUTES = 30;
 const MIN_TRUSTED_WAX_LIQUIDITY = 10;
+const MAX_REASONABLE_PAIR_TVL_USD = 100000000;
 const CANDLE_BACKFILL_SOURCE = 'candle_backfill';
 const ALCOR_TRADE_INDEX_SOURCE = 'alcor_trade_rows';
 const AMM_TRADE_INDEX_SOURCE = 'amm_trade_rows';
@@ -589,6 +590,17 @@ function parseAsset(asset) {
   };
 }
 
+function decimalAmountFromValue(value, precision = null) {
+  const amount = asNumber(value);
+  if (amount == null) return null;
+  const decimals = precision == null || precision === '' ? null : Number(precision);
+  const text = String(value || '').trim();
+  if (!Number.isFinite(decimals) || decimals <= 0 || text.includes('.')) return amount;
+  const scale = 10 ** decimals;
+  if (!Number.isFinite(scale) || scale <= 1) return amount;
+  return amount / scale;
+}
+
 function parseSymbolCode(value) {
   const text = String(value || '').trim();
   const match = text.match(/^(\d+),([A-Z0-9._-]+)$/i);
@@ -626,6 +638,10 @@ function getTokenSideInfo(side) {
   const quantity = side.quantity || side.reserve || side.amount || side.balance || side.value || '';
   const parsed = parseAsset(quantity);
   const parsedSymbolCode = parseSymbolCode(side.symbol);
+  const precision = side.decimals != null
+    ? Number(side.decimals)
+    : (side.precision != null ? Number(side.precision) : (parsed.precision ?? parsedSymbolCode.precision));
+  const amount = parsed.symbol ? parsed.amount : decimalAmountFromValue(quantity, precision);
   const symbol = parsed.symbol ||
     parsedSymbolCode.symbol ||
     getSymbolValue(side.symbol) ||
@@ -636,9 +652,9 @@ function getTokenSideInfo(side) {
     symbol: normalizeSymbol(symbol),
     contract: normalizeContract(side.contract || side.contract_name || side.code || side.token_contract || side.scope),
     quantity: parsed.raw || String(quantity || ''),
-    amount: parsed.amount,
-    decimals: side.decimals != null ? Number(side.decimals) : (parsed.precision ?? parsedSymbolCode.precision),
-    precision: side.precision != null ? Number(side.precision) : (parsed.precision ?? parsedSymbolCode.precision),
+    amount,
+    decimals: precision,
+    precision,
   };
 }
 
@@ -818,6 +834,7 @@ function normalizePair(pair, tickerByMarketId, priceIndex, syncedAt) {
     const waxPrice = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
     if (waxPrice != null) liquidityUsd = safeDecimal(asNumber(liquidityWax) * waxPrice);
   }
+  const sanitizedLiquidity = sanitizeLiquidityValues(liquidityWax, liquidityUsd, priceIndex);
 
   return {
     source: 'alcor',
@@ -831,12 +848,32 @@ function normalizePair(pair, tickerByMarketId, priceIndex, syncedAt) {
     volume_24h: volume24,
     volume_24h_wax: volume24Wax,
     volume_24h_usd: volume24Usd,
-    liquidity_wax: liquidityWax,
-    liquidity_usd: liquidityUsd,
+    liquidity_wax: sanitizedLiquidity.liquidityWax,
+    liquidity_usd: sanitizedLiquidity.liquidityUsd,
     reserve_a: reserveA,
     reserve_b: reserveB,
     fee_bps: safeDecimal(pair.fee),
     updated_at: syncedAt,
+  };
+}
+
+function isReasonablePairTvlUsd(value) {
+  const usd = asNumber(value);
+  return usd == null || (usd >= 0 && usd <= MAX_REASONABLE_PAIR_TVL_USD);
+}
+
+function sanitizeLiquidityValues(liquidityWax, liquidityUsd, priceIndex) {
+  const wax = asNumber(liquidityWax);
+  let usd = asNumber(liquidityUsd);
+  const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+  if (usd == null && wax != null && waxUsd != null) usd = wax * waxUsd;
+  if (!isReasonablePairTvlUsd(usd)) {
+    return { liquidityWax: null, liquidityUsd: null, skipped: true };
+  }
+  return {
+    liquidityWax: safeDecimal(wax),
+    liquidityUsd: safeDecimal(usd),
+    skipped: false,
   };
 }
 
@@ -861,7 +898,7 @@ function liquidityFromSides(tokenA, tokenB, priceIndex) {
     const waxPrice = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
     if (waxPrice != null) liquidityUsd = safeDecimal(asNumber(liquidityWax) * waxPrice);
   }
-  return { liquidityWax, liquidityUsd };
+  return sanitizeLiquidityValues(liquidityWax, liquidityUsd, priceIndex);
 }
 
 function pairPriceWaxForToken(pair, contract, symbol) {
@@ -3638,24 +3675,39 @@ function priceWaxFromIndexedPair(pair, contract, symbol, priceIndex) {
 }
 
 function liquidityWaxFromIndexedPair(pair, priceIndex) {
-  const indexed = asNumber(pair.liquidity_wax);
-  if (indexed != null) return indexed;
   const reserveA = asNumber(pair.reserve_a);
   const reserveB = asNumber(pair.reserve_b);
-  if (reserveA == null || reserveB == null) return null;
-  if (isWaxToken(pair.token_a_contract, pair.token_a_symbol)) return reserveA * 2;
-  if (isWaxToken(pair.token_b_contract, pair.token_b_symbol)) return reserveB * 2;
-  const priceA = priceIndex.get(tokenKey(pair.token_a_contract, pair.token_a_symbol))?.priceWax;
-  const priceB = priceIndex.get(tokenKey(pair.token_b_contract, pair.token_b_symbol))?.priceWax;
-  if (priceA == null || priceB == null) return null;
-  return (reserveA * priceA) + (reserveB * priceB);
+  if (reserveA != null && reserveB != null) {
+    let derived = null;
+    if (isWaxToken(pair.token_a_contract, pair.token_a_symbol)) {
+      derived = reserveA * 2;
+    } else if (isWaxToken(pair.token_b_contract, pair.token_b_symbol)) {
+      derived = reserveB * 2;
+    } else {
+      const priceA = priceIndex.get(tokenKey(pair.token_a_contract, pair.token_a_symbol))?.priceWax;
+      const priceB = priceIndex.get(tokenKey(pair.token_b_contract, pair.token_b_symbol))?.priceWax;
+      if (priceA != null && priceB != null) derived = (reserveA * priceA) + (reserveB * priceB);
+    }
+    if (derived != null) {
+      const sanitized = sanitizeLiquidityValues(derived, null, priceIndex);
+      return asNumber(sanitized.liquidityWax);
+    }
+  }
+  const indexed = asNumber(pair.liquidity_wax);
+  if (indexed == null) return null;
+  const sanitized = sanitizeLiquidityValues(indexed, pair.liquidity_usd, priceIndex);
+  return asNumber(sanitized.liquidityWax);
 }
 
 function liquidityUsdFromWax(liquidityWax, pair, priceIndex) {
-  const indexed = asNumber(pair.liquidity_usd);
-  if (indexed != null) return indexed;
   const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
-  return liquidityWax != null && waxUsd != null ? liquidityWax * waxUsd : null;
+  if (liquidityWax != null && waxUsd != null) {
+    const derived = liquidityWax * waxUsd;
+    return isReasonablePairTvlUsd(derived) ? derived : null;
+  }
+  const indexed = asNumber(pair.liquidity_usd);
+  if (indexed != null) return isReasonablePairTvlUsd(indexed) ? indexed : null;
+  return null;
 }
 
 function volumeWaxFromIndexedPair(pair, priceIndex) {
@@ -4131,6 +4183,58 @@ async function sourceRowCounts(db) {
   return counts;
 }
 
+async function getTvlPrecisionDiagnostics(db) {
+  const validRows = await countScalar(db, `
+    SELECT COUNT(*) AS count
+    FROM waxonedge_pairs
+    WHERE liquidity_usd IS NOT NULL
+      AND CAST(liquidity_usd AS NUMERIC) >= 0
+      AND CAST(liquidity_usd AS NUMERIC) <= ?`, [MAX_REASONABLE_PAIR_TVL_USD]);
+  const impossibleRows = await countScalar(db, `
+    SELECT COUNT(*) AS count
+    FROM waxonedge_pairs
+    WHERE liquidity_usd IS NOT NULL
+      AND CAST(liquidity_usd AS NUMERIC) > ?`, [MAX_REASONABLE_PAIR_TVL_USD]);
+  const missingRealPriceRows = await countScalar(db, `
+    SELECT COUNT(*) AS count
+    FROM waxonedge_pairs
+    WHERE liquidity_usd IS NULL
+      AND CAST(COALESCE(reserve_a, '0') AS NUMERIC) > 0
+      AND CAST(COALESCE(reserve_b, '0') AS NUMERIC) > 0`);
+  const maxRow = await db.prepare(
+    `SELECT MAX(CAST(liquidity_usd AS NUMERIC)) AS max_tvl_usd
+     FROM waxonedge_pairs
+     WHERE liquidity_usd IS NOT NULL
+       AND CAST(liquidity_usd AS NUMERIC) <= ?`
+  ).bind(MAX_REASONABLE_PAIR_TVL_USD).first().catch(() => null);
+  const examples = await db.prepare(
+    `SELECT source, pair_id, token_a_symbol, token_b_symbol, reserve_a, reserve_b, liquidity_wax, liquidity_usd
+     FROM waxonedge_pairs
+     WHERE liquidity_usd IS NOT NULL
+       AND CAST(liquidity_usd AS NUMERIC) <= ?
+     ORDER BY CAST(liquidity_usd AS NUMERIC) DESC
+     LIMIT 5`
+  ).bind(MAX_REASONABLE_PAIR_TVL_USD).all().catch(() => ({ results: [] }));
+  return {
+    max_reasonable_pair_tvl_usd: MAX_REASONABLE_PAIR_TVL_USD,
+    tvl_rows_valid: validRows,
+    tvl_rows_skipped: impossibleRows,
+    impossible_tvl_rows_skipped: impossibleRows,
+    tvl_rows_missing_real_price: missingRealPriceRows,
+    max_tvl_usd_after_fix: asNumber(maxRow?.max_tvl_usd),
+    largest_tvl_examples: (examples.results || []).map((row) => ({
+      source: row.source,
+      pair_id: row.pair_id,
+      pair: [row.token_a_symbol, row.token_b_symbol].filter(Boolean).join('/'),
+      reserve_a: row.reserve_a,
+      reserve_b: row.reserve_b,
+      liquidity_wax: row.liquidity_wax,
+      liquidity_usd: row.liquidity_usd,
+    })),
+    no_fake_tvl_caps: true,
+  };
+}
+
 async function getIndexerHealth(db, env = {}) {
   const pairTokenCte = `
     WITH pair_tokens AS (
@@ -4192,6 +4296,7 @@ async function getIndexerHealth(db, env = {}) {
     tradeIndexSnapshot,
     ammTradeIndexState,
     ammTradeIndexSnapshot,
+    tvlPrecisionDiagnostics,
   ] = await Promise.all([
     countScalar(db, `SELECT COUNT(*) AS count FROM waxonedge_tokens`),
     countScalar(db, `${pairTokenCte} SELECT COUNT(*) AS count FROM pair_tokens`),
@@ -4220,6 +4325,7 @@ async function getIndexerHealth(db, env = {}) {
     readSnapshot(db, ALCOR_TRADE_INDEX_SOURCE),
     readSourceIndexState(db, AMM_TRADE_INDEX_SOURCE),
     readSnapshot(db, AMM_TRADE_INDEX_SOURCE),
+    getTvlPrecisionDiagnostics(db),
   ]);
   const staleSyncRows = await Promise.all(sourceStates
     .filter(sourceStateStale)
@@ -4401,6 +4507,7 @@ async function getIndexerHealth(db, env = {}) {
       aggregate_refresh_deferred_budget: aggregateRefreshPending && aggregateSnapshot.data?.aggregate_refresh_deferred_budget === true,
     },
     dead_token_reason_counts: deadReasons,
+    tvl_precision_diagnostics: tvlPrecisionDiagnostics,
     candle_gap: {
       chart_candles_indexed_count: chartCandleCount1d,
       tokens_with_no_chart_source: Math.max(0, totalTokens - tokensWithCandles),
@@ -5223,6 +5330,13 @@ export const __waxonedgeTestHooks = {
   deriveTokenPairMetrics,
   collectTokenPriceKeysForPairs,
   diagnoseTokenAggregate,
+  parseAsset,
+  decimalAmountFromValue,
+  getTokenSideInfo,
+  liquidityFromSides,
+  liquidityWaxFromIndexedPair,
+  liquidityUsdFromWax,
+  isReasonablePairTvlUsd,
   buildDailyCandlesFromTradeRows,
   normalizeAlcorMarketTradeRow,
   priceFromIndexedTradeRow,
