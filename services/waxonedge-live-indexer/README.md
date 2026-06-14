@@ -32,6 +32,7 @@ WAXONEDGE_HYPERION_API=https://wax.eosusa.io/v2
 WAXONEDGE_STATE_HISTORY_ENDPOINT=
 WAXONEDGE_LIVE_SHARED_SECRET=
 WAXONEDGE_LIVE_ENABLE_STREAM=false
+WAXONEDGE_LIVE_BIND_HOST=127.0.0.1
 ```
 
 Future Worker-to-VPS calls must send the shared secret in:
@@ -78,6 +79,8 @@ Returns compact live token updates in the same general shape as the Worker snaps
 Returns an SSE contract with heartbeat events only. It does not emit `token_update` events until real indexed trade deltas are connected.
 
 ## Deployment Notes
+
+For the VPS runtime runbook, systemd template, PM2 alternative, rollback steps, and health-check command, see `DEPLOY.md`.
 
 Deploy this service on a VPS behind a private network path, tunnel, firewall rule, or reverse proxy that the Worker can reach later. The next integration PR should verify:
 

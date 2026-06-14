@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const LIVE_SECRET_HEADER = 'x-waxonedge-live-secret';
@@ -26,6 +27,12 @@ function parsePort(value) {
   return Number.isFinite(parsed) && parsed > 0 && parsed <= 65535 ? parsed : 8789;
 }
 
+export function normalizeBindHost(value) {
+  const raw = String(value || '').trim() || '127.0.0.1';
+  if (/^\[[^\]]+\]$/.test(raw)) return raw.slice(1, -1);
+  return raw;
+}
+
 function sanitizedHttpUrl(value) {
   const raw = String(value || '').trim();
   if (!raw) return '';
@@ -43,6 +50,7 @@ function sanitizedHttpUrl(value) {
 export function loadConfig(env = process.env) {
   return {
     port: parsePort(env.WAXONEDGE_LIVE_PORT),
+    bind_host: normalizeBindHost(env.WAXONEDGE_LIVE_BIND_HOST),
     hyperion_api: sanitizedHttpUrl(env.WAXONEDGE_HYPERION_API),
     state_history_endpoint: sanitizedHttpUrl(env.WAXONEDGE_STATE_HISTORY_ENDPOINT),
     stream_enabled: booleanEnv(env.WAXONEDGE_LIVE_ENABLE_STREAM, false),
@@ -194,17 +202,23 @@ export function createServer(state = createState()) {
 export function startServer(env = process.env) {
   const state = createState(loadConfig(env));
   const server = createServer(state);
-  server.listen(state.config.port, () => {
+  server.listen(state.config.port, state.config.bind_host, () => {
     console.log(JSON.stringify({
       service: 'waxonedge-live-indexer',
       status: state.status,
       port: state.config.port,
+      bind_host: state.config.bind_host,
       uses_fake_live_data: false,
     }));
   });
   return { server, state };
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+export function isDirectRun(metaUrl = import.meta.url, argv1 = process.argv[1], cwd = process.cwd()) {
+  if (!argv1) return false;
+  return fileURLToPath(metaUrl) === resolve(cwd, argv1);
+}
+
+if (isDirectRun()) {
   startServer();
 }

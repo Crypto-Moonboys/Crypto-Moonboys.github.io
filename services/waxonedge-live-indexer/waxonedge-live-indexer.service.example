@@ -1,0 +1,22 @@
+[Unit]
+Description=WaxOnEdge live indexer
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=waxonedge
+Group=waxonedge
+WorkingDirectory=/opt/crypto-moonboys/services/waxonedge-live-indexer
+Environment=WAXONEDGE_LIVE_BIND_HOST=127.0.0.1
+EnvironmentFile=/etc/waxonedge-live-indexer.env
+ExecStart=/usr/bin/node src/index.mjs
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
