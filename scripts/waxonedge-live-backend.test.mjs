@@ -324,6 +324,25 @@ ok('VPS live indexer registers only verified trade streams',
     snapshot.uses_fake_live_data === false &&
     snapshot.browser_hyperion_fetch === false);
 }
+
+function createEmptyWaxonedgeHealthDb() {
+  const statement = {
+    bind() {
+      return this;
+    },
+    async first() {
+      return { count: 0 };
+    },
+    async all() {
+      return { results: [] };
+    },
+  };
+  return {
+    prepare() {
+      return statement;
+    },
+  };
+}
 ok('VPS live indexer binds locally by default and allows explicit host override',
   liveIndexer.loadConfig({}).bind_host === '127.0.0.1' &&
   liveIndexer.loadConfig({ WAXONEDGE_LIVE_BIND_HOST: '0.0.0.0' }).bind_host === '0.0.0.0' &&
@@ -708,6 +727,12 @@ ok('indexer health exposes live update contract metadata',
   }, async () => {
     throw new Error('fetch should not run');
   });
+  const nonLoopbackHttpConfigured = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'http://live.example',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+  }, async () => {
+    throw new Error('fetch should not run');
+  });
   ok('Worker live indexer probe reports not_configured for missing or unsafe URL',
     notConfigured.configured === false &&
     notConfigured.reachable === false &&
@@ -717,7 +742,10 @@ ok('indexer health exposes live update contract metadata',
     emptyConfigured.status === 'not_configured' &&
     unsafeConfigured.configured === false &&
     unsafeConfigured.reachable === false &&
-    unsafeConfigured.status === 'not_configured');
+    unsafeConfigured.status === 'not_configured' &&
+    nonLoopbackHttpConfigured.configured === false &&
+    nonLoopbackHttpConfigured.reachable === false &&
+    nonLoopbackHttpConfigured.status === 'not_configured');
 }
 {
   let requestedUrl = '';
@@ -743,7 +771,8 @@ ok('indexer health exposes live update contract metadata',
     probe.reachable === true &&
     probe.status === 'not_connected' &&
     probe.service === 'waxonedge-live-indexer' &&
-    probe.secret_configured === true &&
+    probe.shared_secret_configured === true &&
+    Object.prototype.hasOwnProperty.call(probe, 'secret_configured') === false &&
     probe.secret_leaked === false &&
     JSON.stringify(probe).includes('do-not-leak') === false);
 }
@@ -893,6 +922,56 @@ ok('indexer health exposes live update contract metadata',
     oldKey.includes('old-secret') === false &&
     newKey.includes('new-secret') === false &&
     __waxonedgeTestHooks.liveIndexerSecretFingerprint('old-secret') !== __waxonedgeTestHooks.liveIndexerSecretFingerprint('new-secret'));
+}
+{
+  const goodHealth = {
+    service: 'waxonedge-live-indexer',
+    status: 'not_connected',
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: false,
+    emits_fake_token_updates: false,
+  };
+  const originalFetch = globalThis.fetch;
+  const originalDateNow = Date.now;
+  let fetchCount = 0;
+  try {
+    globalThis.fetch = async () => {
+      fetchCount += 1;
+      return new Response(JSON.stringify(goodHealth), { status: 200 });
+    };
+    const db = createEmptyWaxonedgeHealthDb();
+    __waxonedgeTestHooks.resetWaxonedgeLiveIndexerProbeCache();
+    Date.now = () => 1000;
+    const first = await __waxonedgeTestHooks.getIndexerHealth(db, {
+      WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+      WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+    });
+    Date.now = () => 2000;
+    const second = await __waxonedgeTestHooks.getIndexerHealth(db, {
+      WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+      WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+    });
+    Date.now = () => 32000;
+    const third = await __waxonedgeTestHooks.getIndexerHealth(db, {
+      WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+      WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+    });
+    ok('public indexer health uses cached live indexer probe without leaking secret',
+      fetchCount === 2 &&
+      first.live_updates.live_indexer_probe.reachable === true &&
+      second.live_updates.live_indexer_probe.reachable === true &&
+      third.live_updates.live_indexer_probe.reachable === true &&
+      first.live_updates.live_indexer.shared_secret_configured === true &&
+      first.live_updates.live_indexer_probe.shared_secret_configured === true &&
+      Object.prototype.hasOwnProperty.call(first.live_updates.live_indexer_probe, 'secret_configured') === false &&
+      Object.prototype.hasOwnProperty.call(first, 'live_indexer_probe') === false &&
+      /"secret_configured"\s*:/.test(JSON.stringify(first)) === false &&
+      JSON.stringify(first).includes('do-not-leak') === false);
+  } finally {
+    globalThis.fetch = originalFetch;
+    Date.now = originalDateNow;
+    __waxonedgeTestHooks.resetWaxonedgeLiveIndexerProbeCache();
+  }
 }
 {
   const probeWithPayload = (payload) => __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({

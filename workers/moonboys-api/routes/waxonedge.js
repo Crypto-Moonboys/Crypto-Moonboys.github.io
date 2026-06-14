@@ -227,7 +227,7 @@ async function probeWaxonedgeLiveIndexer(env, fetchImpl = globalThis.fetch) {
     uses_fake_live_data: null,
     browser_hyperion_fetch: null,
     emits_fake_token_updates: null,
-    secret_configured: !!secret,
+    shared_secret_configured: !!secret,
     secret_leaked: false,
     last_error: null,
   };
@@ -314,7 +314,7 @@ async function probeWaxonedgeLiveIndexer(env, fetchImpl = globalThis.fetch) {
       uses_fake_live_data: false,
       browser_hyperion_fetch: false,
       emits_fake_token_updates: false,
-      secret_configured: !!secret,
+      shared_secret_configured: !!secret,
       secret_leaked: false,
       last_error: null,
     };
@@ -6006,6 +6006,7 @@ export const __waxonedgeTestHooks = {
   liveIndexerProbeCacheKey,
   liveIndexerSecretFingerprint,
   resetWaxonedgeLiveIndexerProbeCache,
+  getIndexerHealth,
   alcorMarketMatchHistoryUrls,
   alcorMarketMatchStreamUrl,
   fetchAlcorMarketMatchStreamRows,
