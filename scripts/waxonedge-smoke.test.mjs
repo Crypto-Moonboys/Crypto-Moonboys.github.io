@@ -153,11 +153,22 @@ ok('waxonedge-bubbles-v2.js supports Ant-style metric and timeframe modes',
   v2Js.includes("price: 'Price'") &&
   v2Js.includes("volume: 'Volume'") &&
   v2Js.includes("tvl: 'TVL'") &&
-  v2Js.includes("mcap: 'Mkt Cap / FDV'") &&
+  v2Js.includes("mcap: 'Mkt Cap'") &&
   v2Js.includes("var TIMEFRAME_LABELS = { '24h': '24h', '7d': '7D', '30d': '30D'") &&
-  v2Js.includes("if (metric === 'price') return record.selectedPriceUsd || record.selectedPriceWax || 0") &&
+  v2Js.includes("if (metric === 'price') return record.selectedPriceUsd != null ? record.selectedPriceUsd : record.selectedPriceWax") &&
   v2Js.includes("if (timeframe === '7d')") &&
   v2Js.includes("if (timeframe === '30d')"));
+ok('waxonedge-bubbles-v2.js does not fallback between scanner metrics',
+  v2Js.includes('return change != null ? Math.abs(change) : null') &&
+  v2Js.includes("if (metric === 'mcap') return record.marketCapUsd != null ? record.marketCapUsd : record.marketCapWax") &&
+  v2Js.includes('return valueForMetric(record, state.metric, state.timeframe) != null') &&
+  !v2Js.includes('record.volume24Usd || record.volume24Wax || record.liquidityUsd || record.liquidityWax || record.indexedPairCount') &&
+  !v2Js.includes('record.fdvUsd || record.marketCapWax') &&
+  !v2Js.includes(" + ' FDV'"));
+ok('waxonedge-bubbles-v2.js formats structured modal stats without object string leaks',
+  v2Js.includes('function formatStatValue') &&
+  v2Js.includes("typeof value === 'object'") &&
+  !v2Js.includes('[object Object]'));
 ok('waxonedge-bubbles-v2.js preserves distinct indexed source keys',
   v2Js.includes('function pairSourceKey(pair)') &&
   v2Js.includes('token.source_keys || token.sourceKeys || token.sources') &&
@@ -236,7 +247,8 @@ ok('waxonedge-bubbles-v2.js pauses animation when hidden and respects reduced mo
 ok('waxonedge-bubbles-v2.js keeps WAX price meta honest',
   v2Js.includes('WAX price unavailable') &&
   v2Js.includes('Connecting to WaxOnEdge indexer') &&
-  v2Js.includes('WAX price from WaxOnEdge indexer') &&
+  v2Js.includes('WAX price from ') &&
+  v2Js.includes('data.summary.wax_price_usd') &&
   !v2Js.includes('Indexed from Alcor, Taco, Nefty, BOX'));
 
 ok('waxonedge.html is scanner-only and omits dominant KPI/source strips',

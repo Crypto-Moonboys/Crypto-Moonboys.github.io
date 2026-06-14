@@ -513,7 +513,7 @@ ok('Alcor market match rows normalize into waxonedge_trades shape',
 ok('Alcor trade-row indexer upserts real rows and exposes source diagnostics',
   route.includes('const ALCOR_TRADE_INDEX_SOURCE =') &&
   route.includes('async function syncAlcorMarketTradeRows') &&
-  route.includes('fetchAlcorMarketTradeRows(pair.pair_id, rowsPerMarket)') &&
+  route.includes('fetchAlcorMarketMatchHistoryRows(env, pair.pair_id, rowsPerMarket)') &&
   route.includes('normalizeAlcorMarketTradeRow(row, pair)') &&
   route.includes('INSERT INTO waxonedge_trades') &&
   route.includes('ON CONFLICT(source, trade_id) DO UPDATE SET') &&
@@ -615,7 +615,7 @@ ok('502 trade fetch response is classified as upstream_5xx temporary failure',
   try {
     globalThis.fetch = async () => new Response('<html>not json</html>', { status: 200 });
     const result = await __waxonedgeTestHooks.fetchAlcorMarketTradeRows('29', 250);
-    ok('invalid JSON trade response is bad upstream payload, not no_trade_rows',
+ok('invalid JSON trade response is bad upstream payload, not no_trade_rows',
       result.failed === true &&
       result.invalidPayload === true &&
       result.noTradeRows !== true &&
@@ -626,15 +626,164 @@ ok('502 trade fetch response is classified as upstream_5xx temporary failure',
     globalThis.fetch = originalFetch;
   }
 }
+{
+  const actionRow = {
+    trx_id: 'abc123',
+    global_sequence: '987654',
+    block_num: 123,
+    '@timestamp': '2026-06-13T00:00:00.000Z',
+    act: {
+      name: 'buymatch',
+      data: {
+        record: {
+          id: 44,
+          asker: 'seller',
+          bidder: 'buyer',
+          unit_price: '250000000',
+          ask: '10.00000000 WAXCASH',
+          bid: '25.00000000 WAX',
+          market: {
+            id: 253,
+            base_token: { contract: 'graffitiking', sym: '8,WAXCASH' },
+            quote_token: { contract: 'eosio.token', sym: '8,WAX' },
+          },
+        },
+      },
+    },
+  };
+  const parsed = __waxonedgeTestHooks.parseAlcorMarketMatchAction(actionRow);
+  const normalized = __waxonedgeTestHooks.normalizeAlcorMarketTradeRow(actionRow, {
+    pair_id: '253',
+    token_a_contract: 'graffitiking',
+    token_a_symbol: 'WAXCASH',
+  });
+  ok('Hyperion/state-history alcordexmain market match rows normalize into waxonedge_trades',
+    parsed &&
+    parsed.src === 'alcor_buy' &&
+    String(parsed.market_id) === '253' &&
+    normalized &&
+    normalized.source === 'alcor' &&
+    normalized.pair_id === '253' &&
+    normalized.price === '2.5' &&
+    normalized.volume === '25' &&
+    normalized.raw_json.includes('Hyperion/state-history alcordexmain buymatch/sellmatch') &&
+    normalized.raw_json.includes('marketMatches'));
+}
+{
+  const originalFetch = globalThis.fetch;
+  const requestedUrls = [];
+  try {
+    globalThis.fetch = async (url) => {
+      requestedUrls.push(String(url));
+      const isSell = String(url).includes('sellmatch');
+      return new Response(JSON.stringify({
+        actions: isSell ? [] : [{
+          trx_id: 'hyperion-trx',
+          global_sequence: '111',
+          '@timestamp': '2026-06-13T00:00:00.000Z',
+          act: {
+            name: 'buymatch',
+            data: {
+              record: {
+                id: 1,
+                unit_price: 100000000,
+                ask: '1.00000000 TOKEN',
+                bid: '1.00000000 WAX',
+                market: { id: 29 },
+              },
+            },
+          },
+        }],
+      }), { status: 200 });
+    };
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example' }, '29', 50);
+    ok('Alcor trade index uses Hyperion/state-history marketMatches instead of guessed public Alcor endpoints',
+      result.rows.length === 1 &&
+      result.ingestion_path === 'hyperion_marketMatches' &&
+      result.diagnostic.endpoint_path === 'Hyperion/state-history marketMatches' &&
+      requestedUrls.every((url) => url.includes('/v2/history/get_actions')) &&
+      requestedUrls.some((url) => url.includes('alcordexmain%3Abuymatch')));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+{
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response('Bad Gateway', { status: 502, statusText: 'Bad Gateway' });
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example' }, '29', 50);
+    ok('Hyperion 502 uses upstream_5xx taxonomy and is temporary',
+      result.temporaryFailure === true &&
+      result.failed !== true &&
+      result.diagnostic.failure_type === 'upstream_5xx' &&
+      result.diagnostic.upstream_server_error === true &&
+      __waxonedgeTestHooks.isTemporaryTradeFailureType(result.diagnostic.failure_type) === true);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+{
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response('<not-json>', { status: 200 });
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example' }, '29', 50);
+    ok('Hyperion invalid JSON is invalid_payload, not temporary or no_trade_rows',
+      result.invalidPayload === true &&
+      result.failed === true &&
+      result.temporaryFailure !== true &&
+      result.noTradeRows !== true &&
+      result.unsupported !== true &&
+      result.rows.length === 0 &&
+      result.diagnostic.failure_type === 'invalid_payload' &&
+      __waxonedgeTestHooks.isTemporaryTradeFailureType(result.diagnostic.failure_type) === false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+{
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => { throw new Error('network socket closed with token abc123'); };
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example' }, '29', 50);
+    ok('Hyperion thrown fetch exception uses failed taxonomy and safe endpoint diagnostics',
+      result.failed === true &&
+      result.temporaryFailure !== true &&
+      result.unsupported !== true &&
+      result.rows.length === 0 &&
+      result.diagnostic.failure_type === 'failed' &&
+      result.diagnostic.endpoint_path.includes('/v2/history/get_actions') &&
+      result.diagnostic.response_body_snippet.includes('network socket closed') &&
+      __waxonedgeTestHooks.isTemporaryTradeFailureType(result.diagnostic.failure_type) === false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+{
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response('Not Found', { status: 404, statusText: 'Not Found' });
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example' }, '29', 50);
+    ok('Hyperion 404 is unsupported, not temporary',
+      result.unsupported === true &&
+      result.temporaryFailure !== true &&
+      result.failed !== true &&
+      result.rows.length === 0 &&
+      result.diagnostic.failure_type === 'unsupported');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
 ok('trade-row fetch separates temporary 5xx from unsupported history',
   route.includes('let temporarilyFailedPairCount = 0') &&
   route.includes('let upstream5xxCount = 0') &&
   route.includes('let upstreamBadPayloadCount = 0') &&
+  route.includes('let hyperionScanNoRowsCount = 0') &&
   route.includes('let noTradeRowsCount = 0') &&
   route.includes('if (result.temporaryFailure)') &&
   route.includes('temporarilyFailedPairCount += 1') &&
   route.includes("result.diagnostic?.failure_type === 'upstream_5xx'") &&
   route.includes('upstream5xxCount += 1') &&
+  route.includes('if (result.invalidPayload || result.diagnostic?.failure_type === \'invalid_payload\') upstreamBadPayloadCount += 1') &&
   route.indexOf('if (result.temporaryFailure)') < route.indexOf('if (result.unsupported)') &&
   !/if \(result\.temporaryFailure\)[\s\S]{0,240}unsupportedPairCount \+= 1/.test(route));
 ok('one failed Alcor trade market does not stop the whole batch',
@@ -647,13 +796,15 @@ ok('trade-row health exposes endpoint/status diagnostics',
   route.includes('sample_trade_fetch_failure') &&
   route.includes('sample_trade_fetch_success') &&
   route.includes('upstream_bad_payload_count') &&
+  route.includes('hyperion_scan_no_market_matches_count') &&
   route.includes('endpoint_path') &&
   route.includes('http_status') &&
   route.includes('response_body_snippet') &&
   route.includes('retry_count') &&
   route.includes('reference_trade_source'));
 ok('Wapaca reference path for alcormarket trades is documented honestly',
-  route.includes('Wapaca backend indexes alcormarket marketMatches from Hyperion/state-history rows') &&
+  route.includes('Hyperion/state-history alcordexmain buymatch/sellmatch -> marketMatches') &&
+  route.includes('guessed_public_alcor_http_source_of_truth: false') &&
   referenceAudit.includes('Hyperion') &&
   referenceAudit.includes('marketMatches'));
 ok('scheduled sync can index trade rows before candle backfill',
