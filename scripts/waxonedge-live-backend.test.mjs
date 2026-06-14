@@ -483,7 +483,8 @@ ok('candle backfill reports remaining candidate-pair trade gaps after candles ar
   route.includes('const error = diagnosticLastError ||'));
 ok('internal candle builder replaces external Alcor chart URL dependency',
   route.includes('function buildInternalDailyCandlesForPair') &&
-  route.includes("reason: hasSourceRows ? 'pair_id_mismatch' : (source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed')") &&
+  route.includes("reason: hasSourceRows && !verifiedMapping") &&
+  route.includes("'swap_alcor_pair_id_mapping_unverified'") &&
   route.includes("reason: 'candles_built_from_trade_rows'") &&
   route.includes('external_chart_endpoint_unsupported') &&
   !route.includes('/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D'));
@@ -507,11 +508,14 @@ ok('candle backfill readiness uses same lookback cutoff as per-pair trade loadin
 ok('old source trade rows do not create pair mismatch diagnostics',
   route.includes('async function indexedTradeRowsExistForSource') &&
   route.match(/async function indexedTradeRowsExistForSource[\s\S]*AND traded_at >= \?[\s\S]*LIMIT 1/) &&
-  route.includes("reason: hasSourceRows ? 'pair_id_mismatch' : (source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed')"));
-ok('recent source rows can still flag pair id mismatch when candidate pair rows are missing',
+  route.includes('const verifiedMapping = pairIdMappingVerifiedForSource(source)'));
+ok('verified swap.alcor mapping does not mislabel missing pool trade rows as pair mismatch',
   route.includes('const hasSourceRows = await indexedTradeRowsExistForSource(db, source)') &&
-  route.includes("reason: hasSourceRows ? 'pair_id_mismatch'") &&
-  route.includes('pair_id_mismatch_count_by_source'));
+  route.includes("hasSourceRows && !verifiedMapping") &&
+  route.includes("source === 'swap.alcor' ? 'swap_alcor_pair_id_mapping_unverified' : 'pair_id_mismatch'") &&
+  route.includes("source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
+  route.includes('pair_id_mismatch_count_by_source') &&
+  route.includes('pair_id_mapping_unverified_by_source'));
 ok('candle backfill excludes table-only sources from trade sources',
   __waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.nefty') &&
   !__waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.adex') &&
@@ -853,6 +857,64 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
   !route.match(/function ammSwapStreamUrl[\s\S]*pair_id=/) &&
   !route.match(/function ammSwapStreamUrl[\s\S]*market_id=/));
 {
+  const stream = { source: 'swap.alcor', referenceSource: 'alcorv2', account: 'swap.alcor', action: 'logswap', parser: 'swap-v3' };
+  const priceIndex = new Map([
+    ['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }],
+    ['foo.token::FOO', { priceWax: 0.4, priceUsd: 0.0024 }],
+  ]);
+  const tablePair = __waxonedgeTestHooks.normalizeCoreDexPair({
+    source: 'swap.alcor',
+    normalizer: 'tokenA-tokenB',
+    feeScale: 100,
+  }, {
+    id: 2668,
+    tokenA: { quantity: '100.00000000 WAX', contract: 'eosio.token' },
+    tokenB: { quantity: '250.0000 FOO', contract: 'foo.token' },
+    fee: 30,
+  }, priceIndex, '2026-06-14T00:00:00.000Z');
+  const parsedLogswap = __waxonedgeTestHooks.parseAmmSwapAction({
+    trx_id: 'alcorv2trx',
+    global_sequence: '333',
+    block_num: 444,
+    '@timestamp': '2026-06-14T03:04:05.000Z',
+    act: {
+      name: 'logswap',
+      data: {
+        poolId: 2668,
+        sender: 'swapper',
+        recipient: 'swapper',
+        tokenA: '-1.00000000 WAX',
+        tokenB: '2.5000 FOO',
+        reserveA: '100.00000000 WAX',
+        reserveB: '250.0000 FOO',
+        sqrtPriceX64: '1',
+        liquidity: '1000',
+        tick: 1,
+      },
+    },
+  }, stream);
+  const normalizedLogswap = __waxonedgeTestHooks.normalizeAmmSwapTradeRow(parsedLogswap, stream);
+  ok('swap.alcor table pools and logswap rows use the same canonical pool id',
+    __waxonedgeTestHooks.canonicalSwapAlcorPoolId({ id: 2668 }) === '2668' &&
+    __waxonedgeTestHooks.canonicalSwapAlcorActionPoolId({ poolId: 2668 }) === '2668' &&
+    tablePair &&
+    tablePair.source === 'swap.alcor' &&
+    tablePair.pair_id === '2668' &&
+    parsedLogswap &&
+    parsedLogswap.pair_id === '2668' &&
+    normalizedLogswap &&
+    normalizedLogswap.pair_id === tablePair.pair_id &&
+    normalizedLogswap.trade_id === 'swap.alcor:logswap:2668:333' &&
+    __waxonedgeTestHooks.pairIdMappingVerifiedForSource('swap.alcor') === true &&
+    __waxonedgeTestHooks.pairIdMappingVerifiedForSource('alcorv2') === true);
+  ok('swap.alcor pair-id mapping diagnostics are explicit instead of generic fallback',
+    route.includes('swap_alcor_pair_id_mapping_unverified') &&
+    route.includes('pair_id_mapping_unverified_count') &&
+    route.includes('pair_id_mapping_unverified_by_source') &&
+    route.includes("pairIdMappingVerifiedForSource(source)") &&
+    route.includes("source === 'swap.alcor' ? 'swap_alcor_pair_id_mapping_unverified' : 'pair_id_mismatch'"));
+}
+{
   const stream = { source: 'swap.taco', referenceSource: 'taco', account: 'swap.taco', action: 'exchangelog', parser: 'swap-v2-taco' };
   const parsed = __waxonedgeTestHooks.parseAmmSwapAction({
     trx_id: 'ammtrx',
@@ -952,7 +1014,8 @@ ok('candle backfill can build from AMM waxonedge_trades rows',
   route.includes('AND traded_at >= ?') &&
   route.includes('FROM waxonedge_pairs') &&
   route.includes('WHERE source IN') &&
-  route.includes("reason: hasSourceRows ? 'pair_id_mismatch' : (source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed')") &&
+  route.includes('const verifiedMapping = pairIdMappingVerifiedForSource(source)') &&
+  route.includes("source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
   __waxonedgeTestHooks.buildDailyCandlesFromTradeRows([
     { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T00:00:00.000Z', price: '0.2', volume: '2' },
     { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T01:00:00.000Z', price: '0.25', volume: '3' },
