@@ -14,6 +14,7 @@ const MIN_TRUSTED_WAX_LIQUIDITY = 10;
 const CANDLE_BACKFILL_SOURCE = 'candle_backfill';
 const ALCOR_TRADE_INDEX_SOURCE = 'alcor_trade_rows';
 const AMM_TRADE_INDEX_SOURCE = 'amm_trade_rows';
+const AGGREGATE_REFRESH_REASON = 'Aggregate refresh pending after source cursor progress';
 const CANDLE_BACKFILL_PLAN = 'Internal 1D kline backfill planned from indexed trade rows; no fake candles are inserted.';
 const TRADE_INDEX_PLAN = 'Alcor market match trade-row indexing planned for internal 1D candle building; no fake trades are inserted.';
 const AMM_TRADE_INDEX_PLAN = 'AMM swap action-row indexing planned from WaxOnEdge reference log streams; no fake trades are inserted.';
@@ -3970,16 +3971,84 @@ async function latestPairSyncRunRow(db) {
   ).bind(...WAXONEDGE_AGGREGATE_SOURCES).first().catch(() => null);
 }
 
+async function latestPairSourceStateUpdateRow(db) {
+  return db.prepare(
+    `SELECT source, status, updated_at AS finished_at, started_at, error
+     FROM waxonedge_source_index_state
+     WHERE source IN (${WAXONEDGE_AGGREGATE_SOURCES.map(() => '?').join(',')})
+       AND status IN ('success', 'partial', 'running')
+     ORDER BY updated_at DESC, started_at DESC
+     LIMIT 1`
+  ).bind(...WAXONEDGE_AGGREGATE_SOURCES).first().catch(() => null);
+}
+
+function parseTimestampMillis(value) {
+  const timestamp = Date.parse(value || '');
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
 async function aggregateNeedsRefreshAfterPairSync(db) {
-  const [aggregate, pairSync] = await Promise.all([
+  const [aggregate, pairSync, sourceState] = await Promise.all([
     latestAggregateRunRow(db),
     latestPairSyncRunRow(db),
+    latestPairSourceStateUpdateRow(db),
   ]);
-  const pairSyncFinishedAt = Date.parse(pairSync?.finished_at || '');
-  if (!Number.isFinite(pairSyncFinishedAt)) return false;
-  const aggregateFinishedAt = Date.parse(aggregate?.finished_at || '');
-  if (!Number.isFinite(aggregateFinishedAt)) return true;
+  const pairSyncFinishedAt = Math.max(
+    parseTimestampMillis(pairSync?.finished_at) ?? 0,
+    parseTimestampMillis(sourceState?.finished_at) ?? 0,
+  );
+  if (!pairSyncFinishedAt) return false;
+  const aggregateFinishedAt = parseTimestampMillis(aggregate?.finished_at);
+  if (aggregateFinishedAt == null) return true;
   return aggregateFinishedAt < pairSyncFinishedAt;
+}
+
+async function recordAggregateRefreshDeferred(db, reason = AGGREGATE_REFRESH_REASON) {
+  const startedAt = nowIso();
+  const payload = {
+    aggregate_refresh_pending: true,
+    aggregate_refresh_deferred_budget: true,
+    reason,
+    no_fake_data: true,
+  };
+  await writeSnapshot(db, 'token_aggregates', payload, startedAt).catch(() => {});
+  await recordSyncRun(db, 'token_aggregates', 'skipped', startedAt, reason).catch(() => {});
+  return {
+    ok: true,
+    status: 'skipped',
+    aggregate_refresh_pending: true,
+    aggregate_refresh_deferred_budget: true,
+    reason,
+  };
+}
+
+async function maybeRefreshAggregateAfterSourceSync(env, options = {}) {
+  const freeSafeMode = waxonedgeFreeSafeMode(env);
+  const needsAggregateRefresh = await aggregateNeedsRefreshAfterPairSync(env.DB);
+  if (!needsAggregateRefresh) {
+    if (!freeSafeMode) {
+      await writeSnapshot(env.DB, 'token_aggregates', {
+        aggregate_refresh_pending: false,
+        aggregate_refresh_deferred_budget: false,
+        reason: null,
+        no_fake_data: true,
+      }, nowIso()).catch(() => {});
+    }
+    return null;
+  }
+  if (freeSafeMode || options.deferForBudget) {
+    return recordAggregateRefreshDeferred(env.DB, options.reason || 'Aggregate refresh deferred after source sync to avoid Worker budget pressure');
+  }
+  const aggregates = await aggregateTokenAnalytics(env);
+  await writeSnapshot(env.DB, 'token_aggregates', {
+    aggregate_refresh_pending: false,
+    aggregate_refresh_deferred_budget: false,
+    refreshed_after_source_sync: true,
+    status: aggregates.status,
+    tokens: aggregates.tokens,
+    no_fake_data: true,
+  }, nowIso()).catch(() => {});
+  return aggregates;
 }
 
 async function sourceRowCounts(db) {
@@ -4048,6 +4117,8 @@ async function getIndexerHealth(db, env = {}) {
     sourceStates,
     lastAggregateSuccess,
     latestPairSuccess,
+    latestPairSourceState,
+    aggregateSnapshot,
     candleBackfillState,
     candleBackfillSnapshot,
     tradeIndexState,
@@ -4074,6 +4145,8 @@ async function getIndexerHealth(db, env = {}) {
     getSourceIndexStates(db),
     latestAggregateRunRow(db),
     latestPairSyncRunRow(db),
+    latestPairSourceStateUpdateRow(db),
+    readSnapshot(db, 'token_aggregates'),
     readSourceIndexState(db, CANDLE_BACKFILL_SOURCE),
     readSnapshot(db, CANDLE_BACKFILL_SOURCE),
     readSourceIndexState(db, ALCOR_TRADE_INDEX_SOURCE),
@@ -4099,8 +4172,16 @@ async function getIndexerHealth(db, env = {}) {
       skipped_cursor_reason: snapshot.data?.skipped_cursor_reason || null,
       };
     }));
-  const aggregateFresh = !!lastAggregateSuccess?.finished_at &&
-    (!latestPairSuccess?.finished_at || Date.parse(lastAggregateSuccess.finished_at) >= Date.parse(latestPairSuccess.finished_at));
+  const latestPairSourceMillis = Math.max(
+    parseTimestampMillis(latestPairSuccess?.finished_at) ?? 0,
+    parseTimestampMillis(latestPairSourceState?.finished_at) ?? 0,
+  );
+  const lastAggregateMillis = parseTimestampMillis(lastAggregateSuccess?.finished_at);
+  const aggregateFresh = !!lastAggregateMillis && (!latestPairSourceMillis || lastAggregateMillis >= latestPairSourceMillis);
+  const aggregateRefreshPending = !aggregateFresh && latestPairSourceMillis > 0;
+  const sourceSyncInProgress = sourceStates
+    .filter((row) => WAXONEDGE_AGGREGATE_SOURCES.includes(aggregateSourceKey(row.source)))
+    .some((row) => ['partial', 'running'].includes(row.status));
   const sourceProgress = await Promise.all(sourceStates
     .filter((row) => WAXONEDGE_AGGREGATE_SOURCES.includes(aggregateSourceKey(row.source)))
     .map(async (row) => {
@@ -4237,8 +4318,12 @@ async function getIndexerHealth(db, env = {}) {
     aggregate_rebuild: {
       status: lastAggregateSuccess?.status || 'failed',
       last_success_at: lastAggregateSuccess?.finished_at || lastAggregateSuccess?.started_at || null,
-      latest_pair_success_at: latestPairSuccess?.finished_at || latestPairSuccess?.started_at || null,
+      latest_pair_success_at: latestPairSuccess?.finished_at || latestPairSourceState?.finished_at || latestPairSuccess?.started_at || latestPairSourceState?.started_at || null,
       fresh_after_latest_pair_sync: aggregateFresh,
+      aggregate_fresh_after_latest_pair_sync: aggregateFresh,
+      source_sync_in_progress: sourceSyncInProgress,
+      aggregate_refresh_pending: aggregateRefreshPending,
+      aggregate_refresh_deferred_budget: aggregateRefreshPending && aggregateSnapshot.data?.aggregate_refresh_deferred_budget === true,
     },
     dead_token_reason_counts: deadReasons,
     candle_gap: {
@@ -5101,9 +5186,22 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
   if (!tasks.length) return { ok: true, skipped: true };
   const results = await Promise.all(tasks);
   let postSyncAggregate = null;
-  if (!freeSafeMode && (!cron || isMinuteCron || shouldRunFullIndex)) {
-    const needsAggregateRefresh = await aggregateNeedsRefreshAfterPairSync(env.DB);
-    if (needsAggregateRefresh) postSyncAggregate = await aggregateTokenAnalytics(env);
+  if (!cron || isMinuteCron || shouldRunFullIndex) {
+    const sourceWorkRan = results.some((result) =>
+      result?.source ||
+      result?.core ||
+      result?.alcor ||
+      result?.syncCycleId ||
+      result?.alcor?.ok ||
+      result?.core?.ok
+    );
+    const deferForBudget = freeSafeMode || (shouldRunFullIndex && results.some((result) => result?.tradeBackfill || result?.candleBackfill || result?.nefty));
+    if (sourceWorkRan) {
+      postSyncAggregate = await maybeRefreshAggregateAfterSourceSync(env, {
+        deferForBudget,
+        reason: deferForBudget ? 'Aggregate refresh deferred after source sync to avoid Worker budget pressure' : AGGREGATE_REFRESH_REASON,
+      });
+    }
   }
   return {
     ok: results.every((result) => result?.ok) && (!postSyncAggregate || postSyncAggregate.ok),
