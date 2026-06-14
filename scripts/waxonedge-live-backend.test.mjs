@@ -707,6 +707,72 @@ ok('invalid JSON trade response is bad upstream payload, not no_trade_rows',
     globalThis.fetch = originalFetch;
   }
 }
+{
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response('Bad Gateway', { status: 502, statusText: 'Bad Gateway' });
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example' }, '29', 50);
+    ok('Hyperion 502 uses upstream_5xx taxonomy and is temporary',
+      result.temporaryFailure === true &&
+      result.failed !== true &&
+      result.diagnostic.failure_type === 'upstream_5xx' &&
+      result.diagnostic.upstream_server_error === true &&
+      __waxonedgeTestHooks.isTemporaryTradeFailureType(result.diagnostic.failure_type) === true);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+{
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response('<not-json>', { status: 200 });
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example' }, '29', 50);
+    ok('Hyperion invalid JSON is invalid_payload, not temporary or no_trade_rows',
+      result.invalidPayload === true &&
+      result.failed === true &&
+      result.temporaryFailure !== true &&
+      result.noTradeRows !== true &&
+      result.unsupported !== true &&
+      result.rows.length === 0 &&
+      result.diagnostic.failure_type === 'invalid_payload' &&
+      __waxonedgeTestHooks.isTemporaryTradeFailureType(result.diagnostic.failure_type) === false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+{
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => { throw new Error('network socket closed with token abc123'); };
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example' }, '29', 50);
+    ok('Hyperion thrown fetch exception uses failed taxonomy and safe endpoint diagnostics',
+      result.failed === true &&
+      result.temporaryFailure !== true &&
+      result.unsupported !== true &&
+      result.rows.length === 0 &&
+      result.diagnostic.failure_type === 'failed' &&
+      result.diagnostic.endpoint_path.includes('/v2/history/get_actions') &&
+      result.diagnostic.response_body_snippet.includes('network socket closed') &&
+      __waxonedgeTestHooks.isTemporaryTradeFailureType(result.diagnostic.failure_type) === false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+{
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response('Not Found', { status: 404, statusText: 'Not Found' });
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example' }, '29', 50);
+    ok('Hyperion 404 is unsupported, not temporary',
+      result.unsupported === true &&
+      result.temporaryFailure !== true &&
+      result.failed !== true &&
+      result.rows.length === 0 &&
+      result.diagnostic.failure_type === 'unsupported');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
 ok('trade-row fetch separates temporary 5xx from unsupported history',
   route.includes('let temporarilyFailedPairCount = 0') &&
   route.includes('let upstream5xxCount = 0') &&
@@ -715,8 +781,9 @@ ok('trade-row fetch separates temporary 5xx from unsupported history',
   route.includes('let noTradeRowsCount = 0') &&
   route.includes('if (result.temporaryFailure)') &&
   route.includes('temporarilyFailedPairCount += 1') &&
-  route.includes("['upstream_5xx', 'hyperion_5xx'].includes(result.diagnostic?.failure_type)") &&
+  route.includes("result.diagnostic?.failure_type === 'upstream_5xx'") &&
   route.includes('upstream5xxCount += 1') &&
+  route.includes('if (result.invalidPayload || result.diagnostic?.failure_type === \'invalid_payload\') upstreamBadPayloadCount += 1') &&
   route.indexOf('if (result.temporaryFailure)') < route.indexOf('if (result.unsupported)') &&
   !/if \(result\.temporaryFailure\)[\s\S]{0,240}unsupportedPairCount \+= 1/.test(route));
 ok('one failed Alcor trade market does not stop the whole batch',

@@ -142,6 +142,10 @@ function tradeFetchSummary(diagnostics) {
   }));
 }
 
+function isTemporaryTradeFailureType(failureType) {
+  return ['upstream_5xx', 'timeout', 'rate_limited', 'budget_limited', 'budget'].includes(String(failureType || ''));
+}
+
 function normalizeCandleInterval(value) {
   const text = String(value || '1D').trim().toLowerCase();
   if (text === '1d' || text === 'd') return '1D';
@@ -1145,7 +1149,7 @@ async function fetchAlcorMarketMatchHistoryRows(env, pairId, limit) {
           pairId,
           status: response.status,
           body: text,
-          category: isUpstreamServerErrorStatus(response.status) ? 'hyperion_5xx' : 'hyperion_failed',
+          category: isUpstreamServerErrorStatus(response.status) ? 'upstream_5xx' : (response.status === 404 ? 'unsupported' : 'failed'),
         });
         attemptedEndpoints.push(diagnostic);
         lastFailure = diagnostic;
@@ -1161,11 +1165,18 @@ async function fetchAlcorMarketMatchHistoryRows(env, pairId, limit) {
           pairId,
           status: response.status,
           body: text || error?.message,
-          category: 'hyperion_invalid_payload',
+          category: 'invalid_payload',
         });
         attemptedEndpoints.push(diagnostic);
-        lastFailure = diagnostic;
-        continue;
+        const attemptedSummary = tradeFetchSummary(attemptedEndpoints);
+        return {
+          rows: [],
+          invalidPayload: true,
+          failed: true,
+          diagnostic: { ...diagnostic, attempted_endpoints: attemptedSummary, ingestion_path: 'hyperion_marketMatches' },
+          attempted_endpoints: attemptedSummary,
+          ingestion_path: 'hyperion_marketMatches',
+        };
       }
       const rows = sourceRows(data.actions || data.simple_actions || data);
       const parsedRows = rows
@@ -1188,7 +1199,7 @@ async function fetchAlcorMarketMatchHistoryRows(env, pairId, limit) {
         pairId,
         status: null,
         body: error?.message || String(error),
-        category: isSubrequestBudgetError(error) ? 'budget' : 'hyperion_failed',
+        category: isSubrequestBudgetError(error) ? 'budget' : 'failed',
       });
       attemptedEndpoints.push(diagnostic);
       lastFailure = diagnostic;
@@ -1225,11 +1236,13 @@ async function fetchAlcorMarketMatchHistoryRows(env, pairId, limit) {
     };
   }
   if (lastFailure) {
-    const temporary = /5xx|failed|invalid_payload/.test(String(lastFailure.failure_type || ''));
+    const temporary = isTemporaryTradeFailureType(lastFailure.failure_type);
+    const unsupported = lastFailure.failure_type === 'unsupported';
     return {
       rows: [],
       temporaryFailure: temporary,
-      failed: !temporary,
+      unsupported,
+      failed: !temporary && !unsupported,
       diagnostic: { ...lastFailure, attempted_endpoints: attemptedSummary, ingestion_path: 'hyperion_marketMatches' },
       attempted_endpoints: attemptedSummary,
       ingestion_path: 'hyperion_marketMatches',
@@ -1481,7 +1494,7 @@ async function syncAlcorMarketTradeRows(env) {
       }
       if (result.temporaryFailure) {
         temporarilyFailedPairCount += 1;
-        if (['upstream_5xx', 'hyperion_5xx'].includes(result.diagnostic?.failure_type)) upstream5xxCount += 1;
+        if (result.diagnostic?.failure_type === 'upstream_5xx') upstream5xxCount += 1;
         lastError = `${result.diagnostic?.http_status || 'upstream'} ${result.diagnostic?.failure_type || 'temporary failure'}`;
         continue;
       }
@@ -3723,6 +3736,7 @@ export const __waxonedgeTestHooks = {
   sourceStateStale,
   tradeFetchDiagnostic,
   isUpstreamServerErrorStatus,
+  isTemporaryTradeFailureType,
   fetchAlcorMarketTradeRows,
   fetchAlcorMarketMatchHistoryRows,
   parseAlcorMarketMatchAction,
