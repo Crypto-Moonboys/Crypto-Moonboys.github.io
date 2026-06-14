@@ -483,8 +483,7 @@ ok('candle backfill reports remaining candidate-pair trade gaps after candles ar
   route.includes('const error = diagnosticLastError ||'));
 ok('internal candle builder replaces external Alcor chart URL dependency',
   route.includes('function buildInternalDailyCandlesForPair') &&
-  route.includes("reason: hasSourceRows && !verifiedMapping") &&
-  route.includes("'swap_alcor_pair_id_mapping_unverified'") &&
+  route.includes("reason: hasSourceRows && source !== 'swap.alcor'") &&
   route.includes("reason: 'candles_built_from_trade_rows'") &&
   route.includes('external_chart_endpoint_unsupported') &&
   !route.includes('/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D'));
@@ -508,14 +507,14 @@ ok('candle backfill readiness uses same lookback cutoff as per-pair trade loadin
 ok('old source trade rows do not create pair mismatch diagnostics',
   route.includes('async function indexedTradeRowsExistForSource') &&
   route.match(/async function indexedTradeRowsExistForSource[\s\S]*AND traded_at >= \?[\s\S]*LIMIT 1/) &&
-  route.includes('const verifiedMapping = pairIdMappingVerifiedForSource(source)'));
+  route.includes("reason: hasSourceRows && source !== 'swap.alcor'"));
 ok('verified swap.alcor mapping does not mislabel missing pool trade rows as pair mismatch',
   route.includes('const hasSourceRows = await indexedTradeRowsExistForSource(db, source)') &&
-  route.includes("hasSourceRows && !verifiedMapping") &&
-  route.includes("source === 'swap.alcor' ? 'swap_alcor_pair_id_mapping_unverified' : 'pair_id_mismatch'") &&
+  route.includes("hasSourceRows && source !== 'swap.alcor'") &&
   route.includes("source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
   route.includes('pair_id_mismatch_count_by_source') &&
-  route.includes('pair_id_mapping_unverified_by_source'));
+  !route.includes('swap_alcor_pair_id_mapping_unverified') &&
+  !route.includes('pair_id_mapping_unverified_by_source'));
 ok('candle backfill excludes table-only sources from trade sources',
   __waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.nefty') &&
   !__waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.adex') &&
@@ -767,6 +766,8 @@ ok('aggregate source list includes swap.adex and dapp.fusion without dropping ex
   ok('impossible pair TVL is unavailable instead of clipped or displayed as real',
     __waxonedgeTestHooks.liquidityWaxFromIndexedPair(impossibleReservePair, priceIndex) === null &&
     __waxonedgeTestHooks.isReasonablePairTvlUsd(1798450000000) === false &&
+    __waxonedgeTestHooks.isReasonablePairTvlUsd(-1) === false &&
+    route.match(/CAST\(liquidity_usd AS NUMERIC\) < 0[\s\S]*CAST\(liquidity_usd AS NUMERIC\) > \?/) &&
     route.includes('tvl_precision_diagnostics') &&
     route.includes('MAX_REASONABLE_PAIR_TVL_USD') &&
     route.includes('impossible_tvl_rows_skipped'));
@@ -905,14 +906,13 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     normalizedLogswap &&
     normalizedLogswap.pair_id === tablePair.pair_id &&
     normalizedLogswap.trade_id === 'swap.alcor:logswap:2668:333' &&
-    __waxonedgeTestHooks.pairIdMappingVerifiedForSource('swap.alcor') === true &&
-    __waxonedgeTestHooks.pairIdMappingVerifiedForSource('alcorv2') === true);
-  ok('swap.alcor pair-id mapping diagnostics are explicit instead of generic fallback',
-    route.includes('swap_alcor_pair_id_mapping_unverified') &&
-    route.includes('pair_id_mapping_unverified_count') &&
-    route.includes('pair_id_mapping_unverified_by_source') &&
-    route.includes("pairIdMappingVerifiedForSource(source)") &&
-    route.includes("source === 'swap.alcor' ? 'swap_alcor_pair_id_mapping_unverified' : 'pair_id_mismatch'"));
+    __waxonedgeTestHooks.moonboysCandleSource('alcorv2') === 'swap.alcor');
+  ok('verified swap.alcor pair-id mapping uses normal missing-row diagnostics only',
+    route.includes("reason: hasSourceRows && source !== 'swap.alcor'") &&
+    route.includes("source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
+    !route.includes('swap_alcor_pair_id_mapping_unverified') &&
+    !route.includes('pair_id_mapping_unverified_count') &&
+    !route.includes('pair_id_mapping_unverified_by_source'));
 }
 {
   const stream = { source: 'swap.taco', referenceSource: 'taco', account: 'swap.taco', action: 'exchangelog', parser: 'swap-v2-taco' };
@@ -1014,7 +1014,7 @@ ok('candle backfill can build from AMM waxonedge_trades rows',
   route.includes('AND traded_at >= ?') &&
   route.includes('FROM waxonedge_pairs') &&
   route.includes('WHERE source IN') &&
-  route.includes('const verifiedMapping = pairIdMappingVerifiedForSource(source)') &&
+  route.includes("reason: hasSourceRows && source !== 'swap.alcor'") &&
   route.includes("source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
   __waxonedgeTestHooks.buildDailyCandlesFromTradeRows([
     { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T00:00:00.000Z', price: '0.2', volume: '2' },
