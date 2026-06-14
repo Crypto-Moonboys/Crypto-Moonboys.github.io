@@ -55,6 +55,9 @@ Current configured aggregate sources remain intentionally limited to `alcor`, `s
 - Taco, NeftyBlocks, and BOX pools default to the reference 30 bps fee when the row has no explicit fee.
 - Inactive NeftyBlocks rows are filtered before pair persistence.
 - Quote-priority matching now follows the reference `isPairReverted` quote list: `USDT`, `WAXUSDT`, `WAXUSDC`, `WAXDAI`, `WAXBUSD`, `WAXWBTC`, `ARBTC`, `WAXRBTC`, `WAXWETH`, and `WAX`.
+- The Alcor market trade indexer now treats the reference `marketMatches` path as source of truth: `alcordexmain::buymatch` and `alcordexmain::sellmatch` action-history rows are normalized into `waxonedge_trades` with `reference_src=alcormarket`.
+- Guessed public Alcor `/markets/:id/deals`, `/matches`, and `/trades` endpoints are no longer the primary ingestion model for candles. They remain only as diagnostic helpers covered by tests.
+- Scanner bubble metric modes no longer substitute unrelated values. Missing `% Change`, volume, TVL, or market-cap metrics are filtered from that selected mode instead of being ranked by another metric.
 
 ## Current Cloudflare/D1 Simplifications
 

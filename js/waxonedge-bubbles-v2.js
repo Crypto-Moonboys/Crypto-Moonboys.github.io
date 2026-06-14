@@ -16,7 +16,7 @@
     price: 'Price',
     volume: 'Volume',
     tvl: 'TVL',
-    mcap: 'Mkt Cap / FDV',
+    mcap: 'Mkt Cap',
   };
   var TIMEFRAME_LABELS = { '24h': '24h', '7d': '7D', '30d': '30D' };
   var SOURCE_ORDER = ['alcor', 'swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'];
@@ -206,17 +206,22 @@
   function valueForMetric(record, metric, timeframe) {
     if (metric === 'change') {
       var change = timeframe === '24h' ? record.change24 : record['change' + timeframe];
-      return change != null ? Math.abs(change) : (record.volume24Usd || record.volume24Wax || record.liquidityUsd || record.liquidityWax || record.indexedPairCount || 0);
+      return change != null ? Math.abs(change) : null;
     }
-    if (metric === 'price') return record.selectedPriceUsd || record.selectedPriceWax || 0;
+    if (metric === 'price') return record.selectedPriceUsd != null ? record.selectedPriceUsd : record.selectedPriceWax;
     if (metric === 'volume') {
-      if (timeframe === '7d') return record.volume7dUsd || record.volume7dWax || 0;
-      if (timeframe === '30d') return record.volume30dUsd || record.volume30dWax || 0;
-      return record.volume24Usd || record.volume24Wax || 0;
+      if (timeframe === '7d') return record.volume7dUsd != null ? record.volume7dUsd : record.volume7dWax;
+      if (timeframe === '30d') return record.volume30dUsd != null ? record.volume30dUsd : record.volume30dWax;
+      return record.volume24Usd != null ? record.volume24Usd : record.volume24Wax;
     }
-    if (metric === 'tvl') return record.tvlUsd || record.liquidityUsd || record.tvlWax || record.liquidityWax || 0;
-    if (metric === 'mcap') return record.marketCapUsd || record.fdvUsd || record.marketCapWax || record.fdvWax || 0;
-    return 0;
+    if (metric === 'tvl') {
+      if (record.tvlUsd != null) return record.tvlUsd;
+      if (record.liquidityUsd != null) return record.liquidityUsd;
+      if (record.tvlWax != null) return record.tvlWax;
+      return record.liquidityWax;
+    }
+    if (metric === 'mcap') return record.marketCapUsd != null ? record.marketCapUsd : record.marketCapWax;
+    return null;
   }
 
   function displayValue(record) {
@@ -243,7 +248,6 @@
     }
     if (state.metric === 'mcap') {
       if (record.marketCapUsd != null) return '$' + fmtNum(record.marketCapUsd) + ' mcap';
-      if (record.fdvUsd != null) return '$' + fmtNum(record.fdvUsd) + ' FDV';
       return 'Mkt cap unavailable';
     }
     return 'Unavailable';
@@ -381,6 +385,8 @@
     var base = state.records.filter(function (record) {
       if (!query) return true;
       return record.searchText.indexOf(query) !== -1;
+    }).filter(function (record) {
+      return valueForMetric(record, state.metric, state.timeframe) != null;
     }).sort(function (a, b) {
       var av = valueForMetric(a, state.metric, state.timeframe);
       var bv = valueForMetric(b, state.metric, state.timeframe);
@@ -388,9 +394,7 @@
       return b.score - a.score;
     });
     if (!query) {
-      base = base.filter(function (record) {
-        return record.indexedPairCount > 0 && (record.liquidityWax || record.liquidityUsd || record.volume24Wax || record.volume24Usd || record.selectedPriceWax || record.selectedPriceUsd);
-      });
+      base = base.filter(function (record) { return record.indexedPairCount > 0; });
     }
     return base.slice(0, TOP_LIMIT).map(function (record, index) {
       record.rank = index + 1;
@@ -784,7 +788,18 @@
   }
 
   function stat(label, value) {
-    return '<div><span>' + escHtml(label) + '</span><strong>' + escHtml(value == null || value === '' ? 'Unavailable' : value) + '</strong></div>';
+    return '<div><span>' + escHtml(label) + '</span><strong>' + escHtml(formatStatValue(value)) + '</strong></div>';
+  }
+
+  function formatStatValue(value) {
+    if (value == null || value === '') return 'Unavailable';
+    if (Array.isArray(value)) return value.filter(Boolean).join(', ') || 'Unavailable';
+    if (typeof value === 'object') {
+      return Object.keys(value).filter(function (key) { return value[key] != null && value[key] !== ''; })
+        .map(function (key) { return key.replace(/_/g, ' ') + ': ' + value[key]; })
+        .join(', ') || 'Unavailable';
+    }
+    return String(value);
   }
 
   function modalShell(record, body) {
@@ -851,7 +866,7 @@
           stat('Indexed pair count', String(record.indexedPairCount || 0)) +
           stat('Strongest pair', record.strongestPairLabel) +
           stat('Selected source', record.selectedSource || 'Unavailable') +
-          stat('FDV / market cap', record.marketCapUsd != null ? '$' + fmtNum(record.marketCapUsd) : (record.fdvUsd != null ? '$' + fmtNum(record.fdvUsd) + ' FDV' : 'Unavailable')) +
+          stat('Market cap', record.marketCapUsd != null ? '$' + fmtNum(record.marketCapUsd) : (record.marketCapWax != null ? fmtNum(record.marketCapWax) + ' WAX' : 'Unavailable')) +
           stat('Supply', record.supply || 'Unavailable') +
         '</section>' +
         '<section class="woe-ab-modal-chart">' + chartHtml(record, chart) + '</section>' +
@@ -927,7 +942,9 @@
 
   function updateWaxPrice(payload) {
     var data = payloadData(payload);
-    var price = data.sources && data.sources.alcor_global && data.sources.alcor_global.indexed && data.raw && data.raw.alcor_global
+    var price = data.summary && data.summary.wax_price_usd != null
+      ? asNum(data.summary.wax_price_usd)
+      : data.sources && data.sources.alcor_global && data.sources.alcor_global.indexed && data.raw && data.raw.alcor_global
       ? asNum(data.raw.alcor_global.usd_price || data.raw.alcor_global.wax_usd || data.raw.alcor_global.price)
       : null;
     var priceEl = document.getElementById('woe-topbar-wax-price');
@@ -935,7 +952,7 @@
     if (priceEl) priceEl.textContent = price == null ? '$ --' : '$' + fmtPrice(price);
     if (metaEl) metaEl.textContent = price == null
       ? (state.connected ? 'WAX price unavailable' : 'Connecting to WaxOnEdge indexer')
-      : 'WAX price from WaxOnEdge indexer';
+      : 'WAX price from ' + (data.summary && data.summary.wax_price_source ? data.summary.wax_price_source : 'WaxOnEdge indexer');
   }
 
   function initCanvas() {
