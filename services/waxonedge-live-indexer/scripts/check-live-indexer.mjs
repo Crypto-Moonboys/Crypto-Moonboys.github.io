@@ -96,12 +96,27 @@ async function checkStream(baseUrl) {
     }
     const reader = response.body?.getReader();
     if (!reader) throw new Error('/stream did not expose a readable body');
-    const chunk = await reader.read();
+    const decoder = new TextDecoder();
+    let text = '';
+    let bytes = 0;
+    for (let chunks = 0; chunks < 8; chunks += 1) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      bytes += chunk.value?.byteLength || 0;
+      text += decoder.decode(chunk.value || new Uint8Array(), { stream: true });
+      if (text.includes('event: token_update')) throw new Error('/stream emitted token_update before real live data is enabled');
+      if (text.includes('"uses_fake_live_data":true')) throw new Error('/stream reported fake live data');
+      if (text.includes('event: heartbeat')) {
+        await reader.cancel().catch(() => {});
+        return { ok: true, content_type: contentType, heartbeat: true };
+      }
+      if (bytes >= 8192) break;
+    }
+    text += decoder.decode();
     await reader.cancel().catch(() => {});
-    const text = new TextDecoder().decode(chunk.value || new Uint8Array());
-    if (!text.includes('event: heartbeat')) throw new Error('/stream heartbeat event missing');
     if (text.includes('event: token_update')) throw new Error('/stream emitted token_update before real live data is enabled');
     if (text.includes('"uses_fake_live_data":true')) throw new Error('/stream reported fake live data');
+    if (!text.includes('event: heartbeat')) throw new Error('/stream heartbeat event missing');
     return { ok: true, content_type: contentType, heartbeat: true };
   } finally {
     done();

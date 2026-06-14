@@ -280,7 +280,12 @@ ok('VPS live indexer registers only verified trade streams',
 }
 ok('VPS live indexer binds locally by default and allows explicit host override',
   liveIndexer.loadConfig({}).bind_host === '127.0.0.1' &&
-  liveIndexer.loadConfig({ WAXONEDGE_LIVE_BIND_HOST: '0.0.0.0' }).bind_host === '0.0.0.0');
+  liveIndexer.loadConfig({ WAXONEDGE_LIVE_BIND_HOST: '0.0.0.0' }).bind_host === '0.0.0.0' &&
+  liveIndexer.normalizeBindHost('[::1]') === '::1' &&
+  liveIndexer.normalizeBindHost('::1') === '::1' &&
+  liveIndexer.normalizeBindHost('127.0.0.1') === '127.0.0.1' &&
+  liveIndexer.normalizeBindHost('0.0.0.0') === '0.0.0.0' &&
+  liveIndexer.loadConfig({ WAXONEDGE_LIVE_BIND_HOST: '[::1]' }).bind_host === '::1');
 ok('VPS live indexer checker maps wildcard bind hosts to routable local targets',
   liveIndexerCheck.checkTargetHost('0.0.0.0') === '127.0.0.1' &&
   liveIndexerCheck.checkTargetHost('::') === '127.0.0.1' &&
@@ -288,6 +293,7 @@ ok('VPS live indexer checker maps wildcard bind hosts to routable local targets'
   liveIndexerCheck.checkTargetHost('localhost') === 'localhost' &&
   liveIndexerCheck.checkTargetHost('::1') === '[::1]' &&
   liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '0.0.0.0', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://127.0.0.1:8789' &&
+  liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '[::1]', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://[::1]:8789' &&
   liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '::1', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://[::1]:8789');
 ok('VPS live indexer /stream contract is SSE heartbeat only until real deltas exist',
   liveIndexerSource.includes("pathname === '/stream'") &&
@@ -345,6 +351,17 @@ ok('VPS live indexer exposes no fake live events or random movement',
     status: 200,
     headers: { 'content-type': 'text/event-stream; charset=utf-8' },
   });
+  const sseChunkResponse = (chunks) => new Response(new ReadableStream({
+    start(controller) {
+      for (const chunk of chunks) {
+        controller.enqueue(new TextEncoder().encode(chunk));
+      }
+      controller.close();
+    },
+  }), {
+    status: 200,
+    headers: { 'content-type': 'text/event-stream; charset=utf-8' },
+  });
   async function withMockFetch(responses, fn) {
     const originalFetch = globalThis.fetch;
     const pending = responses.slice();
@@ -374,7 +391,18 @@ ok('VPS live indexer exposes no fake live events or random movement',
   let rejectedWrongService = false;
   let rejected404 = false;
   let rejected500 = false;
+  let rejectedNoHeartbeat = false;
   let rejectedFakeStream = false;
+  const firstChunkHeartbeat = await withMockFetch([
+    jsonResponse(503, healthPayload),
+    jsonResponse(503, snapshotPayload),
+    sseResponse('event: heartbeat\ndata: {"uses_fake_live_data":false}\n\n'),
+  ], () => liveIndexerCheck.runCheck({ WAXONEDGE_LIVE_CHECK_URL: 'http://live-indexer.test' }));
+  const splitHeartbeat = await withMockFetch([
+    jsonResponse(503, healthPayload),
+    jsonResponse(503, snapshotPayload),
+    sseChunkResponse(['event: hea', 'rtbeat\n', 'data: {"uses_fake_live_data":false}\n\n']),
+  ], () => liveIndexerCheck.runCheck({ WAXONEDGE_LIVE_CHECK_URL: 'http://live-indexer.test' }));
   try {
     await withMockFetch([
       jsonResponse(200, { ...healthPayload, service: 'other-service' }),
@@ -403,6 +431,15 @@ ok('VPS live indexer exposes no fake live events or random movement',
     await withMockFetch([
       jsonResponse(503, healthPayload),
       jsonResponse(503, snapshotPayload),
+      sseChunkResponse(['event: ready\n', 'data: {}\n\n']),
+    ], () => liveIndexerCheck.runCheck({ WAXONEDGE_LIVE_CHECK_URL: 'http://live-indexer.test' }));
+  } catch (_) {
+    rejectedNoHeartbeat = true;
+  }
+  try {
+    await withMockFetch([
+      jsonResponse(503, healthPayload),
+      jsonResponse(503, snapshotPayload),
       sseResponse('event: token_update\ndata: {"uses_fake_live_data":false}\n\n'),
     ], () => liveIndexerCheck.runCheck({ WAXONEDGE_LIVE_CHECK_URL: 'http://live-indexer.test' }));
   } catch (_) {
@@ -411,9 +448,12 @@ ok('VPS live indexer exposes no fake live events or random movement',
   ok('VPS live indexer runtime checker validates service identity, endpoint status, and skeleton contracts',
     skeleton.ok === true &&
     connected.ok === true &&
+    firstChunkHeartbeat.stream.heartbeat === true &&
+    splitHeartbeat.stream.heartbeat === true &&
     rejectedWrongService &&
     rejected404 &&
     rejected500 &&
+    rejectedNoHeartbeat &&
     rejectedFakeStream);
 }
 ok('VPS live indexer safely parses request path without trusting Host header',

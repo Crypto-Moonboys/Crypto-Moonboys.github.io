@@ -26,9 +26,10 @@ function parsePort(value) {
   return Number.isFinite(parsed) && parsed > 0 && parsed <= 65535 ? parsed : 8789;
 }
 
-function bindHost(value) {
-  const raw = String(value || '').trim();
-  return raw || '127.0.0.1';
+export function normalizeBindHost(value) {
+  const raw = String(value || '').trim() || '127.0.0.1';
+  if (/^\[[^\]]+\]$/.test(raw)) return raw.slice(1, -1);
+  return raw;
 }
 
 function sanitizedHttpUrl(value) {
@@ -48,7 +49,7 @@ function sanitizedHttpUrl(value) {
 export function loadConfig(env = process.env) {
   return {
     port: parsePort(env.WAXONEDGE_LIVE_PORT),
-    bind_host: bindHost(env.WAXONEDGE_LIVE_BIND_HOST),
+    bind_host: normalizeBindHost(env.WAXONEDGE_LIVE_BIND_HOST),
     hyperion_api: sanitizedHttpUrl(env.WAXONEDGE_HYPERION_API),
     state_history_endpoint: sanitizedHttpUrl(env.WAXONEDGE_STATE_HISTORY_ENDPOINT),
     stream_enabled: booleanEnv(env.WAXONEDGE_LIVE_ENABLE_STREAM, false),
