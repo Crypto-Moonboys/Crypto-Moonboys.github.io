@@ -676,6 +676,54 @@ ok('AMM pair-id mismatch diagnostics include compact examples',
   route.includes("reason: 'recent trade rows exist for source but not for candidate pair_id'") &&
   !route.includes('swap_alcor_pair_id_mapping_unverified') &&
   !route.includes('pair_id_mapping_unverified_by_source'));
+{
+  const oldA = { source: 'swap.alcor', candidate_pair_id: 'old-a', observed_trade_pair_id: 'trade-a', reason: 'pair_id_mismatch' };
+  const oldB = { source: 'swap.alcor', candidate_pair_id: 'old-b', observed_trade_pair_id: 'trade-b', reason: 'pair_id_mismatch' };
+  const oldC = { source: 'swap.alcor', candidate_pair_id: 'old-c', observed_trade_pair_id: 'trade-c', reason: 'pair_id_mismatch' };
+  const fresh = { source: 'swap.alcor', candidate_pair_id: 'fresh', observed_trade_pair_id: 'trade-fresh', reason: 'pair_id_mismatch' };
+  const merged = __waxonedgeTestHooks.mergeSourceExamples(
+    { 'swap.alcor': [oldA, oldB, oldC] },
+    { 'swap.alcor': [fresh] },
+    3
+  );
+  ok('current pair-id mismatch examples replace stale full previous list',
+    merged['swap.alcor'].length === 3 &&
+    merged['swap.alcor'][0] === fresh &&
+    merged['swap.alcor'].includes(oldA) &&
+    merged['swap.alcor'].includes(oldB) &&
+    !merged['swap.alcor'].includes(oldC));
+}
+{
+  const currentA = { source: 'swap.taco', candidate_pair_id: 'current-a', observed_trade_pair_id: 'trade-a', reason: 'pair_id_mismatch' };
+  const currentB = { source: 'swap.taco', candidate_pair_id: 'current-b', observed_trade_pair_id: 'trade-b', reason: 'pair_id_mismatch' };
+  const previousA = { source: 'swap.taco', candidate_pair_id: 'previous-a', observed_trade_pair_id: 'trade-c', reason: 'pair_id_mismatch' };
+  const previousB = { source: 'swap.taco', candidate_pair_id: 'previous-b', observed_trade_pair_id: 'trade-d', reason: 'pair_id_mismatch' };
+  const previousC = { source: 'swap.taco', candidate_pair_id: 'previous-c', observed_trade_pair_id: 'trade-e', reason: 'pair_id_mismatch' };
+  const merged = __waxonedgeTestHooks.mergeSourceExamples(
+    { 'swap.taco': [previousA, previousB, previousC] },
+    { 'swap.taco': [currentA, currentB] },
+    3
+  );
+  ok('current pair-id mismatch examples fill first then previous examples fill remaining slots',
+    merged['swap.taco'].length === 3 &&
+    merged['swap.taco'][0] === currentA &&
+    merged['swap.taco'][1] === currentB &&
+    merged['swap.taco'][2] === previousA);
+}
+{
+  const duplicateCurrent = { source: 'swap.box', candidate_pair_id: '42', observed_trade_pair_id: '0042', reason: 'pair_id_mismatch' };
+  const duplicatePrevious = { source: 'swap.box', candidate_pair_id: '42', observed_trade_pair_id: '0042', reason: 'pair_id_mismatch' };
+  const previousOnly = { source: 'swap.box', candidate_pair_id: '43', observed_trade_pair_id: '0043', reason: 'pair_id_mismatch' };
+  const merged = __waxonedgeTestHooks.mergeSourceExamples(
+    { 'swap.box': [duplicatePrevious, previousOnly] },
+    { 'swap.box': [duplicateCurrent] },
+    3
+  );
+  ok('duplicate current and previous pair-id mismatch examples are not repeated',
+    merged['swap.box'].length === 2 &&
+    merged['swap.box'][0] === duplicateCurrent &&
+    merged['swap.box'][1] === previousOnly);
+}
 ok('candle backfill excludes table-only sources from trade sources',
   __waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.nefty') &&
   !__waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.adex') &&

@@ -341,12 +341,32 @@ function mergeSourceCounters(previous, current) {
 
 function mergeSourceExamples(previous, current, limit = 3) {
   const merged = {};
-  for (const [source, examples] of Object.entries(previous && typeof previous === 'object' ? previous : {})) {
-    if (Array.isArray(examples)) merged[source] = examples.slice(0, limit);
-  }
-  for (const [source, examples] of Object.entries(current && typeof current === 'object' ? current : {})) {
+  const sources = new Set([
+    ...Object.keys(previous && typeof previous === 'object' ? previous : {}),
+    ...Object.keys(current && typeof current === 'object' ? current : {}),
+  ]);
+  const exampleKey = (example) => [
+    example?.source || '',
+    example?.candidate_pair_id || '',
+    example?.observed_trade_pair_id || '',
+    example?.reason || '',
+  ].join('::');
+  for (const source of sources) {
+    const currentExamples = current && typeof current === 'object' ? current[source] : null;
+    const previousExamples = previous && typeof previous === 'object' ? previous[source] : null;
+    const examples = [
+      ...(Array.isArray(currentExamples) ? currentExamples : []),
+      ...(Array.isArray(previousExamples) ? previousExamples : []),
+    ];
     if (!Array.isArray(examples)) continue;
-    merged[source] = [...(merged[source] || []), ...examples].slice(0, limit);
+    const seen = new Set();
+    for (const example of examples) {
+      const key = exampleKey(example);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      merged[source] = [...(merged[source] || []), example].slice(0, limit);
+      if (merged[source].length >= limit) break;
+    }
   }
   return merged;
 }
@@ -5732,6 +5752,7 @@ export const __waxonedgeTestHooks = {
   referenceCandleSource,
   candleTradeSourceNamesFor,
   indexedCandleTradeSources,
+  mergeSourceExamples,
   candleUrlExample,
   candleBackfillPairLimit,
   tradeIndexPairLimit,
