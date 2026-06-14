@@ -485,6 +485,82 @@ ok('no internal candle is produced without trade or swap rows',
 ok('WaxOnEdge source names map alcormarket to Moonboys alcor rows',
   __waxonedgeTestHooks.moonboysCandleSource('alcormarket') === 'alcor' &&
   __waxonedgeTestHooks.referenceCandleSource('alcor') === 'alcormarket');
+const normalizedAlcorTrade = __waxonedgeTestHooks.normalizeAlcorMarketTradeRow({
+  id: '12345',
+  unit_price: 858589,
+  ask: '12.3456 WAXCASH',
+  bid: '0.1059 WAX',
+  trx_id: 'abc123',
+  created_at: '2026-06-13T12:34:56.000Z',
+}, {
+  pair_id: '29',
+  token_a_contract: 'graffitiking',
+  token_a_symbol: 'WAXCASH',
+  token_b_contract: 'eosio.token',
+  token_b_symbol: 'WAX',
+});
+ok('Alcor market match rows normalize into waxonedge_trades shape',
+  normalizedAlcorTrade.source === 'alcor' &&
+  normalizedAlcorTrade.trade_id === '29:12345' &&
+  normalizedAlcorTrade.pair_id === '29' &&
+  normalizedAlcorTrade.contract === 'graffitiking' &&
+  normalizedAlcorTrade.symbol === 'WAXCASH' &&
+  normalizedAlcorTrade.price === '0.00858589' &&
+  normalizedAlcorTrade.volume === '0.1059' &&
+  normalizedAlcorTrade.tx_id === 'abc123' &&
+  normalizedAlcorTrade.traded_at === '2026-06-13T12:34:56.000Z' &&
+  JSON.parse(normalizedAlcorTrade.raw_json).reference_src === 'alcormarket');
+ok('Alcor trade-row indexer upserts real rows and exposes source diagnostics',
+  route.includes('const ALCOR_TRADE_INDEX_SOURCE =') &&
+  route.includes('async function syncAlcorMarketTradeRows') &&
+  route.includes('fetchAlcorMarketTradeRows(pair.pair_id, rowsPerMarket)') &&
+  route.includes('normalizeAlcorMarketTradeRow(row, pair)') &&
+  route.includes('INSERT INTO waxonedge_trades') &&
+  route.includes('ON CONFLICT(source, trade_id) DO UPDATE SET') &&
+  route.includes("source: 'alcor'") &&
+  route.includes("reference_src: 'alcormarket'") &&
+  route.includes("trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box']") &&
+  route.includes('no_fake_trades: true'));
+ok('trade-row index state treats normal cursoring as non-truncated progress',
+  route.includes('const sourceStateTruncated = status === \'failed\' ? 1 : 0') &&
+  route.includes('truncated: sourceStateTruncated') &&
+  route.includes('const sourceStateError = status === \'failed\' ? visibleError : null') &&
+  route.includes('error: sourceStateError') &&
+  !route.includes('truncated: complete ? 0 : 1'));
+ok('successful trade-row index runs clear stale-looking errors',
+  route.includes("const visibleError = status === 'success' ? null") &&
+  route.includes('last_error: visibleError') &&
+  route.includes('recordSyncRun(env.DB, ALCOR_TRADE_INDEX_SOURCE, status, startedAt, visibleError)'));
+ok('sourceStateStale does not treat normal trade_indexing partial cursor as stale',
+  __waxonedgeTestHooks.sourceStateStale({
+    source: 'alcor_trade_rows',
+    status: 'partial',
+    truncated: 0,
+    complete: 0,
+    cursor: '24',
+    updated_at: new Date().toISOString(),
+  }) === false);
+ok('sourceStateStale still reports true trade_indexing failures',
+  __waxonedgeTestHooks.sourceStateStale({
+    source: 'alcor_trade_rows',
+    status: 'failed',
+    truncated: 1,
+    complete: 0,
+    cursor: '24',
+    updated_at: new Date().toISOString(),
+  }) === true);
+ok('scheduled sync can index trade rows before candle backfill',
+  route.includes("cron === 'waxonedge-trade-backfill'") &&
+  route.includes('runWaxOnEdgeTradeBackfill') &&
+  route.includes('const tradeBackfill = await syncAlcorMarketTradeRows(env)') &&
+  route.includes('const tradeBackfill = await syncAlcorMarketTradeRows(env);\n      const aggregates = await aggregateTokenAnalytics(env);\n      const candleBackfill = await planWaxOnEdgeCandleBackfill(env)'));
+ok('candle endpoint examples expose selected chart source and pair id',
+  __waxonedgeTestHooks.candleUrlExample('alcor', '29') === '/api/waxonedge/candles?duration=1d&src=alcor&pair_id=29' &&
+  route.includes('chart_src') &&
+  route.includes('chart_pair_id') &&
+  route.includes('candle_url_example') &&
+  route.includes('reference_candle_url_example') &&
+  route.includes('candle_url_examples'));
 const cachedRawJsonRow = {
   source: 'alcormarket',
   traded_at: null,
@@ -533,6 +609,12 @@ ok('candle backfill limit respects free-safe and paid mode',
 ok('WAXONEDGE_FREE_SAFE_MODE=false uses paid candle limit',
   __waxonedgeTestHooks.candleBackfillPairLimit({ WAXONEDGE_FREE_SAFE_MODE: 'false' }) === 24 &&
   __waxonedgeTestHooks.candleBackfillPairLimit({ WAXONEDGE_FREE_SAFE_MODE: 'true' }) === 2);
+ok('WAXONEDGE_FREE_SAFE_MODE=false is configured for paid WaxOnEdge runtime',
+  wrangler.includes('WAXONEDGE_FREE_SAFE_MODE = "false"') &&
+  __waxonedgeTestHooks.tradeIndexPairLimit({ WAXONEDGE_FREE_SAFE_MODE: 'false' }) === 24 &&
+  __waxonedgeTestHooks.tradeIndexPairLimit({ WAXONEDGE_FREE_SAFE_MODE: 'true' }) === 2 &&
+  __waxonedgeTestHooks.tradeRowsPerMarketLimit({ WAXONEDGE_FREE_SAFE_MODE: 'false' }) === 250 &&
+  __waxonedgeTestHooks.tradeRowsPerMarketLimit({ WAXONEDGE_FREE_SAFE_MODE: 'true' }) === 50);
 ok('candle_backfill budget_limited is benign progress for stale health',
   route.includes("['planned', 'partial_success', 'skipped', 'budget_limited'].includes(row.status)") &&
   route.includes('budget_exhausted: !!candleBackfillSnapshot.data?.budget_exhausted'));
@@ -668,8 +750,13 @@ ok('indexer health exposes active runtime mode and internal kline diagnostics',
   route.includes('runtime_config') &&
   route.includes('free_safe_mode: waxonedgeFreeSafeMode(env)') &&
   route.includes('active_candle_backfill_pair_limit: candleBackfillPairLimit(env)') &&
+  route.includes('active_trade_index_pair_limit: tradeIndexPairLimit(env)') &&
+  route.includes('active_trade_rows_per_market_limit: tradeRowsPerMarketLimit(env)') &&
   route.includes('active_source_page_limit: coreDexPagesPerInvocation(env)') &&
   route.includes('active_cron_rotation_mode') &&
+  route.includes('trade_indexing') &&
+  route.includes('trade_rows_indexed') &&
+  route.includes('no_fake_trades') &&
   route.includes('external_chart_endpoint_unsupported') &&
   route.includes('trade_rows_not_indexed') &&
   route.includes('swap_rows_not_indexed') &&
