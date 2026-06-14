@@ -214,9 +214,9 @@ export function startServer(env = process.env) {
   return { server, state };
 }
 
-export function isDirectRun(metaUrl = import.meta.url, argv1 = process.argv[1]) {
+export function isDirectRun(metaUrl = import.meta.url, argv1 = process.argv[1], cwd = process.cwd()) {
   if (!argv1) return false;
-  return fileURLToPath(metaUrl) === resolve(argv1);
+  return fileURLToPath(metaUrl) === resolve(cwd, argv1);
 }
 
 if (isDirectRun()) {

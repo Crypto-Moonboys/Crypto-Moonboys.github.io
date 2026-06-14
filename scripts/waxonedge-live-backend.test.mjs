@@ -193,15 +193,23 @@ ok('VPS live indexer service package exists',
 ok('VPS live indexer service entrypoint starts for relative npm/systemd paths',
   liveIndexer.isDirectRun(
     pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/src/index.mjs')).href,
+    'src/index.mjs',
+    path.join(ROOT, 'services/waxonedge-live-indexer'),
+  ) === true &&
+  liveIndexer.isDirectRun(
+    pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/src/index.mjs')).href,
     'services/waxonedge-live-indexer/src/index.mjs',
+    ROOT,
   ) === true &&
   liveIndexer.isDirectRun(
     pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/src/index.mjs')).href,
     path.join(ROOT, 'services/waxonedge-live-indexer/src/index.mjs'),
+    ROOT,
   ) === true &&
   liveIndexer.isDirectRun(
     pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/src/index.mjs')).href,
     'scripts/waxonedge-live-backend.test.mjs',
+    ROOT,
   ) === false);
 ok('VPS live indexer check entrypoint runs for relative npm check paths',
   liveIndexerCheck.isDirectRun(
