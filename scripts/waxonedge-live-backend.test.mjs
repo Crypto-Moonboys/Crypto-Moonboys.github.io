@@ -663,6 +663,14 @@ ok('swap.adex and dapp.fusion are not guessed into AMM trade streams or candle s
   route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES]") &&
   !route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES, 'swap.adex'") &&
   !route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES, 'dapp.fusion'"));
+ok('unverified swap.adex and dapp.fusion trade streams are reported honestly in health',
+  route.includes('const TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS = Object.freeze') &&
+  route.includes("verified_listing_action: 'createpool'") &&
+  route.includes('no SwapOrderRow trade action stream') &&
+  route.includes('dapp.fusion global special pool rows') &&
+  route.includes('not indexed as kline trade rows') &&
+  route.includes('trade_stream_not_verified_from_og_refs: TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS') &&
+  route.includes('trade_stream_not_verified_from_og_refs: ammTradeIndexSnapshot.data?.trade_stream_not_verified_from_og_refs || TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS'));
 ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filters',
   route.includes('function ammSwapStreamUrl') &&
   route.includes('`account=${encodeURIComponent(stream.account)}`') &&
