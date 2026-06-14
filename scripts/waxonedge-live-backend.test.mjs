@@ -1181,7 +1181,12 @@ ok('candle backfill can build from AMM waxonedge_trades rows',
 ok('Alcor marketMatches pagination reports per-action skip progress without full-history completion claims',
   route.includes('function normalizeActionStreamProgressMap') &&
   route.includes('const streamProgress = normalizeActionStreamProgressMap(previousData.action_streams, actionStreams)') &&
+  route.includes('const HYPERION_SKIP_WINDOW_LIMIT = 10000') &&
+  route.includes('function hyperionSkipWindowState') &&
   route.includes('pagination_mode: \'skip\'') &&
+  route.includes('bounded_skip_window_exhausted') &&
+  route.includes('hyperion_skip_window_limit: HYPERION_SKIP_WINDOW_LIMIT') &&
+  route.includes('last_valid_skip_cursor') &&
   route.includes('action_streams: streamProgress') &&
   route.includes('last_stream_cursor: lastStreamCursor') &&
   route.includes('last_stream_sequence: lastStreamSequence') &&
@@ -1191,10 +1196,45 @@ ok('Alcor marketMatches pagination reports per-action skip progress without full
   route.includes('active_stream_pages_per_run: pagesPerRun') &&
   route.includes('bounded_history_seed: false') &&
   route.includes('history_pagination_complete: false') &&
-  route.includes("next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : (allStreamsComplete ? 'skip pagination exhausted; sequence-complete replay not claimed' : 'continue per-action Hyperion skip pagination')") &&
+  route.includes('HYPERION_SKIP_WINDOW_NEXT_ACTION') &&
   route.includes('const nextCursor = \'\';') &&
   route.includes('const complete = false;') &&
   !route.includes("complete && failedPairCount === 0 ? 'success'"));
+ok('Alcor Hyperion skip window guard allows the last valid page and blocks invalid windows',
+  __waxonedgeTestHooks.hyperionSkipWindowState(9750, 250).bounded_skip_window_exhausted === false &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9751, 250).bounded_skip_window_exhausted === true &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(10000, 250).bounded_skip_window_exhausted === true &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(10000, 250).last_valid_skip_cursor === 9750 &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9900, 50).bounded_skip_window_exhausted === false &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9901, 50).bounded_skip_window_exhausted === true &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9950, 50).bounded_skip_window_exhausted === true &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9900, 50).last_valid_skip_cursor === 9900);
+ok('bounded skip exhaustion is handled before Alcor fetch attempt accounting',
+  route.indexOf('const skipWindow = hyperionSkipWindowState(streamCursor, rowsPerMarket)') > -1 &&
+  route.indexOf('const skipWindow = hyperionSkipWindowState(streamCursor, rowsPerMarket)') < route.indexOf('attemptedPairCount += 1') &&
+  route.includes('if (skipWindow.bounded_skip_window_exhausted)') &&
+  route.includes('actionState.status = \'partial\'') &&
+  route.includes('actionState.complete = false') &&
+  route.includes('actionState.next_action = HYPERION_SKIP_WINDOW_NEXT_ACTION') &&
+  route.includes('continue;\n    }\n    attemptedPairCount += 1') &&
+  !/bounded_skip_window_exhausted[\s\S]{0,800}failedPairCount \+= 1/.test(route) &&
+  !/bounded_skip_window_exhausted[\s\S]{0,800}upstream5xxCount \+= 1/.test(route));
+ok('bounded skip exhaustion keeps existing rows and does not fake completion',
+  route.includes('const anyBoundedSkipWindowExhausted = boundedSkipWindowExhausted || actionStreams.some') &&
+  route.includes('attemptedPairCount > 0 || allStreamsCompleteBeforeRun || allStreamsComplete || anyBoundedSkipWindowExhausted') &&
+  route.includes('trade_rows_indexed: totalRowsIndexed') &&
+  route.includes('rows_written: totalRowsWritten') &&
+  route.includes('history_pagination_complete: false') &&
+  route.includes('no_fake_trades: true') &&
+  route.includes('status !== \'failed\'') &&
+  !route.includes('history_pagination_complete: anyBoundedSkipWindowExhausted'));
+ok('AMM skip streams are not changed by the Alcor-only bounded skip guard',
+  route.indexOf('async function syncAmmSwapTradeRows') > -1 &&
+  !route.slice(
+    route.indexOf('async function syncAmmSwapTradeRows'),
+    route.indexOf('async function readSourceIndexState'),
+  ).includes('hyperionSkipWindowState') &&
+  route.includes('continue per-source AMM Hyperion skip pagination'));
 ok('candidate stream selection respects smaller trade index and pages-per-run limits',
   route.indexOf('const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length)') > -1 &&
   route.indexOf('const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length)') < route.indexOf('candidateRows.length < streamRunLimit') &&
