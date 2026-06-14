@@ -703,7 +703,9 @@ ok('Hyperion API base rejects credentials, query strings, and fragments',
   __waxonedgeTestHooks.hyperionConfigured({ WAXONEDGE_HYPERION_API: 'https://host/v2?x=y' }) === false &&
   __waxonedgeTestHooks.hyperionApiBase({ WAXONEDGE_HYPERION_API: 'https://host/v2#frag' }) === '' &&
   __waxonedgeTestHooks.hyperionConfigured({ WAXONEDGE_HYPERION_API: 'https://host/v2#frag' }) === false &&
-  __waxonedgeTestHooks.hyperionApiBase({ WAXONEDGE_HYPERION_API: 'https://host/v2/' }) === 'https://host/v2');
+  __waxonedgeTestHooks.hyperionApiBase({ WAXONEDGE_HYPERION_API: 'https://host/v2/' }) === 'https://host/v2' &&
+  __waxonedgeTestHooks.hyperionApiBase({ WAXONEDGE_HYPERION_API: 'https://host/' }) === 'https://host' &&
+  __waxonedgeTestHooks.hyperionApiBase({ WAXONEDGE_HYPERION_API: 'https://host' }) === 'https://host');
 ok('Hyperion history endpoint builder is deterministic and idempotent',
   __waxonedgeTestHooks.hyperionHistoryActionsEndpoint({ WAXONEDGE_HYPERION_API: 'https://host/v2/' }) === 'https://host/v2/history/get_actions' &&
   __waxonedgeTestHooks.hyperionHistoryActionsEndpoint({ WAXONEDGE_HYPERION_API: 'https://host/v2/history/get_actions' }) === 'https://host/v2/history/get_actions' &&

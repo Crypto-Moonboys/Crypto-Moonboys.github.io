@@ -82,7 +82,7 @@ function hyperionApiBase(env) {
     if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '';
     if (parsed.username || parsed.password || parsed.search || parsed.hash) return '';
     const pathname = parsed.pathname.replace(/\/+$/, '');
-    return `${parsed.origin}${pathname === '/' ? '' : pathname}`;
+    return `${parsed.origin}${pathname}`;
   } catch (_) {
     return '';
   }
