@@ -224,6 +224,7 @@ ok('VPS live indexer deploy guide documents runtime operations without enabling 
   liveIndexerDeploy.includes('fake token updates'));
 ok('VPS live indexer systemd template is local-only and secret-free',
   liveIndexerSystemd.includes('User=waxonedge') &&
+  liveIndexerSystemd.includes('Group=waxonedge') &&
   liveIndexerSystemd.includes('WorkingDirectory=/opt/crypto-moonboys/services/waxonedge-live-indexer') &&
   liveIndexerSystemd.includes('Environment=WAXONEDGE_LIVE_BIND_HOST=127.0.0.1') &&
   liveIndexerSystemd.includes('EnvironmentFile=/etc/waxonedge-live-indexer.env') &&
@@ -300,6 +301,7 @@ ok('VPS live indexer checker maps wildcard bind hosts to routable local targets'
   liveIndexerCheck.checkTargetHost('[::1]') === '[::1]' &&
   liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '0.0.0.0', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://127.0.0.1:8789' &&
   liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '::', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://[::1]:8789' &&
+  liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '[::]', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://[::1]:8789' &&
   liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '[::1]', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://[::1]:8789' &&
   liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '::1', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://[::1]:8789');
 ok('VPS live indexer /stream contract is SSE heartbeat only until real deltas exist',
