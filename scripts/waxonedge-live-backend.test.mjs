@@ -228,7 +228,7 @@ ok('VPS live indexer registers only verified trade streams',
     snapshot.browser_hyperion_fetch === false);
 }
 ok('VPS live indexer /stream contract is SSE heartbeat only until real deltas exist',
-  liveIndexerSource.includes("url.pathname === '/stream'") &&
+  liveIndexerSource.includes("pathname === '/stream'") &&
   liveIndexerSource.includes("'content-type': 'text/event-stream; charset=utf-8'") &&
   liveIndexerSource.includes('event: heartbeat') &&
   liveIndexerSource.includes('token_update_events_enabled: false') &&
@@ -240,6 +240,16 @@ ok('VPS live indexer exposes no fake live events or random movement',
   !/fake\s*:\s*true/i.test(liveIndexerSource) &&
   !liveIndexerSource.includes('random') &&
   !liveIndexerSource.includes('setInterval'));
+ok('VPS live indexer safely parses request path without trusting Host header',
+  liveIndexer.safeRequestPathname('/health?x=1') === '/health' &&
+  liveIndexer.safeRequestPathname('https://host.example/snapshot?x=1') === '/snapshot' &&
+  liveIndexer.safeRequestPathname('bad-target') === null &&
+  liveIndexer.safeRequestPathname('/bad%') === null &&
+  liveIndexer.safeRequestPathname('/bad\r\nHost:evil.example') === null &&
+  liveIndexerSource.includes('function safeRequestPathname') &&
+  !liveIndexerSource.includes('new URL(req.url ||') &&
+  !liveIndexerSource.includes('req.headers.host ||') &&
+  liveIndexerSource.includes("error: 'malformed request target'"));
 {
   function fakeLiveDb(results, onSql) {
     return {
@@ -1482,13 +1492,56 @@ ok('bounded skip exhaustion keeps existing rows and does not fake completion',
   route.includes('no_fake_trades: true') &&
   route.includes('status !== \'failed\'') &&
   !route.includes('history_pagination_complete: anyBoundedSkipWindowExhausted'));
-ok('AMM skip streams are not changed by the Alcor-only bounded skip guard',
+ok('AMM Hyperion skip window guard mirrors Alcor bounded-window handling',
   route.indexOf('async function syncAmmSwapTradeRows') > -1 &&
-  !route.slice(
+  route.slice(
     route.indexOf('async function syncAmmSwapTradeRows'),
     route.indexOf('async function readSourceIndexState'),
   ).includes('hyperionSkipWindowState') &&
+  route.slice(
+    route.indexOf('async function syncAmmSwapTradeRows'),
+    route.indexOf('async function readSourceIndexState'),
+  ).includes('if (skipWindow.bounded_skip_window_exhausted)') &&
+  route.slice(
+    route.indexOf('async function syncAmmSwapTradeRows'),
+    route.indexOf('async function readSourceIndexState'),
+  ).includes('actionState.status = \'partial\'') &&
+  route.slice(
+    route.indexOf('async function syncAmmSwapTradeRows'),
+    route.indexOf('async function readSourceIndexState'),
+  ).includes('actionState.next_action = HYPERION_SKIP_WINDOW_NEXT_ACTION') &&
+  route.slice(
+    route.indexOf('async function syncAmmSwapTradeRows'),
+    route.indexOf('async function readSourceIndexState'),
+  ).includes('continue;\n    }\n    attemptedPairCount += 1') &&
   route.includes('continue per-source AMM Hyperion skip pagination'));
+ok('AMM skip guard allows last valid page and blocks invalid windows using real request limit',
+  __waxonedgeTestHooks.hyperionSkipWindowState(9900, 50).bounded_skip_window_exhausted === false &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9901, 50).bounded_skip_window_exhausted === true &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9950, 50).bounded_skip_window_exhausted === true &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9900, 50).page_limit === 100 &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9900, 50).last_valid_skip_cursor === 9900);
+{
+  const ammBlock = route.slice(
+    route.indexOf('async function syncAmmSwapTradeRows'),
+    route.indexOf('async function readSourceIndexState'),
+  );
+  const ammSkipGuard = ammBlock.match(/if \(skipWindow\.bounded_skip_window_exhausted\) \{([\s\S]*?)\n    \}\n    attemptedPairCount \+= 1/)?.[1] || '';
+  ok('bounded AMM skip exhaustion is partial and does not log expected 400s as failures',
+    route.includes('const anyBoundedSkipWindowExhausted = boundedSkipWindowExhausted || actionStreams.some') &&
+    route.includes('bounded_skip_window_exhausted: anyBoundedSkipWindowExhausted') &&
+    route.includes('last_valid_skip_cursor: lastValidSkipCursor') &&
+    route.includes('next_action: hyperionNotConfigured') &&
+    route.includes(': (anyBoundedSkipWindowExhausted') &&
+    route.includes('trade_rows_indexed: totalRowsIndexed') &&
+    route.includes('rows_written: totalRowsWritten') &&
+    ammSkipGuard.includes("actionState.status = 'partial'") &&
+    ammSkipGuard.includes('actionState.next_action = HYPERION_SKIP_WINDOW_NEXT_ACTION') &&
+    ammSkipGuard.includes('continue;') &&
+    !ammSkipGuard.includes('failedPairCount += 1') &&
+    !ammSkipGuard.includes('fetchAmmSwapStreamRows') &&
+    !ammSkipGuard.includes('upstream5xxCount += 1'));
+}
 ok('candidate stream selection respects smaller trade index and pages-per-run limits',
   route.indexOf('const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length)') > -1 &&
   route.indexOf('const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length)') < route.indexOf('candidateRows.length < streamRunLimit') &&

@@ -2755,6 +2755,9 @@ async function syncAmmSwapTradeRows(env) {
       bounded_history_seed: false,
       history_pagination_complete: false,
       pagination_mode: 'none',
+      bounded_skip_window_exhausted: false,
+      hyperion_skip_window_limit: HYPERION_SKIP_WINDOW_LIMIT,
+      last_valid_skip_cursor: hyperionSkipWindowState(0, rowsPerMarket).last_valid_skip_cursor,
       action_streams: streamProgress,
       no_trade_rows_count: asNumber(previousData.no_trade_rows_count) || 0,
       trade_rows_not_usable_count: asNumber(previousData.trade_rows_not_usable_count) || 0,
@@ -2804,15 +2807,30 @@ async function syncAmmSwapTradeRows(env) {
   let rowsWritten = 0;
   let duplicateRowsSkipped = 0;
   let lastError = null;
+  let boundedSkipWindowExhausted = false;
   let sampleTradeFetchFailure = previousData.sample_trade_fetch_failure || null;
   let sampleTradeFetchSuccess = previousData.sample_trade_fetch_success || null;
   let budgetExhausted = false;
   for (const streamKey of candidateRows) {
     const stream = findAmmSwapActionStream(streamKey);
     if (!stream) continue;
-    attemptedPairCount += 1;
     const actionState = streamProgress[streamKey] || normalizeActionStreamProgress(streamKey);
     const streamCursor = actionState.skip_cursor || 0;
+    const skipWindow = hyperionSkipWindowState(streamCursor, rowsPerMarket);
+    if (skipWindow.bounded_skip_window_exhausted) {
+      boundedSkipWindowExhausted = true;
+      actionState.status = 'partial';
+      actionState.complete = false;
+      actionState.pagination_mode = 'skip';
+      actionState.bounded_skip_window_exhausted = true;
+      actionState.hyperion_skip_window_limit = skipWindow.hyperion_skip_window_limit;
+      actionState.last_valid_skip_cursor = skipWindow.last_valid_skip_cursor;
+      actionState.last_error = null;
+      actionState.next_action = HYPERION_SKIP_WINDOW_NEXT_ACTION;
+      actionState.updated_at = nowIso();
+      continue;
+    }
+    attemptedPairCount += 1;
     try {
       const result = await fetchAmmSwapStreamRows(env, stream, rowsPerMarket, streamCursor);
       if (result.diagnostic?.row_count > 0) sampleTradeFetchSuccess = result.diagnostic;
@@ -2890,6 +2908,9 @@ async function syncAmmSwapTradeRows(env) {
       const parsedNextCursor = asNumber(result.next_cursor);
       const nextSkipCursor = parsedNextCursor ?? (streamCursor + result.rows.length);
       actionState.skip_cursor = Math.max(actionState.skip_cursor, Math.floor(nextSkipCursor));
+      actionState.bounded_skip_window_exhausted = false;
+      actionState.hyperion_skip_window_limit = HYPERION_SKIP_WINDOW_LIMIT;
+      actionState.last_valid_skip_cursor = hyperionSkipWindowState(actionState.skip_cursor, rowsPerMarket).last_valid_skip_cursor;
       actionState.last_sequence = result.last_sequence ?? actionState.last_sequence;
       actionState.last_block = result.last_block ?? actionState.last_block;
       actionState.last_indexed_timestamp = result.last_indexed_timestamp || actionState.last_indexed_timestamp;
@@ -2941,6 +2962,8 @@ async function syncAmmSwapTradeRows(env) {
   const lastStreamSequence = maxNumberValue(actionStreams.map((streamKey) => streamProgress[streamKey]?.last_sequence));
   const lastStreamBlock = maxNumberValue(actionStreams.map((streamKey) => streamProgress[streamKey]?.last_block));
   const allStreamsComplete = actionStreams.every((streamKey) => streamProgress[streamKey]?.complete === true);
+  const anyBoundedSkipWindowExhausted = boundedSkipWindowExhausted || actionStreams.some((streamKey) => streamProgress[streamKey]?.bounded_skip_window_exhausted === true);
+  const lastValidSkipCursor = Math.max(0, ...actionStreams.map((streamKey) => asNumber(streamProgress[streamKey]?.last_valid_skip_cursor) || hyperionSkipWindowState(0, rowsPerMarket).last_valid_skip_cursor));
   const hardFailure = failedPairCount > 0 && processedPairCount === 0 && unsupportedPairCount === 0 && !budgetExhausted;
   const status = hyperionNotConfigured
     ? 'skipped'
@@ -2948,7 +2971,7 @@ async function syncAmmSwapTradeRows(env) {
     ? 'failed'
     : (budgetExhausted
     ? 'budget_limited'
-    : (attemptedPairCount > 0 || allStreamsCompleteBeforeRun || allStreamsComplete ? 'partial' : 'planned')));
+    : (attemptedPairCount > 0 || allStreamsCompleteBeforeRun || allStreamsComplete || anyBoundedSkipWindowExhausted ? 'partial' : 'planned')));
   const hasCurrentFailure = hyperionNotConfigured || budgetExhausted || failedPairCount > 0 || temporarilyFailedPairCount > 0;
   const visibleError = (status === 'success' || (rowsWritten > 0 && !hasCurrentFailure))
     ? null
@@ -2987,6 +3010,9 @@ async function syncAmmSwapTradeRows(env) {
     bounded_history_seed: false,
     history_pagination_complete: false,
     pagination_mode: 'skip',
+    bounded_skip_window_exhausted: anyBoundedSkipWindowExhausted,
+    hyperion_skip_window_limit: HYPERION_SKIP_WINDOW_LIMIT,
+    last_valid_skip_cursor: lastValidSkipCursor,
     action_streams: streamProgress,
     last_stream_cursor: lastStreamCursor,
     last_stream_sequence: lastStreamSequence,
@@ -3011,7 +3037,11 @@ async function syncAmmSwapTradeRows(env) {
     sample_trade_fetch_failure: sampleTradeFetchFailure,
     sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
-    next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : (allStreamsComplete ? 'skip pagination exhausted; sequence-complete replay not claimed' : 'continue per-source AMM Hyperion skip pagination'),
+    next_action: hyperionNotConfigured
+      ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint'
+      : (anyBoundedSkipWindowExhausted
+      ? HYPERION_SKIP_WINDOW_NEXT_ACTION
+      : (allStreamsComplete ? 'skip pagination exhausted; sequence-complete replay not claimed' : 'continue per-source AMM Hyperion skip pagination')),
     no_fake_trades: true,
     plan: AMM_TRADE_INDEX_PLAN,
   };
@@ -4980,6 +5010,9 @@ async function getIndexerHealth(db, env = {}) {
       bounded_history_seed: ammTradeIndexSnapshot.data?.bounded_history_seed === true,
       history_pagination_complete: ammTradeIndexSnapshot.data?.history_pagination_complete === true,
       pagination_mode: ammTradeIndexSnapshot.data?.pagination_mode || 'skip',
+      bounded_skip_window_exhausted: ammTradeIndexSnapshot.data?.bounded_skip_window_exhausted === true,
+      hyperion_skip_window_limit: asNumber(ammTradeIndexSnapshot.data?.hyperion_skip_window_limit) || HYPERION_SKIP_WINDOW_LIMIT,
+      last_valid_skip_cursor: asNumber(ammTradeIndexSnapshot.data?.last_valid_skip_cursor) ?? hyperionSkipWindowState(0, tradeRowsPerMarketLimit(env)).last_valid_skip_cursor,
       configured_streams: ammTradeIndexSnapshot.data?.configured_streams || AMM_SWAP_ACTION_STREAMS,
       action_streams: ammTradeIndexSnapshot.data?.action_streams || normalizeActionStreamProgressMap({}, defaultAmmSwapActionStreams()),
       last_stream_cursor: asNumber(ammTradeIndexSnapshot.data?.last_stream_cursor) || 0,

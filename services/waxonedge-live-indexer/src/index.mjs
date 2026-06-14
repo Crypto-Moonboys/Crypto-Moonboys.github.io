@@ -151,22 +151,45 @@ function writeSseHeartbeat(res, state) {
   res.end();
 }
 
+export function safeRequestPathname(requestUrl) {
+  const raw = String(requestUrl || '/');
+  if (!raw || raw.length > 2048 || /[\r\n]/.test(raw)) return null;
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      return new URL(raw).pathname || '/';
+    } catch (_) {
+      return null;
+    }
+  }
+  if (!raw.startsWith('/')) return null;
+  const path = raw.split('?')[0].split('#')[0] || '/';
+  try {
+    return decodeURI(path);
+  } catch (_) {
+    return null;
+  }
+}
+
 export function createServer(state = createState()) {
   return http.createServer((req, res) => {
-    const url = new URL(req.url || '/', `http://${req.headers.host || '127.0.0.1'}`);
+    const pathname = safeRequestPathname(req.url);
+    if (!pathname) {
+      writeJson(res, 400, { ok: false, error: 'malformed request target', uses_fake_live_data: false });
+      return;
+    }
     if (req.method !== 'GET') {
       writeJson(res, 405, { ok: false, error: 'method not allowed', uses_fake_live_data: false });
       return;
     }
-    if (url.pathname === '/health') {
+    if (pathname === '/health') {
       writeJson(res, state.connected ? 200 : 503, healthPayload(state));
       return;
     }
-    if (url.pathname === '/snapshot') {
+    if (pathname === '/snapshot') {
       writeJson(res, state.connected ? 200 : 503, snapshotPayload(state));
       return;
     }
-    if (url.pathname === '/stream') {
+    if (pathname === '/stream') {
       writeSseHeartbeat(res, state);
       return;
     }
