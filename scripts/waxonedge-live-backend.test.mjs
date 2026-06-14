@@ -550,7 +550,7 @@ ok('sourceStateStale still reports true trade_indexing failures',
     updated_at: new Date().toISOString(),
   }) === true);
 const alcor502Diagnostic = __waxonedgeTestHooks.tradeFetchDiagnostic({
-  url: 'https://wax.alcor.exchange/api/v2/markets/29/deals?limit=250',
+  url: 'https://wax.example/v2/history/get_actions?account=alcordexmain&act.name=buymatch',
   pairId: '29',
   status: 502,
   body: '<html>Bad Gateway</html>',
@@ -561,7 +561,7 @@ ok('502 trade fetch response is classified as upstream_5xx temporary failure',
   alcor502Diagnostic.failure_type === 'upstream_5xx' &&
   alcor502Diagnostic.source === 'alcor' &&
   alcor502Diagnostic.pair_id === '29' &&
-  alcor502Diagnostic.endpoint_path === '/api/v2/markets/29/deals?limit=250' &&
+  alcor502Diagnostic.endpoint_path === '/v2/history/get_actions?account=alcordexmain&act.name=buymatch' &&
   alcor502Diagnostic.http_status === 502 &&
   alcor502Diagnostic.retry_count === 2 &&
   alcor502Diagnostic.response_body_snippet === '<html>Bad Gateway</html>' &&
@@ -573,55 +573,19 @@ ok('502 trade fetch response is classified as upstream_5xx temporary failure',
   try {
     globalThis.fetch = async (url) => {
       requestedUrls.push(String(url));
-      if (String(url).includes('/deals?')) {
-        return new Response('Bad Gateway', { status: 502, statusText: 'Bad Gateway' });
-      }
-      return new Response(JSON.stringify([{ id: 'match-1', unit_price: 100000000, created_at: '2026-06-13T00:00:00.000Z' }]), { status: 200 });
+      return new Response(JSON.stringify({ actions: [] }), { status: 200 });
     };
-    const result = await __waxonedgeTestHooks.fetchAlcorMarketTradeRows('29', 250);
-    ok('fallback trade endpoint succeeds after first endpoint 502',
-      result.rows.length === 1 &&
-      result.temporaryFailure !== true &&
-      result.diagnostic.endpoint_path === '/api/v2/markets/29/matches?limit=250' &&
-      requestedUrls.some((url) => url.includes('/deals?')) &&
-      requestedUrls.some((url) => url.includes('/matches?')) &&
-      !requestedUrls.some((url) => url.includes('/trades?')) &&
-      Array.isArray(result.attempted_endpoints) &&
-      result.attempted_endpoints.some((entry) => entry.failure_type === 'upstream_5xx') &&
-      result.attempted_endpoints.some((entry) => entry.row_count === 1));
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
-}
-{
-  const originalFetch = globalThis.fetch;
-  try {
-    globalThis.fetch = async () => new Response('Bad Gateway', { status: 502, statusText: 'Bad Gateway' });
-    const result = await __waxonedgeTestHooks.fetchAlcorMarketTradeRows('29', 250);
-    ok('all fallback trade endpoints 5xx returns temporaryFailure with attempted endpoint diagnostics',
-      result.temporaryFailure === true &&
-      result.unsupported !== true &&
-      result.diagnostic.failure_type === 'upstream_5xx' &&
-      Array.isArray(result.diagnostic.attempted_endpoints) &&
-      result.diagnostic.attempted_endpoints.some((entry) => entry.endpoint_path === '/api/v2/markets/29/deals?limit=250') &&
-      result.diagnostic.attempted_endpoints.some((entry) => entry.endpoint_path === '/api/v2/markets/29/matches?limit=250') &&
-      result.diagnostic.attempted_endpoints.some((entry) => entry.endpoint_path === '/api/v2/markets/29/trades?limit=250'));
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
-}
-{
-  const originalFetch = globalThis.fetch;
-  try {
-    globalThis.fetch = async () => new Response('<html>not json</html>', { status: 200 });
-    const result = await __waxonedgeTestHooks.fetchAlcorMarketTradeRows('29', 250);
-ok('invalid JSON trade response is bad upstream payload, not no_trade_rows',
-      result.failed === true &&
-      result.invalidPayload === true &&
-      result.noTradeRows !== true &&
-      result.unsupported !== true &&
-      result.diagnostic.failure_type === 'invalid_payload' &&
-      result.diagnostic.response_body_snippet === '<html>not json</html>');
+    await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2' }, '29', 250);
+    ok('legacy public Alcor trade endpoints are not an alternate ingestion path',
+      !('fetchAlcorMarketTradeRows' in __waxonedgeTestHooks) &&
+      !route.includes('function fetchAlcorMarketTradeRows') &&
+      !route.includes('function alcorMarketTradeUrls') &&
+      !route.includes('/markets/${id}/deals') &&
+      !route.includes('/markets/${id}/matches') &&
+      !route.includes('/markets/${id}/trades') &&
+      requestedUrls.length === 2 &&
+      requestedUrls.every((url) => url.includes('/history/get_actions')) &&
+      requestedUrls.every((url) => !url.includes('/api/v2/markets/')));
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -732,6 +696,14 @@ ok('invalid WAXONEDGE_HYPERION_API skips trade indexing like missing config',
   __waxonedgeTestHooks.hyperionApiBase({ WAXONEDGE_HYPERION_API: 'wax.example/v2' }) === '' &&
   __waxonedgeTestHooks.hyperionApiBase({ WAXONEDGE_HYPERION_API: 'ftp://wax.example/v2' }) === '' &&
   __waxonedgeTestHooks.hyperionConfigured({ WAXONEDGE_HYPERION_API: 'wax.example/v2' }) === false);
+ok('Hyperion API base rejects credentials, query strings, and fragments',
+  __waxonedgeTestHooks.hyperionApiBase({ WAXONEDGE_HYPERION_API: 'https://user:pass@host/v2' }) === '' &&
+  __waxonedgeTestHooks.hyperionConfigured({ WAXONEDGE_HYPERION_API: 'https://user:pass@host/v2' }) === false &&
+  __waxonedgeTestHooks.hyperionApiBase({ WAXONEDGE_HYPERION_API: 'https://host/v2?x=y' }) === '' &&
+  __waxonedgeTestHooks.hyperionConfigured({ WAXONEDGE_HYPERION_API: 'https://host/v2?x=y' }) === false &&
+  __waxonedgeTestHooks.hyperionApiBase({ WAXONEDGE_HYPERION_API: 'https://host/v2#frag' }) === '' &&
+  __waxonedgeTestHooks.hyperionConfigured({ WAXONEDGE_HYPERION_API: 'https://host/v2#frag' }) === false &&
+  __waxonedgeTestHooks.hyperionApiBase({ WAXONEDGE_HYPERION_API: 'https://host/v2/' }) === 'https://host/v2');
 ok('Hyperion marketMatches URL uses OG account/act.name query and filters market_id locally',
   __waxonedgeTestHooks.alcorMarketMatchHistoryUrls({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2/' }, '29', 50).every((url) =>
     url.startsWith('https://wax.example/v2/history/get_actions?') &&
