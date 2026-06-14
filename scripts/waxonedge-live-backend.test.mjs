@@ -537,8 +537,91 @@ ok('Alcor trade-row indexer upserts real rows and exposes source diagnostics',
   route.includes('ON CONFLICT(source, trade_id) DO UPDATE SET') &&
   route.includes("source: 'alcor'") &&
   route.includes("reference_src: 'alcormarket'") &&
-  route.includes('trade_history_not_available_for_source: []') &&
+  route.includes('TRADE_HISTORY_NOT_AVAILABLE_SOURCES') &&
   route.includes('no_fake_trades: true'));
+ok('route registers remaining OG WaxOnEdge table sources for aggregate coverage',
+  route.includes("source: 'swap.adex'") &&
+  route.includes("referenceSource: 'adex'") &&
+  route.includes("contract: 'swap.adex'") &&
+  route.includes("table: 'pools'") &&
+  route.includes("normalizer: 'adex-pools'") &&
+  route.includes("source: 'dapp.fusion'") &&
+  route.includes("referenceSource: 'waxfusion'") &&
+  route.includes("contract: 'dapp.fusion'") &&
+  route.includes("table: 'global'") &&
+  route.includes("normalizer: 'waxfusion-global'") &&
+  route.includes("poolType: 'poolsSpecial'"));
+ok('aggregate source list includes swap.adex and dapp.fusion without dropping existing sources',
+  ['alcor', 'swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box', 'swap.adex', 'dapp.fusion']
+    .every((source) => route.includes("'" + source + "'")) &&
+  route.includes('swap_adex: keys.has(\'swap.adex\')') &&
+  route.includes('dapp_fusion: keys.has(\'dapp.fusion\')'));
+{
+  const priceIndex = new Map([
+    ['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }],
+  ]);
+  const adapter = {
+    source: 'swap.adex',
+    normalizer: 'adex-pools',
+  };
+  const pair = __waxonedgeTestHooks.normalizeCoreDexPair(adapter, {
+    id: 29,
+    code: 'ADEXLP',
+    base_token: { quantity: '100.00000000 WAX', contract: 'eosio.token' },
+    quote_token: { quantity: '250.0000 FOO', contract: 'foo.token' },
+    pool_fee: '0.2500 FEE',
+    platform_fee: '0.0500 FEE',
+  }, priceIndex, '2026-06-14T00:00:00.000Z');
+  ok('swap.adex verified pools rows normalize without fake reserves',
+    pair &&
+    pair.source === 'swap.adex' &&
+    pair.pair_id === '29' &&
+    pair.token_a_contract === 'eosio.token' &&
+    pair.token_a_symbol === 'WAX' &&
+    pair.token_b_contract === 'foo.token' &&
+    pair.token_b_symbol === 'FOO' &&
+    pair.reserve_a === '100' &&
+    pair.reserve_b === '250' &&
+    pair.price === '2.5' &&
+    pair.fee_bps === '30');
+  ok('unparseable swap.adex rows are skipped instead of faked',
+    __waxonedgeTestHooks.normalizeCoreDexPair(adapter, {
+      id: 30,
+      base_token: { quantity: '0.00000000 WAX', contract: 'eosio.token' },
+      quote_token: { quantity: '250.0000 FOO', contract: 'foo.token' },
+    }, priceIndex, '2026-06-14T00:00:00.000Z') === null);
+}
+{
+  const priceIndex = new Map([
+    ['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }],
+  ]);
+  const adapter = {
+    source: 'dapp.fusion',
+    normalizer: 'waxfusion-global',
+    defaultFeeBps: 0,
+  };
+  const pair = __waxonedgeTestHooks.normalizeCoreDexPair(adapter, {
+    wax_available_for_rentals: '50.00000000 WAX',
+    liquified_swax: '105.00000000 LSWAX',
+    swax_currently_backing_lswax: '100.00000000 SWAX',
+  }, priceIndex, '2026-06-14T00:00:00.000Z');
+  ok('dapp.fusion global row normalizes as special WaxFusion WAX/LSWAX source',
+    pair &&
+    pair.source === 'dapp.fusion' &&
+    pair.pair_id === 'dapp.fusion' &&
+    pair.token_a_contract === 'eosio.token' &&
+    pair.token_a_symbol === 'WAX' &&
+    pair.token_b_contract === 'token.fusion' &&
+    pair.token_b_symbol === 'LSWAX' &&
+    pair.reserve_a === '50' &&
+    pair.reserve_b === '105' &&
+    pair.price === '1.05' &&
+    pair.fee_bps === '0');
+  ok('unparseable dapp.fusion global rows are skipped instead of faked',
+    __waxonedgeTestHooks.normalizeCoreDexPair(adapter, {
+      liquified_swax: '105.00000000 LSWAX',
+    }, priceIndex, '2026-06-14T00:00:00.000Z') === null);
+}
 ok('AMM stream config includes verified WaxOnEdge swap action sources',
   route.includes('const AMM_TRADE_INDEX_SOURCE =') &&
   route.includes('const AMM_SWAP_ACTION_STREAMS = Object.freeze') &&
@@ -555,8 +638,19 @@ ok('AMM stream config includes verified WaxOnEdge swap action sources',
   route.includes("source: 'swap.nefty'") &&
   route.includes("account: 'swap.nefty'") &&
   route.includes("action: 'logswap'") &&
-  !route.includes("source: 'swap.adex'") &&
-  !route.includes("source: 'dapp.fusion'"));
+  route.includes("trade_history_not_available_for_source: TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice()") &&
+  route.includes("'swap.adex'") &&
+  route.includes("'dapp.fusion'"));
+const ammStreamBlock = route.slice(
+  route.indexOf('const AMM_SWAP_ACTION_STREAMS = Object.freeze'),
+  route.indexOf('const AMM_TRADE_SOURCES = Object.freeze'),
+);
+ok('swap.adex and dapp.fusion are not guessed into AMM trade streams or candle sources',
+  !ammStreamBlock.includes("source: 'swap.adex'") &&
+  !ammStreamBlock.includes("source: 'dapp.fusion'") &&
+  route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES]") &&
+  !route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES, 'swap.adex'") &&
+  !route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES, 'dapp.fusion'"));
 ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filters',
   route.includes('function ammSwapStreamUrl') &&
   route.includes('`account=${encodeURIComponent(stream.account)}`') &&
