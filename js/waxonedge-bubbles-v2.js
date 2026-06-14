@@ -16,6 +16,7 @@
     price: 'Price',
     volume: 'Volume',
     tvl: 'TVL',
+    liquidity: 'Liquidity',
     mcap: 'Mkt Cap',
   };
   var TIMEFRAME_LABELS = { '24h': '24h', '7d': '7D', '30d': '30D' };
@@ -215,11 +216,9 @@
       return record.volume24Usd != null ? record.volume24Usd : record.volume24Wax;
     }
     if (metric === 'tvl') {
-      if (record.tvlUsd != null) return record.tvlUsd;
-      if (record.liquidityUsd != null) return record.liquidityUsd;
-      if (record.tvlWax != null) return record.tvlWax;
-      return record.liquidityWax;
+      return record.tvlUsd != null ? record.tvlUsd : record.tvlWax;
     }
+    if (metric === 'liquidity') return record.liquidityUsd != null ? record.liquidityUsd : record.liquidityWax;
     if (metric === 'mcap') return record.marketCapUsd != null ? record.marketCapUsd : record.marketCapWax;
     return null;
   }
@@ -242,9 +241,14 @@
       return 'Volume unavailable';
     }
     if (state.metric === 'tvl') {
-      if (record.tvlUsd != null || record.liquidityUsd != null) return '$' + fmtNum(record.tvlUsd || record.liquidityUsd);
-      if (record.tvlWax != null || record.liquidityWax != null) return fmtNum(record.tvlWax || record.liquidityWax) + ' WAX';
+      if (record.tvlUsd != null) return '$' + fmtNum(record.tvlUsd);
+      if (record.tvlWax != null) return fmtNum(record.tvlWax) + ' WAX';
       return 'TVL unavailable';
+    }
+    if (state.metric === 'liquidity') {
+      if (record.liquidityUsd != null) return '$' + fmtNum(record.liquidityUsd);
+      if (record.liquidityWax != null) return fmtNum(record.liquidityWax) + ' WAX';
+      return 'Liquidity unavailable';
     }
     if (state.metric === 'mcap') {
       if (record.marketCapUsd != null) return '$' + fmtNum(record.marketCapUsd) + ' mcap';
@@ -352,11 +356,6 @@
         if (source) record.sourcesMap[source] = true;
         record.computedPairCount += 1;
         record.strongestPair = betterPair(record.strongestPair, pair);
-        if (record.change24 == null) record.change24 = asNum(pair.change_24h);
-        if (record.liquidityWax == null && asNum(pair.liquidity_wax) != null) record.liquidityWax = asNum(pair.liquidity_wax);
-        if (record.liquidityUsd == null && asNum(pair.liquidity_usd) != null) record.liquidityUsd = asNum(pair.liquidity_usd);
-        if (record.volume24Wax == null && asNum(pair.volume_24h_wax || pair.volume_24h) != null) record.volume24Wax = asNum(pair.volume_24h_wax || pair.volume_24h);
-        if (record.volume24Usd == null && asNum(pair.volume_24h_usd) != null) record.volume24Usd = asNum(pair.volume_24h_usd);
       });
     });
 
@@ -410,8 +409,8 @@
     var p95 = positives.length ? positives[Math.max(0, Math.floor(positives.length * 0.95) - 1)] : 1;
     var max = Math.max.apply(Math, values.concat([1]));
     var mobile = width < 680;
-    var minR = mobile ? 18 : 25;
-    var maxR = Math.max(minR + 10, Math.min(mobile ? 72 : 132, Math.sqrt(width * height * (mobile ? 0.085 : 0.055) / Math.PI)));
+    var minR = mobile ? 15 : 20;
+    var maxR = Math.max(minR + 8, Math.min(mobile ? 52 : 88, Math.sqrt(width * height * (mobile ? 0.052 : 0.032) / Math.PI)));
     return records.map(function (record, index) {
       var value = values[index];
       var norm = value <= 0 ? 0.06 : Math.pow(value / Math.max(p95, 1), state.metric === 'change' || state.metric === 'price' ? 0.5 : 0.33);

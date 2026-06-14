@@ -153,18 +153,32 @@ ok('waxonedge-bubbles-v2.js supports Ant-style metric and timeframe modes',
   v2Js.includes("price: 'Price'") &&
   v2Js.includes("volume: 'Volume'") &&
   v2Js.includes("tvl: 'TVL'") &&
+  v2Js.includes("liquidity: 'Liquidity'") &&
   v2Js.includes("mcap: 'Mkt Cap'") &&
   v2Js.includes("var TIMEFRAME_LABELS = { '24h': '24h', '7d': '7D', '30d': '30D'") &&
   v2Js.includes("if (metric === 'price') return record.selectedPriceUsd != null ? record.selectedPriceUsd : record.selectedPriceWax") &&
   v2Js.includes("if (timeframe === '7d')") &&
   v2Js.includes("if (timeframe === '30d')"));
+ok('waxonedge.html exposes Liquidity scanner metric control when liquidity mode exists',
+  html.includes('data-woe-metric="liquidity"') &&
+  html.includes('>Liquidity</button>'));
 ok('waxonedge-bubbles-v2.js does not fallback between scanner metrics',
   v2Js.includes('return change != null ? Math.abs(change) : null') &&
-  v2Js.includes("if (metric === 'mcap') return record.marketCapUsd != null ? record.marketCapUsd : record.marketCapWax") &&
+  /if\s*\(\s*metric\s*===\s*'tvl'\s*\)\s*\{\s*return\s+record\.tvlUsd\s*!=\s*null\s*\?\s*record\.tvlUsd\s*:\s*record\.tvlWax\s*;\s*\}/.test(v2Js) &&
+  /if\s*\(\s*metric\s*===\s*'liquidity'\s*\)\s*return\s+record\.liquidityUsd\s*!=\s*null\s*\?\s*record\.liquidityUsd\s*:\s*record\.liquidityWax/.test(v2Js) &&
+  /if\s*\(\s*metric\s*===\s*'mcap'\s*\)\s*return\s+record\.marketCapUsd\s*!=\s*null\s*\?\s*record\.marketCapUsd\s*:\s*record\.marketCapWax/.test(v2Js) &&
   v2Js.includes('return valueForMetric(record, state.metric, state.timeframe) != null') &&
+  !v2Js.includes('record.tvlUsd || record.liquidityUsd') &&
+  !v2Js.includes('record.tvlWax || record.liquidityWax') &&
+  !v2Js.includes('if (record.change24 == null) record.change24 = asNum(pair.change_24h)') &&
+  !v2Js.includes('if (record.liquidityWax == null') &&
+  !v2Js.includes('if (record.volume24Wax == null') &&
   !v2Js.includes('record.volume24Usd || record.volume24Wax || record.liquidityUsd || record.liquidityWax || record.indexedPairCount') &&
   !v2Js.includes('record.fdvUsd || record.marketCapWax') &&
   !v2Js.includes(" + ' FDV'"));
+ok('waxonedge-bubbles-v2.js reduces max bubble radius for dense Top 100 scanner layout',
+  v2Js.includes('mobile ? 52 : 88') &&
+  !v2Js.includes('mobile ? 72 : 132'));
 ok('waxonedge-bubbles-v2.js formats structured modal stats without object string leaks',
   v2Js.includes('function formatStatValue') &&
   v2Js.includes("typeof value === 'object'") &&
