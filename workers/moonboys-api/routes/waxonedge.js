@@ -57,6 +57,24 @@ const TRADE_HISTORY_NOT_AVAILABLE_SOURCES = Object.freeze([
   'swap.adex',
   'dapp.fusion',
 ]);
+const TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS = Object.freeze([
+  {
+    source: 'swap.adex',
+    account: 'swap.adex',
+    verified_table: 'pools',
+    verified_listing_action: 'createpool',
+    trade_stream_not_verified_from_og_refs: true,
+    reason: 'OG WaxOnEdge config registers swap.adex createpool listing events and pools table rows, but no SwapOrderRow trade action stream.',
+  },
+  {
+    source: 'dapp.fusion',
+    account: 'dapp.fusion',
+    verified_table: 'global',
+    verified_listing_action: null,
+    trade_stream_not_verified_from_og_refs: true,
+    reason: 'OG WaxOnEdge config registers dapp.fusion global special pool rows; contract execution actions are not indexed as kline trade rows in the backend reference.',
+  },
+]);
 const TRADE_RAW_JSON_CACHE = Symbol('waxonedgeTradeRawJson');
 
 function waxonedgeFreeSafeMode(env) {
@@ -2113,6 +2131,7 @@ async function syncAlcorMarketTradeRows(env) {
       active_rows_per_market_limit: rowsPerMarket,
       budget_exhausted: false,
       trade_history_not_available_for_source: TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice(),
+      trade_stream_not_verified_from_og_refs: TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS,
       reference_trade_source: 'Hyperion/state-history alcordexmain buymatch/sellmatch -> marketMatches',
       guessed_public_alcor_http_source_of_truth: false,
       sample_trade_fetch_failure: isLegacyTradeFetchDiagnostic(previousData.sample_trade_fetch_failure) ? null : (previousData.sample_trade_fetch_failure || null),
@@ -2351,6 +2370,7 @@ async function syncAlcorMarketTradeRows(env) {
     active_rows_per_market_limit: rowsPerMarket,
     budget_exhausted: budgetExhausted,
     trade_history_not_available_for_source: TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice(),
+    trade_stream_not_verified_from_og_refs: TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS,
     reference_trade_source: 'Hyperion/state-history alcordexmain buymatch/sellmatch -> marketMatches',
     guessed_public_alcor_http_source_of_truth: false,
     sample_trade_fetch_failure: sampleTradeFetchFailure,
@@ -2401,6 +2421,7 @@ async function syncAlcorMarketTradeRows(env) {
     active_rows_per_market_limit: rowsPerMarket,
     budget_exhausted: budgetExhausted,
     trade_history_not_available_for_source: TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice(),
+    trade_stream_not_verified_from_og_refs: TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS,
     sample_trade_fetch_failure: sampleTradeFetchFailure,
     sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
@@ -2710,6 +2731,7 @@ async function syncAmmSwapTradeRows(env) {
     budget_exhausted: budgetExhausted,
     configured_streams: AMM_SWAP_ACTION_STREAMS,
     trade_history_not_available_for_source: TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice(),
+    trade_stream_not_verified_from_og_refs: TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS,
     sample_trade_fetch_failure: sampleTradeFetchFailure,
     sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
@@ -4264,7 +4286,8 @@ async function getIndexerHealth(db, env = {}) {
       active_stream_limit: asNumber(tradeIndexSnapshot.data?.active_stream_limit) || tradeIndexPairLimit(env),
       active_stream_pages_per_run: asNumber(tradeIndexSnapshot.data?.active_stream_pages_per_run) || tradeStreamPagesPerRun(env),
       active_rows_per_market_limit: asNumber(tradeIndexSnapshot.data?.active_rows_per_market_limit) || tradeRowsPerMarketLimit(env),
-      trade_history_not_available_for_source: tradeIndexSnapshot.data?.trade_history_not_available_for_source || [],
+      trade_history_not_available_for_source: tradeIndexSnapshot.data?.trade_history_not_available_for_source || TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice(),
+      trade_stream_not_verified_from_og_refs: tradeIndexSnapshot.data?.trade_stream_not_verified_from_og_refs || TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS,
       reference_trade_source: tradeIndexSnapshot.data?.reference_trade_source || 'Wapaca backend indexes alcormarket marketMatches from Hyperion/state-history rows, not a canonical public Alcor HTTP trade endpoint.',
       guessed_public_alcor_http_source_of_truth: tradeIndexSnapshot.data?.guessed_public_alcor_http_source_of_truth === true,
       sample_trade_fetch_failure: tradeIndexSnapshot.data?.sample_trade_fetch_failure || null,
@@ -4314,6 +4337,7 @@ async function getIndexerHealth(db, env = {}) {
       active_stream_pages_per_run: asNumber(ammTradeIndexSnapshot.data?.active_stream_pages_per_run) || tradeStreamPagesPerRun(env),
       active_rows_per_market_limit: asNumber(ammTradeIndexSnapshot.data?.active_rows_per_market_limit) || tradeRowsPerMarketLimit(env),
       trade_history_not_available_for_source: ammTradeIndexSnapshot.data?.trade_history_not_available_for_source || TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice(),
+      trade_stream_not_verified_from_og_refs: ammTradeIndexSnapshot.data?.trade_stream_not_verified_from_og_refs || TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS,
       sample_trade_fetch_failure: ammTradeIndexSnapshot.data?.sample_trade_fetch_failure || null,
       sample_trade_fetch_success: ammTradeIndexSnapshot.data?.sample_trade_fetch_success || null,
       budget_exhausted: !!ammTradeIndexSnapshot.data?.budget_exhausted,
