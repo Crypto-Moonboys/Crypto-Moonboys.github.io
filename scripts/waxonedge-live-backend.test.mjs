@@ -136,9 +136,10 @@ ok('live snapshot uses stable contract-symbol token keys',
     parsed.cursor.updated_at === '2026-06-14T10:00:00.000Z' &&
     parsed.cursor.contract === 'graffitiking' &&
     parsed.cursor.symbol === 'WAXCASH' &&
-    route.includes('ORDER BY COALESCE(s.updated_at, t.updated_at) ASC, t.contract ASC, t.symbol ASC') &&
-    route.includes('COALESCE(s.updated_at, t.updated_at) > ?') &&
-    route.includes('OR (t.contract = ? AND t.symbol > ?)') &&
+    route.includes('ORDER BY updated_at ASC, contract ASC, symbol ASC') &&
+    route.includes('${updatedAtExpr} > ?') &&
+    route.includes('OR (${updatedAtExpr} = ? AND t.contract > ?)') &&
+    route.includes('OR (${updatedAtExpr} = ? AND t.contract = ? AND t.symbol > ?)') &&
     route.includes('next_cursor: liveCursorFromRow(lastRow)'));
 }
 {
@@ -2025,8 +2026,9 @@ ok('frontend live empty source_keys clears stale source badges',
 ok('frontend live cursor advances even for unmatched token updates',
   frontendBubbles.indexOf('if (nextCursor) state.live.cursor = nextCursor') > -1 &&
   frontendBubbles.indexOf('if (nextCursor) state.live.cursor = nextCursor') < frontendBubbles.indexOf('if (!tokens.length) return') &&
-  frontendBubbles.indexOf('if (!nextCursor && update.updated_at)') > -1 &&
-  frontendBubbles.indexOf('if (!nextCursor && update.updated_at)') < frontendBubbles.indexOf('if (!record) return'));
+  frontendBubbles.includes('function advanceLiveFallbackCursor(update)') &&
+  frontendBubbles.indexOf('if (!nextCursor) advanceLiveFallbackCursor(update)') > -1 &&
+  frontendBubbles.indexOf('if (!nextCursor) advanceLiveFallbackCursor(update)') < frontendBubbles.indexOf('if (!record) return'));
 ok('frontend live update path changes bubble target radius without full reload',
   frontendBubbles.includes('function refreshLiveTargetRadii') &&
   frontendBubbles.includes('node.targetRadius = radii[index] || node.targetRadius') &&

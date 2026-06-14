@@ -507,6 +507,11 @@
     });
   }
 
+  function advanceLiveFallbackCursor(update) {
+    if (!update || !update.updated_at) return;
+    state.live.cursor = !state.live.cursor || update.updated_at > state.live.cursor ? update.updated_at : state.live.cursor;
+  }
+
   function applyLiveSnapshot(snapshot) {
     var data = payloadData(snapshot);
     var tokens = sourceRows(data.tokens);
@@ -517,7 +522,7 @@
     state.records.forEach(function (record) { byKey[record.key] = record; });
     var changed = 0;
     tokens.forEach(function (update) {
-      if (!nextCursor && update.updated_at) state.live.cursor = !state.live.cursor || update.updated_at > state.live.cursor ? update.updated_at : state.live.cursor;
+      if (!nextCursor) advanceLiveFallbackCursor(update);
       var key = update.token_key || tokenKey(update.contract, update.symbol);
       var record = byKey[key];
       if (!record) return;

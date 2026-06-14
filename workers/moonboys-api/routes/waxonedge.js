@@ -3554,41 +3554,39 @@ async function listLiveTokenUpdates(db, options = {}) {
   const parsedSince = parsedCursor.cursor ? { since: null, warning: null } : parseLiveSince(options.since);
   const filters = [];
   const params = [];
+  const updatedAtExpr = 'COALESCE(s.updated_at, t.updated_at)';
   if (parsedCursor.cursor) {
     filters.push(`(
-      COALESCE(s.updated_at, t.updated_at) > ?
-      OR (
-        COALESCE(s.updated_at, t.updated_at) = ?
-        AND (
-          t.contract > ?
-          OR (t.contract = ? AND t.symbol > ?)
-        )
-      )
+      ${updatedAtExpr} > ?
+      OR (${updatedAtExpr} = ? AND t.contract > ?)
+      OR (${updatedAtExpr} = ? AND t.contract = ? AND t.symbol > ?)
     )`);
     params.push(
       parsedCursor.cursor.updated_at,
       parsedCursor.cursor.updated_at,
       parsedCursor.cursor.contract,
+      parsedCursor.cursor.updated_at,
       parsedCursor.cursor.contract,
       parsedCursor.cursor.symbol,
     );
   } else if (parsedSince.since) {
-    filters.push(`COALESCE(s.updated_at, t.updated_at) > ?`);
+    filters.push(`${updatedAtExpr} > ?`);
     params.push(parsedSince.since);
   }
   params.push(clampInteger(options.limit, LIVE_SNAPSHOT_TOKEN_LIMIT, 1, LIVE_SNAPSHOT_TOKEN_LIMIT));
   const rows = await db.prepare(
-    `SELECT t.contract, t.symbol, t.price_wax, t.price_usd, t.pair_count, t.updated_at,
+    `SELECT t.contract, t.symbol, t.price_wax, t.price_usd, t.pair_count,
+            t.updated_at AS token_updated_at,
             s.selected_price_wax, s.selected_price_usd, s.change_24h,
             s.volume_24h, s.volume_24h_wax, s.volume_24h_usd,
             s.tvl_wax, s.tvl_usd, s.liquidity_wax, s.liquidity_usd,
             s.indexed_pair_count, s.source_count, s.source_keys,
-            COALESCE(s.updated_at, t.updated_at) AS stats_updated_at
+            COALESCE(s.updated_at, t.updated_at) AS updated_at
      FROM waxonedge_tokens t
      LEFT JOIN waxonedge_token_stats s
        ON s.contract = t.contract AND s.symbol = t.symbol
      ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
-     ORDER BY COALESCE(s.updated_at, t.updated_at) ASC, t.contract ASC, t.symbol ASC
+     ORDER BY updated_at ASC, contract ASC, symbol ASC
      LIMIT ?`
   ).bind(...params).all();
   const results = rows.results || [];
