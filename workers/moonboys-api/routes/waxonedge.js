@@ -110,6 +110,8 @@ const TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS = Object.freeze([
   },
 ]);
 const TRADE_RAW_JSON_CACHE = Symbol('waxonedgeTradeRawJson');
+const LIVE_INDEXER_PROBE_CACHE_TTL_MS = 30000;
+let waxonedgeLiveIndexerProbeCache = null;
 
 function waxonedgeFreeSafeMode(env) {
   return String(env?.WAXONEDGE_FREE_SAFE_MODE ?? WAXONEDGE_FREE_SAFE_MODE_DEFAULT).toLowerCase() !== 'false';
@@ -185,14 +187,32 @@ function waxonedgeLiveIndexerUrlConfigured(env) {
   if (!raw) return false;
   try {
     const parsed = new URL(raw);
-    return (parsed.protocol === 'https:' || parsed.protocol === 'http:') &&
-      !parsed.username &&
-      !parsed.password &&
-      !parsed.search &&
-      !parsed.hash;
+    if (parsed.username || parsed.password || parsed.search || parsed.hash) return false;
+    if (parsed.protocol === 'https:') return true;
+    if (parsed.protocol === 'http:') return isLoopbackLiveIndexerHost(parsed.hostname);
+    return false;
   } catch (_) {
     return false;
   }
+}
+
+function isLoopbackLiveIndexerHost(hostname) {
+  const host = String(hostname || '').trim().toLowerCase().replace(/^\[|\]$/g, '');
+  if (host === 'localhost' || host === '::1') return true;
+  const octets = host.split('.');
+  if (octets.length !== 4) return false;
+  const values = octets.map((part) => {
+    if (!/^\d+$/.test(part)) return null;
+    const value = Number(part);
+    return Number.isInteger(value) && value >= 0 && value <= 255 ? value : null;
+  });
+  return values.every((value) => value != null) && values[0] === 127;
+}
+
+function waxonedgeLiveIndexerBaseUrl(env) {
+  const raw = String(env?.WAXONEDGE_LIVE_INDEXER_URL || '').trim();
+  if (!raw || !waxonedgeLiveIndexerUrlConfigured(env)) return '';
+  return raw.replace(/\/+$/, '');
 }
 
 function waxonedgeLiveIndexerConfig(env) {
@@ -202,6 +222,162 @@ function waxonedgeLiveIndexerConfig(env) {
     secret_header: WAXONEDGE_LIVE_SECRET_HEADER,
     proxy_enabled: false,
   };
+}
+
+async function probeWaxonedgeLiveIndexer(env, fetchImpl = globalThis.fetch) {
+  const baseUrl = waxonedgeLiveIndexerBaseUrl(env);
+  const secret = String(env?.WAXONEDGE_LIVE_SHARED_SECRET || '').trim();
+  const base = {
+    configured: !!baseUrl,
+    reachable: false,
+    status: baseUrl ? 'probe_failed' : 'not_configured',
+    service: null,
+    uses_fake_live_data: null,
+    browser_hyperion_fetch: null,
+    emits_fake_token_updates: null,
+    shared_secret_configured: !!secret,
+    secret_leaked: false,
+    last_error: null,
+  };
+  if (!baseUrl) {
+    return {
+      ...base,
+      status: 'not_configured',
+      last_error: null,
+    };
+  }
+  if (typeof fetchImpl !== 'function') {
+    return {
+      ...base,
+      status: 'probe_failed',
+      last_error: 'fetch unavailable',
+    };
+  }
+
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutMs = clampInteger(env?.WAXONEDGE_LIVE_PROBE_TIMEOUT_MS, 1500, 250, 5000);
+  const timeout = controller ? setTimeout(() => controller.abort('live indexer probe timeout'), timeoutMs) : null;
+  try {
+    const headers = {};
+    if (secret) headers[WAXONEDGE_LIVE_SECRET_HEADER] = secret;
+    const response = await fetchImpl(`${baseUrl}/health`, {
+      method: 'GET',
+      headers,
+      redirect: 'manual',
+      signal: controller?.signal,
+    });
+    if (response.status >= 300 && response.status <= 399) {
+      return {
+        ...base,
+        status: 'probe_failed',
+        last_error: 'live indexer health redirected',
+      };
+    }
+    const bodyText = await response.text();
+    let payload = null;
+    try {
+      payload = bodyText ? JSON.parse(bodyText) : null;
+    } catch (_) {
+      return {
+        ...base,
+        status: 'probe_failed',
+        last_error: `invalid JSON from live indexer health (${response.status})`,
+      };
+    }
+    const service = safeString(payload?.service);
+    const usesFakeLiveDataSafe = payload?.uses_fake_live_data === false;
+    const browserHyperionFetchSafe = payload?.browser_hyperion_fetch === false;
+    const emitsFakeTokenUpdatesSafe = payload?.emits_fake_token_updates === false;
+    const validIdentity = service === 'waxonedge-live-indexer' &&
+      usesFakeLiveDataSafe &&
+      browserHyperionFetchSafe &&
+      emitsFakeTokenUpdatesSafe;
+    if (!response.ok && response.status !== 503) {
+      return {
+        ...base,
+        service,
+        uses_fake_live_data: payload?.uses_fake_live_data ?? null,
+        browser_hyperion_fetch: payload?.browser_hyperion_fetch ?? null,
+        emits_fake_token_updates: payload?.emits_fake_token_updates ?? null,
+        status: 'probe_failed',
+        last_error: `live indexer health returned ${response.status}`,
+      };
+    }
+    if (!validIdentity) {
+      return {
+        ...base,
+        service,
+        uses_fake_live_data: payload?.uses_fake_live_data ?? null,
+        browser_hyperion_fetch: payload?.browser_hyperion_fetch ?? null,
+        emits_fake_token_updates: payload?.emits_fake_token_updates ?? null,
+        status: 'probe_failed',
+        last_error: 'live indexer health identity validation failed',
+      };
+    }
+    return {
+      configured: true,
+      reachable: true,
+      status: safeString(payload?.status || payload?.health_status) || (response.status === 503 ? 'not_connected' : 'ok'),
+      service,
+      uses_fake_live_data: false,
+      browser_hyperion_fetch: false,
+      emits_fake_token_updates: false,
+      shared_secret_configured: !!secret,
+      secret_leaked: false,
+      last_error: null,
+    };
+  } catch (error) {
+    return {
+      ...base,
+      status: 'probe_failed',
+      last_error: safeString(error?.message || error) || 'fetch failed',
+    };
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
+function cloneLiveIndexerProbeResult(result) {
+  return JSON.parse(JSON.stringify(result || null));
+}
+
+function liveIndexerProbeCacheKey(env) {
+  const baseUrl = waxonedgeLiveIndexerBaseUrl(env);
+  const secret = String(env?.WAXONEDGE_LIVE_SHARED_SECRET || '').trim();
+  return `${baseUrl || 'not_configured'}|secret:${liveIndexerSecretFingerprint(secret)}`;
+}
+
+function liveIndexerSecretFingerprint(secret) {
+  const text = String(secret || '');
+  if (!text) return 'none';
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `fnv1a:${(hash >>> 0).toString(16).padStart(8, '0')}`;
+}
+
+async function cachedProbeWaxonedgeLiveIndexer(env, fetchImpl = globalThis.fetch, nowMs = Date.now()) {
+  const cacheKey = liveIndexerProbeCacheKey(env);
+  if (
+    waxonedgeLiveIndexerProbeCache &&
+    waxonedgeLiveIndexerProbeCache.key === cacheKey &&
+    waxonedgeLiveIndexerProbeCache.expires_at > nowMs
+  ) {
+    return cloneLiveIndexerProbeResult(waxonedgeLiveIndexerProbeCache.result);
+  }
+  const result = await probeWaxonedgeLiveIndexer(env, fetchImpl);
+  waxonedgeLiveIndexerProbeCache = {
+    key: cacheKey,
+    expires_at: nowMs + LIVE_INDEXER_PROBE_CACHE_TTL_MS,
+    result: cloneLiveIndexerProbeResult(result),
+  };
+  return cloneLiveIndexerProbeResult(result);
+}
+
+function resetWaxonedgeLiveIndexerProbeCache() {
+  waxonedgeLiveIndexerProbeCache = null;
 }
 
 function hyperionNotConfiguredTradeResult(pairId, actionName = null) {
@@ -4705,6 +4881,7 @@ async function getIndexerHealth(db, env = {}) {
     ammTradeIndexState,
     ammTradeIndexSnapshot,
     tvlPrecisionDiagnostics,
+    liveIndexerProbe,
   ] = await Promise.all([
     countScalar(db, `SELECT COUNT(*) AS count FROM waxonedge_tokens`),
     countScalar(db, `${pairTokenCte} SELECT COUNT(*) AS count FROM pair_tokens`),
@@ -4734,6 +4911,7 @@ async function getIndexerHealth(db, env = {}) {
     readSourceIndexState(db, AMM_TRADE_INDEX_SOURCE),
     readSnapshot(db, AMM_TRADE_INDEX_SOURCE),
     getTvlPrecisionDiagnostics(db),
+    cachedProbeWaxonedgeLiveIndexer(env),
   ]);
   const staleSyncRows = await Promise.all(sourceStates
     .filter(sourceStateStale)
@@ -4892,6 +5070,7 @@ async function getIndexerHealth(db, env = {}) {
       transport: 'snapshot-polling-contract',
       vps_stream_required: true,
       live_indexer: waxonedgeLiveIndexerConfig(env),
+      live_indexer_probe: liveIndexerProbe,
       uses_fake_live_data: false,
       browser_hyperion_fetch: false,
       token_key_format: 'contract::symbol',
@@ -5827,7 +6006,15 @@ export const __waxonedgeTestHooks = {
   hyperionConfigured,
   hyperionHistoryActionsEndpoint,
   waxonedgeLiveIndexerUrlConfigured,
+  isLoopbackLiveIndexerHost,
+  waxonedgeLiveIndexerBaseUrl,
   waxonedgeLiveIndexerConfig,
+  probeWaxonedgeLiveIndexer,
+  cachedProbeWaxonedgeLiveIndexer,
+  liveIndexerProbeCacheKey,
+  liveIndexerSecretFingerprint,
+  resetWaxonedgeLiveIndexerProbeCache,
+  getIndexerHealth,
   alcorMarketMatchHistoryUrls,
   alcorMarketMatchStreamUrl,
   fetchAlcorMarketMatchStreamRows,
