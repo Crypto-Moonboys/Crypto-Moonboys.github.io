@@ -344,6 +344,7 @@ ok('aggregate refresh is triggered after source cursor state advances',
 ok('aggregate refresh is not triggered when no source state changed',
   route.includes('if (!pairSyncFinishedAt) return false') &&
   route.includes('if (!needsAggregateRefresh)') &&
+  route.includes('if (!freeSafeMode)') &&
   route.includes('aggregate_refresh_pending: false') &&
   route.includes('aggregate_refresh_deferred_budget: false'));
 ok('stale aggregate health exposes pending and budget-deferred status',
@@ -357,6 +358,17 @@ ok('budget-deferred aggregate refresh does not mark aggregate successful',
   !route.includes("recordSyncRun(db, 'token_aggregates', 'success', startedAt, reason)") &&
   route.includes('deferForBudget') &&
   route.includes('maybeRefreshAggregateAfterSourceSync(env'));
+ok('free-safe post-source aggregate refresh records skipped budget deferral',
+  route.includes('const freeSafeMode = waxonedgeFreeSafeMode(env)') &&
+  route.includes('if (freeSafeMode || options.deferForBudget)') &&
+  route.includes("return recordAggregateRefreshDeferred(env.DB, options.reason || 'Aggregate refresh deferred after source sync to avoid Worker budget pressure')") &&
+  route.includes('aggregate_refresh_pending: true') &&
+  route.includes('aggregate_refresh_deferred_budget: true'));
+ok('non-free-safe mode can run post-source aggregate refresh when stale',
+  route.includes('if (freeSafeMode || options.deferForBudget)') &&
+  route.includes('const aggregates = await aggregateTokenAnalytics(env)') &&
+  route.includes('refreshed_after_source_sync: true') &&
+  route.includes('status: aggregates.status'));
 ok('bootstrap compact source metadata does not mark missing snapshots complete',
   route.includes('row_count: tableSnapshot.data?.row_count || (Array.isArray(tableSnapshot.data?.rows) ? tableSnapshot.data.rows.length : 0)') &&
   route.includes('complete: !!tableSnapshot.data && (tableSnapshot.data?.truncated ? false : !tableSnapshot.data?.cursor)'));
@@ -375,6 +387,7 @@ ok('free-safe cron only runs one heavy WaxOnEdge workload per invocation',
   route.includes('tasks.push(syncSupplyInputs(env))') &&
   route.includes('selectCoreDexAdapterForCron(minute)') &&
   route.includes('!freeSafeMode && (!cron || cron === \'*/15 * * * *\'') &&
+  route.includes('const deferForBudget = freeSafeMode ||') &&
   route.includes('const sourceWorkRan = results.some') &&
   route.includes('postSyncAggregate = await maybeRefreshAggregateAfterSourceSync(env'));
 ok('free-safe source sync runs one DEX source chunk with conservative budgets',

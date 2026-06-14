@@ -4023,18 +4023,21 @@ async function recordAggregateRefreshDeferred(db, reason = AGGREGATE_REFRESH_REA
 }
 
 async function maybeRefreshAggregateAfterSourceSync(env, options = {}) {
+  const freeSafeMode = waxonedgeFreeSafeMode(env);
   const needsAggregateRefresh = await aggregateNeedsRefreshAfterPairSync(env.DB);
   if (!needsAggregateRefresh) {
-    await writeSnapshot(env.DB, 'token_aggregates', {
-      aggregate_refresh_pending: false,
-      aggregate_refresh_deferred_budget: false,
-      reason: null,
-      no_fake_data: true,
-    }, nowIso()).catch(() => {});
+    if (!freeSafeMode) {
+      await writeSnapshot(env.DB, 'token_aggregates', {
+        aggregate_refresh_pending: false,
+        aggregate_refresh_deferred_budget: false,
+        reason: null,
+        no_fake_data: true,
+      }, nowIso()).catch(() => {});
+    }
     return null;
   }
-  if (options.deferForBudget) {
-    return recordAggregateRefreshDeferred(env.DB, options.reason || 'Aggregate refresh deferred after heavy source sync to avoid Worker budget pressure');
+  if (freeSafeMode || options.deferForBudget) {
+    return recordAggregateRefreshDeferred(env.DB, options.reason || 'Aggregate refresh deferred after source sync to avoid Worker budget pressure');
   }
   const aggregates = await aggregateTokenAnalytics(env);
   await writeSnapshot(env.DB, 'token_aggregates', {
@@ -5192,11 +5195,11 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
       result?.alcor?.ok ||
       result?.core?.ok
     );
-    const deferForBudget = shouldRunFullIndex && results.some((result) => result?.tradeBackfill || result?.candleBackfill || result?.nefty);
+    const deferForBudget = freeSafeMode || (shouldRunFullIndex && results.some((result) => result?.tradeBackfill || result?.candleBackfill || result?.nefty));
     if (sourceWorkRan) {
       postSyncAggregate = await maybeRefreshAggregateAfterSourceSync(env, {
         deferForBudget,
-        reason: deferForBudget ? 'Aggregate refresh deferred after full source/trade/candle sync to avoid Worker budget pressure' : AGGREGATE_REFRESH_REASON,
+        reason: deferForBudget ? 'Aggregate refresh deferred after source sync to avoid Worker budget pressure' : AGGREGATE_REFRESH_REASON,
       });
     }
   }
