@@ -137,9 +137,11 @@ ok('live snapshot uses stable contract-symbol token keys',
     parsed.cursor.contract === 'graffitiking' &&
     parsed.cursor.symbol === 'WAXCASH' &&
     route.includes('ORDER BY updated_at ASC, contract ASC, symbol ASC') &&
-    route.includes('${updatedAtExpr} > ?') &&
-    route.includes('OR (${updatedAtExpr} = ? AND t.contract > ?)') &&
-    route.includes('OR (${updatedAtExpr} = ? AND t.contract = ? AND t.symbol > ?)') &&
+    route.includes('updated_at > ?') &&
+    route.includes('OR (updated_at = ? AND contract > ?)') &&
+    route.includes('OR (updated_at = ? AND contract = ? AND symbol > ?)') &&
+    route.includes('FROM (') &&
+    route.includes(') live_rows') &&
     route.includes('next_cursor: liveCursorFromRow(lastRow)'));
 }
 {
@@ -165,6 +167,93 @@ ok('live stream route is an honest unavailable contract until VPS SSE exists',
   route.includes('fallback: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT') &&
   route.includes('uses_fake_live_data: false') &&
   route.includes("transport: 'snapshot-polling-contract'"));
+{
+  function fakeLiveDb(results, onSql) {
+    return {
+      prepare(sql) {
+        if (onSql) onSql(sql);
+        return {
+          bind() {
+            return {
+              async all() {
+                return { results };
+              },
+            };
+          },
+        };
+      },
+    };
+  }
+  const emptyResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
+    { DB: fakeLiveDb([]) },
+    new URLSearchParams(),
+    {},
+  );
+  const emptyBody = await emptyResponse.json();
+  ok('/api/waxonedge/live returns ok true with empty indexed rows',
+    emptyResponse.status === 200 &&
+    emptyBody.ok === true &&
+    emptyBody.source === 'moonboys-api/waxonedge-live' &&
+    emptyBody.mode === 'snapshot' &&
+    Array.isArray(emptyBody.tokens) &&
+    emptyBody.tokens.length === 0 &&
+    emptyBody.next_cursor == null &&
+    Array.isArray(emptyBody.warnings) &&
+    emptyBody.warnings.length === 0);
+  const nullStatsResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
+    {
+      DB: fakeLiveDb([{
+        contract: 'graffitiking',
+        symbol: 'WAXCASH',
+        price_wax: null,
+        price_usd: null,
+        pair_count: null,
+        updated_at: '2026-06-14T11:00:00.000Z',
+        source_keys: '',
+      }]),
+    },
+    new URLSearchParams(),
+    {},
+  );
+  const nullStatsBody = await nullStatsResponse.json();
+  ok('/api/waxonedge/live handler does not throw when stats fields are null/missing',
+    nullStatsResponse.status === 200 &&
+    nullStatsBody.ok === true &&
+    nullStatsBody.tokens.length === 1 &&
+    nullStatsBody.tokens[0].token_key === 'graffitiking::WAXCASH' &&
+    nullStatsBody.next_cursor === '2026-06-14T11%3A00%3A00.000Z~graffitiking~WAXCASH');
+  const badCursorResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
+    { DB: fakeLiveDb([]) },
+    new URLSearchParams('cursor=bad-cursor'),
+    {},
+  );
+  const badCursorBody = await badCursorResponse.json();
+  ok('/api/waxonedge/live cursor parse errors return safe JSON instead of throwing',
+    badCursorResponse.status === 200 &&
+    badCursorBody.ok === true &&
+    badCursorBody.tokens.length === 0 &&
+    badCursorBody.warnings.includes('Invalid live cursor ignored.'));
+  const errorResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
+    {
+      DB: {
+        prepare() {
+          throw new Error('mock D1 exploded');
+        },
+      },
+    },
+    new URLSearchParams(),
+    {},
+  );
+  const errorBody = await errorResponse.json();
+  ok('/api/waxonedge/live catches runtime errors as JSON diagnostics',
+    errorResponse.status === 503 &&
+    errorBody.ok === false &&
+    errorBody.source === 'moonboys-api/waxonedge-live' &&
+    errorBody.mode === 'snapshot' &&
+    errorBody.error === 'live snapshot unavailable' &&
+    errorBody.diagnostic.includes('mock D1 exploded') &&
+    errorBody.uses_fake_live_data === false);
+}
 ok('indexer health exposes live update contract metadata',
   route.includes('live_updates') &&
   route.includes('snapshot_endpoint: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT') &&
@@ -1481,8 +1570,8 @@ ok('trade-row fetch separates temporary 5xx from unsupported history',
   route.indexOf('if (result.temporaryFailure)') < route.indexOf('if (result.unsupported)') &&
   !/if \(result\.temporaryFailure\)[\s\S]{0,240}unsupportedPairCount \+= 1/.test(route));
 ok('one failed Alcor trade market does not stop the whole batch',
-  route.includes('continue;\n      }\n      if (result.failed)') &&
-  route.includes('continue;\n      }\n      if (result.unsupported)') &&
+  /if \(result\.temporaryFailure\)[\s\S]*?continue;\s*}\s*if \(result\.failed\)/.test(route) &&
+  /if \(result\.failed\)[\s\S]*?continue;\s*}\s*if \(result\.unsupported\)/.test(route) &&
   route.includes('rowsWritten += written') &&
   route.includes('processedPairCount += 1') &&
   route.includes('const nextStreamIndex = candidateRows.length'));
@@ -1537,9 +1626,9 @@ ok('Wapaca reference path for alcormarket trades is documented honestly',
 ok('scheduled sync can index trade rows before candle backfill',
   route.includes("cron === 'waxonedge-trade-backfill'") &&
   route.includes('runWaxOnEdgeTradeBackfill') &&
-  route.includes('const alcorTradeBackfill = await syncAlcorMarketTradeRows(env);\n  const ammTradeBackfill = await syncAmmSwapTradeRows(env);') &&
+  /const alcorTradeBackfill = await syncAlcorMarketTradeRows\(env\);\s*const ammTradeBackfill = await syncAmmSwapTradeRows\(env\);/.test(route) &&
   !route.includes('const [alcorTradeBackfill, ammTradeBackfill] = await Promise.all') &&
-  route.includes('const tradeBackfill = await runWaxOnEdgeTradeBackfill(env);\n      const aggregates = await aggregateTokenAnalytics(env);\n      const candleBackfill = await planWaxOnEdgeCandleBackfill(env)'));
+  /const tradeBackfill = await runWaxOnEdgeTradeBackfill\(env\);\s*const aggregates = await aggregateTokenAnalytics\(env\);\s*const candleBackfill = await planWaxOnEdgeCandleBackfill\(env\)/.test(route));
 ok('candle endpoint examples expose selected chart source and pair id',
   __waxonedgeTestHooks.candleUrlExample('alcor', '29') === '/api/waxonedge/candles?duration=1d&src=alcor&pair_id=29' &&
   route.includes('chart_src') &&
