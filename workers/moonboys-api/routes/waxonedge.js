@@ -13,9 +13,12 @@ const SOURCE_STALE_MINUTES = 30;
 const MIN_TRUSTED_WAX_LIQUIDITY = 10;
 const CANDLE_BACKFILL_SOURCE = 'candle_backfill';
 const ALCOR_TRADE_INDEX_SOURCE = 'alcor_trade_rows';
+const AMM_TRADE_INDEX_SOURCE = 'amm_trade_rows';
 const CANDLE_BACKFILL_PLAN = 'Internal 1D kline backfill planned from indexed trade rows; no fake candles are inserted.';
 const TRADE_INDEX_PLAN = 'Alcor market match trade-row indexing planned for internal 1D candle building; no fake trades are inserted.';
+const AMM_TRADE_INDEX_PLAN = 'AMM swap action-row indexing planned from WaxOnEdge reference log streams; no fake trades are inserted.';
 const HYPERION_MARKET_MATCH_QUERY_SHAPE = 'GET <configured-base-or-endpoint>/history/get_actions?account=alcordexmain&act.name=buymatch|sellmatch&sort=desc&limit=<n>; market_id filtered locally from action data';
+const HYPERION_AMM_SWAP_QUERY_SHAPE = 'GET <configured-base-or-endpoint>/history/get_actions?account=<swap-contract>&act.name=<reference-action>&sort=desc&limit=<n>; pair/pool id parsed locally from action data';
 const WAXONEDGE_FREE_SAFE_MODE_DEFAULT = true;
 const DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT = 24;
 const DEFAULT_TRADE_INDEX_PAIR_LIMIT = 24;
@@ -164,13 +167,13 @@ function safeBodySnippet(text) {
     .slice(0, 300);
 }
 
-function tradeFetchDiagnostic({ url, pairId, actionName = null, status, body = '', retryCount = 0, category = '', error = '' }) {
+function tradeFetchDiagnostic({ url, pairId, actionName = null, source = 'alcor', status, body = '', retryCount = 0, category = '', error = '' }) {
   const httpStatus = asNumber(status);
   const failureCategory = category || (isUpstreamServerErrorStatus(httpStatus)
     ? 'upstream_5xx'
     : (httpStatus === 404 ? 'unsupported' : 'failed'));
   return {
-    source: 'alcor',
+    source: source || 'alcor',
     pair_id: safeString(pairId) || null,
     action_name: actionName ? safeString(actionName) : null,
     endpoint_path: endpointPath(url),
@@ -291,6 +294,39 @@ const CORE_DEX_ADAPTERS = Object.freeze([
     explorer: 'https://waxblock.io/account/swap.box',
   },
 ]);
+
+const AMM_SWAP_ACTION_STREAMS = Object.freeze([
+  {
+    source: 'swap.alcor',
+    referenceSource: 'alcorv2',
+    account: 'swap.alcor',
+    action: 'logswap',
+    parser: 'swap-v3',
+  },
+  {
+    source: 'swap.taco',
+    referenceSource: 'taco',
+    account: 'swap.taco',
+    action: 'exchangelog',
+    parser: 'swap-v2-taco',
+  },
+  {
+    source: 'swap.box',
+    referenceSource: 'defibox',
+    account: 'swap.box',
+    action: 'swaplog',
+    parser: 'swap-v2-defibox',
+  },
+  {
+    source: 'swap.nefty',
+    referenceSource: 'neftyblocks',
+    account: 'swap.nefty',
+    action: 'logswap',
+    parser: 'swap-v2-nefty',
+  },
+]);
+
+const AMM_TRADE_SOURCES = Object.freeze(AMM_SWAP_ACTION_STREAMS.map((stream) => stream.source));
 
 const REFERENCE_QUOTE_TOKENS = Object.freeze([
   ['usdt.alcor', 'USDT'],
@@ -1187,6 +1223,219 @@ function normalizeAlcorMarketTradeRow(row, pair) {
   };
 }
 
+function defaultAmmSwapActionStreams() {
+  return AMM_SWAP_ACTION_STREAMS.map((stream) => `${stream.source}:${stream.action}`);
+}
+
+function findAmmSwapActionStream(keyOrSource, actionName = '') {
+  const key = String(keyOrSource || '').trim().toLowerCase();
+  const action = String(actionName || '').trim().toLowerCase();
+  return AMM_SWAP_ACTION_STREAMS.find((stream) =>
+    `${stream.source}:${stream.action}` === key ||
+    (stream.source === key && (!action || stream.action === action)));
+}
+
+function ammSwapStreamUrl(env, stream, limit, cursor = '') {
+  const endpoint = hyperionHistoryActionsEndpoint(env);
+  const count = encodeURIComponent(String(Math.max(limit, DEFAULT_HYPERION_TRADE_SCAN_LIMIT)));
+  const params = [
+    `account=${encodeURIComponent(stream.account)}`,
+    `act.name=${encodeURIComponent(stream.action)}`,
+    'sort=desc',
+    `limit=${count}`,
+    'simple=true',
+    'noBinary=true',
+    'checkLib=true',
+  ];
+  if (cursor) params.push(`skip=${encodeURIComponent(String(cursor))}`);
+  return `${endpoint}?${params.join('&')}`;
+}
+
+function parseAmmSwapAction(row, stream) {
+  const actionValue = typeof row?.action === 'string' ? row.action : null;
+  const act = row?.act || row?.action_trace?.act || (typeof row?.action === 'object' ? row.action : null) || row;
+  const actionName = (safeString(actionValue || act?.name || row?.act_name || row?.action_name || row?.name) || '').toLowerCase();
+  if (actionName && actionName !== stream.action) return null;
+  const data = row?.data || act?.data || {};
+  const record = data?.record || act?.data?.record || data || {};
+  let pairId = null;
+  let maker = null;
+  let quantityIn = null;
+  let quantityOut = null;
+  let reserveA = null;
+  let reserveB = null;
+  let tokenA = null;
+  let tokenB = null;
+  let sender = null;
+  let recipient = null;
+  let sqrtPriceX64 = null;
+  let liquidity = null;
+  let tick = null;
+  if (stream.parser === 'swap-v3') {
+    pairId = firstPresent(record.poolId, record.pool_id, record.pair_id, record.id, row?.pair_id);
+    sender = firstPresent(record.sender, row?.sender);
+    recipient = firstPresent(record.recipient, row?.recipient);
+    tokenA = firstPresent(record.tokenA, row?.tokenA);
+    tokenB = firstPresent(record.tokenB, row?.tokenB);
+    reserveA = firstPresent(record.reserveA, row?.reserveA);
+    reserveB = firstPresent(record.reserveB, row?.reserveB);
+    sqrtPriceX64 = firstPresent(record.sqrtPriceX64, row?.sqrtPriceX64);
+    liquidity = firstPresent(record.liquidity, row?.liquidity);
+    tick = firstPresent(record.tick, row?.tick);
+    quantityIn = tokenA;
+    quantityOut = tokenB;
+    maker = sender;
+  } else if (stream.parser === 'swap-v2-defibox') {
+    pairId = firstPresent(record.pair_id, record.pairId, record.id, row?.pair_id);
+    maker = firstPresent(record.owner, record.maker, row?.owner);
+    quantityIn = firstPresent(record.quantity_in, row?.quantity_in);
+    quantityOut = firstPresent(record.quantity_out, row?.quantity_out);
+    reserveA = firstPresent(record.reserve0, row?.reserve0);
+    reserveB = firstPresent(record.reserve1, row?.reserve1);
+  } else if (stream.parser === 'swap-v2-nefty') {
+    pairId = firstPresent(record.code, record.pair_id, record.id, row?.pair_id);
+    maker = firstPresent(record.owner, record.maker, row?.owner);
+    quantityIn = firstPresent(record.quantity_in, row?.quantity_in);
+    quantityOut = firstPresent(record.quantity_out, row?.quantity_out);
+    reserveA = firstPresent(record.reserve0?.quantity, record.reserve0, row?.reserve0?.quantity, row?.reserve0);
+    reserveB = firstPresent(record.reserve1?.quantity, record.reserve1, row?.reserve1?.quantity, row?.reserve1);
+  } else {
+    pairId = firstPresent(record.id, record.pair_id, record.pairId, row?.pair_id);
+    maker = firstPresent(record.maker, record.owner, row?.maker);
+    quantityIn = firstPresent(record.quantity_in, row?.quantity_in);
+    quantityOut = firstPresent(record.quantity_out, row?.quantity_out);
+    reserveA = firstPresent(record.pool1, record.reserveA, row?.pool1, row?.reserveA);
+    reserveB = firstPresent(record.pool2, record.reserveB, row?.pool2, row?.reserveB);
+  }
+  if (pairId == null || pairId === '') return null;
+  const parsedIn = parseAsset(quantityIn);
+  const parsedOut = parseAsset(quantityOut);
+  const parsedReserveA = parseAsset(reserveA);
+  const parsedReserveB = parseAsset(reserveB);
+  if (parsedIn.amount == null || parsedOut.amount == null || !parsedIn.symbol || !parsedOut.symbol) return null;
+  return {
+    id: firstPresent(row?.global_sequence, row?.global_sequence_num, row?.receipt?.global_sequence, row?.seq, row?.trx_id, row?.action_ordinal),
+    trx_id: firstPresent(row?.transaction_id, row?.trx_id, row?.trxid, row?.action_trace?.trx_id),
+    action_ordinal: firstPresent(row?.action_ordinal, row?.receipt?.recv_sequence, row?.receipt?.global_sequence),
+    global_sequence: firstPresent(row?.global_sequence, row?.global_sequence_num, row?.receipt?.global_sequence),
+    block_num: firstPresent(row?.block, row?.block_num, row?.block_number),
+    pair_id: pairId,
+    source: stream.source,
+    reference_src: stream.referenceSource,
+    action_name: stream.action,
+    maker: maker || sender || recipient || null,
+    sender,
+    recipient,
+    quantity_in: quantityIn,
+    quantity_out: quantityOut,
+    amount_in: Math.abs(Number(parsedIn.amount)),
+    amount_out: Math.abs(Number(parsedOut.amount)),
+    code_in: parsedIn.symbol,
+    code_out: parsedOut.symbol,
+    precision_in: parsedIn.precision,
+    precision_out: parsedOut.precision,
+    reserveA,
+    reserveB,
+    amount_reserveA: parsedReserveA.amount,
+    amount_reserveB: parsedReserveB.amount,
+    code_reserveA: parsedReserveA.symbol,
+    code_reserveB: parsedReserveB.symbol,
+    sqrtPriceX64,
+    liquidity,
+    tick,
+    updated_at_time: firstPresent(row?.updated_at_time, row?.timestamp, record.timestamp, row?.['@timestamp'], row?.block_time, row?.created_at),
+    created_at: firstPresent(row?.timestamp, row?.['@timestamp'], row?.block_time, row?.created_at),
+    raw_action: row,
+  };
+}
+
+function tradeRowSequenceAny(row) {
+  return asNumber(firstPresent(
+    row?.global_sequence,
+    row?.global_sequence_num,
+    row?.receipt?.global_sequence,
+    row?.receipt?.recv_sequence,
+    row?.action_trace?.receipt?.global_sequence,
+  ));
+}
+
+function tradeRowBlockAny(row) {
+  return asNumber(firstPresent(row?.block_num, row?.block, row?.block_number, row?.action_trace?.block_num));
+}
+
+function ammSwapTradePrice(row) {
+  const amountIn = asNumber(row?.amount_in);
+  const amountOut = asNumber(row?.amount_out);
+  if (amountIn != null && amountIn > 0 && amountOut != null && amountOut > 0) {
+    if (row?.code_in && row?.code_reserveA && row.code_in === row.code_reserveA) return amountIn / amountOut;
+    return amountOut / amountIn;
+  }
+  const reserveA = asNumber(row?.amount_reserveA);
+  const reserveB = asNumber(row?.amount_reserveB);
+  if (reserveA != null && reserveA > 0 && reserveB != null && reserveB > 0) return reserveA / reserveB;
+  return null;
+}
+
+function ammSwapTradeVolume(row) {
+  if (row?.code_in === 'WAX') return row.amount_in;
+  if (row?.code_out === 'WAX') return row.amount_out;
+  return row.amount_in;
+}
+
+function normalizeAmmSwapTradeRow(row, stream) {
+  row = parseAmmSwapAction(row, stream) || row;
+  const pairId = safeString(row?.pair_id);
+  if (!pairId) return null;
+  const tradeIdValue = firstPresent(row?.id, row?.trade_id, row?.global_sequence, row?.trx_id, row?.action_ordinal);
+  const tradeId = safeString(tradeIdValue);
+  if (!tradeId) return null;
+  const tradedAt = normalizeTradeTimestamp(firstPresent(
+    row?.traded_at,
+    row?.created_at,
+    row?.updated_at_time,
+    row?.block_time,
+    row?.timestamp,
+    row?.time,
+  ));
+  if (!tradedAt) return null;
+  const price = safeDecimal(ammSwapTradePrice(row));
+  const volume = safeDecimal(ammSwapTradeVolume(row));
+  if (price == null || volume == null) return null;
+  const amount = safeDecimal(row?.amount_in);
+  const source = stream.source;
+  return {
+    source,
+    trade_id: `${source}:${stream.action}:${pairId}:${tradeId}`,
+    pair_id: pairId,
+    contract: null,
+    symbol: normalizeSymbol(row?.code_in) || null,
+    side: 'swap',
+    price,
+    amount,
+    volume,
+    tx_id: safeString(firstPresent(row?.tx_id, row?.trx_id, row?.transaction_id)) || null,
+    traded_at: tradedAt,
+    raw_json: JSON.stringify({
+      reference_src: stream.referenceSource,
+      reference_table: stream.parser === 'swap-v3' ? 'swapVThreeOrders' : 'swapOrders',
+      reference_ingestion: `Hyperion/state-history ${stream.account} ${stream.action}`,
+      action_name: stream.action,
+      pair_id: pairId,
+      amount_in: row?.amount_in,
+      amount_out: row?.amount_out,
+      code_in: row?.code_in,
+      code_out: row?.code_out,
+      amount_reserveA: row?.amount_reserveA,
+      amount_reserveB: row?.amount_reserveB,
+      code_reserveA: row?.code_reserveA,
+      code_reserveB: row?.code_reserveB,
+      global_sequence: row?.global_sequence || null,
+      block_num: row?.block_num || null,
+      row,
+    }),
+  };
+}
+
 function defaultAlcorTradeActionStreams() {
   return ['buymatch', 'sellmatch'];
 }
@@ -1449,6 +1698,183 @@ async function fetchAlcorMarketMatchHistoryRows(env, pairId, limit) {
   };
 }
 
+async function fetchAmmSwapStreamRows(env, stream, limit, cursor = '') {
+  if (!hyperionConfigured(env)) {
+    const diagnostic = {
+      source: stream.source,
+      pair_id: null,
+      action_name: stream.action,
+      endpoint_path: 'Hyperion/state-history AMM swap actions',
+      http_status: null,
+      response_body_snippet: 'WAXONEDGE_HYPERION_API is not configured',
+      retry_count: 0,
+      failure_type: 'hyperion_not_configured',
+      upstream_server_error: false,
+      budget_failure: false,
+      unsupported: false,
+      ingestion_path: 'hyperion_amm_swaps',
+      attempted_endpoints: [],
+    };
+    return {
+      rows: [],
+      skipped: true,
+      hyperionNotConfigured: true,
+      diagnostic,
+      attempted_endpoints: [],
+      ingestion_path: 'hyperion_amm_swaps',
+    };
+  }
+  const attemptedEndpoints = [];
+  const matchedRows = [];
+  let lastFailure = null;
+  const url = ammSwapStreamUrl(env, stream, limit, cursor);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    const text = await response.text();
+    if (!response.ok) {
+      const diagnostic = tradeFetchDiagnostic({
+        url,
+        source: stream.source,
+        pairId: null,
+        actionName: stream.action,
+        status: response.status,
+        body: text,
+        category: isUpstreamServerErrorStatus(response.status) ? 'upstream_5xx' : (response.status === 404 ? 'unsupported' : 'failed'),
+      });
+      attemptedEndpoints.push(diagnostic);
+      lastFailure = diagnostic;
+    } else {
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (error) {
+        const diagnostic = tradeFetchDiagnostic({
+          url,
+          source: stream.source,
+          pairId: null,
+          actionName: stream.action,
+          status: response.status,
+          body: text || error?.message,
+          category: 'invalid_payload',
+        });
+        attemptedEndpoints.push(diagnostic);
+        const attemptedSummary = tradeFetchSummary(attemptedEndpoints);
+        return {
+          rows: [],
+          invalidPayload: true,
+          failed: true,
+          diagnostic: { ...diagnostic, attempted_endpoints: attemptedSummary, ingestion_path: 'hyperion_amm_swaps' },
+          attempted_endpoints: attemptedSummary,
+          ingestion_path: 'hyperion_amm_swaps',
+        };
+      }
+      const rows = sourceRows(data.actions || data.simple_actions || data);
+      const parsedRows = rows
+        .map((row) => parseAmmSwapAction(row, stream))
+        .filter(Boolean);
+      attemptedEndpoints.push({
+        source: stream.source,
+        pair_id: null,
+        action_name: stream.action,
+        endpoint_path: endpointPath(url),
+        http_status: response.status,
+        retry_count: 0,
+        failure_type: null,
+        row_count: parsedRows.length,
+        ingestion_path: 'hyperion_amm_swaps',
+      });
+      matchedRows.push(...parsedRows);
+    }
+  } catch (error) {
+    const diagnostic = tradeFetchDiagnostic({
+      url,
+      source: stream.source,
+      pairId: null,
+      actionName: stream.action,
+      status: null,
+      body: error?.message || String(error),
+      category: isSubrequestBudgetError(error) ? 'budget' : 'failed',
+    });
+    attemptedEndpoints.push(diagnostic);
+    lastFailure = diagnostic;
+    if (isSubrequestBudgetError(error)) {
+      const attemptedSummary = tradeFetchSummary(attemptedEndpoints);
+      return {
+        rows: [],
+        budgetFailure: true,
+        diagnostic: { ...diagnostic, attempted_endpoints: attemptedSummary, ingestion_path: 'hyperion_amm_swaps' },
+        attempted_endpoints: attemptedSummary,
+        ingestion_path: 'hyperion_amm_swaps',
+      };
+    }
+  } finally {
+    clearTimeout(timer);
+  }
+  const attemptedSummary = tradeFetchSummary(attemptedEndpoints);
+  if (matchedRows.length) {
+    const currentSkip = Math.max(0, Math.floor(asNumber(cursor) || 0));
+    const nextSkip = currentSkip + matchedRows.length;
+    return {
+      rows: matchedRows,
+      pagination_mode: 'skip',
+      next_cursor: String(nextSkip),
+      last_sequence: maxNumberValue(matchedRows.map(tradeRowSequenceAny)),
+      last_block: maxNumberValue(matchedRows.map(tradeRowBlockAny)),
+      last_indexed_timestamp: matchedRows
+        .map((row) => normalizeTradeTimestamp(firstPresent(row?.updated_at_time, row?.created_at, row?.raw_action?.timestamp)))
+        .filter(Boolean)
+        .sort()
+        .pop() || null,
+      diagnostic: {
+        source: stream.source,
+        pair_id: null,
+        action_name: stream.action,
+        endpoint_path: endpointPath(url),
+        http_status: 200,
+        retry_count: 0,
+        row_count: matchedRows.length,
+        ingestion_path: 'hyperion_amm_swaps',
+        attempted_endpoints: attemptedSummary,
+      },
+      attempted_endpoints: attemptedSummary,
+      ingestion_path: 'hyperion_amm_swaps',
+    };
+  }
+  if (lastFailure) {
+    const temporary = isTemporaryTradeFailureType(lastFailure.failure_type);
+    const unsupported = lastFailure.failure_type === 'unsupported';
+    return {
+      rows: [],
+      temporaryFailure: temporary,
+      unsupported,
+      failed: !temporary && !unsupported,
+      diagnostic: { ...lastFailure, attempted_endpoints: attemptedSummary, ingestion_path: 'hyperion_amm_swaps' },
+      attempted_endpoints: attemptedSummary,
+      ingestion_path: 'hyperion_amm_swaps',
+    };
+  }
+  return {
+    rows: [],
+    noTradeRows: true,
+    diagnostic: {
+      source: stream.source,
+      pair_id: null,
+      action_name: stream.action,
+      endpoint_path: endpointPath(url),
+      http_status: 200,
+      retry_count: 0,
+      row_count: 0,
+      failure_type: 'no_amm_swaps_for_action_stream_in_bounded_history_scan',
+      ingestion_path: 'hyperion_amm_swaps',
+      attempted_endpoints: attemptedSummary,
+    },
+    attempted_endpoints: attemptedSummary,
+    ingestion_path: 'hyperion_amm_swaps',
+  };
+}
+
 async function upsertTrades(db, trades) {
   if (!trades.length) return 0;
   const uniqueTrades = [];
@@ -1571,7 +1997,7 @@ async function syncAlcorMarketTradeRows(env) {
       active_stream_pages_per_run: pagesPerRun,
       active_rows_per_market_limit: rowsPerMarket,
       budget_exhausted: false,
-      trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'],
+      trade_history_not_available_for_source: [],
       reference_trade_source: 'Hyperion/state-history alcordexmain buymatch/sellmatch -> marketMatches',
       guessed_public_alcor_http_source_of_truth: false,
       sample_trade_fetch_failure: isLegacyTradeFetchDiagnostic(previousData.sample_trade_fetch_failure) ? null : (previousData.sample_trade_fetch_failure || null),
@@ -1805,7 +2231,7 @@ async function syncAlcorMarketTradeRows(env) {
     active_stream_pages_per_run: pagesPerRun,
     active_rows_per_market_limit: rowsPerMarket,
     budget_exhausted: budgetExhausted,
-    trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'],
+    trade_history_not_available_for_source: [],
     reference_trade_source: 'Hyperion/state-history alcordexmain buymatch/sellmatch -> marketMatches',
     guessed_public_alcor_http_source_of_truth: false,
     sample_trade_fetch_failure: sampleTradeFetchFailure,
@@ -1855,13 +2281,324 @@ async function syncAlcorMarketTradeRows(env) {
     active_stream_pages_per_run: pagesPerRun,
     active_rows_per_market_limit: rowsPerMarket,
     budget_exhausted: budgetExhausted,
-    trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'],
+    trade_history_not_available_for_source: [],
     sample_trade_fetch_failure: sampleTradeFetchFailure,
     sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
     next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : (allStreamsComplete ? 'skip pagination exhausted; sequence-complete replay not claimed' : 'continue per-action Hyperion skip pagination'),
     no_fake_trades: true,
     plan: TRADE_INDEX_PLAN,
+  };
+}
+
+async function syncAmmSwapTradeRows(env) {
+  const startedAt = nowIso();
+  const state = await readSourceIndexState(env.DB, AMM_TRADE_INDEX_SOURCE);
+  const previousSnapshot = await readSnapshot(env.DB, AMM_TRADE_INDEX_SOURCE);
+  const previousData = previousSnapshot.data || {};
+  const actionStreams = defaultAmmSwapActionStreams();
+  const streamProgress = normalizeActionStreamProgressMap(previousData.action_streams, actionStreams);
+  const candidatePairCount = actionStreams.length;
+  const limit = Math.max(1, Math.min(tradeIndexPairLimit(env), actionStreams.length));
+  const rowsPerMarket = tradeRowsPerMarketLimit(env);
+  const pagesPerRun = tradeStreamPagesPerRun(env);
+  const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length);
+  if (!hyperionConfigured(env)) {
+    const totalHyperionNotConfiguredCount = (asNumber(previousData.hyperion_not_configured_count) || 0) + 1;
+    const cursor = state?.cursor || '';
+    const visibleError = 'hyperion_not_configured: configure WAXONEDGE_HYPERION_API with a real WAX Hyperion history/get_actions base or endpoint';
+    await upsertSourceIndexState(env.DB, AMM_TRADE_INDEX_SOURCE, {
+      sync_cycle_id: state?.sync_cycle_id || `amm-trades-${new Date().toISOString().slice(0, 10)}`,
+      cursor,
+      page_count: asNumber(state?.page_count) || 0,
+      row_count: candidatePairCount,
+      complete: 0,
+      truncated: 0,
+      status: 'skipped',
+      error: null,
+      started_at: startedAt,
+    });
+    const snapshot = {
+      source: AMM_TRADE_INDEX_SOURCE,
+      status: 'skipped',
+      candidate_pair_count: candidatePairCount,
+      action_stream_count: candidatePairCount,
+      attempted_stream_count: asNumber(previousData.attempted_stream_count ?? previousData.attempted_pair_count) || 0,
+      processed_stream_count: asNumber(previousData.processed_stream_count ?? previousData.processed_pair_count) || 0,
+      processed_pair_count: asNumber(previousData.processed_pair_count) || 0,
+      attempted_pair_count: asNumber(previousData.attempted_pair_count) || 0,
+      failed_pair_count: asNumber(previousData.failed_pair_count) || 0,
+      unsupported_pair_count: asNumber(previousData.unsupported_pair_count) || 0,
+      temporarily_failed_pair_count: asNumber(previousData.temporarily_failed_pair_count) || 0,
+      upstream_5xx_count: asNumber(previousData.upstream_5xx_count) || 0,
+      upstream_bad_payload_count: asNumber(previousData.upstream_bad_payload_count) || 0,
+      hyperion_not_configured: true,
+      hyperion_not_configured_count: totalHyperionNotConfiguredCount,
+      active_hyperion_endpoint: null,
+      hyperion_query_shape: HYPERION_AMM_SWAP_QUERY_SHAPE,
+      bounded_history_seed: false,
+      history_pagination_complete: false,
+      pagination_mode: 'none',
+      action_streams: streamProgress,
+      no_trade_rows_count: asNumber(previousData.no_trade_rows_count) || 0,
+      trade_rows_not_usable_count: asNumber(previousData.trade_rows_not_usable_count) || 0,
+      trade_rows_indexed: asNumber(previousData.trade_rows_indexed) || 0,
+      rows_written: asNumber(previousData.rows_written) || 0,
+      last_run_rows_fetched: 0,
+      last_run_rows_written: 0,
+      duplicate_rows_skipped: asNumber(previousData.duplicate_rows_skipped) || 0,
+      cursor,
+      active_pair_limit: limit,
+      active_stream_limit: limit,
+      active_stream_pages_per_run: pagesPerRun,
+      active_rows_per_market_limit: rowsPerMarket,
+      budget_exhausted: false,
+      configured_streams: AMM_SWAP_ACTION_STREAMS,
+      sample_trade_fetch_failure: previousData.sample_trade_fetch_failure || null,
+      sample_trade_fetch_success: previousData.sample_trade_fetch_success || null,
+      last_error: visibleError,
+      next_action: 'configure WAXONEDGE_HYPERION_API',
+      no_fake_trades: true,
+      plan: AMM_TRADE_INDEX_PLAN,
+    };
+    await writeSnapshot(env.DB, AMM_TRADE_INDEX_SOURCE, snapshot, nowIso());
+    await recordSyncRun(env.DB, AMM_TRADE_INDEX_SOURCE, 'skipped', startedAt, visibleError);
+    return { ok: true, ...snapshot };
+  }
+  const lastStreamIndex = Math.max(0, Math.floor(asNumber(previousData.last_stream_index) || 0));
+  const candidateRows = [];
+  for (let i = 0; i < actionStreams.length && candidateRows.length < streamRunLimit; i += 1) {
+    const index = (lastStreamIndex + i) % actionStreams.length;
+    const streamKey = actionStreams[index];
+    if (streamProgress[streamKey]?.complete === true) continue;
+    candidateRows.push(streamKey);
+  }
+  const allStreamsCompleteBeforeRun = actionStreams.every((streamKey) => streamProgress[streamKey]?.complete === true);
+  let attemptedPairCount = 0;
+  let processedPairCount = 0;
+  let failedPairCount = 0;
+  let unsupportedPairCount = 0;
+  let temporarilyFailedPairCount = 0;
+  let upstream5xxCount = 0;
+  let upstreamBadPayloadCount = 0;
+  let hyperionNotConfiguredCount = 0;
+  let noTradeRowsCount = 0;
+  let tradeRowsNotUsableCount = 0;
+  let rowsIndexed = 0;
+  let rowsWritten = 0;
+  let duplicateRowsSkipped = 0;
+  let lastError = null;
+  let sampleTradeFetchFailure = previousData.sample_trade_fetch_failure || null;
+  let sampleTradeFetchSuccess = previousData.sample_trade_fetch_success || null;
+  let budgetExhausted = false;
+  for (const streamKey of candidateRows) {
+    const stream = findAmmSwapActionStream(streamKey);
+    if (!stream) continue;
+    attemptedPairCount += 1;
+    const actionState = streamProgress[streamKey] || normalizeActionStreamProgress(streamKey);
+    const streamCursor = actionState.skip_cursor || 0;
+    try {
+      const result = await fetchAmmSwapStreamRows(env, stream, rowsPerMarket, streamCursor);
+      if (result.diagnostic?.row_count > 0) sampleTradeFetchSuccess = result.diagnostic;
+      if (result.diagnostic && result.diagnostic.failure_type) sampleTradeFetchFailure = result.diagnostic;
+      if (result.hyperionNotConfigured) {
+        hyperionNotConfiguredCount += 1;
+        actionState.status = 'skipped';
+        actionState.last_error = 'hyperion_not_configured';
+        actionState.updated_at = nowIso();
+        lastError = 'hyperion_not_configured: set WAXONEDGE_HYPERION_API to a WAX Hyperion endpoint that supports /v2/history/get_actions';
+        break;
+      }
+      if (result.budgetFailure) {
+        budgetExhausted = true;
+        actionState.status = 'budget_limited';
+        actionState.last_error = result.diagnostic?.response_body_snippet || 'AMM trade row fetch budget exhausted';
+        actionState.updated_at = nowIso();
+        lastError = result.diagnostic?.response_body_snippet || 'AMM trade row fetch budget exhausted';
+        break;
+      }
+      if (result.temporaryFailure) {
+        temporarilyFailedPairCount += 1;
+        if (result.diagnostic?.failure_type === 'upstream_5xx') upstream5xxCount += 1;
+        actionState.status = 'partial';
+        actionState.last_error = result.diagnostic?.failure_type || 'temporary failure';
+        actionState.updated_at = nowIso();
+        lastError = `${result.diagnostic?.http_status || 'upstream'} ${result.diagnostic?.failure_type || 'temporary failure'}`;
+        continue;
+      }
+      if (result.failed) {
+        failedPairCount += 1;
+        if (result.invalidPayload || result.diagnostic?.failure_type === 'invalid_payload') upstreamBadPayloadCount += 1;
+        actionState.status = 'failed';
+        actionState.last_error = result.diagnostic?.failure_type || 'failed';
+        actionState.updated_at = nowIso();
+        lastError = `${result.diagnostic?.http_status || 'fetch'} ${result.diagnostic?.failure_type || 'failed'}`;
+        continue;
+      }
+      if (result.unsupported) {
+        unsupportedPairCount += 1;
+        actionState.status = 'unsupported';
+        actionState.last_error = `trade_history_endpoint_unavailable: ${stream.source} ${stream.action}`;
+        actionState.updated_at = nowIso();
+        lastError = `trade_history_endpoint_unavailable: ${stream.source} ${stream.action}`;
+        continue;
+      }
+      if (result.noTradeRows || !result.rows.length) {
+        noTradeRowsCount += 1;
+        actionState.status = 'complete';
+        actionState.complete = true;
+        actionState.page_count += 1;
+        actionState.last_error = result.diagnostic?.failure_type || 'no_trade_rows';
+        actionState.updated_at = nowIso();
+        lastError = `${result.diagnostic?.failure_type || 'no_trade_rows'}: ${stream.source} ${stream.action}`;
+        continue;
+      }
+      const trades = result.rows
+        .map((row) => normalizeAmmSwapTradeRow(row, stream))
+        .filter(Boolean);
+      if (!trades.length) {
+        tradeRowsNotUsableCount += 1;
+        actionState.status = 'partial';
+        actionState.page_count += 1;
+        actionState.last_error = `trade_rows_not_usable: ${stream.source} ${stream.action}`;
+        actionState.updated_at = nowIso();
+        lastError = actionState.last_error;
+        continue;
+      }
+      const written = await upsertTrades(env.DB, trades);
+      rowsIndexed += trades.length;
+      rowsWritten += written;
+      duplicateRowsSkipped += Math.max(0, trades.length - written);
+      actionState.status = result.rows.length < rowsPerMarket ? 'complete' : 'partial';
+      actionState.pagination_mode = result.pagination_mode || 'skip';
+      const parsedNextCursor = asNumber(result.next_cursor);
+      const nextSkipCursor = parsedNextCursor ?? (streamCursor + result.rows.length);
+      actionState.skip_cursor = Math.max(actionState.skip_cursor, Math.floor(nextSkipCursor));
+      actionState.last_sequence = result.last_sequence ?? actionState.last_sequence;
+      actionState.last_block = result.last_block ?? actionState.last_block;
+      actionState.last_indexed_timestamp = result.last_indexed_timestamp || actionState.last_indexed_timestamp;
+      actionState.page_count += 1;
+      actionState.row_count += result.rows.length;
+      actionState.rows_written += written;
+      actionState.duplicate_rows_skipped += Math.max(0, trades.length - written);
+      actionState.complete = result.rows.length < rowsPerMarket;
+      actionState.last_error = null;
+      actionState.updated_at = nowIso();
+      sampleTradeFetchFailure = null;
+      processedPairCount += 1;
+    } catch (error) {
+      if (isSubrequestBudgetError(error)) {
+        budgetExhausted = true;
+        actionState.status = 'budget_limited';
+        actionState.last_error = error?.message || String(error);
+        actionState.updated_at = nowIso();
+        lastError = error?.message || String(error);
+        break;
+      }
+      failedPairCount += 1;
+      actionState.status = 'failed';
+      actionState.last_error = error?.message || String(error);
+      actionState.updated_at = nowIso();
+      lastError = error?.message || String(error);
+    }
+  }
+  const hyperionNotConfigured = hyperionNotConfiguredCount > 0;
+  const nextCursor = '';
+  const complete = false;
+  const nextStreamIndex = candidateRows.length
+    ? (actionStreams.indexOf(candidateRows[candidateRows.length - 1]) + 1) % actionStreams.length
+    : lastStreamIndex;
+  const totalAttemptedPairCount = (asNumber(previousData.attempted_pair_count) || 0) + attemptedPairCount;
+  const totalProcessedPairCount = (asNumber(previousData.processed_pair_count) || 0) + processedPairCount;
+  const totalFailedPairCount = (asNumber(previousData.failed_pair_count) || 0) + failedPairCount;
+  const totalUnsupportedPairCount = (asNumber(previousData.unsupported_pair_count) || 0) + unsupportedPairCount;
+  const totalTemporarilyFailedPairCount = (asNumber(previousData.temporarily_failed_pair_count) || 0) + temporarilyFailedPairCount;
+  const totalUpstream5xxCount = (asNumber(previousData.upstream_5xx_count) || 0) + upstream5xxCount;
+  const totalUpstreamBadPayloadCount = (asNumber(previousData.upstream_bad_payload_count) || 0) + upstreamBadPayloadCount;
+  const totalHyperionNotConfiguredCount = (asNumber(previousData.hyperion_not_configured_count) || 0) + hyperionNotConfiguredCount;
+  const totalNoTradeRowsCount = (asNumber(previousData.no_trade_rows_count) || 0) + noTradeRowsCount;
+  const totalTradeRowsNotUsableCount = (asNumber(previousData.trade_rows_not_usable_count) || 0) + tradeRowsNotUsableCount;
+  const totalRowsIndexed = (asNumber(previousData.trade_rows_indexed) || 0) + rowsWritten;
+  const totalRowsWritten = (asNumber(previousData.rows_written) || 0) + rowsWritten;
+  const totalDuplicateRowsSkipped = (asNumber(previousData.duplicate_rows_skipped) || 0) + duplicateRowsSkipped;
+  const lastStreamCursor = Math.max(0, ...actionStreams.map((streamKey) => asNumber(streamProgress[streamKey]?.skip_cursor) || 0));
+  const lastStreamSequence = maxNumberValue(actionStreams.map((streamKey) => streamProgress[streamKey]?.last_sequence));
+  const lastStreamBlock = maxNumberValue(actionStreams.map((streamKey) => streamProgress[streamKey]?.last_block));
+  const allStreamsComplete = actionStreams.every((streamKey) => streamProgress[streamKey]?.complete === true);
+  const hardFailure = failedPairCount > 0 && processedPairCount === 0 && unsupportedPairCount === 0 && !budgetExhausted;
+  const status = hyperionNotConfigured
+    ? 'skipped'
+    : (hardFailure
+    ? 'failed'
+    : (budgetExhausted
+    ? 'budget_limited'
+    : (attemptedPairCount > 0 || allStreamsCompleteBeforeRun || allStreamsComplete ? 'partial' : 'planned')));
+  const visibleError = status === 'success' ? null : (lastError || (status === 'planned' ? AMM_TRADE_INDEX_PLAN : null));
+  const sourceStateError = status === 'failed' ? visibleError : null;
+  const sourceStateTruncated = status === 'failed' ? 1 : 0;
+  await upsertSourceIndexState(env.DB, AMM_TRADE_INDEX_SOURCE, {
+    sync_cycle_id: `amm-trades-${new Date().toISOString().slice(0, 10)}`,
+    cursor: nextCursor,
+    page_count: attemptedPairCount,
+    row_count: candidatePairCount,
+    complete: complete ? 1 : 0,
+    truncated: sourceStateTruncated,
+    status,
+    error: sourceStateError,
+    started_at: startedAt,
+  });
+  const snapshot = {
+    source: AMM_TRADE_INDEX_SOURCE,
+    status,
+    candidate_pair_count: candidatePairCount,
+    action_stream_count: candidatePairCount,
+    attempted_stream_count: totalAttemptedPairCount,
+    processed_stream_count: totalProcessedPairCount,
+    processed_pair_count: totalProcessedPairCount,
+    attempted_pair_count: totalAttemptedPairCount,
+    failed_pair_count: totalFailedPairCount,
+    unsupported_pair_count: totalUnsupportedPairCount,
+    temporarily_failed_pair_count: totalTemporarilyFailedPairCount,
+    upstream_5xx_count: totalUpstream5xxCount,
+    upstream_bad_payload_count: totalUpstreamBadPayloadCount,
+    hyperion_not_configured: hyperionNotConfigured || !hyperionConfigured(env),
+    hyperion_not_configured_count: totalHyperionNotConfiguredCount,
+    active_hyperion_endpoint: hyperionHistoryActionsEndpoint(env) || null,
+    hyperion_query_shape: HYPERION_AMM_SWAP_QUERY_SHAPE,
+    bounded_history_seed: false,
+    history_pagination_complete: false,
+    pagination_mode: 'skip',
+    action_streams: streamProgress,
+    last_stream_cursor: lastStreamCursor,
+    last_stream_sequence: lastStreamSequence,
+    last_stream_block: lastStreamBlock,
+    last_stream_index: nextStreamIndex,
+    no_trade_rows_count: totalNoTradeRowsCount,
+    trade_rows_not_usable_count: totalTradeRowsNotUsableCount,
+    trade_rows_indexed: totalRowsIndexed,
+    rows_written: totalRowsWritten,
+    last_run_rows_fetched: rowsIndexed,
+    last_run_rows_written: rowsWritten,
+    duplicate_rows_skipped: totalDuplicateRowsSkipped,
+    cursor: nextCursor,
+    active_pair_limit: limit,
+    active_stream_limit: limit,
+    active_stream_pages_per_run: pagesPerRun,
+    active_rows_per_market_limit: rowsPerMarket,
+    budget_exhausted: budgetExhausted,
+    configured_streams: AMM_SWAP_ACTION_STREAMS,
+    sample_trade_fetch_failure: sampleTradeFetchFailure,
+    sample_trade_fetch_success: sampleTradeFetchSuccess,
+    last_error: visibleError,
+    next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : (allStreamsComplete ? 'skip pagination exhausted; sequence-complete replay not claimed' : 'continue per-source AMM Hyperion skip pagination'),
+    no_fake_trades: true,
+    plan: AMM_TRADE_INDEX_PLAN,
+  };
+  await writeSnapshot(env.DB, AMM_TRADE_INDEX_SOURCE, snapshot, nowIso());
+  await recordSyncRun(env.DB, AMM_TRADE_INDEX_SOURCE, status, startedAt, visibleError);
+  return {
+    ok: status !== 'failed',
+    ...snapshot,
   };
 }
 
@@ -3170,6 +3907,8 @@ async function getIndexerHealth(db, env = {}) {
     candleBackfillSnapshot,
     tradeIndexState,
     tradeIndexSnapshot,
+    ammTradeIndexState,
+    ammTradeIndexSnapshot,
   ] = await Promise.all([
     countScalar(db, `SELECT COUNT(*) AS count FROM waxonedge_tokens`),
     countScalar(db, `${pairTokenCte} SELECT COUNT(*) AS count FROM pair_tokens`),
@@ -3194,6 +3933,8 @@ async function getIndexerHealth(db, env = {}) {
     readSnapshot(db, CANDLE_BACKFILL_SOURCE),
     readSourceIndexState(db, ALCOR_TRADE_INDEX_SOURCE),
     readSnapshot(db, ALCOR_TRADE_INDEX_SOURCE),
+    readSourceIndexState(db, AMM_TRADE_INDEX_SOURCE),
+    readSnapshot(db, AMM_TRADE_INDEX_SOURCE),
   ]);
   const staleSyncRows = await Promise.all(sourceStates
     .filter(sourceStateStale)
@@ -3400,7 +4141,7 @@ async function getIndexerHealth(db, env = {}) {
       active_stream_limit: asNumber(tradeIndexSnapshot.data?.active_stream_limit) || tradeIndexPairLimit(env),
       active_stream_pages_per_run: asNumber(tradeIndexSnapshot.data?.active_stream_pages_per_run) || tradeStreamPagesPerRun(env),
       active_rows_per_market_limit: asNumber(tradeIndexSnapshot.data?.active_rows_per_market_limit) || tradeRowsPerMarketLimit(env),
-      trade_history_not_available_for_source: tradeIndexSnapshot.data?.trade_history_not_available_for_source || ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'],
+      trade_history_not_available_for_source: tradeIndexSnapshot.data?.trade_history_not_available_for_source || [],
       reference_trade_source: tradeIndexSnapshot.data?.reference_trade_source || 'Wapaca backend indexes alcormarket marketMatches from Hyperion/state-history rows, not a canonical public Alcor HTTP trade endpoint.',
       guessed_public_alcor_http_source_of_truth: tradeIndexSnapshot.data?.guessed_public_alcor_http_source_of_truth === true,
       sample_trade_fetch_failure: tradeIndexSnapshot.data?.sample_trade_fetch_failure || null,
@@ -3410,6 +4151,52 @@ async function getIndexerHealth(db, env = {}) {
       last_error: tradeIndexSnapshot.data?.last_error || tradeIndexState?.error || null,
       next_action: tradeIndexSnapshot.data?.next_action || (!hyperionConfigured(env) ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : 'continue from cursor'),
       plan: TRADE_INDEX_PLAN,
+      no_fake_trades: true,
+    },
+    amm_trade_indexing: {
+      source: AMM_TRADE_INDEX_SOURCE,
+      status: ammTradeIndexState?.status || 'not_started',
+      candidate_pair_count: asNumber(ammTradeIndexSnapshot.data?.candidate_pair_count) || asNumber(ammTradeIndexState?.row_count) || 0,
+      action_stream_count: asNumber(ammTradeIndexSnapshot.data?.action_stream_count) || AMM_SWAP_ACTION_STREAMS.length,
+      attempted_stream_count: asNumber(ammTradeIndexSnapshot.data?.attempted_stream_count) || asNumber(ammTradeIndexSnapshot.data?.attempted_pair_count) || 0,
+      processed_stream_count: asNumber(ammTradeIndexSnapshot.data?.processed_stream_count) || asNumber(ammTradeIndexSnapshot.data?.processed_pair_count) || asNumber(ammTradeIndexState?.page_count) || 0,
+      processed_pair_count: asNumber(ammTradeIndexSnapshot.data?.processed_pair_count) || asNumber(ammTradeIndexState?.page_count) || 0,
+      attempted_pair_count: asNumber(ammTradeIndexSnapshot.data?.attempted_pair_count) || 0,
+      failed_pair_count: asNumber(ammTradeIndexSnapshot.data?.failed_pair_count) || 0,
+      unsupported_pair_count: asNumber(ammTradeIndexSnapshot.data?.unsupported_pair_count) || 0,
+      temporarily_failed_pair_count: asNumber(ammTradeIndexSnapshot.data?.temporarily_failed_pair_count) || 0,
+      upstream_5xx_count: asNumber(ammTradeIndexSnapshot.data?.upstream_5xx_count) || 0,
+      upstream_bad_payload_count: asNumber(ammTradeIndexSnapshot.data?.upstream_bad_payload_count) || 0,
+      hyperion_not_configured: ammTradeIndexSnapshot.data?.hyperion_not_configured === true || !hyperionConfigured(env),
+      hyperion_not_configured_count: asNumber(ammTradeIndexSnapshot.data?.hyperion_not_configured_count) || 0,
+      active_hyperion_endpoint: hyperionHistoryActionsEndpoint(env) || ammTradeIndexSnapshot.data?.active_hyperion_endpoint || null,
+      hyperion_query_shape: ammTradeIndexSnapshot.data?.hyperion_query_shape || HYPERION_AMM_SWAP_QUERY_SHAPE,
+      bounded_history_seed: ammTradeIndexSnapshot.data?.bounded_history_seed === true,
+      history_pagination_complete: ammTradeIndexSnapshot.data?.history_pagination_complete === true,
+      pagination_mode: ammTradeIndexSnapshot.data?.pagination_mode || 'skip',
+      configured_streams: ammTradeIndexSnapshot.data?.configured_streams || AMM_SWAP_ACTION_STREAMS,
+      action_streams: ammTradeIndexSnapshot.data?.action_streams || normalizeActionStreamProgressMap({}, defaultAmmSwapActionStreams()),
+      last_stream_cursor: asNumber(ammTradeIndexSnapshot.data?.last_stream_cursor) || 0,
+      last_stream_sequence: ammTradeIndexSnapshot.data?.last_stream_sequence ?? null,
+      last_stream_block: ammTradeIndexSnapshot.data?.last_stream_block ?? null,
+      no_trade_rows_count: asNumber(ammTradeIndexSnapshot.data?.no_trade_rows_count) || 0,
+      trade_rows_not_usable_count: asNumber(ammTradeIndexSnapshot.data?.trade_rows_not_usable_count) || 0,
+      trade_rows_indexed: asNumber(ammTradeIndexSnapshot.data?.trade_rows_indexed) || 0,
+      rows_written: asNumber(ammTradeIndexSnapshot.data?.rows_written) || 0,
+      last_run_rows_fetched: asNumber(ammTradeIndexSnapshot.data?.last_run_rows_fetched) || 0,
+      last_run_rows_written: asNumber(ammTradeIndexSnapshot.data?.last_run_rows_written) || 0,
+      duplicate_rows_skipped: asNumber(ammTradeIndexSnapshot.data?.duplicate_rows_skipped) || 0,
+      active_pair_limit: asNumber(ammTradeIndexSnapshot.data?.active_pair_limit) || tradeIndexPairLimit(env),
+      active_stream_limit: asNumber(ammTradeIndexSnapshot.data?.active_stream_limit) || tradeIndexPairLimit(env),
+      active_stream_pages_per_run: asNumber(ammTradeIndexSnapshot.data?.active_stream_pages_per_run) || tradeStreamPagesPerRun(env),
+      active_rows_per_market_limit: asNumber(ammTradeIndexSnapshot.data?.active_rows_per_market_limit) || tradeRowsPerMarketLimit(env),
+      sample_trade_fetch_failure: ammTradeIndexSnapshot.data?.sample_trade_fetch_failure || null,
+      sample_trade_fetch_success: ammTradeIndexSnapshot.data?.sample_trade_fetch_success || null,
+      budget_exhausted: !!ammTradeIndexSnapshot.data?.budget_exhausted,
+      cursor: ammTradeIndexState?.cursor || ammTradeIndexSnapshot.data?.cursor || '',
+      last_error: ammTradeIndexSnapshot.data?.last_error || ammTradeIndexState?.error || null,
+      next_action: ammTradeIndexSnapshot.data?.next_action || (!hyperionConfigured(env) ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : 'continue AMM action streams'),
+      plan: AMM_TRADE_INDEX_PLAN,
       no_fake_trades: true,
     },
     candle_backfill: {
@@ -3667,19 +4454,22 @@ async function writeChartCandles(db, source, pairId, interval, candles) {
 
 async function planWaxOnEdgeCandleBackfill(env) {
   const startedAt = nowIso();
+  const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES];
+  const candleTradeSourcePlaceholders = candleTradeSources.map(() => '?').join(',');
   const candidatePairCount = await countScalar(env.DB,
     `SELECT COUNT(*) AS count
      FROM waxonedge_pairs
-     WHERE source = 'alcor'
+     WHERE source IN (${candleTradeSourcePlaceholders})
        AND pair_id IS NOT NULL
-       AND pair_id != ''`);
+       AND pair_id != ''`,
+    candleTradeSources);
   const state = await readSourceIndexState(env.DB, CANDLE_BACKFILL_SOURCE);
   const previousSnapshot = await readSnapshot(env.DB, CANDLE_BACKFILL_SOURCE);
   const previousData = previousSnapshot.data || {};
   const cursorOffset = clampInteger(state?.cursor || 0, 0, 0, Number.MAX_SAFE_INTEGER);
   const indexedAlcorTradeRow = await env.DB.prepare(
-    `SELECT 1 FROM waxonedge_trades WHERE source = 'alcor' LIMIT 1`
-  ).first().catch(() => null);
+    `SELECT 1 FROM waxonedge_trades WHERE source IN (${candleTradeSourcePlaceholders}) LIMIT 1`
+  ).bind(...candleTradeSources).first().catch(() => null);
   if (!indexedAlcorTradeRow) {
     const existingCandleCount = await countScalar(env.DB,
       `SELECT COUNT(*) AS count FROM waxonedge_chart_candles WHERE interval = '1D'`);
@@ -3725,12 +4515,12 @@ async function planWaxOnEdgeCandleBackfill(env) {
   const candidates = await env.DB.prepare(
     `SELECT source, pair_id
      FROM waxonedge_pairs
-     WHERE source = 'alcor'
+     WHERE source IN (${candleTradeSourcePlaceholders})
        AND pair_id IS NOT NULL
        AND pair_id != ''
-     ORDER BY CAST(pair_id AS NUMERIC), pair_id
+     ORDER BY source, CAST(pair_id AS NUMERIC), pair_id
      LIMIT ? OFFSET ?`
-  ).bind(candleBackfillPairLimit(env), cursorOffset).all().catch(() => ({ results: [] }));
+  ).bind(...candleTradeSources, candleBackfillPairLimit(env), cursorOffset).all().catch(() => ({ results: [] }));
   const candidateRows = candidates.results || [];
   let attemptedPairCount = 0;
   let processedPairCount = 0;
@@ -4054,6 +4844,11 @@ export const __waxonedgeTestHooks = {
   fetchAlcorMarketMatchStreamRows,
   fetchAlcorMarketMatchHistoryRows,
   parseAlcorMarketMatchAction,
+  defaultAmmSwapActionStreams,
+  ammSwapStreamUrl,
+  parseAmmSwapAction,
+  normalizeAmmSwapTradeRow,
+  fetchAmmSwapStreamRows,
   normalizeActionStreamProgressMap,
 };
 
@@ -4069,7 +4864,15 @@ export async function runWaxOnEdgeCandleBackfillPlan(env) {
 
 export async function runWaxOnEdgeTradeBackfill(env) {
   if (!env.DB) return { ok: false, error: 'DB binding is not configured' };
-  return syncAlcorMarketTradeRows(env);
+  const [alcorTradeBackfill, ammTradeBackfill] = await Promise.all([
+    syncAlcorMarketTradeRows(env),
+    syncAmmSwapTradeRows(env),
+  ]);
+  return {
+    ok: alcorTradeBackfill.ok && ammTradeBackfill.ok,
+    alcorTradeBackfill,
+    ammTradeBackfill,
+  };
 }
 
 export async function runWaxOnEdgeScheduledSync(env, cron = '') {
@@ -4084,7 +4887,7 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
     return { ok: candleBackfill.ok, candle_backfill: true, free_safe_mode: freeSafeMode, candleBackfill };
   }
   if (cron === 'waxonedge-trade-backfill') {
-    const tradeBackfill = await syncAlcorMarketTradeRows(env);
+    const tradeBackfill = await runWaxOnEdgeTradeBackfill(env);
     return { ok: tradeBackfill.ok, trade_backfill: true, free_safe_mode: freeSafeMode, tradeBackfill };
   }
   const tasks = [];
@@ -4123,7 +4926,7 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
         syncCoreDexAdapters(env, syncCycleId),
         syncNeftyAbi(env),
       ]);
-      const tradeBackfill = await syncAlcorMarketTradeRows(env);
+      const tradeBackfill = await runWaxOnEdgeTradeBackfill(env);
       const aggregates = await aggregateTokenAnalytics(env);
       const candleBackfill = await planWaxOnEdgeCandleBackfill(env);
       return { ok: alcor.ok && core.ok && nefty.ok && tradeBackfill.ok && aggregates.ok && candleBackfill.ok, syncCycleId, alcor, core, nefty, tradeBackfill, aggregates, candleBackfill };

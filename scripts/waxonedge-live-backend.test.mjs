@@ -420,8 +420,9 @@ ok('candle_backfill does not remain planned forever after scheduled run',
   route.includes("attemptedPairCount > 0 ? 'partial'") &&
   route.includes("status === 'planned' ? CANDLE_BACKFILL_PLAN : null") &&
   route.includes("const candleBackfill = await planWaxOnEdgeCandleBackfill(env);"));
-ok('candle backfill waits for indexed Alcor trades without fake attempted progress',
-  route.includes("SELECT 1 FROM waxonedge_trades WHERE source = 'alcor' LIMIT 1") &&
+ok('candle backfill waits for indexed trade rows without fake attempted progress',
+  route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES]") &&
+  route.includes('SELECT 1 FROM waxonedge_trades WHERE source IN') &&
   !route.includes("SELECT COUNT(*) AS count FROM waxonedge_trades WHERE source = 'alcor'") &&
   route.includes('if (!indexedAlcorTradeRow)') &&
   route.includes("status: 'skipped'") &&
@@ -530,8 +531,103 @@ ok('Alcor trade-row indexer upserts real rows and exposes source diagnostics',
   route.includes('ON CONFLICT(source, trade_id) DO UPDATE SET') &&
   route.includes("source: 'alcor'") &&
   route.includes("reference_src: 'alcormarket'") &&
-  route.includes("trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box']") &&
+  route.includes('trade_history_not_available_for_source: []') &&
   route.includes('no_fake_trades: true'));
+ok('AMM stream config includes verified WaxOnEdge swap action sources',
+  route.includes('const AMM_TRADE_INDEX_SOURCE =') &&
+  route.includes('const AMM_SWAP_ACTION_STREAMS = Object.freeze') &&
+  route.includes("source: 'swap.alcor'") &&
+  route.includes("referenceSource: 'alcorv2'") &&
+  route.includes("account: 'swap.alcor'") &&
+  route.includes("action: 'logswap'") &&
+  route.includes("source: 'swap.taco'") &&
+  route.includes("account: 'swap.taco'") &&
+  route.includes("action: 'exchangelog'") &&
+  route.includes("source: 'swap.box'") &&
+  route.includes("account: 'swap.box'") &&
+  route.includes("action: 'swaplog'") &&
+  route.includes("source: 'swap.nefty'") &&
+  route.includes("account: 'swap.nefty'") &&
+  route.includes("action: 'logswap'") &&
+  !route.includes("source: 'swap.adex'") &&
+  !route.includes("source: 'dapp.fusion'"));
+ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filters',
+  route.includes('function ammSwapStreamUrl') &&
+  route.includes('`account=${encodeURIComponent(stream.account)}`') &&
+  route.includes('`act.name=${encodeURIComponent(stream.action)}`') &&
+  route.includes("'sort=desc'") &&
+  route.includes("'simple=true'") &&
+  route.includes('if (cursor) params.push(`skip=${encodeURIComponent(String(cursor))}`)') &&
+  !route.match(/function ammSwapStreamUrl[\s\S]*pair_id=/) &&
+  !route.match(/function ammSwapStreamUrl[\s\S]*market_id=/));
+{
+  const stream = { source: 'swap.taco', referenceSource: 'taco', account: 'swap.taco', action: 'exchangelog', parser: 'swap-v2-taco' };
+  const parsed = __waxonedgeTestHooks.parseAmmSwapAction({
+    trx_id: 'ammtrx',
+    global_sequence: '111',
+    block_num: 222,
+    '@timestamp': '2026-06-14T01:02:03.000Z',
+    act: {
+      name: 'exchangelog',
+      data: {
+        id: 'WAXFOO',
+        maker: 'swapper',
+        quantity_in: '2.00000000 WAX',
+        quantity_out: '10.0000 FOO',
+        pool1: '100.00000000 WAX',
+        pool2: '500.0000 FOO',
+      },
+    },
+  }, stream);
+  const normalized = __waxonedgeTestHooks.normalizeAmmSwapTradeRow(parsed, stream);
+  ok('AMM logswap-style rows normalize into waxonedge_trades with correct source',
+    parsed &&
+    parsed.source === 'swap.taco' &&
+    parsed.action_name === 'exchangelog' &&
+    parsed.pair_id === 'WAXFOO' &&
+    parsed.amount_in === 2 &&
+    parsed.amount_out === 10 &&
+    normalized &&
+    normalized.source === 'swap.taco' &&
+    normalized.trade_id === 'swap.taco:exchangelog:WAXFOO:111' &&
+    normalized.pair_id === 'WAXFOO' &&
+    normalized.symbol === 'WAX' &&
+    normalized.side === 'swap' &&
+    normalized.price === '0.2' &&
+    normalized.volume === '2' &&
+    normalized.traded_at === '2026-06-14T01:02:03.000Z' &&
+    JSON.parse(normalized.raw_json).reference_src === 'taco');
+}
+{
+  const stream = { source: 'swap.box', referenceSource: 'defibox', account: 'swap.box', action: 'swaplog', parser: 'swap-v2-defibox' };
+  const parsed = __waxonedgeTestHooks.parseAmmSwapAction({
+    act: { name: 'swaplog', data: { pair_id: '12', owner: 'swapper', quantity_in: '0.0000 WAX', quantity_out: '1.0000 BOX', reserve0: '1.0000 WAX', reserve1: '2.0000 BOX' } },
+  }, stream);
+  ok('unparseable AMM rows are skipped instead of faked',
+    parsed &&
+    parsed.amount_in === 0 &&
+    __waxonedgeTestHooks.normalizeAmmSwapTradeRow(parsed, stream) === null);
+}
+ok('AMM trade indexer exposes progress and duplicate-safe row accounting',
+  route.includes('async function syncAmmSwapTradeRows') &&
+  route.includes('fetchAmmSwapStreamRows(env, stream, rowsPerMarket, streamCursor)') &&
+  route.includes('normalizeAmmSwapTradeRow(row, stream)') &&
+  route.includes('const written = await upsertTrades(env.DB, trades)') &&
+  route.includes('duplicateRowsSkipped += Math.max(0, trades.length - written)') &&
+  route.includes('amm_trade_indexing: {') &&
+  route.includes('configured_streams: ammTradeIndexSnapshot.data?.configured_streams || AMM_SWAP_ACTION_STREAMS') &&
+  route.includes('trade_rows_not_usable_count') &&
+  route.includes('no_fake_trades: true'));
+ok('candle backfill can build from AMM waxonedge_trades rows',
+  route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES]") &&
+  route.includes('SELECT 1 FROM waxonedge_trades WHERE source IN') &&
+  route.includes('FROM waxonedge_pairs') &&
+  route.includes('WHERE source IN') &&
+  route.includes("reason: source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
+  __waxonedgeTestHooks.buildDailyCandlesFromTradeRows([
+    { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T00:00:00.000Z', price: '0.2', volume: '2' },
+    { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T01:00:00.000Z', price: '0.25', volume: '3' },
+  ], { source: 'swap.taco' })[0].close === '0.25');
 ok('Alcor marketMatches pagination reports per-action skip progress without full-history completion claims',
   route.includes('function normalizeActionStreamProgressMap') &&
   route.includes('const streamProgress = normalizeActionStreamProgressMap(previousData.action_streams, actionStreams)') &&
@@ -978,8 +1074,9 @@ ok('Wapaca reference path for alcormarket trades is documented honestly',
 ok('scheduled sync can index trade rows before candle backfill',
   route.includes("cron === 'waxonedge-trade-backfill'") &&
   route.includes('runWaxOnEdgeTradeBackfill') &&
-  route.includes('const tradeBackfill = await syncAlcorMarketTradeRows(env)') &&
-  route.includes('const tradeBackfill = await syncAlcorMarketTradeRows(env);\n      const aggregates = await aggregateTokenAnalytics(env);\n      const candleBackfill = await planWaxOnEdgeCandleBackfill(env)'));
+  route.includes('syncAlcorMarketTradeRows(env)') &&
+  route.includes('syncAmmSwapTradeRows(env)') &&
+  route.includes('const tradeBackfill = await runWaxOnEdgeTradeBackfill(env);\n      const aggregates = await aggregateTokenAnalytics(env);\n      const candleBackfill = await planWaxOnEdgeCandleBackfill(env)'));
 ok('candle endpoint examples expose selected chart source and pair id',
   __waxonedgeTestHooks.candleUrlExample('alcor', '29') === '/api/waxonedge/candles?duration=1d&src=alcor&pair_id=29' &&
   route.includes('chart_src') &&
