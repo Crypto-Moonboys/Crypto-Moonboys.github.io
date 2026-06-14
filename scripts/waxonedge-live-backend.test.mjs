@@ -53,7 +53,12 @@ const frontendSources = read('js/waxonedge-sources.js');
 const html = read('waxonedge.html');
 const tokenHtml = read('analytics/token/index.html');
 const { __waxonedgeTestHooks } = await import(pathToFileURL(path.join(ROOT, 'workers/moonboys-api/routes/waxonedge.js')).href);
+const liveIndexer = await import(pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/src/index.mjs')).href);
 const referenceAudit = read('docs/waxonedge-real-reference-audit.md');
+const liveIndexerPackage = JSON.parse(read('services/waxonedge-live-indexer/package.json'));
+const liveIndexerReadme = read('services/waxonedge-live-indexer/README.md');
+const liveIndexerEnvExample = read('services/waxonedge-live-indexer/.env.example');
+const liveIndexerSource = read('services/waxonedge-live-indexer/src/index.mjs');
 
 for (const table of [
   'waxonedge_sync_runs',
@@ -167,6 +172,102 @@ ok('live stream route is an honest unavailable contract until VPS SSE exists',
   route.includes('fallback: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT') &&
   route.includes('uses_fake_live_data: false') &&
   route.includes("transport: 'snapshot-polling-contract'"));
+ok('VPS live indexer service package exists',
+  exists('services/waxonedge-live-indexer/package.json') &&
+  exists('services/waxonedge-live-indexer/src/index.mjs') &&
+  exists('services/waxonedge-live-indexer/.env.example') &&
+  exists('services/waxonedge-live-indexer/README.md') &&
+  liveIndexerPackage.name === '@crypto-moonboys/waxonedge-live-indexer' &&
+  liveIndexerPackage.type === 'module' &&
+  liveIndexerPackage.scripts.start === 'node src/index.mjs');
+ok('VPS live indexer documents env-only config and shared secret header',
+  liveIndexerEnvExample.includes('WAXONEDGE_LIVE_PORT=8789') &&
+  liveIndexerEnvExample.includes('WAXONEDGE_HYPERION_API=https://wax.eosusa.io/v2') &&
+  liveIndexerEnvExample.includes('WAXONEDGE_LIVE_SHARED_SECRET=') &&
+  liveIndexerReadme.includes('x-waxonedge-live-secret') &&
+  liveIndexerReadme.includes('Do not commit secrets.'));
+ok('VPS live indexer registers only verified trade streams',
+  liveIndexer.VERIFIED_TRADE_STREAMS.length === 6 &&
+  liveIndexer.VERIFIED_TRADE_STREAMS.some((stream) => stream.account === 'alcordexmain' && stream.action === 'buymatch') &&
+  liveIndexer.VERIFIED_TRADE_STREAMS.some((stream) => stream.account === 'alcordexmain' && stream.action === 'sellmatch') &&
+  liveIndexer.VERIFIED_TRADE_STREAMS.some((stream) => stream.account === 'swap.alcor' && stream.action === 'logswap') &&
+  liveIndexer.VERIFIED_TRADE_STREAMS.some((stream) => stream.account === 'swap.taco' && stream.action === 'exchangelog') &&
+  liveIndexer.VERIFIED_TRADE_STREAMS.some((stream) => stream.account === 'swap.box' && stream.action === 'swaplog') &&
+  liveIndexer.VERIFIED_TRADE_STREAMS.some((stream) => stream.account === 'swap.nefty' && stream.action === 'logswap') &&
+  !liveIndexerSource.includes("account: 'swap.adex'") &&
+  !liveIndexerSource.includes("account: 'dapp.fusion'"));
+{
+  const state = liveIndexer.createState(liveIndexer.loadConfig({
+    WAXONEDGE_LIVE_PORT: '8790',
+    WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'secret-value',
+    WAXONEDGE_LIVE_ENABLE_STREAM: 'false',
+  }));
+  const health = liveIndexer.healthPayload(state);
+  const snapshot = liveIndexer.snapshotPayload(state);
+  ok('VPS live indexer /health contract is honest while not connected',
+    health.ok === false &&
+    health.status === 'not_connected' &&
+    health.connected === false &&
+    health.config.hyperion_configured === true &&
+    health.config.shared_secret_configured === true &&
+    health.config.secret_header === 'x-waxonedge-live-secret' &&
+    health.uses_fake_live_data === false &&
+    health.browser_hyperion_fetch === false &&
+    health.emits_fake_token_updates === false);
+  ok('VPS live indexer /snapshot contract matches Worker live snapshot shape without fake data',
+    snapshot.ok === false &&
+    snapshot.source === 'waxonedge-live-indexer' &&
+    snapshot.mode === 'snapshot' &&
+    snapshot.status === 'not_connected' &&
+    snapshot.token_key_format === 'contract::symbol' &&
+    Array.isArray(snapshot.tokens) &&
+    snapshot.tokens.length === 0 &&
+    snapshot.next_cursor === null &&
+    snapshot.uses_fake_live_data === false &&
+    snapshot.browser_hyperion_fetch === false);
+}
+ok('VPS live indexer /stream contract is SSE heartbeat only until real deltas exist',
+  liveIndexerSource.includes("pathname === '/stream'") &&
+  liveIndexerSource.includes("'content-type': 'text/event-stream; charset=utf-8'") &&
+  liveIndexerSource.includes('event: heartbeat') &&
+  liveIndexerSource.includes('token_update_events_enabled: false') &&
+  !liveIndexerSource.includes('event: token_update') &&
+  !liveIndexerSource.includes('Math.random'));
+ok('VPS live indexer exposes no fake live events or random movement',
+  liveIndexerSource.includes('uses_fake_live_data: false') &&
+  liveIndexerSource.includes('emits_fake_token_updates: false') &&
+  !/fake\s*:\s*true/i.test(liveIndexerSource) &&
+  !liveIndexerSource.includes('random') &&
+  !liveIndexerSource.includes('setInterval'));
+ok('VPS live indexer safely parses request path without trusting Host header',
+  liveIndexer.safeRequestPathname('/health?x=1') === '/health' &&
+  liveIndexer.safeRequestPathname('/health') === '/health' &&
+  liveIndexer.safeRequestPathname('/snapshot') === '/snapshot' &&
+  liveIndexer.safeRequestPathname('/stream') === '/stream' &&
+  liveIndexer.safeRequestPathname('bad-target') === null &&
+  liveIndexer.safeRequestPathname('/bad%') === null &&
+  liveIndexer.safeRequestPathname('/bad\r\nHost:evil.example') === null &&
+  liveIndexer.safeRequestPathname('https://user:pass@host/health?x=1') === null &&
+  liveIndexer.safeRequestPathname('https://host/health#frag') === null &&
+  liveIndexer.safeRequestPathname('ftp://host/health') === null &&
+  liveIndexerSource.includes('function safeRequestPathname') &&
+  !liveIndexerSource.includes('new URL(req.url ||') &&
+  !liveIndexerSource.includes('req.headers.host ||') &&
+  liveIndexerSource.includes("error: 'malformed request target'"));
+{
+  let body = '';
+  const res = {
+    writeHead() {},
+    end(value) {
+      body = value;
+    },
+  };
+  liveIndexer.writeJson(res, 200, { ok: true, nested: { value: 1 } });
+  ok('VPS live indexer writeJson uses compact JSON responses',
+    body === '{"ok":true,"nested":{"value":1}}' &&
+    !body.includes('\n  "'));
+}
 {
   function fakeLiveDb(results, onSql) {
     return {
@@ -259,7 +360,46 @@ ok('indexer health exposes live update contract metadata',
   route.includes('snapshot_endpoint: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT') &&
   route.includes('stream_endpoint: WAXONEDGE_LIVE_STREAM_ENDPOINT') &&
   route.includes('vps_stream_required: true') &&
-  route.includes('browser_hyperion_fetch: false'));
+  route.includes('browser_hyperion_fetch: false') &&
+  route.includes('live_indexer: waxonedgeLiveIndexerConfig(env)') &&
+  route.includes('const WAXONEDGE_LIVE_SECRET_HEADER'));
+{
+  const noConfig = __waxonedgeTestHooks.waxonedgeLiveIndexerConfig({});
+  const configured = __waxonedgeTestHooks.waxonedgeLiveIndexerConfig({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+  });
+  ok('Worker health exposes live indexer config state without leaking secrets',
+    noConfig.vps_indexer_url_configured === false &&
+    noConfig.shared_secret_configured === false &&
+    noConfig.secret_header === 'x-waxonedge-live-secret' &&
+    configured.vps_indexer_url_configured === true &&
+    configured.shared_secret_configured === true &&
+    configured.secret_header === 'x-waxonedge-live-secret' &&
+    JSON.stringify(configured).includes('do-not-leak') === false);
+  ok('Worker rejects unsafe live indexer URL config shapes',
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'ftp://live.example' }) === false &&
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'https://user:pass@live.example' }) === false &&
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'https://live.example/?x=1' }) === false &&
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'https://live.example/#frag' }) === false);
+}
+{
+  const streamResponse = __waxonedgeTestHooks.handleLiveStream({}, {
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+  });
+  const streamBody = await streamResponse.json();
+  ok('Worker live stream remains honest unavailable contract even when VPS config is present',
+    streamResponse.status === 503 &&
+    streamBody.ok === false &&
+    streamBody.unavailable === 'live stream transport not enabled yet' &&
+    streamBody.fallback === '/api/waxonedge/live' &&
+    streamBody.live_indexer.vps_indexer_url_configured === true &&
+    streamBody.live_indexer.shared_secret_configured === true &&
+    JSON.stringify(streamBody).includes('do-not-leak') === false &&
+    streamBody.uses_fake_live_data === false &&
+    streamBody.browser_hyperion_fetch === false);
+}
 ok('route exposes token detail family', route.includes('const tokenMatch = path.match'));
 ok('route exposes token debug diagnostics without raw wallet/swap actions',
   route.includes("child === 'debug'") &&
@@ -1370,13 +1510,56 @@ ok('bounded skip exhaustion keeps existing rows and does not fake completion',
   route.includes('no_fake_trades: true') &&
   route.includes('status !== \'failed\'') &&
   !route.includes('history_pagination_complete: anyBoundedSkipWindowExhausted'));
-ok('AMM skip streams are not changed by the Alcor-only bounded skip guard',
+ok('AMM Hyperion skip window guard mirrors Alcor bounded-window handling',
   route.indexOf('async function syncAmmSwapTradeRows') > -1 &&
-  !route.slice(
+  route.slice(
     route.indexOf('async function syncAmmSwapTradeRows'),
     route.indexOf('async function readSourceIndexState'),
   ).includes('hyperionSkipWindowState') &&
+  route.slice(
+    route.indexOf('async function syncAmmSwapTradeRows'),
+    route.indexOf('async function readSourceIndexState'),
+  ).includes('if (skipWindow.bounded_skip_window_exhausted)') &&
+  route.slice(
+    route.indexOf('async function syncAmmSwapTradeRows'),
+    route.indexOf('async function readSourceIndexState'),
+  ).includes('actionState.status = \'partial\'') &&
+  route.slice(
+    route.indexOf('async function syncAmmSwapTradeRows'),
+    route.indexOf('async function readSourceIndexState'),
+  ).includes('actionState.next_action = HYPERION_SKIP_WINDOW_NEXT_ACTION') &&
+  route.slice(
+    route.indexOf('async function syncAmmSwapTradeRows'),
+    route.indexOf('async function readSourceIndexState'),
+  ).includes('continue;\n    }\n    attemptedPairCount += 1') &&
   route.includes('continue per-source AMM Hyperion skip pagination'));
+ok('AMM skip guard allows last valid page and blocks invalid windows using real request limit',
+  __waxonedgeTestHooks.hyperionSkipWindowState(9900, 50).bounded_skip_window_exhausted === false &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9901, 50).bounded_skip_window_exhausted === true &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9950, 50).bounded_skip_window_exhausted === true &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9900, 50).page_limit === 100 &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9900, 50).last_valid_skip_cursor === 9900);
+{
+  const ammBlock = route.slice(
+    route.indexOf('async function syncAmmSwapTradeRows'),
+    route.indexOf('async function readSourceIndexState'),
+  );
+  const ammSkipGuard = ammBlock.match(/if \(skipWindow\.bounded_skip_window_exhausted\) \{([\s\S]*?)\n    \}\n    attemptedPairCount \+= 1/)?.[1] || '';
+  ok('bounded AMM skip exhaustion is partial and does not log expected 400s as failures',
+    route.includes('const anyBoundedSkipWindowExhausted = boundedSkipWindowExhausted || actionStreams.some') &&
+    route.includes('bounded_skip_window_exhausted: anyBoundedSkipWindowExhausted') &&
+    route.includes('last_valid_skip_cursor: lastValidSkipCursor') &&
+    route.includes('next_action: hyperionNotConfigured') &&
+    route.includes(': (anyBoundedSkipWindowExhausted') &&
+    route.includes('trade_rows_indexed: totalRowsIndexed') &&
+    route.includes('rows_written: totalRowsWritten') &&
+    ammSkipGuard.includes("actionState.status = 'partial'") &&
+    ammSkipGuard.includes('actionState.next_action = HYPERION_SKIP_WINDOW_NEXT_ACTION') &&
+    ammSkipGuard.includes('continue;') &&
+    !ammSkipGuard.includes('failedPairCount += 1') &&
+    !ammSkipGuard.includes('fetchAmmSwapStreamRows') &&
+    !ammSkipGuard.includes('upstream5xxCount += 1'));
+}
 ok('candidate stream selection respects smaller trade index and pages-per-run limits',
   route.indexOf('const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length)') > -1 &&
   route.indexOf('const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length)') < route.indexOf('candidateRows.length < streamRunLimit') &&
