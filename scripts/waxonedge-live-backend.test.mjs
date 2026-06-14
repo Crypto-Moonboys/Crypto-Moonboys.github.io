@@ -523,8 +523,8 @@ ok('Alcor market match rows normalize into waxonedge_trades shape',
 ok('Alcor trade-row indexer upserts real rows and exposes source diagnostics',
   route.includes('const ALCOR_TRADE_INDEX_SOURCE =') &&
   route.includes('async function syncAlcorMarketTradeRows') &&
-  route.includes("const actionStreams = ['buymatch', 'sellmatch']") &&
-  route.includes('fetchAlcorMarketMatchStreamRows(env, actionName, rowsPerMarket)') &&
+  route.includes('const actionStreams = defaultAlcorTradeActionStreams()') &&
+  route.includes('fetchAlcorMarketMatchStreamRows(env, actionName, rowsPerMarket, streamCursor)') &&
   route.includes('normalizeAlcorMarketTradeRow(row)') &&
   route.includes('INSERT INTO waxonedge_trades') &&
   route.includes('ON CONFLICT(source, trade_id) DO UPDATE SET') &&
@@ -532,13 +532,29 @@ ok('Alcor trade-row indexer upserts real rows and exposes source diagnostics',
   route.includes("reference_src: 'alcormarket'") &&
   route.includes("trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box']") &&
   route.includes('no_fake_trades: true'));
-ok('bounded Alcor stream seed reports honest progress without full-history completion claims',
-  route.includes('bounded_history_seed: true') &&
+ok('Alcor marketMatches pagination reports per-action skip progress without full-history completion claims',
+  route.includes('function normalizeActionStreamProgressMap') &&
+  route.includes('const streamProgress = normalizeActionStreamProgressMap(previousData.action_streams, actionStreams)') &&
+  route.includes('pagination_mode: \'skip\'') &&
+  route.includes('action_streams: streamProgress') &&
+  route.includes('last_stream_cursor: lastStreamCursor') &&
+  route.includes('last_stream_sequence: lastStreamSequence') &&
+  route.includes('last_stream_block: lastStreamBlock') &&
+  route.includes('const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length)') &&
+  route.includes('candidateRows.length < streamRunLimit') &&
+  route.includes('active_stream_pages_per_run: pagesPerRun') &&
+  route.includes('bounded_history_seed: false') &&
   route.includes('history_pagination_complete: false') &&
-  route.includes("next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : 'bounded latest-stream seed; add Hyperion sequence pagination for full history'") &&
+  route.includes("next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : (allStreamsComplete ? 'skip pagination exhausted; sequence-complete replay not claimed' : 'continue per-action Hyperion skip pagination')") &&
   route.includes('const nextCursor = \'\';') &&
   route.includes('const complete = false;') &&
   !route.includes("complete && failedPairCount === 0 ? 'success'"));
+ok('candidate stream selection respects smaller trade index and pages-per-run limits',
+  route.indexOf('const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length)') > -1 &&
+  route.indexOf('const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length)') < route.indexOf('candidateRows.length < streamRunLimit') &&
+  route.includes('const limit = Math.max(1, Math.min(tradeIndexPairLimit(env), actionStreams.length))') &&
+  route.includes('const pagesPerRun = tradeStreamPagesPerRun(env)') &&
+  !route.includes('candidateRows.length < Math.min(pagesPerRun, actionStreams.length)'));
 ok('trade-row sync does not inflate indexed/written counters on conflict-only upserts',
   route.includes('const uniqueTrades = []') &&
   route.includes('SELECT source, trade_id FROM waxonedge_trades WHERE') &&
@@ -546,7 +562,13 @@ ok('trade-row sync does not inflate indexed/written counters on conflict-only up
   route.includes('return newRowCount') &&
   route.includes('const totalRowsIndexed = (asNumber(previousData.trade_rows_indexed) || 0) + rowsWritten') &&
   route.includes('last_run_rows_fetched: rowsIndexed') &&
-  route.includes('last_run_rows_written: rowsWritten'));
+  route.includes('last_run_rows_written: rowsWritten') &&
+  route.includes('duplicate_rows_skipped: totalDuplicateRowsSkipped'));
+ok('next_cursor zero is preserved instead of replaced by fallback math',
+  route.includes('const parsedNextCursor = asNumber(result.next_cursor)') &&
+  route.includes('const nextSkipCursor = parsedNextCursor ?? (streamCursor + result.rows.length)') &&
+  route.includes('Math.floor(nextSkipCursor)') &&
+  !route.includes('asNumber(result.next_cursor) || (streamCursor + result.rows.length)'));
 ok('trade-row index state treats normal cursoring as non-truncated progress',
   route.includes('const sourceStateTruncated = status === \'failed\' ? 1 : 0') &&
   route.includes('truncated: sourceStateTruncated') &&
@@ -734,13 +756,17 @@ ok('502 trade fetch response is classified as upstream_5xx temporary failure',
         }],
       }), { status: 200 });
     };
-    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchStreamRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2/' }, 'buymatch', 50);
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchStreamRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2/' }, 'buymatch', 50, 7);
     ok('Alcor trade index fetches Hyperion/state-history marketMatches as action streams',
       result.rows.length === 1 &&
       result.ingestion_path === 'hyperion_marketMatches' &&
       result.diagnostic.action_name === 'buymatch' &&
+      result.pagination_mode === 'skip' &&
+      result.next_cursor === '8' &&
+      result.last_sequence === 111 &&
       requestedUrls.every((url) => url.includes('/v2/history/get_actions')) &&
       requestedUrls.every((url) => url.includes('act.name=buymatch')) &&
+      requestedUrls.every((url) => url.includes('skip=7')) &&
       requestedUrls.every((url) => !url.includes('market_id=')) &&
       requestedUrls.length === 1);
   } finally {
@@ -898,12 +924,12 @@ ok('trade-row fetch separates temporary 5xx from unsupported history',
 ok('one failed Alcor trade market does not stop the whole batch',
   route.includes('continue;\n      }\n      if (result.failed)') &&
   route.includes('continue;\n      }\n      if (result.unsupported)') &&
-  route.includes('rowsWritten += await upsertTrades(env.DB, trades)') &&
+  route.includes('rowsWritten += written') &&
   route.includes('processedPairCount += 1') &&
-  route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + attemptedPairCount)'));
+  route.includes('const nextStreamIndex = candidateRows.length'));
 ok('trade-row sync is stream-based and does not query Hyperion once per pair',
-  route.includes("const actionStreams = ['buymatch', 'sellmatch']") &&
-  route.includes('const candidateRows = actionStreams.slice(cursorOffset, cursorOffset + limit)') &&
+  route.includes('const actionStreams = defaultAlcorTradeActionStreams()') &&
+  route.includes('candidateRows.push(actionName)') &&
   route.includes('for (const actionName of candidateRows)') &&
   !/async function syncAlcorMarketTradeRows[\s\S]*FROM waxonedge_pairs[\s\S]*ORDER BY CAST\(pair_id AS NUMERIC\), pair_id[\s\S]*LIMIT \? OFFSET \?[\s\S]*async function readSourceIndexState/.test(route) &&
   !route.includes('fetchAlcorMarketMatchHistoryRows(env, pair.pair_id, rowsPerMarket)') &&
@@ -930,7 +956,7 @@ ok('trade-row health reports explicit Hyperion configuration instead of WAX RPC 
   !route.includes('market_id=${encodeURIComponent(String(pairId))}'));
 ok('missing Hyperion config skips trade indexing without fake attempted progress',
   route.indexOf('if (!hyperionConfigured(env))') > -1 &&
-  route.indexOf('if (!hyperionConfigured(env))') < route.indexOf('const candidateRows = actionStreams.slice(cursorOffset, cursorOffset + limit)') &&
+  route.indexOf('if (!hyperionConfigured(env))') < route.indexOf('const candidateRows = []') &&
   route.indexOf('if (!hyperionConfigured(env))') < route.indexOf('for (const actionName of candidateRows)') &&
   route.includes('status: \'skipped\'') &&
   route.includes('attempted_pair_count: asNumber(previousData.attempted_pair_count) || 0') &&
