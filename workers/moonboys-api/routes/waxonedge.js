@@ -3554,12 +3554,11 @@ async function listLiveTokenUpdates(db, options = {}) {
   const parsedSince = parsedCursor.cursor ? { since: null, warning: null } : parseLiveSince(options.since);
   const filters = [];
   const params = [];
-  const updatedAtExpr = 'COALESCE(s.updated_at, t.updated_at)';
   if (parsedCursor.cursor) {
     filters.push(`(
-      ${updatedAtExpr} > ?
-      OR (${updatedAtExpr} = ? AND t.contract > ?)
-      OR (${updatedAtExpr} = ? AND t.contract = ? AND t.symbol > ?)
+      updated_at > ?
+      OR (updated_at = ? AND contract > ?)
+      OR (updated_at = ? AND contract = ? AND symbol > ?)
     )`);
     params.push(
       parsedCursor.cursor.updated_at,
@@ -3570,21 +3569,35 @@ async function listLiveTokenUpdates(db, options = {}) {
       parsedCursor.cursor.symbol,
     );
   } else if (parsedSince.since) {
-    filters.push(`${updatedAtExpr} > ?`);
+    filters.push(`updated_at > ?`);
     params.push(parsedSince.since);
   }
   params.push(clampInteger(options.limit, LIVE_SNAPSHOT_TOKEN_LIMIT, 1, LIVE_SNAPSHOT_TOKEN_LIMIT));
   const rows = await db.prepare(
-    `SELECT t.contract, t.symbol, t.price_wax, t.price_usd, t.pair_count,
-            t.updated_at AS token_updated_at,
-            s.selected_price_wax, s.selected_price_usd, s.change_24h,
-            s.volume_24h, s.volume_24h_wax, s.volume_24h_usd,
-            s.tvl_wax, s.tvl_usd, s.liquidity_wax, s.liquidity_usd,
-            s.indexed_pair_count, s.source_count, s.source_keys,
-            COALESCE(s.updated_at, t.updated_at) AS updated_at
-     FROM waxonedge_tokens t
-     LEFT JOIN waxonedge_token_stats s
-       ON s.contract = t.contract AND s.symbol = t.symbol
+    `SELECT *
+     FROM (
+       SELECT t.contract AS contract, t.symbol AS symbol,
+              t.price_wax AS price_wax, t.price_usd AS price_usd,
+              t.pair_count AS pair_count,
+              t.updated_at AS token_updated_at,
+              s.selected_price_wax AS selected_price_wax,
+              s.selected_price_usd AS selected_price_usd,
+              s.change_24h AS change_24h,
+              s.volume_24h AS volume_24h,
+              s.volume_24h_wax AS volume_24h_wax,
+              s.volume_24h_usd AS volume_24h_usd,
+              s.tvl_wax AS tvl_wax,
+              s.tvl_usd AS tvl_usd,
+              s.liquidity_wax AS liquidity_wax,
+              s.liquidity_usd AS liquidity_usd,
+              s.indexed_pair_count AS indexed_pair_count,
+              s.source_count AS source_count,
+              s.source_keys AS source_keys,
+              COALESCE(s.updated_at, t.updated_at) AS updated_at
+       FROM waxonedge_tokens t
+       LEFT JOIN waxonedge_token_stats s
+         ON s.contract = t.contract AND s.symbol = t.symbol
+     ) live_rows
      ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
      ORDER BY updated_at ASC, contract ASC, symbol ASC
      LIMIT ?`
@@ -3601,29 +3614,44 @@ async function listLiveTokenUpdates(db, options = {}) {
 }
 
 async function handleLiveSnapshot(env, query, corsHeaders) {
-  const live = await listLiveTokenUpdates(env.DB, {
-    cursor: query.get('cursor') || query.get('next_cursor'),
-    since: query.get('since') || query.get('updated_since'),
-    limit: query.get('limit'),
-  });
-  const warnings = ['Live snapshot is backed by indexed WaxOnEdge aggregate rows only.'];
-  if (live.warning) warnings.push(live.warning);
-  return waxonedgeJson({
-    ok: true,
-    source: 'moonboys-api/waxonedge-live',
-    mode: 'snapshot',
-    generated_at: nowIso(),
-    since: live.since,
-    cursor: query.get('cursor') || query.get('next_cursor') || null,
-    next_cursor: live.next_cursor,
-    snapshot_endpoint: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT,
-    stream_endpoint: WAXONEDGE_LIVE_STREAM_ENDPOINT,
-    token_key_format: 'contract::symbol',
-    uses_fake_live_data: false,
-    browser_hyperion_fetch: false,
-    tokens: live.tokens,
-    warnings,
-  }, 200, corsHeaders);
+  try {
+    const live = await listLiveTokenUpdates(env.DB, {
+      cursor: query.get('cursor') || query.get('next_cursor'),
+      since: query.get('since') || query.get('updated_since'),
+      limit: query.get('limit'),
+    });
+    const warnings = live.warning ? [live.warning] : [];
+    return waxonedgeJson({
+      ok: true,
+      source: 'moonboys-api/waxonedge-live',
+      mode: 'snapshot',
+      generated_at: nowIso(),
+      since: live.since,
+      cursor: query.get('cursor') || query.get('next_cursor') || null,
+      next_cursor: live.next_cursor,
+      snapshot_endpoint: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT,
+      stream_endpoint: WAXONEDGE_LIVE_STREAM_ENDPOINT,
+      token_key_format: 'contract::symbol',
+      uses_fake_live_data: false,
+      browser_hyperion_fetch: false,
+      tokens: live.tokens,
+      warnings,
+    }, 200, corsHeaders);
+  } catch (error) {
+    return waxonedgeJson({
+      ok: false,
+      source: 'moonboys-api/waxonedge-live',
+      mode: 'snapshot',
+      generated_at: nowIso(),
+      error: 'live snapshot unavailable',
+      diagnostic: safeString(error?.message || error),
+      tokens: [],
+      next_cursor: null,
+      uses_fake_live_data: false,
+      browser_hyperion_fetch: false,
+      warnings: ['live snapshot unavailable'],
+    }, 503, corsHeaders);
+  }
 }
 
 function handleLiveStream(corsHeaders) {
@@ -5584,6 +5612,7 @@ export const __waxonedgeTestHooks = {
   parseLiveCursor,
   normalizeLiveTokenUpdate,
   listLiveTokenUpdates,
+  handleLiveSnapshot,
   sourceCoverageFromKeys,
 };
 
