@@ -460,8 +460,12 @@ ok('candle_backfill does not remain planned forever after scheduled run',
   route.includes("status === 'planned' ? CANDLE_BACKFILL_PLAN : null") &&
   route.includes("const candleBackfill = await planWaxOnEdgeCandleBackfill(env);"));
 ok('candle backfill waits for indexed trade rows without fake attempted progress',
-  route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES]") &&
-  route.includes('SELECT 1 FROM waxonedge_trades WHERE source IN') &&
+  route.includes('const candleTradeSources = indexedCandleTradeSources()') &&
+  route.includes('const candlePairSourceNames = [...new Set(candleTradeSources.flatMap(candleTradeSourceNamesFor))]') &&
+  route.includes('FROM waxonedge_trades') &&
+  route.includes('WHERE source IN') &&
+  route.includes('const tradeLookbackCutoffIso = candleBackfillLookbackCutoffIso()') &&
+  route.includes('AND traded_at >= ?') &&
   !route.includes("SELECT COUNT(*) AS count FROM waxonedge_trades WHERE source = 'alcor'") &&
   route.includes('if (!indexedAlcorTradeRow)') &&
   route.includes("status: 'skipped'") &&
@@ -478,10 +482,59 @@ ok('candle backfill reports remaining candidate-pair trade gaps after candles ar
   route.includes('const error = diagnosticLastError ||'));
 ok('internal candle builder replaces external Alcor chart URL dependency',
   route.includes('function buildInternalDailyCandlesForPair') &&
-  route.includes("reason: source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
+  route.includes("reason: hasSourceRows ? 'pair_id_mismatch' : (source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed')") &&
   route.includes("reason: 'candles_built_from_trade_rows'") &&
   route.includes('external_chart_endpoint_unsupported') &&
   !route.includes('/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D'));
+ok('candle candidate source aliases normalize correctly',
+  __waxonedgeTestHooks.moonboysCandleSource('alcormarket') === 'alcor' &&
+  __waxonedgeTestHooks.moonboysCandleSource('alcorv2') === 'swap.alcor' &&
+  __waxonedgeTestHooks.moonboysCandleSource('defibox') === 'swap.box' &&
+  __waxonedgeTestHooks.moonboysCandleSource('neftyblocks') === 'swap.nefty' &&
+  __waxonedgeTestHooks.moonboysCandleSource('taco') === 'swap.taco');
+ok('candle alias matching is source-specific',
+  __waxonedgeTestHooks.candleTradeSourceNamesFor('alcor').includes('alcormarket') &&
+  !__waxonedgeTestHooks.candleTradeSourceNamesFor('alcor').includes('alcorv2') &&
+  __waxonedgeTestHooks.candleTradeSourceNamesFor('swap.alcor').includes('alcorv2') &&
+  !__waxonedgeTestHooks.candleTradeSourceNamesFor('swap.alcor').includes('alcormarket'));
+ok('candle backfill readiness uses same lookback cutoff as per-pair trade loading',
+  route.includes('function candleBackfillLookbackCutoffIso') &&
+  route.includes('const startIso = candleBackfillLookbackCutoffIso()') &&
+  route.includes('const tradeLookbackCutoffIso = candleBackfillLookbackCutoffIso()') &&
+  route.includes(').bind(...candlePairSourceNames, tradeLookbackCutoffIso)') &&
+  !route.includes('SELECT 1 FROM waxonedge_trades WHERE source IN (${candleTradeSourcePlaceholders}) LIMIT 1'));
+ok('old source trade rows do not create pair mismatch diagnostics',
+  route.includes('async function indexedTradeRowsExistForSource') &&
+  route.match(/async function indexedTradeRowsExistForSource[\s\S]*AND traded_at >= \?[\s\S]*LIMIT 1/) &&
+  route.includes("reason: hasSourceRows ? 'pair_id_mismatch' : (source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed')"));
+ok('recent source rows can still flag pair id mismatch when candidate pair rows are missing',
+  route.includes('const hasSourceRows = await indexedTradeRowsExistForSource(db, source)') &&
+  route.includes("reason: hasSourceRows ? 'pair_id_mismatch'") &&
+  route.includes('pair_id_mismatch_count_by_source'));
+ok('candle backfill excludes table-only sources from trade sources',
+  __waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.nefty') &&
+  !__waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.adex') &&
+  !__waxonedgeTestHooks.indexedCandleTradeSources().includes('dapp.fusion') &&
+  route.includes('const CANDLE_TRADE_SOURCES = Object.freeze') &&
+  route.includes('const TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS = Object.freeze'));
+ok('table-only unavailable sources do not inflate broken candle trade rows',
+  route.includes('trade_stream_not_verified_from_og_refs: candleBackfillSnapshot.data?.trade_stream_not_verified_from_og_refs || TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS') &&
+  route.includes('const candlePairSourceNames = [...new Set(candleTradeSources.flatMap(candleTradeSourceNamesFor))]') &&
+  !route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES, 'swap.adex'") &&
+  !route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES, 'dapp.fusion'"));
+ok('candle backfill reports source-level pair matching diagnostics',
+  route.includes('candle_candidate_count_by_source') &&
+  route.includes('trade_rows_indexed_by_source') &&
+  route.includes('candles_written_by_source') &&
+  route.includes('trade_rows_not_indexed_by_source') &&
+  route.includes('pair_id_mismatch_count_by_source') &&
+  route.includes('source_alias_normalized_count'));
+ok('candle URL example prefers a real indexed candle when possible',
+  route.includes('FROM waxonedge_chart_candles') &&
+  route.includes("WHERE interval = '1D'") &&
+  route.includes('has_real_indexed_candle_example: !!chartExamplePair') &&
+  route.includes("unavailable: chartExamplePair ? null : 'No real indexed 1D candle rows available yet.'") &&
+  !route.includes("dapp.fusion' candle examples"));
 ok('candle normalization preserves real zero OHLCV values',
   route.includes('item.open ?? item.o') &&
   route.includes('item.high ?? item.h') &&
@@ -699,7 +752,8 @@ const ammStreamBlock = route.slice(
 ok('swap.adex and dapp.fusion are not guessed into AMM trade streams or candle sources',
   !ammStreamBlock.includes("source: 'swap.adex'") &&
   !ammStreamBlock.includes("source: 'dapp.fusion'") &&
-  route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES]") &&
+  route.includes('const CANDLE_TRADE_SOURCES = Object.freeze') &&
+  route.includes('function indexedCandleTradeSources()') &&
   !route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES, 'swap.adex'") &&
   !route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES, 'dapp.fusion'"));
 ok('unverified swap.adex and dapp.fusion trade streams are reported honestly in health',
@@ -815,11 +869,13 @@ ok('AMM trade indexer exposes progress and duplicate-safe row accounting',
   route.includes('trade_rows_not_usable_count') &&
   route.includes('no_fake_trades: true'));
 ok('candle backfill can build from AMM waxonedge_trades rows',
-  route.includes("const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES]") &&
-  route.includes('SELECT 1 FROM waxonedge_trades WHERE source IN') &&
+  route.includes('const candleTradeSources = indexedCandleTradeSources()') &&
+  route.includes('const candlePairSourceNames = [...new Set(candleTradeSources.flatMap(candleTradeSourceNamesFor))]') &&
+  route.includes('FROM waxonedge_trades') &&
+  route.includes('AND traded_at >= ?') &&
   route.includes('FROM waxonedge_pairs') &&
   route.includes('WHERE source IN') &&
-  route.includes("reason: source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
+  route.includes("reason: hasSourceRows ? 'pair_id_mismatch' : (source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed')") &&
   __waxonedgeTestHooks.buildDailyCandlesFromTradeRows([
     { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T00:00:00.000Z', price: '0.2', volume: '2' },
     { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T01:00:00.000Z', price: '0.25', volume: '3' },

@@ -58,6 +58,32 @@ const TRADE_HISTORY_NOT_AVAILABLE_SOURCES = Object.freeze([
   'swap.adex',
   'dapp.fusion',
 ]);
+const CANDLE_TRADE_SOURCES = Object.freeze([
+  'alcor',
+  'swap.alcor',
+  'swap.taco',
+  'swap.box',
+  'swap.nefty',
+]);
+const CANDLE_SOURCE_ALIASES = Object.freeze({
+  alcormarket: 'alcor',
+  alcordexmain: 'alcor',
+  alcorv2: 'swap.alcor',
+  taco: 'swap.taco',
+  defibox: 'swap.box',
+  neftyblocks: 'swap.nefty',
+  adex: 'swap.adex',
+  waxfusion: 'dapp.fusion',
+});
+const CANDLE_REFERENCE_SOURCE_BY_RUNTIME = Object.freeze({
+  alcor: 'alcormarket',
+  'swap.alcor': 'alcorv2',
+  'swap.taco': 'taco',
+  'swap.box': 'defibox',
+  'swap.nefty': 'neftyblocks',
+  'swap.adex': 'adex',
+  'dapp.fusion': 'waxfusion',
+});
 const TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS = Object.freeze([
   {
     source: 'swap.adex',
@@ -242,15 +268,56 @@ function normalizeCandleInterval(value) {
 }
 
 function referenceCandleSource(source) {
-  const key = aggregateSourceKey(source);
-  if (key === 'alcor') return 'alcormarket';
-  return key;
+  const key = moonboysCandleSource(source);
+  return CANDLE_REFERENCE_SOURCE_BY_RUNTIME[key] || key;
 }
 
 function moonboysCandleSource(source) {
   const key = String(source || '').trim().toLowerCase();
-  if (key === 'alcormarket' || key === 'alcordexmain') return 'alcor';
-  return aggregateSourceKey(key);
+  return CANDLE_SOURCE_ALIASES[key] || aggregateSourceKey(key);
+}
+
+function indexedCandleTradeSources() {
+  return CANDLE_TRADE_SOURCES.slice();
+}
+
+function candleTradeSourceNamesFor(source) {
+  const runtimeSource = moonboysCandleSource(source);
+  const names = new Set([runtimeSource]);
+  const referenceSource = referenceCandleSource(runtimeSource);
+  if (referenceSource) names.add(referenceSource);
+  for (const [alias, canonical] of Object.entries(CANDLE_SOURCE_ALIASES)) {
+    if (canonical === runtimeSource) names.add(alias);
+  }
+  return [...names].filter(Boolean);
+}
+
+function countBySource(rows, valueKey = 'count') {
+  const counts = {};
+  for (const row of rows || []) {
+    const source = moonboysCandleSource(row.source);
+    if (!source) continue;
+    counts[source] = (counts[source] || 0) + (asNumber(row[valueKey]) ?? 0);
+  }
+  return counts;
+}
+
+function incrementSourceCounter(target, source, amount = 1) {
+  const key = moonboysCandleSource(source);
+  if (!key) return;
+  target[key] = (target[key] || 0) + amount;
+}
+
+function mergeSourceCounters(previous, current) {
+  const merged = { ...(previous && typeof previous === 'object' ? previous : {}) };
+  for (const [source, value] of Object.entries(current || {})) {
+    merged[source] = (asNumber(merged[source]) || 0) + (asNumber(value) || 0);
+  }
+  return merged;
+}
+
+function candleBackfillLookbackCutoffIso(now = Date.now()) {
+  return new Date(now - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60 * 1000)).toISOString();
 }
 
 function candleUrlExample(source, pairId) {
@@ -4222,6 +4289,14 @@ async function getIndexerHealth(db, env = {}) {
     }));
   const chartCandleCount1d = await countScalar(db, `SELECT COUNT(*) AS count FROM waxonedge_chart_candles WHERE interval = '1D'`);
   const chartExamplePair = await db.prepare(
+    `SELECT source, pair_id
+     FROM waxonedge_chart_candles
+     WHERE interval = '1D'
+     GROUP BY source, pair_id
+     ORDER BY MAX(updated_at) DESC
+     LIMIT 1`
+  ).first().catch(() => null);
+  const selectedChartExamplePair = chartExamplePair || await db.prepare(
     `SELECT selected_pair_source AS source, selected_pair_id AS pair_id
      FROM waxonedge_token_stats
      WHERE selected_pair_source IS NOT NULL
@@ -4332,8 +4407,10 @@ async function getIndexerHealth(db, env = {}) {
       tokens_with_chart_candidate_but_no_candles: Math.max(0, tokensWithPairs - tokensWithCandles),
     },
     candle_url_examples: {
-      moonboys_source: candleUrlExample(chartExamplePair?.source || 'alcor', chartExamplePair?.pair_id || '<selected_pair_id>'),
-      reference_source: referenceCandleUrlExample(chartExamplePair?.source || 'alcor', chartExamplePair?.pair_id || '<selected_pair_id>'),
+      moonboys_source: candleUrlExample(selectedChartExamplePair?.source || 'alcor', selectedChartExamplePair?.pair_id || '<selected_pair_id>'),
+      reference_source: referenceCandleUrlExample(selectedChartExamplePair?.source || 'alcor', selectedChartExamplePair?.pair_id || '<selected_pair_id>'),
+      has_real_indexed_candle_example: !!chartExamplePair,
+      unavailable: chartExamplePair ? null : 'No real indexed 1D candle rows available yet.',
     },
     trade_indexing: {
       source: ALCOR_TRADE_INDEX_SOURCE,
@@ -4444,7 +4521,15 @@ async function getIndexerHealth(db, env = {}) {
       trade_rows_not_indexed: asNumber(candleBackfillSnapshot.data?.trade_rows_not_indexed_count) || 0,
       trade_rows_not_usable_for_ohlcv: asNumber(candleBackfillSnapshot.data?.trade_rows_not_usable_for_ohlcv_count) || 0,
       swap_rows_not_indexed: asNumber(candleBackfillSnapshot.data?.swap_rows_not_indexed_count) || 0,
+      pair_id_mismatch_count: asNumber(candleBackfillSnapshot.data?.pair_id_mismatch_count) || 0,
       candles_built_from_trade_rows: asNumber(candleBackfillSnapshot.data?.candles_built_from_trade_rows) || 0,
+      candle_candidate_count_by_source: candleBackfillSnapshot.data?.candle_candidate_count_by_source || {},
+      trade_rows_indexed_by_source: candleBackfillSnapshot.data?.trade_rows_indexed_by_source || {},
+      candles_written_by_source: candleBackfillSnapshot.data?.candles_written_by_source || {},
+      trade_rows_not_indexed_by_source: candleBackfillSnapshot.data?.trade_rows_not_indexed_by_source || {},
+      pair_id_mismatch_count_by_source: candleBackfillSnapshot.data?.pair_id_mismatch_count_by_source || {},
+      source_alias_normalized_count: asNumber(candleBackfillSnapshot.data?.source_alias_normalized_count) || 0,
+      trade_stream_not_verified_from_og_refs: candleBackfillSnapshot.data?.trade_stream_not_verified_from_og_refs || TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS,
       budget_exhausted: !!candleBackfillSnapshot.data?.budget_exhausted,
       unsupported_reason: candleBackfillSnapshot.data?.unsupported_reason || null,
       candles_written: asNumber(candleBackfillSnapshot.data?.candles_written) || 0,
@@ -4607,19 +4692,34 @@ function buildDailyCandlesFromTradeRows(rows, options = {}) {
 
 async function loadIndexedTradeRowsForPair(db, source, pairId) {
   const moonboysSource = moonboysCandleSource(source);
-  const referenceSource = referenceCandleSource(moonboysSource);
-  const startMillis = Date.now() - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
-  const startIso = new Date(startMillis).toISOString();
+  const tradeSources = candleTradeSourceNamesFor(moonboysSource);
+  const startIso = candleBackfillLookbackCutoffIso();
+  const sourcePlaceholders = tradeSources.map(() => '?').join(',');
   const rows = await db.prepare(
     `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json
      FROM waxonedge_trades
      WHERE pair_id = ?
-       AND (source = ? OR source = ?)
+       AND source IN (${sourcePlaceholders})
        AND traded_at >= ?
      ORDER BY traded_at DESC
      LIMIT 5000`
-  ).bind(String(pairId), moonboysSource, referenceSource, startIso).all().catch(() => ({ results: [] }));
+  ).bind(String(pairId), ...tradeSources, startIso).all().catch(() => ({ results: [] }));
   return rows.results || [];
+}
+
+async function indexedTradeRowsExistForSource(db, source) {
+  const tradeSources = candleTradeSourceNamesFor(source);
+  if (!tradeSources.length) return false;
+  const placeholders = tradeSources.map(() => '?').join(',');
+  const startIso = candleBackfillLookbackCutoffIso();
+  const row = await db.prepare(
+    `SELECT 1
+     FROM waxonedge_trades
+     WHERE source IN (${placeholders})
+       AND traded_at >= ?
+     LIMIT 1`
+  ).bind(...tradeSources, startIso).first().catch(() => null);
+  return !!row;
 }
 
 async function buildInternalDailyCandlesForPair(db, pair) {
@@ -4628,9 +4728,10 @@ async function buildInternalDailyCandlesForPair(db, pair) {
   if (!source || !pairId) return { ok: false, reason: 'missing_pair_identity', candles_written: 0, candle_count: 0 };
   const rows = await loadIndexedTradeRowsForPair(db, source, pairId);
   if (!rows.length) {
+    const hasSourceRows = await indexedTradeRowsExistForSource(db, source);
     return {
       ok: true,
-      reason: source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed',
+      reason: hasSourceRows ? 'pair_id_mismatch' : (source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'),
       candles_written: 0,
       candle_count: 0,
     };
@@ -4687,22 +4788,50 @@ async function writeChartCandles(db, source, pairId, interval, candles) {
 
 async function planWaxOnEdgeCandleBackfill(env) {
   const startedAt = nowIso();
-  const candleTradeSources = ['alcor', ...AMM_TRADE_SOURCES];
-  const candleTradeSourcePlaceholders = candleTradeSources.map(() => '?').join(',');
+  const candleTradeSources = indexedCandleTradeSources();
+  const candlePairSourceNames = [...new Set(candleTradeSources.flatMap(candleTradeSourceNamesFor))];
+  const candleTradeSourcePlaceholders = candlePairSourceNames.map(() => '?').join(',');
+  const allTradeSourceNames = candlePairSourceNames;
   const candidatePairCount = await countScalar(env.DB,
     `SELECT COUNT(*) AS count
      FROM waxonedge_pairs
      WHERE source IN (${candleTradeSourcePlaceholders})
        AND pair_id IS NOT NULL
        AND pair_id != ''`,
-    candleTradeSources);
+    candlePairSourceNames);
+  const candidateCountRows = await env.DB.prepare(
+    `SELECT source, COUNT(*) AS count
+     FROM waxonedge_pairs
+     WHERE source IN (${candleTradeSourcePlaceholders})
+       AND pair_id IS NOT NULL
+       AND pair_id != ''
+     GROUP BY source`
+  ).bind(...candlePairSourceNames).all().catch(() => ({ results: [] }));
+  const candleCandidateCountBySource = countBySource(candidateCountRows.results || []);
+  const allTradeSourcePlaceholders = allTradeSourceNames.map(() => '?').join(',');
+  const tradeCountRows = allTradeSourceNames.length ? await env.DB.prepare(
+    `SELECT source, COUNT(*) AS count
+     FROM waxonedge_trades
+     WHERE source IN (${allTradeSourcePlaceholders})
+     GROUP BY source`
+  ).bind(...allTradeSourceNames).all().catch(() => ({ results: [] })) : { results: [] };
+  const tradeRowsIndexedBySource = countBySource(tradeCountRows.results || []);
+  const sourceAliasNormalizedCount = (tradeCountRows.results || []).reduce((count, row) => {
+    const rawSource = String(row.source || '').trim().toLowerCase();
+    return count + (rawSource && moonboysCandleSource(rawSource) !== rawSource ? (asNumber(row.count) || 0) : 0);
+  }, 0);
   const state = await readSourceIndexState(env.DB, CANDLE_BACKFILL_SOURCE);
   const previousSnapshot = await readSnapshot(env.DB, CANDLE_BACKFILL_SOURCE);
   const previousData = previousSnapshot.data || {};
   const cursorOffset = clampInteger(state?.cursor || 0, 0, 0, Number.MAX_SAFE_INTEGER);
+  const tradeLookbackCutoffIso = candleBackfillLookbackCutoffIso();
   const indexedAlcorTradeRow = await env.DB.prepare(
-    `SELECT 1 FROM waxonedge_trades WHERE source IN (${candleTradeSourcePlaceholders}) LIMIT 1`
-  ).bind(...candleTradeSources).first().catch(() => null);
+    `SELECT 1
+     FROM waxonedge_trades
+     WHERE source IN (${candleTradeSourcePlaceholders})
+       AND traded_at >= ?
+     LIMIT 1`
+  ).bind(...candlePairSourceNames, tradeLookbackCutoffIso).first().catch(() => null);
   if (!indexedAlcorTradeRow) {
     const existingCandleCount = await countScalar(env.DB,
       `SELECT COUNT(*) AS count FROM waxonedge_chart_candles WHERE interval = '1D'`);
@@ -4730,8 +4859,16 @@ async function planWaxOnEdgeCandleBackfill(env) {
       trade_rows_not_indexed_count: asNumber(previousData.trade_rows_not_indexed_count) || 0,
       trade_rows_not_usable_for_ohlcv_count: asNumber(previousData.trade_rows_not_usable_for_ohlcv_count) || 0,
       swap_rows_not_indexed_count: asNumber(previousData.swap_rows_not_indexed_count) || 0,
+      pair_id_mismatch_count: asNumber(previousData.pair_id_mismatch_count) || 0,
       candles_built_from_trade_rows: asNumber(previousData.candles_built_from_trade_rows) || 0,
       external_chart_endpoint_unsupported: asNumber(previousData.external_chart_endpoint_unsupported) || 0,
+      candle_candidate_count_by_source: candleCandidateCountBySource,
+      trade_rows_indexed_by_source: tradeRowsIndexedBySource,
+      candles_written_by_source: previousData.candles_written_by_source || {},
+      trade_rows_not_indexed_by_source: previousData.trade_rows_not_indexed_by_source || {},
+      pair_id_mismatch_count_by_source: previousData.pair_id_mismatch_count_by_source || {},
+      source_alias_normalized_count: sourceAliasNormalizedCount,
+      trade_stream_not_verified_from_og_refs: TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS,
       budget_exhausted: false,
       unsupported_reason: null,
       candles_written: asNumber(previousData.candles_written) || 0,
@@ -4753,7 +4890,7 @@ async function planWaxOnEdgeCandleBackfill(env) {
        AND pair_id != ''
      ORDER BY source, CAST(pair_id AS NUMERIC), pair_id
      LIMIT ? OFFSET ?`
-  ).bind(...candleTradeSources, candleBackfillPairLimit(env), cursorOffset).all().catch(() => ({ results: [] }));
+  ).bind(...candlePairSourceNames, candleBackfillPairLimit(env), cursorOffset).all().catch(() => ({ results: [] }));
   const candidateRows = candidates.results || [];
   let attemptedPairCount = 0;
   let processedPairCount = 0;
@@ -4763,8 +4900,12 @@ async function planWaxOnEdgeCandleBackfill(env) {
   let tradeRowsNotIndexedCount = 0;
   let tradeRowsNotUsableForOhlcvCount = 0;
   let swapRowsNotIndexedCount = 0;
+  let pairIdMismatchCount = 0;
   let candlesBuiltFromTradeRowsCount = 0;
   let candlesWritten = 0;
+  const candlesWrittenBySource = {};
+  const tradeRowsNotIndexedBySource = {};
+  const pairIdMismatchCountBySource = {};
   let lastError = null;
   let unsupportedReason = null;
   let budgetExhausted = false;
@@ -4782,11 +4923,18 @@ async function planWaxOnEdgeCandleBackfill(env) {
       if (result.reason === 'candles_built_from_trade_rows') {
         candlesBuiltFromTradeRowsCount += 1;
         processedPairCount += 1;
+        incrementSourceCounter(candlesWrittenBySource, pair.source, result.candles_written || 0);
       } else if (result.reason === 'trade_rows_not_indexed') {
         tradeRowsNotIndexedCount += 1;
+        incrementSourceCounter(tradeRowsNotIndexedBySource, pair.source);
         lastError = 'waiting for indexed trade rows for remaining candidate pairs';
       } else if (result.reason === 'swap_rows_not_indexed') {
         swapRowsNotIndexedCount += 1;
+        incrementSourceCounter(tradeRowsNotIndexedBySource, pair.source);
+        lastError = 'waiting for indexed trade rows for remaining candidate pairs';
+      } else if (result.reason === 'pair_id_mismatch') {
+        pairIdMismatchCount += 1;
+        incrementSourceCounter(pairIdMismatchCountBySource, pair.source);
         lastError = 'waiting for indexed trade rows for remaining candidate pairs';
       } else if (result.reason === 'trade_rows_not_usable_for_ohlcv') {
         unsupportedPairCount += 1;
@@ -4820,8 +4968,12 @@ async function planWaxOnEdgeCandleBackfill(env) {
   const totalTradeRowsNotIndexedCount = (asNumber(previousData.trade_rows_not_indexed_count) || 0) + tradeRowsNotIndexedCount;
   const totalTradeRowsNotUsableForOhlcvCount = (asNumber(previousData.trade_rows_not_usable_for_ohlcv_count) || 0) + tradeRowsNotUsableForOhlcvCount;
   const totalSwapRowsNotIndexedCount = (asNumber(previousData.swap_rows_not_indexed_count) || 0) + swapRowsNotIndexedCount;
+  const totalPairIdMismatchCount = (asNumber(previousData.pair_id_mismatch_count) || 0) + pairIdMismatchCount;
   const totalCandlesBuiltFromTradeRowsCount = (asNumber(previousData.candles_built_from_trade_rows) || 0) + candlesBuiltFromTradeRowsCount;
   const totalCandlesWritten = (asNumber(previousData.candles_written) || 0) + candlesWritten;
+  const totalCandlesWrittenBySource = mergeSourceCounters(previousData.candles_written_by_source, candlesWrittenBySource);
+  const totalTradeRowsNotIndexedBySource = mergeSourceCounters(previousData.trade_rows_not_indexed_by_source, tradeRowsNotIndexedBySource);
+  const totalPairIdMismatchCountBySource = mergeSourceCounters(previousData.pair_id_mismatch_count_by_source, pairIdMismatchCountBySource);
   const complete = candidatePairCount > 0 && nextCursor >= candidatePairCount;
   const existingCandleCount = await countScalar(env.DB,
     `SELECT COUNT(*) AS count FROM waxonedge_chart_candles WHERE interval = '1D'`);
@@ -4857,8 +5009,16 @@ async function planWaxOnEdgeCandleBackfill(env) {
     trade_rows_not_indexed_count: totalTradeRowsNotIndexedCount,
     trade_rows_not_usable_for_ohlcv_count: totalTradeRowsNotUsableForOhlcvCount,
     swap_rows_not_indexed_count: totalSwapRowsNotIndexedCount,
+    pair_id_mismatch_count: totalPairIdMismatchCount,
     candles_built_from_trade_rows: totalCandlesBuiltFromTradeRowsCount,
     external_chart_endpoint_unsupported: totalExternalUnsupportedPairCount,
+    candle_candidate_count_by_source: candleCandidateCountBySource,
+    trade_rows_indexed_by_source: tradeRowsIndexedBySource,
+    candles_written_by_source: totalCandlesWrittenBySource,
+    trade_rows_not_indexed_by_source: totalTradeRowsNotIndexedBySource,
+    pair_id_mismatch_count_by_source: totalPairIdMismatchCountBySource,
+    source_alias_normalized_count: sourceAliasNormalizedCount,
+    trade_stream_not_verified_from_og_refs: TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS,
     budget_exhausted: budgetExhausted,
     unsupported_reason: unsupportedReason,
     candles_written: totalCandlesWritten,
@@ -4881,8 +5041,16 @@ async function planWaxOnEdgeCandleBackfill(env) {
     trade_rows_not_indexed_count: totalTradeRowsNotIndexedCount,
     trade_rows_not_usable_for_ohlcv_count: totalTradeRowsNotUsableForOhlcvCount,
     swap_rows_not_indexed_count: totalSwapRowsNotIndexedCount,
+    pair_id_mismatch_count: totalPairIdMismatchCount,
     candles_built_from_trade_rows: totalCandlesBuiltFromTradeRowsCount,
     external_chart_endpoint_unsupported: totalExternalUnsupportedPairCount,
+    candle_candidate_count_by_source: candleCandidateCountBySource,
+    trade_rows_indexed_by_source: tradeRowsIndexedBySource,
+    candles_written_by_source: totalCandlesWrittenBySource,
+    trade_rows_not_indexed_by_source: totalTradeRowsNotIndexedBySource,
+    pair_id_mismatch_count_by_source: totalPairIdMismatchCountBySource,
+    source_alias_normalized_count: sourceAliasNormalizedCount,
+    trade_stream_not_verified_from_og_refs: TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS,
     budget_exhausted: budgetExhausted,
     unsupported_reason: unsupportedReason,
     candles_written: totalCandlesWritten,
@@ -5063,6 +5231,8 @@ export const __waxonedgeTestHooks = {
   normalizeCandleInterval,
   moonboysCandleSource,
   referenceCandleSource,
+  candleTradeSourceNamesFor,
+  indexedCandleTradeSources,
   candleUrlExample,
   candleBackfillPairLimit,
   tradeIndexPairLimit,
