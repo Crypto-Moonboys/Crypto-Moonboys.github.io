@@ -9,6 +9,9 @@
 
   var BOOTSTRAP_API = '/api/waxonedge/bootstrap';
   var HEALTH_API = '/api/waxonedge/indexer-health';
+  var LIVE_API = '/api/waxonedge/live';
+  var LIVE_STREAM_API = '/api/waxonedge/live/stream';
+  var LIVE_POLL_MS = 10000;
   var WAX_KEY = tokenKey('eosio.token', 'WAX');
   var TOP_LIMIT = 100;
   var METRIC_LABELS = {
@@ -54,6 +57,13 @@
     modalKeydownHandler: null,
     detailCache: {},
     chartCache: {},
+    live: {
+      eventSource: null,
+      pollTimer: 0,
+      pollInFlight: false,
+      cursor: null,
+      transport: 'idle',
+    },
   };
 
   function escHtml(value) {
@@ -452,6 +462,72 @@
     requestDraw();
   }
 
+  function assignLiveNumber(record, prop, value) {
+    var n = asNum(value);
+    if (n == null || record[prop] === n) return false;
+    record[prop] = n;
+    return true;
+  }
+
+  function applyLiveTokenUpdate(record, update) {
+    var changed = false;
+    changed = assignLiveNumber(record, 'selectedPriceWax', update.price_wax) || changed;
+    changed = assignLiveNumber(record, 'selectedPriceUsd', update.price_usd) || changed;
+    changed = assignLiveNumber(record, 'change24', update.change_24h) || changed;
+    changed = assignLiveNumber(record, 'volume24Wax', update.volume_24h_wax) || changed;
+    changed = assignLiveNumber(record, 'volume24Usd', update.volume_24h_usd) || changed;
+    changed = assignLiveNumber(record, 'tvlWax', update.tvl_wax) || changed;
+    changed = assignLiveNumber(record, 'tvlUsd', update.tvl_usd) || changed;
+    changed = assignLiveNumber(record, 'liquidityWax', update.liquidity_wax) || changed;
+    changed = assignLiveNumber(record, 'liquidityUsd', update.liquidity_usd) || changed;
+    changed = assignLiveNumber(record, 'indexedPairCount', update.indexed_pair_count) || changed;
+    changed = assignLiveNumber(record, 'sourceCount', update.source_count) || changed;
+    if (update.source_keys) {
+      var sources = parseSourceKeys(update.source_keys);
+      if (sources.join(',') !== record.sources.join(',')) {
+        record.sourcesMap = sources.reduce(function (acc, source) { acc[source] = true; return acc; }, {});
+        record.sources = sources.sort(compareSources);
+        changed = true;
+      }
+    }
+    if (update.updated_at) record.liveUpdatedAt = update.updated_at;
+    if (changed) {
+      record.searchText = tokenSearchText(record);
+      bubbleCanvasCache.delete(record.id);
+    }
+    return changed;
+  }
+
+  function refreshLiveTargetRadii() {
+    if (!state.canvas) return;
+    var rect = state.canvas.getBoundingClientRect();
+    var radii = computeRadii(state.visible, Math.max(320, rect.width), Math.max(320, rect.height));
+    state.nodes.forEach(function (node, index) {
+      node.targetRadius = radii[index] || node.targetRadius;
+    });
+  }
+
+  function applyLiveSnapshot(snapshot) {
+    var data = payloadData(snapshot);
+    var tokens = sourceRows(data.tokens);
+    if (!tokens.length) return;
+    var byKey = {};
+    state.records.forEach(function (record) { byKey[record.key] = record; });
+    var changed = 0;
+    tokens.forEach(function (update) {
+      var key = update.token_key || tokenKey(update.contract, update.symbol);
+      var record = byKey[key];
+      if (!record) return;
+      if (applyLiveTokenUpdate(record, update)) changed += 1;
+      if (update.updated_at) state.live.cursor = !state.live.cursor || update.updated_at > state.live.cursor ? update.updated_at : state.live.cursor;
+    });
+    if (!changed) return;
+    state.lastUpdated = state.live.cursor || data.generated_at || new Date().toISOString();
+    refreshLiveTargetRadii();
+    syncNodes();
+    if (state.selected && byKey[state.selected.key]) renderModal(byKey[state.selected.key]);
+  }
+
   function forceSimulationEquivalent(width, height) {
     var nodes = state.nodes;
     var cx = width / 2;
@@ -752,6 +828,75 @@
     });
   }
 
+  function liveSnapshotUrl() {
+    return state.live.cursor
+      ? LIVE_API + '?since=' + encodeURIComponent(state.live.cursor)
+      : LIVE_API;
+  }
+
+  function scheduleLivePolling(delay) {
+    window.clearTimeout(state.live.pollTimer);
+    state.live.transport = 'snapshot-polling';
+    state.live.pollTimer = window.setTimeout(pollLiveSnapshot, delay == null ? LIVE_POLL_MS : delay);
+  }
+
+  function pollLiveSnapshot() {
+    if (state.live.pollInFlight || document.hidden) {
+      scheduleLivePolling(LIVE_POLL_MS);
+      return;
+    }
+    state.live.pollInFlight = true;
+    apiJson(liveSnapshotUrl()).then(function (snapshot) {
+      state.connected = true;
+      applyLiveSnapshot(snapshot);
+      setStatus();
+    }).catch(function () {
+      state.connected = false;
+      setStatus();
+    }).finally(function () {
+      state.live.pollInFlight = false;
+      scheduleLivePolling(LIVE_POLL_MS);
+    });
+  }
+
+  function startLiveEventSource(endpoint) {
+    if (!window.EventSource || !endpoint) {
+      scheduleLivePolling(1000);
+      return;
+    }
+    try {
+      state.live.transport = 'sse';
+      state.live.eventSource = new window.EventSource(endpoint);
+      state.live.eventSource.addEventListener('token_update', function (event) {
+        try {
+          applyLiveSnapshot({ tokens: [JSON.parse(event.data)] });
+          setStatus();
+        } catch (_) {}
+      });
+      state.live.eventSource.addEventListener('heartbeat', function () {
+        state.connected = true;
+        setStatus();
+      });
+      state.live.eventSource.onerror = function () {
+        if (state.live.eventSource) state.live.eventSource.close();
+        state.live.eventSource = null;
+        scheduleLivePolling(1000);
+      };
+    } catch (_) {
+      scheduleLivePolling(1000);
+    }
+  }
+
+  function startLiveUpdates() {
+    var live = state.health && state.health.live_updates ? state.health.live_updates : {};
+    state.live.cursor = state.lastUpdated || null;
+    if (live.transport === 'sse' && live.stream_endpoint) {
+      startLiveEventSource(live.stream_endpoint || LIVE_STREAM_API);
+      return;
+    }
+    scheduleLivePolling(1000);
+  }
+
   function setStatus() {
     var dot = document.getElementById('woe-ab-live-dot');
     var text = document.getElementById('woe-ab-live-text');
@@ -1007,6 +1152,7 @@
       syncNodes();
       setStatus();
       state.nodes.forEach(function (node) { loadImage(node.record.logoUrl); });
+      startLiveUpdates();
       requestDraw();
     }).catch(function (error) {
       state.connected = false;

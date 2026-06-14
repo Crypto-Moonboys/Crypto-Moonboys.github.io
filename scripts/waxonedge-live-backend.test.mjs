@@ -99,9 +99,59 @@ for (const endpoint of [
   '/pairs/top',
   '/sync-status',
   '/indexer-health',
+  '/live',
+  '/live/stream',
 ]) {
   ok('route exposes ' + endpoint, route.includes(endpoint));
 }
+ok('live snapshot route reads compact indexed token data only',
+  route.includes('async function listLiveTokenUpdates') &&
+  route.includes('FROM waxonedge_tokens t') &&
+  route.includes('LEFT JOIN waxonedge_token_stats s') &&
+  route.includes('COALESCE(s.updated_at, t.updated_at)') &&
+  route.includes('LIVE_SNAPSHOT_TOKEN_LIMIT'));
+{
+  const liveSnapshotBlock = route.match(/async function handleLiveSnapshot[\s\S]*?function handleLiveStream/)?.[0] || '';
+  ok('live snapshot handler does not call Hyperion, public fetch, or aggregate rebuild',
+    liveSnapshotBlock.includes('listLiveTokenUpdates(env.DB') &&
+    !liveSnapshotBlock.includes('fetch(') &&
+    !liveSnapshotBlock.includes('hyperionHistoryActionsEndpoint') &&
+    !liveSnapshotBlock.includes('aggregateTokenAnalytics'));
+}
+ok('live snapshot uses stable contract-symbol token keys',
+  route.includes('function liveTokenUpdateKey(contract, symbol)') &&
+  route.includes('return tokenKey(contract, symbol)') &&
+  route.includes('token_key: tokenKeyValue') &&
+  __waxonedgeTestHooks.liveTokenUpdateKey('GraffitiKing', 'waxcash') === 'graffitiking::WAXCASH');
+{
+  const update = __waxonedgeTestHooks.normalizeLiveTokenUpdate({
+    contract: 'graffitiking',
+    symbol: 'WAXCASH',
+    selected_price_usd: '0',
+    change_24h: '0',
+    volume_24h_usd: '0',
+    tvl_usd: '123.45',
+    updated_at: '2026-06-14T00:00:00.000Z',
+  });
+  ok('live token update preserves real zero metric values',
+    update &&
+    update.token_key === 'graffitiking::WAXCASH' &&
+    update.price_usd === '0' &&
+    update.change_24h === '0' &&
+    update.volume_24h_usd === '0');
+}
+ok('live stream route is an honest unavailable contract until VPS SSE exists',
+  route.includes('function handleLiveStream') &&
+  route.includes('live stream transport not enabled yet') &&
+  route.includes('fallback: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT') &&
+  route.includes('uses_fake_live_data: false') &&
+  route.includes("transport: 'snapshot-polling-contract'"));
+ok('indexer health exposes live update contract metadata',
+  route.includes('live_updates') &&
+  route.includes('snapshot_endpoint: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT') &&
+  route.includes('stream_endpoint: WAXONEDGE_LIVE_STREAM_ENDPOINT') &&
+  route.includes('vps_stream_required: true') &&
+  route.includes('browser_hyperion_fetch: false'));
 ok('route exposes token detail family', route.includes('const tokenMatch = path.match'));
 ok('route exposes token debug diagnostics without raw wallet/swap actions',
   route.includes("child === 'debug'") &&
@@ -1931,6 +1981,28 @@ ok('frontend scanner front door and token analytics route are present',
   frontend.includes("'/analytics/token/?token='") &&
   frontend.includes("state.filters.bubbleMetric === 'volume'") &&
   frontend.includes('hasRealSignal'));
+ok('frontend bubbles bootstrap first and then starts live updates',
+  frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') > -1 &&
+  frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') < frontendBubbles.lastIndexOf('startLiveUpdates();') &&
+  frontendBubbles.includes("var LIVE_API = '/api/waxonedge/live'") &&
+  frontendBubbles.includes("var LIVE_STREAM_API = '/api/waxonedge/live/stream'"));
+ok('frontend live hook uses EventSource only when enabled and safe polling fallback',
+  frontendBubbles.includes('window.EventSource') &&
+  frontendBubbles.includes("live.transport === 'sse'") &&
+  frontendBubbles.includes('scheduleLivePolling(1000)') &&
+  frontendBubbles.includes('var LIVE_POLL_MS = 10000'));
+ok('frontend live updates records by stable token key',
+  frontendBubbles.includes('update.token_key || tokenKey(update.contract, update.symbol)') &&
+  frontendBubbles.includes("state.records.forEach(function (record) { byKey[record.key] = record; })") &&
+  frontendBubbles.includes('applyLiveTokenUpdate(record, update)'));
+ok('frontend live update path changes bubble target radius without full reload',
+  frontendBubbles.includes('function refreshLiveTargetRadii') &&
+  frontendBubbles.includes('node.targetRadius = radii[index] || node.targetRadius') &&
+  frontendBubbles.includes('syncNodes()') &&
+  !frontendBubbles.includes('window.location.reload'));
+ok('frontend live hook does not fetch Hyperion or DEX APIs directly',
+  !/history\/get_actions|wax\.alcor\.exchange|WAXONEDGE_HYPERION_API|Hyperion/i.test(frontendBubbles) &&
+  !/fetch\(\s*['"]https?:\/\//.test(frontendBubbles));
 ok('frontend has no wallet/swap/liquidity action buttons',
   !/(>|\bvalue=["'])(Connect Wallet|Add Liquidity|Remove Liquidity|Trade on Swap)(<|["'])/.test(frontend + html + tokenHtml));
 ok('real reference audit documents license and endpoint comparison',
