@@ -1,4 +1,6 @@
 const WAXONEDGE_API_PREFIX = '/api/waxonedge';
+const WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT = `${WAXONEDGE_API_PREFIX}/live`;
+const WAXONEDGE_LIVE_STREAM_ENDPOINT = `${WAXONEDGE_API_PREFIX}/live/stream`;
 
 const ALCOR_API = 'https://wax.alcor.exchange/api/v2';
 const WAX_RPC = 'https://wax.greymass.com';
@@ -27,6 +29,7 @@ const DEFAULT_TRADE_INDEX_PAIR_LIMIT = 24;
 const DEFAULT_TRADE_ROWS_PER_MARKET_LIMIT = 250;
 const DEFAULT_HYPERION_TRADE_SCAN_LIMIT = 100;
 const DEFAULT_TRADE_STREAM_PAGES_PER_RUN = 2;
+const LIVE_SNAPSHOT_TOKEN_LIMIT = 250;
 const FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION = 1;
 const FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE = 1;
 const FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT = 2;
@@ -3462,6 +3465,183 @@ async function listTopTokens(db) {
   return rows.results || [];
 }
 
+function liveTokenUpdateKey(contract, symbol) {
+  return tokenKey(contract, symbol);
+}
+
+function selectedMetricValueForLiveToken(row) {
+  const change = asNumber(row.change_24h);
+  if (change != null) return change;
+  const tvlUsd = asNumber(row.tvl_usd);
+  if (tvlUsd != null) return tvlUsd;
+  const liquidityUsd = asNumber(row.liquidity_usd);
+  if (liquidityUsd != null) return liquidityUsd;
+  const volumeUsd = asNumber(row.volume_24h_usd);
+  if (volumeUsd != null) return volumeUsd;
+  return asNumber(row.selected_price_usd ?? row.price_usd);
+}
+
+function normalizeLiveTokenUpdate(row) {
+  const contract = normalizeContract(row?.contract);
+  const symbol = normalizeSymbol(row?.symbol);
+  const tokenKeyValue = liveTokenUpdateKey(contract, symbol);
+  if (!tokenKeyValue) return null;
+  return {
+    token_key: tokenKeyValue,
+    contract,
+    symbol,
+    price_wax: safeDecimal(asNumber(row.selected_price_wax ?? row.price_wax)),
+    price_usd: safeDecimal(asNumber(row.selected_price_usd ?? row.price_usd)),
+    change_24h: safeDecimal(asNumber(row.change_24h)),
+    volume_24h_wax: safeDecimal(asNumber(row.volume_24h_wax ?? row.volume_24h)),
+    volume_24h_usd: safeDecimal(asNumber(row.volume_24h_usd)),
+    tvl_wax: safeDecimal(asNumber(row.tvl_wax)),
+    tvl_usd: safeDecimal(asNumber(row.tvl_usd)),
+    liquidity_wax: safeDecimal(asNumber(row.liquidity_wax)),
+    liquidity_usd: safeDecimal(asNumber(row.liquidity_usd)),
+    selected_metric_value: safeDecimal(selectedMetricValueForLiveToken(row)),
+    indexed_pair_count: asNumber(row.indexed_pair_count ?? row.pair_count),
+    source_count: asNumber(row.source_count),
+    source_keys: row.source_keys || '',
+    updated_at: row.stats_updated_at || row.updated_at || null,
+  };
+}
+
+function liveCursorFromRow(row) {
+  const updatedAt = row?.stats_updated_at || row?.updated_at || '';
+  const contract = normalizeContract(row?.contract);
+  const symbol = normalizeSymbol(row?.symbol);
+  if (!updatedAt || !contract || !symbol) return null;
+  return [updatedAt, contract, symbol].map((part) => encodeURIComponent(part)).join('~');
+}
+
+function parseLiveCursor(value) {
+  const text = safeString(value);
+  if (!text) return { cursor: null, warning: null };
+  const parts = text.split('~').map((part) => {
+    try {
+      return decodeURIComponent(part);
+    } catch {
+      return '';
+    }
+  });
+  if (parts.length !== 3) return { cursor: null, warning: 'Invalid live cursor ignored.' };
+  const [updatedAt, contract, symbol] = parts;
+  const parsed = Date.parse(updatedAt);
+  if (!Number.isFinite(parsed) || !normalizeContract(contract) || !normalizeSymbol(symbol)) {
+    return { cursor: null, warning: 'Invalid live cursor ignored.' };
+  }
+  return {
+    cursor: {
+      updated_at: new Date(parsed).toISOString(),
+      contract: normalizeContract(contract),
+      symbol: normalizeSymbol(symbol),
+    },
+    warning: null,
+  };
+}
+
+function parseLiveSince(value) {
+  const text = safeString(value);
+  if (!text) return { since: null, warning: null };
+  const parsed = Date.parse(text);
+  if (!Number.isFinite(parsed)) return { since: null, warning: 'Invalid since timestamp ignored.' };
+  return { since: new Date(parsed).toISOString(), warning: null };
+}
+
+async function listLiveTokenUpdates(db, options = {}) {
+  const parsedCursor = parseLiveCursor(options.cursor);
+  const parsedSince = parsedCursor.cursor ? { since: null, warning: null } : parseLiveSince(options.since);
+  const filters = [];
+  const params = [];
+  const updatedAtExpr = 'COALESCE(s.updated_at, t.updated_at)';
+  if (parsedCursor.cursor) {
+    filters.push(`(
+      ${updatedAtExpr} > ?
+      OR (${updatedAtExpr} = ? AND t.contract > ?)
+      OR (${updatedAtExpr} = ? AND t.contract = ? AND t.symbol > ?)
+    )`);
+    params.push(
+      parsedCursor.cursor.updated_at,
+      parsedCursor.cursor.updated_at,
+      parsedCursor.cursor.contract,
+      parsedCursor.cursor.updated_at,
+      parsedCursor.cursor.contract,
+      parsedCursor.cursor.symbol,
+    );
+  } else if (parsedSince.since) {
+    filters.push(`${updatedAtExpr} > ?`);
+    params.push(parsedSince.since);
+  }
+  params.push(clampInteger(options.limit, LIVE_SNAPSHOT_TOKEN_LIMIT, 1, LIVE_SNAPSHOT_TOKEN_LIMIT));
+  const rows = await db.prepare(
+    `SELECT t.contract, t.symbol, t.price_wax, t.price_usd, t.pair_count,
+            t.updated_at AS token_updated_at,
+            s.selected_price_wax, s.selected_price_usd, s.change_24h,
+            s.volume_24h, s.volume_24h_wax, s.volume_24h_usd,
+            s.tvl_wax, s.tvl_usd, s.liquidity_wax, s.liquidity_usd,
+            s.indexed_pair_count, s.source_count, s.source_keys,
+            COALESCE(s.updated_at, t.updated_at) AS updated_at
+     FROM waxonedge_tokens t
+     LEFT JOIN waxonedge_token_stats s
+       ON s.contract = t.contract AND s.symbol = t.symbol
+     ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
+     ORDER BY updated_at ASC, contract ASC, symbol ASC
+     LIMIT ?`
+  ).bind(...params).all();
+  const results = rows.results || [];
+  const lastRow = results[results.length - 1] || null;
+  return {
+    tokens: results.map(normalizeLiveTokenUpdate).filter(Boolean),
+    cursor: parsedCursor.cursor,
+    since: parsedSince.since,
+    next_cursor: liveCursorFromRow(lastRow),
+    warning: parsedCursor.warning || parsedSince.warning,
+  };
+}
+
+async function handleLiveSnapshot(env, query, corsHeaders) {
+  const live = await listLiveTokenUpdates(env.DB, {
+    cursor: query.get('cursor') || query.get('next_cursor'),
+    since: query.get('since') || query.get('updated_since'),
+    limit: query.get('limit'),
+  });
+  const warnings = ['Live snapshot is backed by indexed WaxOnEdge aggregate rows only.'];
+  if (live.warning) warnings.push(live.warning);
+  return waxonedgeJson({
+    ok: true,
+    source: 'moonboys-api/waxonedge-live',
+    mode: 'snapshot',
+    generated_at: nowIso(),
+    since: live.since,
+    cursor: query.get('cursor') || query.get('next_cursor') || null,
+    next_cursor: live.next_cursor,
+    snapshot_endpoint: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT,
+    stream_endpoint: WAXONEDGE_LIVE_STREAM_ENDPOINT,
+    token_key_format: 'contract::symbol',
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: false,
+    tokens: live.tokens,
+    warnings,
+  }, 200, corsHeaders);
+}
+
+function handleLiveStream(corsHeaders) {
+  return waxonedgeJson({
+    ok: false,
+    unavailable: 'live stream transport not enabled yet',
+    fallback: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT,
+    transport: 'snapshot-polling-contract',
+    vps_stream_required: true,
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: false,
+    event_contract: {
+      token_key_format: 'contract::symbol',
+      events: ['token_update', 'heartbeat'],
+    },
+  }, 503, corsHeaders);
+}
+
 async function listTopPairs(db) {
   const rows = await db.prepare(
     `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
@@ -4487,6 +4667,15 @@ async function getIndexerHealth(db, env = {}) {
       hyperion_configured: hyperionConfigured(env),
       active_hyperion_endpoint: hyperionHistoryActionsEndpoint(env) || null,
     },
+    live_updates: {
+      snapshot_endpoint: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT,
+      stream_endpoint: WAXONEDGE_LIVE_STREAM_ENDPOINT,
+      transport: 'snapshot-polling-contract',
+      vps_stream_required: true,
+      uses_fake_live_data: false,
+      browser_hyperion_fetch: false,
+      token_key_format: 'contract::symbol',
+    },
     totals: {
       total_indexed_tokens: totalTokens,
       tokens_with_selected_price: tokensWithSelectedPrice,
@@ -5302,6 +5491,12 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
     if (path === `${WAXONEDGE_API_PREFIX}/indexer-health`) {
       return ok(await getIndexerHealth(env.DB, env), [], null, corsHeaders);
     }
+    if (path === WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT) {
+      return handleLiveSnapshot(env, url.searchParams, corsHeaders);
+    }
+    if (path === WAXONEDGE_LIVE_STREAM_ENDPOINT) {
+      return handleLiveStream(corsHeaders);
+    }
 
     const tokenMatch = path.match(/^\/api\/waxonedge\/token\/([^/]+)\/([^/]+)(?:\/([^/]+))?$/);
     if (tokenMatch) {
@@ -5384,6 +5579,11 @@ export const __waxonedgeTestHooks = {
   fetchAmmSwapStreamRows,
   normalizeActionStreamProgressMap,
   normalizeCoreDexPair,
+  liveTokenUpdateKey,
+  liveCursorFromRow,
+  parseLiveCursor,
+  normalizeLiveTokenUpdate,
+  listLiveTokenUpdates,
   sourceCoverageFromKeys,
 };
 
