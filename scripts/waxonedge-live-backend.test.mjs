@@ -704,11 +704,19 @@ ok('Hyperion API base rejects credentials, query strings, and fragments',
   __waxonedgeTestHooks.hyperionApiBase({ WAXONEDGE_HYPERION_API: 'https://host/v2#frag' }) === '' &&
   __waxonedgeTestHooks.hyperionConfigured({ WAXONEDGE_HYPERION_API: 'https://host/v2#frag' }) === false &&
   __waxonedgeTestHooks.hyperionApiBase({ WAXONEDGE_HYPERION_API: 'https://host/v2/' }) === 'https://host/v2');
+ok('Hyperion history endpoint builder is deterministic and idempotent',
+  __waxonedgeTestHooks.hyperionHistoryActionsEndpoint({ WAXONEDGE_HYPERION_API: 'https://host/v2/' }) === 'https://host/v2/history/get_actions' &&
+  __waxonedgeTestHooks.hyperionHistoryActionsEndpoint({ WAXONEDGE_HYPERION_API: 'https://host/v2/history/get_actions' }) === 'https://host/v2/history/get_actions' &&
+  __waxonedgeTestHooks.hyperionConfigured({ WAXONEDGE_HYPERION_API: 'https://host/v2/history/get_actions' }) === true &&
+  __waxonedgeTestHooks.hyperionHistoryActionsEndpoint({ WAXONEDGE_HYPERION_API: 'https://host/v2/history/get_actions/extra' }) === '' &&
+  __waxonedgeTestHooks.hyperionConfigured({ WAXONEDGE_HYPERION_API: 'https://host/v2/history/get_actions/extra' }) === false);
 ok('Hyperion marketMatches URL uses OG account/act.name query and filters market_id locally',
   __waxonedgeTestHooks.alcorMarketMatchHistoryUrls({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2/' }, '29', 50).every((url) =>
     url.startsWith('https://wax.example/v2/history/get_actions?') &&
     url.includes('account=alcordexmain') &&
     url.includes('act.name=') &&
+    url.includes('sort=desc') &&
+    !url.includes('sort=asc') &&
     !url.includes('filter=') &&
     !url.includes('market_id=')) &&
   __waxonedgeTestHooks.hyperionHistoryActionsEndpoint({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2/' }) === 'https://wax.example/v2/history/get_actions' &&
@@ -813,11 +821,22 @@ ok('trade-row health reports explicit Hyperion configuration instead of WAX RPC 
   route.includes('active_hyperion_endpoint') &&
   route.includes('hyperion_query_shape') &&
   route.includes('hyperion_configured') &&
-  route.includes('const totalHyperionNotConfiguredCount = (asNumber(previousSnapshot.data?.hyperion_not_configured_count) || 0) + hyperionNotConfiguredCount') &&
-  route.includes('active_hyperion_endpoint: hyperionApiBase(env) || tradeIndexSnapshot.data?.active_hyperion_endpoint || null') &&
+  route.includes('const totalHyperionNotConfiguredCount = (asNumber(previousData.hyperion_not_configured_count) || 0) + hyperionNotConfiguredCount') &&
+  route.includes('active_hyperion_endpoint: hyperionHistoryActionsEndpoint(env) || tradeIndexSnapshot.data?.active_hyperion_endpoint || null') &&
   route.includes('act.name=buymatch|sellmatch') &&
   !route.includes('env?.WAXONEDGE_HYPERION_API || WAX_RPC') &&
   !route.includes('market_id=${encodeURIComponent(String(pairId))}'));
+ok('missing Hyperion config skips trade indexing without fake attempted progress',
+  route.indexOf('if (!hyperionConfigured(env))') > -1 &&
+  route.indexOf('if (!hyperionConfigured(env))') < route.indexOf('const candidates = await env.DB.prepare') &&
+  route.indexOf('if (!hyperionConfigured(env))') < route.indexOf('for (const pair of candidateRows)') &&
+  route.includes('status: \'skipped\'') &&
+  route.includes('attempted_pair_count: asNumber(previousData.attempted_pair_count) || 0') &&
+  route.includes('processed_pair_count: asNumber(previousData.processed_pair_count) || 0') &&
+  route.includes('rows_written: asNumber(previousData.rows_written) || 0') &&
+  route.includes("next_action: 'configure WAXONEDGE_HYPERION_API'") &&
+  route.includes('cursor,') &&
+  route.includes('const totalAttemptedPairCount = (asNumber(previousData.attempted_pair_count) || 0) + attemptedPairCount'));
 ok('Wapaca reference path for alcormarket trades is documented honestly',
   route.includes('Hyperion/state-history alcordexmain buymatch/sellmatch -> marketMatches') &&
   route.includes('guessed_public_alcor_http_source_of_truth: false') &&

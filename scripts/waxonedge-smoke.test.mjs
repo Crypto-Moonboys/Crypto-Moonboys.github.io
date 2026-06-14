@@ -164,9 +164,9 @@ ok('waxonedge.html exposes Liquidity scanner metric control when liquidity mode 
   html.includes('>Liquidity</button>'));
 ok('waxonedge-bubbles-v2.js does not fallback between scanner metrics',
   v2Js.includes('return change != null ? Math.abs(change) : null') &&
-  v2Js.includes("if (metric === 'tvl') {\n      return record.tvlUsd != null ? record.tvlUsd : record.tvlWax;\n    }") &&
-  v2Js.includes("if (metric === 'liquidity') return record.liquidityUsd != null ? record.liquidityUsd : record.liquidityWax") &&
-  v2Js.includes("if (metric === 'mcap') return record.marketCapUsd != null ? record.marketCapUsd : record.marketCapWax") &&
+  /if\s*\(\s*metric\s*===\s*'tvl'\s*\)\s*\{\s*return\s+record\.tvlUsd\s*!=\s*null\s*\?\s*record\.tvlUsd\s*:\s*record\.tvlWax\s*;\s*\}/.test(v2Js) &&
+  /if\s*\(\s*metric\s*===\s*'liquidity'\s*\)\s*return\s+record\.liquidityUsd\s*!=\s*null\s*\?\s*record\.liquidityUsd\s*:\s*record\.liquidityWax/.test(v2Js) &&
+  /if\s*\(\s*metric\s*===\s*'mcap'\s*\)\s*return\s+record\.marketCapUsd\s*!=\s*null\s*\?\s*record\.marketCapUsd\s*:\s*record\.marketCapWax/.test(v2Js) &&
   v2Js.includes('return valueForMetric(record, state.metric, state.timeframe) != null') &&
   !v2Js.includes('record.tvlUsd || record.liquidityUsd') &&
   !v2Js.includes('record.tvlWax || record.liquidityWax') &&
