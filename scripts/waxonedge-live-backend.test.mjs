@@ -540,6 +540,8 @@ ok('Alcor marketMatches pagination reports per-action skip progress without full
   route.includes('last_stream_cursor: lastStreamCursor') &&
   route.includes('last_stream_sequence: lastStreamSequence') &&
   route.includes('last_stream_block: lastStreamBlock') &&
+  route.includes('const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length)') &&
+  route.includes('candidateRows.length < streamRunLimit') &&
   route.includes('active_stream_pages_per_run: pagesPerRun') &&
   route.includes('bounded_history_seed: false') &&
   route.includes('history_pagination_complete: false') &&
@@ -547,6 +549,12 @@ ok('Alcor marketMatches pagination reports per-action skip progress without full
   route.includes('const nextCursor = \'\';') &&
   route.includes('const complete = false;') &&
   !route.includes("complete && failedPairCount === 0 ? 'success'"));
+ok('candidate stream selection respects smaller trade index and pages-per-run limits',
+  route.indexOf('const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length)') > -1 &&
+  route.indexOf('const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length)') < route.indexOf('candidateRows.length < streamRunLimit') &&
+  route.includes('const limit = Math.max(1, Math.min(tradeIndexPairLimit(env), actionStreams.length))') &&
+  route.includes('const pagesPerRun = tradeStreamPagesPerRun(env)') &&
+  !route.includes('candidateRows.length < Math.min(pagesPerRun, actionStreams.length)'));
 ok('trade-row sync does not inflate indexed/written counters on conflict-only upserts',
   route.includes('const uniqueTrades = []') &&
   route.includes('SELECT source, trade_id FROM waxonedge_trades WHERE') &&
@@ -556,6 +564,11 @@ ok('trade-row sync does not inflate indexed/written counters on conflict-only up
   route.includes('last_run_rows_fetched: rowsIndexed') &&
   route.includes('last_run_rows_written: rowsWritten') &&
   route.includes('duplicate_rows_skipped: totalDuplicateRowsSkipped'));
+ok('next_cursor zero is preserved instead of replaced by fallback math',
+  route.includes('const parsedNextCursor = asNumber(result.next_cursor)') &&
+  route.includes('const nextSkipCursor = parsedNextCursor ?? (streamCursor + result.rows.length)') &&
+  route.includes('Math.floor(nextSkipCursor)') &&
+  !route.includes('asNumber(result.next_cursor) || (streamCursor + result.rows.length)'));
 ok('trade-row index state treats normal cursoring as non-truncated progress',
   route.includes('const sourceStateTruncated = status === \'failed\' ? 1 : 0') &&
   route.includes('truncated: sourceStateTruncated') &&

@@ -1520,6 +1520,7 @@ async function syncAlcorMarketTradeRows(env) {
   const limit = Math.max(1, Math.min(tradeIndexPairLimit(env), actionStreams.length));
   const rowsPerMarket = tradeRowsPerMarketLimit(env);
   const pagesPerRun = tradeStreamPagesPerRun(env);
+  const streamRunLimit = Math.min(limit, pagesPerRun, actionStreams.length);
   if (!hyperionConfigured(env)) {
     const totalHyperionNotConfiguredCount = (asNumber(previousData.hyperion_not_configured_count) || 0) + 1;
     const cursor = state?.cursor || '';
@@ -1586,7 +1587,7 @@ async function syncAlcorMarketTradeRows(env) {
   }
   const lastStreamIndex = Math.max(0, Math.floor(asNumber(previousData.last_stream_index) || 0));
   const candidateRows = [];
-  for (let i = 0; i < actionStreams.length && candidateRows.length < Math.min(pagesPerRun, actionStreams.length); i += 1) {
+  for (let i = 0; i < actionStreams.length && candidateRows.length < streamRunLimit; i += 1) {
     const index = (lastStreamIndex + i) % actionStreams.length;
     const actionName = actionStreams[index];
     if (streamProgress[actionName]?.complete === true) continue;
@@ -1689,7 +1690,9 @@ async function syncAlcorMarketTradeRows(env) {
       duplicateRowsSkipped += Math.max(0, trades.length - written);
       actionState.status = result.rows.length < rowsPerMarket ? 'complete' : 'partial';
       actionState.pagination_mode = result.pagination_mode || 'skip';
-      actionState.skip_cursor = Math.max(actionState.skip_cursor, Math.floor(asNumber(result.next_cursor) || (streamCursor + result.rows.length)));
+      const parsedNextCursor = asNumber(result.next_cursor);
+      const nextSkipCursor = parsedNextCursor ?? (streamCursor + result.rows.length);
+      actionState.skip_cursor = Math.max(actionState.skip_cursor, Math.floor(nextSkipCursor));
       actionState.last_sequence = result.last_sequence ?? actionState.last_sequence;
       actionState.last_block = result.last_block ?? actionState.last_block;
       actionState.last_indexed_timestamp = result.last_indexed_timestamp || actionState.last_indexed_timestamp;
