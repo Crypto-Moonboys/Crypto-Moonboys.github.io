@@ -584,6 +584,18 @@ ok('aggregate source list includes swap.adex and dapp.fusion without dropping ex
     pair.reserve_b === '250' &&
     pair.price === '2.5' &&
     pair.fee_bps === '30');
+  const driftFeePair = __waxonedgeTestHooks.normalizeCoreDexPair(adapter, {
+    id: 31,
+    base_token: { quantity: '100.00000000 WAX', contract: 'eosio.token' },
+    quote_token: { quantity: '250.0000 FOO', contract: 'foo.token' },
+    pool_fee: '0.2000 FEE',
+    platform_fee: '0.1001 FEE',
+  }, priceIndex, '2026-06-14T00:00:00.000Z');
+  ok('swap.adex fee bps are rounded away from floating precision drift',
+    driftFeePair &&
+    driftFeePair.fee_bps === '30.01' &&
+    driftFeePair.fee_bps !== '30.009999999999998' &&
+    driftFeePair.fee_bps !== '30.010000000000005');
   ok('unparseable swap.adex rows are skipped instead of faked',
     __waxonedgeTestHooks.normalizeCoreDexPair(adapter, {
       id: 30,

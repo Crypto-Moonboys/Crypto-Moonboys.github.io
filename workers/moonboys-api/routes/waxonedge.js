@@ -846,7 +846,8 @@ function adapterFeeBps(adapter, row) {
     const poolFee = asNumber(parseAsset(row.pool_fee).amount ?? row.pool_fee);
     const platformFee = asNumber(parseAsset(row.platform_fee).amount ?? row.platform_fee);
     const totalFee = (poolFee || 0) + (platformFee || 0);
-    return totalFee > 0 ? safeDecimal(totalFee * 100) : null;
+    const feeBps = Math.round(totalFee * 100 * 100) / 100;
+    return feeBps > 0 ? safeDecimal(feeBps) : null;
   }
   const rawFee = asNumber(row.fee ?? row.marketFee ?? row.pool_fee);
   if (rawFee != null) {
