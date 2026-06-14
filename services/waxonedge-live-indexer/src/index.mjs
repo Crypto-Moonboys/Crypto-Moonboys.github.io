@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const LIVE_SECRET_HEADER = 'x-waxonedge-live-secret';
@@ -213,6 +214,11 @@ export function startServer(env = process.env) {
   return { server, state };
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+export function isDirectRun(metaUrl = import.meta.url, argv1 = process.argv[1]) {
+  if (!argv1) return false;
+  return fileURLToPath(metaUrl) === resolve(argv1);
+}
+
+if (isDirectRun()) {
   startServer();
 }

@@ -190,6 +190,34 @@ ok('VPS live indexer service package exists',
   liveIndexerPackage.type === 'module' &&
   liveIndexerPackage.scripts.start === 'node src/index.mjs' &&
   liveIndexerPackage.scripts.check === 'node scripts/check-live-indexer.mjs');
+ok('VPS live indexer service entrypoint starts for relative npm/systemd paths',
+  liveIndexer.isDirectRun(
+    pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/src/index.mjs')).href,
+    'services/waxonedge-live-indexer/src/index.mjs',
+  ) === true &&
+  liveIndexer.isDirectRun(
+    pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/src/index.mjs')).href,
+    path.join(ROOT, 'services/waxonedge-live-indexer/src/index.mjs'),
+  ) === true &&
+  liveIndexer.isDirectRun(
+    pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/src/index.mjs')).href,
+    'scripts/waxonedge-live-backend.test.mjs',
+  ) === false);
+ok('VPS live indexer check entrypoint runs for relative npm check paths',
+  liveIndexerCheck.isDirectRun(
+    pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/scripts/check-live-indexer.mjs')).href,
+    'services/waxonedge-live-indexer/scripts/check-live-indexer.mjs',
+  ) === true &&
+  liveIndexerCheck.isDirectRun(
+    pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/scripts/check-live-indexer.mjs')).href,
+    path.join(ROOT, 'services/waxonedge-live-indexer/scripts/check-live-indexer.mjs'),
+  ) === true &&
+  liveIndexerCheck.isDirectRun(
+    pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/scripts/check-live-indexer.mjs')).href,
+    'scripts/waxonedge-live-backend.test.mjs',
+  ) === false &&
+  liveIndexerCheckScript.includes('if (isDirectRun())') &&
+  liveIndexerCheckScript.includes('runCheck()'));
 ok('VPS live indexer documents env-only config and shared secret header',
   liveIndexerEnvExample.includes('WAXONEDGE_LIVE_PORT=8789') &&
   liveIndexerEnvExample.includes('WAXONEDGE_HYPERION_API=https://wax.eosusa.io/v2') &&
@@ -371,6 +399,17 @@ ok('VPS live indexer exposes no fake live events or random movement',
     status: 200,
     headers: { 'content-type': 'text/event-stream; charset=utf-8' },
   });
+  let consumed503StreamBody = false;
+  const jsonStream503 = (payload) => new Response(new ReadableStream({
+    start(controller) {
+      consumed503StreamBody = true;
+      controller.enqueue(new TextEncoder().encode(JSON.stringify(payload)));
+      controller.close();
+    },
+  }), {
+    status: 503,
+    headers: { 'content-type': 'application/json; charset=utf-8' },
+  });
   async function withMockFetch(responses, fn) {
     const originalFetch = globalThis.fetch;
     const pending = responses.slice();
@@ -402,6 +441,7 @@ ok('VPS live indexer exposes no fake live events or random movement',
   let rejected500 = false;
   let rejectedNoHeartbeat = false;
   let rejectedFakeStream = false;
+  let rejectedFake503Stream = false;
   const firstChunkHeartbeat = await withMockFetch([
     jsonResponse(503, healthPayload),
     jsonResponse(503, snapshotPayload),
@@ -411,6 +451,15 @@ ok('VPS live indexer exposes no fake live events or random movement',
     jsonResponse(503, healthPayload),
     jsonResponse(503, snapshotPayload),
     sseChunkResponse(['event: hea', 'rtbeat\n', 'data: {"uses_fake_live_data":false}\n\n']),
+  ], () => liveIndexerCheck.runCheck({ WAXONEDGE_LIVE_CHECK_URL: 'http://live-indexer.test' }));
+  const skeleton503Stream = await withMockFetch([
+    jsonResponse(503, healthPayload),
+    jsonResponse(503, snapshotPayload),
+    jsonStream503({
+      ok: false,
+      error: 'live stream transport not enabled yet',
+      uses_fake_live_data: false,
+    }),
   ], () => liveIndexerCheck.runCheck({ WAXONEDGE_LIVE_CHECK_URL: 'http://live-indexer.test' }));
   try {
     await withMockFetch([
@@ -454,16 +503,28 @@ ok('VPS live indexer exposes no fake live events or random movement',
   } catch (_) {
     rejectedFakeStream = true;
   }
+  try {
+    await withMockFetch([
+      jsonResponse(503, healthPayload),
+      jsonResponse(503, snapshotPayload),
+      jsonStream503({ uses_fake_live_data: true }),
+    ], () => liveIndexerCheck.runCheck({ WAXONEDGE_LIVE_CHECK_URL: 'http://live-indexer.test' }));
+  } catch (_) {
+    rejectedFake503Stream = true;
+  }
   ok('VPS live indexer runtime checker validates service identity, endpoint status, and skeleton contracts',
     skeleton.ok === true &&
     connected.ok === true &&
     firstChunkHeartbeat.stream.heartbeat === true &&
     splitHeartbeat.stream.heartbeat === true &&
+    skeleton503Stream.stream.unavailable === true &&
+    consumed503StreamBody &&
     rejectedWrongService &&
     rejected404 &&
     rejected500 &&
     rejectedNoHeartbeat &&
-    rejectedFakeStream);
+    rejectedFakeStream &&
+    rejectedFake503Stream);
 }
 ok('VPS live indexer safely parses request path without trusting Host header',
   liveIndexer.safeRequestPathname('/health?x=1') === '/health' &&

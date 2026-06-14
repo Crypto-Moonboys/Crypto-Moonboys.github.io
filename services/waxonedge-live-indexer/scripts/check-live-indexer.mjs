@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DEFAULT_BASE_URL = 'http://127.0.0.1:8789';
@@ -90,6 +91,20 @@ async function checkStream(baseUrl) {
     assertExpectedStatus(response, '/stream');
     const contentType = response.headers.get('content-type') || '';
     if (response.status === 503) {
+      const text = await response.text();
+      if (text) {
+        try {
+          const payload = JSON.parse(text);
+          if (payload && typeof payload === 'object' && Object.hasOwn(payload, 'uses_fake_live_data')) {
+            assertNoFakeLiveData(payload, '/stream');
+          }
+        } catch (error) {
+          if (error instanceof SyntaxError) {
+            return { ok: true, status: response.status, unavailable: true };
+          }
+          throw error;
+        }
+      }
       return { ok: true, status: response.status, unavailable: true };
     }
     if (!contentType.includes('text/event-stream')) {
@@ -144,7 +159,12 @@ export async function runCheck(env = process.env) {
   return result;
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+export function isDirectRun(metaUrl = import.meta.url, argv1 = process.argv[1]) {
+  if (!argv1) return false;
+  return fileURLToPath(metaUrl) === resolve(argv1);
+}
+
+if (isDirectRun()) {
   runCheck()
     .then((result) => {
       console.log(JSON.stringify(result));
