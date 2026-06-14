@@ -21,11 +21,13 @@ const DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT = 24;
 const DEFAULT_TRADE_INDEX_PAIR_LIMIT = 24;
 const DEFAULT_TRADE_ROWS_PER_MARKET_LIMIT = 250;
 const DEFAULT_HYPERION_TRADE_SCAN_LIMIT = 100;
+const DEFAULT_TRADE_STREAM_PAGES_PER_RUN = 2;
 const FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION = 1;
 const FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE = 1;
 const FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT = 2;
 const FREE_SAFE_TRADE_INDEX_PAIR_LIMIT = 2;
 const FREE_SAFE_TRADE_ROWS_PER_MARKET_LIMIT = 50;
+const FREE_SAFE_TRADE_STREAM_PAGES_PER_RUN = 1;
 const FREE_SAFE_CANDLE_SUBREQUEST_BUDGET = 2;
 const CANDLE_BACKFILL_LOOKBACK_DAYS = 120;
 const STUCK_CURSOR_RETRY_LIMIT = 3;
@@ -72,6 +74,12 @@ function tradeIndexPairLimit(env) {
 
 function tradeRowsPerMarketLimit(env) {
   return waxonedgeFreeSafeMode(env) ? FREE_SAFE_TRADE_ROWS_PER_MARKET_LIMIT : DEFAULT_TRADE_ROWS_PER_MARKET_LIMIT;
+}
+
+function tradeStreamPagesPerRun(env) {
+  const configured = asNumber(env?.WAXONEDGE_TRADE_STREAM_PAGES_PER_RUN);
+  if (configured != null && configured > 0) return Math.min(10, Math.floor(configured));
+  return waxonedgeFreeSafeMode(env) ? FREE_SAFE_TRADE_STREAM_PAGES_PER_RUN : DEFAULT_TRADE_STREAM_PAGES_PER_RUN;
 }
 
 function hyperionApiBase(env) {
@@ -1179,6 +1187,70 @@ function normalizeAlcorMarketTradeRow(row, pair) {
   };
 }
 
+function defaultAlcorTradeActionStreams() {
+  return ['buymatch', 'sellmatch'];
+}
+
+function normalizeActionStreamProgress(actionName, value = {}) {
+  return {
+    action_name: actionName,
+    status: value.status || 'pending',
+    pagination_mode: value.pagination_mode || 'skip',
+    skip_cursor: Math.max(0, Math.floor(asNumber(value.skip_cursor) || 0)),
+    last_sequence: value.last_sequence ?? null,
+    last_block: value.last_block ?? null,
+    last_indexed_timestamp: value.last_indexed_timestamp || null,
+    page_count: Math.max(0, Math.floor(asNumber(value.page_count) || 0)),
+    row_count: Math.max(0, Math.floor(asNumber(value.row_count) || 0)),
+    rows_written: Math.max(0, Math.floor(asNumber(value.rows_written) || 0)),
+    duplicate_rows_skipped: Math.max(0, Math.floor(asNumber(value.duplicate_rows_skipped) || 0)),
+    complete: value.complete === true,
+    last_error: value.last_error || null,
+    updated_at: value.updated_at || null,
+  };
+}
+
+function normalizeActionStreamProgressMap(value = {}, actionStreams = defaultAlcorTradeActionStreams()) {
+  const map = {};
+  for (const actionName of actionStreams) {
+    map[actionName] = normalizeActionStreamProgress(actionName, value?.[actionName] || {});
+  }
+  return map;
+}
+
+function tradeRowSequence(row) {
+  const parsed = parseAlcorMarketMatchAction(row) || row || {};
+  return asNumber(firstPresent(
+    parsed.global_sequence,
+    row?.global_sequence,
+    row?.global_sequence_num,
+    row?.receipt?.global_sequence,
+    row?.receipt?.recv_sequence,
+    row?.action_trace?.receipt?.global_sequence,
+  ));
+}
+
+function tradeRowBlock(row) {
+  const parsed = parseAlcorMarketMatchAction(row) || row || {};
+  return asNumber(firstPresent(
+    parsed.block_num,
+    row?.block_num,
+    row?.block,
+    row?.block_number,
+    row?.action_trace?.block_num,
+  ));
+}
+
+function maxNumberValue(values) {
+  let max = null;
+  for (const value of values || []) {
+    const n = asNumber(value);
+    if (n == null) continue;
+    max = max == null ? n : Math.max(max, n);
+  }
+  return max;
+}
+
 function alcorMarketMatchStreamUrl(env, actionName, limit, cursor = '') {
   const endpoint = hyperionHistoryActionsEndpoint(env);
   const count = encodeURIComponent(String(Math.max(limit, DEFAULT_HYPERION_TRADE_SCAN_LIMIT)));
@@ -1288,8 +1360,19 @@ async function fetchAlcorMarketMatchStreamRows(env, actionName, limit, cursor = 
   }
   const attemptedSummary = tradeFetchSummary(attemptedEndpoints);
   if (matchedRows.length) {
+    const currentSkip = Math.max(0, Math.floor(asNumber(cursor) || 0));
+    const nextSkip = currentSkip + matchedRows.length;
     return {
       rows: matchedRows,
+      pagination_mode: 'skip',
+      next_cursor: String(nextSkip),
+      last_sequence: maxNumberValue(matchedRows.map(tradeRowSequence)),
+      last_block: maxNumberValue(matchedRows.map(tradeRowBlock)),
+      last_indexed_timestamp: matchedRows
+        .map((row) => normalizeTradeTimestamp(firstPresent(row?.updated_at_time, row?.created_at, row?.timestamp, row?.raw_action?.timestamp)))
+        .filter(Boolean)
+        .sort()
+        .pop() || null,
       diagnostic: {
         source: 'alcor',
         pair_id: null,
@@ -1431,11 +1514,12 @@ async function syncAlcorMarketTradeRows(env) {
   const state = await readSourceIndexState(env.DB, ALCOR_TRADE_INDEX_SOURCE);
   const previousSnapshot = await readSnapshot(env.DB, ALCOR_TRADE_INDEX_SOURCE);
   const previousData = previousSnapshot.data || {};
-  const actionStreams = ['buymatch', 'sellmatch'];
+  const actionStreams = defaultAlcorTradeActionStreams();
+  const streamProgress = normalizeActionStreamProgressMap(previousData.action_streams, actionStreams);
   const candidatePairCount = actionStreams.length;
-  const cursorOffset = 0;
   const limit = Math.max(1, Math.min(tradeIndexPairLimit(env), actionStreams.length));
   const rowsPerMarket = tradeRowsPerMarketLimit(env);
+  const pagesPerRun = tradeStreamPagesPerRun(env);
   if (!hyperionConfigured(env)) {
     const totalHyperionNotConfiguredCount = (asNumber(previousData.hyperion_not_configured_count) || 0) + 1;
     const cursor = state?.cursor || '';
@@ -1443,7 +1527,7 @@ async function syncAlcorMarketTradeRows(env) {
     await upsertSourceIndexState(env.DB, ALCOR_TRADE_INDEX_SOURCE, {
       sync_cycle_id: state?.sync_cycle_id || `trades-${new Date().toISOString().slice(0, 10)}`,
       cursor,
-      page_count: asNumber(state?.page_count) || cursorOffset,
+      page_count: asNumber(state?.page_count) || 0,
       row_count: candidatePairCount,
       complete: 0,
       truncated: 0,
@@ -1471,15 +1555,19 @@ async function syncAlcorMarketTradeRows(env) {
       hyperion_query_shape: HYPERION_MARKET_MATCH_QUERY_SHAPE,
       bounded_history_seed: true,
       history_pagination_complete: false,
+      pagination_mode: 'none',
+      action_streams: streamProgress,
       hyperion_scan_no_market_matches_count: asNumber(previousData.hyperion_scan_no_market_matches_count) || 0,
       no_trade_rows_count: asNumber(previousData.no_trade_rows_count) || 0,
       trade_rows_indexed: asNumber(previousData.trade_rows_indexed) || 0,
       rows_written: asNumber(previousData.rows_written) || 0,
       last_run_rows_fetched: 0,
       last_run_rows_written: 0,
+      duplicate_rows_skipped: asNumber(previousData.duplicate_rows_skipped) || 0,
       cursor,
       active_pair_limit: limit,
       active_stream_limit: limit,
+      active_stream_pages_per_run: pagesPerRun,
       active_rows_per_market_limit: rowsPerMarket,
       budget_exhausted: false,
       trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'],
@@ -1496,7 +1584,15 @@ async function syncAlcorMarketTradeRows(env) {
     await recordSyncRun(env.DB, ALCOR_TRADE_INDEX_SOURCE, 'skipped', startedAt, visibleError);
     return { ok: true, ...snapshot };
   }
-  const candidateRows = actionStreams.slice(cursorOffset, cursorOffset + limit);
+  const lastStreamIndex = Math.max(0, Math.floor(asNumber(previousData.last_stream_index) || 0));
+  const candidateRows = [];
+  for (let i = 0; i < actionStreams.length && candidateRows.length < Math.min(pagesPerRun, actionStreams.length); i += 1) {
+    const index = (lastStreamIndex + i) % actionStreams.length;
+    const actionName = actionStreams[index];
+    if (streamProgress[actionName]?.complete === true) continue;
+    candidateRows.push(actionName);
+  }
+  const allStreamsCompleteBeforeRun = actionStreams.every((actionName) => streamProgress[actionName]?.complete === true);
   let attemptedPairCount = 0;
   let processedPairCount = 0;
   let failedPairCount = 0;
@@ -1509,46 +1605,69 @@ async function syncAlcorMarketTradeRows(env) {
   let noTradeRowsCount = 0;
   let rowsIndexed = 0;
   let rowsWritten = 0;
+  let duplicateRowsSkipped = 0;
   let lastError = null;
   let sampleTradeFetchFailure = isLegacyTradeFetchDiagnostic(previousData.sample_trade_fetch_failure) ? null : (previousData.sample_trade_fetch_failure || null);
   let sampleTradeFetchSuccess = previousData.sample_trade_fetch_success || null;
   let budgetExhausted = false;
   for (const actionName of candidateRows) {
     attemptedPairCount += 1;
+    const actionState = streamProgress[actionName] || normalizeActionStreamProgress(actionName);
+    const streamCursor = actionState.skip_cursor || 0;
     try {
-      const result = await fetchAlcorMarketMatchStreamRows(env, actionName, rowsPerMarket);
+      const result = await fetchAlcorMarketMatchStreamRows(env, actionName, rowsPerMarket, streamCursor);
       if (result.diagnostic?.row_count > 0) sampleTradeFetchSuccess = result.diagnostic;
       if (result.diagnostic && result.diagnostic.failure_type) sampleTradeFetchFailure = result.diagnostic;
       if (result.hyperionNotConfigured) {
         hyperionNotConfiguredCount += 1;
+        actionState.status = 'skipped';
+        actionState.last_error = 'hyperion_not_configured';
+        actionState.updated_at = nowIso();
         lastError = 'hyperion_not_configured: set WAXONEDGE_HYPERION_API to a WAX Hyperion endpoint that supports /v2/history/get_actions';
         break;
       }
       if (result.budgetFailure) {
         budgetExhausted = true;
+        actionState.status = 'budget_limited';
+        actionState.last_error = result.diagnostic?.response_body_snippet || 'trade row fetch budget exhausted';
+        actionState.updated_at = nowIso();
         lastError = result.diagnostic?.response_body_snippet || 'trade row fetch budget exhausted';
         break;
       }
       if (result.temporaryFailure) {
         temporarilyFailedPairCount += 1;
         if (result.diagnostic?.failure_type === 'upstream_5xx') upstream5xxCount += 1;
+        actionState.status = 'partial';
+        actionState.last_error = result.diagnostic?.failure_type || 'temporary failure';
+        actionState.updated_at = nowIso();
         lastError = `${result.diagnostic?.http_status || 'upstream'} ${result.diagnostic?.failure_type || 'temporary failure'}`;
         continue;
       }
       if (result.failed) {
         failedPairCount += 1;
         if (result.invalidPayload || result.diagnostic?.failure_type === 'invalid_payload') upstreamBadPayloadCount += 1;
+        actionState.status = 'failed';
+        actionState.last_error = result.diagnostic?.failure_type || 'failed';
+        actionState.updated_at = nowIso();
         lastError = `${result.diagnostic?.http_status || 'fetch'} ${result.diagnostic?.failure_type || 'failed'}`;
         continue;
       }
       if (result.unsupported) {
         unsupportedPairCount += 1;
+        actionState.status = 'unsupported';
+        actionState.last_error = `trade_history_endpoint_unavailable: ${actionName}`;
+        actionState.updated_at = nowIso();
         lastError = `trade_history_endpoint_unavailable: alcor action stream ${actionName}`;
         continue;
       }
       if (result.noTradeRows || !result.rows.length) {
         noTradeRowsCount += 1;
         if (result.diagnostic?.failure_type === 'no_marketMatches_for_action_stream_in_bounded_history_scan') hyperionScanNoRowsCount += 1;
+        actionState.status = 'complete';
+        actionState.complete = true;
+        actionState.page_count += 1;
+        actionState.last_error = result.diagnostic?.failure_type || 'no_trade_rows';
+        actionState.updated_at = nowIso();
         lastError = `${result.diagnostic?.failure_type || 'no_trade_rows'}: alcor action stream ${actionName}`;
         continue;
       }
@@ -1557,26 +1676,54 @@ async function syncAlcorMarketTradeRows(env) {
         .filter(Boolean);
       if (!trades.length) {
         noTradeRowsCount += 1;
+        actionState.status = 'partial';
+        actionState.page_count += 1;
+        actionState.last_error = `trade_rows_not_usable: ${actionName}`;
+        actionState.updated_at = nowIso();
         lastError = `trade_rows_not_usable: alcor action stream ${actionName}`;
         continue;
       }
+      const written = await upsertTrades(env.DB, trades);
       rowsIndexed += trades.length;
-      rowsWritten += await upsertTrades(env.DB, trades);
+      rowsWritten += written;
+      duplicateRowsSkipped += Math.max(0, trades.length - written);
+      actionState.status = result.rows.length < rowsPerMarket ? 'complete' : 'partial';
+      actionState.pagination_mode = result.pagination_mode || 'skip';
+      actionState.skip_cursor = Math.max(actionState.skip_cursor, Math.floor(asNumber(result.next_cursor) || (streamCursor + result.rows.length)));
+      actionState.last_sequence = result.last_sequence ?? actionState.last_sequence;
+      actionState.last_block = result.last_block ?? actionState.last_block;
+      actionState.last_indexed_timestamp = result.last_indexed_timestamp || actionState.last_indexed_timestamp;
+      actionState.page_count += 1;
+      actionState.row_count += result.rows.length;
+      actionState.rows_written += written;
+      actionState.duplicate_rows_skipped += Math.max(0, trades.length - written);
+      actionState.complete = result.rows.length < rowsPerMarket;
+      actionState.last_error = null;
+      actionState.updated_at = nowIso();
       sampleTradeFetchFailure = null;
       processedPairCount += 1;
     } catch (error) {
       if (isSubrequestBudgetError(error)) {
         budgetExhausted = true;
+        actionState.status = 'budget_limited';
+        actionState.last_error = error?.message || String(error);
+        actionState.updated_at = nowIso();
         lastError = error?.message || String(error);
         break;
       }
       failedPairCount += 1;
+      actionState.status = 'failed';
+      actionState.last_error = error?.message || String(error);
+      actionState.updated_at = nowIso();
       lastError = error?.message || String(error);
     }
   }
   const hyperionNotConfigured = hyperionNotConfiguredCount > 0;
   const nextCursor = '';
   const complete = false;
+  const nextStreamIndex = candidateRows.length
+    ? (actionStreams.indexOf(candidateRows[candidateRows.length - 1]) + 1) % actionStreams.length
+    : lastStreamIndex;
   const totalAttemptedPairCount = (asNumber(previousData.attempted_pair_count) || 0) + attemptedPairCount;
   const totalProcessedPairCount = (asNumber(previousData.processed_pair_count) || 0) + processedPairCount;
   const totalFailedPairCount = (asNumber(previousData.failed_pair_count) || 0) + failedPairCount;
@@ -1589,6 +1736,11 @@ async function syncAlcorMarketTradeRows(env) {
   const totalNoTradeRowsCount = (asNumber(previousData.no_trade_rows_count) || 0) + noTradeRowsCount;
   const totalRowsIndexed = (asNumber(previousData.trade_rows_indexed) || 0) + rowsWritten;
   const totalRowsWritten = (asNumber(previousData.rows_written) || 0) + rowsWritten;
+  const totalDuplicateRowsSkipped = (asNumber(previousData.duplicate_rows_skipped) || 0) + duplicateRowsSkipped;
+  const lastStreamCursor = Math.max(0, ...actionStreams.map((actionName) => asNumber(streamProgress[actionName]?.skip_cursor) || 0));
+  const lastStreamSequence = maxNumberValue(actionStreams.map((actionName) => streamProgress[actionName]?.last_sequence));
+  const lastStreamBlock = maxNumberValue(actionStreams.map((actionName) => streamProgress[actionName]?.last_block));
+  const allStreamsComplete = actionStreams.every((actionName) => streamProgress[actionName]?.complete === true);
   const hardFailure = failedPairCount > 0 && processedPairCount === 0 && unsupportedPairCount === 0 && !budgetExhausted;
   const status = hyperionNotConfigured
     ? 'skipped'
@@ -1596,7 +1748,7 @@ async function syncAlcorMarketTradeRows(env) {
     ? 'failed'
     : (budgetExhausted
     ? 'budget_limited'
-    : (attemptedPairCount > 0 ? 'partial' : 'planned')));
+    : (attemptedPairCount > 0 || allStreamsCompleteBeforeRun || allStreamsComplete ? 'partial' : 'planned')));
   const visibleError = status === 'success' ? null : (lastError || (status === 'planned' ? TRADE_INDEX_PLAN : null));
   const sourceStateError = status === 'failed' ? visibleError : null;
   const sourceStateTruncated = status === 'failed' ? 1 : 0;
@@ -1629,17 +1781,25 @@ async function syncAlcorMarketTradeRows(env) {
     hyperion_not_configured_count: totalHyperionNotConfiguredCount,
     active_hyperion_endpoint: hyperionHistoryActionsEndpoint(env) || null,
     hyperion_query_shape: HYPERION_MARKET_MATCH_QUERY_SHAPE,
-    bounded_history_seed: true,
+    bounded_history_seed: false,
     history_pagination_complete: false,
+    pagination_mode: 'skip',
+    action_streams: streamProgress,
+    last_stream_cursor: lastStreamCursor,
+    last_stream_sequence: lastStreamSequence,
+    last_stream_block: lastStreamBlock,
+    last_stream_index: nextStreamIndex,
     hyperion_scan_no_market_matches_count: totalHyperionScanNoRowsCount,
     no_trade_rows_count: totalNoTradeRowsCount,
     trade_rows_indexed: totalRowsIndexed,
     rows_written: totalRowsWritten,
     last_run_rows_fetched: rowsIndexed,
     last_run_rows_written: rowsWritten,
+    duplicate_rows_skipped: totalDuplicateRowsSkipped,
     cursor: nextCursor,
     active_pair_limit: limit,
     active_stream_limit: limit,
+    active_stream_pages_per_run: pagesPerRun,
     active_rows_per_market_limit: rowsPerMarket,
     budget_exhausted: budgetExhausted,
     trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'],
@@ -1648,7 +1808,7 @@ async function syncAlcorMarketTradeRows(env) {
     sample_trade_fetch_failure: sampleTradeFetchFailure,
     sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
-    next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : 'bounded latest-stream seed; add Hyperion sequence pagination for full history',
+    next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : (allStreamsComplete ? 'skip pagination exhausted; sequence-complete replay not claimed' : 'continue per-action Hyperion skip pagination'),
     no_fake_trades: true,
     plan: TRADE_INDEX_PLAN,
   }, nowIso());
@@ -1671,24 +1831,32 @@ async function syncAlcorMarketTradeRows(env) {
     hyperion_not_configured_count: totalHyperionNotConfiguredCount,
     active_hyperion_endpoint: hyperionHistoryActionsEndpoint(env) || null,
     hyperion_query_shape: HYPERION_MARKET_MATCH_QUERY_SHAPE,
-    bounded_history_seed: true,
+    bounded_history_seed: false,
     history_pagination_complete: false,
+    pagination_mode: 'skip',
+    action_streams: streamProgress,
+    last_stream_cursor: lastStreamCursor,
+    last_stream_sequence: lastStreamSequence,
+    last_stream_block: lastStreamBlock,
+    last_stream_index: nextStreamIndex,
     hyperion_scan_no_market_matches_count: totalHyperionScanNoRowsCount,
     no_trade_rows_count: totalNoTradeRowsCount,
     trade_rows_indexed: totalRowsIndexed,
     rows_written: totalRowsWritten,
     last_run_rows_fetched: rowsIndexed,
     last_run_rows_written: rowsWritten,
+    duplicate_rows_skipped: totalDuplicateRowsSkipped,
     cursor: nextCursor,
     active_pair_limit: limit,
     active_stream_limit: limit,
+    active_stream_pages_per_run: pagesPerRun,
     active_rows_per_market_limit: rowsPerMarket,
     budget_exhausted: budgetExhausted,
     trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'],
     sample_trade_fetch_failure: sampleTradeFetchFailure,
     sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
-    next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : 'bounded latest-stream seed; add Hyperion sequence pagination for full history',
+    next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : (allStreamsComplete ? 'skip pagination exhausted; sequence-complete replay not claimed' : 'continue per-action Hyperion skip pagination'),
     no_fake_trades: true,
     plan: TRADE_INDEX_PLAN,
   };
@@ -3153,6 +3321,7 @@ async function getIndexerHealth(db, env = {}) {
       active_candle_backfill_pair_limit: candleBackfillPairLimit(env),
       active_trade_index_pair_limit: tradeIndexPairLimit(env),
       active_trade_rows_per_market_limit: tradeRowsPerMarketLimit(env),
+      active_trade_stream_pages_per_run: tradeStreamPagesPerRun(env),
       active_source_page_limit: coreDexPagesPerInvocation(env),
       active_cron_rotation_mode: 'isolated-heavy-workloads',
       hyperion_configured: hyperionConfigured(env),
@@ -3212,14 +3381,21 @@ async function getIndexerHealth(db, env = {}) {
       hyperion_query_shape: tradeIndexSnapshot.data?.hyperion_query_shape || HYPERION_MARKET_MATCH_QUERY_SHAPE,
       bounded_history_seed: tradeIndexSnapshot.data?.bounded_history_seed !== false,
       history_pagination_complete: tradeIndexSnapshot.data?.history_pagination_complete === true,
+      pagination_mode: tradeIndexSnapshot.data?.pagination_mode || (tradeIndexSnapshot.data?.bounded_history_seed === false ? 'skip' : 'none'),
+      action_streams: tradeIndexSnapshot.data?.action_streams || normalizeActionStreamProgressMap({}, defaultAlcorTradeActionStreams()),
+      last_stream_cursor: asNumber(tradeIndexSnapshot.data?.last_stream_cursor) || 0,
+      last_stream_sequence: tradeIndexSnapshot.data?.last_stream_sequence ?? null,
+      last_stream_block: tradeIndexSnapshot.data?.last_stream_block ?? null,
       hyperion_scan_no_market_matches_count: asNumber(tradeIndexSnapshot.data?.hyperion_scan_no_market_matches_count) || 0,
       no_trade_rows_count: asNumber(tradeIndexSnapshot.data?.no_trade_rows_count) || 0,
       trade_rows_indexed: asNumber(tradeIndexSnapshot.data?.trade_rows_indexed) || 0,
       rows_written: asNumber(tradeIndexSnapshot.data?.rows_written) || 0,
       last_run_rows_fetched: asNumber(tradeIndexSnapshot.data?.last_run_rows_fetched) || 0,
       last_run_rows_written: asNumber(tradeIndexSnapshot.data?.last_run_rows_written) || 0,
+      duplicate_rows_skipped: asNumber(tradeIndexSnapshot.data?.duplicate_rows_skipped) || 0,
       active_pair_limit: asNumber(tradeIndexSnapshot.data?.active_pair_limit) || tradeIndexPairLimit(env),
       active_stream_limit: asNumber(tradeIndexSnapshot.data?.active_stream_limit) || tradeIndexPairLimit(env),
+      active_stream_pages_per_run: asNumber(tradeIndexSnapshot.data?.active_stream_pages_per_run) || tradeStreamPagesPerRun(env),
       active_rows_per_market_limit: asNumber(tradeIndexSnapshot.data?.active_rows_per_market_limit) || tradeRowsPerMarketLimit(env),
       trade_history_not_available_for_source: tradeIndexSnapshot.data?.trade_history_not_available_for_source || ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'],
       reference_trade_source: tradeIndexSnapshot.data?.reference_trade_source || 'Wapaca backend indexes alcormarket marketMatches from Hyperion/state-history rows, not a canonical public Alcor HTTP trade endpoint.',
@@ -3862,6 +4038,7 @@ export const __waxonedgeTestHooks = {
   candleBackfillPairLimit,
   tradeIndexPairLimit,
   tradeRowsPerMarketLimit,
+  tradeStreamPagesPerRun,
   sourceStateStale,
   tradeFetchDiagnostic,
   isUpstreamServerErrorStatus,
@@ -3874,6 +4051,7 @@ export const __waxonedgeTestHooks = {
   fetchAlcorMarketMatchStreamRows,
   fetchAlcorMarketMatchHistoryRows,
   parseAlcorMarketMatchAction,
+  normalizeActionStreamProgressMap,
 };
 
 export async function runWaxOnEdgeAggregateBackfill(env) {
