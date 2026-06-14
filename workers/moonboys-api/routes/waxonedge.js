@@ -146,7 +146,10 @@ function tradeStreamPagesPerRun(env) {
 
 function hyperionSkipWindowState(cursor, limit, maxWindow = HYPERION_SKIP_WINDOW_LIMIT) {
   const skipCursor = Math.max(0, Math.floor(asNumber(cursor) || 0));
-  const pageLimit = Math.max(1, Math.floor(asNumber(limit) || DEFAULT_HYPERION_TRADE_SCAN_LIMIT));
+  const pageLimit = Math.max(
+    DEFAULT_HYPERION_TRADE_SCAN_LIMIT,
+    Math.floor(asNumber(limit) || DEFAULT_HYPERION_TRADE_SCAN_LIMIT),
+  );
   const windowLimit = Math.max(1, Math.floor(asNumber(maxWindow) || HYPERION_SKIP_WINDOW_LIMIT));
   const lastValidSkipCursor = Math.max(0, windowLimit - pageLimit);
   return {

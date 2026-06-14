@@ -1204,7 +1204,11 @@ ok('Alcor Hyperion skip window guard allows the last valid page and blocks inval
   __waxonedgeTestHooks.hyperionSkipWindowState(9750, 250).bounded_skip_window_exhausted === false &&
   __waxonedgeTestHooks.hyperionSkipWindowState(9751, 250).bounded_skip_window_exhausted === true &&
   __waxonedgeTestHooks.hyperionSkipWindowState(10000, 250).bounded_skip_window_exhausted === true &&
-  __waxonedgeTestHooks.hyperionSkipWindowState(10000, 250).last_valid_skip_cursor === 9750);
+  __waxonedgeTestHooks.hyperionSkipWindowState(10000, 250).last_valid_skip_cursor === 9750 &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9900, 50).bounded_skip_window_exhausted === false &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9901, 50).bounded_skip_window_exhausted === true &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9950, 50).bounded_skip_window_exhausted === true &&
+  __waxonedgeTestHooks.hyperionSkipWindowState(9900, 50).last_valid_skip_cursor === 9900);
 ok('bounded skip exhaustion is handled before Alcor fetch attempt accounting',
   route.indexOf('const skipWindow = hyperionSkipWindowState(streamCursor, rowsPerMarket)') > -1 &&
   route.indexOf('const skipWindow = hyperionSkipWindowState(streamCursor, rowsPerMarket)') < route.indexOf('attemptedPairCount += 1') &&
