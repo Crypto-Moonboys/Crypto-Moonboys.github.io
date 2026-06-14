@@ -462,7 +462,10 @@ ok('candle_backfill does not remain planned forever after scheduled run',
 ok('candle backfill waits for indexed trade rows without fake attempted progress',
   route.includes('const candleTradeSources = indexedCandleTradeSources()') &&
   route.includes('const candlePairSourceNames = [...new Set(candleTradeSources.flatMap(candleTradeSourceNamesFor))]') &&
-  route.includes('SELECT 1 FROM waxonedge_trades WHERE source IN') &&
+  route.includes('FROM waxonedge_trades') &&
+  route.includes('WHERE source IN') &&
+  route.includes('const tradeLookbackCutoffIso = candleBackfillLookbackCutoffIso()') &&
+  route.includes('AND traded_at >= ?') &&
   !route.includes("SELECT COUNT(*) AS count FROM waxonedge_trades WHERE source = 'alcor'") &&
   route.includes('if (!indexedAlcorTradeRow)') &&
   route.includes("status: 'skipped'") &&
@@ -494,6 +497,20 @@ ok('candle alias matching is source-specific',
   !__waxonedgeTestHooks.candleTradeSourceNamesFor('alcor').includes('alcorv2') &&
   __waxonedgeTestHooks.candleTradeSourceNamesFor('swap.alcor').includes('alcorv2') &&
   !__waxonedgeTestHooks.candleTradeSourceNamesFor('swap.alcor').includes('alcormarket'));
+ok('candle backfill readiness uses same lookback cutoff as per-pair trade loading',
+  route.includes('function candleBackfillLookbackCutoffIso') &&
+  route.includes('const startIso = candleBackfillLookbackCutoffIso()') &&
+  route.includes('const tradeLookbackCutoffIso = candleBackfillLookbackCutoffIso()') &&
+  route.includes(').bind(...candlePairSourceNames, tradeLookbackCutoffIso)') &&
+  !route.includes('SELECT 1 FROM waxonedge_trades WHERE source IN (${candleTradeSourcePlaceholders}) LIMIT 1'));
+ok('old source trade rows do not create pair mismatch diagnostics',
+  route.includes('async function indexedTradeRowsExistForSource') &&
+  route.match(/async function indexedTradeRowsExistForSource[\s\S]*AND traded_at >= \?[\s\S]*LIMIT 1/) &&
+  route.includes("reason: hasSourceRows ? 'pair_id_mismatch' : (source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed')"));
+ok('recent source rows can still flag pair id mismatch when candidate pair rows are missing',
+  route.includes('const hasSourceRows = await indexedTradeRowsExistForSource(db, source)') &&
+  route.includes("reason: hasSourceRows ? 'pair_id_mismatch'") &&
+  route.includes('pair_id_mismatch_count_by_source'));
 ok('candle backfill excludes table-only sources from trade sources',
   __waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.nefty') &&
   !__waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.adex') &&
@@ -854,7 +871,8 @@ ok('AMM trade indexer exposes progress and duplicate-safe row accounting',
 ok('candle backfill can build from AMM waxonedge_trades rows',
   route.includes('const candleTradeSources = indexedCandleTradeSources()') &&
   route.includes('const candlePairSourceNames = [...new Set(candleTradeSources.flatMap(candleTradeSourceNamesFor))]') &&
-  route.includes('SELECT 1 FROM waxonedge_trades WHERE source IN') &&
+  route.includes('FROM waxonedge_trades') &&
+  route.includes('AND traded_at >= ?') &&
   route.includes('FROM waxonedge_pairs') &&
   route.includes('WHERE source IN') &&
   route.includes("reason: hasSourceRows ? 'pair_id_mismatch' : (source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed')") &&

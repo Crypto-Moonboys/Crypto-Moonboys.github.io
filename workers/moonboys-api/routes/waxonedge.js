@@ -316,6 +316,10 @@ function mergeSourceCounters(previous, current) {
   return merged;
 }
 
+function candleBackfillLookbackCutoffIso(now = Date.now()) {
+  return new Date(now - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60 * 1000)).toISOString();
+}
+
 function candleUrlExample(source, pairId) {
   const src = moonboysCandleSource(source);
   const id = safeString(pairId);
@@ -4689,8 +4693,7 @@ function buildDailyCandlesFromTradeRows(rows, options = {}) {
 async function loadIndexedTradeRowsForPair(db, source, pairId) {
   const moonboysSource = moonboysCandleSource(source);
   const tradeSources = candleTradeSourceNamesFor(moonboysSource);
-  const startMillis = Date.now() - (CANDLE_BACKFILL_LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
-  const startIso = new Date(startMillis).toISOString();
+  const startIso = candleBackfillLookbackCutoffIso();
   const sourcePlaceholders = tradeSources.map(() => '?').join(',');
   const rows = await db.prepare(
     `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json
@@ -4708,9 +4711,14 @@ async function indexedTradeRowsExistForSource(db, source) {
   const tradeSources = candleTradeSourceNamesFor(source);
   if (!tradeSources.length) return false;
   const placeholders = tradeSources.map(() => '?').join(',');
+  const startIso = candleBackfillLookbackCutoffIso();
   const row = await db.prepare(
-    `SELECT 1 FROM waxonedge_trades WHERE source IN (${placeholders}) LIMIT 1`
-  ).bind(...tradeSources).first().catch(() => null);
+    `SELECT 1
+     FROM waxonedge_trades
+     WHERE source IN (${placeholders})
+       AND traded_at >= ?
+     LIMIT 1`
+  ).bind(...tradeSources, startIso).first().catch(() => null);
   return !!row;
 }
 
@@ -4816,9 +4824,14 @@ async function planWaxOnEdgeCandleBackfill(env) {
   const previousSnapshot = await readSnapshot(env.DB, CANDLE_BACKFILL_SOURCE);
   const previousData = previousSnapshot.data || {};
   const cursorOffset = clampInteger(state?.cursor || 0, 0, 0, Number.MAX_SAFE_INTEGER);
+  const tradeLookbackCutoffIso = candleBackfillLookbackCutoffIso();
   const indexedAlcorTradeRow = await env.DB.prepare(
-    `SELECT 1 FROM waxonedge_trades WHERE source IN (${candleTradeSourcePlaceholders}) LIMIT 1`
-  ).bind(...candlePairSourceNames).first().catch(() => null);
+    `SELECT 1
+     FROM waxonedge_trades
+     WHERE source IN (${candleTradeSourcePlaceholders})
+       AND traded_at >= ?
+     LIMIT 1`
+  ).bind(...candlePairSourceNames, tradeLookbackCutoffIso).first().catch(() => null);
   if (!indexedAlcorTradeRow) {
     const existingCandleCount = await countScalar(env.DB,
       `SELECT COUNT(*) AS count FROM waxonedge_chart_candles WHERE interval = '1D'`);
