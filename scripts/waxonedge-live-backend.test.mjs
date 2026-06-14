@@ -431,6 +431,12 @@ ok('candle backfill waits for indexed trade rows without fake attempted progress
   route.includes('processed_pair_count: asNumber(previousData.processed_pair_count) || 0') &&
   route.includes('cursor: state?.cursor ||') &&
   route.includes('return { ok: true, ...snapshot, indexed_1d_candle_count: existingCandleCount }'));
+ok('candle backfill reports remaining candidate-pair trade gaps after candles are written',
+  route.includes("lastError = 'waiting for indexed trade rows for remaining candidate pairs'") &&
+  route.includes('const diagnosticLastError = candlesWritten > 0 && (tradeRowsNotIndexedCount > 0 || swapRowsNotIndexedCount > 0)') &&
+  route.includes("? 'waiting for indexed trade rows for remaining candidate pairs'") &&
+  route.includes('last_error: diagnosticLastError') &&
+  route.includes('const error = diagnosticLastError ||'));
 ok('internal candle builder replaces external Alcor chart URL dependency',
   route.includes('function buildInternalDailyCandlesForPair') &&
   route.includes("reason: source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
@@ -670,9 +676,11 @@ ok('trade-row index state treats normal cursoring as non-truncated progress',
   route.includes('truncated: sourceStateTruncated') &&
   route.includes('const sourceStateError = status === \'failed\' ? visibleError : null') &&
   route.includes('error: sourceStateError') &&
+  route.includes("error: Object.prototype.hasOwnProperty.call(patch, 'error') ? patch.error : existing?.error ?? null") &&
   !route.includes('truncated: complete ? 0 : 1'));
 ok('successful trade-row index runs clear stale-looking errors',
-  route.includes("const visibleError = status === 'success' ? null") &&
+  route.includes('const hasCurrentFailure = hyperionNotConfigured || budgetExhausted || failedPairCount > 0 || temporarilyFailedPairCount > 0') &&
+  route.includes("const visibleError = (status === 'success' || (rowsWritten > 0 && !hasCurrentFailure))") &&
   route.includes('last_error: visibleError') &&
   route.includes('recordSyncRun(env.DB, ALCOR_TRADE_INDEX_SOURCE, status, startedAt, visibleError)'));
 ok('sourceStateStale does not treat normal trade_indexing partial cursor as stale',
@@ -1113,7 +1121,7 @@ ok('candle backfill advances cursor by attempted pairs and records failures',
   route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + attemptedPairCount)') &&
   route.includes('attempted_pair_count: totalAttemptedPairCount') &&
   route.includes('failed_pair_count: totalFailedPairCount') &&
-  route.includes('last_error: lastError') &&
+  route.includes('last_error: diagnosticLastError') &&
   !route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + processedPairCount)'));
 ok('candle batch stops before budget exhaustion and reports budget separately',
   route.includes('DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT = 24') &&

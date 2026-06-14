@@ -2178,7 +2178,10 @@ async function syncAlcorMarketTradeRows(env) {
     : (budgetExhausted
     ? 'budget_limited'
     : (attemptedPairCount > 0 || allStreamsCompleteBeforeRun || allStreamsComplete ? 'partial' : 'planned')));
-  const visibleError = status === 'success' ? null : (lastError || (status === 'planned' ? TRADE_INDEX_PLAN : null));
+  const hasCurrentFailure = hyperionNotConfigured || budgetExhausted || failedPairCount > 0 || temporarilyFailedPairCount > 0;
+  const visibleError = (status === 'success' || (rowsWritten > 0 && !hasCurrentFailure))
+    ? null
+    : (lastError || (status === 'planned' ? TRADE_INDEX_PLAN : null));
   const sourceStateError = status === 'failed' ? visibleError : null;
   const sourceStateTruncated = status === 'failed' ? 1 : 0;
   await upsertSourceIndexState(env.DB, ALCOR_TRADE_INDEX_SOURCE, {
@@ -2533,7 +2536,10 @@ async function syncAmmSwapTradeRows(env) {
     : (budgetExhausted
     ? 'budget_limited'
     : (attemptedPairCount > 0 || allStreamsCompleteBeforeRun || allStreamsComplete ? 'partial' : 'planned')));
-  const visibleError = status === 'success' ? null : (lastError || (status === 'planned' ? AMM_TRADE_INDEX_PLAN : null));
+  const hasCurrentFailure = hyperionNotConfigured || budgetExhausted || failedPairCount > 0 || temporarilyFailedPairCount > 0;
+  const visibleError = (status === 'success' || (rowsWritten > 0 && !hasCurrentFailure))
+    ? null
+    : (lastError || (status === 'planned' ? AMM_TRADE_INDEX_PLAN : null));
   const sourceStateError = status === 'failed' ? visibleError : null;
   const sourceStateTruncated = status === 'failed' ? 1 : 0;
   await upsertSourceIndexState(env.DB, AMM_TRADE_INDEX_SOURCE, {
@@ -2622,7 +2628,7 @@ async function upsertSourceIndexState(db, source, patch) {
     complete: patch.complete ?? existing?.complete ?? 0,
     truncated: patch.truncated ?? existing?.truncated ?? 0,
     status: patch.status ?? existing?.status ?? 'pending',
-    error: patch.error ?? existing?.error ?? null,
+    error: Object.prototype.hasOwnProperty.call(patch, 'error') ? patch.error : existing?.error ?? null,
     started_at: patch.started_at ?? existing?.started_at ?? now,
     updated_at: patch.updated_at ?? now,
   };
@@ -4551,10 +4557,10 @@ async function planWaxOnEdgeCandleBackfill(env) {
         processedPairCount += 1;
       } else if (result.reason === 'trade_rows_not_indexed') {
         tradeRowsNotIndexedCount += 1;
-        lastError = 'trade rows not indexed yet';
+        lastError = 'waiting for indexed trade rows for remaining candidate pairs';
       } else if (result.reason === 'swap_rows_not_indexed') {
         swapRowsNotIndexedCount += 1;
-        lastError = 'swap rows not indexed yet';
+        lastError = 'waiting for indexed trade rows for remaining candidate pairs';
       } else if (result.reason === 'trade_rows_not_usable_for_ohlcv') {
         unsupportedPairCount += 1;
         tradeRowsNotUsableForOhlcvCount += 1;
@@ -4597,7 +4603,10 @@ async function planWaxOnEdgeCandleBackfill(env) {
     : (complete && failedPairCount === 0
     ? 'success'
     : (attemptedPairCount > 0 ? 'partial' : (lastError ? 'failed' : 'planned')));
-  const error = lastError || (status === 'planned' ? CANDLE_BACKFILL_PLAN : null);
+  const diagnosticLastError = candlesWritten > 0 && (tradeRowsNotIndexedCount > 0 || swapRowsNotIndexedCount > 0)
+    ? 'waiting for indexed trade rows for remaining candidate pairs'
+    : lastError;
+  const error = diagnosticLastError || (status === 'planned' ? CANDLE_BACKFILL_PLAN : null);
   await upsertSourceIndexState(env.DB, CANDLE_BACKFILL_SOURCE, {
     sync_cycle_id: `candle-${new Date().toISOString().slice(0, 10)}`,
     cursor: complete ? '' : String(nextCursor),
@@ -4628,7 +4637,7 @@ async function planWaxOnEdgeCandleBackfill(env) {
     candles_written: totalCandlesWritten,
     latest_1d_candle_count: existingCandleCount,
     cursor: complete ? '' : String(nextCursor),
-    last_error: lastError,
+    last_error: diagnosticLastError,
     no_fake_candles: true,
     plan: CANDLE_BACKFILL_PLAN,
   }, nowIso());
@@ -4652,7 +4661,7 @@ async function planWaxOnEdgeCandleBackfill(env) {
     candles_written: totalCandlesWritten,
     indexed_1d_candle_count: existingCandleCount,
     cursor: complete ? '' : String(nextCursor),
-    last_error: lastError,
+    last_error: diagnosticLastError,
     no_fake_candles: true,
     plan: CANDLE_BACKFILL_PLAN,
   };
