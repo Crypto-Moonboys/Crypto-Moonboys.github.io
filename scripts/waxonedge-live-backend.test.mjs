@@ -641,7 +641,7 @@ ok('candle backfill reports remaining candidate-pair trade gaps after candles ar
   route.includes('const error = diagnosticLastError ||'));
 ok('internal candle builder replaces external Alcor chart URL dependency',
   route.includes('function buildInternalDailyCandlesForPair') &&
-  route.includes("reason: hasSourceRows && source !== 'swap.alcor'") &&
+  route.includes("const mismatch = hasSourceRows && source !== 'alcor'") &&
   route.includes("reason: 'candles_built_from_trade_rows'") &&
   route.includes('external_chart_endpoint_unsupported') &&
   !route.includes('/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D'));
@@ -665,14 +665,65 @@ ok('candle backfill readiness uses same lookback cutoff as per-pair trade loadin
 ok('old source trade rows do not create pair mismatch diagnostics',
   route.includes('async function indexedTradeRowsExistForSource') &&
   route.match(/async function indexedTradeRowsExistForSource[\s\S]*AND traded_at >= \?[\s\S]*LIMIT 1/) &&
-  route.includes("reason: hasSourceRows && source !== 'swap.alcor'"));
-ok('verified swap.alcor mapping does not mislabel missing pool trade rows as pair mismatch',
+  route.includes("const mismatch = hasSourceRows && source !== 'alcor'"));
+ok('AMM pair-id mismatch diagnostics include compact examples',
   route.includes('const hasSourceRows = await indexedTradeRowsExistForSource(db, source)') &&
-  route.includes("hasSourceRows && source !== 'swap.alcor'") &&
+  route.includes("const mismatch = hasSourceRows && source !== 'alcor'") &&
   route.includes("source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
   route.includes('pair_id_mismatch_count_by_source') &&
+  route.includes('pair_id_mismatch_examples_by_source') &&
+  route.includes('function indexedTradePairIdExampleForSource') &&
+  route.includes("reason: 'recent trade rows exist for source but not for candidate pair_id'") &&
   !route.includes('swap_alcor_pair_id_mapping_unverified') &&
   !route.includes('pair_id_mapping_unverified_by_source'));
+{
+  const oldA = { source: 'swap.alcor', candidate_pair_id: 'old-a', observed_trade_pair_id: 'trade-a', reason: 'pair_id_mismatch' };
+  const oldB = { source: 'swap.alcor', candidate_pair_id: 'old-b', observed_trade_pair_id: 'trade-b', reason: 'pair_id_mismatch' };
+  const oldC = { source: 'swap.alcor', candidate_pair_id: 'old-c', observed_trade_pair_id: 'trade-c', reason: 'pair_id_mismatch' };
+  const fresh = { source: 'swap.alcor', candidate_pair_id: 'fresh', observed_trade_pair_id: 'trade-fresh', reason: 'pair_id_mismatch' };
+  const merged = __waxonedgeTestHooks.mergeSourceExamples(
+    { 'swap.alcor': [oldA, oldB, oldC] },
+    { 'swap.alcor': [fresh] },
+    3
+  );
+  ok('current pair-id mismatch examples replace stale full previous list',
+    merged['swap.alcor'].length === 3 &&
+    merged['swap.alcor'][0] === fresh &&
+    merged['swap.alcor'].includes(oldA) &&
+    merged['swap.alcor'].includes(oldB) &&
+    !merged['swap.alcor'].includes(oldC));
+}
+{
+  const currentA = { source: 'swap.taco', candidate_pair_id: 'current-a', observed_trade_pair_id: 'trade-a', reason: 'pair_id_mismatch' };
+  const currentB = { source: 'swap.taco', candidate_pair_id: 'current-b', observed_trade_pair_id: 'trade-b', reason: 'pair_id_mismatch' };
+  const previousA = { source: 'swap.taco', candidate_pair_id: 'previous-a', observed_trade_pair_id: 'trade-c', reason: 'pair_id_mismatch' };
+  const previousB = { source: 'swap.taco', candidate_pair_id: 'previous-b', observed_trade_pair_id: 'trade-d', reason: 'pair_id_mismatch' };
+  const previousC = { source: 'swap.taco', candidate_pair_id: 'previous-c', observed_trade_pair_id: 'trade-e', reason: 'pair_id_mismatch' };
+  const merged = __waxonedgeTestHooks.mergeSourceExamples(
+    { 'swap.taco': [previousA, previousB, previousC] },
+    { 'swap.taco': [currentA, currentB] },
+    3
+  );
+  ok('current pair-id mismatch examples fill first then previous examples fill remaining slots',
+    merged['swap.taco'].length === 3 &&
+    merged['swap.taco'][0] === currentA &&
+    merged['swap.taco'][1] === currentB &&
+    merged['swap.taco'][2] === previousA);
+}
+{
+  const duplicateCurrent = { source: 'swap.box', candidate_pair_id: '42', observed_trade_pair_id: '0042', reason: 'pair_id_mismatch' };
+  const duplicatePrevious = { source: 'swap.box', candidate_pair_id: '42', observed_trade_pair_id: '0042', reason: 'pair_id_mismatch' };
+  const previousOnly = { source: 'swap.box', candidate_pair_id: '43', observed_trade_pair_id: '0043', reason: 'pair_id_mismatch' };
+  const merged = __waxonedgeTestHooks.mergeSourceExamples(
+    { 'swap.box': [duplicatePrevious, previousOnly] },
+    { 'swap.box': [duplicateCurrent] },
+    3
+  );
+  ok('duplicate current and previous pair-id mismatch examples are not repeated',
+    merged['swap.box'].length === 2 &&
+    merged['swap.box'][0] === duplicateCurrent &&
+    merged['swap.box'][1] === previousOnly);
+}
 ok('candle backfill excludes table-only sources from trade sources',
   __waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.nefty') &&
   !__waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.adex') &&
@@ -1056,6 +1107,8 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
   ok('swap.alcor table pools and logswap rows use the same canonical pool id',
     __waxonedgeTestHooks.canonicalSwapAlcorPoolId({ id: 2668 }) === '2668' &&
     __waxonedgeTestHooks.canonicalSwapAlcorActionPoolId({ poolId: 2668 }) === '2668' &&
+    __waxonedgeTestHooks.canonicalAmmPairId('swap.alcor', { id: 2668 }) === '2668' &&
+    __waxonedgeTestHooks.canonicalAmmActionPairId('swap.alcor', { poolId: 2668 }) === '2668' &&
     tablePair &&
     tablePair.source === 'swap.alcor' &&
     tablePair.pair_id === '2668' &&
@@ -1065,15 +1118,22 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     normalizedLogswap.pair_id === tablePair.pair_id &&
     normalizedLogswap.trade_id === 'swap.alcor:logswap:2668:333' &&
     __waxonedgeTestHooks.moonboysCandleSource('alcorv2') === 'swap.alcor');
-  ok('verified swap.alcor pair-id mapping uses normal missing-row diagnostics only',
-    route.includes("reason: hasSourceRows && source !== 'swap.alcor'") &&
-    route.includes("source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
-    !route.includes('swap_alcor_pair_id_mapping_unverified') &&
-    !route.includes('pair_id_mapping_unverified_count') &&
-    !route.includes('pair_id_mapping_unverified_by_source'));
 }
 {
   const stream = { source: 'swap.taco', referenceSource: 'taco', account: 'swap.taco', action: 'exchangelog', parser: 'swap-v2-taco' };
+  const priceIndex = new Map([
+    ['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }],
+    ['foo.token::FOO', { priceWax: 0.4, priceUsd: 0.0024 }],
+  ]);
+  const tablePair = __waxonedgeTestHooks.normalizeCoreDexPair({
+    source: 'swap.taco',
+    normalizer: 'pool1-pool2',
+    defaultFeeBps: 30,
+  }, {
+    id: 'WAXFOO',
+    pool1: { quantity: '100.00000000 WAX', contract: 'eosio.token' },
+    pool2: { quantity: '500.0000 FOO', contract: 'foo.token' },
+  }, priceIndex, '2026-06-14T00:00:00.000Z');
   const parsed = __waxonedgeTestHooks.parseAmmSwapAction({
     trx_id: 'ammtrx',
     global_sequence: '111',
@@ -1092,7 +1152,11 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     },
   }, stream);
   const normalized = __waxonedgeTestHooks.normalizeAmmSwapTradeRow(parsed, stream);
-  ok('AMM logswap-style rows normalize into waxonedge_trades with correct source',
+  ok('swap.taco table/action pair IDs normalize consistently',
+    __waxonedgeTestHooks.canonicalTacoPairId({ id: 'WAXFOO' }) === 'WAXFOO' &&
+    __waxonedgeTestHooks.canonicalTacoActionPairId({ id: 'WAXFOO' }) === 'WAXFOO' &&
+    tablePair &&
+    tablePair.pair_id === 'WAXFOO' &&
     parsed &&
     parsed.source === 'swap.taco' &&
     parsed.action_name === 'exchangelog' &&
@@ -1102,7 +1166,7 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     normalized &&
     normalized.source === 'swap.taco' &&
     normalized.trade_id === 'swap.taco:exchangelog:WAXFOO:111' &&
-    normalized.pair_id === 'WAXFOO' &&
+    normalized.pair_id === tablePair.pair_id &&
     normalized.symbol === 'WAX' &&
     normalized.side === 'swap' &&
     normalized.price === '0.2' &&
@@ -1112,6 +1176,35 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
 }
 {
   const stream = { source: 'swap.box', referenceSource: 'defibox', account: 'swap.box', action: 'swaplog', parser: 'swap-v2-defibox' };
+  const priceIndex = new Map([
+    ['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }],
+    ['box.token::BOX', { priceWax: 0.5, priceUsd: 0.003 }],
+  ]);
+  const tablePair = __waxonedgeTestHooks.normalizeCoreDexPair({
+    source: 'swap.box',
+    normalizer: 'box-pairs',
+    defaultFeeBps: 30,
+  }, {
+    pair_id: '12',
+    token0: { contract: 'eosio.token', symbol: 'WAX' },
+    token1: { contract: 'box.token', symbol: 'BOX' },
+    reserve0: '100.0000 WAX',
+    reserve1: '200.0000 BOX',
+  }, priceIndex, '2026-06-14T00:00:00.000Z');
+  const validParsed = __waxonedgeTestHooks.parseAmmSwapAction({
+    trx_id: 'boxtrx',
+    global_sequence: '222',
+    block_num: 333,
+    '@timestamp': '2026-06-14T01:02:03.000Z',
+    act: { name: 'swaplog', data: { pair_id: '12', owner: 'swapper', quantity_in: '1.0000 WAX', quantity_out: '2.0000 BOX', reserve0: '100.0000 WAX', reserve1: '200.0000 BOX' } },
+  }, stream);
+  ok('swap.box table/action pair IDs normalize consistently',
+    __waxonedgeTestHooks.canonicalDefiboxPairId({ pair_id: '12' }) === '12' &&
+    __waxonedgeTestHooks.canonicalDefiboxActionPairId({ pair_id: '12' }) === '12' &&
+    tablePair &&
+    validParsed &&
+    tablePair.pair_id === validParsed.pair_id &&
+    __waxonedgeTestHooks.normalizeAmmSwapTradeRow(validParsed, stream)?.pair_id === tablePair.pair_id);
   const parsed = __waxonedgeTestHooks.parseAmmSwapAction({
     act: { name: 'swaplog', data: { pair_id: '12', owner: 'swapper', quantity_in: '0.0000 WAX', quantity_out: '1.0000 BOX', reserve0: '1.0000 WAX', reserve1: '2.0000 BOX' } },
   }, stream);
@@ -1119,6 +1212,46 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     parsed &&
     parsed.amount_in === 0 &&
     __waxonedgeTestHooks.normalizeAmmSwapTradeRow(parsed, stream) === null);
+}
+{
+  const stream = { source: 'swap.nefty', referenceSource: 'neftyblocks', account: 'swap.nefty', action: 'logswap', parser: 'swap-v2-nefty' };
+  const priceIndex = new Map([
+    ['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }],
+    ['foo.token::FOO', { priceWax: 0.4, priceUsd: 0.0024 }],
+  ]);
+  const tablePair = __waxonedgeTestHooks.normalizeCoreDexPair({
+    source: 'swap.nefty',
+    normalizer: 'reserve0-reserve1',
+    defaultFeeBps: 30,
+  }, {
+    code: 'WAXFOO',
+    reserve0: { quantity: '100.00000000 WAX', contract: 'eosio.token' },
+    reserve1: { quantity: '250.0000 FOO', contract: 'foo.token' },
+  }, priceIndex, '2026-06-14T00:00:00.000Z');
+  const parsed = __waxonedgeTestHooks.parseAmmSwapAction({
+    trx_id: 'neftytrx',
+    global_sequence: '444',
+    block_num: 555,
+    '@timestamp': '2026-06-14T01:02:03.000Z',
+    act: {
+      name: 'logswap',
+      data: {
+        code: 'WAXFOO',
+        owner: 'swapper',
+        quantity_in: '1.00000000 WAX',
+        quantity_out: '2.5000 FOO',
+        reserve0: { quantity: '100.00000000 WAX' },
+        reserve1: { quantity: '250.0000 FOO' },
+      },
+    },
+  }, stream);
+  ok('swap.nefty table/action pair IDs normalize consistently',
+    __waxonedgeTestHooks.canonicalNeftyPairId({ code: 'WAXFOO' }) === 'WAXFOO' &&
+    __waxonedgeTestHooks.canonicalNeftyActionPairId({ code: 'WAXFOO' }) === 'WAXFOO' &&
+    tablePair &&
+    parsed &&
+    tablePair.pair_id === parsed.pair_id &&
+    __waxonedgeTestHooks.normalizeAmmSwapTradeRow(parsed, stream)?.pair_id === tablePair.pair_id);
 }
 {
   const originalFetch = globalThis.fetch;
@@ -1172,12 +1305,21 @@ ok('candle backfill can build from AMM waxonedge_trades rows',
   route.includes('AND traded_at >= ?') &&
   route.includes('FROM waxonedge_pairs') &&
   route.includes('WHERE source IN') &&
-  route.includes("reason: hasSourceRows && source !== 'swap.alcor'") &&
+  route.includes("const mismatch = hasSourceRows && source !== 'alcor'") &&
   route.includes("source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
   __waxonedgeTestHooks.buildDailyCandlesFromTradeRows([
     { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T00:00:00.000Z', price: '0.2', volume: '2' },
     { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T01:00:00.000Z', price: '0.25', volume: '3' },
   ], { source: 'swap.taco' })[0].close === '0.25');
+ok('candle backfill uses canonical AMM IDs and does not derive candles from reserves',
+  route.includes('function canonicalAmmPairId') &&
+  route.includes('function canonicalAmmActionPairId') &&
+  route.includes('const pairId = canonicalAmmPairId(adapter.source, row)') &&
+  route.includes('pairId = canonicalAmmActionPairId(stream.source, record, row)') &&
+  route.includes('const rows = await loadIndexedTradeRowsForPair(db, source, pairId)') &&
+  route.includes('if (!rows.length)') &&
+  !/buildInternalDailyCandlesForPair[\s\S]*reserve_a[\s\S]*writeChartCandles/.test(route) &&
+  !route.includes('public chart fallback'));
 ok('Alcor marketMatches pagination reports per-action skip progress without full-history completion claims',
   route.includes('function normalizeActionStreamProgressMap') &&
   route.includes('const streamProgress = normalizeActionStreamProgressMap(previousData.action_streams, actionStreams)') &&
