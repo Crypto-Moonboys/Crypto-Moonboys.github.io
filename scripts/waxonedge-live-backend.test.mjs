@@ -242,14 +242,32 @@ ok('VPS live indexer exposes no fake live events or random movement',
   !liveIndexerSource.includes('setInterval'));
 ok('VPS live indexer safely parses request path without trusting Host header',
   liveIndexer.safeRequestPathname('/health?x=1') === '/health' &&
-  liveIndexer.safeRequestPathname('https://host.example/snapshot?x=1') === '/snapshot' &&
+  liveIndexer.safeRequestPathname('/health') === '/health' &&
+  liveIndexer.safeRequestPathname('/snapshot') === '/snapshot' &&
+  liveIndexer.safeRequestPathname('/stream') === '/stream' &&
   liveIndexer.safeRequestPathname('bad-target') === null &&
   liveIndexer.safeRequestPathname('/bad%') === null &&
   liveIndexer.safeRequestPathname('/bad\r\nHost:evil.example') === null &&
+  liveIndexer.safeRequestPathname('https://user:pass@host/health?x=1') === null &&
+  liveIndexer.safeRequestPathname('https://host/health#frag') === null &&
+  liveIndexer.safeRequestPathname('ftp://host/health') === null &&
   liveIndexerSource.includes('function safeRequestPathname') &&
   !liveIndexerSource.includes('new URL(req.url ||') &&
   !liveIndexerSource.includes('req.headers.host ||') &&
   liveIndexerSource.includes("error: 'malformed request target'"));
+{
+  let body = '';
+  const res = {
+    writeHead() {},
+    end(value) {
+      body = value;
+    },
+  };
+  liveIndexer.writeJson(res, 200, { ok: true, nested: { value: 1 } });
+  ok('VPS live indexer writeJson uses compact JSON responses',
+    body === '{"ok":true,"nested":{"value":1}}' &&
+    !body.includes('\n  "'));
+}
 {
   function fakeLiveDb(results, onSql) {
     return {

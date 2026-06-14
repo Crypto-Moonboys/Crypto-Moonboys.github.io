@@ -124,8 +124,8 @@ export function snapshotPayload(state = createState()) {
   };
 }
 
-function writeJson(res, status, payload) {
-  const body = JSON.stringify(payload, null, 2);
+export function writeJson(res, status, payload) {
+  const body = JSON.stringify(payload);
   res.writeHead(status, {
     'content-type': 'application/json; charset=utf-8',
     'cache-control': 'no-store',
@@ -154,13 +154,7 @@ function writeSseHeartbeat(res, state) {
 export function safeRequestPathname(requestUrl) {
   const raw = String(requestUrl || '/');
   if (!raw || raw.length > 2048 || /[\r\n]/.test(raw)) return null;
-  if (/^https?:\/\//i.test(raw)) {
-    try {
-      return new URL(raw).pathname || '/';
-    } catch (_) {
-      return null;
-    }
-  }
+  if (/^[A-Za-z][A-Za-z0-9+.-]*:/.test(raw)) return null;
   if (!raw.startsWith('/')) return null;
   const path = raw.split('?')[0].split('#')[0] || '/';
   try {
