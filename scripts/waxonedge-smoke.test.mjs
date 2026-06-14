@@ -159,6 +159,9 @@ ok('waxonedge-bubbles-v2.js supports Ant-style metric and timeframe modes',
   v2Js.includes("if (metric === 'price') return record.selectedPriceUsd != null ? record.selectedPriceUsd : record.selectedPriceWax") &&
   v2Js.includes("if (timeframe === '7d')") &&
   v2Js.includes("if (timeframe === '30d')"));
+ok('waxonedge.html exposes Liquidity scanner metric control when liquidity mode exists',
+  html.includes('data-woe-metric="liquidity"') &&
+  html.includes('>Liquidity</button>'));
 ok('waxonedge-bubbles-v2.js does not fallback between scanner metrics',
   v2Js.includes('return change != null ? Math.abs(change) : null') &&
   v2Js.includes("if (metric === 'tvl') {\n      return record.tvlUsd != null ? record.tvlUsd : record.tvlWax;\n    }") &&

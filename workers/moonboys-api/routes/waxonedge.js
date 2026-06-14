@@ -76,7 +76,15 @@ function tradeRowsPerMarketLimit(env) {
 }
 
 function hyperionApiBase(env) {
-  return String(env?.WAXONEDGE_HYPERION_API || '').trim().replace(/\/+$/, '');
+  const raw = String(env?.WAXONEDGE_HYPERION_API || '').trim();
+  if (!raw) return '';
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '';
+    return parsed.href.replace(/\/+$/, '');
+  } catch (_) {
+    return '';
+  }
 }
 
 function hyperionConfigured(env) {
@@ -106,6 +114,11 @@ function hyperionNotConfiguredTradeResult(pairId) {
     attempted_endpoints: [],
     ingestion_path: 'hyperion_marketMatches',
   };
+}
+
+function hyperionHistoryActionsEndpoint(env) {
+  const base = hyperionApiBase(env);
+  return base ? `${base}/history/get_actions` : '';
 }
 
 function isSubrequestBudgetError(error) {
@@ -1155,11 +1168,11 @@ function alcorMarketTradeUrls(pairId, limit) {
 }
 
 function alcorMarketMatchHistoryUrls(env, pairId, limit) {
-  const base = hyperionApiBase(env);
+  const endpoint = hyperionHistoryActionsEndpoint(env);
   const count = encodeURIComponent(String(Math.max(limit, DEFAULT_HYPERION_TRADE_SCAN_LIMIT)));
   const filters = ['alcordexmain:buymatch', 'alcordexmain:sellmatch'];
   return filters.map((filter) =>
-    `${base}/v2/history/get_actions?account=alcordexmain&filter=${encodeURIComponent(filter)}&sort=desc&limit=${count}&simple=true&noBinary=true&checkLib=true`);
+    `${endpoint}?account=alcordexmain&act.name=${encodeURIComponent(filter.split(':')[1])}&sort=asc&limit=${count}&simple=true&noBinary=true&checkLib=true`);
 }
 
 async function fetchAlcorMarketMatchHistoryRows(env, pairId, limit) {
@@ -1582,7 +1595,7 @@ async function syncAlcorMarketTradeRows(env) {
   const totalTemporarilyFailedPairCount = (asNumber(previousSnapshot.data?.temporarily_failed_pair_count) || 0) + temporarilyFailedPairCount;
   const totalUpstream5xxCount = (asNumber(previousSnapshot.data?.upstream_5xx_count) || 0) + upstream5xxCount;
   const totalUpstreamBadPayloadCount = (asNumber(previousSnapshot.data?.upstream_bad_payload_count) || 0) + upstreamBadPayloadCount;
-  const totalHyperionNotConfiguredCount = hyperionNotConfiguredCount ? hyperionNotConfiguredCount : (asNumber(previousSnapshot.data?.hyperion_not_configured_count) || 0);
+  const totalHyperionNotConfiguredCount = (asNumber(previousSnapshot.data?.hyperion_not_configured_count) || 0) + hyperionNotConfiguredCount;
   const totalHyperionScanNoRowsCount = (asNumber(previousSnapshot.data?.hyperion_scan_no_market_matches_count) || 0) + hyperionScanNoRowsCount;
   const totalNoTradeRowsCount = (asNumber(previousSnapshot.data?.no_trade_rows_count) || 0) + noTradeRowsCount;
   const totalRowsIndexed = (asNumber(previousSnapshot.data?.trade_rows_indexed) || 0) + rowsIndexed;
@@ -1623,7 +1636,7 @@ async function syncAlcorMarketTradeRows(env) {
     hyperion_not_configured: hyperionNotConfigured || !hyperionConfigured(env),
     hyperion_not_configured_count: totalHyperionNotConfiguredCount,
     active_hyperion_endpoint: hyperionApiBase(env) || null,
-    hyperion_query_shape: 'GET /v2/history/get_actions?account=alcordexmain&filter=alcordexmain:buymatch|sellmatch&sort=desc&limit=<n>; market_id filtered locally from action data',
+    hyperion_query_shape: 'GET <configured-base>/history/get_actions?account=alcordexmain&act.name=buymatch|sellmatch&sort=asc&limit=<n>; market_id filtered locally from action data',
     hyperion_scan_no_market_matches_count: totalHyperionScanNoRowsCount,
     no_trade_rows_count: totalNoTradeRowsCount,
     trade_rows_indexed: totalRowsIndexed,
@@ -1657,7 +1670,7 @@ async function syncAlcorMarketTradeRows(env) {
     hyperion_not_configured: hyperionNotConfigured || !hyperionConfigured(env),
     hyperion_not_configured_count: totalHyperionNotConfiguredCount,
     active_hyperion_endpoint: hyperionApiBase(env) || null,
-    hyperion_query_shape: 'GET /v2/history/get_actions?account=alcordexmain&filter=alcordexmain:buymatch|sellmatch&sort=desc&limit=<n>; market_id filtered locally from action data',
+    hyperion_query_shape: 'GET <configured-base>/history/get_actions?account=alcordexmain&act.name=buymatch|sellmatch&sort=asc&limit=<n>; market_id filtered locally from action data',
     hyperion_scan_no_market_matches_count: totalHyperionScanNoRowsCount,
     no_trade_rows_count: totalNoTradeRowsCount,
     trade_rows_indexed: totalRowsIndexed,
@@ -3187,8 +3200,8 @@ async function getIndexerHealth(db, env = {}) {
       upstream_bad_payload_count: asNumber(tradeIndexSnapshot.data?.upstream_bad_payload_count) || 0,
       hyperion_not_configured: tradeIndexSnapshot.data?.hyperion_not_configured === true || !hyperionConfigured(env),
       hyperion_not_configured_count: asNumber(tradeIndexSnapshot.data?.hyperion_not_configured_count) || 0,
-      active_hyperion_endpoint: tradeIndexSnapshot.data?.active_hyperion_endpoint || hyperionApiBase(env) || null,
-      hyperion_query_shape: tradeIndexSnapshot.data?.hyperion_query_shape || 'GET /v2/history/get_actions?account=alcordexmain&filter=alcordexmain:buymatch|sellmatch&sort=desc&limit=<n>; market_id filtered locally from action data',
+      active_hyperion_endpoint: hyperionApiBase(env) || tradeIndexSnapshot.data?.active_hyperion_endpoint || null,
+      hyperion_query_shape: tradeIndexSnapshot.data?.hyperion_query_shape || 'GET <configured-base>/history/get_actions?account=alcordexmain&act.name=buymatch|sellmatch&sort=asc&limit=<n>; market_id filtered locally from action data',
       hyperion_scan_no_market_matches_count: asNumber(tradeIndexSnapshot.data?.hyperion_scan_no_market_matches_count) || 0,
       no_trade_rows_count: asNumber(tradeIndexSnapshot.data?.no_trade_rows_count) || 0,
       trade_rows_indexed: asNumber(tradeIndexSnapshot.data?.trade_rows_indexed) || 0,
@@ -3796,6 +3809,7 @@ export const __waxonedgeTestHooks = {
   isTemporaryTradeFailureType,
   hyperionApiBase,
   hyperionConfigured,
+  hyperionHistoryActionsEndpoint,
   alcorMarketMatchHistoryUrls,
   fetchAlcorMarketTradeRows,
   fetchAlcorMarketMatchHistoryRows,
