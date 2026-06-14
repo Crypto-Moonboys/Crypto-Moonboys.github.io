@@ -684,7 +684,15 @@ ok('indexer health exposes live update contract metadata',
     __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'ftp://live.example' }) === false &&
     __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'https://user:pass@live.example' }) === false &&
     __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'https://live.example/?x=1' }) === false &&
-    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'https://live.example/#frag' }) === false);
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'https://live.example/#frag' }) === false &&
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'http://live.example' }) === false);
+  ok('Worker live indexer URL policy allows loopback HTTP and non-loopback HTTPS only',
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'http://127.0.0.1:8789' }) === true &&
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'http://localhost:8789' }) === true &&
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'http://[::1]:8789' }) === true &&
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal' }) === true &&
+    __waxonedgeTestHooks.isLoopbackLiveIndexerHost('::1') === true &&
+    __waxonedgeTestHooks.isLoopbackLiveIndexerHost('[::1]') === true);
 }
 {
   const notConfigured = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({}, async () => {
@@ -839,7 +847,52 @@ ok('indexer health exposes live update contract metadata',
     __waxonedgeTestHooks.liveIndexerProbeCacheKey({
       WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer-a.example.internal',
       WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
-    }) === 'https://live-indexer-a.example.internal|secret:1');
+    }).startsWith('https://live-indexer-a.example.internal|secret:fnv1a:') &&
+    __waxonedgeTestHooks.liveIndexerProbeCacheKey({
+      WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer-a.example.internal',
+      WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+    }).includes('do-not-leak') === false);
+}
+{
+  const goodHealth = {
+    service: 'waxonedge-live-indexer',
+    status: 'not_connected',
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: false,
+    emits_fake_token_updates: false,
+  };
+  const secrets = [];
+  __waxonedgeTestHooks.resetWaxonedgeLiveIndexerProbeCache();
+  await __waxonedgeTestHooks.cachedProbeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'old-secret',
+  }, async (_url, options) => {
+    secrets.push(options.headers['x-waxonedge-live-secret']);
+    return new Response(JSON.stringify(goodHealth), { status: 200 });
+  }, 1000);
+  await __waxonedgeTestHooks.cachedProbeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'new-secret',
+  }, async (_url, options) => {
+    secrets.push(options.headers['x-waxonedge-live-secret']);
+    return new Response(JSON.stringify(goodHealth), { status: 200 });
+  }, 2000);
+  const oldKey = __waxonedgeTestHooks.liveIndexerProbeCacheKey({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'old-secret',
+  });
+  const newKey = __waxonedgeTestHooks.liveIndexerProbeCacheKey({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'new-secret',
+  });
+  ok('Worker live indexer probe cache invalidates on shared secret fingerprint changes',
+    secrets.length === 2 &&
+    secrets[0] === 'old-secret' &&
+    secrets[1] === 'new-secret' &&
+    oldKey !== newKey &&
+    oldKey.includes('old-secret') === false &&
+    newKey.includes('new-secret') === false &&
+    __waxonedgeTestHooks.liveIndexerSecretFingerprint('old-secret') !== __waxonedgeTestHooks.liveIndexerSecretFingerprint('new-secret'));
 }
 {
   const probeWithPayload = (payload) => __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({

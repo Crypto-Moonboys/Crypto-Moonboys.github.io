@@ -187,14 +187,18 @@ function waxonedgeLiveIndexerUrlConfigured(env) {
   if (!raw) return false;
   try {
     const parsed = new URL(raw);
-    return (parsed.protocol === 'https:' || parsed.protocol === 'http:') &&
-      !parsed.username &&
-      !parsed.password &&
-      !parsed.search &&
-      !parsed.hash;
+    if (parsed.username || parsed.password || parsed.search || parsed.hash) return false;
+    if (parsed.protocol === 'https:') return true;
+    if (parsed.protocol === 'http:') return isLoopbackLiveIndexerHost(parsed.hostname);
+    return false;
   } catch (_) {
     return false;
   }
+}
+
+function isLoopbackLiveIndexerHost(hostname) {
+  const host = String(hostname || '').trim().toLowerCase().replace(/^\[|\]$/g, '');
+  return host === '127.0.0.1' || host === 'localhost' || host === '::1';
 }
 
 function waxonedgeLiveIndexerBaseUrl(env) {
@@ -331,8 +335,19 @@ function cloneLiveIndexerProbeResult(result) {
 
 function liveIndexerProbeCacheKey(env) {
   const baseUrl = waxonedgeLiveIndexerBaseUrl(env);
-  const secretConfigured = Boolean(String(env?.WAXONEDGE_LIVE_SHARED_SECRET || '').trim());
-  return `${baseUrl || 'not_configured'}|secret:${secretConfigured ? '1' : '0'}`;
+  const secret = String(env?.WAXONEDGE_LIVE_SHARED_SECRET || '').trim();
+  return `${baseUrl || 'not_configured'}|secret:${liveIndexerSecretFingerprint(secret)}`;
+}
+
+function liveIndexerSecretFingerprint(secret) {
+  const text = String(secret || '');
+  if (!text) return 'none';
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `fnv1a:${(hash >>> 0).toString(16).padStart(8, '0')}`;
 }
 
 async function cachedProbeWaxonedgeLiveIndexer(env, fetchImpl = globalThis.fetch, nowMs = Date.now()) {
@@ -5983,11 +5998,13 @@ export const __waxonedgeTestHooks = {
   hyperionConfigured,
   hyperionHistoryActionsEndpoint,
   waxonedgeLiveIndexerUrlConfigured,
+  isLoopbackLiveIndexerHost,
   waxonedgeLiveIndexerBaseUrl,
   waxonedgeLiveIndexerConfig,
   probeWaxonedgeLiveIndexer,
   cachedProbeWaxonedgeLiveIndexer,
   liveIndexerProbeCacheKey,
+  liveIndexerSecretFingerprint,
   resetWaxonedgeLiveIndexerProbeCache,
   alcorMarketMatchHistoryUrls,
   alcorMarketMatchStreamUrl,
