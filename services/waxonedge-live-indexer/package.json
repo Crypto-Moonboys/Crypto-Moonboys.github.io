@@ -7,6 +7,7 @@
   "main": "src/index.mjs",
   "scripts": {
     "start": "node src/index.mjs",
+    "check": "node scripts/check-live-indexer.mjs",
     "test": "node --check src/index.mjs"
   },
   "engines": {
