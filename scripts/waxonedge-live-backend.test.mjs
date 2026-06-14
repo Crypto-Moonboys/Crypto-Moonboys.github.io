@@ -48,6 +48,7 @@ const aggregateMigration = read('workers/moonboys-api/migrations/023_waxonedge_t
 const sourceCoverageMigration = read('workers/moonboys-api/migrations/024_waxonedge_aggregate_source_coverage.sql');
 const sourceStateMigration = read('workers/moonboys-api/migrations/025_waxonedge_source_index_state.sql');
 const frontend = read('js/waxonedge.js');
+const frontendBubbles = read('js/waxonedge-bubbles-v2.js');
 const frontendSources = read('js/waxonedge-sources.js');
 const html = read('waxonedge.html');
 const tokenHtml = read('analytics/token/index.html');
@@ -482,7 +483,7 @@ ok('candle backfill reports remaining candidate-pair trade gaps after candles ar
   route.includes('const error = diagnosticLastError ||'));
 ok('internal candle builder replaces external Alcor chart URL dependency',
   route.includes('function buildInternalDailyCandlesForPair') &&
-  route.includes("reason: hasSourceRows ? 'pair_id_mismatch' : (source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed')") &&
+  route.includes("reason: hasSourceRows && source !== 'swap.alcor'") &&
   route.includes("reason: 'candles_built_from_trade_rows'") &&
   route.includes('external_chart_endpoint_unsupported') &&
   !route.includes('/markets/${encodeURIComponent(pair.pair_id)}/charts?resolution=1D'));
@@ -506,11 +507,14 @@ ok('candle backfill readiness uses same lookback cutoff as per-pair trade loadin
 ok('old source trade rows do not create pair mismatch diagnostics',
   route.includes('async function indexedTradeRowsExistForSource') &&
   route.match(/async function indexedTradeRowsExistForSource[\s\S]*AND traded_at >= \?[\s\S]*LIMIT 1/) &&
-  route.includes("reason: hasSourceRows ? 'pair_id_mismatch' : (source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed')"));
-ok('recent source rows can still flag pair id mismatch when candidate pair rows are missing',
+  route.includes("reason: hasSourceRows && source !== 'swap.alcor'"));
+ok('verified swap.alcor mapping does not mislabel missing pool trade rows as pair mismatch',
   route.includes('const hasSourceRows = await indexedTradeRowsExistForSource(db, source)') &&
-  route.includes("reason: hasSourceRows ? 'pair_id_mismatch'") &&
-  route.includes('pair_id_mismatch_count_by_source'));
+  route.includes("hasSourceRows && source !== 'swap.alcor'") &&
+  route.includes("source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
+  route.includes('pair_id_mismatch_count_by_source') &&
+  !route.includes('swap_alcor_pair_id_mapping_unverified') &&
+  !route.includes('pair_id_mapping_unverified_by_source'));
 ok('candle backfill excludes table-only sources from trade sources',
   __waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.nefty') &&
   !__waxonedgeTestHooks.indexedCandleTradeSources().includes('swap.adex') &&
@@ -698,6 +702,84 @@ ok('aggregate source list includes swap.adex and dapp.fusion without dropping ex
 {
   const priceIndex = new Map([
     ['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }],
+    ['foo.token::FOO', { priceWax: 0.4, priceUsd: 0.0024 }],
+  ]);
+  const parsedWax = __waxonedgeTestHooks.parseAsset('100.00000000 WAX');
+  const parsedFoo = __waxonedgeTestHooks.parseAsset('250.0000 FOO');
+  const rawWaxSide = __waxonedgeTestHooks.getTokenSideInfo({
+    amount: '10000000000',
+    decimals: 8,
+    symbol: '8,WAX',
+    contract: 'eosio.token',
+  });
+  const decimalWaxSide = __waxonedgeTestHooks.getTokenSideInfo({
+    amount: '100.5',
+    decimals: 8,
+    symbol: '8,WAX',
+    contract: 'eosio.token',
+  });
+  const zeroDecimalSide = __waxonedgeTestHooks.getTokenSideInfo({
+    amount: '250',
+    decimals: 0,
+    symbol: '0,FOO',
+    contract: 'foo.token',
+  });
+  ok('WaxOnEdge reserve parser applies token precision exactly once',
+    parsedWax.amount === 100 &&
+    parsedFoo.amount === 250 &&
+    rawWaxSide.amount === 100 &&
+    decimalWaxSide.amount === 100.5 &&
+    zeroDecimalSide.amount === 250);
+  const normalLiquidity = __waxonedgeTestHooks.liquidityFromSides(
+    { contract: 'eosio.token', symbol: 'WAX', amount: 100 },
+    { contract: 'foo.token', symbol: 'FOO', amount: 250 },
+    priceIndex,
+  );
+  ok('WaxOnEdge TVL derives from scaled reserves and real WAX/USD price',
+    normalLiquidity.liquidityWax === '200' &&
+    normalLiquidity.liquidityUsd === '1.2');
+  const legacyHugePair = {
+    source: 'swap.adex',
+    pair_id: '29',
+    token_a_contract: 'eosio.token',
+    token_a_symbol: 'WAX',
+    token_b_contract: 'foo.token',
+    token_b_symbol: 'FOO',
+    reserve_a: '100',
+    reserve_b: '250',
+    liquidity_wax: '999999999999',
+    liquidity_usd: '999999999999',
+  };
+  ok('aggregate TVL prefers reserve-derived liquidity over stale impossible stored liquidity',
+    __waxonedgeTestHooks.liquidityWaxFromIndexedPair(legacyHugePair, priceIndex) === 200 &&
+    __waxonedgeTestHooks.liquidityUsdFromWax(200, legacyHugePair, priceIndex) === 1.2);
+  const impossibleReservePair = {
+    source: 'swap.adex',
+    pair_id: '30',
+    token_a_contract: 'eosio.token',
+    token_a_symbol: 'WAX',
+    token_b_contract: 'foo.token',
+    token_b_symbol: 'FOO',
+    reserve_a: '100000000000',
+    reserve_b: '250',
+  };
+  ok('impossible pair TVL is unavailable instead of clipped or displayed as real',
+    __waxonedgeTestHooks.liquidityWaxFromIndexedPair(impossibleReservePair, priceIndex) === null &&
+    __waxonedgeTestHooks.isReasonablePairTvlUsd(1798450000000) === false &&
+    __waxonedgeTestHooks.isReasonablePairTvlUsd(-1) === false &&
+    route.match(/CAST\(liquidity_usd AS NUMERIC\) < 0[\s\S]*CAST\(liquidity_usd AS NUMERIC\) > \?/) &&
+    route.includes('tvl_precision_diagnostics') &&
+    route.includes('MAX_REASONABLE_PAIR_TVL_USD') &&
+    route.includes('impossible_tvl_rows_skipped'));
+  ok('bubble scanner displays backend TVL without independent frontend rescaling',
+    frontendBubbles.includes("return record.tvlUsd != null ? record.tvlUsd : record.tvlWax") &&
+    frontendBubbles.includes("return '$' + fmtNum(record.tvlUsd)") &&
+    !/record\.tvlUsd\s*[*/]\s*(?:1e\d+|1000|1000000|100000000)/.test(frontendBubbles) &&
+    !/record\.tvlWax\s*[*/]\s*(?:1e\d+|1000|1000000|100000000)/.test(frontendBubbles));
+}
+{
+  const priceIndex = new Map([
+    ['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }],
   ]);
   const adapter = {
     source: 'dapp.fusion',
@@ -775,6 +857,63 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
   route.includes('if (cursor) params.push(`skip=${encodeURIComponent(String(cursor))}`)') &&
   !route.match(/function ammSwapStreamUrl[\s\S]*pair_id=/) &&
   !route.match(/function ammSwapStreamUrl[\s\S]*market_id=/));
+{
+  const stream = { source: 'swap.alcor', referenceSource: 'alcorv2', account: 'swap.alcor', action: 'logswap', parser: 'swap-v3' };
+  const priceIndex = new Map([
+    ['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }],
+    ['foo.token::FOO', { priceWax: 0.4, priceUsd: 0.0024 }],
+  ]);
+  const tablePair = __waxonedgeTestHooks.normalizeCoreDexPair({
+    source: 'swap.alcor',
+    normalizer: 'tokenA-tokenB',
+    feeScale: 100,
+  }, {
+    id: 2668,
+    tokenA: { quantity: '100.00000000 WAX', contract: 'eosio.token' },
+    tokenB: { quantity: '250.0000 FOO', contract: 'foo.token' },
+    fee: 30,
+  }, priceIndex, '2026-06-14T00:00:00.000Z');
+  const parsedLogswap = __waxonedgeTestHooks.parseAmmSwapAction({
+    trx_id: 'alcorv2trx',
+    global_sequence: '333',
+    block_num: 444,
+    '@timestamp': '2026-06-14T03:04:05.000Z',
+    act: {
+      name: 'logswap',
+      data: {
+        poolId: 2668,
+        sender: 'swapper',
+        recipient: 'swapper',
+        tokenA: '-1.00000000 WAX',
+        tokenB: '2.5000 FOO',
+        reserveA: '100.00000000 WAX',
+        reserveB: '250.0000 FOO',
+        sqrtPriceX64: '1',
+        liquidity: '1000',
+        tick: 1,
+      },
+    },
+  }, stream);
+  const normalizedLogswap = __waxonedgeTestHooks.normalizeAmmSwapTradeRow(parsedLogswap, stream);
+  ok('swap.alcor table pools and logswap rows use the same canonical pool id',
+    __waxonedgeTestHooks.canonicalSwapAlcorPoolId({ id: 2668 }) === '2668' &&
+    __waxonedgeTestHooks.canonicalSwapAlcorActionPoolId({ poolId: 2668 }) === '2668' &&
+    tablePair &&
+    tablePair.source === 'swap.alcor' &&
+    tablePair.pair_id === '2668' &&
+    parsedLogswap &&
+    parsedLogswap.pair_id === '2668' &&
+    normalizedLogswap &&
+    normalizedLogswap.pair_id === tablePair.pair_id &&
+    normalizedLogswap.trade_id === 'swap.alcor:logswap:2668:333' &&
+    __waxonedgeTestHooks.moonboysCandleSource('alcorv2') === 'swap.alcor');
+  ok('verified swap.alcor pair-id mapping uses normal missing-row diagnostics only',
+    route.includes("reason: hasSourceRows && source !== 'swap.alcor'") &&
+    route.includes("source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
+    !route.includes('swap_alcor_pair_id_mapping_unverified') &&
+    !route.includes('pair_id_mapping_unverified_count') &&
+    !route.includes('pair_id_mapping_unverified_by_source'));
+}
 {
   const stream = { source: 'swap.taco', referenceSource: 'taco', account: 'swap.taco', action: 'exchangelog', parser: 'swap-v2-taco' };
   const parsed = __waxonedgeTestHooks.parseAmmSwapAction({
@@ -875,7 +1014,8 @@ ok('candle backfill can build from AMM waxonedge_trades rows',
   route.includes('AND traded_at >= ?') &&
   route.includes('FROM waxonedge_pairs') &&
   route.includes('WHERE source IN') &&
-  route.includes("reason: hasSourceRows ? 'pair_id_mismatch' : (source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed')") &&
+  route.includes("reason: hasSourceRows && source !== 'swap.alcor'") &&
+  route.includes("source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
   __waxonedgeTestHooks.buildDailyCandlesFromTradeRows([
     { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T00:00:00.000Z', price: '0.2', volume: '2' },
     { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T01:00:00.000Z', price: '0.25', volume: '3' },
