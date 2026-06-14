@@ -669,6 +669,8 @@ ok('unverified swap.adex and dapp.fusion trade streams are reported honestly in 
   route.includes('no SwapOrderRow trade action stream') &&
   route.includes('dapp.fusion global special pool rows') &&
   route.includes('not indexed as kline trade rows') &&
+  route.includes('trade_history_not_available_for_source: tradeIndexSnapshot.data?.trade_history_not_available_for_source || TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice()') &&
+  route.includes('trade_history_not_available_for_source: ammTradeIndexSnapshot.data?.trade_history_not_available_for_source || TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice()') &&
   route.includes('trade_stream_not_verified_from_og_refs: TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS') &&
   route.includes('trade_stream_not_verified_from_og_refs: ammTradeIndexSnapshot.data?.trade_stream_not_verified_from_og_refs || TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS'));
 ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filters',

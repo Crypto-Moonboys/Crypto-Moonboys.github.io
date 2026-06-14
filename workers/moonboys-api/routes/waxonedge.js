@@ -4286,7 +4286,7 @@ async function getIndexerHealth(db, env = {}) {
       active_stream_limit: asNumber(tradeIndexSnapshot.data?.active_stream_limit) || tradeIndexPairLimit(env),
       active_stream_pages_per_run: asNumber(tradeIndexSnapshot.data?.active_stream_pages_per_run) || tradeStreamPagesPerRun(env),
       active_rows_per_market_limit: asNumber(tradeIndexSnapshot.data?.active_rows_per_market_limit) || tradeRowsPerMarketLimit(env),
-      trade_history_not_available_for_source: tradeIndexSnapshot.data?.trade_history_not_available_for_source || [],
+      trade_history_not_available_for_source: tradeIndexSnapshot.data?.trade_history_not_available_for_source || TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice(),
       trade_stream_not_verified_from_og_refs: tradeIndexSnapshot.data?.trade_stream_not_verified_from_og_refs || TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS,
       reference_trade_source: tradeIndexSnapshot.data?.reference_trade_source || 'Wapaca backend indexes alcormarket marketMatches from Hyperion/state-history rows, not a canonical public Alcor HTTP trade endpoint.',
       guessed_public_alcor_http_source_of_truth: tradeIndexSnapshot.data?.guessed_public_alcor_http_source_of_truth === true,
