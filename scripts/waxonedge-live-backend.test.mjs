@@ -549,6 +549,52 @@ ok('sourceStateStale still reports true trade_indexing failures',
     cursor: '24',
     updated_at: new Date().toISOString(),
   }) === true);
+const alcor502Diagnostic = __waxonedgeTestHooks.tradeFetchDiagnostic({
+  url: 'https://wax.alcor.exchange/api/v2/markets/29/deals?limit=250',
+  pairId: '29',
+  status: 502,
+  body: '<html>Bad Gateway</html>',
+  retryCount: 2,
+});
+ok('502 trade fetch response is classified as upstream_5xx temporary failure',
+  __waxonedgeTestHooks.isUpstreamServerErrorStatus(502) &&
+  alcor502Diagnostic.failure_type === 'upstream_5xx' &&
+  alcor502Diagnostic.source === 'alcor' &&
+  alcor502Diagnostic.pair_id === '29' &&
+  alcor502Diagnostic.endpoint_path === '/api/v2/markets/29/deals?limit=250' &&
+  alcor502Diagnostic.http_status === 502 &&
+  alcor502Diagnostic.retry_count === 2 &&
+  alcor502Diagnostic.response_body_snippet === '<html>Bad Gateway</html>' &&
+  alcor502Diagnostic.upstream_server_error === true &&
+  alcor502Diagnostic.unsupported === false);
+ok('trade-row fetch separates temporary 5xx from unsupported history',
+  route.includes('let temporarilyFailedPairCount = 0') &&
+  route.includes('let upstream5xxCount = 0') &&
+  route.includes('let noTradeRowsCount = 0') &&
+  route.includes('if (result.temporaryFailure)') &&
+  route.includes('temporarilyFailedPairCount += 1') &&
+  route.includes("result.diagnostic?.failure_type === 'upstream_5xx'") &&
+  route.includes('upstream5xxCount += 1') &&
+  route.indexOf('if (result.temporaryFailure)') < route.indexOf('if (result.unsupported)') &&
+  !/if \(result\.temporaryFailure\)[\s\S]{0,240}unsupportedPairCount \+= 1/.test(route));
+ok('one failed Alcor trade market does not stop the whole batch',
+  route.includes('continue;\n      }\n      if (result.failed)') &&
+  route.includes('continue;\n      }\n      if (result.unsupported)') &&
+  route.includes('rowsWritten += await upsertTrades(env.DB, trades)') &&
+  route.includes('processedPairCount += 1') &&
+  route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + attemptedPairCount)'));
+ok('trade-row health exposes endpoint/status diagnostics',
+  route.includes('sample_trade_fetch_failure') &&
+  route.includes('sample_trade_fetch_success') &&
+  route.includes('endpoint_path') &&
+  route.includes('http_status') &&
+  route.includes('response_body_snippet') &&
+  route.includes('retry_count') &&
+  route.includes('reference_trade_source'));
+ok('Wapaca reference path for alcormarket trades is documented honestly',
+  route.includes('Wapaca backend indexes alcormarket marketMatches from Hyperion/state-history rows') &&
+  referenceAudit.includes('Hyperion') &&
+  referenceAudit.includes('marketMatches'));
 ok('scheduled sync can index trade rows before candle backfill',
   route.includes("cron === 'waxonedge-trade-backfill'") &&
   route.includes('runWaxOnEdgeTradeBackfill') &&
