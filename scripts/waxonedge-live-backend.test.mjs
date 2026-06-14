@@ -567,9 +567,69 @@ ok('502 trade fetch response is classified as upstream_5xx temporary failure',
   alcor502Diagnostic.response_body_snippet === '<html>Bad Gateway</html>' &&
   alcor502Diagnostic.upstream_server_error === true &&
   alcor502Diagnostic.unsupported === false);
+{
+  const originalFetch = globalThis.fetch;
+  const requestedUrls = [];
+  try {
+    globalThis.fetch = async (url) => {
+      requestedUrls.push(String(url));
+      if (String(url).includes('/deals?')) {
+        return new Response('Bad Gateway', { status: 502, statusText: 'Bad Gateway' });
+      }
+      return new Response(JSON.stringify([{ id: 'match-1', unit_price: 100000000, created_at: '2026-06-13T00:00:00.000Z' }]), { status: 200 });
+    };
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketTradeRows('29', 250);
+    ok('fallback trade endpoint succeeds after first endpoint 502',
+      result.rows.length === 1 &&
+      result.temporaryFailure !== true &&
+      result.diagnostic.endpoint_path === '/api/v2/markets/29/matches?limit=250' &&
+      requestedUrls.some((url) => url.includes('/deals?')) &&
+      requestedUrls.some((url) => url.includes('/matches?')) &&
+      !requestedUrls.some((url) => url.includes('/trades?')) &&
+      Array.isArray(result.attempted_endpoints) &&
+      result.attempted_endpoints.some((entry) => entry.failure_type === 'upstream_5xx') &&
+      result.attempted_endpoints.some((entry) => entry.row_count === 1));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+{
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response('Bad Gateway', { status: 502, statusText: 'Bad Gateway' });
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketTradeRows('29', 250);
+    ok('all fallback trade endpoints 5xx returns temporaryFailure with attempted endpoint diagnostics',
+      result.temporaryFailure === true &&
+      result.unsupported !== true &&
+      result.diagnostic.failure_type === 'upstream_5xx' &&
+      Array.isArray(result.diagnostic.attempted_endpoints) &&
+      result.diagnostic.attempted_endpoints.some((entry) => entry.endpoint_path === '/api/v2/markets/29/deals?limit=250') &&
+      result.diagnostic.attempted_endpoints.some((entry) => entry.endpoint_path === '/api/v2/markets/29/matches?limit=250') &&
+      result.diagnostic.attempted_endpoints.some((entry) => entry.endpoint_path === '/api/v2/markets/29/trades?limit=250'));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+{
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response('<html>not json</html>', { status: 200 });
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketTradeRows('29', 250);
+    ok('invalid JSON trade response is bad upstream payload, not no_trade_rows',
+      result.failed === true &&
+      result.invalidPayload === true &&
+      result.noTradeRows !== true &&
+      result.unsupported !== true &&
+      result.diagnostic.failure_type === 'invalid_payload' &&
+      result.diagnostic.response_body_snippet === '<html>not json</html>');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
 ok('trade-row fetch separates temporary 5xx from unsupported history',
   route.includes('let temporarilyFailedPairCount = 0') &&
   route.includes('let upstream5xxCount = 0') &&
+  route.includes('let upstreamBadPayloadCount = 0') &&
   route.includes('let noTradeRowsCount = 0') &&
   route.includes('if (result.temporaryFailure)') &&
   route.includes('temporarilyFailedPairCount += 1') &&
@@ -586,6 +646,7 @@ ok('one failed Alcor trade market does not stop the whole batch',
 ok('trade-row health exposes endpoint/status diagnostics',
   route.includes('sample_trade_fetch_failure') &&
   route.includes('sample_trade_fetch_success') &&
+  route.includes('upstream_bad_payload_count') &&
   route.includes('endpoint_path') &&
   route.includes('http_status') &&
   route.includes('response_body_snippet') &&
