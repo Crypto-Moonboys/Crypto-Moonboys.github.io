@@ -707,9 +707,22 @@ ok('indexer health exposes live update contract metadata',
     __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'http://live.example' }) === false);
   ok('Worker live indexer URL policy allows loopback HTTP and non-loopback HTTPS only',
     __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'http://127.0.0.1:8789' }) === true &&
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'http://127.0.0.2:8789' }) === true &&
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'http://127.1.2.3:8789' }) === true &&
     __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'http://localhost:8789' }) === true &&
     __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'http://[::1]:8789' }) === true &&
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'http://128.0.0.1:8789' }) === false &&
+    __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'http://10.0.0.1:8789' }) === false &&
     __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal' }) === true &&
+    __waxonedgeTestHooks.isLoopbackLiveIndexerHost('127.0.0.1') === true &&
+    __waxonedgeTestHooks.isLoopbackLiveIndexerHost('127.0.0.2') === true &&
+    __waxonedgeTestHooks.isLoopbackLiveIndexerHost('127.1.2.3') === true &&
+    __waxonedgeTestHooks.isLoopbackLiveIndexerHost('127.255.255.255') === true &&
+    __waxonedgeTestHooks.isLoopbackLiveIndexerHost('128.0.0.1') === false &&
+    __waxonedgeTestHooks.isLoopbackLiveIndexerHost('10.0.0.1') === false &&
+    __waxonedgeTestHooks.isLoopbackLiveIndexerHost('127.0.0.256') === false &&
+    __waxonedgeTestHooks.isLoopbackLiveIndexerHost('127.0.0.x') === false &&
+    __waxonedgeTestHooks.isLoopbackLiveIndexerHost('localhost') === true &&
     __waxonedgeTestHooks.isLoopbackLiveIndexerHost('::1') === true &&
     __waxonedgeTestHooks.isLoopbackLiveIndexerHost('[::1]') === true);
 }

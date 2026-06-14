@@ -198,7 +198,15 @@ function waxonedgeLiveIndexerUrlConfigured(env) {
 
 function isLoopbackLiveIndexerHost(hostname) {
   const host = String(hostname || '').trim().toLowerCase().replace(/^\[|\]$/g, '');
-  return host === '127.0.0.1' || host === 'localhost' || host === '::1';
+  if (host === 'localhost' || host === '::1') return true;
+  const octets = host.split('.');
+  if (octets.length !== 4) return false;
+  const values = octets.map((part) => {
+    if (!/^\d+$/.test(part)) return null;
+    const value = Number(part);
+    return Number.isInteger(value) && value >= 0 && value <= 255 ? value : null;
+  });
+  return values.every((value) => value != null) && values[0] === 127;
 }
 
 function waxonedgeLiveIndexerBaseUrl(env) {
