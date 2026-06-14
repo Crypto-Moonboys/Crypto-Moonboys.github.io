@@ -92,10 +92,11 @@ function hyperionConfigured(env) {
   return !!hyperionHistoryActionsEndpoint(env);
 }
 
-function hyperionNotConfiguredTradeResult(pairId) {
+function hyperionNotConfiguredTradeResult(pairId, actionName = null) {
   const diagnostic = {
     source: 'alcor',
     pair_id: safeString(pairId) || null,
+    action_name: actionName ? safeString(actionName) : null,
     endpoint_path: 'Hyperion/state-history marketMatches',
     http_status: null,
     response_body_snippet: 'WAXONEDGE_HYPERION_API is not configured',
@@ -155,7 +156,7 @@ function safeBodySnippet(text) {
     .slice(0, 300);
 }
 
-function tradeFetchDiagnostic({ url, pairId, status, body = '', retryCount = 0, category = '', error = '' }) {
+function tradeFetchDiagnostic({ url, pairId, actionName = null, status, body = '', retryCount = 0, category = '', error = '' }) {
   const httpStatus = asNumber(status);
   const failureCategory = category || (isUpstreamServerErrorStatus(httpStatus)
     ? 'upstream_5xx'
@@ -163,6 +164,7 @@ function tradeFetchDiagnostic({ url, pairId, status, body = '', retryCount = 0, 
   return {
     source: 'alcor',
     pair_id: safeString(pairId) || null,
+    action_name: actionName ? safeString(actionName) : null,
     endpoint_path: endpointPath(url),
     http_status: httpStatus,
     response_body_snippet: safeBodySnippet(body || error),
@@ -178,6 +180,7 @@ function tradeFetchSummary(diagnostics) {
   return (diagnostics || []).map((item) => ({
     endpoint_path: item.endpoint_path || '',
     http_status: item.http_status ?? null,
+    action_name: item.action_name || null,
     retry_count: item.retry_count ?? 0,
     failure_type: item.failure_type || null,
     row_count: item.row_count ?? null,
@@ -1197,8 +1200,7 @@ function alcorMarketMatchHistoryUrls(env, pairId, limit) {
 }
 
 async function fetchAlcorMarketMatchStreamRows(env, actionName, limit, cursor = '') {
-  const pairId = `alcordexmain:${actionName}`;
-  if (!hyperionConfigured(env)) return hyperionNotConfiguredTradeResult(pairId);
+  if (!hyperionConfigured(env)) return hyperionNotConfiguredTradeResult(null, actionName);
   const attemptedEndpoints = [];
   const matchedRows = [];
   let lastFailure = null;
@@ -1211,7 +1213,8 @@ async function fetchAlcorMarketMatchStreamRows(env, actionName, limit, cursor = 
     if (!response.ok) {
       const diagnostic = tradeFetchDiagnostic({
         url,
-        pairId,
+        pairId: null,
+        actionName,
         status: response.status,
         body: text,
         category: isUpstreamServerErrorStatus(response.status) ? 'upstream_5xx' : (response.status === 404 ? 'unsupported' : 'failed'),
@@ -1225,7 +1228,8 @@ async function fetchAlcorMarketMatchStreamRows(env, actionName, limit, cursor = 
       } catch (error) {
         const diagnostic = tradeFetchDiagnostic({
           url,
-          pairId,
+          pairId: null,
+          actionName,
           status: response.status,
           body: text || error?.message,
           category: 'invalid_payload',
@@ -1261,7 +1265,8 @@ async function fetchAlcorMarketMatchStreamRows(env, actionName, limit, cursor = 
   } catch (error) {
     const diagnostic = tradeFetchDiagnostic({
       url,
-      pairId,
+      pairId: null,
+      actionName,
       status: null,
       body: error?.message || String(error),
       category: isSubrequestBudgetError(error) ? 'budget' : 'failed',
@@ -3454,9 +3459,10 @@ async function planWaxOnEdgeCandleBackfill(env) {
   const previousSnapshot = await readSnapshot(env.DB, CANDLE_BACKFILL_SOURCE);
   const previousData = previousSnapshot.data || {};
   const cursorOffset = clampInteger(state?.cursor || 0, 0, 0, Number.MAX_SAFE_INTEGER);
-  const indexedAlcorTradeCount = await countScalar(env.DB,
-    `SELECT COUNT(*) AS count FROM waxonedge_trades WHERE source = 'alcor'`);
-  if (indexedAlcorTradeCount <= 0) {
+  const indexedAlcorTradeRow = await env.DB.prepare(
+    `SELECT 1 FROM waxonedge_trades WHERE source = 'alcor' LIMIT 1`
+  ).first().catch(() => null);
+  if (!indexedAlcorTradeRow) {
     const existingCandleCount = await countScalar(env.DB,
       `SELECT COUNT(*) AS count FROM waxonedge_chart_candles WHERE interval = '1D'`);
     const error = 'waiting for indexed trade rows';

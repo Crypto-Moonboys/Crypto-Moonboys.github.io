@@ -421,8 +421,9 @@ ok('candle_backfill does not remain planned forever after scheduled run',
   route.includes("status === 'planned' ? CANDLE_BACKFILL_PLAN : null") &&
   route.includes("const candleBackfill = await planWaxOnEdgeCandleBackfill(env);"));
 ok('candle backfill waits for indexed Alcor trades without fake attempted progress',
-  route.includes("SELECT COUNT(*) AS count FROM waxonedge_trades WHERE source = 'alcor'") &&
-  route.includes('if (indexedAlcorTradeCount <= 0)') &&
+  route.includes("SELECT 1 FROM waxonedge_trades WHERE source = 'alcor' LIMIT 1") &&
+  !route.includes("SELECT COUNT(*) AS count FROM waxonedge_trades WHERE source = 'alcor'") &&
+  route.includes('if (!indexedAlcorTradeRow)') &&
   route.includes("status: 'skipped'") &&
   route.includes("const error = 'waiting for indexed trade rows'") &&
   route.includes('attempted_pair_count: asNumber(previousData.attempted_pair_count) || 0') &&
@@ -786,13 +787,19 @@ ok('Hyperion marketMatches URL uses OG account/act.name query and filters market
   const originalFetch = globalThis.fetch;
   try {
     globalThis.fetch = async () => new Response('Bad Gateway', { status: 502, statusText: 'Bad Gateway' });
-    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2' }, '29', 50);
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchStreamRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2' }, 'sellmatch', 50);
     ok('Hyperion 502 uses upstream_5xx taxonomy and is temporary',
       result.temporaryFailure === true &&
       result.failed !== true &&
       result.diagnostic.failure_type === 'upstream_5xx' &&
       result.diagnostic.upstream_server_error === true &&
+      result.diagnostic.pair_id === null &&
+      result.diagnostic.action_name === 'sellmatch' &&
       __waxonedgeTestHooks.isTemporaryTradeFailureType(result.diagnostic.failure_type) === true);
+    ok('stream non-2xx diagnostics have pair_id null and action_name set',
+      result.diagnostic.pair_id === null &&
+      result.diagnostic.action_name === 'sellmatch' &&
+      result.attempted_endpoints.every((item) => item.action_name === 'sellmatch'));
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -801,7 +808,7 @@ ok('Hyperion marketMatches URL uses OG account/act.name query and filters market
   const originalFetch = globalThis.fetch;
   try {
     globalThis.fetch = async () => new Response('<not-json>', { status: 200 });
-    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2' }, '29', 50);
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchStreamRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2' }, 'buymatch', 50);
     ok('Hyperion invalid JSON is invalid_payload, not temporary or no_trade_rows',
       result.invalidPayload === true &&
       result.failed === true &&
@@ -810,7 +817,13 @@ ok('Hyperion marketMatches URL uses OG account/act.name query and filters market
       result.unsupported !== true &&
       result.rows.length === 0 &&
       result.diagnostic.failure_type === 'invalid_payload' &&
+      result.diagnostic.pair_id === null &&
+      result.diagnostic.action_name === 'buymatch' &&
       __waxonedgeTestHooks.isTemporaryTradeFailureType(result.diagnostic.failure_type) === false);
+    ok('invalid JSON stream diagnostics have pair_id null and action_name set',
+      result.diagnostic.pair_id === null &&
+      result.diagnostic.action_name === 'buymatch' &&
+      result.attempted_endpoints.every((item) => item.action_name === 'buymatch'));
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -819,7 +832,7 @@ ok('Hyperion marketMatches URL uses OG account/act.name query and filters market
   const originalFetch = globalThis.fetch;
   try {
     globalThis.fetch = async () => { throw new Error('network socket closed with token abc123'); };
-    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2' }, '29', 50);
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchStreamRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2' }, 'sellmatch', 50);
     ok('Hyperion thrown fetch exception uses failed taxonomy and safe endpoint diagnostics',
       result.failed === true &&
       result.temporaryFailure !== true &&
@@ -828,7 +841,13 @@ ok('Hyperion marketMatches URL uses OG account/act.name query and filters market
       result.diagnostic.failure_type === 'failed' &&
       result.diagnostic.endpoint_path.includes('/v2/history/get_actions') &&
       result.diagnostic.response_body_snippet.includes('network socket closed') &&
+      result.diagnostic.pair_id === null &&
+      result.diagnostic.action_name === 'sellmatch' &&
       __waxonedgeTestHooks.isTemporaryTradeFailureType(result.diagnostic.failure_type) === false);
+    ok('thrown fetch stream diagnostics have pair_id null and action_name set',
+      result.diagnostic.pair_id === null &&
+      result.diagnostic.action_name === 'sellmatch' &&
+      result.attempted_endpoints.every((item) => item.action_name === 'sellmatch'));
   } finally {
     globalThis.fetch = originalFetch;
   }
