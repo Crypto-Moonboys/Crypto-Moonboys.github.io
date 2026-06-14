@@ -1524,6 +1524,9 @@ async function fetchAlcorMarketMatchStreamRows(env, actionName, limit, cursor = 
   if (!hyperionConfigured(env)) return hyperionNotConfiguredTradeResult(null, actionName);
   const attemptedEndpoints = [];
   const matchedRows = [];
+  let rawRowCount = 0;
+  let parsedRowCount = 0;
+  let parserDiagnostic = null;
   let lastFailure = null;
   const url = alcorMarketMatchStreamUrl(env, actionName, limit, cursor);
   const controller = new AbortController();
@@ -1726,6 +1729,9 @@ async function fetchAmmSwapStreamRows(env, stream, limit, cursor = '') {
   }
   const attemptedEndpoints = [];
   const matchedRows = [];
+  let rawRowCount = 0;
+  let parsedRowCount = 0;
+  let parserDiagnostic = null;
   let lastFailure = null;
   const url = ammSwapStreamUrl(env, stream, limit, cursor);
   const controller = new AbortController();
@@ -1771,20 +1777,42 @@ async function fetchAmmSwapStreamRows(env, stream, limit, cursor = '') {
         };
       }
       const rows = sourceRows(data.actions || data.simple_actions || data);
+      rawRowCount += rows.length;
       const parsedRows = rows
         .map((row) => parseAmmSwapAction(row, stream))
         .filter(Boolean);
+      parsedRowCount += parsedRows.length;
       attemptedEndpoints.push({
         source: stream.source,
         pair_id: null,
         action_name: stream.action,
+        account: stream.account,
         endpoint_path: endpointPath(url),
         http_status: response.status,
         retry_count: 0,
         failure_type: null,
+        raw_row_count: rows.length,
+        parsed_row_count: parsedRows.length,
         row_count: parsedRows.length,
         ingestion_path: 'hyperion_amm_swaps',
       });
+      if (rows.length > 0 && parsedRows.length === 0) {
+        parserDiagnostic = {
+          source: stream.source,
+          pair_id: null,
+          action_name: stream.action,
+          account: stream.account,
+          endpoint_path: endpointPath(url),
+          http_status: response.status,
+          retry_count: 0,
+          failure_type: 'amm_rows_unparseable',
+          raw_row_count: rows.length,
+          parsed_row_count: 0,
+          row_count: 0,
+          ingestion_path: 'hyperion_amm_swaps',
+          attempted_endpoints: [],
+        };
+      }
       matchedRows.push(...parsedRows);
     }
   } catch (error) {
@@ -1855,6 +1883,21 @@ async function fetchAmmSwapStreamRows(env, stream, limit, cursor = '') {
       ingestion_path: 'hyperion_amm_swaps',
     };
   }
+  if (rawRowCount > 0 && parsedRowCount === 0) {
+    return {
+      rows: [],
+      failed: true,
+      tradeRowsNotUsable: true,
+      diagnostic: {
+        ...parserDiagnostic,
+        raw_row_count: rawRowCount,
+        parsed_row_count: parsedRowCount,
+        attempted_endpoints: attemptedSummary,
+      },
+      attempted_endpoints: attemptedSummary,
+      ingestion_path: 'hyperion_amm_swaps',
+    };
+  }
   return {
     rows: [],
     noTradeRows: true,
@@ -1862,10 +1905,13 @@ async function fetchAmmSwapStreamRows(env, stream, limit, cursor = '') {
       source: stream.source,
       pair_id: null,
       action_name: stream.action,
+      account: stream.account,
       endpoint_path: endpointPath(url),
       http_status: 200,
       retry_count: 0,
       row_count: 0,
+      raw_row_count: 0,
+      parsed_row_count: 0,
       failure_type: 'no_amm_swaps_for_action_stream_in_bounded_history_scan',
       ingestion_path: 'hyperion_amm_swaps',
       attempted_endpoints: attemptedSummary,
@@ -2073,6 +2119,7 @@ async function syncAlcorMarketTradeRows(env) {
       if (result.failed) {
         failedPairCount += 1;
         if (result.invalidPayload || result.diagnostic?.failure_type === 'invalid_payload') upstreamBadPayloadCount += 1;
+        if (result.tradeRowsNotUsable || result.diagnostic?.failure_type === 'amm_rows_unparseable') tradeRowsNotUsableCount += 1;
         actionState.status = 'failed';
         actionState.last_error = result.diagnostic?.failure_type || 'failed';
         actionState.updated_at = nowIso();
@@ -4873,10 +4920,8 @@ export async function runWaxOnEdgeCandleBackfillPlan(env) {
 
 export async function runWaxOnEdgeTradeBackfill(env) {
   if (!env.DB) return { ok: false, error: 'DB binding is not configured' };
-  const [alcorTradeBackfill, ammTradeBackfill] = await Promise.all([
-    syncAlcorMarketTradeRows(env),
-    syncAmmSwapTradeRows(env),
-  ]);
+  const alcorTradeBackfill = await syncAlcorMarketTradeRows(env);
+  const ammTradeBackfill = await syncAmmSwapTradeRows(env);
   return {
     ok: alcorTradeBackfill.ok && ammTradeBackfill.ok,
     alcorTradeBackfill,

@@ -614,6 +614,41 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     parsed.amount_in === 0 &&
     __waxonedgeTestHooks.normalizeAmmSwapTradeRow(parsed, stream) === null);
 }
+{
+  const originalFetch = globalThis.fetch;
+  const stream = { source: 'swap.box', referenceSource: 'defibox', account: 'swap.box', action: 'swaplog', parser: 'swap-v2-defibox' };
+  try {
+    globalThis.fetch = async () => new Response(JSON.stringify({
+      actions: [{
+        trx_id: 'bad-amm-row',
+        global_sequence: '123',
+        block_num: 456,
+        '@timestamp': '2026-06-14T02:03:04.000Z',
+        act: { name: 'swaplog', data: { pair_id: '12', owner: 'swapper' } },
+      }],
+    }), { status: 200 });
+    const result = await __waxonedgeTestHooks.fetchAmmSwapStreamRows(
+      { WAXONEDGE_HYPERION_API: 'https://wax.example/v2' },
+      stream,
+      1,
+    );
+    ok('raw AMM rows rejected by parser are schema failures, not no-trade completion',
+      result.failed === true &&
+      result.tradeRowsNotUsable === true &&
+      result.noTradeRows !== true &&
+      result.diagnostic.failure_type === 'amm_rows_unparseable' &&
+      result.diagnostic.raw_row_count === 1 &&
+      result.diagnostic.parsed_row_count === 0 &&
+      result.diagnostic.source === 'swap.box' &&
+      result.diagnostic.account === 'swap.box' &&
+      result.diagnostic.action_name === 'swaplog' &&
+      route.includes("failure_type: 'amm_rows_unparseable'") &&
+      route.includes('if (result.tradeRowsNotUsable || result.diagnostic?.failure_type === \'amm_rows_unparseable\') tradeRowsNotUsableCount += 1') &&
+      route.includes("actionState.status = 'failed'"));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
 ok('AMM trade indexer exposes progress and duplicate-safe row accounting',
   route.includes('async function syncAmmSwapTradeRows') &&
   route.includes('fetchAmmSwapStreamRows(env, stream, rowsPerMarket, streamCursor)') &&
@@ -1082,8 +1117,8 @@ ok('Wapaca reference path for alcormarket trades is documented honestly',
 ok('scheduled sync can index trade rows before candle backfill',
   route.includes("cron === 'waxonedge-trade-backfill'") &&
   route.includes('runWaxOnEdgeTradeBackfill') &&
-  route.includes('syncAlcorMarketTradeRows(env)') &&
-  route.includes('syncAmmSwapTradeRows(env)') &&
+  route.includes('const alcorTradeBackfill = await syncAlcorMarketTradeRows(env);\n  const ammTradeBackfill = await syncAmmSwapTradeRows(env);') &&
+  !route.includes('const [alcorTradeBackfill, ammTradeBackfill] = await Promise.all') &&
   route.includes('const tradeBackfill = await runWaxOnEdgeTradeBackfill(env);\n      const aggregates = await aggregateTokenAnalytics(env);\n      const candleBackfill = await planWaxOnEdgeCandleBackfill(env)'));
 ok('candle endpoint examples expose selected chart source and pair id',
   __waxonedgeTestHooks.candleUrlExample('alcor', '29') === '/api/waxonedge/candles?duration=1d&src=alcor&pair_id=29' &&
