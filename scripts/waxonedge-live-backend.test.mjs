@@ -319,19 +319,44 @@ ok('aggregate rebuild runs after latest pair sync if freshness drifts',
   route.includes('async function aggregateNeedsRefreshAfterPairSync') &&
   route.includes('latestAggregateRunRow(db)') &&
   route.includes('latestPairSyncRunRow(db)') &&
-  route.includes("const pairSyncFinishedAt = Date.parse(pairSync?.finished_at || '')") &&
-  route.includes('if (!Number.isFinite(pairSyncFinishedAt)) return false') &&
-  route.includes("const aggregateFinishedAt = Date.parse(aggregate?.finished_at || '')") &&
-  route.includes('if (!Number.isFinite(aggregateFinishedAt)) return true') &&
+  route.includes('latestPairSourceStateUpdateRow(db)') &&
+  route.includes('parseTimestampMillis(pairSync?.finished_at)') &&
+  route.includes('parseTimestampMillis(sourceState?.finished_at)') &&
+  route.includes('if (!pairSyncFinishedAt) return false') &&
+  route.includes('if (aggregateFinishedAt == null) return true') &&
   route.includes('return aggregateFinishedAt < pairSyncFinishedAt') &&
   route.includes('const needsAggregateRefresh = await aggregateNeedsRefreshAfterPairSync(env.DB)') &&
-  route.includes('postSyncAggregate = await aggregateTokenAnalytics(env)') &&
+  route.includes('postSyncAggregate = await maybeRefreshAggregateAfterSourceSync(env') &&
   route.includes('post_sync_aggregate: postSyncAggregate'));
 ok('aggregate refresh timestamp parsing covers invalid and ordered timestamp cases',
-  route.includes('if (!Number.isFinite(pairSyncFinishedAt)) return false') &&
-  route.includes('if (!Number.isFinite(aggregateFinishedAt)) return true') &&
+  route.includes('function parseTimestampMillis(value)') &&
+  route.includes('if (!pairSyncFinishedAt) return false') &&
+  route.includes('if (aggregateFinishedAt == null) return true') &&
   route.includes('return aggregateFinishedAt < pairSyncFinishedAt') &&
   !route.includes('return Date.parse(aggregate.finished_at) < Date.parse(pairSync.finished_at)'));
+ok('aggregate refresh is triggered after source cursor state advances',
+  route.includes('async function latestPairSourceStateUpdateRow(db)') &&
+  route.includes('FROM waxonedge_source_index_state') &&
+  route.includes("status IN ('success', 'partial', 'running')") &&
+  route.includes('latestPairSourceStateUpdateRow(db)') &&
+  ['alcor', 'swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box', 'swap.adex', 'dapp.fusion']
+    .every((source) => route.includes(`'${source}'`)));
+ok('aggregate refresh is not triggered when no source state changed',
+  route.includes('if (!pairSyncFinishedAt) return false') &&
+  route.includes('if (!needsAggregateRefresh)') &&
+  route.includes('aggregate_refresh_pending: false') &&
+  route.includes('aggregate_refresh_deferred_budget: false'));
+ok('stale aggregate health exposes pending and budget-deferred status',
+  route.includes('aggregate_refresh_pending: aggregateRefreshPending') &&
+  route.includes('aggregate_refresh_deferred_budget: aggregateRefreshPending && aggregateSnapshot.data?.aggregate_refresh_deferred_budget === true') &&
+  route.includes('source_sync_in_progress: sourceSyncInProgress') &&
+  route.includes('aggregate_fresh_after_latest_pair_sync: aggregateFresh'));
+ok('budget-deferred aggregate refresh does not mark aggregate successful',
+  route.includes('async function recordAggregateRefreshDeferred') &&
+  route.includes("recordSyncRun(db, 'token_aggregates', 'skipped'") &&
+  !route.includes("recordSyncRun(db, 'token_aggregates', 'success', startedAt, reason)") &&
+  route.includes('deferForBudget') &&
+  route.includes('maybeRefreshAggregateAfterSourceSync(env'));
 ok('bootstrap compact source metadata does not mark missing snapshots complete',
   route.includes('row_count: tableSnapshot.data?.row_count || (Array.isArray(tableSnapshot.data?.rows) ? tableSnapshot.data.rows.length : 0)') &&
   route.includes('complete: !!tableSnapshot.data && (tableSnapshot.data?.truncated ? false : !tableSnapshot.data?.cursor)'));
@@ -350,7 +375,8 @@ ok('free-safe cron only runs one heavy WaxOnEdge workload per invocation',
   route.includes('tasks.push(syncSupplyInputs(env))') &&
   route.includes('selectCoreDexAdapterForCron(minute)') &&
   route.includes('!freeSafeMode && (!cron || cron === \'*/15 * * * *\'') &&
-  route.includes('!freeSafeMode && (!cron || isMinuteCron || shouldRunFullIndex)'));
+  route.includes('const sourceWorkRan = results.some') &&
+  route.includes('postSyncAggregate = await maybeRefreshAggregateAfterSourceSync(env'));
 ok('free-safe source sync runs one DEX source chunk with conservative budgets',
   route.includes('WAXONEDGE_FREE_SAFE_MODE_DEFAULT = true') &&
   route.includes('FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION = 1') &&
