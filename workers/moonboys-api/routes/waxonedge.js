@@ -1368,7 +1368,30 @@ async function fetchAlcorMarketMatchHistoryRows(env, pairId, limit) {
 
 async function upsertTrades(db, trades) {
   if (!trades.length) return 0;
-  const statements = trades.map((trade) => db.prepare(
+  const uniqueTrades = [];
+  const seenKeys = new Set();
+  for (const trade of trades) {
+    const key = `${trade.source}::${trade.trade_id}`;
+    if (seenKeys.has(key)) continue;
+    seenKeys.add(key);
+    uniqueTrades.push(trade);
+  }
+  const existingKeys = new Set();
+  for (let i = 0; i < uniqueTrades.length; i += 50) {
+    const chunk = uniqueTrades.slice(i, i + 50);
+    const where = chunk.map(() => '(source = ? AND trade_id = ?)').join(' OR ');
+    const params = chunk.flatMap((trade) => [trade.source, trade.trade_id]);
+    const rows = await db.prepare(
+      `SELECT source, trade_id FROM waxonedge_trades WHERE ${where}`
+    ).bind(...params).all().catch(() => ({ results: [] }));
+    for (const row of rows.results || []) {
+      existingKeys.add(`${row.source}::${row.trade_id}`);
+    }
+  }
+  const newRowCount = uniqueTrades.reduce((count, trade) => (
+    count + (existingKeys.has(`${trade.source}::${trade.trade_id}`) ? 0 : 1)
+  ), 0);
+  const statements = uniqueTrades.map((trade) => db.prepare(
     `INSERT INTO waxonedge_trades
      (source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -1400,7 +1423,7 @@ async function upsertTrades(db, trades) {
   for (let i = 0; i < statements.length; i += 50) {
     await db.batch(statements.slice(i, i + 50));
   }
-  return trades.length;
+  return newRowCount;
 }
 
 async function syncAlcorMarketTradeRows(env) {
@@ -1410,7 +1433,7 @@ async function syncAlcorMarketTradeRows(env) {
   const previousData = previousSnapshot.data || {};
   const actionStreams = ['buymatch', 'sellmatch'];
   const candidatePairCount = actionStreams.length;
-  const cursorOffset = clampInteger(state?.cursor || 0, 0, 0, actionStreams.length);
+  const cursorOffset = 0;
   const limit = Math.max(1, Math.min(tradeIndexPairLimit(env), actionStreams.length));
   const rowsPerMarket = tradeRowsPerMarketLimit(env);
   if (!hyperionConfigured(env)) {
@@ -1446,10 +1469,14 @@ async function syncAlcorMarketTradeRows(env) {
       hyperion_not_configured_count: totalHyperionNotConfiguredCount,
       active_hyperion_endpoint: null,
       hyperion_query_shape: HYPERION_MARKET_MATCH_QUERY_SHAPE,
+      bounded_history_seed: true,
+      history_pagination_complete: false,
       hyperion_scan_no_market_matches_count: asNumber(previousData.hyperion_scan_no_market_matches_count) || 0,
       no_trade_rows_count: asNumber(previousData.no_trade_rows_count) || 0,
       trade_rows_indexed: asNumber(previousData.trade_rows_indexed) || 0,
       rows_written: asNumber(previousData.rows_written) || 0,
+      last_run_rows_fetched: 0,
+      last_run_rows_written: 0,
       cursor,
       active_pair_limit: limit,
       active_stream_limit: limit,
@@ -1548,8 +1575,8 @@ async function syncAlcorMarketTradeRows(env) {
     }
   }
   const hyperionNotConfigured = hyperionNotConfiguredCount > 0;
-  const nextCursor = hyperionNotConfigured ? cursorOffset : Math.min(candidatePairCount, cursorOffset + attemptedPairCount);
-  const complete = candidatePairCount > 0 && nextCursor >= candidatePairCount;
+  const nextCursor = '';
+  const complete = false;
   const totalAttemptedPairCount = (asNumber(previousData.attempted_pair_count) || 0) + attemptedPairCount;
   const totalProcessedPairCount = (asNumber(previousData.processed_pair_count) || 0) + processedPairCount;
   const totalFailedPairCount = (asNumber(previousData.failed_pair_count) || 0) + failedPairCount;
@@ -1560,7 +1587,7 @@ async function syncAlcorMarketTradeRows(env) {
   const totalHyperionNotConfiguredCount = (asNumber(previousData.hyperion_not_configured_count) || 0) + hyperionNotConfiguredCount;
   const totalHyperionScanNoRowsCount = (asNumber(previousData.hyperion_scan_no_market_matches_count) || 0) + hyperionScanNoRowsCount;
   const totalNoTradeRowsCount = (asNumber(previousData.no_trade_rows_count) || 0) + noTradeRowsCount;
-  const totalRowsIndexed = (asNumber(previousData.trade_rows_indexed) || 0) + rowsIndexed;
+  const totalRowsIndexed = (asNumber(previousData.trade_rows_indexed) || 0) + rowsWritten;
   const totalRowsWritten = (asNumber(previousData.rows_written) || 0) + rowsWritten;
   const hardFailure = failedPairCount > 0 && processedPairCount === 0 && unsupportedPairCount === 0 && !budgetExhausted;
   const status = hyperionNotConfigured
@@ -1569,14 +1596,14 @@ async function syncAlcorMarketTradeRows(env) {
     ? 'failed'
     : (budgetExhausted
     ? 'budget_limited'
-    : (complete && failedPairCount === 0 ? 'success' : (attemptedPairCount > 0 ? 'partial' : 'planned'))));
+    : (attemptedPairCount > 0 ? 'partial' : 'planned')));
   const visibleError = status === 'success' ? null : (lastError || (status === 'planned' ? TRADE_INDEX_PLAN : null));
   const sourceStateError = status === 'failed' ? visibleError : null;
   const sourceStateTruncated = status === 'failed' ? 1 : 0;
   await upsertSourceIndexState(env.DB, ALCOR_TRADE_INDEX_SOURCE, {
     sync_cycle_id: `trades-${new Date().toISOString().slice(0, 10)}`,
-    cursor: complete ? '' : String(nextCursor),
-    page_count: nextCursor,
+    cursor: nextCursor,
+    page_count: attemptedPairCount,
     row_count: candidatePairCount,
     complete: complete ? 1 : 0,
     truncated: sourceStateTruncated,
@@ -1602,11 +1629,15 @@ async function syncAlcorMarketTradeRows(env) {
     hyperion_not_configured_count: totalHyperionNotConfiguredCount,
     active_hyperion_endpoint: hyperionHistoryActionsEndpoint(env) || null,
     hyperion_query_shape: HYPERION_MARKET_MATCH_QUERY_SHAPE,
+    bounded_history_seed: true,
+    history_pagination_complete: false,
     hyperion_scan_no_market_matches_count: totalHyperionScanNoRowsCount,
     no_trade_rows_count: totalNoTradeRowsCount,
     trade_rows_indexed: totalRowsIndexed,
     rows_written: totalRowsWritten,
-    cursor: complete ? '' : String(nextCursor),
+    last_run_rows_fetched: rowsIndexed,
+    last_run_rows_written: rowsWritten,
+    cursor: nextCursor,
     active_pair_limit: limit,
     active_stream_limit: limit,
     active_rows_per_market_limit: rowsPerMarket,
@@ -1617,7 +1648,7 @@ async function syncAlcorMarketTradeRows(env) {
     sample_trade_fetch_failure: sampleTradeFetchFailure,
     sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
-    next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : (complete ? 'complete' : 'continue from cursor'),
+    next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : 'bounded latest-stream seed; add Hyperion sequence pagination for full history',
     no_fake_trades: true,
     plan: TRADE_INDEX_PLAN,
   }, nowIso());
@@ -1640,11 +1671,15 @@ async function syncAlcorMarketTradeRows(env) {
     hyperion_not_configured_count: totalHyperionNotConfiguredCount,
     active_hyperion_endpoint: hyperionHistoryActionsEndpoint(env) || null,
     hyperion_query_shape: HYPERION_MARKET_MATCH_QUERY_SHAPE,
+    bounded_history_seed: true,
+    history_pagination_complete: false,
     hyperion_scan_no_market_matches_count: totalHyperionScanNoRowsCount,
     no_trade_rows_count: totalNoTradeRowsCount,
     trade_rows_indexed: totalRowsIndexed,
     rows_written: totalRowsWritten,
-    cursor: complete ? '' : String(nextCursor),
+    last_run_rows_fetched: rowsIndexed,
+    last_run_rows_written: rowsWritten,
+    cursor: nextCursor,
     active_pair_limit: limit,
     active_stream_limit: limit,
     active_rows_per_market_limit: rowsPerMarket,
@@ -1653,7 +1688,7 @@ async function syncAlcorMarketTradeRows(env) {
     sample_trade_fetch_failure: sampleTradeFetchFailure,
     sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
-    next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : (complete ? 'complete' : 'continue from cursor'),
+    next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : 'bounded latest-stream seed; add Hyperion sequence pagination for full history',
     no_fake_trades: true,
     plan: TRADE_INDEX_PLAN,
   };
@@ -3175,10 +3210,14 @@ async function getIndexerHealth(db, env = {}) {
       hyperion_not_configured_count: asNumber(tradeIndexSnapshot.data?.hyperion_not_configured_count) || 0,
       active_hyperion_endpoint: hyperionHistoryActionsEndpoint(env) || tradeIndexSnapshot.data?.active_hyperion_endpoint || null,
       hyperion_query_shape: tradeIndexSnapshot.data?.hyperion_query_shape || HYPERION_MARKET_MATCH_QUERY_SHAPE,
+      bounded_history_seed: tradeIndexSnapshot.data?.bounded_history_seed !== false,
+      history_pagination_complete: tradeIndexSnapshot.data?.history_pagination_complete === true,
       hyperion_scan_no_market_matches_count: asNumber(tradeIndexSnapshot.data?.hyperion_scan_no_market_matches_count) || 0,
       no_trade_rows_count: asNumber(tradeIndexSnapshot.data?.no_trade_rows_count) || 0,
       trade_rows_indexed: asNumber(tradeIndexSnapshot.data?.trade_rows_indexed) || 0,
       rows_written: asNumber(tradeIndexSnapshot.data?.rows_written) || 0,
+      last_run_rows_fetched: asNumber(tradeIndexSnapshot.data?.last_run_rows_fetched) || 0,
+      last_run_rows_written: asNumber(tradeIndexSnapshot.data?.last_run_rows_written) || 0,
       active_pair_limit: asNumber(tradeIndexSnapshot.data?.active_pair_limit) || tradeIndexPairLimit(env),
       active_stream_limit: asNumber(tradeIndexSnapshot.data?.active_stream_limit) || tradeIndexPairLimit(env),
       active_rows_per_market_limit: asNumber(tradeIndexSnapshot.data?.active_rows_per_market_limit) || tradeRowsPerMarketLimit(env),

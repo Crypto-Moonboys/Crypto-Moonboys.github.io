@@ -532,6 +532,21 @@ ok('Alcor trade-row indexer upserts real rows and exposes source diagnostics',
   route.includes("reference_src: 'alcormarket'") &&
   route.includes("trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box']") &&
   route.includes('no_fake_trades: true'));
+ok('bounded Alcor stream seed reports honest progress without full-history completion claims',
+  route.includes('bounded_history_seed: true') &&
+  route.includes('history_pagination_complete: false') &&
+  route.includes("next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : 'bounded latest-stream seed; add Hyperion sequence pagination for full history'") &&
+  route.includes('const nextCursor = \'\';') &&
+  route.includes('const complete = false;') &&
+  !route.includes("complete && failedPairCount === 0 ? 'success'"));
+ok('trade-row sync does not inflate indexed/written counters on conflict-only upserts',
+  route.includes('const uniqueTrades = []') &&
+  route.includes('SELECT source, trade_id FROM waxonedge_trades WHERE') &&
+  route.includes('const newRowCount = uniqueTrades.reduce') &&
+  route.includes('return newRowCount') &&
+  route.includes('const totalRowsIndexed = (asNumber(previousData.trade_rows_indexed) || 0) + rowsWritten') &&
+  route.includes('last_run_rows_fetched: rowsIndexed') &&
+  route.includes('last_run_rows_written: rowsWritten'));
 ok('trade-row index state treats normal cursoring as non-truncated progress',
   route.includes('const sourceStateTruncated = status === \'failed\' ? 1 : 0') &&
   route.includes('truncated: sourceStateTruncated') &&
