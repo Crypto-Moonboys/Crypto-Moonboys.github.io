@@ -65,6 +65,7 @@ The reference backend is heavier than the current Worker/D1 implementation in th
 - Candle paging: `/candles` honors `countBack` and prepends earlier rows when the requested range is short.
 - Candle volume: the reference stores `volumeA` and `volumeB`, plus trade count and account counts. The current D1 schema has one chart volume field, so 7d/30d volume remains unavailable unless backed by indexed stats.
 - Trade ingestion: the reference computes candles and last stats from `swapOrders`, `marketMatches`, and `swapVThreeOrders`. The current Worker only serves candles when D1 candle rows already exist and never fabricates missing candles.
+- Alcor market matches: the reference `alcormarket` path stores `marketMatches` from Hyperion catch-up plus WAX state-history stream rows, using `alcor_buy`/`alcor_sell`, `market_id`, `updated_at_time`, `global_sequence`, and `unit_price / 10^8`; it is not a canonical public Alcor HTTP trade endpoint.
 - Alcor v2 math: the reference uses v3 pool slot/tick/liquidity math. The current normalizer reads token sides/reserves when available, but does not fully reproduce concentrated liquidity pricing.
 - Alcor order book: the reference includes `alcordexmain` markets. Moonboys still uses the public Alcor API `alcor` source plus core on-chain AMM sources.
 - Scam and pool filtering: the reference skips `scam_contracts` and `pools_blacklist`. Moonboys does not copy that list in this PR; production parity should add an owned denylist source before claiming full scam filtering.

@@ -19,6 +19,8 @@ const WAXONEDGE_FREE_SAFE_MODE_DEFAULT = true;
 const DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT = 24;
 const DEFAULT_TRADE_INDEX_PAIR_LIMIT = 24;
 const DEFAULT_TRADE_ROWS_PER_MARKET_LIMIT = 250;
+const TRADE_FETCH_RETRY_LIMIT = 2;
+const TRADE_FETCH_RETRY_BACKOFF_MS = 150;
 const FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION = 1;
 const FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE = 1;
 const FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT = 2;
@@ -78,6 +80,61 @@ function isSubrequestBudgetError(error) {
 
 function isNotFoundError(error) {
   return /^404\b|not found/i.test(String(error?.message || error || ''));
+}
+
+function isUpstreamServerErrorStatus(status) {
+  const n = asNumber(status);
+  return n != null && n >= 500 && n <= 599;
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function endpointPath(url) {
+  try {
+    const parsed = new URL(url);
+    return `${parsed.pathname}${parsed.search}`;
+  } catch {
+    return String(url || '');
+  }
+}
+
+function safeBodySnippet(text) {
+  return String(text || '')
+    .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 300);
+}
+
+function tradeFetchDiagnostic({ url, pairId, status, body = '', retryCount = 0, category = '', error = '' }) {
+  const httpStatus = asNumber(status);
+  const failureCategory = category || (isUpstreamServerErrorStatus(httpStatus)
+    ? 'upstream_5xx'
+    : (httpStatus === 404 ? 'unsupported' : 'failed'));
+  return {
+    source: 'alcor',
+    pair_id: safeString(pairId) || null,
+    endpoint_path: endpointPath(url),
+    http_status: httpStatus,
+    response_body_snippet: safeBodySnippet(body || error),
+    retry_count: retryCount,
+    failure_type: failureCategory,
+    upstream_server_error: failureCategory === 'upstream_5xx',
+    budget_failure: failureCategory === 'budget',
+    unsupported: failureCategory === 'unsupported',
+  };
+}
+
+function tradeFetchSummary(diagnostics) {
+  return (diagnostics || []).map((item) => ({
+    endpoint_path: item.endpoint_path || '',
+    http_status: item.http_status ?? null,
+    retry_count: item.retry_count ?? 0,
+    failure_type: item.failure_type || null,
+    row_count: item.row_count ?? null,
+  }));
 }
 
 function normalizeCandleInterval(value) {
@@ -1000,20 +1057,141 @@ function alcorMarketTradeUrls(pairId, limit) {
 
 async function fetchAlcorMarketTradeRows(pairId, limit) {
   const notFoundErrors = [];
+  const attemptedEndpoints = [];
+  let lastTemporaryFailure = null;
+  let lastFailedDiagnostic = null;
   for (const url of alcorMarketTradeUrls(pairId, limit)) {
-    try {
-      const data = await fetchJson(url, { timeoutMs: 12000 });
-      const rows = sourceRows(data);
-      return { rows, url };
-    } catch (error) {
-      if (/^404\b|not found/i.test(String(error?.message || error || ''))) {
-        notFoundErrors.push(error?.message || String(error));
-        continue;
+    let endpointTemporaryFailure = null;
+    for (let retryCount = 0; retryCount <= TRADE_FETCH_RETRY_LIMIT; retryCount += 1) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 12000);
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        const text = await response.text();
+        if (response.ok) {
+          let data = null;
+          try {
+            data = text ? JSON.parse(text) : [];
+          } catch (error) {
+            const diagnostic = tradeFetchDiagnostic({
+              url,
+              pairId,
+              status: response.status,
+              body: text || error?.message,
+              retryCount,
+              category: 'invalid_payload',
+            });
+            attemptedEndpoints.push(diagnostic);
+            const attemptedSummary = tradeFetchSummary(attemptedEndpoints);
+            return {
+              rows: [],
+              invalidPayload: true,
+              failed: true,
+              diagnostic: { ...diagnostic, attempted_endpoints: attemptedSummary },
+              attempted_endpoints: attemptedSummary,
+            };
+          }
+          const rows = sourceRows(data);
+          const diagnostic = {
+            source: 'alcor',
+            pair_id: safeString(pairId) || null,
+            endpoint_path: endpointPath(url),
+            http_status: response.status,
+            retry_count: retryCount,
+            row_count: rows.length,
+          };
+          attemptedEndpoints.push(diagnostic);
+          return {
+            rows,
+            url,
+            diagnostic,
+            attempted_endpoints: tradeFetchSummary(attemptedEndpoints),
+          };
+        }
+        const diagnostic = tradeFetchDiagnostic({
+          url,
+          pairId,
+          status: response.status,
+          body: text,
+          retryCount,
+          category: response.status === 404 ? 'unsupported' : (isUpstreamServerErrorStatus(response.status) ? 'upstream_5xx' : 'failed'),
+        });
+        attemptedEndpoints.push(diagnostic);
+        if (response.status === 404) {
+          notFoundErrors.push(diagnostic);
+          break;
+        }
+        if (isUpstreamServerErrorStatus(response.status)) {
+          endpointTemporaryFailure = diagnostic;
+          lastTemporaryFailure = diagnostic;
+          if (retryCount < TRADE_FETCH_RETRY_LIMIT) await wait(TRADE_FETCH_RETRY_BACKOFF_MS * (retryCount + 1));
+          continue;
+        }
+        lastFailedDiagnostic = diagnostic;
+        break;
+      } catch (error) {
+        const diagnostic = tradeFetchDiagnostic({
+          url,
+          pairId,
+          status: null,
+          body: error?.message || String(error),
+          retryCount,
+          category: isSubrequestBudgetError(error) ? 'budget' : 'failed',
+        });
+        attemptedEndpoints.push(diagnostic);
+        if (isSubrequestBudgetError(error)) {
+          const attemptedSummary = tradeFetchSummary(attemptedEndpoints);
+          return {
+            rows: [],
+            budgetFailure: true,
+            diagnostic: { ...diagnostic, attempted_endpoints: attemptedSummary },
+            attempted_endpoints: attemptedSummary,
+          };
+        }
+        lastFailedDiagnostic = diagnostic;
+        break;
+      } finally {
+        clearTimeout(timer);
       }
-      throw error;
     }
+    if (endpointTemporaryFailure) continue;
   }
-  return { rows: [], unsupported: true, error: notFoundErrors[0] || 'Alcor market trade history endpoint unsupported' };
+  if (lastTemporaryFailure) {
+    return {
+      rows: [],
+      temporaryFailure: true,
+      diagnostic: {
+        ...lastTemporaryFailure,
+        attempted_endpoints: tradeFetchSummary(attemptedEndpoints),
+      },
+      attempted_endpoints: tradeFetchSummary(attemptedEndpoints),
+    };
+  }
+  if (lastFailedDiagnostic) {
+    const attemptedSummary = tradeFetchSummary(attemptedEndpoints);
+    return {
+      rows: [],
+      failed: true,
+      diagnostic: { ...lastFailedDiagnostic, attempted_endpoints: attemptedSummary },
+      attempted_endpoints: attemptedSummary,
+    };
+  }
+  return {
+    rows: [],
+    unsupported: true,
+    diagnostic: {
+      ...(notFoundErrors[0] || tradeFetchDiagnostic({
+      url: alcorMarketTradeUrls(pairId, limit)[0],
+      pairId,
+      status: 404,
+      body: 'Alcor market trade history endpoint unsupported',
+      retryCount: 0,
+      category: 'unsupported',
+      })),
+      attempted_endpoints: tradeFetchSummary(attemptedEndpoints),
+    },
+    attempted_endpoints: tradeFetchSummary(attemptedEndpoints),
+  };
 }
 
 async function upsertTrades(db, trades) {
@@ -1080,24 +1258,54 @@ async function syncAlcorMarketTradeRows(env) {
   let processedPairCount = 0;
   let failedPairCount = 0;
   let unsupportedPairCount = 0;
+  let temporarilyFailedPairCount = 0;
+  let upstream5xxCount = 0;
+  let upstreamBadPayloadCount = 0;
+  let noTradeRowsCount = 0;
   let rowsIndexed = 0;
   let rowsWritten = 0;
   let lastError = null;
+  let sampleTradeFetchFailure = previousSnapshot.data?.sample_trade_fetch_failure || null;
+  let sampleTradeFetchSuccess = previousSnapshot.data?.sample_trade_fetch_success || null;
   let budgetExhausted = false;
   for (const pair of candidateRows) {
     attemptedPairCount += 1;
     try {
       const result = await fetchAlcorMarketTradeRows(pair.pair_id, rowsPerMarket);
+      if (result.diagnostic?.row_count > 0) sampleTradeFetchSuccess = result.diagnostic;
+      if (result.diagnostic && result.diagnostic.failure_type) sampleTradeFetchFailure = result.diagnostic;
+      if (result.budgetFailure) {
+        budgetExhausted = true;
+        lastError = result.diagnostic?.response_body_snippet || 'trade row fetch budget exhausted';
+        break;
+      }
+      if (result.temporaryFailure) {
+        temporarilyFailedPairCount += 1;
+        if (result.diagnostic?.failure_type === 'upstream_5xx') upstream5xxCount += 1;
+        lastError = `${result.diagnostic?.http_status || 'upstream'} ${result.diagnostic?.failure_type || 'temporary failure'}`;
+        continue;
+      }
+      if (result.failed) {
+        failedPairCount += 1;
+        if (result.invalidPayload || result.diagnostic?.failure_type === 'invalid_payload') upstreamBadPayloadCount += 1;
+        lastError = `${result.diagnostic?.http_status || 'fetch'} ${result.diagnostic?.failure_type || 'failed'}`;
+        continue;
+      }
       if (result.unsupported) {
         unsupportedPairCount += 1;
-        lastError = `trade_history_not_available_for_source: alcor pair ${pair.pair_id}`;
+        lastError = `trade_history_endpoint_unavailable: alcor pair ${pair.pair_id}`;
+        continue;
+      }
+      if (result.noTradeRows || !result.rows.length) {
+        noTradeRowsCount += 1;
+        lastError = `no_trade_rows: alcor pair ${pair.pair_id}`;
         continue;
       }
       const trades = result.rows
         .map((row) => normalizeAlcorMarketTradeRow(row, pair))
         .filter(Boolean);
       if (!trades.length) {
-        unsupportedPairCount += 1;
+        noTradeRowsCount += 1;
         lastError = `trade_rows_not_usable: alcor pair ${pair.pair_id}`;
         continue;
       }
@@ -1120,6 +1328,10 @@ async function syncAlcorMarketTradeRows(env) {
   const totalProcessedPairCount = (asNumber(previousSnapshot.data?.processed_pair_count) || 0) + processedPairCount;
   const totalFailedPairCount = (asNumber(previousSnapshot.data?.failed_pair_count) || 0) + failedPairCount;
   const totalUnsupportedPairCount = (asNumber(previousSnapshot.data?.unsupported_pair_count) || 0) + unsupportedPairCount;
+  const totalTemporarilyFailedPairCount = (asNumber(previousSnapshot.data?.temporarily_failed_pair_count) || 0) + temporarilyFailedPairCount;
+  const totalUpstream5xxCount = (asNumber(previousSnapshot.data?.upstream_5xx_count) || 0) + upstream5xxCount;
+  const totalUpstreamBadPayloadCount = (asNumber(previousSnapshot.data?.upstream_bad_payload_count) || 0) + upstreamBadPayloadCount;
+  const totalNoTradeRowsCount = (asNumber(previousSnapshot.data?.no_trade_rows_count) || 0) + noTradeRowsCount;
   const totalRowsIndexed = (asNumber(previousSnapshot.data?.trade_rows_indexed) || 0) + rowsIndexed;
   const totalRowsWritten = (asNumber(previousSnapshot.data?.rows_written) || 0) + rowsWritten;
   const hardFailure = failedPairCount > 0 && processedPairCount === 0 && unsupportedPairCount === 0 && !budgetExhausted;
@@ -1150,6 +1362,10 @@ async function syncAlcorMarketTradeRows(env) {
     attempted_pair_count: totalAttemptedPairCount,
     failed_pair_count: totalFailedPairCount,
     unsupported_pair_count: totalUnsupportedPairCount,
+    temporarily_failed_pair_count: totalTemporarilyFailedPairCount,
+    upstream_5xx_count: totalUpstream5xxCount,
+    upstream_bad_payload_count: totalUpstreamBadPayloadCount,
+    no_trade_rows_count: totalNoTradeRowsCount,
     trade_rows_indexed: totalRowsIndexed,
     rows_written: totalRowsWritten,
     cursor: complete ? '' : String(nextCursor),
@@ -1157,6 +1373,8 @@ async function syncAlcorMarketTradeRows(env) {
     active_rows_per_market_limit: rowsPerMarket,
     budget_exhausted: budgetExhausted,
     trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'],
+    sample_trade_fetch_failure: sampleTradeFetchFailure,
+    sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
     no_fake_trades: true,
     plan: TRADE_INDEX_PLAN,
@@ -1170,6 +1388,10 @@ async function syncAlcorMarketTradeRows(env) {
     attempted_pair_count: totalAttemptedPairCount,
     failed_pair_count: totalFailedPairCount,
     unsupported_pair_count: totalUnsupportedPairCount,
+    temporarily_failed_pair_count: totalTemporarilyFailedPairCount,
+    upstream_5xx_count: totalUpstream5xxCount,
+    upstream_bad_payload_count: totalUpstreamBadPayloadCount,
+    no_trade_rows_count: totalNoTradeRowsCount,
     trade_rows_indexed: totalRowsIndexed,
     rows_written: totalRowsWritten,
     cursor: complete ? '' : String(nextCursor),
@@ -1177,6 +1399,8 @@ async function syncAlcorMarketTradeRows(env) {
     active_rows_per_market_limit: rowsPerMarket,
     budget_exhausted: budgetExhausted,
     trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'],
+    sample_trade_fetch_failure: sampleTradeFetchFailure,
+    sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
     no_fake_trades: true,
     plan: TRADE_INDEX_PLAN,
@@ -2687,11 +2911,18 @@ async function getIndexerHealth(db, env = {}) {
       attempted_pair_count: asNumber(tradeIndexSnapshot.data?.attempted_pair_count) || 0,
       failed_pair_count: asNumber(tradeIndexSnapshot.data?.failed_pair_count) || 0,
       unsupported_pair_count: asNumber(tradeIndexSnapshot.data?.unsupported_pair_count) || 0,
+      temporarily_failed_pair_count: asNumber(tradeIndexSnapshot.data?.temporarily_failed_pair_count) || 0,
+      upstream_5xx_count: asNumber(tradeIndexSnapshot.data?.upstream_5xx_count) || 0,
+      upstream_bad_payload_count: asNumber(tradeIndexSnapshot.data?.upstream_bad_payload_count) || 0,
+      no_trade_rows_count: asNumber(tradeIndexSnapshot.data?.no_trade_rows_count) || 0,
       trade_rows_indexed: asNumber(tradeIndexSnapshot.data?.trade_rows_indexed) || 0,
       rows_written: asNumber(tradeIndexSnapshot.data?.rows_written) || 0,
       active_pair_limit: asNumber(tradeIndexSnapshot.data?.active_pair_limit) || tradeIndexPairLimit(env),
       active_rows_per_market_limit: asNumber(tradeIndexSnapshot.data?.active_rows_per_market_limit) || tradeRowsPerMarketLimit(env),
       trade_history_not_available_for_source: tradeIndexSnapshot.data?.trade_history_not_available_for_source || ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'],
+      reference_trade_source: 'Wapaca backend indexes alcormarket marketMatches from Hyperion/state-history rows, not a canonical public Alcor HTTP trade endpoint.',
+      sample_trade_fetch_failure: tradeIndexSnapshot.data?.sample_trade_fetch_failure || null,
+      sample_trade_fetch_success: tradeIndexSnapshot.data?.sample_trade_fetch_success || null,
       budget_exhausted: !!tradeIndexSnapshot.data?.budget_exhausted,
       cursor: tradeIndexState?.cursor || tradeIndexSnapshot.data?.cursor || '',
       last_error: tradeIndexSnapshot.data?.last_error || tradeIndexState?.error || null,
@@ -3278,6 +3509,9 @@ export const __waxonedgeTestHooks = {
   tradeIndexPairLimit,
   tradeRowsPerMarketLimit,
   sourceStateStale,
+  tradeFetchDiagnostic,
+  isUpstreamServerErrorStatus,
+  fetchAlcorMarketTradeRows,
 };
 
 export async function runWaxOnEdgeAggregateBackfill(env) {
