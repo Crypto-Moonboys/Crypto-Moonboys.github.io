@@ -40,6 +40,8 @@ const WAXONEDGE_AGGREGATE_SOURCES = Object.freeze([
   'swap.taco',
   'swap.nefty',
   'swap.box',
+  'swap.adex',
+  'dapp.fusion',
 ]);
 const TOKEN_PAIR_PAGE_LIMIT = 100;
 const TOKEN_PAIR_MAX_PAGE_LIMIT = 250;
@@ -48,6 +50,12 @@ const LARGE_SNAPSHOT_SOURCES = Object.freeze([
   'swap.taco_pairs',
   'swap.nefty_pairs',
   'swap.box_pairs',
+  'swap.adex_pools',
+  'dapp.fusion_global',
+]);
+const TRADE_HISTORY_NOT_AVAILABLE_SOURCES = Object.freeze([
+  'swap.adex',
+  'dapp.fusion',
 ]);
 const TRADE_RAW_JSON_CACHE = Symbol('waxonedgeTradeRawJson');
 
@@ -293,6 +301,29 @@ const CORE_DEX_ADAPTERS = Object.freeze([
     defaultFeeBps: 30,
     explorer: 'https://waxblock.io/account/swap.box',
   },
+  {
+    source: 'swap.adex',
+    label: 'A-DEX',
+    referenceSource: 'adex',
+    dexCode: 'a',
+    poolType: 'pools',
+    contract: 'swap.adex',
+    table: 'pools',
+    normalizer: 'adex-pools',
+    explorer: 'https://waxblock.io/account/swap.adex',
+  },
+  {
+    source: 'dapp.fusion',
+    label: 'WaxFusion',
+    referenceSource: 'waxfusion',
+    dexCode: 'wf',
+    poolType: 'poolsSpecial',
+    contract: 'dapp.fusion',
+    table: 'global',
+    normalizer: 'waxfusion-global',
+    defaultFeeBps: 0,
+    explorer: 'https://waxblock.io/account/dapp.fusion',
+  },
 ]);
 
 const AMM_SWAP_ACTION_STREAMS = Object.freeze([
@@ -357,6 +388,8 @@ function sourceCoverageFromKeys(sourceKeys) {
     swap_taco: keys.has('swap.taco'),
     swap_nefty: keys.has('swap.nefty'),
     swap_box: keys.has('swap.box'),
+    swap_adex: keys.has('swap.adex'),
+    dapp_fusion: keys.has('dapp.fusion'),
   };
 }
 
@@ -809,6 +842,13 @@ function isFalseLike(value) {
 }
 
 function adapterFeeBps(adapter, row) {
+  if (adapter.normalizer === 'adex-pools') {
+    const poolFee = asNumber(parseAsset(row.pool_fee).amount ?? row.pool_fee);
+    const platformFee = asNumber(parseAsset(row.platform_fee).amount ?? row.platform_fee);
+    const totalFee = (poolFee || 0) + (platformFee || 0);
+    const feeBps = Math.round(totalFee * 100 * 100) / 100;
+    return feeBps > 0 ? safeDecimal(feeBps) : null;
+  }
   const rawFee = asNumber(row.fee ?? row.marketFee ?? row.pool_fee);
   if (rawFee != null) {
     return safeDecimal(adapter.feeScale ? rawFee / adapter.feeScale : rawFee);
@@ -816,10 +856,30 @@ function adapterFeeBps(adapter, row) {
   return adapter.defaultFeeBps != null ? safeDecimal(adapter.defaultFeeBps) : null;
 }
 
+function waxFusionTokenSides(row) {
+  const waxAvailable = getTokenSideInfo({
+    contract: 'eosio.token',
+    quantity: row.wax_available_for_rentals,
+  });
+  const liquifiedLswax = getTokenSideInfo({
+    contract: 'token.fusion',
+    quantity: row.liquified_swax,
+  });
+  if (!waxAvailable.amount || !liquifiedLswax.amount) return { tokenA: null, tokenB: null, price: null };
+  const backing = asNumber(parseAsset(row.swax_currently_backing_lswax).amount);
+  const conversionPrice = backing && backing > 0 ? safeDecimal(liquifiedLswax.amount / backing) : null;
+  return {
+    tokenA: waxAvailable,
+    tokenB: liquifiedLswax,
+    price: conversionPrice,
+  };
+}
+
 function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
   if (isFalseLike(row.active)) return null;
   let tokenA = null;
   let tokenB = null;
+  let explicitPrice = null;
   if (adapter.normalizer === 'tokenA-tokenB') {
     tokenA = getTokenSideInfo(row.tokenA);
     tokenB = getTokenSideInfo(row.tokenB);
@@ -840,13 +900,22 @@ function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
       symbol: row.token1?.symbol,
       quantity: row.reserve1,
     });
+  } else if (adapter.normalizer === 'adex-pools') {
+    tokenA = getTokenSideInfo(row.base_token);
+    tokenB = getTokenSideInfo(row.quote_token);
+  } else if (adapter.normalizer === 'waxfusion-global') {
+    const sides = waxFusionTokenSides(row);
+    tokenA = sides.tokenA;
+    tokenB = sides.tokenB;
+    explicitPrice = sides.price;
   }
   if (!tokenA?.contract || !tokenA?.symbol || !tokenB?.contract || !tokenB?.symbol) return null;
   if (tokenA.amount == null || tokenB.amount == null) return null;
   if (tokenA.amount <= 0 || tokenB.amount <= 0) return null;
-  const pairId = safeString(row.id ?? row.code ?? row.pair_id);
+  const pairId = safeString(row.id ?? row.code ?? row.pair_id) ||
+    (adapter.normalizer === 'waxfusion-global' ? 'dapp.fusion' : null);
   if (!pairId) return null;
-  const price = tokenA.amount > 0 ? safeDecimal(tokenB.amount / tokenA.amount) : null;
+  const price = explicitPrice || (tokenA.amount > 0 ? safeDecimal(tokenB.amount / tokenA.amount) : null);
   const liquidity = liquidityFromSides(tokenA, tokenB, priceIndex);
   const volume24 = safeDecimal(row.volume_24h ?? row.volume24);
   const volume24Raw = asNumber(volume24);
@@ -2043,7 +2112,7 @@ async function syncAlcorMarketTradeRows(env) {
       active_stream_pages_per_run: pagesPerRun,
       active_rows_per_market_limit: rowsPerMarket,
       budget_exhausted: false,
-      trade_history_not_available_for_source: [],
+      trade_history_not_available_for_source: TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice(),
       reference_trade_source: 'Hyperion/state-history alcordexmain buymatch/sellmatch -> marketMatches',
       guessed_public_alcor_http_source_of_truth: false,
       sample_trade_fetch_failure: isLegacyTradeFetchDiagnostic(previousData.sample_trade_fetch_failure) ? null : (previousData.sample_trade_fetch_failure || null),
@@ -2281,7 +2350,7 @@ async function syncAlcorMarketTradeRows(env) {
     active_stream_pages_per_run: pagesPerRun,
     active_rows_per_market_limit: rowsPerMarket,
     budget_exhausted: budgetExhausted,
-    trade_history_not_available_for_source: [],
+    trade_history_not_available_for_source: TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice(),
     reference_trade_source: 'Hyperion/state-history alcordexmain buymatch/sellmatch -> marketMatches',
     guessed_public_alcor_http_source_of_truth: false,
     sample_trade_fetch_failure: sampleTradeFetchFailure,
@@ -2331,7 +2400,7 @@ async function syncAlcorMarketTradeRows(env) {
     active_stream_pages_per_run: pagesPerRun,
     active_rows_per_market_limit: rowsPerMarket,
     budget_exhausted: budgetExhausted,
-    trade_history_not_available_for_source: [],
+    trade_history_not_available_for_source: TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice(),
     sample_trade_fetch_failure: sampleTradeFetchFailure,
     sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
@@ -2640,6 +2709,7 @@ async function syncAmmSwapTradeRows(env) {
     active_rows_per_market_limit: rowsPerMarket,
     budget_exhausted: budgetExhausted,
     configured_streams: AMM_SWAP_ACTION_STREAMS,
+    trade_history_not_available_for_source: TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice(),
     sample_trade_fetch_failure: sampleTradeFetchFailure,
     sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
@@ -4243,6 +4313,7 @@ async function getIndexerHealth(db, env = {}) {
       active_stream_limit: asNumber(ammTradeIndexSnapshot.data?.active_stream_limit) || tradeIndexPairLimit(env),
       active_stream_pages_per_run: asNumber(ammTradeIndexSnapshot.data?.active_stream_pages_per_run) || tradeStreamPagesPerRun(env),
       active_rows_per_market_limit: asNumber(ammTradeIndexSnapshot.data?.active_rows_per_market_limit) || tradeRowsPerMarketLimit(env),
+      trade_history_not_available_for_source: ammTradeIndexSnapshot.data?.trade_history_not_available_for_source || TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice(),
       sample_trade_fetch_failure: ammTradeIndexSnapshot.data?.sample_trade_fetch_failure || null,
       sample_trade_fetch_success: ammTradeIndexSnapshot.data?.sample_trade_fetch_success || null,
       budget_exhausted: !!ammTradeIndexSnapshot.data?.budget_exhausted,
@@ -4906,6 +4977,8 @@ export const __waxonedgeTestHooks = {
   normalizeAmmSwapTradeRow,
   fetchAmmSwapStreamRows,
   normalizeActionStreamProgressMap,
+  normalizeCoreDexPair,
+  sourceCoverageFromKeys,
 };
 
 export async function runWaxOnEdgeAggregateBackfill(env) {
