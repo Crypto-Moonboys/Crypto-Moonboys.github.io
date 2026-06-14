@@ -4,7 +4,8 @@ const DEFAULT_BASE_URL = 'http://127.0.0.1:8789';
 
 export function checkTargetHost(bindHost) {
   const host = String(bindHost || '').trim();
-  if (!host || host === '0.0.0.0' || host === '::' || host === '[::]') return '127.0.0.1';
+  if (!host || host === '0.0.0.0') return '127.0.0.1';
+  if (host === '::' || host === '[::]') return '[::1]';
   if (host.includes(':') && !host.startsWith('[')) return `[${host}]`;
   return host;
 }

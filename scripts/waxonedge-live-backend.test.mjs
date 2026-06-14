@@ -206,6 +206,10 @@ ok('VPS live indexer production env example has required keys and blank secret',
   !/WAXONEDGE_LIVE_SHARED_SECRET=.+/.test(liveIndexerProdEnvExample));
 ok('VPS live indexer deploy guide documents runtime operations without enabling production proxy',
   liveIndexerDeploy.includes('Node.js 22') &&
+  liveIndexerDeploy.includes('sudo groupadd --system waxonedge || true') &&
+  liveIndexerDeploy.includes('sudo useradd --system --gid waxonedge --home /opt/crypto-moonboys --shell /usr/sbin/nologin waxonedge || true') &&
+  liveIndexerDeploy.indexOf('sudo groupadd --system waxonedge || true') <
+    liveIndexerDeploy.indexOf('sudo chown waxonedge:waxonedge /opt/crypto-moonboys') &&
   liveIndexerDeploy.includes('npm install --omit=dev') &&
   liveIndexerDeploy.includes('systemd') &&
   liveIndexerDeploy.includes('PM2') &&
@@ -288,11 +292,14 @@ ok('VPS live indexer binds locally by default and allows explicit host override'
   liveIndexer.loadConfig({ WAXONEDGE_LIVE_BIND_HOST: '[::1]' }).bind_host === '::1');
 ok('VPS live indexer checker maps wildcard bind hosts to routable local targets',
   liveIndexerCheck.checkTargetHost('0.0.0.0') === '127.0.0.1' &&
-  liveIndexerCheck.checkTargetHost('::') === '127.0.0.1' &&
+  liveIndexerCheck.checkTargetHost('::') === '[::1]' &&
+  liveIndexerCheck.checkTargetHost('[::]') === '[::1]' &&
   liveIndexerCheck.checkTargetHost('127.0.0.1') === '127.0.0.1' &&
   liveIndexerCheck.checkTargetHost('localhost') === 'localhost' &&
   liveIndexerCheck.checkTargetHost('::1') === '[::1]' &&
+  liveIndexerCheck.checkTargetHost('[::1]') === '[::1]' &&
   liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '0.0.0.0', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://127.0.0.1:8789' &&
+  liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '::', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://[::1]:8789' &&
   liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '[::1]', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://[::1]:8789' &&
   liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '::1', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://[::1]:8789');
 ok('VPS live indexer /stream contract is SSE heartbeat only until real deltas exist',

@@ -13,7 +13,8 @@ This guide wires the existing WaxOnEdge live indexer skeleton for VPS runtime ch
 ## Install
 
 ```bash
-sudo useradd --system --home /opt/crypto-moonboys --shell /usr/sbin/nologin waxonedge
+sudo groupadd --system waxonedge || true
+sudo useradd --system --gid waxonedge --home /opt/crypto-moonboys --shell /usr/sbin/nologin waxonedge || true
 sudo mkdir -p /opt/crypto-moonboys
 sudo chown waxonedge:waxonedge /opt/crypto-moonboys
 sudo -u waxonedge git clone https://github.com/Crypto-Moonboys/Crypto-Moonboys.github.io.git /opt/crypto-moonboys
