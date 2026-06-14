@@ -2,10 +2,17 @@ import { fileURLToPath } from 'node:url';
 
 const DEFAULT_BASE_URL = 'http://127.0.0.1:8789';
 
-function checkUrl(env = process.env) {
+export function checkTargetHost(bindHost) {
+  const host = String(bindHost || '').trim();
+  if (!host || host === '0.0.0.0' || host === '::' || host === '[::]') return '127.0.0.1';
+  if (host.includes(':') && !host.startsWith('[')) return `[${host}]`;
+  return host;
+}
+
+export function checkUrl(env = process.env) {
   const explicit = String(env.WAXONEDGE_LIVE_CHECK_URL || '').trim();
   if (explicit) return explicit.replace(/\/+$/, '');
-  const host = String(env.WAXONEDGE_LIVE_BIND_HOST || '127.0.0.1').trim() || '127.0.0.1';
+  const host = checkTargetHost(env.WAXONEDGE_LIVE_BIND_HOST || '127.0.0.1');
   const port = String(env.WAXONEDGE_LIVE_PORT || '8789').trim() || '8789';
   return `http://${host}:${port}`;
 }
@@ -49,6 +56,29 @@ export function assertNoFakeLiveData(payload, label = 'payload') {
   }
 }
 
+function assertExpectedStatus(response, path) {
+  if (![200, 503].includes(response.status)) {
+    throw new Error(`${path} returned unexpected status ${response.status}`);
+  }
+}
+
+export function validateHealthContract(response, payload) {
+  assertExpectedStatus(response, '/health');
+  assertNoFakeLiveData(payload, '/health');
+  if (payload.service !== 'waxonedge-live-indexer') throw new Error('/health returned wrong service identity');
+  if (payload.browser_hyperion_fetch !== false) throw new Error('/health must report browser_hyperion_fetch=false');
+  if (payload.emits_fake_token_updates !== false) throw new Error('/health must report emits_fake_token_updates=false');
+}
+
+export function validateSnapshotContract(response, payload) {
+  assertExpectedStatus(response, '/snapshot');
+  assertNoFakeLiveData(payload, '/snapshot');
+  if (payload.source !== 'waxonedge-live-indexer') throw new Error('/snapshot returned wrong source identity');
+  if (payload.mode !== 'snapshot') throw new Error('/snapshot must report mode=snapshot');
+  if (payload.token_key_format !== 'contract::symbol') throw new Error('/snapshot must report token_key_format=contract::symbol');
+  if (payload.browser_hyperion_fetch !== false) throw new Error('/snapshot must report browser_hyperion_fetch=false');
+}
+
 async function checkStream(baseUrl) {
   const { signal, done } = timeoutSignal(4000);
   try {
@@ -56,7 +86,11 @@ async function checkStream(baseUrl) {
       headers: { accept: 'text/event-stream' },
       signal,
     });
+    assertExpectedStatus(response, '/stream');
     const contentType = response.headers.get('content-type') || '';
+    if (response.status === 503) {
+      return { ok: true, status: response.status, unavailable: true };
+    }
     if (!contentType.includes('text/event-stream')) {
       throw new Error(`/stream returned unexpected content-type: ${contentType || 'missing'}`);
     }
@@ -77,9 +111,9 @@ async function checkStream(baseUrl) {
 export async function runCheck(env = process.env) {
   const baseUrl = checkUrl(env) || DEFAULT_BASE_URL;
   const health = await fetchJson(baseUrl, '/health');
-  assertNoFakeLiveData(health.data, '/health');
+  validateHealthContract(health.response, health.data);
   const snapshot = await fetchJson(baseUrl, '/snapshot');
-  assertNoFakeLiveData(snapshot.data, '/snapshot');
+  validateSnapshotContract(snapshot.response, snapshot.data);
   const result = {
     ok: true,
     base_url: baseUrl,

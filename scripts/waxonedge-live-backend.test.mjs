@@ -221,8 +221,10 @@ ok('VPS live indexer deploy guide documents runtime operations without enabling 
 ok('VPS live indexer systemd template is local-only and secret-free',
   liveIndexerSystemd.includes('User=waxonedge') &&
   liveIndexerSystemd.includes('WorkingDirectory=/opt/crypto-moonboys/services/waxonedge-live-indexer') &&
-  liveIndexerSystemd.includes('EnvironmentFile=/etc/waxonedge-live-indexer.env') &&
   liveIndexerSystemd.includes('Environment=WAXONEDGE_LIVE_BIND_HOST=127.0.0.1') &&
+  liveIndexerSystemd.includes('EnvironmentFile=/etc/waxonedge-live-indexer.env') &&
+  liveIndexerSystemd.indexOf('Environment=WAXONEDGE_LIVE_BIND_HOST=127.0.0.1') <
+    liveIndexerSystemd.indexOf('EnvironmentFile=/etc/waxonedge-live-indexer.env') &&
   liveIndexerSystemd.includes('ExecStart=/usr/bin/node src/index.mjs') &&
   liveIndexerSystemd.includes('Restart=on-failure') &&
   liveIndexerSystemd.includes('NoNewPrivileges=true') &&
@@ -279,6 +281,14 @@ ok('VPS live indexer registers only verified trade streams',
 ok('VPS live indexer binds locally by default and allows explicit host override',
   liveIndexer.loadConfig({}).bind_host === '127.0.0.1' &&
   liveIndexer.loadConfig({ WAXONEDGE_LIVE_BIND_HOST: '0.0.0.0' }).bind_host === '0.0.0.0');
+ok('VPS live indexer checker maps wildcard bind hosts to routable local targets',
+  liveIndexerCheck.checkTargetHost('0.0.0.0') === '127.0.0.1' &&
+  liveIndexerCheck.checkTargetHost('::') === '127.0.0.1' &&
+  liveIndexerCheck.checkTargetHost('127.0.0.1') === '127.0.0.1' &&
+  liveIndexerCheck.checkTargetHost('localhost') === 'localhost' &&
+  liveIndexerCheck.checkTargetHost('::1') === '[::1]' &&
+  liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '0.0.0.0', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://127.0.0.1:8789' &&
+  liveIndexerCheck.checkUrl({ WAXONEDGE_LIVE_BIND_HOST: '::1', WAXONEDGE_LIVE_PORT: '8789' }) === 'http://[::1]:8789');
 ok('VPS live indexer /stream contract is SSE heartbeat only until real deltas exist',
   liveIndexerSource.includes("pathname === '/stream'") &&
   liveIndexerSource.includes("'content-type': 'text/event-stream; charset=utf-8'") &&
@@ -310,6 +320,101 @@ ok('VPS live indexer exposes no fake live events or random movement',
   }
   ok('VPS live indexer runtime check fails on fake live data',
     rejectedFakeHealth && rejectedFakeToken);
+}
+{
+  const healthPayload = {
+    service: 'waxonedge-live-indexer',
+    status: 'not_connected',
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: false,
+    emits_fake_token_updates: false,
+  };
+  const snapshotPayload = {
+    source: 'waxonedge-live-indexer',
+    mode: 'snapshot',
+    token_key_format: 'contract::symbol',
+    tokens: [],
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: false,
+  };
+  const jsonResponse = (status, payload) => new Response(JSON.stringify(payload), {
+    status,
+    headers: { 'content-type': 'application/json; charset=utf-8' },
+  });
+  const sseResponse = (body) => new Response(body, {
+    status: 200,
+    headers: { 'content-type': 'text/event-stream; charset=utf-8' },
+  });
+  async function withMockFetch(responses, fn) {
+    const originalFetch = globalThis.fetch;
+    const pending = responses.slice();
+    globalThis.fetch = async () => {
+      const next = pending.shift();
+      if (!next) throw new Error('unexpected fetch call');
+      return next;
+    };
+    try {
+      return await fn();
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  }
+  const checkEnv = {
+    WAXONEDGE_LIVE_CHECK_URL: 'http://live-indexer.test',
+    WAXONEDGE_LIVE_CHECK_STREAM: 'false',
+  };
+  const skeleton = await withMockFetch([
+    jsonResponse(503, healthPayload),
+    jsonResponse(503, snapshotPayload),
+  ], () => liveIndexerCheck.runCheck(checkEnv));
+  const connected = await withMockFetch([
+    jsonResponse(200, { ...healthPayload, status: 'connected' }),
+    jsonResponse(200, { ...snapshotPayload, status: 'connected' }),
+  ], () => liveIndexerCheck.runCheck(checkEnv));
+  let rejectedWrongService = false;
+  let rejected404 = false;
+  let rejected500 = false;
+  let rejectedFakeStream = false;
+  try {
+    await withMockFetch([
+      jsonResponse(200, { ...healthPayload, service: 'other-service' }),
+      jsonResponse(200, snapshotPayload),
+    ], () => liveIndexerCheck.runCheck(checkEnv));
+  } catch (_) {
+    rejectedWrongService = true;
+  }
+  try {
+    await withMockFetch([
+      jsonResponse(404, { ...healthPayload }),
+      jsonResponse(200, snapshotPayload),
+    ], () => liveIndexerCheck.runCheck(checkEnv));
+  } catch (_) {
+    rejected404 = true;
+  }
+  try {
+    await withMockFetch([
+      jsonResponse(500, { ...healthPayload }),
+      jsonResponse(200, snapshotPayload),
+    ], () => liveIndexerCheck.runCheck(checkEnv));
+  } catch (_) {
+    rejected500 = true;
+  }
+  try {
+    await withMockFetch([
+      jsonResponse(503, healthPayload),
+      jsonResponse(503, snapshotPayload),
+      sseResponse('event: token_update\ndata: {"uses_fake_live_data":false}\n\n'),
+    ], () => liveIndexerCheck.runCheck({ WAXONEDGE_LIVE_CHECK_URL: 'http://live-indexer.test' }));
+  } catch (_) {
+    rejectedFakeStream = true;
+  }
+  ok('VPS live indexer runtime checker validates service identity, endpoint status, and skeleton contracts',
+    skeleton.ok === true &&
+    connected.ok === true &&
+    rejectedWrongService &&
+    rejected404 &&
+    rejected500 &&
+    rejectedFakeStream);
 }
 ok('VPS live indexer safely parses request path without trusting Host header',
   liveIndexer.safeRequestPathname('/health?x=1') === '/health' &&
