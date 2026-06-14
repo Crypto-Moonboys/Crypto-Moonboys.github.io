@@ -521,6 +521,34 @@ ok('Alcor trade-row indexer upserts real rows and exposes source diagnostics',
   route.includes("reference_src: 'alcormarket'") &&
   route.includes("trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box']") &&
   route.includes('no_fake_trades: true'));
+ok('trade-row index state treats normal cursoring as non-truncated progress',
+  route.includes('const sourceStateTruncated = status === \'failed\' ? 1 : 0') &&
+  route.includes('truncated: sourceStateTruncated') &&
+  route.includes('const sourceStateError = status === \'failed\' ? visibleError : null') &&
+  route.includes('error: sourceStateError') &&
+  !route.includes('truncated: complete ? 0 : 1'));
+ok('successful trade-row index runs clear stale-looking errors',
+  route.includes("const visibleError = status === 'success' ? null") &&
+  route.includes('last_error: visibleError') &&
+  route.includes('recordSyncRun(env.DB, ALCOR_TRADE_INDEX_SOURCE, status, startedAt, visibleError)'));
+ok('sourceStateStale does not treat normal trade_indexing partial cursor as stale',
+  __waxonedgeTestHooks.sourceStateStale({
+    source: 'alcor_trade_rows',
+    status: 'partial',
+    truncated: 0,
+    complete: 0,
+    cursor: '24',
+    updated_at: new Date().toISOString(),
+  }) === false);
+ok('sourceStateStale still reports true trade_indexing failures',
+  __waxonedgeTestHooks.sourceStateStale({
+    source: 'alcor_trade_rows',
+    status: 'failed',
+    truncated: 1,
+    complete: 0,
+    cursor: '24',
+    updated_at: new Date().toISOString(),
+  }) === true);
 ok('scheduled sync can index trade rows before candle backfill',
   route.includes("cron === 'waxonedge-trade-backfill'") &&
   route.includes('runWaxOnEdgeTradeBackfill') &&

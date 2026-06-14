@@ -1122,19 +1122,24 @@ async function syncAlcorMarketTradeRows(env) {
   const totalUnsupportedPairCount = (asNumber(previousSnapshot.data?.unsupported_pair_count) || 0) + unsupportedPairCount;
   const totalRowsIndexed = (asNumber(previousSnapshot.data?.trade_rows_indexed) || 0) + rowsIndexed;
   const totalRowsWritten = (asNumber(previousSnapshot.data?.rows_written) || 0) + rowsWritten;
-  const status = budgetExhausted
+  const hardFailure = failedPairCount > 0 && processedPairCount === 0 && unsupportedPairCount === 0 && !budgetExhausted;
+  const status = hardFailure
+    ? 'failed'
+    : (budgetExhausted
     ? 'budget_limited'
-    : (complete && failedPairCount === 0 ? 'success' : (attemptedPairCount > 0 ? 'partial' : 'planned'));
-  const error = lastError || (status === 'planned' ? TRADE_INDEX_PLAN : null);
+    : (complete && failedPairCount === 0 ? 'success' : (attemptedPairCount > 0 ? 'partial' : 'planned')));
+  const visibleError = status === 'success' ? null : (lastError || (status === 'planned' ? TRADE_INDEX_PLAN : null));
+  const sourceStateError = status === 'failed' ? visibleError : null;
+  const sourceStateTruncated = status === 'failed' ? 1 : 0;
   await upsertSourceIndexState(env.DB, ALCOR_TRADE_INDEX_SOURCE, {
     sync_cycle_id: `trades-${new Date().toISOString().slice(0, 10)}`,
     cursor: complete ? '' : String(nextCursor),
     page_count: nextCursor,
     row_count: candidatePairCount,
     complete: complete ? 1 : 0,
-    truncated: complete ? 0 : 1,
+    truncated: sourceStateTruncated,
     status,
-    error,
+    error: sourceStateError,
     started_at: startedAt,
   });
   await writeSnapshot(env.DB, ALCOR_TRADE_INDEX_SOURCE, {
@@ -1152,11 +1157,11 @@ async function syncAlcorMarketTradeRows(env) {
     active_rows_per_market_limit: rowsPerMarket,
     budget_exhausted: budgetExhausted,
     trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'],
-    last_error: lastError,
+    last_error: visibleError,
     no_fake_trades: true,
     plan: TRADE_INDEX_PLAN,
   }, nowIso());
-  await recordSyncRun(env.DB, ALCOR_TRADE_INDEX_SOURCE, status, startedAt, error);
+  await recordSyncRun(env.DB, ALCOR_TRADE_INDEX_SOURCE, status, startedAt, visibleError);
   return {
     ok: status !== 'failed',
     status,
@@ -1172,7 +1177,7 @@ async function syncAlcorMarketTradeRows(env) {
     active_rows_per_market_limit: rowsPerMarket,
     budget_exhausted: budgetExhausted,
     trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'],
-    last_error: lastError,
+    last_error: visibleError,
     no_fake_trades: true,
     plan: TRADE_INDEX_PLAN,
   };
@@ -3272,6 +3277,7 @@ export const __waxonedgeTestHooks = {
   candleBackfillPairLimit,
   tradeIndexPairLimit,
   tradeRowsPerMarketLimit,
+  sourceStateStale,
 };
 
 export async function runWaxOnEdgeAggregateBackfill(env) {
