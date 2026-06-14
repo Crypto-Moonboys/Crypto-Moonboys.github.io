@@ -29,6 +29,8 @@ const DEFAULT_TRADE_INDEX_PAIR_LIMIT = 24;
 const DEFAULT_TRADE_ROWS_PER_MARKET_LIMIT = 250;
 const DEFAULT_HYPERION_TRADE_SCAN_LIMIT = 100;
 const DEFAULT_TRADE_STREAM_PAGES_PER_RUN = 2;
+const HYPERION_SKIP_WINDOW_LIMIT = 10000;
+const HYPERION_SKIP_WINDOW_NEXT_ACTION = 'requires sequence/state-history cursor or VPS indexer for deeper history';
 const LIVE_SNAPSHOT_TOKEN_LIMIT = 250;
 const FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION = 1;
 const FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE = 1;
@@ -140,6 +142,20 @@ function tradeStreamPagesPerRun(env) {
   const configured = asNumber(env?.WAXONEDGE_TRADE_STREAM_PAGES_PER_RUN);
   if (configured != null && configured > 0) return Math.min(10, Math.floor(configured));
   return waxonedgeFreeSafeMode(env) ? FREE_SAFE_TRADE_STREAM_PAGES_PER_RUN : DEFAULT_TRADE_STREAM_PAGES_PER_RUN;
+}
+
+function hyperionSkipWindowState(cursor, limit, maxWindow = HYPERION_SKIP_WINDOW_LIMIT) {
+  const skipCursor = Math.max(0, Math.floor(asNumber(cursor) || 0));
+  const pageLimit = Math.max(1, Math.floor(asNumber(limit) || DEFAULT_HYPERION_TRADE_SCAN_LIMIT));
+  const windowLimit = Math.max(1, Math.floor(asNumber(maxWindow) || HYPERION_SKIP_WINDOW_LIMIT));
+  const lastValidSkipCursor = Math.max(0, windowLimit - pageLimit);
+  return {
+    skip_cursor: skipCursor,
+    page_limit: pageLimit,
+    hyperion_skip_window_limit: windowLimit,
+    last_valid_skip_cursor: lastValidSkipCursor,
+    bounded_skip_window_exhausted: skipCursor + pageLimit > windowLimit,
+  };
 }
 
 function hyperionApiBase(env) {
@@ -2284,13 +2300,28 @@ async function syncAlcorMarketTradeRows(env) {
   let rowsWritten = 0;
   let duplicateRowsSkipped = 0;
   let lastError = null;
+  let boundedSkipWindowExhausted = false;
   let sampleTradeFetchFailure = isLegacyTradeFetchDiagnostic(previousData.sample_trade_fetch_failure) ? null : (previousData.sample_trade_fetch_failure || null);
   let sampleTradeFetchSuccess = previousData.sample_trade_fetch_success || null;
   let budgetExhausted = false;
   for (const actionName of candidateRows) {
-    attemptedPairCount += 1;
     const actionState = streamProgress[actionName] || normalizeActionStreamProgress(actionName);
     const streamCursor = actionState.skip_cursor || 0;
+    const skipWindow = hyperionSkipWindowState(streamCursor, rowsPerMarket);
+    if (skipWindow.bounded_skip_window_exhausted) {
+      boundedSkipWindowExhausted = true;
+      actionState.status = 'partial';
+      actionState.complete = false;
+      actionState.pagination_mode = 'skip';
+      actionState.bounded_skip_window_exhausted = true;
+      actionState.hyperion_skip_window_limit = skipWindow.hyperion_skip_window_limit;
+      actionState.last_valid_skip_cursor = skipWindow.last_valid_skip_cursor;
+      actionState.last_error = null;
+      actionState.next_action = HYPERION_SKIP_WINDOW_NEXT_ACTION;
+      actionState.updated_at = nowIso();
+      continue;
+    }
+    attemptedPairCount += 1;
     try {
       const result = await fetchAlcorMarketMatchStreamRows(env, actionName, rowsPerMarket, streamCursor);
       if (result.diagnostic?.row_count > 0) sampleTradeFetchSuccess = result.diagnostic;
@@ -2370,6 +2401,9 @@ async function syncAlcorMarketTradeRows(env) {
       const parsedNextCursor = asNumber(result.next_cursor);
       const nextSkipCursor = parsedNextCursor ?? (streamCursor + result.rows.length);
       actionState.skip_cursor = Math.max(actionState.skip_cursor, Math.floor(nextSkipCursor));
+      actionState.bounded_skip_window_exhausted = false;
+      actionState.hyperion_skip_window_limit = HYPERION_SKIP_WINDOW_LIMIT;
+      actionState.last_valid_skip_cursor = hyperionSkipWindowState(actionState.skip_cursor, rowsPerMarket).last_valid_skip_cursor;
       actionState.last_sequence = result.last_sequence ?? actionState.last_sequence;
       actionState.last_block = result.last_block ?? actionState.last_block;
       actionState.last_indexed_timestamp = result.last_indexed_timestamp || actionState.last_indexed_timestamp;
@@ -2421,6 +2455,8 @@ async function syncAlcorMarketTradeRows(env) {
   const lastStreamSequence = maxNumberValue(actionStreams.map((actionName) => streamProgress[actionName]?.last_sequence));
   const lastStreamBlock = maxNumberValue(actionStreams.map((actionName) => streamProgress[actionName]?.last_block));
   const allStreamsComplete = actionStreams.every((actionName) => streamProgress[actionName]?.complete === true);
+  const anyBoundedSkipWindowExhausted = boundedSkipWindowExhausted || actionStreams.some((actionName) => streamProgress[actionName]?.bounded_skip_window_exhausted === true);
+  const lastValidSkipCursor = Math.max(0, ...actionStreams.map((actionName) => asNumber(streamProgress[actionName]?.last_valid_skip_cursor) || hyperionSkipWindowState(0, rowsPerMarket).last_valid_skip_cursor));
   const hardFailure = failedPairCount > 0 && processedPairCount === 0 && unsupportedPairCount === 0 && !budgetExhausted;
   const status = hyperionNotConfigured
     ? 'skipped'
@@ -2428,7 +2464,7 @@ async function syncAlcorMarketTradeRows(env) {
     ? 'failed'
     : (budgetExhausted
     ? 'budget_limited'
-    : (attemptedPairCount > 0 || allStreamsCompleteBeforeRun || allStreamsComplete ? 'partial' : 'planned')));
+    : (attemptedPairCount > 0 || allStreamsCompleteBeforeRun || allStreamsComplete || anyBoundedSkipWindowExhausted ? 'partial' : 'planned')));
   const hasCurrentFailure = hyperionNotConfigured || budgetExhausted || failedPairCount > 0 || temporarilyFailedPairCount > 0;
   const visibleError = (status === 'success' || (rowsWritten > 0 && !hasCurrentFailure))
     ? null
@@ -2467,6 +2503,9 @@ async function syncAlcorMarketTradeRows(env) {
     bounded_history_seed: false,
     history_pagination_complete: false,
     pagination_mode: 'skip',
+    bounded_skip_window_exhausted: anyBoundedSkipWindowExhausted,
+    hyperion_skip_window_limit: HYPERION_SKIP_WINDOW_LIMIT,
+    last_valid_skip_cursor: lastValidSkipCursor,
     action_streams: streamProgress,
     last_stream_cursor: lastStreamCursor,
     last_stream_sequence: lastStreamSequence,
@@ -2492,7 +2531,11 @@ async function syncAlcorMarketTradeRows(env) {
     sample_trade_fetch_failure: sampleTradeFetchFailure,
     sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
-    next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : (allStreamsComplete ? 'skip pagination exhausted; sequence-complete replay not claimed' : 'continue per-action Hyperion skip pagination'),
+    next_action: hyperionNotConfigured
+      ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint'
+      : (anyBoundedSkipWindowExhausted
+      ? HYPERION_SKIP_WINDOW_NEXT_ACTION
+      : (allStreamsComplete ? 'skip pagination exhausted; sequence-complete replay not claimed' : 'continue per-action Hyperion skip pagination')),
     no_fake_trades: true,
     plan: TRADE_INDEX_PLAN,
   }, nowIso());
@@ -2518,6 +2561,9 @@ async function syncAlcorMarketTradeRows(env) {
     bounded_history_seed: false,
     history_pagination_complete: false,
     pagination_mode: 'skip',
+    bounded_skip_window_exhausted: anyBoundedSkipWindowExhausted,
+    hyperion_skip_window_limit: HYPERION_SKIP_WINDOW_LIMIT,
+    last_valid_skip_cursor: lastValidSkipCursor,
     action_streams: streamProgress,
     last_stream_cursor: lastStreamCursor,
     last_stream_sequence: lastStreamSequence,
@@ -2541,7 +2587,11 @@ async function syncAlcorMarketTradeRows(env) {
     sample_trade_fetch_failure: sampleTradeFetchFailure,
     sample_trade_fetch_success: sampleTradeFetchSuccess,
     last_error: visibleError,
-    next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : (allStreamsComplete ? 'skip pagination exhausted; sequence-complete replay not claimed' : 'continue per-action Hyperion skip pagination'),
+    next_action: hyperionNotConfigured
+      ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint'
+      : (anyBoundedSkipWindowExhausted
+      ? HYPERION_SKIP_WINDOW_NEXT_ACTION
+      : (allStreamsComplete ? 'skip pagination exhausted; sequence-complete replay not claimed' : 'continue per-action Hyperion skip pagination')),
     no_fake_trades: true,
     plan: TRADE_INDEX_PLAN,
   };
@@ -4766,6 +4816,9 @@ async function getIndexerHealth(db, env = {}) {
       bounded_history_seed: tradeIndexSnapshot.data?.bounded_history_seed !== false,
       history_pagination_complete: tradeIndexSnapshot.data?.history_pagination_complete === true,
       pagination_mode: tradeIndexSnapshot.data?.pagination_mode || (tradeIndexSnapshot.data?.bounded_history_seed === false ? 'skip' : 'none'),
+      bounded_skip_window_exhausted: tradeIndexSnapshot.data?.bounded_skip_window_exhausted === true,
+      hyperion_skip_window_limit: asNumber(tradeIndexSnapshot.data?.hyperion_skip_window_limit) || HYPERION_SKIP_WINDOW_LIMIT,
+      last_valid_skip_cursor: asNumber(tradeIndexSnapshot.data?.last_valid_skip_cursor) ?? hyperionSkipWindowState(0, tradeRowsPerMarketLimit(env)).last_valid_skip_cursor,
       action_streams: tradeIndexSnapshot.data?.action_streams || normalizeActionStreamProgressMap({}, defaultAlcorTradeActionStreams()),
       last_stream_cursor: asNumber(tradeIndexSnapshot.data?.last_stream_cursor) || 0,
       last_stream_sequence: tradeIndexSnapshot.data?.last_stream_sequence ?? null,
@@ -5586,6 +5639,7 @@ export const __waxonedgeTestHooks = {
   tradeIndexPairLimit,
   tradeRowsPerMarketLimit,
   tradeStreamPagesPerRun,
+  hyperionSkipWindowState,
   sourceStateStale,
   tradeFetchDiagnostic,
   isUpstreamServerErrorStatus,
