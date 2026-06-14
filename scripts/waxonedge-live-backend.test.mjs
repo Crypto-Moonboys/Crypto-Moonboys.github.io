@@ -420,6 +420,16 @@ ok('candle_backfill does not remain planned forever after scheduled run',
   route.includes("attemptedPairCount > 0 ? 'partial'") &&
   route.includes("status === 'planned' ? CANDLE_BACKFILL_PLAN : null") &&
   route.includes("const candleBackfill = await planWaxOnEdgeCandleBackfill(env);"));
+ok('candle backfill waits for indexed Alcor trades without fake attempted progress',
+  route.includes("SELECT 1 FROM waxonedge_trades WHERE source = 'alcor' LIMIT 1") &&
+  !route.includes("SELECT COUNT(*) AS count FROM waxonedge_trades WHERE source = 'alcor'") &&
+  route.includes('if (!indexedAlcorTradeRow)') &&
+  route.includes("status: 'skipped'") &&
+  route.includes("const error = 'waiting for indexed trade rows'") &&
+  route.includes('attempted_pair_count: asNumber(previousData.attempted_pair_count) || 0') &&
+  route.includes('processed_pair_count: asNumber(previousData.processed_pair_count) || 0') &&
+  route.includes('cursor: state?.cursor ||') &&
+  route.includes('return { ok: true, ...snapshot, indexed_1d_candle_count: existingCandleCount }'));
 ok('internal candle builder replaces external Alcor chart URL dependency',
   route.includes('function buildInternalDailyCandlesForPair') &&
   route.includes("reason: source === 'alcor' ? 'trade_rows_not_indexed' : 'swap_rows_not_indexed'") &&
@@ -501,7 +511,7 @@ const normalizedAlcorTrade = __waxonedgeTestHooks.normalizeAlcorMarketTradeRow({
 });
 ok('Alcor market match rows normalize into waxonedge_trades shape',
   normalizedAlcorTrade.source === 'alcor' &&
-  normalizedAlcorTrade.trade_id === '29:12345' &&
+  normalizedAlcorTrade.trade_id === '29:match:12345' &&
   normalizedAlcorTrade.pair_id === '29' &&
   normalizedAlcorTrade.contract === 'graffitiking' &&
   normalizedAlcorTrade.symbol === 'WAXCASH' &&
@@ -513,14 +523,30 @@ ok('Alcor market match rows normalize into waxonedge_trades shape',
 ok('Alcor trade-row indexer upserts real rows and exposes source diagnostics',
   route.includes('const ALCOR_TRADE_INDEX_SOURCE =') &&
   route.includes('async function syncAlcorMarketTradeRows') &&
-  route.includes('fetchAlcorMarketMatchHistoryRows(env, pair.pair_id, rowsPerMarket)') &&
-  route.includes('normalizeAlcorMarketTradeRow(row, pair)') &&
+  route.includes("const actionStreams = ['buymatch', 'sellmatch']") &&
+  route.includes('fetchAlcorMarketMatchStreamRows(env, actionName, rowsPerMarket)') &&
+  route.includes('normalizeAlcorMarketTradeRow(row)') &&
   route.includes('INSERT INTO waxonedge_trades') &&
   route.includes('ON CONFLICT(source, trade_id) DO UPDATE SET') &&
   route.includes("source: 'alcor'") &&
   route.includes("reference_src: 'alcormarket'") &&
   route.includes("trade_history_not_available_for_source: ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box']") &&
   route.includes('no_fake_trades: true'));
+ok('bounded Alcor stream seed reports honest progress without full-history completion claims',
+  route.includes('bounded_history_seed: true') &&
+  route.includes('history_pagination_complete: false') &&
+  route.includes("next_action: hyperionNotConfigured ? 'configure WAXONEDGE_HYPERION_API with a real WAX Hyperion endpoint' : 'bounded latest-stream seed; add Hyperion sequence pagination for full history'") &&
+  route.includes('const nextCursor = \'\';') &&
+  route.includes('const complete = false;') &&
+  !route.includes("complete && failedPairCount === 0 ? 'success'"));
+ok('trade-row sync does not inflate indexed/written counters on conflict-only upserts',
+  route.includes('const uniqueTrades = []') &&
+  route.includes('SELECT source, trade_id FROM waxonedge_trades WHERE') &&
+  route.includes('const newRowCount = uniqueTrades.reduce') &&
+  route.includes('return newRowCount') &&
+  route.includes('const totalRowsIndexed = (asNumber(previousData.trade_rows_indexed) || 0) + rowsWritten') &&
+  route.includes('last_run_rows_fetched: rowsIndexed') &&
+  route.includes('last_run_rows_written: rowsWritten'));
 ok('trade-row index state treats normal cursoring as non-truncated progress',
   route.includes('const sourceStateTruncated = status === \'failed\' ? 1 : 0') &&
   route.includes('truncated: sourceStateTruncated') &&
@@ -634,6 +660,54 @@ ok('502 trade fetch response is classified as upstream_5xx temporary failure',
     normalized.raw_json.includes('marketMatches'));
 }
 {
+  const eosusaRow = {
+    contract: 'alcordexmain',
+    action: 'buymatch',
+    transaction_id: 'eosusa-trx',
+    block: 439856858,
+    timestamp: '2026-06-14T05:28:12.000',
+    data: {
+      record: {
+        id: '690094',
+        market: {
+          id: '26',
+          base_token: { sym: '8,WAX', contract: 'eosio.token' },
+          quote_token: { sym: '4,TLM', contract: 'alien.worlds' },
+        },
+        bidder: 'downplayedco',
+        asker: 'eeejo.wam',
+        bid: '0.00160539 WAX',
+        ask: '0.0070 TLM',
+        unit_price: '22979999',
+        timestamp: '1781414892',
+      },
+    },
+  };
+  const parsed = __waxonedgeTestHooks.parseAlcorMarketMatchAction(eosusaRow);
+  const normalized = __waxonedgeTestHooks.normalizeAlcorMarketTradeRow(eosusaRow);
+  const raw = JSON.parse(normalized.raw_json);
+  ok('EOSUSA simple_actions buymatch rows parse marketMatches fields without act.name',
+    parsed &&
+    parsed.action_name === 'buymatch' &&
+    parsed.src === 'alcor_buy' &&
+    parsed.side === 'buy' &&
+    String(parsed.market_id) === '26' &&
+    String(parsed.order_id) === '690094' &&
+    parsed.trx_id === 'eosusa-trx' &&
+    String(parsed.block_num) === '439856858' &&
+    normalized.trade_id === '26:buymatch:690094' &&
+    normalized.pair_id === '26' &&
+    normalized.contract === 'eosio.token' &&
+    normalized.symbol === 'WAX' &&
+    normalized.price === '0.22979999' &&
+    normalized.volume === '0.00160539' &&
+    normalized.tx_id === 'eosusa-trx' &&
+    normalized.traded_at === '2026-06-14T05:28:12.000Z' &&
+    raw.src === 'alcor_buy' &&
+    raw.global_sequence === null &&
+    raw.block_num === 439856858);
+}
+{
   const originalFetch = globalThis.fetch;
   const requestedUrls = [];
   try {
@@ -660,14 +734,15 @@ ok('502 trade fetch response is classified as upstream_5xx temporary failure',
         }],
       }), { status: 200 });
     };
-    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2/' }, '29', 50);
-    ok('Alcor trade index uses Hyperion/state-history marketMatches instead of guessed public Alcor endpoints',
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchStreamRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2/' }, 'buymatch', 50);
+    ok('Alcor trade index fetches Hyperion/state-history marketMatches as action streams',
       result.rows.length === 1 &&
       result.ingestion_path === 'hyperion_marketMatches' &&
-      result.diagnostic.endpoint_path === 'Hyperion/state-history marketMatches' &&
+      result.diagnostic.action_name === 'buymatch' &&
       requestedUrls.every((url) => url.includes('/v2/history/get_actions')) &&
+      requestedUrls.every((url) => url.includes('act.name=buymatch')) &&
       requestedUrls.every((url) => !url.includes('market_id=')) &&
-      requestedUrls.some((url) => url.includes('act.name=buymatch')));
+      requestedUrls.length === 1);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -727,13 +802,19 @@ ok('Hyperion marketMatches URL uses OG account/act.name query and filters market
   const originalFetch = globalThis.fetch;
   try {
     globalThis.fetch = async () => new Response('Bad Gateway', { status: 502, statusText: 'Bad Gateway' });
-    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2' }, '29', 50);
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchStreamRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2' }, 'sellmatch', 50);
     ok('Hyperion 502 uses upstream_5xx taxonomy and is temporary',
       result.temporaryFailure === true &&
       result.failed !== true &&
       result.diagnostic.failure_type === 'upstream_5xx' &&
       result.diagnostic.upstream_server_error === true &&
+      result.diagnostic.pair_id === null &&
+      result.diagnostic.action_name === 'sellmatch' &&
       __waxonedgeTestHooks.isTemporaryTradeFailureType(result.diagnostic.failure_type) === true);
+    ok('stream non-2xx diagnostics have pair_id null and action_name set',
+      result.diagnostic.pair_id === null &&
+      result.diagnostic.action_name === 'sellmatch' &&
+      result.attempted_endpoints.every((item) => item.action_name === 'sellmatch'));
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -742,7 +823,7 @@ ok('Hyperion marketMatches URL uses OG account/act.name query and filters market
   const originalFetch = globalThis.fetch;
   try {
     globalThis.fetch = async () => new Response('<not-json>', { status: 200 });
-    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2' }, '29', 50);
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchStreamRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2' }, 'buymatch', 50);
     ok('Hyperion invalid JSON is invalid_payload, not temporary or no_trade_rows',
       result.invalidPayload === true &&
       result.failed === true &&
@@ -751,7 +832,13 @@ ok('Hyperion marketMatches URL uses OG account/act.name query and filters market
       result.unsupported !== true &&
       result.rows.length === 0 &&
       result.diagnostic.failure_type === 'invalid_payload' &&
+      result.diagnostic.pair_id === null &&
+      result.diagnostic.action_name === 'buymatch' &&
       __waxonedgeTestHooks.isTemporaryTradeFailureType(result.diagnostic.failure_type) === false);
+    ok('invalid JSON stream diagnostics have pair_id null and action_name set',
+      result.diagnostic.pair_id === null &&
+      result.diagnostic.action_name === 'buymatch' &&
+      result.attempted_endpoints.every((item) => item.action_name === 'buymatch'));
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -760,7 +847,7 @@ ok('Hyperion marketMatches URL uses OG account/act.name query and filters market
   const originalFetch = globalThis.fetch;
   try {
     globalThis.fetch = async () => { throw new Error('network socket closed with token abc123'); };
-    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2' }, '29', 50);
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchStreamRows({ WAXONEDGE_HYPERION_API: 'https://wax.example/v2' }, 'sellmatch', 50);
     ok('Hyperion thrown fetch exception uses failed taxonomy and safe endpoint diagnostics',
       result.failed === true &&
       result.temporaryFailure !== true &&
@@ -769,7 +856,13 @@ ok('Hyperion marketMatches URL uses OG account/act.name query and filters market
       result.diagnostic.failure_type === 'failed' &&
       result.diagnostic.endpoint_path.includes('/v2/history/get_actions') &&
       result.diagnostic.response_body_snippet.includes('network socket closed') &&
+      result.diagnostic.pair_id === null &&
+      result.diagnostic.action_name === 'sellmatch' &&
       __waxonedgeTestHooks.isTemporaryTradeFailureType(result.diagnostic.failure_type) === false);
+    ok('thrown fetch stream diagnostics have pair_id null and action_name set',
+      result.diagnostic.pair_id === null &&
+      result.diagnostic.action_name === 'sellmatch' &&
+      result.attempted_endpoints.every((item) => item.action_name === 'sellmatch'));
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -808,6 +901,13 @@ ok('one failed Alcor trade market does not stop the whole batch',
   route.includes('rowsWritten += await upsertTrades(env.DB, trades)') &&
   route.includes('processedPairCount += 1') &&
   route.includes('const nextCursor = Math.min(candidatePairCount, cursorOffset + attemptedPairCount)'));
+ok('trade-row sync is stream-based and does not query Hyperion once per pair',
+  route.includes("const actionStreams = ['buymatch', 'sellmatch']") &&
+  route.includes('const candidateRows = actionStreams.slice(cursorOffset, cursorOffset + limit)') &&
+  route.includes('for (const actionName of candidateRows)') &&
+  !/async function syncAlcorMarketTradeRows[\s\S]*FROM waxonedge_pairs[\s\S]*ORDER BY CAST\(pair_id AS NUMERIC\), pair_id[\s\S]*LIMIT \? OFFSET \?[\s\S]*async function readSourceIndexState/.test(route) &&
+  !route.includes('fetchAlcorMarketMatchHistoryRows(env, pair.pair_id, rowsPerMarket)') &&
+  !route.includes('.map((row) => normalizeAlcorMarketTradeRow(row, pair))'));
 ok('trade-row health exposes endpoint/status diagnostics',
   route.includes('sample_trade_fetch_failure') &&
   route.includes('sample_trade_fetch_success') &&
@@ -830,8 +930,8 @@ ok('trade-row health reports explicit Hyperion configuration instead of WAX RPC 
   !route.includes('market_id=${encodeURIComponent(String(pairId))}'));
 ok('missing Hyperion config skips trade indexing without fake attempted progress',
   route.indexOf('if (!hyperionConfigured(env))') > -1 &&
-  route.indexOf('if (!hyperionConfigured(env))') < route.indexOf('const candidates = await env.DB.prepare') &&
-  route.indexOf('if (!hyperionConfigured(env))') < route.indexOf('for (const pair of candidateRows)') &&
+  route.indexOf('if (!hyperionConfigured(env))') < route.indexOf('const candidateRows = actionStreams.slice(cursorOffset, cursorOffset + limit)') &&
+  route.indexOf('if (!hyperionConfigured(env))') < route.indexOf('for (const actionName of candidateRows)') &&
   route.includes('status: \'skipped\'') &&
   route.includes('attempted_pair_count: asNumber(previousData.attempted_pair_count) || 0') &&
   route.includes('processed_pair_count: asNumber(previousData.processed_pair_count) || 0') &&
@@ -839,6 +939,11 @@ ok('missing Hyperion config skips trade indexing without fake attempted progress
   route.includes("next_action: 'configure WAXONEDGE_HYPERION_API'") &&
   route.includes('cursor,') &&
   route.includes('const totalAttemptedPairCount = (asNumber(previousData.attempted_pair_count) || 0) + attemptedPairCount'));
+ok('trade-row sync clears stale pre-stream diagnostics',
+  route.includes('function isLegacyTradeFetchDiagnostic') &&
+  route.includes('filter=alcordexmain|market_id=|\\/api\\/v2\\/markets\\/') &&
+  route.includes('sampleTradeFetchFailure = null') &&
+  route.includes('sample_trade_fetch_failure: isLegacyTradeFetchDiagnostic(previousData.sample_trade_fetch_failure) ? null'));
 ok('Wapaca reference path for alcormarket trades is documented honestly',
   route.includes('Hyperion/state-history alcordexmain buymatch/sellmatch -> marketMatches') &&
   route.includes('guessed_public_alcor_http_source_of_truth: false') &&
@@ -918,7 +1023,7 @@ ok('budget exhaustion does not inflate failed_pair_count for every candidate',
   route.includes('budgetExhausted = true') &&
   route.includes('break') &&
   route.indexOf('if (isSubrequestBudgetError(error))') < route.indexOf('failedPairCount += 1') &&
-  route.includes('const totalFailedPairCount = (asNumber(previousSnapshot.data?.failed_pair_count) || 0) + failedPairCount'));
+  route.includes('const totalFailedPairCount = (asNumber(previousData.failed_pair_count) || 0) + failedPairCount'));
 ok('404 candle pair is skipped as unsupported without retrying forever',
   route.includes('function isNotFoundError(error)') &&
   route.includes('if (isNotFoundError(error))') &&
@@ -940,10 +1045,10 @@ ok('external chart unsupported diagnostic is separate from internal unsupported 
   route.includes('external_chart_endpoint_unsupported: totalExternalUnsupportedPairCount') &&
   !route.includes('external_chart_endpoint_unsupported: totalUnsupportedPairCount'));
 ok('candle backfill cumulative counters separate cursor from success/failure counts',
-  route.includes('const totalAttemptedPairCount = (asNumber(previousSnapshot.data?.attempted_pair_count) || 0) + attemptedPairCount') &&
-  route.includes('const totalProcessedPairCount = (asNumber(previousSnapshot.data?.processed_pair_count) || 0) + processedPairCount') &&
-  route.includes('const totalFailedPairCount = (asNumber(previousSnapshot.data?.failed_pair_count) || 0) + failedPairCount') &&
-  route.includes('const totalUnsupportedPairCount = (asNumber(previousSnapshot.data?.unsupported_pair_count) || 0) + unsupportedPairCount') &&
+  route.includes('const totalAttemptedPairCount = (asNumber(previousData.attempted_pair_count) || 0) + attemptedPairCount') &&
+  route.includes('const totalProcessedPairCount = (asNumber(previousData.processed_pair_count) || 0) + processedPairCount') &&
+  route.includes('const totalFailedPairCount = (asNumber(previousData.failed_pair_count) || 0) + failedPairCount') &&
+  route.includes('const totalUnsupportedPairCount = (asNumber(previousData.unsupported_pair_count) || 0) + unsupportedPairCount') &&
   route.includes('processed_pair_count: totalProcessedPairCount') &&
   route.includes('cursor: complete ?') &&
   !route.includes('processed_pair_count: nextCursor'));
