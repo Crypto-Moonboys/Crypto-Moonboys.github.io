@@ -702,11 +702,39 @@ ok('invalid JSON trade response is bad upstream payload, not no_trade_rows',
       result.ingestion_path === 'hyperion_marketMatches' &&
       result.diagnostic.endpoint_path === 'Hyperion/state-history marketMatches' &&
       requestedUrls.every((url) => url.includes('/v2/history/get_actions')) &&
+      requestedUrls.every((url) => !url.includes('market_id=')) &&
       requestedUrls.some((url) => url.includes('alcordexmain%3Abuymatch')));
   } finally {
     globalThis.fetch = originalFetch;
   }
 }
+{
+  let fetchCalled = false;
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => {
+      fetchCalled = true;
+      return new Response('{}', { status: 200 });
+    };
+    const result = await __waxonedgeTestHooks.fetchAlcorMarketMatchHistoryRows({}, '29', 50);
+    ok('missing WAXONEDGE_HYPERION_API skips trade indexing without WAX RPC fallback',
+      fetchCalled === false &&
+      result.skipped === true &&
+      result.hyperionNotConfigured === true &&
+      result.diagnostic.failure_type === 'hyperion_not_configured' &&
+      __waxonedgeTestHooks.hyperionApiBase({}) === '' &&
+      __waxonedgeTestHooks.hyperionConfigured({}) === false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+ok('Hyperion marketMatches URL uses account/filter query and filters market_id locally',
+  __waxonedgeTestHooks.alcorMarketMatchHistoryUrls({ WAXONEDGE_HYPERION_API: 'https://wax.example/' }, '29', 50).every((url) =>
+    url.startsWith('https://wax.example/v2/history/get_actions?') &&
+    url.includes('account=alcordexmain') &&
+    url.includes('filter=alcordexmain%3A') &&
+    !url.includes('market_id=')) &&
+  route.includes('safeString(row.market_id) === safeString(pairId)'));
 {
   const originalFetch = globalThis.fetch;
   try {
@@ -802,6 +830,13 @@ ok('trade-row health exposes endpoint/status diagnostics',
   route.includes('response_body_snippet') &&
   route.includes('retry_count') &&
   route.includes('reference_trade_source'));
+ok('trade-row health reports explicit Hyperion configuration instead of WAX RPC fallback',
+  route.includes('hyperion_not_configured') &&
+  route.includes('active_hyperion_endpoint') &&
+  route.includes('hyperion_query_shape') &&
+  route.includes('hyperion_configured') &&
+  !route.includes('env?.WAXONEDGE_HYPERION_API || WAX_RPC') &&
+  !route.includes('market_id=${encodeURIComponent(String(pairId))}'));
 ok('Wapaca reference path for alcormarket trades is documented honestly',
   route.includes('Hyperion/state-history alcordexmain buymatch/sellmatch -> marketMatches') &&
   route.includes('guessed_public_alcor_http_source_of_truth: false') &&
