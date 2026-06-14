@@ -3507,21 +3507,74 @@ function normalizeLiveTokenUpdate(row) {
   };
 }
 
+function liveCursorFromRow(row) {
+  const updatedAt = row?.stats_updated_at || row?.updated_at || '';
+  const contract = normalizeContract(row?.contract);
+  const symbol = normalizeSymbol(row?.symbol);
+  if (!updatedAt || !contract || !symbol) return null;
+  return [updatedAt, contract, symbol].map((part) => encodeURIComponent(part)).join('~');
+}
+
+function parseLiveCursor(value) {
+  const text = safeString(value);
+  if (!text) return { cursor: null, warning: null };
+  const parts = text.split('~').map((part) => {
+    try {
+      return decodeURIComponent(part);
+    } catch {
+      return '';
+    }
+  });
+  if (parts.length !== 3) return { cursor: null, warning: 'Invalid live cursor ignored.' };
+  const [updatedAt, contract, symbol] = parts;
+  const parsed = Date.parse(updatedAt);
+  if (!Number.isFinite(parsed) || !normalizeContract(contract) || !normalizeSymbol(symbol)) {
+    return { cursor: null, warning: 'Invalid live cursor ignored.' };
+  }
+  return {
+    cursor: {
+      updated_at: new Date(parsed).toISOString(),
+      contract: normalizeContract(contract),
+      symbol: normalizeSymbol(symbol),
+    },
+    warning: null,
+  };
+}
+
 function parseLiveSince(value) {
   const text = safeString(value);
-  if (!text) return { value: null, warning: null };
+  if (!text) return { since: null, warning: null };
   const parsed = Date.parse(text);
-  if (!Number.isFinite(parsed)) return { value: null, warning: 'Invalid since timestamp ignored.' };
-  return { value: new Date(parsed).toISOString(), warning: null };
+  if (!Number.isFinite(parsed)) return { since: null, warning: 'Invalid since timestamp ignored.' };
+  return { since: new Date(parsed).toISOString(), warning: null };
 }
 
 async function listLiveTokenUpdates(db, options = {}) {
-  const since = parseLiveSince(options.since);
+  const parsedCursor = parseLiveCursor(options.cursor);
+  const parsedSince = parsedCursor.cursor ? { since: null, warning: null } : parseLiveSince(options.since);
   const filters = [];
   const params = [];
-  if (since.value) {
+  if (parsedCursor.cursor) {
+    filters.push(`(
+      COALESCE(s.updated_at, t.updated_at) > ?
+      OR (
+        COALESCE(s.updated_at, t.updated_at) = ?
+        AND (
+          t.contract > ?
+          OR (t.contract = ? AND t.symbol > ?)
+        )
+      )
+    )`);
+    params.push(
+      parsedCursor.cursor.updated_at,
+      parsedCursor.cursor.updated_at,
+      parsedCursor.cursor.contract,
+      parsedCursor.cursor.contract,
+      parsedCursor.cursor.symbol,
+    );
+  } else if (parsedSince.since) {
     filters.push(`COALESCE(s.updated_at, t.updated_at) > ?`);
-    params.push(since.value);
+    params.push(parsedSince.since);
   }
   params.push(clampInteger(options.limit, LIVE_SNAPSHOT_TOKEN_LIMIT, 1, LIVE_SNAPSHOT_TOKEN_LIMIT));
   const rows = await db.prepare(
@@ -3535,19 +3588,24 @@ async function listLiveTokenUpdates(db, options = {}) {
      LEFT JOIN waxonedge_token_stats s
        ON s.contract = t.contract AND s.symbol = t.symbol
      ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
-     ORDER BY COALESCE(s.updated_at, t.updated_at) DESC, t.pair_count DESC
+     ORDER BY COALESCE(s.updated_at, t.updated_at) ASC, t.contract ASC, t.symbol ASC
      LIMIT ?`
   ).bind(...params).all();
+  const results = rows.results || [];
+  const lastRow = results[results.length - 1] || null;
   return {
-    tokens: (rows.results || []).map(normalizeLiveTokenUpdate).filter(Boolean),
-    since: since.value,
-    warning: since.warning,
+    tokens: results.map(normalizeLiveTokenUpdate).filter(Boolean),
+    cursor: parsedCursor.cursor,
+    since: parsedSince.since,
+    next_cursor: liveCursorFromRow(lastRow),
+    warning: parsedCursor.warning || parsedSince.warning,
   };
 }
 
 async function handleLiveSnapshot(env, query, corsHeaders) {
   const live = await listLiveTokenUpdates(env.DB, {
-    since: query.get('since') || query.get('cursor') || query.get('updated_since'),
+    cursor: query.get('cursor') || query.get('next_cursor'),
+    since: query.get('since') || query.get('updated_since'),
     limit: query.get('limit'),
   });
   const warnings = ['Live snapshot is backed by indexed WaxOnEdge aggregate rows only.'];
@@ -3558,6 +3616,8 @@ async function handleLiveSnapshot(env, query, corsHeaders) {
     mode: 'snapshot',
     generated_at: nowIso(),
     since: live.since,
+    cursor: query.get('cursor') || query.get('next_cursor') || null,
+    next_cursor: live.next_cursor,
     snapshot_endpoint: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT,
     stream_endpoint: WAXONEDGE_LIVE_STREAM_ENDPOINT,
     token_key_format: 'contract::symbol',
@@ -5522,6 +5582,8 @@ export const __waxonedgeTestHooks = {
   normalizeActionStreamProgressMap,
   normalizeCoreDexPair,
   liveTokenUpdateKey,
+  liveCursorFromRow,
+  parseLiveCursor,
   normalizeLiveTokenUpdate,
   listLiveTokenUpdates,
   sourceCoverageFromKeys,

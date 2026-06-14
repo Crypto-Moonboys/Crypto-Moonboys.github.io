@@ -482,7 +482,7 @@
     changed = assignLiveNumber(record, 'liquidityUsd', update.liquidity_usd) || changed;
     changed = assignLiveNumber(record, 'indexedPairCount', update.indexed_pair_count) || changed;
     changed = assignLiveNumber(record, 'sourceCount', update.source_count) || changed;
-    if (update.source_keys) {
+    if (Object.prototype.hasOwnProperty.call(update, 'source_keys')) {
       var sources = parseSourceKeys(update.source_keys);
       if (sources.join(',') !== record.sources.join(',')) {
         record.sourcesMap = sources.reduce(function (acc, source) { acc[source] = true; return acc; }, {});
@@ -510,16 +510,18 @@
   function applyLiveSnapshot(snapshot) {
     var data = payloadData(snapshot);
     var tokens = sourceRows(data.tokens);
+    var nextCursor = data.next_cursor || snapshot.next_cursor || null;
+    if (nextCursor) state.live.cursor = nextCursor;
     if (!tokens.length) return;
     var byKey = {};
     state.records.forEach(function (record) { byKey[record.key] = record; });
     var changed = 0;
     tokens.forEach(function (update) {
+      if (!nextCursor && update.updated_at) state.live.cursor = !state.live.cursor || update.updated_at > state.live.cursor ? update.updated_at : state.live.cursor;
       var key = update.token_key || tokenKey(update.contract, update.symbol);
       var record = byKey[key];
       if (!record) return;
       if (applyLiveTokenUpdate(record, update)) changed += 1;
-      if (update.updated_at) state.live.cursor = !state.live.cursor || update.updated_at > state.live.cursor ? update.updated_at : state.live.cursor;
     });
     if (!changed) return;
     state.lastUpdated = state.live.cursor || data.generated_at || new Date().toISOString();
@@ -830,7 +832,7 @@
 
   function liveSnapshotUrl() {
     return state.live.cursor
-      ? LIVE_API + '?since=' + encodeURIComponent(state.live.cursor)
+      ? LIVE_API + '?cursor=' + encodeURIComponent(state.live.cursor)
       : LIVE_API;
   }
 
