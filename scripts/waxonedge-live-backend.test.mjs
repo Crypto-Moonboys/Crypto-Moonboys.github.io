@@ -94,6 +94,10 @@ ok('worker scheduled handler runs WaxOnEdge sync', worker.includes('runWaxOnEdge
 ok('wrangler has WaxOnEdge minute cron and daily digest cron',
   wrangler.includes('"* * * * *"') &&
   wrangler.includes('"0 9 * * *"'));
+ok('wrangler documents WaxOnEdge live indexer probe env without committing shared secret',
+  wrangler.includes('WAXONEDGE_LIVE_INDEXER_URL = "http://127.0.0.1:8789"') &&
+  wrangler.includes('wrangler secret put WAXONEDGE_LIVE_SHARED_SECRET') &&
+  !/WAXONEDGE_LIVE_SHARED_SECRET\s*=/.test(wrangler));
 ok('worker computes WaxOnEdge 5/15 minute and holder-snapshot sub-cadences',
   route.includes('minute % 5 === 0') &&
   route.includes('minute % 15 === 0') &&
@@ -656,6 +660,8 @@ ok('indexer health exposes live update contract metadata',
   route.includes('vps_stream_required: true') &&
   route.includes('browser_hyperion_fetch: false') &&
   route.includes('live_indexer: waxonedgeLiveIndexerConfig(env)') &&
+  route.includes('live_indexer_probe: liveIndexerProbe') &&
+  route.includes('probeWaxonedgeLiveIndexer(env)') &&
   route.includes('const WAXONEDGE_LIVE_SECRET_HEADER'));
 {
   const noConfig = __waxonedgeTestHooks.waxonedgeLiveIndexerConfig({});
@@ -676,6 +682,106 @@ ok('indexer health exposes live update contract metadata',
     __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'https://user:pass@live.example' }) === false &&
     __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'https://live.example/?x=1' }) === false &&
     __waxonedgeTestHooks.waxonedgeLiveIndexerUrlConfigured({ WAXONEDGE_LIVE_INDEXER_URL: 'https://live.example/#frag' }) === false);
+}
+{
+  const notConfigured = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({}, async () => {
+    throw new Error('fetch should not run');
+  });
+  const unsafeConfigured = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://user:pass@live.example',
+  }, async () => {
+    throw new Error('fetch should not run');
+  });
+  ok('Worker live indexer probe reports not_configured for missing or unsafe URL',
+    notConfigured.configured === false &&
+    notConfigured.reachable === false &&
+    notConfigured.status === 'not_configured' &&
+    unsafeConfigured.configured === false &&
+    unsafeConfigured.reachable === false &&
+    unsafeConfigured.status === 'not_configured');
+}
+{
+  let requestedUrl = '';
+  let receivedSecret = '';
+  const probe = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal/',
+    WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+  }, async (url, options) => {
+    requestedUrl = url;
+    receivedSecret = options.headers['x-waxonedge-live-secret'];
+    return new Response(JSON.stringify({
+      service: 'waxonedge-live-indexer',
+      status: 'not_connected',
+      uses_fake_live_data: false,
+      browser_hyperion_fetch: false,
+      emits_fake_token_updates: false,
+    }), { status: 200 });
+  });
+  ok('Worker live indexer probe sends secret header and does not leak secret',
+    requestedUrl === 'https://live-indexer.example.internal/health' &&
+    receivedSecret === 'do-not-leak' &&
+    probe.configured === true &&
+    probe.reachable === true &&
+    probe.status === 'not_connected' &&
+    probe.service === 'waxonedge-live-indexer' &&
+    probe.secret_configured === true &&
+    probe.secret_leaked === false &&
+    JSON.stringify(probe).includes('do-not-leak') === false);
+}
+{
+  const wrongService = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+  }, async () => new Response(JSON.stringify({
+    service: 'other-service',
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: false,
+    emits_fake_token_updates: false,
+  }), { status: 200 }));
+  const fakeData = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+  }, async () => new Response(JSON.stringify({
+    service: 'waxonedge-live-indexer',
+    uses_fake_live_data: true,
+    browser_hyperion_fetch: false,
+    emits_fake_token_updates: false,
+  }), { status: 200 }));
+  const browserHyperion = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+  }, async () => new Response(JSON.stringify({
+    service: 'waxonedge-live-indexer',
+    uses_fake_live_data: false,
+    browser_hyperion_fetch: true,
+    emits_fake_token_updates: false,
+  }), { status: 200 }));
+  ok('Worker live indexer probe rejects wrong identity, fake data, and browser Hyperion fetching',
+    wrongService.reachable === false &&
+    wrongService.status === 'probe_failed' &&
+    /identity/.test(wrongService.last_error || '') &&
+    fakeData.reachable === false &&
+    fakeData.status === 'probe_failed' &&
+    fakeData.uses_fake_live_data === true &&
+    browserHyperion.reachable === false &&
+    browserHyperion.status === 'probe_failed' &&
+    browserHyperion.browser_hyperion_fetch === true);
+}
+{
+  const failure = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+  }, async () => {
+    throw new Error('fetch failed');
+  });
+  const invalidJson = await __waxonedgeTestHooks.probeWaxonedgeLiveIndexer({
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+  }, async () => new Response('not-json', { status: 200 }));
+  ok('Worker live indexer probe reports safe probe_failed diagnostics for fetch and payload failures',
+    failure.configured === true &&
+    failure.reachable === false &&
+    failure.status === 'probe_failed' &&
+    failure.last_error === 'fetch failed' &&
+    invalidJson.configured === true &&
+    invalidJson.reachable === false &&
+    invalidJson.status === 'probe_failed' &&
+    /invalid JSON/.test(invalidJson.last_error || ''));
 }
 {
   const streamResponse = __waxonedgeTestHooks.handleLiveStream({}, {

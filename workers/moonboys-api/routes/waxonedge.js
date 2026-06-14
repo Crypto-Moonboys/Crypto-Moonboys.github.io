@@ -195,6 +195,12 @@ function waxonedgeLiveIndexerUrlConfigured(env) {
   }
 }
 
+function waxonedgeLiveIndexerBaseUrl(env) {
+  const raw = String(env?.WAXONEDGE_LIVE_INDEXER_URL || '').trim();
+  if (!raw || !waxonedgeLiveIndexerUrlConfigured(env)) return '';
+  return raw.replace(/\/+$/, '');
+}
+
 function waxonedgeLiveIndexerConfig(env) {
   return {
     vps_indexer_url_configured: waxonedgeLiveIndexerUrlConfigured(env),
@@ -202,6 +208,111 @@ function waxonedgeLiveIndexerConfig(env) {
     secret_header: WAXONEDGE_LIVE_SECRET_HEADER,
     proxy_enabled: false,
   };
+}
+
+async function probeWaxonedgeLiveIndexer(env, fetchImpl = globalThis.fetch) {
+  const baseUrl = waxonedgeLiveIndexerBaseUrl(env);
+  const secret = String(env?.WAXONEDGE_LIVE_SHARED_SECRET || '').trim();
+  const base = {
+    configured: !!baseUrl,
+    reachable: false,
+    status: baseUrl ? 'probe_failed' : 'not_configured',
+    service: null,
+    uses_fake_live_data: null,
+    browser_hyperion_fetch: null,
+    emits_fake_token_updates: null,
+    secret_configured: !!secret,
+    secret_leaked: false,
+    last_error: null,
+  };
+  if (!baseUrl) {
+    return {
+      ...base,
+      status: 'not_configured',
+      last_error: null,
+    };
+  }
+  if (typeof fetchImpl !== 'function') {
+    return {
+      ...base,
+      status: 'probe_failed',
+      last_error: 'fetch unavailable',
+    };
+  }
+
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutMs = clampInteger(env?.WAXONEDGE_LIVE_PROBE_TIMEOUT_MS, 1500, 250, 5000);
+  const timeout = controller ? setTimeout(() => controller.abort('live indexer probe timeout'), timeoutMs) : null;
+  try {
+    const headers = {};
+    if (secret) headers[WAXONEDGE_LIVE_SECRET_HEADER] = secret;
+    const response = await fetchImpl(`${baseUrl}/health`, {
+      method: 'GET',
+      headers,
+      signal: controller?.signal,
+    });
+    const bodyText = await response.text();
+    let payload = null;
+    try {
+      payload = bodyText ? JSON.parse(bodyText) : null;
+    } catch (_) {
+      return {
+        ...base,
+        status: 'probe_failed',
+        last_error: `invalid JSON from live indexer health (${response.status})`,
+      };
+    }
+    const service = safeString(payload?.service);
+    const usesFakeLiveData = payload?.uses_fake_live_data === true;
+    const browserHyperionFetch = payload?.browser_hyperion_fetch === true;
+    const emitsFakeTokenUpdates = payload?.emits_fake_token_updates === true;
+    const validIdentity = service === 'waxonedge-live-indexer' &&
+      usesFakeLiveData === false &&
+      browserHyperionFetch === false &&
+      emitsFakeTokenUpdates === false;
+    if (!response.ok && response.status !== 503) {
+      return {
+        ...base,
+        service,
+        uses_fake_live_data: payload?.uses_fake_live_data ?? null,
+        browser_hyperion_fetch: payload?.browser_hyperion_fetch ?? null,
+        emits_fake_token_updates: payload?.emits_fake_token_updates ?? null,
+        status: 'probe_failed',
+        last_error: `live indexer health returned ${response.status}`,
+      };
+    }
+    if (!validIdentity) {
+      return {
+        ...base,
+        service,
+        uses_fake_live_data: payload?.uses_fake_live_data ?? null,
+        browser_hyperion_fetch: payload?.browser_hyperion_fetch ?? null,
+        emits_fake_token_updates: payload?.emits_fake_token_updates ?? null,
+        status: 'probe_failed',
+        last_error: 'live indexer health identity validation failed',
+      };
+    }
+    return {
+      configured: true,
+      reachable: true,
+      status: safeString(payload?.status || payload?.health_status) || (response.status === 503 ? 'not_connected' : 'ok'),
+      service,
+      uses_fake_live_data: false,
+      browser_hyperion_fetch: false,
+      emits_fake_token_updates: false,
+      secret_configured: !!secret,
+      secret_leaked: false,
+      last_error: null,
+    };
+  } catch (error) {
+    return {
+      ...base,
+      status: 'probe_failed',
+      last_error: safeString(error?.message || error) || 'fetch failed',
+    };
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
 }
 
 function hyperionNotConfiguredTradeResult(pairId, actionName = null) {
@@ -4705,6 +4816,7 @@ async function getIndexerHealth(db, env = {}) {
     ammTradeIndexState,
     ammTradeIndexSnapshot,
     tvlPrecisionDiagnostics,
+    liveIndexerProbe,
   ] = await Promise.all([
     countScalar(db, `SELECT COUNT(*) AS count FROM waxonedge_tokens`),
     countScalar(db, `${pairTokenCte} SELECT COUNT(*) AS count FROM pair_tokens`),
@@ -4734,6 +4846,7 @@ async function getIndexerHealth(db, env = {}) {
     readSourceIndexState(db, AMM_TRADE_INDEX_SOURCE),
     readSnapshot(db, AMM_TRADE_INDEX_SOURCE),
     getTvlPrecisionDiagnostics(db),
+    probeWaxonedgeLiveIndexer(env),
   ]);
   const staleSyncRows = await Promise.all(sourceStates
     .filter(sourceStateStale)
@@ -4892,10 +5005,12 @@ async function getIndexerHealth(db, env = {}) {
       transport: 'snapshot-polling-contract',
       vps_stream_required: true,
       live_indexer: waxonedgeLiveIndexerConfig(env),
+      live_indexer_probe: liveIndexerProbe,
       uses_fake_live_data: false,
       browser_hyperion_fetch: false,
       token_key_format: 'contract::symbol',
     },
+    live_indexer_probe: liveIndexerProbe,
     totals: {
       total_indexed_tokens: totalTokens,
       tokens_with_selected_price: tokensWithSelectedPrice,
@@ -5827,7 +5942,9 @@ export const __waxonedgeTestHooks = {
   hyperionConfigured,
   hyperionHistoryActionsEndpoint,
   waxonedgeLiveIndexerUrlConfigured,
+  waxonedgeLiveIndexerBaseUrl,
   waxonedgeLiveIndexerConfig,
+  probeWaxonedgeLiveIndexer,
   alcorMarketMatchHistoryUrls,
   alcorMarketMatchStreamUrl,
   fetchAlcorMarketMatchStreamRows,

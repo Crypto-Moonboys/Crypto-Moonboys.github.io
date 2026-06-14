@@ -20,6 +20,11 @@ TELEGRAM_BOT_USERNAME = "WIKICOMSBOT"
 ANTI_CHEAT_WORKER_URL = "https://moonboys-anti-cheat.sercullen.workers.dev"
 LEADERBOARD_API_URL = "https://moonboys-leaderboard.sercullen.workers.dev"
 WAXONEDGE_FREE_SAFE_MODE = "false"
+WAXONEDGE_LIVE_INDEXER_URL = "http://127.0.0.1:8789"
+
+# WaxOnEdge live indexer probe secret. Set via Wrangler CLI; never commit the value:
+#
+#   wrangler secret put WAXONEDGE_LIVE_SHARED_SECRET
 
 # D1 database binding — production wikicoms database.
 [[d1_databases]]
