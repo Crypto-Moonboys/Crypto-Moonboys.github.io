@@ -1,6 +1,7 @@
 const WAXONEDGE_API_PREFIX = '/api/waxonedge';
 const WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT = `${WAXONEDGE_API_PREFIX}/live`;
 const WAXONEDGE_LIVE_STREAM_ENDPOINT = `${WAXONEDGE_API_PREFIX}/live/stream`;
+const WAXONEDGE_LIVE_SECRET_HEADER = 'x-waxonedge-live-secret';
 
 const ALCOR_API = 'https://wax.alcor.exchange/api/v2';
 const WAX_RPC = 'https://wax.greymass.com';
@@ -177,6 +178,30 @@ function hyperionApiBase(env) {
 
 function hyperionConfigured(env) {
   return !!hyperionHistoryActionsEndpoint(env);
+}
+
+function waxonedgeLiveIndexerUrlConfigured(env) {
+  const raw = String(env?.WAXONEDGE_LIVE_INDEXER_URL || '').trim();
+  if (!raw) return false;
+  try {
+    const parsed = new URL(raw);
+    return (parsed.protocol === 'https:' || parsed.protocol === 'http:') &&
+      !parsed.username &&
+      !parsed.password &&
+      !parsed.search &&
+      !parsed.hash;
+  } catch (_) {
+    return false;
+  }
+}
+
+function waxonedgeLiveIndexerConfig(env) {
+  return {
+    vps_indexer_url_configured: waxonedgeLiveIndexerUrlConfigured(env),
+    shared_secret_configured: Boolean(String(env?.WAXONEDGE_LIVE_SHARED_SECRET || '').trim()),
+    secret_header: WAXONEDGE_LIVE_SECRET_HEADER,
+    proxy_enabled: false,
+  };
 }
 
 function hyperionNotConfiguredTradeResult(pairId, actionName = null) {
@@ -3789,13 +3814,14 @@ async function handleLiveSnapshot(env, query, corsHeaders) {
   }
 }
 
-function handleLiveStream(corsHeaders) {
+function handleLiveStream(corsHeaders, env = {}) {
   return waxonedgeJson({
     ok: false,
     unavailable: 'live stream transport not enabled yet',
     fallback: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT,
     transport: 'snapshot-polling-contract',
     vps_stream_required: true,
+    live_indexer: waxonedgeLiveIndexerConfig(env),
     uses_fake_live_data: false,
     browser_hyperion_fetch: false,
     event_contract: {
@@ -4835,6 +4861,7 @@ async function getIndexerHealth(db, env = {}) {
       stream_endpoint: WAXONEDGE_LIVE_STREAM_ENDPOINT,
       transport: 'snapshot-polling-contract',
       vps_stream_required: true,
+      live_indexer: waxonedgeLiveIndexerConfig(env),
       uses_fake_live_data: false,
       browser_hyperion_fetch: false,
       token_key_format: 'contract::symbol',
@@ -5694,7 +5721,7 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       return handleLiveSnapshot(env, url.searchParams, corsHeaders);
     }
     if (path === WAXONEDGE_LIVE_STREAM_ENDPOINT) {
-      return handleLiveStream(corsHeaders);
+      return handleLiveStream(corsHeaders, env);
     }
 
     const tokenMatch = path.match(/^\/api\/waxonedge\/token\/([^/]+)\/([^/]+)(?:\/([^/]+))?$/);
@@ -5766,6 +5793,8 @@ export const __waxonedgeTestHooks = {
   hyperionApiBase,
   hyperionConfigured,
   hyperionHistoryActionsEndpoint,
+  waxonedgeLiveIndexerUrlConfigured,
+  waxonedgeLiveIndexerConfig,
   alcorMarketMatchHistoryUrls,
   alcorMarketMatchStreamUrl,
   fetchAlcorMarketMatchStreamRows,
@@ -5794,6 +5823,7 @@ export const __waxonedgeTestHooks = {
   normalizeLiveTokenUpdate,
   listLiveTokenUpdates,
   handleLiveSnapshot,
+  handleLiveStream,
   sourceCoverageFromKeys,
 };
 

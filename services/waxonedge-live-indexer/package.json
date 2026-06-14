@@ -1,0 +1,15 @@
+{
+  "name": "@crypto-moonboys/waxonedge-live-indexer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "VPS-side WaxOnEdge live indexer service skeleton for real Hyperion/state-history token updates.",
+  "main": "src/index.mjs",
+  "scripts": {
+    "start": "node src/index.mjs",
+    "test": "node --check src/index.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
