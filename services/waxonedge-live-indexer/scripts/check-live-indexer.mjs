@@ -75,7 +75,7 @@ function hasFakeMarker(value, key = '') {
 
 function parseSseDataPayloads(text) {
   const payloads = [];
-  for (const frame of String(text || '').split(/\n\n+/)) {
+  for (const frame of String(text || '').split(/\r?\n(?:\r?\n)+/)) {
     const dataLines = frame
       .split(/\r?\n/)
       .filter((line) => line.startsWith('data:'))

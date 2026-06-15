@@ -406,8 +406,10 @@ function parseAlcorMarketMatch(row, stream) {
   const price = unitPrice != null ? unitPrice / 100000000 : null;
   const tradedAt = normalizeTradeTimestamp(firstPresent(row?.timestamp, row?.['@timestamp'], row?.block_time, row?.created_at, record.timestamp));
   if (!tradedAt) return null;
+  const stableId = tradeIdFromRow(row, stream, record);
+  if (!stableId) return null;
   return {
-    trade_id: `${streamKey(stream)}:${marketId}:${tradeIdFromRow(row, stream, record)}`,
+    trade_id: `${streamKey(stream)}:${marketId}:${stableId}`,
     source: stream.source,
     stream_source: streamKey(stream),
     pair_id: safeString(marketId),
@@ -453,8 +455,10 @@ function parseAmmSwap(row, stream) {
     : null;
   const tradedAt = normalizeTradeTimestamp(firstPresent(row?.timestamp, row?.['@timestamp'], row?.block_time, row?.created_at, record.timestamp));
   if (!tradedAt) return null;
+  const stableId = tradeIdFromRow(row, stream, record);
+  if (!stableId) return null;
   return {
-    trade_id: `${streamKey(stream)}:${pairId}:${tradeIdFromRow(row, stream, record)}`,
+    trade_id: `${streamKey(stream)}:${pairId}:${stableId}`,
     source: stream.source,
     stream_source: streamKey(stream),
     pair_id: pairId,
