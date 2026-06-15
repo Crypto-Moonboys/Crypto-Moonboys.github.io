@@ -2150,6 +2150,25 @@ ok('free-safe supply sync runs as isolated cron workload',
   route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env))') &&
   route.includes('tasks.push(syncSupplyInputs(env))') &&
   !route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env));\n      tasks.push(syncSupplyInputs(env))'));
+ok('supply sync rotates across indexed pair tokens with a nonzero bounded limit',
+  route.includes('function supplySyncLimit(env)') &&
+  route.includes('return Math.max(1, Math.min(250, Math.floor(configured)))') &&
+  route.includes('return waxonedgeFreeSafeMode(env) ? FREE_SAFE_SUPPLY_SYNC_LIMIT : DEFAULT_SUPPLY_SYNC_LIMIT') &&
+  route.includes('const state = await readSourceIndexState(env.DB, SUPPLY_SYNC_SOURCE)') &&
+  route.includes('WHERE COALESCE(s.indexed_pair_count, t.pair_count, 0) > 0') &&
+  route.includes('ORDER BY token_key ASC') &&
+  route.includes('LIMIT ?'));
+ok('supply sync cursor SQL uses the same single-quoted token key expression',
+  route.includes('const tokenKeyExpression = "(t.contract || \'::\' || t.symbol)"') &&
+  route.includes('const cursorFilter = afterCursor ? "AND (t.contract || \'::\' || t.symbol) > ?" : \'\'') &&
+  route.includes('SELECT t.contract, t.symbol, ${tokenKeyExpression} AS token_key') &&
+  !route.includes('|| "::" ||'));
+ok('supply sync reports honest bounded rotation status',
+  route.includes('const complete = totalPairTokens > 0 && totalPairTokens <= limit && attempted >= totalPairTokens ? 1 : 0') &&
+  route.includes('const truncated = totalPairTokens > limit && attempted >= limit ? 1 : 0') &&
+  route.includes("const status = attempted <= 0 ? 'skipped' : (complete === 1 ? 'success' : 'partial')") &&
+  route.includes("const error = attempted > 0 ? null : 'No indexed pair tokens found for supply sync'") &&
+  route.includes('await upsertSourceIndexState(env.DB, SUPPLY_SYNC_SOURCE'));
 ok('scheduled full index can still run legacy combined workflow when free-safe is disabled',
   route.includes('} else if (shouldRunFullIndex) {') &&
   route.includes('const [alcor, core, nefty] = await Promise.all') &&
