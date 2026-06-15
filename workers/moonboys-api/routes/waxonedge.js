@@ -4066,8 +4066,11 @@ async function listTokenPairs(db, contract, symbol, options = {}) {
   ).bind(contract, symbol, contract, symbol, limit + 1, offset).all();
   const pageRows = rows.results || [];
   const hasMore = pageRows.length > limit;
+  const visibleRows = pageRows.slice(0, limit);
+  const priceRows = await loadTokenPriceRowsForPairs(db, visibleRows);
+  const priceIndex = buildDbTokenPriceIndex(priceRows);
   return {
-    rows: pageRows.slice(0, limit),
+    rows: visibleRows.map((pair) => withPairContributionProof(pair, contract, symbol, priceIndex)),
     next_cursor: hasMore ? String(offset + limit) : null,
     complete: !hasMore,
   };
@@ -4317,6 +4320,175 @@ function selectedPairLabel(pair) {
   return [pair.source, pair.pair_id ? `#${pair.pair_id}` : null, pairName].filter(Boolean).join(' ');
 }
 
+function reserveWaxValue(contract, symbol, reserve, priceIndex) {
+  const amount = asNumber(reserve);
+  if (amount == null) return null;
+  if (isWaxToken(contract, symbol)) return amount;
+  const priceWax = priceIndex.get(tokenKey(contract, symbol))?.priceWax;
+  return priceWax != null ? amount * priceWax : null;
+}
+
+function pairContributionProof(pair, contract, symbol, priceIndex) {
+  const side = pairTokenSide(pair, contract, symbol);
+  const hasReserves = hasRealPairReserves(pair);
+  const directWax = hasWaxQuoteForToken(pair, contract, symbol);
+  const priceWax = priceWaxFromIndexedPair(pair, contract, symbol, priceIndex);
+  const liquidityWax = liquidityWaxFromIndexedPair(pair, priceIndex);
+  const liquidityUsd = liquidityUsdFromWax(liquidityWax, pair, priceIndex);
+  const tokenReserveWax = side ? reserveWaxValue(side.token.contract, side.token.symbol, side.token.reserve, priceIndex) : null;
+  const quoteReserveWax = side ? reserveWaxValue(side.quote.contract, side.quote.symbol, side.quote.reserve, priceIndex) : null;
+  const reasonCodes = [];
+  if (!side) reasonCodes.push('token_not_in_pair');
+  if (!hasReserves) reasonCodes.push('missing_or_zero_reserves');
+  if (side && !directWax && priceWax == null) reasonCodes.push('no_indexed_wax_route');
+  if (side && liquidityWax == null) reasonCodes.push('no_valued_reserve_contribution');
+  const routeType = !side
+    ? 'not_token_pair'
+    : (directWax ? 'direct_wax_pair' : (priceWax != null ? 'indexed_quote_route' : 'unpriced'));
+  return {
+    token_side: side?.side || null,
+    route_type: routeType,
+    valuation_route: side
+      ? (directWax
+        ? `${normalizeSymbol(symbol)}/WAX direct reserve route`
+        : (priceWax != null ? `${normalizeSymbol(symbol)}/${normalizeSymbol(side.quote.symbol)} via indexed quote route` : null))
+      : null,
+    contributes_to_liquidity: liquidityWax != null || liquidityUsd != null,
+    contributes_to_tvl: liquidityWax != null || liquidityUsd != null,
+    contribution_wax: safeDecimal(liquidityWax),
+    contribution_usd: safeDecimal(liquidityUsd),
+    liquidity_contribution_wax: safeDecimal(liquidityWax),
+    liquidity_contribution_usd: safeDecimal(liquidityUsd),
+    tvl_contribution_wax: safeDecimal(liquidityWax),
+    tvl_contribution_usd: safeDecimal(liquidityUsd),
+    reserve_token_wax_value: safeDecimal(tokenReserveWax),
+    reserve_quote_wax_value: safeDecimal(quoteReserveWax),
+    reserve_side_wax_values: {
+      token: safeDecimal(tokenReserveWax),
+      quote: safeDecimal(quoteReserveWax),
+    },
+    reason_codes: reasonCodes,
+  };
+}
+
+function withPairContributionProof(pair, contract, symbol, priceIndex) {
+  return {
+    ...pair,
+    pair_contribution_proof: pairContributionProof(pair, contract, symbol, priceIndex),
+  };
+}
+
+function tokenMetricProof(metrics, selected = null) {
+  const selectedPriceWax = asNumber(metrics?.selected_price_wax);
+  const selectedPriceUsd = asNumber(metrics?.selected_price_usd);
+  const liquidityWax = asNumber(metrics?.liquidity_wax);
+  const liquidityUsd = asNumber(metrics?.liquidity_usd);
+  const tvlWax = asNumber(metrics?.tvl_wax);
+  const tvlUsd = asNumber(metrics?.tvl_usd);
+  const volume24Wax = asNumber(metrics?.volume_24h_wax ?? metrics?.volume_24h);
+  const volume24Usd = asNumber(metrics?.volume_24h_usd);
+  const totalSupply = asNumber(metrics?.total_supply);
+  const hasCirculatingSupply = asNumber(metrics?.circulating_supply) != null;
+  const hasMarketCap = hasCirculatingSupply && asNumber(metrics?.market_cap_wax ?? metrics?.market_cap_usd) != null;
+  const hasFdv = asNumber(metrics?.fdv_wax ?? metrics?.fdv_usd) != null;
+  const liquidityBasis = liquidityWax != null || liquidityUsd != null ? 'indexed_pair_reserve_value' : null;
+  const tvlBasis = tvlWax != null || tvlUsd != null ? 'indexed_pair_reserve_value' : null;
+  const selectedPriceLive = selectedPriceWax != null || selectedPriceUsd != null;
+  const selectedRouteType = selected
+    ? (selected.directWax ? 'direct_wax_pair' : (selected.priceWax != null ? 'indexed_quote_route' : 'unpriced'))
+    : (metrics?.selected_pair_source && metrics?.selected_pair_id ? 'stored_indexed_pair' : null);
+  const selectedPriceProof = {
+    live: selectedPriceLive,
+    source: metrics?.selected_pair_source || selected?.pair?.source || null,
+    pair_id: metrics?.selected_pair_id || selected?.pair?.pair_id || null,
+    pair_label: metrics?.selected_pair_label || selectedPairLabel(selected?.pair) || null,
+    selected_price_wax: safeDecimal(selectedPriceWax),
+    selected_price_usd: safeDecimal(selectedPriceUsd),
+    route_type: selectedRouteType,
+    valuation_route: selectedRouteType === 'direct_wax_pair'
+      ? 'direct WAX reserve quote'
+      : (selectedRouteType === 'indexed_quote_route' ? 'indexed quote token WAX route' : selectedRouteType),
+    token_side: selected?.pair ? pairTokenSide(selected.pair, metrics?.contract, metrics?.symbol)?.side || null : null,
+    trusted_liquidity: selected?.trusted === true,
+  };
+  const metricStatus = {
+    selected_price: {
+      live: selectedPriceLive,
+      source: selectedPriceProof.source ? 'indexed_pair' : null,
+      reason: selectedPriceLive ? null : (metrics?.unavailable_reasons?.selected_price || 'No indexed pair has enough price data yet'),
+    },
+    liquidity: {
+      live: liquidityBasis != null,
+      basis: liquidityBasis,
+      reason: liquidityBasis ? null : metrics?.unavailable_reasons?.liquidity || 'Requires valued indexed pair reserves',
+    },
+    tvl: {
+      live: tvlBasis != null,
+      basis: tvlBasis,
+      independent: false,
+      reason: tvlBasis ? null : metrics?.unavailable_reasons?.tvl || 'Requires valued indexed pair reserves',
+    },
+    fdv: {
+      live: hasFdv,
+      basis: hasFdv ? 'total_supply_x_selected_price' : null,
+      formula: 'total supply x selected price',
+      reason: hasFdv ? null : 'Requires total supply and selected price',
+    },
+    market_cap: {
+      live: hasMarketCap,
+      basis: hasMarketCap ? 'circulating_supply_x_selected_price' : null,
+      formula: 'circulating supply x selected price',
+      requires_circulating_supply: true,
+      reason: hasMarketCap ? null : (hasCirculatingSupply ? 'Requires selected market cap value' : 'Requires circulating supply and selected price'),
+    },
+    holder_count: {
+      live: asNumber(metrics?.holder_count) != null,
+      source: asNumber(metrics?.holder_count) != null ? 'indexed_snapshot' : null,
+      reason: asNumber(metrics?.holder_count) != null ? null : REQUIRES_INDEXED_BACKEND,
+    },
+    volume_24h: {
+      live: volume24Wax != null || volume24Usd != null,
+      source: volume24Wax != null || volume24Usd != null ? 'indexed_pair_or_ticker_volume' : null,
+      reason: volume24Wax != null || volume24Usd != null ? null : 'Requires indexed pair or ticker volume',
+    },
+    volume_7d: {
+      live: asNumber(metrics?.volume_7d) != null,
+      source: asNumber(metrics?.volume_7d) != null ? 'indexed_trade_history_window' : null,
+      reason: asNumber(metrics?.volume_7d) != null ? null : 'Requires indexed candle or trade history',
+    },
+    volume_30d: {
+      live: asNumber(metrics?.volume_30d) != null,
+      source: asNumber(metrics?.volume_30d) != null ? 'indexed_trade_history_window' : null,
+      reason: asNumber(metrics?.volume_30d) != null ? null : 'Requires indexed candle or trade history',
+    },
+  };
+  return {
+    has_selected_price: selectedPriceLive,
+    has_liquidity: liquidityBasis != null,
+    has_tvl: tvlBasis != null,
+    has_fdv: hasFdv,
+    has_market_cap: hasMarketCap,
+    has_circulating_supply: hasCirculatingSupply,
+    has_total_supply: totalSupply != null,
+    tvl_basis: tvlBasis,
+    liquidity_basis: liquidityBasis,
+    tvl_liquidity_same_basis: tvlBasis != null && liquidityBasis != null && tvlBasis === liquidityBasis,
+    selected_price_proof: selectedPriceProof,
+    metric_status: metricStatus,
+    metric_sources: {
+      selected_price: selectedPriceProof.source ? 'indexed_pair' : null,
+      liquidity: liquidityBasis,
+      tvl: tvlBasis,
+      fdv: hasFdv ? 'total_supply_x_selected_price' : null,
+      market_cap: hasMarketCap ? 'circulating_supply_x_selected_price' : null,
+      holder_count: metricStatus.holder_count.source,
+      volume_24h: metricStatus.volume_24h.source,
+      volume_7d: metricStatus.volume_7d.source,
+      volume_30d: metricStatus.volume_30d.source,
+    },
+  };
+}
+
 function reasonMapForTokenMetrics(metrics) {
   const reasons = {};
   if (metrics.selected_price_wax == null) reasons.selected_price = metrics.selected_pair_id ? 'Source indexed; price unavailable' : 'No indexed pair has enough price data yet';
@@ -4409,6 +4581,9 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows) {
   const volumeWax = hasVolumeWax ? volumeWaxTotal : asNumber(metrics.volume_24h_wax ?? metrics.volume_24h);
   const volumeUsd = volumeWax != null && waxUsd != null ? volumeWax * waxUsd : asNumber(metrics.volume_24h_usd);
 
+  metrics.contract = contract;
+  metrics.symbol = symbol;
+  metrics.total_supply = safeDecimal(totalSupply);
   metrics.selected_price_wax = safeDecimal(selectedPriceWax);
   metrics.selected_price_usd = safeDecimal(selectedPriceUsd);
   metrics.selected_pair_source = selected?.pair?.source || metrics.selected_pair_source || null;
@@ -4442,6 +4617,7 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows) {
     ? (asNumber(metrics.aggregate_complete) === 1 ? 'Canonical aggregate complete' : (hasLiquidityWax || hasLiquidityUsd ? 'Pair liquidity indexed; holder/candle metrics pending' : 'Indexed pairs found; advanced metrics partial'))
     : (asNumber(metrics.aggregate_truncated) === 1 ? 'Aggregate truncated; final metrics unavailable' : 'Aggregate incomplete; final metrics unavailable');
   metrics.unavailable_reasons = reasonMapForTokenMetrics(metrics);
+  Object.assign(metrics, tokenMetricProof(metrics, selected));
   return metrics;
 }
 
@@ -5807,6 +5983,25 @@ async function planWaxOnEdgeCandleBackfill(env) {
   };
 }
 
+function metricCapabilitiesFromTokens(tokens = []) {
+  const has = (predicate) => tokens.some((token) => predicate(token));
+  const marketCapLive = has((token) =>
+    asNumber(token?.circulating_supply) != null &&
+    asNumber(token?.market_cap_wax ?? token?.market_cap_usd) != null);
+  return {
+    change: has((token) => asNumber(token?.change_24h) != null),
+    price: has((token) => asNumber(token?.selected_price_wax ?? token?.selected_price_usd ?? token?.price_wax ?? token?.price_usd) != null),
+    volume: has((token) => asNumber(token?.volume_24h_wax ?? token?.volume_24h_usd ?? token?.volume_24h) != null),
+    liquidity: has((token) => asNumber(token?.liquidity_wax ?? token?.liquidity_usd) != null),
+    tvl: has((token) => asNumber(token?.tvl_wax ?? token?.tvl_usd) != null),
+    market_cap: marketCapLive,
+    mcap: marketCapLive,
+    volume_7d: has((token) => asNumber(token?.volume_7d) != null),
+    volume_30d: has((token) => asNumber(token?.volume_30d) != null),
+    holders: has((token) => asNumber(token?.holder_count) != null),
+  };
+}
+
 async function handleBootstrap(env, corsHeaders) {
   const coreSnapshotReads = CORE_DEX_ADAPTERS.flatMap((adapter) => [
     readSnapshot(env.DB, `${adapter.source}_abi`),
@@ -5857,6 +6052,7 @@ async function handleBootstrap(env, corsHeaders) {
     .sort()
     .pop() || null;
   const aggregateCount = tokens.filter((token) => token.liquidity_wax != null || token.selected_pair_source != null).length;
+  const metricCapabilities = metricCapabilitiesFromTokens(tokens);
   const waxToken = tokens.find((token) => normalizeContract(token.contract) === 'eosio.token' && normalizeSymbol(token.symbol) === 'WAX');
   const waxGlobalPrice = asNumber(alcorGlobal.data?.usd_price ?? alcorGlobal.data?.wax_usd ?? alcorGlobal.data?.price);
   const waxPriceUsd = asNumber(waxToken?.price_usd) ?? waxGlobalPrice;
@@ -5871,7 +6067,9 @@ async function handleBootstrap(env, corsHeaders) {
       token_aggregate_count: aggregateCount,
       wax_price_usd: waxPriceUsd == null ? null : safeDecimal(waxPriceUsd),
       wax_price_source: waxPriceUsd == null ? null : (asNumber(waxToken?.price_usd) != null ? 'indexed eosio.token/WAX token price' : 'Alcor analytics/global'),
+      metric_capabilities: metricCapabilities,
     },
+    metric_capabilities: metricCapabilities,
     tokens,
     pairs,
     sync_status: syncStatus,
@@ -5972,6 +6170,9 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
 
 export const __waxonedgeTestHooks = {
   deriveTokenPairMetrics,
+  tokenMetricProof,
+  pairContributionProof,
+  metricCapabilitiesFromTokens,
   collectTokenPriceKeysForPairs,
   diagnoseTokenAggregate,
   parseAsset,

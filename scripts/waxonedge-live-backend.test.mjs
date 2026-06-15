@@ -3586,6 +3586,36 @@ ok('token detail derives partial aggregate metrics from indexed pair rows',
   route.includes('strongest_pair') &&
   route.includes('unavailable_reasons') &&
   route.includes('Pair liquidity indexed; holder/candle metrics pending'));
+ok('token detail exposes backend metric proof fields without frontend changes',
+  route.includes('function tokenMetricProof') &&
+  route.includes('selected_price_proof') &&
+  route.includes('metric_status') &&
+  route.includes('metric_sources') &&
+  route.includes('tvl_basis') &&
+  route.includes('liquidity_basis') &&
+  route.includes('tvl_liquidity_same_basis') &&
+  route.includes('has_market_cap') &&
+  route.includes('circulating_supply_x_selected_price') &&
+  route.includes('total_supply_x_selected_price'));
+ok('token pair endpoint exposes pair contribution proof fields',
+  route.includes('function pairContributionProof') &&
+  route.includes('pair_contribution_proof') &&
+  route.includes('contributes_to_liquidity') &&
+  route.includes('contributes_to_tvl') &&
+  route.includes('contribution_wax') &&
+  route.includes('contribution_usd') &&
+  route.includes('valuation_route') &&
+  route.includes('route_type') &&
+  route.includes('token_side') &&
+  route.includes('reserve_side_wax_values') &&
+  route.includes('reason_codes'));
+ok('bootstrap exposes frontend metric capability flags from backend truth',
+  route.includes('function metricCapabilitiesFromTokens') &&
+  route.includes('metric_capabilities: metricCapabilities') &&
+  route.includes('market_cap: marketCapLive') &&
+  route.includes('mcap: marketCapLive') &&
+  route.includes('volume_7d') &&
+  route.includes('volume_30d'));
 ok('indexer health reports systemic dead-token and source health counts',
   route.includes('async function getIndexerHealth') &&
   route.includes('total_indexed_tokens') &&
@@ -3708,6 +3738,13 @@ ok('token detail avoids unbounded all-priced-token scan',
     wufStats.aggregate_status === 'Pair liquidity indexed; holder/candle metrics pending' &&
     wufStats.selected_pair_source === 'swap.nefty' &&
     wufStats.selected_pair_id === 'WAXWUFB' &&
+    wufStats.selected_price_proof.live === true &&
+    wufStats.metric_status.fdv.live === true &&
+    wufStats.metric_status.market_cap.live === false &&
+    wufStats.metric_status.market_cap.requires_circulating_supply === true &&
+    wufStats.tvl_basis === 'indexed_pair_reserve_value' &&
+    wufStats.liquidity_basis === 'indexed_pair_reserve_value' &&
+    wufStats.tvl_liquidity_same_basis === true &&
     wufStats.selected_price_source.includes('swap.nefty') &&
     wufStats.indexed_pair_count === 2 &&
     wufStats.source_count === 2 &&
@@ -3717,6 +3754,63 @@ ok('token detail avoids unbounded all-priced-token scan',
     wufStats.change_24h == null &&
     Number(wufStats.fdv_wax) > 0 &&
     wufStats.unavailable_reasons.price_change_24h === 'Requires indexed 24h price-change data');
+  const marketCapProofWithoutCirculating = __waxonedgeTestHooks.tokenMetricProof({
+    selected_price_wax: '2',
+    market_cap_wax: '200',
+    fdv_wax: '1000',
+  });
+  const marketCapProofWithCirculating = __waxonedgeTestHooks.tokenMetricProof({
+    selected_price_wax: '2',
+    circulating_supply: '100',
+    market_cap_wax: '200',
+    fdv_wax: '1000',
+  });
+  ok('market cap proof requires circulating supply while FDV remains total-supply based',
+    marketCapProofWithoutCirculating.has_market_cap === false &&
+    marketCapProofWithoutCirculating.metric_status.market_cap.live === false &&
+    marketCapProofWithoutCirculating.metric_status.fdv.basis === 'total_supply_x_selected_price' &&
+    marketCapProofWithCirculating.has_market_cap === true &&
+    marketCapProofWithCirculating.metric_status.market_cap.basis === 'circulating_supply_x_selected_price');
+  const pairProof = __waxonedgeTestHooks.pairContributionProof(
+    {
+      source: 'swap.nefty',
+      pair_id: 'WAXWUFB',
+      token_a_contract: 'eosio.token',
+      token_a_symbol: 'WAX',
+      token_b_contract: 'wuffi',
+      token_b_symbol: 'WUF',
+      price: '500',
+      reserve_a: '1000',
+      reserve_b: '500000',
+    },
+    'wuffi',
+    'WUF',
+    new Map([
+      ['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }],
+      ['wuffi::WUF', { priceWax: 0.002, priceUsd: 0.000012 }],
+    ]),
+  );
+  ok('pair contribution proof reports route, side, contribution, and reserve values',
+    pairProof.token_side === 'b' &&
+    pairProof.route_type === 'direct_wax_pair' &&
+    pairProof.valuation_route.includes('direct') &&
+    pairProof.contributes_to_liquidity === true &&
+    pairProof.contributes_to_tvl === true &&
+    Number(pairProof.contribution_wax) === 2000 &&
+    pairProof.reserve_side_wax_values.token != null &&
+    pairProof.reserve_side_wax_values.quote != null &&
+    Array.isArray(pairProof.reason_codes) &&
+    pairProof.reason_codes.length === 0);
+  const caps = __waxonedgeTestHooks.metricCapabilitiesFromTokens([
+    { selected_price_wax: '1', market_cap_wax: '20', fdv_wax: '50', volume_7d: null },
+    { selected_price_wax: '2', circulating_supply: '10', market_cap_wax: '20', volume_7d: '7', volume_30d: null },
+  ]);
+  ok('bootstrap metric capabilities require circulating supply for market cap',
+    caps.price === true &&
+    caps.market_cap === true &&
+    caps.mcap === true &&
+    caps.volume_7d === true &&
+    caps.volume_30d === false);
   const preservedChangeStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
     {
       contract: 'wuffi',
