@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -234,16 +234,25 @@ ok('VPS live indexer check entrypoint runs for relative npm check paths',
 ok('VPS live indexer documents env-only config and shared secret header',
   liveIndexerEnvExample.includes('WAXONEDGE_LIVE_PORT=8789') &&
   liveIndexerEnvExample.includes('WAXONEDGE_HYPERION_API=https://wax.eosusa.io/v2') &&
+  liveIndexerEnvExample.includes('WAXNODE_ENDPOINT=') &&
+  liveIndexerEnvExample.includes('WAXONEDGE_LIVE_POLL_MS=1000') &&
+  liveIndexerEnvExample.includes('WAXONEDGE_LIVE_HISTORY_PATH=') &&
   liveIndexerEnvExample.includes('WAXONEDGE_LIVE_SHARED_SECRET=') &&
   liveIndexerReadme.includes('x-waxonedge-live-secret') &&
-  liveIndexerReadme.includes('Do not commit secrets.'));
+  liveIndexerReadme.includes('Do not commit secrets.') &&
+  liveIndexerReadme.includes('history_mode') &&
+  liveIndexerReadme.includes('fresh_start') &&
+  liveIndexerReadme.includes('requires_ship_for_deep_history'));
 ok('VPS live indexer production env example has required keys and blank secret',
   liveIndexerProdEnvExample.includes('WAXONEDGE_LIVE_PORT=8789') &&
   liveIndexerProdEnvExample.includes('WAXONEDGE_HYPERION_API=https://wax.eosusa.io/v2') &&
   liveIndexerProdEnvExample.includes('WAXONEDGE_STATE_HISTORY_ENDPOINT=') &&
+  liveIndexerProdEnvExample.includes('WAXNODE_ENDPOINT=') &&
   liveIndexerProdEnvExample.includes('WAXONEDGE_LIVE_SHARED_SECRET=') &&
   liveIndexerProdEnvExample.includes('WAXONEDGE_LIVE_ENABLE_STREAM=false') &&
   liveIndexerProdEnvExample.includes('WAXONEDGE_LIVE_BIND_HOST=127.0.0.1') &&
+  liveIndexerProdEnvExample.includes('WAXONEDGE_LIVE_POLL_MS=1000') &&
+  liveIndexerProdEnvExample.includes('WAXONEDGE_LIVE_HISTORY_PATH=/opt/crypto-moonboys/services/waxonedge-live-indexer/data/waxonedge-live-history.json') &&
   !/WAXONEDGE_LIVE_SHARED_SECRET=.+/.test(liveIndexerProdEnvExample));
 ok('VPS live indexer deploy guide documents runtime operations without enabling production proxy',
   liveIndexerDeploy.includes('Node.js 22') &&
@@ -256,7 +265,11 @@ ok('VPS live indexer deploy guide documents runtime operations without enabling 
   liveIndexerDeploy.includes('PM2') &&
   liveIndexerDeploy.includes('curl -fsS http://127.0.0.1:8789/health') &&
   liveIndexerDeploy.includes('curl -fsS http://127.0.0.1:8789/snapshot') &&
+  liveIndexerDeploy.includes('curl -fsS http://127.0.0.1:8789/history') &&
   liveIndexerDeploy.includes('curl -N http://127.0.0.1:8789/stream') &&
+  liveIndexerDeploy.includes('history_complete=false') &&
+  liveIndexerDeploy.includes('history_backfilled=false') &&
+  liveIndexerDeploy.includes('fresh-start') &&
   liveIndexerDeploy.includes('journalctl -u waxonedge-live-indexer') &&
   liveIndexerDeploy.includes('systemctl restart waxonedge-live-indexer') &&
   /rollback/i.test(liveIndexerDeploy) &&
@@ -312,6 +325,9 @@ ok('VPS live indexer registers only verified trade streams',
     health.uses_fake_live_data === false &&
     health.browser_hyperion_fetch === false &&
     health.emits_fake_token_updates === false);
+  ok('VPS live indexer defaults to approximately one-second verified stream polling',
+    state.config.poll_ms === 1000 &&
+    liveIndexerSource.includes('const DEFAULT_LIVE_POLL_MS = 1000'));
   ok('VPS live indexer /snapshot contract matches Worker live snapshot shape without fake data',
     snapshot.ok === false &&
     snapshot.source === 'waxonedge-live-indexer' &&
@@ -380,6 +396,13 @@ ok('VPS live indexer /stream contract supports heartbeat and real token update e
   liveIndexerSource.includes('event: token_update') &&
   liveIndexerSource.includes('function writeSseTokenUpdate') &&
   !liveIndexerSource.includes('Math.random'));
+ok('VPS live indexer exposes fresh-start rolling history without claiming backfill',
+  liveIndexerSource.includes("pathname === '/history'") &&
+  liveIndexerSource.includes("history_mode: FRESH_HISTORY_MODE") &&
+  liveIndexerSource.includes('history_complete: false') &&
+  liveIndexerSource.includes('history_backfilled: false') &&
+  liveIndexerSource.includes('requires_ship_for_deep_history: true') &&
+  !liveIndexerSource.includes('reserve-derived candles'));
 ok('VPS live indexer exposes no fake live events or random movement',
   liveIndexerSource.includes('uses_fake_live_data: false') &&
   liveIndexerSource.includes('emits_fake_token_updates: false') &&
@@ -558,6 +581,36 @@ ok('VPS live indexer exposes no fake live events or random movement',
       merged &&
       merged.source_keys === 'alcor,swap.alcor' &&
       merged.source === 'alcor');
+  }
+  {
+    const historyPath = path.join(ROOT, '.tmp-waxonedge-live-history-test.json');
+    rmSync(historyPath, { force: true });
+    const historyConfig = liveIndexer.loadConfig({
+      WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+      WAXONEDGE_LIVE_HISTORY_PATH: historyPath,
+    });
+    const historyState = liveIndexer.createState(historyConfig);
+    liveIndexer.observeLiveTrade(historyState, alcorTrade);
+    const fileWasWritten = existsSync(historyPath);
+    const historyHealth = liveIndexer.healthPayload(historyState);
+    const restartedState = liveIndexer.createState(historyConfig);
+    const restartedHealth = liveIndexer.healthPayload(restartedState);
+    const restartedSnapshot = liveIndexer.snapshotPayload(restartedState);
+    rmSync(historyPath, { force: true });
+    ok('VPS live indexer persists observed verified trades and hydrates fresh history after restart',
+      fileWasWritten &&
+      historyHealth.history.history_mode === 'fresh_start' &&
+      historyHealth.history.persisted_trade_count === 1 &&
+      historyHealth.history.history_complete === false &&
+      historyHealth.history.history_backfilled === false &&
+      historyHealth.history.requires_ship_for_deep_history === true &&
+      restartedHealth.status === 'connected' &&
+      restartedHealth.history.persisted_trade_count === 1 &&
+      restartedHealth.history.rolling_1d_candle_count === 1 &&
+      restartedSnapshot.tokens.length === 1 &&
+      restartedSnapshot.tokens[0].fresh_history_trade_count === 1 &&
+      restartedSnapshot.tokens[0].fresh_history_volume_7d_complete === false &&
+      restartedSnapshot.tokens[0].fresh_history_volume_30d_complete === false);
   }
 }
 {

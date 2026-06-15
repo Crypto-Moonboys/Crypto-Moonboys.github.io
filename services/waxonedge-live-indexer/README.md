@@ -1,11 +1,13 @@
 # WaxOnEdge Live Indexer Service
 
-This is the VPS-side WaxOnEdge live bubble update service. It polls only verified WAX Hyperion/state-history trade action streams, keeps an in-memory token update cache, and can emit real `token_update` SSE events when streaming is enabled.
+This is the VPS-side WaxOnEdge live bubble update service. It polls only verified WAX Hyperion/state-history trade action streams, persists observed trade rows as fresh-start rolling history, keeps an in-memory token update cache, and can emit real `token_update` SSE events when streaming is enabled.
 
 ## Current Status
 
 - Status: connects only after real verified trade rows are observed.
 - Real live token deltas: from verified Hyperion/state-history trade rows only.
+- Rolling history: fresh-start only from observed persisted rows.
+- Full historical backfill: not claimed; SHIP/state-history deep-history mode remains future optional work.
 - Fake token updates: never emitted.
 - Worker integration: health probe/snapshot contract remains unchanged until a later Worker proxy PR.
 
@@ -30,9 +32,12 @@ Copy `.env.example` to your VPS environment manager and set values as process en
 WAXONEDGE_LIVE_PORT=8789
 WAXONEDGE_HYPERION_API=https://wax.eosusa.io/v2
 WAXONEDGE_STATE_HISTORY_ENDPOINT=
+WAXNODE_ENDPOINT=
 WAXONEDGE_LIVE_SHARED_SECRET=
 WAXONEDGE_LIVE_ENABLE_STREAM=false
 WAXONEDGE_LIVE_BIND_HOST=127.0.0.1
+WAXONEDGE_LIVE_POLL_MS=1000
+WAXONEDGE_LIVE_HISTORY_PATH=/opt/crypto-moonboys/services/waxonedge-live-indexer/data/waxonedge-live-history.json
 ```
 
 Future Worker-to-VPS calls must send the shared secret in:
@@ -53,6 +58,7 @@ Then check:
 ```bash
 curl http://127.0.0.1:8789/health
 curl http://127.0.0.1:8789/snapshot
+curl http://127.0.0.1:8789/history
 curl -N http://127.0.0.1:8789/stream
 ```
 
@@ -70,9 +76,26 @@ Reports config presence, uptime, connection state, verified stream list, and no-
 }
 ```
 
+The `history` object is always honest fresh-start metadata:
+
+```json
+{
+  "history_mode": "fresh_start",
+  "history_complete": false,
+  "history_backfilled": false,
+  "requires_ship_for_deep_history": true
+}
+```
+
 ### `GET /snapshot`
 
 Returns compact live token updates observed in memory from verified trade rows. Until a real trade is observed, it returns `ok:false`, `status:"not_connected"`, and `tokens:[]`.
+
+When persisted observed trades exist after a restart, the token cache and rolling metrics hydrate from those real rows only. `fresh_history_volume_7d_complete` and `fresh_history_volume_30d_complete` remain false until enough wall-clock time has elapsed since `history_started_at`.
+
+### `GET /history`
+
+Returns compact fresh-start history metadata, persisted observed trade count, rolling 1D candle count, and completion flags. It does not expose fake backfill status and does not build candles from reserves.
 
 ### `GET /stream`
 
