@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="WAXONEDGE - visual WAX token bubble scanner powered by indexed Cloudflare Worker and D1 data.">
+  <meta name="description" content="WAXONEDGE - live WAX Galaxy token scanner powered by indexed Cloudflare Worker and D1 data.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="WAXONEDGE - WAX Bubble Scanner | Crypto Moonboys">
-  <meta property="og:description" content="Scan WAX token bubbles, indexed liquidity, volume, and source coverage from the WaxOnEdge backend.">
+  <meta property="og:title" content="WAXONEDGE - WAX Galaxy | Crypto Moonboys">
+  <meta property="og:description" content="Scan the live WAX Galaxy with indexed all-pairs liquidity, volume, and source coverage from the WaxOnEdge backend.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cryptomoonboys.com/waxonedge.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <link rel="canonical" href="https://cryptomoonboys.com/waxonedge.html">
-  <title>WAXONEDGE - WAX Bubble Scanner | Crypto Moonboys</title>
+  <title>WAXONEDGE - WAX Galaxy | Crypto Moonboys</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
@@ -30,7 +30,7 @@
         <span class="woe-og-brand-mark woe-ab-brand-mark" aria-hidden="true">●</span>
         <div>
           <h1 class="woe-page-title">WAX<span>ONEDGE</span></h1>
-          <p class="woe-page-subtitle">Powered by WaxOnEdge multi-DEX indexer</p>
+          <p class="woe-page-subtitle">Live WAX Galaxy powered by WaxOnEdge indexer</p>
         </div>
       </a>
       <div class="woe-ab-chain-badge">WAX</div>
@@ -63,15 +63,15 @@
     </header>
 
     <section class="woe-section woe-bubble-section woe-scanner-only woe-ab-board-section" aria-labelledby="woe-bubbles-heading">
-      <h2 id="woe-bubbles-heading" class="woe-ab-sr">WaxOnEdge AntBubbles-style scanner</h2>
+      <h2 id="woe-bubbles-heading" class="woe-ab-sr">WaxOnEdge WAX Galaxy scanner</h2>
       <div id="woe-bubble-board" class="woe-bubble-board" aria-live="polite">
         <p class="woe-loading">Loading token bubbles...</p>
       </div>
+      <aside id="woe-ab-live-feed" class="woe-ab-live-feed" aria-live="polite" aria-label="Live WaxOnEdge market feed"></aside>
       <footer id="woe-ab-stats" class="woe-ab-stats" aria-live="polite"></footer>
     </section>
   </div>
 </main>
-<div id="woe-ab-modal" class="woe-ab-modal" hidden></div>
 
 <script data-cfasync="false" src="/js/api-config.js"></script>
 <script data-cfasync="false">

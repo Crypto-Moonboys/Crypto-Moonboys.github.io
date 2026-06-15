@@ -13,7 +13,7 @@
    WAXONEDGE_ALCOR_API, WAXONEDGE_WAX_RPC, WAXONEDGE_WAX_RPC_FALLBACKS,
    WAXONEDGE_NEFTY_CONTRACT, WAXONEDGE_WAXBLOCK_BASE,
    WAXONEDGE_SOURCES, WAXONEDGE_ALCOR_PATHS, WAXONEDGE_RPC_PATHS,
-   WAXONEDGE_NEFTY_TABLES, WAXONEDGE_HYPERION, WAXONEDGE_HYPERION_PATHS,
+   WAXONEDGE_NEFTY_TABLES,
    LightweightCharts
 */
 
@@ -1700,6 +1700,21 @@
     return availabilityHtml(tokenStatReason(stats, key) || fallback);
   }
 
+  function isFreshHistoryAccumulating(stats, key) {
+    if (!stats) return false;
+    var keyComplete = asNum(stats[key + '_complete']);
+    if (keyComplete === 0) return true;
+    var historyComplete = asNum(stats.history_complete != null ? stats.history_complete : stats.fresh_history_complete);
+    if (historyComplete === 0) return true;
+    var historyState = String(stats.history_state || stats.history_status || stats.fresh_history_state || '').toLowerCase();
+    return /fresh|build|accumulat|incomplete/.test(historyState);
+  }
+
+  function historicalVolumeAvailabilityHtml(stats, key) {
+    if (isFreshHistoryAccumulating(stats, key)) return availabilityHtml('Building from fresh live history');
+    return tokenAvailabilityHtml(stats, key);
+  }
+
   function getSelectedTokenContext() {
     var selection = state.selected;
     var detail = state.tokenDetailCache[selection.key] || null;
@@ -2077,6 +2092,7 @@
     var summaryHtml = '<h2 class="woe-token-summary-title">' + escHtml(token.symbol || context.selection.symbol || 'Token') + '</h2>' +
       '<p class="woe-token-summary-subtitle">' +
         'Indexed analytics detail for <code>' + escHtml(token.contract || context.selection.contract || 'unknown-contract') + '</code>. ' +
+        'All-pairs WAX valuation sums usable indexed pair value across supported DEXs where a trusted WAX route exists. ' +
         'Click another token in the scanner or share this state with <code>?token=</code> + <code>&amp;contract=</code>.' +
       '</p>';
     setHtml('woe-token-summary', summaryHtml);
@@ -2172,10 +2188,10 @@
       : tokenAvailabilityHtml(stats, 'liquidity'));
     statsHtml += statRow('7d volume', canUseHistoricalVolumes && historicalVolumes && historicalVolumes.sevenDay != null
       ? escHtml(fmtNum(historicalVolumes.sevenDay) + ' ' + selection.symbol)
-      : tokenAvailabilityHtml(stats, 'volume_7d'));
+      : historicalVolumeAvailabilityHtml(stats, 'volume_7d'));
     statsHtml += statRow('30d volume', canUseHistoricalVolumes && historicalVolumes && historicalVolumes.thirtyDay != null
       ? escHtml(fmtNum(historicalVolumes.thirtyDay) + ' ' + selection.symbol)
-      : tokenAvailabilityHtml(stats, 'volume_30d'));
+      : historicalVolumeAvailabilityHtml(stats, 'volume_30d'));
     statsHtml += statRow('Market cap', marketCapWax != null || marketCapUsd != null
       ? escHtml(formatDualMetric(marketCapWax, marketCapUsd))
       : tokenAvailabilityHtml(stats, 'market_cap'), { muted: marketCapWax == null && marketCapUsd == null });
@@ -2195,17 +2211,18 @@
     var nextSource = nextCandidate
       ? nextCandidate.source + (nextCandidate.marketId ? ' #' + nextCandidate.marketId : '')
       : 'No alternate indexed pair candidate available';
+    var statusText = metaLabel || reason || 'Indexed chart building from fresh live data';
     setHtml('woe-chart-panel',
       '<div class="woe-chart-placeholder-card">' +
         '<div class="woe-chart-placeholder-grid">' +
           '<div><span>Selected source</span><strong>' + escHtml(selectedSource) + '</strong></div>' +
-          '<div><span>Status</span><strong>' + escHtml(SOURCE_NOT_INDEXED_TEXT) + '</strong></div>' +
+          '<div><span>Status</span><strong>' + escHtml(statusText) + '</strong></div>' +
           '<div><span>Reason</span><strong>' + escHtml(reason || 'No backend OHLCV candles are indexed for this pair yet') + '</strong></div>' +
           '<div><span>Next candidate</span><strong>' + escHtml(nextSource) + '</strong></div>' +
         '</div>' +
         '<p>No fake candles are shown. When D1 has OHLCV rows for the selected pair, this panel renders with Lightweight Charts.</p>' +
       '</div>');
-    setText('woe-chart-meta', metaLabel || SOURCE_NOT_INDEXED_TEXT);
+    setText('woe-chart-meta', statusText);
   }
 
   function renderChart(context) {
@@ -2370,7 +2387,7 @@
   function renderMatrix(context) {
     var rows = context.markets;
     setText('woe-matrix-meta', state.backend.mode === 'backend'
-      ? 'Selected token pairs across alcor, swap.alcor, swap.taco, swap.nefty, swap.box.'
+      ? 'Selected token pairs across alcor, swap.alcor, swap.taco, swap.nefty, swap.box. All-pairs WAX valuation is partial when a pair cannot be valued through a trusted indexed WAX route.'
       : 'Diagnostic fallback active.');
 
     if (!rows || rows.length === 0) {
@@ -2511,64 +2528,14 @@
 
   function renderHolderPlaceholder() {
     setHtml('woe-holders-panel',
-      '<div class="woe-placeholder">' +
-        '<span class="woe-placeholder-icon">◫</span>' +
-        '<p>Look up the tokens currently held by a WAX account via the Hyperion API.</p>' +
-        '<p>Enter an account name below to read the balances returned by <code>/state/get_tokens</code>.</p>' +
-        '<div class="woe-holder-form">' +
-          '<input id="woe-holder-account" class="woe-input" type="text" placeholder="Account (e.g. cryptomoonboy)" autocomplete="off" aria-label="WAX account for token balance lookup">' +
-          '<button id="woe-holder-lookup" class="woe-btn-lookup">Look up balances</button>' +
-        '</div>' +
-        '<div id="woe-holder-result" class="woe-holder-result"></div>' +
+      '<div class="woe-placeholder woe-holder-index-empty">' +
+        '<span class="woe-placeholder-icon">IDX</span>' +
+        '<p>Holder indexing not enabled yet.</p>' +
+        '<p>No fake holder rows are shown. Holder count and top-holder rows will appear here only after the WaxOnEdge backend exposes indexed holder data.</p>' +
       '</div>'
     );
-    attachHolderLookup();
+    setText('woe-holder-status', 'Holder indexing not enabled yet');
   }
-
-  function attachHolderLookup() {
-    var btn = document.getElementById('woe-holder-lookup');
-    if (!btn || btn.dataset.bound === 'true') return;
-    btn.dataset.bound = 'true';
-    btn.addEventListener('click', function () {
-      var account = (document.getElementById('woe-holder-account') || {}).value || '';
-      account = account.trim().toLowerCase();
-      if (!account) {
-        setHtml('woe-holder-result', '<p class="woe-error">Enter a WAX account name.</p>');
-        return;
-      }
-      setHtml('woe-holder-result', '<p class="woe-loading">Querying Hyperion balances for ' + escHtml(account) + '…</p>');
-      var hyperion = window.WAXONEDGE_HYPERION || 'https://wax.eosusa.io/v2';
-      var hyperionPaths = window.WAXONEDGE_HYPERION_PATHS || {};
-      var getTokensPath = hyperionPaths.getTokens || '/state/get_tokens';
-      var url = hyperion + getTokensPath + '?account=' + encodeURIComponent(account);
-      apiFetch(url, 10000).then(function (data) {
-        if (!data) {
-          setHtml('woe-holder-result',
-            '<p class="woe-warn">Hyperion did not return data. ' +
-            'Account token balance lookup requires Hyperion v2 support from the chosen endpoint.</p>');
-          return;
-        }
-        var tokens = data.tokens || [];
-        if (tokens.length === 0) {
-          setHtml('woe-holder-result',
-            '<p class="woe-warn">No token balances were returned for ' + escHtml(account) + '.</p>');
-          return;
-        }
-        var rows = tokens.slice(0, 25).map(function (token) {
-          return '<div class="woe-holder-result-card">' +
-            '<div><strong>Symbol:</strong> ' + escHtml(String(token.symbol || '—')) + '</div>' +
-            '<div><strong>Balance:</strong> ' + escHtml(String(token.amount || '—')) + '</div>' +
-            '<div><strong>Contract:</strong> ' + escHtml(String(token.contract || '—')) + '</div>' +
-            '<div><strong>Decimals:</strong> ' + escHtml(String(token.decimals || '—')) + '</div>' +
-          '</div>';
-        }).join('');
-        setHtml('woe-holder-result',
-          '<p><strong>' + escHtml(account) + '</strong> — ' + escHtml(String(tokens.length)) + ' token balance(s) returned.</p>' +
-          rows);
-      });
-    });
-  }
-
   /* ── Wide / fullscreen analytics terminal mode ──────────────── */
 
   var WOE_WIDE_CLASS = 'woe-wide-mode';

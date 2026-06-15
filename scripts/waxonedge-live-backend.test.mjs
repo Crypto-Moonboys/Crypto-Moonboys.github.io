@@ -3908,7 +3908,11 @@ ok('frontend live hook uses EventSource only when enabled and safe polling fallb
 ok('frontend uses live next_cursor instead of timestamp-only since cursor',
   frontendBubbles.includes("LIVE_API + '?cursor=' + encodeURIComponent(state.live.cursor)") &&
   frontendBubbles.includes('var nextCursor = data.next_cursor || snapshot.next_cursor || null') &&
-  frontendBubbles.includes('if (nextCursor) state.live.cursor = nextCursor') &&
+  frontendBubbles.includes('if (nextCursor) setBackendLiveCursor(nextCursor)') &&
+  frontendBubbles.includes('state.live.cursor && state.live.cursorFromBackend') &&
+  frontendBubbles.includes('state.live.cursorFromBackend = true') &&
+  !frontendBubbles.includes('state.live.cursor = state.lastUpdated') &&
+  !frontendBubbles.includes('state.lastUpdated = state.live.cursor') &&
   !frontendBubbles.includes("LIVE_API + '?since='"));
 ok('frontend live updates records by stable token key',
   frontendBubbles.includes('update.token_key || tokenKey(update.contract, update.symbol)') &&
@@ -3918,12 +3922,14 @@ ok('frontend live empty source_keys clears stale source badges',
   frontendBubbles.includes("Object.prototype.hasOwnProperty.call(update, 'source_keys')") &&
   frontendBubbles.includes('var sources = parseSourceKeys(update.source_keys)') &&
   !frontendBubbles.includes('if (update.source_keys)'));
-ok('frontend live cursor advances even for unmatched token updates',
-  frontendBubbles.indexOf('if (nextCursor) state.live.cursor = nextCursor') > -1 &&
-  frontendBubbles.indexOf('if (nextCursor) state.live.cursor = nextCursor') < frontendBubbles.indexOf('if (!tokens.length) return') &&
-  frontendBubbles.includes('function advanceLiveFallbackCursor(update)') &&
-  frontendBubbles.indexOf('if (!nextCursor) advanceLiveFallbackCursor(update)') > -1 &&
-  frontendBubbles.indexOf('if (!nextCursor) advanceLiveFallbackCursor(update)') < frontendBubbles.indexOf('if (!record) return'));
+ok('frontend live cursor remains backend-provided while display time advances for unmatched updates',
+  frontendBubbles.indexOf('if (nextCursor) setBackendLiveCursor(nextCursor)') > -1 &&
+  frontendBubbles.indexOf('if (nextCursor) setBackendLiveCursor(nextCursor)') < frontendBubbles.indexOf('if (!tokens.length) return') &&
+  frontendBubbles.includes('function advanceLiveDisplayTimestamp(value)') &&
+  frontendBubbles.indexOf('advanceLiveDisplayTimestamp(displayTimestamp)') > -1 &&
+  frontendBubbles.indexOf('advanceLiveDisplayTimestamp(displayTimestamp)') < frontendBubbles.indexOf('if (!tokens.length) return') &&
+  frontendBubbles.includes('function latestTokenUpdatedAt(tokens)') &&
+  !frontendBubbles.includes('function advanceLiveFallbackCursor(update)'));
 ok('frontend live update path changes bubble target radius without full reload',
   frontendBubbles.includes('function refreshLiveTargetRadii') &&
   frontendBubbles.includes('node.targetRadius = radii[index] || node.targetRadius') &&

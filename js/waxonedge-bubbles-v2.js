@@ -43,25 +43,33 @@
     hovered: null,
     dragging: null,
     selected: null,
+    shockwaves: [],
+    liveFeed: [],
+    lastImpactAt: 0,
+    camera: {
+      offsetX: 0,
+      offsetY: 0,
+      scale: 1,
+      focusUntil: 0,
+      focusX: 0,
+      focusY: 0,
+    },
     canvas: null,
     ctx: null,
     board: null,
     tooltip: null,
-    modal: null,
     raf: 0,
     resizeTimer: 0,
     lastFrame: 0,
     lastUpdated: null,
     connected: false,
-    lastFocusedBeforeModal: null,
-    modalKeydownHandler: null,
-    detailCache: {},
-    chartCache: {},
     live: {
       eventSource: null,
       pollTimer: 0,
       pollInFlight: false,
       cursor: null,
+      cursorFromBackend: false,
+      lastEventAt: null,
       transport: 'idle',
     },
   };
@@ -267,6 +275,66 @@
     return 'Unavailable';
   }
 
+  function waxUsdPrice() {
+    var data = payloadData(state.payload);
+    var price = data.summary && data.summary.wax_price_usd != null
+      ? asNum(data.summary.wax_price_usd)
+      : data.raw && data.raw.alcor_global
+      ? asNum(data.raw.alcor_global.usd_price || data.raw.alcor_global.wax_usd || data.raw.alcor_global.price)
+      : null;
+    return price;
+  }
+
+  function toUsd(wax, usd) {
+    var u = asNum(usd);
+    if (u != null) return u;
+    var w = asNum(wax);
+    var waxUsd = waxUsdPrice();
+    return w != null && waxUsd != null ? w * waxUsd : null;
+  }
+
+  function reweightedScore(parts) {
+    var total = parts.reduce(function (sum, part) {
+      return sum + (part.value != null && part.value > 0 ? part.weight : 0);
+    }, 0);
+    if (total <= 0) return 0;
+    return parts.reduce(function (sum, part) {
+      if (part.value == null || part.value <= 0) return sum;
+      return sum + (Math.log10(1 + part.value) * (part.weight / total));
+    }, 0);
+  }
+
+  function blendedMarketScore(record) {
+    var liquidity = Math.max(
+      toUsd(record.liquidityWax, record.liquidityUsd) || 0,
+      toUsd(record.tvlWax, record.tvlUsd) || 0
+    );
+    var volume = toUsd(record.volume24Wax, record.volume24Usd);
+    var cap = toUsd(record.marketCapWax, record.marketCapUsd);
+    if (cap == null) cap = toUsd(record.fdvWax, record.fdvUsd);
+    var price = toUsd(record.selectedPriceWax, record.selectedPriceUsd);
+    var change = asNum(record.change24);
+    var movement = change == null ? null : Math.abs(change);
+    var coverage = (record.indexedPairCount || 0) * 10 + (record.sourceCount || 0) * 18;
+    var score = reweightedScore([
+      { weight: 0.4, value: liquidity },
+      { weight: 0.25, value: volume },
+      { weight: 0.15, value: cap },
+      { weight: 0.1, value: movement != null ? movement + (price || 0) * 0.001 : null },
+      { weight: 0.1, value: coverage },
+    ]);
+    record.baseMarketScore = score;
+    return score;
+  }
+
+  function metricEmphasis(record) {
+    if (state.metric === 'volume') return valueForMetric(record, 'volume', state.timeframe) != null ? 1.04 : 1;
+    if (state.metric === 'tvl') return valueForMetric(record, 'tvl', state.timeframe) != null ? 1.06 : 1;
+    if (state.metric === 'liquidity') return valueForMetric(record, 'liquidity', state.timeframe) != null ? 1.04 : 1;
+    if (state.metric === 'mcap') return valueForMetric(record, 'mcap', state.timeframe) != null ? 1.05 : 1;
+    return 1;
+  }
+
   function normalizeRecords(payload) {
     var data = payloadData(payload);
     var tokens = sourceRows(data.tokens);
@@ -394,12 +462,12 @@
     var base = state.records.filter(function (record) {
       if (!query) return true;
       return record.searchText.indexOf(query) !== -1;
-    }).filter(function (record) {
-      return valueForMetric(record, state.metric, state.timeframe) != null;
     }).sort(function (a, b) {
       var av = valueForMetric(a, state.metric, state.timeframe);
       var bv = valueForMetric(b, state.metric, state.timeframe);
-      if (bv !== av) return bv - av;
+      if (av != null && bv == null) return -1;
+      if (bv != null && av == null) return 1;
+      if (bv !== av && av != null && bv != null) return Math.abs(bv) - Math.abs(av);
       return b.score - a.score;
     });
     if (!query) {
@@ -412,21 +480,21 @@
   }
 
   function computeRadii(records, width, height) {
-    var values = records.map(function (record) {
-      return Math.abs(valueForMetric(record, state.metric, state.timeframe) || 0);
+    var scores = records.map(function (record) {
+      return blendedMarketScore(record);
     });
-    var positives = values.filter(function (value) { return value > 0; }).sort(function (a, b) { return a - b; });
+    var positives = scores.filter(function (value) { return value > 0; }).sort(function (a, b) { return a - b; });
     var p95 = positives.length ? positives[Math.max(0, Math.floor(positives.length * 0.95) - 1)] : 1;
-    var max = Math.max.apply(Math, values.concat([1]));
+    var max = Math.max.apply(Math, scores.concat([1]));
     var mobile = width < 680;
     var minR = mobile ? 15 : 20;
     var maxR = Math.max(minR + 8, Math.min(mobile ? 52 : 88, Math.sqrt(width * height * (mobile ? 0.052 : 0.032) / Math.PI)));
     return records.map(function (record, index) {
-      var value = values[index];
-      var norm = value <= 0 ? 0.06 : Math.pow(value / Math.max(p95, 1), state.metric === 'change' || state.metric === 'price' ? 0.5 : 0.33);
+      var value = scores[index];
+      var norm = value <= 0 ? 0.06 : Math.pow(value / Math.max(p95, 1), 0.72);
       if (value > p95 && max > p95) norm = 0.84 + (Math.log(value / p95) / Math.log(max / p95)) * 0.16;
       norm = Math.max(0.06, Math.min(1, norm));
-      return Math.round(minR + norm * (maxR - minR));
+      return Math.round((minR + norm * (maxR - minR)) * metricEmphasis(record));
     });
   }
 
@@ -449,11 +517,15 @@
         y: height / 2 + Math.sin(angle) * spiral,
         vx: 0,
         vy: 0,
+        depth: 0.9 + ((index * 37) % 21) / 100,
       };
       node.record = record;
+      record.nodeX = node.x;
+      record.nodeY = node.y;
       node.radius = old ? old.radius : radii[index];
       node.targetRadius = radii[index];
       node.rank = index + 1;
+      node.depth = old && old.depth ? old.depth : 0.9 + ((index * 37) % 21) / 100;
       node.match = !state.query || record.searchText.indexOf(state.query.toLowerCase()) !== -1;
       return node;
     });
@@ -471,6 +543,8 @@
 
   function applyLiveTokenUpdate(record, update) {
     var changed = false;
+    var previousVolume = record.volume24Usd != null ? record.volume24Usd : record.volume24Wax;
+    var previousChange = record.change24;
     changed = assignLiveNumber(record, 'selectedPriceWax', update.price_wax) || changed;
     changed = assignLiveNumber(record, 'selectedPriceUsd', update.price_usd) || changed;
     changed = assignLiveNumber(record, 'change24', update.change_24h) || changed;
@@ -492,8 +566,17 @@
     }
     if (update.updated_at) record.liveUpdatedAt = update.updated_at;
     if (changed) {
+      var nextVolume = record.volume24Usd != null ? record.volume24Usd : record.volume24Wax;
+      var now = performance.now();
+      record.recentUntil = now + 4200;
+      record.pulseUntil = now + 1600;
+      if (isVolumeSpike(previousVolume, nextVolume)) record.volumeSpikeUntil = now + 2600;
+      if (isLiveImpactEvent(update, previousVolume, nextVolume)) {
+        record.shockwavePending = true;
+        record.majorUpdatePending = true;
+      }
+      record.liveMessage = liveMessageForUpdate(record, update, previousVolume, nextVolume, previousChange);
       record.searchText = tokenSearchText(record);
-      bubbleCanvasCache.delete(record.id);
     }
     return changed;
   }
@@ -507,32 +590,166 @@
     });
   }
 
-  function advanceLiveFallbackCursor(update) {
-    if (!update || !update.updated_at) return;
-    state.live.cursor = !state.live.cursor || update.updated_at > state.live.cursor ? update.updated_at : state.live.cursor;
+  function isValidIsoTimestamp(value) {
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T/.test(value)) return false;
+    return Number.isFinite(new Date(value).getTime());
+  }
+
+  function setBackendLiveCursor(nextCursor) {
+    if (!nextCursor) return;
+    state.live.cursor = String(nextCursor);
+    state.live.cursorFromBackend = true;
+  }
+
+  function latestTokenUpdatedAt(tokens) {
+    return tokens.reduce(function (latest, token) {
+      var value = token && token.updated_at;
+      if (!isValidIsoTimestamp(value)) return latest;
+      return !latest || value > latest ? value : latest;
+    }, null);
+  }
+
+  function advanceLiveDisplayTimestamp(value) {
+    if (!isValidIsoTimestamp(value)) return;
+    state.live.lastEventAt = !state.live.lastEventAt || value > state.live.lastEventAt ? value : state.live.lastEventAt;
+    state.lastUpdated = !state.lastUpdated || value > state.lastUpdated ? value : state.lastUpdated;
   }
 
   function applyLiveSnapshot(snapshot) {
     var data = payloadData(snapshot);
     var tokens = sourceRows(data.tokens);
     var nextCursor = data.next_cursor || snapshot.next_cursor || null;
-    if (nextCursor) state.live.cursor = nextCursor;
+    if (nextCursor) setBackendLiveCursor(nextCursor);
+    var latestUpdate = latestTokenUpdatedAt(tokens);
+    var displayTimestamp =
+      latestUpdate ||
+      (isValidIsoTimestamp(data.generated_at) ? data.generated_at : null) ||
+      (isValidIsoTimestamp(snapshot.generated_at) ? snapshot.generated_at : null) ||
+      (isValidIsoTimestamp(state.lastUpdated) ? state.lastUpdated : null) ||
+      new Date().toISOString();
+    advanceLiveDisplayTimestamp(displayTimestamp);
     if (!tokens.length) return;
     var byKey = {};
     state.records.forEach(function (record) { byKey[record.key] = record; });
     var changed = 0;
+    var changedRecords = [];
     tokens.forEach(function (update) {
-      if (!nextCursor) advanceLiveFallbackCursor(update);
       var key = update.token_key || tokenKey(update.contract, update.symbol);
       var record = byKey[key];
       if (!record) return;
-      if (applyLiveTokenUpdate(record, update)) changed += 1;
+      if (applyLiveTokenUpdate(record, update)) {
+        changed += 1;
+        changedRecords.push(record);
+      }
     });
     if (!changed) return;
-    state.lastUpdated = state.live.cursor || data.generated_at || new Date().toISOString();
     refreshLiveTargetRadii();
     syncNodes();
-    if (state.selected && byKey[state.selected.key]) renderModal(byKey[state.selected.key]);
+    changedRecords.forEach(function (record) {
+      if (record.liveMessage) addLiveFeed(record.liveMessage, record);
+    });
+    queuePendingShockwaves();
+  }
+
+  function isVolumeSpike(previousVolume, nextVolume) {
+    if (previousVolume == null || nextVolume == null || previousVolume <= 0) return false;
+    return Math.abs(nextVolume - previousVolume) / previousVolume >= 0.12;
+  }
+
+  function isLiveImpactEvent(update, previousVolume, nextVolume) {
+    var type = String(update.event_type || update.type || update.reason || '').toLowerCase();
+    if (type.indexOf('whale') !== -1 || type.indexOf('volume') !== -1) return true;
+    if (update.whale === true || update.is_whale === true || update.volume_event === true) return true;
+    if (previousVolume == null || nextVolume == null || previousVolume <= 0) return false;
+    return isVolumeSpike(previousVolume, nextVolume) && Math.abs(nextVolume - previousVolume) / previousVolume >= 0.18;
+  }
+
+  function liveMessageForUpdate(record, update, previousVolume, nextVolume, previousChange) {
+    var type = String(update.event_type || update.type || update.reason || '').toLowerCase();
+    if (type.indexOf('whale') !== -1 || update.whale === true || update.is_whale === true) {
+      return 'Whale/high-volume update detected for ' + record.symbol + ' from live indexer data';
+    }
+    if (isVolumeSpike(previousVolume, nextVolume)) {
+      return 'Volume spike: ' + record.symbol + ' 24h volume moved to ' + displayValueForMetric(record, 'volume', '24h');
+    }
+    var change = asNum(record.change24);
+    if (change != null && previousChange !== change) return 'Top mover update: ' + record.symbol + ' now ' + fmtPct(change);
+    return 'Fresh history building: ' + record.symbol + ' updated from WaxOnEdge live data';
+  }
+
+  function displayValueForMetric(record, metric, timeframeOverride) {
+    var oldMetric = state.metric;
+    var oldTimeframe = state.timeframe;
+    try {
+      state.metric = metric;
+      if (timeframeOverride) state.timeframe = timeframeOverride;
+      return displayValue(record);
+    } finally {
+      state.metric = oldMetric;
+      state.timeframe = oldTimeframe;
+    }
+  }
+
+  function addLiveFeed(message, record) {
+    state.liveFeed.unshift({
+      message: message,
+      symbol: record.symbol,
+      color: ringColor(record),
+      time: Date.now(),
+    });
+    state.liveFeed = state.liveFeed.slice(0, 6);
+    if (record.majorUpdatePending) {
+      var currentNode = state.nodes.find(function (node) {
+        return node.record && node.record.key === record.key;
+      });
+      if (currentNode) {
+        state.camera.focusUntil = performance.now() + 3800;
+        state.camera.focusX = currentNode.x;
+        state.camera.focusY = currentNode.y;
+      }
+      record.majorUpdatePending = false;
+    }
+    renderLiveFeed();
+  }
+
+  function renderLiveFeed() {
+    var feed = document.getElementById('woe-ab-live-feed');
+    if (!feed) return;
+    if (!state.liveFeed.length) {
+      feed.innerHTML = '<div class="woe-ab-feed-item"><strong>Live WAX Galaxy</strong><span>Waiting for real WaxOnEdge updates.</span></div>';
+      return;
+    }
+    feed.innerHTML = state.liveFeed.map(function (item) {
+      return '<div class="woe-ab-feed-item" style="--feed-color:' + escHtml(item.color) + '">' +
+        '<strong>' + escHtml(item.symbol) + '</strong>' +
+        '<span>' + escHtml(item.message) + '</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  function queuePendingShockwaves() {
+    if (!shouldAnimate()) {
+      state.nodes.forEach(function (node) {
+        if (node.record) node.record.shockwavePending = false;
+      });
+      return;
+    }
+    var now = performance.now();
+    state.nodes.forEach(function (node) {
+      if (!node.record || !node.record.shockwavePending) return;
+      node.record.shockwavePending = false;
+      node.record.nodeX = node.x;
+      node.record.nodeY = node.y;
+      state.shockwaves.push({
+        x: node.x,
+        y: node.y,
+        radius: visualRadius(node),
+        color: ringColor(node.record),
+        startedAt: now,
+        duration: 1050,
+      });
+    });
+    if (state.shockwaves.length > 24) state.shockwaves = state.shockwaves.slice(-24);
   }
 
   function forceSimulationEquivalent(width, height) {
@@ -557,7 +774,7 @@
           var dx = b.x - a.x;
           var dy = b.y - a.y;
           var dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          var min = a.radius + b.radius + 4;
+          var min = visualRadius(a) + visualRadius(b) + 4;
           if (dist < min) {
             var push = (min - dist) / dist * 0.04;
             var px = dx * push;
@@ -574,9 +791,14 @@
       node.vy *= 0.88;
       node.x += node.vx;
       node.y += node.vy;
-      node.x = Math.max(node.radius + 8, Math.min(width - node.radius - 8, node.x));
-      node.y = Math.max(node.radius + 8, Math.min(height - node.radius - 8, node.y));
+      var boundsRadius = visualRadius(node);
+      node.x = Math.max(boundsRadius + 8, Math.min(width - boundsRadius - 8, node.x));
+      node.y = Math.max(boundsRadius + 8, Math.min(height - boundsRadius - 8, node.y));
     });
+  }
+
+  function visualRadius(node) {
+    return node.radius * (node.depth || 1);
   }
 
   function signal(record) {
@@ -623,16 +845,16 @@
 
   function drawBubbleOffscreen(node, dpr) {
     var record = node.record;
-    var r = Math.round(node.radius);
+    var r = Math.round(visualRadius(node));
     var img = imageCache.get(record.logoUrl);
-    var key = [r, state.metric, state.timeframe, displayValue(record), record.symbol, ringColor(record), img ? 1 : 0, dpr].join('|');
+    var key = [r, state.metric, state.timeframe, displayValue(record), record.symbol, record.sourceCount, ringColor(record), img ? 1 : 0, dpr].join('|');
     var cached = bubbleCanvasCache.get(record.id);
     if (cached && cached.key === key) {
       bubbleCanvasCache.delete(record.id);
       bubbleCanvasCache.set(record.id, cached);
       return cached.canvas;
     }
-    var pad = 5;
+    var pad = Math.ceil(Math.max(10, r * 0.26));
     var size = (r * 2) + (pad * 2);
     var canvas = document.createElement('canvas');
     canvas.width = size * dpr;
@@ -640,20 +862,50 @@
     var ctx = canvas.getContext('2d');
     ctx.scale(dpr, dpr);
     ctx.translate(r + pad, r + pad);
-    var fill = signal(record) == null ? '#141414' : (signal(record) >= 0 ? '#001b0e' : '#1a0005');
-    var light = signal(record) == null ? '#302618' : (signal(record) >= 0 ? '#004d20' : '#4d0010');
-    var grad = ctx.createRadialGradient(-r * 0.25, -r * 0.28, 1, 0, 0, r);
-    grad.addColorStop(0, light);
-    grad.addColorStop(0.72, fill);
-    grad.addColorStop(1, ringColor(record));
+    var rim = ringColor(record);
+    var positive = signal(record) == null || signal(record) >= 0;
+    var core = positive ? '#071e14' : '#210711';
+    var mid = positive ? '#0b4a27' : '#55111c';
+    var lit = positive ? '#77ff9a' : '#ff8a6d';
+    var grad = ctx.createRadialGradient(-r * 0.34, -r * 0.38, r * 0.04, 0, 0, r);
+    grad.addColorStop(0, lit);
+    grad.addColorStop(0.2, mid);
+    grad.addColorStop(0.64, core);
+    grad.addColorStop(0.88, '#050506');
+    grad.addColorStop(1, rim);
+    ctx.shadowColor = rim;
+    ctx.shadowBlur = Math.max(12, r * 0.34);
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.fillStyle = grad;
     ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.98, 0, Math.PI * 2);
+    ctx.clip();
+    var lower = ctx.createLinearGradient(0, -r * 0.18, 0, r);
+    lower.addColorStop(0, 'rgba(0,0,0,0)');
+    lower.addColorStop(0.45, 'rgba(0,0,0,.20)');
+    lower.addColorStop(1, 'rgba(0,0,0,.76)');
+    ctx.fillStyle = lower;
+    ctx.fillRect(-r, -r, r * 2, r * 2);
+    drawPlanetBands(ctx, record, r, 0);
+    drawPlanetNoise(ctx, record, r);
+    ctx.restore();
+    var rimGrad = ctx.createRadialGradient(r * 0.35, r * 0.35, r * 0.35, 0, 0, r);
+    rimGrad.addColorStop(0, 'rgba(255,255,255,0)');
+    rimGrad.addColorStop(0.72, 'rgba(255,255,255,0)');
+    rimGrad.addColorStop(0.93, hexToRgba(rim, 0.34));
+    rimGrad.addColorStop(1, hexToRgba(rim, 0.9));
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fillStyle = rimGrad;
+    ctx.fill();
     ctx.lineWidth = Math.max(1, r * 0.045);
-    ctx.strokeStyle = ringColor(record);
-    ctx.shadowColor = ringColor(record);
-    ctx.shadowBlur = Math.max(8, r * 0.25);
+    ctx.strokeStyle = rim;
+    ctx.shadowColor = rim;
+    ctx.shadowBlur = Math.max(8, r * 0.2);
     ctx.stroke();
     ctx.shadowBlur = 0;
     ctx.save();
@@ -677,26 +929,175 @@
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = '#fff';
+      ctx.lineWidth = Math.max(2, symSize * 0.18);
+      ctx.strokeStyle = 'rgba(0,0,0,.72)';
+      ctx.shadowColor = 'rgba(0,0,0,.9)';
+      ctx.shadowBlur = Math.max(4, r * 0.08);
+      ctx.strokeText(record.symbol, 0, img ? r * 0.05 : -r * 0.02);
       ctx.fillText(record.symbol, 0, img ? r * 0.05 : -r * 0.02);
       if (r > 36) {
-        ctx.font = '700 ' + Math.max(8, Math.min(15, r * 0.16)) + 'px Inter, Arial, sans-serif';
-        ctx.fillStyle = ringColor(record);
+        var valueSize = Math.max(8, Math.min(15, r * 0.16));
+        ctx.font = '700 ' + valueSize + 'px Inter, Arial, sans-serif';
+        ctx.lineWidth = Math.max(2, valueSize * 0.16);
+        ctx.fillStyle = rim;
+        ctx.strokeText(displayValue(record).slice(0, 18), 0, r * 0.34);
         ctx.fillText(displayValue(record).slice(0, 18), 0, r * 0.34);
       }
       if (r > 50) {
-        ctx.font = '600 ' + Math.max(7, Math.min(12, r * 0.12)) + 'px Inter, Arial, sans-serif';
+        var sourceSize = Math.max(7, Math.min(12, r * 0.12));
+        ctx.font = '600 ' + sourceSize + 'px Inter, Arial, sans-serif';
+        ctx.lineWidth = Math.max(2, sourceSize * 0.16);
         ctx.fillStyle = 'rgba(255,255,255,.72)';
-        ctx.fillText('#' + node.rank + ' ' + record.sourceCount + ' src', 0, r * 0.56);
+        ctx.strokeText(record.sourceCount + ' src', 0, r * 0.56);
+        ctx.fillText(record.sourceCount + ' src', 0, r * 0.56);
       }
+      ctx.shadowBlur = 0;
     }
     ctx.restore();
     ctx.beginPath();
     ctx.ellipse(-r * 0.22, -r * 0.34, r * 0.34, r * 0.13, -0.45, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(255,255,255,.30)';
     ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.34, -r * 0.42, r * 0.18, r * 0.07, -0.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,.56)';
+    ctx.fill();
     bubbleCanvasCache.set(record.id, { key: key, canvas: canvas });
     capMap(bubbleCanvasCache, BUBBLE_CANVAS_CACHE_LIMIT);
     return canvas;
+  }
+
+  function hashText(value) {
+    var hash = 0;
+    String(value || '').split('').forEach(function (ch) {
+      hash = ((hash << 5) - hash) + ch.charCodeAt(0);
+      hash |= 0;
+    });
+    return Math.abs(hash);
+  }
+
+  function hexToRgba(hex, alpha) {
+    var value = String(hex || '#f89422').replace('#', '');
+    if (value.length === 3) value = value.split('').map(function (ch) { return ch + ch; }).join('');
+    var n = parseInt(value, 16);
+    if (!Number.isFinite(n)) return 'rgba(248,148,34,' + alpha + ')';
+    return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + alpha + ')';
+  }
+
+  function drawPlanetBands(ctx, record, r, phase) {
+    var seed = hashText(record.key || record.symbol);
+    ctx.globalCompositeOperation = 'screen';
+    for (var i = 0; i < 5; i += 1) {
+      var y = -r * 0.52 + (i * r * 0.24) + (((seed + i * 17) % 9) - 4);
+      var offset = Math.sin(phase + i + seed * 0.001) * r * 0.08;
+      ctx.beginPath();
+      ctx.ellipse(offset, y, r * (0.78 - i * 0.035), Math.max(1.5, r * (0.035 + ((seed + i) % 4) * 0.01)), 0.08, 0, Math.PI * 2);
+      ctx.fillStyle = i % 2 ? 'rgba(255,255,255,.07)' : hexToRgba(ringColor(record), 0.12);
+      ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  function drawPlanetNoise(ctx, record, r) {
+    var seed = hashText(record.key || record.symbol);
+    ctx.fillStyle = 'rgba(255,255,255,.08)';
+    for (var i = 0; i < 14; i += 1) {
+      var angle = ((seed + i * 71) % 360) * Math.PI / 180;
+      var dist = r * (0.18 + ((seed + i * 31) % 62) / 100);
+      var x = Math.cos(angle) * dist;
+      var y = Math.sin(angle) * dist;
+      if ((x * x) + (y * y) > r * r * 0.72) continue;
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(0.8, r * (0.008 + ((seed + i) % 4) * 0.003)), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function drawAnimatedBands(ctx, node, now) {
+    if (!shouldAnimate() || node.radius < 28) return;
+    var r = visualRadius(node);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, r * 0.96, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.translate(node.x, node.y);
+    ctx.globalAlpha = 0.28;
+    drawPlanetBands(ctx, node.record, r, now / 1800);
+    ctx.restore();
+  }
+
+  function drawCastShadow(ctx, node) {
+    var r = visualRadius(node);
+    ctx.save();
+    ctx.globalAlpha = 0.34 * Math.min(1.25, node.depth || 1);
+    ctx.fillStyle = '#000';
+    ctx.filter = 'blur(' + Math.max(5, r * 0.12).toFixed(1) + 'px)';
+    ctx.beginPath();
+    ctx.ellipse(node.x + r * 0.2, node.y + r * 0.72, r * 0.76, r * 0.18, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawShockwaves(ctx, now) {
+    if (!state.shockwaves.length) return;
+    state.shockwaves = state.shockwaves.filter(function (wave) {
+      var t = (now - wave.startedAt) / wave.duration;
+      if (t >= 1) return false;
+      ctx.save();
+      ctx.globalAlpha = (1 - t) * 0.72;
+      ctx.strokeStyle = wave.color;
+      ctx.lineWidth = Math.max(1, wave.radius * 0.05 * (1 - t));
+      ctx.shadowColor = wave.color;
+      ctx.shadowBlur = 18 * (1 - t);
+      ctx.beginPath();
+      ctx.arc(wave.x, wave.y, wave.radius * (1.08 + t * 1.35), 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(wave.x, wave.y, wave.radius * (1.36 + t * 1.8), 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+      return true;
+    });
+  }
+
+  function updateCamera(width, height, now) {
+    var camera = state.camera;
+    if (!shouldAnimate()) {
+      camera.offsetX += (0 - camera.offsetX) * 0.08;
+      camera.offsetY += (0 - camera.offsetY) * 0.08;
+      camera.scale += (1 - camera.scale) * 0.08;
+      return;
+    }
+    var targetX = Math.sin(now / 11000) * 18;
+    var targetY = Math.cos(now / 13000) * 12;
+    var targetScale = 1 + Math.sin(now / 17000) * 0.018;
+    if (now < camera.focusUntil) {
+      targetX = (width / 2) - camera.focusX;
+      targetY = (height / 2) - camera.focusY;
+      targetScale = 1.08;
+    }
+    camera.offsetX += (targetX - camera.offsetX) * 0.015;
+    camera.offsetY += (targetY - camera.offsetY) * 0.015;
+    camera.scale += (targetScale - camera.scale) * 0.012;
+  }
+
+  function applyCamera(ctx, width, height) {
+    var camera = state.camera;
+    ctx.translate(width / 2, height / 2);
+    ctx.scale(camera.scale, camera.scale);
+    ctx.translate(-width / 2 + camera.offsetX, -height / 2 + camera.offsetY);
+  }
+
+  function screenToWorld(point) {
+    if (!state.canvas) return point;
+    var rect = state.canvas.getBoundingClientRect();
+    var width = Math.max(320, rect.width);
+    var height = Math.max(320, rect.height);
+    var camera = state.camera;
+    return {
+      x: ((point.x - width / 2) / camera.scale) + width / 2 - camera.offsetX,
+      y: ((point.y - height / 2) / camera.scale) + height / 2 - camera.offsetY,
+    };
   }
 
   function draw() {
@@ -718,8 +1119,16 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     forceSimulationEquivalent(width, height);
+    var now = performance.now();
+    updateCamera(width, height, now);
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, width, height);
+    var weather = marketWeather();
+    var sky = ctx.createRadialGradient(width * 0.5, height * 0.35, 10, width * 0.5, height * 0.5, Math.max(width, height));
+    sky.addColorStop(0, weather.center);
+    sky.addColorStop(1, '#000');
+    ctx.fillStyle = sky;
     ctx.fillRect(0, 0, width, height);
     var grid = 64;
     ctx.strokeStyle = 'rgba(255,255,255,.035)';
@@ -730,23 +1139,61 @@
     for (var gy = 0; gy < height; gy += grid) {
       ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(width, gy); ctx.stroke();
     }
-    state.nodes.forEach(function (node) {
-      var alpha = state.query && !node.match ? 0.16 : 1;
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      var bubble = drawBubbleOffscreen(node, dpr);
-      var r = Math.round(node.radius);
-      ctx.drawImage(bubble, node.x - r - 5, node.y - r - 5, r * 2 + 10, r * 2 + 10);
-      if (state.hovered === node) {
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, r + 5, 0, Math.PI * 2);
-        ctx.strokeStyle = '#f89422';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-      ctx.restore();
+    ctx.save();
+    applyCamera(ctx, width, height);
+    state.nodes.forEach(function (node) { drawCastShadow(ctx, node); });
+    drawShockwaves(ctx, now);
+    state.nodes.slice().sort(function (a, b) { return (a.depth || 1) - (b.depth || 1); }).forEach(function (node) {
+      drawGalaxyNode(ctx, node, dpr, now);
     });
+    ctx.restore();
     if (shouldAnimate()) state.raf = window.requestAnimationFrame(draw);
+  }
+
+  function marketWeather() {
+    var records = state.visible || [];
+    var scored = records.filter(function (record) { return asNum(record.change24) != null; });
+    var avg = scored.length
+      ? scored.reduce(function (sum, record) { return sum + asNum(record.change24); }, 0) / scored.length
+      : 0;
+    if (avg > 2) return { center: 'rgba(0,80,32,.28)' };
+    if (avg < -2) return { center: 'rgba(90,0,20,.30)' };
+    return { center: 'rgba(248,148,34,.12)' };
+  }
+
+  function drawGalaxyNode(ctx, node, dpr, now) {
+    var alpha = state.query && !node.match ? 0.16 : 1;
+    var record = node.record;
+    var r = Math.round(visualRadius(node));
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    var recent = record.recentUntil && now < record.recentUntil;
+    var pulse = record.pulseUntil && now < record.pulseUntil ? (record.pulseUntil - now) / 1600 : 0;
+    var volumePulse = record.volumeSpikeUntil && now < record.volumeSpikeUntil ? (record.volumeSpikeUntil - now) / 2600 : 0;
+    if (recent || pulse || volumePulse) {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, r + 7 + volumePulse * 9, 0, Math.PI * 2);
+      ctx.strokeStyle = ringColor(record);
+      ctx.globalAlpha = alpha * Math.max(0.25, pulse || volumePulse || 0.22);
+      ctx.lineWidth = Math.max(1, r * (0.03 + volumePulse * 0.04));
+      ctx.shadowColor = ringColor(record);
+      ctx.shadowBlur = 18 + volumePulse * 18;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = alpha;
+    }
+    var bubble = drawBubbleOffscreen(node, dpr);
+    var pad = Math.ceil(Math.max(10, r * 0.26));
+    ctx.drawImage(bubble, node.x - r - pad, node.y - r - pad, r * 2 + pad * 2, r * 2 + pad * 2);
+    drawAnimatedBands(ctx, node, now);
+    if (state.hovered === node) {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, r + 5, 0, Math.PI * 2);
+      ctx.strokeStyle = '#f89422';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 
   function requestDraw() {
@@ -755,7 +1202,7 @@
 
   function canvasPoint(event) {
     var rect = state.canvas.getBoundingClientRect();
-    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    return screenToWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top });
   }
 
   function findNodeAt(point) {
@@ -763,7 +1210,8 @@
       var node = state.nodes[i];
       var dx = point.x - node.x;
       var dy = point.y - node.y;
-      if ((dx * dx) + (dy * dy) <= node.radius * node.radius) return node;
+      var r = visualRadius(node);
+      if ((dx * dx) + (dy * dy) <= r * r) return node;
     }
     return null;
   }
@@ -816,7 +1264,7 @@
     state.dragging = null;
     if (!node) return;
     var moved = Math.hypot(node.x - node.startX, node.y - node.startY);
-    if (moved < 8 && Date.now() - node.startedAt < 500) openTokenModal(node.record, state.canvas);
+    if (moved < 8 && Date.now() - node.startedAt < 500) openTokenAnalytics(node.record);
     try { state.canvas.releasePointerCapture(event.pointerId); } catch (_) {}
   }
 
@@ -825,7 +1273,16 @@
     var node = state.hovered || state.nodes[0];
     if (!node) return;
     event.preventDefault();
-    openTokenModal(node.record, state.canvas);
+    openTokenAnalytics(node.record);
+  }
+
+  function tokenAnalyticsUrl(record) {
+    return '/analytics/token/?token=' + encodeURIComponent(record.symbol) + '&contract=' + encodeURIComponent(record.contract);
+  }
+
+  function openTokenAnalytics(record) {
+    if (!record) return;
+    window.location.href = tokenAnalyticsUrl(record);
   }
 
   function apiJson(path) {
@@ -836,7 +1293,7 @@
   }
 
   function liveSnapshotUrl() {
-    return state.live.cursor
+    return state.live.cursor && state.live.cursorFromBackend
       ? LIVE_API + '?cursor=' + encodeURIComponent(state.live.cursor)
       : LIVE_API;
   }
@@ -896,7 +1353,6 @@
 
   function startLiveUpdates() {
     var live = state.health && state.health.live_updates ? state.health.live_updates : {};
-    state.live.cursor = state.lastUpdated || null;
     if (live.transport === 'sse' && live.stream_endpoint) {
       startLiveEventSource(live.stream_endpoint || LIVE_STREAM_API);
       return;
@@ -910,13 +1366,23 @@
     var updated = document.getElementById('woe-ab-last-updated');
     if (dot) dot.className = 'woe-ab-live-dot ' + (state.connected ? 'is-live' : 'is-waiting');
     if (text) text.textContent = state.connected ? 'LIVE' : 'CONNECTING';
-    if (updated) updated.textContent = state.lastUpdated ? new Date(state.lastUpdated).toLocaleTimeString() : 'Waiting for sync';
+    if (updated) updated.textContent = safeTimeLabel(state.lastUpdated) || 'Waiting for sync';
+  }
+
+  function safeTimeLabel(value) {
+    if (!isValidIsoTimestamp(value)) return '';
+    var date = new Date(value);
+    return date.toLocaleTimeString();
   }
 
   function updateStats() {
     var bar = document.getElementById('woe-ab-stats');
     if (!bar) return;
     var records = state.visible || [];
+    var metricCount = records.filter(function (r) { return valueForMetric(r, state.metric, state.timeframe) != null; }).length;
+    var tokenLabel = metricCount < records.length
+      ? records.length + ' tokens / ' + metricCount + ' with ' + METRIC_LABELS[state.metric] + ' data'
+      : records.length + ' tokens';
     var gainers = records.filter(function (r) { return asNum(r.change24) > 0; }).length;
     var losers = records.filter(function (r) { return asNum(r.change24) < 0; }).length;
     var volume = records.reduce(function (sum, r) { return sum + (r.volume24Usd || r.volume24Wax || 0); }, 0);
@@ -924,10 +1390,12 @@
     var topLoser = records.reduce(function (best, r) { return !best || (r.change24 || Infinity) < (best.change24 || Infinity) ? r : best; }, null);
     var sources = {};
     records.forEach(function (r) { r.sources.forEach(function (s) { sources[s] = true; }); });
-    var candleStatus = state.health && state.health.candle_backfill
+    var candleStatus = state.timeframe !== '24h'
+      ? TIMEFRAME_LABELS[state.timeframe] + ' history building from fresh live data'
+      : state.health && state.health.candle_backfill
       ? (state.health.candle_backfill.latest_1d_candle_count || 0) + ' 1D candles'
       : 'candles pending';
-    bar.innerHTML = '<span>' + escHtml(String(records.length)) + ' tokens</span>' +
+    bar.innerHTML = '<span>' + escHtml(tokenLabel) + '</span>' +
       '<span class="woe-ab-up">▲ ' + escHtml(String(gainers)) + '</span>' +
       '<span class="woe-ab-down">▼ ' + escHtml(String(losers)) + '</span>' +
       '<span>Vol 24h <strong>' + escHtml(fmtNum(volume)) + '</strong></span>' +
@@ -935,136 +1403,8 @@
       '<span>Bot <strong class="woe-ab-down">' + escHtml(topLoser ? topLoser.symbol + ' ' + fmtPct(topLoser.change24) : 'Unavailable') + '</strong></span>' +
       '<span>Sources <strong>' + escHtml(String(Object.keys(sources).length)) + '</strong></span>' +
       '<span>' + escHtml(candleStatus) + '</span>' +
+      '<span>All-pairs WAX valuation model</span>' +
       '<span class="woe-ab-credit">Powered by WaxOnEdge multi-DEX indexer</span>';
-  }
-
-  function stat(label, value) {
-    return '<div><span>' + escHtml(label) + '</span><strong>' + escHtml(formatStatValue(value)) + '</strong></div>';
-  }
-
-  function formatStatValue(value) {
-    if (value == null || value === '') return 'Unavailable';
-    if (Array.isArray(value)) return value.filter(Boolean).join(', ') || 'Unavailable';
-    if (typeof value === 'object') {
-      return Object.keys(value).filter(function (key) { return value[key] != null && value[key] !== ''; })
-        .map(function (key) { return key.replace(/_/g, ' ') + ': ' + value[key]; })
-        .join(', ') || 'Unavailable';
-    }
-    return String(value);
-  }
-
-  function modalShell(record, body) {
-    if (!state.modal) return;
-    state.modal.hidden = false;
-    state.modal.innerHTML = '<div class="woe-ab-modal-backdrop" data-close-modal="true"></div>' +
-      '<section class="woe-ab-modal-panel" role="dialog" aria-modal="true" aria-label="' + escHtml(record.symbol) + ' token detail">' +
-        '<button class="woe-ab-modal-close" type="button" data-close-modal="true" aria-label="Close">×</button>' +
-        body +
-      '</section>';
-    window.setTimeout(function () {
-      if (!state.modal || state.modal.hidden || state.modal.contains(document.activeElement)) return;
-      var closeButton = state.modal.querySelector('.woe-ab-modal-close');
-      var heading = state.modal.querySelector('h2');
-      if (closeButton && closeButton.focus) closeButton.focus();
-      else if (heading && heading.focus) heading.focus();
-    }, 0);
-  }
-
-  function chartHtml(record, chart) {
-    var candles = chart && Array.isArray(chart.candles) ? chart.candles : [];
-    if (!candles.length) {
-      return '<div class="woe-ab-chart-empty">Trade history/candles not indexed yet. No fake candles are shown.</div>';
-    }
-    var points = candles.slice(-60).map(function (candle) {
-      return asNum(candle.close);
-    }).filter(function (n) { return n != null; });
-    if (points.length < 2) return '<div class="woe-ab-chart-empty">Stored candles are present but not enough to draw a chart.</div>';
-    var min = Math.min.apply(Math, points);
-    var max = Math.max.apply(Math, points);
-    var span = max - min || 1;
-    var d = points.map(function (price, index) {
-      var x = (index / Math.max(1, points.length - 1)) * 100;
-      var y = 92 - ((price - min) / span) * 76;
-      return (index ? 'L' : 'M') + x.toFixed(2) + ' ' + y.toFixed(2);
-    }).join(' ');
-    return '<svg class="woe-ab-chart-svg" viewBox="0 0 100 100" role="img" aria-label="Stored WaxOnEdge candle close chart">' +
-      '<path d="' + escHtml(d) + '" fill="none" stroke="' + escHtml(signal(record) == null || signal(record) >= 0 ? '#00cc66' : '#ff284f') + '" stroke-width="2" vector-effect="non-scaling-stroke"/>' +
-      '</svg>';
-  }
-
-  function renderModal(record) {
-    var detail = state.detailCache[record.key];
-    var chart = state.chartCache[record.key];
-    var stats = detail && detail.stats ? detail.stats : {};
-    var detailSources = detail && detail.source_coverage ? detail.source_coverage : null;
-    var unavailable = stats.unavailable_reasons || record.unavailableReasons || '';
-    var pairs = detail && Array.isArray(detail.pairs) ? detail.pairs : [];
-    var pairRows = pairs.slice(0, 8).map(function (pair) {
-      return '<tr><td>' + escHtml(sourceLabel(pair.source)) + '</td><td>' + escHtml(pairLabel(pair)) + '</td><td>' + escHtml(fmtNum(pair.liquidity_wax || pair.liquidity_usd)) + '</td></tr>';
-    }).join('');
-    modalShell(record,
-      '<header class="woe-ab-modal-head">' +
-        '<div class="woe-ab-token-avatar">' + escHtml(record.symbol.slice(0, 3)) + '</div>' +
-        '<div><h2>' + escHtml(record.symbol) + '</h2><p>' + escHtml(record.contract) + '</p></div>' +
-      '</header>' +
-      '<div class="woe-ab-modal-grid">' +
-        '<section class="woe-ab-modal-stats">' +
-          stat('Current price', record.selectedPriceUsd != null ? '$' + fmtPrice(record.selectedPriceUsd) : (record.selectedPriceWax != null ? fmtPrice(record.selectedPriceWax) + ' WAX' : 'Unavailable')) +
-          stat('24h change', fmtPct(record.change24)) +
-          stat('24h volume', record.volume24Usd != null ? '$' + fmtNum(record.volume24Usd) : (record.volume24Wax != null ? fmtNum(record.volume24Wax) + ' WAX' : 'Unavailable')) +
-          stat('Indexed liquidity', record.liquidityUsd != null ? '$' + fmtNum(record.liquidityUsd) : (record.liquidityWax != null ? fmtNum(record.liquidityWax) + ' WAX' : 'Unavailable')) +
-          stat('Source count', String(record.sourceCount || 0)) +
-          stat('Indexed pair count', String(record.indexedPairCount || 0)) +
-          stat('Strongest pair', record.strongestPairLabel) +
-          stat('Selected source', record.selectedSource || 'Unavailable') +
-          stat('Market cap', record.marketCapUsd != null ? '$' + fmtNum(record.marketCapUsd) : (record.marketCapWax != null ? fmtNum(record.marketCapWax) + ' WAX' : 'Unavailable')) +
-          stat('Supply', record.supply || 'Unavailable') +
-        '</section>' +
-        '<section class="woe-ab-modal-chart">' + chartHtml(record, chart) + '</section>' +
-      '</div>' +
-      '<div class="woe-ab-source-row">' + record.sources.map(function (s) { return '<span>' + escHtml(sourceLabel(s)) + '</span>'; }).join('') + '</div>' +
-      '<div class="woe-ab-modal-note">' + escHtml(unavailable || (detailSources ? 'Multi-DEX aggregate loaded from WaxOnEdge backend.' : 'Loading backend detail/debug data.')) + '</div>' +
-      '<table class="woe-ab-pair-table"><tbody>' + (pairRows || '<tr><td colspan="3">Pair/source list unavailable in modal. Open analytics for full proof rows.</td></tr>') + '</tbody></table>' +
-      '<a class="woe-ab-open-analytics" href="/analytics/token/?token=' + encodeURIComponent(record.symbol) + '&contract=' + encodeURIComponent(record.contract) + '">Open fullscreen analytics</a>');
-  }
-
-  function onModalKeydown(event) {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      closeModal();
-    }
-  }
-
-  function openTokenModal(record, opener) {
-    state.lastFocusedBeforeModal = opener || document.activeElement || state.canvas;
-    state.selected = record;
-    if (!state.modalKeydownHandler) {
-      state.modalKeydownHandler = onModalKeydown;
-      document.addEventListener('keydown', state.modalKeydownHandler);
-    }
-    renderModal(record);
-    var detailPath = '/api/waxonedge/token/' + encodeURIComponent(record.contract) + '/' + encodeURIComponent(record.symbol) + '/debug';
-    var chartPath = '/api/waxonedge/token/' + encodeURIComponent(record.contract) + '/' + encodeURIComponent(record.symbol) + '/chart';
-    Promise.all([
-      state.detailCache[record.key] ? Promise.resolve(null) : apiJson(detailPath).then(function (payload) { state.detailCache[record.key] = payloadData(payload); }).catch(function () {}),
-      state.chartCache[record.key] ? Promise.resolve(null) : apiJson(chartPath).then(function (payload) { state.chartCache[record.key] = payloadData(payload); }).catch(function () {}),
-    ]).then(function () {
-      if (state.selected && state.selected.key === record.key) renderModal(record);
-    });
-  }
-
-  function closeModal() {
-    state.selected = null;
-    if (state.modal) state.modal.hidden = true;
-    if (state.modalKeydownHandler) {
-      document.removeEventListener('keydown', state.modalKeydownHandler);
-      state.modalKeydownHandler = null;
-    }
-    var focusTarget = state.lastFocusedBeforeModal && document.contains(state.lastFocusedBeforeModal)
-      ? state.lastFocusedBeforeModal
-      : state.canvas;
-    state.lastFocusedBeforeModal = null;
-    if (focusTarget && focusTarget.focus) focusTarget.focus();
   }
 
   function attachControls() {
@@ -1109,22 +1449,17 @@
   function initCanvas() {
     state.board = document.getElementById('woe-bubble-board');
     if (!state.board) return;
-    state.board.innerHTML = '<canvas id="woe-ab-canvas" class="woe-ab-canvas" tabindex="0" role="application" aria-label="WaxOnEdge multi-DEX bubble scanner. Use Enter to open the highlighted token and Escape to close token details."></canvas>' +
+    state.board.innerHTML = '<canvas id="woe-ab-canvas" class="woe-ab-canvas" tabindex="0" role="application" aria-label="WaxOnEdge WAX Galaxy scanner. Use Enter or Space to open the highlighted token analytics page."></canvas>' +
       '<div id="woe-ab-tooltip" class="woe-ab-tooltip" hidden></div>';
     state.canvas = document.getElementById('woe-ab-canvas');
     state.ctx = state.canvas.getContext('2d');
     state.tooltip = document.getElementById('woe-ab-tooltip');
-    state.modal = document.getElementById('woe-ab-modal');
     state.canvas.addEventListener('pointermove', onPointerMove);
     state.canvas.addEventListener('pointerdown', onPointerDown);
     state.canvas.addEventListener('pointerup', onPointerUp);
     state.canvas.addEventListener('keydown', onCanvasKeydown);
     state.canvas.addEventListener('pointerleave', function () { state.hovered = null; moveTooltip(null); });
-    if (state.modal) {
-      state.modal.addEventListener('click', function (event) {
-        if (event.target && event.target.getAttribute && event.target.getAttribute('data-close-modal') === 'true') closeModal();
-      });
-    }
+    renderLiveFeed();
     window.addEventListener('resize', function () { window.clearTimeout(state.resizeTimer); state.resizeTimer = window.setTimeout(syncNodes, 120); });
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) requestDraw();
@@ -1154,7 +1489,13 @@
       state.records = normalizeRecords(state.payload);
       state.pairs = sourceRows(payloadData(state.payload).pairs);
       state.connected = true;
-      state.lastUpdated = payloadData(state.payload).updated_at || new Date().toISOString();
+      var loadedData = payloadData(state.payload);
+      setBackendLiveCursor(loadedData.next_cursor);
+      state.lastUpdated =
+        (isValidIsoTimestamp(loadedData.updated_at) ? loadedData.updated_at : null) ||
+        (isValidIsoTimestamp(loadedData.generated_at) ? loadedData.generated_at : null) ||
+        new Date().toISOString();
+      advanceLiveDisplayTimestamp(state.lastUpdated);
       updateWaxPrice(state.payload);
       syncNodes();
       setStatus();
