@@ -195,12 +195,16 @@ ok('waxonedge-bubbles-v2.js keeps metric availability honest with selected-metri
   !v2Js.includes('record.volume24Usd || record.volume24Wax || record.liquidityUsd || record.liquidityWax || record.indexedPairCount') &&
   !v2Js.includes('record.fdvUsd || record.marketCapWax') &&
   !v2Js.includes(" + ' FDV'"));
-ok('waxonedge-bubbles-v2.js reduces max bubble radius for dense Top 100 scanner layout',
-  v2Js.includes('var cellLimit = Math.max(18, cellSize * (mobile ? 0.36 : 0.38))') &&
-  v2Js.includes('return Math.round(Math.min(cellLimit') &&
+ok('waxonedge-bubbles-v2.js uses organic page-wide WAX Galaxy layout instead of rows or columns',
+  v2Js.includes('function seededUnit(seed)') &&
+  v2Js.includes('var golden = Math.PI * (3 - Math.sqrt(5))') &&
+  v2Js.includes('var ring = Math.sqrt((index + 0.62) / Math.max(count, 1))') &&
   v2Js.includes('function layoutPosition(index, count, width, height, radius)') &&
   v2Js.includes('node.homeX = position.x') &&
   v2Js.includes('node.homeY = position.y') &&
+  !v2Js.includes('var cols = Math.max') &&
+  !v2Js.includes('var cellLimit =') &&
+  !v2Js.includes('for (var gx = 0; gx < width; gx += grid)') &&
   !v2Js.includes('mobile ? 72 : 132'));
 ok('waxonedge-bubbles-v2.js removes structured modal stats and object string leaks',
   !v2Js.includes('function formatStatValue') &&
@@ -541,6 +545,13 @@ ok('waxonedge-bubbles-v2.css includes live feed and tooltip styling without moda
   v2Css.includes('.woe-ab-chart-empty') &&
   !v2Css.includes('.woe-ab-modal-panel') &&
   !v2Css.includes('.woe-ab-open-analytics'));
+ok('waxonedge-bubbles-v2.css renders a page-wide transparent galaxy instead of a boxed board',
+  v2Css.includes('.woe-antbubbles-page::before') &&
+  /\.woe-ab-board-section\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?inset:\s*0;[\s\S]*?background:\s*transparent;/.test(v2Css) &&
+  /\.woe-antbubbles-page \.woe-bubble-board,\s*\n\.woe-ab-canvas\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?width:\s*100vw;[\s\S]*?height:\s*100vh;/.test(v2Css) &&
+  v2Css.includes('@keyframes woe-ab-ticker') &&
+  !v2Css.includes('right: 14px;\n  bottom: 48px') &&
+  !v2Css.includes('display: grid;\n  gap: 7px'));
 ok('waxonedge-bubbles-v2.css includes responsive scanner support',
   v2Css.includes('@media (max-width: 920px)') && v2Css.includes('@media (max-width: 620px)'));
 ok('waxonedge-bubbles-v2.css includes focus-visible and reduced-motion scanner support',
