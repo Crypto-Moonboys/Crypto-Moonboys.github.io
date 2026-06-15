@@ -262,8 +262,16 @@ function saveObservedHistory(state) {
     requires_ship_for_deep_history: true,
     trades: state.history.trades.slice(-MAX_PERSISTED_TRADE_HISTORY),
   };
-  fs.mkdirSync(dirname(historyPath), { recursive: true });
-  fs.writeFileSync(historyPath, `${JSON.stringify(payload)}\n`);
+  const tmpPath = `${historyPath}.tmp`;
+  try {
+    fs.mkdirSync(dirname(historyPath), { recursive: true });
+    fs.writeFileSync(tmpPath, `${JSON.stringify(payload)}\n`);
+    fs.renameSync(tmpPath, historyPath);
+    state.history.last_error = null;
+  } catch (error) {
+    state.history.last_error = `history save failed: ${error?.message || 'unknown error'}`;
+    state.last_error = state.history.last_error;
+  }
 }
 
 function historyElapsedMs(state) {
@@ -443,7 +451,9 @@ export function createState(config = loadConfig()) {
       : 'WAXONEDGE_HYPERION_API, WAXONEDGE_STATE_HISTORY_ENDPOINT, or WAXNODE_ENDPOINT required',
   };
   for (const trade of state.history.trades) {
-    if (rememberTradeId(state, trade.trade_id)) observeLiveTrade(state, trade, { persist: false, broadcast: false });
+    if (rememberTradeId(state, trade.trade_id)) {
+      observeLiveTrade(state, trade, { persist: false, broadcast: false, refresh: false });
+    }
   }
   refreshRollingHistory(state);
   return state;
@@ -760,6 +770,7 @@ function tokenUpdateFromTrade(trade) {
 export function observeLiveTrade(state, trade, options = {}) {
   const persist = options.persist !== false;
   const broadcast = options.broadcast !== false;
+  const refresh = options.refresh !== false;
   const update = tokenUpdateFromTrade(trade);
   if (!update) return null;
   const existing = state.tokenCache.get(update.token_key) || {};
@@ -816,7 +827,7 @@ export function observeLiveTrade(state, trade, options = {}) {
       saveObservedHistory(state);
     }
   }
-  refreshRollingHistory(state);
+  if (refresh) refreshRollingHistory(state);
   if (broadcast) sendTokenUpdate(state, state.tokenCache.get(update.token_key));
   return update;
 }

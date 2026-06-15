@@ -402,13 +402,18 @@ ok('VPS live indexer /stream contract supports heartbeat and real token update e
   liveIndexerSource.includes('event: token_update') &&
   liveIndexerSource.includes('function writeSseTokenUpdate') &&
   !liveIndexerSource.includes('Math.random'));
-  ok('VPS live indexer exposes fresh-start rolling history without claiming backfill',
+ok('VPS live indexer exposes fresh-start rolling history without claiming backfill',
   liveIndexerSource.includes("pathname === '/history'") &&
   liveIndexerSource.includes("history_mode: FRESH_HISTORY_MODE") &&
   liveIndexerSource.includes('history_complete: false') &&
   liveIndexerSource.includes('history_backfilled: false') &&
   liveIndexerSource.includes("deep_history_status: 'requires_ship_state_history'") &&
   liveIndexerSource.includes('requires_ship_for_deep_history: true') &&
+  liveIndexerSource.includes('const refresh = options.refresh !== false') &&
+  liveIndexerSource.includes('if (refresh) refreshRollingHistory(state)') &&
+  liveIndexerSource.includes('refresh: false') &&
+  liveIndexerSource.includes('fs.writeFileSync(tmpPath') &&
+  liveIndexerSource.includes('fs.renameSync(tmpPath, historyPath)') &&
   !liveIndexerSource.includes('reserve-derived candles'));
 ok('VPS live indexer exposes no fake live events or random movement',
   liveIndexerSource.includes('uses_fake_live_data: false') &&
@@ -675,6 +680,24 @@ ok('VPS live indexer exposes no fake live events or random movement',
       restartedSnapshot.tokens[0].fresh_history_trade_count === 1 &&
       restartedSnapshot.tokens[0].fresh_history_volume_7d_complete === false &&
       restartedSnapshot.tokens[0].fresh_history_volume_30d_complete === false);
+  }
+  {
+    const failingConfig = liveIndexer.loadConfig({
+      WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+      WAXONEDGE_LIVE_HISTORY_PATH: 'bad\u0000path',
+    });
+    const failingState = liveIndexer.createState(failingConfig);
+    let threw = false;
+    try {
+      liveIndexer.observeLiveTrade(failingState, { ...alcorTrade, trade_id: `${alcorTrade.trade_id}:save-failure` });
+    } catch (_) {
+      threw = true;
+    }
+    ok('VPS live indexer records history save failures without crashing ingestion',
+      threw === false &&
+      /history save failed:/.test(failingState.history.last_error || '') &&
+      failingState.last_error === failingState.history.last_error &&
+      failingState.history.trades.length === 1);
   }
 }
 {
