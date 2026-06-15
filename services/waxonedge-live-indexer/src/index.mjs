@@ -1005,7 +1005,7 @@ export async function ingestVerifiedTradeStreams(state, fetchImpl = globalThis.f
       const rows = sourceRows(payload);
       for (const row of rows.reverse()) {
         const trade = normalizeLiveTradeRow(row, stream);
-        if (!trade || !rememberTradeId(state, trade.trade_id)) continue;
+        if (!trade || state.persistedTradeIdSet.has(trade.trade_id) || !rememberTradeId(state, trade.trade_id)) continue;
         const update = observeLiveTrade(state, trade, {
           persist: true,
           save: false,

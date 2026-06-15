@@ -888,6 +888,90 @@ ok('VPS live indexer exposes no fake live events or random movement',
       rmSync(`${serializedPath}.tmp`, { force: true });
     }
   }
+  {
+    const duplicateState = liveIndexer.createState(liveIndexer.loadConfig({
+      WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+      WAXONEDGE_LIVE_ENABLE_STREAM: 'true',
+    }));
+    liveIndexer.observeLiveTrade(duplicateState, alcorTrade, { save: false, refresh: false, broadcast: false });
+    duplicateState.seenTradeIds = [];
+    duplicateState.seenTradeIdSet.clear();
+    duplicateState.event_count = 0;
+    duplicateState.last_event_at = '2026-06-15T12:00:00.000Z';
+    duplicateState.stream_source = 'swap.alcor::logswap';
+    const sentEvents = [];
+    duplicateState.clients.add({
+      res: {
+        write(chunk) {
+          sentEvents.push(String(chunk));
+        },
+      },
+    });
+    const duplicateResult = await liveIndexer.ingestVerifiedTradeStreams(duplicateState, async () => new Response(JSON.stringify({
+      actions: [{
+        action: 'buymatch',
+        global_sequence: 101,
+        timestamp: '2026-06-15T10:00:00',
+        data: {
+          record: {
+            id: 7,
+            market_id: 314,
+            ask: '10.00000000 WAXCASH',
+            bid: '0.10000000 WAX',
+            unit_price: 1000000,
+            market: {
+              id: 314,
+              base_token: { contract: 'graffitiking', sym: '8,WAXCASH' },
+              quote_token: { contract: 'eosio.token', sym: '8,WAX' },
+            },
+          },
+        },
+      }],
+    }), { status: 200, headers: { 'content-type': 'application/json' } }));
+    const cachedDuplicateToken = duplicateState.tokenCache.get('graffitiking::WAXCASH');
+    ok('VPS live indexer skips retained persisted duplicate trades before side effects',
+      liveIndexerSource.includes('state.persistedTradeIdSet.has(trade.trade_id)') &&
+      liveIndexerSource.indexOf('state.persistedTradeIdSet.has(trade.trade_id)') <
+        liveIndexerSource.indexOf('!rememberTradeId(state, trade.trade_id)') &&
+      duplicateResult.observed === 0 &&
+      duplicateState.event_count === 0 &&
+      duplicateState.last_event_at === '2026-06-15T12:00:00.000Z' &&
+      duplicateState.stream_source === 'swap.alcor::logswap' &&
+      duplicateState.history.trades.length === 1 &&
+      duplicateState.persistedTradeIdSet.has(alcorTrade.trade_id) &&
+      cachedDuplicateToken?.last_trade_at === alcorTrade.traded_at &&
+      sentEvents.length === 0);
+  }
+  {
+    const maxHistoryMatch = liveIndexerSource.match(/const MAX_PERSISTED_TRADE_HISTORY = (\d+)/);
+    const maxPersistedHistory = Number.parseInt(maxHistoryMatch?.[1] || '0', 10);
+    const trimState = liveIndexer.createState(liveIndexer.loadConfig({
+      WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+    }));
+    trimState.history.trades.splice(0, trimState.history.trades.length);
+    trimState.persistedTradeIdSet.clear();
+    const trimBaseMs = Date.parse('2026-06-14T00:00:00.000Z');
+    for (let i = 0; i < maxPersistedHistory; i += 1) {
+      const trade = {
+        ...alcorTrade,
+        trade_id: `trim-retained-${i}`,
+        traded_at: new Date(trimBaseMs + i * 1000).toISOString(),
+      };
+      trimState.history.trades.push(trade);
+      trimState.persistedTradeIdSet.add(trade.trade_id);
+    }
+    liveIndexer.observeLiveTrade(trimState, {
+      ...alcorTrade,
+      trade_id: 'trim-retained-new',
+      traded_at: new Date(trimBaseMs + maxPersistedHistory * 1000).toISOString(),
+    }, { save: false, refresh: false, broadcast: false });
+    ok('VPS live indexer removes trimmed retained trade IDs from persisted dedupe set',
+      maxPersistedHistory > 0 &&
+      trimState.history.trades.length === maxPersistedHistory &&
+      !trimState.persistedTradeIdSet.has('trim-retained-0') &&
+      trimState.persistedTradeIdSet.has('trim-retained-new') &&
+      liveIndexerSource.includes('idSet.delete(trade.trade_id)'));
+  }
 }
 {
   const stream = liveIndexer.VERIFIED_TRADE_STREAMS.find((item) =>
