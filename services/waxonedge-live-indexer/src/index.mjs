@@ -482,8 +482,11 @@ function refreshRollingHistory(state) {
   }
 }
 
-function historyPayload(state) {
-  const rolling = state.rollingHistory || buildRollingHistory(state);
+export function historyPayload(state) {
+  if (!state.rollingHistory || state.rolling_history_dirty) {
+    refreshRollingHistory(state);
+  }
+  const rolling = state.rollingHistory;
   return {
     history_mode: FRESH_HISTORY_MODE,
     history_started_at: state.history.history_started_at,

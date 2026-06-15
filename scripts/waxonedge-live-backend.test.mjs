@@ -680,6 +680,52 @@ ok('VPS live indexer exposes no fake live events or random movement',
         wax.token_key === 'eosio.token::WAX' &&
         wax.symbol === 'WAX' &&
         wax.uses_fake_live_data === false);
+      const dirtyHealthState = liveIndexer.createState(liveIndexer.loadConfig({
+        WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+      }));
+      liveIndexer.observeLiveTrade(dirtyHealthState, {
+        ...alcorTrade,
+        trade_id: `${alcorTrade.trade_id}:dirty-health`,
+        traded_at: '2026-06-15T10:20:00.000Z',
+        price: 2,
+        volume: 3,
+      }, { save: false, refresh: false, broadcast: false });
+      const dirtyHealth = liveIndexer.healthPayload(dirtyHealthState);
+      const healthToken = dirtyHealthState.tokenCache.get('graffitiking::WAXCASH');
+      const dirtySnapshotState = liveIndexer.createState(liveIndexer.loadConfig({
+        WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+      }));
+      liveIndexer.observeLiveTrade(dirtySnapshotState, {
+        ...alcorTrade,
+        trade_id: `${alcorTrade.trade_id}:dirty-snapshot`,
+        traded_at: '2026-06-15T10:21:00.000Z',
+        price: 2,
+        volume: 3,
+      }, { save: false, refresh: false, broadcast: false });
+      const dirtySnapshot = liveIndexer.snapshotPayload(dirtySnapshotState);
+      const dirtyHistoryState = liveIndexer.createState(liveIndexer.loadConfig({
+        WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+      }));
+      liveIndexer.observeLiveTrade(dirtyHistoryState, {
+        ...alcorTrade,
+        trade_id: `${alcorTrade.trade_id}:dirty-history`,
+        traded_at: '2026-06-15T10:22:00.000Z',
+        price: 2,
+        volume: 3,
+      }, { save: false, refresh: false, broadcast: false });
+      const dirtyHistory = liveIndexer.historyPayload(dirtyHistoryState);
+      ok('VPS live indexer refreshes dirty rolling history on payload reads',
+        liveIndexerSource.includes('if (!state.rollingHistory || state.rolling_history_dirty)') &&
+        liveIndexerSource.includes('refreshRollingHistory(state)') &&
+        liveIndexerSource.includes('const rolling = state.rollingHistory') &&
+        dirtyHealth.history.rolling_token_count === 1 &&
+        dirtyHealthState.rolling_history_dirty === false &&
+        healthToken?.fresh_history_trade_count === 1 &&
+        dirtySnapshot.history.rolling_token_count === 1 &&
+        dirtySnapshotState.rolling_history_dirty === false &&
+        dirtySnapshot.tokens.find((token) => token.token_key === 'graffitiking::WAXCASH')?.fresh_history_trade_count === 1 &&
+        dirtyHistory.rolling_token_count === 1 &&
+        dirtyHistoryState.rolling_history_dirty === false);
     } finally {
       Date.now = originalDateNow;
     }
