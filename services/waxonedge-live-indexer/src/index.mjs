@@ -1,22 +1,26 @@
 import http from 'node:http';
-import { resolve } from 'node:path';
+import fs from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const LIVE_SECRET_HEADER = 'x-waxonedge-live-secret';
 
 export const VERIFIED_TRADE_STREAMS = Object.freeze([
-  { account: 'alcordexmain', action: 'buymatch', source: 'alcor' },
-  { account: 'alcordexmain', action: 'sellmatch', source: 'alcor' },
-  { account: 'swap.alcor', action: 'logswap', source: 'swap.alcor', parser: 'swap-v3' },
-  { account: 'swap.taco', action: 'exchangelog', source: 'swap.taco', parser: 'swap-v2-taco' },
-  { account: 'swap.box', action: 'swaplog', source: 'swap.box', parser: 'swap-v2-defibox' },
-  { account: 'swap.nefty', action: 'logswap', source: 'swap.nefty', parser: 'swap-v2-nefty' },
+  { account: 'alcordexmain', action: 'buymatch', source: 'alcor', og_source: 'alcor_buy' },
+  { account: 'alcordexmain', action: 'sellmatch', source: 'alcor', og_source: 'alcor_sell' },
+  { account: 'swap.alcor', action: 'logswap', source: 'swap.alcor', og_source: 'alcorv2', parser: 'swap-v3' },
+  { account: 'swap.taco', action: 'exchangelog', source: 'swap.taco', og_source: 'taco', parser: 'swap-v2-taco' },
+  { account: 'swap.box', action: 'swaplog', source: 'swap.box', og_source: 'defibox', parser: 'swap-v2-defibox' },
+  { account: 'swap.nefty', action: 'logswap', source: 'swap.nefty', og_source: 'neftyblocks', parser: 'swap-v2-nefty' },
 ]);
 
-const DEFAULT_LIVE_POLL_MS = 5000;
+const DEFAULT_LIVE_POLL_MS = 1000;
 const DEFAULT_LIVE_FETCH_LIMIT = 50;
+const DEFAULT_HISTORY_SAVE_MS = 5000;
 const MAX_TOKEN_CACHE_SIZE = 500;
 const MAX_SEEN_TRADE_IDS = 5000;
+const MAX_PERSISTED_TRADE_HISTORY = 100000;
+const FRESH_HISTORY_MODE = 'fresh_start';
 
 function nowIso() {
   return new Date().toISOString();
@@ -36,6 +40,10 @@ function clampInteger(value, fallback, min, max) {
   const parsed = Number.parseInt(String(value || ''), 10);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.max(min, Math.min(max, parsed));
+}
+
+export function defaultHistoryPath(cwd = process.cwd()) {
+  return resolve(cwd, 'data', 'waxonedge-live-history.json');
 }
 
 export function normalizeBindHost(value) {
@@ -168,13 +176,389 @@ export function loadConfig(env = process.env) {
     stream_enabled: booleanEnv(env.WAXONEDGE_LIVE_ENABLE_STREAM, false),
     poll_ms: clampInteger(env.WAXONEDGE_LIVE_POLL_MS, DEFAULT_LIVE_POLL_MS, 1000, 60000),
     fetch_limit: clampInteger(env.WAXONEDGE_LIVE_FETCH_LIMIT, DEFAULT_LIVE_FETCH_LIMIT, 1, 250),
+    history_save_ms: clampInteger(env.WAXONEDGE_LIVE_HISTORY_SAVE_MS, DEFAULT_HISTORY_SAVE_MS, 0, 60000),
+    history_path: safeString(env.WAXONEDGE_LIVE_HISTORY_PATH),
     shared_secret_configured: Boolean(String(env.WAXONEDGE_LIVE_SHARED_SECRET || '').trim()),
     secret_header: LIVE_SECRET_HEADER,
   };
 }
 
-export function createState(config = loadConfig()) {
+export function runtimeConfig(env = process.env) {
+  const config = loadConfig(env);
+  const hasHistoryPath = Object.prototype.hasOwnProperty.call(env || {}, 'WAXONEDGE_LIVE_HISTORY_PATH');
   return {
+    ...config,
+    history_path: hasHistoryPath ? config.history_path : defaultHistoryPath(),
+  };
+}
+
+function emptyHistory(startedAt = nowIso()) {
+  return {
+    history_mode: FRESH_HISTORY_MODE,
+    history_started_at: startedAt,
+    history_complete: false,
+    history_backfilled: false,
+    deep_history_status: 'requires_ship_state_history',
+    requires_ship_for_deep_history: true,
+    trades: [],
+  };
+}
+
+function normalizePersistedTrade(trade) {
+  if (!trade || typeof trade !== 'object') return null;
+  const tradeId = safeString(trade.trade_id);
+  const token = tokenKey(trade.contract, trade.symbol);
+  const tradedAt = normalizeTradeTimestamp(trade.traded_at);
+  if (!tradeId || !token || !tradedAt) return null;
+  return {
+    trade_id: tradeId,
+    source: safeString(trade.source),
+    stream_source: safeString(trade.stream_source),
+    og_source: safeString(trade.og_source),
+    pair_id: safeString(trade.pair_id),
+    contract: normalizeContract(trade.contract),
+    symbol: normalizeSymbol(trade.symbol),
+    quote_contract: normalizeContract(trade.quote_contract),
+    quote_symbol: normalizeSymbol(trade.quote_symbol),
+    price: safeDecimal(trade.price),
+    volume: safeDecimal(trade.volume),
+    side: safeString(trade.side),
+    traded_at: tradedAt,
+    observed_at: normalizeTradeTimestamp(trade.observed_at) || nowIso(),
+    uses_fake_live_data: false,
+  };
+}
+
+function comparePersistedTradeTime(a, b) {
+  return Date.parse(a.traded_at || '') - Date.parse(b.traded_at || '');
+}
+
+function trimTradeArrayInPlace(trades, idSet = null) {
+  if (trades.length > MAX_PERSISTED_TRADE_HISTORY) {
+    const removed = trades.splice(0, trades.length - MAX_PERSISTED_TRADE_HISTORY);
+    if (idSet) {
+      for (const trade of removed) {
+        idSet.delete(trade.trade_id);
+      }
+    }
+  }
+}
+
+function trimPersistedHistory(state) {
+  trimTradeArrayInPlace(state.history.trades, state.persistedTradeIdSet);
+}
+
+function loadObservedHistory(historyPath) {
+  if (!historyPath) return emptyHistory();
+  try {
+    const raw = fs.readFileSync(historyPath, 'utf8');
+    const parsed = JSON.parse(raw);
+    const startedAt = normalizeTradeTimestamp(parsed?.history_started_at) || nowIso();
+    const trades = Array.isArray(parsed?.trades)
+      ? parsed.trades.map(normalizePersistedTrade).filter(Boolean)
+      : [];
+    trades.sort(comparePersistedTradeTime);
+    trimTradeArrayInPlace(trades);
+    return {
+      ...emptyHistory(startedAt),
+      trades,
+    };
+  } catch (error) {
+    if (error?.code !== 'ENOENT') {
+      return {
+        ...emptyHistory(),
+        last_error: `history load failed: ${error?.message || 'unknown error'}`,
+      };
+    }
+    return emptyHistory();
+  }
+}
+
+function addPersistedTrade(state, trade) {
+  const persisted = normalizePersistedTrade(trade);
+  if (!persisted || state.persistedTradeIdSet.has(persisted.trade_id)) return null;
+  state.persistedTradeIdSet.add(persisted.trade_id);
+  const trades = state.history.trades;
+  const last = trades[trades.length - 1];
+  const persistedTime = Date.parse(persisted.traded_at || '');
+  const lastTime = Date.parse(last?.traded_at || '');
+  if (!trades.length || !Number.isFinite(persistedTime) || !Number.isFinite(lastTime) || persistedTime >= lastTime) {
+    trades.push(persisted);
+  } else {
+    let index = trades.length - 1;
+    while (index >= 0) {
+      const tradeTime = Date.parse(trades[index]?.traded_at || '');
+      if (!Number.isFinite(tradeTime) || tradeTime <= persistedTime) break;
+      index -= 1;
+    }
+    trades.splice(index + 1, 0, persisted);
+  }
+  trimPersistedHistory(state);
+  state.rolling_history_dirty = true;
+  return persisted;
+}
+
+function historySavePayload(state) {
+  return {
+    history_mode: FRESH_HISTORY_MODE,
+    history_started_at: state.history.history_started_at,
+    history_complete: false,
+    history_backfilled: false,
+    deep_history_status: 'requires_ship_state_history',
+    requires_ship_for_deep_history: true,
+    trades: state.history.trades,
+  };
+}
+
+async function writeObservedHistorySnapshot(state) {
+  const historyPath = state?.config?.history_path;
+  if (!historyPath) return false;
+  const payload = historySavePayload(state);
+  const tmpPath = `${historyPath}.tmp`;
+  await fs.promises.mkdir(dirname(historyPath), { recursive: true });
+  await fs.promises.writeFile(tmpPath, `${JSON.stringify(payload)}\n`);
+  await fs.promises.rename(tmpPath, historyPath);
+  state.history_last_saved_at = nowIso();
+  return true;
+}
+
+async function runSerializedHistorySave(state) {
+  state.history_save_in_flight = true;
+  try {
+    while (state.history_save_dirty) {
+      state.history_save_dirty = false;
+      try {
+        const wrote = await writeObservedHistorySnapshot(state);
+        if (wrote) state.history.last_error = null;
+        if (state.history_save_dirty && historySaveDelayMs(state) > 0) break;
+      } catch (error) {
+        state.history.last_error = `history save failed: ${error?.message || 'unknown error'}`;
+        state.last_error = state.history.last_error;
+      }
+    }
+  } finally {
+    state.history_save_in_flight = false;
+    state.history_save_promise = null;
+    if (state.history_save_dirty) {
+      scheduleSerializedHistorySave(state, historySaveDelayMs(state));
+    }
+  }
+}
+
+function historySaveDelayMs(state) {
+  const interval = Math.max(0, asNumber(state?.config?.history_save_ms) ?? DEFAULT_HISTORY_SAVE_MS);
+  if (!interval) return 0;
+  const lastSavedAt = Date.parse(state.history_last_saved_at || '');
+  if (!Number.isFinite(lastSavedAt)) return 0;
+  return Math.max(0, interval - (Date.now() - lastSavedAt));
+}
+
+function scheduleSerializedHistorySave(state, delayMs = 0) {
+  if (state.history_save_in_flight) return state.history_save_promise || Promise.resolve(false);
+  if (state.history_save_timer) return state.history_save_promise || Promise.resolve(false);
+  state.history_save_promise = new Promise((resolve) => {
+    const run = () => {
+      state.history_save_timer = null;
+      runSerializedHistorySave(state).then(
+        () => resolve(state.history.last_error == null),
+        () => resolve(false),
+      );
+    };
+    if (delayMs > 0) {
+      state.history_save_timer = setTimeout(run, delayMs);
+    } else {
+      run();
+    }
+  });
+  return state.history_save_promise;
+}
+
+export function saveObservedHistory(state) {
+  if (!state?.config?.history_path) return Promise.resolve(false);
+  state.history_save_dirty = true;
+  return scheduleSerializedHistorySave(state, historySaveDelayMs(state));
+}
+
+function historyElapsedMs(state) {
+  const started = Date.parse(state?.history?.history_started_at || '');
+  if (!Number.isFinite(started)) return 0;
+  return Math.max(0, Date.now() - started);
+}
+
+function rollingCompleteness(state) {
+  const elapsed = historyElapsedMs(state);
+  return {
+    volume_24h_complete: elapsed >= 24 * 60 * 60 * 1000,
+    volume_7d_complete: elapsed >= 7 * 24 * 60 * 60 * 1000,
+    volume_30d_complete: elapsed >= 30 * 24 * 60 * 60 * 1000,
+  };
+}
+
+function percentChange(startPrice, endPrice) {
+  const start = asNumber(startPrice);
+  const end = asNumber(endPrice);
+  if (start == null || end == null || start <= 0) return null;
+  return ((end - start) / start) * 100;
+}
+
+function buildRollingHistory(state) {
+  const nowMs = Date.now();
+  const windows = {
+    volume_1h: 60 * 60 * 1000,
+    volume_24h: 24 * 60 * 60 * 1000,
+    volume_7d: 7 * 24 * 60 * 60 * 1000,
+    volume_30d: 30 * 24 * 60 * 60 * 1000,
+  };
+  const byToken = new Map();
+  const candles = new Map();
+  for (const trade of state.history.trades) {
+    const tradedMs = Date.parse(trade.traded_at);
+    if (!Number.isFinite(tradedMs)) continue;
+    const key = tokenKey(trade.contract, trade.symbol);
+    if (!key) continue;
+    const metric = byToken.get(key) || {
+      token_key: key,
+      contract: trade.contract,
+      symbol: trade.symbol,
+      trade_count: 0,
+      latest_price: null,
+      latest_trade_at: null,
+      volume_1h: 0,
+      volume_24h: 0,
+      volume_7d: 0,
+      volume_30d: 0,
+      window_start_prices: {},
+      window_price_counts: {},
+    };
+    metric.trade_count += 1;
+    const price = asNumber(trade.price);
+    if (price != null) {
+      metric.latest_price = price;
+      metric.latest_trade_at = trade.traded_at;
+      for (const [field, millis] of Object.entries(windows)) {
+        if (nowMs - tradedMs <= millis && metric.window_start_prices[field] == null) {
+          metric.window_start_prices[field] = price;
+        }
+        if (nowMs - tradedMs <= millis) {
+          metric.window_price_counts[field] = (metric.window_price_counts[field] || 0) + 1;
+        }
+      }
+    }
+    const volume = asNumber(trade.volume) || 0;
+    for (const [field, millis] of Object.entries(windows)) {
+      if (nowMs - tradedMs <= millis) metric[field] += volume;
+    }
+    byToken.set(key, metric);
+    if (price == null) continue;
+    const day = trade.traded_at.slice(0, 10);
+    const candleKey = `${trade.source || ''}::${trade.pair_id || ''}::${day}`;
+    const candle = candles.get(candleKey) || {
+      source: trade.source,
+      pair_id: trade.pair_id,
+      interval: '1D',
+      day,
+      open: price,
+      high: price,
+      low: price,
+      close: price,
+      volume: 0,
+      trade_count: 0,
+    };
+    candle.high = Math.max(candle.high, price);
+    candle.low = Math.min(candle.low, price);
+    candle.close = price;
+    candle.volume += volume;
+    candle.trade_count += 1;
+    candles.set(candleKey, candle);
+  }
+  const completeness = rollingCompleteness(state);
+  for (const metric of byToken.values()) {
+    metric.change_1h = metric.window_price_counts.volume_1h > 1
+      ? percentChange(metric.window_start_prices.volume_1h, metric.latest_price)
+      : null;
+    metric.change_24h = metric.window_price_counts.volume_24h > 1
+      ? percentChange(metric.window_start_prices.volume_24h, metric.latest_price)
+      : null;
+    delete metric.window_start_prices;
+    delete metric.window_price_counts;
+  }
+  return {
+    token_metrics: byToken,
+    candles,
+    completeness,
+  };
+}
+
+function refreshRollingHistory(state) {
+  const rolling = buildRollingHistory(state);
+  state.rollingHistory = rolling;
+  state.rolling_history_dirty = false;
+  for (const [tokenKeyValue, existing] of state.tokenCache.entries()) {
+    if (rolling.token_metrics.has(tokenKeyValue)) continue;
+    state.tokenCache.set(tokenKeyValue, {
+      ...existing,
+      fresh_history_trade_count: 0,
+      fresh_history_latest_price: null,
+      fresh_history_latest_trade_at: null,
+      fresh_history_volume_1h: null,
+      fresh_history_volume_24h: null,
+      fresh_history_volume_7d: null,
+      fresh_history_volume_30d: null,
+      fresh_history_change_1h: null,
+      fresh_history_change_24h: null,
+      fresh_history_volume_24h_complete: false,
+      fresh_history_volume_7d_complete: false,
+      fresh_history_volume_30d_complete: false,
+    });
+  }
+  for (const metric of rolling.token_metrics.values()) {
+    const existing = state.tokenCache.get(metric.token_key);
+    if (!existing) continue;
+    state.tokenCache.set(metric.token_key, {
+      ...existing,
+      fresh_history_trade_count: metric.trade_count,
+      fresh_history_latest_price: metric.latest_price == null ? null : safeDecimal(metric.latest_price),
+      fresh_history_latest_trade_at: metric.latest_trade_at || null,
+      fresh_history_volume_1h: metric.volume_1h ? safeDecimal(metric.volume_1h) : null,
+      fresh_history_volume_24h: metric.volume_24h ? safeDecimal(metric.volume_24h) : null,
+      fresh_history_volume_7d: metric.volume_7d ? safeDecimal(metric.volume_7d) : null,
+      fresh_history_volume_30d: metric.volume_30d ? safeDecimal(metric.volume_30d) : null,
+      fresh_history_change_1h: metric.change_1h == null ? null : safeDecimal(metric.change_1h),
+      fresh_history_change_24h: metric.change_24h == null ? null : safeDecimal(metric.change_24h),
+      fresh_history_volume_24h_complete: rolling.completeness.volume_24h_complete,
+      fresh_history_volume_7d_complete: rolling.completeness.volume_7d_complete,
+      fresh_history_volume_30d_complete: rolling.completeness.volume_30d_complete,
+    });
+  }
+}
+
+export function historyPayload(state) {
+  if (!state.rollingHistory || state.rolling_history_dirty) {
+    refreshRollingHistory(state);
+  }
+  const rolling = state.rollingHistory;
+  return {
+    history_mode: FRESH_HISTORY_MODE,
+    history_started_at: state.history.history_started_at,
+    history_complete: false,
+    history_backfilled: false,
+    deep_history_status: 'requires_ship_state_history',
+    requires_ship_for_deep_history: true,
+    persisted_trade_count: state.history.trades.length,
+    rolling_1d_candle_count: rolling.candles.size,
+    rolling_token_count: rolling.token_metrics.size,
+    volume_24h_complete: rolling.completeness.volume_24h_complete,
+    volume_7d_complete: rolling.completeness.volume_7d_complete,
+    volume_30d_complete: rolling.completeness.volume_30d_complete,
+    persistence_enabled: Boolean(state.config.history_path),
+    history_save_pending: Boolean(state.history_save_dirty || state.history_save_in_flight || state.history_save_timer),
+    history_last_saved_at: state.history_last_saved_at || null,
+    last_error: state.history.last_error || null,
+  };
+}
+
+export function createState(config = loadConfig()) {
+  const state = {
     started_at: nowIso(),
     connected: false,
     status: 'not_connected',
@@ -192,6 +576,15 @@ export function createState(config = loadConfig()) {
     seenTradeIds: [],
     seenTradeIdSet: new Set(),
     clients: new Set(),
+    history: loadObservedHistory(config.history_path),
+    persistedTradeIdSet: new Set(),
+    history_save_in_flight: false,
+    history_save_dirty: false,
+    history_save_timer: null,
+    history_save_promise: null,
+    history_last_saved_at: null,
+    rolling_history_dirty: true,
+    rollingHistory: null,
     event_count: 0,
     last_event_at: null,
     stream_source: null,
@@ -201,6 +594,16 @@ export function createState(config = loadConfig()) {
       ? 'no verified trade events observed yet'
       : 'WAXONEDGE_HYPERION_API, WAXONEDGE_STATE_HISTORY_ENDPOINT, or WAXNODE_ENDPOINT required',
   };
+  for (const trade of state.history.trades) {
+    state.persistedTradeIdSet.add(trade.trade_id);
+  }
+  for (const trade of state.history.trades) {
+    if (rememberTradeId(state, trade.trade_id)) {
+      observeLiveTrade(state, trade, { persist: false, broadcast: false, refresh: false });
+    }
+  }
+  refreshRollingHistory(state);
+  return state;
 }
 
 function uptimeSeconds(state) {
@@ -217,6 +620,7 @@ function streamStatus(state) {
       account: stream.account,
       action: stream.action,
       source: stream.source,
+      og_source: stream.og_source,
       status: current.status || (state.connected ? 'connected' : 'not_connected'),
       verified: true,
       event_count: current.event_count || 0,
@@ -246,6 +650,7 @@ export function healthPayload(state = createState()) {
       secret_header: state.config.secret_header,
     },
     source_status: streamStatus(state),
+    history: historyPayload(state),
     verified_trade_streams: VERIFIED_TRADE_STREAMS.map((stream) => `${stream.account}::${stream.action}`),
     token_key_format: 'contract::symbol',
     uses_fake_live_data: false,
@@ -264,6 +669,7 @@ export function snapshotPayload(state = createState()) {
     generated_at: nowIso(),
     token_key_format: 'contract::symbol',
     next_cursor: state.last_event_at || null,
+    history: historyPayload(state),
     tokens: Array.from(state.tokenCache.values())
       .sort((a, b) => String(a.token_key).localeCompare(String(b.token_key))),
     uses_fake_live_data: false,
@@ -415,6 +821,7 @@ function parseAlcorMarketMatch(row, stream) {
   return {
     trade_id: `${stableId}:market:${marketId}`,
     source: stream.source,
+    og_source: stream.og_source,
     stream_source: streamKey(stream),
     pair_id: safeString(marketId),
     contract,
@@ -464,6 +871,7 @@ function parseAmmSwap(row, stream) {
   return {
     trade_id: `${stableId}:pair:${pairId}`,
     source: stream.source,
+    og_source: stream.og_source,
     stream_source: streamKey(stream),
     pair_id: pairId,
     contract,
@@ -494,6 +902,7 @@ function tokenUpdateFromTrade(trade) {
     symbol: normalizeSymbol(trade.symbol),
     updated_at: trade.traded_at,
     source: trade.source,
+    og_source: trade.og_source,
     source_keys: trade.source,
     pair_id: trade.pair_id,
     stream_source: trade.stream_source,
@@ -505,7 +914,11 @@ function tokenUpdateFromTrade(trade) {
   };
 }
 
-export function observeLiveTrade(state, trade) {
+export function observeLiveTrade(state, trade, options = {}) {
+  const persist = options.persist !== false;
+  const save = options.save !== false;
+  const broadcast = options.broadcast !== false;
+  const refresh = options.refresh !== false;
   const update = tokenUpdateFromTrade(trade);
   if (!update) return null;
   const existing = state.tokenCache.get(update.token_key) || {};
@@ -551,7 +964,17 @@ export function observeLiveTrade(state, trade) {
     }
     current.last_error = null;
   }
-  sendTokenUpdate(state, state.tokenCache.get(update.token_key));
+  if (persist) {
+    const persisted = addPersistedTrade(state, {
+      ...trade,
+      observed_at: nowIso(),
+    });
+    if (persisted) {
+      if (save) saveObservedHistory(state);
+    }
+  }
+  if (refresh) refreshRollingHistory(state);
+  if (broadcast) sendTokenUpdate(state, state.tokenCache.get(update.token_key));
   return update;
 }
 
@@ -563,6 +986,8 @@ export async function ingestVerifiedTradeStreams(state, fetchImpl = globalThis.f
     return { observed: 0, error: state.last_error };
   }
   let observed = 0;
+  const updatedTokenKeys = new Set();
+  let persistedTradesAdded = false;
   for (const stream of VERIFIED_TRADE_STREAMS) {
     const key = streamKey(stream);
     const current = state.streamState.get(key);
@@ -583,8 +1008,15 @@ export async function ingestVerifiedTradeStreams(state, fetchImpl = globalThis.f
       const rows = sourceRows(payload);
       for (const row of rows.reverse()) {
         const trade = normalizeLiveTradeRow(row, stream);
-        if (!trade || !rememberTradeId(state, trade.trade_id)) continue;
-        observeLiveTrade(state, trade);
+        if (!trade || state.persistedTradeIdSet.has(trade.trade_id) || !rememberTradeId(state, trade.trade_id)) continue;
+        const update = observeLiveTrade(state, trade, {
+          persist: true,
+          save: false,
+          broadcast: false,
+          refresh: false,
+        });
+        if (update?.token_key) updatedTokenKeys.add(update.token_key);
+        persistedTradesAdded = true;
         observed += 1;
       }
       if (current && current.event_count === 0) {
@@ -598,7 +1030,15 @@ export async function ingestVerifiedTradeStreams(state, fetchImpl = globalThis.f
       }
     }
   }
-  if (observed > 0) return { observed, error: null };
+  if (observed > 0) {
+    refreshRollingHistory(state);
+    if (persistedTradesAdded) saveObservedHistory(state);
+    for (const key of updatedTokenKeys) {
+      const update = state.tokenCache.get(key);
+      if (update) sendTokenUpdate(state, update);
+    }
+    return { observed, error: null };
+  }
   if (!state.connected) {
     const streamError = Array.from(state.streamState.values())
       .map((item) => item?.last_error)
@@ -665,6 +1105,17 @@ export function createServer(state = createState()) {
       writeJson(res, state.connected ? 200 : 503, snapshotPayload(state));
       return;
     }
+    if (pathname === '/history') {
+      writeJson(res, 200, {
+        ok: true,
+        service: 'waxonedge-live-indexer',
+        generated_at: nowIso(),
+        history: historyPayload(state),
+        uses_fake_live_data: false,
+        browser_hyperion_fetch: false,
+      });
+      return;
+    }
     if (pathname === '/stream') {
       writeSseStream(res, state);
       return;
@@ -674,7 +1125,7 @@ export function createServer(state = createState()) {
 }
 
 export function startServer(env = process.env) {
-  const state = createState(loadConfig(env));
+  const state = createState(runtimeConfig(env));
   const server = createServer(state);
   startLiveIngestion(state);
   server.listen(state.config.port, state.config.bind_host, () => {

@@ -48,9 +48,12 @@ Required keys:
 WAXONEDGE_LIVE_PORT=8789
 WAXONEDGE_HYPERION_API=https://wax.eosusa.io/v2
 WAXONEDGE_STATE_HISTORY_ENDPOINT=
+WAXNODE_ENDPOINT=
 WAXONEDGE_LIVE_SHARED_SECRET=
 WAXONEDGE_LIVE_ENABLE_STREAM=false
 WAXONEDGE_LIVE_BIND_HOST=127.0.0.1
+WAXONEDGE_LIVE_POLL_MS=1000
+WAXONEDGE_LIVE_HISTORY_PATH=/opt/crypto-moonboys/services/waxonedge-live-indexer/data/waxonedge-live-history.json
 ```
 
 Do not put real secrets in `.env.example`, `.env.production.example`, the systemd unit, or git history.
@@ -70,11 +73,14 @@ Check contracts:
 ```bash
 curl -fsS http://127.0.0.1:8789/health
 curl -fsS http://127.0.0.1:8789/snapshot
+curl -fsS http://127.0.0.1:8789/history
 curl -N http://127.0.0.1:8789/stream
 npm run check
 ```
 
 Expected startup status is `not_connected` with `uses_fake_live_data=false` until real verified Hyperion/state-history trade rows are observed. The service must not emit `token_update` events unless they come from those verified streams.
+
+Rolling history is fresh-start only. The service persists real observed rows under `WAXONEDGE_LIVE_HISTORY_PATH`, rebuilds rolling candles/metrics from those rows after restart, and keeps `history_complete=false` plus `history_backfilled=false`. Do not present 7D/30D metrics as complete until the service has actually observed that much time. Percentage change is available only when an actual older observed price exists in the requested fresh window.
 
 ## systemd
 
