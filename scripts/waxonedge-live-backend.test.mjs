@@ -485,6 +485,10 @@ ok('VPS live indexer exposes no fake live events or random movement',
       'alcordexmain::buymatch:source:alcor:action:buymatch:seq:77' &&
     liveIndexer.tradeIdFromRow({ global_sequence: 77 }, { account: 'swap.alcor', action: 'logswap', source: 'swap.alcor' }, {}) ===
       'swap.alcor::logswap:source:swap.alcor:action:logswap:seq:77');
+  ok('VPS live indexer final trade IDs stay collision-safe without redundant stream prefix wrapping',
+    alcorTrade.trade_id === 'alcordexmain::buymatch:source:alcor:action:buymatch:id:7:seq:101:market:314' &&
+    ammTrade.trade_id === 'swap.alcor::logswap:source:swap.alcor:action:logswap:seq:102:pair:22' &&
+    alcorTrade.trade_id !== ammTrade.trade_id);
   {
     const evictionState = liveIndexer.createState(liveIndexer.loadConfig({
       WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
@@ -525,6 +529,19 @@ ok('VPS live indexer exposes no fake live events or random movement',
       monotonicState.stream_source === newer.stream_source &&
       monotonicState.streamState.get('alcordexmain::buymatch').last_event_at === newer.traded_at &&
       monotonicState.streamState.get('swap.alcor::logswap').last_event_at === olderOtherStream.traded_at);
+  }
+  {
+    const sourceState = liveIndexer.createState(liveIndexer.loadConfig({
+      WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+    }));
+    liveIndexer.observeLiveTrade(sourceState, alcorTrade);
+    liveIndexer.observeLiveTrade(sourceState, { ...ammTrade, contract: 'graffitiking', symbol: 'WAXCASH' });
+    liveIndexer.observeLiveTrade(sourceState, { ...alcorTrade, trade_id: `${alcorTrade.trade_id}:again` });
+    const merged = sourceState.tokenCache.get('graffitiking::WAXCASH');
+    ok('VPS live indexer merges source_keys across observed token sources without duplicates',
+      merged &&
+      merged.source_keys === 'alcor,swap.alcor' &&
+      merged.source === 'alcor');
   }
 }
 {
@@ -570,6 +587,18 @@ ok('VPS live indexer exposes no fake live events or random movement',
     stream &&
     !liveIndexerSource.includes('reserve-derived candles') &&
     !/Math\.random|synthetic price movement|browser_hyperion_fetch:\s*true/i.test(liveIndexerSource));
+  {
+    const errorState = liveIndexer.createState(liveIndexer.loadConfig({
+      WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+    }));
+    const errorResult = await liveIndexer.ingestVerifiedTradeStreams(errorState, async () =>
+      new Response('bad gateway', { status: 502 }));
+    ok('VPS live indexer surfaces real stream errors when no trades are observed',
+      errorResult.observed === 0 &&
+      errorState.connected === false &&
+      errorState.last_error === 'Hyperion 502' &&
+      errorResult.error === 'Hyperion 502');
+  }
   const emptyResult = await liveIndexer.ingestVerifiedTradeStreams(state, async () =>
     new Response(JSON.stringify({ actions: [] }), { status: 200, headers: { 'content-type': 'application/json' } }));
   ok('VPS live indexer keeps connected state after an empty poll once real events were observed',

@@ -409,7 +409,7 @@ function parseAlcorMarketMatch(row, stream) {
   const stableId = tradeIdFromRow(row, stream, record);
   if (!stableId) return null;
   return {
-    trade_id: `${streamKey(stream)}:${marketId}:${stableId}`,
+    trade_id: `${stableId}:market:${marketId}`,
     source: stream.source,
     stream_source: streamKey(stream),
     pair_id: safeString(marketId),
@@ -458,7 +458,7 @@ function parseAmmSwap(row, stream) {
   const stableId = tradeIdFromRow(row, stream, record);
   if (!stableId) return null;
   return {
-    trade_id: `${streamKey(stream)}:${pairId}:${stableId}`,
+    trade_id: `${stableId}:pair:${pairId}`,
     source: stream.source,
     stream_source: streamKey(stream),
     pair_id: pairId,
@@ -505,6 +505,17 @@ export function observeLiveTrade(state, trade) {
   const update = tokenUpdateFromTrade(trade);
   if (!update) return null;
   const existing = state.tokenCache.get(update.token_key) || {};
+  const existingSources = String(existing.source_keys || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const nextSources = Array.from(new Set([
+    ...existingSources,
+    update.source,
+  ].filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  if (nextSources.length) {
+    update.source_keys = nextSources.join(',');
+  }
   if (state.tokenCache.has(update.token_key)) {
     state.tokenCache.delete(update.token_key);
   }
@@ -585,8 +596,11 @@ export async function ingestVerifiedTradeStreams(state, fetchImpl = globalThis.f
   }
   if (observed > 0) return { observed, error: null };
   if (!state.connected) {
+    const streamError = Array.from(state.streamState.values())
+      .map((item) => item?.last_error)
+      .find(Boolean);
     state.status = 'not_connected';
-    state.last_error = 'no verified trade events observed yet';
+    state.last_error = streamError || 'no verified trade events observed yet';
   }
   return { observed, error: state.last_error };
 }
