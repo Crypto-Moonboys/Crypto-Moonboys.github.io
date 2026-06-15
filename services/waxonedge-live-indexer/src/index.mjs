@@ -41,7 +41,7 @@ function clampInteger(value, fallback, min, max) {
   return Math.max(min, Math.min(max, parsed));
 }
 
-function defaultHistoryPath(cwd = process.cwd()) {
+export function defaultHistoryPath(cwd = process.cwd()) {
   return resolve(cwd, 'data', 'waxonedge-live-history.json');
 }
 
@@ -181,11 +181,12 @@ export function loadConfig(env = process.env) {
   };
 }
 
-function runtimeConfig(env = process.env) {
+export function runtimeConfig(env = process.env) {
   const config = loadConfig(env);
+  const hasHistoryPath = Object.prototype.hasOwnProperty.call(env || {}, 'WAXONEDGE_LIVE_HISTORY_PATH');
   return {
     ...config,
-    history_path: config.history_path || defaultHistoryPath(),
+    history_path: hasHistoryPath ? config.history_path : defaultHistoryPath(),
   };
 }
 
@@ -325,6 +326,7 @@ function buildRollingHistory(state) {
       volume_7d: 0,
       volume_30d: 0,
       window_start_prices: {},
+      window_price_counts: {},
     };
     metric.trade_count += 1;
     const price = asNumber(trade.price);
@@ -334,6 +336,9 @@ function buildRollingHistory(state) {
       for (const [field, millis] of Object.entries(windows)) {
         if (nowMs - tradedMs <= millis && metric.window_start_prices[field] == null) {
           metric.window_start_prices[field] = price;
+        }
+        if (nowMs - tradedMs <= millis) {
+          metric.window_price_counts[field] = (metric.window_price_counts[field] || 0) + 1;
         }
       }
     }
@@ -366,9 +371,14 @@ function buildRollingHistory(state) {
   }
   const completeness = rollingCompleteness(state);
   for (const metric of byToken.values()) {
-    metric.change_1h = percentChange(metric.window_start_prices.volume_1h, metric.latest_price);
-    metric.change_24h = percentChange(metric.window_start_prices.volume_24h, metric.latest_price);
+    metric.change_1h = metric.window_price_counts.volume_1h > 1
+      ? percentChange(metric.window_start_prices.volume_1h, metric.latest_price)
+      : null;
+    metric.change_24h = metric.window_price_counts.volume_24h > 1
+      ? percentChange(metric.window_start_prices.volume_24h, metric.latest_price)
+      : null;
     delete metric.window_start_prices;
+    delete metric.window_price_counts;
   }
   return {
     token_metrics: byToken,
@@ -417,6 +427,7 @@ function historyPayload(state) {
     volume_7d_complete: rolling.completeness.volume_7d_complete,
     volume_30d_complete: rolling.completeness.volume_30d_complete,
     persistence_enabled: Boolean(state.config.history_path),
+    last_error: state.history.last_error || null,
   };
 }
 
@@ -769,6 +780,7 @@ function tokenUpdateFromTrade(trade) {
 
 export function observeLiveTrade(state, trade, options = {}) {
   const persist = options.persist !== false;
+  const save = options.save !== false;
   const broadcast = options.broadcast !== false;
   const refresh = options.refresh !== false;
   const update = tokenUpdateFromTrade(trade);
@@ -824,7 +836,7 @@ export function observeLiveTrade(state, trade, options = {}) {
     if (persisted) {
       state.history.trades.push(persisted);
       state.history.trades = state.history.trades.slice(-MAX_PERSISTED_TRADE_HISTORY);
-      saveObservedHistory(state);
+      if (save) saveObservedHistory(state);
     }
   }
   if (refresh) refreshRollingHistory(state);
@@ -840,6 +852,8 @@ export async function ingestVerifiedTradeStreams(state, fetchImpl = globalThis.f
     return { observed: 0, error: state.last_error };
   }
   let observed = 0;
+  const updatedTokenKeys = new Set();
+  let persistedTradesAdded = false;
   for (const stream of VERIFIED_TRADE_STREAMS) {
     const key = streamKey(stream);
     const current = state.streamState.get(key);
@@ -861,7 +875,14 @@ export async function ingestVerifiedTradeStreams(state, fetchImpl = globalThis.f
       for (const row of rows.reverse()) {
         const trade = normalizeLiveTradeRow(row, stream);
         if (!trade || !rememberTradeId(state, trade.trade_id)) continue;
-        observeLiveTrade(state, trade);
+        const update = observeLiveTrade(state, trade, {
+          persist: true,
+          save: false,
+          broadcast: false,
+          refresh: false,
+        });
+        if (update?.token_key) updatedTokenKeys.add(update.token_key);
+        persistedTradesAdded = true;
         observed += 1;
       }
       if (current && current.event_count === 0) {
@@ -875,7 +896,15 @@ export async function ingestVerifiedTradeStreams(state, fetchImpl = globalThis.f
       }
     }
   }
-  if (observed > 0) return { observed, error: null };
+  if (observed > 0) {
+    refreshRollingHistory(state);
+    if (persistedTradesAdded) saveObservedHistory(state);
+    for (const key of updatedTokenKeys) {
+      const update = state.tokenCache.get(key);
+      if (update) sendTokenUpdate(state, update);
+    }
+    return { observed, error: null };
+  }
   if (!state.connected) {
     const streamError = Array.from(state.streamState.values())
       .map((item) => item?.last_error)

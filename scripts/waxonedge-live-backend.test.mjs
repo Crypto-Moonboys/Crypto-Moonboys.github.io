@@ -381,6 +381,9 @@ ok('VPS live indexer binds locally by default and allows explicit host override'
   liveIndexer.normalizeBindHost('127.0.0.1') === '127.0.0.1' &&
   liveIndexer.normalizeBindHost('0.0.0.0') === '0.0.0.0' &&
   liveIndexer.loadConfig({ WAXONEDGE_LIVE_BIND_HOST: '[::1]' }).bind_host === '::1');
+ok('VPS live indexer runtime config respects explicit blank history path',
+  liveIndexer.runtimeConfig({ WAXONEDGE_LIVE_HISTORY_PATH: '' }).history_path === '' &&
+  liveIndexer.runtimeConfig({}).history_path === liveIndexer.defaultHistoryPath());
 ok('VPS live indexer checker maps wildcard bind hosts to routable local targets',
   liveIndexerCheck.checkTargetHost('0.0.0.0') === '127.0.0.1' &&
   liveIndexerCheck.checkTargetHost('::') === '[::1]' &&
@@ -411,7 +414,12 @@ ok('VPS live indexer exposes fresh-start rolling history without claiming backfi
   liveIndexerSource.includes('requires_ship_for_deep_history: true') &&
   liveIndexerSource.includes('const refresh = options.refresh !== false') &&
   liveIndexerSource.includes('if (refresh) refreshRollingHistory(state)') &&
+  liveIndexerSource.includes('const save = options.save !== false') &&
   liveIndexerSource.includes('refresh: false') &&
+  liveIndexerSource.includes('save: false') &&
+  liveIndexerSource.includes('if (persistedTradesAdded) saveObservedHistory(state)') &&
+  liveIndexerSource.includes('observeLiveTrade(state, trade, { persist: false, broadcast: false, refresh: false })') &&
+  liveIndexerSource.includes('last_error: state.history.last_error || null') &&
   liveIndexerSource.includes('fs.writeFileSync(tmpPath') &&
   liveIndexerSource.includes('fs.renameSync(tmpPath, historyPath)') &&
   !liveIndexerSource.includes('reserve-derived candles'));
@@ -600,6 +608,19 @@ ok('VPS live indexer exposes no fake live events or random movement',
     const originalDateNow = Date.now;
     Date.now = () => Date.parse('2026-06-15T11:00:00.000Z');
     try {
+      const singleTradeState = liveIndexer.createState(liveIndexer.loadConfig({
+        WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+      }));
+      singleTradeState.history.history_started_at = '2026-06-15T10:00:00.000Z';
+      liveIndexer.observeLiveTrade(singleTradeState, {
+        ...alcorTrade,
+        trade_id: `${alcorTrade.trade_id}:metric-single`,
+        traded_at: '2026-06-15T10:30:00.000Z',
+        price: 2,
+        volume: 3,
+      });
+      const singleWaxcash = liveIndexer.snapshotPayload(singleTradeState).tokens
+        .find((token) => token.token_key === 'graffitiking::WAXCASH');
       const metricState = liveIndexer.createState(liveIndexer.loadConfig({
         WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
       }));
@@ -630,6 +651,10 @@ ok('VPS live indexer exposes no fake live events or random movement',
       const metricSnapshot = liveIndexer.snapshotPayload(metricState);
       const waxcash = metricSnapshot.tokens.find((token) => token.token_key === 'graffitiking::WAXCASH');
       const wax = metricSnapshot.tokens.find((token) => token.token_key === 'eosio.token::WAX');
+      ok('VPS live indexer keeps fresh percentage change unavailable until an older observed price exists',
+        singleWaxcash &&
+        singleWaxcash.fresh_history_change_1h === null &&
+        singleWaxcash.fresh_history_change_24h === null);
       ok('VPS live indexer derives fresh rolling metrics only from observed persisted trades',
         waxcash &&
         waxcash.fresh_history_latest_price === 2 &&
@@ -667,6 +692,7 @@ ok('VPS live indexer exposes no fake live events or random movement',
     ok('VPS live indexer persists observed verified trades and hydrates fresh history after restart',
       fileWasWritten &&
       historyHealth.history.history_mode === 'fresh_start' &&
+      historyHealth.history.last_error === null &&
       historyHealth.history.persisted_trade_count === 1 &&
       historyHealth.history.history_complete === false &&
       historyHealth.history.history_backfilled === false &&
@@ -697,7 +723,9 @@ ok('VPS live indexer exposes no fake live events or random movement',
       threw === false &&
       /history save failed:/.test(failingState.history.last_error || '') &&
       failingState.last_error === failingState.history.last_error &&
-      failingState.history.trades.length === 1);
+      failingState.history.trades.length === 1 &&
+      liveIndexer.healthPayload(failingState).history.last_error === failingState.history.last_error &&
+      liveIndexer.snapshotPayload(failingState).history.last_error === failingState.history.last_error);
   }
 }
 {
@@ -743,6 +771,16 @@ ok('VPS live indexer exposes no fake live events or random movement',
     stream &&
     !liveIndexerSource.includes('reserve-derived candles') &&
     !/Math\.random|synthetic price movement|browser_hyperion_fetch:\s*true/i.test(liveIndexerSource));
+  ok('VPS live indexer batches polling refresh and history persistence once per poll',
+    liveIndexerSource.includes('const updatedTokenKeys = new Set()') &&
+    liveIndexerSource.includes('let persistedTradesAdded = false') &&
+    liveIndexerSource.includes('observeLiveTrade(state, trade, {') &&
+    liveIndexerSource.includes('save: false') &&
+    liveIndexerSource.includes('broadcast: false') &&
+    liveIndexerSource.includes('refresh: false') &&
+    liveIndexerSource.includes('if (observed > 0) {') &&
+    liveIndexerSource.includes('refreshRollingHistory(state)') &&
+    liveIndexerSource.includes('if (persistedTradesAdded) saveObservedHistory(state)'));
   {
     const errorState = liveIndexer.createState(liveIndexer.loadConfig({
       WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
