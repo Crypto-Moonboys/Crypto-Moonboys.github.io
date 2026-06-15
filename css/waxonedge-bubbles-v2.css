@@ -221,6 +221,7 @@
 }
 
 .woe-ab-board-section {
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
   margin: 0;
@@ -321,6 +322,42 @@
   color: #d7d7d7;
 }
 
+.woe-ab-live-feed {
+  position: absolute;
+  right: 14px;
+  bottom: 48px;
+  z-index: 6;
+  width: min(360px, calc(100vw - 28px));
+  display: grid;
+  gap: 7px;
+  pointer-events: none;
+}
+
+.woe-ab-feed-item {
+  border: 1px solid color-mix(in srgb, var(--feed-color, #f89422) 42%, transparent);
+  border-radius: 8px;
+  background: rgba(5, 5, 5, .78);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--feed-color, #f89422) 14%, transparent);
+  padding: 8px 10px;
+}
+
+.woe-ab-feed-item strong,
+.woe-ab-feed-item span {
+  display: block;
+}
+
+.woe-ab-feed-item strong {
+  color: var(--feed-color, #f89422);
+  font-size: 11px;
+  margin-bottom: 3px;
+}
+
+.woe-ab-feed-item span {
+  color: #c9c9c9;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .woe-ab-up {
   color: #1ee678 !important;
 }
@@ -332,126 +369,6 @@
 .woe-ab-credit {
   margin-left: auto;
   color: #f89422;
-}
-
-.woe-ab-modal[hidden] {
-  display: none;
-}
-
-.woe-ab-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-}
-
-.woe-ab-modal-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, .72);
-  backdrop-filter: blur(5px);
-}
-
-.woe-ab-modal-panel {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: min(980px, calc(100vw - 28px));
-  max-height: min(860px, calc(100vh - 32px));
-  overflow: auto;
-  transform: translate(-50%, -50%);
-  border: 1px solid rgba(248, 148, 34, .32);
-  border-radius: 18px;
-  background: #070707;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, .72);
-  padding: 20px;
-}
-
-.woe-ab-modal-close {
-  position: absolute;
-  top: 13px;
-  right: 14px;
-  width: 34px;
-  height: 34px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, .08);
-  color: #fff;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-.woe-ab-modal-head {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 18px;
-}
-
-.woe-ab-token-avatar {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: radial-gradient(circle at 35% 25%, #fff, #f89422 34%, #422100 78%);
-  color: #000;
-  font-weight: 900;
-}
-
-.woe-ab-modal-head h2 {
-  margin: 0;
-  color: #fff;
-  font-size: 26px;
-}
-
-.woe-ab-modal-head p {
-  margin: 4px 0 0;
-  color: #888;
-  font-size: 13px;
-}
-
-.woe-ab-modal-grid {
-  display: grid;
-  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
-  gap: 14px;
-}
-
-.woe-ab-modal-stats {
-  display: grid;
-  gap: 8px;
-}
-
-.woe-ab-modal-stats div {
-  display: grid;
-  grid-template-columns: minmax(90px, 1fr) minmax(0, 1.2fr);
-  gap: 10px;
-  padding: 9px 10px;
-  border: 1px solid rgba(255, 255, 255, .08);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, .04);
-}
-
-.woe-ab-modal-stats span,
-.woe-ab-modal-note,
-.woe-ab-pair-table td {
-  color: #898989;
-  font-size: 12px;
-}
-
-.woe-ab-modal-stats strong {
-  color: #fff;
-  font-size: 12px;
-  overflow-wrap: anywhere;
-}
-
-.woe-ab-modal-chart {
-  min-height: 270px;
-  border: 1px solid rgba(255, 255, 255, .08);
-  border-radius: 12px;
-  background: #020202;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
 }
 
 .woe-ab-chart-empty {
@@ -470,49 +387,6 @@
   background-size: 64px 64px;
 }
 
-.woe-ab-source-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin: 15px 0 10px;
-}
-
-.woe-ab-source-row span {
-  border-radius: 999px;
-  padding: 5px 9px;
-  background: rgba(248, 148, 34, .12);
-  color: #f8b45e;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.woe-ab-modal-note {
-  margin: 8px 0 12px;
-}
-
-.woe-ab-pair-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 0 0 14px;
-}
-
-.woe-ab-pair-table td {
-  padding: 8px 9px;
-  border-top: 1px solid rgba(255, 255, 255, .06);
-}
-
-.woe-ab-open-analytics {
-  display: inline-flex;
-  min-height: 34px;
-  align-items: center;
-  border-radius: 9px;
-  padding: 0 13px;
-  background: #f89422;
-  color: #000;
-  font-weight: 900;
-  text-decoration: none;
-}
-
 @keyframes woe-ab-pulse {
   0%, 100% { opacity: .75; transform: scale(.9); }
   50% { opacity: 1; transform: scale(1.2); }
@@ -524,7 +398,7 @@
   }
 
   .woe-ab-canvas,
-  .woe-ab-modal-panel,
+  .woe-ab-live-feed,
   .woe-ab-tooltip {
     transition: none;
     scroll-behavior: auto;
@@ -546,8 +420,8 @@
     display: none;
   }
 
-  .woe-ab-modal-grid {
-    grid-template-columns: 1fr;
+  .woe-ab-live-feed {
+    display: none;
   }
 }
 

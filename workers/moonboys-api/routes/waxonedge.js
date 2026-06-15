@@ -3853,8 +3853,8 @@ async function syncSupplyInputs(env) {
     cursor: lastTokenKey || '',
     page_count: (asNumber(state?.page_count) || 0) + 1,
     row_count: totalPairTokens,
-    complete: totalPairTokens > 0 && attempted >= totalPairTokens ? 1 : 0,
-    truncated: totalPairTokens > attempted ? 1 : 0,
+    complete: totalPairTokens > 0 && (attempted >= totalPairTokens || attempted < limit) ? 1 : 0,
+    truncated: totalPairTokens > attempted && attempted >= limit ? 1 : 0,
     status,
     error,
     started_at: startedAt,
@@ -4220,6 +4220,7 @@ function tokenMetricProof(row, pairProofRows = []) {
   const hasMarketCap = asNumber(row?.market_cap_wax ?? row?.market_cap_usd) != null;
   const hasCirculatingSupply = asNumber(row?.circulating_supply) != null;
   const hasHolderSnapshot = asNumber(row?.holder_count) != null && asNumber(row?.holder_count) > 0;
+  const hasPairProofRows = (pairProofRows || []).length > 0;
   const tvlBasis = tvlWax != null || tvlUsd != null ? 'indexed_pair_reserve_value' : null;
   const liquidityBasis = liquidityWax != null || liquidityUsd != null ? 'indexed_pair_reserve_value' : null;
   const tvlLiquiditySameBasis = tvlBasis != null && liquidityBasis != null && tvlBasis === liquidityBasis;
@@ -4253,8 +4254,16 @@ function tokenMetricProof(row, pairProofRows = []) {
     },
     liquidity_contribution_count: liquidityContributionRows.length || asNumber(row?.indexed_pair_count) || 0,
     tvl_contribution_count: tvlContributionRows.length || asNumber(row?.indexed_pair_count) || 0,
-    pair_contribution_total_wax: safeDecimal(pairContributionWax || liquidityWax),
-    pair_contribution_total_usd: safeDecimal(pairContributionUsd || liquidityUsd),
+    pair_contribution_total_wax: safeDecimal(
+      hasPairProofRows
+        ? (contributionRows.length ? pairContributionWax : null)
+        : liquidityWax
+    ),
+    pair_contribution_total_usd: safeDecimal(
+      hasPairProofRows
+        ? (contributionRows.length ? pairContributionUsd : null)
+        : liquidityUsd
+    ),
     has_holder_snapshot: hasHolderSnapshot,
     has_market_cap: hasMarketCap,
     has_circulating_supply: hasCirculatingSupply,
