@@ -420,6 +420,10 @@ ok('WaxOnEdge never renders Invalid Date for scanner timestamps',
   v2Js.includes("if (!value) return ''") &&
   v2Js.includes("if (!Number.isFinite(date.getTime())) return ''") &&
   v2Js.includes("safeTimeLabel(state.lastUpdated) || 'Waiting for sync'") &&
+  v2Js.includes('(tokens[tokens.length - 1] && tokens[tokens.length - 1].updated_at)') &&
+  v2Js.includes('state.lastUpdated = loadedData.updated_at || loadedData.generated_at || new Date().toISOString()') &&
+  !v2Js.includes('state.lastUpdated = state.live.cursor') &&
+  !v2Js.includes('loadedData.updated_at || loadedData.generated_at || loadedData.next_cursor') &&
   !/function safeTimeLabel[\s\S]*new Date\(\)[\s\S]*return date\.toLocaleTimeString/.test(v2Js) &&
   !v2Js.includes('Invalid Date') &&
   !html.includes('Invalid Date') &&

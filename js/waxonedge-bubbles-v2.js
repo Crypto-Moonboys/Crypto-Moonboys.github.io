@@ -614,7 +614,10 @@
       }
     });
     if (!changed) return;
-    state.lastUpdated = state.live.cursor || data.generated_at || new Date().toISOString();
+    state.lastUpdated =
+      (tokens[tokens.length - 1] && tokens[tokens.length - 1].updated_at) ||
+      data.generated_at ||
+      new Date().toISOString();
     refreshLiveTargetRadii();
     syncNodes();
     changedRecords.forEach(function (record) {
@@ -1457,7 +1460,7 @@
       state.pairs = sourceRows(payloadData(state.payload).pairs);
       state.connected = true;
       var loadedData = payloadData(state.payload);
-      state.lastUpdated = loadedData.updated_at || loadedData.generated_at || loadedData.next_cursor || new Date().toISOString();
+      state.lastUpdated = loadedData.updated_at || loadedData.generated_at || new Date().toISOString();
       updateWaxPrice(state.payload);
       syncNodes();
       setStatus();
