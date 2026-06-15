@@ -2159,6 +2159,16 @@ ok('free-safe supply sync runs as isolated cron workload',
   route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env))') &&
   route.includes('tasks.push(syncSupplyInputs(env))') &&
   !route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env));\n      tasks.push(syncSupplyInputs(env))'));
+{
+  const supplySyncBlock = route.match(/async function syncSupplyInputs[\s\S]*?const totalPairTokens/)?.[0] || '';
+  const cursorExpression = "(t.contract || '::' || t.symbol)";
+  ok('supply cursor filter uses single-quoted token separator',
+    supplySyncBlock.includes(`const cursorFilter = afterCursor ? "AND ${cursorExpression} > ?" : '';`) &&
+    !supplySyncBlock.includes('t.contract || "::" || t.symbol'));
+  ok('supply rotation cursor expression matches token_key expression',
+    supplySyncBlock.includes(`SELECT DISTINCT t.contract, t.symbol, ${cursorExpression} AS token_key`) &&
+    supplySyncBlock.includes(`AND ${cursorExpression} > ?`));
+}
 ok('supply sync rotates across all indexed-pair tokens with bounded Worker budget',
   route.includes('function supplySyncLimit') &&
   route.includes('WAXONEDGE_SUPPLY_SYNC_LIMIT') &&
@@ -3887,6 +3897,56 @@ ok('route does not fake holder distribution',
   route.includes('has_real_snapshot') &&
   route.includes("if (child === 'holders')") &&
   !route.includes("if (child === 'holders') return ok([], [REQUIRES_INDEXED_BACKEND]"));
+{
+  function holderDb(hasSourceColumn) {
+    return {
+      prepare(sql) {
+        const statement = {
+          async first() {
+            if (sql.includes('MAX(snapshot_at)')) return { snapshot_at: '2026-06-15T00:00:00.000Z' };
+            if (sql.includes('COUNT(*) AS count')) return { count: 1 };
+            if (sql.includes('SUM(CAST(balance AS NUMERIC))')) return { total_holder_balance: 42 };
+            if (sql.includes('SELECT total_supply')) return { total_supply: '100.00000000' };
+            return null;
+          },
+          async all() {
+            if (sql.includes('snapshot_at, source') && !hasSourceColumn) {
+              throw new Error('no such column: source');
+            }
+            return {
+              results: [{
+                account: 'waxholder111',
+                balance: '42.00000000',
+                percentage: '42',
+                snapshot_at: '2026-06-15T00:00:00.000Z',
+                ...(hasSourceColumn ? { source: 'holder_indexer' } : {}),
+              }],
+            };
+          },
+        };
+        return {
+          bind() {
+            return statement;
+          },
+          first: statement.first,
+          all: statement.all,
+        };
+      },
+    };
+  }
+  const holdersWithoutSource = await __waxonedgeTestHooks.listTokenHolders(holderDb(false), 'tokenctr', 'TOK', { limit: 10 });
+  ok('holder endpoint still returns rows when holder table lacks source column',
+    holdersWithoutSource.rows.length === 1 &&
+    holdersWithoutSource.rows[0].account === 'waxholder111' &&
+    holdersWithoutSource.rows[0].source === 'indexed_snapshot' &&
+    holdersWithoutSource.source === 'indexed_snapshot' &&
+    holdersWithoutSource.has_real_snapshot === true);
+  const holdersWithSource = await __waxonedgeTestHooks.listTokenHolders(holderDb(true), 'tokenctr', 'TOK', { limit: 10 });
+  ok('holder endpoint preserves source when holder source column exists',
+    holdersWithSource.rows.length === 1 &&
+    holdersWithSource.rows[0].source === 'holder_indexer' &&
+    holdersWithSource.source === 'holder_indexer');
+}
 ok('route marks chart/trades unavailable unless indexed', route.includes('SOURCE_NOT_INDEXED') && route.includes("child === 'chart'") && route.includes("child === 'trades'"));
 ok('token debug explains missing candles, stale aggregates, and partial source sync',
   route.includes('sync_diagnostics') &&

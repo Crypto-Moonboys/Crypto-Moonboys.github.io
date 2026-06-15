@@ -3790,7 +3790,7 @@ async function syncSupplyInputs(env) {
   const state = await readSourceIndexState(env.DB, 'wax_rpc_supply');
   const cursor = safeString(state?.cursor);
   async function loadRows(afterCursor) {
-    const cursorFilter = afterCursor ? 'AND (t.contract || "::" || t.symbol) > ?' : '';
+    const cursorFilter = afterCursor ? "AND (t.contract || '::' || t.symbol) > ?" : '';
     const params = afterCursor ? [afterCursor, limit] : [limit];
     return env.DB.prepare(
       `SELECT DISTINCT t.contract, t.symbol, (t.contract || '::' || t.symbol) AS token_key
@@ -4330,13 +4330,32 @@ async function listTokenHolders(db, contract, symbol, options = {}) {
       has_real_snapshot: false,
     };
   }
-  const rows = await db.prepare(
-    `SELECT account, balance, percentage, snapshot_at, source
-     FROM waxonedge_holders
-     WHERE contract = ? AND symbol = ? AND snapshot_at = ?
-     ORDER BY CAST(balance AS NUMERIC) DESC
-     LIMIT ?`
-  ).bind(contract, symbol, latest.snapshot_at, limit).all().catch(() => ({ results: [] }));
+  let rows;
+  try {
+    rows = await db.prepare(
+      `SELECT account, balance, percentage, snapshot_at, source
+       FROM waxonedge_holders
+       WHERE contract = ? AND symbol = ? AND snapshot_at = ?
+       ORDER BY CAST(balance AS NUMERIC) DESC
+       LIMIT ?`
+    ).bind(contract, symbol, latest.snapshot_at, limit).all();
+  } catch (error) {
+    const message = String(error?.message || error).toLowerCase();
+    if (!message.includes('no such column') || !message.includes('source')) throw error;
+    const fallbackRows = await db.prepare(
+      `SELECT account, balance, percentage, snapshot_at
+       FROM waxonedge_holders
+       WHERE contract = ? AND symbol = ? AND snapshot_at = ?
+       ORDER BY CAST(balance AS NUMERIC) DESC
+       LIMIT ?`
+    ).bind(contract, symbol, latest.snapshot_at, limit).all();
+    rows = {
+      results: (fallbackRows.results || []).map((row) => ({
+        ...row,
+        source: 'indexed_snapshot',
+      })),
+    };
+  }
   const count = await countScalar(db,
     `SELECT COUNT(*) AS count
      FROM waxonedge_holders
@@ -6500,6 +6519,7 @@ export const __waxonedgeTestHooks = {
   listLiveTokenUpdates,
   handleLiveSnapshot,
   handleLiveStream,
+  listTokenHolders,
   sourceCoverageFromKeys,
 };
 
