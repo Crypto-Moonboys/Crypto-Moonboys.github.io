@@ -9,6 +9,19 @@
   overflow: hidden;
 }
 
+.woe-antbubbles-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 14% 18%, rgba(0, 229, 255, .18), transparent 34%),
+    radial-gradient(circle at 82% 20%, rgba(255, 43, 214, .13), transparent 32%),
+    radial-gradient(circle at 58% 78%, rgba(57, 255, 136, .10), transparent 38%),
+    #020008;
+  pointer-events: none;
+}
+
 .woe-antbubbles-page .site-shell,
 .woe-antbubbles-page .wiki-sidebar,
 .woe-antbubbles-page .right-rail {
@@ -17,6 +30,8 @@
 
 .woe-antbubbles-page #content {
   min-height: 100vh;
+  position: relative;
+  z-index: 1;
 }
 
 .woe-ab-shell {
@@ -25,28 +40,30 @@
   max-width: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  background:
-    radial-gradient(circle at 20% 18%, rgba(0, 229, 255, .12), transparent 30%),
-    radial-gradient(circle at 88% 64%, rgba(255, 43, 214, .11), transparent 34%),
-    #020008;
+  display: block;
+  background: transparent;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .woe-ab-topbar {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  right: 14px;
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
   min-height: 56px;
-  padding: 8px 14px;
+  padding: 8px 10px;
   border: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .07);
-  background: #000;
-  box-shadow: none;
-  border-radius: 0;
-  z-index: 5;
+  background: linear-gradient(180deg, rgba(3, 5, 13, .80), rgba(3, 5, 13, .45));
+  box-shadow: 0 18px 46px rgba(0, 0, 0, .28);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  z-index: 20;
+  pointer-events: auto;
 }
 
 .woe-ab-topbar .woe-og-brand {
@@ -225,20 +242,18 @@
 }
 
 .woe-ab-board-section {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 0;
+  position: fixed;
+  inset: 0;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
   border: 0;
   border-radius: 0;
-  background:
-    radial-gradient(circle at 52% 42%, rgba(0, 229, 255, .10), transparent 28%),
-    radial-gradient(circle at 72% 70%, rgba(255, 43, 214, .09), transparent 30%),
-    #020008;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  background: transparent;
+  display: block;
+  overflow: visible;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .woe-ab-sr {
@@ -251,19 +266,22 @@
 
 .woe-antbubbles-page .woe-bubble-board,
 .woe-ab-canvas {
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  inset: 0;
+  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
   border: 0;
   border-radius: 0;
   background: transparent;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .woe-ab-canvas {
   display: block;
   touch-action: none;
+  z-index: 1;
+  pointer-events: auto;
 }
 
 .woe-ab-canvas:focus-visible {
@@ -312,17 +330,25 @@
 }
 
 .woe-ab-stats {
+  position: fixed;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  z-index: 18;
   display: flex;
   align-items: center;
   gap: 15px;
-  min-height: 34px;
+  min-height: 32px;
   padding: 7px 13px;
-  border-top: 1px solid rgba(255, 255, 255, .06);
-  background: #000;
+  border: 1px solid rgba(0, 229, 255, .16);
+  border-radius: 999px;
+  background: rgba(2, 6, 14, .72);
+  backdrop-filter: blur(10px);
   color: #777;
   font-size: 12px;
   overflow-x: auto;
   white-space: nowrap;
+  pointer-events: auto;
 }
 
 .woe-ab-stats strong {
@@ -330,39 +356,49 @@
 }
 
 .woe-ab-live-feed {
-  position: absolute;
+  position: fixed;
+  left: 14px;
   right: 14px;
-  bottom: 48px;
-  z-index: 6;
-  width: min(360px, calc(100vw - 28px));
-  display: grid;
-  gap: 7px;
+  top: 86px;
+  z-index: 17;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 999px;
+  background: rgba(2, 6, 14, .48);
+  backdrop-filter: blur(8px);
+  padding: 6px 12px;
   pointer-events: none;
 }
 
 .woe-ab-feed-item {
-  border: 1px solid color-mix(in srgb, var(--feed-color, #f89422) 42%, transparent);
-  border-radius: 8px;
-  background: rgba(5, 5, 5, .78);
-  box-shadow: 0 0 22px color-mix(in srgb, var(--feed-color, #f89422) 14%, transparent);
-  padding: 8px 10px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #c9c9c9;
+  font-size: 11px;
+  animation: woe-ab-ticker 24s linear infinite;
 }
 
 .woe-ab-feed-item strong,
 .woe-ab-feed-item span {
-  display: block;
+  display: inline;
 }
 
 .woe-ab-feed-item strong {
   color: var(--feed-color, #f89422);
   font-size: 11px;
-  margin-bottom: 3px;
+  margin: 0;
 }
 
 .woe-ab-feed-item span {
   color: #c9c9c9;
   font-size: 11px;
-  line-height: 1.35;
+  line-height: 1.2;
 }
 
 .woe-ab-up {
@@ -399,6 +435,11 @@
   50% { opacity: 1; transform: scale(1.2); }
 }
 
+@keyframes woe-ab-ticker {
+  0% { transform: translateX(22vw); }
+  100% { transform: translateX(-120vw); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .woe-ab-pulse {
     animation: none;
@@ -407,6 +448,7 @@
   .woe-ab-canvas,
   .woe-ab-live-feed,
   .woe-ab-tooltip {
+    animation: none;
     transition: none;
     scroll-behavior: auto;
   }
@@ -414,6 +456,9 @@
 
 @media (max-width: 920px) {
   .woe-ab-topbar {
+    top: 8px;
+    left: 8px;
+    right: 8px;
     align-items: stretch;
   }
 
@@ -428,7 +473,9 @@
   }
 
   .woe-ab-live-feed {
-    display: none;
+    top: 128px;
+    left: 8px;
+    right: 8px;
   }
 }
 
@@ -443,6 +490,9 @@
   }
 
   .woe-ab-stats {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
     min-height: 40px;
   }
 }

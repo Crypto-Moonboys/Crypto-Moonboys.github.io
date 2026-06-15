@@ -562,9 +562,6 @@
   function computeRadii(records, width, height) {
     var count = Math.max(1, records.length);
     var mobile = width < 680;
-    var cols = Math.max(1, Math.ceil(Math.sqrt(count * (width / Math.max(height, 1)))));
-    var rows = Math.max(1, Math.ceil(count / cols));
-    var cellSize = Math.min(width / (cols + 0.8), height / (rows + 0.8));
     var scores = records.map(function (record) {
       var metricValue = valueForMetric(record, state.metric, state.timeframe);
       if (metricValue == null || metricValue <= 0) return blendedMarketScore(record) * 0.28;
@@ -573,38 +570,46 @@
     var positives = scores.filter(function (value) { return value > 0; }).sort(function (a, b) { return a - b; });
     var p95 = positives.length ? positives[Math.max(0, Math.floor(positives.length * 0.95) - 1)] : 1;
     var max = Math.max.apply(Math, scores.concat([1]));
-    var cellLimit = Math.max(18, cellSize * (mobile ? 0.36 : 0.38));
-    var minR = Math.min(mobile ? 15 : 20, Math.max(12, cellLimit * 0.62));
-    var maxR = Math.max(minR + 6, Math.min(mobile ? 42 : 62, Math.sqrt(width * height * (mobile ? 0.032 : 0.018) / Math.PI), cellLimit));
+    var areaRadius = Math.sqrt(width * height * (mobile ? 0.021 : 0.011) / Math.max(count, 1));
+    var minR = mobile ? 13 : 16;
+    var maxR = Math.max(minR + 7, Math.min(mobile ? 34 : 48, areaRadius * (mobile ? 1.86 : 1.94)));
     return records.map(function (record, index) {
       var value = scores[index];
       var norm = value <= 0 ? 0.06 : Math.pow(value / Math.max(p95, 1), 0.72);
       if (value > p95 && max > p95) norm = 0.84 + (Math.log(value / p95) / Math.log(max / p95)) * 0.16;
       norm = Math.max(0.06, Math.min(1, norm));
-      return Math.round(Math.min(cellLimit, (minR + norm * (maxR - minR)) * metricEmphasis(record)));
+      return Math.round((minR + norm * (maxR - minR)) * metricEmphasis(record));
     });
   }
 
+  function seededUnit(seed) {
+    var x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+    return x - Math.floor(x);
+  }
+
   function layoutPosition(index, count, width, height, radius) {
-    var cols = Math.max(1, Math.ceil(Math.sqrt(Math.max(1, count) * (width / Math.max(height, 1)))));
-    var rows = Math.max(1, Math.ceil(count / cols));
-    var col = index % cols;
-    var row = Math.floor(index / cols);
-    var marginX = Math.max(radius + 10, width * 0.035);
-    var marginY = Math.max(radius + 10, height * 0.07);
-    var usableW = Math.max(1, width - marginX * 2);
-    var usableH = Math.max(1, height - marginY * 2);
-    var cellW = cols > 1 ? usableW / (cols - 1) : 0;
-    var cellH = rows > 1 ? usableH / (rows - 1) : 0;
-    var seed = ((index + 1) * 9301 + count * 49297) % 233280;
-    var jitterX = (((seed % 100) / 100) - 0.5) * Math.min(cellW || usableW, radius * 1.4) * 0.28;
-    var jitterY = ((((seed * 37) % 100) / 100) - 0.5) * Math.min(cellH || usableH, radius * 1.4) * 0.28;
-    var x = cols > 1 ? marginX + col * cellW : width / 2;
-    var y = rows > 1 ? marginY + row * cellH : height / 2;
-    if (row % 2 && cols > 2) x += Math.min(cellW * 0.18, radius * 0.7);
+    var safe = Math.max(radius + 14, 26);
+    var usableW = Math.max(1, width - safe * 2);
+    var usableH = Math.max(1, height - safe * 2);
+    var centerX = width * (0.5 + (seededUnit(count + 17) - 0.5) * 0.05);
+    var centerY = height * (0.53 + (seededUnit(count + 31) - 0.5) * 0.08);
+    var golden = Math.PI * (3 - Math.sqrt(5));
+    var seedA = seededUnit((index + 1) * 19 + count);
+    var seedB = seededUnit((index + 1) * 37 + count * 3);
+    var ring = Math.sqrt((index + 0.62) / Math.max(count, 1));
+    var wobble = 0.78 + seedA * 0.34;
+    var angle = (index * golden) + (seedA - 0.5) * 1.8 + count * 0.07;
+    var orbitX = usableW * (0.08 + ring * 0.46) * wobble;
+    var orbitY = usableH * (0.10 + ring * 0.42) * (0.82 + seedB * 0.30);
+    var x = centerX + Math.cos(angle) * orbitX + Math.sin(angle * 2.3) * usableW * 0.045;
+    var y = centerY + Math.sin(angle) * orbitY + Math.cos(angle * 1.7) * usableH * 0.05;
+    if (index < 8) {
+      x = centerX + Math.cos(angle) * usableW * (0.08 + seedA * 0.12);
+      y = centerY + Math.sin(angle) * usableH * (0.08 + seedB * 0.12);
+    }
     return {
-      x: Math.max(radius + 8, Math.min(width - radius - 8, x + jitterX)),
-      y: Math.max(radius + 8, Math.min(height - radius - 8, y + jitterY)),
+      x: Math.max(safe, Math.min(width - safe, x)),
+      y: Math.max(safe, Math.min(height - safe, y)),
     };
   }
 
@@ -827,14 +832,14 @@
     var feed = document.getElementById('woe-ab-live-feed');
     if (!feed) return;
     if (!state.liveFeed.length) {
-      feed.innerHTML = '<div class="woe-ab-feed-item"><strong>Live WAX Galaxy</strong><span>Waiting for real WaxOnEdge updates.</span></div>';
+      feed.innerHTML = '<span class="woe-ab-feed-item"><strong>Live WAX Galaxy</strong><span>Waiting for real WaxOnEdge updates.</span></span>';
       return;
     }
     feed.innerHTML = state.liveFeed.map(function (item) {
-      return '<div class="woe-ab-feed-item" style="--feed-color:' + escHtml(item.color) + '">' +
+      return '<span class="woe-ab-feed-item" style="--feed-color:' + escHtml(item.color) + '">' +
         '<strong>' + escHtml(item.symbol) + '</strong>' +
         '<span>' + escHtml(item.message) + '</span>' +
-      '</div>';
+      '</span>';
     }).join('');
   }
 
@@ -867,15 +872,15 @@
     var nodes = state.nodes;
     var animate = shouldAnimate();
     var now = performance.now();
-    for (var tick = 0; tick < 5; tick += 1) {
+    for (var tick = 0; tick < 9; tick += 1) {
       nodes.forEach(function (node, index) {
         node.radius += (node.targetRadius - node.radius) * 0.1;
         if (!animate) return;
-        node.vx += ((node.homeX || width / 2) - node.x) * 0.014;
-        node.vy += ((node.homeY || height / 2) - node.y) * 0.014;
-        var drift = Math.sqrt(index + 1) * 0.22;
-        node.vx += Math.cos(index * 1.7 + Date.now() / 9000) * drift * 0.012;
-        node.vy += Math.sin(index * 1.3 + Date.now() / 11000) * drift * 0.012;
+        node.vx += ((node.homeX || width / 2) - node.x) * 0.0015;
+        node.vy += ((node.homeY || height / 2) - node.y) * 0.0015;
+        var drift = 0.18 + Math.sqrt(index + 1) * 0.035;
+        node.vx += Math.cos(index * 1.7 + now / 7200) * drift * 0.018;
+        node.vy += Math.sin(index * 1.3 + now / 9200) * drift * 0.018;
       });
       for (var i = 0; i < nodes.length; i += 1) {
         for (var j = i + 1; j < nodes.length; j += 1) {
@@ -884,23 +889,23 @@
           var dx = b.x - a.x;
           var dy = b.y - a.y;
           var dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          var min = visualRadius(a) + visualRadius(b) + 5;
+          var min = visualRadius(a) + visualRadius(b) + 18;
           if (dist < min) {
             var overlap = min - dist;
             var nx = dx / dist;
             var ny = dy / dist;
-            var move = overlap * 0.52;
+            var move = overlap * 0.7;
             if (state.dragging !== a) {
               a.x -= nx * move;
               a.y -= ny * move;
-              a.vx -= nx * overlap * 0.08;
-              a.vy -= ny * overlap * 0.08;
+              a.vx -= nx * overlap * 0.14;
+              a.vy -= ny * overlap * 0.14;
             }
             if (state.dragging !== b) {
               b.x += nx * move;
               b.y += ny * move;
-              b.vx += nx * overlap * 0.08;
-              b.vy += ny * overlap * 0.08;
+              b.vx += nx * overlap * 0.14;
+              b.vy += ny * overlap * 0.14;
             }
             if (overlap > 1.5) {
               a.collisionUntil = Math.max(a.collisionUntil || 0, now + 320);
@@ -912,8 +917,8 @@
     }
     nodes.forEach(function (node) {
       if (state.dragging === node) return;
-      node.vx *= 0.88;
-      node.vy *= 0.88;
+      node.vx *= 0.9;
+      node.vy *= 0.9;
       node.x += node.vx;
       node.y += node.vy;
       var boundsRadius = visualRadius(node);
@@ -1247,23 +1252,12 @@
     var now = performance.now();
     updateCamera(width, height, now);
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, width, height);
     var weather = marketWeather();
     var sky = ctx.createRadialGradient(width * 0.5, height * 0.35, 10, width * 0.5, height * 0.5, Math.max(width, height));
     sky.addColorStop(0, weather.center);
-    sky.addColorStop(1, '#000');
+    sky.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, width, height);
-    var grid = 64;
-    ctx.strokeStyle = 'rgba(255,255,255,.035)';
-    ctx.lineWidth = 1;
-    for (var gx = 0; gx < width; gx += grid) {
-      ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, height); ctx.stroke();
-    }
-    for (var gy = 0; gy < height; gy += grid) {
-      ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(width, gy); ctx.stroke();
-    }
     ctx.save();
     applyCamera(ctx, width, height);
     state.nodes.forEach(function (node) { drawCastShadow(ctx, node); });
