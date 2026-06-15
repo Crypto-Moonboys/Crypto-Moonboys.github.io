@@ -74,6 +74,45 @@
 <div id="woe-ab-modal" class="woe-ab-modal" hidden></div>
 
 <script data-cfasync="false" src="/js/api-config.js"></script>
+<script data-cfasync="false">
+(function () {
+  'use strict';
+
+  var api = window.MOONBOYS_API || {};
+  var info = api.getApiBaseInfo ? api.getApiBaseInfo({ allowProductionFallback: true }) : null;
+  var baseUrl = String((info && info.url) || api.BASE_URL || api.PRODUCTION_BASE_URL || '').replace(/\/$/, '');
+  var waxonedgePath = /^\/api\/waxonedge(?:\/|\?|$)/;
+
+  if (!baseUrl || !window.fetch) return;
+
+  function rewriteWaxOnEdgeUrl(input) {
+    var url = typeof input === 'string' ? input : (input && input.url);
+    if (!url || !waxonedgePath.test(url)) return input;
+
+    var nextUrl = baseUrl + url;
+    if (typeof input === 'string') return nextUrl;
+
+    try {
+      return new Request(nextUrl, input);
+    } catch (_) {
+      return nextUrl;
+    }
+  }
+
+  var nativeFetch = window.fetch;
+  window.fetch = function (input, init) {
+    return nativeFetch.call(this, rewriteWaxOnEdgeUrl(input), init);
+  };
+
+  if (window.EventSource) {
+    var NativeEventSource = window.EventSource;
+    window.EventSource = function (url, config) {
+      return new NativeEventSource(rewriteWaxOnEdgeUrl(String(url)), config);
+    };
+    window.EventSource.prototype = NativeEventSource.prototype;
+  }
+}());
+</script>
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
