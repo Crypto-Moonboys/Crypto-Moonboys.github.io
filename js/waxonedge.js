@@ -1700,6 +1700,22 @@
     return availabilityHtml(tokenStatReason(stats, key) || fallback);
   }
 
+  function isFreshHistoryAccumulating(stats, key) {
+    if (!stats) return false;
+    var keyComplete = asNum(stats[key + '_complete']);
+    if (keyComplete === 0) return true;
+    var historyComplete = asNum(stats.history_complete != null ? stats.history_complete : stats.fresh_history_complete);
+    if (historyComplete === 0) return true;
+    var historyState = String(stats.history_state || stats.history_status || stats.fresh_history_state || '').toLowerCase();
+    return /fresh|build|accumulat|incomplete/.test(historyState);
+  }
+
+  function historicalVolumeAvailabilityHtml(stats, key) {
+    if (tokenStatReason(stats, key)) return tokenAvailabilityHtml(stats, key);
+    if (isFreshHistoryAccumulating(stats, key)) return availabilityHtml('Building from fresh live history');
+    return tokenAvailabilityHtml(stats, key);
+  }
+
   function getSelectedTokenContext() {
     var selection = state.selected;
     var detail = state.tokenDetailCache[selection.key] || null;
@@ -2173,10 +2189,10 @@
       : tokenAvailabilityHtml(stats, 'liquidity'));
     statsHtml += statRow('7d volume', canUseHistoricalVolumes && historicalVolumes && historicalVolumes.sevenDay != null
       ? escHtml(fmtNum(historicalVolumes.sevenDay) + ' ' + selection.symbol)
-      : '<span class="woe-stat-muted">Building from fresh live history</span>');
+      : historicalVolumeAvailabilityHtml(stats, 'volume_7d'));
     statsHtml += statRow('30d volume', canUseHistoricalVolumes && historicalVolumes && historicalVolumes.thirtyDay != null
       ? escHtml(fmtNum(historicalVolumes.thirtyDay) + ' ' + selection.symbol)
-      : '<span class="woe-stat-muted">Building from fresh live history</span>');
+      : historicalVolumeAvailabilityHtml(stats, 'volume_30d'));
     statsHtml += statRow('Market cap', marketCapWax != null || marketCapUsd != null
       ? escHtml(formatDualMetric(marketCapWax, marketCapUsd))
       : tokenAvailabilityHtml(stats, 'market_cap'), { muted: marketCapWax == null && marketCapUsd == null });
@@ -2196,17 +2212,18 @@
     var nextSource = nextCandidate
       ? nextCandidate.source + (nextCandidate.marketId ? ' #' + nextCandidate.marketId : '')
       : 'No alternate indexed pair candidate available';
+    var statusText = metaLabel || reason || 'Indexed chart building from fresh live data';
     setHtml('woe-chart-panel',
       '<div class="woe-chart-placeholder-card">' +
         '<div class="woe-chart-placeholder-grid">' +
           '<div><span>Selected source</span><strong>' + escHtml(selectedSource) + '</strong></div>' +
-          '<div><span>Status</span><strong>Indexed chart building from fresh live data</strong></div>' +
+          '<div><span>Status</span><strong>' + escHtml(statusText) + '</strong></div>' +
           '<div><span>Reason</span><strong>' + escHtml(reason || 'No backend OHLCV candles are indexed for this pair yet') + '</strong></div>' +
           '<div><span>Next candidate</span><strong>' + escHtml(nextSource) + '</strong></div>' +
         '</div>' +
         '<p>No fake candles are shown. When D1 has OHLCV rows for the selected pair, this panel renders with Lightweight Charts.</p>' +
       '</div>');
-    setText('woe-chart-meta', metaLabel || 'Indexed chart building from fresh live data');
+    setText('woe-chart-meta', statusText);
   }
 
   function renderChart(context) {

@@ -212,6 +212,10 @@ ok('WaxOnEdge keeps missing 7d/30d/candle data honest instead of fake',
   v2Js.includes('30D unavailable') &&
   v2Js.includes('history building from fresh live data') &&
   js.includes('Indexed chart building from fresh live data') &&
+  js.includes('function historicalVolumeAvailabilityHtml') &&
+  js.includes("if (tokenStatReason(stats, key)) return tokenAvailabilityHtml(stats, key)") &&
+  js.includes('function isFreshHistoryAccumulating') &&
+  js.includes('var statusText = metaLabel || reason') &&
   js.includes('No fake candles are shown') &&
   !v2Js.includes('synthesized candle') &&
   !js.includes('synthesized candle') &&
@@ -239,6 +243,7 @@ ok('waxonedge-bubbles-v2.js makes the canvas keyboard focusable and opens analyt
   v2Js.includes('tabindex="0"') &&
   v2Js.includes('role="application"') &&
   v2Js.includes('WaxOnEdge WAX Galaxy scanner') &&
+  v2Js.includes('Use Enter or Space to open the highlighted token analytics page') &&
   v2Js.includes('function onCanvasKeydown') &&
   v2Js.includes("event.key !== 'Enter'") &&
   v2Js.includes("event.key !== ' '") &&
@@ -287,6 +292,8 @@ ok('waxonedge-bubbles-v2.js adds live WAX Galaxy reactions from real update data
   html.includes('woe-ab-live-feed') &&
   v2Js.includes('function addLiveFeed') &&
   v2Js.includes('function updateCamera') &&
+  v2Js.includes('return node.record && node.record.key === record.key') &&
+  v2Js.includes('state.camera.focusX = currentNode ? currentNode.x : (record.nodeX || 0)') &&
   v2Js.includes('function marketWeather') &&
   v2Js.includes('record.recentUntil') &&
   v2Js.includes('record.volumeSpikeUntil') &&

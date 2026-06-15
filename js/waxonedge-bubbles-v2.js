@@ -666,9 +666,12 @@
     });
     state.liveFeed = state.liveFeed.slice(0, 6);
     if (record.majorUpdatePending) {
+      var currentNode = state.nodes.find(function (node) {
+        return node.record && node.record.key === record.key;
+      });
       state.camera.focusUntil = performance.now() + 3800;
-      state.camera.focusX = record.nodeX || 0;
-      state.camera.focusY = record.nodeY || 0;
+      state.camera.focusX = currentNode ? currentNode.x : (record.nodeX || 0);
+      state.camera.focusY = currentNode ? currentNode.y : (record.nodeY || 0);
       record.majorUpdatePending = false;
     }
     renderLiveFeed();
@@ -1412,7 +1415,7 @@
   function initCanvas() {
     state.board = document.getElementById('woe-bubble-board');
     if (!state.board) return;
-    state.board.innerHTML = '<canvas id="woe-ab-canvas" class="woe-ab-canvas" tabindex="0" role="application" aria-label="WaxOnEdge WAX Galaxy scanner. Use Enter to open the highlighted token analytics page."></canvas>' +
+    state.board.innerHTML = '<canvas id="woe-ab-canvas" class="woe-ab-canvas" tabindex="0" role="application" aria-label="WaxOnEdge WAX Galaxy scanner. Use Enter or Space to open the highlighted token analytics page."></canvas>' +
       '<div id="woe-ab-tooltip" class="woe-ab-tooltip" hidden></div>';
     state.canvas = document.getElementById('woe-ab-canvas');
     state.ctx = state.canvas.getContext('2d');
