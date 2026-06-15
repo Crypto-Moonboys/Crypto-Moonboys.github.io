@@ -297,6 +297,8 @@ ok('waxonedge-bubbles-v2.js renders cached fake-3D planet bubbles with live impa
   v2Js.includes('function drawShockwaves') &&
   v2Js.includes('function queuePendingShockwaves') &&
   v2Js.includes('function isLiveImpactEvent') &&
+  v2Js.includes('node.collisionUntil') &&
+  v2Js.includes('var collisionPulse = node.collisionUntil') &&
   v2Js.includes('ctx.createRadialGradient') &&
   v2Js.includes('ctx.strokeText(record.symbol') &&
   v2Js.includes('} else if (!showText) {') &&
