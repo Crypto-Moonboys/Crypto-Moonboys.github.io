@@ -197,7 +197,7 @@ export function createState(config = loadConfig()) {
     poll_timer: null,
     polling: false,
     last_error: config.hyperion_api || config.state_history_endpoint
-      ? 'live stream connector not implemented yet'
+      ? 'no verified trade events observed yet'
       : 'WAXONEDGE_HYPERION_API or WAXONEDGE_STATE_HISTORY_ENDPOINT required',
   };
 }
@@ -337,17 +337,27 @@ function sendTokenUpdate(state, update) {
   }
 }
 
-function tradeIdFromRow(row, stream, parsed = {}) {
-  return safeString(firstPresent(
-    parsed.trade_id,
-    parsed.id,
-    row?.global_sequence,
-    row?.global_sequence_num,
-    row?.receipt?.global_sequence,
-    row?.action_trace?.receipt?.global_sequence,
-    row?.transaction_id,
-    row?.trx_id,
-  ));
+export function tradeIdFromRow(row, stream, parsed = {}) {
+  const streamIdentity = streamKey(stream);
+  const action = safeString(stream?.action || parsed.action_name || actionName(row));
+  const source = safeString(stream?.source || parsed.source);
+  const idParts = [
+    ['trade', parsed.trade_id],
+    ['id', parsed.id],
+    ['seq', firstPresent(row?.global_sequence, row?.global_sequence_num, row?.receipt?.global_sequence, row?.action_trace?.receipt?.global_sequence)],
+    ['trx', firstPresent(row?.transaction_id, row?.trx_id, row?.action_trace?.trx_id)],
+    ['ordinal', firstPresent(row?.action_ordinal, row?.receipt?.recv_sequence, row?.action_trace?.receipt?.recv_sequence)],
+    ['block', firstPresent(row?.block_num, row?.block, row?.block_number)],
+  ]
+    .map(([label, value]) => {
+      const text = safeString(value);
+      return text ? `${label}:${text}` : '';
+    })
+    .filter(Boolean);
+  if (!idParts.length) return '';
+  return [streamIdentity, source && `source:${source}`, action && `action:${action}`, ...idParts]
+    .filter(Boolean)
+    .join(':');
 }
 
 function rememberTradeId(state, tradeId) {
@@ -534,7 +544,7 @@ export async function ingestVerifiedTradeStreams(state, fetchImpl = globalThis.f
       });
       if (!response.ok) {
         if (current) {
-          current.status = 'not_connected';
+          current.status = current.event_count > 0 ? 'connected' : 'not_connected';
           current.last_error = `Hyperion ${response.status}`;
         }
         continue;
@@ -553,7 +563,7 @@ export async function ingestVerifiedTradeStreams(state, fetchImpl = globalThis.f
       }
     } catch (error) {
       if (current) {
-        current.status = 'not_connected';
+        current.status = current.event_count > 0 ? 'connected' : 'not_connected';
         current.last_error = error?.message || 'fetch failed';
       }
     }

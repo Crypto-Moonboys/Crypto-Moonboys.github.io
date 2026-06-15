@@ -418,6 +418,7 @@ ok('VPS live indexer exposes no fake live events or random movement',
     WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
     WAXONEDGE_LIVE_ENABLE_STREAM: 'true',
   }));
+  const initialHealth = liveIndexer.healthPayload(state);
   const observed = liveIndexer.observeLiveTrade(state, alcorTrade);
   const health = liveIndexer.healthPayload(state);
   const snapshot = liveIndexer.snapshotPayload(state);
@@ -430,6 +431,9 @@ ok('VPS live indexer exposes no fake live events or random movement',
     ammTrade.contract === 'graffitiking' &&
     ammTrade.symbol === 'WAXCASH' &&
     ammTrade.stream_source === 'swap.alcor::logswap');
+  ok('VPS live indexer health no longer reports stale skeleton connector wording',
+    initialHealth.last_error === 'no verified trade events observed yet' &&
+    !liveIndexerSource.includes('live stream connector not implemented yet'));
   ok('VPS live indexer becomes connected only after observed real trade rows',
     observed &&
     observed.token_key === 'graffitiking::WAXCASH' &&
@@ -445,6 +449,11 @@ ok('VPS live indexer exposes no fake live events or random movement',
     snapshot.tokens.length === 1 &&
     snapshot.tokens[0].last_trade_price === alcorTrade.price &&
     snapshot.tokens[0].last_trade_volume === alcorTrade.volume);
+  ok('VPS live indexer trade IDs include stream/source/action context for weak fallback fields',
+    liveIndexer.tradeIdFromRow({ global_sequence: 77 }, { account: 'alcordexmain', action: 'buymatch', source: 'alcor' }, {}) ===
+      'alcordexmain::buymatch:source:alcor:action:buymatch:seq:77' &&
+    liveIndexer.tradeIdFromRow({ global_sequence: 77 }, { account: 'swap.alcor', action: 'logswap', source: 'swap.alcor' }, {}) ===
+      'swap.alcor::logswap:source:swap.alcor:action:logswap:seq:77');
 }
 {
   const stream = liveIndexer.VERIFIED_TRADE_STREAMS.find((item) =>
@@ -489,10 +498,18 @@ ok('VPS live indexer exposes no fake live events or random movement',
     stream &&
     !liveIndexerSource.includes('reserve-derived candles') &&
     !/Math\.random|synthetic price movement|browser_hyperion_fetch:\s*true/i.test(liveIndexerSource));
+  const emptyResult = await liveIndexer.ingestVerifiedTradeStreams(state, async () =>
+    new Response(JSON.stringify({ actions: [] }), { status: 200, headers: { 'content-type': 'application/json' } }));
+  ok('VPS live indexer keeps connected state after an empty poll once real events were observed',
+    emptyResult.observed === 0 &&
+    state.connected === true &&
+    state.status === 'connected' &&
+    liveIndexer.healthPayload(state).status === 'connected');
 }
 {
   let rejectedFakeHealth = false;
   let rejectedFakeToken = false;
+  let rejectedNestedSynthetic = false;
   try {
     liveIndexerCheck.assertNoFakeLiveData({ uses_fake_live_data: true }, 'health');
   } catch (_) {
@@ -506,8 +523,16 @@ ok('VPS live indexer exposes no fake live events or random movement',
   } catch (_) {
     rejectedFakeToken = true;
   }
+  try {
+    liveIndexerCheck.assertNoFakeLiveData({
+      uses_fake_live_data: false,
+      details: { synthetic: true },
+    }, 'snapshot');
+  } catch (_) {
+    rejectedNestedSynthetic = true;
+  }
   ok('VPS live indexer runtime check fails on fake live data',
-    rejectedFakeHealth && rejectedFakeToken);
+    rejectedFakeHealth && rejectedFakeToken && rejectedNestedSynthetic);
 }
 {
   const healthPayload = {
@@ -586,6 +611,7 @@ ok('VPS live indexer exposes no fake live events or random movement',
   let rejected500 = false;
   let rejectedNoHeartbeat = false;
   let rejectedFakeStream = false;
+  let rejectedNestedFakeStream = false;
   let rejectedFake503Stream = false;
   const firstChunkHeartbeat = await withMockFetch([
     jsonResponse(503, healthPayload),
@@ -648,10 +674,19 @@ ok('VPS live indexer exposes no fake live events or random movement',
     await withMockFetch([
       jsonResponse(503, healthPayload),
       jsonResponse(503, snapshotPayload),
-      sseResponse('event: token_update\ndata: {"uses_fake_live_data":true}\n\n'),
+      sseResponse('event: token_update\ndata: {\n  "uses_fake_live_data" : true\n}\n\n'),
     ], () => liveIndexerCheck.runCheck({ WAXONEDGE_LIVE_CHECK_URL: 'http://live-indexer.test' }));
   } catch (_) {
     rejectedFakeStream = true;
+  }
+  try {
+    await withMockFetch([
+      jsonResponse(503, healthPayload),
+      jsonResponse(503, snapshotPayload),
+      sseResponse('event: token_update\ndata: {"token_key":"graffitiking::WAXCASH","meta":{"source":"mock"},"uses_fake_live_data":false}\n\nevent: heartbeat\ndata: {"uses_fake_live_data":false}\n\n'),
+    ], () => liveIndexerCheck.runCheck({ WAXONEDGE_LIVE_CHECK_URL: 'http://live-indexer.test' }));
+  } catch (_) {
+    rejectedNestedFakeStream = true;
   }
   try {
     await withMockFetch([
@@ -675,6 +710,7 @@ ok('VPS live indexer exposes no fake live events or random movement',
     rejected500 &&
     rejectedNoHeartbeat &&
     rejectedFakeStream &&
+    rejectedNestedFakeStream &&
     rejectedFake503Stream);
 }
 ok('VPS live indexer safely parses request path without trusting Host header',
