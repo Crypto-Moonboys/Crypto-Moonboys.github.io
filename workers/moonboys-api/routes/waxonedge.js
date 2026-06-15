@@ -4220,8 +4220,9 @@ function tokenMetricProof(row, pairProofRows = []) {
   const hasMarketCap = asNumber(row?.market_cap_wax ?? row?.market_cap_usd) != null;
   const hasCirculatingSupply = asNumber(row?.circulating_supply) != null;
   const hasHolderSnapshot = asNumber(row?.holder_count) != null && asNumber(row?.holder_count) > 0;
-  const tvlLiquiditySameBasis = (tvlWax != null && liquidityWax != null && tvlWax === liquidityWax) ||
-    (tvlUsd != null && liquidityUsd != null && tvlUsd === liquidityUsd);
+  const tvlBasis = tvlWax != null || tvlUsd != null ? 'indexed_pair_reserve_value' : null;
+  const liquidityBasis = liquidityWax != null || liquidityUsd != null ? 'indexed_pair_reserve_value' : null;
+  const tvlLiquiditySameBasis = tvlBasis != null && liquidityBasis != null && tvlBasis === liquidityBasis;
   return {
     metric_status: {
       price: selectedPriceWax != null || selectedPriceUsd != null,
@@ -4260,8 +4261,8 @@ function tokenMetricProof(row, pairProofRows = []) {
     has_7d_volume: has7dVolume,
     has_30d_volume: has30dVolume,
     tvl_liquidity_same_basis: tvlLiquiditySameBasis,
-    tvl_basis: tvlWax != null || tvlUsd != null ? 'indexed_pair_reserve_value' : null,
-    liquidity_basis: liquidityWax != null || liquidityUsd != null ? 'indexed_pair_reserve_value' : null,
+    tvl_basis: tvlBasis,
+    liquidity_basis: liquidityBasis,
   };
 }
 
@@ -4843,7 +4844,7 @@ async function getTokenDebug(db, contract, symbol) {
   const holderSnapshot = await listTokenHolders(db, contract, symbol, { limit: 1 });
   detail.stats.chart_candle_count = chartCandleCount;
   detail.stats.has_holder_snapshot = holderSnapshot.has_real_snapshot === true;
-  detail.stats.holder_count = holderSnapshot.holder_count || detail.stats.holder_count || null;
+  detail.stats.holder_count = holderSnapshot.holder_count ?? detail.stats.holder_count ?? null;
   Object.assign(detail.stats, tokenMetricProof(detail.stats, pairRows.map((pair) => pairContributionProof(pair, contract, symbol, pairPriceIndex))));
   const partialSourceStates = sourceStates.filter((row) =>
     sourceKeys.includes(aggregateSourceKey(row.source)) &&
