@@ -563,33 +563,42 @@
     var count = Math.max(1, records.length);
     var mobile = width < 680;
     var metric = state.metric;
-    var weighted = metric === 'tvl' || metric === 'liquidity';
-    var scores = records.map(function (record) {
-      var metricValue = valueForMetric(record, state.metric, state.timeframe);
-      if (metricValue == null || metricValue <= 0) return weighted ? 0 : blendedMarketScore(record) * 0.18;
-      return Math.log10(1 + Math.abs(metricValue));
+    var metricWeighted = metric === 'tvl' || metric === 'liquidity' || metric === 'volume';
+    var rawValues = records.map(function (record) {
+      var value = valueForMetric(record, metric, state.timeframe);
+      return value == null ? 0 : Math.abs(value);
     });
-    var positives = scores.filter(function (value) { return value > 0; }).sort(function (a, b) { return a - b; });
-    var lowIndex = Math.max(0, Math.floor(positives.length * (weighted ? 0.08 : 0.12)) - 1);
-    var highIndex = Math.max(0, Math.floor(positives.length * (weighted ? 0.96 : 0.92)) - 1);
-    var low = positives.length ? positives[lowIndex] : 0;
-    var high = positives.length ? positives[highIndex] : 1;
-    var max = Math.max.apply(Math, scores.concat([1]));
-    var areaRadius = Math.sqrt(width * height * (mobile ? 0.020 : 0.0105) / Math.max(count, 1));
-    var minR = weighted ? (mobile ? 10 : 12) : (mobile ? 13 : 16);
-    var maxR = weighted
-      ? Math.max(minR + 24, Math.min(mobile ? 52 : 78, areaRadius * (mobile ? 2.6 : 3.05)))
-      : Math.max(minR + 7, Math.min(mobile ? 34 : 48, areaRadius * (mobile ? 1.86 : 1.94)));
+    var positives = rawValues.filter(function (value) { return value > 0; }).sort(function (a, b) { return a - b; });
+    var maxValue = positives.length ? positives[positives.length - 1] : 0;
+    var p95 = positives.length
+      ? positives[Math.max(0, Math.floor(positives.length * 0.95) - 1)]
+      : maxValue;
+    var ref = Math.max(p95 || maxValue || 1, 1);
+    var hasOutliers = maxValue > ref * 1.01;
+    var topFloor = hasOutliers ? 0.84 : 1;
+    var exponent = metricWeighted ? (1 / 3) : 0.5;
+    var norms = rawValues.map(function (value) {
+      if (value <= 0) return metricWeighted ? 0.035 : 0.06;
+      if (value <= ref) return Math.pow(value / ref, exponent) * topFloor;
+      var denom = Math.max(0.0001, Math.log(maxValue / ref));
+      return topFloor + (Math.log(value / ref) / denom) * (1 - topFloor);
+    });
+    var sumN = norms.reduce(function (sum, value) { return sum + value; }, 0);
+    var sumN2 = norms.reduce(function (sum, value) { return sum + (value * value); }, 0);
+    var fillTarget = mobile ? (metricWeighted ? 0.44 : 0.48) : (metricWeighted ? 0.32 : 0.34);
+    var ratio = mobile ? (metricWeighted ? 5.6 : 4.1) : (metricWeighted ? 7.6 : 4.8);
+    var ratioMinusOne = ratio - 1;
+    var denom = count + (2 * ratioMinusOne * sumN) + (ratioMinusOne * ratioMinusOne * sumN2);
+    var rawMin = Math.sqrt((width * height * fillTarget) / (Math.PI * Math.max(1, denom)));
+    var minR = Math.max(metricWeighted ? (mobile ? 9 : 11) : (mobile ? 12 : 15), Math.round(rawMin));
+    var viewportCap = Math.round(Math.min(width, height) * (metricWeighted ? (mobile ? 0.13 : 0.105) : (mobile ? 0.078 : 0.062)));
+    var areaCap = Math.round(Math.sqrt(width * height * (metricWeighted ? (mobile ? 0.044 : 0.028) : (mobile ? 0.026 : 0.014)) / Math.PI));
+    var maxR = Math.max(minR + (metricWeighted ? 24 : 10), Math.min(viewportCap, areaCap, Math.round(rawMin * ratio)));
     return records.map(function (record, index) {
-      var value = scores[index];
-      var norm = value <= 0 ? 0 : (value - low) / Math.max(0.001, high - low);
-      if (value > high && max > high) norm = 0.88 + (Math.log(value / high) / Math.log(max / high)) * 0.12;
-      norm = Math.max(weighted ? 0.02 : 0.06, Math.min(1, norm));
-      norm = Math.pow(norm, weighted ? 0.52 : 0.72);
-      return Math.round((minR + norm * (maxR - minR)) * metricEmphasis(record));
+      var norm = Math.max(metricWeighted ? 0.035 : 0.06, Math.min(1, norms[index] || 0));
+      return Math.round(minR + norm * (maxR - minR));
     });
   }
-
   function seededUnit(seed) {
     var x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
     return x - Math.floor(x);
@@ -899,61 +908,103 @@
     var nodes = state.nodes;
     var animate = shouldAnimate();
     var now = performance.now();
-    for (var tick = 0; tick < 9; tick += 1) {
-      nodes.forEach(function (node, index) {
-        node.radius += (node.targetRadius - node.radius) * 0.1;
-        if (!animate) return;
-        node.vx += ((node.homeX || width / 2) - node.x) * 0.0015;
-        node.vy += ((node.homeY || height / 2) - node.y) * 0.0015;
-        var drift = 0.18 + Math.sqrt(index + 1) * 0.035;
-        node.vx += Math.cos(index * 1.7 + now / 7200) * drift * 0.018;
-        node.vy += Math.sin(index * 1.3 + now / 9200) * drift * 0.018;
-      });
+    nodes.forEach(function (node, index) {
+      node.radius += (node.targetRadius - node.radius) * 0.075;
+      if (!animate) return;
+      if (!Number.isFinite(node.vx)) node.vx = 0;
+      if (!Number.isFinite(node.vy)) node.vy = 0;
+      if (node.driftDirection == null) {
+        node.driftDirection = seededUnit((index + 1) * 907 + 19) * Math.PI * 2;
+      }
+      if (node.driftPhaseX == null) node.driftPhaseX = seededUnit((index + 1) * 101 + nodes.length) * Math.PI * 2;
+      if (node.driftPhaseY == null) node.driftPhaseY = seededUnit((index + 1) * 211 + nodes.length) * Math.PI * 2;
+      if (seededUnit(Math.floor(now / 9000) + (index + 1) * 409) > 0.992) {
+        node.driftDirection += (seededUnit(index * 113 + Math.floor(now / 9000)) - 0.5) * 0.55;
+      }
+      var homePull = 0.00042;
+      node.vx += ((node.homeX || node.x) - node.x) * homePull;
+      node.vy += ((node.homeY || node.y) - node.y) * homePull;
+      var phaseX = node.driftPhaseX + now / (18000 + index * 37);
+      var phaseY = node.driftPhaseY + now / (21000 + index * 41);
+      var drift = 0.006 + seededUnit((index + 3) * 61) * 0.006;
+      node.vx += Math.cos(node.driftDirection + phaseX * 0.18) * drift;
+      node.vy += Math.sin(node.driftDirection + phaseY * 0.18) * drift;
+    });
+
+    for (var pass = 0; pass < 7; pass += 1) {
       for (var i = 0; i < nodes.length; i += 1) {
         for (var j = i + 1; j < nodes.length; j += 1) {
           var a = nodes[i];
           var b = nodes[j];
           var dx = b.x - a.x;
           var dy = b.y - a.y;
-          var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          var distSq = dx * dx + dy * dy;
           var min = visualRadius(a) + visualRadius(b) + 18;
-          if (dist < min) {
-            var overlap = min - dist;
+          if (distSq > 0 && distSq < min * min) {
+            var dist = Math.sqrt(distSq);
             var nx = dx / dist;
             var ny = dy / dist;
-            var move = overlap * 0.7;
+            var overlap = min - dist;
+            var ar = visualRadius(a);
+            var br = visualRadius(b);
+            var total = ar + br || 1;
+            var aShare = br / total;
+            var bShare = ar / total;
             if (state.dragging !== a) {
-              a.x -= nx * move;
-              a.y -= ny * move;
-              a.vx -= nx * overlap * 0.14;
-              a.vy -= ny * overlap * 0.14;
+              a.x -= nx * overlap * aShare * 0.62;
+              a.y -= ny * overlap * aShare * 0.62;
+              a.vx -= nx * overlap * 0.018;
+              a.vy -= ny * overlap * 0.018;
             }
             if (state.dragging !== b) {
-              b.x += nx * move;
-              b.y += ny * move;
-              b.vx += nx * overlap * 0.14;
-              b.vy += ny * overlap * 0.14;
+              b.x += nx * overlap * bShare * 0.62;
+              b.y += ny * overlap * bShare * 0.62;
+              b.vx += nx * overlap * 0.018;
+              b.vy += ny * overlap * 0.018;
             }
-            if (overlap > 1.5) {
-              a.collisionUntil = Math.max(a.collisionUntil || 0, now + 320);
-              b.collisionUntil = Math.max(b.collisionUntil || 0, now + 320);
+            if (overlap > 1.2) {
+              a.collisionUntil = Math.max(a.collisionUntil || 0, now + 360);
+              b.collisionUntil = Math.max(b.collisionUntil || 0, now + 360);
             }
           }
         }
       }
     }
+
     nodes.forEach(function (node) {
-      if (state.dragging === node) return;
-      node.vx *= 0.9;
-      node.vy *= 0.9;
-      node.x += node.vx;
-      node.y += node.vy;
-      var boundsRadius = visualRadius(node);
-      node.x = Math.max(boundsRadius + 8, Math.min(width - boundsRadius - 8, node.x));
-      node.y = Math.max(boundsRadius + 8, Math.min(height - boundsRadius - 8, node.y));
+      if (state.dragging !== node && animate) {
+        node.vx *= 0.965;
+        node.vy *= 0.965;
+        var speed = Math.sqrt(node.vx * node.vx + node.vy * node.vy);
+        var maxSpeed = 0.72;
+        if (speed > maxSpeed) {
+          node.vx = (node.vx / speed) * maxSpeed;
+          node.vy = (node.vy / speed) * maxSpeed;
+        }
+        node.x += node.vx;
+        node.y += node.vy;
+      }
+      var bounds = sceneBounds(width, height, visualRadius(node));
+      if (node.x < bounds.minX) {
+        node.x = bounds.minX;
+        node.vx = Math.abs(node.vx || 0) * 0.62;
+        node.collisionUntil = Math.max(node.collisionUntil || 0, now + 260);
+      } else if (node.x > bounds.maxX) {
+        node.x = bounds.maxX;
+        node.vx = -Math.abs(node.vx || 0) * 0.62;
+        node.collisionUntil = Math.max(node.collisionUntil || 0, now + 260);
+      }
+      if (node.y < bounds.minY) {
+        node.y = bounds.minY;
+        node.vy = Math.abs(node.vy || 0) * 0.62;
+        node.collisionUntil = Math.max(node.collisionUntil || 0, now + 260);
+      } else if (node.y > bounds.maxY) {
+        node.y = bounds.maxY;
+        node.vy = -Math.abs(node.vy || 0) * 0.62;
+        node.collisionUntil = Math.max(node.collisionUntil || 0, now + 260);
+      }
     });
   }
-
   function visualRadius(node) {
     return node.radius * (node.depth || 1);
   }
@@ -1520,18 +1571,21 @@
       : state.health && state.health.candle_backfill
       ? (state.health.candle_backfill.latest_1d_candle_count || 0) + ' 1D candles'
       : 'candles not indexed';
-    bar.innerHTML = '<span>' + escHtml(tokenLabel) + '</span>' +
-      '<span class="woe-ab-up">▲ ' + escHtml(String(gainers)) + '</span>' +
-      '<span class="woe-ab-down">▼ ' + escHtml(String(losers)) + '</span>' +
+    bar.innerHTML = '<span class="woe-ab-stat-cluster">' +
+      '<span>' + escHtml(tokenLabel) + '</span>' +
+      '<span class="woe-ab-up">? ' + escHtml(String(gainers)) + '</span>' +
+      '<span class="woe-ab-down">? ' + escHtml(String(losers)) + '</span>' +
       '<span>Vol 24h <strong>' + escHtml(fmtNum(volume)) + '</strong></span>' +
       '<span>Top <strong class="woe-ab-up">' + escHtml(topGainer ? topGainer.symbol + ' ' + fmtPct(topGainer.change24) : 'Not indexed') + '</strong></span>' +
       '<span>Bot <strong class="woe-ab-down">' + escHtml(topLoser ? topLoser.symbol + ' ' + fmtPct(topLoser.change24) : 'Not indexed') + '</strong></span>' +
       '<span>Sources <strong>' + escHtml(String(Object.keys(sources).length)) + '</strong></span>' +
       '<span>' + escHtml(candleStatus) + '</span>' +
       '<span>All-pairs WAX valuation model</span>' +
+      '</span>' +
+      '<span id="woe-ab-live-feed" class="woe-ab-live-feed" aria-live="polite" aria-label="Live WaxOnEdge market feed"></span>' +
       '<span class="woe-ab-credit">Powered by WaxOnEdge multi-DEX indexer</span>';
+    renderLiveFeed();
   }
-
   function attachControls() {
     document.querySelectorAll('[data-woe-metric]').forEach(function (button) {
       button.addEventListener('click', function () {

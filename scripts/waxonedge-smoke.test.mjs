@@ -186,7 +186,7 @@ ok('waxonedge-bubbles-v2.js keeps metric availability honest with selected-metri
   v2Js.includes('metricCount < records.length') &&
   v2Js.includes("with ' + METRIC_LABELS[state.metric] + ' data") &&
   v2Js.includes('blendedMarketScore(record)') &&
-  /function computeRadii[\s\S]*valueForMetric\(record, state\.metric, state\.timeframe\)/.test(v2Js) &&
+  /function computeRadii[\s\S]*valueForMetric\(record, metric, state\.timeframe\)/.test(v2Js) &&
   !v2Js.includes('record.tvlUsd || record.liquidityUsd') &&
   !v2Js.includes('record.tvlWax || record.liquidityWax') &&
   !v2Js.includes('if (record.change24 == null) record.change24 = asNum(pair.change_24h)') &&
@@ -318,15 +318,18 @@ ok('waxonedge-bubbles-v2.js uses selected metric and blended base score for bubb
   v2Js.includes('volume24Wax') &&
   v2Js.includes('marketCapWax') &&
   v2Js.includes('indexedPairCount') &&
-  /function computeRadii[\s\S]*valueForMetric\(record, state\.metric, state\.timeframe\)/.test(v2Js));
+  /function computeRadii[\s\S]*valueForMetric\(record, metric, state\.timeframe\)/.test(v2Js));
 ok('waxonedge-bubbles-v2.js adds live WAX Galaxy reactions without camera jumps',
-  html.includes('woe-ab-live-feed') &&
+  !html.includes('id="woe-ab-live-feed"') &&
+  v2Js.includes('id="woe-ab-live-feed" class="woe-ab-live-feed"') &&
   v2Js.includes('function addLiveFeed') &&
   v2Js.includes('function updateCamera') &&
   v2Js.includes('camera.offsetX = 0') &&
   v2Js.includes('function sceneBounds(width, height, radius)') &&
   v2Js.includes('function clampNodeToBounds(node, width, height)') &&
   v2Js.includes('driftPhaseX') &&
+  v2Js.includes('driftDirection') &&
+  v2Js.includes('node.vx *= 0.965') &&
   v2Js.includes("displayValueForMetric(record, 'volume', '24h')") &&
   v2Js.includes('function displayValueForMetric(record, metric, timeframeOverride)') &&
   v2Js.includes('var oldTimeframe = state.timeframe') &&
@@ -553,6 +556,11 @@ ok('waxonedge-bubbles-v2.css renders a page-wide transparent galaxy instead of a
   /\.woe-ab-board-section\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?inset:\s*0;[\s\S]*?background:\s*transparent;/.test(v2Css) &&
   /\.woe-antbubbles-page \.woe-bubble-board,\s*\n\.woe-ab-canvas\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?width:\s*100vw;[\s\S]*?height:\s*100vh;/.test(v2Css) &&
   v2Css.includes('@keyframes woe-ab-ticker') &&
+  v2Css.includes('animation: woe-ab-ticker 120s linear infinite') &&
+  v2Css.includes('grid-template-columns: minmax(390px, auto) minmax(260px, 1fr) auto') &&
+  v2Css.includes('mask-image: linear-gradient') &&
+  v2Css.includes('background: transparent !important') &&
+  !v2Css.includes('#020008') &&
   !v2Css.includes('right: 14px;\n  bottom: 48px') &&
   !v2Css.includes('display: grid;\n  gap: 7px'));
 ok('waxonedge-bubbles-v2.css includes responsive scanner support',
