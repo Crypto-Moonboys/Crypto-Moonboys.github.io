@@ -1,13 +1,13 @@
 # WaxOnEdge Live Indexer Service
 
-This is the VPS-side foundation for future WaxOnEdge live bubble updates. It is intentionally a skeleton/contract service: it defines the local HTTP and SSE surface, verified action streams, configuration, and no-fake-data guarantees without pretending to have a stable live Hyperion/state-history connection yet.
+This is the VPS-side WaxOnEdge live bubble update service. It polls only verified WAX Hyperion/state-history trade action streams, keeps an in-memory token update cache, and can emit real `token_update` SSE events when streaming is enabled.
 
 ## Current Status
 
-- Status: skeleton/contract.
-- Real live token deltas: not connected yet.
+- Status: connects only after real verified trade rows are observed.
+- Real live token deltas: from verified Hyperion/state-history trade rows only.
 - Fake token updates: never emitted.
-- Worker integration: contract metadata only in this PR.
+- Worker integration: health probe/snapshot contract remains unchanged until a later Worker proxy PR.
 
 ## Verified Streams
 
@@ -72,19 +72,18 @@ Reports config presence, uptime, connection state, verified stream list, and no-
 
 ### `GET /snapshot`
 
-Returns compact live token updates in the same general shape as the Worker snapshot endpoint. Until connected, it returns `ok:false`, `status:"not_connected"`, and `tokens:[]`.
+Returns compact live token updates observed in memory from verified trade rows. Until a real trade is observed, it returns `ok:false`, `status:"not_connected"`, and `tokens:[]`.
 
 ### `GET /stream`
 
-Returns an SSE contract with heartbeat events only. It does not emit `token_update` events until real indexed trade deltas are connected.
+Returns heartbeat events and, when `WAXONEDGE_LIVE_ENABLE_STREAM=true`, real `token_update` events from observed verified trade rows. It does not emit fake updates.
 
 ## Deployment Notes
 
 For the VPS runtime runbook, systemd template, PM2 alternative, rollback steps, and health-check command, see `DEPLOY.md`.
 
-Deploy this service on a VPS behind a private network path, tunnel, firewall rule, or reverse proxy that the Worker can reach later. The next integration PR should verify:
+Deploy this service on a VPS behind a private network path, tunnel, firewall rule, or reverse proxy that the Worker can reach later. The Worker probe and production stream routing remain unchanged until a later integration PR verifies:
 
-- real Hyperion/state-history connectivity,
 - shared-secret request validation,
 - Worker proxy/fallback behavior,
 - no fake token updates,

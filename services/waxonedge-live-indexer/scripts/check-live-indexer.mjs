@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DEFAULT_BASE_URL = 'http://127.0.0.1:8789';
+const TOKEN_UPDATE_EVENT = 'event: token_update';
 
 export function checkTargetHost(bindHost) {
   const host = String(bindHost || '').trim();
@@ -47,6 +48,7 @@ export function assertNoFakeLiveData(payload, label = 'payload') {
   if (payload.uses_fake_live_data !== false) throw new Error(`${label} must report uses_fake_live_data=false`);
   if (payload.browser_hyperion_fetch === true) throw new Error(`${label} must not use browser Hyperion fetching`);
   if (payload.emits_fake_token_updates === true) throw new Error(`${label} must not emit fake token updates`);
+  if (hasFakeMarker(payload)) throw new Error(`${label} contains fake/mock/demo/synthetic marker`);
   if (Array.isArray(payload.tokens)) {
     const fakeToken = payload.tokens.find((token) =>
       token?.fake === true ||
@@ -56,6 +58,48 @@ export function assertNoFakeLiveData(payload, label = 'payload') {
     );
     if (fakeToken) throw new Error(`${label} contains a fake token update`);
   }
+}
+
+function hasFakeMarker(value, key = '') {
+  if (value == null) return false;
+  const normalizedKey = String(key || '').toLowerCase();
+  if (['uses_fake_live_data', 'emits_fake_token_updates', 'browser_hyperion_fetch', 'fake', 'mock', 'demo', 'synthetic'].includes(normalizedKey)) {
+    if (value === true) return true;
+    if (typeof value === 'string' && /^(true|fake|mock|demo|synthetic)$/i.test(value.trim())) return true;
+  }
+  if (normalizedKey === 'source' && typeof value === 'string' && /^(fake|mock|demo|synthetic)$/i.test(value.trim())) return true;
+  if (typeof value !== 'object') return false;
+  if (Array.isArray(value)) return value.some((item) => hasFakeMarker(item));
+  return Object.entries(value).some(([childKey, childValue]) => hasFakeMarker(childValue, childKey));
+}
+
+function parseSseDataPayloads(text) {
+  const payloads = [];
+  for (const frame of String(text || '').split(/\r?\n(?:\r?\n)+/)) {
+    const dataLines = frame
+      .split(/\r?\n/)
+      .filter((line) => line.startsWith('data:'))
+      .map((line) => line.slice(5).trimStart());
+    if (!dataLines.length) continue;
+    const data = dataLines.join('\n').trim();
+    if (!data || data === '[DONE]') continue;
+    try {
+      payloads.push(JSON.parse(data));
+    } catch (_) {}
+  }
+  return payloads;
+}
+
+function streamHasFakeLiveData(text) {
+  try {
+    const payload = JSON.parse(String(text || '').trim());
+    if (hasFakeMarker(payload)) return true;
+  } catch (_) {}
+  if (parseSseDataPayloads(text).some((payload) => hasFakeMarker(payload))) return true;
+  return /"uses_fake_live_data"\s*:\s*true/i.test(text) ||
+    /"emits_fake_token_updates"\s*:\s*true/i.test(text) ||
+    /"browser_hyperion_fetch"\s*:\s*true/i.test(text) ||
+    (text.includes(TOKEN_UPDATE_EVENT) && /"(fake|mock|demo|synthetic)"\s*:\s*(true|"true"|"fake"|"mock"|"demo"|"synthetic")/i.test(text));
 }
 
 function assertExpectedStatus(response, path) {
@@ -120,8 +164,7 @@ async function checkStream(baseUrl) {
       if (chunk.done) break;
       bytes += chunk.value?.byteLength || 0;
       text += decoder.decode(chunk.value || new Uint8Array(), { stream: true });
-      if (text.includes('event: token_update')) throw new Error('/stream emitted token_update before real live data is enabled');
-      if (text.includes('"uses_fake_live_data":true')) throw new Error('/stream reported fake live data');
+      if (streamHasFakeLiveData(text)) throw new Error('/stream reported fake live data');
       if (text.includes('event: heartbeat')) {
         await reader.cancel().catch(() => {});
         return { ok: true, content_type: contentType, heartbeat: true };
@@ -130,8 +173,7 @@ async function checkStream(baseUrl) {
     }
     text += decoder.decode();
     await reader.cancel().catch(() => {});
-    if (text.includes('event: token_update')) throw new Error('/stream emitted token_update before real live data is enabled');
-    if (text.includes('"uses_fake_live_data":true')) throw new Error('/stream reported fake live data');
+    if (streamHasFakeLiveData(text)) throw new Error('/stream reported fake live data');
     if (!text.includes('event: heartbeat')) throw new Error('/stream heartbeat event missing');
     return { ok: true, content_type: contentType, heartbeat: true };
   } finally {
