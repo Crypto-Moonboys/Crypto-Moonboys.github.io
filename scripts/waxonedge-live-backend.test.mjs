@@ -39,6 +39,7 @@ ok('moonboys-api WaxOnEdge source index state migration exists', exists('workers
 ok('WaxOnEdge real reference audit exists', exists('docs/waxonedge-real-reference-audit.md'));
 
 const route = read('workers/moonboys-api/routes/waxonedge.js');
+const normalizedRoute = route.replace(/\r\n/g, '\n');
 const worker = read('workers/moonboys-api/worker.js');
 const wrangler = read('workers/moonboys-api/wrangler.toml');
 const ci = read('.github/workflows/ci.yml');
@@ -2938,7 +2939,7 @@ ok('bounded skip exhaustion is handled before Alcor fetch attempt accounting',
   route.includes('actionState.status = \'partial\'') &&
   route.includes('actionState.complete = false') &&
   route.includes('actionState.next_action = HYPERION_SKIP_WINDOW_NEXT_ACTION') &&
-  route.includes('continue;\n    }\n    attemptedPairCount += 1') &&
+  normalizedRoute.includes('continue;\n    }\n    attemptedPairCount += 1') &&
   !/bounded_skip_window_exhausted[\s\S]{0,800}failedPairCount \+= 1/.test(route) &&
   !/bounded_skip_window_exhausted[\s\S]{0,800}upstream5xxCount \+= 1/.test(route));
 ok('bounded skip exhaustion keeps existing rows and does not fake completion',
@@ -2952,25 +2953,25 @@ ok('bounded skip exhaustion keeps existing rows and does not fake completion',
   !route.includes('history_pagination_complete: anyBoundedSkipWindowExhausted'));
 ok('AMM Hyperion skip window guard mirrors Alcor bounded-window handling',
   route.indexOf('async function syncAmmSwapTradeRows') > -1 &&
-  route.slice(
-    route.indexOf('async function syncAmmSwapTradeRows'),
-    route.indexOf('async function readSourceIndexState'),
+  normalizedRoute.slice(
+    normalizedRoute.indexOf('async function syncAmmSwapTradeRows'),
+    normalizedRoute.indexOf('async function readSourceIndexState'),
   ).includes('hyperionSkipWindowState') &&
-  route.slice(
-    route.indexOf('async function syncAmmSwapTradeRows'),
-    route.indexOf('async function readSourceIndexState'),
+  normalizedRoute.slice(
+    normalizedRoute.indexOf('async function syncAmmSwapTradeRows'),
+    normalizedRoute.indexOf('async function readSourceIndexState'),
   ).includes('if (skipWindow.bounded_skip_window_exhausted)') &&
-  route.slice(
-    route.indexOf('async function syncAmmSwapTradeRows'),
-    route.indexOf('async function readSourceIndexState'),
+  normalizedRoute.slice(
+    normalizedRoute.indexOf('async function syncAmmSwapTradeRows'),
+    normalizedRoute.indexOf('async function readSourceIndexState'),
   ).includes('actionState.status = \'partial\'') &&
-  route.slice(
-    route.indexOf('async function syncAmmSwapTradeRows'),
-    route.indexOf('async function readSourceIndexState'),
+  normalizedRoute.slice(
+    normalizedRoute.indexOf('async function syncAmmSwapTradeRows'),
+    normalizedRoute.indexOf('async function readSourceIndexState'),
   ).includes('actionState.next_action = HYPERION_SKIP_WINDOW_NEXT_ACTION') &&
-  route.slice(
-    route.indexOf('async function syncAmmSwapTradeRows'),
-    route.indexOf('async function readSourceIndexState'),
+  normalizedRoute.slice(
+    normalizedRoute.indexOf('async function syncAmmSwapTradeRows'),
+    normalizedRoute.indexOf('async function readSourceIndexState'),
   ).includes('continue;\n    }\n    attemptedPairCount += 1') &&
   route.includes('continue per-source AMM Hyperion skip pagination'));
 ok('AMM skip guard allows last valid page and blocks invalid windows using real request limit',
@@ -2980,9 +2981,9 @@ ok('AMM skip guard allows last valid page and blocks invalid windows using real 
   __waxonedgeTestHooks.hyperionSkipWindowState(9900, 50).page_limit === 100 &&
   __waxonedgeTestHooks.hyperionSkipWindowState(9900, 50).last_valid_skip_cursor === 9900);
 {
-  const ammBlock = route.slice(
-    route.indexOf('async function syncAmmSwapTradeRows'),
-    route.indexOf('async function readSourceIndexState'),
+  const ammBlock = normalizedRoute.slice(
+    normalizedRoute.indexOf('async function syncAmmSwapTradeRows'),
+    normalizedRoute.indexOf('async function readSourceIndexState'),
   );
   const ammSkipGuard = ammBlock.match(/if \(skipWindow\.bounded_skip_window_exhausted\) \{([\s\S]*?)\n    \}\n    attemptedPairCount \+= 1/)?.[1] || '';
   ok('bounded AMM skip exhaustion is partial and does not log expected 400s as failures',

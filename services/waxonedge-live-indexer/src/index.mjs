@@ -89,6 +89,17 @@ function safeDecimal(value) {
   return n == null ? null : n;
 }
 
+export function normalizeTradeVolume(value) {
+  const n = safeDecimal(value);
+  return n == null ? null : Math.abs(n);
+}
+
+function volumeDirection(value) {
+  const n = safeDecimal(value);
+  if (n == null || n === 0) return null;
+  return n < 0 ? 'out' : 'in';
+}
+
 function firstPresent(...values) {
   return values.find((value) => value !== undefined && value !== null && value !== '');
 }
@@ -818,6 +829,7 @@ function parseAlcorMarketMatch(row, stream) {
   if (!tradedAt) return null;
   const stableId = tradeIdFromRow(row, stream, record);
   if (!stableId) return null;
+  const volume = firstPresent(ask.amount, bid.amount);
   return {
     trade_id: `${stableId}:market:${marketId}`,
     source: stream.source,
@@ -829,8 +841,9 @@ function parseAlcorMarketMatch(row, stream) {
     quote_contract: quoteContract || null,
     quote_symbol: quoteSymbol || null,
     price,
-    volume: safeDecimal(firstPresent(ask.amount, bid.amount)),
+    volume: normalizeTradeVolume(volume),
     side: stream.action === 'sellmatch' ? 'sell' : 'buy',
+    direction: volumeDirection(volume),
     traded_at: tradedAt,
     raw_event: row,
   };
@@ -868,6 +881,9 @@ function parseAmmSwap(row, stream) {
   if (!tradedAt) return null;
   const stableId = tradeIdFromRow(row, stream, record);
   if (!stableId) return null;
+  const volume = parsedIn.symbol === 'WAX'
+    ? parsedIn.amount
+    : (parsedOut.symbol === 'WAX' ? parsedOut.amount : parsedIn.amount);
   return {
     trade_id: `${stableId}:pair:${pairId}`,
     source: stream.source,
@@ -879,8 +895,9 @@ function parseAmmSwap(row, stream) {
     quote_contract: parsedOut.contract || null,
     quote_symbol: parsedOut.symbol || null,
     price,
-    volume: safeDecimal(parsedIn.symbol === 'WAX' ? parsedIn.amount : (parsedOut.symbol === 'WAX' ? parsedOut.amount : parsedIn.amount)),
+    volume: normalizeTradeVolume(volume),
     side: 'swap',
+    direction: volumeDirection(volume),
     traded_at: tradedAt,
     raw_event: row,
   };
@@ -908,7 +925,8 @@ function tokenUpdateFromTrade(trade) {
     stream_source: trade.stream_source,
     last_trade_at: trade.traded_at,
     last_trade_price: trade.price,
-    last_trade_volume: trade.volume,
+    last_trade_volume: normalizeTradeVolume(trade.volume),
+    last_trade_direction: trade.direction || null,
     price_wax: trade.quote_symbol === 'WAX' ? trade.price : null,
     uses_fake_live_data: false,
   };

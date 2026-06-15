@@ -8,7 +8,7 @@
   "scripts": {
     "start": "node src/index.mjs",
     "check": "node scripts/check-live-indexer.mjs",
-    "test": "node --check src/index.mjs"
+    "test": "node --check src/index.mjs && node --test test/*.test.mjs"
   },
   "engines": {
     "node": ">=22"
