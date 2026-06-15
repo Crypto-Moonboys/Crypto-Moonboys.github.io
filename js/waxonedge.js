@@ -1711,7 +1711,6 @@
   }
 
   function historicalVolumeAvailabilityHtml(stats, key) {
-    if (tokenStatReason(stats, key)) return tokenAvailabilityHtml(stats, key);
     if (isFreshHistoryAccumulating(stats, key)) return availabilityHtml('Building from fresh live history');
     return tokenAvailabilityHtml(stats, key);
   }

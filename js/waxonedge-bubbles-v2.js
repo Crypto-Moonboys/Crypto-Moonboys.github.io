@@ -1336,8 +1336,9 @@
   }
 
   function safeTimeLabel(value) {
-    var date = value ? new Date(value) : new Date();
-    if (!Number.isFinite(date.getTime())) date = new Date();
+    if (!value) return '';
+    var date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return '';
     return date.toLocaleTimeString();
   }
 

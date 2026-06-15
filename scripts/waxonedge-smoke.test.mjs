@@ -213,7 +213,8 @@ ok('WaxOnEdge keeps missing 7d/30d/candle data honest instead of fake',
   v2Js.includes('history building from fresh live data') &&
   js.includes('Indexed chart building from fresh live data') &&
   js.includes('function historicalVolumeAvailabilityHtml') &&
-  js.includes("if (tokenStatReason(stats, key)) return tokenAvailabilityHtml(stats, key)") &&
+  js.includes("if (isFreshHistoryAccumulating(stats, key)) return availabilityHtml('Building from fresh live history')") &&
+  js.includes('return tokenAvailabilityHtml(stats, key)') &&
   js.includes('function isFreshHistoryAccumulating') &&
   js.includes('var statusText = metaLabel || reason') &&
   js.includes('No fake candles are shown') &&
@@ -416,6 +417,10 @@ ok('waxonedge.js explicitly marks indexed-backend-only states', js.includes('Req
 ok('waxonedge.js explicitly marks unindexed chart states', js.includes('Source not indexed yet'));
 ok('WaxOnEdge never renders Invalid Date for scanner timestamps',
   v2Js.includes('function safeTimeLabel') &&
+  v2Js.includes("if (!value) return ''") &&
+  v2Js.includes("if (!Number.isFinite(date.getTime())) return ''") &&
+  v2Js.includes("safeTimeLabel(state.lastUpdated) || 'Waiting for sync'") &&
+  !/function safeTimeLabel[\s\S]*new Date\(\)[\s\S]*return date\.toLocaleTimeString/.test(v2Js) &&
   !v2Js.includes('Invalid Date') &&
   !html.includes('Invalid Date') &&
   !tokenHtml.includes('Invalid Date'));
