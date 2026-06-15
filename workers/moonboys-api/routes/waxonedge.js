@@ -3846,11 +3846,9 @@ async function syncSupplyInputs(env) {
       WHERE (p.token_a_contract = t.contract AND p.token_a_symbol = t.symbol)
          OR (p.token_b_contract = t.contract AND p.token_b_symbol = t.symbol)
     )`);
-  const complete = totalPairTokens > 0 && (attempted >= totalPairTokens || attempted < limit) ? 1 : 0;
-  const truncated = totalPairTokens > attempted && attempted >= limit ? 1 : 0;
-  const status = attempted <= 0
-    ? 'skipped'
-    : (complete === 1 && truncated !== 1 ? 'success' : 'partial');
+  const complete = totalPairTokens > 0 && totalPairTokens <= limit && attempted >= totalPairTokens ? 1 : 0;
+  const truncated = totalPairTokens > limit && attempted >= limit ? 1 : 0;
+  const status = attempted <= 0 ? 'skipped' : (complete === 1 ? 'success' : 'partial');
   const error = attempted > 0 ? null : 'No indexed pair tokens found for supply sync';
   await upsertSourceIndexState(env.DB, 'wax_rpc_supply', {
     sync_cycle_id: `supply-${new Date().toISOString().slice(0, 10)}`,
@@ -4221,8 +4219,8 @@ function tokenMetricProof(row, pairProofRows = []) {
   const pairContributionUsd = contributionRows.reduce((sum, pair) => sum + (asNumber(pair.contribution_usd) || 0), 0);
   const tvlContributionRows = (pairProofRows || []).filter((pair) => pair.contributes_to_tvl);
   const liquidityContributionRows = (pairProofRows || []).filter((pair) => pair.contributes_to_liquidity);
-  const hasMarketCap = asNumber(row?.market_cap_wax ?? row?.market_cap_usd) != null;
   const hasCirculatingSupply = asNumber(row?.circulating_supply) != null;
+  const hasMarketCap = hasCirculatingSupply && asNumber(row?.market_cap_wax ?? row?.market_cap_usd) != null;
   const hasHolderSnapshot = asNumber(row?.holder_count) != null && asNumber(row?.holder_count) > 0;
   const hasPairProofRows = (pairProofRows || []).length > 0;
   const tvlBasis = tvlWax != null || tvlUsd != null ? 'indexed_pair_reserve_value' : null;

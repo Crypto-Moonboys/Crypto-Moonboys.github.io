@@ -2160,7 +2160,7 @@ ok('free-safe supply sync runs as isolated cron workload',
   route.includes('tasks.push(syncSupplyInputs(env))') &&
   !route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env));\n      tasks.push(syncSupplyInputs(env))'));
 {
-  const supplySyncBlock = route.match(/async function syncSupplyInputs[\s\S]*?const totalPairTokens/)?.[0] || '';
+  const supplySyncBlock = route.match(/async function syncSupplyInputs[\s\S]*?const error = attempted > 0/)?.[0] || '';
   const cursorExpression = "(t.contract || '::' || t.symbol)";
   ok('supply cursor filter uses single-quoted token separator',
     supplySyncBlock.includes(`const cursorFilter = afterCursor ? "AND ${cursorExpression} > ?" : '';`) &&
@@ -2168,6 +2168,11 @@ ok('free-safe supply sync runs as isolated cron workload',
   ok('supply rotation cursor expression matches token_key expression',
     supplySyncBlock.includes(`SELECT DISTINCT t.contract, t.symbol, ${cursorExpression} AS token_key`) &&
     supplySyncBlock.includes(`AND ${cursorExpression} > ?`));
+  ok('supply sync reports success only when the whole token set fits the run limit',
+    supplySyncBlock.includes('const complete = totalPairTokens > 0 && totalPairTokens <= limit && attempted >= totalPairTokens ? 1 : 0;') &&
+    supplySyncBlock.includes('const truncated = totalPairTokens > limit && attempted >= limit ? 1 : 0;') &&
+    supplySyncBlock.includes("const status = attempted <= 0 ? 'skipped' : (complete === 1 ? 'success' : 'partial');") &&
+    !supplySyncBlock.includes('attempted < limit'));
 }
 ok('supply sync rotates across all indexed-pair tokens with bounded Worker budget',
   route.includes('function supplySyncLimit') &&
@@ -3631,6 +3636,15 @@ ok('token metric proof exposes per-token status and source fields',
   route.includes('has_circulating_supply') &&
   route.includes('has_7d_volume') &&
   route.includes('has_30d_volume'));
+{
+  const tokenMetricProofBlock = route.match(/function tokenMetricProof[\s\S]*?function attachMetricProof/)?.[0] || '';
+  ok('token metric proof marks market cap live only with circulating supply',
+    tokenMetricProofBlock.includes('const hasCirculatingSupply = asNumber(row?.circulating_supply) != null;') &&
+    tokenMetricProofBlock.includes('const hasMarketCap = hasCirculatingSupply && asNumber(row?.market_cap_wax ?? row?.market_cap_usd) != null;') &&
+    tokenMetricProofBlock.indexOf('const hasCirculatingSupply') < tokenMetricProofBlock.indexOf('const hasMarketCap') &&
+    tokenMetricProofBlock.includes('fdv: asNumber(row?.fdv_wax ?? row?.fdv_usd) != null') &&
+    tokenMetricProofBlock.includes("market_cap: hasMarketCap ? 'waxonedge_token_stats.circulating_supply * selected_price' : null"));
+}
 ok('token detail endpoint returns canonical stats and source coverage',
   route.includes('source_coverage: sourceCoverageFromKeys') &&
   route.includes('selected_price_wax') &&
