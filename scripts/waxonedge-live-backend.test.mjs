@@ -454,6 +454,47 @@ ok('VPS live indexer exposes no fake live events or random movement',
       'alcordexmain::buymatch:source:alcor:action:buymatch:seq:77' &&
     liveIndexer.tradeIdFromRow({ global_sequence: 77 }, { account: 'swap.alcor', action: 'logswap', source: 'swap.alcor' }, {}) ===
       'swap.alcor::logswap:source:swap.alcor:action:logswap:seq:77');
+  {
+    const evictionState = liveIndexer.createState(liveIndexer.loadConfig({
+      WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+    }));
+    const makeTrade = (symbol, seconds, streamSource = 'alcordexmain::buymatch') => ({
+      ...alcorTrade,
+      trade_id: `${streamSource}:${symbol}:${seconds}`,
+      contract: `${symbol.toLowerCase()}.tokens`,
+      symbol,
+      stream_source: streamSource,
+      traded_at: `2026-06-15T10:${String(seconds).padStart(2, '0')}:00.000Z`,
+    });
+    liveIndexer.observeLiveTrade(evictionState, makeTrade('OLD', 1));
+    for (let i = 2; i <= 500; i += 1) {
+      liveIndexer.observeLiveTrade(evictionState, makeTrade(`T${i}`, i % 60));
+    }
+    liveIndexer.observeLiveTrade(evictionState, makeTrade('OLD', 50));
+    liveIndexer.observeLiveTrade(evictionState, makeTrade('NEW', 51));
+    ok('VPS live indexer refreshes token cache recency before eviction',
+      evictionState.tokenCache.size === 500 &&
+      evictionState.tokenCache.has('old.tokens::OLD') &&
+      evictionState.tokenCache.has('new.tokens::NEW') &&
+      !evictionState.tokenCache.has('t2.tokens::T2'));
+  }
+  {
+    const monotonicState = liveIndexer.createState(liveIndexer.loadConfig({
+      WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+    }));
+    const newer = { ...alcorTrade, trade_id: 'newer', traded_at: '2026-06-15T12:00:00.000Z', stream_source: 'alcordexmain::buymatch' };
+    const olderSameStream = { ...alcorTrade, trade_id: 'older-same', traded_at: '2026-06-15T11:00:00.000Z', stream_source: 'alcordexmain::buymatch' };
+    const olderOtherStream = { ...ammTrade, trade_id: 'older-other', traded_at: '2026-06-15T10:00:00.000Z', stream_source: 'swap.alcor::logswap' };
+    liveIndexer.observeLiveTrade(monotonicState, newer);
+    liveIndexer.observeLiveTrade(monotonicState, olderSameStream);
+    liveIndexer.observeLiveTrade(monotonicState, olderOtherStream);
+    ok('VPS live indexer does not move global or stream timestamps backwards',
+      monotonicState.event_count === 3 &&
+      monotonicState.last_event_at === newer.traded_at &&
+      monotonicState.stream_source === newer.stream_source &&
+      monotonicState.streamState.get('alcordexmain::buymatch').last_event_at === newer.traded_at &&
+      monotonicState.streamState.get('swap.alcor::logswap').last_event_at === olderOtherStream.traded_at);
+  }
 }
 {
   const stream = liveIndexer.VERIFIED_TRADE_STREAMS.find((item) =>

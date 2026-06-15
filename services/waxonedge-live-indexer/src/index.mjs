@@ -500,8 +500,12 @@ function tokenUpdateFromTrade(trade) {
 export function observeLiveTrade(state, trade) {
   const update = tokenUpdateFromTrade(trade);
   if (!update) return null;
+  const existing = state.tokenCache.get(update.token_key) || {};
+  if (state.tokenCache.has(update.token_key)) {
+    state.tokenCache.delete(update.token_key);
+  }
   state.tokenCache.set(update.token_key, {
-    ...(state.tokenCache.get(update.token_key) || {}),
+    ...existing,
     ...update,
   });
   while (state.tokenCache.size > MAX_TOKEN_CACHE_SIZE) {
@@ -511,14 +515,21 @@ export function observeLiveTrade(state, trade) {
   state.connected = true;
   state.status = 'connected';
   state.last_error = null;
-  state.last_event_at = trade.traded_at;
-  state.stream_source = trade.stream_source;
+  const currentGlobalTime = Date.parse(state.last_event_at || '');
+  const tradeTime = Date.parse(trade.traded_at || '');
+  if (!state.last_event_at || (Number.isFinite(tradeTime) && (!Number.isFinite(currentGlobalTime) || tradeTime > currentGlobalTime))) {
+    state.last_event_at = trade.traded_at;
+    state.stream_source = trade.stream_source;
+  }
   state.event_count += 1;
   const current = state.streamState.get(trade.stream_source);
   if (current) {
     current.status = 'connected';
     current.event_count += 1;
-    current.last_event_at = trade.traded_at;
+    const currentStreamTime = Date.parse(current.last_event_at || '');
+    if (!current.last_event_at || (Number.isFinite(tradeTime) && (!Number.isFinite(currentStreamTime) || tradeTime > currentStreamTime))) {
+      current.last_event_at = trade.traded_at;
+    }
     current.last_error = null;
   }
   sendTokenUpdate(state, state.tokenCache.get(update.token_key));
