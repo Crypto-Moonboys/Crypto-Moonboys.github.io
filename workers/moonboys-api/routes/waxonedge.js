@@ -18,6 +18,7 @@ const MAX_REASONABLE_PAIR_TVL_USD = 100000000;
 const CANDLE_BACKFILL_SOURCE = 'candle_backfill';
 const ALCOR_TRADE_INDEX_SOURCE = 'alcor_trade_rows';
 const AMM_TRADE_INDEX_SOURCE = 'amm_trade_rows';
+const SUPPLY_SYNC_SOURCE = 'wax_rpc_supply';
 const AGGREGATE_REFRESH_REASON = 'Aggregate refresh pending after source cursor progress';
 const CANDLE_BACKFILL_PLAN = 'Internal 1D kline backfill planned from indexed trade rows; no fake candles are inserted.';
 const TRADE_INDEX_PLAN = 'Alcor market match trade-row indexing planned for internal 1D candle building; no fake trades are inserted.';
@@ -28,6 +29,7 @@ const WAXONEDGE_FREE_SAFE_MODE_DEFAULT = true;
 const DEFAULT_CANDLE_BACKFILL_PAIR_LIMIT = 24;
 const DEFAULT_TRADE_INDEX_PAIR_LIMIT = 24;
 const DEFAULT_TRADE_ROWS_PER_MARKET_LIMIT = 250;
+const DEFAULT_SUPPLY_SYNC_LIMIT = 25;
 const DEFAULT_HYPERION_TRADE_SCAN_LIMIT = 100;
 const DEFAULT_TRADE_STREAM_PAGES_PER_RUN = 2;
 const HYPERION_SKIP_WINDOW_LIMIT = 10000;
@@ -38,6 +40,7 @@ const FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE = 1;
 const FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT = 2;
 const FREE_SAFE_TRADE_INDEX_PAIR_LIMIT = 2;
 const FREE_SAFE_TRADE_ROWS_PER_MARKET_LIMIT = 50;
+const FREE_SAFE_SUPPLY_SYNC_LIMIT = 5;
 const FREE_SAFE_TRADE_STREAM_PAGES_PER_RUN = 1;
 const FREE_SAFE_CANDLE_SUBREQUEST_BUDGET = 2;
 const CANDLE_BACKFILL_LOOKBACK_DAYS = 120;
@@ -145,6 +148,12 @@ function tradeStreamPagesPerRun(env) {
   const configured = asNumber(env?.WAXONEDGE_TRADE_STREAM_PAGES_PER_RUN);
   if (configured != null && configured > 0) return Math.min(10, Math.floor(configured));
   return waxonedgeFreeSafeMode(env) ? FREE_SAFE_TRADE_STREAM_PAGES_PER_RUN : DEFAULT_TRADE_STREAM_PAGES_PER_RUN;
+}
+
+function supplySyncLimit(env) {
+  const configured = asNumber(env?.WAXONEDGE_SUPPLY_SYNC_LIMIT);
+  if (configured != null && configured > 0) return Math.max(1, Math.min(250, Math.floor(configured)));
+  return waxonedgeFreeSafeMode(env) ? FREE_SAFE_SUPPLY_SYNC_LIMIT : DEFAULT_SUPPLY_SYNC_LIMIT;
 }
 
 function hyperionSkipWindowState(cursor, limit, maxWindow = HYPERION_SKIP_WINDOW_LIMIT) {
@@ -3780,11 +3789,45 @@ async function syncNeftyAbi(env) {
 
 async function syncSupplyInputs(env) {
   const startedAt = nowIso();
-  const rows = await env.DB.prepare(
-    `SELECT contract, symbol FROM waxonedge_tokens ORDER BY pair_count DESC, updated_at DESC LIMIT 50`
-  ).all().catch(() => ({ results: [] }));
+  const state = await readSourceIndexState(env.DB, SUPPLY_SYNC_SOURCE);
+  const limit = supplySyncLimit(env);
+  const afterCursor = String(state?.cursor || '').trim();
+  const tokenKeyExpression = "(t.contract || '::' || t.symbol)";
+  const cursorFilter = afterCursor ? "AND (t.contract || '::' || t.symbol) > ?" : '';
+  const totalPairTokensRow = await env.DB.prepare(
+    `SELECT COUNT(*) AS count
+     FROM waxonedge_tokens t
+     LEFT JOIN waxonedge_token_stats s
+       ON s.contract = t.contract AND s.symbol = t.symbol
+     WHERE COALESCE(s.indexed_pair_count, t.pair_count, 0) > 0`
+  ).first().catch(() => ({ count: 0 }));
+  const totalPairTokens = Math.max(0, Math.floor(asNumber(totalPairTokensRow?.count) || 0));
+  const selectSql = `SELECT t.contract, t.symbol, ${tokenKeyExpression} AS token_key
+     FROM waxonedge_tokens t
+     LEFT JOIN waxonedge_token_stats s
+       ON s.contract = t.contract AND s.symbol = t.symbol
+     WHERE COALESCE(s.indexed_pair_count, t.pair_count, 0) > 0
+       ${cursorFilter}
+     ORDER BY token_key ASC
+     LIMIT ?`;
+  let rows = await env.DB.prepare(selectSql)
+    .bind(...(afterCursor ? [afterCursor, limit] : [limit]))
+    .all().catch(() => ({ results: [] }));
+  if (afterCursor && totalPairTokens > 0 && !(rows.results || []).length) {
+    rows = await env.DB.prepare(
+      `SELECT t.contract, t.symbol, ${tokenKeyExpression} AS token_key
+       FROM waxonedge_tokens t
+       LEFT JOIN waxonedge_token_stats s
+         ON s.contract = t.contract AND s.symbol = t.symbol
+       WHERE COALESCE(s.indexed_pair_count, t.pair_count, 0) > 0
+       ORDER BY token_key ASC
+       LIMIT ?`
+    ).bind(limit).all().catch(() => ({ results: [] }));
+  }
   let updated = 0;
+  let attempted = 0;
   for (const row of rows.results || []) {
+    attempted += 1;
     try {
       const stats = await rpcPost('/v1/chain/get_currency_stats', {
         code: row.contract,
@@ -3806,8 +3849,35 @@ async function syncSupplyInputs(env) {
       // Individual token supply lookups are best-effort and recorded in the run row.
     }
   }
-  await recordSyncRun(env.DB, 'wax_rpc_supply', updated > 0 ? 'success' : 'skipped', startedAt, updated > 0 ? null : SOURCE_NOT_INDEXED).catch(() => {});
-  return { ok: true, updated };
+  const complete = totalPairTokens > 0 && totalPairTokens <= limit && attempted >= totalPairTokens ? 1 : 0;
+  const truncated = totalPairTokens > limit && attempted >= limit ? 1 : 0;
+  const status = attempted <= 0 ? 'skipped' : (complete === 1 ? 'success' : 'partial');
+  const error = attempted > 0 ? null : 'No indexed pair tokens found for supply sync';
+  const lastTokenKey = (rows.results || []).length ? rows.results[rows.results.length - 1].token_key : '';
+  const nextCursor = attempted > 0 && totalPairTokens > limit && attempted >= limit ? String(lastTokenKey || '') : '';
+  await upsertSourceIndexState(env.DB, SUPPLY_SYNC_SOURCE, {
+    sync_cycle_id: state?.sync_cycle_id || `supply-${new Date().toISOString().slice(0, 10)}`,
+    cursor: nextCursor,
+    page_count: (asNumber(state?.page_count) || 0) + (attempted > 0 ? 1 : 0),
+    row_count: totalPairTokens,
+    complete,
+    truncated,
+    status,
+    error,
+    started_at: startedAt,
+  }).catch(() => {});
+  await recordSyncRun(env.DB, SUPPLY_SYNC_SOURCE, status, startedAt, error).catch(() => {});
+  return {
+    ok: true,
+    updated,
+    attempted,
+    total_pair_tokens: totalPairTokens,
+    limit,
+    cursor: nextCursor,
+    complete,
+    truncated,
+    status,
+  };
 }
 
 async function listTopTokens(db) {
