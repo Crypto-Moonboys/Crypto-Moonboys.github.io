@@ -1,6 +1,6 @@
 # WaxOnEdge Live Indexer VPS Deployment
 
-This guide wires the existing WaxOnEdge live indexer skeleton for VPS runtime checks. It does not enable production Worker proxying or switch the frontend from safe snapshot polling.
+This guide wires the WaxOnEdge live indexer for VPS runtime checks. It does not enable production Worker proxying or switch the frontend from safe snapshot polling.
 
 ## Requirements
 
@@ -74,7 +74,7 @@ curl -N http://127.0.0.1:8789/stream
 npm run check
 ```
 
-Expected skeleton status is `not_connected` with `uses_fake_live_data=false`. The service must not emit `token_update` events until real Hyperion/state-history live deltas are implemented.
+Expected startup status is `not_connected` with `uses_fake_live_data=false` until real verified Hyperion/state-history trade rows are observed. The service must not emit `token_update` events unless they come from those verified streams.
 
 ## systemd
 

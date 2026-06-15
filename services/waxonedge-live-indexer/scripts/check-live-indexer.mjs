@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DEFAULT_BASE_URL = 'http://127.0.0.1:8789';
+const TOKEN_UPDATE_EVENT = 'event: token_update';
 
 export function checkTargetHost(bindHost) {
   const host = String(bindHost || '').trim();
@@ -56,6 +57,11 @@ export function assertNoFakeLiveData(payload, label = 'payload') {
     );
     if (fakeToken) throw new Error(`${label} contains a fake token update`);
   }
+}
+
+function streamHasFakeLiveData(text) {
+  return text.includes('"uses_fake_live_data":true') ||
+    (text.includes(TOKEN_UPDATE_EVENT) && text.includes('"fake":true'));
 }
 
 function assertExpectedStatus(response, path) {
@@ -120,8 +126,7 @@ async function checkStream(baseUrl) {
       if (chunk.done) break;
       bytes += chunk.value?.byteLength || 0;
       text += decoder.decode(chunk.value || new Uint8Array(), { stream: true });
-      if (text.includes('event: token_update')) throw new Error('/stream emitted token_update before real live data is enabled');
-      if (text.includes('"uses_fake_live_data":true')) throw new Error('/stream reported fake live data');
+      if (streamHasFakeLiveData(text)) throw new Error('/stream reported fake live data');
       if (text.includes('event: heartbeat')) {
         await reader.cancel().catch(() => {});
         return { ok: true, content_type: contentType, heartbeat: true };
@@ -130,8 +135,7 @@ async function checkStream(baseUrl) {
     }
     text += decoder.decode();
     await reader.cancel().catch(() => {});
-    if (text.includes('event: token_update')) throw new Error('/stream emitted token_update before real live data is enabled');
-    if (text.includes('"uses_fake_live_data":true')) throw new Error('/stream reported fake live data');
+    if (streamHasFakeLiveData(text)) throw new Error('/stream reported fake live data');
     if (!text.includes('event: heartbeat')) throw new Error('/stream heartbeat event missing');
     return { ok: true, content_type: contentType, heartbeat: true };
   } finally {

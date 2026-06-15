@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "VPS-side WaxOnEdge live indexer service skeleton for real Hyperion/state-history token updates.",
+  "description": "VPS-side WaxOnEdge live indexer service for verified Hyperion/state-history token updates.",
   "main": "src/index.mjs",
   "scripts": {
     "start": "node src/index.mjs",
