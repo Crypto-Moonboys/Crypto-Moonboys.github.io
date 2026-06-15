@@ -1447,7 +1447,11 @@
       button.disabled = button.hidden;
       button.classList.toggle('is-active', metric === state.metric && !button.hidden);
     });
-    if (!metricAllowed(state.metric)) state.metric = metricAllowed('change') ? 'change' : 'price';
+    if (!metricAllowed(state.metric)) {
+      state.metric = ['change', 'price', 'volume', 'liquidity', 'tvl', 'mcap'].find(function (metric) {
+        return metricAllowed(metric);
+      }) || 'change';
+    }
     document.querySelectorAll('[data-woe-metric]').forEach(function (button) {
       button.classList.toggle('is-active', (button.getAttribute('data-woe-metric') || '') === state.metric && !button.hidden);
     });
