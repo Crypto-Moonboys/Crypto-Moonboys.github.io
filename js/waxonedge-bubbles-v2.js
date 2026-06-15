@@ -645,19 +645,24 @@
       return 'Whale/high-volume update detected for ' + record.symbol + ' from live indexer data';
     }
     if (isVolumeSpike(previousVolume, nextVolume)) {
-      return 'Volume spike: ' + record.symbol + ' 24h volume moved to ' + displayValueForMetric(record, 'volume');
+      return 'Volume spike: ' + record.symbol + ' 24h volume moved to ' + displayValueForMetric(record, 'volume', '24h');
     }
     var change = asNum(record.change24);
     if (change != null && previousChange !== change) return 'Top mover update: ' + record.symbol + ' now ' + fmtPct(change);
     return 'Fresh history building: ' + record.symbol + ' updated from WaxOnEdge live data';
   }
 
-  function displayValueForMetric(record, metric) {
+  function displayValueForMetric(record, metric, timeframeOverride) {
     var oldMetric = state.metric;
-    state.metric = metric;
-    var value = displayValue(record);
-    state.metric = oldMetric;
-    return value;
+    var oldTimeframe = state.timeframe;
+    try {
+      state.metric = metric;
+      if (timeframeOverride) state.timeframe = timeframeOverride;
+      return displayValue(record);
+    } finally {
+      state.metric = oldMetric;
+      state.timeframe = oldTimeframe;
+    }
   }
 
   function addLiveFeed(message, record) {
@@ -672,9 +677,11 @@
       var currentNode = state.nodes.find(function (node) {
         return node.record && node.record.key === record.key;
       });
-      state.camera.focusUntil = performance.now() + 3800;
-      state.camera.focusX = currentNode ? currentNode.x : (record.nodeX || 0);
-      state.camera.focusY = currentNode ? currentNode.y : (record.nodeY || 0);
+      if (currentNode) {
+        state.camera.focusUntil = performance.now() + 3800;
+        state.camera.focusX = currentNode.x;
+        state.camera.focusY = currentNode.y;
+      }
       record.majorUpdatePending = false;
     }
     renderLiveFeed();

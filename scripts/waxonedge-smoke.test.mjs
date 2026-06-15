@@ -243,6 +243,8 @@ ok('waxonedge-bubbles-v2.js opens full token analytics directly without token mo
 ok('waxonedge-bubbles-v2.js makes the canvas keyboard focusable and opens analytics from keyboard',
   v2Js.includes('tabindex="0"') &&
   v2Js.includes('role="application"') &&
+  html.includes('WaxOnEdge WAX Galaxy scanner') &&
+  !html.includes('WaxOnEdge AntBubbles-style scanner') &&
   v2Js.includes('WaxOnEdge WAX Galaxy scanner') &&
   v2Js.includes('Use Enter or Space to open the highlighted token analytics page') &&
   v2Js.includes('function onCanvasKeydown') &&
@@ -294,7 +296,14 @@ ok('waxonedge-bubbles-v2.js adds live WAX Galaxy reactions from real update data
   v2Js.includes('function addLiveFeed') &&
   v2Js.includes('function updateCamera') &&
   v2Js.includes('return node.record && node.record.key === record.key') &&
-  v2Js.includes('state.camera.focusX = currentNode ? currentNode.x : (record.nodeX || 0)') &&
+  v2Js.includes("displayValueForMetric(record, 'volume', '24h')") &&
+  v2Js.includes('function displayValueForMetric(record, metric, timeframeOverride)') &&
+  v2Js.includes('var oldTimeframe = state.timeframe') &&
+  v2Js.includes('} finally {') &&
+  v2Js.includes('state.camera.focusX = currentNode.x') &&
+  v2Js.includes('state.camera.focusY = currentNode.y') &&
+  !v2Js.includes('record.nodeX || 0') &&
+  !v2Js.includes('record.nodeY || 0') &&
   v2Js.includes('function marketWeather') &&
   v2Js.includes('record.recentUntil') &&
   v2Js.includes('record.volumeSpikeUntil') &&
