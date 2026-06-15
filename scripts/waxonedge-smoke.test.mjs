@@ -401,6 +401,17 @@ ok('renderTokenStats uses backend detail stats without aggregate-complete gating
   js.includes('stats.aggregate_status') &&
   js.includes('tokenStatReason(stats') &&
   !js.includes('var currentPriceWax = token.systemPrice'));
+ok('token analytics respects backend proof before rendering dead metrics',
+  js.includes('function metricStatusLive(stats, key)') &&
+  js.includes('function hasRealHolderSnapshot(stats)') &&
+  js.includes("var hasMarketCap = backendFlag(stats.has_market_cap) || metricStatusLive(stats, 'market_cap')") &&
+  js.includes('var hasHolderCount = hasRealHolderSnapshot(stats) && stats.holder_count != null') &&
+  js.includes("var hasVolume7d = metricStatusLive(stats, 'volume_7d') && volume7d != null") &&
+  js.includes("var hasVolume30d = metricStatusLive(stats, 'volume_30d') && volume30d != null") &&
+  js.includes("statsHtml += statRow('Market cap', hasMarketCap && (marketCapWax != null || marketCapUsd != null)") &&
+  js.includes("statsHtml += statRow('7d volume', hasVolume7d") &&
+  js.includes("statsHtml += statRow('30d volume', hasVolume30d") &&
+  !js.includes('marketCapWax != null || marketCapUsd != null\\n      ? escHtml(formatDualMetric(marketCapWax, marketCapUsd))'));
 
 ok('waxonedge.js has exactly one pickDefaultSelection definition',
   countMatches(js, /function pickDefaultSelection\s*\(/g) === 1);

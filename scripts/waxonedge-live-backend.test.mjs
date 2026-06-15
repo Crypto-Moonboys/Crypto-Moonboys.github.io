@@ -3955,11 +3955,13 @@ ok('frontend does not label raw base volume as WAX',
   frontend.includes('rawVolume24: row.volume_24h') &&
   frontend.includes('volume24: asNum(row.volume_24h_wax)') &&
   frontend.includes("volume24Text: row.volume_24h_wax != null ? String(row.volume_24h_wax) + ' WAX' : UNAVAILABLE_TEXT"));
-ok('frontend only labels historical candle volume when chart source tokenA matches selection',
-  frontend.includes('function chartBundleHasSelectedBaseVolume(chartBundle, context)') &&
-  frontend.includes('var canUseHistoricalVolumes = chartBundleHasSelectedBaseVolume(chartBundle, context)') &&
-  frontend.includes('canUseHistoricalVolumes && historicalVolumes && historicalVolumes.sevenDay != null') &&
-  frontend.includes('canUseHistoricalVolumes && historicalVolumes && historicalVolumes.thirtyDay != null'));
+ok('frontend only displays 7d/30d volume when backend metric proof marks it live',
+  frontend.includes("var hasVolume7d = metricStatusLive(stats, 'volume_7d') && volume7d != null") &&
+  frontend.includes("var hasVolume30d = metricStatusLive(stats, 'volume_30d') && volume30d != null") &&
+  frontend.includes("statsHtml += statRow('7d volume', hasVolume7d") &&
+  frontend.includes("statsHtml += statRow('30d volume', hasVolume30d") &&
+  !frontend.includes('canUseHistoricalVolumes && historicalVolumes && historicalVolumes.sevenDay != null') &&
+  !frontend.includes('canUseHistoricalVolumes && historicalVolumes && historicalVolumes.thirtyDay != null'));
 ok('frontend fallback mode does not claim indexed backend adapters',
   frontend.includes('Diagnostic fallback active') &&
   frontend.includes('Backend adapter status unavailable') &&

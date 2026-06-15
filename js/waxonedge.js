@@ -1690,10 +1690,34 @@
   }
 
   function tokenStatReason(stats, key) {
+    var proof = stats && stats.metric_status && typeof stats.metric_status === 'object'
+      ? stats.metric_status[key]
+      : null;
+    if (proof && proof.reason) return proof.reason;
     var reasons = stats && stats.unavailable_reasons && typeof stats.unavailable_reasons === 'object'
       ? stats.unavailable_reasons
       : {};
     return reasons[key] || '';
+  }
+
+  function backendFlag(value) {
+    return value === true || value === 1 || value === '1' || String(value).toLowerCase() === 'true';
+  }
+
+  function metricStatusLive(stats, key) {
+    var proof = stats && stats.metric_status && typeof stats.metric_status === 'object'
+      ? stats.metric_status[key]
+      : null;
+    return proof && backendFlag(proof.live);
+  }
+
+  function hasRealHolderSnapshot(stats) {
+    if (!stats) return false;
+    if (backendFlag(stats.has_real_snapshot)) return true;
+    var holderProof = stats.holder_snapshot && typeof stats.holder_snapshot === 'object'
+      ? stats.holder_snapshot
+      : null;
+    return !!(holderProof && backendFlag(holderProof.has_real_snapshot));
   }
 
   function tokenAvailabilityHtml(stats, key, fallback) {
@@ -2116,9 +2140,6 @@
     var stats = context.stats || {};
     var chainStat = state.chainStatCache[selection.key] || null;
     var supply = chainStat && chainStat.supply ? chainStat.supply : null;
-    var chartBundle = context.chartMarket ? state.chartCache[context.chartMarket.marketId] : state.chartCache['backend:' + selection.key];
-    var historicalVolumes = computeHistoricalVolumes(chartBundle);
-    var canUseHistoricalVolumes = chartBundleHasSelectedBaseVolume(chartBundle, context);
     var currentPriceWax = asNum(stats.selected_price_wax);
     var currentPriceUsd = asNum(stats.selected_price_usd);
     var selectedSource = stats.selected_price_source ||
@@ -2130,6 +2151,8 @@
     var sourceCount = asNum(stats.source_count);
     var indexedPairCount = asNum(stats.indexed_pair_count);
     var volume24 = asNum(stats.volume_24h_wax);
+    var volume7d = asNum(stats.volume_7d);
+    var volume30d = asNum(stats.volume_30d);
     var liquidityWax = asNum(stats.liquidity_wax);
     var liquidityUsd = asNum(stats.liquidity_usd);
     var cumulatedLiquidityWax = asNum(stats.cumulated_pair_liquidity_wax != null ? stats.cumulated_pair_liquidity_wax : stats.liquidity_wax);
@@ -2140,6 +2163,11 @@
     var fdvUsd = asNum(stats.fdv_usd);
     var marketCapWax = asNum(stats.market_cap_wax);
     var marketCapUsd = asNum(stats.market_cap_usd);
+    var hasMarketCap = backendFlag(stats.has_market_cap) || metricStatusLive(stats, 'market_cap');
+    var hasFdv = backendFlag(stats.has_fdv) || metricStatusLive(stats, 'fdv') || fdvWax != null || fdvUsd != null;
+    var hasHolderCount = hasRealHolderSnapshot(stats) && stats.holder_count != null;
+    var hasVolume7d = metricStatusLive(stats, 'volume_7d') && volume7d != null;
+    var hasVolume30d = metricStatusLive(stats, 'volume_30d') && volume30d != null;
     var change24 = asNum(stats.price_change_24h != null ? stats.price_change_24h : stats.change_24h);
     var aggregateStatus = stats.aggregate_status ||
       (isCanonicalAggregateValid(stats)
@@ -2179,23 +2207,23 @@
     statsHtml += statRow('Source count', sourceCount != null ? escHtml(String(sourceCount)) : availabilityHtml());
     statsHtml += statRow('Indexed pair count', indexedPairCount != null ? escHtml(String(indexedPairCount)) : availabilityHtml());
     statsHtml += statRow('Strongest pair', strongestPair ? escHtml(strongestPair) : tokenAvailabilityHtml(stats, 'selected_price'));
-    statsHtml += statRow('Holder count', stats.holder_count != null ? escHtml(String(stats.holder_count)) : tokenAvailabilityHtml(stats, 'holder_count'), { muted: stats.holder_count == null });
+    statsHtml += statRow('Holder count', hasHolderCount ? escHtml(String(stats.holder_count)) : tokenAvailabilityHtml(stats, 'holder_count'), { muted: !hasHolderCount });
     statsHtml += statRow('Decimals', token.decimals != null ? escHtml(String(token.decimals)) : availabilityHtml());
     statsHtml += statRow('Total token supply', totalSupplyText ? escHtml(totalSupplyText) : availabilityHtml());
     statsHtml += statRow('Circulating supply', stats.circulating_supply != null ? escHtml(String(stats.circulating_supply) + ' ' + selection.symbol) : tokenAvailabilityHtml(stats, 'circulating_supply'), { muted: stats.circulating_supply == null });
     statsHtml += statRow('Indexed liquidity TVL', tvlWax != null || tvlUsd != null
       ? escHtml(formatDualMetric(tvlWax, tvlUsd))
       : tokenAvailabilityHtml(stats, 'liquidity'));
-    statsHtml += statRow('7d volume', canUseHistoricalVolumes && historicalVolumes && historicalVolumes.sevenDay != null
-      ? escHtml(fmtNum(historicalVolumes.sevenDay) + ' ' + selection.symbol)
+    statsHtml += statRow('7d volume', hasVolume7d
+      ? escHtml(fmtNum(volume7d) + ' WAX')
       : historicalVolumeAvailabilityHtml(stats, 'volume_7d'));
-    statsHtml += statRow('30d volume', canUseHistoricalVolumes && historicalVolumes && historicalVolumes.thirtyDay != null
-      ? escHtml(fmtNum(historicalVolumes.thirtyDay) + ' ' + selection.symbol)
+    statsHtml += statRow('30d volume', hasVolume30d
+      ? escHtml(fmtNum(volume30d) + ' WAX')
       : historicalVolumeAvailabilityHtml(stats, 'volume_30d'));
-    statsHtml += statRow('Market cap', marketCapWax != null || marketCapUsd != null
+    statsHtml += statRow('Market cap', hasMarketCap && (marketCapWax != null || marketCapUsd != null)
       ? escHtml(formatDualMetric(marketCapWax, marketCapUsd))
-      : tokenAvailabilityHtml(stats, 'market_cap'), { muted: marketCapWax == null && marketCapUsd == null });
-    statsHtml += statRow('Fully diluted valuation', fdvWax != null || fdvUsd != null
+      : tokenAvailabilityHtml(stats, 'market_cap'), { muted: !(hasMarketCap && (marketCapWax != null || marketCapUsd != null)) });
+    statsHtml += statRow('Fully diluted valuation', hasFdv && (fdvWax != null || fdvUsd != null)
       ? escHtml(formatDualMetric(fdvWax, fdvUsd))
       : tokenAvailabilityHtml(stats, 'fdv'));
 
