@@ -560,6 +560,11 @@
   }
 
   function computeRadii(records, width, height) {
+    var count = Math.max(1, records.length);
+    var mobile = width < 680;
+    var cols = Math.max(1, Math.ceil(Math.sqrt(count * (width / Math.max(height, 1)))));
+    var rows = Math.max(1, Math.ceil(count / cols));
+    var cellSize = Math.min(width / (cols + 0.8), height / (rows + 0.8));
     var scores = records.map(function (record) {
       var metricValue = valueForMetric(record, state.metric, state.timeframe);
       if (metricValue == null || metricValue <= 0) return blendedMarketScore(record) * 0.28;
@@ -568,16 +573,39 @@
     var positives = scores.filter(function (value) { return value > 0; }).sort(function (a, b) { return a - b; });
     var p95 = positives.length ? positives[Math.max(0, Math.floor(positives.length * 0.95) - 1)] : 1;
     var max = Math.max.apply(Math, scores.concat([1]));
-    var mobile = width < 680;
-    var minR = mobile ? 15 : 20;
-    var maxR = Math.max(minR + 8, Math.min(mobile ? 46 : 76, Math.sqrt(width * height * (mobile ? 0.042 : 0.024) / Math.PI)));
+    var cellLimit = Math.max(18, cellSize * (mobile ? 0.36 : 0.38));
+    var minR = Math.min(mobile ? 15 : 20, Math.max(12, cellLimit * 0.62));
+    var maxR = Math.max(minR + 6, Math.min(mobile ? 42 : 62, Math.sqrt(width * height * (mobile ? 0.032 : 0.018) / Math.PI), cellLimit));
     return records.map(function (record, index) {
       var value = scores[index];
       var norm = value <= 0 ? 0.06 : Math.pow(value / Math.max(p95, 1), 0.72);
       if (value > p95 && max > p95) norm = 0.84 + (Math.log(value / p95) / Math.log(max / p95)) * 0.16;
       norm = Math.max(0.06, Math.min(1, norm));
-      return Math.round((minR + norm * (maxR - minR)) * metricEmphasis(record));
+      return Math.round(Math.min(cellLimit, (minR + norm * (maxR - minR)) * metricEmphasis(record)));
     });
+  }
+
+  function layoutPosition(index, count, width, height, radius) {
+    var cols = Math.max(1, Math.ceil(Math.sqrt(Math.max(1, count) * (width / Math.max(height, 1)))));
+    var rows = Math.max(1, Math.ceil(count / cols));
+    var col = index % cols;
+    var row = Math.floor(index / cols);
+    var marginX = Math.max(radius + 10, width * 0.035);
+    var marginY = Math.max(radius + 10, height * 0.07);
+    var usableW = Math.max(1, width - marginX * 2);
+    var usableH = Math.max(1, height - marginY * 2);
+    var cellW = cols > 1 ? usableW / (cols - 1) : 0;
+    var cellH = rows > 1 ? usableH / (rows - 1) : 0;
+    var seed = ((index + 1) * 9301 + count * 49297) % 233280;
+    var jitterX = (((seed % 100) / 100) - 0.5) * Math.min(cellW || usableW, radius * 1.4) * 0.28;
+    var jitterY = ((((seed * 37) % 100) / 100) - 0.5) * Math.min(cellH || usableH, radius * 1.4) * 0.28;
+    var x = cols > 1 ? marginX + col * cellW : width / 2;
+    var y = rows > 1 ? marginY + row * cellH : height / 2;
+    if (row % 2 && cols > 2) x += Math.min(cellW * 0.18, radius * 0.7);
+    return {
+      x: Math.max(radius + 8, Math.min(width - radius - 8, x + jitterX)),
+      y: Math.max(radius + 8, Math.min(height - radius - 8, y + jitterY)),
+    };
   }
 
   function syncNodes() {
@@ -591,12 +619,11 @@
     state.nodes.forEach(function (node) { existing[node.id] = node; });
     state.nodes = state.visible.map(function (record, index) {
       var old = existing[record.id];
-      var angle = index * 2.399963;
-      var spiral = Math.sqrt(index + 1) * 24;
+      var position = layoutPosition(index, state.visible.length, width, height, radii[index]);
       var node = old || {
         id: record.id,
-        x: width / 2 + Math.cos(angle) * spiral,
-        y: height / 2 + Math.sin(angle) * spiral,
+        x: position.x,
+        y: position.y,
         vx: 0,
         vy: 0,
         depth: 0.9 + ((index * 37) % 21) / 100,
@@ -606,6 +633,8 @@
       record.nodeY = node.y;
       node.radius = old ? old.radius : radii[index];
       node.targetRadius = radii[index];
+      node.homeX = position.x;
+      node.homeY = position.y;
       node.rank = index + 1;
       node.depth = old && old.depth ? old.depth : 0.9 + ((index * 37) % 21) / 100;
       node.match = !state.query || record.searchText.indexOf(state.query.toLowerCase()) !== -1;
@@ -836,18 +865,16 @@
 
   function forceSimulationEquivalent(width, height) {
     var nodes = state.nodes;
-    var cx = width / 2;
-    var cy = height / 2;
     var animate = shouldAnimate();
-    for (var tick = 0; tick < 3; tick += 1) {
+    for (var tick = 0; tick < 5; tick += 1) {
       nodes.forEach(function (node, index) {
         node.radius += (node.targetRadius - node.radius) * 0.1;
         if (!animate) return;
-        node.vx += (cx - node.x) * 0.0025;
-        node.vy += (cy - node.y) * 0.0025;
-        var ring = Math.sqrt(index + 1) * 3;
-        node.vx += Math.cos(index * 1.7 + Date.now() / 9000) * ring * 0.0008;
-        node.vy += Math.sin(index * 1.3 + Date.now() / 11000) * ring * 0.0008;
+        node.vx += ((node.homeX || width / 2) - node.x) * 0.014;
+        node.vy += ((node.homeY || height / 2) - node.y) * 0.014;
+        var drift = Math.sqrt(index + 1) * 0.22;
+        node.vx += Math.cos(index * 1.7 + Date.now() / 9000) * drift * 0.012;
+        node.vy += Math.sin(index * 1.3 + Date.now() / 11000) * drift * 0.012;
       });
       for (var i = 0; i < nodes.length; i += 1) {
         for (var j = i + 1; j < nodes.length; j += 1) {
@@ -856,13 +883,24 @@
           var dx = b.x - a.x;
           var dy = b.y - a.y;
           var dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          var min = visualRadius(a) + visualRadius(b) + 7;
+          var min = visualRadius(a) + visualRadius(b) + 5;
           if (dist < min) {
-            var push = (min - dist) / dist * 0.075;
-            var px = dx * push;
-            var py = dy * push;
-            a.vx -= px; a.vy -= py;
-            b.vx += px; b.vy += py;
+            var overlap = min - dist;
+            var nx = dx / dist;
+            var ny = dy / dist;
+            var move = overlap * 0.52;
+            if (state.dragging !== a) {
+              a.x -= nx * move;
+              a.y -= ny * move;
+              a.vx -= nx * overlap * 0.08;
+              a.vy -= ny * overlap * 0.08;
+            }
+            if (state.dragging !== b) {
+              b.x += nx * move;
+              b.y += ny * move;
+              b.vx += nx * overlap * 0.08;
+              b.vy += ny * overlap * 0.08;
+            }
           }
         }
       }
@@ -895,7 +933,7 @@
     if (change > 0) return '#00d7ff';
     if (change < -5) return '#ff2bd6';
     if (change < 0) return '#ff4d6a';
-    return '#ffe66d';
+    return '#00e5ff';
   }
 
   function loadImage(url) {
@@ -978,16 +1016,16 @@
     var rimGrad = ctx.createRadialGradient(r * 0.35, r * 0.35, r * 0.35, 0, 0, r);
     rimGrad.addColorStop(0, 'rgba(255,255,255,0)');
     rimGrad.addColorStop(0.72, 'rgba(255,255,255,0)');
-    rimGrad.addColorStop(0.93, hexToRgba(rim, 0.34));
-    rimGrad.addColorStop(1, hexToRgba(rim, 0.9));
+    rimGrad.addColorStop(0.93, hexToRgba(rim, 0.22));
+    rimGrad.addColorStop(1, hexToRgba(rim, 0.68));
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.fillStyle = rimGrad;
     ctx.fill();
-    ctx.lineWidth = Math.max(1, r * 0.025);
+    ctx.lineWidth = Math.max(1, r * 0.018);
     ctx.strokeStyle = rim;
     ctx.shadowColor = rim;
-    ctx.shadowBlur = Math.max(10, r * 0.28);
+    ctx.shadowBlur = Math.max(6, r * 0.16);
     ctx.stroke();
     ctx.shadowBlur = 0;
     ctx.save();
