@@ -23,6 +23,15 @@
     mcap: 'Mkt Cap',
   };
   var TIMEFRAME_LABELS = { '24h': '24h', '7d': '7D', '30d': '30D' };
+  var DEFAULT_METRIC_ALLOWED = {
+    change: true,
+    price: true,
+    volume: true,
+    tvl: true,
+    liquidity: true,
+    mcap: false,
+  };
+  var DEFAULT_TIMEFRAME_ALLOWED = { '24h': true, '7d': false, '30d': false };
   var SOURCE_ORDER = ['alcor', 'swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'];
   var IMAGE_CACHE_LIMIT = 160;
   var BUBBLE_CANVAS_CACHE_LIMIT = 240;
@@ -33,6 +42,7 @@
   var state = {
     payload: null,
     health: null,
+    capabilities: null,
     records: [],
     pairs: [],
     visible: [],
@@ -116,7 +126,7 @@
   function fmtNum(value, decimals) {
     var n = asNum(value);
     var d = decimals == null ? 2 : decimals;
-    if (n == null) return 'Unavailable';
+    if (n == null) return 'Not indexed';
     if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(d) + 'B';
     if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(d) + 'M';
     if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(d) + 'K';
@@ -125,7 +135,7 @@
 
   function fmtPrice(value) {
     var n = asNum(value);
-    if (n == null) return 'Unavailable';
+    if (n == null) return 'Not indexed';
     if (Math.abs(n) >= 1000) return n.toFixed(2);
     if (Math.abs(n) >= 1) return n.toFixed(4);
     if (Math.abs(n) >= 0.0001) return n.toFixed(6);
@@ -134,7 +144,7 @@
 
   function fmtPct(value) {
     var n = asNum(value);
-    if (n == null) return 'Unavailable';
+    if (n == null) return 'Not indexed';
     return (n > 0 ? '+' : '') + n.toFixed(2) + '%';
   }
 
@@ -197,7 +207,7 @@
   }
 
   function pairLabel(pair) {
-    if (!pair) return 'Unavailable';
+    if (!pair) return 'Not indexed';
     var a = normalizeSymbol(pair.token_a_symbol);
     var b = normalizeSymbol(pair.token_b_symbol);
     return (a && b ? a + '/' + b : 'Pair') + (pair.pair_id ? ' #' + pair.pair_id : '');
@@ -241,6 +251,76 @@
     return null;
   }
 
+  function firstDefinedCapability(keys) {
+    var caps = state.capabilities || {};
+    for (var i = 0; i < keys.length; i += 1) {
+      var key = keys[i];
+      if (Object.prototype.hasOwnProperty.call(caps, key)) return caps[key];
+    }
+    return undefined;
+  }
+
+  function capabilityEnabled(keys, fallback) {
+    var value = firstDefinedCapability(keys);
+    if (value == null) return !!fallback;
+    if (value === true || value === 1 || value === '1') return true;
+    if (value === false || value === 0 || value === '0') return false;
+    return String(value).toLowerCase() === 'true';
+  }
+
+  function metricAllowed(metric) {
+    if (!Object.prototype.hasOwnProperty.call(DEFAULT_METRIC_ALLOWED, metric)) return false;
+    if (metric === 'mcap') return capabilityEnabled(['market_cap', 'mcap'], DEFAULT_METRIC_ALLOWED.mcap);
+    return capabilityEnabled([metric], DEFAULT_METRIC_ALLOWED[metric]);
+  }
+
+  function timeframeAllowed(timeframe) {
+    if (!Object.prototype.hasOwnProperty.call(DEFAULT_TIMEFRAME_ALLOWED, timeframe)) return false;
+    if (timeframe === '7d') return capabilityEnabled(['volume_7d', 'history_7d', 'timeframe_7d'], false);
+    if (timeframe === '30d') return capabilityEnabled(['volume_30d', 'history_30d', 'timeframe_30d'], false);
+    return DEFAULT_TIMEFRAME_ALLOWED[timeframe];
+  }
+
+  function updateCapabilityControls() {
+    document.querySelectorAll('[data-woe-metric]').forEach(function (button) {
+      var metric = button.getAttribute('data-woe-metric') || '';
+      var allowed = metricAllowed(metric);
+      button.hidden = !allowed;
+      button.disabled = !allowed;
+      button.setAttribute('aria-disabled', allowed ? 'false' : 'true');
+      button.classList.toggle('is-active', allowed && metric === state.metric);
+    });
+    document.querySelectorAll('[data-woe-timeframe]').forEach(function (button) {
+      var timeframe = button.getAttribute('data-woe-timeframe') || '';
+      var allowed = timeframeAllowed(timeframe);
+      button.hidden = !allowed;
+      button.disabled = !allowed;
+      button.setAttribute('aria-disabled', allowed ? 'false' : 'true');
+      button.classList.toggle('is-active', allowed && timeframe === state.timeframe);
+    });
+  }
+
+  function extractMetricCapabilities(payload) {
+    var data = payloadData(payload);
+    var caps = data.metric_capabilities || data.metricCapabilities || {};
+    if (data.summary && (data.summary.metric_capabilities || data.summary.metricCapabilities)) {
+      caps = data.summary.metric_capabilities || data.summary.metricCapabilities;
+    }
+    if (caps.metrics) caps = caps.metrics;
+    return caps || {};
+  }
+
+  function applyMetricCapabilities(payload) {
+    state.capabilities = extractMetricCapabilities(payload);
+    if (!metricAllowed(state.metric)) {
+      state.metric = ['change', 'price', 'volume', 'liquidity', 'tvl', 'mcap'].find(function (metric) {
+        return metricAllowed(metric);
+      }) || 'change';
+    }
+    if (!timeframeAllowed(state.timeframe)) state.timeframe = '24h';
+    updateCapabilityControls();
+  }
+
   function displayValue(record) {
     if (state.metric === 'change') {
       var change = state.timeframe === '24h' ? record.change24 : record['change' + state.timeframe];
@@ -249,30 +329,30 @@
     if (state.metric === 'price') {
       if (record.selectedPriceUsd != null) return '$' + fmtPrice(record.selectedPriceUsd);
       if (record.selectedPriceWax != null) return fmtPrice(record.selectedPriceWax) + ' WAX';
-      return 'Price unavailable';
+      return 'No indexed price';
     }
     if (state.metric === 'volume') {
-      if (state.timeframe === '7d') return record.volume7dUsd != null ? '$' + fmtNum(record.volume7dUsd) : '7D unavailable';
-      if (state.timeframe === '30d') return record.volume30dUsd != null ? '$' + fmtNum(record.volume30dUsd) : '30D unavailable';
+      if (state.timeframe === '7d') return record.volume7dUsd != null ? '$' + fmtNum(record.volume7dUsd) : 'No indexed 7D volume';
+      if (state.timeframe === '30d') return record.volume30dUsd != null ? '$' + fmtNum(record.volume30dUsd) : 'No indexed 30D volume';
       if (record.volume24Usd != null) return '$' + fmtNum(record.volume24Usd);
       if (record.volume24Wax != null) return fmtNum(record.volume24Wax) + ' WAX';
-      return 'Volume unavailable';
+      return 'No indexed volume';
     }
     if (state.metric === 'tvl') {
       if (record.tvlUsd != null) return '$' + fmtNum(record.tvlUsd);
       if (record.tvlWax != null) return fmtNum(record.tvlWax) + ' WAX';
-      return 'TVL unavailable';
+      return 'No indexed TVL';
     }
     if (state.metric === 'liquidity') {
       if (record.liquidityUsd != null) return '$' + fmtNum(record.liquidityUsd);
       if (record.liquidityWax != null) return fmtNum(record.liquidityWax) + ' WAX';
-      return 'Liquidity unavailable';
+      return 'No indexed liquidity';
     }
     if (state.metric === 'mcap') {
       if (record.marketCapUsd != null) return '$' + fmtNum(record.marketCapUsd) + ' mcap';
-      return 'Mkt cap unavailable';
+      return 'No indexed market cap';
     }
-    return 'Unavailable';
+    return 'Not indexed';
   }
 
   function waxUsdPrice() {
@@ -444,7 +524,7 @@
       record.indexedPairCount = Math.max(record.indexedPairCount || 0, record.computedPairCount || 0);
       record.strongestPairLabel = record.strongestPair
         ? sourceLabel(record.strongestPair.source) + ' ' + pairLabel(record.strongestPair)
-        : (record.selectedSource && record.selectedPair ? record.selectedSource + ' #' + record.selectedPair : 'Unavailable');
+        : (record.selectedSource && record.selectedPair ? record.selectedSource + ' #' + record.selectedPair : 'Not indexed');
       record.searchText = tokenSearchText(record);
       record.score = (record.selectedPriceWax != null || record.selectedPriceUsd != null ? 500000 : 0) +
         (record.indexedPairCount > 0 ? 250000 : 0) +
@@ -481,14 +561,16 @@
 
   function computeRadii(records, width, height) {
     var scores = records.map(function (record) {
-      return blendedMarketScore(record);
+      var metricValue = valueForMetric(record, state.metric, state.timeframe);
+      if (metricValue == null || metricValue <= 0) return blendedMarketScore(record) * 0.28;
+      return Math.log10(1 + Math.abs(metricValue));
     });
     var positives = scores.filter(function (value) { return value > 0; }).sort(function (a, b) { return a - b; });
     var p95 = positives.length ? positives[Math.max(0, Math.floor(positives.length * 0.95) - 1)] : 1;
     var max = Math.max.apply(Math, scores.concat([1]));
     var mobile = width < 680;
     var minR = mobile ? 15 : 20;
-    var maxR = Math.max(minR + 8, Math.min(mobile ? 52 : 88, Math.sqrt(width * height * (mobile ? 0.052 : 0.032) / Math.PI)));
+    var maxR = Math.max(minR + 8, Math.min(mobile ? 46 : 76, Math.sqrt(width * height * (mobile ? 0.042 : 0.024) / Math.PI)));
     return records.map(function (record, index) {
       var value = scores[index];
       var norm = value <= 0 ? 0.06 : Math.pow(value / Math.max(p95, 1), 0.72);
@@ -757,7 +839,7 @@
     var cx = width / 2;
     var cy = height / 2;
     var animate = shouldAnimate();
-    for (var tick = 0; tick < 2; tick += 1) {
+    for (var tick = 0; tick < 3; tick += 1) {
       nodes.forEach(function (node, index) {
         node.radius += (node.targetRadius - node.radius) * 0.1;
         if (!animate) return;
@@ -774,9 +856,9 @@
           var dx = b.x - a.x;
           var dy = b.y - a.y;
           var dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          var min = visualRadius(a) + visualRadius(b) + 4;
+          var min = visualRadius(a) + visualRadius(b) + 7;
           if (dist < min) {
-            var push = (min - dist) / dist * 0.04;
+            var push = (min - dist) / dist * 0.075;
             var px = dx * push;
             var py = dy * push;
             a.vx -= px; a.vy -= py;
@@ -808,12 +890,12 @@
 
   function ringColor(record) {
     var change = signal(record);
-    if (change == null) return '#f89422';
-    if (change > 5) return '#00ff55';
-    if (change > 0) return '#00cc66';
-    if (change < -5) return '#ff284f';
-    if (change < 0) return '#cc1122';
-    return '#f89422';
+    if (change == null) return '#00e5ff';
+    if (change > 5) return '#39ff88';
+    if (change > 0) return '#00d7ff';
+    if (change < -5) return '#ff2bd6';
+    if (change < 0) return '#ff4d6a';
+    return '#ffe66d';
   }
 
   function loadImage(url) {
@@ -902,10 +984,10 @@
     ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.fillStyle = rimGrad;
     ctx.fill();
-    ctx.lineWidth = Math.max(1, r * 0.045);
+    ctx.lineWidth = Math.max(1, r * 0.025);
     ctx.strokeStyle = rim;
     ctx.shadowColor = rim;
-    ctx.shadowBlur = Math.max(8, r * 0.2);
+    ctx.shadowBlur = Math.max(10, r * 0.28);
     ctx.stroke();
     ctx.shadowBlur = 0;
     ctx.save();
@@ -916,7 +998,7 @@
     if (img && r > 18) {
       var logoSize = showText ? Math.max(18, Math.min(r * 0.72, 54)) : r * 1.15;
       ctx.drawImage(img, -logoSize / 2, showText ? -r * 0.55 : -logoSize / 2, logoSize, logoSize);
-    } else {
+    } else if (!showText) {
       ctx.fillStyle = '#fff';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -1158,7 +1240,7 @@
       : 0;
     if (avg > 2) return { center: 'rgba(0,80,32,.28)' };
     if (avg < -2) return { center: 'rgba(90,0,20,.30)' };
-    return { center: 'rgba(248,148,34,.12)' };
+    return { center: 'rgba(0,229,255,.10)' };
   }
 
   function drawGalaxyNode(ctx, node, dpr, now) {
@@ -1189,8 +1271,10 @@
     if (state.hovered === node) {
       ctx.beginPath();
       ctx.arc(node.x, node.y, r + 5, 0, Math.PI * 2);
-      ctx.strokeStyle = '#f89422';
+      ctx.strokeStyle = ringColor(record);
       ctx.lineWidth = 2;
+      ctx.shadowColor = ringColor(record);
+      ctx.shadowBlur = 18;
       ctx.stroke();
     }
     ctx.restore();
@@ -1394,13 +1478,13 @@
       ? TIMEFRAME_LABELS[state.timeframe] + ' history building from fresh live data'
       : state.health && state.health.candle_backfill
       ? (state.health.candle_backfill.latest_1d_candle_count || 0) + ' 1D candles'
-      : 'candles pending';
+      : 'candles not indexed';
     bar.innerHTML = '<span>' + escHtml(tokenLabel) + '</span>' +
       '<span class="woe-ab-up">▲ ' + escHtml(String(gainers)) + '</span>' +
       '<span class="woe-ab-down">▼ ' + escHtml(String(losers)) + '</span>' +
       '<span>Vol 24h <strong>' + escHtml(fmtNum(volume)) + '</strong></span>' +
-      '<span>Top <strong class="woe-ab-up">' + escHtml(topGainer ? topGainer.symbol + ' ' + fmtPct(topGainer.change24) : 'Unavailable') + '</strong></span>' +
-      '<span>Bot <strong class="woe-ab-down">' + escHtml(topLoser ? topLoser.symbol + ' ' + fmtPct(topLoser.change24) : 'Unavailable') + '</strong></span>' +
+      '<span>Top <strong class="woe-ab-up">' + escHtml(topGainer ? topGainer.symbol + ' ' + fmtPct(topGainer.change24) : 'Not indexed') + '</strong></span>' +
+      '<span>Bot <strong class="woe-ab-down">' + escHtml(topLoser ? topLoser.symbol + ' ' + fmtPct(topLoser.change24) : 'Not indexed') + '</strong></span>' +
       '<span>Sources <strong>' + escHtml(String(Object.keys(sources).length)) + '</strong></span>' +
       '<span>' + escHtml(candleStatus) + '</span>' +
       '<span>All-pairs WAX valuation model</span>' +
@@ -1410,16 +1494,20 @@
   function attachControls() {
     document.querySelectorAll('[data-woe-metric]').forEach(function (button) {
       button.addEventListener('click', function () {
-        state.metric = button.getAttribute('data-woe-metric') || 'change';
-        document.querySelectorAll('[data-woe-metric]').forEach(function (el) { el.classList.toggle('is-active', el === button); });
+        var metric = button.getAttribute('data-woe-metric') || 'change';
+        if (!metricAllowed(metric)) return;
+        state.metric = metric;
+        updateCapabilityControls();
         bubbleCanvasCache.clear();
         syncNodes();
       });
     });
     document.querySelectorAll('[data-woe-timeframe]').forEach(function (button) {
       button.addEventListener('click', function () {
-        state.timeframe = button.getAttribute('data-woe-timeframe') || '24h';
-        document.querySelectorAll('[data-woe-timeframe]').forEach(function (el) { el.classList.toggle('is-active', el === button); });
+        var timeframe = button.getAttribute('data-woe-timeframe') || '24h';
+        if (!timeframeAllowed(timeframe)) return;
+        state.timeframe = timeframe;
+        updateCapabilityControls();
         bubbleCanvasCache.clear();
         syncNodes();
       });
@@ -1429,6 +1517,7 @@
       state.query = String(search.value || '').trim().toLowerCase();
       syncNodes();
     });
+    updateCapabilityControls();
   }
 
   function updateWaxPrice(payload) {
@@ -1442,7 +1531,7 @@
     var metaEl = document.getElementById('woe-topbar-wax-price-meta');
     if (priceEl) priceEl.textContent = price == null ? '$ --' : '$' + fmtPrice(price);
     if (metaEl) metaEl.textContent = price == null
-      ? (state.connected ? 'WAX price unavailable' : 'Connecting to WaxOnEdge indexer')
+      ? (state.connected ? 'WAX price not indexed' : 'Connecting to WaxOnEdge indexer')
       : 'WAX price from ' + (data.summary && data.summary.wax_price_source ? data.summary.wax_price_source : 'WaxOnEdge indexer');
   }
 
@@ -1486,6 +1575,7 @@
     ]).then(function (results) {
       state.payload = results[0];
       state.health = results[1] ? payloadData(results[1]) : null;
+      applyMetricCapabilities(state.payload);
       state.records = normalizeRecords(state.payload);
       state.pairs = sourceRows(payloadData(state.payload).pairs);
       state.connected = true;
@@ -1505,7 +1595,7 @@
     }).catch(function (error) {
       state.connected = false;
       setStatus();
-      if (state.board) state.board.innerHTML = '<div class="woe-ab-empty">WaxOnEdge backend unavailable. No fake token data is shown.</div>';
+      if (state.board) state.board.innerHTML = '<div class="woe-ab-empty">WaxOnEdge backend did not return indexed token data. No fake token data is shown.</div>';
       // eslint-disable-next-line no-console
       console.warn(error);
     });
