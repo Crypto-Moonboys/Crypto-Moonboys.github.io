@@ -133,7 +133,7 @@ function normalizeTradeTimestamp(value) {
 }
 
 function hyperionHistoryActionsEndpoint(config) {
-  const base = config?.hyperion_api || config?.state_history_endpoint || '';
+  const base = config?.hyperion_api || config?.state_history_endpoint || config?.waxnode_endpoint || '';
   if (!base) return '';
   if (/\/history\/get_actions$/i.test(base)) return base;
   const cleanBase = base.replace(/\/+$/, '');
@@ -164,6 +164,7 @@ export function loadConfig(env = process.env) {
     bind_host: normalizeBindHost(env.WAXONEDGE_LIVE_BIND_HOST),
     hyperion_api: sanitizedHttpUrl(env.WAXONEDGE_HYPERION_API),
     state_history_endpoint: sanitizedHttpUrl(env.WAXONEDGE_STATE_HISTORY_ENDPOINT),
+    waxnode_endpoint: sanitizedHttpUrl(env.WAXNODE_ENDPOINT),
     stream_enabled: booleanEnv(env.WAXONEDGE_LIVE_ENABLE_STREAM, false),
     poll_ms: clampInteger(env.WAXONEDGE_LIVE_POLL_MS, DEFAULT_LIVE_POLL_MS, 1000, 60000),
     fetch_limit: clampInteger(env.WAXONEDGE_LIVE_FETCH_LIMIT, DEFAULT_LIVE_FETCH_LIMIT, 1, 250),
@@ -196,9 +197,9 @@ export function createState(config = loadConfig()) {
     stream_source: null,
     poll_timer: null,
     polling: false,
-    last_error: config.hyperion_api || config.state_history_endpoint
+    last_error: config.hyperion_api || config.state_history_endpoint || config.waxnode_endpoint
       ? 'no verified trade events observed yet'
-      : 'WAXONEDGE_HYPERION_API or WAXONEDGE_STATE_HISTORY_ENDPOINT required',
+      : 'WAXONEDGE_HYPERION_API, WAXONEDGE_STATE_HISTORY_ENDPOINT, or WAXNODE_ENDPOINT required',
   };
 }
 
@@ -239,6 +240,7 @@ export function healthPayload(state = createState()) {
     config: {
       hyperion_configured: Boolean(state.config.hyperion_api),
       state_history_configured: Boolean(state.config.state_history_endpoint),
+      waxnode_configured: Boolean(state.config.waxnode_endpoint),
       stream_enabled: state.config.stream_enabled === true,
       shared_secret_configured: state.config.shared_secret_configured === true,
       secret_header: state.config.secret_header,
@@ -338,9 +340,11 @@ function sendTokenUpdate(state, update) {
 }
 
 export function tradeIdFromRow(row, stream, parsed = {}) {
-  const streamIdentity = streamKey(stream);
+  const account = safeString(stream?.account || parsed.account);
   const action = safeString(stream?.action || parsed.action_name || actionName(row));
   const source = safeString(stream?.source || parsed.source);
+  if (!account || !action || !source) return '';
+  const streamIdentity = `${account}::${action}`;
   const idParts = [
     ['trade', parsed.trade_id],
     ['id', parsed.id],
@@ -555,7 +559,7 @@ export async function ingestVerifiedTradeStreams(state, fetchImpl = globalThis.f
   if (!hyperionHistoryActionsEndpoint(state.config)) {
     state.connected = false;
     state.status = 'not_connected';
-    state.last_error = 'WAXONEDGE_HYPERION_API or WAXONEDGE_STATE_HISTORY_ENDPOINT required';
+    state.last_error = 'WAXONEDGE_HYPERION_API, WAXONEDGE_STATE_HISTORY_ENDPOINT, or WAXNODE_ENDPOINT required';
     return { observed: 0, error: state.last_error };
   }
   let observed = 0;

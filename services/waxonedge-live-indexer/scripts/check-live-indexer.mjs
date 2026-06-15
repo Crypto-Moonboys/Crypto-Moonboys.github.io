@@ -91,6 +91,10 @@ function parseSseDataPayloads(text) {
 }
 
 function streamHasFakeLiveData(text) {
+  try {
+    const payload = JSON.parse(String(text || '').trim());
+    if (hasFakeMarker(payload)) return true;
+  } catch (_) {}
   if (parseSseDataPayloads(text).some((payload) => hasFakeMarker(payload))) return true;
   return /"uses_fake_live_data"\s*:\s*true/i.test(text) ||
     /"emits_fake_token_updates"\s*:\s*true/i.test(text) ||

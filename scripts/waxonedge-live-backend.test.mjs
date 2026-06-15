@@ -323,6 +323,14 @@ ok('VPS live indexer registers only verified trade streams',
     snapshot.next_cursor === null &&
     snapshot.uses_fake_live_data === false &&
     snapshot.browser_hyperion_fetch === false);
+  const missingConfigState = liveIndexer.createState(liveIndexer.loadConfig({}));
+  const missingConfigHealth = liveIndexer.healthPayload(missingConfigState);
+  ok('VPS live indexer health reports a concrete missing stream config reason',
+    missingConfigHealth.last_error === 'WAXONEDGE_HYPERION_API, WAXONEDGE_STATE_HISTORY_ENDPOINT, or WAXNODE_ENDPOINT required' &&
+    missingConfigHealth.config.hyperion_configured === false &&
+    missingConfigHealth.config.state_history_configured === false &&
+    missingConfigHealth.config.waxnode_configured === false &&
+    !liveIndexerSource.includes('live stream connector not implemented yet'));
 }
 
 function createEmptyWaxonedgeHealthDb() {
@@ -484,11 +492,19 @@ ok('VPS live indexer exposes no fake live events or random movement',
     liveIndexer.tradeIdFromRow({ global_sequence: 77 }, { account: 'alcordexmain', action: 'buymatch', source: 'alcor' }, {}) ===
       'alcordexmain::buymatch:source:alcor:action:buymatch:seq:77' &&
     liveIndexer.tradeIdFromRow({ global_sequence: 77 }, { account: 'swap.alcor', action: 'logswap', source: 'swap.alcor' }, {}) ===
-      'swap.alcor::logswap:source:swap.alcor:action:logswap:seq:77');
+      'swap.alcor::logswap:source:swap.alcor:action:logswap:seq:77' &&
+    liveIndexer.tradeIdFromRow({ global_sequence: 77 }, { action: 'buymatch', source: 'alcor' }, {}) === '' &&
+    liveIndexer.tradeIdFromRow({ global_sequence: 77 }, { account: 'alcordexmain', source: 'alcor' }, {}) === '' &&
+    liveIndexer.tradeIdFromRow({ global_sequence: 77 }, { account: 'alcordexmain', action: 'buymatch' }, {}) === '');
   ok('VPS live indexer final trade IDs stay collision-safe without redundant stream prefix wrapping',
     alcorTrade.trade_id === 'alcordexmain::buymatch:source:alcor:action:buymatch:id:7:seq:101:market:314' &&
     ammTrade.trade_id === 'swap.alcor::logswap:source:swap.alcor:action:logswap:seq:102:pair:22' &&
     alcorTrade.trade_id !== ammTrade.trade_id);
+  ok('VPS live indexer source keeps stable ID guards and no blank trade_id suffix path',
+    liveIndexerSource.includes('const stableId = tradeIdFromRow(row, stream, record);') &&
+    liveIndexerSource.includes('if (!stableId) return null;') &&
+    !liveIndexerSource.includes('${streamKey(stream)}:${marketId}:${tradeIdFromRow(row, stream, record)}') &&
+    !liveIndexerSource.includes('${streamKey(stream)}:${pairId}:${tradeIdFromRow(row, stream, record)}'));
   {
     const evictionState = liveIndexer.createState(liveIndexer.loadConfig({
       WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
@@ -715,6 +731,7 @@ ok('VPS live indexer exposes no fake live events or random movement',
   let rejectedNestedFakeStream = false;
   let rejectedCrlfFakeStream = false;
   let rejectedFake503Stream = false;
+  let rejectedNestedJson503Stream = false;
   const firstChunkHeartbeat = await withMockFetch([
     jsonResponse(503, healthPayload),
     jsonResponse(503, snapshotPayload),
@@ -808,6 +825,15 @@ ok('VPS live indexer exposes no fake live events or random movement',
   } catch (_) {
     rejectedFake503Stream = true;
   }
+  try {
+    await withMockFetch([
+      jsonResponse(503, healthPayload),
+      jsonResponse(503, snapshotPayload),
+      jsonStream503({ uses_fake_live_data: false, nested: { browser_hyperion_fetch: true } }),
+    ], () => liveIndexerCheck.runCheck({ WAXONEDGE_LIVE_CHECK_URL: 'http://live-indexer.test' }));
+  } catch (_) {
+    rejectedNestedJson503Stream = true;
+  }
   ok('VPS live indexer runtime checker validates service identity, endpoint status, and skeleton contracts',
     skeleton.ok === true &&
     connected.ok === true &&
@@ -823,7 +849,10 @@ ok('VPS live indexer exposes no fake live events or random movement',
     rejectedFakeStream &&
     rejectedNestedFakeStream &&
     rejectedCrlfFakeStream &&
-    rejectedFake503Stream);
+    rejectedFake503Stream &&
+    rejectedNestedJson503Stream &&
+    liveIndexerCheckScript.includes("JSON.parse(String(text || '').trim())") &&
+    liveIndexerCheckScript.includes('parseSseDataPayloads(text).some((payload) => hasFakeMarker(payload))'));
 }
 ok('VPS live indexer safely parses request path without trusting Host header',
   liveIndexer.safeRequestPathname('/health?x=1') === '/health' &&
