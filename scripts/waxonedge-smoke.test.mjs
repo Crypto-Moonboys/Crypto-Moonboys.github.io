@@ -426,13 +426,25 @@ ok('waxonedge.js explicitly marks indexed-backend-only states', js.includes('Req
 ok('waxonedge.js explicitly marks unindexed chart states', js.includes('Source not indexed yet'));
 ok('WaxOnEdge never renders Invalid Date for scanner timestamps',
   v2Js.includes('function safeTimeLabel') &&
-  v2Js.includes("if (!value) return ''") &&
-  v2Js.includes("if (!Number.isFinite(date.getTime())) return ''") &&
+  v2Js.includes('function isValidIsoTimestamp') &&
+  v2Js.includes("if (!isValidIsoTimestamp(value)) return ''") &&
   v2Js.includes("safeTimeLabel(state.lastUpdated) || 'Waiting for sync'") &&
-  v2Js.includes('(tokens[tokens.length - 1] && tokens[tokens.length - 1].updated_at)') &&
-  v2Js.includes('state.lastUpdated = loadedData.updated_at || loadedData.generated_at || new Date().toISOString()') &&
+  v2Js.includes('function latestTokenUpdatedAt(tokens)') &&
+  v2Js.includes('state.live.lastEventAt') &&
+  v2Js.includes('function advanceLiveDisplayTimestamp(value)') &&
+  v2Js.includes('function setBackendLiveCursor(nextCursor)') &&
+  v2Js.includes('state.live.cursorFromBackend = true') &&
+  v2Js.includes('if (nextCursor) setBackendLiveCursor(nextCursor)') &&
+  v2Js.includes('state.live.cursor && state.live.cursorFromBackend') &&
+  v2Js.includes('setBackendLiveCursor(loadedData.next_cursor)') &&
+  v2Js.includes('isValidIsoTimestamp(loadedData.generated_at)') &&
   !v2Js.includes('state.lastUpdated = state.live.cursor') &&
+  !v2Js.includes('state.live.cursor = state.lastUpdated') &&
+  !v2Js.includes('advanceLiveFallbackCursor') &&
   !v2Js.includes('loadedData.updated_at || loadedData.generated_at || loadedData.next_cursor') &&
+  !v2Js.includes('safeTimeLabel(data.next_cursor') &&
+  !v2Js.includes('safeTimeLabel(snapshot.next_cursor') &&
+  !v2Js.includes('safeTimeLabel(loadedData.next_cursor') &&
   !/function safeTimeLabel[\s\S]*new Date\(\)[\s\S]*return date\.toLocaleTimeString/.test(v2Js) &&
   !v2Js.includes('Invalid Date') &&
   !html.includes('Invalid Date') &&

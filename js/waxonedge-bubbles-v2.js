@@ -68,6 +68,8 @@
       pollTimer: 0,
       pollInFlight: false,
       cursor: null,
+      cursorFromBackend: false,
+      lastEventAt: null,
       transport: 'idle',
     },
   };
@@ -588,23 +590,50 @@
     });
   }
 
-  function advanceLiveFallbackCursor(update) {
-    if (!update || !update.updated_at) return;
-    state.live.cursor = !state.live.cursor || update.updated_at > state.live.cursor ? update.updated_at : state.live.cursor;
+  function isValidIsoTimestamp(value) {
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T/.test(value)) return false;
+    return Number.isFinite(new Date(value).getTime());
+  }
+
+  function setBackendLiveCursor(nextCursor) {
+    if (!nextCursor) return;
+    state.live.cursor = String(nextCursor);
+    state.live.cursorFromBackend = true;
+  }
+
+  function latestTokenUpdatedAt(tokens) {
+    return tokens.reduce(function (latest, token) {
+      var value = token && token.updated_at;
+      if (!isValidIsoTimestamp(value)) return latest;
+      return !latest || value > latest ? value : latest;
+    }, null);
+  }
+
+  function advanceLiveDisplayTimestamp(value) {
+    if (!isValidIsoTimestamp(value)) return;
+    state.live.lastEventAt = !state.live.lastEventAt || value > state.live.lastEventAt ? value : state.live.lastEventAt;
+    state.lastUpdated = !state.lastUpdated || value > state.lastUpdated ? value : state.lastUpdated;
   }
 
   function applyLiveSnapshot(snapshot) {
     var data = payloadData(snapshot);
     var tokens = sourceRows(data.tokens);
     var nextCursor = data.next_cursor || snapshot.next_cursor || null;
-    if (nextCursor) state.live.cursor = nextCursor;
+    if (nextCursor) setBackendLiveCursor(nextCursor);
+    var latestUpdate = latestTokenUpdatedAt(tokens);
+    var displayTimestamp =
+      latestUpdate ||
+      (isValidIsoTimestamp(data.generated_at) ? data.generated_at : null) ||
+      (isValidIsoTimestamp(snapshot.generated_at) ? snapshot.generated_at : null) ||
+      (isValidIsoTimestamp(state.lastUpdated) ? state.lastUpdated : null) ||
+      new Date().toISOString();
+    advanceLiveDisplayTimestamp(displayTimestamp);
     if (!tokens.length) return;
     var byKey = {};
     state.records.forEach(function (record) { byKey[record.key] = record; });
     var changed = 0;
     var changedRecords = [];
     tokens.forEach(function (update) {
-      if (!nextCursor) advanceLiveFallbackCursor(update);
       var key = update.token_key || tokenKey(update.contract, update.symbol);
       var record = byKey[key];
       if (!record) return;
@@ -614,10 +643,6 @@
       }
     });
     if (!changed) return;
-    state.lastUpdated =
-      (tokens[tokens.length - 1] && tokens[tokens.length - 1].updated_at) ||
-      data.generated_at ||
-      new Date().toISOString();
     refreshLiveTargetRadii();
     syncNodes();
     changedRecords.forEach(function (record) {
@@ -1268,7 +1293,7 @@
   }
 
   function liveSnapshotUrl() {
-    return state.live.cursor
+    return state.live.cursor && state.live.cursorFromBackend
       ? LIVE_API + '?cursor=' + encodeURIComponent(state.live.cursor)
       : LIVE_API;
   }
@@ -1328,7 +1353,6 @@
 
   function startLiveUpdates() {
     var live = state.health && state.health.live_updates ? state.health.live_updates : {};
-    state.live.cursor = state.lastUpdated || null;
     if (live.transport === 'sse' && live.stream_endpoint) {
       startLiveEventSource(live.stream_endpoint || LIVE_STREAM_API);
       return;
@@ -1346,9 +1370,8 @@
   }
 
   function safeTimeLabel(value) {
-    if (!value) return '';
+    if (!isValidIsoTimestamp(value)) return '';
     var date = new Date(value);
-    if (!Number.isFinite(date.getTime())) return '';
     return date.toLocaleTimeString();
   }
 
@@ -1467,7 +1490,12 @@
       state.pairs = sourceRows(payloadData(state.payload).pairs);
       state.connected = true;
       var loadedData = payloadData(state.payload);
-      state.lastUpdated = loadedData.updated_at || loadedData.generated_at || new Date().toISOString();
+      setBackendLiveCursor(loadedData.next_cursor);
+      state.lastUpdated =
+        (isValidIsoTimestamp(loadedData.updated_at) ? loadedData.updated_at : null) ||
+        (isValidIsoTimestamp(loadedData.generated_at) ? loadedData.generated_at : null) ||
+        new Date().toISOString();
+      advanceLiveDisplayTimestamp(state.lastUpdated);
       updateWaxPrice(state.payload);
       syncNodes();
       setStatus();
