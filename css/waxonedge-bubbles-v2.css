@@ -4,7 +4,7 @@
    ============================================================ */
 
 .woe-antbubbles-page {
-  background: #000;
+  background: #020008;
   color: #fff;
   overflow: hidden;
 }
@@ -27,7 +27,10 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  background: #000;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(0, 229, 255, .12), transparent 30%),
+    radial-gradient(circle at 88% 64%, rgba(255, 43, 214, .11), transparent 34%),
+    #020008;
   overflow: hidden;
 }
 
@@ -58,8 +61,8 @@
   display: grid;
   place-items: center;
   color: #fff;
-  background: #f89422;
-  box-shadow: 0 0 22px rgba(248, 148, 34, .36);
+  background: linear-gradient(135deg, #00e5ff, #ff2bd6 58%, #39ff88);
+  box-shadow: 0 0 22px rgba(0, 229, 255, .34), 0 0 28px rgba(255, 43, 214, .24);
   font-size: 13px;
 }
 
@@ -71,7 +74,7 @@
 }
 
 .woe-ab-topbar .woe-page-title span {
-  color: #f89422;
+  color: #00e5ff;
 }
 
 .woe-ab-topbar .woe-page-subtitle {
@@ -87,7 +90,7 @@
   flex: 0 0 auto;
   border-radius: 8px;
   background: rgba(255, 255, 255, .07);
-  color: #f89422;
+  color: #00e5ff;
   font-size: 12px;
   font-weight: 800;
   padding: 8px 11px;
@@ -118,7 +121,8 @@
 .woe-ab-segments button:focus,
 .woe-ab-segments button.is-active {
   color: #fff;
-  background: rgba(255, 255, 255, .13);
+  background: rgba(0, 229, 255, .16);
+  box-shadow: 0 0 18px rgba(0, 229, 255, .18);
   outline: none;
 }
 
@@ -164,7 +168,7 @@
 }
 
 .woe-ab-search input:focus {
-  border-color: rgba(248, 148, 34, .56);
+  border-color: rgba(0, 229, 255, .56);
 }
 
 .woe-ab-live {
@@ -211,7 +215,7 @@
 }
 
 .woe-ab-topbar #woe-topbar-wax-price {
-  color: #f89422;
+  color: #39ff88;
   font-size: 14px;
 }
 
@@ -228,7 +232,10 @@
   padding: 0;
   border: 0;
   border-radius: 0;
-  background: #000;
+  background:
+    radial-gradient(circle at 52% 42%, rgba(0, 229, 255, .10), transparent 28%),
+    radial-gradient(circle at 72% 70%, rgba(255, 43, 214, .09), transparent 30%),
+    #020008;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -250,7 +257,7 @@
   height: 100%;
   border: 0;
   border-radius: 0;
-  background: #000;
+  background: transparent;
   overflow: hidden;
 }
 
@@ -260,9 +267,9 @@
 }
 
 .woe-ab-canvas:focus-visible {
-  outline: 2px solid #f89422;
+  outline: 2px solid #00e5ff;
   outline-offset: -4px;
-  box-shadow: inset 0 0 0 2px rgba(248, 148, 34, .35);
+  box-shadow: inset 0 0 0 2px rgba(0, 229, 255, .26);
 }
 
 .woe-ab-empty {
@@ -279,7 +286,7 @@
   min-width: 190px;
   max-width: 280px;
   padding: 10px 12px;
-  border: 1px solid rgba(248, 148, 34, .35);
+  border: 1px solid rgba(0, 229, 255, .35);
   border-radius: 10px;
   background: rgba(8, 8, 8, .94);
   box-shadow: 0 14px 42px rgba(0, 0, 0, .46);
@@ -368,7 +375,7 @@
 
 .woe-ab-credit {
   margin-left: auto;
-  color: #f89422;
+  color: #00e5ff;
 }
 
 .woe-ab-chart-empty {
