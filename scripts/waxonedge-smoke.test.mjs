@@ -59,6 +59,10 @@ ok('waxonedge.html references /css/waxonedge-bubbles-v2.css', html.includes('/cs
 ok('waxonedge.html lets the AntBubbles scanner own the page without old dashboard scripts',
   !html.includes('/js/waxonedge.js') && !html.includes('/js/waxonedge-sources.js'));
 ok('waxonedge.html references /js/waxonedge-bubbles-v2.js', html.includes('/js/waxonedge-bubbles-v2.js'));
+ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles',
+  html.includes('/css/waxonedge.css?v=woe-') &&
+  html.includes('/css/waxonedge-bubbles-v2.css?v=woe-') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
 ok('waxonedge clean-route alias redirects to /waxonedge.html', aliasHtml.includes('url=/waxonedge.html'));
 ok('waxonedge clean-route alias preserves query-string routing', aliasHtml.includes("window.location.search || ''"));
 ok('waxonedge clean-route alias preserves hash routing', aliasHtml.includes("window.location.hash || ''"));
