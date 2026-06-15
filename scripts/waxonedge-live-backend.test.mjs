@@ -1898,6 +1898,15 @@ ok('bootstrap exposes core adapter statuses and token aggregate count',
   route.includes('token_aggregate_count') &&
   route.includes("const key = adapter.source.replaceAll('.', '_')") &&
   route.includes('coreSources[`${key}_${adapter.table}`]'));
+ok('bootstrap exposes explicit metric capabilities from token rows',
+  route.includes('function metricCapabilitiesFromTokens') &&
+  route.includes('metric_capabilities: metricCapabilities') &&
+  route.includes('volume_7d') &&
+  route.includes('volume_30d') &&
+  route.includes('tvl_independent') &&
+  route.includes('market_cap') &&
+  route.includes('holders') &&
+  route.includes('candles'));
 ok('scheduled sync indexes core adapters, not only Alcor',
   route.includes('syncCoreDexAdapters(env, syncCycleId)') &&
   route.includes("syncAlcorMarketData(env, 'alcor_five_minute_market_data', syncCycleId)"));
@@ -2150,6 +2159,14 @@ ok('free-safe supply sync runs as isolated cron workload',
   route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env))') &&
   route.includes('tasks.push(syncSupplyInputs(env))') &&
   !route.includes('tasks.push(planWaxOnEdgeCandleBackfill(env));\n      tasks.push(syncSupplyInputs(env))'));
+ok('supply sync rotates across all indexed-pair tokens with bounded Worker budget',
+  route.includes('function supplySyncLimit') &&
+  route.includes('WAXONEDGE_SUPPLY_SYNC_LIMIT') &&
+  route.includes('SELECT DISTINCT t.contract, t.symbol') &&
+  route.includes('readSourceIndexState(env.DB, \'wax_rpc_supply\')') &&
+  route.includes('upsertSourceIndexState(env.DB, \'wax_rpc_supply\'') &&
+  route.includes('vps_required_for_full_sweep') &&
+  route.includes('tokens_with_total_supply'));
 ok('scheduled full index can still run legacy combined workflow when free-safe is disabled',
   route.includes('} else if (shouldRunFullIndex) {') &&
   route.includes('const [alcor, core, nefty] = await Promise.all') &&
@@ -3547,6 +3564,12 @@ ok('aggregate rebuild persists all computable token metrics from indexed pairs',
   route.includes('detailStats.fdv_wax') &&
   route.includes('fdv_wax = excluded.fdv_wax') &&
   route.includes('fdv_usd = excluded.fdv_usd'));
+ok('FDV calculation stays separate from market cap calculation',
+  route.includes('const totalSupply = asNumber(token?.total_supply ?? token?.max_supply)') &&
+  route.includes('const circulatingSupply = asNumber(metrics.circulating_supply)') &&
+  route.includes('totalSupply != null && selectedPriceWax != null ? totalSupply * selectedPriceWax') &&
+  route.includes('circulatingSupply != null && selectedPriceWax != null ? circulatingSupply * selectedPriceWax') &&
+  route.includes('market_cap_wax = excluded.market_cap_wax'));
 ok('route selects chart source only from indexed candle rows',
   route.includes('async function listBestChartCandles') &&
   route.includes('JOIN waxonedge_chart_candles') &&
@@ -3569,6 +3592,35 @@ ok('token pair endpoint returns all selected-token pairs by liquidity then volum
   route.includes('next_cursor') &&
   route.includes('complete: !hasMore') &&
   route.includes('LIMIT ? OFFSET ?'));
+ok('token pair and debug endpoints expose aggregate contribution proof rows',
+  route.includes('function pairContributionProof') &&
+  route.includes('contributes_to_aggregate_value') &&
+  route.includes('contributes_to_liquidity') &&
+  route.includes('contributes_to_tvl') &&
+  route.includes('contribution_wax') &&
+  route.includes('contribution_usd') &&
+  route.includes('contribution_reason') &&
+  route.includes('pair_liquidity_contribution_wax') &&
+  route.includes('pair_tvl_contribution_wax') &&
+  route.includes('opposite_valued_in_wax') &&
+  route.includes('route_type') &&
+  route.includes('reserve_a_wax_value') &&
+  route.includes('reserve_b_wax_value') &&
+  route.includes('valuation_path') &&
+  route.includes('pairs: pairRows.map((pair) => pairContributionProof'));
+ok('token metric proof exposes per-token status and source fields',
+  route.includes('function tokenMetricProof') &&
+  route.includes('metric_status') &&
+  route.includes('metric_sources') &&
+  route.includes('selected_price_proof') &&
+  route.includes('liquidity_contribution_count') &&
+  route.includes('tvl_contribution_count') &&
+  route.includes('pair_contribution_total_wax') &&
+  route.includes('has_holder_snapshot') &&
+  route.includes('has_market_cap') &&
+  route.includes('has_circulating_supply') &&
+  route.includes('has_7d_volume') &&
+  route.includes('has_30d_volume'));
 ok('token detail endpoint returns canonical stats and source coverage',
   route.includes('source_coverage: sourceCoverageFromKeys') &&
   route.includes('selected_price_wax') &&
@@ -3585,7 +3637,7 @@ ok('token detail derives partial aggregate metrics from indexed pair rows',
   route.includes('cumulated_pair_liquidity_wax') &&
   route.includes('strongest_pair') &&
   route.includes('unavailable_reasons') &&
-  route.includes('Pair liquidity indexed; holder/candle metrics pending'));
+  route.includes('Pair liquidity indexed; holder/candle metrics not indexed'));
 ok('indexer health reports systemic dead-token and source health counts',
   route.includes('async function getIndexerHealth') &&
   route.includes('total_indexed_tokens') &&
@@ -3594,8 +3646,24 @@ ok('indexer health reports systemic dead-token and source health counts',
   route.includes('tokens_with_indexed_pairs') &&
   route.includes('tokens_with_zero_indexed_pairs') &&
   route.includes('tokens_with_liquidity') &&
+  route.includes('tokens_with_tvl') &&
+  route.includes('tokens_where_tvl_equals_liquidity') &&
+  route.includes('tokens_with_fdv') &&
+  route.includes('tokens_with_market_cap') &&
+  route.includes('tokens_with_circulating_supply') &&
+  route.includes('tokens_with_holder_count') &&
+  route.includes('tokens_with_holder_snapshot_rows') &&
   route.includes('tokens_with_24h_volume') &&
+  route.includes('tokens_with_7d_volume') &&
+  route.includes('tokens_with_30d_volume') &&
   route.includes('tokens_with_chart_candles') &&
+  route.includes('tokens_missing_required_primary_metric') &&
+  route.includes('tokens_with_total_supply') &&
+  route.includes('metric_gap_examples') &&
+  route.includes('missing_market_cap') &&
+  route.includes('missing_holders') &&
+  route.includes('missing_7d_30d') &&
+  route.includes('tvl_equals_liquidity') &&
   route.includes('per_source_row_counts') &&
   route.includes('stale_sync_rows') &&
   route.includes('last_success_at') &&
@@ -3705,7 +3773,7 @@ ok('token detail avoids unbounded all-priced-token scan',
     ],
   );
   ok('WUF-style partial aggregate keeps useful indexed pair stats',
-    wufStats.aggregate_status === 'Pair liquidity indexed; holder/candle metrics pending' &&
+    wufStats.aggregate_status === 'Pair liquidity indexed; holder/candle metrics not indexed' &&
     wufStats.selected_pair_source === 'swap.nefty' &&
     wufStats.selected_pair_id === 'WAXWUFB' &&
     wufStats.selected_price_source.includes('swap.nefty') &&
@@ -3809,7 +3877,16 @@ ok('token detail avoids unbounded all-priced-token scan',
 }
 ok('route has no unused bootstrap source key mirror',
   !route.includes('CORE_BOOTSTRAP_SOURCE_KEYS'));
-ok('route does not fake holder distribution', route.includes('Holder distribution requires indexed balance snapshots') && route.includes('REQUIRES_INDEXED_BACKEND'));
+ok('route does not fake holder distribution',
+  route.includes('async function listTokenHolders') &&
+  route.includes('FROM waxonedge_holders') &&
+  route.includes('SELECT MAX(snapshot_at) AS snapshot_at') &&
+  route.includes('latest_snapshot_at') &&
+  route.includes('total_holder_balance') &&
+  route.includes('supply_used_for_percentage') &&
+  route.includes('has_real_snapshot') &&
+  route.includes("if (child === 'holders')") &&
+  !route.includes("if (child === 'holders') return ok([], [REQUIRES_INDEXED_BACKEND]"));
 ok('route marks chart/trades unavailable unless indexed', route.includes('SOURCE_NOT_INDEXED') && route.includes("child === 'chart'") && route.includes("child === 'trades'"));
 ok('token debug explains missing candles, stale aggregates, and partial source sync',
   route.includes('sync_diagnostics') &&
@@ -3819,7 +3896,7 @@ ok('token debug explains missing candles, stale aggregates, and partial source s
   route.includes('source_sync_partial') &&
   route.includes('aggregate_stale') &&
   route.includes('has_1d_candles') &&
-  route.includes("nextAction = 'waiting for candle backfill'") &&
+  route.includes("nextAction = 'run candle backfill'") &&
   route.includes("nextAction = 'source cursor still partial'"));
 ok('frontend calls /api/waxonedge/bootstrap first', frontend.includes("waxonedgeApi('/bootstrap')"));
 ok('frontend direct source fetch is diagnostic fallback', frontend.includes('loadDiagnosticFallback') && frontend.includes('Backend bootstrap unavailable'));

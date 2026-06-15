@@ -20,9 +20,8 @@
     volume: 'Volume',
     tvl: 'TVL',
     liquidity: 'Liquidity',
-    mcap: 'Mkt Cap',
   };
-  var TIMEFRAME_LABELS = { '24h': '24h', '7d': '7D', '30d': '30D' };
+  var TIMEFRAME_LABELS = { '24h': '24h' };
   var SOURCE_ORDER = ['alcor', 'swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'];
   var IMAGE_CACHE_LIMIT = 160;
   var BUBBLE_CANVAS_CACHE_LIMIT = 240;
@@ -33,6 +32,7 @@
   var state = {
     payload: null,
     health: null,
+    capabilities: {},
     records: [],
     pairs: [],
     visible: [],
@@ -108,7 +108,7 @@
   function fmtNum(value, decimals) {
     var n = asNum(value);
     var d = decimals == null ? 2 : decimals;
-    if (n == null) return 'Unavailable';
+    if (n == null) return 'Not indexed';
     if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(d) + 'B';
     if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(d) + 'M';
     if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(d) + 'K';
@@ -117,7 +117,7 @@
 
   function fmtPrice(value) {
     var n = asNum(value);
-    if (n == null) return 'Unavailable';
+    if (n == null) return 'Not indexed';
     if (Math.abs(n) >= 1000) return n.toFixed(2);
     if (Math.abs(n) >= 1) return n.toFixed(4);
     if (Math.abs(n) >= 0.0001) return n.toFixed(6);
@@ -126,7 +126,7 @@
 
   function fmtPct(value) {
     var n = asNum(value);
-    if (n == null) return 'Unavailable';
+    if (n == null) return 'Not indexed';
     return (n > 0 ? '+' : '') + n.toFixed(2) + '%';
   }
 
@@ -189,7 +189,7 @@
   }
 
   function pairLabel(pair) {
-    if (!pair) return 'Unavailable';
+    if (!pair) return 'Not indexed';
     var a = normalizeSymbol(pair.token_a_symbol);
     var b = normalizeSymbol(pair.token_b_symbol);
     return (a && b ? a + '/' + b : 'Pair') + (pair.pair_id ? ' #' + pair.pair_id : '');
@@ -216,55 +216,44 @@
 
   function valueForMetric(record, metric, timeframe) {
     if (metric === 'change') {
-      var change = timeframe === '24h' ? record.change24 : record['change' + timeframe];
-      return change != null ? Math.abs(change) : null;
+      return record.change24 != null ? Math.abs(record.change24) : null;
     }
     if (metric === 'price') return record.selectedPriceUsd != null ? record.selectedPriceUsd : record.selectedPriceWax;
     if (metric === 'volume') {
-      if (timeframe === '7d') return record.volume7dUsd != null ? record.volume7dUsd : record.volume7dWax;
-      if (timeframe === '30d') return record.volume30dUsd != null ? record.volume30dUsd : record.volume30dWax;
       return record.volume24Usd != null ? record.volume24Usd : record.volume24Wax;
     }
     if (metric === 'tvl') {
       return record.tvlUsd != null ? record.tvlUsd : record.tvlWax;
     }
     if (metric === 'liquidity') return record.liquidityUsd != null ? record.liquidityUsd : record.liquidityWax;
-    if (metric === 'mcap') return record.marketCapUsd != null ? record.marketCapUsd : record.marketCapWax;
     return null;
   }
 
   function displayValue(record) {
     if (state.metric === 'change') {
-      var change = state.timeframe === '24h' ? record.change24 : record['change' + state.timeframe];
-      return fmtPct(change);
+      return fmtPct(record.change24);
     }
     if (state.metric === 'price') {
       if (record.selectedPriceUsd != null) return '$' + fmtPrice(record.selectedPriceUsd);
       if (record.selectedPriceWax != null) return fmtPrice(record.selectedPriceWax) + ' WAX';
-      return 'Price unavailable';
+      return 'No indexed price';
     }
     if (state.metric === 'volume') {
-      if (state.timeframe === '7d') return record.volume7dUsd != null ? '$' + fmtNum(record.volume7dUsd) : '7D unavailable';
-      if (state.timeframe === '30d') return record.volume30dUsd != null ? '$' + fmtNum(record.volume30dUsd) : '30D unavailable';
       if (record.volume24Usd != null) return '$' + fmtNum(record.volume24Usd);
       if (record.volume24Wax != null) return fmtNum(record.volume24Wax) + ' WAX';
-      return 'Volume unavailable';
+      return 'No indexed volume';
     }
     if (state.metric === 'tvl') {
       if (record.tvlUsd != null) return '$' + fmtNum(record.tvlUsd);
       if (record.tvlWax != null) return fmtNum(record.tvlWax) + ' WAX';
-      return 'TVL unavailable';
+      return 'No indexed TVL';
     }
     if (state.metric === 'liquidity') {
       if (record.liquidityUsd != null) return '$' + fmtNum(record.liquidityUsd);
       if (record.liquidityWax != null) return fmtNum(record.liquidityWax) + ' WAX';
-      return 'Liquidity unavailable';
+      return 'No indexed liquidity';
     }
-    if (state.metric === 'mcap') {
-      if (record.marketCapUsd != null) return '$' + fmtNum(record.marketCapUsd) + ' mcap';
-      return 'Mkt cap unavailable';
-    }
-    return 'Unavailable';
+    return 'Not indexed';
   }
 
   function normalizeRecords(payload) {
@@ -376,7 +365,7 @@
       record.indexedPairCount = Math.max(record.indexedPairCount || 0, record.computedPairCount || 0);
       record.strongestPairLabel = record.strongestPair
         ? sourceLabel(record.strongestPair.source) + ' ' + pairLabel(record.strongestPair)
-        : (record.selectedSource && record.selectedPair ? record.selectedSource + ' #' + record.selectedPair : 'Unavailable');
+        : (record.selectedSource && record.selectedPair ? record.selectedSource + ' #' + record.selectedPair : 'Not indexed');
       record.searchText = tokenSearchText(record);
       record.score = (record.selectedPriceWax != null || record.selectedPriceUsd != null ? 500000 : 0) +
         (record.indexedPairCount > 0 ? 250000 : 0) +
@@ -664,7 +653,7 @@
     if (img && r > 18) {
       var logoSize = showText ? Math.max(18, Math.min(r * 0.72, 54)) : r * 1.15;
       ctx.drawImage(img, -logoSize / 2, showText ? -r * 0.55 : -logoSize / 2, logoSize, logoSize);
-    } else {
+    } else if (!showText) {
       ctx.fillStyle = '#fff';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -926,13 +915,13 @@
     records.forEach(function (r) { r.sources.forEach(function (s) { sources[s] = true; }); });
     var candleStatus = state.health && state.health.candle_backfill
       ? (state.health.candle_backfill.latest_1d_candle_count || 0) + ' 1D candles'
-      : 'candles pending';
+      : 'candles indexing';
     bar.innerHTML = '<span>' + escHtml(String(records.length)) + ' tokens</span>' +
       '<span class="woe-ab-up">▲ ' + escHtml(String(gainers)) + '</span>' +
       '<span class="woe-ab-down">▼ ' + escHtml(String(losers)) + '</span>' +
       '<span>Vol 24h <strong>' + escHtml(fmtNum(volume)) + '</strong></span>' +
-      '<span>Top <strong class="woe-ab-up">' + escHtml(topGainer ? topGainer.symbol + ' ' + fmtPct(topGainer.change24) : 'Unavailable') + '</strong></span>' +
-      '<span>Bot <strong class="woe-ab-down">' + escHtml(topLoser ? topLoser.symbol + ' ' + fmtPct(topLoser.change24) : 'Unavailable') + '</strong></span>' +
+      '<span>Top <strong class="woe-ab-up">' + escHtml(topGainer ? topGainer.symbol + ' ' + fmtPct(topGainer.change24) : 'Not indexed') + '</strong></span>' +
+      '<span>Bot <strong class="woe-ab-down">' + escHtml(topLoser ? topLoser.symbol + ' ' + fmtPct(topLoser.change24) : 'Not indexed') + '</strong></span>' +
       '<span>Sources <strong>' + escHtml(String(Object.keys(sources).length)) + '</strong></span>' +
       '<span>' + escHtml(candleStatus) + '</span>' +
       '<span class="woe-ab-credit">Powered by WaxOnEdge multi-DEX indexer</span>';
@@ -943,12 +932,12 @@
   }
 
   function formatStatValue(value) {
-    if (value == null || value === '') return 'Unavailable';
-    if (Array.isArray(value)) return value.filter(Boolean).join(', ') || 'Unavailable';
+    if (value == null || value === '') return 'Not indexed';
+    if (Array.isArray(value)) return value.filter(Boolean).join(', ') || 'Not indexed';
     if (typeof value === 'object') {
       return Object.keys(value).filter(function (key) { return value[key] != null && value[key] !== ''; })
         .map(function (key) { return key.replace(/_/g, ' ') + ': ' + value[key]; })
-        .join(', ') || 'Unavailable';
+        .join(', ') || 'Not indexed';
     }
     return String(value);
   }
@@ -973,7 +962,7 @@
   function chartHtml(record, chart) {
     var candles = chart && Array.isArray(chart.candles) ? chart.candles : [];
     if (!candles.length) {
-      return '<div class="woe-ab-chart-empty">Trade history/candles not indexed yet. No fake candles are shown.</div>';
+      return '<div class="woe-ab-chart-empty">Trade history/candles are not indexed. No synthetic candles are shown.</div>';
     }
     var points = candles.slice(-60).map(function (candle) {
       return asNum(candle.close);
@@ -997,7 +986,6 @@
     var chart = state.chartCache[record.key];
     var stats = detail && detail.stats ? detail.stats : {};
     var detailSources = detail && detail.source_coverage ? detail.source_coverage : null;
-    var unavailable = stats.unavailable_reasons || record.unavailableReasons || '';
     var pairs = detail && Array.isArray(detail.pairs) ? detail.pairs : [];
     var pairRows = pairs.slice(0, 8).map(function (pair) {
       return '<tr><td>' + escHtml(sourceLabel(pair.source)) + '</td><td>' + escHtml(pairLabel(pair)) + '</td><td>' + escHtml(fmtNum(pair.liquidity_wax || pair.liquidity_usd)) + '</td></tr>';
@@ -1009,22 +997,21 @@
       '</header>' +
       '<div class="woe-ab-modal-grid">' +
         '<section class="woe-ab-modal-stats">' +
-          stat('Current price', record.selectedPriceUsd != null ? '$' + fmtPrice(record.selectedPriceUsd) : (record.selectedPriceWax != null ? fmtPrice(record.selectedPriceWax) + ' WAX' : 'Unavailable')) +
+          stat('Current price', record.selectedPriceUsd != null ? '$' + fmtPrice(record.selectedPriceUsd) : (record.selectedPriceWax != null ? fmtPrice(record.selectedPriceWax) + ' WAX' : 'Not indexed')) +
           stat('24h change', fmtPct(record.change24)) +
-          stat('24h volume', record.volume24Usd != null ? '$' + fmtNum(record.volume24Usd) : (record.volume24Wax != null ? fmtNum(record.volume24Wax) + ' WAX' : 'Unavailable')) +
-          stat('Indexed liquidity', record.liquidityUsd != null ? '$' + fmtNum(record.liquidityUsd) : (record.liquidityWax != null ? fmtNum(record.liquidityWax) + ' WAX' : 'Unavailable')) +
+          stat('24h volume', record.volume24Usd != null ? '$' + fmtNum(record.volume24Usd) : (record.volume24Wax != null ? fmtNum(record.volume24Wax) + ' WAX' : 'Not indexed')) +
+          stat('Indexed liquidity', record.liquidityUsd != null ? '$' + fmtNum(record.liquidityUsd) : (record.liquidityWax != null ? fmtNum(record.liquidityWax) + ' WAX' : 'Not indexed')) +
           stat('Source count', String(record.sourceCount || 0)) +
           stat('Indexed pair count', String(record.indexedPairCount || 0)) +
           stat('Strongest pair', record.strongestPairLabel) +
-          stat('Selected source', record.selectedSource || 'Unavailable') +
-          stat('Market cap', record.marketCapUsd != null ? '$' + fmtNum(record.marketCapUsd) : (record.marketCapWax != null ? fmtNum(record.marketCapWax) + ' WAX' : 'Unavailable')) +
-          stat('Supply', record.supply || 'Unavailable') +
+          stat('Selected source', record.selectedSource || 'Not indexed') +
+          stat('Supply', record.supply || 'Not indexed') +
         '</section>' +
         '<section class="woe-ab-modal-chart">' + chartHtml(record, chart) + '</section>' +
       '</div>' +
       '<div class="woe-ab-source-row">' + record.sources.map(function (s) { return '<span>' + escHtml(sourceLabel(s)) + '</span>'; }).join('') + '</div>' +
-      '<div class="woe-ab-modal-note">' + escHtml(unavailable || (detailSources ? 'Multi-DEX aggregate loaded from WaxOnEdge backend.' : 'Loading backend detail/debug data.')) + '</div>' +
-      '<table class="woe-ab-pair-table"><tbody>' + (pairRows || '<tr><td colspan="3">Pair/source list unavailable in modal. Open analytics for full proof rows.</td></tr>') + '</tbody></table>' +
+      '<div class="woe-ab-modal-note">' + escHtml(detailSources ? 'Multi-DEX aggregate loaded from WaxOnEdge backend.' : 'Loading backend detail/debug data.') + '</div>' +
+      '<table class="woe-ab-pair-table"><tbody>' + (pairRows || '<tr><td colspan="3">Open analytics for full pair proof rows.</td></tr>') + '</tbody></table>' +
       '<a class="woe-ab-open-analytics" href="/analytics/token/?token=' + encodeURIComponent(record.symbol) + '&contract=' + encodeURIComponent(record.contract) + '">Open fullscreen analytics</a>');
   }
 
@@ -1091,6 +1078,52 @@
     });
   }
 
+  function metricAllowed(metric) {
+    var cap = state.capabilities || {};
+    if (metric === 'change') return cap.change_24h !== false;
+    if (metric === 'price') return cap.price !== false;
+    if (metric === 'volume') return cap.volume_24h !== false;
+    if (metric === 'liquidity') return cap.liquidity !== false;
+    if (metric === 'tvl') return cap.tvl === true && cap.tvl_independent === true;
+    if (metric === 'mcap') return cap.market_cap === true;
+    return true;
+  }
+
+  function timeframeAllowed(timeframe) {
+    var cap = state.capabilities || {};
+    if (timeframe === '7d') return cap.volume_7d === true;
+    if (timeframe === '30d') return cap.volume_30d === true;
+    return true;
+  }
+
+  function applyMetricCapabilities(payload) {
+    var data = payloadData(payload);
+    state.capabilities = data.metric_capabilities || {};
+    document.querySelectorAll('[data-woe-metric]').forEach(function (button) {
+      var metric = button.getAttribute('data-woe-metric') || '';
+      button.hidden = !metricAllowed(metric);
+    });
+    document.querySelectorAll('[data-woe-timeframe]').forEach(function (button) {
+      var timeframe = button.getAttribute('data-woe-timeframe') || '';
+      button.hidden = !timeframeAllowed(timeframe);
+    });
+    if (!metricAllowed(state.metric)) {
+      var metricButton = Array.prototype.find.call(document.querySelectorAll('[data-woe-metric]'), function (button) {
+        return !button.hidden;
+      });
+      state.metric = metricButton ? metricButton.getAttribute('data-woe-metric') || 'change' : 'change';
+    }
+    if (!timeframeAllowed(state.timeframe)) {
+      state.timeframe = '24h';
+    }
+    document.querySelectorAll('[data-woe-metric]').forEach(function (button) {
+      button.classList.toggle('is-active', !button.hidden && button.getAttribute('data-woe-metric') === state.metric);
+    });
+    document.querySelectorAll('[data-woe-timeframe]').forEach(function (button) {
+      button.classList.toggle('is-active', !button.hidden && button.getAttribute('data-woe-timeframe') === state.timeframe);
+    });
+  }
+
   function updateWaxPrice(payload) {
     var data = payloadData(payload);
     var price = data.summary && data.summary.wax_price_usd != null
@@ -1102,7 +1135,7 @@
     var metaEl = document.getElementById('woe-topbar-wax-price-meta');
     if (priceEl) priceEl.textContent = price == null ? '$ --' : '$' + fmtPrice(price);
     if (metaEl) metaEl.textContent = price == null
-      ? (state.connected ? 'WAX price unavailable' : 'Connecting to WaxOnEdge indexer')
+      ? (state.connected ? 'WAX price not indexed' : 'Connecting to WaxOnEdge indexer')
       : 'WAX price from ' + (data.summary && data.summary.wax_price_source ? data.summary.wax_price_source : 'WaxOnEdge indexer');
   }
 
@@ -1151,6 +1184,7 @@
     ]).then(function (results) {
       state.payload = results[0];
       state.health = results[1] ? payloadData(results[1]) : null;
+      applyMetricCapabilities(state.payload);
       state.records = normalizeRecords(state.payload);
       state.pairs = sourceRows(payloadData(state.payload).pairs);
       state.connected = true;
@@ -1164,7 +1198,7 @@
     }).catch(function (error) {
       state.connected = false;
       setStatus();
-      if (state.board) state.board.innerHTML = '<div class="woe-ab-empty">WaxOnEdge backend unavailable. No fake token data is shown.</div>';
+      if (state.board) state.board.innerHTML = '<div class="woe-ab-empty">WaxOnEdge backend did not return indexed token data. No synthetic token data is shown.</div>';
       // eslint-disable-next-line no-console
       console.warn(error);
     });
