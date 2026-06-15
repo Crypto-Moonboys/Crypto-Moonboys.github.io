@@ -866,6 +866,7 @@
   function forceSimulationEquivalent(width, height) {
     var nodes = state.nodes;
     var animate = shouldAnimate();
+    var now = performance.now();
     for (var tick = 0; tick < 5; tick += 1) {
       nodes.forEach(function (node, index) {
         node.radius += (node.targetRadius - node.radius) * 0.1;
@@ -900,6 +901,10 @@
               b.y += ny * move;
               b.vx += nx * overlap * 0.08;
               b.vy += ny * overlap * 0.08;
+            }
+            if (overlap > 1.5) {
+              a.collisionUntil = Math.max(a.collisionUntil || 0, now + 320);
+              b.collisionUntil = Math.max(b.collisionUntil || 0, now + 320);
             }
           }
         }
@@ -1290,14 +1295,15 @@
     var recent = record.recentUntil && now < record.recentUntil;
     var pulse = record.pulseUntil && now < record.pulseUntil ? (record.pulseUntil - now) / 1600 : 0;
     var volumePulse = record.volumeSpikeUntil && now < record.volumeSpikeUntil ? (record.volumeSpikeUntil - now) / 2600 : 0;
-    if (recent || pulse || volumePulse) {
+    var collisionPulse = node.collisionUntil && now < node.collisionUntil ? (node.collisionUntil - now) / 320 : 0;
+    if (recent || pulse || volumePulse || collisionPulse) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, r + 7 + volumePulse * 9, 0, Math.PI * 2);
+      ctx.arc(node.x, node.y, r + 7 + volumePulse * 9 + collisionPulse * 4, 0, Math.PI * 2);
       ctx.strokeStyle = ringColor(record);
-      ctx.globalAlpha = alpha * Math.max(0.25, pulse || volumePulse || 0.22);
-      ctx.lineWidth = Math.max(1, r * (0.03 + volumePulse * 0.04));
+      ctx.globalAlpha = alpha * Math.max(0.25, pulse || volumePulse || collisionPulse * 0.72 || 0.22);
+      ctx.lineWidth = Math.max(1, r * (0.03 + volumePulse * 0.04 + collisionPulse * 0.018));
       ctx.shadowColor = ringColor(record);
-      ctx.shadowBlur = 18 + volumePulse * 18;
+      ctx.shadowBlur = 18 + volumePulse * 18 + collisionPulse * 12;
       ctx.stroke();
       ctx.shadowBlur = 0;
       ctx.globalAlpha = alpha;
