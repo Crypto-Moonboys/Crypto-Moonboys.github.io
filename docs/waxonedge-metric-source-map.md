@@ -15,7 +15,7 @@ Status: source-of-truth map only. This file documents WaxOnEdge metric provenanc
 | A-DEX | `CORE_DEX_ADAPTERS` `swap.adex` | indexed as table rows | Included in aggregate source list, but trade history is marked not verified from OG refs. |
 | WaxFusion | `CORE_DEX_ADAPTERS` `dapp.fusion` | indexed as table rows | Special global pool row, not a normal DEX trade stream. |
 | Token supply | `syncSupplyInputs` | partial | WAX RPC `get_currency_stats` stores issued `total_supply` and `max_supply` for top indexed tokens. |
-| Holders | `waxonedge_holders` | schema only unless external snapshot writes rows | D1 table exists. No current scheduled holder balance indexer is implemented in Worker. Product holder UI must stay hidden unless latest snapshot rows exist. |
+| Holders | `waxonedge_holders` | schema only | D1 table exists, but the holder read endpoint is currently stubbed/unimplemented. Product holder UI must stay hidden until the endpoint reads latest real D1 holder snapshots and a holder snapshot writer/indexer writes real rows. |
 | Candles/OHLCV | `waxonedge_trades`, `waxonedge_chart_candles` | conditional | Only real D1 trade rows can create candles. Reserve-derived candles are not allowed. |
 
 ## Metric Map
@@ -38,16 +38,16 @@ Status: source-of-truth map only. This file documents WaxOnEdge metric provenanc
 | max supply | WAX chain token stat | `/v1/chain/get_currency_stats`; `waxonedge_tokens.max_supply` | yes | partial for top tokens | parse `max_supply` asset amount | expand coverage beyond top 50 per sync | token detail includes max supply when present |
 | market cap WAX/USD | Circulating supply and selected price | `waxonedge_token_stats.market_cap_*` | schema only | no reliable values today | `circulating_supply * selected_price` | circulating supply source/index | Mkt Cap primary mode hidden if market cap absent |
 | FDV WAX/USD | Issued/total supply and selected price | `waxonedge_token_stats.fdv_*` | yes | yes when supply and price exist | `total_supply * selected_price` | broader supply sync | FDV remains secondary, not primary market cap |
-| holder count | Real balance snapshot | `waxonedge_holders`, `waxonedge_token_stats.holder_count` | schema only | only if D1 has real rows | count accounts with latest positive balance snapshot | scheduled holder balance indexer/VPS path | holders UI hidden unless rows exist |
-| top holders | Real balance snapshot | `waxonedge_holders` latest `snapshot_at` | schema only | only if D1 has real rows | order latest snapshot balances desc | holder indexer | holders endpoint returns latest D1 rows only |
-| holder token amount | Real balance snapshot | `waxonedge_holders.balance` | schema only | only if D1 has real rows | parsed account balance | holder indexer | holders endpoint exposes balance |
-| holder % of supply | Real balance snapshot plus supply | `waxonedge_holders.percentage` or latest supply | schema only | only if D1 has real rows | `balance / total_supply * 100` | holder indexer and supply coverage | holders endpoint exposes percentage when calculable |
-| all indexed pairs | DEX adapters and Alcor pairs | `waxonedge_pairs`; `/token/:contract/:symbol/pairs` | yes | yes | every row where token is side A or B | continue source cursor coverage | pair endpoint returns complete paged rows |
+| holder count | Real balance snapshot | `waxonedge_holders`, `waxonedge_token_stats.holder_count` | schema only | no | count accounts with latest positive balance snapshot | implement real-only holders endpoint + holder snapshot writer/indexer | holders UI hidden until endpoint and rows exist |
+| top holders | Real balance snapshot | `waxonedge_holders` latest `snapshot_at` | schema only | no | order latest snapshot balances desc | implement holders endpoint + holder indexer/VPS snapshot path | holders endpoint must read latest real D1 rows only |
+| holder token amount | Real balance snapshot | `waxonedge_holders.balance` | schema only | no | parsed account balance | implement holders endpoint + holder indexer/VPS snapshot path | holders endpoint must expose balance only from real snapshots |
+| holder % of supply | Real balance snapshot plus supply | `waxonedge_holders.percentage` or latest supply | schema only | no | `balance / total_supply * 100` | implement holders endpoint + holder indexer/VPS snapshot path | holders endpoint must expose percentage only from real snapshots |
+| all indexed pairs | DEX adapters and Alcor pairs | `waxonedge_pairs`; `/api/waxonedge/token/:contract/:symbol/pairs` | yes | yes | every row where token is side A or B | continue source cursor coverage | pair endpoint returns complete paged rows |
 | pair reserves | DEX table reserves | `waxonedge_pairs.reserve_a`, `reserve_b` | yes | yes | parsed asset reserve quantities | concentrated liquidity math parity for Alcor V2 | pair proof rows include reserves |
 | pair source/DEX | Adapter metadata | `waxonedge_pairs.source` | yes | yes | normalized source key | none | source labels remain distinct |
 | pair fee | DEX table or reference default | `waxonedge_pairs.fee_bps` | yes | yes where known | Alcor fee scale or source default bps | source-specific dynamic fees if exposed | pair rows include `fee_bps` |
-| pair TVL/liquidity contribution | Reserves valued in WAX/USD | future `/token/:contract/:symbol/pairs` contribution fields | planned | not guaranteed today | pair WAX contribution = valued reserve total for that indexed pair | backend proof fields for contribution route and valued reserves | contribution proof tests |
-| chart candles/OHLCV | D1 candles from indexed trades | `waxonedge_chart_candles`; `/token/:contract/:symbol/chart` | yes | conditional | OHLCV bucketed from `waxonedge_trades` only | more trade stream coverage | no synthetic candle tests |
+| pair TVL/liquidity contribution | Reserves valued in WAX/USD | future `/api/waxonedge/token/:contract/:symbol/pairs` contribution fields | planned | not guaranteed today | pair WAX contribution = valued reserve total for that indexed pair | backend proof fields for contribution route and valued reserves | contribution proof tests |
+| chart candles/OHLCV | D1 candles from indexed trades | `waxonedge_chart_candles`; `/api/waxonedge/token/:contract/:symbol/chart` | yes | conditional | OHLCV bucketed from `waxonedge_trades` only | more trade stream coverage | no synthetic candle tests |
 | source count | Aggregated pair source keys | `waxonedge_token_stats.source_count`, `source_keys` | yes | yes | unique indexed sources for token | none | bootstrap includes source count |
 | indexed pair count | Aggregated pair rows | `waxonedge_token_stats.indexed_pair_count` | yes | yes | count pair rows with token side | none | bootstrap includes pair count |
 | strongest pair | Selected price pair | `selected_pair_source`, `selected_pair_id`, debug `strongest_pair` | yes | yes when priced | highest tier, liquidity, then volume | none | debug exposes strongest pair proof |
@@ -55,7 +55,7 @@ Status: source-of-truth map only. This file documents WaxOnEdge metric provenanc
 
 ## Product Decisions
 
-- Holder UI remains hidden unless `/api/waxonedge/token/:contract/:symbol/holders` has real latest `waxonedge_holders` rows.
+- Holder UI remains hidden until the holders endpoint is implemented to read real latest `waxonedge_holders` snapshots and those snapshots exist in D1.
 - Market-cap primary scanner mode must remain hidden until `circulating_supply` and `market_cap_*` are real.
 - 7D and 30D scanner controls must remain hidden until real indexed history populates 7d/30d volume fields.
 - TVL and liquidity currently share the same indexed pair-reserve valuation basis. They are both backend fields, but UI must not present them as independent protocol facts.
@@ -63,7 +63,7 @@ Status: source-of-truth map only. This file documents WaxOnEdge metric provenanc
 
 ## Cannot Complete Locally Without
 
-- **Holder indexer:** the repo has the `waxonedge_holders` table and a real-only read endpoint, but local Worker code cannot safely discover every token holder by scanning arbitrary WAX account balances inside edge request budgets. A VPS holder indexer or verified holder snapshot feed must write latest positive-balance rows into D1, then `holder_count`, top holders, balance, and percentage become live.
+- **Holder endpoint and indexer:** the repo has holder schema only. The holders endpoint is currently stubbed and must be implemented before holder UI can become live. Local Worker code cannot safely discover every token holder by scanning arbitrary WAX account balances inside edge request budgets. A VPS holder indexer or verified holder snapshot feed must write latest positive-balance rows into D1 before `holder_count`, top holders, balance, and percentage become live.
 - **Circulating supply source:** market cap requires a verified circulating-supply feed or an owned exclusion list for locked/burned/team/treasury balances per token. FDV is enabled from total supply and selected price; market cap remains absent until `circulating_supply` is real.
 - **Deployed WAX Hyperion configuration:** 24h trade-derived change, 7D volume, 30D volume, and candle coverage require `WAXONEDGE_HYPERION_API` pointed at a real WAX Hyperion/state-history endpoint so the trade indexers can write D1 `waxonedge_trades` and `waxonedge_chart_candles`.
 - **Live D1 history rows:** 7D/30D controls cannot be enabled locally until deployed D1 contains enough real trade/candle history to populate those windows.
