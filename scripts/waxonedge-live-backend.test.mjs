@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -420,8 +421,17 @@ ok('VPS live indexer exposes fresh-start rolling history without claiming backfi
   liveIndexerSource.includes('if (persistedTradesAdded) saveObservedHistory(state)') &&
   liveIndexerSource.includes('observeLiveTrade(state, trade, { persist: false, broadcast: false, refresh: false })') &&
   liveIndexerSource.includes('last_error: state.history.last_error || null') &&
-  liveIndexerSource.includes('fs.writeFileSync(tmpPath') &&
-  liveIndexerSource.includes('fs.renameSync(tmpPath, historyPath)') &&
+  liveIndexerSource.includes('state.history_save_in_flight = true') &&
+  liveIndexerSource.includes('state.history_save_dirty = true') &&
+  liveIndexerSource.includes('await fs.promises.writeFile(tmpPath') &&
+  liveIndexerSource.includes('await fs.promises.rename(tmpPath, historyPath)') &&
+  liveIndexerSource.includes('trades.splice(0, trades.length - MAX_PERSISTED_TRADE_HISTORY)') &&
+  !liveIndexerSource.includes('state.history.trades = state.history.trades.slice(-MAX_PERSISTED_TRADE_HISTORY)') &&
+  !liveIndexerSource.includes('.slice(-MAX_PERSISTED_TRADE_HISTORY)') &&
+  !liveIndexerSource.includes('state.history.trades.slice().sort') &&
+  !liveIndexerSource.includes('fs.writeFileSync') &&
+  !liveIndexerSource.includes('fs.renameSync') &&
+  !liveIndexerSource.includes('fs.mkdirSync') &&
   !liveIndexerSource.includes('reserve-derived candles'));
 ok('VPS live indexer exposes no fake live events or random movement',
   liveIndexerSource.includes('uses_fake_live_data: false') &&
@@ -683,6 +693,7 @@ ok('VPS live indexer exposes no fake live events or random movement',
     });
     const historyState = liveIndexer.createState(historyConfig);
     liveIndexer.observeLiveTrade(historyState, alcorTrade);
+    await historyState.history_save_promise;
     const fileWasWritten = existsSync(historyPath);
     const historyHealth = liveIndexer.healthPayload(historyState);
     const restartedState = liveIndexer.createState(historyConfig);
@@ -716,6 +727,7 @@ ok('VPS live indexer exposes no fake live events or random movement',
     let threw = false;
     try {
       liveIndexer.observeLiveTrade(failingState, { ...alcorTrade, trade_id: `${alcorTrade.trade_id}:save-failure` });
+      await failingState.history_save_promise;
     } catch (_) {
       threw = true;
     }
@@ -726,6 +738,60 @@ ok('VPS live indexer exposes no fake live events or random movement',
       failingState.history.trades.length === 1 &&
       liveIndexer.healthPayload(failingState).history.last_error === failingState.history.last_error &&
       liveIndexer.snapshotPayload(failingState).history.last_error === failingState.history.last_error);
+  }
+  {
+    const serializedPath = path.join(ROOT, '.tmp-waxonedge-live-history-serialized.json');
+    rmSync(serializedPath, { force: true });
+    rmSync(`${serializedPath}.tmp`, { force: true });
+    const serializedState = liveIndexer.createState(liveIndexer.loadConfig({
+      WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+      WAXONEDGE_LIVE_HISTORY_PATH: serializedPath,
+    }));
+    const originalWriteFile = fs.promises.writeFile;
+    let releaseFirstWrite;
+    let activeWrites = 0;
+    let maxActiveWrites = 0;
+    let writeCalls = 0;
+    fs.promises.writeFile = async (...args) => {
+      writeCalls += 1;
+      activeWrites += 1;
+      maxActiveWrites = Math.max(maxActiveWrites, activeWrites);
+      try {
+        if (writeCalls === 1) {
+          await new Promise((resolve) => { releaseFirstWrite = resolve; });
+        }
+        return await originalWriteFile.apply(fs.promises, args);
+      } finally {
+        activeWrites -= 1;
+      }
+    };
+    try {
+      liveIndexer.observeLiveTrade(serializedState, { ...alcorTrade, trade_id: `${alcorTrade.trade_id}:serialized-1` });
+      const firstPromise = serializedState.history_save_promise;
+      for (let i = 0; i < 20 && !releaseFirstWrite; i += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+      if (!releaseFirstWrite) throw new Error('history save did not reach writeFile');
+      liveIndexer.observeLiveTrade(serializedState, {
+        ...alcorTrade,
+        trade_id: `${alcorTrade.trade_id}:serialized-2`,
+        traded_at: '2026-06-15T10:31:00.000Z',
+      });
+      const dirtyDuringFirstWrite = serializedState.history_save_dirty;
+      releaseFirstWrite();
+      await firstPromise;
+      ok('VPS live indexer serializes async history saves with dirty follow-up writes',
+        dirtyDuringFirstWrite === true &&
+        writeCalls === 2 &&
+        maxActiveWrites === 1 &&
+        serializedState.history_save_in_flight === false &&
+        serializedState.history_save_dirty === false &&
+        serializedState.history.last_error === null);
+    } finally {
+      fs.promises.writeFile = originalWriteFile;
+      rmSync(serializedPath, { force: true });
+      rmSync(`${serializedPath}.tmp`, { force: true });
+    }
   }
 }
 {
@@ -780,7 +846,9 @@ ok('VPS live indexer exposes no fake live events or random movement',
     liveIndexerSource.includes('refresh: false') &&
     liveIndexerSource.includes('if (observed > 0) {') &&
     liveIndexerSource.includes('refreshRollingHistory(state)') &&
-    liveIndexerSource.includes('if (persistedTradesAdded) saveObservedHistory(state)'));
+    liveIndexerSource.includes('if (persistedTradesAdded) saveObservedHistory(state)') &&
+    !/for \(const row of rows\.reverse\(\)\)[\s\S]*refreshRollingHistory\(state\)[\s\S]*observed \+= 1/.test(liveIndexerSource) &&
+    !/for \(const row of rows\.reverse\(\)\)[\s\S]*saveObservedHistory\(state\)[\s\S]*observed \+= 1/.test(liveIndexerSource));
   {
     const errorState = liveIndexer.createState(liveIndexer.loadConfig({
       WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',

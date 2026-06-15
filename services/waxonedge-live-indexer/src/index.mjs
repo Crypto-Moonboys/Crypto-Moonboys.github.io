@@ -227,6 +227,25 @@ function normalizePersistedTrade(trade) {
   };
 }
 
+function comparePersistedTradeTime(a, b) {
+  return Date.parse(a.traded_at || '') - Date.parse(b.traded_at || '');
+}
+
+function trimTradeArrayInPlace(trades, idSet = null) {
+  if (trades.length > MAX_PERSISTED_TRADE_HISTORY) {
+    const removed = trades.splice(0, trades.length - MAX_PERSISTED_TRADE_HISTORY);
+    if (idSet) {
+      for (const trade of removed) {
+        idSet.delete(trade.trade_id);
+      }
+    }
+  }
+}
+
+function trimPersistedHistory(state) {
+  trimTradeArrayInPlace(state.history.trades, state.persistedTradeIdSet);
+}
+
 function loadObservedHistory(historyPath) {
   if (!historyPath) return emptyHistory();
   try {
@@ -234,8 +253,10 @@ function loadObservedHistory(historyPath) {
     const parsed = JSON.parse(raw);
     const startedAt = normalizeTradeTimestamp(parsed?.history_started_at) || nowIso();
     const trades = Array.isArray(parsed?.trades)
-      ? parsed.trades.map(normalizePersistedTrade).filter(Boolean).slice(-MAX_PERSISTED_TRADE_HISTORY)
+      ? parsed.trades.map(normalizePersistedTrade).filter(Boolean)
       : [];
+    trades.sort(comparePersistedTradeTime);
+    trimTradeArrayInPlace(trades);
     return {
       ...emptyHistory(startedAt),
       trades,
@@ -251,28 +272,79 @@ function loadObservedHistory(historyPath) {
   }
 }
 
-function saveObservedHistory(state) {
-  const historyPath = state?.config?.history_path;
-  if (!historyPath) return;
-  const payload = {
+function addPersistedTrade(state, trade) {
+  const persisted = normalizePersistedTrade(trade);
+  if (!persisted || state.persistedTradeIdSet.has(persisted.trade_id)) return null;
+  state.persistedTradeIdSet.add(persisted.trade_id);
+  const trades = state.history.trades;
+  const last = trades[trades.length - 1];
+  const persistedTime = Date.parse(persisted.traded_at || '');
+  const lastTime = Date.parse(last?.traded_at || '');
+  if (!trades.length || !Number.isFinite(persistedTime) || !Number.isFinite(lastTime) || persistedTime >= lastTime) {
+    trades.push(persisted);
+  } else {
+    let index = trades.length - 1;
+    while (index >= 0) {
+      const tradeTime = Date.parse(trades[index]?.traded_at || '');
+      if (!Number.isFinite(tradeTime) || tradeTime <= persistedTime) break;
+      index -= 1;
+    }
+    trades.splice(index + 1, 0, persisted);
+  }
+  trimPersistedHistory(state);
+  state.rolling_history_dirty = true;
+  return persisted;
+}
+
+function historySavePayload(state) {
+  return {
     history_mode: FRESH_HISTORY_MODE,
     history_started_at: state.history.history_started_at,
     history_complete: false,
     history_backfilled: false,
     deep_history_status: 'requires_ship_state_history',
     requires_ship_for_deep_history: true,
-    trades: state.history.trades.slice(-MAX_PERSISTED_TRADE_HISTORY),
+    trades: state.history.trades,
   };
+}
+
+async function writeObservedHistorySnapshot(state) {
+  const historyPath = state?.config?.history_path;
+  if (!historyPath) return false;
+  const payload = historySavePayload(state);
   const tmpPath = `${historyPath}.tmp`;
+  await fs.promises.mkdir(dirname(historyPath), { recursive: true });
+  await fs.promises.writeFile(tmpPath, `${JSON.stringify(payload)}\n`);
+  await fs.promises.rename(tmpPath, historyPath);
+  return true;
+}
+
+async function runSerializedHistorySave(state) {
+  state.history_save_in_flight = true;
   try {
-    fs.mkdirSync(dirname(historyPath), { recursive: true });
-    fs.writeFileSync(tmpPath, `${JSON.stringify(payload)}\n`);
-    fs.renameSync(tmpPath, historyPath);
-    state.history.last_error = null;
-  } catch (error) {
-    state.history.last_error = `history save failed: ${error?.message || 'unknown error'}`;
-    state.last_error = state.history.last_error;
+    while (state.history_save_dirty) {
+      state.history_save_dirty = false;
+      try {
+        const wrote = await writeObservedHistorySnapshot(state);
+        if (wrote) state.history.last_error = null;
+      } catch (error) {
+        state.history.last_error = `history save failed: ${error?.message || 'unknown error'}`;
+        state.last_error = state.history.last_error;
+      }
+    }
+  } finally {
+    state.history_save_in_flight = false;
+    state.history_save_promise = null;
   }
+}
+
+export function saveObservedHistory(state) {
+  if (!state?.config?.history_path) return Promise.resolve(false);
+  state.history_save_dirty = true;
+  if (!state.history_save_in_flight) {
+    state.history_save_promise = runSerializedHistorySave(state);
+  }
+  return state.history_save_promise || Promise.resolve(false);
 }
 
 function historyElapsedMs(state) {
@@ -307,9 +379,7 @@ function buildRollingHistory(state) {
   };
   const byToken = new Map();
   const candles = new Map();
-  const sortedTrades = state.history.trades.slice().sort((a, b) =>
-    Date.parse(a.traded_at || '') - Date.parse(b.traded_at || ''));
-  for (const trade of sortedTrades) {
+  for (const trade of state.history.trades) {
     const tradedMs = Date.parse(trade.traded_at);
     if (!Number.isFinite(tradedMs)) continue;
     const key = tokenKey(trade.contract, trade.symbol);
@@ -390,6 +460,7 @@ function buildRollingHistory(state) {
 function refreshRollingHistory(state) {
   const rolling = buildRollingHistory(state);
   state.rollingHistory = rolling;
+  state.rolling_history_dirty = false;
   for (const metric of rolling.token_metrics.values()) {
     const existing = state.tokenCache.get(metric.token_key);
     if (!existing) continue;
@@ -451,6 +522,11 @@ export function createState(config = loadConfig()) {
     seenTradeIdSet: new Set(),
     clients: new Set(),
     history: loadObservedHistory(config.history_path),
+    persistedTradeIdSet: new Set(),
+    history_save_in_flight: false,
+    history_save_dirty: false,
+    history_save_promise: null,
+    rolling_history_dirty: true,
     rollingHistory: null,
     event_count: 0,
     last_event_at: null,
@@ -461,6 +537,9 @@ export function createState(config = loadConfig()) {
       ? 'no verified trade events observed yet'
       : 'WAXONEDGE_HYPERION_API, WAXONEDGE_STATE_HISTORY_ENDPOINT, or WAXNODE_ENDPOINT required',
   };
+  for (const trade of state.history.trades) {
+    state.persistedTradeIdSet.add(trade.trade_id);
+  }
   for (const trade of state.history.trades) {
     if (rememberTradeId(state, trade.trade_id)) {
       observeLiveTrade(state, trade, { persist: false, broadcast: false, refresh: false });
@@ -829,13 +908,11 @@ export function observeLiveTrade(state, trade, options = {}) {
     current.last_error = null;
   }
   if (persist) {
-    const persisted = normalizePersistedTrade({
+    const persisted = addPersistedTrade(state, {
       ...trade,
       observed_at: nowIso(),
     });
     if (persisted) {
-      state.history.trades.push(persisted);
-      state.history.trades = state.history.trades.slice(-MAX_PERSISTED_TRADE_HISTORY);
       if (save) saveObservedHistory(state);
     }
   }
