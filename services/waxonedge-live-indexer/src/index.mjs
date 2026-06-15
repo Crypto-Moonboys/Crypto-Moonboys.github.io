@@ -215,12 +215,17 @@ function emptyHistory(startedAt = nowIso()) {
   };
 }
 
-function normalizePersistedTrade(trade) {
+export function normalizePersistedTrade(trade) {
   if (!trade || typeof trade !== 'object') return null;
   const tradeId = safeString(trade.trade_id);
   const token = tokenKey(trade.contract, trade.symbol);
   const tradedAt = normalizeTradeTimestamp(trade.traded_at);
   if (!tradeId || !token || !tradedAt) return null;
+  const originalVolume = trade.volume;
+  const rawDirection = safeString(trade.direction).toLowerCase();
+  const direction = (rawDirection === 'in' || rawDirection === 'out')
+    ? rawDirection
+    : volumeDirection(originalVolume);
   return {
     trade_id: tradeId,
     source: safeString(trade.source),
@@ -232,8 +237,9 @@ function normalizePersistedTrade(trade) {
     quote_contract: normalizeContract(trade.quote_contract),
     quote_symbol: normalizeSymbol(trade.quote_symbol),
     price: safeDecimal(trade.price),
-    volume: safeDecimal(trade.volume),
+    volume: normalizeTradeVolume(originalVolume),
     side: safeString(trade.side),
+    direction,
     traded_at: tradedAt,
     observed_at: normalizeTradeTimestamp(trade.observed_at) || nowIso(),
     uses_fake_live_data: false,
@@ -455,7 +461,7 @@ function buildRollingHistory(state) {
         }
       }
     }
-    const volume = asNumber(trade.volume) || 0;
+    const volume = normalizeTradeVolume(trade.volume) || 0;
     for (const [field, millis] of Object.entries(windows)) {
       if (nowMs - tradedMs <= millis) metric[field] += volume;
     }
