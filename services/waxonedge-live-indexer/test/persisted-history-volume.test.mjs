@@ -55,6 +55,28 @@ test('persisted direction is preserved while volume is normalized', () => {
   assert.equal(trade.direction, 'in');
 });
 
+test('persisted direction is normalized to lowercase when valid', () => {
+  const trade = normalizePersistedTrade(persistedTrade({
+    direction: 'OUT',
+    volume: 29385.411838,
+  }));
+
+  assert.equal(trade.volume, 29385.411838);
+  assert.equal(trade.direction, 'out');
+});
+
+test('invalid persisted direction derives from signed volume', () => {
+  for (const direction of ['sell', 'swap', 'unknown']) {
+    const trade = normalizePersistedTrade(persistedTrade({
+      direction,
+      volume: -29385.411838,
+    }));
+
+    assert.equal(trade.volume, 29385.411838);
+    assert.equal(trade.direction, 'out');
+  }
+});
+
 test('rehydrated snapshot and fresh-history metrics never expose signed persisted volume', () => {
   const historyPath = tempHistoryPath();
   const now = new Date().toISOString();
@@ -124,4 +146,37 @@ test('saving rehydrated history persists normalized positive volume', async () =
   assert.equal(saved.trades[0].volume, 29385.411838);
   assert.equal(saved.trades[0].direction, 'out');
   assert.ok(saved.trades[0].volume >= 0);
+});
+
+test('history save writes the already-normalized trade array directly', async () => {
+  const historyPath = tempHistoryPath();
+  const now = new Date().toISOString();
+  fs.writeFileSync(historyPath, `${JSON.stringify({
+    history_started_at: now,
+    trades: [persistedTrade({
+      direction: 'OUT',
+      traded_at: now,
+      observed_at: now,
+    })],
+  })}\n`);
+
+  const state = createState({
+    history_path: historyPath,
+    hyperion_api: '',
+    state_history_endpoint: '',
+    waxnode_endpoint: '',
+    stream_enabled: false,
+    history_save_ms: 0,
+    shared_secret_configured: false,
+    secret_header: 'x-waxonedge-live-secret',
+  });
+  const loadedTrade = state.history.trades[0];
+
+  await saveObservedHistory(state);
+  const saved = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
+
+  assert.deepEqual(saved.trades, state.history.trades);
+  assert.equal(state.history.trades[0], loadedTrade);
+  assert.equal(saved.trades[0].direction, 'out');
+  assert.equal(saved.trades[0].volume, 29385.411838);
 });

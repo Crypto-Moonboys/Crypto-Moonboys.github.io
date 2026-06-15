@@ -222,7 +222,10 @@ export function normalizePersistedTrade(trade) {
   const tradedAt = normalizeTradeTimestamp(trade.traded_at);
   if (!tradeId || !token || !tradedAt) return null;
   const originalVolume = trade.volume;
-  const direction = safeString(trade.direction) || volumeDirection(originalVolume);
+  const rawDirection = safeString(trade.direction).toLowerCase();
+  const direction = (rawDirection === 'in' || rawDirection === 'out')
+    ? rawDirection
+    : volumeDirection(originalVolume);
   return {
     trade_id: tradeId,
     source: safeString(trade.source),
@@ -320,7 +323,7 @@ function historySavePayload(state) {
     history_backfilled: false,
     deep_history_status: 'requires_ship_state_history',
     requires_ship_for_deep_history: true,
-    trades: state.history.trades.map(normalizePersistedTrade).filter(Boolean),
+    trades: state.history.trades,
   };
 }
 
