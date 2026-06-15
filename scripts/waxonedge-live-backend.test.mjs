@@ -384,7 +384,9 @@ ok('VPS live indexer binds locally by default and allows explicit host override'
   liveIndexer.loadConfig({ WAXONEDGE_LIVE_BIND_HOST: '[::1]' }).bind_host === '::1');
 ok('VPS live indexer runtime config respects explicit blank history path',
   liveIndexer.runtimeConfig({ WAXONEDGE_LIVE_HISTORY_PATH: '' }).history_path === '' &&
-  liveIndexer.runtimeConfig({}).history_path === liveIndexer.defaultHistoryPath());
+  liveIndexer.runtimeConfig({}).history_path === liveIndexer.defaultHistoryPath() &&
+  liveIndexer.loadConfig({}).history_save_ms === 5000 &&
+  liveIndexer.loadConfig({ WAXONEDGE_LIVE_HISTORY_SAVE_MS: '25' }).history_save_ms === 25);
 ok('VPS live indexer checker maps wildcard bind hosts to routable local targets',
   liveIndexerCheck.checkTargetHost('0.0.0.0') === '127.0.0.1' &&
   liveIndexerCheck.checkTargetHost('::') === '[::1]' &&
@@ -423,6 +425,10 @@ ok('VPS live indexer exposes fresh-start rolling history without claiming backfi
   liveIndexerSource.includes('last_error: state.history.last_error || null') &&
   liveIndexerSource.includes('state.history_save_in_flight = true') &&
   liveIndexerSource.includes('state.history_save_dirty = true') &&
+  liveIndexerSource.includes('history_save_pending') &&
+  liveIndexerSource.includes('history_last_saved_at') &&
+  liveIndexerSource.includes('WAXONEDGE_LIVE_HISTORY_SAVE_MS') &&
+  liveIndexerSource.includes('const DEFAULT_HISTORY_SAVE_MS = 5000') &&
   liveIndexerSource.includes('await fs.promises.writeFile(tmpPath') &&
   liveIndexerSource.includes('await fs.promises.rename(tmpPath, historyPath)') &&
   liveIndexerSource.includes('trades.splice(0, trades.length - MAX_PERSISTED_TRADE_HISTORY)') &&
@@ -726,6 +732,36 @@ ok('VPS live indexer exposes no fake live events or random movement',
         dirtySnapshot.tokens.find((token) => token.token_key === 'graffitiking::WAXCASH')?.fresh_history_trade_count === 1 &&
         dirtyHistory.rolling_token_count === 1 &&
         dirtyHistoryState.rolling_history_dirty === false);
+      const staleMetricState = liveIndexer.createState(liveIndexer.loadConfig({
+        WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+      }));
+      liveIndexer.observeLiveTrade(staleMetricState, {
+        ...alcorTrade,
+        trade_id: `${alcorTrade.trade_id}:stale-fields`,
+        traded_at: '2026-06-15T10:23:00.000Z',
+        price: 2,
+        volume: 3,
+      });
+      staleMetricState.history.trades.splice(0, staleMetricState.history.trades.length);
+      staleMetricState.persistedTradeIdSet.clear();
+      staleMetricState.rolling_history_dirty = true;
+      const staleHistory = liveIndexer.historyPayload(staleMetricState);
+      const staleToken = staleMetricState.tokenCache.get('graffitiking::WAXCASH');
+      ok('VPS live indexer clears stale fresh-history fields for cached tokens missing rolling metrics',
+        staleHistory.rolling_token_count === 0 &&
+        staleToken &&
+        staleToken.fresh_history_trade_count === 0 &&
+        staleToken.fresh_history_latest_price === null &&
+        staleToken.fresh_history_latest_trade_at === null &&
+        staleToken.fresh_history_volume_1h === null &&
+        staleToken.fresh_history_volume_24h === null &&
+        staleToken.fresh_history_volume_7d === null &&
+        staleToken.fresh_history_volume_30d === null &&
+        staleToken.fresh_history_change_1h === null &&
+        staleToken.fresh_history_change_24h === null &&
+        staleToken.fresh_history_volume_24h_complete === false &&
+        staleToken.fresh_history_volume_7d_complete === false &&
+        staleToken.fresh_history_volume_30d_complete === false);
     } finally {
       Date.now = originalDateNow;
     }
@@ -792,6 +828,7 @@ ok('VPS live indexer exposes no fake live events or random movement',
     const serializedState = liveIndexer.createState(liveIndexer.loadConfig({
       WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
       WAXONEDGE_LIVE_HISTORY_PATH: serializedPath,
+      WAXONEDGE_LIVE_HISTORY_SAVE_MS: '20',
     }));
     const originalWriteFile = fs.promises.writeFile;
     let releaseFirstWrite;
@@ -823,15 +860,27 @@ ok('VPS live indexer exposes no fake live events or random movement',
         trade_id: `${alcorTrade.trade_id}:serialized-2`,
         traded_at: '2026-06-15T10:31:00.000Z',
       });
+      liveIndexer.observeLiveTrade(serializedState, {
+        ...alcorTrade,
+        trade_id: `${alcorTrade.trade_id}:serialized-3`,
+        traded_at: '2026-06-15T10:32:00.000Z',
+      });
       const dirtyDuringFirstWrite = serializedState.history_save_dirty;
       releaseFirstWrite();
       await firstPromise;
+      const pendingAfterFirstWrite = liveIndexer.historyPayload(serializedState).history_save_pending;
+      await serializedState.history_save_promise;
+      const serializedHistory = liveIndexer.historyPayload(serializedState);
       ok('VPS live indexer serializes async history saves with dirty follow-up writes',
         dirtyDuringFirstWrite === true &&
+        pendingAfterFirstWrite === true &&
         writeCalls === 2 &&
+        serializedState.history.trades.length === 3 &&
         maxActiveWrites === 1 &&
         serializedState.history_save_in_flight === false &&
         serializedState.history_save_dirty === false &&
+        serializedHistory.history_save_pending === false &&
+        typeof serializedHistory.history_last_saved_at === 'string' &&
         serializedState.history.last_error === null);
     } finally {
       fs.promises.writeFile = originalWriteFile;
