@@ -6,12 +6,12 @@ import { fileURLToPath } from 'node:url';
 export const LIVE_SECRET_HEADER = 'x-waxonedge-live-secret';
 
 export const VERIFIED_TRADE_STREAMS = Object.freeze([
-  { account: 'alcordexmain', action: 'buymatch', source: 'alcor' },
-  { account: 'alcordexmain', action: 'sellmatch', source: 'alcor' },
-  { account: 'swap.alcor', action: 'logswap', source: 'swap.alcor', parser: 'swap-v3' },
-  { account: 'swap.taco', action: 'exchangelog', source: 'swap.taco', parser: 'swap-v2-taco' },
-  { account: 'swap.box', action: 'swaplog', source: 'swap.box', parser: 'swap-v2-defibox' },
-  { account: 'swap.nefty', action: 'logswap', source: 'swap.nefty', parser: 'swap-v2-nefty' },
+  { account: 'alcordexmain', action: 'buymatch', source: 'alcor', og_source: 'alcor_buy' },
+  { account: 'alcordexmain', action: 'sellmatch', source: 'alcor', og_source: 'alcor_sell' },
+  { account: 'swap.alcor', action: 'logswap', source: 'swap.alcor', og_source: 'alcorv2', parser: 'swap-v3' },
+  { account: 'swap.taco', action: 'exchangelog', source: 'swap.taco', og_source: 'taco', parser: 'swap-v2-taco' },
+  { account: 'swap.box', action: 'swaplog', source: 'swap.box', og_source: 'defibox', parser: 'swap-v2-defibox' },
+  { account: 'swap.nefty', action: 'logswap', source: 'swap.nefty', og_source: 'neftyblocks', parser: 'swap-v2-nefty' },
 ]);
 
 const DEFAULT_LIVE_POLL_MS = 1000;
@@ -195,6 +195,7 @@ function emptyHistory(startedAt = nowIso()) {
     history_started_at: startedAt,
     history_complete: false,
     history_backfilled: false,
+    deep_history_status: 'requires_ship_state_history',
     requires_ship_for_deep_history: true,
     trades: [],
   };
@@ -210,6 +211,7 @@ function normalizePersistedTrade(trade) {
     trade_id: tradeId,
     source: safeString(trade.source),
     stream_source: safeString(trade.stream_source),
+    og_source: safeString(trade.og_source),
     pair_id: safeString(trade.pair_id),
     contract: normalizeContract(trade.contract),
     symbol: normalizeSymbol(trade.symbol),
@@ -256,6 +258,7 @@ function saveObservedHistory(state) {
     history_started_at: state.history.history_started_at,
     history_complete: false,
     history_backfilled: false,
+    deep_history_status: 'requires_ship_state_history',
     requires_ship_for_deep_history: true,
     trades: state.history.trades.slice(-MAX_PERSISTED_TRADE_HISTORY),
   };
@@ -278,16 +281,26 @@ function rollingCompleteness(state) {
   };
 }
 
+function percentChange(startPrice, endPrice) {
+  const start = asNumber(startPrice);
+  const end = asNumber(endPrice);
+  if (start == null || end == null || start <= 0) return null;
+  return ((end - start) / start) * 100;
+}
+
 function buildRollingHistory(state) {
   const nowMs = Date.now();
   const windows = {
+    volume_1h: 60 * 60 * 1000,
     volume_24h: 24 * 60 * 60 * 1000,
     volume_7d: 7 * 24 * 60 * 60 * 1000,
     volume_30d: 30 * 24 * 60 * 60 * 1000,
   };
   const byToken = new Map();
   const candles = new Map();
-  for (const trade of state.history.trades) {
+  const sortedTrades = state.history.trades.slice().sort((a, b) =>
+    Date.parse(a.traded_at || '') - Date.parse(b.traded_at || ''));
+  for (const trade of sortedTrades) {
     const tradedMs = Date.parse(trade.traded_at);
     if (!Number.isFinite(tradedMs)) continue;
     const key = tokenKey(trade.contract, trade.symbol);
@@ -297,17 +310,30 @@ function buildRollingHistory(state) {
       contract: trade.contract,
       symbol: trade.symbol,
       trade_count: 0,
+      latest_price: null,
+      latest_trade_at: null,
+      volume_1h: 0,
       volume_24h: 0,
       volume_7d: 0,
       volume_30d: 0,
+      window_start_prices: {},
     };
     metric.trade_count += 1;
+    const price = asNumber(trade.price);
+    if (price != null) {
+      metric.latest_price = price;
+      metric.latest_trade_at = trade.traded_at;
+      for (const [field, millis] of Object.entries(windows)) {
+        if (nowMs - tradedMs <= millis && metric.window_start_prices[field] == null) {
+          metric.window_start_prices[field] = price;
+        }
+      }
+    }
     const volume = asNumber(trade.volume) || 0;
     for (const [field, millis] of Object.entries(windows)) {
       if (nowMs - tradedMs <= millis) metric[field] += volume;
     }
     byToken.set(key, metric);
-    const price = asNumber(trade.price);
     if (price == null) continue;
     const day = trade.traded_at.slice(0, 10);
     const candleKey = `${trade.source || ''}::${trade.pair_id || ''}::${day}`;
@@ -331,6 +357,11 @@ function buildRollingHistory(state) {
     candles.set(candleKey, candle);
   }
   const completeness = rollingCompleteness(state);
+  for (const metric of byToken.values()) {
+    metric.change_1h = percentChange(metric.window_start_prices.volume_1h, metric.latest_price);
+    metric.change_24h = percentChange(metric.window_start_prices.volume_24h, metric.latest_price);
+    delete metric.window_start_prices;
+  }
   return {
     token_metrics: byToken,
     candles,
@@ -347,9 +378,14 @@ function refreshRollingHistory(state) {
     state.tokenCache.set(metric.token_key, {
       ...existing,
       fresh_history_trade_count: metric.trade_count,
+      fresh_history_latest_price: metric.latest_price == null ? null : safeDecimal(metric.latest_price),
+      fresh_history_latest_trade_at: metric.latest_trade_at || null,
+      fresh_history_volume_1h: metric.volume_1h ? safeDecimal(metric.volume_1h) : null,
       fresh_history_volume_24h: metric.volume_24h ? safeDecimal(metric.volume_24h) : null,
       fresh_history_volume_7d: metric.volume_7d ? safeDecimal(metric.volume_7d) : null,
       fresh_history_volume_30d: metric.volume_30d ? safeDecimal(metric.volume_30d) : null,
+      fresh_history_change_1h: metric.change_1h == null ? null : safeDecimal(metric.change_1h),
+      fresh_history_change_24h: metric.change_24h == null ? null : safeDecimal(metric.change_24h),
       fresh_history_volume_24h_complete: rolling.completeness.volume_24h_complete,
       fresh_history_volume_7d_complete: rolling.completeness.volume_7d_complete,
       fresh_history_volume_30d_complete: rolling.completeness.volume_30d_complete,
@@ -364,6 +400,7 @@ function historyPayload(state) {
     history_started_at: state.history.history_started_at,
     history_complete: false,
     history_backfilled: false,
+    deep_history_status: 'requires_ship_state_history',
     requires_ship_for_deep_history: true,
     persisted_trade_count: state.history.trades.length,
     rolling_1d_candle_count: rolling.candles.size,
@@ -426,6 +463,7 @@ function streamStatus(state) {
       account: stream.account,
       action: stream.action,
       source: stream.source,
+      og_source: stream.og_source,
       status: current.status || (state.connected ? 'connected' : 'not_connected'),
       verified: true,
       event_count: current.event_count || 0,
@@ -626,6 +664,7 @@ function parseAlcorMarketMatch(row, stream) {
   return {
     trade_id: `${stableId}:market:${marketId}`,
     source: stream.source,
+    og_source: stream.og_source,
     stream_source: streamKey(stream),
     pair_id: safeString(marketId),
     contract,
@@ -675,6 +714,7 @@ function parseAmmSwap(row, stream) {
   return {
     trade_id: `${stableId}:pair:${pairId}`,
     source: stream.source,
+    og_source: stream.og_source,
     stream_source: streamKey(stream),
     pair_id: pairId,
     contract,
@@ -705,6 +745,7 @@ function tokenUpdateFromTrade(trade) {
     symbol: normalizeSymbol(trade.symbol),
     updated_at: trade.traded_at,
     source: trade.source,
+    og_source: trade.og_source,
     source_keys: trade.source,
     pair_id: trade.pair_id,
     stream_source: trade.stream_source,

@@ -304,6 +304,12 @@ ok('VPS live indexer registers only verified trade streams',
   liveIndexer.VERIFIED_TRADE_STREAMS.some((stream) => stream.account === 'swap.taco' && stream.action === 'exchangelog') &&
   liveIndexer.VERIFIED_TRADE_STREAMS.some((stream) => stream.account === 'swap.box' && stream.action === 'swaplog') &&
   liveIndexer.VERIFIED_TRADE_STREAMS.some((stream) => stream.account === 'swap.nefty' && stream.action === 'logswap') &&
+  liveIndexer.VERIFIED_TRADE_STREAMS.find((stream) => stream.account === 'alcordexmain' && stream.action === 'buymatch')?.og_source === 'alcor_buy' &&
+  liveIndexer.VERIFIED_TRADE_STREAMS.find((stream) => stream.account === 'alcordexmain' && stream.action === 'sellmatch')?.og_source === 'alcor_sell' &&
+  liveIndexer.VERIFIED_TRADE_STREAMS.find((stream) => stream.account === 'swap.alcor' && stream.action === 'logswap')?.og_source === 'alcorv2' &&
+  liveIndexer.VERIFIED_TRADE_STREAMS.find((stream) => stream.account === 'swap.taco' && stream.action === 'exchangelog')?.og_source === 'taco' &&
+  liveIndexer.VERIFIED_TRADE_STREAMS.find((stream) => stream.account === 'swap.box' && stream.action === 'swaplog')?.og_source === 'defibox' &&
+  liveIndexer.VERIFIED_TRADE_STREAMS.find((stream) => stream.account === 'swap.nefty' && stream.action === 'logswap')?.og_source === 'neftyblocks' &&
   !liveIndexerSource.includes("account: 'swap.adex'") &&
   !liveIndexerSource.includes("account: 'dapp.fusion'"));
 {
@@ -396,11 +402,12 @@ ok('VPS live indexer /stream contract supports heartbeat and real token update e
   liveIndexerSource.includes('event: token_update') &&
   liveIndexerSource.includes('function writeSseTokenUpdate') &&
   !liveIndexerSource.includes('Math.random'));
-ok('VPS live indexer exposes fresh-start rolling history without claiming backfill',
+  ok('VPS live indexer exposes fresh-start rolling history without claiming backfill',
   liveIndexerSource.includes("pathname === '/history'") &&
   liveIndexerSource.includes("history_mode: FRESH_HISTORY_MODE") &&
   liveIndexerSource.includes('history_complete: false') &&
   liveIndexerSource.includes('history_backfilled: false') &&
+  liveIndexerSource.includes("deep_history_status: 'requires_ship_state_history'") &&
   liveIndexerSource.includes('requires_ship_for_deep_history: true') &&
   !liveIndexerSource.includes('reserve-derived candles'));
 ok('VPS live indexer exposes no fake live events or random movement',
@@ -486,10 +493,12 @@ ok('VPS live indexer exposes no fake live events or random movement',
     alcorTrade.contract === 'graffitiking' &&
     alcorTrade.symbol === 'WAXCASH' &&
     alcorTrade.stream_source === 'alcordexmain::buymatch' &&
+    alcorTrade.og_source === 'alcor_buy' &&
     ammTrade &&
     ammTrade.contract === 'graffitiking' &&
     ammTrade.symbol === 'WAXCASH' &&
-    ammTrade.stream_source === 'swap.alcor::logswap');
+    ammTrade.stream_source === 'swap.alcor::logswap' &&
+    ammTrade.og_source === 'alcorv2');
   ok('VPS live indexer rejects trade rows without stable IDs instead of collapsing blank suffixes',
     alcorMissingStableId === null &&
     ammMissingStableId === null);
@@ -583,6 +592,59 @@ ok('VPS live indexer exposes no fake live events or random movement',
       merged.source === 'alcor');
   }
   {
+    const originalDateNow = Date.now;
+    Date.now = () => Date.parse('2026-06-15T11:00:00.000Z');
+    try {
+      const metricState = liveIndexer.createState(liveIndexer.loadConfig({
+        WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+      }));
+      metricState.history.history_started_at = '2026-06-15T10:00:00.000Z';
+      liveIndexer.observeLiveTrade(metricState, {
+        ...alcorTrade,
+        trade_id: `${alcorTrade.trade_id}:metric-old`,
+        traded_at: '2026-06-15T10:00:00.000Z',
+        price: 1,
+        volume: 2,
+      });
+      liveIndexer.observeLiveTrade(metricState, {
+        ...alcorTrade,
+        trade_id: `${alcorTrade.trade_id}:metric-new`,
+        traded_at: '2026-06-15T10:30:00.000Z',
+        price: 2,
+        volume: 3,
+      });
+      liveIndexer.observeLiveTrade(metricState, {
+        ...alcorTrade,
+        trade_id: `${alcorTrade.trade_id}:wax-token`,
+        contract: 'eosio.token',
+        symbol: 'WAX',
+        traded_at: '2026-06-15T10:45:00.000Z',
+        price: 1,
+        volume: 4,
+      });
+      const metricSnapshot = liveIndexer.snapshotPayload(metricState);
+      const waxcash = metricSnapshot.tokens.find((token) => token.token_key === 'graffitiking::WAXCASH');
+      const wax = metricSnapshot.tokens.find((token) => token.token_key === 'eosio.token::WAX');
+      ok('VPS live indexer derives fresh rolling metrics only from observed persisted trades',
+        waxcash &&
+        waxcash.fresh_history_latest_price === 2 &&
+        waxcash.fresh_history_latest_trade_at === '2026-06-15T10:30:00.000Z' &&
+        waxcash.fresh_history_volume_1h === 5 &&
+        waxcash.fresh_history_volume_24h === 5 &&
+        waxcash.fresh_history_change_1h === 100 &&
+        waxcash.fresh_history_change_24h === 100 &&
+        waxcash.fresh_history_volume_24h_complete === false &&
+        waxcash.fresh_history_volume_7d_complete === false &&
+        waxcash.fresh_history_volume_30d_complete === false &&
+        wax &&
+        wax.token_key === 'eosio.token::WAX' &&
+        wax.symbol === 'WAX' &&
+        wax.uses_fake_live_data === false);
+    } finally {
+      Date.now = originalDateNow;
+    }
+  }
+  {
     const historyPath = path.join(ROOT, '.tmp-waxonedge-live-history-test.json');
     rmSync(historyPath, { force: true });
     const historyConfig = liveIndexer.loadConfig({
@@ -603,11 +665,13 @@ ok('VPS live indexer exposes no fake live events or random movement',
       historyHealth.history.persisted_trade_count === 1 &&
       historyHealth.history.history_complete === false &&
       historyHealth.history.history_backfilled === false &&
+      historyHealth.history.deep_history_status === 'requires_ship_state_history' &&
       historyHealth.history.requires_ship_for_deep_history === true &&
       restartedHealth.status === 'connected' &&
       restartedHealth.history.persisted_trade_count === 1 &&
       restartedHealth.history.rolling_1d_candle_count === 1 &&
       restartedSnapshot.tokens.length === 1 &&
+      restartedSnapshot.tokens[0].og_source === 'alcor_buy' &&
       restartedSnapshot.tokens[0].fresh_history_trade_count === 1 &&
       restartedSnapshot.tokens[0].fresh_history_volume_7d_complete === false &&
       restartedSnapshot.tokens[0].fresh_history_volume_30d_complete === false);

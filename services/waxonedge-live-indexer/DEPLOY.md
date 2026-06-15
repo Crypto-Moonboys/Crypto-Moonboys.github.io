@@ -80,7 +80,7 @@ npm run check
 
 Expected startup status is `not_connected` with `uses_fake_live_data=false` until real verified Hyperion/state-history trade rows are observed. The service must not emit `token_update` events unless they come from those verified streams.
 
-Rolling history is fresh-start only. The service persists real observed rows under `WAXONEDGE_LIVE_HISTORY_PATH`, rebuilds rolling candles/metrics from those rows after restart, and keeps `history_complete=false` plus `history_backfilled=false`. Do not present 7D/30D metrics as complete until the service has actually observed that much time.
+Rolling history is fresh-start only. The service persists real observed rows under `WAXONEDGE_LIVE_HISTORY_PATH`, rebuilds rolling candles/metrics from those rows after restart, and keeps `history_complete=false` plus `history_backfilled=false`. Do not present 7D/30D metrics as complete until the service has actually observed that much time. Percentage change is available only when an actual older observed price exists in the requested fresh window.
 
 ## systemd
 

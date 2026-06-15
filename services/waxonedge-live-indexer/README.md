@@ -15,12 +15,12 @@ This is the VPS-side WaxOnEdge live bubble update service. It polls only verifie
 
 The service is reserved for these verified WaxOnEdge trade streams:
 
-- `alcordexmain::buymatch`
-- `alcordexmain::sellmatch`
-- `swap.alcor::logswap`
-- `swap.taco::exchangelog`
-- `swap.box::swaplog`
-- `swap.nefty::logswap`
+- `alcordexmain::buymatch` -> `source: "alcor"`, `og_source: "alcor_buy"`
+- `alcordexmain::sellmatch` -> `source: "alcor"`, `og_source: "alcor_sell"`
+- `swap.alcor::logswap` -> `source: "swap.alcor"`, `og_source: "alcorv2"`
+- `swap.taco::exchangelog` -> `source: "swap.taco"`, `og_source: "taco"`
+- `swap.box::swaplog` -> `source: "swap.box"`, `og_source: "defibox"`
+- `swap.nefty::logswap` -> `source: "swap.nefty"`, `og_source: "neftyblocks"`
 
 Table-only sources such as `swap.adex` and `dapp.fusion` are not live trade streams until verified separately.
 
@@ -92,6 +92,8 @@ The `history` object is always honest fresh-start metadata:
 Returns compact live token updates observed in memory from verified trade rows. Until a real trade is observed, it returns `ok:false`, `status:"not_connected"`, and `tokens:[]`.
 
 When persisted observed trades exist after a restart, the token cache and rolling metrics hydrate from those real rows only. `fresh_history_volume_7d_complete` and `fresh_history_volume_30d_complete` remain false until enough wall-clock time has elapsed since `history_started_at`.
+
+Fresh rolling metrics include latest observed price, latest trade time, 1h volume, 24h volume, and percentage change only when an actual older observed price exists inside that window. Missing windows stay unavailable; they are not filled from reserves or generated history.
 
 ### `GET /history`
 
