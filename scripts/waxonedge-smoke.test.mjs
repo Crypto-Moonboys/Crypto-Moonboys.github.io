@@ -192,7 +192,11 @@ ok('waxonedge-bubbles-v2.js keeps metric availability honest with selected-metri
   !v2Js.includes('record.fdvUsd || record.marketCapWax') &&
   !v2Js.includes(" + ' FDV'"));
 ok('waxonedge-bubbles-v2.js reduces max bubble radius for dense Top 100 scanner layout',
-  v2Js.includes('mobile ? 46 : 76') &&
+  v2Js.includes('var cellLimit = Math.max(18, cellSize * (mobile ? 0.36 : 0.38))') &&
+  v2Js.includes('return Math.round(Math.min(cellLimit') &&
+  v2Js.includes('function layoutPosition(index, count, width, height, radius)') &&
+  v2Js.includes('node.homeX = position.x') &&
+  v2Js.includes('node.homeY = position.y') &&
   !v2Js.includes('mobile ? 72 : 132'));
 ok('waxonedge-bubbles-v2.js removes structured modal stats and object string leaks',
   !v2Js.includes('function formatStatValue') &&
