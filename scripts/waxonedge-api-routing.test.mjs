@@ -26,7 +26,7 @@ function ok(label, condition, detail) {
 }
 
 const apiConfigIndex = html.indexOf('src="/js/api-config.js"');
-const bubblesIndex = html.indexOf('src="/js/waxonedge-bubbles-v2.js"');
+const bubblesIndex = html.indexOf('src="/js/waxonedge-bubbles-v2.js');
 const routingShimIndex = html.indexOf('function rewriteWaxOnEdgeUrl');
 
 ok('waxonedge.html loads api-config before the bubbles runtime',
