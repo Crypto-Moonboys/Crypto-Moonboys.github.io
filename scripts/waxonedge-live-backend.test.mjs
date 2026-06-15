@@ -772,10 +772,12 @@ ok('VPS live indexer exposes no fake live events or random movement',
     const historyConfig = liveIndexer.loadConfig({
       WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
       WAXONEDGE_LIVE_HISTORY_PATH: historyPath,
+      WAXONEDGE_LIVE_HISTORY_SAVE_MS: '0',
     });
     const historyState = liveIndexer.createState(historyConfig);
     liveIndexer.observeLiveTrade(historyState, alcorTrade);
     await historyState.history_save_promise;
+    const successfulSaveResult = await liveIndexer.saveObservedHistory(historyState);
     const fileWasWritten = existsSync(historyPath);
     const historyHealth = liveIndexer.healthPayload(historyState);
     const restartedState = liveIndexer.createState(historyConfig);
@@ -783,6 +785,7 @@ ok('VPS live indexer exposes no fake live events or random movement',
     const restartedSnapshot = liveIndexer.snapshotPayload(restartedState);
     rmSync(historyPath, { force: true });
     ok('VPS live indexer persists observed verified trades and hydrates fresh history after restart',
+      successfulSaveResult === true &&
       fileWasWritten &&
       historyHealth.history.history_mode === 'fresh_start' &&
       historyHealth.history.last_error === null &&
@@ -807,19 +810,32 @@ ok('VPS live indexer exposes no fake live events or random movement',
     });
     const failingState = liveIndexer.createState(failingConfig);
     let threw = false;
+    let failedSaveResult;
     try {
       liveIndexer.observeLiveTrade(failingState, { ...alcorTrade, trade_id: `${alcorTrade.trade_id}:save-failure` });
-      await failingState.history_save_promise;
+      failedSaveResult = await failingState.history_save_promise;
     } catch (_) {
       threw = true;
     }
     ok('VPS live indexer records history save failures without crashing ingestion',
       threw === false &&
+      failedSaveResult === false &&
       /history save failed:/.test(failingState.history.last_error || '') &&
       failingState.last_error === failingState.history.last_error &&
       failingState.history.trades.length === 1 &&
       liveIndexer.healthPayload(failingState).history.last_error === failingState.history.last_error &&
       liveIndexer.snapshotPayload(failingState).history.last_error === failingState.history.last_error);
+  }
+  {
+    const disabledState = liveIndexer.createState(liveIndexer.loadConfig({
+      WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+      WAXONEDGE_LIVE_HISTORY_PATH: '',
+    }));
+    const disabledSaveResult = await liveIndexer.saveObservedHistory(disabledState);
+    ok('VPS live indexer save promise resolves false when history persistence is disabled',
+      disabledSaveResult === false &&
+      disabledState.history_save_promise === null &&
+      disabledState.history.last_error == null);
   }
   {
     const serializedPath = path.join(ROOT, '.tmp-waxonedge-live-history-serialized.json');

@@ -359,7 +359,10 @@ function scheduleSerializedHistorySave(state, delayMs = 0) {
   state.history_save_promise = new Promise((resolve) => {
     const run = () => {
       state.history_save_timer = null;
-      runSerializedHistorySave(state).then(resolve, resolve);
+      runSerializedHistorySave(state).then(
+        () => resolve(state.history.last_error == null),
+        () => resolve(false),
+      );
     };
     if (delayMs > 0) {
       state.history_save_timer = setTimeout(run, delayMs);
