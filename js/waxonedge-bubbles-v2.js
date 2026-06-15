@@ -562,22 +562,30 @@
   function computeRadii(records, width, height) {
     var count = Math.max(1, records.length);
     var mobile = width < 680;
+    var metric = state.metric;
+    var weighted = metric === 'tvl' || metric === 'liquidity';
     var scores = records.map(function (record) {
       var metricValue = valueForMetric(record, state.metric, state.timeframe);
-      if (metricValue == null || metricValue <= 0) return blendedMarketScore(record) * 0.28;
+      if (metricValue == null || metricValue <= 0) return weighted ? 0 : blendedMarketScore(record) * 0.18;
       return Math.log10(1 + Math.abs(metricValue));
     });
     var positives = scores.filter(function (value) { return value > 0; }).sort(function (a, b) { return a - b; });
-    var p95 = positives.length ? positives[Math.max(0, Math.floor(positives.length * 0.95) - 1)] : 1;
+    var lowIndex = Math.max(0, Math.floor(positives.length * (weighted ? 0.08 : 0.12)) - 1);
+    var highIndex = Math.max(0, Math.floor(positives.length * (weighted ? 0.96 : 0.92)) - 1);
+    var low = positives.length ? positives[lowIndex] : 0;
+    var high = positives.length ? positives[highIndex] : 1;
     var max = Math.max.apply(Math, scores.concat([1]));
-    var areaRadius = Math.sqrt(width * height * (mobile ? 0.021 : 0.011) / Math.max(count, 1));
-    var minR = mobile ? 13 : 16;
-    var maxR = Math.max(minR + 7, Math.min(mobile ? 34 : 48, areaRadius * (mobile ? 1.86 : 1.94)));
+    var areaRadius = Math.sqrt(width * height * (mobile ? 0.020 : 0.0105) / Math.max(count, 1));
+    var minR = weighted ? (mobile ? 10 : 12) : (mobile ? 13 : 16);
+    var maxR = weighted
+      ? Math.max(minR + 24, Math.min(mobile ? 52 : 78, areaRadius * (mobile ? 2.6 : 3.05)))
+      : Math.max(minR + 7, Math.min(mobile ? 34 : 48, areaRadius * (mobile ? 1.86 : 1.94)));
     return records.map(function (record, index) {
       var value = scores[index];
-      var norm = value <= 0 ? 0.06 : Math.pow(value / Math.max(p95, 1), 0.72);
-      if (value > p95 && max > p95) norm = 0.84 + (Math.log(value / p95) / Math.log(max / p95)) * 0.16;
-      norm = Math.max(0.06, Math.min(1, norm));
+      var norm = value <= 0 ? 0 : (value - low) / Math.max(0.001, high - low);
+      if (value > high && max > high) norm = 0.88 + (Math.log(value / high) / Math.log(max / high)) * 0.12;
+      norm = Math.max(weighted ? 0.02 : 0.06, Math.min(1, norm));
+      norm = Math.pow(norm, weighted ? 0.52 : 0.72);
       return Math.round((minR + norm * (maxR - minR)) * metricEmphasis(record));
     });
   }
@@ -587,12 +595,31 @@
     return x - Math.floor(x);
   }
 
+  function sceneBounds(width, height, radius) {
+    var safe = Math.max(radius + 14, 28);
+    var top = Math.max(safe, Math.min(112, height * 0.16));
+    var bottom = Math.max(safe, Math.min(62, height * 0.09));
+    return {
+      minX: safe,
+      maxX: Math.max(safe, width - safe),
+      minY: top,
+      maxY: Math.max(top, height - bottom),
+    };
+  }
+
+  function clampNodeToBounds(node, width, height) {
+    var boundsRadius = visualRadius(node);
+    var bounds = sceneBounds(width, height, boundsRadius);
+    node.x = Math.max(bounds.minX, Math.min(bounds.maxX, node.x));
+    node.y = Math.max(bounds.minY, Math.min(bounds.maxY, node.y));
+  }
+
   function layoutPosition(index, count, width, height, radius) {
-    var safe = Math.max(radius + 14, 26);
-    var usableW = Math.max(1, width - safe * 2);
-    var usableH = Math.max(1, height - safe * 2);
-    var centerX = width * (0.5 + (seededUnit(count + 17) - 0.5) * 0.05);
-    var centerY = height * (0.53 + (seededUnit(count + 31) - 0.5) * 0.08);
+    var bounds = sceneBounds(width, height, radius);
+    var usableW = Math.max(1, bounds.maxX - bounds.minX);
+    var usableH = Math.max(1, bounds.maxY - bounds.minY);
+    var centerX = bounds.minX + usableW * (0.5 + (seededUnit(count + 17) - 0.5) * 0.05);
+    var centerY = bounds.minY + usableH * (0.51 + (seededUnit(count + 31) - 0.5) * 0.06);
     var golden = Math.PI * (3 - Math.sqrt(5));
     var seedA = seededUnit((index + 1) * 19 + count);
     var seedB = seededUnit((index + 1) * 37 + count * 3);
@@ -608,8 +635,8 @@
       y = centerY + Math.sin(angle) * usableH * (0.08 + seedB * 0.12);
     }
     return {
-      x: Math.max(safe, Math.min(width - safe, x)),
-      y: Math.max(safe, Math.min(height - safe, y)),
+      x: Math.max(bounds.minX, Math.min(bounds.maxX, x)),
+      y: Math.max(bounds.minY, Math.min(bounds.maxY, y)),
     };
   }
 
@@ -624,13 +651,18 @@
     state.nodes.forEach(function (node) { existing[node.id] = node; });
     state.nodes = state.visible.map(function (record, index) {
       var old = existing[record.id];
-      var position = layoutPosition(index, state.visible.length, width, height, radii[index]);
+      var position = old ? null : layoutPosition(index, state.visible.length, width, height, radii[index]);
       var node = old || {
         id: record.id,
         x: position.x,
         y: position.y,
         vx: 0,
         vy: 0,
+        homeX: position.x,
+        homeY: position.y,
+        driftPhaseX: seededUnit((index + 1) * 101 + state.visible.length) * Math.PI * 2,
+        driftPhaseY: seededUnit((index + 1) * 211 + state.visible.length) * Math.PI * 2,
+        driftDir: seededUnit((index + 1) * 307) > 0.5 ? 1 : -1,
         depth: 0.9 + ((index * 37) % 21) / 100,
       };
       node.record = record;
@@ -638,10 +670,13 @@
       record.nodeY = node.y;
       node.radius = old ? old.radius : radii[index];
       node.targetRadius = radii[index];
-      node.homeX = position.x;
-      node.homeY = position.y;
+      if (!old) {
+        node.homeX = position.x;
+        node.homeY = position.y;
+      }
       node.rank = index + 1;
       node.depth = old && old.depth ? old.depth : 0.9 + ((index * 37) % 21) / 100;
+      clampNodeToBounds(node, width, height);
       node.match = !state.query || record.searchText.indexOf(state.query.toLowerCase()) !== -1;
       return node;
     });
@@ -815,14 +850,6 @@
     });
     state.liveFeed = state.liveFeed.slice(0, 6);
     if (record.majorUpdatePending) {
-      var currentNode = state.nodes.find(function (node) {
-        return node.record && node.record.key === record.key;
-      });
-      if (currentNode) {
-        state.camera.focusUntil = performance.now() + 3800;
-        state.camera.focusX = currentNode.x;
-        state.camera.focusY = currentNode.y;
-      }
       record.majorUpdatePending = false;
     }
     renderLiveFeed();
@@ -1192,42 +1219,18 @@
 
   function updateCamera(width, height, now) {
     var camera = state.camera;
-    if (!shouldAnimate()) {
-      camera.offsetX += (0 - camera.offsetX) * 0.08;
-      camera.offsetY += (0 - camera.offsetY) * 0.08;
-      camera.scale += (1 - camera.scale) * 0.08;
-      return;
-    }
-    var targetX = Math.sin(now / 11000) * 18;
-    var targetY = Math.cos(now / 13000) * 12;
-    var targetScale = 1 + Math.sin(now / 17000) * 0.018;
-    if (now < camera.focusUntil) {
-      targetX = (width / 2) - camera.focusX;
-      targetY = (height / 2) - camera.focusY;
-      targetScale = 1.08;
-    }
-    camera.offsetX += (targetX - camera.offsetX) * 0.015;
-    camera.offsetY += (targetY - camera.offsetY) * 0.015;
-    camera.scale += (targetScale - camera.scale) * 0.012;
+    camera.offsetX = 0;
+    camera.offsetY = 0;
+    camera.scale = 1;
+    camera.focusUntil = 0;
   }
 
   function applyCamera(ctx, width, height) {
-    var camera = state.camera;
-    ctx.translate(width / 2, height / 2);
-    ctx.scale(camera.scale, camera.scale);
-    ctx.translate(-width / 2 + camera.offsetX, -height / 2 + camera.offsetY);
+    return;
   }
 
   function screenToWorld(point) {
-    if (!state.canvas) return point;
-    var rect = state.canvas.getBoundingClientRect();
-    var width = Math.max(320, rect.width);
-    var height = Math.max(320, rect.height);
-    var camera = state.camera;
-    return {
-      x: ((point.x - width / 2) / camera.scale) + width / 2 - camera.offsetX,
-      y: ((point.y - height / 2) / camera.scale) + height / 2 - camera.offsetY,
-    };
+    return point;
   }
 
   function draw() {

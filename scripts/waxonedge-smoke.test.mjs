@@ -319,17 +319,20 @@ ok('waxonedge-bubbles-v2.js uses selected metric and blended base score for bubb
   v2Js.includes('marketCapWax') &&
   v2Js.includes('indexedPairCount') &&
   /function computeRadii[\s\S]*valueForMetric\(record, state\.metric, state\.timeframe\)/.test(v2Js));
-ok('waxonedge-bubbles-v2.js adds live WAX Galaxy reactions from real update data',
+ok('waxonedge-bubbles-v2.js adds live WAX Galaxy reactions without camera jumps',
   html.includes('woe-ab-live-feed') &&
   v2Js.includes('function addLiveFeed') &&
   v2Js.includes('function updateCamera') &&
-  v2Js.includes('return node.record && node.record.key === record.key') &&
+  v2Js.includes('camera.offsetX = 0') &&
+  v2Js.includes('function sceneBounds(width, height, radius)') &&
+  v2Js.includes('function clampNodeToBounds(node, width, height)') &&
+  v2Js.includes('driftPhaseX') &&
   v2Js.includes("displayValueForMetric(record, 'volume', '24h')") &&
   v2Js.includes('function displayValueForMetric(record, metric, timeframeOverride)') &&
   v2Js.includes('var oldTimeframe = state.timeframe') &&
   v2Js.includes('} finally {') &&
-  v2Js.includes('state.camera.focusX = currentNode.x') &&
-  v2Js.includes('state.camera.focusY = currentNode.y') &&
+  !v2Js.includes('state.camera.focusX = currentNode.x') &&
+  !v2Js.includes('state.camera.focusY = currentNode.y') &&
   !v2Js.includes('record.nodeX || 0') &&
   !v2Js.includes('record.nodeY || 0') &&
   v2Js.includes('function marketWeather') &&
