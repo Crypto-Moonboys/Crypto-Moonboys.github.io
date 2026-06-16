@@ -3720,13 +3720,22 @@ ok('selected price health counts are scoped to indexed tokens',
 ok('token detail loads the bounded indexed-pair route graph without an all-priced-token scan',
   route.includes('function collectTokenPriceKeysForPairs') &&
   route.includes('async function loadRouteGraphRowsForToken') &&
-  route.includes("WHERE (token_a_contract || '::' || token_a_symbol) IN") &&
+  route.includes('const frontierPredicates = frontierBatch.map') &&
+  route.includes('(token_a_contract = ? AND token_a_symbol = ?)') &&
+  route.includes('(token_b_contract = ? AND token_b_symbol = ?)') &&
+  route.includes("CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC") &&
+  route.includes('updated_at DESC') &&
+  route.includes('source ASC') &&
+  route.includes('pair_id ASC') &&
+  /async function loadRouteGraphRowsForToken[\s\S]*ORDER BY[\s\S]*CAST\(COALESCE\(liquidity_wax, '0'\) AS NUMERIC\) DESC[\s\S]*LIMIT \?`/.test(route) &&
   route.includes('const graphRows = options.graphRows || await loadRouteGraphRowsForToken(db, contract, symbol)') &&
   route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, graphRows)') &&
   route.includes('const detail = await getToken(db, contract, symbol, { includeRouteContext: true })') &&
   route.includes('delete detail.route_context') &&
   route.includes('const routeIndex = routeContext.routeIndex || buildOgWaxRouteGraph(graphRows, priceIndex)') &&
   !route.includes('async function loadAllPairRowsForGraph') &&
+  !route.includes("(token_a_contract || '::' || token_a_symbol) IN") &&
+  !route.includes("(token_b_contract || '::' || token_b_symbol) IN") &&
   !route.includes('queue.shift()') &&
   !route.includes('WHERE price_wax IS NOT NULL OR price_usd IS NOT NULL'));
 {
@@ -3822,6 +3831,9 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     Number(wufStats.cumulated_pair_liquidity_wax) === 2400 &&
     Number(wufStats.tvl_wax) === 2400 &&
     Number(wufStats.tvl_usd) === 14.4 &&
+    Number(wufStats.strongest_pair.liquidity_wax) === 1000 &&
+    wufStats.strongest_pair.liquidity_usd === null &&
+    Number(wufStats.strongest_pair.route_liquidity_score) === 1000 &&
     Number(wufStats.volume_24h_wax) === 60 &&
     wufStats.change_24h == null &&
     Number(wufStats.fdv_wax) > 0 &&

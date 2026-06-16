@@ -4785,6 +4785,8 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
     source: selected.route_hops?.[selected.route_hops.length - 1]?.source || null,
     pair_id: selected.route_hops?.[selected.route_hops.length - 1]?.pair_id || null,
     label: metrics.selected_pair_label,
+    liquidity_wax: safeDecimal(selected.liquidityWax ?? selected.route_liquidity_score),
+    liquidity_usd: safeDecimal(selected.liquidityUsd),
     route_liquidity_score: safeDecimal(selected.route_liquidity_score),
     selected_price_wax: safeDecimal(selected.priceWax),
     selected_price_usd: safeDecimal(selected.priceUsd),
@@ -4815,23 +4817,46 @@ async function loadPairRowsForToken(db, contract, symbol) {
 async function loadRouteGraphRowsForToken(db, contract, symbol, maxHops = OG_WAX_ROUTE_MAX_HOPS) {
   const startKey = tokenKey(contract, symbol);
   if (!startKey) return [];
+  const parseFrontierKey = (key) => {
+    const separator = String(key || '').indexOf('::');
+    if (separator <= 0) return null;
+    const parsedContract = normalizeContract(String(key).slice(0, separator));
+    const parsedSymbol = normalizeSymbol(String(key).slice(separator + 2));
+    return parsedContract && parsedSymbol ? { contract: parsedContract, symbol: parsedSymbol } : null;
+  };
   const seenTokens = new Set([startKey]);
   const seenPairs = new Map();
   let frontier = [startKey];
   for (let depth = 0; depth < maxHops && frontier.length; depth += 1) {
     const nextFrontier = [];
     for (let offset = 0; offset < frontier.length; offset += OG_WAX_ROUTE_GRAPH_FRONTIER_LIMIT) {
-      const frontierBatch = frontier.slice(offset, offset + OG_WAX_ROUTE_GRAPH_FRONTIER_LIMIT);
-      const placeholders = frontierBatch.map(() => '?').join(', ');
+      const frontierBatch = frontier
+        .slice(offset, offset + OG_WAX_ROUTE_GRAPH_FRONTIER_LIMIT)
+        .map(parseFrontierKey)
+        .filter(Boolean);
+      if (!frontierBatch.length) continue;
+      const frontierPredicates = frontierBatch.map(() =>
+        `((token_a_contract = ? AND token_a_symbol = ?) OR (token_b_contract = ? AND token_b_symbol = ?))`
+      ).join(' OR ');
+      const frontierParams = frontierBatch.flatMap((token) => [
+        token.contract,
+        token.symbol,
+        token.contract,
+        token.symbol,
+      ]);
       const rows = await db.prepare(
         `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
                 price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
                 liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
          FROM waxonedge_pairs
-         WHERE (token_a_contract || '::' || token_a_symbol) IN (${placeholders})
-            OR (token_b_contract || '::' || token_b_symbol) IN (${placeholders})
+         WHERE ${frontierPredicates}
+         ORDER BY
+           CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC,
+           updated_at DESC,
+           source ASC,
+           pair_id ASC
          LIMIT ?`
-      ).bind(...frontierBatch, ...frontierBatch, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT).all().catch(() => ({ results: [] }));
+      ).bind(...frontierParams, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT).all().catch(() => ({ results: [] }));
       for (const pair of rows.results || []) {
         const pairKey = `${pair.source || ''}::${pair.pair_id || ''}::${pair.token_a_contract || ''}::${pair.token_a_symbol || ''}::${pair.token_b_contract || ''}::${pair.token_b_symbol || ''}`;
         if (!seenPairs.has(pairKey)) seenPairs.set(pairKey, pair);
