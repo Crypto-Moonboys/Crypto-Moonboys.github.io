@@ -4684,9 +4684,8 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
     reason_codes: reasonCodes,
   };
   for (const field of ['volume_24h', 'volume_24h_wax', 'volume_24h_usd']) {
-    if (Object.prototype.hasOwnProperty.call(pair, field)) {
-      proof[field] = safeDecimal(asNumber(pair[field]));
-    }
+    const parsed = asNumber(pair[field]);
+    if (parsed != null) proof[field] = safeDecimal(parsed);
   }
   return proof;
 }

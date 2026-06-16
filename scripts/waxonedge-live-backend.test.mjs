@@ -3648,6 +3648,8 @@ ok('WAXCASH OG WOE parity proof exposes all exact pair rows with unavailable rea
   route.includes('pair_summary: pairSummary') &&
   route.includes('function waxcashPairSummary') &&
   route.includes("pairedIsWax ? { price_wax: '1' } : null") &&
+  route.includes('const parsed = asNumber(pair[field])') &&
+  route.includes('if (parsed != null) proof[field] = safeDecimal(parsed)') &&
   route.includes('fee_bps: safeDecimal(asNumber(pair.fee_bps))') &&
   route.includes('pair_price_relative_to_waxcash') &&
   route.includes('pair_liquidity_wax') &&

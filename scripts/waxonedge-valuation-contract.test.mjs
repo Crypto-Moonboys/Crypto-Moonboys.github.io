@@ -238,6 +238,8 @@ const waxcashShallowWax = {
   reserve_b: '50',
   fee_bps: '25',
   volume_24h: '12',
+  volume_24h_wax: '0',
+  volume_24h_usd: 0,
   liquidity_wax: '999999',
   liquidity_usd: '999999',
   updated_at: '2026-06-16T00:00:00.000Z',
@@ -261,6 +263,9 @@ const waxcashGooPair = {
   reserve_a: '1000',
   reserve_b: '20',
   price: '999',
+  volume_24h: null,
+  volume_24h_wax: '',
+  volume_24h_usd: 'not-a-number',
   updated_at: '2026-06-16T02:00:00.000Z',
 };
 const gooWaxPair = {
@@ -338,11 +343,17 @@ ok('WAXCASH OG proof pair rows expose fee_bps without duplicate fee field',
     pair.pair_id === 'WAXCASHWAX50' &&
     pair.fee_bps === '25' &&
     !Object.prototype.hasOwnProperty.call(pair, 'fee')));
-ok('WAXCASH OG proof pair rows keep only sourced 24h volume fields',
-  waxcashProof.all_pairs.some((pair) => pair.pair_id === 'WAXCASHWAX50' && pair.volume_24h === '12') &&
+ok('WAXCASH OG proof pair rows keep only numeric 24h volume fields',
+  waxcashProof.all_pairs.some((pair) =>
+    pair.pair_id === 'WAXCASHWAX50' &&
+    pair.volume_24h === '12' &&
+    pair.volume_24h_wax === '0' &&
+    pair.volume_24h_usd === '0') &&
   waxcashProof.all_pairs.some((pair) =>
     pair.pair_id === 'WAXCASHGOO' &&
-    !Object.prototype.hasOwnProperty.call(pair, 'volume_24h')));
+    !Object.prototype.hasOwnProperty.call(pair, 'volume_24h') &&
+    !Object.prototype.hasOwnProperty.call(pair, 'volume_24h_wax') &&
+    !Object.prototype.hasOwnProperty.call(pair, 'volume_24h_usd')));
 ok('WAXCASH OG proof pair rows omit unsourced active and 7d/30d pair volume fields',
   waxcashProof.all_pairs.every((pair) =>
     !Object.prototype.hasOwnProperty.call(pair, 'active_status') &&
