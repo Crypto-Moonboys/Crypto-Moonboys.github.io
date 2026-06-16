@@ -236,6 +236,7 @@ const waxcashShallowWax = {
   price: '999999',
   reserve_a: '100000',
   reserve_b: '50',
+  fee_bps: '25',
   liquidity_wax: '999999',
   liquidity_usd: '999999',
   updated_at: '2026-06-16T00:00:00.000Z',
@@ -320,6 +321,16 @@ ok('WAXCASH pair list includes all exact graffitiking::WAXCASH pairs only',
   waxcashProof.all_pairs.length === 5 &&
   waxcashProof.all_pairs.some((pair) => pair.pair_id === 'WAXCASHGOO') &&
   !waxcashProof.all_pairs.some((pair) => pair.pair_id === 'WRONGWAXCASH'));
+ok('WAXCASH OG proof pair rows expose fee_bps without duplicate fee field',
+  waxcashProof.all_pairs.some((pair) =>
+    pair.pair_id === 'WAXCASHWAX50' &&
+    pair.fee_bps === '25' &&
+    !Object.prototype.hasOwnProperty.call(pair, 'fee')));
+ok('WAXCASH OG proof pair rows omit unsourced active and 7d/30d pair volume fields',
+  waxcashProof.all_pairs.every((pair) =>
+    !Object.prototype.hasOwnProperty.call(pair, 'active_status') &&
+    !Object.prototype.hasOwnProperty.call(pair, 'volume_7d') &&
+    !Object.prototype.hasOwnProperty.call(pair, 'volume_30d')));
 ok('non-WAX WAXCASH pairs do not become headline price',
   waxcashProof.headline_price.og_headline_price_pair_id !== 'WAXCASHGOO' &&
   waxcashProof.direct_wax_candidates.every((pair) => pair.direct_wax_pair === true));

@@ -4672,14 +4672,11 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
     token_b_symbol: pair.token_b_symbol || null,
     reserve_a: safeDecimal(asNumber(pair.reserve_a)),
     reserve_b: safeDecimal(asNumber(pair.reserve_b)),
-    fee: safeDecimal(asNumber(pair.fee_bps)),
-    active_status: pair.active_status ?? pair.active ?? null,
+    fee_bps: safeDecimal(asNumber(pair.fee_bps)),
     updated_at: pair.updated_at || null,
     volume_24h: safeDecimal(asNumber(pair.volume_24h)),
     volume_24h_wax: safeDecimal(asNumber(pair.volume_24h_wax)),
     volume_24h_usd: safeDecimal(asNumber(pair.volume_24h_usd)),
-    volume_7d: safeDecimal(asNumber(pair.volume_7d)),
-    volume_30d: safeDecimal(asNumber(pair.volume_30d)),
     pair_liquidity_wax: safeDecimal(liquidityWax),
     pair_liquidity_usd: safeDecimal(liquidityUsd),
     pair_price_relative_to_waxcash: safeDecimal(priceRelative),
@@ -5037,6 +5034,18 @@ async function loadPairRowsForToken(db, contract, symbol) {
   return rows.results || [];
 }
 
+async function loadWaxcashOgPairRows(db) {
+  const rows = await db.prepare(
+    `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+            price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+            liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
+     FROM waxonedge_pairs
+     WHERE (token_a_contract = ? AND token_a_symbol = ?)
+        OR (token_b_contract = ? AND token_b_symbol = ?)`
+  ).bind(WAXCASH_CONTRACT, WAXCASH_SYMBOL, WAXCASH_CONTRACT, WAXCASH_SYMBOL).all().catch(() => ({ results: [] }));
+  return rows.results || [];
+}
+
 async function loadDirectWaxRowsForTokens(db, tokens = []) {
   const targets = (tokens || [])
     .filter((token) => token?.key && !isWaxToken(token.contract, token.symbol));
@@ -5062,7 +5071,7 @@ async function loadDirectWaxRowsForTokens(db, tokens = []) {
 }
 
 async function getWaxcashOgProof(db) {
-  const pairRows = await loadPairRowsForToken(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+  const pairRows = await loadWaxcashOgPairRows(db);
   const pairedTokens = pairRows
     .map((pair) => otherTokenForPair(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL))
     .filter((token, index, list) => token?.key && list.findIndex((item) => item?.key === token.key) === index);

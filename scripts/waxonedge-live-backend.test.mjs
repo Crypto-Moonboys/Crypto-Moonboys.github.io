@@ -3629,6 +3629,10 @@ ok('WAXCASH OG WOE parity proof endpoint is narrow and exact-token scoped',
   route.includes('getWaxcashOgProof(env.DB)') &&
   route.includes('OG parity proof is only available for graffitiking::WAXCASH') &&
   route.includes('og_woe_parity'));
+ok('WAXCASH OG WOE parity proof uses narrow fee_bps loader',
+  route.includes('async function loadWaxcashOgPairRows') &&
+  /async function loadWaxcashOgPairRows[\s\S]*fee_bps, updated_at[\s\S]*FROM waxonedge_pairs[\s\S]*WAXCASH_CONTRACT, WAXCASH_SYMBOL/.test(route) &&
+  route.includes('const pairRows = await loadWaxcashOgPairRows(db)'));
 ok('WAXCASH OG WOE parity proof uses deepest direct WAX pool without stored price or multi-hop headline',
   route.includes('function buildWaxcashOgParityProof') &&
   route.includes('function waxcashHeadlinePrice') &&
@@ -3641,11 +3645,16 @@ ok('WAXCASH OG WOE parity proof uses deepest direct WAX pool without stored pric
 ok('WAXCASH OG WOE parity proof exposes all exact pair rows with unavailable reason codes',
   route.includes('all_pairs: allPairs') &&
   route.includes('rejected_pairs: rejectedPairs') &&
+  route.includes('fee_bps: safeDecimal(asNumber(pair.fee_bps))') &&
   route.includes('pair_price_relative_to_waxcash') &&
   route.includes('pair_liquidity_wax') &&
   route.includes('paired_token_wax_price_unavailable') &&
   route.includes('missing_or_zero_reserves') &&
-  route.includes('exact contract::symbol scoped'));
+  route.includes('exact contract::symbol scoped') &&
+  !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('active_status') &&
+  !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('volume_7d') &&
+  !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('volume_30d') &&
+  !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('fee:'));
 ok('token detail exposes backend metric proof fields without frontend changes',
   route.includes('function tokenMetricProof') &&
   route.includes('selected_price_proof') &&
