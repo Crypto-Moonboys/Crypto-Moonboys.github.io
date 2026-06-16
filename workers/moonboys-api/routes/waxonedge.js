@@ -4749,7 +4749,11 @@ function waxcashHeadlinePrice(pairRows, priceIndex) {
   const selected = alcorSelectedValid ? alcorSelected : fallbackSelected;
   const reasonCodes = selected.reason_codes.slice();
   const fallbackReasonCodes = [];
-  if (!alcorSelectedValid) fallbackReasonCodes.push('alcor_waxcash_direct_pool_missing');
+  if (!alcorSelectedValid) {
+    fallbackReasonCodes.push(alcorCandidates.length
+      ? 'alcor_waxcash_direct_pool_unusable'
+      : 'alcor_waxcash_direct_pool_missing');
+  }
   const waxReserve = asNumber(selected.wax_reserve);
   return {
     og_headline_price_wax: selected.price_wax,
@@ -4767,7 +4771,7 @@ function waxcashHeadlinePrice(pairRows, priceIndex) {
     alcor_direct_wax_candidate_count: alcorCandidates.length,
     alcor_direct_wax_candidate_found: alcorCandidates.length > 0,
     alcor_direct_wax_selected: alcorSelectedValid,
-    alcor_expected_direct_wax_pool_missing: !alcorSelectedValid,
+    alcor_expected_direct_wax_pool_missing: alcorCandidates.length === 0,
     headline_fallback_used: !alcorSelectedValid && asNumber(selected.price_wax) != null,
     headline_fallback_reason_codes: fallbackReasonCodes,
   };

@@ -480,6 +480,13 @@ ok('waxonedge.js blocks weak price, liquidity, and TVL from bubble values',
   js.includes("if (record.tvlConfidence !== 'good') return null") &&
   js.includes("if (confidence === 'weak') return 'Proof weak'") &&
   js.includes('guardedDualMetric(record,'));
+ok('waxonedge.js preserves real zero values in metric fallbacks',
+  js.includes("var liquidity = metricValueForToken(record, 'liquidity');") &&
+  js.includes("return liquidity != null ? liquidity : metricValueForToken(record, 'tvl');") &&
+  js.includes('record.selectedPriceWax != null ? record.selectedPriceWax : record.systemPrice') &&
+  js.includes('record.selectedPriceUsd != null ? record.selectedPriceUsd : record.usdPrice') &&
+  !js.includes('record.selectedPriceWax || record.systemPrice') &&
+  !js.includes('record.selectedPriceUsd || record.usdPrice'));
 ok('waxonedge-bubbles-v2.js blocks weak price, liquidity, and TVL from sizing/display',
   v2Js.includes("if (record.selectedPriceConfidence !== 'good') return null") &&
   v2Js.includes("if (record.liquidityConfidence !== 'good') return null") &&

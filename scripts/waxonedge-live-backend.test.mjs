@@ -3642,6 +3642,8 @@ ok('WAXCASH OG WOE parity proof prefers Alcor direct WAX pool without stored pri
   route.includes('alcor_direct_wax_selected') &&
   route.includes('headline_fallback_used') &&
   route.includes('alcor_waxcash_direct_pool_missing') &&
+  route.includes('alcor_waxcash_direct_pool_unusable') &&
+  route.includes('alcor_expected_direct_wax_pool_missing: alcorCandidates.length === 0') &&
   route.includes('function ogDirectWaxTokenPrice') &&
   route.includes('waxReserve > selected.waxReserve') &&
   route.includes('price_wax = wax_reserve / waxcash_reserve') &&

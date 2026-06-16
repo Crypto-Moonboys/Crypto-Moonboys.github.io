@@ -266,6 +266,13 @@ const waxcashAlcorWax = {
   price: '999999',
   updated_at: '2026-06-16T04:00:00.000Z',
 };
+const waxcashAlcorUnusableWax = {
+  ...waxcashAlcorWax,
+  pair_id: '124741',
+  reserve_a: '0',
+  reserve_b: '119457846.68648227',
+  updated_at: '2026-06-16T04:05:00.000Z',
+};
 const waxcashGooPair = {
   source: 'swap.nefty',
   pair_id: 'WAXCASHGOO',
@@ -420,6 +427,19 @@ ok('WAXCASH OG headline fallback is explicit when Alcor direct pool is missing',
   waxcashNoAlcorProof.headline_price.alcor_expected_direct_wax_pool_missing === true &&
   waxcashNoAlcorProof.headline_price.headline_fallback_used === true &&
   waxcashNoAlcorProof.headline_price.headline_fallback_reason_codes.includes('alcor_waxcash_direct_pool_missing'));
+const waxcashUnusableAlcorProof = __waxonedgeTestHooks.buildWaxcashOgParityProof(
+  [waxcashShallowWax, waxcashDeepWax, waxcashAlcorUnusableWax, waxcashGooPair, waxcashNoRoutePair, waxcashBadReservePair],
+  priceIndex,
+  [gooWaxPair],
+);
+ok('WAXCASH OG headline fallback distinguishes unusable Alcor direct pool from missing',
+  waxcashUnusableAlcorProof.headline_price.og_headline_price_pair_id === 'WAXCASHWAX150' &&
+  waxcashUnusableAlcorProof.headline_price.alcor_direct_wax_candidate_found === true &&
+  waxcashUnusableAlcorProof.headline_price.alcor_direct_wax_selected === false &&
+  waxcashUnusableAlcorProof.headline_price.alcor_expected_direct_wax_pool_missing === false &&
+  waxcashUnusableAlcorProof.headline_price.headline_fallback_used === true &&
+  waxcashUnusableAlcorProof.headline_price.headline_fallback_reason_codes.includes('alcor_waxcash_direct_pool_unusable') &&
+  !waxcashUnusableAlcorProof.headline_price.headline_fallback_reason_codes.includes('alcor_waxcash_direct_pool_missing'));
 const waxcashNoWaxProof = __waxonedgeTestHooks.buildWaxcashOgParityProof([waxcashGooPair], priceIndex, [gooWaxPair]);
 ok('missing WAXCASH direct WAX pool returns unavailable null, not fake zero',
   waxcashNoWaxProof.headline_price.og_headline_price_wax === null &&

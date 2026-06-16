@@ -1291,7 +1291,8 @@
     }
     if (metric === 'volume') return record.volume24 != null ? record.volume24 : null;
     if (metric === 'pairs') return record.pairCount != null ? record.pairCount : null;
-    return metricValueForToken(record, 'liquidity') != null ? metricValueForToken(record, 'liquidity') : metricValueForToken(record, 'tvl');
+    var liquidity = metricValueForToken(record, 'liquidity');
+    return liquidity != null ? liquidity : metricValueForToken(record, 'tvl');
   }
 
   function metricConfidenceFrom(row, metricName) {
@@ -1309,7 +1310,14 @@
       : record.liquidityConfidence;
     if (confidence === 'weak') return 'Proof weak';
     if (confidence !== 'good') return UNAVAILABLE_TEXT;
-    if (metric === 'price') return formatDualMetric(record.selectedPriceWax || record.systemPrice, record.selectedPriceUsd || record.usdPrice, 'WAX', '$');
+    if (metric === 'price') {
+      return formatDualMetric(
+        record.selectedPriceWax != null ? record.selectedPriceWax : record.systemPrice,
+        record.selectedPriceUsd != null ? record.selectedPriceUsd : record.usdPrice,
+        'WAX',
+        '$'
+      );
+    }
     if (metric === 'tvl') return formatDualMetric(record.tvlWax, record.tvlUsd);
     return formatDualMetric(record.liquidityWax, record.liquidityUsd);
   }
