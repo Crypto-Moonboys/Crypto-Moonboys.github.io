@@ -237,6 +237,7 @@ const waxcashShallowWax = {
   reserve_a: '100000',
   reserve_b: '50',
   fee_bps: '25',
+  volume_24h: '12',
   liquidity_wax: '999999',
   liquidity_usd: '999999',
   updated_at: '2026-06-16T00:00:00.000Z',
@@ -321,11 +322,27 @@ ok('WAXCASH pair list includes all exact graffitiking::WAXCASH pairs only',
   waxcashProof.all_pairs.length === 5 &&
   waxcashProof.all_pairs.some((pair) => pair.pair_id === 'WAXCASHGOO') &&
   !waxcashProof.all_pairs.some((pair) => pair.pair_id === 'WRONGWAXCASH'));
+ok('WAXCASH direct WAX pair rows report WAX paired-token price as 1',
+  waxcashProof.all_pairs
+    .filter((pair) => pair.direct_wax_pair && pair.paired_token?.key === 'eosio.token::WAX')
+    .every((pair) => pair.paired_token_og_wax_price === '1'));
+ok('WAXCASH direct WAX pair rows do not report WAX paired-token unavailable',
+  waxcashProof.all_pairs
+    .filter((pair) => pair.direct_wax_pair && pair.paired_token?.key === 'eosio.token::WAX')
+    .every((pair) => !pair.reason_codes.includes('paired_token_wax_price_unavailable')));
+ok('WAXCASH direct WAX pair liquidity still uses WAX-side reserve',
+  waxcashProof.all_pairs.some((pair) => pair.pair_id === 'WAXCASHWAX50' && pair.pair_liquidity_wax === '100') &&
+  waxcashProof.all_pairs.some((pair) => pair.pair_id === 'WAXCASHWAX150' && pair.pair_liquidity_wax === '300'));
 ok('WAXCASH OG proof pair rows expose fee_bps without duplicate fee field',
   waxcashProof.all_pairs.some((pair) =>
     pair.pair_id === 'WAXCASHWAX50' &&
     pair.fee_bps === '25' &&
     !Object.prototype.hasOwnProperty.call(pair, 'fee')));
+ok('WAXCASH OG proof pair rows keep only sourced 24h volume fields',
+  waxcashProof.all_pairs.some((pair) => pair.pair_id === 'WAXCASHWAX50' && pair.volume_24h === '12') &&
+  waxcashProof.all_pairs.some((pair) =>
+    pair.pair_id === 'WAXCASHGOO' &&
+    !Object.prototype.hasOwnProperty.call(pair, 'volume_24h')));
 ok('WAXCASH OG proof pair rows omit unsourced active and 7d/30d pair volume fields',
   waxcashProof.all_pairs.every((pair) =>
     !Object.prototype.hasOwnProperty.call(pair, 'active_status') &&
@@ -339,11 +356,31 @@ ok('non-WAX pair WAX value is unavailable when paired token lacks OG WAX price',
     pair.pair_id === 'WAXCASHNOROUTE' &&
     pair.pair_liquidity_wax === null &&
     pair.reason_codes.includes('paired_token_wax_price_unavailable')));
+ok('non-WAX pair with direct OG WAX price contributes computed pair liquidity',
+  waxcashProof.all_pairs.some((pair) =>
+    pair.pair_id === 'WAXCASHGOO' &&
+    almostEqual(pair.pair_liquidity_wax, 40.15) &&
+    pair.reason_codes.length === 0));
 ok('zero reserves are rejected in WAXCASH OG proof rows',
   waxcashProof.all_pairs.some((pair) =>
     pair.pair_id === 'WAXCASHBAD' &&
     pair.pair_liquidity_wax === null &&
     pair.reason_codes.includes('missing_or_zero_reserves')));
+ok('WAXCASH OG proof includes valued versus unvalued pair summary counts',
+  waxcashProof.pair_summary &&
+  waxcashProof.pair_summary.total_pairs === waxcashProof.all_pairs.length &&
+  waxcashProof.pair_summary.direct_wax_pair_count === 3 &&
+  waxcashProof.pair_summary.non_wax_pair_count === 2 &&
+  waxcashProof.pair_summary.valued_pair_count === 3 &&
+  waxcashProof.pair_summary.unvalued_pair_count === 2);
+ok('WAXCASH OG proof pair summary counts unavailable reason codes',
+  waxcashProof.pair_summary.unavailable_reason_counts.paired_token_wax_price_unavailable === 1 &&
+  waxcashProof.pair_summary.unavailable_reason_counts.missing_or_zero_reserves === 1);
+ok('WAXCASH OG proof pair summary sums computed liquidity only',
+  almostEqual(waxcashProof.pair_summary.total_pair_liquidity_wax, 440.15) &&
+  almostEqual(waxcashProof.pair_summary.total_pair_liquidity_usd, 2.6409) &&
+  waxcashProof.pair_summary.total_pair_liquidity_wax !== waxcashShallowWax.liquidity_wax &&
+  waxcashProof.pair_summary.total_pair_liquidity_usd !== waxcashShallowWax.liquidity_usd);
 const waxcashNoWaxProof = __waxonedgeTestHooks.buildWaxcashOgParityProof([waxcashGooPair], priceIndex, [gooWaxPair]);
 ok('missing WAXCASH direct WAX pool returns unavailable null, not fake zero',
   waxcashNoWaxProof.headline_price.og_headline_price_wax === null &&
