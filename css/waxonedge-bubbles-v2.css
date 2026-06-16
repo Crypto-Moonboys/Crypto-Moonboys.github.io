@@ -15,18 +15,11 @@ body.woe-antbubbles-page {
 body.woe-antbubbles-page {
   position: fixed;
   inset: 0;
-  background: transparent !important;
   color: #fff;
 }
 
 .woe-antbubbles-page::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, .16), transparent 24%, transparent 72%, rgba(0, 0, 0, .18));
-  pointer-events: none;
+  content: none;
 }
 
 .woe-antbubbles-page #site-footer,

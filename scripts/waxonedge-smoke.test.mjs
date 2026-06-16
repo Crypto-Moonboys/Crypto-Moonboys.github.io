@@ -328,7 +328,8 @@ ok('waxonedge-bubbles-v2.js adds live WAX Galaxy reactions without camera jumps'
   v2Js.includes('function sceneBounds(width, height, radius)') &&
   v2Js.includes('function clampNodeToBounds(node, width, height)') &&
   v2Js.includes('driftPhaseX') &&
-  v2Js.includes('driftDirection') &&
+  v2Js.includes('driftAngle') &&
+  v2Js.includes('movementEvent') &&
   v2Js.includes('node.vx *= 0.965') &&
   v2Js.includes("displayValueForMetric(record, 'volume', '24h')") &&
   v2Js.includes('function displayValueForMetric(record, metric, timeframeOverride)') &&
@@ -345,6 +346,37 @@ ok('waxonedge-bubbles-v2.js adds live WAX Galaxy reactions without camera jumps'
   v2Js.includes('Fresh history building') &&
   v2Js.includes('safeTimeLabel') &&
   !v2Js.includes('Invalid Date'));
+
+const movementEventSection = (v2Js.match(/var MOVEMENT_EVENT_TABLE = \[([\s\S]*?)\];/) || [null, ''])[1];
+const movementMessageSection = (v2Js.match(/function movementEventMessage[\s\S]*?function pushShockwave/) || [''])[0];
+ok('waxonedge-bubbles-v2.js includes visual-only 1-100 random movement event table',
+  v2Js.includes('var MOVEMENT_EVENT_TABLE = [') &&
+  v2Js.includes("min: 1, max: 45, event: 'normal_drift'") &&
+  v2Js.includes("min: 46, max: 60, event: 'soft_bounce'") &&
+  v2Js.includes("min: 61, max: 72, event: 'orbit_wobble'") &&
+  v2Js.includes("min: 73, max: 82, event: 'pulse_drift'") &&
+  v2Js.includes("min: 83, max: 90, event: 'magnetic_repel'") &&
+  v2Js.includes("min: 91, max: 95, event: 'whale_pulse'") &&
+  v2Js.includes("min: 96, max: 98, event: 'shockwave'") &&
+  v2Js.includes("min: 99, max: 99, event: 'bonus_surge'") &&
+  v2Js.includes("min: 100, max: 100, event: 'mega_event'") &&
+  v2Js.includes('function rollMovementEvent') &&
+  v2Js.includes('6000 + seededUnit') &&
+  v2Js.includes('* 8000') &&
+  v2Js.includes('movementRoll') &&
+  v2Js.includes('movementEvent') &&
+  v2Js.includes('eventUntil') &&
+  v2Js.includes('driftAngle') &&
+  v2Js.includes('driftSpeed') &&
+  v2Js.includes('shockwaveUntil') &&
+  v2Js.includes('lastCollisionAt') &&
+  v2Js.includes('nearbyRepelUntil'));
+ok('waxonedge movement events are visual-only and avoid prize/trading language',
+  movementEventSection.includes('bonus_surge') &&
+  movementEventSection.includes('mega_event') &&
+  movementMessageSection.includes('Bonus surge visual') &&
+  movementMessageSection.includes('Mega visual event') &&
+  !/wallet|trading|trade|swap|win|wins|prize|payout|jackpot/i.test(movementEventSection + movementMessageSection));
 ok('waxonedge-bubbles-v2.js pauses animation when hidden and respects reduced motion',
   v2Js.includes("window.matchMedia('(prefers-reduced-motion: reduce)'") &&
   v2Js.includes('function shouldAnimate()') &&
@@ -559,8 +591,12 @@ ok('waxonedge-bubbles-v2.css renders a page-wide transparent galaxy instead of a
   v2Css.includes('animation: woe-ab-ticker 120s linear infinite') &&
   v2Css.includes('grid-template-columns: minmax(390px, auto) minmax(260px, 1fr) auto') &&
   v2Css.includes('mask-image: linear-gradient') &&
-  v2Css.includes('background: transparent !important') &&
+  /body\.woe-antbubbles-page\s*\{[^}]*position:\s*fixed;[^}]*inset:\s*0;[^}]*color:\s*#fff;[^}]*\}/.test(v2Css) &&
+  !/body\.woe-antbubbles-page\s*\{[^}]*background:/.test(v2Css) &&
+  v2Css.includes('background: transparent;') &&
   !v2Css.includes('#020008') &&
+  !v2Js.includes('ctx.fillRect(0, 0, width, height)') &&
+  !v2Js.includes('ctx.createRadialGradient(width * 0.5') &&
   !v2Css.includes('right: 14px;\n  bottom: 48px') &&
   !v2Css.includes('display: grid;\n  gap: 7px'));
 ok('waxonedge-bubbles-v2.css includes responsive scanner support',
