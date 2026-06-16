@@ -3622,6 +3622,30 @@ ok('token debug exposes all-pair aggregate contribution totals',
   route.includes('total_tvl_wax') &&
   route.includes('total_tvl_usd') &&
   route.includes('unresolved_pair_count'));
+ok('WAXCASH OG WOE parity proof endpoint is narrow and exact-token scoped',
+  route.includes("const WAXCASH_CONTRACT = 'graffitiking'") &&
+  route.includes("const WAXCASH_SYMBOL = 'WAXCASH'") &&
+  route.includes("child === 'og-proof'") &&
+  route.includes('getWaxcashOgProof(env.DB)') &&
+  route.includes('OG parity proof is only available for graffitiking::WAXCASH') &&
+  route.includes('og_woe_parity'));
+ok('WAXCASH OG WOE parity proof uses deepest direct WAX pool without stored price or multi-hop headline',
+  route.includes('function buildWaxcashOgParityProof') &&
+  route.includes('function waxcashHeadlinePrice') &&
+  route.includes('function ogDirectWaxTokenPrice') &&
+  route.includes('waxReserve > selected.waxReserve') &&
+  route.includes('price_wax = wax_reserve / waxcash_reserve') &&
+  route.includes('og_headline_passes_100_wax_threshold') &&
+  route.includes('Stored pair.price, TVL, market cap, volume, and multi-hop routes are not headline-price inputs') &&
+  !route.slice(route.indexOf('function waxcashHeadlinePrice'), route.indexOf('function buildWaxcashOgParityProof')).includes('pair.price'));
+ok('WAXCASH OG WOE parity proof exposes all exact pair rows with unavailable reason codes',
+  route.includes('all_pairs: allPairs') &&
+  route.includes('rejected_pairs: rejectedPairs') &&
+  route.includes('pair_price_relative_to_waxcash') &&
+  route.includes('pair_liquidity_wax') &&
+  route.includes('paired_token_wax_price_unavailable') &&
+  route.includes('missing_or_zero_reserves') &&
+  route.includes('exact contract::symbol scoped'));
 ok('token detail exposes backend metric proof fields without frontend changes',
   route.includes('function tokenMetricProof') &&
   route.includes('selected_price_proof') &&
