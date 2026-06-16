@@ -12,8 +12,13 @@
   var LIVE_API = '/api/waxonedge/live';
   var LIVE_STREAM_API = '/api/waxonedge/live/stream';
   var LIVE_POLL_MS = 10000;
-  var WAX_KEY = tokenKey('eosio.token', 'WAX');
-  var TOP_LIMIT = 100;
+  var WAXONEDGE_FEATURED_TOKENS = Array.isArray(window.WAXONEDGE_FEATURED_TOKENS)
+    ? window.WAXONEDGE_FEATURED_TOKENS
+    : [];
+  var WAXONEDGE_FEATURED_TOKEN_MAP = WAXONEDGE_FEATURED_TOKENS.reduce(function (acc, token) {
+    acc[token.key] = token;
+    return acc;
+  }, {});
   var METRIC_LABELS = {
     change: '% Change',
     price: 'Price',
@@ -67,6 +72,7 @@
     selected: null,
     shockwaves: [],
     liveFeed: [],
+    missingFeaturedLogged: {},
     lastImpactAt: 0,
     camera: {
       offsetX: 0,
@@ -236,12 +242,57 @@
   function tokenSearchText(record) {
     return [
       record.symbol,
+      record.displaySymbol,
       record.contract,
       record.selectedSource,
       record.selectedPair,
       record.strongestPairLabel,
       record.sources.join(' '),
     ].join(' ').toLowerCase();
+  }
+
+  function pairDerivedRecord(featured, key) {
+    var parts = String(key || '').split('::');
+    var contract = normalizeContract(parts[0]);
+    var symbol = normalizeSymbol(parts[1]);
+    return {
+      id: key,
+      key: key,
+      symbol: symbol,
+      displaySymbol: featured.label,
+      contract: contract,
+      logoUrl: '',
+      selectedPriceWax: null,
+      selectedPriceUsd: null,
+      change24: null,
+      change7d: null,
+      change30d: null,
+      volume24Wax: null,
+      volume24Usd: null,
+      volume7dWax: null,
+      volume7dUsd: null,
+      volume30dWax: null,
+      volume30dUsd: null,
+      liquidityWax: null,
+      liquidityUsd: null,
+      tvlWax: null,
+      tvlUsd: null,
+      marketCapWax: null,
+      marketCapUsd: null,
+      fdvWax: null,
+      fdvUsd: null,
+      supply: '',
+      selectedPair: '',
+      selectedSource: '',
+      sourceCount: 0,
+      indexedPairCount: 0,
+      computedPairCount: 0,
+      sourcesMap: {},
+      sources: [],
+      strongestPair: null,
+      strongestPairLabel: '',
+      unavailableReasons: '',
+    };
   }
 
   function valueForMetric(record, metric, timeframe) {
@@ -437,12 +488,14 @@
       var symbol = normalizeSymbol(token.symbol || token.id);
       var contract = normalizeContract(token.contract);
       var key = tokenKey(contract, symbol);
-      if (!key || key === WAX_KEY) return;
+      var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key];
+      if (!key || !featured) return;
       var sources = parseSourceKeys(token.source_keys || token.sourceKeys || token.sources);
       byKey[key] = {
         id: key,
         key: key,
         symbol: symbol,
+        displaySymbol: featured.label,
         contract: contract,
         logoUrl: token.icon_url || token.logo || token.image || '',
         selectedPriceWax: asNum(token.selected_price_wax || token.price_wax),
@@ -480,46 +533,10 @@
 
     pairs.forEach(function (pair) {
       pairKeys(pair).forEach(function (key) {
-        if (key === WAX_KEY) return;
+        var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key];
+        if (!featured) return;
         if (!byKey[key]) {
-          var sideA = key === tokenKey(pair.token_a_contract, pair.token_a_symbol);
-          byKey[key] = {
-            id: key,
-            key: key,
-            symbol: normalizeSymbol(sideA ? pair.token_a_symbol : pair.token_b_symbol),
-            contract: normalizeContract(sideA ? pair.token_a_contract : pair.token_b_contract),
-            logoUrl: '',
-            selectedPriceWax: null,
-            selectedPriceUsd: null,
-            change24: null,
-            change7d: null,
-            change30d: null,
-            volume24Wax: null,
-            volume24Usd: null,
-            volume7dWax: null,
-            volume7dUsd: null,
-            volume30dWax: null,
-            volume30dUsd: null,
-            liquidityWax: null,
-            liquidityUsd: null,
-            tvlWax: null,
-            tvlUsd: null,
-            marketCapWax: null,
-            marketCapUsd: null,
-            fdvWax: null,
-            fdvUsd: null,
-            supply: '',
-            selectedPair: '',
-            selectedSource: '',
-            sourceCount: 0,
-            indexedPairCount: 0,
-            computedPairCount: 0,
-            sourcesMap: {},
-            sources: [],
-            strongestPair: null,
-            strongestPairLabel: '',
-            unavailableReasons: '',
-          };
+          byKey[key] = pairDerivedRecord(featured, key);
         }
         var record = byKey[key];
         var source = pairSourceKey(pair);
@@ -529,8 +546,16 @@
       });
     });
 
-    return Object.keys(byKey).map(function (key) {
-      var record = byKey[key];
+    return WAXONEDGE_FEATURED_TOKENS.map(function (featured) {
+      var record = byKey[featured.key];
+      if (!record) {
+        if (!state.missingFeaturedLogged[featured.key]) {
+          state.missingFeaturedLogged[featured.key] = true;
+          // eslint-disable-next-line no-console
+          console.debug('missing_featured_token', featured.key);
+        }
+        return null;
+      }
       record.sources = Object.keys(record.sourcesMap).sort(compareSources);
       record.sourceCount = Math.max(record.sourceCount || 0, record.sources.length);
       record.indexedPairCount = Math.max(record.indexedPairCount || 0, record.computedPairCount || 0);
@@ -545,7 +570,7 @@
         Math.log10(1 + (record.volume24Usd || record.volume24Wax || 0)) * 700;
       return record;
     }).filter(function (record) {
-      return record.key !== WAX_KEY && (record.indexedPairCount > 0 || record.selectedPriceWax != null || record.selectedPriceUsd != null);
+      return record;
     });
   }
 
@@ -562,10 +587,7 @@
       if (bv !== av && av != null && bv != null) return Math.abs(bv) - Math.abs(av);
       return b.score - a.score;
     });
-    if (!query) {
-      base = base.filter(function (record) { return record.indexedPairCount > 0; });
-    }
-    return base.slice(0, TOP_LIMIT).map(function (record, index) {
+    return base.map(function (record, index) {
       record.rank = index + 1;
       return record;
     });
@@ -849,14 +871,14 @@
   function liveMessageForUpdate(record, update, previousVolume, nextVolume, previousChange) {
     var type = String(update.event_type || update.type || update.reason || '').toLowerCase();
     if (type.indexOf('whale') !== -1 || update.whale === true || update.is_whale === true) {
-      return 'Whale/high-volume update detected for ' + record.symbol + ' from live indexer data';
+      return 'Whale/high-volume update detected for ' + (record.displaySymbol || record.symbol) + ' from live indexer data';
     }
     if (isVolumeSpike(previousVolume, nextVolume)) {
-      return 'Volume spike: ' + record.symbol + ' 24h volume moved to ' + displayValueForMetric(record, 'volume', '24h');
+      return 'Volume spike: ' + (record.displaySymbol || record.symbol) + ' 24h volume moved to ' + displayValueForMetric(record, 'volume', '24h');
     }
     var change = asNum(record.change24);
-    if (change != null && previousChange !== change) return 'Top mover update: ' + record.symbol + ' now ' + fmtPct(change);
-    return 'Fresh history building: ' + record.symbol + ' updated from WaxOnEdge live data';
+    if (change != null && previousChange !== change) return 'Top mover update: ' + (record.displaySymbol || record.symbol) + ' now ' + fmtPct(change);
+    return 'Fresh history building: ' + (record.displaySymbol || record.symbol) + ' updated from WaxOnEdge live data';
   }
 
   function displayValueForMetric(record, metric, timeframeOverride) {
@@ -875,7 +897,7 @@
   function addLiveFeed(message, record) {
     state.liveFeed.unshift({
       message: message,
-      symbol: record.symbol,
+      symbol: record.displaySymbol || record.symbol,
       color: ringColor(record),
       time: Date.now(),
     });
@@ -948,10 +970,10 @@
 
   function movementEventMessage(node, entry) {
     if (!node.record) return null;
-    if (entry.event === 'mega_event') return 'Mega visual event: ' + node.record.symbol + ' galaxy shockwave';
-    if (entry.event === 'bonus_surge') return 'Bonus surge visual: ' + node.record.symbol + ' drift pulse';
-    if (entry.event === 'shockwave') return 'Shockwave visual: ' + node.record.symbol + ' pushed nearby bubbles';
-    if (entry.event === 'whale_pulse' && isWhaleVisualNode(node)) return 'Whale pulse visual: ' + node.record.symbol + ' glow expanded';
+    if (entry.event === 'mega_event') return 'Mega visual event: ' + (node.record.displaySymbol || node.record.symbol) + ' galaxy shockwave';
+    if (entry.event === 'bonus_surge') return 'Bonus surge visual: ' + (node.record.displaySymbol || node.record.symbol) + ' drift pulse';
+    if (entry.event === 'shockwave') return 'Shockwave visual: ' + (node.record.displaySymbol || node.record.symbol) + ' pushed nearby bubbles';
+    if (entry.event === 'whale_pulse' && isWhaleVisualNode(node)) return 'Whale pulse visual: ' + (node.record.displaySymbol || node.record.symbol) + ' glow expanded';
     return null;
   }
 
@@ -1191,7 +1213,7 @@
     var record = node.record;
     var r = Math.round(visualRadius(node));
     var img = imageCache.get(record.logoUrl);
-    var key = [r, state.metric, state.timeframe, displayValue(record), record.symbol, record.sourceCount, ringColor(record), img ? 1 : 0, dpr].join('|');
+    var key = [r, state.metric, state.timeframe, displayValue(record), record.displaySymbol || record.symbol, record.sourceCount, ringColor(record), img ? 1 : 0, dpr].join('|');
     var cached = bubbleCanvasCache.get(record.id);
     if (cached && cached.key === key) {
       bubbleCanvasCache.delete(record.id);
@@ -1265,10 +1287,11 @@
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.font = '900 ' + Math.max(10, r * 0.35) + 'px Inter, Arial, sans-serif';
-      ctx.fillText(record.symbol.slice(0, r > 30 ? 5 : 2), 0, showText ? -r * 0.28 : 0);
+      ctx.fillText((record.displaySymbol || record.symbol).slice(0, r > 30 ? 5 : 2), 0, showText ? -r * 0.28 : 0);
     }
     if (showText) {
-      var symSize = textFit(ctx, record.symbol, r * 1.48, Math.min(30, Math.max(11, r * 0.31)), 8);
+      var symbolLabel = record.displaySymbol || record.symbol;
+      var symSize = textFit(ctx, symbolLabel, r * 1.48, Math.min(30, Math.max(11, r * 0.31)), 8);
       ctx.font = '900 ' + symSize + 'px Inter, Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -1277,8 +1300,8 @@
       ctx.strokeStyle = 'rgba(0,0,0,.72)';
       ctx.shadowColor = 'rgba(0,0,0,.9)';
       ctx.shadowBlur = Math.max(4, r * 0.08);
-      ctx.strokeText(record.symbol, 0, img ? r * 0.05 : -r * 0.02);
-      ctx.fillText(record.symbol, 0, img ? r * 0.05 : -r * 0.02);
+      ctx.strokeText(symbolLabel, 0, img ? r * 0.05 : -r * 0.02);
+      ctx.fillText(symbolLabel, 0, img ? r * 0.05 : -r * 0.02);
       if (r > 36) {
         var valueSize = Math.max(8, Math.min(15, r * 0.16));
         ctx.font = '700 ' + valueSize + 'px Inter, Arial, sans-serif';
@@ -1534,7 +1557,7 @@
     state.tooltip.hidden = false;
     state.tooltip.style.left = event.clientX + 14 + 'px';
     state.tooltip.style.top = event.clientY + 14 + 'px';
-    state.tooltip.innerHTML = '<strong>' + escHtml(record.symbol) + '</strong>' +
+    state.tooltip.innerHTML = '<strong>' + escHtml(record.displaySymbol || record.symbol) + '</strong>' +
       '<span>' + escHtml(record.contract) + '</span>' +
       '<span>' + escHtml(displayValue(record)) + ' / ' + escHtml(fmtPct(record.change24)) + '</span>' +
       '<span>' + escHtml(record.sourceCount + ' source(s), ' + record.indexedPairCount + ' pair(s)') + '</span>' +
@@ -1708,11 +1731,11 @@
       '<span class="woe-ab-up">? ' + escHtml(String(gainers)) + '</span>' +
       '<span class="woe-ab-down">? ' + escHtml(String(losers)) + '</span>' +
       '<span>Vol 24h <strong>' + escHtml(fmtNum(volume)) + '</strong></span>' +
-      '<span>Top <strong class="woe-ab-up">' + escHtml(topGainer ? topGainer.symbol + ' ' + fmtPct(topGainer.change24) : 'Not indexed') + '</strong></span>' +
-      '<span>Bot <strong class="woe-ab-down">' + escHtml(topLoser ? topLoser.symbol + ' ' + fmtPct(topLoser.change24) : 'Not indexed') + '</strong></span>' +
+      '<span>Top <strong class="woe-ab-up">' + escHtml(topGainer ? (topGainer.displaySymbol || topGainer.symbol) + ' ' + fmtPct(topGainer.change24) : 'Not indexed') + '</strong></span>' +
+      '<span>Bot <strong class="woe-ab-down">' + escHtml(topLoser ? (topLoser.displaySymbol || topLoser.symbol) + ' ' + fmtPct(topLoser.change24) : 'Not indexed') + '</strong></span>' +
       '<span>Sources <strong>' + escHtml(String(Object.keys(sources).length)) + '</strong></span>' +
       '<span>' + escHtml(candleStatus) + '</span>' +
-      '<span>All-pairs WAX valuation model</span>' +
+      '<span>Featured tokens only</span>' +
       '</span>' +
       '<span id="woe-ab-live-feed" class="woe-ab-live-feed" aria-live="polite" aria-label="Live WaxOnEdge market feed"></span>' +
       '<span class="woe-ab-credit">Powered by WaxOnEdge multi-DEX indexer</span>';

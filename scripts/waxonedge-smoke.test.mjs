@@ -43,6 +43,7 @@ ok('css/waxonedge.css exists', exists('css/waxonedge.css'));
 ok('css/waxonedge-bubbles-v2.css exists', exists('css/waxonedge-bubbles-v2.css'));
 ok('js/waxonedge.js exists', exists('js/waxonedge.js'));
 ok('js/waxonedge-sources.js exists', exists('js/waxonedge-sources.js'));
+ok('js/waxonedge-featured-tokens.js exists', exists('js/waxonedge-featured-tokens.js'));
 ok('js/waxonedge-bubbles-v2.js exists', exists('js/waxonedge-bubbles-v2.js'));
 
 const html = exists('waxonedge.html') ? read('waxonedge.html') : '';
@@ -52,6 +53,7 @@ const css = exists('css/waxonedge.css') ? read('css/waxonedge.css') : '';
 const v2Css = exists('css/waxonedge-bubbles-v2.css') ? read('css/waxonedge-bubbles-v2.css') : '';
 const js = exists('js/waxonedge.js') ? read('js/waxonedge.js') : '';
 const sourcesJs = exists('js/waxonedge-sources.js') ? read('js/waxonedge-sources.js') : '';
+const featuredJs = exists('js/waxonedge-featured-tokens.js') ? read('js/waxonedge-featured-tokens.js') : '';
 const v2Js = exists('js/waxonedge-bubbles-v2.js') ? read('js/waxonedge-bubbles-v2.js') : '';
 
 ok('waxonedge.html references /css/waxonedge.css', html.includes('/css/waxonedge.css'));
@@ -59,10 +61,23 @@ ok('waxonedge.html references /css/waxonedge-bubbles-v2.css', html.includes('/cs
 ok('waxonedge.html lets the AntBubbles scanner own the page without old dashboard scripts',
   !html.includes('/js/waxonedge.js') && !html.includes('/js/waxonedge-sources.js'));
 ok('waxonedge.html references /js/waxonedge-bubbles-v2.js', html.includes('/js/waxonedge-bubbles-v2.js'));
+ok('waxonedge.html loads featured-token config before scanner runtime',
+  html.indexOf('/js/waxonedge-featured-tokens.js') !== -1 &&
+  html.indexOf('/js/waxonedge-featured-tokens.js') < html.indexOf('/js/waxonedge-bubbles-v2.js'));
+ok('analytics token page loads featured-token config before waxonedge.js',
+  tokenHtml.indexOf('/js/waxonedge-featured-tokens.js') !== -1 &&
+  tokenHtml.indexOf('/js/waxonedge-featured-tokens.js') < tokenHtml.indexOf('/js/waxonedge.js'));
 ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles',
   html.includes('/css/waxonedge.css?v=woe-') &&
   html.includes('/css/waxonedge-bubbles-v2.css?v=woe-') &&
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
+ok('featured-token PR cache-busts changed WaxOnEdge scanner assets',
+  html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260616-featured') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260615-galaxy3'));
+ok('featured-token PR cache-busts changed token analytics assets',
+  tokenHtml.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
+  tokenHtml.includes('/js/waxonedge.js?v=woe-20260616-featured'));
 ok('waxonedge clean-route alias redirects to /waxonedge.html', aliasHtml.includes('url=/waxonedge.html'));
 ok('waxonedge clean-route alias preserves query-string routing', aliasHtml.includes("window.location.search || ''"));
 ok('waxonedge clean-route alias preserves hash routing', aliasHtml.includes("window.location.hash || ''"));
@@ -111,6 +126,13 @@ try {
   ok('js/waxonedge-sources.js passes node --check', true);
 } catch (error) {
   ok('js/waxonedge-sources.js passes node --check', false, error.message);
+}
+
+try {
+  execFileSync(process.execPath, ['--check', path.join(ROOT, 'js/waxonedge-featured-tokens.js')], { encoding: 'utf8' });
+  ok('js/waxonedge-featured-tokens.js passes node --check', true);
+} catch (error) {
+  ok('js/waxonedge-featured-tokens.js passes node --check', false, error.message);
 }
 
 try {
@@ -223,15 +245,15 @@ ok('waxonedge-bubbles-v2.js preserves distinct indexed source keys',
   v2Js.includes("if (source === 'swap.taco') return 'swap.taco';") &&
   v2Js.includes("if (source === 'swap.nefty') return 'swap.nefty';") &&
   v2Js.includes("if (source === 'swap.box') return 'swap.box';"));
-ok('waxonedge-bubbles-v2.js selects Top 100 using multi-DEX aggregate fields',
-  v2Js.includes('var TOP_LIMIT = 100') &&
+ok('waxonedge-bubbles-v2.js selects featured tokens using multi-DEX aggregate fields',
+  featuredJs.includes('window.WAXONEDGE_FEATURED_TOKENS = [') &&
   v2Js.includes('selected_price_wax') &&
   v2Js.includes('selected_price_usd') &&
   v2Js.includes('source_count') &&
   v2Js.includes('indexed_pair_count') &&
   v2Js.includes('selected_pair_source') &&
   v2Js.includes('source_keys') &&
-  v2Js.includes('return base.slice(0, TOP_LIMIT)'));
+  v2Js.includes('return base.map(function (record, index)'));
 ok('WaxOnEdge keeps missing 7d/30d/candle data honest instead of fake',
   v2Js.includes('No indexed 7D volume') &&
   v2Js.includes('No indexed 30D volume') &&
@@ -251,11 +273,50 @@ ok('WaxOnEdge keeps missing 7d/30d/candle data honest instead of fake',
   !js.includes('hardcoded WUF'));
 ok('waxonedge-bubbles-v2.js filters search by symbol, contract, source, and pair labels',
   v2Js.includes('function tokenSearchText') &&
+  v2Js.includes('record.displaySymbol') &&
   v2Js.includes('record.symbol') &&
   v2Js.includes('record.contract') &&
   v2Js.includes('record.selectedSource') &&
   v2Js.includes('record.strongestPairLabel') &&
   v2Js.includes('record.sources.join'));
+ok('WaxOnEdge featured-token allowlist is defined in one shared config file',
+  featuredJs.includes('window.WAXONEDGE_FEATURED_TOKENS = [') &&
+  featuredJs.includes("['AIGOD', 'aigodtokenwx', 'AIGOD']") &&
+  featuredJs.includes("['WAXP', 'eosio.token', 'WAX']") &&
+  !js.includes("['AIGOD', 'aigodtokenwx', 'AIGOD']") &&
+  !v2Js.includes("['AIGOD', 'aigodtokenwx', 'AIGOD']") &&
+  !js.includes("['WAXP', 'eosio.token', 'WAX']") &&
+  !v2Js.includes("['WAXP', 'eosio.token', 'WAX']"));
+ok('waxonedge-bubbles-v2.js renders featured token allowlist only from shared config',
+  v2Js.includes('Array.isArray(window.WAXONEDGE_FEATURED_TOKENS)') &&
+  v2Js.includes('? window.WAXONEDGE_FEATURED_TOKENS') &&
+  v2Js.includes('var WAXONEDGE_FEATURED_TOKEN_MAP = WAXONEDGE_FEATURED_TOKENS.reduce') &&
+  v2Js.includes('var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&
+  v2Js.includes('if (!key || !featured) return;') &&
+  v2Js.includes('if (!featured) return;') &&
+  v2Js.includes('state.missingFeaturedLogged[featured.key]') &&
+  v2Js.includes("console.debug('missing_featured_token', featured.key)") &&
+  !v2Js.includes('var TOP_LIMIT = 100') &&
+  !v2Js.includes('base.slice(0, TOP_LIMIT)'));
+ok('waxonedge-bubbles-v2.js creates pair-only featured records from exact allowlisted pair keys',
+  v2Js.includes('function pairDerivedRecord(featured, key)') &&
+  v2Js.includes('var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&
+  v2Js.includes('if (!featured) return;') &&
+  v2Js.includes('byKey[key] = pairDerivedRecord(featured, key)') &&
+  v2Js.includes('displaySymbol: featured.label') &&
+  v2Js.includes('computedPairCount: 0') &&
+  v2Js.includes('strongestPair: null') &&
+  v2Js.includes('record.searchText = tokenSearchText(record)'));
+ok('waxonedge-bubbles-v2.js pair-only featured records do not fake price, TVL, liquidity, or volume',
+  /function pairDerivedRecord\(featured, key\)[\s\S]*selectedPriceWax: null[\s\S]*selectedPriceUsd: null[\s\S]*volume24Wax: null[\s\S]*volume24Usd: null[\s\S]*liquidityWax: null[\s\S]*liquidityUsd: null[\s\S]*tvlWax: null[\s\S]*tvlUsd: null/.test(v2Js) &&
+  /function pairDerivedRecord\(featured, key\)[\s\S]*volume7dWax: null[\s\S]*volume7dUsd: null[\s\S]*volume30dWax: null[\s\S]*volume30dUsd: null/.test(v2Js));
+ok('waxonedge-bubbles-v2.js keeps modes and search scoped to featured tokens without fake metric zeroes',
+  /function rankedRecords\(\)[\s\S]*state\.records\.filter[\s\S]*record\.searchText\.indexOf\(query\)[\s\S]*base\.map/.test(v2Js) &&
+  /function computeRadii[\s\S]*value == null \? 0 : Math\.abs\(value\)/.test(v2Js) &&
+  v2Js.includes('No indexed TVL') &&
+  v2Js.includes('No indexed liquidity') &&
+  v2Js.includes('No indexed volume') &&
+  v2Js.includes('Featured tokens only'));
 ok('waxonedge-bubbles-v2.js opens full token analytics directly without token modal flow',
   v2Js.includes('function openTokenAnalytics') &&
   v2Js.includes('function tokenAnalyticsUrl') &&
@@ -304,7 +365,7 @@ ok('waxonedge-bubbles-v2.js renders cached fake-3D planet bubbles with live impa
   v2Js.includes('node.collisionUntil') &&
   v2Js.includes('var collisionPulse = node.collisionUntil') &&
   v2Js.includes('ctx.createRadialGradient') &&
-  v2Js.includes('ctx.strokeText(record.symbol') &&
+  v2Js.includes('ctx.strokeText(symbolLabel') &&
   v2Js.includes('} else if (!showText) {') &&
   v2Js.includes("record.sourceCount + ' src'") &&
   v2Js.includes('bubbleCanvasCache.get(record.id)') &&
@@ -425,7 +486,26 @@ ok('waxonedge.js maps backend source labels without collapsing swap adapters int
   js.includes("'swap.taco': { label: 'swap.taco'") &&
   js.includes("'swap.nefty': { label: 'swap.nefty'") &&
   js.includes("'swap.box': { label: 'swap.box'"));
-ok('waxonedge.js still builds Top 99 scanner records for bubble sizing', js.includes('getRankedTokenRecords().slice(0, 99)'));
+ok('waxonedge.js renders only featured token records in legacy scanner paths',
+  js.includes('Array.isArray(window.WAXONEDGE_FEATURED_TOKENS)') &&
+  js.includes('? window.WAXONEDGE_FEATURED_TOKENS') &&
+  js.includes('function featuredTokenRecords()') &&
+  js.includes('state.tokenMap && state.tokenMap.byKey ? state.tokenMap.byKey[featured.key] : null') &&
+  js.includes('var tokens = getRankedTokenRecords();') &&
+  js.includes('var rows = tokensData.map(function (record, index)') &&
+  js.includes('state.missingFeaturedLogged[featured.key]') &&
+  js.includes("console.debug('missing_featured_token', featured.key)") &&
+  !js.includes('getRankedTokenRecords().slice(0, 99)') &&
+  !js.includes('tokensData.slice(0, 250)'));
+ok('waxonedge.js creates pair-only featured records from exact allowlisted pair keys',
+  js.includes('function addPairDerivedFeaturedTokenRecords(tokenMap, pairsData)') &&
+  js.includes('var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&
+  js.includes('if (!featured || tokenMap.byKey[key]) return;') &&
+  js.includes('tokenMap.byKey[key] = pairDerivedFeaturedTokenRecord(') &&
+  !/pairDerivedFeaturedTokenRecord[\s\S]*map\.bySymbol/.test(js));
+ok('waxonedge.js pair-only featured records do not fake price, TVL, liquidity, or volume',
+  /function pairDerivedFeaturedTokenRecord\(featured, key, pairCount, sourceKeys, strongestPair\)[\s\S]*systemPrice: null[\s\S]*usdPrice: null[\s\S]*selectedPriceWax: null[\s\S]*selectedPriceUsd: null[\s\S]*volume24: null[\s\S]*volume24Wax: null[\s\S]*volume24Usd: null[\s\S]*liquidityWax: null[\s\S]*liquidityUsd: null[\s\S]*tvlWax: null[\s\S]*tvlUsd: null/.test(js) &&
+  /function pairDerivedFeaturedTokenRecord\(featured, key, pairCount, sourceKeys, strongestPair\)[\s\S]*sourceKeys: sourceKeys[\s\S]*strongestPair: strongestPair \|\| null/.test(js));
 ok('waxonedge.js keeps pair matrix renderer for token analytics route', js.includes('function renderMatrix') && js.includes('woe-matrix-body'));
 ok('waxonedge.js renders pair detail on row click', js.includes('function renderPairDetail') && js.includes('woe-pair-detail-link'));
 ok('waxonedge.js no longer auto-selects a default token-first view',
@@ -469,6 +549,8 @@ ok('waxonedge.js has exactly one pickDefaultSelection definition',
   countMatches(js, /function pickDefaultSelection\s*\(/g) === 1);
 ok('waxonedge.js has exactly one renderMatrix definition',
   countMatches(js, /function renderMatrix\s*\(/g) === 1);
+ok('waxonedge.js has exactly one renderTokens definition',
+  countMatches(js, /function renderTokens\s*\(/g) === 1);
 ok('waxonedge.js defines shared stable pair key helper',
   js.includes('function getPairKey(market)') &&
   js.includes("market.marketId || market.pairId || market.pair_id || market.id") &&
@@ -548,7 +630,7 @@ ok('token analytics renders honest holder indexing placeholder only',
 ok('token analytics preserves all-pairs WAX valuation model copy',
   js.includes('All-pairs WAX valuation sums usable indexed pair value across supported DEXs where a trusted WAX route exists') &&
   js.includes('All-pairs WAX valuation is partial when a pair cannot be valued through a trusted indexed WAX route') &&
-  v2Js.includes('All-pairs WAX valuation model'));
+  v2Js.includes('Featured tokens only'));
 
 ok('waxonedge.css includes terminal shell and detail layout styles',
   css.includes('.woe-og-bar') &&

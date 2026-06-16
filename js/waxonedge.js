@@ -23,6 +23,13 @@
   var UNAVAILABLE_TEXT = 'Unavailable';
   var INDEXED_BACKEND_TEXT = 'Requires indexed backend';
   var SOURCE_NOT_INDEXED_TEXT = 'Source not indexed yet';
+  var WAXONEDGE_FEATURED_TOKENS = Array.isArray(window.WAXONEDGE_FEATURED_TOKENS)
+    ? window.WAXONEDGE_FEATURED_TOKENS
+    : [];
+  var WAXONEDGE_FEATURED_TOKEN_MAP = WAXONEDGE_FEATURED_TOKENS.reduce(function (acc, token) {
+    acc[token.key] = token;
+    return acc;
+  }, {});
 
   var state = {
     tokens: [],
@@ -37,6 +44,7 @@
     neftyTableUsed: '',
     selected: { symbol: '', contract: '', key: '' },
     selectedPair: null,
+    missingFeaturedLogged: {},
     summary: {},
     sources: {},
     filters: {
@@ -666,6 +674,7 @@
   function renderLoadedData() {
     state.tokenMap = buildTokenMap(state.tokens);
     state.pairIndex = buildPairIndex(state.pairs);
+    addPairDerivedFeaturedTokenRecords(state.tokenMap, state.pairs);
     state.alcorMarkets = buildAlcorMarkets(state.pairs, state.tickers);
     updateTopBarWaxPrice();
     renderDashboardMetrics();
@@ -802,6 +811,90 @@
       map.bySymbol[symbol].push(record);
     });
     return map;
+  }
+
+  function pairDerivedFeaturedTokenRecord(featured, key, pairCount, sourceKeys, strongestPair) {
+    var parts = String(key || '').split('::');
+    return {
+      key: key,
+      symbol: normalizeSymbol(parts[1]),
+      displaySymbol: featured.label,
+      contract: normalizeContract(parts[0]),
+      id: key,
+      decimals: null,
+      systemPrice: null,
+      usdPrice: null,
+      selectedPriceWax: null,
+      selectedPriceUsd: null,
+      pairCount: pairCount,
+      volume24: null,
+      volume24Wax: null,
+      volume24Usd: null,
+      change24: null,
+      volume7d: null,
+      volume30d: null,
+      liquidityWax: null,
+      liquidityUsd: null,
+      tvlWax: null,
+      tvlUsd: null,
+      holderCount: null,
+      circulatingSupply: null,
+      fdvWax: null,
+      fdvUsd: null,
+      selectedPairSource: '',
+      selectedPairId: '',
+      sourceCount: sourceKeys.length,
+      indexedPairCount: pairCount,
+      sourceKeys: sourceKeys,
+      strongestPair: strongestPair || null,
+      aggregateComplete: null,
+      aggregateTruncated: null,
+      updatedAt: '',
+      raw: null,
+    };
+  }
+
+  function betterPairRecord(a, b) {
+    if (!a) return b;
+    if (!b) return a;
+    var av = asNum(a.liquidityUsd) || asNum(a.liquidityWax) || asNum(a.volume24Usd) || asNum(a.volume24) || 0;
+    var bv = asNum(b.liquidityUsd) || asNum(b.liquidityWax) || asNum(b.volume24Usd) || asNum(b.volume24) || 0;
+    return bv > av ? b : a;
+  }
+
+  function addPairDerivedFeaturedTokenRecords(tokenMap, pairsData) {
+    var pairState = {};
+    (pairsData || []).forEach(function (pair) {
+      getPairTokens(pair).forEach(function (token) {
+        var key = token.key;
+        var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key];
+        if (!featured || tokenMap.byKey[key]) return;
+        if (!pairState[key]) {
+          pairState[key] = {
+            featured: featured,
+            pairCount: 0,
+            sources: {},
+            strongestPair: null,
+          };
+        }
+        var entry = pairState[key];
+        var source = pair && (pair.adapter || pair.rawSource || pair.source);
+        if (source) entry.sources[String(source).toLowerCase()] = true;
+        entry.pairCount += 1;
+        entry.strongestPair = betterPairRecord(entry.strongestPair, pair);
+      });
+    });
+    Object.keys(pairState).forEach(function (key) {
+      var entry = pairState[key];
+      tokenMap.byKey[key] = pairDerivedFeaturedTokenRecord(
+        entry.featured,
+        key,
+        entry.pairCount,
+        Object.keys(entry.sources).sort(),
+        entry.strongestPair
+      );
+    });
+    return tokenMap;
   }
 
   function getPairTokens(pair) {
@@ -1175,10 +1268,30 @@
   }
 
   function metricValueForToken(record, metric) {
-    if (!record) return 0;
-    if (metric === 'volume') return record.volume24 || 0;
-    if (metric === 'pairs') return record.pairCount || 0;
-    return record.liquidityUsd || record.tvlUsd || record.liquidityWax || record.tvlWax || record.volume24 || record.pairCount || 0;
+    if (!record) return null;
+    if (metric === 'volume') return record.volume24 != null ? record.volume24 : null;
+    if (metric === 'pairs') return record.pairCount != null ? record.pairCount : null;
+    return record.liquidityUsd != null ? record.liquidityUsd
+      : record.tvlUsd != null ? record.tvlUsd
+      : record.liquidityWax != null ? record.liquidityWax
+      : record.tvlWax != null ? record.tvlWax
+      : null;
+  }
+
+  function featuredTokenRecords() {
+    return WAXONEDGE_FEATURED_TOKENS.map(function (featured) {
+      var record = state.tokenMap && state.tokenMap.byKey ? state.tokenMap.byKey[featured.key] : null;
+      if (!record) {
+        if (!state.missingFeaturedLogged[featured.key]) {
+          state.missingFeaturedLogged[featured.key] = true;
+          // eslint-disable-next-line no-console
+          console.debug('missing_featured_token', featured.key);
+        }
+        return null;
+      }
+      record.displaySymbol = featured.label;
+      return record;
+    }).filter(Boolean);
   }
 
   function getTokenSources(selectionKey) {
@@ -1367,110 +1480,7 @@
   }
 
   function renderTokens() {
-    var tokensData = state.tokens;
-    var tokenPairCounts = state.pairIndex && state.pairIndex.tokenPairCounts ? state.pairIndex.tokenPairCounts : {};
-    if (!Array.isArray(tokensData) || tokensData.length === 0) {
-      setHtml('woe-tokens-body', '<tr><td colspan="6" class="woe-loading woe-error">Failed to load token data.</td></tr>');
-      return;
-    }
-
-    var selectedKey = state.selected.key;
-    var rows = tokensData.slice(0, 250).map(function (tok) {
-      var record = findTokenRecord(state.tokenMap, tok.contract, tok.symbol || tok.id) || tok;
-      var sym = record.symbol || tok.symbol || tok.id || '?';
-      var contr = record.contract || tok.contract || '';
-      var usdVal = record.usdPrice != null ? record.usdPrice : asNum(tok.usd_price);
-      var sysVal = record.systemPrice != null ? record.systemPrice : asNum(tok.system_price);
-      var pairCountKey = tokenKey(contr, sym);
-      var pairCountVal = pairCountKey ? (tokenPairCounts[pairCountKey] || 0) : null;
-      var activeClass = pairCountKey && pairCountKey === selectedKey ? ' class="woe-row-active"' : '';
-      var symbolLink = '<a class="woe-token-detail-link" href="' + escHtml(buildTokenHref(sym, contr)) + '"' +
-        ' data-token="' + escHtml(sym) + '"' +
-        ' data-contract="' + escHtml(contr) + '">' + escHtml(sym) + '</a>';
-      var waxLink = contr
-        ? '<a href="' + escHtml((window.WAXONEDGE_WAXBLOCK_BASE || 'https://waxblock.io') + '/account/' + contr) + '" target="_blank" rel="noopener noreferrer" class="woe-chain-link">' + escHtml(contr) + ' ↗</a>'
-        : availabilityHtml();
-      return '<tr' + activeClass + '>' +
-        '<td data-col="sym"><strong>' + symbolLink + '</strong></td>' +
-        '<td data-col="contr">' + waxLink + '</td>' +
-        '<td data-col="usd" data-sortval="' + escHtml(String(usdVal || 0)) + '" class="woe-num">' + escHtml(usdVal != null ? fmtPrice(usdVal) : '—') + '</td>' +
-        '<td data-col="sys" data-sortval="' + escHtml(String(sysVal || 0)) + '" class="woe-num">' + escHtml(sysVal != null ? fmtPrice(sysVal) : '—') + '</td>' +
-        '<td data-col="dec" data-sortval="' + escHtml(String(record.decimals || 0)) + '" class="woe-num">' + escHtml(record.decimals != null ? String(record.decimals) : '—') + '</td>' +
-        '<td data-col="pairs" data-sortval="' + escHtml(String(pairCountVal || 0)) + '" class="woe-num">' + escHtml(pairCountVal != null ? String(pairCountVal) : '—') + '</td>' +
-      '</tr>';
-    }).join('');
-
-    setHtml('woe-tokens-body', rows);
-    setText('woe-tokens-count', tokensData.length + ' tokens');
-    attachTokenSelectionLinks();
-    attachTableSort('woe-table-tokens');
-    attachTableFilter('woe-filter-tokens', 'woe-table-tokens');
-  }
-
-  /* ── Risk flags panel ────────────────────────────────────────── */
-
-  function getRankedTokenRecords() {
-    var q = state.filters.query;
-    var sourceFilter = state.filters.source;
-    return (state.tokens || []).map(function (tok) {
-      return findTokenRecord(state.tokenMap, tok.contract, tok.symbol || tok.id) || tok;
-    }).filter(function (record) {
-      var symbol = normalizeSymbol(record.symbol || record.id);
-      var contract = normalizeContract(record.contract);
-      var key = tokenKey(contract, symbol);
-      if (!key || key === WAX_NATIVE_KEY) return false;
-      var sources = getTokenSources(key);
-      if (sourceFilter && sources.indexOf(sourceFilter) === -1) return false;
-      if (!q) return true;
-      return (symbol + ' ' + contract + ' ' + sources.join(' ')).toLowerCase().indexOf(q) !== -1;
-    }).sort(function (a, b) {
-      return metricValueForToken(b, state.filters.bubbleMetric) - metricValueForToken(a, state.filters.bubbleMetric);
-    });
-  }
-
-  function renderBubbles() {
-    var tokens = getRankedTokenRecords().slice(0, 99);
-    if (tokens.length === 0) {
-      setHtml('woe-bubble-board', '<div class="woe-chart-empty">No indexed tokens match the current filters.</div>');
-      return;
-    }
-    var maxMetric = tokens.reduce(function (max, record) {
-      return Math.max(max, metricValueForToken(record, state.filters.bubbleMetric));
-    }, 1);
-    var html = tokens.map(function (record, index) {
-      var symbol = normalizeSymbol(record.symbol || record.id);
-      var contract = normalizeContract(record.contract);
-      var key = tokenKey(contract, symbol);
-      var sources = getTokenSources(key);
-      var market = strongestMarketForToken(key);
-      var metric = metricValueForToken(record, state.filters.bubbleMetric);
-      var ratio = Math.max(0.08, Math.min(1, metric / maxMetric));
-      var size = Math.round(72 + (ratio * 104));
-      var glow = Math.round(12 + (ratio * 34));
-      var change = record.change24 != null ? record.change24 : (market && market.change24 != null ? market.change24 : null);
-      var colorClass = change == null ? 'woe-bubble-flat' : (change >= 0 ? 'woe-bubble-up' : 'woe-bubble-down');
-      var subtitle = state.filters.bubbleMetric === 'volume'
-        ? fmtNum(record.volume24 || 0) + ' vol'
-        : state.filters.bubbleMetric === 'pairs'
-          ? String(record.pairCount || sources.length || 0) + ' pairs'
-          : formatDualMetric(record.liquidityWax || record.tvlWax, record.liquidityUsd || record.tvlUsd);
-      return '<button class="woe-bubble-token ' + colorClass + '" type="button"' +
-        ' data-token="' + escHtml(symbol) + '" data-contract="' + escHtml(contract) + '"' +
-        ' style="--bubble-size:' + escHtml(String(size)) + 'px;--bubble-glow:' + escHtml(String(glow)) + 'px;"' +
-        ' title="' + escHtml(symbol + ' @ ' + contract) + '">' +
-          '<span class="woe-bubble-rank">#' + escHtml(String(index + 1)) + '</span>' +
-          '<strong>' + escHtml(symbol) + '</strong>' +
-          '<span class="woe-bubble-metric">' + escHtml(subtitle) + '</span>' +
-          '<span class="woe-bubble-change ' + escHtml(pctClass(change)) + '">' + escHtml(change != null ? fmtPct(change) : 'No 24h') + '</span>' +
-          '<span class="woe-bubble-badges">' + sourceBadgesHtml(sources) + '</span>' +
-        '</button>';
-    }).join('');
-    setHtml('woe-bubble-board', html);
-    attachTokenSelectionLinks();
-  }
-
-  function renderTokens() {
-    var tokensData = getRankedTokenRecords().slice(0, 99);
+    var tokensData = getRankedTokenRecords();
     if (!Array.isArray(tokensData) || tokensData.length === 0) {
       setHtml('woe-token-rank-grid', '<div class="woe-chart-empty">No tokens match the current filters.</div>');
       return;
@@ -1487,21 +1497,86 @@
       var activeClass = key && key === selectedKey ? ' woe-token-rank-active' : '';
       var symbolLink = '<a class="woe-token-detail-link" href="' + escHtml(buildTokenHref(sym, contr)) + '"' +
         ' data-token="' + escHtml(sym) + '"' +
-        ' data-contract="' + escHtml(contr) + '">' + escHtml(sym) + '</a>';
+        ' data-contract="' + escHtml(contr) + '">' + escHtml(record.displaySymbol || sym) + '</a>';
       return '<article class="woe-token-rank-card' + activeClass + '">' +
         '<span class="woe-token-rank-number">#' + escHtml(String(index + 1)) + '</span>' +
         '<div><strong>' + symbolLink + '</strong><span>' + escHtml(contr || UNAVAILABLE_TEXT) + '</span></div>' +
         '<div class="woe-token-rank-metrics">' +
           '<span>' + escHtml(formatDualMetric(record.selectedPriceWax || record.systemPrice, record.selectedPriceUsd || record.usdPrice, 'WAX', '$')) + '</span>' +
           '<span class="' + escHtml(pctClass(change)) + '">' + escHtml(change != null ? fmtPct(change) : UNAVAILABLE_TEXT) + '</span>' +
-          '<span>' + escHtml(fmtNum(record.volume24 || 0)) + ' vol</span>' +
+          '<span>' + escHtml(record.volume24 != null ? fmtNum(record.volume24) + ' vol' : UNAVAILABLE_TEXT) + '</span>' +
         '</div>' +
         '<div class="woe-token-rank-badges">' + sourceBadgesHtml(sources) + '</div>' +
       '</article>';
     }).join('');
 
     setHtml('woe-token-rank-grid', rows);
-    setText('woe-tokens-count', 'Top ' + tokensData.length);
+    setText('woe-tokens-count', tokensData.length + ' featured tokens');
+    attachTokenSelectionLinks();
+  }
+
+  /* ── Risk flags panel ────────────────────────────────────────── */
+
+  function getRankedTokenRecords() {
+    var q = state.filters.query;
+    var sourceFilter = state.filters.source;
+    return featuredTokenRecords().filter(function (record) {
+      var symbol = normalizeSymbol(record.symbol || record.id);
+      var contract = normalizeContract(record.contract);
+      var key = tokenKey(contract, symbol);
+      if (!key || !WAXONEDGE_FEATURED_TOKEN_MAP[key]) return false;
+      var sources = getTokenSources(key);
+      if (sourceFilter && sources.indexOf(sourceFilter) === -1) return false;
+      if (!q) return true;
+      return ((record.displaySymbol || '') + ' ' + symbol + ' ' + contract + ' ' + sources.join(' ')).toLowerCase().indexOf(q) !== -1;
+    }).sort(function (a, b) {
+      var bv = metricValueForToken(b, state.filters.bubbleMetric);
+      var av = metricValueForToken(a, state.filters.bubbleMetric);
+      if (bv != null && av == null) return 1;
+      if (av != null && bv == null) return -1;
+      return (bv || 0) - (av || 0);
+    });
+  }
+
+  function renderBubbles() {
+    var tokens = getRankedTokenRecords();
+    if (tokens.length === 0) {
+      setHtml('woe-bubble-board', '<div class="woe-chart-empty">No indexed tokens match the current filters.</div>');
+      return;
+    }
+    var maxMetric = tokens.reduce(function (max, record) {
+      var metric = metricValueForToken(record, state.filters.bubbleMetric);
+      return Math.max(max, metric == null ? 0 : metric);
+    }, 1);
+    var html = tokens.map(function (record, index) {
+      var symbol = normalizeSymbol(record.symbol || record.id);
+      var contract = normalizeContract(record.contract);
+      var key = tokenKey(contract, symbol);
+      var sources = getTokenSources(key);
+      var market = strongestMarketForToken(key);
+      var metric = metricValueForToken(record, state.filters.bubbleMetric);
+      var ratio = metric == null ? 0.08 : Math.max(0.08, Math.min(1, metric / maxMetric));
+      var size = Math.round(72 + (ratio * 104));
+      var glow = Math.round(12 + (ratio * 34));
+      var change = record.change24 != null ? record.change24 : (market && market.change24 != null ? market.change24 : null);
+      var colorClass = change == null ? 'woe-bubble-flat' : (change >= 0 ? 'woe-bubble-up' : 'woe-bubble-down');
+      var subtitle = state.filters.bubbleMetric === 'volume'
+        ? (record.volume24 != null ? fmtNum(record.volume24) + ' vol' : UNAVAILABLE_TEXT)
+        : state.filters.bubbleMetric === 'pairs'
+          ? (record.pairCount != null || sources.length ? String(record.pairCount != null ? record.pairCount : sources.length) + ' pairs' : UNAVAILABLE_TEXT)
+          : formatDualMetric(record.liquidityWax || record.tvlWax, record.liquidityUsd || record.tvlUsd);
+      return '<button class="woe-bubble-token ' + colorClass + '" type="button"' +
+        ' data-token="' + escHtml(symbol) + '" data-contract="' + escHtml(contract) + '"' +
+        ' style="--bubble-size:' + escHtml(String(size)) + 'px;--bubble-glow:' + escHtml(String(glow)) + 'px;"' +
+        ' title="' + escHtml(symbol + ' @ ' + contract) + '">' +
+          '<span class="woe-bubble-rank">#' + escHtml(String(index + 1)) + '</span>' +
+          '<strong>' + escHtml(record.displaySymbol || symbol) + '</strong>' +
+          '<span class="woe-bubble-metric">' + escHtml(subtitle) + '</span>' +
+          '<span class="woe-bubble-change ' + escHtml(pctClass(change)) + '">' + escHtml(change != null ? fmtPct(change) : 'No 24h') + '</span>' +
+          '<span class="woe-bubble-badges">' + sourceBadgesHtml(sources) + '</span>' +
+        '</button>';
+    }).join('');
+    setHtml('woe-bubble-board', html);
     attachTokenSelectionLinks();
   }
 

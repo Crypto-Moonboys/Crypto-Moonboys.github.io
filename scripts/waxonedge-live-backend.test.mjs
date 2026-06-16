@@ -51,6 +51,7 @@ const sourceCoverageMigration = read('workers/moonboys-api/migrations/024_waxone
 const sourceStateMigration = read('workers/moonboys-api/migrations/025_waxonedge_source_index_state.sql');
 const frontend = read('js/waxonedge.js');
 const frontendBubbles = read('js/waxonedge-bubbles-v2.js');
+const featuredTokens = read('js/waxonedge-featured-tokens.js');
 const frontendSources = read('js/waxonedge-sources.js');
 const html = read('waxonedge.html');
 const tokenHtml = read('analytics/token/index.html');
@@ -4365,7 +4366,11 @@ ok('Node/Wrangler versions are aligned on Node 22',
   packageLock.packages[''].engines.node === '>=22' &&
   packageJson.devDependencies &&
   packageJson.devDependencies.wrangler === '^4.100.0');
-ok('frontend default state still avoids eosio.token/WAX dead detail', frontend.includes('WAX_NATIVE_KEY') && frontend.includes('key === WAX_NATIVE_KEY'));
+ok('frontend featured-token scanner allows eosio.token/WAX only by explicit allowlist',
+  featuredTokens.includes("['WAXP', 'eosio.token', 'WAX']") &&
+  frontend.includes('WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&
+  frontendBubbles.includes('WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&
+  !frontend.includes('key === WAX_NATIVE_KEY'));
 ok('frontend scanner front door and token analytics route are present',
   html.includes('woe-bubble-board') &&
   !html.includes('woe-token-rank-grid') &&
