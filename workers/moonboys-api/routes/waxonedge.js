@@ -41,6 +41,8 @@ const FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT = 2;
 const FREE_SAFE_TRADE_INDEX_PAIR_LIMIT = 2;
 const FREE_SAFE_TRADE_ROWS_PER_MARKET_LIMIT = 50;
 const OG_WAX_ROUTE_MAX_HOPS = 5;
+const OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 2000;
+const OG_WAX_ROUTE_GRAPH_FRONTIER_LIMIT = 200;
 const FREE_SAFE_SUPPLY_SYNC_LIMIT = 5;
 const FREE_SAFE_TRADE_STREAM_PAGES_PER_RUN = 1;
 const FREE_SAFE_CANDLE_SUBREQUEST_BUDGET = 2;
@@ -3553,6 +3555,7 @@ async function aggregateTokenAnalytics(env) {
     ).all().catch(() => ({ results: [] })),
   ]);
   const priceIndex = buildDbTokenPriceIndex(tokenRows.results || []);
+  const aggregateRouteIndex = buildOgWaxRouteGraph(pairRows.results || [], priceIndex);
   const tokenInfo = new Map();
   for (const token of tokenRows.results || []) {
     const key = tokenKey(token.contract, token.symbol);
@@ -3607,6 +3610,7 @@ async function aggregateTokenAnalytics(env) {
       agg.pairs,
       tokenRows.results || [],
       pairRows.results || [],
+      { routeIndex: aggregateRouteIndex },
     );
     const presentSources = requiredSources.filter((source) => agg.sources.has(source));
     statements.push(env.DB.prepare(
@@ -4085,7 +4089,7 @@ async function listTokenPairs(db, contract, symbol, options = {}) {
   const pageRows = rows.results || [];
   const hasMore = pageRows.length > limit;
   const visibleRows = pageRows.slice(0, limit);
-  const graphRows = await loadAllPairRowsForGraph(db);
+  const graphRows = await loadRouteGraphRowsForToken(db, contract, symbol);
   const priceRows = await loadTokenPriceRowsForPairs(db, graphRows);
   const priceIndex = buildDbTokenPriceIndex(priceRows);
   const routeIndex = buildOgWaxRouteGraph(graphRows, priceIndex);
@@ -4337,8 +4341,8 @@ function buildOgWaxRouteGraph(pairRows = [], priceIndex = new Map(), maxHops = O
     route_liquidity_score: Number.POSITIVE_INFINITY,
   });
   const queue = [waxKey];
-  while (queue.length) {
-    const fromKey = queue.shift();
+  for (let queueIndex = 0; queueIndex < queue.length; queueIndex += 1) {
+    const fromKey = queue[queueIndex];
     const fromRoute = routes.get(fromKey);
     if (!fromRoute || fromRoute.route_hops.length >= maxHops) continue;
     for (const edge of adjacency.get(fromKey) || []) {
@@ -4524,7 +4528,7 @@ function withPairContributionProof(pair, contract, symbol, priceIndex) {
   };
 }
 
-function aggregatePairContributionTotals(pairRows, contract, symbol, priceIndex, graphPairRows = pairRows) {
+function aggregatePairContributionTotals(pairRows, contract, symbol, priceIndex, graphPairRows = pairRows, options = {}) {
   let liquidityWax = 0;
   let liquidityUsd = 0;
   let hasLiquidityWax = false;
@@ -4532,7 +4536,7 @@ function aggregatePairContributionTotals(pairRows, contract, symbol, priceIndex,
   let liquidityCount = 0;
   let unresolvedCount = 0;
   const sourceKeys = new Set();
-  const routeIndex = buildOgWaxRouteGraph(graphPairRows, priceIndex);
+  const routeIndex = options.routeIndex || buildOgWaxRouteGraph(graphPairRows, priceIndex);
   const selectedPriceProof = selectOgWaxRoutePrice(tokenKey(contract, symbol), routeIndex);
   for (const pair of pairRows || []) {
     const source = aggregateSourceKey(pair.source);
@@ -4705,7 +4709,7 @@ function reasonMapForTokenMetrics(metrics) {
   return reasons;
 }
 
-function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows = pairRows) {
+function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows = pairRows, options = {}) {
   const contract = normalizeContract(token?.contract || stats?.contract);
   const symbol = normalizeSymbol(token?.symbol || stats?.symbol);
   const priceIndex = buildDbTokenPriceIndex(priceRows);
@@ -4717,7 +4721,7 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   let volumeWaxTotal = 0;
   let hasLiquidityWax = false;
   let hasVolumeWax = false;
-  const routeIndex = buildOgWaxRouteGraph(graphPairRows, priceIndex);
+  const routeIndex = options.routeIndex || buildOgWaxRouteGraph(graphPairRows, priceIndex);
   const selected = selectOgWaxRoutePrice(tokenKey(contract, symbol), routeIndex);
 
   for (const pair of pairRows || []) {
@@ -4808,14 +4812,43 @@ async function loadPairRowsForToken(db, contract, symbol) {
   return rows.results || [];
 }
 
-async function loadAllPairRowsForGraph(db) {
-  const rows = await db.prepare(
-    `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
-            price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
-            liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
-     FROM waxonedge_pairs`
-  ).all().catch(() => ({ results: [] }));
-  return rows.results || [];
+async function loadRouteGraphRowsForToken(db, contract, symbol, maxHops = OG_WAX_ROUTE_MAX_HOPS) {
+  const startKey = tokenKey(contract, symbol);
+  if (!startKey) return [];
+  const seenTokens = new Set([startKey]);
+  const seenPairs = new Map();
+  let frontier = [startKey];
+  for (let depth = 0; depth < maxHops && frontier.length; depth += 1) {
+    const nextFrontier = [];
+    for (let offset = 0; offset < frontier.length; offset += OG_WAX_ROUTE_GRAPH_FRONTIER_LIMIT) {
+      const frontierBatch = frontier.slice(offset, offset + OG_WAX_ROUTE_GRAPH_FRONTIER_LIMIT);
+      const placeholders = frontierBatch.map(() => '?').join(', ');
+      const rows = await db.prepare(
+        `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+                price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+                liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
+         FROM waxonedge_pairs
+         WHERE (token_a_contract || '::' || token_a_symbol) IN (${placeholders})
+            OR (token_b_contract || '::' || token_b_symbol) IN (${placeholders})
+         LIMIT ?`
+      ).bind(...frontierBatch, ...frontierBatch, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT).all().catch(() => ({ results: [] }));
+      for (const pair of rows.results || []) {
+        const pairKey = `${pair.source || ''}::${pair.pair_id || ''}::${pair.token_a_contract || ''}::${pair.token_a_symbol || ''}::${pair.token_b_contract || ''}::${pair.token_b_symbol || ''}`;
+        if (!seenPairs.has(pairKey)) seenPairs.set(pairKey, pair);
+        for (const key of [
+          tokenKey(pair.token_a_contract, pair.token_a_symbol),
+          tokenKey(pair.token_b_contract, pair.token_b_symbol),
+        ]) {
+          if (key && !seenTokens.has(key)) {
+            seenTokens.add(key);
+            nextFrontier.push(key);
+          }
+        }
+      }
+    }
+    frontier = nextFrontier;
+  }
+  return Array.from(seenPairs.values());
 }
 
 function diagnoseTokenAggregate(contract, symbol, metrics, pairRows, chartCandleCount, aggregateFresh) {
@@ -4874,7 +4907,7 @@ function diagnoseTokenAggregate(contract, symbol, metrics, pairRows, chartCandle
   };
 }
 
-async function getToken(db, contract, symbol) {
+async function getToken(db, contract, symbol, options = {}) {
   const token = await db.prepare(
     `SELECT contract, symbol, decimals, total_supply, max_supply, updated_at
      FROM waxonedge_tokens WHERE contract = ? AND symbol = ? LIMIT 1`
@@ -4891,23 +4924,31 @@ async function getToken(db, contract, symbol) {
      FROM waxonedge_token_stats WHERE contract = ? AND symbol = ? LIMIT 1`
   ).bind(contract, symbol).first().catch(() => null);
   const pairRows = await loadPairRowsForToken(db, contract, symbol);
-  const graphRows = await loadAllPairRowsForGraph(db);
+  const graphRows = options.graphRows || await loadRouteGraphRowsForToken(db, contract, symbol);
   const priceRows = await loadTokenPriceRowsForPairs(db, graphRows);
-  const detailStats = deriveTokenPairMetrics(token || { contract, symbol }, stats || {}, pairRows, priceRows, graphRows);
-  return {
+  const priceIndex = buildDbTokenPriceIndex(priceRows);
+  const routeIndex = options.routeIndex || buildOgWaxRouteGraph(graphRows, priceIndex);
+  const detailStats = deriveTokenPairMetrics(token || { contract, symbol }, stats || {}, pairRows, priceRows, graphRows, { routeIndex });
+  const detail = {
     token,
     stats: detailStats,
     source_coverage: sourceCoverageFromKeys(parseSourceKeys(detailStats?.source_keys)),
   };
+  if (options.includeRouteContext) {
+    detail.route_context = { pairRows, graphRows, priceIndex, routeIndex };
+  }
+  return detail;
 }
 
 async function getTokenDebug(db, contract, symbol) {
-  const detail = await getToken(db, contract, symbol);
-  const pairRows = await loadPairRowsForToken(db, contract, symbol);
-  const graphRows = await loadAllPairRowsForGraph(db);
-  const priceRows = await loadTokenPriceRowsForPairs(db, graphRows);
-  const priceIndex = buildDbTokenPriceIndex(priceRows);
-  const aggregateTotals = aggregatePairContributionTotals(pairRows, contract, symbol, priceIndex, graphRows);
+  const detail = await getToken(db, contract, symbol, { includeRouteContext: true });
+  const routeContext = detail.route_context || {};
+  delete detail.route_context;
+  const pairRows = routeContext.pairRows || await loadPairRowsForToken(db, contract, symbol);
+  const graphRows = routeContext.graphRows || await loadRouteGraphRowsForToken(db, contract, symbol);
+  const priceIndex = routeContext.priceIndex || buildDbTokenPriceIndex(await loadTokenPriceRowsForPairs(db, graphRows));
+  const routeIndex = routeContext.routeIndex || buildOgWaxRouteGraph(graphRows, priceIndex);
+  const aggregateTotals = aggregatePairContributionTotals(pairRows, contract, symbol, priceIndex, graphRows, { routeIndex });
   const chartCandleCount = await countScalar(db,
     `SELECT COUNT(*) AS count
      FROM waxonedge_chart_candles c

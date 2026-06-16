@@ -3556,7 +3556,9 @@ ok('candle backfill cumulative counters separate cursor from success/failure cou
   !route.includes('processed_pair_count: nextCursor'));
 ok('aggregate selected price uses the shared WAX route graph instead of a direct-WAX-only selector',
   route.includes('function buildOgWaxRouteGraph') &&
-  route.includes('const routeIndex = buildOgWaxRouteGraph(graphPairRows, priceIndex)') &&
+  route.includes('const routeIndex = options.routeIndex || buildOgWaxRouteGraph(graphPairRows, priceIndex)') &&
+  route.includes('const aggregateRouteIndex = buildOgWaxRouteGraph(pairRows.results || [], priceIndex)') &&
+  route.includes('{ routeIndex: aggregateRouteIndex }') &&
   route.includes('const selected = selectOgWaxRoutePrice(tokenKey(contract, symbol), routeIndex)') &&
   route.includes('routeLiquidityScore > existing.route_liquidity_score') &&
   !route.includes('const trusted = liquidityWax >= MIN_TRUSTED_WAX_LIQUIDITY'));
@@ -3717,8 +3719,15 @@ ok('selected price health counts are scoped to indexed tokens',
   route.includes('tokens_without_selected_price: Math.max(0, totalTokens - tokensWithSelectedPrice)'));
 ok('token detail loads the bounded indexed-pair route graph without an all-priced-token scan',
   route.includes('function collectTokenPriceKeysForPairs') &&
-  route.includes('const graphRows = await loadAllPairRowsForGraph(db)') &&
+  route.includes('async function loadRouteGraphRowsForToken') &&
+  route.includes("WHERE (token_a_contract || '::' || token_a_symbol) IN") &&
+  route.includes('const graphRows = options.graphRows || await loadRouteGraphRowsForToken(db, contract, symbol)') &&
   route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, graphRows)') &&
+  route.includes('const detail = await getToken(db, contract, symbol, { includeRouteContext: true })') &&
+  route.includes('delete detail.route_context') &&
+  route.includes('const routeIndex = routeContext.routeIndex || buildOgWaxRouteGraph(graphRows, priceIndex)') &&
+  !route.includes('async function loadAllPairRowsForGraph') &&
+  !route.includes('queue.shift()') &&
   !route.includes('WHERE price_wax IS NOT NULL OR price_usd IS NOT NULL'));
 {
   const directWaxPair = {
@@ -4060,6 +4069,23 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     pairProof.reserve_side_wax_values.quote != null &&
     Array.isArray(pairProof.reason_codes) &&
     pairProof.reason_codes.length === 0);
+  const waxPairProof = __waxonedgeTestHooks.pairContributionProof(
+    directWaxPair,
+    'eosio.token',
+    'WAX',
+    routePriceIndex,
+    routeIndex,
+  );
+  ok('WAX token pool proof treats WAX as the graph root and values both reserve sides',
+    waxPairProof.token_side === 'a' &&
+    waxPairProof.route_type === 'wax_self' &&
+    waxPairProof.contributes_to_liquidity === true &&
+    waxPairProof.contributes_to_tvl === true &&
+    Number(waxPairProof.contribution_wax) === 2000 &&
+    Number(waxPairProof.contribution_usd) === 12 &&
+    waxPairProof.wax_price_used === '1' &&
+    Array.isArray(waxPairProof.reason_codes) &&
+    waxPairProof.reason_codes.length === 0);
   const multiHopPairProof = __waxonedgeTestHooks.pairContributionProof(
     wufAbcPair,
     'wuffi',
