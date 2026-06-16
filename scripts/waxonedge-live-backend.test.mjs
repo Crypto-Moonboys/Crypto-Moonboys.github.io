@@ -3727,7 +3727,9 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
   route.includes('updated_at DESC') &&
   route.includes('source ASC') &&
   route.includes('pair_id ASC') &&
-  /async function loadRouteGraphRowsForToken[\s\S]*ORDER BY[\s\S]*CAST\(COALESCE\(liquidity_wax, '0'\) AS NUMERIC\) DESC[\s\S]*LIMIT \?`/.test(route) &&
+  route.includes("AND CAST(COALESCE(reserve_a, '0') AS NUMERIC) > 0") &&
+  route.includes("AND CAST(COALESCE(reserve_b, '0') AS NUMERIC) > 0") &&
+  /async function loadRouteGraphRowsForToken[\s\S]*WHERE \$\{frontierPredicates\}[\s\S]*CAST\(COALESCE\(reserve_a, '0'\) AS NUMERIC\) > 0[\s\S]*CAST\(COALESCE\(reserve_b, '0'\) AS NUMERIC\) > 0[\s\S]*ORDER BY[\s\S]*CAST\(COALESCE\(liquidity_wax, '0'\) AS NUMERIC\) DESC[\s\S]*LIMIT \?`/.test(route) &&
   route.includes('const graphRows = options.graphRows || await loadRouteGraphRowsForToken(db, contract, symbol)') &&
   route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, graphRows)') &&
   route.includes('const detail = await getToken(db, contract, symbol, { includeRouteContext: true })') &&
@@ -4126,9 +4128,9 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     unresolvedPairProof.reason_codes.includes('token_a_no_wax_route'));
   const badReserveIndex = __waxonedgeTestHooks.buildOgWaxRouteGraph([
     { ...directWaxPair, pair_id: 'ZERO', reserve_a: '0', reserve_b: '500000' },
-    { ...directWaxPair, pair_id: 'NEGATIVE_PRICE', reserve_a: '1000', reserve_b: '500000', price: '-1' },
+    { ...directWaxPair, pair_id: 'NEGATIVE_RESERVE', reserve_a: '-1', reserve_b: '500000', price: '-1' },
   ], routePriceIndex);
-  ok('zero reserve and negative price pairs are rejected from route graph',
+  ok('zero and negative reserve pairs are rejected from route graph',
     __waxonedgeTestHooks.selectOgWaxRoutePrice('wuffi::WUF', badReserveIndex) == null);
   const caps = __waxonedgeTestHooks.metricCapabilitiesFromTokens([
     { selected_price_wax: '1', market_cap_wax: '20', fdv_wax: '50', volume_7d: null },

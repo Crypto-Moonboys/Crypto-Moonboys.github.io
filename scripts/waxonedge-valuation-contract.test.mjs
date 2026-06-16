@@ -31,7 +31,7 @@ const directWaxPair = {
   token_a_symbol: 'WAX',
   token_b_contract: 'wuffi',
   token_b_symbol: 'WUF',
-  price: '500',
+  price: '999',
   reserve_a: '1000',
   reserve_b: '500000',
   liquidity_wax: '999999999',
@@ -45,7 +45,7 @@ const wufAbcPair = {
   token_a_symbol: 'WUF',
   token_b_contract: 'abc.token',
   token_b_symbol: 'ABC',
-  price: '0.001',
+  price: 'malformed-price',
   reserve_a: '100000',
   reserve_b: '100',
   liquidity_wax: '888888888',
@@ -108,11 +108,19 @@ ok('direct WAX route derives token WAX price from real reserves',
   wufRoute?.route_type === 'direct_wax' &&
   almostEqual(wufRoute.priceWax, 0.002));
 
+ok('pairEdgePrice uses reserve ratio even when pair.price is present',
+  directWaxPair.price !== '500' &&
+  almostEqual(wufRoute.priceWax, 0.002));
+
 const multiHopOnlyRouteIndex = __waxonedgeTestHooks.buildOgWaxRouteGraph([wufAbcPair, abcWaxPair], priceIndex);
 const multiHopWufRoute = __waxonedgeTestHooks.selectOgWaxRoutePrice('wuffi::WUF', multiHopOnlyRouteIndex);
 ok('multi-hop WAX route is valid without direct WAX pair',
   multiHopWufRoute?.route_type === 'multi_hop_wax' &&
   multiHopWufRoute.route_hops.length === 2 &&
+  almostEqual(multiHopWufRoute.priceWax, 0.002));
+
+ok('malformed pair.price does not discard a valid reserve-backed edge',
+  wufAbcPair.price === 'malformed-price' &&
   almostEqual(multiHopWufRoute.priceWax, 0.002));
 
 ok('token with no direct WAX pool can still be valued through the graph',

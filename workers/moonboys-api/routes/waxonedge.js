@@ -4278,11 +4278,11 @@ function pairTokenSide(pair, contract, symbol) {
 function pairEdgePrice(pair) {
   const reserveA = asNumber(pair?.reserve_a);
   const reserveB = asNumber(pair?.reserve_b);
+  if (reserveA != null && reserveA > 0 && reserveB != null && reserveB > 0) {
+    return reserveB / reserveA;
+  }
   const sourcePrice = asNumber(pair?.price);
-  if (pair?.price != null && sourcePrice == null) return null;
-  if (sourcePrice != null && sourcePrice <= 0) return null;
   if (sourcePrice != null && sourcePrice > 0) return sourcePrice;
-  if (reserveA != null && reserveA > 0 && reserveB != null && reserveB > 0) return reserveB / reserveA;
   return null;
 }
 
@@ -4850,6 +4850,8 @@ async function loadRouteGraphRowsForToken(db, contract, symbol, maxHops = OG_WAX
                 liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
          FROM waxonedge_pairs
          WHERE ${frontierPredicates}
+           AND CAST(COALESCE(reserve_a, '0') AS NUMERIC) > 0
+           AND CAST(COALESCE(reserve_b, '0') AS NUMERIC) > 0
          ORDER BY
            CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC,
            updated_at DESC,
