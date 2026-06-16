@@ -71,6 +71,13 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/css/waxonedge.css?v=woe-') &&
   html.includes('/css/waxonedge-bubbles-v2.css?v=woe-') &&
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
+ok('featured-token PR cache-busts changed WaxOnEdge scanner assets',
+  html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260616-featured') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260615-galaxy3'));
+ok('featured-token PR cache-busts changed token analytics assets',
+  tokenHtml.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
+  tokenHtml.includes('/js/waxonedge.js?v=woe-20260616-featured'));
 ok('waxonedge clean-route alias redirects to /waxonedge.html', aliasHtml.includes('url=/waxonedge.html'));
 ok('waxonedge clean-route alias preserves query-string routing', aliasHtml.includes("window.location.search || ''"));
 ok('waxonedge clean-route alias preserves hash routing', aliasHtml.includes("window.location.hash || ''"));
