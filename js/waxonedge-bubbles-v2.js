@@ -39,6 +39,18 @@
   var bubbleCanvasCache = new Map();
   var reducedMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 
+  var MOVEMENT_EVENT_TABLE = [
+    { min: 1, max: 45, event: 'normal_drift', label: 'normal drift' },
+    { min: 46, max: 60, event: 'soft_bounce', label: 'soft bounce' },
+    { min: 61, max: 72, event: 'orbit_wobble', label: 'orbit wobble' },
+    { min: 73, max: 82, event: 'pulse_drift', label: 'pulse drift' },
+    { min: 83, max: 90, event: 'magnetic_repel', label: 'magnetic repel' },
+    { min: 91, max: 95, event: 'whale_pulse', label: 'whale pulse' },
+    { min: 96, max: 98, event: 'shockwave', label: 'shockwave' },
+    { min: 99, max: 99, event: 'bonus_surge', label: 'bonus surge' },
+    { min: 100, max: 100, event: 'mega_event', label: 'mega event' },
+  ];
+
   var state = {
     payload: null,
     health: null,
@@ -672,6 +684,16 @@
         driftPhaseX: seededUnit((index + 1) * 101 + state.visible.length) * Math.PI * 2,
         driftPhaseY: seededUnit((index + 1) * 211 + state.visible.length) * Math.PI * 2,
         driftDir: seededUnit((index + 1) * 307) > 0.5 ? 1 : -1,
+        driftAngle: seededUnit((index + 1) * 907 + 19) * Math.PI * 2,
+        driftSpeed: 0.018 + seededUnit((index + 1) * 613) * 0.018,
+        movementRoll: 1,
+        movementEvent: 'normal_drift',
+        eventUntil: 0,
+        nextMovementRollAt: 0,
+        pulseUntil: 0,
+        shockwaveUntil: 0,
+        lastCollisionAt: 0,
+        nearbyRepelUntil: 0,
         depth: 0.9 + ((index * 37) % 21) / 100,
       };
       node.record = record;
@@ -892,18 +914,122 @@
       node.record.shockwavePending = false;
       node.record.nodeX = node.x;
       node.record.nodeY = node.y;
-      state.shockwaves.push({
-        x: node.x,
-        y: node.y,
-        radius: visualRadius(node),
-        color: ringColor(node.record),
-        startedAt: now,
-        duration: 1050,
-      });
+      pushShockwave(node, now, 1, 'live_update');
     });
     if (state.shockwaves.length > 24) state.shockwaves = state.shockwaves.slice(-24);
   }
 
+  function movementRollForNode(node, now) {
+    var slot = Math.floor(now / 1000);
+    var seed = (node.rank || 1) * 73 + String(node.id || '').length * 19 + slot;
+    return 1 + Math.floor(seededUnit(seed) * 100);
+  }
+
+  function movementEventForRoll(roll) {
+    for (var i = 0; i < MOVEMENT_EVENT_TABLE.length; i += 1) {
+      var entry = MOVEMENT_EVENT_TABLE[i];
+      if (roll >= entry.min && roll <= entry.max) return entry;
+    }
+    return MOVEMENT_EVENT_TABLE[0];
+  }
+
+  function scheduleNextMovementRoll(node, now) {
+    var delay = 6000 + seededUnit((node.rank || 1) * 719 + Math.floor(now / 1000)) * 8000;
+    node.nextMovementRollAt = now + delay;
+  }
+
+  function isWhaleVisualNode(node) {
+    var record = node.record || {};
+    var tvl = asNum(record.tvlUsd != null ? record.tvlUsd : record.tvlWax) || 0;
+    var liq = asNum(record.liquidityUsd != null ? record.liquidityUsd : record.liquidityWax) || 0;
+    var volume = asNum(record.volume24Usd != null ? record.volume24Usd : record.volume24Wax) || 0;
+    return Math.max(tvl, liq, volume) > 50000 || (node.rank || 999) <= 12;
+  }
+
+  function movementEventMessage(node, entry) {
+    if (!node.record) return null;
+    if (entry.event === 'mega_event') return 'Mega visual event: ' + node.record.symbol + ' galaxy shockwave';
+    if (entry.event === 'bonus_surge') return 'Bonus surge visual: ' + node.record.symbol + ' drift pulse';
+    if (entry.event === 'shockwave') return 'Shockwave visual: ' + node.record.symbol + ' pushed nearby bubbles';
+    if (entry.event === 'whale_pulse' && isWhaleVisualNode(node)) return 'Whale pulse visual: ' + node.record.symbol + ' glow expanded';
+    return null;
+  }
+
+  function pushShockwave(node, now, scale, reason) {
+    if (!node || !node.record) return;
+    state.shockwaves.push({
+      x: node.x,
+      y: node.y,
+      radius: visualRadius(node) * (scale || 1),
+      color: ringColor(node.record),
+      startedAt: now,
+      duration: reason === 'mega_event' ? 1500 : 1100,
+    });
+    node.shockwaveUntil = Math.max(node.shockwaveUntil || 0, now + 900);
+    if (state.shockwaves.length > 28) state.shockwaves = state.shockwaves.slice(-28);
+  }
+
+  function rollMovementEvent(node, now) {
+    if (!node.nextMovementRollAt) scheduleNextMovementRoll(node, now - 5000);
+    if (now < node.nextMovementRollAt) return;
+    node.movementRoll = movementRollForNode(node, now);
+    var entry = movementEventForRoll(node.movementRoll);
+    node.movementEvent = entry.event;
+    node.eventUntil = now + (entry.event === 'mega_event' ? 2300 : entry.event === 'normal_drift' ? 1200 : 1600 + seededUnit((node.rank || 1) * 331) * 1200);
+    node.driftAngle = (node.driftAngle || 0) + (seededUnit((node.rank || 1) * 991 + node.movementRoll) - 0.5) * (entry.event === 'soft_bounce' ? 1.4 : 0.72);
+    if (entry.event === 'soft_bounce') node.driftSpeed = 0.028 + seededUnit(node.movementRoll * 17) * 0.018;
+    if (entry.event === 'pulse_drift') node.pulseUntil = Math.max(node.pulseUntil || 0, now + 1300);
+    if (entry.event === 'magnetic_repel') node.nearbyRepelUntil = Math.max(node.nearbyRepelUntil || 0, now + 1400);
+    if (entry.event === 'whale_pulse' && isWhaleVisualNode(node)) node.pulseUntil = Math.max(node.pulseUntil || 0, now + 1900);
+    if (entry.event === 'shockwave' || entry.event === 'bonus_surge' || entry.event === 'mega_event') {
+      node.pulseUntil = Math.max(node.pulseUntil || 0, now + 1700);
+      pushShockwave(node, now, entry.event === 'mega_event' ? 1.55 : 1.15, entry.event);
+      node.nearbyRepelUntil = Math.max(node.nearbyRepelUntil || 0, now + 1200);
+    }
+    var message = movementEventMessage(node, entry);
+    if (message && now - state.lastImpactAt > 1600) {
+      state.lastImpactAt = now;
+      addLiveFeed(message, node.record);
+    }
+    scheduleNextMovementRoll(node, now);
+  }
+
+  function applyMovementEventForces(node, nodes, index, now) {
+    var active = node.eventUntil && now < node.eventUntil;
+    var event = active ? node.movementEvent : 'normal_drift';
+    var eventBoost = 1;
+    if (event === 'pulse_drift') eventBoost = 1.7;
+    if (event === 'bonus_surge') eventBoost = 2.25;
+    if (event === 'mega_event') eventBoost = 2.75;
+    if (event === 'whale_pulse' && isWhaleVisualNode(node)) eventBoost = 1.35;
+    var speed = (node.driftSpeed || 0.022) * eventBoost;
+    if (event === 'orbit_wobble') {
+      node.driftAngle += Math.sin(now / 520 + index) * 0.012;
+      speed *= 1.24;
+    }
+    node.vx += Math.cos(node.driftAngle || 0) * speed;
+    node.vy += Math.sin(node.driftAngle || 0) * speed;
+    if (event === 'magnetic_repel' || event === 'mega_event' || (node.nearbyRepelUntil && now < node.nearbyRepelUntil)) {
+      for (var i = 0; i < nodes.length; i += 1) {
+        var other = nodes[i];
+        if (other === node) continue;
+        var dx = node.x - other.x;
+        var dy = node.y - other.y;
+        var distSq = dx * dx + dy * dy;
+        var range = visualRadius(node) + visualRadius(other) + (event === 'mega_event' ? 120 : 70);
+        if (distSq > 0 && distSq < range * range) {
+          var dist = Math.sqrt(distSq);
+          var force = (range - dist) / range * (event === 'mega_event' ? 0.18 : 0.07);
+          node.vx += (dx / dist) * force;
+          node.vy += (dy / dist) * force;
+          if (state.dragging !== other) {
+            other.vx -= (dx / dist) * force * 0.62;
+            other.vy -= (dy / dist) * force * 0.62;
+          }
+        }
+      }
+    }
+  }
   function forceSimulationEquivalent(width, height) {
     var nodes = state.nodes;
     var animate = shouldAnimate();
@@ -913,22 +1039,22 @@
       if (!animate) return;
       if (!Number.isFinite(node.vx)) node.vx = 0;
       if (!Number.isFinite(node.vy)) node.vy = 0;
-      if (node.driftDirection == null) {
-        node.driftDirection = seededUnit((index + 1) * 907 + 19) * Math.PI * 2;
-      }
+      if (node.driftAngle == null) node.driftAngle = seededUnit((index + 1) * 907 + 19) * Math.PI * 2;
+      if (node.driftSpeed == null) node.driftSpeed = 0.018 + seededUnit((index + 1) * 613) * 0.018;
       if (node.driftPhaseX == null) node.driftPhaseX = seededUnit((index + 1) * 101 + nodes.length) * Math.PI * 2;
       if (node.driftPhaseY == null) node.driftPhaseY = seededUnit((index + 1) * 211 + nodes.length) * Math.PI * 2;
-      if (seededUnit(Math.floor(now / 9000) + (index + 1) * 409) > 0.992) {
-        node.driftDirection += (seededUnit(index * 113 + Math.floor(now / 9000)) - 0.5) * 0.55;
+      rollMovementEvent(node, now);
+      if (seededUnit(Math.floor(now / 11000) + (index + 1) * 409) > 0.996) {
+        node.driftAngle += (seededUnit(index * 113 + Math.floor(now / 9000)) - 0.5) * 0.36;
       }
-      var homePull = 0.00042;
+      var homePull = 0.00034;
       node.vx += ((node.homeX || node.x) - node.x) * homePull;
       node.vy += ((node.homeY || node.y) - node.y) * homePull;
-      var phaseX = node.driftPhaseX + now / (18000 + index * 37);
-      var phaseY = node.driftPhaseY + now / (21000 + index * 41);
-      var drift = 0.006 + seededUnit((index + 3) * 61) * 0.006;
-      node.vx += Math.cos(node.driftDirection + phaseX * 0.18) * drift;
-      node.vy += Math.sin(node.driftDirection + phaseY * 0.18) * drift;
+      var phaseX = node.driftPhaseX + now / (15000 + index * 37);
+      var phaseY = node.driftPhaseY + now / (17500 + index * 41);
+      node.vx += Math.cos((node.driftAngle || 0) + phaseX * 0.12) * 0.004;
+      node.vy += Math.sin((node.driftAngle || 0) + phaseY * 0.12) * 0.004;
+      applyMovementEventForces(node, nodes, index, now);
     });
 
     for (var pass = 0; pass < 7; pass += 1) {
@@ -965,6 +1091,12 @@
             if (overlap > 1.2) {
               a.collisionUntil = Math.max(a.collisionUntil || 0, now + 360);
               b.collisionUntil = Math.max(b.collisionUntil || 0, now + 360);
+              a.lastCollisionAt = now;
+              b.lastCollisionAt = now;
+              if (overlap > 7) {
+                a.driftAngle = Math.atan2(-ny, -nx);
+                b.driftAngle = Math.atan2(ny, nx);
+              }
             }
           }
         }
@@ -1006,7 +1138,11 @@
     });
   }
   function visualRadius(node) {
-    return node.radius * (node.depth || 1);
+    var now = performance.now();
+    var eventPulse = node.pulseUntil && now < node.pulseUntil ? Math.max(0, (node.pulseUntil - now) / 1900) : 0;
+    var eventName = node.eventUntil && now < node.eventUntil ? node.movementEvent : '';
+    var eventScale = eventName === 'mega_event' ? 0.18 : eventName === 'bonus_surge' ? 0.13 : eventName === 'whale_pulse' ? 0.10 : eventName === 'pulse_drift' ? 0.075 : 0;
+    return node.radius * (node.depth || 1) * (1 + Math.min(0.20, eventPulse * eventScale));
   }
 
   function signal(record) {
@@ -1306,12 +1442,6 @@
     var now = performance.now();
     updateCamera(width, height, now);
     ctx.clearRect(0, 0, width, height);
-    var weather = marketWeather();
-    var sky = ctx.createRadialGradient(width * 0.5, height * 0.35, 10, width * 0.5, height * 0.5, Math.max(width, height));
-    sky.addColorStop(0, weather.center);
-    sky.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, width, height);
     ctx.save();
     applyCamera(ctx, width, height);
     state.nodes.forEach(function (node) { drawCastShadow(ctx, node); });
@@ -1342,16 +1472,18 @@
     ctx.globalAlpha = alpha;
     var recent = record.recentUntil && now < record.recentUntil;
     var pulse = record.pulseUntil && now < record.pulseUntil ? (record.pulseUntil - now) / 1600 : 0;
+    var eventPulse = node.pulseUntil && now < node.pulseUntil ? (node.pulseUntil - now) / 1900 : 0;
+    var shockwavePulse = node.shockwaveUntil && now < node.shockwaveUntil ? (node.shockwaveUntil - now) / 900 : 0;
     var volumePulse = record.volumeSpikeUntil && now < record.volumeSpikeUntil ? (record.volumeSpikeUntil - now) / 2600 : 0;
     var collisionPulse = node.collisionUntil && now < node.collisionUntil ? (node.collisionUntil - now) / 320 : 0;
-    if (recent || pulse || volumePulse || collisionPulse) {
+    if (recent || pulse || volumePulse || collisionPulse || eventPulse || shockwavePulse) {
       ctx.beginPath();
-      ctx.arc(node.x, node.y, r + 7 + volumePulse * 9 + collisionPulse * 4, 0, Math.PI * 2);
+      ctx.arc(node.x, node.y, r + 7 + volumePulse * 9 + collisionPulse * 4 + eventPulse * 10 + shockwavePulse * 15, 0, Math.PI * 2);
       ctx.strokeStyle = ringColor(record);
-      ctx.globalAlpha = alpha * Math.max(0.25, pulse || volumePulse || collisionPulse * 0.72 || 0.22);
+      ctx.globalAlpha = alpha * Math.max(0.25, pulse || volumePulse || collisionPulse * 0.72 || eventPulse * 0.78 || shockwavePulse * 0.9 || 0.22);
       ctx.lineWidth = Math.max(1, r * (0.03 + volumePulse * 0.04 + collisionPulse * 0.018));
       ctx.shadowColor = ringColor(record);
-      ctx.shadowBlur = 18 + volumePulse * 18 + collisionPulse * 12;
+      ctx.shadowBlur = 18 + volumePulse * 18 + collisionPulse * 12 + eventPulse * 20 + shockwavePulse * 24;
       ctx.stroke();
       ctx.shadowBlur = 0;
       ctx.globalAlpha = alpha;
