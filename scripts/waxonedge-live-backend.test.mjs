@@ -3721,6 +3721,8 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
   route.includes('function collectTokenPriceKeysForPairs') &&
   route.includes('async function loadRouteGraphRowsForToken') &&
   route.includes('const frontierPredicates = frontierBatch.map') &&
+  route.includes("`((token_a_contract = ? AND token_a_symbol = ?) OR (token_b_contract = ? AND token_b_symbol = ?))`") &&
+  route.includes('const frontierParams = frontierBatch.flatMap') &&
   route.includes('(token_a_contract = ? AND token_a_symbol = ?)') &&
   route.includes('(token_b_contract = ? AND token_b_symbol = ?)') &&
   route.includes("CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC") &&
@@ -3735,6 +3737,8 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
   route.includes('const detail = await getToken(db, contract, symbol, { includeRouteContext: true })') &&
   route.includes('delete detail.route_context') &&
   route.includes('const routeIndex = routeContext.routeIndex || buildOgWaxRouteGraph(graphRows, priceIndex)') &&
+  route.includes('const routeIndex = options.routeIndex || buildOgWaxRouteGraph(graphPairRows, priceIndex)') &&
+  route.includes('{ routeIndex: aggregateRouteIndex }') &&
   !route.includes('async function loadAllPairRowsForGraph') &&
   !route.includes("(token_a_contract || '::' || token_a_symbol) IN") &&
   !route.includes("(token_b_contract || '::' || token_b_symbol) IN") &&
@@ -3833,6 +3837,8 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     Number(wufStats.cumulated_pair_liquidity_wax) === 2400 &&
     Number(wufStats.tvl_wax) === 2400 &&
     Number(wufStats.tvl_usd) === 14.4 &&
+    wufStats.strongest_pair.liquidity_wax != null &&
+    'liquidity_usd' in wufStats.strongest_pair &&
     Number(wufStats.strongest_pair.liquidity_wax) === 1000 &&
     wufStats.strongest_pair.liquidity_usd === null &&
     Number(wufStats.strongest_pair.route_liquidity_score) === 1000 &&
@@ -4100,6 +4106,40 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     waxPairProof.wax_price_used === '1' &&
     Array.isArray(waxPairProof.reason_codes) &&
     waxPairProof.reason_codes.length === 0);
+  const waxOnlyRouteIndex = new Map([['eosio.token::WAX', {
+    priceWax: 1,
+    priceUsd: 0.006,
+    route_type: 'wax_self',
+    route_hops: [],
+    route_liquidity_score: null,
+  }]]);
+  const waxAwareProof = __waxonedgeTestHooks.pairContributionProof(
+    {
+      source: 'swap.taco',
+      pair_id: 'WAXNOQUOTE',
+      token_a_contract: 'eosio.token',
+      token_a_symbol: 'WAX',
+      token_b_contract: 'no.route',
+      token_b_symbol: 'NOROUTE',
+      reserve_a: '42',
+      reserve_b: '1000000',
+      liquidity_wax: '999999',
+      liquidity_usd: '999999',
+    },
+    'eosio.token',
+    'WAX',
+    routePriceIndex,
+    waxOnlyRouteIndex,
+  );
+  ok('WAX-aware valuation derives WAX pool value from WAX-side reserve without requiring a non-WAX route',
+    waxAwareProof.token_side === 'a' &&
+    waxAwareProof.route_type === 'wax_self' &&
+    Number(waxAwareProof.contribution_wax) === 84 &&
+    Number(waxAwareProof.contribution_usd) === 0.504 &&
+    Number(waxAwareProof.reserve_side_wax_values.token) === 42 &&
+    waxAwareProof.reserve_side_wax_values.quote === null &&
+    !waxAwareProof.reason_codes.includes('token_b_no_wax_route') &&
+    !waxAwareProof.reason_codes.includes('not_direct_wax_pair'));
   const multiHopPairProof = __waxonedgeTestHooks.pairContributionProof(
     wufAbcPair,
     'wuffi',
@@ -4132,6 +4172,18 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
   ], routePriceIndex);
   ok('zero and negative reserve pairs are rejected from route graph',
     __waxonedgeTestHooks.selectOgWaxRoutePrice('wuffi::WUF', badReserveIndex) == null);
+  const suppliedRouteStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
+    { contract: 'wuffi', symbol: 'WUF', total_supply: '1000000' },
+    { aggregate_complete: 0 },
+    [wufAbcPair],
+    routePriceRows,
+    [],
+    { routeIndex },
+  );
+  ok('deriveTokenPairMetrics reuses supplied aggregate route graph instead of rebuilding per token',
+    Number(suppliedRouteStats.selected_price_wax) === 0.002 &&
+    Number(suppliedRouteStats.liquidity_wax) === 400 &&
+    suppliedRouteStats.selected_price_proof.route_type === 'direct_wax');
   const caps = __waxonedgeTestHooks.metricCapabilitiesFromTokens([
     { selected_price_wax: '1', market_cap_wax: '20', fdv_wax: '50', volume_7d: null },
     { selected_price_wax: '2', circulating_supply: '10', market_cap_wax: '20', volume_7d: '7', volume_30d: null },

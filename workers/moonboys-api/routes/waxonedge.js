@@ -4400,15 +4400,23 @@ function ogPairReserveValuation(pair, contract, symbol, priceIndex, routeIndex =
   let reserveAWax = null;
   let reserveBWax = null;
   let contributionWax = null;
+  const selectedTokenIsWax = isWaxToken(contract, symbol);
   const routeA = routeIndex.get(tokenKey(pair?.token_a_contract, pair?.token_a_symbol));
   const routeB = routeIndex.get(tokenKey(pair?.token_b_contract, pair?.token_b_symbol));
   if (!reasonCodes.length) {
-    if (!routeA) reasonCodes.push('token_a_no_wax_route');
-    if (!routeB) reasonCodes.push('token_b_no_wax_route');
-    if (routeA) reserveAWax = reserveA * routeA.priceWax;
-    if (routeB) reserveBWax = reserveB * routeB.priceWax;
-    if (reserveAWax != null && reserveBWax != null) contributionWax = reserveAWax + reserveBWax;
-    else if (!reasonCodes.length) reasonCodes.push('missing_valued_reserve_side');
+    if (selectedTokenIsWax) {
+      const waxReserve = side.side === 'a' ? reserveA : reserveB;
+      if (side.side === 'a') reserveAWax = waxReserve;
+      if (side.side === 'b') reserveBWax = waxReserve;
+      contributionWax = waxReserve * 2;
+    } else {
+      if (!routeA) reasonCodes.push('token_a_no_wax_route');
+      if (!routeB) reasonCodes.push('token_b_no_wax_route');
+      if (routeA) reserveAWax = reserveA * routeA.priceWax;
+      if (routeB) reserveBWax = reserveB * routeB.priceWax;
+      if (reserveAWax != null && reserveBWax != null) contributionWax = reserveAWax + reserveBWax;
+      else if (!reasonCodes.length) reasonCodes.push('missing_valued_reserve_side');
+    }
   }
 
   const contributionUsd = contributionWax != null && waxUsd != null ? contributionWax * waxUsd : null;

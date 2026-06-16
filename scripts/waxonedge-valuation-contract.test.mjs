@@ -193,5 +193,38 @@ ok('all-pairs aggregate equals sum of contributing proof rows',
   almostEqual(aggregate.total_tvl_wax, contributionSumWax) &&
   almostEqual(aggregate.total_tvl_usd, contributionSumUsd));
 
+const waxOnlyRouteIndex = new Map([['eosio.token::WAX', {
+  priceWax: 1,
+  priceUsd: 0.006,
+  route_type: 'wax_self',
+  route_hops: [],
+  route_liquidity_score: null,
+}]]);
+const waxPoolProof = __waxonedgeTestHooks.pairContributionProof(
+  {
+    source: 'swap.taco',
+    pair_id: 'WAXUNROUTED',
+    token_a_contract: 'eosio.token',
+    token_a_symbol: 'WAX',
+    token_b_contract: 'unrouted',
+    token_b_symbol: 'NOROUTE',
+    reserve_a: '25',
+    reserve_b: '250000',
+    liquidity_wax: '999999',
+    liquidity_usd: '999999',
+  },
+  'eosio.token',
+  'WAX',
+  priceIndex,
+  waxOnlyRouteIndex,
+);
+ok('WAX-aware pair valuation uses WAX-side reserve without requiring counter-token route',
+  waxPoolProof.route_type === 'wax_self' &&
+  Number(waxPoolProof.contribution_wax) === 50 &&
+  Number(waxPoolProof.contribution_usd) === 0.3 &&
+  Number(waxPoolProof.reserve_side_wax_values.token) === 25 &&
+  waxPoolProof.reserve_side_wax_values.quote === null &&
+  waxPoolProof.reason_codes.length === 0);
+
 console.log(`\nwaxonedge-valuation-contract.test: ${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
