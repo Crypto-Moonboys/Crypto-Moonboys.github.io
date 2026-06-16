@@ -3587,7 +3587,8 @@ ok('token pair endpoint returns all selected-token pairs by liquidity then volum
   route.includes('CAST(COALESCE(volume_24h_wax') &&
   route.includes('next_cursor') &&
   route.includes('complete: !hasMore') &&
-  route.includes('LIMIT ? OFFSET ?'));
+  route.includes('LIMIT ? OFFSET ?') &&
+  route.includes('const TOKEN_PAIR_MAX_PAGE_LIMIT = 1000'));
 ok('token detail endpoint returns canonical stats and source coverage',
   route.includes('source_coverage: sourceCoverageFromKeys') &&
   route.includes('selected_price_wax') &&
@@ -3602,9 +3603,19 @@ ok('token detail derives partial aggregate metrics from indexed pair rows',
   route.includes('function loadTokenPriceRowsForPairs') &&
   route.includes('selected_price_source') &&
   route.includes('cumulated_pair_liquidity_wax') &&
+  route.includes('metrics.tvl_wax = safeDecimal(liquidityWax)') &&
+  route.includes('metrics.tvl_usd = safeDecimal(liquidityUsd)') &&
   route.includes('strongest_pair') &&
   route.includes('unavailable_reasons') &&
   route.includes('Pair liquidity indexed; holder/candle metrics pending'));
+ok('token debug exposes all-pair aggregate contribution totals',
+  route.includes('function aggregatePairContributionTotals') &&
+  route.includes('aggregate_totals: aggregateTotals') &&
+  route.includes('total_liquidity_wax') &&
+  route.includes('total_liquidity_usd') &&
+  route.includes('total_tvl_wax') &&
+  route.includes('total_tvl_usd') &&
+  route.includes('unresolved_pair_count'));
 ok('token detail exposes backend metric proof fields without frontend changes',
   route.includes('function tokenMetricProof') &&
   route.includes('selected_price_proof') &&
@@ -3769,10 +3780,115 @@ ok('token detail avoids unbounded all-priced-token scan',
     wufStats.source_count === 2 &&
     Number(wufStats.liquidity_wax) === 2100 &&
     Number(wufStats.cumulated_pair_liquidity_wax) === 2100 &&
+    Number(wufStats.tvl_wax) === 2100 &&
+    Number(wufStats.tvl_usd) === 12.6 &&
     Number(wufStats.volume_24h_wax) === 60 &&
     wufStats.change_24h == null &&
     Number(wufStats.fdv_wax) > 0 &&
     wufStats.unavailable_reasons.price_change_24h === 'Requires indexed 24h price-change data');
+  const staleTvlStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
+    {
+      contract: 'wuffi',
+      symbol: 'WUF',
+      total_supply: '1000000',
+    },
+    {
+      aggregate_complete: 0,
+      liquidity_wax: '999999',
+      liquidity_usd: '9999',
+      tvl_wax: '888888',
+      tvl_usd: '8888',
+    },
+    [
+      {
+        source: 'swap.nefty',
+        pair_id: 'WAXWUFB',
+        token_a_contract: 'eosio.token',
+        token_a_symbol: 'WAX',
+        token_b_contract: 'wuffi',
+        token_b_symbol: 'WUF',
+        price: '500',
+        volume_24h_wax: '50',
+        reserve_a: '1000',
+        reserve_b: '500000',
+      },
+      {
+        source: 'swap.taco',
+        pair_id: 'WUFABC',
+        token_a_contract: 'wuffi',
+        token_a_symbol: 'WUF',
+        token_b_contract: 'abc.token',
+        token_b_symbol: 'ABC',
+        price: '0.001',
+        volume_24h_wax: '10',
+        reserve_a: '100000',
+        reserve_b: '100',
+      },
+    ],
+    [
+      { contract: 'eosio.token', symbol: 'WAX', price_wax: '1', price_usd: '0.006' },
+      { contract: 'abc.token', symbol: 'ABC', price_wax: '2', price_usd: '0.012' },
+    ],
+  );
+  ok('same-basis TVL is recomputed from all-pair liquidity instead of stale stored stats',
+    Number(staleTvlStats.liquidity_wax) === 2000 &&
+    Number(staleTvlStats.tvl_wax) === 2000 &&
+    Number(staleTvlStats.liquidity_usd) === 12 &&
+    Number(staleTvlStats.tvl_usd) === 12 &&
+    staleTvlStats.tvl_liquidity_same_basis === true);
+  const aggregateTotals = __waxonedgeTestHooks.aggregatePairContributionTotals(
+    [
+      {
+        source: 'swap.nefty',
+        pair_id: 'WAXWUFB',
+        token_a_contract: 'eosio.token',
+        token_a_symbol: 'WAX',
+        token_b_contract: 'wuffi',
+        token_b_symbol: 'WUF',
+        price: '500',
+        reserve_a: '1000',
+        reserve_b: '500000',
+      },
+      {
+        source: 'swap.taco',
+        pair_id: 'WUFABC',
+        token_a_contract: 'wuffi',
+        token_a_symbol: 'WUF',
+        token_b_contract: 'abc.token',
+        token_b_symbol: 'ABC',
+        price: '0.001',
+        reserve_a: '100000',
+        reserve_b: '100',
+      },
+      {
+        source: 'swap.box',
+        pair_id: 'WUFZZZ',
+        token_a_contract: 'wuffi',
+        token_a_symbol: 'WUF',
+        token_b_contract: 'zzz.token',
+        token_b_symbol: 'ZZZ',
+        price: '0.001',
+        reserve_a: '1',
+        reserve_b: '1',
+      },
+    ],
+    'wuffi',
+    'WUF',
+    new Map([
+      ['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }],
+      ['abc.token::ABC', { priceWax: 2, priceUsd: 0.012 }],
+    ]),
+  );
+  ok('aggregate pair contribution totals sum included pairs and count unresolved pairs',
+    aggregateTotals.indexed_pair_count === 3 &&
+    aggregateTotals.source_count === 3 &&
+    aggregateTotals.liquidity_contribution_count === 1 &&
+    aggregateTotals.tvl_contribution_count === 1 &&
+    aggregateTotals.unresolved_pair_count === 2 &&
+    Number(aggregateTotals.total_liquidity_wax) === 2000 &&
+    Number(aggregateTotals.total_tvl_wax) === 2000 &&
+    Number(aggregateTotals.total_liquidity_usd) === 12 &&
+    Number(aggregateTotals.total_tvl_usd) === 12);
   const marketCapProofWithoutCirculating = __waxonedgeTestHooks.tokenMetricProof({
     selected_price_wax: '2',
     market_cap_wax: '200',

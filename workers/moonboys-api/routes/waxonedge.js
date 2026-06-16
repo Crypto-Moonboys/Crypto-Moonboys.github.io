@@ -55,7 +55,7 @@ const WAXONEDGE_AGGREGATE_SOURCES = Object.freeze([
   'dapp.fusion',
 ]);
 const TOKEN_PAIR_PAGE_LIMIT = 100;
-const TOKEN_PAIR_MAX_PAGE_LIMIT = 250;
+const TOKEN_PAIR_MAX_PAGE_LIMIT = 1000;
 const LARGE_SNAPSHOT_SOURCES = Object.freeze([
   'swap.alcor_pools',
   'swap.taco_pairs',
@@ -4448,6 +4448,45 @@ function withPairContributionProof(pair, contract, symbol, priceIndex) {
   };
 }
 
+function aggregatePairContributionTotals(pairRows, contract, symbol, priceIndex) {
+  let liquidityWax = 0;
+  let liquidityUsd = 0;
+  let liquidityCount = 0;
+  let unresolvedCount = 0;
+  const sourceKeys = new Set();
+  for (const pair of pairRows || []) {
+    const source = aggregateSourceKey(pair.source);
+    if (source) sourceKeys.add(source);
+    const proof = pairContributionProof(pair, contract, symbol, priceIndex);
+    if (proof.contributes_to_liquidity || proof.contributes_to_tvl) {
+      const wax = asNumber(proof.contribution_wax);
+      const usd = asNumber(proof.contribution_usd);
+      if (wax != null) liquidityWax += wax;
+      if (usd != null) liquidityUsd += usd;
+      liquidityCount += 1;
+    } else {
+      unresolvedCount += 1;
+    }
+  }
+  const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+  return {
+    indexed_pair_count: (pairRows || []).length,
+    source_count: sourceKeys.size,
+    source_keys: Array.from(sourceKeys).sort(),
+    liquidity_contribution_count: liquidityCount,
+    tvl_contribution_count: liquidityCount,
+    unresolved_pair_count: unresolvedCount,
+    total_liquidity_wax: liquidityCount ? safeDecimal(liquidityWax) : null,
+    total_liquidity_usd: liquidityCount ? safeDecimal(liquidityUsd) : null,
+    total_tvl_wax: liquidityCount ? safeDecimal(liquidityWax) : null,
+    total_tvl_usd: liquidityCount ? safeDecimal(liquidityUsd) : null,
+    wax_usd: safeDecimal(waxUsd),
+    liquidity_basis: liquidityCount ? 'indexed_pair_reserve_value' : null,
+    tvl_basis: liquidityCount ? 'indexed_pair_reserve_value' : null,
+    tvl_liquidity_same_basis: liquidityCount > 0,
+  };
+}
+
 function tokenMetricProof(metrics, selected = null) {
   const selectedPriceWax = asNumber(metrics?.selected_price_wax);
   const selectedPriceUsd = asNumber(metrics?.selected_price_usd);
@@ -4669,8 +4708,8 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows) {
   metrics.liquidity_usd = safeDecimal(liquidityUsd);
   metrics.cumulated_pair_liquidity_wax = safeDecimal(liquidityWax);
   metrics.cumulated_pair_liquidity_usd = safeDecimal(liquidityUsd);
-  metrics.tvl_wax = safeDecimal(asNumber(metrics.tvl_wax) ?? liquidityWax);
-  metrics.tvl_usd = safeDecimal(asNumber(metrics.tvl_usd) ?? liquidityUsd);
+  metrics.tvl_wax = safeDecimal(liquidityWax);
+  metrics.tvl_usd = safeDecimal(liquidityUsd);
   metrics.source_count = sources.size || asNumber(metrics.source_count) || null;
   metrics.indexed_pair_count = pairCount || asNumber(metrics.indexed_pair_count) || null;
   metrics.source_keys = Array.from(sources).sort().join(',');
@@ -4788,6 +4827,9 @@ async function getToken(db, contract, symbol) {
 async function getTokenDebug(db, contract, symbol) {
   const detail = await getToken(db, contract, symbol);
   const pairRows = await loadPairRowsForToken(db, contract, symbol);
+  const priceRows = await loadTokenPriceRowsForPairs(db, pairRows);
+  const priceIndex = buildDbTokenPriceIndex(priceRows);
+  const aggregateTotals = aggregatePairContributionTotals(pairRows, contract, symbol, priceIndex);
   const chartCandleCount = await countScalar(db,
     `SELECT COUNT(*) AS count
      FROM waxonedge_chart_candles c
@@ -4825,6 +4867,7 @@ async function getTokenDebug(db, contract, symbol) {
     chart_pair_id: chartPairId,
     candle_url_example: candleUrlExample(chartSrc, chartPairId),
     reference_candle_url_example: referenceCandleUrlExample(chartSrc, chartPairId),
+    aggregate_totals: aggregateTotals,
     diagnostics: diagnoseTokenAggregate(contract, symbol, detail.stats, pairRows, chartCandleCount, aggregateFresh),
     source_coverage: detail.source_coverage,
     sync_diagnostics: {
@@ -6242,6 +6285,7 @@ export const __waxonedgeTestHooks = {
   deriveTokenPairMetrics,
   tokenMetricProof,
   pairContributionProof,
+  aggregatePairContributionTotals,
   metricCapabilitiesFromTokens,
   collectTokenPriceKeysForPairs,
   diagnoseTokenAggregate,
