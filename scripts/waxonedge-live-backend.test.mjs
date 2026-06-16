@@ -3633,9 +3633,15 @@ ok('WAXCASH OG WOE parity proof uses narrow fee_bps loader',
   route.includes('async function loadWaxcashOgPairRows') &&
   /async function loadWaxcashOgPairRows[\s\S]*fee_bps, updated_at[\s\S]*FROM waxonedge_pairs[\s\S]*WAXCASH_CONTRACT, WAXCASH_SYMBOL/.test(route) &&
   route.includes('const pairRows = await loadWaxcashOgPairRows(db)'));
-ok('WAXCASH OG WOE parity proof uses deepest direct WAX pool without stored price or multi-hop headline',
+ok('WAXCASH OG WOE parity proof prefers Alcor direct WAX pool without stored price or multi-hop headline',
   route.includes('function buildWaxcashOgParityProof') &&
   route.includes('function waxcashHeadlinePrice') &&
+  route.includes('function isAlcorWaxcashDirectPair') &&
+  route.includes("headline_price_source_policy: 'alcor_preferred_direct_wax'") &&
+  route.includes('alcor_direct_wax_candidate_count') &&
+  route.includes('alcor_direct_wax_selected') &&
+  route.includes('headline_fallback_used') &&
+  route.includes('alcor_waxcash_direct_pool_missing') &&
   route.includes('function ogDirectWaxTokenPrice') &&
   route.includes('waxReserve > selected.waxReserve') &&
   route.includes('price_wax = wax_reserve / waxcash_reserve') &&
@@ -3666,6 +3672,10 @@ ok('token detail exposes backend metric proof fields without frontend changes',
   route.includes('function tokenMetricProof') &&
   route.includes('selected_price_proof') &&
   route.includes('metric_status') &&
+  route.includes('selected_price_confidence') &&
+  route.includes('liquidity_confidence') &&
+  route.includes('tvl_confidence') &&
+  route.includes('metric_reason_codes') &&
   route.includes('metric_sources') &&
   route.includes('tvl_basis') &&
   route.includes('liquidity_basis') &&

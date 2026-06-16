@@ -792,6 +792,10 @@
         liquidityUsd: asNum(tok.liquidity_usd),
         tvlWax: asNum(tok.tvl_wax),
         tvlUsd: asNum(tok.tvl_usd),
+        selectedPriceConfidence: metricConfidenceFrom(tok, 'selected_price'),
+        liquidityConfidence: metricConfidenceFrom(tok, 'liquidity'),
+        tvlConfidence: metricConfidenceFrom(tok, 'tvl'),
+        metricReasonCodes: String(tok.metric_reason_codes || tok.reason_codes || tok.unavailable_reasons || '').split(',').map(function (reason) { return reason.trim(); }).filter(Boolean),
         holderCount: asNum(tok.holder_count),
         circulatingSupply: asNum(tok.circulating_supply),
         fdvWax: asNum(tok.fdv_wax),
@@ -837,6 +841,10 @@
       liquidityUsd: null,
       tvlWax: null,
       tvlUsd: null,
+      selectedPriceConfidence: 'unavailable',
+      liquidityConfidence: 'unavailable',
+      tvlConfidence: 'unavailable',
+      metricReasonCodes: [],
       holderCount: null,
       circulatingSupply: null,
       fdvWax: null,
@@ -1269,13 +1277,41 @@
 
   function metricValueForToken(record, metric) {
     if (!record) return null;
+    if (metric === 'price') {
+      if (record.selectedPriceConfidence !== 'good') return null;
+      return record.selectedPriceUsd != null ? record.selectedPriceUsd : record.selectedPriceWax;
+    }
+    if (metric === 'tvl') {
+      if (record.tvlConfidence !== 'good') return null;
+      return record.tvlUsd != null ? record.tvlUsd : record.tvlWax;
+    }
+    if (metric === 'liquidity') {
+      if (record.liquidityConfidence !== 'good') return null;
+      return record.liquidityUsd != null ? record.liquidityUsd : record.liquidityWax;
+    }
     if (metric === 'volume') return record.volume24 != null ? record.volume24 : null;
     if (metric === 'pairs') return record.pairCount != null ? record.pairCount : null;
-    return record.liquidityUsd != null ? record.liquidityUsd
-      : record.tvlUsd != null ? record.tvlUsd
-      : record.liquidityWax != null ? record.liquidityWax
-      : record.tvlWax != null ? record.tvlWax
-      : null;
+    return metricValueForToken(record, 'liquidity') != null ? metricValueForToken(record, 'liquidity') : metricValueForToken(record, 'tvl');
+  }
+
+  function metricConfidenceFrom(row, metricName) {
+    var direct = row && (row[metricName + '_confidence'] || row[metricName + 'Confidence']);
+    if (direct) return String(direct).toLowerCase();
+    var status = row && (row.metric_status || row.metricStatus);
+    var metricStatus = status && status[metricName];
+    if (!metricStatus) return 'unavailable';
+    return metricStatus.live === true ? 'good' : (metricStatus.reason ? 'unavailable' : 'weak');
+  }
+
+  function guardedDualMetric(record, metric) {
+    var confidence = metric === 'price' ? record.selectedPriceConfidence
+      : metric === 'tvl' ? record.tvlConfidence
+      : record.liquidityConfidence;
+    if (confidence === 'weak') return 'Proof weak';
+    if (confidence !== 'good') return UNAVAILABLE_TEXT;
+    if (metric === 'price') return formatDualMetric(record.selectedPriceWax || record.systemPrice, record.selectedPriceUsd || record.usdPrice, 'WAX', '$');
+    if (metric === 'tvl') return formatDualMetric(record.tvlWax, record.tvlUsd);
+    return formatDualMetric(record.liquidityWax, record.liquidityUsd);
   }
 
   function featuredTokenRecords() {
@@ -1502,7 +1538,7 @@
         '<span class="woe-token-rank-number">#' + escHtml(String(index + 1)) + '</span>' +
         '<div><strong>' + symbolLink + '</strong><span>' + escHtml(contr || UNAVAILABLE_TEXT) + '</span></div>' +
         '<div class="woe-token-rank-metrics">' +
-          '<span>' + escHtml(formatDualMetric(record.selectedPriceWax || record.systemPrice, record.selectedPriceUsd || record.usdPrice, 'WAX', '$')) + '</span>' +
+          '<span>' + escHtml(guardedDualMetric(record, 'price')) + '</span>' +
           '<span class="' + escHtml(pctClass(change)) + '">' + escHtml(change != null ? fmtPct(change) : UNAVAILABLE_TEXT) + '</span>' +
           '<span>' + escHtml(record.volume24 != null ? fmtNum(record.volume24) + ' vol' : UNAVAILABLE_TEXT) + '</span>' +
         '</div>' +
@@ -1564,7 +1600,11 @@
         ? (record.volume24 != null ? fmtNum(record.volume24) + ' vol' : UNAVAILABLE_TEXT)
         : state.filters.bubbleMetric === 'pairs'
           ? (record.pairCount != null || sources.length ? String(record.pairCount != null ? record.pairCount : sources.length) + ' pairs' : UNAVAILABLE_TEXT)
-          : formatDualMetric(record.liquidityWax || record.tvlWax, record.liquidityUsd || record.tvlUsd);
+          : state.filters.bubbleMetric === 'price'
+            ? guardedDualMetric(record, 'price')
+            : state.filters.bubbleMetric === 'tvl'
+              ? guardedDualMetric(record, 'tvl')
+              : guardedDualMetric(record, 'liquidity');
       return '<button class="woe-bubble-token ' + colorClass + '" type="button"' +
         ' data-token="' + escHtml(symbol) + '" data-contract="' + escHtml(contract) + '"' +
         ' style="--bubble-size:' + escHtml(String(size)) + 'px;--bubble-glow:' + escHtml(String(glow)) + 'px;"' +
@@ -1735,6 +1775,10 @@
       liquidityUsd: asNum(stats.liquidity_usd),
       tvlWax: asNum(stats.tvl_wax),
       tvlUsd: asNum(stats.tvl_usd),
+      selectedPriceConfidence: metricConfidenceFrom(stats, 'selected_price'),
+      liquidityConfidence: metricConfidenceFrom(stats, 'liquidity'),
+      tvlConfidence: metricConfidenceFrom(stats, 'tvl'),
+      metricReasonCodes: String(stats.metric_reason_codes || stats.reason_codes || stats.unavailable_reasons || '').split(',').map(function (reason) { return reason.trim(); }).filter(Boolean),
       selectedPairSource: stats.selected_pair_source || '',
       selectedPairId: stats.selected_pair_id || '',
       sourceCount: asNum(stats.source_count),
