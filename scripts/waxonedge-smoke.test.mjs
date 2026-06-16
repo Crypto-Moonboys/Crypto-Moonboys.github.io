@@ -43,6 +43,7 @@ ok('css/waxonedge.css exists', exists('css/waxonedge.css'));
 ok('css/waxonedge-bubbles-v2.css exists', exists('css/waxonedge-bubbles-v2.css'));
 ok('js/waxonedge.js exists', exists('js/waxonedge.js'));
 ok('js/waxonedge-sources.js exists', exists('js/waxonedge-sources.js'));
+ok('js/waxonedge-featured-tokens.js exists', exists('js/waxonedge-featured-tokens.js'));
 ok('js/waxonedge-bubbles-v2.js exists', exists('js/waxonedge-bubbles-v2.js'));
 
 const html = exists('waxonedge.html') ? read('waxonedge.html') : '';
@@ -52,6 +53,7 @@ const css = exists('css/waxonedge.css') ? read('css/waxonedge.css') : '';
 const v2Css = exists('css/waxonedge-bubbles-v2.css') ? read('css/waxonedge-bubbles-v2.css') : '';
 const js = exists('js/waxonedge.js') ? read('js/waxonedge.js') : '';
 const sourcesJs = exists('js/waxonedge-sources.js') ? read('js/waxonedge-sources.js') : '';
+const featuredJs = exists('js/waxonedge-featured-tokens.js') ? read('js/waxonedge-featured-tokens.js') : '';
 const v2Js = exists('js/waxonedge-bubbles-v2.js') ? read('js/waxonedge-bubbles-v2.js') : '';
 
 ok('waxonedge.html references /css/waxonedge.css', html.includes('/css/waxonedge.css'));
@@ -59,6 +61,12 @@ ok('waxonedge.html references /css/waxonedge-bubbles-v2.css', html.includes('/cs
 ok('waxonedge.html lets the AntBubbles scanner own the page without old dashboard scripts',
   !html.includes('/js/waxonedge.js') && !html.includes('/js/waxonedge-sources.js'));
 ok('waxonedge.html references /js/waxonedge-bubbles-v2.js', html.includes('/js/waxonedge-bubbles-v2.js'));
+ok('waxonedge.html loads featured-token config before scanner runtime',
+  html.indexOf('/js/waxonedge-featured-tokens.js') !== -1 &&
+  html.indexOf('/js/waxonedge-featured-tokens.js') < html.indexOf('/js/waxonedge-bubbles-v2.js'));
+ok('analytics token page loads featured-token config before waxonedge.js',
+  tokenHtml.indexOf('/js/waxonedge-featured-tokens.js') !== -1 &&
+  tokenHtml.indexOf('/js/waxonedge-featured-tokens.js') < tokenHtml.indexOf('/js/waxonedge.js'));
 ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles',
   html.includes('/css/waxonedge.css?v=woe-') &&
   html.includes('/css/waxonedge-bubbles-v2.css?v=woe-') &&
@@ -111,6 +119,13 @@ try {
   ok('js/waxonedge-sources.js passes node --check', true);
 } catch (error) {
   ok('js/waxonedge-sources.js passes node --check', false, error.message);
+}
+
+try {
+  execFileSync(process.execPath, ['--check', path.join(ROOT, 'js/waxonedge-featured-tokens.js')], { encoding: 'utf8' });
+  ok('js/waxonedge-featured-tokens.js passes node --check', true);
+} catch (error) {
+  ok('js/waxonedge-featured-tokens.js passes node --check', false, error.message);
 }
 
 try {
@@ -224,7 +239,7 @@ ok('waxonedge-bubbles-v2.js preserves distinct indexed source keys',
   v2Js.includes("if (source === 'swap.nefty') return 'swap.nefty';") &&
   v2Js.includes("if (source === 'swap.box') return 'swap.box';"));
 ok('waxonedge-bubbles-v2.js selects featured tokens using multi-DEX aggregate fields',
-  v2Js.includes('var WAXONEDGE_FEATURED_TOKENS = [') &&
+  featuredJs.includes('window.WAXONEDGE_FEATURED_TOKENS = [') &&
   v2Js.includes('selected_price_wax') &&
   v2Js.includes('selected_price_usd') &&
   v2Js.includes('source_count') &&
@@ -257,16 +272,23 @@ ok('waxonedge-bubbles-v2.js filters search by symbol, contract, source, and pair
   v2Js.includes('record.selectedSource') &&
   v2Js.includes('record.strongestPairLabel') &&
   v2Js.includes('record.sources.join'));
-ok('waxonedge-bubbles-v2.js renders featured token allowlist only',
-  v2Js.includes('var WAXONEDGE_FEATURED_TOKENS = [') &&
-  v2Js.includes("['AIGOD', 'aigodtokenwx', 'AIGOD']") &&
-  v2Js.includes("['WAXP', 'eosio.token', 'WAX']") &&
+ok('WaxOnEdge featured-token allowlist is defined in one shared config file',
+  featuredJs.includes('window.WAXONEDGE_FEATURED_TOKENS = [') &&
+  featuredJs.includes("['AIGOD', 'aigodtokenwx', 'AIGOD']") &&
+  featuredJs.includes("['WAXP', 'eosio.token', 'WAX']") &&
+  !js.includes("['AIGOD', 'aigodtokenwx', 'AIGOD']") &&
+  !v2Js.includes("['AIGOD', 'aigodtokenwx', 'AIGOD']") &&
+  !js.includes("['WAXP', 'eosio.token', 'WAX']") &&
+  !v2Js.includes("['WAXP', 'eosio.token', 'WAX']"));
+ok('waxonedge-bubbles-v2.js renders featured token allowlist only from shared config',
+  v2Js.includes('Array.isArray(window.WAXONEDGE_FEATURED_TOKENS)') &&
+  v2Js.includes('? window.WAXONEDGE_FEATURED_TOKENS') &&
   v2Js.includes('var WAXONEDGE_FEATURED_TOKEN_MAP = WAXONEDGE_FEATURED_TOKENS.reduce') &&
   v2Js.includes('var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&
   v2Js.includes('if (!key || !featured) return;') &&
   v2Js.includes('if (!WAXONEDGE_FEATURED_TOKEN_MAP[key]) return;') &&
-  v2Js.includes('console.debug') &&
-  v2Js.includes("'missing_featured_token'") &&
+  v2Js.includes('state.missingFeaturedLogged[featured.key]') &&
+  v2Js.includes("console.debug('missing_featured_token', featured.key)") &&
   !v2Js.includes('var TOP_LIMIT = 100') &&
   !v2Js.includes('base.slice(0, TOP_LIMIT)'));
 ok('waxonedge-bubbles-v2.js keeps modes and search scoped to featured tokens without fake metric zeroes',
@@ -446,11 +468,14 @@ ok('waxonedge.js maps backend source labels without collapsing swap adapters int
   js.includes("'swap.nefty': { label: 'swap.nefty'") &&
   js.includes("'swap.box': { label: 'swap.box'"));
 ok('waxonedge.js renders only featured token records in legacy scanner paths',
-  js.includes('var WAXONEDGE_FEATURED_TOKENS = [') &&
+  js.includes('Array.isArray(window.WAXONEDGE_FEATURED_TOKENS)') &&
+  js.includes('? window.WAXONEDGE_FEATURED_TOKENS') &&
   js.includes('function featuredTokenRecords()') &&
   js.includes('state.tokenMap && state.tokenMap.byKey ? state.tokenMap.byKey[featured.key] : null') &&
   js.includes('var tokens = getRankedTokenRecords();') &&
-  js.includes('var rows = tokensData.map(function (tok)') &&
+  js.includes('var rows = tokensData.map(function (record, index)') &&
+  js.includes('state.missingFeaturedLogged[featured.key]') &&
+  js.includes("console.debug('missing_featured_token', featured.key)") &&
   !js.includes('getRankedTokenRecords().slice(0, 99)') &&
   !js.includes('tokensData.slice(0, 250)'));
 ok('waxonedge.js keeps pair matrix renderer for token analytics route', js.includes('function renderMatrix') && js.includes('woe-matrix-body'));
@@ -496,6 +521,8 @@ ok('waxonedge.js has exactly one pickDefaultSelection definition',
   countMatches(js, /function pickDefaultSelection\s*\(/g) === 1);
 ok('waxonedge.js has exactly one renderMatrix definition',
   countMatches(js, /function renderMatrix\s*\(/g) === 1);
+ok('waxonedge.js has exactly one renderTokens definition',
+  countMatches(js, /function renderTokens\s*\(/g) === 1);
 ok('waxonedge.js defines shared stable pair key helper',
   js.includes('function getPairKey(market)') &&
   js.includes("market.marketId || market.pairId || market.pair_id || market.id") &&
