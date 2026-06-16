@@ -108,6 +108,16 @@ ok('direct WAX route derives token WAX price from real reserves',
   wufRoute?.route_type === 'direct_wax' &&
   almostEqual(wufRoute.priceWax, 0.002));
 
+const directProofFields = __waxonedgeTestHooks.selectedPriceProofFields(wufRoute);
+ok('selected price proof exposes reserve-backed direct WAX evidence',
+  directProofFields.selected_price_confidence === 'good' &&
+  directProofFields.selected_price_route_type === 'direct_wax' &&
+  almostEqual(directProofFields.selected_price_wax, 0.002) &&
+  directProofFields.selected_price_pair_id === 'WAXWUF' &&
+  directProofFields.selected_price_reserve_a === '1000' &&
+  directProofFields.selected_price_reserve_b === '500000' &&
+  directProofFields.selected_price_formula.includes('indexed reserves'));
+
 ok('pairEdgePrice uses reserve ratio even when pair.price is present',
   directWaxPair.price !== '500' &&
   almostEqual(wufRoute.priceWax, 0.002));
@@ -119,6 +129,18 @@ ok('multi-hop WAX route is valid without direct WAX pair',
   multiHopWufRoute.route_hops.length === 2 &&
   almostEqual(multiHopWufRoute.priceWax, 0.002));
 
+ok('direct WAX pair is preferred when usable reserves exist',
+  wufRoute?.route_type === 'direct_wax' &&
+  wufRoute.route_hops.length === 1 &&
+  wufRoute.route_hops[0].pair_id === 'WAXWUF');
+
+const multiHopProofFields = __waxonedgeTestHooks.selectedPriceProofFields(multiHopWufRoute);
+ok('selected price proof exposes reserve-backed multi-hop WAX evidence',
+  multiHopProofFields.selected_price_confidence === 'good' &&
+  multiHopProofFields.selected_price_route_type === 'multi_hop_wax' &&
+  multiHopProofFields.selected_price_route_hops.length === 2 &&
+  almostEqual(multiHopProofFields.selected_price_wax, 0.002));
+
 ok('malformed pair.price does not discard a valid reserve-backed edge',
   wufAbcPair.price === 'malformed-price' &&
   almostEqual(multiHopWufRoute.priceWax, 0.002));
@@ -129,6 +151,13 @@ ok('token with no direct WAX pool can still be valued through the graph',
 
 ok('unresolved token remains null instead of worthless or guessed',
   zzzRoute == null);
+
+const unresolvedPriceProof = __waxonedgeTestHooks.selectedPriceProofFields(zzzRoute);
+ok('unknown selected price is unavailable null, not fake zero',
+  unresolvedPriceProof.selected_price_confidence === 'unavailable' &&
+  unresolvedPriceProof.selected_price_wax === null &&
+  unresolvedPriceProof.selected_price_usd === null &&
+  unresolvedPriceProof.selected_price_reason_codes.includes('no_indexed_wax_route'));
 
 const directProof = __waxonedgeTestHooks.pairContributionProof(
   directWaxPair,
@@ -167,6 +196,16 @@ const badReserveRouteIndex = __waxonedgeTestHooks.buildOgWaxRouteGraph([
 ok('zero and negative reserves are rejected from the WAX route graph',
   __waxonedgeTestHooks.selectOgWaxRoutePrice('wuffi::WUF', badReserveRouteIndex) == null &&
   __waxonedgeTestHooks.selectOgWaxRoutePrice('abc.token::ABC', badReserveRouteIndex) == null);
+
+const tinyRouteIndex = __waxonedgeTestHooks.buildOgWaxRouteGraph([
+  { ...directWaxPair, pair_id: 'TINY', reserve_a: '1', reserve_b: '500' },
+], priceIndex);
+const tinyRoute = __waxonedgeTestHooks.selectOgWaxRoutePrice('wuffi::WUF', tinyRouteIndex);
+const tinyProof = __waxonedgeTestHooks.selectedPriceProofFields(tinyRoute);
+ok('tiny reserve route is weak and does not expose trusted price',
+  tinyProof.selected_price_confidence === 'weak' &&
+  tinyProof.selected_price_wax === null &&
+  tinyProof.selected_price_reason_codes.includes('route_liquidity_below_threshold'));
 
 ok('unresolved contribution has null values and reason codes',
   unresolvedProof.contributes_to_liquidity === false &&
@@ -225,6 +264,12 @@ ok('WAX-aware pair valuation uses WAX-side reserve without requiring counter-tok
   Number(waxPoolProof.reserve_side_wax_values.token) === 25 &&
   waxPoolProof.reserve_side_wax_values.quote === null &&
   waxPoolProof.reason_codes.length === 0);
+
+const waxProofFields = __waxonedgeTestHooks.selectedPriceProofFields(waxRoute);
+ok('WAX proof returns exactly 1 WAX with good confidence',
+  waxProofFields.selected_price_confidence === 'good' &&
+  waxProofFields.selected_price_route_type === 'wax_self' &&
+  waxProofFields.selected_price_wax === '1');
 
 console.log(`\nwaxonedge-valuation-contract.test: ${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

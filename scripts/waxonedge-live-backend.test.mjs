@@ -175,7 +175,8 @@ ok('live snapshot uses stable contract-symbol token keys',
   ok('live token update preserves real zero metric values',
     update &&
     update.token_key === 'graffitiking::WAXCASH' &&
-    update.price_usd === '0' &&
+    update.price_usd === null &&
+    update.selected_price_confidence === 'unavailable' &&
     update.change_24h === '0' &&
     update.volume_24h_usd === '0');
 }
@@ -3622,9 +3623,21 @@ ok('token debug exposes all-pair aggregate contribution totals',
   route.includes('total_tvl_wax') &&
   route.includes('total_tvl_usd') &&
   route.includes('unresolved_pair_count'));
+ok('token debug exposes selected-price proof audit route diagnostics',
+  route.includes('function priceProofAudit') &&
+  route.includes('price_proof_audit: priceProofAudit') &&
+  route.includes('all_candidate_pairs') &&
+  route.includes('all_candidate_route_prices') &&
+  route.includes('selected_route') &&
+  route.includes('rejected_routes') &&
+  route.includes('wax_usd_source') &&
+  route.includes('final_displayed_price'));
 ok('token detail exposes backend metric proof fields without frontend changes',
   route.includes('function tokenMetricProof') &&
   route.includes('selected_price_proof') &&
+  route.includes('selected_price_confidence') &&
+  route.includes('selected_price_reason_codes') &&
+  route.includes('Price proof weak') &&
   route.includes('metric_status') &&
   route.includes('metric_sources') &&
   route.includes('tvl_basis') &&
@@ -3647,6 +3660,9 @@ ok('token pair endpoint exposes pair contribution proof fields',
   route.includes('reason_codes'));
 ok('bootstrap exposes frontend metric capability flags from backend truth',
   route.includes('function metricCapabilitiesFromTokens') &&
+  route.includes('function addBootstrapSelectedPriceProof') &&
+  route.includes('tokens: proofTokens') &&
+  route.includes("token?.selected_price_confidence === 'good'") &&
   route.includes('metric_capabilities: metricCapabilities') &&
   route.includes('market_cap: marketCapLive') &&
   route.includes('mcap: marketCapLive') &&
@@ -4055,11 +4071,13 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     Number(wufStats.tvl_usd) === Number(aggregateTotals.total_tvl_usd));
   const marketCapProofWithoutCirculating = __waxonedgeTestHooks.tokenMetricProof({
     selected_price_wax: '2',
+    selected_price_confidence: 'good',
     market_cap_wax: '200',
     fdv_wax: '1000',
   });
   const marketCapProofWithCirculating = __waxonedgeTestHooks.tokenMetricProof({
     selected_price_wax: '2',
+    selected_price_confidence: 'good',
     circulating_supply: '100',
     market_cap_wax: '200',
     fdv_wax: '1000',
@@ -4186,8 +4204,8 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     Number(suppliedRouteStats.liquidity_wax) === 400 &&
     suppliedRouteStats.selected_price_proof.route_type === 'direct_wax');
   const caps = __waxonedgeTestHooks.metricCapabilitiesFromTokens([
-    { selected_price_wax: '1', market_cap_wax: '20', fdv_wax: '50', volume_7d: null },
-    { selected_price_wax: '2', circulating_supply: '10', market_cap_wax: '20', volume_7d: '7', volume_30d: null },
+    { selected_price_wax: '1', selected_price_confidence: 'good', market_cap_wax: '20', fdv_wax: '50', volume_7d: null },
+    { selected_price_wax: '2', selected_price_confidence: 'good', circulating_supply: '10', market_cap_wax: '20', volume_7d: '7', volume_30d: null },
   ]);
   ok('bootstrap metric capabilities require circulating supply for market cap',
     caps.price === true &&

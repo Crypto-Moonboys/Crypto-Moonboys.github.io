@@ -151,6 +151,16 @@
     return c && s ? c + '::' + s : '';
   }
 
+  function priceProofGood(record) {
+    return record && record.selectedPriceConfidence === 'good';
+  }
+
+  function priceProofStatusText(value) {
+    if (value === 'good') return 'Price proof good';
+    if (value === 'weak') return 'Price proof weak';
+    return 'Price unavailable';
+  }
+
   function parseAssetSymbol(asset) {
     var match = String(asset || '').trim().match(/^[\d.+-]+\s+([A-Z0-9._-]+)$/);
     return match ? match[1] : '';
@@ -406,6 +416,17 @@
       usd_price: row.price_usd,
       selected_price_wax: row.selected_price_wax,
       selected_price_usd: row.selected_price_usd,
+      selected_price_source: row.selected_price_source,
+      selected_price_pair_id: row.selected_price_pair_id,
+      selected_price_pair_label: row.selected_price_pair_label,
+      selected_price_route_type: row.selected_price_route_type,
+      selected_price_route_hops: row.selected_price_route_hops,
+      selected_price_reserve_a: row.selected_price_reserve_a,
+      selected_price_reserve_b: row.selected_price_reserve_b,
+      selected_price_formula: row.selected_price_formula,
+      selected_price_updated_at: row.selected_price_updated_at,
+      selected_price_confidence: row.selected_price_confidence,
+      selected_price_reason_codes: row.selected_price_reason_codes,
       holder_count: row.holder_count,
       circulating_supply: row.circulating_supply,
       fdv_wax: row.fdv_wax,
@@ -779,8 +800,13 @@
         decimals: tok.decimals != null ? tok.decimals : null,
         systemPrice: asNum(tok.system_price),
         usdPrice: asNum(tok.usd_price),
-        selectedPriceWax: asNum(tok.selected_price_wax),
-        selectedPriceUsd: asNum(tok.selected_price_usd),
+        selectedPriceConfidence: tok.selected_price_confidence === 'good'
+          ? 'good'
+          : (tok.selected_price_confidence === 'weak' ? 'weak' : 'unavailable'),
+        selectedPriceWax: tok.selected_price_confidence === 'good' ? asNum(tok.selected_price_wax) : null,
+        selectedPriceUsd: tok.selected_price_confidence === 'good' ? asNum(tok.selected_price_usd) : null,
+        selectedPriceRouteType: tok.selected_price_route_type || 'unavailable',
+        selectedPriceReasonCodes: Array.isArray(tok.selected_price_reason_codes) ? tok.selected_price_reason_codes : [],
         pairCount: asNum(tok.pair_count),
         volume24: asNum(tok.volume_24h_wax),
         volume24Wax: asNum(tok.volume_24h_wax),
@@ -824,6 +850,7 @@
       decimals: null,
       systemPrice: null,
       usdPrice: null,
+      selectedPriceConfidence: 'unavailable',
       selectedPriceWax: null,
       selectedPriceUsd: null,
       pairCount: pairCount,
@@ -1269,6 +1296,9 @@
 
   function metricValueForToken(record, metric) {
     if (!record) return null;
+    if (metric === 'price') return priceProofGood(record)
+      ? (record.selectedPriceUsd != null ? record.selectedPriceUsd : record.selectedPriceWax)
+      : null;
     if (metric === 'volume') return record.volume24 != null ? record.volume24 : null;
     if (metric === 'pairs') return record.pairCount != null ? record.pairCount : null;
     return record.liquidityUsd != null ? record.liquidityUsd
@@ -1495,6 +1525,9 @@
       var market = strongestMarketForToken(key);
       var change = record.change24 != null ? record.change24 : (market && market.change24 != null ? market.change24 : null);
       var activeClass = key && key === selectedKey ? ' woe-token-rank-active' : '';
+      var priceText = priceProofGood(record)
+        ? formatDualMetric(record.selectedPriceWax, record.selectedPriceUsd, 'WAX', '$')
+        : priceProofStatusText(record.selectedPriceConfidence);
       var symbolLink = '<a class="woe-token-detail-link" href="' + escHtml(buildTokenHref(sym, contr)) + '"' +
         ' data-token="' + escHtml(sym) + '"' +
         ' data-contract="' + escHtml(contr) + '">' + escHtml(record.displaySymbol || sym) + '</a>';
@@ -1502,7 +1535,7 @@
         '<span class="woe-token-rank-number">#' + escHtml(String(index + 1)) + '</span>' +
         '<div><strong>' + symbolLink + '</strong><span>' + escHtml(contr || UNAVAILABLE_TEXT) + '</span></div>' +
         '<div class="woe-token-rank-metrics">' +
-          '<span>' + escHtml(formatDualMetric(record.selectedPriceWax || record.systemPrice, record.selectedPriceUsd || record.usdPrice, 'WAX', '$')) + '</span>' +
+          '<span>' + escHtml(priceText) + '</span>' +
           '<span class="' + escHtml(pctClass(change)) + '">' + escHtml(change != null ? fmtPct(change) : UNAVAILABLE_TEXT) + '</span>' +
           '<span>' + escHtml(record.volume24 != null ? fmtNum(record.volume24) + ' vol' : UNAVAILABLE_TEXT) + '</span>' +
         '</div>' +
@@ -1722,8 +1755,11 @@
       decimals: token.decimals != null ? token.decimals : null,
       systemPrice: null,
       usdPrice: null,
-      selectedPriceWax: asNum(stats.selected_price_wax),
-      selectedPriceUsd: asNum(stats.selected_price_usd),
+      selectedPriceConfidence: stats.selected_price_confidence === 'good'
+        ? 'good'
+        : (stats.selected_price_confidence === 'weak' ? 'weak' : 'unavailable'),
+      selectedPriceWax: stats.selected_price_confidence === 'good' ? asNum(stats.selected_price_wax) : null,
+      selectedPriceUsd: stats.selected_price_confidence === 'good' ? asNum(stats.selected_price_usd) : null,
       pairCount: asNum(stats.indexed_pair_count),
       volume24: asNum(stats.volume_24h_wax),
       volume24Wax: asNum(stats.volume_24h_wax),
@@ -2217,6 +2253,10 @@
     var supply = chainStat && chainStat.supply ? chainStat.supply : null;
     var currentPriceWax = asNum(stats.selected_price_wax);
     var currentPriceUsd = asNum(stats.selected_price_usd);
+    var selectedPriceConfidence = stats.selected_price_confidence === 'good'
+      ? 'good'
+      : (stats.selected_price_confidence === 'weak' ? 'weak' : 'unavailable');
+    var selectedPriceTrusted = selectedPriceConfidence === 'good';
     var selectedSource = stats.selected_price_source ||
       (stats.selected_pair_source && stats.selected_pair_id ? getDexShortLabel(stats.selected_pair_source) + ' #' + stats.selected_pair_id : '');
     var strongestPairData = stats.strongest_pair && typeof stats.strongest_pair === 'object' ? stats.strongest_pair : null;
@@ -2263,8 +2303,9 @@
     var statsHtml = '';
     statsHtml += statRow('Token', escHtml(selection.symbol + ' @ ' + selection.contract));
     statsHtml += statRow('Aggregate status', escHtml(aggregateStatus), { muted: !isCanonicalAggregateValid(stats) });
+    statsHtml += statRow('Selected price proof', escHtml(priceProofStatusText(selectedPriceConfidence)), { muted: !selectedPriceTrusted });
     statsHtml += statRow('Selected price source', selectedSource ? escHtml(selectedSource) : tokenAvailabilityHtml(stats, 'selected_price'));
-    statsHtml += statRow('Current price in WAX and USD', currentPriceWax != null || currentPriceUsd != null
+    statsHtml += statRow('Current price in WAX and USD', selectedPriceTrusted && (currentPriceWax != null || currentPriceUsd != null)
       ? escHtml(formatDualMetric(currentPriceWax, currentPriceUsd, 'WAX', '$'))
       : tokenAvailabilityHtml(stats, 'selected_price'));
     statsHtml += statRow('24h price change', change24 != null

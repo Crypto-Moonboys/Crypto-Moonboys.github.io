@@ -182,7 +182,7 @@ ok('waxonedge-bubbles-v2.js supports WAX Galaxy metric modes with dead controls 
   v2Js.includes("liquidity: 'Liquidity'") &&
   v2Js.includes("mcap: 'Mkt Cap'") &&
   v2Js.includes("var TIMEFRAME_LABELS = { '24h': '24h', '7d': '7D', '30d': '30D'") &&
-  v2Js.includes("if (metric === 'price') return record.selectedPriceUsd != null ? record.selectedPriceUsd : record.selectedPriceWax") &&
+  v2Js.includes("if (metric === 'price') return priceProofGood(record)") &&
   v2Js.includes("if (timeframe === '7d')") &&
   v2Js.includes("if (timeframe === '30d')") &&
   v2Js.includes('function metricAllowed(metric)') &&
@@ -249,6 +249,9 @@ ok('waxonedge-bubbles-v2.js selects featured tokens using multi-DEX aggregate fi
   featuredJs.includes('window.WAXONEDGE_FEATURED_TOKENS = [') &&
   v2Js.includes('selected_price_wax') &&
   v2Js.includes('selected_price_usd') &&
+  v2Js.includes('selected_price_confidence') &&
+  v2Js.includes('function priceProofGood(record)') &&
+  v2Js.includes("record.selectedPriceConfidence === 'good'") &&
   v2Js.includes('source_count') &&
   v2Js.includes('indexed_pair_count') &&
   v2Js.includes('selected_pair_source') &&
@@ -310,6 +313,14 @@ ok('waxonedge-bubbles-v2.js creates pair-only featured records from exact allowl
 ok('waxonedge-bubbles-v2.js pair-only featured records do not fake price, TVL, liquidity, or volume',
   /function pairDerivedRecord\(featured, key\)[\s\S]*selectedPriceWax: null[\s\S]*selectedPriceUsd: null[\s\S]*volume24Wax: null[\s\S]*volume24Usd: null[\s\S]*liquidityWax: null[\s\S]*liquidityUsd: null[\s\S]*tvlWax: null[\s\S]*tvlUsd: null/.test(v2Js) &&
   /function pairDerivedRecord\(featured, key\)[\s\S]*volume7dWax: null[\s\S]*volume7dUsd: null[\s\S]*volume30dWax: null[\s\S]*volume30dUsd: null/.test(v2Js));
+ok('waxonedge-bubbles-v2.js shows price only when backend proof confidence is good',
+  /if \(state\.metric === 'price'\)[\s\S]*if \(!priceProofGood\(record\)\) return priceProofLabel\(record\)/.test(v2Js) &&
+  v2Js.includes("return record && record.selectedPriceConfidence === 'weak' ? 'Price proof weak' : 'Price unavailable'") &&
+  v2Js.includes('selectedPriceWax: priceConfidence === \'good\' ? asNum(token.selected_price_wax) : null') &&
+  v2Js.includes('selectedPriceUsd: priceConfidence === \'good\' ? asNum(token.selected_price_usd) : null') &&
+  v2Js.includes("update.selected_price_confidence === 'good'") &&
+  !v2Js.includes('token.selected_price_wax || token.price_wax') &&
+  !v2Js.includes('token.selected_price_usd || token.price_usd'));
 ok('waxonedge-bubbles-v2.js keeps modes and search scoped to featured tokens without fake metric zeroes',
   /function rankedRecords\(\)[\s\S]*state\.records\.filter[\s\S]*record\.searchText\.indexOf\(query\)[\s\S]*base\.map/.test(v2Js) &&
   /function computeRadii[\s\S]*value == null \? 0 : Math\.abs\(value\)/.test(v2Js) &&
@@ -497,6 +508,17 @@ ok('waxonedge.js renders only featured token records in legacy scanner paths',
   js.includes("console.debug('missing_featured_token', featured.key)") &&
   !js.includes('getRankedTokenRecords().slice(0, 99)') &&
   !js.includes('tokensData.slice(0, 250)'));
+ok('waxonedge.js shows selected price only when proof confidence is good',
+  js.includes('function priceProofGood(record)') &&
+  js.includes("record.selectedPriceConfidence === 'good'") &&
+  js.includes("function priceProofStatusText(value)") &&
+  js.includes('tok.selected_price_confidence === \'good\' ? asNum(tok.selected_price_wax) : null') &&
+  js.includes('tok.selected_price_confidence === \'good\' ? asNum(tok.selected_price_usd) : null') &&
+  js.includes('var priceText = priceProofGood(record)') &&
+  js.includes("statsHtml += statRow('Selected price proof'") &&
+  js.includes('selectedPriceTrusted && (currentPriceWax != null || currentPriceUsd != null)') &&
+  !js.includes('record.selectedPriceWax || record.systemPrice') &&
+  !js.includes('record.selectedPriceUsd || record.usdPrice'));
 ok('waxonedge.js creates pair-only featured records from exact allowlisted pair keys',
   js.includes('function addPairDerivedFeaturedTokenRecords(tokenMap, pairsData)') &&
   js.includes('var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&

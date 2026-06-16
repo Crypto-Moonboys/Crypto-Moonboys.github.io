@@ -251,6 +251,15 @@
     ].join(' ').toLowerCase();
   }
 
+  function priceProofGood(record) {
+    return record && record.selectedPriceConfidence === 'good';
+  }
+
+  function priceProofLabel(record) {
+    if (priceProofGood(record)) return 'Price proof good';
+    return record && record.selectedPriceConfidence === 'weak' ? 'Price proof weak' : 'Price unavailable';
+  }
+
   function pairDerivedRecord(featured, key) {
     var parts = String(key || '').split('::');
     var contract = normalizeContract(parts[0]);
@@ -264,6 +273,9 @@
       logoUrl: '',
       selectedPriceWax: null,
       selectedPriceUsd: null,
+      selectedPriceConfidence: 'unavailable',
+      selectedPriceReasonCodes: [],
+      selectedPriceRouteType: 'unavailable',
       change24: null,
       change7d: null,
       change30d: null,
@@ -300,7 +312,9 @@
       var change = timeframe === '24h' ? record.change24 : record['change' + timeframe];
       return change != null ? Math.abs(change) : null;
     }
-    if (metric === 'price') return record.selectedPriceUsd != null ? record.selectedPriceUsd : record.selectedPriceWax;
+    if (metric === 'price') return priceProofGood(record)
+      ? (record.selectedPriceUsd != null ? record.selectedPriceUsd : record.selectedPriceWax)
+      : null;
     if (metric === 'volume') {
       if (timeframe === '7d') return record.volume7dUsd != null ? record.volume7dUsd : record.volume7dWax;
       if (timeframe === '30d') return record.volume30dUsd != null ? record.volume30dUsd : record.volume30dWax;
@@ -390,9 +404,10 @@
       return fmtPct(change);
     }
     if (state.metric === 'price') {
+      if (!priceProofGood(record)) return priceProofLabel(record);
       if (record.selectedPriceUsd != null) return '$' + fmtPrice(record.selectedPriceUsd);
       if (record.selectedPriceWax != null) return fmtPrice(record.selectedPriceWax) + ' WAX';
-      return 'No indexed price';
+      return 'Price unavailable';
     }
     if (state.metric === 'volume') {
       if (state.timeframe === '7d') return record.volume7dUsd != null ? '$' + fmtNum(record.volume7dUsd) : 'No indexed 7D volume';
@@ -455,7 +470,7 @@
     var volume = toUsd(record.volume24Wax, record.volume24Usd);
     var cap = toUsd(record.marketCapWax, record.marketCapUsd);
     if (cap == null) cap = toUsd(record.fdvWax, record.fdvUsd);
-    var price = toUsd(record.selectedPriceWax, record.selectedPriceUsd);
+    var price = priceProofGood(record) ? toUsd(record.selectedPriceWax, record.selectedPriceUsd) : null;
     var change = asNum(record.change24);
     var movement = change == null ? null : Math.abs(change);
     var coverage = (record.indexedPairCount || 0) * 10 + (record.sourceCount || 0) * 18;
@@ -491,6 +506,9 @@
       var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key];
       if (!key || !featured) return;
       var sources = parseSourceKeys(token.source_keys || token.sourceKeys || token.sources);
+      var priceConfidence = token.selected_price_confidence === 'good'
+        ? 'good'
+        : (token.selected_price_confidence === 'weak' ? 'weak' : 'unavailable');
       byKey[key] = {
         id: key,
         key: key,
@@ -498,8 +516,11 @@
         displaySymbol: featured.label,
         contract: contract,
         logoUrl: token.icon_url || token.logo || token.image || '',
-        selectedPriceWax: asNum(token.selected_price_wax || token.price_wax),
-        selectedPriceUsd: asNum(token.selected_price_usd || token.price_usd),
+        selectedPriceWax: priceConfidence === 'good' ? asNum(token.selected_price_wax) : null,
+        selectedPriceUsd: priceConfidence === 'good' ? asNum(token.selected_price_usd) : null,
+        selectedPriceConfidence: priceConfidence,
+        selectedPriceReasonCodes: Array.isArray(token.selected_price_reason_codes) ? token.selected_price_reason_codes : [],
+        selectedPriceRouteType: token.selected_price_route_type || 'unavailable',
         change24: asNum(token.change_24h),
         change7d: null,
         change30d: null,
@@ -563,7 +584,7 @@
         ? sourceLabel(record.strongestPair.source) + ' ' + pairLabel(record.strongestPair)
         : (record.selectedSource && record.selectedPair ? record.selectedSource + ' #' + record.selectedPair : 'Not indexed');
       record.searchText = tokenSearchText(record);
-      record.score = (record.selectedPriceWax != null || record.selectedPriceUsd != null ? 500000 : 0) +
+      record.score = (priceProofGood(record) && (record.selectedPriceWax != null || record.selectedPriceUsd != null) ? 500000 : 0) +
         (record.indexedPairCount > 0 ? 250000 : 0) +
         (record.selectedPair ? 125000 : 0) +
         Math.log10(1 + (record.liquidityUsd || record.liquidityWax || 0)) * 1000 +
@@ -749,8 +770,11 @@
     var changed = false;
     var previousVolume = record.volume24Usd != null ? record.volume24Usd : record.volume24Wax;
     var previousChange = record.change24;
-    changed = assignLiveNumber(record, 'selectedPriceWax', update.price_wax) || changed;
-    changed = assignLiveNumber(record, 'selectedPriceUsd', update.price_usd) || changed;
+    if (update.selected_price_confidence === 'good') {
+      record.selectedPriceConfidence = 'good';
+      changed = assignLiveNumber(record, 'selectedPriceWax', update.price_wax) || changed;
+      changed = assignLiveNumber(record, 'selectedPriceUsd', update.price_usd) || changed;
+    }
     changed = assignLiveNumber(record, 'change24', update.change_24h) || changed;
     changed = assignLiveNumber(record, 'volume24Wax', update.volume_24h_wax) || changed;
     changed = assignLiveNumber(record, 'volume24Usd', update.volume_24h_usd) || changed;
@@ -1560,6 +1584,7 @@
     state.tooltip.innerHTML = '<strong>' + escHtml(record.displaySymbol || record.symbol) + '</strong>' +
       '<span>' + escHtml(record.contract) + '</span>' +
       '<span>' + escHtml(displayValue(record)) + ' / ' + escHtml(fmtPct(record.change24)) + '</span>' +
+      '<span>' + escHtml(priceProofLabel(record)) + '</span>' +
       '<span>' + escHtml(record.sourceCount + ' source(s), ' + record.indexedPairCount + ' pair(s)') + '</span>' +
       '<span>' + escHtml(record.strongestPairLabel) + '</span>';
   }

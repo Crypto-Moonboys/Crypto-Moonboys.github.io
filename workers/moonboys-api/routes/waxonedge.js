@@ -3866,7 +3866,7 @@ function selectedMetricValueForLiveToken(row) {
   if (liquidityUsd != null) return liquidityUsd;
   const volumeUsd = asNumber(row.volume_24h_usd);
   if (volumeUsd != null) return volumeUsd;
-  return asNumber(row.selected_price_usd ?? row.price_usd);
+  return null;
 }
 
 function normalizeLiveTokenUpdate(row) {
@@ -3878,8 +3878,10 @@ function normalizeLiveTokenUpdate(row) {
     token_key: tokenKeyValue,
     contract,
     symbol,
-    price_wax: safeDecimal(asNumber(row.selected_price_wax ?? row.price_wax)),
-    price_usd: safeDecimal(asNumber(row.selected_price_usd ?? row.price_usd)),
+    price_wax: null,
+    price_usd: null,
+    selected_price_confidence: 'unavailable',
+    selected_price_reason_codes: ['live_update_without_price_proof'],
     change_24h: safeDecimal(asNumber(row.change_24h)),
     volume_24h_wax: safeDecimal(asNumber(row.volume_24h_wax ?? row.volume_24h)),
     volume_24h_usd: safeDecimal(asNumber(row.volume_24h_usd)),
@@ -4069,6 +4071,17 @@ async function listTopPairs(db) {
      LIMIT 250`
   ).all();
   return rows.results || [];
+}
+
+async function addBootstrapSelectedPriceProof(db, tokens, pairs) {
+  const priceRows = await loadTokenPriceRowsForPairs(db, pairs);
+  const priceIndex = buildDbTokenPriceIndex(priceRows);
+  const routeIndex = buildOgWaxRouteGraph(pairs, priceIndex);
+  return (tokens || []).map((token) => {
+    const key = tokenKey(token.contract, token.symbol);
+    const route = selectOgWaxRoutePrice(key, routeIndex);
+    return applySelectedPriceProofFields({ ...token }, route);
+  });
 }
 
 async function listTokenPairs(db, contract, symbol, options = {}) {
@@ -4281,8 +4294,6 @@ function pairEdgePrice(pair) {
   if (reserveA != null && reserveA > 0 && reserveB != null && reserveB > 0) {
     return reserveB / reserveA;
   }
-  const sourcePrice = asNumber(pair?.price);
-  if (sourcePrice != null && sourcePrice > 0) return sourcePrice;
   return null;
 }
 
@@ -4295,7 +4306,73 @@ function ogRouteHop(pair, fromKey, toKey, priceFromTo, reserveFrom, reserveTo) {
     price_from_to: safeDecimal(priceFromTo),
     reserve_from: safeDecimal(reserveFrom),
     reserve_to: safeDecimal(reserveTo),
+    reserve_a: safeDecimal(asNumber(pair?.reserve_a)),
+    reserve_b: safeDecimal(asNumber(pair?.reserve_b)),
+    pair_label: selectedPairLabel(pair),
+    updated_at: pair?.updated_at || null,
   };
+}
+
+function selectedPriceFormula(route) {
+  if (!route) return null;
+  if (route.route_type === 'wax_self') return 'WAX = 1';
+  if (!route.route_hops?.length) return null;
+  const hopText = route.route_hops.map((hop) =>
+    `${hop.from}->${hop.to}: reserve_to / reserve_from`).join('; ');
+  return `price_wax = WAX route product from indexed reserves (${hopText})`;
+}
+
+function selectedPriceReasonCodes(route) {
+  const reasons = [];
+  if (!route) {
+    reasons.push('no_indexed_wax_route');
+    return reasons;
+  }
+  if (route.route_type !== 'wax_self') {
+    if (!route.route_hops?.length) reasons.push('missing_route_hops');
+    const score = asNumber(route.route_liquidity_score);
+    if (score == null || score <= 0) reasons.push('missing_route_liquidity');
+    else if (score < MIN_TRUSTED_WAX_LIQUIDITY) reasons.push('route_liquidity_below_threshold');
+  }
+  if (asNumber(route.priceWax) == null || asNumber(route.priceWax) <= 0) reasons.push('invalid_route_price');
+  return reasons;
+}
+
+function selectedPriceConfidence(route) {
+  const reasons = selectedPriceReasonCodes(route);
+  if (!route) return 'unavailable';
+  return reasons.length ? 'weak' : 'good';
+}
+
+function selectedPriceProofFields(route) {
+  const confidence = selectedPriceConfidence(route);
+  const good = confidence === 'good';
+  const lastHop = route?.route_hops?.[route.route_hops.length - 1] || null;
+  return {
+    selected_price_wax: good ? safeDecimal(asNumber(route?.priceWax)) : null,
+    selected_price_usd: good ? safeDecimal(asNumber(route?.priceUsd)) : null,
+    selected_price_source: lastHop?.source || (route?.route_type === 'wax_self' ? 'eosio.token WAX' : null),
+    selected_price_pair_id: lastHop?.pair_id || null,
+    selected_price_pair_label: lastHop?.pair_label || null,
+    selected_price_route_type: route?.route_type || 'unavailable',
+    selected_price_route_hops: route?.route_hops || [],
+    selected_price_reserve_a: lastHop?.reserve_a ?? null,
+    selected_price_reserve_b: lastHop?.reserve_b ?? null,
+    selected_price_formula: selectedPriceFormula(route),
+    selected_price_updated_at: lastHop?.updated_at || null,
+    selected_price_confidence: confidence,
+    selected_price_reason_codes: selectedPriceReasonCodes(route),
+  };
+}
+
+function applySelectedPriceProofFields(target, route) {
+  const proof = selectedPriceProofFields(route);
+  Object.assign(target, proof);
+  target.selected_pair_source = proof.selected_price_source;
+  target.selected_pair_id = proof.selected_price_pair_id;
+  target.selected_pair_label = proof.selected_price_pair_label;
+  target.selected_price_source = proof.selected_price_source;
+  return target;
 }
 
 function buildOgWaxRouteGraph(pairRows = [], priceIndex = new Map(), maxHops = OG_WAX_ROUTE_MAX_HOPS) {
@@ -4357,9 +4434,18 @@ function buildOgWaxRouteGraph(pairRows = [], priceIndex = new Map(), maxHops = O
       ]);
       const routeType = routeHops.length === 1 && (fromKey === waxKey || edge.to === waxKey) ? 'direct_wax' : 'multi_hop_wax';
       const existing = routes.get(edge.to);
+      const routePreference = (value) => {
+        if (value === 'wax_self') return 3;
+        if (value === 'direct_wax') return 2;
+        if (value === 'multi_hop_wax') return 1;
+        return 0;
+      };
       const better = !existing ||
+        routePreference(routeType) > routePreference(existing.route_type) ||
+        (routePreference(routeType) === routePreference(existing.route_type) && (
         routeLiquidityScore > existing.route_liquidity_score ||
-        (routeLiquidityScore === existing.route_liquidity_score && routeHops.length < existing.route_hops.length);
+        (routeLiquidityScore === existing.route_liquidity_score && routeHops.length < existing.route_hops.length)
+        ));
       if (better) {
         routes.set(edge.to, {
           token_key: edge.to,
@@ -4609,26 +4695,38 @@ function tokenMetricProof(metrics, selected = null) {
   const selectedPriceLive = selectedPriceWax != null || selectedPriceUsd != null;
   const selectedRouteType = selected
     ? selected.route_type
-    : (metrics?.selected_pair_source && metrics?.selected_pair_id ? 'stored_indexed_pair' : null);
+    : (metrics?.selected_price_route_type || 'unavailable');
+  const selectedConfidence = metrics?.selected_price_confidence || selectedPriceConfidence(selected);
+  const proofReasonCodes = Array.isArray(metrics?.selected_price_reason_codes)
+    ? metrics.selected_price_reason_codes
+    : selectedPriceReasonCodes(selected);
   const selectedPriceProof = {
-    live: selectedPriceLive,
-    source: metrics?.selected_pair_source || selected?.pair?.source || null,
-    pair_id: metrics?.selected_pair_id || selected?.pair?.pair_id || null,
-    pair_label: metrics?.selected_pair_label || selectedPairLabel(selected?.pair) || null,
+    live: selectedPriceLive && selectedConfidence === 'good',
+    source: metrics?.selected_price_source || metrics?.selected_pair_source || null,
+    pair_id: metrics?.selected_price_pair_id || metrics?.selected_pair_id || null,
+    pair_label: metrics?.selected_price_pair_label || metrics?.selected_pair_label || null,
     selected_price_wax: safeDecimal(selectedPriceWax),
     selected_price_usd: safeDecimal(selectedPriceUsd),
     route_type: selectedRouteType,
     valuation_route: selectedRouteType || null,
     token_side: null,
-    route_hops: selected?.route_hops || [],
+    route_hops: metrics?.selected_price_route_hops || selected?.route_hops || [],
     route_liquidity_score: safeDecimal(selected?.route_liquidity_score),
-    trusted_liquidity: selected?.priceWax != null,
+    reserve_a: metrics?.selected_price_reserve_a ?? null,
+    reserve_b: metrics?.selected_price_reserve_b ?? null,
+    formula: metrics?.selected_price_formula || selectedPriceFormula(selected),
+    updated_at: metrics?.selected_price_updated_at || null,
+    confidence: selectedConfidence,
+    reason_codes: proofReasonCodes,
+    trusted_liquidity: selectedConfidence === 'good',
   };
   const metricStatus = {
     selected_price: {
-      live: selectedPriceLive,
-      source: selectedPriceProof.source ? 'indexed_pair' : null,
-      reason: selectedPriceLive ? null : (metrics?.unavailable_reasons?.selected_price || 'No indexed pair has enough price data yet'),
+      live: selectedPriceProof.live,
+      source: selectedPriceProof.live ? 'indexed_reserve_route' : null,
+      confidence: selectedConfidence,
+      reason_codes: proofReasonCodes,
+      reason: selectedPriceProof.live ? null : (selectedConfidence === 'weak' ? 'Price proof weak' : (metrics?.unavailable_reasons?.selected_price || 'Price unavailable')),
     },
     liquidity: {
       live: liquidityBasis != null,
@@ -4676,7 +4774,7 @@ function tokenMetricProof(metrics, selected = null) {
     },
   };
   return {
-    has_selected_price: selectedPriceLive,
+    has_selected_price: selectedPriceProof.live,
     has_liquidity: liquidityBasis != null,
     has_tvl: tvlBasis != null,
     has_fdv: hasFdv,
@@ -4689,7 +4787,7 @@ function tokenMetricProof(metrics, selected = null) {
     selected_price_proof: selectedPriceProof,
     metric_status: metricStatus,
     metric_sources: {
-      selected_price: selectedPriceProof.source ? 'indexed_pair' : null,
+      selected_price: selectedPriceProof.live ? 'indexed_reserve_route' : null,
       liquidity: liquidityBasis,
       tvl: tvlBasis,
       fdv: hasFdv ? 'total_supply_x_selected_price' : null,
@@ -4752,8 +4850,9 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   }
 
   const totalSupply = asNumber(token?.total_supply ?? token?.max_supply);
-  const selectedPriceWax = selected?.priceWax ?? null;
-  const selectedPriceUsd = selected?.priceUsd ?? null;
+  const selectedProof = selectedPriceProofFields(selected);
+  const selectedPriceWax = asNumber(selectedProof.selected_price_wax);
+  const selectedPriceUsd = asNumber(selectedProof.selected_price_usd);
   const fdvWax = asNumber(metrics.fdv_wax) ?? (totalSupply != null && selectedPriceWax != null ? totalSupply * selectedPriceWax : null);
   const fdvUsd = asNumber(metrics.fdv_usd) ?? (totalSupply != null && selectedPriceUsd != null ? totalSupply * selectedPriceUsd : null);
   const liquidityWax = hasLiquidityWax ? liquidityWaxTotal : null;
@@ -4764,13 +4863,7 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   metrics.contract = contract;
   metrics.symbol = symbol;
   metrics.total_supply = safeDecimal(totalSupply);
-  metrics.selected_price_wax = safeDecimal(selectedPriceWax);
-  metrics.selected_price_usd = safeDecimal(selectedPriceUsd);
-  const selectedProofHop = selected?.route_hops?.[selected.route_hops.length - 1] || null;
-  metrics.selected_pair_source = selectedProofHop?.source || null;
-  metrics.selected_pair_id = selectedProofHop?.pair_id || null;
-  metrics.selected_pair_label = selectedProofHop ? [selectedProofHop.source, selectedProofHop.pair_id ? `#${selectedProofHop.pair_id}` : null, selected.route_type].filter(Boolean).join(' ') : null;
-  metrics.selected_price_source = metrics.selected_pair_label || (selected?.route_type === 'wax_self' ? 'eosio.token WAX' : null);
+  applySelectedPriceProofFields(metrics, selected);
   metrics.change_24h = safeDecimal(metrics.change_24h);
   metrics.price_change_24h = metrics.change_24h;
   metrics.volume_24h = safeDecimal(volumeWax);
@@ -4975,6 +5068,62 @@ async function getToken(db, contract, symbol, options = {}) {
   return detail;
 }
 
+function priceProofAudit(contract, symbol, detail, pairRows, graphRows, priceIndex, routeIndex) {
+  const key = tokenKey(contract, symbol);
+  const selectedRoute = selectOgWaxRoutePrice(key, routeIndex);
+  const selectedProof = selectedPriceProofFields(selectedRoute);
+  const candidatePairs = (pairRows || []).map((pair) => ({
+    source: pair.source || null,
+    pair_id: pair.pair_id || null,
+    pair_label: selectedPairLabel(pair),
+    token_a_contract: pair.token_a_contract || null,
+    token_a_symbol: pair.token_a_symbol || null,
+    token_b_contract: pair.token_b_contract || null,
+    token_b_symbol: pair.token_b_symbol || null,
+    reserve_a: safeDecimal(asNumber(pair.reserve_a)),
+    reserve_b: safeDecimal(asNumber(pair.reserve_b)),
+    has_real_reserves: hasRealPairReserves(pair),
+    direct_wax_pair: hasWaxQuoteForToken(pair, contract, symbol),
+    contribution_proof: pairContributionProof(pair, contract, symbol, priceIndex, routeIndex),
+  }));
+  const candidateRoutePrices = selectedRoute ? [{
+    token_key: key,
+    selected: true,
+    selected_price_wax: selectedProof.selected_price_wax,
+    selected_price_usd: selectedProof.selected_price_usd,
+    route_type: selectedProof.selected_price_route_type,
+    route_hops: selectedProof.selected_price_route_hops,
+    confidence: selectedProof.selected_price_confidence,
+    reason_codes: selectedProof.selected_price_reason_codes,
+  }] : [];
+  const selectedRoutePairKeys = new Set((selectedRoute?.route_hops || [])
+    .map((hop) => `${hop.source || ''}::${hop.pair_id || ''}`));
+  const rejectedRoutes = (graphRows || []).filter((pair) => {
+    const pairKey = `${pair.source || ''}::${pair.pair_id || ''}`;
+    return pairTokenSide(pair, contract, symbol) && !selectedRoutePairKeys.has(pairKey);
+  }).map((pair) => ({
+    source: pair.source || null,
+    pair_id: pair.pair_id || null,
+    pair_label: selectedPairLabel(pair),
+    reason_codes: hasRealPairReserves(pair) ? ['not_selected_best_route'] : ['missing_or_zero_reserves'],
+  }));
+  const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd ?? null;
+  return {
+    all_candidate_pairs: candidatePairs,
+    all_candidate_route_prices: candidateRoutePrices,
+    selected_route: selectedProof,
+    rejected_routes: rejectedRoutes,
+    wax_usd_source: waxUsd == null ? null : 'indexed eosio.token/WAX token price',
+    wax_usd: safeDecimal(waxUsd),
+    final_displayed_price: {
+      selected_price_wax: detail.stats?.selected_price_wax ?? null,
+      selected_price_usd: detail.stats?.selected_price_usd ?? null,
+      confidence: detail.stats?.selected_price_confidence || 'unavailable',
+      reason_codes: detail.stats?.selected_price_reason_codes || [],
+    },
+  };
+}
+
 async function getTokenDebug(db, contract, symbol) {
   const detail = await getToken(db, contract, symbol, { includeRouteContext: true });
   const routeContext = detail.route_context || {};
@@ -5022,6 +5171,7 @@ async function getTokenDebug(db, contract, symbol) {
     candle_url_example: candleUrlExample(chartSrc, chartPairId),
     reference_candle_url_example: referenceCandleUrlExample(chartSrc, chartPairId),
     aggregate_totals: aggregateTotals,
+    price_proof_audit: priceProofAudit(contract, symbol, detail, pairRows, graphRows, priceIndex, routeIndex),
     diagnostics: diagnoseTokenAggregate(contract, symbol, detail.stats, pairRows, chartCandleCount, aggregateFresh),
     source_coverage: detail.source_coverage,
     sync_diagnostics: {
@@ -6257,7 +6407,9 @@ function metricCapabilitiesFromTokens(tokens = []) {
     asNumber(token?.market_cap_wax ?? token?.market_cap_usd) != null);
   return {
     change: has((token) => asNumber(token?.change_24h) != null),
-    price: has((token) => asNumber(token?.selected_price_wax ?? token?.selected_price_usd ?? token?.price_wax ?? token?.price_usd) != null),
+    price: has((token) =>
+      token?.selected_price_confidence === 'good' &&
+      asNumber(token?.selected_price_wax ?? token?.selected_price_usd) != null),
     volume: has((token) => asNumber(token?.volume_24h_wax ?? token?.volume_24h_usd ?? token?.volume_24h) != null),
     liquidity: has((token) => asNumber(token?.liquidity_wax ?? token?.liquidity_usd) != null),
     tvl: has((token) => asNumber(token?.tvl_wax ?? token?.tvl_usd) != null),
@@ -6285,6 +6437,7 @@ async function handleBootstrap(env, corsHeaders) {
     readSnapshot(env.DB, 'alcor_global'),
     ...coreSnapshotReads,
   ]);
+  const proofTokens = await addBootstrapSelectedPriceProof(env.DB, tokens, pairs);
   const coreSources = {};
   const rawCore = {};
   CORE_DEX_ADAPTERS.forEach((adapter, index) => {
@@ -6318,9 +6471,9 @@ async function handleBootstrap(env, corsHeaders) {
     .filter(Boolean)
     .sort()
     .pop() || null;
-  const aggregateCount = tokens.filter((token) => token.liquidity_wax != null || token.selected_pair_source != null).length;
-  const metricCapabilities = metricCapabilitiesFromTokens(tokens);
-  const waxToken = tokens.find((token) => normalizeContract(token.contract) === 'eosio.token' && normalizeSymbol(token.symbol) === 'WAX');
+  const aggregateCount = proofTokens.filter((token) => token.liquidity_wax != null || token.selected_pair_source != null).length;
+  const metricCapabilities = metricCapabilitiesFromTokens(proofTokens);
+  const waxToken = proofTokens.find((token) => normalizeContract(token.contract) === 'eosio.token' && normalizeSymbol(token.symbol) === 'WAX');
   const waxGlobalPrice = asNumber(alcorGlobal.data?.usd_price ?? alcorGlobal.data?.wax_usd ?? alcorGlobal.data?.price);
   const waxPriceUsd = asNumber(waxToken?.price_usd) ?? waxGlobalPrice;
   const warnings = [];
@@ -6329,7 +6482,7 @@ async function handleBootstrap(env, corsHeaders) {
   warnings.push('7d/30d volume, market cap, FDV, and chart candles stay unavailable until indexed from source data.');
   return ok({
     summary: {
-      token_count: tokens.length,
+      token_count: proofTokens.length,
       pair_count: pairs.length,
       token_aggregate_count: aggregateCount,
       wax_price_usd: waxPriceUsd == null ? null : safeDecimal(waxPriceUsd),
@@ -6337,7 +6490,7 @@ async function handleBootstrap(env, corsHeaders) {
       metric_capabilities: metricCapabilities,
     },
     metric_capabilities: metricCapabilities,
-    tokens,
+    tokens: proofTokens,
     pairs,
     sync_status: syncStatus,
     source_index_state: sourceStates,
@@ -6381,7 +6534,10 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       const [tokens, pairs, syncStatus, sourceStates] = await Promise.all([listTopTokens(env.DB), listTopPairs(env.DB), getLatestSync(env.DB), getSourceIndexStates(env.DB)]);
       return ok({ token_count: tokens.length, pair_count: pairs.length, latest_sync: syncStatus.slice(0, 10), source_index_state: sourceStates }, [], null, corsHeaders);
     }
-    if (path === `${WAXONEDGE_API_PREFIX}/tokens/top`) return ok(await listTopTokens(env.DB), [], null, corsHeaders);
+    if (path === `${WAXONEDGE_API_PREFIX}/tokens/top`) {
+      const [tokens, pairs] = await Promise.all([listTopTokens(env.DB), listTopPairs(env.DB)]);
+      return ok(await addBootstrapSelectedPriceProof(env.DB, tokens, pairs), [], null, corsHeaders);
+    }
     if (path === `${WAXONEDGE_API_PREFIX}/pairs/top`) return ok(await listTopPairs(env.DB), [], null, corsHeaders);
     if (path === `${WAXONEDGE_API_PREFIX}/candles`) {
       const chart = await listChartCandlesBySource(env.DB, Object.fromEntries(url.searchParams.entries()));
@@ -6438,6 +6594,8 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
 export const __waxonedgeTestHooks = {
   deriveTokenPairMetrics,
   tokenMetricProof,
+  selectedPriceProofFields,
+  selectedPriceConfidence,
   pairContributionProof,
   aggregatePairContributionTotals,
   ogPairReserveValuation,
