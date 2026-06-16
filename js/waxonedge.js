@@ -23,6 +23,42 @@
   var UNAVAILABLE_TEXT = 'Unavailable';
   var INDEXED_BACKEND_TEXT = 'Requires indexed backend';
   var SOURCE_NOT_INDEXED_TEXT = 'Source not indexed yet';
+  var WAXONEDGE_FEATURED_TOKENS = [
+    ['WAXP', 'eosio.token', 'WAX'], ['WAXCASH', 'graffitiking', 'WAXCASH'], ['NBG', 'gkniftyheads', 'NBG'],
+    ['KING', 'alpha.waxfun', 'KING'], ['WAXUSDC', 'eth.token', 'WAXUSDC'], ['DUMPIT', 'kingsofgraff', 'DUMPIT'],
+    ['KEK', 'waxpepetoken', 'KEK'], ['PXJ', 'pixeljourney', 'PXJ'], ['WUF', 'wuffi', 'WUF'],
+    ['JUAN', 'theonlyjuans', 'JUAN'], ['MOONBOY', 'gkniftyheads', 'MOONBOY'], ['USDT', 'usdt.alcor', 'USDT'],
+    ['HITCOIN', 'gkniftyheads', 'HITCOIN'], ['PUNK', 'gkniftyheads', 'PUNK'], ['WAXGOD', 'gkniftyheads', 'WAXGOD'],
+    ['CHEESE', 'cheeseburger', 'CHEESE'], ['LFGK', 'kingsofgraff', 'LFGK'], ['WIENR', 'token.wienr', 'WIENR'],
+    ['NFTV', 'token.nftg', 'NFTV'], ['WAXUSDT', 'eth.token', 'WAXUSDT'], ['BLUWHL', 'bluemobwally', 'BLUWHL'],
+    ['HERB', 'naturestoken', 'HERB'], ['SSN', 'metatoken.gm', 'SSN'], ['NIFTY', 'gkniftyheads', 'NIFTY'],
+    ['FED', 'supergrinch1', 'FED'], ['ROOK', 'pixilminirpg', 'ROOK'], ['WAXWETH', 'eth.token', 'WAXWETH'],
+    ['WAXWBTC', 'eth.token', 'WAXWBTC'], ['SHING', 't.taco', 'SHING'], ['STAKE', 'kingsofgraff', 'STAKE'],
+    ['RODC', 'redmobwallet', 'RODC'], ['AIGOD', 'aigodtokenwx', 'AIGOD'], ['TACO', 't.taco', 'TACO'],
+    ['DEAL', 'dealwithitwx', 'DEAL'], ['WAXDAO', 'token.waxdao', 'WAXDAO'], ['TRASH', 'cleanuptoken', 'TRASH'],
+    ['WOMBEE', 'yellowmobbee', 'WOMBEE'], ['WURST', 'supergrinch1', 'WURST'], ['MARTIA', 'martia', 'MARTIA'],
+    ['YEET', 'token.yeet', 'YEET'], ['PURR', 'token.yeet', 'PURR'], ['LSWAX', 'token.fusion', 'LSWAX'],
+    ['LSW', 'lsw.alcor', 'LSW'], ['DUST', 'niftywizards', 'DUST'], ['NEFTY', 'token.nefty', 'NEFTY'],
+    ['PLAI', 't.playmind', 'PLAI'], ['WOMBAT', 'wombattokens', 'WOMBAT'], ['CMX', 'token.mf', 'CMX'],
+    ['CHAD', 'chadtoken.gm', 'CHAD'], ['STONKX', 'stonkrewardx', 'STONKX'], ['WPIXAL', 'pixeljourney', 'WPIXAL'],
+    ['WHALLY', 'bluemobwally', 'WHALLY'], ['NWO', 'cointreasure', 'NWO'], ['LAMBO', 'rareruggapes', 'LAMBO'],
+    ['PUMP', 'rareruggapes', 'PUMP'], ['TLM', 'alien.worlds', 'TLM'], ['AIMR', 'aimr.meromai', 'AIMR'],
+    ['BBCHAD', 'chadtoken.gm', 'BBCHAD'], ['BEATZ', 'maestrobeatz', 'BEATZ'], ['GOLDXXX', 'alcorammswap', 'GOLDXXX'],
+    ['TOMATOE', 'maestrobeatz', 'TOMATOE'], ['ACK', 'marstokensgo', 'ACK'], ['TOOLS', 'stonkrewardx', 'TOOLS'],
+    ['BUZZ', 'buzzingarden', 'BUZZ'], ['ANON', 'anoncoin.gm', 'ANON'], ['MINTY', 'token.minty', 'MINTY'],
+    ['DUSTDAO', 'dao.dust', 'DUSTDAO'], ['BANANAZ', 'maestrobeatz', 'BANANAZ'],
+  ].map(function (entry) {
+    return {
+      label: normalizeSymbol(entry[0]),
+      contract: normalizeContract(entry[1]),
+      symbol: normalizeSymbol(entry[2]),
+      key: tokenKey(entry[1], entry[2]),
+    };
+  });
+  var WAXONEDGE_FEATURED_TOKEN_MAP = WAXONEDGE_FEATURED_TOKENS.reduce(function (acc, token) {
+    acc[token.key] = token;
+    return acc;
+  }, {});
 
   var state = {
     tokens: [],
@@ -1175,10 +1211,27 @@
   }
 
   function metricValueForToken(record, metric) {
-    if (!record) return 0;
-    if (metric === 'volume') return record.volume24 || 0;
-    if (metric === 'pairs') return record.pairCount || 0;
-    return record.liquidityUsd || record.tvlUsd || record.liquidityWax || record.tvlWax || record.volume24 || record.pairCount || 0;
+    if (!record) return null;
+    if (metric === 'volume') return record.volume24 != null ? record.volume24 : null;
+    if (metric === 'pairs') return record.pairCount != null ? record.pairCount : null;
+    return record.liquidityUsd != null ? record.liquidityUsd
+      : record.tvlUsd != null ? record.tvlUsd
+      : record.liquidityWax != null ? record.liquidityWax
+      : record.tvlWax != null ? record.tvlWax
+      : null;
+  }
+
+  function featuredTokenRecords() {
+    return WAXONEDGE_FEATURED_TOKENS.map(function (featured) {
+      var record = state.tokenMap && state.tokenMap.byKey ? state.tokenMap.byKey[featured.key] : null;
+      if (!record) {
+        // eslint-disable-next-line no-console
+        console.debug('missing_featured_token', featured.key);
+        return null;
+      }
+      record.displaySymbol = featured.label;
+      return record;
+    }).filter(Boolean);
   }
 
   function getTokenSources(selectionKey) {
@@ -1367,7 +1420,7 @@
   }
 
   function renderTokens() {
-    var tokensData = state.tokens;
+    var tokensData = featuredTokenRecords();
     var tokenPairCounts = state.pairIndex && state.pairIndex.tokenPairCounts ? state.pairIndex.tokenPairCounts : {};
     if (!Array.isArray(tokensData) || tokensData.length === 0) {
       setHtml('woe-tokens-body', '<tr><td colspan="6" class="woe-loading woe-error">Failed to load token data.</td></tr>');
@@ -1375,8 +1428,8 @@
     }
 
     var selectedKey = state.selected.key;
-    var rows = tokensData.slice(0, 250).map(function (tok) {
-      var record = findTokenRecord(state.tokenMap, tok.contract, tok.symbol || tok.id) || tok;
+    var rows = tokensData.map(function (tok) {
+      var record = tok;
       var sym = record.symbol || tok.symbol || tok.id || '?';
       var contr = record.contract || tok.contract || '';
       var usdVal = record.usdPrice != null ? record.usdPrice : asNum(tok.usd_price);
@@ -1386,7 +1439,7 @@
       var activeClass = pairCountKey && pairCountKey === selectedKey ? ' class="woe-row-active"' : '';
       var symbolLink = '<a class="woe-token-detail-link" href="' + escHtml(buildTokenHref(sym, contr)) + '"' +
         ' data-token="' + escHtml(sym) + '"' +
-        ' data-contract="' + escHtml(contr) + '">' + escHtml(sym) + '</a>';
+        ' data-contract="' + escHtml(contr) + '">' + escHtml(record.displaySymbol || sym) + '</a>';
       var waxLink = contr
         ? '<a href="' + escHtml((window.WAXONEDGE_WAXBLOCK_BASE || 'https://waxblock.io') + '/account/' + contr) + '" target="_blank" rel="noopener noreferrer" class="woe-chain-link">' + escHtml(contr) + ' ↗</a>'
         : availabilityHtml();
@@ -1401,7 +1454,7 @@
     }).join('');
 
     setHtml('woe-tokens-body', rows);
-    setText('woe-tokens-count', tokensData.length + ' tokens');
+    setText('woe-tokens-count', tokensData.length + ' featured tokens');
     attachTokenSelectionLinks();
     attachTableSort('woe-table-tokens');
     attachTableFilter('woe-filter-tokens', 'woe-table-tokens');
@@ -1412,30 +1465,33 @@
   function getRankedTokenRecords() {
     var q = state.filters.query;
     var sourceFilter = state.filters.source;
-    return (state.tokens || []).map(function (tok) {
-      return findTokenRecord(state.tokenMap, tok.contract, tok.symbol || tok.id) || tok;
-    }).filter(function (record) {
+    return featuredTokenRecords().filter(function (record) {
       var symbol = normalizeSymbol(record.symbol || record.id);
       var contract = normalizeContract(record.contract);
       var key = tokenKey(contract, symbol);
-      if (!key || key === WAX_NATIVE_KEY) return false;
+      if (!key || !WAXONEDGE_FEATURED_TOKEN_MAP[key]) return false;
       var sources = getTokenSources(key);
       if (sourceFilter && sources.indexOf(sourceFilter) === -1) return false;
       if (!q) return true;
-      return (symbol + ' ' + contract + ' ' + sources.join(' ')).toLowerCase().indexOf(q) !== -1;
+      return ((record.displaySymbol || '') + ' ' + symbol + ' ' + contract + ' ' + sources.join(' ')).toLowerCase().indexOf(q) !== -1;
     }).sort(function (a, b) {
-      return metricValueForToken(b, state.filters.bubbleMetric) - metricValueForToken(a, state.filters.bubbleMetric);
+      var bv = metricValueForToken(b, state.filters.bubbleMetric);
+      var av = metricValueForToken(a, state.filters.bubbleMetric);
+      if (bv != null && av == null) return 1;
+      if (av != null && bv == null) return -1;
+      return (bv || 0) - (av || 0);
     });
   }
 
   function renderBubbles() {
-    var tokens = getRankedTokenRecords().slice(0, 99);
+    var tokens = getRankedTokenRecords();
     if (tokens.length === 0) {
       setHtml('woe-bubble-board', '<div class="woe-chart-empty">No indexed tokens match the current filters.</div>');
       return;
     }
     var maxMetric = tokens.reduce(function (max, record) {
-      return Math.max(max, metricValueForToken(record, state.filters.bubbleMetric));
+      var metric = metricValueForToken(record, state.filters.bubbleMetric);
+      return Math.max(max, metric == null ? 0 : metric);
     }, 1);
     var html = tokens.map(function (record, index) {
       var symbol = normalizeSymbol(record.symbol || record.id);
@@ -1444,22 +1500,22 @@
       var sources = getTokenSources(key);
       var market = strongestMarketForToken(key);
       var metric = metricValueForToken(record, state.filters.bubbleMetric);
-      var ratio = Math.max(0.08, Math.min(1, metric / maxMetric));
+      var ratio = metric == null ? 0.08 : Math.max(0.08, Math.min(1, metric / maxMetric));
       var size = Math.round(72 + (ratio * 104));
       var glow = Math.round(12 + (ratio * 34));
       var change = record.change24 != null ? record.change24 : (market && market.change24 != null ? market.change24 : null);
       var colorClass = change == null ? 'woe-bubble-flat' : (change >= 0 ? 'woe-bubble-up' : 'woe-bubble-down');
       var subtitle = state.filters.bubbleMetric === 'volume'
-        ? fmtNum(record.volume24 || 0) + ' vol'
+        ? (record.volume24 != null ? fmtNum(record.volume24) + ' vol' : UNAVAILABLE_TEXT)
         : state.filters.bubbleMetric === 'pairs'
-          ? String(record.pairCount || sources.length || 0) + ' pairs'
+          ? (record.pairCount != null || sources.length ? String(record.pairCount != null ? record.pairCount : sources.length) + ' pairs' : UNAVAILABLE_TEXT)
           : formatDualMetric(record.liquidityWax || record.tvlWax, record.liquidityUsd || record.tvlUsd);
       return '<button class="woe-bubble-token ' + colorClass + '" type="button"' +
         ' data-token="' + escHtml(symbol) + '" data-contract="' + escHtml(contract) + '"' +
         ' style="--bubble-size:' + escHtml(String(size)) + 'px;--bubble-glow:' + escHtml(String(glow)) + 'px;"' +
         ' title="' + escHtml(symbol + ' @ ' + contract) + '">' +
           '<span class="woe-bubble-rank">#' + escHtml(String(index + 1)) + '</span>' +
-          '<strong>' + escHtml(symbol) + '</strong>' +
+          '<strong>' + escHtml(record.displaySymbol || symbol) + '</strong>' +
           '<span class="woe-bubble-metric">' + escHtml(subtitle) + '</span>' +
           '<span class="woe-bubble-change ' + escHtml(pctClass(change)) + '">' + escHtml(change != null ? fmtPct(change) : 'No 24h') + '</span>' +
           '<span class="woe-bubble-badges">' + sourceBadgesHtml(sources) + '</span>' +
@@ -1470,7 +1526,7 @@
   }
 
   function renderTokens() {
-    var tokensData = getRankedTokenRecords().slice(0, 99);
+    var tokensData = getRankedTokenRecords();
     if (!Array.isArray(tokensData) || tokensData.length === 0) {
       setHtml('woe-token-rank-grid', '<div class="woe-chart-empty">No tokens match the current filters.</div>');
       return;
@@ -1487,14 +1543,14 @@
       var activeClass = key && key === selectedKey ? ' woe-token-rank-active' : '';
       var symbolLink = '<a class="woe-token-detail-link" href="' + escHtml(buildTokenHref(sym, contr)) + '"' +
         ' data-token="' + escHtml(sym) + '"' +
-        ' data-contract="' + escHtml(contr) + '">' + escHtml(sym) + '</a>';
+        ' data-contract="' + escHtml(contr) + '">' + escHtml(record.displaySymbol || sym) + '</a>';
       return '<article class="woe-token-rank-card' + activeClass + '">' +
         '<span class="woe-token-rank-number">#' + escHtml(String(index + 1)) + '</span>' +
         '<div><strong>' + symbolLink + '</strong><span>' + escHtml(contr || UNAVAILABLE_TEXT) + '</span></div>' +
         '<div class="woe-token-rank-metrics">' +
           '<span>' + escHtml(formatDualMetric(record.selectedPriceWax || record.systemPrice, record.selectedPriceUsd || record.usdPrice, 'WAX', '$')) + '</span>' +
           '<span class="' + escHtml(pctClass(change)) + '">' + escHtml(change != null ? fmtPct(change) : UNAVAILABLE_TEXT) + '</span>' +
-          '<span>' + escHtml(fmtNum(record.volume24 || 0)) + ' vol</span>' +
+          '<span>' + escHtml(record.volume24 != null ? fmtNum(record.volume24) + ' vol' : UNAVAILABLE_TEXT) + '</span>' +
         '</div>' +
         '<div class="woe-token-rank-badges">' + sourceBadgesHtml(sources) + '</div>' +
       '</article>';
