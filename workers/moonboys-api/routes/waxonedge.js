@@ -4536,6 +4536,218 @@ function withPairContributionProof(pair, contract, symbol, priceIndex) {
   };
 }
 
+const WAXCASH_CONTRACT = 'graffitiking';
+const WAXCASH_SYMBOL = 'WAXCASH';
+const WAXCASH_KEY = tokenKey(WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+
+function isWaxcashToken(contract, symbol) {
+  return tokenKey(contract, symbol) === WAXCASH_KEY;
+}
+
+function tokenRef(contract, symbol) {
+  return {
+    contract: normalizeContract(contract),
+    symbol: normalizeSymbol(symbol),
+    key: tokenKey(contract, symbol),
+  };
+}
+
+function otherTokenForPair(pair, contract, symbol) {
+  const side = pairTokenSide(pair, contract, symbol);
+  if (!side) return null;
+  return side.side === 'a'
+    ? tokenRef(pair.token_b_contract, pair.token_b_symbol)
+    : tokenRef(pair.token_a_contract, pair.token_a_symbol);
+}
+
+function waxSideReserveForToken(pair, contract, symbol) {
+  const side = pairTokenSide(pair, contract, symbol);
+  if (!side || !hasWaxQuoteForToken(pair, contract, symbol) || !hasRealPairReserves(pair)) return null;
+  return side.side === 'a' ? asNumber(pair.reserve_b) : asNumber(pair.reserve_a);
+}
+
+function tokenSideReserveForToken(pair, contract, symbol) {
+  const side = pairTokenSide(pair, contract, symbol);
+  if (!side || !hasRealPairReserves(pair)) return null;
+  return side.side === 'a' ? asNumber(pair.reserve_a) : asNumber(pair.reserve_b);
+}
+
+function ogDirectWaxTokenPrice(contract, symbol, directWaxPairs = [], priceIndex = new Map()) {
+  if (isWaxToken(contract, symbol)) {
+    const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+    return {
+      price_wax: safeDecimal(1),
+      price_usd: safeDecimal(waxUsd),
+      source: 'eosio.token',
+      pair_id: null,
+      pair_label: 'WAX = 1',
+      wax_reserve: null,
+      token_reserve: null,
+      updated_at: null,
+      reason_codes: [],
+    };
+  }
+  const candidates = (directWaxPairs || [])
+    .filter((pair) => pairTokenSide(pair, contract, symbol))
+    .filter((pair) => hasWaxQuoteForToken(pair, contract, symbol));
+  let selected = null;
+  for (const pair of candidates) {
+    const waxReserve = waxSideReserveForToken(pair, contract, symbol);
+    const tokenReserve = tokenSideReserveForToken(pair, contract, symbol);
+    if (waxReserve == null || waxReserve <= 0 || tokenReserve == null || tokenReserve <= 0) continue;
+    if (!selected || waxReserve > selected.waxReserve) {
+      selected = { pair, waxReserve, tokenReserve };
+    }
+  }
+  if (!selected) {
+    return {
+      price_wax: null,
+      price_usd: null,
+      source: null,
+      pair_id: null,
+      pair_label: null,
+      wax_reserve: null,
+      token_reserve: null,
+      updated_at: null,
+      reason_codes: candidates.length ? ['no_direct_wax_pool_with_usable_reserves'] : ['no_direct_wax_pool'],
+    };
+  }
+  const priceWax = selected.waxReserve / selected.tokenReserve;
+  const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+  return {
+    price_wax: safeDecimal(priceWax),
+    price_usd: waxUsd != null ? safeDecimal(priceWax * waxUsd) : null,
+    source: selected.pair.source || null,
+    pair_id: selected.pair.pair_id || null,
+    pair_label: selectedPairLabel(selected.pair),
+    wax_reserve: safeDecimal(selected.waxReserve),
+    token_reserve: safeDecimal(selected.tokenReserve),
+    updated_at: selected.pair.updated_at || null,
+    reason_codes: [],
+  };
+}
+
+function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex) {
+  const side = pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+  const reasonCodes = [];
+  if (!side) reasonCodes.push('not_waxcash_pair');
+  if (!hasRealPairReserves(pair)) reasonCodes.push('missing_or_zero_reserves');
+  const paired = otherTokenForPair(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+  const waxcashReserve = tokenSideReserveForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+  const pairedReserve = side?.side === 'a' ? asNumber(pair.reserve_b) : asNumber(pair.reserve_a);
+  const directWax = hasWaxQuoteForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+  const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+  let liquidityWax = null;
+  let liquidityUsd = null;
+  let pairedTokenPrice = null;
+
+  if (!reasonCodes.length) {
+    if (directWax) {
+      const waxReserve = waxSideReserveForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+      liquidityWax = waxReserve != null ? waxReserve * 2 : null;
+    } else {
+      pairedTokenPrice = paired ? ogDirectWaxTokenPrice(paired.contract, paired.symbol, pairedDirectWaxPairs, priceIndex) : null;
+      const waxcashPriceWax = asNumber(headlinePrice?.og_headline_price_wax);
+      const pairedPriceWax = asNumber(pairedTokenPrice?.price_wax);
+      if (waxcashPriceWax == null) reasonCodes.push('waxcash_headline_price_unavailable');
+      if (pairedPriceWax == null) reasonCodes.push('paired_token_wax_price_unavailable');
+      if (!reasonCodes.length) {
+        liquidityWax = (waxcashReserve * waxcashPriceWax) + (pairedReserve * pairedPriceWax);
+      }
+    }
+  }
+  if (liquidityWax != null && waxUsd != null) liquidityUsd = liquidityWax * waxUsd;
+
+  const priceRelative = !reasonCodes.includes('missing_or_zero_reserves') && waxcashReserve != null && waxcashReserve > 0
+    ? pairedReserve / waxcashReserve
+    : null;
+
+  return {
+    source: pair.source || null,
+    pair_id: pair.pair_id || null,
+    pair_label: selectedPairLabel(pair),
+    token_a_contract: pair.token_a_contract || null,
+    token_a_symbol: pair.token_a_symbol || null,
+    token_b_contract: pair.token_b_contract || null,
+    token_b_symbol: pair.token_b_symbol || null,
+    reserve_a: safeDecimal(asNumber(pair.reserve_a)),
+    reserve_b: safeDecimal(asNumber(pair.reserve_b)),
+    fee_bps: safeDecimal(asNumber(pair.fee_bps)),
+    updated_at: pair.updated_at || null,
+    volume_24h: safeDecimal(asNumber(pair.volume_24h)),
+    volume_24h_wax: safeDecimal(asNumber(pair.volume_24h_wax)),
+    volume_24h_usd: safeDecimal(asNumber(pair.volume_24h_usd)),
+    pair_liquidity_wax: safeDecimal(liquidityWax),
+    pair_liquidity_usd: safeDecimal(liquidityUsd),
+    pair_price_relative_to_waxcash: safeDecimal(priceRelative),
+    paired_token: paired,
+    paired_token_og_wax_price: pairedTokenPrice?.price_wax || null,
+    direct_wax_pair: directWax,
+    reason_codes: reasonCodes,
+  };
+}
+
+function waxcashHeadlinePrice(pairRows, priceIndex) {
+  const directCandidates = (pairRows || []).filter((pair) =>
+    pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL) &&
+    hasWaxQuoteForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL));
+  const selected = ogDirectWaxTokenPrice(WAXCASH_CONTRACT, WAXCASH_SYMBOL, directCandidates, priceIndex);
+  const reasonCodes = selected.reason_codes.slice();
+  const waxReserve = asNumber(selected.wax_reserve);
+  return {
+    og_headline_price_wax: selected.price_wax,
+    og_headline_price_usd: selected.price_usd,
+    og_headline_price_source: selected.source,
+    og_headline_price_pair_id: selected.pair_id,
+    og_headline_price_pair_label: selected.pair_label,
+    og_headline_wax_reserve: selected.wax_reserve,
+    og_headline_token_reserve: selected.token_reserve,
+    og_headline_formula: selected.price_wax == null ? null : 'price_wax = wax_reserve / waxcash_reserve',
+    og_headline_passes_100_wax_threshold: waxReserve != null ? waxReserve >= 100 : false,
+    og_headline_reason_codes: reasonCodes,
+    og_headline_updated_at: selected.updated_at,
+  };
+}
+
+function buildWaxcashOgParityProof(pairRows = [], priceIndex = new Map(), pairedDirectWaxPairs = []) {
+  const exactPairs = (pairRows || []).filter((pair) => pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL));
+  const headline = waxcashHeadlinePrice(exactPairs, priceIndex);
+  const allPairs = exactPairs.map((pair) => waxcashPairProof(pair, headline, pairedDirectWaxPairs, priceIndex));
+  const rejectedPairs = allPairs.filter((pair) => pair.reason_codes.length > 0);
+  const liquidityWaxValues = allPairs.map((pair) => asNumber(pair.pair_liquidity_wax)).filter((value) => value != null);
+  const liquidityWax = liquidityWaxValues.length ? liquidityWaxValues.reduce((sum, value) => sum + value, 0) : null;
+  const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+  return {
+    token: {
+      contract: WAXCASH_CONTRACT,
+      symbol: WAXCASH_SYMBOL,
+      key: WAXCASH_KEY,
+    },
+    headline_price: headline,
+    direct_wax_candidates: allPairs.filter((pair) => pair.direct_wax_pair),
+    selected_deepest_wax_pool: headline.og_headline_price_pair_id ? {
+      source: headline.og_headline_price_source,
+      pair_id: headline.og_headline_price_pair_id,
+      pair_label: headline.og_headline_price_pair_label,
+      wax_reserve: headline.og_headline_wax_reserve,
+      token_reserve: headline.og_headline_token_reserve,
+    } : null,
+    all_pairs: allPairs,
+    rejected_pairs: rejectedPairs,
+    aggregate_pair_liquidity: {
+      pair_count: allPairs.length,
+      computable_pair_count: liquidityWaxValues.length,
+      liquidity_wax: safeDecimal(liquidityWax),
+      liquidity_usd: liquidityWax != null && waxUsd != null ? safeDecimal(liquidityWax * waxUsd) : null,
+    },
+    comparison_notes: [
+      'WAXCASH OG parity proof is exact contract::symbol scoped.',
+      'Headline price uses the deepest direct WAX pool only.',
+      'Stored pair.price, TVL, market cap, volume, and multi-hop routes are not headline-price inputs.',
+    ],
+  };
+}
+
 function aggregatePairContributionTotals(pairRows, contract, symbol, priceIndex, graphPairRows = pairRows, options = {}) {
   let liquidityWax = 0;
   let liquidityUsd = 0;
@@ -4822,6 +5034,56 @@ async function loadPairRowsForToken(db, contract, symbol) {
   return rows.results || [];
 }
 
+async function loadWaxcashOgPairRows(db) {
+  const rows = await db.prepare(
+    `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+            price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+            liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
+     FROM waxonedge_pairs
+     WHERE (token_a_contract = ? AND token_a_symbol = ?)
+        OR (token_b_contract = ? AND token_b_symbol = ?)`
+  ).bind(WAXCASH_CONTRACT, WAXCASH_SYMBOL, WAXCASH_CONTRACT, WAXCASH_SYMBOL).all().catch(() => ({ results: [] }));
+  return rows.results || [];
+}
+
+async function loadDirectWaxRowsForTokens(db, tokens = []) {
+  const targets = (tokens || [])
+    .filter((token) => token?.key && !isWaxToken(token.contract, token.symbol));
+  if (!targets.length) return [];
+  const rows = [];
+  for (let i = 0; i < targets.length; i += 50) {
+    const chunk = targets.slice(i, i + 50);
+    const where = chunk.map(() =>
+      `(((token_a_contract = ? AND token_a_symbol = ?) AND token_b_contract = 'eosio.token' AND token_b_symbol = 'WAX')
+        OR ((token_b_contract = ? AND token_b_symbol = ?) AND token_a_contract = 'eosio.token' AND token_a_symbol = 'WAX'))`
+    ).join(' OR ');
+    const params = chunk.flatMap((token) => [token.contract, token.symbol, token.contract, token.symbol]);
+    const result = await db.prepare(
+      `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+              price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+              liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
+       FROM waxonedge_pairs
+       WHERE ${where}`
+    ).bind(...params).all().catch(() => ({ results: [] }));
+    rows.push(...(result.results || []));
+  }
+  return rows;
+}
+
+async function getWaxcashOgProof(db) {
+  const pairRows = await loadWaxcashOgPairRows(db);
+  const pairedTokens = pairRows
+    .map((pair) => otherTokenForPair(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL))
+    .filter((token, index, list) => token?.key && list.findIndex((item) => item?.key === token.key) === index);
+  const pairedDirectWaxPairs = await loadDirectWaxRowsForTokens(db, pairedTokens);
+  const priceRows = await loadTokenPriceRowsForPairs(db, pairRows.concat(pairedDirectWaxPairs));
+  const priceIndex = buildDbTokenPriceIndex(priceRows);
+  const proof = buildWaxcashOgParityProof(pairRows, priceIndex, pairedDirectWaxPairs);
+  return {
+    og_woe_parity: proof,
+  };
+}
+
 async function loadRouteGraphRowsForToken(db, contract, symbol, maxHops = OG_WAX_ROUTE_MAX_HOPS) {
   const startKey = tokenKey(contract, symbol);
   if (!startKey) return [];
@@ -5014,6 +5276,7 @@ async function getTokenDebug(db, contract, symbol) {
   }
   const chartSrc = detail.stats?.selected_pair_source || null;
   const chartPairId = detail.stats?.selected_pair_id || null;
+  const waxcashOgProof = isWaxcashToken(contract, symbol) ? await getWaxcashOgProof(db) : null;
   return {
     token: detail.token,
     stats: detail.stats,
@@ -5022,6 +5285,7 @@ async function getTokenDebug(db, contract, symbol) {
     candle_url_example: candleUrlExample(chartSrc, chartPairId),
     reference_candle_url_example: referenceCandleUrlExample(chartSrc, chartPairId),
     aggregate_totals: aggregateTotals,
+    ...(waxcashOgProof || {}),
     diagnostics: diagnoseTokenAggregate(contract, symbol, detail.stats, pairRows, chartCandleCount, aggregateFresh),
     source_coverage: detail.source_coverage,
     sync_diagnostics: {
@@ -6421,6 +6685,11 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
         if (!debug.token) return unavailable('Token not indexed yet', 404, corsHeaders);
         return ok(debug, ['Debug diagnostics are derived from indexed rows and sync state only.'], debug.token.updated_at, corsHeaders);
       }
+      if (child === 'og-proof') {
+        if (!isWaxcashToken(contract, symbol)) return unavailable('OG parity proof is only available for graffitiking::WAXCASH in this narrow PR', 404, corsHeaders);
+        const proof = await getWaxcashOgProof(env.DB);
+        return ok(proof, ['WAXCASH OG parity proof uses exact indexed pairs and deepest direct WAX pool only.'], proof.og_woe_parity?.headline_price?.og_headline_updated_at || null, corsHeaders);
+      }
       if (child === 'holders') return ok([], [REQUIRES_INDEXED_BACKEND], null, corsHeaders);
       if (child === 'trades') return ok([], [SOURCE_NOT_INDEXED], null, corsHeaders);
       if (child) return unavailable('WaxOnEdge endpoint not found', 404, corsHeaders);
@@ -6443,6 +6712,9 @@ export const __waxonedgeTestHooks = {
   ogPairReserveValuation,
   buildOgWaxRouteGraph,
   selectOgWaxRoutePrice,
+  buildWaxcashOgParityProof,
+  waxcashHeadlinePrice,
+  ogDirectWaxTokenPrice,
   metricCapabilitiesFromTokens,
   collectTokenPriceKeysForPairs,
   diagnoseTokenAggregate,

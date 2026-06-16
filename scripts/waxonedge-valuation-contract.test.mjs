@@ -226,5 +226,137 @@ ok('WAX-aware pair valuation uses WAX-side reserve without requiring counter-tok
   waxPoolProof.reserve_side_wax_values.quote === null &&
   waxPoolProof.reason_codes.length === 0);
 
+const waxcashShallowWax = {
+  source: 'swap.alcor',
+  pair_id: 'WAXCASHWAX50',
+  token_a_contract: 'graffitiking',
+  token_a_symbol: 'WAXCASH',
+  token_b_contract: 'eosio.token',
+  token_b_symbol: 'WAX',
+  price: '999999',
+  reserve_a: '100000',
+  reserve_b: '50',
+  fee_bps: '25',
+  liquidity_wax: '999999',
+  liquidity_usd: '999999',
+  updated_at: '2026-06-16T00:00:00.000Z',
+};
+const waxcashDeepWax = {
+  ...waxcashShallowWax,
+  source: 'swap.taco',
+  pair_id: 'WAXCASHWAX150',
+  reserve_a: '1000000',
+  reserve_b: '150',
+  price: '123456',
+  updated_at: '2026-06-16T01:00:00.000Z',
+};
+const waxcashGooPair = {
+  source: 'swap.nefty',
+  pair_id: 'WAXCASHGOO',
+  token_a_contract: 'graffitiking',
+  token_a_symbol: 'WAXCASH',
+  token_b_contract: 'goo.token',
+  token_b_symbol: 'GOO',
+  reserve_a: '1000',
+  reserve_b: '20',
+  price: '999',
+  updated_at: '2026-06-16T02:00:00.000Z',
+};
+const gooWaxPair = {
+  source: 'swap.box',
+  pair_id: 'GOOWAX',
+  token_a_contract: 'goo.token',
+  token_a_symbol: 'GOO',
+  token_b_contract: 'eosio.token',
+  token_b_symbol: 'WAX',
+  reserve_a: '20',
+  reserve_b: '40',
+  updated_at: '2026-06-16T03:00:00.000Z',
+};
+const waxcashNoRoutePair = {
+  source: 'swap.adex',
+  pair_id: 'WAXCASHNOROUTE',
+  token_a_contract: 'graffitiking',
+  token_a_symbol: 'WAXCASH',
+  token_b_contract: 'noroute',
+  token_b_symbol: 'NOPE',
+  reserve_a: '1000',
+  reserve_b: '5',
+};
+const waxcashBadReservePair = {
+  source: 'dapp.fusion',
+  pair_id: 'WAXCASHBAD',
+  token_a_contract: 'graffitiking',
+  token_a_symbol: 'WAXCASH',
+  token_b_contract: 'eosio.token',
+  token_b_symbol: 'WAX',
+  reserve_a: '0',
+  reserve_b: '500',
+};
+const wrongContractWaxcashSymbolPair = {
+  source: 'swap.taco',
+  pair_id: 'WRONGWAXCASH',
+  token_a_contract: 'wrong.token',
+  token_a_symbol: 'WAXCASH',
+  token_b_contract: 'eosio.token',
+  token_b_symbol: 'WAX',
+  reserve_a: '1',
+  reserve_b: '999',
+};
+const waxcashProof = __waxonedgeTestHooks.buildWaxcashOgParityProof(
+  [waxcashShallowWax, waxcashDeepWax, waxcashGooPair, waxcashNoRoutePair, waxcashBadReservePair, wrongContractWaxcashSymbolPair],
+  priceIndex,
+  [gooWaxPair],
+);
+ok('WAXCASH OG headline selects deepest direct WAX pool by WAX-side reserve',
+  waxcashProof.headline_price.og_headline_price_pair_id === 'WAXCASHWAX150' &&
+  waxcashProof.headline_price.og_headline_price_source === 'swap.taco' &&
+  waxcashProof.headline_price.og_headline_wax_reserve === '150' &&
+  waxcashProof.headline_price.og_headline_passes_100_wax_threshold === true);
+ok('WAXCASH OG headline price uses reserve ratio, not stored pair.price',
+  almostEqual(waxcashProof.headline_price.og_headline_price_wax, 0.00015) &&
+  waxcashProof.headline_price.og_headline_price_wax !== waxcashDeepWax.price &&
+  waxcashProof.headline_price.og_headline_formula === 'price_wax = wax_reserve / waxcash_reserve');
+ok('WAXCASH pair list includes all exact graffitiking::WAXCASH pairs only',
+  waxcashProof.all_pairs.length === 5 &&
+  waxcashProof.all_pairs.some((pair) => pair.pair_id === 'WAXCASHGOO') &&
+  !waxcashProof.all_pairs.some((pair) => pair.pair_id === 'WRONGWAXCASH'));
+ok('WAXCASH OG proof pair rows expose fee_bps without duplicate fee field',
+  waxcashProof.all_pairs.some((pair) =>
+    pair.pair_id === 'WAXCASHWAX50' &&
+    pair.fee_bps === '25' &&
+    !Object.prototype.hasOwnProperty.call(pair, 'fee')));
+ok('WAXCASH OG proof pair rows omit unsourced active and 7d/30d pair volume fields',
+  waxcashProof.all_pairs.every((pair) =>
+    !Object.prototype.hasOwnProperty.call(pair, 'active_status') &&
+    !Object.prototype.hasOwnProperty.call(pair, 'volume_7d') &&
+    !Object.prototype.hasOwnProperty.call(pair, 'volume_30d')));
+ok('non-WAX WAXCASH pairs do not become headline price',
+  waxcashProof.headline_price.og_headline_price_pair_id !== 'WAXCASHGOO' &&
+  waxcashProof.direct_wax_candidates.every((pair) => pair.direct_wax_pair === true));
+ok('non-WAX pair WAX value is unavailable when paired token lacks OG WAX price',
+  waxcashProof.all_pairs.some((pair) =>
+    pair.pair_id === 'WAXCASHNOROUTE' &&
+    pair.pair_liquidity_wax === null &&
+    pair.reason_codes.includes('paired_token_wax_price_unavailable')));
+ok('zero reserves are rejected in WAXCASH OG proof rows',
+  waxcashProof.all_pairs.some((pair) =>
+    pair.pair_id === 'WAXCASHBAD' &&
+    pair.pair_liquidity_wax === null &&
+    pair.reason_codes.includes('missing_or_zero_reserves')));
+const waxcashNoWaxProof = __waxonedgeTestHooks.buildWaxcashOgParityProof([waxcashGooPair], priceIndex, [gooWaxPair]);
+ok('missing WAXCASH direct WAX pool returns unavailable null, not fake zero',
+  waxcashNoWaxProof.headline_price.og_headline_price_wax === null &&
+  waxcashNoWaxProof.headline_price.og_headline_price_usd === null &&
+  waxcashNoWaxProof.headline_price.og_headline_reason_codes.includes('no_direct_wax_pool'));
+const waxcashThresholdProof = __waxonedgeTestHooks.buildWaxcashOgParityProof([waxcashShallowWax], priceIndex, []);
+ok('100 WAX threshold flag is reported without hiding raw WAXCASH proof rows',
+  waxcashThresholdProof.headline_price.og_headline_passes_100_wax_threshold === false &&
+  waxcashThresholdProof.all_pairs.length === 1 &&
+  waxcashThresholdProof.all_pairs[0].pair_id === 'WAXCASHWAX50');
+ok('WAXCASH OG parity proof does not use multi-hop headline pricing',
+  waxcashProof.comparison_notes.some((note) => note.includes('multi-hop routes are not headline-price inputs')) &&
+  !JSON.stringify(waxcashProof.headline_price).includes('multi_hop'));
+
 console.log(`\nwaxonedge-valuation-contract.test: ${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
