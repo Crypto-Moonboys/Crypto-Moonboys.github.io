@@ -674,6 +674,7 @@
   function renderLoadedData() {
     state.tokenMap = buildTokenMap(state.tokens);
     state.pairIndex = buildPairIndex(state.pairs);
+    addPairDerivedFeaturedTokenRecords(state.tokenMap, state.pairs);
     state.alcorMarkets = buildAlcorMarkets(state.pairs, state.tickers);
     updateTopBarWaxPrice();
     renderDashboardMetrics();
@@ -810,6 +811,90 @@
       map.bySymbol[symbol].push(record);
     });
     return map;
+  }
+
+  function pairDerivedFeaturedTokenRecord(featured, key, pairCount, sourceKeys, strongestPair) {
+    var parts = String(key || '').split('::');
+    return {
+      key: key,
+      symbol: normalizeSymbol(parts[1]),
+      displaySymbol: featured.label,
+      contract: normalizeContract(parts[0]),
+      id: key,
+      decimals: null,
+      systemPrice: null,
+      usdPrice: null,
+      selectedPriceWax: null,
+      selectedPriceUsd: null,
+      pairCount: pairCount,
+      volume24: null,
+      volume24Wax: null,
+      volume24Usd: null,
+      change24: null,
+      volume7d: null,
+      volume30d: null,
+      liquidityWax: null,
+      liquidityUsd: null,
+      tvlWax: null,
+      tvlUsd: null,
+      holderCount: null,
+      circulatingSupply: null,
+      fdvWax: null,
+      fdvUsd: null,
+      selectedPairSource: '',
+      selectedPairId: '',
+      sourceCount: sourceKeys.length,
+      indexedPairCount: pairCount,
+      sourceKeys: sourceKeys,
+      strongestPair: strongestPair || null,
+      aggregateComplete: null,
+      aggregateTruncated: null,
+      updatedAt: '',
+      raw: null,
+    };
+  }
+
+  function betterPairRecord(a, b) {
+    if (!a) return b;
+    if (!b) return a;
+    var av = asNum(a.liquidityUsd) || asNum(a.liquidityWax) || asNum(a.volume24Usd) || asNum(a.volume24) || 0;
+    var bv = asNum(b.liquidityUsd) || asNum(b.liquidityWax) || asNum(b.volume24Usd) || asNum(b.volume24) || 0;
+    return bv > av ? b : a;
+  }
+
+  function addPairDerivedFeaturedTokenRecords(tokenMap, pairsData) {
+    var pairState = {};
+    (pairsData || []).forEach(function (pair) {
+      getPairTokens(pair).forEach(function (token) {
+        var key = token.key;
+        var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key];
+        if (!featured || tokenMap.byKey[key]) return;
+        if (!pairState[key]) {
+          pairState[key] = {
+            featured: featured,
+            pairCount: 0,
+            sources: {},
+            strongestPair: null,
+          };
+        }
+        var entry = pairState[key];
+        var source = pair && (pair.adapter || pair.rawSource || pair.source);
+        if (source) entry.sources[String(source).toLowerCase()] = true;
+        entry.pairCount += 1;
+        entry.strongestPair = betterPairRecord(entry.strongestPair, pair);
+      });
+    });
+    Object.keys(pairState).forEach(function (key) {
+      var entry = pairState[key];
+      tokenMap.byKey[key] = pairDerivedFeaturedTokenRecord(
+        entry.featured,
+        key,
+        entry.pairCount,
+        Object.keys(entry.sources).sort(),
+        entry.strongestPair
+      );
+    });
+    return tokenMap;
   }
 
   function getPairTokens(pair) {

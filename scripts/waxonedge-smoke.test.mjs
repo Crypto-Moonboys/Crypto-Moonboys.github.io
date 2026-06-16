@@ -293,11 +293,23 @@ ok('waxonedge-bubbles-v2.js renders featured token allowlist only from shared co
   v2Js.includes('var WAXONEDGE_FEATURED_TOKEN_MAP = WAXONEDGE_FEATURED_TOKENS.reduce') &&
   v2Js.includes('var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&
   v2Js.includes('if (!key || !featured) return;') &&
-  v2Js.includes('if (!WAXONEDGE_FEATURED_TOKEN_MAP[key]) return;') &&
+  v2Js.includes('if (!featured) return;') &&
   v2Js.includes('state.missingFeaturedLogged[featured.key]') &&
   v2Js.includes("console.debug('missing_featured_token', featured.key)") &&
   !v2Js.includes('var TOP_LIMIT = 100') &&
   !v2Js.includes('base.slice(0, TOP_LIMIT)'));
+ok('waxonedge-bubbles-v2.js creates pair-only featured records from exact allowlisted pair keys',
+  v2Js.includes('function pairDerivedRecord(featured, key)') &&
+  v2Js.includes('var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&
+  v2Js.includes('if (!featured) return;') &&
+  v2Js.includes('byKey[key] = pairDerivedRecord(featured, key)') &&
+  v2Js.includes('displaySymbol: featured.label') &&
+  v2Js.includes('computedPairCount: 0') &&
+  v2Js.includes('strongestPair: null') &&
+  v2Js.includes('record.searchText = tokenSearchText(record)'));
+ok('waxonedge-bubbles-v2.js pair-only featured records do not fake price, TVL, liquidity, or volume',
+  /function pairDerivedRecord\(featured, key\)[\s\S]*selectedPriceWax: null[\s\S]*selectedPriceUsd: null[\s\S]*volume24Wax: null[\s\S]*volume24Usd: null[\s\S]*liquidityWax: null[\s\S]*liquidityUsd: null[\s\S]*tvlWax: null[\s\S]*tvlUsd: null/.test(v2Js) &&
+  /function pairDerivedRecord\(featured, key\)[\s\S]*volume7dWax: null[\s\S]*volume7dUsd: null[\s\S]*volume30dWax: null[\s\S]*volume30dUsd: null/.test(v2Js));
 ok('waxonedge-bubbles-v2.js keeps modes and search scoped to featured tokens without fake metric zeroes',
   /function rankedRecords\(\)[\s\S]*state\.records\.filter[\s\S]*record\.searchText\.indexOf\(query\)[\s\S]*base\.map/.test(v2Js) &&
   /function computeRadii[\s\S]*value == null \? 0 : Math\.abs\(value\)/.test(v2Js) &&
@@ -485,6 +497,15 @@ ok('waxonedge.js renders only featured token records in legacy scanner paths',
   js.includes("console.debug('missing_featured_token', featured.key)") &&
   !js.includes('getRankedTokenRecords().slice(0, 99)') &&
   !js.includes('tokensData.slice(0, 250)'));
+ok('waxonedge.js creates pair-only featured records from exact allowlisted pair keys',
+  js.includes('function addPairDerivedFeaturedTokenRecords(tokenMap, pairsData)') &&
+  js.includes('var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&
+  js.includes('if (!featured || tokenMap.byKey[key]) return;') &&
+  js.includes('tokenMap.byKey[key] = pairDerivedFeaturedTokenRecord(') &&
+  !/pairDerivedFeaturedTokenRecord[\s\S]*map\.bySymbol/.test(js));
+ok('waxonedge.js pair-only featured records do not fake price, TVL, liquidity, or volume',
+  /function pairDerivedFeaturedTokenRecord\(featured, key, pairCount, sourceKeys, strongestPair\)[\s\S]*systemPrice: null[\s\S]*usdPrice: null[\s\S]*selectedPriceWax: null[\s\S]*selectedPriceUsd: null[\s\S]*volume24: null[\s\S]*volume24Wax: null[\s\S]*volume24Usd: null[\s\S]*liquidityWax: null[\s\S]*liquidityUsd: null[\s\S]*tvlWax: null[\s\S]*tvlUsd: null/.test(js) &&
+  /function pairDerivedFeaturedTokenRecord\(featured, key, pairCount, sourceKeys, strongestPair\)[\s\S]*sourceKeys: sourceKeys[\s\S]*strongestPair: strongestPair \|\| null/.test(js));
 ok('waxonedge.js keeps pair matrix renderer for token analytics route', js.includes('function renderMatrix') && js.includes('woe-matrix-body'));
 ok('waxonedge.js renders pair detail on row click', js.includes('function renderPairDetail') && js.includes('woe-pair-detail-link'));
 ok('waxonedge.js no longer auto-selects a default token-first view',

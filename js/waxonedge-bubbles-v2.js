@@ -251,6 +251,50 @@
     ].join(' ').toLowerCase();
   }
 
+  function pairDerivedRecord(featured, key) {
+    var parts = String(key || '').split('::');
+    var contract = normalizeContract(parts[0]);
+    var symbol = normalizeSymbol(parts[1]);
+    return {
+      id: key,
+      key: key,
+      symbol: symbol,
+      displaySymbol: featured.label,
+      contract: contract,
+      logoUrl: '',
+      selectedPriceWax: null,
+      selectedPriceUsd: null,
+      change24: null,
+      change7d: null,
+      change30d: null,
+      volume24Wax: null,
+      volume24Usd: null,
+      volume7dWax: null,
+      volume7dUsd: null,
+      volume30dWax: null,
+      volume30dUsd: null,
+      liquidityWax: null,
+      liquidityUsd: null,
+      tvlWax: null,
+      tvlUsd: null,
+      marketCapWax: null,
+      marketCapUsd: null,
+      fdvWax: null,
+      fdvUsd: null,
+      supply: '',
+      selectedPair: '',
+      selectedSource: '',
+      sourceCount: 0,
+      indexedPairCount: 0,
+      computedPairCount: 0,
+      sourcesMap: {},
+      sources: [],
+      strongestPair: null,
+      strongestPairLabel: '',
+      unavailableReasons: '',
+    };
+  }
+
   function valueForMetric(record, metric, timeframe) {
     if (metric === 'change') {
       var change = timeframe === '24h' ? record.change24 : record['change' + timeframe];
@@ -489,9 +533,10 @@
 
     pairs.forEach(function (pair) {
       pairKeys(pair).forEach(function (key) {
-        if (!WAXONEDGE_FEATURED_TOKEN_MAP[key]) return;
+        var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key];
+        if (!featured) return;
         if (!byKey[key]) {
-          return;
+          byKey[key] = pairDerivedRecord(featured, key);
         }
         var record = byKey[key];
         var source = pairSourceKey(pair);
