@@ -3645,11 +3645,18 @@ ok('WAXCASH OG WOE parity proof uses deepest direct WAX pool without stored pric
 ok('WAXCASH OG WOE parity proof exposes all exact pair rows with unavailable reason codes',
   route.includes('all_pairs: allPairs') &&
   route.includes('rejected_pairs: rejectedPairs') &&
+  route.includes('pair_summary: pairSummary') &&
+  route.includes('function waxcashPairSummary') &&
+  route.includes("pairedIsWax ? { price_wax: '1' } : null") &&
+  route.includes('const parsed = asNumber(pair[field])') &&
+  route.includes('if (parsed != null) proof[field] = safeDecimal(parsed)') &&
   route.includes('fee_bps: safeDecimal(asNumber(pair.fee_bps))') &&
   route.includes('pair_price_relative_to_waxcash') &&
   route.includes('pair_liquidity_wax') &&
   route.includes('paired_token_wax_price_unavailable') &&
   route.includes('missing_or_zero_reserves') &&
+  route.includes('total_pair_liquidity_wax') &&
+  route.includes('unavailable_reason_counts') &&
   route.includes('exact contract::symbol scoped') &&
   !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('active_status') &&
   !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('volume_7d') &&

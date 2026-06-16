@@ -4636,10 +4636,11 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
   const waxcashReserve = tokenSideReserveForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
   const pairedReserve = side?.side === 'a' ? asNumber(pair.reserve_b) : asNumber(pair.reserve_a);
   const directWax = hasWaxQuoteForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+  const pairedIsWax = paired ? isWaxToken(paired.contract, paired.symbol) : false;
   const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
   let liquidityWax = null;
   let liquidityUsd = null;
-  let pairedTokenPrice = null;
+  let pairedTokenPrice = pairedIsWax ? { price_wax: '1' } : null;
 
   if (!reasonCodes.length) {
     if (directWax) {
@@ -4662,7 +4663,7 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
     ? pairedReserve / waxcashReserve
     : null;
 
-  return {
+  const proof = {
     source: pair.source || null,
     pair_id: pair.pair_id || null,
     pair_label: selectedPairLabel(pair),
@@ -4674,9 +4675,6 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
     reserve_b: safeDecimal(asNumber(pair.reserve_b)),
     fee_bps: safeDecimal(asNumber(pair.fee_bps)),
     updated_at: pair.updated_at || null,
-    volume_24h: safeDecimal(asNumber(pair.volume_24h)),
-    volume_24h_wax: safeDecimal(asNumber(pair.volume_24h_wax)),
-    volume_24h_usd: safeDecimal(asNumber(pair.volume_24h_usd)),
     pair_liquidity_wax: safeDecimal(liquidityWax),
     pair_liquidity_usd: safeDecimal(liquidityUsd),
     pair_price_relative_to_waxcash: safeDecimal(priceRelative),
@@ -4685,6 +4683,51 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
     direct_wax_pair: directWax,
     reason_codes: reasonCodes,
   };
+  for (const field of ['volume_24h', 'volume_24h_wax', 'volume_24h_usd']) {
+    const parsed = asNumber(pair[field]);
+    if (parsed != null) proof[field] = safeDecimal(parsed);
+  }
+  return proof;
+}
+
+function waxcashPairSummary(allPairs = []) {
+  const summary = {
+    total_pairs: allPairs.length,
+    direct_wax_pair_count: 0,
+    non_wax_pair_count: 0,
+    valued_pair_count: 0,
+    unvalued_pair_count: 0,
+    total_pair_liquidity_wax: null,
+    total_pair_liquidity_usd: null,
+    unavailable_reason_counts: {},
+  };
+  let totalWax = 0;
+  let totalUsd = 0;
+  let hasWax = false;
+  let hasUsd = false;
+  for (const pair of allPairs) {
+    if (pair.direct_wax_pair) summary.direct_wax_pair_count += 1;
+    else summary.non_wax_pair_count += 1;
+    const liquidityWax = asNumber(pair.pair_liquidity_wax);
+    const liquidityUsd = asNumber(pair.pair_liquidity_usd);
+    if (liquidityWax != null) {
+      summary.valued_pair_count += 1;
+      totalWax += liquidityWax;
+      hasWax = true;
+    } else {
+      summary.unvalued_pair_count += 1;
+    }
+    if (liquidityUsd != null) {
+      totalUsd += liquidityUsd;
+      hasUsd = true;
+    }
+    for (const code of pair.reason_codes || []) {
+      summary.unavailable_reason_counts[code] = (summary.unavailable_reason_counts[code] || 0) + 1;
+    }
+  }
+  summary.total_pair_liquidity_wax = hasWax ? safeDecimal(totalWax) : null;
+  summary.total_pair_liquidity_usd = hasUsd ? safeDecimal(totalUsd) : null;
+  return summary;
 }
 
 function waxcashHeadlinePrice(pairRows, priceIndex) {
@@ -4714,6 +4757,7 @@ function buildWaxcashOgParityProof(pairRows = [], priceIndex = new Map(), paired
   const headline = waxcashHeadlinePrice(exactPairs, priceIndex);
   const allPairs = exactPairs.map((pair) => waxcashPairProof(pair, headline, pairedDirectWaxPairs, priceIndex));
   const rejectedPairs = allPairs.filter((pair) => pair.reason_codes.length > 0);
+  const pairSummary = waxcashPairSummary(allPairs);
   const liquidityWaxValues = allPairs.map((pair) => asNumber(pair.pair_liquidity_wax)).filter((value) => value != null);
   const liquidityWax = liquidityWaxValues.length ? liquidityWaxValues.reduce((sum, value) => sum + value, 0) : null;
   const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
@@ -4734,6 +4778,7 @@ function buildWaxcashOgParityProof(pairRows = [], priceIndex = new Map(), paired
     } : null,
     all_pairs: allPairs,
     rejected_pairs: rejectedPairs,
+    pair_summary: pairSummary,
     aggregate_pair_liquidity: {
       pair_count: allPairs.length,
       computable_pair_count: liquidityWaxValues.length,
