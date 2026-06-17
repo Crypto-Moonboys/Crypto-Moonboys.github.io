@@ -201,6 +201,17 @@
     return String(value || '').split(',').map(sourceLabel).filter(Boolean);
   }
 
+  function parseReasonCodes(value) {
+    if (!value) return [];
+    if (Array.isArray(value)) {
+      return value.map(function (item) { return String(item || '').trim(); }).filter(Boolean);
+    }
+    if (typeof value === 'object') {
+      return Object.keys(value).filter(function (key) { return !!value[key]; });
+    }
+    return String(value || '').split(',').map(function (item) { return item.trim(); }).filter(Boolean);
+  }
+
   function capMap(map, limit) {
     while (map.size > limit) {
       var oldest = map.keys().next();
@@ -216,6 +227,14 @@
     var metricStatus = status && status[metricName];
     if (!metricStatus) return 'unavailable';
     return metricStatus.live === true ? 'good' : (metricStatus.reason ? 'unavailable' : 'weak');
+  }
+
+  function normalizeConfidence(value) {
+    var text = String(value == null ? '' : value).trim().toLowerCase();
+    if (text === 'good' || text === 'weak' || text === 'unavailable') return text;
+    if (text === 'live' || text === 'true' || text === '1') return 'good';
+    if (text === 'false' || text === '0' || text === 'missing' || text === 'not_indexed') return 'unavailable';
+    return '';
   }
 
   function prefersReducedMotion() {
@@ -542,7 +561,7 @@
         selectedPriceConfidence: metricConfidenceFrom(token, 'selected_price'),
         liquidityConfidence: metricConfidenceFrom(token, 'liquidity'),
         tvlConfidence: metricConfidenceFrom(token, 'tvl'),
-        metricReasonCodes: parseSourceKeys(token.metric_reason_codes || token.reason_codes || token.unavailable_reasons),
+        metricReasonCodes: parseReasonCodes(token.metric_reason_codes || token.reason_codes || token.unavailable_reasons),
         marketCapWax: asNum(token.market_cap_wax),
         marketCapUsd: asNum(token.market_cap_usd),
         fdvWax: asNum(token.fdv_wax),
@@ -557,7 +576,7 @@
         sources: sources,
         strongestPair: null,
         strongestPairLabel: '',
-        unavailableReasons: parseSourceKeys(token.unavailable_reasons).join(', '),
+        unavailableReasons: parseReasonCodes(token.unavailable_reasons).join(', '),
       };
     });
 
@@ -810,7 +829,7 @@
     if (Object.prototype.hasOwnProperty.call(update, 'metric_reason_codes') ||
         Object.prototype.hasOwnProperty.call(update, 'reason_codes') ||
         Object.prototype.hasOwnProperty.call(update, 'unavailable_reasons')) {
-      var reasonCodes = parseSourceKeys(update.metric_reason_codes || update.reason_codes || update.unavailable_reasons);
+      var reasonCodes = parseReasonCodes(update.metric_reason_codes || update.reason_codes || update.unavailable_reasons);
       if (reasonCodes.join(',') !== (record.metricReasonCodes || []).join(',')) {
         record.metricReasonCodes = reasonCodes;
         changed = true;
