@@ -3637,6 +3637,12 @@ ok('aggregate rebuild persists all computable token metrics from indexed pairs',
   route.includes('detailStats.selected_price_usd') &&
   route.includes('detailStats.liquidity_wax') &&
   route.includes('detailStats.tvl_wax') &&
+  route.includes('detailStats.circulating_supply') &&
+  route.includes('detailStats.market_cap_wax') &&
+  route.includes('detailStats.market_cap_usd') &&
+  route.includes('circulating_supply = excluded.circulating_supply') &&
+  route.includes('market_cap_wax = excluded.market_cap_wax') &&
+  route.includes('market_cap_usd = excluded.market_cap_usd') &&
   route.includes('detailStats.fdv_wax') &&
   route.includes('fdv_wax = excluded.fdv_wax') &&
   route.includes('fdv_usd = excluded.fdv_usd'));
@@ -4227,12 +4233,26 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     market_cap_wax: '200',
     fdv_wax: '1000',
   });
+  const marketCapDerivedStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
+    { contract: 'wuffi', symbol: 'WUF', total_supply: '500', circulating_supply: '100' },
+    {},
+    [directWaxPair],
+    routePriceRows,
+    graphRows,
+    { routeIndex },
+  );
   ok('market cap proof requires circulating supply while FDV remains total-supply based',
     marketCapProofWithoutCirculating.has_market_cap === false &&
     marketCapProofWithoutCirculating.metric_status.market_cap.live === false &&
     marketCapProofWithoutCirculating.metric_status.fdv.basis === 'total_supply_x_selected_price' &&
     marketCapProofWithCirculating.has_market_cap === true &&
     marketCapProofWithCirculating.metric_status.market_cap.basis === 'circulating_supply_x_selected_price');
+  ok('backend derives market cap from circulating supply and verified selected price',
+    Number(marketCapDerivedStats.selected_price_wax) === 0.002 &&
+    Number(marketCapDerivedStats.market_cap_wax) === 0.2 &&
+    Number(marketCapDerivedStats.fdv_wax) === 1 &&
+    marketCapDerivedStats.metric_status.market_cap.live === true &&
+    marketCapDerivedStats.metric_status.market_cap.basis === 'circulating_supply_x_selected_price');
   const pairProof = __waxonedgeTestHooks.pairContributionProof(
     directWaxPair,
     'wuffi',
@@ -4589,6 +4609,13 @@ ok('frontend live hook has no fake live ticks or random movement',
   !/fake live|fake tick|Math\.random|random movement/i.test(frontendBubbles));
 ok('frontend has no wallet/swap/liquidity action buttons',
   !/(>|\bvalue=["'])(Connect Wallet|Add Liquidity|Remove Liquidity|Trade on Swap)(<|["'])/.test(frontend + html + tokenHtml));
+ok('WaxOnEdge route exposes analytics only and no swap quote or execution API',
+  !/\/api\/waxonedge\/(?:swap|trade|wallet|quote|execute|transaction|orderbook|aggregator)(?:\/|\?|$)/i.test(route) &&
+  !/child\s*===\s*['"](?:swap|quote|execute|transaction|orderbook|aggregator)['"]/.test(route) &&
+  !/build(?:Swap|Transaction)|execute(?:Swap|Route)|submit(?:Transaction|Swap)|swapQuote|quoteSwap|routeExecution/i.test(route));
+ok('WaxOnEdge backend has no wallet signing, slippage, receiver, or aggregator execution surface',
+  !/\b(waxjs|eosjs|anchor-link|SigningRequest|wallet\.sign|api\.transact|signTransaction)\b/i.test(route) &&
+  !/\b(slippage|receiver|swap modal|orderbook trading|aggregator contract)\b/i.test(route));
 ok('real reference audit documents license and endpoint comparison',
   referenceAudit.includes('MIT licenses') &&
   referenceAudit.includes('/candles') &&

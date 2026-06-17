@@ -1663,7 +1663,7 @@
         return ((ask - bid) / bid) > 0.1;
       });
       if (highSpread.length > 0) {
-        flags.push({ level: 'warn', msg: highSpread.length + ' pair(s) have a spread > 10% (high slippage risk).' });
+        flags.push({ level: 'warn', msg: highSpread.length + ' pair(s) have a spread > 10% (wide spread risk).' });
       }
       var bigDrop = tickersData.filter(function (ticker) {
         var change = asNum(ticker.change24 != null ? ticker.change24 : ticker.price_change_percent);
@@ -2296,8 +2296,8 @@
     var fdvUsd = asNum(stats.fdv_usd);
     var marketCapWax = asNum(stats.market_cap_wax);
     var marketCapUsd = asNum(stats.market_cap_usd);
-    var hasMarketCap = backendFlag(stats.has_market_cap) || metricStatusLive(stats, 'market_cap');
-    var hasFdv = backendFlag(stats.has_fdv) || metricStatusLive(stats, 'fdv') || fdvWax != null || fdvUsd != null;
+    var hasMarketCap = metricStatusLive(stats, 'market_cap');
+    var hasFdv = metricStatusLive(stats, 'fdv');
     var hasHolderCount = hasRealHolderSnapshot(stats) && stats.holder_count != null;
     var hasVolume7d = metricStatusLive(stats, 'volume_7d') && volume7d != null;
     var hasVolume30d = metricStatusLive(stats, 'volume_30d') && volume30d != null;
@@ -2372,7 +2372,7 @@
     var nextSource = nextCandidate
       ? nextCandidate.source + (nextCandidate.marketId ? ' #' + nextCandidate.marketId : '')
       : 'No alternate indexed pair candidate available';
-    var statusText = metaLabel || reason || 'Indexed chart building from fresh live data';
+    var statusText = metaLabel || reason || 'Indexed candles not available yet for this pair';
     setHtml('woe-chart-panel',
       '<div class="woe-chart-placeholder-card">' +
         '<div class="woe-chart-placeholder-grid">' +
@@ -2381,7 +2381,7 @@
           '<div><span>Reason</span><strong>' + escHtml(reason || 'No backend OHLCV candles are indexed for this pair yet') + '</strong></div>' +
           '<div><span>Next candidate</span><strong>' + escHtml(nextSource) + '</strong></div>' +
         '</div>' +
-        '<p>No fake candles are shown. When D1 has OHLCV rows for the selected pair, this panel renders with Lightweight Charts.</p>' +
+        '<p>Indexed candles not available yet for this pair. Pair proof is available below. No fake candles are shown.</p>' +
       '</div>');
     setText('woe-chart-meta', statusText);
   }
