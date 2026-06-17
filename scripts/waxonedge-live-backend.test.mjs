@@ -136,6 +136,15 @@ ok('live snapshot token rows expose metric confidence proof fields',
   route.includes('tvl_confidence: proof.tvl_confidence') &&
   route.includes('metric_status: proof.metric_status') &&
   route.includes('metric_reason_codes: proof.metric_reason_codes'));
+ok('live snapshot rows select supply and market cap fields needed for valuation serialization',
+  route.includes('t.decimals AS decimals') &&
+  route.includes('t.total_supply AS total_supply') &&
+  route.includes('t.max_supply AS max_supply') &&
+  route.includes('s.circulating_supply AS circulating_supply') &&
+  route.includes('s.market_cap_wax AS market_cap_wax') &&
+  route.includes('s.market_cap_usd AS market_cap_usd') &&
+  route.includes('s.fdv_wax AS fdv_wax') &&
+  route.includes('s.fdv_usd AS fdv_usd'));
 {
   const liveSnapshotBlock = route.match(/async function handleLiveSnapshot[\s\S]*?function handleLiveStream/)?.[0] || '';
   ok('live snapshot handler does not call Hyperion, public fetch, or aggregate rebuild',
@@ -1472,6 +1481,73 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     nullStatsBody.tokens.length === 1 &&
     nullStatsBody.tokens[0].token_key === 'graffitiking::WAXCASH' &&
     nullStatsBody.next_cursor === '2026-06-14T11%3A00%3A00.000Z~graffitiking~WAXCASH');
+  const liveValuationPair = {
+    source: 'swap.alcor',
+    pair_id: '8388',
+    token_a_contract: 'eosio.token',
+    token_a_symbol: 'WAX',
+    token_b_contract: 'graffitiking',
+    token_b_symbol: 'WAXCASH',
+    reserve_a: '1000',
+    reserve_b: '100000',
+    volume_24h_wax: '123',
+    volume_24h_usd: '0.738',
+    updated_at: '2026-06-14T11:00:00.000Z',
+  };
+  const liveValuationDb = {
+    prepare(sql) {
+      return {
+        bind() {
+          return {
+            async all() {
+              if (sql.includes('FROM waxonedge_pairs')) {
+                return { results: [liveValuationPair] };
+              }
+              if (sql.includes('FROM waxonedge_tokens') && sql.includes('WHERE')) {
+                return { results: [{ contract: 'eosio.token', symbol: 'WAX', price_wax: '1', price_usd: '0.006' }] };
+              }
+              return {
+                results: [{
+                  contract: 'graffitiking',
+                  symbol: 'WAXCASH',
+                  total_supply: '1000000',
+                  circulating_supply: '500000',
+                  pair_count: '1',
+                  source_keys: 'swap.alcor',
+                  updated_at: '2026-06-14T11:00:00.000Z',
+                }],
+              };
+            },
+          };
+        },
+      };
+    },
+  };
+  const valuedLiveResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
+    { DB: liveValuationDb },
+    new URLSearchParams(),
+    {},
+  );
+  const valuedLiveBody = await valuedLiveResponse.json();
+  const valuedLiveToken = valuedLiveBody.tokens?.[0] || {};
+  ok('/api/waxonedge/live serializes reserve-backed selected price, TVL, liquidity, volume, and market cap',
+    valuedLiveResponse.status === 200 &&
+    valuedLiveBody.ok === true &&
+    valuedLiveToken.token_key === 'graffitiking::WAXCASH' &&
+    Number(valuedLiveToken.price_wax) === 0.01 &&
+    Number(valuedLiveToken.price_usd) === 0.00006 &&
+    Number(valuedLiveToken.liquidity_wax) === 2000 &&
+    Number(valuedLiveToken.liquidity_usd) === 12 &&
+    Number(valuedLiveToken.tvl_wax) === 2000 &&
+    Number(valuedLiveToken.tvl_usd) === 12 &&
+    Number(valuedLiveToken.volume_24h_wax) === 123 &&
+    Number(valuedLiveToken.volume_24h_usd) === 0.738 &&
+    Number(valuedLiveToken.market_cap_wax) === 5000 &&
+    Number(valuedLiveToken.market_cap_usd) === 30 &&
+    valuedLiveToken.selected_price_confidence === 'good' &&
+    valuedLiveToken.liquidity_confidence === 'good' &&
+    valuedLiveToken.tvl_confidence === 'good' &&
+    valuedLiveToken.market_cap_confidence === 'good');
   const badCursorResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
     { DB: fakeLiveDb([]) },
     new URLSearchParams('cursor=bad-cursor'),
@@ -2813,6 +2889,34 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     normalizedLogswap.pair_id === tablePair.pair_id &&
     normalizedLogswap.trade_id === 'swap.alcor:logswap:2668:333' &&
     __waxonedgeTestHooks.moonboysCandleSource('alcorv2') === 'swap.alcor');
+  const alcorWaxcash8388 = __waxonedgeTestHooks.normalizeCoreDexPair({
+    source: 'swap.alcor',
+    normalizer: 'tokenA-tokenB',
+    feeScale: 100,
+  }, {
+    pool_id: 8388,
+    token_a: { contract: 'eosio.token', symbol: 'WAX', precision: 8 },
+    token_b: { contract: 'graffitiking', symbol: 'WAXCASH', precision: 8 },
+    reserve_a: '1138621.39085541',
+    reserve_b: '119457846.68648227',
+    fee: 100,
+  }, priceIndex, '2026-06-17T00:00:00.000Z');
+  const waxcash8388Proof = __waxonedgeTestHooks.buildWaxcashOgParityProof([alcorWaxcash8388], priceIndex, []);
+  ok('swap.alcor pool #8388 snake_case row normalizes as direct WAX/WAXCASH and is selected for WAXCASH headline',
+    alcorWaxcash8388 &&
+    alcorWaxcash8388.source === 'swap.alcor' &&
+    alcorWaxcash8388.pair_id === '8388' &&
+    alcorWaxcash8388.token_a_contract === 'eosio.token' &&
+    alcorWaxcash8388.token_a_symbol === 'WAX' &&
+    alcorWaxcash8388.token_b_contract === 'graffitiking' &&
+    alcorWaxcash8388.token_b_symbol === 'WAXCASH' &&
+    Number(alcorWaxcash8388.reserve_a) === 1138621.39085541 &&
+    Number(alcorWaxcash8388.reserve_b) === 119457846.68648227 &&
+    waxcash8388Proof.headline_price.alcor_direct_wax_candidate_count === 1 &&
+    waxcash8388Proof.headline_price.alcor_expected_direct_wax_pool_missing === false &&
+    waxcash8388Proof.headline_price.og_headline_price_source === 'swap.alcor' &&
+    waxcash8388Proof.headline_price.og_headline_price_pair_id === '8388' &&
+    Number(waxcash8388Proof.headline_price.og_headline_price_wax) > 0);
 }
 {
   const stream = { source: 'swap.taco', referenceSource: 'taco', account: 'swap.taco', action: 'exchangelog', parser: 'swap-v2-taco' };

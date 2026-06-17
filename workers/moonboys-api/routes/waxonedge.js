@@ -1322,14 +1322,76 @@ function waxFusionTokenSides(row) {
   };
 }
 
+function alcorTokenSide(row, sideName, reserveName) {
+  const upper = sideName.toUpperCase();
+  const lower = sideName.toLowerCase();
+  const side = firstPresent(
+    row?.[sideName],
+    row?.[`token${upper}`],
+    row?.[`token_${lower}`],
+    row?.[`${lower}_token`],
+  );
+  const reserve = firstPresent(
+    side?.quantity,
+    side?.reserve,
+    side?.amount,
+    row?.[reserveName],
+    row?.[`reserve${upper}`],
+    row?.[`reserve_${lower}`],
+    row?.[`quantity${upper}`],
+    row?.[`quantity_${lower}`],
+    row?.[`${lower}_reserve`],
+    row?.[`${lower}_quantity`],
+  );
+  const contract = firstPresent(
+    side?.contract,
+    side?.contract_name,
+    side?.token_contract,
+    side?.code,
+    row?.[`contract${upper}`],
+    row?.[`contract_${lower}`],
+    row?.[`${lower}_contract`],
+  );
+  const symbol = firstPresent(
+    side?.symbol,
+    side?.sym,
+    side?.currency,
+    side?.token_symbol,
+    row?.[`symbol${upper}`],
+    row?.[`symbol_${lower}`],
+    row?.[`${lower}_symbol`],
+    row?.[`sym${upper}`],
+    row?.[`sym_${lower}`],
+    row?.[`${lower}_sym`],
+  );
+  const precision = firstPresent(
+    side?.precision,
+    side?.decimals,
+    row?.[`precision${upper}`],
+    row?.[`precision_${lower}`],
+    row?.[`${lower}_precision`],
+    row?.[`decimals${upper}`],
+    row?.[`decimals_${lower}`],
+    row?.[`${lower}_decimals`],
+  );
+  return getTokenSideInfo({
+    ...((side && typeof side === 'object') ? side : {}),
+    contract,
+    symbol,
+    precision,
+    decimals: precision,
+    quantity: reserve,
+  });
+}
+
 function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
   if (isFalseLike(row.active)) return null;
   let tokenA = null;
   let tokenB = null;
   let explicitPrice = null;
   if (adapter.normalizer === 'tokenA-tokenB') {
-    tokenA = getTokenSideInfo(row.tokenA);
-    tokenB = getTokenSideInfo(row.tokenB);
+    tokenA = alcorTokenSide(row, 'A', 'reserveA');
+    tokenB = alcorTokenSide(row, 'B', 'reserveB');
   } else if (adapter.normalizer === 'pool1-pool2') {
     tokenA = getTokenSideInfo(row.pool1);
     tokenB = getTokenSideInfo(row.pool2);
@@ -4051,6 +4113,9 @@ async function listLiveTokenUpdates(db, options = {}) {
      FROM (
        SELECT t.contract AS contract, t.symbol AS symbol,
               t.price_wax AS price_wax, t.price_usd AS price_usd,
+              t.decimals AS decimals,
+              t.total_supply AS total_supply,
+              t.max_supply AS max_supply,
               t.pair_count AS pair_count,
               t.updated_at AS token_updated_at,
               s.selected_price_wax AS selected_price_wax,
@@ -4063,6 +4128,13 @@ async function listLiveTokenUpdates(db, options = {}) {
               s.tvl_usd AS tvl_usd,
               s.liquidity_wax AS liquidity_wax,
               s.liquidity_usd AS liquidity_usd,
+              s.holder_count AS holder_count,
+              s.circulating_supply AS circulating_supply,
+              s.burned_amount AS burned_amount,
+              s.market_cap_wax AS market_cap_wax,
+              s.market_cap_usd AS market_cap_usd,
+              s.fdv_wax AS fdv_wax,
+              s.fdv_usd AS fdv_usd,
               s.selected_pair_source AS selected_pair_source,
               s.selected_pair_id AS selected_pair_id,
               s.indexed_pair_count AS indexed_pair_count,
