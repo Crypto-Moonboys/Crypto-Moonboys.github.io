@@ -73,7 +73,8 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
 ok('OG analytics parity PR cache-busts changed WaxOnEdge scanner assets',
   html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-og-analytics') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-bubble-liquidity') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-og-analytics') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-trust-hardening') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-confidence') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260615-galaxy3'));
@@ -237,8 +238,8 @@ ok('waxonedge.html exposes required scanner metric controls by default',
   html.includes('data-woe-capability="volume_30d" hidden'));
 ok('waxonedge-bubbles-v2.js keeps metric availability honest with selected-metric sizing',
   v2Js.includes('return change != null ? Math.abs(change) : null') &&
-  /if\s*\(\s*metric\s*===\s*'tvl'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.tvlConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*return\s+record\.tvlUsd\s*!=\s*null\s*\?\s*record\.tvlUsd\s*:\s*record\.tvlWax\s*;[\s\S]*\}/.test(v2Js) &&
-  /if\s*\(\s*metric\s*===\s*'liquidity'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.liquidityConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*return\s+record\.liquidityUsd\s*!=\s*null\s*\?\s*record\.liquidityUsd\s*:\s*record\.liquidityWax/.test(v2Js) &&
+  /if\s*\(\s*metric\s*===\s*'tvl'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.tvlConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*record\.bubbleTvlUsd[\s\S]*record\.bubbleTvlWax[\s\S]*return\s+record\.tvlUsd\s*!=\s*null\s*\?\s*record\.tvlUsd\s*:\s*record\.tvlWax\s*;[\s\S]*\}/.test(v2Js) &&
+  /if\s*\(\s*metric\s*===\s*'liquidity'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.liquidityConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*record\.bubbleLiquidityUsd[\s\S]*record\.bubbleLiquidityWax[\s\S]*return\s+record\.liquidityUsd\s*!=\s*null\s*\?\s*record\.liquidityUsd\s*:\s*record\.liquidityWax/.test(v2Js) &&
   /if\s*\(\s*metric\s*===\s*'mcap'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.marketCapConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*return\s+record\.marketCapUsd\s*!=\s*null\s*\?\s*record\.marketCapUsd\s*:\s*record\.marketCapWax;[\s\S]*\}/.test(v2Js) &&
   v2Js.includes('metricCount < records.length') &&
   v2Js.includes("with ' + METRIC_LABELS[state.metric] + ' data") &&
@@ -537,7 +538,8 @@ ok('waxonedge-bubbles-v2.js blocks weak price, liquidity, and TVL from sizing/di
   v2Js.includes("if (record.tvlConfidence !== 'good') return null") &&
   v2Js.includes("if (record.selectedPriceConfidence === 'weak') return 'Proof weak'") &&
   v2Js.includes("if (record.liquidityConfidence === 'weak') return 'Proof weak'") &&
-  v2Js.includes('record.liquidityConfidence === \'good\' ? (toUsd(record.liquidityWax, record.liquidityUsd) || 0) : 0'));
+  v2Js.includes("record.liquidityConfidence === 'good' ? (toUsd(") &&
+  v2Js.includes('record.bubbleLiquidityWax != null ? record.bubbleLiquidityWax : record.liquidityWax'));
 ok('waxonedge-bubbles-v2.js reads bootstrap confidence fields for proof-backed metric data',
   v2Js.includes("selectedPriceConfidence: metricConfidenceFrom(token, 'selected_price')") &&
   v2Js.includes("liquidityConfidence: metricConfidenceFrom(token, 'liquidity')") &&
@@ -588,8 +590,8 @@ ok('waxonedge-bubbles-v2.js parses reason codes without source-label normalizati
   !v2Js.includes('var reasonCodes = parseSourceKeys(update.metric_reason_codes || update.reason_codes || update.unavailable_reasons)'));
 ok('waxonedge-bubbles-v2.js keeps proof-backed price, liquidity, and TVL data countable',
   /function valueForMetric[\s\S]*if \(metric === 'price'\)[\s\S]*record\.selectedPriceConfidence !== 'good'[\s\S]*return record\.selectedPriceUsd != null \? record\.selectedPriceUsd : record\.selectedPriceWax/.test(v2Js) &&
-  /function valueForMetric[\s\S]*if \(metric === 'tvl'\)[\s\S]*record\.tvlConfidence !== 'good'[\s\S]*return record\.tvlUsd != null \? record\.tvlUsd : record\.tvlWax/.test(v2Js) &&
-  /function valueForMetric[\s\S]*if \(metric === 'liquidity'\)[\s\S]*record\.liquidityConfidence !== 'good'[\s\S]*return record\.liquidityUsd != null \? record\.liquidityUsd : record\.liquidityWax/.test(v2Js));
+  /function valueForMetric[\s\S]*if \(metric === 'tvl'\)[\s\S]*record\.tvlConfidence !== 'good'[\s\S]*record\.bubbleTvlUsd[\s\S]*record\.bubbleSuspiciousLiquidityPairCount[\s\S]*return record\.tvlUsd != null \? record\.tvlUsd : record\.tvlWax/.test(v2Js) &&
+  /function valueForMetric[\s\S]*if \(metric === 'liquidity'\)[\s\S]*record\.liquidityConfidence !== 'good'[\s\S]*record\.bubbleLiquidityUsd[\s\S]*record\.bubbleSuspiciousLiquidityPairCount[\s\S]*return record\.liquidityUsd != null \? record\.liquidityUsd : record\.liquidityWax/.test(v2Js));
 ok('waxonedge-bubbles-v2.js exposes market cap mode only through proof-backed capability and values',
   v2Js.includes("mcap: true") &&
   /if \(metric === 'mcap'\) return capabilityEnabled\(\['market_cap', 'mcap'\], DEFAULT_METRIC_ALLOWED\.mcap\)/.test(v2Js) &&
@@ -619,6 +621,17 @@ ok('waxonedge-bubbles-v2.js excludes unproofed market cap and FDV from blended s
   !/function blendedMarketScore\(record\)[\s\S]*?marketCap[\s\S]*?function metricEmphasis/.test(v2Js) &&
   !/function blendedMarketScore\(record\)[\s\S]*?fdv[\s\S]*?function metricEmphasis/.test(v2Js) &&
   !/function blendedMarketScore\(record\)[\s\S]*?var cap[\s\S]*?function metricEmphasis/.test(v2Js));
+ok('waxonedge-bubbles-v2.js sizes liquidity and TVL bubbles from bubble-safe metrics before aggregate proof totals',
+  v2Js.includes('if (record.bubbleTvlUsd != null) return record.bubbleTvlUsd;') &&
+  v2Js.includes('if (record.bubbleTvlWax != null) return record.bubbleTvlWax;') &&
+  v2Js.includes("if ((record.bubbleSuspiciousLiquidityPairCount || 0) > 0) return null;") &&
+  v2Js.includes('if (record.bubbleLiquidityUsd != null) return record.bubbleLiquidityUsd;') &&
+  v2Js.includes('if (record.bubbleLiquidityWax != null) return record.bubbleLiquidityWax;') &&
+  v2Js.includes('bubbleSuspiciousLiquidityPairCount: asNum(token.bubble_suspicious_liquidity_pair_count)') &&
+  v2Js.includes('record.bubbleLiquidityWax != null ? record.bubbleLiquidityWax : record.liquidityWax') &&
+  v2Js.includes('record.bubbleTvlWax != null ? record.bubbleTvlWax : record.tvlWax') &&
+  v2Js.includes("changed = assignLiveMetricNumber(record, 'bubbleLiquidityWax', update, ['bubble_liquidity_wax'], nextLiquidityConfidence) || changed;") &&
+  v2Js.includes("changed = assignLiveNumber(record, 'bubbleSuspiciousLiquidityPairCount', update.bubble_suspicious_liquidity_pair_count) || changed;"));
 ok('waxonedge-bubbles-v2.js footer uses clean gain/loss labels',
   v2Js.includes("'<span class=\"woe-ab-up\">Up '") &&
   v2Js.includes("'<span class=\"woe-ab-down\">Down '") &&

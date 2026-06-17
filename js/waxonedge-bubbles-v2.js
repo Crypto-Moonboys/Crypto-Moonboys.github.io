@@ -345,10 +345,16 @@
     }
     if (metric === 'tvl') {
       if (record.tvlConfidence !== 'good') return null;
+      if (record.bubbleTvlUsd != null) return record.bubbleTvlUsd;
+      if (record.bubbleTvlWax != null) return record.bubbleTvlWax;
+      if ((record.bubbleSuspiciousLiquidityPairCount || 0) > 0) return null;
       return record.tvlUsd != null ? record.tvlUsd : record.tvlWax;
     }
     if (metric === 'liquidity') {
       if (record.liquidityConfidence !== 'good') return null;
+      if (record.bubbleLiquidityUsd != null) return record.bubbleLiquidityUsd;
+      if (record.bubbleLiquidityWax != null) return record.bubbleLiquidityWax;
+      if ((record.bubbleSuspiciousLiquidityPairCount || 0) > 0) return null;
       return record.liquidityUsd != null ? record.liquidityUsd : record.liquidityWax;
     }
     if (metric === 'mcap') {
@@ -450,6 +456,8 @@
     if (state.metric === 'tvl') {
       if (record.tvlConfidence === 'weak') return 'Proof weak';
       if (record.tvlConfidence !== 'good') return 'Not indexed';
+      if (record.bubbleTvlUsd != null) return '$' + fmtNum(record.bubbleTvlUsd);
+      if (record.bubbleTvlWax != null) return fmtNum(record.bubbleTvlWax) + ' WAX';
       if (record.tvlUsd != null) return '$' + fmtNum(record.tvlUsd);
       if (record.tvlWax != null) return fmtNum(record.tvlWax) + ' WAX';
       return 'No indexed TVL';
@@ -457,6 +465,8 @@
     if (state.metric === 'liquidity') {
       if (record.liquidityConfidence === 'weak') return 'Proof weak';
       if (record.liquidityConfidence !== 'good') return 'Not indexed';
+      if (record.bubbleLiquidityUsd != null) return '$' + fmtNum(record.bubbleLiquidityUsd);
+      if (record.bubbleLiquidityWax != null) return fmtNum(record.bubbleLiquidityWax) + ' WAX';
       if (record.liquidityUsd != null) return '$' + fmtNum(record.liquidityUsd);
       if (record.liquidityWax != null) return fmtNum(record.liquidityWax) + ' WAX';
       return 'No indexed liquidity';
@@ -502,8 +512,14 @@
 
   function blendedMarketScore(record) {
     var liquidity = Math.max(
-      record.liquidityConfidence === 'good' ? (toUsd(record.liquidityWax, record.liquidityUsd) || 0) : 0,
-      record.tvlConfidence === 'good' ? (toUsd(record.tvlWax, record.tvlUsd) || 0) : 0
+      record.liquidityConfidence === 'good' ? (toUsd(
+        record.bubbleLiquidityWax != null ? record.bubbleLiquidityWax : record.liquidityWax,
+        record.bubbleLiquidityUsd != null ? record.bubbleLiquidityUsd : record.liquidityUsd
+      ) || 0) : 0,
+      record.tvlConfidence === 'good' ? (toUsd(
+        record.bubbleTvlWax != null ? record.bubbleTvlWax : record.tvlWax,
+        record.bubbleTvlUsd != null ? record.bubbleTvlUsd : record.tvlUsd
+      ) || 0) : 0
     );
     var volume = toUsd(record.volume24Wax, record.volume24Usd);
     var price = record.selectedPriceConfidence === 'good' ? toUsd(record.selectedPriceWax, record.selectedPriceUsd) : null;
@@ -563,6 +579,11 @@
         liquidityUsd: asNum(token.liquidity_usd),
         tvlWax: asNum(token.tvl_wax),
         tvlUsd: asNum(token.tvl_usd),
+        bubbleLiquidityWax: asNum(token.bubble_liquidity_wax),
+        bubbleLiquidityUsd: asNum(token.bubble_liquidity_usd),
+        bubbleTvlWax: asNum(token.bubble_tvl_wax),
+        bubbleTvlUsd: asNum(token.bubble_tvl_usd),
+        bubbleSuspiciousLiquidityPairCount: asNum(token.bubble_suspicious_liquidity_pair_count),
         selectedPriceConfidence: metricConfidenceFrom(token, 'selected_price'),
         liquidityConfidence: metricConfidenceFrom(token, 'liquidity'),
         tvlConfidence: metricConfidenceFrom(token, 'tvl'),
@@ -845,6 +866,11 @@
     changed = assignLiveMetricNumber(record, 'tvlUsd', update, ['tvl_usd'], nextTvlConfidence) || changed;
     changed = assignLiveMetricNumber(record, 'liquidityWax', update, ['liquidity_wax'], nextLiquidityConfidence) || changed;
     changed = assignLiveMetricNumber(record, 'liquidityUsd', update, ['liquidity_usd'], nextLiquidityConfidence) || changed;
+    changed = assignLiveMetricNumber(record, 'bubbleTvlWax', update, ['bubble_tvl_wax'], nextTvlConfidence) || changed;
+    changed = assignLiveMetricNumber(record, 'bubbleTvlUsd', update, ['bubble_tvl_usd'], nextTvlConfidence) || changed;
+    changed = assignLiveMetricNumber(record, 'bubbleLiquidityWax', update, ['bubble_liquidity_wax'], nextLiquidityConfidence) || changed;
+    changed = assignLiveMetricNumber(record, 'bubbleLiquidityUsd', update, ['bubble_liquidity_usd'], nextLiquidityConfidence) || changed;
+    changed = assignLiveNumber(record, 'bubbleSuspiciousLiquidityPairCount', update.bubble_suspicious_liquidity_pair_count) || changed;
     changed = assignLiveMetricNumber(record, 'marketCapWax', update, ['market_cap_wax'], nextMarketCapConfidence) || changed;
     changed = assignLiveMetricNumber(record, 'marketCapUsd', update, ['market_cap_usd'], nextMarketCapConfidence) || changed;
     changed = assignLiveNumber(record, 'indexedPairCount', update.indexed_pair_count) || changed;
