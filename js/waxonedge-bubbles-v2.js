@@ -34,7 +34,7 @@
     volume: true,
     tvl: true,
     liquidity: true,
-    mcap: false,
+    mcap: true,
   };
   var DEFAULT_TIMEFRAME_ALLOWED = { '24h': true, '7d': false, '30d': false };
   var SOURCE_ORDER = ['alcor', 'swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'];
@@ -377,7 +377,7 @@
 
   function metricAllowed(metric) {
     if (!Object.prototype.hasOwnProperty.call(DEFAULT_METRIC_ALLOWED, metric)) return false;
-    if (metric === 'mcap') return false;
+    if (metric === 'mcap') return capabilityEnabled(['market_cap', 'mcap'], DEFAULT_METRIC_ALLOWED.mcap);
     return capabilityEnabled([metric], DEFAULT_METRIC_ALLOWED[metric]);
   }
 
@@ -463,7 +463,7 @@
     }
     if (state.metric === 'mcap') {
       if (record.marketCapConfidence === 'weak') return 'Proof weak';
-      if (record.marketCapConfidence !== 'good') return 'Not indexed';
+      if (record.marketCapConfidence !== 'good') return 'No verified market cap';
       if (record.marketCapUsd != null) return '$' + fmtNum(record.marketCapUsd) + ' mcap';
       return 'No indexed market cap';
     }
@@ -834,6 +834,7 @@
     var nextPriceConfidence = liveConfidenceFromUpdate(update, ['selected_price_confidence', 'selectedPriceConfidence'], record.selectedPriceConfidence);
     var nextLiquidityConfidence = liveConfidenceFromUpdate(update, ['liquidity_confidence', 'liquidityConfidence'], record.liquidityConfidence);
     var nextTvlConfidence = liveConfidenceFromUpdate(update, ['tvl_confidence', 'tvlConfidence'], record.tvlConfidence);
+    var nextMarketCapConfidence = liveConfidenceFromUpdate(update, ['market_cap_confidence', 'marketCapConfidence'], record.marketCapConfidence);
     changed = assignLiveMetricNumber(record, 'selectedPriceWax', update, ['price_wax', 'selected_price_wax'], nextPriceConfidence) || changed;
     changed = assignLiveMetricNumber(record, 'selectedPriceUsd', update, ['price_usd', 'selected_price_usd'], nextPriceConfidence) || changed;
     changed = assignLiveNumber(record, 'change24', update.change_24h) || changed;
@@ -843,12 +844,15 @@
     changed = assignLiveMetricNumber(record, 'tvlUsd', update, ['tvl_usd'], nextTvlConfidence) || changed;
     changed = assignLiveMetricNumber(record, 'liquidityWax', update, ['liquidity_wax'], nextLiquidityConfidence) || changed;
     changed = assignLiveMetricNumber(record, 'liquidityUsd', update, ['liquidity_usd'], nextLiquidityConfidence) || changed;
+    changed = assignLiveMetricNumber(record, 'marketCapWax', update, ['market_cap_wax'], nextMarketCapConfidence) || changed;
+    changed = assignLiveMetricNumber(record, 'marketCapUsd', update, ['market_cap_usd'], nextMarketCapConfidence) || changed;
     changed = assignLiveNumber(record, 'indexedPairCount', update.indexed_pair_count) || changed;
     changed = assignLiveNumber(record, 'sourceCount', update.source_count) || changed;
     [
       ['selectedPriceConfidence', ['selected_price_confidence', 'selectedPriceConfidence']],
       ['liquidityConfidence', ['liquidity_confidence', 'liquidityConfidence']],
-      ['tvlConfidence', ['tvl_confidence', 'tvlConfidence']]
+      ['tvlConfidence', ['tvl_confidence', 'tvlConfidence']],
+      ['marketCapConfidence', ['market_cap_confidence', 'marketCapConfidence']]
     ].forEach(function (entry) {
       var prop = entry[0];
       var keys = entry[1];
