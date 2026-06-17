@@ -200,6 +200,30 @@ ok('live snapshot uses stable contract-symbol token keys',
     update.volume_24h_usd === '0');
 }
 {
+  const preciseMarketCapWax = '12345678901234567890.123456789';
+  const preciseMarketCapUsd = '98765432109876543210.987654321';
+  const update = __waxonedgeTestHooks.normalizeLiveTokenUpdate({
+    contract: 'graffitiking',
+    symbol: 'WAXCASH',
+    selected_price_wax: '1.23456789',
+    selected_price_usd: '0.123456789',
+    selected_pair_source: 'swap.alcor',
+    selected_pair_id: '8388',
+    circulating_supply: '10000000000000000000.000000001',
+    market_cap_wax: preciseMarketCapWax,
+    market_cap_usd: preciseMarketCapUsd,
+    updated_at: '2026-06-14T00:00:00.000Z',
+  });
+  ok('live market_cap_wax decimal TEXT is preserved without float round-trip precision loss',
+    update &&
+    update.market_cap_confidence === 'good' &&
+    update.market_cap_wax === preciseMarketCapWax);
+  ok('live market_cap_usd decimal TEXT is preserved without float round-trip precision loss',
+    update &&
+    update.market_cap_confidence === 'good' &&
+    update.market_cap_usd === preciseMarketCapUsd);
+}
+{
   const update = __waxonedgeTestHooks.normalizeLiveTokenUpdate({
     contract: 'graffitiking',
     symbol: 'WAXCASH',
@@ -3637,6 +3661,12 @@ ok('aggregate rebuild persists all computable token metrics from indexed pairs',
   route.includes('detailStats.selected_price_usd') &&
   route.includes('detailStats.liquidity_wax') &&
   route.includes('detailStats.tvl_wax') &&
+  route.includes('detailStats.circulating_supply') &&
+  route.includes('detailStats.market_cap_wax') &&
+  route.includes('detailStats.market_cap_usd') &&
+  route.includes('circulating_supply = excluded.circulating_supply') &&
+  route.includes('market_cap_wax = excluded.market_cap_wax') &&
+  route.includes('market_cap_usd = excluded.market_cap_usd') &&
   route.includes('detailStats.fdv_wax') &&
   route.includes('fdv_wax = excluded.fdv_wax') &&
   route.includes('fdv_usd = excluded.fdv_usd'));
@@ -4227,12 +4257,26 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     market_cap_wax: '200',
     fdv_wax: '1000',
   });
+  const marketCapDerivedStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
+    { contract: 'wuffi', symbol: 'WUF', total_supply: '500', circulating_supply: '100' },
+    {},
+    [directWaxPair],
+    routePriceRows,
+    graphRows,
+    { routeIndex },
+  );
   ok('market cap proof requires circulating supply while FDV remains total-supply based',
     marketCapProofWithoutCirculating.has_market_cap === false &&
     marketCapProofWithoutCirculating.metric_status.market_cap.live === false &&
     marketCapProofWithoutCirculating.metric_status.fdv.basis === 'total_supply_x_selected_price' &&
     marketCapProofWithCirculating.has_market_cap === true &&
     marketCapProofWithCirculating.metric_status.market_cap.basis === 'circulating_supply_x_selected_price');
+  ok('backend derives market cap from circulating supply and verified selected price',
+    Number(marketCapDerivedStats.selected_price_wax) === 0.002 &&
+    Number(marketCapDerivedStats.market_cap_wax) === 0.2 &&
+    Number(marketCapDerivedStats.fdv_wax) === 1 &&
+    marketCapDerivedStats.metric_status.market_cap.live === true &&
+    marketCapDerivedStats.metric_status.market_cap.basis === 'circulating_supply_x_selected_price');
   const pairProof = __waxonedgeTestHooks.pairContributionProof(
     directWaxPair,
     'wuffi',

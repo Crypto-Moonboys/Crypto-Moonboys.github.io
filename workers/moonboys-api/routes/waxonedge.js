@@ -3619,10 +3619,11 @@ async function aggregateTokenAnalytics(env) {
        (contract, symbol, volume_24h, volume_24h_wax, volume_24h_usd,
         liquidity_wax, liquidity_usd, tvl_wax, tvl_usd, change_24h,
         selected_price_wax, selected_price_usd, selected_pair_source, selected_pair_id,
-        fdv_wax, fdv_usd, source_count, indexed_pair_count, source_keys, aggregate_complete,
+        circulating_supply, market_cap_wax, market_cap_usd, fdv_wax, fdv_usd,
+        source_count, indexed_pair_count, source_keys, aggregate_complete,
         aggregate_sources_required, aggregate_sources_present, aggregate_sources_processed,
         aggregate_sources_failed, aggregate_truncated, aggregate_sources_truncated, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(contract, symbol) DO UPDATE SET
          volume_24h = excluded.volume_24h,
          volume_24h_wax = excluded.volume_24h_wax,
@@ -3636,6 +3637,9 @@ async function aggregateTokenAnalytics(env) {
          selected_price_usd = excluded.selected_price_usd,
          selected_pair_source = excluded.selected_pair_source,
          selected_pair_id = excluded.selected_pair_id,
+         circulating_supply = excluded.circulating_supply,
+         market_cap_wax = excluded.market_cap_wax,
+         market_cap_usd = excluded.market_cap_usd,
          fdv_wax = excluded.fdv_wax,
          fdv_usd = excluded.fdv_usd,
          source_count = excluded.source_count,
@@ -3664,6 +3668,9 @@ async function aggregateTokenAnalytics(env) {
       detailStats.selected_price_usd,
       detailStats.selected_pair_source,
       detailStats.selected_pair_id,
+      detailStats.circulating_supply,
+      detailStats.market_cap_wax,
+      detailStats.market_cap_usd,
       detailStats.fdv_wax,
       detailStats.fdv_usd,
       detailStats.source_count,
@@ -3930,6 +3937,9 @@ function normalizeLiveTokenUpdate(row) {
   const liquidityUsd = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.liquidity_usd)) : null;
   const tvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_wax)) : null;
   const tvlUsd = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_usd)) : null;
+  const marketCapLive = proof.metric_status?.market_cap?.live === true;
+  const marketCapWax = marketCapLive ? safeDecimal(row.market_cap_wax) : null;
+  const marketCapUsd = marketCapLive ? safeDecimal(row.market_cap_usd) : null;
   const selectedMetricValue = (() => {
     const change = asNumber(row.change_24h);
     if (change != null) return change;
@@ -3954,6 +3964,9 @@ function normalizeLiveTokenUpdate(row) {
     tvl_usd: tvlUsd,
     liquidity_wax: liquidityWax,
     liquidity_usd: liquidityUsd,
+    market_cap_wax: marketCapWax,
+    market_cap_usd: marketCapUsd,
+    market_cap_confidence: marketCapLive ? 'good' : 'unavailable',
     selected_price_confidence: proof.selected_price_confidence,
     liquidity_confidence: proof.liquidity_confidence,
     tvl_confidence: proof.tvl_confidence,
@@ -5117,8 +5130,11 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   }
 
   const totalSupply = asNumber(token?.total_supply ?? token?.max_supply);
+  const circulatingSupply = asNumber(metrics.circulating_supply ?? token?.circulating_supply);
   const selectedPriceWax = selected?.priceWax ?? null;
   const selectedPriceUsd = selected?.priceUsd ?? null;
+  const marketCapWax = circulatingSupply != null && selectedPriceWax != null ? circulatingSupply * selectedPriceWax : null;
+  const marketCapUsd = circulatingSupply != null && selectedPriceUsd != null ? circulatingSupply * selectedPriceUsd : null;
   const fdvWax = asNumber(metrics.fdv_wax) ?? (totalSupply != null && selectedPriceWax != null ? totalSupply * selectedPriceWax : null);
   const fdvUsd = asNumber(metrics.fdv_usd) ?? (totalSupply != null && selectedPriceUsd != null ? totalSupply * selectedPriceUsd : null);
   const liquidityWax = hasLiquidityWax ? liquidityWaxTotal : null;
@@ -5129,6 +5145,7 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   metrics.contract = contract;
   metrics.symbol = symbol;
   metrics.total_supply = safeDecimal(totalSupply);
+  metrics.circulating_supply = safeDecimal(circulatingSupply);
   metrics.selected_price_wax = safeDecimal(selectedPriceWax);
   metrics.selected_price_usd = safeDecimal(selectedPriceUsd);
   const selectedProofHop = selected?.route_hops?.[selected.route_hops.length - 1] || null;
@@ -5152,6 +5169,8 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   metrics.source_count = sources.size || asNumber(metrics.source_count) || null;
   metrics.indexed_pair_count = pairCount || asNumber(metrics.indexed_pair_count) || null;
   metrics.source_keys = Array.from(sources).sort().join(',');
+  metrics.market_cap_wax = safeDecimal(marketCapWax);
+  metrics.market_cap_usd = safeDecimal(marketCapUsd);
   metrics.fdv_wax = safeDecimal(fdvWax);
   metrics.fdv_usd = safeDecimal(fdvUsd);
   metrics.strongest_pair = selected ? {

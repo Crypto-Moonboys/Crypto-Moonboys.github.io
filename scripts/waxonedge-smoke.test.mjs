@@ -71,14 +71,16 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/css/waxonedge.css?v=woe-') &&
   html.includes('/css/waxonedge-bubbles-v2.css?v=woe-') &&
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
-ok('trust-hardening PR cache-busts changed WaxOnEdge scanner assets',
+ok('OG analytics parity PR cache-busts changed WaxOnEdge scanner assets',
   html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-trust-hardening') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-og-analytics') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-trust-hardening') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-confidence') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260615-galaxy3'));
-ok('trust-hardening PR cache-busts changed token analytics assets',
+ok('OG analytics parity PR cache-busts changed token analytics assets',
   tokenHtml.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-trust-hardening') &&
+  tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-og-analytics') &&
+  !tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-trust-hardening') &&
   !tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-confidence'));
 ok('WaxOnEdge CSS cache keys remain on the existing CSS version because this PR does not edit CSS assets',
   html.includes('/css/waxonedge.css?v=woe-20260615-galaxy3') &&
@@ -134,7 +136,7 @@ ok('WaxOnEdge visible metrics stay read-only and proof-backed',
   v2Js.includes("if (record.selectedPriceConfidence !== 'good') return null") &&
   v2Js.includes("if (record.tvlConfidence !== 'good') return null") &&
   v2Js.includes("if (record.liquidityConfidence !== 'good') return null") &&
-  v2Js.includes("if (metric === 'mcap') return false;") &&
+  /if \(metric === 'mcap'\) return capabilityEnabled\(\['market_cap', 'mcap'\], DEFAULT_METRIC_ALLOWED\.mcap\)/.test(v2Js) &&
   js.includes("var hasMarketCap = metricStatusLive(stats, 'market_cap')") &&
   js.includes("var hasFdv = metricStatusLive(stats, 'fdv')"));
 
@@ -215,15 +217,20 @@ ok('waxonedge-bubbles-v2.js supports WAX Galaxy metric modes with dead controls 
   v2Js.includes("if (timeframe === '30d')") &&
   v2Js.includes('function metricAllowed(metric)') &&
   v2Js.includes('function timeframeAllowed(timeframe)') &&
-  v2Js.includes("mcap: false") &&
+  v2Js.includes("mcap: true") &&
   v2Js.includes("'7d': false") &&
   v2Js.includes("'30d': false"));
 ok('waxonedge.html exposes Liquidity scanner metric control when liquidity mode exists',
   html.includes('data-woe-metric="liquidity"') &&
   html.includes('>Liquidity</button>'));
-ok('waxonedge.html gates dead primary scanner controls by default',
+ok('waxonedge.html exposes required scanner metric controls by default',
   html.includes('data-woe-metric="mcap"') &&
-  html.includes('data-woe-capability="market_cap" hidden') &&
+  html.includes('>Market Cap</button>') &&
+  !html.includes('data-woe-capability="market_cap" hidden') &&
+  html.includes('data-woe-metric="price"') &&
+  html.includes('data-woe-metric="volume"') &&
+  html.includes('data-woe-metric="tvl"') &&
+  html.includes('data-woe-metric="liquidity"') &&
   html.includes('data-woe-timeframe="7d"') &&
   html.includes('data-woe-capability="volume_7d" hidden') &&
   html.includes('data-woe-timeframe="30d"') &&
@@ -583,12 +590,25 @@ ok('waxonedge-bubbles-v2.js keeps proof-backed price, liquidity, and TVL data co
   /function valueForMetric[\s\S]*if \(metric === 'price'\)[\s\S]*record\.selectedPriceConfidence !== 'good'[\s\S]*return record\.selectedPriceUsd != null \? record\.selectedPriceUsd : record\.selectedPriceWax/.test(v2Js) &&
   /function valueForMetric[\s\S]*if \(metric === 'tvl'\)[\s\S]*record\.tvlConfidence !== 'good'[\s\S]*return record\.tvlUsd != null \? record\.tvlUsd : record\.tvlWax/.test(v2Js) &&
   /function valueForMetric[\s\S]*if \(metric === 'liquidity'\)[\s\S]*record\.liquidityConfidence !== 'good'[\s\S]*return record\.liquidityUsd != null \? record\.liquidityUsd : record\.liquidityWax/.test(v2Js));
-ok('waxonedge-bubbles-v2.js keeps market cap mode hard disabled unless a future proof gate is explicitly wired',
-  v2Js.includes("if (metric === 'mcap') return false;") &&
+ok('waxonedge-bubbles-v2.js exposes market cap mode only through proof-backed capability and values',
+  v2Js.includes("mcap: true") &&
+  /if \(metric === 'mcap'\) return capabilityEnabled\(\['market_cap', 'mcap'\], DEFAULT_METRIC_ALLOWED\.mcap\)/.test(v2Js) &&
   /function valueForMetric[\s\S]*if \(metric === 'mcap'\)[\s\S]*record\.marketCapConfidence !== 'good'[\s\S]*return null[\s\S]*record\.marketCapUsd/.test(v2Js) &&
-  /function displayValue[\s\S]*if \(state\.metric === 'mcap'\)[\s\S]*record\.marketCapConfidence === 'weak'[\s\S]*record\.marketCapConfidence !== 'good'[\s\S]*Not indexed/.test(v2Js) &&
-  !/function metricAllowed[\s\S]*capabilityEnabled\(\['market_cap', 'mcap'\]/.test(v2Js) &&
+  /function displayValue[\s\S]*if \(state\.metric === 'mcap'\)[\s\S]*record\.marketCapConfidence === 'weak'[\s\S]*record\.marketCapConfidence !== 'good'[\s\S]*No verified market cap[\s\S]*record\.marketCapUsd != null[\s\S]*record\.marketCapWax != null[\s\S]*WAX mcap/.test(v2Js) &&
+  v2Js.includes("['marketCapConfidence', ['market_cap_confidence', 'marketCapConfidence']]") &&
+  v2Js.includes("assignLiveMetricNumber(record, 'marketCapWax', update, ['market_cap_wax'], nextMarketCapConfidence)") &&
+  v2Js.includes("assignLiveMetricNumber(record, 'marketCapUsd', update, ['market_cap_usd'], nextMarketCapConfidence)") &&
+  !v2Js.includes("if (metric === 'mcap') return false;") &&
+  !v2Js.includes('No indexed market cap') &&
   !/function valueForMetric[\s\S]*if \(metric === 'mcap'\) return record\.marketCap/.test(v2Js));
+{
+  const displayMcapBranch = (v2Js.match(/if \(state\.metric === 'mcap'\) \{[\s\S]*?return 'No verified market cap';\n    \}/) || [''])[0];
+  ok('waxonedge-bubbles-v2.js mcap display falls back to WAX and has no duplicate unreachable confidence branch',
+    displayMcapBranch.includes("if (record.marketCapUsd != null) return '$' + fmtNum(record.marketCapUsd) + ' mcap';") &&
+    displayMcapBranch.includes("if (record.marketCapWax != null) return fmtNum(record.marketCapWax) + ' WAX mcap';") &&
+    !displayMcapBranch.includes('No indexed market cap') &&
+    (displayMcapBranch.match(/record\.marketCapConfidence !== 'good'/g) || []).length === 1);
+}
 ok('waxonedge-bubbles-v2.js excludes unproofed market cap and FDV from blended score',
   /function blendedMarketScore\(record\)[\s\S]*?function metricEmphasis/.test(v2Js) &&
   /function blendedMarketScore\(record\)[\s\S]*?var volume = toUsd\(record\.volume24Wax, record\.volume24Usd\);[\s\S]*?var price = record\.selectedPriceConfidence === 'good'[\s\S]*?function metricEmphasis/.test(v2Js) &&
