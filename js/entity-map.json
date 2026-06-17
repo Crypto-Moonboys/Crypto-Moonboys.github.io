@@ -1,50 +1,5 @@
 [
   {
-    "entity_id": "1m_free_nfts",
-    "canonical_title": "1M Free NFTs — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/1m-free-nfts.html",
-    "category": "factions",
-    "aliases": [],
-    "tags": [
-      "1m",
-      "free",
-      "nfts",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/1m-free-nfts.html"
-    ],
-    "brand": null,
-    "alias_candidates": [
-      "1m free nfts"
-    ]
-  },
-  {
-    "entity_id": "1m_free_nfts_drop",
-    "canonical_title": "1M Free NFTs Drop — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/1m-free-nfts-drop.html",
-    "category": "factions",
-    "aliases": [],
-    "tags": [
-      "1m",
-      "free",
-      "nfts",
-      "drop",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/1m-free-nfts-drop.html"
-    ],
-    "brand": null,
-    "alias_candidates": [
-      "1m free nfts drop"
-    ]
-  },
-  {
     "entity_id": "1m_free_nfts_program",
     "canonical_title": "1m_free_nfts_program — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/1m-free-nfts-program.html",
@@ -207,52 +162,6 @@
     "brand": null,
     "alias_candidates": [
       "alfie bitcoin kid blaze"
-    ]
-  },
-  {
-    "entity_id": "alfie_blaze",
-    "canonical_title": "alfie_blaze — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/alfie-blaze.html",
-    "category": "characters",
-    "aliases": [
-      "alfie blaze crypto moonboys wiki"
-    ],
-    "tags": [
-      "alfie",
-      "blaze",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/alfie-blaze.html"
-    ],
-    "brand": null,
-    "alias_candidates": [
-      "alfie blaze"
-    ]
-  },
-  {
-    "entity_id": "alfie_the_bitcoin_kid_blaze",
-    "canonical_title": "Alfie 'The Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
-    "category": "factions",
-    "aliases": [],
-    "tags": [
-      "alfie",
-      "bitcoin",
-      "kid",
-      "blaze",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/alfie-the-bitcoin-kid-blaze.html"
-    ],
-    "brand": null,
-    "alias_candidates": [
-      "alfie the bitcoin kid blaze"
     ]
   },
   {
@@ -832,28 +741,6 @@
     "brand": null,
     "alias_candidates": [
       "darren cullen"
-    ]
-  },
-  {
-    "entity_id": "darren_cullen_ser",
-    "canonical_title": "Darren Cullen (SER) — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/darren-cullen-ser.html",
-    "category": "factions",
-    "aliases": [],
-    "tags": [
-      "darren",
-      "cullen",
-      "ser",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/darren-cullen-ser.html"
-    ],
-    "brand": null,
-    "alias_candidates": [
-      "darren cullen ser"
     ]
   },
   {
@@ -1460,28 +1347,6 @@
     ]
   },
   {
-    "entity_id": "graffitikings",
-    "canonical_title": "graffitikings — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/graffitikings.html",
-    "category": "characters",
-    "aliases": [
-      "graffitikings crypto moonboys wiki"
-    ],
-    "tags": [
-      "graffitikings",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/graffitikings.html"
-    ],
-    "brand": null,
-    "alias_candidates": [
-      "graffitikings"
-    ]
-  },
-  {
     "entity_id": "graffpunks",
     "canonical_title": "graffpunks — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/graffpunks.html",
@@ -1753,8 +1618,7 @@
       "wiki"
     ],
     "source_urls": [
-      "/wiki/hodl-warriors.html",
-      "/wiki/hodl-x-warriors.html"
+      "/wiki/hodl-warriors.html"
     ],
     "brand": {
       "brand_family": "hodl",
@@ -1796,6 +1660,27 @@
     "alias_candidates": [
       "hodl wars"
     ]
+  },
+  {
+    "entity_id": "hodl_x_warriors",
+    "canonical_title": "hodl_warriors — Crypto Moonboys Wiki",
+    "canonical_url": "/wiki/hodl-x-warriors.html",
+    "category": "characters",
+    "aliases": [
+      "hodl warriors crypto moonboys wiki",
+      "Hodl X Warriors"
+    ],
+    "tags": [
+      "hodl",
+      "warriors",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "source_urls": [
+      "/wiki/hodl-x-warriors.html"
+    ],
+    "brand": null
   },
   {
     "entity_id": "ian_harrison",
@@ -2381,29 +2266,6 @@
     ]
   },
   {
-    "entity_id": "no_ball_games_nbg",
-    "canonical_title": "No Ball Games (NBG) — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/no-ball-games-nbg.html",
-    "category": "factions",
-    "aliases": [],
-    "tags": [
-      "no",
-      "ball",
-      "games",
-      "nbg",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/no-ball-games-nbg.html"
-    ],
-    "brand": null,
-    "alias_candidates": [
-      "no ball games nbg"
-    ]
-  },
-  {
     "entity_id": "null_the_prophet",
     "canonical_title": "null_the_prophet — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/null-the-prophet.html",
@@ -2608,28 +2470,6 @@
     ]
   },
   {
-    "entity_id": "punk",
-    "canonical_title": "punk — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/punk.html",
-    "category": "factions",
-    "aliases": [
-      "punk crypto moonboys wiki"
-    ],
-    "tags": [
-      "punk",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/punk.html"
-    ],
-    "brand": null,
-    "alias_candidates": [
-      "punk"
-    ]
-  },
-  {
     "entity_id": "punk_token",
     "canonical_title": "punk_token — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/punk-token.html",
@@ -2694,28 +2534,6 @@
     "brand": null,
     "alias_candidates": [
       "queen sarah p fly"
-    ]
-  },
-  {
-    "entity_id": "queen_sarah_pfly",
-    "canonical_title": "queen_sarah_pfly — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/queen-sarah-pfly.html",
-    "category": "characters",
-    "aliases": [],
-    "tags": [
-      "queen",
-      "sarah",
-      "pfly",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/queen-sarah-pfly.html"
-    ],
-    "brand": null,
-    "alias_candidates": [
-      "queen sarah pfly"
     ]
   },
   {
@@ -2873,29 +2691,6 @@
       "/wiki/samaelexe.html"
     ],
     "brand": null
-  },
-  {
-    "entity_id": "sarah_pu51fly",
-    "canonical_title": "Sarah PU51FLY — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/sarah-pu51fly.html",
-    "category": "characters",
-    "aliases": [
-      "sarah pu51fly crypto moonboys wiki"
-    ],
-    "tags": [
-      "sarah",
-      "pu51fly",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/sarah-pu51fly.html"
-    ],
-    "brand": null,
-    "alias_candidates": [
-      "sarah pu51fly"
-    ]
   },
   {
     "entity_id": "satorebel",
@@ -3465,29 +3260,6 @@
     "alias_candidates": [
       "code alchemists crypto moonboys wiki",
       "the code alchemists"
-    ]
-  },
-  {
-    "entity_id": "the_crypto_moongirls",
-    "canonical_title": "The CRYPTO MOONGIRLS — Crypto Moonboys Wiki",
-    "canonical_url": "/wiki/the-crypto-moongirls.html",
-    "category": "factions",
-    "aliases": [
-      "CRYPTO MOONGIRLS — Crypto Moonboys Wiki",
-      "crypto moongirls moonboys wiki"
-    ],
-    "tags": [
-      "crypto",
-      "moongirls",
-      "moonboys",
-      "wiki"
-    ],
-    "source_urls": [
-      "/wiki/the-crypto-moongirls.html"
-    ],
-    "brand": null,
-    "alias_candidates": [
-      "the crypto moongirls"
     ]
   },
   {

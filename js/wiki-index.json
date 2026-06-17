@@ -497,8 +497,7 @@
         "title": "hodl warriors crypto moonboys wiki"
       },
       {
-        "title": "Hodl X Warriors",
-        "url": "/wiki/hodl-x-warriors.html"
+        "title": "Hodl X Warriors"
       }
     ],
     "rank_score": 702,
@@ -673,99 +672,6 @@
       "outbound_count": 67,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 67,
-      "authority": 0
-    },
-    "brand": null
-  },
-  {
-    "title": "queen_sarah_pfly — Crypto Moonboys Wiki",
-    "desc": "Queen Sarah P-fly reigns as a cryptic monarch in the Crypto Moonboys and GraffPUNKS universe, a figure of immense power and unfathomable motives whose presence",
-    "url": "/wiki/queen-sarah-pfly.html",
-    "tags": [
-      "queen",
-      "sarah",
-      "pfly",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [],
-    "rank_score": 692,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 9293,
-      "keyword_bag_size": 26,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 112,
-      "section_count": 6,
-      "lore_paragraph_count": 108,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 465,
-      "keyword_bag_points": 26,
-      "content_quality_points": 113,
-      "authority_points": 18,
-      "final_rank_score": 692,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "queen sarah pfly crypto moonboys wiki",
-      "tokens": [
-        "queen",
-        "sarah",
-        "pfly",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "queen",
-        "sarah",
-        "pfly",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "p",
-        "fly",
-        "reigns",
-        "as",
-        "a",
-        "cryptic",
-        "monarch",
-        "in",
-        "the",
-        "and",
-        "graffpunks",
-        "universe",
-        "figure",
-        "of",
-        "immense",
-        "power",
-        "unfathomable",
-        "motives",
-        "whose",
-        "presence"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 44,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 44,
       "authority": 0
     },
     "brand": null
@@ -948,80 +854,6 @@
       "existing_outbound_count": 3,
       "suggested_outbound_count": 25,
       "authority": 313.5
-    },
-    "brand": null
-  },
-  {
-    "title": "alfie_blaze — Crypto Moonboys Wiki",
-    "desc": "Alfie",
-    "url": "/wiki/alfie-blaze.html",
-    "tags": [
-      "alfie",
-      "blaze",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "alfie blaze crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 623,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 8712,
-      "keyword_bag_size": 5,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 108,
-      "section_count": 6,
-      "lore_paragraph_count": 104,
-      "content_quality_score": 90,
-      "authority_score": 14
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 436,
-      "keyword_bag_points": 5,
-      "content_quality_points": 98,
-      "authority_points": 14,
-      "final_rank_score": 623,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "alfie blaze crypto moonboys wiki",
-      "tokens": [
-        "alfie",
-        "blaze",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "alfie",
-        "blaze",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 33,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 33,
-      "authority": 0
     },
     "brand": null
   },
@@ -2404,99 +2236,6 @@
     "brand": null
   },
   {
-    "title": "graffitikings — Crypto Moonboys Wiki",
-    "desc": "Graffiti Kings stands as the real-world cultural cornerstone of the Crypto Moonboys universe, a London-based street art collective founded by Darren Cullen (SER",
-    "url": "/wiki/graffitikings.html",
-    "tags": [
-      "graffitikings",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "graffitikings crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 454,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 4448,
-      "keyword_bag_size": 26,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 66,
-      "section_count": 6,
-      "lore_paragraph_count": 61,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 222,
-      "keyword_bag_points": 26,
-      "content_quality_points": 114,
-      "authority_points": 22,
-      "final_rank_score": 454,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "graffitikings crypto moonboys wiki",
-      "tokens": [
-        "graffitikings",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "graffitikings",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "graffiti",
-        "kings",
-        "stands",
-        "as",
-        "the",
-        "real",
-        "world",
-        "cultural",
-        "cornerstone",
-        "of",
-        "universe",
-        "a",
-        "london",
-        "based",
-        "street",
-        "art",
-        "collective",
-        "founded",
-        "by",
-        "darren",
-        "cullen",
-        "ser"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 37,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 30,
-      "authority": 3.5
-    },
-    "brand": null
-  },
-  {
     "title": "gang_signs — Crypto Moonboys Wiki",
     "desc": "Gang Signs erupts from the chaotic underbelly of the Crypto Moonboys universe as a digital card game that channels the raw, unfiltered energy of Block Topia’s n",
     "url": "/wiki/gang-signs.html",
@@ -2873,96 +2612,6 @@
     }
   },
   {
-    "title": "punk — Crypto Moonboys Wiki",
-    "desc": "The $PUNK token throbs as the defiant heartbeat of the GraffPUNKS faction in the Crypto Moonboys universe, a digital currency that channels the raw, anarchic sp",
-    "url": "/wiki/punk.html",
-    "tags": [
-      "punk",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "punk crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 430,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 4201,
-      "keyword_bag_size": 23,
-      "heading_count": 6,
-      "list_count": 3,
-      "internal_link_count": 0,
-      "paragraph_count": 62,
-      "section_count": 5,
-      "lore_paragraph_count": 57,
-      "content_quality_score": 103,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 210,
-      "keyword_bag_points": 23,
-      "content_quality_points": 110,
-      "authority_points": 22,
-      "final_rank_score": 430,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "punk crypto moonboys wiki",
-      "tokens": [
-        "punk",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "punk",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "token",
-        "throbs",
-        "as",
-        "defiant",
-        "heartbeat",
-        "of",
-        "graffpunks",
-        "faction",
-        "in",
-        "universe",
-        "a",
-        "digital",
-        "currency",
-        "that",
-        "channels",
-        "raw",
-        "anarchic",
-        "sp"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 39,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 32,
-      "authority": 3.5
-    },
-    "brand": null
-  },
-  {
     "title": "metropolis — Crypto Moonboys Wiki",
     "desc": "Metropolis stands as a shimmering anomaly within the chaotic sprawl of Block Topia, a conceptual neutral sub-district in the Crypto Moonboys universe where the",
     "url": "/wiki/metropolis.html",
@@ -3048,6 +2697,104 @@
       "outbound_count": 23,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 23,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
+    "title": "hodl_warriors — Crypto Moonboys Wiki",
+    "desc": "The HODL X Warriors are a legendary and formidable army within the Crypto Moonboys universe, an elite force forged through the brutal trials of the Hard Fork Game",
+    "url": "/wiki/hodl-x-warriors.html",
+    "tags": [
+      "hodl",
+      "warriors",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "hodl warriors crypto moonboys wiki"
+      },
+      {
+        "title": "Hodl X Warriors"
+      }
+    ],
+    "rank_score": 411,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 3589,
+      "keyword_bag_size": 26,
+      "heading_count": 7,
+      "list_count": 4,
+      "internal_link_count": 0,
+      "paragraph_count": 38,
+      "section_count": 6,
+      "lore_paragraph_count": 33,
+      "content_quality_score": 107,
+      "authority_score": 18
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 179,
+      "keyword_bag_points": 26,
+      "content_quality_points": 118,
+      "authority_points": 18,
+      "final_rank_score": 411,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "hodl warriors crypto moonboys wiki",
+      "tokens": [
+        "hodl",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "hodl",
+        "warriors",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "the",
+        "x",
+        "are",
+        "a",
+        "legendary",
+        "and",
+        "formidable",
+        "army",
+        "within",
+        "universe",
+        "an",
+        "elite",
+        "force",
+        "forged",
+        "through",
+        "brutal",
+        "trials",
+        "of",
+        "hard",
+        "fork",
+        "game"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 19,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 19,
       "authority": 0
     },
     "brand": null
@@ -4931,104 +4678,6 @@
       "outbound_count": 24,
       "existing_outbound_count": 7,
       "suggested_outbound_count": 17,
-      "authority": 3.5
-    },
-    "brand": null
-  },
-  {
-    "title": "The CRYPTO MOONGIRLS — Crypto Moonboys Wiki",
-    "desc": "The CRYPTO MOONGIRLS are a fierce, female-led faction in Block Topia, driven by an unyielding mission to claim crypto dominance in a male-heavy blockchain battl",
-    "url": "/wiki/the-crypto-moongirls.html",
-    "tags": [
-      "crypto",
-      "moongirls",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "CRYPTO MOONGIRLS — Crypto Moonboys Wiki"
-      },
-      {
-        "title": "crypto moongirls moonboys wiki"
-      }
-    ],
-    "rank_score": 270,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 4,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1155,
-      "keyword_bag_size": 26,
-      "heading_count": 5,
-      "list_count": 1,
-      "internal_link_count": 4,
-      "paragraph_count": 23,
-      "section_count": 4,
-      "lore_paragraph_count": 21,
-      "content_quality_score": 93,
-      "authority_score": 14
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 58,
-      "keyword_bag_points": 26,
-      "content_quality_points": 103,
-      "authority_points": 18,
-      "final_rank_score": 270,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "the crypto moongirls crypto moonboys wiki",
-      "tokens": [
-        "the",
-        "crypto",
-        "moongirls",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "the",
-        "crypto",
-        "moongirls",
-        "moonboys",
-        "wiki",
-        "are",
-        "a",
-        "fierce",
-        "female",
-        "led",
-        "faction",
-        "in",
-        "block",
-        "topia",
-        "driven",
-        "by",
-        "an",
-        "unyielding",
-        "mission",
-        "to",
-        "claim",
-        "dominance",
-        "male",
-        "heavy",
-        "blockchain",
-        "battl"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 21,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 14,
       "authority": 3.5
     },
     "brand": null
@@ -9420,99 +9069,6 @@
     "brand": null
   },
   {
-    "title": "Alfie 'The Bitcoin Kid' Blaze — Crypto Moonboys Wiki",
-    "desc": "Fearless leader of the Bitcoin Kids rebels, guiding the fight for freedom in Block Topia against centralized oppression",
-    "url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
-    "tags": [
-      "alfie",
-      "bitcoin",
-      "kid",
-      "blaze",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 238,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 7,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 801,
-      "keyword_bag_size": 23,
-      "heading_count": 6,
-      "list_count": 1,
-      "internal_link_count": 3,
-      "paragraph_count": 24,
-      "section_count": 5,
-      "lore_paragraph_count": 23,
-      "content_quality_score": 85,
-      "authority_score": 14
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 40,
-      "keyword_bag_points": 23,
-      "content_quality_points": 92,
-      "authority_points": 18,
-      "final_rank_score": 238,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "alfie the bitcoin kid blaze crypto moonboys wiki",
-      "tokens": [
-        "alfie",
-        "the",
-        "bitcoin",
-        "kid",
-        "blaze",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "alfie",
-        "the",
-        "bitcoin",
-        "kid",
-        "blaze",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "fearless",
-        "leader",
-        "of",
-        "kids",
-        "rebels",
-        "guiding",
-        "fight",
-        "for",
-        "freedom",
-        "in",
-        "block",
-        "topia",
-        "against",
-        "centralized",
-        "oppression"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 32,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 25,
-      "authority": 3.5
-    },
-    "brand": null
-  },
-  {
     "title": "WAX Blockchain — Crypto Moonboys Wiki",
     "desc": "Crypto Moonboys wiki guide to the WAX blockchain, including WAXP, resources, NFT infrastructure, games, wallets and creator use cases.",
     "url": "/wiki/wax-blockchain.html",
@@ -9597,99 +9153,6 @@
       "existing_outbound_count": 0,
       "suggested_outbound_count": 0,
       "authority": 0
-    },
-    "brand": null
-  },
-  {
-    "title": "1M Free NFTs Drop — Crypto Moonboys Wiki",
-    "desc": "The 1M free NFTs drop stands as a historic and monumental event within the Crypto Moonboys universe, a digital deluge of 1 million NFTs unleashed as a rallying",
-    "url": "/wiki/1m-free-nfts-drop.html",
-    "tags": [
-      "1m",
-      "free",
-      "nfts",
-      "drop",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 237,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 7,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 836,
-      "keyword_bag_size": 24,
-      "heading_count": 6,
-      "list_count": 1,
-      "internal_link_count": 4,
-      "paragraph_count": 19,
-      "section_count": 5,
-      "lore_paragraph_count": 17,
-      "content_quality_score": 81,
-      "authority_score": 14
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 42,
-      "keyword_bag_points": 24,
-      "content_quality_points": 88,
-      "authority_points": 18,
-      "final_rank_score": 237,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "1m free nfts drop crypto moonboys wiki",
-      "tokens": [
-        "1m",
-        "free",
-        "nfts",
-        "drop",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "1m",
-        "free",
-        "nfts",
-        "drop",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "the",
-        "stands",
-        "as",
-        "a",
-        "historic",
-        "and",
-        "monumental",
-        "event",
-        "within",
-        "universe",
-        "digital",
-        "deluge",
-        "of",
-        "1",
-        "million",
-        "unleashed",
-        "rallying"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 35,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 28,
-      "authority": 3.5
     },
     "brand": null
   },
@@ -13690,98 +13153,6 @@
     "brand": null
   },
   {
-    "title": "Sarah PU51FLY — Crypto Moonboys Wiki",
-    "desc": "Creative partner of Darren Cullen and inspiration for Queen Sarah P-fly, a cultural force in Web3 and the Crypto Moonboys universe",
-    "url": "/wiki/sarah-pu51fly.html",
-    "tags": [
-      "sarah",
-      "pu51fly",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "sarah pu51fly crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 208,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 449,
-      "keyword_bag_size": 23,
-      "heading_count": 6,
-      "list_count": 1,
-      "internal_link_count": 3,
-      "paragraph_count": 17,
-      "section_count": 5,
-      "lore_paragraph_count": 16,
-      "content_quality_score": 69,
-      "authority_score": 12
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 22,
-      "keyword_bag_points": 23,
-      "content_quality_points": 77,
-      "authority_points": 16,
-      "final_rank_score": 208,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "sarah pu51fly crypto moonboys wiki",
-      "tokens": [
-        "sarah",
-        "pu51fly",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "sarah",
-        "pu51fly",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "creative",
-        "partner",
-        "of",
-        "darren",
-        "cullen",
-        "and",
-        "inspiration",
-        "for",
-        "queen",
-        "p",
-        "fly",
-        "a",
-        "cultural",
-        "force",
-        "in",
-        "web3",
-        "the",
-        "universe"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 26,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 19,
-      "authority": 3.5
-    },
-    "brand": null
-  },
-  {
     "title": "The Bear Market Siege — Crypto Moonboys Wiki",
     "desc": "The prolonged dark chapter of the HODL Wars — extended market downtrends where Diamond Hands warriors are tested.",
     "url": "/wiki/bear-market-siege.html",
@@ -13962,103 +13333,6 @@
       "outbound_count": 34,
       "existing_outbound_count": 7,
       "suggested_outbound_count": 27,
-      "authority": 3.5
-    },
-    "brand": null
-  },
-  {
-    "title": "Darren Cullen (SER) — Crypto Moonboys Wiki",
-    "desc": "Darren Cullen, known by his tag SER, is the visionary founder of Graffiti Kings, a legendary London-based street art collective that has shaped urban culture si",
-    "url": "/wiki/darren-cullen-ser.html",
-    "tags": [
-      "darren",
-      "cullen",
-      "ser",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 206,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 431,
-      "keyword_bag_size": 30,
-      "heading_count": 7,
-      "list_count": 2,
-      "internal_link_count": 3,
-      "paragraph_count": 8,
-      "section_count": 6,
-      "lore_paragraph_count": 7,
-      "content_quality_score": 65,
-      "authority_score": 14
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 22,
-      "keyword_bag_points": 30,
-      "content_quality_points": 71,
-      "authority_points": 18,
-      "final_rank_score": 206,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "darren cullen ser crypto moonboys wiki",
-      "tokens": [
-        "darren",
-        "cullen",
-        "ser",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "darren",
-        "cullen",
-        "ser",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "known",
-        "by",
-        "his",
-        "tag",
-        "is",
-        "the",
-        "visionary",
-        "founder",
-        "of",
-        "graffiti",
-        "kings",
-        "a",
-        "legendary",
-        "london",
-        "based",
-        "street",
-        "art",
-        "collective",
-        "that",
-        "has",
-        "shaped",
-        "urban",
-        "culture",
-        "si"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 29,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 22,
       "authority": 3.5
     },
     "brand": null
@@ -16283,88 +15557,6 @@
     "brand": null
   },
   {
-    "title": "No Ball Games (NBG) — Crypto Moonboys Wiki",
-    "desc": "Iconic NFT collection embodying street rebellion",
-    "url": "/wiki/no-ball-games-nbg.html",
-    "tags": [
-      "no",
-      "ball",
-      "games",
-      "nbg",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 176,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 7,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 308,
-      "keyword_bag_size": 13,
-      "heading_count": 6,
-      "list_count": 1,
-      "internal_link_count": 3,
-      "paragraph_count": 13,
-      "section_count": 5,
-      "lore_paragraph_count": 12,
-      "content_quality_score": 60,
-      "authority_score": 12
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 15,
-      "keyword_bag_points": 13,
-      "content_quality_points": 67,
-      "authority_points": 16,
-      "final_rank_score": 176,
-      "authority_graph_points": 4
-    },
-    "search_index": {
-      "normalized_title": "no ball games nbg crypto moonboys wiki",
-      "tokens": [
-        "no",
-        "ball",
-        "games",
-        "nbg",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "no",
-        "ball",
-        "games",
-        "nbg",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "iconic",
-        "nft",
-        "collection",
-        "embodying",
-        "street",
-        "rebellion"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 25,
-      "existing_outbound_count": 7,
-      "suggested_outbound_count": 18,
-      "authority": 3.5
-    },
-    "brand": null
-  },
-  {
     "title": "Bitcoin Kid Army — Crypto Moonboys Wiki",
     "desc": "Rebel army of escaped Bitcoin Kids under Alfie",
     "url": "/wiki/bitcoin-kid-army.html",
@@ -17310,79 +16502,6 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 23,
       "authority": 3.5
-    },
-    "brand": null
-  },
-  {
-    "title": "1M Free NFTs — Crypto Moonboys Wiki",
-    "desc": "1M Free NFTs — Crypto Moonboys Wiki",
-    "url": "/wiki/1m-free-nfts.html",
-    "tags": [
-      "1m",
-      "free",
-      "nfts",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 87,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 0,
-      "tag_count": 6,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 7,
-      "keyword_bag_size": 6,
-      "heading_count": 0,
-      "list_count": 0,
-      "internal_link_count": 0,
-      "paragraph_count": 0,
-      "section_count": 0,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 10,
-      "authority_score": 0
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 0,
-      "keyword_bag_points": 6,
-      "content_quality_points": 16,
-      "authority_points": 0,
-      "final_rank_score": 87,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "1m free nfts crypto moonboys wiki",
-      "tokens": [
-        "1m",
-        "free",
-        "nfts",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "1m",
-        "free",
-        "nfts",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 9,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 9,
-      "authority": 0
     },
     "brand": null
   },
