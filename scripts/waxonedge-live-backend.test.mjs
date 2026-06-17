@@ -175,15 +175,18 @@ ok('live snapshot uses stable contract-symbol token keys',
     contract: 'graffitiking',
     symbol: 'WAXCASH',
     selected_price_usd: '0',
+    selected_price_source: 'swap.alcor #8388 direct_wax',
     selected_pair_source: 'swap.alcor',
     selected_pair_id: '8388',
     change_24h: '0',
     volume_24h_usd: '0',
     tvl_usd: '123.45',
     liquidity_wax: '456.78',
+    liquidity_basis: 'og_wax_route_pool_graph',
+    tvl_basis: 'og_wax_route_pool_graph',
     updated_at: '2026-06-14T00:00:00.000Z',
   });
-  ok('live token update preserves real zero metric values and proof confidence',
+  ok('live token update preserves real zero metric values when reserve proof is present',
     update &&
     update.token_key === 'graffitiking::WAXCASH' &&
     update.price_usd === '0' &&
@@ -196,11 +199,54 @@ ok('live snapshot uses stable contract-symbol token keys',
     update.change_24h === '0' &&
     update.volume_24h_usd === '0');
 }
+{
+  const update = __waxonedgeTestHooks.normalizeLiveTokenUpdate({
+    contract: 'graffitiking',
+    symbol: 'WAXCASH',
+    selected_price_usd: '0',
+    selected_pair_source: 'swap.alcor',
+    selected_pair_id: '8388',
+    volume_24h_usd: '0',
+    tvl_usd: '999999999',
+    liquidity_wax: '888888888',
+    updated_at: '2026-06-14T00:00:00.000Z',
+  });
+  ok('live token update blocks stored impossible TVL/liquidity without reserve proof basis',
+    update &&
+    update.liquidity_confidence === 'unavailable' &&
+    update.tvl_confidence === 'unavailable' &&
+    update.liquidity_wax === null &&
+    update.liquidity_usd === null &&
+    update.tvl_wax === null &&
+    update.tvl_usd === null &&
+    update.selected_metric_value === '0');
+}
 ok('bootstrap token rows expose metric confidence proof fields',
-  route.includes('return (rows.results || []).map((row) => Object.assign(row, tokenMetricProof(row)))') &&
+  route.includes('return deriveReserveBackedTokenRows(db, rows.results || [])') &&
+  route.includes('async function deriveReserveBackedTokenRow') &&
+  route.includes('async function loadPairRowsForTokens') &&
+  route.includes('async function loadReserveRouteGraphRows') &&
+  route.includes('const pairRows = await loadPairRowsForTokens(db, tokenRows)') &&
+  route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, pairRows)') &&
+  !route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, [])') &&
+  route.includes('const routeGraphRows = graphLimit > 0 ? await loadReserveRouteGraphRows(db, graphLimit) : []') &&
+  route.includes('const graphRows = dedupePairRows(pairRows.concat(routeGraphRows))') &&
+  route.includes('return tokenRows.map((entry) => deriveTokenPairMetrics(') &&
   route.includes('selected_price_confidence: selectedPriceLive && selectedPriceProof.source ? \'good\' : \'unavailable\'') &&
   route.includes('liquidity_confidence: liquidityBasis != null ? \'good\' : \'unavailable\'') &&
   route.includes('tvl_confidence: tvlBasis != null ? \'good\' : \'unavailable\''));
+ok('live snapshot rows are reserve-derived before confidence is emitted',
+  route.includes('const reserveBackedRows = await deriveReserveBackedTokenRows(db, results, {') &&
+  route.includes('routeGraphLimit: LIVE_RESERVE_ROUTE_GRAPH_PAIR_SCAN_LIMIT') &&
+  route.includes('tokens: reserveBackedRows.map(normalizeLiveTokenUpdate).filter(Boolean)') &&
+  route.includes("const liquidityWax = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.liquidity_wax)) : null") &&
+  route.includes("const tvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_wax)) : null"));
+ok('live snapshot reserve proof uses a smaller bounded route graph than bootstrap',
+  route.includes('const LIVE_RESERVE_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 250') &&
+  route.includes('const OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 2000') &&
+  route.includes('async function loadReserveRouteGraphRows(db, limit = OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT)') &&
+  route.includes('const graphLimit = clampInteger(limit, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT, 1, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT)') &&
+  route.includes(').bind(graphLimit).all().catch(() => ({ results: [] }))'));
 ok('live stream route is an honest unavailable contract until VPS SSE exists',
   route.includes('function handleLiveStream') &&
   route.includes('live stream transport not enabled yet') &&
@@ -3921,6 +3967,34 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     wufStats.change_24h == null &&
     Number(wufStats.fdv_wax) > 0 &&
     wufStats.unavailable_reasons.price_change_24h === 'Requires indexed 24h price-change data');
+  const rawNonWaxVolumeStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
+    {
+      contract: 'wuffi',
+      symbol: 'WUF',
+      total_supply: '1000000',
+    },
+    {
+      aggregate_complete: 0,
+    },
+    [
+      {
+        ...wufAbcPair,
+        pair_id: 'WUFABC_RAW_VOLUME',
+        volume_24h: '2500',
+        volume_24h_wax: null,
+        volume_24h_usd: null,
+      },
+    ],
+    [
+      { contract: 'eosio.token', symbol: 'WAX', price_wax: '1', price_usd: '0.006' },
+      { contract: 'wuffi', symbol: 'WUF', price_wax: '0.002', price_usd: '0.000012' },
+      { contract: 'abc.token', symbol: 'ABC', price_wax: '2', price_usd: '0.012' },
+    ],
+    graphRows,
+  );
+  ok('non-WAX pair raw volume converts through token price rows when volume_24h_wax is missing',
+    Number(rawNonWaxVolumeStats.volume_24h_wax) === 5 &&
+    Number(rawNonWaxVolumeStats.volume_24h_usd) === 0.03);
   const staleTvlStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
     {
       contract: 'wuffi',
@@ -3946,6 +4020,21 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     staleTvlStats.liquidity_wax !== '999999' &&
     staleTvlStats.liquidity_usd !== '9999' &&
     staleTvlStats.tvl_liquidity_same_basis === true);
+  const staleStoredProof = __waxonedgeTestHooks.tokenMetricProof({
+    selected_price_wax: '1',
+    selected_price_source: 'stored',
+    liquidity_wax: '999999999',
+    liquidity_usd: '999999',
+    tvl_wax: '888888888',
+    tvl_usd: '888888',
+  });
+  ok('stored impossible liquidity and TVL are not proof-backed without reserve basis',
+    staleStoredProof.liquidity_confidence === 'unavailable' &&
+    staleStoredProof.tvl_confidence === 'unavailable' &&
+    staleStoredProof.has_liquidity === false &&
+    staleStoredProof.has_tvl === false &&
+    staleStoredProof.metric_status.liquidity.reason === 'Requires valued indexed pair reserves' &&
+    staleStoredProof.metric_status.tvl.reason === 'Requires valued indexed pair reserves');
   const lowWaxDirectStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
     { contract: 'wuffi', symbol: 'WUF', total_supply: '1000000' },
     { selected_price_wax: '9', selected_price_usd: '9', selected_pair_source: 'stale', selected_pair_id: 'stale' },

@@ -42,6 +42,7 @@ const FREE_SAFE_TRADE_INDEX_PAIR_LIMIT = 2;
 const FREE_SAFE_TRADE_ROWS_PER_MARKET_LIMIT = 50;
 const OG_WAX_ROUTE_MAX_HOPS = 5;
 const OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 2000;
+const LIVE_RESERVE_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 250;
 const OG_WAX_ROUTE_GRAPH_FRONTIER_LIMIT = 200;
 const FREE_SAFE_SUPPLY_SYNC_LIMIT = 5;
 const FREE_SAFE_TRADE_STREAM_PAGES_PER_RUN = 1;
@@ -3850,7 +3851,51 @@ async function listTopTokens(db) {
      ORDER BY t.pair_count DESC, t.updated_at DESC
      LIMIT 250`
   ).all();
-  return (rows.results || []).map((row) => Object.assign(row, tokenMetricProof(row)));
+  return deriveReserveBackedTokenRows(db, rows.results || []);
+}
+
+async function deriveReserveBackedTokenRow(db, row) {
+  const [derived] = await deriveReserveBackedTokenRows(db, [row]);
+  return derived || Object.assign({ ...(row || {}) }, tokenMetricProof(row || {}));
+}
+
+async function deriveReserveBackedTokenRows(db, rows = [], options = {}) {
+  const tokenRows = (rows || [])
+    .map((row) => ({
+      row,
+      contract: normalizeContract(row?.contract),
+      symbol: normalizeSymbol(row?.symbol),
+      key: tokenKey(row?.contract, row?.symbol),
+    }))
+    .filter((entry) => entry.key);
+  if (!tokenRows.length) return [];
+
+  const pairRows = await loadPairRowsForTokens(db, tokenRows);
+  const graphLimit = clampInteger(options.routeGraphLimit, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT, 0, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT);
+  const routeGraphRows = graphLimit > 0 ? await loadReserveRouteGraphRows(db, graphLimit) : [];
+  const graphRows = dedupePairRows(pairRows.concat(routeGraphRows));
+  const priceRows = await loadTokenPriceRowsForPairs(db, pairRows);
+  const priceIndex = buildDbTokenPriceIndex(priceRows);
+  const routeIndex = buildOgWaxRouteGraph(graphRows, priceIndex);
+  const pairsByToken = new Map();
+  for (const pair of pairRows) {
+    for (const key of [
+      tokenKey(pair.token_a_contract, pair.token_a_symbol),
+      tokenKey(pair.token_b_contract, pair.token_b_symbol),
+    ]) {
+      if (!key) continue;
+      if (!pairsByToken.has(key)) pairsByToken.set(key, []);
+      pairsByToken.get(key).push(pair);
+    }
+  }
+  return tokenRows.map((entry) => deriveTokenPairMetrics(
+    { ...(entry.row || {}), contract: entry.contract, symbol: entry.symbol },
+    { ...(entry.row || {}), contract: entry.contract, symbol: entry.symbol },
+    pairsByToken.get(entry.key) || [],
+    priceRows,
+    graphRows,
+    { routeIndex },
+  ));
 }
 
 function liveTokenUpdateKey(contract, symbol) {
@@ -3875,25 +3920,46 @@ function normalizeLiveTokenUpdate(row) {
   const tokenKeyValue = liveTokenUpdateKey(contract, symbol);
   if (!tokenKeyValue) return null;
   const proof = tokenMetricProof(row);
+  const priceWax = proof.selected_price_confidence === 'good'
+    ? safeDecimal(asNumber(row.selected_price_wax ?? row.price_wax))
+    : null;
+  const priceUsd = proof.selected_price_confidence === 'good'
+    ? safeDecimal(asNumber(row.selected_price_usd ?? row.price_usd))
+    : null;
+  const liquidityWax = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.liquidity_wax)) : null;
+  const liquidityUsd = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.liquidity_usd)) : null;
+  const tvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_wax)) : null;
+  const tvlUsd = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_usd)) : null;
+  const selectedMetricValue = (() => {
+    const change = asNumber(row.change_24h);
+    if (change != null) return change;
+    const trustedTvlUsd = asNumber(tvlUsd);
+    if (trustedTvlUsd != null) return trustedTvlUsd;
+    const trustedLiquidityUsd = asNumber(liquidityUsd);
+    if (trustedLiquidityUsd != null) return trustedLiquidityUsd;
+    const volumeUsd = asNumber(row.volume_24h_usd);
+    if (volumeUsd != null) return volumeUsd;
+    return asNumber(priceUsd);
+  })();
   return {
     token_key: tokenKeyValue,
     contract,
     symbol,
-    price_wax: safeDecimal(asNumber(row.selected_price_wax ?? row.price_wax)),
-    price_usd: safeDecimal(asNumber(row.selected_price_usd ?? row.price_usd)),
+    price_wax: priceWax,
+    price_usd: priceUsd,
     change_24h: safeDecimal(asNumber(row.change_24h)),
     volume_24h_wax: safeDecimal(asNumber(row.volume_24h_wax ?? row.volume_24h)),
     volume_24h_usd: safeDecimal(asNumber(row.volume_24h_usd)),
-    tvl_wax: safeDecimal(asNumber(row.tvl_wax)),
-    tvl_usd: safeDecimal(asNumber(row.tvl_usd)),
-    liquidity_wax: safeDecimal(asNumber(row.liquidity_wax)),
-    liquidity_usd: safeDecimal(asNumber(row.liquidity_usd)),
+    tvl_wax: tvlWax,
+    tvl_usd: tvlUsd,
+    liquidity_wax: liquidityWax,
+    liquidity_usd: liquidityUsd,
     selected_price_confidence: proof.selected_price_confidence,
     liquidity_confidence: proof.liquidity_confidence,
     tvl_confidence: proof.tvl_confidence,
     metric_status: proof.metric_status,
     metric_reason_codes: proof.metric_reason_codes,
-    selected_metric_value: safeDecimal(selectedMetricValueForLiveToken(row)),
+    selected_metric_value: safeDecimal(selectedMetricValue),
     indexed_pair_count: asNumber(row.indexed_pair_count ?? row.pair_count),
     source_count: asNumber(row.source_count),
     source_keys: row.source_keys || '',
@@ -4000,8 +4066,11 @@ async function listLiveTokenUpdates(db, options = {}) {
   ).bind(...params).all();
   const results = rows.results || [];
   const lastRow = results[results.length - 1] || null;
+  const reserveBackedRows = await deriveReserveBackedTokenRows(db, results, {
+    routeGraphLimit: LIVE_RESERVE_ROUTE_GRAPH_PAIR_SCAN_LIMIT,
+  });
   return {
-    tokens: results.map(normalizeLiveTokenUpdate).filter(Boolean),
+    tokens: reserveBackedRows.map(normalizeLiveTokenUpdate).filter(Boolean),
     cursor: parsedCursor.cursor,
     since: parsedSince.since,
     next_cursor: liveCursorFromRow(lastRow),
@@ -4894,15 +4963,15 @@ function tokenMetricProof(metrics, selected = null) {
   const hasCirculatingSupply = asNumber(metrics?.circulating_supply) != null;
   const hasMarketCap = hasCirculatingSupply && asNumber(metrics?.market_cap_wax ?? metrics?.market_cap_usd) != null;
   const hasFdv = asNumber(metrics?.fdv_wax ?? metrics?.fdv_usd) != null;
-  const liquidityBasis = liquidityWax != null || liquidityUsd != null ? (metrics?.liquidity_basis || 'og_wax_route_pool_graph') : null;
-  const tvlBasis = tvlWax != null || tvlUsd != null ? (metrics?.tvl_basis || 'og_wax_route_pool_graph') : null;
+  const liquidityBasis = (liquidityWax != null || liquidityUsd != null) && metrics?.liquidity_basis ? metrics.liquidity_basis : null;
+  const tvlBasis = (tvlWax != null || tvlUsd != null) && metrics?.tvl_basis ? metrics.tvl_basis : null;
   const selectedPriceLive = selectedPriceWax != null || selectedPriceUsd != null;
   const selectedRouteType = selected
     ? selected.route_type
     : (metrics?.selected_pair_source && metrics?.selected_pair_id ? 'stored_indexed_pair' : null);
   const selectedPriceProof = {
     live: selectedPriceLive,
-    source: metrics?.selected_pair_source || selected?.pair?.source || null,
+    source: metrics?.selected_price_source || metrics?.selected_pair_source || selected?.pair?.source || null,
     pair_id: metrics?.selected_pair_id || selected?.pair?.pair_id || null,
     pair_label: metrics?.selected_pair_label || selectedPairLabel(selected?.pair) || null,
     selected_price_wax: safeDecimal(selectedPriceWax),
@@ -5128,6 +5197,65 @@ async function loadWaxcashOgPairRows(db) {
         OR (token_b_contract = ? AND token_b_symbol = ?)`
   ).bind(WAXCASH_CONTRACT, WAXCASH_SYMBOL, WAXCASH_CONTRACT, WAXCASH_SYMBOL).all().catch(() => ({ results: [] }));
   return rows.results || [];
+}
+
+function dedupePairRows(pairRows = []) {
+  const rows = new Map();
+  for (const pair of pairRows || []) {
+    const key = [
+      pair?.source || '',
+      pair?.pair_id || '',
+      pair?.token_a_contract || '',
+      pair?.token_a_symbol || '',
+      pair?.token_b_contract || '',
+      pair?.token_b_symbol || '',
+    ].join('::');
+    if (!rows.has(key)) rows.set(key, pair);
+  }
+  return Array.from(rows.values());
+}
+
+async function loadPairRowsForTokens(db, tokens = []) {
+  const targets = (tokens || [])
+    .filter((token) => token?.contract && token?.symbol)
+    .filter((token, index, list) => list.findIndex((item) => item.contract === token.contract && item.symbol === token.symbol) === index);
+  if (!targets.length) return [];
+  const rows = [];
+  for (let i = 0; i < targets.length; i += 50) {
+    const chunk = targets.slice(i, i + 50);
+    const where = chunk.map(() =>
+      `((token_a_contract = ? AND token_a_symbol = ?) OR (token_b_contract = ? AND token_b_symbol = ?))`
+    ).join(' OR ');
+    const params = chunk.flatMap((token) => [token.contract, token.symbol, token.contract, token.symbol]);
+    const result = await db.prepare(
+      `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+              price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+              liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
+       FROM waxonedge_pairs
+       WHERE ${where}`
+    ).bind(...params).all().catch(() => ({ results: [] }));
+    rows.push(...(result.results || []));
+  }
+  return dedupePairRows(rows);
+}
+
+async function loadReserveRouteGraphRows(db, limit = OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT) {
+  const graphLimit = clampInteger(limit, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT, 1, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT);
+  const rows = await db.prepare(
+    `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+            price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+            liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
+     FROM waxonedge_pairs
+     WHERE CAST(COALESCE(reserve_a, '0') AS NUMERIC) > 0
+       AND CAST(COALESCE(reserve_b, '0') AS NUMERIC) > 0
+     ORDER BY
+       CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC,
+       updated_at DESC,
+       source ASC,
+       pair_id ASC
+     LIMIT ?`
+  ).bind(graphLimit).all().catch(() => ({ results: [] }));
+  return dedupePairRows(rows.results || []);
 }
 
 async function loadDirectWaxRowsForTokens(db, tokens = []) {
@@ -6790,6 +6918,8 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
 
 export const __waxonedgeTestHooks = {
   deriveTokenPairMetrics,
+  deriveReserveBackedTokenRow,
+  deriveReserveBackedTokenRows,
   tokenMetricProof,
   pairContributionProof,
   aggregatePairContributionTotals,
