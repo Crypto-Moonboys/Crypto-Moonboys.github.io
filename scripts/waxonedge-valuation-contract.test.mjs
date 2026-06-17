@@ -256,7 +256,7 @@ const waxcashDeepWax = {
 const waxcashAlcorWax = {
   ...waxcashShallowWax,
   source: 'swap.alcor',
-  pair_id: '124740',
+  pair_id: '8388',
   token_a_contract: 'eosio.token',
   token_a_symbol: 'WAX',
   token_b_contract: 'graffitiking',
@@ -335,7 +335,7 @@ const waxcashProof = __waxonedgeTestHooks.buildWaxcashOgParityProof(
   [gooWaxPair],
 );
 ok('WAXCASH OG headline selects verified Alcor direct WAX pool when present',
-  waxcashProof.headline_price.og_headline_price_pair_id === '124740' &&
+  waxcashProof.headline_price.og_headline_price_pair_id === '8388' &&
   waxcashProof.headline_price.og_headline_price_source === 'swap.alcor' &&
   waxcashProof.headline_price.og_headline_wax_reserve === '1138621.39085541' &&
   waxcashProof.headline_price.headline_price_source_policy === 'alcor_preferred_direct_wax' &&

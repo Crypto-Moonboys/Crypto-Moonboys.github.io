@@ -227,16 +227,24 @@ ok('bootstrap token rows expose metric confidence proof fields',
   route.includes('async function loadPairRowsForTokens') &&
   route.includes('async function loadReserveRouteGraphRows') &&
   route.includes('const pairRows = await loadPairRowsForTokens(db, tokenRows)') &&
-  route.includes('const graphRows = dedupePairRows(pairRows.concat(await loadReserveRouteGraphRows(db)))') &&
+  route.includes('const routeGraphRows = graphLimit > 0 ? await loadReserveRouteGraphRows(db, graphLimit) : []') &&
+  route.includes('const graphRows = dedupePairRows(pairRows.concat(routeGraphRows))') &&
   route.includes('return tokenRows.map((entry) => deriveTokenPairMetrics(') &&
   route.includes('selected_price_confidence: selectedPriceLive && selectedPriceProof.source ? \'good\' : \'unavailable\'') &&
   route.includes('liquidity_confidence: liquidityBasis != null ? \'good\' : \'unavailable\'') &&
   route.includes('tvl_confidence: tvlBasis != null ? \'good\' : \'unavailable\''));
 ok('live snapshot rows are reserve-derived before confidence is emitted',
-  route.includes('const reserveBackedRows = await deriveReserveBackedTokenRows(db, results)') &&
+  route.includes('const reserveBackedRows = await deriveReserveBackedTokenRows(db, results, {') &&
+  route.includes('routeGraphLimit: LIVE_RESERVE_ROUTE_GRAPH_PAIR_SCAN_LIMIT') &&
   route.includes('tokens: reserveBackedRows.map(normalizeLiveTokenUpdate).filter(Boolean)') &&
   route.includes("const liquidityWax = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.liquidity_wax)) : null") &&
   route.includes("const tvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_wax)) : null"));
+ok('live snapshot reserve proof uses a smaller bounded route graph than bootstrap',
+  route.includes('const LIVE_RESERVE_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 250') &&
+  route.includes('const OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 2000') &&
+  route.includes('async function loadReserveRouteGraphRows(db, limit = OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT)') &&
+  route.includes('const graphLimit = clampInteger(limit, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT, 1, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT)') &&
+  route.includes(').bind(graphLimit).all().catch(() => ({ results: [] }))'));
 ok('live stream route is an honest unavailable contract until VPS SSE exists',
   route.includes('function handleLiveStream') &&
   route.includes('live stream transport not enabled yet') &&

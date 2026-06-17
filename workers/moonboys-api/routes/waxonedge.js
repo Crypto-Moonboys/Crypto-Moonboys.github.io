@@ -42,6 +42,7 @@ const FREE_SAFE_TRADE_INDEX_PAIR_LIMIT = 2;
 const FREE_SAFE_TRADE_ROWS_PER_MARKET_LIMIT = 50;
 const OG_WAX_ROUTE_MAX_HOPS = 5;
 const OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 2000;
+const LIVE_RESERVE_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 250;
 const OG_WAX_ROUTE_GRAPH_FRONTIER_LIMIT = 200;
 const FREE_SAFE_SUPPLY_SYNC_LIMIT = 5;
 const FREE_SAFE_TRADE_STREAM_PAGES_PER_RUN = 1;
@@ -3858,7 +3859,7 @@ async function deriveReserveBackedTokenRow(db, row) {
   return derived || Object.assign({ ...(row || {}) }, tokenMetricProof(row || {}));
 }
 
-async function deriveReserveBackedTokenRows(db, rows = []) {
+async function deriveReserveBackedTokenRows(db, rows = [], options = {}) {
   const tokenRows = (rows || [])
     .map((row) => ({
       row,
@@ -3870,7 +3871,9 @@ async function deriveReserveBackedTokenRows(db, rows = []) {
   if (!tokenRows.length) return [];
 
   const pairRows = await loadPairRowsForTokens(db, tokenRows);
-  const graphRows = dedupePairRows(pairRows.concat(await loadReserveRouteGraphRows(db)));
+  const graphLimit = clampInteger(options.routeGraphLimit, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT, 0, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT);
+  const routeGraphRows = graphLimit > 0 ? await loadReserveRouteGraphRows(db, graphLimit) : [];
+  const graphRows = dedupePairRows(pairRows.concat(routeGraphRows));
   const priceRows = await loadTokenPriceRowsForPairs(db, []);
   const priceIndex = buildDbTokenPriceIndex(priceRows);
   const routeIndex = buildOgWaxRouteGraph(graphRows, priceIndex);
@@ -4063,7 +4066,9 @@ async function listLiveTokenUpdates(db, options = {}) {
   ).bind(...params).all();
   const results = rows.results || [];
   const lastRow = results[results.length - 1] || null;
-  const reserveBackedRows = await deriveReserveBackedTokenRows(db, results);
+  const reserveBackedRows = await deriveReserveBackedTokenRows(db, results, {
+    routeGraphLimit: LIVE_RESERVE_ROUTE_GRAPH_PAIR_SCAN_LIMIT,
+  });
   return {
     tokens: reserveBackedRows.map(normalizeLiveTokenUpdate).filter(Boolean),
     cursor: parsedCursor.cursor,
@@ -5234,7 +5239,8 @@ async function loadPairRowsForTokens(db, tokens = []) {
   return dedupePairRows(rows);
 }
 
-async function loadReserveRouteGraphRows(db) {
+async function loadReserveRouteGraphRows(db, limit = OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT) {
+  const graphLimit = clampInteger(limit, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT, 1, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT);
   const rows = await db.prepare(
     `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
             price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
@@ -5248,7 +5254,7 @@ async function loadReserveRouteGraphRows(db) {
        source ASC,
        pair_id ASC
      LIMIT ?`
-  ).bind(OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT).all().catch(() => ({ results: [] }));
+  ).bind(graphLimit).all().catch(() => ({ results: [] }));
   return dedupePairRows(rows.results || []);
 }
 
