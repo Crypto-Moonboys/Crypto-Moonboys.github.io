@@ -465,7 +465,8 @@
       if (record.marketCapConfidence === 'weak') return 'Proof weak';
       if (record.marketCapConfidence !== 'good') return 'No verified market cap';
       if (record.marketCapUsd != null) return '$' + fmtNum(record.marketCapUsd) + ' mcap';
-      return 'No indexed market cap';
+      if (record.marketCapWax != null) return fmtNum(record.marketCapWax) + ' WAX mcap';
+      return 'No verified market cap';
     }
     return 'Not indexed';
   }

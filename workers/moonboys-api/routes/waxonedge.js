@@ -3938,8 +3938,8 @@ function normalizeLiveTokenUpdate(row) {
   const tvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_wax)) : null;
   const tvlUsd = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_usd)) : null;
   const marketCapLive = proof.metric_status?.market_cap?.live === true;
-  const marketCapWax = marketCapLive ? safeDecimal(asNumber(row.market_cap_wax)) : null;
-  const marketCapUsd = marketCapLive ? safeDecimal(asNumber(row.market_cap_usd)) : null;
+  const marketCapWax = marketCapLive ? safeDecimal(row.market_cap_wax) : null;
+  const marketCapUsd = marketCapLive ? safeDecimal(row.market_cap_usd) : null;
   const selectedMetricValue = (() => {
     const change = asNumber(row.change_24h);
     if (change != null) return change;

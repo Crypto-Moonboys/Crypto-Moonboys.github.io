@@ -200,6 +200,30 @@ ok('live snapshot uses stable contract-symbol token keys',
     update.volume_24h_usd === '0');
 }
 {
+  const preciseMarketCapWax = '12345678901234567890.123456789';
+  const preciseMarketCapUsd = '98765432109876543210.987654321';
+  const update = __waxonedgeTestHooks.normalizeLiveTokenUpdate({
+    contract: 'graffitiking',
+    symbol: 'WAXCASH',
+    selected_price_wax: '1.23456789',
+    selected_price_usd: '0.123456789',
+    selected_pair_source: 'swap.alcor',
+    selected_pair_id: '8388',
+    circulating_supply: '10000000000000000000.000000001',
+    market_cap_wax: preciseMarketCapWax,
+    market_cap_usd: preciseMarketCapUsd,
+    updated_at: '2026-06-14T00:00:00.000Z',
+  });
+  ok('live market_cap_wax decimal TEXT is preserved without float round-trip precision loss',
+    update &&
+    update.market_cap_confidence === 'good' &&
+    update.market_cap_wax === preciseMarketCapWax);
+  ok('live market_cap_usd decimal TEXT is preserved without float round-trip precision loss',
+    update &&
+    update.market_cap_confidence === 'good' &&
+    update.market_cap_usd === preciseMarketCapUsd);
+}
+{
   const update = __waxonedgeTestHooks.normalizeLiveTokenUpdate({
     contract: 'graffitiking',
     symbol: 'WAXCASH',

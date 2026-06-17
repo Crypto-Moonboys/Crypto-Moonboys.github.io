@@ -594,12 +594,21 @@ ok('waxonedge-bubbles-v2.js exposes market cap mode only through proof-backed ca
   v2Js.includes("mcap: true") &&
   /if \(metric === 'mcap'\) return capabilityEnabled\(\['market_cap', 'mcap'\], DEFAULT_METRIC_ALLOWED\.mcap\)/.test(v2Js) &&
   /function valueForMetric[\s\S]*if \(metric === 'mcap'\)[\s\S]*record\.marketCapConfidence !== 'good'[\s\S]*return null[\s\S]*record\.marketCapUsd/.test(v2Js) &&
-  /function displayValue[\s\S]*if \(state\.metric === 'mcap'\)[\s\S]*record\.marketCapConfidence === 'weak'[\s\S]*record\.marketCapConfidence !== 'good'[\s\S]*No verified market cap/.test(v2Js) &&
+  /function displayValue[\s\S]*if \(state\.metric === 'mcap'\)[\s\S]*record\.marketCapConfidence === 'weak'[\s\S]*record\.marketCapConfidence !== 'good'[\s\S]*No verified market cap[\s\S]*record\.marketCapUsd != null[\s\S]*record\.marketCapWax != null[\s\S]*WAX mcap/.test(v2Js) &&
   v2Js.includes("['marketCapConfidence', ['market_cap_confidence', 'marketCapConfidence']]") &&
   v2Js.includes("assignLiveMetricNumber(record, 'marketCapWax', update, ['market_cap_wax'], nextMarketCapConfidence)") &&
   v2Js.includes("assignLiveMetricNumber(record, 'marketCapUsd', update, ['market_cap_usd'], nextMarketCapConfidence)") &&
   !v2Js.includes("if (metric === 'mcap') return false;") &&
+  !v2Js.includes('No indexed market cap') &&
   !/function valueForMetric[\s\S]*if \(metric === 'mcap'\) return record\.marketCap/.test(v2Js));
+{
+  const displayMcapBranch = (v2Js.match(/if \(state\.metric === 'mcap'\) \{[\s\S]*?return 'No verified market cap';\n    \}/) || [''])[0];
+  ok('waxonedge-bubbles-v2.js mcap display falls back to WAX and has no duplicate unreachable confidence branch',
+    displayMcapBranch.includes("if (record.marketCapUsd != null) return '$' + fmtNum(record.marketCapUsd) + ' mcap';") &&
+    displayMcapBranch.includes("if (record.marketCapWax != null) return fmtNum(record.marketCapWax) + ' WAX mcap';") &&
+    !displayMcapBranch.includes('No indexed market cap') &&
+    (displayMcapBranch.match(/record\.marketCapConfidence !== 'good'/g) || []).length === 1);
+}
 ok('waxonedge-bubbles-v2.js excludes unproofed market cap and FDV from blended score',
   /function blendedMarketScore\(record\)[\s\S]*?function metricEmphasis/.test(v2Js) &&
   /function blendedMarketScore\(record\)[\s\S]*?var volume = toUsd\(record\.volume24Wax, record\.volume24Usd\);[\s\S]*?var price = record\.selectedPriceConfidence === 'good'[\s\S]*?function metricEmphasis/.test(v2Js) &&
