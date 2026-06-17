@@ -1,6 +1,11 @@
 {
-  "scanned_pages": 195,
+  "scanned_pages": 0,
+  "total_approved_pages": 0,
   "deleted_noise_pages": 0,
-  "protected_pages": 195,
-  "stale_references_remaining": 0
+  "protected_pages": 0,
+  "alias_duplicate_candidates": 0,
+  "blocked_noise_pages_found": 0,
+  "unsafe_taxonomy_collapses": 0,
+  "stale_references_remaining": 0,
+  "validation_status": "PENDING_RUN"
 }
