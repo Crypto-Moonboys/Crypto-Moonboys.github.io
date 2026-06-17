@@ -71,13 +71,18 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/css/waxonedge.css?v=woe-') &&
   html.includes('/css/waxonedge-bubbles-v2.css?v=woe-') &&
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
-ok('featured-token PR cache-busts changed WaxOnEdge scanner assets',
+ok('trust-hardening PR cache-busts changed WaxOnEdge scanner assets',
   html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-confidence') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-trust-hardening') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-confidence') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260615-galaxy3'));
-ok('featured-token PR cache-busts changed token analytics assets',
+ok('trust-hardening PR cache-busts changed token analytics assets',
   tokenHtml.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-confidence'));
+  tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-trust-hardening') &&
+  !tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-confidence'));
+ok('WaxOnEdge CSS cache keys remain on the existing CSS version because this PR does not edit CSS assets',
+  html.includes('/css/waxonedge.css?v=woe-20260615-galaxy3') &&
+  html.includes('/css/waxonedge-bubbles-v2.css?v=woe-20260615-galaxy3'));
 ok('waxonedge clean-route alias redirects to /waxonedge.html', aliasHtml.includes('url=/waxonedge.html'));
 ok('waxonedge clean-route alias preserves query-string routing', aliasHtml.includes("window.location.search || ''"));
 ok('waxonedge clean-route alias preserves hash routing', aliasHtml.includes("window.location.hash || ''"));
@@ -109,6 +114,29 @@ for (const label of FORBIDDEN_LABELS) {
     'Found "' + label + '" in WaxOnEdge frontend',
   );
 }
+
+const waxonedgeFrontendBundle = [html, tokenHtml, js, v2Js].join('\n');
+const waxonedgePageMarkup = [html, tokenHtml].join('\n');
+ok('WaxOnEdge Bubbles public pages have no trading buttons, buy/sell CTA, or connect-wallet-to-trade copy',
+  !/(<button[^>]*>|<a[^>]*>|value=["'])([^<"']*\b(?:Swap|Buy|Sell|Connect Wallet|Trade on Swap|Add Liquidity|Remove Liquidity)\b[^<"']*)/i.test(waxonedgePageMarkup) &&
+  !/\bconnect[-\s]?wallet[-\s]?to[-\s]?trade\b/i.test(waxonedgePageMarkup));
+ok('WaxOnEdge frontend does not expose slippage, receiver, swap modal, or orderbook trading fields',
+  !/\b(slippage|receiver|swap modal|orderbook|order book)\b/i.test(waxonedgeFrontendBundle) &&
+  !/id=["'][^"']*(slippage|receiver|swap-modal|orderbook)[^"']*["']/i.test(waxonedgeFrontendBundle) &&
+  !/name=["'][^"']*(slippage|receiver)[^"']*["']/i.test(waxonedgeFrontendBundle));
+ok('WaxOnEdge frontend does not load wallet signing or transaction execution libraries',
+  !/\b(waxjs|eosjs|anchor-link|ual-|wallet[-_]?plugin|SigningRequest|transact\(|signTransaction|wallet\.sign|api\.transact)\b/i.test(waxonedgeFrontendBundle));
+ok('WaxOnEdge Bubbles page loads only read-only analytics scripts, not hidden trading runtimes',
+  html.includes('/js/waxonedge-bubbles-v2.js') &&
+  tokenHtml.includes('/js/waxonedge.js') &&
+  !/src=["'][^"']*(swap|trade|wallet|sign|transaction|orderbook|aggregator)[^"']*\.js/i.test(waxonedgePageMarkup));
+ok('WaxOnEdge visible metrics stay read-only and proof-backed',
+  v2Js.includes("if (record.selectedPriceConfidence !== 'good') return null") &&
+  v2Js.includes("if (record.tvlConfidence !== 'good') return null") &&
+  v2Js.includes("if (record.liquidityConfidence !== 'good') return null") &&
+  v2Js.includes("if (metric === 'mcap') return false;") &&
+  js.includes("var hasMarketCap = metricStatusLive(stats, 'market_cap')") &&
+  js.includes("var hasFdv = metricStatusLive(stats, 'fdv')"));
 
 ok('waxonedge.html has canonical favicon tag', html.includes('<link rel="icon" type="image/png" href="/favicon.png">'));
 ok('waxonedge.html does not reference old domain crypto-moonboys.github.io', !/crypto-moonboys\.github\.io/.test(html));
@@ -204,7 +232,7 @@ ok('waxonedge-bubbles-v2.js keeps metric availability honest with selected-metri
   v2Js.includes('return change != null ? Math.abs(change) : null') &&
   /if\s*\(\s*metric\s*===\s*'tvl'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.tvlConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*return\s+record\.tvlUsd\s*!=\s*null\s*\?\s*record\.tvlUsd\s*:\s*record\.tvlWax\s*;[\s\S]*\}/.test(v2Js) &&
   /if\s*\(\s*metric\s*===\s*'liquidity'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.liquidityConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*return\s+record\.liquidityUsd\s*!=\s*null\s*\?\s*record\.liquidityUsd\s*:\s*record\.liquidityWax/.test(v2Js) &&
-  /if\s*\(\s*metric\s*===\s*'mcap'\s*\)\s*return\s+record\.marketCapUsd\s*!=\s*null\s*\?\s*record\.marketCapUsd\s*:\s*record\.marketCapWax/.test(v2Js) &&
+  /if\s*\(\s*metric\s*===\s*'mcap'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.marketCapConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*return\s+record\.marketCapUsd\s*!=\s*null\s*\?\s*record\.marketCapUsd\s*:\s*record\.marketCapWax;[\s\S]*\}/.test(v2Js) &&
   v2Js.includes('metricCount < records.length') &&
   v2Js.includes("with ' + METRIC_LABELS[state.metric] + ' data") &&
   v2Js.includes('blendedMarketScore(record)') &&
@@ -257,8 +285,9 @@ ok('waxonedge-bubbles-v2.js selects featured tokens using multi-DEX aggregate fi
 ok('WaxOnEdge keeps missing 7d/30d/candle data honest instead of fake',
   v2Js.includes('No indexed 7D volume') &&
   v2Js.includes('No indexed 30D volume') &&
-  v2Js.includes('history building from fresh live data') &&
-  js.includes('Indexed chart building from fresh live data') &&
+  v2Js.includes('history building from indexed snapshots') &&
+  js.includes('Indexed candles not available yet for this pair') &&
+  js.includes('Pair proof is available below') &&
   js.includes('function historicalVolumeAvailabilityHtml') &&
   js.includes("if (isFreshHistoryAccumulating(stats, key)) return availabilityHtml('Building from fresh live history')") &&
   js.includes('return tokenAvailabilityHtml(stats, key)') &&
@@ -404,7 +433,8 @@ ok('waxonedge-bubbles-v2.js adds live WAX Galaxy reactions without camera jumps'
   v2Js.includes('record.recentUntil') &&
   v2Js.includes('record.volumeSpikeUntil') &&
   v2Js.includes('Whale/high-volume update detected') &&
-  v2Js.includes('Fresh history building') &&
+  v2Js.includes('indexed snapshot data') &&
+  v2Js.includes('updated from WaxOnEdge snapshots') &&
   v2Js.includes('safeTimeLabel') &&
   !v2Js.includes('Invalid Date'));
 
@@ -451,6 +481,13 @@ ok('waxonedge-bubbles-v2.js keeps WAX price meta honest',
   v2Js.includes('WAX price from ') &&
   v2Js.includes('data.summary.wax_price_usd') &&
   !v2Js.includes('Indexed from Alcor, Taco, Nefty, BOX'));
+ok('waxonedge-bubbles-v2.js labels snapshot polling honestly instead of fake streaming live status',
+  v2Js.includes("state.live.transport === 'snapshot-polling' && state.connected") &&
+  v2Js.includes("'SYNCED 10s'") &&
+  v2Js.includes("'SNAPSHOT POLLING'") &&
+  v2Js.includes("state.live.transport === 'sse' && state.connected") &&
+  v2Js.includes("'INDEXED STREAM'") &&
+  !v2Js.includes("text.textContent = state.connected ? 'LIVE' : 'CONNECTING'"));
 
 ok('waxonedge.html is scanner-only and omits dominant KPI/source strips',
   !html.includes('woe-kpi-grid') &&
@@ -498,6 +535,8 @@ ok('waxonedge-bubbles-v2.js reads bootstrap confidence fields for proof-backed m
   v2Js.includes("selectedPriceConfidence: metricConfidenceFrom(token, 'selected_price')") &&
   v2Js.includes("liquidityConfidence: metricConfidenceFrom(token, 'liquidity')") &&
   v2Js.includes("tvlConfidence: metricConfidenceFrom(token, 'tvl')") &&
+  v2Js.includes("marketCapConfidence: metricConfidenceFrom(token, 'market_cap')") &&
+  v2Js.includes("fdvConfidence: metricConfidenceFrom(token, 'fdv')") &&
   v2Js.includes("metricReasonCodes: parseReasonCodes(token.metric_reason_codes || token.reason_codes || token.unavailable_reasons)"));
 ok('waxonedge-bubbles-v2.js preserves confidence fields from live updates without erasing omitted values',
   v2Js.includes('function normalizeConfidence(value)') &&
@@ -514,6 +553,15 @@ ok('waxonedge-bubbles-v2.js preserves confidence fields from live updates withou
   v2Js.includes('if (next && record[prop] !== next)') &&
   v2Js.includes("Object.prototype.hasOwnProperty.call(update, 'metric_reason_codes')") &&
   !/applyLiveTokenUpdate[\s\S]*selectedPriceConfidence\s*=\s*['"]unavailable['"]/.test(v2Js));
+ok('waxonedge-bubbles-v2.js clears stale live values only when explicit null arrives with weak or unavailable confidence',
+  v2Js.includes('function assignLiveMetricNumber(record, prop, update, keys, confidence)') &&
+  v2Js.includes("if ((confidence === 'weak' || confidence === 'unavailable') && record[prop] != null)") &&
+  v2Js.includes("assignLiveMetricNumber(record, 'selectedPriceWax', update, ['price_wax', 'selected_price_wax'], nextPriceConfidence)") &&
+  v2Js.includes("assignLiveMetricNumber(record, 'selectedPriceUsd', update, ['price_usd', 'selected_price_usd'], nextPriceConfidence)") &&
+  v2Js.includes("assignLiveMetricNumber(record, 'tvlWax', update, ['tvl_wax'], nextTvlConfidence)") &&
+  v2Js.includes("assignLiveMetricNumber(record, 'tvlUsd', update, ['tvl_usd'], nextTvlConfidence)") &&
+  v2Js.includes("assignLiveMetricNumber(record, 'liquidityWax', update, ['liquidity_wax'], nextLiquidityConfidence)") &&
+  v2Js.includes("assignLiveMetricNumber(record, 'liquidityUsd', update, ['liquidity_usd'], nextLiquidityConfidence)"));
 ok('waxonedge-bubbles-v2.js preserves zero token metrics during normalization',
   v2Js.includes('selectedPriceWax: asNum(token.selected_price_wax != null ? token.selected_price_wax : token.price_wax)') &&
   v2Js.includes('selectedPriceUsd: asNum(token.selected_price_usd != null ? token.selected_price_usd : token.price_usd)') &&
@@ -535,6 +583,12 @@ ok('waxonedge-bubbles-v2.js keeps proof-backed price, liquidity, and TVL data co
   /function valueForMetric[\s\S]*if \(metric === 'price'\)[\s\S]*record\.selectedPriceConfidence !== 'good'[\s\S]*return record\.selectedPriceUsd != null \? record\.selectedPriceUsd : record\.selectedPriceWax/.test(v2Js) &&
   /function valueForMetric[\s\S]*if \(metric === 'tvl'\)[\s\S]*record\.tvlConfidence !== 'good'[\s\S]*return record\.tvlUsd != null \? record\.tvlUsd : record\.tvlWax/.test(v2Js) &&
   /function valueForMetric[\s\S]*if \(metric === 'liquidity'\)[\s\S]*record\.liquidityConfidence !== 'good'[\s\S]*return record\.liquidityUsd != null \? record\.liquidityUsd : record\.liquidityWax/.test(v2Js));
+ok('waxonedge-bubbles-v2.js keeps market cap mode hard disabled unless a future proof gate is explicitly wired',
+  v2Js.includes("if (metric === 'mcap') return false;") &&
+  /function valueForMetric[\s\S]*if \(metric === 'mcap'\)[\s\S]*record\.marketCapConfidence !== 'good'[\s\S]*return null[\s\S]*record\.marketCapUsd/.test(v2Js) &&
+  /function displayValue[\s\S]*if \(state\.metric === 'mcap'\)[\s\S]*record\.marketCapConfidence === 'weak'[\s\S]*record\.marketCapConfidence !== 'good'[\s\S]*Not indexed/.test(v2Js) &&
+  !/function metricAllowed[\s\S]*capabilityEnabled\(\['market_cap', 'mcap'\]/.test(v2Js) &&
+  !/function valueForMetric[\s\S]*if \(metric === 'mcap'\) return record\.marketCap/.test(v2Js));
 ok('waxonedge-bubbles-v2.js excludes unproofed market cap and FDV from blended score',
   /function blendedMarketScore\(record\)[\s\S]*?function metricEmphasis/.test(v2Js) &&
   /function blendedMarketScore\(record\)[\s\S]*?var volume = toUsd\(record\.volume24Wax, record\.volume24Usd\);[\s\S]*?var price = record\.selectedPriceConfidence === 'good'[\s\S]*?function metricEmphasis/.test(v2Js) &&
@@ -615,7 +669,10 @@ ok('renderTokenStats uses backend detail stats without aggregate-complete gating
 ok('token analytics respects backend proof before rendering dead metrics',
   js.includes('function metricStatusLive(stats, key)') &&
   js.includes('function hasRealHolderSnapshot(stats)') &&
-  js.includes("var hasMarketCap = backendFlag(stats.has_market_cap) || metricStatusLive(stats, 'market_cap')") &&
+  js.includes("var hasMarketCap = metricStatusLive(stats, 'market_cap')") &&
+  js.includes("var hasFdv = metricStatusLive(stats, 'fdv')") &&
+  !js.includes("var hasMarketCap = backendFlag(stats.has_market_cap) || metricStatusLive(stats, 'market_cap')") &&
+  !js.includes("var hasFdv = backendFlag(stats.has_fdv) || metricStatusLive(stats, 'fdv') || fdvWax != null || fdvUsd != null") &&
   js.includes('var hasHolderCount = hasRealHolderSnapshot(stats) && stats.holder_count != null') &&
   js.includes("var hasVolume7d = metricStatusLive(stats, 'volume_7d') && volume7d != null") &&
   js.includes("var hasVolume30d = metricStatusLive(stats, 'volume_30d') && volume30d != null") &&
@@ -701,8 +758,10 @@ ok('account lookup panel is not exposed on scanner or token analytics pages',
   !js.includes('state/get_tokens') &&
   !js.includes('Look up balances') &&
   !js.includes('WAXONEDGE_HYPERION'));
-ok('token analytics renders honest holder indexing placeholder only',
-  tokenHtml.includes('id="woe-holders-panel"') &&
+ok('token analytics hides the public holder panel until real indexed holder data exists',
+  !tokenHtml.includes('id="woe-holders-panel"') &&
+  !tokenHtml.includes('Holder Panel') &&
+  !tokenHtml.includes('Backend holder indexing') &&
   js.includes('Holder indexing not enabled yet') &&
   js.includes('No fake holder rows are shown') &&
   !js.includes('woe-holder-result-card'));

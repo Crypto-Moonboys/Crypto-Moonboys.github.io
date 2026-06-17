@@ -311,8 +311,10 @@
       metricReasonCodes: [],
       marketCapWax: null,
       marketCapUsd: null,
+      marketCapConfidence: 'unavailable',
       fdvWax: null,
       fdvUsd: null,
+      fdvConfidence: 'unavailable',
       supply: '',
       selectedPair: '',
       selectedSource: '',
@@ -349,7 +351,10 @@
       if (record.liquidityConfidence !== 'good') return null;
       return record.liquidityUsd != null ? record.liquidityUsd : record.liquidityWax;
     }
-    if (metric === 'mcap') return record.marketCapUsd != null ? record.marketCapUsd : record.marketCapWax;
+    if (metric === 'mcap') {
+      if (record.marketCapConfidence !== 'good') return null;
+      return record.marketCapUsd != null ? record.marketCapUsd : record.marketCapWax;
+    }
     return null;
   }
 
@@ -372,7 +377,7 @@
 
   function metricAllowed(metric) {
     if (!Object.prototype.hasOwnProperty.call(DEFAULT_METRIC_ALLOWED, metric)) return false;
-    if (metric === 'mcap') return capabilityEnabled(['market_cap', 'mcap'], DEFAULT_METRIC_ALLOWED.mcap);
+    if (metric === 'mcap') return false;
     return capabilityEnabled([metric], DEFAULT_METRIC_ALLOWED[metric]);
   }
 
@@ -457,6 +462,8 @@
       return 'No indexed liquidity';
     }
     if (state.metric === 'mcap') {
+      if (record.marketCapConfidence === 'weak') return 'Proof weak';
+      if (record.marketCapConfidence !== 'good') return 'Not indexed';
       if (record.marketCapUsd != null) return '$' + fmtNum(record.marketCapUsd) + ' mcap';
       return 'No indexed market cap';
     }
@@ -561,8 +568,10 @@
         metricReasonCodes: parseReasonCodes(token.metric_reason_codes || token.reason_codes || token.unavailable_reasons),
         marketCapWax: asNum(token.market_cap_wax),
         marketCapUsd: asNum(token.market_cap_usd),
+        marketCapConfidence: metricConfidenceFrom(token, 'market_cap'),
         fdvWax: asNum(token.fdv_wax),
         fdvUsd: asNum(token.fdv_usd),
+        fdvConfidence: metricConfidenceFrom(token, 'fdv'),
         supply: token.circulating_supply || token.total_supply || '',
         selectedPair: token.selected_pair_id || '',
         selectedSource: sourceLabel(token.selected_pair_source),
@@ -791,19 +800,49 @@
     return true;
   }
 
+  function liveConfidenceFromUpdate(update, keys, current) {
+    for (var i = 0; i < keys.length; i += 1) {
+      if (!Object.prototype.hasOwnProperty.call(update, keys[i])) continue;
+      return normalizeConfidence(update[keys[i]]) || current || '';
+    }
+    return current || '';
+  }
+
+  function assignLiveMetricNumber(record, prop, update, keys, confidence) {
+    for (var i = 0; i < keys.length; i += 1) {
+      var key = keys[i];
+      if (!Object.prototype.hasOwnProperty.call(update, key)) continue;
+      var n = asNum(update[key]);
+      if (n != null) {
+        if (record[prop] === n) return false;
+        record[prop] = n;
+        return true;
+      }
+      if ((confidence === 'weak' || confidence === 'unavailable') && record[prop] != null) {
+        record[prop] = null;
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }
+
   function applyLiveTokenUpdate(record, update) {
     var changed = false;
     var previousVolume = record.volume24Usd != null ? record.volume24Usd : record.volume24Wax;
     var previousChange = record.change24;
-    changed = assignLiveNumber(record, 'selectedPriceWax', update.price_wax) || changed;
-    changed = assignLiveNumber(record, 'selectedPriceUsd', update.price_usd) || changed;
+    var nextPriceConfidence = liveConfidenceFromUpdate(update, ['selected_price_confidence', 'selectedPriceConfidence'], record.selectedPriceConfidence);
+    var nextLiquidityConfidence = liveConfidenceFromUpdate(update, ['liquidity_confidence', 'liquidityConfidence'], record.liquidityConfidence);
+    var nextTvlConfidence = liveConfidenceFromUpdate(update, ['tvl_confidence', 'tvlConfidence'], record.tvlConfidence);
+    changed = assignLiveMetricNumber(record, 'selectedPriceWax', update, ['price_wax', 'selected_price_wax'], nextPriceConfidence) || changed;
+    changed = assignLiveMetricNumber(record, 'selectedPriceUsd', update, ['price_usd', 'selected_price_usd'], nextPriceConfidence) || changed;
     changed = assignLiveNumber(record, 'change24', update.change_24h) || changed;
     changed = assignLiveNumber(record, 'volume24Wax', update.volume_24h_wax) || changed;
     changed = assignLiveNumber(record, 'volume24Usd', update.volume_24h_usd) || changed;
-    changed = assignLiveNumber(record, 'tvlWax', update.tvl_wax) || changed;
-    changed = assignLiveNumber(record, 'tvlUsd', update.tvl_usd) || changed;
-    changed = assignLiveNumber(record, 'liquidityWax', update.liquidity_wax) || changed;
-    changed = assignLiveNumber(record, 'liquidityUsd', update.liquidity_usd) || changed;
+    changed = assignLiveMetricNumber(record, 'tvlWax', update, ['tvl_wax'], nextTvlConfidence) || changed;
+    changed = assignLiveMetricNumber(record, 'tvlUsd', update, ['tvl_usd'], nextTvlConfidence) || changed;
+    changed = assignLiveMetricNumber(record, 'liquidityWax', update, ['liquidity_wax'], nextLiquidityConfidence) || changed;
+    changed = assignLiveMetricNumber(record, 'liquidityUsd', update, ['liquidity_usd'], nextLiquidityConfidence) || changed;
     changed = assignLiveNumber(record, 'indexedPairCount', update.indexed_pair_count) || changed;
     changed = assignLiveNumber(record, 'sourceCount', update.source_count) || changed;
     [
@@ -943,14 +982,14 @@
   function liveMessageForUpdate(record, update, previousVolume, nextVolume, previousChange) {
     var type = String(update.event_type || update.type || update.reason || '').toLowerCase();
     if (type.indexOf('whale') !== -1 || update.whale === true || update.is_whale === true) {
-      return 'Whale/high-volume update detected for ' + (record.displaySymbol || record.symbol) + ' from live indexer data';
+      return 'Whale/high-volume update detected for ' + (record.displaySymbol || record.symbol) + ' from indexed snapshot data';
     }
     if (isVolumeSpike(previousVolume, nextVolume)) {
       return 'Volume spike: ' + (record.displaySymbol || record.symbol) + ' 24h volume moved to ' + displayValueForMetric(record, 'volume', '24h');
     }
     var change = asNum(record.change24);
     if (change != null && previousChange !== change) return 'Top mover update: ' + (record.displaySymbol || record.symbol) + ' now ' + fmtPct(change);
-    return 'Fresh history building: ' + (record.displaySymbol || record.symbol) + ' updated from WaxOnEdge live data';
+    return 'Fresh history building: ' + (record.displaySymbol || record.symbol) + ' updated from WaxOnEdge snapshots';
   }
 
   function displayValueForMetric(record, metric, timeframeOverride) {
@@ -1768,7 +1807,15 @@
     var text = document.getElementById('woe-ab-live-text');
     var updated = document.getElementById('woe-ab-last-updated');
     if (dot) dot.className = 'woe-ab-live-dot ' + (state.connected ? 'is-live' : 'is-waiting');
-    if (text) text.textContent = state.connected ? 'LIVE' : 'CONNECTING';
+    if (text) {
+      text.textContent = state.live.transport === 'sse' && state.connected
+        ? 'INDEXED STREAM'
+        : state.live.transport === 'snapshot-polling' && state.connected
+        ? 'SYNCED 10s'
+        : state.live.transport === 'snapshot-polling'
+        ? 'SNAPSHOT POLLING'
+        : 'CONNECTING';
+    }
     if (updated) updated.textContent = safeTimeLabel(state.lastUpdated) || 'Waiting for sync';
   }
 
@@ -1794,7 +1841,7 @@
     var sources = {};
     records.forEach(function (r) { r.sources.forEach(function (s) { sources[s] = true; }); });
     var candleStatus = state.timeframe !== '24h'
-      ? TIMEFRAME_LABELS[state.timeframe] + ' history building from fresh live data'
+      ? TIMEFRAME_LABELS[state.timeframe] + ' history building from indexed snapshots'
       : state.health && state.health.candle_backfill
       ? (state.health.candle_backfill.latest_1d_candle_count || 0) + ' 1D candles'
       : 'candles not indexed';

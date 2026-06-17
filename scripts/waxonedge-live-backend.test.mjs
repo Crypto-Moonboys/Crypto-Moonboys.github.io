@@ -4589,6 +4589,13 @@ ok('frontend live hook has no fake live ticks or random movement',
   !/fake live|fake tick|Math\.random|random movement/i.test(frontendBubbles));
 ok('frontend has no wallet/swap/liquidity action buttons',
   !/(>|\bvalue=["'])(Connect Wallet|Add Liquidity|Remove Liquidity|Trade on Swap)(<|["'])/.test(frontend + html + tokenHtml));
+ok('WaxOnEdge route exposes analytics only and no swap quote or execution API',
+  !/\/api\/waxonedge\/(?:swap|trade|wallet|quote|execute|transaction|orderbook|aggregator)(?:\/|\?|$)/i.test(route) &&
+  !/child\s*===\s*['"](?:swap|quote|execute|transaction|orderbook|aggregator)['"]/.test(route) &&
+  !/build(?:Swap|Transaction)|execute(?:Swap|Route)|submit(?:Transaction|Swap)|swapQuote|quoteSwap|routeExecution/i.test(route));
+ok('WaxOnEdge backend has no wallet signing, slippage, receiver, or aggregator execution surface',
+  !/\b(waxjs|eosjs|anchor-link|SigningRequest|wallet\.sign|api\.transact|signTransaction)\b/i.test(route) &&
+  !/\b(slippage|receiver|swap modal|orderbook trading|aggregator contract)\b/i.test(route));
 ok('real reference audit documents license and endpoint comparison',
   referenceAudit.includes('MIT licenses') &&
   referenceAudit.includes('/candles') &&
