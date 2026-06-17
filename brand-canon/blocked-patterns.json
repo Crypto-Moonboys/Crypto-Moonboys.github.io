@@ -1,6 +1,42 @@
 {
-  "_comment": "Slug patterns that are always blocked from the wiki index/map/graph unless the slug appears in approved-pages.json. More specific patterns MUST come before the generic '*-via-*' fallback so their specific reason strings are used.",
+  "_comment": "Slug patterns that are always blocked from the wiki index/map/graph unless the slug appears in approved-pages.json. More specific patterns MUST come before generic fallbacks so their specific reason strings are used.",
   "blocked_patterns": [
+    {
+      "pattern": "*enable-javascript*",
+      "reason": "BLOCKED_ANTIBOT_SCRAPE_ARTIFACT: enable-javascript pages are anti-bot scrape noise."
+    },
+    {
+      "pattern": "*enable_javascript*",
+      "reason": "BLOCKED_ANTIBOT_SCRAPE_ARTIFACT: enable_javascript pages are anti-bot scrape noise."
+    },
+    {
+      "pattern": "*captcha*",
+      "reason": "BLOCKED_ANTIBOT_SCRAPE_ARTIFACT: captcha pages are anti-bot scrape noise."
+    },
+    {
+      "pattern": "*access-denied*",
+      "reason": "BLOCKED_ANTIBOT_SCRAPE_ARTIFACT: access-denied pages are anti-bot scrape noise."
+    },
+    {
+      "pattern": "*access_denied*",
+      "reason": "BLOCKED_ANTIBOT_SCRAPE_ARTIFACT: access_denied pages are anti-bot scrape noise."
+    },
+    {
+      "pattern": "*just-a-moment*",
+      "reason": "BLOCKED_ANTIBOT_SCRAPE_ARTIFACT: just-a-moment pages are anti-bot scrape noise."
+    },
+    {
+      "pattern": "*just_a_moment*",
+      "reason": "BLOCKED_ANTIBOT_SCRAPE_ARTIFACT: just_a_moment pages are anti-bot scrape noise."
+    },
+    {
+      "pattern": "*are-you-human*",
+      "reason": "BLOCKED_ANTIBOT_SCRAPE_ARTIFACT: are-you-human pages are anti-bot scrape noise."
+    },
+    {
+      "pattern": "*are_you_human*",
+      "reason": "BLOCKED_ANTIBOT_SCRAPE_ARTIFACT: are_you_human pages are anti-bot scrape noise."
+    },
     {
       "pattern": "*-token-via-*",
       "reason": "BLOCKED_SYNTHETIC_SLUG: token-via pages are keyword-combination spam.",
