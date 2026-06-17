@@ -1689,6 +1689,24 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     graphLiveKeys.includes('abc.token::ABC') &&
     graphLiveKeys.includes('eosio.token::WAX') &&
     !graphLiveKeys.includes('qqq.core::QQQCORE'));
+  const searchedLiveResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
+    { DB: graphDb },
+    new URLSearchParams('search=WUF'),
+    {},
+  );
+  const searchedLiveBody = await searchedLiveResponse.json();
+  const searchedLiveKeys = searchedLiveBody.tokens.map((token) => token.token_key);
+  ok('/api/waxonedge/live search filters by token text inside the WAXCASH graph only',
+    searchedLiveResponse.status === 200 &&
+    searchedLiveBody.ok === true &&
+    searchedLiveKeys.includes('wuffi::WUF') &&
+    !searchedLiveKeys.includes('graffitiking::WAXCASH') &&
+    !searchedLiveKeys.includes('qqq.core::QQQCORE'));
+  ok('/api/waxonedge/live handler passes search query into the graph-scoped live snapshot loader',
+    route.includes("search: query.get('search') || query.get('q')") &&
+    route.includes("const search = safeString(options.search) || ''") &&
+    route.includes('function matchesSearch(row)') &&
+    route.includes('const graph = await loadWaxcashGraphTokenRows(db)'));
   const badCursorResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
     { DB: fakeLiveDb([]) },
     new URLSearchParams('cursor=bad-cursor'),

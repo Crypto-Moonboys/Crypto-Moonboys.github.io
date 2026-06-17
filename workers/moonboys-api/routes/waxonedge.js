@@ -4110,16 +4110,31 @@ function parseLiveSince(value) {
 async function listLiveTokenUpdates(db, options = {}) {
   const parsedCursor = parseLiveCursor(options.cursor);
   const parsedSince = parsedCursor.cursor ? { since: null, warning: null } : parseLiveSince(options.since);
+  const search = safeString(options.search) || '';
   const limit = clampInteger(options.limit, LIVE_SNAPSHOT_TOKEN_LIMIT, 1, LIVE_SNAPSHOT_TOKEN_LIMIT);
   const graph = await loadWaxcashGraphTokenRows(db);
   const cursor = parsedCursor.cursor;
+  const searchLower = search.toLowerCase();
+  const searchSymbol = normalizeSymbol(search);
+  function matchesSearch(row) {
+    if (!search) return true;
+    const contract = normalizeContract(row?.contract);
+    const symbol = normalizeSymbol(row?.symbol);
+    const key = tokenKey(contract, symbol);
+    return contract === searchLower ||
+      symbol === searchSymbol ||
+      key === searchLower ||
+      contract.includes(searchLower) ||
+      symbol.toLowerCase().includes(searchLower) ||
+      key.includes(searchLower);
+  }
   const orderedRows = (graph.tokenRows || []).slice().sort((a, b) => {
     const updatedCompare = String(a.updated_at || '').localeCompare(String(b.updated_at || ''));
     if (updatedCompare !== 0) return updatedCompare;
     return String(a.contract || '').localeCompare(String(b.contract || '')) ||
       String(a.symbol || '').localeCompare(String(b.symbol || ''));
   });
-  const results = orderedRows.filter((row) => {
+  const results = orderedRows.filter(matchesSearch).filter((row) => {
     const updatedAt = row.updated_at || '';
     const contract = normalizeContract(row.contract);
     const symbol = normalizeSymbol(row.symbol);
@@ -4151,6 +4166,7 @@ async function handleLiveSnapshot(env, query, corsHeaders) {
       cursor: query.get('cursor') || query.get('next_cursor'),
       since: query.get('since') || query.get('updated_since'),
       limit: query.get('limit'),
+      search: query.get('search') || query.get('q'),
     });
     const warnings = live.warning ? [live.warning] : [];
     return waxonedgeJson({
