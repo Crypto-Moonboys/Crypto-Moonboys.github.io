@@ -602,7 +602,11 @@ ok('waxonedge-bubbles-v2.js exposes market cap mode only through proof-backed ca
   !v2Js.includes('No indexed market cap') &&
   !/function valueForMetric[\s\S]*if \(metric === 'mcap'\) return record\.marketCap/.test(v2Js));
 {
-  const displayMcapBranch = (v2Js.match(/if \(state\.metric === 'mcap'\) \{[\s\S]*?return 'No verified market cap';\n    \}/) || [''])[0];
+  const mcapBranchStart = v2Js.indexOf("if (state.metric === 'mcap') {");
+  const mcapBranchEnd = v2Js.indexOf("return 'Not indexed';", mcapBranchStart);
+  const displayMcapBranch = mcapBranchStart >= 0 && mcapBranchEnd > mcapBranchStart
+    ? v2Js.slice(mcapBranchStart, mcapBranchEnd)
+    : '';
   ok('waxonedge-bubbles-v2.js mcap display falls back to WAX and has no duplicate unreachable confidence branch',
     displayMcapBranch.includes("if (record.marketCapUsd != null) return '$' + fmtNum(record.marketCapUsd) + ' mcap';") &&
     displayMcapBranch.includes("if (record.marketCapWax != null) return fmtNum(record.marketCapWax) + ' WAX mcap';") &&
