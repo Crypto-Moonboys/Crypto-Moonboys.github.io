@@ -1548,6 +1548,71 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     valuedLiveToken.liquidity_confidence === 'good' &&
     valuedLiveToken.tvl_confidence === 'good' &&
     valuedLiveToken.market_cap_confidence === 'good');
+  const searchedSql = [];
+  const searchedParams = [];
+  const searchLiveDb = {
+    prepare(sql) {
+      searchedSql.push(sql);
+      return {
+        bind(...params) {
+          searchedParams.push(params);
+          return {
+            async all() {
+              if (sql.includes('WITH pair_token_rows')) {
+                return {
+                  results: [{
+                    contract: 'graffitiking',
+                    symbol: 'WAXCASH',
+                    decimals: 8,
+                    total_supply: '1000000',
+                    circulating_supply: '500000',
+                    pair_count: '1',
+                    source_keys: 'swap.alcor',
+                    updated_at: '2026-06-14T11:00:00.000Z',
+                  }],
+                };
+              }
+              if (sql.includes('SELECT contract, symbol, price_wax, price_usd')) {
+                return { results: [{ contract: 'eosio.token', symbol: 'WAX', price_wax: '1', price_usd: '0.006' }] };
+              }
+              if (sql.includes('FROM waxonedge_pairs')) {
+                return { results: [liveValuationPair] };
+              }
+              return { results: [] };
+            },
+          };
+        },
+      };
+    },
+  };
+  const searchedLiveResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
+    { DB: searchLiveDb },
+    new URLSearchParams('search=WAXCASH'),
+    {},
+  );
+  const searchedLiveBody = await searchedLiveResponse.json();
+  const searchedWaxcashToken = searchedLiveBody.tokens?.find((token) => token.token_key === 'graffitiking::WAXCASH');
+  ok('/api/waxonedge/live search filters by token text and hydrates WAXCASH valuation from indexed pairs',
+    searchedLiveResponse.status === 200 &&
+    searchedLiveBody.ok === true &&
+    searchedLiveBody.tokens.length === 1 &&
+    searchedWaxcashToken &&
+    Number(searchedWaxcashToken.price_wax) === 0.01 &&
+    Number(searchedWaxcashToken.liquidity_wax) === 2000 &&
+    Number(searchedWaxcashToken.tvl_wax) === 2000 &&
+    Number(searchedWaxcashToken.market_cap_wax) === 5000 &&
+    searchedWaxcashToken.selected_price_confidence === 'good' &&
+    searchedWaxcashToken.liquidity_confidence === 'good' &&
+    searchedWaxcashToken.tvl_confidence === 'good' &&
+    searchedWaxcashToken.market_cap_confidence === 'good' &&
+    searchedSql.some((sql) => sql.includes('WITH pair_token_rows')) &&
+    searchedSql.some((sql) => sql.includes('FROM pair_tokens')) &&
+    searchedParams.some((params) => params.includes('waxcash') && params.includes('WAXCASH')));
+  ok('/api/waxonedge/live handler passes search query into the live snapshot loader',
+    route.includes("search: query.get('search') || query.get('q')") &&
+    route.includes("const search = safeString(options.search) || ''") &&
+    route.includes('WITH pair_token_rows') &&
+    route.includes("LOWER(contract || '::' || symbol) LIKE ?"));
   const badCursorResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
     { DB: fakeLiveDb([]) },
     new URLSearchParams('cursor=bad-cursor'),
