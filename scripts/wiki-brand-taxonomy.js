@@ -46,7 +46,7 @@ const BRAND_CANON = {
       },
       game: {
         canonical: 'midevilpunks',
-        aliases: ['midevil-hero-arena'],
+        aliases: [],
       },
     },
   },
@@ -56,7 +56,7 @@ const BRAND_CANON = {
     concepts: {
       faction: {
         canonical: 'hodl-warriors',
-        aliases: ['hodl-x-warriors'],
+        aliases: [],
       },
       game: {
         canonical: 'hodl-wars',
