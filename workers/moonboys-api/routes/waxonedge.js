@@ -5333,7 +5333,11 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   const routeIndex = options.routeIndex || buildOgWaxRouteGraph(graphPairRows, priceIndex);
   const selected = selectOgWaxRoutePrice(tokenKey(contract, symbol), routeIndex);
 
-  for (const pair of dedupePairRows(pairRows || [])) {
+  const sortedPairs = (pairRows || [])
+    .slice()
+    .sort((a, b) => String(b?.updated_at || '').localeCompare(String(a?.updated_at || '')));
+
+  for (const pair of dedupePairRows(sortedPairs)) {
     if (!pairTokenSide(pair, contract, symbol)) continue;
     if (!hasRealPairReserves(pair)) continue;
     pairCount += 1;

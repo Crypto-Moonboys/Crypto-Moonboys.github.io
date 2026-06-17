@@ -191,8 +191,8 @@ ok('live snapshot uses stable contract-symbol token keys',
     direct_pair_liquidity_wax: '456.78',
     direct_waxcash_pair_liquidity_wax: '456.78',
     suspicious_liquidity_pair_count: '1',
-    liquidity_basis: 'og_wax_route_pool_graph',
-    tvl_basis: 'og_wax_route_pool_graph',
+    liquidity_basis: 'direct_indexed_pair_reserves',
+    tvl_basis: 'direct_indexed_pair_reserves',
     updated_at: '2026-06-14T00:00:00.000Z',
   });
   ok('live token update preserves real zero metric values when reserve proof is present',
@@ -280,7 +280,9 @@ ok('live snapshot rows are reserve-derived before confidence is emitted',
 ok('live snapshot liquidity uses sane direct pair reserves instead of route-multiplied TVL',
   route.includes('const MAX_REASONABLE_PAIR_TVL_WAX = 10000000000') &&
   route.includes('function isReasonablePairTvlWax') &&
-  route.includes('for (const pair of dedupePairRows(pairRows || []))') &&
+  route.includes('const sortedPairs = (pairRows || [])') &&
+  route.includes("String(b?.updated_at || '').localeCompare(String(a?.updated_at || ''))") &&
+  route.includes('for (const pair of dedupePairRows(sortedPairs))') &&
   route.includes('suspiciousLiquidityPairCount += 1') &&
   route.includes("metrics.liquidity_basis = hasLiquidityWax ? 'direct_indexed_pair_reserves' : null") &&
   route.includes("metrics.tvl_basis = hasLiquidityWax ? 'direct_indexed_pair_reserves' : null") &&
