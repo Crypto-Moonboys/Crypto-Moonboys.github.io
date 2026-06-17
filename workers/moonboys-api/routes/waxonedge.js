@@ -15,6 +15,7 @@ const CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE = 3;
 const SOURCE_STALE_MINUTES = 30;
 const MIN_TRUSTED_WAX_LIQUIDITY = 10;
 const MAX_REASONABLE_PAIR_TVL_USD = 100000000;
+const MAX_REASONABLE_PAIR_TVL_WAX = 10000000000;
 const CANDLE_BACKFILL_SOURCE = 'candle_backfill';
 const ALCOR_TRADE_INDEX_SOURCE = 'alcor_trade_rows';
 const AMM_TRADE_INDEX_SOURCE = 'amm_trade_rows';
@@ -1183,6 +1184,14 @@ function normalizePair(pair, tickerByMarketId, priceIndex, syncedAt) {
 function isReasonablePairTvlUsd(value) {
   const usd = asNumber(value);
   return usd == null || (usd >= 0 && usd <= MAX_REASONABLE_PAIR_TVL_USD);
+}
+
+function isReasonablePairTvlWax(value, waxUsd = null) {
+  const wax = asNumber(value);
+  if (wax == null) return true;
+  if (wax < 0 || wax > MAX_REASONABLE_PAIR_TVL_WAX) return false;
+  const usd = waxUsd != null ? wax * waxUsd : null;
+  return isReasonablePairTvlUsd(usd);
 }
 
 function sanitizeLiquidityValues(liquidityWax, liquidityUsd, priceIndex) {
@@ -4049,6 +4058,11 @@ function normalizeLiveTokenUpdate(row) {
     tvl_usd: tvlUsd,
     liquidity_wax: liquidityWax,
     liquidity_usd: liquidityUsd,
+    direct_pair_liquidity_wax: proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.direct_pair_liquidity_wax ?? row.liquidity_wax)) : null,
+    direct_pair_liquidity_usd: proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.direct_pair_liquidity_usd ?? row.liquidity_usd)) : null,
+    direct_waxcash_pair_liquidity_wax: safeDecimal(asNumber(row.direct_waxcash_pair_liquidity_wax)),
+    direct_wax_pair_liquidity_wax: safeDecimal(asNumber(row.direct_wax_pair_liquidity_wax)),
+    suspicious_liquidity_pair_count: asNumber(row.suspicious_liquidity_pair_count),
     market_cap_wax: marketCapWax,
     market_cap_usd: marketCapUsd,
     market_cap_confidence: marketCapLive ? 'good' : 'unavailable',
@@ -5285,7 +5299,11 @@ function reasonMapForTokenMetrics(metrics) {
   if (metrics.selected_price_wax == null) reasons.selected_price = metrics.selected_pair_id ? 'Source indexed; price unavailable' : 'No indexed pair has enough price data yet';
   if (metrics.change_24h == null) reasons.price_change_24h = 'Requires indexed 24h price-change data';
   if (metrics.volume_24h_wax == null) reasons.volume_24h = 'Requires indexed pair or ticker volume';
-  if (metrics.liquidity_wax == null && metrics.liquidity_usd == null) reasons.liquidity = 'Requires valued indexed pair reserves';
+  if (metrics.liquidity_wax == null && metrics.liquidity_usd == null) {
+    reasons.liquidity = asNumber(metrics.suspicious_liquidity_pair_count) > 0
+      ? 'Suspicious pair liquidity excluded from trusted totals'
+      : 'Requires valued indexed pair reserves';
+  }
   if (metrics.holder_count == null) reasons.holder_count = REQUIRES_INDEXED_BACKEND;
   if (metrics.circulating_supply == null) reasons.circulating_supply = 'Requires indexed circulating supply';
   if (metrics.volume_7d == null) reasons.volume_7d = 'Requires indexed candle or trade history';
@@ -5307,10 +5325,19 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   let volumeWaxTotal = 0;
   let hasLiquidityWax = false;
   let hasVolumeWax = false;
+  let directWaxcashLiquidityWax = 0;
+  let directWaxLiquidityWax = 0;
+  let hasDirectWaxcashLiquidityWax = false;
+  let hasDirectWaxLiquidityWax = false;
+  let suspiciousLiquidityPairCount = 0;
   const routeIndex = options.routeIndex || buildOgWaxRouteGraph(graphPairRows, priceIndex);
   const selected = selectOgWaxRoutePrice(tokenKey(contract, symbol), routeIndex);
 
-  for (const pair of pairRows || []) {
+  const sortedPairs = (pairRows || [])
+    .slice()
+    .sort((a, b) => String(b?.updated_at || '').localeCompare(String(a?.updated_at || '')));
+
+  for (const pair of dedupePairRows(sortedPairs)) {
     if (!pairTokenSide(pair, contract, symbol)) continue;
     if (!hasRealPairReserves(pair)) continue;
     pairCount += 1;
@@ -5318,10 +5345,23 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
     if (source) sources.add(source);
     const valuation = ogPairReserveValuation(pair, contract, symbol, priceIndex, routeIndex, selected);
     const liquidityWax = asNumber(valuation.contribution_wax);
+    const liquidityUsd = asNumber(valuation.contribution_usd) ?? (liquidityWax != null && waxUsd != null ? liquidityWax * waxUsd : null);
     const volumeWax = volumeWaxFromIndexedPair(pair, priceIndex);
     if (liquidityWax != null) {
-      liquidityWaxTotal += liquidityWax;
-      hasLiquidityWax = true;
+      if (isReasonablePairTvlWax(liquidityWax, waxUsd) && isReasonablePairTvlUsd(liquidityUsd)) {
+        liquidityWaxTotal += liquidityWax;
+        hasLiquidityWax = true;
+        if (pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL)) {
+          directWaxcashLiquidityWax += liquidityWax;
+          hasDirectWaxcashLiquidityWax = true;
+        }
+        if (hasWaxQuoteForToken(pair, contract, symbol)) {
+          directWaxLiquidityWax += liquidityWax;
+          hasDirectWaxLiquidityWax = true;
+        }
+      } else {
+        suspiciousLiquidityPairCount += 1;
+      }
     }
     if (volumeWax != null) {
       volumeWaxTotal += volumeWax;
@@ -5360,12 +5400,17 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   metrics.volume_24h_usd = safeDecimal(volumeUsd);
   metrics.liquidity_wax = safeDecimal(liquidityWax);
   metrics.liquidity_usd = safeDecimal(liquidityUsd);
+  metrics.direct_pair_liquidity_wax = safeDecimal(liquidityWax);
+  metrics.direct_pair_liquidity_usd = safeDecimal(liquidityUsd);
+  metrics.direct_waxcash_pair_liquidity_wax = safeDecimal(hasDirectWaxcashLiquidityWax ? directWaxcashLiquidityWax : null);
+  metrics.direct_wax_pair_liquidity_wax = safeDecimal(hasDirectWaxLiquidityWax ? directWaxLiquidityWax : null);
+  metrics.suspicious_liquidity_pair_count = suspiciousLiquidityPairCount || null;
   metrics.cumulated_pair_liquidity_wax = safeDecimal(liquidityWax);
   metrics.cumulated_pair_liquidity_usd = safeDecimal(liquidityUsd);
   metrics.tvl_wax = safeDecimal(liquidityWax);
   metrics.tvl_usd = safeDecimal(liquidityUsd);
-  metrics.liquidity_basis = hasLiquidityWax ? 'og_wax_route_pool_graph' : null;
-  metrics.tvl_basis = hasLiquidityWax ? 'og_wax_route_pool_graph' : null;
+  metrics.liquidity_basis = hasLiquidityWax ? 'direct_indexed_pair_reserves' : null;
+  metrics.tvl_basis = hasLiquidityWax ? 'direct_indexed_pair_reserves' : null;
   metrics.source_count = sources.size || asNumber(metrics.source_count) || null;
   metrics.indexed_pair_count = pairCount || asNumber(metrics.indexed_pair_count) || null;
   metrics.source_keys = Array.from(sources).sort().join(',');

@@ -188,8 +188,11 @@ ok('live snapshot uses stable contract-symbol token keys',
     volume_24h_usd: '0',
     tvl_usd: '123.45',
     liquidity_wax: '456.78',
-    liquidity_basis: 'og_wax_route_pool_graph',
-    tvl_basis: 'og_wax_route_pool_graph',
+    direct_pair_liquidity_wax: '456.78',
+    direct_waxcash_pair_liquidity_wax: '456.78',
+    suspicious_liquidity_pair_count: '1',
+    liquidity_basis: 'direct_indexed_pair_reserves',
+    tvl_basis: 'direct_indexed_pair_reserves',
     updated_at: '2026-06-14T00:00:00.000Z',
   });
   ok('live token update preserves real zero metric values when reserve proof is present',
@@ -202,6 +205,9 @@ ok('live snapshot uses stable contract-symbol token keys',
     update.metric_status.selected_price.live === true &&
     update.metric_status.liquidity.live === true &&
     update.metric_status.tvl.live === true &&
+    update.direct_pair_liquidity_wax === '456.78' &&
+    update.direct_waxcash_pair_liquidity_wax === '456.78' &&
+    update.suspicious_liquidity_pair_count === 1 &&
     update.change_24h === '0' &&
     update.volume_24h_usd === '0');
 }
@@ -271,6 +277,17 @@ ok('live snapshot rows are reserve-derived before confidence is emitted',
   route.includes('tokens: sortWaxcashGraphTokens(reserveBackedRows).map(normalizeLiveTokenUpdate).filter(Boolean)') &&
   route.includes("const liquidityWax = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.liquidity_wax)) : null") &&
   route.includes("const tvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_wax)) : null"));
+ok('live snapshot liquidity uses sane direct pair reserves instead of route-multiplied TVL',
+  route.includes('const MAX_REASONABLE_PAIR_TVL_WAX = 10000000000') &&
+  route.includes('function isReasonablePairTvlWax') &&
+  route.includes('const sortedPairs = (pairRows || [])') &&
+  route.includes("String(b?.updated_at || '').localeCompare(String(a?.updated_at || ''))") &&
+  route.includes('for (const pair of dedupePairRows(sortedPairs))') &&
+  route.includes('suspiciousLiquidityPairCount += 1') &&
+  route.includes("metrics.liquidity_basis = hasLiquidityWax ? 'direct_indexed_pair_reserves' : null") &&
+  route.includes("metrics.tvl_basis = hasLiquidityWax ? 'direct_indexed_pair_reserves' : null") &&
+  route.includes('direct_waxcash_pair_liquidity_wax') &&
+  route.includes('suspicious_liquidity_pair_count'));
 ok('live snapshot reserve proof is bounded to WAXCASH graph rows',
   route.includes('const OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 2000') &&
   route.includes('const WAXCASH_GRAPH_ROUTE_CONCURRENCY = 8') &&
@@ -1607,6 +1624,28 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       updated_at: '2026-06-14T11:06:30.000Z',
     },
     {
+      source: 'swap.nefty',
+      pair_id: 'WAXCASHAIGOD',
+      token_a_contract: 'graffitiking',
+      token_a_symbol: 'WAXCASH',
+      token_b_contract: 'aigodtokenwx',
+      token_b_symbol: 'AIGOD',
+      reserve_a: '1000',
+      reserve_b: '2251349246008.36',
+      updated_at: '2026-06-14T11:06:35.000Z',
+    },
+    {
+      source: 'swap.taco',
+      pair_id: 'AIGODWAXFAKE',
+      token_a_contract: 'aigodtokenwx',
+      token_a_symbol: 'AIGOD',
+      token_b_contract: 'eosio.token',
+      token_b_symbol: 'WAX',
+      reserve_a: '1',
+      reserve_b: '100',
+      updated_at: '2026-06-14T11:06:40.000Z',
+    },
+    {
       source: 'swap.box',
       pair_id: 'ROUTEHELP',
       token_a_contract: 'route.token',
@@ -1667,6 +1706,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     { contract: 'wuffi', symbol: 'WUF', total_supply: '1000000', circulating_supply: '400000', updated_at: '2026-06-14T11:05:00.000Z' },
     { contract: 'abc.token', symbol: 'ABC', total_supply: '1000000', circulating_supply: '300000', updated_at: '2026-06-14T11:06:00.000Z' },
     { contract: 'route.token', symbol: 'ROUTE', total_supply: '1000000', circulating_supply: '200000', updated_at: '2026-06-14T11:06:30.000Z' },
+    { contract: 'aigodtokenwx', symbol: 'AIGOD', total_supply: '1000000', circulating_supply: '200000', updated_at: '2026-06-14T11:06:35.000Z' },
     { contract: 'help.token', symbol: 'HELP', total_supply: '1000000', circulating_supply: '100000', updated_at: '2026-06-14T11:06:50.000Z' },
     { contract: 'qqq.core', symbol: 'QQQCORE', total_supply: '1000000', circulating_supply: '100000', updated_at: '2026-06-14T11:09:00.000Z' },
     { contract: 'eosio.token', symbol: 'WAX', price_wax: '1', price_usd: '0.006', updated_at: '2026-06-14T11:00:00.000Z' },
@@ -1711,11 +1751,13 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     graphTokenKeys.includes('wuffi::WUF') &&
     graphTokenKeys.includes('abc.token::ABC') &&
     graphTokenKeys.includes('route.token::ROUTE') &&
+    graphTokenKeys.includes('aigodtokenwx::AIGOD') &&
     graphTokenKeys.includes('eosio.token::WAX') &&
     !graphTokenKeys.includes('help.token::HELP') &&
     !graphTokenKeys.includes('qqq.core::QQQCORE') &&
     graphPairIds.includes('WUFWAX150') &&
     graphPairIds.includes('ABCWAX50') &&
+    graphPairIds.includes('AIGODWAXFAKE') &&
     graphPairIds.includes('ROUTEHELP') &&
     graphPairIds.includes('HELPWAX') &&
     !graphPairIds.includes('QQQWAX999'));
@@ -1732,6 +1774,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     graphLiveKeys.includes('wuffi::WUF') &&
     graphLiveKeys.includes('abc.token::ABC') &&
     graphLiveKeys.includes('route.token::ROUTE') &&
+    graphLiveKeys.includes('aigodtokenwx::AIGOD') &&
     graphLiveKeys.includes('eosio.token::WAX') &&
     !graphLiveKeys.includes('help.token::HELP') &&
     !graphLiveKeys.includes('qqq.core::QQQCORE'));
@@ -1742,6 +1785,19 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     Number(routedLiveToken.price_wax) > 0 &&
     Number(routedLiveToken.liquidity_wax) > 0 &&
     Number(routedLiveToken.tvl_wax) > 0);
+  const aigodLiveToken = graphLiveBody.tokens.find((token) => token.token_key === 'aigodtokenwx::AIGOD');
+  const wufLiveToken = graphLiveBody.tokens.find((token) => token.token_key === 'wuffi::WUF');
+  ok('AIGOD-style fake/exploded WAXCASH pair liquidity is excluded from trusted feed ranking',
+    aigodLiveToken &&
+    wufLiveToken &&
+    aigodLiveToken.selected_price_confidence === 'good' &&
+    Number(aigodLiveToken.price_wax) === 100 &&
+    Number(aigodLiveToken.liquidity_wax) === 200 &&
+    Number(aigodLiveToken.tvl_wax) === 200 &&
+    Number(aigodLiveToken.direct_wax_pair_liquidity_wax) === 200 &&
+    aigodLiveToken.direct_waxcash_pair_liquidity_wax == null &&
+    aigodLiveToken.suspicious_liquidity_pair_count === 1 &&
+    Number(aigodLiveToken.selected_metric_value) < Number(wufLiveToken.selected_metric_value));
   const searchedLiveResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
     { DB: graphDb },
     new URLSearchParams('search=WUF'),
@@ -1767,6 +1823,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     searchedWaxcashKeys.includes('graffitiking::WAXCASH') &&
     searchedWaxcashKeys.includes('wuffi::WUF') &&
     searchedWaxcashKeys.includes('route.token::ROUTE') &&
+    searchedWaxcashKeys.includes('aigodtokenwx::AIGOD') &&
     !searchedWaxcashKeys.includes('help.token::HELP') &&
     !searchedWaxcashKeys.includes('qqq.core::QQQCORE'));
   ok('/api/waxonedge/live handler passes search query into the graph-scoped live snapshot loader',
@@ -4297,7 +4354,7 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     routePriceRows,
     graphRows,
   );
-  ok('WUF-style partial aggregate uses OG route-graph price and all eligible reserve value',
+  ok('WUF-style partial aggregate uses OG route-graph price and sane direct reserve liquidity',
     wufStats.aggregate_status === 'Pair liquidity indexed; holder/candle metrics pending' &&
     wufStats.selected_pair_source === 'swap.nefty' &&
     wufStats.selected_pair_id === 'WAXWUFB' &&
@@ -4309,8 +4366,8 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     wufStats.metric_status.fdv.live === true &&
     wufStats.metric_status.market_cap.live === false &&
     wufStats.metric_status.market_cap.requires_circulating_supply === true &&
-    wufStats.tvl_basis === 'og_wax_route_pool_graph' &&
-    wufStats.liquidity_basis === 'og_wax_route_pool_graph' &&
+    wufStats.tvl_basis === 'direct_indexed_pair_reserves' &&
+    wufStats.liquidity_basis === 'direct_indexed_pair_reserves' &&
     wufStats.tvl_liquidity_same_basis === true &&
     wufStats.selected_price_source.includes('swap.nefty') &&
     wufStats.indexed_pair_count === 2 &&
