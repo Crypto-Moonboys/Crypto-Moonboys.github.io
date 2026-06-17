@@ -304,10 +304,15 @@ const PURGE_SUMMARY_PATH = path.join(ROOT, 'js', 'wiki-purge-summary.json');
 if (fs.existsSync(PURGE_SUMMARY_PATH)) {
   const purgeSummary = JSON.parse(fs.readFileSync(PURGE_SUMMARY_PATH, 'utf8'));
   const allowedKeys = new Set([
-    'scanned_pages',
+    'alias_duplicate_candidates',
+    'blocked_noise_pages_found',
     'deleted_noise_pages',
     'protected_pages',
+    'scanned_pages',
     'stale_references_remaining',
+    'total_approved_pages',
+    'unsafe_taxonomy_collapses',
+    'validation_status',
   ]);
   for (const key of Object.keys(purgeSummary)) {
     assert.ok(
@@ -320,11 +325,23 @@ if (fs.existsSync(PURGE_SUMMARY_PATH)) {
       Object.prototype.hasOwnProperty.call(purgeSummary, key),
       `CI FAIL: wiki-purge-summary.json missing required key: ${key}`
     );
-    assert.equal(
-      typeof purgeSummary[key],
-      'number',
-      `CI FAIL: wiki-purge-summary.json key "${key}" must be numeric`
-    );
+    if (key === 'validation_status') {
+      assert.equal(
+        typeof purgeSummary[key],
+        'string',
+        `CI FAIL: wiki-purge-summary.json key "${key}" must be a string`
+      );
+      assert.ok(
+        ['PASS', 'FAIL', 'PENDING_RUN'].includes(purgeSummary[key]),
+        `CI FAIL: wiki-purge-summary.json key "${key}" must be PASS, FAIL, or PENDING_RUN`
+      );
+    } else {
+      assert.equal(
+        typeof purgeSummary[key],
+        'number',
+        `CI FAIL: wiki-purge-summary.json key "${key}" must be numeric`
+      );
+    }
   }
   const summaryBlocked = purgeSummary.stale_references_remaining;
   assert.equal(

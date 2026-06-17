@@ -33,8 +33,8 @@ assert.equal(canonicalizeSlug('graffpunks-24-7'), 'graffpunks-24-7-radio');
 assert.equal(canonicalizeSlug('graffpunks-247-blockchain-radio-station'), 'graffpunks-24-7-radio');
 assert.equal(canonicalizeSlug('the-graffpunks'), 'graffpunks');
 assert.equal(canonicalizeSlug('  HODL-WARS-GAME  '), 'hodl-wars');
-assert.equal(canonicalizeSlug('hodl-x-warriors'), 'hodl-warriors');
-assert.equal(canonicalizeSlug('midevil-hero-arena'), 'midevilpunks');
+assert.equal(canonicalizeSlug('hodl-x-warriors'), 'hodl-x-warriors');
+assert.equal(canonicalizeSlug('midevil-hero-arena'), 'midevil-hero-arena');
 assert.equal(canonicalizeSlug('1m-free-nfts-programme'), '1m-free-nfts-program');
 assert.equal(canonicalizeSlug('one-million-free-nfts'), '1m-free-nfts-program');
 

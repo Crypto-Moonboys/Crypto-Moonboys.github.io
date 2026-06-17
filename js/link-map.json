@@ -1,7 +1,7 @@
 {
-  "/wiki/1m-free-nfts-drop.html": {
+  "/wiki/1m-free-nfts-program.html": {
     "existing_links": [
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/battlemech-blast.html",
       "/wiki/block-topia.html",
       "/wiki/blockchain-technology.html"
@@ -35,13 +35,13 @@
   "/wiki/1m-free-nfts-program.html": {
     "existing_links": [
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/bitcoin.html",
       "/wiki/block-topia.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
-      "/wiki/alfie-blaze.html",
+      "/wiki/1m-free-nfts-program.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/block-node-defenders.html",
       "/wiki/charlie-buster.html",
       "/wiki/crypto-moonboys.html",
@@ -57,7 +57,7 @@
       "/wiki/nfts-non-fungible-tokens.html",
       "/wiki/nfts.html",
       "/wiki/one-million-free-nfts.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/rave-relics.html",
       "/wiki/the-graffpunks.html",
       "/wiki/tokens.html",
@@ -67,12 +67,12 @@
   },
   "/wiki/1m-free-nfts-programme.html": {
     "existing_links": [
-      "/wiki/1m-free-nfts.html",
-      "/wiki/alfie-blaze.html",
+      "/wiki/1m-free-nfts-program.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/block-topia.html",
       "/wiki/burn-to-earn.html",
@@ -92,7 +92,7 @@
       "/wiki/nfts.html",
       "/wiki/null-the-prophet.html",
       "/wiki/one-million-free-nfts.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
       "/wiki/the-graffpunks.html",
@@ -103,10 +103,10 @@
       "/wiki/xrp.html"
     ]
   },
-  "/wiki/1m-free-nfts.html": {
+  "/wiki/1m-free-nfts-program.html": {
     "existing_links": [],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
       "/wiki/crypto-moonboys.html",
@@ -126,7 +126,7 @@
     "suggested_links": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-24-7.html",
@@ -267,8 +267,8 @@
       "/wiki/crypto-moonboys.html"
     ],
     "suggested_links": [
-      "/wiki/alfie-blaze.html",
-      "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-x-kids.html",
@@ -279,13 +279,13 @@
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-graffpunks.html",
       "/wiki/tokens.html"
     ]
   },
-  "/wiki/alfie-blaze.html": {
+  "/wiki/alfie-bitcoin-kid-blaze.html": {
     "existing_links": [
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -294,7 +294,7 @@
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/charlie-buster.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/genesis-kernel.html",
@@ -309,7 +309,7 @@
       "/wiki/midevil-hero-arena.html",
       "/wiki/null-the-prophet.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-gkniftyheads.html",
       "/wiki/the-graffpunks.html",
@@ -317,7 +317,7 @@
       "/wiki/tokens.html"
     ]
   },
-  "/wiki/alfie-the-bitcoin-kid-blaze.html": {
+  "/wiki/alfie-bitcoin-kid-blaze.html": {
     "existing_links": [
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
@@ -325,7 +325,7 @@
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
@@ -386,7 +386,7 @@
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
@@ -431,7 +431,7 @@
       "/wiki/graffpunks-nfts.html",
       "/wiki/medium-articles-by-graffpunks.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
-      "/wiki/no-ball-games-nbg-collection.html",
+      "/wiki/nbg.html",
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
       "/wiki/substack-posts-on-graffpunkssubstackcom.html",
       "/wiki/the-graffpunks.html"
@@ -492,7 +492,7 @@
       "/wiki/nbg.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/rave-relics.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
@@ -600,7 +600,7 @@
     "existing_links": [],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -683,8 +683,8 @@
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/alfie-blaze.html",
-      "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
@@ -706,13 +706,13 @@
   },
   "/wiki/bitcoin-kids.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html"
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/atomichub.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin-kid-army.html",
@@ -738,9 +738,9 @@
       "/wiki/null-the-prophet.html",
       "/wiki/pmsl.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/spirit-borns.html",
       "/wiki/the-bitcoin-kid-army.html",
@@ -795,13 +795,13 @@
   },
   "/wiki/bitcoin-x-kids.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html"
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/block-node-defenders.html",
@@ -818,7 +818,7 @@
       "/wiki/hodl-wars.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-bitcoin-kid-army.html",
       "/wiki/the-graffpunks.html",
@@ -843,7 +843,7 @@
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
@@ -876,7 +876,7 @@
   },
   "/wiki/block-topia.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html"
     ],
@@ -892,7 +892,7 @@
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-24-7.html",
       "/wiki/graffpunks-nfts.html",
@@ -911,9 +911,9 @@
       "/wiki/nbgx.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
       "/wiki/the-gkniftyheads.html",
@@ -1028,7 +1028,7 @@
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
@@ -1047,8 +1047,8 @@
   },
   "/wiki/bone-idol-ink.html": {
     "existing_links": [
-      "/wiki/1m-free-nfts-drop.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/darren-cullen.html"
@@ -1062,7 +1062,7 @@
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/hodl-wars.html",
       "/wiki/the-gkniftyheads.html",
       "/wiki/web3.html"
@@ -1071,14 +1071,14 @@
   "/wiki/burn-to-earn.html": {
     "existing_links": [
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
       "/wiki/1m-free-nfts-program.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/block-topia.html",
       "/wiki/charlie-buster.html",
       "/wiki/crypto-moonboys.html",
@@ -1109,9 +1109,9 @@
       "/wiki/one-million-free-nfts.html",
       "/wiki/pmsl.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/stake-for-gk-tokens.html",
       "/wiki/staking-for-gk-tokens.html",
@@ -1159,7 +1159,7 @@
   },
   "/wiki/charlie-buster.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-topia.html"
@@ -1167,12 +1167,12 @@
     "suggested_links": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/darren-cullen-ser.html",
+      "/wiki/darren-cullen.html",
       "/wiki/darren-cullen.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-24-7.html",
@@ -1195,9 +1195,9 @@
       "/wiki/nbg.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
       "/wiki/substack-posts-on-graffpunkssubstackcom.html",
@@ -1220,7 +1220,7 @@
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/grit.html",
       "/wiki/leake-street-tunnel.html",
       "/wiki/street-kingdoms.html",
@@ -1237,8 +1237,8 @@
   "/wiki/crypto-moonboys.html": {
     "existing_links": [
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
-      "/wiki/alfie-blaze.html",
+      "/wiki/1m-free-nfts-program.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html"
     ],
@@ -1265,9 +1265,9 @@
       "/wiki/medium-articles-by-graffpunks.html",
       "/wiki/midevil-hero-arena.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
-      "/wiki/no-ball-games-nbg-collection.html",
+      "/wiki/nbg.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
@@ -1285,7 +1285,7 @@
       "/wiki/wallets.html"
     ]
   },
-  "/wiki/darren-cullen-ser-real.html": {
+  "/wiki/darren-cullen-real.html": {
     "existing_links": [
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads.html",
@@ -1293,30 +1293,30 @@
       "/wiki/graffiti-queens-in-decentraland.html"
     ],
     "suggested_links": [
-      "/wiki/darren-cullen-ser.html",
+      "/wiki/darren-cullen.html",
       "/wiki/darren-cullen.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html"
     ]
   },
-  "/wiki/darren-cullen-ser.html": {
+  "/wiki/darren-cullen.html": {
     "existing_links": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/darren-cullen.html"
     ],
     "suggested_links": [
-      "/wiki/darren-cullen-ser-real.html",
+      "/wiki/darren-cullen-real.html",
       "/wiki/forkborn-collective.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games-game.html",
       "/wiki/hard-fork-games.html",
@@ -1338,8 +1338,8 @@
     "suggested_links": [
       "/wiki/charlie-buster.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/darren-cullen-ser-real.html",
-      "/wiki/darren-cullen-ser.html",
+      "/wiki/darren-cullen-real.html",
+      "/wiki/darren-cullen.html",
       "/wiki/genesis-spray.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
@@ -1347,7 +1347,7 @@
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-nfts.html",
       "/wiki/graffpunks.html",
       "/wiki/grit.html",
@@ -1357,7 +1357,7 @@
       "/wiki/metropolis.html",
       "/wiki/midevil-hero-arena.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
@@ -1439,13 +1439,13 @@
       "/wiki/gkniftyheads.html"
     ],
     "suggested_links": [
-      "/wiki/darren-cullen-ser-real.html",
+      "/wiki/darren-cullen-real.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
       "/wiki/grit.html",
       "/wiki/hodl-warriors.html",
@@ -1496,7 +1496,7 @@
   "/wiki/drop-xrpl.html": {
     "existing_links": [],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/589-xrpl.html",
       "/wiki/666-xrpl.html",
       "/wiki/bear-xrpl.html",
@@ -1558,10 +1558,10 @@
       "/wiki/web3.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/blockchain-technology.html",
       "/wiki/crypto-exchanges.html",
@@ -1608,10 +1608,10 @@
       "/wiki/web3.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/blockchain-technology.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/defi-decentralised-finance.html",
@@ -1952,7 +1952,7 @@
       "/wiki/grit.html",
       "/wiki/hodl-wars.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/the-graffpunks.html",
       "/wiki/trevor-fung.html",
       "/wiki/xrp.html"
@@ -2024,8 +2024,8 @@
       "/wiki/hard-fork-games-event.html",
       "/wiki/hard-fork-games-game.html",
       "/wiki/hard-fork-games.html",
-      "/wiki/no-ball-games-nbg-collection.html",
-      "/wiki/no-ball-games-nbg.html",
+      "/wiki/nbg.html",
+      "/wiki/nbg.html",
       "/wiki/pixil-mini.html"
     ]
   },
@@ -2049,7 +2049,7 @@
       "/wiki/midevil-hero-arena-game.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
@@ -2066,7 +2066,7 @@
     "suggested_links": [
       "/wiki/blockchain-technology.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-247-blockchain-radio-station.html",
       "/wiki/graffpunks.html",
@@ -2106,7 +2106,7 @@
       "/wiki/hodl-wars.html",
       "/wiki/midevil-hero-arena-game.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
       "/wiki/the-graffpunks.html",
@@ -2136,7 +2136,7 @@
       "/wiki/hodl-wars.html",
       "/wiki/null-the-prophet.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-code-alchemists.html",
       "/wiki/the-graffpunks.html",
@@ -2148,7 +2148,7 @@
   "/wiki/genesis-spray-drop.html": {
     "existing_links": [],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/drop-xrpl.html",
       "/wiki/genesis-kernel.html",
@@ -2159,8 +2159,8 @@
   "/wiki/genesis-spray.html": {
     "existing_links": [
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
-      "/wiki/alfie-blaze.html"
+      "/wiki/1m-free-nfts-program.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html"
     ],
     "suggested_links": [
       "/wiki/1m-free-nfts-program.html",
@@ -2173,14 +2173,14 @@
       "/wiki/burn-to-earn.html",
       "/wiki/charlie-buster.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/darren-cullen-ser.html",
+      "/wiki/darren-cullen.html",
       "/wiki/darren-cullen.html",
       "/wiki/genesis-kernel.html",
       "/wiki/genesis-spray-drop.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-24-7.html",
@@ -2199,10 +2199,10 @@
       "/wiki/metropolis.html",
       "/wiki/midevil-hero-arena.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
-      "/wiki/no-ball-games-nbg-collection.html",
+      "/wiki/nbg.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
@@ -2280,10 +2280,10 @@
       "/wiki/staking.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/fgl-token.html",
       "/wiki/gk.html",
@@ -2315,10 +2315,10 @@
       "/wiki/staking.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/fgl-token.html",
       "/wiki/gk-token.html",
       "/wiki/gk.html",
@@ -2352,7 +2352,7 @@
       "/wiki/gk-tokens.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games-game.html",
       "/wiki/hard-fork-games.html",
@@ -2386,7 +2386,7 @@
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/grit.html",
       "/wiki/hodl-wars.html",
       "/wiki/medium-articles-by-gkniftyheads.html",
@@ -2398,13 +2398,13 @@
   "/wiki/gkniftyheads.html": {
     "existing_links": [
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html"
     ],
     "suggested_links": [
       "/wiki/1m-free-nfts-program.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/block-topia.html",
       "/wiki/burn-to-earn.html",
@@ -2417,7 +2417,7 @@
       "/wiki/gkniftyheads-phase-one-two-three.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-24-7.html",
       "/wiki/graffpunks-collection.html",
@@ -2431,12 +2431,12 @@
       "/wiki/medium-articles-by-gkniftyheads.html",
       "/wiki/midevil-hero-arena.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
-      "/wiki/no-ball-games-nbg-collection.html",
+      "/wiki/nbg.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/spirit-borns.html",
       "/wiki/staking.html",
@@ -2455,15 +2455,15 @@
     ],
     "suggested_links": [
       "/wiki/atomichub-graffpunks-collection.html",
-      "/wiki/darren-cullen-ser-real.html",
-      "/wiki/darren-cullen-ser.html",
+      "/wiki/darren-cullen-real.html",
+      "/wiki/darren-cullen.html",
       "/wiki/forkborn-collective.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-24-7.html",
@@ -2497,7 +2497,7 @@
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html"
+      "/wiki/graffiti-kings.html"
     ]
   },
   "/wiki/graffiti-queens-exhibition.html": {
@@ -2511,7 +2511,7 @@
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html"
+      "/wiki/graffiti-kings.html"
     ]
   },
   "/wiki/graffiti-queens-in-decentraland-ecosystem.html": {
@@ -2524,7 +2524,7 @@
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-ecosystem.html",
       "/wiki/hodl-wars-ecosystem.html"
     ]
@@ -2541,11 +2541,11 @@
       "/wiki/graffiti-nexus.html",
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/the-gkniftyheads.html"
     ]
   },
-  "/wiki/graffitikings.html": {
+  "/wiki/graffiti-kings.html": {
     "existing_links": [
       "/wiki/block-topia.html",
       "/wiki/charlie-buster.html",
@@ -2553,8 +2553,8 @@
       "/wiki/darren-cullen.html"
     ],
     "suggested_links": [
-      "/wiki/darren-cullen-ser-real.html",
-      "/wiki/darren-cullen-ser.html",
+      "/wiki/darren-cullen-real.html",
+      "/wiki/darren-cullen.html",
       "/wiki/forkborn-collective.html",
       "/wiki/genesis-kernel.html",
       "/wiki/gkniftyheads.html",
@@ -2572,7 +2572,7 @@
       "/wiki/hodl-wars.html",
       "/wiki/leake-street-tunnel.html",
       "/wiki/nbg.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
       "/wiki/street-kingdoms.html",
@@ -2639,9 +2639,9 @@
       "/wiki/medium-articles-by-graffpunks.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
@@ -2689,7 +2689,7 @@
       "/wiki/midevil-hero-arena.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/rave-relics.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
@@ -2732,7 +2732,7 @@
   },
   "/wiki/graffpunks-247-radio.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-topia.html",
@@ -2766,9 +2766,9 @@
       "/wiki/midevil-hero-arena.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/rave-relics.html",
       "/wiki/sacred-chain.html",
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
@@ -2812,14 +2812,14 @@
       "/wiki/graffiti-kings.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/atomichub.html",
       "/wiki/blockchain.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-24-7.html",
@@ -2837,7 +2837,7 @@
       "/wiki/neftyblocks-midevilpunks-collection.html",
       "/wiki/nfts-non-fungible-tokens.html",
       "/wiki/nfts.html",
-      "/wiki/no-ball-games-nbg-collection.html",
+      "/wiki/nbg.html",
       "/wiki/one-million-free-nfts.html",
       "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html",
@@ -2851,7 +2851,7 @@
   },
   "/wiki/graffpunks-ecosystem.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
       "/wiki/burn-to-earn.html",
@@ -2864,7 +2864,7 @@
       "/wiki/nbgx.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/xrp-kids.html"
     ],
     "suggested_links": [
@@ -2886,7 +2886,7 @@
       "/wiki/metropolis.html",
       "/wiki/nbg-token.html",
       "/wiki/nbg.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/spirit-borns.html",
       "/wiki/street-kingdoms.html",
@@ -2979,10 +2979,10 @@
   "/wiki/graffpunks-nfts.html": {
     "existing_links": [],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
@@ -3024,7 +3024,7 @@
       "/wiki/nbg-token.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/queen-sarah-pfly.html"
+      "/wiki/queen-sarah-p-fly.html"
     ],
     "suggested_links": [
       "/wiki/block-topia.html",
@@ -3036,7 +3036,7 @@
       "/wiki/grit.html",
       "/wiki/midevil-hero-arena.html",
       "/wiki/nbg.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/staking.html",
       "/wiki/the-graffpunks.html",
@@ -3056,8 +3056,8 @@
   "/wiki/graffpunks.html": {
     "existing_links": [
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
-      "/wiki/alfie-blaze.html"
+      "/wiki/1m-free-nfts-program.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html"
     ],
     "suggested_links": [
       "/wiki/1m-free-nfts-program.html",
@@ -3069,14 +3069,14 @@
       "/wiki/burn-to-earn.html",
       "/wiki/charlie-buster.html",
       "/wiki/crypto-moonboys.html",
-      "/wiki/darren-cullen-ser.html",
+      "/wiki/darren-cullen.html",
       "/wiki/darren-cullen.html",
       "/wiki/dream-sovereign.html",
       "/wiki/genesis-spray.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-24-7.html",
@@ -3102,9 +3102,9 @@
       "/wiki/null-the-prophet.html",
       "/wiki/pmsl.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/rave-relics.html",
       "/wiki/sacred-chain.html",
       "/wiki/spirit-borns.html",
@@ -3173,10 +3173,10 @@
       "/wiki/games4punks-telegram-games.html",
       "/wiki/hard-fork-games-game.html",
       "/wiki/hard-fork-games.html",
-      "/wiki/no-ball-games-nbg-collection.html",
-      "/wiki/no-ball-games-nbg.html",
+      "/wiki/nbg.html",
+      "/wiki/nbg.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/triple-fork-event.html"
     ]
@@ -3191,8 +3191,8 @@
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars-game.html",
       "/wiki/midevil-hero-arena-game.html",
-      "/wiki/no-ball-games-nbg-collection.html",
-      "/wiki/no-ball-games-nbg.html",
+      "/wiki/nbg.html",
+      "/wiki/nbg.html",
       "/wiki/the-hard-fork-rockers.html",
       "/wiki/triple-fork-event.html"
     ]
@@ -3215,11 +3215,11 @@
       "/wiki/hodl-wars.html",
       "/wiki/nbg.html",
       "/wiki/nbgx.html",
-      "/wiki/no-ball-games-nbg-collection.html",
-      "/wiki/no-ball-games-nbg.html",
+      "/wiki/nbg.html",
+      "/wiki/nbg.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-hard-fork-rockers.html",
@@ -3266,7 +3266,7 @@
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/hard-fork-games-game.html",
       "/wiki/hard-fork-games.html",
       "/wiki/metaverse-battles.html",
@@ -3343,7 +3343,7 @@
       "/wiki/hodl-x-warriors.html",
       "/wiki/midevil-hero-arena-game.html",
       "/wiki/midevil-hero-arena.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
       "/wiki/the-bitcoin-kid-army.html",
@@ -3356,8 +3356,8 @@
   },
   "/wiki/hodl-wars-ecosystem.html": {
     "existing_links": [
-      "/wiki/1m-free-nfts-drop.html",
-      "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "/wiki/1m-free-nfts-program.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/block-node-defenders.html",
       "/wiki/games4punks-telegram.html",
       "/wiki/genesis-spray.html",
@@ -3373,11 +3373,11 @@
       "/wiki/sacred-chain.html",
       "/wiki/street-kingdoms.html",
       "/wiki/the-chain-scribes.html",
-      "/wiki/the-crypto-moongirls.html",
+      "/wiki/crypto-moonboys.html",
       "/wiki/the-nice-easy-bois.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/ethereum-ecosystem.html",
@@ -3399,7 +3399,7 @@
   },
   "/wiki/hodl-wars-game.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html"
     ],
@@ -3421,9 +3421,9 @@
       "/wiki/null-the-prophet.html",
       "/wiki/playable-nft-murals.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/rave-relics.html",
       "/wiki/rug-pull-wars.html",
       "/wiki/sacred-chain.html",
@@ -3490,9 +3490,9 @@
       "/wiki/midevil-hero-arena.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
       "/wiki/the-gkniftyheads.html",
@@ -3507,7 +3507,7 @@
       "/wiki/crypto-moonboys.html"
     ],
     "suggested_links": [
-      "/wiki/darren-cullen-ser-real.html",
+      "/wiki/darren-cullen-real.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-24-7.html",
       "/wiki/graffpunks.html",
@@ -3523,7 +3523,7 @@
       "/wiki/midevil-hero-arena.html",
       "/wiki/punk-coin.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/sneakar.html",
       "/wiki/the-graffpunks.html",
@@ -3588,7 +3588,7 @@
     ],
     "suggested_links": [
       "/wiki/blockchain-technology.html",
-      "/wiki/darren-cullen-ser-real.html",
+      "/wiki/darren-cullen-real.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-24-7.html",
       "/wiki/graffpunks-247-blockchain-radio-station.html",
@@ -3605,7 +3605,7 @@
       "/wiki/midevil-hero-arena.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
       "/wiki/the-blockchain-furies.html",
@@ -3644,7 +3644,7 @@
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/hard-fork-games-game.html",
       "/wiki/hard-fork-games.html",
       "/wiki/lady-ink.html",
@@ -3750,7 +3750,7 @@
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/hodl-warriors.html",
       "/wiki/street-kingdoms.html"
     ]
@@ -3824,8 +3824,8 @@
       "/wiki/midevil-hero-arena.html",
       "/wiki/nbg-token.html",
       "/wiki/nbgx-token.html",
-      "/wiki/no-ball-games-nbg-collection.html",
-      "/wiki/no-ball-games-nbg.html",
+      "/wiki/nbg.html",
+      "/wiki/nbg.html",
       "/wiki/pmsl-token.html",
       "/wiki/punk-token.html",
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
@@ -3872,7 +3872,7 @@
   },
   "/wiki/maidstone-base.html": {
     "existing_links": [
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/gkniftyheads.html"
@@ -3880,7 +3880,7 @@
     "suggested_links": [
       "/wiki/gkniftyheads-phase-one-two-three.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/medium-articles-by-gkniftyheads.html",
       "/wiki/metaverse-battles.html",
       "/wiki/the-gkniftyheads.html",
@@ -3948,7 +3948,7 @@
     ],
     "suggested_links": [
       "/wiki/crypto-moonboys.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
       "/wiki/medium-articles-by-gkniftyheads.html",
       "/wiki/medium-articles-by-graffpunks.html",
@@ -4002,7 +4002,7 @@
       "/wiki/gk-token.html",
       "/wiki/gk.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-24-7.html",
@@ -4045,9 +4045,9 @@
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/jillian-godsil.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/staking.html",
       "/wiki/the-graffpunks.html",
       "/wiki/tokens.html"
@@ -4065,7 +4065,7 @@
   },
   "/wiki/midevil-hero-arena.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-topia.html",
@@ -4096,9 +4096,9 @@
       "/wiki/neftyblocks.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
       "/wiki/the-graffpunks.html",
@@ -4129,7 +4129,7 @@
       "/wiki/nbgx.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
       "/wiki/neftyblocks.html",
-      "/wiki/no-ball-games-nbg-collection.html",
+      "/wiki/nbg.html",
       "/wiki/pmsl.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-evm-punks.html",
@@ -4178,8 +4178,8 @@
   "/wiki/nbg-token.html": {
     "existing_links": [
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
-      "/wiki/alfie-blaze.html",
+      "/wiki/1m-free-nfts-program.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html"
     ],
@@ -4207,7 +4207,7 @@
       "/wiki/nbgx-token.html",
       "/wiki/pmsl-token.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
       "/wiki/the-chain-scribes.html",
@@ -4233,13 +4233,13 @@
   "/wiki/nbg.html": {
     "existing_links": [
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/altcoins.html",
       "/wiki/bitcoin-kids.html"
     ],
     "suggested_links": [
       "/wiki/1m-free-nfts-program.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/589-xrpl.html",
       "/wiki/666-xrpl.html",
       "/wiki/bear-xrpl.html",
@@ -4274,9 +4274,9 @@
       "/wiki/pmsl-xrpl.html",
       "/wiki/profit-xrpl.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/sigma-xrpl.html",
       "/wiki/staking.html",
@@ -4322,7 +4322,7 @@
   },
   "/wiki/nbgx.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-topia.html"
@@ -4354,9 +4354,9 @@
       "/wiki/null-the-prophet.html",
       "/wiki/pmsl-token.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/rave-relics.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
@@ -4372,14 +4372,14 @@
     "existing_links": [
       "/wiki/gkniftyheads.html",
       "/wiki/graffpunks.html",
-      "/wiki/punk.html"
+      "/wiki/punk-token.html"
     ],
     "suggested_links": [
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/graffpunks-collection.html",
       "/wiki/neftyblocks.html",
-      "/wiki/no-ball-games-nbg-collection.html",
+      "/wiki/nbg.html",
       "/wiki/punk-coin.html",
       "/wiki/punk-token.html"
     ]
@@ -4387,7 +4387,7 @@
   "/wiki/neftyblocks.html": {
     "existing_links": [],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/drop-xrpl.html",
       "/wiki/genesis-spray-drop.html",
@@ -4411,10 +4411,10 @@
   "/wiki/nfts-non-fungible-tokens.html": {
     "existing_links": [],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/gk-tokens.html",
       "/wiki/graffpunks-nfts.html",
@@ -4452,10 +4452,10 @@
       "/wiki/web3.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/blockchain-technology.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/diamond-hands.html",
@@ -4511,7 +4511,7 @@
       "/wiki/medium-articles-by-gkniftyheads.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
       "/wiki/nifty-wizards.html",
-      "/wiki/no-ball-games-nbg-collection.html",
+      "/wiki/nbg.html",
       "/wiki/staking.html",
       "/wiki/the-gkniftyheads.html"
     ]
@@ -4527,7 +4527,7 @@
       "/wiki/graffpunks-collection.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
       "/wiki/nifty-crowns.html",
-      "/wiki/no-ball-games-nbg-collection.html",
+      "/wiki/nbg.html",
       "/wiki/staking.html",
       "/wiki/tokenomics.html",
       "/wiki/wax-nft-marketplaces.html"
@@ -4539,7 +4539,7 @@
       "/wiki/crypto-moonboys.html"
     ]
   },
-  "/wiki/no-ball-games-nbg-collection.html": {
+  "/wiki/nbg.html": {
     "existing_links": [
       "/wiki/charlie-buster.html",
       "/wiki/crypto-moonboys.html",
@@ -4554,10 +4554,10 @@
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-warriors.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
-      "/wiki/no-ball-games-nbg.html"
+      "/wiki/nbg.html"
     ]
   },
-  "/wiki/no-ball-games-nbg.html": {
+  "/wiki/nbg.html": {
     "existing_links": [
       "/wiki/block-topia.html",
       "/wiki/charlie-buster.html",
@@ -4575,14 +4575,14 @@
       "/wiki/metaverse-battles.html",
       "/wiki/nbg.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
-      "/wiki/no-ball-games-nbg-collection.html",
+      "/wiki/nbg.html",
       "/wiki/street-kingdoms.html",
       "/wiki/xrp.html"
     ]
   },
   "/wiki/null-the-prophet.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html"
     ],
@@ -4620,9 +4620,9 @@
       "/wiki/nbg.html",
       "/wiki/nbgx.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
       "/wiki/substack-posts-on-graffpunkssubstackcom.html",
@@ -4636,10 +4636,10 @@
   "/wiki/one-million-free-nfts.html": {
     "existing_links": [],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/graffpunks-nfts.html",
       "/wiki/nfts-non-fungible-tokens.html",
@@ -4761,7 +4761,7 @@
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-247-blockchain-radio-station.html",
       "/wiki/graffpunks.html",
@@ -4826,7 +4826,7 @@
       "/wiki/gk-token.html",
       "/wiki/gk.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-247-blockchain-radio-station.html",
       "/wiki/graffpunks.html",
@@ -4862,7 +4862,7 @@
       "/wiki/pmsl-xrpl.html",
       "/wiki/pmsl.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
@@ -4904,7 +4904,7 @@
   },
   "/wiki/pmsl.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html",
       "/wiki/block-topia.html"
@@ -4947,7 +4947,7 @@
       "/wiki/pmsl-token.html",
       "/wiki/pmsl-xrpl.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/spirit-borns.html",
       "/wiki/staking.html",
@@ -5000,7 +5000,7 @@
       "/wiki/graffpunks.html",
       "/wiki/hodl-wars.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/wax-blockchain.html",
       "/wiki/xrp.html"
     ]
@@ -5008,8 +5008,8 @@
   "/wiki/punk-token.html": {
     "existing_links": [
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
-      "/wiki/alfie-blaze.html"
+      "/wiki/1m-free-nfts-program.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html"
     ],
     "suggested_links": [
       "/wiki/1m-free-nfts-program.html",
@@ -5031,7 +5031,7 @@
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
       "/wiki/graffiti-nexus.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-24-7.html",
@@ -5060,9 +5060,9 @@
       "/wiki/null-the-prophet.html",
       "/wiki/pmsl-token.html",
       "/wiki/punk-coin.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/rave-relics.html",
       "/wiki/sacred-chain.html",
       "/wiki/staking.html",
@@ -5077,7 +5077,7 @@
       "/wiki/xrp.html"
     ]
   },
-  "/wiki/punk.html": {
+  "/wiki/punk-token.html": {
     "existing_links": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
@@ -5161,18 +5161,18 @@
       "/wiki/hard-fork-games.html",
       "/wiki/hodl-wars.html",
       "/wiki/medium-articles-by-graffpunks.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
-      "/wiki/sarah-pu51fly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
       "/wiki/substack-posts-on-graffpunkssubstackcom.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html"
     ]
   },
-  "/wiki/queen-sarah-pfly.html": {
+  "/wiki/queen-sarah-p-fly.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html"
     ],
@@ -5202,10 +5202,10 @@
       "/wiki/midevil-hero-arena.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
-      "/wiki/sarah-pu51fly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
       "/wiki/substack-posts-on-graffpunkssubstackcom.html",
       "/wiki/the-gkniftyheads.html",
@@ -5236,7 +5236,7 @@
   },
   "/wiki/rave-relics.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html"
@@ -5256,10 +5256,10 @@
       "/wiki/hodl-wars.html",
       "/wiki/midevil-hero-arena.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
-      "/wiki/no-ball-games-nbg-collection.html",
+      "/wiki/nbg.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-graffpunks.html",
       "/wiki/the-sacred-chain.html",
@@ -5320,7 +5320,7 @@
   },
   "/wiki/sacred-chain.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html"
     ],
@@ -5347,9 +5347,9 @@
       "/wiki/midevil-hero-arena.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/staking.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/the-chain-scribes.html",
@@ -5386,23 +5386,23 @@
       "/wiki/triple-fork-event.html"
     ]
   },
-  "/wiki/sarah-pu51fly.html": {
+  "/wiki/queen-sarah-p-fly.html": {
     "existing_links": [
       "/wiki/block-topia.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/darren-cullen.html"
     ],
     "suggested_links": [
-      "/wiki/darren-cullen-ser-real.html",
-      "/wiki/darren-cullen-ser.html",
+      "/wiki/darren-cullen-real.html",
+      "/wiki/darren-cullen.html",
       "/wiki/gkniftyheads.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games-game.html",
       "/wiki/hard-fork-games.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/the-gkniftyheads.html",
       "/wiki/triple-fork-event.html",
       "/wiki/web3.html"
@@ -5422,7 +5422,7 @@
       "/wiki/hard-fork-games-game.html",
       "/wiki/hard-fork-games.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-sacred-chain.html",
       "/wiki/triple-fork-event.html"
@@ -5438,7 +5438,7 @@
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin-kid-army.html",
       "/wiki/bitcoin-kids.html",
@@ -5462,7 +5462,7 @@
     ],
     "suggested_links": [
       "/wiki/graffiti-kings.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
       "/wiki/hard-fork-games-game.html",
       "/wiki/hard-fork-games.html",
@@ -5539,10 +5539,10 @@
       "/wiki/graffpunks.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/gang-signs-card-game.html",
       "/wiki/graffpunks-nfts.html",
       "/wiki/grit.html",
@@ -5589,10 +5589,10 @@
       "/wiki/nfts.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/blockchain-technology.html",
       "/wiki/crypto-moonboys.html",
       "/wiki/defi-decentralised-finance.html",
@@ -5633,7 +5633,7 @@
     "suggested_links": [
       "/wiki/genesis-spray-drop.html",
       "/wiki/genesis-spray.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks.html",
       "/wiki/smart-nft-mechanics.html",
       "/wiki/spraycode-writcode.html",
@@ -5653,7 +5653,7 @@
       "/wiki/graffiti-queens-exhibition.html",
       "/wiki/graffiti-queens-in-decentraland-ecosystem.html",
       "/wiki/graffiti-queens-in-decentraland.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/smart-nft-mechanics.html",
       "/wiki/spraycode-writcode-mechanics.html"
     ]
@@ -5713,7 +5713,7 @@
   },
   "/wiki/staking.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html"
     ],
@@ -5748,9 +5748,9 @@
       "/wiki/null-the-prophet.html",
       "/wiki/punk-coin.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/rave-relics.html",
       "/wiki/sacred-chain.html",
       "/wiki/stake-for-gk-tokens.html",
@@ -5996,8 +5996,8 @@
     ],
     "suggested_links": [
       "/wiki/alfie-bitcoin-kid-blaze.html",
-      "/wiki/alfie-blaze.html",
-      "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-btc.html",
       "/wiki/bitcoin-x-kids.html",
       "/wiki/bitcoin.html",
@@ -6010,7 +6010,7 @@
       "/wiki/metaverse-battles.html",
       "/wiki/nbg.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-gkniftyheads.html",
       "/wiki/the-sacred-chain.html",
@@ -6092,7 +6092,7 @@
       "/wiki/wax-blockchain.html"
     ]
   },
-  "/wiki/the-crypto-moongirls.html": {
+  "/wiki/crypto-moonboys.html": {
     "existing_links": [
       "/wiki/block-topia.html",
       "/wiki/blockchain.html",
@@ -6142,7 +6142,7 @@
   "/wiki/the-evm-punks.html": {
     "existing_links": [
       "/wiki/block-topia.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/the-finance-guild.html",
       "/wiki/the-high-hats.html"
     ],
@@ -6160,7 +6160,7 @@
   "/wiki/the-finance-guild.html": {
     "existing_links": [
       "/wiki/block-topia.html",
-      "/wiki/the-crypto-moongirls.html",
+      "/wiki/crypto-moonboys.html",
       "/wiki/the-evm-punks.html"
     ],
     "suggested_links": [
@@ -6207,14 +6207,14 @@
     ],
     "suggested_links": [
       "/wiki/gkniftyheads-phase-one-two-three.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/hodl-wars.html",
       "/wiki/medium-articles-by-gkniftyheads.html",
       "/wiki/metaverse-battles.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
-      "/wiki/sarah-pu51fly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/the-sacred-chain.html",
       "/wiki/web3.html"
     ]
@@ -6231,7 +6231,7 @@
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/blockchain-technology.html",
       "/wiki/graffiti-kings.html",
-      "/wiki/graffitikings.html",
+      "/wiki/graffiti-kings.html",
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-24-7-radio.html",
       "/wiki/graffpunks-24-7.html",
@@ -6251,7 +6251,7 @@
       "/wiki/metaverse-battles.html",
       "/wiki/playable-nft-murals.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/street-kingdoms.html",
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
       "/wiki/substack-posts-on-graffpunkssubstackcom.html",
@@ -6451,7 +6451,7 @@
       "/wiki/graffpunks-24-7-blockchain-radio-station.html",
       "/wiki/graffpunks-247-blockchain-radio-station.html",
       "/wiki/queen-sarah-p-fly.html",
-      "/wiki/queen-sarah-pfly.html",
+      "/wiki/queen-sarah-p-fly.html",
       "/wiki/sacred-chain.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/the-chain-scribes.html",
@@ -6670,7 +6670,7 @@
   },
   "/wiki/trevor-fung.html": {
     "existing_links": [
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin.html"
     ],
@@ -6696,7 +6696,7 @@
       "/wiki/medium-articles-by-graffpunks.html",
       "/wiki/null-the-prophet.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/rave-relics.html",
       "/wiki/sacred-chain.html",
       "/wiki/substack-posts-on-graffpunks-substack-com.html",
@@ -6798,8 +6798,8 @@
       "/wiki/hard-fork-games.html",
       "/wiki/meme-coins.html",
       "/wiki/memecoins.html",
-      "/wiki/no-ball-games-nbg-collection.html",
-      "/wiki/no-ball-games-nbg.html",
+      "/wiki/nbg.html",
+      "/wiki/nbg.html",
       "/wiki/staking.html",
       "/wiki/the-blockchain-furies.html",
       "/wiki/tokens.html",
@@ -7074,10 +7074,10 @@
       "/wiki/nfts.html"
     ],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bitcoin-kids.html",
       "/wiki/bitcoin-x-kids.html",
@@ -7090,7 +7090,7 @@
       "/wiki/hodl-warriors.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
       "/wiki/nfts-non-fungible-tokens.html",
-      "/wiki/no-ball-games-nbg-collection.html",
+      "/wiki/nbg.html",
       "/wiki/one-million-free-nfts.html",
       "/wiki/xrp-kids-nbg-updates.html",
       "/wiki/xrp-kids.html",
@@ -7120,8 +7120,8 @@
       "/wiki/hard-fork-games.html",
       "/wiki/jelly-xrpl.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
-      "/wiki/no-ball-games-nbg-collection.html",
-      "/wiki/no-ball-games-nbg.html",
+      "/wiki/nbg.html",
+      "/wiki/nbg.html",
       "/wiki/opulence-xrpl.html",
       "/wiki/pmsl-xrpl.html",
       "/wiki/profit-xrpl.html",
@@ -7145,7 +7145,7 @@
     "suggested_links": [
       "/wiki/589-xrpl.html",
       "/wiki/666-xrpl.html",
-      "/wiki/alfie-blaze.html",
+      "/wiki/alfie-bitcoin-kid-blaze.html",
       "/wiki/atomichub-graffpunks-collection.html",
       "/wiki/bear-xrpl.html",
       "/wiki/bitcoin-x-kids.html",
@@ -7164,13 +7164,13 @@
       "/wiki/jelly-xrpl.html",
       "/wiki/nbg.html",
       "/wiki/neftyblocks-midevilpunks-collection.html",
-      "/wiki/no-ball-games-nbg-collection.html",
+      "/wiki/nbg.html",
       "/wiki/null-the-prophet.html",
       "/wiki/opulence-xrpl.html",
       "/wiki/pmsl-xrpl.html",
       "/wiki/profit-xrpl.html",
       "/wiki/punk-token.html",
-      "/wiki/punk.html",
+      "/wiki/punk-token.html",
       "/wiki/sacred-chain.html",
       "/wiki/sigma-xrpl.html",
       "/wiki/spirit-borns.html",
@@ -7191,10 +7191,10 @@
   "/wiki/xrp-ledger.html": {
     "existing_links": [],
     "suggested_links": [
-      "/wiki/1m-free-nfts-drop.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-program.html",
       "/wiki/1m-free-nfts-programme.html",
-      "/wiki/1m-free-nfts.html",
+      "/wiki/1m-free-nfts-program.html",
       "/wiki/589-xrpl.html",
       "/wiki/666-xrpl.html",
       "/wiki/bear-xrpl.html",

@@ -1,5 +1,5 @@
-﻿/**
- * game-registry.js â€” Central registry of all arcade games.
+/**
+ * game-registry.js — Central registry of all arcade games.
  *
  * Each game module registers itself (at module import time) using
  * GameRegistry.register().  The shell and any future listing/routing
@@ -7,9 +7,9 @@
  *
  * Usage:
  *   import { GameRegistry } from '/js/arcade/core/game-registry.js';
- *   GameRegistry.register('snake', { label: 'ðŸ SnakeRun 3008', bootstrap: bootstrapSnake });
- *   GameRegistry.get('snake');   // â†’ { label, bootstrap }
- *   GameRegistry.list();         // â†’ [{ id, label, bootstrap }, â€¦]
+ *   GameRegistry.register('snake', { label: '🐍 SnakeRun 3008', bootstrap: bootstrapSnake });
+ *   GameRegistry.get('snake');   // → { label, bootstrap }
+ *   GameRegistry.list();         // → [{ id, label, bootstrap }, …]
  */
 
 var _registry = new Map();
@@ -26,7 +26,7 @@ export var GameRegistry = {
       return;
     }
     if (_registry.has(id)) {
-      console.warn('[game-registry] duplicate registration for id "' + id + '" â€” overwriting previous entry');
+      console.warn('[game-registry] duplicate registration for id "' + id + '" — overwriting previous entry');
     }
     _registry.set(id, Object.assign({ id: id }, meta));
   },

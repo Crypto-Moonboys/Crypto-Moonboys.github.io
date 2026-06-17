@@ -1,4 +1,4 @@
-﻿import { ArcadeSync } from '/js/arcade-sync.js';
+import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
 import { TETRIS_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
@@ -46,26 +46,26 @@ function createLegacybootstrapTetris(root) {
   const BACK_TO_BACK_CHAIN_STEP_BONUS = 35;
   const MUTATION_CHANCE = 0.18;
 
-  // ── Roguelite / Director constants ────────────────────────────────────────
+  // -- Roguelite / Director constants ----------------------------------------
   const WAVE_SIZE = 5;
   const BOSS_WAVE_EVERY = 5;
   const UPGRADE_DEFS = [
-    { id: 'scoreBoost',  name: '📈 Score Rush',     rarity: 'common',    desc: '+20% score on all line clears this run.',     apply(s) { s.scoreMult += 0.20; } },
-    { id: 'dropSlowdown', name: '🕐 Time Dilation', rarity: 'common',    desc: '-8% drop speed permanently this run.',        apply(s) { s.dropSlowdown += 0.08; } },
-    { id: 'comboBonus',  name: '⛓ Chain Power',     rarity: 'uncommon',  desc: 'Combo multiplier cap +1.',                    apply(s) { s.comboBoostMax += 1; } },
-    { id: 'shield',      name: '🛡 Block Shield',    rarity: 'rare',      desc: 'Next top-out attempt is blocked once.',       apply(s) { s.shieldCharges += 1; } },
-    { id: 'ghost',       name: '👻 Phantom Line',    rarity: 'uncommon',  desc: 'Every 10th clear scores double.',             apply(s) { s.phantomLineBonus += 1; } },
-    { id: 'levelRush',   name: '⚡ Level Rush',      rarity: 'rare',      desc: 'Advance one level instantly and gain score.', apply(s) { s.levelRush += 1; } },
-    { id: 'revive',      name: '💎 Crystal Revive',  rarity: 'legendary', desc: 'One revive token — survives one top-out.',    apply(s) { s.reviveTokens += 1; } },
+    { id: 'scoreBoost',  name: '?? Score Rush',     rarity: 'common',    desc: '+20% score on all line clears this run.',     apply(s) { s.scoreMult += 0.20; } },
+    { id: 'dropSlowdown', name: '?? Time Dilation', rarity: 'common',    desc: '-8% drop speed permanently this run.',        apply(s) { s.dropSlowdown += 0.08; } },
+    { id: 'comboBonus',  name: '? Chain Power',     rarity: 'uncommon',  desc: 'Combo multiplier cap +1.',                    apply(s) { s.comboBoostMax += 1; } },
+    { id: 'shield',      name: '?? Block Shield',    rarity: 'rare',      desc: 'Next top-out attempt is blocked once.',       apply(s) { s.shieldCharges += 1; } },
+    { id: 'ghost',       name: '?? Phantom Line',    rarity: 'uncommon',  desc: 'Every 10th clear scores double.',             apply(s) { s.phantomLineBonus += 1; } },
+    { id: 'levelRush',   name: '? Level Rush',      rarity: 'rare',      desc: 'Advance one level instantly and gain score.', apply(s) { s.levelRush += 1; } },
+    { id: 'revive',      name: '?? Crystal Revive',  rarity: 'legendary', desc: 'One revive token � survives one top-out.',    apply(s) { s.reviveTokens += 1; } },
   ];
   const RARITY_COLORS = { common: '#88ccee', uncommon: '#3fb950', rare: '#f7c948', legendary: '#ff4fd1' };
 
   const TETRIS_EVENTS = [
-    { id: 'speedBurst',   minWave: 2, weight: 1.2, execute(s) { director.eventBoostTimer = 6; addFloatBanner(s, '⚡ SPEED BURST!', '#f7c948'); } },
-    { id: 'garbageLine',  minWave: 3, weight: 1.0, execute(s) { injectGarbageLines(s, 1 + Math.floor((director.intensity || 0) / 40)); addFloatBanner(s, '☣ GARBAGE DROP!', '#ff4fd1'); } },
-    { id: 'mirrorFlip',   minWave: 4, weight: 0.7, execute(s) { director.mirrorTimer = 8; addFloatBanner(s, '🔄 MIRROR MODE!', '#bc8cff'); } },
-    { id: 'powerClear',   minWave: 3, weight: 0.9, execute(s) { triggerPowerClear(s); addFloatBanner(s, '💥 POWER CLEAR!', '#2ec5ff'); } },
-    { id: 'doubleScore',  minWave: 5, weight: 0.8, execute(s) { director.doubleScoreTimer = 10; addFloatBanner(s, '✶ DOUBLE SCORE!', '#ff8c00'); } },
+    { id: 'speedBurst',   minWave: 2, weight: 1.2, execute(s) { director.eventBoostTimer = 6; addFloatBanner(s, '? SPEED BURST!', '#f7c948'); } },
+    { id: 'garbageLine',  minWave: 3, weight: 1.0, execute(s) { injectGarbageLines(s, 1 + Math.floor((director.intensity || 0) / 40)); addFloatBanner(s, '? GARBAGE DROP!', '#ff4fd1'); } },
+    { id: 'mirrorFlip',   minWave: 4, weight: 0.7, execute(s) { director.mirrorTimer = 8; addFloatBanner(s, '?? MIRROR MODE!', '#bc8cff'); } },
+    { id: 'powerClear',   minWave: 3, weight: 0.9, execute(s) { triggerPowerClear(s); addFloatBanner(s, '?? POWER CLEAR!', '#2ec5ff'); } },
+    { id: 'doubleScore',  minWave: 5, weight: 0.8, execute(s) { director.doubleScoreTimer = 10; addFloatBanner(s, '? DOUBLE SCORE!', '#ff8c00'); } },
   ];
 
   const MUTATION_DEFS = [
@@ -136,14 +136,14 @@ function createLegacybootstrapTetris(root) {
   let lastTime = 0;
   let elapsed = 0;
 
-  // ── Faction + modifier state (refreshed each run) ─────────────────────────
+  // -- Faction + modifier state (refreshed each run) -------------------------
   let _tetrisFactionId   = 'unaligned';
   let _tetrisModScoreMult   = 1;
   let _tetrisModShielded    = false;
-  let _tetrisEventRateMult  = 1; // faction chaos modifier × cross-game pressureRate
-  let _tetrisModGoldenBoost = 0; // goldenSpawnBoost modifier — lowers golden mutation threshold
+  let _tetrisEventRateMult  = 1; // faction chaos modifier � cross-game pressureRate
+  let _tetrisModGoldenBoost = 0; // goldenSpawnBoost modifier � lowers golden mutation threshold
 
-  // ── Roguelite run state ────────────────────────────────────────────────────
+  // -- Roguelite run state ----------------------------------------------------
   let wave = 0;
   let lastWaveLevel = 0;
   let phase = 'combat'; // 'combat' | 'upgrade' | 'boss'
@@ -237,7 +237,7 @@ function createLegacybootstrapTetris(root) {
     }
     if (submitInFlight) {
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Submittingâ€¦';
+      submitBtn.textContent = 'Submitting…';
       return;
     }
     if (submittedRunScore) {
@@ -280,7 +280,7 @@ function createLegacybootstrapTetris(root) {
     syncSubmitButton();
   }
 
-  // ── Roguelite / Director helpers ──────────────────────────────────────────
+  // -- Roguelite / Director helpers ------------------------------------------
 
   function initRunState() {
     run = { scoreMult: 1, dropSlowdown: 0, comboBoostMax: 0, shieldCharges: 0, phantomLineBonus: 0, levelRush: 0, reviveTokens: 0 };
@@ -292,7 +292,7 @@ function createLegacybootstrapTetris(root) {
     submittedMeta = false;
     if (bossTimeout !== null) { clearTimeout(bossTimeout); bossTimeout = null; }
 
-    // ── Cross-game modifiers ─────────────────────────────────────────────────
+    // -- Cross-game modifiers -------------------------------------------------
     const crossMods = getActiveModifiers(GAME_ID, TETRIS_CONFIG.crossGameTags || []);
     _tetrisModScoreMult = getStatEffect(crossMods, 'scoreMult', 1);
     _tetrisModShielded  = hasEffect(crossMods, 'shieldedStart');
@@ -300,7 +300,7 @@ function createLegacybootstrapTetris(root) {
     _tetrisModGoldenBoost = getStatEffect(crossMods, 'goldenSpawnBoost', 0);
     if (_tetrisModShielded) run.shieldCharges += 1;
 
-    // ── Faction: refresh faction id, apply starting-shield + event-rate ──────
+    // -- Faction: refresh faction id, apply starting-shield + event-rate ------
     try {
       _tetrisFactionId = getPlayerFaction();
       const _fx = getFactionEffects(_tetrisFactionId);
@@ -375,7 +375,7 @@ function createLegacybootstrapTetris(root) {
     // bossesDefeated incremented only if the player survives the boss wave (timeout fires without game over)
     director.eventBoostTimer = 12;
     injectGarbageLines(null, 2);
-    addFloatBanner(null, '💀 BOSS WAVE!', '#ff4fd1');
+    addFloatBanner(null, '?? BOSS WAVE!', '#ff4fd1');
     playGameSound('level');
     bossTimeout = setTimeout(() => {
       bossTimeout = null;
@@ -409,7 +409,7 @@ function createLegacybootstrapTetris(root) {
       if (gameCard) { gameCard.style.position = 'relative'; gameCard.appendChild(overlayEl); }
     }
     const title = document.createElement('h2');
-    title.textContent = '⬆ WAVE ' + wave + ' CLEAR — CHOOSE UPGRADE';
+    title.textContent = '? WAVE ' + wave + ' CLEAR � CHOOSE UPGRADE';
     title.style.cssText = 'color:#f7c948;margin-bottom:16px;font-size:1rem;text-align:center;';
     const grid = document.createElement('div');
     grid.style.cssText = 'display:flex;flex-direction:column;gap:8px;width:90%;max-width:320px;';
@@ -467,7 +467,7 @@ function createLegacybootstrapTetris(root) {
     const chaos = checkForcedChaos(director);
     if (chaos) {
       injectGarbageLines(null, 1);
-      addFloatBanner(null, '🔥 CHAOS!', '#ff4fd1');
+      addFloatBanner(null, '?? CHAOS!', '#ff4fd1');
     }
     if (director.eventBoostTimer > 0) {
       director.eventBoostTimer -= dt;
@@ -1102,13 +1102,13 @@ function createLegacybootstrapTetris(root) {
     }
   }
 
-  // POST-RUN LOOP AUDIT — Tetris Block Topia
+  // POST-RUN LOOP AUDIT � Tetris Block Topia
   //
   // Game-over detection:  onGameOver() is called when the board fills to the top
   //   (stack overflow).  Guard: the running/gameOver flags prevent re-entry.
   //
-  // Score submission:     await submitRunScore() → await submitScore(player, score, 'tetris')
-  //   — uses the shared post-run path in leaderboard-client.js.
+  // Score submission:     await submitRunScore() ? await submitScore(player, score, 'tetris')
+  //   � uses the shared post-run path in leaderboard-client.js.
   //   Guard: submittedRunScore prevents duplicate submission per run.
   //   A manual "Submit" button also calls submitRunScore() after game-over.
   //
@@ -1152,7 +1152,7 @@ function createLegacybootstrapTetris(root) {
 
     await submitRunScore();
 
-    // ── Faction war contribution ───────────────────────────────────────────
+    // -- Faction war contribution -------------------------------------------
     try {
       if (score > 0 && _tetrisFactionId && _tetrisFactionId !== 'unaligned') {
         const contrib = Math.max(1, Math.floor(score / 100));

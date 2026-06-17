@@ -1,4 +1,4 @@
-﻿import { ArcadeSync } from '/js/arcade-sync.js';
+import { ArcadeSync } from '/js/arcade-sync.js';
 import { submitScore } from '/js/leaderboard-client.js';
 import { PAC_CHAIN_CONFIG } from './config.js';
 import { createGameAdapter, registerGameAdapter, bootstrapFromAdapter } from '/js/arcade/engine/game-adapter.js';
@@ -167,11 +167,11 @@ function createLegacybootstrapPacChain(root) {
   const tileCenter = (t, c) => t * c + c / 2;
   const cloneMaze = (base) => base.map((r) => r.slice());
 
-  // ── Faction + modifier state (refreshed each run) ────────────────────────
+  // -- Faction + modifier state (refreshed each run) ------------------------
   let _pacFactionId      = 'unaligned';
   let _pacModScoreMult   = 1;
-  let _pacEventRateMult  = 1; // faction chaos modifier × cross-game pressureRate
-  let _pacGoldenBoost    = 0; // goldenSpawnBoost modifier — boosts goldenPellet event weight
+  let _pacEventRateMult  = 1; // faction chaos modifier � cross-game pressureRate
+  let _pacGoldenBoost    = 0; // goldenSpawnBoost modifier � boosts goldenPellet event weight
 
   function addBanner(s, text, kind) {
     s.bannerQueue.push({ text, kind: kind || 'event', ttl: 2.1 });
@@ -251,20 +251,20 @@ function createLegacybootstrapPacChain(root) {
     const panel = document.createElement('div');
     panel.className = 'pc-modal';
 
-    // Per-modal Escape handler reference — stored so it can be cleaned up from
+    // Per-modal Escape handler reference � stored so it can be cleaned up from
     // both the close-button click path AND the Escape key path.
     let escHandler = null;
     function cleanupEsc() {
       if (escHandler) { document.removeEventListener('keydown', escHandler); escHandler = null; }
     }
 
-    // Close / skip button — shown for non-required modals (onSkip provided)
+    // Close / skip button � shown for non-required modals (onSkip provided)
     if (typeof onSkip === 'function') {
       const closeBtn = document.createElement('button');
       closeBtn.type = 'button';
       closeBtn.className = 'pc-modal-close';
       closeBtn.setAttribute('aria-label', 'Close');
-      closeBtn.textContent = '×';
+      closeBtn.textContent = '�';
       closeBtn.addEventListener('click', () => { cleanupEsc(); hideModal(); onSkip(); });
       panel.appendChild(closeBtn);
     }
@@ -314,14 +314,14 @@ function createLegacybootstrapPacChain(root) {
       activeRisks: {}, rareUpgradeBoost: 0, stats: { ghostsEaten: 0, highestIntensity: 0, eventsTriggered: 0, eliteDefeated: 0 },
     };
 
-    // ── Cross-game modifiers ─────────────────────────────────────────────────
+    // -- Cross-game modifiers -------------------------------------------------
     const crossMods = getActiveModifiers(GAME_ID, PAC_CHAIN_CONFIG.crossGameTags || []);
     _pacModScoreMult = getStatEffect(crossMods, 'scoreMult', 1);
     const modPressureRate = getStatEffect(crossMods, 'pressureRate', 1);
     _pacGoldenBoost = getStatEffect(crossMods, 'goldenSpawnBoost', 0);
     if (hasEffect(crossMods, 'shieldedStart')) state.run.shieldCharges += 1;
 
-    // ── Faction: refresh faction id, apply starting-shield + event-rate ──────
+    // -- Faction: refresh faction id, apply starting-shield + event-rate ------
     try {
       _pacFactionId = getPlayerFaction();
       const _fx = getFactionEffects(_pacFactionId);
@@ -768,13 +768,13 @@ function createLegacybootstrapPacChain(root) {
     }
     return ArcadeSync.getPlayer();
   }
-  // POST-RUN LOOP AUDIT — Pac-Chain
+  // POST-RUN LOOP AUDIT � Pac-Chain
   //
   // Game-over detection:  onGameOver() is called when the player runs out of
   //   lives (all ghosts catch the player, or maze complete).
   //
   // Score submission:     await submitScore(resolveCompetitivePlayer(), score, GAME_ID)
-  //   — uses the shared post-run path in leaderboard-client.js.
+  //   � uses the shared post-run path in leaderboard-client.js.
   //   Guard: state.submitDone prevents duplicate submission per run.
   //
   // Public leaderboard:   submitScore() always attempts a public leaderboard POST.
@@ -818,7 +818,7 @@ function createLegacybootstrapPacChain(root) {
       state.submitDone = true;
       try { await submitScore(resolveCompetitivePlayer(), state.score, GAME_ID); } catch (_) {}
     }
-    // ── Faction war contribution ───────────────────────────────────────────
+    // -- Faction war contribution -------------------------------------------
     try {
       if (state.score > 0 && _pacFactionId && _pacFactionId !== 'unaligned') {
         const contrib = Math.max(1, Math.floor(state.score / 100));

@@ -43,9 +43,9 @@
       "authority_score": 30
     },
     {
-      "id": "/wiki/queen-sarah-pfly.html",
+      "id": "/wiki/queen-sarah-p-fly.html",
       "title": "Queen Sarah P-Fly — Crypto Moonboys Wiki",
-      "url": "/wiki/queen-sarah-pfly.html",
+      "url": "/wiki/queen-sarah-p-fly.html",
       "category": "characters",
       "rank_score": 709,
       "authority_score": 30
@@ -75,9 +75,9 @@
       "authority_score": 30
     },
     {
-      "id": "/wiki/alfie-blaze.html",
+      "id": "/wiki/alfie-bitcoin-kid-blaze.html",
       "title": "Alfie Blaze — Crypto Moonboys Wiki",
-      "url": "/wiki/alfie-blaze.html",
+      "url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "category": "characters",
       "rank_score": 639,
       "authority_score": 26
@@ -251,9 +251,9 @@
       "authority_score": 30
     },
     {
-      "id": "/wiki/graffitikings.html",
+      "id": "/wiki/graffiti-kings.html",
       "title": "Graffiti Kings — Crypto Moonboys Wiki",
-      "url": "/wiki/graffitikings.html",
+      "url": "/wiki/graffiti-kings.html",
       "category": "characters",
       "rank_score": 418,
       "authority_score": 30
@@ -435,9 +435,9 @@
       "authority_score": 27
     },
     {
-      "id": "/wiki/the-crypto-moongirls.html",
+      "id": "/wiki/crypto-moonboys.html",
       "title": "The CRYPTO MOONGIRLS — Crypto Moonboys Wiki",
-      "url": "/wiki/the-crypto-moongirls.html",
+      "url": "/wiki/crypto-moonboys.html",
       "category": "factions",
       "rank_score": 295,
       "authority_score": 27
@@ -611,7 +611,7 @@
       "weight": 0.92
     },
     {
-      "source": "/wiki/graffitikings.html",
+      "source": "/wiki/graffiti-kings.html",
       "target": "/wiki/diamond-hands.html",
       "score": 92,
       "weight": 0.92
@@ -713,7 +713,7 @@
       "weight": 0.78
     },
     {
-      "source": "/wiki/alfie-blaze.html",
+      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/hodl-warriors.html",
       "score": 76,
       "weight": 0.76
@@ -780,7 +780,7 @@
     },
     {
       "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/graffitikings.html",
+      "target": "/wiki/graffiti-kings.html",
       "score": 72,
       "weight": 0.72
     },
@@ -791,7 +791,7 @@
       "weight": 0.72
     },
     {
-      "source": "/wiki/graffitikings.html",
+      "source": "/wiki/graffiti-kings.html",
       "target": "/wiki/patchwork.html",
       "score": 72,
       "weight": 0.72
@@ -857,7 +857,7 @@
       "weight": 0.61
     },
     {
-      "source": "/wiki/alfie-blaze.html",
+      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/null-the-prophet.html",
       "score": 60,
       "weight": 0.6
@@ -875,7 +875,7 @@
       "weight": 0.6
     },
     {
-      "source": "/wiki/alfie-blaze.html",
+      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/punk-token.html",
       "score": 59,
       "weight": 0.59

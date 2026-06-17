@@ -153,7 +153,7 @@ const CENTRALITY_TIERS = [
 //   Only applied when organicScore > 0 (same rule as all authority boosts).
 //   Calibration examples (DIVISOR=55, CAP=8):
 //     graffpunks  (para=117, lore=112, cqs=103, sect=6) → raw=474 → boost=8
-//     alfie-blaze (para=107, lore=103, cqs=90,  sect=6) → raw=433 → boost=7
+//     alfie-bitcoin-kid-blaze (para=107, lore=103, cqs=90,  sect=6) → raw=433 → boost=7
 //     hodl-wars   (para=39,  lore=34,  cqs=107, sect=6) → raw=244 → boost=4
 //     hodl-warriors(para=24, lore=19,  cqs=103, sect=6) → raw=195 → boost=3
 //     bitcoin-btc (para=5,   lore=0,   cqs=24,  sect=2) → raw=39  → boost=0

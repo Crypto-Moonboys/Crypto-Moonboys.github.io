@@ -601,7 +601,7 @@
         "title": "punk token crypto moonboys wiki"
       }
     ],
-    "rank_score": 692,
+    "rank_score": 696,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -628,9 +628,9 @@
       "word_count_points": 470,
       "keyword_bag_points": 23,
       "content_quality_points": 111,
-      "authority_points": 18,
-      "final_rank_score": 692,
-      "authority_graph_points": 0
+      "authority_points": 22,
+      "final_rank_score": 696,
+      "authority_graph_points": 4
     },
     "search_index": {
       "normalized_title": "punk token crypto moonboys wiki",
@@ -669,10 +669,10 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 67,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 67,
-      "authority": 0
+      "outbound_count": 39,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 32,
+      "authority": 3.5
     },
     "brand": null
   },
@@ -1419,7 +1419,7 @@
         "title": "Nbg Token"
       }
     ],
-    "rank_score": 579,
+    "rank_score": 583,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 2,
@@ -1446,9 +1446,9 @@
       "word_count_points": 350,
       "keyword_bag_points": 24,
       "content_quality_points": 117,
-      "authority_points": 18,
-      "final_rank_score": 579,
-      "authority_graph_points": 0
+      "authority_points": 22,
+      "final_rank_score": 583,
+      "authority_graph_points": 4
     },
     "search_index": {
       "normalized_title": "nbg crypto moonboys wiki",
@@ -1487,10 +1487,10 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 44,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 44,
-      "authority": 0
+      "outbound_count": 25,
+      "existing_outbound_count": 7,
+      "suggested_outbound_count": 18,
+      "authority": 3.5
     },
     "brand": {
       "brand_family": "nbg",
@@ -3829,9 +3829,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 44,
+      "outbound_count": 21,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 37,
+      "suggested_outbound_count": 14,
       "authority": 3.5
     },
     "brand": null
@@ -9540,9 +9540,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 30,
+      "outbound_count": 9,
       "existing_outbound_count": 0,
-      "suggested_outbound_count": 30,
+      "suggested_outbound_count": 9,
       "authority": 0
     },
     "brand": {
@@ -13949,9 +13949,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 34,
+      "outbound_count": 26,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 27,
+      "suggested_outbound_count": 19,
       "authority": 3.5
     },
     "brand": null
@@ -14401,9 +14401,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 43,
+      "outbound_count": 37,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 36,
+      "suggested_outbound_count": 30,
       "authority": 3.5
     },
     "brand": null
@@ -16229,9 +16229,9 @@
     },
     "link_score": {
       "inbound_count": 0,
-      "outbound_count": 25,
+      "outbound_count": 32,
       "existing_outbound_count": 7,
-      "suggested_outbound_count": 18,
+      "suggested_outbound_count": 25,
       "authority": 3.5
     },
     "brand": null

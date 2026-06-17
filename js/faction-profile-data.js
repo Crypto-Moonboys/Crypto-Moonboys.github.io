@@ -109,7 +109,7 @@
       titleLadder: ['Moon Recruit', 'Signal Siren', 'Lunar Elite', 'Queen’s Blade', 'Moon Commander'],
       rogueliteIdentity: 'Control / precision / status',
       relatedLinks: [
-        { label: 'Faction wiki: The Crypto Moongirls', href: '/wiki/the-crypto-moongirls.html' },
+        { label: 'Faction chamber: The Crypto Moongirls', href: '/battle-chamber/factions/crypto-moongirls.html' },
       ],
       joinCtaCopy: 'Join Crypto Moongirls and dominate with precision control.'
     },

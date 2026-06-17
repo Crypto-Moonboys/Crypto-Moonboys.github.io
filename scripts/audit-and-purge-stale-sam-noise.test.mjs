@@ -48,6 +48,7 @@ for (const slug of requiredProtected) {
 
 const approvedCanon = JSON.parse(fs.readFileSync(approvedCanonPath, 'utf8'));
 const approvedSet = new Set((approvedCanon.approved_slugs || []).map((slug) => String(slug)));
+
 for (const slug of requiredProtected) {
   assert.ok(approvedSet.has(slug), `required protected page missing from approved canon: ${slug}`);
 }
@@ -57,6 +58,7 @@ assert.equal(
   0,
   'all *-via-* pages must be deleted from wiki/'
 );
+
 assert.equal(
   wikiFiles.filter((file) => file.startsWith('sam-')).length,
   0,
@@ -67,6 +69,7 @@ const allowedWikiSlugs = new Set(approvedSet);
 for (const slug of requiredProtected) {
   allowedWikiSlugs.add(slug);
 }
+
 const wikiIndexText = fs.readFileSync(wikiIndexPath, 'utf8');
 const entityMapText = fs.readFileSync(entityMapPath, 'utf8');
 const entityGraphText = fs.readFileSync(entityGraphPath, 'utf8');
@@ -81,6 +84,7 @@ for (const slug of wikiSlugs) {
     `unapproved/unprotected wiki page still exists in wiki/: ${slug}.html`
   );
 }
+
 assertAllWikiUrlsResolve(wikiIndexText, 'js/wiki-index.json');
 assertAllWikiUrlsResolve(entityMapText, 'js/entity-map.json');
 assertAllWikiUrlsResolve(entityGraphText, 'js/entity-graph.json');
@@ -90,22 +94,46 @@ assertAllWikiUrlsResolve(q2Text, 'games/data/question_pack_002.json');
 assertAllWikiUrlsResolve(crystalTrailText, 'games/data/crystal-maze-seed.json');
 
 const purgeSummary = JSON.parse(fs.readFileSync(purgeSummaryPath, 'utf8'));
+
 assert.deepEqual(
   Object.keys(purgeSummary).sort(),
-  ['deleted_noise_pages', 'protected_pages', 'scanned_pages', 'stale_references_remaining'],
+  [
+    'alias_duplicate_candidates',
+    'blocked_noise_pages_found',
+    'deleted_noise_pages',
+    'protected_pages',
+    'scanned_pages',
+    'stale_references_remaining',
+    'total_approved_pages',
+    'unsafe_taxonomy_collapses',
+    'validation_status',
+  ],
   'wiki-purge-summary.json must be counts-only'
 );
+
 assert.equal(purgeSummary.stale_references_remaining, 0, 'stale_references_remaining must be 0');
 assert.ok(purgeSummary.deleted_noise_pages >= 0, 'deleted_noise_pages count must be non-negative');
+
 for (const [key, value] of Object.entries(purgeSummary)) {
-  assert.equal(typeof value, 'number', `summary key "${key}" must be numeric`);
+  if (key === 'validation_status') {
+    assert.equal(typeof value, 'string', `summary key "${key}" must be a string`);
+    assert.ok(
+      ['PASS', 'FAIL', 'PENDING_RUN'].includes(value),
+      `summary key "${key}" must be a known status`
+    );
+  } else {
+    assert.equal(typeof value, 'number', `summary key "${key}" must be numeric`);
+  }
+
   assert.ok(!Array.isArray(value), `summary key "${key}" must not be an array/list`);
 }
+
 assert.ok(!Object.prototype.hasOwnProperty.call(purgeSummary, 'deleted'), 'summary must not include deleted slug list');
 assert.ok(!Object.prototype.hasOwnProperty.call(purgeSummary, 'skipped_aliases'), 'summary must not include skipped alias list');
 assert.ok(!Object.prototype.hasOwnProperty.call(purgeSummary, 'blocked'), 'summary must not include blocked slug list');
 
 const audit = JSON.parse(fs.readFileSync(auditPath, 'utf8'));
+
 assert.equal(audit.summary.total, wikiFiles.length, 'wiki publish audit total must match current wiki file count');
 assert.equal(audit.summary.blocked, 0, 'wiki publish audit blocked count must be 0 after purge');
 assert.equal(audit.summary.needs_review, 0, 'wiki publish audit review count must be 0 after purge');

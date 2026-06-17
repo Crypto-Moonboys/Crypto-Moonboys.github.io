@@ -262,8 +262,8 @@
         "/wiki/hard-fork-games-event.html",
         "/wiki/hard-fork-games-game.html",
         "/wiki/the-hard-fork-rockers.html",
-        "/wiki/no-ball-games-nbg.html",
-        "/wiki/no-ball-games-nbg-collection.html"
+        "/wiki/nbg.html",
+        "/wiki/nbg.html"
       ]
     },
     {
@@ -318,8 +318,8 @@
       "recommended_source_pages": []
     },
     {
-      "target_url": "/wiki/darren-cullen-ser-real.html",
-      "target_slug": "darren-cullen-ser-real",
+      "target_url": "/wiki/darren-cullen-real.html",
+      "target_slug": "darren-cullen-real",
       "action_type": "strengthen_cluster_member",
       "priority_score": 123,
       "reasons": [
@@ -645,8 +645,8 @@
       "recommended_source_pages": []
     },
     {
-      "target_url": "/wiki/no-ball-games-nbg-collection.html",
-      "target_slug": "no-ball-games-nbg-collection",
+      "target_url": "/wiki/nbg.html",
+      "target_slug": "nbg",
       "action_type": "strengthen_cluster_member",
       "priority_score": 121,
       "reasons": [
@@ -696,7 +696,7 @@
       "recommended_source_pages": []
     },
     {
-      "target_url": "/wiki/1m-free-nfts.html",
+      "target_url": "/wiki/1m-free-nfts-program.html",
       "target_slug": "1m-free-nfts",
       "action_type": "strengthen_cluster_member",
       "priority_score": 117,
@@ -1057,8 +1057,8 @@
       ]
     },
     {
-      "target_url": "/wiki/no-ball-games-nbg.html",
-      "target_slug": "no-ball-games-nbg",
+      "target_url": "/wiki/nbg.html",
+      "target_slug": "nbg",
       "action_type": "strengthen_cluster_member",
       "priority_score": 110,
       "reasons": [
@@ -1074,7 +1074,7 @@
       "recommended_source_pages": []
     },
     {
-      "target_url": "/wiki/sarah-pu51fly.html",
+      "target_url": "/wiki/queen-sarah-p-fly.html",
       "target_slug": "sarah-pu51fly",
       "action_type": "strengthen_cluster_member",
       "priority_score": 110,
@@ -1319,7 +1319,7 @@
         "/wiki/hard-fork-games.html",
         "/wiki/nfts.html",
         "/wiki/1m-free-nfts-programme.html",
-        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
         "/wiki/1m-free-nfts-program.html"
       ]
     },
@@ -1497,8 +1497,8 @@
       ]
     },
     {
-      "target_url": "/wiki/darren-cullen-ser.html",
-      "target_slug": "darren-cullen-ser",
+      "target_url": "/wiki/darren-cullen.html",
+      "target_slug": "darren-cullen",
       "action_type": "strengthen_cluster_member",
       "priority_score": 108,
       "reasons": [
@@ -1737,7 +1737,7 @@
       "recommended_source_pages": []
     },
     {
-      "target_url": "/wiki/1m-free-nfts-drop.html",
+      "target_url": "/wiki/1m-free-nfts-program.html",
       "target_slug": "1m-free-nfts-drop",
       "action_type": "strengthen_cluster_member",
       "priority_score": 103,
@@ -1754,8 +1754,8 @@
       "recommended_source_pages": []
     },
     {
-      "target_url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
-      "target_slug": "alfie-the-bitcoin-kid-blaze",
+      "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "target_slug": "alfie-bitcoin-kid-blaze",
       "action_type": "strengthen_cluster_member",
       "priority_score": 103,
       "reasons": [
@@ -1922,7 +1922,7 @@
       ]
     },
     {
-      "target_url": "/wiki/punk.html",
+      "target_url": "/wiki/punk-token.html",
       "target_slug": "punk",
       "action_type": "strengthen_cluster_member",
       "priority_score": 102,
@@ -2635,7 +2635,7 @@
       "recommended_source_pages": []
     },
     {
-      "target_url": "/wiki/the-crypto-moongirls.html",
+      "target_url": "/wiki/crypto-moonboys.html",
       "target_slug": "the-crypto-moongirls",
       "action_type": "strengthen_cluster_member",
       "priority_score": 100,
@@ -2938,8 +2938,8 @@
       "recommended_source_pages": []
     },
     {
-      "target_url": "/wiki/graffitikings.html",
-      "target_slug": "graffitikings",
+      "target_url": "/wiki/graffiti-kings.html",
+      "target_slug": "graffiti-kings",
       "action_type": "expand_existing_page",
       "priority_score": 97,
       "reasons": [
@@ -3145,11 +3145,11 @@
       ],
       "cluster_context": "the-whale-lords",
       "recommended_source_pages": [
-        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
         "/wiki/2025-metaverse-launch-party.html",
         "/wiki/aleema-child-of-the-shard.html",
         "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+        "/wiki/alfie-bitcoin-kid-blaze.html"
       ]
     },
     {
@@ -3340,11 +3340,11 @@
       ],
       "cluster_context": "the-whale-lords",
       "recommended_source_pages": [
-        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
         "/wiki/2025-metaverse-launch-party.html",
         "/wiki/aleema-child-of-the-shard.html",
         "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+        "/wiki/alfie-bitcoin-kid-blaze.html"
       ]
     },
     {
@@ -3368,11 +3368,11 @@
       ],
       "cluster_context": "the-whale-lords",
       "recommended_source_pages": [
-        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
         "/wiki/2025-metaverse-launch-party.html",
         "/wiki/aleema-child-of-the-shard.html",
         "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+        "/wiki/alfie-bitcoin-kid-blaze.html"
       ]
     },
     {
@@ -3396,11 +3396,11 @@
       ],
       "cluster_context": "the-whale-lords",
       "recommended_source_pages": [
-        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
         "/wiki/2025-metaverse-launch-party.html",
         "/wiki/aleema-child-of-the-shard.html",
         "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+        "/wiki/alfie-bitcoin-kid-blaze.html"
       ]
     },
     {
@@ -3424,11 +3424,11 @@
       ],
       "cluster_context": "the-whale-lords",
       "recommended_source_pages": [
-        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
         "/wiki/2025-metaverse-launch-party.html",
         "/wiki/aleema-child-of-the-shard.html",
         "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+        "/wiki/alfie-bitcoin-kid-blaze.html"
       ]
     },
     {
@@ -3892,8 +3892,8 @@
       "recommended_source_pages": []
     },
     {
-      "target_url": "/wiki/alfie-blaze.html",
-      "target_slug": "alfie-blaze",
+      "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "target_slug": "alfie-bitcoin-kid-blaze",
       "action_type": "expand_existing_page",
       "priority_score": 75,
       "reasons": [
@@ -4046,8 +4046,8 @@
       "recommended_source_pages": []
     },
     {
-      "target_url": "/wiki/queen-sarah-pfly.html",
-      "target_slug": "queen-sarah-pfly",
+      "target_url": "/wiki/queen-sarah-p-fly.html",
+      "target_slug": "queen-sarah-p-fly",
       "action_type": "expand_existing_page",
       "priority_score": 74,
       "reasons": [
@@ -4284,8 +4284,8 @@
       "cluster_context": "games",
       "recommended_source_pages": [
         "/wiki/hard-fork-games.html",
-        "/wiki/no-ball-games-nbg.html",
-        "/wiki/no-ball-games-nbg-collection.html",
+        "/wiki/nbg.html",
+        "/wiki/nbg.html",
         "/wiki/hard-fork-games-event.html",
         "/wiki/games4punks-telegram-games.html"
       ]
@@ -4328,11 +4328,11 @@
       ],
       "cluster_context": "the-whale-lords",
       "recommended_source_pages": [
-        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
         "/wiki/2025-metaverse-launch-party.html",
         "/wiki/aleema-child-of-the-shard.html",
         "/wiki/alfie-bitcoin-kid-blaze.html",
-        "/wiki/alfie-the-bitcoin-kid-blaze.html"
+        "/wiki/alfie-bitcoin-kid-blaze.html"
       ]
     },
     {
@@ -4442,7 +4442,7 @@
       "cluster_context": "kid",
       "recommended_source_pages": [
         "/wiki/the-bitcoin-kid-army.html",
-        "/wiki/alfie-the-bitcoin-kid-blaze.html",
+        "/wiki/alfie-bitcoin-kid-blaze.html",
         "/wiki/billy-the-goat-kid.html",
         "/wiki/bitcoin-kid-army.html",
         "/wiki/alfie-bitcoin-kid-blaze.html"
@@ -4546,10 +4546,10 @@
       "cluster_context": "free",
       "recommended_source_pages": [
         "/wiki/1m-free-nfts-programme.html",
-        "/wiki/1m-free-nfts-drop.html",
+        "/wiki/1m-free-nfts-program.html",
         "/wiki/1m-free-nfts-program.html",
         "/wiki/one-million-free-nfts.html",
-        "/wiki/1m-free-nfts.html"
+        "/wiki/1m-free-nfts-program.html"
       ]
     },
     {

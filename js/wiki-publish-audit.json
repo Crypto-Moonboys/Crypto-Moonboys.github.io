@@ -1,7 +1,7 @@
 {
   "_generated": "2026-06-13T19:49:09.816Z",
   "summary": {
-    "total": 195,
+    "total": 184,
     "approved": 195,
     "blocked": 0,
     "needs_review": 0,
@@ -74,15 +74,15 @@
       "word_count": 396
     },
     {
-      "slug": "alfie-blaze",
-      "file": "alfie-blaze.html",
+      "slug": "alfie-bitcoin-kid-blaze",
+      "file": "alfie-bitcoin-kid-blaze.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 8269
     },
     {
-      "slug": "alfie-the-bitcoin-kid-blaze",
-      "file": "alfie-the-bitcoin-kid-blaze.html",
+      "slug": "alfie-bitcoin-kid-blaze",
+      "file": "alfie-bitcoin-kid-blaze.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 769
@@ -291,8 +291,8 @@
       "word_count": 3192
     },
     {
-      "slug": "darren-cullen-ser",
-      "file": "darren-cullen-ser.html",
+      "slug": "darren-cullen",
+      "file": "darren-cullen.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 412
@@ -494,8 +494,8 @@
       "word_count": 612
     },
     {
-      "slug": "graffitikings",
-      "file": "graffitikings.html",
+      "slug": "graffiti-kings",
+      "file": "graffiti-kings.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 4327
@@ -767,8 +767,8 @@
       "word_count": 676
     },
     {
-      "slug": "no-ball-games-nbg",
-      "file": "no-ball-games-nbg.html",
+      "slug": "nbg",
+      "file": "nbg.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 293
@@ -865,8 +865,8 @@
       "word_count": 429
     },
     {
-      "slug": "queen-sarah-pfly",
-      "file": "queen-sarah-pfly.html",
+      "slug": "queen-sarah-p-fly",
+      "file": "queen-sarah-p-fly.html",
       "status": "APPROVED_CANON_PAGE",
       "reason": "Manually approved in brand-canon/approved-pages.json.",
       "word_count": 8929

@@ -195,7 +195,7 @@
       "title": "Archives: No Ball Games NBG",
       "difficulty": "easy",
       "clue": "Visit the Moonboys wiki page for No Ball Games NBG. Name the exact subject documented there.",
-      "wiki_url": "/wiki/no-ball-games-nbg.html",
+      "wiki_url": "/wiki/nbg.html",
       "accepted_answers": [
         "NO BALL GAMES NBG"
       ],
@@ -270,7 +270,7 @@
       "title": "Keyword Hunt: Alfie The Bitcoin Kid Blaze",
       "difficulty": "medium",
       "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Alfie The Bitcoin Kid Blaze. What is its canonical name?",
-      "wiki_url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "wiki_url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "accepted_answers": [
         "ALFIE THE BITCOIN KID BLAZE"
       ],
@@ -356,13 +356,13 @@
       }
     },
     {
-      "id": "graffitikings_q4",
-      "title": "Secret File: Graffitikings",
+      "id": "graffiti-kings_q4",
+      "title": "Secret File: graffiti-kings",
       "difficulty": "hard",
-      "clue": "A secret Moonboys file details Graffitikings. Enter the name used to title this article.",
-      "wiki_url": "/wiki/graffitikings.html",
+      "clue": "A secret Moonboys file details graffiti-kings. Enter the name used to title this article.",
+      "wiki_url": "/wiki/graffiti-kings.html",
       "accepted_answers": [
-        "GRAFFITIKINGS"
+        "graffiti-kings"
       ],
       "rewards": {
         "xp": 160,
@@ -420,7 +420,7 @@
       "title": "Keyword Hunt: Queen Sarah Pfly",
       "difficulty": "medium",
       "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Queen Sarah Pfly. What is its canonical name?",
-      "wiki_url": "/wiki/queen-sarah-pfly.html",
+      "wiki_url": "/wiki/queen-sarah-p-fly.html",
       "accepted_answers": [
         "QUEEN SARAH PFLY"
       ],
@@ -570,7 +570,7 @@
       "title": "Keyword Hunt: 1m Free NFTS",
       "difficulty": "medium",
       "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on 1m Free NFTS. What is its canonical name?",
-      "wiki_url": "/wiki/1m-free-nfts.html",
+      "wiki_url": "/wiki/1m-free-nfts-program.html",
       "accepted_answers": [
         "1M FREE NFTS"
       ],
@@ -660,7 +660,7 @@
       "title": "Keyword Hunt: GK Graffpunks",
       "difficulty": "medium",
       "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on GK Graffpunks. What is its canonical name?",
-      "wiki_url": "/wiki/graffitikings.html",
+      "wiki_url": "/wiki/graffiti-kings.html",
       "accepted_answers": [
         "GK GRAFFPUNKS"
       ],
@@ -720,7 +720,7 @@
       "title": "Deep Dive: Alfie The Bitcoin Kid Blaze",
       "difficulty": "medium",
       "clue": "Deep in the wiki archives, Alfie The Bitcoin Kid Blaze is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "wiki_url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "accepted_answers": [
         "ALFIE THE BITCOIN KID BLAZE"
       ],
@@ -855,7 +855,7 @@
       "title": "Archives: Alfie Blaze",
       "difficulty": "easy",
       "clue": "Visit the Moonboys wiki page for Alfie Blaze. Name the exact subject documented there.",
-      "wiki_url": "/wiki/alfie-blaze.html",
+      "wiki_url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "accepted_answers": [
         "ALFIE BLAZE"
       ],
@@ -986,13 +986,13 @@
       }
     },
     {
-      "id": "graffitikings_q2",
-      "title": "Keyword Hunt: Graffitikings",
+      "id": "graffiti-kings_q2",
+      "title": "Keyword Hunt: graffiti-kings",
       "difficulty": "medium",
-      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Graffitikings. What is its canonical name?",
-      "wiki_url": "/wiki/graffitikings.html",
+      "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on graffiti-kings. What is its canonical name?",
+      "wiki_url": "/wiki/graffiti-kings.html",
       "accepted_answers": [
-        "GRAFFITIKINGS"
+        "graffiti-kings"
       ],
       "rewards": {
         "xp": 140,
@@ -1275,7 +1275,7 @@
       "title": "Secret File: Darren Cullen Ser",
       "difficulty": "hard",
       "clue": "A secret Moonboys file details Darren Cullen Ser. Enter the name used to title this article.",
-      "wiki_url": "/wiki/darren-cullen-ser.html",
+      "wiki_url": "/wiki/darren-cullen.html",
       "accepted_answers": [
         "DARREN CULLEN SER"
       ],
@@ -1485,7 +1485,7 @@
       "title": "Keyword Hunt: Punk",
       "difficulty": "medium",
       "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Punk. What is its canonical name?",
-      "wiki_url": "/wiki/punk.html",
+      "wiki_url": "/wiki/punk-token.html",
       "accepted_answers": [
         "PUNK"
       ],
@@ -1575,7 +1575,7 @@
       "title": "Keyword Hunt: Alfie Blaze",
       "difficulty": "medium",
       "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on Alfie Blaze. What is its canonical name?",
-      "wiki_url": "/wiki/alfie-blaze.html",
+      "wiki_url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "accepted_answers": [
         "ALFIE BLAZE"
       ],
@@ -1650,7 +1650,7 @@
       "title": "Keyword Hunt: 1m Free NFTS Drop",
       "difficulty": "medium",
       "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on 1m Free NFTS Drop. What is its canonical name?",
-      "wiki_url": "/wiki/1m-free-nfts-drop.html",
+      "wiki_url": "/wiki/1m-free-nfts-program.html",
       "accepted_answers": [
         "1M FREE NFTS DROP"
       ],
@@ -1770,7 +1770,7 @@
       "title": "Archives: 1m Free NFTS Drop",
       "difficulty": "easy",
       "clue": "Visit the Moonboys wiki page for 1m Free NFTS Drop. Name the exact subject documented there.",
-      "wiki_url": "/wiki/1m-free-nfts-drop.html",
+      "wiki_url": "/wiki/1m-free-nfts-program.html",
       "accepted_answers": [
         "1M FREE NFTS DROP"
       ],
@@ -2235,7 +2235,7 @@
       "title": "Secret File: Alfie Blaze",
       "difficulty": "hard",
       "clue": "A secret Moonboys file details Alfie Blaze. Enter the name used to title this article.",
-      "wiki_url": "/wiki/alfie-blaze.html",
+      "wiki_url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "accepted_answers": [
         "ALFIE BLAZE"
       ],
@@ -2295,7 +2295,7 @@
       "title": "Deep Dive: GK Graffpunks",
       "difficulty": "medium",
       "clue": "Deep in the wiki archives, GK Graffpunks is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/graffitikings.html",
+      "wiki_url": "/wiki/graffiti-kings.html",
       "accepted_answers": [
         "GK GRAFFPUNKS"
       ],
@@ -2460,7 +2460,7 @@
       "title": "Keyword Hunt: No Ball Games NBG",
       "difficulty": "medium",
       "clue": "The Crypto Moonboys encyclopedia has a dedicated entry on No Ball Games NBG. What is its canonical name?",
-      "wiki_url": "/wiki/no-ball-games-nbg.html",
+      "wiki_url": "/wiki/nbg.html",
       "accepted_answers": [
         "NO BALL GAMES NBG"
       ],
@@ -2670,7 +2670,7 @@
       "title": "Deep Dive: Punk",
       "difficulty": "medium",
       "clue": "Deep in the wiki archives, Punk is catalogued. State its precise identifier.",
-      "wiki_url": "/wiki/punk.html",
+      "wiki_url": "/wiki/punk-token.html",
       "accepted_answers": [
         "PUNK"
       ],
@@ -3195,7 +3195,7 @@
       "title": "Secret File: GK Graffpunks",
       "difficulty": "hard",
       "clue": "A secret Moonboys file details GK Graffpunks. Enter the name used to title this article.",
-      "wiki_url": "/wiki/graffitikings.html",
+      "wiki_url": "/wiki/graffiti-kings.html",
       "accepted_answers": [
         "GK GRAFFPUNKS"
       ],

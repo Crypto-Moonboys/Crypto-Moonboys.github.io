@@ -210,7 +210,7 @@
   "unknown_slugs": [
     {
       "slug": "1m-free-nfts-drop",
-      "url": "/wiki/1m-free-nfts-drop.html",
+      "url": "/wiki/1m-free-nfts-program.html",
       "status": "NEEDS_BRAND_REVIEW",
       "in_wiki_index": true,
       "in_entity_map": true,
@@ -218,7 +218,7 @@
     },
     {
       "slug": "1m-free-nfts",
-      "url": "/wiki/1m-free-nfts.html",
+      "url": "/wiki/1m-free-nfts-program.html",
       "status": "NEEDS_BRAND_REVIEW",
       "in_wiki_index": true,
       "in_entity_map": true,
@@ -273,16 +273,16 @@
       "note": "Slug is outside all known brand families; review before adding to taxonomy"
     },
     {
-      "slug": "alfie-blaze",
-      "url": "/wiki/alfie-blaze.html",
+      "slug": "alfie-bitcoin-kid-blaze",
+      "url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "status": "NEEDS_BRAND_REVIEW",
       "in_wiki_index": true,
       "in_entity_map": true,
       "note": "Slug is outside all known brand families; review before adding to taxonomy"
     },
     {
-      "slug": "alfie-the-bitcoin-kid-blaze",
-      "url": "/wiki/alfie-the-bitcoin-kid-blaze.html",
+      "slug": "alfie-bitcoin-kid-blaze",
+      "url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "status": "NEEDS_BRAND_REVIEW",
       "in_wiki_index": true,
       "in_entity_map": true,
@@ -521,16 +521,16 @@
       "note": "Slug is outside all known brand families; review before adding to taxonomy"
     },
     {
-      "slug": "darren-cullen-ser-real",
-      "url": "/wiki/darren-cullen-ser-real.html",
+      "slug": "darren-cullen-real",
+      "url": "/wiki/darren-cullen-real.html",
       "status": "NEEDS_BRAND_REVIEW",
       "in_wiki_index": true,
       "in_entity_map": true,
       "note": "Slug is outside all known brand families; review before adding to taxonomy"
     },
     {
-      "slug": "darren-cullen-ser",
-      "url": "/wiki/darren-cullen-ser.html",
+      "slug": "darren-cullen",
+      "url": "/wiki/darren-cullen.html",
       "status": "NEEDS_BRAND_REVIEW",
       "in_wiki_index": true,
       "in_entity_map": true,
@@ -849,8 +849,8 @@
       "note": "Slug is outside all known brand families; review before adding to taxonomy"
     },
     {
-      "slug": "graffitikings",
-      "url": "/wiki/graffitikings.html",
+      "slug": "graffiti-kings",
+      "url": "/wiki/graffiti-kings.html",
       "status": "NEEDS_BRAND_REVIEW",
       "in_wiki_index": true,
       "in_entity_map": true,
@@ -1241,16 +1241,16 @@
       "note": "Slug is outside all known brand families; review before adding to taxonomy"
     },
     {
-      "slug": "no-ball-games-nbg-collection",
-      "url": "/wiki/no-ball-games-nbg-collection.html",
+      "slug": "nbg",
+      "url": "/wiki/nbg.html",
       "status": "NEEDS_BRAND_REVIEW",
       "in_wiki_index": true,
       "in_entity_map": true,
       "note": "Slug appears brand-related but is not in BRAND_CANON; review for potential alias or new concept"
     },
     {
-      "slug": "no-ball-games-nbg",
-      "url": "/wiki/no-ball-games-nbg.html",
+      "slug": "nbg",
+      "url": "/wiki/nbg.html",
       "status": "NEEDS_BRAND_REVIEW",
       "in_wiki_index": true,
       "in_entity_map": true,
@@ -1378,7 +1378,7 @@
     },
     {
       "slug": "punk",
-      "url": "/wiki/punk.html",
+      "url": "/wiki/punk-token.html",
       "status": "NEEDS_BRAND_REVIEW",
       "in_wiki_index": true,
       "in_entity_map": true,
@@ -1401,8 +1401,8 @@
       "note": "Slug is outside all known brand families; review before adding to taxonomy"
     },
     {
-      "slug": "queen-sarah-pfly",
-      "url": "/wiki/queen-sarah-pfly.html",
+      "slug": "queen-sarah-p-fly",
+      "url": "/wiki/queen-sarah-p-fly.html",
       "status": "NEEDS_BRAND_REVIEW",
       "in_wiki_index": true,
       "in_entity_map": true,
@@ -1474,7 +1474,7 @@
     },
     {
       "slug": "sarah-pu51fly",
-      "url": "/wiki/sarah-pu51fly.html",
+      "url": "/wiki/queen-sarah-p-fly.html",
       "status": "NEEDS_BRAND_REVIEW",
       "in_wiki_index": true,
       "in_entity_map": true,
@@ -1762,7 +1762,7 @@
     },
     {
       "slug": "the-crypto-moongirls",
-      "url": "/wiki/the-crypto-moongirls.html",
+      "url": "/wiki/crypto-moonboys.html",
       "status": "NEEDS_BRAND_REVIEW",
       "in_wiki_index": true,
       "in_entity_map": true,

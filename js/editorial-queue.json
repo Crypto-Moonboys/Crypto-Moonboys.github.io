@@ -175,11 +175,11 @@
       ]
     },
     {
-      "id": "stub-promotion-candidate::alfie-blaze",
+      "id": "stub-promotion-candidate::alfie-bitcoin-kid-blaze",
       "type": "stub-promotion-candidate",
       "title": "Alfie Blaze — Crypto Moonboys Wiki",
-      "url": "/wiki/alfie-blaze.html",
-      "target_url": "/wiki/alfie-blaze.html",
+      "url": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "source": "js/growth-priority.json",
       "confidence": 0.375,
       "status": "pending",
@@ -464,11 +464,11 @@
       ]
     },
     {
-      "id": "stub-promotion-candidate::graffitikings",
+      "id": "stub-promotion-candidate::graffiti-kings",
       "type": "stub-promotion-candidate",
       "title": "Graffiti Kings — Crypto Moonboys Wiki",
-      "url": "/wiki/graffitikings.html",
-      "target_url": "/wiki/graffitikings.html",
+      "url": "/wiki/graffiti-kings.html",
+      "target_url": "/wiki/graffiti-kings.html",
       "source": "js/growth-priority.json",
       "confidence": 0.485,
       "status": "pending",
@@ -852,11 +852,11 @@
       ]
     },
     {
-      "id": "stub-promotion-candidate::queen-sarah-pfly",
+      "id": "stub-promotion-candidate::queen-sarah-p-fly",
       "type": "stub-promotion-candidate",
       "title": "Queen Sarah P-Fly — Crypto Moonboys Wiki",
-      "url": "/wiki/queen-sarah-pfly.html",
-      "target_url": "/wiki/queen-sarah-pfly.html",
+      "url": "/wiki/queen-sarah-p-fly.html",
+      "target_url": "/wiki/queen-sarah-p-fly.html",
       "source": "js/growth-priority.json",
       "confidence": 0.37,
       "status": "pending",

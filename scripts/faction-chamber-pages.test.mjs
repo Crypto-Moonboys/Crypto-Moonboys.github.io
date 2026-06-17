@@ -196,7 +196,7 @@ check(!profileDataJs.includes("label: 'Faction wiki: Hard Fork Games'"), 'profil
 check(!profileDataJs.includes("label: 'Faction wiki: The Princess'"), 'profile data does not mislabel The Princess as faction wiki');
 check(!profileDataJs.includes("label: 'Faction wiki: Blockchain GraffPUNKS'"), 'profile data does not mislabel Blockchain GraffPUNKS as faction wiki');
 check(profileDataJs.includes("href: '/wiki/the-hard-fork-rockers.html'"), 'profile data links Hard Fork Rockers to canonical faction wiki page');
-check(profileDataJs.includes("href: '/wiki/the-crypto-moongirls.html'"), 'profile data links Crypto Moongirls to canonical faction wiki page');
+check(profileDataJs.includes("href: '/battle-chamber/factions/crypto-moongirls.html'"), 'profile data links Crypto Moongirls to canonical faction chamber page');
 check(profileDataJs.includes("href: '/wiki/the-blockchain-furies.html'"), 'profile data links Blockchain Furies to canonical faction wiki page');
 
 const chamberRendererJs = read('/js/faction-chamber-page.js');

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-17T10:54:10.636Z",
+  "generated_at": "2026-06-17T11:12:41.807Z",
   "nodes": [
     {
       "id": "/wiki/1m-free-nfts-program.html",
@@ -718,7 +718,7 @@
       "title": "nbg — Crypto Moonboys Wiki",
       "url": "/wiki/nbg.html",
       "category": "characters",
-      "rank_score": 579,
+      "rank_score": 583,
       "authority_score": 18
     },
     {
@@ -862,7 +862,7 @@
       "title": "punk_token — Crypto Moonboys Wiki",
       "url": "/wiki/punk-token.html",
       "category": "characters",
-      "rank_score": 692,
+      "rank_score": 696,
       "authority_score": 18
     },
     {
@@ -1446,32 +1446,26 @@
     {
       "source": "/wiki/1m-free-nfts-program.html",
       "target": "/wiki/hodl-wars.html",
-      "score": 84,
-      "weight": 0.84
+      "score": 75,
+      "weight": 0.75
+    },
+    {
+      "source": "/wiki/1m-free-nfts-program.html",
+      "target": "/wiki/1m-free-nfts-program.html",
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/1m-free-nfts-program.html",
       "target": "/wiki/ethereum.html",
-      "score": 71,
-      "weight": 0.71
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/1m-free-nfts-program.html",
       "target": "/wiki/solana.html",
-      "score": 69,
-      "weight": 0.69
-    },
-    {
-      "source": "/wiki/1m-free-nfts-program.html",
-      "target": "/wiki/moon-mission.html",
       "score": 67,
       "weight": 0.67
-    },
-    {
-      "source": "/wiki/1m-free-nfts-program.html",
-      "target": "/wiki/pmsl.html",
-      "score": 62,
-      "weight": 0.62
     },
     {
       "source": "/wiki/2025-metaverse-launch-party.html",
@@ -1625,33 +1619,33 @@
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 83,
-      "weight": 0.83
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "score": 86,
+      "weight": 0.86
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/bitcoin-kid-army.html",
-      "score": 74,
-      "weight": 0.74
+      "target": "/wiki/hodl-wars.html",
+      "score": 84,
+      "weight": 0.84
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/the-bitcoin-kid-army.html",
-      "score": 73,
-      "weight": 0.73
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "target": "/wiki/bitcoin-kid-army.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/alfie-bitcoin-kid-blaze.html",
       "target": "/wiki/ethereum.html",
-      "score": 68,
-      "weight": 0.68
-    },
-    {
-      "source": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "target": "/wiki/solana.html",
-      "score": 67,
-      "weight": 0.67
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/alien-worlds-tlm.html",
@@ -2038,12 +2032,6 @@
       "weight": 0.68
     },
     {
-      "source": "/wiki/bitcoin-kid-army.html",
-      "target": "/wiki/solana.html",
-      "score": 67,
-      "weight": 0.67
-    },
-    {
       "source": "/wiki/bitcoin-kids.html",
       "target": "/wiki/hodl-warriors.html",
       "score": 79,
@@ -2339,9 +2327,9 @@
     },
     {
       "source": "/wiki/charlie-buster.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 64,
-      "weight": 0.64
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/croydon-tower-blocks.html",
@@ -2375,33 +2363,33 @@
     },
     {
       "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 81,
-      "weight": 0.81
+      "target": "/wiki/hodl-wars.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/diamond-hands.html",
+      "target": "/wiki/ethereum.html",
+      "score": 73,
+      "weight": 0.73
+    },
+    {
+      "source": "/wiki/crypto-moonboys.html",
+      "target": "/wiki/solana.html",
       "score": 70,
       "weight": 0.7
     },
     {
       "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/punk-token.html",
-      "score": 69,
-      "weight": 0.69
+      "target": "/wiki/moon-mission.html",
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/graffpunks.html",
-      "score": 68,
-      "weight": 0.68
-    },
-    {
-      "source": "/wiki/crypto-moonboys.html",
-      "target": "/wiki/charlie-buster.html",
-      "score": 66,
-      "weight": 0.66
+      "target": "/wiki/the-hard-fork-rockers.html",
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/darren-cullen.html",
@@ -2417,6 +2405,12 @@
     },
     {
       "source": "/wiki/darren-cullen.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "score": 66,
+      "weight": 0.66
+    },
+    {
+      "source": "/wiki/darren-cullen.html",
       "target": "/wiki/charlie-buster.html",
       "score": 66,
       "weight": 0.66
@@ -2424,12 +2418,6 @@
     {
       "source": "/wiki/darren-cullen.html",
       "target": "/wiki/nbgx.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/darren-cullen.html",
-      "target": "/wiki/null-the-prophet.html",
       "score": 64,
       "weight": 0.64
     },
@@ -2987,6 +2975,12 @@
     },
     {
       "source": "/wiki/gang-signs.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "score": 66,
+      "weight": 0.66
+    },
+    {
+      "source": "/wiki/gang-signs.html",
       "target": "/wiki/charlie-buster.html",
       "score": 66,
       "weight": 0.66
@@ -2996,12 +2990,6 @@
       "target": "/wiki/genesis-kernel.html",
       "score": 65,
       "weight": 0.65
-    },
-    {
-      "source": "/wiki/gang-signs.html",
-      "target": "/wiki/nbgx.html",
-      "score": 64,
-      "weight": 0.64
     },
     {
       "source": "/wiki/genesis-kernel.html",
@@ -3017,6 +3005,12 @@
     },
     {
       "source": "/wiki/genesis-kernel.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "score": 66,
+      "weight": 0.66
+    },
+    {
+      "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/charlie-buster.html",
       "score": 66,
       "weight": 0.66
@@ -3024,12 +3018,6 @@
     {
       "source": "/wiki/genesis-kernel.html",
       "target": "/wiki/gang-signs.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/genesis-kernel.html",
-      "target": "/wiki/xrp-kids.html",
       "score": 64,
       "weight": 0.64
     },
@@ -3155,33 +3143,33 @@
     },
     {
       "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 76,
-      "weight": 0.76
+      "target": "/wiki/hodl-warriors.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/ethereum.html",
-      "score": 68,
-      "weight": 0.68
+      "target": "/wiki/diamond-hands.html",
+      "score": 71,
+      "weight": 0.71
     },
     {
       "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/solana.html",
-      "score": 67,
-      "weight": 0.67
-    },
-    {
-      "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
-    },
-    {
-      "source": "/wiki/graffiti-kings.html",
-      "target": "/wiki/games4punks-telegram.html",
+      "target": "/wiki/gang-signs.html",
       "score": 60,
       "weight": 0.6
+    },
+    {
+      "source": "/wiki/graffiti-kings.html",
+      "target": "/wiki/queen-sarah-p-fly.html",
+      "score": 60,
+      "weight": 0.6
+    },
+    {
+      "source": "/wiki/graffiti-kings.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "score": 59,
+      "weight": 0.59
     },
     {
       "source": "/wiki/graffiti-nexus.html",
@@ -3437,6 +3425,12 @@
     },
     {
       "source": "/wiki/hard-fork-games.html",
+      "target": "/wiki/nbg.html",
+      "score": 76,
+      "weight": 0.76
+    },
+    {
+      "source": "/wiki/hard-fork-games.html",
       "target": "/wiki/triple-fork-event.html",
       "score": 76,
       "weight": 0.76
@@ -3446,12 +3440,6 @@
       "target": "/wiki/ethereum.html",
       "score": 71,
       "weight": 0.71
-    },
-    {
-      "source": "/wiki/hard-fork-games.html",
-      "target": "/wiki/solana.html",
-      "score": 70,
-      "weight": 0.7
     },
     {
       "source": "/wiki/harrison-rift.html",
@@ -3557,6 +3545,12 @@
     },
     {
       "source": "/wiki/hodl-warriors.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "score": 66,
+      "weight": 0.66
+    },
+    {
+      "source": "/wiki/hodl-warriors.html",
       "target": "/wiki/charlie-buster.html",
       "score": 66,
       "weight": 0.66
@@ -3566,12 +3560,6 @@
       "target": "/wiki/genesis-kernel.html",
       "score": 65,
       "weight": 0.65
-    },
-    {
-      "source": "/wiki/hodl-warriors.html",
-      "target": "/wiki/gang-signs.html",
-      "score": 64,
-      "weight": 0.64
     },
     {
       "source": "/wiki/hodl-wars.html",
@@ -3707,6 +3695,12 @@
     },
     {
       "source": "/wiki/jodie-zoom-2000.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "score": 62,
+      "weight": 0.62
+    },
+    {
+      "source": "/wiki/jodie-zoom-2000.html",
       "target": "/wiki/charlie-buster.html",
       "score": 62,
       "weight": 0.62
@@ -3714,12 +3708,6 @@
     {
       "source": "/wiki/jodie-zoom-2000.html",
       "target": "/wiki/gang-signs.html",
-      "score": 61,
-      "weight": 0.61
-    },
-    {
-      "source": "/wiki/jodie-zoom-2000.html",
-      "target": "/wiki/patchwork.html",
       "score": 61,
       "weight": 0.61
     },
@@ -3767,6 +3755,12 @@
     },
     {
       "source": "/wiki/lady-ink.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
+      "score": 62,
+      "weight": 0.62
+    },
+    {
+      "source": "/wiki/lady-ink.html",
       "target": "/wiki/charlie-buster.html",
       "score": 62,
       "weight": 0.62
@@ -3774,12 +3768,6 @@
     {
       "source": "/wiki/lady-ink.html",
       "target": "/wiki/gang-signs.html",
-      "score": 61,
-      "weight": 0.61
-    },
-    {
-      "source": "/wiki/lady-ink.html",
-      "target": "/wiki/patchwork.html",
       "score": 61,
       "weight": 0.61
     },
@@ -4085,33 +4073,33 @@
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/nbgx.html",
-      "score": 86,
-      "weight": 0.86
+      "target": "/wiki/hard-fork-games.html",
+      "score": 79,
+      "weight": 0.79
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 78,
-      "weight": 0.78
+      "target": "/wiki/hodl-wars.html",
+      "score": 77,
+      "weight": 0.77
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/diamond-hands.html",
-      "score": 73,
-      "weight": 0.73
+      "target": "/wiki/ethereum.html",
+      "score": 68,
+      "weight": 0.68
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/graffpunks.html",
+      "target": "/wiki/solana.html",
       "score": 67,
       "weight": 0.67
     },
     {
       "source": "/wiki/nbg.html",
-      "target": "/wiki/punk-token.html",
-      "score": 66,
-      "weight": 0.66
+      "target": "/wiki/moon-mission.html",
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/nbgx-token.html",
@@ -4373,13 +4361,13 @@
     },
     {
       "source": "/wiki/null-the-prophet.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 64,
-      "weight": 0.64
+      "target": "/wiki/queen-sarah-p-fly.html",
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/null-the-prophet.html",
-      "target": "/wiki/block-topia.html",
+      "target": "/wiki/bitcoin-kids.html",
       "score": 64,
       "weight": 0.64
     },
@@ -4439,7 +4427,7 @@
     },
     {
       "source": "/wiki/patchwork.html",
-      "target": "/wiki/charlie-buster.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
       "score": 60,
       "weight": 0.6
     },
@@ -4625,33 +4613,33 @@
     },
     {
       "source": "/wiki/punk-token.html",
-      "target": "/wiki/hodl-warriors.html",
-      "score": 72,
-      "weight": 0.72
+      "target": "/wiki/hodl-wars.html",
+      "score": 75,
+      "weight": 0.75
     },
     {
       "source": "/wiki/punk-token.html",
-      "target": "/wiki/diamond-hands.html",
-      "score": 70,
-      "weight": 0.7
-    },
-    {
-      "source": "/wiki/punk-token.html",
-      "target": "/wiki/graffpunks.html",
+      "target": "/wiki/ethereum.html",
       "score": 68,
       "weight": 0.68
     },
     {
       "source": "/wiki/punk-token.html",
-      "target": "/wiki/nbg.html",
-      "score": 61,
-      "weight": 0.61
+      "target": "/wiki/solana.html",
+      "score": 67,
+      "weight": 0.67
     },
     {
       "source": "/wiki/punk-token.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 59,
-      "weight": 0.59
+      "target": "/wiki/games4punks-telegram.html",
+      "score": 65,
+      "weight": 0.65
+    },
+    {
+      "source": "/wiki/punk-token.html",
+      "target": "/wiki/moon-mission.html",
+      "score": 64,
+      "weight": 0.64
     },
     {
       "source": "/wiki/pyralith.html",
@@ -4679,39 +4667,39 @@
     },
     {
       "source": "/wiki/pyralith.html",
-      "target": "/wiki/charlie-buster.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
       "score": 60,
       "weight": 0.6
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/hodl-wars.html",
-      "score": 75,
-      "weight": 0.75
+      "target": "/wiki/hodl-warriors.html",
+      "score": 81,
+      "weight": 0.81
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/ethereum.html",
+      "target": "/wiki/diamond-hands.html",
       "score": 68,
       "weight": 0.68
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/solana.html",
-      "score": 67,
-      "weight": 0.67
+      "target": "/wiki/graffiti-kings.html",
+      "score": 60,
+      "weight": 0.6
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/games4punks-telegram.html",
-      "score": 65,
-      "weight": 0.65
+      "target": "/wiki/ian-harrison.html",
+      "score": 60,
+      "weight": 0.6
     },
     {
       "source": "/wiki/queen-sarah-p-fly.html",
-      "target": "/wiki/moon-mission.html",
-      "score": 64,
-      "weight": 0.64
+      "target": "/wiki/queen-sarah-p-fly.html",
+      "score": 60,
+      "weight": 0.6
     },
     {
       "source": "/wiki/quell.html",
@@ -4949,7 +4937,7 @@
     },
     {
       "source": "/wiki/satorebel.html",
-      "target": "/wiki/charlie-buster.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
       "score": 60,
       "weight": 0.6
     },
@@ -5249,9 +5237,9 @@
     },
     {
       "source": "/wiki/staking.html",
-      "target": "/wiki/bitcoin-kids.html",
-      "score": 64,
-      "weight": 0.64
+      "target": "/wiki/queen-sarah-p-fly.html",
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/stikfamwars.html",
@@ -5508,20 +5496,14 @@
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/alfie-bitcoin-kid-blaze.html",
-      "score": 70,
-      "weight": 0.7
+      "score": 73,
+      "weight": 0.73
     },
     {
       "source": "/wiki/the-bitcoin-kid-army.html",
       "target": "/wiki/ethereum.html",
       "score": 68,
       "weight": 0.68
-    },
-    {
-      "source": "/wiki/the-bitcoin-kid-army.html",
-      "target": "/wiki/solana.html",
-      "score": 67,
-      "weight": 0.67
     },
     {
       "source": "/wiki/the-blockchain-furies.html",
@@ -6473,13 +6455,13 @@
     },
     {
       "source": "/wiki/wallets.html",
-      "target": "/wiki/charlie-buster.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
       "score": 59,
       "weight": 0.59
     },
     {
       "source": "/wiki/wallets.html",
-      "target": "/wiki/graffpunks.html",
+      "target": "/wiki/charlie-buster.html",
       "score": 59,
       "weight": 0.59
     },
@@ -6773,15 +6755,15 @@
     },
     {
       "source": "/wiki/xrp-kids.html",
-      "target": "/wiki/charlie-buster.html",
+      "target": "/wiki/alfie-bitcoin-kid-blaze.html",
       "score": 66,
       "weight": 0.66
     },
     {
       "source": "/wiki/xrp-kids.html",
-      "target": "/wiki/genesis-kernel.html",
-      "score": 65,
-      "weight": 0.65
+      "target": "/wiki/charlie-buster.html",
+      "score": 66,
+      "weight": 0.66
     },
     {
       "source": "/wiki/xrp-ledger.html",

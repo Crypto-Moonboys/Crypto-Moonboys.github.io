@@ -1,5 +1,5 @@
 {
-  "/wiki/1m-free-nfts-drop.html": [
+  "/wiki/1m-free-nfts-program.html": [
     {
       "target_url": "/wiki/crypto-moonboys.html",
       "anchor_text": "Crypto Moonboys",
@@ -43,7 +43,7 @@
       "context_snippet": "In lore, the 1M Free NFTs Programme is framed as a digital uprising, a way to flood Block Topia…"
     },
     {
-      "target_url": "/wiki/1m-free-nfts.html",
+      "target_url": "/wiki/1m-free-nfts-program.html",
       "anchor_text": "1M Free NFTs",
       "match_type": "title",
       "section_type": "lore",
@@ -65,7 +65,7 @@
   ],
   "/wiki/1m-free-nfts-programme.html": [
     {
-      "target_url": "/wiki/1m-free-nfts.html",
+      "target_url": "/wiki/1m-free-nfts-program.html",
       "anchor_text": "1M Free NFTs",
       "match_type": "title",
       "section_type": "lore",
@@ -191,7 +191,7 @@
       "context_snippet": "…his comrades from virtual shackles. As a central figure in the GraffPUNKS saga, Alfie’s actions reverberate through HODL WARS and the…"
     }
   ],
-  "/wiki/alfie-blaze.html": [
+  "/wiki/alfie-bitcoin-kid-blaze.html": [
     {
       "target_url": "/wiki/bitcoin.html",
       "anchor_text": "Bitcoin",
@@ -223,7 +223,7 @@
       "context_snippet": "…ft the allegiance of entire armies. This lore ties Alfie to NULL THE PROPHET, as some speculate the Genesis Error might sense this ancie…"
     }
   ],
-  "/wiki/alfie-the-bitcoin-kid-blaze.html": [
+  "/wiki/alfie-bitcoin-kid-blaze.html": [
     {
       "target_url": "/wiki/bitcoin-kid-army.html",
       "anchor_text": "Bitcoin Kid Army",
@@ -753,7 +753,7 @@
       "context_snippet": "…bout in the darkest corners of Block Topia and hinted at in the GraffPUNKS archives, are believed to be remnants of the Genesis Kernel…"
     }
   ],
-  "/wiki/darren-cullen-ser-real.html": [
+  "/wiki/darren-cullen-real.html": [
     {
       "target_url": "/wiki/graffiti-kings.html",
       "anchor_text": "Graffiti Kings",
@@ -775,7 +775,7 @@
       "context_snippet": "…ral in Kent (2013), collaborated with major brands, founded Graffiti Queens in Decentraland."
     }
   ],
-  "/wiki/darren-cullen-ser.html": [
+  "/wiki/darren-cullen.html": [
     {
       "target_url": "/wiki/crypto-moonboys.html",
       "anchor_text": "Crypto Moonboys",
@@ -1427,7 +1427,7 @@
       "context_snippet": "A pivotal event for The GKniftyHEADS, establishing the metaverse as a battleground for decentral…"
     }
   ],
-  "/wiki/graffitikings.html": [
+  "/wiki/graffiti-kings.html": [
     {
       "target_url": "/wiki/crypto-moonboys.html",
       "anchor_text": "Crypto Moonboys",
@@ -2637,7 +2637,7 @@
   ],
   "/wiki/nbg-token.html": [
     {
-      "target_url": "/wiki/alfie-blaze.html",
+      "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "anchor_text": "Alfie Blaze",
       "match_type": "title",
       "section_type": "lore",
@@ -2807,7 +2807,7 @@
       "context_snippet": "Category: factions. Aliases: nine armies, nine armies crypto moonboys wiki. Tags: nine, armies, crypto, moonboys, wiki."
     }
   ],
-  "/wiki/no-ball-games-nbg-collection.html": [
+  "/wiki/nbg.html": [
     {
       "target_url": "/wiki/charlie-buster.html",
       "anchor_text": "Charlie Buster",
@@ -2829,7 +2829,7 @@
       "context_snippet": "…Games ( ) is an NFT collection by Charlie Buster within the Crypto Moonboys universe, though specific details are limited."
     }
   ],
-  "/wiki/no-ball-games-nbg.html": [
+  "/wiki/nbg.html": [
     {
       "target_url": "/wiki/block-topia.html",
       "anchor_text": "Block Topia",
@@ -3097,7 +3097,7 @@
       "context_snippet": "…el and making it a focal point of intrigue for figures like NULL THE PROPHET."
     }
   ],
-  "/wiki/punk.html": [
+  "/wiki/punk-token.html": [
     {
       "target_url": "/wiki/crypto-moonboys.html",
       "anchor_text": "Crypto Moonboys",
@@ -3193,7 +3193,7 @@
       "context_snippet": "…o grant her the ability to decrypt hidden prophecies within the Sacred Chain, guiding her decisions in steering the factions of Block To…"
     }
   ],
-  "/wiki/queen-sarah-pfly.html": [
+  "/wiki/queen-sarah-p-fly.html": [
     {
       "target_url": "/wiki/graffpunks.html",
       "anchor_text": "GraffPUNKS",
@@ -3397,7 +3397,7 @@
       "context_snippet": "…ke next. Its presence spikes during chaotic events like the Triple Fork Event, where it undermines entire campaigns by turning allies aga…"
     }
   ],
-  "/wiki/sarah-pu51fly.html": [
+  "/wiki/queen-sarah-p-fly.html": [
     {
       "target_url": "/wiki/crypto-moonboys.html",
       "anchor_text": "Crypto Moonboys",
@@ -4055,7 +4055,7 @@
       "context_snippet": "Their arcane interventions can alter metaverse battles, offering protections or curses through cryptic code-based…"
     }
   ],
-  "/wiki/the-crypto-moongirls.html": [
+  "/wiki/crypto-moonboys.html": [
     {
       "target_url": "/wiki/block-topia.html",
       "anchor_text": "Block Topia",
@@ -4797,7 +4797,7 @@
   ],
   "/wiki/trevor-fung.html": [
     {
-      "target_url": "/wiki/alfie-blaze.html",
+      "target_url": "/wiki/alfie-bitcoin-kid-blaze.html",
       "anchor_text": "Alfie Blaze",
       "match_type": "title",
       "section_type": "lore",
