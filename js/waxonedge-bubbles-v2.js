@@ -347,12 +347,14 @@
       if (record.tvlConfidence !== 'good') return null;
       if (record.bubbleTvlUsd != null) return record.bubbleTvlUsd;
       if (record.bubbleTvlWax != null) return record.bubbleTvlWax;
+      if ((record.bubbleSuspiciousLiquidityPairCount || 0) > 0) return null;
       return record.tvlUsd != null ? record.tvlUsd : record.tvlWax;
     }
     if (metric === 'liquidity') {
       if (record.liquidityConfidence !== 'good') return null;
       if (record.bubbleLiquidityUsd != null) return record.bubbleLiquidityUsd;
       if (record.bubbleLiquidityWax != null) return record.bubbleLiquidityWax;
+      if ((record.bubbleSuspiciousLiquidityPairCount || 0) > 0) return null;
       return record.liquidityUsd != null ? record.liquidityUsd : record.liquidityWax;
     }
     if (metric === 'mcap') {
@@ -581,6 +583,7 @@
         bubbleLiquidityUsd: asNum(token.bubble_liquidity_usd),
         bubbleTvlWax: asNum(token.bubble_tvl_wax),
         bubbleTvlUsd: asNum(token.bubble_tvl_usd),
+        bubbleSuspiciousLiquidityPairCount: asNum(token.bubble_suspicious_liquidity_pair_count),
         selectedPriceConfidence: metricConfidenceFrom(token, 'selected_price'),
         liquidityConfidence: metricConfidenceFrom(token, 'liquidity'),
         tvlConfidence: metricConfidenceFrom(token, 'tvl'),
@@ -867,6 +870,7 @@
     changed = assignLiveMetricNumber(record, 'bubbleTvlUsd', update, ['bubble_tvl_usd'], nextTvlConfidence) || changed;
     changed = assignLiveMetricNumber(record, 'bubbleLiquidityWax', update, ['bubble_liquidity_wax'], nextLiquidityConfidence) || changed;
     changed = assignLiveMetricNumber(record, 'bubbleLiquidityUsd', update, ['bubble_liquidity_usd'], nextLiquidityConfidence) || changed;
+    changed = assignLiveNumber(record, 'bubbleSuspiciousLiquidityPairCount', update.bubble_suspicious_liquidity_pair_count) || changed;
     changed = assignLiveMetricNumber(record, 'marketCapWax', update, ['market_cap_wax'], nextMarketCapConfidence) || changed;
     changed = assignLiveMetricNumber(record, 'marketCapUsd', update, ['market_cap_usd'], nextMarketCapConfidence) || changed;
     changed = assignLiveNumber(record, 'indexedPairCount', update.indexed_pair_count) || changed;

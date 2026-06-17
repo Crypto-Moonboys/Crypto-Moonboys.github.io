@@ -218,6 +218,60 @@ ok('live snapshot uses stable contract-symbol token keys',
     update.volume_24h_usd === '0');
 }
 {
+  const update = __waxonedgeTestHooks.normalizeLiveTokenUpdate({
+    contract: 'aigodtokenwx',
+    symbol: 'AIGOD',
+    selected_price_wax: '100',
+    selected_pair_source: 'swap.taco',
+    selected_pair_id: 'AIGODWAXFAKE',
+    liquidity_wax: '600800000',
+    liquidity_usd: '360480000',
+    tvl_wax: '600800000',
+    tvl_usd: '360480000',
+    bubble_liquidity_wax: null,
+    bubble_liquidity_usd: null,
+    bubble_tvl_wax: null,
+    bubble_tvl_usd: null,
+    bubble_suspicious_liquidity_pair_count: '2',
+    liquidity_basis: 'direct_indexed_pair_reserves',
+    tvl_basis: 'direct_indexed_pair_reserves',
+    updated_at: '2026-06-14T00:00:00.000Z',
+  });
+  ok('live token update treats null bubble-safe liquidity/TVL as intentional and does not fall back to aggregate totals',
+    update &&
+    update.token_key === 'aigodtokenwx::AIGOD' &&
+    update.liquidity_wax === '600800000' &&
+    update.tvl_wax === '600800000' &&
+    update.bubble_liquidity_wax === null &&
+    update.bubble_liquidity_usd === null &&
+    update.bubble_tvl_wax === null &&
+    update.bubble_tvl_usd === null &&
+    update.bubble_suspicious_liquidity_pair_count === 2);
+}
+{
+  const update = __waxonedgeTestHooks.normalizeLiveTokenUpdate({
+    contract: 'legacy.token',
+    symbol: 'LEGACY',
+    selected_price_wax: '1',
+    selected_pair_source: 'swap.taco',
+    selected_pair_id: 'LEGACYWAX',
+    liquidity_wax: '321',
+    liquidity_usd: '192.6',
+    tvl_wax: '321',
+    tvl_usd: '192.6',
+    liquidity_basis: 'direct_indexed_pair_reserves',
+    tvl_basis: 'direct_indexed_pair_reserves',
+    updated_at: '2026-06-14T00:00:00.000Z',
+  });
+  ok('live token update keeps undefined legacy bubble-safe fields falling back to aggregate liquidity/TVL',
+    update &&
+    update.token_key === 'legacy.token::LEGACY' &&
+    update.bubble_liquidity_wax === '321' &&
+    update.bubble_liquidity_usd === '192.6' &&
+    update.bubble_tvl_wax === '321' &&
+    update.bubble_tvl_usd === '192.6');
+}
+{
   const preciseMarketCapWax = '12345678901234567890.123456789';
   const preciseMarketCapUsd = '98765432109876543210.987654321';
   const update = __waxonedgeTestHooks.normalizeLiveTokenUpdate({
@@ -288,6 +342,11 @@ ok('live snapshot liquidity uses sane direct pair reserves instead of route-mult
   route.includes('const MAX_BUBBLE_LIQUIDITY_TO_MARKET_CAP_RATIO = 5') &&
   route.includes('function isReasonablePairTvlWax') &&
   route.includes('function isReasonableBubbleLiquidity') &&
+  route.includes('row.bubble_liquidity_wax !== undefined ? row.bubble_liquidity_wax : row.liquidity_wax') &&
+  route.includes('row.bubble_liquidity_usd !== undefined ? row.bubble_liquidity_usd : row.liquidity_usd') &&
+  route.includes('row.bubble_tvl_wax !== undefined ? row.bubble_tvl_wax : row.tvl_wax') &&
+  route.includes('row.bubble_tvl_usd !== undefined ? row.bubble_tvl_usd : row.tvl_usd') &&
+  !route.includes('row.bubble_liquidity_wax ?? row.liquidity_wax') &&
   route.includes('const sortedPairs = (pairRows || [])') &&
   route.includes("String(b?.updated_at || '').localeCompare(String(a?.updated_at || ''))") &&
   route.includes('for (const pair of dedupePairRows(sortedPairs))') &&

@@ -4046,10 +4046,18 @@ function normalizeLiveTokenUpdate(row) {
   const liquidityUsd = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.liquidity_usd)) : null;
   const tvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_wax)) : null;
   const tvlUsd = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_usd)) : null;
-  const bubbleLiquidityWax = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.bubble_liquidity_wax ?? row.liquidity_wax)) : null;
-  const bubbleLiquidityUsd = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.bubble_liquidity_usd ?? row.liquidity_usd)) : null;
-  const bubbleTvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.bubble_tvl_wax ?? row.tvl_wax)) : null;
-  const bubbleTvlUsd = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.bubble_tvl_usd ?? row.tvl_usd)) : null;
+  const bubbleLiquidityWax = proof.liquidity_confidence === 'good'
+    ? safeDecimal(asNumber(row.bubble_liquidity_wax !== undefined ? row.bubble_liquidity_wax : row.liquidity_wax))
+    : null;
+  const bubbleLiquidityUsd = proof.liquidity_confidence === 'good'
+    ? safeDecimal(asNumber(row.bubble_liquidity_usd !== undefined ? row.bubble_liquidity_usd : row.liquidity_usd))
+    : null;
+  const bubbleTvlWax = proof.tvl_confidence === 'good'
+    ? safeDecimal(asNumber(row.bubble_tvl_wax !== undefined ? row.bubble_tvl_wax : row.tvl_wax))
+    : null;
+  const bubbleTvlUsd = proof.tvl_confidence === 'good'
+    ? safeDecimal(asNumber(row.bubble_tvl_usd !== undefined ? row.bubble_tvl_usd : row.tvl_usd))
+    : null;
   const marketCapLive = proof.metric_status?.market_cap?.live === true;
   const marketCapWax = marketCapLive ? safeDecimal(row.market_cap_wax) : null;
   const marketCapUsd = marketCapLive ? safeDecimal(row.market_cap_usd) : null;
