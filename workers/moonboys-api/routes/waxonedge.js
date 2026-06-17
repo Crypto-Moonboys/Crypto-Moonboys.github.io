@@ -4087,6 +4087,7 @@ function parseLiveSince(value) {
 async function listLiveTokenUpdates(db, options = {}) {
   const parsedCursor = parseLiveCursor(options.cursor);
   const parsedSince = parsedCursor.cursor ? { since: null, warning: null } : parseLiveSince(options.since);
+  const search = safeString(options.search) || '';
   const filters = [];
   const params = [];
   if (parsedCursor.cursor) {
@@ -4107,48 +4108,131 @@ async function listLiveTokenUpdates(db, options = {}) {
     filters.push(`updated_at > ?`);
     params.push(parsedSince.since);
   }
+  if (search) {
+    const searchLower = search.toLowerCase();
+    const searchSymbol = normalizeSymbol(search);
+    const searchLike = `%${searchLower}%`;
+    filters.push(`(
+      LOWER(contract) = ?
+      OR UPPER(symbol) = ?
+      OR LOWER(contract || '::' || symbol) = ?
+      OR LOWER(contract) LIKE ?
+      OR LOWER(symbol) LIKE ?
+      OR LOWER(contract || '::' || symbol) LIKE ?
+    )`);
+    params.push(searchLower, searchSymbol, searchLower, searchLike, searchLike, searchLike);
+  }
   params.push(clampInteger(options.limit, LIVE_SNAPSHOT_TOKEN_LIMIT, 1, LIVE_SNAPSHOT_TOKEN_LIMIT));
-  const rows = await db.prepare(
-    `SELECT *
-     FROM (
-       SELECT t.contract AS contract, t.symbol AS symbol,
-              t.price_wax AS price_wax, t.price_usd AS price_usd,
-              t.decimals AS decimals,
-              t.total_supply AS total_supply,
-              t.max_supply AS max_supply,
-              t.pair_count AS pair_count,
-              t.updated_at AS token_updated_at,
-              s.selected_price_wax AS selected_price_wax,
-              s.selected_price_usd AS selected_price_usd,
-              s.change_24h AS change_24h,
-              s.volume_24h AS volume_24h,
-              s.volume_24h_wax AS volume_24h_wax,
-              s.volume_24h_usd AS volume_24h_usd,
-              s.tvl_wax AS tvl_wax,
-              s.tvl_usd AS tvl_usd,
-              s.liquidity_wax AS liquidity_wax,
-              s.liquidity_usd AS liquidity_usd,
-              s.holder_count AS holder_count,
-              s.circulating_supply AS circulating_supply,
-              s.burned_amount AS burned_amount,
-              s.market_cap_wax AS market_cap_wax,
-              s.market_cap_usd AS market_cap_usd,
-              s.fdv_wax AS fdv_wax,
-              s.fdv_usd AS fdv_usd,
-              s.selected_pair_source AS selected_pair_source,
-              s.selected_pair_id AS selected_pair_id,
-              s.indexed_pair_count AS indexed_pair_count,
-              s.source_count AS source_count,
-              s.source_keys AS source_keys,
-              COALESCE(s.updated_at, t.updated_at) AS updated_at
-       FROM waxonedge_tokens t
-       LEFT JOIN waxonedge_token_stats s
-         ON s.contract = t.contract AND s.symbol = t.symbol
-     ) live_rows
-     ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
-     ORDER BY updated_at ASC, contract ASC, symbol ASC
-     LIMIT ?`
-  ).bind(...params).all();
+  const liveRowsSql = search
+    ? `WITH pair_token_rows AS (
+         SELECT token_a_contract AS contract, token_a_symbol AS symbol, updated_at
+         FROM waxonedge_pairs
+         WHERE token_a_contract IS NOT NULL AND token_a_symbol IS NOT NULL
+         UNION ALL
+         SELECT token_b_contract AS contract, token_b_symbol AS symbol, updated_at
+         FROM waxonedge_pairs
+         WHERE token_b_contract IS NOT NULL AND token_b_symbol IS NOT NULL
+       ),
+       pair_tokens AS (
+         SELECT contract, symbol, MAX(updated_at) AS pair_updated_at, COUNT(*) AS pair_count
+         FROM pair_token_rows
+         GROUP BY contract, symbol
+       ),
+       candidate_rows AS (
+         SELECT contract, symbol, updated_at AS candidate_updated_at, pair_count AS candidate_pair_count
+         FROM waxonedge_tokens
+         UNION ALL
+         SELECT contract, symbol, pair_updated_at AS candidate_updated_at, pair_count AS candidate_pair_count
+         FROM pair_tokens
+       ),
+       live_candidates AS (
+         SELECT contract, symbol,
+                MAX(candidate_updated_at) AS candidate_updated_at,
+                MAX(candidate_pair_count) AS candidate_pair_count
+         FROM candidate_rows
+         GROUP BY contract, symbol
+       )
+       SELECT *
+       FROM (
+         SELECT c.contract AS contract, c.symbol AS symbol,
+                t.price_wax AS price_wax, t.price_usd AS price_usd,
+                t.decimals AS decimals,
+                t.total_supply AS total_supply,
+                t.max_supply AS max_supply,
+                COALESCE(t.pair_count, c.candidate_pair_count) AS pair_count,
+                t.updated_at AS token_updated_at,
+                s.selected_price_wax AS selected_price_wax,
+                s.selected_price_usd AS selected_price_usd,
+                s.change_24h AS change_24h,
+                s.volume_24h AS volume_24h,
+                s.volume_24h_wax AS volume_24h_wax,
+                s.volume_24h_usd AS volume_24h_usd,
+                s.tvl_wax AS tvl_wax,
+                s.tvl_usd AS tvl_usd,
+                s.liquidity_wax AS liquidity_wax,
+                s.liquidity_usd AS liquidity_usd,
+                s.holder_count AS holder_count,
+                s.circulating_supply AS circulating_supply,
+                s.burned_amount AS burned_amount,
+                s.market_cap_wax AS market_cap_wax,
+                s.market_cap_usd AS market_cap_usd,
+                s.fdv_wax AS fdv_wax,
+                s.fdv_usd AS fdv_usd,
+                s.selected_pair_source AS selected_pair_source,
+                s.selected_pair_id AS selected_pair_id,
+                s.indexed_pair_count AS indexed_pair_count,
+                s.source_count AS source_count,
+                s.source_keys AS source_keys,
+                COALESCE(s.updated_at, t.updated_at, c.candidate_updated_at) AS updated_at
+         FROM live_candidates c
+         LEFT JOIN waxonedge_tokens t
+           ON t.contract = c.contract AND t.symbol = c.symbol
+         LEFT JOIN waxonedge_token_stats s
+           ON s.contract = c.contract AND s.symbol = c.symbol
+       ) live_rows
+       ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
+       ORDER BY updated_at ASC, contract ASC, symbol ASC
+       LIMIT ?`
+    : `SELECT *
+       FROM (
+         SELECT t.contract AS contract, t.symbol AS symbol,
+                t.price_wax AS price_wax, t.price_usd AS price_usd,
+                t.decimals AS decimals,
+                t.total_supply AS total_supply,
+                t.max_supply AS max_supply,
+                t.pair_count AS pair_count,
+                t.updated_at AS token_updated_at,
+                s.selected_price_wax AS selected_price_wax,
+                s.selected_price_usd AS selected_price_usd,
+                s.change_24h AS change_24h,
+                s.volume_24h AS volume_24h,
+                s.volume_24h_wax AS volume_24h_wax,
+                s.volume_24h_usd AS volume_24h_usd,
+                s.tvl_wax AS tvl_wax,
+                s.tvl_usd AS tvl_usd,
+                s.liquidity_wax AS liquidity_wax,
+                s.liquidity_usd AS liquidity_usd,
+                s.holder_count AS holder_count,
+                s.circulating_supply AS circulating_supply,
+                s.burned_amount AS burned_amount,
+                s.market_cap_wax AS market_cap_wax,
+                s.market_cap_usd AS market_cap_usd,
+                s.fdv_wax AS fdv_wax,
+                s.fdv_usd AS fdv_usd,
+                s.selected_pair_source AS selected_pair_source,
+                s.selected_pair_id AS selected_pair_id,
+                s.indexed_pair_count AS indexed_pair_count,
+                s.source_count AS source_count,
+                s.source_keys AS source_keys,
+                COALESCE(s.updated_at, t.updated_at) AS updated_at
+         FROM waxonedge_tokens t
+         LEFT JOIN waxonedge_token_stats s
+           ON s.contract = t.contract AND s.symbol = t.symbol
+       ) live_rows
+       ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
+       ORDER BY updated_at ASC, contract ASC, symbol ASC
+       LIMIT ?`;
+  const rows = await db.prepare(liveRowsSql).bind(...params).all();
   const results = rows.results || [];
   const lastRow = results[results.length - 1] || null;
   const reserveBackedRows = await deriveReserveBackedTokenRows(db, results, {
@@ -4169,6 +4253,7 @@ async function handleLiveSnapshot(env, query, corsHeaders) {
       cursor: query.get('cursor') || query.get('next_cursor'),
       since: query.get('since') || query.get('updated_since'),
       limit: query.get('limit'),
+      search: query.get('search') || query.get('q'),
     });
     const warnings = live.warning ? [live.warning] : [];
     return waxonedgeJson({
