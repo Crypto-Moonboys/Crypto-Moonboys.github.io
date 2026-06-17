@@ -73,11 +73,11 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
 ok('featured-token PR cache-busts changed WaxOnEdge scanner assets',
   html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260616-featured') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-confidence') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260615-galaxy3'));
 ok('featured-token PR cache-busts changed token analytics assets',
   tokenHtml.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  tokenHtml.includes('/js/waxonedge.js?v=woe-20260616-featured'));
+  tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-confidence'));
 ok('waxonedge clean-route alias redirects to /waxonedge.html', aliasHtml.includes('url=/waxonedge.html'));
 ok('waxonedge clean-route alias preserves query-string routing', aliasHtml.includes("window.location.search || ''"));
 ok('waxonedge clean-route alias preserves hash routing', aliasHtml.includes("window.location.hash || ''"));
@@ -501,6 +501,7 @@ ok('waxonedge-bubbles-v2.js reads bootstrap confidence fields for proof-backed m
   v2Js.includes("metricReasonCodes: parseReasonCodes(token.metric_reason_codes || token.reason_codes || token.unavailable_reasons)"));
 ok('waxonedge-bubbles-v2.js preserves confidence fields from live updates without erasing omitted values',
   v2Js.includes('function normalizeConfidence(value)') &&
+  v2Js.includes("if (direct) return normalizeConfidence(direct) || 'unavailable';") &&
   v2Js.includes("if (text === 'good' || text === 'weak' || text === 'unavailable') return text;") &&
   v2Js.includes("if (text === 'live' || text === 'true' || text === '1') return 'good';") &&
   v2Js.includes("if (text === 'false' || text === '0' || text === 'missing' || text === 'not_indexed') return 'unavailable';") &&
@@ -513,6 +514,18 @@ ok('waxonedge-bubbles-v2.js preserves confidence fields from live updates withou
   v2Js.includes('if (next && record[prop] !== next)') &&
   v2Js.includes("Object.prototype.hasOwnProperty.call(update, 'metric_reason_codes')") &&
   !/applyLiveTokenUpdate[\s\S]*selectedPriceConfidence\s*=\s*['"]unavailable['"]/.test(v2Js));
+ok('waxonedge-bubbles-v2.js preserves zero token metrics during normalization',
+  v2Js.includes('selectedPriceWax: asNum(token.selected_price_wax != null ? token.selected_price_wax : token.price_wax)') &&
+  v2Js.includes('selectedPriceUsd: asNum(token.selected_price_usd != null ? token.selected_price_usd : token.price_usd)') &&
+  v2Js.includes('volume24Wax: asNum(token.volume_24h_wax != null ? token.volume_24h_wax : token.volume_24h)') &&
+  !v2Js.includes('selectedPriceWax: asNum(token.selected_price_wax || token.price_wax)') &&
+  !v2Js.includes('selectedPriceUsd: asNum(token.selected_price_usd || token.price_usd)') &&
+  !v2Js.includes('volume24Wax: asNum(token.volume_24h_wax || token.volume_24h)'));
+ok('waxonedge-bubbles-v2.js direct confidence normalization is strict',
+  v2Js.includes("if (text === 'live' || text === 'true' || text === '1') return 'good';") &&
+  v2Js.includes("if (text === 'false' || text === '0' || text === 'missing' || text === 'not_indexed') return 'unavailable';") &&
+  v2Js.includes("return '';") &&
+  !v2Js.includes('return String(direct).toLowerCase();'));
 ok('waxonedge-bubbles-v2.js parses reason codes without source-label normalization',
   v2Js.includes('function parseReasonCodes(value)') &&
   v2Js.includes('return Object.keys(value).filter(function (key) { return !!value[key]; });') &&
@@ -522,6 +535,12 @@ ok('waxonedge-bubbles-v2.js keeps proof-backed price, liquidity, and TVL data co
   /function valueForMetric[\s\S]*if \(metric === 'price'\)[\s\S]*record\.selectedPriceConfidence !== 'good'[\s\S]*return record\.selectedPriceUsd != null \? record\.selectedPriceUsd : record\.selectedPriceWax/.test(v2Js) &&
   /function valueForMetric[\s\S]*if \(metric === 'tvl'\)[\s\S]*record\.tvlConfidence !== 'good'[\s\S]*return record\.tvlUsd != null \? record\.tvlUsd : record\.tvlWax/.test(v2Js) &&
   /function valueForMetric[\s\S]*if \(metric === 'liquidity'\)[\s\S]*record\.liquidityConfidence !== 'good'[\s\S]*return record\.liquidityUsd != null \? record\.liquidityUsd : record\.liquidityWax/.test(v2Js));
+ok('waxonedge-bubbles-v2.js excludes unproofed market cap and FDV from blended score',
+  /function blendedMarketScore\(record\)[\s\S]*?function metricEmphasis/.test(v2Js) &&
+  /function blendedMarketScore\(record\)[\s\S]*?var volume = toUsd\(record\.volume24Wax, record\.volume24Usd\);[\s\S]*?var price = record\.selectedPriceConfidence === 'good'[\s\S]*?function metricEmphasis/.test(v2Js) &&
+  !/function blendedMarketScore\(record\)[\s\S]*?marketCap[\s\S]*?function metricEmphasis/.test(v2Js) &&
+  !/function blendedMarketScore\(record\)[\s\S]*?fdv[\s\S]*?function metricEmphasis/.test(v2Js) &&
+  !/function blendedMarketScore\(record\)[\s\S]*?var cap[\s\S]*?function metricEmphasis/.test(v2Js));
 ok('waxonedge-bubbles-v2.js footer uses clean gain/loss labels',
   v2Js.includes("'<span class=\"woe-ab-up\">Up '") &&
   v2Js.includes("'<span class=\"woe-ab-down\">Down '") &&

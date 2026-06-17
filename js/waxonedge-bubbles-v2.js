@@ -222,7 +222,7 @@
 
   function metricConfidenceFrom(token, metricName) {
     var direct = token && (token[metricName + '_confidence'] || token[metricName + 'Confidence']);
-    if (direct) return String(direct).toLowerCase();
+    if (direct) return normalizeConfidence(direct) || 'unavailable';
     var status = token && (token.metric_status || token.metricStatus);
     var metricStatus = status && status[metricName];
     if (!metricStatus) return 'unavailable';
@@ -498,18 +498,15 @@
       record.tvlConfidence === 'good' ? (toUsd(record.tvlWax, record.tvlUsd) || 0) : 0
     );
     var volume = toUsd(record.volume24Wax, record.volume24Usd);
-    var cap = toUsd(record.marketCapWax, record.marketCapUsd);
-    if (cap == null) cap = toUsd(record.fdvWax, record.fdvUsd);
     var price = record.selectedPriceConfidence === 'good' ? toUsd(record.selectedPriceWax, record.selectedPriceUsd) : null;
     var change = asNum(record.change24);
     var movement = change == null ? null : Math.abs(change);
     var coverage = (record.indexedPairCount || 0) * 10 + (record.sourceCount || 0) * 18;
     var score = reweightedScore([
       { weight: 0.4, value: liquidity },
-      { weight: 0.25, value: volume },
-      { weight: 0.15, value: cap },
+      { weight: 0.35, value: volume },
       { weight: 0.1, value: movement != null ? movement + (price || 0) * 0.001 : null },
-      { weight: 0.1, value: coverage },
+      { weight: 0.15, value: coverage },
     ]);
     record.baseMarketScore = score;
     return score;
@@ -543,12 +540,12 @@
         displaySymbol: featured.label,
         contract: contract,
         logoUrl: token.icon_url || token.logo || token.image || '',
-        selectedPriceWax: asNum(token.selected_price_wax || token.price_wax),
-        selectedPriceUsd: asNum(token.selected_price_usd || token.price_usd),
+        selectedPriceWax: asNum(token.selected_price_wax != null ? token.selected_price_wax : token.price_wax),
+        selectedPriceUsd: asNum(token.selected_price_usd != null ? token.selected_price_usd : token.price_usd),
         change24: asNum(token.change_24h),
         change7d: null,
         change30d: null,
-        volume24Wax: asNum(token.volume_24h_wax || token.volume_24h),
+        volume24Wax: asNum(token.volume_24h_wax != null ? token.volume_24h_wax : token.volume_24h),
         volume24Usd: asNum(token.volume_24h_usd),
         volume7dWax: asNum(token.volume_7d_wax),
         volume7dUsd: asNum(token.volume_7d_usd),
@@ -569,8 +566,8 @@
         supply: token.circulating_supply || token.total_supply || '',
         selectedPair: token.selected_pair_id || '',
         selectedSource: sourceLabel(token.selected_pair_source),
-        sourceCount: asNum(token.source_count) || sources.length || 0,
-        indexedPairCount: asNum(token.indexed_pair_count || token.pair_count) || 0,
+        sourceCount: asNum(token.source_count) != null ? asNum(token.source_count) : (sources.length || 0),
+        indexedPairCount: asNum(token.indexed_pair_count != null ? token.indexed_pair_count : token.pair_count) || 0,
         computedPairCount: 0,
         sourcesMap: sources.reduce(function (acc, source) { acc[source] = true; return acc; }, {}),
         sources: sources,
