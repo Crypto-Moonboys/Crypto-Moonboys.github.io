@@ -4701,6 +4701,7 @@ function withPairContributionProof(pair, contract, symbol, priceIndex) {
 const WAXCASH_CONTRACT = 'graffitiking';
 const WAXCASH_SYMBOL = 'WAXCASH';
 const WAXCASH_KEY = tokenKey(WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+const WAXCASH_GRAPH_ROUTE_CONCURRENCY = 8;
 
 function isWaxcashToken(contract, symbol) {
   return tokenKey(contract, symbol) === WAXCASH_KEY;
@@ -4802,8 +4803,12 @@ async function loadWaxcashGraphTokenRows(db) {
   const routeGraphRows = [];
   const routeTargets = [waxcashRef].concat(pairedTokens)
     .filter((token) => token?.key && !isWaxToken(token.contract, token.symbol));
-  for (const token of routeTargets) {
-    routeGraphRows.push(...await loadRouteGraphRowsForToken(db, token.contract, token.symbol));
+  for (let index = 0; index < routeTargets.length; index += WAXCASH_GRAPH_ROUTE_CONCURRENCY) {
+    const batch = routeTargets.slice(index, index + WAXCASH_GRAPH_ROUTE_CONCURRENCY);
+    const batchRows = await Promise.all(batch.map((token) =>
+      loadRouteGraphRowsForToken(db, token.contract, token.symbol)
+    ));
+    for (const rows of batchRows) routeGraphRows.push(...rows);
   }
   const tokenRows = await loadTokenRowsForRefs(db, Array.from(tokenMeta.values()));
   return {

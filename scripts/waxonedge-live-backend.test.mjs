@@ -273,11 +273,15 @@ ok('live snapshot rows are reserve-derived before confidence is emitted',
   route.includes("const tvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_wax)) : null"));
 ok('live snapshot reserve proof is bounded to WAXCASH graph rows',
   route.includes('const OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 2000') &&
+  route.includes('const WAXCASH_GRAPH_ROUTE_CONCURRENCY = 8') &&
   route.includes('routeGraphLimit: 0') &&
   route.includes('async function loadWaxcashGraphTokenRows') &&
   route.includes('const routeTargets = [waxcashRef].concat(pairedTokens)') &&
   route.includes(".filter((token) => token?.key && !isWaxToken(token.contract, token.symbol))") &&
-  route.includes('routeGraphRows.push(...await loadRouteGraphRowsForToken(db, token.contract, token.symbol))') &&
+  route.includes('index += WAXCASH_GRAPH_ROUTE_CONCURRENCY') &&
+  route.includes('const batch = routeTargets.slice(index, index + WAXCASH_GRAPH_ROUTE_CONCURRENCY)') &&
+  route.includes('const batchRows = await Promise.all(batch.map((token) =>') &&
+  route.includes('loadRouteGraphRowsForToken(db, token.contract, token.symbol)') &&
   route.includes('async function loadReserveRouteGraphRows(db, limit = OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT)') &&
   route.includes('const graphLimit = clampInteger(limit, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT, 1, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT)') &&
   route.includes(').bind(graphLimit).all().catch(() => ({ results: [] }))'));
