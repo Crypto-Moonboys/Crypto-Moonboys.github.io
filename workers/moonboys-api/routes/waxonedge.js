@@ -3874,7 +3874,7 @@ async function deriveReserveBackedTokenRows(db, rows = [], options = {}) {
   const graphLimit = clampInteger(options.routeGraphLimit, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT, 0, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT);
   const routeGraphRows = graphLimit > 0 ? await loadReserveRouteGraphRows(db, graphLimit) : [];
   const graphRows = dedupePairRows(pairRows.concat(routeGraphRows));
-  const priceRows = await loadTokenPriceRowsForPairs(db, []);
+  const priceRows = await loadTokenPriceRowsForPairs(db, pairRows);
   const priceIndex = buildDbTokenPriceIndex(priceRows);
   const routeIndex = buildOgWaxRouteGraph(graphRows, priceIndex);
   const pairsByToken = new Map();

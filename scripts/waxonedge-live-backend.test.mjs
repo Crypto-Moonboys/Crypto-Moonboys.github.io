@@ -227,6 +227,8 @@ ok('bootstrap token rows expose metric confidence proof fields',
   route.includes('async function loadPairRowsForTokens') &&
   route.includes('async function loadReserveRouteGraphRows') &&
   route.includes('const pairRows = await loadPairRowsForTokens(db, tokenRows)') &&
+  route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, pairRows)') &&
+  !route.includes('const priceRows = await loadTokenPriceRowsForPairs(db, [])') &&
   route.includes('const routeGraphRows = graphLimit > 0 ? await loadReserveRouteGraphRows(db, graphLimit) : []') &&
   route.includes('const graphRows = dedupePairRows(pairRows.concat(routeGraphRows))') &&
   route.includes('return tokenRows.map((entry) => deriveTokenPairMetrics(') &&
@@ -3965,6 +3967,34 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     wufStats.change_24h == null &&
     Number(wufStats.fdv_wax) > 0 &&
     wufStats.unavailable_reasons.price_change_24h === 'Requires indexed 24h price-change data');
+  const rawNonWaxVolumeStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
+    {
+      contract: 'wuffi',
+      symbol: 'WUF',
+      total_supply: '1000000',
+    },
+    {
+      aggregate_complete: 0,
+    },
+    [
+      {
+        ...wufAbcPair,
+        pair_id: 'WUFABC_RAW_VOLUME',
+        volume_24h: '2500',
+        volume_24h_wax: null,
+        volume_24h_usd: null,
+      },
+    ],
+    [
+      { contract: 'eosio.token', symbol: 'WAX', price_wax: '1', price_usd: '0.006' },
+      { contract: 'wuffi', symbol: 'WUF', price_wax: '0.002', price_usd: '0.000012' },
+      { contract: 'abc.token', symbol: 'ABC', price_wax: '2', price_usd: '0.012' },
+    ],
+    graphRows,
+  );
+  ok('non-WAX pair raw volume converts through token price rows when volume_24h_wax is missing',
+    Number(rawNonWaxVolumeStats.volume_24h_wax) === 5 &&
+    Number(rawNonWaxVolumeStats.volume_24h_usd) === 0.03);
   const staleTvlStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
     {
       contract: 'wuffi',
