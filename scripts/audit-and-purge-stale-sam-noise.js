@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const gate = require('./wiki-publish-gate.js');
-const { isAliasSlug } = require('./wiki-aliases.js');
+const { isAliasSlug, ALIAS_TO_CANONICAL } = require('./wiki-aliases.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const WIKI_DIR = path.join(ROOT, 'wiki');
@@ -21,6 +21,12 @@ const REQUIRED_PROTECTED_PAGES = new Set([
   'midevilpunks',
   '1m-free-nfts-program',
 ]);
+
+const UNSAFE_TAXONOMY_COLLAPSES = [
+  ['hodl-x-warriors', 'hodl-warriors'],
+  ['midevil-hero-arena', 'midevilpunks'],
+  ['bitcoin-x-kids', 'bitcoin-kids'],
+];
 
 const STALE_REFERENCE_FILES = [
   'js/wiki-index.json',
@@ -52,6 +58,10 @@ function compileBlockedPatterns() {
     const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
     return new RegExp(`^${escaped}$`, 'i');
   });
+}
+
+function countUnsafeTaxonomyCollapses() {
+  return UNSAFE_TAXONOMY_COLLAPSES.filter(([alias, canonical]) => ALIAS_TO_CANONICAL[alias] === canonical).length;
 }
 
 function countStaleReferences(deletedSlugs) {
@@ -92,6 +102,9 @@ function run() {
 
   const toDelete = [];
   let protectedPages = 0;
+  let aliasDuplicateCandidates = 0;
+  let blockedNoisePagesFound = 0;
+  const unsafeTaxonomyCollapses = countUnsafeTaxonomyCollapses();
 
   for (const file of wikiFiles) {
     const slug = normalizeSlug(path.basename(file, '.html'));
@@ -108,6 +121,9 @@ function run() {
     const aliasDuplicate = isAliasSlug(slug) && !REQUIRED_PROTECTED_PAGES.has(slug);
     const gateResult = gate.classifyPage(slug, fs.readFileSync(filePath, 'utf8'), canon);
     const blockedByGate = String(gateResult.status || '').startsWith('BLOCKED_');
+
+    if (aliasDuplicate) aliasDuplicateCandidates += 1;
+    if (blockedByPattern || blockedByPrefix || blockedByGate) blockedNoisePagesFound += 1;
 
     const shouldDelete =
       blockedByPattern ||
@@ -132,12 +148,18 @@ function run() {
 
   const deletedSlugs = toDelete.map((entry) => entry.slug);
   const staleReferencesRemaining = countStaleReferences(deletedSlugs);
+  const validationStatus = unsafeTaxonomyCollapses === 0 && staleReferencesRemaining === 0 ? 'PASS' : 'FAIL';
 
   const summary = {
     scanned_pages: scannedPages,
+    total_approved_pages: approvedSlugs.size,
     deleted_noise_pages: deletedSlugs.length,
     protected_pages: protectedPages,
+    alias_duplicate_candidates: aliasDuplicateCandidates,
+    blocked_noise_pages_found: blockedNoisePagesFound,
+    unsafe_taxonomy_collapses: unsafeTaxonomyCollapses,
     stale_references_remaining: staleReferencesRemaining,
+    validation_status: validationStatus,
   };
 
   const jsDir = path.join(ROOT, 'js');
@@ -160,5 +182,6 @@ if (require.main === module) {
 module.exports = {
   REQUIRED_PROTECTED_PAGES,
   STALE_REFERENCE_FILES,
+  UNSAFE_TAXONOMY_COLLAPSES,
   run,
 };
