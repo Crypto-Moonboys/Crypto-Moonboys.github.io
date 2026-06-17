@@ -2889,6 +2889,34 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     normalizedLogswap.pair_id === tablePair.pair_id &&
     normalizedLogswap.trade_id === 'swap.alcor:logswap:2668:333' &&
     __waxonedgeTestHooks.moonboysCandleSource('alcorv2') === 'swap.alcor');
+  const alcorWaxcash8388 = __waxonedgeTestHooks.normalizeCoreDexPair({
+    source: 'swap.alcor',
+    normalizer: 'tokenA-tokenB',
+    feeScale: 100,
+  }, {
+    pool_id: 8388,
+    token_a: { contract: 'eosio.token', symbol: 'WAX', precision: 8 },
+    token_b: { contract: 'graffitiking', symbol: 'WAXCASH', precision: 8 },
+    reserve_a: '1138621.39085541',
+    reserve_b: '119457846.68648227',
+    fee: 100,
+  }, priceIndex, '2026-06-17T00:00:00.000Z');
+  const waxcash8388Proof = __waxonedgeTestHooks.buildWaxcashOgParityProof([alcorWaxcash8388], priceIndex, []);
+  ok('swap.alcor pool #8388 snake_case row normalizes as direct WAX/WAXCASH and is selected for WAXCASH headline',
+    alcorWaxcash8388 &&
+    alcorWaxcash8388.source === 'swap.alcor' &&
+    alcorWaxcash8388.pair_id === '8388' &&
+    alcorWaxcash8388.token_a_contract === 'eosio.token' &&
+    alcorWaxcash8388.token_a_symbol === 'WAX' &&
+    alcorWaxcash8388.token_b_contract === 'graffitiking' &&
+    alcorWaxcash8388.token_b_symbol === 'WAXCASH' &&
+    Number(alcorWaxcash8388.reserve_a) === 1138621.39085541 &&
+    Number(alcorWaxcash8388.reserve_b) === 119457846.68648227 &&
+    waxcash8388Proof.headline_price.alcor_direct_wax_candidate_count === 1 &&
+    waxcash8388Proof.headline_price.alcor_expected_direct_wax_pool_missing === false &&
+    waxcash8388Proof.headline_price.og_headline_price_source === 'swap.alcor' &&
+    waxcash8388Proof.headline_price.og_headline_price_pair_id === '8388' &&
+    Number(waxcash8388Proof.headline_price.og_headline_price_wax) > 0);
 }
 {
   const stream = { source: 'swap.taco', referenceSource: 'taco', account: 'swap.taco', action: 'exchangelog', parser: 'swap-v2-taco' };

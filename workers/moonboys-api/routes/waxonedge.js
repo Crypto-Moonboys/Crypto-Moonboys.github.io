@@ -1322,14 +1322,76 @@ function waxFusionTokenSides(row) {
   };
 }
 
+function alcorTokenSide(row, sideName, reserveName) {
+  const upper = sideName.toUpperCase();
+  const lower = sideName.toLowerCase();
+  const side = firstPresent(
+    row?.[sideName],
+    row?.[`token${upper}`],
+    row?.[`token_${lower}`],
+    row?.[`${lower}_token`],
+  );
+  const reserve = firstPresent(
+    side?.quantity,
+    side?.reserve,
+    side?.amount,
+    row?.[reserveName],
+    row?.[`reserve${upper}`],
+    row?.[`reserve_${lower}`],
+    row?.[`quantity${upper}`],
+    row?.[`quantity_${lower}`],
+    row?.[`${lower}_reserve`],
+    row?.[`${lower}_quantity`],
+  );
+  const contract = firstPresent(
+    side?.contract,
+    side?.contract_name,
+    side?.token_contract,
+    side?.code,
+    row?.[`contract${upper}`],
+    row?.[`contract_${lower}`],
+    row?.[`${lower}_contract`],
+  );
+  const symbol = firstPresent(
+    side?.symbol,
+    side?.sym,
+    side?.currency,
+    side?.token_symbol,
+    row?.[`symbol${upper}`],
+    row?.[`symbol_${lower}`],
+    row?.[`${lower}_symbol`],
+    row?.[`sym${upper}`],
+    row?.[`sym_${lower}`],
+    row?.[`${lower}_sym`],
+  );
+  const precision = firstPresent(
+    side?.precision,
+    side?.decimals,
+    row?.[`precision${upper}`],
+    row?.[`precision_${lower}`],
+    row?.[`${lower}_precision`],
+    row?.[`decimals${upper}`],
+    row?.[`decimals_${lower}`],
+    row?.[`${lower}_decimals`],
+  );
+  return getTokenSideInfo({
+    ...((side && typeof side === 'object') ? side : {}),
+    contract,
+    symbol,
+    precision,
+    decimals: precision,
+    quantity: reserve,
+  });
+}
+
 function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
   if (isFalseLike(row.active)) return null;
   let tokenA = null;
   let tokenB = null;
   let explicitPrice = null;
   if (adapter.normalizer === 'tokenA-tokenB') {
-    tokenA = getTokenSideInfo(row.tokenA);
-    tokenB = getTokenSideInfo(row.tokenB);
+    tokenA = alcorTokenSide(row, 'A', 'reserveA');
+    tokenB = alcorTokenSide(row, 'B', 'reserveB');
   } else if (adapter.normalizer === 'pool1-pool2') {
     tokenA = getTokenSideInfo(row.pool1);
     tokenB = getTokenSideInfo(row.pool2);
