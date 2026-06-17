@@ -209,6 +209,15 @@
     }
   }
 
+  function metricConfidenceFrom(token, metricName) {
+    var direct = token && (token[metricName + '_confidence'] || token[metricName + 'Confidence']);
+    if (direct) return String(direct).toLowerCase();
+    var status = token && (token.metric_status || token.metricStatus);
+    var metricStatus = status && status[metricName];
+    if (!metricStatus) return 'unavailable';
+    return metricStatus.live === true ? 'good' : (metricStatus.reason ? 'unavailable' : 'weak');
+  }
+
   function prefersReducedMotion() {
     return !!(reducedMotionQuery && reducedMotionQuery.matches);
   }
@@ -277,6 +286,10 @@
       liquidityUsd: null,
       tvlWax: null,
       tvlUsd: null,
+      selectedPriceConfidence: 'unavailable',
+      liquidityConfidence: 'unavailable',
+      tvlConfidence: 'unavailable',
+      metricReasonCodes: [],
       marketCapWax: null,
       marketCapUsd: null,
       fdvWax: null,
@@ -300,16 +313,23 @@
       var change = timeframe === '24h' ? record.change24 : record['change' + timeframe];
       return change != null ? Math.abs(change) : null;
     }
-    if (metric === 'price') return record.selectedPriceUsd != null ? record.selectedPriceUsd : record.selectedPriceWax;
+    if (metric === 'price') {
+      if (record.selectedPriceConfidence !== 'good') return null;
+      return record.selectedPriceUsd != null ? record.selectedPriceUsd : record.selectedPriceWax;
+    }
     if (metric === 'volume') {
       if (timeframe === '7d') return record.volume7dUsd != null ? record.volume7dUsd : record.volume7dWax;
       if (timeframe === '30d') return record.volume30dUsd != null ? record.volume30dUsd : record.volume30dWax;
       return record.volume24Usd != null ? record.volume24Usd : record.volume24Wax;
     }
     if (metric === 'tvl') {
+      if (record.tvlConfidence !== 'good') return null;
       return record.tvlUsd != null ? record.tvlUsd : record.tvlWax;
     }
-    if (metric === 'liquidity') return record.liquidityUsd != null ? record.liquidityUsd : record.liquidityWax;
+    if (metric === 'liquidity') {
+      if (record.liquidityConfidence !== 'good') return null;
+      return record.liquidityUsd != null ? record.liquidityUsd : record.liquidityWax;
+    }
     if (metric === 'mcap') return record.marketCapUsd != null ? record.marketCapUsd : record.marketCapWax;
     return null;
   }
@@ -390,6 +410,8 @@
       return fmtPct(change);
     }
     if (state.metric === 'price') {
+      if (record.selectedPriceConfidence === 'weak') return 'Proof weak';
+      if (record.selectedPriceConfidence !== 'good') return 'Not indexed';
       if (record.selectedPriceUsd != null) return '$' + fmtPrice(record.selectedPriceUsd);
       if (record.selectedPriceWax != null) return fmtPrice(record.selectedPriceWax) + ' WAX';
       return 'No indexed price';
@@ -402,11 +424,15 @@
       return 'No indexed volume';
     }
     if (state.metric === 'tvl') {
+      if (record.tvlConfidence === 'weak') return 'Proof weak';
+      if (record.tvlConfidence !== 'good') return 'Not indexed';
       if (record.tvlUsd != null) return '$' + fmtNum(record.tvlUsd);
       if (record.tvlWax != null) return fmtNum(record.tvlWax) + ' WAX';
       return 'No indexed TVL';
     }
     if (state.metric === 'liquidity') {
+      if (record.liquidityConfidence === 'weak') return 'Proof weak';
+      if (record.liquidityConfidence !== 'good') return 'Not indexed';
       if (record.liquidityUsd != null) return '$' + fmtNum(record.liquidityUsd);
       if (record.liquidityWax != null) return fmtNum(record.liquidityWax) + ' WAX';
       return 'No indexed liquidity';
@@ -449,13 +475,13 @@
 
   function blendedMarketScore(record) {
     var liquidity = Math.max(
-      toUsd(record.liquidityWax, record.liquidityUsd) || 0,
-      toUsd(record.tvlWax, record.tvlUsd) || 0
+      record.liquidityConfidence === 'good' ? (toUsd(record.liquidityWax, record.liquidityUsd) || 0) : 0,
+      record.tvlConfidence === 'good' ? (toUsd(record.tvlWax, record.tvlUsd) || 0) : 0
     );
     var volume = toUsd(record.volume24Wax, record.volume24Usd);
     var cap = toUsd(record.marketCapWax, record.marketCapUsd);
     if (cap == null) cap = toUsd(record.fdvWax, record.fdvUsd);
-    var price = toUsd(record.selectedPriceWax, record.selectedPriceUsd);
+    var price = record.selectedPriceConfidence === 'good' ? toUsd(record.selectedPriceWax, record.selectedPriceUsd) : null;
     var change = asNum(record.change24);
     var movement = change == null ? null : Math.abs(change);
     var coverage = (record.indexedPairCount || 0) * 10 + (record.sourceCount || 0) * 18;
@@ -513,6 +539,10 @@
         liquidityUsd: asNum(token.liquidity_usd),
         tvlWax: asNum(token.tvl_wax),
         tvlUsd: asNum(token.tvl_usd),
+        selectedPriceConfidence: metricConfidenceFrom(token, 'selected_price'),
+        liquidityConfidence: metricConfidenceFrom(token, 'liquidity'),
+        tvlConfidence: metricConfidenceFrom(token, 'tvl'),
+        metricReasonCodes: parseSourceKeys(token.metric_reason_codes || token.reason_codes || token.unavailable_reasons),
         marketCapWax: asNum(token.market_cap_wax),
         marketCapUsd: asNum(token.market_cap_usd),
         fdvWax: asNum(token.fdv_wax),
@@ -563,10 +593,10 @@
         ? sourceLabel(record.strongestPair.source) + ' ' + pairLabel(record.strongestPair)
         : (record.selectedSource && record.selectedPair ? record.selectedSource + ' #' + record.selectedPair : 'Not indexed');
       record.searchText = tokenSearchText(record);
-      record.score = (record.selectedPriceWax != null || record.selectedPriceUsd != null ? 500000 : 0) +
+      record.score = (valueForMetric(record, 'price', '24h') != null ? 500000 : 0) +
         (record.indexedPairCount > 0 ? 250000 : 0) +
         (record.selectedPair ? 125000 : 0) +
-        Math.log10(1 + (record.liquidityUsd || record.liquidityWax || 0)) * 1000 +
+        Math.log10(1 + (valueForMetric(record, 'liquidity', '24h') || 0)) * 1000 +
         Math.log10(1 + (record.volume24Usd || record.volume24Wax || 0)) * 700;
       return record;
     }).filter(function (record) {
@@ -962,8 +992,8 @@
 
   function isWhaleVisualNode(node) {
     var record = node.record || {};
-    var tvl = asNum(record.tvlUsd != null ? record.tvlUsd : record.tvlWax) || 0;
-    var liq = asNum(record.liquidityUsd != null ? record.liquidityUsd : record.liquidityWax) || 0;
+    var tvl = valueForMetric(record, 'tvl', '24h') || 0;
+    var liq = valueForMetric(record, 'liquidity', '24h') || 0;
     var volume = asNum(record.volume24Usd != null ? record.volume24Usd : record.volume24Wax) || 0;
     return Math.max(tvl, liq, volume) > 50000 || (node.rank || 999) <= 12;
   }

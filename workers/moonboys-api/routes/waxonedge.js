@@ -4627,6 +4627,12 @@ function ogDirectWaxTokenPrice(contract, symbol, directWaxPairs = [], priceIndex
   };
 }
 
+function isAlcorWaxcashDirectPair(pair) {
+  return aggregateSourceKey(pair?.source) === 'swap.alcor' &&
+    pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL) &&
+    hasWaxQuoteForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+}
+
 function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex) {
   const side = pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
   const reasonCodes = [];
@@ -4734,8 +4740,20 @@ function waxcashHeadlinePrice(pairRows, priceIndex) {
   const directCandidates = (pairRows || []).filter((pair) =>
     pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL) &&
     hasWaxQuoteForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL));
-  const selected = ogDirectWaxTokenPrice(WAXCASH_CONTRACT, WAXCASH_SYMBOL, directCandidates, priceIndex);
+  const alcorCandidates = directCandidates.filter(isAlcorWaxcashDirectPair);
+  const alcorSelected = ogDirectWaxTokenPrice(WAXCASH_CONTRACT, WAXCASH_SYMBOL, alcorCandidates, priceIndex);
+  const alcorSelectedValid = asNumber(alcorSelected.price_wax) != null;
+  const fallbackSelected = alcorSelectedValid
+    ? null
+    : ogDirectWaxTokenPrice(WAXCASH_CONTRACT, WAXCASH_SYMBOL, directCandidates, priceIndex);
+  const selected = alcorSelectedValid ? alcorSelected : fallbackSelected;
   const reasonCodes = selected.reason_codes.slice();
+  const fallbackReasonCodes = [];
+  if (!alcorSelectedValid) {
+    fallbackReasonCodes.push(alcorCandidates.length
+      ? 'alcor_waxcash_direct_pool_unusable'
+      : 'alcor_waxcash_direct_pool_missing');
+  }
   const waxReserve = asNumber(selected.wax_reserve);
   return {
     og_headline_price_wax: selected.price_wax,
@@ -4749,6 +4767,13 @@ function waxcashHeadlinePrice(pairRows, priceIndex) {
     og_headline_passes_100_wax_threshold: waxReserve != null ? waxReserve >= 100 : false,
     og_headline_reason_codes: reasonCodes,
     og_headline_updated_at: selected.updated_at,
+    headline_price_source_policy: 'alcor_preferred_direct_wax',
+    alcor_direct_wax_candidate_count: alcorCandidates.length,
+    alcor_direct_wax_candidate_found: alcorCandidates.length > 0,
+    alcor_direct_wax_selected: alcorSelectedValid,
+    alcor_expected_direct_wax_pool_missing: alcorCandidates.length === 0,
+    headline_fallback_used: !alcorSelectedValid && asNumber(selected.price_wax) != null,
+    headline_fallback_reason_codes: fallbackReasonCodes,
   };
 }
 
@@ -4936,6 +4961,12 @@ function tokenMetricProof(metrics, selected = null) {
     has_selected_price: selectedPriceLive,
     has_liquidity: liquidityBasis != null,
     has_tvl: tvlBasis != null,
+    selected_price_confidence: selectedPriceLive && selectedPriceProof.source ? 'good' : 'unavailable',
+    liquidity_confidence: liquidityBasis != null ? 'good' : 'unavailable',
+    tvl_confidence: tvlBasis != null ? 'good' : 'unavailable',
+    metric_reason_codes: Object.entries(metricStatus)
+      .filter(([, status]) => status?.reason)
+      .map(([metric]) => metric),
     has_fdv: hasFdv,
     has_market_cap: hasMarketCap,
     has_circulating_supply: hasCirculatingSupply,
