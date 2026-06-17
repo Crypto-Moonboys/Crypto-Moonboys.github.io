@@ -118,7 +118,7 @@
         "title": "block topia crypto moonboys wiki"
       }
     ],
-    "rank_score": 752,
+    "rank_score": 755,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 1,
@@ -127,14 +127,14 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 10615,
+      "article_word_count": 10677,
       "keyword_bag_size": 22,
       "heading_count": 7,
       "list_count": 4,
       "internal_link_count": 0,
-      "paragraph_count": 112,
+      "paragraph_count": 114,
       "section_count": 6,
-      "lore_paragraph_count": 106,
+      "lore_paragraph_count": 108,
       "content_quality_score": 103,
       "authority_score": 18
     },
@@ -142,11 +142,11 @@
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 40,
-      "word_count_points": 531,
+      "word_count_points": 534,
       "keyword_bag_points": 22,
       "content_quality_points": 111,
       "authority_points": 18,
-      "final_rank_score": 752,
+      "final_rank_score": 755,
       "authority_graph_points": 0
     },
     "search_index": {
@@ -1419,7 +1419,7 @@
         "title": "Nbg Token"
       }
     ],
-    "rank_score": 583,
+    "rank_score": 584,
     "rank_signals": {
       "is_canonical": true,
       "alias_count": 2,
@@ -1428,14 +1428,14 @@
       "category": "characters",
       "category_priority": 8,
       "has_description": true,
-      "article_word_count": 6991,
+      "article_word_count": 7016,
       "keyword_bag_size": 24,
       "heading_count": 7,
       "list_count": 4,
       "internal_link_count": 0,
-      "paragraph_count": 85,
+      "paragraph_count": 86,
       "section_count": 6,
-      "lore_paragraph_count": 79,
+      "lore_paragraph_count": 80,
       "content_quality_score": 107,
       "authority_score": 18
     },
@@ -1443,11 +1443,11 @@
       "canonical_points": 20,
       "description_points": 10,
       "category_points": 40,
-      "word_count_points": 350,
+      "word_count_points": 351,
       "keyword_bag_points": 24,
       "content_quality_points": 117,
       "authority_points": 22,
-      "final_rank_score": 583,
+      "final_rank_score": 584,
       "authority_graph_points": 4
     },
     "search_index": {
