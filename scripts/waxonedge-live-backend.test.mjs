@@ -273,10 +273,15 @@ ok('live snapshot rows are reserve-derived before confidence is emitted',
   route.includes("const tvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_wax)) : null"));
 ok('live snapshot reserve proof is bounded to WAXCASH graph rows',
   route.includes('const OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 2000') &&
+  route.includes('const WAXCASH_GRAPH_ROUTE_CONCURRENCY = 8') &&
   route.includes('routeGraphLimit: 0') &&
   route.includes('async function loadWaxcashGraphTokenRows') &&
-  route.includes('const eligibleDirectWaxRows = (pairedDirectWaxRows || []).filter') &&
-  route.includes('WAXCASH_GRAPH_MIN_DIRECT_WAX_RESERVE') &&
+  route.includes('const routeTargets = [waxcashRef].concat(pairedTokens)') &&
+  route.includes(".filter((token) => token?.key && !isWaxToken(token.contract, token.symbol))") &&
+  route.includes('index += WAXCASH_GRAPH_ROUTE_CONCURRENCY') &&
+  route.includes('const batch = routeTargets.slice(index, index + WAXCASH_GRAPH_ROUTE_CONCURRENCY)') &&
+  route.includes('const batchRows = await Promise.all(batch.map((token) =>') &&
+  route.includes('loadRouteGraphRowsForToken(db, token.contract, token.symbol)') &&
   route.includes('async function loadReserveRouteGraphRows(db, limit = OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT)') &&
   route.includes('const graphLimit = clampInteger(limit, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT, 1, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT)') &&
   route.includes(').bind(graphLimit).all().catch(() => ({ results: [] }))'));
@@ -1591,6 +1596,39 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       updated_at: '2026-06-14T11:06:00.000Z',
     },
     {
+      source: 'swap.nefty',
+      pair_id: 'WAXCASHROUTE',
+      token_a_contract: 'graffitiking',
+      token_a_symbol: 'WAXCASH',
+      token_b_contract: 'route.token',
+      token_b_symbol: 'ROUTE',
+      reserve_a: '20000',
+      reserve_b: '100',
+      updated_at: '2026-06-14T11:06:30.000Z',
+    },
+    {
+      source: 'swap.box',
+      pair_id: 'ROUTEHELP',
+      token_a_contract: 'route.token',
+      token_a_symbol: 'ROUTE',
+      token_b_contract: 'help.token',
+      token_b_symbol: 'HELP',
+      reserve_a: '100',
+      reserve_b: '50',
+      updated_at: '2026-06-14T11:06:45.000Z',
+    },
+    {
+      source: 'swap.taco',
+      pair_id: 'HELPWAX',
+      token_a_contract: 'help.token',
+      token_a_symbol: 'HELP',
+      token_b_contract: 'eosio.token',
+      token_b_symbol: 'WAX',
+      reserve_a: '1000',
+      reserve_b: '200',
+      updated_at: '2026-06-14T11:06:50.000Z',
+    },
+    {
       source: 'swap.taco',
       pair_id: 'WUFWAX150',
       token_a_contract: 'wuffi',
@@ -1628,6 +1666,8 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     { contract: 'graffitiking', symbol: 'WAXCASH', total_supply: '1000000', circulating_supply: '500000', updated_at: '2026-06-14T11:00:00.000Z' },
     { contract: 'wuffi', symbol: 'WUF', total_supply: '1000000', circulating_supply: '400000', updated_at: '2026-06-14T11:05:00.000Z' },
     { contract: 'abc.token', symbol: 'ABC', total_supply: '1000000', circulating_supply: '300000', updated_at: '2026-06-14T11:06:00.000Z' },
+    { contract: 'route.token', symbol: 'ROUTE', total_supply: '1000000', circulating_supply: '200000', updated_at: '2026-06-14T11:06:30.000Z' },
+    { contract: 'help.token', symbol: 'HELP', total_supply: '1000000', circulating_supply: '100000', updated_at: '2026-06-14T11:06:50.000Z' },
     { contract: 'qqq.core', symbol: 'QQQCORE', total_supply: '1000000', circulating_supply: '100000', updated_at: '2026-06-14T11:09:00.000Z' },
     { contract: 'eosio.token', symbol: 'WAX', price_wax: '1', price_usd: '0.006', updated_at: '2026-06-14T11:00:00.000Z' },
   ];
@@ -1639,7 +1679,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
             async all() {
               if (sql.includes('FROM waxonedge_pairs')) {
                 const wantsWaxcash = params.includes('graffitiking') && params.includes('WAXCASH');
-                if (wantsWaxcash) {
+                if (wantsWaxcash && !sql.includes('CAST(COALESCE(reserve_a')) {
                   return { results: graphPairs.filter((pair) => pair.pair_id.startsWith('8388') || pair.pair_id.startsWith('WAXCASH')) };
                 }
                 return {
@@ -1670,10 +1710,14 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     graphTokenKeys.includes('graffitiking::WAXCASH') &&
     graphTokenKeys.includes('wuffi::WUF') &&
     graphTokenKeys.includes('abc.token::ABC') &&
+    graphTokenKeys.includes('route.token::ROUTE') &&
     graphTokenKeys.includes('eosio.token::WAX') &&
+    !graphTokenKeys.includes('help.token::HELP') &&
     !graphTokenKeys.includes('qqq.core::QQQCORE') &&
     graphPairIds.includes('WUFWAX150') &&
-    !graphPairIds.includes('ABCWAX50') &&
+    graphPairIds.includes('ABCWAX50') &&
+    graphPairIds.includes('ROUTEHELP') &&
+    graphPairIds.includes('HELPWAX') &&
     !graphPairIds.includes('QQQWAX999'));
   const graphLiveResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
     { DB: graphDb },
@@ -1687,8 +1731,17 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     graphLiveKeys[0] === 'graffitiking::WAXCASH' &&
     graphLiveKeys.includes('wuffi::WUF') &&
     graphLiveKeys.includes('abc.token::ABC') &&
+    graphLiveKeys.includes('route.token::ROUTE') &&
     graphLiveKeys.includes('eosio.token::WAX') &&
+    !graphLiveKeys.includes('help.token::HELP') &&
     !graphLiveKeys.includes('qqq.core::QQQCORE'));
+  const routedLiveToken = graphLiveBody.tokens.find((token) => token.token_key === 'route.token::ROUTE');
+  ok('WAXCASH-paired token without a direct WAX pool remains visible and can use routed valuation',
+    routedLiveToken &&
+    routedLiveToken.selected_price_confidence === 'good' &&
+    Number(routedLiveToken.price_wax) > 0 &&
+    Number(routedLiveToken.liquidity_wax) > 0 &&
+    Number(routedLiveToken.tvl_wax) > 0);
   const searchedLiveResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
     { DB: graphDb },
     new URLSearchParams('search=WUF'),
@@ -1700,8 +1753,22 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     searchedLiveResponse.status === 200 &&
     searchedLiveBody.ok === true &&
     searchedLiveKeys.includes('wuffi::WUF') &&
-    !searchedLiveKeys.includes('graffitiking::WAXCASH') &&
     !searchedLiveKeys.includes('qqq.core::QQQCORE'));
+  const searchedWaxcashResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
+    { DB: graphDb },
+    new URLSearchParams('search=WAXCASH'),
+    {},
+  );
+  const searchedWaxcashBody = await searchedWaxcashResponse.json();
+  const searchedWaxcashKeys = searchedWaxcashBody.tokens.map((token) => token.token_key);
+  ok('/api/waxonedge/live search returns WAXCASH and direct WAXCASH-paired tokens only',
+    searchedWaxcashResponse.status === 200 &&
+    searchedWaxcashBody.ok === true &&
+    searchedWaxcashKeys.includes('graffitiking::WAXCASH') &&
+    searchedWaxcashKeys.includes('wuffi::WUF') &&
+    searchedWaxcashKeys.includes('route.token::ROUTE') &&
+    !searchedWaxcashKeys.includes('help.token::HELP') &&
+    !searchedWaxcashKeys.includes('qqq.core::QQQCORE'));
   ok('/api/waxonedge/live handler passes search query into the graph-scoped live snapshot loader',
     route.includes("search: query.get('search') || query.get('q')") &&
     route.includes("const search = safeString(options.search) || ''") &&

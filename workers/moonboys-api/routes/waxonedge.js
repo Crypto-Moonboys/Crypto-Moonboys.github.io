@@ -4121,12 +4121,14 @@ async function listLiveTokenUpdates(db, options = {}) {
     const contract = normalizeContract(row?.contract);
     const symbol = normalizeSymbol(row?.symbol);
     const key = tokenKey(contract, symbol);
+    const searchText = safeString(row?.search_text).toLowerCase();
     return contract === searchLower ||
       symbol === searchSymbol ||
       key === searchLower ||
       contract.includes(searchLower) ||
       symbol.toLowerCase().includes(searchLower) ||
-      key.includes(searchLower);
+      key.includes(searchLower) ||
+      searchText.includes(searchLower);
   }
   const orderedRows = (graph.tokenRows || []).slice().sort((a, b) => {
     const updatedCompare = String(a.updated_at || '').localeCompare(String(b.updated_at || ''));
@@ -4699,7 +4701,7 @@ function withPairContributionProof(pair, contract, symbol, priceIndex) {
 const WAXCASH_CONTRACT = 'graffitiking';
 const WAXCASH_SYMBOL = 'WAXCASH';
 const WAXCASH_KEY = tokenKey(WAXCASH_CONTRACT, WAXCASH_SYMBOL);
-const WAXCASH_GRAPH_MIN_DIRECT_WAX_RESERVE = 100;
+const WAXCASH_GRAPH_ROUTE_CONCURRENCY = 8;
 
 function isWaxcashToken(contract, symbol) {
   return tokenKey(contract, symbol) === WAXCASH_KEY;
@@ -4721,10 +4723,22 @@ function mergeWaxcashGraphTokenMeta(meta, token, pair) {
     key: token.key,
     pair_count: 0,
     source_keys: new Set(),
+    search_terms: new Set(),
     updated_at: null,
   };
   existing.pair_count += 1;
   if (pair?.source) existing.source_keys.add(aggregateSourceKey(pair.source));
+  for (const term of [
+    pair?.pair_id,
+    pair?.source,
+    pair?.token_a_contract,
+    pair?.token_a_symbol,
+    pair?.token_b_contract,
+    pair?.token_b_symbol,
+  ]) {
+    const text = safeString(term).toLowerCase();
+    if (text) existing.search_terms.add(text);
+  }
   if (!existing.updated_at || String(pair?.updated_at || '') > existing.updated_at) {
     existing.updated_at = pair?.updated_at || existing.updated_at;
   }
@@ -4759,6 +4773,7 @@ function enrichWaxcashGraphTokenRows(tokenRows = [], tokenMeta = new Map()) {
       indexed_pair_count: row.indexed_pair_count ?? meta.pair_count,
       source_count: row.source_count ?? sourceKeys.length,
       source_keys: sourceKeys.join(','),
+      search_text: Array.from(meta.search_terms || []).join(' '),
       updated_at: row.stats_updated_at || row.updated_at || meta.updated_at,
     };
   });
@@ -4773,6 +4788,7 @@ async function loadWaxcashGraphTokenRows(db) {
       ...waxcashRef,
       pair_count: 0,
       source_keys: new Set(),
+      search_terms: new Set(),
       updated_at: null,
     });
   }
@@ -4784,18 +4800,22 @@ async function loadWaxcashGraphTokenRows(db) {
     mergeWaxcashGraphTokenMeta(tokenMeta, paired, pair);
     if (!pairedTokens.some((token) => token.key === paired.key)) pairedTokens.push(paired);
   }
-  const pairedDirectWaxRows = await loadDirectWaxRowsForTokens(db, pairedTokens);
-  const eligibleDirectWaxRows = (pairedDirectWaxRows || []).filter((pair) => {
-    const waxReserve = waxReserveForPair(pair);
-    return waxReserve != null && waxReserve > WAXCASH_GRAPH_MIN_DIRECT_WAX_RESERVE &&
-      pairedTokens.some((token) => pairTouchesToken(pair, token));
-  });
+  const routeGraphRows = [];
+  const routeTargets = [waxcashRef].concat(pairedTokens)
+    .filter((token) => token?.key && !isWaxToken(token.contract, token.symbol));
+  for (let index = 0; index < routeTargets.length; index += WAXCASH_GRAPH_ROUTE_CONCURRENCY) {
+    const batch = routeTargets.slice(index, index + WAXCASH_GRAPH_ROUTE_CONCURRENCY);
+    const batchRows = await Promise.all(batch.map((token) =>
+      loadRouteGraphRowsForToken(db, token.contract, token.symbol)
+    ));
+    for (const rows of batchRows) routeGraphRows.push(...rows);
+  }
   const tokenRows = await loadTokenRowsForRefs(db, Array.from(tokenMeta.values()));
   return {
     tokenRows: enrichWaxcashGraphTokenRows(tokenRows, tokenMeta),
-    pairRows: dedupePairRows((waxcashPairs || []).concat(eligibleDirectWaxRows)),
+    pairRows: dedupePairRows((waxcashPairs || []).concat(routeGraphRows)),
     waxcashPairs: waxcashPairs || [],
-    directWaxRows: eligibleDirectWaxRows,
+    routeGraphRows: dedupePairRows(routeGraphRows),
   };
 }
 
@@ -5548,7 +5568,8 @@ async function loadRouteGraphRowsForToken(db, contract, symbol, maxHops = OG_WAX
           tokenKey(pair.token_a_contract, pair.token_a_symbol),
           tokenKey(pair.token_b_contract, pair.token_b_symbol),
         ]) {
-          if (key && !seenTokens.has(key)) {
+          const parsed = parseFrontierKey(key);
+          if (key && parsed && !isWaxToken(parsed.contract, parsed.symbol) && !seenTokens.has(key)) {
             seenTokens.add(key);
             nextFrontier.push(key);
           }
