@@ -42,7 +42,6 @@ const FREE_SAFE_TRADE_INDEX_PAIR_LIMIT = 2;
 const FREE_SAFE_TRADE_ROWS_PER_MARKET_LIMIT = 50;
 const OG_WAX_ROUTE_MAX_HOPS = 5;
 const OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 2000;
-const LIVE_RESERVE_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 250;
 const OG_WAX_ROUTE_GRAPH_FRONTIER_LIMIT = 200;
 const FREE_SAFE_SUPPLY_SYNC_LIMIT = 5;
 const FREE_SAFE_TRADE_STREAM_PAGES_PER_RUN = 1;
@@ -3903,24 +3902,45 @@ async function syncSupplyInputs(env) {
 }
 
 async function listTopTokens(db) {
-  const rows = await db.prepare(
-    `SELECT t.contract, t.symbol, t.decimals, t.total_supply, t.max_supply, t.price_wax, t.price_usd,
-            t.pair_count, t.icon_url, t.updated_at,
-            s.volume_24h, s.volume_24h_wax, s.volume_24h_usd, s.volume_7d, s.volume_30d,
-            s.liquidity_wax, s.liquidity_usd,
-            s.tvl_wax, s.tvl_usd, s.change_24h, s.selected_price_wax, s.selected_price_usd,
-            s.selected_pair_source, s.selected_pair_id, s.holder_count, s.circulating_supply,
-            s.burned_amount, s.market_cap_wax, s.market_cap_usd, s.fdv_wax, s.fdv_usd,
-            s.source_count, s.indexed_pair_count, s.source_keys, s.aggregate_complete,
-            s.aggregate_sources_required, s.aggregate_sources_present, s.aggregate_sources_processed,
-            s.aggregate_sources_failed, s.aggregate_truncated, s.aggregate_sources_truncated
-     FROM waxonedge_tokens t
-     LEFT JOIN waxonedge_token_stats s
-       ON s.contract = t.contract AND s.symbol = t.symbol
-     ORDER BY t.pair_count DESC, t.updated_at DESC
-     LIMIT 250`
-  ).all();
-  return deriveReserveBackedTokenRows(db, rows.results || []);
+  const graph = await loadWaxcashGraphTokenRows(db);
+  const tokens = await deriveReserveBackedTokenRows(db, graph.tokenRows, {
+    pairRows: graph.pairRows,
+    routeGraphRows: graph.pairRows,
+    routeGraphLimit: 0,
+  });
+  return sortWaxcashGraphTokens(tokens).slice(0, 250);
+}
+
+async function loadTokenRowsForRefs(db, refs = []) {
+  const targets = (refs || [])
+    .filter((token) => token?.contract && token?.symbol)
+    .filter((token, index, list) => list.findIndex((item) => item.contract === token.contract && item.symbol === token.symbol) === index);
+  if (!targets.length) return [];
+  const rows = [];
+  for (let i = 0; i < targets.length; i += 50) {
+    const chunk = targets.slice(i, i + 50);
+    const where = chunk.map(() => '(t.contract = ? AND t.symbol = ?)').join(' OR ');
+    const params = chunk.flatMap((token) => [token.contract, token.symbol]);
+    const result = await db.prepare(
+      `SELECT t.contract, t.symbol, t.decimals, t.total_supply, t.max_supply, t.price_wax, t.price_usd,
+              t.pair_count, t.icon_url, t.updated_at,
+              s.volume_24h, s.volume_24h_wax, s.volume_24h_usd, s.volume_7d, s.volume_30d,
+              s.liquidity_wax, s.liquidity_usd,
+              s.tvl_wax, s.tvl_usd, s.change_24h, s.selected_price_wax, s.selected_price_usd,
+              s.selected_pair_source, s.selected_pair_id, s.holder_count, s.circulating_supply,
+              s.burned_amount, s.market_cap_wax, s.market_cap_usd, s.fdv_wax, s.fdv_usd,
+              s.source_count, s.indexed_pair_count, s.source_keys, s.aggregate_complete,
+              s.aggregate_sources_required, s.aggregate_sources_present, s.aggregate_sources_processed,
+              s.aggregate_sources_failed, s.aggregate_truncated, s.aggregate_sources_truncated,
+              COALESCE(s.updated_at, t.updated_at) AS stats_updated_at
+       FROM waxonedge_tokens t
+       LEFT JOIN waxonedge_token_stats s
+         ON s.contract = t.contract AND s.symbol = t.symbol
+       WHERE ${where}`
+    ).bind(...params).all().catch(() => ({ results: [] }));
+    rows.push(...(result.results || []));
+  }
+  return rows;
 }
 
 async function deriveReserveBackedTokenRow(db, row) {
@@ -3939,9 +3959,12 @@ async function deriveReserveBackedTokenRows(db, rows = [], options = {}) {
     .filter((entry) => entry.key);
   if (!tokenRows.length) return [];
 
-  const pairRows = await loadPairRowsForTokens(db, tokenRows);
+  const providedPairRows = Array.isArray(options.pairRows) ? dedupePairRows(options.pairRows) : null;
+  const pairRows = providedPairRows || await loadPairRowsForTokens(db, tokenRows);
   const graphLimit = clampInteger(options.routeGraphLimit, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT, 0, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT);
-  const routeGraphRows = graphLimit > 0 ? await loadReserveRouteGraphRows(db, graphLimit) : [];
+  const routeGraphRows = Array.isArray(options.routeGraphRows)
+    ? dedupePairRows(options.routeGraphRows)
+    : (graphLimit > 0 ? await loadReserveRouteGraphRows(db, graphLimit) : []);
   const graphRows = dedupePairRows(pairRows.concat(routeGraphRows));
   const priceRows = await loadTokenPriceRowsForPairs(db, pairRows);
   const priceIndex = buildDbTokenPriceIndex(priceRows);
@@ -4088,158 +4111,48 @@ async function listLiveTokenUpdates(db, options = {}) {
   const parsedCursor = parseLiveCursor(options.cursor);
   const parsedSince = parsedCursor.cursor ? { since: null, warning: null } : parseLiveSince(options.since);
   const search = safeString(options.search) || '';
-  const filters = [];
-  const params = [];
-  if (parsedCursor.cursor) {
-    filters.push(`(
-      updated_at > ?
-      OR (updated_at = ? AND contract > ?)
-      OR (updated_at = ? AND contract = ? AND symbol > ?)
-    )`);
-    params.push(
-      parsedCursor.cursor.updated_at,
-      parsedCursor.cursor.updated_at,
-      parsedCursor.cursor.contract,
-      parsedCursor.cursor.updated_at,
-      parsedCursor.cursor.contract,
-      parsedCursor.cursor.symbol,
-    );
-  } else if (parsedSince.since) {
-    filters.push(`updated_at > ?`);
-    params.push(parsedSince.since);
+  const limit = clampInteger(options.limit, LIVE_SNAPSHOT_TOKEN_LIMIT, 1, LIVE_SNAPSHOT_TOKEN_LIMIT);
+  const graph = await loadWaxcashGraphTokenRows(db);
+  const cursor = parsedCursor.cursor;
+  const searchLower = search.toLowerCase();
+  const searchSymbol = normalizeSymbol(search);
+  function matchesSearch(row) {
+    if (!search) return true;
+    const contract = normalizeContract(row?.contract);
+    const symbol = normalizeSymbol(row?.symbol);
+    const key = tokenKey(contract, symbol);
+    return contract === searchLower ||
+      symbol === searchSymbol ||
+      key === searchLower ||
+      contract.includes(searchLower) ||
+      symbol.toLowerCase().includes(searchLower) ||
+      key.includes(searchLower);
   }
-  if (search) {
-    const searchLower = search.toLowerCase();
-    const searchSymbol = normalizeSymbol(search);
-    const searchLike = `%${searchLower}%`;
-    filters.push(`(
-      LOWER(contract) = ?
-      OR UPPER(symbol) = ?
-      OR LOWER(contract || '::' || symbol) = ?
-      OR LOWER(contract) LIKE ?
-      OR LOWER(symbol) LIKE ?
-      OR LOWER(contract || '::' || symbol) LIKE ?
-    )`);
-    params.push(searchLower, searchSymbol, searchLower, searchLike, searchLike, searchLike);
-  }
-  params.push(clampInteger(options.limit, LIVE_SNAPSHOT_TOKEN_LIMIT, 1, LIVE_SNAPSHOT_TOKEN_LIMIT));
-  const liveRowsSql = search
-    ? `WITH pair_token_rows AS (
-         SELECT token_a_contract AS contract, token_a_symbol AS symbol, updated_at
-         FROM waxonedge_pairs
-         WHERE token_a_contract IS NOT NULL AND token_a_symbol IS NOT NULL
-         UNION ALL
-         SELECT token_b_contract AS contract, token_b_symbol AS symbol, updated_at
-         FROM waxonedge_pairs
-         WHERE token_b_contract IS NOT NULL AND token_b_symbol IS NOT NULL
-       ),
-       pair_tokens AS (
-         SELECT contract, symbol, MAX(updated_at) AS pair_updated_at, COUNT(*) AS pair_count
-         FROM pair_token_rows
-         GROUP BY contract, symbol
-       ),
-       candidate_rows AS (
-         SELECT contract, symbol, updated_at AS candidate_updated_at, pair_count AS candidate_pair_count
-         FROM waxonedge_tokens
-         UNION ALL
-         SELECT contract, symbol, pair_updated_at AS candidate_updated_at, pair_count AS candidate_pair_count
-         FROM pair_tokens
-       ),
-       live_candidates AS (
-         SELECT contract, symbol,
-                MAX(candidate_updated_at) AS candidate_updated_at,
-                MAX(candidate_pair_count) AS candidate_pair_count
-         FROM candidate_rows
-         GROUP BY contract, symbol
-       )
-       SELECT *
-       FROM (
-         SELECT c.contract AS contract, c.symbol AS symbol,
-                t.price_wax AS price_wax, t.price_usd AS price_usd,
-                t.decimals AS decimals,
-                t.total_supply AS total_supply,
-                t.max_supply AS max_supply,
-                COALESCE(t.pair_count, c.candidate_pair_count) AS pair_count,
-                t.updated_at AS token_updated_at,
-                s.selected_price_wax AS selected_price_wax,
-                s.selected_price_usd AS selected_price_usd,
-                s.change_24h AS change_24h,
-                s.volume_24h AS volume_24h,
-                s.volume_24h_wax AS volume_24h_wax,
-                s.volume_24h_usd AS volume_24h_usd,
-                s.tvl_wax AS tvl_wax,
-                s.tvl_usd AS tvl_usd,
-                s.liquidity_wax AS liquidity_wax,
-                s.liquidity_usd AS liquidity_usd,
-                s.holder_count AS holder_count,
-                s.circulating_supply AS circulating_supply,
-                s.burned_amount AS burned_amount,
-                s.market_cap_wax AS market_cap_wax,
-                s.market_cap_usd AS market_cap_usd,
-                s.fdv_wax AS fdv_wax,
-                s.fdv_usd AS fdv_usd,
-                s.selected_pair_source AS selected_pair_source,
-                s.selected_pair_id AS selected_pair_id,
-                s.indexed_pair_count AS indexed_pair_count,
-                s.source_count AS source_count,
-                s.source_keys AS source_keys,
-                COALESCE(s.updated_at, t.updated_at, c.candidate_updated_at) AS updated_at
-         FROM live_candidates c
-         LEFT JOIN waxonedge_tokens t
-           ON t.contract = c.contract AND t.symbol = c.symbol
-         LEFT JOIN waxonedge_token_stats s
-           ON s.contract = c.contract AND s.symbol = c.symbol
-       ) live_rows
-       ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
-       ORDER BY updated_at ASC, contract ASC, symbol ASC
-       LIMIT ?`
-    : `SELECT *
-       FROM (
-         SELECT t.contract AS contract, t.symbol AS symbol,
-                t.price_wax AS price_wax, t.price_usd AS price_usd,
-                t.decimals AS decimals,
-                t.total_supply AS total_supply,
-                t.max_supply AS max_supply,
-                t.pair_count AS pair_count,
-                t.updated_at AS token_updated_at,
-                s.selected_price_wax AS selected_price_wax,
-                s.selected_price_usd AS selected_price_usd,
-                s.change_24h AS change_24h,
-                s.volume_24h AS volume_24h,
-                s.volume_24h_wax AS volume_24h_wax,
-                s.volume_24h_usd AS volume_24h_usd,
-                s.tvl_wax AS tvl_wax,
-                s.tvl_usd AS tvl_usd,
-                s.liquidity_wax AS liquidity_wax,
-                s.liquidity_usd AS liquidity_usd,
-                s.holder_count AS holder_count,
-                s.circulating_supply AS circulating_supply,
-                s.burned_amount AS burned_amount,
-                s.market_cap_wax AS market_cap_wax,
-                s.market_cap_usd AS market_cap_usd,
-                s.fdv_wax AS fdv_wax,
-                s.fdv_usd AS fdv_usd,
-                s.selected_pair_source AS selected_pair_source,
-                s.selected_pair_id AS selected_pair_id,
-                s.indexed_pair_count AS indexed_pair_count,
-                s.source_count AS source_count,
-                s.source_keys AS source_keys,
-                COALESCE(s.updated_at, t.updated_at) AS updated_at
-         FROM waxonedge_tokens t
-         LEFT JOIN waxonedge_token_stats s
-           ON s.contract = t.contract AND s.symbol = t.symbol
-       ) live_rows
-       ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
-       ORDER BY updated_at ASC, contract ASC, symbol ASC
-       LIMIT ?`;
-  const rows = await db.prepare(liveRowsSql).bind(...params).all();
-  const results = rows.results || [];
+  const orderedRows = (graph.tokenRows || []).slice().sort((a, b) => {
+    const updatedCompare = String(a.updated_at || '').localeCompare(String(b.updated_at || ''));
+    if (updatedCompare !== 0) return updatedCompare;
+    return String(a.contract || '').localeCompare(String(b.contract || '')) ||
+      String(a.symbol || '').localeCompare(String(b.symbol || ''));
+  });
+  const results = orderedRows.filter(matchesSearch).filter((row) => {
+    const updatedAt = row.updated_at || '';
+    const contract = normalizeContract(row.contract);
+    const symbol = normalizeSymbol(row.symbol);
+    if (cursor) {
+      return updatedAt > cursor.updated_at ||
+        (updatedAt === cursor.updated_at && contract > cursor.contract) ||
+        (updatedAt === cursor.updated_at && contract === cursor.contract && symbol > cursor.symbol);
+    }
+    return parsedSince.since ? updatedAt > parsedSince.since : true;
+  }).slice(0, limit);
   const lastRow = results[results.length - 1] || null;
   const reserveBackedRows = await deriveReserveBackedTokenRows(db, results, {
-    routeGraphLimit: LIVE_RESERVE_ROUTE_GRAPH_PAIR_SCAN_LIMIT,
+    pairRows: graph.pairRows,
+    routeGraphRows: graph.pairRows,
+    routeGraphLimit: 0,
   });
   return {
-    tokens: reserveBackedRows.map(normalizeLiveTokenUpdate).filter(Boolean),
+    tokens: sortWaxcashGraphTokens(reserveBackedRows).map(normalizeLiveTokenUpdate).filter(Boolean),
     cursor: parsedCursor.cursor,
     since: parsedSince.since,
     next_cursor: liveCursorFromRow(lastRow),
@@ -4786,6 +4699,7 @@ function withPairContributionProof(pair, contract, symbol, priceIndex) {
 const WAXCASH_CONTRACT = 'graffitiking';
 const WAXCASH_SYMBOL = 'WAXCASH';
 const WAXCASH_KEY = tokenKey(WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+const WAXCASH_GRAPH_MIN_DIRECT_WAX_RESERVE = 100;
 
 function isWaxcashToken(contract, symbol) {
   return tokenKey(contract, symbol) === WAXCASH_KEY;
@@ -4797,6 +4711,115 @@ function tokenRef(contract, symbol) {
     symbol: normalizeSymbol(symbol),
     key: tokenKey(contract, symbol),
   };
+}
+
+function mergeWaxcashGraphTokenMeta(meta, token, pair) {
+  if (!token?.key) return;
+  const existing = meta.get(token.key) || {
+    contract: token.contract,
+    symbol: token.symbol,
+    key: token.key,
+    pair_count: 0,
+    source_keys: new Set(),
+    updated_at: null,
+  };
+  existing.pair_count += 1;
+  if (pair?.source) existing.source_keys.add(aggregateSourceKey(pair.source));
+  if (!existing.updated_at || String(pair?.updated_at || '') > existing.updated_at) {
+    existing.updated_at = pair?.updated_at || existing.updated_at;
+  }
+  meta.set(token.key, existing);
+}
+
+function waxReserveForPair(pair) {
+  if (isWaxToken(pair?.token_a_contract, pair?.token_a_symbol)) return asNumber(pair.reserve_a);
+  if (isWaxToken(pair?.token_b_contract, pair?.token_b_symbol)) return asNumber(pair.reserve_b);
+  return null;
+}
+
+function pairTouchesToken(pair, token) {
+  return !!token?.key && !!pairTokenSide(pair, token.contract, token.symbol);
+}
+
+function enrichWaxcashGraphTokenRows(tokenRows = [], tokenMeta = new Map()) {
+  const rowsByKey = new Map();
+  for (const row of tokenRows || []) {
+    const key = tokenKey(row?.contract, row?.symbol);
+    if (key) rowsByKey.set(key, row);
+  }
+  return Array.from(tokenMeta.values()).map((meta) => {
+    const row = rowsByKey.get(meta.key) || {};
+    const existingSourceKeys = parseSourceKeys(row.source_keys);
+    const sourceKeys = Array.from(new Set(existingSourceKeys.concat(Array.from(meta.source_keys || [])))).filter(Boolean);
+    return {
+      ...row,
+      contract: meta.contract,
+      symbol: meta.symbol,
+      pair_count: row.pair_count ?? meta.pair_count,
+      indexed_pair_count: row.indexed_pair_count ?? meta.pair_count,
+      source_count: row.source_count ?? sourceKeys.length,
+      source_keys: sourceKeys.join(','),
+      updated_at: row.stats_updated_at || row.updated_at || meta.updated_at,
+    };
+  });
+}
+
+async function loadWaxcashGraphTokenRows(db) {
+  const waxcashPairs = await loadWaxcashOgPairRows(db);
+  const tokenMeta = new Map();
+  const waxcashRef = tokenRef(WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+  if (waxcashRef.key) {
+    tokenMeta.set(waxcashRef.key, {
+      ...waxcashRef,
+      pair_count: 0,
+      source_keys: new Set(),
+      updated_at: null,
+    });
+  }
+  const pairedTokens = [];
+  for (const pair of waxcashPairs || []) {
+    const paired = otherTokenForPair(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+    if (!paired?.key) continue;
+    mergeWaxcashGraphTokenMeta(tokenMeta, waxcashRef, pair);
+    mergeWaxcashGraphTokenMeta(tokenMeta, paired, pair);
+    if (!pairedTokens.some((token) => token.key === paired.key)) pairedTokens.push(paired);
+  }
+  const pairedDirectWaxRows = await loadDirectWaxRowsForTokens(db, pairedTokens);
+  const eligibleDirectWaxRows = (pairedDirectWaxRows || []).filter((pair) => {
+    const waxReserve = waxReserveForPair(pair);
+    return waxReserve != null && waxReserve > WAXCASH_GRAPH_MIN_DIRECT_WAX_RESERVE &&
+      pairedTokens.some((token) => pairTouchesToken(pair, token));
+  });
+  const tokenRows = await loadTokenRowsForRefs(db, Array.from(tokenMeta.values()));
+  return {
+    tokenRows: enrichWaxcashGraphTokenRows(tokenRows, tokenMeta),
+    pairRows: dedupePairRows((waxcashPairs || []).concat(eligibleDirectWaxRows)),
+    waxcashPairs: waxcashPairs || [],
+    directWaxRows: eligibleDirectWaxRows,
+  };
+}
+
+function waxcashGraphMetricScore(token) {
+  return asNumber(token?.tvl_wax) ??
+    asNumber(token?.liquidity_wax) ??
+    asNumber(token?.volume_24h_wax) ??
+    asNumber(token?.selected_price_wax) ??
+    0;
+}
+
+function sortWaxcashGraphTokens(tokens = []) {
+  return (tokens || []).slice().sort((a, b) => {
+    const aWaxcash = isWaxcashToken(a?.contract, a?.symbol);
+    const bWaxcash = isWaxcashToken(b?.contract, b?.symbol);
+    if (aWaxcash !== bWaxcash) return aWaxcash ? -1 : 1;
+    const aValued = tokenMetricProof(a).selected_price_confidence === 'good';
+    const bValued = tokenMetricProof(b).selected_price_confidence === 'good';
+    if (aValued !== bValued) return aValued ? -1 : 1;
+    const scoreDelta = waxcashGraphMetricScore(b) - waxcashGraphMetricScore(a);
+    if (Number.isFinite(scoreDelta) && scoreDelta !== 0) return scoreDelta;
+    return String(a?.symbol || '').localeCompare(String(b?.symbol || '')) ||
+      String(a?.contract || '').localeCompare(String(b?.contract || ''));
+  });
 }
 
 function otherTokenForPair(pair, contract, symbol) {
@@ -5436,6 +5459,7 @@ async function loadReserveRouteGraphRows(db, limit = OG_WAX_ROUTE_GRAPH_PAIR_SCA
 
 async function loadDirectWaxRowsForTokens(db, tokens = []) {
   const targets = (tokens || [])
+    .map((token) => tokenRef(token?.contract, token?.symbol))
     .filter((token) => token?.key && !isWaxToken(token.contract, token.symbol));
   if (!targets.length) return [];
   const rows = [];
@@ -7175,6 +7199,8 @@ export const __waxonedgeTestHooks = {
   liveCursorFromRow,
   parseLiveCursor,
   normalizeLiveTokenUpdate,
+  loadWaxcashGraphTokenRows,
+  sortWaxcashGraphTokens,
   listLiveTokenUpdates,
   handleLiveSnapshot,
   handleLiveStream,
