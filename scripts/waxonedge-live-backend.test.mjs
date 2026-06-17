@@ -190,7 +190,10 @@ ok('live snapshot uses stable contract-symbol token keys',
     liquidity_wax: '456.78',
     direct_pair_liquidity_wax: '456.78',
     direct_waxcash_pair_liquidity_wax: '456.78',
+    bubble_liquidity_wax: '123.45',
+    bubble_tvl_wax: '123.45',
     suspicious_liquidity_pair_count: '1',
+    bubble_suspicious_liquidity_pair_count: '1',
     liquidity_basis: 'direct_indexed_pair_reserves',
     tvl_basis: 'direct_indexed_pair_reserves',
     updated_at: '2026-06-14T00:00:00.000Z',
@@ -207,7 +210,10 @@ ok('live snapshot uses stable contract-symbol token keys',
     update.metric_status.tvl.live === true &&
     update.direct_pair_liquidity_wax === '456.78' &&
     update.direct_waxcash_pair_liquidity_wax === '456.78' &&
+    update.bubble_liquidity_wax === '123.45' &&
+    update.bubble_tvl_wax === '123.45' &&
     update.suspicious_liquidity_pair_count === 1 &&
+    update.bubble_suspicious_liquidity_pair_count === 1 &&
     update.change_24h === '0' &&
     update.volume_24h_usd === '0');
 }
@@ -279,7 +285,9 @@ ok('live snapshot rows are reserve-derived before confidence is emitted',
   route.includes("const tvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_wax)) : null"));
 ok('live snapshot liquidity uses sane direct pair reserves instead of route-multiplied TVL',
   route.includes('const MAX_REASONABLE_PAIR_TVL_WAX = 10000000000') &&
+  route.includes('const MAX_BUBBLE_LIQUIDITY_TO_MARKET_CAP_RATIO = 5') &&
   route.includes('function isReasonablePairTvlWax') &&
+  route.includes('function isReasonableBubbleLiquidity') &&
   route.includes('const sortedPairs = (pairRows || [])') &&
   route.includes("String(b?.updated_at || '').localeCompare(String(a?.updated_at || ''))") &&
   route.includes('for (const pair of dedupePairRows(sortedPairs))') &&
@@ -287,6 +295,8 @@ ok('live snapshot liquidity uses sane direct pair reserves instead of route-mult
   route.includes("metrics.liquidity_basis = hasLiquidityWax ? 'direct_indexed_pair_reserves' : null") &&
   route.includes("metrics.tvl_basis = hasLiquidityWax ? 'direct_indexed_pair_reserves' : null") &&
   route.includes('direct_waxcash_pair_liquidity_wax') &&
+  route.includes('bubble_liquidity_wax') &&
+  route.includes('bubble_suspicious_liquidity_pair_count') &&
   route.includes('suspicious_liquidity_pair_count'));
 ok('live snapshot reserve proof is bounded to WAXCASH graph rows',
   route.includes('const OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 2000') &&
@@ -1631,7 +1641,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       token_b_contract: 'aigodtokenwx',
       token_b_symbol: 'AIGOD',
       reserve_a: '1000',
-      reserve_b: '2251349246008.36',
+      reserve_b: '3000000',
       updated_at: '2026-06-14T11:06:35.000Z',
     },
     {
@@ -1787,16 +1797,20 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     Number(routedLiveToken.tvl_wax) > 0);
   const aigodLiveToken = graphLiveBody.tokens.find((token) => token.token_key === 'aigodtokenwx::AIGOD');
   const wufLiveToken = graphLiveBody.tokens.find((token) => token.token_key === 'wuffi::WUF');
-  ok('AIGOD-style fake/exploded WAXCASH pair liquidity is excluded from trusted feed ranking',
+  ok('AIGOD-style fake/exploded WAXCASH pair liquidity stays in proof totals but is excluded from bubble sizing',
     aigodLiveToken &&
     wufLiveToken &&
     aigodLiveToken.selected_price_confidence === 'good' &&
     Number(aigodLiveToken.price_wax) === 100 &&
-    Number(aigodLiveToken.liquidity_wax) === 200 &&
-    Number(aigodLiveToken.tvl_wax) === 200 &&
+    Number(aigodLiveToken.liquidity_wax) > 100000000 &&
+    Number(aigodLiveToken.tvl_wax) > 100000000 &&
+    Number(aigodLiveToken.direct_pair_liquidity_wax) > 100000000 &&
+    Number(aigodLiveToken.bubble_liquidity_wax) === 200 &&
+    Number(aigodLiveToken.bubble_tvl_wax) === 200 &&
     Number(aigodLiveToken.direct_wax_pair_liquidity_wax) === 200 &&
-    aigodLiveToken.direct_waxcash_pair_liquidity_wax == null &&
-    aigodLiveToken.suspicious_liquidity_pair_count === 1 &&
+    Number(aigodLiveToken.direct_waxcash_pair_liquidity_wax) > 100000000 &&
+    aigodLiveToken.suspicious_liquidity_pair_count == null &&
+    aigodLiveToken.bubble_suspicious_liquidity_pair_count === 1 &&
     Number(aigodLiveToken.selected_metric_value) < Number(wufLiveToken.selected_metric_value));
   const searchedLiveResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
     { DB: graphDb },

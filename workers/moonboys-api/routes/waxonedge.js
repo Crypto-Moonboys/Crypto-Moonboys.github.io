@@ -16,6 +16,7 @@ const SOURCE_STALE_MINUTES = 30;
 const MIN_TRUSTED_WAX_LIQUIDITY = 10;
 const MAX_REASONABLE_PAIR_TVL_USD = 100000000;
 const MAX_REASONABLE_PAIR_TVL_WAX = 10000000000;
+const MAX_BUBBLE_LIQUIDITY_TO_MARKET_CAP_RATIO = 5;
 const CANDLE_BACKFILL_SOURCE = 'candle_backfill';
 const ALCOR_TRADE_INDEX_SOURCE = 'alcor_trade_rows';
 const AMM_TRADE_INDEX_SOURCE = 'amm_trade_rows';
@@ -1192,6 +1193,20 @@ function isReasonablePairTvlWax(value, waxUsd = null) {
   if (wax < 0 || wax > MAX_REASONABLE_PAIR_TVL_WAX) return false;
   const usd = waxUsd != null ? wax * waxUsd : null;
   return isReasonablePairTvlUsd(usd);
+}
+
+function isReasonableBubbleLiquidity(liquidityWax, liquidityUsd, marketCapWax = null, marketCapUsd = null) {
+  const wax = asNumber(liquidityWax);
+  const usd = asNumber(liquidityUsd);
+  const capWax = asNumber(marketCapWax);
+  const capUsd = asNumber(marketCapUsd);
+  if (wax != null && capWax != null && capWax > 0 && wax > capWax * MAX_BUBBLE_LIQUIDITY_TO_MARKET_CAP_RATIO) {
+    return false;
+  }
+  if (usd != null && capUsd != null && capUsd > 0 && usd > capUsd * MAX_BUBBLE_LIQUIDITY_TO_MARKET_CAP_RATIO) {
+    return false;
+  }
+  return true;
 }
 
 function sanitizeLiquidityValues(liquidityWax, liquidityUsd, priceIndex) {
@@ -4031,15 +4046,19 @@ function normalizeLiveTokenUpdate(row) {
   const liquidityUsd = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.liquidity_usd)) : null;
   const tvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_wax)) : null;
   const tvlUsd = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_usd)) : null;
+  const bubbleLiquidityWax = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.bubble_liquidity_wax ?? row.liquidity_wax)) : null;
+  const bubbleLiquidityUsd = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.bubble_liquidity_usd ?? row.liquidity_usd)) : null;
+  const bubbleTvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.bubble_tvl_wax ?? row.tvl_wax)) : null;
+  const bubbleTvlUsd = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.bubble_tvl_usd ?? row.tvl_usd)) : null;
   const marketCapLive = proof.metric_status?.market_cap?.live === true;
   const marketCapWax = marketCapLive ? safeDecimal(row.market_cap_wax) : null;
   const marketCapUsd = marketCapLive ? safeDecimal(row.market_cap_usd) : null;
   const selectedMetricValue = (() => {
     const change = asNumber(row.change_24h);
     if (change != null) return change;
-    const trustedTvlUsd = asNumber(tvlUsd);
+    const trustedTvlUsd = asNumber(bubbleTvlUsd);
     if (trustedTvlUsd != null) return trustedTvlUsd;
-    const trustedLiquidityUsd = asNumber(liquidityUsd);
+    const trustedLiquidityUsd = asNumber(bubbleLiquidityUsd);
     if (trustedLiquidityUsd != null) return trustedLiquidityUsd;
     const volumeUsd = asNumber(row.volume_24h_usd);
     if (volumeUsd != null) return volumeUsd;
@@ -4058,11 +4077,16 @@ function normalizeLiveTokenUpdate(row) {
     tvl_usd: tvlUsd,
     liquidity_wax: liquidityWax,
     liquidity_usd: liquidityUsd,
+    bubble_liquidity_wax: bubbleLiquidityWax,
+    bubble_liquidity_usd: bubbleLiquidityUsd,
+    bubble_tvl_wax: bubbleTvlWax,
+    bubble_tvl_usd: bubbleTvlUsd,
     direct_pair_liquidity_wax: proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.direct_pair_liquidity_wax ?? row.liquidity_wax)) : null,
     direct_pair_liquidity_usd: proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.direct_pair_liquidity_usd ?? row.liquidity_usd)) : null,
     direct_waxcash_pair_liquidity_wax: safeDecimal(asNumber(row.direct_waxcash_pair_liquidity_wax)),
     direct_wax_pair_liquidity_wax: safeDecimal(asNumber(row.direct_wax_pair_liquidity_wax)),
     suspicious_liquidity_pair_count: asNumber(row.suspicious_liquidity_pair_count),
+    bubble_suspicious_liquidity_pair_count: asNumber(row.bubble_suspicious_liquidity_pair_count),
     market_cap_wax: marketCapWax,
     market_cap_usd: marketCapUsd,
     market_cap_confidence: marketCapLive ? 'good' : 'unavailable',
@@ -5330,8 +5354,16 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   let hasDirectWaxcashLiquidityWax = false;
   let hasDirectWaxLiquidityWax = false;
   let suspiciousLiquidityPairCount = 0;
+  let bubbleSuspiciousLiquidityPairCount = 0;
+  const liquidityContributions = [];
   const routeIndex = options.routeIndex || buildOgWaxRouteGraph(graphPairRows, priceIndex);
   const selected = selectOgWaxRoutePrice(tokenKey(contract, symbol), routeIndex);
+  const totalSupply = asNumber(token?.total_supply ?? token?.max_supply);
+  const circulatingSupply = asNumber(metrics.circulating_supply ?? token?.circulating_supply);
+  const selectedPriceWax = selected?.priceWax ?? null;
+  const selectedPriceUsd = selected?.priceUsd ?? null;
+  const marketCapWax = circulatingSupply != null && selectedPriceWax != null ? circulatingSupply * selectedPriceWax : null;
+  const marketCapUsd = circulatingSupply != null && selectedPriceUsd != null ? circulatingSupply * selectedPriceUsd : null;
 
   const sortedPairs = (pairRows || [])
     .slice()
@@ -5359,6 +5391,7 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
           directWaxLiquidityWax += liquidityWax;
           hasDirectWaxLiquidityWax = true;
         }
+        liquidityContributions.push({ liquidityWax, liquidityUsd });
       } else {
         suspiciousLiquidityPairCount += 1;
       }
@@ -5369,16 +5402,27 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
     }
   }
 
-  const totalSupply = asNumber(token?.total_supply ?? token?.max_supply);
-  const circulatingSupply = asNumber(metrics.circulating_supply ?? token?.circulating_supply);
-  const selectedPriceWax = selected?.priceWax ?? null;
-  const selectedPriceUsd = selected?.priceUsd ?? null;
-  const marketCapWax = circulatingSupply != null && selectedPriceWax != null ? circulatingSupply * selectedPriceWax : null;
-  const marketCapUsd = circulatingSupply != null && selectedPriceUsd != null ? circulatingSupply * selectedPriceUsd : null;
+  const bubbleLiquidityTotals = liquidityContributions.reduce((totals, contribution) => {
+    if (!isReasonableBubbleLiquidity(contribution.liquidityWax, contribution.liquidityUsd, marketCapWax, marketCapUsd)) {
+      bubbleSuspiciousLiquidityPairCount += 1;
+      return totals;
+    }
+    totals.wax += contribution.liquidityWax;
+    if (contribution.liquidityUsd != null) {
+      totals.usd += contribution.liquidityUsd;
+      totals.hasUsd = true;
+    }
+    totals.hasWax = true;
+    return totals;
+  }, { wax: 0, usd: 0, hasWax: false, hasUsd: false });
   const fdvWax = asNumber(metrics.fdv_wax) ?? (totalSupply != null && selectedPriceWax != null ? totalSupply * selectedPriceWax : null);
   const fdvUsd = asNumber(metrics.fdv_usd) ?? (totalSupply != null && selectedPriceUsd != null ? totalSupply * selectedPriceUsd : null);
   const liquidityWax = hasLiquidityWax ? liquidityWaxTotal : null;
   const liquidityUsd = hasLiquidityWax && waxUsd != null ? liquidityWaxTotal * waxUsd : null;
+  const bubbleLiquidityWax = bubbleLiquidityTotals.hasWax ? bubbleLiquidityTotals.wax : null;
+  const bubbleLiquidityUsd = bubbleLiquidityTotals.hasUsd
+    ? bubbleLiquidityTotals.usd
+    : (bubbleLiquidityWax != null && waxUsd != null ? bubbleLiquidityWax * waxUsd : null);
   const volumeWax = hasVolumeWax ? volumeWaxTotal : asNumber(metrics.volume_24h_wax ?? metrics.volume_24h);
   const volumeUsd = volumeWax != null && waxUsd != null ? volumeWax * waxUsd : asNumber(metrics.volume_24h_usd);
 
@@ -5404,7 +5448,12 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   metrics.direct_pair_liquidity_usd = safeDecimal(liquidityUsd);
   metrics.direct_waxcash_pair_liquidity_wax = safeDecimal(hasDirectWaxcashLiquidityWax ? directWaxcashLiquidityWax : null);
   metrics.direct_wax_pair_liquidity_wax = safeDecimal(hasDirectWaxLiquidityWax ? directWaxLiquidityWax : null);
+  metrics.bubble_liquidity_wax = safeDecimal(bubbleLiquidityWax);
+  metrics.bubble_liquidity_usd = safeDecimal(bubbleLiquidityUsd);
+  metrics.bubble_tvl_wax = safeDecimal(bubbleLiquidityWax);
+  metrics.bubble_tvl_usd = safeDecimal(bubbleLiquidityUsd);
   metrics.suspicious_liquidity_pair_count = suspiciousLiquidityPairCount || null;
+  metrics.bubble_suspicious_liquidity_pair_count = bubbleSuspiciousLiquidityPairCount || null;
   metrics.cumulated_pair_liquidity_wax = safeDecimal(liquidityWax);
   metrics.cumulated_pair_liquidity_usd = safeDecimal(liquidityUsd);
   metrics.tvl_wax = safeDecimal(liquidityWax);
