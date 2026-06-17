@@ -3850,7 +3850,7 @@ async function listTopTokens(db) {
      ORDER BY t.pair_count DESC, t.updated_at DESC
      LIMIT 250`
   ).all();
-  return rows.results || [];
+  return (rows.results || []).map((row) => Object.assign(row, tokenMetricProof(row)));
 }
 
 function liveTokenUpdateKey(contract, symbol) {
@@ -3874,6 +3874,7 @@ function normalizeLiveTokenUpdate(row) {
   const symbol = normalizeSymbol(row?.symbol);
   const tokenKeyValue = liveTokenUpdateKey(contract, symbol);
   if (!tokenKeyValue) return null;
+  const proof = tokenMetricProof(row);
   return {
     token_key: tokenKeyValue,
     contract,
@@ -3887,6 +3888,11 @@ function normalizeLiveTokenUpdate(row) {
     tvl_usd: safeDecimal(asNumber(row.tvl_usd)),
     liquidity_wax: safeDecimal(asNumber(row.liquidity_wax)),
     liquidity_usd: safeDecimal(asNumber(row.liquidity_usd)),
+    selected_price_confidence: proof.selected_price_confidence,
+    liquidity_confidence: proof.liquidity_confidence,
+    tvl_confidence: proof.tvl_confidence,
+    metric_status: proof.metric_status,
+    metric_reason_codes: proof.metric_reason_codes,
     selected_metric_value: safeDecimal(selectedMetricValueForLiveToken(row)),
     indexed_pair_count: asNumber(row.indexed_pair_count ?? row.pair_count),
     source_count: asNumber(row.source_count),
@@ -3978,6 +3984,8 @@ async function listLiveTokenUpdates(db, options = {}) {
               s.tvl_usd AS tvl_usd,
               s.liquidity_wax AS liquidity_wax,
               s.liquidity_usd AS liquidity_usd,
+              s.selected_pair_source AS selected_pair_source,
+              s.selected_pair_id AS selected_pair_id,
               s.indexed_pair_count AS indexed_pair_count,
               s.source_count AS source_count,
               s.source_keys AS source_keys,

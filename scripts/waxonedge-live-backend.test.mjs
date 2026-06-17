@@ -128,6 +128,14 @@ ok('live snapshot route reads compact indexed token data only',
   route.includes('LEFT JOIN waxonedge_token_stats s') &&
   route.includes('COALESCE(s.updated_at, t.updated_at)') &&
   route.includes('LIVE_SNAPSHOT_TOKEN_LIMIT'));
+ok('live snapshot token rows expose metric confidence proof fields',
+  route.includes('s.selected_pair_source AS selected_pair_source') &&
+  route.includes('s.selected_pair_id AS selected_pair_id') &&
+  route.includes('selected_price_confidence: proof.selected_price_confidence') &&
+  route.includes('liquidity_confidence: proof.liquidity_confidence') &&
+  route.includes('tvl_confidence: proof.tvl_confidence') &&
+  route.includes('metric_status: proof.metric_status') &&
+  route.includes('metric_reason_codes: proof.metric_reason_codes'));
 {
   const liveSnapshotBlock = route.match(/async function handleLiveSnapshot[\s\S]*?function handleLiveStream/)?.[0] || '';
   ok('live snapshot handler does not call Hyperion, public fetch, or aggregate rebuild',
@@ -167,18 +175,32 @@ ok('live snapshot uses stable contract-symbol token keys',
     contract: 'graffitiking',
     symbol: 'WAXCASH',
     selected_price_usd: '0',
+    selected_pair_source: 'swap.alcor',
+    selected_pair_id: '8388',
     change_24h: '0',
     volume_24h_usd: '0',
     tvl_usd: '123.45',
+    liquidity_wax: '456.78',
     updated_at: '2026-06-14T00:00:00.000Z',
   });
-  ok('live token update preserves real zero metric values',
+  ok('live token update preserves real zero metric values and proof confidence',
     update &&
     update.token_key === 'graffitiking::WAXCASH' &&
     update.price_usd === '0' &&
+    update.selected_price_confidence === 'good' &&
+    update.liquidity_confidence === 'good' &&
+    update.tvl_confidence === 'good' &&
+    update.metric_status.selected_price.live === true &&
+    update.metric_status.liquidity.live === true &&
+    update.metric_status.tvl.live === true &&
     update.change_24h === '0' &&
     update.volume_24h_usd === '0');
 }
+ok('bootstrap token rows expose metric confidence proof fields',
+  route.includes('return (rows.results || []).map((row) => Object.assign(row, tokenMetricProof(row)))') &&
+  route.includes('selected_price_confidence: selectedPriceLive && selectedPriceProof.source ? \'good\' : \'unavailable\'') &&
+  route.includes('liquidity_confidence: liquidityBasis != null ? \'good\' : \'unavailable\'') &&
+  route.includes('tvl_confidence: tvlBasis != null ? \'good\' : \'unavailable\''));
 ok('live stream route is an honest unavailable contract until VPS SSE exists',
   route.includes('function handleLiveStream') &&
   route.includes('live stream transport not enabled yet') &&

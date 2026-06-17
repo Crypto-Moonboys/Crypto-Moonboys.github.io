@@ -790,6 +790,32 @@
     changed = assignLiveNumber(record, 'liquidityUsd', update.liquidity_usd) || changed;
     changed = assignLiveNumber(record, 'indexedPairCount', update.indexed_pair_count) || changed;
     changed = assignLiveNumber(record, 'sourceCount', update.source_count) || changed;
+    [
+      ['selectedPriceConfidence', ['selected_price_confidence', 'selectedPriceConfidence']],
+      ['liquidityConfidence', ['liquidity_confidence', 'liquidityConfidence']],
+      ['tvlConfidence', ['tvl_confidence', 'tvlConfidence']]
+    ].forEach(function (entry) {
+      var prop = entry[0];
+      var keys = entry[1];
+      for (var i = 0; i < keys.length; i += 1) {
+        if (!Object.prototype.hasOwnProperty.call(update, keys[i])) continue;
+        var next = normalizeConfidence(update[keys[i]]);
+        if (next && record[prop] !== next) {
+          record[prop] = next;
+          changed = true;
+        }
+        break;
+      }
+    });
+    if (Object.prototype.hasOwnProperty.call(update, 'metric_reason_codes') ||
+        Object.prototype.hasOwnProperty.call(update, 'reason_codes') ||
+        Object.prototype.hasOwnProperty.call(update, 'unavailable_reasons')) {
+      var reasonCodes = parseSourceKeys(update.metric_reason_codes || update.reason_codes || update.unavailable_reasons);
+      if (reasonCodes.join(',') !== (record.metricReasonCodes || []).join(',')) {
+        record.metricReasonCodes = reasonCodes;
+        changed = true;
+      }
+    }
     if (Object.prototype.hasOwnProperty.call(update, 'source_keys')) {
       var sources = parseSourceKeys(update.source_keys);
       if (sources.join(',') !== record.sources.join(',')) {
@@ -1758,8 +1784,8 @@
       : 'candles not indexed';
     bar.innerHTML = '<span class="woe-ab-stat-cluster">' +
       '<span>' + escHtml(tokenLabel) + '</span>' +
-      '<span class="woe-ab-up">? ' + escHtml(String(gainers)) + '</span>' +
-      '<span class="woe-ab-down">? ' + escHtml(String(losers)) + '</span>' +
+      '<span class="woe-ab-up">Up ' + escHtml(String(gainers)) + '</span>' +
+      '<span class="woe-ab-down">Down ' + escHtml(String(losers)) + '</span>' +
       '<span>Vol 24h <strong>' + escHtml(fmtNum(volume)) + '</strong></span>' +
       '<span>Top <strong class="woe-ab-up">' + escHtml(topGainer ? (topGainer.displaySymbol || topGainer.symbol) + ' ' + fmtPct(topGainer.change24) : 'Not indexed') + '</strong></span>' +
       '<span>Bot <strong class="woe-ab-down">' + escHtml(topLoser ? (topLoser.displaySymbol || topLoser.symbol) + ' ' + fmtPct(topLoser.change24) : 'Not indexed') + '</strong></span>' +
