@@ -201,6 +201,17 @@
     return String(value || '').split(',').map(sourceLabel).filter(Boolean);
   }
 
+  function parseReasonCodes(value) {
+    if (!value) return [];
+    if (Array.isArray(value)) {
+      return value.map(function (item) { return String(item || '').trim(); }).filter(Boolean);
+    }
+    if (typeof value === 'object') {
+      return Object.keys(value).filter(function (key) { return !!value[key]; });
+    }
+    return String(value || '').split(',').map(function (item) { return item.trim(); }).filter(Boolean);
+  }
+
   function capMap(map, limit) {
     while (map.size > limit) {
       var oldest = map.keys().next();
@@ -216,6 +227,14 @@
     var metricStatus = status && status[metricName];
     if (!metricStatus) return 'unavailable';
     return metricStatus.live === true ? 'good' : (metricStatus.reason ? 'unavailable' : 'weak');
+  }
+
+  function normalizeConfidence(value) {
+    var text = String(value == null ? '' : value).trim().toLowerCase();
+    if (text === 'good' || text === 'weak' || text === 'unavailable') return text;
+    if (text === 'live' || text === 'true' || text === '1') return 'good';
+    if (text === 'false' || text === '0' || text === 'missing' || text === 'not_indexed') return 'unavailable';
+    return '';
   }
 
   function prefersReducedMotion() {
@@ -542,7 +561,7 @@
         selectedPriceConfidence: metricConfidenceFrom(token, 'selected_price'),
         liquidityConfidence: metricConfidenceFrom(token, 'liquidity'),
         tvlConfidence: metricConfidenceFrom(token, 'tvl'),
-        metricReasonCodes: parseSourceKeys(token.metric_reason_codes || token.reason_codes || token.unavailable_reasons),
+        metricReasonCodes: parseReasonCodes(token.metric_reason_codes || token.reason_codes || token.unavailable_reasons),
         marketCapWax: asNum(token.market_cap_wax),
         marketCapUsd: asNum(token.market_cap_usd),
         fdvWax: asNum(token.fdv_wax),
@@ -557,7 +576,7 @@
         sources: sources,
         strongestPair: null,
         strongestPairLabel: '',
-        unavailableReasons: parseSourceKeys(token.unavailable_reasons).join(', '),
+        unavailableReasons: parseReasonCodes(token.unavailable_reasons).join(', '),
       };
     });
 
@@ -790,6 +809,32 @@
     changed = assignLiveNumber(record, 'liquidityUsd', update.liquidity_usd) || changed;
     changed = assignLiveNumber(record, 'indexedPairCount', update.indexed_pair_count) || changed;
     changed = assignLiveNumber(record, 'sourceCount', update.source_count) || changed;
+    [
+      ['selectedPriceConfidence', ['selected_price_confidence', 'selectedPriceConfidence']],
+      ['liquidityConfidence', ['liquidity_confidence', 'liquidityConfidence']],
+      ['tvlConfidence', ['tvl_confidence', 'tvlConfidence']]
+    ].forEach(function (entry) {
+      var prop = entry[0];
+      var keys = entry[1];
+      for (var i = 0; i < keys.length; i += 1) {
+        if (!Object.prototype.hasOwnProperty.call(update, keys[i])) continue;
+        var next = normalizeConfidence(update[keys[i]]);
+        if (next && record[prop] !== next) {
+          record[prop] = next;
+          changed = true;
+        }
+        break;
+      }
+    });
+    if (Object.prototype.hasOwnProperty.call(update, 'metric_reason_codes') ||
+        Object.prototype.hasOwnProperty.call(update, 'reason_codes') ||
+        Object.prototype.hasOwnProperty.call(update, 'unavailable_reasons')) {
+      var reasonCodes = parseReasonCodes(update.metric_reason_codes || update.reason_codes || update.unavailable_reasons);
+      if (reasonCodes.join(',') !== (record.metricReasonCodes || []).join(',')) {
+        record.metricReasonCodes = reasonCodes;
+        changed = true;
+      }
+    }
     if (Object.prototype.hasOwnProperty.call(update, 'source_keys')) {
       var sources = parseSourceKeys(update.source_keys);
       if (sources.join(',') !== record.sources.join(',')) {
@@ -1758,8 +1803,8 @@
       : 'candles not indexed';
     bar.innerHTML = '<span class="woe-ab-stat-cluster">' +
       '<span>' + escHtml(tokenLabel) + '</span>' +
-      '<span class="woe-ab-up">? ' + escHtml(String(gainers)) + '</span>' +
-      '<span class="woe-ab-down">? ' + escHtml(String(losers)) + '</span>' +
+      '<span class="woe-ab-up">Up ' + escHtml(String(gainers)) + '</span>' +
+      '<span class="woe-ab-down">Down ' + escHtml(String(losers)) + '</span>' +
       '<span>Vol 24h <strong>' + escHtml(fmtNum(volume)) + '</strong></span>' +
       '<span>Top <strong class="woe-ab-up">' + escHtml(topGainer ? (topGainer.displaySymbol || topGainer.symbol) + ' ' + fmtPct(topGainer.change24) : 'Not indexed') + '</strong></span>' +
       '<span>Bot <strong class="woe-ab-down">' + escHtml(topLoser ? (topLoser.displaySymbol || topLoser.symbol) + ' ' + fmtPct(topLoser.change24) : 'Not indexed') + '</strong></span>' +
