@@ -5604,6 +5604,154 @@ async function loadDirectWaxRowsForTokens(db, tokens = []) {
   return rows;
 }
 
+function absSafeDecimal(value) {
+  const amount = asNumber(value);
+  return amount == null ? null : safeDecimal(Math.abs(amount));
+}
+
+function tokenDecimalsForGraph(token, rowsByKey = new Map()) {
+  const row = rowsByKey.get(token?.key) || {};
+  const decimals = asNumber(row.decimals);
+  return decimals != null ? decimals : null;
+}
+
+function waxcashGraphPairValuation(pair, headlinePrice, priceIndex = new Map(), rowsByKey = new Map()) {
+  const side = pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+  const paired = otherTokenForPair(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+  const waxcashReserve = tokenSideReserveForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+  const pairedReserve = side?.side === 'a' ? asNumber(pair.reserve_b) : asNumber(pair.reserve_a);
+  const waxcashPriceWax = asNumber(headlinePrice?.og_headline_price_wax);
+  const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+  const reasonCodes = [];
+  if (!side) reasonCodes.push('not_waxcash_pair');
+  if (!paired?.key) reasonCodes.push('paired_token_unavailable');
+  if (!hasRealPairReserves(pair)) reasonCodes.push('missing_or_zero_reserves');
+  if (waxcashPriceWax == null) reasonCodes.push('waxcash_headline_price_unavailable');
+
+  let tokenPriceWaxcash = null;
+  let tokenPriceWax = null;
+  let tokenPriceUsd = null;
+  let waxcashSideValueWax = null;
+  let pairedSideValueWax = null;
+  let liquidityWax = null;
+  let liquidityUsd = null;
+  const pairedIsWax = paired ? isWaxToken(paired.contract, paired.symbol) : false;
+
+  if (!reasonCodes.length && waxcashReserve != null && waxcashReserve > 0 && pairedReserve != null && pairedReserve > 0) {
+    tokenPriceWaxcash = waxcashReserve / pairedReserve;
+    tokenPriceWax = pairedIsWax ? 1 : tokenPriceWaxcash * waxcashPriceWax;
+    tokenPriceUsd = waxUsd != null ? tokenPriceWax * waxUsd : null;
+    waxcashSideValueWax = waxcashReserve * waxcashPriceWax;
+    pairedSideValueWax = pairedReserve * tokenPriceWax;
+    liquidityWax = waxcashSideValueWax + pairedSideValueWax;
+    liquidityUsd = waxUsd != null ? liquidityWax * waxUsd : null;
+  }
+
+  return {
+    paired_token: paired,
+    pair_direction: side?.side === 'a' ? 'waxcash_token_a' : (side?.side === 'b' ? 'waxcash_token_b' : null),
+    reserve_normalization: 'stored_decimal_amounts',
+    waxcash_decimals: tokenDecimalsForGraph(tokenRef(WAXCASH_CONTRACT, WAXCASH_SYMBOL), rowsByKey),
+    paired_token_decimals: tokenDecimalsForGraph(paired, rowsByKey),
+    waxcash_reserve: safeDecimal(waxcashReserve),
+    paired_token_reserve: safeDecimal(pairedReserve),
+    selected_waxcash_price_wax: safeDecimal(waxcashPriceWax),
+    selected_wax_usd: safeDecimal(waxUsd),
+    token_price_in_waxcash: safeDecimal(tokenPriceWaxcash),
+    selected_price_wax: safeDecimal(tokenPriceWax),
+    selected_price_usd: safeDecimal(tokenPriceUsd),
+    waxcash_side_value_wax: safeDecimal(waxcashSideValueWax),
+    paired_token_side_value_wax: safeDecimal(pairedSideValueWax),
+    liquidity_wax: safeDecimal(liquidityWax),
+    liquidity_usd: safeDecimal(liquidityUsd),
+    volume_24h: absSafeDecimal(pair.volume_24h),
+    volume_24h_wax: absSafeDecimal(pair.volume_24h_wax),
+    volume_24h_usd: absSafeDecimal(pair.volume_24h_usd),
+    valuation_basis: liquidityWax != null ? 'direct_waxcash_reserve_ratio' : null,
+    reason_codes: reasonCodes,
+  };
+}
+
+function aggregateWaxcashGraphMetrics(token, directPairsForToken, graphValuations, row = {}) {
+  const isRoot = isWaxcashToken(token.contract, token.symbol);
+  const isWax = isWaxToken(token.contract, token.symbol);
+  const valuationRows = (directPairsForToken || [])
+    .map((pair) => graphValuations.get(pair))
+    .filter(Boolean);
+  let liquidityWax = 0;
+  let liquidityUsd = 0;
+  let volumeWax = 0;
+  let volumeUsd = 0;
+  let hasLiquidityWax = false;
+  let hasLiquidityUsd = false;
+  let hasVolumeWax = false;
+  let hasVolumeUsd = false;
+  let selectedValuation = null;
+
+  for (const valuation of valuationRows) {
+    const pairLiquidityWax = asNumber(valuation.liquidity_wax);
+    const pairLiquidityUsd = asNumber(valuation.liquidity_usd);
+    const pairVolumeWax = asNumber(valuation.volume_24h_wax);
+    const pairVolumeUsd = asNumber(valuation.volume_24h_usd);
+    if (pairLiquidityWax != null) {
+      liquidityWax += pairLiquidityWax;
+      hasLiquidityWax = true;
+      if (!selectedValuation || pairLiquidityWax > (asNumber(selectedValuation.liquidity_wax) ?? -1)) {
+        selectedValuation = valuation;
+      }
+    }
+    if (pairLiquidityUsd != null) {
+      liquidityUsd += pairLiquidityUsd;
+      hasLiquidityUsd = true;
+    }
+    if (pairVolumeWax != null) {
+      volumeWax += pairVolumeWax;
+      hasVolumeWax = true;
+    }
+    if (pairVolumeUsd != null) {
+      volumeUsd += pairVolumeUsd;
+      hasVolumeUsd = true;
+    }
+  }
+
+  const selectedPriceWax = isRoot
+    ? asNumber(selectedValuation?.selected_waxcash_price_wax)
+    : (isWax ? 1 : asNumber(selectedValuation?.selected_price_wax));
+  const selectedWaxUsd = asNumber(selectedValuation?.selected_wax_usd);
+  const selectedPriceUsd = selectedPriceWax != null && selectedWaxUsd != null ? selectedPriceWax * selectedWaxUsd : null;
+  const circulatingSupply = asNumber(row.circulating_supply);
+  const totalSupply = asNumber(row.total_supply ?? row.max_supply);
+  const marketCapWax = circulatingSupply != null && selectedPriceWax != null ? circulatingSupply * selectedPriceWax : null;
+  const marketCapUsd = circulatingSupply != null && selectedPriceUsd != null ? circulatingSupply * selectedPriceUsd : null;
+  const fdvWax = totalSupply != null && selectedPriceWax != null ? totalSupply * selectedPriceWax : null;
+  const fdvUsd = totalSupply != null && selectedPriceUsd != null ? totalSupply * selectedPriceUsd : null;
+
+  return {
+    selected_price_wax: safeDecimal(selectedPriceWax),
+    selected_price_usd: safeDecimal(selectedPriceUsd),
+    selected_price_source: selectedValuation?.pair_label || selectedValuation?.pair_id || null,
+    selected_pair_source: selectedValuation?.source || null,
+    selected_pair_id: selectedValuation?.pair_id || null,
+    selected_pair_label: selectedValuation?.pair_label || null,
+    liquidity_wax: safeDecimal(hasLiquidityWax ? liquidityWax : null),
+    liquidity_usd: safeDecimal(hasLiquidityUsd ? liquidityUsd : null),
+    direct_pair_liquidity_wax: safeDecimal(hasLiquidityWax ? liquidityWax : null),
+    direct_pair_liquidity_usd: safeDecimal(hasLiquidityUsd ? liquidityUsd : null),
+    direct_waxcash_pair_liquidity_wax: safeDecimal(hasLiquidityWax ? liquidityWax : null),
+    volume_24h: safeDecimal(hasVolumeWax ? volumeWax : null),
+    volume_24h_wax: safeDecimal(hasVolumeWax ? volumeWax : null),
+    volume_24h_usd: safeDecimal(hasVolumeUsd ? volumeUsd : null),
+    market_cap_wax: safeDecimal(marketCapWax),
+    market_cap_usd: safeDecimal(marketCapUsd),
+    fdv_wax: safeDecimal(fdvWax),
+    fdv_usd: safeDecimal(fdvUsd),
+    liquidity_basis: hasLiquidityWax ? 'direct_waxcash_reserve_ratio' : null,
+    tvl_basis: hasLiquidityWax ? 'direct_waxcash_reserve_ratio' : null,
+    tvl_wax: safeDecimal(hasLiquidityWax ? liquidityWax : null),
+    tvl_usd: safeDecimal(hasLiquidityUsd ? liquidityUsd : null),
+  };
+}
+
 
 async function buildWaxcashPairGraph(db) {
   const directPairs = await loadWaxcashOgPairRows(db);
@@ -5615,33 +5763,37 @@ async function buildWaxcashPairGraph(db) {
 
   const tokenRows = await loadTokenRowsForRefs(db, tokenRefs);
   const rowsByKey = new Map((tokenRows || []).map((row) => [tokenKey(row.contract, row.symbol), row]));
-  const derivedRows = await deriveReserveBackedTokenRows(db, tokenRefs.map((ref) => ({
-    ...(rowsByKey.get(ref.key) || {}),
-    contract: ref.contract,
-    symbol: ref.symbol,
-  })), {
-    pairRows: directPairs,
-    routeGraphRows: directPairs,
-    routeGraphLimit: 0,
-  });
-  const derivedByKey = new Map((derivedRows || []).map((row) => [tokenKey(row.contract, row.symbol), row]));
+  const priceRows = await loadTokenPriceRowsForPairs(db, directPairs);
+  const priceIndex = buildDbTokenPriceIndex(priceRows);
+  const headlinePrice = waxcashHeadlinePrice(directPairs, priceIndex);
+  const graphValuations = new Map();
+  for (const pair of directPairs || []) {
+    graphValuations.set(pair, {
+      ...waxcashGraphPairValuation(pair, headlinePrice, priceIndex, rowsByKey),
+      source: pair.source || null,
+      pair_id: pair.pair_id || null,
+      pair_label: selectedPairLabel(pair),
+    });
+  }
   const nodeKeys = new Set(tokenRefs.map((token) => token.key).filter(Boolean));
-    const nodes = tokenRefs
-      .filter((token) => token?.key)
-      .map((token) => {
-        const row = derivedByKey.get(token.key) || rowsByKey.get(token.key) || token;
-        const directPairsForToken = (directPairs || []).filter((pair) => pairTouchesToken(pair, token));
-        const directSources = Array.from(new Set(directPairsForToken
-          .map((pair) => aggregateSourceKey(pair.source))
-          .filter(Boolean)));
-        const normalized = normalizeLiveTokenUpdate({
-          ...row,
-          contract: token.contract,
-          symbol: token.symbol,
-          indexed_pair_count: directPairsForToken.length,
-          source_keys: directSources.join(','),
-          source_count: directSources.length,
-        }) || { token_key: token.key, contract: token.contract, symbol: token.symbol };
+  const nodes = tokenRefs
+    .filter((token) => token?.key)
+    .map((token) => {
+      const row = rowsByKey.get(token.key) || token;
+      const directPairsForToken = (directPairs || []).filter((pair) => pairTouchesToken(pair, token));
+      const directSources = Array.from(new Set(directPairsForToken
+        .map((pair) => aggregateSourceKey(pair.source))
+        .filter(Boolean)));
+      const graphMetrics = aggregateWaxcashGraphMetrics(token, directPairsForToken, graphValuations, row);
+      const normalized = normalizeLiveTokenUpdate({
+        ...row,
+        ...graphMetrics,
+        contract: token.contract,
+        symbol: token.symbol,
+        indexed_pair_count: directPairsForToken.length,
+        source_keys: directSources.join(','),
+        source_count: directSources.length,
+      }) || { token_key: token.key, contract: token.contract, symbol: token.symbol };
       return {
         id: token.key,
         token_key: token.key,
@@ -5659,6 +5811,7 @@ async function buildWaxcashPairGraph(db) {
       const sourceKey = tokenKey(pair.token_a_contract, pair.token_a_symbol);
       const targetKey = tokenKey(pair.token_b_contract, pair.token_b_symbol);
       if (!sourceKey || !targetKey || !nodeKeys.has(sourceKey) || !nodeKeys.has(targetKey)) return null;
+      const valuation = graphValuations.get(pair) || {};
       return {
         id: [pair.source, pair.pair_id, sourceKey, targetKey].map((part) => safeString(part)).join('::'),
         source: sourceKey,
@@ -5670,17 +5823,18 @@ async function buildWaxcashPairGraph(db) {
         dex_source: pair.source,
         pair_id: pair.pair_id,
         label: selectedPairLabel(pair),
-        price: safeDecimal(asNumber(pair.price)),
+        price: valuation.selected_price_wax || null,
         change_24h: safeDecimal(asNumber(pair.change_24h)),
-        volume_24h: safeDecimal(asNumber(pair.volume_24h)),
-        volume_24h_wax: safeDecimal(asNumber(pair.volume_24h_wax)),
-        volume_24h_usd: safeDecimal(asNumber(pair.volume_24h_usd)),
-        liquidity_wax: safeDecimal(asNumber(pair.liquidity_wax)),
-        liquidity_usd: safeDecimal(asNumber(pair.liquidity_usd)),
+        volume_24h: valuation.volume_24h || null,
+        volume_24h_wax: valuation.volume_24h_wax || null,
+        volume_24h_usd: valuation.volume_24h_usd || null,
+        liquidity_wax: valuation.liquidity_wax || null,
+        liquidity_usd: valuation.liquidity_usd || null,
         reserve_a: safeDecimal(asNumber(pair.reserve_a)),
         reserve_b: safeDecimal(asNumber(pair.reserve_b)),
         fee_bps: safeDecimal(asNumber(pair.fee_bps)),
         updated_at: pair.updated_at || null,
+        valuation,
         analytics_links: waxcashGraphPairLinks(pair),
       };
     })
@@ -7379,6 +7533,7 @@ export const __waxonedgeTestHooks = {
   selectOgWaxRoutePrice,
   buildWaxcashOgParityProof,
   waxcashHeadlinePrice,
+  waxcashGraphPairValuation,
   ogDirectWaxTokenPrice,
   metricCapabilitiesFromTokens,
   collectTokenPriceKeysForPairs,
