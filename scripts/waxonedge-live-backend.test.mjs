@@ -1770,9 +1770,9 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       updated_at: '2026-06-14T11:09:00.000Z',
     },
   ];
-  const graphTokenRows = [
-    { contract: 'graffitiking', symbol: 'WAXCASH', total_supply: '1000000', circulating_supply: '500000', updated_at: '2026-06-14T11:00:00.000Z' },
-    { contract: 'wuffi', symbol: 'WUF', total_supply: '1000000', circulating_supply: '400000', updated_at: '2026-06-14T11:05:00.000Z' },
+    const graphTokenRows = [
+      { contract: 'graffitiking', symbol: 'WAXCASH', total_supply: '1000000', circulating_supply: '500000', updated_at: '2026-06-14T11:00:00.000Z' },
+      { contract: 'wuffi', symbol: 'WUF', total_supply: '1000000', circulating_supply: '400000', source_count: 3, source_keys: 'swap.nefty,swap.taco,swap.box', updated_at: '2026-06-14T11:05:00.000Z' },
     { contract: 'abc.token', symbol: 'ABC', total_supply: '1000000', circulating_supply: '300000', updated_at: '2026-06-14T11:06:00.000Z' },
     { contract: 'route.token', symbol: 'ROUTE', total_supply: '1000000', circulating_supply: '200000', updated_at: '2026-06-14T11:06:30.000Z' },
     { contract: 'aigodtokenwx', symbol: 'AIGOD', total_supply: '1000000', circulating_supply: '200000', updated_at: '2026-06-14T11:06:35.000Z' },
@@ -1812,9 +1812,10 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       };
     },
   };
-  const waxcashGraph = await __waxonedgeTestHooks.loadWaxcashGraphTokenRows(graphDb);
-  const graphTokenKeys = waxcashGraph.tokenRows.map((token) => `${token.contract}::${token.symbol}`);
-  const graphPairIds = waxcashGraph.pairRows.map((pair) => pair.pair_id);
+    const waxcashGraph = await __waxonedgeTestHooks.loadWaxcashGraphTokenRows(graphDb);
+    const waxcashPairGraph = await __waxonedgeTestHooks.buildWaxcashPairGraph(graphDb);
+    const graphTokenKeys = waxcashGraph.tokenRows.map((token) => `${token.contract}::${token.symbol}`);
+    const graphPairIds = waxcashGraph.pairRows.map((pair) => pair.pair_id);
   ok('WaxOnEdge main token graph is WAXCASH-centered and excludes unrelated WAX tokens',
     graphTokenKeys.includes('graffitiking::WAXCASH') &&
     graphTokenKeys.includes('wuffi::WUF') &&
@@ -1828,9 +1829,15 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     graphPairIds.includes('ABCWAX50') &&
     graphPairIds.includes('AIGODWAXFAKE') &&
     graphPairIds.includes('ROUTEHELP') &&
-    graphPairIds.includes('HELPWAX') &&
-    !graphPairIds.includes('QQQWAX999'));
-  const graphLiveResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
+      graphPairIds.includes('HELPWAX') &&
+      !graphPairIds.includes('QQQWAX999'));
+    const wufGraphNode = waxcashPairGraph.nodes.find((node) => node.token_key === 'wuffi::WUF');
+    ok('WAXCASH graph endpoint source_count matches direct WAXCASH source_keys only',
+      wufGraphNode &&
+      wufGraphNode.source_keys === 'swap.nefty' &&
+      wufGraphNode.source_count === 1 &&
+      wufGraphNode.indexed_pair_count === 1);
+    const graphLiveResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
     { DB: graphDb },
     new URLSearchParams(),
     {},
@@ -3185,15 +3192,16 @@ ok('unverified swap.adex and dapp.fusion trade streams are reported honestly in 
   route.includes('trade_history_not_available_for_source: ammTradeIndexSnapshot.data?.trade_history_not_available_for_source || TRADE_HISTORY_NOT_AVAILABLE_SOURCES.slice()') &&
   route.includes('trade_stream_not_verified_from_og_refs: TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS') &&
   route.includes('trade_stream_not_verified_from_og_refs: ammTradeIndexSnapshot.data?.trade_stream_not_verified_from_og_refs || TRADE_STREAM_NOT_VERIFIED_FROM_OG_REFS'));
+const ammSwapStreamUrlBody = normalizedRoute.match(/function ammSwapStreamUrl[\s\S]*?\n  }\n/)?.[0] || '';
 ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filters',
-  route.includes('function ammSwapStreamUrl') &&
-  route.includes('`account=${encodeURIComponent(stream.account)}`') &&
-  route.includes('`act.name=${encodeURIComponent(stream.action)}`') &&
-  route.includes("'sort=desc'") &&
-  route.includes("'simple=true'") &&
-  route.includes('if (cursor) params.push(`skip=${encodeURIComponent(String(cursor))}`)') &&
-  !route.match(/function ammSwapStreamUrl[\s\S]*pair_id=/) &&
-  !route.match(/function ammSwapStreamUrl[\s\S]*market_id=/));
+  ammSwapStreamUrlBody.includes('function ammSwapStreamUrl') &&
+  ammSwapStreamUrlBody.includes('`account=${encodeURIComponent(stream.account)}`') &&
+  ammSwapStreamUrlBody.includes('`act.name=${encodeURIComponent(stream.action)}`') &&
+  ammSwapStreamUrlBody.includes("'sort=desc'") &&
+  ammSwapStreamUrlBody.includes("'simple=true'") &&
+  ammSwapStreamUrlBody.includes('if (cursor) params.push(`skip=${encodeURIComponent(String(cursor))}`)') &&
+  !ammSwapStreamUrlBody.includes('pair_id=') &&
+  !ammSwapStreamUrlBody.includes('market_id='));
 {
   const stream = { source: 'swap.alcor', referenceSource: 'alcorv2', account: 'swap.alcor', action: 'logswap', parser: 'swap-v3' };
   const priceIndex = new Map([

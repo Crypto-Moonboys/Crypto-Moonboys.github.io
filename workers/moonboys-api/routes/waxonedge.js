@@ -5626,20 +5626,22 @@ async function buildWaxcashPairGraph(db) {
   });
   const derivedByKey = new Map((derivedRows || []).map((row) => [tokenKey(row.contract, row.symbol), row]));
   const nodeKeys = new Set(tokenRefs.map((token) => token.key).filter(Boolean));
-  const nodes = tokenRefs
-    .filter((token) => token?.key)
-    .map((token) => {
-      const row = derivedByKey.get(token.key) || rowsByKey.get(token.key) || token;
-      const normalized = normalizeLiveTokenUpdate({
-        ...row,
-        contract: token.contract,
-        symbol: token.symbol,
-        indexed_pair_count: (directPairs || []).filter((pair) => pairTouchesToken(pair, token)).length,
-        source_keys: Array.from(new Set((directPairs || [])
-          .filter((pair) => pairTouchesToken(pair, token))
+    const nodes = tokenRefs
+      .filter((token) => token?.key)
+      .map((token) => {
+        const row = derivedByKey.get(token.key) || rowsByKey.get(token.key) || token;
+        const directPairsForToken = (directPairs || []).filter((pair) => pairTouchesToken(pair, token));
+        const directSources = Array.from(new Set(directPairsForToken
           .map((pair) => aggregateSourceKey(pair.source))
-          .filter(Boolean))).join(','),
-      }) || { token_key: token.key, contract: token.contract, symbol: token.symbol };
+          .filter(Boolean)));
+        const normalized = normalizeLiveTokenUpdate({
+          ...row,
+          contract: token.contract,
+          symbol: token.symbol,
+          indexed_pair_count: directPairsForToken.length,
+          source_keys: directSources.join(','),
+          source_count: directSources.length,
+        }) || { token_key: token.key, contract: token.contract, symbol: token.symbol };
       return {
         id: token.key,
         token_key: token.key,
