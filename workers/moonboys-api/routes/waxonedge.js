@@ -5683,6 +5683,13 @@ function isAlcorWaxcashDirectPair(pair) {
     hasWaxQuoteForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
 }
 
+function isOldWoeLegacyWaxcashDirectPair(pair) {
+  const source = aggregateSourceKey(pair?.source);
+  return ['swap.nefty', 'swap.box', 'swap.taco', 'swap.adex'].includes(source) &&
+    pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL) &&
+    hasWaxQuoteForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+}
+
 function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex) {
   const side = pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
   const reasonCodes = [];
@@ -5790,19 +5797,21 @@ function waxcashHeadlinePrice(pairRows, priceIndex) {
   const directCandidates = (pairRows || []).filter((pair) =>
     pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL) &&
     hasWaxQuoteForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL));
-  const alcorCandidates = directCandidates.filter(isAlcorWaxcashDirectPair);
-  const alcorSelected = ogDirectWaxTokenPrice(WAXCASH_CONTRACT, WAXCASH_SYMBOL, alcorCandidates, priceIndex);
-  const alcorSelectedValid = asNumber(alcorSelected.price_wax) != null;
-  const fallbackSelected = alcorSelectedValid
+  const legacyCandidates = directCandidates.filter(isOldWoeLegacyWaxcashDirectPair);
+  const v3Candidates = directCandidates.filter(isAlcorWaxcashDirectPair);
+  const legacySelected = ogDirectWaxTokenPrice(WAXCASH_CONTRACT, WAXCASH_SYMBOL, legacyCandidates, priceIndex);
+  const legacySelectedValid = asNumber(legacySelected.price_wax) != null;
+  const v3Selected = legacySelectedValid
     ? null
-    : ogDirectWaxTokenPrice(WAXCASH_CONTRACT, WAXCASH_SYMBOL, directCandidates, priceIndex);
-  const selected = alcorSelectedValid ? alcorSelected : fallbackSelected;
+    : ogDirectWaxTokenPrice(WAXCASH_CONTRACT, WAXCASH_SYMBOL, v3Candidates, priceIndex);
+  const v3SelectedValid = asNumber(v3Selected?.price_wax) != null;
+  const selected = legacySelectedValid ? legacySelected : v3Selected;
   const reasonCodes = selected.reason_codes.slice();
   const fallbackReasonCodes = [];
-  if (!alcorSelectedValid) {
-    fallbackReasonCodes.push(alcorCandidates.length
-      ? 'alcor_waxcash_direct_pool_unusable'
-      : 'alcor_waxcash_direct_pool_missing');
+  if (!legacySelectedValid) {
+    fallbackReasonCodes.push(legacyCandidates.length
+      ? 'legacy_waxcash_direct_pool_unusable'
+      : 'legacy_waxcash_direct_pool_missing');
   }
   const waxReserve = asNumber(selected.wax_reserve);
   return {
@@ -5817,12 +5826,14 @@ function waxcashHeadlinePrice(pairRows, priceIndex) {
     og_headline_passes_100_wax_threshold: waxReserve != null ? waxReserve >= 100 : false,
     og_headline_reason_codes: reasonCodes,
     og_headline_updated_at: selected.updated_at,
-    headline_price_source_policy: 'alcor_preferred_direct_wax',
-    alcor_direct_wax_candidate_count: alcorCandidates.length,
-    alcor_direct_wax_candidate_found: alcorCandidates.length > 0,
-    alcor_direct_wax_selected: alcorSelectedValid,
-    alcor_expected_direct_wax_pool_missing: alcorCandidates.length === 0,
-    headline_fallback_used: !alcorSelectedValid && asNumber(selected.price_wax) != null,
+    headline_price_source_policy: 'old_woe_legacy_pool_first_then_v3',
+    legacy_direct_wax_candidate_count: legacyCandidates.length,
+    legacy_direct_wax_candidate_found: legacyCandidates.length > 0,
+    legacy_direct_wax_selected: legacySelectedValid,
+    v3_direct_wax_candidate_count: v3Candidates.length,
+    v3_direct_wax_candidate_found: v3Candidates.length > 0,
+    v3_direct_wax_selected: !legacySelectedValid && v3SelectedValid,
+    headline_fallback_used: !legacySelectedValid && v3SelectedValid,
     headline_fallback_reason_codes: fallbackReasonCodes,
   };
 }
@@ -6663,8 +6674,9 @@ async function buildWaxcashAnalytics(db) {
   const fdvUsd = totalSupply != null && selectedPriceUsd != null ? totalSupply * selectedPriceUsd : null;
   const volume24Wax = asNumber(detailStats.volume_24h_wax ?? detailStats.volume_24h) ?? sumProofField(proof.all_pairs, 'volume_24h_wax');
   const volume24Usd = asNumber(detailStats.volume_24h_usd) ?? (volume24Wax != null && waxUsd != null ? volume24Wax * waxUsd : null);
-  const liquidityWax = asNumber(proof.aggregate_pair_liquidity?.liquidity_wax);
-  const liquidityUsd = asNumber(proof.aggregate_pair_liquidity?.liquidity_usd);
+  const selectedDirectWaxReserve = asNumber(selectedWaxPool?.wax_reserve);
+  const selectedDirectLiquidityWax = selectedDirectWaxReserve != null ? selectedDirectWaxReserve * 2 : null;
+  const selectedDirectLiquidityUsd = selectedDirectLiquidityWax != null && waxUsd != null ? selectedDirectLiquidityWax * waxUsd : null;
   const selectedPriceLive = selectedPriceWax != null;
   const marketCapLive = marketCapWax != null || marketCapUsd != null;
   const metricStatus = detailStats.metric_status || {};
@@ -6693,12 +6705,14 @@ async function buildWaxcashAnalytics(db) {
       selected_price_rejection_reason: selectedPriceLive ? null : (headline.og_headline_reason_codes || []).join(',') || 'direct_wax_price_unavailable',
       uses_recursive_graph_price: false,
       holder_count: asNumber(detailStats.holder_count),
-      tvl_wax: safeDecimal(liquidityWax),
-      tvl_usd: safeDecimal(liquidityUsd),
-      liquidity_wax: safeDecimal(liquidityWax),
-      liquidity_usd: safeDecimal(liquidityUsd),
-      cumulated_pair_liquidity_wax: safeDecimal(liquidityWax),
-      cumulated_pair_liquidity_usd: safeDecimal(liquidityUsd),
+      tvl_wax: safeDecimal(selectedDirectLiquidityWax),
+      tvl_usd: safeDecimal(selectedDirectLiquidityUsd),
+      liquidity_wax: safeDecimal(selectedDirectLiquidityWax),
+      liquidity_usd: safeDecimal(selectedDirectLiquidityUsd),
+      selected_direct_wax_pair_liquidity_wax: safeDecimal(selectedDirectLiquidityWax),
+      selected_direct_wax_pair_liquidity_usd: safeDecimal(selectedDirectLiquidityUsd),
+      cumulated_pair_liquidity_wax: null,
+      cumulated_pair_liquidity_usd: null,
       volume_24h_wax: safeDecimal(volume24Wax),
       volume_24h_usd: safeDecimal(volume24Usd),
       volume_7d: safeDecimal(asNumber(detailStats.volume_7d)),

@@ -63,6 +63,10 @@
       '</div>';
   }
 
+  function firstPresent(primary, fallback) {
+    return primary == null ? fallback : primary;
+  }
+
   function renderStats(payload) {
     var token = payload.token || {};
     var stats = payload.stats || {};
@@ -72,8 +76,15 @@
     $('wx-stats').innerHTML = [
       statRow('Token', '<span class="wx-token"><strong>WAXCASH</strong>graffitiking</span>'),
       statRow('Decimals', esc(token.decimals == null ? DASH : token.decimals)),
-      statRow('TVL', dual(stats.tvl_wax, stats.tvl_usd), stats.tvl_wax == null && stats.tvl_usd == null),
-      statRow('Cumulated Pair Liquidity', dual(stats.cumulated_pair_liquidity_wax, stats.cumulated_pair_liquidity_usd), stats.cumulated_pair_liquidity_wax == null && stats.cumulated_pair_liquidity_usd == null),
+      statRow(
+        'Selected Direct WAX Pair Liquidity',
+        dual(
+          firstPresent(stats.selected_direct_wax_pair_liquidity_wax, stats.liquidity_wax),
+          firstPresent(stats.selected_direct_wax_pair_liquidity_usd, stats.liquidity_usd)
+        ),
+        (stats.selected_direct_wax_pair_liquidity_wax == null && stats.liquidity_wax == null) &&
+          (stats.selected_direct_wax_pair_liquidity_usd == null && stats.liquidity_usd == null)
+      ),
       statRow('Price', dual(stats.selected_price_wax, stats.selected_price_usd), stats.selected_price_wax == null && stats.selected_price_usd == null),
       statRow('24h price change', '<span class="' + (change == null ? 'wx-muted' : (change >= 0 ? 'wx-positive' : 'wx-negative')) + '">' + esc(pct(change)) + '</span>', change == null),
       statRow('24h volume', dual(stats.volume_24h_wax, stats.volume_24h_usd), stats.volume_24h_wax == null && stats.volume_24h_usd == null),
