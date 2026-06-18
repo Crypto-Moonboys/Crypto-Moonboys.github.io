@@ -1908,8 +1908,64 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       };
     },
   };
+  const pairTokenTouches = (pair, contract, symbol) =>
+    (pair.token_a_contract === contract && pair.token_a_symbol === symbol) ||
+    (pair.token_b_contract === contract && pair.token_b_symbol === symbol);
+  const waxcashAnalyticsDb = {
+    prepare(sql) {
+      function allResults(params) {
+        if (sql.includes('FROM waxonedge_pairs')) {
+          const wantsWaxcash = params.includes('graffitiking') && params.includes('WAXCASH');
+          if (wantsWaxcash) {
+            return { results: graphPairs.filter((pair) => pairTokenTouches(pair, 'graffitiking', 'WAXCASH')) };
+          }
+          return {
+            results: graphPairs.filter((pair) => params.some((value, index) =>
+              index % 4 === 0 &&
+              ((pair.token_a_contract === value && pair.token_a_symbol === params[index + 1] && pair.token_b_contract === 'eosio.token' && pair.token_b_symbol === 'WAX') ||
+                (pair.token_b_contract === value && pair.token_b_symbol === params[index + 1] && pair.token_a_contract === 'eosio.token' && pair.token_a_symbol === 'WAX'))
+            )),
+          };
+        }
+        if (sql.includes('FROM waxonedge_chart_candles')) {
+          return { results: [] };
+        }
+        if (sql.includes('FROM waxonedge_tokens')) {
+          return { results: graphTokenRows.filter((row) => params.some((value, index) => index % 2 === 0 && row.contract === value && row.symbol === params[index + 1])) };
+        }
+        if (sql.includes('FROM waxonedge_token_stats')) {
+          return {
+            results: [{
+              contract: 'graffitiking',
+              symbol: 'WAXCASH',
+              circulating_supply: '500000',
+              volume_24h_wax: '100',
+              volume_7d: '700',
+              volume_30d: '3000',
+              source_count: '3',
+              updated_at: '2026-06-14T11:00:00.000Z',
+            }],
+          };
+        }
+        return { results: [] };
+      }
+      return {
+        bind(...params) {
+          return {
+            async all() {
+              return allResults(params);
+            },
+            async first() {
+              return allResults(params).results[0] || null;
+            },
+          };
+        },
+      };
+    },
+  };
     const waxcashGraph = await __waxonedgeTestHooks.loadWaxcashGraphTokenRows(graphDb);
     const waxcashPairGraph = await __waxonedgeTestHooks.buildWaxcashPairGraph(graphDb);
+    const waxcashAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(waxcashAnalyticsDb);
     const graphTokenKeys = waxcashGraph.tokenRows.map((token) => `${token.contract}::${token.symbol}`);
     const graphPairIds = waxcashGraph.pairRows.map((pair) => pair.pair_id);
     const visibleGraphKeys = waxcashGraph.tokenRows
@@ -1965,6 +2021,28 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         reserve_b: '200',
         liquidity_wax: null,
       }) === false);
+    ok('WAXCASH analytics endpoint returns all exact WAXCASH pairs',
+      waxcashAnalytics.pairs.length === graphPairs.filter((pair) => pairTokenTouches(pair, 'graffitiking', 'WAXCASH')).length &&
+      waxcashAnalytics.pairs.some((pair) => pair.pair_id === '8388') &&
+      waxcashAnalytics.pairs.some((pair) => pair.pair_id === 'WAXCASHWUF') &&
+      waxcashAnalytics.pairs.some((pair) => pair.pair_id === 'WAXCASHABC'),
+      JSON.stringify(waxcashAnalytics.pairs.map((pair) => pair.pair_id)));
+    ok('WAXCASH analytics selected price uses old WOE direct WAX proof, not recursive graph route',
+      Number(waxcashAnalytics.stats.selected_price_wax) === 0.01 &&
+      waxcashAnalytics.stats.selected_pair_source === 'swap.alcor' &&
+      waxcashAnalytics.stats.selected_pair_id === '8388' &&
+      waxcashAnalytics.stats.selected_price_basis === 'og_woe_direct_wax_pool' &&
+      waxcashAnalytics.stats.selected_price_route === null &&
+      waxcashAnalytics.stats.uses_recursive_graph_price === false);
+    ok('WAXCASH analytics names the selected direct WAX pool by largest WAX reserve, not depth',
+      waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id === '8388' &&
+      !(('selected_' + 'deep' + 'est_wax_pool') in waxcashAnalytics) &&
+      !(('selected_' + 'deep' + 'est_wax_pool') in (waxcashAnalytics.proof || {})));
+    ok('WAXCASH analytics market cap derives only from circulating supply times selected price',
+      Number(waxcashAnalytics.stats.market_cap_wax) === 5000 &&
+      Number(waxcashAnalytics.stats.market_cap_usd) === 30 &&
+      waxcashAnalytics.stats.market_cap_basis === 'circulating_supply_x_selected_price' &&
+      Number(waxcashAnalytics.stats.market_cap_wax) !== Number(waxcashAnalytics.stats.liquidity_wax));
     const staleWufUpdate = __waxonedgeTestHooks.instantLiveTokenUpdatesForVerifiedPairEvent({
       changedPair: graphPairs.find((pair) => pair.pair_id === 'WAXCASHWUF'),
       tokenRows: graphTokenRows,
@@ -4610,6 +4688,10 @@ ok('WAXCASH OG WOE parity proof prefers Alcor direct WAX pool without stored pri
   route.includes('waxReserve > selected.waxReserve') &&
   route.includes('price_wax = wax_reserve / waxcash_reserve') &&
   route.includes('og_headline_passes_100_wax_threshold') &&
+  route.includes('selected_largest_wax_reserve_pool') &&
+  !route.includes('selected_' + 'deep' + 'est_wax_pool') &&
+  route.includes('largest verified WAX reserve') &&
+  !route.includes('deep' + 'est direct WAX pool') &&
   route.includes('Stored pair.price, TVL, market cap, volume, and multi-hop routes are not headline-price inputs') &&
   !route.slice(route.indexOf('function waxcashHeadlinePrice'), route.indexOf('function buildWaxcashOgParityProof')).includes('pair.price'));
 ok('WAXCASH OG WOE parity proof exposes all exact pair rows with unavailable reason codes',

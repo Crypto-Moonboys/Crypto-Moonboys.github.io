@@ -37,6 +37,7 @@ function ok(label, condition, detail) {
 }
 
 ok('waxonedge.html exists', exists('waxonedge.html'));
+ok('waxcash.html exists', exists('waxcash.html'));
 ok('waxonedge/index.html clean-route alias exists', exists('waxonedge/index.html'));
 ok('analytics/token/index.html token analytics route exists', exists('analytics/token/index.html'));
 ok('css/waxonedge.css exists', exists('css/waxonedge.css'));
@@ -45,8 +46,10 @@ ok('js/waxonedge.js exists', exists('js/waxonedge.js'));
 ok('js/waxonedge-sources.js exists', exists('js/waxonedge-sources.js'));
 ok('js/waxonedge-featured-tokens.js exists', exists('js/waxonedge-featured-tokens.js'));
 ok('js/waxonedge-bubbles-v2.js exists', exists('js/waxonedge-bubbles-v2.js'));
+ok('js/waxcash-analytics.js exists', exists('js/waxcash-analytics.js'));
 
 const html = exists('waxonedge.html') ? read('waxonedge.html') : '';
+const waxcashHtml = exists('waxcash.html') ? read('waxcash.html') : '';
 const tokenHtml = exists('analytics/token/index.html') ? read('analytics/token/index.html') : '';
 const aliasHtml = exists('waxonedge/index.html') ? read('waxonedge/index.html') : '';
 const css = exists('css/waxonedge.css') ? read('css/waxonedge.css') : '';
@@ -55,6 +58,7 @@ const js = exists('js/waxonedge.js') ? read('js/waxonedge.js') : '';
 const sourcesJs = exists('js/waxonedge-sources.js') ? read('js/waxonedge-sources.js') : '';
 const featuredJs = exists('js/waxonedge-featured-tokens.js') ? read('js/waxonedge-featured-tokens.js') : '';
 const v2Js = exists('js/waxonedge-bubbles-v2.js') ? read('js/waxonedge-bubbles-v2.js') : '';
+const waxcashAnalyticsJs = exists('js/waxcash-analytics.js') ? read('js/waxcash-analytics.js') : '';
 
 ok('waxonedge.html references /css/waxonedge.css', html.includes('/css/waxonedge.css'));
 ok('waxonedge.html references /css/waxonedge-bubbles-v2.css', html.includes('/css/waxonedge-bubbles-v2.css'));
@@ -108,6 +112,23 @@ ok('analytics token page removes unnecessary header nav/actions',
   !tokenHtml.includes('Read-Only') &&
   !tokenHtml.includes('Exit Wide') &&
   !tokenHtml.includes('id="woe-wide-toggle"'));
+ok('waxcash.html is a dedicated analytics page without top nav or graph runtime',
+  waxcashHtml.includes('WAXCASH Analytics') &&
+  waxcashHtml.includes('/js/waxcash-analytics.js') &&
+  !waxcashHtml.includes('/js/waxcash-graph.js') &&
+  !waxcashHtml.includes('woe-ab-segments') &&
+  !waxcashHtml.includes('woe-og-nav') &&
+  !waxcashHtml.includes('href="/index.html"') &&
+  !waxcashHtml.includes('>Home<') &&
+  !waxcashHtml.includes('>Spot<') &&
+  !waxcashHtml.includes('>Markets<') &&
+  !waxcashHtml.includes('>Analytics<'));
+ok('waxcash analytics frontend calls the dedicated backend endpoint only',
+  waxcashAnalyticsJs.includes("var ENDPOINT = '/api/waxonedge/waxcash-analytics'") &&
+  !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-graph') &&
+  !waxcashAnalyticsJs.includes('/api/waxonedge/bootstrap') &&
+  waxcashAnalyticsJs.includes('market_cap_wax') &&
+  waxcashAnalyticsJs.includes('cumulated_pair_liquidity_wax'));
 
 const FORBIDDEN_LABELS = ['Swap', 'Add Liquidity', 'Remove Liquidity', 'Connect Wallet', 'Trade on Swap', 'Static read-only MVP'];
 for (const label of FORBIDDEN_LABELS) {
@@ -115,6 +136,13 @@ for (const label of FORBIDDEN_LABELS) {
     'waxonedge does NOT contain forbidden label: "' + label + '"',
     !html.includes(label),
     'Found "' + label + '" in WaxOnEdge frontend',
+  );
+}
+for (const label of FORBIDDEN_LABELS) {
+  ok(
+    'waxcash analytics page does NOT contain forbidden label: "' + label + '"',
+    !waxcashHtml.includes(label) && !waxcashAnalyticsJs.includes(label),
+    'Found "' + label + '" in WAXCASH analytics page',
   );
 }
 
