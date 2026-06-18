@@ -550,6 +550,7 @@
     var tokens = sourceRows(data.tokens);
     var pairs = sourceRows(data.pairs);
     var byKey = {};
+    var visibleBubbleKeys = {};
 
     tokens.forEach(function (token) {
       var symbol = normalizeSymbol(token.symbol || token.id);
@@ -557,6 +558,8 @@
       var key = tokenKey(contract, symbol);
       var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key];
       if (!key) return;
+      if (token.visible_in_waxcash_bubbles !== true) return;
+      visibleBubbleKeys[key] = true;
       var sources = parseSourceKeys(token.source_keys || token.sourceKeys || token.sources);
       byKey[key] = {
         id: key,
@@ -608,11 +611,13 @@
         strongestPair: null,
         strongestPairLabel: '',
         unavailableReasons: parseReasonCodes(token.unavailable_reasons).join(', '),
+        visibleInWaxcashBubbles: true,
       };
     });
 
     pairs.forEach(function (pair) {
       pairKeys(pair).forEach(function (key) {
+        if (!visibleBubbleKeys[key]) return;
         var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key];
         if (!byKey[key]) {
           byKey[key] = pairDerivedRecord(featured || null, key);
