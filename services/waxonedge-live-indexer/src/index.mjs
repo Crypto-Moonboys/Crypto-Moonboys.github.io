@@ -887,6 +887,13 @@ function parseAdapterSwap(row, stream, quantityResolver) {
   const volume = parsedIn.symbol === 'WAX'
     ? parsedIn.amount
     : (parsedOut.symbol === 'WAX' ? parsedOut.amount : parsedIn.amount);
+  const canonicalPair = canonicalPairFromReserveBearingEvent({
+    stream,
+    pairId,
+    record,
+    row,
+    tradedAt,
+  });
   return {
     trade_id: `${stableId}:pair:${pairId}`,
     source: stream.source,
@@ -902,6 +909,7 @@ function parseAdapterSwap(row, stream, quantityResolver) {
     side: 'swap',
     direction: volumeDirection(volume),
     traded_at: tradedAt,
+    canonical_pair: canonicalPair || undefined,
     raw_event: row,
   };
 }
@@ -928,6 +936,88 @@ function parseAmmSwap(row, stream) {
   return null;
 }
 
+function tokenIdentityFromRecord(record = {}, row = {}, side = 'a') {
+  const upper = side.toUpperCase();
+  const token = firstPresent(
+    record[`token_${side}`],
+    row?.[`token_${side}`],
+    record[`token${upper}`],
+    row?.[`token${upper}`],
+    record[`${side}_token`],
+    row?.[`${side}_token`],
+  ) || {};
+  const parsed = parseAsset(token);
+  const symText = firstPresent(
+    record[`token_${side}_symbol`],
+    row?.[`token_${side}_symbol`],
+    record[`token${upper}Symbol`],
+    row?.[`token${upper}Symbol`],
+    token.symbol,
+    token.sym,
+    parsed.symbol,
+  );
+  const contractText = firstPresent(
+    record[`token_${side}_contract`],
+    row?.[`token_${side}_contract`],
+    record[`token${upper}Contract`],
+    row?.[`token${upper}Contract`],
+    token.contract,
+    token.code,
+    parsed.contract,
+  );
+  return {
+    contract: normalizeContract(contractText),
+    symbol: normalizeSymbol(String(symText || '').includes(',')
+      ? String(symText).split(',').pop()
+      : symText),
+  };
+}
+
+function canonicalPairFromReserveBearingEvent({ stream, pairId, record = {}, row = {}, tradedAt = null }) {
+  const reserveA = safeDecimal(firstPresent(
+    record.reserve_a_decimal,
+    row?.reserve_a_decimal,
+    record.reserve_a,
+    row?.reserve_a,
+    record.reserveA,
+    row?.reserveA,
+    record.reserve0,
+    row?.reserve0,
+  ));
+  const reserveB = safeDecimal(firstPresent(
+    record.reserve_b_decimal,
+    row?.reserve_b_decimal,
+    record.reserve_b,
+    row?.reserve_b,
+    record.reserveB,
+    row?.reserveB,
+    record.reserve1,
+    row?.reserve1,
+  ));
+  const tokenA = tokenIdentityFromRecord(record, row, 'a');
+  const tokenB = tokenIdentityFromRecord(record, row, 'b');
+  const source = safeString(stream?.source);
+  const id = safeString(pairId);
+  if (!source || !id || !tokenA.contract || !tokenA.symbol || !tokenB.contract || !tokenB.symbol || reserveA == null || reserveB == null) {
+    return null;
+  }
+  return {
+    source,
+    pair_id: id,
+    token_a_contract: tokenA.contract,
+    token_a_symbol: tokenA.symbol,
+    token_b_contract: tokenB.contract,
+    token_b_symbol: tokenB.symbol,
+    reserve_a: safeDecimal(reserveA),
+    reserve_b: safeDecimal(reserveB),
+    reserve_a_decimal: safeDecimal(reserveA),
+    reserve_b_decimal: safeDecimal(reserveB),
+    liquidity_wax: safeDecimal(firstPresent(record.liquidity_wax, row?.liquidity_wax)),
+    liquidity_usd: safeDecimal(firstPresent(record.liquidity_usd, row?.liquidity_usd)),
+    updated_at: tradedAt || nowIso(),
+  };
+}
+
 export function normalizeLiveTradeRow(row, stream) {
   if (!row || !stream) return null;
   return stream.source === 'alcor'
@@ -935,9 +1025,41 @@ export function normalizeLiveTradeRow(row, stream) {
     : parseAmmSwap(row, stream);
 }
 
+function canonicalPairFromTrade(trade) {
+  const pair = trade?.canonical_pair;
+  if (!pair || typeof pair !== 'object') return null;
+  const source = safeString(firstPresent(pair.source, trade.source));
+  const pairId = safeString(firstPresent(pair.pair_id, trade.pair_id));
+  const tokenAContract = normalizeContract(pair.token_a_contract);
+  const tokenASymbol = normalizeSymbol(pair.token_a_symbol);
+  const tokenBContract = normalizeContract(pair.token_b_contract);
+  const tokenBSymbol = normalizeSymbol(pair.token_b_symbol);
+  const reserveA = safeDecimal(firstPresent(pair.reserve_a_decimal, pair.reserve_a));
+  const reserveB = safeDecimal(firstPresent(pair.reserve_b_decimal, pair.reserve_b));
+  if (!source || !pairId || !tokenAContract || !tokenASymbol || !tokenBContract || !tokenBSymbol || reserveA == null || reserveB == null) {
+    return null;
+  }
+  return {
+    source,
+    pair_id: pairId,
+    token_a_contract: tokenAContract,
+    token_a_symbol: tokenASymbol,
+    token_b_contract: tokenBContract,
+    token_b_symbol: tokenBSymbol,
+    reserve_a: safeDecimal(reserveA),
+    reserve_b: safeDecimal(reserveB),
+    reserve_a_decimal: safeDecimal(reserveA),
+    reserve_b_decimal: safeDecimal(reserveB),
+    liquidity_wax: safeDecimal(pair.liquidity_wax),
+    liquidity_usd: safeDecimal(pair.liquidity_usd),
+    updated_at: pair.updated_at || trade.traded_at || nowIso(),
+  };
+}
+
 function tokenUpdateFromTrade(trade) {
   const key = tokenKey(trade.contract, trade.symbol);
   if (!key) return null;
+  const canonicalPair = canonicalPairFromTrade(trade);
   return {
     token_key: key,
     contract: normalizeContract(trade.contract),
@@ -953,6 +1075,7 @@ function tokenUpdateFromTrade(trade) {
     last_trade_volume: normalizeTradeVolume(trade.volume),
     last_trade_direction: trade.direction || null,
     price_wax: trade.quote_symbol === 'WAX' ? trade.price : null,
+    ...(canonicalPair ? { canonical_pair: canonicalPair } : {}),
     uses_fake_live_data: false,
   };
 }
