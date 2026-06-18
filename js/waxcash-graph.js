@@ -66,10 +66,6 @@
     return value == null ? null : asNumber(value);
   }
 
-  function suffixFor(records, waxKey) {
-    return firstNumber(records, [waxKey]) != null ? ' WAX' : ' USD';
-  }
-
   function formatCompact(value, suffix) {
     var n = asNumber(value);
     if (n == null) return '--';
@@ -85,18 +81,22 @@
 
   function metricValue(node, edge) {
     var records = [node, node && node.token, edge];
-    if (metric === 'volume') return firstNumber(records, ['volume_24h_wax', 'volume_24h_usd']);
-    if (metric === 'price') return firstNumber(records, ['selected_price_wax', 'selected_price_usd']);
-    if (metric === 'mcap') return firstNumber(records, ['market_cap_wax', 'market_cap_usd']);
-    return firstNumber(records, ['liquidity_wax', 'liquidity_usd']);
+    if (metric === 'volume') return firstNumber(records, ['volume_24h_wax']);
+    if (metric === 'price') return firstNumber(records, ['price_wax']);
+    if (metric === 'mcap') return firstNumber(records, ['market_cap_wax']);
+    return firstNumber(records, ['liquidity_wax']);
   }
 
   function metricSuffix(node, edge) {
     var records = [node, node && node.token, edge];
-    if (metric === 'volume') return suffixFor(records, 'volume_24h_wax');
-    if (metric === 'price') return suffixFor(records, 'selected_price_wax');
-    if (metric === 'mcap') return suffixFor(records, 'market_cap_wax');
-    return suffixFor(records, 'liquidity_wax');
+    if (metric === 'volume') return firstNumber(records, ['volume_24h_wax']) != null ? ' WAX' : '';
+    if (metric === 'price') return firstNumber(records, ['price_wax']) != null ? ' WAX' : '';
+    if (metric === 'mcap') return firstNumber(records, ['market_cap_wax']) != null ? ' WAX' : '';
+    return firstNumber(records, ['liquidity_wax']) != null ? ' WAX' : '';
+  }
+
+  function logMetricSelection(node, value) {
+    console.log('waxcash metric', metric, node && node.symbol, value);
   }
 
   function radiusFor(value) {
@@ -212,6 +212,7 @@
         return (firstNumber([b], ['liquidity_wax', 'liquidity_usd']) || 0) - (firstNumber([a], ['liquidity_wax', 'liquidity_usd']) || 0);
       })[0] || null;
       var value = metricValue(node, bestPair);
+      logMetricSelection(node, value);
       return Object.assign(node, {
         bestPair: bestPair,
         value: value,
@@ -306,10 +307,8 @@
     });
   }
 
-  function renderMetric(records, waxKey, usdKey) {
-    var waxValue = firstNumber(records, [waxKey]);
-    var value = waxValue != null ? waxValue : firstNumber(records, [usdKey]);
-    return formatCompact(value, waxValue != null ? ' WAX' : ' USD');
+  function renderWaxMetric(records, waxKey) {
+    return formatCompact(firstNumber(records, [waxKey]), ' WAX');
   }
 
   function renderPanel() {
@@ -324,16 +323,16 @@
       if (pairUrl) {
         label = '<a class="wxcash-link" href="' + escapeHtml(pairUrl) + '">' + label + '</a>';
       }
-      return '<div class="wxcash-pair-row">' + label + '<br>Liquidity: ' + escapeHtml(renderMetric([pair], 'liquidity_wax', 'liquidity_usd')) + ' - Volume 24h: ' + escapeHtml(renderMetric([pair], 'volume_24h_wax', 'volume_24h_usd')) + '</div>';
+      return '<div class="wxcash-pair-row">' + label + '<br>Liquidity: ' + escapeHtml(renderWaxMetric([pair], 'liquidity_wax')) + ' - Volume 24h: ' + escapeHtml(renderWaxMetric([pair], 'volume_24h_wax')) + '</div>';
     }).join('');
     return '<aside class="wxcash-panel">' +
       '<h3>' + escapeHtml(node.symbol) + ' / WAXCASH</h3>' +
       '<p>' + escapeHtml(node.contract) + ' - ' + escapeHtml(node.pairs.length) + ' indexed WAXCASH pair(s)</p>' +
       '<dl>' +
-        '<dt>Price</dt><dd>' + escapeHtml(renderMetric(records, 'selected_price_wax', 'selected_price_usd')) + '</dd>' +
-        '<dt>Liquidity</dt><dd>' + escapeHtml(renderMetric(records, 'liquidity_wax', 'liquidity_usd')) + '</dd>' +
-        '<dt>24h Volume</dt><dd>' + escapeHtml(renderMetric(records, 'volume_24h_wax', 'volume_24h_usd')) + '</dd>' +
-        '<dt>Market Cap</dt><dd>' + escapeHtml(renderMetric(records, 'market_cap_wax', 'market_cap_usd')) + '</dd>' +
+        '<dt>Price</dt><dd>' + escapeHtml(renderWaxMetric(records, 'price_wax')) + '</dd>' +
+        '<dt>Liquidity</dt><dd>' + escapeHtml(renderWaxMetric(records, 'liquidity_wax')) + '</dd>' +
+        '<dt>24h Volume</dt><dd>' + escapeHtml(renderWaxMetric(records, 'volume_24h_wax')) + '</dd>' +
+        '<dt>Market Cap</dt><dd>' + escapeHtml(renderWaxMetric(records, 'market_cap_wax')) + '</dd>' +
       '</dl>' +
       '<a class="wxcash-link" href="' + escapeHtml(tokenAnalyticsUrl(node)) + '">Open full token analytics</a>' +
       pairRows +
@@ -382,6 +381,7 @@
       });
       state.nodes.forEach(function (node) {
         node.value = metricValue(node, node.bestPair || {});
+        logMetricSelection(node, node.value);
         node.radius = radiusFor(node.value);
       });
       render();
