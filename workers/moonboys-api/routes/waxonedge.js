@@ -4262,9 +4262,13 @@ function normalizeLiveTokenUpdate(row) {
     bubble_suspicious_liquidity_pair_count: asNumber(row.bubble_suspicious_liquidity_pair_count),
     market_cap_wax: marketCapWax,
     market_cap_usd: marketCapUsd,
+    market_cap_rejection_reason: row.market_cap_rejection_reason || proof.metric_status?.market_cap?.reason || null,
     market_cap_confidence: marketCapLive ? 'good' : 'unavailable',
     selected_pair_source: row.selected_pair_source || null,
     selected_pair_id: row.selected_pair_id || null,
+    selected_price_source: row.selected_price_source || row.selected_pair_source || null,
+    selected_price_route: row.selected_price_route || row.selected_price_proof?.route_type || null,
+    selected_price_rejection_reason: row.selected_price_rejection_reason || row.selected_price_proof?.rejection_reason || proof.metric_status?.selected_price?.reason || null,
     proof_status: proof.selected_price_confidence === 'good' && marketCapLive ? 'verified' : 'unavailable',
     selected_price_confidence: proof.selected_price_confidence,
     liquidity_confidence: proof.liquidity_confidence,
@@ -4933,6 +4937,53 @@ function selectOgWaxRoutePrice(tokenKeyValue, routeIndex) {
   return routeIndex?.get(tokenKeyValue) || null;
 }
 
+function routeHops(route) {
+  return Array.isArray(route?.route_hops) ? route.route_hops : [];
+}
+
+function routeHopUsesPair(hop, pair) {
+  if (!hop || !pair) return false;
+  const hopSource = aggregateSourceKey(hop.source);
+  const pairSource = aggregateSourceKey(pair.source);
+  const hopPairId = safeString(hop.pair_id);
+  const pairId = safeString(pair.pair_id);
+  if (hopSource && pairSource && hopPairId && pairId) {
+    return hopSource === pairSource && hopPairId === pairId;
+  }
+  return false;
+}
+
+function routeTouchesToken(route, tokenKeyValue) {
+  if (!tokenKeyValue) return false;
+  return routeHops(route).some((hop) => hop.from === tokenKeyValue || hop.to === tokenKeyValue);
+}
+
+function routeUsesPair(route, pair) {
+  return routeHops(route).some((hop) => routeHopUsesPair(hop, pair));
+}
+
+function isWaxTokenKey(key) {
+  return key === tokenKey('eosio.token', 'WAX');
+}
+
+function cleanQuoteRouteForCandidate(route, pair, selectedTokenKey, quoteKey) {
+  if (!route) return { ok: false, reason: 'quote_route_unavailable' };
+  const quoteRouteKey = route.token_key || quoteKey;
+  if (quoteRouteKey !== quoteKey) return { ok: false, reason: 'quote_route_token_mismatch' };
+  const hops = routeHops(route);
+  if (!isWaxTokenKey(quoteKey) && !hops.length) return { ok: false, reason: 'quote_route_missing_wax_proof' };
+  if (routeTouchesToken(route, selectedTokenKey)) return { ok: false, reason: 'quote_route_touches_selected_token' };
+  if (routeUsesPair(route, pair)) return { ok: false, reason: 'quote_route_reuses_candidate_pair' };
+  if (hops.some((hop) => !hop.from || !hop.to || !hop.source || !hop.pair_id)) {
+    return { ok: false, reason: 'quote_route_incomplete_hop_proof' };
+  }
+  const routePriceWax = asNumber(route.priceWax);
+  if (routePriceWax == null || routePriceWax <= 0 || !Number.isFinite(routePriceWax)) {
+    return { ok: false, reason: 'quote_route_invalid_wax_price' };
+  }
+  return { ok: true, reason: null };
+}
+
 function ogPairReserveValuation(pair, contract, symbol, priceIndex, routeIndex = null, selectedPriceProof = null) {
   const side = pairTokenSide(pair, contract, symbol);
   const hasReserves = hasRealPairReserves(pair);
@@ -5045,31 +5096,41 @@ function volumeWaxFromIndexedPair(pair, priceIndex) {
   return asNumber(normalizeTokenAVolume(volume24Raw, tokenA, tokenB, pair.price, priceIndex).wax);
 }
 
-function pairPriceCandidateForToken(pair, contract, symbol, priceIndex, routeIndex = null) {
-  if (aggregateSourceKey(pair?.source) === 'swap.alcor') return null;
+function pairPriceCandidateForToken(pair, contract, symbol, priceIndex, routeIndex = null, rejectionReasons = null) {
+  const reject = (reason) => {
+    if (Array.isArray(rejectionReasons) && reason) rejectionReasons.push(reason);
+    return null;
+  };
+  if (aggregateSourceKey(pair?.source) === 'swap.alcor') return reject('adapter_unavailable_for_selected_price');
   const side = pairTokenSide(pair, contract, symbol);
-  if (!side || !hasRealPairReserves(pair)) return null;
+  if (!side) return reject('token_not_in_pair');
+  if (!hasRealPairReserves(pair)) return reject('missing_or_zero_reserves');
   const reserveA = asNumber(pair.reserve_a);
   const reserveB = asNumber(pair.reserve_b);
   const reserveToken = side.side === 'a' ? reserveA : reserveB;
   const reserveQuote = side.side === 'a' ? reserveB : reserveA;
-  if (reserveToken == null || reserveToken <= 0 || reserveQuote == null || reserveQuote <= 0) return null;
+  if (reserveToken == null || reserveToken <= 0 || reserveQuote == null || reserveQuote <= 0) return reject('invalid_reserve_ratio');
   const quoteContract = side.side === 'a' ? pair.token_b_contract : pair.token_a_contract;
   const quoteSymbol = side.side === 'a' ? pair.token_b_symbol : pair.token_a_symbol;
   const quoteKey = tokenKey(quoteContract, quoteSymbol);
-  if (!quoteKey) return null;
+  const selectedTokenKey = tokenKey(contract, symbol);
+  if (!quoteKey || !selectedTokenKey) return reject('invalid_token_identity');
   const hopPriceFromTo = reserveQuote / reserveToken;
-  if (hopPriceFromTo == null || hopPriceFromTo <= 0 || !Number.isFinite(hopPriceFromTo)) return null;
+  if (hopPriceFromTo == null || hopPriceFromTo <= 0 || !Number.isFinite(hopPriceFromTo)) return reject('invalid_reserve_ratio');
   const quoteRoute = isWaxToken(quoteContract, quoteSymbol)
     ? { priceWax: 1, priceUsd: priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd }
     : (routeIndex?.get(quoteKey) || priceIndex.get(quoteKey));
+  const routeProof = isWaxToken(quoteContract, quoteSymbol)
+    ? { ok: true, reason: null }
+    : cleanQuoteRouteForCandidate(quoteRoute, pair, selectedTokenKey, quoteKey);
+  if (!routeProof.ok) return reject(routeProof.reason);
   const quotePriceWax = asNumber(quoteRoute?.priceWax);
-  if (quotePriceWax == null || quotePriceWax <= 0) return null;
+  if (quotePriceWax == null || quotePriceWax <= 0) return reject('quote_route_invalid_wax_price');
   const priceWax = (reserveQuote * quotePriceWax) / reserveToken;
-  if (priceWax == null || priceWax <= 0 || !Number.isFinite(priceWax)) return null;
+  if (priceWax == null || priceWax <= 0 || !Number.isFinite(priceWax)) return reject('invalid_selected_price');
   const valuation = ogPairReserveValuation(pair, contract, symbol, priceIndex, routeIndex);
   const liquidityWax = asNumber(valuation.contribution_wax);
-  if (liquidityWax == null || liquidityWax < MIN_TRUSTED_WAX_LIQUIDITY) return null;
+  if (liquidityWax == null || liquidityWax < MIN_TRUSTED_WAX_LIQUIDITY) return reject('below_minimum_verified_liquidity');
   const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
   return {
     pair,
@@ -5081,6 +5142,8 @@ function pairPriceCandidateForToken(pair, contract, symbol, priceIndex, routeInd
     fromKey: tokenKey(contract, symbol),
     quoteKey,
     hopPriceFromTo,
+    quoteRouteType: quoteRoute?.route_type || null,
+    quoteRouteHops: routeHops(quoteRoute),
   };
 }
 
@@ -5212,17 +5275,43 @@ function selectLiquidityWeightedMedianPrice(contract, symbol, pairRows, priceInd
       route_liquidity_score: Number.POSITIVE_INFINITY,
     };
   }
+  const rejectionReasons = [];
   const candidates = (pairRows || [])
-    .map((pair) => pairPriceCandidateForToken(pair, contract, symbol, priceIndex, routeIndex))
+    .map((pair) => pairPriceCandidateForToken(pair, contract, symbol, priceIndex, routeIndex, rejectionReasons))
     .filter(Boolean);
-  if (!candidates.length) return null;
+  const selectedPriceRejectionReason = Array.from(new Set(rejectionReasons)).filter(Boolean).join(',') || 'no_verified_price_candidate';
+  if (!candidates.length) {
+    return {
+      priceWax: null,
+      priceUsd: null,
+      source: null,
+      pair_id: null,
+      route_type: 'unavailable',
+      route_hops: [],
+      route_liquidity_score: null,
+      candidate_count: 0,
+      rejection_reason: selectedPriceRejectionReason,
+    };
+  }
   const median = medianNumber(candidates.map((candidate) => candidate.priceWax));
   const filtered = median == null ? candidates : candidates.filter((candidate) =>
     candidate.priceWax > 0 &&
     candidate.priceWax >= median / 100 &&
     candidate.priceWax <= median * 100
   );
-  if (!filtered.length) return null;
+  if (!filtered.length) {
+    return {
+      priceWax: null,
+      priceUsd: null,
+      source: null,
+      pair_id: null,
+      route_type: 'unavailable',
+      route_hops: [],
+      route_liquidity_score: null,
+      candidate_count: candidates.length,
+      rejection_reason: 'all_candidates_rejected_as_outliers',
+    };
+  }
   const sorted = filtered.slice().sort((a, b) => a.priceWax - b.priceWax);
   const totalWeight = sorted.reduce((sum, candidate) => sum + Math.max(0, candidate.liquidityWax || 0), 0);
   const midpoint = totalWeight / 2;
@@ -5253,6 +5342,7 @@ function selectLiquidityWeightedMedianPrice(contract, symbol, pairRows, priceInd
     }],
     route_liquidity_score: selected.liquidityWax,
     candidate_count: filtered.length,
+    rejection_reason: null,
   };
 }
 
@@ -5861,6 +5951,7 @@ function tokenMetricProof(metrics, selected = null) {
     selected_price_usd: safeDecimal(selectedPriceUsd),
     route_type: selectedRouteType,
     valuation_route: selectedRouteType || null,
+    rejection_reason: metrics?.selected_price_rejection_reason || null,
     token_side: null,
     route_hops: selected?.route_hops || [],
     route_liquidity_score: safeDecimal(selected?.route_liquidity_score),
@@ -5870,7 +5961,7 @@ function tokenMetricProof(metrics, selected = null) {
     selected_price: {
       live: selectedPriceLive,
       source: selectedPriceProof.source ? 'indexed_pair' : null,
-      reason: selectedPriceLive ? null : (metrics?.unavailable_reasons?.selected_price || 'No indexed pair has enough price data yet'),
+      reason: selectedPriceLive ? null : (metrics?.selected_price_rejection_reason || metrics?.unavailable_reasons?.selected_price || 'No indexed pair has enough price data yet'),
     },
     liquidity: {
       live: liquidityBasis != null,
@@ -5894,7 +5985,7 @@ function tokenMetricProof(metrics, selected = null) {
       basis: hasMarketCap ? 'circulating_supply_x_selected_price' : null,
       formula: 'circulating supply x selected price',
       requires_circulating_supply: true,
-      reason: hasMarketCap ? null : (hasCirculatingSupply ? 'Requires selected market cap value' : 'Requires circulating supply and selected price'),
+      reason: hasMarketCap ? null : (metrics?.market_cap_rejection_reason || (hasCirculatingSupply ? 'Requires selected market cap value' : 'Requires circulating supply and selected price')),
     },
     holder_count: {
       live: asNumber(metrics?.holder_count) != null,
@@ -5952,7 +6043,7 @@ function tokenMetricProof(metrics, selected = null) {
 
 function reasonMapForTokenMetrics(metrics) {
   const reasons = {};
-  if (metrics.selected_price_wax == null) reasons.selected_price = metrics.selected_pair_id ? 'Source indexed; price unavailable' : 'No indexed pair has enough price data yet';
+  if (metrics.selected_price_wax == null) reasons.selected_price = metrics.selected_price_rejection_reason || (metrics.selected_pair_id ? 'Source indexed; price unavailable' : 'No indexed pair has enough price data yet');
   if (metrics.change_24h == null) reasons.price_change_24h = 'Requires indexed 24h price-change data';
   if (metrics.volume_24h_wax == null) reasons.volume_24h = 'Requires indexed pair or ticker volume';
   if (metrics.liquidity_wax == null && metrics.liquidity_usd == null) {
@@ -5964,7 +6055,7 @@ function reasonMapForTokenMetrics(metrics) {
   if (metrics.circulating_supply == null) reasons.circulating_supply = 'Requires indexed circulating supply';
   if (metrics.volume_7d == null) reasons.volume_7d = 'Requires indexed candle or trade history';
   if (metrics.volume_30d == null) reasons.volume_30d = 'Requires indexed candle or trade history';
-  if (metrics.market_cap_wax == null && metrics.market_cap_usd == null) reasons.market_cap = metrics.selected_price_wax != null ? 'Circulating supply not indexed' : 'Price unavailable';
+  if (metrics.market_cap_wax == null && metrics.market_cap_usd == null) reasons.market_cap = metrics.market_cap_rejection_reason || (metrics.selected_price_wax != null ? 'Circulating supply not indexed' : 'Price unavailable');
   if (metrics.fdv_wax == null && metrics.fdv_usd == null) reasons.fdv = 'Requires total supply and selected price';
   return reasons;
 }
@@ -6071,6 +6162,8 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   metrics.selected_pair_id = selectedProofHop?.pair_id || null;
   metrics.selected_pair_label = selectedProofHop ? [selectedProofHop.source, selectedProofHop.pair_id ? `#${selectedProofHop.pair_id}` : null, selected.route_type].filter(Boolean).join(' ') : null;
   metrics.selected_price_source = metrics.selected_pair_label || (selected?.route_type === 'wax_self' ? 'eosio.token WAX' : null);
+  metrics.selected_price_route = selected?.route_type || null;
+  metrics.selected_price_rejection_reason = selectedPriceWax == null ? (selected?.rejection_reason || 'no_verified_price_candidate') : null;
   metrics.change_24h = safeDecimal(metrics.change_24h);
   metrics.price_change_24h = metrics.change_24h;
   metrics.volume_24h = safeDecimal(volumeWax);
@@ -6101,9 +6194,12 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   metrics.source_keys = Array.from(sources).sort().join(',');
   metrics.market_cap_wax = safeDecimal(marketCapWax);
   metrics.market_cap_usd = safeDecimal(marketCapUsd);
+  metrics.market_cap_rejection_reason = marketCapWax == null && marketCapUsd == null
+    ? (circulatingSupply == null ? 'circulating_supply_unavailable' : (selectedPriceWax == null ? 'selected_price_unavailable' : 'market_cap_unavailable'))
+    : null;
   metrics.fdv_wax = safeDecimal(fdvWax);
   metrics.fdv_usd = safeDecimal(fdvUsd);
-  metrics.strongest_pair = selected ? {
+  metrics.strongest_pair = selected && selectedPriceWax != null ? {
     source: selected.route_hops?.[selected.route_hops.length - 1]?.source || null,
     pair_id: selected.route_hops?.[selected.route_hops.length - 1]?.pair_id || null,
     label: metrics.selected_pair_label,

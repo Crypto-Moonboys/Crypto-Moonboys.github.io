@@ -2228,6 +2228,13 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     hiddenLiveKeys.includes('help.token::HELP') &&
     graphLiveKeys.includes('help.token::HELP'),
     JSON.stringify({ graphLiveKeys, visibleLiveKeys, hiddenLiveKeys }));
+  ok('/api/waxonedge/live exposes selected price and market-cap rejection diagnostics per token',
+    graphLiveBody.tokens.every((token) =>
+      Object.prototype.hasOwnProperty.call(token, 'selected_price_source') &&
+      Object.prototype.hasOwnProperty.call(token, 'selected_price_route') &&
+      Object.prototype.hasOwnProperty.call(token, 'selected_price_rejection_reason') &&
+      Object.prototype.hasOwnProperty.call(token, 'market_cap_rejection_reason')
+    ));
   const routedLiveToken = graphLiveBody.tokens.find((token) => token.token_key === 'route.token::ROUTE');
   ok('WAXCASH-paired token without a direct WAX pool remains visible and can use routed valuation',
     routedLiveToken &&
@@ -4948,6 +4955,117 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     lowWaxDirectStats.selected_pair_id === 'LOWWAX' &&
     Number(lowWaxDirectStats.liquidity_wax) === 100 &&
     Number(lowWaxDirectStats.liquidity_usd) === 0.6);
+  const waxpWaxPair = {
+    source: 'swap.taco',
+    pair_id: 'WAXPWAX',
+    token_a_contract: 'token.waxp',
+    token_a_symbol: 'WAXP',
+    token_b_contract: 'eosio.token',
+    token_b_symbol: 'WAX',
+    reserve_a: '1000',
+    reserve_b: '1000',
+  };
+  const waxpWaxcashPair = {
+    source: 'swap.nefty',
+    pair_id: 'WAXPWAXCASH_BAD',
+    token_a_contract: 'token.waxp',
+    token_a_symbol: 'WAXP',
+    token_b_contract: 'graffitiking',
+    token_b_symbol: 'WAXCASH',
+    reserve_a: '1',
+    reserve_b: '500000',
+  };
+  const waxpStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
+    { contract: 'token.waxp', symbol: 'WAXP', circulating_supply: '1000000', total_supply: '1000000' },
+    { aggregate_complete: 0 },
+    [waxpWaxcashPair, waxpWaxPair],
+    routePriceRows,
+    [waxpWaxcashPair, waxpWaxPair],
+  );
+  ok('WAXP visible bubble uses its own clean selected market price instead of contaminated WAXCASH route price',
+    Number(waxpStats.selected_price_wax) === 1 &&
+    Number(waxpStats.market_cap_wax) === 1000000 &&
+    waxpStats.selected_pair_id === 'WAXPWAX' &&
+    waxpStats.selected_price_route === 'liquidity_weighted_median_verified_pair' &&
+    waxpStats.selected_price_rejection_reason == null &&
+    waxpStats.market_cap_rejection_reason == null);
+  const stableWaxPair = {
+    source: 'swap.box',
+    pair_id: 'WAXUSDCWAX',
+    token_a_contract: 'eth.token',
+    token_a_symbol: 'WAXUSDC',
+    token_b_contract: 'eosio.token',
+    token_b_symbol: 'WAX',
+    reserve_a: '100',
+    reserve_b: '22500',
+  };
+  const stableWaxcashPair = {
+    source: 'swap.nefty',
+    pair_id: 'WAXUSDCWAXCASH_BAD',
+    token_a_contract: 'eth.token',
+    token_a_symbol: 'WAXUSDC',
+    token_b_contract: 'graffitiking',
+    token_b_symbol: 'WAXCASH',
+    reserve_a: '1',
+    reserve_b: '900000',
+  };
+  const stableStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
+    { contract: 'eth.token', symbol: 'WAXUSDC', circulating_supply: '1000', total_supply: '1000' },
+    { aggregate_complete: 0 },
+    [stableWaxcashPair, stableWaxPair],
+    routePriceRows,
+    [stableWaxcashPair, stableWaxPair],
+  );
+  ok('WAXUSDC-style stable token rejects circular WAXCASH route artefacts and keeps sane WAX market price',
+    Number(stableStats.selected_price_wax) === 225 &&
+    Number(stableStats.selected_price_usd) === 1.35 &&
+    Number(stableStats.market_cap_wax) === 225000 &&
+    stableStats.selected_pair_id === 'WAXUSDCWAX' &&
+    Number(stableStats.selected_price_wax) < 1000);
+  const badWaxcashOnlyStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
+    { contract: 'bad.route', symbol: 'BAD', circulating_supply: '1000', total_supply: '1000' },
+    { aggregate_complete: 0 },
+    [{
+      source: 'swap.taco',
+      pair_id: 'BADWAXCASH',
+      token_a_contract: 'bad.route',
+      token_a_symbol: 'BAD',
+      token_b_contract: 'graffitiking',
+      token_b_symbol: 'WAXCASH',
+      reserve_a: '1',
+      reserve_b: '1000000',
+    }],
+    routePriceRows,
+    [
+      {
+        source: 'swap.taco',
+        pair_id: 'BADWAXCASH',
+        token_a_contract: 'bad.route',
+        token_a_symbol: 'BAD',
+        token_b_contract: 'graffitiking',
+        token_b_symbol: 'WAXCASH',
+        reserve_a: '1',
+        reserve_b: '1000000',
+      },
+      {
+        source: 'swap.box',
+        pair_id: 'BADWAX',
+        token_a_contract: 'bad.route',
+        token_a_symbol: 'BAD',
+        token_b_contract: 'eosio.token',
+        token_b_symbol: 'WAX',
+        reserve_a: '1',
+        reserve_b: '1',
+      },
+    ],
+  );
+  ok('WAXCASH direct pair token with bad recursive route shows unavailable instead of fake market cap',
+    badWaxcashOnlyStats.selected_price_wax == null &&
+    badWaxcashOnlyStats.market_cap_wax == null &&
+    badWaxcashOnlyStats.selected_price_confidence === 'unavailable' &&
+    badWaxcashOnlyStats.metric_status.market_cap.live === false &&
+    badWaxcashOnlyStats.selected_price_rejection_reason.includes('quote_route_touches_selected_token') &&
+    badWaxcashOnlyStats.market_cap_rejection_reason === 'selected_price_unavailable');
   const multiHopStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
     { contract: 'wuffi', symbol: 'WUF', total_supply: '1000000' },
     { selected_price_wax: '9', selected_price_usd: '9' },
@@ -5740,7 +5858,9 @@ ok('Layer 1 route hop price_from_to is not a WAX price unless the quote token is
     return hop.to === 'eosio.token::WAX' || !almostEqual(hop.price_from_to, selection.priceWax);
   }));
 ok('Layer 1 weighted median excludes swap.alcor concentrated pools from V2 reserve candidates',
-  alcorOnlyLayer1Selection === null &&
+  alcorOnlyLayer1Selection?.route_type === 'unavailable' &&
+  alcorOnlyLayer1Selection.priceWax === null &&
+  alcorOnlyLayer1Selection.rejection_reason === 'adapter_unavailable_for_selected_price' &&
   mixedAlcorTrapSelection.pair_id === 'WAXCASH-WAX' &&
   almostEqual(mixedAlcorTrapSelection.priceWax, 0.01) &&
   mixedAlcorTrapSelection.source !== 'swap.alcor');
@@ -5753,7 +5873,8 @@ ok('Layer 1 deriveTokenPairMetrics does not fall back to old route price when we
   noFallbackStats.selected_price_proof.live === false &&
   noFallbackStats.selected_price_proof.route_hops.length === 0 &&
   noFallbackStats.strongest_pair === null &&
-  noFallbackStats.unavailable_reasons.selected_price === 'No indexed pair has enough price data yet');
+  noFallbackStats.selected_price_rejection_reason === 'adapter_unavailable_for_selected_price' &&
+  noFallbackStats.unavailable_reasons.selected_price === 'adapter_unavailable_for_selected_price');
 ok('Layer 1 selected price proof route hops have complete real pair identity',
   [waxcashLayer1Selection, nbgLayer1Selection, wufLayer1Selection, mixedAlcorTrapSelection].every((selection) =>
     selection &&
