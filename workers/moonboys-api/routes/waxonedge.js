@@ -5604,6 +5604,130 @@ async function loadDirectWaxRowsForTokens(db, tokens = []) {
   return rows;
 }
 
+
+async function buildWaxcashPairGraph(db) {
+  const directPairs = await loadWaxcashOgPairRows(db);
+  const tokenRefs = [tokenRef(WAXCASH_CONTRACT, WAXCASH_SYMBOL)];
+  for (const pair of directPairs || []) {
+    const paired = otherTokenForPair(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+    if (paired?.key && !tokenRefs.some((token) => token.key === paired.key)) tokenRefs.push(paired);
+  }
+
+  const tokenRows = await loadTokenRowsForRefs(db, tokenRefs);
+  const rowsByKey = new Map((tokenRows || []).map((row) => [tokenKey(row.contract, row.symbol), row]));
+  const derivedRows = await deriveReserveBackedTokenRows(db, tokenRefs.map((ref) => ({
+    ...(rowsByKey.get(ref.key) || {}),
+    contract: ref.contract,
+    symbol: ref.symbol,
+  })), {
+    pairRows: directPairs,
+    routeGraphRows: directPairs,
+    routeGraphLimit: 0,
+  });
+  const derivedByKey = new Map((derivedRows || []).map((row) => [tokenKey(row.contract, row.symbol), row]));
+  const nodeKeys = new Set(tokenRefs.map((token) => token.key).filter(Boolean));
+    const nodes = tokenRefs
+      .filter((token) => token?.key)
+      .map((token) => {
+        const row = derivedByKey.get(token.key) || rowsByKey.get(token.key) || token;
+        const directPairsForToken = (directPairs || []).filter((pair) => pairTouchesToken(pair, token));
+        const directSources = Array.from(new Set(directPairsForToken
+          .map((pair) => aggregateSourceKey(pair.source))
+          .filter(Boolean)));
+        const normalized = normalizeLiveTokenUpdate({
+          ...row,
+          contract: token.contract,
+          symbol: token.symbol,
+          indexed_pair_count: directPairsForToken.length,
+          source_keys: directSources.join(','),
+          source_count: directSources.length,
+        }) || { token_key: token.key, contract: token.contract, symbol: token.symbol };
+      return {
+        id: token.key,
+        token_key: token.key,
+        contract: token.contract,
+        symbol: token.symbol,
+        label: token.symbol,
+        role: isWaxcashToken(token.contract, token.symbol) ? 'root' : 'direct_pair_token',
+        ...normalized,
+        analytics_links: waxcashGraphTokenLinks(token.contract, token.symbol),
+      };
+    });
+
+  const edges = (directPairs || [])
+    .map((pair) => {
+      const sourceKey = tokenKey(pair.token_a_contract, pair.token_a_symbol);
+      const targetKey = tokenKey(pair.token_b_contract, pair.token_b_symbol);
+      if (!sourceKey || !targetKey || !nodeKeys.has(sourceKey) || !nodeKeys.has(targetKey)) return null;
+      return {
+        id: [pair.source, pair.pair_id, sourceKey, targetKey].map((part) => safeString(part)).join('::'),
+        source: sourceKey,
+        target: targetKey,
+        source_contract: pair.token_a_contract,
+        source_symbol: pair.token_a_symbol,
+        target_contract: pair.token_b_contract,
+        target_symbol: pair.token_b_symbol,
+        dex_source: pair.source,
+        pair_id: pair.pair_id,
+        label: selectedPairLabel(pair),
+        price: safeDecimal(asNumber(pair.price)),
+        change_24h: safeDecimal(asNumber(pair.change_24h)),
+        volume_24h: safeDecimal(asNumber(pair.volume_24h)),
+        volume_24h_wax: safeDecimal(asNumber(pair.volume_24h_wax)),
+        volume_24h_usd: safeDecimal(asNumber(pair.volume_24h_usd)),
+        liquidity_wax: safeDecimal(asNumber(pair.liquidity_wax)),
+        liquidity_usd: safeDecimal(asNumber(pair.liquidity_usd)),
+        reserve_a: safeDecimal(asNumber(pair.reserve_a)),
+        reserve_b: safeDecimal(asNumber(pair.reserve_b)),
+        fee_bps: safeDecimal(asNumber(pair.fee_bps)),
+        updated_at: pair.updated_at || null,
+        analytics_links: waxcashGraphPairLinks(pair),
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => (asNumber(b.liquidity_wax) || 0) - (asNumber(a.liquidity_wax) || 0) || String(a.id).localeCompare(String(b.id)));
+
+  const updatedAt = directPairs.map((pair) => pair.updated_at).filter(Boolean).sort().pop() || null;
+  return {
+    root: tokenRef(WAXCASH_CONTRACT, WAXCASH_SYMBOL),
+    dataset: {
+      authoritative_table: 'waxonedge_pairs',
+      source_policy: 'indexed_direct_waxcash_pairs_only',
+      bootstrap_token_inventory_used: false,
+      indirect_route_pairs_used: false,
+    },
+    counts: { nodes: nodes.length, edges: edges.length, direct_pair_count: directPairs.length },
+    nodes,
+    edges,
+    updated_at: updatedAt,
+  };
+}
+
+function waxcashGraphTokenLinks(contract, symbol) {
+  const c = encodeURIComponent(normalizeContract(contract));
+  const s = encodeURIComponent(normalizeSymbol(symbol));
+  return {
+    detail: `${WAXONEDGE_API_PREFIX}/token/${c}/${s}`,
+    pairs: `${WAXONEDGE_API_PREFIX}/token/${c}/${s}/pairs`,
+    chart: `${WAXONEDGE_API_PREFIX}/token/${c}/${s}/chart`,
+    debug: `${WAXONEDGE_API_PREFIX}/token/${c}/${s}/debug`,
+    og_proof: isWaxcashToken(contract, symbol) ? `${WAXONEDGE_API_PREFIX}/token/${c}/${s}/og-proof` : null,
+    waxblock: `https://waxblock.io/account/${c}`,
+  };
+}
+
+function waxcashGraphPairLinks(pair) {
+  const source = aggregateSourceKey(pair?.source);
+  const pairId = encodeURIComponent(safeString(pair?.pair_id));
+  return {
+    token_a: waxcashGraphTokenLinks(pair?.token_a_contract, pair?.token_a_symbol).detail,
+    token_b: waxcashGraphTokenLinks(pair?.token_b_contract, pair?.token_b_symbol).detail,
+    candles: `${WAXONEDGE_API_PREFIX}/candles?source=${encodeURIComponent(safeString(pair?.source))}&pair_id=${pairId}`,
+    alcor_market: source === 'alcor' && pairId ? `https://wax.alcor.exchange/trade/${pairId}` : null,
+    waxblock_source: pair?.source && String(pair.source).includes('.') ? `https://waxblock.io/account/${encodeURIComponent(pair.source)}` : null,
+  };
+}
+
 async function getWaxcashOgProof(db) {
   const pairRows = await loadWaxcashOgPairRows(db);
   const pairedTokens = pairRows
@@ -7182,6 +7306,10 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
     }
     if (path === `${WAXONEDGE_API_PREFIX}/tokens/top`) return ok(await listTopTokens(env.DB), [], null, corsHeaders);
     if (path === `${WAXONEDGE_API_PREFIX}/pairs/top`) return ok(await listTopPairs(env.DB), [], null, corsHeaders);
+    if (path === `${WAXONEDGE_API_PREFIX}/waxcash-graph`) {
+      const graph = await buildWaxcashPairGraph(env.DB);
+      return ok(graph, ['WAXCASH graph is derived only from indexed direct waxonedge_pairs rows; bootstrap token inventory is not used.'], graph.updated_at, corsHeaders);
+    }
     if (path === `${WAXONEDGE_API_PREFIX}/candles`) {
       const chart = await listChartCandlesBySource(env.DB, Object.fromEntries(url.searchParams.entries()));
       return ok(chart, chart.unavailable ? [chart.unavailable] : [], null, corsHeaders);
@@ -7323,6 +7451,7 @@ export const __waxonedgeTestHooks = {
   parseLiveCursor,
   normalizeLiveTokenUpdate,
   loadWaxcashGraphTokenRows,
+  buildWaxcashPairGraph,
   sortWaxcashGraphTokens,
   listLiveTokenUpdates,
   handleLiveSnapshot,
