@@ -5344,6 +5344,30 @@ const layer1RouteIndex = __waxonedgeTestHooks.buildOgWaxRouteGraph(layer1Rows, l
 const waxcashLayer1Selection = __waxonedgeTestHooks.selectLiquidityWeightedMedianPrice('graffitiking', 'WAXCASH', layer1Rows, layer1PriceIndex, layer1RouteIndex);
 const nbgLayer1Selection = __waxonedgeTestHooks.selectLiquidityWeightedMedianPrice('niftyblocksd', 'NBG', layer1Rows, layer1PriceIndex, layer1RouteIndex);
 const wufLayer1Selection = __waxonedgeTestHooks.selectLiquidityWeightedMedianPrice('wuffi', 'WUF', layer1Rows, layer1PriceIndex, layer1RouteIndex);
+const swapAlcorV2TrapPair = {
+  source: 'swap.alcor',
+  pair_id: 'ALCOR-CL-TRAP',
+  token_a_contract: 'graffitiking',
+  token_a_symbol: 'WAXCASH',
+  token_b_contract: 'eosio.token',
+  token_b_symbol: 'WAX',
+  reserve_a: '1',
+  reserve_b: '1000000',
+};
+const alcorOnlyLayer1Selection = __waxonedgeTestHooks.selectLiquidityWeightedMedianPrice(
+  'graffitiking',
+  'WAXCASH',
+  [swapAlcorV2TrapPair],
+  layer1PriceIndex,
+  __waxonedgeTestHooks.buildOgWaxRouteGraph([swapAlcorV2TrapPair], layer1PriceIndex),
+);
+const mixedAlcorTrapSelection = __waxonedgeTestHooks.selectLiquidityWeightedMedianPrice(
+  'graffitiking',
+  'WAXCASH',
+  [swapAlcorV2TrapPair, waxcashWaxLayer1Pair],
+  layer1PriceIndex,
+  __waxonedgeTestHooks.buildOgWaxRouteGraph([swapAlcorV2TrapPair, waxcashWaxLayer1Pair], layer1PriceIndex),
+);
 ok('Layer 1 known WAXCASH/WAX price direction is not reversed',
   waxcashLayer1Selection.pair_id !== 'WAXCASH-WAX' || almostEqual(waxcashLayer1Selection.priceWax, 0.01));
 ok('Layer 1 known WAXCASH/NBG price direction uses quote reserve value over token reserve',
@@ -5352,6 +5376,17 @@ ok('Layer 1 known WAXCASH/NBG price direction uses quote reserve value over toke
 ok('Layer 1 known WAXCASH/WUF price direction uses paired WAX route without reversing reserves',
   almostEqual(wufLayer1Selection.priceWax, 0.003) &&
   !almostEqual(wufLayer1Selection.priceWax, 333.3333333333333));
+ok('Layer 1 weighted median excludes swap.alcor concentrated pools from V2 reserve candidates',
+  alcorOnlyLayer1Selection === null &&
+  mixedAlcorTrapSelection.pair_id === 'WAXCASH-WAX' &&
+  almostEqual(mixedAlcorTrapSelection.priceWax, 0.01) &&
+  mixedAlcorTrapSelection.source !== 'swap.alcor');
+ok('Layer 1 selected price proof route hops have complete real pair identity',
+  [waxcashLayer1Selection, nbgLayer1Selection, wufLayer1Selection, mixedAlcorTrapSelection].every((selection) =>
+    selection &&
+    Array.isArray(selection.route_hops) &&
+    selection.route_hops.length > 0 &&
+    selection.route_hops.every((hop) => hop.from && hop.to && hop.source && hop.pair_id)));
 const concentratedProof = __waxonedgeTestHooks.priceAdapterPair(
   { source: 'swap.alcor', pricingType: 'concentrated_liquidity' },
   { contract: 'graffitiking', symbol: 'WAXCASH', amount: 1000 },

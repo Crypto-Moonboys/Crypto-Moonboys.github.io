@@ -4866,6 +4866,7 @@ function volumeWaxFromIndexedPair(pair, priceIndex) {
 }
 
 function pairPriceCandidateForToken(pair, contract, symbol, priceIndex, routeIndex = null) {
+  if (aggregateSourceKey(pair?.source) === 'swap.alcor') return null;
   const side = pairTokenSide(pair, contract, symbol);
   if (!side || !hasRealPairReserves(pair)) return null;
   const reserveA = asNumber(pair.reserve_a);
@@ -4876,6 +4877,7 @@ function pairPriceCandidateForToken(pair, contract, symbol, priceIndex, routeInd
   const quoteContract = side.side === 'a' ? pair.token_b_contract : pair.token_a_contract;
   const quoteSymbol = side.side === 'a' ? pair.token_b_symbol : pair.token_a_symbol;
   const quoteKey = tokenKey(quoteContract, quoteSymbol);
+  if (!quoteKey) return null;
   const quoteRoute = isWaxToken(quoteContract, quoteSymbol)
     ? { priceWax: 1, priceUsd: priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd }
     : (routeIndex?.get(quoteKey) || priceIndex.get(quoteKey));
@@ -4894,6 +4896,8 @@ function pairPriceCandidateForToken(pair, contract, symbol, priceIndex, routeInd
     liquidityWax,
     source: pair.source || null,
     pair_id: pair.pair_id || null,
+    fromKey: tokenKey(contract, symbol),
+    quoteKey,
   };
 }
 
@@ -4949,8 +4953,8 @@ function selectLiquidityWeightedMedianPrice(contract, symbol, pairRows, priceInd
     route_hops: [{
       source: selected.source,
       pair_id: selected.pair_id,
-      from: tokenKey(contract, symbol),
-      to: isWaxToken(contract, symbol) ? tokenKey('eosio.token', 'WAX') : null,
+      from: selected.fromKey,
+      to: selected.quoteKey,
       price_from_to: safeDecimal(selected.priceWax),
       reserve_from: null,
       reserve_to: null,
