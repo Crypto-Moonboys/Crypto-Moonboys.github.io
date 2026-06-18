@@ -1837,6 +1837,123 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       wufGraphNode.source_keys === 'swap.nefty' &&
       wufGraphNode.source_count === 1 &&
       wufGraphNode.indexed_pair_count === 1);
+    const valuationGraphPairs = [
+      {
+        source: 'swap.alcor',
+        pair_id: '8388',
+        token_a_contract: 'eosio.token',
+        token_a_symbol: 'WAX',
+        token_b_contract: 'graffitiking',
+        token_b_symbol: 'WAXCASH',
+        reserve_a: '100',
+        reserve_b: '10000',
+        liquidity_wax: '999999',
+        updated_at: '2026-06-14T12:00:00.000Z',
+      },
+      {
+        source: 'swap.nefty',
+        pair_id: 'WAXCASHTOKA',
+        token_a_contract: 'graffitiking',
+        token_a_symbol: 'WAXCASH',
+        token_b_contract: 'tok.a',
+        token_b_symbol: 'TOKA',
+        reserve_a: '500',
+        reserve_b: '100',
+        liquidity_wax: '999999',
+        volume_24h_wax: '-7',
+        volume_24h_usd: '-0.042',
+        updated_at: '2026-06-14T12:05:00.000Z',
+      },
+      {
+        source: 'swap.taco',
+        pair_id: 'TOKBWAXCASH',
+        token_a_contract: 'tok.b',
+        token_a_symbol: 'TOKB',
+        token_b_contract: 'graffitiking',
+        token_b_symbol: 'WAXCASH',
+        reserve_a: '20',
+        reserve_b: '40',
+        liquidity_wax: '999999',
+        updated_at: '2026-06-14T12:06:00.000Z',
+      },
+      {
+        source: 'swap.box',
+        pair_id: 'WAXCASHZERO',
+        token_a_contract: 'graffitiking',
+        token_a_symbol: 'WAXCASH',
+        token_b_contract: 'zero.token',
+        token_b_symbol: 'ZERO',
+        reserve_a: '0',
+        reserve_b: '1',
+        liquidity_wax: '999999',
+        updated_at: '2026-06-14T12:07:00.000Z',
+      },
+    ];
+    const valuationGraphRows = [
+      { contract: 'eosio.token', symbol: 'WAX', decimals: 8, price_wax: '1', price_usd: '0.006', updated_at: '2026-06-14T12:00:00.000Z' },
+      { contract: 'graffitiking', symbol: 'WAXCASH', decimals: 8, total_supply: '1000000', circulating_supply: '500000', updated_at: '2026-06-14T12:00:00.000Z' },
+      { contract: 'tok.a', symbol: 'TOKA', decimals: 4, total_supply: '1000000', source_count: 5, source_keys: 'swap.nefty,swap.taco', updated_at: '2026-06-14T12:05:00.000Z' },
+      { contract: 'tok.b', symbol: 'TOKB', decimals: 6, total_supply: '1000000', circulating_supply: '10', updated_at: '2026-06-14T12:06:00.000Z' },
+      { contract: 'zero.token', symbol: 'ZERO', decimals: 0, total_supply: '100', updated_at: '2026-06-14T12:07:00.000Z' },
+    ];
+    const valuationGraphDb = {
+      prepare(sql) {
+        return {
+          bind(...params) {
+            return {
+              async all() {
+                if (sql.includes('FROM waxonedge_pairs')) {
+                  return { results: valuationGraphPairs };
+                }
+                if (sql.includes('SELECT contract, symbol, price_wax, price_usd')) {
+                  return { results: valuationGraphRows.filter((row) => params.some((value, index) => index % 2 === 0 && row.contract === value && row.symbol === params[index + 1])) };
+                }
+                if (sql.includes('FROM waxonedge_tokens t')) {
+                  return { results: valuationGraphRows.filter((row) => params.some((value, index) => index % 2 === 0 && row.contract === value && row.symbol === params[index + 1])) };
+                }
+                return { results: [] };
+              },
+            };
+          },
+        };
+      },
+    };
+    const valuationGraph = await __waxonedgeTestHooks.buildWaxcashPairGraph(valuationGraphDb);
+    const tokaNode = valuationGraph.nodes.find((node) => node.token_key === 'tok.a::TOKA');
+    const tokbNode = valuationGraph.nodes.find((node) => node.token_key === 'tok.b::TOKB');
+    const zeroNode = valuationGraph.nodes.find((node) => node.token_key === 'zero.token::ZERO');
+    const tokaEdge = valuationGraph.edges.find((edge) => edge.pair_id === 'WAXCASHTOKA');
+    const tokbEdge = valuationGraph.edges.find((edge) => edge.pair_id === 'TOKBWAXCASH');
+    const zeroEdge = valuationGraph.edges.find((edge) => edge.pair_id === 'WAXCASHZERO');
+    ok('WAXCASH graph endpoint values direct WAXCASH pairs from normalized reserves, not stored liquidity',
+      valuationGraph.counts.direct_pair_count === 4 &&
+      tokaEdge &&
+      tokaEdge.valuation.pair_direction === 'waxcash_token_a' &&
+      tokaEdge.valuation.waxcash_decimals === 8 &&
+      tokaEdge.valuation.paired_token_decimals === 4 &&
+      Number(tokaEdge.valuation.token_price_in_waxcash) === 5 &&
+      Number(tokaEdge.valuation.selected_price_wax) === 0.05 &&
+      Number(tokaEdge.liquidity_wax) === 10 &&
+      tokaEdge.liquidity_wax !== '999999' &&
+      Number(tokaEdge.volume_24h_wax) === 7 &&
+      tokbEdge &&
+      tokbEdge.valuation.pair_direction === 'waxcash_token_b' &&
+      tokbEdge.valuation.paired_token_decimals === 6 &&
+      Number(tokbEdge.valuation.token_price_in_waxcash) === 2 &&
+      Number(tokbEdge.liquidity_wax) === 0.8);
+    ok('WAXCASH graph endpoint leaves missing-supply market cap null and keeps sources direct-scoped',
+      tokaNode &&
+      tokaNode.market_cap_wax === null &&
+      tokaNode.market_cap_usd === null &&
+      tokaNode.source_keys === 'swap.nefty' &&
+      tokaNode.source_count === 1 &&
+      tokbNode &&
+      Number(tokbNode.market_cap_wax) === 0.2 &&
+      zeroNode &&
+      zeroNode.price_wax === null &&
+      zeroEdge &&
+      zeroEdge.liquidity_wax === null &&
+      zeroEdge.valuation.reason_codes.includes('missing_or_zero_reserves'));
     const graphLiveResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
     { DB: graphDb },
     new URLSearchParams(),

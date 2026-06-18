@@ -454,5 +454,88 @@ ok('WAXCASH OG parity proof does not use multi-hop headline pricing',
   waxcashProof.comparison_notes.some((note) => note.includes('multi-hop routes are not headline-price inputs')) &&
   !JSON.stringify(waxcashProof.headline_price).includes('multi_hop'));
 
+const waxcashGraphRowsByKey = new Map([
+  ['graffitiking::WAXCASH', { contract: 'graffitiking', symbol: 'WAXCASH', decimals: 8 }],
+  ['tok.a::TOKA', { contract: 'tok.a', symbol: 'TOKA', decimals: 4 }],
+  ['tok.b::TOKB', { contract: 'tok.b', symbol: 'TOKB', decimals: 6 }],
+]);
+const graphHeadline = { og_headline_price_wax: '0.01' };
+const waxcashTokenAPair = {
+  source: 'swap.nefty',
+  pair_id: 'GRAPH_A',
+  token_a_contract: 'graffitiking',
+  token_a_symbol: 'WAXCASH',
+  token_b_contract: 'tok.a',
+  token_b_symbol: 'TOKA',
+  reserve_a: '500',
+  reserve_b: '100',
+  price: '999',
+  liquidity_wax: '999999',
+  volume_24h_wax: '-7',
+  volume_24h_usd: '-0.042',
+};
+const waxcashTokenBPair = {
+  source: 'swap.taco',
+  pair_id: 'GRAPH_B',
+  token_a_contract: 'tok.b',
+  token_a_symbol: 'TOKB',
+  token_b_contract: 'graffitiking',
+  token_b_symbol: 'WAXCASH',
+  reserve_a: '20',
+  reserve_b: '40',
+  price: '999',
+  liquidity_wax: '999999',
+};
+const zeroReserveGraphPair = {
+  ...waxcashTokenAPair,
+  pair_id: 'GRAPH_ZERO',
+  reserve_a: '0',
+  reserve_b: '100',
+};
+const graphTokenAValuation = __waxonedgeTestHooks.waxcashGraphPairValuation(
+  waxcashTokenAPair,
+  graphHeadline,
+  priceIndex,
+  waxcashGraphRowsByKey,
+);
+const graphTokenBValuation = __waxonedgeTestHooks.waxcashGraphPairValuation(
+  waxcashTokenBPair,
+  graphHeadline,
+  priceIndex,
+  waxcashGraphRowsByKey,
+);
+const graphZeroValuation = __waxonedgeTestHooks.waxcashGraphPairValuation(
+  zeroReserveGraphPair,
+  graphHeadline,
+  priceIndex,
+  waxcashGraphRowsByKey,
+);
+ok('WAXCASH graph valuation is direction-safe when WAXCASH is token A',
+  graphTokenAValuation.pair_direction === 'waxcash_token_a' &&
+  graphTokenAValuation.waxcash_decimals === 8 &&
+  graphTokenAValuation.paired_token_decimals === 4 &&
+  Number(graphTokenAValuation.waxcash_reserve) === 500 &&
+  Number(graphTokenAValuation.paired_token_reserve) === 100 &&
+  Number(graphTokenAValuation.token_price_in_waxcash) === 5 &&
+  Number(graphTokenAValuation.selected_price_wax) === 0.05 &&
+  almostEqual(graphTokenAValuation.selected_price_usd, 0.0003) &&
+  Number(graphTokenAValuation.liquidity_wax) === 10 &&
+  graphTokenAValuation.selected_price_wax !== waxcashTokenAPair.price &&
+  graphTokenAValuation.liquidity_wax !== waxcashTokenAPair.liquidity_wax &&
+  Number(graphTokenAValuation.volume_24h_wax) === 7 &&
+  Number(graphTokenAValuation.volume_24h_usd) === 0.042);
+ok('WAXCASH graph valuation is direction-safe when WAXCASH is token B',
+  graphTokenBValuation.pair_direction === 'waxcash_token_b' &&
+  graphTokenBValuation.paired_token_decimals === 6 &&
+  Number(graphTokenBValuation.waxcash_reserve) === 40 &&
+  Number(graphTokenBValuation.paired_token_reserve) === 20 &&
+  Number(graphTokenBValuation.token_price_in_waxcash) === 2 &&
+  Number(graphTokenBValuation.selected_price_wax) === 0.02 &&
+  Number(graphTokenBValuation.liquidity_wax) === 0.8);
+ok('WAXCASH graph zero reserve pairs stay null-valued',
+  graphZeroValuation.liquidity_wax === null &&
+  graphZeroValuation.selected_price_wax === null &&
+  graphZeroValuation.reason_codes.includes('missing_or_zero_reserves'));
+
 console.log(`\nwaxonedge-valuation-contract.test: ${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
