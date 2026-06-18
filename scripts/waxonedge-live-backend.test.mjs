@@ -5344,6 +5344,14 @@ const layer1RouteIndex = __waxonedgeTestHooks.buildOgWaxRouteGraph(layer1Rows, l
 const waxcashLayer1Selection = __waxonedgeTestHooks.selectLiquidityWeightedMedianPrice('graffitiking', 'WAXCASH', layer1Rows, layer1PriceIndex, layer1RouteIndex);
 const nbgLayer1Selection = __waxonedgeTestHooks.selectLiquidityWeightedMedianPrice('niftyblocksd', 'NBG', layer1Rows, layer1PriceIndex, layer1RouteIndex);
 const wufLayer1Selection = __waxonedgeTestHooks.selectLiquidityWeightedMedianPrice('wuffi', 'WUF', layer1Rows, layer1PriceIndex, layer1RouteIndex);
+const waxcashWufOnlyRouteIndex = __waxonedgeTestHooks.buildOgWaxRouteGraph([waxcashWufLayer1Pair, wufWaxLayer1Pair], layer1PriceIndex);
+const waxcashWufOnlySelection = __waxonedgeTestHooks.selectLiquidityWeightedMedianPrice(
+  'graffitiking',
+  'WAXCASH',
+  [waxcashWufLayer1Pair],
+  layer1PriceIndex,
+  waxcashWufOnlyRouteIndex,
+);
 const swapAlcorV2TrapPair = {
   source: 'swap.alcor',
   pair_id: 'ALCOR-CL-TRAP',
@@ -5376,6 +5384,18 @@ ok('Layer 1 known WAXCASH/NBG price direction uses quote reserve value over toke
 ok('Layer 1 known WAXCASH/WUF price direction uses paired WAX route without reversing reserves',
   almostEqual(wufLayer1Selection.priceWax, 0.003) &&
   !almostEqual(wufLayer1Selection.priceWax, 333.3333333333333));
+ok('Layer 1 WAXCASH/WUF route hop price is WAXCASH-denominated while selected price is WAX-denominated',
+  waxcashWufOnlySelection.pair_id === 'WUF-WAXCASH' &&
+  waxcashWufOnlySelection.route_hops[0].from === 'graffitiking::WAXCASH' &&
+  waxcashWufOnlySelection.route_hops[0].to === 'wuffi::WUF' &&
+  almostEqual(waxcashWufOnlySelection.route_hops[0].price_from_to, 20) &&
+  almostEqual(waxcashWufOnlySelection.route_hops[0].selected_price_wax, 0.06) &&
+  !almostEqual(waxcashWufOnlySelection.route_hops[0].price_from_to, waxcashWufOnlySelection.priceWax));
+ok('Layer 1 route hop price_from_to is not a WAX price unless the quote token is WAX',
+  [waxcashLayer1Selection, nbgLayer1Selection, wufLayer1Selection].every((selection) => {
+    const hop = selection.route_hops[0];
+    return hop.to === 'eosio.token::WAX' || !almostEqual(hop.price_from_to, selection.priceWax);
+  }));
 ok('Layer 1 weighted median excludes swap.alcor concentrated pools from V2 reserve candidates',
   alcorOnlyLayer1Selection === null &&
   mixedAlcorTrapSelection.pair_id === 'WAXCASH-WAX' &&
