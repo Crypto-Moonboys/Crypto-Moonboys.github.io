@@ -134,17 +134,23 @@
     return response.json();
   }
 
-  function normalizeRoot(root) {
-    var contract = normalizeContract(root && (root.contract || root.token_contract)) || WAXCASH.contract;
-    var symbol = normalizeSymbol(root && (root.symbol || root.token_symbol)) || WAXCASH.symbol;
-    var key = safeText(root && (root.key || root.id || root.token_key)) || tokenKey(contract, symbol);
-    return {
+  function normalizeRoot(root, node) {
+    var source = node || root || {};
+    var token = source && source.token && typeof source.token === 'object' ? source.token : source;
+    var contract = normalizeContract(token && (token.contract || token.token_contract)) || WAXCASH.contract;
+    var symbol = normalizeSymbol(token && (token.symbol || token.token_symbol)) || WAXCASH.symbol;
+    var key = safeText(source && (source.key || source.id || source.token_key)) || safeText(root && (root.key || root.id || root.token_key)) || tokenKey(contract, symbol);
+    return Object.assign({}, source, {
       key: key,
+      id: safeText(source && source.id) || key,
+      token_key: safeText(source && source.token_key) || key,
       contract: contract,
       symbol: symbol,
-      links: root && root.links && typeof root.links === 'object' ? root.links : {},
-      analytics_links: root && root.analytics_links && typeof root.analytics_links === 'object' ? root.analytics_links : {},
-    };
+      token: token || {},
+      pairs: [],
+      links: source && source.links && typeof source.links === 'object' ? source.links : {},
+      analytics_links: source && source.analytics_links && typeof source.analytics_links === 'object' ? source.analytics_links : {},
+    });
   }
 
   function normalizeGraphNode(node) {
@@ -194,17 +200,22 @@
 
   function buildGraph(payload) {
     var data = payload && payload.data && typeof payload.data === 'object' ? payload.data : {};
-    var root = normalizeRoot(data.root);
+    var rootNode = null;
     var nodeMap = new Map();
     var rawNodes = Array.isArray(data.nodes) ? data.nodes : [];
     var rawEdges = Array.isArray(data.edges) ? data.edges : [];
 
     rawNodes.forEach(function (rawNode) {
       var node = normalizeGraphNode(rawNode);
-      if (!node || isWaxcash(node.contract, node.symbol)) return;
+      if (!node) return;
+      if (isWaxcash(node.contract, node.symbol)) {
+        rootNode = node;
+        return;
+      }
       nodeMap.set(node.key, node);
     });
 
+    var root = normalizeRoot(data.root, rootNode);
     var edges = rawEdges.map(function (rawEdge) {
       var key = edgeNodeKey(rawEdge, root.key);
       if (!key || !nodeMap.has(key)) return null;
@@ -220,6 +231,7 @@
       var node = nodeMap.get(edge.nodeKey);
       if (node) node.pairs.push(edge);
     });
+    root.pairs = edges.slice();
 
     var nodes = Array.from(nodeMap.values()).map(function (node) {
       var bestPair = node.pairs.slice().sort(function (a, b) {
@@ -303,14 +315,22 @@
       '.wxcash-web{position:absolute;inset:0;width:100%;height:100%;opacity:.5}.wxcash-web line{stroke:rgba(0,255,209,.35);stroke-width:1.2;filter:drop-shadow(0 0 5px rgba(0,255,209,.5))}' +
       '.wxcash-core,.wxcash-node{position:absolute;border:1px solid rgba(0,255,209,.58);border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.22),rgba(0,255,209,.24) 20%,rgba(0,20,30,.88) 62%,rgba(0,0,0,.94));color:#fff;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 0 28px rgba(0,255,209,.22),inset 0 0 25px rgba(0,255,209,.2);cursor:pointer}' +
       '.wxcash-core{left:calc(50% - 95px);top:calc(50% - 95px);width:190px;height:190px;z-index:5;border-color:rgba(255,197,63,.8);box-shadow:0 0 54px rgba(255,197,63,.32),inset 0 0 32px rgba(255,197,63,.22)}' +
-      '.wxcash-node{z-index:4;font:inherit;padding:8px;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.wxcash-node:hover,.wxcash-node.is-selected{transform:scale(1.08);border-color:#fff;box-shadow:0 0 46px rgba(0,255,209,.42),inset 0 0 30px rgba(0,255,209,.22)}' +
+      '.wxcash-node{z-index:4;font:inherit;padding:8px;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.wxcash-node:hover,.wxcash-node.is-selected,.wxcash-core:hover,.wxcash-core.is-selected{transform:scale(1.08);border-color:#fff;box-shadow:0 0 46px rgba(0,255,209,.42),inset 0 0 30px rgba(0,255,209,.22)}' +
       '.wxcash-node strong,.wxcash-core strong{font-size:13px;color:#00ffd1}.wxcash-core strong{font-size:18px;color:#ffd75a}.wxcash-node span,.wxcash-core span{font-size:9px;color:rgba(255,255,255,.72)}.wxcash-node em,.wxcash-core em{font-size:10px;color:#fff;font-style:normal}' +
-      '.wxcash-panel{position:absolute;right:18px;bottom:18px;z-index:8;width:min(460px,calc(100% - 36px));max-height:58%;overflow:auto;padding:18px;border:1px solid rgba(0,255,209,.36);border-radius:18px;background:rgba(3,8,14,.92);box-shadow:0 18px 55px rgba(0,0,0,.45)}.wxcash-panel h3{margin:0 0 8px;color:#00ffd1}.wxcash-panel dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.wxcash-panel dt{color:rgba(255,255,255,.55)}.wxcash-panel dd{margin:0;text-align:right;color:#fff}.wxcash-panel dd small{display:block;color:rgba(255,255,255,.62);font-size:10px;margin-top:2px}.wxcash-pair-row{padding:8px 0;border-top:1px solid rgba(255,255,255,.08);font-size:11px}.wxcash-link{color:#00ffd1;text-decoration:none}' +
+      '.wxcash-panel{position:absolute;right:18px;bottom:18px;z-index:20;width:min(460px,calc(100% - 36px));max-height:58%;overflow:auto;padding:18px;border:1px solid rgba(0,255,209,.36);border-radius:18px;background:rgba(3,8,14,.92);box-shadow:0 18px 55px rgba(0,0,0,.45)}.wxcash-panel h3{margin:0 0 8px;color:#00ffd1}.wxcash-panel dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.wxcash-panel dt{color:rgba(255,255,255,.55)}.wxcash-panel dd{margin:0;text-align:right;color:#fff}.wxcash-panel dd small{display:block;color:rgba(255,255,255,.62);font-size:10px;margin-top:2px}.wxcash-pair-row{padding:8px 0;border-top:1px solid rgba(255,255,255,.08);font-size:11px}.wxcash-link{color:#00ffd1;text-decoration:none}' +
     '</style>' +
     '<svg class="wxcash-web" viewBox="0 0 ' + width + ' ' + height + '" preserveAspectRatio="none" aria-hidden="true">' + edges + '</svg>' +
-    '<button type="button" class="wxcash-core" data-core="true"><strong>' + escapeHtml(state.root.symbol) + '</strong><span>' + escapeHtml(state.root.contract) + '</span><em>ROOT NODE</em></button>' +
+    '<button type="button" class="wxcash-core' + (state.selected === state.root.key ? ' is-selected' : '') + '" data-core="true" data-key="' + escapeHtml(state.root.key) + '" aria-label="Show WAXCASH details"><strong>' + escapeHtml(state.root.symbol) + '</strong><span>' + escapeHtml(state.root.contract) + '</span><em>ROOT NODE</em></button>' +
     bubbles +
     renderPanel();
+
+    var core = board.querySelector('.wxcash-core');
+    if (core) {
+      core.addEventListener('click', function () {
+        state.selected = state.root.key;
+        render();
+      });
+    }
 
     Array.prototype.forEach.call(board.querySelectorAll('.wxcash-node'), function (button) {
       button.addEventListener('click', function () {
@@ -333,7 +353,9 @@
 
   function renderPanel() {
     if (!state.selected) return '';
-    var node = state.nodes.find(function (item) { return item.key === state.selected; });
+    var node = state.selected === state.root.key
+      ? state.root
+      : state.nodes.find(function (item) { return item.key === state.selected; });
     if (!node) return '';
     var token = node.token || {};
     var records = [node, token];
@@ -346,7 +368,7 @@
       return '<div class="wxcash-pair-row">' + label + '<br>Liquidity: ' + escapeHtml(renderWaxMetric([pair], 'liquidity_wax')) + ' - Volume 24h: ' + escapeHtml(renderWaxMetric([pair], 'volume_24h_wax')) + '</div>';
     }).join('');
     return '<aside class="wxcash-panel">' +
-      '<h3>' + escapeHtml(node.symbol) + ' / WAXCASH</h3>' +
+      '<h3>' + escapeHtml(node.symbol) + (node.key === state.root.key ? ' root' : ' / WAXCASH') + '</h3>' +
       '<p>' + escapeHtml(node.contract) + ' - ' + escapeHtml(node.pairs.length) + ' indexed WAXCASH pair(s)</p>' +
       '<dl>' +
         '<dt>Price</dt><dd>' + renderPriceMetric(records) + '</dd>' +

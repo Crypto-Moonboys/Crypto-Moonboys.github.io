@@ -5147,6 +5147,16 @@ ok('WAXCASH graph metric modes use USD price labels and WAX liquidity/volume',
   !waxcashGraphFrontend.includes("if (metric === 'volume') return firstNumber(records, ['volume_24h_wax', 'volume_24h_usd'])") &&
   !waxcashGraphFrontend.includes("renderMetric(records, 'selected_price_wax', 'selected_price_usd')") &&
   !waxcashGraphFrontend.includes("renderMetric(records, 'volume_24h_wax', 'volume_24h_usd')"));
+ok('WAXCASH graph root bubble opens the details panel',
+  waxcashGraphFrontend.includes('rootNode = node') &&
+  waxcashGraphFrontend.includes('root.pairs = edges.slice()') &&
+  waxcashGraphFrontend.includes('data-core="true" data-key="') &&
+  waxcashGraphFrontend.includes('aria-label="Show WAXCASH details"') &&
+  waxcashGraphFrontend.includes("var core = board.querySelector('.wxcash-core')") &&
+  waxcashGraphFrontend.includes('state.selected = state.root.key') &&
+  waxcashGraphFrontend.includes('state.selected === state.root.key') &&
+  waxcashGraphFrontend.includes('z-index:20') &&
+  waxcashGraphFrontend.includes('.wxcash-core:hover,.wxcash-core.is-selected'));
 ok('frontend only displays 7d/30d volume when backend metric proof marks it live',
   frontend.includes("var hasVolume7d = metricStatusLive(stats, 'volume_7d') && volume7d != null") &&
   frontend.includes("var hasVolume30d = metricStatusLive(stats, 'volume_30d') && volume30d != null") &&
