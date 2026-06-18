@@ -2,6 +2,7 @@
   'use strict';
 
   var WAXCASH = { contract: 'graffitiking', symbol: 'WAXCASH' };
+  var WAXCASH_GRAPH_ENDPOINT = '/api/waxonedge/waxcash-graph';
   var board = document.getElementById('wxcash-board');
   var stats = document.getElementById('wxcash-stats');
   var search = document.getElementById('wxcash-search');
@@ -10,7 +11,7 @@
   var updated = document.getElementById('wxcash-last-updated');
   var waxPrice = document.getElementById('wxcash-wax-price');
   var metric = 'liquidity';
-  var state = { tokens: [], pairs: [], nodes: [], selected: null };
+  var state = { root: WAXCASH, edges: [], nodes: [], selected: null };
 
   function safeText(value) {
     return value == null ? '' : String(value).trim();
@@ -30,6 +31,14 @@
     return c && s ? c + '::' + s : '';
   }
 
+  function tokenRefFromKey(value) {
+    var parts = safeText(value).split('::');
+    if (parts.length !== 2) return null;
+    var contract = normalizeContract(parts[0]);
+    var symbol = normalizeSymbol(parts[1]);
+    return contract && symbol ? { contract: contract, symbol: symbol, key: tokenKey(contract, symbol) } : null;
+  }
+
   function isWaxcash(contract, symbol) {
     return tokenKey(contract, symbol) === tokenKey(WAXCASH.contract, WAXCASH.symbol);
   }
@@ -37,6 +46,28 @@
   function asNumber(value) {
     var n = typeof value === 'number' ? value : Number.parseFloat(value);
     return Number.isFinite(n) ? n : null;
+  }
+
+  function firstValue(records, names) {
+    for (var recordIndex = 0; recordIndex < records.length; recordIndex += 1) {
+      var record = records[recordIndex];
+      if (!record || typeof record !== 'object') continue;
+      for (var nameIndex = 0; nameIndex < names.length; nameIndex += 1) {
+        var name = names[nameIndex];
+        if (record[name] != null) return record[name];
+        if (record.metrics && record.metrics[name] != null) return record.metrics[name];
+      }
+    }
+    return null;
+  }
+
+  function firstNumber(records, names) {
+    var value = firstValue(records, names);
+    return value == null ? null : asNumber(value);
+  }
+
+  function suffixFor(records, waxKey) {
+    return firstNumber(records, [waxKey]) != null ? ' WAX' : ' USD';
   }
 
   function formatCompact(value, suffix) {
@@ -52,25 +83,20 @@
     return out + (suffix || '');
   }
 
-  function pairOtherSide(pair) {
-    var aContract = normalizeContract(pair.token_a_contract);
-    var aSymbol = normalizeSymbol(pair.token_a_symbol);
-    var bContract = normalizeContract(pair.token_b_contract);
-    var bSymbol = normalizeSymbol(pair.token_b_symbol);
-    if (isWaxcash(aContract, aSymbol) && bContract && bSymbol) {
-      return { contract: bContract, symbol: bSymbol, side: 'b' };
-    }
-    if (isWaxcash(bContract, bSymbol) && aContract && aSymbol) {
-      return { contract: aContract, symbol: aSymbol, side: 'a' };
-    }
-    return null;
+  function metricValue(node, edge) {
+    var records = [node, node && node.token, edge];
+    if (metric === 'volume') return firstNumber(records, ['volume_24h_wax', 'volume_24h_usd']);
+    if (metric === 'price') return firstNumber(records, ['selected_price_wax', 'selected_price_usd']);
+    if (metric === 'mcap') return firstNumber(records, ['market_cap_wax', 'market_cap_usd']);
+    return firstNumber(records, ['liquidity_wax', 'liquidity_usd']);
   }
 
-  function metricValue(token, pair) {
-    if (metric === 'volume') return asNumber(token.volume_24h_wax) || asNumber(pair.volume_24h_wax) || asNumber(pair.volume_24h) || 0;
-    if (metric === 'price') return asNumber(token.selected_price_wax) || asNumber(token.price_wax) || asNumber(pair.price) || 0;
-    if (metric === 'mcap') return asNumber(token.market_cap_wax) || 0;
-    return asNumber(pair.liquidity_wax) || asNumber(token.direct_waxcash_pair_liquidity_wax) || asNumber(token.liquidity_wax) || 0;
+  function metricSuffix(node, edge) {
+    var records = [node, node && node.token, edge];
+    if (metric === 'volume') return suffixFor(records, 'volume_24h_wax');
+    if (metric === 'price') return suffixFor(records, 'selected_price_wax');
+    if (metric === 'mcap') return suffixFor(records, 'market_cap_wax');
+    return suffixFor(records, 'liquidity_wax');
   }
 
   function radiusFor(value) {
@@ -94,43 +120,122 @@
     return response.json();
   }
 
-  function buildNodes(payload) {
-    var data = payload && payload.data ? payload.data : {};
-    var tokens = Array.isArray(data.tokens) ? data.tokens : [];
-    var pairs = Array.isArray(data.pairs) ? data.pairs : [];
-    var tokenMap = new Map(tokens.map(function (token) {
-      return [tokenKey(token.contract, token.symbol), token];
-    }));
-    var pairGroups = new Map();
+  function normalizeRoot(root) {
+    return {
+      contract: normalizeContract(root && (root.contract || root.token_contract)) || WAXCASH.contract,
+      symbol: normalizeSymbol(root && (root.symbol || root.token_symbol)) || WAXCASH.symbol,
+      links: root && root.links && typeof root.links === 'object' ? root.links : {},
+    };
+  }
 
-    pairs.forEach(function (pair) {
-      var other = pairOtherSide(pair);
-      if (!other) return;
-      var key = tokenKey(other.contract, other.symbol);
-      if (!key) return;
-      var current = pairGroups.get(key) || { token: tokenMap.get(key) || other, pairs: [] };
-      current.pairs.push(pair);
-      pairGroups.set(key, current);
+  function normalizeGraphNode(node) {
+    var token = node && node.token && typeof node.token === 'object' ? node.token : node;
+    var contract = normalizeContract(token && (token.contract || token.token_contract));
+    var symbol = normalizeSymbol(token && (token.symbol || token.token_symbol));
+    var key = safeText(node && (node.key || node.id)) || tokenKey(contract, symbol);
+    if (!key || !contract || !symbol) return null;
+    return Object.assign({}, node, {
+      key: key,
+      contract: contract,
+      symbol: symbol,
+      token: token || {},
+      links: node && node.links && typeof node.links === 'object' ? node.links : {},
+      pairs: [],
+    });
+  }
+
+  function edgeOtherSide(edge, root) {
+    var rootKey = tokenKey(root && root.contract, root && root.symbol);
+    var sourceRef = tokenRefFromKey(edge.source || edge.from);
+    var targetRef = tokenRefFromKey(edge.target || edge.to);
+    var sideA = tokenKey(edge.token_a_contract || edge.from_contract || edge.source_contract || edge.base_contract, edge.token_a_symbol || edge.from_symbol || edge.source_symbol || edge.base_symbol);
+    var sideB = tokenKey(edge.token_b_contract || edge.to_contract || edge.target_contract || edge.quote_contract, edge.token_b_symbol || edge.to_symbol || edge.target_symbol || edge.quote_symbol);
+    var fromKey = sourceRef ? sourceRef.key : tokenKey(edge.from_contract || edge.source_contract, edge.from_symbol || edge.source_symbol);
+    var toKey = targetRef ? targetRef.key : tokenKey(edge.to_contract || edge.target_contract, edge.to_symbol || edge.target_symbol);
+
+    if (sideA === rootKey && sideB) {
+      return {
+        contract: normalizeContract(edge.token_b_contract || edge.to_contract || edge.target_contract || edge.quote_contract),
+        symbol: normalizeSymbol(edge.token_b_symbol || edge.to_symbol || edge.target_symbol || edge.quote_symbol),
+      };
+    }
+    if (sideB === rootKey && sideA) {
+      return {
+        contract: normalizeContract(edge.token_a_contract || edge.from_contract || edge.source_contract || edge.base_contract),
+        symbol: normalizeSymbol(edge.token_a_symbol || edge.from_symbol || edge.source_symbol || edge.base_symbol),
+      };
+    }
+    if (fromKey === rootKey && toKey) {
+      return targetRef || { contract: normalizeContract(edge.to_contract || edge.target_contract), symbol: normalizeSymbol(edge.to_symbol || edge.target_symbol) };
+    }
+    if (toKey === rootKey && fromKey) {
+      return sourceRef || { contract: normalizeContract(edge.from_contract || edge.source_contract), symbol: normalizeSymbol(edge.from_symbol || edge.source_symbol) };
+    }
+    return null;
+  }
+
+  function edgeLink(edge) {
+    if (!edge || !edge.links) return '';
+    return safeText(edge.links.analytics || edge.links.pair || edge.links.detail || edge.links.explorer);
+  }
+
+  function tokenAnalyticsUrl(node) {
+    if (node && node.links && node.links.analytics) return safeText(node.links.analytics);
+    return '/analytics/token/?token=' + encodeURIComponent(node.symbol) + '&contract=' + encodeURIComponent(node.contract);
+  }
+
+  function buildGraph(payload) {
+    var data = payload && payload.data && (payload.data.root || payload.data.nodes || payload.data.edges) ? payload.data : (payload || {});
+    var root = normalizeRoot(data.root);
+    var nodeMap = new Map();
+    var rawNodes = Array.isArray(data.nodes) ? data.nodes : [];
+    var rawEdges = Array.isArray(data.edges) ? data.edges : [];
+
+    rawNodes.forEach(function (rawNode) {
+      var node = normalizeGraphNode(rawNode);
+      if (!node || isWaxcash(node.contract, node.symbol)) return;
+      nodeMap.set(node.key, node);
     });
 
-    var nodes = Array.from(pairGroups.entries()).map(function (entry) {
-      var key = entry[0];
-      var group = entry[1];
-      var bestPair = group.pairs.slice().sort(function (a, b) {
-        return (asNumber(b.liquidity_wax) || 0) - (asNumber(a.liquidity_wax) || 0);
-      })[0];
-      var token = group.token || {};
-      var value = metricValue(token, bestPair || {});
-      return {
-        key: key,
-        contract: normalizeContract(token.contract),
-        symbol: normalizeSymbol(token.symbol),
-        token: token,
+    var edges = rawEdges.map(function (rawEdge) {
+      var other = edgeOtherSide(rawEdge, root);
+      if (!other) return null;
+      var key = tokenKey(other.contract, other.symbol);
+      if (!key) return null;
+      if (!nodeMap.has(key)) {
+        nodeMap.set(key, {
+          key: key,
+          contract: other.contract,
+          symbol: other.symbol,
+          token: other,
+          links: {},
+          pairs: [],
+        });
+      }
+      return Object.assign({}, rawEdge, {
+        key: safeText(rawEdge.key || rawEdge.id || rawEdge.pair_id || rawEdge.pair_key) || key,
+        nodeKey: key,
+        links: rawEdge.links && typeof rawEdge.links === 'object' ? rawEdge.links : {},
+      });
+    }).filter(Boolean);
+
+    edges.forEach(function (edge) {
+      var node = nodeMap.get(edge.nodeKey);
+      if (node) node.pairs.push(edge);
+    });
+
+    var nodes = Array.from(nodeMap.values()).map(function (node) {
+      var bestPair = node.pairs.slice().sort(function (a, b) {
+        return (firstNumber([b], ['liquidity_wax', 'liquidity_usd']) || 0) - (firstNumber([a], ['liquidity_wax', 'liquidity_usd']) || 0);
+      })[0] || null;
+      var value = metricValue(node, bestPair);
+      return Object.assign(node, {
         bestPair: bestPair,
-        pairs: group.pairs,
         value: value,
         radius: radiusFor(value),
-      };
+      });
+    }).filter(function (node) {
+      return node.pairs.length > 0;
     });
 
     nodes.sort(function (a, b) {
@@ -138,11 +243,11 @@
     });
 
     return {
-      tokens: tokens,
-      pairs: pairs,
+      root: root,
+      edges: edges,
       nodes: nodes,
       summary: data.summary || {},
-      updated_at: payload.updated_at || null,
+      updated_at: data.updated_at || payload.updated_at || null,
       warnings: payload.warnings || [],
     };
   }
@@ -191,7 +296,7 @@
       return '<button type="button" class="wxcash-node' + selected + '" data-key="' + escapeHtml(node.key) + '" style="left:' + (pos.x - r).toFixed(1) + 'px;top:' + (pos.y - r).toFixed(1) + 'px;width:' + (r * 2).toFixed(1) + 'px;height:' + (r * 2).toFixed(1) + 'px">' +
         '<strong>' + escapeHtml(node.symbol) + '</strong>' +
         '<span>' + escapeHtml(node.contract) + '</span>' +
-        '<em>' + escapeHtml(formatCompact(node.value, metric === 'price' ? ' WAX' : ' WAX')) + '</em>' +
+        '<em>' + escapeHtml(formatCompact(node.value, metricSuffix(node, node.bestPair))) + '</em>' +
       '</button>';
     }).join('');
 
@@ -205,7 +310,7 @@
       '.wxcash-panel{position:absolute;right:18px;bottom:18px;z-index:8;width:min(460px,calc(100% - 36px));max-height:58%;overflow:auto;padding:18px;border:1px solid rgba(0,255,209,.36);border-radius:18px;background:rgba(3,8,14,.92);box-shadow:0 18px 55px rgba(0,0,0,.45)}.wxcash-panel h3{margin:0 0 8px;color:#00ffd1}.wxcash-panel dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.wxcash-panel dt{color:rgba(255,255,255,.55)}.wxcash-panel dd{margin:0;text-align:right;color:#fff}.wxcash-pair-row{padding:8px 0;border-top:1px solid rgba(255,255,255,.08);font-size:11px}.wxcash-link{color:#00ffd1;text-decoration:none}' +
     '</style>' +
     '<svg class="wxcash-web" viewBox="0 0 ' + width + ' ' + height + '" preserveAspectRatio="none" aria-hidden="true">' + edges + '</svg>' +
-    '<button type="button" class="wxcash-core" data-core="true"><strong>WAXCASH</strong><span>graffitiking</span><em>ROOT NODE</em></button>' +
+    '<button type="button" class="wxcash-core" data-core="true"><strong>' + escapeHtml(state.root.symbol) + '</strong><span>' + escapeHtml(state.root.contract) + '</span><em>ROOT NODE</em></button>' +
     bubbles +
     renderPanel();
 
@@ -217,25 +322,36 @@
     });
   }
 
+  function renderMetric(records, waxKey, usdKey) {
+    var waxValue = firstNumber(records, [waxKey]);
+    var value = waxValue != null ? waxValue : firstNumber(records, [usdKey]);
+    return formatCompact(value, waxValue != null ? ' WAX' : ' USD');
+  }
+
   function renderPanel() {
     if (!state.selected) return '';
     var node = state.nodes.find(function (item) { return item.key === state.selected; });
     if (!node) return '';
     var token = node.token || {};
+    var records = [node, token];
     var pairRows = node.pairs.slice(0, 12).map(function (pair) {
-      return '<div class="wxcash-pair-row"><strong>' + escapeHtml(pair.source || 'indexed') + '</strong> pair ' + escapeHtml(pair.pair_id) + '<br>Liquidity: ' + escapeHtml(formatCompact(pair.liquidity_wax, ' WAX')) + ' · Volume 24h: ' + escapeHtml(formatCompact(pair.volume_24h_wax || pair.volume_24h, ' WAX')) + '</div>';
+      var label = '<strong>' + escapeHtml(pair.source || 'indexed') + '</strong> pair ' + escapeHtml(pair.pair_id || pair.id || pair.key || '--');
+      var pairUrl = edgeLink(pair);
+      if (pairUrl) {
+        label = '<a class="wxcash-link" href="' + escapeHtml(pairUrl) + '">' + label + '</a>';
+      }
+      return '<div class="wxcash-pair-row">' + label + '<br>Liquidity: ' + escapeHtml(renderMetric([pair], 'liquidity_wax', 'liquidity_usd')) + ' - Volume 24h: ' + escapeHtml(renderMetric([pair], 'volume_24h_wax', 'volume_24h_usd')) + '</div>';
     }).join('');
-    var analyticsUrl = '/analytics/token/' + encodeURIComponent(node.symbol + '_' + node.contract);
     return '<aside class="wxcash-panel">' +
       '<h3>' + escapeHtml(node.symbol) + ' / WAXCASH</h3>' +
-      '<p>' + escapeHtml(node.contract) + ' · ' + escapeHtml(node.pairs.length) + ' indexed WAXCASH pair(s)</p>' +
+      '<p>' + escapeHtml(node.contract) + ' - ' + escapeHtml(node.pairs.length) + ' indexed WAXCASH pair(s)</p>' +
       '<dl>' +
-        '<dt>Price</dt><dd>' + escapeHtml(formatCompact(token.selected_price_wax || token.price_wax, ' WAX')) + '</dd>' +
-        '<dt>Liquidity</dt><dd>' + escapeHtml(formatCompact(token.direct_waxcash_pair_liquidity_wax || token.liquidity_wax || node.value, ' WAX')) + '</dd>' +
-        '<dt>24h Volume</dt><dd>' + escapeHtml(formatCompact(token.volume_24h_wax || token.volume_24h, ' WAX')) + '</dd>' +
-        '<dt>Market Cap</dt><dd>' + escapeHtml(formatCompact(token.market_cap_wax, ' WAX')) + '</dd>' +
+        '<dt>Price</dt><dd>' + escapeHtml(renderMetric(records, 'selected_price_wax', 'selected_price_usd')) + '</dd>' +
+        '<dt>Liquidity</dt><dd>' + escapeHtml(renderMetric(records, 'liquidity_wax', 'liquidity_usd')) + '</dd>' +
+        '<dt>24h Volume</dt><dd>' + escapeHtml(renderMetric(records, 'volume_24h_wax', 'volume_24h_usd')) + '</dd>' +
+        '<dt>Market Cap</dt><dd>' + escapeHtml(renderMetric(records, 'market_cap_wax', 'market_cap_usd')) + '</dd>' +
       '</dl>' +
-      '<a class="wxcash-link" href="' + escapeHtml(analyticsUrl) + '">Open full token analytics</a>' +
+      '<a class="wxcash-link" href="' + escapeHtml(tokenAnalyticsUrl(node)) + '">Open full token analytics</a>' +
       pairRows +
     '</aside>';
   }
@@ -249,7 +365,7 @@
     if (waxPrice && graph.summary && graph.summary.wax_price_usd != null) waxPrice.textContent = '$ ' + formatCompact(graph.summary.wax_price_usd);
     if (updated) updated.textContent = graph.updated_at ? 'Updated ' + graph.updated_at : 'Indexed snapshot';
     if (stats) {
-      stats.textContent = 'WAXCASH graph: ' + graph.nodes.length + ' direct paired tokens · ' + graph.pairs.filter(pairOtherSide).length + ' WAXCASH pair rows · metric: ' + metric;
+      stats.textContent = 'WAXCASH graph: ' + graph.nodes.length + ' direct paired tokens - ' + graph.edges.length + ' WAXCASH pair edges - metric: ' + metric;
     }
   }
 
@@ -257,10 +373,10 @@
     if (!board) return;
     setStatus(false, 'CONNECTING');
     try {
-      var payload = await fetchJson('/api/waxonedge/bootstrap');
-      var graph = buildNodes(payload);
-      state.tokens = graph.tokens;
-      state.pairs = graph.pairs;
+      var payload = await fetchJson(WAXCASH_GRAPH_ENDPOINT);
+      var graph = buildGraph(payload);
+      state.root = graph.root;
+      state.edges = graph.edges;
       state.nodes = graph.nodes;
       updateStats(graph);
       setStatus(true, 'INDEXED');
@@ -278,11 +394,11 @@
         other.classList.toggle('is-active', other === button);
       });
       state.nodes.forEach(function (node) {
-        node.value = metricValue(node.token || {}, node.bestPair || {});
+        node.value = metricValue(node, node.bestPair || {});
         node.radius = radiusFor(node.value);
       });
       render();
-      if (stats) stats.textContent = 'WAXCASH graph: ' + visibleNodes().length + ' visible tokens · metric: ' + metric;
+      if (stats) stats.textContent = 'WAXCASH graph: ' + visibleNodes().length + ' visible tokens - metric: ' + metric;
     });
   });
 

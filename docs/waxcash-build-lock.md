@@ -44,11 +44,11 @@ The uploaded Codex `waxonedge-live-indexer.zip` is a live trade-event indexer on
 
 This branch adds a new `waxcash.html` page and a dedicated `js/waxcash-graph.js` renderer that uses the existing indexed WaxOnEdge API:
 
-- `/api/waxonedge/bootstrap`
+- `/api/waxonedge/waxcash-graph`
 - existing token analytics links
-- existing indexed token and pair rows
+- uncapped direct indexed WAXCASH graph rows from the backend endpoint
 
-The renderer filters the existing indexed pair rows down to direct WAXCASH pairs only.
+The frontend consumes `/api/waxonedge/waxcash-graph` as the graph source. `/api/waxonedge/bootstrap` is not a graph source and must not be used for WAXCASH graph edges, token inventory, or top-pair fallback. The WAXCASH graph uses the uncapped direct indexed WAXCASH pairs supplied by the backend endpoint.
 
 ## Data rules
 
