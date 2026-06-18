@@ -51,6 +51,7 @@ const sourceCoverageMigration = read('workers/moonboys-api/migrations/024_waxone
 const sourceStateMigration = read('workers/moonboys-api/migrations/025_waxonedge_source_index_state.sql');
 const frontend = read('js/waxonedge.js');
 const frontendBubbles = read('js/waxonedge-bubbles-v2.js');
+const waxcashGraphFrontend = read('js/waxcash-graph.js');
 const featuredTokens = read('js/waxonedge-featured-tokens.js');
 const frontendSources = read('js/waxonedge-sources.js');
 const html = read('waxonedge.html');
@@ -5132,6 +5133,17 @@ ok('frontend does not label raw base volume as WAX',
   frontend.includes('rawVolume24: row.volume_24h') &&
   frontend.includes('volume24: asNum(row.volume_24h_wax)') &&
   frontend.includes("volume24Text: row.volume_24h_wax != null ? String(row.volume_24h_wax) + ' WAX' : UNAVAILABLE_TEXT"));
+ok('WAXCASH graph metric modes use backend WAX fields without USD fallbacks',
+  waxcashGraphFrontend.includes("if (metric === 'volume') return firstNumber(records, ['volume_24h_wax'])") &&
+  waxcashGraphFrontend.includes("if (metric === 'price') return firstNumber(records, ['price_wax'])") &&
+  waxcashGraphFrontend.includes("return firstNumber(records, ['liquidity_wax'])") &&
+  waxcashGraphFrontend.includes("renderWaxMetric(records, 'price_wax')") &&
+  waxcashGraphFrontend.includes("renderWaxMetric(records, 'volume_24h_wax')") &&
+  waxcashGraphFrontend.includes("console.log('waxcash metric', metric, node && node.symbol, value)") &&
+  !waxcashGraphFrontend.includes("if (metric === 'price') return firstNumber(records, ['selected_price_wax', 'selected_price_usd'])") &&
+  !waxcashGraphFrontend.includes("if (metric === 'volume') return firstNumber(records, ['volume_24h_wax', 'volume_24h_usd'])") &&
+  !waxcashGraphFrontend.includes("renderMetric(records, 'selected_price_wax', 'selected_price_usd')") &&
+  !waxcashGraphFrontend.includes("renderMetric(records, 'volume_24h_wax', 'volume_24h_usd')"));
 ok('frontend only displays 7d/30d volume when backend metric proof marks it live',
   frontend.includes("var hasVolume7d = metricStatusLive(stats, 'volume_7d') && volume7d != null") &&
   frontend.includes("var hasVolume30d = metricStatusLive(stats, 'volume_30d') && volume30d != null") &&
