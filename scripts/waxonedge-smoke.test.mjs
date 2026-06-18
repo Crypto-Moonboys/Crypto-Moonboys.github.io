@@ -239,8 +239,8 @@ ok('waxonedge.html exposes required scanner metric controls by default',
 ok('waxonedge-bubbles-v2.js keeps metric availability honest with selected-metric sizing',
   v2Js.includes('return change != null ? Math.abs(change) : null') &&
   /if\s*\(\s*metric\s*===\s*'tvl'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.tvlConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*record\.bubbleTvlUsd[\s\S]*record\.bubbleTvlWax[\s\S]*return\s+record\.tvlUsd\s*!=\s*null\s*\?\s*record\.tvlUsd\s*:\s*record\.tvlWax\s*;[\s\S]*\}/.test(v2Js) &&
-  /if\s*\(\s*metric\s*===\s*'liquidity'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.liquidityConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*record\.bubbleLiquidityUsd[\s\S]*record\.bubbleLiquidityWax[\s\S]*return\s+record\.liquidityUsd\s*!=\s*null\s*\?\s*record\.liquidityUsd\s*:\s*record\.liquidityWax/.test(v2Js) &&
-  /if\s*\(\s*metric\s*===\s*'mcap'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.marketCapConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*return\s+record\.marketCapUsd\s*!=\s*null\s*\?\s*record\.marketCapUsd\s*:\s*record\.marketCapWax;[\s\S]*\}/.test(v2Js) &&
+  /if\s*\(\s*metric\s*===\s*'liquidity'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.liquidityConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*return\s+record\.graphLiquidityWax;[\s\S]*\}/.test(v2Js) &&
+  /if\s*\(\s*metric\s*===\s*'mcap'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.marketCapConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*return\s+record\.marketCapWax;[\s\S]*\}/.test(v2Js) &&
   v2Js.includes('metricCount < records.length') &&
   v2Js.includes("with ' + METRIC_LABELS[state.metric] + ' data") &&
   v2Js.includes('blendedMarketScore(record)') &&
@@ -324,36 +324,38 @@ ok('WaxOnEdge featured-token allowlist is defined in one shared config file',
   !v2Js.includes("['AIGOD', 'aigodtokenwx', 'AIGOD']") &&
   !js.includes("['WAXP', 'eosio.token', 'WAX']") &&
   !v2Js.includes("['WAXP', 'eosio.token', 'WAX']"));
-ok('waxonedge-bubbles-v2.js renders featured token allowlist only from shared config',
+ok('waxonedge-bubbles-v2.js renders backend graph tokens with shared featured labels when available',
   v2Js.includes('Array.isArray(window.WAXONEDGE_FEATURED_TOKENS)') &&
   v2Js.includes('? window.WAXONEDGE_FEATURED_TOKENS') &&
   v2Js.includes('var WAXONEDGE_FEATURED_TOKEN_MAP = WAXONEDGE_FEATURED_TOKENS.reduce') &&
   v2Js.includes('var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&
-  v2Js.includes('if (!key || !featured) return;') &&
-  v2Js.includes('if (!featured) return;') &&
-  v2Js.includes('state.missingFeaturedLogged[featured.key]') &&
-  v2Js.includes("console.debug('missing_featured_token', featured.key)") &&
+  v2Js.includes('if (!key) return;') &&
+  v2Js.includes('displaySymbol: featured ? featured.label : symbol') &&
+  v2Js.includes('return Object.keys(byKey).map(function (key)') &&
+  !v2Js.includes('if (!key || !featured) return;') &&
+  !v2Js.includes("console.debug('missing_featured_token', featured.key)") &&
   !v2Js.includes('var TOP_LIMIT = 100') &&
   !v2Js.includes('base.slice(0, TOP_LIMIT)'));
-ok('waxonedge-bubbles-v2.js creates pair-only featured records from exact allowlisted pair keys',
+ok('waxonedge-bubbles-v2.js creates pair-only graph records without requiring allowlisted pair keys',
   v2Js.includes('function pairDerivedRecord(featured, key)') &&
   v2Js.includes('var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&
-  v2Js.includes('if (!featured) return;') &&
-  v2Js.includes('byKey[key] = pairDerivedRecord(featured, key)') &&
-  v2Js.includes('displaySymbol: featured.label') &&
+  !v2Js.includes('if (!featured) return;') &&
+  v2Js.includes('byKey[key] = pairDerivedRecord(featured || null, key)') &&
+  v2Js.includes('displaySymbol: featured && featured.label ? featured.label : symbol') &&
   v2Js.includes('computedPairCount: 0') &&
   v2Js.includes('strongestPair: null') &&
   v2Js.includes('record.searchText = tokenSearchText(record)'));
 ok('waxonedge-bubbles-v2.js pair-only featured records do not fake price, TVL, liquidity, or volume',
   /function pairDerivedRecord\(featured, key\)[\s\S]*selectedPriceWax: null[\s\S]*selectedPriceUsd: null[\s\S]*volume24Wax: null[\s\S]*volume24Usd: null[\s\S]*liquidityWax: null[\s\S]*liquidityUsd: null[\s\S]*tvlWax: null[\s\S]*tvlUsd: null/.test(v2Js) &&
   /function pairDerivedRecord\(featured, key\)[\s\S]*volume7dWax: null[\s\S]*volume7dUsd: null[\s\S]*volume30dWax: null[\s\S]*volume30dUsd: null/.test(v2Js));
-ok('waxonedge-bubbles-v2.js keeps modes and search scoped to featured tokens without fake metric zeroes',
+ok('waxonedge-bubbles-v2.js keeps modes and search scoped to backend graph tokens without fake metric zeroes',
   /function rankedRecords\(\)[\s\S]*state\.records\.filter[\s\S]*record\.searchText\.indexOf\(query\)[\s\S]*base\.map/.test(v2Js) &&
   /function computeRadii[\s\S]*value == null \? 0 : Math\.abs\(value\)/.test(v2Js) &&
   v2Js.includes('No indexed TVL') &&
-  v2Js.includes('No indexed liquidity') &&
+  v2Js.includes('No graph liquidity') &&
   v2Js.includes('No indexed volume') &&
-  v2Js.includes('Featured tokens only'));
+  v2Js.includes('WAXCASH graph tokens') &&
+  !v2Js.includes('Featured tokens only'));
 ok('waxonedge-bubbles-v2.js opens full token analytics directly without token modal flow',
   v2Js.includes('function openTokenAnalytics') &&
   v2Js.includes('function tokenAnalyticsUrl') &&
@@ -539,7 +541,7 @@ ok('waxonedge-bubbles-v2.js blocks weak price, liquidity, and TVL from sizing/di
   v2Js.includes("if (record.selectedPriceConfidence === 'weak') return 'Proof weak'") &&
   v2Js.includes("if (record.liquidityConfidence === 'weak') return 'Proof weak'") &&
   v2Js.includes("record.liquidityConfidence === 'good' ? (toUsd(") &&
-  v2Js.includes('record.bubbleLiquidityWax != null ? record.bubbleLiquidityWax : record.liquidityWax'));
+  v2Js.includes('record.graphLiquidityWax'));
 ok('waxonedge-bubbles-v2.js reads bootstrap confidence fields for proof-backed metric data',
   v2Js.includes("selectedPriceConfidence: metricConfidenceFrom(token, 'selected_price')") &&
   v2Js.includes("liquidityConfidence: metricConfidenceFrom(token, 'liquidity')") &&
@@ -591,11 +593,11 @@ ok('waxonedge-bubbles-v2.js parses reason codes without source-label normalizati
 ok('waxonedge-bubbles-v2.js keeps proof-backed price, liquidity, and TVL data countable',
   /function valueForMetric[\s\S]*if \(metric === 'price'\)[\s\S]*record\.selectedPriceConfidence !== 'good'[\s\S]*return record\.selectedPriceUsd != null \? record\.selectedPriceUsd : record\.selectedPriceWax/.test(v2Js) &&
   /function valueForMetric[\s\S]*if \(metric === 'tvl'\)[\s\S]*record\.tvlConfidence !== 'good'[\s\S]*record\.bubbleTvlUsd[\s\S]*record\.bubbleSuspiciousLiquidityPairCount[\s\S]*return record\.tvlUsd != null \? record\.tvlUsd : record\.tvlWax/.test(v2Js) &&
-  /function valueForMetric[\s\S]*if \(metric === 'liquidity'\)[\s\S]*record\.liquidityConfidence !== 'good'[\s\S]*record\.bubbleLiquidityUsd[\s\S]*record\.bubbleSuspiciousLiquidityPairCount[\s\S]*return record\.liquidityUsd != null \? record\.liquidityUsd : record\.liquidityWax/.test(v2Js));
+  /function valueForMetric[\s\S]*if \(metric === 'liquidity'\)[\s\S]*record\.liquidityConfidence !== 'good'[\s\S]*return record\.graphLiquidityWax/.test(v2Js));
 ok('waxonedge-bubbles-v2.js exposes market cap mode only through proof-backed capability and values',
   v2Js.includes("mcap: true") &&
   /if \(metric === 'mcap'\) return capabilityEnabled\(\['market_cap', 'mcap'\], DEFAULT_METRIC_ALLOWED\.mcap\)/.test(v2Js) &&
-  /function valueForMetric[\s\S]*if \(metric === 'mcap'\)[\s\S]*record\.marketCapConfidence !== 'good'[\s\S]*return null[\s\S]*record\.marketCapUsd/.test(v2Js) &&
+  /function valueForMetric[\s\S]*if \(metric === 'mcap'\)[\s\S]*record\.marketCapConfidence !== 'good'[\s\S]*return null[\s\S]*return record\.marketCapWax/.test(v2Js) &&
   /function displayValue[\s\S]*if \(state\.metric === 'mcap'\)[\s\S]*record\.marketCapConfidence === 'weak'[\s\S]*record\.marketCapConfidence !== 'good'[\s\S]*No verified market cap[\s\S]*record\.marketCapUsd != null[\s\S]*record\.marketCapWax != null[\s\S]*WAX mcap/.test(v2Js) &&
   v2Js.includes("['marketCapConfidence', ['market_cap_confidence', 'marketCapConfidence']]") &&
   v2Js.includes("assignLiveMetricNumber(record, 'marketCapWax', update, ['market_cap_wax'], nextMarketCapConfidence)") &&
@@ -603,6 +605,12 @@ ok('waxonedge-bubbles-v2.js exposes market cap mode only through proof-backed ca
   !v2Js.includes("if (metric === 'mcap') return false;") &&
   !v2Js.includes('No indexed market cap') &&
   !/function valueForMetric[\s\S]*if \(metric === 'mcap'\) return record\.marketCap/.test(v2Js));
+ok('waxonedge-bubbles-v2.js live token updates immediately resize market-cap bubbles from market_cap_wax',
+  v2Js.includes("assignLiveMetricNumber(record, 'marketCapWax', update, ['market_cap_wax'], nextMarketCapConfidence)") &&
+  v2Js.includes('function refreshLiveTargetRadii()') &&
+  /function refreshLiveTargetRadii\(\)[\s\S]*computeRadii\(state\.visible[\s\S]*node\.targetRadius = radii\[index\]/.test(v2Js) &&
+  /function applyLiveSnapshot\(snapshot\)[\s\S]*applyLiveTokenUpdate\(record, update\)[\s\S]*refreshLiveTargetRadii\(\)[\s\S]*syncNodes\(\)/.test(v2Js) &&
+  /function valueForMetric[\s\S]*if \(metric === 'mcap'\)[\s\S]*return record\.marketCapWax/.test(v2Js));
 {
   const mcapBranchStart = v2Js.indexOf("if (state.metric === 'mcap') {");
   const mcapBranchEnd = v2Js.indexOf("return 'Not indexed';", mcapBranchStart);
@@ -621,16 +629,15 @@ ok('waxonedge-bubbles-v2.js excludes unproofed market cap and FDV from blended s
   !/function blendedMarketScore\(record\)[\s\S]*?marketCap[\s\S]*?function metricEmphasis/.test(v2Js) &&
   !/function blendedMarketScore\(record\)[\s\S]*?fdv[\s\S]*?function metricEmphasis/.test(v2Js) &&
   !/function blendedMarketScore\(record\)[\s\S]*?var cap[\s\S]*?function metricEmphasis/.test(v2Js));
-ok('waxonedge-bubbles-v2.js sizes liquidity and TVL bubbles from bubble-safe metrics before aggregate proof totals',
+ok('waxonedge-bubbles-v2.js sizes liquidity from graph liquidity and TVL from bubble-safe metrics',
   v2Js.includes('if (record.bubbleTvlUsd != null) return record.bubbleTvlUsd;') &&
   v2Js.includes('if (record.bubbleTvlWax != null) return record.bubbleTvlWax;') &&
   v2Js.includes("if ((record.bubbleSuspiciousLiquidityPairCount || 0) > 0) return null;") &&
-  v2Js.includes('if (record.bubbleLiquidityUsd != null) return record.bubbleLiquidityUsd;') &&
-  v2Js.includes('if (record.bubbleLiquidityWax != null) return record.bubbleLiquidityWax;') &&
+  v2Js.includes('return record.graphLiquidityWax;') &&
+  v2Js.includes('graphLiquidityWax: asNum(token.graph_liquidity_wax)') &&
   v2Js.includes('bubbleSuspiciousLiquidityPairCount: asNum(token.bubble_suspicious_liquidity_pair_count)') &&
-  v2Js.includes('record.bubbleLiquidityWax != null ? record.bubbleLiquidityWax : record.liquidityWax') &&
   v2Js.includes('record.bubbleTvlWax != null ? record.bubbleTvlWax : record.tvlWax') &&
-  v2Js.includes("changed = assignLiveMetricNumber(record, 'bubbleLiquidityWax', update, ['bubble_liquidity_wax'], nextLiquidityConfidence) || changed;") &&
+  v2Js.includes("changed = assignLiveMetricNumber(record, 'graphLiquidityWax', update, ['graph_liquidity_wax'], nextLiquidityConfidence) || changed;") &&
   v2Js.includes("changed = assignLiveNumber(record, 'bubbleSuspiciousLiquidityPairCount', update.bubble_suspicious_liquidity_pair_count) || changed;"));
 ok('waxonedge-bubbles-v2.js footer uses clean gain/loss labels',
   v2Js.includes("'<span class=\"woe-ab-up\">Up '") &&
@@ -805,7 +812,7 @@ ok('token analytics hides the public holder panel until real indexed holder data
 ok('token analytics preserves all-pairs WAX valuation model copy',
   js.includes('All-pairs WAX valuation sums usable indexed pair value across supported DEXs where a trusted WAX route exists') &&
   js.includes('All-pairs WAX valuation is partial when a pair cannot be valued through a trusted indexed WAX route') &&
-  v2Js.includes('Featured tokens only'));
+  v2Js.includes('WAXCASH graph tokens'));
 
 ok('waxonedge.css includes terminal shell and detail layout styles',
   css.includes('.woe-og-bar') &&

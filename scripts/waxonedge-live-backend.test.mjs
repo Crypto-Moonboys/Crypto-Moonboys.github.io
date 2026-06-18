@@ -363,26 +363,41 @@ ok('live snapshot liquidity uses sane direct pair reserves instead of route-mult
   route.includes('bubble_liquidity_wax') &&
   route.includes('bubble_suspicious_liquidity_pair_count') &&
   route.includes('suspicious_liquidity_pair_count'));
-ok('live snapshot reserve proof is bounded to WAXCASH graph rows',
+ok('live snapshot reserve proof is bounded to the recursive WAXCASH market graph',
   route.includes('const OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT = 2000') &&
   route.includes('const WAXCASH_GRAPH_ROUTE_CONCURRENCY = 8') &&
+  route.includes('const WAXCASH_MARKET_GRAPH_DEFAULT_DEPTH = 2') &&
+  route.includes('const WAXCASH_MARKET_GRAPH_MIN_EXPAND_LIQUIDITY_WAX = 1') &&
   route.includes('routeGraphLimit: 0') &&
   route.includes('async function loadWaxcashGraphTokenRows') &&
-  route.includes('const routeTargets = [waxcashRef].concat(pairedTokens)') &&
-  route.includes(".filter((token) => token?.key && !isWaxToken(token.contract, token.symbol))") &&
+  route.includes('let frontier = pairedTokens.filter((token) => token?.key && !isWaxToken(token.contract, token.symbol))') &&
+  route.includes('for (let depth = 1; depth <= maxDepth && frontier.length; depth += 1)') &&
+  route.includes('pairPassesGraphExpansionThreshold(pair, minExpandLiquidityWax)') &&
   route.includes('index += WAXCASH_GRAPH_ROUTE_CONCURRENCY') &&
-  route.includes('const batch = routeTargets.slice(index, index + WAXCASH_GRAPH_ROUTE_CONCURRENCY)') &&
-  route.includes('const batchRows = await Promise.all(batch.map((token) =>') &&
-  route.includes('loadRouteGraphRowsForToken(db, token.contract, token.symbol)') &&
+  route.includes('const batch = frontier.slice(index, index + WAXCASH_GRAPH_ROUTE_CONCURRENCY)') &&
+  route.includes('const batchRows = await Promise.all(batch.map((token) => loadPairRowsForToken(db, token.contract, token.symbol)))') &&
   route.includes('async function loadReserveRouteGraphRows(db, limit = OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT)') &&
   route.includes('const graphLimit = clampInteger(limit, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT, 1, OG_WAX_ROUTE_GRAPH_PAIR_SCAN_LIMIT)') &&
   route.includes(').bind(graphLimit).all().catch(() => ({ results: [] }))'));
-ok('live stream route is an honest unavailable contract until VPS SSE exists',
+ok('instant live recompute helper emits verified valuation fields for changed graph pairs',
+  route.includes('function instantLiveTokenUpdatesForVerifiedPairEvent') &&
+  route.includes('function buildInstantLiveTokenUpdatesForPair') &&
+  route.includes('selectedProofUsesPair(metrics, changed)') &&
+  route.includes('selected_pair_source: row.selected_pair_source || null') &&
+  route.includes('selected_pair_id: row.selected_pair_id || null') &&
+  route.includes("proof_status: proof.selected_price_confidence === 'good' && marketCapLive ? 'verified' : 'unavailable'") &&
+  route.includes('buildOgWaxRouteGraph(graphRows, priceIndex)') &&
+  !route.includes('liquidity_as_market_cap'));
+ok('live stream route proxies VPS SSE into recomputed Worker token_update events',
   route.includes('function handleLiveStream') &&
-  route.includes('live stream transport not enabled yet') &&
+  route.includes("fetchImpl(`${baseUrl}/stream`") &&
+  route.includes('parseSseFrames(buffer)') &&
+  route.includes('changedPairFromLiveEvent(payload)') &&
+  route.includes('buildInstantLiveTokenUpdatesForPair(env.DB, changedPair') &&
+  route.includes("enqueue('token_update', update)") &&
   route.includes('fallback: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT') &&
   route.includes('uses_fake_live_data: false') &&
-  route.includes("transport: 'snapshot-polling-contract'"));
+  route.includes("transport: 'worker-sse-proxy'"));
 ok('VPS live indexer service package exists',
   exists('services/waxonedge-live-indexer/package.json') &&
   exists('services/waxonedge-live-indexer/src/index.mjs') &&
@@ -681,6 +696,42 @@ ok('VPS live indexer exposes no fake live events or random movement',
       },
     },
   }, ammStream);
+  const reserveBearingStream = liveIndexer.VERIFIED_TRADE_STREAMS.find((stream) =>
+    stream.account === 'swap.nefty' && stream.action === 'logswap');
+  const reserveBearingTrade = liveIndexer.normalizeLiveTradeRow({
+    action: 'logswap',
+    global_sequence: 103,
+    timestamp: '2026-06-15T10:04:00Z',
+    data: {
+      record: {
+        code: 'WAXCASHWUF',
+        quantity_in: { quantity: '1.00000000 WAXCASH', contract: 'graffitiking' },
+        quantity_out: { quantity: '0.01000000 WUF', contract: 'wuffi' },
+        token_a_contract: 'graffitiking',
+        token_a_symbol: 'WAXCASH',
+        token_b_contract: 'wuffi',
+        token_b_symbol: 'WUF',
+        reserve_a: '100000',
+        reserve_b: '1000',
+        liquidity_wax: '2000',
+        liquidity_usd: '12',
+      },
+    },
+  }, reserveBearingStream);
+  const reserveWithoutExplicitIdentityTrade = liveIndexer.normalizeLiveTradeRow({
+    action: 'logswap',
+    global_sequence: 104,
+    timestamp: '2026-06-15T10:05:00Z',
+    data: {
+      record: {
+        code: 'WAXCASHWUF',
+        quantity_in: { quantity: '1.00000000 WAXCASH', contract: 'graffitiking' },
+        quantity_out: { quantity: '0.01000000 WUF', contract: 'wuffi' },
+        reserve_a: '100000',
+        reserve_b: '1000',
+      },
+    },
+  }, reserveBearingStream);
   const alcorMissingStableId = liveIndexer.normalizeLiveTradeRow({
     action: 'buymatch',
     timestamp: '2026-06-15T10:02:00Z',
@@ -717,6 +768,15 @@ ok('VPS live indexer exposes no fake live events or random movement',
   const observed = liveIndexer.observeLiveTrade(state, alcorTrade);
   const health = liveIndexer.healthPayload(state);
   const snapshot = liveIndexer.snapshotPayload(state);
+  const reserveState = liveIndexer.createState(liveIndexer.loadConfig({
+    WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+    WAXONEDGE_LIVE_ENABLE_STREAM: 'true',
+  }));
+  const reserveBearingUpdate = liveIndexer.observeLiveTrade(reserveState, reserveBearingTrade, {
+    save: false,
+    refresh: false,
+    broadcast: false,
+  });
   ok('VPS live indexer normalizes real verified Hyperion trade rows without fake data',
     alcorTrade &&
     alcorTrade.contract === 'graffitiking' &&
@@ -728,6 +788,35 @@ ok('VPS live indexer exposes no fake live events or random movement',
     ammTrade.symbol === 'WAXCASH' &&
     ammTrade.stream_source === 'swap.alcor::logswap' &&
     ammTrade.og_source === 'alcorv2');
+  ok('VPS live indexer emits canonical_pair for reserve-bearing supported swap events',
+    reserveBearingTrade &&
+    reserveBearingUpdate &&
+    reserveBearingUpdate.canonical_pair &&
+    reserveBearingUpdate.canonical_pair.source === 'swap.nefty' &&
+    reserveBearingUpdate.canonical_pair.pair_id === 'WAXCASHWUF' &&
+    reserveBearingUpdate.canonical_pair.token_a_contract === 'graffitiking' &&
+    reserveBearingUpdate.canonical_pair.token_a_symbol === 'WAXCASH' &&
+    reserveBearingUpdate.canonical_pair.token_b_contract === 'wuffi' &&
+    reserveBearingUpdate.canonical_pair.token_b_symbol === 'WUF' &&
+    Number(reserveBearingUpdate.canonical_pair.reserve_a) === 100000 &&
+    Number(reserveBearingUpdate.canonical_pair.reserve_b) === 1000 &&
+    Number(reserveBearingUpdate.canonical_pair.reserve_a_decimal) === 100000 &&
+    Number(reserveBearingUpdate.canonical_pair.reserve_b_decimal) === 1000 &&
+    Number(reserveBearingUpdate.canonical_pair.liquidity_wax) === 2000 &&
+    Number(reserveBearingUpdate.canonical_pair.liquidity_usd) === 12 &&
+    reserveState.tokenCache.get('graffitiking::WAXCASH')?.canonical_pair?.pair_id === 'WAXCASHWUF',
+    JSON.stringify({ reserveBearingTrade, reserveBearingUpdate }));
+  ok('VPS live indexer omits canonical_pair when the stream event lacks real reserves',
+    ammTrade &&
+    liveIndexer.observeLiveTrade(liveIndexer.createState(liveIndexer.loadConfig({
+      WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+    })), ammTrade, { save: false, refresh: false, broadcast: false })?.canonical_pair == null);
+  ok('VPS live indexer does not infer canonical_pair token order from parsed swap quantities',
+    reserveWithoutExplicitIdentityTrade &&
+    reserveWithoutExplicitIdentityTrade.canonical_pair == null &&
+    liveIndexer.observeLiveTrade(liveIndexer.createState(liveIndexer.loadConfig({
+      WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+    })), reserveWithoutExplicitIdentityTrade, { save: false, refresh: false, broadcast: false })?.canonical_pair == null);
   ok('VPS live indexer rejects trade rows without stable IDs instead of collapsing blank suffixes',
     alcorMissingStableId === null &&
     ammMissingStableId === null);
@@ -1729,6 +1818,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       token_b_symbol: 'HELP',
       reserve_a: '100',
       reserve_b: '50',
+      liquidity_wax: '20',
       updated_at: '2026-06-14T11:06:45.000Z',
     },
     {
@@ -1828,15 +1918,145 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     graphTokenKeys.includes('abc.token::ABC') &&
     graphTokenKeys.includes('route.token::ROUTE') &&
     graphTokenKeys.includes('aigodtokenwx::AIGOD') &&
+    graphTokenKeys.includes('help.token::HELP') &&
     graphTokenKeys.includes('eosio.token::WAX') &&
-    !graphTokenKeys.includes('help.token::HELP') &&
     !graphTokenKeys.includes('qqq.core::QQQCORE') &&
     graphPairIds.includes('WUFWAX150') &&
     graphPairIds.includes('ABCWAX50') &&
     graphPairIds.includes('AIGODWAXFAKE') &&
     graphPairIds.includes('ROUTEHELP') &&
+    graphPairIds.includes('HELPWAX') &&
+    graphTokenKeys.includes('help.token::HELP') &&
+    !graphPairIds.includes('QQQWAX999'),
+    JSON.stringify({ graphTokenKeys, graphPairIds }));
+    ok('WaxOnEdge recursive graph loads direct token pairs and secondary connected token pairs',
+      graphPairIds.includes('WAXCASHROUTE') &&
+      graphPairIds.includes('ROUTEHELP') &&
+      graphTokenKeys.includes('help.token::HELP') &&
       graphPairIds.includes('HELPWAX') &&
-      !graphPairIds.includes('QQQWAX999'));
+      waxcashGraph.graph_config.max_depth === 2,
+      JSON.stringify({ graphTokenKeys, graphPairIds }));
+    ok('WaxOnEdge recursive graph does not expand through unknown graph liquidity',
+      __waxonedgeTestHooks.pairPassesGraphExpansionThreshold({
+        source: 'swap.taco',
+        pair_id: 'UNKNOWNLIQ',
+        token_a_contract: 'wuffi',
+        token_a_symbol: 'WUF',
+        token_b_contract: 'mystery.token',
+        token_b_symbol: 'MYST',
+        reserve_a: '100',
+        reserve_b: '200',
+        liquidity_wax: null,
+      }) === false);
+    const staleWufUpdate = __waxonedgeTestHooks.instantLiveTokenUpdatesForVerifiedPairEvent({
+      changedPair: graphPairs.find((pair) => pair.pair_id === 'WAXCASHWUF'),
+      tokenRows: graphTokenRows,
+      pairRows: graphPairs,
+      priceRows: graphTokenRows.filter((row) => row.contract === 'eosio.token' && row.symbol === 'WAX'),
+      updatedAt: '2026-06-14T11:05:00.000Z',
+    }).find((update) => update.token_key === 'wuffi::WUF');
+    const workerReserveStream = liveIndexer.VERIFIED_TRADE_STREAMS.find((stream) =>
+      stream.account === 'swap.nefty' && stream.action === 'logswap');
+    const workerReserveTrade = liveIndexer.normalizeLiveTradeRow({
+      action: 'logswap',
+      global_sequence: 203,
+      timestamp: '2026-06-18T12:30:00.000Z',
+      data: {
+        record: {
+          code: 'WAXCASHWUF',
+          quantity_in: { quantity: '1.00000000 WAXCASH', contract: 'graffitiking' },
+          quantity_out: { quantity: '0.01000000 WUF', contract: 'wuffi' },
+          token_a_contract: 'graffitiking',
+          token_a_symbol: 'WAXCASH',
+          token_b_contract: 'wuffi',
+          token_b_symbol: 'WUF',
+          reserve_a: '100000',
+          reserve_b: '1000',
+        },
+      },
+    }, workerReserveStream);
+    const workerReserveUpdate = liveIndexer.observeLiveTrade(liveIndexer.createState(liveIndexer.loadConfig({
+      WAXONEDGE_HYPERION_API: 'https://wax.eosusa.io/v2',
+      WAXONEDGE_LIVE_ENABLE_STREAM: 'true',
+    })), workerReserveTrade, { save: false, refresh: false, broadcast: false });
+    const sseResponse = await __waxonedgeTestHooks.handleLiveStream({}, {
+      DB: graphDb,
+      WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+      WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
+    }, async (url, init) => new Response(
+      'event: token_update\n' +
+      `data: ${JSON.stringify(workerReserveUpdate)}\n\n`,
+      {
+        status: 200,
+        headers: { 'content-type': 'text/event-stream' },
+      },
+    ));
+    const sseBody = await sseResponse.text();
+    const sseTokenUpdates = Array.from(sseBody.matchAll(/event: token_update\ndata: ([^\n]+)/g))
+      .map((match) => JSON.parse(match[1]));
+    const sseTokenUpdate = sseTokenUpdates.find((update) => update.token_key === 'wuffi::WUF');
+    ok('Worker live stream transforms changed pair events into recomputed token_update output',
+      sseResponse.status === 200 &&
+      sseResponse.headers.get('content-type').includes('text/event-stream') &&
+      sseBody.includes('event: token_update') &&
+      sseBody.includes('"token_key":"wuffi::WUF"') &&
+      sseBody.includes('"selected_price_wax"') &&
+      sseBody.includes('"market_cap_wax"') &&
+      sseBody.includes('"graph_liquidity_wax"') &&
+      sseBody.includes('"selected_pair_source"') &&
+      sseBody.includes('"selected_pair_id"') &&
+      sseBody.includes('"proof_status":"verified"') &&
+      !sseBody.includes('do-not-leak'),
+      sseBody);
+    ok('Worker live stream consumes the real VPS emitted canonical_pair shape',
+      workerReserveUpdate?.canonical_pair &&
+      sseTokenUpdate &&
+      sseTokenUpdate.selected_pair_id === workerReserveUpdate.canonical_pair.pair_id &&
+      sseBody.includes('"token_key":"wuffi::WUF"'),
+      JSON.stringify({ workerReserveUpdate, sseTokenUpdates }));
+    ok('Worker live stream recomputes market cap from live event reserves without mutating D1 first',
+      sseTokenUpdate &&
+      staleWufUpdate &&
+      Number(sseTokenUpdate.selected_price_wax) !== Number(staleWufUpdate.selected_price_wax) &&
+      Number(sseTokenUpdate.market_cap_wax) !== Number(staleWufUpdate.market_cap_wax) &&
+      Number(sseTokenUpdate.graph_liquidity_wax) !== 0 &&
+      sseTokenUpdate.selected_pair_id === 'WAXCASHWUF',
+      JSON.stringify({ staleWufUpdate, sseTokenUpdates }));
+    const staleIdentityOnlySse = await __waxonedgeTestHooks.handleLiveStream({}, {
+      DB: graphDb,
+      WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
+    }, async () => new Response(
+      'event: token_update\n' +
+      'data: {"source":"swap.taco","pair_id":"WUFWAX150","updated_at":"2026-06-18T12:31:00.000Z"}\n\n',
+      {
+        status: 200,
+        headers: { 'content-type': 'text/event-stream' },
+      },
+    ));
+    const staleIdentityOnlyBody = await staleIdentityOnlySse.text();
+    ok('Worker live stream does not claim instant recompute from identity-only stale-D1 events',
+      staleIdentityOnlyBody.includes('event: heartbeat') &&
+      !staleIdentityOnlyBody.includes('event: token_update'),
+      staleIdentityOnlyBody);
+    const noSupplyGraphUpdate = __waxonedgeTestHooks.normalizeLiveTokenUpdate({
+      contract: 'nosupply.token',
+      symbol: 'NOSUP',
+      selected_price_wax: '2',
+      selected_price_usd: '0.012',
+      liquidity_wax: '500',
+      liquidity_usd: '3',
+      graph_liquidity_wax: '500',
+      graph_liquidity_usd: '3',
+      liquidity_basis: 'og_wax_route_pool_graph',
+      market_cap_wax: '999999',
+      market_cap_usd: '5999.994',
+    });
+    ok('WaxOnEdge market cap is unavailable without circulating supply and is not replaced with graph liquidity',
+      noSupplyGraphUpdate.graph_liquidity_wax === '500' &&
+      noSupplyGraphUpdate.market_cap_wax === null &&
+      noSupplyGraphUpdate.market_cap_usd === null &&
+      noSupplyGraphUpdate.market_cap_confidence === 'unavailable' &&
+      noSupplyGraphUpdate.metric_status.market_cap.live === false);
     const wufGraphNode = waxcashPairGraph.nodes.find((node) => node.token_key === 'wuffi::WUF');
     ok('WAXCASH graph endpoint source_count matches direct WAXCASH source_keys only',
       wufGraphNode &&
@@ -1974,8 +2194,8 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     graphLiveKeys.includes('abc.token::ABC') &&
     graphLiveKeys.includes('route.token::ROUTE') &&
     graphLiveKeys.includes('aigodtokenwx::AIGOD') &&
+    graphLiveKeys.includes('help.token::HELP') &&
     graphLiveKeys.includes('eosio.token::WAX') &&
-    !graphLiveKeys.includes('help.token::HELP') &&
     !graphLiveKeys.includes('qqq.core::QQQCORE'));
   const routedLiveToken = graphLiveBody.tokens.find((token) => token.token_key === 'route.token::ROUTE');
   ok('WAXCASH-paired token without a direct WAX pool remains visible and can use routed valuation',
@@ -2071,7 +2291,9 @@ ok('indexer health exposes live update contract metadata',
   route.includes('live_updates') &&
   route.includes('snapshot_endpoint: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT') &&
   route.includes('stream_endpoint: WAXONEDGE_LIVE_STREAM_ENDPOINT') &&
-  route.includes('vps_stream_required: true') &&
+  route.includes("transport: liveIndexerProbe?.reachable ? 'sse' : 'snapshot-polling-fallback'") &&
+  route.includes('vps_stream_required: !liveIndexerProbe?.reachable') &&
+  route.includes('instant_market_cap_recompute: liveIndexerProbe?.reachable === true') &&
   route.includes('browser_hyperion_fetch: false') &&
   route.includes('live_indexer: waxonedgeLiveIndexerConfig(env)') &&
   route.includes('live_indexer_probe: liveIndexerProbe') &&
@@ -2088,9 +2310,13 @@ ok('indexer health exposes live update contract metadata',
   ok('Worker health exposes live indexer config state without leaking secrets',
     noConfig.vps_indexer_url_configured === false &&
     noConfig.shared_secret_configured === false &&
+    noConfig.proxy_enabled === false &&
+    noConfig.worker_stream_endpoint === null &&
     noConfig.secret_header === 'x-waxonedge-live-secret' &&
     configured.vps_indexer_url_configured === true &&
     configured.shared_secret_configured === true &&
+    configured.proxy_enabled === true &&
+    configured.worker_stream_endpoint === '/api/waxonedge/live/stream' &&
     configured.secret_header === 'x-waxonedge-live-secret' &&
     JSON.stringify(configured).includes('do-not-leak') === false);
   ok('Worker rejects unsafe live indexer URL config shapes',
@@ -2481,19 +2707,15 @@ ok('indexer health exposes live update contract metadata',
     /invalid JSON/.test(invalidJson.last_error || ''));
 }
 {
-  const streamResponse = __waxonedgeTestHooks.handleLiveStream({}, {
-    WAXONEDGE_LIVE_INDEXER_URL: 'https://live-indexer.example.internal',
-    WAXONEDGE_LIVE_SHARED_SECRET: 'do-not-leak',
-  });
+  const streamResponse = await __waxonedgeTestHooks.handleLiveStream({}, {});
   const streamBody = await streamResponse.json();
-  ok('Worker live stream remains honest unavailable contract even when VPS config is present',
+  ok('Worker live stream falls back honestly when VPS stream is not configured',
     streamResponse.status === 503 &&
     streamBody.ok === false &&
-    streamBody.unavailable === 'live stream transport not enabled yet' &&
+    streamBody.unavailable === 'live stream requires configured WAXONEDGE_LIVE_INDEXER_URL' &&
     streamBody.fallback === '/api/waxonedge/live' &&
-    streamBody.live_indexer.vps_indexer_url_configured === true &&
-    streamBody.live_indexer.shared_secret_configured === true &&
-    JSON.stringify(streamBody).includes('do-not-leak') === false &&
+    streamBody.live_indexer.vps_indexer_url_configured === false &&
+    streamBody.live_indexer.proxy_enabled === false &&
     streamBody.uses_fake_live_data === false &&
     streamBody.browser_hyperion_fetch === false);
 }
@@ -4874,6 +5096,76 @@ ok('token detail loads the bounded indexed-pair route graph without an all-price
     Number(marketCapDerivedStats.fdv_wax) === 1 &&
     marketCapDerivedStats.metric_status.market_cap.live === true &&
     marketCapDerivedStats.metric_status.market_cap.basis === 'circulating_supply_x_selected_price');
+  const changedDirectWaxPair = {
+    ...directWaxPair,
+    pair_id: 'WAXWUFA',
+    reserve_a: '2000',
+    reserve_b: '500000',
+    updated_at: '2026-06-18T12:00:00.000Z',
+  };
+  const instantUpdates = __waxonedgeTestHooks.instantLiveTokenUpdatesForVerifiedPairEvent({
+    changedPair: changedDirectWaxPair,
+    tokenRows: [
+      { contract: 'wuffi', symbol: 'WUF', total_supply: '500', circulating_supply: '100' },
+      { contract: 'eosio.token', symbol: 'WAX', total_supply: '1000000', circulating_supply: '1000000' },
+      { contract: 'abc.token', symbol: 'ABC', total_supply: '1000', circulating_supply: '10' },
+    ],
+    pairRows: [changedDirectWaxPair, wufAbcPair],
+    priceRows: routePriceRows,
+    updatedAt: '2026-06-18T12:00:00.000Z',
+  });
+  const instantWuf = instantUpdates.find((update) => update.token_key === 'wuffi::WUF');
+  const instantAbc = instantUpdates.find((update) => update.token_key === 'abc.token::ABC');
+  ok('instant live token_update recomputes market_cap_wax from changed verified pair reserves',
+    instantWuf &&
+    Math.abs(Number(instantWuf.selected_price_wax) - 0.004) < 0.0000000001 &&
+    Math.abs(Number(instantWuf.market_cap_wax) - 0.4) < 0.0000000001 &&
+    instantWuf.market_cap_confidence === 'good' &&
+    instantWuf.proof_status === 'verified' &&
+    !!instantWuf.selected_pair_source &&
+    !!instantWuf.selected_pair_id &&
+    instantWuf.updated_at === '2026-06-18T12:00:00.000Z',
+    JSON.stringify(instantWuf));
+  ok('instant live token_update emits graph_liquidity_wax separately from market_cap_wax',
+    instantWuf &&
+    Number(instantWuf.graph_liquidity_wax) === 4800 &&
+    Number(instantWuf.market_cap_wax) === 0.4 &&
+    Number(instantWuf.graph_liquidity_wax) !== Number(instantWuf.market_cap_wax));
+  ok('instant live recompute includes dependent graph nodes whose selected route uses the changed pair',
+    instantAbc &&
+    instantAbc.token_key === 'abc.token::ABC' &&
+    Number(instantAbc.selected_price_wax) > 0 &&
+    Number(instantAbc.market_cap_wax) > 0 &&
+    instantAbc.selected_price_confidence === 'good',
+    JSON.stringify({ instantAbc, tokenKeys: instantUpdates.map((update) => update.token_key) }));
+  const noSupplyInstantUpdate = __waxonedgeTestHooks.instantLiveTokenUpdatesForVerifiedPairEvent({
+    changedPair: changedDirectWaxPair,
+    tokenRows: [
+      { contract: 'wuffi', symbol: 'WUF', total_supply: '500' },
+    ],
+    pairRows: [changedDirectWaxPair],
+    priceRows: routePriceRows,
+    updatedAt: '2026-06-18T12:00:01.000Z',
+  }).find((update) => update.token_key === 'wuffi::WUF');
+  ok('instant live token_update leaves market_cap_wax unavailable when circulating supply is missing',
+    noSupplyInstantUpdate &&
+    Math.abs(Number(noSupplyInstantUpdate.selected_price_wax) - 0.004) < 0.0000000001 &&
+    noSupplyInstantUpdate.market_cap_wax === null &&
+    noSupplyInstantUpdate.market_cap_usd === null &&
+    noSupplyInstantUpdate.market_cap_confidence === 'unavailable' &&
+    Number(noSupplyInstantUpdate.graph_liquidity_wax) === 4000,
+    JSON.stringify(noSupplyInstantUpdate));
+  const noPriceInstantUpdate = __waxonedgeTestHooks.instantLiveTokenUpdatesForVerifiedPairEvent({
+    changedPair: { ...changedDirectWaxPair, reserve_a: null, reserve_b: null },
+    tokenRows: [
+      { contract: 'wuffi', symbol: 'WUF', total_supply: '500', circulating_supply: '100' },
+    ],
+    pairRows: [{ ...changedDirectWaxPair, reserve_a: null, reserve_b: null }],
+    priceRows: routePriceRows,
+    updatedAt: '2026-06-18T12:00:02.000Z',
+  }).find((update) => update.token_key === 'wuffi::WUF');
+  ok('instant live token_update does not emit fake market cap when verified selected price is unavailable',
+    noPriceInstantUpdate == null);
   const pairProof = __waxonedgeTestHooks.pairContributionProof(
     directWaxPair,
     'wuffi',
@@ -5217,7 +5509,8 @@ ok('frontend live hook uses EventSource only when enabled and safe polling fallb
   frontendBubbles.includes('window.EventSource') &&
   frontendBubbles.includes("live.transport === 'sse'") &&
   frontendBubbles.includes('scheduleLivePolling(1000)') &&
-  frontendBubbles.includes('var LIVE_POLL_MS = 10000'));
+  frontendBubbles.includes('var LIVE_POLL_MS = 1000') &&
+  !frontendBubbles.includes('var LIVE_POLL_MS = 10000'));
 ok('frontend uses live next_cursor instead of timestamp-only since cursor',
   frontendBubbles.includes("LIVE_API + '?cursor=' + encodeURIComponent(state.live.cursor)") &&
   frontendBubbles.includes('var nextCursor = data.next_cursor || snapshot.next_cursor || null') &&
@@ -5449,14 +5742,29 @@ ok('Layer 1 unavailable adapter proof does not generate fake price or liquidity'
   adexProof.liquidityWax === null &&
   adexProof.proof_status === 'unavailable' &&
   adexProof.reason_codes.includes('adapter_swap_action_not_verified'));
-ok('frontend bubble sizing defaults to verified market cap WAX and falls back to verified liquidity WAX only',
+ok('frontend market-cap bubble sizing uses verified market cap WAX without liquidity fallback',
   frontendBubbles.includes("metric: 'mcap'") &&
   frontendBubbles.includes('function verifiedBubbleSizeValue(record)') &&
   frontendBubbles.includes("record.marketCapConfidence === 'good' && record.marketCapWax != null") &&
-  frontendBubbles.includes("record.liquidityConfidence === 'good'") &&
+  !frontendBubbles.includes("if (record.liquidityConfidence === 'good') {\n      if (record.bubbleLiquidityWax != null)") &&
   frontendBubbles.includes("var value = metric === 'mcap'") &&
   frontendBubbles.includes('verifiedBubbleSizeValue(record)') &&
   frontendBubbles.includes('refreshLiveTargetRadii();'));
+ok('frontend market-cap and liquidity bubble modes use separate verified fields',
+  frontendBubbles.includes("if (metric === 'liquidity')") &&
+  frontendBubbles.includes('return record.graphLiquidityWax') &&
+  frontendBubbles.includes("if (metric === 'mcap')") &&
+  frontendBubbles.includes('return record.marketCapWax') &&
+  frontendBubbles.includes('graphLiquidityWax: asNum(token.graph_liquidity_wax)') &&
+  !frontendBubbles.includes('return record.liquidityUsd != null ? record.liquidityUsd : record.liquidityWax') &&
+  !frontendBubbles.includes('return record.marketCapUsd != null ? record.marketCapUsd : record.marketCapWax'));
+ok('frontend renders backend graph tokens beyond the old featured allowlist',
+  frontendBubbles.includes('return Object.keys(byKey).map(function (key)') &&
+  frontendBubbles.includes('displaySymbol: featured ? featured.label : symbol') &&
+  !frontendBubbles.includes('if (!key || !featured) return;'));
+ok('frontend bubble click resolves to the full static token analytics route',
+  frontendBubbles.includes("return '/analytics/token/?token=' + encodeURIComponent(record.symbol) + '&contract=' + encodeURIComponent(record.contract)") &&
+  frontendBubbles.includes('openTokenAnalytics(node.record)'));
 ok('waxonedge.html remains the live bubble scanner product path',
   html.includes('id="woe-bubble-board"') &&
   html.includes('/js/waxonedge-bubbles-v2.js') &&

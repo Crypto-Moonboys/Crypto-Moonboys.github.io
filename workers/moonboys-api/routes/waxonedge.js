@@ -230,11 +230,13 @@ function waxonedgeLiveIndexerBaseUrl(env) {
 }
 
 function waxonedgeLiveIndexerConfig(env) {
+  const proxyEnabled = !!waxonedgeLiveIndexerBaseUrl(env);
   return {
     vps_indexer_url_configured: waxonedgeLiveIndexerUrlConfigured(env),
     shared_secret_configured: Boolean(String(env?.WAXONEDGE_LIVE_SHARED_SECRET || '').trim()),
     secret_header: WAXONEDGE_LIVE_SECRET_HEADER,
-    proxy_enabled: false,
+    proxy_enabled: proxyEnabled,
+    worker_stream_endpoint: proxyEnabled ? WAXONEDGE_LIVE_STREAM_ENDPOINT : null,
   };
 }
 
@@ -4201,6 +4203,8 @@ function normalizeLiveTokenUpdate(row) {
     : null;
   const liquidityWax = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.liquidity_wax)) : null;
   const liquidityUsd = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.liquidity_usd)) : null;
+  const graphLiquidityWax = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.graph_liquidity_wax ?? row.liquidity_wax)) : null;
+  const graphLiquidityUsd = proof.liquidity_confidence === 'good' ? safeDecimal(asNumber(row.graph_liquidity_usd ?? row.liquidity_usd)) : null;
   const tvlWax = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_wax)) : null;
   const tvlUsd = proof.tvl_confidence === 'good' ? safeDecimal(asNumber(row.tvl_usd)) : null;
   const bubbleLiquidityWax = proof.liquidity_confidence === 'good'
@@ -4235,6 +4239,8 @@ function normalizeLiveTokenUpdate(row) {
     symbol,
     price_wax: priceWax,
     price_usd: priceUsd,
+    selected_price_wax: priceWax,
+    selected_price_usd: priceUsd,
     change_24h: safeDecimal(asNumber(row.change_24h)),
     volume_24h_wax: safeDecimal(asNumber(row.volume_24h_wax ?? row.volume_24h)),
     volume_24h_usd: safeDecimal(asNumber(row.volume_24h_usd)),
@@ -4242,6 +4248,8 @@ function normalizeLiveTokenUpdate(row) {
     tvl_usd: tvlUsd,
     liquidity_wax: liquidityWax,
     liquidity_usd: liquidityUsd,
+    graph_liquidity_wax: graphLiquidityWax,
+    graph_liquidity_usd: graphLiquidityUsd,
     bubble_liquidity_wax: bubbleLiquidityWax,
     bubble_liquidity_usd: bubbleLiquidityUsd,
     bubble_tvl_wax: bubbleTvlWax,
@@ -4255,6 +4263,9 @@ function normalizeLiveTokenUpdate(row) {
     market_cap_wax: marketCapWax,
     market_cap_usd: marketCapUsd,
     market_cap_confidence: marketCapLive ? 'good' : 'unavailable',
+    selected_pair_source: row.selected_pair_source || null,
+    selected_pair_id: row.selected_pair_id || null,
+    proof_status: proof.selected_price_confidence === 'good' && marketCapLive ? 'verified' : 'unavailable',
     selected_price_confidence: proof.selected_price_confidence,
     liquidity_confidence: proof.liquidity_confidence,
     tvl_confidence: proof.tvl_confidence,
@@ -4407,21 +4418,188 @@ async function handleLiveSnapshot(env, query, corsHeaders) {
   }
 }
 
-function handleLiveStream(corsHeaders, env = {}) {
-  return waxonedgeJson({
-    ok: false,
-    unavailable: 'live stream transport not enabled yet',
-    fallback: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT,
-    transport: 'snapshot-polling-contract',
-    vps_stream_required: true,
-    live_indexer: waxonedgeLiveIndexerConfig(env),
-    uses_fake_live_data: false,
-    browser_hyperion_fetch: false,
-    event_contract: {
-      token_key_format: 'contract::symbol',
-      events: ['token_update', 'heartbeat'],
+function encodeSseEvent(event, data) {
+  return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+}
+
+function parseSseFrames(buffer) {
+  const frames = [];
+  let rest = String(buffer || '');
+  for (;;) {
+    const rn = rest.indexOf('\r\n\r\n');
+    const nn = rest.indexOf('\n\n');
+    const index = rn >= 0 && (nn < 0 || rn < nn) ? rn : nn;
+    if (index < 0) break;
+    const separatorLength = rest.slice(index, index + 4) === '\r\n\r\n' ? 4 : 2;
+    frames.push(rest.slice(0, index));
+    rest = rest.slice(index + separatorLength);
+  }
+  return { frames, rest };
+}
+
+function parseSseFrame(frame) {
+  const lines = String(frame || '').split(/\r?\n/);
+  let event = 'message';
+  const data = [];
+  for (const line of lines) {
+    if (line.startsWith('event:')) event = line.slice(6).trim();
+    if (line.startsWith('data:')) data.push(line.slice(5).trimStart());
+  }
+  return { event, data: data.join('\n') };
+}
+
+function changedPairFromLiveEvent(payload) {
+  if (!payload || typeof payload !== 'object') return null;
+  const pair = payload.canonical_pair || payload.pair || payload;
+  const source = aggregateSourceKey(pair.source || payload.source || payload.og_source || payload.stream_source);
+  const pairId = safeString(pair.pair_id || payload.pair_id);
+  const tokenAContract = normalizeContract(pair.token_a_contract);
+  const tokenASymbol = normalizeSymbol(pair.token_a_symbol);
+  const tokenBContract = normalizeContract(pair.token_b_contract);
+  const tokenBSymbol = normalizeSymbol(pair.token_b_symbol);
+  const reserveA = safeDecimal(asNumber(pair.reserve_a_decimal ?? pair.reserve_a));
+  const reserveB = safeDecimal(asNumber(pair.reserve_b_decimal ?? pair.reserve_b));
+  if (!source || !pairId || !tokenAContract || !tokenASymbol || !tokenBContract || !tokenBSymbol || reserveA == null || reserveB == null) {
+    return null;
+  }
+  return {
+    source,
+    pair_id: pairId,
+    token_a_contract: tokenAContract,
+    token_a_symbol: tokenASymbol,
+    token_b_contract: tokenBContract,
+    token_b_symbol: tokenBSymbol,
+    token_a_decimals: asNumber(pair.token_a_decimals),
+    token_b_decimals: asNumber(pair.token_b_decimals),
+    reserve_a: reserveA,
+    reserve_b: reserveB,
+    reserve_a_decimal: reserveA,
+    reserve_b_decimal: reserveB,
+    price: safeDecimal(asNumber(pair.price)),
+    liquidity_wax: safeDecimal(asNumber(pair.liquidity_wax)),
+    liquidity_usd: safeDecimal(asNumber(pair.liquidity_usd)),
+    volume_24h: safeDecimal(asNumber(pair.volume_24h)),
+    volume_24h_wax: safeDecimal(asNumber(pair.volume_24h_wax)),
+    volume_24h_usd: safeDecimal(asNumber(pair.volume_24h_usd)),
+    change_24h: safeDecimal(asNumber(pair.change_24h)),
+    fee_bps: asNumber(pair.fee_bps),
+    updated_at: pair.updated_at || payload.updated_at || payload.last_trade_at || payload.traded_at || nowIso(),
+  };
+}
+
+async function handleLiveStream(corsHeaders, env = {}, fetchImpl = globalThis.fetch) {
+  const baseUrl = waxonedgeLiveIndexerBaseUrl(env);
+  if (!baseUrl || typeof fetchImpl !== 'function') {
+    return waxonedgeJson({
+      ok: false,
+      unavailable: 'live stream requires configured WAXONEDGE_LIVE_INDEXER_URL',
+      fallback: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT,
+      transport: 'snapshot-polling-fallback',
+      vps_stream_required: true,
+      live_indexer: waxonedgeLiveIndexerConfig(env),
+      uses_fake_live_data: false,
+      browser_hyperion_fetch: false,
+      event_contract: {
+        token_key_format: 'contract::symbol',
+        events: ['token_update', 'heartbeat'],
+      },
+    }, 503, corsHeaders);
+  }
+
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const enqueue = (event, data) => controller.enqueue(encoder.encode(encodeSseEvent(event, data)));
+      enqueue('heartbeat', {
+        ok: true,
+        source: 'moonboys-api/waxonedge-live-stream',
+        transport: 'worker-sse-proxy',
+        generated_at: nowIso(),
+        uses_fake_live_data: false,
+        browser_hyperion_fetch: false,
+      });
+      try {
+        const headers = { Accept: 'text/event-stream' };
+        const secret = String(env?.WAXONEDGE_LIVE_SHARED_SECRET || '').trim();
+        if (secret) headers[WAXONEDGE_LIVE_SECRET_HEADER] = secret;
+        const upstream = await fetchImpl(`${baseUrl}/stream`, {
+          method: 'GET',
+          headers,
+          redirect: 'manual',
+        });
+        if (!upstream.ok || !upstream.body) {
+          enqueue('error', {
+            ok: false,
+            error: 'live indexer stream unavailable',
+            status: upstream.status,
+            fallback: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT,
+            uses_fake_live_data: false,
+          });
+          controller.close();
+          return;
+        }
+        const reader = upstream.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const parsed = parseSseFrames(buffer);
+          buffer = parsed.rest;
+          for (const frame of parsed.frames) {
+            const event = parseSseFrame(frame);
+            if (event.event === 'heartbeat') {
+              let data = {};
+              try { data = event.data ? JSON.parse(event.data) : {}; } catch (_) {}
+              enqueue('heartbeat', {
+                ...data,
+                source: 'moonboys-api/waxonedge-live-stream',
+                transport: 'worker-sse-proxy',
+                uses_fake_live_data: false,
+                browser_hyperion_fetch: false,
+              });
+              continue;
+            }
+            if (event.event !== 'token_update') continue;
+            let payload = null;
+            try {
+              payload = event.data ? JSON.parse(event.data) : null;
+            } catch (_) {
+              continue;
+            }
+            const changedPair = changedPairFromLiveEvent(payload);
+            if (!changedPair) continue;
+            const updates = await buildInstantLiveTokenUpdatesForPair(env.DB, changedPair, {
+              updatedAt: payload.updated_at || payload.last_trade_at || payload.traded_at || nowIso(),
+            });
+            for (const update of updates) enqueue('token_update', update);
+          }
+        }
+        controller.close();
+      } catch (error) {
+        enqueue('error', {
+          ok: false,
+          error: 'live stream transform failed',
+          diagnostic: safeString(error?.message || error),
+          fallback: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT,
+          uses_fake_live_data: false,
+        });
+        controller.close();
+      }
     },
-  }, 503, corsHeaders);
+  });
+
+  return new Response(stream, {
+    status: 200,
+    headers: {
+      ...corsHeaders,
+      'content-type': 'text/event-stream; charset=utf-8',
+      'cache-control': 'no-store',
+      connection: 'keep-alive',
+      'x-accel-buffering': 'no',
+    },
+  });
 }
 
 async function listTopPairs(db) {
@@ -4904,6 +5082,114 @@ function pairPriceCandidateForToken(pair, contract, symbol, priceIndex, routeInd
   };
 }
 
+function pairIdentityMatches(pair, target) {
+  if (!pair || !target) return false;
+  const source = aggregateSourceKey(pair.source);
+  const targetSource = aggregateSourceKey(target.source);
+  const pairId = safeString(pair.pair_id);
+  const targetPairId = safeString(target.pair_id);
+  if (source && targetSource && pairId && targetPairId) {
+    return source === targetSource && pairId === targetPairId;
+  }
+  return graphPairKey(pair) === graphPairKey(target);
+}
+
+function selectedProofUsesPair(metrics, changedPair) {
+  const hops = Array.isArray(metrics?.selected_price_proof?.route_hops)
+    ? metrics.selected_price_proof.route_hops
+    : [];
+  return hops.some((hop) => pairIdentityMatches({
+    source: hop.source,
+    pair_id: hop.pair_id,
+    token_a_contract: hop.from_contract,
+    token_a_symbol: hop.from_symbol,
+    token_b_contract: hop.to_contract,
+    token_b_symbol: hop.to_symbol,
+  }, changedPair));
+}
+
+function selectedProofTouchesToken(metrics, tokenKeys = []) {
+  const keys = new Set((tokenKeys || []).filter(Boolean));
+  if (!keys.size) return false;
+  const hops = Array.isArray(metrics?.selected_price_proof?.route_hops)
+    ? metrics.selected_price_proof.route_hops
+    : [];
+  return hops.some((hop) =>
+    keys.has(safeString(hop.from)) ||
+    keys.has(safeString(hop.to)) ||
+    keys.has(tokenKey(hop.from_contract, hop.from_symbol)) ||
+    keys.has(tokenKey(hop.to_contract, hop.to_symbol))
+  );
+}
+
+function instantLiveTokenUpdatesForVerifiedPairEvent({ changedPair, tokenRows = [], pairRows = [], priceRows = [], updatedAt = null } = {}) {
+  if (!changedPair) return [];
+  const changed = (pairRows || []).find((pair) => pairIdentityMatches(pair, changedPair)) || changedPair;
+  if (!hasRealPairReserves(changed)) return [];
+  const graphRows = dedupePairRows(pairRows);
+  const priceIndex = buildDbTokenPriceIndex(priceRows);
+  const routeIndex = buildOgWaxRouteGraph(graphRows, priceIndex);
+  const changedTokenKeys = [
+    tokenKey(changed.token_a_contract, changed.token_a_symbol),
+    tokenKey(changed.token_b_contract, changed.token_b_symbol),
+  ].filter(Boolean);
+  const pairsByToken = new Map();
+  for (const pair of graphRows) {
+    for (const key of [
+      tokenKey(pair.token_a_contract, pair.token_a_symbol),
+      tokenKey(pair.token_b_contract, pair.token_b_symbol),
+    ]) {
+      if (!key) continue;
+      if (!pairsByToken.has(key)) pairsByToken.set(key, []);
+      pairsByToken.get(key).push(pair);
+    }
+  }
+  return (tokenRows || [])
+    .map((row) => {
+      const contract = normalizeContract(row?.contract);
+      const symbol = normalizeSymbol(row?.symbol);
+      const key = tokenKey(contract, symbol);
+      if (!key) return null;
+      const metrics = deriveTokenPairMetrics(
+        { ...(row || {}), contract, symbol },
+        { ...(row || {}), contract, symbol },
+        pairsByToken.get(key) || [],
+        priceRows,
+        graphRows,
+        { routeIndex },
+      );
+      const isDirectlyAffected = changedTokenKeys.includes(key);
+      const isDependent = selectedProofUsesPair(metrics, changed) || selectedProofTouchesToken(metrics, changedTokenKeys);
+      if (!isDirectlyAffected && !isDependent) return null;
+      return normalizeLiveTokenUpdate({
+        ...metrics,
+        updated_at: updatedAt || changed.updated_at || metrics.updated_at || nowIso(),
+        stats_updated_at: updatedAt || changed.updated_at || metrics.stats_updated_at || metrics.updated_at || nowIso(),
+      });
+    })
+    .filter(Boolean);
+}
+
+async function buildInstantLiveTokenUpdatesForPair(db, changedPair, options = {}) {
+  if (!db || !changedPair) return [];
+  const graph = await loadWaxcashGraphTokenRows(db, options.graph || {});
+  const existing = (graph.pairRows || []).find((pair) => pairIdentityMatches(pair, changedPair)) || {};
+  const changed = { ...existing, ...changedPair };
+  const pairRows = dedupePairRows((graph.pairRows || []).map((pair) =>
+    pairIdentityMatches(pair, changed) ? { ...pair, ...changed } : pair
+  ));
+  if (!(graph.pairRows || []).some((pair) => pairIdentityMatches(pair, changed))) pairRows.push(changed);
+  const tokenRows = graph.tokenRows || [];
+  const priceRows = await loadTokenPriceRowsForPairs(db, pairRows);
+  return instantLiveTokenUpdatesForVerifiedPairEvent({
+    changedPair: changed,
+    tokenRows,
+    pairRows,
+    priceRows,
+    updatedAt: options.updatedAt || changed.updated_at || nowIso(),
+  });
+}
+
 function medianNumber(values) {
   const sorted = values.filter((value) => value != null && Number.isFinite(value)).slice().sort((a, b) => a - b);
   if (!sorted.length) return null;
@@ -5010,6 +5296,9 @@ const WAXCASH_CONTRACT = 'graffitiking';
 const WAXCASH_SYMBOL = 'WAXCASH';
 const WAXCASH_KEY = tokenKey(WAXCASH_CONTRACT, WAXCASH_SYMBOL);
 const WAXCASH_GRAPH_ROUTE_CONCURRENCY = 8;
+const WAXCASH_MARKET_GRAPH_DEFAULT_DEPTH = 2;
+const WAXCASH_MARKET_GRAPH_MAX_DEPTH = 4;
+const WAXCASH_MARKET_GRAPH_MIN_EXPAND_LIQUIDITY_WAX = 1;
 
 function isWaxcashToken(contract, symbol) {
   return tokenKey(contract, symbol) === WAXCASH_KEY;
@@ -5053,6 +5342,32 @@ function mergeWaxcashGraphTokenMeta(meta, token, pair) {
   meta.set(token.key, existing);
 }
 
+function graphPairKey(pair) {
+  return [
+    pair?.source || '',
+    pair?.pair_id || '',
+    pair?.token_a_contract || '',
+    pair?.token_a_symbol || '',
+    pair?.token_b_contract || '',
+    pair?.token_b_symbol || '',
+  ].join('::');
+}
+
+function pairGraphLiquidityWax(pair) {
+  const stored = asNumber(pair?.liquidity_wax);
+  if (stored != null && stored >= 0) return stored;
+  const waxReserve = waxReserveForPair(pair);
+  if (waxReserve != null && waxReserve > 0) return waxReserve * 2;
+  return null;
+}
+
+function pairPassesGraphExpansionThreshold(pair, minLiquidityWax = WAXCASH_MARKET_GRAPH_MIN_EXPAND_LIQUIDITY_WAX) {
+  if (!hasRealPairReserves(pair)) return false;
+  const threshold = asNumber(minLiquidityWax) ?? WAXCASH_MARKET_GRAPH_MIN_EXPAND_LIQUIDITY_WAX;
+  const liquidityWax = pairGraphLiquidityWax(pair);
+  return liquidityWax != null && liquidityWax >= threshold;
+}
+
 function waxReserveForPair(pair) {
   if (isWaxToken(pair?.token_a_contract, pair?.token_a_symbol)) return asNumber(pair.reserve_a);
   if (isWaxToken(pair?.token_b_contract, pair?.token_b_symbol)) return asNumber(pair.reserve_b);
@@ -5077,9 +5392,9 @@ function enrichWaxcashGraphTokenRows(tokenRows = [], tokenMeta = new Map()) {
       ...row,
       contract: meta.contract,
       symbol: meta.symbol,
-      pair_count: row.pair_count ?? meta.pair_count,
-      indexed_pair_count: row.indexed_pair_count ?? meta.pair_count,
-      source_count: row.source_count ?? sourceKeys.length,
+      pair_count: meta.pair_count,
+      indexed_pair_count: meta.pair_count,
+      source_count: sourceKeys.length,
       source_keys: sourceKeys.join(','),
       search_text: Array.from(meta.search_terms || []).join(' '),
       updated_at: row.stats_updated_at || row.updated_at || meta.updated_at,
@@ -5087,11 +5402,21 @@ function enrichWaxcashGraphTokenRows(tokenRows = [], tokenMeta = new Map()) {
   });
 }
 
-async function loadWaxcashGraphTokenRows(db) {
+async function loadWaxcashGraphTokenRows(db, options = {}) {
+  const maxDepth = clampInteger(
+    options.maxDepth,
+    WAXCASH_MARKET_GRAPH_DEFAULT_DEPTH,
+    0,
+    WAXCASH_MARKET_GRAPH_MAX_DEPTH,
+  );
+  const minExpandLiquidityWax = asNumber(options.minExpandLiquidityWax) ?? WAXCASH_MARKET_GRAPH_MIN_EXPAND_LIQUIDITY_WAX;
   const waxcashPairs = await loadWaxcashOgPairRows(db);
   const tokenMeta = new Map();
+  const graphPairs = new Map();
+  const tokenDepth = new Map();
   const waxcashRef = tokenRef(WAXCASH_CONTRACT, WAXCASH_SYMBOL);
   if (waxcashRef.key) {
+    tokenDepth.set(waxcashRef.key, 0);
     tokenMeta.set(waxcashRef.key, {
       ...waxcashRef,
       pair_count: 0,
@@ -5102,28 +5427,61 @@ async function loadWaxcashGraphTokenRows(db) {
   }
   const pairedTokens = [];
   for (const pair of waxcashPairs || []) {
+    graphPairs.set(graphPairKey(pair), pair);
     const paired = otherTokenForPair(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
     if (!paired?.key) continue;
     mergeWaxcashGraphTokenMeta(tokenMeta, waxcashRef, pair);
     mergeWaxcashGraphTokenMeta(tokenMeta, paired, pair);
+    if (!tokenDepth.has(paired.key)) tokenDepth.set(paired.key, 1);
     if (!pairedTokens.some((token) => token.key === paired.key)) pairedTokens.push(paired);
   }
-  const routeGraphRows = [];
-  const routeTargets = [waxcashRef].concat(pairedTokens)
-    .filter((token) => token?.key && !isWaxToken(token.contract, token.symbol));
-  for (let index = 0; index < routeTargets.length; index += WAXCASH_GRAPH_ROUTE_CONCURRENCY) {
-    const batch = routeTargets.slice(index, index + WAXCASH_GRAPH_ROUTE_CONCURRENCY);
-    const batchRows = await Promise.all(batch.map((token) =>
-      loadRouteGraphRowsForToken(db, token.contract, token.symbol)
-    ));
-    for (const rows of batchRows) routeGraphRows.push(...rows);
+  let frontier = pairedTokens.filter((token) => token?.key && !isWaxToken(token.contract, token.symbol));
+  for (let depth = 1; depth <= maxDepth && frontier.length; depth += 1) {
+    const nextFrontierByKey = new Map();
+    for (let index = 0; index < frontier.length; index += WAXCASH_GRAPH_ROUTE_CONCURRENCY) {
+      const batch = frontier.slice(index, index + WAXCASH_GRAPH_ROUTE_CONCURRENCY);
+      const batchRows = await Promise.all(batch.map((token) => loadPairRowsForToken(db, token.contract, token.symbol)));
+      for (const rows of batchRows) {
+        for (const pair of rows || []) {
+          const pairKey = graphPairKey(pair);
+          if (!graphPairs.has(pairKey)) graphPairs.set(pairKey, pair);
+          const tokenA = tokenRef(pair.token_a_contract, pair.token_a_symbol);
+          const tokenB = tokenRef(pair.token_b_contract, pair.token_b_symbol);
+          mergeWaxcashGraphTokenMeta(tokenMeta, tokenA, pair);
+          mergeWaxcashGraphTokenMeta(tokenMeta, tokenB, pair);
+          for (const token of [tokenA, tokenB]) {
+            if (!token?.key || isWaxToken(token.contract, token.symbol)) continue;
+            if (!tokenDepth.has(token.key)) tokenDepth.set(token.key, depth + 1);
+            if (depth < maxDepth &&
+                !frontier.some((item) => item.key === token.key) &&
+                pairPassesGraphExpansionThreshold(pair, minExpandLiquidityWax)) {
+              nextFrontierByKey.set(token.key, token);
+            }
+          }
+        }
+      }
+    }
+    frontier = Array.from(nextFrontierByKey.values())
+      .filter((token) => token?.key && !isWaxcashToken(token.contract, token.symbol));
   }
   const tokenRows = await loadTokenRowsForRefs(db, Array.from(tokenMeta.values()));
+  const pairRows = dedupePairRows(Array.from(graphPairs.values()));
+  const routeGraphRows = pairRows.filter((pair) => !pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL));
   return {
-    tokenRows: enrichWaxcashGraphTokenRows(tokenRows, tokenMeta),
-    pairRows: dedupePairRows((waxcashPairs || []).concat(routeGraphRows)),
+    tokenRows: enrichWaxcashGraphTokenRows(tokenRows, tokenMeta).map((row) => ({
+      ...row,
+      graph_depth: tokenDepth.get(tokenKey(row.contract, row.symbol)) ?? null,
+    })),
+    pairRows,
     waxcashPairs: waxcashPairs || [],
     routeGraphRows: dedupePairRows(routeGraphRows),
+    graph_config: {
+      root: WAXCASH_KEY,
+      max_depth: maxDepth,
+      default_depth: WAXCASH_MARKET_GRAPH_DEFAULT_DEPTH,
+      max_allowed_depth: WAXCASH_MARKET_GRAPH_MAX_DEPTH,
+      min_expand_liquidity_wax: safeDecimal(minExpandLiquidityWax),
+    },
   };
 }
 
@@ -5714,6 +6072,8 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   metrics.volume_24h_usd = safeDecimal(volumeUsd);
   metrics.liquidity_wax = safeDecimal(liquidityWax);
   metrics.liquidity_usd = safeDecimal(liquidityUsd);
+  metrics.graph_liquidity_wax = safeDecimal(liquidityWax);
+  metrics.graph_liquidity_usd = safeDecimal(liquidityUsd);
   metrics.direct_pair_liquidity_wax = safeDecimal(liquidityWax);
   metrics.direct_pair_liquidity_usd = safeDecimal(liquidityUsd);
   metrics.direct_waxcash_pair_liquidity_wax = safeDecimal(hasDirectWaxcashLiquidityWax ? directWaxcashLiquidityWax : null);
@@ -6849,13 +7209,14 @@ async function getIndexerHealth(db, env = {}) {
     live_updates: {
       snapshot_endpoint: WAXONEDGE_LIVE_SNAPSHOT_ENDPOINT,
       stream_endpoint: WAXONEDGE_LIVE_STREAM_ENDPOINT,
-      transport: 'snapshot-polling-contract',
-      vps_stream_required: true,
+      transport: liveIndexerProbe?.reachable ? 'sse' : 'snapshot-polling-fallback',
+      vps_stream_required: !liveIndexerProbe?.reachable,
       live_indexer: waxonedgeLiveIndexerConfig(env),
       live_indexer_probe: liveIndexerProbe,
       uses_fake_live_data: false,
       browser_hyperion_fetch: false,
       token_key_format: 'contract::symbol',
+      instant_market_cap_recompute: liveIndexerProbe?.reachable === true,
     },
     totals: {
       total_indexed_tokens: totalTokens,
@@ -7741,7 +8102,7 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       return handleLiveSnapshot(env, url.searchParams, corsHeaders);
     }
     if (path === WAXONEDGE_LIVE_STREAM_ENDPOINT) {
-      return handleLiveStream(corsHeaders, env);
+      return await handleLiveStream(corsHeaders, env);
     }
 
     const tokenMatch = path.match(/^\/api\/waxonedge\/token\/([^/]+)\/([^/]+)(?:\/([^/]+))?$/);
@@ -7874,6 +8235,9 @@ export const __waxonedgeTestHooks = {
   liveCursorFromRow,
   parseLiveCursor,
   normalizeLiveTokenUpdate,
+  instantLiveTokenUpdatesForVerifiedPairEvent,
+  buildInstantLiveTokenUpdatesForPair,
+  pairPassesGraphExpansionThreshold,
   loadWaxcashGraphTokenRows,
   buildWaxcashPairGraph,
   sortWaxcashGraphTokens,
