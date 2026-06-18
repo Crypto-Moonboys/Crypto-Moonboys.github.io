@@ -2137,12 +2137,26 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     const v3FallbackHeadline = __waxonedgeTestHooks.waxcashHeadlinePrice([
       graphPairs.find((pair) => pair.pair_id === '8388'),
     ], waxPriceIndex);
-    ok('WAXCASH old-WOE headline falls back to Alcor V3 when no usable legacy WAX pool exists',
-      v3FallbackHeadline.og_headline_price_source === 'swap.alcor' &&
-      v3FallbackHeadline.og_headline_price_pair_id === '8388' &&
-      Number(v3FallbackHeadline.og_headline_price_wax) === 0.01 &&
+    ok('WAXCASH old-WOE headline rejects unproven Alcor V3 reserve-ratio fallback',
+      v3FallbackHeadline.og_headline_price_source === null &&
+      v3FallbackHeadline.og_headline_price_pair_id === null &&
+      v3FallbackHeadline.og_headline_price_wax === null &&
       v3FallbackHeadline.legacy_direct_wax_selected === false &&
-      v3FallbackHeadline.v3_direct_wax_selected === true);
+      v3FallbackHeadline.v3_direct_wax_selected === false &&
+      v3FallbackHeadline.og_headline_reason_codes.includes('v3_poolv3_getprice_proof_unavailable'));
+    const provenV3FallbackHeadline = __waxonedgeTestHooks.waxcashHeadlinePrice([{
+      ...graphPairs.find((pair) => pair.pair_id === '8388'),
+      poolv3_price: '200',
+      valuation_basis: 'alcor_v3_poolv3_getprice',
+      proof_status: 'verified',
+    }], waxPriceIndex);
+    ok('WAXCASH old-WOE headline uses proven PoolV3.getPrice fallback without reserve-ratio math',
+      provenV3FallbackHeadline.og_headline_price_source === 'swap.alcor' &&
+      provenV3FallbackHeadline.og_headline_price_pair_id === '8388' &&
+      Number(provenV3FallbackHeadline.og_headline_price_wax) === 0.005 &&
+      provenV3FallbackHeadline.og_headline_formula === 'price_wax = 1 / PoolV3.getPrice(pool)' &&
+      Number(provenV3FallbackHeadline.og_headline_price_wax) !== 0.01 &&
+      provenV3FallbackHeadline.v3_direct_wax_selected === true);
     const noDirectWaxcashAnalyticsDb = {
       prepare(sql) {
         function allResults(params) {
@@ -2320,6 +2334,9 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         token_b_symbol: 'WAXCASH',
         reserve_a: '100',
         reserve_b: '10000',
+        poolv3_price: '100',
+        valuation_basis: 'alcor_v3_poolv3_getprice',
+        proof_status: 'verified',
         liquidity_wax: '999999',
         updated_at: '2026-06-14T12:00:00.000Z',
       },
@@ -3891,7 +3908,7 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     fee: 100,
   }, priceIndex, '2026-06-17T00:00:00.000Z');
   const waxcash8388Proof = __waxonedgeTestHooks.buildWaxcashOgParityProof([alcorWaxcash8388], priceIndex, []);
-  ok('swap.alcor pool #8388 snake_case row normalizes as direct WAX/WAXCASH V3 fallback candidate',
+  ok('swap.alcor pool #8388 snake_case row normalizes as direct WAX/WAXCASH V3 candidate but not price proof',
     alcorWaxcash8388 &&
     alcorWaxcash8388.source === 'swap.alcor' &&
     alcorWaxcash8388.pair_id === '8388' &&
@@ -3903,10 +3920,11 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     Number(alcorWaxcash8388.reserve_b) === 119457846.68648227 &&
     waxcash8388Proof.headline_price.v3_direct_wax_candidate_count === 1 &&
     waxcash8388Proof.headline_price.legacy_direct_wax_selected === false &&
-    waxcash8388Proof.headline_price.v3_direct_wax_selected === true &&
-    waxcash8388Proof.headline_price.og_headline_price_source === 'swap.alcor' &&
-    waxcash8388Proof.headline_price.og_headline_price_pair_id === '8388' &&
-    Number(waxcash8388Proof.headline_price.og_headline_price_wax) > 0);
+    waxcash8388Proof.headline_price.v3_direct_wax_selected === false &&
+    waxcash8388Proof.headline_price.og_headline_price_source === null &&
+    waxcash8388Proof.headline_price.og_headline_price_pair_id === null &&
+    waxcash8388Proof.headline_price.og_headline_price_wax === null &&
+    waxcash8388Proof.headline_price.og_headline_reason_codes.includes('v3_poolv3_getprice_proof_unavailable'));
 }
 {
   const stream = { source: 'swap.taco', referenceSource: 'taco', account: 'swap.taco', action: 'exchangelog', parser: 'swap-v2-taco' };
@@ -4840,8 +4858,12 @@ ok('WAXCASH OG WOE parity proof uses old-WOE legacy direct WAX pool before Alcor
   route.includes('legacy_waxcash_direct_pool_missing') &&
   route.includes('legacy_waxcash_direct_pool_unusable') &&
   route.includes('function ogDirectWaxTokenPrice') &&
+  route.includes('function ogV3DirectWaxTokenPrice') &&
+  route.includes('function hasPoolV3GetPriceProof') &&
   route.includes('waxReserve > selected.waxReserve') &&
-  route.includes('price_wax = wax_reserve / waxcash_reserve') &&
+  route.includes('price_wax = wax_reserve / token_reserve') &&
+  route.includes('price_wax = 1 / PoolV3.getPrice(pool)') &&
+  route.includes('v3_poolv3_getprice_proof_unavailable') &&
   route.includes('og_headline_passes_100_wax_threshold') &&
   route.includes('selected_largest_wax_reserve_pool') &&
   !route.includes('selected_' + 'deep' + 'est_wax_pool') &&

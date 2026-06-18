@@ -5672,6 +5672,84 @@ function ogDirectWaxTokenPrice(contract, symbol, directWaxPairs = [], priceIndex
     pair_label: selectedPairLabel(selected.pair),
     wax_reserve: safeDecimal(selected.waxReserve),
     token_reserve: safeDecimal(selected.tokenReserve),
+    formula: 'price_wax = wax_reserve / token_reserve',
+    updated_at: selected.pair.updated_at || null,
+    reason_codes: [],
+  };
+}
+
+function hasPoolV3GetPriceProof(pair) {
+  const proofStatus = String(pair?.proof_status || pair?.price_proof_status || '').toLowerCase();
+  const valuationBasis = String(pair?.valuation_basis || pair?.price_valuation_basis || pair?.price_basis || '').toLowerCase();
+  const priceSource = String(pair?.price_source || pair?.v3_price_source || '').toLowerCase();
+  if (proofStatus !== 'verified') return false;
+  return (
+    valuationBasis.includes('poolv3_getprice') ||
+    valuationBasis.includes('pool_v3_getprice') ||
+    valuationBasis.includes('alcor_v3_pool_price') ||
+    priceSource.includes('poolv3_getprice') ||
+    priceSource.includes('pool_v3_getprice')
+  );
+}
+
+function poolV3PriceForPair(pair) {
+  return asNumber(pair?.poolv3_price ?? pair?.pool_v3_price ?? pair?.v3_pool_price ?? pair?.price);
+}
+
+function ogV3DirectWaxTokenPrice(contract, symbol, directWaxPairs = [], priceIndex = new Map()) {
+  const candidates = (directWaxPairs || [])
+    .filter((pair) => pairTokenSide(pair, contract, symbol))
+    .filter((pair) => hasWaxQuoteForToken(pair, contract, symbol));
+  let selected = null;
+  const rejectedReasonCounts = {};
+  for (const pair of candidates) {
+    const waxReserve = waxSideReserveForToken(pair, contract, symbol);
+    const tokenReserve = tokenSideReserveForToken(pair, contract, symbol);
+    const poolPrice = poolV3PriceForPair(pair);
+    const reasonCodes = [];
+    if (!hasPoolV3GetPriceProof(pair)) reasonCodes.push('v3_poolv3_getprice_proof_unavailable');
+    if (poolPrice == null || poolPrice <= 0) reasonCodes.push('v3_poolv3_getprice_value_unavailable');
+    if (reasonCodes.length) {
+      for (const code of reasonCodes) rejectedReasonCounts[code] = (rejectedReasonCounts[code] || 0) + 1;
+      continue;
+    }
+    const waxSide = pairTokenSide(pair, 'eosio.token', 'WAX');
+    if (!waxSide) continue;
+    const priceWax = waxSide.side === 'a' ? 1 / poolPrice : poolPrice;
+    const depthScore = waxReserve ?? asNumber(pair.liquidity_wax) ?? 0;
+    if (!selected || depthScore > selected.depthScore) {
+      selected = { pair, waxReserve, tokenReserve, poolPrice, priceWax, depthScore, waxSide: waxSide.side };
+    }
+  }
+  if (!selected) {
+    const reasonCodes = Object.keys(rejectedReasonCounts);
+    return {
+      price_wax: null,
+      price_usd: null,
+      source: null,
+      pair_id: null,
+      pair_label: null,
+      wax_reserve: null,
+      token_reserve: null,
+      formula: null,
+      updated_at: null,
+      reason_codes: candidates.length
+        ? (reasonCodes.length ? reasonCodes : ['v3_poolv3_getprice_proof_unavailable'])
+        : ['no_direct_wax_pool'],
+    };
+  }
+  const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+  return {
+    price_wax: safeDecimal(selected.priceWax),
+    price_usd: waxUsd != null ? safeDecimal(selected.priceWax * waxUsd) : null,
+    source: selected.pair.source || null,
+    pair_id: selected.pair.pair_id || null,
+    pair_label: selectedPairLabel(selected.pair),
+    wax_reserve: safeDecimal(selected.waxReserve),
+    token_reserve: safeDecimal(selected.tokenReserve),
+    formula: selected.waxSide === 'a'
+      ? 'price_wax = 1 / PoolV3.getPrice(pool)'
+      : 'price_wax = PoolV3.getPrice(pool)',
     updated_at: selected.pair.updated_at || null,
     reason_codes: [],
   };
@@ -5803,7 +5881,7 @@ function waxcashHeadlinePrice(pairRows, priceIndex) {
   const legacySelectedValid = asNumber(legacySelected.price_wax) != null;
   const v3Selected = legacySelectedValid
     ? null
-    : ogDirectWaxTokenPrice(WAXCASH_CONTRACT, WAXCASH_SYMBOL, v3Candidates, priceIndex);
+    : ogV3DirectWaxTokenPrice(WAXCASH_CONTRACT, WAXCASH_SYMBOL, v3Candidates, priceIndex);
   const v3SelectedValid = asNumber(v3Selected?.price_wax) != null;
   const selected = legacySelectedValid ? legacySelected : v3Selected;
   const reasonCodes = selected.reason_codes.slice();
@@ -5822,7 +5900,7 @@ function waxcashHeadlinePrice(pairRows, priceIndex) {
     og_headline_price_pair_label: selected.pair_label,
     og_headline_wax_reserve: selected.wax_reserve,
     og_headline_token_reserve: selected.token_reserve,
-    og_headline_formula: selected.price_wax == null ? null : 'price_wax = wax_reserve / waxcash_reserve',
+    og_headline_formula: selected.price_wax == null ? null : selected.formula,
     og_headline_passes_100_wax_threshold: waxReserve != null ? waxReserve >= 100 : false,
     og_headline_reason_codes: reasonCodes,
     og_headline_updated_at: selected.updated_at,
@@ -8428,6 +8506,7 @@ export const __waxonedgeTestHooks = {
   waxcashHeadlinePrice,
   waxcashGraphPairValuation,
   ogDirectWaxTokenPrice,
+  ogV3DirectWaxTokenPrice,
   metricCapabilitiesFromTokens,
   collectTokenPriceKeysForPairs,
   diagnoseTokenAggregate,

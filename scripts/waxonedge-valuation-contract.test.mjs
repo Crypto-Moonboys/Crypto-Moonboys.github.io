@@ -348,7 +348,7 @@ ok('WAXCASH OG headline selects legacy non-V3 direct WAX pool before Alcor V3',
 ok('WAXCASH OG headline price uses reserve ratio, not stored pair.price',
   almostEqual(waxcashProof.headline_price.og_headline_price_wax, 150 / 1000000) &&
   waxcashProof.headline_price.og_headline_price_wax !== waxcashDeepWax.price &&
-  waxcashProof.headline_price.og_headline_formula === 'price_wax = wax_reserve / waxcash_reserve');
+  waxcashProof.headline_price.og_headline_formula === 'price_wax = wax_reserve / token_reserve');
 ok('WAXCASH pair list includes all exact graffitiking::WAXCASH pairs only',
   waxcashProof.all_pairs.length === 6 &&
   waxcashProof.all_pairs.some((pair) => pair.pair_id === 'WAXCASHGOO') &&
@@ -446,13 +446,31 @@ const waxcashV3FallbackProof = __waxonedgeTestHooks.buildWaxcashOgParityProof(
   priceIndex,
   [gooWaxPair],
 );
-ok('WAXCASH OG headline falls back to Alcor V3 when no usable legacy direct WAX pool exists',
-  waxcashV3FallbackProof.headline_price.og_headline_price_pair_id === '8388' &&
+ok('WAXCASH OG headline rejects Alcor V3 fallback without PoolV3.getPrice proof',
+  waxcashV3FallbackProof.headline_price.og_headline_price_pair_id === null &&
+  waxcashV3FallbackProof.headline_price.og_headline_price_wax === null &&
   waxcashV3FallbackProof.headline_price.legacy_direct_wax_candidate_found === false &&
   waxcashV3FallbackProof.headline_price.v3_direct_wax_candidate_found === true &&
-  waxcashV3FallbackProof.headline_price.v3_direct_wax_selected === true &&
-  waxcashV3FallbackProof.headline_price.headline_fallback_used === true &&
-  waxcashV3FallbackProof.headline_price.headline_fallback_reason_codes.includes('legacy_waxcash_direct_pool_missing'));
+  waxcashV3FallbackProof.headline_price.v3_direct_wax_selected === false &&
+  waxcashV3FallbackProof.headline_price.headline_fallback_used === false &&
+  waxcashV3FallbackProof.headline_price.headline_fallback_reason_codes.includes('legacy_waxcash_direct_pool_missing') &&
+  waxcashV3FallbackProof.headline_price.og_headline_reason_codes.includes('v3_poolv3_getprice_proof_unavailable'));
+const waxcashProvenV3FallbackProof = __waxonedgeTestHooks.buildWaxcashOgParityProof(
+  [{
+    ...waxcashAlcorWax,
+    poolv3_price: '200',
+    valuation_basis: 'alcor_v3_poolv3_getprice',
+    proof_status: 'verified',
+  }],
+  priceIndex,
+  [],
+);
+ok('WAXCASH OG headline PoolV3 fallback does not use reserve ratio',
+  waxcashProvenV3FallbackProof.headline_price.og_headline_price_pair_id === '8388' &&
+  waxcashProvenV3FallbackProof.headline_price.v3_direct_wax_selected === true &&
+  waxcashProvenV3FallbackProof.headline_price.og_headline_formula === 'price_wax = 1 / PoolV3.getPrice(pool)' &&
+  almostEqual(waxcashProvenV3FallbackProof.headline_price.og_headline_price_wax, 0.005) &&
+  !almostEqual(waxcashProvenV3FallbackProof.headline_price.og_headline_price_wax, 1138621.39085541 / 119457846.68648227));
 const waxcashNoWaxProof = __waxonedgeTestHooks.buildWaxcashOgParityProof([waxcashGooPair], priceIndex, [gooWaxPair]);
 ok('missing WAXCASH direct WAX pool returns unavailable null, not fake zero',
   waxcashNoWaxProof.headline_price.og_headline_price_wax === null &&
