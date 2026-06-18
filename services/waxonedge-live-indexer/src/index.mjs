@@ -863,18 +863,15 @@ function canonicalAmmActionPairId(source, record = {}, row = {}) {
   return safeString(firstPresent(record.id, record.pair_id, record.pairId, record.code, row?.pair_id, row?.pairId, row?.id, row?.code));
 }
 
-function parseAmmSwap(row, stream) {
+function parseAdapterSwap(row, stream, quantityResolver) {
   const name = actionName(row);
   if (name && name !== stream.action) return null;
   const record = actionRecord(row);
   const pairId = canonicalAmmActionPairId(stream.source, record, row);
   if (!pairId) return null;
-  let quantityIn = firstPresent(record.quantity_in, row?.quantity_in);
-  let quantityOut = firstPresent(record.quantity_out, row?.quantity_out);
-  if (stream.parser === 'swap-v3') {
-    quantityIn = firstPresent(record.tokenA, row?.tokenA, quantityIn);
-    quantityOut = firstPresent(record.tokenB, row?.tokenB, quantityOut);
-  }
+  const quantities = quantityResolver(record, row);
+  const quantityIn = quantities.quantityIn;
+  const quantityOut = quantities.quantityOut;
   const parsedIn = parseAsset(quantityIn);
   const parsedOut = parseAsset(quantityOut);
   if (parsedIn.amount == null || parsedOut.amount == null || !parsedIn.symbol || !parsedOut.symbol) return null;
@@ -907,6 +904,28 @@ function parseAmmSwap(row, stream) {
     traded_at: tradedAt,
     raw_event: row,
   };
+}
+
+function parseAlcorConcentratedSwap(row, stream) {
+  return parseAdapterSwap(row, stream, (record, raw) => ({
+    quantityIn: firstPresent(record.tokenA, raw?.tokenA, record.quantity_in, raw?.quantity_in),
+    quantityOut: firstPresent(record.tokenB, raw?.tokenB, record.quantity_out, raw?.quantity_out),
+  }));
+}
+
+function parseV2ConstantProductSwap(row, stream) {
+  return parseAdapterSwap(row, stream, (record, raw) => ({
+    quantityIn: firstPresent(record.quantity_in, raw?.quantity_in),
+    quantityOut: firstPresent(record.quantity_out, raw?.quantity_out),
+  }));
+}
+
+function parseAmmSwap(row, stream) {
+  if (stream.parser === 'swap-v3') return parseAlcorConcentratedSwap(row, stream);
+  if (stream.parser === 'swap-v2-taco' || stream.parser === 'swap-v2-defibox' || stream.parser === 'swap-v2-nefty') {
+    return parseV2ConstantProductSwap(row, stream);
+  }
+  return null;
 }
 
 export function normalizeLiveTradeRow(row, stream) {
