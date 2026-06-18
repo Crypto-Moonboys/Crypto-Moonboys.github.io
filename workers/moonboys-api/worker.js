@@ -53,6 +53,7 @@ import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFaction
  *   GET  /api/waxonedge/summary
  *   GET  /api/waxonedge/tokens/top
  *   GET  /api/waxonedge/pairs/top
+ *   GET  /api/waxonedge/waxcash-graph
  *   GET  /api/waxonedge/token/:contract/:symbol
  *   GET  /api/waxonedge/token/:contract/:symbol/pairs
  *   GET  /api/waxonedge/token/:contract/:symbol/chart
