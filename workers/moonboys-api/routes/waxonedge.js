@@ -5627,8 +5627,7 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   let bubbleSuspiciousLiquidityPairCount = 0;
   const liquidityContributions = [];
   const routeIndex = options.routeIndex || buildOgWaxRouteGraph(graphPairRows, priceIndex);
-  const selected = selectLiquidityWeightedMedianPrice(contract, symbol, pairRows, priceIndex, routeIndex) ||
-    selectOgWaxRoutePrice(tokenKey(contract, symbol), routeIndex);
+  const selected = selectLiquidityWeightedMedianPrice(contract, symbol, pairRows, priceIndex, routeIndex);
   const totalSupply = asNumber(token?.total_supply ?? token?.max_supply);
   const circulatingSupply = asNumber(metrics.circulating_supply ?? token?.circulating_supply);
   const selectedPriceWax = selected?.priceWax ?? null;

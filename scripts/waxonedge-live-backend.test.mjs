@@ -4247,7 +4247,8 @@ ok('aggregate selected price uses the shared WAX route graph instead of a direct
   route.includes('const routeIndex = options.routeIndex || buildOgWaxRouteGraph(graphPairRows, priceIndex)') &&
   route.includes('const aggregateRouteIndex = buildOgWaxRouteGraph(pairRows.results || [], priceIndex)') &&
   route.includes('{ routeIndex: aggregateRouteIndex }') &&
-  route.includes('const selected = selectOgWaxRoutePrice(tokenKey(contract, symbol), routeIndex)') &&
+  route.includes('const selected = selectLiquidityWeightedMedianPrice(contract, symbol, pairRows, priceIndex, routeIndex)') &&
+  !route.includes('selectLiquidityWeightedMedianPrice(contract, symbol, pairRows, priceIndex, routeIndex) ||') &&
   route.includes('routeLiquidityScore > existing.route_liquidity_score') &&
   !route.includes('const trusted = liquidityWax >= MIN_TRUSTED_WAX_LIQUIDITY'));
 ok('aggregate rebuild persists all computable token metrics from indexed pairs',
@@ -5376,6 +5377,16 @@ const mixedAlcorTrapSelection = __waxonedgeTestHooks.selectLiquidityWeightedMedi
   layer1PriceIndex,
   __waxonedgeTestHooks.buildOgWaxRouteGraph([swapAlcorV2TrapPair, waxcashWaxLayer1Pair], layer1PriceIndex),
 );
+const noFallbackRouteIndex = __waxonedgeTestHooks.buildOgWaxRouteGraph([waxcashWaxLayer1Pair], layer1PriceIndex);
+const noFallbackRoutePrice = __waxonedgeTestHooks.selectOgWaxRoutePrice('graffitiking::WAXCASH', noFallbackRouteIndex);
+const noFallbackStats = __waxonedgeTestHooks.deriveTokenPairMetrics(
+  { contract: 'graffitiking', symbol: 'WAXCASH', total_supply: '1000000' },
+  { aggregate_complete: 0 },
+  [swapAlcorV2TrapPair],
+  [{ contract: 'eosio.token', symbol: 'WAX', price_wax: '1', price_usd: '0.006' }],
+  [waxcashWaxLayer1Pair],
+  { routeIndex: noFallbackRouteIndex },
+);
 ok('Layer 1 known WAXCASH/WAX price direction is not reversed',
   waxcashLayer1Selection.pair_id !== 'WAXCASH-WAX' || almostEqual(waxcashLayer1Selection.priceWax, 0.01));
 ok('Layer 1 known WAXCASH/NBG price direction uses quote reserve value over token reserve',
@@ -5401,6 +5412,16 @@ ok('Layer 1 weighted median excludes swap.alcor concentrated pools from V2 reser
   mixedAlcorTrapSelection.pair_id === 'WAXCASH-WAX' &&
   almostEqual(mixedAlcorTrapSelection.priceWax, 0.01) &&
   mixedAlcorTrapSelection.source !== 'swap.alcor');
+ok('Layer 1 deriveTokenPairMetrics does not fall back to old route price when weighted-median candidates are unavailable',
+  noFallbackRoutePrice != null &&
+  almostEqual(noFallbackRoutePrice.priceWax, 0.01) &&
+  noFallbackStats.selected_price_wax === null &&
+  noFallbackStats.selected_price_usd === null &&
+  noFallbackStats.selected_pair_id === null &&
+  noFallbackStats.selected_price_proof.live === false &&
+  noFallbackStats.selected_price_proof.route_hops.length === 0 &&
+  noFallbackStats.strongest_pair === null &&
+  noFallbackStats.unavailable_reasons.selected_price === 'No indexed pair has enough price data yet');
 ok('Layer 1 selected price proof route hops have complete real pair identity',
   [waxcashLayer1Selection, nbgLayer1Selection, wufLayer1Selection, mixedAlcorTrapSelection].every((selection) =>
     selection &&
