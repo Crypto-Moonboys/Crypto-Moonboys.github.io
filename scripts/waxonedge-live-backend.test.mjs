@@ -1756,6 +1756,19 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     },
     {
       source: 'swap.nefty',
+      pair_id: 'WAXCASHWAXLEGACY',
+      token_a_contract: 'graffitiking',
+      token_a_symbol: 'WAXCASH',
+      token_b_contract: 'eosio.token',
+      token_b_symbol: 'WAX',
+      reserve_a: '50000',
+      reserve_b: '1500',
+      liquidity_wax: '3000',
+      volume_24h_wax: '75',
+      updated_at: '2026-06-14T11:01:00.000Z',
+    },
+    {
+      source: 'swap.nefty',
       pair_id: 'WAXCASHWUF',
       token_a_contract: 'graffitiking',
       token_a_symbol: 'WAXCASH',
@@ -1928,17 +1941,17 @@ ok('VPS live indexer safely parses request path without trusting Host header',
           };
         }
         if (sql.includes('FROM waxonedge_chart_candles')) {
-          if (params[0] === 'swap.alcor' && params[1] === '8388') {
+          if (params[0] === 'swap.nefty' && params[1] === 'WAXCASHWAXLEGACY') {
             return {
               results: [{
-                source: 'swap.alcor',
-                pair_id: '8388',
+                source: 'swap.nefty',
+                pair_id: 'WAXCASHWAXLEGACY',
                 interval: '1D',
                 bucket_time: '2026-06-14T00:00:00.000Z',
-                open: '0.009',
-                high: '0.011',
-                low: '0.008',
-                close: '0.01',
+                open: '0.029',
+                high: '0.031',
+                low: '0.028',
+                close: '0.03',
                 volume: '100',
               }],
             };
@@ -2059,35 +2072,143 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.pairs.some((pair) => pair.pair_id === 'WAXCASHABC'),
       JSON.stringify(waxcashAnalytics.pairs.map((pair) => pair.pair_id)));
     ok('WAXCASH analytics selected price uses old WOE direct WAX proof, not recursive graph route',
-      Number(waxcashAnalytics.stats.selected_price_wax) === 0.01 &&
-      waxcashAnalytics.stats.selected_pair_source === 'swap.alcor' &&
-      waxcashAnalytics.stats.selected_pair_id === '8388' &&
+      Number(waxcashAnalytics.stats.selected_price_wax) === 0.03 &&
+      waxcashAnalytics.stats.selected_pair_source === 'swap.nefty' &&
+      waxcashAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY' &&
       waxcashAnalytics.stats.selected_price_basis === 'og_woe_direct_wax_pool' &&
       waxcashAnalytics.stats.selected_price_route === null &&
-      waxcashAnalytics.stats.uses_recursive_graph_price === false);
+      waxcashAnalytics.stats.uses_recursive_graph_price === false &&
+      waxcashAnalytics.headline_price?.headline_price_source_policy === 'old_woe_legacy_pool_first_then_v3');
     ok('WAXCASH analytics names the selected direct WAX pool by largest WAX reserve, not depth',
-      waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id === '8388' &&
+      waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id === 'WAXCASHWAXLEGACY' &&
       !(('selected_' + 'deep' + 'est_wax_pool') in waxcashAnalytics) &&
       !(('selected_' + 'deep' + 'est_wax_pool') in (waxcashAnalytics.proof || {})));
     ok('WAXCASH analytics chart source is the selected direct WAX proof pair',
       waxcashAnalytics.chart?.chart_source?.source === waxcashAnalytics.selected_largest_wax_reserve_pool?.source &&
       waxcashAnalytics.chart?.chart_source?.pair_id === waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id &&
-      waxcashAnalytics.chart?.chart_source?.pair_id === '8388' &&
+      waxcashAnalytics.chart?.chart_source?.pair_id === 'WAXCASHWAXLEGACY' &&
       waxcashAnalytics.chart?.chart_source?.pair_id !== 'WAXWUFB');
     ok('WAXCASH analytics stats reuse indexed token detail supply and volume fields',
       Number(waxcashAnalytics.stats.holder_count) === 42 &&
       Number(waxcashAnalytics.stats.circulating_supply) === 500000 &&
       Number(waxcashAnalytics.stats.total_supply) === 1000000 &&
-      Number(waxcashAnalytics.stats.volume_24h_wax) === 100 &&
+      Number(waxcashAnalytics.stats.volume_24h_wax) === 175 &&
       Number(waxcashAnalytics.stats.volume_7d) === 700 &&
-      Number(waxcashAnalytics.stats.volume_30d) === 3000);
+      Number(waxcashAnalytics.stats.volume_30d) === 3000,
+      JSON.stringify({
+        holder_count: waxcashAnalytics.stats.holder_count,
+        circulating_supply: waxcashAnalytics.stats.circulating_supply,
+        total_supply: waxcashAnalytics.stats.total_supply,
+        volume_24h_wax: waxcashAnalytics.stats.volume_24h_wax,
+        volume_7d: waxcashAnalytics.stats.volume_7d,
+        volume_30d: waxcashAnalytics.stats.volume_30d,
+      }));
     ok('WAXCASH analytics market cap derives only from circulating supply times selected price',
-      Number(waxcashAnalytics.stats.market_cap_wax) === 5000 &&
-      Number(waxcashAnalytics.stats.market_cap_usd) === 30 &&
+      Number(waxcashAnalytics.stats.market_cap_wax) === 15000 &&
+      almostEqual(waxcashAnalytics.stats.market_cap_usd, 90) &&
       waxcashAnalytics.stats.market_cap_basis === 'circulating_supply_x_selected_price' &&
-      Number(waxcashAnalytics.stats.fdv_wax) === 10000 &&
-      Number(waxcashAnalytics.stats.fdv_usd) === 60 &&
-      Number(waxcashAnalytics.stats.market_cap_wax) !== Number(waxcashAnalytics.stats.liquidity_wax));
+      Number(waxcashAnalytics.stats.fdv_wax) === 30000 &&
+      almostEqual(waxcashAnalytics.stats.fdv_usd, 180) &&
+      Number(waxcashAnalytics.stats.liquidity_wax) === 3000 &&
+      Number(waxcashAnalytics.stats.cumulated_pair_liquidity_wax || 0) === 0 &&
+      Number(waxcashAnalytics.stats.market_cap_wax) !== Number(waxcashAnalytics.stats.liquidity_wax),
+      JSON.stringify({
+        selected_price_wax: waxcashAnalytics.stats.selected_price_wax,
+        selected_price_usd: waxcashAnalytics.stats.selected_price_usd,
+        market_cap_wax: waxcashAnalytics.stats.market_cap_wax,
+        market_cap_usd: waxcashAnalytics.stats.market_cap_usd,
+        fdv_wax: waxcashAnalytics.stats.fdv_wax,
+        fdv_usd: waxcashAnalytics.stats.fdv_usd,
+        liquidity_wax: waxcashAnalytics.stats.liquidity_wax,
+        cumulated_pair_liquidity_wax: waxcashAnalytics.stats.cumulated_pair_liquidity_wax,
+      }));
+    const waxPriceIndex = new Map([['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }]]);
+    const legacyFirstHeadline = __waxonedgeTestHooks.waxcashHeadlinePrice([
+      graphPairs.find((pair) => pair.pair_id === '8388'),
+      graphPairs.find((pair) => pair.pair_id === 'WAXCASHWAXLEGACY'),
+    ], waxPriceIndex);
+    ok('WAXCASH old-WOE headline selects legacy non-V3 direct WAX pool before Alcor V3',
+      legacyFirstHeadline.og_headline_price_source === 'swap.nefty' &&
+      legacyFirstHeadline.og_headline_price_pair_id === 'WAXCASHWAXLEGACY' &&
+      Number(legacyFirstHeadline.og_headline_price_wax) === 0.03 &&
+      legacyFirstHeadline.headline_price_source_policy === 'old_woe_legacy_pool_first_then_v3' &&
+      legacyFirstHeadline.legacy_direct_wax_selected === true &&
+      legacyFirstHeadline.v3_direct_wax_selected === false);
+    const v3FallbackHeadline = __waxonedgeTestHooks.waxcashHeadlinePrice([
+      graphPairs.find((pair) => pair.pair_id === '8388'),
+    ], waxPriceIndex);
+    ok('WAXCASH old-WOE headline rejects unproven Alcor V3 reserve-ratio fallback',
+      v3FallbackHeadline.og_headline_price_source === null &&
+      v3FallbackHeadline.og_headline_price_pair_id === null &&
+      v3FallbackHeadline.og_headline_price_wax === null &&
+      v3FallbackHeadline.legacy_direct_wax_selected === false &&
+      v3FallbackHeadline.v3_direct_wax_selected === false &&
+      v3FallbackHeadline.og_headline_reason_codes.includes('v3_poolv3_getprice_proof_unavailable'));
+    const provenV3FallbackHeadline = __waxonedgeTestHooks.waxcashHeadlinePrice([{
+      ...graphPairs.find((pair) => pair.pair_id === '8388'),
+      poolv3_price: '200',
+      valuation_basis: 'alcor_v3_poolv3_getprice',
+      proof_status: 'verified',
+    }], waxPriceIndex);
+    ok('WAXCASH old-WOE headline uses proven PoolV3.getPrice fallback without reserve-ratio math',
+      provenV3FallbackHeadline.og_headline_price_source === 'swap.alcor' &&
+      provenV3FallbackHeadline.og_headline_price_pair_id === '8388' &&
+      Number(provenV3FallbackHeadline.og_headline_price_wax) === 0.005 &&
+      provenV3FallbackHeadline.og_headline_formula === 'price_wax = 1 / PoolV3.getPrice(pool)' &&
+      Number(provenV3FallbackHeadline.og_headline_price_wax) !== 0.01 &&
+      provenV3FallbackHeadline.v3_direct_wax_selected === true);
+    const noDirectWaxcashAnalyticsDb = {
+      prepare(sql) {
+        function allResults(params) {
+          if (sql.includes('FROM waxonedge_pairs')) {
+            const wantsWaxcash = params.includes('graffitiking') && params.includes('WAXCASH');
+            if (wantsWaxcash) {
+              return { results: graphPairs.filter((pair) => pairTokenTouches(pair, 'graffitiking', 'WAXCASH') && pair.token_a_symbol !== 'WAX' && pair.token_b_symbol !== 'WAX') };
+            }
+            return { results: [] };
+          }
+          if (sql.includes('FROM waxonedge_chart_candles')) return { results: [] };
+          if (sql.includes('FROM waxonedge_tokens')) {
+            return { results: graphTokenRows.filter((row) => params.some((value, index) => index % 2 === 0 && row.contract === value && row.symbol === params[index + 1])) };
+          }
+          if (sql.includes('FROM waxonedge_token_stats')) {
+            return {
+              results: [{
+                contract: 'graffitiking',
+                symbol: 'WAXCASH',
+                holder_count: '42',
+                circulating_supply: '500000',
+                total_supply: '1000000',
+                updated_at: '2026-06-14T11:00:00.000Z',
+              }],
+            };
+          }
+          return { results: [] };
+        }
+        return {
+          bind(...params) {
+            return {
+              async all() {
+                return allResults(params);
+              },
+              async first() {
+                return allResults(params).results[0] || null;
+              },
+            };
+          },
+        };
+      },
+    };
+    const noDirectWaxcashAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(noDirectWaxcashAnalyticsDb);
+    ok('WAXCASH analytics keeps price, market cap, and FDV unavailable without usable direct WAX proof',
+      noDirectWaxcashAnalytics.stats.selected_price_wax === null &&
+      noDirectWaxcashAnalytics.stats.market_cap_wax === null &&
+      noDirectWaxcashAnalytics.stats.market_cap_usd === null &&
+      noDirectWaxcashAnalytics.stats.fdv_wax === null &&
+      noDirectWaxcashAnalytics.stats.fdv_usd === null &&
+      noDirectWaxcashAnalytics.stats.selected_price_basis === 'og_woe_direct_wax_pool' &&
+      !String(noDirectWaxcashAnalytics.stats.selected_price_basis).includes('recursive') &&
+      noDirectWaxcashAnalytics.headline_price?.headline_price_source_policy === 'old_woe_legacy_pool_first_then_v3');
     const staleWufUpdate = __waxonedgeTestHooks.instantLiveTokenUpdatesForVerifiedPairEvent({
       changedPair: graphPairs.find((pair) => pair.pair_id === 'WAXCASHWUF'),
       tokenRows: graphTokenRows,
@@ -2213,6 +2334,9 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         token_b_symbol: 'WAXCASH',
         reserve_a: '100',
         reserve_b: '10000',
+        poolv3_price: '100',
+        valuation_basis: 'alcor_v3_poolv3_getprice',
+        proof_status: 'verified',
         liquidity_wax: '999999',
         updated_at: '2026-06-14T12:00:00.000Z',
       },
@@ -3784,7 +3908,7 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     fee: 100,
   }, priceIndex, '2026-06-17T00:00:00.000Z');
   const waxcash8388Proof = __waxonedgeTestHooks.buildWaxcashOgParityProof([alcorWaxcash8388], priceIndex, []);
-  ok('swap.alcor pool #8388 snake_case row normalizes as direct WAX/WAXCASH and is selected for WAXCASH headline',
+  ok('swap.alcor pool #8388 snake_case row normalizes as direct WAX/WAXCASH V3 candidate but not price proof',
     alcorWaxcash8388 &&
     alcorWaxcash8388.source === 'swap.alcor' &&
     alcorWaxcash8388.pair_id === '8388' &&
@@ -3794,11 +3918,13 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     alcorWaxcash8388.token_b_symbol === 'WAXCASH' &&
     Number(alcorWaxcash8388.reserve_a) === 1138621.39085541 &&
     Number(alcorWaxcash8388.reserve_b) === 119457846.68648227 &&
-    waxcash8388Proof.headline_price.alcor_direct_wax_candidate_count === 1 &&
-    waxcash8388Proof.headline_price.alcor_expected_direct_wax_pool_missing === false &&
-    waxcash8388Proof.headline_price.og_headline_price_source === 'swap.alcor' &&
-    waxcash8388Proof.headline_price.og_headline_price_pair_id === '8388' &&
-    Number(waxcash8388Proof.headline_price.og_headline_price_wax) > 0);
+    waxcash8388Proof.headline_price.v3_direct_wax_candidate_count === 1 &&
+    waxcash8388Proof.headline_price.legacy_direct_wax_selected === false &&
+    waxcash8388Proof.headline_price.v3_direct_wax_selected === false &&
+    waxcash8388Proof.headline_price.og_headline_price_source === null &&
+    waxcash8388Proof.headline_price.og_headline_price_pair_id === null &&
+    waxcash8388Proof.headline_price.og_headline_price_wax === null &&
+    waxcash8388Proof.headline_price.og_headline_reason_codes.includes('v3_poolv3_getprice_proof_unavailable'));
 }
 {
   const stream = { source: 'swap.taco', referenceSource: 'taco', account: 'swap.taco', action: 'exchangelog', parser: 'swap-v2-taco' };
@@ -4718,26 +4844,33 @@ ok('WAXCASH OG WOE parity proof uses narrow fee_bps loader',
   route.includes('async function loadWaxcashOgPairRows') &&
   /async function loadWaxcashOgPairRows[\s\S]*fee_bps, updated_at[\s\S]*FROM waxonedge_pairs[\s\S]*WAXCASH_CONTRACT, WAXCASH_SYMBOL/.test(route) &&
   route.includes('const pairRows = await loadWaxcashOgPairRows(db)'));
-ok('WAXCASH OG WOE parity proof prefers Alcor direct WAX pool without stored price or multi-hop headline',
+ok('WAXCASH OG WOE parity proof uses old-WOE legacy direct WAX pool before Alcor V3',
   route.includes('function buildWaxcashOgParityProof') &&
   route.includes('function waxcashHeadlinePrice') &&
+  route.includes('function isOldWoeLegacyWaxcashDirectPair') &&
   route.includes('function isAlcorWaxcashDirectPair') &&
-  route.includes("headline_price_source_policy: 'alcor_preferred_direct_wax'") &&
-  route.includes('alcor_direct_wax_candidate_count') &&
-  route.includes('alcor_direct_wax_selected') &&
+  route.includes("headline_price_source_policy: 'old_woe_legacy_pool_first_then_v3'") &&
+  route.includes('legacy_direct_wax_candidate_count') &&
+  route.includes('legacy_direct_wax_selected') &&
+  route.includes('v3_direct_wax_candidate_count') &&
+  route.includes('v3_direct_wax_selected') &&
   route.includes('headline_fallback_used') &&
-  route.includes('alcor_waxcash_direct_pool_missing') &&
-  route.includes('alcor_waxcash_direct_pool_unusable') &&
-  route.includes('alcor_expected_direct_wax_pool_missing: alcorCandidates.length === 0') &&
+  route.includes('legacy_waxcash_direct_pool_missing') &&
+  route.includes('legacy_waxcash_direct_pool_unusable') &&
   route.includes('function ogDirectWaxTokenPrice') &&
+  route.includes('function ogV3DirectWaxTokenPrice') &&
+  route.includes('function hasPoolV3GetPriceProof') &&
   route.includes('waxReserve > selected.waxReserve') &&
-  route.includes('price_wax = wax_reserve / waxcash_reserve') &&
+  route.includes('price_wax = wax_reserve / token_reserve') &&
+  route.includes('price_wax = 1 / PoolV3.getPrice(pool)') &&
+  route.includes('v3_poolv3_getprice_proof_unavailable') &&
   route.includes('og_headline_passes_100_wax_threshold') &&
   route.includes('selected_largest_wax_reserve_pool') &&
   !route.includes('selected_' + 'deep' + 'est_wax_pool') &&
   route.includes('largest verified WAX reserve') &&
   !route.includes('deep' + 'est direct WAX pool') &&
   route.includes('Stored pair.price, TVL, market cap, volume, and multi-hop routes are not headline-price inputs') &&
+  !route.includes("headline_price_source_policy: 'alcor_" + "preferred_direct_wax'") &&
   !route.slice(route.indexOf('function waxcashHeadlinePrice'), route.indexOf('function buildWaxcashOgParityProof')).includes('pair.price'));
 ok('WAXCASH OG WOE parity proof exposes all exact pair rows with unavailable reason codes',
   route.includes('all_pairs: allPairs') &&
