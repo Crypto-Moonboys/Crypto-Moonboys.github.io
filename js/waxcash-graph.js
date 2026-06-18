@@ -79,10 +79,22 @@
     return out + (suffix || '');
   }
 
+  function formatUsd(value) {
+    var n = asNumber(value);
+    if (n == null) return '--';
+    var abs = Math.abs(n);
+    if (abs >= 1000) return '$' + n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    if (abs >= 1) return '$' + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+    if (abs >= 0.01) return '$' + n.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+    if (abs >= 0.0001) return '$' + n.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
+    if (abs >= 0.000001) return '$' + n.toFixed(8).replace(/0+$/, '').replace(/\.$/, '');
+    return '$' + n.toExponential(4).replace('e-', 'e-');
+  }
+
   function metricValue(node, edge) {
     var records = [node, node && node.token, edge];
     if (metric === 'volume') return firstNumber(records, ['volume_24h_wax']);
-    if (metric === 'price') return firstNumber(records, ['price_wax']);
+    if (metric === 'price') return firstNumber(records, ['price_usd']);
     if (metric === 'mcap') return firstNumber(records, ['market_cap_wax']);
     return firstNumber(records, ['liquidity_wax']);
   }
@@ -90,13 +102,15 @@
   function metricSuffix(node, edge) {
     var records = [node, node && node.token, edge];
     if (metric === 'volume') return firstNumber(records, ['volume_24h_wax']) != null ? ' WAX' : '';
-    if (metric === 'price') return firstNumber(records, ['price_wax']) != null ? ' WAX' : '';
+    if (metric === 'price') return '';
     if (metric === 'mcap') return firstNumber(records, ['market_cap_wax']) != null ? ' WAX' : '';
     return firstNumber(records, ['liquidity_wax']) != null ? ' WAX' : '';
   }
 
-  function logMetricSelection(node, value) {
-    console.log('waxcash metric', metric, node && node.symbol, value);
+  function metricLabel(node, edge) {
+    var records = [node, node && node.token, edge];
+    if (metric === 'price') return formatUsd(firstNumber(records, ['price_usd']));
+    return formatCompact(metricValue(node, edge), metricSuffix(node, edge));
   }
 
   function radiusFor(value) {
@@ -212,7 +226,6 @@
         return (firstNumber([b], ['liquidity_wax', 'liquidity_usd']) || 0) - (firstNumber([a], ['liquidity_wax', 'liquidity_usd']) || 0);
       })[0] || null;
       var value = metricValue(node, bestPair);
-      logMetricSelection(node, value);
       return Object.assign(node, {
         bestPair: bestPair,
         value: value,
@@ -281,7 +294,7 @@
       return '<button type="button" class="wxcash-node' + selected + '" data-key="' + escapeHtml(node.key) + '" style="left:' + (pos.x - r).toFixed(1) + 'px;top:' + (pos.y - r).toFixed(1) + 'px;width:' + (r * 2).toFixed(1) + 'px;height:' + (r * 2).toFixed(1) + 'px">' +
         '<strong>' + escapeHtml(node.symbol) + '</strong>' +
         '<span>' + escapeHtml(node.contract) + '</span>' +
-        '<em>' + escapeHtml(formatCompact(node.value, metricSuffix(node, node.bestPair))) + '</em>' +
+        '<em>' + escapeHtml(metricLabel(node, node.bestPair)) + '</em>' +
       '</button>';
     }).join('');
 
@@ -292,7 +305,7 @@
       '.wxcash-core{left:calc(50% - 95px);top:calc(50% - 95px);width:190px;height:190px;z-index:5;border-color:rgba(255,197,63,.8);box-shadow:0 0 54px rgba(255,197,63,.32),inset 0 0 32px rgba(255,197,63,.22)}' +
       '.wxcash-node{z-index:4;font:inherit;padding:8px;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.wxcash-node:hover,.wxcash-node.is-selected{transform:scale(1.08);border-color:#fff;box-shadow:0 0 46px rgba(0,255,209,.42),inset 0 0 30px rgba(0,255,209,.22)}' +
       '.wxcash-node strong,.wxcash-core strong{font-size:13px;color:#00ffd1}.wxcash-core strong{font-size:18px;color:#ffd75a}.wxcash-node span,.wxcash-core span{font-size:9px;color:rgba(255,255,255,.72)}.wxcash-node em,.wxcash-core em{font-size:10px;color:#fff;font-style:normal}' +
-      '.wxcash-panel{position:absolute;right:18px;bottom:18px;z-index:8;width:min(460px,calc(100% - 36px));max-height:58%;overflow:auto;padding:18px;border:1px solid rgba(0,255,209,.36);border-radius:18px;background:rgba(3,8,14,.92);box-shadow:0 18px 55px rgba(0,0,0,.45)}.wxcash-panel h3{margin:0 0 8px;color:#00ffd1}.wxcash-panel dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.wxcash-panel dt{color:rgba(255,255,255,.55)}.wxcash-panel dd{margin:0;text-align:right;color:#fff}.wxcash-pair-row{padding:8px 0;border-top:1px solid rgba(255,255,255,.08);font-size:11px}.wxcash-link{color:#00ffd1;text-decoration:none}' +
+      '.wxcash-panel{position:absolute;right:18px;bottom:18px;z-index:8;width:min(460px,calc(100% - 36px));max-height:58%;overflow:auto;padding:18px;border:1px solid rgba(0,255,209,.36);border-radius:18px;background:rgba(3,8,14,.92);box-shadow:0 18px 55px rgba(0,0,0,.45)}.wxcash-panel h3{margin:0 0 8px;color:#00ffd1}.wxcash-panel dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.wxcash-panel dt{color:rgba(255,255,255,.55)}.wxcash-panel dd{margin:0;text-align:right;color:#fff}.wxcash-panel dd small{display:block;color:rgba(255,255,255,.62);font-size:10px;margin-top:2px}.wxcash-pair-row{padding:8px 0;border-top:1px solid rgba(255,255,255,.08);font-size:11px}.wxcash-link{color:#00ffd1;text-decoration:none}' +
     '</style>' +
     '<svg class="wxcash-web" viewBox="0 0 ' + width + ' ' + height + '" preserveAspectRatio="none" aria-hidden="true">' + edges + '</svg>' +
     '<button type="button" class="wxcash-core" data-core="true"><strong>' + escapeHtml(state.root.symbol) + '</strong><span>' + escapeHtml(state.root.contract) + '</span><em>ROOT NODE</em></button>' +
@@ -309,6 +322,13 @@
 
   function renderWaxMetric(records, waxKey) {
     return formatCompact(firstNumber(records, [waxKey]), ' WAX');
+  }
+
+  function renderPriceMetric(records) {
+    var usd = firstNumber(records, ['price_usd']);
+    var wax = firstNumber(records, ['price_wax']);
+    var waxLine = wax != null ? '<small>' + escapeHtml(formatCompact(wax, ' WAX')) + '</small>' : '';
+    return escapeHtml(formatUsd(usd)) + waxLine;
   }
 
   function renderPanel() {
@@ -329,7 +349,7 @@
       '<h3>' + escapeHtml(node.symbol) + ' / WAXCASH</h3>' +
       '<p>' + escapeHtml(node.contract) + ' - ' + escapeHtml(node.pairs.length) + ' indexed WAXCASH pair(s)</p>' +
       '<dl>' +
-        '<dt>Price</dt><dd>' + escapeHtml(renderWaxMetric(records, 'price_wax')) + '</dd>' +
+        '<dt>Price</dt><dd>' + renderPriceMetric(records) + '</dd>' +
         '<dt>Liquidity</dt><dd>' + escapeHtml(renderWaxMetric(records, 'liquidity_wax')) + '</dd>' +
         '<dt>24h Volume</dt><dd>' + escapeHtml(renderWaxMetric(records, 'volume_24h_wax')) + '</dd>' +
         '<dt>Market Cap</dt><dd>' + escapeHtml(renderWaxMetric(records, 'market_cap_wax')) + '</dd>' +
@@ -357,9 +377,6 @@
     setStatus(false, 'CONNECTING');
     try {
       var graph = await fetchJson(WAXCASH_GRAPH_ENDPOINT);
-      console.log('waxcash graph', graph);
-      console.log('node count', graph.data?.nodes?.length);
-      console.log('edge count', graph.data?.edges?.length);
       var renderedGraph = buildGraph(graph);
       state.root = renderedGraph.root;
       state.edges = renderedGraph.edges;
@@ -381,7 +398,6 @@
       });
       state.nodes.forEach(function (node) {
         node.value = metricValue(node, node.bestPair || {});
-        logMetricSelection(node, node.value);
         node.radius = radiusFor(node.value);
       });
       render();
