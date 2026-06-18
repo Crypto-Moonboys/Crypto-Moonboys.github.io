@@ -4272,6 +4272,8 @@ function normalizeLiveTokenUpdate(row) {
     metric_status: proof.metric_status,
     metric_reason_codes: proof.metric_reason_codes,
     selected_metric_value: safeDecimal(selectedMetricValue),
+    graph_depth: asNumber(row.graph_depth),
+    visible_in_waxcash_bubbles: row.visible_in_waxcash_bubbles === true || row.visible_in_waxcash_bubbles === 1 || row.visible_in_waxcash_bubbles === '1',
     indexed_pair_count: asNumber(row.indexed_pair_count ?? row.pair_count),
     source_count: asNumber(row.source_count),
     source_keys: row.source_keys || '',
@@ -5397,6 +5399,7 @@ function enrichWaxcashGraphTokenRows(tokenRows = [], tokenMeta = new Map()) {
       source_count: sourceKeys.length,
       source_keys: sourceKeys.join(','),
       search_text: Array.from(meta.search_terms || []).join(' '),
+      visible_in_waxcash_bubbles: row.visible_in_waxcash_bubbles,
       updated_at: row.stats_updated_at || row.updated_at || meta.updated_at,
     };
   });
@@ -5471,6 +5474,7 @@ async function loadWaxcashGraphTokenRows(db, options = {}) {
     tokenRows: enrichWaxcashGraphTokenRows(tokenRows, tokenMeta).map((row) => ({
       ...row,
       graph_depth: tokenDepth.get(tokenKey(row.contract, row.symbol)) ?? null,
+      visible_in_waxcash_bubbles: (tokenDepth.get(tokenKey(row.contract, row.symbol)) ?? Number.POSITIVE_INFINITY) <= 1,
     })),
     pairRows,
     waxcashPairs: waxcashPairs || [],
@@ -6056,6 +6060,8 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
 
   metrics.contract = contract;
   metrics.symbol = symbol;
+  metrics.graph_depth = asNumber(metrics.graph_depth);
+  metrics.visible_in_waxcash_bubbles = metrics.visible_in_waxcash_bubbles === true || metrics.visible_in_waxcash_bubbles === 1 || metrics.visible_in_waxcash_bubbles === '1';
   metrics.total_supply = safeDecimal(totalSupply);
   metrics.circulating_supply = safeDecimal(circulatingSupply);
   metrics.selected_price_wax = safeDecimal(selectedPriceWax);

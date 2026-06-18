@@ -1912,6 +1912,12 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     const waxcashPairGraph = await __waxonedgeTestHooks.buildWaxcashPairGraph(graphDb);
     const graphTokenKeys = waxcashGraph.tokenRows.map((token) => `${token.contract}::${token.symbol}`);
     const graphPairIds = waxcashGraph.pairRows.map((pair) => pair.pair_id);
+    const visibleGraphKeys = waxcashGraph.tokenRows
+      .filter((token) => token.visible_in_waxcash_bubbles === true)
+      .map((token) => `${token.contract}::${token.symbol}`);
+    const hiddenGraphKeys = waxcashGraph.tokenRows
+      .filter((token) => token.visible_in_waxcash_bubbles === false)
+      .map((token) => `${token.contract}::${token.symbol}`);
   ok('WaxOnEdge main token graph is WAXCASH-centered and excludes unrelated WAX tokens',
     graphTokenKeys.includes('graffitiking::WAXCASH') &&
     graphTokenKeys.includes('wuffi::WUF') &&
@@ -1936,6 +1942,17 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       graphPairIds.includes('HELPWAX') &&
       waxcashGraph.graph_config.max_depth === 2,
       JSON.stringify({ graphTokenKeys, graphPairIds }));
+    ok('WaxOnEdge visible bubble scope is WAXCASH root plus direct WAXCASH-paired tokens only',
+      visibleGraphKeys.includes('graffitiking::WAXCASH') &&
+      visibleGraphKeys.includes('wuffi::WUF') &&
+      visibleGraphKeys.includes('abc.token::ABC') &&
+      visibleGraphKeys.includes('route.token::ROUTE') &&
+      visibleGraphKeys.includes('aigodtokenwx::AIGOD') &&
+      visibleGraphKeys.includes('eosio.token::WAX') &&
+      visibleGraphKeys.length === 6 &&
+      hiddenGraphKeys.includes('help.token::HELP') &&
+      !visibleGraphKeys.includes('help.token::HELP'),
+      JSON.stringify({ visibleGraphKeys, hiddenGraphKeys }));
     ok('WaxOnEdge recursive graph does not expand through unknown graph liquidity',
       __waxonedgeTestHooks.pairPassesGraphExpansionThreshold({
         source: 'swap.taco',
@@ -2187,6 +2204,12 @@ ok('VPS live indexer safely parses request path without trusting Host header',
   );
   const graphLiveBody = await graphLiveResponse.json();
   const graphLiveKeys = graphLiveBody.tokens.map((token) => token.token_key);
+  const visibleLiveKeys = graphLiveBody.tokens
+    .filter((token) => token.visible_in_waxcash_bubbles === true)
+    .map((token) => token.token_key);
+  const hiddenLiveKeys = graphLiveBody.tokens
+    .filter((token) => token.visible_in_waxcash_bubbles === false)
+    .map((token) => token.token_key);
   ok('/api/waxonedge/live default feed is pinned to WAXCASH graph, not broad WAX token ranking',
     graphLiveResponse.status === 200 &&
     graphLiveKeys[0] === 'graffitiking::WAXCASH' &&
@@ -2197,9 +2220,18 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     graphLiveKeys.includes('help.token::HELP') &&
     graphLiveKeys.includes('eosio.token::WAX') &&
     !graphLiveKeys.includes('qqq.core::QQQCORE'));
+  ok('/api/waxonedge/live marks visible bubbles separately from recursive valuation tokens',
+    visibleLiveKeys.length === 6 &&
+    visibleLiveKeys.includes('graffitiking::WAXCASH') &&
+    visibleLiveKeys.includes('route.token::ROUTE') &&
+    visibleLiveKeys.includes('eosio.token::WAX') &&
+    hiddenLiveKeys.includes('help.token::HELP') &&
+    graphLiveKeys.includes('help.token::HELP'),
+    JSON.stringify({ graphLiveKeys, visibleLiveKeys, hiddenLiveKeys }));
   const routedLiveToken = graphLiveBody.tokens.find((token) => token.token_key === 'route.token::ROUTE');
   ok('WAXCASH-paired token without a direct WAX pool remains visible and can use routed valuation',
     routedLiveToken &&
+    routedLiveToken.visible_in_waxcash_bubbles === true &&
     routedLiveToken.selected_price_confidence === 'good' &&
     Number(routedLiveToken.price_wax) > 0 &&
     Number(routedLiveToken.liquidity_wax) > 0 &&
@@ -2221,6 +2253,13 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     aigodLiveToken.suspicious_liquidity_pair_count == null &&
     aigodLiveToken.bubble_suspicious_liquidity_pair_count === 1 &&
     Number(aigodLiveToken.selected_metric_value) < Number(wufLiveToken.selected_metric_value));
+  ok('WaxOnEdge visible token liquidity uses full graph liquidity, not only direct WAXCASH pair liquidity',
+    wufLiveToken &&
+    wufLiveToken.visible_in_waxcash_bubbles === true &&
+    Number(wufLiveToken.graph_liquidity_wax) === Number(wufLiveToken.liquidity_wax) &&
+    Number(wufLiveToken.graph_liquidity_wax) > 0 &&
+    wufLiveToken.liquidity_confidence === 'good',
+    JSON.stringify(wufLiveToken));
   const searchedLiveResponse = await __waxonedgeTestHooks.handleLiveSnapshot(
     { DB: graphDb },
     new URLSearchParams('search=WUF'),

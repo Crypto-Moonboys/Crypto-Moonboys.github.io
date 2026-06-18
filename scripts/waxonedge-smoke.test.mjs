@@ -336,6 +336,12 @@ ok('waxonedge-bubbles-v2.js renders backend graph tokens with shared featured la
   !v2Js.includes("console.debug('missing_featured_token', featured.key)") &&
   !v2Js.includes('var TOP_LIMIT = 100') &&
   !v2Js.includes('base.slice(0, TOP_LIMIT)'));
+ok('waxonedge-bubbles-v2.js renders only backend-marked direct WAXCASH bubble tokens',
+  v2Js.includes('var visibleBubbleKeys = {};') &&
+  v2Js.includes('if (token.visible_in_waxcash_bubbles !== true) return;') &&
+  v2Js.includes('visibleBubbleKeys[key] = true;') &&
+  v2Js.includes('visibleInWaxcashBubbles: true') &&
+  v2Js.includes('if (!visibleBubbleKeys[key]) return;'));
 ok('waxonedge-bubbles-v2.js creates pair-only graph records without requiring allowlisted pair keys',
   v2Js.includes('function pairDerivedRecord(featured, key)') &&
   v2Js.includes('var featured = WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&
@@ -639,6 +645,9 @@ ok('waxonedge-bubbles-v2.js sizes liquidity from graph liquidity and TVL from bu
   v2Js.includes('record.bubbleTvlWax != null ? record.bubbleTvlWax : record.tvlWax') &&
   v2Js.includes("changed = assignLiveMetricNumber(record, 'graphLiquidityWax', update, ['graph_liquidity_wax'], nextLiquidityConfidence) || changed;") &&
   v2Js.includes("changed = assignLiveNumber(record, 'bubbleSuspiciousLiquidityPairCount', update.bubble_suspicious_liquidity_pair_count) || changed;"));
+ok('waxonedge-bubbles-v2.js does not size liquidity mode from direct WAXCASH pair fields',
+  !/function valueForMetric\(record, metric, timeframe\)[\s\S]*?if \(metric === 'liquidity'\)[\s\S]*?direct_waxcash_pair_liquidity_wax[\s\S]*?if \(metric === 'mcap'\)/.test(v2Js) &&
+  !/function valueForMetric\(record, metric, timeframe\)[\s\S]*?if \(metric === 'liquidity'\)[\s\S]*?directWaxcashPairLiquidityWax[\s\S]*?if \(metric === 'mcap'\)/.test(v2Js));
 ok('waxonedge-bubbles-v2.js footer uses clean gain/loss labels',
   v2Js.includes("'<span class=\"woe-ab-up\">Up '") &&
   v2Js.includes("'<span class=\"woe-ab-down\">Down '") &&
