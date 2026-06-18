@@ -1928,6 +1928,36 @@ ok('VPS live indexer safely parses request path without trusting Host header',
           };
         }
         if (sql.includes('FROM waxonedge_chart_candles')) {
+          if (params[0] === 'swap.alcor' && params[1] === '8388') {
+            return {
+              results: [{
+                source: 'swap.alcor',
+                pair_id: '8388',
+                interval: '1D',
+                bucket_time: '2026-06-14T00:00:00.000Z',
+                open: '0.009',
+                high: '0.011',
+                low: '0.008',
+                close: '0.01',
+                volume: '100',
+              }],
+            };
+          }
+          if (params[0] === 'swap.nefty' && params[1] === 'WAXWUFB') {
+            return {
+              results: [{
+                source: 'swap.nefty',
+                pair_id: 'WAXWUFB',
+                interval: '1D',
+                bucket_time: '2026-06-14T00:00:00.000Z',
+                open: '999',
+                high: '1000',
+                low: '998',
+                close: '999',
+                volume: '1',
+              }],
+            };
+          }
           return { results: [] };
         }
         if (sql.includes('FROM waxonedge_tokens')) {
@@ -1938,6 +1968,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
             results: [{
               contract: 'graffitiking',
               symbol: 'WAXCASH',
+              holder_count: '42',
               circulating_supply: '500000',
               volume_24h_wax: '100',
               volume_7d: '700',
@@ -2038,10 +2069,24 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id === '8388' &&
       !(('selected_' + 'deep' + 'est_wax_pool') in waxcashAnalytics) &&
       !(('selected_' + 'deep' + 'est_wax_pool') in (waxcashAnalytics.proof || {})));
+    ok('WAXCASH analytics chart source is the selected direct WAX proof pair',
+      waxcashAnalytics.chart?.chart_source?.source === waxcashAnalytics.selected_largest_wax_reserve_pool?.source &&
+      waxcashAnalytics.chart?.chart_source?.pair_id === waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id &&
+      waxcashAnalytics.chart?.chart_source?.pair_id === '8388' &&
+      waxcashAnalytics.chart?.chart_source?.pair_id !== 'WAXWUFB');
+    ok('WAXCASH analytics stats reuse indexed token detail supply and volume fields',
+      Number(waxcashAnalytics.stats.holder_count) === 42 &&
+      Number(waxcashAnalytics.stats.circulating_supply) === 500000 &&
+      Number(waxcashAnalytics.stats.total_supply) === 1000000 &&
+      Number(waxcashAnalytics.stats.volume_24h_wax) === 100 &&
+      Number(waxcashAnalytics.stats.volume_7d) === 700 &&
+      Number(waxcashAnalytics.stats.volume_30d) === 3000);
     ok('WAXCASH analytics market cap derives only from circulating supply times selected price',
       Number(waxcashAnalytics.stats.market_cap_wax) === 5000 &&
       Number(waxcashAnalytics.stats.market_cap_usd) === 30 &&
       waxcashAnalytics.stats.market_cap_basis === 'circulating_supply_x_selected_price' &&
+      Number(waxcashAnalytics.stats.fdv_wax) === 10000 &&
+      Number(waxcashAnalytics.stats.fdv_usd) === 60 &&
       Number(waxcashAnalytics.stats.market_cap_wax) !== Number(waxcashAnalytics.stats.liquidity_wax));
     const staleWufUpdate = __waxonedgeTestHooks.instantLiveTokenUpdatesForVerifiedPairEvent({
       changedPair: graphPairs.find((pair) => pair.pair_id === 'WAXCASHWUF'),
