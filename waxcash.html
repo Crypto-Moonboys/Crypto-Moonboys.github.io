@@ -3,64 +3,202 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="WAXCASH - live WAXCASH ecosystem graph powered by WaxOnEdge indexed market data.">
+  <meta name="description" content="WAXCASH analytics powered by indexed WaxOnEdge market data.">
   <meta name="robots" content="index, follow">
-  <meta property="og:title" content="WAXCASH Graph | Crypto Moonboys">
-  <meta property="og:description" content="Interactive WAXCASH spider-web graph showing tokens paired directly with WAXCASH across indexed WAX DEX sources.">
+  <meta property="og:title" content="WAXCASH Analytics | Crypto Moonboys">
+  <meta property="og:description" content="Read-only WAXCASH token stats, price proof, liquidity, volume, supply, market cap, pair table, and indexed chart data.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cryptomoonboys.com/waxcash.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
   <link rel="canonical" href="https://cryptomoonboys.com/waxcash.html">
-  <title>WAXCASH Graph | Crypto Moonboys</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
-  <link rel="stylesheet" href="/css/wiki.css">
-  <link rel="stylesheet" href="/css/retro-16bit-theme.css">
-  <link rel="stylesheet" href="/css/waxonedge.css?v=wxcash-20260618-graph1">
-  <link rel="stylesheet" href="/css/waxonedge-bubbles-v2.css?v=wxcash-20260618-graph1">
+  <title>WAXCASH Analytics | Crypto Moonboys</title>
   <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111820;
+      --panel: #171e27;
+      --panel-2: #202a35;
+      --line: #344252;
+      --text: #f3f7fb;
+      --muted: #94a3ad;
+      --cyan: #04f0e6;
+      --green: #00f59f;
+      --red: #ff3d67;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { padding: 24px; }
+    .wx-shell { max-width: 1840px; margin: 0 auto; }
+    .wx-title {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 18px;
+      margin-bottom: 18px;
+    }
+    h1, h2 { margin: 0; letter-spacing: 0; }
+    h1 { font-size: clamp(30px, 4vw, 56px); color: var(--cyan); line-height: 1; }
+    h2 { font-size: 20px; color: var(--cyan); }
+    .wx-subtitle { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
+    .wx-status { color: var(--muted); font-size: 14px; text-align: right; }
+    .wx-grid {
+      display: grid;
+      grid-template-columns: minmax(300px, 540px) minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .wx-panel {
+      background: linear-gradient(180deg, var(--panel), #121922);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .wx-panel-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+    .wx-stats { padding: 0; }
+    .wx-row {
+      display: grid;
+      grid-template-columns: minmax(130px, 1fr) minmax(150px, 1.6fr);
+      gap: 14px;
+      padding: 10px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.025);
+    }
+    .wx-row:nth-child(even) { background: rgba(255,255,255,0.075); }
+    .wx-label { font-weight: 700; color: var(--text); }
+    .wx-value { text-align: right; font-weight: 800; overflow-wrap: anywhere; }
+    .wx-value small { display: block; color: var(--green); font-size: 0.95em; margin-top: 2px; }
+    .wx-muted { color: var(--muted); }
+    .wx-positive { color: var(--green); }
+    .wx-negative { color: var(--red); }
+    .wx-chart {
+      min-height: 360px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .wx-chart svg {
+      width: 100%;
+      height: 300px;
+      background: #111722;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    .wx-chart-empty {
+      min-height: 300px;
+      display: grid;
+      place-items: center;
+      background: #111722;
+      border: 1px dashed var(--line);
+      border-radius: 6px;
+      color: var(--muted);
+      text-align: center;
+      padding: 20px;
+    }
+    .wx-table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 1180px; }
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      text-align: right;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: #121922;
+    }
+    th:first-child, td:first-child,
+    th:nth-child(2), td:nth-child(2) { text-align: left; }
+    tbody tr:nth-child(odd) { background: rgba(255,255,255,0.025); }
+    tbody tr:nth-child(even) { background: rgba(255,255,255,0.06); }
+    .wx-token { color: var(--muted); font-weight: 700; }
+    .wx-token strong { color: var(--text); display: block; }
+    .wx-source { color: var(--cyan); font-weight: 800; }
+    .wx-note { color: var(--muted); font-size: 13px; line-height: 1.45; }
+    @media (max-width: 980px) {
+      main { padding: 14px; }
+      .wx-title { display: block; }
+      .wx-status { text-align: left; margin-top: 10px; }
+      .wx-grid { grid-template-columns: 1fr; }
+      .wx-row { grid-template-columns: 1fr; }
+      .wx-value { text-align: left; }
+    }
+  </style>
 </head>
-<body class="page-waxonedge page-standard-shell woe-wide-mode woe-scanner-page woe-antbubbles-page page-waxcash-graph">
-
+<body>
 <main id="content" role="main">
-  <div class="woe-page woe-ab-shell" id="wxcash-home">
-    <header class="woe-og-bar woe-terminal-header woe-ab-topbar">
-      <a class="woe-og-brand" href="/waxcash.html" aria-label="WAXCASH graph home">
-        <span class="woe-og-brand-mark woe-ab-brand-mark" aria-hidden="true">●</span>
-        <div>
-          <h1 class="woe-page-title">WAX<span>CASH</span></h1>
-          <p class="woe-page-subtitle">WAXCASH liquidity spider-web — no swaps, no trading</p>
-        </div>
-      </a>
-      <div class="woe-ab-chain-badge">WAXCASH</div>
-      <nav class="woe-ab-segments" aria-label="Bubble metric">
-        <button class="is-active" type="button" data-wxcash-metric="liquidity">Liquidity</button>
-        <button type="button" data-wxcash-metric="volume">Volume</button>
-        <button type="button" data-wxcash-metric="price">Price</button>
-        <button type="button" data-wxcash-metric="mcap">Market Cap</button>
-      </nav>
-      <div class="woe-ab-search">
-        <input id="wxcash-search" type="search" placeholder="Search WAXCASH pairs..." autocomplete="off" aria-label="Search WAXCASH graph tokens">
+  <div class="wx-shell">
+    <header class="wx-title">
+      <div>
+        <h1>WAXCASH</h1>
+        <p class="wx-subtitle">WaxOnEdge-style indexed analytics for graffitiking::WAXCASH</p>
       </div>
-      <div class="woe-ab-live">
-        <span id="wxcash-live-dot" class="woe-ab-live-dot is-waiting"></span>
-        <span id="wxcash-live-text">CONNECTING</span>
-      </div>
-      <div id="wxcash-last-updated" class="woe-ab-updated">Waiting for sync</div>
-      <div class="woe-og-wax-block">
-        <span class="woe-og-block-label">WAX Price</span>
-        <strong id="wxcash-wax-price">$ --</strong>
-        <span id="wxcash-wax-price-meta">Indexed source only</span>
-      </div>
+      <div id="wx-status" class="wx-status">Loading indexed analytics...</div>
     </header>
 
-    <section class="woe-section woe-bubble-section woe-scanner-only woe-ab-board-section" aria-labelledby="wxcash-bubbles-heading">
-      <h2 id="wxcash-bubbles-heading" class="woe-ab-sr">WAXCASH token graph</h2>
-      <div id="wxcash-board" class="woe-bubble-board" aria-live="polite">
-        <p class="woe-loading">Loading WAXCASH graph...</p>
+    <section class="wx-grid" aria-label="WAXCASH analytics">
+      <article class="wx-panel">
+        <div class="wx-panel-header">
+          <h2>Token Stats</h2>
+          <span id="wx-price-source" class="wx-note">--</span>
+        </div>
+        <div id="wx-stats" class="wx-stats" aria-live="polite"></div>
+      </article>
+
+      <article class="wx-panel">
+        <div class="wx-panel-header">
+          <h2>Chart</h2>
+          <span id="wx-chart-source" class="wx-note">Indexed candles</span>
+        </div>
+        <div id="wx-chart" class="wx-chart" aria-live="polite"></div>
+      </article>
+    </section>
+
+    <section class="wx-panel" style="margin-top:18px" aria-labelledby="wx-pairs-heading">
+      <div class="wx-panel-header">
+        <h2 id="wx-pairs-heading">WAXCASH Pairs</h2>
+        <span id="wx-pair-summary" class="wx-note">--</span>
       </div>
-      <footer id="wxcash-stats" class="woe-ab-stats" aria-live="polite"></footer>
+      <div class="wx-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Pair</th>
+              <th>Source</th>
+              <th>Price</th>
+              <th>24h</th>
+              <th>Liquidity</th>
+              <th>Volume 24h</th>
+              <th>Reserves</th>
+              <th>Proof</th>
+            </tr>
+          </thead>
+          <tbody id="wx-pairs">
+            <tr><td colspan="9" class="wx-muted">Loading WAXCASH pairs...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
   </div>
 </main>
@@ -69,40 +207,23 @@
 <script data-cfasync="false">
 (function () {
   'use strict';
-
   var api = window.MOONBOYS_API || {};
   var info = api.getApiBaseInfo ? api.getApiBaseInfo({ allowProductionFallback: true }) : null;
   var baseUrl = String((info && info.url) || api.BASE_URL || api.PRODUCTION_BASE_URL || '').replace(/\/$/, '');
-  var waxonedgePath = /^\/api\/waxonedge(?:\/|\?|$)/;
-
   if (!baseUrl || !window.fetch) return;
-
-  function rewriteWaxOnEdgeUrl(input) {
-    var url = typeof input === 'string' ? input : (input && input.url);
-    if (!url || !waxonedgePath.test(url)) return input;
-    var nextUrl = baseUrl + url;
-    if (typeof input === 'string') return nextUrl;
-    try {
-      return new Request(nextUrl, input);
-    } catch (_) {
-      return nextUrl;
-    }
-  }
-
   var nativeFetch = window.fetch;
   window.fetch = function (input, init) {
-    return nativeFetch.call(this, rewriteWaxOnEdgeUrl(input), init);
+    var url = typeof input === 'string' ? input : (input && input.url);
+    if (url && /^\/api\/waxonedge(?:\/|\?|$)/.test(url)) {
+      var nextUrl = baseUrl + url;
+      if (typeof input === 'string') return nativeFetch.call(this, nextUrl, init);
+      try { return nativeFetch.call(this, new Request(nextUrl, input), init); }
+      catch (_) { return nativeFetch.call(this, nextUrl, init); }
+    }
+    return nativeFetch.call(this, input, init);
   };
 }());
 </script>
-<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<script data-cfasync="false" src="/js/identity-gate.js"></script>
-<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<script data-cfasync="false" src="/js/site-shell.js"></script>
-<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
-<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
-<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<script data-cfasync="false" src="/js/waxcash-graph.js?v=wxcash-20260618-graph5"></script>
-
+<script data-cfasync="false" src="/js/waxcash-analytics.js?v=wxcash-analytics-20260618-1"></script>
 </body>
 </html>
