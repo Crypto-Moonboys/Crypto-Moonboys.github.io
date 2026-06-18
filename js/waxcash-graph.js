@@ -121,10 +121,15 @@
   }
 
   function normalizeRoot(root) {
+    var contract = normalizeContract(root && (root.contract || root.token_contract)) || WAXCASH.contract;
+    var symbol = normalizeSymbol(root && (root.symbol || root.token_symbol)) || WAXCASH.symbol;
+    var key = safeText(root && (root.key || root.id || root.token_key)) || tokenKey(contract, symbol);
     return {
-      contract: normalizeContract(root && (root.contract || root.token_contract)) || WAXCASH.contract,
-      symbol: normalizeSymbol(root && (root.symbol || root.token_symbol)) || WAXCASH.symbol,
+      key: key,
+      contract: contract,
+      symbol: symbol,
       links: root && root.links && typeof root.links === 'object' ? root.links : {},
+      analytics_links: root && root.analytics_links && typeof root.analytics_links === 'object' ? root.analytics_links : {},
     };
   }
 
@@ -132,60 +137,49 @@
     var token = node && node.token && typeof node.token === 'object' ? node.token : node;
     var contract = normalizeContract(token && (token.contract || token.token_contract));
     var symbol = normalizeSymbol(token && (token.symbol || token.token_symbol));
-    var key = safeText(node && (node.key || node.id)) || tokenKey(contract, symbol);
+    var key = safeText(node && (node.key || node.id || node.token_key)) || tokenKey(contract, symbol);
     if (!key || !contract || !symbol) return null;
     return Object.assign({}, node, {
       key: key,
+      id: safeText(node && node.id) || key,
+      token_key: safeText(node && node.token_key) || key,
       contract: contract,
       symbol: symbol,
       token: token || {},
       links: node && node.links && typeof node.links === 'object' ? node.links : {},
+      analytics_links: node && node.analytics_links && typeof node.analytics_links === 'object' ? node.analytics_links : {},
       pairs: [],
     });
   }
 
-  function edgeOtherSide(edge, root) {
-    var rootKey = tokenKey(root && root.contract, root && root.symbol);
-    var sourceRef = tokenRefFromKey(edge.source || edge.from);
-    var targetRef = tokenRefFromKey(edge.target || edge.to);
-    var sideA = tokenKey(edge.token_a_contract || edge.from_contract || edge.source_contract || edge.base_contract, edge.token_a_symbol || edge.from_symbol || edge.source_symbol || edge.base_symbol);
-    var sideB = tokenKey(edge.token_b_contract || edge.to_contract || edge.target_contract || edge.quote_contract, edge.token_b_symbol || edge.to_symbol || edge.target_symbol || edge.quote_symbol);
-    var fromKey = sourceRef ? sourceRef.key : tokenKey(edge.from_contract || edge.source_contract, edge.from_symbol || edge.source_symbol);
-    var toKey = targetRef ? targetRef.key : tokenKey(edge.to_contract || edge.target_contract, edge.to_symbol || edge.target_symbol);
+  function edgeEndpointKey(edge, name) {
+    var value = edge && edge[name];
+    var ref = tokenRefFromKey(value);
+    return ref ? ref.key : safeText(value);
+  }
 
-    if (sideA === rootKey && sideB) {
-      return {
-        contract: normalizeContract(edge.token_b_contract || edge.to_contract || edge.target_contract || edge.quote_contract),
-        symbol: normalizeSymbol(edge.token_b_symbol || edge.to_symbol || edge.target_symbol || edge.quote_symbol),
-      };
-    }
-    if (sideB === rootKey && sideA) {
-      return {
-        contract: normalizeContract(edge.token_a_contract || edge.from_contract || edge.source_contract || edge.base_contract),
-        symbol: normalizeSymbol(edge.token_a_symbol || edge.from_symbol || edge.source_symbol || edge.base_symbol),
-      };
-    }
-    if (fromKey === rootKey && toKey) {
-      return targetRef || { contract: normalizeContract(edge.to_contract || edge.target_contract), symbol: normalizeSymbol(edge.to_symbol || edge.target_symbol) };
-    }
-    if (toKey === rootKey && fromKey) {
-      return sourceRef || { contract: normalizeContract(edge.from_contract || edge.source_contract), symbol: normalizeSymbol(edge.from_symbol || edge.source_symbol) };
-    }
-    return null;
+  function edgeNodeKey(edge, rootKey) {
+    var sourceKey = edgeEndpointKey(edge, 'source');
+    var targetKey = edgeEndpointKey(edge, 'target');
+    if (sourceKey === rootKey && targetKey) return targetKey;
+    if (targetKey === rootKey && sourceKey) return sourceKey;
+    return '';
   }
 
   function edgeLink(edge) {
-    if (!edge || !edge.links) return '';
-    return safeText(edge.links.analytics || edge.links.pair || edge.links.detail || edge.links.explorer);
+    if (!edge) return '';
+    var links = edge.analytics_links || edge.links || {};
+    return safeText(links.analytics || links.pair || links.detail || links.candles || links.explorer);
   }
 
   function tokenAnalyticsUrl(node) {
     if (node && node.links && node.links.analytics) return safeText(node.links.analytics);
+    if (node && node.analytics_links && node.analytics_links.detail) return safeText(node.analytics_links.detail);
     return '/analytics/token/?token=' + encodeURIComponent(node.symbol) + '&contract=' + encodeURIComponent(node.contract);
   }
 
   function buildGraph(payload) {
-    var data = payload && payload.data && (payload.data.root || payload.data.nodes || payload.data.edges) ? payload.data : (payload || {});
+    var data = payload && payload.data && typeof payload.data === 'object' ? payload.data : {};
     var root = normalizeRoot(data.root);
     var nodeMap = new Map();
     var rawNodes = Array.isArray(data.nodes) ? data.nodes : [];
@@ -198,24 +192,13 @@
     });
 
     var edges = rawEdges.map(function (rawEdge) {
-      var other = edgeOtherSide(rawEdge, root);
-      if (!other) return null;
-      var key = tokenKey(other.contract, other.symbol);
-      if (!key) return null;
-      if (!nodeMap.has(key)) {
-        nodeMap.set(key, {
-          key: key,
-          contract: other.contract,
-          symbol: other.symbol,
-          token: other,
-          links: {},
-          pairs: [],
-        });
-      }
+      var key = edgeNodeKey(rawEdge, root.key);
+      if (!key || !nodeMap.has(key)) return null;
       return Object.assign({}, rawEdge, {
         key: safeText(rawEdge.key || rawEdge.id || rawEdge.pair_id || rawEdge.pair_key) || key,
         nodeKey: key,
         links: rawEdge.links && typeof rawEdge.links === 'object' ? rawEdge.links : {},
+        analytics_links: rawEdge.analytics_links && typeof rawEdge.analytics_links === 'object' ? rawEdge.analytics_links : {},
       });
     }).filter(Boolean);
 
@@ -247,6 +230,7 @@
       edges: edges,
       nodes: nodes,
       summary: data.summary || {},
+      counts: data.counts || {},
       updated_at: data.updated_at || payload.updated_at || null,
       warnings: payload.warnings || [],
     };
@@ -335,7 +319,7 @@
     var token = node.token || {};
     var records = [node, token];
     var pairRows = node.pairs.slice(0, 12).map(function (pair) {
-      var label = '<strong>' + escapeHtml(pair.source || 'indexed') + '</strong> pair ' + escapeHtml(pair.pair_id || pair.id || pair.key || '--');
+      var label = '<strong>' + escapeHtml(pair.dex_source || pair.source || 'indexed') + '</strong> pair ' + escapeHtml(pair.pair_id || pair.id || pair.key || '--');
       var pairUrl = edgeLink(pair);
       if (pairUrl) {
         label = '<a class="wxcash-link" href="' + escapeHtml(pairUrl) + '">' + label + '</a>';
@@ -373,12 +357,15 @@
     if (!board) return;
     setStatus(false, 'CONNECTING');
     try {
-      var payload = await fetchJson(WAXCASH_GRAPH_ENDPOINT);
-      var graph = buildGraph(payload);
-      state.root = graph.root;
-      state.edges = graph.edges;
-      state.nodes = graph.nodes;
-      updateStats(graph);
+      var graph = await fetchJson(WAXCASH_GRAPH_ENDPOINT);
+      console.log('waxcash graph', graph);
+      console.log('node count', graph.data?.nodes?.length);
+      console.log('edge count', graph.data?.edges?.length);
+      var renderedGraph = buildGraph(graph);
+      state.root = renderedGraph.root;
+      state.edges = renderedGraph.edges;
+      state.nodes = renderedGraph.nodes;
+      updateStats(renderedGraph);
       setStatus(true, 'INDEXED');
       render();
     } catch (error) {
