@@ -5133,13 +5133,16 @@ ok('frontend does not label raw base volume as WAX',
   frontend.includes('rawVolume24: row.volume_24h') &&
   frontend.includes('volume24: asNum(row.volume_24h_wax)') &&
   frontend.includes("volume24Text: row.volume_24h_wax != null ? String(row.volume_24h_wax) + ' WAX' : UNAVAILABLE_TEXT"));
-ok('WAXCASH graph metric modes use backend WAX fields without USD fallbacks',
+ok('WAXCASH graph metric modes use USD price labels and WAX liquidity/volume',
   waxcashGraphFrontend.includes("if (metric === 'volume') return firstNumber(records, ['volume_24h_wax'])") &&
-  waxcashGraphFrontend.includes("if (metric === 'price') return firstNumber(records, ['price_wax'])") &&
+  waxcashGraphFrontend.includes("if (metric === 'price') return firstNumber(records, ['price_usd'])") &&
   waxcashGraphFrontend.includes("return firstNumber(records, ['liquidity_wax'])") &&
-  waxcashGraphFrontend.includes("renderWaxMetric(records, 'price_wax')") &&
+  waxcashGraphFrontend.includes("if (metric === 'price') return formatUsd(firstNumber(records, ['price_usd']))") &&
+  waxcashGraphFrontend.includes("var wax = firstNumber(records, ['price_wax'])") &&
+  waxcashGraphFrontend.includes("renderPriceMetric(records)") &&
   waxcashGraphFrontend.includes("renderWaxMetric(records, 'volume_24h_wax')") &&
-  waxcashGraphFrontend.includes("console.log('waxcash metric', metric, node && node.symbol, value)") &&
+  !waxcashGraphFrontend.includes('console.log(') &&
+  !waxcashGraphFrontend.includes("if (metric === 'price') return firstNumber(records, ['price_wax'])") &&
   !waxcashGraphFrontend.includes("if (metric === 'price') return firstNumber(records, ['selected_price_wax', 'selected_price_usd'])") &&
   !waxcashGraphFrontend.includes("if (metric === 'volume') return firstNumber(records, ['volume_24h_wax', 'volume_24h_usd'])") &&
   !waxcashGraphFrontend.includes("renderMetric(records, 'selected_price_wax', 'selected_price_usd')") &&
