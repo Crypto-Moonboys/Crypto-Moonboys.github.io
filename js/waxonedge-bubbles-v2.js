@@ -64,7 +64,7 @@
     pairs: [],
     visible: [],
     nodes: [],
-    metric: 'change',
+    metric: 'mcap',
     timeframe: '24h',
     query: '',
     hovered: null,
@@ -360,6 +360,16 @@
     if (metric === 'mcap') {
       if (record.marketCapConfidence !== 'good') return null;
       return record.marketCapUsd != null ? record.marketCapUsd : record.marketCapWax;
+    }
+    return null;
+  }
+
+  function verifiedBubbleSizeValue(record) {
+    if (record.marketCapConfidence === 'good' && record.marketCapWax != null) return record.marketCapWax;
+    if (record.liquidityConfidence === 'good') {
+      if (record.bubbleLiquidityWax != null) return record.bubbleLiquidityWax;
+      if ((record.bubbleSuspiciousLiquidityPairCount || 0) > 0) return null;
+      if (record.liquidityWax != null) return record.liquidityWax;
     }
     return null;
   }
@@ -674,9 +684,11 @@
     var count = Math.max(1, records.length);
     var mobile = width < 680;
     var metric = state.metric;
-    var metricWeighted = metric === 'tvl' || metric === 'liquidity' || metric === 'volume';
+    var metricWeighted = metric === 'tvl' || metric === 'liquidity' || metric === 'volume' || metric === 'mcap';
     var rawValues = records.map(function (record) {
-      var value = valueForMetric(record, metric, state.timeframe);
+      var value = metric === 'mcap'
+        ? verifiedBubbleSizeValue(record)
+        : valueForMetric(record, metric, state.timeframe);
       return value == null ? 0 : Math.abs(value);
     });
     var positives = rawValues.filter(function (value) { return value > 0; }).sort(function (a, b) { return a - b; });

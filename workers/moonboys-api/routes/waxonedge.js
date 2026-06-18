@@ -674,6 +674,7 @@ const CORE_DEX_ADAPTERS = Object.freeze([
     contract: 'swap.alcor',
     table: 'pools',
     normalizer: 'tokenA-tokenB',
+    pricingType: 'concentrated_liquidity',
     feeScale: 100,
     explorer: 'https://waxblock.io/account/swap.alcor',
   },
@@ -686,6 +687,7 @@ const CORE_DEX_ADAPTERS = Object.freeze([
     contract: 'swap.taco',
     table: 'pairs',
     normalizer: 'pool1-pool2',
+    pricingType: 'v2_constant_product',
     defaultFeeBps: 30,
     explorer: 'https://waxblock.io/account/swap.taco',
   },
@@ -698,6 +700,7 @@ const CORE_DEX_ADAPTERS = Object.freeze([
     contract: 'swap.nefty',
     table: 'pairs',
     normalizer: 'reserve0-reserve1',
+    pricingType: 'v2_constant_product',
     defaultFeeBps: 30,
     explorer: 'https://waxblock.io/account/swap.nefty',
   },
@@ -710,6 +713,7 @@ const CORE_DEX_ADAPTERS = Object.freeze([
     contract: 'swap.box',
     table: 'pairs',
     normalizer: 'box-pairs',
+    pricingType: 'v2_constant_product',
     defaultFeeBps: 30,
     explorer: 'https://waxblock.io/account/swap.box',
   },
@@ -722,6 +726,7 @@ const CORE_DEX_ADAPTERS = Object.freeze([
     contract: 'swap.adex',
     table: 'pools',
     normalizer: 'adex-pools',
+    pricingType: 'table_only_until_swap_verified',
     explorer: 'https://waxblock.io/account/swap.adex',
   },
   {
@@ -733,10 +738,63 @@ const CORE_DEX_ADAPTERS = Object.freeze([
     contract: 'dapp.fusion',
     table: 'global',
     normalizer: 'waxfusion-global',
+    pricingType: 'waxfusion_special',
     defaultFeeBps: 0,
     explorer: 'https://waxblock.io/account/dapp.fusion',
   },
 ]);
+
+const DEX_ADAPTER_CONTRACT = Object.freeze({
+  alcor_orderbook: {
+    source: 'alcor',
+    contract: 'alcordexmain',
+    table: 'markets',
+    live_actions: ['sellmatch', 'buymatch'],
+    pricing_type: 'orderbook_market_match',
+  },
+  alcor_concentrated_pool: {
+    source: 'swap.alcor',
+    contract: 'swap.alcor',
+    table: 'pools',
+    tables: ['pools', 'positions', 'ticks'],
+    live_actions: ['logswap', 'logmint', 'logburn', 'logcollect', 'logpool'],
+    pricing_type: 'concentrated_liquidity_not_v2_reserve_ratio',
+  },
+  taco: {
+    source: 'swap.taco',
+    contract: 'swap.taco',
+    table: 'pairs',
+    live_actions: ['exchangelog', 'liquiditylog', 'inittoken'],
+    pricing_type: 'v2_constant_product',
+  },
+  defibox: {
+    source: 'swap.box',
+    contract: 'swap.box',
+    table: 'pairs',
+    live_actions: ['swaplog', 'liquiditylog', 'createlog'],
+    pricing_type: 'v2_constant_product',
+  },
+  neftyblocks: {
+    source: 'swap.nefty',
+    contract: 'swap.nefty',
+    table: 'pairs',
+    live_actions: ['logswap', 'lognewpair'],
+    pricing_type: 'v2_constant_product',
+  },
+  adex: {
+    source: 'swap.adex',
+    contract: 'swap.adex',
+    table: 'pools',
+    listing_action: 'createpool',
+    pricing_type: 'table_only_until_swap_action_verified',
+  },
+  waxfusion: {
+    source: 'dapp.fusion',
+    contract: 'dapp.fusion',
+    table: 'global',
+    pricing_type: 'special_staking_rate_source_not_dex_pair',
+  },
+});
 
 const AMM_SWAP_ACTION_STREAMS = Object.freeze([
   {
@@ -1159,15 +1217,21 @@ function normalizePair(pair, tickerByMarketId, priceIndex, syncedAt) {
     const waxPrice = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
     if (waxPrice != null) liquidityUsd = safeDecimal(asNumber(liquidityWax) * waxPrice);
   }
-  const sanitizedLiquidity = sanitizeLiquidityValues(liquidityWax, liquidityUsd, priceIndex);
+  const orderbookPricing = priceAlcorOrderbook(tokenA, tokenB, price, priceIndex);
+  const sanitizedLiquidity = {
+    liquidityWax: orderbookPricing.liquidityWax ?? sanitizeLiquidityValues(liquidityWax, liquidityUsd, priceIndex).liquidityWax,
+    liquidityUsd: orderbookPricing.liquidityUsd ?? sanitizeLiquidityValues(liquidityWax, liquidityUsd, priceIndex).liquidityUsd,
+  };
 
   return {
     source: 'alcor',
     pair_id: pairId,
     token_a_contract: tokenA.contract || null,
     token_a_symbol: tokenA.symbol || null,
+    token_a_decimals: tokenA.decimals ?? null,
     token_b_contract: tokenB.contract || null,
     token_b_symbol: tokenB.symbol || null,
+    token_b_decimals: tokenB.decimals ?? null,
     price,
     change_24h: change24,
     volume_24h: volume24,
@@ -1177,8 +1241,13 @@ function normalizePair(pair, tickerByMarketId, priceIndex, syncedAt) {
     liquidity_usd: sanitizedLiquidity.liquidityUsd,
     reserve_a: reserveA,
     reserve_b: reserveB,
+    reserve_a_decimal: reserveA,
+    reserve_b_decimal: reserveB,
     fee_bps: safeDecimal(pair.fee),
     updated_at: syncedAt,
+    valuation_basis: orderbookPricing.valuation_basis,
+    proof_status: orderbookPricing.proof_status,
+    reason_codes: orderbookPricing.reason_codes,
   };
 }
 
@@ -1246,6 +1315,87 @@ function liquidityFromSides(tokenA, tokenB, priceIndex) {
     if (waxPrice != null) liquidityUsd = safeDecimal(asNumber(liquidityWax) * waxPrice);
   }
   return sanitizeLiquidityValues(liquidityWax, liquidityUsd, priceIndex);
+}
+
+function unavailablePricingProof(valuationBasis, reasonCodes = []) {
+  return {
+    price: null,
+    liquidityWax: null,
+    liquidityUsd: null,
+    valuation_basis: valuationBasis,
+    proof_status: 'unavailable',
+    reason_codes: reasonCodes.length ? reasonCodes : ['adapter_price_proof_unavailable'],
+  };
+}
+
+function reserveRatioPrice(tokenA, tokenB) {
+  if (tokenA?.amount == null || tokenA.amount <= 0 || tokenB?.amount == null || tokenB.amount <= 0) return null;
+  return tokenB.amount / tokenA.amount;
+}
+
+function priceAlcorOrderbook(tokenA, tokenB, price, priceIndex) {
+  const sourcePrice = asNumber(price);
+  const liquidity = liquidityFromSides(tokenA, tokenB, priceIndex);
+  return {
+    price: safeDecimal(sourcePrice),
+    liquidityWax: liquidity.liquidityWax,
+    liquidityUsd: liquidity.liquidityUsd,
+    valuation_basis: 'alcor_orderbook_market_match',
+    proof_status: sourcePrice != null && sourcePrice > 0 ? 'verified' : 'weak',
+    reason_codes: sourcePrice != null && sourcePrice > 0 ? [] : ['orderbook_match_price_unavailable'],
+  };
+}
+
+function priceAlcorConcentratedPool(tokenA, tokenB, priceIndex) {
+  const liquidity = liquidityFromSides(tokenA, tokenB, priceIndex);
+  return {
+    price: null,
+    liquidityWax: liquidity.liquidityWax,
+    liquidityUsd: liquidity.liquidityUsd,
+    valuation_basis: 'alcor_concentrated_liquidity_pool',
+    proof_status: 'weak',
+    reason_codes: ['concentrated_liquidity_price_requires_tick_sqrt_price_proof'],
+  };
+}
+
+function priceV2ConstantProductPool(tokenA, tokenB, priceIndex) {
+  const price = reserveRatioPrice(tokenA, tokenB);
+  if (price == null || price <= 0) {
+    return unavailablePricingProof('v2_constant_product_reserves', ['missing_or_zero_reserves']);
+  }
+  const liquidity = liquidityFromSides(tokenA, tokenB, priceIndex);
+  return {
+    price: safeDecimal(price),
+    liquidityWax: liquidity.liquidityWax,
+    liquidityUsd: liquidity.liquidityUsd,
+    valuation_basis: 'v2_constant_product_reserves',
+    proof_status: 'verified',
+    reason_codes: [],
+  };
+}
+
+function priceWaxFusionSpecial(tokenA, tokenB, explicitPrice, priceIndex) {
+  const price = asNumber(explicitPrice);
+  if (price == null || price <= 0) {
+    return unavailablePricingProof('waxfusion_special_staking_rate', ['waxfusion_staking_rate_unavailable']);
+  }
+  const liquidity = liquidityFromSides(tokenA, tokenB, priceIndex);
+  return {
+    price: safeDecimal(price),
+    liquidityWax: liquidity.liquidityWax,
+    liquidityUsd: liquidity.liquidityUsd,
+    valuation_basis: 'waxfusion_special_staking_rate',
+    proof_status: 'verified',
+    reason_codes: [],
+  };
+}
+
+function priceAdapterPair(adapter, tokenA, tokenB, priceIndex, explicitPrice = null) {
+  if (adapter.source === 'alcor') return priceAlcorOrderbook(tokenA, tokenB, explicitPrice, priceIndex);
+  if (adapter.pricingType === 'concentrated_liquidity') return priceAlcorConcentratedPool(tokenA, tokenB, priceIndex);
+  if (adapter.pricingType === 'v2_constant_product') return priceV2ConstantProductPool(tokenA, tokenB, priceIndex);
+  if (adapter.pricingType === 'waxfusion_special') return priceWaxFusionSpecial(tokenA, tokenB, explicitPrice, priceIndex);
+  return unavailablePricingProof(adapter.pricingType || 'unverified_adapter_pricing', ['adapter_swap_action_not_verified']);
 }
 
 function pairPriceWaxForToken(pair, contract, symbol) {
@@ -1447,8 +1597,8 @@ function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
   const pairId = canonicalAmmPairId(adapter.source, row) ||
     (adapter.normalizer === 'waxfusion-global' ? 'dapp.fusion' : null);
   if (!pairId) return null;
-  const price = explicitPrice || (tokenA.amount > 0 ? safeDecimal(tokenB.amount / tokenA.amount) : null);
-  const liquidity = liquidityFromSides(tokenA, tokenB, priceIndex);
+  const pricing = priceAdapterPair(adapter, tokenA, tokenB, priceIndex, explicitPrice);
+  const price = pricing.price;
   const volume24 = safeDecimal(row.volume_24h ?? row.volume24);
   const volume24Raw = asNumber(volume24);
   const normalizedVolume = normalizeTokenAVolume(volume24Raw, tokenA, tokenB, price, priceIndex);
@@ -1459,19 +1609,26 @@ function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
     pair_id: String(pairId),
     token_a_contract: tokenA.contract,
     token_a_symbol: tokenA.symbol,
+    token_a_decimals: tokenA.decimals ?? null,
     token_b_contract: tokenB.contract,
     token_b_symbol: tokenB.symbol,
+    token_b_decimals: tokenB.decimals ?? null,
     price,
     change_24h: null,
     volume_24h: volume24,
     volume_24h_wax: volume24Wax,
     volume_24h_usd: volume24Usd,
-    liquidity_wax: liquidity.liquidityWax,
-    liquidity_usd: liquidity.liquidityUsd,
+    liquidity_wax: pricing.proof_status === 'unavailable' ? null : pricing.liquidityWax,
+    liquidity_usd: pricing.proof_status === 'unavailable' ? null : pricing.liquidityUsd,
     reserve_a: safeDecimal(tokenA.amount),
     reserve_b: safeDecimal(tokenB.amount),
+    reserve_a_decimal: safeDecimal(tokenA.amount),
+    reserve_b_decimal: safeDecimal(tokenB.amount),
     fee_bps: adapterFeeBps(adapter, row),
     updated_at: syncedAt,
+    valuation_basis: pricing.valuation_basis,
+    proof_status: pricing.proof_status,
+    reason_codes: pricing.reason_codes,
   };
 }
 
@@ -4484,6 +4641,8 @@ function pairTokenSide(pair, contract, symbol) {
 }
 
 function pairEdgePrice(pair) {
+  const source = aggregateSourceKey(pair?.source);
+  if (source === 'swap.alcor') return null;
   const reserveA = asNumber(pair?.reserve_a);
   const reserveB = asNumber(pair?.reserve_b);
   if (reserveA != null && reserveA > 0 && reserveB != null && reserveB > 0) {
@@ -4704,6 +4863,109 @@ function volumeWaxFromIndexedPair(pair, priceIndex) {
     symbol: pair.token_b_symbol,
   };
   return asNumber(normalizeTokenAVolume(volume24Raw, tokenA, tokenB, pair.price, priceIndex).wax);
+}
+
+function pairPriceCandidateForToken(pair, contract, symbol, priceIndex, routeIndex = null) {
+  if (aggregateSourceKey(pair?.source) === 'swap.alcor') return null;
+  const side = pairTokenSide(pair, contract, symbol);
+  if (!side || !hasRealPairReserves(pair)) return null;
+  const reserveA = asNumber(pair.reserve_a);
+  const reserveB = asNumber(pair.reserve_b);
+  const reserveToken = side.side === 'a' ? reserveA : reserveB;
+  const reserveQuote = side.side === 'a' ? reserveB : reserveA;
+  if (reserveToken == null || reserveToken <= 0 || reserveQuote == null || reserveQuote <= 0) return null;
+  const quoteContract = side.side === 'a' ? pair.token_b_contract : pair.token_a_contract;
+  const quoteSymbol = side.side === 'a' ? pair.token_b_symbol : pair.token_a_symbol;
+  const quoteKey = tokenKey(quoteContract, quoteSymbol);
+  if (!quoteKey) return null;
+  const hopPriceFromTo = reserveQuote / reserveToken;
+  if (hopPriceFromTo == null || hopPriceFromTo <= 0 || !Number.isFinite(hopPriceFromTo)) return null;
+  const quoteRoute = isWaxToken(quoteContract, quoteSymbol)
+    ? { priceWax: 1, priceUsd: priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd }
+    : (routeIndex?.get(quoteKey) || priceIndex.get(quoteKey));
+  const quotePriceWax = asNumber(quoteRoute?.priceWax);
+  if (quotePriceWax == null || quotePriceWax <= 0) return null;
+  const priceWax = (reserveQuote * quotePriceWax) / reserveToken;
+  if (priceWax == null || priceWax <= 0 || !Number.isFinite(priceWax)) return null;
+  const valuation = ogPairReserveValuation(pair, contract, symbol, priceIndex, routeIndex);
+  const liquidityWax = asNumber(valuation.contribution_wax);
+  if (liquidityWax == null || liquidityWax < MIN_TRUSTED_WAX_LIQUIDITY) return null;
+  const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+  return {
+    pair,
+    priceWax,
+    priceUsd: waxUsd != null ? priceWax * waxUsd : null,
+    liquidityWax,
+    source: pair.source || null,
+    pair_id: pair.pair_id || null,
+    fromKey: tokenKey(contract, symbol),
+    quoteKey,
+    hopPriceFromTo,
+  };
+}
+
+function medianNumber(values) {
+  const sorted = values.filter((value) => value != null && Number.isFinite(value)).slice().sort((a, b) => a - b);
+  if (!sorted.length) return null;
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+function selectLiquidityWeightedMedianPrice(contract, symbol, pairRows, priceIndex, routeIndex = null) {
+  if (isWaxToken(contract, symbol)) {
+    const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
+    return {
+      priceWax: 1,
+      priceUsd: waxUsd ?? null,
+      source: 'eosio.token',
+      pair_id: null,
+      route_type: 'wax_self',
+      route_hops: [],
+      route_liquidity_score: Number.POSITIVE_INFINITY,
+    };
+  }
+  const candidates = (pairRows || [])
+    .map((pair) => pairPriceCandidateForToken(pair, contract, symbol, priceIndex, routeIndex))
+    .filter(Boolean);
+  if (!candidates.length) return null;
+  const median = medianNumber(candidates.map((candidate) => candidate.priceWax));
+  const filtered = median == null ? candidates : candidates.filter((candidate) =>
+    candidate.priceWax > 0 &&
+    candidate.priceWax >= median / 100 &&
+    candidate.priceWax <= median * 100
+  );
+  if (!filtered.length) return null;
+  const sorted = filtered.slice().sort((a, b) => a.priceWax - b.priceWax);
+  const totalWeight = sorted.reduce((sum, candidate) => sum + Math.max(0, candidate.liquidityWax || 0), 0);
+  const midpoint = totalWeight / 2;
+  let running = 0;
+  let selected = sorted[sorted.length - 1];
+  for (const candidate of sorted) {
+    running += Math.max(0, candidate.liquidityWax || 0);
+    if (running >= midpoint) {
+      selected = candidate;
+      break;
+    }
+  }
+  return {
+    priceWax: selected.priceWax,
+    priceUsd: selected.priceUsd,
+    source: selected.source,
+    pair_id: selected.pair_id,
+    route_type: 'liquidity_weighted_median_verified_pair',
+    route_hops: [{
+      source: selected.source,
+      pair_id: selected.pair_id,
+      from: selected.fromKey,
+      to: selected.quoteKey,
+      price_from_to: safeDecimal(selected.hopPriceFromTo),
+      selected_price_wax: safeDecimal(selected.priceWax),
+      reserve_from: null,
+      reserve_to: null,
+    }],
+    route_liquidity_score: selected.liquidityWax,
+    candidate_count: filtered.length,
+  };
 }
 
 function selectedPairLabel(pair) {
@@ -5365,7 +5627,7 @@ function deriveTokenPairMetrics(token, stats, pairRows, priceRows, graphPairRows
   let bubbleSuspiciousLiquidityPairCount = 0;
   const liquidityContributions = [];
   const routeIndex = options.routeIndex || buildOgWaxRouteGraph(graphPairRows, priceIndex);
-  const selected = selectOgWaxRoutePrice(tokenKey(contract, symbol), routeIndex);
+  const selected = selectLiquidityWeightedMedianPrice(contract, symbol, pairRows, priceIndex, routeIndex);
   const totalSupply = asNumber(token?.total_supply ?? token?.max_supply);
   const circulatingSupply = asNumber(metrics.circulating_supply ?? token?.circulating_supply);
   const selectedPriceWax = selected?.priceWax ?? null;
@@ -7531,6 +7793,13 @@ export const __waxonedgeTestHooks = {
   ogPairReserveValuation,
   buildOgWaxRouteGraph,
   selectOgWaxRoutePrice,
+  selectLiquidityWeightedMedianPrice,
+  priceAlcorOrderbook,
+  priceAlcorConcentratedPool,
+  priceV2ConstantProductPool,
+  priceWaxFusionSpecial,
+  priceAdapterPair,
+  DEX_ADAPTER_CONTRACT,
   buildWaxcashOgParityProof,
   waxcashHeadlinePrice,
   waxcashGraphPairValuation,
