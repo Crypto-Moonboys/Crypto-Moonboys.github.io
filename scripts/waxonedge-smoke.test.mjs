@@ -127,8 +127,11 @@ ok('waxcash analytics frontend calls the dedicated backend endpoint only',
   waxcashAnalyticsJs.includes("var ENDPOINT = '/api/waxonedge/waxcash-analytics'") &&
   !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-graph') &&
   !waxcashAnalyticsJs.includes('/api/waxonedge/bootstrap') &&
-  waxcashAnalyticsJs.includes('market_cap_wax') &&
-  waxcashAnalyticsJs.includes('selected_direct_wax_pair_liquidity_wax'));
+  waxcashAnalyticsJs.includes('sections.token_stats') &&
+  waxcashAnalyticsJs.includes('sections.price_proof') &&
+  waxcashAnalyticsJs.includes('sections.supply_proof') &&
+  waxcashAnalyticsJs.includes('sections.pair_table') &&
+  waxcashAnalyticsJs.includes('sections.chart'));
 
 const FORBIDDEN_LABELS = ['Swap', 'Add Liquidity', 'Remove Liquidity', 'Connect Wallet', 'Trade on Swap', 'Static read-only MVP'];
 for (const label of FORBIDDEN_LABELS) {
