@@ -59,6 +59,12 @@ const WAXONEDGE_AGGREGATE_SOURCES = Object.freeze([
   'swap.adex',
   'dapp.fusion',
 ]);
+const WAXCASH_TOKEN_REF = Object.freeze({
+  contract: 'graffitiking',
+  symbol: 'WAXCASH',
+  decimals: 8,
+  token_key: 'graffitiking::WAXCASH',
+});
 const TOKEN_PAIR_PAGE_LIMIT = 100;
 const TOKEN_PAIR_MAX_PAGE_LIMIT = 1000;
 const LARGE_SNAPSHOT_SOURCES = Object.freeze([
@@ -159,6 +165,10 @@ function supplySyncLimit(env) {
   const configured = asNumber(env?.WAXONEDGE_SUPPLY_SYNC_LIMIT);
   if (configured != null && configured > 0) return Math.max(1, Math.min(250, Math.floor(configured)));
   return waxonedgeFreeSafeMode(env) ? FREE_SAFE_SUPPLY_SYNC_LIMIT : DEFAULT_SUPPLY_SYNC_LIMIT;
+}
+
+function waxcashSupplyTarget() {
+  return { ...WAXCASH_TOKEN_REF };
 }
 
 function hyperionSkipWindowState(cursor, limit, maxWindow = HYPERION_SKIP_WINDOW_LIMIT) {
@@ -973,6 +983,12 @@ function parseAsset(asset) {
     symbol: normalizeSymbol(match[2]),
     precision: match[1].includes('.') ? match[1].split('.')[1].length : 0,
   };
+}
+
+function assetAmountDecimalString(asset) {
+  const raw = String(asset || '').trim();
+  const match = raw.match(/^([+-]?\d+(?:\.\d+)?)\s+[A-Z0-9._-]+$/i);
+  return safeDecimal(match ? match[1] : raw);
 }
 
 function decimalAmountFromValue(value, precision = null) {
@@ -4028,9 +4044,25 @@ async function syncSupplyInputs(env) {
        LIMIT ?`
     ).bind(limit).all().catch(() => ({ results: [] }));
   }
+  const targetRows = [];
+  const seenTargets = new Set();
+  const addTarget = (target) => {
+    const contract = normalizeContract(target?.contract);
+    const symbol = normalizeSymbol(target?.symbol);
+    const key = tokenKey(contract, symbol);
+    if (!key || seenTargets.has(key)) return;
+    seenTargets.add(key);
+    targetRows.push({ contract, symbol, token_key: key, decimals: asNumber(target?.decimals) });
+  };
+  addTarget(waxcashSupplyTarget());
+  for (const row of rows.results || []) addTarget(row);
   let updated = 0;
   let attempted = 0;
-  for (const row of rows.results || []) {
+  const rotatingRows = (rows.results || []).slice(0, limit);
+  const runRows = targetRows.filter((row) =>
+    row.token_key === WAXCASH_TOKEN_REF.token_key ||
+    rotatingRows.some((rotating) => tokenKey(rotating.contract, rotating.symbol) === row.token_key));
+  for (const row of runRows) {
     attempted += 1;
     try {
       const stats = await rpcPost('/v1/chain/get_currency_stats', {
@@ -4041,29 +4073,53 @@ async function syncSupplyInputs(env) {
       if (!stat) continue;
       const supply = parseAsset(stat.supply);
       const maxSupply = parseAsset(stat.max_supply);
+      if (supply.symbol && supply.symbol !== row.symbol) continue;
+      if (maxSupply.symbol && maxSupply.symbol !== row.symbol) continue;
+      const decimals = asNumber(row.decimals) ?? supply.precision ?? maxSupply.precision ?? null;
+      const totalSupplyDecimal = assetAmountDecimalString(stat.supply);
+      const maxSupplyDecimal = assetAmountDecimalString(stat.max_supply);
+      const syncedAt = nowIso();
       await env.DB.prepare(
-        `UPDATE waxonedge_tokens
-         SET total_supply = COALESCE(?, total_supply),
-             max_supply = COALESCE(?, max_supply),
-             updated_at = ?
-         WHERE contract = ? AND symbol = ?`
-      ).bind(safeDecimal(supply.amount), safeDecimal(maxSupply.amount), nowIso(), row.contract, row.symbol).run();
+        `INSERT INTO waxonedge_tokens
+         (contract, symbol, decimals, total_supply, max_supply, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?)
+         ON CONFLICT(contract, symbol) DO UPDATE SET
+           decimals = COALESCE(excluded.decimals, waxonedge_tokens.decimals),
+           total_supply = COALESCE(excluded.total_supply, waxonedge_tokens.total_supply),
+           max_supply = COALESCE(excluded.max_supply, waxonedge_tokens.max_supply),
+           updated_at = excluded.updated_at`
+      ).bind(
+        row.contract,
+        row.symbol,
+        decimals,
+        totalSupplyDecimal,
+        maxSupplyDecimal,
+        syncedAt,
+      ).run();
+      await env.DB.prepare(
+        `INSERT INTO waxonedge_token_stats
+         (contract, symbol, fdv_wax, fdv_usd, updated_at)
+         VALUES (?, ?, NULL, NULL, ?)
+         ON CONFLICT(contract, symbol) DO UPDATE SET
+           updated_at = excluded.updated_at`
+      ).bind(row.contract, row.symbol, syncedAt).run().catch(() => {});
       updated += 1;
     } catch {
       // Individual token supply lookups are best-effort and recorded in the run row.
     }
   }
-  const complete = totalPairTokens > 0 && totalPairTokens <= limit && attempted >= totalPairTokens ? 1 : 0;
-  const truncated = totalPairTokens > limit && attempted >= limit ? 1 : 0;
+  const totalSupplyTargets = Math.max(totalPairTokens, targetRows.length);
+  const complete = totalSupplyTargets > 0 && totalPairTokens <= limit && rotatingRows.length >= totalPairTokens ? 1 : 0;
+  const truncated = complete ? 0 : (totalPairTokens > limit && rotatingRows.length >= limit ? 1 : 0);
   const status = attempted <= 0 ? 'skipped' : (complete === 1 ? 'success' : 'partial');
   const error = attempted > 0 ? null : 'No indexed pair tokens found for supply sync';
-  const lastTokenKey = (rows.results || []).length ? rows.results[rows.results.length - 1].token_key : '';
-  const nextCursor = attempted > 0 && totalPairTokens > limit && attempted >= limit ? String(lastTokenKey || '') : '';
+  const lastTokenKey = rotatingRows.length ? rotatingRows[rotatingRows.length - 1].token_key : '';
+  const nextCursor = rotatingRows.length > 0 && totalPairTokens > limit && rotatingRows.length >= limit ? String(lastTokenKey || '') : '';
   await upsertSourceIndexState(env.DB, SUPPLY_SYNC_SOURCE, {
     sync_cycle_id: state?.sync_cycle_id || `supply-${new Date().toISOString().slice(0, 10)}`,
     cursor: nextCursor,
     page_count: (asNumber(state?.page_count) || 0) + (attempted > 0 ? 1 : 0),
-    row_count: totalPairTokens,
+    row_count: totalSupplyTargets,
     complete,
     truncated,
     status,
@@ -4076,6 +4132,8 @@ async function syncSupplyInputs(env) {
     updated,
     attempted,
     total_pair_tokens: totalPairTokens,
+    total_supply_targets: totalSupplyTargets,
+    waxcash_target_included: seenTargets.has(WAXCASH_TOKEN_REF.token_key),
     limit,
     cursor: nextCursor,
     complete,
@@ -6757,6 +6815,10 @@ async function buildWaxcashAnalytics(db) {
   const selectedDirectLiquidityUsd = selectedDirectLiquidityWax != null && waxUsd != null ? selectedDirectLiquidityWax * waxUsd : null;
   const selectedPriceLive = selectedPriceWax != null;
   const marketCapLive = marketCapWax != null || marketCapUsd != null;
+  const totalSupplyLive = totalSupply != null;
+  const circulatingSupplyLive = circulatingSupply != null;
+  const holderCountLive = asNumber(detailStats.holder_count) != null;
+  const fdvLive = fdvWax != null || fdvUsd != null;
   const metricStatus = detailStats.metric_status || {};
   return {
     token: {
@@ -6816,10 +6878,28 @@ async function buildWaxcashAnalytics(db) {
           source: selectedPriceLive ? 'og_woe_direct_wax_pool' : null,
           reason: selectedPriceLive ? null : 'Requires verified direct WAX/WAXCASH pool proof',
         },
-        holder_count: metricStatus.holder_count || {
-          live: asNumber(detailStats.holder_count) != null,
-          source: asNumber(detailStats.holder_count) != null ? 'indexed_snapshot' : null,
-          reason: asNumber(detailStats.holder_count) != null ? null : REQUIRES_INDEXED_BACKEND,
+        holder_count: holderCountLive
+          ? (metricStatus.holder_count || {
+            live: true,
+            source: 'indexed_snapshot',
+            reason: null,
+          })
+          : {
+            live: false,
+            source: null,
+            reason: 'Holder count requires a verified indexed holder source; no fake holder count is emitted',
+          },
+        total_supply: {
+          live: totalSupplyLive,
+          source: totalSupplyLive ? 'wax_rpc_get_currency_stats' : null,
+          basis: totalSupplyLive ? 'graffitiking::WAXCASH stat.supply' : null,
+          reason: totalSupplyLive ? null : 'Requires WAX RPC get_currency_stats proof for graffitiking::WAXCASH',
+        },
+        circulating_supply: {
+          live: circulatingSupplyLive,
+          source: circulatingSupplyLive ? 'indexed_circulating_supply' : null,
+          basis: circulatingSupplyLive ? 'indexed_circulating_supply' : null,
+          reason: circulatingSupplyLive ? null : 'Circulating supply is not inferred from total supply',
         },
         volume_24h: metricStatus.volume_24h || {
           live: volume24Wax != null || volume24Usd != null,
@@ -6839,7 +6919,14 @@ async function buildWaxcashAnalytics(db) {
         market_cap: {
           live: marketCapLive,
           basis: marketCapLive ? 'circulating_supply_x_selected_price' : null,
-          reason: marketCapLive ? null : (circulatingSupply == null ? 'Requires circulating supply and selected price' : 'Requires selected price'),
+          formula: 'circulating_supply x selected_price',
+          reason: marketCapLive ? null : (circulatingSupply == null ? 'Requires proven circulating supply and selected price; total supply is not used as a fallback' : 'Requires selected price'),
+        },
+        fdv: {
+          live: fdvLive,
+          basis: fdvLive ? 'total_supply_x_selected_price' : null,
+          formula: 'total_supply x selected_price',
+          reason: fdvLive ? null : (totalSupply == null ? 'Requires WAX RPC total supply and selected price' : 'Requires selected price'),
         },
       },
     },
@@ -8580,6 +8667,8 @@ export const __waxonedgeTestHooks = {
   instantLiveTokenUpdatesForVerifiedPairEvent,
   buildInstantLiveTokenUpdatesForPair,
   pairPassesGraphExpansionThreshold,
+  syncSupplyInputs,
+  waxcashSupplyTarget,
   loadWaxcashGraphTokenRows,
   buildWaxcashPairGraph,
   sortWaxcashGraphTokens,
