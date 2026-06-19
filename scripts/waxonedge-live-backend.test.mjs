@@ -6575,7 +6575,9 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   waxcashAnalyticsFrontend.includes('sections.chart_external') &&
   waxcashAnalyticsFrontend.includes('renderLightweightCandles(payload, feed)') &&
   waxcashAnalyticsFrontend.includes('tradingViewFeedCandles(feed)') &&
-  waxcashAnalyticsFrontend.includes("'/api/waxonedge/waxcash-analytics/chart-feed?resolution=1D'") &&
+  waxcashAnalyticsFrontend.includes('return chart.feed_url || null') &&
+  waxcashAnalyticsFrontend.includes('backend did not provide sections.chart.feed_url') &&
+  !waxcashAnalyticsFrontend.includes("|| '/api/waxonedge/waxcash-analytics/chart-feed?resolution=1D'") &&
   waxcashAnalyticsFrontend.includes('loadChartFeed(state.payload)') &&
   waxcashAnalyticsFrontend.includes('window.LightweightCharts') &&
   waxcashAnalyticsFrontend.includes('chartCandles(feed)') &&

@@ -355,7 +355,7 @@
   function chartFeedUrl(payload) {
     var sections = (payload || {}).sections || {};
     var chart = sections.chart || {};
-    return chart.feed_url || '/api/waxonedge/waxcash-analytics/chart-feed?resolution=1D';
+    return chart.feed_url || null;
   }
 
   function renderChart(payload, feed) {
@@ -364,7 +364,16 @@
   }
 
   function loadChartFeed(payload) {
-    return fetch(chartFeedUrl(payload), { headers: { Accept: 'application/json' } })
+    var feedUrl = chartFeedUrl(payload);
+    if (!feedUrl) {
+      state.chartFeed = null;
+      var host = $('wx-chart');
+      if (host) {
+        host.innerHTML = '<div class="wx-chart-empty">Chart feed unavailable: backend did not provide sections.chart.feed_url.</div>';
+      }
+      return Promise.resolve(false);
+    }
+    return fetch(feedUrl, { headers: { Accept: 'application/json' } })
       .then(function (response) {
         if (!response.ok) throw new Error('HTTP ' + response.status);
         return response.json();
