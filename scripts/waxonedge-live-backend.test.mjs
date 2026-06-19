@@ -58,7 +58,9 @@ const frontendBubbles = read('js/waxonedge-bubbles-v2.js');
 const waxcashGraphFrontend = read('js/waxcash-graph.js');
 const featuredTokens = read('js/waxonedge-featured-tokens.js');
 const frontendSources = read('js/waxonedge-sources.js');
+const waxcashAnalyticsFrontend = read('js/waxcash-analytics.js');
 const html = read('waxonedge.html');
+const waxcashHtml = read('waxcash.html');
 const tokenHtml = read('analytics/token/index.html');
 const { __waxonedgeTestHooks } = await import(pathToFileURL(path.join(ROOT, 'workers/moonboys-api/routes/waxonedge.js')).href);
 const liveIndexer = await import(pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/src/index.mjs')).href);
@@ -2109,10 +2111,76 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.chart?.candle_normalization?.inverted_count === 1 &&
       !waxcashChartCloses.some((value) => value > 1),
       JSON.stringify({ waxcashChartCloses, normalization: waxcashAnalytics.chart?.candle_normalization }));
-    ok('WAXCASH analytics stats reuse indexed token detail supply and volume fields',
+    ok('/waxcash-analytics returns display-ready backend sections',
+      waxcashAnalytics.sections?.token_stats?.rows?.length >= 12 &&
+      waxcashAnalytics.sections?.supply_proof &&
+      waxcashAnalytics.sections?.price_proof &&
+      waxcashAnalytics.sections?.pair_table?.rows?.length === waxcashAnalytics.pairs.length &&
+      waxcashAnalytics.sections?.chart?.price_unit === 'WAX_per_WAXCASH',
+      JSON.stringify(waxcashAnalytics.sections));
+    ok('WAXCASH analytics pair table orders selected WAXCASH/WAX proof pair first',
+      waxcashAnalytics.sections?.pair_table?.rows?.[0]?.is_selected_price_pair === true &&
+      waxcashAnalytics.sections?.pair_table?.rows?.[0]?.pair_id === 'WAXCASHWAXLEGACY');
+    ok('WAXCASH analytics unvalued pair rows carry explicit valuation reasons',
+      waxcashAnalytics.sections?.pair_table?.rows?.some((row) =>
+        row.status === 'unavailable' &&
+        row.reason &&
+        row.proof_label &&
+        row.no_fake_value === true),
+      JSON.stringify(waxcashAnalytics.sections?.pair_table?.rows));
+    const liveSupplyWrites = [];
+    const liveSupplyDb = {
+      prepare(sql) {
+        const base = waxcashAnalyticsDb.prepare(sql);
+        return {
+          bind(...params) {
+            const bound = base.bind(...params);
+            return {
+              async all() {
+                return bound.all();
+              },
+              async first() {
+                return bound.first();
+              },
+              async run() {
+                liveSupplyWrites.push({ sql, params });
+                return { success: true };
+              },
+            };
+          },
+        };
+      },
+    };
+    const liveSupplyOriginalFetch = globalThis.fetch;
+    globalThis.fetch = async (_url, init) => {
+      const body = JSON.parse(init?.body || '{}');
+      if (body.code === 'graffitiking' && body.symbol === 'WAXCASH') {
+        return new Response(JSON.stringify({
+          WAXCASH: {
+            supply: '2000000.12345678 WAXCASH',
+            max_supply: '2000000.12345678 WAXCASH',
+          },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+      return new Response(JSON.stringify({}), { status: 200, headers: { 'content-type': 'application/json' } });
+    };
+    let liveSupplyAnalytics = null;
+    try {
+      liveSupplyAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(liveSupplyDb);
+    } finally {
+      globalThis.fetch = liveSupplyOriginalFetch;
+    }
+    ok('WAXCASH analytics performs live get_currency_stats supply proof and calculates FDV immediately',
+      liveSupplyAnalytics.sections?.supply_proof?.source === 'wax_rpc_get_currency_stats' &&
+      liveSupplyAnalytics.sections?.supply_proof?.total_supply === '2000000.12345678' &&
+      Number(liveSupplyAnalytics.stats.total_supply) === 2000000.12345678 &&
+      almostEqual(liveSupplyAnalytics.stats.fdv_wax, 60000.0037037034, 1e-7) &&
+      liveSupplyWrites.some((write) => write.sql.includes('INSERT INTO waxonedge_tokens') && write.params[0] === 'graffitiking' && write.params[1] === 'WAXCASH'),
+      JSON.stringify({ supply_proof: liveSupplyAnalytics.sections?.supply_proof, stats: liveSupplyAnalytics.stats, liveSupplyWrites }));
+    ok('WAXCASH analytics stats reuse indexed detail volume fields but not cached total supply',
       Number(waxcashAnalytics.stats.holder_count) === 42 &&
       Number(waxcashAnalytics.stats.circulating_supply) === 500000 &&
-      Number(waxcashAnalytics.stats.total_supply) === 1000000 &&
+      waxcashAnalytics.stats.total_supply === null &&
       Number(waxcashAnalytics.stats.volume_24h_wax) === 175 &&
       Number(waxcashAnalytics.stats.volume_7d) === 700 &&
       Number(waxcashAnalytics.stats.volume_30d) === 3000,
@@ -2128,8 +2196,8 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       Number(waxcashAnalytics.stats.market_cap_wax) === 15000 &&
       almostEqual(waxcashAnalytics.stats.market_cap_usd, 90) &&
       waxcashAnalytics.stats.market_cap_basis === 'circulating_supply_x_selected_price' &&
-      Number(waxcashAnalytics.stats.fdv_wax) === 30000 &&
-      almostEqual(waxcashAnalytics.stats.fdv_usd, 180) &&
+      waxcashAnalytics.stats.fdv_wax === null &&
+      waxcashAnalytics.stats.fdv_usd === null &&
       Number(waxcashAnalytics.stats.liquidity_wax) === 3000 &&
       Number(waxcashAnalytics.stats.cumulated_pair_liquidity_wax || 0) === 0 &&
       Number(waxcashAnalytics.stats.market_cap_wax) !== Number(waxcashAnalytics.stats.liquidity_wax),
@@ -2210,28 +2278,32 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       },
     };
     const supplyOnlyWaxcashAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(supplyOnlyWaxcashAnalyticsDb);
-    ok('WAXCASH analytics with real total supply and selected price returns FDV without market-cap fallback',
-      Number(supplyOnlyWaxcashAnalytics.stats.total_supply) === 1000000 &&
-      Number(supplyOnlyWaxcashAnalytics.stats.fdv_wax) === 30000 &&
-      almostEqual(supplyOnlyWaxcashAnalytics.stats.fdv_usd, 180) &&
+    ok('WAXCASH analytics does not use D1 cached total supply or FDV when live RPC proof fails',
+      supplyOnlyWaxcashAnalytics.stats.total_supply === null &&
+      supplyOnlyWaxcashAnalytics.stats.fdv_wax === null &&
+      supplyOnlyWaxcashAnalytics.stats.fdv_usd === null &&
       supplyOnlyWaxcashAnalytics.stats.circulating_supply === null &&
       supplyOnlyWaxcashAnalytics.stats.market_cap_wax === null &&
       supplyOnlyWaxcashAnalytics.stats.market_cap_usd === null &&
       Number(supplyOnlyWaxcashAnalytics.stats.liquidity_wax) === 3000 &&
-      Number(supplyOnlyWaxcashAnalytics.stats.fdv_wax) !== Number(supplyOnlyWaxcashAnalytics.stats.liquidity_wax) &&
       supplyOnlyWaxcashAnalytics.stats.cumulated_pair_liquidity_wax === null &&
-      supplyOnlyWaxcashAnalytics.stats.metric_status.total_supply.live === true &&
-      supplyOnlyWaxcashAnalytics.stats.metric_status.total_supply.source === 'wax_rpc_get_currency_stats' &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.total_supply.live === false &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.total_supply.source === null &&
+      supplyOnlyWaxcashAnalytics.sections?.supply_proof?.live === false &&
+      supplyOnlyWaxcashAnalytics.sections?.supply_proof?.source === null &&
+      supplyOnlyWaxcashAnalytics.sections?.supply_proof?.total_supply === null &&
+      supplyOnlyWaxcashAnalytics.sections?.supply_proof?.cached_total_supply_diagnostic === '1000000' &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.circulating_supply.live === false &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.circulating_supply.reason.includes('not inferred') &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.market_cap.reason.includes('not used as a fallback') &&
-      supplyOnlyWaxcashAnalytics.stats.metric_status.fdv.live === true,
+      supplyOnlyWaxcashAnalytics.stats.metric_status.fdv.live === false,
       JSON.stringify({
         total_supply: supplyOnlyWaxcashAnalytics.stats.total_supply,
         circulating_supply: supplyOnlyWaxcashAnalytics.stats.circulating_supply,
         fdv_wax: supplyOnlyWaxcashAnalytics.stats.fdv_wax,
         market_cap_wax: supplyOnlyWaxcashAnalytics.stats.market_cap_wax,
         liquidity_wax: supplyOnlyWaxcashAnalytics.stats.liquidity_wax,
+        supply_proof: supplyOnlyWaxcashAnalytics.sections?.supply_proof,
         metric_status: supplyOnlyWaxcashAnalytics.stats.metric_status,
       }));
     ok('WAXCASH analytics holder count remains unavailable with explicit reason when no holder source exists',
@@ -2303,12 +2375,12 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       },
     };
     const failedSupplyWaxcashAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(failedSupplyWaxcashAnalyticsDb);
-    ok('WAXCASH analytics total-supply metric status exposes supply sync failure without FDV or market-cap fallback',
+    ok('WAXCASH analytics total-supply metric status exposes current RPC failure without FDV or market-cap fallback',
       failedSupplyWaxcashAnalytics.stats.total_supply === null &&
       failedSupplyWaxcashAnalytics.stats.fdv_wax === null &&
       failedSupplyWaxcashAnalytics.stats.market_cap_wax === null &&
       failedSupplyWaxcashAnalytics.stats.metric_status.total_supply.live === false &&
-      failedSupplyWaxcashAnalytics.stats.metric_status.total_supply.reason.includes('get_currency_stats_missing_WAXCASH') &&
+      failedSupplyWaxcashAnalytics.stats.metric_status.total_supply.reason.includes('WAX RPC get_currency_stats failed') &&
       failedSupplyWaxcashAnalytics.supply_sync_status.waxcash.last_error.includes('get_currency_stats_missing_WAXCASH'),
       JSON.stringify({
         stats: failedSupplyWaxcashAnalytics.stats,
@@ -6204,6 +6276,19 @@ ok('frontend does not label raw base volume as WAX',
   frontend.includes('rawVolume24: row.volume_24h') &&
   frontend.includes('volume24: asNum(row.volume_24h_wax)') &&
   frontend.includes("volume24Text: row.volume_24h_wax != null ? String(row.volume_24h_wax) + ' WAX' : UNAVAILABLE_TEXT"));
+ok('/waxcash.html pair table no longer exposes reserve ratio as a visible headline column',
+  !waxcashHtml.includes('<th>Pair Reserve Ratio</th>') &&
+  !waxcashHtml.includes('<th>Relative Pair Price</th>') &&
+  waxcashHtml.includes('<th>Status</th>') &&
+  waxcashHtml.includes('<td colspan="8"'));
+ok('WAXCASH analytics frontend renders backend sections instead of raw proof-row guesses',
+  waxcashAnalyticsFrontend.includes('payload.sections || {}') &&
+  waxcashAnalyticsFrontend.includes('sections.token_stats') &&
+  waxcashAnalyticsFrontend.includes('sections.pair_table') &&
+  waxcashAnalyticsFrontend.includes('sections.chart') &&
+  waxcashAnalyticsFrontend.includes('Unavailable') &&
+  waxcashAnalyticsFrontend.includes('row.reason') &&
+  !waxcashAnalyticsFrontend.includes('pair_price_relative_to_waxcash'));
 ok('WAXCASH graph metric modes use USD price labels and WAX liquidity/volume',
   waxcashGraphFrontend.includes("if (metric === 'volume') return firstNumber(records, ['volume_24h_wax'])") &&
   waxcashGraphFrontend.includes("if (metric === 'price') return firstNumber(records, ['price_usd'])") &&

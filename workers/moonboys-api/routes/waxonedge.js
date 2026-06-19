@@ -6911,6 +6911,304 @@ async function getWaxcashSupplySyncStatus(db) {
   };
 }
 
+function waxcashSupplyUnavailableReason(error) {
+  const message = error?.message || String(error || '');
+  return message
+    ? `WAX RPC get_currency_stats failed for graffitiking::WAXCASH: ${message}`
+    : 'WAX RPC get_currency_stats did not return graffitiking::WAXCASH';
+}
+
+async function fetchWaxcashLiveSupplyProof(db, cachedToken = {}) {
+  const cachedTotalSupply = assetAmountDecimalString(cachedToken?.total_supply);
+  const cachedMaxSupply = assetAmountDecimalString(cachedToken?.max_supply);
+  try {
+    const stats = await rpcPost('/v1/chain/get_currency_stats', {
+      code: WAXCASH_CONTRACT,
+      symbol: WAXCASH_SYMBOL,
+    });
+    const stat = stats?.[WAXCASH_SYMBOL] || null;
+    if (!stat) throw new Error('WAX RPC get_currency_stats did not return graffitiking::WAXCASH');
+    const supply = parseAsset(stat.supply);
+    const maxSupply = parseAsset(stat.max_supply);
+    if (supply.symbol && supply.symbol !== WAXCASH_SYMBOL) throw new Error(`WAX RPC supply symbol mismatch: ${supply.symbol}`);
+    if (maxSupply.symbol && maxSupply.symbol !== WAXCASH_SYMBOL) throw new Error(`WAX RPC max_supply symbol mismatch: ${maxSupply.symbol}`);
+    const totalSupply = assetAmountDecimalString(stat.supply);
+    const maxSupplyDecimal = assetAmountDecimalString(stat.max_supply);
+    if (totalSupply == null) throw new Error('WAX RPC supply amount parse failed for graffitiking::WAXCASH');
+    const decimals = asNumber(supply.precision) ?? asNumber(maxSupply.precision) ?? WAXCASH_TOKEN_REF.decimals;
+    if (decimals !== WAXCASH_TOKEN_REF.decimals) throw new Error(`WAXCASH precision mismatch: expected 8, got ${decimals}`);
+    const syncedAt = nowIso();
+    await db.prepare(
+      `INSERT INTO waxonedge_tokens
+       (contract, symbol, decimals, total_supply, max_supply, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON CONFLICT(contract, symbol) DO UPDATE SET
+         decimals = COALESCE(excluded.decimals, waxonedge_tokens.decimals),
+         total_supply = COALESCE(excluded.total_supply, waxonedge_tokens.total_supply),
+         max_supply = COALESCE(excluded.max_supply, waxonedge_tokens.max_supply),
+         updated_at = excluded.updated_at`
+    ).bind(WAXCASH_CONTRACT, WAXCASH_SYMBOL, decimals, totalSupply, maxSupplyDecimal, syncedAt).run().catch(() => {});
+    await db.prepare(
+      `INSERT INTO waxonedge_token_stats
+       (contract, symbol, fdv_wax, fdv_usd, updated_at)
+       VALUES (?, ?, NULL, NULL, ?)
+       ON CONFLICT(contract, symbol) DO UPDATE SET
+         updated_at = excluded.updated_at`
+    ).bind(WAXCASH_CONTRACT, WAXCASH_SYMBOL, syncedAt).run().catch(() => {});
+    return {
+      key: 'waxcash_supply',
+      live: true,
+      source: 'wax_rpc_get_currency_stats',
+      basis: 'graffitiking::WAXCASH stat.supply',
+      total_supply: totalSupply,
+      max_supply: maxSupplyDecimal,
+      decimals,
+      updated_at: syncedAt,
+      reason: null,
+      no_fake_value: true,
+    };
+  } catch (error) {
+    const reason = waxcashSupplyUnavailableReason(error);
+    return {
+      key: 'waxcash_supply',
+      live: false,
+      source: null,
+      basis: null,
+      total_supply: null,
+      max_supply: null,
+      decimals: asNumber(cachedToken?.decimals) ?? null,
+      updated_at: cachedToken?.updated_at || null,
+      cached_total_supply_diagnostic: cachedTotalSupply,
+      cached_max_supply_diagnostic: cachedMaxSupply,
+      cached_updated_at_diagnostic: cachedToken?.updated_at || null,
+      reason,
+      no_fake_value: true,
+    };
+  }
+}
+
+function waxcashStatSectionRow({
+  key,
+  label,
+  live,
+  source = null,
+  basis = null,
+  formula = null,
+  reason = null,
+  value = null,
+  value_wax = null,
+  value_usd = null,
+  value_token = null,
+  token_symbol = null,
+}) {
+  return {
+    key,
+    label,
+    value: safeDecimal(asNumber(value)) ?? value,
+    value_wax: safeDecimal(asNumber(value_wax)),
+    value_usd: safeDecimal(asNumber(value_usd)),
+    value_token: safeDecimal(asNumber(value_token)) ?? value_token,
+    token_symbol: token_symbol || null,
+    live: !!live,
+    source,
+    basis,
+    formula,
+    reason: live ? null : (reason || 'Unavailable from indexed WaxOnEdge sources'),
+    no_fake_value: true,
+  };
+}
+
+function waxcashBuildTokenStatsSection({ token, stats, supplyProof }) {
+  const metricStatus = stats.metric_status || {};
+  const rows = [
+    waxcashStatSectionRow({
+      key: 'token',
+      label: 'Token',
+      live: true,
+      source: 'request_scope',
+      basis: WAXCASH_KEY,
+      value: WAXCASH_SYMBOL,
+      value_token: WAXCASH_SYMBOL,
+      token_symbol: WAXCASH_SYMBOL,
+    }),
+    waxcashStatSectionRow({
+      key: 'decimals',
+      label: 'Decimals',
+      live: asNumber(token.decimals) != null,
+      source: asNumber(token.decimals) != null ? (supplyProof?.source || 'indexed_token_metadata') : null,
+      basis: asNumber(token.decimals) != null ? 'WAXCASH token precision' : null,
+      value: asNumber(token.decimals),
+      reason: 'Requires WAXCASH token precision from chain stats or indexed metadata',
+    }),
+    waxcashStatSectionRow({
+      key: 'selected_direct_wax_pair_liquidity',
+      label: 'Selected Direct WAX Pair Liquidity',
+      live: stats.selected_direct_wax_pair_liquidity_wax != null || stats.selected_direct_wax_pair_liquidity_usd != null,
+      source: stats.selected_pair_source || null,
+      basis: 'selected direct WAX/WAXCASH proof pair reserves',
+      value_wax: stats.selected_direct_wax_pair_liquidity_wax,
+      value_usd: stats.selected_direct_wax_pair_liquidity_usd,
+      reason: 'Requires selected direct WAX/WAXCASH pair reserve proof',
+    }),
+    waxcashStatSectionRow({
+      key: 'price',
+      label: 'Price',
+      live: stats.selected_price_wax != null || stats.selected_price_usd != null,
+      source: stats.selected_price_source || null,
+      basis: stats.selected_price_basis || null,
+      formula: stats.selected_price_formula || null,
+      value_wax: stats.selected_price_wax,
+      value_usd: stats.selected_price_usd,
+      reason: stats.selected_price_rejection_reason || 'Requires verified direct WAX/WAXCASH pool proof',
+    }),
+    waxcashStatSectionRow({
+      key: 'change_24h',
+      label: '24h price change',
+      live: stats.change_24h != null,
+      source: stats.change_24h != null ? 'indexed_token_stats' : null,
+      basis: stats.change_24h != null ? 'indexed 24h price change' : null,
+      value: stats.change_24h,
+      reason: 'Requires indexed 24h price-change data',
+    }),
+    waxcashStatSectionRow({
+      key: 'volume_24h',
+      label: '24h volume',
+      live: stats.volume_24h_wax != null || stats.volume_24h_usd != null,
+      source: metricStatus.volume_24h?.source || null,
+      basis: 'indexed pair or ticker volume',
+      value_wax: stats.volume_24h_wax,
+      value_usd: stats.volume_24h_usd,
+      reason: metricStatus.volume_24h?.reason || 'Requires indexed pair or ticker volume',
+    }),
+    waxcashStatSectionRow({
+      key: 'volume_7d',
+      label: '7d volume',
+      live: stats.volume_7d != null,
+      source: metricStatus.volume_7d?.source || null,
+      basis: 'indexed trade history window',
+      value_wax: stats.volume_7d,
+      reason: metricStatus.volume_7d?.reason || 'Requires indexed candle or trade history',
+    }),
+    waxcashStatSectionRow({
+      key: 'volume_30d',
+      label: '30d volume',
+      live: stats.volume_30d != null,
+      source: metricStatus.volume_30d?.source || null,
+      basis: 'indexed trade history window',
+      value_wax: stats.volume_30d,
+      reason: metricStatus.volume_30d?.reason || 'Requires indexed candle or trade history',
+    }),
+    waxcashStatSectionRow({
+      key: 'circulating_supply',
+      label: 'Circulating supply',
+      live: stats.circulating_supply != null,
+      source: metricStatus.circulating_supply?.source || null,
+      basis: metricStatus.circulating_supply?.basis || null,
+      value_token: stats.circulating_supply,
+      token_symbol: WAXCASH_SYMBOL,
+      reason: metricStatus.circulating_supply?.reason || 'Circulating supply is not inferred from total supply',
+    }),
+    waxcashStatSectionRow({
+      key: 'market_cap',
+      label: 'Market cap',
+      live: stats.market_cap_wax != null || stats.market_cap_usd != null,
+      source: stats.market_cap_wax != null || stats.market_cap_usd != null ? 'circulating_supply_x_selected_price' : null,
+      basis: stats.market_cap_basis || null,
+      formula: 'circulating_supply x selected_price',
+      value_wax: stats.market_cap_wax,
+      value_usd: stats.market_cap_usd,
+      reason: 'Requires proven circulating supply; total supply is not used as market cap.',
+    }),
+    waxcashStatSectionRow({
+      key: 'total_supply',
+      label: 'Total supply',
+      live: stats.total_supply != null,
+      source: supplyProof?.source || metricStatus.total_supply?.source || null,
+      basis: supplyProof?.basis || metricStatus.total_supply?.basis || null,
+      value_token: stats.total_supply,
+      token_symbol: WAXCASH_SYMBOL,
+      reason: supplyProof?.reason || metricStatus.total_supply?.reason || 'WAX RPC get_currency_stats did not return graffitiking::WAXCASH',
+    }),
+    waxcashStatSectionRow({
+      key: 'fdv',
+      label: 'Fully diluted valuation',
+      live: stats.fdv_wax != null || stats.fdv_usd != null,
+      source: stats.fdv_wax != null || stats.fdv_usd != null ? supplyProof?.source || null : null,
+      basis: stats.fdv_wax != null || stats.fdv_usd != null ? 'total_supply_x_selected_price' : null,
+      formula: 'total_supply x selected_price',
+      value_wax: stats.fdv_wax,
+      value_usd: stats.fdv_usd,
+      reason: metricStatus.fdv?.reason || 'Requires WAX RPC total supply and selected price',
+    }),
+  ];
+  return {
+    rows,
+    by_key: Object.fromEntries(rows.map((row) => [row.key, row])),
+  };
+}
+
+function waxcashPairTableRow(pair, selectedWaxPool) {
+  const isSelected = pair.source === selectedWaxPool?.source && pair.pair_id === selectedWaxPool?.pair_id;
+  const liquidityWax = asNumber(pair.pair_liquidity_wax);
+  const liquidityUsd = asNumber(pair.pair_liquidity_usd);
+  const volumeWax = asNumber(pair.volume_24h_wax);
+  const volumeUsd = asNumber(pair.volume_24h_usd);
+  const reasonCodes = Array.isArray(pair.reason_codes) ? pair.reason_codes : [];
+  const live = liquidityWax != null || liquidityUsd != null;
+  const reason = reasonCodes.length ? reasonCodes.join(', ') : (live ? null : 'liquidity_unavailable');
+  const status = isSelected
+    ? 'selected_price_pair'
+    : (pair.direct_wax_pair ? 'direct_wax_pair' : (live ? 'valued' : 'unavailable'));
+  return {
+    pair_label: pair.pair_label || selectedPairLabel(pair),
+    source: pair.source || null,
+    pair_id: pair.pair_id || null,
+    is_selected_price_pair: isSelected,
+    is_direct_wax_pair: !!pair.direct_wax_pair,
+    status,
+    liquidity_wax: safeDecimal(liquidityWax),
+    liquidity_usd: safeDecimal(liquidityUsd),
+    volume_24h_wax: safeDecimal(volumeWax),
+    volume_24h_usd: safeDecimal(volumeUsd),
+    reserves_label: [
+      `${safeDecimal(asNumber(pair.reserve_a)) || '--'} ${pair.token_a_symbol || ''}`.trim(),
+      `${safeDecimal(asNumber(pair.reserve_b)) || '--'} ${pair.token_b_symbol || ''}`.trim(),
+    ].join(' / '),
+    proof_label: reasonCodes.length ? reason : (isSelected ? 'selected direct WAX price proof' : 'reserve-backed valuation'),
+    reason,
+    token_a_contract: pair.token_a_contract || null,
+    token_a_symbol: pair.token_a_symbol || null,
+    token_b_contract: pair.token_b_contract || null,
+    token_b_symbol: pair.token_b_symbol || null,
+    no_fake_value: true,
+    proof_details: {
+      reserve_ratio: pair.pair_price_relative_to_waxcash || null,
+      reason_codes: reasonCodes,
+      direct_wax_pair: !!pair.direct_wax_pair,
+      paired_token_og_wax_price: pair.paired_token_og_wax_price || null,
+    },
+  };
+}
+
+function waxcashBuildPairTableSection(pairs = [], selectedWaxPool = null) {
+  const rows = (pairs || []).map((pair) => waxcashPairTableRow(pair, selectedWaxPool));
+  rows.sort((a, b) => {
+    if (a.is_selected_price_pair !== b.is_selected_price_pair) return a.is_selected_price_pair ? -1 : 1;
+    if (a.is_direct_wax_pair !== b.is_direct_wax_pair) return a.is_direct_wax_pair ? -1 : 1;
+    const aLive = asNumber(a.liquidity_wax) != null || asNumber(a.liquidity_usd) != null;
+    const bLive = asNumber(b.liquidity_wax) != null || asNumber(b.liquidity_usd) != null;
+    if (aLive !== bLive) return aLive ? -1 : 1;
+    return (asNumber(b.liquidity_wax) || 0) - (asNumber(a.liquidity_wax) || 0) ||
+      String(a.pair_label || '').localeCompare(String(b.pair_label || ''));
+  });
+  return {
+    rows,
+    row_count: rows.length,
+    selected_pair_id: selectedWaxPool?.pair_id || null,
+    no_fake_value: true,
+  };
+}
+
 async function buildWaxcashAnalytics(db) {
   const [detail, proofWrapper] = await Promise.all([
     getToken(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL),
@@ -6941,8 +7239,9 @@ async function buildWaxcashAnalytics(db) {
     candle_normalization: normalizedChart.summary,
     unavailable: normalizedChart.candles.length ? null : (rawChart.unavailable || 'waxcash_wax_chart_candles_unavailable_after_direction_normalization'),
   };
+  const liveSupplyProof = await fetchWaxcashLiveSupplyProof(db, token);
   const circulatingSupply = asNumber(detailStats.circulating_supply ?? token.circulating_supply);
-  const totalSupply = asNumber(detailStats.total_supply ?? token.total_supply ?? token.max_supply);
+  const totalSupply = liveSupplyProof.live ? asNumber(liveSupplyProof.total_supply) : null;
   const marketCapWax = circulatingSupply != null && selectedPriceWax != null ? circulatingSupply * selectedPriceWax : null;
   const marketCapUsd = circulatingSupply != null && selectedPriceUsd != null ? circulatingSupply * selectedPriceUsd : null;
   const fdvWax = totalSupply != null && selectedPriceWax != null ? totalSupply * selectedPriceWax : null;
@@ -6954,7 +7253,7 @@ async function buildWaxcashAnalytics(db) {
   const selectedDirectLiquidityUsd = selectedDirectLiquidityWax != null && waxUsd != null ? selectedDirectLiquidityWax * waxUsd : null;
   const selectedPriceLive = selectedPriceWax != null;
   const marketCapLive = marketCapWax != null || marketCapUsd != null;
-  const totalSupplyLive = totalSupply != null;
+  const totalSupplyLive = liveSupplyProof.live && totalSupply != null;
   const circulatingSupplyLive = circulatingSupply != null;
   const holderCountLive = asNumber(detailStats.holder_count) != null;
   const fdvLive = fdvWax != null || fdvUsd != null;
@@ -6962,17 +7261,17 @@ async function buildWaxcashAnalytics(db) {
   const supplySyncStatus = await getWaxcashSupplySyncStatus(db);
   const totalSupplyReason = totalSupplyLive
     ? null
-    : (supplySyncStatus?.waxcash?.last_error || 'Requires WAX RPC get_currency_stats proof for graffitiking::WAXCASH');
-  return {
+    : (liveSupplyProof.reason || supplySyncStatus?.waxcash?.last_error || 'Requires WAX RPC get_currency_stats proof for graffitiking::WAXCASH');
+  const analytics = {
     token: {
       contract: WAXCASH_CONTRACT,
       symbol: WAXCASH_SYMBOL,
       key: WAXCASH_KEY,
-      decimals: asNumber(token.decimals),
+      decimals: asNumber(liveSupplyProof.decimals) ?? asNumber(token.decimals),
       total_supply: safeDecimal(totalSupply),
       circulating_supply: safeDecimal(circulatingSupply),
       icon_url: token.icon_url || null,
-      updated_at: token.updated_at || detailStats.updated_at || proof.headline_price?.og_headline_updated_at || null,
+      updated_at: liveSupplyProof.updated_at || token.updated_at || detailStats.updated_at || proof.headline_price?.og_headline_updated_at || null,
     },
     stats: {
       selected_price_wax: safeDecimal(selectedPriceWax),
@@ -7084,6 +7383,49 @@ async function buildWaxcashAnalytics(db) {
     proof,
     source_policy: 'waxcash_analytics_uses_og_woe_direct_wax_price_not_recursive_graph',
   };
+  analytics.sections = {
+    token_stats: waxcashBuildTokenStatsSection({
+      token: analytics.token,
+      stats: analytics.stats,
+      supplyProof: liveSupplyProof,
+    }),
+    price_proof: {
+      live: selectedPriceLive,
+      source: headline.og_headline_price_source || null,
+      pair_id: headline.og_headline_price_pair_id || null,
+      pair_label: headline.og_headline_price_pair_label || null,
+      basis: 'old_woe_legacy_pool_first_then_v3',
+      formula: headline.og_headline_formula || null,
+      selected_price_wax: analytics.stats.selected_price_wax,
+      selected_price_usd: analytics.stats.selected_price_usd,
+      reason: selectedPriceLive ? null : analytics.stats.selected_price_rejection_reason,
+      no_fake_value: true,
+    },
+    supply_proof: {
+      ...liveSupplyProof,
+      fdv_wax: analytics.stats.fdv_wax,
+      fdv_usd: analytics.stats.fdv_usd,
+      fdv_formula: 'total_supply x selected_price',
+      market_cap_wax: analytics.stats.market_cap_wax,
+      market_cap_usd: analytics.stats.market_cap_usd,
+      market_cap_reason: analytics.stats.market_cap_wax == null && analytics.stats.market_cap_usd == null
+        ? 'Requires proven circulating supply; total supply is not used as market cap.'
+        : null,
+    },
+    chart: {
+      price_unit: 'WAX_per_WAXCASH',
+      normalized: true,
+      inverted_count: chart.candle_normalization?.inverted_count || 0,
+      source: chart.chart_source?.source || null,
+      pair_id: chart.chart_source?.pair_id || null,
+      pair_label: selectedWaxPool?.pair_label || headline.og_headline_price_pair_label || null,
+      candles: chart.candles || [],
+      unavailable: chart.unavailable || null,
+      no_fake_value: true,
+    },
+    pair_table: waxcashBuildPairTableSection(proof.all_pairs || [], selectedWaxPool),
+  };
+  return analytics;
 }
 
 async function loadRouteGraphRowsForToken(db, contract, symbol, maxHops = OG_WAX_ROUTE_MAX_HOPS) {
