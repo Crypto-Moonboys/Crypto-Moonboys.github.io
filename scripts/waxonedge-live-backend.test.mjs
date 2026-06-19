@@ -2167,6 +2167,21 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.chart?.candle_normalization?.rejection_reasons?.ohlc_outside_selected_price_range === 1 &&
       !waxcashChartOhlcValues.some((value) => value > 1),
       JSON.stringify({ waxcashChartCloses, waxcashChartOhlcValues, normalization: waxcashAnalytics.chart?.candle_normalization }));
+    const waxcashChartFeed = await __waxonedgeTestHooks.buildWaxcashTradingViewChartFeed(waxcashAnalyticsDb, { resolution: '1D' });
+    ok('WAXCASH analytics exposes a TradingView UDF history feed backed by normalized Alcor #8388 candles',
+      waxcashAnalytics.sections?.chart?.feed_url === '/api/waxonedge/waxcash-analytics/chart-feed?resolution=1D' &&
+      waxcashAnalytics.sections?.chart?.feed_format === 'tradingview_udf_history' &&
+      waxcashChartFeed.feed_format === 'tradingview_udf_history' &&
+      waxcashChartFeed.s === 'ok' &&
+      waxcashChartFeed.source === 'swap.alcor' &&
+      waxcashChartFeed.pair_id === '8388' &&
+      waxcashChartFeed.price_unit === 'WAX_per_WAXCASH' &&
+      waxcashChartFeed.affects_waxonedge_metrics === false &&
+      waxcashChartFeed.selected_price_policy_unchanged === true &&
+      waxcashChartFeed.t.length === 2 &&
+      waxcashChartFeed.o.concat(waxcashChartFeed.h, waxcashChartFeed.l, waxcashChartFeed.c).every((value) => value > 0.02 && value < 0.04) &&
+      !waxcashChartFeed.o.concat(waxcashChartFeed.h, waxcashChartFeed.l, waxcashChartFeed.c).some((value) => value > 1),
+      JSON.stringify(waxcashChartFeed));
     const onRequestChartRows = [];
     const onRequestTradeRows = [
       { source: 'swap.alcor', trade_id: '8388-a', pair_id: '8388', price: '0.028', volume: '10', traded_at: '2026-06-14T01:00:00.000Z', raw_json: '{}' },
@@ -6471,9 +6486,12 @@ ok('WAXCASH analytics frontend keeps values compact and proof reasons in tooltip
   waxcashHtml.includes('overflow-wrap: anywhere'));
 ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with display-only pool controls',
   waxcashAnalyticsFrontend.includes('sections.chart_external') &&
-  waxcashAnalyticsFrontend.includes('renderLightweightCandles(payload)') &&
+  waxcashAnalyticsFrontend.includes('renderLightweightCandles(payload, feed)') &&
+  waxcashAnalyticsFrontend.includes('tradingViewFeedCandles(feed)') &&
+  waxcashAnalyticsFrontend.includes("'/api/waxonedge/waxcash-analytics/chart-feed?resolution=1D'") &&
+  waxcashAnalyticsFrontend.includes('loadChartFeed(state.payload)') &&
   waxcashAnalyticsFrontend.includes('window.LightweightCharts') &&
-  waxcashAnalyticsFrontend.includes('chartCandles(payload)') &&
+  waxcashAnalyticsFrontend.includes('chartCandles(payload, feed)') &&
   waxcashAnalyticsFrontend.includes('pickPoolViews(rows)') &&
   waxcashAnalyticsFrontend.includes('Selected proof pool') &&
   waxcashAnalyticsFrontend.includes('Best liquidity pool') &&
@@ -6481,10 +6499,11 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   waxcashAnalyticsFrontend.includes('Weighted/valued pool view') &&
   waxcashAnalyticsFrontend.includes('Alcor pool #') &&
   waxcashHtml.includes('lightweight-charts@5.2.0') &&
+  waxcashHtml.includes('TradingView UDF feed') &&
   waxcashHtml.includes('Lightweight Charts renderer') &&
   waxcashHtml.includes('wx-lightweight-chart') &&
   waxcashHtml.includes('wx-view-controls') &&
-  waxcashHtml.includes('WAX per WAXCASH candles from WaxOnEdge indexed chart/trade rows. Display controls do not change selected price.') &&
+  waxcashHtml.includes('WAX per WAXCASH candles from the WaxOnEdge TradingView-compatible feed. Display controls do not change selected price.') &&
   waxcashHtml.includes('allowProductionFallback: false') &&
   !waxcashHtml.includes('allowProductionFallback: true') &&
   !waxcashHtml.includes('api.PRODUCTION_BASE_URL') &&

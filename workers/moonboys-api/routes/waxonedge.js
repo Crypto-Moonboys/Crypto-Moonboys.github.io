@@ -7242,6 +7242,106 @@ function waxcashChartFeedPool(pairs = [], selectedWaxPool = null) {
     null;
 }
 
+async function buildWaxcashChartBundle(db, proof, headline, options = {}) {
+  const selectedPriceWax = asNumber(headline?.og_headline_price_wax);
+  const selectedWaxPool = proof?.selected_largest_wax_reserve_pool || null;
+  const chartFeedPool = waxcashChartFeedPool(proof?.all_pairs || [], selectedWaxPool);
+  const interval = normalizeCandleInterval(options.interval || options.resolution || '1D');
+  const chartQuery = {
+    source: chartFeedPool?.source,
+    pair_id: chartFeedPool?.pair_id,
+    interval,
+    limit: options.limit || options.countBack || 120,
+  };
+  if (options.from != null) chartQuery.startAt = Number(options.from) * 1000;
+  if (options.to != null) chartQuery.endAt = Number(options.to) * 1000;
+  let rawChart = chartFeedPool?.source && chartFeedPool?.pair_id
+    ? await listChartCandlesBySource(db, chartQuery)
+    : { chart_source: null, candles: [], unavailable: 'waxcash_chart_feed_pair_unavailable' };
+  let normalizedChart = normalizeWaxcashWaxCandles(rawChart.candles || [], { selectedPriceWax });
+  let chartBuild = null;
+  if (chartFeedPool?.source && chartFeedPool?.pair_id && interval === '1D' && !normalizedChart.candles.length) {
+    chartBuild = await buildInternalDailyCandlesForPair(db, chartFeedPool);
+    if (chartBuild?.candles_written > 0) {
+      rawChart = await listChartCandlesBySource(db, chartQuery);
+      normalizedChart = normalizeWaxcashWaxCandles(rawChart.candles || [], { selectedPriceWax });
+    }
+  }
+  const chart = {
+    ...rawChart,
+    candles: normalizedChart.candles,
+    candle_normalization: normalizedChart.summary,
+    build_from_indexed_trades: chartBuild,
+    unavailable: normalizedChart.candles.length ? null : (chartBuild?.reason || rawChart.unavailable || 'waxcash_wax_chart_candles_unavailable_after_direction_normalization'),
+  };
+  return { chart, chartFeedPool, selectedWaxPool };
+}
+
+function tradingViewHistoryFromWaxcashChart(chart) {
+  const candles = (chart?.candles || [])
+    .map((candle) => {
+      const timeMs = Date.parse(candle.bucket_time || candle.time || candle.timestamp || '');
+      const open = asNumber(candle.open);
+      const high = asNumber(candle.high);
+      const low = asNumber(candle.low);
+      const close = asNumber(candle.close);
+      if (!Number.isFinite(timeMs) || open == null || high == null || low == null || close == null) return null;
+      return {
+        time: Math.floor(timeMs / 1000),
+        open,
+        high,
+        low,
+        close,
+        volume: asNumber(candle.volume) ?? 0,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.time - b.time);
+  return {
+    s: candles.length ? 'ok' : 'no_data',
+    t: candles.map((candle) => candle.time),
+    o: candles.map((candle) => candle.open),
+    h: candles.map((candle) => candle.high),
+    l: candles.map((candle) => candle.low),
+    c: candles.map((candle) => candle.close),
+    v: candles.map((candle) => candle.volume),
+    candles,
+  };
+}
+
+async function buildWaxcashTradingViewChartFeed(db, query = {}) {
+  const proofWrapper = await getWaxcashOgProof(db);
+  const proof = proofWrapper.og_woe_parity || {};
+  const headline = proof.headline_price || {};
+  const { chart, chartFeedPool } = await buildWaxcashChartBundle(db, proof, headline, {
+    resolution: query.resolution || query.interval || '1D',
+    from: query.from,
+    to: query.to,
+    countBack: query.countback || query.countBack || query.limit || 120,
+  });
+  const history = tradingViewHistoryFromWaxcashChart(chart);
+  return {
+    feed_format: 'tradingview_udf_history',
+    symbol: 'WAXCASH/WAX',
+    ticker: 'WAXCASH/WAX',
+    description: 'WAXCASH priced in WAX from indexed WaxOnEdge candles',
+    exchange: 'WaxOnEdge',
+    type: 'crypto',
+    resolution: normalizeCandleInterval(query.resolution || query.interval || '1D'),
+    price_unit: 'WAX_per_WAXCASH',
+    source: chart.chart_source?.source || chartFeedPool?.source || null,
+    pair_id: chart.chart_source?.pair_id || chartFeedPool?.pair_id || null,
+    pair_label: chartFeedPool?.pair_label || 'WAX/WAXCASH',
+    affects_waxonedge_metrics: false,
+    selected_price_policy_unchanged: true,
+    candle_normalization: chart.candle_normalization || null,
+    build_from_indexed_trades: chart.build_from_indexed_trades || null,
+    unavailable: chart.unavailable || null,
+    no_fake_value: true,
+    ...history,
+  };
+}
+
 async function buildWaxcashAnalytics(db) {
   const [detail, proofWrapper] = await Promise.all([
     getToken(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL),
@@ -7256,37 +7356,7 @@ async function buildWaxcashAnalytics(db) {
     : null;
   const selectedPriceWax = asNumber(headline.og_headline_price_wax);
   const selectedPriceUsd = asNumber(headline.og_headline_price_usd);
-  const selectedWaxPool = proof.selected_largest_wax_reserve_pool || null;
-  const chartFeedPool = waxcashChartFeedPool(proof.all_pairs || [], selectedWaxPool);
-  let rawChart = chartFeedPool?.source && chartFeedPool?.pair_id
-    ? await listChartCandlesBySource(db, {
-      source: chartFeedPool.source,
-      pair_id: chartFeedPool.pair_id,
-      interval: '1D',
-      limit: 120,
-    })
-    : { chart_source: null, candles: [], unavailable: 'waxcash_chart_feed_pair_unavailable' };
-  let normalizedChart = normalizeWaxcashWaxCandles(rawChart.candles || [], { selectedPriceWax });
-  let chartBuild = null;
-  if (chartFeedPool?.source && chartFeedPool?.pair_id && !normalizedChart.candles.length) {
-    chartBuild = await buildInternalDailyCandlesForPair(db, chartFeedPool);
-    if (chartBuild?.candles_written > 0) {
-      rawChart = await listChartCandlesBySource(db, {
-        source: chartFeedPool.source,
-        pair_id: chartFeedPool.pair_id,
-        interval: '1D',
-        limit: 120,
-      });
-      normalizedChart = normalizeWaxcashWaxCandles(rawChart.candles || [], { selectedPriceWax });
-    }
-  }
-  const chart = {
-    ...rawChart,
-    candles: normalizedChart.candles,
-    candle_normalization: normalizedChart.summary,
-    build_from_indexed_trades: chartBuild,
-    unavailable: normalizedChart.candles.length ? null : (chartBuild?.reason || rawChart.unavailable || 'waxcash_wax_chart_candles_unavailable_after_direction_normalization'),
-  };
+  const { chart, chartFeedPool, selectedWaxPool } = await buildWaxcashChartBundle(db, proof, headline);
   const liveSupplyProof = await fetchWaxcashLiveSupplyProof(db, token);
   const circulatingSupply = asNumber(detailStats.circulating_supply ?? token.circulating_supply);
   const totalSupply = liveSupplyProof.live ? asNumber(liveSupplyProof.total_supply) : null;
@@ -7467,6 +7537,8 @@ async function buildWaxcashAnalytics(db) {
       source: chart.chart_source?.source || null,
       pair_id: chart.chart_source?.pair_id || null,
       pair_label: chartFeedPool?.pair_label || selectedWaxPool?.pair_label || headline.og_headline_price_pair_label || null,
+      feed_url: `${WAXONEDGE_API_PREFIX}/waxcash-analytics/chart-feed?resolution=1D`,
+      feed_format: 'tradingview_udf_history',
       candles: chart.candles || [],
       build_from_indexed_trades: chart.build_from_indexed_trades || null,
       unavailable: chart.unavailable || null,
@@ -9058,6 +9130,10 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       const analytics = await buildWaxcashAnalytics(env.DB);
       return ok(analytics, ['WAXCASH analytics uses old WaxOnEdge-style direct WAX price proof; recursive graph routing is not a selected-price source.'], analytics.stats?.updated_at || analytics.token?.updated_at || null, corsHeaders);
     }
+    if (path === `${WAXONEDGE_API_PREFIX}/waxcash-analytics/chart-feed`) {
+      const feed = await buildWaxcashTradingViewChartFeed(env.DB, Object.fromEntries(url.searchParams.entries()));
+      return ok(feed, feed.unavailable ? [feed.unavailable] : ['WAXCASH chart feed is TradingView UDF history shaped and backed by indexed WaxOnEdge candle/trade rows only.'], null, corsHeaders);
+    }
     if (path === `${WAXONEDGE_API_PREFIX}/candles`) {
       const chart = await listChartCandlesBySource(env.DB, Object.fromEntries(url.searchParams.entries()));
       return ok(chart, chart.unavailable ? [chart.unavailable] : [], null, corsHeaders);
@@ -9141,6 +9217,7 @@ export const __waxonedgeTestHooks = {
   priceAdapterPair,
   DEX_ADAPTER_CONTRACT,
   buildWaxcashAnalytics,
+  buildWaxcashTradingViewChartFeed,
   buildWaxcashOgParityProof,
   getWaxcashSupplySyncStatus,
   normalizeWaxcashWaxCandles,

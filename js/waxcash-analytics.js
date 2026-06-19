@@ -5,6 +5,7 @@
   var DASH = '--';
   var state = {
     payload: null,
+    chartFeed: null,
     view: 'selected',
     chart: null,
   };
@@ -276,7 +277,24 @@
     return null;
   }
 
-  function chartCandles(payload) {
+  function tradingViewFeedCandles(feed) {
+    if (!feed || feed.s !== 'ok' || !Array.isArray(feed.t)) return [];
+    return feed.t.map(function (time, index) {
+      var close = num(feed.c && feed.c[index]);
+      if (time == null || close == null) return null;
+      return {
+        time: Number(time),
+        open: num(feed.o && feed.o[index]) != null ? num(feed.o && feed.o[index]) : close,
+        high: num(feed.h && feed.h[index]) != null ? num(feed.h && feed.h[index]) : close,
+        low: num(feed.l && feed.l[index]) != null ? num(feed.l && feed.l[index]) : close,
+        close: close,
+      };
+    }).filter(Boolean).sort(function (a, b) { return a.time - b.time; });
+  }
+
+  function chartCandles(payload, feed) {
+    var feedCandles = tradingViewFeedCandles(feed);
+    if (feedCandles.length) return feedCandles;
     var sections = payload.sections || {};
     var chart = sections.chart || {};
     var candles = Array.isArray(chart.candles) ? chart.candles : [];
@@ -294,9 +312,9 @@
     }).filter(Boolean).sort(function (a, b) { return a.time - b.time; });
   }
 
-  function renderLightweightCandles(payload) {
+  function renderLightweightCandles(payload, feed) {
     var host = $('wx-chart');
-    var candles = chartCandles(payload);
+    var candles = chartCandles(payload, feed);
     var tv = window.LightweightCharts;
     if (state.chart && typeof state.chart.remove === 'function') {
       try { state.chart.remove(); } catch (_) {}
@@ -304,7 +322,7 @@
     }
     if (!host) return false;
     if (!candles.length) {
-      host.innerHTML = '<div class="wx-chart-empty">No indexed WAX-per-WAXCASH candles are available for the selected proof pool.</div>';
+      host.innerHTML = '<div class="wx-chart-empty">No indexed WAX-per-WAXCASH chart-feed candles are available.</div>';
       return false;
     }
     if (!tv || typeof tv.createChart !== 'function') {
@@ -365,9 +383,31 @@
     $('wx-chart-pair-title').textContent = pairLabel(row);
   }
 
-  function renderChart(payload) {
+  function chartFeedUrl(payload) {
+    var sections = (payload || {}).sections || {};
+    var chart = sections.chart || {};
+    return chart.feed_url || '/api/waxonedge/waxcash-analytics/chart-feed?resolution=1D';
+  }
+
+  function renderChart(payload, feed) {
     updateChartLabels(payload);
-    renderLightweightCandles(payload);
+    renderLightweightCandles(payload, feed || state.chartFeed);
+  }
+
+  function loadChartFeed(payload) {
+    return fetch(chartFeedUrl(payload), { headers: { Accept: 'application/json' } })
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (feedPayload) {
+        state.chartFeed = feedPayload && feedPayload.data ? feedPayload.data : feedPayload;
+        renderChart(payload, state.chartFeed);
+      })
+      .catch(function () {
+        state.chartFeed = null;
+        renderChart(payload, null);
+      });
   }
 
   function render(payload) {
@@ -380,7 +420,8 @@
     $('wx-status').textContent = status;
     renderStats(state.payload);
     renderPoolControls(state.payload);
-    renderChart(state.payload);
+    renderChart(state.payload, state.chartFeed);
+    loadChartFeed(state.payload);
     renderPairDetail(state.payload);
     renderPairs(state.payload);
   }
