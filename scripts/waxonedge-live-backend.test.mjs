@@ -6342,7 +6342,7 @@ ok('WAXCASH analytics frontend formats values and reasons without concatenation'
 ok('WAXCASH analytics frontend renders external Alcor chart as visual-only reference',
   waxcashAnalyticsFrontend.includes('sections.chart_external') &&
   waxcashAnalyticsFrontend.includes('External Alcor WAX/WAXCASH pool chart') &&
-  waxcashAnalyticsFrontend.includes('External visual reference only. WaxOnEdge stats remain backend proof values.') &&
+  waxcashAnalyticsFrontend.includes('Chart is external visual reference only. WaxOnEdge stats remain backend proof values.') &&
   waxcashAnalyticsFrontend.includes('Open the external Alcor pool chart in a new tab.') &&
   waxcashAnalyticsFrontend.includes('Open Alcor chart') &&
   waxcashAnalyticsFrontend.includes('wx-external-chart-linkcard') &&

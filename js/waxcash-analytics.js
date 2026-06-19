@@ -185,7 +185,7 @@
         '<div class="wx-external-chart-copy">' +
           '<strong>External Alcor WAX/WAXCASH pool chart</strong>' +
           '<span>' + esc(sourceLabel) + '</span>' +
-          '<p>External visual reference only. WaxOnEdge stats remain backend proof values.</p>' +
+          '<p>Chart is external visual reference only. WaxOnEdge stats remain backend proof values.</p>' +
         '</div>' +
         '<div class="wx-external-chart-linkcard">' +
           '<span>Open the external Alcor pool chart in a new tab.</span>' +
