@@ -1943,6 +1943,45 @@ ok('VPS live indexer safely parses request path without trusting Host header',
           };
         }
         if (sql.includes('FROM waxonedge_chart_candles')) {
+          if (params[0] === 'swap.alcor' && params[1] === '8388') {
+            return {
+              results: [
+                {
+                  source: 'swap.alcor',
+                  pair_id: '8388',
+                  interval: '1D',
+                  bucket_time: '2026-06-14T00:00:00.000Z',
+                  open: '0.029',
+                  high: '0.031',
+                  low: '0.028',
+                  close: '0.03',
+                  volume: '100',
+                },
+                {
+                  source: 'swap.alcor',
+                  pair_id: '8388',
+                  interval: '1D',
+                  bucket_time: '2026-06-15T00:00:00.000Z',
+                  open: '34.48275862',
+                  high: '35.71428571',
+                  low: '32.25806452',
+                  close: '33.33333333',
+                  volume: '120',
+                },
+                {
+                  source: 'swap.alcor',
+                  pair_id: '8388',
+                  interval: '1D',
+                  bucket_time: '2026-06-16T00:00:00.000Z',
+                  open: '100',
+                  high: '101',
+                  low: '0.029',
+                  close: '0.03',
+                  volume: '12',
+                },
+              ],
+            };
+          }
           if (params[0] === 'swap.nefty' && params[1] === 'WAXCASHWAXLEGACY') {
             return {
               results: [
@@ -2109,10 +2148,11 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id === 'WAXCASHWAXLEGACY' &&
       !(('selected_' + 'deep' + 'est_wax_pool') in waxcashAnalytics) &&
       !(('selected_' + 'deep' + 'est_wax_pool') in (waxcashAnalytics.proof || {})));
-    ok('WAXCASH analytics chart source is the selected direct WAX proof pair',
-      waxcashAnalytics.chart?.chart_source?.source === waxcashAnalytics.selected_largest_wax_reserve_pool?.source &&
-      waxcashAnalytics.chart?.chart_source?.pair_id === waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id &&
-      waxcashAnalytics.chart?.chart_source?.pair_id === 'WAXCASHWAXLEGACY' &&
+    ok('WAXCASH analytics chart source is Alcor pool #8388 display feed, not the selected price proof pair',
+      waxcashAnalytics.chart?.chart_source?.source === 'swap.alcor' &&
+      waxcashAnalytics.chart?.chart_source?.pair_id === '8388' &&
+      waxcashAnalytics.chart?.chart_source?.pair_id !== waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id &&
+      waxcashAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY' &&
       waxcashAnalytics.chart?.chart_source?.pair_id !== 'WAXWUFB');
     const waxcashChartOhlcValues = (waxcashAnalytics.chart?.candles || []).flatMap((candle) =>
       ['open', 'high', 'low', 'close'].map((field) => Number(candle[field])));
@@ -2127,6 +2167,89 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.chart?.candle_normalization?.rejection_reasons?.ohlc_outside_selected_price_range === 1 &&
       !waxcashChartOhlcValues.some((value) => value > 1),
       JSON.stringify({ waxcashChartCloses, waxcashChartOhlcValues, normalization: waxcashAnalytics.chart?.candle_normalization }));
+    const onRequestChartRows = [];
+    const onRequestTradeRows = [
+      { source: 'swap.alcor', trade_id: '8388-a', pair_id: '8388', price: '0.028', volume: '10', traded_at: '2026-06-14T01:00:00.000Z', raw_json: '{}' },
+      { source: 'swap.alcor', trade_id: '8388-b', pair_id: '8388', price: '0.032', volume: '12', traded_at: '2026-06-14T05:00:00.000Z', raw_json: '{}' },
+      { source: 'swap.alcor', trade_id: '8388-c', pair_id: '8388', price: '0.03', volume: '11', traded_at: '2026-06-15T02:00:00.000Z', raw_json: '{}' },
+    ];
+    const onRequestChartDb = {
+      prepare(sql) {
+        if (sql.includes('INSERT INTO waxonedge_chart_candles')) {
+          return {
+            bind(...params) {
+              return { insert_chart_params: params };
+            },
+          };
+        }
+        if (sql.includes('FROM waxonedge_chart_candles')) {
+          return {
+            bind(...params) {
+              return {
+                async all() {
+                  return {
+                    results: onRequestChartRows
+                      .filter((row) => row.source === params[0] && row.pair_id === params[1] && row.interval === params[2])
+                      .sort((a, b) => String(b.bucket_time).localeCompare(String(a.bucket_time))),
+                  };
+                },
+                async first() {
+                  return null;
+                },
+              };
+            },
+          };
+        }
+        if (sql.includes('FROM waxonedge_trades')) {
+          return {
+            bind(...params) {
+              return {
+                async all() {
+                  if (String(params[0]) === '8388') return { results: onRequestTradeRows };
+                  return { results: [] };
+                },
+                async first() {
+                  return onRequestTradeRows[0] || null;
+                },
+              };
+            },
+          };
+        }
+        return waxcashAnalyticsDb.prepare(sql);
+      },
+      async batch(statements) {
+        for (const statement of statements || []) {
+          const params = statement.insert_chart_params || [];
+          onRequestChartRows.push({
+            source: params[0],
+            pair_id: params[1],
+            interval: params[2],
+            bucket_time: params[3],
+            open: params[4],
+            high: params[5],
+            low: params[6],
+            close: params[7],
+            volume: params[8],
+            updated_at: params[9],
+          });
+        }
+        return statements || [];
+      },
+    };
+    const onRequestChartAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(onRequestChartDb);
+    ok('WAXCASH analytics builds source-backed Alcor #8388 candles from indexed trade rows when stored candles are missing',
+      onRequestChartAnalytics.chart?.chart_source?.source === 'swap.alcor' &&
+      onRequestChartAnalytics.chart?.chart_source?.pair_id === '8388' &&
+      onRequestChartAnalytics.chart?.candles?.length === 2 &&
+      onRequestChartAnalytics.chart?.unavailable === null &&
+      onRequestChartAnalytics.chart?.build_from_indexed_trades?.reason === 'candles_built_from_trade_rows' &&
+      onRequestChartAnalytics.sections?.chart?.build_from_indexed_trades?.candles_written === 2 &&
+      Number(onRequestChartAnalytics.stats.selected_price_wax) === 0.03 &&
+      onRequestChartAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY',
+      JSON.stringify({
+        chart: onRequestChartAnalytics.chart,
+        selected_pair_id: onRequestChartAnalytics.stats.selected_pair_id,
+      }));
     ok('/waxcash-analytics returns display-ready backend sections',
       waxcashAnalytics.sections?.token_stats?.rows?.length >= 12 &&
       waxcashAnalytics.sections?.supply_proof &&
@@ -4575,6 +4698,11 @@ ok('candle backfill can build from AMM waxonedge_trades rows',
     { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T00:00:00.000Z', price: '0.2', volume: '2' },
     { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T01:00:00.000Z', price: '0.25', volume: '3' },
   ], { source: 'swap.taco' })[0].close === '0.25');
+const internalCandleBuilderStart = route.indexOf('async function buildInternalDailyCandlesForPair');
+const internalCandleBuilderEnd = route.indexOf('async function writeChartCandles', internalCandleBuilderStart);
+const internalCandleBuilderBody = internalCandleBuilderStart >= 0 && internalCandleBuilderEnd > internalCandleBuilderStart
+  ? route.slice(internalCandleBuilderStart, internalCandleBuilderEnd)
+  : '';
 ok('candle backfill uses canonical AMM IDs and does not derive candles from reserves',
   route.includes('function canonicalAmmPairId') &&
   route.includes('function canonicalAmmActionPairId') &&
@@ -4582,7 +4710,9 @@ ok('candle backfill uses canonical AMM IDs and does not derive candles from rese
   route.includes('pairId = canonicalAmmActionPairId(stream.source, record, row)') &&
   route.includes('const rows = await loadIndexedTradeRowsForPair(db, source, pairId)') &&
   route.includes('if (!rows.length)') &&
-  !/buildInternalDailyCandlesForPair[\s\S]*reserve_a[\s\S]*writeChartCandles/.test(route) &&
+  internalCandleBuilderBody.includes('loadIndexedTradeRowsForPair(db, source, pairId)') &&
+  !internalCandleBuilderBody.includes('reserve_a') &&
+  !internalCandleBuilderBody.includes('reserve_b') &&
   !route.includes('public chart fallback'));
 ok('Alcor marketMatches pagination reports per-action skip progress without full-history completion claims',
   route.includes('function normalizeActionStreamProgressMap') &&
@@ -6351,9 +6481,17 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   waxcashAnalyticsFrontend.includes('Weighted/valued pool view') &&
   waxcashAnalyticsFrontend.includes('Alcor pool #') &&
   waxcashHtml.includes('lightweight-charts@5.2.0') &&
+  waxcashHtml.includes('Lightweight Charts renderer') &&
   waxcashHtml.includes('wx-lightweight-chart') &&
   waxcashHtml.includes('wx-view-controls') &&
-  waxcashHtml.includes('Display-only chart feed; WaxOnEdge proof fields remain stats authority.') &&
+  waxcashHtml.includes('WAX per WAXCASH candles from WaxOnEdge indexed chart/trade rows. Display controls do not change selected price.') &&
+  waxcashHtml.includes('allowProductionFallback: false') &&
+  !waxcashHtml.includes('allowProductionFallback: true') &&
+  !waxcashHtml.includes('api.PRODUCTION_BASE_URL') &&
+  !waxcashHtml.includes('>1m</button>') &&
+  !waxcashHtml.includes('>15m</button>') &&
+  !waxcashHtml.includes('>1h</button>') &&
+  !waxcashHtml.includes('>Indicators</button>') &&
   !waxcashAnalyticsFrontend.includes('Open Alcor chart') &&
   !waxcashAnalyticsFrontend.includes('wx-external-chart-linkcard') &&
   !waxcashAnalyticsFrontend.includes('<iframe') &&

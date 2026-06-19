@@ -168,7 +168,6 @@
       color: #d8dee8;
       white-space: nowrap;
     }
-    .wx-toolbar-button,
     .wx-view-button {
       border: 1px solid transparent;
       background: transparent;
@@ -181,11 +180,15 @@
       cursor: pointer;
       white-space: nowrap;
     }
-    .wx-toolbar-button.is-active,
     .wx-view-button.is-active {
       color: #1e7cff;
       border-color: rgba(30,124,255,0.35);
       background: rgba(30,124,255,0.08);
+    }
+    .wx-chart-mode-label {
+      color: var(--muted);
+      font-weight: 800;
+      white-space: nowrap;
     }
     .wx-chart-source-row {
       padding: 10px 14px 0;
@@ -343,17 +346,12 @@
         </div>
         <div class="wx-chart-toolbar" aria-label="Chart display toolbar">
           <span id="wx-chart-pair-title" class="wx-pair-title">WAXCASH/WAX</span>
-          <button class="wx-toolbar-button" type="button" aria-pressed="false">1m</button>
-          <button class="wx-toolbar-button" type="button" aria-pressed="false">15m</button>
-          <button class="wx-toolbar-button" type="button" aria-pressed="false">1h</button>
-          <button class="wx-toolbar-button is-active" type="button" aria-pressed="true">1D</button>
-          <button class="wx-toolbar-button" type="button" aria-pressed="false">W</button>
-          <button class="wx-toolbar-button" type="button" aria-pressed="false">M</button>
-          <button class="wx-toolbar-button" type="button" aria-pressed="false">Indicators</button>
+          <span class="wx-chart-mode-label">1D source-backed candles</span>
+          <span class="wx-chart-mode-label">Lightweight Charts renderer</span>
         </div>
         <div class="wx-chart-source-row">
           <span id="wx-chart-feed-label">Alcor pool #8388 display feed</span>
-          <small>WAX per WAXCASH candles. Display-only chart feed; WaxOnEdge proof fields remain stats authority.</small>
+          <small>WAX per WAXCASH candles from WaxOnEdge indexed chart/trade rows. Display controls do not change selected price.</small>
         </div>
         <div id="wx-chart" class="wx-chart-host" aria-live="polite">
           <div class="wx-chart-empty">Loading WAX-per-WAXCASH candles.</div>
@@ -397,8 +395,8 @@
 (function () {
   'use strict';
   var api = window.MOONBOYS_API || {};
-  var info = api.getApiBaseInfo ? api.getApiBaseInfo({ allowProductionFallback: true }) : null;
-  var baseUrl = String((info && info.url) || api.BASE_URL || api.PRODUCTION_BASE_URL || '').replace(/\/$/, '');
+  var info = api.getApiBaseInfo ? api.getApiBaseInfo({ allowProductionFallback: false }) : null;
+  var baseUrl = String((info && info.url) || '').replace(/\/$/, '');
   if (!baseUrl || !window.fetch) return;
   var nativeFetch = window.fetch;
   window.fetch = function (input, init) {

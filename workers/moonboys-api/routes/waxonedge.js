@@ -7235,6 +7235,13 @@ function waxcashBuildPairTableSection(pairs = [], selectedWaxPool = null) {
   };
 }
 
+function waxcashChartFeedPool(pairs = [], selectedWaxPool = null) {
+  return (pairs || []).find((pair) =>
+    moonboysCandleSource(pair?.source) === 'swap.alcor' && String(pair?.pair_id || '') === '8388') ||
+    selectedWaxPool ||
+    null;
+}
+
 async function buildWaxcashAnalytics(db) {
   const [detail, proofWrapper] = await Promise.all([
     getToken(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL),
@@ -7250,20 +7257,35 @@ async function buildWaxcashAnalytics(db) {
   const selectedPriceWax = asNumber(headline.og_headline_price_wax);
   const selectedPriceUsd = asNumber(headline.og_headline_price_usd);
   const selectedWaxPool = proof.selected_largest_wax_reserve_pool || null;
-  const rawChart = selectedWaxPool?.source && selectedWaxPool?.pair_id
+  const chartFeedPool = waxcashChartFeedPool(proof.all_pairs || [], selectedWaxPool);
+  let rawChart = chartFeedPool?.source && chartFeedPool?.pair_id
     ? await listChartCandlesBySource(db, {
-      source: selectedWaxPool.source,
-      pair_id: selectedWaxPool.pair_id,
+      source: chartFeedPool.source,
+      pair_id: chartFeedPool.pair_id,
       interval: '1D',
       limit: 120,
     })
-    : { chart_source: null, candles: [], unavailable: 'selected_direct_wax_price_pair_unavailable' };
-  const normalizedChart = normalizeWaxcashWaxCandles(rawChart.candles || [], { selectedPriceWax });
+    : { chart_source: null, candles: [], unavailable: 'waxcash_chart_feed_pair_unavailable' };
+  let normalizedChart = normalizeWaxcashWaxCandles(rawChart.candles || [], { selectedPriceWax });
+  let chartBuild = null;
+  if (chartFeedPool?.source && chartFeedPool?.pair_id && !normalizedChart.candles.length) {
+    chartBuild = await buildInternalDailyCandlesForPair(db, chartFeedPool);
+    if (chartBuild?.candles_written > 0) {
+      rawChart = await listChartCandlesBySource(db, {
+        source: chartFeedPool.source,
+        pair_id: chartFeedPool.pair_id,
+        interval: '1D',
+        limit: 120,
+      });
+      normalizedChart = normalizeWaxcashWaxCandles(rawChart.candles || [], { selectedPriceWax });
+    }
+  }
   const chart = {
     ...rawChart,
     candles: normalizedChart.candles,
     candle_normalization: normalizedChart.summary,
-    unavailable: normalizedChart.candles.length ? null : (rawChart.unavailable || 'waxcash_wax_chart_candles_unavailable_after_direction_normalization'),
+    build_from_indexed_trades: chartBuild,
+    unavailable: normalizedChart.candles.length ? null : (chartBuild?.reason || rawChart.unavailable || 'waxcash_wax_chart_candles_unavailable_after_direction_normalization'),
   };
   const liveSupplyProof = await fetchWaxcashLiveSupplyProof(db, token);
   const circulatingSupply = asNumber(detailStats.circulating_supply ?? token.circulating_supply);
@@ -7444,8 +7466,9 @@ async function buildWaxcashAnalytics(db) {
       inverted_count: chart.candle_normalization?.inverted_count || 0,
       source: chart.chart_source?.source || null,
       pair_id: chart.chart_source?.pair_id || null,
-      pair_label: selectedWaxPool?.pair_label || headline.og_headline_price_pair_label || null,
+      pair_label: chartFeedPool?.pair_label || selectedWaxPool?.pair_label || headline.og_headline_price_pair_label || null,
       candles: chart.candles || [],
+      build_from_indexed_trades: chart.build_from_indexed_trades || null,
       unavailable: chart.unavailable || null,
       no_fake_value: true,
     },
