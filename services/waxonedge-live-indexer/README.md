@@ -99,6 +99,10 @@ Fresh rolling metrics include latest observed price, latest trade time, 1h volum
 
 Returns compact fresh-start history metadata, persisted observed trade count, rolling 1D candle count, and completion flags. It does not expose fake backfill status and does not build candles from reserves.
 
+### `GET /history/trades`
+
+Returns a bounded, paginated list of persisted real WAXCASH-related trade rows observed by the live indexer. Use `limit` and `cursor` query parameters. This endpoint exposes only persisted observed rows; it does not synthesize missing trades or backfill from reserves.
+
 ### `GET /stream`
 
 Returns heartbeat events and, when `WAXONEDGE_LIVE_ENABLE_STREAM=true`, real `token_update` events from observed verified trade rows. It does not emit fake updates.

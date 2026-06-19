@@ -110,10 +110,17 @@ ok('wrangler documents WaxOnEdge live indexer probe env without committing share
   wrangler.includes('wrangler secret put WAXONEDGE_LIVE_SHARED_SECRET') &&
   !/^\s*WAXONEDGE_LIVE_INDEXER_URL\s*=\s*"http:\/\/127\.0\.0\.1:8789"/m.test(wrangler) &&
   !/WAXONEDGE_LIVE_SHARED_SECRET\s*=/.test(wrangler));
+ok('wrangler configures real WAX Hyperion source for live WaxOnEdge backfill',
+  wrangler.includes('WAXONEDGE_HYPERION_API = "https://wax.eosusa.io/v2"'));
 ok('worker computes WaxOnEdge 5/15 minute and holder-snapshot sub-cadences',
   route.includes('minute % 5 === 0') &&
   route.includes('minute % 15 === 0') &&
   route.includes('hour % 2 === 0'));
+ok('Worker scheduled sync runs WAXCASH-specific live coverage jobs',
+  route.includes('syncPinnedWaxcashPairs(env, syncCycleId)') &&
+  route.includes('syncLiveIndexerHistory(env)') &&
+  route.includes('syncWaxcashHolderSnapshot(env)') &&
+  !route.includes("recordSyncRun(env.DB, 'holders', 'skipped'"));
 ok('wrangler wires same-origin WaxOnEdge route',
   wrangler.includes('cryptomoonboys.com/api/waxonedge/*') &&
   wrangler.includes('zone_name = "cryptomoonboys.com"'));
@@ -591,6 +598,51 @@ function createEmptyWaxonedgeHealthDb() {
     },
   };
 }
+
+function createWriteCaptureDb() {
+  const writes = [];
+  const db = {
+    writes,
+    prepare(sql) {
+      return {
+        bind(...params) {
+          return {
+            async first() {
+              if (sql.includes('COUNT')) return { count: 0 };
+              return null;
+            },
+            async all() {
+              return { results: [] };
+            },
+            async run() {
+              writes.push({ sql, params });
+              return { success: true };
+            },
+          };
+        },
+        async first() {
+          if (sql.includes('COUNT')) return { count: 0 };
+          return null;
+        },
+        async all() {
+          return { results: [] };
+        },
+        async run() {
+          writes.push({ sql, params: [] });
+          return { success: true };
+        },
+      };
+    },
+    async batch(statements) {
+      for (const statement of statements || []) {
+        if (statement?.run) await statement.run();
+        else writes.push(statement);
+      }
+      return statements || [];
+    },
+  };
+  return db;
+}
 ok('VPS live indexer binds locally by default and allows explicit host override',
   liveIndexer.loadConfig({}).bind_host === '127.0.0.1' &&
   liveIndexer.loadConfig({ WAXONEDGE_LIVE_BIND_HOST: '0.0.0.0' }).bind_host === '0.0.0.0' &&
@@ -627,6 +679,10 @@ ok('VPS live indexer /stream contract supports heartbeat and real token update e
   !liveIndexerSource.includes('Math.random'));
 ok('VPS live indexer exposes fresh-start rolling history without claiming backfill',
   liveIndexerSource.includes("pathname === '/history'") &&
+  liveIndexerSource.includes("pathname === '/history/trades'") &&
+  liveIndexerSource.includes('historyTradesPayload(state') &&
+  liveIndexerSource.includes('waxcash_trade_count') &&
+  liveIndexerSource.includes('next_cursor') &&
   liveIndexerSource.includes("history_mode: FRESH_HISTORY_MODE") &&
   liveIndexerSource.includes('history_complete: false') &&
   liveIndexerSource.includes('history_backfilled: false') &&
@@ -656,6 +712,118 @@ ok('VPS live indexer exposes fresh-start rolling history without claiming backfi
   !liveIndexerSource.includes('fs.renameSync') &&
   !liveIndexerSource.includes('fs.mkdirSync') &&
   !liveIndexerSource.includes('reserve-derived candles'));
+{
+  const imported = __waxonedgeTestHooks.normalizeLiveIndexerHistoryTrade({
+    trade_id: 'live-8388-a',
+    source: 'swap.alcor',
+    pair_id: '8388',
+    contract: 'graffitiking',
+    symbol: 'WAXCASH',
+    quote_contract: 'eosio.token',
+    quote_symbol: 'WAX',
+    price: '0.03',
+    volume: '10',
+    side: 'swap',
+    traded_at: '2026-06-18T00:00:00.000Z',
+  });
+  ok('Worker normalizes live-indexer WAXCASH history rows into D1 trade rows with WAX-volume proof',
+    imported &&
+    imported.source === 'swap.alcor' &&
+    imported.pair_id === '8388' &&
+    imported.contract === 'graffitiking' &&
+    imported.symbol === 'WAXCASH' &&
+    imported.price === '0.03' &&
+    JSON.parse(imported.raw_json).volume_wax === '0.3' &&
+    JSON.parse(imported.raw_json).reference_ingestion === 'waxonedge-live-indexer /history');
+  const db = createWriteCaptureDb();
+  const requestedHistoryUrls = [];
+  const historyResult = await __waxonedgeTestHooks.syncLiveIndexerHistory({
+    DB: db,
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live.example',
+  }, async (url) => {
+    requestedHistoryUrls.push(url);
+    return ({
+    ok: true,
+    status: 200,
+    async text() {
+      return JSON.stringify({
+        history_started_at: '2026-06-18T00:00:00.000Z',
+        persisted_trade_count: 1,
+        trades: [{
+          trade_id: 'live-8388-a',
+          source: 'swap.alcor',
+          pair_id: '8388',
+          contract: 'graffitiking',
+          symbol: 'WAXCASH',
+          quote_contract: 'eosio.token',
+          quote_symbol: 'WAX',
+          price: '0.03',
+          volume: '10',
+          traded_at: '2026-06-18T00:00:00.000Z',
+        }],
+      });
+    },
+  });
+  });
+  ok('Worker imports live-indexer history into waxonedge_trades for rolling volume and candle backfill',
+    historyResult.ok &&
+    requestedHistoryUrls[0] === 'https://live.example/history/trades?limit=500' &&
+    historyResult.imported_trade_count === 1 &&
+    db.writes.some((write) => write.sql.includes('INSERT INTO waxonedge_trades') && write.params[0] === 'swap.alcor' && write.params[2] === '8388') &&
+    db.writes.some((write) => write.params.includes('live_indexer_history_import')));
+  const metadataOnlyDb = createWriteCaptureDb();
+  const metadataOnlyResult = await __waxonedgeTestHooks.syncLiveIndexerHistory({
+    DB: metadataOnlyDb,
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live.example',
+  }, async () => ({
+    ok: true,
+    status: 200,
+    async text() {
+      return JSON.stringify({
+        history: {
+          history_started_at: '2026-06-18T00:00:00.000Z',
+          persisted_trade_count: 12,
+        },
+      });
+    },
+  }));
+  ok('Worker does not mark live-indexer metadata-only history payload as successful import',
+    metadataOnlyResult.ok &&
+    metadataOnlyResult.status === 'skipped' &&
+    metadataOnlyResult.imported_trade_count === 0 &&
+    metadataOnlyResult.reason === 'live_indexer_history_trades_not_exposed' &&
+    !metadataOnlyDb.writes.some((write) => write.sql.includes('INSERT INTO waxonedge_trades')) &&
+    metadataOnlyDb.writes.some((write) => write.params.includes('live_indexer_history_trades_not_exposed')));
+}
+{
+  const snapshotAt = '2026-06-18T00:00:00.000Z';
+  const holders = __waxonedgeTestHooks.holderRowsFromHyperionPayload({
+    tokens: [
+      { account: 'alice', contract: 'graffitiking', symbol: 'WAXCASH', amount: '12.50000000' },
+      { owner: 'bob', contract: 'graffitiking', quantity: '0.00000000 WAXCASH' },
+      { account: 'carol', contract: 'graffitiking', quantity: '2.00000000 WAXCASH' },
+      { account: 'wrong', contract: 'other.token', quantity: '5.00000000 WAXCASH' },
+    ],
+  }, snapshotAt);
+  ok('WAXCASH holder snapshot parser counts only positive graffitiking::WAXCASH balances',
+    holders.length === 2 &&
+    holders[0].account === 'alice' &&
+    holders[0].balance === '12.5' &&
+    holders[1].account === 'carol' &&
+    holders.every((holder) => holder.snapshot_at === snapshotAt && holder.source === 'hyperion_state_get_tokens'));
+  const holderFetch = await __waxonedgeTestHooks.fetchWaxcashHolderRows({}, 1000, '');
+  const holderDb = createWriteCaptureDb();
+  const holderSync = await __waxonedgeTestHooks.syncWaxcashHolderSnapshot({ DB: holderDb });
+  ok('WAXCASH holder sync does not use account-scoped Hyperion state/get_tokens as a global holder source',
+    holderFetch.skipped === true &&
+    holderFetch.reason === 'holder_global_source_unavailable' &&
+    holderSync.status === 'skipped' &&
+    holderSync.holder_count === null &&
+    holderSync.reason === 'holder_global_source_unavailable' &&
+    holderDb.writes.some((write) => write.params.includes('holder_global_source_unavailable')) &&
+    !route.includes("hyperionStateEndpoint(env, '/state/get_tokens')") &&
+    !route.includes("source_endpoint: 'hyperion_state_get_tokens'"));
+}
 ok('VPS live indexer exposes no fake live events or random movement',
   liveIndexerSource.includes('uses_fake_live_data: false') &&
   liveIndexerSource.includes('emits_fake_token_updates: false') &&
@@ -4181,8 +4349,8 @@ ok('supply sync reports honest bounded rotation status',
   route.includes('await upsertSourceIndexState(env.DB, SUPPLY_SYNC_SOURCE'));
 ok('scheduled full index can still run legacy combined workflow when free-safe is disabled',
   route.includes('} else if (shouldRunFullIndex) {') &&
-  route.includes('const [alcor, core, nefty] = await Promise.all') &&
-  route.lastIndexOf('const aggregates = await aggregateTokenAnalytics(env);') > route.indexOf('const [alcor, core, nefty] = await Promise.all'));
+  route.includes('const [alcor, core, nefty, pinned] = await Promise.all') &&
+  route.lastIndexOf('const aggregates = await aggregateTokenAnalytics(env);') > route.indexOf('const [alcor, core, nefty, pinned] = await Promise.all'));
 ok('aggregate backfill can run as a focused cron/admin pathway',
   route.includes('export async function runWaxOnEdgeAggregateBackfill') &&
   route.includes("cron === 'waxonedge-backfill'") &&
@@ -4732,6 +4900,12 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     normalizedLogswap.pair_id === tablePair.pair_id &&
     normalizedLogswap.trade_id === 'swap.alcor:logswap:2668:333' &&
     __waxonedgeTestHooks.moonboysCandleSource('alcorv2') === 'swap.alcor');
+  ok('Worker pins swap.alcor #8388 discovery for the WAXCASH display chart feed',
+    route.includes('async function syncPinnedWaxcashPairs') &&
+    route.includes("pins = [{ source: 'swap.alcor', pair_id: '8388', reason: 'waxcash_display_chart_feed' }]") &&
+    route.includes("lowerBound: '8388'") &&
+    route.includes('alcor_8388_indexed') &&
+    route.includes('source_coverage: pairs.map((pair) => pair.source)'));
   const alcorWaxcash8388 = __waxonedgeTestHooks.normalizeCoreDexPair({
     source: 'swap.alcor',
     normalizer: 'tokenA-tokenB',
@@ -5561,9 +5735,9 @@ ok('Wapaca reference path for alcormarket trades is documented honestly',
 ok('scheduled sync can index trade rows before candle backfill',
   route.includes("cron === 'waxonedge-trade-backfill'") &&
   route.includes('runWaxOnEdgeTradeBackfill') &&
-  /const alcorTradeBackfill = await syncAlcorMarketTradeRows\(env\);\s*const ammTradeBackfill = await syncAmmSwapTradeRows\(env\);/.test(route) &&
+  /const liveIndexerHistory = await syncLiveIndexerHistory\(env\);\s*const alcorTradeBackfill = await syncAlcorMarketTradeRows\(env\);\s*const ammTradeBackfill = await syncAmmSwapTradeRows\(env\);/.test(route) &&
   !route.includes('const [alcorTradeBackfill, ammTradeBackfill] = await Promise.all') &&
-  /const tradeBackfill = await runWaxOnEdgeTradeBackfill\(env\);\s*const aggregates = await aggregateTokenAnalytics\(env\);\s*const candleBackfill = await planWaxOnEdgeCandleBackfill\(env\)/.test(route));
+  /const tradeBackfill = await runWaxOnEdgeTradeBackfill\(env\);\s*const holders = await syncWaxcashHolderSnapshot\(env\);\s*const aggregates = await aggregateTokenAnalytics\(env\);\s*const candleBackfill = await planWaxOnEdgeCandleBackfill\(env\)/.test(route));
 ok('candle endpoint examples expose selected chart source and pair id',
   __waxonedgeTestHooks.candleUrlExample('alcor', '29') === '/api/waxonedge/candles?duration=1d&src=alcor&pair_id=29' &&
   route.includes('chart_src') &&
@@ -6768,7 +6942,7 @@ ok('WAXCASH analytics frontend renders backend sections instead of raw proof-row
   waxcashAnalyticsFrontend.includes('payload.sections || {}') &&
   waxcashAnalyticsFrontend.includes('sections.token_stats') &&
   waxcashAnalyticsFrontend.includes('sections.pair_table') &&
-  waxcashAnalyticsFrontend.includes('sections.chart') &&
+  waxcashAnalyticsFrontend.includes('sections.chart_external') &&
   waxcashAnalyticsFrontend.includes('Unavailable') &&
   waxcashAnalyticsFrontend.includes('row.reason') &&
   !waxcashAnalyticsFrontend.includes('pair_price_relative_to_waxcash'));
@@ -6787,21 +6961,28 @@ ok('WAXCASH analytics frontend keeps values compact and proof reasons in tooltip
   waxcashHtml.includes('table-layout: fixed') &&
   waxcashHtml.includes('white-space: normal') &&
   waxcashHtml.includes('overflow-wrap: anywhere'));
-ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with display-only pool controls',
+ok('WAXCASH analytics frontend keeps visible chart external and separate from OG backend proof',
   waxcashAnalyticsFrontend.includes('sections.chart_external') &&
-  waxcashAnalyticsFrontend.includes('renderLightweightCandles(payload, feed)') &&
-  waxcashAnalyticsFrontend.includes('tradingViewFeedCandles(feed)') &&
-  waxcashAnalyticsFrontend.includes('return chart.feed_url || null') &&
-  waxcashAnalyticsFrontend.includes('backend did not provide sections.chart.feed_url') &&
-  !waxcashAnalyticsFrontend.includes("|| '/api/waxonedge/waxcash-analytics/chart-feed?resolution=1D'") &&
-  waxcashAnalyticsFrontend.includes('loadChartFeed(state.payload)') &&
-  waxcashAnalyticsFrontend.includes('window.LightweightCharts') &&
-  waxcashAnalyticsFrontend.includes('chartCandles(feed)') &&
+  waxcashAnalyticsFrontend.includes('DEFAULT_EXTERNAL_CHART') &&
+  waxcashAnalyticsFrontend.includes('function renderExternalChart(payload)') &&
+  waxcashAnalyticsFrontend.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
+  waxcashAnalyticsFrontend.includes('wx-external-chart-frame') &&
+  waxcashAnalyticsFrontend.includes('full embedded chart') &&
+  !waxcashAnalyticsFrontend.includes('Open external chart') &&
+  !waxcashAnalyticsFrontend.includes('wx-external-chart-link') &&
+  waxcashAnalyticsFrontend.includes('renderExternalChart(state.payload)') &&
+  !waxcashAnalyticsFrontend.includes('/api/waxonedge/waxcash-analytics/chart-feed') &&
+  !waxcashAnalyticsFrontend.includes('loadChartFeed') &&
+  !waxcashAnalyticsFrontend.includes('chartFeedUrl') &&
+  !waxcashAnalyticsFrontend.includes('renderLightweightCandles') &&
+  !waxcashAnalyticsFrontend.includes('tradingViewFeedCandles') &&
+  !waxcashAnalyticsFrontend.includes('window.LightweightCharts') &&
+  !waxcashAnalyticsFrontend.includes('chartCandles(feed)') &&
   !waxcashAnalyticsFrontend.includes('Array.isArray(chart.candles)') &&
   !waxcashAnalyticsFrontend.includes('renderChart(state.payload') &&
   !waxcashAnalyticsFrontend.includes('WAXP/WAXCASH') &&
   waxcashAnalyticsFrontend.includes("'Alcor pool #' + external.pool_id + ' display feed'") &&
-  waxcashAnalyticsFrontend.includes('Backend chart display feed') &&
+  waxcashAnalyticsFrontend.includes('External WAXCASH/WAX display feed') &&
   waxcashAnalyticsFrontend.includes('pickPoolViews(rows)') &&
   waxcashAnalyticsFrontend.includes('Selected proof pool') &&
   waxcashAnalyticsFrontend.includes("view.label + ' detail'") &&
@@ -6809,14 +6990,24 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   waxcashAnalyticsFrontend.includes('Worst/low liquidity pool') &&
   waxcashAnalyticsFrontend.includes('Weighted/valued pool view') &&
   waxcashAnalyticsFrontend.includes('Alcor pool #') &&
-  waxcashHtml.includes('lightweight-charts@5.2.0') &&
-  waxcashHtml.includes('Backend feed only') &&
-  waxcashHtml.includes('Worker UDF-shaped feed') &&
-  waxcashHtml.includes('Lightweight Charts renderer') &&
-  waxcashHtml.includes('wx-lightweight-chart') &&
+  !waxcashHtml.includes('lightweight-charts@5.2.0') &&
+  !waxcashHtml.includes('Backend feed only') &&
+  !waxcashHtml.includes('Worker UDF-shaped feed') &&
+  !waxcashHtml.includes('Lightweight Charts renderer') &&
+  !waxcashHtml.includes('wx-lightweight-chart') &&
+  waxcashHtml.includes('Full embedded chart') &&
+  waxcashHtml.includes('Single WAXCASH/WAX feed') &&
+  waxcashHtml.includes('Display-only') &&
+  waxcashHtml.includes('wx-external-chart-frame') &&
+  waxcashHtml.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
+  waxcashHtml.includes('WAXCASH/WAX full embedded chart') &&
+  !waxcashHtml.includes('Open external chart') &&
+  !waxcashHtml.includes('wx-external-chart-link') &&
+  waxcashHtml.includes('height: 660px') &&
+  waxcashHtml.includes('min-height: 660px') &&
   waxcashHtml.includes('wx-view-controls') &&
   waxcashHtml.includes('Display-only pair detail views') &&
-  waxcashHtml.includes('WAX per WAXCASH candles from the WaxOnEdge Worker feed. Display controls do not change selected price.') &&
+  waxcashHtml.includes('Standalone chart display, separate from WaxOnEdge token detail proof.') &&
   waxcashHtml.includes('allowProductionFallback: false') &&
   waxcashHtml.includes('API base URL unavailable — MOONBOYS_API not configured.') &&
   waxcashHtml.includes('Display-only source-backed pair detail views') &&
@@ -6833,12 +7024,11 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   !waxcashHtml.includes('>Indicators</button>') &&
   !waxcashAnalyticsFrontend.includes('Open Alcor chart') &&
   !waxcashAnalyticsFrontend.includes('wx-external-chart-linkcard') &&
-  !waxcashAnalyticsFrontend.includes('<iframe') &&
-  !waxcashAnalyticsFrontend.includes('sandbox=') &&
-  !waxcashAnalyticsFrontend.includes('allow-popups') &&
-  !waxcashHtml.includes('.wx-external-chart-frame') &&
+  waxcashAnalyticsFrontend.includes('<iframe') &&
+  waxcashAnalyticsFrontend.includes('sandbox=') &&
+  waxcashAnalyticsFrontend.includes('allow-popups') &&
+  waxcashHtml.includes('.wx-external-chart-frame') &&
   !waxcashAnalyticsFrontend.includes('External Alcor chart unavailable in embed.') &&
-  waxcashAnalyticsFrontend.includes('return tradingViewFeedCandles(feed)') &&
   !/Deposit|Add Liquidity|Swap|Trade on Swap|Connect Wallet|wallet selector|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
 ok('WAXCASH analytics backend uses chart-feed labels and alias-aware trade volume matching',
   route.includes("pair_label: 'WAXCASH/WAX'") &&
