@@ -4,10 +4,10 @@
   var ENDPOINT = '/api/waxonedge/waxcash-analytics';
   var DASH = '--';
   var DEFAULT_EXTERNAL_CHART = {
-    source: 'alcor',
-    pool_id: '8388',
+    source: 'geckoterminal',
+    pool_id: 'swap-alcor-8388',
     pair_label: 'WAXCASH/WAX',
-    url: 'https://alcor.exchange/v/wax/analytics/pools/8388',
+    url: 'https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1',
     role: 'external_visual_reference_only',
     affects_waxonedge_metrics: false,
   };
@@ -267,7 +267,7 @@
     var sections = (payload || {}).sections || {};
     var external = sections.chart_external || {};
     var url = String(external.url || DEFAULT_EXTERNAL_CHART.url);
-    if (!/^https:\/\/alcor\.exchange\//.test(url)) url = DEFAULT_EXTERNAL_CHART.url;
+    if (!/^https:\/\/www\.geckoterminal\.com\/wax\/pools\/swap-alcor-8388(?:\?|$)/.test(url)) url = DEFAULT_EXTERNAL_CHART.url;
     return {
       source: external.source || DEFAULT_EXTERNAL_CHART.source,
       pool_id: external.pool_id || DEFAULT_EXTERNAL_CHART.pool_id,
@@ -283,7 +283,7 @@
     var external = chartExternalConfig(payload);
     if (!host) return;
     host.innerHTML =
-      '<iframe class="wx-external-chart-frame" src="' + esc(external.url) + '" title="' + esc((external.pair_label || 'WAXCASH/WAX') + ' full embedded chart') + '" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>';
+      '<iframe class="wx-external-chart-frame" src="' + esc(external.url) + '" title="' + esc((external.pair_label || 'WAXCASH/WAX') + ' GeckoTerminal candle chart') + '" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>';
   }
 
   function render(payload) {

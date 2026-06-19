@@ -144,6 +144,14 @@ ok('waxcash frontend removes visible explanatory chart/status/proof labels',
   !waxcashHtml.includes('Display-only pair detail views') &&
   !waxcashHtml.includes('wx-view-controls') &&
   !waxcashHtml.includes('wx-pair-detail'));
+ok('waxcash frontend embeds GeckoTerminal WAXCASH/WAX candle chart instead of Alcor pool analytics',
+  waxcashHtml.includes('https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1') &&
+  waxcashHtml.includes('WAXCASH/WAX GeckoTerminal candle chart') &&
+  waxcashAnalyticsJs.includes('https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1') &&
+  waxcashAnalyticsJs.includes('GeckoTerminal candle chart') &&
+  !waxcashHtml.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
+  !waxcashAnalyticsJs.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
+  !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-analytics/chart-feed'));
 ok('waxcash pair table exposes liquidity and 24h volume sort controls',
   waxcashHtml.includes('id="wx-sort-liquidity"') &&
   waxcashHtml.includes('data-sort="liquidity"') &&

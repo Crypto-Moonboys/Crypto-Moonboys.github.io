@@ -2528,18 +2528,18 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.sections?.price_proof &&
       waxcashAnalytics.sections?.pair_table?.rows?.length === waxcashAnalytics.pairs.length &&
       waxcashAnalytics.sections?.chart?.price_unit === 'WAX_per_WAXCASH' &&
-      waxcashAnalytics.sections?.chart_external?.source === 'alcor' &&
-      waxcashAnalytics.sections?.chart_external?.pool_id === '8388' &&
+      waxcashAnalytics.sections?.chart_external?.source === 'geckoterminal' &&
+      waxcashAnalytics.sections?.chart_external?.pool_id === 'swap-alcor-8388' &&
       waxcashAnalytics.sections?.chart_external?.role === 'external_visual_reference_only' &&
       waxcashAnalytics.sections?.chart_external?.affects_waxonedge_metrics === false,
       JSON.stringify(waxcashAnalytics.sections));
-    ok('WAXCASH external Alcor chart metadata does not affect backend proof metrics',
+    ok('WAXCASH external GeckoTerminal chart metadata does not affect backend proof metrics',
       waxcashAnalytics.headline_price?.headline_price_source_policy === 'og_woe_deepest_usable_direct_wax_pool' &&
       Number(waxcashAnalytics.stats.selected_price_wax) === 0.03 &&
       waxcashAnalytics.stats.fdv_wax === null &&
       Number(waxcashAnalytics.stats.market_cap_wax) === 15000 &&
       waxcashAnalytics.stats.market_cap_basis === 'circulating_supply_x_selected_price' &&
-      waxcashAnalytics.sections?.chart_external?.url === 'https://alcor.exchange/v/wax/analytics/pools/8388' &&
+      waxcashAnalytics.sections?.chart_external?.url === 'https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1' &&
       waxcashAnalytics.sections?.price_proof?.basis === 'og_woe_deepest_usable_direct_wax_pool',
       JSON.stringify({
         stats: waxcashAnalytics.stats,
@@ -6967,9 +6967,10 @@ ok('WAXCASH analytics frontend keeps visible chart external and separate from OG
   waxcashAnalyticsFrontend.includes('sections.chart_external') &&
   waxcashAnalyticsFrontend.includes('DEFAULT_EXTERNAL_CHART') &&
   waxcashAnalyticsFrontend.includes('function renderExternalChart(payload)') &&
-  waxcashAnalyticsFrontend.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
+  waxcashAnalyticsFrontend.includes('https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1') &&
+  waxcashAnalyticsFrontend.includes('GeckoTerminal candle chart') &&
+  !waxcashAnalyticsFrontend.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
   waxcashAnalyticsFrontend.includes('wx-external-chart-frame') &&
-  waxcashAnalyticsFrontend.includes('full embedded chart') &&
   !waxcashAnalyticsFrontend.includes('Open external chart') &&
   !waxcashAnalyticsFrontend.includes('wx-external-chart-link') &&
   waxcashAnalyticsFrontend.includes('renderExternalChart(state.payload)') &&
@@ -7000,8 +7001,9 @@ ok('WAXCASH analytics frontend keeps visible chart external and separate from OG
   !waxcashHtml.includes('Single WAXCASH/WAX feed') &&
   !waxcashHtml.includes('Display-only') &&
   waxcashHtml.includes('wx-external-chart-frame') &&
-  waxcashHtml.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
-  waxcashHtml.includes('WAXCASH/WAX full embedded chart') &&
+  waxcashHtml.includes('https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1') &&
+  waxcashHtml.includes('WAXCASH/WAX GeckoTerminal candle chart') &&
+  !waxcashHtml.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
   !waxcashHtml.includes('Open external chart') &&
   !waxcashHtml.includes('wx-external-chart-link') &&
   waxcashHtml.includes('height: 660px') &&
@@ -7030,7 +7032,7 @@ ok('WAXCASH analytics frontend keeps visible chart external and separate from OG
   waxcashAnalyticsFrontend.includes('allow-popups') &&
   waxcashHtml.includes('.wx-external-chart-frame') &&
   !waxcashAnalyticsFrontend.includes('External Alcor chart unavailable in embed.') &&
-  !/Deposit|Add Liquidity|Swap|Trade on Swap|Connect Wallet|wallet selector|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
+  !/(>|\bvalue=["'])(Deposit|Add Liquidity|Swap|Trade on Swap|Connect Wallet|wallet selector)(<|["'])|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
 ok('WAXCASH analytics frontend keeps pair table and adds USD-first liquidity/24h volume sorting',
   waxcashHtml.includes('id="wx-sort-liquidity"') &&
   waxcashHtml.includes('data-sort="liquidity"') &&

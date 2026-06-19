@@ -8421,10 +8421,10 @@ async function buildWaxcashAnalytics(db) {
       no_fake_value: true,
     },
     chart_external: {
-      source: 'alcor',
-      pool_id: '8388',
+      source: 'geckoterminal',
+      pool_id: 'swap-alcor-8388',
       pair_label: 'WAXCASH/WAX',
-      url: 'https://alcor.exchange/v/wax/analytics/pools/8388',
+      url: 'https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1',
       role: 'external_visual_reference_only',
       affects_waxonedge_metrics: false,
     },
