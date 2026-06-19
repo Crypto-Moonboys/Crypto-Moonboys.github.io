@@ -2154,6 +2154,16 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.chart?.chart_source?.pair_id !== waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id &&
       waxcashAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY' &&
       waxcashAnalytics.chart?.chart_source?.pair_id !== 'WAXWUFB');
+    ok('WAXCASH analytics 24h change comes from selected proof history, not display chart candles',
+      waxcashAnalytics.stats.metric_status.change_24h.source === 'selected_price_proof_pool_history' &&
+      waxcashAnalytics.stats.metric_status.change_24h.basis.includes('selected proof pool') &&
+      waxcashAnalytics.sections?.chart?.pair_id === '8388' &&
+      waxcashAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY',
+      JSON.stringify({
+        change_24h: waxcashAnalytics.stats.change_24h,
+        change_status: waxcashAnalytics.stats.metric_status.change_24h,
+        chart: waxcashAnalytics.sections?.chart,
+      }));
     const waxcashChartOhlcValues = (waxcashAnalytics.chart?.candles || []).flatMap((candle) =>
       ['open', 'high', 'low', 'close'].map((field) => Number(candle[field])));
     const waxcashChartCloses = (waxcashAnalytics.chart?.candles || []).map((candle) => Number(candle.close));
@@ -2267,6 +2277,79 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       JSON.stringify({
         chart: onRequestChartAnalytics.chart,
         selected_pair_id: onRequestChartAnalytics.stats.selected_pair_id,
+      }));
+    const noChartFallbackDb = {
+      prepare(sql) {
+        const base = waxcashAnalyticsDb.prepare(sql);
+        return {
+          bind(...params) {
+            const bound = base.bind(...params);
+            return {
+              async all() {
+                const value = await bound.all();
+                if (sql.includes('FROM waxonedge_pairs')) {
+                  return { results: (value.results || []).filter((pair) => pair.pair_id !== '8388') };
+                }
+                return value;
+              },
+              async first() {
+                const value = await this.all();
+                return value.results?.[0] || null;
+              },
+              async run() {
+                return bound.run ? bound.run() : { success: true };
+              },
+            };
+          },
+        };
+      },
+    };
+    const noChartFallbackAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(noChartFallbackDb);
+    ok('WAXCASH chart feed does not fallback to selected proof pool when Alcor #8388 is absent',
+      noChartFallbackAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY' &&
+      noChartFallbackAnalytics.chart?.chart_source === null &&
+      noChartFallbackAnalytics.sections?.chart?.source === null &&
+      noChartFallbackAnalytics.sections?.chart?.pair_id === null &&
+      noChartFallbackAnalytics.chart?.unavailable === 'waxcash_chart_feed_pair_unavailable',
+      JSON.stringify({
+        selected_pair_id: noChartFallbackAnalytics.stats.selected_pair_id,
+        chart: noChartFallbackAnalytics.sections?.chart,
+      }));
+    const noSelectedHistoryDb = {
+      prepare(sql) {
+        const base = waxcashAnalyticsDb.prepare(sql);
+        return {
+          bind(...params) {
+            const bound = base.bind(...params);
+            return {
+              async all() {
+                if (sql.includes('FROM waxonedge_chart_candles') && params[0] === 'swap.nefty' && params[1] === 'WAXCASHWAXLEGACY') {
+                  return { results: [] };
+                }
+                return bound.all();
+              },
+              async first() {
+                const value = await this.all();
+                return value.results?.[0] || null;
+              },
+              async run() {
+                return bound.run ? bound.run() : { success: true };
+              },
+            };
+          },
+        };
+      },
+    };
+    const noSelectedHistoryAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(noSelectedHistoryDb);
+    ok('WAXCASH 24h change stays unavailable when selected proof history is missing even if #8388 chart candles exist',
+      noSelectedHistoryAnalytics.sections?.chart?.pair_id === '8388' &&
+      noSelectedHistoryAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY' &&
+      noSelectedHistoryAnalytics.stats.change_24h === null &&
+      noSelectedHistoryAnalytics.stats.metric_status.change_24h.live === false,
+      JSON.stringify({
+        change_24h: noSelectedHistoryAnalytics.stats.change_24h,
+        change_status: noSelectedHistoryAnalytics.stats.metric_status.change_24h,
+        chart: noSelectedHistoryAnalytics.sections?.chart,
       }));
     ok('/waxcash-analytics returns display-ready backend sections',
       waxcashAnalytics.sections?.token_stats?.rows?.length >= 12 &&
@@ -2532,19 +2615,39 @@ ok('VPS live indexer safely parses request path without trusting Host header',
             },
           };
         }
-        if (sql.includes('FROM waxonedge_trades') && sql.includes('SUM(ABS')) {
+        if (sql.includes('FROM waxonedge_trades') && sql.includes('SELECT source, trade_id')) {
           return {
             bind(...params) {
               return {
                 async all() {
                   const since = String(params[params.length - 1] || '');
-                  const volume = since >= '2026-06-14' ? '136850.54368654' : (since >= '2026-06-08' ? '764308.56919631' : '6816747.33378953');
-                  return { results: [{ volume }] };
+                  const volumeWax = since >= '2026-06-14' ? '136850.54368654' : (since >= '2026-06-08' ? '764308.56919631' : '6816747.33378953');
+                  return {
+                    results: [{
+                      source: 'swap.nefty',
+                      trade_id: `proof-${since}`,
+                      pair_id: 'WAXCASHWAXLEGACY',
+                      contract: 'graffitiking',
+                      symbol: 'WAXCASH',
+                      amount: '999999999',
+                      volume: '999999999',
+                      traded_at: '2026-06-15T00:00:00.000Z',
+                      raw_json: JSON.stringify({ volume_wax: volumeWax, volume: '999999999 WAXCASH' }),
+                    }, {
+                      source: 'swap.nefty',
+                      trade_id: `raw-unproven-${since}`,
+                      pair_id: 'WAXCASHWAXLEGACY',
+                      contract: null,
+                      symbol: null,
+                      amount: '888888888',
+                      volume: '888888888',
+                      traded_at: '2026-06-15T00:00:00.000Z',
+                      raw_json: JSON.stringify({ volume: '888888888 UNKNOWN' }),
+                    }],
+                  };
                 },
                 async first() {
-                  const since = String(params[params.length - 1] || '');
-                  const volume = since >= '2026-06-14' ? '136850.54368654' : (since >= '2026-06-08' ? '764308.56919631' : '6816747.33378953');
-                  return { volume };
+                  return (await this.all()).results[0] || null;
                 },
               };
             },
@@ -2560,9 +2663,11 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       Number(holderTradeWaxcashAnalytics.stats.volume_24h_wax) === 175 &&
       Number(holderTradeWaxcashAnalytics.stats.volume_7d) === 764308.56919631 &&
       Number(holderTradeWaxcashAnalytics.stats.volume_30d) === 6816747.33378953 &&
+      Number(holderTradeWaxcashAnalytics.stats.volume_7d) !== 999999999 &&
       holderTradeWaxcashAnalytics.stats.metric_status.volume_24h.source === 'indexed_pair_or_ticker_volume' &&
-      holderTradeWaxcashAnalytics.stats.metric_status.volume_7d.source === 'indexed_trade_rows_window' &&
-      holderTradeWaxcashAnalytics.stats.metric_status.volume_30d.source === 'indexed_trade_rows_window',
+      holderTradeWaxcashAnalytics.stats.metric_status.volume_7d.source === 'indexed_trade_rows_window_wax_denominated' &&
+      holderTradeWaxcashAnalytics.stats.metric_status.volume_7d.basis === 'indexed_trade_rows_window_wax_denominated' &&
+      holderTradeWaxcashAnalytics.stats.metric_status.volume_30d.source === 'indexed_trade_rows_window_wax_denominated',
       JSON.stringify({
         holder_count: holderTradeWaxcashAnalytics.stats.holder_count,
         volume_24h_wax: holderTradeWaxcashAnalytics.stats.volume_24h_wax,
@@ -4615,6 +4720,25 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     waxcash8388Proof.headline_price.direct_wax_candidates.some((candidate) =>
       candidate.pair_id === '8388' &&
       candidate.reason_codes.includes('v3_poolv3_getprice_proof_unavailable')));
+  const alcorOrderbookWaxcash = {
+    source: 'alcor',
+    pair_id: 'ORDERBOOK-WAXCASH-WAX',
+    token_a_contract: 'graffitiking',
+    token_a_symbol: 'WAXCASH',
+    token_b_contract: 'eosio.token',
+    token_b_symbol: 'WAX',
+    reserve_a: '1000000',
+    reserve_b: '2000',
+  };
+  const waxcashOrderbookProof = __waxonedgeTestHooks.buildWaxcashOgParityProof([alcorOrderbookWaxcash], priceIndex, []);
+  ok('Alcor orderbook WAXCASH/WAX rows are explicitly unsupported instead of treated as V2 reserve pools',
+    waxcashOrderbookProof.headline_price.og_headline_price_wax === null &&
+    waxcashOrderbookProof.headline_price.direct_wax_candidates.some((candidate) =>
+      candidate.source === 'alcor' &&
+      candidate.reason_codes.includes('alcor_orderbook_direct_wax_price_proof_not_implemented')) &&
+    waxcashOrderbookProof.all_pairs.some((pair) =>
+      pair.pair_id === 'ORDERBOOK-WAXCASH-WAX' &&
+      pair.direct_wax_pair === true));
 }
 {
   const stream = { source: 'swap.taco', referenceSource: 'taco', account: 'swap.taco', action: 'exchangelog', parser: 'swap-v2-taco' };
