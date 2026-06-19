@@ -2053,14 +2053,14 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     },
   ];
     const graphTokenRows = [
-      { contract: 'graffitiking', symbol: 'WAXCASH', total_supply: '1000000', circulating_supply: '500000', updated_at: '2026-06-14T11:00:00.000Z' },
-      { contract: 'wuffi', symbol: 'WUF', total_supply: '1000000', circulating_supply: '400000', source_count: 3, source_keys: 'swap.nefty,swap.taco,swap.box', updated_at: '2026-06-14T11:05:00.000Z' },
+      { contract: 'graffitiking', symbol: 'WAXCASH', total_supply: '1000000', circulating_supply: '500000', icon_url: '/img/tokens/waxcash.png', updated_at: '2026-06-14T11:00:00.000Z' },
+      { contract: 'wuffi', symbol: 'WUF', total_supply: '1000000', circulating_supply: '400000', icon_url: '/img/tokens/wuf.png', source_count: 3, source_keys: 'swap.nefty,swap.taco,swap.box', updated_at: '2026-06-14T11:05:00.000Z' },
     { contract: 'abc.token', symbol: 'ABC', total_supply: '1000000', circulating_supply: '300000', updated_at: '2026-06-14T11:06:00.000Z' },
     { contract: 'route.token', symbol: 'ROUTE', total_supply: '1000000', circulating_supply: '200000', updated_at: '2026-06-14T11:06:30.000Z' },
     { contract: 'aigodtokenwx', symbol: 'AIGOD', total_supply: '1000000', circulating_supply: '200000', updated_at: '2026-06-14T11:06:35.000Z' },
     { contract: 'help.token', symbol: 'HELP', total_supply: '1000000', circulating_supply: '100000', updated_at: '2026-06-14T11:06:50.000Z' },
     { contract: 'qqq.core', symbol: 'QQQCORE', total_supply: '1000000', circulating_supply: '100000', updated_at: '2026-06-14T11:09:00.000Z' },
-    { contract: 'eosio.token', symbol: 'WAX', price_wax: '1', price_usd: '0.006', updated_at: '2026-06-14T11:00:00.000Z' },
+    { contract: 'eosio.token', symbol: 'WAX', price_wax: '1', price_usd: '0.006', icon_url: '/img/tokens/wax.png', updated_at: '2026-06-14T11:00:00.000Z' },
   ];
   const graphDb = {
     prepare(sql) {
@@ -2575,12 +2575,36 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.sections?.pair_table?.rows?.[0]?.fee_bps !== null &&
       Number(waxcashAnalytics.sections?.pair_table?.rows?.[0]?.fee_bps) === 0,
       JSON.stringify(waxcashAnalytics.sections?.pair_table?.rows?.[0]));
-    ok('WAXCASH analytics unvalued pair rows carry explicit valuation reasons',
+    ok('WAXCASH analytics pair table exposes real token icons and proven USD price subvalues when indexed proofs exist',
+      waxcashAnalytics.sections?.pair_table?.rows?.[0]?.token_a_icon === '/img/tokens/waxcash.png' &&
+      waxcashAnalytics.sections?.pair_table?.rows?.[0]?.token_b_icon === '/img/tokens/wax.png' &&
+      waxcashAnalytics.sections?.pair_table?.rows?.[0]?.token_a_logo === '/img/tokens/waxcash.png' &&
+      waxcashAnalytics.sections?.pair_table?.rows?.[0]?.token_b_logo === '/img/tokens/wax.png' &&
+      Math.abs(Number(waxcashAnalytics.sections?.pair_table?.rows?.[0]?.price_usd) - 0.00018) < 0.000000000001,
+      JSON.stringify(waxcashAnalytics.sections?.pair_table?.rows?.[0]));
+    ok('WAXCASH analytics pair table exposes OG row fields and keeps status/reserves out of main rows',
       waxcashAnalytics.sections?.pair_table?.rows?.some((row) =>
-        row.status === 'unavailable' &&
         row.reason &&
         row.proof_label &&
-        row.no_fake_value === true),
+        row.no_fake_value === true &&
+        row.volume_7d_wax == null &&
+        row.volume_7d_usd == null &&
+        row.volume_30d_wax == null &&
+        row.volume_30d_usd == null) &&
+      waxcashAnalytics.sections?.pair_table?.rows?.every((row) =>
+        Object.prototype.hasOwnProperty.call(row, 'source_label') &&
+        Object.prototype.hasOwnProperty.call(row, 'source_logo_key') &&
+        Object.prototype.hasOwnProperty.call(row, 'price') &&
+        Object.prototype.hasOwnProperty.call(row, 'price_usd') &&
+        Object.prototype.hasOwnProperty.call(row, 'token_a_icon') &&
+        Object.prototype.hasOwnProperty.call(row, 'token_b_icon') &&
+        Object.prototype.hasOwnProperty.call(row, 'change_24h') &&
+        Object.prototype.hasOwnProperty.call(row, 'volume_24h_wax') &&
+        Object.prototype.hasOwnProperty.call(row, 'volume_7d_wax') &&
+        Object.prototype.hasOwnProperty.call(row, 'volume_30d_wax') &&
+        !Object.prototype.hasOwnProperty.call(row, 'status') &&
+        !Object.prototype.hasOwnProperty.call(row, 'status_label') &&
+        !Object.prototype.hasOwnProperty.call(row, 'reserves_label')),
       JSON.stringify(waxcashAnalytics.sections?.pair_table?.rows));
     const liveSupplyWrites = [];
     const liveSupplyDb = {
@@ -2896,6 +2920,15 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         volume_30d: holderTradeWaxcashAnalytics.stats.volume_30d,
         metric_status: holderTradeWaxcashAnalytics.stats.metric_status,
       }));
+    const indexedWindowPairRow = holderTradeWaxcashAnalytics.sections?.pair_table?.rows?.find((row) => row.pair_id === 'WAXCASHWAXLEGACY');
+    ok('WAXCASH pair table 24h/7d/30d volumes come from real indexed pair trade windows when available',
+      Number(indexedWindowPairRow?.volume_24h_wax) === 136850.54368654 &&
+      Number(indexedWindowPairRow?.volume_7d_wax) === 764308.56919631 &&
+      Number(indexedWindowPairRow?.volume_30d_wax) === 6816747.33378953 &&
+      Number(indexedWindowPairRow?.volume_7d_usd) === 4585.85141517786 &&
+      Number(indexedWindowPairRow?.volume_30d_usd) === 40900.48400273718 &&
+      indexedWindowPairRow?.proof_details?.status === 'selected_price_pair',
+      JSON.stringify(indexedWindowPairRow));
     rollingVolumeSelectCount = 0;
     rollingVolumeSelectSqls.length = 0;
     const tradeWindowVolumes = await __waxonedgeTestHooks.indexedTradeWindowVolumes(holderTradeWaxcashAnalyticsDb, [{
@@ -5942,8 +5975,8 @@ ok('WAXCASH OG WOE parity proof endpoint is narrow and exact-token scoped',
   route.includes('og_woe_parity'));
 ok('WAXCASH OG WOE parity proof uses narrow fee_bps loader',
   route.includes('async function loadWaxcashOgPairRows') &&
-  /async function loadWaxcashOgPairRows[\s\S]*fee_bps, updated_at[\s\S]*FROM waxonedge_pairs[\s\S]*WAXCASH_CONTRACT, WAXCASH_SYMBOL/.test(route) &&
-  route.includes('const pairRows = await loadWaxcashOgPairRows(db)'));
+  /async function loadWaxcashOgPairRows[\s\S]*volume_7d, volume_7d_wax, volume_7d_usd, volume_30d, volume_30d_wax, volume_30d_usd[\s\S]*fee_bps, updated_at[\s\S]*FROM waxonedge_pairs[\s\S]*WAXCASH_CONTRACT, WAXCASH_SYMBOL/.test(route) &&
+  route.includes('const rawPairRows = await loadWaxcashOgPairRows(db)'));
 ok('WAXCASH OG WOE parity proof uses deepest usable direct WAX pool with verified V3 support',
   route.includes('function buildWaxcashOgParityProof') &&
   route.includes('function waxcashHeadlinePrice') &&
@@ -5984,6 +6017,9 @@ ok('WAXCASH OG WOE parity proof exposes all exact pair rows with unavailable rea
   route.includes('if (parsed != null) proof[field] = safeDecimal(parsed)') &&
   route.includes('fee_bps: safeDecimal(asNumber(pair.fee_bps))') &&
   route.includes('pair_price_relative_to_waxcash') &&
+  route.includes('pair_price_usd') &&
+  route.includes('token_a_icon') &&
+  route.includes('token_b_icon') &&
   route.includes('pair_liquidity_wax') &&
   route.includes('paired_token_wax_price_unavailable') &&
   route.includes('missing_or_zero_reserves') &&
@@ -5991,9 +6027,18 @@ ok('WAXCASH OG WOE parity proof exposes all exact pair rows with unavailable rea
   route.includes('unavailable_reason_counts') &&
   route.includes('exact contract::symbol scoped') &&
   !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('active_status') &&
-  !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('volume_7d') &&
-  !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('volume_30d') &&
+  route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('volume_7d_wax') &&
+  route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('volume_30d_wax') &&
   !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('fee:'));
+ok('WAXCASH pair table backend enriches token icons and pair-level indexed volume windows',
+  route.includes('function buildDbTokenIconIndex') &&
+  route.includes('function enrichPairsWithTokenIcons') &&
+  route.includes('function collectTokenRefsForPairs') &&
+  route.includes('async function indexedTradeWindowVolumesByPair') &&
+  route.includes('function applyIndexedPairWindowVolumes') &&
+  route.includes('indexed_pair_volume_window_source') &&
+  route.includes('pairTablePairs = applyIndexedPairWindowVolumes') &&
+  route.includes('pair_table: waxcashBuildPairTableSection(pairTablePairs, selectedWaxPool)'));
 ok('token detail exposes backend metric proof fields without frontend changes',
   route.includes('function tokenMetricProof') &&
   route.includes('selected_price_proof') &&
@@ -6955,12 +7000,17 @@ ok('frontend does not label raw base volume as WAX',
   frontend.includes('rawVolume24: row.volume_24h') &&
   frontend.includes('volume24: asNum(row.volume_24h_wax)') &&
   frontend.includes("volume24Text: row.volume_24h_wax != null ? String(row.volume_24h_wax) + ' WAX' : UNAVAILABLE_TEXT"));
-ok('/waxcash.html pair table follows OG-style pair detail columns without relative-price wording',
+ok('/waxcash.html pair table follows OG-style pair detail columns without status or reserves',
   !waxcashHtml.includes('<th>Pair Reserve Ratio</th>') &&
   !waxcashHtml.includes('<th>Relative Pair Price</th>') &&
-  waxcashHtml.includes('<th>Pair price</th>') &&
-  waxcashHtml.includes('<th>Status</th>') &&
-  waxcashHtml.includes('<td colspan="9"'));
+  !waxcashHtml.includes('<th>Pair price</th>') &&
+  !waxcashHtml.includes('<th>Status</th>') &&
+  !waxcashHtml.includes('<th>Reserves</th>') &&
+  waxcashHtml.includes('<th>Price</th>') &&
+  waxcashHtml.includes('<th>24h change</th>') &&
+  waxcashHtml.includes('<th>7d volume</th>') &&
+  waxcashHtml.includes('<th>30d volume</th>') &&
+  waxcashHtml.includes('<td colspan="10"'));
 ok('WAXCASH analytics frontend renders backend sections instead of raw proof-row guesses',
   waxcashAnalyticsFrontend.includes('payload.sections || {}') &&
   waxcashAnalyticsFrontend.includes('sections.token_stats') &&
@@ -6978,7 +7028,7 @@ ok('WAXCASH analytics frontend keeps values compact and proof reasons in tooltip
   waxcashAnalyticsFrontend.includes('function proofDot(row)') &&
   waxcashAnalyticsFrontend.includes('title=\"') &&
   waxcashAnalyticsFrontend.includes('wx-subvalue') &&
-  waxcashAnalyticsFrontend.includes('Low liquidity') &&
+  !waxcashAnalyticsFrontend.includes('Low liquidity') &&
   waxcashHtml.includes('.wx-reason-dot') &&
   !waxcashHtml.includes('.wx-value .wx-reason') &&
   waxcashHtml.includes('table-layout: fixed') &&
@@ -7062,10 +7112,32 @@ ok('WAXCASH analytics frontend keeps pair table and adds WAX-only liquidity/24h 
   waxcashHtml.includes('data-sort="liquidity"') &&
   waxcashHtml.includes('id="wx-sort-volume24"') &&
   waxcashHtml.includes('data-sort="volume24"') &&
+  waxcashHtml.includes('.wx-source-logo') &&
+  waxcashHtml.includes('.wx-token-logo') &&
   waxcashAnalyticsFrontend.includes('function sortedPairRows(rows)') &&
   waxcashAnalyticsFrontend.includes('function defaultPairSort(rows)') &&
+  waxcashAnalyticsFrontend.includes('function sourceLogoUrl(row)') &&
+  waxcashAnalyticsFrontend.includes('function sourceCell(row)') &&
+  waxcashAnalyticsFrontend.includes('function tokenIconUrl(row, side)') &&
+  waxcashAnalyticsFrontend.includes('function tokenSideLabel(row, side)') &&
+  waxcashAnalyticsFrontend.includes("'swap.nefty': '/img/waxonedge/dex/neftyblocks.png'") &&
+  waxcashAnalyticsFrontend.includes("'swap.alcor': '/img/waxonedge/dex/alcor.png'") &&
+  waxcashAnalyticsFrontend.includes("'alcordexmain': '/img/waxonedge/dex/alcor.png'") &&
+  waxcashAnalyticsFrontend.includes("'swap.taco': '/img/waxonedge/dex/taco.png'") &&
+  waxcashAnalyticsFrontend.includes("'swap.box': '/img/waxonedge/dex/defibox.png'") &&
+  waxcashAnalyticsFrontend.includes("'swap.adex': '/img/waxonedge/dex/adex.png'") &&
+  waxcashAnalyticsFrontend.includes("'dapp.fusion': '/img/waxonedge/dex/waxfusion.png'") &&
+  waxcashAnalyticsFrontend.includes('<img class="wx-source-logo" src="') &&
+  waxcashAnalyticsFrontend.includes('<img class="wx-token-logo" src="') &&
+  waxcashAnalyticsFrontend.includes("'<td>' + sourceCell(row) + '</td>'") &&
   waxcashAnalyticsFrontend.includes('return num(row && row.liquidity_wax)') &&
   waxcashAnalyticsFrontend.includes('return num(row && row.volume_24h_wax)') &&
+  waxcashAnalyticsFrontend.includes('dual(row.volume_7d_wax, row.volume_7d_usd, row.reason)') &&
+  waxcashAnalyticsFrontend.includes('dual(row.volume_30d_wax, row.volume_30d_usd, row.reason)') &&
+  waxcashAnalyticsFrontend.includes('changeCell(row.change_24h)') &&
+  waxcashAnalyticsFrontend.includes('priceCell(row)') &&
+  !waxcashAnalyticsFrontend.includes('pairStatus(row)') &&
+  !waxcashAnalyticsFrontend.includes('row.reserves_label') &&
   !waxcashAnalyticsFrontend.includes('function metricValue(row, usdKey, waxKey)') &&
   !waxcashAnalyticsFrontend.includes("metricValue(row, 'liquidity_usd', 'liquidity_wax')") &&
   !waxcashAnalyticsFrontend.includes("metricValue(row, 'volume_24h_usd', 'volume_24h_wax')") &&

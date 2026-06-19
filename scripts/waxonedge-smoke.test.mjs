@@ -161,9 +161,43 @@ ok('waxcash pair table exposes WAX-only liquidity and 24h volume sort controls',
   waxcashHtml.includes('data-sort="liquidity"') &&
   waxcashHtml.includes('id="wx-sort-volume24"') &&
   waxcashHtml.includes('data-sort="volume24"') &&
+  exists('img/waxonedge/dex/neftyblocks.png') &&
+  exists('img/waxonedge/dex/alcor.png') &&
+  exists('img/waxonedge/dex/taco.png') &&
+  exists('img/waxonedge/dex/defibox.png') &&
+  exists('img/waxonedge/dex/adex.png') &&
+  exists('img/waxonedge/dex/waxfusion.png') &&
+  waxcashHtml.includes('<th>Price</th>') &&
+  waxcashHtml.includes('<th>24h change</th>') &&
+  waxcashHtml.includes('<th>7d volume</th>') &&
+  waxcashHtml.includes('<th>30d volume</th>') &&
+  waxcashHtml.includes('<td colspan="10"') &&
+  !waxcashHtml.includes('<th>Status</th>') &&
+  !waxcashHtml.includes('<th>Reserves</th>') &&
+  !waxcashHtml.includes('<th>Pair price</th>') &&
   waxcashAnalyticsJs.includes('function sortedPairRows(rows)') &&
+  waxcashAnalyticsJs.includes('function sourceLogoUrl(row)') &&
+  waxcashAnalyticsJs.includes('function sourceCell(row)') &&
+  waxcashAnalyticsJs.includes('function tokenIconUrl(row, side)') &&
+  waxcashAnalyticsJs.includes('function tokenSideLabel(row, side)') &&
+  waxcashAnalyticsJs.includes("'swap.nefty': '/img/waxonedge/dex/neftyblocks.png'") &&
+  waxcashAnalyticsJs.includes("'swap.alcor': '/img/waxonedge/dex/alcor.png'") &&
+  waxcashAnalyticsJs.includes("'alcordexmain': '/img/waxonedge/dex/alcor.png'") &&
+  waxcashAnalyticsJs.includes("'swap.taco': '/img/waxonedge/dex/taco.png'") &&
+  waxcashAnalyticsJs.includes("'swap.box': '/img/waxonedge/dex/defibox.png'") &&
+  waxcashAnalyticsJs.includes("'swap.adex': '/img/waxonedge/dex/adex.png'") &&
+  waxcashAnalyticsJs.includes("'dapp.fusion': '/img/waxonedge/dex/waxfusion.png'") &&
+  waxcashAnalyticsJs.includes('<img class="wx-source-logo" src="') &&
+  waxcashAnalyticsJs.includes('<img class="wx-token-logo" src="') &&
+  waxcashAnalyticsJs.includes("'<td>' + sourceCell(row) + '</td>'") &&
   waxcashAnalyticsJs.includes('return num(row && row.liquidity_wax)') &&
   waxcashAnalyticsJs.includes('return num(row && row.volume_24h_wax)') &&
+  waxcashAnalyticsJs.includes('priceCell(row)') &&
+  waxcashAnalyticsJs.includes('changeCell(row.change_24h)') &&
+  waxcashAnalyticsJs.includes('dual(row.volume_7d_wax, row.volume_7d_usd, row.reason)') &&
+  waxcashAnalyticsJs.includes('dual(row.volume_30d_wax, row.volume_30d_usd, row.reason)') &&
+  !waxcashAnalyticsJs.includes('pairStatus(row)') &&
+  !waxcashAnalyticsJs.includes('row.reserves_label') &&
   !waxcashAnalyticsJs.includes('function metricValue(row, usdKey, waxKey)') &&
   !waxcashAnalyticsJs.includes("metricValue(row, 'liquidity_usd', 'liquidity_wax')") &&
   !waxcashAnalyticsJs.includes("metricValue(row, 'volume_24h_usd', 'volume_24h_wax')") &&
