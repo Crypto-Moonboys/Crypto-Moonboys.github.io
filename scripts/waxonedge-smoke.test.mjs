@@ -128,11 +128,51 @@ ok('waxcash analytics frontend calls the dedicated backend endpoint only',
   !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-graph') &&
   !waxcashAnalyticsJs.includes('/api/waxonedge/bootstrap') &&
   waxcashAnalyticsJs.includes('sections.token_stats') &&
-  waxcashAnalyticsJs.includes('sections.price_proof') &&
   waxcashAnalyticsJs.includes('sections.supply_proof') &&
   waxcashAnalyticsJs.includes('sections.pair_table') &&
   waxcashAnalyticsJs.includes('sections.chart_external') &&
   !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-analytics/chart-feed'));
+ok('waxcash frontend removes visible explanatory chart/status/proof labels',
+  !waxcashHtml.includes('Chart and stats') &&
+  !waxcashHtml.includes('WAXCASH token analytics for graffitiking::WAXCASH') &&
+  !waxcashHtml.includes('Price proof:') &&
+  !waxcashHtml.includes('Alcor pool #8388 display feed') &&
+  !waxcashHtml.includes('Full embedded chart') &&
+  !waxcashHtml.includes('Single WAXCASH/WAX feed') &&
+  !waxcashHtml.includes('Display-only') &&
+  !waxcashHtml.includes('Standalone chart display, separate from WaxOnEdge token detail proof.') &&
+  !waxcashHtml.includes('Display-only pair detail views') &&
+  !waxcashHtml.includes('wx-view-controls') &&
+  !waxcashHtml.includes('wx-pair-detail'));
+ok('waxcash frontend embeds GeckoTerminal WAXCASH/WAX candle chart instead of Alcor pool analytics',
+  waxcashHtml.includes('https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1') &&
+  waxcashHtml.includes('WAXCASH/WAX GeckoTerminal candle chart') &&
+  waxcashAnalyticsJs.includes('https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1') &&
+  waxcashAnalyticsJs.includes('GeckoTerminal candle chart') &&
+  waxcashAnalyticsJs.includes("var iframe = host.querySelector('.wx-external-chart-frame')") &&
+  waxcashAnalyticsJs.includes("if (!iframe) {") &&
+  waxcashAnalyticsJs.includes("if (iframe.getAttribute('src') !== external.url) iframe.setAttribute('src', external.url)") &&
+  !waxcashAnalyticsJs.includes("host.innerHTML =\r\n      '<iframe class=\"wx-external-chart-frame\" src=\"'") &&
+  !waxcashHtml.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
+  !waxcashAnalyticsJs.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
+  !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-analytics/chart-feed'));
+ok('waxcash pair table exposes WAX-only liquidity and 24h volume sort controls',
+  waxcashHtml.includes('id="wx-sort-liquidity"') &&
+  waxcashHtml.includes('data-sort="liquidity"') &&
+  waxcashHtml.includes('id="wx-sort-volume24"') &&
+  waxcashHtml.includes('data-sort="volume24"') &&
+  waxcashAnalyticsJs.includes('function sortedPairRows(rows)') &&
+  waxcashAnalyticsJs.includes('return num(row && row.liquidity_wax)') &&
+  waxcashAnalyticsJs.includes('return num(row && row.volume_24h_wax)') &&
+  !waxcashAnalyticsJs.includes('function metricValue(row, usdKey, waxKey)') &&
+  !waxcashAnalyticsJs.includes("metricValue(row, 'liquidity_usd', 'liquidity_wax')") &&
+  !waxcashAnalyticsJs.includes("metricValue(row, 'volume_24h_usd', 'volume_24h_wax')") &&
+  waxcashAnalyticsJs.includes('defaultPairSort(rows)') &&
+  waxcashAnalyticsJs.includes('if (!state.payload)') &&
+  waxcashAnalyticsJs.includes('updateSortButtons([])') &&
+  waxcashAnalyticsJs.includes('renderPairs(state.payload)') &&
+  !waxcashAnalyticsJs.includes('renderPairs(state.payload || {})') &&
+  waxcashAnalyticsJs.includes("button.textContent = isActive ? label + ' ' + String.fromCharCode(8595) : label"));
 
 const FORBIDDEN_LABELS = ['Swap', 'Add Liquidity', 'Remove Liquidity', 'Connect Wallet', 'Trade on Swap', 'Static read-only MVP'];
 for (const label of FORBIDDEN_LABELS) {
