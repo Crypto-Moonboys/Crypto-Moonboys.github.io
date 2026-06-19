@@ -6931,7 +6931,9 @@ ok('WAXCASH analytics frontend keeps visible chart external and separate from OG
   waxcashAnalyticsFrontend.includes('function renderExternalChart(payload)') &&
   waxcashAnalyticsFrontend.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
   waxcashAnalyticsFrontend.includes('wx-external-chart-frame') &&
-  waxcashAnalyticsFrontend.includes('Open external chart') &&
+  waxcashAnalyticsFrontend.includes('full embedded chart') &&
+  !waxcashAnalyticsFrontend.includes('Open external chart') &&
+  !waxcashAnalyticsFrontend.includes('wx-external-chart-link') &&
   waxcashAnalyticsFrontend.includes('renderExternalChart(state.payload)') &&
   !waxcashAnalyticsFrontend.includes('/api/waxonedge/waxcash-analytics/chart-feed') &&
   !waxcashAnalyticsFrontend.includes('loadChartFeed') &&
@@ -6957,12 +6959,16 @@ ok('WAXCASH analytics frontend keeps visible chart external and separate from OG
   !waxcashHtml.includes('Worker UDF-shaped feed') &&
   !waxcashHtml.includes('Lightweight Charts renderer') &&
   !waxcashHtml.includes('wx-lightweight-chart') &&
-  waxcashHtml.includes('External feed') &&
-  waxcashHtml.includes('Visual only') &&
-  waxcashHtml.includes('Alcor pool') &&
+  waxcashHtml.includes('Full embedded chart') &&
+  waxcashHtml.includes('Single WAXCASH/WAX feed') &&
+  waxcashHtml.includes('Display-only') &&
   waxcashHtml.includes('wx-external-chart-frame') &&
   waxcashHtml.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
-  waxcashHtml.includes('Open external chart') &&
+  waxcashHtml.includes('WAXCASH/WAX full embedded chart') &&
+  !waxcashHtml.includes('Open external chart') &&
+  !waxcashHtml.includes('wx-external-chart-link') &&
+  waxcashHtml.includes('height: 660px') &&
+  waxcashHtml.includes('min-height: 660px') &&
   waxcashHtml.includes('wx-view-controls') &&
   waxcashHtml.includes('Display-only pair detail views') &&
   waxcashHtml.includes('Standalone chart display, separate from WaxOnEdge token detail proof.') &&

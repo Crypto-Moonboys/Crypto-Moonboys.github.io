@@ -73,7 +73,7 @@
       overflow: hidden;
     }
     .wx-stats-panel { border-radius: 0; }
-    .wx-chart-panel { border-radius: 0; min-height: 690px; }
+    .wx-chart-panel { border-radius: 0; min-height: 800px; }
     .wx-panel-header {
       min-height: 50px;
       padding: 12px 16px;
@@ -201,28 +201,16 @@
     }
     .wx-chart-source-row small { color: var(--muted); font-weight: 700; }
     .wx-chart-host {
-      min-height: 540px;
+      min-height: 660px;
       padding: 10px 14px 14px;
       position: relative;
     }
     .wx-external-chart-frame {
       width: 100%;
-      min-height: 510px;
+      height: 660px;
+      min-height: 660px;
       background: #111722;
       border: 1px solid rgba(148,163,173,0.16);
-    }
-    .wx-external-chart-link {
-      display: inline-flex;
-      align-items: center;
-      min-height: 34px;
-      margin-top: 10px;
-      padding: 0 10px;
-      border: 1px solid rgba(30,124,255,0.35);
-      border-radius: 4px;
-      color: #9ac3ff;
-      font-weight: 900;
-      text-decoration: none;
-      background: rgba(30,124,255,0.08);
     }
     .wx-chart-empty {
       min-height: 510px;
@@ -329,8 +317,8 @@
       .wx-title { display: block; }
       .wx-status { text-align: left; margin-top: 8px; }
       .wx-main-grid { grid-template-columns: 1fr; }
-      .wx-chart-panel { min-height: 520px; }
-      .wx-external-chart-frame, .wx-chart-empty { height: 380px; min-height: 380px; }
+      .wx-chart-panel { min-height: 620px; }
+      .wx-external-chart-frame, .wx-chart-empty { height: 520px; min-height: 520px; }
       .wx-pair-detail { grid-template-columns: 1fr 1fr; }
     }
   </style>
@@ -369,17 +357,16 @@
         </div>
         <div class="wx-chart-toolbar" aria-label="Chart display toolbar">
           <span id="wx-chart-pair-title" class="wx-pair-title">WAXCASH/WAX</span>
-          <span class="wx-chart-mode-label">External feed</span>
-          <span class="wx-chart-mode-label">Visual only</span>
-          <span class="wx-chart-mode-label">Alcor pool</span>
+          <span class="wx-chart-mode-label">Full embedded chart</span>
+          <span class="wx-chart-mode-label">Single WAXCASH/WAX feed</span>
+          <span class="wx-chart-mode-label">Display-only</span>
         </div>
         <div class="wx-chart-source-row">
           <span id="wx-chart-feed-label">Alcor pool #8388 display feed</span>
           <small>Standalone chart display, separate from WaxOnEdge token detail proof.</small>
         </div>
         <div id="wx-chart" class="wx-chart-host" aria-live="polite">
-          <iframe class="wx-external-chart-frame" src="https://alcor.exchange/v/wax/analytics/pools/8388" title="WAXCASH/WAX external chart" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
-          <a class="wx-external-chart-link" href="https://alcor.exchange/v/wax/analytics/pools/8388" target="_blank" rel="noopener noreferrer">Open external chart</a>
+          <iframe class="wx-external-chart-frame" src="https://alcor.exchange/v/wax/analytics/pools/8388" title="WAXCASH/WAX full embedded chart" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
         </div>
         <div class="wx-view-note">Display-only pair detail views</div>
         <div id="wx-view-controls" class="wx-view-controls" aria-label="Display-only source-backed pair detail views"></div>

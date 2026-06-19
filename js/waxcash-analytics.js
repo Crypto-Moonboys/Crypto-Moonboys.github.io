@@ -301,8 +301,7 @@
     updateChartLabels(payload);
     if (!host) return;
     host.innerHTML =
-      '<iframe class="wx-external-chart-frame" src="' + esc(external.url) + '" title="' + esc((external.pair_label || 'WAXCASH/WAX') + ' external chart') + '" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>' +
-      '<a class="wx-external-chart-link" href="' + esc(external.url) + '" target="_blank" rel="noopener noreferrer">Open external chart</a>';
+      '<iframe class="wx-external-chart-frame" src="' + esc(external.url) + '" title="' + esc((external.pair_label || 'WAXCASH/WAX') + ' full embedded chart') + '" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>';
   }
 
   function render(payload) {
