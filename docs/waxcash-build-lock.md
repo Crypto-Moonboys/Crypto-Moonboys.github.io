@@ -14,18 +14,10 @@ WAXCASH is a WAXCASH-centred liquidity graph:
 
 ## Implementation decision
 
-The uploaded `waxonedge_backend_public-public.zip` is not the full OG pricing engine. Local inspection showed a small older backend/API reader shape:
+The uploaded `waxonedge_backend_public-public.zip` contains the OG WaxOnEdge backend structure and must be used as the reference for WAXCASH parity. It includes the real old backend shape:
 
 ```text
 app/api.js
-app/daemon.js
-app/config.js
-app/libs/antelope-ship-reader/dist
-```
-
-It did not contain the expected full OG market stack:
-
-```text
 reader
 readerrows
 indexer
@@ -33,30 +25,36 @@ liquiditypricesindexer
 laststatsindexer
 klinesindexer
 socketio
-multi-DEX pool calculators
+rows/models
+exchange adapters
+multi-DEX table/action config
 ```
 
-The uploaded `waxonedge_contract_public-main.zip` is the old swap contract reference and must not be installed for this no-trading WAXCASH graph.
+The uploaded `waxonedge_contract_public-main.zip` is the old swap contract reference and must not be installed for this no-trading WAXCASH analytics page.
 
 The uploaded Codex `waxonedge-live-indexer.zip` is a live trade-event indexer only. It can help with fresh trade ticks and recent observed volume, but it is not a full valuation engine because it does not provide token supply, holders, market cap, TVL, full pair discovery, or WAXCASH graph logic.
 
 ## Current branch scope
 
-This branch adds a new `waxcash.html` page and a dedicated `js/waxcash-graph.js` renderer that uses the existing indexed WaxOnEdge API:
+The WAXCASH rebuild is an OG WaxOnEdge-style analytics page:
 
-- `/api/waxonedge/waxcash-graph`
-- existing token analytics links
-- uncapped direct indexed WAXCASH graph rows from the backend endpoint
+- `/api/waxonedge/waxcash-analytics` is the token stats and proof source.
+- `/api/waxonedge/waxcash-analytics/chart-feed` is a display-only Alcor pool `#8388` chart feed.
+- `/api/waxonedge/waxcash-graph` remains available for graph consumers.
+- Existing token analytics links remain read-only.
+- No swap UI, wallet execution, order builder, route execution, or fake fallback values belong on this page.
 
-The frontend consumes `/api/waxonedge/waxcash-graph` as the graph source. `/api/waxonedge/bootstrap` is not a graph source and must not be used for WAXCASH graph edges, token inventory, or top-pair fallback. The WAXCASH graph uses the uncapped direct indexed WAXCASH pairs supplied by the backend endpoint.
+The chart is display-only. It must not control selected WAXCASH price, TVL, liquidity, market cap, volume, or token stats. Token stats come from indexed WaxOnEdge backend logic.
 
 ## Data rules
 
 - Do not fake missing values.
 - Do not use fallback trading math as valuation truth.
 - Do not size bubbles from aggregate values unless the backend exposes them as indexed/proof-backed values.
-- Use direct WAXCASH pair liquidity first for WAXCASH graph sizing.
-- Keep market cap disabled or empty where circulating supply and selected price are not live/proof-backed.
+- Keep selected direct WAX pair liquidity, cumulated pair liquidity, and TVL as separate concepts.
+- Select WAXCASH price from the deepest usable direct WAX/WAXCASH pool, including verified Alcor V3 PoolV3 price proofs.
+- Use the WAXCASH-only OG parity rule `og_woe_total_supply_as_circulating_for_waxcash` only when live `get_currency_stats` total supply exists and no locked/burned exclusion source exists.
+- Keep holder count unavailable unless a real holder snapshot/indexer source exists.
 
 ## Future backend fix target
 

@@ -1767,6 +1767,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       reserve_b: '1500',
       liquidity_wax: '3000',
       volume_24h_wax: '75',
+      fee_bps: '0',
       updated_at: '2026-06-14T11:01:00.000Z',
     },
     {
@@ -2136,14 +2137,14 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.pairs.some((pair) => pair.pair_id === 'WAXCASHWUF') &&
       waxcashAnalytics.pairs.some((pair) => pair.pair_id === 'WAXCASHABC'),
       JSON.stringify(waxcashAnalytics.pairs.map((pair) => pair.pair_id)));
-    ok('WAXCASH analytics selected price uses old WOE direct WAX proof, not recursive graph route',
+    ok('WAXCASH analytics selected price uses deepest usable direct WAX proof, not recursive graph route',
       Number(waxcashAnalytics.stats.selected_price_wax) === 0.03 &&
       waxcashAnalytics.stats.selected_pair_source === 'swap.nefty' &&
       waxcashAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY' &&
       waxcashAnalytics.stats.selected_price_basis === 'og_woe_direct_wax_pool' &&
       waxcashAnalytics.stats.selected_price_route === null &&
       waxcashAnalytics.stats.uses_recursive_graph_price === false &&
-      waxcashAnalytics.headline_price?.headline_price_source_policy === 'old_woe_legacy_pool_first_then_v3');
+      waxcashAnalytics.headline_price?.headline_price_source_policy === 'og_woe_deepest_usable_direct_wax_pool');
     ok('WAXCASH analytics names the selected direct WAX pool by largest WAX reserve, not depth',
       waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id === 'WAXCASHWAXLEGACY' &&
       !(('selected_' + 'deep' + 'est_wax_pool') in waxcashAnalytics) &&
@@ -2154,6 +2155,16 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.chart?.chart_source?.pair_id !== waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id &&
       waxcashAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY' &&
       waxcashAnalytics.chart?.chart_source?.pair_id !== 'WAXWUFB');
+    ok('WAXCASH analytics 24h change comes from selected proof history, not display chart candles',
+      waxcashAnalytics.stats.metric_status.change_24h.source === 'selected_price_proof_pool_history' &&
+      waxcashAnalytics.stats.metric_status.change_24h.basis.includes('selected proof pool') &&
+      waxcashAnalytics.sections?.chart?.pair_id === '8388' &&
+      waxcashAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY',
+      JSON.stringify({
+        change_24h: waxcashAnalytics.stats.change_24h,
+        change_status: waxcashAnalytics.stats.metric_status.change_24h,
+        chart: waxcashAnalytics.sections?.chart,
+      }));
     const waxcashChartOhlcValues = (waxcashAnalytics.chart?.candles || []).flatMap((candle) =>
       ['open', 'high', 'low', 'close'].map((field) => Number(candle[field])));
     const waxcashChartCloses = (waxcashAnalytics.chart?.candles || []).map((candle) => Number(candle.close));
@@ -2268,6 +2279,79 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         chart: onRequestChartAnalytics.chart,
         selected_pair_id: onRequestChartAnalytics.stats.selected_pair_id,
       }));
+    const noChartFallbackDb = {
+      prepare(sql) {
+        const base = waxcashAnalyticsDb.prepare(sql);
+        return {
+          bind(...params) {
+            const bound = base.bind(...params);
+            return {
+              async all() {
+                const value = await bound.all();
+                if (sql.includes('FROM waxonedge_pairs')) {
+                  return { results: (value.results || []).filter((pair) => pair.pair_id !== '8388') };
+                }
+                return value;
+              },
+              async first() {
+                const value = await this.all();
+                return value.results?.[0] || null;
+              },
+              async run() {
+                return bound.run ? bound.run() : { success: true };
+              },
+            };
+          },
+        };
+      },
+    };
+    const noChartFallbackAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(noChartFallbackDb);
+    ok('WAXCASH chart feed does not fallback to selected proof pool when Alcor #8388 is absent',
+      noChartFallbackAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY' &&
+      noChartFallbackAnalytics.chart?.chart_source === null &&
+      noChartFallbackAnalytics.sections?.chart?.source === null &&
+      noChartFallbackAnalytics.sections?.chart?.pair_id === null &&
+      noChartFallbackAnalytics.chart?.unavailable === 'waxcash_chart_feed_pair_unavailable',
+      JSON.stringify({
+        selected_pair_id: noChartFallbackAnalytics.stats.selected_pair_id,
+        chart: noChartFallbackAnalytics.sections?.chart,
+      }));
+    const noSelectedHistoryDb = {
+      prepare(sql) {
+        const base = waxcashAnalyticsDb.prepare(sql);
+        return {
+          bind(...params) {
+            const bound = base.bind(...params);
+            return {
+              async all() {
+                if (sql.includes('FROM waxonedge_chart_candles') && params[0] === 'swap.nefty' && params[1] === 'WAXCASHWAXLEGACY') {
+                  return { results: [] };
+                }
+                return bound.all();
+              },
+              async first() {
+                const value = await this.all();
+                return value.results?.[0] || null;
+              },
+              async run() {
+                return bound.run ? bound.run() : { success: true };
+              },
+            };
+          },
+        };
+      },
+    };
+    const noSelectedHistoryAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(noSelectedHistoryDb);
+    ok('WAXCASH 24h change stays unavailable when selected proof history is missing even if #8388 chart candles exist',
+      noSelectedHistoryAnalytics.sections?.chart?.pair_id === '8388' &&
+      noSelectedHistoryAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY' &&
+      noSelectedHistoryAnalytics.stats.change_24h === null &&
+      noSelectedHistoryAnalytics.stats.metric_status.change_24h.live === false,
+      JSON.stringify({
+        change_24h: noSelectedHistoryAnalytics.stats.change_24h,
+        change_status: noSelectedHistoryAnalytics.stats.metric_status.change_24h,
+        chart: noSelectedHistoryAnalytics.sections?.chart,
+      }));
     ok('/waxcash-analytics returns display-ready backend sections',
       waxcashAnalytics.sections?.token_stats?.rows?.length >= 12 &&
       waxcashAnalytics.sections?.supply_proof &&
@@ -2280,13 +2364,13 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.sections?.chart_external?.affects_waxonedge_metrics === false,
       JSON.stringify(waxcashAnalytics.sections));
     ok('WAXCASH external Alcor chart metadata does not affect backend proof metrics',
-      waxcashAnalytics.headline_price?.headline_price_source_policy === 'old_woe_legacy_pool_first_then_v3' &&
+      waxcashAnalytics.headline_price?.headline_price_source_policy === 'og_woe_deepest_usable_direct_wax_pool' &&
       Number(waxcashAnalytics.stats.selected_price_wax) === 0.03 &&
       waxcashAnalytics.stats.fdv_wax === null &&
       Number(waxcashAnalytics.stats.market_cap_wax) === 15000 &&
       waxcashAnalytics.stats.market_cap_basis === 'circulating_supply_x_selected_price' &&
       waxcashAnalytics.sections?.chart_external?.url === 'https://alcor.exchange/v/wax/analytics/pools/8388' &&
-      waxcashAnalytics.sections?.price_proof?.basis === 'old_woe_legacy_pool_first_then_v3',
+      waxcashAnalytics.sections?.price_proof?.basis === 'og_woe_deepest_usable_direct_wax_pool',
       JSON.stringify({
         stats: waxcashAnalytics.stats,
         chart_external: waxcashAnalytics.sections?.chart_external,
@@ -2295,6 +2379,11 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     ok('WAXCASH analytics pair table orders selected WAXCASH/WAX proof pair first',
       waxcashAnalytics.sections?.pair_table?.rows?.[0]?.is_selected_price_pair === true &&
       waxcashAnalytics.sections?.pair_table?.rows?.[0]?.pair_id === 'WAXCASHWAXLEGACY');
+    ok('WAXCASH analytics pair table preserves legitimate 0-bps fees',
+      waxcashAnalytics.sections?.pair_table?.rows?.[0]?.pair_id === 'WAXCASHWAXLEGACY' &&
+      waxcashAnalytics.sections?.pair_table?.rows?.[0]?.fee_bps !== null &&
+      Number(waxcashAnalytics.sections?.pair_table?.rows?.[0]?.fee_bps) === 0,
+      JSON.stringify(waxcashAnalytics.sections?.pair_table?.rows?.[0]));
     ok('WAXCASH analytics unvalued pair rows carry explicit valuation reasons',
       waxcashAnalytics.sections?.pair_table?.rows?.some((row) =>
         row.status === 'unavailable' &&
@@ -2367,15 +2456,16 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         volume_7d: waxcashAnalytics.stats.volume_7d,
         volume_30d: waxcashAnalytics.stats.volume_30d,
       }));
-    ok('WAXCASH analytics market cap derives only from circulating supply times selected price',
+    ok('WAXCASH analytics separates market cap, selected-pair liquidity, cumulated liquidity, and TVL',
       Number(waxcashAnalytics.stats.market_cap_wax) === 15000 &&
       almostEqual(waxcashAnalytics.stats.market_cap_usd, 90) &&
       waxcashAnalytics.stats.market_cap_basis === 'circulating_supply_x_selected_price' &&
       waxcashAnalytics.stats.fdv_wax === null &&
       waxcashAnalytics.stats.fdv_usd === null &&
-      Number(waxcashAnalytics.stats.liquidity_wax) === 3000 &&
-      Number(waxcashAnalytics.stats.cumulated_pair_liquidity_wax || 0) === 0 &&
-      Number(waxcashAnalytics.stats.market_cap_wax) !== Number(waxcashAnalytics.stats.liquidity_wax),
+      Number(waxcashAnalytics.stats.selected_direct_wax_pair_liquidity_wax) === 3000 &&
+      Number(waxcashAnalytics.stats.cumulated_pair_liquidity_wax) > 3000 &&
+      Number(waxcashAnalytics.stats.tvl_wax) === Number(waxcashAnalytics.stats.cumulated_pair_liquidity_wax) &&
+      Number(waxcashAnalytics.stats.market_cap_wax) !== Number(waxcashAnalytics.stats.cumulated_pair_liquidity_wax),
       JSON.stringify({
         selected_price_wax: waxcashAnalytics.stats.selected_price_wax,
         selected_price_usd: waxcashAnalytics.stats.selected_price_usd,
@@ -2460,8 +2550,8 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       supplyOnlyWaxcashAnalytics.stats.circulating_supply === null &&
       supplyOnlyWaxcashAnalytics.stats.market_cap_wax === null &&
       supplyOnlyWaxcashAnalytics.stats.market_cap_usd === null &&
-      Number(supplyOnlyWaxcashAnalytics.stats.liquidity_wax) === 3000 &&
-      supplyOnlyWaxcashAnalytics.stats.cumulated_pair_liquidity_wax === null &&
+      Number(supplyOnlyWaxcashAnalytics.stats.selected_direct_wax_pair_liquidity_wax) === 3000 &&
+      Number(supplyOnlyWaxcashAnalytics.stats.cumulated_pair_liquidity_wax) > 3000 &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.total_supply.live === false &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.total_supply.source === null &&
       supplyOnlyWaxcashAnalytics.sections?.supply_proof?.live === false &&
@@ -2469,8 +2559,8 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       supplyOnlyWaxcashAnalytics.sections?.supply_proof?.total_supply === null &&
       supplyOnlyWaxcashAnalytics.sections?.supply_proof?.cached_total_supply_diagnostic === '1000000' &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.circulating_supply.live === false &&
-      supplyOnlyWaxcashAnalytics.stats.metric_status.circulating_supply.reason.includes('not inferred') &&
-      supplyOnlyWaxcashAnalytics.stats.metric_status.market_cap.reason.includes('not used as a fallback') &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.circulating_supply.reason.includes('WAXCASH circulating supply requires') &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.market_cap.reason.includes('Requires WAXCASH circulating supply') &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.fdv.live === false,
       JSON.stringify({
         total_supply: supplyOnlyWaxcashAnalytics.stats.total_supply,
@@ -2485,6 +2575,8 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       supplyOnlyWaxcashAnalytics.stats.holder_count === null &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.live === false &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.reason.includes('No indexed holder snapshot exists for graffitiking::WAXCASH'));
+    let rollingVolumeSelectCount = 0;
+    const rollingVolumeSelectSqls = [];
     const holderTradeWaxcashAnalyticsDb = {
       prepare(sql) {
         if (sql.includes('FROM waxonedge_token_stats')) {
@@ -2531,19 +2623,61 @@ ok('VPS live indexer safely parses request path without trusting Host header',
             },
           };
         }
-        if (sql.includes('FROM waxonedge_trades') && sql.includes('SUM(ABS')) {
+        if (sql.includes('FROM waxonedge_trades') && sql.includes('SELECT source, trade_id')) {
+          rollingVolumeSelectCount += 1;
+          rollingVolumeSelectSqls.push(sql);
           return {
             bind(...params) {
               return {
                 async all() {
                   const since = String(params[params.length - 1] || '');
-                  const volume = since >= '2026-06-14' ? '136850.54368654' : (since >= '2026-06-08' ? '764308.56919631' : '6816747.33378953');
-                  return { results: [{ volume }] };
+                  return {
+                    results: [{
+                      source: 'swap.nefty',
+                      trade_id: 'proof-24h',
+                      pair_id: 'WAXCASHWAXLEGACY',
+                      contract: 'graffitiking',
+                      symbol: 'WAXCASH',
+                      amount: '999999999',
+                      volume: '999999999',
+                      traded_at: '2026-06-15T00:00:00.000Z',
+                      raw_json: JSON.stringify({ volume_wax: '136850.54368654', volume: '999999999 WAXCASH' }),
+                    }, {
+                      source: 'swap.nefty',
+                      trade_id: 'proof-7d-only',
+                      pair_id: 'WAXCASHWAXLEGACY',
+                      contract: 'graffitiking',
+                      symbol: 'WAXCASH',
+                      amount: '999999999',
+                      volume: '999999999',
+                      traded_at: '2026-06-10T00:00:00.000Z',
+                      raw_json: JSON.stringify({ volume_wax: '627458.02550977', volume: '999999999 WAXCASH' }),
+                    }, {
+                      source: 'swap.nefty',
+                      trade_id: 'proof-30d-only',
+                      pair_id: 'WAXCASHWAXLEGACY',
+                      contract: 'graffitiking',
+                      symbol: 'WAXCASH',
+                      amount: '999999999',
+                      volume: '999999999',
+                      traded_at: '2026-05-20T00:00:00.000Z',
+                      raw_json: JSON.stringify({ volume_wax: '6052438.76459322', volume: '999999999 WAXCASH' }),
+                    }, {
+                      source: 'swap.nefty',
+                      trade_id: 'raw-unproven-all-windows',
+                      tx_id: 'raw-unproven-tx',
+                      pair_id: 'WAXCASHWAXLEGACY',
+                      contract: null,
+                      symbol: null,
+                      amount: '888888888',
+                      volume: '888888888',
+                      traded_at: '2026-06-15T00:00:00.000Z',
+                      raw_json: JSON.stringify({ volume: '888888888 UNKNOWN' }),
+                    }].filter((row) => String(row.traded_at) >= since),
+                  };
                 },
                 async first() {
-                  const since = String(params[params.length - 1] || '');
-                  const volume = since >= '2026-06-14' ? '136850.54368654' : (since >= '2026-06-08' ? '764308.56919631' : '6816747.33378953');
-                  return { volume };
+                  return (await this.all()).results[0] || null;
                 },
               };
             },
@@ -2559,9 +2693,11 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       Number(holderTradeWaxcashAnalytics.stats.volume_24h_wax) === 175 &&
       Number(holderTradeWaxcashAnalytics.stats.volume_7d) === 764308.56919631 &&
       Number(holderTradeWaxcashAnalytics.stats.volume_30d) === 6816747.33378953 &&
+      Number(holderTradeWaxcashAnalytics.stats.volume_7d) !== 999999999 &&
       holderTradeWaxcashAnalytics.stats.metric_status.volume_24h.source === 'indexed_pair_or_ticker_volume' &&
-      holderTradeWaxcashAnalytics.stats.metric_status.volume_7d.source === 'indexed_trade_rows_window' &&
-      holderTradeWaxcashAnalytics.stats.metric_status.volume_30d.source === 'indexed_trade_rows_window',
+      holderTradeWaxcashAnalytics.stats.metric_status.volume_7d.source === 'indexed_trade_rows_window_wax_denominated' &&
+      holderTradeWaxcashAnalytics.stats.metric_status.volume_7d.basis === 'indexed_trade_rows_window_wax_denominated' &&
+      holderTradeWaxcashAnalytics.stats.metric_status.volume_30d.source === 'indexed_trade_rows_window_wax_denominated',
       JSON.stringify({
         holder_count: holderTradeWaxcashAnalytics.stats.holder_count,
         volume_24h_wax: holderTradeWaxcashAnalytics.stats.volume_24h_wax,
@@ -2569,6 +2705,21 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         volume_30d: holderTradeWaxcashAnalytics.stats.volume_30d,
         metric_status: holderTradeWaxcashAnalytics.stats.metric_status,
       }));
+    rollingVolumeSelectCount = 0;
+    rollingVolumeSelectSqls.length = 0;
+    const tradeWindowVolumes = await __waxonedgeTestHooks.indexedTradeWindowVolumes(holderTradeWaxcashAnalyticsDb, [{
+      source: 'swap.nefty',
+      pair_id: 'WAXCASHWAXLEGACY',
+      direct_wax_pair: true,
+    }], { selectedPriceWax: '0.001' });
+    ok('WAXCASH rolling volume scans 30d rows once and counts distinct excluded trades once',
+      Number(tradeWindowVolumes.volume_24h_wax) === 136850.54368654 &&
+      Number(tradeWindowVolumes.volume_7d) === 764308.56919631 &&
+      Number(tradeWindowVolumes.volume_30d) === 6816747.33378953 &&
+      rollingVolumeSelectCount === 1 &&
+      rollingVolumeSelectSqls[0]?.includes('traded_at >= ?') &&
+      tradeWindowVolumes.excluded_unproven_trade_count === 1,
+      JSON.stringify({ tradeWindowVolumes, rollingVolumeSelectCount, rollingVolumeSelectSqls }));
     const failedSupplyWaxcashAnalyticsDb = {
       prepare(sql) {
         function allResults(params) {
@@ -2805,30 +2956,34 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       graphPairs.find((pair) => pair.pair_id === '8388'),
       graphPairs.find((pair) => pair.pair_id === 'WAXCASHWAXLEGACY'),
     ], waxPriceIndex);
-    ok('WAXCASH old-WOE headline selects legacy non-V3 direct WAX pool before Alcor V3',
+    ok('WAXCASH headline selects deepest usable direct WAX pool and rejects unproven V3',
       legacyFirstHeadline.og_headline_price_source === 'swap.nefty' &&
       legacyFirstHeadline.og_headline_price_pair_id === 'WAXCASHWAXLEGACY' &&
       Number(legacyFirstHeadline.og_headline_price_wax) === 0.03 &&
-      legacyFirstHeadline.headline_price_source_policy === 'old_woe_legacy_pool_first_then_v3' &&
+      legacyFirstHeadline.headline_price_source_policy === 'og_woe_deepest_usable_direct_wax_pool' &&
+      legacyFirstHeadline.usable_direct_wax_candidate_count === 1 &&
       legacyFirstHeadline.legacy_direct_wax_selected === true &&
       legacyFirstHeadline.v3_direct_wax_selected === false);
     const v3FallbackHeadline = __waxonedgeTestHooks.waxcashHeadlinePrice([
       graphPairs.find((pair) => pair.pair_id === '8388'),
     ], waxPriceIndex);
-    ok('WAXCASH old-WOE headline rejects unproven Alcor V3 reserve-ratio fallback',
+    ok('WAXCASH headline rejects unproven Alcor V3 reserve-ratio fallback',
       v3FallbackHeadline.og_headline_price_source === null &&
       v3FallbackHeadline.og_headline_price_pair_id === null &&
       v3FallbackHeadline.og_headline_price_wax === null &&
       v3FallbackHeadline.legacy_direct_wax_selected === false &&
       v3FallbackHeadline.v3_direct_wax_selected === false &&
-      v3FallbackHeadline.og_headline_reason_codes.includes('v3_poolv3_getprice_proof_unavailable'));
+      v3FallbackHeadline.og_headline_reason_codes.includes('no_direct_wax_pool_with_usable_price_proof') &&
+      v3FallbackHeadline.direct_wax_candidates.some((candidate) =>
+        candidate.pair_id === '8388' &&
+        candidate.reason_codes.includes('v3_poolv3_getprice_proof_unavailable')));
     const provenV3FallbackHeadline = __waxonedgeTestHooks.waxcashHeadlinePrice([{
       ...graphPairs.find((pair) => pair.pair_id === '8388'),
       poolv3_price: '200',
       valuation_basis: 'alcor_v3_poolv3_getprice',
       proof_status: 'verified',
     }], waxPriceIndex);
-    ok('WAXCASH old-WOE headline uses proven PoolV3.getPrice fallback without reserve-ratio math',
+    ok('WAXCASH headline uses proven PoolV3.getPrice without reserve-ratio math',
       provenV3FallbackHeadline.og_headline_price_source === 'swap.alcor' &&
       provenV3FallbackHeadline.og_headline_price_pair_id === '8388' &&
       Number(provenV3FallbackHeadline.og_headline_price_wax) === 0.005 &&
@@ -2886,7 +3041,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       noDirectWaxcashAnalytics.stats.fdv_usd === null &&
       noDirectWaxcashAnalytics.stats.selected_price_basis === 'og_woe_direct_wax_pool' &&
       !String(noDirectWaxcashAnalytics.stats.selected_price_basis).includes('recursive') &&
-      noDirectWaxcashAnalytics.headline_price?.headline_price_source_policy === 'old_woe_legacy_pool_first_then_v3');
+      noDirectWaxcashAnalytics.headline_price?.headline_price_source_policy === 'og_woe_deepest_usable_direct_wax_pool');
     const staleWufUpdate = __waxonedgeTestHooks.instantLiveTokenUpdatesForVerifiedPairEvent({
       changedPair: graphPairs.find((pair) => pair.pair_id === 'WAXCASHWUF'),
       tokenRows: graphTokenRows,
@@ -4606,7 +4761,47 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     waxcash8388Proof.headline_price.og_headline_price_source === null &&
     waxcash8388Proof.headline_price.og_headline_price_pair_id === null &&
     waxcash8388Proof.headline_price.og_headline_price_wax === null &&
-    waxcash8388Proof.headline_price.og_headline_reason_codes.includes('v3_poolv3_getprice_proof_unavailable'));
+    waxcash8388Proof.headline_price.og_headline_reason_codes.includes('no_direct_wax_pool_with_usable_price_proof') &&
+    waxcash8388Proof.headline_price.direct_wax_candidates.some((candidate) =>
+      candidate.pair_id === '8388' &&
+      candidate.reason_codes.includes('v3_poolv3_getprice_proof_unavailable')));
+  const alcorOrderbookWaxcash = {
+    source: 'alcor',
+    pair_id: 'ORDERBOOK-WAXCASH-WAX',
+    token_a_contract: 'graffitiking',
+    token_a_symbol: 'WAXCASH',
+    token_b_contract: 'eosio.token',
+    token_b_symbol: 'WAX',
+    price: '0.002',
+    liquidity_wax: '4000',
+  };
+  const waxcashOrderbookProof = __waxonedgeTestHooks.buildWaxcashOgParityProof([alcorOrderbookWaxcash], priceIndex, []);
+  ok('Alcor orderbook WAXCASH/WAX rows use the OG market-match price proof path',
+    waxcashOrderbookProof.headline_price.og_headline_price_wax === '0.002' &&
+    waxcashOrderbookProof.headline_price.og_headline_price_source === 'alcor' &&
+    waxcashOrderbookProof.headline_price.og_headline_price_pair_id === 'ORDERBOOK-WAXCASH-WAX' &&
+    waxcashOrderbookProof.headline_price.direct_wax_candidates.some((candidate) =>
+      candidate.source === 'alcor' &&
+      candidate.adapter_type === 'alcor_orderbook_market_match' &&
+      candidate.formula === 'price_wax = alcordexmain market match price' &&
+      candidate.usable === true) &&
+    waxcashOrderbookProof.all_pairs.some((pair) =>
+      pair.pair_id === 'ORDERBOOK-WAXCASH-WAX' &&
+      pair.direct_wax_pair === true &&
+      pair.pair_liquidity_wax === '4000' &&
+      pair.pair_price_relative_to_waxcash === '0.002'));
+  const unusableOrderbookProof = __waxonedgeTestHooks.buildWaxcashOgParityProof([{
+    ...alcorOrderbookWaxcash,
+    pair_id: 'ORDERBOOK-WAXCASH-WAX-NOPRICE',
+    price: null,
+    liquidity_wax: null,
+  }], priceIndex, []);
+  ok('Alcor orderbook WAXCASH/WAX rows remain unavailable when market-match price or depth proof is missing',
+    unusableOrderbookProof.headline_price.og_headline_price_wax === null &&
+    unusableOrderbookProof.headline_price.direct_wax_candidates.some((candidate) =>
+      candidate.source === 'alcor' &&
+      candidate.reason_codes.includes('orderbook_match_price_unavailable') &&
+      candidate.reason_codes.includes('orderbook_liquidity_depth_unavailable')));
 }
 {
   const stream = { source: 'swap.taco', referenceSource: 'taco', account: 'swap.taco', action: 'exchangelog', parser: 'swap-v2-taco' };
@@ -5047,8 +5242,27 @@ ok('502 trade fetch response is classified as upstream_5xx temporary failure',
     normalized.pair_id === '253' &&
     normalized.price === '2.5' &&
     normalized.volume === '25' &&
+    JSON.parse(normalized.raw_json).volume_wax === '25' &&
     normalized.raw_json.includes('Hyperion/state-history alcordexmain buymatch/sellmatch') &&
     normalized.raw_json.includes('marketMatches'));
+  const legacyMarketVolumeProof = __waxonedgeTestHooks.waxcashTradeVolumeWax({
+    source: 'alcor',
+    pair_id: '253',
+    contract: 'graffitiking',
+    symbol: 'WAXCASH',
+    amount: '10',
+    volume: '10',
+    raw_json: JSON.stringify({
+      reference_src: 'alcormarket',
+      amount_ask: '10',
+      code_ask: 'WAXCASH',
+      amount_bid: '25',
+      code_bid: 'WAX',
+    }),
+  }, new Map(), '0.0025');
+  ok('OG-style alcordexmain amount_bid/code_bid rows normalize rolling volume in WAX',
+    legacyMarketVolumeProof.volumeWax === 25 &&
+    legacyMarketVolumeProof.basis === 'indexed_trade_rows_window_wax_denominated');
 }
 {
   const eosusaRow = {
@@ -5533,23 +5747,25 @@ ok('WAXCASH OG WOE parity proof uses narrow fee_bps loader',
   route.includes('async function loadWaxcashOgPairRows') &&
   /async function loadWaxcashOgPairRows[\s\S]*fee_bps, updated_at[\s\S]*FROM waxonedge_pairs[\s\S]*WAXCASH_CONTRACT, WAXCASH_SYMBOL/.test(route) &&
   route.includes('const pairRows = await loadWaxcashOgPairRows(db)'));
-ok('WAXCASH OG WOE parity proof uses old-WOE legacy direct WAX pool before Alcor V3',
+ok('WAXCASH OG WOE parity proof uses deepest usable direct WAX pool with verified V3 support',
   route.includes('function buildWaxcashOgParityProof') &&
   route.includes('function waxcashHeadlinePrice') &&
   route.includes('function isOldWoeLegacyWaxcashDirectPair') &&
   route.includes('function isAlcorWaxcashDirectPair') &&
-  route.includes("headline_price_source_policy: 'old_woe_legacy_pool_first_then_v3'") &&
+  route.includes('function waxcashDirectWaxCandidateProof') &&
+  route.includes("headline_price_source_policy: 'og_woe_deepest_usable_direct_wax_pool'") &&
+  route.includes('direct_wax_candidate_count') &&
+  route.includes('usable_direct_wax_candidate_count') &&
   route.includes('legacy_direct_wax_candidate_count') &&
   route.includes('legacy_direct_wax_selected') &&
   route.includes('v3_direct_wax_candidate_count') &&
   route.includes('v3_direct_wax_selected') &&
   route.includes('headline_fallback_used') &&
-  route.includes('legacy_waxcash_direct_pool_missing') &&
-  route.includes('legacy_waxcash_direct_pool_unusable') &&
+  route.includes('no_direct_wax_pool_with_usable_price_proof') &&
   route.includes('function ogDirectWaxTokenPrice') &&
   route.includes('function ogV3DirectWaxTokenPrice') &&
   route.includes('function hasPoolV3GetPriceProof') &&
-  route.includes('waxReserve > selected.waxReserve') &&
+  route.includes('(asNumber(b.depth_score) || 0) - (asNumber(a.depth_score) || 0)') &&
   route.includes('price_wax = wax_reserve / token_reserve') &&
   route.includes('price_wax = 1 / PoolV3.getPrice(pool)') &&
   route.includes('v3_poolv3_getprice_proof_unavailable') &&
