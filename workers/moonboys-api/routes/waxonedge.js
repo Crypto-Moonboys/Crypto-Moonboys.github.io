@@ -4058,26 +4058,39 @@ async function syncSupplyInputs(env) {
   for (const row of rows.results || []) addTarget(row);
   let updated = 0;
   let attempted = 0;
+  let failed = 0;
+  let waxcashSupplyError = null;
   const rotatingRows = (rows.results || []).slice(0, limit);
   const runRows = targetRows.filter((row) =>
     row.token_key === WAXCASH_TOKEN_REF.token_key ||
     rotatingRows.some((rotating) => tokenKey(rotating.contract, rotating.symbol) === row.token_key));
   for (const row of runRows) {
     attempted += 1;
+    const isWaxcashTarget = row.token_key === WAXCASH_TOKEN_REF.token_key;
     try {
       const stats = await rpcPost('/v1/chain/get_currency_stats', {
         code: row.contract,
         symbol: row.symbol,
       });
       const stat = stats?.[row.symbol] || null;
-      if (!stat) continue;
+      if (!stat) {
+        if (isWaxcashTarget) throw new Error('get_currency_stats_missing_WAXCASH');
+        continue;
+      }
       const supply = parseAsset(stat.supply);
       const maxSupply = parseAsset(stat.max_supply);
-      if (supply.symbol && supply.symbol !== row.symbol) continue;
-      if (maxSupply.symbol && maxSupply.symbol !== row.symbol) continue;
+      if (supply.symbol && supply.symbol !== row.symbol) {
+        if (isWaxcashTarget) throw new Error(`get_currency_stats_symbol_mismatch:${supply.symbol}`);
+        continue;
+      }
+      if (maxSupply.symbol && maxSupply.symbol !== row.symbol) {
+        if (isWaxcashTarget) throw new Error(`get_currency_stats_max_supply_symbol_mismatch:${maxSupply.symbol}`);
+        continue;
+      }
       const decimals = asNumber(row.decimals) ?? supply.precision ?? maxSupply.precision ?? null;
       const totalSupplyDecimal = assetAmountDecimalString(stat.supply);
       const maxSupplyDecimal = assetAmountDecimalString(stat.max_supply);
+      if (isWaxcashTarget && totalSupplyDecimal == null) throw new Error('get_currency_stats_supply_parse_failed');
       const syncedAt = nowIso();
       await env.DB.prepare(
         `INSERT INTO waxonedge_tokens
@@ -4104,15 +4117,21 @@ async function syncSupplyInputs(env) {
            updated_at = excluded.updated_at`
       ).bind(row.contract, row.symbol, syncedAt).run().catch(() => {});
       updated += 1;
-    } catch {
-      // Individual token supply lookups are best-effort and recorded in the run row.
+    } catch (error) {
+      failed += 1;
+      const message = error?.message || String(error);
+      if (isWaxcashTarget) waxcashSupplyError = `graffitiking::WAXCASH supply sync failed: ${message}`;
     }
   }
   const totalSupplyTargets = Math.max(totalPairTokens, targetRows.length);
-  const complete = totalSupplyTargets > 0 && totalPairTokens <= limit && rotatingRows.length >= totalPairTokens ? 1 : 0;
+  const complete = totalSupplyTargets > 0 && totalPairTokens <= limit && rotatingRows.length >= totalPairTokens && failed === 0 ? 1 : 0;
   const truncated = complete ? 0 : (totalPairTokens > limit && rotatingRows.length >= limit ? 1 : 0);
-  const status = attempted <= 0 ? 'skipped' : (complete === 1 ? 'success' : 'partial');
-  const error = attempted > 0 ? null : 'No indexed pair tokens found for supply sync';
+  const status = attempted <= 0
+    ? 'skipped'
+    : (complete === 1 ? 'success' : (updated > 0 ? 'partial' : 'failed'));
+  const error = attempted <= 0
+    ? 'No indexed pair tokens found for supply sync'
+    : (waxcashSupplyError || (failed > 0 ? `${failed} supply target(s) failed` : null));
   const lastTokenKey = rotatingRows.length ? rotatingRows[rotatingRows.length - 1].token_key : '';
   const nextCursor = rotatingRows.length > 0 && totalPairTokens > limit && rotatingRows.length >= limit ? String(lastTokenKey || '') : '';
   await upsertSourceIndexState(env.DB, SUPPLY_SYNC_SOURCE, {
@@ -4131,9 +4150,11 @@ async function syncSupplyInputs(env) {
     ok: true,
     updated,
     attempted,
+    failed,
     total_pair_tokens: totalPairTokens,
     total_supply_targets: totalSupplyTargets,
     waxcash_target_included: seenTargets.has(WAXCASH_TOKEN_REF.token_key),
+    waxcash_error: waxcashSupplyError,
     limit,
     cursor: nextCursor,
     complete,
@@ -4765,6 +4786,72 @@ function reverseStoredCandle(candle) {
     low: reversedLow,
     close: reversedClose,
   };
+}
+
+function normalizeWaxcashWaxCandle(candle, options = {}) {
+  const selectedPriceWax = asNumber(options.selectedPriceWax);
+  const close = asNumber(candle?.close);
+  if (close == null || close <= 0) {
+    return {
+      candle: null,
+      status: 'rejected',
+      reason: 'invalid_close',
+    };
+  }
+  if (selectedPriceWax == null || selectedPriceWax <= 0) {
+    return {
+      candle: { ...candle, price_unit: 'WAX_per_WAXCASH', normalized_direction: 'unverified_raw' },
+      status: 'raw',
+      reason: 'selected_price_unavailable',
+    };
+  }
+  const reciprocalClose = 1 / close;
+  const directDistance = Math.abs(Math.log(close / selectedPriceWax));
+  const inverseDistance = Math.abs(Math.log(reciprocalClose / selectedPriceWax));
+  if (inverseDistance < directDistance) {
+    const reversed = reverseStoredCandle(candle);
+    const reversedClose = asNumber(reversed.close);
+    if (reversedClose == null || reversedClose <= 0) {
+      return {
+        candle: null,
+        status: 'rejected',
+        reason: 'inverse_close_unavailable',
+      };
+    }
+    return {
+      candle: { ...reversed, price_unit: 'WAX_per_WAXCASH', normalized_direction: 'inverted_from_WAXCASH_per_WAX' },
+      status: 'inverted',
+      reason: null,
+    };
+  }
+  return {
+    candle: { ...candle, price_unit: 'WAX_per_WAXCASH', normalized_direction: 'already_WAX_per_WAXCASH' },
+    status: 'accepted',
+    reason: null,
+  };
+}
+
+function normalizeWaxcashWaxCandles(candles = [], options = {}) {
+  const summary = {
+    price_unit: 'WAX_per_WAXCASH',
+    selected_price_wax: safeDecimal(asNumber(options.selectedPriceWax)),
+    accepted_count: 0,
+    inverted_count: 0,
+    rejected_count: 0,
+    rejection_reasons: {},
+  };
+  const normalized = [];
+  for (const candle of candles || []) {
+    const result = normalizeWaxcashWaxCandle(candle, options);
+    if (result.status === 'accepted' || result.status === 'raw') summary.accepted_count += 1;
+    if (result.status === 'inverted') summary.inverted_count += 1;
+    if (result.status === 'rejected') {
+      summary.rejected_count += 1;
+      summary.rejection_reasons[result.reason || 'unknown'] = (summary.rejection_reasons[result.reason || 'unknown'] || 0) + 1;
+    }
+    if (result.candle) normalized.push(result.candle);
+  }
+  return { candles: normalized, summary };
 }
 
 async function listChartCandlesBySource(db, query) {
@@ -6779,6 +6866,51 @@ function sumProofField(rows = [], field) {
   return hasValue ? total : null;
 }
 
+async function getWaxcashSupplySyncStatus(db) {
+  const [state, latestRun, tokenRow] = await Promise.all([
+    readSourceIndexState(db, SUPPLY_SYNC_SOURCE).catch(() => null),
+    db.prepare(
+      `SELECT source, status, started_at, finished_at, error
+       FROM waxonedge_sync_runs
+       WHERE source = ?
+       ORDER BY finished_at DESC, started_at DESC
+       LIMIT 1`
+    ).bind(SUPPLY_SYNC_SOURCE).first().catch(() => null),
+    db.prepare(
+      `SELECT contract, symbol, decimals, total_supply, max_supply, updated_at
+       FROM waxonedge_tokens
+       WHERE contract = ? AND symbol = ?
+       LIMIT 1`
+    ).bind(WAXCASH_CONTRACT, WAXCASH_SYMBOL).first().catch(() => null),
+  ]);
+  const totalSupply = assetAmountDecimalString(tokenRow?.total_supply);
+  const maxSupply = assetAmountDecimalString(tokenRow?.max_supply);
+  const lastError = state?.error || latestRun?.error || null;
+  return {
+    source: SUPPLY_SYNC_SOURCE,
+    waxcash: {
+      target: waxcashSupplyTarget(),
+      total_supply: totalSupply,
+      max_supply: maxSupply,
+      decimals: asNumber(tokenRow?.decimals),
+      updated_at: tokenRow?.updated_at || null,
+      live: totalSupply != null,
+      last_error: totalSupply != null ? null : lastError,
+    },
+    sync_state: state ? {
+      status: state.status || null,
+      cursor: state.cursor || '',
+      complete: asNumber(state.complete) === 1,
+      truncated: asNumber(state.truncated) === 1,
+      row_count: asNumber(state.row_count),
+      updated_at: state.updated_at || null,
+      error: state.error || null,
+    } : null,
+    latest_run: latestRun || null,
+    no_fake_supply: true,
+  };
+}
+
 async function buildWaxcashAnalytics(db) {
   const [detail, proofWrapper] = await Promise.all([
     getToken(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL),
@@ -6788,8 +6920,13 @@ async function buildWaxcashAnalytics(db) {
   const detailStats = detail.stats || {};
   const proof = proofWrapper.og_woe_parity;
   const headline = proof.headline_price || {};
+  const waxUsd = asNumber(headline.og_headline_price_usd) != null && asNumber(headline.og_headline_price_wax) != null
+    ? asNumber(headline.og_headline_price_usd) / asNumber(headline.og_headline_price_wax)
+    : null;
+  const selectedPriceWax = asNumber(headline.og_headline_price_wax);
+  const selectedPriceUsd = asNumber(headline.og_headline_price_usd);
   const selectedWaxPool = proof.selected_largest_wax_reserve_pool || null;
-  const chart = selectedWaxPool?.source && selectedWaxPool?.pair_id
+  const rawChart = selectedWaxPool?.source && selectedWaxPool?.pair_id
     ? await listChartCandlesBySource(db, {
       source: selectedWaxPool.source,
       pair_id: selectedWaxPool.pair_id,
@@ -6797,11 +6934,13 @@ async function buildWaxcashAnalytics(db) {
       limit: 120,
     })
     : { chart_source: null, candles: [], unavailable: 'selected_direct_wax_price_pair_unavailable' };
-  const waxUsd = asNumber(headline.og_headline_price_usd) != null && asNumber(headline.og_headline_price_wax) != null
-    ? asNumber(headline.og_headline_price_usd) / asNumber(headline.og_headline_price_wax)
-    : null;
-  const selectedPriceWax = asNumber(headline.og_headline_price_wax);
-  const selectedPriceUsd = asNumber(headline.og_headline_price_usd);
+  const normalizedChart = normalizeWaxcashWaxCandles(rawChart.candles || [], { selectedPriceWax });
+  const chart = {
+    ...rawChart,
+    candles: normalizedChart.candles,
+    candle_normalization: normalizedChart.summary,
+    unavailable: normalizedChart.candles.length ? null : (rawChart.unavailable || 'waxcash_wax_chart_candles_unavailable_after_direction_normalization'),
+  };
   const circulatingSupply = asNumber(detailStats.circulating_supply ?? token.circulating_supply);
   const totalSupply = asNumber(detailStats.total_supply ?? token.total_supply ?? token.max_supply);
   const marketCapWax = circulatingSupply != null && selectedPriceWax != null ? circulatingSupply * selectedPriceWax : null;
@@ -6820,6 +6959,10 @@ async function buildWaxcashAnalytics(db) {
   const holderCountLive = asNumber(detailStats.holder_count) != null;
   const fdvLive = fdvWax != null || fdvUsd != null;
   const metricStatus = detailStats.metric_status || {};
+  const supplySyncStatus = await getWaxcashSupplySyncStatus(db);
+  const totalSupplyReason = totalSupplyLive
+    ? null
+    : (supplySyncStatus?.waxcash?.last_error || 'Requires WAX RPC get_currency_stats proof for graffitiking::WAXCASH');
   return {
     token: {
       contract: WAXCASH_CONTRACT,
@@ -6893,7 +7036,8 @@ async function buildWaxcashAnalytics(db) {
           live: totalSupplyLive,
           source: totalSupplyLive ? 'wax_rpc_get_currency_stats' : null,
           basis: totalSupplyLive ? 'graffitiking::WAXCASH stat.supply' : null,
-          reason: totalSupplyLive ? null : 'Requires WAX RPC get_currency_stats proof for graffitiking::WAXCASH',
+          reason: totalSupplyReason,
+          sync_status: supplySyncStatus?.waxcash || null,
         },
         circulating_supply: {
           live: circulatingSupplyLive,
@@ -6936,6 +7080,7 @@ async function buildWaxcashAnalytics(db) {
     selected_largest_wax_reserve_pool: selectedWaxPool,
     aggregate_pair_liquidity: proof.aggregate_pair_liquidity,
     chart,
+    supply_sync_status: supplySyncStatus,
     proof,
     source_policy: 'waxcash_analytics_uses_og_woe_direct_wax_price_not_recursive_graph',
   };
@@ -8518,9 +8663,17 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       const chart = await listChartCandlesBySource(env.DB, Object.fromEntries(url.searchParams.entries()));
       return ok(chart, chart.unavailable ? [chart.unavailable] : [], null, corsHeaders);
     }
+    if (path === `${WAXONEDGE_API_PREFIX}/waxcash-supply-status`) {
+      const supply = await getWaxcashSupplySyncStatus(env.DB);
+      return ok(supply, supply.waxcash?.last_error ? [supply.waxcash.last_error] : [], supply.waxcash?.updated_at || supply.sync_state?.updated_at || null, corsHeaders);
+    }
     if (path === `${WAXONEDGE_API_PREFIX}/sync-status`) {
-      const [latest_sync, source_index_state] = await Promise.all([getLatestSync(env.DB), getSourceIndexStates(env.DB)]);
-      return ok({ latest_sync, source_index_state }, [], null, corsHeaders);
+      const [latest_sync, source_index_state, waxcash_supply] = await Promise.all([
+        getLatestSync(env.DB),
+        getSourceIndexStates(env.DB),
+        getWaxcashSupplySyncStatus(env.DB),
+      ]);
+      return ok({ latest_sync, source_index_state, waxcash_supply }, waxcash_supply.waxcash?.last_error ? [waxcash_supply.waxcash.last_error] : [], null, corsHeaders);
     }
     if (path === `${WAXONEDGE_API_PREFIX}/indexer-health`) {
       return ok(await getIndexerHealth(env.DB, env), [], null, corsHeaders);
@@ -8590,6 +8743,8 @@ export const __waxonedgeTestHooks = {
   DEX_ADAPTER_CONTRACT,
   buildWaxcashAnalytics,
   buildWaxcashOgParityProof,
+  getWaxcashSupplySyncStatus,
+  normalizeWaxcashWaxCandles,
   waxcashHeadlinePrice,
   waxcashGraphPairValuation,
   ogDirectWaxTokenPrice,
