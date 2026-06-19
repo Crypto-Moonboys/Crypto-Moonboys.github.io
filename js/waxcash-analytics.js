@@ -185,12 +185,11 @@
         '<div class="wx-external-chart-copy">' +
           '<strong>External Alcor WAX/WAXCASH pool chart</strong>' +
           '<span>' + esc(sourceLabel) + '</span>' +
-          '<p>Chart is external pool visualisation only. WaxOnEdge stats above remain backend proof values.</p>' +
+          '<p>External visual reference only. WaxOnEdge stats remain backend proof values.</p>' +
         '</div>' +
-        '<iframe class="wx-external-chart-frame" title="External Alcor WAX/WAXCASH pool chart" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups" src="' + esc(url) + '"></iframe>' +
-        '<div class="wx-chart-empty wx-external-chart-fallback">' +
-          '<span>External Alcor chart unavailable in embed.</span>' +
-          '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">Open Alcor pool #8388</a>' +
+        '<div class="wx-external-chart-linkcard">' +
+          '<span>Open the external Alcor pool chart in a new tab.</span>' +
+          '<a class="wx-external-chart-link" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">Open Alcor chart</a>' +
         '</div>' +
       '</div>';
   }
@@ -218,7 +217,7 @@
     .catch(function (error) {
       $('wx-status').textContent = 'Analytics unavailable';
       $('wx-stats').innerHTML = statRow({ label: 'Status', live: false, reason: error.message || String(error) });
-      $('wx-chart').innerHTML = '<div class="wx-chart-empty">External Alcor chart unavailable in embed.</div>';
+      $('wx-chart').innerHTML = '<div class="wx-chart-empty">External Alcor chart unavailable.</div>';
       $('wx-pairs').innerHTML = '<tr><td colspan="8" class="wx-muted">Pair table unavailable.</td></tr>';
     });
 }());

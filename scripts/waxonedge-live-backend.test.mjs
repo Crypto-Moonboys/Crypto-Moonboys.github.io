@@ -6342,14 +6342,19 @@ ok('WAXCASH analytics frontend formats values and reasons without concatenation'
 ok('WAXCASH analytics frontend renders external Alcor chart as visual-only reference',
   waxcashAnalyticsFrontend.includes('sections.chart_external') &&
   waxcashAnalyticsFrontend.includes('External Alcor WAX/WAXCASH pool chart') &&
-  waxcashAnalyticsFrontend.includes('Chart is external pool visualisation only. WaxOnEdge stats above remain backend proof values.') &&
-  waxcashAnalyticsFrontend.includes('External Alcor chart unavailable in embed.') &&
-  waxcashAnalyticsFrontend.includes('Open Alcor pool #8388') &&
-  waxcashAnalyticsFrontend.includes('sandbox="allow-scripts allow-same-origin allow-popups"') &&
-  waxcashAnalyticsFrontend.includes('referrerpolicy="no-referrer"') &&
+  waxcashAnalyticsFrontend.includes('External visual reference only. WaxOnEdge stats remain backend proof values.') &&
+  waxcashAnalyticsFrontend.includes('Open the external Alcor pool chart in a new tab.') &&
+  waxcashAnalyticsFrontend.includes('Open Alcor chart') &&
+  waxcashAnalyticsFrontend.includes('wx-external-chart-linkcard') &&
+  waxcashHtml.includes('.wx-external-chart-link') &&
+  !waxcashAnalyticsFrontend.includes('<iframe') &&
+  !waxcashAnalyticsFrontend.includes('sandbox=') &&
+  !waxcashAnalyticsFrontend.includes('allow-popups') &&
+  !waxcashHtml.includes('.wx-external-chart-frame') &&
+  !waxcashAnalyticsFrontend.includes('External Alcor chart unavailable in embed.') &&
   !waxcashAnalyticsFrontend.includes('candles.map(function (candle)') &&
   !waxcashAnalyticsFrontend.includes('waxcash_wax_chart_candles_unavailable_after_direction_normalization') &&
-  !/Swap|Trade on Swap|Connect Wallet|wallet|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
+  !/Deposit|Add Liquidity|Swap|Trade on Swap|Connect Wallet|wallet selector|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
 ok('WAXCASH graph metric modes use USD price labels and WAX liquidity/volume',
   waxcashGraphFrontend.includes("if (metric === 'volume') return firstNumber(records, ['volume_24h_wax'])") &&
   waxcashGraphFrontend.includes("if (metric === 'price') return firstNumber(records, ['price_usd'])") &&
