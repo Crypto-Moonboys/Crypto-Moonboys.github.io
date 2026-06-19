@@ -2481,7 +2481,91 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     ok('WAXCASH analytics holder count remains unavailable with explicit reason when no holder source exists',
       supplyOnlyWaxcashAnalytics.stats.holder_count === null &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.live === false &&
-      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.reason.includes('verified indexed holder source'));
+      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.reason.includes('No indexed holder snapshot exists'));
+    const holderTradeWaxcashAnalyticsDb = {
+      prepare(sql) {
+        if (sql.includes('FROM waxonedge_token_stats')) {
+          return {
+            bind() {
+              return {
+                async all() {
+                  return { results: [{ contract: 'graffitiking', symbol: 'WAXCASH', updated_at: '2026-06-14T11:00:00.000Z' }] };
+                },
+                async first() {
+                  return { contract: 'graffitiking', symbol: 'WAXCASH', updated_at: '2026-06-14T11:00:00.000Z' };
+                },
+              };
+            },
+          };
+        }
+        if (sql.includes('FROM waxonedge_holders') && sql.includes('ORDER BY snapshot_at DESC')) {
+          return {
+            bind() {
+              return {
+                async all() { return { results: [{ snapshot_at: '2026-06-14T00:00:00.000Z' }] }; },
+                async first() { return { snapshot_at: '2026-06-14T00:00:00.000Z' }; },
+              };
+            },
+          };
+        }
+        if (sql.includes('FROM waxonedge_holders') && sql.includes('COUNT(DISTINCT account)')) {
+          return {
+            bind() {
+              return {
+                async all() { return { results: [{ count: 9173 }] }; },
+                async first() { return { count: 9173 }; },
+              };
+            },
+          };
+        }
+        if (sql.includes('FROM waxonedge_trades') && sql.includes('MAX(traded_at)')) {
+          return {
+            bind() {
+              return {
+                async all() { return { results: [{ latest_trade_at: '2026-06-15T00:00:00.000Z' }] }; },
+                async first() { return { latest_trade_at: '2026-06-15T00:00:00.000Z' }; },
+              };
+            },
+          };
+        }
+        if (sql.includes('FROM waxonedge_trades') && sql.includes('SUM(ABS')) {
+          return {
+            bind(...params) {
+              return {
+                async all() {
+                  const since = String(params[params.length - 1] || '');
+                  const volume = since >= '2026-06-14' ? '136850.54368654' : (since >= '2026-06-08' ? '764308.56919631' : '6816747.33378953');
+                  return { results: [{ volume }] };
+                },
+                async first() {
+                  const since = String(params[params.length - 1] || '');
+                  const volume = since >= '2026-06-14' ? '136850.54368654' : (since >= '2026-06-08' ? '764308.56919631' : '6816747.33378953');
+                  return { volume };
+                },
+              };
+            },
+          };
+        }
+        return supplyOnlyWaxcashAnalyticsDb.prepare(sql);
+      },
+    };
+    const holderTradeWaxcashAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(holderTradeWaxcashAnalyticsDb);
+    ok('WAXCASH analytics derives holder count and rolling volumes from indexed holder/trade rows when aggregate stats are missing',
+      Number(holderTradeWaxcashAnalytics.stats.holder_count) === 9173 &&
+      holderTradeWaxcashAnalytics.stats.metric_status.holder_count.source === 'indexed_holder_snapshot' &&
+      Number(holderTradeWaxcashAnalytics.stats.volume_24h_wax) === 175 &&
+      Number(holderTradeWaxcashAnalytics.stats.volume_7d) === 764308.56919631 &&
+      Number(holderTradeWaxcashAnalytics.stats.volume_30d) === 6816747.33378953 &&
+      holderTradeWaxcashAnalytics.stats.metric_status.volume_24h.source === 'indexed_pair_or_ticker_volume' &&
+      holderTradeWaxcashAnalytics.stats.metric_status.volume_7d.source === 'indexed_trade_rows_window' &&
+      holderTradeWaxcashAnalytics.stats.metric_status.volume_30d.source === 'indexed_trade_rows_window',
+      JSON.stringify({
+        holder_count: holderTradeWaxcashAnalytics.stats.holder_count,
+        volume_24h_wax: holderTradeWaxcashAnalytics.stats.volume_24h_wax,
+        volume_7d: holderTradeWaxcashAnalytics.stats.volume_7d,
+        volume_30d: holderTradeWaxcashAnalytics.stats.volume_30d,
+        metric_status: holderTradeWaxcashAnalytics.stats.metric_status,
+      }));
     const failedSupplyWaxcashAnalyticsDb = {
       prepare(sql) {
         function allResults(params) {
