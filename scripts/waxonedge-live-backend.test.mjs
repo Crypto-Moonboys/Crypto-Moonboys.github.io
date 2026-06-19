@@ -1943,6 +1943,45 @@ ok('VPS live indexer safely parses request path without trusting Host header',
           };
         }
         if (sql.includes('FROM waxonedge_chart_candles')) {
+          if (params[0] === 'swap.alcor' && params[1] === '8388') {
+            return {
+              results: [
+                {
+                  source: 'swap.alcor',
+                  pair_id: '8388',
+                  interval: '1D',
+                  bucket_time: '2026-06-14T00:00:00.000Z',
+                  open: '0.029',
+                  high: '0.031',
+                  low: '0.028',
+                  close: '0.03',
+                  volume: '100',
+                },
+                {
+                  source: 'swap.alcor',
+                  pair_id: '8388',
+                  interval: '1D',
+                  bucket_time: '2026-06-15T00:00:00.000Z',
+                  open: '34.48275862',
+                  high: '35.71428571',
+                  low: '32.25806452',
+                  close: '33.33333333',
+                  volume: '120',
+                },
+                {
+                  source: 'swap.alcor',
+                  pair_id: '8388',
+                  interval: '1D',
+                  bucket_time: '2026-06-16T00:00:00.000Z',
+                  open: '100',
+                  high: '101',
+                  low: '0.029',
+                  close: '0.03',
+                  volume: '12',
+                },
+              ],
+            };
+          }
           if (params[0] === 'swap.nefty' && params[1] === 'WAXCASHWAXLEGACY') {
             return {
               results: [
@@ -2109,10 +2148,11 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id === 'WAXCASHWAXLEGACY' &&
       !(('selected_' + 'deep' + 'est_wax_pool') in waxcashAnalytics) &&
       !(('selected_' + 'deep' + 'est_wax_pool') in (waxcashAnalytics.proof || {})));
-    ok('WAXCASH analytics chart source is the selected direct WAX proof pair',
-      waxcashAnalytics.chart?.chart_source?.source === waxcashAnalytics.selected_largest_wax_reserve_pool?.source &&
-      waxcashAnalytics.chart?.chart_source?.pair_id === waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id &&
-      waxcashAnalytics.chart?.chart_source?.pair_id === 'WAXCASHWAXLEGACY' &&
+    ok('WAXCASH analytics chart source is Alcor pool #8388 display feed, not the selected price proof pair',
+      waxcashAnalytics.chart?.chart_source?.source === 'swap.alcor' &&
+      waxcashAnalytics.chart?.chart_source?.pair_id === '8388' &&
+      waxcashAnalytics.chart?.chart_source?.pair_id !== waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id &&
+      waxcashAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY' &&
       waxcashAnalytics.chart?.chart_source?.pair_id !== 'WAXWUFB');
     const waxcashChartOhlcValues = (waxcashAnalytics.chart?.candles || []).flatMap((candle) =>
       ['open', 'high', 'low', 'close'].map((field) => Number(candle[field])));
@@ -2127,6 +2167,107 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.chart?.candle_normalization?.rejection_reasons?.ohlc_outside_selected_price_range === 1 &&
       !waxcashChartOhlcValues.some((value) => value > 1),
       JSON.stringify({ waxcashChartCloses, waxcashChartOhlcValues, normalization: waxcashAnalytics.chart?.candle_normalization }));
+    const waxcashChartFeed = await __waxonedgeTestHooks.buildWaxcashUdfChartFeed(waxcashAnalyticsDb, { resolution: '1D' });
+    ok('WAXCASH analytics exposes a UDF-shaped history feed backed by normalized Alcor #8388 candles',
+      waxcashAnalytics.sections?.chart?.feed_url === '/api/waxonedge/waxcash-analytics/chart-feed?resolution=1D' &&
+      waxcashAnalytics.sections?.chart?.feed_format === 'tradingview_udf_history' &&
+      waxcashChartFeed.feed_format === 'tradingview_udf_history' &&
+      waxcashChartFeed.s === 'ok' &&
+      waxcashChartFeed.source === 'swap.alcor' &&
+      waxcashChartFeed.pair_id === '8388' &&
+      waxcashChartFeed.symbol === 'WAXCASH/WAX' &&
+      waxcashChartFeed.ticker === 'WAXCASH/WAX' &&
+      waxcashChartFeed.pair_label === 'WAXCASH/WAX' &&
+      waxcashChartFeed.price_unit === 'WAX_per_WAXCASH' &&
+      waxcashChartFeed.affects_waxonedge_metrics === false &&
+      waxcashChartFeed.selected_price_policy_unchanged === true &&
+      waxcashChartFeed.t.length === 2 &&
+      waxcashChartFeed.o.concat(waxcashChartFeed.h, waxcashChartFeed.l, waxcashChartFeed.c).every((value) => value > 0.02 && value < 0.04) &&
+      !waxcashChartFeed.o.concat(waxcashChartFeed.h, waxcashChartFeed.l, waxcashChartFeed.c).some((value) => value > 1),
+      JSON.stringify(waxcashChartFeed));
+    const onRequestChartRows = [];
+    const onRequestTradeRows = [
+      { source: 'swap.alcor', trade_id: '8388-a', pair_id: '8388', price: '0.028', volume: '10', traded_at: '2026-06-14T01:00:00.000Z', raw_json: '{}' },
+      { source: 'swap.alcor', trade_id: '8388-b', pair_id: '8388', price: '0.032', volume: '12', traded_at: '2026-06-14T05:00:00.000Z', raw_json: '{}' },
+      { source: 'swap.alcor', trade_id: '8388-c', pair_id: '8388', price: '0.03', volume: '11', traded_at: '2026-06-15T02:00:00.000Z', raw_json: '{}' },
+    ];
+    const onRequestChartDb = {
+      prepare(sql) {
+        if (sql.includes('INSERT INTO waxonedge_chart_candles')) {
+          return {
+            bind(...params) {
+              return { insert_chart_params: params };
+            },
+          };
+        }
+        if (sql.includes('FROM waxonedge_chart_candles')) {
+          return {
+            bind(...params) {
+              return {
+                async all() {
+                  return {
+                    results: onRequestChartRows
+                      .filter((row) => row.source === params[0] && row.pair_id === params[1] && row.interval === params[2])
+                      .sort((a, b) => String(b.bucket_time).localeCompare(String(a.bucket_time))),
+                  };
+                },
+                async first() {
+                  return null;
+                },
+              };
+            },
+          };
+        }
+        if (sql.includes('FROM waxonedge_trades')) {
+          return {
+            bind(...params) {
+              return {
+                async all() {
+                  if (String(params[0]) === '8388') return { results: onRequestTradeRows };
+                  return { results: [] };
+                },
+                async first() {
+                  return onRequestTradeRows[0] || null;
+                },
+              };
+            },
+          };
+        }
+        return waxcashAnalyticsDb.prepare(sql);
+      },
+      async batch(statements) {
+        for (const statement of statements || []) {
+          const params = statement.insert_chart_params || [];
+          onRequestChartRows.push({
+            source: params[0],
+            pair_id: params[1],
+            interval: params[2],
+            bucket_time: params[3],
+            open: params[4],
+            high: params[5],
+            low: params[6],
+            close: params[7],
+            volume: params[8],
+            updated_at: params[9],
+          });
+        }
+        return statements || [];
+      },
+    };
+    const onRequestChartAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(onRequestChartDb);
+    ok('WAXCASH analytics builds source-backed Alcor #8388 candles from indexed trade rows when stored candles are missing',
+      onRequestChartAnalytics.chart?.chart_source?.source === 'swap.alcor' &&
+      onRequestChartAnalytics.chart?.chart_source?.pair_id === '8388' &&
+      onRequestChartAnalytics.chart?.candles?.length === 2 &&
+      onRequestChartAnalytics.chart?.unavailable === null &&
+      onRequestChartAnalytics.chart?.build_from_indexed_trades?.reason === 'candles_built_from_trade_rows' &&
+      onRequestChartAnalytics.sections?.chart?.build_from_indexed_trades?.candles_written === 2 &&
+      Number(onRequestChartAnalytics.stats.selected_price_wax) === 0.03 &&
+      onRequestChartAnalytics.stats.selected_pair_id === 'WAXCASHWAXLEGACY',
+      JSON.stringify({
+        chart: onRequestChartAnalytics.chart,
+        selected_pair_id: onRequestChartAnalytics.stats.selected_pair_id,
+      }));
     ok('/waxcash-analytics returns display-ready backend sections',
       waxcashAnalytics.sections?.token_stats?.rows?.length >= 12 &&
       waxcashAnalytics.sections?.supply_proof &&
@@ -2343,7 +2484,91 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     ok('WAXCASH analytics holder count remains unavailable with explicit reason when no holder source exists',
       supplyOnlyWaxcashAnalytics.stats.holder_count === null &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.live === false &&
-      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.reason.includes('verified indexed holder source'));
+      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.reason.includes('No indexed holder snapshot exists for graffitiking::WAXCASH'));
+    const holderTradeWaxcashAnalyticsDb = {
+      prepare(sql) {
+        if (sql.includes('FROM waxonedge_token_stats')) {
+          return {
+            bind() {
+              return {
+                async all() {
+                  return { results: [{ contract: 'graffitiking', symbol: 'WAXCASH', updated_at: '2026-06-14T11:00:00.000Z' }] };
+                },
+                async first() {
+                  return { contract: 'graffitiking', symbol: 'WAXCASH', updated_at: '2026-06-14T11:00:00.000Z' };
+                },
+              };
+            },
+          };
+        }
+        if (sql.includes('FROM waxonedge_holders') && sql.includes('ORDER BY snapshot_at DESC')) {
+          return {
+            bind() {
+              return {
+                async all() { return { results: [{ snapshot_at: '2026-06-14T00:00:00.000Z' }] }; },
+                async first() { return { snapshot_at: '2026-06-14T00:00:00.000Z' }; },
+              };
+            },
+          };
+        }
+        if (sql.includes('FROM waxonedge_holders') && sql.includes('COUNT(DISTINCT account)')) {
+          return {
+            bind() {
+              return {
+                async all() { return { results: [{ count: 9173 }] }; },
+                async first() { return { count: 9173 }; },
+              };
+            },
+          };
+        }
+        if (sql.includes('FROM waxonedge_trades') && sql.includes('MAX(traded_at)')) {
+          return {
+            bind() {
+              return {
+                async all() { return { results: [{ latest_trade_at: '2026-06-15T00:00:00.000Z' }] }; },
+                async first() { return { latest_trade_at: '2026-06-15T00:00:00.000Z' }; },
+              };
+            },
+          };
+        }
+        if (sql.includes('FROM waxonedge_trades') && sql.includes('SUM(ABS')) {
+          return {
+            bind(...params) {
+              return {
+                async all() {
+                  const since = String(params[params.length - 1] || '');
+                  const volume = since >= '2026-06-14' ? '136850.54368654' : (since >= '2026-06-08' ? '764308.56919631' : '6816747.33378953');
+                  return { results: [{ volume }] };
+                },
+                async first() {
+                  const since = String(params[params.length - 1] || '');
+                  const volume = since >= '2026-06-14' ? '136850.54368654' : (since >= '2026-06-08' ? '764308.56919631' : '6816747.33378953');
+                  return { volume };
+                },
+              };
+            },
+          };
+        }
+        return supplyOnlyWaxcashAnalyticsDb.prepare(sql);
+      },
+    };
+    const holderTradeWaxcashAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(holderTradeWaxcashAnalyticsDb);
+    ok('WAXCASH analytics derives holder count and rolling volumes from indexed holder/trade rows when aggregate stats are missing',
+      Number(holderTradeWaxcashAnalytics.stats.holder_count) === 9173 &&
+      holderTradeWaxcashAnalytics.stats.metric_status.holder_count.source === 'indexed_holder_snapshot' &&
+      Number(holderTradeWaxcashAnalytics.stats.volume_24h_wax) === 175 &&
+      Number(holderTradeWaxcashAnalytics.stats.volume_7d) === 764308.56919631 &&
+      Number(holderTradeWaxcashAnalytics.stats.volume_30d) === 6816747.33378953 &&
+      holderTradeWaxcashAnalytics.stats.metric_status.volume_24h.source === 'indexed_pair_or_ticker_volume' &&
+      holderTradeWaxcashAnalytics.stats.metric_status.volume_7d.source === 'indexed_trade_rows_window' &&
+      holderTradeWaxcashAnalytics.stats.metric_status.volume_30d.source === 'indexed_trade_rows_window',
+      JSON.stringify({
+        holder_count: holderTradeWaxcashAnalytics.stats.holder_count,
+        volume_24h_wax: holderTradeWaxcashAnalytics.stats.volume_24h_wax,
+        volume_7d: holderTradeWaxcashAnalytics.stats.volume_7d,
+        volume_30d: holderTradeWaxcashAnalytics.stats.volume_30d,
+        metric_status: holderTradeWaxcashAnalytics.stats.metric_status,
+      }));
     const failedSupplyWaxcashAnalyticsDb = {
       prepare(sql) {
         function allResults(params) {
@@ -4575,6 +4800,11 @@ ok('candle backfill can build from AMM waxonedge_trades rows',
     { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T00:00:00.000Z', price: '0.2', volume: '2' },
     { source: 'swap.taco', pair_id: 'WAXFOO', traded_at: '2026-06-14T01:00:00.000Z', price: '0.25', volume: '3' },
   ], { source: 'swap.taco' })[0].close === '0.25');
+const internalCandleBuilderStart = route.indexOf('async function buildInternalDailyCandlesForPair');
+const internalCandleBuilderEnd = route.indexOf('async function writeChartCandles', internalCandleBuilderStart);
+const internalCandleBuilderBody = internalCandleBuilderStart >= 0 && internalCandleBuilderEnd > internalCandleBuilderStart
+  ? route.slice(internalCandleBuilderStart, internalCandleBuilderEnd)
+  : '';
 ok('candle backfill uses canonical AMM IDs and does not derive candles from reserves',
   route.includes('function canonicalAmmPairId') &&
   route.includes('function canonicalAmmActionPairId') &&
@@ -4582,7 +4812,9 @@ ok('candle backfill uses canonical AMM IDs and does not derive candles from rese
   route.includes('pairId = canonicalAmmActionPairId(stream.source, record, row)') &&
   route.includes('const rows = await loadIndexedTradeRowsForPair(db, source, pairId)') &&
   route.includes('if (!rows.length)') &&
-  !/buildInternalDailyCandlesForPair[\s\S]*reserve_a[\s\S]*writeChartCandles/.test(route) &&
+  internalCandleBuilderBody.includes('loadIndexedTradeRowsForPair(db, source, pairId)') &&
+  !internalCandleBuilderBody.includes('reserve_a') &&
+  !internalCandleBuilderBody.includes('reserve_b') &&
   !route.includes('public chart fallback'));
 ok('Alcor marketMatches pagination reports per-action skip progress without full-history completion claims',
   route.includes('function normalizeActionStreamProgressMap') &&
@@ -6286,7 +6518,7 @@ ok('frontend backend chart request captures selection before async call and clea
 ok('frontend renders backend candle bundles without context.chartMarket',
   frontend.includes('return renderChartBundle(backendBundle, backendMarket, backendChartMeta)') &&
   frontend.includes('function renderChartBundle(bundle, market, chartMetaLabel)'));
-ok('frontend renders indexed candles with TradingView Lightweight Charts, not symbol widgets',
+ok('frontend renders indexed candles with Lightweight Charts and no full TradingView widget',
   tokenHtml.includes('lightweight-charts@5.2.0') &&
   frontend.includes('window.LightweightCharts') &&
   frontend.includes('tv.createChart') &&
@@ -6310,11 +6542,12 @@ ok('frontend does not label raw base volume as WAX',
   frontend.includes('rawVolume24: row.volume_24h') &&
   frontend.includes('volume24: asNum(row.volume_24h_wax)') &&
   frontend.includes("volume24Text: row.volume_24h_wax != null ? String(row.volume_24h_wax) + ' WAX' : UNAVAILABLE_TEXT"));
-ok('/waxcash.html pair table no longer exposes reserve ratio as a visible headline column',
+ok('/waxcash.html pair table follows OG-style pair detail columns without relative-price wording',
   !waxcashHtml.includes('<th>Pair Reserve Ratio</th>') &&
   !waxcashHtml.includes('<th>Relative Pair Price</th>') &&
+  waxcashHtml.includes('<th>Pair price</th>') &&
   waxcashHtml.includes('<th>Status</th>') &&
-  waxcashHtml.includes('<td colspan="8"'));
+  waxcashHtml.includes('<td colspan="9"'));
 ok('WAXCASH analytics frontend renders backend sections instead of raw proof-row guesses',
   waxcashAnalyticsFrontend.includes('payload.sections || {}') &&
   waxcashAnalyticsFrontend.includes('sections.token_stats') &&
@@ -6323,38 +6556,80 @@ ok('WAXCASH analytics frontend renders backend sections instead of raw proof-row
   waxcashAnalyticsFrontend.includes('Unavailable') &&
   waxcashAnalyticsFrontend.includes('row.reason') &&
   !waxcashAnalyticsFrontend.includes('pair_price_relative_to_waxcash'));
-ok('WAXCASH analytics frontend formats values and reasons without concatenation',
+ok('WAXCASH analytics frontend keeps values compact and proof reasons in tooltip/detail text',
   waxcashAnalyticsFrontend.includes('function humanReason(reason)') &&
   waxcashAnalyticsFrontend.includes("paired_token_wax_price_unavailable: 'Paired token WAX price unavailable'") &&
   waxcashAnalyticsFrontend.includes("missing_or_zero_reserves: 'Missing or zero reserves'") &&
   waxcashAnalyticsFrontend.includes("direct_wax_price_unavailable: 'Direct WAX price unavailable'") &&
   waxcashAnalyticsFrontend.includes("selected_price_unavailable: 'Selected price unavailable'") &&
-  waxcashAnalyticsFrontend.includes('function reasonHtml(reason)') &&
-  waxcashAnalyticsFrontend.includes('<span class=\"wx-main-value\">') &&
-  waxcashAnalyticsFrontend.includes('<small>') &&
+  waxcashAnalyticsFrontend.includes('function proofDot(row)') &&
+  waxcashAnalyticsFrontend.includes('title=\"') &&
+  waxcashAnalyticsFrontend.includes('wx-subvalue') &&
   waxcashAnalyticsFrontend.includes('Low liquidity') &&
-  waxcashHtml.includes('.wx-reason') &&
-  waxcashHtml.includes('.wx-value .wx-reason') &&
-  waxcashHtml.indexOf('.wx-value .wx-reason') > waxcashHtml.indexOf('.wx-value small') &&
+  waxcashHtml.includes('.wx-reason-dot') &&
+  !waxcashHtml.includes('.wx-value .wx-reason') &&
   waxcashHtml.includes('table-layout: fixed') &&
   waxcashHtml.includes('white-space: normal') &&
   waxcashHtml.includes('overflow-wrap: anywhere'));
-ok('WAXCASH analytics frontend renders external Alcor chart as visual-only reference',
+ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with display-only pool controls',
   waxcashAnalyticsFrontend.includes('sections.chart_external') &&
-  waxcashAnalyticsFrontend.includes('External Alcor WAX/WAXCASH pool chart') &&
-  waxcashAnalyticsFrontend.includes('Chart is external visual reference only. WaxOnEdge stats remain backend proof values.') &&
-  waxcashAnalyticsFrontend.includes('Open the external Alcor pool chart in a new tab.') &&
-  waxcashAnalyticsFrontend.includes('Open Alcor chart') &&
-  waxcashAnalyticsFrontend.includes('wx-external-chart-linkcard') &&
-  waxcashHtml.includes('.wx-external-chart-link') &&
+  waxcashAnalyticsFrontend.includes('renderLightweightCandles(payload, feed)') &&
+  waxcashAnalyticsFrontend.includes('tradingViewFeedCandles(feed)') &&
+  waxcashAnalyticsFrontend.includes('return chart.feed_url || null') &&
+  waxcashAnalyticsFrontend.includes('backend did not provide sections.chart.feed_url') &&
+  !waxcashAnalyticsFrontend.includes("|| '/api/waxonedge/waxcash-analytics/chart-feed?resolution=1D'") &&
+  waxcashAnalyticsFrontend.includes('loadChartFeed(state.payload)') &&
+  waxcashAnalyticsFrontend.includes('window.LightweightCharts') &&
+  waxcashAnalyticsFrontend.includes('chartCandles(feed)') &&
+  !waxcashAnalyticsFrontend.includes('Array.isArray(chart.candles)') &&
+  !waxcashAnalyticsFrontend.includes('renderChart(state.payload') &&
+  !waxcashAnalyticsFrontend.includes('WAXP/WAXCASH') &&
+  waxcashAnalyticsFrontend.includes("'Alcor pool #' + external.pool_id + ' display feed'") &&
+  waxcashAnalyticsFrontend.includes('Backend chart display feed') &&
+  waxcashAnalyticsFrontend.includes('pickPoolViews(rows)') &&
+  waxcashAnalyticsFrontend.includes('Selected proof pool') &&
+  waxcashAnalyticsFrontend.includes("view.label + ' detail'") &&
+  waxcashAnalyticsFrontend.includes('Best liquidity pool') &&
+  waxcashAnalyticsFrontend.includes('Worst/low liquidity pool') &&
+  waxcashAnalyticsFrontend.includes('Weighted/valued pool view') &&
+  waxcashAnalyticsFrontend.includes('Alcor pool #') &&
+  waxcashHtml.includes('lightweight-charts@5.2.0') &&
+  waxcashHtml.includes('Backend feed only') &&
+  waxcashHtml.includes('Worker UDF-shaped feed') &&
+  waxcashHtml.includes('Lightweight Charts renderer') &&
+  waxcashHtml.includes('wx-lightweight-chart') &&
+  waxcashHtml.includes('wx-view-controls') &&
+  waxcashHtml.includes('Display-only pair detail views') &&
+  waxcashHtml.includes('WAX per WAXCASH candles from the WaxOnEdge Worker feed. Display controls do not change selected price.') &&
+  waxcashHtml.includes('allowProductionFallback: false') &&
+  waxcashHtml.includes('API base URL unavailable — MOONBOYS_API not configured.') &&
+  waxcashHtml.includes('Display-only source-backed pair detail views') &&
+  !waxcashHtml.includes('allowProductionFallback: true') &&
+  !waxcashHtml.includes('api.PRODUCTION_BASE_URL') &&
+  !waxcashHtml.includes('1D source-backed candles') &&
+  !waxcashHtml.includes('>1m</button>') &&
+  !waxcashHtml.includes('>15m</button>') &&
+  !waxcashHtml.includes('>1h</button>') &&
+  !waxcashHtml.includes('>4h</button>') &&
+  !waxcashHtml.includes('>D</button>') &&
+  !waxcashHtml.includes('>W</button>') &&
+  !waxcashHtml.includes('>M</button>') &&
+  !waxcashHtml.includes('>Indicators</button>') &&
+  !waxcashAnalyticsFrontend.includes('Open Alcor chart') &&
+  !waxcashAnalyticsFrontend.includes('wx-external-chart-linkcard') &&
   !waxcashAnalyticsFrontend.includes('<iframe') &&
   !waxcashAnalyticsFrontend.includes('sandbox=') &&
   !waxcashAnalyticsFrontend.includes('allow-popups') &&
   !waxcashHtml.includes('.wx-external-chart-frame') &&
   !waxcashAnalyticsFrontend.includes('External Alcor chart unavailable in embed.') &&
-  !waxcashAnalyticsFrontend.includes('candles.map(function (candle)') &&
-  !waxcashAnalyticsFrontend.includes('waxcash_wax_chart_candles_unavailable_after_direction_normalization') &&
+  waxcashAnalyticsFrontend.includes('return tradingViewFeedCandles(feed)') &&
   !/Deposit|Add Liquidity|Swap|Trade on Swap|Connect Wallet|wallet selector|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
+ok('WAXCASH analytics backend uses chart-feed labels and alias-aware trade volume matching',
+  route.includes("pair_label: 'WAXCASH/WAX'") &&
+  route.includes('const sourceNames = candleTradeSourceNamesFor(pair?.source)') &&
+  route.includes('source IN (${sourceNames.map(() => \'?\').join(\',\')})') &&
+  route.includes('No indexed holder snapshot exists for ${contract}::${symbol}') &&
+  !route.includes('No indexed holder snapshot exists for graffitiking::WAXCASH'));
 ok('WAXCASH graph metric modes use USD price labels and WAX liquidity/volume',
   waxcashGraphFrontend.includes("if (metric === 'volume') return firstNumber(records, ['volume_24h_wax'])") &&
   waxcashGraphFrontend.includes("if (metric === 'price') return firstNumber(records, ['price_usd'])") &&

@@ -6,7 +6,7 @@
   <meta name="description" content="WAXCASH analytics powered by indexed WaxOnEdge market data.">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="WAXCASH Analytics | Crypto Moonboys">
-  <meta property="og:description" content="Read-only WAXCASH token stats, price proof, liquidity, volume, supply, market cap, pair table, and indexed chart data.">
+  <meta property="og:description" content="Old WaxOnEdge-style WAXCASH token stats, WAX candle chart, proof pool controls, and indexed pair details.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cryptomoonboys.com/waxcash.html">
   <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
@@ -17,14 +17,17 @@
     :root {
       color-scheme: dark;
       --bg: #111820;
-      --panel: #171e27;
-      --panel-2: #202a35;
+      --rail: #0f141b;
+      --panel: #151b23;
+      --panel-2: #1c2631;
+      --panel-3: #253241;
       --line: #344252;
-      --text: #f3f7fb;
-      --muted: #94a3ad;
-      --cyan: #04f0e6;
+      --text: #f5f7fb;
+      --muted: #95a3ad;
+      --cyan: #02f0e7;
       --green: #00f59f;
       --red: #ff3d67;
+      --yellow: #f8c547;
     }
     * { box-sizing: border-box; }
     body {
@@ -34,188 +37,288 @@
       color: var(--text);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-    main { padding: 24px; }
-    .wx-shell { max-width: 1840px; margin: 0 auto; }
+    main { padding: 18px 16px 28px; }
+    .wx-shell {
+      max-width: 1868px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #1a222c, #121922);
+      border: 1px solid rgba(148,163,173,0.18);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.26);
+    }
     .wx-title {
       display: flex;
       align-items: end;
       justify-content: space-between;
       gap: 16px;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 18px;
       margin-bottom: 18px;
     }
-    h1, h2 { margin: 0; letter-spacing: 0; }
-    h1 { font-size: clamp(30px, 4vw, 56px); color: var(--cyan); line-height: 1; }
+    h1, h2, h3 { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 30px; color: var(--cyan); line-height: 1; }
     h2 { font-size: 20px; color: var(--cyan); }
-    .wx-subtitle { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
-    .wx-status { color: var(--muted); font-size: 14px; text-align: right; }
-    .wx-grid {
+    h3 { font-size: 16px; color: var(--text); }
+    .wx-subtitle, .wx-status, .wx-note { color: var(--muted); font-size: 13px; line-height: 1.35; }
+    .wx-subtitle { margin: 8px 0 0; }
+    .wx-status { text-align: right; max-width: 560px; }
+    .wx-main-grid {
       display: grid;
-      grid-template-columns: minmax(300px, 540px) minmax(0, 1fr);
-      gap: 18px;
-      align-items: start;
+      grid-template-columns: minmax(300px, 530px) minmax(0, 1fr);
+      gap: 10px;
+      align-items: stretch;
     }
     .wx-panel {
-      background: linear-gradient(180deg, var(--panel), #121922);
-      border: 1px solid var(--line);
-      border-radius: 8px;
+      background: var(--panel);
+      border: 1px solid rgba(148,163,173,0.16);
       overflow: hidden;
     }
+    .wx-stats-panel { border-radius: 0; }
+    .wx-chart-panel { border-radius: 0; min-height: 690px; }
     .wx-panel-header {
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--line);
+      min-height: 50px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(148,163,173,0.16);
       display: flex;
       justify-content: space-between;
       gap: 12px;
       align-items: center;
+      background: #111722;
     }
+    .wx-token-head {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--rail);
+      border-bottom: 1px solid rgba(148,163,173,0.16);
+    }
+    .wx-token-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+    }
+    .wx-token-name strong { display: block; font-size: 20px; }
+    .wx-token-name span { display: block; color: var(--muted); font-weight: 700; }
     .wx-stats { padding: 0; }
     .wx-row {
       display: grid;
-      grid-template-columns: minmax(130px, 1fr) minmax(150px, 1.6fr);
-      gap: 14px;
-      padding: 12px 18px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      background: rgba(255,255,255,0.025);
-      align-items: start;
+      grid-template-columns: minmax(128px, 1fr) minmax(146px, 1.45fr);
+      gap: 12px;
+      padding: 5px 0;
+      min-height: 28px;
+      align-items: center;
+      background: var(--rail);
     }
-    .wx-row:nth-child(even) { background: rgba(255,255,255,0.075); }
-    .wx-label { font-weight: 700; color: var(--text); }
-    .wx-value { text-align: right; font-weight: 800; overflow-wrap: anywhere; line-height: 1.25; }
-    .wx-value small { display: block; color: var(--green); font-size: 0.9em; line-height: 1.25; margin-top: 4px; }
-    .wx-main-value { display: block; }
-    .wx-reason {
-      display: block;
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.3;
-      font-weight: 600;
-      margin-top: 4px;
+    .wx-row:nth-child(4n+3),
+    .wx-row:nth-child(4n+4) { background: var(--panel-3); }
+    .wx-label {
+      padding-left: 16px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.1;
+    }
+    .wx-value {
+      padding-right: 16px;
+      text-align: right;
+      font-weight: 900;
+      line-height: 1.12;
       overflow-wrap: anywhere;
     }
-    .wx-value .wx-reason,
-    td .wx-reason {
+    .wx-value small,
+    .wx-subvalue {
+      display: block;
+      color: var(--green);
+      font-size: 0.9em;
+      line-height: 1.16;
+      margin-top: 2px;
+    }
+    .wx-reason-dot {
+      display: inline-grid;
+      place-items: center;
+      width: 15px;
+      height: 15px;
+      margin-left: 6px;
+      border-radius: 50%;
+      background: rgba(148,163,173,0.18);
       color: var(--muted);
-      font-size: 11px;
-      line-height: 1.3;
-      font-weight: 600;
+      font-size: 10px;
+      vertical-align: middle;
     }
     .wx-muted { color: var(--muted); }
     .wx-positive { color: var(--green); }
     .wx-negative { color: var(--red); }
-    .wx-warning { color: var(--gold); font-weight: 800; }
-    .wx-chart {
-      min-height: 360px;
-      padding: 18px;
+    .wx-warning { color: var(--yellow); font-weight: 900; }
+    .wx-chart-toolbar {
       display: flex;
-      flex-direction: column;
       gap: 12px;
-    }
-    .wx-external-chart-card {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-height: 360px;
-    }
-    .wx-external-chart-copy {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 14px;
-      align-items: baseline;
-      color: var(--muted);
-      line-height: 1.45;
-    }
-    .wx-external-chart-copy strong { color: var(--text); }
-    .wx-external-chart-copy span { color: var(--cyan); font-weight: 800; }
-    .wx-external-chart-copy p { flex-basis: 100%; margin: 0; font-size: 13px; }
-    .wx-external-chart-linkcard {
-      min-height: 260px;
-      padding: 12px 14px;
-      display: flex;
-      flex-wrap: wrap;
-      align-content: center;
       align-items: center;
-      justify-content: center;
-      gap: 14px;
-      background: #111722;
-      border: 1px dashed var(--line);
-      border-radius: 6px;
-      color: var(--muted);
-      text-align: center;
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(148,163,173,0.12);
+      background: #131924;
+      overflow-x: auto;
     }
-    .wx-external-chart-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 42px;
-      padding: 0 16px;
-      border-radius: 6px;
-      background: var(--cyan);
-      color: #071014;
+    .wx-pair-title {
+      min-width: 150px;
+      font-size: 18px;
       font-weight: 900;
-      text-decoration: none;
+      color: #d8dee8;
+      white-space: nowrap;
     }
-    .wx-chart svg {
+    .wx-view-button {
+      border: 1px solid transparent;
+      background: transparent;
+      color: #cbd5df;
+      min-height: 28px;
+      padding: 0 6px;
+      border-radius: 4px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .wx-view-button.is-active {
+      color: #1e7cff;
+      border-color: rgba(30,124,255,0.35);
+      background: rgba(30,124,255,0.08);
+    }
+    .wx-chart-mode-label {
+      color: var(--muted);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .wx-chart-source-row {
+      padding: 10px 14px 0;
+      color: #d8dee8;
+      font-weight: 800;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: baseline;
+    }
+    .wx-chart-source-row small { color: var(--muted); font-weight: 700; }
+    .wx-chart-host {
+      min-height: 540px;
+      padding: 10px 14px 14px;
+      position: relative;
+    }
+    .wx-lightweight-chart {
       width: 100%;
-      height: 300px;
+      height: 510px;
       background: #111722;
-      border: 1px solid var(--line);
-      border-radius: 6px;
+      border: 1px solid rgba(148,163,173,0.16);
     }
     .wx-chart-empty {
-      min-height: 300px;
+      min-height: 510px;
       display: grid;
       place-items: center;
       background: #111722;
       border: 1px dashed var(--line);
-      border-radius: 6px;
       color: var(--muted);
       text-align: center;
       padding: 20px;
     }
-    .wx-table-wrap { overflow-x: auto; max-width: 100%; }
-    table { width: 100%; border-collapse: collapse; min-width: 1040px; table-layout: fixed; }
-    th, td {
-      padding: 12px 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-      text-align: right;
-      vertical-align: top;
-      white-space: normal;
-      overflow-wrap: anywhere;
-      line-height: 1.3;
+    .wx-view-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 14px;
+      border-top: 1px solid rgba(148,163,173,0.14);
+      background: #111722;
     }
-    th:nth-child(1), td:nth-child(1) { width: 52px; }
-    th:nth-child(2), td:nth-child(2) { width: 18%; }
-    th:nth-child(3), td:nth-child(3) { width: 13%; }
-    th:nth-child(4), td:nth-child(4) { width: 14%; }
-    th:nth-child(5), td:nth-child(5),
-    th:nth-child(6), td:nth-child(6) { width: 13%; }
-    th:nth-child(7), td:nth-child(7) { width: 18%; }
-    th:nth-child(8), td:nth-child(8) { width: 14%; }
-    td small { display: block; margin-top: 4px; }
-    th {
+    .wx-view-note {
+      padding: 12px 14px 0;
+      border-top: 1px solid rgba(148,163,173,0.14);
+      background: #111722;
       color: var(--muted);
       font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .wx-view-button {
+      border-color: rgba(148,163,173,0.22);
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.03);
+    }
+    .wx-pair-detail {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(130px, 1fr));
+      gap: 1px;
+      background: rgba(148,163,173,0.14);
+      border-top: 1px solid rgba(148,163,173,0.16);
+    }
+    .wx-pair-detail div {
+      min-height: 58px;
+      padding: 10px 12px;
+      background: var(--panel-2);
+      font-weight: 900;
+    }
+    .wx-pair-detail span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.04em;
+      margin-bottom: 3px;
+    }
+    .wx-pairs-panel {
+      margin-top: 10px;
+      border-radius: 0;
+    }
+    .wx-table-wrap { overflow-x: auto; max-width: 100%; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1240px;
+      table-layout: fixed;
       background: #121922;
     }
-    th:first-child, td:first-child,
-    th:nth-child(2), td:nth-child(2) { text-align: left; }
+    th, td {
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      text-align: right;
+      vertical-align: middle;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.16;
+      font-weight: 800;
+    }
+    th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: #10161f;
+    }
+    th:nth-child(1), td:nth-child(1) { width: 52px; text-align: left; }
+    th:nth-child(2), td:nth-child(2) { width: 14%; text-align: left; }
+    th:nth-child(3), td:nth-child(3) { width: 10%; }
+    th:nth-child(4), td:nth-child(4) { width: 12%; text-align: left; }
+    th:nth-child(5), td:nth-child(5) { width: 14%; }
+    th:nth-child(6), td:nth-child(6) { width: 12%; }
+    th:nth-child(7), td:nth-child(7) { width: 10%; }
+    th:nth-child(8), td:nth-child(8) { width: 14%; }
+    th:nth-child(9), td:nth-child(9) { width: 14%; }
     tbody tr:nth-child(odd) { background: rgba(255,255,255,0.025); }
     tbody tr:nth-child(even) { background: rgba(255,255,255,0.06); }
-    .wx-token { color: var(--muted); font-weight: 700; }
+    tbody tr.is-selected { outline: 2px solid rgba(2,240,231,0.42); outline-offset: -2px; }
+    .wx-token { color: var(--muted); font-weight: 800; }
     .wx-token strong { color: var(--text); display: block; }
-    .wx-source { color: var(--cyan); font-weight: 800; }
-    .wx-note { color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .wx-source { color: var(--cyan); font-weight: 900; }
+    .wx-cell-sub { display: block; color: var(--green); margin-top: 2px; }
     @media (max-width: 980px) {
-      main { padding: 14px; }
+      main { padding: 10px; }
+      .wx-shell { padding: 12px; border-radius: 10px; }
       .wx-title { display: block; }
-      .wx-status { text-align: left; margin-top: 10px; }
-      .wx-grid { grid-template-columns: 1fr; }
-      .wx-row { grid-template-columns: 1fr; }
-      .wx-value { text-align: left; }
+      .wx-status { text-align: left; margin-top: 8px; }
+      .wx-main-grid { grid-template-columns: 1fr; }
+      .wx-chart-panel { min-height: 520px; }
+      .wx-lightweight-chart, .wx-chart-empty { height: 380px; min-height: 380px; }
+      .wx-pair-detail { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -224,33 +327,55 @@
   <div class="wx-shell">
     <header class="wx-title">
       <div>
-        <h1>WAXCASH</h1>
-        <p class="wx-subtitle">WaxOnEdge-style indexed analytics for graffitiking::WAXCASH</p>
+        <h1>Chart and stats</h1>
+        <p class="wx-subtitle">WAXCASH token analytics for graffitiking::WAXCASH</p>
       </div>
       <div id="wx-status" class="wx-status">Loading indexed analytics...</div>
     </header>
 
-    <section class="wx-grid" aria-label="WAXCASH analytics">
-      <article class="wx-panel">
+    <section class="wx-main-grid" aria-label="WAXCASH analytics">
+      <article class="wx-panel wx-stats-panel">
         <div class="wx-panel-header">
-          <h2>Token Stats</h2>
+          <h2>Token stats</h2>
           <span id="wx-price-source" class="wx-note">--</span>
+        </div>
+        <div class="wx-token-head">
+          <img id="wx-token-icon" class="wx-token-icon" alt="" src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+          <div class="wx-token-name">
+            <strong>WAXCASH</strong>
+            <span>graffitiking</span>
+          </div>
         </div>
         <div id="wx-stats" class="wx-stats" aria-live="polite"></div>
       </article>
 
-      <article class="wx-panel">
+      <article class="wx-panel wx-chart-panel">
         <div class="wx-panel-header">
-          <h2>Chart</h2>
-          <span id="wx-chart-source" class="wx-note">Indexed candles</span>
+          <h2 id="wx-chart-heading">WAXCASH/WAX chart</h2>
+          <span id="wx-chart-source" class="wx-note">Selecting chart feed</span>
         </div>
-        <div id="wx-chart" class="wx-chart" aria-live="polite"></div>
+        <div class="wx-chart-toolbar" aria-label="Chart display toolbar">
+          <span id="wx-chart-pair-title" class="wx-pair-title">WAXCASH/WAX</span>
+          <span class="wx-chart-mode-label">Backend feed only</span>
+          <span class="wx-chart-mode-label">Worker UDF-shaped feed</span>
+          <span class="wx-chart-mode-label">Lightweight Charts renderer</span>
+        </div>
+        <div class="wx-chart-source-row">
+          <span id="wx-chart-feed-label">Alcor pool #8388 display feed</span>
+          <small>WAX per WAXCASH candles from the WaxOnEdge Worker feed. Display controls do not change selected price.</small>
+        </div>
+        <div id="wx-chart" class="wx-chart-host" aria-live="polite">
+          <div class="wx-chart-empty">Loading WAX-per-WAXCASH candles.</div>
+        </div>
+        <div class="wx-view-note">Display-only pair detail views</div>
+        <div id="wx-view-controls" class="wx-view-controls" aria-label="Display-only source-backed pair detail views"></div>
+        <div id="wx-pair-detail" class="wx-pair-detail" aria-live="polite"></div>
       </article>
     </section>
 
-    <section class="wx-panel" style="margin-top:18px" aria-labelledby="wx-pairs-heading">
+    <section class="wx-panel wx-pairs-panel" aria-labelledby="wx-pairs-heading">
       <div class="wx-panel-header">
-        <h2 id="wx-pairs-heading">WAXCASH Pairs</h2>
+        <h2 id="wx-pairs-heading">Pair details</h2>
         <span id="wx-pair-summary" class="wx-note">--</span>
       </div>
       <div class="wx-table-wrap">
@@ -258,17 +383,18 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Pair</th>
               <th>Source</th>
-              <th>Status</th>
+              <th>Fee</th>
+              <th>Pair</th>
               <th>Liquidity</th>
-              <th>Volume 24h</th>
+              <th>Pair price</th>
+              <th>Status</th>
+              <th>24h volume</th>
               <th>Reserves</th>
-              <th>Proof</th>
             </tr>
           </thead>
           <tbody id="wx-pairs">
-            <tr><td colspan="8" class="wx-muted">Loading WAXCASH pairs...</td></tr>
+            <tr><td colspan="9" class="wx-muted">Loading WAXCASH pairs...</td></tr>
           </tbody>
         </table>
       </div>
@@ -281,9 +407,24 @@
 (function () {
   'use strict';
   var api = window.MOONBOYS_API || {};
-  var info = api.getApiBaseInfo ? api.getApiBaseInfo({ allowProductionFallback: true }) : null;
-  var baseUrl = String((info && info.url) || api.BASE_URL || api.PRODUCTION_BASE_URL || '').replace(/\/$/, '');
-  if (!baseUrl || !window.fetch) return;
+  var info = api.getApiBaseInfo ? api.getApiBaseInfo({ allowProductionFallback: false }) : null;
+  var baseUrl = String((info && info.url) || '').replace(/\/$/, '');
+  function showApiUnavailable(message) {
+    var status = document.getElementById('wx-status');
+    var chart = document.getElementById('wx-chart');
+    var stats = document.getElementById('wx-stats');
+    if (status) status.textContent = message;
+    if (chart) chart.innerHTML = '<div class="wx-chart-empty">' + message + '</div>';
+    if (stats) stats.innerHTML = '<div class="wx-stat"><span>Status</span><strong>Unavailable</strong><small class="wx-stat-reason">' + message + '</small></div>';
+  }
+  if (!baseUrl) {
+    showApiUnavailable('API base URL unavailable — MOONBOYS_API not configured.');
+    return;
+  }
+  if (!window.fetch) {
+    showApiUnavailable('API base URL unavailable — fetch is not available.');
+    return;
+  }
   var nativeFetch = window.fetch;
   window.fetch = function (input, init) {
     var url = typeof input === 'string' ? input : (input && input.url);
@@ -297,6 +438,7 @@
   };
 }());
 </script>
-<script data-cfasync="false" src="/js/waxcash-analytics.js?v=wxcash-analytics-20260618-1"></script>
+<script data-cfasync="false" src="https://unpkg.com/lightweight-charts@5.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<script data-cfasync="false" src="/js/waxcash-analytics.js?v=wxcash-og-analytics-20260619-1"></script>
 </body>
 </html>
