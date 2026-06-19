@@ -6575,7 +6575,9 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   waxcashAnalyticsFrontend.includes("'/api/waxonedge/waxcash-analytics/chart-feed?resolution=1D'") &&
   waxcashAnalyticsFrontend.includes('loadChartFeed(state.payload)') &&
   waxcashAnalyticsFrontend.includes('window.LightweightCharts') &&
-  waxcashAnalyticsFrontend.includes('chartCandles(payload, feed)') &&
+  waxcashAnalyticsFrontend.includes('chartCandles(feed)') &&
+  !waxcashAnalyticsFrontend.includes('Array.isArray(chart.candles)') &&
+  !waxcashAnalyticsFrontend.includes('renderChart(state.payload') &&
   waxcashAnalyticsFrontend.includes('pickPoolViews(rows)') &&
   waxcashAnalyticsFrontend.includes('Selected proof pool') &&
   waxcashAnalyticsFrontend.includes('Best liquidity pool') &&
@@ -6602,7 +6604,7 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   !waxcashAnalyticsFrontend.includes('allow-popups') &&
   !waxcashHtml.includes('.wx-external-chart-frame') &&
   !waxcashAnalyticsFrontend.includes('External Alcor chart unavailable in embed.') &&
-  waxcashAnalyticsFrontend.includes('candles.map(function (candle)') &&
+  waxcashAnalyticsFrontend.includes('return tradingViewFeedCandles(feed)') &&
   !/Deposit|Add Liquidity|Swap|Trade on Swap|Connect Wallet|wallet selector|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
 ok('WAXCASH graph metric modes use USD price labels and WAX liquidity/volume',
   waxcashGraphFrontend.includes("if (metric === 'volume') return firstNumber(records, ['volume_24h_wax'])") &&

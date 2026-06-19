@@ -265,18 +265,6 @@
     }).join('');
   }
 
-  function candleTime(candle) {
-    var raw = candle.time || candle.timestamp || candle.bucket || candle.date || candle.open_time || candle.updated_at;
-    if (typeof raw === 'number') return raw > 1000000000000 ? Math.floor(raw / 1000) : Math.floor(raw);
-    if (typeof raw === 'string') {
-      var numeric = Number(raw);
-      if (Number.isFinite(numeric)) return numeric > 1000000000000 ? Math.floor(numeric / 1000) : Math.floor(numeric);
-      var parsed = Date.parse(raw);
-      if (Number.isFinite(parsed)) return Math.floor(parsed / 1000);
-    }
-    return null;
-  }
-
   function tradingViewFeedCandles(feed) {
     if (!feed || feed.s !== 'ok' || !Array.isArray(feed.t)) return [];
     return feed.t.map(function (time, index) {
@@ -292,29 +280,13 @@
     }).filter(Boolean).sort(function (a, b) { return a.time - b.time; });
   }
 
-  function chartCandles(payload, feed) {
-    var feedCandles = tradingViewFeedCandles(feed);
-    if (feedCandles.length) return feedCandles;
-    var sections = payload.sections || {};
-    var chart = sections.chart || {};
-    var candles = Array.isArray(chart.candles) ? chart.candles : [];
-    return candles.map(function (candle) {
-      var close = num(candle.close);
-      var time = candleTime(candle);
-      if (time == null || close == null) return null;
-      return {
-        time: time,
-        open: num(candle.open) != null ? num(candle.open) : close,
-        high: num(candle.high) != null ? num(candle.high) : close,
-        low: num(candle.low) != null ? num(candle.low) : close,
-        close: close,
-      };
-    }).filter(Boolean).sort(function (a, b) { return a.time - b.time; });
+  function chartCandles(feed) {
+    return tradingViewFeedCandles(feed);
   }
 
   function renderLightweightCandles(payload, feed) {
     var host = $('wx-chart');
-    var candles = chartCandles(payload, feed);
+    var candles = chartCandles(feed);
     var tv = window.LightweightCharts;
     if (state.chart && typeof state.chart.remove === 'function') {
       try { state.chart.remove(); } catch (_) {}
@@ -406,7 +378,10 @@
       })
       .catch(function () {
         state.chartFeed = null;
-        renderChart(payload, null);
+        var host = $('wx-chart');
+        if (host) {
+          host.innerHTML = '<div class="wx-chart-empty">No indexed WAX-per-WAXCASH chart-feed candles are available.</div>';
+        }
       });
   }
 
@@ -420,7 +395,6 @@
     $('wx-status').textContent = status;
     renderStats(state.payload);
     renderPoolControls(state.payload);
-    renderChart(state.payload, state.chartFeed);
     loadChartFeed(state.payload);
     renderPairDetail(state.payload);
     renderPairs(state.payload);
