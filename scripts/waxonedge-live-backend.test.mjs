@@ -1767,6 +1767,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       reserve_b: '1500',
       liquidity_wax: '3000',
       volume_24h_wax: '75',
+      fee_bps: '0',
       updated_at: '2026-06-14T11:01:00.000Z',
     },
     {
@@ -2378,6 +2379,11 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     ok('WAXCASH analytics pair table orders selected WAXCASH/WAX proof pair first',
       waxcashAnalytics.sections?.pair_table?.rows?.[0]?.is_selected_price_pair === true &&
       waxcashAnalytics.sections?.pair_table?.rows?.[0]?.pair_id === 'WAXCASHWAXLEGACY');
+    ok('WAXCASH analytics pair table preserves legitimate 0-bps fees',
+      waxcashAnalytics.sections?.pair_table?.rows?.[0]?.pair_id === 'WAXCASHWAXLEGACY' &&
+      waxcashAnalytics.sections?.pair_table?.rows?.[0]?.fee_bps !== null &&
+      Number(waxcashAnalytics.sections?.pair_table?.rows?.[0]?.fee_bps) === 0,
+      JSON.stringify(waxcashAnalytics.sections?.pair_table?.rows?.[0]));
     ok('WAXCASH analytics unvalued pair rows carry explicit valuation reasons',
       waxcashAnalytics.sections?.pair_table?.rows?.some((row) =>
         row.status === 'unavailable' &&
@@ -2569,6 +2575,8 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       supplyOnlyWaxcashAnalytics.stats.holder_count === null &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.live === false &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.reason.includes('No indexed holder snapshot exists for graffitiking::WAXCASH'));
+    let rollingVolumeSelectCount = 0;
+    const rollingVolumeSelectSqls = [];
     const holderTradeWaxcashAnalyticsDb = {
       prepare(sql) {
         if (sql.includes('FROM waxonedge_token_stats')) {
@@ -2616,26 +2624,48 @@ ok('VPS live indexer safely parses request path without trusting Host header',
           };
         }
         if (sql.includes('FROM waxonedge_trades') && sql.includes('SELECT source, trade_id')) {
+          rollingVolumeSelectCount += 1;
+          rollingVolumeSelectSqls.push(sql);
           return {
             bind(...params) {
               return {
                 async all() {
                   const since = String(params[params.length - 1] || '');
-                  const volumeWax = since >= '2026-06-14' ? '136850.54368654' : (since >= '2026-06-08' ? '764308.56919631' : '6816747.33378953');
                   return {
                     results: [{
                       source: 'swap.nefty',
-                      trade_id: `proof-${since}`,
+                      trade_id: 'proof-24h',
                       pair_id: 'WAXCASHWAXLEGACY',
                       contract: 'graffitiking',
                       symbol: 'WAXCASH',
                       amount: '999999999',
                       volume: '999999999',
                       traded_at: '2026-06-15T00:00:00.000Z',
-                      raw_json: JSON.stringify({ volume_wax: volumeWax, volume: '999999999 WAXCASH' }),
+                      raw_json: JSON.stringify({ volume_wax: '136850.54368654', volume: '999999999 WAXCASH' }),
                     }, {
                       source: 'swap.nefty',
-                      trade_id: `raw-unproven-${since}`,
+                      trade_id: 'proof-7d-only',
+                      pair_id: 'WAXCASHWAXLEGACY',
+                      contract: 'graffitiking',
+                      symbol: 'WAXCASH',
+                      amount: '999999999',
+                      volume: '999999999',
+                      traded_at: '2026-06-10T00:00:00.000Z',
+                      raw_json: JSON.stringify({ volume_wax: '627458.02550977', volume: '999999999 WAXCASH' }),
+                    }, {
+                      source: 'swap.nefty',
+                      trade_id: 'proof-30d-only',
+                      pair_id: 'WAXCASHWAXLEGACY',
+                      contract: 'graffitiking',
+                      symbol: 'WAXCASH',
+                      amount: '999999999',
+                      volume: '999999999',
+                      traded_at: '2026-05-20T00:00:00.000Z',
+                      raw_json: JSON.stringify({ volume_wax: '6052438.76459322', volume: '999999999 WAXCASH' }),
+                    }, {
+                      source: 'swap.nefty',
+                      trade_id: 'raw-unproven-all-windows',
+                      tx_id: 'raw-unproven-tx',
                       pair_id: 'WAXCASHWAXLEGACY',
                       contract: null,
                       symbol: null,
@@ -2643,7 +2673,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
                       volume: '888888888',
                       traded_at: '2026-06-15T00:00:00.000Z',
                       raw_json: JSON.stringify({ volume: '888888888 UNKNOWN' }),
-                    }],
+                    }].filter((row) => String(row.traded_at) >= since),
                   };
                 },
                 async first() {
@@ -2675,6 +2705,21 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         volume_30d: holderTradeWaxcashAnalytics.stats.volume_30d,
         metric_status: holderTradeWaxcashAnalytics.stats.metric_status,
       }));
+    rollingVolumeSelectCount = 0;
+    rollingVolumeSelectSqls.length = 0;
+    const tradeWindowVolumes = await __waxonedgeTestHooks.indexedTradeWindowVolumes(holderTradeWaxcashAnalyticsDb, [{
+      source: 'swap.nefty',
+      pair_id: 'WAXCASHWAXLEGACY',
+      direct_wax_pair: true,
+    }], { selectedPriceWax: '0.001' });
+    ok('WAXCASH rolling volume scans 30d rows once and counts distinct excluded trades once',
+      Number(tradeWindowVolumes.volume_24h_wax) === 136850.54368654 &&
+      Number(tradeWindowVolumes.volume_7d) === 764308.56919631 &&
+      Number(tradeWindowVolumes.volume_30d) === 6816747.33378953 &&
+      rollingVolumeSelectCount === 1 &&
+      rollingVolumeSelectSqls[0]?.includes('traded_at >= ?') &&
+      tradeWindowVolumes.excluded_unproven_trade_count === 1,
+      JSON.stringify({ tradeWindowVolumes, rollingVolumeSelectCount, rollingVolumeSelectSqls }));
     const failedSupplyWaxcashAnalyticsDb = {
       prepare(sql) {
         function allResults(params) {

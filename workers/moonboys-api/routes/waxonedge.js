@@ -7333,7 +7333,7 @@ function waxcashPairTableRow(pair, selectedWaxPool) {
     pair_label: pair.pair_label || selectedPairLabel(pair),
     source: pair.source || null,
     pair_id: pair.pair_id || null,
-    fee_bps: pair.fee_bps || null,
+    fee_bps: pair.fee_bps ?? null,
     is_selected_price_pair: isSelected,
     is_direct_wax_pair: !!pair.direct_wax_pair,
     status,
@@ -7701,11 +7701,9 @@ async function indexedTradeWindowVolumes(db, pairs = [], options = {}) {
       basis: null,
     };
   }
-  const windows = [
-    ['volume_24h_wax', 24 * 60 * 60 * 1000],
-    ['volume_7d', 7 * 24 * 60 * 60 * 1000],
-    ['volume_30d', 30 * 24 * 60 * 60 * 1000],
-  ];
+  const since24hMs = latestMs - (24 * 60 * 60 * 1000);
+  const since7dMs = latestMs - (7 * 24 * 60 * 60 * 1000);
+  const since30dMs = latestMs - (30 * 24 * 60 * 60 * 1000);
   const result = {
     volume_24h_wax: null,
     volume_7d: null,
@@ -7718,26 +7716,52 @@ async function indexedTradeWindowVolumes(db, pairs = [], options = {}) {
     excluded_unproven_trade_count: 0,
   };
   const pairProofByKey = new Map((pairs || []).map((pair) => [waxcashTradePairKey(pair.source, pair.pair_id), pair]));
-  for (const [key, spanMs] of windows) {
-    const since = new Date(latestMs - spanMs).toISOString();
-    const rows = await db.prepare(
-      `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json
-       FROM waxonedge_trades
-       WHERE (${where}) AND traded_at >= ?`
-    ).bind(...params, since).all().then((value) => value.results || []).catch(() => []);
-    let totalWax = 0;
-    let hasWax = false;
-    for (const row of rows) {
-      const proof = waxcashTradeVolumeWax(row, pairProofByKey, options.selectedPriceWax);
-      if (proof.volumeWax == null) {
-        result.excluded_unproven_trade_count += 1;
-        continue;
-      }
-      totalWax += proof.volumeWax;
-      hasWax = true;
+  const rows = await db.prepare(
+    `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json
+     FROM waxonedge_trades
+     WHERE (${where}) AND traded_at >= ?`
+  ).bind(...params, new Date(since30dMs).toISOString()).all().then((value) => value.results || []).catch(() => []);
+  const totals = {
+    volume_24h_wax: 0,
+    volume_7d: 0,
+    volume_30d: 0,
+  };
+  const hasTotals = {
+    volume_24h_wax: false,
+    volume_7d: false,
+    volume_30d: false,
+  };
+  const excludedTradeKeys = new Set();
+  for (const row of rows) {
+    const tradedMs = Date.parse(row?.traded_at || '');
+    if (!Number.isFinite(tradedMs) || tradedMs < since30dMs) continue;
+    const proof = waxcashTradeVolumeWax(row, pairProofByKey, options.selectedPriceWax);
+    if (proof.volumeWax == null) {
+      const excludedKey = [
+        row?.source,
+        row?.trade_id,
+        row?.tx_id,
+        row?.pair_id,
+        row?.traded_at,
+      ].map(safeString).join('::');
+      excludedTradeKeys.add(excludedKey);
+      continue;
     }
-    result[key] = hasWax ? safeDecimal(totalWax) : null;
+    totals.volume_30d += proof.volumeWax;
+    hasTotals.volume_30d = true;
+    if (tradedMs >= since7dMs) {
+      totals.volume_7d += proof.volumeWax;
+      hasTotals.volume_7d = true;
+    }
+    if (tradedMs >= since24hMs) {
+      totals.volume_24h_wax += proof.volumeWax;
+      hasTotals.volume_24h_wax = true;
+    }
   }
+  result.volume_24h_wax = hasTotals.volume_24h_wax ? safeDecimal(totals.volume_24h_wax) : null;
+  result.volume_7d = hasTotals.volume_7d ? safeDecimal(totals.volume_7d) : null;
+  result.volume_30d = hasTotals.volume_30d ? safeDecimal(totals.volume_30d) : null;
+  result.excluded_unproven_trade_count = excludedTradeKeys.size;
   if (result.volume_24h_wax == null && result.volume_7d == null && result.volume_30d == null) {
     result.live = false;
     result.source = null;
