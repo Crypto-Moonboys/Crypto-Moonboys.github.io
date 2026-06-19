@@ -6620,24 +6620,6 @@ async function getWaxcashOgProof(db) {
   };
 }
 
-async function loadWaxcashTokenStats(db) {
-  const token = await db.prepare(
-    `SELECT contract, symbol, decimals, total_supply, max_supply, icon_url, updated_at
-     FROM waxonedge_tokens
-     WHERE contract = ? AND symbol = ?
-     LIMIT 1`
-  ).bind(WAXCASH_CONTRACT, WAXCASH_SYMBOL).first().catch(() => null);
-  const stats = await db.prepare(
-    `SELECT holder_count, circulating_supply, volume_24h, volume_24h_wax, volume_24h_usd,
-            volume_7d, volume_30d, change_24h, burned_amount, source_count,
-            indexed_pair_count, source_keys, updated_at
-     FROM waxonedge_token_stats
-     WHERE contract = ? AND symbol = ?
-     LIMIT 1`
-  ).bind(WAXCASH_CONTRACT, WAXCASH_SYMBOL).first().catch(() => null);
-  return { token: token || { contract: WAXCASH_CONTRACT, symbol: WAXCASH_SYMBOL }, stats: stats || {} };
-}
-
 function sumProofField(rows = [], field) {
   let total = 0;
   let hasValue = false;
@@ -6651,30 +6633,41 @@ function sumProofField(rows = [], field) {
 }
 
 async function buildWaxcashAnalytics(db) {
-  const [{ token, stats }, proofWrapper, chart] = await Promise.all([
-    loadWaxcashTokenStats(db),
+  const [detail, proofWrapper] = await Promise.all([
+    getToken(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL),
     getWaxcashOgProof(db),
-    listBestChartCandles(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL),
   ]);
+  const token = detail.token || { contract: WAXCASH_CONTRACT, symbol: WAXCASH_SYMBOL };
+  const detailStats = detail.stats || {};
   const proof = proofWrapper.og_woe_parity;
   const headline = proof.headline_price || {};
+  const selectedWaxPool = proof.selected_largest_wax_reserve_pool || null;
+  const chart = selectedWaxPool?.source && selectedWaxPool?.pair_id
+    ? await listChartCandlesBySource(db, {
+      source: selectedWaxPool.source,
+      pair_id: selectedWaxPool.pair_id,
+      interval: '1D',
+      limit: 120,
+    })
+    : { chart_source: null, candles: [], unavailable: 'selected_direct_wax_price_pair_unavailable' };
   const waxUsd = asNumber(headline.og_headline_price_usd) != null && asNumber(headline.og_headline_price_wax) != null
     ? asNumber(headline.og_headline_price_usd) / asNumber(headline.og_headline_price_wax)
     : null;
   const selectedPriceWax = asNumber(headline.og_headline_price_wax);
   const selectedPriceUsd = asNumber(headline.og_headline_price_usd);
-  const circulatingSupply = asNumber(stats.circulating_supply ?? token.circulating_supply);
-  const totalSupply = asNumber(token.total_supply ?? token.max_supply ?? stats.total_supply);
+  const circulatingSupply = asNumber(detailStats.circulating_supply ?? token.circulating_supply);
+  const totalSupply = asNumber(detailStats.total_supply ?? token.total_supply ?? token.max_supply);
   const marketCapWax = circulatingSupply != null && selectedPriceWax != null ? circulatingSupply * selectedPriceWax : null;
   const marketCapUsd = circulatingSupply != null && selectedPriceUsd != null ? circulatingSupply * selectedPriceUsd : null;
   const fdvWax = totalSupply != null && selectedPriceWax != null ? totalSupply * selectedPriceWax : null;
   const fdvUsd = totalSupply != null && selectedPriceUsd != null ? totalSupply * selectedPriceUsd : null;
-  const volume24Wax = asNumber(stats.volume_24h_wax ?? stats.volume_24h) ?? sumProofField(proof.all_pairs, 'volume_24h_wax');
-  const volume24Usd = asNumber(stats.volume_24h_usd) ?? (volume24Wax != null && waxUsd != null ? volume24Wax * waxUsd : null);
+  const volume24Wax = asNumber(detailStats.volume_24h_wax ?? detailStats.volume_24h) ?? sumProofField(proof.all_pairs, 'volume_24h_wax');
+  const volume24Usd = asNumber(detailStats.volume_24h_usd) ?? (volume24Wax != null && waxUsd != null ? volume24Wax * waxUsd : null);
   const liquidityWax = asNumber(proof.aggregate_pair_liquidity?.liquidity_wax);
   const liquidityUsd = asNumber(proof.aggregate_pair_liquidity?.liquidity_usd);
   const selectedPriceLive = selectedPriceWax != null;
   const marketCapLive = marketCapWax != null || marketCapUsd != null;
+  const metricStatus = detailStats.metric_status || {};
   return {
     token: {
       contract: WAXCASH_CONTRACT,
@@ -6684,7 +6677,7 @@ async function buildWaxcashAnalytics(db) {
       total_supply: safeDecimal(totalSupply),
       circulating_supply: safeDecimal(circulatingSupply),
       icon_url: token.icon_url || null,
-      updated_at: token.updated_at || stats.updated_at || proof.headline_price?.og_headline_updated_at || null,
+      updated_at: token.updated_at || detailStats.updated_at || proof.headline_price?.og_headline_updated_at || null,
     },
     stats: {
       selected_price_wax: safeDecimal(selectedPriceWax),
@@ -6699,7 +6692,7 @@ async function buildWaxcashAnalytics(db) {
       selected_price_confidence: selectedPriceLive ? 'good' : 'unavailable',
       selected_price_rejection_reason: selectedPriceLive ? null : (headline.og_headline_reason_codes || []).join(',') || 'direct_wax_price_unavailable',
       uses_recursive_graph_price: false,
-      holder_count: asNumber(stats.holder_count),
+      holder_count: asNumber(detailStats.holder_count),
       tvl_wax: safeDecimal(liquidityWax),
       tvl_usd: safeDecimal(liquidityUsd),
       liquidity_wax: safeDecimal(liquidityWax),
@@ -6708,9 +6701,9 @@ async function buildWaxcashAnalytics(db) {
       cumulated_pair_liquidity_usd: safeDecimal(liquidityUsd),
       volume_24h_wax: safeDecimal(volume24Wax),
       volume_24h_usd: safeDecimal(volume24Usd),
-      volume_7d: safeDecimal(asNumber(stats.volume_7d)),
-      volume_30d: safeDecimal(asNumber(stats.volume_30d)),
-      change_24h: safeDecimal(asNumber(stats.change_24h)),
+      volume_7d: safeDecimal(asNumber(detailStats.volume_7d)),
+      volume_30d: safeDecimal(asNumber(detailStats.volume_30d)),
+      change_24h: safeDecimal(asNumber(detailStats.change_24h)),
       circulating_supply: safeDecimal(circulatingSupply),
       market_cap_wax: safeDecimal(marketCapWax),
       market_cap_usd: safeDecimal(marketCapUsd),
@@ -6721,15 +6714,35 @@ async function buildWaxcashAnalytics(db) {
       fdv_wax: safeDecimal(fdvWax),
       fdv_usd: safeDecimal(fdvUsd),
       fdv_confidence: fdvWax != null || fdvUsd != null ? 'good' : 'unavailable',
-      source_count: asNumber(stats.source_count) ?? proof.pair_summary?.source_count ?? null,
-      indexed_pair_count: proof.pair_summary?.total_pairs ?? asNumber(stats.indexed_pair_count),
-      source_keys: stats.source_keys || Array.from(new Set((proof.all_pairs || []).map((pair) => aggregateSourceKey(pair.source)).filter(Boolean))).sort().join(','),
-      updated_at: stats.updated_at || proof.headline_price?.og_headline_updated_at || null,
+      source_count: asNumber(detailStats.source_count) ?? proof.pair_summary?.source_count ?? null,
+      indexed_pair_count: proof.pair_summary?.total_pairs ?? asNumber(detailStats.indexed_pair_count),
+      source_keys: detailStats.source_keys || Array.from(new Set((proof.all_pairs || []).map((pair) => aggregateSourceKey(pair.source)).filter(Boolean))).sort().join(','),
+      updated_at: detailStats.updated_at || proof.headline_price?.og_headline_updated_at || null,
       metric_status: {
         selected_price: {
           live: selectedPriceLive,
           source: selectedPriceLive ? 'og_woe_direct_wax_pool' : null,
           reason: selectedPriceLive ? null : 'Requires verified direct WAX/WAXCASH pool proof',
+        },
+        holder_count: metricStatus.holder_count || {
+          live: asNumber(detailStats.holder_count) != null,
+          source: asNumber(detailStats.holder_count) != null ? 'indexed_snapshot' : null,
+          reason: asNumber(detailStats.holder_count) != null ? null : REQUIRES_INDEXED_BACKEND,
+        },
+        volume_24h: metricStatus.volume_24h || {
+          live: volume24Wax != null || volume24Usd != null,
+          source: volume24Wax != null || volume24Usd != null ? 'indexed_pair_or_ticker_volume' : null,
+          reason: volume24Wax != null || volume24Usd != null ? null : 'Requires indexed pair or ticker volume',
+        },
+        volume_7d: metricStatus.volume_7d || {
+          live: asNumber(detailStats.volume_7d) != null,
+          source: asNumber(detailStats.volume_7d) != null ? 'indexed_trade_history_window' : null,
+          reason: asNumber(detailStats.volume_7d) != null ? null : 'Requires indexed candle or trade history',
+        },
+        volume_30d: metricStatus.volume_30d || {
+          live: asNumber(detailStats.volume_30d) != null,
+          source: asNumber(detailStats.volume_30d) != null ? 'indexed_trade_history_window' : null,
+          reason: asNumber(detailStats.volume_30d) != null ? null : 'Requires indexed candle or trade history',
         },
         market_cap: {
           live: marketCapLive,
@@ -6741,7 +6754,7 @@ async function buildWaxcashAnalytics(db) {
     pairs: proof.all_pairs || [],
     pair_summary: proof.pair_summary,
     headline_price: headline,
-    selected_largest_wax_reserve_pool: proof.selected_largest_wax_reserve_pool,
+    selected_largest_wax_reserve_pool: selectedWaxPool,
     aggregate_pair_liquidity: proof.aggregate_pair_liquidity,
     chart,
     proof,
