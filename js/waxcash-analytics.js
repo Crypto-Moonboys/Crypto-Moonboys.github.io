@@ -3,6 +3,11 @@
 
   var ENDPOINT = '/api/waxonedge/waxcash-analytics';
   var DASH = '--';
+  var state = {
+    payload: null,
+    view: 'selected',
+    chart: null,
+  };
 
   function $(id) {
     return document.getElementById(id);
@@ -45,7 +50,7 @@
 
   function fmtToken(value, symbol) {
     var parsed = num(value);
-    return parsed == null ? DASH : fmt(parsed, 4) + (symbol ? ' ' + symbol : '');
+    return parsed == null ? DASH : fmt(parsed, parsed >= 1000 ? 4 : 8) + (symbol ? ' ' + symbol : '');
   }
 
   function pct(value) {
@@ -60,9 +65,9 @@
     direct_wax_price_unavailable: 'Direct WAX price unavailable',
     selected_price_unavailable: 'Selected price unavailable',
     liquidity_unavailable: 'Liquidity unavailable',
-    invalid_ohlc: 'Invalid OHLC candle',
-    invalid_ohlc_range: 'Invalid OHLC candle range',
-    ohlc_outside_selected_price_range: 'OHLC outside selected price range',
+    selected_direct_wax_price_pair_unavailable: 'Selected direct WAX price pair unavailable',
+    waxcash_wax_chart_candles_unavailable_after_direction_normalization: 'WAXCASH/WAX chart candles unavailable after direction normalization',
+    circulating_supply_unavailable: 'Circulating supply unavailable',
   };
 
   function humanReason(reason) {
@@ -78,132 +83,306 @@
       .join(', ');
   }
 
-  function reasonHtml(reason) {
-    var label = humanReason(reason);
-    return label ? '<small class="wx-reason">' + esc(label) + '</small>' : '';
+  function statusTitle(row) {
+    var parts = [];
+    if (row && row.source) parts.push('Source: ' + row.source);
+    if (row && row.basis) parts.push('Basis: ' + row.basis);
+    if (row && row.formula) parts.push('Formula: ' + row.formula);
+    var reason = humanReason(row && row.reason);
+    if (reason) parts.push('Reason: ' + reason);
+    return parts.join(' | ');
   }
 
-  function valueHtml(row) {
-    if (!row || row.live === false) {
-      return '<span class="wx-main-value">Unavailable</span>' +
-        reasonHtml((row && row.reason) || 'No source-backed value available.');
-    }
+  function proofDot(row) {
+    var title = statusTitle(row);
+    return title ? '<span class="wx-reason-dot" title="' + esc(title) + '" aria-label="' + esc(title) + '">i</span>' : '';
+  }
+
+  function valueForStat(row) {
+    if (!row || row.live === false) return '<span class="wx-muted">Unavailable</span>' + proofDot(row);
     if (row.key === 'token') return '<span class="wx-token"><strong>WAXCASH</strong>graffitiking</span>';
-    if (row.key === 'decimals') return esc(row.value == null ? DASH : row.value);
+    if (row.key === 'decimals') return esc(row.value == null ? DASH : row.value) + proofDot(row);
     if (row.key === 'change_24h') {
       var change = num(row.value);
-      return '<span class="' + (change == null ? 'wx-muted' : (change >= 0 ? 'wx-positive' : 'wx-negative')) + '">' + esc(pct(change)) + '</span>';
+      return '<span class="' + (change == null ? 'wx-muted' : (change >= 0 ? 'wx-positive' : 'wx-negative')) + '">' + esc(pct(change)) + '</span>' + proofDot(row);
     }
-    if (row.value_token != null) return esc(fmtToken(row.value_token, row.token_symbol));
+    if (row.value_token != null) return esc(fmtToken(row.value_token, row.token_symbol)) + proofDot(row);
     var wax = fmtWax(row.value_wax);
     var usd = fmtUsd(row.value_usd);
-    if (wax !== DASH && usd !== DASH) return esc(wax) + '<small>' + esc(usd) + '</small>';
-    if (wax !== DASH) return esc(wax);
-    if (usd !== DASH) return esc(usd);
-    if (row.value != null) return esc(fmt(row.value, 8));
-    return '<span class="wx-main-value">Unavailable</span>' +
-      reasonHtml(row.reason || 'No source-backed value available.');
+    if (wax !== DASH && usd !== DASH) return esc(wax) + '<span class="wx-subvalue">' + esc(usd) + '</span>' + proofDot(row);
+    if (wax !== DASH) return esc(wax) + proofDot(row);
+    if (usd !== DASH) return esc(usd) + proofDot(row);
+    if (row.value != null) return esc(fmt(row.value, 8)) + proofDot(row);
+    return '<span class="wx-muted">Unavailable</span>' + proofDot(row);
   }
 
   function statRow(row) {
     return '<div class="wx-row">' +
       '<div class="wx-label">' + esc(row.label || row.key || '') + '</div>' +
-      '<div class="wx-value ' + (row.live === false ? 'wx-muted' : '') + '">' + valueHtml(row) + '</div>' +
+      '<div class="wx-value ' + (row.live === false ? 'wx-muted' : '') + '">' + valueForStat(row) + '</div>' +
       '</div>';
   }
 
   function renderStats(payload) {
     var sections = payload.sections || {};
+    var token = payload.token || {};
     var tokenStats = sections.token_stats || {};
     var rows = Array.isArray(tokenStats.rows) ? tokenStats.rows : [];
     var priceProof = sections.price_proof || {};
+    var icon = $('wx-token-icon');
+    if (icon && token.icon_url) icon.src = token.icon_url;
     $('wx-price-source').textContent = priceProof.pair_label
       ? 'Price proof: ' + priceProof.pair_label
-      : (priceProof.reason || 'Price proof unavailable');
+      : (humanReason(priceProof.reason) || 'Price proof unavailable');
     $('wx-stats').innerHTML = rows.length
       ? rows.map(statRow).join('')
       : statRow({ label: 'Status', live: false, reason: 'Backend token_stats section unavailable.' });
   }
 
-  function tokenLabel(row) {
-    var a = '<span class="wx-token"><strong>' + esc(row.token_a_symbol || DASH) + '</strong>' + esc(row.token_a_contract || '') + '</span>';
-    var b = '<span class="wx-token"><strong>' + esc(row.token_b_symbol || DASH) + '</strong>' + esc(row.token_b_contract || '') + '</span>';
-    return a + b;
+  function pairRows(payload) {
+    var sections = payload.sections || {};
+    var section = sections.pair_table || {};
+    return Array.isArray(section.rows) ? section.rows : [];
   }
 
-  function pairStatus(row) {
-    if (row.is_selected_price_pair) return '<span class="wx-positive">Selected price pair</span>';
-    if (row.status === 'unavailable') return '<span class="wx-muted">Unavailable</span>';
-    if (num(row.liquidity_wax) != null && num(row.liquidity_wax) < 1) return '<span class="wx-warning">Low liquidity</span>';
-    if (row.is_direct_wax_pair) return '<span class="wx-positive">Direct WAX pair</span>';
-    return '<span class="wx-positive">Valued</span>';
+  function pairKey(row) {
+    return String((row && row.source) || '') + ':' + String((row && row.pair_id) || '');
+  }
+
+  function pairLabel(row) {
+    if (!row) return 'WAXCASH/WAX';
+    return row.pair_label || [row.token_a_symbol, row.token_b_symbol].filter(Boolean).join('/') || 'WAXCASH pair';
+  }
+
+  function sourceLabel(row) {
+    if (!row) return DASH;
+    return [row.source || DASH, row.pair_id ? '#' + row.pair_id : ''].filter(Boolean).join(' ');
+  }
+
+  function pickPoolViews(rows) {
+    var selected = rows.find(function (row) { return row.is_selected_price_pair; }) || rows[0] || null;
+    var valued = rows.filter(function (row) { return num(row.liquidity_wax) != null; });
+    var best = valued.slice().sort(function (a, b) { return (num(b.liquidity_wax) || 0) - (num(a.liquidity_wax) || 0); })[0] || selected;
+    var low = valued.slice().sort(function (a, b) { return (num(a.liquidity_wax) || 0) - (num(b.liquidity_wax) || 0); })[0] || rows.find(function (row) { return row.status === 'unavailable'; }) || selected;
+    var weighted = valued.find(function (row) { return !row.is_selected_price_pair; }) || best || selected;
+    return [
+      { key: 'selected', label: 'Selected proof pool', row: selected },
+      { key: 'best', label: 'Best liquidity pool', row: best },
+      { key: 'low', label: 'Worst/low liquidity pool', row: low },
+      { key: 'weighted', label: 'Weighted/valued pool view', row: weighted },
+    ];
+  }
+
+  function activeView(payload) {
+    var views = pickPoolViews(pairRows(payload));
+    return views.find(function (view) { return view.key === state.view; }) || views[0] || { key: 'selected', label: 'Selected proof pool', row: null };
+  }
+
+  function setActiveView(key) {
+    state.view = key;
+    renderPoolControls(state.payload);
+    renderPairDetail(state.payload);
+    renderPairs(state.payload);
+    updateChartLabels(state.payload);
+  }
+
+  function renderPoolControls(payload) {
+    var views = pickPoolViews(pairRows(payload));
+    $('wx-view-controls').innerHTML = views.map(function (view) {
+      var isActive = view.key === state.view;
+      return '<button class="wx-view-button ' + (isActive ? 'is-active' : '') + '" type="button" data-view="' + esc(view.key) + '" aria-pressed="' + (isActive ? 'true' : 'false') + '">' +
+        esc(view.label) +
+        '</button>';
+    }).join('');
+    Array.prototype.forEach.call(document.querySelectorAll('.wx-view-button'), function (button) {
+      button.addEventListener('click', function () { setActiveView(button.getAttribute('data-view')); });
+    });
   }
 
   function dual(wax, usd, reason) {
     var waxText = fmtWax(wax);
     var usdText = fmtUsd(usd);
-    if (waxText !== DASH && usdText !== DASH) return '<span class="wx-main-value">' + esc(waxText) + '</span><small>' + esc(usdText) + '</small>';
-    if (waxText !== DASH) return '<span class="wx-main-value">' + esc(waxText) + '</span>';
-    if (usdText !== DASH) return '<span class="wx-main-value">' + esc(usdText) + '</span>';
-    return '<span class="wx-muted">Unavailable</span>' + reasonHtml(reason);
+    if (waxText !== DASH && usdText !== DASH) return '<span>' + esc(waxText) + '</span><span class="wx-cell-sub">' + esc(usdText) + '</span>';
+    if (waxText !== DASH) return esc(waxText);
+    if (usdText !== DASH) return esc(usdText);
+    return '<span class="wx-muted" title="' + esc(humanReason(reason)) + '">Unavailable</span>';
+  }
+
+  function pairStatus(row) {
+    if (!row) return '<span class="wx-muted">Unavailable</span>';
+    if (row.is_selected_price_pair) return '<span class="wx-positive">Selected proof</span>';
+    if (row.status === 'unavailable') return '<span class="wx-muted" title="' + esc(humanReason(row.reason)) + '">Unavailable</span>';
+    if (num(row.liquidity_wax) != null && num(row.liquidity_wax) < 1) return '<span class="wx-warning">Low liquidity</span>';
+    if (row.is_direct_wax_pair) return '<span class="wx-positive">Direct WAX</span>';
+    return '<span class="wx-positive">Valued</span>';
+  }
+
+  function tokenLabel(row) {
+    return '<span class="wx-token"><strong>' + esc(row.token_a_symbol || DASH) + '</strong>' + esc(row.token_a_contract || '') + '</span>' +
+      '<span class="wx-token"><strong>' + esc(row.token_b_symbol || DASH) + '</strong>' + esc(row.token_b_contract || '') + '</span>';
+  }
+
+  function renderPairDetail(payload) {
+    var view = activeView(payload);
+    var row = view.row || {};
+    $('wx-pair-detail').innerHTML =
+      '<div><span>Display view</span>' + esc(view.label) + '</div>' +
+      '<div><span>Pair</span>' + esc(pairLabel(row)) + '</div>' +
+      '<div><span>Source</span>' + esc(sourceLabel(row)) + '</div>' +
+      '<div><span>Status</span>' + pairStatus(row) + '</div>' +
+      '<div><span>Liquidity</span>' + dual(row.liquidity_wax, row.liquidity_usd, row.reason) + '</div>' +
+      '<div><span>24h volume</span>' + dual(row.volume_24h_wax, row.volume_24h_usd, row.reason) + '</div>' +
+      '<div><span>Reserves</span>' + esc(row.reserves_label || DASH) + '</div>' +
+      '<div><span>Proof</span>' + esc(humanReason(row.proof_label || row.reason || 'Verified indexed row')) + '</div>';
   }
 
   function renderPairs(payload) {
-    var sections = payload.sections || {};
-    var section = sections.pair_table || {};
-    var rows = Array.isArray(section.rows) ? section.rows : [];
+    var rows = pairRows(payload);
+    var view = activeView(payload);
+    var activeKey = pairKey(view.row);
     $('wx-pair-summary').textContent = rows.length + ' indexed WAXCASH pairs';
     if (!rows.length) {
-      $('wx-pairs').innerHTML = '<tr><td colspan="8" class="wx-muted">No source-backed WAXCASH pair rows returned.</td></tr>';
+      $('wx-pairs').innerHTML = '<tr><td colspan="9" class="wx-muted">No source-backed WAXCASH pair rows returned.</td></tr>';
       return;
     }
     $('wx-pairs').innerHTML = rows.map(function (row, index) {
-      var proof = humanReason(row.proof_label || row.reason || 'verified');
-      return '<tr>' +
+      var fee = row.fee_bps != null ? fmt(row.fee_bps / 100, 2) + ' %' : (row.is_direct_wax_pair ? 'Direct' : DASH);
+      var pairPrice = row.proof_details && row.proof_details.reserve_ratio != null
+        ? fmt(row.proof_details.reserve_ratio, 8) + ' WAXCASH pair ratio'
+        : DASH;
+      return '<tr class="' + (pairKey(row) === activeKey ? 'is-selected' : '') + '">' +
         '<td>#' + (index + 1) + '</td>' +
+        '<td><span class="wx-source">' + esc(row.source || DASH) + '</span><span class="wx-cell-sub">' + esc(row.pair_id || DASH) + '</span></td>' +
+        '<td>' + esc(fee) + '</td>' +
         '<td>' + tokenLabel(row) + '</td>' +
-        '<td><span class="wx-source">' + esc(row.source || DASH) + '</span><br><span class="wx-muted">' + esc(row.pair_id || DASH) + '</span></td>' +
-        '<td>' + pairStatus(row) + reasonHtml(row.reason) + '</td>' +
         '<td>' + dual(row.liquidity_wax, row.liquidity_usd, row.reason) + '</td>' +
+        '<td>' + esc(pairPrice) + '</td>' +
+        '<td>' + pairStatus(row) + '</td>' +
         '<td>' + dual(row.volume_24h_wax, row.volume_24h_usd, row.reason) + '</td>' +
         '<td>' + esc(row.reserves_label || DASH) + '</td>' +
-        '<td class="' + (row.status === 'unavailable' ? 'wx-muted' : 'wx-positive') + '">' + esc(proof) + '</td>' +
         '</tr>';
     }).join('');
   }
 
-  function renderChart(payload) {
+  function candleTime(candle) {
+    var raw = candle.time || candle.timestamp || candle.bucket || candle.date || candle.open_time || candle.updated_at;
+    if (typeof raw === 'number') return raw > 1000000000000 ? Math.floor(raw / 1000) : Math.floor(raw);
+    if (typeof raw === 'string') {
+      var numeric = Number(raw);
+      if (Number.isFinite(numeric)) return numeric > 1000000000000 ? Math.floor(numeric / 1000) : Math.floor(numeric);
+      var parsed = Date.parse(raw);
+      if (Number.isFinite(parsed)) return Math.floor(parsed / 1000);
+    }
+    return null;
+  }
+
+  function chartCandles(payload) {
     var sections = payload.sections || {};
-    var section = sections.chart_external || {};
-    var url = section.url || 'https://alcor.exchange/v/wax/analytics/pools/8388';
-    var sourceLabel = section.source === 'alcor' && section.pool_id
-      ? 'Alcor pool #' + section.pool_id
-      : 'Alcor pool #8388';
-    $('wx-chart-source').textContent = sourceLabel;
-    $('wx-chart').innerHTML =
-      '<div class="wx-external-chart-card">' +
-        '<div class="wx-external-chart-copy">' +
-          '<strong>External Alcor WAX/WAXCASH pool chart</strong>' +
-          '<span>' + esc(sourceLabel) + '</span>' +
-          '<p>Chart is external visual reference only. WaxOnEdge stats remain backend proof values.</p>' +
-        '</div>' +
-        '<div class="wx-external-chart-linkcard">' +
-          '<span>Open the external Alcor pool chart in a new tab.</span>' +
-          '<a class="wx-external-chart-link" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">Open Alcor chart</a>' +
-        '</div>' +
-      '</div>';
+    var chart = sections.chart || {};
+    var candles = Array.isArray(chart.candles) ? chart.candles : [];
+    return candles.map(function (candle) {
+      var close = num(candle.close);
+      var time = candleTime(candle);
+      if (time == null || close == null) return null;
+      return {
+        time: time,
+        open: num(candle.open) != null ? num(candle.open) : close,
+        high: num(candle.high) != null ? num(candle.high) : close,
+        low: num(candle.low) != null ? num(candle.low) : close,
+        close: close,
+      };
+    }).filter(Boolean).sort(function (a, b) { return a.time - b.time; });
+  }
+
+  function renderLightweightCandles(payload) {
+    var host = $('wx-chart');
+    var candles = chartCandles(payload);
+    var tv = window.LightweightCharts;
+    if (state.chart && typeof state.chart.remove === 'function') {
+      try { state.chart.remove(); } catch (_) {}
+      state.chart = null;
+    }
+    if (!host) return false;
+    if (!candles.length) {
+      host.innerHTML = '<div class="wx-chart-empty">No indexed WAX-per-WAXCASH candles are available for the selected proof pool.</div>';
+      return false;
+    }
+    if (!tv || typeof tv.createChart !== 'function') {
+      host.innerHTML = '<div class="wx-chart-empty">Lightweight Charts renderer unavailable. No fallback chart is shown.</div>';
+      return false;
+    }
+    host.innerHTML = '<div id="wx-lightweight-chart" class="wx-lightweight-chart" role="img" aria-label="WAX per WAXCASH OHLCV candlestick chart"></div>';
+    var chartHost = $('wx-lightweight-chart');
+    var chart = tv.createChart(chartHost, {
+      autoSize: true,
+      height: chartHost.clientHeight || 510,
+      layout: {
+        background: { type: 'solid', color: 'transparent' },
+        textColor: '#d8dee8',
+      },
+      grid: {
+        vertLines: { color: 'rgba(148, 163, 184, 0.14)' },
+        horzLines: { color: 'rgba(148, 163, 184, 0.14)' },
+      },
+      rightPriceScale: { borderColor: 'rgba(148, 163, 184, 0.25)' },
+      timeScale: { borderColor: 'rgba(148, 163, 184, 0.25)' },
+    });
+    var factory = tv.CandlestickSeries || null;
+    var series = factory && typeof chart.addSeries === 'function'
+      ? chart.addSeries(factory, {
+        upColor: '#00e6b0',
+        downColor: '#ff3d67',
+        borderUpColor: '#00e6b0',
+        borderDownColor: '#ff3d67',
+        wickUpColor: '#00e6b0',
+        wickDownColor: '#ff3d67',
+      })
+      : chart.addCandlestickSeries({
+        upColor: '#00e6b0',
+        downColor: '#ff3d67',
+        borderUpColor: '#00e6b0',
+        borderDownColor: '#ff3d67',
+        wickUpColor: '#00e6b0',
+        wickDownColor: '#ff3d67',
+      });
+    series.setData(candles);
+    chart.timeScale().fitContent();
+    state.chart = chart;
+    return true;
+  }
+
+  function updateChartLabels(payload) {
+    var sections = (payload || {}).sections || {};
+    var chart = sections.chart || {};
+    var external = sections.chart_external || {};
+    var view = activeView(payload);
+    var row = view.row || {};
+    var feedLabel = external.pool_id
+      ? 'Alcor pool #' + external.pool_id + ' WAXP/WAXCASH display feed'
+      : (chart.source && chart.pair_id ? chart.source + ' #' + chart.pair_id + ' display feed' : 'Indexed WAX/WAXCASH display feed');
+    $('wx-chart-source').textContent = feedLabel;
+    $('wx-chart-feed-label').textContent = feedLabel;
+    $('wx-chart-pair-title').textContent = pairLabel(row);
+  }
+
+  function renderChart(payload) {
+    updateChartLabels(payload);
+    renderLightweightCandles(payload);
   }
 
   function render(payload) {
-    var stats = payload.stats || {};
-    var sections = payload.sections || {};
+    state.payload = payload || {};
+    var stats = state.payload.stats || {};
+    var sections = state.payload.sections || {};
     var supply = sections.supply_proof || {};
     var status = stats.updated_at ? 'Updated ' + stats.updated_at : 'Indexed analytics loaded';
-    if (supply.live === false && supply.reason) status += ' - Supply: ' + supply.reason;
+    if (supply.live === false && supply.reason) status += ' | Supply: ' + humanReason(supply.reason);
     $('wx-status').textContent = status;
-    renderStats(payload);
-    renderChart(payload);
-    renderPairs(payload);
+    renderStats(state.payload);
+    renderPoolControls(state.payload);
+    renderChart(state.payload);
+    renderPairDetail(state.payload);
+    renderPairs(state.payload);
   }
 
   fetch(ENDPOINT, { headers: { Accept: 'application/json' } })
@@ -217,7 +396,8 @@
     .catch(function (error) {
       $('wx-status').textContent = 'Analytics unavailable';
       $('wx-stats').innerHTML = statRow({ label: 'Status', live: false, reason: error.message || String(error) });
-      $('wx-chart').innerHTML = '<div class="wx-chart-empty">External Alcor chart unavailable.</div>';
-      $('wx-pairs').innerHTML = '<tr><td colspan="8" class="wx-muted">Pair table unavailable.</td></tr>';
+      $('wx-chart').innerHTML = '<div class="wx-chart-empty">WAXCASH chart unavailable.</div>';
+      $('wx-pair-detail').innerHTML = '<div><span>Status</span>Unavailable</div>';
+      $('wx-pairs').innerHTML = '<tr><td colspan="9" class="wx-muted">Pair table unavailable.</td></tr>';
     });
 }());
