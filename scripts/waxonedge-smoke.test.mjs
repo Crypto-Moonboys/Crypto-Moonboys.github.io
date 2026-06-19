@@ -178,6 +178,8 @@ ok('waxcash pair table exposes WAX-only liquidity and 24h volume sort controls',
   waxcashAnalyticsJs.includes('function sortedPairRows(rows)') &&
   waxcashAnalyticsJs.includes('function sourceLogoUrl(row)') &&
   waxcashAnalyticsJs.includes('function sourceCell(row)') &&
+  waxcashAnalyticsJs.includes('function tokenIconUrl(row, side)') &&
+  waxcashAnalyticsJs.includes('function tokenSideLabel(row, side)') &&
   waxcashAnalyticsJs.includes("'swap.nefty': '/img/waxonedge/dex/neftyblocks.png'") &&
   waxcashAnalyticsJs.includes("'swap.alcor': '/img/waxonedge/dex/alcor.png'") &&
   waxcashAnalyticsJs.includes("'alcordexmain': '/img/waxonedge/dex/alcor.png'") &&
@@ -186,6 +188,7 @@ ok('waxcash pair table exposes WAX-only liquidity and 24h volume sort controls',
   waxcashAnalyticsJs.includes("'swap.adex': '/img/waxonedge/dex/adex.png'") &&
   waxcashAnalyticsJs.includes("'dapp.fusion': '/img/waxonedge/dex/waxfusion.png'") &&
   waxcashAnalyticsJs.includes('<img class="wx-source-logo" src="') &&
+  waxcashAnalyticsJs.includes('<img class="wx-token-logo" src="') &&
   waxcashAnalyticsJs.includes("'<td>' + sourceCell(row) + '</td>'") &&
   waxcashAnalyticsJs.includes('return num(row && row.liquidity_wax)') &&
   waxcashAnalyticsJs.includes('return num(row && row.volume_24h_wax)') &&

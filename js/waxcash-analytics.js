@@ -198,8 +198,21 @@
   }
 
   function tokenLabel(row) {
-    return '<span class="wx-token"><strong>' + esc(row.token_a_symbol || DASH) + '</strong>' + esc(row.token_a_contract || '') + '</span>' +
-      '<span class="wx-token"><strong>' + esc(row.token_b_symbol || DASH) + '</strong>' + esc(row.token_b_contract || '') + '</span>';
+    return tokenSideLabel(row, 'a') + tokenSideLabel(row, 'b');
+  }
+
+  function tokenIconUrl(row, side) {
+    return String((row && (row['token_' + side + '_icon'] || row['token_' + side + '_logo'])) || '');
+  }
+
+  function tokenSideLabel(row, side) {
+    var icon = tokenIconUrl(row, side);
+    var symbol = row && row['token_' + side + '_symbol'];
+    var contract = row && row['token_' + side + '_contract'];
+    return '<span class="wx-token">' +
+      (icon ? '<img class="wx-token-logo" src="' + esc(icon) + '" alt="" loading="lazy">' : '') +
+      '<span class="wx-token-text"><strong>' + esc(symbol || DASH) + '</strong>' + esc(contract || '') + '</span>' +
+      '</span>';
   }
 
   function priceCell(row) {

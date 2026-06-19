@@ -218,7 +218,28 @@
     tbody tr:nth-child(odd) { background: rgba(255,255,255,0.025); }
     tbody tr:nth-child(even) { background: rgba(255,255,255,0.06); }
     tbody tr.is-selected { outline: 2px solid rgba(2,240,231,0.42); outline-offset: -2px; }
-    .wx-token { color: var(--muted); font-weight: 800; }
+    .wx-token {
+      align-items: center;
+      color: var(--muted);
+      display: flex;
+      font-weight: 800;
+      gap: 8px;
+      margin: 4px 0;
+    }
+    .wx-token-logo {
+      aspect-ratio: 1;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+      display: block;
+      flex: 0 0 auto;
+      height: 28px;
+      object-fit: contain;
+      width: 28px;
+    }
+    .wx-token-text {
+      display: block;
+      min-width: 0;
+    }
     .wx-token strong { color: var(--text); display: block; }
     .wx-source-cell {
       align-items: center;

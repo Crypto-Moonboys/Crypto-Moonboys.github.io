@@ -5259,6 +5259,38 @@ function buildDbTokenPriceIndex(rows) {
   return index;
 }
 
+function buildDbTokenIconIndex(rows) {
+  const index = new Map();
+  for (const row of rows || []) {
+    const key = tokenKey(row.contract, row.symbol);
+    const icon = safeString(row.icon_url || row.logo || row.image);
+    if (key && icon) index.set(key, icon);
+  }
+  return index;
+}
+
+function enrichPairsWithTokenIcons(pairRows = [], tokenRows = []) {
+  const icons = buildDbTokenIconIndex(tokenRows);
+  return (pairRows || []).map((pair) => ({
+    ...pair,
+    token_a_icon: icons.get(tokenKey(pair.token_a_contract, pair.token_a_symbol)) || null,
+    token_b_icon: icons.get(tokenKey(pair.token_b_contract, pair.token_b_symbol)) || null,
+  }));
+}
+
+function collectTokenRefsForPairs(pairRows = []) {
+  const refs = new Map();
+  function add(contract, symbol) {
+    const ref = tokenRef(contract, symbol);
+    if (ref?.key && !refs.has(ref.key)) refs.set(ref.key, ref);
+  }
+  for (const pair of pairRows || []) {
+    add(pair.token_a_contract, pair.token_a_symbol);
+    add(pair.token_b_contract, pair.token_b_symbol);
+  }
+  return Array.from(refs.values());
+}
+
 function collectTokenPriceKeysForPairs(pairRows) {
   const keys = new Map();
   function add(contract, symbol) {
@@ -6383,6 +6415,10 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
     : (!reasonCodes.includes('missing_or_zero_reserves') && waxcashReserve != null && waxcashReserve > 0
       ? pairedReserve / waxcashReserve
       : null);
+  const pairedTokenPriceWax = pairedIsWax ? 1 : asNumber(pairedTokenPrice?.price_wax);
+  const priceRelativeUsd = priceRelative != null && pairedTokenPriceWax != null && waxUsd != null
+    ? priceRelative * pairedTokenPriceWax * waxUsd
+    : null;
 
   const proof = {
     source: pair.source || null,
@@ -6390,8 +6426,10 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
     pair_label: selectedPairLabel(pair),
     token_a_contract: pair.token_a_contract || null,
     token_a_symbol: pair.token_a_symbol || null,
+    token_a_icon: pair.token_a_icon || pair.token_a_logo || null,
     token_b_contract: pair.token_b_contract || null,
     token_b_symbol: pair.token_b_symbol || null,
+    token_b_icon: pair.token_b_icon || pair.token_b_logo || null,
     reserve_a: safeDecimal(asNumber(pair.reserve_a)),
     reserve_b: safeDecimal(asNumber(pair.reserve_b)),
     fee_bps: safeDecimal(asNumber(pair.fee_bps)),
@@ -6399,6 +6437,7 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
     pair_liquidity_wax: safeDecimal(liquidityWax),
     pair_liquidity_usd: safeDecimal(liquidityUsd),
     pair_price_relative_to_waxcash: safeDecimal(priceRelative),
+    pair_price_usd: safeDecimal(priceRelativeUsd),
     paired_token: paired,
     paired_token_og_wax_price: pairedTokenPrice?.price_wax || null,
     direct_wax_pair: directWax,
@@ -7307,7 +7346,9 @@ function waxcashGraphPairLinks(pair) {
 }
 
 async function getWaxcashOgProof(db) {
-  const pairRows = await loadWaxcashOgPairRows(db);
+  const rawPairRows = await loadWaxcashOgPairRows(db);
+  const tokenRows = await loadTokenRowsForRefs(db, collectTokenRefsForPairs(rawPairRows));
+  const pairRows = enrichPairsWithTokenIcons(rawPairRows, tokenRows);
   const pairedTokens = pairRows
     .map((pair) => otherTokenForPair(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL))
     .filter((token, index, list) => token?.key && list.findIndex((item) => item?.key === token.key) === index);
@@ -7663,6 +7704,7 @@ function waxcashPairTableRow(pair, selectedWaxPool) {
   const volume30dWax = asNumber(pair.volume_30d_wax);
   const volume30dUsd = asNumber(pair.volume_30d_usd);
   const price = asNumber(pair.pair_price_relative_to_waxcash ?? pair.price);
+  const priceUsd = asNumber(pair.pair_price_usd);
   const change24h = asNumber(pair.change_24h);
   const reasonCodes = Array.isArray(pair.reason_codes) ? pair.reason_codes : [];
   const live = liquidityWax != null || liquidityUsd != null;
@@ -7686,7 +7728,7 @@ function waxcashPairTableRow(pair, selectedWaxPool) {
     liquidity_usd: safeDecimal(liquidityUsd),
     price: safeDecimal(price),
     pair_price: safeDecimal(price),
-    price_usd: null,
+    price_usd: safeDecimal(priceUsd),
     change_24h: safeDecimal(change24h),
     volume_24h_wax: safeDecimal(volumeWax),
     volume_24h_usd: safeDecimal(volumeUsd),
@@ -7698,8 +7740,12 @@ function waxcashPairTableRow(pair, selectedWaxPool) {
     reason,
     token_a_contract: pair.token_a_contract || null,
     token_a_symbol: pair.token_a_symbol || null,
+    token_a_icon: pair.token_a_icon || pair.token_a_logo || null,
+    token_a_logo: pair.token_a_logo || pair.token_a_icon || null,
     token_b_contract: pair.token_b_contract || null,
     token_b_symbol: pair.token_b_symbol || null,
+    token_b_icon: pair.token_b_icon || pair.token_b_logo || null,
+    token_b_logo: pair.token_b_logo || pair.token_b_icon || null,
     no_fake_value: true,
     proof_details: {
       reserve_ratio: pair.pair_price_relative_to_waxcash || null,
@@ -8212,6 +8258,94 @@ async function indexedTradeWindowVolumes(db, pairs = [], options = {}) {
   return result;
 }
 
+async function indexedTradeWindowVolumesByPair(db, pairs = [], options = {}) {
+  const { predicates, params } = waxcashTradeVolumePredicates(pairs);
+  const where = predicates.join(' OR ');
+  const latest = await db.prepare(
+    `SELECT MAX(traded_at) AS latest_trade_at
+     FROM waxonedge_trades
+     WHERE (${where})`
+  ).bind(...params).first().catch(() => null);
+  const latestMs = Date.parse(latest?.latest_trade_at || '');
+  if (!Number.isFinite(latestMs)) return new Map();
+
+  const since24hMs = latestMs - (24 * 60 * 60 * 1000);
+  const since7dMs = latestMs - (7 * 24 * 60 * 60 * 1000);
+  const since30dMs = latestMs - (30 * 24 * 60 * 60 * 1000);
+  const pairProofByKey = new Map((pairs || []).map((pair) => [waxcashTradePairKey(pair.source, pair.pair_id), pair]));
+  const rows = await db.prepare(
+    `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json
+     FROM waxonedge_trades
+     WHERE (${where}) AND traded_at >= ?`
+  ).bind(...params, new Date(since30dMs).toISOString()).all().then((value) => value.results || []).catch(() => []);
+  const windows = new Map();
+  for (const row of rows) {
+    const tradedMs = Date.parse(row?.traded_at || '');
+    if (!Number.isFinite(tradedMs) || tradedMs < since30dMs) continue;
+    const key = waxcashTradePairKey(row?.source, row?.pair_id);
+    if (!pairProofByKey.has(key)) continue;
+    const proof = waxcashTradeVolumeWax(row, pairProofByKey, options.selectedPriceWax);
+    if (proof.volumeWax == null) continue;
+    if (!windows.has(key)) {
+      windows.set(key, {
+        volume_24h_wax: 0,
+        volume_7d_wax: 0,
+        volume_30d_wax: 0,
+        has_24h: false,
+        has_7d: false,
+        has_30d: false,
+        source: 'indexed_trade_rows_window_wax_denominated',
+        basis: proof.basis,
+      });
+    }
+    const window = windows.get(key);
+    window.volume_30d_wax += proof.volumeWax;
+    window.has_30d = true;
+    if (proof.basis) window.basis = proof.basis;
+    if (tradedMs >= since7dMs) {
+      window.volume_7d_wax += proof.volumeWax;
+      window.has_7d = true;
+    }
+    if (tradedMs >= since24hMs) {
+      window.volume_24h_wax += proof.volumeWax;
+      window.has_24h = true;
+    }
+  }
+  for (const [key, window] of windows.entries()) {
+    windows.set(key, {
+      volume_24h_wax: window.has_24h ? safeDecimal(window.volume_24h_wax) : null,
+      volume_7d_wax: window.has_7d ? safeDecimal(window.volume_7d_wax) : null,
+      volume_30d_wax: window.has_30d ? safeDecimal(window.volume_30d_wax) : null,
+      source: window.source,
+      basis: window.basis,
+      latest_trade_at: latest.latest_trade_at,
+      no_fake_value: true,
+    });
+  }
+  return windows;
+}
+
+function applyIndexedPairWindowVolumes(pairs = [], windows = new Map(), waxUsd = null) {
+  return (pairs || []).map((pair) => {
+    const window = windows.get(waxcashTradePairKey(pair?.source, pair?.pair_id));
+    if (!window) return pair;
+    const volume24Wax = asNumber(window.volume_24h_wax);
+    const volume7dWax = asNumber(window.volume_7d_wax);
+    const volume30dWax = asNumber(window.volume_30d_wax);
+    return {
+      ...pair,
+      volume_24h_wax: safeDecimal(volume24Wax) ?? pair.volume_24h_wax ?? null,
+      volume_24h_usd: volume24Wax != null && waxUsd != null ? safeDecimal(volume24Wax * waxUsd) : (pair.volume_24h_usd ?? null),
+      volume_7d_wax: safeDecimal(volume7dWax) ?? pair.volume_7d_wax ?? null,
+      volume_7d_usd: volume7dWax != null && waxUsd != null ? safeDecimal(volume7dWax * waxUsd) : (pair.volume_7d_usd ?? null),
+      volume_30d_wax: safeDecimal(volume30dWax) ?? pair.volume_30d_wax ?? null,
+      volume_30d_usd: volume30dWax != null && waxUsd != null ? safeDecimal(volume30dWax * waxUsd) : (pair.volume_30d_usd ?? null),
+      indexed_pair_volume_window_source: window.source,
+      indexed_pair_volume_window_basis: window.basis,
+    };
+  });
+}
+
 async function buildWaxcashUdfChartFeed(db, query = {}) {
   const proofWrapper = await getWaxcashOgProof(db);
   const proof = proofWrapper.og_woe_parity || {};
@@ -8261,10 +8395,12 @@ async function buildWaxcashAnalytics(db) {
   const selectedPriceUsd = asNumber(headline.og_headline_price_usd);
   const { chart, chartFeedPool, selectedWaxPool } = await buildWaxcashChartBundle(db, proof, headline);
   const liveSupplyProof = await fetchWaxcashLiveSupplyProof(db, token);
-  const [holderSnapshot, tradeWindowVolumes] = await Promise.all([
+  const [holderSnapshot, tradeWindowVolumes, pairWindowVolumes] = await Promise.all([
     latestIndexedHolderCount(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL),
     indexedTradeWindowVolumes(db, proof.all_pairs || [], { selectedPriceWax }),
+    indexedTradeWindowVolumesByPair(db, proof.all_pairs || [], { selectedPriceWax }),
   ]);
+  const pairTablePairs = applyIndexedPairWindowVolumes(proof.all_pairs || [], pairWindowVolumes, waxUsd);
   const priceChange24hProof = await selectedProofPriceChange24h(db, selectedWaxPool, selectedPriceWax);
   const circulatingSupply = asNumber(detailStats.circulating_supply ?? token.circulating_supply);
   const totalSupply = liveSupplyProof.live ? asNumber(liveSupplyProof.total_supply) : null;
@@ -8516,7 +8652,7 @@ async function buildWaxcashAnalytics(db) {
       role: 'external_visual_reference_only',
       affects_waxonedge_metrics: false,
     },
-    pair_table: waxcashBuildPairTableSection(proof.all_pairs || [], selectedWaxPool),
+    pair_table: waxcashBuildPairTableSection(pairTablePairs, selectedWaxPool),
   };
   return analytics;
 }
