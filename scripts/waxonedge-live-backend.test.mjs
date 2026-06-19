@@ -7082,8 +7082,20 @@ ok('WAXCASH analytics frontend keeps pair table and adds WAX-only liquidity/24h 
   waxcashHtml.includes('data-sort="liquidity"') &&
   waxcashHtml.includes('id="wx-sort-volume24"') &&
   waxcashHtml.includes('data-sort="volume24"') &&
+  waxcashHtml.includes('.wx-source-logo') &&
   waxcashAnalyticsFrontend.includes('function sortedPairRows(rows)') &&
   waxcashAnalyticsFrontend.includes('function defaultPairSort(rows)') &&
+  waxcashAnalyticsFrontend.includes('function sourceLogoUrl(row)') &&
+  waxcashAnalyticsFrontend.includes('function sourceCell(row)') &&
+  waxcashAnalyticsFrontend.includes("'swap.nefty': '/img/waxonedge/dex/neftyblocks.png'") &&
+  waxcashAnalyticsFrontend.includes("'swap.alcor': '/img/waxonedge/dex/alcor.png'") &&
+  waxcashAnalyticsFrontend.includes("'alcordexmain': '/img/waxonedge/dex/alcor.png'") &&
+  waxcashAnalyticsFrontend.includes("'swap.taco': '/img/waxonedge/dex/taco.png'") &&
+  waxcashAnalyticsFrontend.includes("'swap.box': '/img/waxonedge/dex/defibox.png'") &&
+  waxcashAnalyticsFrontend.includes("'swap.adex': '/img/waxonedge/dex/adex.png'") &&
+  waxcashAnalyticsFrontend.includes("'dapp.fusion': '/img/waxonedge/dex/waxfusion.png'") &&
+  waxcashAnalyticsFrontend.includes('<img class="wx-source-logo" src="') &&
+  waxcashAnalyticsFrontend.includes("'<td>' + sourceCell(row) + '</td>'") &&
   waxcashAnalyticsFrontend.includes('return num(row && row.liquidity_wax)') &&
   waxcashAnalyticsFrontend.includes('return num(row && row.volume_24h_wax)') &&
   waxcashAnalyticsFrontend.includes('dual(row.volume_7d_wax, row.volume_7d_usd, row.reason)') &&

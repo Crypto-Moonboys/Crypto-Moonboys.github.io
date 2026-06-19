@@ -220,7 +220,21 @@
     tbody tr.is-selected { outline: 2px solid rgba(2,240,231,0.42); outline-offset: -2px; }
     .wx-token { color: var(--muted); font-weight: 800; }
     .wx-token strong { color: var(--text); display: block; }
-    .wx-source { color: var(--cyan); font-weight: 900; }
+    .wx-source-cell {
+      align-items: center;
+      display: inline-flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 64px;
+    }
+    .wx-source-logo {
+      aspect-ratio: 1;
+      display: block;
+      height: 42px;
+      object-fit: contain;
+      width: 42px;
+    }
+    .wx-source-name { color: var(--text); font-weight: 900; }
     .wx-cell-sub { display: block; color: var(--green); margin-top: 2px; }
     @media (max-width: 980px) {
       main { padding: 10px; }

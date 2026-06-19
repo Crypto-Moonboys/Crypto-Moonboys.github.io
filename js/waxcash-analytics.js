@@ -162,6 +162,32 @@
     return row.source_label || row.source || DASH;
   }
 
+  function sourceLogoUrl(row) {
+    var key = String((row && (row.source_logo_key || row.source)) || '').toLowerCase();
+    var map = {
+      'swap.nefty': '/img/waxonedge/dex/neftyblocks.png',
+      'neftyblocks': '/img/waxonedge/dex/neftyblocks.png',
+      'swap.alcor': '/img/waxonedge/dex/alcor.png',
+      'alcor': '/img/waxonedge/dex/alcor.png',
+      'alcordexmain': '/img/waxonedge/dex/alcor.png',
+      'swap.taco': '/img/waxonedge/dex/taco.png',
+      'swap.box': '/img/waxonedge/dex/defibox.png',
+      'defibox': '/img/waxonedge/dex/defibox.png',
+      'swap.adex': '/img/waxonedge/dex/adex.png',
+      'dapp.fusion': '/img/waxonedge/dex/waxfusion.png',
+      'waxfusion': '/img/waxonedge/dex/waxfusion.png',
+    };
+    return map[key] || '';
+  }
+
+  function sourceCell(row) {
+    var logo = sourceLogoUrl(row);
+    return '<span class="wx-source-cell">' +
+      (logo ? '<img class="wx-source-logo" src="' + esc(logo) + '" alt="" loading="lazy">' : '') +
+      '<span class="wx-source-name">' + esc(sourceLabel(row)) + '</span>' +
+      '</span>';
+  }
+
   function dual(wax, usd, reason) {
     var waxText = fmtWax(wax);
     var usdText = fmtUsd(usd);
@@ -250,7 +276,7 @@
       var fee = row.fee_bps != null ? fmt(row.fee_bps / 100, 2) + ' %' : (row.is_direct_wax_pair ? 'Direct' : DASH);
       return '<tr class="' + (pairKey(row) === activeKey ? 'is-selected' : '') + '">' +
         '<td>#' + (index + 1) + '</td>' +
-        '<td><span class="wx-source">' + esc(sourceLabel(row)) + '</span></td>' +
+        '<td>' + sourceCell(row) + '</td>' +
         '<td>' + esc(fee) + '</td>' +
         '<td>' + tokenLabel(row) + '</td>' +
         '<td>' + dual(row.liquidity_wax, row.liquidity_usd, row.reason) + '</td>' +
