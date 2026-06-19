@@ -128,11 +128,32 @@ ok('waxcash analytics frontend calls the dedicated backend endpoint only',
   !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-graph') &&
   !waxcashAnalyticsJs.includes('/api/waxonedge/bootstrap') &&
   waxcashAnalyticsJs.includes('sections.token_stats') &&
-  waxcashAnalyticsJs.includes('sections.price_proof') &&
   waxcashAnalyticsJs.includes('sections.supply_proof') &&
   waxcashAnalyticsJs.includes('sections.pair_table') &&
   waxcashAnalyticsJs.includes('sections.chart_external') &&
   !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-analytics/chart-feed'));
+ok('waxcash frontend removes visible explanatory chart/status/proof labels',
+  !waxcashHtml.includes('Chart and stats') &&
+  !waxcashHtml.includes('WAXCASH token analytics for graffitiking::WAXCASH') &&
+  !waxcashHtml.includes('Price proof:') &&
+  !waxcashHtml.includes('Alcor pool #8388 display feed') &&
+  !waxcashHtml.includes('Full embedded chart') &&
+  !waxcashHtml.includes('Single WAXCASH/WAX feed') &&
+  !waxcashHtml.includes('Display-only') &&
+  !waxcashHtml.includes('Standalone chart display, separate from WaxOnEdge token detail proof.') &&
+  !waxcashHtml.includes('Display-only pair detail views') &&
+  !waxcashHtml.includes('wx-view-controls') &&
+  !waxcashHtml.includes('wx-pair-detail'));
+ok('waxcash pair table exposes liquidity and 24h volume sort controls',
+  waxcashHtml.includes('id="wx-sort-liquidity"') &&
+  waxcashHtml.includes('data-sort="liquidity"') &&
+  waxcashHtml.includes('id="wx-sort-volume24"') &&
+  waxcashHtml.includes('data-sort="volume24"') &&
+  waxcashAnalyticsJs.includes('function sortedPairRows(rows)') &&
+  waxcashAnalyticsJs.includes("metricValue(row, 'liquidity_usd', 'liquidity_wax')") &&
+  waxcashAnalyticsJs.includes("metricValue(row, 'volume_24h_usd', 'volume_24h_wax')") &&
+  waxcashAnalyticsJs.includes('defaultPairSort(rows)') &&
+  waxcashAnalyticsJs.includes("button.textContent = isActive ? label + ' ' + String.fromCharCode(8595) : label"));
 
 const FORBIDDEN_LABELS = ['Swap', 'Add Liquidity', 'Remove Liquidity', 'Connect Wallet', 'Trade on Swap', 'Static read-only MVP'];
 for (const label of FORBIDDEN_LABELS) {

@@ -6981,23 +6981,22 @@ ok('WAXCASH analytics frontend keeps visible chart external and separate from OG
   !waxcashAnalyticsFrontend.includes('Array.isArray(chart.candles)') &&
   !waxcashAnalyticsFrontend.includes('renderChart(state.payload') &&
   !waxcashAnalyticsFrontend.includes('WAXP/WAXCASH') &&
-  waxcashAnalyticsFrontend.includes("'Alcor pool #' + external.pool_id + ' display feed'") &&
-  waxcashAnalyticsFrontend.includes('External WAXCASH/WAX display feed') &&
-  waxcashAnalyticsFrontend.includes('pickPoolViews(rows)') &&
-  waxcashAnalyticsFrontend.includes('Selected proof pool') &&
-  waxcashAnalyticsFrontend.includes("view.label + ' detail'") &&
-  waxcashAnalyticsFrontend.includes('Best liquidity pool') &&
-  waxcashAnalyticsFrontend.includes('Worst/low liquidity pool') &&
-  waxcashAnalyticsFrontend.includes('Weighted/valued pool view') &&
-  waxcashAnalyticsFrontend.includes('Alcor pool #') &&
+  !waxcashAnalyticsFrontend.includes("'Alcor pool #' + external.pool_id + ' display feed'") &&
+  !waxcashAnalyticsFrontend.includes('External WAXCASH/WAX display feed') &&
+  !waxcashAnalyticsFrontend.includes('pickPoolViews(rows)') &&
+  !waxcashAnalyticsFrontend.includes("view.label + ' detail'") &&
+  !waxcashAnalyticsFrontend.includes('Best liquidity pool') &&
+  !waxcashAnalyticsFrontend.includes('Worst/low liquidity pool') &&
+  !waxcashAnalyticsFrontend.includes('Weighted/valued pool view') &&
+  !waxcashAnalyticsFrontend.includes('Alcor pool #') &&
   !waxcashHtml.includes('lightweight-charts@5.2.0') &&
   !waxcashHtml.includes('Backend feed only') &&
   !waxcashHtml.includes('Worker UDF-shaped feed') &&
   !waxcashHtml.includes('Lightweight Charts renderer') &&
   !waxcashHtml.includes('wx-lightweight-chart') &&
-  waxcashHtml.includes('Full embedded chart') &&
-  waxcashHtml.includes('Single WAXCASH/WAX feed') &&
-  waxcashHtml.includes('Display-only') &&
+  !waxcashHtml.includes('Full embedded chart') &&
+  !waxcashHtml.includes('Single WAXCASH/WAX feed') &&
+  !waxcashHtml.includes('Display-only') &&
   waxcashHtml.includes('wx-external-chart-frame') &&
   waxcashHtml.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
   waxcashHtml.includes('WAXCASH/WAX full embedded chart') &&
@@ -7005,12 +7004,12 @@ ok('WAXCASH analytics frontend keeps visible chart external and separate from OG
   !waxcashHtml.includes('wx-external-chart-link') &&
   waxcashHtml.includes('height: 660px') &&
   waxcashHtml.includes('min-height: 660px') &&
-  waxcashHtml.includes('wx-view-controls') &&
-  waxcashHtml.includes('Display-only pair detail views') &&
-  waxcashHtml.includes('Standalone chart display, separate from WaxOnEdge token detail proof.') &&
+  !waxcashHtml.includes('wx-view-controls') &&
+  !waxcashHtml.includes('Display-only pair detail views') &&
+  !waxcashHtml.includes('Standalone chart display, separate from WaxOnEdge token detail proof.') &&
   waxcashHtml.includes('allowProductionFallback: false') &&
   waxcashHtml.includes('API base URL unavailable — MOONBOYS_API not configured.') &&
-  waxcashHtml.includes('Display-only source-backed pair detail views') &&
+  !waxcashHtml.includes('Display-only source-backed pair detail views') &&
   !waxcashHtml.includes('allowProductionFallback: true') &&
   !waxcashHtml.includes('api.PRODUCTION_BASE_URL') &&
   !waxcashHtml.includes('1D source-backed candles') &&
@@ -7030,6 +7029,22 @@ ok('WAXCASH analytics frontend keeps visible chart external and separate from OG
   waxcashHtml.includes('.wx-external-chart-frame') &&
   !waxcashAnalyticsFrontend.includes('External Alcor chart unavailable in embed.') &&
   !/Deposit|Add Liquidity|Swap|Trade on Swap|Connect Wallet|wallet selector|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
+ok('WAXCASH analytics frontend keeps pair table and adds USD-first liquidity/24h volume sorting',
+  waxcashHtml.includes('id="wx-sort-liquidity"') &&
+  waxcashHtml.includes('data-sort="liquidity"') &&
+  waxcashHtml.includes('id="wx-sort-volume24"') &&
+  waxcashHtml.includes('data-sort="volume24"') &&
+  waxcashAnalyticsFrontend.includes('function sortedPairRows(rows)') &&
+  waxcashAnalyticsFrontend.includes('function defaultPairSort(rows)') &&
+  waxcashAnalyticsFrontend.includes("metricValue(row, 'liquidity_usd', 'liquidity_wax')") &&
+  waxcashAnalyticsFrontend.includes("metricValue(row, 'volume_24h_usd', 'volume_24h_wax')") &&
+  waxcashAnalyticsFrontend.includes("state.pairSort || defaultPairSort(rows)") &&
+  waxcashAnalyticsFrontend.includes('if (a.metric && !b.metric) return -1') &&
+  waxcashAnalyticsFrontend.includes('if (!a.metric && b.metric) return 1') &&
+  waxcashAnalyticsFrontend.includes("button.classList.toggle('is-active', isActive)") &&
+  waxcashAnalyticsFrontend.includes("button.textContent = isActive ? label + ' ' + String.fromCharCode(8595) : label") &&
+  !waxcashHtml.includes('wx-pair-detail') &&
+  !waxcashAnalyticsFrontend.includes('renderPairDetail'));
 ok('WAXCASH analytics backend uses chart-feed labels and alias-aware trade volume matching',
   route.includes("pair_label: 'WAXCASH/WAX'") &&
   route.includes('const sourceNames = candleTradeSourceNamesFor(pair?.source)') &&
