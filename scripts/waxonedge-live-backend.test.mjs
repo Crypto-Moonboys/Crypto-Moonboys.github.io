@@ -6584,7 +6584,8 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   !waxcashAnalyticsFrontend.includes('Array.isArray(chart.candles)') &&
   !waxcashAnalyticsFrontend.includes('renderChart(state.payload') &&
   !waxcashAnalyticsFrontend.includes('WAXP/WAXCASH') &&
-  waxcashAnalyticsFrontend.includes('WAXCASH/WAX display feed') &&
+  waxcashAnalyticsFrontend.includes("'Alcor pool #' + external.pool_id + ' display feed'") &&
+  waxcashAnalyticsFrontend.includes('Backend chart display feed') &&
   waxcashAnalyticsFrontend.includes('pickPoolViews(rows)') &&
   waxcashAnalyticsFrontend.includes('Selected proof pool') &&
   waxcashAnalyticsFrontend.includes("view.label + ' detail'") &&

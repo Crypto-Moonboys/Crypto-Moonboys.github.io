@@ -345,8 +345,8 @@
     var chart = sections.chart || {};
     var external = sections.chart_external || {};
     var feedLabel = external.pool_id
-      ? 'Alcor pool #' + external.pool_id + ' WAXCASH/WAX display feed'
-      : (chart.source && chart.pair_id ? chart.source + ' #' + chart.pair_id + ' display feed' : 'Indexed WAX/WAXCASH display feed');
+      ? 'Alcor pool #' + external.pool_id + ' display feed'
+      : (chart.source && chart.pair_id ? chart.source + ' #' + chart.pair_id + ' display feed' : 'Backend chart display feed');
     $('wx-chart-source').textContent = feedLabel;
     $('wx-chart-feed-label').textContent = feedLabel;
     $('wx-chart-pair-title').textContent = 'WAXCASH/WAX';
