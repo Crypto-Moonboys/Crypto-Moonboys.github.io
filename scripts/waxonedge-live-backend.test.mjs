@@ -6594,16 +6594,19 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   waxcashAnalyticsFrontend.includes('Weighted/valued pool view') &&
   waxcashAnalyticsFrontend.includes('Alcor pool #') &&
   waxcashHtml.includes('lightweight-charts@5.2.0') &&
+  waxcashHtml.includes('Backend feed only') &&
   waxcashHtml.includes('Worker UDF-shaped feed') &&
   waxcashHtml.includes('Lightweight Charts renderer') &&
   waxcashHtml.includes('wx-lightweight-chart') &&
   waxcashHtml.includes('wx-view-controls') &&
+  waxcashHtml.includes('Display-only pair detail views') &&
   waxcashHtml.includes('WAX per WAXCASH candles from the WaxOnEdge Worker feed. Display controls do not change selected price.') &&
   waxcashHtml.includes('allowProductionFallback: false') &&
   waxcashHtml.includes('API base URL unavailable — MOONBOYS_API not configured.') &&
   waxcashHtml.includes('Display-only source-backed pair detail views') &&
   !waxcashHtml.includes('allowProductionFallback: true') &&
   !waxcashHtml.includes('api.PRODUCTION_BASE_URL') &&
+  !waxcashHtml.includes('1D source-backed candles') &&
   !waxcashHtml.includes('>1m</button>') &&
   !waxcashHtml.includes('>15m</button>') &&
   !waxcashHtml.includes('>1h</button>') &&

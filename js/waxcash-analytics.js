@@ -297,7 +297,7 @@
       return false;
     }
     if (!tv || typeof tv.createChart !== 'function') {
-      host.innerHTML = '<div class="wx-chart-empty">Lightweight Charts renderer unavailable. No alternate chart is shown.</div>';
+      host.innerHTML = '<div class="wx-chart-empty">Lightweight Charts renderer unavailable.</div>';
       return false;
     }
     host.innerHTML = '<div id="wx-lightweight-chart" class="wx-lightweight-chart" role="img" aria-label="WAX per WAXCASH OHLCV candlestick chart"></div>';

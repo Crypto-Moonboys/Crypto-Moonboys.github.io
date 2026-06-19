@@ -229,6 +229,16 @@
       border-top: 1px solid rgba(148,163,173,0.14);
       background: #111722;
     }
+    .wx-view-note {
+      padding: 12px 14px 0;
+      border-top: 1px solid rgba(148,163,173,0.14);
+      background: #111722;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
     .wx-view-button {
       border-color: rgba(148,163,173,0.22);
       padding: 6px 10px;
@@ -346,7 +356,7 @@
         </div>
         <div class="wx-chart-toolbar" aria-label="Chart display toolbar">
           <span id="wx-chart-pair-title" class="wx-pair-title">WAXCASH/WAX</span>
-          <span class="wx-chart-mode-label">1D source-backed candles</span>
+          <span class="wx-chart-mode-label">Backend feed only</span>
           <span class="wx-chart-mode-label">Worker UDF-shaped feed</span>
           <span class="wx-chart-mode-label">Lightweight Charts renderer</span>
         </div>
@@ -357,6 +367,7 @@
         <div id="wx-chart" class="wx-chart-host" aria-live="polite">
           <div class="wx-chart-empty">Loading WAX-per-WAXCASH candles.</div>
         </div>
+        <div class="wx-view-note">Display-only pair detail views</div>
         <div id="wx-view-controls" class="wx-view-controls" aria-label="Display-only source-backed pair detail views"></div>
         <div id="wx-pair-detail" class="wx-pair-detail" aria-live="polite"></div>
       </article>
