@@ -681,6 +681,8 @@ ok('VPS live indexer exposes fresh-start rolling history without claiming backfi
   liveIndexerSource.includes("pathname === '/history'") &&
   liveIndexerSource.includes("pathname === '/history/trades'") &&
   liveIndexerSource.includes('historyTradesPayload(state') &&
+  liveIndexerSource.includes('const limit = clampInteger(options.limit, 250, 1, 500)') &&
+  !liveIndexerSource.includes('clampInt(') &&
   liveIndexerSource.includes('waxcash_trade_count') &&
   liveIndexerSource.includes('next_cursor') &&
   liveIndexerSource.includes("history_mode: FRESH_HISTORY_MODE") &&

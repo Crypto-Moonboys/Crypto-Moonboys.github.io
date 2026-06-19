@@ -588,7 +588,7 @@ function isWaxcashHistoryTrade(trade) {
 }
 
 export function historyTradesPayload(state, options = {}) {
-  const limit = clampInt(options.limit, 1, 500, 250);
+  const limit = clampInteger(options.limit, 250, 1, 500);
   const cursor = Math.max(0, Number.parseInt(String(options.cursor || '0'), 10) || 0);
   const rows = state.history.trades
     .filter(isWaxcashHistoryTrade)
