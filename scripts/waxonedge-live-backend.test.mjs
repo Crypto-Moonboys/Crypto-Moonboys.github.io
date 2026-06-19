@@ -1968,6 +1968,17 @@ ok('VPS live indexer safely parses request path without trusting Host header',
                   close: '33.33333333',
                   volume: '120',
                 },
+                {
+                  source: 'swap.nefty',
+                  pair_id: 'WAXCASHWAXLEGACY',
+                  interval: '1D',
+                  bucket_time: '2026-06-16T00:00:00.000Z',
+                  open: '100',
+                  high: '101',
+                  low: '0.029',
+                  close: '0.03',
+                  volume: '12',
+                },
               ],
             };
           }
@@ -2103,14 +2114,19 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.chart?.chart_source?.pair_id === waxcashAnalytics.selected_largest_wax_reserve_pool?.pair_id &&
       waxcashAnalytics.chart?.chart_source?.pair_id === 'WAXCASHWAXLEGACY' &&
       waxcashAnalytics.chart?.chart_source?.pair_id !== 'WAXWUFB');
+    const waxcashChartOhlcValues = (waxcashAnalytics.chart?.candles || []).flatMap((candle) =>
+      ['open', 'high', 'low', 'close'].map((field) => Number(candle[field])));
     const waxcashChartCloses = (waxcashAnalytics.chart?.candles || []).map((candle) => Number(candle.close));
     ok('WAXCASH analytics chart normalizes selected WAX pair candles to WAX per WAXCASH without mixed inverse values',
       waxcashChartCloses.length === 2 &&
       waxcashChartCloses.every((value) => value > 0.02 && value < 0.04) &&
+      waxcashChartOhlcValues.every((value) => value > 0.02 && value < 0.04) &&
       waxcashAnalytics.chart?.candle_normalization?.price_unit === 'WAX_per_WAXCASH' &&
       waxcashAnalytics.chart?.candle_normalization?.inverted_count === 1 &&
-      !waxcashChartCloses.some((value) => value > 1),
-      JSON.stringify({ waxcashChartCloses, normalization: waxcashAnalytics.chart?.candle_normalization }));
+      waxcashAnalytics.chart?.candle_normalization?.rejected_count === 1 &&
+      waxcashAnalytics.chart?.candle_normalization?.rejection_reasons?.ohlc_outside_selected_price_range === 1 &&
+      !waxcashChartOhlcValues.some((value) => value > 1),
+      JSON.stringify({ waxcashChartCloses, waxcashChartOhlcValues, normalization: waxcashAnalytics.chart?.candle_normalization }));
     ok('/waxcash-analytics returns display-ready backend sections',
       waxcashAnalytics.sections?.token_stats?.rows?.length >= 12 &&
       waxcashAnalytics.sections?.supply_proof &&
@@ -6289,6 +6305,22 @@ ok('WAXCASH analytics frontend renders backend sections instead of raw proof-row
   waxcashAnalyticsFrontend.includes('Unavailable') &&
   waxcashAnalyticsFrontend.includes('row.reason') &&
   !waxcashAnalyticsFrontend.includes('pair_price_relative_to_waxcash'));
+ok('WAXCASH analytics frontend formats values and reasons without concatenation',
+  waxcashAnalyticsFrontend.includes('function humanReason(reason)') &&
+  waxcashAnalyticsFrontend.includes("paired_token_wax_price_unavailable: 'Paired token WAX price unavailable'") &&
+  waxcashAnalyticsFrontend.includes("missing_or_zero_reserves: 'Missing or zero reserves'") &&
+  waxcashAnalyticsFrontend.includes("direct_wax_price_unavailable: 'Direct WAX price unavailable'") &&
+  waxcashAnalyticsFrontend.includes("selected_price_unavailable: 'Selected price unavailable'") &&
+  waxcashAnalyticsFrontend.includes('function reasonHtml(reason)') &&
+  waxcashAnalyticsFrontend.includes('<span class=\"wx-main-value\">') &&
+  waxcashAnalyticsFrontend.includes('<small>') &&
+  waxcashAnalyticsFrontend.includes('Low liquidity') &&
+  waxcashHtml.includes('.wx-reason') &&
+  waxcashHtml.includes('.wx-value .wx-reason') &&
+  waxcashHtml.indexOf('.wx-value .wx-reason') > waxcashHtml.indexOf('.wx-value small') &&
+  waxcashHtml.includes('table-layout: fixed') &&
+  waxcashHtml.includes('white-space: normal') &&
+  waxcashHtml.includes('overflow-wrap: anywhere'));
 ok('WAXCASH graph metric modes use USD price labels and WAX liquidity/volume',
   waxcashGraphFrontend.includes("if (metric === 'volume') return firstNumber(records, ['volume_24h_wax'])") &&
   waxcashGraphFrontend.includes("if (metric === 'price') return firstNumber(records, ['price_usd'])") &&
