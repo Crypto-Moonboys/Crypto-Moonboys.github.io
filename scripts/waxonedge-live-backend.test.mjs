@@ -6906,7 +6906,7 @@ ok('WAXCASH analytics frontend renders backend sections instead of raw proof-row
   waxcashAnalyticsFrontend.includes('payload.sections || {}') &&
   waxcashAnalyticsFrontend.includes('sections.token_stats') &&
   waxcashAnalyticsFrontend.includes('sections.pair_table') &&
-  waxcashAnalyticsFrontend.includes('sections.chart') &&
+  waxcashAnalyticsFrontend.includes('sections.chart_external') &&
   waxcashAnalyticsFrontend.includes('Unavailable') &&
   waxcashAnalyticsFrontend.includes('row.reason') &&
   !waxcashAnalyticsFrontend.includes('pair_price_relative_to_waxcash'));
@@ -6925,21 +6925,26 @@ ok('WAXCASH analytics frontend keeps values compact and proof reasons in tooltip
   waxcashHtml.includes('table-layout: fixed') &&
   waxcashHtml.includes('white-space: normal') &&
   waxcashHtml.includes('overflow-wrap: anywhere'));
-ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with display-only pool controls',
+ok('WAXCASH analytics frontend keeps visible chart external and separate from OG backend proof',
   waxcashAnalyticsFrontend.includes('sections.chart_external') &&
-  waxcashAnalyticsFrontend.includes('renderLightweightCandles(payload, feed)') &&
-  waxcashAnalyticsFrontend.includes('tradingViewFeedCandles(feed)') &&
-  waxcashAnalyticsFrontend.includes('return chart.feed_url || null') &&
-  waxcashAnalyticsFrontend.includes('backend did not provide sections.chart.feed_url') &&
-  !waxcashAnalyticsFrontend.includes("|| '/api/waxonedge/waxcash-analytics/chart-feed?resolution=1D'") &&
-  waxcashAnalyticsFrontend.includes('loadChartFeed(state.payload)') &&
-  waxcashAnalyticsFrontend.includes('window.LightweightCharts') &&
-  waxcashAnalyticsFrontend.includes('chartCandles(feed)') &&
+  waxcashAnalyticsFrontend.includes('DEFAULT_EXTERNAL_CHART') &&
+  waxcashAnalyticsFrontend.includes('function renderExternalChart(payload)') &&
+  waxcashAnalyticsFrontend.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
+  waxcashAnalyticsFrontend.includes('wx-external-chart-frame') &&
+  waxcashAnalyticsFrontend.includes('Open external chart') &&
+  waxcashAnalyticsFrontend.includes('renderExternalChart(state.payload)') &&
+  !waxcashAnalyticsFrontend.includes('/api/waxonedge/waxcash-analytics/chart-feed') &&
+  !waxcashAnalyticsFrontend.includes('loadChartFeed') &&
+  !waxcashAnalyticsFrontend.includes('chartFeedUrl') &&
+  !waxcashAnalyticsFrontend.includes('renderLightweightCandles') &&
+  !waxcashAnalyticsFrontend.includes('tradingViewFeedCandles') &&
+  !waxcashAnalyticsFrontend.includes('window.LightweightCharts') &&
+  !waxcashAnalyticsFrontend.includes('chartCandles(feed)') &&
   !waxcashAnalyticsFrontend.includes('Array.isArray(chart.candles)') &&
   !waxcashAnalyticsFrontend.includes('renderChart(state.payload') &&
   !waxcashAnalyticsFrontend.includes('WAXP/WAXCASH') &&
   waxcashAnalyticsFrontend.includes("'Alcor pool #' + external.pool_id + ' display feed'") &&
-  waxcashAnalyticsFrontend.includes('Backend chart display feed') &&
+  waxcashAnalyticsFrontend.includes('External WAXCASH/WAX display feed') &&
   waxcashAnalyticsFrontend.includes('pickPoolViews(rows)') &&
   waxcashAnalyticsFrontend.includes('Selected proof pool') &&
   waxcashAnalyticsFrontend.includes("view.label + ' detail'") &&
@@ -6947,14 +6952,20 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   waxcashAnalyticsFrontend.includes('Worst/low liquidity pool') &&
   waxcashAnalyticsFrontend.includes('Weighted/valued pool view') &&
   waxcashAnalyticsFrontend.includes('Alcor pool #') &&
-  waxcashHtml.includes('lightweight-charts@5.2.0') &&
-  waxcashHtml.includes('Backend feed only') &&
-  waxcashHtml.includes('Worker UDF-shaped feed') &&
-  waxcashHtml.includes('Lightweight Charts renderer') &&
-  waxcashHtml.includes('wx-lightweight-chart') &&
+  !waxcashHtml.includes('lightweight-charts@5.2.0') &&
+  !waxcashHtml.includes('Backend feed only') &&
+  !waxcashHtml.includes('Worker UDF-shaped feed') &&
+  !waxcashHtml.includes('Lightweight Charts renderer') &&
+  !waxcashHtml.includes('wx-lightweight-chart') &&
+  waxcashHtml.includes('External feed') &&
+  waxcashHtml.includes('Visual only') &&
+  waxcashHtml.includes('Alcor pool') &&
+  waxcashHtml.includes('wx-external-chart-frame') &&
+  waxcashHtml.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
+  waxcashHtml.includes('Open external chart') &&
   waxcashHtml.includes('wx-view-controls') &&
   waxcashHtml.includes('Display-only pair detail views') &&
-  waxcashHtml.includes('WAX per WAXCASH candles from the WaxOnEdge Worker feed. Display controls do not change selected price.') &&
+  waxcashHtml.includes('Standalone chart display, separate from WaxOnEdge token detail proof.') &&
   waxcashHtml.includes('allowProductionFallback: false') &&
   waxcashHtml.includes('API base URL unavailable — MOONBOYS_API not configured.') &&
   waxcashHtml.includes('Display-only source-backed pair detail views') &&
@@ -6971,12 +6982,11 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   !waxcashHtml.includes('>Indicators</button>') &&
   !waxcashAnalyticsFrontend.includes('Open Alcor chart') &&
   !waxcashAnalyticsFrontend.includes('wx-external-chart-linkcard') &&
-  !waxcashAnalyticsFrontend.includes('<iframe') &&
-  !waxcashAnalyticsFrontend.includes('sandbox=') &&
-  !waxcashAnalyticsFrontend.includes('allow-popups') &&
-  !waxcashHtml.includes('.wx-external-chart-frame') &&
+  waxcashAnalyticsFrontend.includes('<iframe') &&
+  waxcashAnalyticsFrontend.includes('sandbox=') &&
+  waxcashAnalyticsFrontend.includes('allow-popups') &&
+  waxcashHtml.includes('.wx-external-chart-frame') &&
   !waxcashAnalyticsFrontend.includes('External Alcor chart unavailable in embed.') &&
-  waxcashAnalyticsFrontend.includes('return tradingViewFeedCandles(feed)') &&
   !/Deposit|Add Liquidity|Swap|Trade on Swap|Connect Wallet|wallet selector|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
 ok('WAXCASH analytics backend uses chart-feed labels and alias-aware trade volume matching',
   route.includes("pair_label: 'WAXCASH/WAX'") &&

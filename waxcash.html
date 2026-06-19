@@ -205,11 +205,24 @@
       padding: 10px 14px 14px;
       position: relative;
     }
-    .wx-lightweight-chart {
+    .wx-external-chart-frame {
       width: 100%;
-      height: 510px;
+      min-height: 510px;
       background: #111722;
       border: 1px solid rgba(148,163,173,0.16);
+    }
+    .wx-external-chart-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      margin-top: 10px;
+      padding: 0 10px;
+      border: 1px solid rgba(30,124,255,0.35);
+      border-radius: 4px;
+      color: #9ac3ff;
+      font-weight: 900;
+      text-decoration: none;
+      background: rgba(30,124,255,0.08);
     }
     .wx-chart-empty {
       min-height: 510px;
@@ -317,7 +330,7 @@
       .wx-status { text-align: left; margin-top: 8px; }
       .wx-main-grid { grid-template-columns: 1fr; }
       .wx-chart-panel { min-height: 520px; }
-      .wx-lightweight-chart, .wx-chart-empty { height: 380px; min-height: 380px; }
+      .wx-external-chart-frame, .wx-chart-empty { height: 380px; min-height: 380px; }
       .wx-pair-detail { grid-template-columns: 1fr 1fr; }
     }
   </style>
@@ -356,16 +369,17 @@
         </div>
         <div class="wx-chart-toolbar" aria-label="Chart display toolbar">
           <span id="wx-chart-pair-title" class="wx-pair-title">WAXCASH/WAX</span>
-          <span class="wx-chart-mode-label">Backend feed only</span>
-          <span class="wx-chart-mode-label">Worker UDF-shaped feed</span>
-          <span class="wx-chart-mode-label">Lightweight Charts renderer</span>
+          <span class="wx-chart-mode-label">External feed</span>
+          <span class="wx-chart-mode-label">Visual only</span>
+          <span class="wx-chart-mode-label">Alcor pool</span>
         </div>
         <div class="wx-chart-source-row">
           <span id="wx-chart-feed-label">Alcor pool #8388 display feed</span>
-          <small>WAX per WAXCASH candles from the WaxOnEdge Worker feed. Display controls do not change selected price.</small>
+          <small>Standalone chart display, separate from WaxOnEdge token detail proof.</small>
         </div>
         <div id="wx-chart" class="wx-chart-host" aria-live="polite">
-          <div class="wx-chart-empty">Loading WAX-per-WAXCASH candles.</div>
+          <iframe class="wx-external-chart-frame" src="https://alcor.exchange/v/wax/analytics/pools/8388" title="WAXCASH/WAX external chart" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+          <a class="wx-external-chart-link" href="https://alcor.exchange/v/wax/analytics/pools/8388" target="_blank" rel="noopener noreferrer">Open external chart</a>
         </div>
         <div class="wx-view-note">Display-only pair detail views</div>
         <div id="wx-view-controls" class="wx-view-controls" aria-label="Display-only source-backed pair detail views"></div>
@@ -411,10 +425,8 @@
   var baseUrl = String((info && info.url) || '').replace(/\/$/, '');
   function showApiUnavailable(message) {
     var status = document.getElementById('wx-status');
-    var chart = document.getElementById('wx-chart');
     var stats = document.getElementById('wx-stats');
     if (status) status.textContent = message;
-    if (chart) chart.innerHTML = '<div class="wx-chart-empty">' + message + '</div>';
     if (stats) stats.innerHTML = '<div class="wx-stat"><span>Status</span><strong>Unavailable</strong><small class="wx-stat-reason">' + message + '</small></div>';
   }
   if (!baseUrl) {
@@ -438,7 +450,6 @@
   };
 }());
 </script>
-<script data-cfasync="false" src="https://unpkg.com/lightweight-charts@5.2.0/dist/lightweight-charts.standalone.production.js"></script>
 <script data-cfasync="false" src="/js/waxcash-analytics.js?v=wxcash-og-analytics-20260619-1"></script>
 </body>
 </html>

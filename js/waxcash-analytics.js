@@ -3,11 +3,17 @@
 
   var ENDPOINT = '/api/waxonedge/waxcash-analytics';
   var DASH = '--';
+  var DEFAULT_EXTERNAL_CHART = {
+    source: 'alcor',
+    pool_id: '8388',
+    pair_label: 'WAXCASH/WAX',
+    url: 'https://alcor.exchange/v/wax/analytics/pools/8388',
+    role: 'external_visual_reference_only',
+    affects_waxonedge_metrics: false,
+  };
   var state = {
     payload: null,
-    chartFeed: null,
     view: 'selected',
-    chart: null,
   };
 
   function $(id) {
@@ -264,131 +270,39 @@
     }).join('');
   }
 
-  function tradingViewFeedCandles(feed) {
-    if (!feed || feed.s !== 'ok' || !Array.isArray(feed.t)) return [];
-    return feed.t.map(function (time, index) {
-      var close = num(feed.c && feed.c[index]);
-      if (time == null || close == null) return null;
-      return {
-        time: Number(time),
-        open: num(feed.o && feed.o[index]) != null ? num(feed.o && feed.o[index]) : close,
-        high: num(feed.h && feed.h[index]) != null ? num(feed.h && feed.h[index]) : close,
-        low: num(feed.l && feed.l[index]) != null ? num(feed.l && feed.l[index]) : close,
-        close: close,
-      };
-    }).filter(Boolean).sort(function (a, b) { return a.time - b.time; });
-  }
-
-  function chartCandles(feed) {
-    return tradingViewFeedCandles(feed);
-  }
-
-  function renderLightweightCandles(payload, feed) {
-    var host = $('wx-chart');
-    var candles = chartCandles(feed);
-    var tv = window.LightweightCharts;
-    if (state.chart && typeof state.chart.remove === 'function') {
-      try { state.chart.remove(); } catch (_) {}
-      state.chart = null;
-    }
-    if (!host) return false;
-    if (!candles.length) {
-      host.innerHTML = '<div class="wx-chart-empty">No indexed WAX-per-WAXCASH chart-feed candles are available.</div>';
-      return false;
-    }
-    if (!tv || typeof tv.createChart !== 'function') {
-      host.innerHTML = '<div class="wx-chart-empty">Lightweight Charts renderer unavailable.</div>';
-      return false;
-    }
-    host.innerHTML = '<div id="wx-lightweight-chart" class="wx-lightweight-chart" role="img" aria-label="WAX per WAXCASH OHLCV candlestick chart"></div>';
-    var chartHost = $('wx-lightweight-chart');
-    var chart = tv.createChart(chartHost, {
-      autoSize: true,
-      height: chartHost.clientHeight || 510,
-      layout: {
-        background: { type: 'solid', color: 'transparent' },
-        textColor: '#d8dee8',
-      },
-      grid: {
-        vertLines: { color: 'rgba(148, 163, 184, 0.14)' },
-        horzLines: { color: 'rgba(148, 163, 184, 0.14)' },
-      },
-      rightPriceScale: { borderColor: 'rgba(148, 163, 184, 0.25)' },
-      timeScale: { borderColor: 'rgba(148, 163, 184, 0.25)' },
-    });
-    var factory = tv.CandlestickSeries || null;
-    var series = factory && typeof chart.addSeries === 'function'
-      ? chart.addSeries(factory, {
-        upColor: '#00e6b0',
-        downColor: '#ff3d67',
-        borderUpColor: '#00e6b0',
-        borderDownColor: '#ff3d67',
-        wickUpColor: '#00e6b0',
-        wickDownColor: '#ff3d67',
-      })
-      : chart.addCandlestickSeries({
-        upColor: '#00e6b0',
-        downColor: '#ff3d67',
-        borderUpColor: '#00e6b0',
-        borderDownColor: '#ff3d67',
-        wickUpColor: '#00e6b0',
-        wickDownColor: '#ff3d67',
-      });
-    series.setData(candles);
-    chart.timeScale().fitContent();
-    state.chart = chart;
-    return true;
+  function chartExternalConfig(payload) {
+    var sections = (payload || {}).sections || {};
+    var external = sections.chart_external || {};
+    var url = String(external.url || DEFAULT_EXTERNAL_CHART.url);
+    if (!/^https:\/\/alcor\.exchange\//.test(url)) url = DEFAULT_EXTERNAL_CHART.url;
+    return {
+      source: external.source || DEFAULT_EXTERNAL_CHART.source,
+      pool_id: external.pool_id || DEFAULT_EXTERNAL_CHART.pool_id,
+      pair_label: external.pair_label || DEFAULT_EXTERNAL_CHART.pair_label,
+      url: url,
+      role: external.role || DEFAULT_EXTERNAL_CHART.role,
+      affects_waxonedge_metrics: external.affects_waxonedge_metrics === true ? true : false,
+    };
   }
 
   function updateChartLabels(payload) {
-    var sections = (payload || {}).sections || {};
-    var chart = sections.chart || {};
-    var external = sections.chart_external || {};
+    var external = chartExternalConfig(payload);
     var feedLabel = external.pool_id
       ? 'Alcor pool #' + external.pool_id + ' display feed'
-      : (chart.source && chart.pair_id ? chart.source + ' #' + chart.pair_id + ' display feed' : 'Backend chart display feed');
+      : 'External WAXCASH/WAX display feed';
     $('wx-chart-source').textContent = feedLabel;
     $('wx-chart-feed-label').textContent = feedLabel;
-    $('wx-chart-pair-title').textContent = 'WAXCASH/WAX';
+    $('wx-chart-pair-title').textContent = external.pair_label || 'WAXCASH/WAX';
   }
 
-  function chartFeedUrl(payload) {
-    var sections = (payload || {}).sections || {};
-    var chart = sections.chart || {};
-    return chart.feed_url || null;
-  }
-
-  function renderChart(payload, feed) {
+  function renderExternalChart(payload) {
+    var host = $('wx-chart');
+    var external = chartExternalConfig(payload);
     updateChartLabels(payload);
-    renderLightweightCandles(payload, feed || state.chartFeed);
-  }
-
-  function loadChartFeed(payload) {
-    var feedUrl = chartFeedUrl(payload);
-    if (!feedUrl) {
-      state.chartFeed = null;
-      var host = $('wx-chart');
-      if (host) {
-        host.innerHTML = '<div class="wx-chart-empty">Chart feed unavailable: backend did not provide sections.chart.feed_url.</div>';
-      }
-      return Promise.resolve(false);
-    }
-    return fetch(feedUrl, { headers: { Accept: 'application/json' } })
-      .then(function (response) {
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        return response.json();
-      })
-      .then(function (feedPayload) {
-        state.chartFeed = feedPayload && feedPayload.data ? feedPayload.data : feedPayload;
-        renderChart(payload, state.chartFeed);
-      })
-      .catch(function () {
-        state.chartFeed = null;
-        var host = $('wx-chart');
-        if (host) {
-          host.innerHTML = '<div class="wx-chart-empty">No indexed WAX-per-WAXCASH chart-feed candles are available.</div>';
-        }
-      });
+    if (!host) return;
+    host.innerHTML =
+      '<iframe class="wx-external-chart-frame" src="' + esc(external.url) + '" title="' + esc((external.pair_label || 'WAXCASH/WAX') + ' external chart') + '" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>' +
+      '<a class="wx-external-chart-link" href="' + esc(external.url) + '" target="_blank" rel="noopener noreferrer">Open external chart</a>';
   }
 
   function render(payload) {
@@ -401,10 +315,12 @@
     $('wx-status').textContent = status;
     renderStats(state.payload);
     renderPoolControls(state.payload);
-    loadChartFeed(state.payload);
+    renderExternalChart(state.payload);
     renderPairDetail(state.payload);
     renderPairs(state.payload);
   }
+
+  renderExternalChart({ sections: { chart_external: DEFAULT_EXTERNAL_CHART } });
 
   fetch(ENDPOINT, { headers: { Accept: 'application/json' } })
     .then(function (response) {
@@ -417,7 +333,7 @@
     .catch(function (error) {
       $('wx-status').textContent = 'Analytics unavailable';
       $('wx-stats').innerHTML = statRow({ label: 'Status', live: false, reason: error.message || String(error) });
-      $('wx-chart').innerHTML = '<div class="wx-chart-empty">WAXCASH chart unavailable.</div>';
+      renderExternalChart({ sections: { chart_external: DEFAULT_EXTERNAL_CHART } });
       $('wx-pair-detail').innerHTML = '<div><span>Status</span>Unavailable</div>';
       $('wx-pairs').innerHTML = '<tr><td colspan="9" class="wx-muted">Pair table unavailable.</td></tr>';
     });
