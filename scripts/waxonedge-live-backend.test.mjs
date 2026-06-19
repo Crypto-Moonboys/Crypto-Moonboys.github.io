@@ -7051,6 +7051,9 @@ ok('WAXCASH analytics frontend keeps visible chart external and separate from OG
   waxcashAnalyticsFrontend.includes('<iframe') &&
   waxcashAnalyticsFrontend.includes('sandbox=') &&
   waxcashAnalyticsFrontend.includes('allow-popups') &&
+  waxcashAnalyticsFrontend.includes("var iframe = host.querySelector('.wx-external-chart-frame')") &&
+  waxcashAnalyticsFrontend.includes("if (!iframe) {") &&
+  waxcashAnalyticsFrontend.includes("if (iframe.getAttribute('src') !== external.url) iframe.setAttribute('src', external.url)") &&
   waxcashHtml.includes('.wx-external-chart-frame') &&
   !waxcashAnalyticsFrontend.includes('External Alcor chart unavailable in embed.') &&
   !/(>|\bvalue=["'])(Deposit|Add Liquidity|Swap|Trade on Swap|Connect Wallet|wallet selector)(<|["'])|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
@@ -7069,6 +7072,10 @@ ok('WAXCASH analytics frontend keeps pair table and adds WAX-only liquidity/24h 
   waxcashAnalyticsFrontend.includes("state.pairSort || defaultPairSort(rows)") &&
   waxcashAnalyticsFrontend.includes('if (a.metric != null && b.metric == null) return -1') &&
   waxcashAnalyticsFrontend.includes('if (a.metric == null && b.metric != null) return 1') &&
+  waxcashAnalyticsFrontend.includes('if (!state.payload)') &&
+  waxcashAnalyticsFrontend.includes('updateSortButtons([])') &&
+  waxcashAnalyticsFrontend.includes('renderPairs(state.payload)') &&
+  !waxcashAnalyticsFrontend.includes('renderPairs(state.payload || {})') &&
   waxcashAnalyticsFrontend.includes("button.classList.toggle('is-active', isActive)") &&
   waxcashAnalyticsFrontend.includes("button.textContent = isActive ? label + ' ' + String.fromCharCode(8595) : label") &&
   !waxcashHtml.includes('wx-pair-detail') &&

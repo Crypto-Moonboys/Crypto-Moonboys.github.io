@@ -222,7 +222,11 @@
 
   function setPairSort(sortKey) {
     state.pairSort = sortKey;
-    renderPairs(state.payload || {});
+    if (!state.payload) {
+      updateSortButtons([]);
+      return;
+    }
+    renderPairs(state.payload);
   }
 
   function renderPairs(payload) {
@@ -274,8 +278,14 @@
     var host = $('wx-chart');
     var external = chartExternalConfig(payload);
     if (!host) return;
-    host.innerHTML =
-      '<iframe class="wx-external-chart-frame" src="' + esc(external.url) + '" title="' + esc((external.pair_label || 'WAXCASH/WAX') + ' GeckoTerminal candle chart') + '" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>';
+    var iframe = host.querySelector('.wx-external-chart-frame');
+    var title = (external.pair_label || 'WAXCASH/WAX') + ' GeckoTerminal candle chart';
+    if (!iframe) {
+      host.innerHTML = '<iframe class="wx-external-chart-frame" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>';
+      iframe = host.querySelector('.wx-external-chart-frame');
+    }
+    if (iframe.getAttribute('src') !== external.url) iframe.setAttribute('src', external.url);
+    if (iframe.getAttribute('title') !== title) iframe.setAttribute('title', title);
   }
 
   function render(payload) {
