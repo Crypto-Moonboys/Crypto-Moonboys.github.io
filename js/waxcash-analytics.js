@@ -185,21 +185,13 @@
       '<span class="wx-token"><strong>' + esc(row.token_b_symbol || DASH) + '</strong>' + esc(row.token_b_contract || '') + '</span>';
   }
 
-  function metricValue(row, usdKey, waxKey) {
-    var usd = num(row && row[usdKey]);
-    if (usd != null) return { value: usd, basis: 'usd' };
-    var wax = num(row && row[waxKey]);
-    if (wax != null) return { value: wax, basis: 'wax' };
-    return null;
-  }
-
   function defaultPairSort(rows) {
-    return rows.some(function (row) { return metricValue(row, 'volume_24h_usd', 'volume_24h_wax'); }) ? 'volume24' : null;
+    return rows.some(function (row) { return num(row && row.volume_24h_wax) != null; }) ? 'volume24' : null;
   }
 
   function pairSortMetric(row, sortKey) {
-    if (sortKey === 'liquidity') return metricValue(row, 'liquidity_usd', 'liquidity_wax');
-    if (sortKey === 'volume24') return metricValue(row, 'volume_24h_usd', 'volume_24h_wax');
+    if (sortKey === 'liquidity') return num(row && row.liquidity_wax);
+    if (sortKey === 'volume24') return num(row && row.volume_24h_wax);
     return null;
   }
 
@@ -209,9 +201,9 @@
     return rows.map(function (row, index) {
       return { row: row, index: index, metric: pairSortMetric(row, sortKey) };
     }).sort(function (a, b) {
-      if (a.metric && !b.metric) return -1;
-      if (!a.metric && b.metric) return 1;
-      if (a.metric && b.metric && b.metric.value !== a.metric.value) return b.metric.value - a.metric.value;
+      if (a.metric != null && b.metric == null) return -1;
+      if (a.metric == null && b.metric != null) return 1;
+      if (a.metric != null && b.metric != null && b.metric !== a.metric) return b.metric - a.metric;
       return a.index - b.index;
     }).map(function (entry) { return entry.row; });
   }

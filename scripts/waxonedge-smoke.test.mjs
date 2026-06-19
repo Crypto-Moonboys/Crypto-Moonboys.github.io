@@ -152,14 +152,17 @@ ok('waxcash frontend embeds GeckoTerminal WAXCASH/WAX candle chart instead of Al
   !waxcashHtml.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
   !waxcashAnalyticsJs.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
   !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-analytics/chart-feed'));
-ok('waxcash pair table exposes liquidity and 24h volume sort controls',
+ok('waxcash pair table exposes WAX-only liquidity and 24h volume sort controls',
   waxcashHtml.includes('id="wx-sort-liquidity"') &&
   waxcashHtml.includes('data-sort="liquidity"') &&
   waxcashHtml.includes('id="wx-sort-volume24"') &&
   waxcashHtml.includes('data-sort="volume24"') &&
   waxcashAnalyticsJs.includes('function sortedPairRows(rows)') &&
-  waxcashAnalyticsJs.includes("metricValue(row, 'liquidity_usd', 'liquidity_wax')") &&
-  waxcashAnalyticsJs.includes("metricValue(row, 'volume_24h_usd', 'volume_24h_wax')") &&
+  waxcashAnalyticsJs.includes('return num(row && row.liquidity_wax)') &&
+  waxcashAnalyticsJs.includes('return num(row && row.volume_24h_wax)') &&
+  !waxcashAnalyticsJs.includes('function metricValue(row, usdKey, waxKey)') &&
+  !waxcashAnalyticsJs.includes("metricValue(row, 'liquidity_usd', 'liquidity_wax')") &&
+  !waxcashAnalyticsJs.includes("metricValue(row, 'volume_24h_usd', 'volume_24h_wax')") &&
   waxcashAnalyticsJs.includes('defaultPairSort(rows)') &&
   waxcashAnalyticsJs.includes("button.textContent = isActive ? label + ' ' + String.fromCharCode(8595) : label"));
 

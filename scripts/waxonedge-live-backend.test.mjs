@@ -2533,6 +2533,27 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.sections?.chart_external?.role === 'external_visual_reference_only' &&
       waxcashAnalytics.sections?.chart_external?.affects_waxonedge_metrics === false,
       JSON.stringify(waxcashAnalytics.sections));
+    const waxcashTokenStatLabels = (waxcashAnalytics.sections?.token_stats?.rows || []).map((row) => row.label);
+    ok('WAXCASH token stats section keeps OG WaxOnEdge row names and omits selected-direct proof liquidity',
+      JSON.stringify(waxcashTokenStatLabels.slice(0, 14)) === JSON.stringify([
+        'Token',
+        'Holder count',
+        'Decimals',
+        'TVL',
+        'Cumulated Pair Liquidity',
+        'Price',
+        '24h price change',
+        '24h volume',
+        '7d volume',
+        '30d volume',
+        'Circulating supply',
+        'Market cap',
+        'Total supply',
+        'Fully diluted valuation',
+      ]) &&
+      !waxcashTokenStatLabels.includes('Selected Direct WAX Pair Liquidity') &&
+      !(waxcashAnalytics.sections?.token_stats?.by_key || {}).selected_direct_wax_pair_liquidity,
+      JSON.stringify(waxcashTokenStatLabels));
     ok('WAXCASH external GeckoTerminal chart metadata does not affect backend proof metrics',
       waxcashAnalytics.headline_price?.headline_price_source_policy === 'og_woe_deepest_usable_direct_wax_pool' &&
       Number(waxcashAnalytics.stats.selected_price_wax) === 0.03 &&
@@ -7033,18 +7054,21 @@ ok('WAXCASH analytics frontend keeps visible chart external and separate from OG
   waxcashHtml.includes('.wx-external-chart-frame') &&
   !waxcashAnalyticsFrontend.includes('External Alcor chart unavailable in embed.') &&
   !/(>|\bvalue=["'])(Deposit|Add Liquidity|Swap|Trade on Swap|Connect Wallet|wallet selector)(<|["'])|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
-ok('WAXCASH analytics frontend keeps pair table and adds USD-first liquidity/24h volume sorting',
+ok('WAXCASH analytics frontend keeps pair table and adds WAX-only liquidity/24h volume sorting',
   waxcashHtml.includes('id="wx-sort-liquidity"') &&
   waxcashHtml.includes('data-sort="liquidity"') &&
   waxcashHtml.includes('id="wx-sort-volume24"') &&
   waxcashHtml.includes('data-sort="volume24"') &&
   waxcashAnalyticsFrontend.includes('function sortedPairRows(rows)') &&
   waxcashAnalyticsFrontend.includes('function defaultPairSort(rows)') &&
-  waxcashAnalyticsFrontend.includes("metricValue(row, 'liquidity_usd', 'liquidity_wax')") &&
-  waxcashAnalyticsFrontend.includes("metricValue(row, 'volume_24h_usd', 'volume_24h_wax')") &&
+  waxcashAnalyticsFrontend.includes('return num(row && row.liquidity_wax)') &&
+  waxcashAnalyticsFrontend.includes('return num(row && row.volume_24h_wax)') &&
+  !waxcashAnalyticsFrontend.includes('function metricValue(row, usdKey, waxKey)') &&
+  !waxcashAnalyticsFrontend.includes("metricValue(row, 'liquidity_usd', 'liquidity_wax')") &&
+  !waxcashAnalyticsFrontend.includes("metricValue(row, 'volume_24h_usd', 'volume_24h_wax')") &&
   waxcashAnalyticsFrontend.includes("state.pairSort || defaultPairSort(rows)") &&
-  waxcashAnalyticsFrontend.includes('if (a.metric && !b.metric) return -1') &&
-  waxcashAnalyticsFrontend.includes('if (!a.metric && b.metric) return 1') &&
+  waxcashAnalyticsFrontend.includes('if (a.metric != null && b.metric == null) return -1') &&
+  waxcashAnalyticsFrontend.includes('if (a.metric == null && b.metric != null) return 1') &&
   waxcashAnalyticsFrontend.includes("button.classList.toggle('is-active', isActive)") &&
   waxcashAnalyticsFrontend.includes("button.textContent = isActive ? label + ' ' + String.fromCharCode(8595) : label") &&
   !waxcashHtml.includes('wx-pair-detail') &&
