@@ -1947,6 +1947,14 @@ function alcorMarketTradeVolume(row) {
   );
 }
 
+function alcorMarketTradeVolumeWax(row) {
+  for (const value of [row?.bid, row?.ask, row?.quote_quantity, row?.base_quantity, row?.volume, row?.amount]) {
+    const asset = parseAsset(value);
+    if (asset.amount != null && asset.symbol === 'WAX') return Math.abs(asset.amount);
+  }
+  return null;
+}
+
 function normalizeAlcorMarketTradeRow(row, pair) {
   row = parseAlcorMarketMatchAction(row) || row;
   const pairId = safeString(pair?.pair_id || pair?.pairId || row?.market_id || row?.market?.id || row?.pair_id);
@@ -1966,6 +1974,7 @@ function normalizeAlcorMarketTradeRow(row, pair) {
   if (!tradedAt) return null;
   const price = safeDecimal(alcorMarketTradePrice(row));
   const volume = safeDecimal(alcorMarketTradeVolume(row));
+  const volumeWax = safeDecimal(alcorMarketTradeVolumeWax(row));
   if (price == null) return null;
   const amount = safeDecimal(assetAmountFromAny(row?.amount, row?.quantity, row?.ask, row?.bid, row?.amount_bid, row?.amount_ask));
   const source = 'alcor';
@@ -1988,6 +1997,13 @@ function normalizeAlcorMarketTradeRow(row, pair) {
       reference_table: 'marketMatches',
       reference_ingestion: 'Hyperion/state-history alcordexmain buymatch/sellmatch',
       unit_price: firstPresent(row?.unit_price, row?.unitPrice),
+      volume_wax: volumeWax,
+      ask: row?.ask || null,
+      bid: row?.bid || null,
+      amount_ask: row?.amount_ask ?? null,
+      code_ask: row?.code_ask ?? null,
+      amount_bid: row?.amount_bid ?? null,
+      code_bid: row?.code_bid ?? null,
       market_id: pairId,
       action_name: actionName,
       src: row?.src || null,
@@ -5935,7 +5951,8 @@ function waxcashDirectWaxCandidateProof(pair, priceIndex = new Map()) {
   const waxReserve = waxSideReserveForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
   const tokenReserve = tokenSideReserveForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
   const liquidityWax = asNumber(pair?.liquidity_wax) ?? (waxReserve != null && waxReserve > 0 ? waxReserve * 2 : null);
-  const depthScore = waxReserve ?? (liquidityWax != null ? liquidityWax / 2 : null);
+  const orderbookDepthWax = source === 'alcor' && liquidityWax != null ? liquidityWax / 2 : null;
+  const depthScore = waxReserve ?? orderbookDepthWax ?? (liquidityWax != null ? liquidityWax / 2 : null);
   const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
   const reasonCodes = [];
   let priceWax = null;
@@ -5943,7 +5960,18 @@ function waxcashDirectWaxCandidateProof(pair, priceIndex = new Map()) {
   let proofStatus = 'unavailable';
 
   if (source === 'alcor') {
-    reasonCodes.push('alcor_orderbook_direct_wax_price_proof_not_implemented');
+    const marketPrice = asNumber(pair?.price);
+    const waxSide = pairTokenSide(pair, 'eosio.token', 'WAX');
+    if (marketPrice == null || marketPrice <= 0) reasonCodes.push('orderbook_match_price_unavailable');
+    if (!waxSide) reasonCodes.push('direct_wax_side_unavailable');
+    if (liquidityWax == null || liquidityWax <= 0) reasonCodes.push('orderbook_liquidity_depth_unavailable');
+    if (!reasonCodes.length) {
+      priceWax = waxSide.side === 'a' ? 1 / marketPrice : marketPrice;
+      formula = waxSide.side === 'a'
+        ? 'price_wax = 1 / alcordexmain market match price'
+        : 'price_wax = alcordexmain market match price';
+      proofStatus = 'verified';
+    }
   } else if (source === 'swap.alcor') {
     const poolPrice = poolV3PriceForPair(pair);
     if (!hasPoolV3GetPriceProof(pair)) reasonCodes.push('v3_poolv3_getprice_proof_unavailable');
@@ -5983,7 +6011,9 @@ function waxcashDirectWaxCandidateProof(pair, priceIndex = new Map()) {
     depth_score: safeDecimal(depthScore),
     formula,
     proof_status: proofStatus,
-    adapter_type: source === 'swap.alcor' ? 'alcor_v3_poolv3_getprice' : 'v2_reserve_ratio',
+    adapter_type: source === 'alcor'
+      ? 'alcor_orderbook_market_match'
+      : (source === 'swap.alcor' ? 'alcor_v3_poolv3_getprice' : 'v2_reserve_ratio'),
     updated_at: pair.updated_at || null,
     usable: proofStatus === 'verified' && asNumber(depthScore) != null && asNumber(depthScore) > 0 && asNumber(priceWax) != null,
     reason_codes: Array.from(new Set(reasonCodes)),
@@ -6005,9 +6035,11 @@ function isOldWoeLegacyWaxcashDirectPair(pair) {
 
 function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex) {
   const side = pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
+  const source = aggregateSourceKey(pair?.source);
+  const isOrderbook = source === 'alcor';
   const reasonCodes = [];
   if (!side) reasonCodes.push('not_waxcash_pair');
-  if (!hasRealPairReserves(pair)) reasonCodes.push('missing_or_zero_reserves');
+  if (!isOrderbook && !hasRealPairReserves(pair)) reasonCodes.push('missing_or_zero_reserves');
   const paired = otherTokenForPair(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
   const waxcashReserve = tokenSideReserveForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
   const pairedReserve = side?.side === 'a' ? asNumber(pair.reserve_b) : asNumber(pair.reserve_a);
@@ -6017,11 +6049,15 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
   let liquidityWax = null;
   let liquidityUsd = null;
   let pairedTokenPrice = pairedIsWax ? { price_wax: '1' } : null;
+  const directCandidate = directWax ? waxcashDirectWaxCandidateProof(pair, priceIndex) : null;
 
   if (!reasonCodes.length) {
     if (directWax) {
       const waxReserve = waxSideReserveForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
-      liquidityWax = waxReserve != null ? waxReserve * 2 : null;
+      liquidityWax = waxReserve != null ? waxReserve * 2 : asNumber(pair?.liquidity_wax);
+      if (isOrderbook && directCandidate?.usable !== true) {
+        for (const code of directCandidate?.reason_codes || ['orderbook_direct_wax_price_proof_unavailable']) reasonCodes.push(code);
+      }
     } else {
       pairedTokenPrice = paired ? ogDirectWaxTokenPrice(paired.contract, paired.symbol, pairedDirectWaxPairs, priceIndex) : null;
       const waxcashPriceWax = asNumber(headlinePrice?.og_headline_price_wax);
@@ -6035,9 +6071,12 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
   }
   if (liquidityWax != null && waxUsd != null) liquidityUsd = liquidityWax * waxUsd;
 
-  const priceRelative = !reasonCodes.includes('missing_or_zero_reserves') && waxcashReserve != null && waxcashReserve > 0
-    ? pairedReserve / waxcashReserve
-    : null;
+  const orderbookPrice = directCandidate?.source === 'alcor' ? asNumber(directCandidate.price_wax) : null;
+  const priceRelative = orderbookPrice != null && pairedIsWax
+    ? orderbookPrice
+    : (!reasonCodes.includes('missing_or_zero_reserves') && waxcashReserve != null && waxcashReserve > 0
+      ? pairedReserve / waxcashReserve
+      : null);
 
   const proof = {
     source: pair.source || null,
@@ -7575,6 +7614,18 @@ function waxcashTradeAssetVolumeWax(row, selectedPriceWax) {
     if (asset.symbol === 'WAX') return { volumeWax: Math.abs(asset.amount), basis: 'indexed_trade_rows_window_wax_denominated' };
     if (asset.symbol === WAXCASH_SYMBOL && selectedWax != null) {
       return { volumeWax: Math.abs(asset.amount * selectedWax), basis: 'indexed_trade_rows_window_waxcash_units_x_selected_price' };
+    }
+  }
+  for (const side of [
+    { amount: raw.amount_bid, symbol: raw.code_bid },
+    { amount: raw.amount_ask, symbol: raw.code_ask },
+  ]) {
+    const amount = asNumber(side.amount);
+    const symbol = normalizeSymbol(side.symbol);
+    if (amount == null || !symbol) continue;
+    if (symbol === 'WAX') return { volumeWax: Math.abs(amount), basis: 'indexed_trade_rows_window_wax_denominated' };
+    if (symbol === WAXCASH_SYMBOL && selectedWax != null) {
+      return { volumeWax: Math.abs(amount * selectedWax), basis: 'indexed_trade_rows_window_waxcash_units_x_selected_price' };
     }
   }
   const rowToken = tokenKey(row?.contract, row?.symbol);

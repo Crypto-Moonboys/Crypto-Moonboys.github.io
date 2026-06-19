@@ -4727,18 +4727,36 @@ ok('AMM Hyperion URLs use account and act.name without pair_id or market_id filt
     token_a_symbol: 'WAXCASH',
     token_b_contract: 'eosio.token',
     token_b_symbol: 'WAX',
-    reserve_a: '1000000',
-    reserve_b: '2000',
+    price: '0.002',
+    liquidity_wax: '4000',
   };
   const waxcashOrderbookProof = __waxonedgeTestHooks.buildWaxcashOgParityProof([alcorOrderbookWaxcash], priceIndex, []);
-  ok('Alcor orderbook WAXCASH/WAX rows are explicitly unsupported instead of treated as V2 reserve pools',
-    waxcashOrderbookProof.headline_price.og_headline_price_wax === null &&
+  ok('Alcor orderbook WAXCASH/WAX rows use the OG market-match price proof path',
+    waxcashOrderbookProof.headline_price.og_headline_price_wax === '0.002' &&
+    waxcashOrderbookProof.headline_price.og_headline_price_source === 'alcor' &&
+    waxcashOrderbookProof.headline_price.og_headline_price_pair_id === 'ORDERBOOK-WAXCASH-WAX' &&
     waxcashOrderbookProof.headline_price.direct_wax_candidates.some((candidate) =>
       candidate.source === 'alcor' &&
-      candidate.reason_codes.includes('alcor_orderbook_direct_wax_price_proof_not_implemented')) &&
+      candidate.adapter_type === 'alcor_orderbook_market_match' &&
+      candidate.formula === 'price_wax = alcordexmain market match price' &&
+      candidate.usable === true) &&
     waxcashOrderbookProof.all_pairs.some((pair) =>
       pair.pair_id === 'ORDERBOOK-WAXCASH-WAX' &&
-      pair.direct_wax_pair === true));
+      pair.direct_wax_pair === true &&
+      pair.pair_liquidity_wax === '4000' &&
+      pair.pair_price_relative_to_waxcash === '0.002'));
+  const unusableOrderbookProof = __waxonedgeTestHooks.buildWaxcashOgParityProof([{
+    ...alcorOrderbookWaxcash,
+    pair_id: 'ORDERBOOK-WAXCASH-WAX-NOPRICE',
+    price: null,
+    liquidity_wax: null,
+  }], priceIndex, []);
+  ok('Alcor orderbook WAXCASH/WAX rows remain unavailable when market-match price or depth proof is missing',
+    unusableOrderbookProof.headline_price.og_headline_price_wax === null &&
+    unusableOrderbookProof.headline_price.direct_wax_candidates.some((candidate) =>
+      candidate.source === 'alcor' &&
+      candidate.reason_codes.includes('orderbook_match_price_unavailable') &&
+      candidate.reason_codes.includes('orderbook_liquidity_depth_unavailable')));
 }
 {
   const stream = { source: 'swap.taco', referenceSource: 'taco', account: 'swap.taco', action: 'exchangelog', parser: 'swap-v2-taco' };
@@ -5179,8 +5197,27 @@ ok('502 trade fetch response is classified as upstream_5xx temporary failure',
     normalized.pair_id === '253' &&
     normalized.price === '2.5' &&
     normalized.volume === '25' &&
+    JSON.parse(normalized.raw_json).volume_wax === '25' &&
     normalized.raw_json.includes('Hyperion/state-history alcordexmain buymatch/sellmatch') &&
     normalized.raw_json.includes('marketMatches'));
+  const legacyMarketVolumeProof = __waxonedgeTestHooks.waxcashTradeVolumeWax({
+    source: 'alcor',
+    pair_id: '253',
+    contract: 'graffitiking',
+    symbol: 'WAXCASH',
+    amount: '10',
+    volume: '10',
+    raw_json: JSON.stringify({
+      reference_src: 'alcormarket',
+      amount_ask: '10',
+      code_ask: 'WAXCASH',
+      amount_bid: '25',
+      code_bid: 'WAX',
+    }),
+  }, new Map(), '0.0025');
+  ok('OG-style alcordexmain amount_bid/code_bid rows normalize rolling volume in WAX',
+    legacyMarketVolumeProof.volumeWax === 25 &&
+    legacyMarketVolumeProof.basis === 'indexed_trade_rows_window_wax_denominated');
 }
 {
   const eosusaRow = {
