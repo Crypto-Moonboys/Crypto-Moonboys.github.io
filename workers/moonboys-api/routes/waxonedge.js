@@ -7400,7 +7400,7 @@ async function indexedTradeWindowVolumes(db, pairs = []) {
   return result;
 }
 
-async function buildWaxcashTradingViewChartFeed(db, query = {}) {
+async function buildWaxcashUdfChartFeed(db, query = {}) {
   const proofWrapper = await getWaxcashOgProof(db);
   const proof = proofWrapper.og_woe_parity || {};
   const headline = proof.headline_price || {};
@@ -9242,8 +9242,8 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       return ok(analytics, ['WAXCASH analytics uses old WaxOnEdge-style direct WAX price proof; recursive graph routing is not a selected-price source.'], analytics.stats?.updated_at || analytics.token?.updated_at || null, corsHeaders);
     }
     if (path === `${WAXONEDGE_API_PREFIX}/waxcash-analytics/chart-feed`) {
-      const feed = await buildWaxcashTradingViewChartFeed(env.DB, Object.fromEntries(url.searchParams.entries()));
-      return ok(feed, feed.unavailable ? [feed.unavailable] : ['WAXCASH chart feed is TradingView UDF history shaped and backed by indexed WaxOnEdge candle/trade rows only.'], null, corsHeaders);
+      const feed = await buildWaxcashUdfChartFeed(env.DB, Object.fromEntries(url.searchParams.entries()));
+      return ok(feed, feed.unavailable ? [feed.unavailable] : ['WAXCASH chart feed is UDF-shaped and backed by indexed WaxOnEdge candle/trade rows only.'], null, corsHeaders);
     }
     if (path === `${WAXONEDGE_API_PREFIX}/candles`) {
       const chart = await listChartCandlesBySource(env.DB, Object.fromEntries(url.searchParams.entries()));
@@ -9328,7 +9328,7 @@ export const __waxonedgeTestHooks = {
   priceAdapterPair,
   DEX_ADAPTER_CONTRACT,
   buildWaxcashAnalytics,
-  buildWaxcashTradingViewChartFeed,
+  buildWaxcashUdfChartFeed,
   buildWaxcashOgParityProof,
   getWaxcashSupplySyncStatus,
   normalizeWaxcashWaxCandles,

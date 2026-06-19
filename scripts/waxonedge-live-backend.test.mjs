@@ -2167,8 +2167,8 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.chart?.candle_normalization?.rejection_reasons?.ohlc_outside_selected_price_range === 1 &&
       !waxcashChartOhlcValues.some((value) => value > 1),
       JSON.stringify({ waxcashChartCloses, waxcashChartOhlcValues, normalization: waxcashAnalytics.chart?.candle_normalization }));
-    const waxcashChartFeed = await __waxonedgeTestHooks.buildWaxcashTradingViewChartFeed(waxcashAnalyticsDb, { resolution: '1D' });
-    ok('WAXCASH analytics exposes a TradingView UDF history feed backed by normalized Alcor #8388 candles',
+    const waxcashChartFeed = await __waxonedgeTestHooks.buildWaxcashUdfChartFeed(waxcashAnalyticsDb, { resolution: '1D' });
+    ok('WAXCASH analytics exposes a UDF-shaped history feed backed by normalized Alcor #8388 candles',
       waxcashAnalytics.sections?.chart?.feed_url === '/api/waxonedge/waxcash-analytics/chart-feed?resolution=1D' &&
       waxcashAnalytics.sections?.chart?.feed_format === 'tradingview_udf_history' &&
       waxcashChartFeed.feed_format === 'tradingview_udf_history' &&
@@ -6518,7 +6518,7 @@ ok('frontend backend chart request captures selection before async call and clea
 ok('frontend renders backend candle bundles without context.chartMarket',
   frontend.includes('return renderChartBundle(backendBundle, backendMarket, backendChartMeta)') &&
   frontend.includes('function renderChartBundle(bundle, market, chartMetaLabel)'));
-ok('frontend renders indexed candles with TradingView Lightweight Charts, not symbol widgets',
+ok('frontend renders indexed candles with Lightweight Charts and no full TradingView widget',
   tokenHtml.includes('lightweight-charts@5.2.0') &&
   frontend.includes('window.LightweightCharts') &&
   frontend.includes('tv.createChart') &&
@@ -6594,11 +6594,11 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   waxcashAnalyticsFrontend.includes('Weighted/valued pool view') &&
   waxcashAnalyticsFrontend.includes('Alcor pool #') &&
   waxcashHtml.includes('lightweight-charts@5.2.0') &&
-  waxcashHtml.includes('TradingView UDF feed') &&
+  waxcashHtml.includes('Worker UDF-shaped feed') &&
   waxcashHtml.includes('Lightweight Charts renderer') &&
   waxcashHtml.includes('wx-lightweight-chart') &&
   waxcashHtml.includes('wx-view-controls') &&
-  waxcashHtml.includes('WAX per WAXCASH candles from the WaxOnEdge TradingView-compatible feed. Display controls do not change selected price.') &&
+  waxcashHtml.includes('WAX per WAXCASH candles from the WaxOnEdge Worker feed. Display controls do not change selected price.') &&
   waxcashHtml.includes('allowProductionFallback: false') &&
   waxcashHtml.includes('API base URL unavailable — MOONBOYS_API not configured.') &&
   waxcashHtml.includes('Display-only source-backed pair detail views') &&
@@ -6607,6 +6607,10 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   !waxcashHtml.includes('>1m</button>') &&
   !waxcashHtml.includes('>15m</button>') &&
   !waxcashHtml.includes('>1h</button>') &&
+  !waxcashHtml.includes('>4h</button>') &&
+  !waxcashHtml.includes('>D</button>') &&
+  !waxcashHtml.includes('>W</button>') &&
+  !waxcashHtml.includes('>M</button>') &&
   !waxcashHtml.includes('>Indicators</button>') &&
   !waxcashAnalyticsFrontend.includes('Open Alcor chart') &&
   !waxcashAnalyticsFrontend.includes('wx-external-chart-linkcard') &&
