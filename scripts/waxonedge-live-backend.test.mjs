@@ -2122,6 +2122,163 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         liquidity_wax: waxcashAnalytics.stats.liquidity_wax,
         cumulated_pair_liquidity_wax: waxcashAnalytics.stats.cumulated_pair_liquidity_wax,
       }));
+    const supplyOnlyWaxcashAnalyticsDb = {
+      prepare(sql) {
+        function allResults(params) {
+          if (sql.includes('FROM waxonedge_pairs')) {
+            const wantsWaxcash = params.includes('graffitiking') && params.includes('WAXCASH');
+            if (wantsWaxcash) {
+              return { results: graphPairs.filter((pair) => pairTokenTouches(pair, 'graffitiking', 'WAXCASH')) };
+            }
+            return {
+              results: graphPairs.filter((pair) => params.some((value, index) =>
+                index % 4 === 0 &&
+                ((pair.token_a_contract === value && pair.token_a_symbol === params[index + 1] && pair.token_b_contract === 'eosio.token' && pair.token_b_symbol === 'WAX') ||
+                  (pair.token_b_contract === value && pair.token_b_symbol === params[index + 1] && pair.token_a_contract === 'eosio.token' && pair.token_a_symbol === 'WAX'))
+              )),
+            };
+          }
+          if (sql.includes('FROM waxonedge_chart_candles')) return { results: [] };
+          if (sql.includes('FROM waxonedge_tokens')) {
+            const rows = [
+              {
+                contract: 'eosio.token',
+                symbol: 'WAX',
+                decimals: '8',
+                price_wax: '1',
+                price_usd: '0.006',
+                updated_at: '2026-06-14T11:00:00.000Z',
+              },
+              {
+                contract: 'graffitiking',
+                symbol: 'WAXCASH',
+                decimals: '8',
+                total_supply: '1000000',
+                max_supply: '1000000',
+                updated_at: '2026-06-14T11:00:00.000Z',
+              },
+            ];
+            return {
+              results: rows.filter((row) => params.some((value, index) => index % 2 === 0 && row.contract === value && row.symbol === params[index + 1])),
+            };
+          }
+          if (sql.includes('FROM waxonedge_token_stats')) {
+            return {
+              results: [{
+                contract: 'graffitiking',
+                symbol: 'WAXCASH',
+                volume_24h_wax: '100',
+                updated_at: '2026-06-14T11:00:00.000Z',
+              }],
+            };
+          }
+          return { results: [] };
+        }
+        return {
+          bind(...params) {
+            return {
+              async all() {
+                return allResults(params);
+              },
+              async first() {
+                return allResults(params).results[0] || null;
+              },
+            };
+          },
+        };
+      },
+    };
+    const supplyOnlyWaxcashAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(supplyOnlyWaxcashAnalyticsDb);
+    ok('WAXCASH analytics with real total supply and selected price returns FDV without market-cap fallback',
+      Number(supplyOnlyWaxcashAnalytics.stats.total_supply) === 1000000 &&
+      Number(supplyOnlyWaxcashAnalytics.stats.fdv_wax) === 30000 &&
+      almostEqual(supplyOnlyWaxcashAnalytics.stats.fdv_usd, 180) &&
+      supplyOnlyWaxcashAnalytics.stats.circulating_supply === null &&
+      supplyOnlyWaxcashAnalytics.stats.market_cap_wax === null &&
+      supplyOnlyWaxcashAnalytics.stats.market_cap_usd === null &&
+      Number(supplyOnlyWaxcashAnalytics.stats.liquidity_wax) === 3000 &&
+      Number(supplyOnlyWaxcashAnalytics.stats.fdv_wax) !== Number(supplyOnlyWaxcashAnalytics.stats.liquidity_wax) &&
+      supplyOnlyWaxcashAnalytics.stats.cumulated_pair_liquidity_wax === null &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.total_supply.live === true &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.total_supply.source === 'wax_rpc_get_currency_stats' &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.circulating_supply.live === false &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.circulating_supply.reason.includes('not inferred') &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.market_cap.reason.includes('not used as a fallback') &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.fdv.live === true,
+      JSON.stringify({
+        total_supply: supplyOnlyWaxcashAnalytics.stats.total_supply,
+        circulating_supply: supplyOnlyWaxcashAnalytics.stats.circulating_supply,
+        fdv_wax: supplyOnlyWaxcashAnalytics.stats.fdv_wax,
+        market_cap_wax: supplyOnlyWaxcashAnalytics.stats.market_cap_wax,
+        liquidity_wax: supplyOnlyWaxcashAnalytics.stats.liquidity_wax,
+        metric_status: supplyOnlyWaxcashAnalytics.stats.metric_status,
+      }));
+    ok('WAXCASH analytics holder count remains unavailable with explicit reason when no holder source exists',
+      supplyOnlyWaxcashAnalytics.stats.holder_count === null &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.live === false &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.reason.includes('verified indexed holder source'));
+    const supplyWrites = [];
+    const supplyDb = {
+      prepare(sql) {
+        const makeExecutor = (params = []) => ({
+          async first() {
+            if (sql.includes('COUNT(*) AS count')) return { count: 0 };
+            return null;
+          },
+          async all() {
+            if (sql.includes('FROM waxonedge_tokens t')) return { results: [] };
+            return { results: [] };
+          },
+          async run() {
+            supplyWrites.push({ sql, params });
+            return { success: true };
+          },
+        });
+        return {
+          bind(...params) {
+            return makeExecutor(params);
+          },
+          first: makeExecutor([]).first,
+          all: makeExecutor([]).all,
+          run: makeExecutor([]).run,
+        };
+      },
+    };
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (_url, init) => {
+      const body = JSON.parse(init?.body || '{}');
+      if (body.code === 'graffitiking' && body.symbol === 'WAXCASH') {
+        return new Response(JSON.stringify({
+          WAXCASH: {
+            supply: '9999999999.12345678 WAXCASH',
+            max_supply: '9999999999.12345678 WAXCASH',
+          },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+      return new Response(JSON.stringify({}), { status: 200, headers: { 'content-type': 'application/json' } });
+    };
+    let supplySyncResult = null;
+    try {
+      supplySyncResult = await __waxonedgeTestHooks.syncSupplyInputs({
+        DB: supplyDb,
+        WAXONEDGE_FREE_SAFE_MODE: 'true',
+        WAXONEDGE_SUPPLY_SYNC_LIMIT: '1',
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+    const tokenSupplyWrite = supplyWrites.find((write) =>
+      write.sql.includes('INSERT INTO waxonedge_tokens') &&
+      write.params[0] === 'graffitiking' &&
+      write.params[1] === 'WAXCASH');
+    ok('WAXCASH supply sync indexes exact chain stat supply with 8-decimal normalization',
+      supplySyncResult?.waxcash_target_included === true &&
+      supplySyncResult?.updated === 1 &&
+      tokenSupplyWrite &&
+      tokenSupplyWrite.params[2] === 8 &&
+      tokenSupplyWrite.params[3] === '9999999999.12345678' &&
+      tokenSupplyWrite.params[4] === '9999999999.12345678',
+      JSON.stringify({ supplySyncResult, tokenSupplyWrite, supplyWrites }));
     const waxPriceIndex = new Map([['eosio.token::WAX', { priceWax: 1, priceUsd: 0.006 }]]);
     const legacyFirstHeadline = __waxonedgeTestHooks.waxcashHeadlinePrice([
       graphPairs.find((pair) => pair.pair_id === '8388'),
@@ -3337,10 +3494,13 @@ ok('supply sync cursor SQL uses the same single-quoted token key expression',
   route.includes('SELECT t.contract, t.symbol, ${tokenKeyExpression} AS token_key') &&
   !route.includes('|| "::" ||'));
 ok('supply sync reports honest bounded rotation status',
-  route.includes('const complete = totalPairTokens > 0 && totalPairTokens <= limit && attempted >= totalPairTokens ? 1 : 0') &&
-  route.includes('const truncated = totalPairTokens > limit && attempted >= limit ? 1 : 0') &&
+  route.includes('addTarget(waxcashSupplyTarget())') &&
+  route.includes('const rotatingRows = (rows.results || []).slice(0, limit)') &&
+  route.includes('const complete = totalSupplyTargets > 0 && totalPairTokens <= limit && rotatingRows.length >= totalPairTokens ? 1 : 0') &&
+  route.includes('const truncated = complete ? 0 : (totalPairTokens > limit && rotatingRows.length >= limit ? 1 : 0)') &&
   route.includes("const status = attempted <= 0 ? 'skipped' : (complete === 1 ? 'success' : 'partial')") &&
   route.includes("const error = attempted > 0 ? null : 'No indexed pair tokens found for supply sync'") &&
+  route.includes('waxcash_target_included: seenTargets.has(WAXCASH_TOKEN_REF.token_key)') &&
   route.includes('await upsertSourceIndexState(env.DB, SUPPLY_SYNC_SOURCE'));
 ok('scheduled full index can still run legacy combined workflow when free-safe is disabled',
   route.includes('} else if (shouldRunFullIndex) {') &&
