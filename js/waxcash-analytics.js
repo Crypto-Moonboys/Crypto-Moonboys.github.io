@@ -159,7 +159,7 @@
 
   function sourceLabel(row) {
     if (!row) return DASH;
-    return [row.source || DASH, row.pair_id ? '#' + row.pair_id : ''].filter(Boolean).join(' ');
+    return row.source_label || row.source || DASH;
   }
 
   function dual(wax, usd, reason) {
@@ -171,18 +171,24 @@
     return '<span class="wx-muted" title="' + esc(humanReason(reason)) + '">Unavailable</span>';
   }
 
-  function pairStatus(row) {
-    if (!row) return '<span class="wx-muted">Unavailable</span>';
-    if (row.is_selected_price_pair) return '<span class="wx-positive">Selected proof</span>';
-    if (row.status === 'unavailable') return '<span class="wx-muted" title="' + esc(humanReason(row.reason)) + '">Unavailable</span>';
-    if (num(row.liquidity_wax) != null && num(row.liquidity_wax) < 1) return '<span class="wx-warning">Low liquidity</span>';
-    if (row.is_direct_wax_pair) return '<span class="wx-positive">Direct WAX</span>';
-    return '<span class="wx-positive">Valued</span>';
-  }
-
   function tokenLabel(row) {
     return '<span class="wx-token"><strong>' + esc(row.token_a_symbol || DASH) + '</strong>' + esc(row.token_a_contract || '') + '</span>' +
       '<span class="wx-token"><strong>' + esc(row.token_b_symbol || DASH) + '</strong>' + esc(row.token_b_contract || '') + '</span>';
+  }
+
+  function priceCell(row) {
+    var price = fmt(row && (row.price != null ? row.price : row.pair_price), 8);
+    var usd = fmtUsd(row && row.price_usd);
+    if (price !== DASH && usd !== DASH) return '<span>' + esc(price) + '</span><span class="wx-cell-sub">' + esc(usd) + '</span>';
+    if (price !== DASH) return esc(price);
+    return '<span class="wx-muted" title="' + esc(humanReason(row && row.reason)) + '">Unavailable</span>';
+  }
+
+  function changeCell(value) {
+    var parsed = num(value);
+    if (parsed == null) return '<span class="wx-muted">Unavailable</span>';
+    var klass = parsed < 0 ? 'wx-negative' : (parsed > 0 ? 'wx-positive' : 'wx-muted');
+    return '<span class="' + klass + '">' + esc(pct(parsed)) + '</span>';
   }
 
   function defaultPairSort(rows) {
@@ -237,24 +243,22 @@
     updateSortButtons(rows);
     $('wx-pair-summary').textContent = rows.length + ' indexed WAXCASH pairs';
     if (!rows.length) {
-      $('wx-pairs').innerHTML = '<tr><td colspan="9" class="wx-muted">No source-backed WAXCASH pair rows returned.</td></tr>';
+      $('wx-pairs').innerHTML = '<tr><td colspan="10" class="wx-muted">No source-backed WAXCASH pair rows returned.</td></tr>';
       return;
     }
     $('wx-pairs').innerHTML = displayRows.map(function (row, index) {
       var fee = row.fee_bps != null ? fmt(row.fee_bps / 100, 2) + ' %' : (row.is_direct_wax_pair ? 'Direct' : DASH);
-      var pairPrice = row.proof_details && row.proof_details.reserve_ratio != null
-        ? fmt(row.proof_details.reserve_ratio, 8) + ' WAXCASH pair ratio'
-        : DASH;
       return '<tr class="' + (pairKey(row) === activeKey ? 'is-selected' : '') + '">' +
         '<td>#' + (index + 1) + '</td>' +
-        '<td><span class="wx-source">' + esc(row.source || DASH) + '</span><span class="wx-cell-sub">' + esc(row.pair_id || DASH) + '</span></td>' +
+        '<td><span class="wx-source">' + esc(sourceLabel(row)) + '</span></td>' +
         '<td>' + esc(fee) + '</td>' +
         '<td>' + tokenLabel(row) + '</td>' +
         '<td>' + dual(row.liquidity_wax, row.liquidity_usd, row.reason) + '</td>' +
-        '<td>' + esc(pairPrice) + '</td>' +
-        '<td>' + pairStatus(row) + '</td>' +
+        '<td>' + priceCell(row) + '</td>' +
+        '<td>' + changeCell(row.change_24h) + '</td>' +
         '<td>' + dual(row.volume_24h_wax, row.volume_24h_usd, row.reason) + '</td>' +
-        '<td>' + esc(row.reserves_label || DASH) + '</td>' +
+        '<td>' + dual(row.volume_7d_wax, row.volume_7d_usd, row.reason) + '</td>' +
+        '<td>' + dual(row.volume_30d_wax, row.volume_30d_usd, row.reason) + '</td>' +
         '</tr>';
     }).join('');
   }
@@ -317,6 +321,6 @@
       $('wx-stats').innerHTML = statRow({ label: 'Status', live: false, reason: error.message || String(error) });
       renderExternalChart({ sections: { chart_external: DEFAULT_EXTERNAL_CHART } });
       updateSortButtons([]);
-      $('wx-pairs').innerHTML = '<tr><td colspan="9" class="wx-muted">Pair table unavailable.</td></tr>';
+      $('wx-pairs').innerHTML = '<tr><td colspan="10" class="wx-muted">Pair table unavailable.</td></tr>';
     });
 }());

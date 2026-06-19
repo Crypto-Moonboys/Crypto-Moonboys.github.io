@@ -2575,12 +2575,27 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.sections?.pair_table?.rows?.[0]?.fee_bps !== null &&
       Number(waxcashAnalytics.sections?.pair_table?.rows?.[0]?.fee_bps) === 0,
       JSON.stringify(waxcashAnalytics.sections?.pair_table?.rows?.[0]));
-    ok('WAXCASH analytics unvalued pair rows carry explicit valuation reasons',
+    ok('WAXCASH analytics pair table exposes OG row fields and keeps status/reserves out of main rows',
       waxcashAnalytics.sections?.pair_table?.rows?.some((row) =>
-        row.status === 'unavailable' &&
         row.reason &&
         row.proof_label &&
-        row.no_fake_value === true),
+        row.no_fake_value === true &&
+        row.volume_7d_wax == null &&
+        row.volume_7d_usd == null &&
+        row.volume_30d_wax == null &&
+        row.volume_30d_usd == null) &&
+      waxcashAnalytics.sections?.pair_table?.rows?.every((row) =>
+        Object.prototype.hasOwnProperty.call(row, 'source_label') &&
+        Object.prototype.hasOwnProperty.call(row, 'source_logo_key') &&
+        Object.prototype.hasOwnProperty.call(row, 'price') &&
+        Object.prototype.hasOwnProperty.call(row, 'price_usd') &&
+        Object.prototype.hasOwnProperty.call(row, 'change_24h') &&
+        Object.prototype.hasOwnProperty.call(row, 'volume_24h_wax') &&
+        Object.prototype.hasOwnProperty.call(row, 'volume_7d_wax') &&
+        Object.prototype.hasOwnProperty.call(row, 'volume_30d_wax') &&
+        !Object.prototype.hasOwnProperty.call(row, 'status') &&
+        !Object.prototype.hasOwnProperty.call(row, 'status_label') &&
+        !Object.prototype.hasOwnProperty.call(row, 'reserves_label')),
       JSON.stringify(waxcashAnalytics.sections?.pair_table?.rows));
     const liveSupplyWrites = [];
     const liveSupplyDb = {
@@ -5991,8 +6006,8 @@ ok('WAXCASH OG WOE parity proof exposes all exact pair rows with unavailable rea
   route.includes('unavailable_reason_counts') &&
   route.includes('exact contract::symbol scoped') &&
   !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('active_status') &&
-  !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('volume_7d') &&
-  !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('volume_30d') &&
+  route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('volume_7d_wax') &&
+  route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('volume_30d_wax') &&
   !route.slice(route.indexOf('function waxcashPairProof'), route.indexOf('function waxcashHeadlinePrice')).includes('fee:'));
 ok('token detail exposes backend metric proof fields without frontend changes',
   route.includes('function tokenMetricProof') &&
@@ -6955,12 +6970,17 @@ ok('frontend does not label raw base volume as WAX',
   frontend.includes('rawVolume24: row.volume_24h') &&
   frontend.includes('volume24: asNum(row.volume_24h_wax)') &&
   frontend.includes("volume24Text: row.volume_24h_wax != null ? String(row.volume_24h_wax) + ' WAX' : UNAVAILABLE_TEXT"));
-ok('/waxcash.html pair table follows OG-style pair detail columns without relative-price wording',
+ok('/waxcash.html pair table follows OG-style pair detail columns without status or reserves',
   !waxcashHtml.includes('<th>Pair Reserve Ratio</th>') &&
   !waxcashHtml.includes('<th>Relative Pair Price</th>') &&
-  waxcashHtml.includes('<th>Pair price</th>') &&
-  waxcashHtml.includes('<th>Status</th>') &&
-  waxcashHtml.includes('<td colspan="9"'));
+  !waxcashHtml.includes('<th>Pair price</th>') &&
+  !waxcashHtml.includes('<th>Status</th>') &&
+  !waxcashHtml.includes('<th>Reserves</th>') &&
+  waxcashHtml.includes('<th>Price</th>') &&
+  waxcashHtml.includes('<th>24h change</th>') &&
+  waxcashHtml.includes('<th>7d volume</th>') &&
+  waxcashHtml.includes('<th>30d volume</th>') &&
+  waxcashHtml.includes('<td colspan="10"'));
 ok('WAXCASH analytics frontend renders backend sections instead of raw proof-row guesses',
   waxcashAnalyticsFrontend.includes('payload.sections || {}') &&
   waxcashAnalyticsFrontend.includes('sections.token_stats') &&
@@ -6978,7 +6998,7 @@ ok('WAXCASH analytics frontend keeps values compact and proof reasons in tooltip
   waxcashAnalyticsFrontend.includes('function proofDot(row)') &&
   waxcashAnalyticsFrontend.includes('title=\"') &&
   waxcashAnalyticsFrontend.includes('wx-subvalue') &&
-  waxcashAnalyticsFrontend.includes('Low liquidity') &&
+  !waxcashAnalyticsFrontend.includes('Low liquidity') &&
   waxcashHtml.includes('.wx-reason-dot') &&
   !waxcashHtml.includes('.wx-value .wx-reason') &&
   waxcashHtml.includes('table-layout: fixed') &&
@@ -7066,6 +7086,12 @@ ok('WAXCASH analytics frontend keeps pair table and adds WAX-only liquidity/24h 
   waxcashAnalyticsFrontend.includes('function defaultPairSort(rows)') &&
   waxcashAnalyticsFrontend.includes('return num(row && row.liquidity_wax)') &&
   waxcashAnalyticsFrontend.includes('return num(row && row.volume_24h_wax)') &&
+  waxcashAnalyticsFrontend.includes('dual(row.volume_7d_wax, row.volume_7d_usd, row.reason)') &&
+  waxcashAnalyticsFrontend.includes('dual(row.volume_30d_wax, row.volume_30d_usd, row.reason)') &&
+  waxcashAnalyticsFrontend.includes('changeCell(row.change_24h)') &&
+  waxcashAnalyticsFrontend.includes('priceCell(row)') &&
+  !waxcashAnalyticsFrontend.includes('pairStatus(row)') &&
+  !waxcashAnalyticsFrontend.includes('row.reserves_label') &&
   !waxcashAnalyticsFrontend.includes('function metricValue(row, usdKey, waxKey)') &&
   !waxcashAnalyticsFrontend.includes("metricValue(row, 'liquidity_usd', 'liquidity_wax')") &&
   !waxcashAnalyticsFrontend.includes("metricValue(row, 'volume_24h_usd', 'volume_24h_wax')") &&

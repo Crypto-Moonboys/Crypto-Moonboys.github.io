@@ -1217,6 +1217,10 @@ function normalizePair(pair, tickerByMarketId, priceIndex, syncedAt) {
   const change24 = safeDecimal(ticker.change24 ?? ticker.price_change_percent ?? ticker.change_24h);
   const volume24 = safeDecimal(ticker.base_volume ?? ticker.volume24 ?? ticker.volume_24h);
   const volume24Raw = asNumber(volume24);
+  const volume7d = safeDecimal(ticker.volume_7d ?? ticker.volume7d ?? ticker.week_volume ?? ticker.weekly_volume ?? pair.volume_7d ?? pair.volume7d);
+  const volume7dRaw = asNumber(volume7d);
+  const volume30d = safeDecimal(ticker.volume_30d ?? ticker.volume30d ?? ticker.month_volume ?? ticker.monthly_volume ?? pair.volume_30d ?? pair.volume30d);
+  const volume30dRaw = asNumber(volume30d);
   const reserveA = safeDecimal(tokenA.amount ?? ticker.base_amm_liquidity);
   const reserveB = safeDecimal(tokenB.amount ?? ticker.target_amm_liquidity);
 
@@ -1227,6 +1231,12 @@ function normalizePair(pair, tickerByMarketId, priceIndex, syncedAt) {
   const normalizedVolume = normalizeTokenAVolume(volume24Raw, tokenA, tokenB, price, priceIndex);
   const volume24Wax = normalizedVolume.wax;
   const volume24Usd = normalizedVolume.usd;
+  const normalizedVolume7d = normalizeTokenAVolume(volume7dRaw, tokenA, tokenB, price, priceIndex);
+  const volume7dWax = normalizedVolume7d.wax;
+  const volume7dUsd = normalizedVolume7d.usd;
+  const normalizedVolume30d = normalizeTokenAVolume(volume30dRaw, tokenA, tokenB, price, priceIndex);
+  const volume30dWax = normalizedVolume30d.wax;
+  const volume30dUsd = normalizedVolume30d.usd;
   if (tokenA.amount != null && tokenB.amount != null && priceA?.priceWax != null && priceB?.priceWax != null) {
     liquidityWax = safeDecimal((tokenA.amount * priceA.priceWax) + (tokenB.amount * priceB.priceWax));
   }
@@ -1265,6 +1275,12 @@ function normalizePair(pair, tickerByMarketId, priceIndex, syncedAt) {
     volume_24h: volume24,
     volume_24h_wax: volume24Wax,
     volume_24h_usd: volume24Usd,
+    volume_7d: volume7d,
+    volume_7d_wax: volume7dWax,
+    volume_7d_usd: volume7dUsd,
+    volume_30d: volume30d,
+    volume_30d_wax: volume30dWax,
+    volume_30d_usd: volume30dUsd,
     liquidity_wax: sanitizedLiquidity.liquidityWax,
     liquidity_usd: sanitizedLiquidity.liquidityUsd,
     reserve_a: reserveA,
@@ -1629,9 +1645,19 @@ function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
   const price = pricing.price;
   const volume24 = safeDecimal(row.volume_24h ?? row.volume24);
   const volume24Raw = asNumber(volume24);
+  const volume7d = safeDecimal(row.volume_7d ?? row.volume7d);
+  const volume7dRaw = asNumber(volume7d);
+  const volume30d = safeDecimal(row.volume_30d ?? row.volume30d);
+  const volume30dRaw = asNumber(volume30d);
   const normalizedVolume = normalizeTokenAVolume(volume24Raw, tokenA, tokenB, price, priceIndex);
   const volume24Wax = normalizedVolume.wax;
   const volume24Usd = normalizedVolume.usd;
+  const normalizedVolume7d = normalizeTokenAVolume(volume7dRaw, tokenA, tokenB, price, priceIndex);
+  const volume7dWax = normalizedVolume7d.wax;
+  const volume7dUsd = normalizedVolume7d.usd;
+  const normalizedVolume30d = normalizeTokenAVolume(volume30dRaw, tokenA, tokenB, price, priceIndex);
+  const volume30dWax = normalizedVolume30d.wax;
+  const volume30dUsd = normalizedVolume30d.usd;
   return {
     source: adapter.source,
     pair_id: String(pairId),
@@ -1646,6 +1672,12 @@ function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
     volume_24h: volume24,
     volume_24h_wax: volume24Wax,
     volume_24h_usd: volume24Usd,
+    volume_7d: volume7d,
+    volume_7d_wax: volume7dWax,
+    volume_7d_usd: volume7dUsd,
+    volume_30d: volume30d,
+    volume_30d_wax: volume30dWax,
+    volume_30d_usd: volume30dUsd,
     liquidity_wax: pricing.proof_status === 'unavailable' ? null : pricing.liquidityWax,
     liquidity_usd: pricing.proof_status === 'unavailable' ? null : pricing.liquidityUsd,
     reserve_a: safeDecimal(tokenA.amount),
@@ -1713,9 +1745,11 @@ async function upsertPairs(db, pairs) {
   const statements = pairs.map((pair) => db.prepare(
     `INSERT INTO waxonedge_pairs
      (source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
-      price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd, liquidity_wax, liquidity_usd,
+      price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+      volume_7d, volume_7d_wax, volume_7d_usd, volume_30d, volume_30d_wax, volume_30d_usd,
+      liquidity_wax, liquidity_usd,
       reserve_a, reserve_b, fee_bps, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(source, pair_id) DO UPDATE SET
        token_a_contract = excluded.token_a_contract,
        token_a_symbol = excluded.token_a_symbol,
@@ -1726,6 +1760,12 @@ async function upsertPairs(db, pairs) {
        volume_24h = excluded.volume_24h,
        volume_24h_wax = excluded.volume_24h_wax,
        volume_24h_usd = excluded.volume_24h_usd,
+       volume_7d = excluded.volume_7d,
+       volume_7d_wax = excluded.volume_7d_wax,
+       volume_7d_usd = excluded.volume_7d_usd,
+       volume_30d = excluded.volume_30d,
+       volume_30d_wax = excluded.volume_30d_wax,
+       volume_30d_usd = excluded.volume_30d_usd,
        liquidity_wax = excluded.liquidity_wax,
        liquidity_usd = excluded.liquidity_usd,
        reserve_a = excluded.reserve_a,
@@ -1736,6 +1776,8 @@ async function upsertPairs(db, pairs) {
     pair.source, pair.pair_id, pair.token_a_contract, pair.token_a_symbol,
     pair.token_b_contract, pair.token_b_symbol, pair.price, pair.change_24h,
     pair.volume_24h, pair.volume_24h_wax, pair.volume_24h_usd,
+    pair.volume_7d, pair.volume_7d_wax, pair.volume_7d_usd,
+    pair.volume_30d, pair.volume_30d_wax, pair.volume_30d_usd,
     pair.liquidity_wax, pair.liquidity_usd, pair.reserve_a,
     pair.reserve_b, pair.fee_bps, pair.updated_at,
   ));
@@ -6362,7 +6404,11 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
     direct_wax_pair: directWax,
     reason_codes: reasonCodes,
   };
-  for (const field of ['volume_24h', 'volume_24h_wax', 'volume_24h_usd']) {
+  for (const field of [
+    'volume_24h', 'volume_24h_wax', 'volume_24h_usd',
+    'volume_7d', 'volume_7d_wax', 'volume_7d_usd',
+    'volume_30d', 'volume_30d_wax', 'volume_30d_usd',
+  ]) {
     const parsed = asNumber(pair[field]);
     if (parsed != null) proof[field] = safeDecimal(parsed);
   }
@@ -6889,6 +6935,7 @@ async function loadWaxcashOgPairRows(db) {
   const rows = await db.prepare(
     `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
             price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+            volume_7d, volume_7d_wax, volume_7d_usd, volume_30d, volume_30d_wax, volume_30d_usd,
             liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
      FROM waxonedge_pairs
      WHERE (token_a_contract = ? AND token_a_symbol = ?)
@@ -7587,12 +7634,36 @@ function waxcashBuildTokenStatsSection({ token, stats, supplyProof }) {
   };
 }
 
+function waxonedgeSourceDisplayLabel(source) {
+  const normalized = moonboysCandleSource(source || '');
+  const adapter = CORE_DEX_ADAPTERS.find((entry) => entry.source === normalized || entry.source === source);
+  if (adapter?.label) return adapter.label;
+  if (normalized === 'alcor' || normalized === 'alcordexmain') return 'Alcor V2';
+  if (normalized === 'swap.alcor') return 'Alcor';
+  if (normalized === 'swap.nefty') return 'NeftyBlocks';
+  if (normalized === 'swap.taco') return 'Taco';
+  if (normalized === 'swap.box') return 'Defibox';
+  if (normalized === 'swap.adex') return 'ADEX';
+  if (normalized === 'dapp.fusion') return 'WaxFusion';
+  return safeString(source || normalized || 'Unknown');
+}
+
+function waxonedgeSourceLogoKey(source) {
+  return aggregateSourceKey(source) || moonboysCandleSource(source || '') || null;
+}
+
 function waxcashPairTableRow(pair, selectedWaxPool) {
   const isSelected = pair.source === selectedWaxPool?.source && pair.pair_id === selectedWaxPool?.pair_id;
   const liquidityWax = asNumber(pair.pair_liquidity_wax);
   const liquidityUsd = asNumber(pair.pair_liquidity_usd);
   const volumeWax = asNumber(pair.volume_24h_wax);
   const volumeUsd = asNumber(pair.volume_24h_usd);
+  const volume7dWax = asNumber(pair.volume_7d_wax);
+  const volume7dUsd = asNumber(pair.volume_7d_usd);
+  const volume30dWax = asNumber(pair.volume_30d_wax);
+  const volume30dUsd = asNumber(pair.volume_30d_usd);
+  const price = asNumber(pair.pair_price_relative_to_waxcash ?? pair.price);
+  const change24h = asNumber(pair.change_24h);
   const reasonCodes = Array.isArray(pair.reason_codes) ? pair.reason_codes : [];
   const live = liquidityWax != null || liquidityUsd != null;
   const reason = reasonCodes.length ? reasonCodes.join(', ') : (live ? null : 'liquidity_unavailable');
@@ -7605,20 +7676,24 @@ function waxcashPairTableRow(pair, selectedWaxPool) {
   return {
     pair_label: pair.pair_label || selectedPairLabel(pair),
     source: pair.source || null,
+    source_label: waxonedgeSourceDisplayLabel(pair.source),
+    source_logo_key: waxonedgeSourceLogoKey(pair.source),
     pair_id: pair.pair_id || null,
     fee_bps: pair.fee_bps ?? null,
     is_selected_price_pair: isSelected,
     is_direct_wax_pair: !!pair.direct_wax_pair,
-    status,
-    status_label: statusLabel,
     liquidity_wax: safeDecimal(liquidityWax),
     liquidity_usd: safeDecimal(liquidityUsd),
+    price: safeDecimal(price),
+    pair_price: safeDecimal(price),
+    price_usd: null,
+    change_24h: safeDecimal(change24h),
     volume_24h_wax: safeDecimal(volumeWax),
     volume_24h_usd: safeDecimal(volumeUsd),
-    reserves_label: [
-      `${safeDecimal(asNumber(pair.reserve_a)) || '--'} ${pair.token_a_symbol || ''}`.trim(),
-      `${safeDecimal(asNumber(pair.reserve_b)) || '--'} ${pair.token_b_symbol || ''}`.trim(),
-    ].join(' / '),
+    volume_7d_wax: safeDecimal(volume7dWax),
+    volume_7d_usd: safeDecimal(volume7dUsd),
+    volume_30d_wax: safeDecimal(volume30dWax),
+    volume_30d_usd: safeDecimal(volume30dUsd),
     proof_label: reasonCodes.length ? reason : (isSelected ? 'selected direct WAX price proof' : 'reserve-backed valuation'),
     reason,
     token_a_contract: pair.token_a_contract || null,
@@ -7631,6 +7706,10 @@ function waxcashPairTableRow(pair, selectedWaxPool) {
       reason_codes: reasonCodes,
       direct_wax_pair: !!pair.direct_wax_pair,
       paired_token_og_wax_price: pair.paired_token_og_wax_price || null,
+      status,
+      status_label: statusLabel,
+      reserve_a: pair.reserve_a || null,
+      reserve_b: pair.reserve_b || null,
     },
   };
 }

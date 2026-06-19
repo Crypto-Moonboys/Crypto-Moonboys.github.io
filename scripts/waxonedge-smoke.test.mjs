@@ -161,9 +161,23 @@ ok('waxcash pair table exposes WAX-only liquidity and 24h volume sort controls',
   waxcashHtml.includes('data-sort="liquidity"') &&
   waxcashHtml.includes('id="wx-sort-volume24"') &&
   waxcashHtml.includes('data-sort="volume24"') &&
+  waxcashHtml.includes('<th>Price</th>') &&
+  waxcashHtml.includes('<th>24h change</th>') &&
+  waxcashHtml.includes('<th>7d volume</th>') &&
+  waxcashHtml.includes('<th>30d volume</th>') &&
+  waxcashHtml.includes('<td colspan="10"') &&
+  !waxcashHtml.includes('<th>Status</th>') &&
+  !waxcashHtml.includes('<th>Reserves</th>') &&
+  !waxcashHtml.includes('<th>Pair price</th>') &&
   waxcashAnalyticsJs.includes('function sortedPairRows(rows)') &&
   waxcashAnalyticsJs.includes('return num(row && row.liquidity_wax)') &&
   waxcashAnalyticsJs.includes('return num(row && row.volume_24h_wax)') &&
+  waxcashAnalyticsJs.includes('priceCell(row)') &&
+  waxcashAnalyticsJs.includes('changeCell(row.change_24h)') &&
+  waxcashAnalyticsJs.includes('dual(row.volume_7d_wax, row.volume_7d_usd, row.reason)') &&
+  waxcashAnalyticsJs.includes('dual(row.volume_30d_wax, row.volume_30d_usd, row.reason)') &&
+  !waxcashAnalyticsJs.includes('pairStatus(row)') &&
+  !waxcashAnalyticsJs.includes('row.reserves_label') &&
   !waxcashAnalyticsJs.includes('function metricValue(row, usdKey, waxKey)') &&
   !waxcashAnalyticsJs.includes("metricValue(row, 'liquidity_usd', 'liquidity_wax')") &&
   !waxcashAnalyticsJs.includes("metricValue(row, 'volume_24h_usd', 'volume_24h_wax')") &&
