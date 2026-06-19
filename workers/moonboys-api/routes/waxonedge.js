@@ -7322,7 +7322,7 @@ async function latestIndexedHolderCount(db, contract, symbol) {
       holder_count: null,
       live: false,
       source: null,
-      reason: 'No indexed holder snapshot exists for graffitiking::WAXCASH',
+      reason: `No indexed holder snapshot exists for ${contract}::${symbol}`,
     };
   }
   const row = await db.prepare(
@@ -7345,11 +7345,11 @@ function waxcashTradeVolumePredicates(pairs = []) {
   const predicates = ['(contract = ? AND symbol = ?)'];
   const params = [WAXCASH_CONTRACT, WAXCASH_SYMBOL];
   for (const pair of pairs || []) {
-    const source = moonboysCandleSource(pair?.source);
+    const sourceNames = candleTradeSourceNamesFor(pair?.source);
     const pairId = safeString(pair?.pair_id);
-    if (!source || !pairId) continue;
-    predicates.push('(source = ? AND pair_id = ?)');
-    params.push(source, pairId);
+    if (!sourceNames.length || !pairId) continue;
+    predicates.push(`(source IN (${sourceNames.map(() => '?').join(',')}) AND pair_id = ?)`);
+    params.push(...sourceNames, pairId);
   }
   return { predicates, params };
 }
@@ -7422,7 +7422,7 @@ async function buildWaxcashTradingViewChartFeed(db, query = {}) {
     price_unit: 'WAX_per_WAXCASH',
     source: chart.chart_source?.source || chartFeedPool?.source || null,
     pair_id: chart.chart_source?.pair_id || chartFeedPool?.pair_id || null,
-    pair_label: chartFeedPool?.pair_label || 'WAX/WAXCASH',
+    pair_label: 'WAXCASH/WAX',
     affects_waxonedge_metrics: false,
     selected_price_policy_unchanged: true,
     candle_normalization: chart.candle_normalization || null,
@@ -7647,7 +7647,7 @@ async function buildWaxcashAnalytics(db) {
       inverted_count: chart.candle_normalization?.inverted_count || 0,
       source: chart.chart_source?.source || null,
       pair_id: chart.chart_source?.pair_id || null,
-      pair_label: chartFeedPool?.pair_label || selectedWaxPool?.pair_label || headline.og_headline_price_pair_label || null,
+      pair_label: 'WAXCASH/WAX',
       feed_url: `${WAXONEDGE_API_PREFIX}/waxcash-analytics/chart-feed?resolution=1D`,
       feed_format: 'tradingview_udf_history',
       candles: chart.candles || [],
@@ -7658,7 +7658,7 @@ async function buildWaxcashAnalytics(db) {
     chart_external: {
       source: 'alcor',
       pool_id: '8388',
-      pair_label: 'WAX/WAXCASH',
+      pair_label: 'WAXCASH/WAX',
       url: 'https://alcor.exchange/v/wax/analytics/pools/8388',
       role: 'external_visual_reference_only',
       affects_waxonedge_metrics: false,

@@ -357,7 +357,7 @@
         <div id="wx-chart" class="wx-chart-host" aria-live="polite">
           <div class="wx-chart-empty">Loading WAX-per-WAXCASH candles.</div>
         </div>
-        <div id="wx-view-controls" class="wx-view-controls" aria-label="Display-only pool views"></div>
+        <div id="wx-view-controls" class="wx-view-controls" aria-label="Display-only source-backed pair detail views"></div>
         <div id="wx-pair-detail" class="wx-pair-detail" aria-live="polite"></div>
       </article>
     </section>
@@ -398,7 +398,22 @@
   var api = window.MOONBOYS_API || {};
   var info = api.getApiBaseInfo ? api.getApiBaseInfo({ allowProductionFallback: false }) : null;
   var baseUrl = String((info && info.url) || '').replace(/\/$/, '');
-  if (!baseUrl || !window.fetch) return;
+  function showApiUnavailable(message) {
+    var status = document.getElementById('wx-status');
+    var chart = document.getElementById('wx-chart');
+    var stats = document.getElementById('wx-stats');
+    if (status) status.textContent = message;
+    if (chart) chart.innerHTML = '<div class="wx-chart-empty">' + message + '</div>';
+    if (stats) stats.innerHTML = '<div class="wx-stat"><span>Status</span><strong>Unavailable</strong><small class="wx-stat-reason">' + message + '</small></div>';
+  }
+  if (!baseUrl) {
+    showApiUnavailable('API base URL unavailable — MOONBOYS_API not configured.');
+    return;
+  }
+  if (!window.fetch) {
+    showApiUnavailable('API base URL unavailable — fetch is not available.');
+    return;
+  }
   var nativeFetch = window.fetch;
   window.fetch = function (input, init) {
     var url = typeof input === 'string' ? input : (input && input.url);

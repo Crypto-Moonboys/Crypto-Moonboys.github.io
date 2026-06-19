@@ -184,7 +184,6 @@
     renderPoolControls(state.payload);
     renderPairDetail(state.payload);
     renderPairs(state.payload);
-    updateChartLabels(state.payload);
   }
 
   function renderPoolControls(payload) {
@@ -192,7 +191,7 @@
     $('wx-view-controls').innerHTML = views.map(function (view) {
       var isActive = view.key === state.view;
       return '<button class="wx-view-button ' + (isActive ? 'is-active' : '') + '" type="button" data-view="' + esc(view.key) + '" aria-pressed="' + (isActive ? 'true' : 'false') + '">' +
-        esc(view.label) +
+        esc(view.label + ' detail') +
         '</button>';
     }).join('');
     Array.prototype.forEach.call(document.querySelectorAll('.wx-view-button'), function (button) {
@@ -345,14 +344,12 @@
     var sections = (payload || {}).sections || {};
     var chart = sections.chart || {};
     var external = sections.chart_external || {};
-    var view = activeView(payload);
-    var row = view.row || {};
     var feedLabel = external.pool_id
-      ? 'Alcor pool #' + external.pool_id + ' WAXP/WAXCASH display feed'
+      ? 'Alcor pool #' + external.pool_id + ' WAXCASH/WAX display feed'
       : (chart.source && chart.pair_id ? chart.source + ' #' + chart.pair_id + ' display feed' : 'Indexed WAX/WAXCASH display feed');
     $('wx-chart-source').textContent = feedLabel;
     $('wx-chart-feed-label').textContent = feedLabel;
-    $('wx-chart-pair-title').textContent = pairLabel(row);
+    $('wx-chart-pair-title').textContent = 'WAXCASH/WAX';
   }
 
   function chartFeedUrl(payload) {

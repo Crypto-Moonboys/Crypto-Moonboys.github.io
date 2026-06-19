@@ -2175,6 +2175,9 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashChartFeed.s === 'ok' &&
       waxcashChartFeed.source === 'swap.alcor' &&
       waxcashChartFeed.pair_id === '8388' &&
+      waxcashChartFeed.symbol === 'WAXCASH/WAX' &&
+      waxcashChartFeed.ticker === 'WAXCASH/WAX' &&
+      waxcashChartFeed.pair_label === 'WAXCASH/WAX' &&
       waxcashChartFeed.price_unit === 'WAX_per_WAXCASH' &&
       waxcashChartFeed.affects_waxonedge_metrics === false &&
       waxcashChartFeed.selected_price_policy_unchanged === true &&
@@ -2481,7 +2484,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
     ok('WAXCASH analytics holder count remains unavailable with explicit reason when no holder source exists',
       supplyOnlyWaxcashAnalytics.stats.holder_count === null &&
       supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.live === false &&
-      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.reason.includes('No indexed holder snapshot exists'));
+      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.reason.includes('No indexed holder snapshot exists for graffitiking::WAXCASH'));
     const holderTradeWaxcashAnalyticsDb = {
       prepare(sql) {
         if (sql.includes('FROM waxonedge_token_stats')) {
@@ -6578,8 +6581,11 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   waxcashAnalyticsFrontend.includes('chartCandles(feed)') &&
   !waxcashAnalyticsFrontend.includes('Array.isArray(chart.candles)') &&
   !waxcashAnalyticsFrontend.includes('renderChart(state.payload') &&
+  !waxcashAnalyticsFrontend.includes('WAXP/WAXCASH') &&
+  waxcashAnalyticsFrontend.includes('WAXCASH/WAX display feed') &&
   waxcashAnalyticsFrontend.includes('pickPoolViews(rows)') &&
   waxcashAnalyticsFrontend.includes('Selected proof pool') &&
+  waxcashAnalyticsFrontend.includes("view.label + ' detail'") &&
   waxcashAnalyticsFrontend.includes('Best liquidity pool') &&
   waxcashAnalyticsFrontend.includes('Worst/low liquidity pool') &&
   waxcashAnalyticsFrontend.includes('Weighted/valued pool view') &&
@@ -6591,6 +6597,8 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   waxcashHtml.includes('wx-view-controls') &&
   waxcashHtml.includes('WAX per WAXCASH candles from the WaxOnEdge TradingView-compatible feed. Display controls do not change selected price.') &&
   waxcashHtml.includes('allowProductionFallback: false') &&
+  waxcashHtml.includes('API base URL unavailable — MOONBOYS_API not configured.') &&
+  waxcashHtml.includes('Display-only source-backed pair detail views') &&
   !waxcashHtml.includes('allowProductionFallback: true') &&
   !waxcashHtml.includes('api.PRODUCTION_BASE_URL') &&
   !waxcashHtml.includes('>1m</button>') &&
@@ -6606,6 +6614,12 @@ ok('WAXCASH analytics frontend renders OG-style in-page WAX candle chart with di
   !waxcashAnalyticsFrontend.includes('External Alcor chart unavailable in embed.') &&
   waxcashAnalyticsFrontend.includes('return tradingViewFeedCandles(feed)') &&
   !/Deposit|Add Liquidity|Swap|Trade on Swap|Connect Wallet|wallet selector|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
+ok('WAXCASH analytics backend uses chart-feed labels and alias-aware trade volume matching',
+  route.includes("pair_label: 'WAXCASH/WAX'") &&
+  route.includes('const sourceNames = candleTradeSourceNamesFor(pair?.source)') &&
+  route.includes('source IN (${sourceNames.map(() => \'?\').join(\',\')})') &&
+  route.includes('No indexed holder snapshot exists for ${contract}::${symbol}') &&
+  !route.includes('No indexed holder snapshot exists for graffitiking::WAXCASH'));
 ok('WAXCASH graph metric modes use USD price labels and WAX liquidity/volume',
   waxcashGraphFrontend.includes("if (metric === 'volume') return firstNumber(records, ['volume_24h_wax'])") &&
   waxcashGraphFrontend.includes("if (metric === 'price') return firstNumber(records, ['price_usd'])") &&
