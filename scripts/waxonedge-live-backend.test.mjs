@@ -2132,8 +2132,25 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.sections?.supply_proof &&
       waxcashAnalytics.sections?.price_proof &&
       waxcashAnalytics.sections?.pair_table?.rows?.length === waxcashAnalytics.pairs.length &&
-      waxcashAnalytics.sections?.chart?.price_unit === 'WAX_per_WAXCASH',
+      waxcashAnalytics.sections?.chart?.price_unit === 'WAX_per_WAXCASH' &&
+      waxcashAnalytics.sections?.chart_external?.source === 'alcor' &&
+      waxcashAnalytics.sections?.chart_external?.pool_id === '8388' &&
+      waxcashAnalytics.sections?.chart_external?.role === 'external_visual_reference_only' &&
+      waxcashAnalytics.sections?.chart_external?.affects_waxonedge_metrics === false,
       JSON.stringify(waxcashAnalytics.sections));
+    ok('WAXCASH external Alcor chart metadata does not affect backend proof metrics',
+      waxcashAnalytics.headline_price?.headline_price_source_policy === 'old_woe_legacy_pool_first_then_v3' &&
+      Number(waxcashAnalytics.stats.selected_price_wax) === 0.03 &&
+      waxcashAnalytics.stats.fdv_wax === null &&
+      Number(waxcashAnalytics.stats.market_cap_wax) === 15000 &&
+      waxcashAnalytics.stats.market_cap_basis === 'circulating_supply_x_selected_price' &&
+      waxcashAnalytics.sections?.chart_external?.url === 'https://alcor.exchange/v/wax/analytics/pools/8388' &&
+      waxcashAnalytics.sections?.price_proof?.basis === 'old_woe_legacy_pool_first_then_v3',
+      JSON.stringify({
+        stats: waxcashAnalytics.stats,
+        chart_external: waxcashAnalytics.sections?.chart_external,
+        price_proof: waxcashAnalytics.sections?.price_proof,
+      }));
     ok('WAXCASH analytics pair table orders selected WAXCASH/WAX proof pair first',
       waxcashAnalytics.sections?.pair_table?.rows?.[0]?.is_selected_price_pair === true &&
       waxcashAnalytics.sections?.pair_table?.rows?.[0]?.pair_id === 'WAXCASHWAXLEGACY');
@@ -2191,6 +2208,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       liveSupplyAnalytics.sections?.supply_proof?.total_supply === '2000000.12345678' &&
       Number(liveSupplyAnalytics.stats.total_supply) === 2000000.12345678 &&
       almostEqual(liveSupplyAnalytics.stats.fdv_wax, 60000.0037037034, 1e-7) &&
+      liveSupplyAnalytics.sections?.chart_external?.affects_waxonedge_metrics === false &&
       liveSupplyWrites.some((write) => write.sql.includes('INSERT INTO waxonedge_tokens') && write.params[0] === 'graffitiking' && write.params[1] === 'WAXCASH'),
       JSON.stringify({ supply_proof: liveSupplyAnalytics.sections?.supply_proof, stats: liveSupplyAnalytics.stats, liveSupplyWrites }));
     ok('WAXCASH analytics stats reuse indexed detail volume fields but not cached total supply',
@@ -6321,6 +6339,17 @@ ok('WAXCASH analytics frontend formats values and reasons without concatenation'
   waxcashHtml.includes('table-layout: fixed') &&
   waxcashHtml.includes('white-space: normal') &&
   waxcashHtml.includes('overflow-wrap: anywhere'));
+ok('WAXCASH analytics frontend renders external Alcor chart as visual-only reference',
+  waxcashAnalyticsFrontend.includes('sections.chart_external') &&
+  waxcashAnalyticsFrontend.includes('External Alcor WAX/WAXCASH pool chart') &&
+  waxcashAnalyticsFrontend.includes('Chart is external pool visualisation only. WaxOnEdge stats above remain backend proof values.') &&
+  waxcashAnalyticsFrontend.includes('External Alcor chart unavailable in embed.') &&
+  waxcashAnalyticsFrontend.includes('Open Alcor pool #8388') &&
+  waxcashAnalyticsFrontend.includes('sandbox="allow-scripts allow-same-origin allow-popups"') &&
+  waxcashAnalyticsFrontend.includes('referrerpolicy="no-referrer"') &&
+  !waxcashAnalyticsFrontend.includes('candles.map(function (candle)') &&
+  !waxcashAnalyticsFrontend.includes('waxcash_wax_chart_candles_unavailable_after_direction_normalization') &&
+  !/Swap|Trade on Swap|Connect Wallet|wallet|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
 ok('WAXCASH graph metric modes use USD price labels and WAX liquidity/volume',
   waxcashGraphFrontend.includes("if (metric === 'volume') return firstNumber(records, ['volume_24h_wax'])") &&
   waxcashGraphFrontend.includes("if (metric === 'price') return firstNumber(records, ['price_usd'])") &&

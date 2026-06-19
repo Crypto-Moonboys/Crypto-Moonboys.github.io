@@ -7449,6 +7449,14 @@ async function buildWaxcashAnalytics(db) {
       unavailable: chart.unavailable || null,
       no_fake_value: true,
     },
+    chart_external: {
+      source: 'alcor',
+      pool_id: '8388',
+      pair_label: 'WAX/WAXCASH',
+      url: 'https://alcor.exchange/v/wax/analytics/pools/8388',
+      role: 'external_visual_reference_only',
+      affects_waxonedge_metrics: false,
+    },
     pair_table: waxcashBuildPairTableSection(proof.all_pairs || [], selectedWaxPool),
   };
   return analytics;

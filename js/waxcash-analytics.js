@@ -174,40 +174,25 @@
 
   function renderChart(payload) {
     var sections = payload.sections || {};
-    var section = sections.chart || {};
-    var candles = Array.isArray(section.candles) ? section.candles : [];
-    $('wx-chart-source').textContent = section.source && section.pair_id
-      ? section.source + ' #' + section.pair_id + ' - WAX per WAXCASH'
-      : 'WAX per WAXCASH';
-    if (!candles.length) {
-      $('wx-chart').innerHTML = '<div class="wx-chart-empty">' + esc(section.unavailable || 'No indexed WAX-per-WAXCASH candles are available yet.') + '</div>';
-      return;
-    }
-    var values = candles.map(function (candle) { return num(candle.close); }).filter(function (value) { return value != null; });
-    if (!values.length) {
-      $('wx-chart').innerHTML = '<div class="wx-chart-empty">Indexed candles are present but close prices are unavailable.</div>';
-      return;
-    }
-    var min = Math.min.apply(Math, values);
-    var max = Math.max.apply(Math, values);
-    var spread = max - min || 1;
-    var width = 900;
-    var height = 280;
-    var points = candles.map(function (candle, index) {
-      var close = num(candle.close);
-      var x = candles.length === 1 ? width / 2 : (index / (candles.length - 1)) * width;
-      var y = close == null ? height : height - ((close - min) / spread) * (height - 30) - 15;
-      return x.toFixed(2) + ',' + y.toFixed(2);
-    }).join(' ');
-    var note = 'WAX per WAXCASH close range: ' + fmt(min, 8) + ' to ' + fmt(max, 8);
-    if (num(section.inverted_count) > 0) {
-      note += '. Normalized ' + fmt(section.inverted_count, 0) + ' reciprocal candle rows to WAX per WAXCASH.';
-    }
+    var section = sections.chart_external || {};
+    var url = section.url || 'https://alcor.exchange/v/wax/analytics/pools/8388';
+    var sourceLabel = section.source === 'alcor' && section.pool_id
+      ? 'Alcor pool #' + section.pool_id
+      : 'Alcor pool #8388';
+    $('wx-chart-source').textContent = sourceLabel;
     $('wx-chart').innerHTML =
-      '<svg viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="WAXCASH WAX per WAXCASH chart">' +
-      '<polyline fill="none" stroke="#04f0e6" stroke-width="3" points="' + esc(points) + '"></polyline>' +
-      '</svg>' +
-      '<div class="wx-note">' + esc(note) + '</div>';
+      '<div class="wx-external-chart-card">' +
+        '<div class="wx-external-chart-copy">' +
+          '<strong>External Alcor WAX/WAXCASH pool chart</strong>' +
+          '<span>' + esc(sourceLabel) + '</span>' +
+          '<p>Chart is external pool visualisation only. WaxOnEdge stats above remain backend proof values.</p>' +
+        '</div>' +
+        '<iframe class="wx-external-chart-frame" title="External Alcor WAX/WAXCASH pool chart" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups" src="' + esc(url) + '"></iframe>' +
+        '<div class="wx-chart-empty wx-external-chart-fallback">' +
+          '<span>External Alcor chart unavailable in embed.</span>' +
+          '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">Open Alcor pool #8388</a>' +
+        '</div>' +
+      '</div>';
   }
 
   function render(payload) {
@@ -233,7 +218,7 @@
     .catch(function (error) {
       $('wx-status').textContent = 'Analytics unavailable';
       $('wx-stats').innerHTML = statRow({ label: 'Status', live: false, reason: error.message || String(error) });
-      $('wx-chart').innerHTML = '<div class="wx-chart-empty">Indexed chart data unavailable.</div>';
+      $('wx-chart').innerHTML = '<div class="wx-chart-empty">External Alcor chart unavailable in embed.</div>';
       $('wx-pairs').innerHTML = '<tr><td colspan="8" class="wx-muted">Pair table unavailable.</td></tr>';
     });
 }());

@@ -112,6 +112,39 @@
       flex-direction: column;
       gap: 12px;
     }
+    .wx-external-chart-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 360px;
+    }
+    .wx-external-chart-copy {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      align-items: baseline;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .wx-external-chart-copy strong { color: var(--text); }
+    .wx-external-chart-copy span { color: var(--cyan); font-weight: 800; }
+    .wx-external-chart-copy p { flex-basis: 100%; margin: 0; font-size: 13px; }
+    .wx-external-chart-frame {
+      width: 100%;
+      min-height: 520px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #111722;
+    }
+    .wx-external-chart-fallback {
+      min-height: auto;
+      padding: 12px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px 14px;
+    }
+    .wx-external-chart-fallback a { color: var(--cyan); font-weight: 800; }
     .wx-chart svg {
       width: 100%;
       height: 300px;
