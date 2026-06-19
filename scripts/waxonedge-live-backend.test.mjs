@@ -679,6 +679,10 @@ ok('VPS live indexer /stream contract supports heartbeat and real token update e
   !liveIndexerSource.includes('Math.random'));
 ok('VPS live indexer exposes fresh-start rolling history without claiming backfill',
   liveIndexerSource.includes("pathname === '/history'") &&
+  liveIndexerSource.includes("pathname === '/history/trades'") &&
+  liveIndexerSource.includes('historyTradesPayload(state') &&
+  liveIndexerSource.includes('waxcash_trade_count') &&
+  liveIndexerSource.includes('next_cursor') &&
   liveIndexerSource.includes("history_mode: FRESH_HISTORY_MODE") &&
   liveIndexerSource.includes('history_complete: false') &&
   liveIndexerSource.includes('history_backfilled: false') &&
@@ -732,8 +736,44 @@ ok('VPS live indexer exposes fresh-start rolling history without claiming backfi
     JSON.parse(imported.raw_json).volume_wax === '0.3' &&
     JSON.parse(imported.raw_json).reference_ingestion === 'waxonedge-live-indexer /history');
   const db = createWriteCaptureDb();
+  const requestedHistoryUrls = [];
   const historyResult = await __waxonedgeTestHooks.syncLiveIndexerHistory({
     DB: db,
+    WAXONEDGE_LIVE_INDEXER_URL: 'https://live.example',
+  }, async (url) => {
+    requestedHistoryUrls.push(url);
+    return ({
+    ok: true,
+    status: 200,
+    async text() {
+      return JSON.stringify({
+        history_started_at: '2026-06-18T00:00:00.000Z',
+        persisted_trade_count: 1,
+        trades: [{
+          trade_id: 'live-8388-a',
+          source: 'swap.alcor',
+          pair_id: '8388',
+          contract: 'graffitiking',
+          symbol: 'WAXCASH',
+          quote_contract: 'eosio.token',
+          quote_symbol: 'WAX',
+          price: '0.03',
+          volume: '10',
+          traded_at: '2026-06-18T00:00:00.000Z',
+        }],
+      });
+    },
+  });
+  });
+  ok('Worker imports live-indexer history into waxonedge_trades for rolling volume and candle backfill',
+    historyResult.ok &&
+    requestedHistoryUrls[0] === 'https://live.example/history/trades?limit=500' &&
+    historyResult.imported_trade_count === 1 &&
+    db.writes.some((write) => write.sql.includes('INSERT INTO waxonedge_trades') && write.params[0] === 'swap.alcor' && write.params[2] === '8388') &&
+    db.writes.some((write) => write.params.includes('live_indexer_history_import')));
+  const metadataOnlyDb = createWriteCaptureDb();
+  const metadataOnlyResult = await __waxonedgeTestHooks.syncLiveIndexerHistory({
+    DB: metadataOnlyDb,
     WAXONEDGE_LIVE_INDEXER_URL: 'https://live.example',
   }, async () => ({
     ok: true,
@@ -742,28 +782,18 @@ ok('VPS live indexer exposes fresh-start rolling history without claiming backfi
       return JSON.stringify({
         history: {
           history_started_at: '2026-06-18T00:00:00.000Z',
-          persisted_trade_count: 1,
-          trades: [{
-            trade_id: 'live-8388-a',
-            source: 'swap.alcor',
-            pair_id: '8388',
-            contract: 'graffitiking',
-            symbol: 'WAXCASH',
-            quote_contract: 'eosio.token',
-            quote_symbol: 'WAX',
-            price: '0.03',
-            volume: '10',
-            traded_at: '2026-06-18T00:00:00.000Z',
-          }],
+          persisted_trade_count: 12,
         },
       });
     },
   }));
-  ok('Worker imports live-indexer history into waxonedge_trades for rolling volume and candle backfill',
-    historyResult.ok &&
-    historyResult.imported_trade_count === 1 &&
-    db.writes.some((write) => write.sql.includes('INSERT INTO waxonedge_trades') && write.params[0] === 'swap.alcor' && write.params[2] === '8388') &&
-    db.writes.some((write) => write.params.includes('live_indexer_history_import')));
+  ok('Worker does not mark live-indexer metadata-only history payload as successful import',
+    metadataOnlyResult.ok &&
+    metadataOnlyResult.status === 'skipped' &&
+    metadataOnlyResult.imported_trade_count === 0 &&
+    metadataOnlyResult.reason === 'live_indexer_history_trades_not_exposed' &&
+    !metadataOnlyDb.writes.some((write) => write.sql.includes('INSERT INTO waxonedge_trades')) &&
+    metadataOnlyDb.writes.some((write) => write.params.includes('live_indexer_history_trades_not_exposed')));
 }
 {
   const snapshotAt = '2026-06-18T00:00:00.000Z';
@@ -781,12 +811,18 @@ ok('VPS live indexer exposes fresh-start rolling history without claiming backfi
     holders[0].balance === '12.5' &&
     holders[1].account === 'carol' &&
     holders.every((holder) => holder.snapshot_at === snapshotAt && holder.source === 'hyperion_state_get_tokens'));
-  ok('WAXCASH holder snapshot keeps incomplete pagination unavailable instead of exposing partial count',
-    route.includes("const reason = 'holder snapshot pagination incomplete'") &&
-    route.includes('partial_positive_balance_rows_seen: holders.length') &&
-    route.includes('holder_count: null') &&
-    route.includes('complete: 1') &&
-    route.includes("status: 'success'"));
+  const holderFetch = await __waxonedgeTestHooks.fetchWaxcashHolderRows({}, 1000, '');
+  const holderDb = createWriteCaptureDb();
+  const holderSync = await __waxonedgeTestHooks.syncWaxcashHolderSnapshot({ DB: holderDb });
+  ok('WAXCASH holder sync does not use account-scoped Hyperion state/get_tokens as a global holder source',
+    holderFetch.skipped === true &&
+    holderFetch.reason === 'holder_global_source_unavailable' &&
+    holderSync.status === 'skipped' &&
+    holderSync.holder_count === null &&
+    holderSync.reason === 'holder_global_source_unavailable' &&
+    holderDb.writes.some((write) => write.params.includes('holder_global_source_unavailable')) &&
+    !route.includes("hyperionStateEndpoint(env, '/state/get_tokens')") &&
+    !route.includes("source_endpoint: 'hyperion_state_get_tokens'"));
 }
 ok('VPS live indexer exposes no fake live events or random movement',
   liveIndexerSource.includes('uses_fake_live_data: false') &&

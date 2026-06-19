@@ -21,6 +21,8 @@ const MAX_TOKEN_CACHE_SIZE = 500;
 const MAX_SEEN_TRADE_IDS = 5000;
 const MAX_PERSISTED_TRADE_HISTORY = 100000;
 const FRESH_HISTORY_MODE = 'fresh_start';
+const WAXCASH_CONTRACT = 'graffitiking';
+const WAXCASH_SYMBOL = 'WAXCASH';
 
 function nowIso() {
   return new Date().toISOString();
@@ -571,6 +573,39 @@ export function historyPayload(state) {
     history_save_pending: Boolean(state.history_save_dirty || state.history_save_in_flight || state.history_save_timer),
     history_last_saved_at: state.history_last_saved_at || null,
     last_error: state.history.last_error || null,
+  };
+}
+
+function isWaxcashHistoryTrade(trade) {
+  if (!trade || typeof trade !== 'object') return false;
+  if (normalizeContract(trade.contract) === WAXCASH_CONTRACT && normalizeSymbol(trade.symbol) === WAXCASH_SYMBOL) return true;
+  if (normalizeContract(trade.quote_contract) === WAXCASH_CONTRACT && normalizeSymbol(trade.quote_symbol) === WAXCASH_SYMBOL) return true;
+  const pair = trade.canonical_pair || {};
+  return (
+    (normalizeContract(pair.token_a_contract) === WAXCASH_CONTRACT && normalizeSymbol(pair.token_a_symbol) === WAXCASH_SYMBOL) ||
+    (normalizeContract(pair.token_b_contract) === WAXCASH_CONTRACT && normalizeSymbol(pair.token_b_symbol) === WAXCASH_SYMBOL)
+  );
+}
+
+export function historyTradesPayload(state, options = {}) {
+  const limit = clampInt(options.limit, 1, 500, 250);
+  const cursor = Math.max(0, Number.parseInt(String(options.cursor || '0'), 10) || 0);
+  const rows = state.history.trades
+    .filter(isWaxcashHistoryTrade)
+    .slice()
+    .sort((a, b) => Date.parse(b.traded_at || '') - Date.parse(a.traded_at || ''));
+  const trades = rows.slice(cursor, cursor + limit);
+  const nextCursor = cursor + trades.length < rows.length ? String(cursor + trades.length) : null;
+  return {
+    history_mode: FRESH_HISTORY_MODE,
+    history_started_at: state.history.history_started_at,
+    persisted_trade_count: state.history.trades.length,
+    waxcash_trade_count: rows.length,
+    cursor: String(cursor),
+    next_cursor: nextCursor,
+    limit,
+    trades,
+    uses_fake_live_data: false,
   };
 }
 
@@ -1255,6 +1290,10 @@ export function safeRequestPathname(requestUrl) {
 export function createServer(state = createState()) {
   return http.createServer((req, res) => {
     const pathname = safeRequestPathname(req.url);
+    let searchParams = new URLSearchParams();
+    try {
+      searchParams = new URL(req.url, 'http://127.0.0.1').searchParams;
+    } catch (_) {}
     if (!pathname) {
       writeJson(res, 400, { ok: false, error: 'malformed request target', uses_fake_live_data: false });
       return;
@@ -1278,6 +1317,19 @@ export function createServer(state = createState()) {
         generated_at: nowIso(),
         history: historyPayload(state),
         uses_fake_live_data: false,
+        browser_hyperion_fetch: false,
+      });
+      return;
+    }
+    if (pathname === '/history/trades') {
+      writeJson(res, 200, {
+        ok: true,
+        service: 'waxonedge-live-indexer',
+        generated_at: nowIso(),
+        ...historyTradesPayload(state, {
+          limit: searchParams.get('limit'),
+          cursor: searchParams.get('cursor'),
+        }),
         browser_hyperion_fetch: false,
       });
       return;

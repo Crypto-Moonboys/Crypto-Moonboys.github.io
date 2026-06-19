@@ -2848,9 +2848,18 @@ async function fetchLiveIndexerJson(env, path, fetchImpl = globalThis.fetch) {
   }
 }
 
+function liveIndexerHistoryTradeRows(payload) {
+  if (!payload || typeof payload !== 'object') return null;
+  if (Array.isArray(payload.trades)) return payload.trades;
+  if (Array.isArray(payload.data)) return payload.data;
+  if (Array.isArray(payload.results)) return payload.results;
+  if (Array.isArray(payload.history?.trades)) return payload.history.trades;
+  return null;
+}
+
 async function syncLiveIndexerHistory(env, fetchImpl = globalThis.fetch) {
   const startedAt = nowIso();
-  const fetched = await fetchLiveIndexerJson(env, '/history', fetchImpl).catch((error) => ({
+  const fetched = await fetchLiveIndexerJson(env, '/history/trades?limit=500', fetchImpl).catch((error) => ({
     ok: false,
     reason: error?.message || String(error),
   }));
@@ -2877,13 +2886,61 @@ async function syncLiveIndexerHistory(env, fetchImpl = globalThis.fetch) {
     }, nowIso()).catch(() => {});
     return { ok: true, status, imported_trade_count: 0, reason: fetched.reason || null, no_fake_trades: true };
   }
-  const trades = (fetched.payload?.history?.trades || [])
+  const exposedTrades = liveIndexerHistoryTradeRows(fetched.payload);
+  if (!Array.isArray(exposedTrades)) {
+    const reason = 'live_indexer_history_trades_not_exposed';
+    await upsertSourceIndexState(env.DB, LIVE_INDEXER_HISTORY_SOURCE, {
+      sync_cycle_id: `live-history-${new Date().toISOString().slice(0, 10)}`,
+      cursor: '',
+      page_count: 0,
+      row_count: 0,
+      complete: 0,
+      truncated: 0,
+      status: 'skipped',
+      error: reason,
+      started_at: startedAt,
+    }).catch(() => {});
+    await recordSyncRun(env.DB, LIVE_INDEXER_HISTORY_SOURCE, 'skipped', startedAt, reason).catch(() => {});
+    await writeSnapshot(env.DB, LIVE_INDEXER_HISTORY_SOURCE, {
+      source: LIVE_INDEXER_HISTORY_SOURCE,
+      status: 'skipped',
+      imported_trade_count: 0,
+      reason,
+      no_fake_trades: true,
+    }, nowIso()).catch(() => {});
+    return { ok: true, status: 'skipped', imported_trade_count: 0, reason, no_fake_trades: true };
+  }
+  const trades = exposedTrades
     .map(normalizeLiveIndexerHistoryTrade)
     .filter(Boolean);
+  if (!trades.length) {
+    const reason = exposedTrades.length ? 'live_indexer_history_no_importable_trades' : 'live_indexer_history_no_trades';
+    await upsertSourceIndexState(env.DB, LIVE_INDEXER_HISTORY_SOURCE, {
+      sync_cycle_id: `live-history-${new Date().toISOString().slice(0, 10)}`,
+      cursor: fetched.payload?.next_cursor || fetched.payload?.history?.history_started_at || '',
+      page_count: 1,
+      row_count: 0,
+      complete: 0,
+      truncated: 0,
+      status: 'skipped',
+      error: reason,
+      started_at: startedAt,
+    }).catch(() => {});
+    await recordSyncRun(env.DB, LIVE_INDEXER_HISTORY_SOURCE, 'skipped', startedAt, reason).catch(() => {});
+    await writeSnapshot(env.DB, LIVE_INDEXER_HISTORY_SOURCE, {
+      source: LIVE_INDEXER_HISTORY_SOURCE,
+      status: 'skipped',
+      imported_trade_count: 0,
+      exposed_trade_count: exposedTrades.length,
+      reason,
+      no_fake_trades: true,
+    }, nowIso()).catch(() => {});
+    return { ok: true, status: 'skipped', imported_trade_count: 0, exposed_trade_count: exposedTrades.length, reason, no_fake_trades: true };
+  }
   const rowsWritten = await upsertTrades(env.DB, trades);
   await upsertSourceIndexState(env.DB, LIVE_INDEXER_HISTORY_SOURCE, {
     sync_cycle_id: `live-history-${new Date().toISOString().slice(0, 10)}`,
-    cursor: fetched.payload?.history?.history_started_at || '',
+    cursor: fetched.payload?.next_cursor || fetched.payload?.history?.history_started_at || '',
     page_count: 1,
     row_count: trades.length,
     complete: 1,
@@ -2896,8 +2953,10 @@ async function syncLiveIndexerHistory(env, fetchImpl = globalThis.fetch) {
     source: LIVE_INDEXER_HISTORY_SOURCE,
     status: 'success',
     imported_trade_count: trades.length,
+    exposed_trade_count: exposedTrades.length,
     rows_written: rowsWritten,
     history_started_at: fetched.payload?.history?.history_started_at || null,
+    next_cursor: fetched.payload?.next_cursor || null,
     persisted_trade_count: asNumber(fetched.payload?.history?.persisted_trade_count) || trades.length,
     source_coverage: Array.from(new Set(trades.map((trade) => moonboysCandleSource(trade.source)).filter(Boolean))).sort(),
     no_fake_trades: true,
@@ -7799,30 +7858,14 @@ function holderRowsFromHyperionPayload(data, snapshotAt) {
 }
 
 async function fetchWaxcashHolderRows(env, limit = 1000, cursor = '') {
-  const endpoint = hyperionStateEndpoint(env, '/state/get_tokens');
-  if (!endpoint) return { ok: false, skipped: true, reason: 'hyperion_state_endpoint_not_configured' };
-  const url = new URL(endpoint);
-  url.searchParams.set('contract', WAXCASH_CONTRACT);
-  url.searchParams.set('symbol', WAXCASH_SYMBOL);
-  url.searchParams.set('limit', String(limit));
-  if (cursor) url.searchParams.set('skip', String(cursor));
-  const response = await fetch(url.toString(), { headers: { accept: 'application/json' } });
-  const text = await response.text();
-  if (!response.ok) return { ok: false, reason: `hyperion_state_get_tokens_${response.status}`, body: safeBodySnippet(text) };
-  let payload = {};
-  try {
-    payload = text ? JSON.parse(text) : {};
-  } catch (error) {
-    return { ok: false, reason: 'hyperion_state_get_tokens_invalid_json', body: safeBodySnippet(text || error?.message) };
-  }
-  const rows = sourceRows(payload?.tokens || payload?.accounts || payload?.holders || payload);
-  const nextCursor = firstPresent(payload.next, payload.next_key, payload.next_cursor, payload.cursor);
+  void env;
+  void limit;
+  void cursor;
   return {
-    ok: true,
-    payload,
-    raw_count: rows.length,
-    next_cursor: safeString(nextCursor),
-    complete: !nextCursor || rows.length < limit,
+    ok: false,
+    skipped: true,
+    reason: 'holder_global_source_unavailable',
+    detail: 'Hyperion state/get_tokens is account-scoped and is not a global WAXCASH holder source.',
   };
 }
 
@@ -7853,109 +7896,32 @@ async function writeWaxcashHolderSnapshot(db, holders, snapshotAt) {
 
 async function syncWaxcashHolderSnapshot(env) {
   const startedAt = nowIso();
-  const snapshotAt = startedAt;
-  const limit = Math.max(1, Math.min(1000, Math.floor(asNumber(env?.WAXONEDGE_HOLDER_SNAPSHOT_LIMIT) || 1000)));
-  const pageLimit = Math.max(1, Math.min(25, Math.floor(asNumber(env?.WAXONEDGE_HOLDER_SNAPSHOT_PAGES) || 10)));
-  const payloads = [];
-  let cursor = '';
-  let fetched = null;
-  for (let page = 0; page < pageLimit; page += 1) {
-    fetched = await fetchWaxcashHolderRows(env, limit, cursor).catch((error) => ({
-      ok: false,
-      reason: error?.message || String(error),
-    }));
-    if (!fetched.ok) break;
-    payloads.push(fetched.payload);
-    if (fetched.complete) break;
-    cursor = fetched.next_cursor || '';
-    if (!cursor) break;
-  }
-  if (!fetched.ok) {
-    const status = fetched.skipped ? 'skipped' : 'failed';
-    await upsertSourceIndexState(env.DB, WAXCASH_HOLDER_SNAPSHOT_SOURCE, {
-      sync_cycle_id: `holders-${new Date().toISOString().slice(0, 10)}`,
-      cursor: '',
-      page_count: 0,
-      row_count: 0,
-      complete: 0,
-      truncated: 0,
-      status,
-      error: fetched.reason || null,
-      started_at: startedAt,
-    }).catch(() => {});
-    await writeSnapshot(env.DB, WAXCASH_HOLDER_SNAPSHOT_SOURCE, {
-      source: WAXCASH_HOLDER_SNAPSHOT_SOURCE,
-      status,
-      holder_count: null,
-      reason: fetched.reason || null,
-      no_fake_value: true,
-    }, nowIso()).catch(() => {});
-    await recordSyncRun(env.DB, WAXCASH_HOLDER_SNAPSHOT_SOURCE, status, startedAt, fetched.reason || null).catch(() => {});
-    return { ok: true, status, holder_count: null, reason: fetched.reason || null, no_fake_value: true };
-  }
-  const complete = fetched.complete === true;
-  const holders = payloads.flatMap((payload) => holderRowsFromHyperionPayload(payload, snapshotAt));
-  if (!complete) {
-    const reason = 'holder snapshot pagination incomplete';
-    await upsertSourceIndexState(env.DB, WAXCASH_HOLDER_SNAPSHOT_SOURCE, {
-      sync_cycle_id: `holders-${new Date().toISOString().slice(0, 10)}`,
-      cursor: cursor || fetched.next_cursor || '',
-      page_count: payloads.length,
-      row_count: holders.length,
-      complete: 0,
-      truncated: 1,
-      status: 'partial',
-      error: reason,
-      started_at: startedAt,
-    }).catch(() => {});
-    await writeSnapshot(env.DB, WAXCASH_HOLDER_SNAPSHOT_SOURCE, {
-      source: WAXCASH_HOLDER_SNAPSHOT_SOURCE,
-      status: 'partial',
-      holder_count: null,
-      partial_positive_balance_rows_seen: holders.length,
-      snapshot_at: null,
-      complete: false,
-      next_cursor: cursor || fetched.next_cursor || null,
-      source_endpoint: 'hyperion_state_get_tokens',
-      reason,
-      no_fake_value: true,
-    }, nowIso()).catch(() => {});
-    await recordSyncRun(env.DB, WAXCASH_HOLDER_SNAPSHOT_SOURCE, 'partial', startedAt, reason).catch(() => {});
-    return { ok: true, status: 'partial', holder_count: null, partial_positive_balance_rows_seen: holders.length, reason, no_fake_value: true };
-  }
-  const rowsWritten = await writeWaxcashHolderSnapshot(env.DB, holders, snapshotAt);
-  await env.DB.prepare(
-    `INSERT INTO waxonedge_token_stats (contract, symbol, holder_count, updated_at)
-     VALUES (?, ?, ?, ?)
-     ON CONFLICT(contract, symbol) DO UPDATE SET
-       holder_count = excluded.holder_count,
-       updated_at = excluded.updated_at`
-  ).bind(WAXCASH_CONTRACT, WAXCASH_SYMBOL, holders.length, snapshotAt).run().catch(() => {});
+  const reason = 'holder_global_source_unavailable';
   await upsertSourceIndexState(env.DB, WAXCASH_HOLDER_SNAPSHOT_SOURCE, {
     sync_cycle_id: `holders-${new Date().toISOString().slice(0, 10)}`,
     cursor: '',
-    page_count: payloads.length,
-    row_count: holders.length,
-    complete: 1,
+    page_count: 0,
+    row_count: 0,
+    complete: 0,
     truncated: 0,
-    status: 'success',
-    error: null,
+    status: 'skipped',
+    error: reason,
     started_at: startedAt,
   }).catch(() => {});
   await writeSnapshot(env.DB, WAXCASH_HOLDER_SNAPSHOT_SOURCE, {
     source: WAXCASH_HOLDER_SNAPSHOT_SOURCE,
-    status: 'success',
-    holder_count: holders.length,
-    rows_written: rowsWritten,
-    snapshot_at: snapshotAt,
-    complete: true,
-    page_count: payloads.length,
+    status: 'skipped',
+    holder_count: null,
+    snapshot_at: null,
+    complete: false,
+    page_count: 0,
     next_cursor: null,
-    source_endpoint: 'hyperion_state_get_tokens',
+    source_endpoint: null,
+    reason,
     no_fake_value: true,
   }, nowIso()).catch(() => {});
-  await recordSyncRun(env.DB, WAXCASH_HOLDER_SNAPSHOT_SOURCE, 'success', startedAt).catch(() => {});
-  return { ok: true, status: 'success', holder_count: holders.length, rows_written: rowsWritten, snapshot_at: snapshotAt, no_fake_value: true };
+  await recordSyncRun(env.DB, WAXCASH_HOLDER_SNAPSHOT_SOURCE, 'skipped', startedAt, reason).catch(() => {});
+  return { ok: true, status: 'skipped', holder_count: null, reason, no_fake_value: true };
 }
 
 function waxcashTradeVolumePredicates(pairs = []) {
@@ -10215,6 +10181,7 @@ export const __waxonedgeTestHooks = {
   canonicalAmmActionPairId,
   fetchAmmSwapStreamRows,
   normalizeLiveIndexerHistoryTrade,
+  liveIndexerHistoryTradeRows,
   syncLiveIndexerHistory,
   holderRowsFromHyperionPayload,
   fetchWaxcashHolderRows,
