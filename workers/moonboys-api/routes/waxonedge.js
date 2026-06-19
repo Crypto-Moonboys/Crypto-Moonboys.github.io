@@ -4788,6 +4788,24 @@ function reverseStoredCandle(candle) {
   };
 }
 
+const WAXCASH_CHART_PRICE_RANGE_FACTOR = 25;
+
+function waxcashCandleOhlc(candle) {
+  return ['open', 'high', 'low', 'close'].map((field) => asNumber(candle?.[field]));
+}
+
+function waxcashCandleRangeReason(candle, selectedPriceWax) {
+  const values = waxcashCandleOhlc(candle);
+  if (values.some((value) => value == null || value <= 0)) return 'invalid_ohlc';
+  const [open, high, low, close] = values;
+  if (high < low || high < open || high < close || low > open || low > close) return 'invalid_ohlc_range';
+  if (selectedPriceWax == null || selectedPriceWax <= 0) return null;
+  const minAllowed = selectedPriceWax / WAXCASH_CHART_PRICE_RANGE_FACTOR;
+  const maxAllowed = selectedPriceWax * WAXCASH_CHART_PRICE_RANGE_FACTOR;
+  if (values.some((value) => value < minAllowed || value > maxAllowed)) return 'ohlc_outside_selected_price_range';
+  return null;
+}
+
 function normalizeWaxcashWaxCandle(candle, options = {}) {
   const selectedPriceWax = asNumber(options.selectedPriceWax);
   const close = asNumber(candle?.close);
@@ -4810,18 +4828,26 @@ function normalizeWaxcashWaxCandle(candle, options = {}) {
   const inverseDistance = Math.abs(Math.log(reciprocalClose / selectedPriceWax));
   if (inverseDistance < directDistance) {
     const reversed = reverseStoredCandle(candle);
-    const reversedClose = asNumber(reversed.close);
-    if (reversedClose == null || reversedClose <= 0) {
+    const reversedReason = waxcashCandleRangeReason(reversed, selectedPriceWax);
+    if (reversedReason) {
       return {
         candle: null,
         status: 'rejected',
-        reason: 'inverse_close_unavailable',
+        reason: reversedReason,
       };
     }
     return {
       candle: { ...reversed, price_unit: 'WAX_per_WAXCASH', normalized_direction: 'inverted_from_WAXCASH_per_WAX' },
       status: 'inverted',
       reason: null,
+    };
+  }
+  const directReason = waxcashCandleRangeReason(candle, selectedPriceWax);
+  if (directReason) {
+    return {
+      candle: null,
+      status: 'rejected',
+      reason: directReason,
     };
   }
   return {

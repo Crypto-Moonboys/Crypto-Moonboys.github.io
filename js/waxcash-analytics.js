@@ -54,10 +54,39 @@
     return parsed.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' %';
   }
 
+  var REASON_LABELS = {
+    paired_token_wax_price_unavailable: 'Paired token WAX price unavailable',
+    missing_or_zero_reserves: 'Missing or zero reserves',
+    direct_wax_price_unavailable: 'Direct WAX price unavailable',
+    selected_price_unavailable: 'Selected price unavailable',
+    liquidity_unavailable: 'Liquidity unavailable',
+    invalid_ohlc: 'Invalid OHLC candle',
+    invalid_ohlc_range: 'Invalid OHLC candle range',
+    ohlc_outside_selected_price_range: 'OHLC outside selected price range',
+  };
+
+  function humanReason(reason) {
+    if (!reason) return '';
+    return String(reason)
+      .split(',')
+      .map(function (part) {
+        var key = part.trim();
+        if (!key) return '';
+        return REASON_LABELS[key] || key.replace(/_/g, ' ').replace(/\b\w/g, function (ch) { return ch.toUpperCase(); });
+      })
+      .filter(Boolean)
+      .join(', ');
+  }
+
+  function reasonHtml(reason) {
+    var label = humanReason(reason);
+    return label ? '<small class="wx-reason">' + esc(label) + '</small>' : '';
+  }
+
   function valueHtml(row) {
     if (!row || row.live === false) {
-      return '<span>Unavailable</span>' +
-        '<small class="wx-muted">' + esc((row && row.reason) || 'No source-backed value available.') + '</small>';
+      return '<span class="wx-main-value">Unavailable</span>' +
+        reasonHtml((row && row.reason) || 'No source-backed value available.');
     }
     if (row.key === 'token') return '<span class="wx-token"><strong>WAXCASH</strong>graffitiking</span>';
     if (row.key === 'decimals') return esc(row.value == null ? DASH : row.value);
@@ -72,8 +101,8 @@
     if (wax !== DASH) return esc(wax);
     if (usd !== DASH) return esc(usd);
     if (row.value != null) return esc(fmt(row.value, 8));
-    return '<span>Unavailable</span>' +
-      '<small class="wx-muted">' + esc(row.reason || 'No source-backed value available.') + '</small>';
+    return '<span class="wx-main-value">Unavailable</span>' +
+      reasonHtml(row.reason || 'No source-backed value available.');
   }
 
   function statRow(row) {
@@ -105,6 +134,7 @@
   function pairStatus(row) {
     if (row.is_selected_price_pair) return '<span class="wx-positive">Selected price pair</span>';
     if (row.status === 'unavailable') return '<span class="wx-muted">Unavailable</span>';
+    if (num(row.liquidity_wax) != null && num(row.liquidity_wax) < 1) return '<span class="wx-warning">Low liquidity</span>';
     if (row.is_direct_wax_pair) return '<span class="wx-positive">Direct WAX pair</span>';
     return '<span class="wx-positive">Valued</span>';
   }
@@ -112,10 +142,10 @@
   function dual(wax, usd, reason) {
     var waxText = fmtWax(wax);
     var usdText = fmtUsd(usd);
-    if (waxText !== DASH && usdText !== DASH) return esc(waxText) + '<small>' + esc(usdText) + '</small>';
-    if (waxText !== DASH) return esc(waxText);
-    if (usdText !== DASH) return esc(usdText);
-    return '<span class="wx-muted">Unavailable</span>' + (reason ? '<small class="wx-muted">' + esc(reason) + '</small>' : '');
+    if (waxText !== DASH && usdText !== DASH) return '<span class="wx-main-value">' + esc(waxText) + '</span><small>' + esc(usdText) + '</small>';
+    if (waxText !== DASH) return '<span class="wx-main-value">' + esc(waxText) + '</span>';
+    if (usdText !== DASH) return '<span class="wx-main-value">' + esc(usdText) + '</span>';
+    return '<span class="wx-muted">Unavailable</span>' + reasonHtml(reason);
   }
 
   function renderPairs(payload) {
@@ -128,12 +158,12 @@
       return;
     }
     $('wx-pairs').innerHTML = rows.map(function (row, index) {
-      var proof = row.proof_label || row.reason || 'verified';
+      var proof = humanReason(row.proof_label || row.reason || 'verified');
       return '<tr>' +
         '<td>#' + (index + 1) + '</td>' +
         '<td>' + tokenLabel(row) + '</td>' +
         '<td><span class="wx-source">' + esc(row.source || DASH) + '</span><br><span class="wx-muted">' + esc(row.pair_id || DASH) + '</span></td>' +
-        '<td>' + pairStatus(row) + (row.reason ? '<small class="wx-muted">' + esc(row.reason) + '</small>' : '') + '</td>' +
+        '<td>' + pairStatus(row) + reasonHtml(row.reason) + '</td>' +
         '<td>' + dual(row.liquidity_wax, row.liquidity_usd, row.reason) + '</td>' +
         '<td>' + dual(row.volume_24h_wax, row.volume_24h_usd, row.reason) + '</td>' +
         '<td>' + esc(row.reserves_label || DASH) + '</td>' +
