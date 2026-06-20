@@ -1860,6 +1860,32 @@ async function countWaxcashPairsForSource(db, source, options = {}) {
   return asNumber(row?.count) || 0;
 }
 
+const WAXCASH_SOURCE_MINIMUM_PAIR_COUNTS = {
+  'swap.nefty': 58,
+  'swap.taco': 12,
+  'swap.alcor': 22,
+};
+
+function waxcashMinimumPairCountForSource(source) {
+  return WAXCASH_SOURCE_MINIMUM_PAIR_COUNTS[aggregateSourceKey(source)] || 0;
+}
+
+function waxcashPairCountBaseline(source, currentD1Count, previousSnapshotData = {}) {
+  const current = asNumber(currentD1Count) || 0;
+  const lastGood = asNumber(previousSnapshotData?.last_good_waxcash_pair_count) || 0;
+  const previousComplete = previousSnapshotData?.status === 'success'
+    ? (asNumber(previousSnapshotData?.waxcash_pair_count) || 0)
+    : 0;
+  const minimum = waxcashMinimumPairCountForSource(source);
+  return {
+    previous_current_d1_waxcash_pair_count: current,
+    last_good_waxcash_pair_count: lastGood,
+    previous_complete_waxcash_pair_count: previousComplete,
+    minimum_waxcash_pair_count: minimum,
+    guard_baseline_waxcash_pair_count: Math.max(current, lastGood, previousComplete, minimum),
+  };
+}
+
 function waxcashSourceCollapseGuard(previousCount, refreshedCount) {
   const previous = asNumber(previousCount) || 0;
   const refreshed = asNumber(refreshedCount) || 0;
@@ -4210,24 +4236,33 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
       const pairs = rows
         .map((row) => normalizeCoreDexPair(adapter, row, priceIndex, syncedAt))
         .filter(Boolean);
+      const previousSnapshot = await readSnapshot(env.DB, `${adapter.source}_${adapter.table}`);
       const previousWaxcashPairCount = await countWaxcashPairsForSource(env.DB, adapter.source);
       await upsertPairs(env.DB, pairs);
       let complete = tableResult.complete ? 1 : 0;
       let status = complete ? 'success' : 'partial';
       const refreshStartedAt = state.started_at || adapterStartedAt;
       let waxcashCollapseGuard = null;
+      const waxcashBaseline = waxcashPairCountBaseline(adapter.source, previousWaxcashPairCount, previousSnapshot.data || {});
+      let nextLastGoodWaxcashPairCount = waxcashBaseline.last_good_waxcash_pair_count || waxcashBaseline.previous_complete_waxcash_pair_count || 0;
       if (complete) {
         const refreshedWaxcashPairCount = await countWaxcashPairsForSource(env.DB, adapter.source, { updatedAtGte: refreshStartedAt });
         waxcashCollapseGuard = {
-          previous_waxcash_pair_count: previousWaxcashPairCount,
+          previous_waxcash_pair_count: waxcashBaseline.guard_baseline_waxcash_pair_count,
+          previous_current_d1_waxcash_pair_count: waxcashBaseline.previous_current_d1_waxcash_pair_count,
+          last_good_waxcash_pair_count: waxcashBaseline.last_good_waxcash_pair_count,
+          previous_complete_waxcash_pair_count: waxcashBaseline.previous_complete_waxcash_pair_count,
+          minimum_waxcash_pair_count: waxcashBaseline.minimum_waxcash_pair_count,
+          guard_baseline_waxcash_pair_count: waxcashBaseline.guard_baseline_waxcash_pair_count,
           refreshed_waxcash_pair_count: refreshedWaxcashPairCount,
           refresh_started_at: refreshStartedAt,
           reason: null,
         };
-        const guard = waxcashSourceCollapseGuard(previousWaxcashPairCount, refreshedWaxcashPairCount);
+        const guard = waxcashSourceCollapseGuard(waxcashBaseline.guard_baseline_waxcash_pair_count, refreshedWaxcashPairCount);
         waxcashCollapseGuard.reason = guard.reason;
         if (guard.ok) {
           await pruneStaleSourcePairsAfterComplete(env.DB, adapter.source, refreshStartedAt);
+          nextLastGoodWaxcashPairCount = Math.max(nextLastGoodWaxcashPairCount, refreshedWaxcashPairCount);
         } else {
           complete = 0;
           status = 'partial';
@@ -4235,9 +4270,8 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
       }
       let error = complete ? null : `Partial source sync checkpoint saved after ${tableResult.page_count} page(s) and ${tableResult.request_count} table row request(s); next_key=${tableResult.next_key || 'unknown'}`;
       if (waxcashCollapseGuard?.reason) {
-        error = [error, `${waxcashCollapseGuard.reason}: previous_waxcash_pair_count=${waxcashCollapseGuard.previous_waxcash_pair_count}; refreshed_waxcash_pair_count=${waxcashCollapseGuard.refreshed_waxcash_pair_count}; prune skipped to preserve last complete WAXCASH rows`].filter(Boolean).join('; ');
+        error = [error, `${waxcashCollapseGuard.reason}: guard_baseline_waxcash_pair_count=${waxcashCollapseGuard.guard_baseline_waxcash_pair_count}; previous_current_d1_waxcash_pair_count=${waxcashCollapseGuard.previous_current_d1_waxcash_pair_count}; last_good_waxcash_pair_count=${waxcashCollapseGuard.last_good_waxcash_pair_count}; refreshed_waxcash_pair_count=${waxcashCollapseGuard.refreshed_waxcash_pair_count}; prune skipped to preserve last complete WAXCASH rows`].filter(Boolean).join('; ');
       }
-      const previousSnapshot = await readSnapshot(env.DB, `${adapter.source}_${adapter.table}`);
       const previousCursor = state.cursor || '';
       const reportedCursor = complete ? '' : (tableResult.next_key || '');
       const cursorChanged = previousCursor !== reportedCursor;
@@ -4295,6 +4329,8 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
         retry_count: retryCount,
         skipped_cursor_count: skippedCursorCount,
         skipped_cursor_reason: skippedCursorReason,
+        waxcash_pair_count: waxcashCollapseGuard?.refreshed_waxcash_pair_count ?? null,
+        last_good_waxcash_pair_count: nextLastGoodWaxcashPairCount,
         waxcash_collapse_guard: waxcashCollapseGuard,
       }, syncedAt);
       if (complete) {
@@ -12307,6 +12343,7 @@ export const __waxonedgeTestHooks = {
   getWaxcashLastStatsDiagnostics,
   buildInternalD1WaxcashLastStats,
   fetchWaxcashOgLastStats,
+  waxcashPairCountBaseline,
   waxcashSourceCollapseGuard,
   buildWaxcashOgParityProof,
   applyOgLastStatsToWaxcashPairs,
