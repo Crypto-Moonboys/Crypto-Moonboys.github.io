@@ -7834,10 +7834,15 @@ function waxcashBuildPairTableSection(pairs = [], selectedWaxPool = null) {
           mapped_og_src: ogDebug24h?.mapped_og_src || null,
           exact_og_bucket_path_checked: ogDebug24h?.exact_og_bucket_path_checked || null,
           og_bucket_exists: ogDebug24h?.og_bucket_exists ?? false,
+          internal_laststats_bucket_exists: ogDebug24h?.internal_laststats_bucket_exists ?? false,
+          internal_laststats_matched_key: ogDebug24h?.internal_laststats_matched_key || null,
+          internal_volumeA: ogDebug24h?.internal_volumeA ?? null,
+          internal_volumeB: ogDebug24h?.internal_volumeB ?? null,
           first_20_og_bucket_keys: ogDebug24h?.first_20_og_bucket_keys || [],
           lookup_keys_attempted: ogDebug24h?.lookup_keys_attempted || null,
           matched_key: ogDebug24h?.matched_key || null,
           match_priority: ogDebug24h?.match_priority || null,
+          laststats_source: ogDebug24h?.laststats_source || null,
           volumeA: ogDebug24h?.volumeA ?? null,
           volumeB: ogDebug24h?.volumeB ?? null,
           reason: ogDebug24h?.reason || null,
@@ -7851,10 +7856,13 @@ function waxcashBuildPairTableSection(pairs = [], selectedWaxPool = null) {
           volume_7d_native_source: row.proof_details?.metric_sources?.volume_7d_native?.source || null,
           volume_30d_native_source: row.proof_details?.metric_sources?.volume_30d_native?.source || null,
           change_24h_source: row.proof_details?.metric_sources?.change_24h?.source || null,
-          latest_indexed_trade_time: row.proof_details?.metric_sources?.latest_indexed_trade_time || null,
-          row_count_24h: row.proof_details?.metric_sources?.volume_24h_wax?.row_count || 0,
-          row_count_7d: row.proof_details?.metric_sources?.volume_7d_wax?.row_count || 0,
-          row_count_30d: row.proof_details?.metric_sources?.volume_30d_wax?.row_count || 0,
+          latest_indexed_trade_time: ogDebug24h?.latest_indexed_trade_time || row.proof_details?.metric_sources?.latest_indexed_trade_time || null,
+          trade_row_count_24h: row.proof_details?.og_laststats_debug?.volume_24h?.trade_row_count || 0,
+          trade_row_count_7d: row.proof_details?.og_laststats_debug?.volume_7d?.trade_row_count || 0,
+          trade_row_count_30d: row.proof_details?.og_laststats_debug?.volume_30d?.trade_row_count || 0,
+          row_count_24h: row.proof_details?.og_laststats_debug?.volume_24h?.trade_row_count || row.proof_details?.metric_sources?.volume_24h_wax?.row_count || 0,
+          row_count_7d: row.proof_details?.og_laststats_debug?.volume_7d?.trade_row_count || row.proof_details?.metric_sources?.volume_7d_wax?.row_count || 0,
+          row_count_30d: row.proof_details?.og_laststats_debug?.volume_30d?.trade_row_count || row.proof_details?.metric_sources?.volume_30d_wax?.row_count || 0,
         };
       }),
     },
@@ -7892,20 +7900,208 @@ async function fetchWaxonedgeOgJson(env, path) {
   }
 }
 
+function lastStatsWindowDefinitions() {
+  return [
+    { duration: '24h', millis: 24 * 60 * 60 * 1000 },
+    { duration: '7d', millis: 7 * 24 * 60 * 60 * 1000 },
+    { duration: '30d', millis: 30 * 24 * 60 * 60 * 1000 },
+  ];
+}
+
+function markLastStatsSource(stats, source) {
+  if (!stats || typeof stats !== 'object') return stats;
+  Object.defineProperty(stats, '__laststats_source', {
+    value: source,
+    configurable: true,
+  });
+  return stats;
+}
+
+function lastStatsSource(stats) {
+  return stats && typeof stats === 'object' ? (stats.__laststats_source || null) : null;
+}
+
+function emptyLastVolumesShape() {
+  const out = {};
+  for (const { duration } of lastStatsWindowDefinitions()) {
+    out[duration] = {
+      tokens: {},
+      pools: {},
+      poolsv3: {},
+      markets: {},
+    };
+  }
+  return out;
+}
+
+function internalLastStatsPairSideVolumes(trade, pair) {
+  const raw = parseTradeRawJson(trade);
+  const sideAKey = tokenKey(pair?.token_a_contract, pair?.token_a_symbol);
+  const sideBKey = tokenKey(pair?.token_b_contract, pair?.token_b_symbol);
+  const addAssetSide = (current, contract, symbol, amount) => {
+    const numeric = asNumber(amount);
+    if (numeric == null) return current;
+    const key = tokenKey(contract, symbol);
+    if (key && key === sideAKey) return { ...current, volumeA: (current.volumeA || 0) + Math.abs(numeric) };
+    if (key && key === sideBKey) return { ...current, volumeB: (current.volumeB || 0) + Math.abs(numeric) };
+    return current;
+  };
+  const addSymbolSide = (current, symbol, amount) => {
+    const numeric = asNumber(amount);
+    const normalized = normalizeSymbol(symbol);
+    if (numeric == null || !normalized) return current;
+    if (normalized === normalizeSymbol(pair?.token_a_symbol)) return { ...current, volumeA: (current.volumeA || 0) + Math.abs(numeric) };
+    if (normalized === normalizeSymbol(pair?.token_b_symbol)) return { ...current, volumeB: (current.volumeB || 0) + Math.abs(numeric) };
+    return current;
+  };
+  let volumes = {};
+  volumes = addSymbolSide(volumes, raw.code_in, raw.amount_in);
+  volumes = addSymbolSide(volumes, raw.code_out, raw.amount_out);
+  volumes = addSymbolSide(volumes, raw.code_ask, raw.amount_ask);
+  volumes = addSymbolSide(volumes, raw.code_bid, raw.amount_bid);
+  const askAsset = parseAsset(raw.ask);
+  if (askAsset.amount != null) volumes = addSymbolSide(volumes, askAsset.symbol, askAsset.amount);
+  const bidAsset = parseAsset(raw.bid);
+  if (bidAsset.amount != null) volumes = addSymbolSide(volumes, bidAsset.symbol, bidAsset.amount);
+  const storedAmount = asNumber(trade?.amount ?? trade?.volume);
+  if ((volumes.volumeA == null && volumes.volumeB == null) && storedAmount != null) {
+    volumes = addAssetSide(volumes, trade?.contract, trade?.symbol, storedAmount);
+  }
+  return {
+    volumeA: asNumber(volumes.volumeA),
+    volumeB: asNumber(volumes.volumeB),
+  };
+}
+
+function addInternalLastStatsVolume(lastVolumes, duration, pair, trade, tradedMs) {
+  const ref = waxcashOgPairRef(pair);
+  if (!ref?.srcType || !ref?.src) return false;
+  const pairId = safeString(ref.pair_id || pair?.og_laststats_pair_id || pair?.pair_id);
+  if (!pairId) return false;
+  const sideVolumes = internalLastStatsPairSideVolumes(trade, pair);
+  if (sideVolumes.volumeA == null && sideVolumes.volumeB == null) return false;
+  const bucketRoot = lastVolumes[duration] ||= { tokens: {}, pools: {}, poolsv3: {}, markets: {} };
+  const sourceTypeBucket = bucketRoot[ref.srcType] ||= {};
+  const bucket = sourceTypeBucket[ref.src] ||= {};
+  const row = bucket[pairId] ||= {
+    volumeA: null,
+    volumeB: null,
+    source: 'internal_d1_laststats',
+    row_count: 0,
+    latest_indexed_trade_time: null,
+    no_fake_value: true,
+  };
+  if (sideVolumes.volumeA != null) row.volumeA = safeDecimal((asNumber(row.volumeA) || 0) + sideVolumes.volumeA);
+  if (sideVolumes.volumeB != null) row.volumeB = safeDecimal((asNumber(row.volumeB) || 0) + sideVolumes.volumeB);
+  row.row_count += 1;
+  if (!row.latest_indexed_trade_time || tradedMs > Date.parse(row.latest_indexed_trade_time)) {
+    row.latest_indexed_trade_time = new Date(tradedMs).toISOString();
+  }
+  return true;
+}
+
+async function buildInternalD1WaxcashLastStats(db, pairs = null) {
+  const pairRows = pairs || await loadWaxcashOgPairRows(db);
+  const pairProofByKey = new Map((pairRows || []).map((pair) => [waxcashTradePairKey(pair.source, pair.pair_id), pair]));
+  const { predicates, params } = waxcashTradeVolumePredicates(pairRows);
+  const where = predicates.join(' OR ');
+  const latest = await db.prepare(
+    `SELECT MAX(traded_at) AS latest_trade_at
+     FROM waxonedge_trades
+     WHERE (${where})`
+  ).bind(...params).first().catch(() => null);
+  const latestMs = Date.parse(latest?.latest_trade_at || '');
+  if (!Number.isFinite(latestMs)) {
+    return {
+      ok: false,
+      lastVolumes: markLastStatsSource(emptyLastVolumesShape(), 'internal_d1_laststats'),
+      reason: 'internal_laststats_no_trade_rows',
+      latest_trade_at: null,
+      rows_scanned: 0,
+      rows_used: 0,
+      no_fake_value: true,
+    };
+  }
+  const windows = lastStatsWindowDefinitions();
+  const since30dMs = latestMs - windows.find((window) => window.duration === '30d').millis;
+  const rows = await db.prepare(
+    `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json
+     FROM waxonedge_trades
+     WHERE (${where}) AND traded_at >= ?`
+  ).bind(...params, new Date(since30dMs).toISOString()).all().then((value) => value.results || []).catch(() => []);
+  const lastVolumes = emptyLastVolumesShape();
+  let rowsUsed = 0;
+  for (const row of rows) {
+    const tradedMs = Date.parse(row?.traded_at || '');
+    if (!Number.isFinite(tradedMs) || tradedMs < since30dMs) continue;
+    const pair = pairProofByKey.get(waxcashTradePairKey(row?.source, row?.pair_id));
+    if (!pair) continue;
+    let used = false;
+    for (const window of windows) {
+      if (tradedMs >= latestMs - window.millis) {
+        used = addInternalLastStatsVolume(lastVolumes, window.duration, pair, row, tradedMs) || used;
+      }
+    }
+    if (used) rowsUsed += 1;
+  }
+  markLastStatsSource(lastVolumes, 'internal_d1_laststats');
+  return {
+    ok: rowsUsed > 0,
+    lastVolumes,
+    reason: rowsUsed > 0 ? null : 'internal_laststats_no_trade_rows',
+    latest_trade_at: latest.latest_trade_at,
+    rows_scanned: rows.length,
+    rows_used: rowsUsed,
+    no_fake_value: true,
+  };
+}
+
 async function fetchWaxcashOgLastStats(env) {
-  const [lastVolumes, lastPriceChanges] = await Promise.all([
+  const internal = env?.DB
+    ? await buildInternalD1WaxcashLastStats(env.DB).catch((error) => ({
+      ok: false,
+      lastVolumes: markLastStatsSource(emptyLastVolumesShape(), 'internal_d1_laststats'),
+      reason: `internal_d1_laststats_failed:${error?.message || String(error)}`,
+      rows_scanned: 0,
+      rows_used: 0,
+      no_fake_value: true,
+    }))
+    : { ok: false, lastVolumes: null, reason: 'd1_not_configured', rows_scanned: 0, rows_used: 0 };
+  const [externalLastVolumes, lastPriceChanges] = await Promise.all([
     fetchWaxonedgeOgJson(env, '/lastVolumes'),
     fetchWaxonedgeOgJson(env, '/lastPriceChanges'),
   ]);
+  const useInternalVolumes = internal.ok || !externalLastVolumes.ok;
+  const selectedLastVolumes = useInternalVolumes ? internal.lastVolumes : markLastStatsSource(externalLastVolumes.data, 'og_api_laststats');
   return {
-    lastVolumes: lastVolumes.ok ? lastVolumes.data : null,
+    lastVolumes: selectedLastVolumes || null,
     lastPriceChanges: lastPriceChanges.ok ? lastPriceChanges.data : null,
     sources: {
-      lastVolumes: lastVolumes.source || null,
+      lastVolumes: useInternalVolumes ? 'internal_d1_laststats' : (externalLastVolumes.source || null),
+      lastVolumes_external: externalLastVolumes.source || null,
       lastPriceChanges: lastPriceChanges.source || null,
     },
-    reasons: [lastVolumes.ok ? null : lastVolumes.reason, lastPriceChanges.ok ? null : lastPriceChanges.reason].filter(Boolean),
-    live: !!lastVolumes.ok || !!lastPriceChanges.ok,
+    reasons: [
+      internal.ok ? null : internal.reason,
+      externalLastVolumes.ok ? null : externalLastVolumes.reason,
+      lastPriceChanges.ok ? null : lastPriceChanges.reason,
+    ].filter(Boolean),
+    live: !!(internal.ok || externalLastVolumes.ok || lastPriceChanges.ok),
+    laststats_source: useInternalVolumes
+      ? (internal.ok ? 'internal_d1_laststats' : 'unavailable')
+      : 'og_api_laststats',
+    internal_laststats: {
+      ok: internal.ok,
+      reason: internal.reason || null,
+      latest_trade_at: internal.latest_trade_at || null,
+      rows_scanned: asNumber(internal.rows_scanned) || 0,
+      rows_used: asNumber(internal.rows_used) || 0,
+    },
+    external_laststats: {
+      ok: externalLastVolumes.ok,
+      reason: externalLastVolumes.reason || null,
+      source: externalLastVolumes.source || null,
+    },
     no_fake_value: true,
   };
 }
@@ -8105,16 +8301,42 @@ async function waxcashSourceSyncDiagnostics(db, sources = ['swap.nefty', 'swap.t
 
 async function getWaxcashLastStatsDiagnostics(env) {
   const ogBase = sanitizedWaxonedgeOgBase(env);
-  const lastVolumes = await fetchWaxonedgeOgDiagnosticJson(env, '/lastVolumes');
-  const bucketDiagnostics = lastVolumes.ok ? ogLastVolumesBucketDiagnostics(lastVolumes.data) : ogLastVolumesBucketDiagnostics(null);
-  const [d1, source_sync] = await Promise.all([
+  const [lastVolumes, internal, d1, source_sync] = await Promise.all([
+    fetchWaxonedgeOgDiagnosticJson(env, '/lastVolumes'),
+    env?.DB ? buildInternalD1WaxcashLastStats(env.DB).catch((error) => ({
+      ok: false,
+      lastVolumes: markLastStatsSource(emptyLastVolumesShape(), 'internal_d1_laststats'),
+      reason: `internal_d1_laststats_failed:${error?.message || String(error)}`,
+      latest_trade_at: null,
+      rows_scanned: 0,
+      rows_used: 0,
+    })) : Promise.resolve({
+      ok: false,
+      lastVolumes: null,
+      reason: 'd1_not_configured',
+      latest_trade_at: null,
+      rows_scanned: 0,
+      rows_used: 0,
+    }),
     waxcashOgLastStatsIdCounts(env.DB),
     waxcashSourceSyncDiagnostics(env.DB),
   ]);
+  const selectedLastVolumes = internal.ok ? internal.lastVolumes : (lastVolumes.ok ? markLastStatsSource(lastVolumes.data, 'og_api_laststats') : null);
+  const bucketDiagnostics = selectedLastVolumes ? ogLastVolumesBucketDiagnostics(selectedLastVolumes) : ogLastVolumesBucketDiagnostics(null);
+  const externalBucketDiagnostics = lastVolumes.ok ? ogLastVolumesBucketDiagnostics(lastVolumes.data) : ogLastVolumesBucketDiagnostics(null);
+  const selectedSource = internal.ok ? 'internal_d1_laststats' : (lastVolumes.ok ? 'og_api_laststats' : 'unavailable');
   return {
-    ok: !!(ogBase.valid && lastVolumes.ok && bucketDiagnostics.buckets.neftyblocks.exists && bucketDiagnostics.buckets.taco.exists && d1.migration_027_applied),
+    ok: !!(selectedSource !== 'unavailable' && d1.migration_027_applied),
     diagnostic_only: true,
     no_fake_value: true,
+    laststats_source: selectedSource,
+    internal_laststats: {
+      ok: !!internal.ok,
+      reason: internal.reason || null,
+      latest_trade_at: internal.latest_trade_at || null,
+      rows_scanned: asNumber(internal.rows_scanned) || 0,
+      rows_used: asNumber(internal.rows_used) || 0,
+    },
     og_api_base: ogBase,
     lastVolumes_fetch: {
       ok: lastVolumes.ok,
@@ -8124,6 +8346,7 @@ async function getWaxcashLastStatsDiagnostics(env) {
       reason: lastVolumes.reason,
     },
     lastVolumes_shape: bucketDiagnostics,
+    external_lastVolumes_shape: externalBucketDiagnostics,
     d1,
     source_sync,
     interpretation: {
@@ -8133,6 +8356,8 @@ async function getWaxcashLastStatsDiagnostics(env) {
       taco_bucket_missing: !bucketDiagnostics.buckets.taco.exists,
       migration_027_missing: !d1.migration_027_applied,
       og_laststats_pair_ids_need_backfill: d1.migration_027_applied && asNumber(d1.og_laststats_pair_id_null) > 0,
+      internal_d1_laststats_available: !!internal.ok,
+      source_sync_required: !internal.ok && ['internal_laststats_no_trade_rows', 'd1_not_configured'].includes(internal.reason),
     },
   };
 }
@@ -8275,6 +8500,7 @@ function ogStatsPairRowMatches(entry, keys, pair) {
 function ogPairLastStatsLookup(stats, duration, pair) {
   const ref = waxcashOgPairRef(pair);
   const ogLastStatsPairId = safeString(pair?.og_laststats_pair_id) || null;
+  const statsSource = lastStatsSource(stats);
   const empty = {
     displayed_pair_id: safeString(pair?.pair_id) || null,
     og_laststats_pair_id: ogLastStatsPairId,
@@ -8287,6 +8513,7 @@ function ogPairLastStatsLookup(stats, duration, pair) {
     first_20_og_bucket_keys: [],
     matched_key: null,
     match_priority: null,
+    laststats_source: statsSource,
     row: null,
     reason: ref ? 'no_lookup_keys' : 'no_og_pair_ref',
   };
@@ -8313,7 +8540,9 @@ function ogPairLastStatsLookup(stats, duration, pair) {
     exact_og_bucket_path_checked: `lastVolumes[${duration}][${ref.srcType}][${ref.src}]`,
     reason: baseReason,
   };
-  if (!bucket || typeof bucket !== 'object') return { ...base, reason: 'no_laststats_bucket' };
+  if (!bucket || typeof bucket !== 'object') {
+    return { ...base, reason: statsSource === 'internal_d1_laststats' ? 'internal_laststats_no_trade_rows' : 'no_laststats_bucket' };
+  }
   const firstKeys = Object.keys(bucket).slice(0, 20);
   const withBucket = { ...base, og_bucket_exists: true, first_20_og_bucket_keys: firstKeys };
   if (!hasAnyKeys) return { ...withBucket, reason: 'no_lookup_keys' };
@@ -8349,6 +8578,7 @@ function ogPairLastStatsValue(stats, duration, pair) {
 function ogPairLastStatsLookupDebug(lookup, row = null, reason = null) {
   const volumeA = row && typeof row === 'object' ? asNumber(row.volumeA) : null;
   const volumeB = row && typeof row === 'object' ? asNumber(row.volumeB) : null;
+  const source = row && typeof row === 'object' ? row.source : null;
   return {
     displayed_pair_id: lookup?.displayed_pair_id || null,
     og_laststats_pair_id: lookup?.og_laststats_pair_id || null,
@@ -8361,9 +8591,16 @@ function ogPairLastStatsLookupDebug(lookup, row = null, reason = null) {
     first_20_og_bucket_keys: Array.isArray(lookup?.first_20_og_bucket_keys) ? lookup.first_20_og_bucket_keys : [],
     matched_key: lookup?.matched_key || null,
     match_priority: lookup?.match_priority || null,
+    laststats_source: lookup?.laststats_source || source || null,
+    internal_laststats_bucket_exists: lookup?.laststats_source === 'internal_d1_laststats' ? !!lookup?.og_bucket_exists : false,
+    internal_laststats_matched_key: lookup?.laststats_source === 'internal_d1_laststats' ? lookup?.matched_key || null : null,
+    internal_volumeA: lookup?.laststats_source === 'internal_d1_laststats' ? safeDecimal(volumeA) : null,
+    internal_volumeB: lookup?.laststats_source === 'internal_d1_laststats' ? safeDecimal(volumeB) : null,
+    trade_row_count: row && typeof row === 'object' ? asNumber(row.row_count) || 0 : 0,
+    latest_indexed_trade_time: row && typeof row === 'object' ? row.latest_indexed_trade_time || null : null,
     volumeA: safeDecimal(volumeA),
     volumeB: safeDecimal(volumeB),
-    reason: reason || lookup?.reason || null,
+    reason: reason || lookup?.reason || (lookup?.laststats_source === 'internal_d1_laststats' && row ? 'internal_laststats_available' : null),
   };
 }
 
@@ -8408,6 +8645,7 @@ function ogPairVolumeProof(lastVolumes, duration, pair, waxUsd = null) {
   const lookup = ogPairLastStatsLookup(lastVolumes, duration, pair);
   const row = lookup.row && typeof lookup.row === 'object' ? lookup.row : null;
   if (!row) return { lookup: ogPairLastStatsLookupDebug(lookup) };
+  const sourcePrefix = lookup.laststats_source === 'internal_d1_laststats' ? 'internal_d1_laststats' : 'og_waxonedge_lastVolumes';
   const tokenASymbol = normalizeSymbol(pair?.token_a_symbol);
   const tokenBSymbol = normalizeSymbol(pair?.token_b_symbol);
   const volumeA = asNumber(row.volumeA);
@@ -8418,19 +8656,24 @@ function ogPairVolumeProof(lastVolumes, duration, pair, waxUsd = null) {
   let source = null;
   if (tokenASymbol === 'WAX' && volumeA != null) {
     volumeWax = volumeA;
-    source = 'og_waxonedge_lastVolumes';
+    source = sourcePrefix;
   } else if (tokenBSymbol === 'WAX' && volumeB != null) {
     volumeWax = volumeB;
-    source = 'og_waxonedge_lastVolumes';
+    source = sourcePrefix;
   } else {
     const convertedSide = preferredOgPairConvertedVolumeSide(pair, volumeA, tokenAPriceWax, volumeB, tokenBPriceWax);
     if (convertedSide) {
       volumeWax = convertedSide.volume_wax;
-      source = 'og_waxonedge_lastVolumes_route_converted_wax';
+      source = sourcePrefix === 'internal_d1_laststats'
+        ? 'internal_d1_laststats_route_converted_wax'
+        : 'og_waxonedge_lastVolumes_route_converted_wax';
     }
   }
   const hasNative = volumeA != null || volumeB != null;
   const debugReason = hasNative ? null : 'no_recent_volume';
+  const nativeSource = sourcePrefix === 'internal_d1_laststats'
+    ? 'internal_d1_laststats_native_pair_volume'
+    : 'og_waxonedge_lastVolumes_native_pair_volume';
   return {
     volume_wax: safeDecimal(volumeWax),
     volume_usd: volumeWax != null && waxUsd != null ? safeDecimal(volumeWax * waxUsd) : null,
@@ -8440,9 +8683,9 @@ function ogPairVolumeProof(lastVolumes, duration, pair, waxUsd = null) {
     token_b_symbol: pair?.token_b_symbol || null,
     token_a_wax_price: safeDecimal(tokenAPriceWax),
     token_b_wax_price: safeDecimal(tokenBPriceWax),
-    source: source || (hasNative ? 'og_waxonedge_lastVolumes_native_pair_volume' : null),
-    native_source: hasNative ? 'og_waxonedge_lastVolumes_native_pair_volume' : null,
-    converted: source === 'og_waxonedge_lastVolumes_route_converted_wax',
+    source: source || (hasNative ? nativeSource : null),
+    native_source: hasNative ? nativeSource : null,
+    converted: /_route_converted_wax$/.test(source || ''),
     lookup: ogPairLastStatsLookupDebug(lookup, row, debugReason),
     no_fake_value: true,
   };
@@ -11171,6 +11414,8 @@ export const __waxonedgeTestHooks = {
   buildWaxcashAnalytics,
   buildWaxcashUdfChartFeed,
   getWaxcashLastStatsDiagnostics,
+  buildInternalD1WaxcashLastStats,
+  fetchWaxcashOgLastStats,
   buildWaxcashOgParityProof,
   applyOgLastStatsToWaxcashPairs,
   waxcashPairTableRow,

@@ -2719,6 +2719,128 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         (tokenOnlyPair.og_laststats_debug?.volume_24h?.reason === 'no_matching_pair_id' ||
           tokenOnlyPair.og_laststats_debug?.volume_24h?.reason === 'og_laststats_pair_id_missing'),
         JSON.stringify(tokenOnlyPair));
+      const internalPairs = [
+        {
+          ...nonWaxPair,
+          pair_id: 'WAXCASHAIGOD',
+          og_laststats_pair_id: 'WAXCASHAIGOD',
+        },
+        {
+          ...graphPairs.find((pair) => pair.pair_id === 'WAXCASHWAXLEGACY'),
+          og_laststats_pair_id: 'WAXCASHWAXLEGACY',
+        },
+      ];
+      const internalTrades = [
+        {
+          source: 'swap.nefty',
+          trade_id: 'recent-native',
+          pair_id: 'WAXCASHAIGOD',
+          contract: null,
+          symbol: 'WAXCASH',
+          amount: '10',
+          volume: '10',
+          traded_at: '2026-06-20T04:00:00.000Z',
+          raw_json: JSON.stringify({ amount_in: '10', code_in: 'WAXCASH', amount_out: '20', code_out: 'AIGOD' }),
+        },
+        {
+          source: 'swap.nefty',
+          trade_id: 'ten-day-native',
+          pair_id: 'WAXCASHAIGOD',
+          contract: null,
+          symbol: 'WAXCASH',
+          amount: '70',
+          volume: '70',
+          traded_at: '2026-06-10T04:00:00.000Z',
+          raw_json: JSON.stringify({ amount_in: '70', code_in: 'WAXCASH', amount_out: '140', code_out: 'AIGOD' }),
+        },
+        {
+          source: 'swap.nefty',
+          trade_id: 'old-native',
+          pair_id: 'WAXCASHAIGOD',
+          contract: null,
+          symbol: 'WAXCASH',
+          amount: '1000',
+          volume: '1000',
+          traded_at: '2026-05-01T04:00:00.000Z',
+          raw_json: JSON.stringify({ amount_in: '1000', code_in: 'WAXCASH', amount_out: '2000', code_out: 'AIGOD' }),
+        },
+        {
+          source: 'swap.nefty',
+          trade_id: 'recent-wax',
+          pair_id: 'WAXCASHWAXLEGACY',
+          contract: null,
+          symbol: 'WAXCASH',
+          amount: '5',
+          volume: '5',
+          traded_at: '2026-06-20T03:30:00.000Z',
+          raw_json: JSON.stringify({ amount_in: '5', code_in: 'WAXCASH', amount_out: '2', code_out: 'WAX' }),
+        },
+      ];
+      const internalDb = {
+        prepare(sql) {
+          return {
+            bind(...params) {
+              return {
+                async all() {
+                  if (sql.includes('FROM waxonedge_pairs')) return { results: internalPairs };
+                  if (sql.includes('FROM waxonedge_trades')) {
+                    const since = params[params.length - 1];
+                    return {
+                      results: internalTrades.filter((row) => !since || !/^\d{4}-/.test(String(since)) || Date.parse(row.traded_at) >= Date.parse(since)),
+                    };
+                  }
+                  return { results: [] };
+                },
+                async first() {
+                  if (sql.includes('MAX(traded_at)')) return { latest_trade_at: '2026-06-20T04:00:00.000Z' };
+                  return null;
+                },
+              };
+            },
+          };
+        },
+      };
+      const internalLastStats = await __waxonedgeTestHooks.buildInternalD1WaxcashLastStats(internalDb);
+      const internalNativeRow = internalLastStats.lastVolumes?.['30d']?.pools?.neftyblocks?.WAXCASHAIGOD;
+      const internalWaxRow = internalLastStats.lastVolumes?.['24h']?.pools?.neftyblocks?.WAXCASHWAXLEGACY;
+      ok('WAXCASH internal D1 LastStats builder creates OG-shaped native volume buckets from indexed trade rows',
+        internalLastStats.ok === true &&
+        internalLastStats.rows_scanned === 3 &&
+        internalLastStats.rows_used === 3 &&
+        Number(internalLastStats.lastVolumes['24h'].pools.neftyblocks.WAXCASHAIGOD.volumeA) === 10 &&
+        Number(internalLastStats.lastVolumes['24h'].pools.neftyblocks.WAXCASHAIGOD.volumeB) === 20 &&
+        Number(internalNativeRow.volumeA) === 80 &&
+        Number(internalNativeRow.volumeB) === 160 &&
+        Number(internalNativeRow.row_count) === 2 &&
+        Number(internalWaxRow.volumeB) === 2,
+        JSON.stringify(internalLastStats));
+      const [internalAppliedNonWax, internalAppliedWax] = __waxonedgeTestHooks.applyOgLastStatsToWaxcashPairs(internalPairs, {
+        lastVolumes: internalLastStats.lastVolumes,
+      }, 0.006);
+      const internalSection = __waxonedgeTestHooks.waxcashBuildPairTableSection([internalAppliedNonWax, internalAppliedWax], null);
+      const internalDebug = internalSection.metric_debug.rows.find((row) => row.pair_id === 'WAXCASHAIGOD');
+      ok('WAXCASH pair table consumes internal D1 LastStats before any dead OG API dependency',
+        internalAppliedNonWax.volume_24h_wax == null &&
+        Number(internalAppliedNonWax.volume_24h_a_native) === 10 &&
+        Number(internalAppliedNonWax.volume_30d_b_native) === 160 &&
+        internalAppliedNonWax.metric_sources?.volume_24h_native?.source === 'internal_d1_laststats_native_pair_volume' &&
+        Number(internalAppliedWax.volume_24h_wax) === 75 &&
+        Number(internalAppliedWax.volume_7d_wax) === 2 &&
+        internalAppliedWax.metric_sources?.volume_7d_wax?.source === 'internal_d1_laststats' &&
+        internalDebug.internal_laststats_bucket_exists === true &&
+        internalDebug.internal_laststats_matched_key === 'WAXCASHAIGOD' &&
+        Number(internalDebug.internal_volumeA) === 10 &&
+        Number(internalDebug.trade_row_count_30d) === 2 &&
+        internalDebug.reason === 'internal_laststats_available',
+        JSON.stringify({ internalAppliedNonWax, internalAppliedWax, internalDebug }));
+      const internalFetched = await __waxonedgeTestHooks.fetchWaxcashOgLastStats({ DB: internalDb });
+      ok('WAXCASH LastStats fetch path uses internal D1 LastStats when OG API base is missing',
+        internalFetched.laststats_source === 'internal_d1_laststats' &&
+        internalFetched.sources?.lastVolumes === 'internal_d1_laststats' &&
+        internalFetched.internal_laststats?.ok === true &&
+        internalFetched.external_laststats?.ok === false &&
+        Number(internalFetched.lastVolumes['24h'].pools.neftyblocks.WAXCASHAIGOD.volumeA) === 10,
+        JSON.stringify(internalFetched));
     }
     const liveSupplyWrites = [];
     const liveSupplyDb = {
