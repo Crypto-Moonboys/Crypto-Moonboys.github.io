@@ -151,6 +151,14 @@ ok('waxcash frontend restores a full TradingView Charting Library widget using t
   waxcashHtml.includes("TOKEN_A = 'waxcash-graffitiking'") &&
   waxcashHtml.includes("TOKEN_B = 'wax-eosio.token'") &&
   waxcashHtml.includes("symbol: 'WAXCASH_WAX'") &&
+  waxcashHtml.includes('var subscriptions = {}') &&
+  waxcashHtml.includes('function fetchLatestBar(resolution)') &&
+  waxcashHtml.includes('subscribeBars: function (symbolInfo, resolution, onRealtime, subscriberUID)') &&
+  waxcashHtml.includes("symbolInfo.ticker !== 'WAXCASH_WAX'") &&
+  waxcashHtml.includes('subscription.timer = setInterval(pollLatestBar') &&
+  waxcashHtml.includes('onRealtime(bar)') &&
+  waxcashHtml.includes('unsubscribeBars: function (subscriberUID)') &&
+  waxcashHtml.includes('clearInterval(subscription.timer)') &&
   !waxcashHtml.includes('Native TradingView Alcor WAXCASH/WAX symbol unavailable') &&
   !waxcashHtml.includes('"symbol": "ALCOR:WAXCASHWAX"') &&
   !waxcashHtml.includes('<iframe') &&

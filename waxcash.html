@@ -403,6 +403,7 @@
   var TOKEN_B = 'wax-eosio.token';
   var RESOLUTIONS = ['1', '5', '15', '30', '60', '240', 'D', 'W', 'M'];
   var activeResolution = '240';
+  var subscriptions = {};
 
   function candleUrl(params) {
     var url = new URL(ALCOR_CANDLES);
@@ -424,6 +425,35 @@
       close: Number(candle.close),
       volume: Number(candle.volume || 0)
     };
+  }
+
+  function resolutionMs(resolution) {
+    if (resolution === 'D' || resolution === '1D') return 24 * 60 * 60 * 1000;
+    if (resolution === 'W' || resolution === '1W') return 7 * 24 * 60 * 60 * 1000;
+    if (resolution === 'M' || resolution === '1M') return 31 * 24 * 60 * 60 * 1000;
+    var minutes = Number(resolution);
+    return Number.isFinite(minutes) && minutes > 0 ? minutes * 60 * 1000 : 4 * 60 * 60 * 1000;
+  }
+
+  function fetchLatestBar(resolution) {
+    var intervalMs = resolutionMs(resolution);
+    var to = Date.now();
+    var from = to - Math.max(intervalMs * 3, 30 * 60 * 1000);
+    return fetch(candleUrl({ resolution: resolution, from: from, to: to }))
+      .then(function (response) {
+        if (!response.ok) throw new Error('Alcor candles HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        var bars = (payload.candles || [])
+          .map(toBar)
+          .filter(function (bar) {
+            return Number.isFinite(bar.time) && Number.isFinite(bar.open) && Number.isFinite(bar.high) &&
+              Number.isFinite(bar.low) && Number.isFinite(bar.close);
+          })
+          .sort(function (a, b) { return a.time - b.time; });
+        return bars[bars.length - 1] || null;
+      });
   }
 
   function initWaxcashTradingViewChart() {
@@ -493,8 +523,36 @@
             onError(error && error.message ? error.message : String(error));
           });
       },
-      subscribeBars: function () {},
-      unsubscribeBars: function () {},
+      subscribeBars: function (symbolInfo, resolution, onRealtime, subscriberUID) {
+        if (!symbolInfo || symbolInfo.ticker !== 'WAXCASH_WAX' || !subscriberUID) return;
+        activeResolution = resolution || activeResolution;
+        if (subscriptions[subscriberUID]) clearInterval(subscriptions[subscriberUID].timer);
+        var subscription = {
+          resolution: activeResolution,
+          timer: null,
+          lastTime: 0
+        };
+        function pollLatestBar() {
+          fetchLatestBar(subscription.resolution)
+            .then(function (bar) {
+              if (!bar || bar.time < subscription.lastTime) return;
+              subscription.lastTime = bar.time;
+              onRealtime(bar);
+            })
+            .catch(function (error) {
+              console.error('[WAXCASH TradingView] Alcor live candle poll failed:', error);
+            });
+        }
+        pollLatestBar();
+        subscription.timer = setInterval(pollLatestBar, Math.max(15000, Math.min(resolutionMs(subscription.resolution), 60000)));
+        subscriptions[subscriberUID] = subscription;
+      },
+      unsubscribeBars: function (subscriberUID) {
+        var subscription = subscriptions[subscriberUID];
+        if (!subscription) return;
+        clearInterval(subscription.timer);
+        delete subscriptions[subscriberUID];
+      },
       getMarks: function () {},
       getTimescaleMarks: function () {},
       getServerTime: function (callback) { callback(Math.floor(Date.now() / 1000)); }
