@@ -7910,6 +7910,233 @@ async function fetchWaxcashOgLastStats(env) {
   };
 }
 
+function sanitizedWaxonedgeOgBase(env) {
+  const configured = safeString(env?.WAXONEDGE_OG_API_BASE);
+  const base = waxonedgeOgApiBase(env);
+  if (!base) {
+    return {
+      configured: !!configured,
+      valid: false,
+      host: null,
+      origin: null,
+      path: null,
+      reason: configured ? 'waxonedge_og_api_base_invalid' : 'waxonedge_og_api_base_not_configured',
+    };
+  }
+  try {
+    const url = new URL(base);
+    return {
+      configured: true,
+      valid: true,
+      host: url.host,
+      origin: url.origin,
+      path: url.pathname && url.pathname !== '/' ? url.pathname : '',
+      reason: null,
+    };
+  } catch (_) {
+    return {
+      configured: true,
+      valid: false,
+      host: null,
+      origin: null,
+      path: null,
+      reason: 'waxonedge_og_api_base_invalid',
+    };
+  }
+}
+
+async function fetchWaxonedgeOgDiagnosticJson(env, path) {
+  const base = waxonedgeOgApiBase(env);
+  const cleanPath = String(path || '').startsWith('/') ? String(path) : `/${path}`;
+  if (!base) {
+    return {
+      ok: false,
+      endpoint_path: cleanPath,
+      http_status: null,
+      content_type: null,
+      reason: 'waxonedge_og_api_base_not_configured',
+      data: null,
+    };
+  }
+  try {
+    const response = await fetch(`${base}${cleanPath}`, {
+      headers: { Accept: 'application/json' },
+      cf: { cacheTtl: 30, cacheEverything: false },
+    });
+    const contentType = response.headers.get('content-type') || '';
+    if (!response.ok) {
+      return {
+        ok: false,
+        endpoint_path: cleanPath,
+        http_status: response.status,
+        content_type: contentType,
+        reason: `waxonedge_og_api_http_${response.status}`,
+        data: null,
+      };
+    }
+    if (!/json/i.test(contentType)) {
+      return {
+        ok: false,
+        endpoint_path: cleanPath,
+        http_status: response.status,
+        content_type: contentType,
+        reason: 'waxonedge_og_api_non_json_response',
+        data: null,
+      };
+    }
+    return {
+      ok: true,
+      endpoint_path: cleanPath,
+      http_status: response.status,
+      content_type: contentType,
+      reason: null,
+      data: await response.json(),
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      endpoint_path: cleanPath,
+      http_status: null,
+      content_type: null,
+      reason: `waxonedge_og_api_fetch_failed:${error?.message || String(error)}`,
+      data: null,
+    };
+  }
+}
+
+function diagnosticObjectKeys(value, limit = 50) {
+  if (!value || typeof value !== 'object') return [];
+  return Object.keys(value).slice(0, Math.max(1, Math.min(250, Math.floor(asNumber(limit) || 50))));
+}
+
+function ogLastVolumesBucketDiagnostics(lastVolumes) {
+  const duration24h = lastVolumes?.['24h'];
+  const pools = duration24h?.pools;
+  const poolKeys = diagnosticObjectKeys(pools);
+  return {
+    top_level_keys: diagnosticObjectKeys(lastVolumes),
+    keys_24h: diagnosticObjectKeys(duration24h),
+    keys_24h_pools: poolKeys,
+    buckets: {
+      neftyblocks: {
+        exists: !!(pools && typeof pools === 'object' && pools.neftyblocks && typeof pools.neftyblocks === 'object'),
+        first_20_keys: diagnosticObjectKeys(pools?.neftyblocks, 20),
+      },
+      taco: {
+        exists: !!(pools && typeof pools === 'object' && pools.taco && typeof pools.taco === 'object'),
+        first_20_keys: diagnosticObjectKeys(pools?.taco, 20),
+      },
+    },
+  };
+}
+
+async function waxcashOgLastStatsIdCounts(db) {
+  const columns = await db.prepare(`PRAGMA table_info(waxonedge_pairs)`).all().catch((error) => ({
+    results: [],
+    error: error?.message || String(error),
+  }));
+  const columnNames = (columns.results || []).map((row) => safeString(row.name));
+  const migrationApplied = columnNames.includes('og_laststats_pair_id');
+  if (!migrationApplied) {
+    return {
+      migration_027_applied: false,
+      total_waxcash_pair_rows: null,
+      og_laststats_pair_id_not_null: null,
+      og_laststats_pair_id_null: null,
+      reason: columns.error || 'og_laststats_pair_id_column_missing',
+    };
+  }
+  const counts = await db.prepare(
+    `SELECT COUNT(*) AS total_waxcash_pair_rows,
+            SUM(CASE WHEN og_laststats_pair_id IS NOT NULL AND og_laststats_pair_id != '' THEN 1 ELSE 0 END) AS og_laststats_pair_id_not_null,
+            SUM(CASE WHEN og_laststats_pair_id IS NULL OR og_laststats_pair_id = '' THEN 1 ELSE 0 END) AS og_laststats_pair_id_null
+     FROM waxonedge_pairs
+     WHERE (LOWER(token_a_contract) = ? AND UPPER(token_a_symbol) = ?)
+        OR (LOWER(token_b_contract) = ? AND UPPER(token_b_symbol) = ?)`
+  ).bind(WAXCASH_CONTRACT, WAXCASH_SYMBOL, WAXCASH_CONTRACT, WAXCASH_SYMBOL).first().catch((error) => ({
+    error: error?.message || String(error),
+  }));
+  if (counts?.error) {
+    return {
+      migration_027_applied: true,
+      total_waxcash_pair_rows: null,
+      og_laststats_pair_id_not_null: null,
+      og_laststats_pair_id_null: null,
+      reason: counts.error,
+    };
+  }
+  return {
+    migration_027_applied: true,
+    total_waxcash_pair_rows: asNumber(counts?.total_waxcash_pair_rows) || 0,
+    og_laststats_pair_id_not_null: asNumber(counts?.og_laststats_pair_id_not_null) || 0,
+    og_laststats_pair_id_null: asNumber(counts?.og_laststats_pair_id_null) || 0,
+    reason: null,
+  };
+}
+
+async function waxcashSourceSyncDiagnostics(db, sources = ['swap.nefty', 'swap.taco']) {
+  const placeholders = sources.map(() => '?').join(',');
+  const sourceStates = await db.prepare(
+    `SELECT source, sync_cycle_id, cursor, page_count, row_count, complete, truncated,
+            status, error, started_at, updated_at
+     FROM waxonedge_source_index_state
+     WHERE source IN (${placeholders})
+     ORDER BY source ASC`
+  ).bind(...sources).all().then((result) => result.results || []).catch(() => []);
+  const latestRuns = await db.prepare(
+    `SELECT source, status, started_at, finished_at, error
+     FROM waxonedge_sync_runs
+     WHERE source IN (${placeholders})
+     ORDER BY started_at DESC
+     LIMIT 20`
+  ).bind(...sources).all().then((result) => result.results || []).catch(() => []);
+  const latestBySource = {};
+  for (const row of latestRuns) {
+    if (!latestBySource[row.source]) latestBySource[row.source] = row;
+  }
+  return sources.reduce((out, source) => {
+    out[source] = {
+      source_index_state: sourceStates.find((row) => row.source === source) || null,
+      latest_sync_run: latestBySource[source] || null,
+    };
+    return out;
+  }, {});
+}
+
+async function getWaxcashLastStatsDiagnostics(env) {
+  const ogBase = sanitizedWaxonedgeOgBase(env);
+  const lastVolumes = await fetchWaxonedgeOgDiagnosticJson(env, '/lastVolumes');
+  const bucketDiagnostics = lastVolumes.ok ? ogLastVolumesBucketDiagnostics(lastVolumes.data) : ogLastVolumesBucketDiagnostics(null);
+  const [d1, source_sync] = await Promise.all([
+    waxcashOgLastStatsIdCounts(env.DB),
+    waxcashSourceSyncDiagnostics(env.DB),
+  ]);
+  return {
+    ok: !!(ogBase.valid && lastVolumes.ok && bucketDiagnostics.buckets.neftyblocks.exists && bucketDiagnostics.buckets.taco.exists && d1.migration_027_applied),
+    diagnostic_only: true,
+    no_fake_value: true,
+    og_api_base: ogBase,
+    lastVolumes_fetch: {
+      ok: lastVolumes.ok,
+      endpoint_path: lastVolumes.endpoint_path,
+      http_status: lastVolumes.http_status,
+      content_type: lastVolumes.content_type,
+      reason: lastVolumes.reason,
+    },
+    lastVolumes_shape: bucketDiagnostics,
+    d1,
+    source_sync,
+    interpretation: {
+      missing_env: !ogBase.configured || !ogBase.valid,
+      lastVolumes_unavailable: !lastVolumes.ok,
+      nefty_bucket_missing: !bucketDiagnostics.buckets.neftyblocks.exists,
+      taco_bucket_missing: !bucketDiagnostics.buckets.taco.exists,
+      migration_027_missing: !d1.migration_027_applied,
+      og_laststats_pair_ids_need_backfill: d1.migration_027_applied && asNumber(d1.og_laststats_pair_id_null) > 0,
+    },
+  };
+}
+
 async function fetchWaxcashAlcorTokenAnalytics() {
   const url = 'https://wax.alcor.exchange/api/v3/analytics/tokens/waxcash-graffitiking?window=30d&hide_scam=true';
   try {
@@ -10826,6 +11053,10 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       const analytics = await buildWaxcashAnalytics(env.DB, env);
       return ok(analytics, ['WAXCASH analytics uses old WaxOnEdge-style direct WAX price proof; recursive graph routing is not a selected-price source.'], analytics.stats?.updated_at || analytics.token?.updated_at || null, corsHeaders);
     }
+    if (path === `${WAXONEDGE_API_PREFIX}/waxcash-analytics/laststats-diagnostics`) {
+      const diagnostics = await getWaxcashLastStatsDiagnostics(env);
+      return ok(diagnostics, ['Diagnostic-only WAXCASH OG LastStats environment, bucket, migration, and source-sync proof.'], null, corsHeaders);
+    }
     const ogEndpointMatch = path.match(/^\/api\/waxonedge\/(pools|pool|poolsv3|poolv3|markets|market|lastVolumes|lastPriceChanges)(?:\/([^/]+))?(?:\/([^/]+))?$/);
     if (ogEndpointMatch) {
       const endpoint = `/${ogEndpointMatch[1]}${ogEndpointMatch[2] ? `/${decodeURIComponent(ogEndpointMatch[2])}` : ''}${ogEndpointMatch[3] ? `/${decodeURIComponent(ogEndpointMatch[3])}` : ''}`;
@@ -10939,6 +11170,7 @@ export const __waxonedgeTestHooks = {
   DEX_ADAPTER_CONTRACT,
   buildWaxcashAnalytics,
   buildWaxcashUdfChartFeed,
+  getWaxcashLastStatsDiagnostics,
   buildWaxcashOgParityProof,
   applyOgLastStatsToWaxcashPairs,
   waxcashPairTableRow,

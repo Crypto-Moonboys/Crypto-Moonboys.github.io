@@ -6204,6 +6204,19 @@ ok('WAXCASH pair table backend enriches token icons and pair-level indexed volum
   route.includes('const candleChange24h = asNumber(candleChange?.change_24h)') &&
   route.includes('const change24h = existingChange24h ?? tradeChange24h ?? candleChange24h') &&
   route.includes('pair_table: waxcashBuildPairTableSection(pairTablePairs, selectedWaxPool)'));
+ok('WAXCASH exposes live LastStats diagnostics for env, bucket, D1 ID backfill, and source sync state',
+  route.includes('async function getWaxcashLastStatsDiagnostics') &&
+  route.includes('/waxcash-analytics/laststats-diagnostics') &&
+  route.includes('sanitizedWaxonedgeOgBase') &&
+  route.includes('lastVolumes_fetch') &&
+  route.includes('top_level_keys') &&
+  route.includes('keys_24h_pools') &&
+  route.includes('buckets.neftyblocks.exists') &&
+  route.includes('buckets.taco.exists') &&
+  route.includes('migration_027_applied') &&
+  route.includes('og_laststats_pair_id_not_null') &&
+  route.includes('og_laststats_pair_id_null') &&
+  route.includes('source_sync'));
 ok('WAXCASH route restores OG WaxOnEdge endpoint shapes for indexed stats and source rows',
   route.includes("'/lastVolumes'") &&
   route.includes("'/lastPriceChanges'") &&
@@ -6215,6 +6228,79 @@ ok('WAXCASH route restores OG WaxOnEdge endpoint shapes for indexed stats and so
   route.includes("'/poolv3'") &&
   route.includes('fetchWaxonedgeOgJson(env, endpoint)') &&
   route.includes('WAXONEDGE_OG_API_BASE'));
+{
+  const originalFetch = globalThis.fetch;
+  const fakeDb = {
+    prepare(sql) {
+      const statement = {
+        bind() { return statement; },
+        async all() {
+          if (sql.includes('PRAGMA table_info(waxonedge_pairs)')) {
+            return { results: [{ name: 'pair_id' }, { name: 'og_laststats_pair_id' }] };
+          }
+          if (sql.includes('FROM waxonedge_source_index_state')) {
+            return { results: [
+              { source: 'swap.nefty', sync_cycle_id: 'woe-test', row_count: 42, complete: 1, status: 'success', error: null, updated_at: '2026-06-20T00:00:00Z' },
+              { source: 'swap.taco', sync_cycle_id: 'woe-test', row_count: 18, complete: 1, status: 'success', error: null, updated_at: '2026-06-20T00:00:00Z' },
+            ] };
+          }
+          if (sql.includes('FROM waxonedge_sync_runs')) {
+            return { results: [
+              { source: 'swap.nefty', status: 'success', started_at: '2026-06-20T00:00:00Z', finished_at: '2026-06-20T00:01:00Z', error: null },
+              { source: 'swap.taco', status: 'success', started_at: '2026-06-20T00:00:00Z', finished_at: '2026-06-20T00:01:00Z', error: null },
+            ] };
+          }
+          return { results: [] };
+        },
+        async first() {
+          if (sql.includes('COUNT(*) AS total_waxcash_pair_rows')) {
+            return {
+              total_waxcash_pair_rows: 60,
+              og_laststats_pair_id_not_null: 0,
+              og_laststats_pair_id_null: 60,
+            };
+          }
+          return null;
+        },
+      };
+      return statement;
+    },
+  };
+  try {
+    globalThis.fetch = async (url) => {
+      return new Response(JSON.stringify({
+        '24h': {
+          pools: {
+            neftyblocks: {
+              '144-117': { volumeA: '10', volumeB: '20' },
+            },
+            taco: {
+              'AA-WAXCASH': { volumeA: '5', volumeB: '9' },
+            },
+          },
+        },
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    };
+    const diagnostic = await __waxonedgeTestHooks.getWaxcashLastStatsDiagnostics({
+      DB: fakeDb,
+      WAXONEDGE_OG_API_BASE: 'https://og.example/api',
+    });
+    ok('WAXCASH LastStats diagnostic reports configured OG base, buckets, null OG IDs, and sync state',
+      diagnostic.og_api_base.configured === true &&
+      diagnostic.og_api_base.host === 'og.example' &&
+      diagnostic.lastVolumes_fetch.ok === true &&
+      diagnostic.lastVolumes_shape.buckets.neftyblocks.exists === true &&
+      diagnostic.lastVolumes_shape.buckets.taco.exists === true &&
+      diagnostic.d1.migration_027_applied === true &&
+      diagnostic.d1.og_laststats_pair_id_not_null === 0 &&
+      diagnostic.d1.og_laststats_pair_id_null === 60 &&
+      diagnostic.interpretation.og_laststats_pair_ids_need_backfill === true &&
+      diagnostic.source_sync['swap.nefty'].source_index_state.status === 'success' &&
+      diagnostic.source_sync['swap.taco'].latest_sync_run.status === 'success');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
 ok('WAXCASH analytics restores a real holder count source instead of accepting unavailable-only holder state',
   route.includes('async function fetchWaxcashAlcorTokenAnalytics') &&
   route.includes('https://wax.alcor.exchange/api/v3/analytics/tokens/waxcash-graffitiking?window=30d&hide_scam=true') &&
