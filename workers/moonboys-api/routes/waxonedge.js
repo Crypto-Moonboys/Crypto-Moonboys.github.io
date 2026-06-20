@@ -7914,10 +7914,86 @@ function waxcashOgPairRef(pair) {
   return { ...ref, pair_id: String(pair.pair_id) };
 }
 
-function ogPairLastVolumeRow(lastVolumes, duration, pair) {
+function ogPairLookupKey(value) {
+  const text = safeString(value);
+  return text ? text.toUpperCase().replace(/[^A-Z0-9]/g, '') : null;
+}
+
+function ogPairLookupKeys(pair, ref) {
+  const keys = new Set();
+  [
+    ref?.pair_id,
+    pair?.pair_id,
+    pair?.id,
+    pair?.pool_id,
+    pair?.market_id,
+    pair?.ticker_id,
+    pair?.pair_key,
+  ].forEach((value) => {
+    const key = ogPairLookupKey(value);
+    if (key) keys.add(key);
+  });
+  const tokenA = ogPairLookupKey(pair?.token_a_symbol);
+  const tokenB = ogPairLookupKey(pair?.token_b_symbol);
+  if (tokenA && tokenB) {
+    keys.add(`${tokenA}${tokenB}`);
+    keys.add(`${tokenB}${tokenA}`);
+  }
+  return keys;
+}
+
+function ogStatsObjectRows(bucket) {
+  if (!bucket || typeof bucket !== 'object') return [];
+  return Array.isArray(bucket) ? bucket : Object.entries(bucket).map(([key, value]) => ({ key, value }));
+}
+
+function ogStatsPairRowValue(entry) {
+  return Object.prototype.hasOwnProperty.call(entry, 'value') ? entry.value : entry;
+}
+
+function ogStatsPairRowMatches(entry, keys, pair) {
+  const value = ogStatsPairRowValue(entry);
+  const row = value && typeof value === 'object' ? value : null;
+  const key = ogPairLookupKey(entry?.key);
+  if (key && keys.has(key)) return true;
+  if (!row) return false;
+  const rowKeys = [
+    row.pair_id,
+    row.id,
+    row.pool_id,
+    row.market_id,
+    row.ticker_id,
+    row.pair_key,
+    row.pairId,
+    row.poolId,
+    row.marketId,
+  ].map(ogPairLookupKey).filter(Boolean);
+  if (rowKeys.some((rowKey) => keys.has(rowKey))) return true;
+  const rowTokenA = ogPairLookupKey(row.tokenA || row.token_a_symbol || row.symbolA || row.base_symbol || row.baseSymbol);
+  const rowTokenB = ogPairLookupKey(row.tokenB || row.token_b_symbol || row.symbolB || row.quote_symbol || row.quoteSymbol);
+  const pairTokenA = ogPairLookupKey(pair?.token_a_symbol);
+  const pairTokenB = ogPairLookupKey(pair?.token_b_symbol);
+  return !!rowTokenA && !!rowTokenB && !!pairTokenA && !!pairTokenB &&
+    ((rowTokenA === pairTokenA && rowTokenB === pairTokenB) || (rowTokenA === pairTokenB && rowTokenB === pairTokenA));
+}
+
+function ogPairLastStatsValue(stats, duration, pair) {
   const ref = waxcashOgPairRef(pair);
   if (!ref) return null;
-  return lastVolumes?.[duration]?.[ref.srcType]?.[ref.src]?.[ref.pair_id] || null;
+  const bucket = stats?.[duration]?.[ref.srcType]?.[ref.src];
+  if (!bucket || typeof bucket !== 'object') return null;
+  const keys = ogPairLookupKeys(pair, ref);
+  if (!keys.size) return null;
+  for (const [bucketKey, bucketValue] of Object.entries(bucket)) {
+    if (keys.has(ogPairLookupKey(bucketKey))) return bucketValue;
+  }
+  const matched = ogStatsObjectRows(bucket).find((entry) => ogStatsPairRowMatches(entry, keys, pair));
+  return matched ? ogStatsPairRowValue(matched) : null;
+}
+
+function ogPairLastVolumeRow(lastVolumes, duration, pair) {
+  const row = ogPairLastStatsValue(lastVolumes, duration, pair);
+  return row && typeof row === 'object' ? row : null;
 }
 
 function ogPairTokenWaxPrice(pair, side) {
@@ -7994,9 +8070,7 @@ function ogPairVolumeProof(lastVolumes, duration, pair, waxUsd = null) {
 }
 
 function ogPairChange24h(lastPriceChanges, pair) {
-  const ref = waxcashOgPairRef(pair);
-  if (!ref) return null;
-  const ratio = asNumber(lastPriceChanges?.['24h']?.[ref.srcType]?.[ref.src]?.[ref.pair_id]);
+  const ratio = asNumber(ogPairLastStatsValue(lastPriceChanges, '24h', pair));
   return ratio == null ? null : (ratio - 1) * 100;
 }
 

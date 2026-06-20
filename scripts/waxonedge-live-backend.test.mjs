@@ -2643,6 +2643,22 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         Number(convertedPair.volume_24h_a_native) === 10 &&
         Number(convertedPair.volume_24h_b_native) === 20,
         JSON.stringify(convertedPair));
+      const [normalizedKeyPair] = __waxonedgeTestHooks.applyOgLastStatsToWaxcashPairs([nonWaxPair], {
+        lastVolumes: {
+          '24h': { pools: { neftyblocks: { 'waxcash/aigod': { volumeA: '11', volumeB: '22' } } } },
+          '7d': { pools: { neftyblocks: [{ pair_id: 'WAXCASH-AIGOD', volumeA: '77', volumeB: '154' }] } },
+          '30d': { pools: { neftyblocks: [{ tokenA: 'AIGOD', tokenB: 'WAXCASH', volumeA: '330', volumeB: '660' }] } },
+        },
+      }, 0.006);
+      ok('WAXCASH OG LastStats volume lookup accepts normalized OG pair keys and row-shaped buckets',
+        Number(normalizedKeyPair.volume_24h_a_native) === 11 &&
+        Number(normalizedKeyPair.volume_24h_b_native) === 22 &&
+        Number(normalizedKeyPair.volume_7d_a_native) === 77 &&
+        Number(normalizedKeyPair.volume_7d_b_native) === 154 &&
+        Number(normalizedKeyPair.volume_30d_a_native) === 330 &&
+        Number(normalizedKeyPair.volume_30d_b_native) === 660 &&
+        normalizedKeyPair.volume_native_source === 'og_waxonedge_lastVolumes_native_pair_volume',
+        JSON.stringify(normalizedKeyPair));
     }
     const liveSupplyWrites = [];
     const liveSupplyDb = {
@@ -7153,6 +7169,13 @@ ok('WAXCASH analytics frontend uses TradingView Charting Library with Alcor WAXC
   waxcashHtml.includes("TOKEN_B = 'wax-eosio.token'") &&
   waxcashHtml.includes("symbol: 'WAXCASH_WAX'") &&
   waxcashHtml.includes('var subscriptions = {}') &&
+  waxcashHtml.includes('function alcorMillis(value)') &&
+  waxcashHtml.includes('return time < 100000000000 ? time * 1000 : time') &&
+  waxcashHtml.includes('function tradingViewSecondsToAlcorMillis(value)') &&
+  waxcashHtml.includes('var fromMs = tradingViewSecondsToAlcorMillis(from)') &&
+  waxcashHtml.includes('fetch(candleUrl({ resolution: resolution, from: fromMs, to: toMs }))') &&
+  !waxcashHtml.includes('time: Number(candle.time)') &&
+  !waxcashHtml.includes('from: from * 1000, to: to * 1000') &&
   waxcashHtml.includes('function fetchLatestBar(resolution)') &&
   waxcashHtml.includes('subscribeBars: function (symbolInfo, resolution, onRealtime, subscriberUID)') &&
   waxcashHtml.includes("symbolInfo.ticker !== 'WAXCASH_WAX'") &&
