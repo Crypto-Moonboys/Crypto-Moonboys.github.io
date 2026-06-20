@@ -6655,24 +6655,33 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
   const waxUsd = priceIndex.get(tokenKey('eosio.token', 'WAX'))?.priceUsd;
   let liquidityWax = null;
   let liquidityUsd = null;
+  let valuationBasis = null;
   let pairedTokenPrice = pairedIsWax ? { price_wax: '1' } : null;
+  let reserveRatioValuation = null;
   const directCandidate = directWax ? waxcashDirectWaxCandidateProof(pair, priceIndex) : null;
 
   if (!reasonCodes.length) {
     if (directWax) {
       const waxReserve = waxSideReserveForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
       liquidityWax = waxReserve != null ? waxReserve * 2 : asNumber(pair?.liquidity_wax);
+      if (liquidityWax != null) valuationBasis = 'direct_wax_pair_reserve';
       if (isOrderbook && directCandidate?.usable !== true) {
         for (const code of directCandidate?.reason_codes || ['orderbook_direct_wax_price_proof_unavailable']) reasonCodes.push(code);
       }
     } else {
       pairedTokenPrice = paired ? ogDirectWaxTokenPrice(paired.contract, paired.symbol, pairedDirectWaxPairs, priceIndex) : null;
+      reserveRatioValuation = waxcashGraphPairValuation(pair, headlinePrice, priceIndex);
       const waxcashPriceWax = asNumber(headlinePrice?.og_headline_price_wax);
       const pairedPriceWax = asNumber(pairedTokenPrice?.price_wax);
       if (waxcashPriceWax == null) reasonCodes.push('waxcash_headline_price_unavailable');
-      if (pairedPriceWax == null) reasonCodes.push('paired_token_wax_price_unavailable');
-      if (!reasonCodes.length) {
+      if (pairedPriceWax != null && !reasonCodes.length) {
         liquidityWax = (waxcashReserve * waxcashPriceWax) + (pairedReserve * pairedPriceWax);
+        valuationBasis = 'paired_token_direct_wax_price';
+      } else if (asNumber(reserveRatioValuation?.liquidity_wax) != null) {
+        liquidityWax = asNumber(reserveRatioValuation.liquidity_wax);
+        valuationBasis = 'waxcash_reserve_ratio_from_selected_waxcash_price';
+      } else if (pairedPriceWax == null) {
+        reasonCodes.push('paired_token_wax_price_unavailable');
       }
     }
   }
@@ -6684,10 +6693,12 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
     : (!reasonCodes.includes('missing_or_zero_reserves') && waxcashReserve != null && waxcashReserve > 0
       ? pairedReserve / waxcashReserve
       : null);
-  const pairedTokenPriceWax = pairedIsWax ? 1 : asNumber(pairedTokenPrice?.price_wax);
+  const reserveRatioPairedTokenPriceWax = asNumber(reserveRatioValuation?.selected_price_wax);
+  const pairedTokenPriceWax = pairedIsWax ? 1 : (asNumber(pairedTokenPrice?.price_wax) ?? reserveRatioPairedTokenPriceWax);
   const priceRelativeUsd = priceRelative != null && pairedTokenPriceWax != null && waxUsd != null
     ? priceRelative * pairedTokenPriceWax * waxUsd
     : null;
+  const reserveRatioPossible = asNumber(reserveRatioValuation?.liquidity_wax) != null;
 
   const proof = {
     source: pair.source || null,
@@ -6709,8 +6720,32 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
     pair_price_usd: safeDecimal(priceRelativeUsd),
     paired_token: paired,
     paired_token_og_wax_price: pairedTokenPrice?.price_wax || null,
+    paired_token_reserve_ratio_wax_price: safeDecimal(reserveRatioPairedTokenPriceWax),
     selected_waxcash_price_wax: headlinePrice?.og_headline_price_wax || null,
     direct_wax_pair: directWax,
+    valuation_basis: valuationBasis,
+    valuation_debug: {
+      no_visible_ui: true,
+      no_fake_value: true,
+      pair_id: pair.pair_id || null,
+      source: pair.source || null,
+      token_a: tokenRef(pair.token_a_contract, pair.token_a_symbol),
+      token_b: tokenRef(pair.token_b_contract, pair.token_b_symbol),
+      reserve_a: safeDecimal(asNumber(pair.reserve_a)),
+      reserve_b: safeDecimal(asNumber(pair.reserve_b)),
+      pair_price_relative_to_waxcash: safeDecimal(priceRelative),
+      selected_waxcash_price_wax: headlinePrice?.og_headline_price_wax || null,
+      pair_liquidity_wax: safeDecimal(liquidityWax),
+      paired_token_og_wax_price: pairedTokenPrice?.price_wax || null,
+      paired_token_reserve_ratio_wax_price: safeDecimal(reserveRatioPairedTokenPriceWax),
+      paired_token_direct_wax_pair_found: asNumber(pairedTokenPrice?.price_wax) != null,
+      route_based_wax_price_found: false,
+      route_graph_available: false,
+      reserve_ratio_waxcash_valuation_possible: reserveRatioPossible,
+      valuation_basis: valuationBasis,
+      rejection_reason: reasonCodes.length ? reasonCodes.join(',') : null,
+      reason_codes: reasonCodes.slice(),
+    },
     reason_codes: reasonCodes,
   };
   for (const field of [
@@ -8041,6 +8076,9 @@ function waxcashPairTableRow(pair, selectedWaxPool) {
       reason_codes: reasonCodes,
       direct_wax_pair: !!pair.direct_wax_pair,
       paired_token_og_wax_price: pair.paired_token_og_wax_price || null,
+      paired_token_reserve_ratio_wax_price: pair.paired_token_reserve_ratio_wax_price || null,
+      valuation_basis: pair.valuation_basis || null,
+      valuation_debug: pair.valuation_debug || null,
       status,
       status_label: statusLabel,
       reserve_a: pair.reserve_a || null,
@@ -8086,6 +8124,8 @@ async function waxcashPairSourceStabilityDiagnostics(db, options = {}) {
   const rawSourceCounts = countRowsByAggregateSource(rawRows);
   const validReserveButUnvalued = (proofPairs || []).filter((pair) =>
     hasRealPairReserves(pair) && asNumber(pair.pair_liquidity_wax) == null);
+  const reserveRatioValued = (proofPairs || []).filter((pair) =>
+    pair?.valuation_basis === 'waxcash_reserve_ratio_from_selected_waxcash_price');
   const nonWaxRejectedPairedTokenPrice = (proofPairs || []).filter((pair) =>
     !pair.direct_wax_pair && Array.isArray(pair.reason_codes) && pair.reason_codes.includes('paired_token_wax_price_unavailable'));
   const partialSourceStates = sourceStateRows.filter((row) =>
@@ -8106,6 +8146,7 @@ async function waxcashPairSourceStabilityDiagnostics(db, options = {}) {
     },
     rows_with_liquidity_wax_not_null: tableRows.filter((row) => asNumber(row.liquidity_wax) != null).length,
     proof_rows_with_pair_liquidity_wax_not_null: proofPairs.filter((pair) => asNumber(pair.pair_liquidity_wax) != null).length,
+    reserve_ratio_waxcash_valued_pair_count: reserveRatioValued.length,
     rows_with_valid_reserves_but_pair_liquidity_wax_null: validReserveButUnvalued.length,
     direct_wax_pair_count: proofPairs.filter((pair) => !!pair.direct_wax_pair).length,
     non_wax_pair_rejected_paired_token_wax_price_unavailable_count: nonWaxRejectedPairedTokenPrice.length,
