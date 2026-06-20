@@ -3,14 +3,6 @@
 
   var ENDPOINT = '/api/waxonedge/waxcash-analytics';
   var DASH = '--';
-  var DEFAULT_EXTERNAL_CHART = {
-    source: 'geckoterminal',
-    pool_id: 'swap-alcor-8388',
-    pair_label: 'WAXCASH/WAX',
-    url: 'https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1',
-    role: 'external_visual_reference_only',
-    affects_waxonedge_metrics: false,
-  };
   var state = {
     payload: null,
     pairSort: null,
@@ -201,6 +193,11 @@
     return tokenSideLabel(row, 'a') + tokenSideLabel(row, 'b');
   }
 
+  function feeText(row) {
+    if (!row) return DASH;
+    return row.fee_bps != null ? fmt(row.fee_bps / 100, 2) + ' %' : (row.is_direct_wax_pair ? 'Direct' : DASH);
+  }
+
   function tokenIconUrl(row, side) {
     return String((row && (row['token_' + side + '_icon'] || row['token_' + side + '_logo'])) || '');
   }
@@ -212,6 +209,18 @@
     return '<span class="wx-token">' +
       (icon ? '<img class="wx-token-logo" src="' + esc(icon) + '" alt="" loading="lazy">' : '') +
       '<span class="wx-token-text"><strong>' + esc(symbol || DASH) + '</strong>' + esc(contract || '') + '</span>' +
+      '</span>';
+  }
+
+  function tokenIconImg(row, side) {
+    var icon = tokenIconUrl(row, side);
+    return icon ? '<img class="wx-token-logo" src="' + esc(icon) + '" alt="" loading="lazy">' : '';
+  }
+
+  function pairCell(row) {
+    return '<span class="wx-pair-cell">' +
+      '<span class="wx-fee-badge"><span class="wx-fee-icons">' + tokenIconImg(row, 'a') + tokenIconImg(row, 'b') + '</span>' + esc(feeText(row)) + '</span>' +
+      '<span>' + tokenLabel(row) + '</span>' +
       '</span>';
   }
 
@@ -282,16 +291,14 @@
     updateSortButtons(rows);
     $('wx-pair-summary').textContent = rows.length + ' indexed WAXCASH pairs';
     if (!rows.length) {
-      $('wx-pairs').innerHTML = '<tr><td colspan="10" class="wx-muted">No source-backed WAXCASH pair rows returned.</td></tr>';
+      $('wx-pairs').innerHTML = '<tr><td colspan="9" class="wx-muted">No source-backed WAXCASH pair rows returned.</td></tr>';
       return;
     }
     $('wx-pairs').innerHTML = displayRows.map(function (row, index) {
-      var fee = row.fee_bps != null ? fmt(row.fee_bps / 100, 2) + ' %' : (row.is_direct_wax_pair ? 'Direct' : DASH);
       return '<tr class="' + (pairKey(row) === activeKey ? 'is-selected' : '') + '">' +
         '<td>#' + (index + 1) + '</td>' +
         '<td>' + sourceCell(row) + '</td>' +
-        '<td>' + esc(fee) + '</td>' +
-        '<td>' + tokenLabel(row) + '</td>' +
+        '<td>' + pairCell(row) + '</td>' +
         '<td>' + dual(row.liquidity_wax, row.liquidity_usd, row.reason) + '</td>' +
         '<td>' + priceCell(row) + '</td>' +
         '<td>' + changeCell(row.change_24h) + '</td>' +
@@ -302,35 +309,6 @@
     }).join('');
   }
 
-  function chartExternalConfig(payload) {
-    var sections = (payload || {}).sections || {};
-    var external = sections.chart_external || {};
-    var url = String(external.url || DEFAULT_EXTERNAL_CHART.url);
-    if (!/^https:\/\/www\.geckoterminal\.com\/wax\/pools\/swap-alcor-8388(?:\?|$)/.test(url)) url = DEFAULT_EXTERNAL_CHART.url;
-    return {
-      source: external.source || DEFAULT_EXTERNAL_CHART.source,
-      pool_id: external.pool_id || DEFAULT_EXTERNAL_CHART.pool_id,
-      pair_label: external.pair_label || DEFAULT_EXTERNAL_CHART.pair_label,
-      url: url,
-      role: external.role || DEFAULT_EXTERNAL_CHART.role,
-      affects_waxonedge_metrics: external.affects_waxonedge_metrics === true ? true : false,
-    };
-  }
-
-  function renderExternalChart(payload) {
-    var host = $('wx-chart');
-    var external = chartExternalConfig(payload);
-    if (!host) return;
-    var iframe = host.querySelector('.wx-external-chart-frame');
-    var title = (external.pair_label || 'WAXCASH/WAX') + ' GeckoTerminal candle chart';
-    if (!iframe) {
-      host.innerHTML = '<iframe class="wx-external-chart-frame" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>';
-      iframe = host.querySelector('.wx-external-chart-frame');
-    }
-    if (iframe.getAttribute('src') !== external.url) iframe.setAttribute('src', external.url);
-    if (iframe.getAttribute('title') !== title) iframe.setAttribute('title', title);
-  }
-
   function render(payload) {
     state.payload = payload || {};
     var sections = state.payload.sections || {};
@@ -338,11 +316,9 @@
     var status = supply.live === false && supply.reason ? 'Supply: ' + humanReason(supply.reason) : '';
     $('wx-status').textContent = status;
     renderStats(state.payload);
-    renderExternalChart(state.payload);
     renderPairs(state.payload);
   }
 
-  renderExternalChart({ sections: { chart_external: DEFAULT_EXTERNAL_CHART } });
   Array.prototype.forEach.call(document.querySelectorAll('.wx-sort-button'), function (button) {
     button.addEventListener('click', function () { setPairSort(button.getAttribute('data-sort')); });
   });
@@ -358,8 +334,7 @@
     .catch(function (error) {
       $('wx-status').textContent = 'Analytics unavailable';
       $('wx-stats').innerHTML = statRow({ label: 'Status', live: false, reason: error.message || String(error) });
-      renderExternalChart({ sections: { chart_external: DEFAULT_EXTERNAL_CHART } });
       updateSortButtons([]);
-      $('wx-pairs').innerHTML = '<tr><td colspan="10" class="wx-muted">Pair table unavailable.</td></tr>';
+      $('wx-pairs').innerHTML = '<tr><td colspan="9" class="wx-muted">Pair table unavailable.</td></tr>';
     });
 }());

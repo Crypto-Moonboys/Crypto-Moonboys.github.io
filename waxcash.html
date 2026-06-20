@@ -148,12 +148,17 @@
       padding: 10px 14px 14px;
       position: relative;
     }
-    .wx-external-chart-frame {
+    .wx-tradingview-chart {
       width: 100%;
       height: 660px;
       min-height: 660px;
       background: #111722;
       border: 1px solid rgba(148,163,173,0.16);
+    }
+    .wx-tradingview-widget {
+      height: 100%;
+      min-height: 660px;
+      width: 100%;
     }
     .wx-chart-empty {
       min-height: 510px;
@@ -178,13 +183,13 @@
       background: #121922;
     }
     th, td {
-      padding: 10px 10px;
+      padding: 7px 9px;
       border-bottom: 1px solid rgba(255,255,255,0.07);
       text-align: right;
       vertical-align: middle;
       white-space: normal;
       overflow-wrap: anywhere;
-      line-height: 1.16;
+      line-height: 1.08;
       font-weight: 800;
     }
     th {
@@ -206,13 +211,13 @@
       cursor: pointer;
     }
     .wx-sort-button.is-active { color: var(--cyan); }
-    th:nth-child(1), td:nth-child(1) { width: 52px; text-align: left; }
-    th:nth-child(2), td:nth-child(2) { width: 14%; text-align: left; }
-    th:nth-child(3), td:nth-child(3) { width: 10%; }
-    th:nth-child(4), td:nth-child(4) { width: 12%; text-align: left; }
-    th:nth-child(5), td:nth-child(5) { width: 14%; }
-    th:nth-child(6), td:nth-child(6) { width: 12%; }
-    th:nth-child(7), td:nth-child(7) { width: 10%; }
+    th:nth-child(1), td:nth-child(1) { width: 58px; text-align: left; }
+    th:nth-child(2), td:nth-child(2) { width: 12%; text-align: center; }
+    th:nth-child(3), td:nth-child(3) { width: 15%; text-align: left; }
+    th:nth-child(4), td:nth-child(4) { width: 14%; }
+    th:nth-child(5), td:nth-child(5) { width: 13%; }
+    th:nth-child(6), td:nth-child(6) { width: 13%; }
+    th:nth-child(7), td:nth-child(7) { width: 14%; }
     th:nth-child(8), td:nth-child(8) { width: 14%; }
     th:nth-child(9), td:nth-child(9) { width: 14%; }
     tbody tr:nth-child(odd) { background: rgba(255,255,255,0.025); }
@@ -223,8 +228,8 @@
       color: var(--muted);
       display: flex;
       font-weight: 800;
-      gap: 8px;
-      margin: 4px 0;
+      gap: 7px;
+      margin: 2px 0;
     }
     .wx-token-logo {
       aspect-ratio: 1;
@@ -232,28 +237,55 @@
       border-radius: 50%;
       display: block;
       flex: 0 0 auto;
-      height: 28px;
+      height: 24px;
       object-fit: contain;
-      width: 28px;
+      width: 24px;
     }
     .wx-token-text {
       display: block;
       min-width: 0;
     }
     .wx-token strong { color: var(--text); display: block; }
+    .wx-pair-cell {
+      align-items: flex-start;
+      display: grid;
+      gap: 7px;
+      grid-template-columns: 44px minmax(0, 1fr);
+    }
+    .wx-fee-badge {
+      color: var(--text);
+      font-weight: 900;
+      line-height: 1;
+      margin-top: 2px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .wx-fee-icons {
+      align-items: center;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 4px;
+      min-height: 24px;
+    }
+    .wx-fee-icons .wx-token-logo {
+      margin-left: -6px;
+    }
+    .wx-fee-icons .wx-token-logo:first-child {
+      margin-left: 0;
+    }
     .wx-source-cell {
       align-items: center;
       display: inline-flex;
       flex-direction: column;
-      gap: 6px;
-      min-width: 64px;
+      gap: 4px;
+      min-width: 58px;
     }
     .wx-source-logo {
       aspect-ratio: 1;
       display: block;
-      height: 42px;
+      height: 34px;
       object-fit: contain;
-      width: 42px;
+      width: 34px;
     }
     .wx-source-name { color: var(--text); font-weight: 900; }
     .wx-cell-sub { display: block; color: var(--green); margin-top: 2px; }
@@ -262,7 +294,7 @@
       .wx-shell { padding: 12px; border-radius: 10px; }
       .wx-main-grid { grid-template-columns: 1fr; }
       .wx-chart-panel { min-height: 620px; }
-      .wx-external-chart-frame, .wx-chart-empty { height: 520px; min-height: 520px; }
+      .wx-tradingview-chart, .wx-tradingview-widget, .wx-chart-empty { height: 520px; min-height: 520px; }
     }
   </style>
 </head>
@@ -291,7 +323,28 @@
           <h2 id="wx-chart-heading">WAXCASH/WAX chart</h2>
         </div>
         <div id="wx-chart" class="wx-chart-host" aria-live="polite">
-          <iframe class="wx-external-chart-frame" src="https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1" title="WAXCASH/WAX GeckoTerminal candle chart" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+          <div class="tradingview-widget-container wx-tradingview-chart">
+            <div id="tradingview_waxcash_alcor" class="tradingview-widget-container__widget wx-tradingview-widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+            {
+              "autosize": true,
+              "symbol": "ALCOR:WAXCASHWAX",
+              "interval": "240",
+              "timezone": "Etc/UTC",
+              "theme": "dark",
+              "style": "1",
+              "locale": "en",
+              "withdateranges": true,
+              "hide_side_toolbar": false,
+              "allow_symbol_change": false,
+              "details": true,
+              "hotlist": false,
+              "calendar": false,
+              "studies": ["Volume@tv-basicstudies"],
+              "support_host": "https://www.tradingview.com"
+            }
+            </script>
+          </div>
         </div>
       </article>
     </section>
@@ -305,20 +358,19 @@
         <table>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Source</th>
-              <th>Fee</th>
+              <th>Rank</th>
+              <th>Exchange</th>
               <th>Pair</th>
               <th><button id="wx-sort-liquidity" class="wx-sort-button" type="button" data-sort="liquidity">Liquidity</button></th>
               <th>Price</th>
-              <th>24h change</th>
+              <th>24h price change</th>
               <th><button id="wx-sort-volume24" class="wx-sort-button" type="button" data-sort="volume24">24h volume</button></th>
               <th>7d volume</th>
               <th>30d volume</th>
             </tr>
           </thead>
           <tbody id="wx-pairs">
-            <tr><td colspan="10" class="wx-muted">Loading WAXCASH pairs...</td></tr>
+            <tr><td colspan="9" class="wx-muted">Loading WAXCASH pairs...</td></tr>
           </tbody>
         </table>
       </div>
@@ -360,6 +412,6 @@
   };
 }());
 </script>
-<script data-cfasync="false" src="/js/waxcash-analytics.js?v=wxcash-geckoterminal-chart-20260619-1"></script>
+<script data-cfasync="false" src="/js/waxcash-analytics.js?v=wxcash-tradingview-chart-20260620-1"></script>
 </body>
 </html>
