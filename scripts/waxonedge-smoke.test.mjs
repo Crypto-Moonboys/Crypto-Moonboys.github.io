@@ -130,7 +130,7 @@ ok('waxcash analytics frontend calls the dedicated backend endpoint only',
   waxcashAnalyticsJs.includes('sections.token_stats') &&
   waxcashAnalyticsJs.includes('sections.supply_proof') &&
   waxcashAnalyticsJs.includes('sections.pair_table') &&
-  waxcashAnalyticsJs.includes('sections.chart_external') &&
+  !waxcashAnalyticsJs.includes('sections.chart_external') &&
   !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-analytics/chart-feed'));
 ok('waxcash frontend removes visible explanatory chart/status/proof labels',
   !waxcashHtml.includes('Chart and stats') &&
@@ -144,15 +144,18 @@ ok('waxcash frontend removes visible explanatory chart/status/proof labels',
   !waxcashHtml.includes('Display-only pair detail views') &&
   !waxcashHtml.includes('wx-view-controls') &&
   !waxcashHtml.includes('wx-pair-detail'));
-ok('waxcash frontend embeds GeckoTerminal WAXCASH/WAX candle chart instead of Alcor pool analytics',
-  waxcashHtml.includes('https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1') &&
-  waxcashHtml.includes('WAXCASH/WAX GeckoTerminal candle chart') &&
-  waxcashAnalyticsJs.includes('https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1') &&
-  waxcashAnalyticsJs.includes('GeckoTerminal candle chart') &&
-  waxcashAnalyticsJs.includes("var iframe = host.querySelector('.wx-external-chart-frame')") &&
-  waxcashAnalyticsJs.includes("if (!iframe) {") &&
-  waxcashAnalyticsJs.includes("if (iframe.getAttribute('src') !== external.url) iframe.setAttribute('src', external.url)") &&
-  !waxcashAnalyticsJs.includes("host.innerHTML =\r\n      '<iframe class=\"wx-external-chart-frame\" src=\"'") &&
+ok('waxcash frontend uses a standalone TradingView WAXCASH/WAX chart widget without iframe or backend candle fallback',
+  waxcashHtml.includes('https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js') &&
+  waxcashHtml.includes('"symbol": "ALCOR:WAXCASHWAX"') &&
+  waxcashHtml.includes('"allow_symbol_change": false') &&
+  waxcashHtml.includes('"studies": ["Volume@tv-basicstudies"]') &&
+  !waxcashHtml.includes('<iframe') &&
+  !waxcashHtml.includes('wx-external-chart-frame') &&
+  !waxcashHtml.includes('geckoterminal.com') &&
+  !waxcashAnalyticsJs.includes('<iframe') &&
+  !waxcashAnalyticsJs.includes('DEFAULT_EXTERNAL_CHART') &&
+  !waxcashAnalyticsJs.includes('renderExternalChart') &&
+  !waxcashAnalyticsJs.includes('geckoterminal.com') &&
   !waxcashHtml.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
   !waxcashAnalyticsJs.includes('https://alcor.exchange/v/wax/analytics/pools/8388') &&
   !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-analytics/chart-feed'));

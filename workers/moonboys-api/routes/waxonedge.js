@@ -8368,7 +8368,7 @@ async function indexedTradeWindowVolumesByPair(db, pairs = [], options = {}) {
   return windows;
 }
 
-async function indexedCandleChange24hByPair(db, pairs = []) {
+async function indexedCandleChange24hByPair(db, pairs = [], selectedPriceWax = null) {
   const changes = new Map();
   for (const pair of pairs || []) {
     if (!pair?.source || !pair?.pair_id) continue;
@@ -8378,13 +8378,15 @@ async function indexedCandleChange24hByPair(db, pairs = []) {
       interval: '1D',
       limit: 3,
     }).catch(() => ({ candles: [] }));
-    const change = waxcashPriceChangeFromCandles(candles.candles || []);
+    const normalized = normalizeWaxcashWaxCandles(candles.candles || [], { selectedPriceWax });
+    const change = waxcashPriceChangeFromCandles(normalized.candles || []);
     if (change == null) continue;
     changes.set(waxcashTradePairKey(pair.source, pair.pair_id), {
       change_24h: safeDecimal(change),
-      source: 'indexed_1d_candle_close_window',
-      row_count: (candles.candles || []).length,
-      latest_candle_time: (candles.candles || []).slice(-1)[0]?.bucket_time || null,
+      source: 'normalized_indexed_1d_candle_close_window',
+      row_count: (normalized.candles || []).length,
+      latest_candle_time: (normalized.candles || []).slice(-1)[0]?.bucket_time || null,
+      candle_normalization: normalized.summary,
       no_fake_value: true,
     });
   }
@@ -8412,17 +8414,22 @@ function applyIndexedPairWindowVolumes(pairs = [], windows = new Map(), waxUsd =
       latest_indexed_trade_time: null,
     };
     if (!window && !candleChange) return { ...pair, metric_sources: metricSources };
+    const existingChange24h = asNumber(pair?.change_24h);
     const volume24Wax = asNumber(window?.volume_24h_wax);
     const volume7dWax = asNumber(window?.volume_7d_wax);
     const volume30dWax = asNumber(window?.volume_30d_wax);
-    const change24h = asNumber(window?.change_24h) ?? asNumber(candleChange?.change_24h);
+    const tradeChange24h = asNumber(window?.change_24h);
+    const candleChange24h = asNumber(candleChange?.change_24h);
+    const change24h = existingChange24h ?? tradeChange24h ?? candleChange24h;
     if (volume24Wax != null) metricSources.volume_24h_wax = { source: window.source, row_count: window.row_count_24h || 0 };
     if (volume7dWax != null) metricSources.volume_7d_wax = { source: window.source, row_count: window.row_count_7d || 0 };
     if (volume30dWax != null) metricSources.volume_30d_wax = { source: window.source, row_count: window.row_count_30d || 0 };
-    if (change24h != null) {
+    if (existingChange24h != null) {
+      metricSources.change_24h = { source: 'indexed_pair_or_ticker_change', row_count: 0 };
+    } else if (change24h != null) {
       metricSources.change_24h = {
-        source: asNumber(window?.change_24h) != null ? (window.change_source || 'indexed_trade_price_window') : candleChange.source,
-        row_count: asNumber(window?.change_24h) != null ? (window.row_count_30d || 0) : (candleChange.row_count || 0),
+        source: tradeChange24h != null ? (window.change_source || 'indexed_trade_price_window') : candleChange.source,
+        row_count: tradeChange24h != null ? (window.row_count_30d || 0) : (candleChange.row_count || 0),
       };
     }
     metricSources.latest_indexed_trade_time = window?.latest_indexed_trade_time || null;
@@ -8495,7 +8502,7 @@ async function buildWaxcashAnalytics(db) {
     latestIndexedHolderCount(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL),
     indexedTradeWindowVolumes(db, proof.all_pairs || [], { selectedPriceWax }),
     indexedTradeWindowVolumesByPair(db, proof.all_pairs || [], { selectedPriceWax }),
-    indexedCandleChange24hByPair(db, proof.all_pairs || []),
+    indexedCandleChange24hByPair(db, proof.all_pairs || [], selectedPriceWax),
   ]);
   const pairTablePairs = applyIndexedPairWindowVolumes(proof.all_pairs || [], pairWindowVolumes, waxUsd, pairCandleChanges);
   const priceChange24hProof = await selectedProofPriceChange24h(db, selectedWaxPool, selectedPriceWax);
@@ -8740,14 +8747,6 @@ async function buildWaxcashAnalytics(db) {
       build_from_indexed_trades: chart.build_from_indexed_trades || null,
       unavailable: chart.unavailable || null,
       no_fake_value: true,
-    },
-    chart_external: {
-      source: 'geckoterminal',
-      pool_id: 'swap-alcor-8388',
-      pair_label: 'WAXCASH/WAX',
-      url: 'https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1',
-      role: 'external_visual_reference_only',
-      affects_waxonedge_metrics: false,
     },
     pair_table: waxcashBuildPairTableSection(pairTablePairs, selectedWaxPool),
   };

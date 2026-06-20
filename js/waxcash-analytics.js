@@ -3,14 +3,6 @@
 
   var ENDPOINT = '/api/waxonedge/waxcash-analytics';
   var DASH = '--';
-  var DEFAULT_EXTERNAL_CHART = {
-    source: 'geckoterminal',
-    pool_id: 'swap-alcor-8388',
-    pair_label: 'WAXCASH/WAX',
-    url: 'https://www.geckoterminal.com/wax/pools/swap-alcor-8388?embed=1',
-    role: 'external_visual_reference_only',
-    affects_waxonedge_metrics: false,
-  };
   var state = {
     payload: null,
     pairSort: null,
@@ -317,35 +309,6 @@
     }).join('');
   }
 
-  function chartExternalConfig(payload) {
-    var sections = (payload || {}).sections || {};
-    var external = sections.chart_external || {};
-    var url = String(external.url || DEFAULT_EXTERNAL_CHART.url);
-    if (!/^https:\/\/www\.geckoterminal\.com\/wax\/pools\/swap-alcor-8388(?:\?|$)/.test(url)) url = DEFAULT_EXTERNAL_CHART.url;
-    return {
-      source: external.source || DEFAULT_EXTERNAL_CHART.source,
-      pool_id: external.pool_id || DEFAULT_EXTERNAL_CHART.pool_id,
-      pair_label: external.pair_label || DEFAULT_EXTERNAL_CHART.pair_label,
-      url: url,
-      role: external.role || DEFAULT_EXTERNAL_CHART.role,
-      affects_waxonedge_metrics: external.affects_waxonedge_metrics === true ? true : false,
-    };
-  }
-
-  function renderExternalChart(payload) {
-    var host = $('wx-chart');
-    var external = chartExternalConfig(payload);
-    if (!host) return;
-    var iframe = host.querySelector('.wx-external-chart-frame');
-    var title = (external.pair_label || 'WAXCASH/WAX') + ' GeckoTerminal candle chart';
-    if (!iframe) {
-      host.innerHTML = '<iframe class="wx-external-chart-frame" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>';
-      iframe = host.querySelector('.wx-external-chart-frame');
-    }
-    if (iframe.getAttribute('src') !== external.url) iframe.setAttribute('src', external.url);
-    if (iframe.getAttribute('title') !== title) iframe.setAttribute('title', title);
-  }
-
   function render(payload) {
     state.payload = payload || {};
     var sections = state.payload.sections || {};
@@ -353,11 +316,9 @@
     var status = supply.live === false && supply.reason ? 'Supply: ' + humanReason(supply.reason) : '';
     $('wx-status').textContent = status;
     renderStats(state.payload);
-    renderExternalChart(state.payload);
     renderPairs(state.payload);
   }
 
-  renderExternalChart({ sections: { chart_external: DEFAULT_EXTERNAL_CHART } });
   Array.prototype.forEach.call(document.querySelectorAll('.wx-sort-button'), function (button) {
     button.addEventListener('click', function () { setPairSort(button.getAttribute('data-sort')); });
   });
@@ -373,7 +334,6 @@
     .catch(function (error) {
       $('wx-status').textContent = 'Analytics unavailable';
       $('wx-stats').innerHTML = statRow({ label: 'Status', live: false, reason: error.message || String(error) });
-      renderExternalChart({ sections: { chart_external: DEFAULT_EXTERNAL_CHART } });
       updateSortButtons([]);
       $('wx-pairs').innerHTML = '<tr><td colspan="9" class="wx-muted">Pair table unavailable.</td></tr>';
     });
