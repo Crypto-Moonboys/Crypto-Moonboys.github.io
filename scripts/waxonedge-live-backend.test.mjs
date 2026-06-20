@@ -2908,6 +2908,74 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         nativeWindowDebug.latest_price_sample?.traded_at === '2026-06-20T04:00:00.000Z' &&
         nativeWindowDebug.prior_24h_price_sample?.traded_at === '2026-06-18T04:00:00.000Z',
         JSON.stringify({ nativeWindow, nativeWindowPair, nativeWindowDebug }));
+      const stalePriceTrades = [
+        {
+          source: 'swap.nefty',
+          trade_id: 'stale-latest-price',
+          pair_id: 'WAXCASHAIGOD',
+          contract: 'aigodtokenwx',
+          symbol: 'AIGOD',
+          amount: '20',
+          volume: '20',
+          price: '0.50',
+          traded_at: '2026-06-14T06:16:34.000Z',
+          raw_json: JSON.stringify({ amount_in: '10', code_in: 'WAXCASH', amount_out: '20', code_out: 'AIGOD' }),
+        },
+        {
+          source: 'swap.nefty',
+          trade_id: 'stale-prior-price',
+          pair_id: 'WAXCASHAIGOD',
+          contract: 'aigodtokenwx',
+          symbol: 'AIGOD',
+          amount: '40',
+          volume: '40',
+          price: '0.25',
+          traded_at: '2026-06-12T06:16:34.000Z',
+          raw_json: JSON.stringify({ amount_in: '20', code_in: 'WAXCASH', amount_out: '40', code_out: 'AIGOD' }),
+        },
+      ];
+      const stalePriceDb = {
+        prepare(sql) {
+          return {
+            bind(...params) {
+              return {
+                async all() {
+                  if (sql.includes('FROM waxonedge_trades')) {
+                    const since = params[params.length - 1];
+                    return {
+                      results: stalePriceTrades.filter((row) => !since || !/^\d{4}-/.test(String(since)) || Date.parse(row.traded_at) >= Date.parse(since)),
+                    };
+                  }
+                  return { results: [] };
+                },
+                async first() {
+                  if (sql.includes('MAX(traded_at)')) return { latest_trade_at: '2026-06-20T04:00:00.000Z' };
+                  return null;
+                },
+              };
+            },
+          };
+        },
+      };
+      const staleWindowMap = await __waxonedgeTestHooks.indexedTradeWindowVolumesByPair(stalePriceDb, [nonWaxPair], {});
+      const staleWindow = staleWindowMap.get('swap.nefty::WAXCASHAIGOD');
+      const [staleWindowPair] = __waxonedgeTestHooks.applyIndexedPairWindowVolumes([nonWaxPair], staleWindowMap, 0.006);
+      const staleWindowDebug = __waxonedgeTestHooks.waxcashBuildPairTableSection([staleWindowPair], null).metric_debug.rows[0];
+      ok('WAXCASH pair table does not expose stale indexed price-window change as current 24h change',
+        staleWindow?.row_count_24h === 0 &&
+        staleWindow?.row_count_7d === 1 &&
+        staleWindow?.row_count_30d === 2 &&
+        staleWindow?.change_24h == null &&
+        staleWindow?.change_source == null &&
+        staleWindow?.change_reason === 'stale_price_window' &&
+        staleWindowPair.change_24h == null &&
+        staleWindowPair.metric_sources?.change_24h?.source == null &&
+        staleWindowPair.metric_sources?.change_24h?.reason === 'stale_price_window' &&
+        staleWindowDebug.change_24h_source == null &&
+        staleWindowDebug.change_24h_reason === 'stale_price_window' &&
+        staleWindowDebug.latest_price_sample?.traded_at === '2026-06-14T06:16:34.000Z' &&
+        staleWindowDebug.prior_24h_price_sample?.traded_at === '2026-06-12T06:16:34.000Z',
+        JSON.stringify({ staleWindow, staleWindowPair, staleWindowDebug }));
     }
     const liveSupplyWrites = [];
     const liveSupplyDb = {
