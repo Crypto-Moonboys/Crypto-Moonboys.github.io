@@ -144,11 +144,23 @@ ok('waxcash frontend removes visible explanatory chart/status/proof labels',
   !waxcashHtml.includes('Display-only pair detail views') &&
   !waxcashHtml.includes('wx-view-controls') &&
   !waxcashHtml.includes('wx-pair-detail'));
-ok('waxcash frontend uses a standalone TradingView WAXCASH/WAX chart widget without iframe or backend candle fallback',
-  waxcashHtml.includes('https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js') &&
-  waxcashHtml.includes('"symbol": "ALCOR:WAXCASHWAX"') &&
-  waxcashHtml.includes('"allow_symbol_change": false') &&
-  waxcashHtml.includes('"studies": ["Volume@tv-basicstudies"]') &&
+ok('waxcash frontend restores a full TradingView Charting Library widget using the Alcor WAXCASH/WAX feed',
+  waxcashHtml.includes('https://alcor.exchange/charting_library/charting_library.standalone.js') &&
+  waxcashHtml.includes('new window.TradingView.widget') &&
+  waxcashHtml.includes('https://wax.alcor.exchange/api/v2/swap/candles') &&
+  waxcashHtml.includes("TOKEN_A = 'waxcash-graffitiking'") &&
+  waxcashHtml.includes("TOKEN_B = 'wax-eosio.token'") &&
+  waxcashHtml.includes("symbol: 'WAXCASH_WAX'") &&
+  waxcashHtml.includes('var subscriptions = {}') &&
+  waxcashHtml.includes('function fetchLatestBar(resolution)') &&
+  waxcashHtml.includes('subscribeBars: function (symbolInfo, resolution, onRealtime, subscriberUID)') &&
+  waxcashHtml.includes("symbolInfo.ticker !== 'WAXCASH_WAX'") &&
+  waxcashHtml.includes('subscription.timer = setInterval(pollLatestBar') &&
+  waxcashHtml.includes('onRealtime(bar)') &&
+  waxcashHtml.includes('unsubscribeBars: function (subscriberUID)') &&
+  waxcashHtml.includes('clearInterval(subscription.timer)') &&
+  !waxcashHtml.includes('Native TradingView Alcor WAXCASH/WAX symbol unavailable') &&
+  !waxcashHtml.includes('"symbol": "ALCOR:WAXCASHWAX"') &&
   !waxcashHtml.includes('<iframe') &&
   !waxcashHtml.includes('wx-external-chart-frame') &&
   !waxcashHtml.includes('geckoterminal.com') &&

@@ -61,6 +61,25 @@ const WAXONEDGE_AGGREGATE_SOURCES = Object.freeze([
   'swap.adex',
   'dapp.fusion',
 ]);
+const WAXONEDGE_OG_ENDPOINTS = Object.freeze([
+  '/pools',
+  '/pool',
+  '/poolsv3',
+  '/poolv3',
+  '/markets',
+  '/market',
+  '/lastVolumes',
+  '/lastPriceChanges',
+]);
+const WAXONEDGE_OG_SOURCE_REF = Object.freeze({
+  alcor: { srcType: 'markets', src: 'alcormarket' },
+  alcordexmain: { srcType: 'markets', src: 'alcormarket' },
+  'swap.alcor': { srcType: 'poolsv3', src: 'alcorv2' },
+  'swap.taco': { srcType: 'pools', src: 'taco' },
+  'swap.nefty': { srcType: 'pools', src: 'neftyblocks' },
+  'swap.box': { srcType: 'pools', src: 'defibox' },
+  'swap.adex': { srcType: 'pools', src: 'adex' },
+});
 const WAXCASH_TOKEN_REF = Object.freeze({
   contract: 'graffitiking',
   symbol: 'WAXCASH',
@@ -7795,6 +7814,139 @@ function waxcashBuildPairTableSection(pairs = [], selectedWaxPool = null) {
   };
 }
 
+function waxonedgeOgApiBase(env) {
+  const raw = String(env?.WAXONEDGE_OG_API_BASE || '').trim().replace(/\/+$/, '');
+  if (!raw) return '';
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== 'https:' && !['localhost', '127.0.0.1', '::1'].includes(url.hostname)) return '';
+    return url.toString().replace(/\/+$/, '');
+  } catch (_) {
+    return '';
+  }
+}
+
+async function fetchWaxonedgeOgJson(env, path) {
+  const base = waxonedgeOgApiBase(env);
+  if (!base) return { ok: false, reason: 'waxonedge_og_api_base_not_configured' };
+  const cleanPath = String(path || '').startsWith('/') ? String(path) : `/${path}`;
+  try {
+    const response = await fetch(`${base}${cleanPath}`, {
+      headers: { Accept: 'application/json' },
+      cf: { cacheTtl: 30, cacheEverything: false },
+    });
+    if (!response.ok) return { ok: false, reason: `waxonedge_og_api_http_${response.status}` };
+    const contentType = response.headers.get('content-type') || '';
+    if (!/json/i.test(contentType)) return { ok: false, reason: 'waxonedge_og_api_non_json_response' };
+    return { ok: true, data: await response.json(), source: `${base}${cleanPath}` };
+  } catch (error) {
+    return { ok: false, reason: `waxonedge_og_api_fetch_failed:${error?.message || String(error)}` };
+  }
+}
+
+async function fetchWaxcashOgLastStats(env) {
+  const [lastVolumes, lastPriceChanges] = await Promise.all([
+    fetchWaxonedgeOgJson(env, '/lastVolumes'),
+    fetchWaxonedgeOgJson(env, '/lastPriceChanges'),
+  ]);
+  return {
+    lastVolumes: lastVolumes.ok ? lastVolumes.data : null,
+    lastPriceChanges: lastPriceChanges.ok ? lastPriceChanges.data : null,
+    sources: {
+      lastVolumes: lastVolumes.source || null,
+      lastPriceChanges: lastPriceChanges.source || null,
+    },
+    reasons: [lastVolumes.ok ? null : lastVolumes.reason, lastPriceChanges.ok ? null : lastPriceChanges.reason].filter(Boolean),
+    live: !!lastVolumes.ok || !!lastPriceChanges.ok,
+    no_fake_value: true,
+  };
+}
+
+async function fetchWaxcashAlcorTokenAnalytics() {
+  const url = 'https://wax.alcor.exchange/api/v3/analytics/tokens/waxcash-graffitiking?window=30d&hide_scam=true';
+  try {
+    const response = await fetch(url, {
+      headers: { Accept: 'application/json' },
+      cf: { cacheTtl: 60, cacheEverything: false },
+    });
+    if (!response.ok) return { ok: false, reason: `alcor_token_analytics_http_${response.status}` };
+    const data = await response.json();
+    const holderCount = asNumber(data?.token?.holders?.count);
+    const truncated = data?.token?.holders?.truncated === true;
+    return {
+      ok: true,
+      data,
+      holder_count: holderCount != null && !truncated ? holderCount : null,
+      holder_snapshot_at: data?.meta?.ts || data?.token?.scores?.details?.updatedAt || null,
+      holder_reason: holderCount == null
+        ? 'alcor_token_analytics_holder_count_missing'
+        : (truncated ? 'alcor_token_analytics_holders_truncated' : null),
+      source: url,
+      no_fake_value: true,
+    };
+  } catch (error) {
+    return { ok: false, reason: `alcor_token_analytics_fetch_failed:${error?.message || String(error)}` };
+  }
+}
+
+function ogTokenVolume(lastVolumes, duration, contract = WAXCASH_CONTRACT, symbol = WAXCASH_SYMBOL) {
+  const key = `${normalizeContract(contract)}_${normalizeSymbol(symbol).toLowerCase()}`;
+  return asNumber(lastVolumes?.[duration]?.tokens?.[key]?.volume);
+}
+
+function waxcashOgPairRef(pair) {
+  const source = aggregateSourceKey(pair?.source) || moonboysCandleSource(pair?.source || '');
+  const ref = WAXONEDGE_OG_SOURCE_REF[source];
+  if (!ref || !pair?.pair_id) return null;
+  return { ...ref, pair_id: String(pair.pair_id) };
+}
+
+function ogPairVolumeWax(lastVolumes, duration, pair) {
+  const ref = waxcashOgPairRef(pair);
+  if (!ref) return null;
+  const row = lastVolumes?.[duration]?.[ref.srcType]?.[ref.src]?.[ref.pair_id];
+  if (!row) return null;
+  const tokenASymbol = normalizeSymbol(pair?.token_a_symbol);
+  const tokenBSymbol = normalizeSymbol(pair?.token_b_symbol);
+  if (tokenASymbol === 'WAX') return asNumber(row.volumeA);
+  if (tokenBSymbol === 'WAX') return asNumber(row.volumeB);
+  return null;
+}
+
+function ogPairChange24h(lastPriceChanges, pair) {
+  const ref = waxcashOgPairRef(pair);
+  if (!ref) return null;
+  const ratio = asNumber(lastPriceChanges?.['24h']?.[ref.srcType]?.[ref.src]?.[ref.pair_id]);
+  return ratio == null ? null : (ratio - 1) * 100;
+}
+
+function applyOgLastStatsToWaxcashPairs(pairs = [], ogStats = {}, waxUsd = null) {
+  const lastVolumes = ogStats.lastVolumes;
+  const lastPriceChanges = ogStats.lastPriceChanges;
+  return (pairs || []).map((pair) => {
+    const volume24 = ogPairVolumeWax(lastVolumes, '24h', pair);
+    const volume7d = ogPairVolumeWax(lastVolumes, '7d', pair);
+    const volume30d = ogPairVolumeWax(lastVolumes, '30d', pair);
+    const change24h = ogPairChange24h(lastPriceChanges, pair);
+    const metricSources = { ...(pair.metric_sources || {}) };
+    if (volume24 != null && asNumber(pair.volume_24h_wax) == null) metricSources.volume_24h_wax = { source: 'og_waxonedge_lastVolumes', row_count: 0 };
+    if (volume7d != null && asNumber(pair.volume_7d_wax) == null) metricSources.volume_7d_wax = { source: 'og_waxonedge_lastVolumes', row_count: 0 };
+    if (volume30d != null && asNumber(pair.volume_30d_wax) == null) metricSources.volume_30d_wax = { source: 'og_waxonedge_lastVolumes', row_count: 0 };
+    if (change24h != null && asNumber(pair.change_24h) == null) metricSources.change_24h = { source: 'og_waxonedge_lastPriceChanges', row_count: 0 };
+    return {
+      ...pair,
+      volume_24h_wax: safeDecimal(asNumber(pair.volume_24h_wax) ?? volume24),
+      volume_24h_usd: safeDecimal(asNumber(pair.volume_24h_usd) ?? (volume24 != null && waxUsd != null ? volume24 * waxUsd : null)),
+      volume_7d_wax: safeDecimal(asNumber(pair.volume_7d_wax) ?? volume7d),
+      volume_7d_usd: safeDecimal(asNumber(pair.volume_7d_usd) ?? (volume7d != null && waxUsd != null ? volume7d * waxUsd : null)),
+      volume_30d_wax: safeDecimal(asNumber(pair.volume_30d_wax) ?? volume30d),
+      volume_30d_usd: safeDecimal(asNumber(pair.volume_30d_usd) ?? (volume30d != null && waxUsd != null ? volume30d * waxUsd : null)),
+      change_24h: safeDecimal(asNumber(pair.change_24h) ?? change24h),
+      metric_sources: metricSources,
+    };
+  });
+}
+
 function waxcashChartFeedPool(pairs = [], selectedWaxPool = null) {
   void selectedWaxPool;
   return (pairs || []).find((pair) =>
@@ -8482,7 +8634,7 @@ async function buildWaxcashUdfChartFeed(db, query = {}) {
   };
 }
 
-async function buildWaxcashAnalytics(db) {
+async function buildWaxcashAnalytics(db, env = null) {
   const [detail, proofWrapper] = await Promise.all([
     getToken(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL),
     getWaxcashOgProof(db),
@@ -8498,13 +8650,16 @@ async function buildWaxcashAnalytics(db) {
   const selectedPriceUsd = asNumber(headline.og_headline_price_usd);
   const { chart, chartFeedPool, selectedWaxPool } = await buildWaxcashChartBundle(db, proof, headline);
   const liveSupplyProof = await fetchWaxcashLiveSupplyProof(db, token);
-  const [holderSnapshot, tradeWindowVolumes, pairWindowVolumes, pairCandleChanges] = await Promise.all([
+  const [holderSnapshot, tradeWindowVolumes, pairWindowVolumes, pairCandleChanges, ogLastStats, alcorTokenAnalytics] = await Promise.all([
     latestIndexedHolderCount(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL),
     indexedTradeWindowVolumes(db, proof.all_pairs || [], { selectedPriceWax }),
     indexedTradeWindowVolumesByPair(db, proof.all_pairs || [], { selectedPriceWax }),
     indexedCandleChange24hByPair(db, proof.all_pairs || [], selectedPriceWax),
+    env ? fetchWaxcashOgLastStats(env) : Promise.resolve({ live: false, reasons: ['waxonedge_og_api_base_not_configured'] }),
+    fetchWaxcashAlcorTokenAnalytics(),
   ]);
-  const pairTablePairs = applyIndexedPairWindowVolumes(proof.all_pairs || [], pairWindowVolumes, waxUsd, pairCandleChanges);
+  const indexedPairTablePairs = applyIndexedPairWindowVolumes(proof.all_pairs || [], pairWindowVolumes, waxUsd, pairCandleChanges);
+  const pairTablePairs = applyOgLastStatsToWaxcashPairs(indexedPairTablePairs, ogLastStats, waxUsd);
   const priceChange24hProof = await selectedProofPriceChange24h(db, selectedWaxPool, selectedPriceWax);
   const circulatingSupply = asNumber(detailStats.circulating_supply ?? token.circulating_supply);
   const totalSupply = liveSupplyProof.live ? asNumber(liveSupplyProof.total_supply) : null;
@@ -8512,12 +8667,16 @@ async function buildWaxcashAnalytics(db) {
   const marketCapUsd = circulatingSupply != null && selectedPriceUsd != null ? circulatingSupply * selectedPriceUsd : null;
   const fdvWax = totalSupply != null && selectedPriceWax != null ? totalSupply * selectedPriceWax : null;
   const fdvUsd = totalSupply != null && selectedPriceUsd != null ? totalSupply * selectedPriceUsd : null;
+  const ogVolume24Wax = ogTokenVolume(ogLastStats.lastVolumes, '24h');
+  const ogVolume7dWax = ogTokenVolume(ogLastStats.lastVolumes, '7d');
+  const ogVolume30dWax = ogTokenVolume(ogLastStats.lastVolumes, '30d');
   const volume24Wax = asNumber(detailStats.volume_24h_wax ?? detailStats.volume_24h) ??
+    ogVolume24Wax ??
     asNumber(tradeWindowVolumes.volume_24h_wax) ??
     sumProofField(proof.all_pairs, 'volume_24h_wax');
   const volume24Usd = asNumber(detailStats.volume_24h_usd) ?? (volume24Wax != null && waxUsd != null ? volume24Wax * waxUsd : null);
-  const volume7d = asNumber(detailStats.volume_7d) ?? asNumber(tradeWindowVolumes.volume_7d);
-  const volume30d = asNumber(detailStats.volume_30d) ?? asNumber(tradeWindowVolumes.volume_30d);
+  const volume7d = asNumber(detailStats.volume_7d) ?? ogVolume7dWax ?? asNumber(tradeWindowVolumes.volume_7d);
+  const volume30d = asNumber(detailStats.volume_30d) ?? ogVolume30dWax ?? asNumber(tradeWindowVolumes.volume_30d);
   const volume7dUsd = volume7d != null && waxUsd != null ? volume7d * waxUsd : null;
   const volume30dUsd = volume30d != null && waxUsd != null ? volume30d * waxUsd : null;
   const selectedDirectWaxReserve = asNumber(selectedWaxPool?.wax_reserve);
@@ -8538,10 +8697,12 @@ async function buildWaxcashAnalytics(db) {
   const effectiveMarketCapUsd = effectiveCirculatingSupply != null && selectedPriceUsd != null ? effectiveCirculatingSupply * selectedPriceUsd : null;
   const marketCapLive = effectiveMarketCapWax != null || effectiveMarketCapUsd != null;
   const circulatingSupplyLive = effectiveCirculatingSupply != null;
-  const holderCount = asNumber(detailStats.holder_count) ?? asNumber(holderSnapshot.holder_count);
+  const alcorHolderCount = asNumber(alcorTokenAnalytics.holder_count);
+  const holderCount = asNumber(detailStats.holder_count) ?? asNumber(holderSnapshot.holder_count) ?? alcorHolderCount;
   const holderCountLive = holderCount != null;
   const fdvLive = fdvWax != null || fdvUsd != null;
-  const change24h = asNumber(detailStats.change_24h) ?? asNumber(priceChange24hProof.change_24h);
+  const ogSelectedChange24h = ogPairChange24h(ogLastStats.lastPriceChanges, selectedWaxPool);
+  const change24h = asNumber(detailStats.change_24h) ?? ogSelectedChange24h ?? asNumber(priceChange24hProof.change_24h);
   const metricStatus = detailStats.metric_status || {};
   const supplySyncStatus = await getWaxcashSupplySyncStatus(db);
   const totalSupplyReason = totalSupplyLive
@@ -8613,14 +8774,16 @@ async function buildWaxcashAnalytics(db) {
         holder_count: holderCountLive
           ? {
             live: true,
-            source: asNumber(detailStats.holder_count) != null ? 'indexed_token_stats' : 'indexed_holder_snapshot',
-            snapshot_at: holderSnapshot.snapshot_at || null,
+            source: asNumber(detailStats.holder_count) != null
+              ? 'indexed_token_stats'
+              : (asNumber(holderSnapshot.holder_count) != null ? 'indexed_holder_snapshot' : 'alcor_token_analytics_holders'),
+            snapshot_at: holderSnapshot.snapshot_at || alcorTokenAnalytics.holder_snapshot_at || null,
             reason: null,
           }
           : {
             live: false,
             source: null,
-            reason: holderSnapshot.reason || metricStatus.holder_count?.reason || 'Holder count requires a verified indexed holder source; no fake holder count is emitted',
+            reason: holderSnapshot.reason || alcorTokenAnalytics.holder_reason || alcorTokenAnalytics.reason || metricStatus.holder_count?.reason || 'Holder count requires a verified indexed holder source; no fake holder count is emitted',
           },
         total_supply: {
           live: totalSupplyLive,
@@ -8640,15 +8803,15 @@ async function buildWaxcashAnalytics(db) {
         volume_24h: metricStatus.volume_24h || {
           live: volume24Wax != null || volume24Usd != null,
           source: volume24Wax != null || volume24Usd != null
-            ? (asNumber(detailStats.volume_24h_wax ?? detailStats.volume_24h) != null ? 'indexed_pair_or_ticker_volume' : (asNumber(tradeWindowVolumes.volume_24h_wax) != null ? 'indexed_trade_rows_window_wax_denominated' : 'indexed_pair_or_ticker_volume'))
+            ? (asNumber(detailStats.volume_24h_wax ?? detailStats.volume_24h) != null ? 'indexed_pair_or_ticker_volume' : (ogVolume24Wax != null ? 'og_waxonedge_lastVolumes' : (asNumber(tradeWindowVolumes.volume_24h_wax) != null ? 'indexed_trade_rows_window_wax_denominated' : 'indexed_pair_or_ticker_volume')))
             : null,
           reason: volume24Wax != null || volume24Usd != null ? null : 'Requires indexed pair or ticker volume',
           basis: asNumber(tradeWindowVolumes.volume_24h_wax) != null ? tradeWindowVolumes.basis : null,
         },
         volume_7d: volume7d != null ? {
           live: volume7d != null,
-          source: volume7d != null ? (asNumber(detailStats.volume_7d) != null ? 'indexed_token_stats' : 'indexed_trade_rows_window_wax_denominated') : null,
-          basis: asNumber(detailStats.volume_7d) != null ? 'indexed_token_stats' : tradeWindowVolumes.basis,
+          source: volume7d != null ? (asNumber(detailStats.volume_7d) != null ? 'indexed_token_stats' : (ogVolume7dWax != null ? 'og_waxonedge_lastVolumes' : 'indexed_trade_rows_window_wax_denominated')) : null,
+          basis: asNumber(detailStats.volume_7d) != null ? 'indexed_token_stats' : (ogVolume7dWax != null ? 'og_waxonedge_lastVolumes' : tradeWindowVolumes.basis),
           reason: volume7d != null ? null : (tradeWindowVolumes.reason || 'Requires indexed candle or trade history'),
         } : (metricStatus.volume_7d || {
           live: false,
@@ -8657,8 +8820,8 @@ async function buildWaxcashAnalytics(db) {
         }),
         volume_30d: volume30d != null ? {
           live: volume30d != null,
-          source: volume30d != null ? (asNumber(detailStats.volume_30d) != null ? 'indexed_token_stats' : 'indexed_trade_rows_window_wax_denominated') : null,
-          basis: asNumber(detailStats.volume_30d) != null ? 'indexed_token_stats' : tradeWindowVolumes.basis,
+          source: volume30d != null ? (asNumber(detailStats.volume_30d) != null ? 'indexed_token_stats' : (ogVolume30dWax != null ? 'og_waxonedge_lastVolumes' : 'indexed_trade_rows_window_wax_denominated')) : null,
+          basis: asNumber(detailStats.volume_30d) != null ? 'indexed_token_stats' : (ogVolume30dWax != null ? 'og_waxonedge_lastVolumes' : tradeWindowVolumes.basis),
           reason: volume30d != null ? null : (tradeWindowVolumes.reason || 'Requires indexed candle or trade history'),
         } : (metricStatus.volume_30d || {
           live: false,
@@ -8667,8 +8830,8 @@ async function buildWaxcashAnalytics(db) {
         }),
         change_24h: {
           live: change24h != null,
-          source: asNumber(detailStats.change_24h) != null ? 'indexed_token_stats' : priceChange24hProof.source,
-          basis: asNumber(detailStats.change_24h) != null ? 'indexed_token_stats' : priceChange24hProof.basis,
+          source: asNumber(detailStats.change_24h) != null ? 'indexed_token_stats' : (ogSelectedChange24h != null ? 'og_waxonedge_lastPriceChanges' : priceChange24hProof.source),
+          basis: asNumber(detailStats.change_24h) != null ? 'indexed_token_stats' : (ogSelectedChange24h != null ? 'og_waxonedge_lastPriceChanges' : priceChange24hProof.basis),
           reason: change24h != null ? null : (priceChange24hProof.reason || 'Requires selected proof pool price history or indexed token stats'),
         },
         market_cap: {
@@ -8692,6 +8855,20 @@ async function buildWaxcashAnalytics(db) {
     aggregate_pair_liquidity: proof.aggregate_pair_liquidity,
     chart,
     supply_sync_status: supplySyncStatus,
+    og_last_stats: {
+      live: ogLastStats.live,
+      sources: ogLastStats.sources,
+      reasons: ogLastStats.reasons,
+      token_key: 'graffitiking_waxcash',
+      no_fake_value: true,
+    },
+    alcor_token_analytics: {
+      live: !!alcorTokenAnalytics.ok,
+      source: alcorTokenAnalytics.source || null,
+      holder_count_live: alcorHolderCount != null,
+      holder_reason: alcorTokenAnalytics.holder_reason || alcorTokenAnalytics.reason || null,
+      no_fake_value: true,
+    },
     proof,
     source_policy: 'waxcash_analytics_uses_og_woe_direct_wax_price_not_recursive_graph',
   };
@@ -10323,8 +10500,23 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       return ok(graph, ['WAXCASH graph is derived only from indexed direct waxonedge_pairs rows; bootstrap token inventory is not used.'], graph.updated_at, corsHeaders);
     }
     if (path === `${WAXONEDGE_API_PREFIX}/waxcash-analytics`) {
-      const analytics = await buildWaxcashAnalytics(env.DB);
+      const analytics = await buildWaxcashAnalytics(env.DB, env);
       return ok(analytics, ['WAXCASH analytics uses old WaxOnEdge-style direct WAX price proof; recursive graph routing is not a selected-price source.'], analytics.stats?.updated_at || analytics.token?.updated_at || null, corsHeaders);
+    }
+    const ogEndpointMatch = path.match(/^\/api\/waxonedge\/(pools|pool|poolsv3|poolv3|markets|market|lastVolumes|lastPriceChanges)(?:\/([^/]+))?(?:\/([^/]+))?$/);
+    if (ogEndpointMatch) {
+      const endpoint = `/${ogEndpointMatch[1]}${ogEndpointMatch[2] ? `/${decodeURIComponent(ogEndpointMatch[2])}` : ''}${ogEndpointMatch[3] ? `/${decodeURIComponent(ogEndpointMatch[3])}` : ''}`;
+      if (!WAXONEDGE_OG_ENDPOINTS.some((allowed) => endpoint === allowed || endpoint.startsWith(`${allowed}/`))) {
+        return unavailable('WaxOnEdge OG endpoint not allowed', 404, corsHeaders);
+      }
+      const upstream = await fetchWaxonedgeOgJson(env, endpoint);
+      if (!upstream.ok) return unavailable(upstream.reason || 'waxonedge_og_endpoint_unavailable', 503, corsHeaders);
+      return ok({
+        endpoint,
+        source: upstream.source,
+        data: upstream.data,
+        no_fake_value: true,
+      }, ['Proxied from OG WaxOnEdge API endpoint shape.'], null, corsHeaders);
     }
     if (path === `${WAXONEDGE_API_PREFIX}/waxcash-analytics/chart-feed`) {
       const feed = await buildWaxcashUdfChartFeed(env.DB, Object.fromEntries(url.searchParams.entries()));

@@ -2753,7 +2753,27 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         };
       },
     };
-    const supplyOnlyWaxcashAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(supplyOnlyWaxcashAnalyticsDb);
+    const supplyOnlyOriginalFetch = globalThis.fetch;
+    let supplyOnlyWaxcashAnalytics = null;
+    try {
+      globalThis.fetch = async (url, init) => {
+        const href = String(url);
+        if (href.includes('wax.alcor.exchange/api/v3/analytics/tokens/waxcash-graffitiking')) {
+          return new Response(JSON.stringify({
+            token: { holders: { count: 9320, truncated: false } },
+            meta: { ts: '2026-06-20T01:53:10.445Z' },
+          }), { status: 200, headers: { 'content-type': 'application/json' } });
+        }
+        const body = JSON.parse(init?.body || '{}');
+        if (body.code === 'graffitiking' && body.symbol === 'WAXCASH') {
+          return new Response(JSON.stringify({}), { status: 200, headers: { 'content-type': 'application/json' } });
+        }
+        return new Response(JSON.stringify({}), { status: 200, headers: { 'content-type': 'application/json' } });
+      };
+      supplyOnlyWaxcashAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(supplyOnlyWaxcashAnalyticsDb);
+    } finally {
+      globalThis.fetch = supplyOnlyOriginalFetch;
+    }
     ok('WAXCASH analytics does not use D1 cached total supply or FDV when live RPC proof fails',
       supplyOnlyWaxcashAnalytics.stats.total_supply === null &&
       supplyOnlyWaxcashAnalytics.stats.fdv_wax === null &&
@@ -2782,10 +2802,12 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         supply_proof: supplyOnlyWaxcashAnalytics.sections?.supply_proof,
         metric_status: supplyOnlyWaxcashAnalytics.stats.metric_status,
       }));
-    ok('WAXCASH analytics holder count remains unavailable with explicit reason when no holder source exists',
-      supplyOnlyWaxcashAnalytics.stats.holder_count === null &&
-      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.live === false &&
-      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.reason.includes('No indexed holder snapshot exists for graffitiking::WAXCASH'));
+    ok('WAXCASH analytics restores holder count from the real Alcor token analytics source when local snapshots are missing',
+      Number(supplyOnlyWaxcashAnalytics.stats.holder_count) === 9320 &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.live === true &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.source === 'alcor_token_analytics_holders' &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.snapshot_at === '2026-06-20T01:53:10.445Z' &&
+      supplyOnlyWaxcashAnalytics.alcor_token_analytics.holder_count_live === true);
     let rollingVolumeSelectCount = 0;
     const rollingVolumeSelectSqls = [];
     const holderTradeWaxcashAnalyticsDb = {
@@ -6043,18 +6065,43 @@ ok('WAXCASH pair table backend enriches token icons and pair-level indexed volum
   route.includes('function enrichPairsWithTokenIcons') &&
   route.includes('function collectTokenRefsForPairs') &&
   route.includes('async function indexedTradeWindowVolumesByPair') &&
+  route.includes('async function fetchWaxcashOgLastStats') &&
+  route.includes('function applyOgLastStatsToWaxcashPairs') &&
+  route.includes("ogTokenVolume(ogLastStats.lastVolumes, '24h')") &&
+  route.includes("ogPairChange24h(ogLastStats.lastPriceChanges, selectedWaxPool)") &&
+  route.includes('og_waxonedge_lastVolumes') &&
+  route.includes('og_waxonedge_lastPriceChanges') &&
   route.includes('async function indexedCandleChange24hByPair') &&
   route.includes('function applyIndexedPairWindowVolumes') &&
   route.includes('indexed_pair_volume_window_source') &&
   route.includes('metric_debug') &&
   route.includes('latest_indexed_trade_time') &&
-  route.includes('pairTablePairs = applyIndexedPairWindowVolumes') &&
+  route.includes('indexedPairTablePairs = applyIndexedPairWindowVolumes') &&
+  route.includes('pairTablePairs = applyOgLastStatsToWaxcashPairs(indexedPairTablePairs, ogLastStats, waxUsd)') &&
   route.includes('const normalized = normalizeWaxcashWaxCandles(candles.candles || [], { selectedPriceWax })') &&
   route.includes('const existingChange24h = asNumber(pair?.change_24h)') &&
   route.includes('const tradeChange24h = asNumber(window?.change_24h)') &&
   route.includes('const candleChange24h = asNumber(candleChange?.change_24h)') &&
   route.includes('const change24h = existingChange24h ?? tradeChange24h ?? candleChange24h') &&
   route.includes('pair_table: waxcashBuildPairTableSection(pairTablePairs, selectedWaxPool)'));
+ok('WAXCASH route restores OG WaxOnEdge endpoint shapes for indexed stats and source rows',
+  route.includes("'/lastVolumes'") &&
+  route.includes("'/lastPriceChanges'") &&
+  route.includes("'/markets'") &&
+  route.includes("'/market'") &&
+  route.includes("'/pools'") &&
+  route.includes("'/pool'") &&
+  route.includes("'/poolsv3'") &&
+  route.includes("'/poolv3'") &&
+  route.includes('fetchWaxonedgeOgJson(env, endpoint)') &&
+  route.includes('WAXONEDGE_OG_API_BASE'));
+ok('WAXCASH analytics restores a real holder count source instead of accepting unavailable-only holder state',
+  route.includes('async function fetchWaxcashAlcorTokenAnalytics') &&
+  route.includes('https://wax.alcor.exchange/api/v3/analytics/tokens/waxcash-graffitiking?window=30d&hide_scam=true') &&
+  route.includes('data?.token?.holders?.count') &&
+  route.includes('data?.token?.holders?.truncated === true') &&
+  route.includes('alcor_token_analytics_holders') &&
+  route.includes('holder_count_live'));
 ok('token detail exposes backend metric proof fields without frontend changes',
   route.includes('function tokenMetricProof') &&
   route.includes('selected_price_proof') &&
@@ -7054,15 +7101,23 @@ ok('WAXCASH analytics frontend keeps values compact and proof reasons in tooltip
   waxcashHtml.includes('table-layout: fixed') &&
   waxcashHtml.includes('white-space: normal') &&
   waxcashHtml.includes('overflow-wrap: anywhere'));
-ok('WAXCASH analytics frontend keeps visible chart as standalone TradingView widget and separate from OG backend proof',
-  waxcashHtml.includes('https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js') &&
-  waxcashHtml.includes('"symbol": "ALCOR:WAXCASHWAX"') &&
-  waxcashHtml.includes('"interval": "240"') &&
-  waxcashHtml.includes('"withdateranges": true') &&
-  waxcashHtml.includes('"allow_symbol_change": false') &&
-  waxcashHtml.includes('"studies": ["Volume@tv-basicstudies"]') &&
-  waxcashHtml.includes('tradingview-widget-container') &&
-  waxcashHtml.includes('wx-tradingview-widget') &&
+ok('WAXCASH analytics frontend uses TradingView Charting Library with Alcor WAXCASH/WAX feed and no backend chart dependency',
+  waxcashHtml.includes('https://alcor.exchange/charting_library/charting_library.standalone.js') &&
+  waxcashHtml.includes('new window.TradingView.widget') &&
+  waxcashHtml.includes('https://wax.alcor.exchange/api/v2/swap/candles') &&
+  waxcashHtml.includes("TOKEN_A = 'waxcash-graffitiking'") &&
+  waxcashHtml.includes("TOKEN_B = 'wax-eosio.token'") &&
+  waxcashHtml.includes("symbol: 'WAXCASH_WAX'") &&
+  waxcashHtml.includes('var subscriptions = {}') &&
+  waxcashHtml.includes('function fetchLatestBar(resolution)') &&
+  waxcashHtml.includes('subscribeBars: function (symbolInfo, resolution, onRealtime, subscriberUID)') &&
+  waxcashHtml.includes("symbolInfo.ticker !== 'WAXCASH_WAX'") &&
+  waxcashHtml.includes('subscription.timer = setInterval(pollLatestBar') &&
+  waxcashHtml.includes('onRealtime(bar)') &&
+  waxcashHtml.includes('unsubscribeBars: function (subscriberUID)') &&
+  waxcashHtml.includes('clearInterval(subscription.timer)') &&
+  !waxcashHtml.includes('Native TradingView Alcor WAXCASH/WAX symbol unavailable') &&
+  !waxcashHtml.includes('"symbol": "ALCOR:WAXCASHWAX"') &&
   !waxcashAnalyticsFrontend.includes('sections.chart_external') &&
   !waxcashAnalyticsFrontend.includes('DEFAULT_EXTERNAL_CHART') &&
   !waxcashAnalyticsFrontend.includes('function renderExternalChart(payload)') &&
