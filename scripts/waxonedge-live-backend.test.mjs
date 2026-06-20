@@ -2722,7 +2722,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       const internalPairs = [
         {
           ...nonWaxPair,
-          pair_id: 'WAXCASHAIGOD',
+          pair_id: 'DISPLAY-WAXCASHAIGOD',
           og_laststats_pair_id: 'WAXCASHAIGOD',
         },
         {
@@ -2818,7 +2818,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         lastVolumes: internalLastStats.lastVolumes,
       }, 0.006);
       const internalSection = __waxonedgeTestHooks.waxcashBuildPairTableSection([internalAppliedNonWax, internalAppliedWax], null);
-      const internalDebug = internalSection.metric_debug.rows.find((row) => row.pair_id === 'WAXCASHAIGOD');
+      const internalDebug = internalSection.metric_debug.rows.find((row) => row.pair_id === 'DISPLAY-WAXCASHAIGOD');
       ok('WAXCASH pair table consumes internal D1 LastStats before any dead OG API dependency',
         internalAppliedNonWax.volume_24h_wax == null &&
         Number(internalAppliedNonWax.volume_24h_a_native) === 10 &&
@@ -6330,6 +6330,7 @@ ok('WAXCASH pair table backend enriches token icons and pair-level indexed volum
   route.includes('pair_table: waxcashBuildPairTableSection(pairTablePairs, selectedWaxPool)'));
 ok('WAXCASH exposes live LastStats diagnostics for env, bucket, D1 ID backfill, and source sync state',
   route.includes('async function getWaxcashLastStatsDiagnostics') &&
+  route.includes('async function waxcashTradeRowDiagnostics') &&
   route.includes('/waxcash-analytics/laststats-diagnostics') &&
   route.includes('sanitizedWaxonedgeOgBase') &&
   route.includes('lastVolumes_fetch') &&
@@ -6340,6 +6341,13 @@ ok('WAXCASH exposes live LastStats diagnostics for env, bucket, D1 ID backfill, 
   route.includes('migration_027_applied') &&
   route.includes('og_laststats_pair_id_not_null') &&
   route.includes('og_laststats_pair_id_null') &&
+  route.includes('total_trade_rows') &&
+  route.includes('waxcash_related_trade_rows') &&
+  route.includes('rows_by_source') &&
+  route.includes('latest_traded_at_by_source') &&
+  route.includes('sample_waxcash_trade_rows') &&
+  route.includes('pair_id_matches_current_pair_id_count') &&
+  route.includes('pair_id_matches_og_laststats_pair_id_count') &&
   route.includes('source_sync'));
 ok('WAXCASH route restores OG WaxOnEdge endpoint shapes for indexed stats and source rows',
   route.includes("'/lastVolumes'") &&
@@ -6384,6 +6392,12 @@ ok('WAXCASH route restores OG WaxOnEdge endpoint shapes for indexed stats and so
               og_laststats_pair_id_null: 60,
             };
           }
+          if (sql.includes('COUNT(*) AS count FROM waxonedge_trades')) {
+            return { count: 0 };
+          }
+          if (sql.includes('COUNT(*) AS row_count') && sql.includes('FROM waxonedge_trades')) {
+            return { row_count: 0, latest_traded_at: null };
+          }
           return null;
         },
       };
@@ -6418,6 +6432,10 @@ ok('WAXCASH route restores OG WaxOnEdge endpoint shapes for indexed stats and so
       diagnostic.d1.migration_027_applied === true &&
       diagnostic.d1.og_laststats_pair_id_not_null === 0 &&
       diagnostic.d1.og_laststats_pair_id_null === 60 &&
+      diagnostic.trade_rows.total_trade_rows === 0 &&
+      diagnostic.trade_rows.waxcash_related_trade_rows === 0 &&
+      diagnostic.trade_rows.reason === 'no_waxcash_trade_rows_indexed' &&
+      diagnostic.interpretation.trade_rows_indexing_required === true &&
       diagnostic.interpretation.og_laststats_pair_ids_need_backfill === true &&
       diagnostic.source_sync['swap.nefty'].source_index_state.status === 'success' &&
       diagnostic.source_sync['swap.taco'].latest_sync_run.status === 'success');
