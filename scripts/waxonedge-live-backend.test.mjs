@@ -4655,7 +4655,21 @@ ok('stale partial swap.taco resumes from saved cursor without wiping rows',
   route.includes('lowerBound: state.cursor ||') &&
   route.includes('const previousCursor = state.cursor ||') &&
   route.includes("cursor: complete ? '' : savedCursor") &&
-  route.includes('const isNewCycle = !state || state.sync_cycle_id !== activeCycleId || state.status === \'failed\''));
+  route.includes('const isNewCycle = !state || state.sync_cycle_id !== activeCycleId || state.status === \'failed\'') &&
+  !route.includes('DELETE FROM waxonedge_pairs WHERE source = ?'));
+ok('partial swap.alcor/swap.taco source refresh preserves last complete pair rows until complete',
+  route.includes('async function pruneStaleSourcePairsAfterComplete') &&
+  route.includes('updated_at IS NULL OR updated_at < ?') &&
+  route.includes('const refreshStartedAt = state.started_at || adapterStartedAt') &&
+  /const complete = tableResult\.complete \? 1 : 0;[\s\S]*if \(complete\) \{[\s\S]*await pruneStaleSourcePairsAfterComplete\(env\.DB, adapter\.source, refreshStartedAt\);[\s\S]*\}/.test(route) &&
+  !route.includes('pruneStaleSourcePairsAfterComplete(env.DB, adapter.source, syncedAt)') &&
+  !/if \(isNewCycle\) \{[\s\S]*DELETE FROM waxonedge_pairs[\s\S]*upsertSourceIndexState/.test(route));
+ok('paged source sync prunes only rows older than the current cycle start after complete',
+  route.includes('const refreshStartedAt = state.started_at || adapterStartedAt') &&
+  route.includes('started_at: refreshStartedAt') &&
+  route.includes('cursor: complete ? \'\' : savedCursor') &&
+  route.includes('status = complete ? \'success\' : \'partial\'') &&
+  !/status = complete \? 'success' : 'partial';[\s\S]*if \(!complete\)[\s\S]*pruneStaleSourcePairsAfterComplete/.test(route));
 ok('repeated stuck Taco cursor is detected and safely skipped by one numeric cursor',
   route.includes('const STUCK_CURSOR_RETRY_LIMIT = 3') &&
   route.includes('function incrementNumericCursor(cursor)') &&

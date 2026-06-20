@@ -1832,6 +1832,15 @@ async function upsertPairs(db, pairs) {
   }
 }
 
+async function pruneStaleSourcePairsAfterComplete(db, source, refreshedAfter) {
+  if (!source || !refreshedAfter) return;
+  await db.prepare(
+    `DELETE FROM waxonedge_pairs
+     WHERE source = ?
+       AND (updated_at IS NULL OR updated_at < ?)`
+  ).bind(source, refreshedAfter).run();
+}
+
 function buildPairCounts(pairs) {
   const counts = new Map();
   for (const pair of sourceRows(pairs)) {
@@ -4126,7 +4135,6 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
       }
       const isNewCycle = !state || state.sync_cycle_id !== activeCycleId || state.status === 'failed';
       if (isNewCycle) {
-        await env.DB.prepare(`DELETE FROM waxonedge_pairs WHERE source = ?`).bind(adapter.source).run();
         state = await upsertSourceIndexState(env.DB, adapter.source, {
           sync_cycle_id: activeCycleId,
           cursor: '',
@@ -4173,6 +4181,10 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
       await upsertPairs(env.DB, pairs);
       const complete = tableResult.complete ? 1 : 0;
       const status = complete ? 'success' : 'partial';
+      const refreshStartedAt = state.started_at || adapterStartedAt;
+      if (complete) {
+        await pruneStaleSourcePairsAfterComplete(env.DB, adapter.source, refreshStartedAt);
+      }
       let error = complete ? null : `Partial source sync checkpoint saved after ${tableResult.page_count} page(s) and ${tableResult.request_count} table row request(s); next_key=${tableResult.next_key || 'unknown'}`;
       const previousSnapshot = await readSnapshot(env.DB, `${adapter.source}_${adapter.table}`);
       const previousCursor = state.cursor || '';
@@ -4214,7 +4226,7 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
         truncated: 0,
         status,
         error,
-        started_at: state.started_at || adapterStartedAt,
+        started_at: refreshStartedAt,
       });
       await writeCompactDexSnapshot(env.DB, adapter, {
         row_count: nextRowCount,
