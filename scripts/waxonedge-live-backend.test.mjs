@@ -76,6 +76,31 @@ const liveIndexerCheckScript = read('services/waxonedge-live-indexer/scripts/che
 const liveIndexerSource = read('services/waxonedge-live-indexer/src/index.mjs');
 const liveIndexerCheck = await import(pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/scripts/check-live-indexer.mjs')).href);
 
+ok('WAXCASH source collapse guard preserves prior Nefty rows on zero-row complete refresh',
+  __waxonedgeTestHooks.waxcashSourceCollapseGuard(58, 0).ok === false &&
+  __waxonedgeTestHooks.waxcashSourceCollapseGuard(58, 0).reason === 'source_complete_but_waxcash_rows_collapsed');
+ok('WAXCASH source collapse guard blocks sharp drops but allows sane complete refreshes',
+  __waxonedgeTestHooks.waxcashSourceCollapseGuard(58, 32).ok === false &&
+  __waxonedgeTestHooks.waxcashSourceCollapseGuard(58, 32).reason === 'source_complete_but_waxcash_rows_sharply_lower' &&
+  __waxonedgeTestHooks.waxcashSourceCollapseGuard(58, 58).ok === true &&
+  __waxonedgeTestHooks.waxcashSourceCollapseGuard(12, 10).ok === true &&
+  __waxonedgeTestHooks.waxcashSourceCollapseGuard(0, 0).ok === true);
+const collapsedNeftyBaseline = __waxonedgeTestHooks.waxcashPairCountBaseline('swap.nefty', 0, {
+  last_good_waxcash_pair_count: 58,
+});
+ok('WAXCASH source collapse guard uses last-good baseline when current D1 is already collapsed',
+  collapsedNeftyBaseline.previous_current_d1_waxcash_pair_count === 0 &&
+  collapsedNeftyBaseline.last_good_waxcash_pair_count === 58 &&
+  collapsedNeftyBaseline.guard_baseline_waxcash_pair_count === 58 &&
+  __waxonedgeTestHooks.waxcashSourceCollapseGuard(collapsedNeftyBaseline.guard_baseline_waxcash_pair_count, 0).ok === false &&
+  __waxonedgeTestHooks.waxcashSourceCollapseGuard(collapsedNeftyBaseline.guard_baseline_waxcash_pair_count, 0).reason === 'source_complete_but_waxcash_rows_collapsed');
+const collapsedNeftyMinimumBaseline = __waxonedgeTestHooks.waxcashPairCountBaseline('swap.nefty', 0, {});
+ok('WAXCASH source collapse guard uses known source minimum when no last-good count exists',
+  collapsedNeftyMinimumBaseline.previous_current_d1_waxcash_pair_count === 0 &&
+  collapsedNeftyMinimumBaseline.minimum_waxcash_pair_count === 58 &&
+  collapsedNeftyMinimumBaseline.guard_baseline_waxcash_pair_count === 58 &&
+  __waxonedgeTestHooks.waxcashSourceCollapseGuard(collapsedNeftyMinimumBaseline.guard_baseline_waxcash_pair_count, 0).ok === false);
+
 for (const table of [
   'waxonedge_sync_runs',
   'waxonedge_snapshots',
@@ -4659,9 +4684,11 @@ ok('stale partial swap.taco resumes from saved cursor without wiping rows',
   !route.includes('DELETE FROM waxonedge_pairs WHERE source = ?'));
 ok('partial swap.alcor/swap.taco source refresh preserves last complete pair rows until complete',
   route.includes('async function pruneStaleSourcePairsAfterComplete') &&
+  route.includes('async function countWaxcashPairsForSource') &&
+  route.includes('function waxcashSourceCollapseGuard') &&
   route.includes('updated_at IS NULL OR updated_at < ?') &&
   route.includes('const refreshStartedAt = state.started_at || adapterStartedAt') &&
-  /const complete = tableResult\.complete \? 1 : 0;[\s\S]*if \(complete\) \{[\s\S]*await pruneStaleSourcePairsAfterComplete\(env\.DB, adapter\.source, refreshStartedAt\);[\s\S]*\}/.test(route) &&
+  /let complete = tableResult\.complete \? 1 : 0;[\s\S]*if \(complete\) \{[\s\S]*await pruneStaleSourcePairsAfterComplete\(env\.DB, adapter\.source, refreshStartedAt\);[\s\S]*\}/.test(route) &&
   !route.includes('pruneStaleSourcePairsAfterComplete(env.DB, adapter.source, syncedAt)') &&
   !/if \(isNewCycle\) \{[\s\S]*DELETE FROM waxonedge_pairs[\s\S]*upsertSourceIndexState/.test(route));
 ok('paged source sync prunes only rows older than the current cycle start after complete',
@@ -4670,6 +4697,22 @@ ok('paged source sync prunes only rows older than the current cycle start after 
   route.includes('cursor: complete ? \'\' : savedCursor') &&
   route.includes('status = complete ? \'success\' : \'partial\'') &&
   !/status = complete \? 'success' : 'partial';[\s\S]*if \(!complete\)[\s\S]*pruneStaleSourcePairsAfterComplete/.test(route));
+ok('complete source sync cannot prune prior WAXCASH rows when refreshed WAXCASH rows collapse',
+  route.includes('const previousWaxcashPairCount = await countWaxcashPairsForSource(env.DB, adapter.source)') &&
+  route.includes('function waxcashPairCountBaseline') &&
+  route.includes('const waxcashBaseline = waxcashPairCountBaseline(adapter.source, previousWaxcashPairCount, previousSnapshot.data || {})') &&
+  route.includes('last_good_waxcash_pair_count') &&
+  route.includes('previous_current_d1_waxcash_pair_count') &&
+  route.includes('guard_baseline_waxcash_pair_count') &&
+  route.includes("return { ok: false, reason: 'source_complete_but_waxcash_rows_collapsed' }") &&
+  route.includes("return { ok: false, reason: 'source_complete_but_waxcash_rows_sharply_lower' }") &&
+  /const guard = waxcashSourceCollapseGuard\(waxcashBaseline\.guard_baseline_waxcash_pair_count, refreshedWaxcashPairCount\);[\s\S]*if \(guard\.ok\) \{[\s\S]*await pruneStaleSourcePairsAfterComplete\(env\.DB, adapter\.source, refreshStartedAt\);[\s\S]*\} else \{[\s\S]*complete = 0;[\s\S]*status = 'partial';[\s\S]*\}/.test(route) &&
+  route.includes('prune skipped to preserve last complete WAXCASH rows'));
+ok('WAXCASH source stability debug reports complete-source row collapse guards',
+  route.includes('const collapseGuardStates = sourceStateRows.filter') &&
+  route.includes('source_complete_but_waxcash_rows_collapsed: collapseGuardStates.length > 0') &&
+  route.includes('source_complete_but_waxcash_rows_collapsed_sources: collapseGuardStates') &&
+  route.includes('waxcash_collapse_guard: waxcashCollapseGuard'));
 ok('repeated stuck Taco cursor is detected and safely skipped by one numeric cursor',
   route.includes('const STUCK_CURSOR_RETRY_LIMIT = 3') &&
   route.includes('function incrementNumericCursor(cursor)') &&
