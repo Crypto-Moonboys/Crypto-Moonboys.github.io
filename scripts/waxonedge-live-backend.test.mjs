@@ -2580,7 +2580,6 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       JSON.stringify(waxcashAnalytics.sections?.pair_table?.rows?.[0]));
     ok('WAXCASH analytics pair table exposes OG row fields and keeps status/reserves out of main rows',
       waxcashAnalytics.sections?.pair_table?.rows?.some((row) =>
-        row.reason &&
         row.proof_label &&
         row.no_fake_value === true &&
         row.volume_7d_wax == null &&
@@ -2618,11 +2617,24 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         stabilityDebug?.source_counts?.pair_table_rows?.['swap.nefty'] >= 1 &&
         stabilityDebug?.rows_with_liquidity_wax_not_null >= 1 &&
         stabilityDebug?.proof_rows_with_pair_liquidity_wax_not_null >= 1 &&
+        typeof stabilityDebug?.reserve_ratio_waxcash_valued_pair_count === 'number' &&
         stabilityDebug?.direct_wax_pair_count >= 1 &&
         typeof stabilityDebug?.source_sync_partial_or_running === 'boolean' &&
         stabilityDebug?.source_sync_deleting_or_replacing_pairs_proven === false &&
         waxcashAnalytics.sections?.pair_table?.metric_debug?.source_stability === stabilityDebug,
         JSON.stringify(stabilityDebug));
+    }
+    {
+      const reserveRatioRow = waxcashAnalytics.sections?.pair_table?.rows?.find((row) =>
+        row.proof_details?.valuation_basis === 'waxcash_reserve_ratio_from_selected_waxcash_price');
+      ok('WAXCASH pair table exposes reserve-ratio valuation separately from paired-token direct WAX proof',
+        reserveRatioRow &&
+        reserveRatioRow.liquidity_wax != null &&
+        reserveRatioRow.proof_details?.paired_token_og_wax_price == null &&
+        reserveRatioRow.proof_details?.paired_token_reserve_ratio_wax_price != null &&
+        reserveRatioRow.proof_details?.valuation_debug?.reserve_ratio_waxcash_valuation_possible === true &&
+        reserveRatioRow.proof_details?.valuation_debug?.paired_token_direct_wax_pair_found === false,
+        JSON.stringify(reserveRatioRow));
     }
     {
       const nonWaxPair = {

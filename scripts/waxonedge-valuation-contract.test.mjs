@@ -296,7 +296,7 @@ const gooWaxPair = {
   token_b_contract: 'eosio.token',
   token_b_symbol: 'WAX',
   reserve_a: '20',
-  reserve_b: '40',
+  reserve_b: '400',
   updated_at: '2026-06-16T03:00:00.000Z',
 };
 const waxcashNoRoutePair = {
@@ -390,15 +390,20 @@ ok('WAXCASH OG proof pair rows omit unsourced active and 7d/30d pair volume fiel
 ok('non-WAX WAXCASH pairs do not become headline price',
   waxcashProof.headline_price.og_headline_price_pair_id !== 'WAXCASHGOO' &&
   waxcashProof.direct_wax_candidates.every((pair) => pair.direct_wax_pair === true));
-ok('non-WAX pair WAX value is unavailable when paired token lacks OG WAX price',
+ok('non-WAX WAXCASH pair can use reserve-ratio valuation when paired token lacks direct OG WAX price',
   waxcashProof.all_pairs.some((pair) =>
     pair.pair_id === 'WAXCASHNOROUTE' &&
-    pair.pair_liquidity_wax === null &&
-    pair.reason_codes.includes('paired_token_wax_price_unavailable')));
+    almostEqual(pair.pair_liquidity_wax, 0.3) &&
+    almostEqual(pair.paired_token_reserve_ratio_wax_price, 0.03) &&
+    pair.paired_token_og_wax_price === null &&
+    pair.valuation_basis === 'waxcash_reserve_ratio_from_selected_waxcash_price' &&
+    pair.reason_codes.length === 0 &&
+    pair.valuation_debug?.reserve_ratio_waxcash_valuation_possible === true &&
+    pair.valuation_debug?.paired_token_direct_wax_pair_found === false));
 ok('non-WAX pair with direct OG WAX price contributes computed pair liquidity',
   waxcashProof.all_pairs.some((pair) =>
     pair.pair_id === 'WAXCASHGOO' &&
-    almostEqual(pair.pair_liquidity_wax, 40.15) &&
+    almostEqual(pair.pair_liquidity_wax, 400.15) &&
     pair.reason_codes.length === 0));
 ok('zero reserves are rejected in WAXCASH OG proof rows',
   waxcashProof.all_pairs.some((pair) =>
@@ -410,14 +415,14 @@ ok('WAXCASH OG proof includes valued versus unvalued pair summary counts',
   waxcashProof.pair_summary.total_pairs === waxcashProof.all_pairs.length &&
   waxcashProof.pair_summary.direct_wax_pair_count === 4 &&
   waxcashProof.pair_summary.non_wax_pair_count === 2 &&
-  waxcashProof.pair_summary.valued_pair_count === 4 &&
-  waxcashProof.pair_summary.unvalued_pair_count === 2);
+  waxcashProof.pair_summary.valued_pair_count === 5 &&
+  waxcashProof.pair_summary.unvalued_pair_count === 1);
 ok('WAXCASH OG proof pair summary counts unavailable reason codes',
-  waxcashProof.pair_summary.unavailable_reason_counts.paired_token_wax_price_unavailable === 1 &&
+  waxcashProof.pair_summary.unavailable_reason_counts.paired_token_wax_price_unavailable == null &&
   waxcashProof.pair_summary.unavailable_reason_counts.missing_or_zero_reserves === 1);
 ok('WAXCASH OG proof pair summary sums computed liquidity only',
-  almostEqual(waxcashProof.pair_summary.total_pair_liquidity_wax, 2277682.93171082) &&
-  almostEqual(waxcashProof.pair_summary.total_pair_liquidity_usd, 13666.09759026492) &&
+  almostEqual(waxcashProof.pair_summary.total_pair_liquidity_wax, 2278043.23171082) &&
+  almostEqual(waxcashProof.pair_summary.total_pair_liquidity_usd, 13668.25939026492) &&
   waxcashProof.pair_summary.total_pair_liquidity_wax !== waxcashShallowWax.liquidity_wax &&
   waxcashProof.pair_summary.total_pair_liquidity_usd !== waxcashShallowWax.liquidity_usd);
 const waxcashNoAlcorProof = __waxonedgeTestHooks.buildWaxcashOgParityProof(
