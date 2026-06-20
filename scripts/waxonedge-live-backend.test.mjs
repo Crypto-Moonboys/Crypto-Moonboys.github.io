@@ -7899,7 +7899,9 @@ ok('frontend live hook uses EventSource only when enabled and safe polling fallb
 ok('frontend polls the WAXCASH analytics feed with no-store/cache-busting instead of timestamp-only since cursor',
   frontendBubbles.includes('return LIVE_API;') &&
   frontendBubbles.includes("var url = path + sep + '_=' + encodeURIComponent(String(Date.now()))") &&
-  frontendBubbles.includes("'Cache-Control': 'no-store'") &&
+  frontendBubbles.includes("headers: { Accept: 'application/json' }") &&
+  frontendBubbles.includes("cache: 'no-store'") &&
+  !frontendBubbles.includes("'Cache-Control': 'no-store'") &&
   frontendBubbles.includes('var nextCursor = data.next_cursor || snapshot.next_cursor || null') &&
   frontendBubbles.includes('if (nextCursor) setBackendLiveCursor(nextCursor)') &&
   frontendBubbles.includes('state.live.cursorFromBackend = true') &&

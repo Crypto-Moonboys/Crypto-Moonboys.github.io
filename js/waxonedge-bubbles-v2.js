@@ -2052,7 +2052,7 @@
   function apiJson(path) {
     var sep = path.indexOf('?') === -1 ? '?' : '&';
     var url = path + sep + '_=' + encodeURIComponent(String(Date.now()));
-    return fetch(url, { headers: { Accept: 'application/json', 'Cache-Control': 'no-store' }, cache: 'no-store' }).then(function (response) {
+    return fetch(url, { headers: { Accept: 'application/json' }, cache: 'no-store' }).then(function (response) {
       if (!response.ok) throw new Error(path + ' failed: ' + response.status);
       return response.json();
     });
