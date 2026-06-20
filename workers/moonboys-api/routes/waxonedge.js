@@ -7942,24 +7942,63 @@ function ogPairLookupKey(value) {
   return text ? text.toUpperCase().replace(/[^A-Z0-9]/g, '') : null;
 }
 
-function ogPairLookupKeys(pair, ref) {
-  const keys = new Set();
-  [
+function uniqueSafeStrings(values = []) {
+  const keys = [];
+  const seen = new Set();
+  for (const value of values) {
+    const key = safeString(value);
+    if (!key || seen.has(key)) continue;
+    keys.push(key);
+    seen.add(key);
+  }
+  return keys;
+}
+
+function normalizedLookupSet(keys = []) {
+  return new Set(keys.map(ogPairLookupKey).filter(Boolean));
+}
+
+function ogPairLookupGroups(pair, ref) {
+  const primaryOgKeys = uniqueSafeStrings([
     ref?.pair_id,
     pair?.og_laststats_pair_id,
     pair?.og_pair_id,
     pair?.pairid,
+  ]);
+  const fallbackDisplayKeys = uniqueSafeStrings([
     pair?.pair_id,
     pair?.id,
     pair?.pool_id,
     pair?.market_id,
     pair?.ticker_id,
     pair?.pair_key,
-  ].forEach((value) => {
-    const key = ogPairLookupKey(value);
-    if (key) keys.add(key);
-  });
-  return keys;
+  ]);
+  return {
+    primaryOgKeys,
+    fallbackDisplayKeys,
+    normalizedPrimaryOgKeys: normalizedLookupSet(primaryOgKeys),
+    normalizedFallbackDisplayKeys: normalizedLookupSet(fallbackDisplayKeys),
+    attempted: uniqueSafeStrings(primaryOgKeys.concat(fallbackDisplayKeys)),
+  };
+}
+
+function ogPairLookupKeys(pair, ref) {
+  return new Set(ogPairLookupGroups(pair, ref).attempted.map(ogPairLookupKey).filter(Boolean));
+}
+
+function exactBucketMatch(bucket, keys = []) {
+  for (const key of keys) {
+    if (Object.prototype.hasOwnProperty.call(bucket, key)) return { key, value: bucket[key] };
+  }
+  return null;
+}
+
+function normalizedBucketMatch(bucket, normalizedKeys) {
+  if (!normalizedKeys?.size) return null;
+  for (const [bucketKey, bucketValue] of Object.entries(bucket)) {
+    if (normalizedKeys.has(ogPairLookupKey(bucketKey))) return { key: bucketKey, value: bucketValue };
+  }
+  return null;
 }
 
 function ogStatsObjectRows(bucket) {
@@ -8004,13 +8043,14 @@ function ogPairLastStatsLookup(stats, duration, pair) {
     og_bucket_exists: false,
     first_20_og_bucket_keys: [],
     matched_key: null,
+    match_priority: null,
     row: null,
     reason: ref ? 'no_lookup_keys' : 'no_og_pair_ref',
   };
   if (!ref) return empty;
   const bucket = stats?.[duration]?.[ref.srcType]?.[ref.src];
-  const keys = ogPairLookupKeys(pair, ref);
-  const lookupKeys = Array.from(keys);
+  const groups = ogPairLookupGroups(pair, ref);
+  const lookupKeys = groups.attempted;
   const base = {
     ...empty,
     displayed_pair_id: ref.displayed_pair_id || empty.displayed_pair_id,
@@ -8023,20 +8063,25 @@ function ogPairLastStatsLookup(stats, duration, pair) {
   if (!bucket || typeof bucket !== 'object') return { ...base, reason: 'no_laststats_bucket' };
   const firstKeys = Object.keys(bucket).slice(0, 20);
   const withBucket = { ...base, og_bucket_exists: true, first_20_og_bucket_keys: firstKeys };
-  if (!keys.size) return { ...withBucket, reason: 'no_lookup_keys' };
-  if (Object.prototype.hasOwnProperty.call(bucket, ref.pair_id)) {
-    return { ...withBucket, matched_key: ref.pair_id, row: bucket[ref.pair_id], reason: null };
-  }
-  for (const [bucketKey, bucketValue] of Object.entries(bucket)) {
-    if (keys.has(ogPairLookupKey(bucketKey))) {
-      return { ...withBucket, matched_key: bucketKey, row: bucketValue, reason: null };
-    }
-  }
-  const matched = ogStatsObjectRows(bucket).find((entry) => ogStatsPairRowMatches(entry, keys, pair));
+  if (!lookupKeys.length) return { ...withBucket, reason: 'no_lookup_keys' };
+  const exactOg = exactBucketMatch(bucket, groups.primaryOgKeys);
+  if (exactOg) return { ...withBucket, matched_key: exactOg.key, match_priority: 'exact_og_key', row: exactOg.value, reason: null };
+  const normalizedOg = normalizedBucketMatch(bucket, groups.normalizedPrimaryOgKeys);
+  if (normalizedOg) return { ...withBucket, matched_key: normalizedOg.key, match_priority: 'normalized_og_key', row: normalizedOg.value, reason: null };
+  const exactDisplay = exactBucketMatch(bucket, groups.fallbackDisplayKeys);
+  if (exactDisplay) return { ...withBucket, matched_key: exactDisplay.key, match_priority: 'exact_display_key', row: exactDisplay.value, reason: null };
+  const normalizedDisplay = normalizedBucketMatch(bucket, groups.normalizedFallbackDisplayKeys);
+  if (normalizedDisplay) return { ...withBucket, matched_key: normalizedDisplay.key, match_priority: 'normalized_display_key', row: normalizedDisplay.value, reason: null };
+  const allRowKeys = new Set([
+    ...groups.normalizedPrimaryOgKeys,
+    ...groups.normalizedFallbackDisplayKeys,
+  ]);
+  const matched = ogStatsObjectRows(bucket).find((entry) => ogStatsPairRowMatches(entry, allRowKeys, pair));
   if (matched) {
     return {
       ...withBucket,
       matched_key: matched.key || safeString(ogStatsPairRowValue(matched)?.pair_id || ogStatsPairRowValue(matched)?.pairid || ogStatsPairRowValue(matched)?.id),
+      match_priority: 'row_pair_id_match',
       row: ogStatsPairRowValue(matched),
       reason: null,
     };
@@ -8061,6 +8106,7 @@ function ogPairLastStatsLookupDebug(lookup, row = null, reason = null) {
     og_bucket_exists: !!lookup?.og_bucket_exists,
     first_20_og_bucket_keys: Array.isArray(lookup?.first_20_og_bucket_keys) ? lookup.first_20_og_bucket_keys : [],
     matched_key: lookup?.matched_key || null,
+    match_priority: lookup?.match_priority || null,
     volumeA: safeDecimal(volumeA),
     volumeB: safeDecimal(volumeB),
     reason: reason || lookup?.reason || null,

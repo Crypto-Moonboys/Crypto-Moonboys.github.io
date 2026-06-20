@@ -2688,6 +2688,23 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         Number(exactDebug.volumeB) === 88 &&
         exactDebug.reason == null,
         JSON.stringify({ exactOgPair, exactDebug }));
+      const [normalizedOgPriorityPair] = __waxonedgeTestHooks.applyOgLastStatsToWaxcashPairs([{
+        ...nonWaxPair,
+        pair_id: 'WAXAIG',
+        og_laststats_pair_id: '144117',
+      }], {
+        lastVolumes: {
+          '24h': { pools: { neftyblocks: { WAXAIG: { volumeA: '1', volumeB: '2' }, '144-117': { volumeA: '55', volumeB: '110' } } } },
+        },
+      }, 0.006);
+      const normalizedOgPriorityDebug = __waxonedgeTestHooks.waxcashBuildPairTableSection([normalizedOgPriorityPair], null)
+        .metric_debug.rows[0].og_laststats_volume_24h;
+      ok('WAXCASH OG LastStats normalized OG key wins over earlier displayed pair id bucket key',
+        Number(normalizedOgPriorityPair.volume_24h_a_native) === 55 &&
+        Number(normalizedOgPriorityPair.volume_24h_b_native) === 110 &&
+        normalizedOgPriorityDebug.matched_key === '144-117' &&
+        normalizedOgPriorityDebug.match_priority === 'normalized_og_key',
+        JSON.stringify({ normalizedOgPriorityPair, normalizedOgPriorityDebug }));
       const [tokenOnlyPair] = __waxonedgeTestHooks.applyOgLastStatsToWaxcashPairs([{
         ...nonWaxPair,
         pair_id: '144117',
