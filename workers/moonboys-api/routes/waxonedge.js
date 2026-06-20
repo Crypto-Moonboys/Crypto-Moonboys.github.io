@@ -922,6 +922,20 @@ function parseSourceKeys(value) {
     .filter(Boolean);
 }
 
+function countRowsByAggregateSource(rows = []) {
+  const counts = {
+    'swap.nefty': 0,
+    'swap.taco': 0,
+    'swap.alcor': 0,
+    alcor: 0,
+  };
+  for (const row of rows || []) {
+    const source = aggregateSourceKey(row?.source) || 'unknown';
+    counts[source] = (counts[source] || 0) + 1;
+  }
+  return counts;
+}
+
 function clampInteger(value, fallback, min, max) {
   const parsed = Number.parseInt(value, 10);
   if (!Number.isFinite(parsed)) return fallback;
@@ -7614,6 +7628,15 @@ async function getWaxcashOgProof(db) {
   const proof = buildWaxcashOgParityProof(pairRows, priceIndex, pairedDirectWaxPairs);
   return {
     og_woe_parity: proof,
+    pair_input_debug: {
+      no_visible_ui: true,
+      raw_load_waxcash_pair_row_count: rawPairRows.length,
+      enriched_waxcash_pair_row_count: pairRows.length,
+      paired_token_count: pairedTokens.length,
+      paired_direct_wax_pair_count: pairedDirectWaxPairs.length,
+      raw_source_counts: countRowsByAggregateSource(rawPairRows),
+      enriched_source_counts: countRowsByAggregateSource(pairRows),
+    },
   };
 }
 
@@ -8025,6 +8048,76 @@ function waxcashPairTableRow(pair, selectedWaxPool) {
       metric_sources: pair.metric_sources || null,
       og_laststats_debug: pair.og_laststats_debug || null,
     },
+  };
+}
+
+async function waxcashPairSourceStabilityDiagnostics(db, options = {}) {
+  const rawRows = options.rawRows || [];
+  const proofPairs = options.proofPairs || [];
+  const tableRows = options.tableRows || [];
+  const sourceStates = db ? await getSourceIndexStates(db).catch(() => []) : [];
+  const latestSyncRows = db ? await getLatestSync(db).catch(() => []) : [];
+  const sourceStateRows = (sourceStates || [])
+    .filter((row) => ['swap.nefty', 'swap.taco', 'swap.alcor', 'alcor', 'alcordexmain'].includes(aggregateSourceKey(row.source)))
+    .map((row) => ({
+      source: row.source,
+      normalized_source: aggregateSourceKey(row.source),
+      status: row.status || null,
+      complete: asNumber(row.complete) === 1,
+      truncated: asNumber(row.truncated) === 1,
+      row_count: asNumber(row.row_count) || 0,
+      cursor: row.cursor || '',
+      updated_at: row.updated_at || null,
+      error: row.error || null,
+    }));
+  const latestPairSyncRows = (latestSyncRows || [])
+    .filter((row) => ['swap.nefty', 'swap.taco', 'swap.alcor', 'alcor', 'alcordexmain'].includes(aggregateSourceKey(row.source)))
+    .slice(0, 20)
+    .map((row) => ({
+      source: row.source,
+      normalized_source: aggregateSourceKey(row.source),
+      status: row.status || null,
+      started_at: row.started_at || null,
+      finished_at: row.finished_at || null,
+      error: row.error || null,
+    }));
+  const proofSourceCounts = countRowsByAggregateSource(proofPairs);
+  const tableSourceCounts = countRowsByAggregateSource(tableRows);
+  const rawSourceCounts = countRowsByAggregateSource(rawRows);
+  const validReserveButUnvalued = (proofPairs || []).filter((pair) =>
+    hasRealPairReserves(pair) && asNumber(pair.pair_liquidity_wax) == null);
+  const nonWaxRejectedPairedTokenPrice = (proofPairs || []).filter((pair) =>
+    !pair.direct_wax_pair && Array.isArray(pair.reason_codes) && pair.reason_codes.includes('paired_token_wax_price_unavailable'));
+  const partialSourceStates = sourceStateRows.filter((row) =>
+    ['partial', 'running'].includes(row.status) || (row.complete === false && row.status !== 'success'));
+  return {
+    no_visible_ui: true,
+    diagnostic_generated_at: nowIso(),
+    cache_control_expected: 'no-store',
+    cache_bust_recommended: true,
+    response_cache_note: 'Compare diagnostic_generated_at plus row/source counts across cache-busted requests to detect stale API responses.',
+    raw_load_waxcash_pair_row_count: rawRows.length,
+    proof_all_pairs_count: proofPairs.length,
+    pair_table_row_count: tableRows.length,
+    source_counts: {
+      raw_load_waxcash_pair_rows: rawSourceCounts,
+      proof_all_pairs: proofSourceCounts,
+      pair_table_rows: tableSourceCounts,
+    },
+    rows_with_liquidity_wax_not_null: tableRows.filter((row) => asNumber(row.liquidity_wax) != null).length,
+    proof_rows_with_pair_liquidity_wax_not_null: proofPairs.filter((pair) => asNumber(pair.pair_liquidity_wax) != null).length,
+    rows_with_valid_reserves_but_pair_liquidity_wax_null: validReserveButUnvalued.length,
+    direct_wax_pair_count: proofPairs.filter((pair) => !!pair.direct_wax_pair).length,
+    non_wax_pair_rejected_paired_token_wax_price_unavailable_count: nonWaxRejectedPairedTokenPrice.length,
+    valuation_rejection_counts: waxcashPairSummary(proofPairs).unavailable_reason_counts || {},
+    source_sync_partial_or_running: partialSourceStates.length > 0,
+    source_sync_partial_or_running_sources: partialSourceStates,
+    source_index_state_rows: sourceStateRows,
+    latest_pair_sync_rows: latestPairSyncRows,
+    possible_partial_pair_refresh: partialSourceStates.length > 0,
+    source_sync_deleting_or_replacing_pairs_proven: false,
+    source_sync_deleting_or_replacing_pairs_note: 'This response can detect partial/running source state and row-count drift across requests; it does not mutate pair rows.',
+    no_fake_value: true,
   };
 }
 
@@ -10110,6 +10203,20 @@ async function buildWaxcashAnalytics(db, env = null) {
   ]);
   const indexedPairTablePairs = applyIndexedPairWindowVolumes(proof.all_pairs || [], pairWindowVolumes, waxUsd);
   const pairTablePairs = applyOgLastStatsToWaxcashPairs(indexedPairTablePairs, ogLastStats, waxUsd);
+  const pairTableSection = waxcashBuildPairTableSection(pairTablePairs, selectedWaxPool);
+  const pairSourceStabilityDebug = await waxcashPairSourceStabilityDiagnostics(db, {
+    rawRows: proofWrapper.pair_input_debug?.raw_rows || [],
+    proofPairs: proof.all_pairs || [],
+    tableRows: pairTableSection.rows || [],
+  });
+  pairSourceStabilityDebug.raw_load_waxcash_pair_row_count = proofWrapper.pair_input_debug?.raw_load_waxcash_pair_row_count ?? pairSourceStabilityDebug.raw_load_waxcash_pair_row_count;
+  pairSourceStabilityDebug.enriched_waxcash_pair_row_count = proofWrapper.pair_input_debug?.enriched_waxcash_pair_row_count ?? null;
+  pairSourceStabilityDebug.paired_token_count = proofWrapper.pair_input_debug?.paired_token_count ?? null;
+  pairSourceStabilityDebug.paired_direct_wax_pair_count = proofWrapper.pair_input_debug?.paired_direct_wax_pair_count ?? null;
+  pairSourceStabilityDebug.source_counts.raw_load_waxcash_pair_rows = proofWrapper.pair_input_debug?.raw_source_counts || pairSourceStabilityDebug.source_counts.raw_load_waxcash_pair_rows;
+  pairSourceStabilityDebug.source_counts.enriched_waxcash_pair_rows = proofWrapper.pair_input_debug?.enriched_source_counts || null;
+  pairTableSection.metric_debug.source_stability = pairSourceStabilityDebug;
+  pairTableSection.source_stability_debug = pairSourceStabilityDebug;
   const priceChange24hProof = await selectedProofPriceChange24h(db, selectedWaxPool, selectedPriceWax);
   const circulatingSupply = asNumber(detailStats.circulating_supply ?? token.circulating_supply);
   const totalSupply = liveSupplyProof.live ? asNumber(liveSupplyProof.total_supply) : null;
@@ -10320,6 +10427,7 @@ async function buildWaxcashAnalytics(db, env = null) {
       no_fake_value: true,
     },
     proof,
+    pair_source_stability_debug: pairSourceStabilityDebug,
     source_policy: 'waxcash_analytics_uses_og_woe_direct_wax_price_not_recursive_graph',
   };
   analytics.sections = {
@@ -10375,7 +10483,7 @@ async function buildWaxcashAnalytics(db, env = null) {
       unavailable: chart.unavailable || null,
       no_fake_value: true,
     },
-    pair_table: waxcashBuildPairTableSection(pairTablePairs, selectedWaxPool),
+    pair_table: pairTableSection,
   };
   return analytics;
 }

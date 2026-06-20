@@ -2603,6 +2603,28 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         !Object.prototype.hasOwnProperty.call(row, 'reserves_label')),
       JSON.stringify(waxcashAnalytics.sections?.pair_table?.rows));
     {
+      const stabilityDebug = waxcashAnalytics.sections?.pair_table?.source_stability_debug;
+      ok('WAXCASH analytics exposes non-visible pair-table source stability diagnostics',
+        stabilityDebug?.no_visible_ui === true &&
+        stabilityDebug?.cache_control_expected === 'no-store' &&
+        stabilityDebug?.cache_bust_recommended === true &&
+        stabilityDebug?.raw_load_waxcash_pair_row_count === waxcashAnalytics.pairs.length &&
+        stabilityDebug?.enriched_waxcash_pair_row_count === waxcashAnalytics.pairs.length &&
+        stabilityDebug?.proof_all_pairs_count === waxcashAnalytics.pairs.length &&
+        stabilityDebug?.pair_table_row_count === waxcashAnalytics.sections?.pair_table?.row_count &&
+        stabilityDebug?.pair_table_row_count === waxcashAnalytics.sections?.pair_table?.rows?.length &&
+        stabilityDebug?.source_counts?.enriched_waxcash_pair_rows?.['swap.nefty'] >= 1 &&
+        stabilityDebug?.source_counts?.proof_all_pairs?.['swap.nefty'] >= 1 &&
+        stabilityDebug?.source_counts?.pair_table_rows?.['swap.nefty'] >= 1 &&
+        stabilityDebug?.rows_with_liquidity_wax_not_null >= 1 &&
+        stabilityDebug?.proof_rows_with_pair_liquidity_wax_not_null >= 1 &&
+        stabilityDebug?.direct_wax_pair_count >= 1 &&
+        typeof stabilityDebug?.source_sync_partial_or_running === 'boolean' &&
+        stabilityDebug?.source_sync_deleting_or_replacing_pairs_proven === false &&
+        waxcashAnalytics.sections?.pair_table?.metric_debug?.source_stability === stabilityDebug,
+        JSON.stringify(stabilityDebug));
+    }
+    {
       const nonWaxPair = {
         ...graphPairs.find((pair) => pair.pair_id === 'WAXCASHAIGOD'),
         pair_label: 'WAXCASH/AIGOD',
@@ -6499,7 +6521,9 @@ ok('WAXCASH pair table backend enriches token icons and pair-level indexed volum
   !route.includes('indexedCandleChange24hByPair(db, proof.all_pairs') &&
   !route.includes('const candleChange24h = asNumber(candleChange?.change_24h)') &&
   !route.includes('existingChange24h ?? tradeChange24h ?? candleChange24h') &&
-  route.includes('pair_table: waxcashBuildPairTableSection(pairTablePairs, selectedWaxPool)'));
+  route.includes('const pairTableSection = waxcashBuildPairTableSection(pairTablePairs, selectedWaxPool)') &&
+  route.includes('pairTableSection.metric_debug.source_stability = pairSourceStabilityDebug') &&
+  route.includes('pair_table: pairTableSection'));
 ok('WAXCASH exposes live LastStats diagnostics for env, bucket, D1 ID backfill, and source sync state',
   route.includes('async function getWaxcashLastStatsDiagnostics') &&
   route.includes('async function waxcashTradeRowDiagnostics') &&
