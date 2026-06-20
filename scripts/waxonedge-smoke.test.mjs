@@ -77,7 +77,8 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
 ok('OG analytics parity PR cache-busts changed WaxOnEdge scanner assets',
   html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-bubble-liquidity') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260620-waxcash-bubbles-live') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-bubble-liquidity') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-og-analytics') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-trust-hardening') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-confidence') &&
@@ -87,9 +88,10 @@ ok('OG analytics parity PR cache-busts changed token analytics assets',
   tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-og-analytics') &&
   !tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-trust-hardening') &&
   !tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-confidence'));
-ok('WaxOnEdge CSS cache keys remain on the existing CSS version because this PR does not edit CSS assets',
+ok('WaxOnEdge bubble CSS cache key is bumped for live-details modal styling',
   html.includes('/css/waxonedge.css?v=woe-20260615-galaxy3') &&
-  html.includes('/css/waxonedge-bubbles-v2.css?v=woe-20260615-galaxy3'));
+  html.includes('/css/waxonedge-bubbles-v2.css?v=woe-20260620-waxcash-bubbles-live') &&
+  !html.includes('/css/waxonedge-bubbles-v2.css?v=woe-20260615-galaxy3'));
 ok('waxonedge clean-route alias redirects to /waxonedge.html', aliasHtml.includes('url=/waxonedge.html'));
 ok('waxonedge clean-route alias preserves query-string routing', aliasHtml.includes("window.location.search || ''"));
 ok('waxonedge clean-route alias preserves hash routing', aliasHtml.includes("window.location.hash || ''"));
@@ -333,11 +335,21 @@ ok('waxonedge.js fetches Alcor chart candles from /markets/:id/charts for diagno
 ok('waxonedge.js keeps Lightweight Charts support', js.includes('window.LightweightCharts') && js.includes('tv.createChart'));
 
 ok('waxonedge-bubbles-v2.js uses WaxOnEdge backend endpoints, not AntBubbles or live Alcor APIs',
-  v2Js.includes("var BOOTSTRAP_API = '/api/waxonedge/bootstrap';") &&
+  v2Js.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics';") &&
   v2Js.includes("var HEALTH_API = '/api/waxonedge/indexer-health';") &&
-  v2Js.includes("var LIVE_API = '/api/waxonedge/live';") &&
+  v2Js.includes("var LIVE_API = '/api/waxonedge/waxcash-analytics';") &&
   !v2Js.includes('antbubbles') &&
   !v2Js.includes('wax.alcor.exchange'));
+ok('waxonedge-bubbles-v2.js phase-one feed normalizes waxcash-analytics token stats and pair table rows',
+  v2Js.includes("source_feed: '/api/waxonedge/waxcash-analytics'") &&
+  v2Js.includes('function waxcashAnalyticsToBubblePayload(payload)') &&
+  v2Js.includes('var pairTable = sections.pair_table || {}') &&
+  v2Js.includes('var rows = sourceRows(pairTable.rows)') &&
+  v2Js.includes('var root = {') &&
+  v2Js.includes('selected_price_wax: stats.price_wax') &&
+  v2Js.includes('market_cap_wax: stats.market_cap_wax') &&
+  v2Js.includes('function waxcashPairMember(row)') &&
+  v2Js.includes('waxcash_pair_valuation_basis'));
 ok('waxonedge-bubbles-v2.js renders AntBubbles-style canvas scanner',
   v2Js.includes('woe-ab-canvas') &&
   v2Js.includes('drawBubbleOffscreen') &&
@@ -432,7 +444,7 @@ ok('waxonedge-bubbles-v2.js selects featured tokens using multi-DEX aggregate fi
 ok('WaxOnEdge keeps missing 7d/30d/candle data honest instead of fake',
   v2Js.includes('No indexed 7D volume') &&
   v2Js.includes('No indexed 30D volume') &&
-  v2Js.includes('history building from indexed snapshots') &&
+  v2Js.includes('WAXCASH analytics feed') &&
   js.includes('Indexed candles not available yet for this pair') &&
   js.includes('Pair proof is available below') &&
   js.includes('function historicalVolumeAvailabilityHtml') &&
@@ -499,28 +511,32 @@ ok('waxonedge-bubbles-v2.js keeps modes and search scoped to backend graph token
   v2Js.includes('No indexed TVL') &&
   v2Js.includes('No graph liquidity') &&
   v2Js.includes('No indexed volume') &&
-  v2Js.includes('WAXCASH graph tokens') &&
+  v2Js.includes('WAXCASH pair members') &&
   !v2Js.includes('Featured tokens only'));
-ok('waxonedge-bubbles-v2.js opens full token analytics directly without token modal flow',
-  v2Js.includes('function openTokenAnalytics') &&
-  v2Js.includes('function tokenAnalyticsUrl') &&
-  v2Js.includes("'/analytics/token/?token='") &&
-  v2Js.includes('window.location.href = tokenAnalyticsUrl(record)') &&
-  !v2Js.includes('function openTokenModal') &&
-  !v2Js.includes('woe-ab-modal-panel') &&
-  !v2Js.includes('Open fullscreen analytics') &&
-  !html.includes('woe-ab-modal'));
-ok('waxonedge-bubbles-v2.js makes the canvas keyboard focusable and opens analytics from keyboard',
+ok('waxonedge-bubbles-v2.js opens an in-page live token details modal instead of full token pages',
+  v2Js.includes('function openTokenModal(record)') &&
+  v2Js.includes('function renderTokenModal(record)') &&
+  v2Js.includes('woe-ab-modal-panel') &&
+  v2Js.includes('Symbol') &&
+  v2Js.includes('24h volume') &&
+  v2Js.includes('30d volume') &&
+  v2Js.includes('WAXCASH pair') &&
+  v2Js.includes('Valuation basis') &&
+  !v2Js.includes('function openTokenAnalytics') &&
+  !v2Js.includes('function tokenAnalyticsUrl') &&
+  !v2Js.includes("'/analytics/token/?token='") &&
+  !v2Js.includes('window.location.href'));
+ok('waxonedge-bubbles-v2.js makes the canvas keyboard focusable and opens the live details modal from keyboard',
   v2Js.includes('tabindex="0"') &&
   v2Js.includes('role="application"') &&
   html.includes('WaxOnEdge WAX Galaxy scanner') &&
   !html.includes('WaxOnEdge AntBubbles-style scanner') &&
   v2Js.includes('WaxOnEdge WAX Galaxy scanner') &&
-  v2Js.includes('Use Enter or Space to open the highlighted token analytics page') &&
+  v2Js.includes('Use Enter or Space to open live token details') &&
   v2Js.includes('function onCanvasKeydown') &&
   v2Js.includes("event.key !== 'Enter'") &&
   v2Js.includes("event.key !== ' '") &&
-  v2Js.includes('openTokenAnalytics(node.record)'));
+  v2Js.includes('openTokenModal(node.record)'));
 ok('waxonedge-bubbles-v2.js caps image and offscreen bubble canvas caches',
   v2Js.includes('var IMAGE_CACHE_LIMIT = 160') &&
   v2Js.includes('var BUBBLE_CANVAS_CACHE_LIMIT = 240') &&
@@ -529,8 +545,8 @@ ok('waxonedge-bubbles-v2.js caps image and offscreen bubble canvas caches',
   v2Js.includes('capMap(bubbleCanvasCache, BUBBLE_CANVAS_CACHE_LIMIT)') &&
   v2Js.includes('bubbleCanvasCache.clear()'));
 ok('WaxOnEdge frontend keeps the scanner and token analytics on Worker API routes only',
-  v2Js.includes("var BOOTSTRAP_API = '/api/waxonedge/bootstrap';") &&
-  v2Js.includes("var LIVE_API = '/api/waxonedge/live';") &&
+  v2Js.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics';") &&
+  v2Js.includes("var LIVE_API = '/api/waxonedge/waxcash-analytics';") &&
   v2Js.includes("var HEALTH_API = '/api/waxonedge/indexer-health';") &&
   js.includes("'/token/' + encodeURIComponent(chartContract) + '/' + encodeURIComponent(chartSymbol) + '/chart'") &&
   js.includes("selectedTokenApiPath(selection, '')") &&
@@ -638,7 +654,7 @@ ok('waxonedge-bubbles-v2.js keeps WAX price meta honest',
   !v2Js.includes('Indexed from Alcor, Taco, Nefty, BOX'));
 ok('waxonedge-bubbles-v2.js labels snapshot polling honestly instead of fake streaming live status',
   v2Js.includes("state.live.transport === 'snapshot-polling' && state.connected") &&
-  v2Js.includes("'SYNCED 10s'") &&
+  v2Js.includes("'SYNCED 1s'") &&
   v2Js.includes("'SNAPSHOT POLLING'") &&
   v2Js.includes("state.live.transport === 'sse' && state.connected") &&
   v2Js.includes("'INDEXED STREAM'") &&
@@ -922,7 +938,7 @@ ok('WaxOnEdge never renders Invalid Date for scanner timestamps',
   v2Js.includes('function setBackendLiveCursor(nextCursor)') &&
   v2Js.includes('state.live.cursorFromBackend = true') &&
   v2Js.includes('if (nextCursor) setBackendLiveCursor(nextCursor)') &&
-  v2Js.includes('state.live.cursor && state.live.cursorFromBackend') &&
+  v2Js.includes('return LIVE_API;') &&
   v2Js.includes('setBackendLiveCursor(loadedData.next_cursor)') &&
   v2Js.includes('isValidIsoTimestamp(loadedData.generated_at)') &&
   !v2Js.includes('state.lastUpdated = state.live.cursor') &&
@@ -960,7 +976,7 @@ ok('token analytics hides the public holder panel until real indexed holder data
 ok('token analytics preserves all-pairs WAX valuation model copy',
   js.includes('All-pairs WAX valuation sums usable indexed pair value across supported DEXs where a trusted WAX route exists') &&
   js.includes('All-pairs WAX valuation is partial when a pair cannot be valued through a trusted indexed WAX route') &&
-  v2Js.includes('WAXCASH graph tokens'));
+  v2Js.includes('WAXCASH pair members'));
 
 ok('waxonedge.css includes terminal shell and detail layout styles',
   css.includes('.woe-og-bar') &&
@@ -988,12 +1004,13 @@ ok('waxonedge-bubbles-v2.css includes cyberpunk WAX Galaxy shell styling',
   v2Css.includes('#39ff88') &&
   v2Css.includes('.woe-ab-canvas') &&
   v2Css.includes('.woe-ab-stats'));
-ok('waxonedge-bubbles-v2.css includes live feed and tooltip styling without modal chrome',
+ok('waxonedge-bubbles-v2.css includes live feed, tooltip, and live-details modal styling',
   v2Css.includes('.woe-ab-live-feed') &&
   v2Css.includes('.woe-ab-feed-item') &&
   v2Css.includes('.woe-ab-tooltip') &&
   v2Css.includes('.woe-ab-chart-empty') &&
-  !v2Css.includes('.woe-ab-modal-panel') &&
+  v2Css.includes('.woe-ab-modal-panel') &&
+  v2Css.includes('.woe-ab-modal-row') &&
   !v2Css.includes('.woe-ab-open-analytics'));
 ok('waxonedge-bubbles-v2.css renders a page-wide transparent galaxy instead of a boxed board',
   v2Css.includes('.woe-antbubbles-page::before') &&
