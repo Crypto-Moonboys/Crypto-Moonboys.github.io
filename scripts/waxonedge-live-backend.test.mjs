@@ -2647,10 +2647,10 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         lastVolumes: {
           '24h': { pools: { neftyblocks: { 'waxcash/aigod': { volumeA: '11', volumeB: '22' } } } },
           '7d': { pools: { neftyblocks: [{ pair_id: 'WAXCASH-AIGOD', volumeA: '77', volumeB: '154' }] } },
-          '30d': { pools: { neftyblocks: [{ tokenA: 'AIGOD', tokenB: 'WAXCASH', volumeA: '330', volumeB: '660' }] } },
+          '30d': { pools: { neftyblocks: [{ pairid: 'WAXCASH.AIGOD', volumeA: '330', volumeB: '660' }] } },
         },
       }, 0.006);
-      ok('WAXCASH OG LastStats volume lookup accepts normalized OG pair keys and row-shaped buckets',
+      ok('WAXCASH OG LastStats volume lookup accepts normalized OG pair-id keys and row-shaped buckets',
         Number(normalizedKeyPair.volume_24h_a_native) === 11 &&
         Number(normalizedKeyPair.volume_24h_b_native) === 22 &&
         Number(normalizedKeyPair.volume_7d_a_native) === 77 &&
@@ -2659,6 +2659,47 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         Number(normalizedKeyPair.volume_30d_b_native) === 660 &&
         normalizedKeyPair.volume_native_source === 'og_waxonedge_lastVolumes_native_pair_volume',
         JSON.stringify(normalizedKeyPair));
+      const [exactOgPair] = __waxonedgeTestHooks.applyOgLastStatsToWaxcashPairs([{
+        ...nonWaxPair,
+        pair_id: 'WAXAIG',
+        og_laststats_pair_id: '144117',
+      }], {
+        lastVolumes: {
+          '24h': { pools: { neftyblocks: { WAXAIG: { volumeA: '1', volumeB: '2' }, '144117': { volumeA: '44', volumeB: '88' } } } },
+          '7d': { pools: { neftyblocks: { '144117': { volumeA: '144', volumeB: '288' } } } },
+          '30d': { pools: { neftyblocks: { '144117': { volumeA: '440', volumeB: '880' } } } },
+        },
+      }, 0.006);
+      const exactDebugSection = __waxonedgeTestHooks.waxcashBuildPairTableSection([exactOgPair], null);
+      const exactDebug = exactDebugSection.metric_debug.rows[0].og_laststats_volume_24h;
+      ok('WAXCASH OG LastStats volume lookup prefers exact stored og_laststats_pair_id and exposes non-visible debug',
+        Number(exactOgPair.volume_24h_a_native) === 44 &&
+        Number(exactOgPair.volume_24h_b_native) === 88 &&
+        exactDebug.displayed_pair_id === 'WAXAIG' &&
+        exactDebug.mapped_og_srcType === 'pools' &&
+        exactDebug.mapped_og_src === 'neftyblocks' &&
+        exactDebug.exact_og_bucket_path_checked === 'lastVolumes[24h][pools][neftyblocks]' &&
+        exactDebug.og_bucket_exists === true &&
+        Array.isArray(exactDebug.first_20_og_bucket_keys) &&
+        exactDebug.first_20_og_bucket_keys.includes('144117') &&
+        exactDebug.lookup_keys_attempted.includes('144117') &&
+        exactDebug.matched_key === '144117' &&
+        Number(exactDebug.volumeA) === 44 &&
+        Number(exactDebug.volumeB) === 88 &&
+        exactDebug.reason == null,
+        JSON.stringify({ exactOgPair, exactDebug }));
+      const [tokenOnlyPair] = __waxonedgeTestHooks.applyOgLastStatsToWaxcashPairs([{
+        ...nonWaxPair,
+        pair_id: '144117',
+      }], {
+        lastVolumes: {
+          '24h': { pools: { neftyblocks: [{ tokenA: 'AIGOD', tokenB: 'WAXCASH', volumeA: '999', volumeB: '1998' }] } },
+        },
+      }, 0.006);
+      ok('WAXCASH OG LastStats volume lookup does not guess pair volume from token symbols alone',
+        tokenOnlyPair.volume_24h_a_native == null &&
+        tokenOnlyPair.og_laststats_debug?.volume_24h?.reason === 'no_matching_pair_id',
+        JSON.stringify(tokenOnlyPair));
     }
     const liveSupplyWrites = [];
     const liveSupplyDb = {

@@ -679,6 +679,16 @@ function canonicalAmmPairId(source, value = {}, row = {}) {
   return safeString(firstPresent(value.id, value.code, value.pair_id, value.pairId, row?.pair_id, row?.pairId));
 }
 
+function ogLastStatsPairIdForSource(source, row = {}) {
+  if (source === 'swap.alcor') return safeString(firstPresent(row.id, row.poolId, row.pool_id, row.pair_id, row.pairId));
+  if (source === 'swap.nefty') return safeString(firstPresent(row.pairid, row.pair_id, row.pairId, row.id, row.code));
+  if (source === 'swap.taco') return safeString(firstPresent(row.pairid, row.pair_id, row.pairId, row.id));
+  if (source === 'swap.box') return safeString(firstPresent(row.pairid, row.pair_id, row.pairId, row.id));
+  if (source === 'swap.adex') return safeString(firstPresent(row.pairid, row.pool_id, row.poolId, row.id, row.pair_id, row.pairId));
+  if (source === 'alcor' || source === 'alcordexmain') return safeString(firstPresent(row.market_id, row.marketId, row.id, row.pair_id, row.pairId));
+  return safeString(firstPresent(row.pairid, row.pair_id, row.pairId, row.pool_id, row.poolId, row.market_id, row.marketId, row.id, row.code));
+}
+
 function canonicalAmmActionPairId(source, record = {}, row = {}) {
   if (source === 'swap.alcor') return canonicalSwapAlcorActionPoolId(record, row);
   if (source === 'swap.taco') return canonicalTacoActionPairId(record, row);
@@ -1283,6 +1293,7 @@ function normalizePair(pair, tickerByMarketId, priceIndex, syncedAt) {
   return {
     source: 'alcor',
     pair_id: pairId,
+    og_laststats_pair_id: ogLastStatsPairIdForSource('alcor', pair) || pairId,
     token_a_contract: tokenA.contract || null,
     token_a_symbol: tokenA.symbol || null,
     token_a_decimals: tokenA.decimals ?? null,
@@ -1680,6 +1691,7 @@ function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
   return {
     source: adapter.source,
     pair_id: String(pairId),
+    og_laststats_pair_id: ogLastStatsPairIdForSource(adapter.source, row) || String(pairId),
     token_a_contract: tokenA.contract,
     token_a_symbol: tokenA.symbol,
     token_a_decimals: tokenA.decimals ?? null,
@@ -1763,13 +1775,14 @@ async function upsertPairs(db, pairs) {
   if (!pairs.length) return;
   const statements = pairs.map((pair) => db.prepare(
     `INSERT INTO waxonedge_pairs
-     (source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+     (source, pair_id, og_laststats_pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
       price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
       volume_7d, volume_7d_wax, volume_7d_usd, volume_30d, volume_30d_wax, volume_30d_usd,
       liquidity_wax, liquidity_usd,
       reserve_a, reserve_b, fee_bps, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(source, pair_id) DO UPDATE SET
+       og_laststats_pair_id = excluded.og_laststats_pair_id,
        token_a_contract = excluded.token_a_contract,
        token_a_symbol = excluded.token_a_symbol,
        token_b_contract = excluded.token_b_contract,
@@ -1792,7 +1805,7 @@ async function upsertPairs(db, pairs) {
        fee_bps = excluded.fee_bps,
        updated_at = excluded.updated_at`
   ).bind(
-    pair.source, pair.pair_id, pair.token_a_contract, pair.token_a_symbol,
+    pair.source, pair.pair_id, pair.og_laststats_pair_id || pair.pair_id, pair.token_a_contract, pair.token_a_symbol,
     pair.token_b_contract, pair.token_b_symbol, pair.price, pair.change_24h,
     pair.volume_24h, pair.volume_24h_wax, pair.volume_24h_usd,
     pair.volume_7d, pair.volume_7d_wax, pair.volume_7d_usd,
@@ -5030,7 +5043,7 @@ async function handleLiveStream(corsHeaders, env = {}, fetchImpl = globalThis.fe
 
 async function listTopPairs(db) {
   const rows = await db.prepare(
-    `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+    `SELECT source, pair_id, og_laststats_pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
             price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
             liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
      FROM waxonedge_pairs
@@ -5044,7 +5057,7 @@ async function listTokenPairs(db, contract, symbol, options = {}) {
   const limit = clampInteger(options.limit, TOKEN_PAIR_PAGE_LIMIT, 1, TOKEN_PAIR_MAX_PAGE_LIMIT);
   const offset = clampInteger(options.cursor, 0, 0, Number.MAX_SAFE_INTEGER);
   const rows = await db.prepare(
-    `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+    `SELECT source, pair_id, og_laststats_pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
             price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
             liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
      FROM waxonedge_pairs
@@ -5385,6 +5398,7 @@ function ogRouteHop(pair, fromKey, toKey, priceFromTo, reserveFrom, reserveTo) {
   return {
     source: pair.source || null,
     pair_id: pair.pair_id || null,
+    og_laststats_pair_id: pair.og_laststats_pair_id || null,
     from: fromKey,
     to: toKey,
     price_from_to: safeDecimal(priceFromTo),
@@ -6992,7 +7006,7 @@ async function loadPairRowsForToken(db, contract, symbol) {
 
 async function loadWaxcashOgPairRows(db) {
   const rows = await db.prepare(
-    `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+    `SELECT source, pair_id, og_laststats_pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
             price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
             volume_7d, volume_7d_wax, volume_7d_usd, volume_30d, volume_30d_wax, volume_30d_usd,
             liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
@@ -7741,6 +7755,7 @@ function waxcashPairTableRow(pair, selectedWaxPool) {
     source_label: waxonedgeSourceDisplayLabel(pair.source),
     source_logo_key: waxonedgeSourceLogoKey(pair.source),
     pair_id: pair.pair_id || null,
+    og_laststats_pair_id: pair.og_laststats_pair_id || null,
     fee_bps: pair.fee_bps ?? null,
     is_selected_price_pair: isSelected,
     is_direct_wax_pair: !!pair.direct_wax_pair,
@@ -7786,6 +7801,7 @@ function waxcashPairTableRow(pair, selectedWaxPool) {
       reserve_a: pair.reserve_a || null,
       reserve_b: pair.reserve_b || null,
       metric_sources: pair.metric_sources || null,
+      og_laststats_debug: pair.og_laststats_debug || null,
     },
   };
 }
@@ -7809,7 +7825,12 @@ function waxcashBuildPairTableSection(pairs = [], selectedWaxPool = null) {
       no_visible_ui: true,
       rows: rows.map((row) => ({
         source: row.source,
+        displayed_pair_id: row.pair_id,
         pair_id: row.pair_id,
+        og_laststats_pair_id: row.og_laststats_pair_id || null,
+        og_laststats_volume_24h: row.proof_details?.og_laststats_debug?.volume_24h || null,
+        og_laststats_volume_7d: row.proof_details?.og_laststats_debug?.volume_7d || null,
+        og_laststats_volume_30d: row.proof_details?.og_laststats_debug?.volume_30d || null,
         volume_24h_wax_source: row.proof_details?.metric_sources?.volume_24h_wax?.source || null,
         volume_7d_wax_source: row.proof_details?.metric_sources?.volume_7d_wax?.source || null,
         volume_30d_wax_source: row.proof_details?.metric_sources?.volume_30d_wax?.source || null,
@@ -7910,8 +7931,10 @@ function ogTokenVolume(lastVolumes, duration, contract = WAXCASH_CONTRACT, symbo
 function waxcashOgPairRef(pair) {
   const source = aggregateSourceKey(pair?.source) || moonboysCandleSource(pair?.source || '');
   const ref = WAXONEDGE_OG_SOURCE_REF[source];
-  if (!ref || !pair?.pair_id) return null;
-  return { ...ref, pair_id: String(pair.pair_id) };
+  const displayedPairId = safeString(pair?.pair_id);
+  const ogPairId = safeString(firstPresent(pair?.og_laststats_pair_id, pair?.og_pair_id, pair?.pairid, displayedPairId));
+  if (!ref || !ogPairId) return null;
+  return { ...ref, pair_id: ogPairId, displayed_pair_id: displayedPairId || ogPairId };
 }
 
 function ogPairLookupKey(value) {
@@ -7923,6 +7946,9 @@ function ogPairLookupKeys(pair, ref) {
   const keys = new Set();
   [
     ref?.pair_id,
+    pair?.og_laststats_pair_id,
+    pair?.og_pair_id,
+    pair?.pairid,
     pair?.pair_id,
     pair?.id,
     pair?.pool_id,
@@ -7933,12 +7959,6 @@ function ogPairLookupKeys(pair, ref) {
     const key = ogPairLookupKey(value);
     if (key) keys.add(key);
   });
-  const tokenA = ogPairLookupKey(pair?.token_a_symbol);
-  const tokenB = ogPairLookupKey(pair?.token_b_symbol);
-  if (tokenA && tokenB) {
-    keys.add(`${tokenA}${tokenB}`);
-    keys.add(`${tokenB}${tokenA}`);
-  }
   return keys;
 }
 
@@ -7960,6 +7980,7 @@ function ogStatsPairRowMatches(entry, keys, pair) {
   const rowKeys = [
     row.pair_id,
     row.id,
+    row.pairid,
     row.pool_id,
     row.market_id,
     row.ticker_id,
@@ -7968,27 +7989,82 @@ function ogStatsPairRowMatches(entry, keys, pair) {
     row.poolId,
     row.marketId,
   ].map(ogPairLookupKey).filter(Boolean);
-  if (rowKeys.some((rowKey) => keys.has(rowKey))) return true;
-  const rowTokenA = ogPairLookupKey(row.tokenA || row.token_a_symbol || row.symbolA || row.base_symbol || row.baseSymbol);
-  const rowTokenB = ogPairLookupKey(row.tokenB || row.token_b_symbol || row.symbolB || row.quote_symbol || row.quoteSymbol);
-  const pairTokenA = ogPairLookupKey(pair?.token_a_symbol);
-  const pairTokenB = ogPairLookupKey(pair?.token_b_symbol);
-  return !!rowTokenA && !!rowTokenB && !!pairTokenA && !!pairTokenB &&
-    ((rowTokenA === pairTokenA && rowTokenB === pairTokenB) || (rowTokenA === pairTokenB && rowTokenB === pairTokenA));
+  return rowKeys.some((rowKey) => keys.has(rowKey));
+}
+
+function ogPairLastStatsLookup(stats, duration, pair) {
+  const ref = waxcashOgPairRef(pair);
+  const empty = {
+    displayed_pair_id: safeString(pair?.pair_id) || null,
+    source: aggregateSourceKey(pair?.source) || moonboysCandleSource(pair?.source || '') || null,
+    mapped_og_srcType: ref?.srcType || null,
+    mapped_og_src: ref?.src || null,
+    lookup_keys_attempted: [],
+    exact_og_bucket_path_checked: null,
+    og_bucket_exists: false,
+    first_20_og_bucket_keys: [],
+    matched_key: null,
+    row: null,
+    reason: ref ? 'no_lookup_keys' : 'no_og_pair_ref',
+  };
+  if (!ref) return empty;
+  const bucket = stats?.[duration]?.[ref.srcType]?.[ref.src];
+  const keys = ogPairLookupKeys(pair, ref);
+  const lookupKeys = Array.from(keys);
+  const base = {
+    ...empty,
+    displayed_pair_id: ref.displayed_pair_id || empty.displayed_pair_id,
+    mapped_og_srcType: ref.srcType,
+    mapped_og_src: ref.src,
+    lookup_keys_attempted: lookupKeys,
+    exact_og_bucket_path_checked: `lastVolumes[${duration}][${ref.srcType}][${ref.src}]`,
+    reason: lookupKeys.length ? null : 'no_lookup_keys',
+  };
+  if (!bucket || typeof bucket !== 'object') return { ...base, reason: 'no_laststats_bucket' };
+  const firstKeys = Object.keys(bucket).slice(0, 20);
+  const withBucket = { ...base, og_bucket_exists: true, first_20_og_bucket_keys: firstKeys };
+  if (!keys.size) return { ...withBucket, reason: 'no_lookup_keys' };
+  if (Object.prototype.hasOwnProperty.call(bucket, ref.pair_id)) {
+    return { ...withBucket, matched_key: ref.pair_id, row: bucket[ref.pair_id], reason: null };
+  }
+  for (const [bucketKey, bucketValue] of Object.entries(bucket)) {
+    if (keys.has(ogPairLookupKey(bucketKey))) {
+      return { ...withBucket, matched_key: bucketKey, row: bucketValue, reason: null };
+    }
+  }
+  const matched = ogStatsObjectRows(bucket).find((entry) => ogStatsPairRowMatches(entry, keys, pair));
+  if (matched) {
+    return {
+      ...withBucket,
+      matched_key: matched.key || safeString(ogStatsPairRowValue(matched)?.pair_id || ogStatsPairRowValue(matched)?.pairid || ogStatsPairRowValue(matched)?.id),
+      row: ogStatsPairRowValue(matched),
+      reason: null,
+    };
+  }
+  return { ...withBucket, reason: 'no_matching_pair_id' };
 }
 
 function ogPairLastStatsValue(stats, duration, pair) {
-  const ref = waxcashOgPairRef(pair);
-  if (!ref) return null;
-  const bucket = stats?.[duration]?.[ref.srcType]?.[ref.src];
-  if (!bucket || typeof bucket !== 'object') return null;
-  const keys = ogPairLookupKeys(pair, ref);
-  if (!keys.size) return null;
-  for (const [bucketKey, bucketValue] of Object.entries(bucket)) {
-    if (keys.has(ogPairLookupKey(bucketKey))) return bucketValue;
-  }
-  const matched = ogStatsObjectRows(bucket).find((entry) => ogStatsPairRowMatches(entry, keys, pair));
-  return matched ? ogStatsPairRowValue(matched) : null;
+  return ogPairLastStatsLookup(stats, duration, pair).row || null;
+}
+
+function ogPairLastStatsLookupDebug(lookup, row = null, reason = null) {
+  const volumeA = row && typeof row === 'object' ? asNumber(row.volumeA) : null;
+  const volumeB = row && typeof row === 'object' ? asNumber(row.volumeB) : null;
+  return {
+    displayed_pair_id: lookup?.displayed_pair_id || null,
+    source: lookup?.source || null,
+    mapped_og_srcType: lookup?.mapped_og_srcType || null,
+    mapped_og_src: lookup?.mapped_og_src || null,
+    lookup_keys_attempted: Array.isArray(lookup?.lookup_keys_attempted) ? lookup.lookup_keys_attempted : [],
+    exact_og_bucket_path_checked: lookup?.exact_og_bucket_path_checked || null,
+    og_bucket_exists: !!lookup?.og_bucket_exists,
+    first_20_og_bucket_keys: Array.isArray(lookup?.first_20_og_bucket_keys) ? lookup.first_20_og_bucket_keys : [],
+    matched_key: lookup?.matched_key || null,
+    volumeA: safeDecimal(volumeA),
+    volumeB: safeDecimal(volumeB),
+    reason: reason || lookup?.reason || null,
+  };
 }
 
 function ogPairLastVolumeRow(lastVolumes, duration, pair) {
@@ -8029,8 +8105,9 @@ function preferredOgPairConvertedVolumeSide(pair, volumeA, tokenAPriceWax, volum
 }
 
 function ogPairVolumeProof(lastVolumes, duration, pair, waxUsd = null) {
-  const row = ogPairLastVolumeRow(lastVolumes, duration, pair);
-  if (!row) return null;
+  const lookup = ogPairLastStatsLookup(lastVolumes, duration, pair);
+  const row = lookup.row && typeof lookup.row === 'object' ? lookup.row : null;
+  if (!row) return { lookup: ogPairLastStatsLookupDebug(lookup) };
   const tokenASymbol = normalizeSymbol(pair?.token_a_symbol);
   const tokenBSymbol = normalizeSymbol(pair?.token_b_symbol);
   const volumeA = asNumber(row.volumeA);
@@ -8053,6 +8130,7 @@ function ogPairVolumeProof(lastVolumes, duration, pair, waxUsd = null) {
     }
   }
   const hasNative = volumeA != null || volumeB != null;
+  const debugReason = hasNative ? null : 'no_recent_volume';
   return {
     volume_wax: safeDecimal(volumeWax),
     volume_usd: volumeWax != null && waxUsd != null ? safeDecimal(volumeWax * waxUsd) : null,
@@ -8065,6 +8143,7 @@ function ogPairVolumeProof(lastVolumes, duration, pair, waxUsd = null) {
     source: source || (hasNative ? 'og_waxonedge_lastVolumes_native_pair_volume' : null),
     native_source: hasNative ? 'og_waxonedge_lastVolumes_native_pair_volume' : null,
     converted: source === 'og_waxonedge_lastVolumes_route_converted_wax',
+    lookup: ogPairLastStatsLookupDebug(lookup, row, debugReason),
     no_fake_value: true,
   };
 }
@@ -8107,6 +8186,11 @@ function applyOgLastStatsToWaxcashPairs(pairs = [], ogStats = {}, waxUsd = null)
       volume_30d_a_native: safeDecimal(volume30d?.volume_a_native),
       volume_30d_b_native: safeDecimal(volume30d?.volume_b_native),
       volume_native_source: volume24?.native_source || volume7d?.native_source || volume30d?.native_source || null,
+      og_laststats_debug: {
+        volume_24h: volume24?.lookup || null,
+        volume_7d: volume7d?.lookup || null,
+        volume_30d: volume30d?.lookup || null,
+      },
       change_24h: safeDecimal(asNumber(pair.change_24h) ?? change24h),
       metric_sources: metricSources,
     };
@@ -10785,6 +10869,7 @@ export const __waxonedgeTestHooks = {
   buildWaxcashOgParityProof,
   applyOgLastStatsToWaxcashPairs,
   waxcashPairTableRow,
+  waxcashBuildPairTableSection,
   getWaxcashSupplySyncStatus,
   normalizeWaxcashWaxCandles,
   waxcashHeadlinePrice,
