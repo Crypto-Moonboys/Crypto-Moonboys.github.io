@@ -7856,6 +7856,8 @@ function waxcashBuildPairTableSection(pairs = [], selectedWaxPool = null) {
           volume_7d_native_source: row.proof_details?.metric_sources?.volume_7d_native?.source || null,
           volume_30d_native_source: row.proof_details?.metric_sources?.volume_30d_native?.source || null,
           change_24h_source: row.proof_details?.metric_sources?.change_24h?.source || null,
+          change_24h_reason: row.proof_details?.metric_sources?.change_24h?.reason || null,
+          change_24h_row_count: row.proof_details?.metric_sources?.change_24h?.row_count || 0,
           latest_indexed_trade_time: ogDebug24h?.latest_indexed_trade_time || row.proof_details?.metric_sources?.latest_indexed_trade_time || null,
           trade_row_count_24h: row.proof_details?.og_laststats_debug?.volume_24h?.trade_row_count || 0,
           trade_row_count_7d: row.proof_details?.og_laststats_debug?.volume_7d?.trade_row_count || 0,
@@ -9338,11 +9340,10 @@ async function indexedCandleChange24hByPair(db, pairs = [], selectedPriceWax = n
   return changes;
 }
 
-function applyIndexedPairWindowVolumes(pairs = [], windows = new Map(), waxUsd = null, candleChanges = new Map()) {
+function applyIndexedPairWindowVolumes(pairs = [], windows = new Map(), waxUsd = null) {
   return (pairs || []).map((pair) => {
     const key = waxcashTradePairKey(pair?.source, pair?.pair_id);
     const window = windows.get(key);
-    const candleChange = candleChanges.get(key);
     const metricSources = {
       volume_24h_wax: asNumber(pair?.volume_24h_wax) != null
         ? { source: 'indexed_pair_or_ticker_volume', row_count: 0 }
@@ -9358,14 +9359,18 @@ function applyIndexedPairWindowVolumes(pairs = [], windows = new Map(), waxUsd =
         : { source: null, row_count: 0 },
       latest_indexed_trade_time: null,
     };
-    if (!window && !candleChange) return { ...pair, metric_sources: metricSources };
+    if (!window) {
+      if (asNumber(pair?.change_24h) == null) {
+        metricSources.change_24h = { source: null, row_count: 0, reason: 'indexed_pair_or_trade_price_change_unavailable' };
+      }
+      return { ...pair, metric_sources: metricSources };
+    }
     const existingChange24h = asNumber(pair?.change_24h);
     const volume24Wax = asNumber(window?.volume_24h_wax);
     const volume7dWax = asNumber(window?.volume_7d_wax);
     const volume30dWax = asNumber(window?.volume_30d_wax);
     const tradeChange24h = asNumber(window?.change_24h);
-    const candleChange24h = asNumber(candleChange?.change_24h);
-    const change24h = existingChange24h ?? tradeChange24h ?? candleChange24h;
+    const change24h = existingChange24h ?? tradeChange24h;
     if (volume24Wax != null) metricSources.volume_24h_wax = { source: window.source, row_count: window.row_count_24h || 0 };
     if (volume7dWax != null) metricSources.volume_7d_wax = { source: window.source, row_count: window.row_count_7d || 0 };
     if (volume30dWax != null) metricSources.volume_30d_wax = { source: window.source, row_count: window.row_count_30d || 0 };
@@ -9373,8 +9378,14 @@ function applyIndexedPairWindowVolumes(pairs = [], windows = new Map(), waxUsd =
       metricSources.change_24h = { source: 'indexed_pair_or_ticker_change', row_count: 0 };
     } else if (change24h != null) {
       metricSources.change_24h = {
-        source: tradeChange24h != null ? (window.change_source || 'indexed_trade_price_window') : candleChange.source,
-        row_count: tradeChange24h != null ? (window.row_count_30d || 0) : (candleChange.row_count || 0),
+        source: window.change_source || 'indexed_trade_price_window',
+        row_count: window.row_count_30d || 0,
+      };
+    } else {
+      metricSources.change_24h = {
+        source: null,
+        row_count: window.row_count_30d || 0,
+        reason: window.row_count_30d ? 'indexed_trade_price_window_insufficient_samples' : 'indexed_pair_or_trade_price_change_unavailable',
       };
     }
     metricSources.latest_indexed_trade_time = window?.latest_indexed_trade_time || null;
@@ -9443,15 +9454,14 @@ async function buildWaxcashAnalytics(db, env = null) {
   const selectedPriceUsd = asNumber(headline.og_headline_price_usd);
   const { chart, chartFeedPool, selectedWaxPool } = await buildWaxcashChartBundle(db, proof, headline);
   const liveSupplyProof = await fetchWaxcashLiveSupplyProof(db, token);
-  const [holderSnapshot, tradeWindowVolumes, pairWindowVolumes, pairCandleChanges, ogLastStats, alcorTokenAnalytics] = await Promise.all([
+  const [holderSnapshot, tradeWindowVolumes, pairWindowVolumes, ogLastStats, alcorTokenAnalytics] = await Promise.all([
     latestIndexedHolderCount(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL),
     indexedTradeWindowVolumes(db, proof.all_pairs || [], { selectedPriceWax }),
     indexedTradeWindowVolumesByPair(db, proof.all_pairs || [], { selectedPriceWax }),
-    indexedCandleChange24hByPair(db, proof.all_pairs || [], selectedPriceWax),
     env ? fetchWaxcashOgLastStats(env) : Promise.resolve({ live: false, reasons: ['waxonedge_og_api_base_not_configured'] }),
     fetchWaxcashAlcorTokenAnalytics(),
   ]);
-  const indexedPairTablePairs = applyIndexedPairWindowVolumes(proof.all_pairs || [], pairWindowVolumes, waxUsd, pairCandleChanges);
+  const indexedPairTablePairs = applyIndexedPairWindowVolumes(proof.all_pairs || [], pairWindowVolumes, waxUsd);
   const pairTablePairs = applyOgLastStatsToWaxcashPairs(indexedPairTablePairs, ogLastStats, waxUsd);
   const priceChange24hProof = await selectedProofPriceChange24h(db, selectedWaxPool, selectedPriceWax);
   const circulatingSupply = asNumber(detailStats.circulating_supply ?? token.circulating_supply);

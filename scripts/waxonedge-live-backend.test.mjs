@@ -6313,18 +6313,20 @@ ok('WAXCASH pair table backend enriches token icons and pair-level indexed volum
   route.includes('og_waxonedge_lastVolumes_native_pair_volume') &&
   route.includes('og_waxonedge_lastVolumes_route_converted_wax') &&
   route.includes('og_waxonedge_lastPriceChanges') &&
-  route.includes('async function indexedCandleChange24hByPair') &&
   route.includes('function applyIndexedPairWindowVolumes') &&
   route.includes('indexed_pair_volume_window_source') &&
   route.includes('metric_debug') &&
+  route.includes('change_24h_reason') &&
   route.includes('latest_indexed_trade_time') &&
   route.includes('indexedPairTablePairs = applyIndexedPairWindowVolumes') &&
   route.includes('pairTablePairs = applyOgLastStatsToWaxcashPairs(indexedPairTablePairs, ogLastStats, waxUsd)') &&
-  route.includes('const normalized = normalizeWaxcashWaxCandles(candles.candles || [], { selectedPriceWax })') &&
   route.includes('const existingChange24h = asNumber(pair?.change_24h)') &&
   route.includes('const tradeChange24h = asNumber(window?.change_24h)') &&
-  route.includes('const candleChange24h = asNumber(candleChange?.change_24h)') &&
-  route.includes('const change24h = existingChange24h ?? tradeChange24h ?? candleChange24h') &&
+  route.includes('const change24h = existingChange24h ?? tradeChange24h') &&
+  route.includes('indexed_trade_price_window_insufficient_samples') &&
+  !route.includes('indexedCandleChange24hByPair(db, proof.all_pairs') &&
+  !route.includes('const candleChange24h = asNumber(candleChange?.change_24h)') &&
+  !route.includes('existingChange24h ?? tradeChange24h ?? candleChange24h') &&
   route.includes('pair_table: waxcashBuildPairTableSection(pairTablePairs, selectedWaxPool)'));
 ok('WAXCASH exposes live LastStats diagnostics for env, bucket, D1 ID backfill, and source sync state',
   route.includes('async function getWaxcashLastStatsDiagnostics') &&
