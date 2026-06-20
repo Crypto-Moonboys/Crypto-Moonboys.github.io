@@ -2929,6 +2929,18 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       Number(indexedWindowPairRow?.volume_30d_usd) === 40900.48400273718 &&
       indexedWindowPairRow?.proof_details?.status === 'selected_price_pair',
       JSON.stringify(indexedWindowPairRow));
+    const indexedWindowDebugRow = holderTradeWaxcashAnalytics.sections?.pair_table?.metric_debug?.rows?.find((row) => row.pair_id === 'WAXCASHWAXLEGACY');
+    ok('WAXCASH pair table exposes non-visible pair metric debug proof for indexed windows',
+      holderTradeWaxcashAnalytics.sections?.pair_table?.metric_debug?.no_visible_ui === true &&
+      indexedWindowDebugRow?.source === 'swap.nefty' &&
+      indexedWindowDebugRow?.volume_24h_wax_source === 'indexed_trade_rows_window_wax_denominated' &&
+      indexedWindowDebugRow?.volume_7d_wax_source === 'indexed_trade_rows_window_wax_denominated' &&
+      indexedWindowDebugRow?.volume_30d_wax_source === 'indexed_trade_rows_window_wax_denominated' &&
+      indexedWindowDebugRow?.latest_indexed_trade_time === '2026-06-15T00:00:00.000Z' &&
+      indexedWindowDebugRow?.row_count_24h === 1 &&
+      indexedWindowDebugRow?.row_count_7d === 2 &&
+      indexedWindowDebugRow?.row_count_30d === 3,
+      JSON.stringify(holderTradeWaxcashAnalytics.sections?.pair_table?.metric_debug));
     rollingVolumeSelectCount = 0;
     rollingVolumeSelectSqls.length = 0;
     const tradeWindowVolumes = await __waxonedgeTestHooks.indexedTradeWindowVolumes(holderTradeWaxcashAnalyticsDb, [{
@@ -6035,8 +6047,11 @@ ok('WAXCASH pair table backend enriches token icons and pair-level indexed volum
   route.includes('function enrichPairsWithTokenIcons') &&
   route.includes('function collectTokenRefsForPairs') &&
   route.includes('async function indexedTradeWindowVolumesByPair') &&
+  route.includes('async function indexedCandleChange24hByPair') &&
   route.includes('function applyIndexedPairWindowVolumes') &&
   route.includes('indexed_pair_volume_window_source') &&
+  route.includes('metric_debug') &&
+  route.includes('latest_indexed_trade_time') &&
   route.includes('pairTablePairs = applyIndexedPairWindowVolumes') &&
   route.includes('pair_table: waxcashBuildPairTableSection(pairTablePairs, selectedWaxPool)'));
 ok('token detail exposes backend metric proof fields without frontend changes',
@@ -7004,13 +7019,17 @@ ok('/waxcash.html pair table follows OG-style pair detail columns without status
   !waxcashHtml.includes('<th>Pair Reserve Ratio</th>') &&
   !waxcashHtml.includes('<th>Relative Pair Price</th>') &&
   !waxcashHtml.includes('<th>Pair price</th>') &&
+  !waxcashHtml.includes('<th>Source</th>') &&
+  !waxcashHtml.includes('<th>Fee</th>') &&
   !waxcashHtml.includes('<th>Status</th>') &&
   !waxcashHtml.includes('<th>Reserves</th>') &&
+  waxcashHtml.includes('<th>Rank</th>') &&
+  waxcashHtml.includes('<th>Exchange</th>') &&
   waxcashHtml.includes('<th>Price</th>') &&
-  waxcashHtml.includes('<th>24h change</th>') &&
+  waxcashHtml.includes('<th>24h price change</th>') &&
   waxcashHtml.includes('<th>7d volume</th>') &&
   waxcashHtml.includes('<th>30d volume</th>') &&
-  waxcashHtml.includes('<td colspan="10"'));
+  waxcashHtml.includes('<td colspan="9"'));
 ok('WAXCASH analytics frontend renders backend sections instead of raw proof-row guesses',
   waxcashAnalyticsFrontend.includes('payload.sections || {}') &&
   waxcashAnalyticsFrontend.includes('sections.token_stats') &&
@@ -7114,12 +7133,14 @@ ok('WAXCASH analytics frontend keeps pair table and adds WAX-only liquidity/24h 
   waxcashHtml.includes('data-sort="volume24"') &&
   waxcashHtml.includes('.wx-source-logo') &&
   waxcashHtml.includes('.wx-token-logo') &&
+  waxcashHtml.includes('.wx-fee-badge') &&
   waxcashAnalyticsFrontend.includes('function sortedPairRows(rows)') &&
   waxcashAnalyticsFrontend.includes('function defaultPairSort(rows)') &&
   waxcashAnalyticsFrontend.includes('function sourceLogoUrl(row)') &&
   waxcashAnalyticsFrontend.includes('function sourceCell(row)') &&
   waxcashAnalyticsFrontend.includes('function tokenIconUrl(row, side)') &&
   waxcashAnalyticsFrontend.includes('function tokenSideLabel(row, side)') &&
+  waxcashAnalyticsFrontend.includes('function pairCell(row)') &&
   waxcashAnalyticsFrontend.includes("'swap.nefty': '/img/waxonedge/dex/neftyblocks.png'") &&
   waxcashAnalyticsFrontend.includes("'swap.alcor': '/img/waxonedge/dex/alcor.png'") &&
   waxcashAnalyticsFrontend.includes("'alcordexmain': '/img/waxonedge/dex/alcor.png'") &&
@@ -7129,6 +7150,7 @@ ok('WAXCASH analytics frontend keeps pair table and adds WAX-only liquidity/24h 
   waxcashAnalyticsFrontend.includes("'dapp.fusion': '/img/waxonedge/dex/waxfusion.png'") &&
   waxcashAnalyticsFrontend.includes('<img class="wx-source-logo" src="') &&
   waxcashAnalyticsFrontend.includes('<img class="wx-token-logo" src="') &&
+  waxcashAnalyticsFrontend.includes('wx-fee-badge') &&
   waxcashAnalyticsFrontend.includes("'<td>' + sourceCell(row) + '</td>'") &&
   waxcashAnalyticsFrontend.includes('return num(row && row.liquidity_wax)') &&
   waxcashAnalyticsFrontend.includes('return num(row && row.volume_24h_wax)') &&

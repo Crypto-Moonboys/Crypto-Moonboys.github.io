@@ -167,11 +167,15 @@ ok('waxcash pair table exposes WAX-only liquidity and 24h volume sort controls',
   exists('img/waxonedge/dex/defibox.png') &&
   exists('img/waxonedge/dex/adex.png') &&
   exists('img/waxonedge/dex/waxfusion.png') &&
+  waxcashHtml.includes('<th>Rank</th>') &&
+  waxcashHtml.includes('<th>Exchange</th>') &&
+  !waxcashHtml.includes('<th>Source</th>') &&
+  !waxcashHtml.includes('<th>Fee</th>') &&
   waxcashHtml.includes('<th>Price</th>') &&
-  waxcashHtml.includes('<th>24h change</th>') &&
+  waxcashHtml.includes('<th>24h price change</th>') &&
   waxcashHtml.includes('<th>7d volume</th>') &&
   waxcashHtml.includes('<th>30d volume</th>') &&
-  waxcashHtml.includes('<td colspan="10"') &&
+  waxcashHtml.includes('<td colspan="9"') &&
   !waxcashHtml.includes('<th>Status</th>') &&
   !waxcashHtml.includes('<th>Reserves</th>') &&
   !waxcashHtml.includes('<th>Pair price</th>') &&
@@ -180,6 +184,7 @@ ok('waxcash pair table exposes WAX-only liquidity and 24h volume sort controls',
   waxcashAnalyticsJs.includes('function sourceCell(row)') &&
   waxcashAnalyticsJs.includes('function tokenIconUrl(row, side)') &&
   waxcashAnalyticsJs.includes('function tokenSideLabel(row, side)') &&
+  waxcashAnalyticsJs.includes('function pairCell(row)') &&
   waxcashAnalyticsJs.includes("'swap.nefty': '/img/waxonedge/dex/neftyblocks.png'") &&
   waxcashAnalyticsJs.includes("'swap.alcor': '/img/waxonedge/dex/alcor.png'") &&
   waxcashAnalyticsJs.includes("'alcordexmain': '/img/waxonedge/dex/alcor.png'") &&
@@ -189,6 +194,7 @@ ok('waxcash pair table exposes WAX-only liquidity and 24h volume sort controls',
   waxcashAnalyticsJs.includes("'dapp.fusion': '/img/waxonedge/dex/waxfusion.png'") &&
   waxcashAnalyticsJs.includes('<img class="wx-source-logo" src="') &&
   waxcashAnalyticsJs.includes('<img class="wx-token-logo" src="') &&
+  waxcashAnalyticsJs.includes('wx-fee-badge') &&
   waxcashAnalyticsJs.includes("'<td>' + sourceCell(row) + '</td>'") &&
   waxcashAnalyticsJs.includes('return num(row && row.liquidity_wax)') &&
   waxcashAnalyticsJs.includes('return num(row && row.volume_24h_wax)') &&

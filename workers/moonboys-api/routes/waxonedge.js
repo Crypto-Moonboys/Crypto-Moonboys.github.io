@@ -7756,6 +7756,7 @@ function waxcashPairTableRow(pair, selectedWaxPool) {
       status_label: statusLabel,
       reserve_a: pair.reserve_a || null,
       reserve_b: pair.reserve_b || null,
+      metric_sources: pair.metric_sources || null,
     },
   };
 }
@@ -7775,6 +7776,21 @@ function waxcashBuildPairTableSection(pairs = [], selectedWaxPool = null) {
     rows,
     row_count: rows.length,
     selected_pair_id: selectedWaxPool?.pair_id || null,
+    metric_debug: {
+      no_visible_ui: true,
+      rows: rows.map((row) => ({
+        source: row.source,
+        pair_id: row.pair_id,
+        volume_24h_wax_source: row.proof_details?.metric_sources?.volume_24h_wax?.source || null,
+        volume_7d_wax_source: row.proof_details?.metric_sources?.volume_7d_wax?.source || null,
+        volume_30d_wax_source: row.proof_details?.metric_sources?.volume_30d_wax?.source || null,
+        change_24h_source: row.proof_details?.metric_sources?.change_24h?.source || null,
+        latest_indexed_trade_time: row.proof_details?.metric_sources?.latest_indexed_trade_time || null,
+        row_count_24h: row.proof_details?.metric_sources?.volume_24h_wax?.row_count || 0,
+        row_count_7d: row.proof_details?.metric_sources?.volume_7d_wax?.row_count || 0,
+        row_count_30d: row.proof_details?.metric_sources?.volume_30d_wax?.row_count || 0,
+      })),
+    },
     no_fake_value: true,
   };
 }
@@ -8291,33 +8307,60 @@ async function indexedTradeWindowVolumesByPair(db, pairs = [], options = {}) {
         volume_24h_wax: 0,
         volume_7d_wax: 0,
         volume_30d_wax: 0,
+        row_count_24h: 0,
+        row_count_7d: 0,
+        row_count_30d: 0,
         has_24h: false,
         has_7d: false,
         has_30d: false,
+        latest_indexed_trade_time: null,
+        price_samples: [],
         source: 'indexed_trade_rows_window_wax_denominated',
         basis: proof.basis,
       });
     }
     const window = windows.get(key);
+    const price = priceFromIndexedTradeRow(row, row?.source);
+    if (price != null) window.price_samples.push({ tradedMs, price });
+    if (!window.latest_indexed_trade_time || tradedMs > Date.parse(window.latest_indexed_trade_time)) {
+      window.latest_indexed_trade_time = new Date(tradedMs).toISOString();
+    }
     window.volume_30d_wax += proof.volumeWax;
+    window.row_count_30d += 1;
     window.has_30d = true;
     if (proof.basis) window.basis = proof.basis;
     if (tradedMs >= since7dMs) {
       window.volume_7d_wax += proof.volumeWax;
+      window.row_count_7d += 1;
       window.has_7d = true;
     }
     if (tradedMs >= since24hMs) {
       window.volume_24h_wax += proof.volumeWax;
+      window.row_count_24h += 1;
       window.has_24h = true;
     }
   }
   for (const [key, window] of windows.entries()) {
+    const priceSamples = (window.price_samples || []).sort((a, b) => a.tradedMs - b.tradedMs);
+    const latestPrice = priceSamples[priceSamples.length - 1] || null;
+    const priorPrice = latestPrice
+      ? priceSamples.slice(0, -1).reverse().find((sample) => sample.tradedMs <= latestPrice.tradedMs - (24 * 60 * 60 * 1000))
+      : null;
+    const change24h = latestPrice && priorPrice && priorPrice.price !== 0
+      ? ((latestPrice.price - priorPrice.price) / priorPrice.price) * 100
+      : null;
     windows.set(key, {
       volume_24h_wax: window.has_24h ? safeDecimal(window.volume_24h_wax) : null,
       volume_7d_wax: window.has_7d ? safeDecimal(window.volume_7d_wax) : null,
       volume_30d_wax: window.has_30d ? safeDecimal(window.volume_30d_wax) : null,
+      change_24h: safeDecimal(change24h),
+      row_count_24h: window.row_count_24h,
+      row_count_7d: window.row_count_7d,
+      row_count_30d: window.row_count_30d,
       source: window.source,
       basis: window.basis,
+      change_source: change24h != null ? 'indexed_trade_price_window' : null,
+      latest_indexed_trade_time: window.latest_indexed_trade_time,
       latest_trade_at: latest.latest_trade_at,
       no_fake_value: true,
     });
@@ -8325,13 +8368,64 @@ async function indexedTradeWindowVolumesByPair(db, pairs = [], options = {}) {
   return windows;
 }
 
-function applyIndexedPairWindowVolumes(pairs = [], windows = new Map(), waxUsd = null) {
+async function indexedCandleChange24hByPair(db, pairs = []) {
+  const changes = new Map();
+  for (const pair of pairs || []) {
+    if (!pair?.source || !pair?.pair_id) continue;
+    const candles = await listChartCandlesBySource(db, {
+      source: pair.source,
+      pair_id: pair.pair_id,
+      interval: '1D',
+      limit: 3,
+    }).catch(() => ({ candles: [] }));
+    const change = waxcashPriceChangeFromCandles(candles.candles || []);
+    if (change == null) continue;
+    changes.set(waxcashTradePairKey(pair.source, pair.pair_id), {
+      change_24h: safeDecimal(change),
+      source: 'indexed_1d_candle_close_window',
+      row_count: (candles.candles || []).length,
+      latest_candle_time: (candles.candles || []).slice(-1)[0]?.bucket_time || null,
+      no_fake_value: true,
+    });
+  }
+  return changes;
+}
+
+function applyIndexedPairWindowVolumes(pairs = [], windows = new Map(), waxUsd = null, candleChanges = new Map()) {
   return (pairs || []).map((pair) => {
-    const window = windows.get(waxcashTradePairKey(pair?.source, pair?.pair_id));
-    if (!window) return pair;
-    const volume24Wax = asNumber(window.volume_24h_wax);
-    const volume7dWax = asNumber(window.volume_7d_wax);
-    const volume30dWax = asNumber(window.volume_30d_wax);
+    const key = waxcashTradePairKey(pair?.source, pair?.pair_id);
+    const window = windows.get(key);
+    const candleChange = candleChanges.get(key);
+    const metricSources = {
+      volume_24h_wax: asNumber(pair?.volume_24h_wax) != null
+        ? { source: 'indexed_pair_or_ticker_volume', row_count: 0 }
+        : { source: null, row_count: 0 },
+      volume_7d_wax: asNumber(pair?.volume_7d_wax) != null
+        ? { source: 'indexed_pair_or_ticker_volume', row_count: 0 }
+        : { source: null, row_count: 0 },
+      volume_30d_wax: asNumber(pair?.volume_30d_wax) != null
+        ? { source: 'indexed_pair_or_ticker_volume', row_count: 0 }
+        : { source: null, row_count: 0 },
+      change_24h: asNumber(pair?.change_24h) != null
+        ? { source: 'indexed_pair_or_ticker_change', row_count: 0 }
+        : { source: null, row_count: 0 },
+      latest_indexed_trade_time: null,
+    };
+    if (!window && !candleChange) return { ...pair, metric_sources: metricSources };
+    const volume24Wax = asNumber(window?.volume_24h_wax);
+    const volume7dWax = asNumber(window?.volume_7d_wax);
+    const volume30dWax = asNumber(window?.volume_30d_wax);
+    const change24h = asNumber(window?.change_24h) ?? asNumber(candleChange?.change_24h);
+    if (volume24Wax != null) metricSources.volume_24h_wax = { source: window.source, row_count: window.row_count_24h || 0 };
+    if (volume7dWax != null) metricSources.volume_7d_wax = { source: window.source, row_count: window.row_count_7d || 0 };
+    if (volume30dWax != null) metricSources.volume_30d_wax = { source: window.source, row_count: window.row_count_30d || 0 };
+    if (change24h != null) {
+      metricSources.change_24h = {
+        source: asNumber(window?.change_24h) != null ? (window.change_source || 'indexed_trade_price_window') : candleChange.source,
+        row_count: asNumber(window?.change_24h) != null ? (window.row_count_30d || 0) : (candleChange.row_count || 0),
+      };
+    }
+    metricSources.latest_indexed_trade_time = window?.latest_indexed_trade_time || null;
     return {
       ...pair,
       volume_24h_wax: safeDecimal(volume24Wax) ?? pair.volume_24h_wax ?? null,
@@ -8340,8 +8434,10 @@ function applyIndexedPairWindowVolumes(pairs = [], windows = new Map(), waxUsd =
       volume_7d_usd: volume7dWax != null && waxUsd != null ? safeDecimal(volume7dWax * waxUsd) : (pair.volume_7d_usd ?? null),
       volume_30d_wax: safeDecimal(volume30dWax) ?? pair.volume_30d_wax ?? null,
       volume_30d_usd: volume30dWax != null && waxUsd != null ? safeDecimal(volume30dWax * waxUsd) : (pair.volume_30d_usd ?? null),
-      indexed_pair_volume_window_source: window.source,
-      indexed_pair_volume_window_basis: window.basis,
+      change_24h: safeDecimal(change24h) ?? pair.change_24h ?? null,
+      indexed_pair_volume_window_source: window?.source || null,
+      indexed_pair_volume_window_basis: window?.basis || null,
+      metric_sources: metricSources,
     };
   });
 }
@@ -8395,12 +8491,13 @@ async function buildWaxcashAnalytics(db) {
   const selectedPriceUsd = asNumber(headline.og_headline_price_usd);
   const { chart, chartFeedPool, selectedWaxPool } = await buildWaxcashChartBundle(db, proof, headline);
   const liveSupplyProof = await fetchWaxcashLiveSupplyProof(db, token);
-  const [holderSnapshot, tradeWindowVolumes, pairWindowVolumes] = await Promise.all([
+  const [holderSnapshot, tradeWindowVolumes, pairWindowVolumes, pairCandleChanges] = await Promise.all([
     latestIndexedHolderCount(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL),
     indexedTradeWindowVolumes(db, proof.all_pairs || [], { selectedPriceWax }),
     indexedTradeWindowVolumesByPair(db, proof.all_pairs || [], { selectedPriceWax }),
+    indexedCandleChange24hByPair(db, proof.all_pairs || []),
   ]);
-  const pairTablePairs = applyIndexedPairWindowVolumes(proof.all_pairs || [], pairWindowVolumes, waxUsd);
+  const pairTablePairs = applyIndexedPairWindowVolumes(proof.all_pairs || [], pairWindowVolumes, waxUsd, pairCandleChanges);
   const priceChange24hProof = await selectedProofPriceChange24h(db, selectedWaxPool, selectedPriceWax);
   const circulatingSupply = asNumber(detailStats.circulating_supply ?? token.circulating_supply);
   const totalSupply = liveSupplyProof.live ? asNumber(liveSupplyProof.total_supply) : null;

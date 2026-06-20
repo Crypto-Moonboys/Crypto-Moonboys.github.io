@@ -201,6 +201,11 @@
     return tokenSideLabel(row, 'a') + tokenSideLabel(row, 'b');
   }
 
+  function feeText(row) {
+    if (!row) return DASH;
+    return row.fee_bps != null ? fmt(row.fee_bps / 100, 2) + ' %' : (row.is_direct_wax_pair ? 'Direct' : DASH);
+  }
+
   function tokenIconUrl(row, side) {
     return String((row && (row['token_' + side + '_icon'] || row['token_' + side + '_logo'])) || '');
   }
@@ -212,6 +217,18 @@
     return '<span class="wx-token">' +
       (icon ? '<img class="wx-token-logo" src="' + esc(icon) + '" alt="" loading="lazy">' : '') +
       '<span class="wx-token-text"><strong>' + esc(symbol || DASH) + '</strong>' + esc(contract || '') + '</span>' +
+      '</span>';
+  }
+
+  function tokenIconImg(row, side) {
+    var icon = tokenIconUrl(row, side);
+    return icon ? '<img class="wx-token-logo" src="' + esc(icon) + '" alt="" loading="lazy">' : '';
+  }
+
+  function pairCell(row) {
+    return '<span class="wx-pair-cell">' +
+      '<span class="wx-fee-badge"><span class="wx-fee-icons">' + tokenIconImg(row, 'a') + tokenIconImg(row, 'b') + '</span>' + esc(feeText(row)) + '</span>' +
+      '<span>' + tokenLabel(row) + '</span>' +
       '</span>';
   }
 
@@ -282,16 +299,14 @@
     updateSortButtons(rows);
     $('wx-pair-summary').textContent = rows.length + ' indexed WAXCASH pairs';
     if (!rows.length) {
-      $('wx-pairs').innerHTML = '<tr><td colspan="10" class="wx-muted">No source-backed WAXCASH pair rows returned.</td></tr>';
+      $('wx-pairs').innerHTML = '<tr><td colspan="9" class="wx-muted">No source-backed WAXCASH pair rows returned.</td></tr>';
       return;
     }
     $('wx-pairs').innerHTML = displayRows.map(function (row, index) {
-      var fee = row.fee_bps != null ? fmt(row.fee_bps / 100, 2) + ' %' : (row.is_direct_wax_pair ? 'Direct' : DASH);
       return '<tr class="' + (pairKey(row) === activeKey ? 'is-selected' : '') + '">' +
         '<td>#' + (index + 1) + '</td>' +
         '<td>' + sourceCell(row) + '</td>' +
-        '<td>' + esc(fee) + '</td>' +
-        '<td>' + tokenLabel(row) + '</td>' +
+        '<td>' + pairCell(row) + '</td>' +
         '<td>' + dual(row.liquidity_wax, row.liquidity_usd, row.reason) + '</td>' +
         '<td>' + priceCell(row) + '</td>' +
         '<td>' + changeCell(row.change_24h) + '</td>' +
@@ -360,6 +375,6 @@
       $('wx-stats').innerHTML = statRow({ label: 'Status', live: false, reason: error.message || String(error) });
       renderExternalChart({ sections: { chart_external: DEFAULT_EXTERNAL_CHART } });
       updateSortButtons([]);
-      $('wx-pairs').innerHTML = '<tr><td colspan="10" class="wx-muted">Pair table unavailable.</td></tr>';
+      $('wx-pairs').innerHTML = '<tr><td colspan="9" class="wx-muted">Pair table unavailable.</td></tr>';
     });
 }());
