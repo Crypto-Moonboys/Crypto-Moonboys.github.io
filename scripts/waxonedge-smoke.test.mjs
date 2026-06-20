@@ -132,6 +132,9 @@ ok('waxcash analytics frontend calls the dedicated backend endpoint only',
   waxcashAnalyticsJs.includes('sections.pair_table') &&
   !waxcashAnalyticsJs.includes('sections.chart_external') &&
   !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-analytics/chart-feed'));
+ok('waxcash analytics script cache key is bumped for native LastStats pair volume fixes',
+  waxcashHtml.includes('/js/waxcash-analytics.js?v=wxcash-native-laststats-20260620-5') &&
+  !waxcashHtml.includes('wxcash-og-woe-restore-20260620-1'));
 ok('waxcash frontend removes visible explanatory chart/status/proof labels',
   !waxcashHtml.includes('Chart and stats') &&
   !waxcashHtml.includes('WAXCASH token analytics for graffitiking::WAXCASH') &&
