@@ -2753,7 +2753,27 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         };
       },
     };
-    const supplyOnlyWaxcashAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(supplyOnlyWaxcashAnalyticsDb);
+    const supplyOnlyOriginalFetch = globalThis.fetch;
+    let supplyOnlyWaxcashAnalytics = null;
+    try {
+      globalThis.fetch = async (url, init) => {
+        const href = String(url);
+        if (href.includes('wax.alcor.exchange/api/v3/analytics/tokens/waxcash-graffitiking')) {
+          return new Response(JSON.stringify({
+            token: { holders: { count: 9320, truncated: false } },
+            meta: { ts: '2026-06-20T01:53:10.445Z' },
+          }), { status: 200, headers: { 'content-type': 'application/json' } });
+        }
+        const body = JSON.parse(init?.body || '{}');
+        if (body.code === 'graffitiking' && body.symbol === 'WAXCASH') {
+          return new Response(JSON.stringify({}), { status: 200, headers: { 'content-type': 'application/json' } });
+        }
+        return new Response(JSON.stringify({}), { status: 200, headers: { 'content-type': 'application/json' } });
+      };
+      supplyOnlyWaxcashAnalytics = await __waxonedgeTestHooks.buildWaxcashAnalytics(supplyOnlyWaxcashAnalyticsDb);
+    } finally {
+      globalThis.fetch = supplyOnlyOriginalFetch;
+    }
     ok('WAXCASH analytics does not use D1 cached total supply or FDV when live RPC proof fails',
       supplyOnlyWaxcashAnalytics.stats.total_supply === null &&
       supplyOnlyWaxcashAnalytics.stats.fdv_wax === null &&
@@ -2782,10 +2802,12 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         supply_proof: supplyOnlyWaxcashAnalytics.sections?.supply_proof,
         metric_status: supplyOnlyWaxcashAnalytics.stats.metric_status,
       }));
-    ok('WAXCASH analytics holder count remains unavailable with explicit reason when no holder source exists',
-      supplyOnlyWaxcashAnalytics.stats.holder_count === null &&
-      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.live === false &&
-      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.reason.includes('No indexed holder snapshot exists for graffitiking::WAXCASH'));
+    ok('WAXCASH analytics restores holder count from the real Alcor token analytics source when local snapshots are missing',
+      Number(supplyOnlyWaxcashAnalytics.stats.holder_count) === 9320 &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.live === true &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.source === 'alcor_token_analytics_holders' &&
+      supplyOnlyWaxcashAnalytics.stats.metric_status.holder_count.snapshot_at === '2026-06-20T01:53:10.445Z' &&
+      supplyOnlyWaxcashAnalytics.alcor_token_analytics.holder_count_live === true);
     let rollingVolumeSelectCount = 0;
     const rollingVolumeSelectSqls = [];
     const holderTradeWaxcashAnalyticsDb = {
