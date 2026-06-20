@@ -1293,7 +1293,7 @@ function normalizePair(pair, tickerByMarketId, priceIndex, syncedAt) {
   return {
     source: 'alcor',
     pair_id: pairId,
-    og_laststats_pair_id: ogLastStatsPairIdForSource('alcor', pair) || pairId,
+    og_laststats_pair_id: ogLastStatsPairIdForSource('alcor', pair) || null,
     token_a_contract: tokenA.contract || null,
     token_a_symbol: tokenA.symbol || null,
     token_a_decimals: tokenA.decimals ?? null,
@@ -1691,7 +1691,7 @@ function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
   return {
     source: adapter.source,
     pair_id: String(pairId),
-    og_laststats_pair_id: ogLastStatsPairIdForSource(adapter.source, row) || String(pairId),
+    og_laststats_pair_id: ogLastStatsPairIdForSource(adapter.source, row) || null,
     token_a_contract: tokenA.contract,
     token_a_symbol: tokenA.symbol,
     token_a_decimals: tokenA.decimals ?? null,
@@ -1805,7 +1805,7 @@ async function upsertPairs(db, pairs) {
        fee_bps = excluded.fee_bps,
        updated_at = excluded.updated_at`
   ).bind(
-    pair.source, pair.pair_id, pair.og_laststats_pair_id || pair.pair_id, pair.token_a_contract, pair.token_a_symbol,
+    pair.source, pair.pair_id, pair.og_laststats_pair_id || null, pair.token_a_contract, pair.token_a_symbol,
     pair.token_b_contract, pair.token_b_symbol, pair.price, pair.change_24h,
     pair.volume_24h, pair.volume_24h_wax, pair.volume_24h_usd,
     pair.volume_7d, pair.volume_7d_wax, pair.volume_7d_usd,
@@ -7823,26 +7823,40 @@ function waxcashBuildPairTableSection(pairs = [], selectedWaxPool = null) {
     selected_pair_id: selectedWaxPool?.pair_id || null,
     metric_debug: {
       no_visible_ui: true,
-      rows: rows.map((row) => ({
-        source: row.source,
-        displayed_pair_id: row.pair_id,
-        pair_id: row.pair_id,
-        og_laststats_pair_id: row.og_laststats_pair_id || null,
-        og_laststats_volume_24h: row.proof_details?.og_laststats_debug?.volume_24h || null,
-        og_laststats_volume_7d: row.proof_details?.og_laststats_debug?.volume_7d || null,
-        og_laststats_volume_30d: row.proof_details?.og_laststats_debug?.volume_30d || null,
-        volume_24h_wax_source: row.proof_details?.metric_sources?.volume_24h_wax?.source || null,
-        volume_7d_wax_source: row.proof_details?.metric_sources?.volume_7d_wax?.source || null,
-        volume_30d_wax_source: row.proof_details?.metric_sources?.volume_30d_wax?.source || null,
-        volume_24h_native_source: row.proof_details?.metric_sources?.volume_24h_native?.source || null,
-        volume_7d_native_source: row.proof_details?.metric_sources?.volume_7d_native?.source || null,
-        volume_30d_native_source: row.proof_details?.metric_sources?.volume_30d_native?.source || null,
-        change_24h_source: row.proof_details?.metric_sources?.change_24h?.source || null,
-        latest_indexed_trade_time: row.proof_details?.metric_sources?.latest_indexed_trade_time || null,
-        row_count_24h: row.proof_details?.metric_sources?.volume_24h_wax?.row_count || 0,
-        row_count_7d: row.proof_details?.metric_sources?.volume_7d_wax?.row_count || 0,
-        row_count_30d: row.proof_details?.metric_sources?.volume_30d_wax?.row_count || 0,
-      })),
+      rows: rows.map((row) => {
+        const ogDebug24h = row.proof_details?.og_laststats_debug?.volume_24h || null;
+        return {
+          source: row.source,
+          displayed_pair_id: row.pair_id,
+          pair_id: row.pair_id,
+          og_laststats_pair_id: row.og_laststats_pair_id || null,
+          mapped_og_srcType: ogDebug24h?.mapped_og_srcType || null,
+          mapped_og_src: ogDebug24h?.mapped_og_src || null,
+          exact_og_bucket_path_checked: ogDebug24h?.exact_og_bucket_path_checked || null,
+          og_bucket_exists: ogDebug24h?.og_bucket_exists ?? false,
+          first_20_og_bucket_keys: ogDebug24h?.first_20_og_bucket_keys || [],
+          lookup_keys_attempted: ogDebug24h?.lookup_keys_attempted || null,
+          matched_key: ogDebug24h?.matched_key || null,
+          match_priority: ogDebug24h?.match_priority || null,
+          volumeA: ogDebug24h?.volumeA ?? null,
+          volumeB: ogDebug24h?.volumeB ?? null,
+          reason: ogDebug24h?.reason || null,
+          og_laststats_volume_24h: row.proof_details?.og_laststats_debug?.volume_24h || null,
+          og_laststats_volume_7d: row.proof_details?.og_laststats_debug?.volume_7d || null,
+          og_laststats_volume_30d: row.proof_details?.og_laststats_debug?.volume_30d || null,
+          volume_24h_wax_source: row.proof_details?.metric_sources?.volume_24h_wax?.source || null,
+          volume_7d_wax_source: row.proof_details?.metric_sources?.volume_7d_wax?.source || null,
+          volume_30d_wax_source: row.proof_details?.metric_sources?.volume_30d_wax?.source || null,
+          volume_24h_native_source: row.proof_details?.metric_sources?.volume_24h_native?.source || null,
+          volume_7d_native_source: row.proof_details?.metric_sources?.volume_7d_native?.source || null,
+          volume_30d_native_source: row.proof_details?.metric_sources?.volume_30d_native?.source || null,
+          change_24h_source: row.proof_details?.metric_sources?.change_24h?.source || null,
+          latest_indexed_trade_time: row.proof_details?.metric_sources?.latest_indexed_trade_time || null,
+          row_count_24h: row.proof_details?.metric_sources?.volume_24h_wax?.row_count || 0,
+          row_count_7d: row.proof_details?.metric_sources?.volume_7d_wax?.row_count || 0,
+          row_count_30d: row.proof_details?.metric_sources?.volume_30d_wax?.row_count || 0,
+        };
+      }),
     },
     no_fake_value: true,
   };
@@ -7931,10 +7945,10 @@ function ogTokenVolume(lastVolumes, duration, contract = WAXCASH_CONTRACT, symbo
 function waxcashOgPairRef(pair) {
   const source = aggregateSourceKey(pair?.source) || moonboysCandleSource(pair?.source || '');
   const ref = WAXONEDGE_OG_SOURCE_REF[source];
+  if (!ref) return null;
   const displayedPairId = safeString(pair?.pair_id);
-  const ogPairId = safeString(firstPresent(pair?.og_laststats_pair_id, pair?.og_pair_id, pair?.pairid, displayedPairId));
-  if (!ref || !ogPairId) return null;
-  return { ...ref, pair_id: ogPairId, displayed_pair_id: displayedPairId || ogPairId };
+  const ogPairId = safeString(firstPresent(pair?.og_laststats_pair_id, pair?.og_pair_id, pair?.pairid)) || null;
+  return { ...ref, pair_id: ogPairId, displayed_pair_id: displayedPairId || null };
 }
 
 function ogPairLookupKey(value) {
@@ -8033,12 +8047,14 @@ function ogStatsPairRowMatches(entry, keys, pair) {
 
 function ogPairLastStatsLookup(stats, duration, pair) {
   const ref = waxcashOgPairRef(pair);
+  const ogLastStatsPairId = safeString(pair?.og_laststats_pair_id) || null;
   const empty = {
     displayed_pair_id: safeString(pair?.pair_id) || null,
+    og_laststats_pair_id: ogLastStatsPairId,
     source: aggregateSourceKey(pair?.source) || moonboysCandleSource(pair?.source || '') || null,
     mapped_og_srcType: ref?.srcType || null,
     mapped_og_src: ref?.src || null,
-    lookup_keys_attempted: [],
+    lookup_keys_attempted: null,
     exact_og_bucket_path_checked: null,
     og_bucket_exists: false,
     first_20_og_bucket_keys: [],
@@ -8050,28 +8066,38 @@ function ogPairLastStatsLookup(stats, duration, pair) {
   if (!ref) return empty;
   const bucket = stats?.[duration]?.[ref.srcType]?.[ref.src];
   const groups = ogPairLookupGroups(pair, ref);
-  const lookupKeys = groups.attempted;
+  const hasOgKeys = groups.primaryOgKeys.length > 0;
+  const hasDisplayKeys = groups.fallbackDisplayKeys.length > 0;
+  const hasAnyKeys = hasOgKeys || hasDisplayKeys;
+  const structuredKeys = {
+    priority_1_exact_og: groups.primaryOgKeys,
+    priority_2_normalized_og: [...groups.normalizedPrimaryOgKeys],
+    priority_3_exact_display: groups.fallbackDisplayKeys,
+    priority_4_normalized_display: [...groups.normalizedFallbackDisplayKeys],
+  };
+  const baseReason = !hasAnyKeys ? 'no_lookup_keys' : (!hasOgKeys ? 'og_laststats_pair_id_missing' : null);
   const base = {
     ...empty,
     displayed_pair_id: ref.displayed_pair_id || empty.displayed_pair_id,
+    og_laststats_pair_id: ogLastStatsPairId,
     mapped_og_srcType: ref.srcType,
     mapped_og_src: ref.src,
-    lookup_keys_attempted: lookupKeys,
+    lookup_keys_attempted: structuredKeys,
     exact_og_bucket_path_checked: `lastVolumes[${duration}][${ref.srcType}][${ref.src}]`,
-    reason: lookupKeys.length ? null : 'no_lookup_keys',
+    reason: baseReason,
   };
   if (!bucket || typeof bucket !== 'object') return { ...base, reason: 'no_laststats_bucket' };
   const firstKeys = Object.keys(bucket).slice(0, 20);
   const withBucket = { ...base, og_bucket_exists: true, first_20_og_bucket_keys: firstKeys };
-  if (!lookupKeys.length) return { ...withBucket, reason: 'no_lookup_keys' };
+  if (!hasAnyKeys) return { ...withBucket, reason: 'no_lookup_keys' };
   const exactOg = exactBucketMatch(bucket, groups.primaryOgKeys);
   if (exactOg) return { ...withBucket, matched_key: exactOg.key, match_priority: 'exact_og_key', row: exactOg.value, reason: null };
   const normalizedOg = normalizedBucketMatch(bucket, groups.normalizedPrimaryOgKeys);
   if (normalizedOg) return { ...withBucket, matched_key: normalizedOg.key, match_priority: 'normalized_og_key', row: normalizedOg.value, reason: null };
   const exactDisplay = exactBucketMatch(bucket, groups.fallbackDisplayKeys);
-  if (exactDisplay) return { ...withBucket, matched_key: exactDisplay.key, match_priority: 'exact_display_key', row: exactDisplay.value, reason: null };
+  if (exactDisplay) return { ...withBucket, matched_key: exactDisplay.key, match_priority: 'exact_display_key', row: exactDisplay.value, reason: !hasOgKeys ? 'og_laststats_pair_id_missing' : null };
   const normalizedDisplay = normalizedBucketMatch(bucket, groups.normalizedFallbackDisplayKeys);
-  if (normalizedDisplay) return { ...withBucket, matched_key: normalizedDisplay.key, match_priority: 'normalized_display_key', row: normalizedDisplay.value, reason: null };
+  if (normalizedDisplay) return { ...withBucket, matched_key: normalizedDisplay.key, match_priority: 'normalized_display_key', row: normalizedDisplay.value, reason: !hasOgKeys ? 'og_laststats_pair_id_missing' : null };
   const allRowKeys = new Set([
     ...groups.normalizedPrimaryOgKeys,
     ...groups.normalizedFallbackDisplayKeys,
@@ -8083,10 +8109,10 @@ function ogPairLastStatsLookup(stats, duration, pair) {
       matched_key: matched.key || safeString(ogStatsPairRowValue(matched)?.pair_id || ogStatsPairRowValue(matched)?.pairid || ogStatsPairRowValue(matched)?.id),
       match_priority: 'row_pair_id_match',
       row: ogStatsPairRowValue(matched),
-      reason: null,
+      reason: !hasOgKeys ? 'og_laststats_pair_id_missing' : null,
     };
   }
-  return { ...withBucket, reason: 'no_matching_pair_id' };
+  return { ...withBucket, reason: !hasOgKeys ? 'og_laststats_pair_id_missing' : 'no_matching_pair_id' };
 }
 
 function ogPairLastStatsValue(stats, duration, pair) {
@@ -8098,10 +8124,11 @@ function ogPairLastStatsLookupDebug(lookup, row = null, reason = null) {
   const volumeB = row && typeof row === 'object' ? asNumber(row.volumeB) : null;
   return {
     displayed_pair_id: lookup?.displayed_pair_id || null,
+    og_laststats_pair_id: lookup?.og_laststats_pair_id || null,
     source: lookup?.source || null,
     mapped_og_srcType: lookup?.mapped_og_srcType || null,
     mapped_og_src: lookup?.mapped_og_src || null,
-    lookup_keys_attempted: Array.isArray(lookup?.lookup_keys_attempted) ? lookup.lookup_keys_attempted : [],
+    lookup_keys_attempted: lookup?.lookup_keys_attempted || null,
     exact_og_bucket_path_checked: lookup?.exact_og_bucket_path_checked || null,
     og_bucket_exists: !!lookup?.og_bucket_exists,
     first_20_og_bucket_keys: Array.isArray(lookup?.first_20_og_bucket_keys) ? lookup.first_20_og_bucket_keys : [],

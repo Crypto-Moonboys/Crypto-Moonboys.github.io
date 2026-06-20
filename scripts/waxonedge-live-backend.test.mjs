@@ -2682,7 +2682,8 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         exactDebug.og_bucket_exists === true &&
         Array.isArray(exactDebug.first_20_og_bucket_keys) &&
         exactDebug.first_20_og_bucket_keys.includes('144117') &&
-        exactDebug.lookup_keys_attempted.includes('144117') &&
+        Array.isArray(exactDebug.lookup_keys_attempted?.priority_1_exact_og) &&
+        exactDebug.lookup_keys_attempted.priority_1_exact_og.includes('144117') &&
         exactDebug.matched_key === '144117' &&
         Number(exactDebug.volumeA) === 44 &&
         Number(exactDebug.volumeB) === 88 &&
@@ -2715,7 +2716,8 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       }, 0.006);
       ok('WAXCASH OG LastStats volume lookup does not guess pair volume from token symbols alone',
         tokenOnlyPair.volume_24h_a_native == null &&
-        tokenOnlyPair.og_laststats_debug?.volume_24h?.reason === 'no_matching_pair_id',
+        (tokenOnlyPair.og_laststats_debug?.volume_24h?.reason === 'no_matching_pair_id' ||
+          tokenOnlyPair.og_laststats_debug?.volume_24h?.reason === 'og_laststats_pair_id_missing'),
         JSON.stringify(tokenOnlyPair));
     }
     const liveSupplyWrites = [];
