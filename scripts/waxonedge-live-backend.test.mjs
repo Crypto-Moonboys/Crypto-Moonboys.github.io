@@ -2841,6 +2841,73 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         internalFetched.external_laststats?.ok === false &&
         Number(internalFetched.lastVolumes['24h'].pools.neftyblocks.WAXCASHAIGOD.volumeA) === 10,
         JSON.stringify(internalFetched));
+      const nativePriceTrades = [
+        {
+          source: 'swap.nefty',
+          trade_id: 'fresh-native-price',
+          pair_id: 'WAXCASHAIGOD',
+          contract: 'aigodtokenwx',
+          symbol: 'AIGOD',
+          amount: '20',
+          volume: '20',
+          price: '0.50',
+          traded_at: '2026-06-20T04:00:00.000Z',
+          raw_json: JSON.stringify({ amount_in: '10', code_in: 'WAXCASH', amount_out: '20', code_out: 'AIGOD' }),
+        },
+        {
+          source: 'swap.nefty',
+          trade_id: 'prior-native-price',
+          pair_id: 'WAXCASHAIGOD',
+          contract: 'aigodtokenwx',
+          symbol: 'AIGOD',
+          amount: '40',
+          volume: '40',
+          price: '0.25',
+          traded_at: '2026-06-18T04:00:00.000Z',
+          raw_json: JSON.stringify({ amount_in: '20', code_in: 'WAXCASH', amount_out: '40', code_out: 'AIGOD' }),
+        },
+      ];
+      const nativePriceDb = {
+        prepare(sql) {
+          return {
+            bind(...params) {
+              return {
+                async all() {
+                  if (sql.includes('FROM waxonedge_trades')) {
+                    const since = params[params.length - 1];
+                    return {
+                      results: nativePriceTrades.filter((row) => !since || !/^\d{4}-/.test(String(since)) || Date.parse(row.traded_at) >= Date.parse(since)),
+                    };
+                  }
+                  return { results: [] };
+                },
+                async first() {
+                  if (sql.includes('MAX(traded_at)')) return { latest_trade_at: '2026-06-20T04:00:00.000Z' };
+                  return null;
+                },
+              };
+            },
+          };
+        },
+      };
+      const nativeWindowMap = await __waxonedgeTestHooks.indexedTradeWindowVolumesByPair(nativePriceDb, [nonWaxPair], {});
+      const nativeWindow = nativeWindowMap.get('swap.nefty::WAXCASHAIGOD');
+      const [nativeWindowPair] = __waxonedgeTestHooks.applyIndexedPairWindowVolumes([nonWaxPair], nativeWindowMap, 0.006);
+      const nativeWindowDebug = __waxonedgeTestHooks.waxcashBuildPairTableSection([nativeWindowPair], null).metric_debug.rows[0];
+      ok('WAXCASH pair table 24h debug distinguishes fresh native rows from missing WAX volume proof',
+        nativeWindow?.row_count_24h === 1 &&
+        nativeWindow?.volume_24h_wax == null &&
+        nativeWindow?.volume_24h_reason === '24h_trade_rows_lack_wax_volume_proof' &&
+        Number(nativeWindow?.change_24h) === 100 &&
+        nativeWindowPair.metric_sources?.volume_24h_wax?.reason === '24h_trade_rows_lack_wax_volume_proof' &&
+        nativeWindowPair.metric_sources?.change_24h?.source === 'indexed_trade_price_window' &&
+        Number(nativeWindowPair.change_24h) === 100 &&
+        nativeWindowDebug.row_count_24h === 1 &&
+        nativeWindowDebug.volume_24h_wax_reason === '24h_trade_rows_lack_wax_volume_proof' &&
+        nativeWindowDebug.volume_24h_unavailable_reason === '24h_trade_rows_lack_wax_volume_proof' &&
+        nativeWindowDebug.latest_price_sample?.traded_at === '2026-06-20T04:00:00.000Z' &&
+        nativeWindowDebug.prior_24h_price_sample?.traded_at === '2026-06-18T04:00:00.000Z',
+        JSON.stringify({ nativeWindow, nativeWindowPair, nativeWindowDebug }));
     }
     const liveSupplyWrites = [];
     const liveSupplyDb = {
@@ -3195,9 +3262,11 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       indexedWindowDebugRow?.volume_7d_wax_source === 'indexed_trade_rows_window_wax_denominated' &&
       indexedWindowDebugRow?.volume_30d_wax_source === 'indexed_trade_rows_window_wax_denominated' &&
       indexedWindowDebugRow?.latest_indexed_trade_time === '2026-06-15T00:00:00.000Z' &&
-      indexedWindowDebugRow?.row_count_24h === 1 &&
-      indexedWindowDebugRow?.row_count_7d === 2 &&
-      indexedWindowDebugRow?.row_count_30d === 3,
+      indexedWindowDebugRow?.row_count_24h === 2 &&
+      indexedWindowDebugRow?.row_count_7d === 3 &&
+      indexedWindowDebugRow?.row_count_30d === 4 &&
+      indexedWindowDebugRow?.indexed_trade_window_debug?.wax_volume_row_count_24h === 1 &&
+      indexedWindowDebugRow?.indexed_trade_window_debug?.unproven_volume_row_count_24h === 1,
       JSON.stringify(holderTradeWaxcashAnalytics.sections?.pair_table?.metric_debug));
     rollingVolumeSelectCount = 0;
     rollingVolumeSelectSqls.length = 0;
