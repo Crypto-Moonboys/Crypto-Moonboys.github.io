@@ -9874,9 +9874,12 @@ async function indexedTradeWindowVolumesByPair(db, pairs = [], options = {}) {
     const priorPrice = latestPrice
       ? priceSamples.slice(0, -1).reverse().find((sample) => sample.tradedMs <= latestPrice.tradedMs - (24 * 60 * 60 * 1000))
       : null;
-    const change24h = latestPrice && priorPrice && priorPrice.price !== 0
+    const rawChange24h = latestPrice && priorPrice && priorPrice.price !== 0
       ? ((latestPrice.price - priorPrice.price) / priorPrice.price) * 100
       : null;
+    const latestTradeMs = Date.parse(window.latest_indexed_trade_time || '');
+    const hasCurrent24hTradeWindow = window.row_count_24h > 0 && Number.isFinite(latestTradeMs) && latestTradeMs >= since24hMs;
+    const change24h = hasCurrent24hTradeWindow ? rawChange24h : null;
     const volume24hReason = window.has_24h
       ? null
       : (window.row_count_24h > 0
@@ -9884,9 +9887,11 @@ async function indexedTradeWindowVolumesByPair(db, pairs = [], options = {}) {
         : (window.row_count_7d > 0 || window.row_count_30d > 0 ? 'no_indexed_trade_rows_in_24h_window' : 'no_indexed_trade_rows_for_pair'));
     const changeReason = change24h != null
       ? null
-      : (!latestPrice
+      : (!hasCurrent24hTradeWindow
+        ? (window.row_count_30d > 0 ? 'stale_price_window' : 'no_current_24h_trade_window')
+        : (!latestPrice
         ? 'no_indexed_price_samples'
-        : (!priorPrice ? 'no_prior_price_sample_at_or_before_24h' : 'indexed_trade_price_window_insufficient_samples'));
+        : (!priorPrice ? 'no_prior_price_sample_at_or_before_24h' : 'indexed_trade_price_window_insufficient_samples')));
     windows.set(key, {
       volume_24h_wax: window.has_24h ? safeDecimal(window.volume_24h_wax) : null,
       volume_7d_wax: window.has_7d ? safeDecimal(window.volume_7d_wax) : null,
