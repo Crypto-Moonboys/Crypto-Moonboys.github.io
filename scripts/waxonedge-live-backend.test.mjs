@@ -2580,7 +2580,9 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       JSON.stringify(waxcashAnalytics.sections?.pair_table?.rows?.[0]));
     ok('WAXCASH analytics pair table exposes OG row fields and keeps status/reserves out of main rows',
       waxcashAnalytics.sections?.pair_table?.rows?.some((row) =>
-        row.reason &&
+        row.proof_details?.valuation_debug?.reserve_ratio_waxcash_valuation_possible === true &&
+        row.proof_details?.valuation_debug?.no_fake_value === true &&
+        row.proof_details?.valuation_basis &&
         row.proof_label &&
         row.no_fake_value === true &&
         row.volume_7d_wax == null &&

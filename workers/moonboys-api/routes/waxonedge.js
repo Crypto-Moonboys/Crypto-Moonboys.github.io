@@ -6642,23 +6642,32 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
   let liquidityWax = null;
   let liquidityUsd = null;
   let pairedTokenPrice = pairedIsWax ? { price_wax: '1' } : null;
+  let reserveRatioValuation = null;
+  let valuationBasis = null;
   const directCandidate = directWax ? waxcashDirectWaxCandidateProof(pair, priceIndex) : null;
 
   if (!reasonCodes.length) {
     if (directWax) {
       const waxReserve = waxSideReserveForToken(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
       liquidityWax = waxReserve != null ? waxReserve * 2 : asNumber(pair?.liquidity_wax);
+      valuationBasis = liquidityWax != null ? 'direct_wax_pair_reserve' : null;
       if (isOrderbook && directCandidate?.usable !== true) {
         for (const code of directCandidate?.reason_codes || ['orderbook_direct_wax_price_proof_unavailable']) reasonCodes.push(code);
       }
     } else {
       pairedTokenPrice = paired ? ogDirectWaxTokenPrice(paired.contract, paired.symbol, pairedDirectWaxPairs, priceIndex) : null;
+      reserveRatioValuation = waxcashGraphPairValuation(pair, headlinePrice, priceIndex);
       const waxcashPriceWax = asNumber(headlinePrice?.og_headline_price_wax);
       const pairedPriceWax = asNumber(pairedTokenPrice?.price_wax);
       if (waxcashPriceWax == null) reasonCodes.push('waxcash_headline_price_unavailable');
-      if (pairedPriceWax == null) reasonCodes.push('paired_token_wax_price_unavailable');
-      if (!reasonCodes.length) {
+      if (!reasonCodes.length && pairedPriceWax != null) {
         liquidityWax = (waxcashReserve * waxcashPriceWax) + (pairedReserve * pairedPriceWax);
+        valuationBasis = 'paired_token_direct_wax_price';
+      } else if (!reasonCodes.length && asNumber(reserveRatioValuation?.liquidity_wax) != null) {
+        liquidityWax = asNumber(reserveRatioValuation.liquidity_wax);
+        valuationBasis = reserveRatioValuation.valuation_basis || 'direct_waxcash_reserve_ratio';
+      } else if (pairedPriceWax == null) {
+        reasonCodes.push('paired_token_wax_price_unavailable');
       }
     }
   }
@@ -6671,9 +6680,33 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
       ? pairedReserve / waxcashReserve
       : null);
   const pairedTokenPriceWax = pairedIsWax ? 1 : asNumber(pairedTokenPrice?.price_wax);
-  const priceRelativeUsd = priceRelative != null && pairedTokenPriceWax != null && waxUsd != null
-    ? priceRelative * pairedTokenPriceWax * waxUsd
+  const reserveRatioTokenPriceWax = asNumber(reserveRatioValuation?.selected_price_wax);
+  const effectivePairedTokenPriceWax = pairedTokenPriceWax ?? reserveRatioTokenPriceWax;
+  const priceRelativeUsd = priceRelative != null && effectivePairedTokenPriceWax != null && waxUsd != null
+    ? priceRelative * effectivePairedTokenPriceWax * waxUsd
     : null;
+  const directWaxPairFound = paired ? (pairedIsWax || !!pairedTokenPrice?.source || !(pairedTokenPrice?.reason_codes || []).includes('no_direct_wax_pool')) : false;
+  const valuationDebug = {
+    pair_id: pair.pair_id || null,
+    source: pair.source || null,
+    token_a: tokenKey(pair.token_a_contract, pair.token_a_symbol),
+    token_b: tokenKey(pair.token_b_contract, pair.token_b_symbol),
+    reserve_a: safeDecimal(asNumber(pair.reserve_a)),
+    reserve_b: safeDecimal(asNumber(pair.reserve_b)),
+    pair_price_relative_to_waxcash: safeDecimal(priceRelative),
+    selected_waxcash_price_wax: headlinePrice?.og_headline_price_wax || null,
+    pair_liquidity_wax: safeDecimal(liquidityWax),
+    paired_token_og_wax_price: pairedTokenPrice?.price_wax || null,
+    paired_token_reserve_ratio_wax_price: safeDecimal(reserveRatioTokenPriceWax),
+    paired_token_direct_wax_pair_found: !!directWaxPairFound,
+    route_based_wax_price_found: false,
+    route_graph_available: false,
+    reserve_ratio_waxcash_valuation_possible: asNumber(reserveRatioValuation?.liquidity_wax) != null,
+    valuation_basis: valuationBasis,
+    rejection_reason: reasonCodes[0] || null,
+    reason_codes: Array.from(new Set(reasonCodes)),
+    no_fake_value: true,
+  };
 
   const proof = {
     source: pair.source || null,
@@ -6695,7 +6728,10 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
     pair_price_usd: safeDecimal(priceRelativeUsd),
     paired_token: paired,
     paired_token_og_wax_price: pairedTokenPrice?.price_wax || null,
+    paired_token_reserve_ratio_wax_price: safeDecimal(reserveRatioTokenPriceWax),
     selected_waxcash_price_wax: headlinePrice?.og_headline_price_wax || null,
+    valuation_basis: valuationBasis,
+    valuation_debug: valuationDebug,
     direct_wax_pair: directWax,
     reason_codes: reasonCodes,
   };
@@ -8018,6 +8054,9 @@ function waxcashPairTableRow(pair, selectedWaxPool) {
       reason_codes: reasonCodes,
       direct_wax_pair: !!pair.direct_wax_pair,
       paired_token_og_wax_price: pair.paired_token_og_wax_price || null,
+      paired_token_reserve_ratio_wax_price: pair.paired_token_reserve_ratio_wax_price || null,
+      valuation_basis: pair.valuation_basis || null,
+      valuation_debug: pair.valuation_debug || null,
       status,
       status_label: statusLabel,
       reserve_a: pair.reserve_a || null,
@@ -8116,6 +8155,17 @@ function waxcashBuildPairTableSection(pairs = [], selectedWaxPool = null) {
           volume_24h_wax_reason: row.proof_details?.metric_sources?.volume_24h_wax?.reason || null,
           volume_24h_native_reason: row.proof_details?.metric_sources?.volume_24h_native?.reason || null,
           indexed_trade_window_debug: indexedWindowDebug,
+          valuation_debug: row.proof_details?.valuation_debug || null,
+          valuation_token_a: row.proof_details?.valuation_debug?.token_a || null,
+          valuation_token_b: row.proof_details?.valuation_debug?.token_b || null,
+          pair_price_relative_to_waxcash: row.proof_details?.valuation_debug?.pair_price_relative_to_waxcash || row.proof_details?.reserve_ratio || null,
+          selected_waxcash_price_wax: row.proof_details?.valuation_debug?.selected_waxcash_price_wax || null,
+          pair_liquidity_wax: row.proof_details?.valuation_debug?.pair_liquidity_wax || row.liquidity_wax || null,
+          paired_token_og_wax_price: row.proof_details?.valuation_debug?.paired_token_og_wax_price || row.proof_details?.paired_token_og_wax_price || null,
+          paired_token_direct_wax_pair_found: row.proof_details?.valuation_debug?.paired_token_direct_wax_pair_found ?? null,
+          route_based_wax_price_found: row.proof_details?.valuation_debug?.route_based_wax_price_found ?? null,
+          reserve_ratio_waxcash_valuation_possible: row.proof_details?.valuation_debug?.reserve_ratio_waxcash_valuation_possible ?? null,
+          valuation_rejection_reason: row.proof_details?.valuation_debug?.rejection_reason || null,
         };
       }),
     },
