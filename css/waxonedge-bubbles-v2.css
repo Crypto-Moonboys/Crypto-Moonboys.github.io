@@ -349,6 +349,102 @@ body.woe-antbubbles-page {
   line-height: 1.45;
 }
 
+.woe-ab-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  pointer-events: auto;
+}
+
+.woe-ab-modal[hidden] {
+  display: none;
+}
+
+.woe-ab-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .56);
+  backdrop-filter: blur(4px);
+}
+
+.woe-ab-modal-panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(560px, calc(100vw - 28px));
+  max-height: min(720px, calc(100vh - 28px));
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(0, 229, 255, .26);
+  border-radius: 10px;
+  background: rgba(8, 13, 21, .96);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, .62);
+  color: #f5f7fb;
+  overflow: auto;
+}
+
+.woe-ab-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .06);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.woe-ab-modal-head {
+  padding: 20px 54px 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+
+.woe-ab-modal-head strong,
+.woe-ab-modal-head span {
+  display: block;
+}
+
+.woe-ab-modal-head strong {
+  color: #00e5ff;
+  font-size: 22px;
+  letter-spacing: 0;
+}
+
+.woe-ab-modal-head span {
+  margin-top: 3px;
+  color: #97a5b6;
+  font-size: 13px;
+}
+
+.woe-ab-modal-grid {
+  display: grid;
+  gap: 0;
+  padding: 10px 18px 18px;
+}
+
+.woe-ab-modal-row {
+  display: grid;
+  grid-template-columns: minmax(130px, .72fr) minmax(0, 1fr);
+  gap: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  align-items: start;
+}
+
+.woe-ab-modal-row span {
+  color: #8fa1b4;
+}
+
+.woe-ab-modal-row strong {
+  min-width: 0;
+  color: #fff;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
 .woe-ab-stats {
   position: fixed;
   left: 12px;

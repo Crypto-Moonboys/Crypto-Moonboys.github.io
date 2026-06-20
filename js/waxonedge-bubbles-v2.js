@@ -7,11 +7,13 @@
 (function () {
   'use strict';
 
-  var BOOTSTRAP_API = '/api/waxonedge/bootstrap';
+  var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics';
   var HEALTH_API = '/api/waxonedge/indexer-health';
-  var LIVE_API = '/api/waxonedge/live';
+  var LIVE_API = '/api/waxonedge/waxcash-analytics';
   var LIVE_STREAM_API = '/api/waxonedge/live/stream';
   var LIVE_POLL_MS = 1000;
+  var WAXCASH_CONTRACT = 'graffitiking';
+  var WAXCASH_SYMBOL = 'WAXCASH';
   var WAXONEDGE_FEATURED_TOKENS = Array.isArray(window.WAXONEDGE_FEATURED_TOKENS)
     ? window.WAXONEDGE_FEATURED_TOKENS
     : [];
@@ -86,6 +88,7 @@
     ctx: null,
     board: null,
     tooltip: null,
+    modal: null,
     raf: 0,
     resizeTimer: 0,
     lastFrame: 0,
@@ -122,6 +125,10 @@
     var c = normalizeContract(contract);
     var s = normalizeSymbol(symbol);
     return c && s ? c + '::' + s : '';
+  }
+
+  function isWaxcashToken(contract, symbol) {
+    return normalizeContract(contract) === WAXCASH_CONTRACT && normalizeSymbol(symbol) === WAXCASH_SYMBOL;
   }
 
   function asNum(value) {
@@ -212,6 +219,16 @@
     return String(value || '').split(',').map(function (item) { return item.trim(); }).filter(Boolean);
   }
 
+  function metricStatusFromValues(values) {
+    var status = {};
+    Object.keys(values || {}).forEach(function (key) {
+      status[key] = values[key] != null
+        ? { live: true, source: 'waxcash_analytics' }
+        : { live: false, reason: 'waxcash_analytics_value_unavailable' };
+    });
+    return status;
+  }
+
   function capMap(map, limit) {
     while (map.size > limit) {
       var oldest = map.keys().next();
@@ -265,6 +282,189 @@
     var av = asNum(a.liquidity_wax) || asNum(a.liquidity_usd) || asNum(a.volume_24h_wax) || 0;
     var bv = asNum(b.liquidity_wax) || asNum(b.liquidity_usd) || asNum(b.volume_24h_wax) || 0;
     return bv > av ? b : a;
+  }
+
+  function waxcashPairMember(row) {
+    if (!row) return null;
+    if (isWaxcashToken(row.token_a_contract, row.token_a_symbol)) {
+      return {
+        contract: normalizeContract(row.token_b_contract),
+        symbol: normalizeSymbol(row.token_b_symbol),
+        icon: row.token_b_icon || row.token_b_logo || '',
+      };
+    }
+    if (isWaxcashToken(row.token_b_contract, row.token_b_symbol)) {
+      return {
+        contract: normalizeContract(row.token_a_contract),
+        symbol: normalizeSymbol(row.token_a_symbol),
+        icon: row.token_a_icon || row.token_a_logo || '',
+      };
+    }
+    return null;
+  }
+
+  function waxcashMetricCapabilities(tokens) {
+    function has(check) {
+      return tokens.some(check);
+    }
+    return {
+      change: has(function (token) { return asNum(token.change_24h) != null; }),
+      price: has(function (token) { return asNum(token.selected_price_wax != null ? token.selected_price_wax : token.price_wax) != null || asNum(token.selected_price_usd != null ? token.selected_price_usd : token.price_usd) != null; }),
+      volume: has(function (token) { return asNum(token.volume_24h_wax != null ? token.volume_24h_wax : token.volume_24h) != null || asNum(token.volume_24h_usd) != null; }),
+      tvl: has(function (token) { return asNum(token.tvl_wax) != null || asNum(token.tvl_usd) != null; }),
+      liquidity: has(function (token) { return asNum(token.graph_liquidity_wax != null ? token.graph_liquidity_wax : token.liquidity_wax) != null || asNum(token.graph_liquidity_usd != null ? token.graph_liquidity_usd : token.liquidity_usd) != null; }),
+      market_cap: has(function (token) { return asNum(token.market_cap_wax) != null || asNum(token.market_cap_usd) != null; }),
+      volume_7d: has(function (token) { return asNum(token.volume_7d_wax) != null || asNum(token.volume_7d_usd) != null; }),
+      volume_30d: has(function (token) { return asNum(token.volume_30d_wax) != null || asNum(token.volume_30d_usd) != null; }),
+    };
+  }
+
+  function waxcashAnalyticsToBubblePayload(payload) {
+    var data = payloadData(payload);
+    var sections = data.sections || {};
+    var pairTable = sections.pair_table || {};
+    var rows = sourceRows(pairTable.rows);
+    if (!sections.token_stats && !rows.length) return data;
+    var stats = data.stats || {};
+    var token = data.token || {};
+    var now = data.generated_at || data.updated_at || new Date().toISOString();
+    var byKey = {};
+    var waxcashSources = {};
+
+    rows.forEach(function (row) {
+      var member = waxcashPairMember(row);
+      if (!member || !member.contract || !member.symbol) return;
+      var key = tokenKey(member.contract, member.symbol);
+      var existing = byKey[key];
+      var source = pairSourceKey(row);
+      if (source) waxcashSources[source] = true;
+      var pairPriceWax = row.price_wax ?? row.selected_price_wax ?? row.price ?? row.pair_price;
+      var pairPriceUsd = row.price_usd ?? row.selected_price_usd;
+      var candidate = {
+        contract: member.contract,
+        symbol: member.symbol,
+        icon_url: member.icon,
+        visible_in_waxcash_bubbles: true,
+        selected_price_wax: pairPriceWax,
+        selected_price_usd: pairPriceUsd,
+        change_24h: row.change_24h,
+        volume_24h_wax: row.volume_24h_wax,
+        volume_24h_usd: row.volume_24h_usd,
+        volume_7d_wax: row.volume_7d_wax,
+        volume_7d_usd: row.volume_7d_usd,
+        volume_30d_wax: row.volume_30d_wax,
+        volume_30d_usd: row.volume_30d_usd,
+        graph_liquidity_wax: row.liquidity_wax,
+        graph_liquidity_usd: row.liquidity_usd,
+        liquidity_wax: row.liquidity_wax,
+        liquidity_usd: row.liquidity_usd,
+        tvl_wax: row.liquidity_wax,
+        tvl_usd: row.liquidity_usd,
+        market_cap_wax: null,
+        market_cap_usd: null,
+        metric_status: metricStatusFromValues({
+          selected_price: pairPriceWax ?? pairPriceUsd,
+          liquidity: row.liquidity_wax ?? row.liquidity_usd,
+          tvl: row.liquidity_wax ?? row.liquidity_usd,
+          market_cap: null,
+        }),
+        source_keys: source ? [source] : [],
+        source_count: source ? 1 : 0,
+        indexed_pair_count: 1,
+        selected_price_source: 'phase_one_waxcash_pair_row_price',
+        selected_pair_source: source,
+        selected_pair_id: row.pair_id,
+        waxcash_pair_source: row.source || source,
+        waxcash_pair_id: row.pair_id,
+        waxcash_pair_label: pairLabel(row),
+        waxcash_pair_valuation_basis: row.valuation_basis || row.basis || (row.proof_details && row.proof_details.valuation_basis) || '',
+        valuation_basis: row.valuation_basis || row.basis || '',
+        proof_details: row.proof_details || null,
+        updated_at: row.updated_at || now,
+        no_fake_value: true,
+      };
+      if (!existing) {
+        byKey[key] = candidate;
+        return;
+      }
+      existing.indexed_pair_count += 1;
+      existing.source_keys = Array.from(new Set(existing.source_keys.concat(candidate.source_keys))).sort(compareSources);
+      existing.source_count = existing.source_keys.length;
+      if (betterPair(existing, candidate) === candidate) {
+        candidate.indexed_pair_count = existing.indexed_pair_count;
+        candidate.source_keys = existing.source_keys;
+        candidate.source_count = existing.source_count;
+        byKey[key] = candidate;
+      }
+    });
+
+    var selectedPriceWax = stats.selected_price_wax ?? stats.price_wax;
+    var selectedPriceUsd = stats.selected_price_usd ?? stats.price_usd;
+    var rootStatus = stats.metric_status || metricStatusFromValues({
+      selected_price: selectedPriceWax ?? selectedPriceUsd,
+      liquidity: stats.cumulated_pair_liquidity_wax ?? stats.cumulated_pair_liquidity_usd,
+      tvl: stats.tvl_wax ?? stats.tvl_usd,
+      market_cap: stats.market_cap_wax ?? stats.market_cap_usd,
+    });
+    var root = {
+      contract: normalizeContract(token.contract || WAXCASH_CONTRACT),
+      symbol: normalizeSymbol(token.symbol || WAXCASH_SYMBOL),
+      icon_url: token.icon_url || '',
+      visible_in_waxcash_bubbles: true,
+      selected_price_wax: selectedPriceWax,
+      selected_price_usd: selectedPriceUsd,
+      change_24h: stats.change_24h,
+      volume_24h_wax: stats.volume_24h_wax,
+      volume_24h_usd: stats.volume_24h_usd,
+      volume_7d_wax: stats.volume_7d_wax,
+      volume_7d_usd: stats.volume_7d_usd,
+      volume_30d_wax: stats.volume_30d_wax,
+      volume_30d_usd: stats.volume_30d_usd,
+      graph_liquidity_wax: stats.cumulated_pair_liquidity_wax,
+      graph_liquidity_usd: stats.cumulated_pair_liquidity_usd,
+      liquidity_wax: stats.cumulated_pair_liquidity_wax,
+      liquidity_usd: stats.cumulated_pair_liquidity_usd,
+      tvl_wax: stats.tvl_wax,
+      tvl_usd: stats.tvl_usd,
+      market_cap_wax: stats.market_cap_wax,
+      market_cap_usd: stats.market_cap_usd,
+      fdv_wax: stats.fdv_wax,
+      fdv_usd: stats.fdv_usd,
+      total_supply: stats.total_supply,
+      circulating_supply: stats.circulating_supply,
+      holder_count: stats.holder_count,
+      holder_count_live: !!(rootStatus.holder_count && rootStatus.holder_count.live),
+      metric_status: rootStatus,
+      source_keys: Object.keys(waxcashSources).sort(compareSources),
+      source_count: Object.keys(waxcashSources).length,
+      indexed_pair_count: rows.length,
+      selected_price_source: stats.selected_price_source || stats.selected_pair_source || 'waxcash_analytics_selected_price',
+      selected_pair_source: stats.selected_price_source || stats.selected_pair_source || '',
+      selected_pair_id: stats.selected_price_pair_id || stats.selected_pair_id || '',
+      valuation_basis: stats.market_cap_basis || stats.price_basis || '',
+      updated_at: data.updated_at || data.generated_at || now,
+      no_fake_value: true,
+    };
+
+    var tokens = [root].concat(Object.keys(byKey).map(function (key) { return byKey[key]; }));
+    var selectedWax = asNum(selectedPriceWax);
+    var selectedUsd = asNum(selectedPriceUsd);
+    var derivedWaxUsd = selectedWax != null && selectedWax > 0 && selectedUsd != null ? selectedUsd / selectedWax : null;
+    return {
+      tokens: tokens,
+      pairs: rows,
+      summary: {
+        wax_price_usd: data.sections && data.sections.wax_price ? data.sections.wax_price.usd : derivedWaxUsd,
+        wax_price_source: 'waxcash-analytics',
+        metric_capabilities: waxcashMetricCapabilities(tokens),
+        source_feed: '/api/waxonedge/waxcash-analytics',
+      },
+      metric_capabilities: waxcashMetricCapabilities(tokens),
+      generated_at: data.generated_at || now,
+      updated_at: data.updated_at || data.generated_at || now,
+      source: 'waxcash_analytics',
+      no_fake_value: true,
+    };
   }
 
   function tokenSearchText(record) {
@@ -418,7 +618,7 @@
   }
 
   function extractMetricCapabilities(payload) {
-    var data = payloadData(payload);
+    var data = waxcashAnalyticsToBubblePayload(payload);
     var caps = data.metric_capabilities || data.metricCapabilities || {};
     if (data.summary && (data.summary.metric_capabilities || data.summary.metricCapabilities)) {
       caps = data.summary.metric_capabilities || data.summary.metricCapabilities;
@@ -483,7 +683,7 @@
   }
 
   function waxUsdPrice() {
-    var data = payloadData(state.payload);
+    var data = waxcashAnalyticsToBubblePayload(state.payload);
     var price = data.summary && data.summary.wax_price_usd != null
       ? asNum(data.summary.wax_price_usd)
       : data.raw && data.raw.alcor_global
@@ -546,7 +746,7 @@
   }
 
   function normalizeRecords(payload) {
-    var data = payloadData(payload);
+    var data = waxcashAnalyticsToBubblePayload(payload);
     var tokens = sourceRows(data.tokens);
     var pairs = sourceRows(data.pairs);
     var byKey = {};
@@ -601,8 +801,19 @@
         fdvUsd: asNum(token.fdv_usd),
         fdvConfidence: metricConfidenceFrom(token, 'fdv'),
         supply: token.circulating_supply || token.total_supply || '',
+        totalSupply: token.total_supply || '',
+        circulatingSupply: token.circulating_supply || '',
+        holderCount: asNum(token.holder_count),
+        holderCountLive: token.holder_count_live === true || !!(token.metric_status && token.metric_status.holder_count && token.metric_status.holder_count.live),
         selectedPair: token.selected_pair_id || '',
         selectedSource: sourceLabel(token.selected_pair_source),
+        selectedPriceSource: token.selected_price_source || token.selected_pair_source || '',
+        valuationBasis: token.valuation_basis || '',
+        waxcashPairSource: token.waxcash_pair_source || '',
+        waxcashPairId: token.waxcash_pair_id || '',
+        waxcashPairLabel: token.waxcash_pair_label || '',
+        waxcashPairValuationBasis: token.waxcash_pair_valuation_basis || '',
+        proofDetails: token.proof_details || null,
         sourceCount: asNum(token.source_count) != null ? asNum(token.source_count) : (sources.length || 0),
         indexedPairCount: asNum(token.indexed_pair_count != null ? token.indexed_pair_count : token.pair_count) || 0,
         computedPairCount: 0,
@@ -612,6 +823,7 @@
         strongestPairLabel: '',
         unavailableReasons: parseReasonCodes(token.unavailable_reasons).join(', '),
         visibleInWaxcashBubbles: true,
+        lastUpdated: token.updated_at || data.updated_at || data.generated_at || '',
       };
     });
 
@@ -864,6 +1076,10 @@
     changed = assignLiveNumber(record, 'change24', update.change_24h) || changed;
     changed = assignLiveNumber(record, 'volume24Wax', update.volume_24h_wax) || changed;
     changed = assignLiveNumber(record, 'volume24Usd', update.volume_24h_usd) || changed;
+    changed = assignLiveNumber(record, 'volume7dWax', update.volume_7d_wax) || changed;
+    changed = assignLiveNumber(record, 'volume7dUsd', update.volume_7d_usd) || changed;
+    changed = assignLiveNumber(record, 'volume30dWax', update.volume_30d_wax) || changed;
+    changed = assignLiveNumber(record, 'volume30dUsd', update.volume_30d_usd) || changed;
     changed = assignLiveMetricNumber(record, 'tvlWax', update, ['tvl_wax'], nextTvlConfidence) || changed;
     changed = assignLiveMetricNumber(record, 'tvlUsd', update, ['tvl_usd'], nextTvlConfidence) || changed;
     changed = assignLiveMetricNumber(record, 'graphLiquidityWax', update, ['graph_liquidity_wax'], nextLiquidityConfidence) || changed;
@@ -879,6 +1095,7 @@
     changed = assignLiveMetricNumber(record, 'marketCapUsd', update, ['market_cap_usd'], nextMarketCapConfidence) || changed;
     changed = assignLiveNumber(record, 'indexedPairCount', update.indexed_pair_count) || changed;
     changed = assignLiveNumber(record, 'sourceCount', update.source_count) || changed;
+    changed = assignLiveNumber(record, 'holderCount', update.holder_count) || changed;
     [
       ['selectedPriceConfidence', ['selected_price_confidence', 'selectedPriceConfidence']],
       ['liquidityConfidence', ['liquidity_confidence', 'liquidityConfidence']],
@@ -915,6 +1132,11 @@
       }
     }
     if (update.updated_at) record.liveUpdatedAt = update.updated_at;
+    if (update.updated_at) record.lastUpdated = update.updated_at;
+    if (Object.prototype.hasOwnProperty.call(update, 'valuation_basis')) record.valuationBasis = update.valuation_basis || '';
+    if (Object.prototype.hasOwnProperty.call(update, 'waxcash_pair_source')) record.waxcashPairSource = update.waxcash_pair_source || '';
+    if (Object.prototype.hasOwnProperty.call(update, 'waxcash_pair_id')) record.waxcashPairId = update.waxcash_pair_id || '';
+    if (Object.prototype.hasOwnProperty.call(update, 'waxcash_pair_valuation_basis')) record.waxcashPairValuationBasis = update.waxcash_pair_valuation_basis || '';
     if (changed) {
       var nextVolume = record.volume24Usd != null ? record.volume24Usd : record.volume24Wax;
       var now = performance.now();
@@ -966,7 +1188,7 @@
   }
 
   function applyLiveSnapshot(snapshot) {
-    var data = payloadData(snapshot);
+    var data = waxcashAnalyticsToBubblePayload(snapshot);
     var tokens = sourceRows(data.tokens);
     var nextCursor = data.next_cursor || snapshot.next_cursor || null;
     if (nextCursor) setBackendLiveCursor(nextCursor);
@@ -981,6 +1203,18 @@
     if (!tokens.length) return;
     var byKey = {};
     state.records.forEach(function (record) { byKey[record.key] = record; });
+    var hasNewRecords = tokens.some(function (update) {
+      var key = update.token_key || tokenKey(update.contract, update.symbol);
+      return key && !byKey[key];
+    });
+    if (hasNewRecords) {
+      state.payload = snapshot;
+      applyMetricCapabilities(snapshot);
+      state.records = normalizeRecords(snapshot);
+      state.pairs = sourceRows(data.pairs);
+      syncNodes();
+      return;
+    }
     var changed = 0;
     var changedRecords = [];
     tokens.forEach(function (update) {
@@ -1741,7 +1975,7 @@
     state.dragging = null;
     if (!node) return;
     var moved = Math.hypot(node.x - node.startX, node.y - node.startY);
-    if (moved < 8 && Date.now() - node.startedAt < 500) openTokenAnalytics(node.record);
+    if (moved < 8 && Date.now() - node.startedAt < 500) openTokenModal(node.record);
     try { state.canvas.releasePointerCapture(event.pointerId); } catch (_) {}
   }
 
@@ -1750,29 +1984,82 @@
     var node = state.hovered || state.nodes[0];
     if (!node) return;
     event.preventDefault();
-    openTokenAnalytics(node.record);
+    openTokenModal(node.record);
   }
 
-  function tokenAnalyticsUrl(record) {
-    return '/analytics/token/?token=' + encodeURIComponent(record.symbol) + '&contract=' + encodeURIComponent(record.contract);
+  function detailValue(value, formatter) {
+    if (value == null || value === '') return 'Not indexed';
+    return formatter ? formatter(value) : String(value);
   }
 
-  function openTokenAnalytics(record) {
+  function dualDetail(wax, usd) {
+    var waxText = asNum(wax) == null ? '' : fmtNum(wax) + ' WAX';
+    var usdText = asNum(usd) == null ? '' : '$' + fmtNum(usd);
+    return waxText && usdText ? waxText + ' / ' + usdText : (waxText || usdText || 'Not indexed');
+  }
+
+  function modalRow(label, value) {
+    return '<div class="woe-ab-modal-row"><span>' + escHtml(label) + '</span><strong>' + escHtml(value) + '</strong></div>';
+  }
+
+  function renderTokenModal(record) {
+    if (!state.modal || !record) return;
+    var holderText = record.holderCountLive && record.holderCount != null ? fmtNum(record.holderCount, 0) : 'Not indexed';
+    var pairRef = record.waxcashPairSource || record.waxcashPairId
+      ? [record.waxcashPairSource, record.waxcashPairId ? '#' + record.waxcashPairId : ''].filter(Boolean).join(' ')
+      : 'WAXCASH root';
+    var rows = [
+      modalRow('Symbol', record.displaySymbol || record.symbol),
+      modalRow('Contract', record.contract),
+      modalRow('Price', dualDetail(record.selectedPriceWax, record.selectedPriceUsd)),
+      modalRow('TVL', dualDetail(record.tvlWax, record.tvlUsd)),
+      modalRow('Liquidity', dualDetail(record.graphLiquidityWax, record.graphLiquidityUsd)),
+      modalRow('24h volume', dualDetail(record.volume24Wax, record.volume24Usd)),
+      modalRow('7d volume', dualDetail(record.volume7dWax, record.volume7dUsd)),
+      modalRow('30d volume', dualDetail(record.volume30dWax, record.volume30dUsd)),
+      modalRow('24h change', detailValue(record.change24, fmtPct)),
+      modalRow('Market cap', dualDetail(record.marketCapWax, record.marketCapUsd)),
+      modalRow('Supply', detailValue(record.circulatingSupply || record.totalSupply || record.supply)),
+      modalRow('Holder count', holderText),
+      modalRow('Indexed pair count', detailValue(record.indexedPairCount, function (value) { return fmtNum(value, 0); })),
+      modalRow('Sources', record.sources.length ? record.sources.join(', ') : 'Not indexed'),
+      modalRow('Selected price source', record.selectedPriceSource || record.selectedSource || 'Not indexed'),
+      modalRow('WAXCASH pair', pairRef),
+      modalRow('Valuation basis', record.waxcashPairValuationBasis || record.valuationBasis || 'Not indexed'),
+      modalRow('Last updated', record.lastUpdated || record.liveUpdatedAt || safeTimeLabel(state.lastUpdated) || 'Not indexed'),
+    ];
+    state.modal.innerHTML = '<div class="woe-ab-modal-backdrop" data-woe-close-modal></div>' +
+      '<section class="woe-ab-modal-panel" role="dialog" aria-modal="true" aria-label="' + escHtml(record.displaySymbol || record.symbol) + ' live token details">' +
+      '<button class="woe-ab-modal-close" type="button" data-woe-close-modal aria-label="Close">x</button>' +
+      '<div class="woe-ab-modal-head"><strong>' + escHtml(record.displaySymbol || record.symbol) + '</strong><span>' + escHtml(record.contract) + '</span></div>' +
+      '<div class="woe-ab-modal-grid">' + rows.join('') + '</div>' +
+      '</section>';
+    state.modal.hidden = false;
+  }
+
+  function closeTokenModal() {
+    if (!state.modal) return;
+    state.modal.hidden = true;
+    state.modal.innerHTML = '';
+  }
+
+  function openTokenModal(record) {
     if (!record) return;
-    window.location.href = tokenAnalyticsUrl(record);
+    state.selected = record;
+    renderTokenModal(record);
   }
 
   function apiJson(path) {
-    return fetch(path, { headers: { Accept: 'application/json' }, cache: 'no-store' }).then(function (response) {
+    var sep = path.indexOf('?') === -1 ? '?' : '&';
+    var url = path + sep + '_=' + encodeURIComponent(String(Date.now()));
+    return fetch(url, { headers: { Accept: 'application/json' }, cache: 'no-store' }).then(function (response) {
       if (!response.ok) throw new Error(path + ' failed: ' + response.status);
       return response.json();
     });
   }
 
   function liveSnapshotUrl() {
-    return state.live.cursor && state.live.cursorFromBackend
-      ? LIVE_API + '?cursor=' + encodeURIComponent(state.live.cursor)
-      : LIVE_API;
+    return LIVE_API;
   }
 
   function scheduleLivePolling(delay) {
@@ -1829,12 +2116,7 @@
   }
 
   function startLiveUpdates() {
-    var live = state.health && state.health.live_updates ? state.health.live_updates : {};
-    if (live.transport === 'sse' && live.stream_endpoint) {
-      startLiveEventSource(live.stream_endpoint || LIVE_STREAM_API);
-      return;
-    }
-    scheduleLivePolling(1000);
+    scheduleLivePolling(LIVE_POLL_MS);
   }
 
   function setStatus() {
@@ -1846,7 +2128,7 @@
       text.textContent = state.live.transport === 'sse' && state.connected
         ? 'INDEXED STREAM'
         : state.live.transport === 'snapshot-polling' && state.connected
-        ? 'SYNCED 10s'
+        ? 'SYNCED 1s'
         : state.live.transport === 'snapshot-polling'
         ? 'SNAPSHOT POLLING'
         : 'CONNECTING';
@@ -1875,11 +2157,7 @@
     var topLoser = records.reduce(function (best, r) { return !best || (r.change24 || Infinity) < (best.change24 || Infinity) ? r : best; }, null);
     var sources = {};
     records.forEach(function (r) { r.sources.forEach(function (s) { sources[s] = true; }); });
-    var candleStatus = state.timeframe !== '24h'
-      ? TIMEFRAME_LABELS[state.timeframe] + ' history building from indexed snapshots'
-      : state.health && state.health.candle_backfill
-      ? (state.health.candle_backfill.latest_1d_candle_count || 0) + ' 1D candles'
-      : 'candles not indexed';
+    var feedStatus = 'WAXCASH analytics feed';
     bar.innerHTML = '<span class="woe-ab-stat-cluster">' +
       '<span>' + escHtml(tokenLabel) + '</span>' +
       '<span class="woe-ab-up">Up ' + escHtml(String(gainers)) + '</span>' +
@@ -1888,8 +2166,8 @@
       '<span>Top <strong class="woe-ab-up">' + escHtml(topGainer ? (topGainer.displaySymbol || topGainer.symbol) + ' ' + fmtPct(topGainer.change24) : 'Not indexed') + '</strong></span>' +
       '<span>Bot <strong class="woe-ab-down">' + escHtml(topLoser ? (topLoser.displaySymbol || topLoser.symbol) + ' ' + fmtPct(topLoser.change24) : 'Not indexed') + '</strong></span>' +
       '<span>Sources <strong>' + escHtml(String(Object.keys(sources).length)) + '</strong></span>' +
-      '<span>' + escHtml(candleStatus) + '</span>' +
-      '<span>WAXCASH graph tokens</span>' +
+      '<span>' + escHtml(feedStatus) + '</span>' +
+      '<span>WAXCASH pair members</span>' +
       '</span>' +
       '<span id="woe-ab-live-feed" class="woe-ab-live-feed" aria-live="polite" aria-label="Live WaxOnEdge market feed"></span>' +
       '<span class="woe-ab-credit">Powered by WaxOnEdge multi-DEX indexer</span>';
@@ -1925,7 +2203,7 @@
   }
 
   function updateWaxPrice(payload) {
-    var data = payloadData(payload);
+    var data = waxcashAnalyticsToBubblePayload(payload);
     var price = data.summary && data.summary.wax_price_usd != null
       ? asNum(data.summary.wax_price_usd)
       : data.sources && data.sources.alcor_global && data.sources.alcor_global.indexed && data.raw && data.raw.alcor_global
@@ -1942,16 +2220,26 @@
   function initCanvas() {
     state.board = document.getElementById('woe-bubble-board');
     if (!state.board) return;
-    state.board.innerHTML = '<canvas id="woe-ab-canvas" class="woe-ab-canvas" tabindex="0" role="application" aria-label="WaxOnEdge WAX Galaxy scanner. Use Enter or Space to open the highlighted token analytics page."></canvas>' +
-      '<div id="woe-ab-tooltip" class="woe-ab-tooltip" hidden></div>';
+    state.board.innerHTML = '<canvas id="woe-ab-canvas" class="woe-ab-canvas" tabindex="0" role="application" aria-label="WaxOnEdge WAX Galaxy scanner. Use Enter or Space to open live token details."></canvas>' +
+      '<div id="woe-ab-tooltip" class="woe-ab-tooltip" hidden></div>' +
+      '<div id="woe-ab-token-modal" class="woe-ab-modal" hidden></div>';
     state.canvas = document.getElementById('woe-ab-canvas');
     state.ctx = state.canvas.getContext('2d');
     state.tooltip = document.getElementById('woe-ab-tooltip');
+    state.modal = document.getElementById('woe-ab-token-modal');
     state.canvas.addEventListener('pointermove', onPointerMove);
     state.canvas.addEventListener('pointerdown', onPointerDown);
     state.canvas.addEventListener('pointerup', onPointerUp);
     state.canvas.addEventListener('keydown', onCanvasKeydown);
     state.canvas.addEventListener('pointerleave', function () { state.hovered = null; moveTooltip(null); });
+    if (state.modal) {
+      state.modal.addEventListener('click', function (event) {
+        if (event.target && event.target.hasAttribute('data-woe-close-modal')) closeTokenModal();
+      });
+    }
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') closeTokenModal();
+    });
     renderLiveFeed();
     window.addEventListener('resize', function () { window.clearTimeout(state.resizeTimer); state.resizeTimer = window.setTimeout(syncNodes, 120); });
     document.addEventListener('visibilitychange', function () {
@@ -1981,9 +2269,9 @@
       state.health = results[1] ? payloadData(results[1]) : null;
       applyMetricCapabilities(state.payload);
       state.records = normalizeRecords(state.payload);
-      state.pairs = sourceRows(payloadData(state.payload).pairs);
+      state.pairs = sourceRows(waxcashAnalyticsToBubblePayload(state.payload).pairs);
       state.connected = true;
-      var loadedData = payloadData(state.payload);
+      var loadedData = waxcashAnalyticsToBubblePayload(state.payload);
       setBackendLiveCursor(loadedData.next_cursor);
       state.lastUpdated =
         (isValidIsoTimestamp(loadedData.updated_at) ? loadedData.updated_at : null) ||

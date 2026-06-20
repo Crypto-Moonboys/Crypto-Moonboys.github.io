@@ -7873,19 +7873,37 @@ ok('frontend scanner front door and token analytics route are present',
 ok('frontend bubbles bootstrap first and then starts live updates',
   frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') > -1 &&
   frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') < frontendBubbles.lastIndexOf('startLiveUpdates();') &&
-  frontendBubbles.includes("var LIVE_API = '/api/waxonedge/live'") &&
+  frontendBubbles.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics'") &&
+  frontendBubbles.includes("var LIVE_API = '/api/waxonedge/waxcash-analytics'") &&
   frontendBubbles.includes("var LIVE_STREAM_API = '/api/waxonedge/live/stream'"));
+ok('frontend WAXCASH analytics adapter maps selected root price, pair row price, liquidity, market cap, and pair_table rows',
+  frontendBubbles.includes('function waxcashAnalyticsToBubblePayload(payload)') &&
+  frontendBubbles.includes('var pairTable = sections.pair_table || {}') &&
+  frontendBubbles.includes('var rows = sourceRows(pairTable.rows)') &&
+  frontendBubbles.includes('var selectedPriceWax = stats.selected_price_wax ?? stats.price_wax') &&
+  frontendBubbles.includes('var selectedPriceUsd = stats.selected_price_usd ?? stats.price_usd') &&
+  frontendBubbles.includes('selected_price_wax: selectedPriceWax') &&
+  frontendBubbles.includes('selected_price_usd: selectedPriceUsd') &&
+  frontendBubbles.includes('graph_liquidity_wax: stats.cumulated_pair_liquidity_wax') &&
+  frontendBubbles.includes('market_cap_wax: stats.market_cap_wax') &&
+  frontendBubbles.includes('var pairPriceWax = row.price_wax ?? row.selected_price_wax ?? row.price ?? row.pair_price') &&
+  frontendBubbles.includes('var pairPriceUsd = row.price_usd ?? row.selected_price_usd') &&
+  frontendBubbles.includes("selected_price_source: 'phase_one_waxcash_pair_row_price'") &&
+  frontendBubbles.includes('selectedUsd / selectedWax'));
 ok('frontend live hook uses EventSource only when enabled and safe polling fallback',
   frontendBubbles.includes('window.EventSource') &&
   frontendBubbles.includes("live.transport === 'sse'") &&
   frontendBubbles.includes('scheduleLivePolling(1000)') &&
   frontendBubbles.includes('var LIVE_POLL_MS = 1000') &&
   !frontendBubbles.includes('var LIVE_POLL_MS = 10000'));
-ok('frontend uses live next_cursor instead of timestamp-only since cursor',
-  frontendBubbles.includes("LIVE_API + '?cursor=' + encodeURIComponent(state.live.cursor)") &&
+ok('frontend polls the WAXCASH analytics feed with no-store/cache-busting instead of timestamp-only since cursor',
+  frontendBubbles.includes('return LIVE_API;') &&
+  frontendBubbles.includes("var url = path + sep + '_=' + encodeURIComponent(String(Date.now()))") &&
+  frontendBubbles.includes("headers: { Accept: 'application/json' }") &&
+  frontendBubbles.includes("cache: 'no-store'") &&
+  !frontendBubbles.includes("'Cache-Control': 'no-store'") &&
   frontendBubbles.includes('var nextCursor = data.next_cursor || snapshot.next_cursor || null') &&
   frontendBubbles.includes('if (nextCursor) setBackendLiveCursor(nextCursor)') &&
-  frontendBubbles.includes('state.live.cursor && state.live.cursorFromBackend') &&
   frontendBubbles.includes('state.live.cursorFromBackend = true') &&
   !frontendBubbles.includes('state.live.cursor = state.lastUpdated') &&
   !frontendBubbles.includes('state.lastUpdated = state.live.cursor') &&
@@ -8135,9 +8153,14 @@ ok('frontend renders backend graph tokens beyond the old featured allowlist',
   frontendBubbles.includes('return Object.keys(byKey).map(function (key)') &&
   frontendBubbles.includes('displaySymbol: featured ? featured.label : symbol') &&
   !frontendBubbles.includes('if (!key || !featured) return;'));
-ok('frontend bubble click resolves to the full static token analytics route',
-  frontendBubbles.includes("return '/analytics/token/?token=' + encodeURIComponent(record.symbol) + '&contract=' + encodeURIComponent(record.contract)") &&
-  frontendBubbles.includes('openTokenAnalytics(node.record)'));
+ok('frontend bubble click opens in-page live token details without full token pages',
+  frontendBubbles.includes('function openTokenModal(record)') &&
+  frontendBubbles.includes('function renderTokenModal(record)') &&
+  frontendBubbles.includes('openTokenModal(node.record)') &&
+  frontendBubbles.includes('woe-ab-modal-panel') &&
+  !frontendBubbles.includes("return '/analytics/token/?token=' + encodeURIComponent(record.symbol) + '&contract=' + encodeURIComponent(record.contract)") &&
+  !frontendBubbles.includes('openTokenAnalytics(node.record)') &&
+  !frontendBubbles.includes('window.location.href'));
 ok('waxonedge.html remains the live bubble scanner product path',
   html.includes('id="woe-bubble-board"') &&
   html.includes('/js/waxonedge-bubbles-v2.js') &&
