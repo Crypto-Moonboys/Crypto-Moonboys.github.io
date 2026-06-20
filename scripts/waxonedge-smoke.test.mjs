@@ -144,9 +144,14 @@ ok('waxcash frontend removes visible explanatory chart/status/proof labels',
   !waxcashHtml.includes('Display-only pair detail views') &&
   !waxcashHtml.includes('wx-view-controls') &&
   !waxcashHtml.includes('wx-pair-detail'));
-ok('waxcash frontend does not load invalid TradingView, GeckoTerminal, Alcor iframe, or backend candle fallback chart',
-  waxcashHtml.includes('Native TradingView Alcor WAXCASH/WAX symbol unavailable.') &&
-  !waxcashHtml.includes('https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js') &&
+ok('waxcash frontend restores a full TradingView Charting Library widget using the Alcor WAXCASH/WAX feed',
+  waxcashHtml.includes('https://alcor.exchange/charting_library/charting_library.standalone.js') &&
+  waxcashHtml.includes('new window.TradingView.widget') &&
+  waxcashHtml.includes('https://wax.alcor.exchange/api/v2/swap/candles') &&
+  waxcashHtml.includes("TOKEN_A = 'waxcash-graffitiking'") &&
+  waxcashHtml.includes("TOKEN_B = 'wax-eosio.token'") &&
+  waxcashHtml.includes("symbol: 'WAXCASH_WAX'") &&
+  !waxcashHtml.includes('Native TradingView Alcor WAXCASH/WAX symbol unavailable') &&
   !waxcashHtml.includes('"symbol": "ALCOR:WAXCASHWAX"') &&
   !waxcashHtml.includes('<iframe') &&
   !waxcashHtml.includes('wx-external-chart-frame') &&

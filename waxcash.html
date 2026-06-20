@@ -323,8 +323,8 @@
           <h2 id="wx-chart-heading">WAXCASH/WAX chart</h2>
         </div>
         <div id="wx-chart" class="wx-chart-host" aria-live="polite">
-          <div class="wx-tradingview-chart wx-chart-empty">
-            Native TradingView Alcor WAXCASH/WAX symbol unavailable.
+          <div class="wx-tradingview-chart">
+            <div id="wx-tv-chart-container" class="wx-tradingview-widget"></div>
           </div>
         </div>
       </article>
@@ -391,6 +391,153 @@
     }
     return nativeFetch.call(this, input, init);
   };
+}());
+</script>
+<script data-cfasync="false" src="https://alcor.exchange/charting_library/charting_library.standalone.js"></script>
+<script data-cfasync="false">
+(function () {
+  'use strict';
+  var CONTAINER_ID = 'wx-tv-chart-container';
+  var ALCOR_CANDLES = 'https://wax.alcor.exchange/api/v2/swap/candles';
+  var TOKEN_A = 'waxcash-graffitiking';
+  var TOKEN_B = 'wax-eosio.token';
+  var RESOLUTIONS = ['1', '5', '15', '30', '60', '240', 'D', 'W', 'M'];
+  var activeResolution = '240';
+
+  function candleUrl(params) {
+    var url = new URL(ALCOR_CANDLES);
+    url.searchParams.set('tokenA', TOKEN_A);
+    url.searchParams.set('tokenB', TOKEN_B);
+    url.searchParams.set('resolution', params.resolution || activeResolution);
+    if (params.from != null) url.searchParams.set('from', String(params.from));
+    if (params.to != null) url.searchParams.set('to', String(params.to));
+    if (params.limit != null) url.searchParams.set('limit', String(params.limit));
+    return url.toString();
+  }
+
+  function toBar(candle) {
+    return {
+      time: Number(candle.time),
+      open: Number(candle.open),
+      high: Number(candle.high),
+      low: Number(candle.low),
+      close: Number(candle.close),
+      volume: Number(candle.volume || 0)
+    };
+  }
+
+  function initWaxcashTradingViewChart() {
+    if (!window.TradingView || !document.getElementById(CONTAINER_ID)) return;
+    var datafeed = {
+      onReady: function (callback) {
+        setTimeout(function () {
+          callback({
+            supported_resolutions: RESOLUTIONS,
+            supports_time: true,
+            supports_marks: false,
+            supports_timescale_marks: false,
+            supports_search: false
+          });
+        }, 0);
+      },
+      searchSymbols: function () {},
+      resolveSymbol: function (symbolName, onResolve) {
+        setTimeout(function () {
+          onResolve({
+            name: 'WAXCASH_WAX',
+            ticker: 'WAXCASH_WAX',
+            description: 'WAXCASH / WAX',
+            type: 'crypto',
+            exchange: 'Alcor',
+            listed_exchange: 'Alcor',
+            timezone: 'Etc/UTC',
+            session: '24x7',
+            minmov: 1,
+            pricescale: 100000000,
+            has_intraday: true,
+            has_daily: true,
+            has_weekly_and_monthly: true,
+            supported_resolutions: RESOLUTIONS,
+            visible_plots_set: 'ohlcv',
+            volume_precision: 2,
+            data_status: 'streaming',
+            format: 'price'
+          });
+        }, 0);
+      },
+      getBars: function (symbolInfo, resolution, periodParams, onHistory, onError) {
+        activeResolution = resolution;
+        var from = Number(periodParams && periodParams.from);
+        var to = Number(periodParams && periodParams.to);
+        if (!Number.isFinite(from) || !Number.isFinite(to) || from <= 0 || to <= 0) {
+          onHistory([], { noData: true });
+          return;
+        }
+        fetch(candleUrl({ resolution: resolution, from: from * 1000, to: to * 1000 }))
+          .then(function (response) {
+            if (!response.ok) throw new Error('Alcor candles HTTP ' + response.status);
+            return response.json();
+          })
+          .then(function (payload) {
+            var bars = (payload.candles || [])
+              .map(toBar)
+              .filter(function (bar) {
+                return Number.isFinite(bar.time) && Number.isFinite(bar.open) && Number.isFinite(bar.high) &&
+                  Number.isFinite(bar.low) && Number.isFinite(bar.close);
+              })
+              .sort(function (a, b) { return a.time - b.time; });
+            onHistory(bars, { noData: bars.length === 0 });
+          })
+          .catch(function (error) {
+            console.error('[WAXCASH TradingView] Alcor candle fetch failed:', error);
+            onError(error && error.message ? error.message : String(error));
+          });
+      },
+      subscribeBars: function () {},
+      unsubscribeBars: function () {},
+      getMarks: function () {},
+      getTimescaleMarks: function () {},
+      getServerTime: function (callback) { callback(Math.floor(Date.now() / 1000)); }
+    };
+
+    new window.TradingView.widget({
+      autosize: true,
+      symbol: 'WAXCASH_WAX',
+      interval: '240',
+      container: CONTAINER_ID,
+      datafeed: datafeed,
+      library_path: 'https://alcor.exchange/charting_library/',
+      locale: 'en',
+      timezone: 'Etc/UTC',
+      theme: 'dark',
+      style: '1',
+      toolbar_bg: '#111820',
+      custom_css_url: 'https://alcor.exchange/tv_themed.css',
+      enabled_features: ['side_toolbar_in_fullscreen_mode', 'header_in_fullscreen_mode'],
+      disabled_features: ['symbol_search_hot_key', 'header_symbol_search'],
+      favorites: { intervals: RESOLUTIONS },
+      studies_overrides: {
+        'volume.volume.color.0': '#ff3b6b',
+        'volume.volume.color.1': '#00e6a8',
+        'volume.volume.transparency': 65
+      },
+      overrides: {
+        'mainSeriesProperties.style': 1,
+        'mainSeriesProperties.candleStyle.upColor': '#00e6a8',
+        'mainSeriesProperties.candleStyle.downColor': '#ff3b6b',
+        'mainSeriesProperties.candleStyle.wickUpColor': '#00e6a8',
+        'mainSeriesProperties.candleStyle.wickDownColor': '#ff3b6b',
+        'paneProperties.background': '#111820',
+        'paneProperties.vertGridProperties.color': 'rgba(148, 163, 184, 0.15)',
+        'paneProperties.horzGridProperties.color': 'rgba(148, 163, 184, 0.15)',
+        'scalesProperties.textColor': '#a8bed3'
+      },
+      loading_screen: { backgroundColor: '#111820', foregroundColor: '#00f5e9' }
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initWaxcashTradingViewChart);
+  else initWaxcashTradingViewChart();
 }());
 </script>
 <script data-cfasync="false" src="/js/waxcash-analytics.js?v=wxcash-og-woe-restore-20260620-1"></script>

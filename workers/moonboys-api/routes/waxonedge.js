@@ -7862,6 +7862,33 @@ async function fetchWaxcashOgLastStats(env) {
   };
 }
 
+async function fetchWaxcashAlcorTokenAnalytics() {
+  const url = 'https://wax.alcor.exchange/api/v3/analytics/tokens/waxcash-graffitiking?window=30d&hide_scam=true';
+  try {
+    const response = await fetch(url, {
+      headers: { Accept: 'application/json' },
+      cf: { cacheTtl: 60, cacheEverything: false },
+    });
+    if (!response.ok) return { ok: false, reason: `alcor_token_analytics_http_${response.status}` };
+    const data = await response.json();
+    const holderCount = asNumber(data?.token?.holders?.count);
+    const truncated = data?.token?.holders?.truncated === true;
+    return {
+      ok: true,
+      data,
+      holder_count: holderCount != null && !truncated ? holderCount : null,
+      holder_snapshot_at: data?.meta?.ts || data?.token?.scores?.details?.updatedAt || null,
+      holder_reason: holderCount == null
+        ? 'alcor_token_analytics_holder_count_missing'
+        : (truncated ? 'alcor_token_analytics_holders_truncated' : null),
+      source: url,
+      no_fake_value: true,
+    };
+  } catch (error) {
+    return { ok: false, reason: `alcor_token_analytics_fetch_failed:${error?.message || String(error)}` };
+  }
+}
+
 function ogTokenVolume(lastVolumes, duration, contract = WAXCASH_CONTRACT, symbol = WAXCASH_SYMBOL) {
   const key = `${normalizeContract(contract)}_${normalizeSymbol(symbol).toLowerCase()}`;
   return asNumber(lastVolumes?.[duration]?.tokens?.[key]?.volume);
@@ -8623,12 +8650,13 @@ async function buildWaxcashAnalytics(db, env = null) {
   const selectedPriceUsd = asNumber(headline.og_headline_price_usd);
   const { chart, chartFeedPool, selectedWaxPool } = await buildWaxcashChartBundle(db, proof, headline);
   const liveSupplyProof = await fetchWaxcashLiveSupplyProof(db, token);
-  const [holderSnapshot, tradeWindowVolumes, pairWindowVolumes, pairCandleChanges, ogLastStats] = await Promise.all([
+  const [holderSnapshot, tradeWindowVolumes, pairWindowVolumes, pairCandleChanges, ogLastStats, alcorTokenAnalytics] = await Promise.all([
     latestIndexedHolderCount(db, WAXCASH_CONTRACT, WAXCASH_SYMBOL),
     indexedTradeWindowVolumes(db, proof.all_pairs || [], { selectedPriceWax }),
     indexedTradeWindowVolumesByPair(db, proof.all_pairs || [], { selectedPriceWax }),
     indexedCandleChange24hByPair(db, proof.all_pairs || [], selectedPriceWax),
     env ? fetchWaxcashOgLastStats(env) : Promise.resolve({ live: false, reasons: ['waxonedge_og_api_base_not_configured'] }),
+    fetchWaxcashAlcorTokenAnalytics(),
   ]);
   const indexedPairTablePairs = applyIndexedPairWindowVolumes(proof.all_pairs || [], pairWindowVolumes, waxUsd, pairCandleChanges);
   const pairTablePairs = applyOgLastStatsToWaxcashPairs(indexedPairTablePairs, ogLastStats, waxUsd);
@@ -8669,7 +8697,8 @@ async function buildWaxcashAnalytics(db, env = null) {
   const effectiveMarketCapUsd = effectiveCirculatingSupply != null && selectedPriceUsd != null ? effectiveCirculatingSupply * selectedPriceUsd : null;
   const marketCapLive = effectiveMarketCapWax != null || effectiveMarketCapUsd != null;
   const circulatingSupplyLive = effectiveCirculatingSupply != null;
-  const holderCount = asNumber(detailStats.holder_count) ?? asNumber(holderSnapshot.holder_count);
+  const alcorHolderCount = asNumber(alcorTokenAnalytics.holder_count);
+  const holderCount = asNumber(detailStats.holder_count) ?? asNumber(holderSnapshot.holder_count) ?? alcorHolderCount;
   const holderCountLive = holderCount != null;
   const fdvLive = fdvWax != null || fdvUsd != null;
   const ogSelectedChange24h = ogPairChange24h(ogLastStats.lastPriceChanges, selectedWaxPool);
@@ -8745,14 +8774,16 @@ async function buildWaxcashAnalytics(db, env = null) {
         holder_count: holderCountLive
           ? {
             live: true,
-            source: asNumber(detailStats.holder_count) != null ? 'indexed_token_stats' : 'indexed_holder_snapshot',
-            snapshot_at: holderSnapshot.snapshot_at || null,
+            source: asNumber(detailStats.holder_count) != null
+              ? 'indexed_token_stats'
+              : (asNumber(holderSnapshot.holder_count) != null ? 'indexed_holder_snapshot' : 'alcor_token_analytics_holders'),
+            snapshot_at: holderSnapshot.snapshot_at || alcorTokenAnalytics.holder_snapshot_at || null,
             reason: null,
           }
           : {
             live: false,
             source: null,
-            reason: holderSnapshot.reason || metricStatus.holder_count?.reason || 'Holder count requires a verified indexed holder source; no fake holder count is emitted',
+            reason: holderSnapshot.reason || alcorTokenAnalytics.holder_reason || alcorTokenAnalytics.reason || metricStatus.holder_count?.reason || 'Holder count requires a verified indexed holder source; no fake holder count is emitted',
           },
         total_supply: {
           live: totalSupplyLive,
@@ -8829,6 +8860,13 @@ async function buildWaxcashAnalytics(db, env = null) {
       sources: ogLastStats.sources,
       reasons: ogLastStats.reasons,
       token_key: 'graffitiking_waxcash',
+      no_fake_value: true,
+    },
+    alcor_token_analytics: {
+      live: !!alcorTokenAnalytics.ok,
+      source: alcorTokenAnalytics.source || null,
+      holder_count_live: alcorHolderCount != null,
+      holder_reason: alcorTokenAnalytics.holder_reason || alcorTokenAnalytics.reason || null,
       no_fake_value: true,
     },
     proof,

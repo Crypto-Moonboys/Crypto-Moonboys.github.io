@@ -6073,6 +6073,13 @@ ok('WAXCASH route restores OG WaxOnEdge endpoint shapes for indexed stats and so
   route.includes("'/poolv3'") &&
   route.includes('fetchWaxonedgeOgJson(env, endpoint)') &&
   route.includes('WAXONEDGE_OG_API_BASE'));
+ok('WAXCASH analytics restores a real holder count source instead of accepting unavailable-only holder state',
+  route.includes('async function fetchWaxcashAlcorTokenAnalytics') &&
+  route.includes('https://wax.alcor.exchange/api/v3/analytics/tokens/waxcash-graffitiking?window=30d&hide_scam=true') &&
+  route.includes('data?.token?.holders?.count') &&
+  route.includes('data?.token?.holders?.truncated === true') &&
+  route.includes('alcor_token_analytics_holders') &&
+  route.includes('holder_count_live'));
 ok('token detail exposes backend metric proof fields without frontend changes',
   route.includes('function tokenMetricProof') &&
   route.includes('selected_price_proof') &&
@@ -7072,11 +7079,15 @@ ok('WAXCASH analytics frontend keeps values compact and proof reasons in tooltip
   waxcashHtml.includes('table-layout: fixed') &&
   waxcashHtml.includes('white-space: normal') &&
   waxcashHtml.includes('overflow-wrap: anywhere'));
-ok('WAXCASH analytics frontend does not keep the invalid TradingView symbol or any iframe/custom candle fallback',
-  waxcashHtml.includes('Native TradingView Alcor WAXCASH/WAX symbol unavailable.') &&
-  !waxcashHtml.includes('https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js') &&
+ok('WAXCASH analytics frontend uses TradingView Charting Library with Alcor WAXCASH/WAX feed and no backend chart dependency',
+  waxcashHtml.includes('https://alcor.exchange/charting_library/charting_library.standalone.js') &&
+  waxcashHtml.includes('new window.TradingView.widget') &&
+  waxcashHtml.includes('https://wax.alcor.exchange/api/v2/swap/candles') &&
+  waxcashHtml.includes("TOKEN_A = 'waxcash-graffitiking'") &&
+  waxcashHtml.includes("TOKEN_B = 'wax-eosio.token'") &&
+  waxcashHtml.includes("symbol: 'WAXCASH_WAX'") &&
+  !waxcashHtml.includes('Native TradingView Alcor WAXCASH/WAX symbol unavailable') &&
   !waxcashHtml.includes('"symbol": "ALCOR:WAXCASHWAX"') &&
-  !waxcashHtml.includes('tradingview-widget-container') &&
   !waxcashAnalyticsFrontend.includes('sections.chart_external') &&
   !waxcashAnalyticsFrontend.includes('DEFAULT_EXTERNAL_CHART') &&
   !waxcashAnalyticsFrontend.includes('function renderExternalChart(payload)') &&
