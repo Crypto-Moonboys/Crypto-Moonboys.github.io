@@ -7876,6 +7876,20 @@ ok('frontend bubbles bootstrap first and then starts live updates',
   frontendBubbles.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics'") &&
   frontendBubbles.includes("var LIVE_API = '/api/waxonedge/waxcash-analytics'") &&
   frontendBubbles.includes("var LIVE_STREAM_API = '/api/waxonedge/live/stream'"));
+ok('frontend WAXCASH analytics adapter maps selected root price, pair row price, liquidity, market cap, and pair_table rows',
+  frontendBubbles.includes('function waxcashAnalyticsToBubblePayload(payload)') &&
+  frontendBubbles.includes('var pairTable = sections.pair_table || {}') &&
+  frontendBubbles.includes('var rows = sourceRows(pairTable.rows)') &&
+  frontendBubbles.includes('var selectedPriceWax = stats.selected_price_wax ?? stats.price_wax') &&
+  frontendBubbles.includes('var selectedPriceUsd = stats.selected_price_usd ?? stats.price_usd') &&
+  frontendBubbles.includes('selected_price_wax: selectedPriceWax') &&
+  frontendBubbles.includes('selected_price_usd: selectedPriceUsd') &&
+  frontendBubbles.includes('graph_liquidity_wax: stats.cumulated_pair_liquidity_wax') &&
+  frontendBubbles.includes('market_cap_wax: stats.market_cap_wax') &&
+  frontendBubbles.includes('var pairPriceWax = row.price_wax ?? row.selected_price_wax ?? row.price ?? row.pair_price') &&
+  frontendBubbles.includes('var pairPriceUsd = row.price_usd ?? row.selected_price_usd') &&
+  frontendBubbles.includes("selected_price_source: 'phase_one_waxcash_pair_row_price'") &&
+  frontendBubbles.includes('selectedUsd / selectedWax'));
 ok('frontend live hook uses EventSource only when enabled and safe polling fallback',
   frontendBubbles.includes('window.EventSource') &&
   frontendBubbles.includes("live.transport === 'sse'") &&

@@ -346,10 +346,18 @@ ok('waxonedge-bubbles-v2.js phase-one feed normalizes waxcash-analytics token st
   v2Js.includes('var pairTable = sections.pair_table || {}') &&
   v2Js.includes('var rows = sourceRows(pairTable.rows)') &&
   v2Js.includes('var root = {') &&
-  v2Js.includes('selected_price_wax: stats.price_wax') &&
+  v2Js.includes('var selectedPriceWax = stats.selected_price_wax ?? stats.price_wax') &&
+  v2Js.includes('var selectedPriceUsd = stats.selected_price_usd ?? stats.price_usd') &&
+  v2Js.includes('selected_price_wax: selectedPriceWax') &&
+  v2Js.includes('selected_price_usd: selectedPriceUsd') &&
   v2Js.includes('market_cap_wax: stats.market_cap_wax') &&
+  v2Js.includes('graph_liquidity_wax: stats.cumulated_pair_liquidity_wax') &&
   v2Js.includes('function waxcashPairMember(row)') &&
-  v2Js.includes('waxcash_pair_valuation_basis'));
+  v2Js.includes('var pairPriceWax = row.price_wax ?? row.selected_price_wax ?? row.price ?? row.pair_price') &&
+  v2Js.includes('var pairPriceUsd = row.price_usd ?? row.selected_price_usd') &&
+  v2Js.includes("selected_price_source: 'phase_one_waxcash_pair_row_price'") &&
+  v2Js.includes('waxcash_pair_valuation_basis') &&
+  v2Js.includes('var derivedWaxUsd = selectedWax != null && selectedWax > 0 && selectedUsd != null ? selectedUsd / selectedWax : null'));
 ok('waxonedge-bubbles-v2.js renders AntBubbles-style canvas scanner',
   v2Js.includes('woe-ab-canvas') &&
   v2Js.includes('drawBubbleOffscreen') &&
@@ -651,6 +659,7 @@ ok('waxonedge-bubbles-v2.js keeps WAX price meta honest',
   v2Js.includes('Connecting to WaxOnEdge indexer') &&
   v2Js.includes('WAX price from ') &&
   v2Js.includes('data.summary.wax_price_usd') &&
+  v2Js.includes('selectedUsd / selectedWax') &&
   !v2Js.includes('Indexed from Alcor, Taco, Nefty, BOX'));
 ok('waxonedge-bubbles-v2.js labels snapshot polling honestly instead of fake streaming live status',
   v2Js.includes("state.live.transport === 'snapshot-polling' && state.connected") &&

@@ -338,13 +338,15 @@
       var existing = byKey[key];
       var source = pairSourceKey(row);
       if (source) waxcashSources[source] = true;
+      var pairPriceWax = row.price_wax ?? row.selected_price_wax ?? row.price ?? row.pair_price;
+      var pairPriceUsd = row.price_usd ?? row.selected_price_usd;
       var candidate = {
         contract: member.contract,
         symbol: member.symbol,
         icon_url: member.icon,
         visible_in_waxcash_bubbles: true,
-        selected_price_wax: null,
-        selected_price_usd: null,
+        selected_price_wax: pairPriceWax,
+        selected_price_usd: pairPriceUsd,
         change_24h: row.change_24h,
         volume_24h_wax: row.volume_24h_wax,
         volume_24h_usd: row.volume_24h_usd,
@@ -361,7 +363,7 @@
         market_cap_wax: null,
         market_cap_usd: null,
         metric_status: metricStatusFromValues({
-          selected_price: null,
+          selected_price: pairPriceWax ?? pairPriceUsd,
           liquidity: row.liquidity_wax ?? row.liquidity_usd,
           tvl: row.liquidity_wax ?? row.liquidity_usd,
           market_cap: null,
@@ -369,6 +371,7 @@
         source_keys: source ? [source] : [],
         source_count: source ? 1 : 0,
         indexed_pair_count: 1,
+        selected_price_source: 'phase_one_waxcash_pair_row_price',
         selected_pair_source: source,
         selected_pair_id: row.pair_id,
         waxcash_pair_source: row.source || source,
@@ -395,8 +398,10 @@
       }
     });
 
+    var selectedPriceWax = stats.selected_price_wax ?? stats.price_wax;
+    var selectedPriceUsd = stats.selected_price_usd ?? stats.price_usd;
     var rootStatus = stats.metric_status || metricStatusFromValues({
-      selected_price: stats.price_wax ?? stats.price_usd,
+      selected_price: selectedPriceWax ?? selectedPriceUsd,
       liquidity: stats.cumulated_pair_liquidity_wax ?? stats.cumulated_pair_liquidity_usd,
       tvl: stats.tvl_wax ?? stats.tvl_usd,
       market_cap: stats.market_cap_wax ?? stats.market_cap_usd,
@@ -406,8 +411,8 @@
       symbol: normalizeSymbol(token.symbol || WAXCASH_SYMBOL),
       icon_url: token.icon_url || '',
       visible_in_waxcash_bubbles: true,
-      selected_price_wax: stats.price_wax,
-      selected_price_usd: stats.price_usd,
+      selected_price_wax: selectedPriceWax,
+      selected_price_usd: selectedPriceUsd,
       change_24h: stats.change_24h,
       volume_24h_wax: stats.volume_24h_wax,
       volume_24h_usd: stats.volume_24h_usd,
@@ -433,6 +438,7 @@
       source_keys: Object.keys(waxcashSources).sort(compareSources),
       source_count: Object.keys(waxcashSources).length,
       indexed_pair_count: rows.length,
+      selected_price_source: stats.selected_price_source || stats.selected_pair_source || 'waxcash_analytics_selected_price',
       selected_pair_source: stats.selected_price_source || stats.selected_pair_source || '',
       selected_pair_id: stats.selected_price_pair_id || stats.selected_pair_id || '',
       valuation_basis: stats.market_cap_basis || stats.price_basis || '',
@@ -441,11 +447,14 @@
     };
 
     var tokens = [root].concat(Object.keys(byKey).map(function (key) { return byKey[key]; }));
+    var selectedWax = asNum(selectedPriceWax);
+    var selectedUsd = asNum(selectedPriceUsd);
+    var derivedWaxUsd = selectedWax != null && selectedWax > 0 && selectedUsd != null ? selectedUsd / selectedWax : null;
     return {
       tokens: tokens,
       pairs: rows,
       summary: {
-        wax_price_usd: data.sections && data.sections.wax_price ? data.sections.wax_price.usd : null,
+        wax_price_usd: data.sections && data.sections.wax_price ? data.sections.wax_price.usd : derivedWaxUsd,
         wax_price_source: 'waxcash-analytics',
         metric_capabilities: waxcashMetricCapabilities(tokens),
         source_feed: '/api/waxonedge/waxcash-analytics',
