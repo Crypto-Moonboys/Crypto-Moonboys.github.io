@@ -215,8 +215,10 @@ ok('waxcash pair table exposes WAX-only liquidity and 24h volume sort controls',
   waxcashAnalyticsJs.includes('return num(row && row.volume_24h_wax)') &&
   waxcashAnalyticsJs.includes('priceCell(row)') &&
   waxcashAnalyticsJs.includes('changeCell(row.change_24h)') &&
-  waxcashAnalyticsJs.includes('dual(row.volume_7d_wax, row.volume_7d_usd, row.reason)') &&
-  waxcashAnalyticsJs.includes('dual(row.volume_30d_wax, row.volume_30d_usd, row.reason)') &&
+  waxcashAnalyticsJs.includes("volumeCell(row, 'volume_24h')") &&
+  waxcashAnalyticsJs.includes("volumeCell(row, 'volume_7d')") &&
+  waxcashAnalyticsJs.includes("volumeCell(row, 'volume_30d')") &&
+  waxcashAnalyticsJs.includes("row[prefix + '_a_native']") &&
   !waxcashAnalyticsJs.includes('pairStatus(row)') &&
   !waxcashAnalyticsJs.includes('row.reserves_label') &&
   !waxcashAnalyticsJs.includes('function metricValue(row, usdKey, waxKey)') &&

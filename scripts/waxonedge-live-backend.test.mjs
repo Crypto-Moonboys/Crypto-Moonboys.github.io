@@ -2602,6 +2602,48 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         !Object.prototype.hasOwnProperty.call(row, 'status_label') &&
         !Object.prototype.hasOwnProperty.call(row, 'reserves_label')),
       JSON.stringify(waxcashAnalytics.sections?.pair_table?.rows));
+    {
+      const nonWaxPair = {
+        ...graphPairs.find((pair) => pair.pair_id === 'WAXCASHAIGOD'),
+        pair_label: 'WAXCASH/AIGOD',
+        paired_token: { contract: 'aigodtokenwx', symbol: 'AIGOD' },
+        selected_waxcash_price_wax: null,
+        paired_token_og_wax_price: null,
+        reason_codes: [],
+      };
+      const lastVolumes = {
+        '24h': { pools: { neftyblocks: { WAXCASHAIGOD: { volumeA: '10', volumeB: '20' } } } },
+        '7d': { pools: { neftyblocks: { WAXCASHAIGOD: { volumeA: '70', volumeB: '140' } } } },
+        '30d': { pools: { neftyblocks: { WAXCASHAIGOD: { volumeA: '300', volumeB: '600' } } } },
+      };
+      const [nativeOnlyPair] = __waxonedgeTestHooks.applyOgLastStatsToWaxcashPairs([nonWaxPair], { lastVolumes }, 0.006);
+      const nativeOnlyRow = __waxonedgeTestHooks.waxcashPairTableRow(nativeOnlyPair, null);
+      ok('WAXCASH pair table preserves OG native LastStats volumes for non-WAX pairs without faking WAX volume',
+        nativeOnlyPair.volume_24h_wax == null &&
+        Number(nativeOnlyPair.volume_24h_a_native) === 10 &&
+        Number(nativeOnlyPair.volume_24h_b_native) === 20 &&
+        Number(nativeOnlyPair.volume_7d_a_native) === 70 &&
+        Number(nativeOnlyPair.volume_30d_b_native) === 600 &&
+        nativeOnlyPair.metric_sources?.volume_24h_native?.source === 'og_waxonedge_lastVolumes_native_pair_volume' &&
+        nativeOnlyRow.volume_24h_wax == null &&
+        Number(nativeOnlyRow.volume_24h_a_native) === 10 &&
+        Number(nativeOnlyRow.volume_24h_b_native) === 20 &&
+        nativeOnlyRow.volume_native_source === 'og_waxonedge_lastVolumes_native_pair_volume',
+        JSON.stringify({ nativeOnlyPair, nativeOnlyRow }));
+      const [convertedPair] = __waxonedgeTestHooks.applyOgLastStatsToWaxcashPairs([{
+        ...nonWaxPair,
+        selected_waxcash_price_wax: '0.03',
+        paired_token_og_wax_price: '100',
+      }], { lastVolumes }, 0.006);
+      ok('WAXCASH pair table exposes one-side route-converted WAX LastStats volume without double-counting native sides',
+        almostEqual(convertedPair.volume_24h_wax, 0.3) &&
+        almostEqual(convertedPair.volume_24h_usd, 0.0018) &&
+        convertedPair.metric_sources?.volume_24h_wax?.source === 'og_waxonedge_lastVolumes_route_converted_wax' &&
+        convertedPair.metric_sources?.volume_24h_native?.source === 'og_waxonedge_lastVolumes_native_pair_volume' &&
+        Number(convertedPair.volume_24h_a_native) === 10 &&
+        Number(convertedPair.volume_24h_b_native) === 20,
+        JSON.stringify(convertedPair));
+    }
     const liveSupplyWrites = [];
     const liveSupplyDb = {
       prepare(sql) {
@@ -6070,6 +6112,8 @@ ok('WAXCASH pair table backend enriches token icons and pair-level indexed volum
   route.includes("ogTokenVolume(ogLastStats.lastVolumes, '24h')") &&
   route.includes("ogPairChange24h(ogLastStats.lastPriceChanges, selectedWaxPool)") &&
   route.includes('og_waxonedge_lastVolumes') &&
+  route.includes('og_waxonedge_lastVolumes_native_pair_volume') &&
+  route.includes('og_waxonedge_lastVolumes_route_converted_wax') &&
   route.includes('og_waxonedge_lastPriceChanges') &&
   route.includes('async function indexedCandleChange24hByPair') &&
   route.includes('function applyIndexedPairWindowVolumes') &&
@@ -7210,8 +7254,10 @@ ok('WAXCASH analytics frontend keeps pair table and adds WAX-only liquidity/24h 
   waxcashAnalyticsFrontend.includes("'<td>' + sourceCell(row) + '</td>'") &&
   waxcashAnalyticsFrontend.includes('return num(row && row.liquidity_wax)') &&
   waxcashAnalyticsFrontend.includes('return num(row && row.volume_24h_wax)') &&
-  waxcashAnalyticsFrontend.includes('dual(row.volume_7d_wax, row.volume_7d_usd, row.reason)') &&
-  waxcashAnalyticsFrontend.includes('dual(row.volume_30d_wax, row.volume_30d_usd, row.reason)') &&
+  waxcashAnalyticsFrontend.includes("volumeCell(row, 'volume_24h')") &&
+  waxcashAnalyticsFrontend.includes("volumeCell(row, 'volume_7d')") &&
+  waxcashAnalyticsFrontend.includes("volumeCell(row, 'volume_30d')") &&
+  waxcashAnalyticsFrontend.includes("row[prefix + '_a_native']") &&
   waxcashAnalyticsFrontend.includes('changeCell(row.change_24h)') &&
   waxcashAnalyticsFrontend.includes('priceCell(row)') &&
   !waxcashAnalyticsFrontend.includes('pairStatus(row)') &&
