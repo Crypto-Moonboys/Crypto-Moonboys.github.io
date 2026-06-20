@@ -416,9 +416,21 @@
     return url.toString();
   }
 
+  function alcorMillis(value) {
+    var time = Number(value);
+    if (!Number.isFinite(time) || time <= 0) return NaN;
+    return time < 100000000000 ? time * 1000 : time;
+  }
+
+  function tradingViewSecondsToAlcorMillis(value) {
+    var seconds = Number(value);
+    if (!Number.isFinite(seconds) || seconds <= 0) return NaN;
+    return Math.floor(seconds * 1000);
+  }
+
   function toBar(candle) {
     return {
-      time: Number(candle.time),
+      time: alcorMillis(candle.time),
       open: Number(candle.open),
       high: Number(candle.high),
       low: Number(candle.low),
@@ -503,7 +515,13 @@
           onHistory([], { noData: true });
           return;
         }
-        fetch(candleUrl({ resolution: resolution, from: from * 1000, to: to * 1000 }))
+        var fromMs = tradingViewSecondsToAlcorMillis(from);
+        var toMs = tradingViewSecondsToAlcorMillis(to);
+        if (!Number.isFinite(fromMs) || !Number.isFinite(toMs)) {
+          onHistory([], { noData: true });
+          return;
+        }
+        fetch(candleUrl({ resolution: resolution, from: fromMs, to: toMs }))
           .then(function (response) {
             if (!response.ok) throw new Error('Alcor candles HTTP ' + response.status);
             return response.json();

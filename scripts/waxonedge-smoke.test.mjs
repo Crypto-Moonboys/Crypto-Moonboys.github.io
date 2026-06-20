@@ -152,6 +152,13 @@ ok('waxcash frontend restores a full TradingView Charting Library widget using t
   waxcashHtml.includes("TOKEN_B = 'wax-eosio.token'") &&
   waxcashHtml.includes("symbol: 'WAXCASH_WAX'") &&
   waxcashHtml.includes('var subscriptions = {}') &&
+  waxcashHtml.includes('function alcorMillis(value)') &&
+  waxcashHtml.includes('return time < 100000000000 ? time * 1000 : time') &&
+  waxcashHtml.includes('function tradingViewSecondsToAlcorMillis(value)') &&
+  waxcashHtml.includes('var fromMs = tradingViewSecondsToAlcorMillis(from)') &&
+  waxcashHtml.includes('fetch(candleUrl({ resolution: resolution, from: fromMs, to: toMs }))') &&
+  !waxcashHtml.includes('time: Number(candle.time)') &&
+  !waxcashHtml.includes('from: from * 1000, to: to * 1000') &&
   waxcashHtml.includes('function fetchLatestBar(resolution)') &&
   waxcashHtml.includes('subscribeBars: function (symbolInfo, resolution, onRealtime, subscriberUID)') &&
   waxcashHtml.includes("symbolInfo.ticker !== 'WAXCASH_WAX'") &&
