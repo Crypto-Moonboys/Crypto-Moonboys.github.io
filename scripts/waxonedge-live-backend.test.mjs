@@ -2635,9 +2635,9 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         selected_waxcash_price_wax: '0.03',
         paired_token_og_wax_price: '100',
       }], { lastVolumes }, 0.006);
-      ok('WAXCASH pair table exposes route-converted WAX LastStats volume only when token WAX prices are verified',
-        almostEqual(convertedPair.volume_24h_wax, 2000.3) &&
-        almostEqual(convertedPair.volume_24h_usd, 12.0018) &&
+      ok('WAXCASH pair table exposes one-side route-converted WAX LastStats volume without double-counting native sides',
+        almostEqual(convertedPair.volume_24h_wax, 0.3) &&
+        almostEqual(convertedPair.volume_24h_usd, 0.0018) &&
         convertedPair.metric_sources?.volume_24h_wax?.source === 'og_waxonedge_lastVolumes_route_converted_wax' &&
         convertedPair.metric_sources?.volume_24h_native?.source === 'og_waxonedge_lastVolumes_native_pair_volume' &&
         Number(convertedPair.volume_24h_a_native) === 10 &&

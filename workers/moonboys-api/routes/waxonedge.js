@@ -7932,6 +7932,26 @@ function ogPairTokenWaxPrice(pair, side) {
   return null;
 }
 
+function preferredOgPairConvertedVolumeSide(pair, volumeA, tokenAPriceWax, volumeB, tokenBPriceWax) {
+  const candidates = [];
+  if (volumeA != null && tokenAPriceWax != null) {
+    candidates.push({
+      side: 'a',
+      volume_wax: volumeA * tokenAPriceWax,
+      is_waxcash: isWaxcashToken(pair?.token_a_contract, pair?.token_a_symbol),
+    });
+  }
+  if (volumeB != null && tokenBPriceWax != null) {
+    candidates.push({
+      side: 'b',
+      volume_wax: volumeB * tokenBPriceWax,
+      is_waxcash: isWaxcashToken(pair?.token_b_contract, pair?.token_b_symbol),
+    });
+  }
+  if (!candidates.length) return null;
+  return candidates.find((candidate) => candidate.is_waxcash) || candidates[0];
+}
+
 function ogPairVolumeProof(lastVolumes, duration, pair, waxUsd = null) {
   const row = ogPairLastVolumeRow(lastVolumes, duration, pair);
   if (!row) return null;
@@ -7950,18 +7970,9 @@ function ogPairVolumeProof(lastVolumes, duration, pair, waxUsd = null) {
     volumeWax = volumeB;
     source = 'og_waxonedge_lastVolumes';
   } else {
-    let converted = 0;
-    let convertedSides = 0;
-    if (volumeA != null && tokenAPriceWax != null) {
-      converted += volumeA * tokenAPriceWax;
-      convertedSides += 1;
-    }
-    if (volumeB != null && tokenBPriceWax != null) {
-      converted += volumeB * tokenBPriceWax;
-      convertedSides += 1;
-    }
-    if (convertedSides > 0) {
-      volumeWax = converted;
+    const convertedSide = preferredOgPairConvertedVolumeSide(pair, volumeA, tokenAPriceWax, volumeB, tokenBPriceWax);
+    if (convertedSide) {
+      volumeWax = convertedSide.volume_wax;
       source = 'og_waxonedge_lastVolumes_route_converted_wax';
     }
   }
