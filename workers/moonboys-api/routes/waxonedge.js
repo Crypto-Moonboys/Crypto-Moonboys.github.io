@@ -6459,6 +6459,7 @@ function waxcashPairProof(pair, headlinePrice, pairedDirectWaxPairs, priceIndex)
     pair_price_usd: safeDecimal(priceRelativeUsd),
     paired_token: paired,
     paired_token_og_wax_price: pairedTokenPrice?.price_wax || null,
+    selected_waxcash_price_wax: headlinePrice?.og_headline_price_wax || null,
     direct_wax_pair: directWax,
     reason_codes: reasonCodes,
   };
@@ -7751,10 +7752,19 @@ function waxcashPairTableRow(pair, selectedWaxPool) {
     change_24h: safeDecimal(change24h),
     volume_24h_wax: safeDecimal(volumeWax),
     volume_24h_usd: safeDecimal(volumeUsd),
+    volume_24h_a_native: safeDecimal(asNumber(pair.volume_24h_a_native ?? pair.volume_a_native)),
+    volume_24h_b_native: safeDecimal(asNumber(pair.volume_24h_b_native ?? pair.volume_b_native)),
+    volume_a_native: safeDecimal(asNumber(pair.volume_a_native ?? pair.volume_24h_a_native)),
+    volume_b_native: safeDecimal(asNumber(pair.volume_b_native ?? pair.volume_24h_b_native)),
     volume_7d_wax: safeDecimal(volume7dWax),
     volume_7d_usd: safeDecimal(volume7dUsd),
+    volume_7d_a_native: safeDecimal(asNumber(pair.volume_7d_a_native)),
+    volume_7d_b_native: safeDecimal(asNumber(pair.volume_7d_b_native)),
     volume_30d_wax: safeDecimal(volume30dWax),
     volume_30d_usd: safeDecimal(volume30dUsd),
+    volume_30d_a_native: safeDecimal(asNumber(pair.volume_30d_a_native)),
+    volume_30d_b_native: safeDecimal(asNumber(pair.volume_30d_b_native)),
+    volume_native_source: pair.volume_native_source || null,
     proof_label: reasonCodes.length ? reason : (isSelected ? 'selected direct WAX price proof' : 'reserve-backed valuation'),
     reason,
     token_a_contract: pair.token_a_contract || null,
@@ -7803,6 +7813,9 @@ function waxcashBuildPairTableSection(pairs = [], selectedWaxPool = null) {
         volume_24h_wax_source: row.proof_details?.metric_sources?.volume_24h_wax?.source || null,
         volume_7d_wax_source: row.proof_details?.metric_sources?.volume_7d_wax?.source || null,
         volume_30d_wax_source: row.proof_details?.metric_sources?.volume_30d_wax?.source || null,
+        volume_24h_native_source: row.proof_details?.metric_sources?.volume_24h_native?.source || null,
+        volume_7d_native_source: row.proof_details?.metric_sources?.volume_7d_native?.source || null,
+        volume_30d_native_source: row.proof_details?.metric_sources?.volume_30d_native?.source || null,
         change_24h_source: row.proof_details?.metric_sources?.change_24h?.source || null,
         latest_indexed_trade_time: row.proof_details?.metric_sources?.latest_indexed_trade_time || null,
         row_count_24h: row.proof_details?.metric_sources?.volume_24h_wax?.row_count || 0,
@@ -7901,16 +7914,72 @@ function waxcashOgPairRef(pair) {
   return { ...ref, pair_id: String(pair.pair_id) };
 }
 
-function ogPairVolumeWax(lastVolumes, duration, pair) {
+function ogPairLastVolumeRow(lastVolumes, duration, pair) {
   const ref = waxcashOgPairRef(pair);
   if (!ref) return null;
-  const row = lastVolumes?.[duration]?.[ref.srcType]?.[ref.src]?.[ref.pair_id];
+  return lastVolumes?.[duration]?.[ref.srcType]?.[ref.src]?.[ref.pair_id] || null;
+}
+
+function ogPairTokenWaxPrice(pair, side) {
+  const symbol = normalizeSymbol(pair?.[`token_${side}_symbol`]);
+  const contract = normalizeContract(pair?.[`token_${side}_contract`]);
+  if (isWaxToken(contract, symbol)) return 1;
+  if (isWaxcashToken(contract, symbol)) return asNumber(pair?.selected_waxcash_price_wax);
+  const paired = pair?.paired_token || {};
+  if (tokenKey(paired.contract, paired.symbol) === tokenKey(contract, symbol)) {
+    return asNumber(pair?.paired_token_og_wax_price);
+  }
+  return null;
+}
+
+function ogPairVolumeProof(lastVolumes, duration, pair, waxUsd = null) {
+  const row = ogPairLastVolumeRow(lastVolumes, duration, pair);
   if (!row) return null;
   const tokenASymbol = normalizeSymbol(pair?.token_a_symbol);
   const tokenBSymbol = normalizeSymbol(pair?.token_b_symbol);
-  if (tokenASymbol === 'WAX') return asNumber(row.volumeA);
-  if (tokenBSymbol === 'WAX') return asNumber(row.volumeB);
-  return null;
+  const volumeA = asNumber(row.volumeA);
+  const volumeB = asNumber(row.volumeB);
+  const tokenAPriceWax = ogPairTokenWaxPrice(pair, 'a');
+  const tokenBPriceWax = ogPairTokenWaxPrice(pair, 'b');
+  let volumeWax = null;
+  let source = null;
+  if (tokenASymbol === 'WAX' && volumeA != null) {
+    volumeWax = volumeA;
+    source = 'og_waxonedge_lastVolumes';
+  } else if (tokenBSymbol === 'WAX' && volumeB != null) {
+    volumeWax = volumeB;
+    source = 'og_waxonedge_lastVolumes';
+  } else {
+    let converted = 0;
+    let convertedSides = 0;
+    if (volumeA != null && tokenAPriceWax != null) {
+      converted += volumeA * tokenAPriceWax;
+      convertedSides += 1;
+    }
+    if (volumeB != null && tokenBPriceWax != null) {
+      converted += volumeB * tokenBPriceWax;
+      convertedSides += 1;
+    }
+    if (convertedSides > 0) {
+      volumeWax = converted;
+      source = 'og_waxonedge_lastVolumes_route_converted_wax';
+    }
+  }
+  const hasNative = volumeA != null || volumeB != null;
+  return {
+    volume_wax: safeDecimal(volumeWax),
+    volume_usd: volumeWax != null && waxUsd != null ? safeDecimal(volumeWax * waxUsd) : null,
+    volume_a_native: safeDecimal(volumeA),
+    volume_b_native: safeDecimal(volumeB),
+    token_a_symbol: pair?.token_a_symbol || null,
+    token_b_symbol: pair?.token_b_symbol || null,
+    token_a_wax_price: safeDecimal(tokenAPriceWax),
+    token_b_wax_price: safeDecimal(tokenBPriceWax),
+    source: source || (hasNative ? 'og_waxonedge_lastVolumes_native_pair_volume' : null),
+    native_source: hasNative ? 'og_waxonedge_lastVolumes_native_pair_volume' : null,
+    converted: source === 'og_waxonedge_lastVolumes_route_converted_wax',
+    no_fake_value: true,
+  };
 }
 
 function ogPairChange24h(lastPriceChanges, pair) {
@@ -7924,23 +7993,35 @@ function applyOgLastStatsToWaxcashPairs(pairs = [], ogStats = {}, waxUsd = null)
   const lastVolumes = ogStats.lastVolumes;
   const lastPriceChanges = ogStats.lastPriceChanges;
   return (pairs || []).map((pair) => {
-    const volume24 = ogPairVolumeWax(lastVolumes, '24h', pair);
-    const volume7d = ogPairVolumeWax(lastVolumes, '7d', pair);
-    const volume30d = ogPairVolumeWax(lastVolumes, '30d', pair);
+    const volume24 = ogPairVolumeProof(lastVolumes, '24h', pair, waxUsd);
+    const volume7d = ogPairVolumeProof(lastVolumes, '7d', pair, waxUsd);
+    const volume30d = ogPairVolumeProof(lastVolumes, '30d', pair, waxUsd);
     const change24h = ogPairChange24h(lastPriceChanges, pair);
     const metricSources = { ...(pair.metric_sources || {}) };
-    if (volume24 != null && asNumber(pair.volume_24h_wax) == null) metricSources.volume_24h_wax = { source: 'og_waxonedge_lastVolumes', row_count: 0 };
-    if (volume7d != null && asNumber(pair.volume_7d_wax) == null) metricSources.volume_7d_wax = { source: 'og_waxonedge_lastVolumes', row_count: 0 };
-    if (volume30d != null && asNumber(pair.volume_30d_wax) == null) metricSources.volume_30d_wax = { source: 'og_waxonedge_lastVolumes', row_count: 0 };
+    if (volume24?.volume_wax != null && asNumber(pair.volume_24h_wax) == null) metricSources.volume_24h_wax = { source: volume24.source, row_count: 0 };
+    if (volume7d?.volume_wax != null && asNumber(pair.volume_7d_wax) == null) metricSources.volume_7d_wax = { source: volume7d.source, row_count: 0 };
+    if (volume30d?.volume_wax != null && asNumber(pair.volume_30d_wax) == null) metricSources.volume_30d_wax = { source: volume30d.source, row_count: 0 };
+    if (volume24?.native_source) metricSources.volume_24h_native = { source: volume24.native_source, row_count: 0 };
+    if (volume7d?.native_source) metricSources.volume_7d_native = { source: volume7d.native_source, row_count: 0 };
+    if (volume30d?.native_source) metricSources.volume_30d_native = { source: volume30d.native_source, row_count: 0 };
     if (change24h != null && asNumber(pair.change_24h) == null) metricSources.change_24h = { source: 'og_waxonedge_lastPriceChanges', row_count: 0 };
     return {
       ...pair,
-      volume_24h_wax: safeDecimal(asNumber(pair.volume_24h_wax) ?? volume24),
-      volume_24h_usd: safeDecimal(asNumber(pair.volume_24h_usd) ?? (volume24 != null && waxUsd != null ? volume24 * waxUsd : null)),
-      volume_7d_wax: safeDecimal(asNumber(pair.volume_7d_wax) ?? volume7d),
-      volume_7d_usd: safeDecimal(asNumber(pair.volume_7d_usd) ?? (volume7d != null && waxUsd != null ? volume7d * waxUsd : null)),
-      volume_30d_wax: safeDecimal(asNumber(pair.volume_30d_wax) ?? volume30d),
-      volume_30d_usd: safeDecimal(asNumber(pair.volume_30d_usd) ?? (volume30d != null && waxUsd != null ? volume30d * waxUsd : null)),
+      volume_24h_wax: safeDecimal(asNumber(pair.volume_24h_wax) ?? asNumber(volume24?.volume_wax)),
+      volume_24h_usd: safeDecimal(asNumber(pair.volume_24h_usd) ?? asNumber(volume24?.volume_usd)),
+      volume_24h_a_native: safeDecimal(volume24?.volume_a_native),
+      volume_24h_b_native: safeDecimal(volume24?.volume_b_native),
+      volume_a_native: safeDecimal(volume24?.volume_a_native),
+      volume_b_native: safeDecimal(volume24?.volume_b_native),
+      volume_7d_wax: safeDecimal(asNumber(pair.volume_7d_wax) ?? asNumber(volume7d?.volume_wax)),
+      volume_7d_usd: safeDecimal(asNumber(pair.volume_7d_usd) ?? asNumber(volume7d?.volume_usd)),
+      volume_7d_a_native: safeDecimal(volume7d?.volume_a_native),
+      volume_7d_b_native: safeDecimal(volume7d?.volume_b_native),
+      volume_30d_wax: safeDecimal(asNumber(pair.volume_30d_wax) ?? asNumber(volume30d?.volume_wax)),
+      volume_30d_usd: safeDecimal(asNumber(pair.volume_30d_usd) ?? asNumber(volume30d?.volume_usd)),
+      volume_30d_a_native: safeDecimal(volume30d?.volume_a_native),
+      volume_30d_b_native: safeDecimal(volume30d?.volume_b_native),
+      volume_native_source: volume24?.native_source || volume7d?.native_source || volume30d?.native_source || null,
       change_24h: safeDecimal(asNumber(pair.change_24h) ?? change24h),
       metric_sources: metricSources,
     };
@@ -10617,6 +10698,8 @@ export const __waxonedgeTestHooks = {
   buildWaxcashAnalytics,
   buildWaxcashUdfChartFeed,
   buildWaxcashOgParityProof,
+  applyOgLastStatsToWaxcashPairs,
+  waxcashPairTableRow,
   getWaxcashSupplySyncStatus,
   normalizeWaxcashWaxCandles,
   waxcashHeadlinePrice,

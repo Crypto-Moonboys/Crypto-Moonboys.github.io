@@ -189,6 +189,25 @@
     return '<span class="wx-muted" title="' + esc(humanReason(reason)) + '">Unavailable</span>';
   }
 
+  function nativeVolumeLines(row, prefix) {
+    var volumeA = num(row && row[prefix + '_a_native']);
+    var volumeB = num(row && row[prefix + '_b_native']);
+    var lines = [];
+    if (volumeA != null) lines.push(fmtToken(volumeA, row && row.token_a_symbol));
+    if (volumeB != null) lines.push(fmtToken(volumeB, row && row.token_b_symbol));
+    return lines.filter(function (line) { return line && line !== DASH; });
+  }
+
+  function volumeCell(row, prefix) {
+    var wax = row && row[prefix + '_wax'];
+    var usd = row && row[prefix + '_usd'];
+    if (num(wax) != null || num(usd) != null) return dual(wax, usd, row && row.reason);
+    var lines = nativeVolumeLines(row, prefix);
+    if (!lines.length) return dual(null, null, row && row.reason);
+    return '<span>' + esc(lines[0]) + '</span>' +
+      (lines[1] ? '<span class="wx-cell-sub">' + esc(lines[1]) + '</span>' : '');
+  }
+
   function tokenLabel(row) {
     return tokenSideLabel(row, 'a') + tokenSideLabel(row, 'b');
   }
@@ -302,9 +321,9 @@
         '<td>' + dual(row.liquidity_wax, row.liquidity_usd, row.reason) + '</td>' +
         '<td>' + priceCell(row) + '</td>' +
         '<td>' + changeCell(row.change_24h) + '</td>' +
-        '<td>' + dual(row.volume_24h_wax, row.volume_24h_usd, row.reason) + '</td>' +
-        '<td>' + dual(row.volume_7d_wax, row.volume_7d_usd, row.reason) + '</td>' +
-        '<td>' + dual(row.volume_30d_wax, row.volume_30d_usd, row.reason) + '</td>' +
+        '<td>' + volumeCell(row, 'volume_24h') + '</td>' +
+        '<td>' + volumeCell(row, 'volume_7d') + '</td>' +
+        '<td>' + volumeCell(row, 'volume_30d') + '</td>' +
         '</tr>';
     }).join('');
   }
