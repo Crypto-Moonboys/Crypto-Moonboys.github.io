@@ -144,11 +144,10 @@ ok('waxcash frontend removes visible explanatory chart/status/proof labels',
   !waxcashHtml.includes('Display-only pair detail views') &&
   !waxcashHtml.includes('wx-view-controls') &&
   !waxcashHtml.includes('wx-pair-detail'));
-ok('waxcash frontend uses a standalone TradingView WAXCASH/WAX chart widget without iframe or backend candle fallback',
-  waxcashHtml.includes('https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js') &&
-  waxcashHtml.includes('"symbol": "ALCOR:WAXCASHWAX"') &&
-  waxcashHtml.includes('"allow_symbol_change": false') &&
-  waxcashHtml.includes('"studies": ["Volume@tv-basicstudies"]') &&
+ok('waxcash frontend does not load invalid TradingView, GeckoTerminal, Alcor iframe, or backend candle fallback chart',
+  waxcashHtml.includes('Native TradingView Alcor WAXCASH/WAX symbol unavailable.') &&
+  !waxcashHtml.includes('https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js') &&
+  !waxcashHtml.includes('"symbol": "ALCOR:WAXCASHWAX"') &&
   !waxcashHtml.includes('<iframe') &&
   !waxcashHtml.includes('wx-external-chart-frame') &&
   !waxcashHtml.includes('geckoterminal.com') &&

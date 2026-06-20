@@ -6043,18 +6043,36 @@ ok('WAXCASH pair table backend enriches token icons and pair-level indexed volum
   route.includes('function enrichPairsWithTokenIcons') &&
   route.includes('function collectTokenRefsForPairs') &&
   route.includes('async function indexedTradeWindowVolumesByPair') &&
+  route.includes('async function fetchWaxcashOgLastStats') &&
+  route.includes('function applyOgLastStatsToWaxcashPairs') &&
+  route.includes("ogTokenVolume(ogLastStats.lastVolumes, '24h')") &&
+  route.includes("ogPairChange24h(ogLastStats.lastPriceChanges, selectedWaxPool)") &&
+  route.includes('og_waxonedge_lastVolumes') &&
+  route.includes('og_waxonedge_lastPriceChanges') &&
   route.includes('async function indexedCandleChange24hByPair') &&
   route.includes('function applyIndexedPairWindowVolumes') &&
   route.includes('indexed_pair_volume_window_source') &&
   route.includes('metric_debug') &&
   route.includes('latest_indexed_trade_time') &&
-  route.includes('pairTablePairs = applyIndexedPairWindowVolumes') &&
+  route.includes('indexedPairTablePairs = applyIndexedPairWindowVolumes') &&
+  route.includes('pairTablePairs = applyOgLastStatsToWaxcashPairs(indexedPairTablePairs, ogLastStats, waxUsd)') &&
   route.includes('const normalized = normalizeWaxcashWaxCandles(candles.candles || [], { selectedPriceWax })') &&
   route.includes('const existingChange24h = asNumber(pair?.change_24h)') &&
   route.includes('const tradeChange24h = asNumber(window?.change_24h)') &&
   route.includes('const candleChange24h = asNumber(candleChange?.change_24h)') &&
   route.includes('const change24h = existingChange24h ?? tradeChange24h ?? candleChange24h') &&
   route.includes('pair_table: waxcashBuildPairTableSection(pairTablePairs, selectedWaxPool)'));
+ok('WAXCASH route restores OG WaxOnEdge endpoint shapes for indexed stats and source rows',
+  route.includes("'/lastVolumes'") &&
+  route.includes("'/lastPriceChanges'") &&
+  route.includes("'/markets'") &&
+  route.includes("'/market'") &&
+  route.includes("'/pools'") &&
+  route.includes("'/pool'") &&
+  route.includes("'/poolsv3'") &&
+  route.includes("'/poolv3'") &&
+  route.includes('fetchWaxonedgeOgJson(env, endpoint)') &&
+  route.includes('WAXONEDGE_OG_API_BASE'));
 ok('token detail exposes backend metric proof fields without frontend changes',
   route.includes('function tokenMetricProof') &&
   route.includes('selected_price_proof') &&
@@ -7054,15 +7072,11 @@ ok('WAXCASH analytics frontend keeps values compact and proof reasons in tooltip
   waxcashHtml.includes('table-layout: fixed') &&
   waxcashHtml.includes('white-space: normal') &&
   waxcashHtml.includes('overflow-wrap: anywhere'));
-ok('WAXCASH analytics frontend keeps visible chart as standalone TradingView widget and separate from OG backend proof',
-  waxcashHtml.includes('https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js') &&
-  waxcashHtml.includes('"symbol": "ALCOR:WAXCASHWAX"') &&
-  waxcashHtml.includes('"interval": "240"') &&
-  waxcashHtml.includes('"withdateranges": true') &&
-  waxcashHtml.includes('"allow_symbol_change": false') &&
-  waxcashHtml.includes('"studies": ["Volume@tv-basicstudies"]') &&
-  waxcashHtml.includes('tradingview-widget-container') &&
-  waxcashHtml.includes('wx-tradingview-widget') &&
+ok('WAXCASH analytics frontend does not keep the invalid TradingView symbol or any iframe/custom candle fallback',
+  waxcashHtml.includes('Native TradingView Alcor WAXCASH/WAX symbol unavailable.') &&
+  !waxcashHtml.includes('https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js') &&
+  !waxcashHtml.includes('"symbol": "ALCOR:WAXCASHWAX"') &&
+  !waxcashHtml.includes('tradingview-widget-container') &&
   !waxcashAnalyticsFrontend.includes('sections.chart_external') &&
   !waxcashAnalyticsFrontend.includes('DEFAULT_EXTERNAL_CHART') &&
   !waxcashAnalyticsFrontend.includes('function renderExternalChart(payload)') &&
