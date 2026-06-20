@@ -1763,7 +1763,7 @@ function coreDexPairNormalizationRejectionReason(adapter, row) {
   return null;
 }
 
-function coreDexSourceNormalizationDiagnostics(adapter, rows = [], normalizedPairs = []) {
+function coreDexSourceNormalizationDiagnostics(adapter, rows = [], normalizedPairs = [], options = {}) {
   const reasons = {};
   const rawWaxcashExamples = [];
   let rawWaxcashRowCount = 0;
@@ -1789,6 +1789,16 @@ function coreDexSourceNormalizationDiagnostics(adapter, rows = [], normalizedPai
       });
     }
   }
+  let waxcashNormalizationReason = null;
+  if (options.unavailableReason) {
+    waxcashNormalizationReason = options.unavailableReason;
+  } else if (rawWaxcashRowCount <= 0) {
+    waxcashNormalizationReason = 'no_raw_waxcash_rows_seen_in_scanned_source_rows';
+  } else if (normalizedWaxcashPairCount <= 0) {
+    waxcashNormalizationReason = 'raw_waxcash_rows_rejected_by_normalizer';
+  } else {
+    waxcashNormalizationReason = 'normalized_waxcash_pairs_available';
+  }
   return {
     source: adapter.source,
     normalizer: adapter.normalizer,
@@ -1797,6 +1807,9 @@ function coreDexSourceNormalizationDiagnostics(adapter, rows = [], normalizedPai
     normalized_pair_count: normalizedPairs.length,
     normalized_waxcash_pair_count: normalizedWaxcashPairCount,
     rejected_reason_counts: reasons,
+    waxcash_normalization_reason: waxcashNormalizationReason,
+    source_rows_available: !options.unavailableReason,
+    unavailable_reason: options.unavailableReason || null,
     raw_waxcash_examples: rawWaxcashExamples,
     no_fake_rows: true,
   };
@@ -4296,6 +4309,9 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
       }, syncedAt);
       if (!tables.includes(adapter.table)) {
         const error = `ABI table not found: ${adapter.table}`;
+        const normalizationDiagnostics = coreDexSourceNormalizationDiagnostics(adapter, [], [], {
+          unavailableReason: 'source_table_unavailable_before_pair_scan',
+        });
         await recordSyncRun(env.DB, adapter.source, 'skipped', adapterStartedAt, error);
         await upsertSourceIndexState(env.DB, adapter.source, {
           sync_cycle_id: activeCycleId,
@@ -4305,6 +4321,21 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
           error,
           started_at: state.started_at || adapterStartedAt,
         });
+        await writeCompactDexSnapshot(env.DB, adapter, {
+          row_count: 0,
+          page_count: 0,
+          truncated: 0,
+          error,
+          cursor: state.cursor || '',
+          sync_cycle_id: activeCycleId,
+          status: 'failed',
+          request_count: 0,
+          recovery_preflight: recoveryDecision,
+          normalization_diagnostics: normalizationDiagnostics,
+          waxcash_pair_count: null,
+          last_good_waxcash_pair_count: recoveryDecision?.last_good_waxcash_pair_count || null,
+          waxcash_collapse_guard: null,
+        }, syncedAt).catch(() => {});
         results.push({ source: adapter.source, ok: true, skipped: true, error });
         continue;
       }
@@ -4442,6 +4473,10 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
         cycle: activeCycleId,
       });
     } catch (error) {
+      const message = error?.message || String(error);
+      const normalizationDiagnostics = coreDexSourceNormalizationDiagnostics(adapter, [], [], {
+        unavailableReason: `source_refresh_failed_before_or_during_pair_scan:${message}`.slice(0, 240),
+      });
       await recordSyncRun(env.DB, adapter.source, 'failed', adapterStartedAt, error?.message || String(error)).catch(() => {});
       await upsertSourceIndexState(env.DB, adapter.source, {
         sync_cycle_id: activeCycleId,
@@ -4451,6 +4486,21 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
         error: error?.message || String(error),
         started_at: adapterStartedAt,
       }).catch(() => {});
+      await writeCompactDexSnapshot(env.DB, adapter, {
+        row_count: 0,
+        page_count: 0,
+        truncated: /truncated/i.test(String(error?.message || error)) ? 1 : 0,
+        error: message,
+        cursor: '',
+        sync_cycle_id: activeCycleId,
+        status: 'failed',
+        request_count: 0,
+        recovery_preflight: null,
+        normalization_diagnostics: normalizationDiagnostics,
+        waxcash_pair_count: null,
+        last_good_waxcash_pair_count: null,
+        waxcash_collapse_guard: null,
+      }, nowIso()).catch(() => {});
       results.push({ source: adapter.source, ok: false, error: error?.message || String(error) });
     }
   }
