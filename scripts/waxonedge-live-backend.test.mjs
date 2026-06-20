@@ -3206,12 +3206,14 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       pair_id: 'WAXCASHWAXLEGACY',
       direct_wax_pair: true,
     }], { selectedPriceWax: '0.001' });
-    ok('WAXCASH rolling volume scans 30d rows once and counts distinct excluded trades once',
+    ok('WAXCASH rolling volume scans chunked 30d rows once per safe query and counts distinct excluded trades once',
       Number(tradeWindowVolumes.volume_24h_wax) === 136850.54368654 &&
       Number(tradeWindowVolumes.volume_7d) === 764308.56919631 &&
       Number(tradeWindowVolumes.volume_30d) === 6816747.33378953 &&
-      rollingVolumeSelectCount === 1 &&
-      rollingVolumeSelectSqls[0]?.includes('traded_at >= ?') &&
+      rollingVolumeSelectCount === tradeWindowVolumes.query_chunk_count &&
+      rollingVolumeSelectSqls.length > 0 &&
+      rollingVolumeSelectSqls.every((sql) => sql.includes('traded_at >= ?')) &&
+      rollingVolumeSelectSqls.every((sql) => !sql.includes('24 * 60') && !sql.includes('7 * 24')) &&
       tradeWindowVolumes.excluded_unproven_trade_count === 1,
       JSON.stringify({ tradeWindowVolumes, rollingVolumeSelectCount, rollingVolumeSelectSqls }));
     const failedSupplyWaxcashAnalyticsDb = {
@@ -6348,6 +6350,11 @@ ok('WAXCASH exposes live LastStats diagnostics for env, bucket, D1 ID backfill, 
   route.includes('sample_waxcash_trade_rows') &&
   route.includes('pair_id_matches_current_pair_id_count') &&
   route.includes('pair_id_matches_og_laststats_pair_id_count') &&
+  route.includes('WAXCASH_TRADE_QUERY_PAIR_ID_CHUNK_SIZE') &&
+  route.includes('function waxcashTradeQueryChunks') &&
+  route.includes('source = ? AND pair_id IN') &&
+  route.includes('query_chunk_count') &&
+  route.includes('trade_rows_query_error') &&
   route.includes('source_sync'));
 ok('WAXCASH route restores OG WaxOnEdge endpoint shapes for indexed stats and source rows',
   route.includes("'/lastVolumes'") &&

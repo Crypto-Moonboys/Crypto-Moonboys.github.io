@@ -8005,13 +8005,7 @@ function addInternalLastStatsVolume(lastVolumes, duration, pair, trade, tradedMs
 async function buildInternalD1WaxcashLastStats(db, pairs = null) {
   const pairRows = pairs || await loadWaxcashOgPairRows(db);
   const pairProofByKey = buildWaxcashTradePairProofMap(pairRows);
-  const { predicates, params } = waxcashTradeVolumePredicates(pairRows);
-  const where = predicates.join(' OR ');
-  const latest = await db.prepare(
-    `SELECT MAX(traded_at) AS latest_trade_at
-     FROM waxonedge_trades
-     WHERE (${where})`
-  ).bind(...params).first().catch(() => null);
+  const latest = await waxcashLatestIndexedTradeAt(db, pairRows);
   const latestMs = Date.parse(latest?.latest_trade_at || '');
   if (!Number.isFinite(latestMs)) {
     return {
@@ -8021,16 +8015,15 @@ async function buildInternalD1WaxcashLastStats(db, pairs = null) {
       latest_trade_at: null,
       rows_scanned: 0,
       rows_used: 0,
+      query_chunk_count: latest.query_chunk_count || 0,
+      trade_rows_query_error: latest.trade_rows_query_error || null,
       no_fake_value: true,
     };
   }
   const windows = lastStatsWindowDefinitions();
   const since30dMs = latestMs - windows.find((window) => window.duration === '30d').millis;
-  const rows = await db.prepare(
-    `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json
-     FROM waxonedge_trades
-     WHERE (${where}) AND traded_at >= ?`
-  ).bind(...params, new Date(since30dMs).toISOString()).all().then((value) => value.results || []).catch(() => []);
+  const selectedRows = await waxcashSelectIndexedTradeRows(db, pairRows, { sinceIso: new Date(since30dMs).toISOString() });
+  const rows = selectedRows.rows;
   const lastVolumes = emptyLastVolumesShape();
   let rowsUsed = 0;
   for (const row of rows) {
@@ -8054,6 +8047,8 @@ async function buildInternalD1WaxcashLastStats(db, pairs = null) {
     latest_trade_at: latest.latest_trade_at,
     rows_scanned: rows.length,
     rows_used: rowsUsed,
+    query_chunk_count: selectedRows.query_chunk_count,
+    trade_rows_query_error: latest.trade_rows_query_error || selectedRows.trade_rows_query_error || null,
     no_fake_value: true,
   };
 }
@@ -8098,6 +8093,8 @@ async function fetchWaxcashOgLastStats(env) {
       latest_trade_at: internal.latest_trade_at || null,
       rows_scanned: asNumber(internal.rows_scanned) || 0,
       rows_used: asNumber(internal.rows_used) || 0,
+      query_chunk_count: asNumber(internal.query_chunk_count) || 0,
+      trade_rows_query_error: internal.trade_rows_query_error || null,
     },
     external_laststats: {
       ok: externalLastVolumes.ok,
@@ -8363,20 +8360,12 @@ async function waxcashTradeRowDiagnostics(db, pairs = null) {
      GROUP BY source
      ORDER BY row_count DESC, source ASC`
   ).bind(...sources).all().then((result) => result.results || []).catch(() => []) : [];
-  const { predicates, params } = waxcashTradeVolumePredicates(pairRows);
-  const where = predicates.join(' OR ');
-  const waxcashCount = await db.prepare(
-    `SELECT COUNT(*) AS row_count, MAX(traded_at) AS latest_traded_at
-     FROM waxonedge_trades
-     WHERE (${where})`
-  ).bind(...params).first().catch((error) => ({ error: error?.message || String(error) }));
-  const sampleRows = await db.prepare(
-    `SELECT source, trade_id, pair_id, contract, symbol, amount, volume, traded_at, raw_json
-     FROM waxonedge_trades
-     WHERE (${where})
-     ORDER BY traded_at DESC
-     LIMIT 10`
-  ).bind(...params).all().then((result) => result.results || []).catch(() => []);
+  const waxcashCount = await waxcashIndexedTradeRowCount(db, pairRows);
+  const sampleResult = await waxcashSelectIndexedTradeRows(db, pairRows, {
+    selectColumns: 'source, trade_id, pair_id, contract, symbol, amount, volume, traded_at, raw_json',
+    limit: 10,
+  });
+  const sampleRows = sampleResult.rows;
   const sourcePairGroups = sourcePlaceholders ? await db.prepare(
     `SELECT source, pair_id, COUNT(*) AS row_count, MAX(traded_at) AS latest_traded_at
      FROM waxonedge_trades
@@ -8410,11 +8399,13 @@ async function waxcashTradeRowDiagnostics(db, pairs = null) {
   }
   return {
     ok: (asNumber(waxcashCount?.row_count) || 0) > 0,
-    reason: waxcashCount?.error || ((asNumber(waxcashCount?.row_count) || 0) > 0 ? null : 'no_waxcash_trade_rows_indexed'),
+    reason: waxcashCount?.trade_rows_query_error || ((asNumber(waxcashCount?.row_count) || 0) > 0 ? null : 'no_waxcash_trade_rows_indexed'),
     total_trade_rows: totalRow?.error ? null : (asNumber(totalRow?.count) || 0),
     total_trade_rows_error: totalRow?.error || null,
-    waxcash_related_trade_rows: waxcashCount?.error ? null : (asNumber(waxcashCount?.row_count) || 0),
+    waxcash_related_trade_rows: waxcashCount?.trade_rows_query_error ? null : (asNumber(waxcashCount?.row_count) || 0),
     latest_waxcash_trade_at: waxcashCount?.latest_traded_at || null,
+    query_chunk_count: Math.max(asNumber(waxcashCount?.query_chunk_count) || 0, asNumber(sampleResult.query_chunk_count) || 0),
+    trade_rows_query_error: waxcashCount?.trade_rows_query_error || sampleResult.trade_rows_query_error || null,
     rows_by_source: rowsBySource.map((row) => ({
       source: row.source || null,
       row_count: asNumber(row.row_count) || 0,
@@ -8473,6 +8464,8 @@ async function getWaxcashLastStatsDiagnostics(env) {
       latest_trade_at: internal.latest_trade_at || null,
       rows_scanned: asNumber(internal.rows_scanned) || 0,
       rows_used: asNumber(internal.rows_used) || 0,
+      query_chunk_count: asNumber(internal.query_chunk_count) || 0,
+      trade_rows_query_error: internal.trade_rows_query_error || null,
     },
     og_api_base: ogBase,
     lastVolumes_fetch: {
@@ -9173,6 +9166,124 @@ function waxcashTradeVolumePredicates(pairs = []) {
   return { predicates, params };
 }
 
+const WAXCASH_TRADE_QUERY_PAIR_ID_CHUNK_SIZE = 40;
+
+function waxcashTradeQueryChunks(pairs = []) {
+  const chunks = [{
+    kind: 'waxcash_token_rows',
+    where: '(contract = ? AND symbol = ?)',
+    params: [WAXCASH_CONTRACT, WAXCASH_SYMBOL],
+  }];
+  const idsBySource = new Map();
+  for (const pair of pairs || []) {
+    const sourceNames = candleTradeSourceNamesFor(pair?.source);
+    const pairIds = waxcashTradePairIdsForLookup(pair);
+    for (const source of sourceNames) {
+      if (!idsBySource.has(source)) idsBySource.set(source, new Set());
+      const ids = idsBySource.get(source);
+      for (const pairId of pairIds) ids.add(pairId);
+    }
+  }
+  for (const [source, ids] of idsBySource.entries()) {
+    const values = [...ids].filter(Boolean);
+    for (let i = 0; i < values.length; i += WAXCASH_TRADE_QUERY_PAIR_ID_CHUNK_SIZE) {
+      const pairIds = values.slice(i, i + WAXCASH_TRADE_QUERY_PAIR_ID_CHUNK_SIZE);
+      chunks.push({
+        kind: 'source_pair_id_rows',
+        source,
+        pair_id_count: pairIds.length,
+        where: `(source = ? AND pair_id IN (${pairIds.map(() => '?').join(',')}))`,
+        params: [source, ...pairIds],
+      });
+    }
+  }
+  return chunks;
+}
+
+function waxcashTradeRowUniqueKey(row) {
+  return [
+    row?.source,
+    row?.trade_id,
+    row?.tx_id,
+    row?.pair_id,
+    row?.traded_at,
+  ].map(safeString).join('::');
+}
+
+async function waxcashLatestIndexedTradeAt(db, pairs = []) {
+  const chunks = waxcashTradeQueryChunks(pairs);
+  let latestTradeAt = null;
+  let queryError = null;
+  for (const chunk of chunks) {
+    const row = await db.prepare(
+      `SELECT MAX(traded_at) AS latest_trade_at
+       FROM waxonedge_trades
+       WHERE ${chunk.where}`
+    ).bind(...chunk.params).first().catch((error) => {
+      queryError = error?.message || String(error);
+      return null;
+    });
+    const candidateMs = Date.parse(row?.latest_trade_at || '');
+    if (Number.isFinite(candidateMs) && (!latestTradeAt || candidateMs > Date.parse(latestTradeAt))) {
+      latestTradeAt = row.latest_trade_at;
+    }
+  }
+  return {
+    latest_trade_at: latestTradeAt,
+    query_chunk_count: chunks.length,
+    trade_rows_query_error: queryError,
+  };
+}
+
+async function waxcashSelectIndexedTradeRows(db, pairs = [], options = {}) {
+  const chunks = waxcashTradeQueryChunks(pairs);
+  const sinceIso = options.sinceIso || null;
+  const limit = Math.max(0, Math.floor(asNumber(options.limit) || 0));
+  const selectColumns = options.selectColumns || 'source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json';
+  const rows = [];
+  const seen = new Set();
+  let queryError = null;
+  for (const chunk of chunks) {
+    const sinceClause = sinceIso ? ' AND traded_at >= ?' : '';
+    const limitClause = limit ? ' LIMIT ?' : '';
+    const params = sinceIso ? chunk.params.concat(sinceIso) : chunk.params.slice();
+    if (limit) params.push(limit);
+    const chunkRows = await db.prepare(
+      `SELECT ${selectColumns}
+       FROM waxonedge_trades
+       WHERE ${chunk.where}${sinceClause}
+       ORDER BY traded_at DESC${limitClause}`
+    ).bind(...params).all().then((result) => result.results || []).catch((error) => {
+      queryError = error?.message || String(error);
+      return [];
+    });
+    for (const row of chunkRows) {
+      const key = waxcashTradeRowUniqueKey(row);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      rows.push(row);
+    }
+  }
+  rows.sort((a, b) => Date.parse(b?.traded_at || '') - Date.parse(a?.traded_at || ''));
+  return {
+    rows: limit ? rows.slice(0, limit) : rows,
+    query_chunk_count: chunks.length,
+    trade_rows_query_error: queryError,
+  };
+}
+
+async function waxcashIndexedTradeRowCount(db, pairs = []) {
+  const selected = await waxcashSelectIndexedTradeRows(db, pairs, {
+    selectColumns: 'source, trade_id, pair_id, tx_id, traded_at',
+  });
+  return {
+    row_count: selected.rows.length,
+    latest_traded_at: selected.rows[0]?.traded_at || null,
+    query_chunk_count: selected.query_chunk_count,
+    trade_rows_query_error: selected.trade_rows_query_error,
+  };
+}
+
 function waxcashTradePairKey(source, pairId) {
   return `${moonboysCandleSource(source)}::${safeString(pairId)}`;
 }
@@ -9292,37 +9403,34 @@ function waxcashTradeVolumeWax(row, pairProofByKey, selectedPriceWax) {
 async function listIndexedTrades(db, contract, symbol, options = {}) {
   const limit = Math.max(1, Math.min(500, Math.floor(asNumber(options.limit) || 100)));
   const pairRows = isWaxcashToken(contract, symbol) ? await loadWaxcashOgPairRows(db) : await loadPairRowsForToken(db, contract, symbol);
-  const { predicates, params } = waxcashTradeVolumePredicates(
-    isWaxcashToken(contract, symbol) ? pairRows : pairRows.filter((pair) => pairTokenSide(pair, contract, symbol)),
-  );
-  const where = isWaxcashToken(contract, symbol)
-    ? predicates.join(' OR ')
-    : '(contract = ? AND symbol = ?)';
-  const bindParams = isWaxcashToken(contract, symbol) ? params : [contract, symbol];
-  const rows = await db.prepare(
-    `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at
-     FROM waxonedge_trades
-     WHERE (${where})
-     ORDER BY traded_at DESC
-     LIMIT ?`
-  ).bind(...bindParams, limit).all().then((result) => result.results || []).catch(() => []);
+  const waxcashRows = isWaxcashToken(contract, symbol)
+    ? await waxcashSelectIndexedTradeRows(db, pairRows, {
+      selectColumns: 'source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at',
+      limit,
+    })
+    : null;
+  const rows = waxcashRows
+    ? waxcashRows.rows
+    : await db.prepare(
+      `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at
+       FROM waxonedge_trades
+       WHERE (contract = ? AND symbol = ?)
+       ORDER BY traded_at DESC
+       LIMIT ?`
+    ).bind(contract, symbol, limit).all().then((result) => result.results || []).catch(() => []);
   return {
     rows,
     row_count: rows.length,
     source: 'waxonedge_trades',
     unavailable: rows.length ? null : `No indexed trade rows exist for ${contract}::${symbol}`,
+    query_chunk_count: waxcashRows?.query_chunk_count || null,
+    trade_rows_query_error: waxcashRows?.trade_rows_query_error || null,
     no_fake_value: true,
   };
 }
 
 async function indexedTradeWindowVolumes(db, pairs = [], options = {}) {
-  const { predicates, params } = waxcashTradeVolumePredicates(pairs);
-  const where = predicates.join(' OR ');
-  const latest = await db.prepare(
-    `SELECT MAX(traded_at) AS latest_trade_at
-     FROM waxonedge_trades
-     WHERE (${where})`
-  ).bind(...params).first().catch(() => null);
+  const latest = await waxcashLatestIndexedTradeAt(db, pairs);
   const latestMs = Date.parse(latest?.latest_trade_at || '');
   if (!Number.isFinite(latestMs)) {
     return {
@@ -9333,6 +9441,8 @@ async function indexedTradeWindowVolumes(db, pairs = [], options = {}) {
       source: null,
       reason: 'No indexed WAXCASH trade rows are available for rolling volume windows',
       basis: null,
+      query_chunk_count: latest.query_chunk_count || 0,
+      trade_rows_query_error: latest.trade_rows_query_error || null,
     };
   }
   const since24hMs = latestMs - (24 * 60 * 60 * 1000);
@@ -9348,13 +9458,14 @@ async function indexedTradeWindowVolumes(db, pairs = [], options = {}) {
     latest_trade_at: latest.latest_trade_at,
     reason: null,
     excluded_unproven_trade_count: 0,
+    query_chunk_count: latest.query_chunk_count || 0,
+    trade_rows_query_error: latest.trade_rows_query_error || null,
   };
   const pairProofByKey = buildWaxcashTradePairProofMap(pairs);
-  const rows = await db.prepare(
-    `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json
-     FROM waxonedge_trades
-     WHERE (${where}) AND traded_at >= ?`
-  ).bind(...params, new Date(since30dMs).toISOString()).all().then((value) => value.results || []).catch(() => []);
+  const selectedRows = await waxcashSelectIndexedTradeRows(db, pairs, { sinceIso: new Date(since30dMs).toISOString() });
+  const rows = selectedRows.rows;
+  result.query_chunk_count = selectedRows.query_chunk_count;
+  result.trade_rows_query_error = latest.trade_rows_query_error || selectedRows.trade_rows_query_error || null;
   const totals = {
     volume_24h_wax: 0,
     volume_7d: 0,
@@ -9406,13 +9517,7 @@ async function indexedTradeWindowVolumes(db, pairs = [], options = {}) {
 }
 
 async function indexedTradeWindowVolumesByPair(db, pairs = [], options = {}) {
-  const { predicates, params } = waxcashTradeVolumePredicates(pairs);
-  const where = predicates.join(' OR ');
-  const latest = await db.prepare(
-    `SELECT MAX(traded_at) AS latest_trade_at
-     FROM waxonedge_trades
-     WHERE (${where})`
-  ).bind(...params).first().catch(() => null);
+  const latest = await waxcashLatestIndexedTradeAt(db, pairs);
   const latestMs = Date.parse(latest?.latest_trade_at || '');
   if (!Number.isFinite(latestMs)) return new Map();
 
@@ -9420,11 +9525,8 @@ async function indexedTradeWindowVolumesByPair(db, pairs = [], options = {}) {
   const since7dMs = latestMs - (7 * 24 * 60 * 60 * 1000);
   const since30dMs = latestMs - (30 * 24 * 60 * 60 * 1000);
   const pairProofByKey = buildWaxcashTradePairProofMap(pairs);
-  const rows = await db.prepare(
-    `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json
-     FROM waxonedge_trades
-     WHERE (${where}) AND traded_at >= ?`
-  ).bind(...params, new Date(since30dMs).toISOString()).all().then((value) => value.results || []).catch(() => []);
+  const selectedRows = await waxcashSelectIndexedTradeRows(db, pairs, { sinceIso: new Date(since30dMs).toISOString() });
+  const rows = selectedRows.rows;
   const windows = new Map();
   for (const row of rows) {
     const tradedMs = Date.parse(row?.traded_at || '');
@@ -9448,6 +9550,8 @@ async function indexedTradeWindowVolumesByPair(db, pairs = [], options = {}) {
         price_samples: [],
         source: 'indexed_trade_rows_window_wax_denominated',
         basis: proof.basis,
+        query_chunk_count: selectedRows.query_chunk_count,
+        trade_rows_query_error: latest.trade_rows_query_error || selectedRows.trade_rows_query_error || null,
       });
     }
     const window = windows.get(key);
@@ -9493,6 +9597,8 @@ async function indexedTradeWindowVolumesByPair(db, pairs = [], options = {}) {
       change_source: change24h != null ? 'indexed_trade_price_window' : null,
       latest_indexed_trade_time: window.latest_indexed_trade_time,
       latest_trade_at: latest.latest_trade_at,
+      query_chunk_count: window.query_chunk_count || selectedRows.query_chunk_count,
+      trade_rows_query_error: window.trade_rows_query_error || latest.trade_rows_query_error || selectedRows.trade_rows_query_error || null,
       no_fake_value: true,
     });
   }
