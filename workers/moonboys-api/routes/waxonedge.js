@@ -8004,7 +8004,7 @@ function addInternalLastStatsVolume(lastVolumes, duration, pair, trade, tradedMs
 
 async function buildInternalD1WaxcashLastStats(db, pairs = null) {
   const pairRows = pairs || await loadWaxcashOgPairRows(db);
-  const pairProofByKey = new Map((pairRows || []).map((pair) => [waxcashTradePairKey(pair.source, pair.pair_id), pair]));
+  const pairProofByKey = buildWaxcashTradePairProofMap(pairRows);
   const { predicates, params } = waxcashTradeVolumePredicates(pairRows);
   const where = predicates.join(' OR ');
   const latest = await db.prepare(
@@ -8301,11 +8301,145 @@ async function waxcashSourceSyncDiagnostics(db, sources = ['swap.nefty', 'swap.t
   }, {});
 }
 
+function waxcashTradeDiagnosticSources(pairs = []) {
+  const sourceNames = new Set([
+    'alcor',
+    'swap.alcor',
+    'swap.taco',
+    'swap.nefty',
+    'swap.box',
+    'swap.adex',
+    ALCOR_TRADE_INDEX_SOURCE,
+    AMM_TRADE_INDEX_SOURCE,
+    LIVE_INDEXER_HISTORY_SOURCE,
+  ]);
+  for (const pair of pairs || []) {
+    for (const source of candleTradeSourceNamesFor(pair?.source)) sourceNames.add(source);
+  }
+  return [...sourceNames].filter(Boolean);
+}
+
+function waxcashTradeDiagnosticSample(row) {
+  const raw = parseTradeRawJson(row);
+  return {
+    source: row?.source || null,
+    trade_id: row?.trade_id || null,
+    pair_id: row?.pair_id || null,
+    contract: row?.contract || null,
+    symbol: row?.symbol || null,
+    amount: row?.amount ?? null,
+    volume: row?.volume ?? null,
+    traded_at: row?.traded_at || null,
+    raw_json_keys: diagnosticObjectKeys(raw, 30),
+  };
+}
+
+async function waxcashTradeRowDiagnostics(db, pairs = null) {
+  if (!db) {
+    return {
+      ok: false,
+      reason: 'd1_not_configured',
+      total_trade_rows: null,
+      waxcash_related_trade_rows: null,
+      latest_waxcash_trade_at: null,
+      rows_by_source: [],
+      latest_traded_at_by_source: {},
+      sample_waxcash_trade_rows: [],
+      pair_id_matches_current_pair_id_count: null,
+      pair_id_matches_og_laststats_pair_id_count: null,
+    };
+  }
+  const pairRows = pairs || await loadWaxcashOgPairRows(db).catch(() => []);
+  const sources = waxcashTradeDiagnosticSources(pairRows);
+  const sourcePlaceholders = sources.map(() => '?').join(',');
+  const { displayPairKeys, ogPairKeys } = waxcashTradePairKeySets(pairRows);
+  const totalRow = await db.prepare(
+    `SELECT COUNT(*) AS count FROM waxonedge_trades`
+  ).first().catch((error) => ({ error: error?.message || String(error) }));
+  const rowsBySource = sourcePlaceholders ? await db.prepare(
+    `SELECT source, COUNT(*) AS row_count, MAX(traded_at) AS latest_traded_at
+     FROM waxonedge_trades
+     WHERE source IN (${sourcePlaceholders})
+     GROUP BY source
+     ORDER BY row_count DESC, source ASC`
+  ).bind(...sources).all().then((result) => result.results || []).catch(() => []) : [];
+  const { predicates, params } = waxcashTradeVolumePredicates(pairRows);
+  const where = predicates.join(' OR ');
+  const waxcashCount = await db.prepare(
+    `SELECT COUNT(*) AS row_count, MAX(traded_at) AS latest_traded_at
+     FROM waxonedge_trades
+     WHERE (${where})`
+  ).bind(...params).first().catch((error) => ({ error: error?.message || String(error) }));
+  const sampleRows = await db.prepare(
+    `SELECT source, trade_id, pair_id, contract, symbol, amount, volume, traded_at, raw_json
+     FROM waxonedge_trades
+     WHERE (${where})
+     ORDER BY traded_at DESC
+     LIMIT 10`
+  ).bind(...params).all().then((result) => result.results || []).catch(() => []);
+  const sourcePairGroups = sourcePlaceholders ? await db.prepare(
+    `SELECT source, pair_id, COUNT(*) AS row_count, MAX(traded_at) AS latest_traded_at
+     FROM waxonedge_trades
+     WHERE source IN (${sourcePlaceholders})
+       AND pair_id IS NOT NULL
+       AND pair_id != ''
+     GROUP BY source, pair_id
+     ORDER BY row_count DESC, latest_traded_at DESC
+     LIMIT 500`
+  ).bind(...sources).all().then((result) => result.results || []).catch(() => []) : [];
+  let displayMatchCount = 0;
+  let ogMatchCount = 0;
+  const matchedGroups = [];
+  const unmatchedGroups = [];
+  for (const group of sourcePairGroups) {
+    const key = waxcashTradePairKey(group.source, group.pair_id);
+    const displayMatch = displayPairKeys.has(key);
+    const ogMatch = ogPairKeys.has(key);
+    if (displayMatch) displayMatchCount += asNumber(group.row_count) || 0;
+    if (ogMatch) ogMatchCount += asNumber(group.row_count) || 0;
+    const shaped = {
+      source: group.source || null,
+      pair_id: group.pair_id || null,
+      row_count: asNumber(group.row_count) || 0,
+      latest_traded_at: group.latest_traded_at || null,
+      matches_current_pair_id: displayMatch,
+      matches_og_laststats_pair_id: ogMatch,
+    };
+    if (displayMatch || ogMatch) matchedGroups.push(shaped);
+    else if (unmatchedGroups.length < 20) unmatchedGroups.push(shaped);
+  }
+  return {
+    ok: (asNumber(waxcashCount?.row_count) || 0) > 0,
+    reason: waxcashCount?.error || ((asNumber(waxcashCount?.row_count) || 0) > 0 ? null : 'no_waxcash_trade_rows_indexed'),
+    total_trade_rows: totalRow?.error ? null : (asNumber(totalRow?.count) || 0),
+    total_trade_rows_error: totalRow?.error || null,
+    waxcash_related_trade_rows: waxcashCount?.error ? null : (asNumber(waxcashCount?.row_count) || 0),
+    latest_waxcash_trade_at: waxcashCount?.latest_traded_at || null,
+    rows_by_source: rowsBySource.map((row) => ({
+      source: row.source || null,
+      row_count: asNumber(row.row_count) || 0,
+      latest_traded_at: row.latest_traded_at || null,
+    })),
+    latest_traded_at_by_source: rowsBySource.reduce((out, row) => {
+      out[row.source] = row.latest_traded_at || null;
+      return out;
+    }, {}),
+    sample_waxcash_trade_rows: sampleRows.map(waxcashTradeDiagnosticSample),
+    pair_id_matches_current_pair_id_count: displayMatchCount,
+    pair_id_matches_og_laststats_pair_id_count: ogMatchCount,
+    matching_source_pair_groups: matchedGroups.slice(0, 50),
+    unmatched_source_pair_groups_sample: unmatchedGroups,
+    source_filters: sources,
+    no_fake_value: true,
+  };
+}
+
 async function getWaxcashLastStatsDiagnostics(env) {
   const ogBase = sanitizedWaxonedgeOgBase(env);
-  const [lastVolumes, internal, d1, source_sync] = await Promise.all([
+  const pairRows = env?.DB ? await loadWaxcashOgPairRows(env.DB).catch(() => []) : [];
+  const [lastVolumes, internal, d1, source_sync, trade_rows] = await Promise.all([
     fetchWaxonedgeOgDiagnosticJson(env, '/lastVolumes'),
-    env?.DB ? buildInternalD1WaxcashLastStats(env.DB).catch((error) => ({
+    env?.DB ? buildInternalD1WaxcashLastStats(env.DB, pairRows).catch((error) => ({
       ok: false,
       lastVolumes: markLastStatsSource(emptyLastVolumesShape(), 'internal_d1_laststats'),
       reason: `internal_d1_laststats_failed:${error?.message || String(error)}`,
@@ -8321,7 +8455,8 @@ async function getWaxcashLastStatsDiagnostics(env) {
       rows_used: 0,
     }),
     waxcashOgLastStatsIdCounts(env.DB),
-    waxcashSourceSyncDiagnostics(env.DB),
+    waxcashSourceSyncDiagnostics(env.DB, ['swap.nefty', 'swap.taco', 'swap.alcor', ALCOR_TRADE_INDEX_SOURCE, AMM_TRADE_INDEX_SOURCE, LIVE_INDEXER_HISTORY_SOURCE]),
+    waxcashTradeRowDiagnostics(env.DB, pairRows),
   ]);
   const selectedLastVolumes = internal.ok ? internal.lastVolumes : (lastVolumes.ok ? markLastStatsSource(lastVolumes.data, 'og_api_laststats') : null);
   const bucketDiagnostics = selectedLastVolumes ? ogLastVolumesBucketDiagnostics(selectedLastVolumes) : ogLastVolumesBucketDiagnostics(null);
@@ -8350,6 +8485,7 @@ async function getWaxcashLastStatsDiagnostics(env) {
     lastVolumes_shape: bucketDiagnostics,
     external_lastVolumes_shape: externalBucketDiagnostics,
     d1,
+    trade_rows,
     source_sync,
     interpretation: {
       missing_env: !ogBase.configured || !ogBase.valid,
@@ -8359,6 +8495,7 @@ async function getWaxcashLastStatsDiagnostics(env) {
       migration_027_missing: !d1.migration_027_applied,
       og_laststats_pair_ids_need_backfill: d1.migration_027_applied && asNumber(d1.og_laststats_pair_id_null) > 0,
       internal_d1_laststats_available: !!internal.ok,
+      trade_rows_indexing_required: !trade_rows.ok,
       source_sync_required: !internal.ok && ['internal_laststats_no_trade_rows', 'd1_not_configured'].includes(internal.reason),
     },
   };
@@ -9026,16 +9163,63 @@ function waxcashTradeVolumePredicates(pairs = []) {
   const params = [WAXCASH_CONTRACT, WAXCASH_SYMBOL];
   for (const pair of pairs || []) {
     const sourceNames = candleTradeSourceNamesFor(pair?.source);
-    const pairId = safeString(pair?.pair_id);
-    if (!sourceNames.length || !pairId) continue;
-    predicates.push(`(source IN (${sourceNames.map(() => '?').join(',')}) AND pair_id = ?)`);
-    params.push(...sourceNames, pairId);
+    const pairIds = waxcashTradePairIdsForLookup(pair);
+    if (!sourceNames.length || !pairIds.length) continue;
+    for (const pairId of pairIds) {
+      predicates.push(`(source IN (${sourceNames.map(() => '?').join(',')}) AND pair_id = ?)`);
+      params.push(...sourceNames, pairId);
+    }
   }
   return { predicates, params };
 }
 
 function waxcashTradePairKey(source, pairId) {
   return `${moonboysCandleSource(source)}::${safeString(pairId)}`;
+}
+
+function waxcashTradePairIdsForLookup(pair) {
+  return uniqueSafeStrings([
+    pair?.og_laststats_pair_id,
+    pair?.og_pair_id,
+    pair?.pairid,
+    pair?.pair_id,
+    pair?.id,
+    pair?.pool_id,
+    pair?.market_id,
+    pair?.ticker_id,
+    pair?.pair_key,
+  ]);
+}
+
+function buildWaxcashTradePairProofMap(pairs = []) {
+  const map = new Map();
+  for (const pair of pairs || []) {
+    const sourceNames = candleTradeSourceNamesFor(pair?.source);
+    const pairIds = waxcashTradePairIdsForLookup(pair);
+    for (const source of sourceNames) {
+      for (const pairId of pairIds) {
+        const key = waxcashTradePairKey(source, pairId);
+        if (!map.has(key)) map.set(key, pair);
+      }
+    }
+  }
+  return map;
+}
+
+function waxcashTradePairKeySets(pairs = []) {
+  const displayPairKeys = new Set();
+  const ogPairKeys = new Set();
+  for (const pair of pairs || []) {
+    const sourceNames = candleTradeSourceNamesFor(pair?.source);
+    for (const source of sourceNames) {
+      const displayPairId = safeString(pair?.pair_id);
+      if (displayPairId) displayPairKeys.add(waxcashTradePairKey(source, displayPairId));
+      for (const ogPairId of uniqueSafeStrings([pair?.og_laststats_pair_id, pair?.og_pair_id, pair?.pairid])) {
+        ogPairKeys.add(waxcashTradePairKey(source, ogPairId));
+      }
+    }
+  }
+  return { displayPairKeys, ogPairKeys };
 }
 
 function waxcashTradeAssetVolumeWax(row, selectedPriceWax) {
@@ -9165,7 +9349,7 @@ async function indexedTradeWindowVolumes(db, pairs = [], options = {}) {
     reason: null,
     excluded_unproven_trade_count: 0,
   };
-  const pairProofByKey = new Map((pairs || []).map((pair) => [waxcashTradePairKey(pair.source, pair.pair_id), pair]));
+  const pairProofByKey = buildWaxcashTradePairProofMap(pairs);
   const rows = await db.prepare(
     `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json
      FROM waxonedge_trades
@@ -9235,7 +9419,7 @@ async function indexedTradeWindowVolumesByPair(db, pairs = [], options = {}) {
   const since24hMs = latestMs - (24 * 60 * 60 * 1000);
   const since7dMs = latestMs - (7 * 24 * 60 * 60 * 1000);
   const since30dMs = latestMs - (30 * 24 * 60 * 60 * 1000);
-  const pairProofByKey = new Map((pairs || []).map((pair) => [waxcashTradePairKey(pair.source, pair.pair_id), pair]));
+  const pairProofByKey = buildWaxcashTradePairProofMap(pairs);
   const rows = await db.prepare(
     `SELECT source, trade_id, pair_id, contract, symbol, side, price, amount, volume, tx_id, traded_at, raw_json
      FROM waxonedge_trades
