@@ -1841,6 +1841,38 @@ async function pruneStaleSourcePairsAfterComplete(db, source, refreshedAfter) {
   ).bind(source, refreshedAfter).run();
 }
 
+async function countWaxcashPairsForSource(db, source, options = {}) {
+  if (!source) return 0;
+  const clauses = [
+    `source = ?`,
+    `((token_a_contract = ? AND token_a_symbol = ?) OR (token_b_contract = ? AND token_b_symbol = ?))`,
+  ];
+  const params = [source, WAXCASH_CONTRACT, WAXCASH_SYMBOL, WAXCASH_CONTRACT, WAXCASH_SYMBOL];
+  if (options.updatedAtGte) {
+    clauses.push(`updated_at >= ?`);
+    params.push(options.updatedAtGte);
+  }
+  const row = await db.prepare(
+    `SELECT COUNT(*) AS count
+     FROM waxonedge_pairs
+     WHERE ${clauses.join(' AND ')}`
+  ).bind(...params).first().catch(() => null);
+  return asNumber(row?.count) || 0;
+}
+
+function waxcashSourceCollapseGuard(previousCount, refreshedCount) {
+  const previous = asNumber(previousCount) || 0;
+  const refreshed = asNumber(refreshedCount) || 0;
+  if (previous <= 0) return { ok: true, reason: null };
+  if (refreshed <= 0) {
+    return { ok: false, reason: 'source_complete_but_waxcash_rows_collapsed' };
+  }
+  if (previous >= 8 && refreshed < Math.ceil(previous * 0.75)) {
+    return { ok: false, reason: 'source_complete_but_waxcash_rows_sharply_lower' };
+  }
+  return { ok: true, reason: null };
+}
+
 function buildPairCounts(pairs) {
   const counts = new Map();
   for (const pair of sourceRows(pairs)) {
@@ -4178,14 +4210,33 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
       const pairs = rows
         .map((row) => normalizeCoreDexPair(adapter, row, priceIndex, syncedAt))
         .filter(Boolean);
+      const previousWaxcashPairCount = await countWaxcashPairsForSource(env.DB, adapter.source);
       await upsertPairs(env.DB, pairs);
-      const complete = tableResult.complete ? 1 : 0;
-      const status = complete ? 'success' : 'partial';
+      let complete = tableResult.complete ? 1 : 0;
+      let status = complete ? 'success' : 'partial';
       const refreshStartedAt = state.started_at || adapterStartedAt;
+      let waxcashCollapseGuard = null;
       if (complete) {
-        await pruneStaleSourcePairsAfterComplete(env.DB, adapter.source, refreshStartedAt);
+        const refreshedWaxcashPairCount = await countWaxcashPairsForSource(env.DB, adapter.source, { updatedAtGte: refreshStartedAt });
+        waxcashCollapseGuard = {
+          previous_waxcash_pair_count: previousWaxcashPairCount,
+          refreshed_waxcash_pair_count: refreshedWaxcashPairCount,
+          refresh_started_at: refreshStartedAt,
+          reason: null,
+        };
+        const guard = waxcashSourceCollapseGuard(previousWaxcashPairCount, refreshedWaxcashPairCount);
+        waxcashCollapseGuard.reason = guard.reason;
+        if (guard.ok) {
+          await pruneStaleSourcePairsAfterComplete(env.DB, adapter.source, refreshStartedAt);
+        } else {
+          complete = 0;
+          status = 'partial';
+        }
       }
       let error = complete ? null : `Partial source sync checkpoint saved after ${tableResult.page_count} page(s) and ${tableResult.request_count} table row request(s); next_key=${tableResult.next_key || 'unknown'}`;
+      if (waxcashCollapseGuard?.reason) {
+        error = [error, `${waxcashCollapseGuard.reason}: previous_waxcash_pair_count=${waxcashCollapseGuard.previous_waxcash_pair_count}; refreshed_waxcash_pair_count=${waxcashCollapseGuard.refreshed_waxcash_pair_count}; prune skipped to preserve last complete WAXCASH rows`].filter(Boolean).join('; ');
+      }
       const previousSnapshot = await readSnapshot(env.DB, `${adapter.source}_${adapter.table}`);
       const previousCursor = state.cursor || '';
       const reportedCursor = complete ? '' : (tableResult.next_key || '');
@@ -4244,6 +4295,7 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
         retry_count: retryCount,
         skipped_cursor_count: skippedCursorCount,
         skipped_cursor_reason: skippedCursorReason,
+        waxcash_collapse_guard: waxcashCollapseGuard,
       }, syncedAt);
       if (complete) {
         await recordSyncRun(env.DB, adapter.source, 'success', adapterStartedAt);
@@ -4263,6 +4315,7 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
         retry_count: retryCount,
         skipped_cursor_count: skippedCursorCount,
         skipped_cursor_reason: skippedCursorReason,
+        waxcash_collapse_guard: waxcashCollapseGuard,
         cycle: activeCycleId,
       });
     } catch (error) {
@@ -8142,6 +8195,8 @@ async function waxcashPairSourceStabilityDiagnostics(db, options = {}) {
     !pair.direct_wax_pair && Array.isArray(pair.reason_codes) && pair.reason_codes.includes('paired_token_wax_price_unavailable'));
   const partialSourceStates = sourceStateRows.filter((row) =>
     ['partial', 'running'].includes(row.status) || (row.complete === false && row.status !== 'success'));
+  const collapseGuardStates = sourceStateRows.filter((row) =>
+    /source_complete_but_waxcash_rows_(collapsed|sharply_lower)/.test(String(row.error || '')));
   return {
     no_visible_ui: true,
     diagnostic_generated_at: nowIso(),
@@ -8168,6 +8223,8 @@ async function waxcashPairSourceStabilityDiagnostics(db, options = {}) {
     source_index_state_rows: sourceStateRows,
     latest_pair_sync_rows: latestPairSyncRows,
     possible_partial_pair_refresh: partialSourceStates.length > 0,
+    source_complete_but_waxcash_rows_collapsed: collapseGuardStates.length > 0,
+    source_complete_but_waxcash_rows_collapsed_sources: collapseGuardStates,
     source_sync_deleting_or_replacing_pairs_proven: false,
     source_sync_deleting_or_replacing_pairs_note: 'This response can detect partial/running source state and row-count drift across requests; it does not mutate pair rows.',
     no_fake_value: true,
@@ -12250,6 +12307,7 @@ export const __waxonedgeTestHooks = {
   getWaxcashLastStatsDiagnostics,
   buildInternalD1WaxcashLastStats,
   fetchWaxcashOgLastStats,
+  waxcashSourceCollapseGuard,
   buildWaxcashOgParityProof,
   applyOgLastStatsToWaxcashPairs,
   applyIndexedPairWindowVolumes,
