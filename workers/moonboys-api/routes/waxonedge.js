@@ -1112,6 +1112,42 @@ function getTokenSideInfo(side) {
   };
 }
 
+function coreDexTokenSides(adapter, row) {
+  let tokenA = null;
+  let tokenB = null;
+  let explicitPrice = null;
+  if (adapter.normalizer === 'tokenA-tokenB') {
+    tokenA = alcorTokenSide(row, 'A', 'reserveA');
+    tokenB = alcorTokenSide(row, 'B', 'reserveB');
+  } else if (adapter.normalizer === 'pool1-pool2') {
+    tokenA = getTokenSideInfo(row.pool1);
+    tokenB = getTokenSideInfo(row.pool2);
+  } else if (adapter.normalizer === 'reserve0-reserve1') {
+    tokenA = getTokenSideInfo(row.reserve0);
+    tokenB = getTokenSideInfo(row.reserve1);
+  } else if (adapter.normalizer === 'box-pairs') {
+    tokenA = getTokenSideInfo({
+      contract: row.token0?.contract,
+      symbol: row.token0?.symbol,
+      quantity: row.reserve0,
+    });
+    tokenB = getTokenSideInfo({
+      contract: row.token1?.contract,
+      symbol: row.token1?.symbol,
+      quantity: row.reserve1,
+    });
+  } else if (adapter.normalizer === 'adex-pools') {
+    tokenA = getTokenSideInfo(row.base_token);
+    tokenB = getTokenSideInfo(row.quote_token);
+  } else if (adapter.normalizer === 'waxfusion-global') {
+    const sides = waxFusionTokenSides(row);
+    tokenA = sides.tokenA;
+    tokenB = sides.tokenB;
+    explicitPrice = sides.price;
+  }
+  return { tokenA, tokenB, explicitPrice };
+}
+
 function getPairTokens(pair) {
   const sides = [
     pair?.base_token,
@@ -1647,38 +1683,7 @@ function alcorTokenSide(row, sideName, reserveName) {
 
 function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
   if (isFalseLike(row.active)) return null;
-  let tokenA = null;
-  let tokenB = null;
-  let explicitPrice = null;
-  if (adapter.normalizer === 'tokenA-tokenB') {
-    tokenA = alcorTokenSide(row, 'A', 'reserveA');
-    tokenB = alcorTokenSide(row, 'B', 'reserveB');
-  } else if (adapter.normalizer === 'pool1-pool2') {
-    tokenA = getTokenSideInfo(row.pool1);
-    tokenB = getTokenSideInfo(row.pool2);
-  } else if (adapter.normalizer === 'reserve0-reserve1') {
-    tokenA = getTokenSideInfo(row.reserve0);
-    tokenB = getTokenSideInfo(row.reserve1);
-  } else if (adapter.normalizer === 'box-pairs') {
-    tokenA = getTokenSideInfo({
-      contract: row.token0?.contract,
-      symbol: row.token0?.symbol,
-      quantity: row.reserve0,
-    });
-    tokenB = getTokenSideInfo({
-      contract: row.token1?.contract,
-      symbol: row.token1?.symbol,
-      quantity: row.reserve1,
-    });
-  } else if (adapter.normalizer === 'adex-pools') {
-    tokenA = getTokenSideInfo(row.base_token);
-    tokenB = getTokenSideInfo(row.quote_token);
-  } else if (adapter.normalizer === 'waxfusion-global') {
-    const sides = waxFusionTokenSides(row);
-    tokenA = sides.tokenA;
-    tokenB = sides.tokenB;
-    explicitPrice = sides.price;
-  }
+  const { tokenA, tokenB, explicitPrice } = coreDexTokenSides(adapter, row);
   if (!tokenA?.contract || !tokenA?.symbol || !tokenB?.contract || !tokenB?.symbol) return null;
   if (tokenA.amount == null || tokenB.amount == null) return null;
   if (tokenA.amount <= 0 || tokenB.amount <= 0) return null;
@@ -1734,6 +1739,66 @@ function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
     valuation_basis: pricing.valuation_basis,
     proof_status: pricing.proof_status,
     reason_codes: pricing.reason_codes,
+  };
+}
+
+function rawRowMentionsWaxcash(row) {
+  return /waxcash|graffitiking/i.test(JSON.stringify(row || {}));
+}
+
+function coreDexPairNormalizationRejectionReason(adapter, row) {
+  if (isFalseLike(row?.active)) return 'inactive_row';
+  const { tokenA, tokenB } = coreDexTokenSides(adapter, row || {});
+  if (!tokenA?.contract || !tokenA?.symbol || !tokenB?.contract || !tokenB?.symbol) {
+    return 'normalize_missing_token_identity';
+  }
+  if (tokenA.amount == null || tokenB.amount == null) return 'normalize_missing_reserves';
+  if (tokenA.amount <= 0 || tokenB.amount <= 0) return 'normalize_zero_or_negative_reserves';
+  const pairId = canonicalAmmPairId(adapter.source, row || {}) ||
+    (adapter.normalizer === 'waxfusion-global' ? 'dapp.fusion' : null);
+  if (!pairId) return 'normalize_missing_pair_id';
+  if (!isWaxcashToken(tokenA.contract, tokenA.symbol) && !isWaxcashToken(tokenB.contract, tokenB.symbol)) {
+    return rawRowMentionsWaxcash(row) ? 'raw_waxcash_not_preserved_after_normalization' : 'raw_row_not_waxcash';
+  }
+  return null;
+}
+
+function coreDexSourceNormalizationDiagnostics(adapter, rows = [], normalizedPairs = []) {
+  const reasons = {};
+  const rawWaxcashExamples = [];
+  let rawWaxcashRowCount = 0;
+  let normalizedWaxcashPairCount = 0;
+  for (const pair of normalizedPairs || []) {
+    if (pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL)) normalizedWaxcashPairCount += 1;
+  }
+  for (const row of rows || []) {
+    const rawMentionsWaxcash = rawRowMentionsWaxcash(row);
+    if (rawMentionsWaxcash) rawWaxcashRowCount += 1;
+    const reason = coreDexPairNormalizationRejectionReason(adapter, row);
+    if (reason) reasons[reason] = (reasons[reason] || 0) + 1;
+    if (rawMentionsWaxcash && rawWaxcashExamples.length < 5) {
+      const { tokenA, tokenB } = coreDexTokenSides(adapter, row || {});
+      rawWaxcashExamples.push({
+        raw_pair_id: safeString(firstPresent(row?.pairid, row?.pair_id, row?.pairId, row?.id, row?.code)) || null,
+        canonical_pair_id: canonicalAmmPairId(adapter.source, row || {}) || null,
+        og_laststats_pair_id: ogLastStatsPairIdForSource(adapter.source, row || {}) || null,
+        token_a: tokenA ? { contract: tokenA.contract || null, symbol: tokenA.symbol || null, amount: tokenA.amount ?? null } : null,
+        token_b: tokenB ? { contract: tokenB.contract || null, symbol: tokenB.symbol || null, amount: tokenB.amount ?? null } : null,
+        rejection_reason: reason,
+        raw_keys: Object.keys(row || {}).slice(0, 20),
+      });
+    }
+  }
+  return {
+    source: adapter.source,
+    normalizer: adapter.normalizer,
+    raw_rows_scanned: rows.length,
+    raw_waxcash_row_count: rawWaxcashRowCount,
+    normalized_pair_count: normalizedPairs.length,
+    normalized_waxcash_pair_count: normalizedWaxcashPairCount,
+    rejected_reason_counts: reasons,
+    raw_waxcash_examples: rawWaxcashExamples,
+    no_fake_rows: true,
   };
 }
 
@@ -1883,6 +1948,16 @@ function waxcashPairCountBaseline(source, currentD1Count, previousSnapshotData =
     previous_complete_waxcash_pair_count: previousComplete,
     minimum_waxcash_pair_count: minimum,
     guard_baseline_waxcash_pair_count: Math.max(current, lastGood, previousComplete, minimum),
+  };
+}
+
+function waxcashSourceRecoveryDecision(source, currentD1Count, previousSnapshotData = {}) {
+  const baseline = waxcashPairCountBaseline(source, currentD1Count, previousSnapshotData);
+  const guard = waxcashSourceCollapseGuard(baseline.guard_baseline_waxcash_pair_count, currentD1Count);
+  return {
+    required: !guard.ok,
+    reason: guard.reason,
+    ...baseline,
   };
 }
 
@@ -4177,7 +4252,12 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
     try {
       activeCycleId = activeCycleId || await getActiveSourceCycleId(env.DB);
       let state = await readSourceIndexState(env.DB, adapter.source);
-      if (state?.complete === 1 && state.sync_cycle_id === activeCycleId) {
+      let previousSnapshot = await readSnapshot(env.DB, `${adapter.source}_${adapter.table}`);
+      let previousWaxcashPairCount = await countWaxcashPairsForSource(env.DB, adapter.source);
+      const recoveryDecision = state?.complete === 1
+        ? waxcashSourceRecoveryDecision(adapter.source, previousWaxcashPairCount, previousSnapshot.data || {})
+        : null;
+      if (state?.complete === 1 && state.sync_cycle_id === activeCycleId && !recoveryDecision?.required) {
         results.push({ source: adapter.source, ok: true, complete: true, skipped: true, cycle: activeCycleId });
         continue;
       }
@@ -4191,7 +4271,7 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
           started_at: state.started_at || adapterStartedAt,
         });
       }
-      const isNewCycle = !state || state.sync_cycle_id !== activeCycleId || state.status === 'failed';
+      const isNewCycle = !state || state.sync_cycle_id !== activeCycleId || state.status === 'failed' || recoveryDecision?.required;
       if (isNewCycle) {
         state = await upsertSourceIndexState(env.DB, adapter.source, {
           sync_cycle_id: activeCycleId,
@@ -4201,7 +4281,9 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
           complete: 0,
           truncated: 0,
           status: 'running',
-          error: null,
+          error: recoveryDecision?.required
+            ? `${recoveryDecision.reason}: recovery sync forced before accepting complete source state; guard_baseline_waxcash_pair_count=${recoveryDecision.guard_baseline_waxcash_pair_count}; previous_current_d1_waxcash_pair_count=${recoveryDecision.previous_current_d1_waxcash_pair_count}; last_good_waxcash_pair_count=${recoveryDecision.last_good_waxcash_pair_count}`
+            : null,
           started_at: adapterStartedAt,
         });
       }
@@ -4236,8 +4318,9 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
       const pairs = rows
         .map((row) => normalizeCoreDexPair(adapter, row, priceIndex, syncedAt))
         .filter(Boolean);
-      const previousSnapshot = await readSnapshot(env.DB, `${adapter.source}_${adapter.table}`);
-      const previousWaxcashPairCount = await countWaxcashPairsForSource(env.DB, adapter.source);
+      previousSnapshot = previousSnapshot || await readSnapshot(env.DB, `${adapter.source}_${adapter.table}`);
+      previousWaxcashPairCount = previousWaxcashPairCount ?? await countWaxcashPairsForSource(env.DB, adapter.source);
+      const normalizationDiagnostics = coreDexSourceNormalizationDiagnostics(adapter, rows, pairs);
       await upsertPairs(env.DB, pairs);
       let complete = tableResult.complete ? 1 : 0;
       let status = complete ? 'success' : 'partial';
@@ -4329,6 +4412,8 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
         retry_count: retryCount,
         skipped_cursor_count: skippedCursorCount,
         skipped_cursor_reason: skippedCursorReason,
+        recovery_preflight: recoveryDecision,
+        normalization_diagnostics: normalizationDiagnostics,
         waxcash_pair_count: waxcashCollapseGuard?.refreshed_waxcash_pair_count ?? null,
         last_good_waxcash_pair_count: nextLastGoodWaxcashPairCount,
         waxcash_collapse_guard: waxcashCollapseGuard,
@@ -4351,6 +4436,8 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
         retry_count: retryCount,
         skipped_cursor_count: skippedCursorCount,
         skipped_cursor_reason: skippedCursorReason,
+        recovery_preflight: recoveryDecision,
+        normalization_diagnostics: normalizationDiagnostics,
         waxcash_collapse_guard: waxcashCollapseGuard,
         cycle: activeCycleId,
       });
@@ -8220,6 +8307,25 @@ async function waxcashPairSourceStabilityDiagnostics(db, options = {}) {
       finished_at: row.finished_at || null,
       error: row.error || null,
     }));
+  const sourceSnapshotDiagnostics = db ? await Promise.all(['swap.nefty', 'swap.taco', 'swap.alcor'].map(async (source) => {
+    const adapter = CORE_DEX_ADAPTERS.find((entry) => entry.source === source);
+    const snapshot = adapter ? await readSnapshot(db, `${adapter.source}_${adapter.table}`).catch(() => ({ data: null, fetched_at: null })) : { data: null, fetched_at: null };
+    const data = snapshot?.data || {};
+    return {
+      source,
+      snapshot_fetched_at: snapshot?.fetched_at || null,
+      status: data.status || null,
+      row_count: asNumber(data.row_count) || 0,
+      page_count: asNumber(data.page_count) || 0,
+      cursor: data.cursor || '',
+      error: data.error || null,
+      waxcash_pair_count: asNumber(data.waxcash_pair_count),
+      last_good_waxcash_pair_count: asNumber(data.last_good_waxcash_pair_count),
+      recovery_preflight: data.recovery_preflight || null,
+      waxcash_collapse_guard: data.waxcash_collapse_guard || null,
+      normalization_diagnostics: data.normalization_diagnostics || null,
+    };
+  })) : [];
   const proofSourceCounts = countRowsByAggregateSource(proofPairs);
   const tableSourceCounts = countRowsByAggregateSource(tableRows);
   const rawSourceCounts = countRowsByAggregateSource(rawRows);
@@ -8257,6 +8363,7 @@ async function waxcashPairSourceStabilityDiagnostics(db, options = {}) {
     source_sync_partial_or_running: partialSourceStates.length > 0,
     source_sync_partial_or_running_sources: partialSourceStates,
     source_index_state_rows: sourceStateRows,
+    source_snapshot_diagnostics: sourceSnapshotDiagnostics,
     latest_pair_sync_rows: latestPairSyncRows,
     possible_partial_pair_refresh: partialSourceStates.length > 0,
     source_complete_but_waxcash_rows_collapsed: collapseGuardStates.length > 0,
@@ -12344,7 +12451,9 @@ export const __waxonedgeTestHooks = {
   buildInternalD1WaxcashLastStats,
   fetchWaxcashOgLastStats,
   waxcashPairCountBaseline,
+  waxcashSourceRecoveryDecision,
   waxcashSourceCollapseGuard,
+  coreDexSourceNormalizationDiagnostics,
   buildWaxcashOgParityProof,
   applyOgLastStatsToWaxcashPairs,
   applyIndexedPairWindowVolumes,

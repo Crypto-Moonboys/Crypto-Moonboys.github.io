@@ -100,6 +100,38 @@ ok('WAXCASH source collapse guard uses known source minimum when no last-good co
   collapsedNeftyMinimumBaseline.minimum_waxcash_pair_count === 58 &&
   collapsedNeftyMinimumBaseline.guard_baseline_waxcash_pair_count === 58 &&
   __waxonedgeTestHooks.waxcashSourceCollapseGuard(collapsedNeftyMinimumBaseline.guard_baseline_waxcash_pair_count, 0).ok === false);
+const collapsedNeftyRecovery = __waxonedgeTestHooks.waxcashSourceRecoveryDecision('swap.nefty', 0, {
+  last_good_waxcash_pair_count: 58,
+});
+ok('WAXCASH source recovery decision forces a pre-guard complete Nefty state to rerun',
+  collapsedNeftyRecovery.required === true &&
+  collapsedNeftyRecovery.reason === 'source_complete_but_waxcash_rows_collapsed' &&
+  collapsedNeftyRecovery.previous_current_d1_waxcash_pair_count === 0 &&
+  collapsedNeftyRecovery.guard_baseline_waxcash_pair_count === 58);
+const neftyNormalizationDebug = __waxonedgeTestHooks.coreDexSourceNormalizationDiagnostics({
+  source: 'swap.nefty',
+  normalizer: 'reserve0-reserve1',
+}, [{
+  code: 'WAXGOOD',
+  reserve0: { contract: 'graffitiking', quantity: '100.00000000 WAXCASH' },
+  reserve1: { contract: 'eosio.token', quantity: '1.00000000 WAX' },
+}, {
+  code: 'WAXBAD',
+  reserve0: '100.00000000 WAXCASH',
+  reserve1: { contract: 'eosio.token', quantity: '1.00000000 WAX' },
+}], [{
+  source: 'swap.nefty',
+  pair_id: 'WAXGOOD',
+  token_a_contract: 'graffitiking',
+  token_a_symbol: 'WAXCASH',
+  token_b_contract: 'eosio.token',
+  token_b_symbol: 'WAX',
+}]);
+ok('WAXCASH Nefty normalization diagnostics distinguish raw WAXCASH rows from normalized WAXCASH pairs',
+  neftyNormalizationDebug.raw_waxcash_row_count === 2 &&
+  neftyNormalizationDebug.normalized_waxcash_pair_count === 1 &&
+  neftyNormalizationDebug.rejected_reason_counts.normalize_missing_token_identity === 1 &&
+  neftyNormalizationDebug.raw_waxcash_examples.length === 2);
 
 for (const table of [
   'waxonedge_sync_runs',
@@ -4698,8 +4730,9 @@ ok('paged source sync prunes only rows older than the current cycle start after 
   route.includes('status = complete ? \'success\' : \'partial\'') &&
   !/status = complete \? 'success' : 'partial';[\s\S]*if \(!complete\)[\s\S]*pruneStaleSourcePairsAfterComplete/.test(route));
 ok('complete source sync cannot prune prior WAXCASH rows when refreshed WAXCASH rows collapse',
-  route.includes('const previousWaxcashPairCount = await countWaxcashPairsForSource(env.DB, adapter.source)') &&
+  route.includes('previousWaxcashPairCount = await countWaxcashPairsForSource(env.DB, adapter.source)') &&
   route.includes('function waxcashPairCountBaseline') &&
+  route.includes('function waxcashSourceRecoveryDecision') &&
   route.includes('const waxcashBaseline = waxcashPairCountBaseline(adapter.source, previousWaxcashPairCount, previousSnapshot.data || {})') &&
   route.includes('last_good_waxcash_pair_count') &&
   route.includes('previous_current_d1_waxcash_pair_count') &&
@@ -4708,6 +4741,20 @@ ok('complete source sync cannot prune prior WAXCASH rows when refreshed WAXCASH 
   route.includes("return { ok: false, reason: 'source_complete_but_waxcash_rows_sharply_lower' }") &&
   /const guard = waxcashSourceCollapseGuard\(waxcashBaseline\.guard_baseline_waxcash_pair_count, refreshedWaxcashPairCount\);[\s\S]*if \(guard\.ok\) \{[\s\S]*await pruneStaleSourcePairsAfterComplete\(env\.DB, adapter\.source, refreshStartedAt\);[\s\S]*\} else \{[\s\S]*complete = 0;[\s\S]*status = 'partial';[\s\S]*\}/.test(route) &&
   route.includes('prune skipped to preserve last complete WAXCASH rows'));
+ok('pre-guard complete WAXCASH source state is forced through recovery when current rows are below baseline',
+  route.includes('const recoveryDecision = state?.complete === 1') &&
+  route.includes('waxcashSourceRecoveryDecision(adapter.source, previousWaxcashPairCount, previousSnapshot.data || {})') &&
+  route.includes('state?.complete === 1 && state.sync_cycle_id === activeCycleId && !recoveryDecision?.required') &&
+  route.includes("error: recoveryDecision?.required") &&
+  route.includes('recovery sync forced before accepting complete source state') &&
+  route.includes('recovery_preflight: recoveryDecision'));
+ok('source stability debug exposes raw Nefty normalization and recovery diagnostics',
+  route.includes('function coreDexSourceNormalizationDiagnostics') &&
+  route.includes('raw_waxcash_row_count') &&
+  route.includes('normalized_waxcash_pair_count') &&
+  route.includes('raw_waxcash_examples') &&
+  route.includes('normalization_diagnostics: normalizationDiagnostics') &&
+  route.includes('source_snapshot_diagnostics: sourceSnapshotDiagnostics'));
 ok('WAXCASH source stability debug reports complete-source row collapse guards',
   route.includes('const collapseGuardStates = sourceStateRows.filter') &&
   route.includes('source_complete_but_waxcash_rows_collapsed: collapseGuardStates.length > 0') &&
