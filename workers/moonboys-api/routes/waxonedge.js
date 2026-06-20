@@ -2378,6 +2378,14 @@ function maxNumberValue(values) {
   return max;
 }
 
+function newestIsoTimestamp(current, candidate) {
+  const currentTime = Date.parse(current || '');
+  const candidateTime = Date.parse(candidate || '');
+  if (!Number.isFinite(candidateTime)) return current || null;
+  if (!Number.isFinite(currentTime) || candidateTime > currentTime) return candidate;
+  return current || null;
+}
+
 function alcorMarketMatchStreamUrl(env, actionName, limit, cursor = '') {
   const endpoint = hyperionHistoryActionsEndpoint(env);
   const count = encodeURIComponent(String(Math.max(limit, DEFAULT_HYPERION_TRADE_SCAN_LIMIT)));
@@ -3143,7 +3151,101 @@ async function syncAlcorMarketTradeRows(env) {
   let sampleTradeFetchFailure = isLegacyTradeFetchDiagnostic(previousData.sample_trade_fetch_failure) ? null : (previousData.sample_trade_fetch_failure || null);
   let sampleTradeFetchSuccess = previousData.sample_trade_fetch_success || null;
   let budgetExhausted = false;
+  let headRefreshStreamCount = 0;
+  let headRefreshRowsFetched = 0;
+  let headRefreshRowsWritten = 0;
+  let headRefreshDuplicateRowsSkipped = 0;
+  let headRefreshFailedStreamCount = 0;
+  let headRefreshLatestIndexedTimestamp = null;
+  let headRefreshLastError = null;
+  for (const actionName of actionStreams) {
+    const actionState = streamProgress[actionName] || normalizeActionStreamProgress(actionName);
+    headRefreshStreamCount += 1;
+    try {
+      const result = await fetchAlcorMarketMatchStreamRows(env, actionName, rowsPerMarket, 0);
+      if (result.diagnostic?.row_count > 0) sampleTradeFetchSuccess = result.diagnostic;
+      if (result.diagnostic && result.diagnostic.failure_type) sampleTradeFetchFailure = result.diagnostic;
+      if (result.hyperionNotConfigured) {
+        hyperionNotConfiguredCount += 1;
+        actionState.status = 'skipped';
+        actionState.last_error = 'hyperion_not_configured';
+        actionState.updated_at = nowIso();
+        headRefreshLastError = 'hyperion_not_configured';
+        lastError = 'hyperion_not_configured: set WAXONEDGE_HYPERION_API to a WAX Hyperion endpoint that supports /v2/history/get_actions';
+        break;
+      }
+      if (result.budgetFailure) {
+        budgetExhausted = true;
+        actionState.status = 'budget_limited';
+        actionState.last_error = result.diagnostic?.response_body_snippet || 'trade row head refresh budget exhausted';
+        actionState.updated_at = nowIso();
+        headRefreshLastError = actionState.last_error;
+        lastError = actionState.last_error;
+        break;
+      }
+      if (result.temporaryFailure || result.failed || result.unsupported) {
+        headRefreshFailedStreamCount += 1;
+        headRefreshLastError = result.diagnostic?.failure_type || (result.unsupported ? 'unsupported' : 'failed');
+        actionState.head_refresh_last_error = headRefreshLastError;
+        actionState.head_refresh_at = nowIso();
+        actionState.updated_at = nowIso();
+        continue;
+      }
+      if (result.noTradeRows || !result.rows.length) {
+        actionState.head_refresh_last_error = result.diagnostic?.failure_type || 'no_trade_rows';
+        actionState.head_refresh_at = nowIso();
+        actionState.updated_at = nowIso();
+        continue;
+      }
+      const trades = result.rows
+        .map((row) => normalizeAlcorMarketTradeRow(row))
+        .filter(Boolean);
+      headRefreshRowsFetched += trades.length;
+      if (!trades.length) {
+        headRefreshFailedStreamCount += 1;
+        actionState.head_refresh_last_error = `trade_rows_not_usable: ${actionName}`;
+        actionState.head_refresh_at = nowIso();
+        actionState.updated_at = nowIso();
+        continue;
+      }
+      const written = await upsertTrades(env.DB, trades);
+      rowsIndexed += trades.length;
+      rowsWritten += written;
+      duplicateRowsSkipped += Math.max(0, trades.length - written);
+      headRefreshRowsWritten += written;
+      headRefreshDuplicateRowsSkipped += Math.max(0, trades.length - written);
+      headRefreshLatestIndexedTimestamp = newestIsoTimestamp(headRefreshLatestIndexedTimestamp, result.last_indexed_timestamp);
+      actionState.last_sequence = maxNumberValue([actionState.last_sequence, result.last_sequence]);
+      actionState.last_block = maxNumberValue([actionState.last_block, result.last_block]);
+      actionState.last_indexed_timestamp = newestIsoTimestamp(actionState.last_indexed_timestamp, result.last_indexed_timestamp);
+      actionState.rows_written += written;
+      actionState.duplicate_rows_skipped += Math.max(0, trades.length - written);
+      actionState.head_refresh_rows_fetched = trades.length;
+      actionState.head_refresh_rows_written = written;
+      actionState.head_refresh_last_indexed_timestamp = result.last_indexed_timestamp || null;
+      actionState.head_refresh_last_error = null;
+      actionState.head_refresh_at = nowIso();
+      actionState.updated_at = nowIso();
+      sampleTradeFetchFailure = null;
+    } catch (error) {
+      if (isSubrequestBudgetError(error)) {
+        budgetExhausted = true;
+        actionState.status = 'budget_limited';
+        actionState.last_error = error?.message || String(error);
+        actionState.updated_at = nowIso();
+        headRefreshLastError = actionState.last_error;
+        lastError = actionState.last_error;
+        break;
+      }
+      headRefreshFailedStreamCount += 1;
+      actionState.head_refresh_last_error = error?.message || String(error);
+      actionState.head_refresh_at = nowIso();
+      actionState.updated_at = nowIso();
+      headRefreshLastError = actionState.head_refresh_last_error;
+    }
+  }
   for (const actionName of candidateRows) {
+    if (budgetExhausted || hyperionNotConfiguredCount > 0) break;
     const actionState = streamProgress[actionName] || normalizeActionStreamProgress(actionName);
     const streamCursor = actionState.skip_cursor || 0;
     const skipWindow = hyperionSkipWindowState(streamCursor, rowsPerMarket);
@@ -3356,6 +3458,14 @@ async function syncAlcorMarketTradeRows(env) {
     rows_written: totalRowsWritten,
     last_run_rows_fetched: rowsIndexed,
     last_run_rows_written: rowsWritten,
+    head_refresh_enabled: true,
+    head_refresh_stream_count: headRefreshStreamCount,
+    head_refresh_failed_stream_count: headRefreshFailedStreamCount,
+    head_refresh_rows_fetched: headRefreshRowsFetched,
+    head_refresh_rows_written: headRefreshRowsWritten,
+    head_refresh_duplicate_rows_skipped: headRefreshDuplicateRowsSkipped,
+    head_refresh_latest_indexed_timestamp: headRefreshLatestIndexedTimestamp,
+    head_refresh_last_error: headRefreshLastError,
     duplicate_rows_skipped: totalDuplicateRowsSkipped,
     cursor: nextCursor,
     active_pair_limit: limit,
@@ -3414,6 +3524,14 @@ async function syncAlcorMarketTradeRows(env) {
     rows_written: totalRowsWritten,
     last_run_rows_fetched: rowsIndexed,
     last_run_rows_written: rowsWritten,
+    head_refresh_enabled: true,
+    head_refresh_stream_count: headRefreshStreamCount,
+    head_refresh_failed_stream_count: headRefreshFailedStreamCount,
+    head_refresh_rows_fetched: headRefreshRowsFetched,
+    head_refresh_rows_written: headRefreshRowsWritten,
+    head_refresh_duplicate_rows_skipped: headRefreshDuplicateRowsSkipped,
+    head_refresh_latest_indexed_timestamp: headRefreshLatestIndexedTimestamp,
+    head_refresh_last_error: headRefreshLastError,
     duplicate_rows_skipped: totalDuplicateRowsSkipped,
     cursor: nextCursor,
     active_pair_limit: limit,
@@ -3540,7 +3658,103 @@ async function syncAmmSwapTradeRows(env) {
   let sampleTradeFetchFailure = previousData.sample_trade_fetch_failure || null;
   let sampleTradeFetchSuccess = previousData.sample_trade_fetch_success || null;
   let budgetExhausted = false;
+  let headRefreshStreamCount = 0;
+  let headRefreshRowsFetched = 0;
+  let headRefreshRowsWritten = 0;
+  let headRefreshDuplicateRowsSkipped = 0;
+  let headRefreshFailedStreamCount = 0;
+  let headRefreshLatestIndexedTimestamp = null;
+  let headRefreshLastError = null;
+  for (const streamKey of actionStreams) {
+    const stream = findAmmSwapActionStream(streamKey);
+    if (!stream) continue;
+    const actionState = streamProgress[streamKey] || normalizeActionStreamProgress(streamKey);
+    headRefreshStreamCount += 1;
+    try {
+      const result = await fetchAmmSwapStreamRows(env, stream, rowsPerMarket, 0);
+      if (result.diagnostic?.row_count > 0) sampleTradeFetchSuccess = result.diagnostic;
+      if (result.diagnostic && result.diagnostic.failure_type) sampleTradeFetchFailure = result.diagnostic;
+      if (result.hyperionNotConfigured) {
+        hyperionNotConfiguredCount += 1;
+        actionState.status = 'skipped';
+        actionState.last_error = 'hyperion_not_configured';
+        actionState.updated_at = nowIso();
+        headRefreshLastError = 'hyperion_not_configured';
+        lastError = 'hyperion_not_configured: set WAXONEDGE_HYPERION_API to a WAX Hyperion endpoint that supports /v2/history/get_actions';
+        break;
+      }
+      if (result.budgetFailure) {
+        budgetExhausted = true;
+        actionState.status = 'budget_limited';
+        actionState.last_error = result.diagnostic?.response_body_snippet || 'AMM trade row head refresh budget exhausted';
+        actionState.updated_at = nowIso();
+        headRefreshLastError = actionState.last_error;
+        lastError = actionState.last_error;
+        break;
+      }
+      if (result.temporaryFailure || result.failed || result.unsupported) {
+        headRefreshFailedStreamCount += 1;
+        headRefreshLastError = result.diagnostic?.failure_type || (result.unsupported ? 'unsupported' : 'failed');
+        actionState.head_refresh_last_error = headRefreshLastError;
+        actionState.head_refresh_at = nowIso();
+        actionState.updated_at = nowIso();
+        continue;
+      }
+      if (result.noTradeRows || !result.rows.length) {
+        actionState.head_refresh_last_error = result.diagnostic?.failure_type || 'no_trade_rows';
+        actionState.head_refresh_at = nowIso();
+        actionState.updated_at = nowIso();
+        continue;
+      }
+      const trades = result.rows
+        .map((row) => normalizeAmmSwapTradeRow(row, stream))
+        .filter(Boolean);
+      headRefreshRowsFetched += trades.length;
+      if (!trades.length) {
+        headRefreshFailedStreamCount += 1;
+        actionState.head_refresh_last_error = `trade_rows_not_usable: ${stream.source} ${stream.action}`;
+        actionState.head_refresh_at = nowIso();
+        actionState.updated_at = nowIso();
+        continue;
+      }
+      const written = await upsertTrades(env.DB, trades);
+      rowsIndexed += trades.length;
+      rowsWritten += written;
+      duplicateRowsSkipped += Math.max(0, trades.length - written);
+      headRefreshRowsWritten += written;
+      headRefreshDuplicateRowsSkipped += Math.max(0, trades.length - written);
+      headRefreshLatestIndexedTimestamp = newestIsoTimestamp(headRefreshLatestIndexedTimestamp, result.last_indexed_timestamp);
+      actionState.last_sequence = maxNumberValue([actionState.last_sequence, result.last_sequence]);
+      actionState.last_block = maxNumberValue([actionState.last_block, result.last_block]);
+      actionState.last_indexed_timestamp = newestIsoTimestamp(actionState.last_indexed_timestamp, result.last_indexed_timestamp);
+      actionState.rows_written += written;
+      actionState.duplicate_rows_skipped += Math.max(0, trades.length - written);
+      actionState.head_refresh_rows_fetched = trades.length;
+      actionState.head_refresh_rows_written = written;
+      actionState.head_refresh_last_indexed_timestamp = result.last_indexed_timestamp || null;
+      actionState.head_refresh_last_error = null;
+      actionState.head_refresh_at = nowIso();
+      actionState.updated_at = nowIso();
+      sampleTradeFetchFailure = null;
+    } catch (error) {
+      if (isSubrequestBudgetError(error)) {
+        budgetExhausted = true;
+        actionState.status = 'budget_limited';
+        actionState.last_error = error?.message || String(error);
+        actionState.updated_at = nowIso();
+        headRefreshLastError = actionState.last_error;
+        lastError = actionState.last_error;
+        break;
+      }
+      headRefreshFailedStreamCount += 1;
+      actionState.head_refresh_last_error = error?.message || String(error);
+      actionState.head_refresh_at = nowIso();
+      actionState.updated_at = nowIso();
+      headRefreshLastError = actionState.head_refresh_last_error;
+    }
+  }
   for (const streamKey of candidateRows) {
+    if (budgetExhausted || hyperionNotConfiguredCount > 0) break;
     const stream = findAmmSwapActionStream(streamKey);
     if (!stream) continue;
     const actionState = streamProgress[streamKey] || normalizeActionStreamProgress(streamKey);
@@ -3753,6 +3967,14 @@ async function syncAmmSwapTradeRows(env) {
     rows_written: totalRowsWritten,
     last_run_rows_fetched: rowsIndexed,
     last_run_rows_written: rowsWritten,
+    head_refresh_enabled: true,
+    head_refresh_stream_count: headRefreshStreamCount,
+    head_refresh_failed_stream_count: headRefreshFailedStreamCount,
+    head_refresh_rows_fetched: headRefreshRowsFetched,
+    head_refresh_rows_written: headRefreshRowsWritten,
+    head_refresh_duplicate_rows_skipped: headRefreshDuplicateRowsSkipped,
+    head_refresh_latest_indexed_timestamp: headRefreshLatestIndexedTimestamp,
+    head_refresh_last_error: headRefreshLastError,
     duplicate_rows_skipped: totalDuplicateRowsSkipped,
     cursor: nextCursor,
     active_pair_limit: limit,
@@ -10798,6 +11020,14 @@ async function getIndexerHealth(db, env = {}) {
       rows_written: asNumber(tradeIndexSnapshot.data?.rows_written) || 0,
       last_run_rows_fetched: asNumber(tradeIndexSnapshot.data?.last_run_rows_fetched) || 0,
       last_run_rows_written: asNumber(tradeIndexSnapshot.data?.last_run_rows_written) || 0,
+      head_refresh_enabled: tradeIndexSnapshot.data?.head_refresh_enabled === true,
+      head_refresh_stream_count: asNumber(tradeIndexSnapshot.data?.head_refresh_stream_count) || 0,
+      head_refresh_failed_stream_count: asNumber(tradeIndexSnapshot.data?.head_refresh_failed_stream_count) || 0,
+      head_refresh_rows_fetched: asNumber(tradeIndexSnapshot.data?.head_refresh_rows_fetched) || 0,
+      head_refresh_rows_written: asNumber(tradeIndexSnapshot.data?.head_refresh_rows_written) || 0,
+      head_refresh_duplicate_rows_skipped: asNumber(tradeIndexSnapshot.data?.head_refresh_duplicate_rows_skipped) || 0,
+      head_refresh_latest_indexed_timestamp: tradeIndexSnapshot.data?.head_refresh_latest_indexed_timestamp || null,
+      head_refresh_last_error: tradeIndexSnapshot.data?.head_refresh_last_error || null,
       duplicate_rows_skipped: asNumber(tradeIndexSnapshot.data?.duplicate_rows_skipped) || 0,
       active_pair_limit: asNumber(tradeIndexSnapshot.data?.active_pair_limit) || tradeIndexPairLimit(env),
       active_stream_limit: asNumber(tradeIndexSnapshot.data?.active_stream_limit) || tradeIndexPairLimit(env),
@@ -10851,6 +11081,14 @@ async function getIndexerHealth(db, env = {}) {
       rows_written: asNumber(ammTradeIndexSnapshot.data?.rows_written) || 0,
       last_run_rows_fetched: asNumber(ammTradeIndexSnapshot.data?.last_run_rows_fetched) || 0,
       last_run_rows_written: asNumber(ammTradeIndexSnapshot.data?.last_run_rows_written) || 0,
+      head_refresh_enabled: ammTradeIndexSnapshot.data?.head_refresh_enabled === true,
+      head_refresh_stream_count: asNumber(ammTradeIndexSnapshot.data?.head_refresh_stream_count) || 0,
+      head_refresh_failed_stream_count: asNumber(ammTradeIndexSnapshot.data?.head_refresh_failed_stream_count) || 0,
+      head_refresh_rows_fetched: asNumber(ammTradeIndexSnapshot.data?.head_refresh_rows_fetched) || 0,
+      head_refresh_rows_written: asNumber(ammTradeIndexSnapshot.data?.head_refresh_rows_written) || 0,
+      head_refresh_duplicate_rows_skipped: asNumber(ammTradeIndexSnapshot.data?.head_refresh_duplicate_rows_skipped) || 0,
+      head_refresh_latest_indexed_timestamp: ammTradeIndexSnapshot.data?.head_refresh_latest_indexed_timestamp || null,
+      head_refresh_last_error: ammTradeIndexSnapshot.data?.head_refresh_last_error || null,
       duplicate_rows_skipped: asNumber(ammTradeIndexSnapshot.data?.duplicate_rows_skipped) || 0,
       active_pair_limit: asNumber(ammTradeIndexSnapshot.data?.active_pair_limit) || tradeIndexPairLimit(env),
       active_stream_limit: asNumber(ammTradeIndexSnapshot.data?.active_stream_limit) || tradeIndexPairLimit(env),

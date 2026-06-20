@@ -5628,6 +5628,39 @@ ok('trade-row sync does not inflate indexed/written counters on conflict-only up
   route.includes('last_run_rows_fetched: rowsIndexed') &&
   route.includes('last_run_rows_written: rowsWritten') &&
   route.includes('duplicate_rows_skipped: totalDuplicateRowsSkipped'));
+{
+  const alcorSyncBlock = route.slice(
+    route.indexOf('async function syncAlcorMarketTradeRows'),
+    route.indexOf('async function syncAmmSwapTradeRows'),
+  );
+  const ammSyncBlock = route.slice(
+    route.indexOf('async function syncAmmSwapTradeRows'),
+    route.indexOf('async function readSourceIndexState'),
+  );
+  ok('trade-row sync refreshes newest Hyperion pages before stale skip-cursor backfill',
+    alcorSyncBlock.includes('fetchAlcorMarketMatchStreamRows(env, actionName, rowsPerMarket, 0)') &&
+    alcorSyncBlock.includes('fetchAlcorMarketMatchStreamRows(env, actionName, rowsPerMarket, streamCursor)') &&
+    alcorSyncBlock.indexOf('fetchAlcorMarketMatchStreamRows(env, actionName, rowsPerMarket, 0)') < alcorSyncBlock.indexOf('fetchAlcorMarketMatchStreamRows(env, actionName, rowsPerMarket, streamCursor)') &&
+    ammSyncBlock.includes('fetchAmmSwapStreamRows(env, stream, rowsPerMarket, 0)') &&
+    ammSyncBlock.includes('fetchAmmSwapStreamRows(env, stream, rowsPerMarket, streamCursor)') &&
+    ammSyncBlock.indexOf('fetchAmmSwapStreamRows(env, stream, rowsPerMarket, 0)') < ammSyncBlock.indexOf('fetchAmmSwapStreamRows(env, stream, rowsPerMarket, streamCursor)'));
+  ok('trade-row head refresh keeps historical skip cursors intact and remains duplicate-safe',
+    route.includes('head_refresh_enabled: true') &&
+    route.includes('head_refresh_rows_fetched') &&
+    route.includes('head_refresh_rows_written') &&
+    route.includes('head_refresh_duplicate_rows_skipped') &&
+    route.includes('head_refresh_latest_indexed_timestamp') &&
+    route.includes('newestIsoTimestamp(actionState.last_indexed_timestamp, result.last_indexed_timestamp)') &&
+    alcorSyncBlock.includes('actionState.skip_cursor = Math.max(actionState.skip_cursor, Math.floor(nextSkipCursor))') &&
+    ammSyncBlock.includes('actionState.skip_cursor = Math.max(actionState.skip_cursor, Math.floor(nextSkipCursor))') &&
+    !/fetchAlcorMarketMatchStreamRows\(env, actionName, rowsPerMarket, 0\)[\s\S]{0,1600}actionState\.skip_cursor =/.test(alcorSyncBlock) &&
+    !/fetchAmmSwapStreamRows\(env, stream, rowsPerMarket, 0\)[\s\S]{0,1600}actionState\.skip_cursor =/.test(ammSyncBlock));
+  ok('trade-index health exposes head-refresh freshness diagnostics',
+    route.includes('head_refresh_enabled: tradeIndexSnapshot.data?.head_refresh_enabled === true') &&
+    route.includes('head_refresh_latest_indexed_timestamp: tradeIndexSnapshot.data?.head_refresh_latest_indexed_timestamp || null') &&
+    route.includes('head_refresh_enabled: ammTradeIndexSnapshot.data?.head_refresh_enabled === true') &&
+    route.includes('head_refresh_latest_indexed_timestamp: ammTradeIndexSnapshot.data?.head_refresh_latest_indexed_timestamp || null'));
+}
 ok('next_cursor zero is preserved instead of replaced by fallback math',
   route.includes('const parsedNextCursor = asNumber(result.next_cursor)') &&
   route.includes('const nextSkipCursor = parsedNextCursor ?? (streamCursor + result.rows.length)') &&
