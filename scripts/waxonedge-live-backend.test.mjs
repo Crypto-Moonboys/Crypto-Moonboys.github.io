@@ -40,7 +40,9 @@ ok('moonboys-api WaxOnEdge migration exists', exists('workers/moonboys-api/migra
 ok('moonboys-api WaxOnEdge aggregate migration exists', exists('workers/moonboys-api/migrations/023_waxonedge_token_aggregate_stats.sql'));
 ok('moonboys-api WaxOnEdge aggregate source coverage migration exists', exists('workers/moonboys-api/migrations/024_waxonedge_aggregate_source_coverage.sql'));
 ok('moonboys-api WaxOnEdge source index state migration exists', exists('workers/moonboys-api/migrations/025_waxonedge_source_index_state.sql'));
+ok('moonboys-api WaxOnEdge retention index migration exists', exists('workers/moonboys-api/migrations/028_waxonedge_retention_indexes.sql'));
 ok('WaxOnEdge real reference audit exists', exists('docs/waxonedge-real-reference-audit.md'));
+ok('WaxOnEdge D1 retention runbook exists', exists('docs/waxonedge-d1-retention.md'));
 
 const route = read('workers/moonboys-api/routes/waxonedge.js');
 const normalizedRoute = route.replace(/\r\n/g, '\n');
@@ -53,6 +55,8 @@ const migration = read('workers/moonboys-api/migrations/022_waxonedge_live_index
 const aggregateMigration = read('workers/moonboys-api/migrations/023_waxonedge_token_aggregate_stats.sql');
 const sourceCoverageMigration = read('workers/moonboys-api/migrations/024_waxonedge_aggregate_source_coverage.sql');
 const sourceStateMigration = read('workers/moonboys-api/migrations/025_waxonedge_source_index_state.sql');
+const retentionMigration = read('workers/moonboys-api/migrations/028_waxonedge_retention_indexes.sql');
+const retentionDocs = read('docs/waxonedge-d1-retention.md');
 const frontend = read('js/waxonedge.js');
 const frontendBubbles = read('js/waxonedge-bubbles-v2.js');
 const waxcashGraphFrontend = read('js/waxcash-graph.js');
@@ -265,6 +269,15 @@ for (const table of [
 ok('source state migration defines resumable checkpoint table',
   sourceStateMigration.includes('CREATE TABLE IF NOT EXISTS waxonedge_source_index_state') &&
   ['source TEXT PRIMARY KEY', 'sync_cycle_id TEXT', 'cursor TEXT', 'page_count INTEGER DEFAULT 0', 'row_count INTEGER DEFAULT 0', 'complete INTEGER DEFAULT 0', 'truncated INTEGER DEFAULT 0', 'status TEXT', 'error TEXT', 'started_at TEXT', 'updated_at TEXT'].every((column) => sourceStateMigration.includes(column)));
+ok('retention migration adds cleanup-friendly indexes without table rewrites',
+  retentionMigration.includes('idx_waxonedge_trades_traded_at') &&
+  retentionMigration.includes('ON waxonedge_trades (traded_at)') &&
+  retentionMigration.includes('idx_waxonedge_trades_raw_json_traded_at') &&
+  retentionMigration.includes('WHERE raw_json IS NOT NULL') &&
+  retentionMigration.includes('idx_waxonedge_chart_interval_time') &&
+  retentionMigration.includes('ON waxonedge_chart_candles (interval, bucket_time)') &&
+  retentionMigration.includes('idx_waxonedge_sync_runs_started') &&
+  !retentionMigration.includes('DROP TABLE'));
 
 ok('migration avoids SQLite REAL for analytics precision', !hasRealColumn(migration));
 ok('migration stores price/volume/liquidity as TEXT',
@@ -276,6 +289,122 @@ ok('worker delegates /api/waxonedge routes through moonboys-api',
   worker.includes("path === '/api/waxonedge'") &&
   worker.includes('handleWaxOnEdgeRoute(request, env, CORS_HEADERS)'));
 ok('worker scheduled handler runs WaxOnEdge sync', worker.includes('runWaxOnEdgeScheduledSync(env, cron)'));
+ok('WaxOnEdge scheduled sync runs bounded retention cleanup and exposes manual cleanup cron',
+  route.includes("cron === 'waxonedge-retention-cleanup'") &&
+  route.includes('runWaxOnEdgeRetentionCleanup(env)') &&
+  route.includes('raw_json_compacted') &&
+  route.includes('trades_deleted') &&
+  route.includes('candles_deleted') &&
+  route.includes('holders_deleted') &&
+  route.includes('sync_runs_deleted') &&
+  route.includes('snapshots_compacted'));
+ok('WaxOnEdge retention cleanup is Cloudflare-cron compatible and admin-secret guarded',
+  worker.includes('async scheduled(event, env, _ctx)') &&
+  worker.includes("cron === '* * * * *'") &&
+  worker.includes('runWaxOnEdgeScheduledSync(env, cron)') &&
+  route.includes("path === `${WAXONEDGE_API_PREFIX}/retention-cleanup`") &&
+  route.includes("request.headers.get('x-admin-secret')") &&
+  route.includes('ADMIN_SECRET') &&
+  route.includes("cleanup_trigger: 'admin_diagnostic_route'"));
+ok('WaxOnEdge retention docs distinguish D1 backup retention from app-table cleanup',
+  retentionDocs.includes('D1 Time Travel is backup/restore retention') &&
+  retentionDocs.includes('does not delete old application rows') &&
+  retentionDocs.includes('Cloudflare Cron Trigger calls the `moonboys-api` Worker `scheduled()` handler') &&
+  retentionDocs.includes('GET /api/waxonedge/retention-cleanup') &&
+  retentionDocs.includes('32-day trade retention keeps the data needed for 24h, 7d, and 30d volume windows'));
+ok('WaxOnEdge retention docs include required remote D1 migration and Worker deploy commands',
+  retentionDocs.includes('npx wrangler d1 migrations apply wikicoms --config workers/moonboys-api/wrangler.toml --remote') &&
+  retentionDocs.includes('npx wrangler deploy workers/moonboys-api/worker.js --config workers/moonboys-api/wrangler.toml --no-assets') &&
+  retentionDocs.includes('Worker deploys do not apply D1 migrations'));
+ok('normal WaxOnEdge scheduled sync treats retention cleanup as non-fatal maintenance',
+  route.includes('runWaxOnEdgeRetentionMaintenance(env)') &&
+  route.includes('maintenance_non_fatal: true') &&
+  route.includes('retention_cleanup_failed_non_fatal') &&
+  !route.includes('supply.ok && holders.ok && retention.ok') &&
+  !route.includes('candleBackfill.ok && retention.ok'));
+{
+  const calls = [];
+  const snapshotPayload = {
+    normalization_diagnostics: {
+      raw_waxcash_examples: [1, 2, 3, 4, 5, 6],
+      raw_graffitiking_non_waxcash_examples: ['a', 'b', 'c', 'd', 'e', 'f'],
+    },
+  };
+  const db = {
+    prepare(sql) {
+      return {
+        bind(...params) {
+          return {
+            async run() {
+              calls.push({ type: 'run', sql, params });
+              return { meta: { changes: 1 } };
+            },
+            async all() {
+              calls.push({ type: 'all', sql, params });
+              return { results: [{ source: 'swap.taco_pairs', payload_json: JSON.stringify(snapshotPayload) }] };
+            },
+          };
+        },
+      };
+    },
+  };
+const cleanup = await __waxonedgeTestHooks.runWaxOnEdgeRetentionCleanup({
+  DB: db,
+}, {
+  now: '2026-06-21T00:00:00.000Z',
+  batchLimit: 7,
+});
+const missingDbCleanup = await __waxonedgeTestHooks.runWaxOnEdgeRetentionCleanup({}, {
+  now: '2026-06-21T00:00:00.000Z',
+});
+ok('WaxOnEdge retention cleanup missing-DB result preserves no-fake invariant',
+  missingDbCleanup.ok === false &&
+  missingDbCleanup.error === 'DB binding is not configured' &&
+  missingDbCleanup.no_fake_value === true,
+  JSON.stringify(missingDbCleanup));
+const tradeDelete = calls.find((call) => call.sql.includes('DELETE FROM waxonedge_trades'));
+  const rawJsonUpdate = calls.find((call) => call.sql.includes('UPDATE waxonedge_trades') && call.sql.includes('SET raw_json = NULL'));
+  const holderDelete = calls.find((call) => call.sql.includes('DELETE FROM waxonedge_holders'));
+  const syncDelete = calls.find((call) => call.sql.includes('DELETE FROM waxonedge_sync_runs'));
+  const candleDelete = calls.find((call) => call.sql.includes('DELETE FROM waxonedge_chart_candles') && call.sql.includes("'1m','5m','15m','30m','1h'"));
+  const snapshotUpdate = calls.find((call) => call.sql.includes('UPDATE waxonedge_snapshots SET payload_json'));
+  const compactedSnapshot = snapshotUpdate ? JSON.parse(snapshotUpdate.params[0]) : null;
+  ok('WaxOnEdge retention cleanup deletes only trade rows older than 32 days in bounded batches',
+    cleanup.ok === true &&
+    cleanup.cutoffs.trades === '2026-05-20T00:00:00.000Z' &&
+    tradeDelete?.params?.[0] === cleanup.cutoffs.trades &&
+    tradeDelete?.params?.[1] === 7 &&
+    tradeDelete.sql.includes('WHERE traded_at < ?') &&
+    tradeDelete.sql.includes('LIMIT ?') &&
+    tradeDelete.sql.includes('rowid IN') &&
+    cleanup.trades_deleted === 1);
+  ok('WaxOnEdge retention cleanup compacts raw_json after 2 days without deleting normalized trade rows',
+    cleanup.cutoffs.raw_json === '2026-06-19T00:00:00.000Z' &&
+    rawJsonUpdate?.params?.[0] === cleanup.cutoffs.raw_json &&
+    rawJsonUpdate?.params?.[1] === 7 &&
+    rawJsonUpdate.sql.includes('raw_json IS NOT NULL') &&
+    rawJsonUpdate.sql.includes('SET raw_json = NULL') &&
+    cleanup.raw_json_compacted === 1);
+  ok('WaxOnEdge retention cleanup preserves 30d volume source data by keeping at least 32 days of trades',
+    Date.parse(cleanup.cutoffs.trades) < Date.parse('2026-05-22T00:00:00.000Z') &&
+    tradeDelete.sql.includes('ORDER BY traded_at ASC') &&
+    !tradeDelete.sql.includes('30'));
+  ok('WaxOnEdge retention cleanup keeps latest holder snapshots and prunes sync logs after 14 days',
+    holderDelete?.params?.[0] === 3 &&
+    holderDelete?.params?.[1] === 7 &&
+    holderDelete.sql.includes('ORDER BY snapshot_at DESC') &&
+    syncDelete?.params?.[0] === '2026-06-07T00:00:00.000Z' &&
+    syncDelete?.params?.[1] === 7 &&
+    cleanup.holders_deleted === 1 &&
+    cleanup.sync_runs_deleted === 1);
+  ok('WaxOnEdge retention cleanup applies interval-specific candle retention and compacts snapshot examples',
+    candleDelete?.params?.[0] === '2026-05-20T00:00:00.000Z' &&
+    candleDelete?.params?.[1] === 7 &&
+    cleanup.candles_deleted === 2 &&
+    cleanup.snapshots_compacted === 1 &&
+    compactedSnapshot?.normalization_diagnostics?.raw_waxcash_examples?.length === 5 &&
+    compactedSnapshot?.normalization_diagnostics?.raw_graffitiking_non_waxcash_examples?.length === 5);
+}
 ok('wrangler has WaxOnEdge minute cron and daily digest cron',
   wrangler.includes('"* * * * *"') &&
   wrangler.includes('"0 9 * * *"'));
@@ -2704,6 +2833,161 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       waxcashAnalytics.sections?.chart?.price_unit === 'WAX_per_WAXCASH' &&
       !waxcashAnalytics.sections?.chart_external,
       JSON.stringify(waxcashAnalytics.sections));
+    const waxcashBubblesLite = __waxonedgeTestHooks.buildWaxcashBubblesLiteFromAnalytics(waxcashAnalytics);
+    const waxcashBubblesLiteJson = JSON.stringify(waxcashBubblesLite);
+    ok('/waxcash-bubbles-lite serializes WAXCASH root and pair-member bubbles without heavy analytics debug',
+      waxcashBubblesLite.source === 'waxcash_bubbles_lite' &&
+      waxcashBubblesLite.summary?.source_feed === '/api/waxonedge/waxcash-bubbles-lite' &&
+      waxcashBubblesLite.tokens?.some((token) => token.symbol === 'WAXCASH' && token.selected_price_wax === waxcashAnalytics.stats.selected_price_wax) &&
+      waxcashBubblesLite.tokens?.some((token) => token.symbol !== 'WAXCASH' && token.pair_id) &&
+      waxcashBubblesLite.pairs?.length === waxcashAnalytics.sections?.pair_table?.rows?.length &&
+      waxcashBubblesLite.payload_policy?.excludes_source_snapshot_diagnostics === true &&
+      waxcashBubblesLite.payload_policy?.excludes_normalization_diagnostics === true &&
+      waxcashBubblesLite.payload_policy?.excludes_chart_candles === true &&
+      !waxcashBubblesLiteJson.includes('"source_stability_debug"') &&
+      !waxcashBubblesLiteJson.includes('"source_snapshot_diagnostics"') &&
+      !waxcashBubblesLiteJson.includes('"normalization_diagnostics"') &&
+      !waxcashBubblesLiteJson.includes('"source_index_state_rows"') &&
+      !waxcashBubblesLiteJson.includes('metric_debug') &&
+      !waxcashBubblesLiteJson.includes('"candles"') &&
+      !waxcashBubblesLiteJson.includes('"proof_details"'),
+      waxcashBubblesLiteJson);
+    const selectedPriceOnlyLite = __waxonedgeTestHooks.buildWaxcashBubblesLiteFromRows({
+      selected_price_wax: '0.01',
+      selected_price_usd: '0.00005',
+      liquidity_wax: '10',
+      liquidity_usd: '0.05',
+    }, [{
+      source: 'swap.nefty',
+      pair_id: 'SELECTEDONLY',
+      token_a_contract: 'graffitiking',
+      token_a_symbol: 'WAXCASH',
+      token_b_contract: 'tokentest',
+      token_b_symbol: 'TST',
+      selected_price_wax: '0.123',
+      selected_price_usd: '0.456',
+      liquidity_wax: '50',
+      liquidity_usd: '2.5',
+      updated_at: '2026-06-21T00:00:00.000Z',
+    }], '2026-06-21T00:00:00.000Z');
+    const selectedOnlyToken = selectedPriceOnlyLite.tokens.find((token) => token.symbol === 'TST');
+    ok('WAXCASH lite pair bubbles mark selected_price live when selected_price_wax exists without price_wax',
+      selectedOnlyToken?.selected_price_wax === '0.123' &&
+      selectedOnlyToken?.selected_price_usd === '0.456' &&
+      selectedOnlyToken?.metric_status?.selected_price?.live === true &&
+      selectedOnlyToken?.metric_status?.selected_price?.source === 'waxcash_pair_row',
+      JSON.stringify(selectedOnlyToken));
+    const failingLiteDb = {
+      prepare(sql) {
+        return {
+          bind() {
+            return {
+              async first() {
+                return {
+                  contract: 'graffitiking',
+                  symbol: 'WAXCASH',
+                  selected_price_wax: '0.01',
+                  selected_price_usd: '0.00005',
+                  updated_at: '2026-06-21T00:00:00.000Z',
+                };
+              },
+              async all() {
+                if (sql.includes('FROM waxonedge_pairs')) throw new Error('simulated lite pair query failure');
+                return { results: [] };
+              },
+            };
+          },
+        };
+      },
+    };
+    const failingLite = await __waxonedgeTestHooks.buildWaxcashBubblesLite(failingLiteDb, {});
+    ok('WAXCASH lite pair query failure is explicit and not reported as a real zero-pair result',
+      failingLite.ok === false &&
+      failingLite.data_available === false &&
+      failingLite.root_summary_available === true &&
+      failingLite.pair_rows_available === false &&
+      failingLite.summary?.data_available === false &&
+      failingLite.summary?.root_summary_available === true &&
+      failingLite.summary?.pair_rows_available === false &&
+      failingLite.lite_query_error === 'simulated lite pair query failure' &&
+      failingLite.summary?.lite_query_error === 'simulated lite pair query failure' &&
+      failingLite.summary?.indexed_pair_count === null &&
+      failingLite.tokens?.some((token) => token.symbol === 'WAXCASH') &&
+      failingLite.no_fake_value === true,
+      JSON.stringify(failingLite));
+    const failingRootLiteDb = {
+      prepare(sql) {
+        return {
+          bind() {
+            return {
+              async first() {
+                if (sql.includes('FROM waxonedge_tokens')) throw new Error('simulated lite root query failure');
+                return null;
+              },
+              async all() {
+                return { results: [{
+                  source: 'swap.nefty',
+                  pair_id: 'ROOTFAILPAIR',
+                  token_a_contract: 'graffitiking',
+                  token_a_symbol: 'WAXCASH',
+                  token_b_contract: 'tokentest',
+                  token_b_symbol: 'RFT',
+                  price: '0.01',
+                  liquidity_wax: '25',
+                  updated_at: '2026-06-21T00:00:00.000Z',
+                }] };
+              },
+            };
+          },
+        };
+      },
+    };
+    const failingRootLite = await __waxonedgeTestHooks.buildWaxcashBubblesLite(failingRootLiteDb, {});
+    ok('WAXCASH lite root query failure is explicit without hiding available pair rows',
+      failingRootLite.ok === false &&
+      failingRootLite.data_available === false &&
+      failingRootLite.root_summary_available === false &&
+      failingRootLite.pair_rows_available === true &&
+      failingRootLite.summary?.root_summary_available === false &&
+      failingRootLite.summary?.pair_rows_available === true &&
+      failingRootLite.lite_query_error === 'simulated lite root query failure' &&
+      failingRootLite.summary?.indexed_pair_count === 1 &&
+      failingRootLite.tokens?.some((token) => token.symbol === 'RFT') &&
+      failingRootLite.no_fake_value === true,
+      JSON.stringify(failingRootLite));
+    const trueZeroLiteDb = {
+      prepare() {
+        return {
+          bind() {
+            return {
+              async first() {
+                return {
+                  contract: 'graffitiking',
+                  symbol: 'WAXCASH',
+                  selected_price_wax: '0.01',
+                  selected_price_usd: '0.00005',
+                  updated_at: '2026-06-21T00:00:00.000Z',
+                };
+              },
+              async all() {
+                return { results: [] };
+              },
+            };
+          },
+        };
+      },
+    };
+    const trueZeroLite = await __waxonedgeTestHooks.buildWaxcashBubblesLite(trueZeroLiteDb, {});
+    ok('WAXCASH lite endpoint reports true zero pair rows only when slim queries succeed',
+      trueZeroLite.ok === true &&
+      trueZeroLite.data_available === true &&
+      trueZeroLite.root_summary_available === true &&
+      trueZeroLite.pair_rows_available === true &&
+      trueZeroLite.lite_query_error === null &&
+      trueZeroLite.summary?.indexed_pair_count === 0 &&
+      trueZeroLite.tokens?.length === 1 &&
+      trueZeroLite.tokens?.[0]?.symbol === 'WAXCASH',
+      JSON.stringify(trueZeroLite));
     const waxcashTokenStatLabels = (waxcashAnalytics.sections?.token_stats?.rows || []).map((row) => row.label);
     ok('WAXCASH token stats section keeps OG WaxOnEdge row names and omits selected-direct proof liquidity',
       JSON.stringify(waxcashTokenStatLabels.slice(0, 14)) === JSON.stringify([
@@ -5310,10 +5594,9 @@ const newestFirstDailyCandles = __waxonedgeTestHooks.buildDailyCandlesFromTradeR
   { source: 'alcormarket', pair_id: '29', traded_at: '2026-06-12T02:00:00.000Z', raw_json: JSON.stringify({ unit_price: 5000000 }), volume: '1' },
 ], { source: 'alcor' });
 ok('trade query selects newest rows while builder sorts ascending for OHLC',
-  route.includes('ORDER BY traded_at DESC') &&
+  route.includes('ORDER BY traded_at DESC${limitClause}') &&
   route.includes('LIMIT 5000') &&
   route.includes('.sort((a, b) => a.millis - b.millis)') &&
-  !route.includes('ORDER BY traded_at ASC') &&
   newestFirstDailyCandles[0].open === '0.01' &&
   newestFirstDailyCandles[0].high === '0.05' &&
   newestFirstDailyCandles[0].low === '0.01' &&
@@ -8109,11 +8392,34 @@ ok('frontend scanner front door and token analytics route are present',
   frontend.includes("'/analytics/token/?token='") &&
   frontend.includes("state.filters.bubbleMetric === 'volume'") &&
   frontend.includes('hasRealSignal'));
+ok('WaxOnEdge route exposes slim WAXCASH bubble feed separately from full analytics',
+  route.includes('/waxcash-bubbles-lite') &&
+  route.includes('buildWaxcashBubblesLite(env.DB, env)') &&
+  route.includes('Slim WAXCASH bubble feed excludes source diagnostics') &&
+  route.includes('buildWaxcashBubblesLiteFromRows') &&
+  route.includes('loadWaxcashLiteRootSummary(db)') &&
+  route.includes('loadWaxcashLitePairRows(db)') &&
+  route.includes('root_summary_available: rootSummaryAvailable') &&
+  route.includes('pair_rows_available: pairRowsAvailable') &&
+  route.includes('data_available: dataAvailable') &&
+  route.includes('lite_query_error: liteQueryError') &&
+  route.includes('rootQueryError') &&
+  route.includes('pairQueryError') &&
+  route.includes('excludes_full_waxcash_analytics_build: true') &&
+  route.includes('excludes_source_snapshot_diagnostics: true') &&
+  route.includes('excludes_normalization_diagnostics: true') &&
+  route.includes('excludes_chart_candles: true') &&
+  !/async function buildWaxcashBubblesLite\(db, env\)\s*{[^}]*buildWaxcashAnalytics/s.test(route));
 ok('frontend bubbles bootstrap first and then starts live updates',
   frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') > -1 &&
   frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') < frontendBubbles.lastIndexOf('startLiveUpdates();') &&
-  frontendBubbles.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics'") &&
-  frontendBubbles.includes("var LIVE_API = '/api/waxonedge/waxcash-analytics'") &&
+  frontendBubbles.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite'") &&
+  frontendBubbles.includes('function isUnavailableLitePayload(payload)') &&
+  frontendBubbles.includes("data.source === 'waxcash_bubbles_lite' && data.data_available === false") &&
+  frontendBubbles.includes('if (isUnavailableLitePayload(snapshot)) return') &&
+  frontendBubbles.includes("if (isUnavailableLitePayload(results[0])) throw new Error('WAXCASH bubble lite query unavailable')") &&
+  frontendBubbles.includes('var BOOTSTRAP_API = BUBBLES_LITE_API;') &&
+  frontendBubbles.includes('var LIVE_API = BUBBLES_LITE_API;') &&
   frontendBubbles.includes("var LIVE_STREAM_API = '/api/waxonedge/live/stream'"));
 ok('frontend WAXCASH analytics adapter maps selected root price, pair row price, liquidity, market cap, and pair_table rows',
   frontendBubbles.includes('function waxcashAnalyticsToBubblePayload(payload)') &&
@@ -8135,8 +8441,9 @@ ok('frontend live hook uses EventSource only when enabled and safe polling fallb
   frontendBubbles.includes('scheduleLivePolling(1000)') &&
   frontendBubbles.includes('var LIVE_POLL_MS = 1000') &&
   !frontendBubbles.includes('var LIVE_POLL_MS = 10000'));
-ok('frontend polls the WAXCASH analytics feed with no-store/cache-busting instead of timestamp-only since cursor',
+ok('frontend polls the slim WAXCASH bubble feed with no-store/cache-busting instead of timestamp-only since cursor',
   frontendBubbles.includes('return LIVE_API;') &&
+  frontendBubbles.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite'") &&
   frontendBubbles.includes("var url = path + sep + '_=' + encodeURIComponent(String(Date.now()))") &&
   frontendBubbles.includes("headers: { Accept: 'application/json' }") &&
   frontendBubbles.includes("cache: 'no-store'") &&
@@ -8394,9 +8701,16 @@ ok('frontend renders backend graph tokens beyond the old featured allowlist',
   !frontendBubbles.includes('if (!key || !featured) return;'));
 ok('frontend bubble click opens in-page live token details without full token pages',
   frontendBubbles.includes('function openTokenModal(record)') &&
-  frontendBubbles.includes('function renderTokenModal(record)') &&
+  frontendBubbles.includes('function renderTokenModal(record, detailState)') &&
+  frontendBubbles.includes('function loadTokenModalDetails(record)') &&
+  frontendBubbles.includes('function modalDetailApiPath(record)') &&
+  frontendBubbles.includes("return '/api/waxonedge/waxcash-analytics'") &&
+  frontendBubbles.includes("'/api/waxonedge/token/' + encodeURIComponent(record.contract) + '/' + encodeURIComponent(record.symbol)") &&
+  frontendBubbles.includes("modalDetailApiPath(record) + '/pairs?limit=100'") &&
   frontendBubbles.includes('openTokenModal(node.record)') &&
   frontendBubbles.includes('woe-ab-modal-panel') &&
+  frontendBubbles.includes('Detail source') &&
+  frontendBubbles.includes('Full token analytics loaded on click') &&
   !frontendBubbles.includes("return '/analytics/token/?token=' + encodeURIComponent(record.symbol) + '&contract=' + encodeURIComponent(record.contract)") &&
   !frontendBubbles.includes('openTokenAnalytics(node.record)') &&
   !frontendBubbles.includes('window.location.href'));
