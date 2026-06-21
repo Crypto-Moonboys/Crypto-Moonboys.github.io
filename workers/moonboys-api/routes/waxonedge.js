@@ -5314,7 +5314,6 @@ async function listTopTokens(db) {
   const tokens = await deriveReserveBackedTokenRows(db, graph.tokenRows, {
     pairRows: graph.pairRows,
     routeGraphRows: graph.pairRows,
-    routeGraphLimit: 0,
   });
   return sortWaxcashGraphTokens(tokens).slice(0, 250);
 }
@@ -5598,7 +5597,6 @@ async function listLiveTokenUpdates(db, options = {}) {
   const reserveBackedRows = await deriveReserveBackedTokenRows(db, results, {
     pairRows: graph.pairRows,
     routeGraphRows: graph.pairRows,
-    routeGraphLimit: 0,
   });
   return {
     tokens: sortWaxcashGraphTokens(reserveBackedRows).map(normalizeLiveTokenUpdate).filter(Boolean),
@@ -9173,12 +9171,20 @@ function waxcashLiteValuationBasis(row, membership = null) {
   const membershipPairId = safeString(membership?.waxcash_pair_id);
   if (route === 'direct_wax') return 'direct_wax_pair';
   if (route === 'wax_self') return 'wax_self';
+  const selectedPairSource = aggregateSourceKey(row?.selected_pair_source);
+  const selectedPairId = safeString(row?.selected_pair_id);
+  const selectedPairIsMembershipPair = !!(
+    membershipSource &&
+    membershipPairId &&
+    selectedPairSource === membershipSource &&
+    selectedPairId === membershipPairId
+  );
   const usesWaxcashPair = hops.some((hop) =>
     tokenKeyFromRoutePart(hop.from) === WAXCASH_KEY ||
     tokenKeyFromRoutePart(hop.to) === WAXCASH_KEY ||
     (membershipSource && membershipPairId && aggregateSourceKey(hop.source) === membershipSource && safeString(hop.pair_id) === membershipPairId)
   );
-  if (usesWaxcashPair || row?.selected_pair_source === membership?.waxcash_pair_source) {
+  if (usesWaxcashPair || selectedPairIsMembershipPair) {
     return 'waxcash_reserve_ratio_from_selected_waxcash_price';
   }
   if (route === 'multi_hop_wax' || route === 'liquidity_weighted_median_verified_pair') return 'routed_wax_pair';
@@ -9304,7 +9310,8 @@ function waxcashLiteEnrichmentDiagnostics(tokens = [], membershipMap = new Map()
 }
 
 function buildWaxcashBubblesLiteFromGraph(rootStats = {}, graph = {}, enrichedRows = [], generatedAt = nowIso(), options = {}) {
-  const pairRows = graph.waxcashPairs || [];
+  const canonicalPairRows = Array.isArray(options.canonicalPairRows) ? options.canonicalPairRows : null;
+  const pairRows = canonicalPairRows || graph.waxcashPairs || [];
   const membershipMap = waxcashLiteMembershipMap(pairRows);
   const rootSummaryAvailable = options.rootSummaryAvailable !== false;
   const graphAvailable = options.graphAvailable !== false;
@@ -9364,7 +9371,7 @@ function buildWaxcashBubblesLiteFromGraph(rootStats = {}, graph = {}, enrichedRo
     no_fake_value: true,
   };
   const memberTokens = (enrichedRows || [])
-    .filter((row) => row.visible_in_waxcash_bubbles === true || row.visible_in_waxcash_bubbles === 1 || row.visible_in_waxcash_bubbles === '1')
+    .filter((row) => membershipMap.has(tokenKey(row.contract, row.symbol)))
     .map((row) => waxcashLiteFullTokenBubble(row, membershipMap.get(tokenKey(row.contract, row.symbol)), generatedAt))
     .filter(Boolean);
   const tokens = [root, ...sortWaxcashGraphTokens(memberTokens)];
@@ -9543,7 +9550,6 @@ async function buildWaxcashBubblesLite(db, env) {
       enrichedRows: await deriveReserveBackedTokenRows(db, graph.tokenRows, {
         pairRows: graph.pairRows,
         routeGraphRows: graph.pairRows,
-        routeGraphLimit: 0,
       }),
       error: null,
     })).catch((error) => ({
@@ -9554,6 +9560,7 @@ async function buildWaxcashBubblesLite(db, env) {
     })),
   ]);
   return buildWaxcashBubblesLiteFromGraph(rootStats.row, graphResult.graph, graphResult.enrichedRows, nowIso(), {
+    canonicalPairRows: pairRowsResult.rows,
     rootSummaryAvailable: rootStats.ok,
     rootQueryError: rootStats.error,
     graphAvailable: pairRowsResult.ok && graphResult.ok,
