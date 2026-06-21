@@ -1967,9 +1967,17 @@ function waxcashPairCountBaseline(source, currentD1Count, previousSnapshotData =
 function waxcashSourceRecoveryDecision(source, currentD1Count, previousSnapshotData = {}) {
   const baseline = waxcashPairCountBaseline(source, currentD1Count, previousSnapshotData);
   const guard = waxcashSourceCollapseGuard(baseline.guard_baseline_waxcash_pair_count, currentD1Count);
+  const normalizationDiagnosticsMissing = !previousSnapshotData?.normalization_diagnostics;
+  const belowMinimumWaxcashPairCount = baseline.minimum_waxcash_pair_count > 0 &&
+    baseline.previous_current_d1_waxcash_pair_count < baseline.minimum_waxcash_pair_count;
+  const needsBelowMinimumAudit = guard.ok && belowMinimumWaxcashPairCount && normalizationDiagnosticsMissing;
   return {
-    required: !guard.ok,
-    reason: guard.reason,
+    required: !guard.ok || needsBelowMinimumAudit,
+    reason: guard.reason || (needsBelowMinimumAudit
+      ? 'source_waxcash_rows_below_baseline_needs_normalization_diagnostics'
+      : null),
+    below_minimum_waxcash_pair_count: belowMinimumWaxcashPairCount,
+    normalization_diagnostics_missing: normalizationDiagnosticsMissing,
     ...baseline,
   };
 }
