@@ -77,16 +77,16 @@
     }
     .wx-token-head {
       display: grid;
-      grid-template-columns: 72px 1fr;
-      gap: 12px;
+      grid-template-columns: 112px 1fr;
+      gap: 18px;
       align-items: center;
       padding: 12px 16px;
       background: var(--rail);
       border-bottom: 1px solid rgba(148,163,173,0.16);
     }
     .wx-token-icon {
-      width: 56px;
-      height: 56px;
+      width: 112px;
+      height: 112px;
       border-radius: 8px;
       object-fit: cover;
       background: var(--panel-2);
@@ -94,6 +94,27 @@
     }
     .wx-token-name strong { display: block; font-size: 20px; }
     .wx-token-name span { display: block; color: var(--muted); font-weight: 700; }
+    .wx-token-blurb {
+      margin: 8px 0 0;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 750;
+      line-height: 1.32;
+    }
+    .wx-token-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .wx-token-links a {
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 900;
+      text-decoration: none;
+    }
+    .wx-token-links a:hover,
+    .wx-token-links a:focus-visible { text-decoration: underline; }
     .wx-stats { padding: 0; }
     .wx-row {
       display: grid;
@@ -309,10 +330,15 @@
           <h2>Token stats</h2>
         </div>
         <div class="wx-token-head">
-          <img id="wx-token-icon" class="wx-token-icon" alt="" src="/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+          <img id="wx-token-icon" class="wx-token-icon" alt="WAXCASH token graffiti artwork" src="/%24WAXCASH%20TOKEN%20GRAFFITI%20GKNIFTYHEADS%20GRAFFITI%20KINGS%20NFTS%201.jpg">
           <div class="wx-token-name">
             <strong>WAXCASH</strong>
             <span>graffitiking</span>
+            <p class="wx-token-blurb">The GKniftyHEADS (also known as Graffiti Kings) are a prominent UK-based street art and graffiti collective that expanded into the digital space. They are known for bridging traditional hip-hop and graffiti culture with blockchain technology by creating and launching their own NFT collections &amp; utility gaming tokens. DISRUPTION BREEDS KINGS, GREED BREEDS MEME$</p>
+            <div class="wx-token-links" aria-label="GKniftyHEADS links">
+              <a href="https://gkniftyheads.com/" rel="noopener" target="_blank">gkniftyheads.com</a>
+              <a href="https://t.me/gkniftyheads" rel="noopener" target="_blank">t.me/gkniftyheads</a>
+            </div>
           </div>
         </div>
         <div id="wx-stats" class="wx-stats" aria-live="polite"></div>

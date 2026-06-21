@@ -9068,6 +9068,17 @@ ok('WAXCASH analytics frontend uses TradingView Charting Library with Alcor WAXC
   !waxcashHtml.includes('.wx-external-chart-frame') &&
   !waxcashAnalyticsFrontend.includes('External Alcor chart unavailable in embed.') &&
   !/(>|\bvalue=["'])(Deposit|Add Liquidity|Swap|Trade on Swap|Connect Wallet|wallet selector)(<|["'])|transact\(/i.test(waxcashHtml + waxcashAnalyticsFrontend));
+ok('WAXCASH analytics page uses the larger GKniftyHEADS artwork and blurb',
+  exists('$WAXCASH TOKEN GRAFFITI GKNIFTYHEADS GRAFFITI KINGS NFTS 1.jpg') &&
+  waxcashHtml.includes('src="/%24WAXCASH%20TOKEN%20GRAFFITI%20GKNIFTYHEADS%20GRAFFITI%20KINGS%20NFTS%201.jpg"') &&
+  waxcashHtml.includes('alt="WAXCASH token graffiti artwork"') &&
+  waxcashHtml.includes('grid-template-columns: 112px 1fr') &&
+  waxcashHtml.includes('width: 112px') &&
+  waxcashHtml.includes('height: 112px') &&
+  waxcashHtml.includes('The GKniftyHEADS (also known as Graffiti Kings)') &&
+  waxcashHtml.includes('DISRUPTION BREEDS KINGS, GREED BREEDS MEME$') &&
+  waxcashHtml.includes('href="https://gkniftyheads.com/"') &&
+  waxcashHtml.includes('href="https://t.me/gkniftyheads"'));
 ok('WAXCASH analytics frontend keeps pair table and adds WAX-only liquidity/24h volume sorting',
   waxcashHtml.includes('id="wx-sort-liquidity"') &&
   waxcashHtml.includes('data-sort="liquidity"') &&
