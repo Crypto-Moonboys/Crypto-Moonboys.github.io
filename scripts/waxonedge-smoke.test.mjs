@@ -61,9 +61,20 @@ const sourcesJs = exists('js/waxonedge-sources.js') ? read('js/waxonedge-sources
 const featuredJs = exists('js/waxonedge-featured-tokens.js') ? read('js/waxonedge-featured-tokens.js') : '';
 const v2Js = exists('js/waxonedge-bubbles-v2.js') ? read('js/waxonedge-bubbles-v2.js') : '';
 const waxcashAnalyticsJs = exists('js/waxcash-analytics.js') ? read('js/waxcash-analytics.js') : '';
+const staticBootstrapGenerator = exists('scripts/generate-waxcash-bubbles-bootstrap.mjs')
+  ? read('scripts/generate-waxcash-bubbles-bootstrap.mjs')
+  : '';
 const staticBootstrap = exists('data/waxonedge/waxcash-bubbles-bootstrap.json')
   ? JSON.parse(read('data/waxonedge/waxcash-bubbles-bootstrap.json'))
   : {};
+const staticBootstrapPricedTokens = Array.isArray(staticBootstrap.tokens)
+  ? staticBootstrap.tokens.filter((token) => (
+    token &&
+    token.visible_in_waxcash_bubbles === true &&
+    token.selected_price_confidence === 'good' &&
+    (token.selected_price_wax != null || token.price_wax != null || token.selected_price_usd != null || token.price_usd != null)
+  ))
+  : [];
 
 ok('waxonedge.html references /css/waxonedge.css', html.includes('/css/waxonedge.css'));
 ok('waxonedge.html references /css/waxonedge-bubbles-v2.css', html.includes('/css/waxonedge-bubbles-v2.css'));
@@ -82,7 +93,8 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
 ok('OG analytics parity PR cache-busts changed WaxOnEdge scanner assets',
   html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-progressive-reveal-v1') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-priced-bootstrap-v1') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-progressive-reveal-v1') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-static-bootstrap-v1') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-membership-first-paint-v1') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-bootstrap-race-v1') &&
@@ -98,7 +110,7 @@ ok('OG analytics parity PR cache-busts changed WaxOnEdge scanner assets',
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-trust-hardening') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-confidence') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260615-galaxy3'));
-ok('static WaxOnEdge bootstrap JSON is compact membership data with no fake values',
+ok('static WaxOnEdge bootstrap JSON is priced indexed first-paint data with no fake values',
   staticBootstrap.source === 'waxcash_bubbles_static_bootstrap' &&
   staticBootstrap.data_available === true &&
   Array.isArray(staticBootstrap.tokens) &&
@@ -110,6 +122,17 @@ ok('static WaxOnEdge bootstrap JSON is compact membership data with no fake valu
   staticBootstrap.payload_policy?.membership_only === true &&
   staticBootstrap.payload_policy?.no_worker_required_for_first_paint === true &&
   staticBootstrap.payload_policy?.no_fake_value === true);
+ok('static WaxOnEdge bootstrap carries indexed pricing fields for immediate first paint',
+  staticBootstrapPricedTokens.length >= 65 &&
+  staticBootstrapPricedTokens.some((token) => token.metric_status?.selected_price?.live === true) &&
+  staticBootstrapPricedTokens.every((token) => token.no_fake_value === true));
+ok('static WaxOnEdge bootstrap priced tokens do not render as Not indexed',
+  staticBootstrapPricedTokens.length >= 65 &&
+  staticBootstrapPricedTokens.every((token) => token.selected_price_confidence === 'good' &&
+    (token.selected_price_wax != null || token.price_wax != null || token.selected_price_usd != null || token.price_usd != null)));
+ok('static WaxOnEdge bootstrap generator defaults to priced lite snapshot, not membership placeholder',
+  staticBootstrapGenerator.includes("const DEFAULT_SOURCE_URL = 'https://cryptomoonboys.com/api/waxonedge/waxcash-bubbles-lite';") &&
+  !staticBootstrapGenerator.includes("DEFAULT_SOURCE_URL = 'https://cryptomoonboys.com/api/waxonedge/waxcash-bubbles-lite?mode=membership'"));
 ok('OG analytics parity PR cache-busts changed token analytics assets',
   tokenHtml.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
   tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-og-analytics') &&
@@ -371,7 +394,7 @@ ok('waxonedge.js fetches Alcor chart candles from /markets/:id/charts for diagno
 ok('waxonedge.js keeps Lightweight Charts support', js.includes('window.LightweightCharts') && js.includes('tv.createChart'));
 
 ok('waxonedge-bubbles-v2.js uses the slim WAXCASH bubble backend endpoint, not full analytics polling or live Alcor APIs',
-  v2Js.includes("var BUBBLES_STATIC_BOOTSTRAP_API = '/data/waxonedge/waxcash-bubbles-bootstrap.json?v=woe-20260621-static-bootstrap-real-v1';") &&
+  v2Js.includes("var BUBBLES_STATIC_BOOTSTRAP_API = '/data/waxonedge/waxcash-bubbles-bootstrap.json?v=woe-20260621-static-priced-bootstrap-v1';") &&
   v2Js.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite';") &&
   v2Js.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
   v2Js.includes('var BOOTSTRAP_API = BUBBLES_STATIC_BOOTSTRAP_API;') &&
@@ -382,13 +405,16 @@ ok('waxonedge-bubbles-v2.js uses the slim WAXCASH bubble backend endpoint, not f
   !v2Js.includes('antbubbles') &&
   !v2Js.includes('wax.alcor.exchange'));
 ok('waxonedge-bubbles-v2.js bootstraps visible bubbles from static JSON before Worker fallbacks and enrichment',
-  v2Js.includes("var BUBBLES_STATIC_BOOTSTRAP_API = '/data/waxonedge/waxcash-bubbles-bootstrap.json?v=woe-20260621-static-bootstrap-real-v1';") &&
+  v2Js.includes("var BUBBLES_STATIC_BOOTSTRAP_API = '/data/waxonedge/waxcash-bubbles-bootstrap.json?v=woe-20260621-static-priced-bootstrap-v1';") &&
   v2Js.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
   v2Js.includes('var MEMBERSHIP_BOOTSTRAP_TIMEOUT_MS = 2000;') &&
   v2Js.includes('function fetchBootstrapSnapshot()') &&
   v2Js.includes('function hasBubbleTokens(payload)') &&
   v2Js.includes('function fetchStaticBootstrap()') &&
-  v2Js.includes('return apiJson(BUBBLES_STATIC_BOOTSTRAP_API).then(function (snapshot)') &&
+  v2Js.includes('function staticBootstrapJson(path)') &&
+  v2Js.includes('return staticBootstrapJson(BUBBLES_STATIC_BOOTSTRAP_API).then(function (snapshot)') &&
+  !/function fetchStaticBootstrap\(\)[\s\S]*apiJson\(BUBBLES_STATIC_BOOTSTRAP_API\)/.test(v2Js) &&
+  !/function staticBootstrapJson\(path\)[\s\S]*cache: 'no-store'/.test(v2Js) &&
   v2Js.includes('function fetchWorkerMembershipBootstrap()') &&
   v2Js.includes("var membershipRequest = apiJsonTimed(BUBBLES_MEMBERSHIP_API, 'membership')") &&
   v2Js.includes('function fetchFullLiteRescue()') &&
@@ -703,7 +729,7 @@ ok('waxonedge-bubbles-v2.js caps modal detail cache for long scanner sessions',
   !v2Js.includes('modalDetailCache: {}') &&
   !v2Js.includes('state.modalDetailCache[key] ='));
 ok('WaxOnEdge frontend keeps the scanner on the slim Worker route and token analytics on Worker API routes only',
-  v2Js.includes("var BUBBLES_STATIC_BOOTSTRAP_API = '/data/waxonedge/waxcash-bubbles-bootstrap.json?v=woe-20260621-static-bootstrap-real-v1';") &&
+  v2Js.includes("var BUBBLES_STATIC_BOOTSTRAP_API = '/data/waxonedge/waxcash-bubbles-bootstrap.json?v=woe-20260621-static-priced-bootstrap-v1';") &&
   v2Js.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite';") &&
   v2Js.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
   v2Js.includes('var BOOTSTRAP_API = BUBBLES_STATIC_BOOTSTRAP_API;') &&
