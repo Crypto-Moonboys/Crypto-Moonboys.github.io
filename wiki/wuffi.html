@@ -31,6 +31,27 @@
     .source-ref-list li { margin-bottom: .5rem; word-break: break-word; }
     .ref a { text-decoration: none; }
     .callout-note { border: 1px solid rgba(255,208,0,.35); background: rgba(255,208,0,.08); padding: 1rem; margin: 1.1rem 0; }
+
+    .token-analytics-panel { margin: 1.4rem 0 1.8rem; display: grid; gap: 1rem; max-width: 100%; }
+    .token-chart-panel, .token-stat-card, .token-pairs-panel { border: 1px solid rgba(255,255,255,.14); border-radius: 14px; background: rgba(5,10,18,.72); box-shadow: 0 10px 24px rgba(0,0,0,.24); overflow: hidden; }
+    .token-panel-header { display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; padding: .95rem 1rem; border-bottom: 1px solid rgba(255,255,255,.1); }
+    .token-panel-header h2, .token-panel-header h3 { margin:0; color:#ffd000; }
+    .token-panel-note, .token-analytics-status { color: rgba(255,255,255,.72); font-size: .82rem; line-height: 1.45; }
+    .token-tradingview-chart { width:100%; height: 430px; min-height: 360px; background:#111820; }
+    .token-stat-cards { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+    .token-stat-card { padding: 1rem; }
+    .token-stat-card span { display:block; color:rgba(255,255,255,.72); font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; }
+    .token-stat-card strong { display:block; margin-top:.45rem; font-size:1.25rem; color:#fff; overflow-wrap:anywhere; }
+    .token-stat-card small { display:block; margin-top:.35rem; color:rgba(255,255,255,.62); line-height:1.4; }
+    .token-pairs-table-wrap { max-width:100%; overflow-x:auto; }
+    .token-pairs-table { width:100%; min-width: 920px; border-collapse: collapse; }
+    .token-pairs-table th, .token-pairs-table td { padding:.72rem .65rem; border-bottom:1px solid rgba(255,255,255,.09); text-align:right; vertical-align:top; overflow-wrap:anywhere; }
+    .token-pairs-table th { color:rgba(255,255,255,.68); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; }
+    .token-pairs-table th:nth-child(2), .token-pairs-table th:nth-child(3), .token-pairs-table td:nth-child(2), .token-pairs-table td:nth-child(3) { text-align:left; }
+    .token-muted { color:rgba(255,255,255,.58); }
+    .token-positive { color:#00f59f; }
+    .token-negative { color:#ff5470; }
+    @media (max-width: 760px) { .token-stat-cards { grid-template-columns:1fr; } .token-panel-header { flex-direction:column; } .token-tradingview-chart { height:360px; } }
   </style>
   <script type="application/ld+json">
   {
@@ -52,6 +73,48 @@
   <h1 class="page-title">🐺 WUFFI / $WUF</h1>
   <div class="page-title-line" aria-hidden="true"></div>
   <div class="article-meta"><span class="article-badge">✅ Source-cited</span><span class="article-badge">🪙 Cryptocurrencies</span><span class="meta-item">📅 Last updated: June 2026</span><span class="meta-item">📂 <a href="/categories/cryptocurrencies.html">Cryptocurrencies</a></span></div>
+
+  <section class="token-analytics-panel" data-token-analytics-page data-contract="wuffi" data-symbol="WUF" aria-label="WUF token analytics">
+    <div class="token-chart-panel">
+      <div class="token-panel-header">
+        <div>
+          <h2>WUF / WAX candle chart</h2>
+          <div class="token-panel-note">Direct Alcor candle feed: wuf-wuffi / wax-eosio.token. Chart candles are visual-only and are not used for table valuation.</div>
+        </div>
+        <div class="token-analytics-status" id="wuf-chart-status">Loading Alcor chart…</div>
+      </div>
+      <div id="wuf-tv-chart-container" class="token-tradingview-chart" aria-label="Alcor TradingView WUF/WAX candlestick chart"></div>
+    </div>
+
+    <div class="token-stat-cards" aria-label="Current WUF analytics summary">
+      <div class="token-stat-card">
+        <span>Indexed liquidity</span>
+        <strong id="wuf-liquidity">Unavailable</strong>
+        <small>From WaxOnEdge indexed token stats only.</small>
+      </div>
+      <div class="token-stat-card">
+        <span>Indexed 24h volume</span>
+        <strong id="wuf-volume-24h">Unavailable</strong>
+        <small id="wuf-analytics-updated">Backend values are not guessed when missing.</small>
+      </div>
+    </div>
+
+    <div class="token-pairs-panel">
+      <div class="token-panel-header">
+        <div>
+          <h2>Top 30 WUF Pairs</h2>
+          <div class="token-panel-note">Ranked by indexed liquidity first, then indexed 24h WAX volume, then backend row order.</div>
+        </div>
+        <div class="token-analytics-status" id="wuf-pair-summary">Loading indexed pairs…</div>
+      </div>
+      <div class="token-pairs-table-wrap">
+        <table class="token-pairs-table">
+          <thead><tr><th>Rank</th><th>Exchange/source</th><th>Pair</th><th>Liquidity</th><th>Price</th><th>24h price change</th><th>24h volume</th><th>7d volume</th><th>30d volume</th></tr></thead>
+          <tbody id="wuf-pairs"><tr><td colspan="9" class="token-muted">Loading indexed WUF pair rows…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
   <article class="wiki-content" data-entity-slug="wuffi">
     <p class="lead-paragraph"><strong>WUFFI</strong>, commonly represented by the token symbol <strong>$WUF</strong>, is a community coin with a multi-chain identity across <a href="/wiki/wax-blockchain.html">WAX</a>, Solana, Base and TON. Its official site positions $WUF as an “all-in-one coin” for gaming, DeFi, staking, integrations, events and community culture. In the WAX ecosystem, WUFFI is useful because it shows how WAX-native culture has expanded beyond isolated NFT collections into meme coins, cross-chain communities and game-linked token activity.<sup class="ref"><a href="#source-1">[1]</a></sup></p>
@@ -141,6 +204,8 @@
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <!-- 6. Page-specific scripts -->
+<script data-cfasync="false" src="https://alcor.exchange/charting_library/charting_library.standalone.js"></script>
+<script data-cfasync="false" src="/js/token-analytics-page.js"></script>
 
 <script type="application/ld+json">
   {

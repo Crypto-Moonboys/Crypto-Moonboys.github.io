@@ -18,7 +18,9 @@
     "btqm:assets": "node scripts/generate-btqm-assets.mjs",
     "test:btqm-runtime-assets": "node scripts/btqm-runtime-assets-smoke.test.mjs",
     "btqm:assets:hydrate": "node scripts/hydrate-btqm-generated-assets.mjs",
-    "test:crystal-quest": "node scripts/crystal-quest-signal-vault.test.mjs && node scripts/crystal-quest-wiki-trail.test.mjs && node scripts/crystal-quest-mobile-fullscreen-polish.test.mjs && node scripts/crystal-quest-living-machine-effects.test.mjs"
+    "test:crystal-quest": "node scripts/crystal-quest-signal-vault.test.mjs && node scripts/crystal-quest-wiki-trail.test.mjs && node scripts/crystal-quest-mobile-fullscreen-polish.test.mjs && node scripts/crystal-quest-living-machine-effects.test.mjs",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
   },
   "keywords": [],
   "author": "",
@@ -28,7 +30,7 @@
   },
   "devDependencies": {
     "playwright": "^1.59.1",
-    "wrangler": "^4.100.0"
+    "wrangler": "^4.101.0"
   },
   "dependencies": {
     "@pixellab-code/pixellab": "^1.0.2",
