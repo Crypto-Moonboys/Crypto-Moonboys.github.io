@@ -968,6 +968,7 @@
         selectedPair: token.selected_pair_id || '',
         selectedSource: sourceLabel(token.selected_pair_source),
         selectedPriceSource: token.selected_price_source || token.selected_pair_source || '',
+        selectedPriceUnavailableReason: token.selected_price_unavailable_reason || token.selected_price_rejection_reason || '',
         valuationBasis: token.valuation_basis || '',
         waxcashPairSource: token.waxcash_pair_source || '',
         waxcashPairId: token.waxcash_pair_id || '',
@@ -1293,6 +1294,10 @@
     }
     if (update.updated_at) record.liveUpdatedAt = update.updated_at;
     if (update.updated_at) record.lastUpdated = update.updated_at;
+    if (Object.prototype.hasOwnProperty.call(update, 'selected_price_unavailable_reason') ||
+        Object.prototype.hasOwnProperty.call(update, 'selected_price_rejection_reason')) {
+      record.selectedPriceUnavailableReason = update.selected_price_unavailable_reason || update.selected_price_rejection_reason || '';
+    }
     if (Object.prototype.hasOwnProperty.call(update, 'valuation_basis')) record.valuationBasis = update.valuation_basis || '';
     if (Object.prototype.hasOwnProperty.call(update, 'waxcash_pair_source')) record.waxcashPairSource = update.waxcash_pair_source || '';
     if (Object.prototype.hasOwnProperty.call(update, 'waxcash_pair_id')) record.waxcashPairId = update.waxcash_pair_id || '';
@@ -2408,6 +2413,7 @@
     }
     var token = detail.token || {};
     var stats = detail.stats || token.stats || {};
+    var selectedAudit = detail.selected_price_audit || stats.selected_price_audit || token.selected_price_audit || {};
     var pairRows = sourceRows(pairsData.rows || pairsData.pairs || detail.pairs || []);
     var sourceKeys = parseSourceKeys(firstPresent(stats.source_keys, token.source_keys, record.sources));
     if (!sourceKeys.length && pairRows.length) {
@@ -2436,7 +2442,7 @@
       sources: sourceKeys,
       selectedPriceSource: firstPresent(stats.selected_price_source, stats.selected_pair_source, token.selected_price_source, record.selectedPriceSource || record.selectedSource),
       valuationBasis: firstPresent(stats.valuation_basis, stats.selected_price_basis, stats.market_cap_basis, token.valuation_basis, record.waxcashPairValuationBasis || record.valuationBasis),
-      diagnostics: firstPresent(detail.unavailable, stats.unavailable_reason, token.unavailable_reason, record.unavailableReasons),
+      diagnostics: firstPresent(selectedAudit.selected_price_reason, stats.selected_price_rejection_reason, detail.unavailable, stats.unavailable_reason, token.unavailable_reason, record.selectedPriceUnavailableReason, record.unavailableReasons),
     };
   }
 

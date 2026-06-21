@@ -3164,6 +3164,117 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       canonicalMissing?.metric_status?.liquidity?.reason === 'full_token_analytics_missing' &&
       canonicalMissing?.no_fake_value === true,
       JSON.stringify(canonicalMissing));
+    const mintyPriceIndex = new Map([
+      ['eosio.token::WAX', { priceWax: 1, priceUsd: 0.005 }],
+    ]);
+    const mintyPairs = [
+      {
+        source: 'swap.alcor',
+        pair_id: '10836',
+        token_a_contract: 'graffitiking',
+        token_a_symbol: 'WAXCASH',
+        token_b_contract: 'token.minty',
+        token_b_symbol: 'MINTY',
+        reserve_a: '1000',
+        reserve_b: '500000',
+        liquidity_wax: '20',
+      },
+      {
+        source: 'swap.alcor',
+        pair_id: 'MINTYOTHER1',
+        token_a_contract: 'token.minty',
+        token_a_symbol: 'MINTY',
+        token_b_contract: 'token.foo',
+        token_b_symbol: 'FOO',
+        reserve_a: '100',
+        reserve_b: '200',
+      },
+      {
+        source: 'swap.alcor',
+        pair_id: 'MINTYOTHER2',
+        token_a_contract: 'token.bar',
+        token_a_symbol: 'BAR',
+        token_b_contract: 'token.minty',
+        token_b_symbol: 'MINTY',
+        reserve_a: '300',
+        reserve_b: '100',
+      },
+      {
+        source: 'swap.alcor',
+        pair_id: 'MINTYOTHER3',
+        token_a_contract: 'token.minty',
+        token_a_symbol: 'MINTY',
+        token_b_contract: 'token.baz',
+        token_b_symbol: 'BAZ',
+        reserve_a: '400',
+        reserve_b: '500',
+      },
+      {
+        source: 'swap.alcor',
+        pair_id: 'MINTYOTHER4',
+        token_a_contract: 'token.qux',
+        token_a_symbol: 'QUX',
+        token_b_contract: 'token.minty',
+        token_b_symbol: 'MINTY',
+        reserve_a: '700',
+        reserve_b: '800',
+      },
+      {
+        source: 'swap.nefty',
+        pair_id: 'WAXCASHWAX',
+        token_a_contract: 'graffitiking',
+        token_a_symbol: 'WAXCASH',
+        token_b_contract: 'eosio.token',
+        token_b_symbol: 'WAX',
+        reserve_a: '100000',
+        reserve_b: '1000',
+      },
+    ];
+    const mintyRouteIndex = __waxonedgeTestHooks.buildOgWaxRouteGraph(mintyPairs, mintyPriceIndex);
+    const mintyAudit = __waxonedgeTestHooks.selectedPriceAuditForToken(
+      'token.minty',
+      'MINTY',
+      mintyPairs.filter((pair) => pair.token_a_symbol === 'MINTY' || pair.token_b_symbol === 'MINTY'),
+      mintyPriceIndex,
+      mintyRouteIndex,
+    );
+    ok('MINTY selected-price audit lists indexed pairs and preserves Alcor adapter rejection without fake price',
+      mintyAudit.indexed_pair_count === 5 &&
+      mintyAudit.selected_price_available === false &&
+      mintyAudit.selected_price_wax === null &&
+      mintyAudit.selected_price_reason === 'adapter_unavailable_for_selected_price' &&
+      mintyAudit.alcor_pair_10836?.found === true &&
+      mintyAudit.alcor_pair_10836?.has_real_reserves === true &&
+      mintyAudit.alcor_pair_10836?.selected_candidate_status === 'rejected' &&
+      mintyAudit.alcor_pair_10836?.selected_candidate_reason === 'adapter_unavailable_for_selected_price' &&
+      mintyAudit.pairs.every((pair) => pair.selected_candidate_status === 'rejected') &&
+      mintyAudit.pairs.some((pair) => pair.pair_id === '10836' && pair.waxcash_pair_reserve_ratio_status?.possible === true),
+      JSON.stringify(mintyAudit));
+    const mintyDirectWaxPairs = mintyPairs.concat([{
+      source: 'swap.nefty',
+      pair_id: 'MINTYWAX',
+      token_a_contract: 'token.minty',
+      token_a_symbol: 'MINTY',
+      token_b_contract: 'eosio.token',
+      token_b_symbol: 'WAX',
+      reserve_a: '10000',
+      reserve_b: '500',
+    }]);
+    const mintyDirectRouteIndex = __waxonedgeTestHooks.buildOgWaxRouteGraph(mintyDirectWaxPairs, mintyPriceIndex);
+    const mintyDirectAudit = __waxonedgeTestHooks.selectedPriceAuditForToken(
+      'token.minty',
+      'MINTY',
+      mintyDirectWaxPairs.filter((pair) => pair.token_a_symbol === 'MINTY' || pair.token_b_symbol === 'MINTY'),
+      mintyPriceIndex,
+      mintyDirectRouteIndex,
+    );
+    ok('MINTY selected-price audit allows a supported direct WAX proof when one exists',
+      mintyDirectAudit.selected_price_available === true &&
+      mintyDirectAudit.selected_price_wax === '0.05' &&
+      mintyDirectAudit.selected_price_source === 'swap.nefty' &&
+      mintyDirectAudit.selected_pair_id === 'MINTYWAX' &&
+      mintyDirectAudit.pairs.some((pair) => pair.pair_id === 'MINTYWAX' && pair.selected_candidate_status === 'usable'),
+      JSON.stringify(mintyDirectAudit));
     const graphFailureLite = __waxonedgeTestHooks.buildWaxcashBubblesLiteFromGraph({
       selected_price_wax: '0.01',
       selected_price_usd: '0.00005',
