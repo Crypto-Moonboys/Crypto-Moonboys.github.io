@@ -13996,7 +13996,6 @@ export const __waxonedgeTestHooks = {
   pairPassesGraphExpansionThreshold,
   syncSupplyInputs,
   waxcashSupplyTarget,
-  loadWaxcashGraphTokenRows,
   buildWaxcashPairGraph,
   sortWaxcashGraphTokens,
   listLiveTokenUpdates,

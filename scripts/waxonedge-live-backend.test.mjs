@@ -9319,7 +9319,9 @@ ok('frontend bubble click opens in-page live token details without full token pa
   frontendBubbles.includes("modalDetailApiPath(record) + '/pairs?limit=100'") &&
   frontendBubbles.includes('openTokenModal(node.record)') &&
   frontendBubbles.includes('woe-ab-modal-panel') &&
-  frontendBubbles.includes('Detail source') &&
+  frontendBubbles.includes('Proof / diagnostics') &&
+  frontendBubbles.includes('Data source') &&
+  !/var rows = \[[\s\S]*Detail source[\s\S]*?\];/.test(frontendBubbles) &&
   frontendBubbles.includes('Full token analytics loaded on click') &&
   !frontendBubbles.includes("return '/analytics/token/?token=' + encodeURIComponent(record.symbol) + '&contract=' + encodeURIComponent(record.contract)") &&
   !frontendBubbles.includes('openTokenAnalytics(node.record)') &&
