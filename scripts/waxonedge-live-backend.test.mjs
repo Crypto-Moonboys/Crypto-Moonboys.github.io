@@ -3129,7 +3129,9 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       ],
     });
     const canonicalDir = canonicalMembershipLite.tokens.find((token) => token.symbol === 'DIR');
+    const canonicalMissing = canonicalMembershipLite.tokens.find((token) => token.symbol === 'MISSFULL');
     ok('WAXCASH bubbles lite uses canonical WAXCASH pair rows for membership while graph rows only enrich values',
+      canonicalMembershipLite.tokens?.length === 4 &&
       canonicalMembershipLite.summary?.indexed_pair_count === 3 &&
       canonicalMembershipLite.pairs?.length === 3 &&
       canonicalMembershipLite.summary?.source_counts?.['swap.nefty'] === 1 &&
@@ -3142,6 +3144,26 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       canonicalMembershipLite.enrichment_debug?.tokens_where_waxcash_pair_exists_but_full_token_analytics_missing?.some((token) =>
         token.contract === 'tokenmissing' && token.symbol === 'MISSFULL' && token.waxcash_pair_id === 'CANONICAL3'),
       JSON.stringify(canonicalMembershipLite));
+    ok('WAXCASH bubbles lite keeps missing-enrichment members visible without fake full-token metrics',
+      canonicalMissing?.visible_in_waxcash_bubbles === true &&
+      canonicalMissing?.membership_source === 'direct_waxcash_pair' &&
+      canonicalMissing?.full_token_analytics_source === 'missing' &&
+      canonicalMissing?.waxcash_pair_id === 'CANONICAL3' &&
+      canonicalMissing?.waxcash_pair_source === 'swap.alcor' &&
+      canonicalMissing?.waxcash_pair_label === 'WAXCASH/MISSFULL #CANONICAL3' &&
+      canonicalMissing?.selected_price_wax === null &&
+      canonicalMissing?.selected_price_usd === null &&
+      canonicalMissing?.selected_price_confidence === 'unavailable' &&
+      canonicalMissing?.liquidity_wax === null &&
+      canonicalMissing?.graph_liquidity_wax === null &&
+      canonicalMissing?.source_count === null &&
+      canonicalMissing?.indexed_pair_count === null &&
+      canonicalMissing?.metric_status?.selected_price?.live === false &&
+      canonicalMissing?.metric_status?.selected_price?.reason === 'full_token_analytics_missing' &&
+      canonicalMissing?.metric_status?.liquidity?.live === false &&
+      canonicalMissing?.metric_status?.liquidity?.reason === 'full_token_analytics_missing' &&
+      canonicalMissing?.no_fake_value === true,
+      JSON.stringify(canonicalMissing));
     const failingLiteDb = {
       prepare(sql) {
         return {

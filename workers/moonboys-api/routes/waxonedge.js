@@ -9266,6 +9266,83 @@ function waxcashLiteFullTokenBubble(row, membership, generatedAt) {
   };
 }
 
+function waxcashLiteMembershipOnlyBubble(membership, generatedAt) {
+  const contract = normalizeContract(membership?.contract);
+  const symbol = normalizeSymbol(membership?.symbol);
+  if (!contract || !symbol || isWaxcashToken(contract, symbol)) return null;
+  const metricStatus = {
+    selected_price: { live: false, reason: 'full_token_analytics_missing' },
+    liquidity: { live: false, reason: 'full_token_analytics_missing' },
+    tvl: { live: false, reason: 'full_token_analytics_missing' },
+    market_cap: { live: false, reason: 'full_token_analytics_missing' },
+    holder_count: { live: false, reason: 'full_token_analytics_missing' },
+  };
+  return {
+    symbol,
+    contract,
+    icon_url: membership.icon_url || null,
+    visible_in_waxcash_bubbles: true,
+    selected_price_wax: null,
+    selected_price_usd: null,
+    selected_price_confidence: 'unavailable',
+    selected_price_source: null,
+    selected_pair_source: null,
+    selected_pair_id: null,
+    selected_price_route: null,
+    valuation_basis: null,
+    liquidity_wax: null,
+    liquidity_usd: null,
+    liquidity_confidence: 'unavailable',
+    graph_liquidity_wax: null,
+    graph_liquidity_usd: null,
+    tvl_wax: null,
+    tvl_usd: null,
+    tvl_confidence: 'unavailable',
+    market_cap_wax: null,
+    market_cap_usd: null,
+    market_cap_confidence: 'unavailable',
+    volume_24h_wax: null,
+    volume_24h_usd: null,
+    volume_7d_wax: null,
+    volume_7d_usd: null,
+    volume_30d_wax: null,
+    volume_30d_usd: null,
+    change_24h: null,
+    holder_count: null,
+    source_keys: membership.waxcash_pair_source_key ? [membership.waxcash_pair_source_key] : [],
+    source_count: null,
+    indexed_pair_count: null,
+    strongest_pair: null,
+    strongest_pair_source: null,
+    strongest_pair_id: null,
+    waxcash_pair_id: membership.waxcash_pair_id,
+    waxcash_pair_source: membership.waxcash_pair_source,
+    waxcash_pair_label: membership.waxcash_pair_label,
+    waxcash_pair_valuation_basis: membership.waxcash_pair_valuation_basis,
+    waxcash_pair_liquidity_wax: membership.waxcash_pair_liquidity_wax,
+    waxcash_pair_liquidity_usd: membership.waxcash_pair_liquidity_usd,
+    metric_status: metricStatus,
+    metric_reason_codes: {
+      selected_price: 'full_token_analytics_missing',
+      liquidity: 'full_token_analytics_missing',
+      tvl: 'full_token_analytics_missing',
+      market_cap: 'full_token_analytics_missing',
+      holder_count: 'full_token_analytics_missing',
+    },
+    unavailable_reasons: {
+      selected_price: 'full_token_analytics_missing',
+      liquidity: 'full_token_analytics_missing',
+      tvl: 'full_token_analytics_missing',
+      market_cap: 'full_token_analytics_missing',
+      holder_count: 'full_token_analytics_missing',
+    },
+    full_token_analytics_source: 'missing',
+    membership_source: 'direct_waxcash_pair',
+    updated_at: membership.waxcash_pair_updated_at || generatedAt,
+    no_fake_value: true,
+  };
+}
+
 function waxcashLiteDistribution(values = []) {
   return (values || []).reduce((counts, value) => {
     const key = value == null ? 'null' : String(value);
@@ -9276,6 +9353,7 @@ function waxcashLiteDistribution(values = []) {
 
 function waxcashLiteEnrichmentDiagnostics(tokens = [], membershipMap = new Map()) {
   const memberTokens = tokens.filter((token) => !isWaxcashToken(token.contract, token.symbol));
+  const missingFullAnalytics = memberTokens.filter((token) => token.full_token_analytics_source === 'missing');
   const basisCounts = waxcashLiteDistribution(memberTokens.map((token) => token.valuation_basis || 'unavailable'));
   const unvalued = memberTokens.filter((token) => token.metric_status?.selected_price?.live !== true);
   return {
@@ -9296,14 +9374,13 @@ function waxcashLiteEnrichmentDiagnostics(tokens = [], membershipMap = new Map()
       waxcash_pair_id: token.waxcash_pair_id,
       reason: token.metric_status?.selected_price?.reason || token.unavailable_reasons?.selected_price || 'selected_price_unavailable',
     })),
-    tokens_where_waxcash_pair_exists_but_full_token_analytics_missing: Array.from(membershipMap.values())
-      .filter((member) => !memberTokens.some((token) => token.contract === member.contract && token.symbol === member.symbol))
+    tokens_where_waxcash_pair_exists_but_full_token_analytics_missing: missingFullAnalytics
       .slice(0, 8)
-      .map((member) => ({
-        contract: member.contract,
-        symbol: member.symbol,
-        waxcash_pair_source: member.waxcash_pair_source,
-        waxcash_pair_id: member.waxcash_pair_id,
+      .map((token) => ({
+        contract: token.contract,
+        symbol: token.symbol,
+        waxcash_pair_source: token.waxcash_pair_source,
+        waxcash_pair_id: token.waxcash_pair_id,
       })),
     no_fake_value: true,
   };
@@ -9370,9 +9447,18 @@ function buildWaxcashBubblesLiteFromGraph(rootStats = {}, graph = {}, enrichedRo
     updated_at: rootStats.updated_at || rootStats.token_updated_at || generatedAt,
     no_fake_value: true,
   };
-  const memberTokens = (enrichedRows || [])
-    .filter((row) => membershipMap.has(tokenKey(row.contract, row.symbol)))
-    .map((row) => waxcashLiteFullTokenBubble(row, membershipMap.get(tokenKey(row.contract, row.symbol)), generatedAt))
+  const enrichedByKey = new Map();
+  for (const row of enrichedRows || []) {
+    const key = tokenKey(row?.contract, row?.symbol);
+    if (key && membershipMap.has(key)) enrichedByKey.set(key, row);
+  }
+  const memberTokens = Array.from(membershipMap.entries())
+    .map(([key, membership]) => {
+      const enriched = enrichedByKey.get(key);
+      return enriched
+        ? waxcashLiteFullTokenBubble(enriched, membership, generatedAt)
+        : waxcashLiteMembershipOnlyBubble(membership, generatedAt);
+    })
     .filter(Boolean);
   const tokens = [root, ...sortWaxcashGraphTokens(memberTokens)];
   const pairs = pairRows.map((row) => ({
