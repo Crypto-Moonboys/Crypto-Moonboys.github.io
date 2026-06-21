@@ -594,5 +594,22 @@ ok('WAXCASH graph zero reserve pairs stay null-valued',
   graphZeroValuation.selected_price_wax === null &&
   graphZeroValuation.reason_codes.includes('missing_or_zero_reserves'));
 
+const emptyDb = {
+  prepare() {
+    return {
+      bind() { return this; },
+      first() { return Promise.resolve(null); },
+      all() { return Promise.resolve({ results: [] }); },
+    };
+  },
+};
+const missingTokenPage = await __waxonedgeTestHooks.getTokenPageAnalytics(emptyDb, 'missing.token', 'MISS');
+ok('generic token-page analytics marks non-indexed tokens without fallback token objects',
+  missingTokenPage.indexed === false &&
+  missingTokenPage.token === null &&
+  Array.isArray(missingTokenPage.pairs) &&
+  missingTokenPage.pairs.length === 0 &&
+  missingTokenPage.no_fake_values === true);
+
 console.log(`\nwaxonedge-valuation-contract.test: ${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

@@ -12633,6 +12633,54 @@ async function getToken(db, contract, symbol, options = {}) {
   return detail;
 }
 
+async function getTokenPageAnalytics(db, contract, symbol) {
+  const detail = await getToken(db, contract, symbol);
+  const policy = {
+    pair_limit: 30,
+    source_policy: 'indexed_waxonedge_pairs_only',
+    ranking_policy: 'liquidity_wax_then_volume_24h_wax_then_backend_order',
+    chart_policy: 'chart_uses_direct_alcor_candles_frontend_only_not_backend_pair_table',
+    supported_sources: ['alcor', 'swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box', 'swap.adex', 'dapp.fusion'],
+    no_fake_values: true,
+  };
+  if (!detail.token) {
+    return {
+      indexed: false,
+      token: null,
+      stats: {},
+      pairs: [],
+      ...policy,
+    };
+  }
+  const rows = await db.prepare(
+    `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+            price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
+            volume_7d, volume_7d_wax, volume_7d_usd, volume_30d, volume_30d_wax, volume_30d_usd,
+            liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
+     FROM waxonedge_pairs
+     WHERE ((token_a_contract = ? AND token_a_symbol = ?)
+        OR (token_b_contract = ? AND token_b_symbol = ?))
+       AND source IN ('alcor','swap.alcor','swap.taco','swap.nefty','swap.box','swap.adex','dapp.fusion')
+     ORDER BY CASE WHEN liquidity_wax IS NOT NULL THEN 0 ELSE 1 END ASC,
+              CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC,
+              CASE WHEN volume_24h_wax IS NOT NULL THEN 0 ELSE 1 END ASC,
+              CAST(COALESCE(volume_24h_wax, '0') AS NUMERIC) DESC,
+              updated_at DESC
+     LIMIT 30`
+  ).bind(contract, symbol, contract, symbol).all();
+  const pairs = (rows.results || []).map((row) => ({
+    ...row,
+    pair_label: [row.token_a_symbol, row.token_b_symbol].filter(Boolean).join('/') || null,
+  }));
+  return {
+    indexed: true,
+    token: detail.token,
+    stats: detail.stats || {},
+    pairs,
+    ...policy,
+  };
+}
+
 async function getTokenDebug(db, contract, symbol) {
   const detail = await getToken(db, contract, symbol, { includeRouteContext: true });
   const routeContext = detail.route_context || {};
@@ -14143,6 +14191,16 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       return await handleLiveStream(corsHeaders, env);
     }
 
+
+    const tokenPageMatch = path.match(/^\/api\/waxonedge\/token-page\/([^/]+)\/([^/]+)$/);
+    if (tokenPageMatch) {
+      const contract = normalizeContract(decodeURIComponent(tokenPageMatch[1]));
+      const symbol = normalizeSymbol(decodeURIComponent(tokenPageMatch[2]));
+      const page = await getTokenPageAnalytics(env.DB, contract, symbol);
+      if (!page.indexed) return unavailable('Token not indexed yet', 404, corsHeaders);
+      return ok(page, ['Token page analytics are derived from indexed WaxOnEdge backend rows only; missing values remain unavailable.'], page.stats?.updated_at || page.token?.updated_at || null, corsHeaders);
+    }
+
     const tokenMatch = path.match(/^\/api\/waxonedge\/token\/([^/]+)\/([^/]+)(?:\/([^/]+))?$/);
     if (tokenMatch) {
       const contract = normalizeContract(decodeURIComponent(tokenMatch[1]));
@@ -14193,6 +14251,7 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
 }
 
 export const __waxonedgeTestHooks = {
+  getTokenPageAnalytics,
   deriveTokenPairMetrics,
   deriveReserveBackedTokenRow,
   deriveReserveBackedTokenRows,
