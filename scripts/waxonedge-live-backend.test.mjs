@@ -2877,6 +2877,159 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       selectedOnlyToken?.metric_status?.selected_price?.live === true &&
       selectedOnlyToken?.metric_status?.selected_price?.source === 'waxcash_pair_row',
       JSON.stringify(selectedOnlyToken));
+    const enrichedLite = __waxonedgeTestHooks.buildWaxcashBubblesLiteFromGraph({
+      selected_price_wax: '0.01',
+      selected_price_usd: '0.00005',
+      liquidity_wax: '100',
+      liquidity_usd: '0.50',
+      indexed_pair_count: 3,
+      source_count: 2,
+    }, {
+      waxcashPairs: [
+        {
+          source: 'swap.nefty',
+          pair_id: 'WAXCASHDIRECT',
+          token_a_contract: 'graffitiking',
+          token_a_symbol: 'WAXCASH',
+          token_b_contract: 'tokendirect',
+          token_b_symbol: 'DIR',
+          liquidity_wax: '12',
+          liquidity_usd: '0.06',
+          valuation_basis: 'waxcash_reserve_ratio_from_selected_waxcash_price',
+          updated_at: '2026-06-21T00:00:00.000Z',
+        },
+        {
+          source: 'swap.taco',
+          pair_id: 'WAXCASHROUTE',
+          token_a_contract: 'graffitiking',
+          token_a_symbol: 'WAXCASH',
+          token_b_contract: 'tokenroute',
+          token_b_symbol: 'ROUTE',
+          liquidity_wax: '8',
+          liquidity_usd: '0.04',
+          valuation_basis: 'waxcash_reserve_ratio_from_selected_waxcash_price',
+          updated_at: '2026-06-21T00:00:00.000Z',
+        },
+        {
+          source: 'swap.alcor',
+          pair_id: 'WAXCASHMISS',
+          token_a_contract: 'graffitiking',
+          token_a_symbol: 'WAXCASH',
+          token_b_contract: 'tokenmiss',
+          token_b_symbol: 'MISS',
+          liquidity_wax: null,
+          updated_at: '2026-06-21T00:00:00.000Z',
+        },
+      ],
+    }, [
+      {
+        contract: 'tokendirect',
+        symbol: 'DIR',
+        icon_url: '/img/dir.png',
+        visible_in_waxcash_bubbles: true,
+        selected_price_wax: '0.25',
+        selected_price_usd: '0.00125',
+        selected_price_route: 'direct_wax',
+        selected_pair_source: 'swap.taco',
+        selected_pair_id: 'DIRWAX',
+        selected_price_source: 'swap.taco #DIRWAX direct_wax',
+        liquidity_wax: '1000',
+        liquidity_usd: '5',
+        graph_liquidity_wax: '1000',
+        graph_liquidity_usd: '5',
+        liquidity_basis: 'og_wax_route_pool_graph',
+        tvl_wax: '1000',
+        tvl_usd: '5',
+        tvl_basis: 'og_wax_route_pool_graph',
+        volume_24h_wax: '90',
+        volume_24h_usd: '0.45',
+        volume_7d_wax: '700',
+        volume_7d_usd: '3.5',
+        volume_30d_wax: '3000',
+        volume_30d_usd: '15',
+        change_24h: '12.5',
+        source_keys: 'swap.nefty,swap.taco,swap.alcor',
+        source_count: 3,
+        indexed_pair_count: 4,
+        strongest_pair: { source: 'swap.taco', pair_id: 'DIRWAX' },
+        updated_at: '2026-06-21T00:00:00.000Z',
+      },
+      {
+        contract: 'tokenroute',
+        symbol: 'ROUTE',
+        visible_in_waxcash_bubbles: true,
+        selected_price_wax: '0.02',
+        selected_price_usd: '0.0001',
+        selected_price_route: 'multi_hop_wax',
+        selected_pair_source: 'swap.taco',
+        selected_pair_id: 'WAXCASHROUTE',
+        selected_price_proof: {
+          route_type: 'multi_hop_wax',
+          route_hops: [{ source: 'swap.taco', pair_id: 'WAXCASHROUTE', from: 'eosio.token::WAX', to: 'graffitiking::WAXCASH' }],
+        },
+        liquidity_wax: '44',
+        liquidity_usd: '0.22',
+        liquidity_basis: 'og_wax_route_pool_graph',
+        tvl_wax: '44',
+        tvl_usd: '0.22',
+        tvl_basis: 'og_wax_route_pool_graph',
+        source_keys: 'swap.taco,swap.nefty',
+        source_count: 2,
+        indexed_pair_count: 2,
+      },
+      {
+        contract: 'tokenmiss',
+        symbol: 'MISS',
+        visible_in_waxcash_bubbles: true,
+        selected_price_wax: null,
+        selected_price_usd: null,
+        selected_price_rejection_reason: 'no_verified_price_candidate',
+        source_keys: 'swap.alcor',
+        source_count: 1,
+        indexed_pair_count: 1,
+      },
+      {
+        contract: 'unrelated',
+        symbol: 'NOPE',
+        visible_in_waxcash_bubbles: false,
+        selected_price_wax: '99',
+        liquidity_wax: '99',
+        liquidity_basis: 'og_wax_route_pool_graph',
+      },
+    ], '2026-06-21T00:00:00.000Z');
+    const dirBubble = enrichedLite.tokens.find((token) => token.symbol === 'DIR');
+    const routeBubble = enrichedLite.tokens.find((token) => token.symbol === 'ROUTE');
+    const missBubble = enrichedLite.tokens.find((token) => token.symbol === 'MISS');
+    ok('WAXCASH bubble visibility stays direct WAXCASH-pair scoped while values come from full all-DEX token analytics',
+      enrichedLite.tokens.some((token) => token.symbol === 'WAXCASH') &&
+      !enrichedLite.tokens.some((token) => token.symbol === 'NOPE') &&
+      dirBubble?.waxcash_pair_id === 'WAXCASHDIRECT' &&
+      dirBubble?.selected_pair_id === 'DIRWAX' &&
+      dirBubble?.selected_price_wax === '0.25' &&
+      dirBubble?.liquidity_wax === '1000' &&
+      dirBubble?.volume_7d_wax === '700' &&
+      dirBubble?.source_count === 3 &&
+      dirBubble?.indexed_pair_count === 4 &&
+      dirBubble?.full_token_analytics_source === 'all_indexed_wax_dex_graph' &&
+      dirBubble?.membership_source === 'direct_waxcash_pair',
+      JSON.stringify({ dirBubble, tokens: enrichedLite.tokens }));
+    ok('WAXCASH bubble all-DEX valuation labels direct, routed, reserve-ratio, and unavailable proofs honestly',
+      dirBubble?.valuation_basis === 'direct_wax_pair' &&
+      routeBubble?.valuation_basis === 'waxcash_reserve_ratio_from_selected_waxcash_price' &&
+      routeBubble?.selected_price_confidence === 'good' &&
+      missBubble?.selected_price_wax === null &&
+      missBubble?.metric_status?.selected_price?.live === false &&
+      missBubble?.metric_status?.selected_price?.reason === 'no_verified_price_candidate' &&
+      enrichedLite.enrichment_debug?.visible_waxcash_pair_member_count === 3 &&
+      enrichedLite.enrichment_debug?.enriched_token_count === 3 &&
+      enrichedLite.enrichment_debug?.tokens_with_direct_wax_price === 1 &&
+      enrichedLite.enrichment_debug?.tokens_with_waxcash_reserve_ratio_price === 1 &&
+      enrichedLite.enrichment_debug?.tokens_unvalued_with_reason === 1 &&
+      enrichedLite.enrichment_debug?.source_count_distribution?.['3'] === 1 &&
+      enrichedLite.enrichment_debug?.indexed_pair_count_distribution?.['4'] === 1 &&
+      enrichedLite.payload_policy?.token_values_enriched_by === 'full_all_indexed_wax_dex_graph' &&
+      enrichedLite.payload_policy?.visible_tokens_selected_by === 'direct_waxcash_pair_membership',
+      JSON.stringify(enrichedLite.enrichment_debug));
     const failingLiteDb = {
       prepare(sql) {
         return {
@@ -8396,15 +8549,19 @@ ok('WaxOnEdge route exposes slim WAXCASH bubble feed separately from full analyt
   route.includes('/waxcash-bubbles-lite') &&
   route.includes('buildWaxcashBubblesLite(env.DB, env)') &&
   route.includes('Slim WAXCASH bubble feed excludes source diagnostics') &&
-  route.includes('buildWaxcashBubblesLiteFromRows') &&
+  route.includes('buildWaxcashBubblesLiteFromGraph') &&
   route.includes('loadWaxcashLiteRootSummary(db)') &&
-  route.includes('loadWaxcashLitePairRows(db)') &&
+  route.includes('loadWaxcashGraphTokenRows(db)') &&
+  route.includes('deriveReserveBackedTokenRows(db, graph.tokenRows') &&
   route.includes('root_summary_available: rootSummaryAvailable') &&
-  route.includes('pair_rows_available: pairRowsAvailable') &&
+  route.includes('pair_rows_available: graphAvailable') &&
   route.includes('data_available: dataAvailable') &&
   route.includes('lite_query_error: liteQueryError') &&
   route.includes('rootQueryError') &&
-  route.includes('pairQueryError') &&
+  route.includes('graphQueryError') &&
+  route.includes("visible_tokens_selected_by: 'direct_waxcash_pair_membership'") &&
+  route.includes("token_values_enriched_by: 'full_all_indexed_wax_dex_graph'") &&
+  route.includes('enrichment_debug: waxcashLiteEnrichmentDiagnostics(tokens, membershipMap)') &&
   route.includes('excludes_full_waxcash_analytics_build: true') &&
   route.includes('excludes_source_snapshot_diagnostics: true') &&
   route.includes('excludes_normalization_diagnostics: true') &&
