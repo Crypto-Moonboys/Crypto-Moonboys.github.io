@@ -3615,6 +3615,81 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         token_count: membershipLite.tokens?.length,
         payload_policy: membershipLite.payload_policy,
       }));
+    const cachedMembershipPayload = __waxonedgeTestHooks.buildWaxcashBubblesLiteFromRows({
+      contract: 'graffitiking',
+      symbol: 'WAXCASH',
+      selected_price_wax: '0.01',
+      selected_price_usd: '0.00005',
+      liquidity_wax: '1000',
+      liquidity_usd: '5',
+      updated_at: '2026-06-21T00:00:00.000Z',
+    }, membershipPairRows, '2026-06-21T00:00:00.000Z');
+    const cachedMembershipDb = {
+      prepare(sql) {
+        if (sql.includes('FROM waxonedge_snapshots')) {
+          return {
+            bind() {
+              return {
+                async first() {
+                  return {
+                    fetched_at: '2026-06-21T00:00:00.000Z',
+                    payload_json: JSON.stringify(cachedMembershipPayload),
+                  };
+                },
+              };
+            },
+          };
+        }
+        throw new Error(`cached membership path should not query live D1 rows or graph: ${sql}`);
+      },
+    };
+    const cachedMembershipLite = await __waxonedgeTestHooks.buildWaxcashBubblesLite(cachedMembershipDb, { mode: 'membership' });
+    ok('WAXCASH bubbles membership mode serves a prebuilt snapshot before live D1 row building',
+      cachedMembershipLite.ok === true &&
+      cachedMembershipLite.data_available === true &&
+      cachedMembershipLite.mode === 'membership' &&
+      cachedMembershipLite.tokens?.length === 93 &&
+      cachedMembershipLite.pairs?.length === 92 &&
+      cachedMembershipLite.membership_snapshot_source === 'prebuilt_d1_snapshot' &&
+      cachedMembershipLite.payload_policy?.prebuilt_membership_snapshot === true &&
+      cachedMembershipLite.payload_policy?.skips_graph_enrichment === true &&
+      cachedMembershipLite.payload_policy?.excludes_loadWaxcashGraphTokenRows === true,
+      JSON.stringify({
+        source: cachedMembershipLite.membership_snapshot_source,
+        summary: cachedMembershipLite.summary,
+        payload_policy: cachedMembershipLite.payload_policy,
+      }));
+    const staleMembershipDb = {
+      prepare(sql) {
+        if (sql.includes('FROM waxonedge_snapshots')) {
+          return {
+            bind() {
+              return {
+                async first() {
+                  return {
+                    fetched_at: '2026-01-01T00:00:00.000Z',
+                    payload_json: JSON.stringify(cachedMembershipPayload),
+                  };
+                },
+              };
+            },
+          };
+        }
+        throw new Error(`stale membership snapshot should not require live D1 rows: ${sql}`);
+      },
+    };
+    const staleMembershipLite = await __waxonedgeTestHooks.buildWaxcashBubblesLite(staleMembershipDb, { mode: 'membership' });
+    ok('WAXCASH bubbles membership mode serves stale prebuilt snapshots with a stale marker instead of blanking the page',
+      staleMembershipLite.ok === true &&
+      staleMembershipLite.data_available === true &&
+      staleMembershipLite.membership_snapshot_stale === true &&
+      staleMembershipLite.summary?.membership_snapshot_stale === true &&
+      staleMembershipLite.payload_policy?.stale_membership_snapshot_allowed === true &&
+      staleMembershipLite.tokens?.length === 93,
+      JSON.stringify({
+        stale: staleMembershipLite.membership_snapshot_stale,
+        summary: staleMembershipLite.summary,
+      }));
     const membershipFailingDb = {
       prepare() {
         throw new Error('simulated membership d1 failure');
@@ -3655,7 +3730,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       nullRowsMembershipLite.no_fake_value === true,
       JSON.stringify(nullRowsMembershipLite));
     ok('WAXCASH bubbles membership branch returns before graph enrichment is requested',
-      /if \(mode === 'membership' \|\| mode === 'members'\)[\s\S]*return lite;[\s\S]*const \[rootStats, pairRowsResult, graphResult\] = await Promise\.all/.test(route),
+      /if \(mode === 'membership' \|\| mode === 'members'\)[\s\S]*return snapshot\.payload;[\s\S]*return await buildWaxcashBubblesLiteMembershipFromD1\(db\);[\s\S]*const \[rootStats, pairRowsResult, graphResult\] = await Promise\.all/.test(route),
       'membership mode must stay before loadWaxcashBubblesLiteGraphResult');
     const waxcashTokenStatLabels = (waxcashAnalytics.sections?.token_stats?.rows || []).map((row) => row.label);
     ok('WAXCASH token stats section keeps OG WaxOnEdge row names and omits selected-direct proof liquidity',
@@ -9068,6 +9143,13 @@ ok('WaxOnEdge route exposes slim WAXCASH bubble feed separately from full analyt
   route.includes('buildWaxcashBubblesLite(env.DB, { ...env, mode: liteMode })') &&
   route.includes("if ((liteMode === 'membership' || liteMode === 'members') && lite?.ok === false)") &&
   route.includes("waxonedgeJson(envelope({\n          ok: false,\n          data: lite") &&
+  route.includes("const WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_SOURCE = 'waxcash_bubbles_membership_lite'") &&
+  route.includes('async function readWaxcashBubblesMembershipSnapshot') &&
+  route.includes('async function refreshWaxcashBubblesMembershipSnapshot') &&
+  route.includes('readWaxcashBubblesMembershipSnapshot(db)') &&
+  route.includes("source: 'prebuilt_d1_snapshot'") &&
+  route.includes('stale_membership_snapshot_allowed: true') &&
+  route.includes('membershipSnapshot = await refreshWaxcashBubblesMembershipSnapshot') &&
   route.includes('Slim WAXCASH bubble feed excludes source diagnostics') &&
   route.includes('buildWaxcashBubblesLiteFromGraph') &&
   route.includes('buildWaxcashBubblesLiteFromRows') &&
@@ -9139,15 +9221,28 @@ ok('frontend bubbles bootstrap first and then starts live updates',
   frontendBubbles.includes("data.source === 'waxcash_bubbles_lite' && data.data_available === false") &&
   frontendBubbles.includes('if (isUnavailableLitePayload(snapshot)) return') &&
   frontendBubbles.includes('function fetchBootstrapSnapshot()') &&
-  frontendBubbles.includes('apiJson(BOOTSTRAP_API).then(function (snapshot)') &&
-  frontendBubbles.includes('return apiJson(BUBBLES_LITE_API).then(function (snapshot)') &&
+  frontendBubbles.includes('apiJsonTimed(BOOTSTRAP_API, \'membership\').then(function (snapshot)') &&
+  frontendBubbles.includes('return apiJsonTimed(BUBBLES_LITE_API, \'full_lite\').then(function (snapshot)') &&
   frontendBubbles.includes("if (isUnavailableLitePayload(snapshot)) throw new Error('WAXCASH membership bubble lite query unavailable')") &&
   frontendBubbles.includes('if (isUnavailableLitePayload(snapshot)) throw error') &&
   frontendBubbles.includes('var BOOTSTRAP_API = BUBBLES_MEMBERSHIP_API;') &&
   frontendBubbles.includes('function fetchEnrichedSnapshotAfterFirstPaint()') &&
-  frontendBubbles.includes('apiJson(BUBBLES_LITE_API).then(function (snapshot)') &&
+  frontendBubbles.includes('apiJsonTimed(BUBBLES_LITE_API, \'full_lite\').then(function (snapshot)') &&
   frontendBubbles.includes('var LIVE_API = BUBBLES_LITE_API;') &&
   frontendBubbles.includes("var LIVE_STREAM_API = '/api/waxonedge/live/stream'"));
+ok('frontend perf debug records time-to-first-bubble without blocking on logo image loads',
+  frontendBubbles.includes('function apiJsonTimed(path, label)') &&
+  frontendBubbles.includes("console.info('[WaxOnEdge perf] ' + label + ' request'") &&
+  frontendBubbles.includes('state.perfStats.membershipMs = performance.now() - start') &&
+  frontendBubbles.includes('state.perfStats.fullLiteMs = performance.now() - start') &&
+  frontendBubbles.includes('state.perfStats.normalizeMs = performance.now() - normalizeStart') &&
+  frontendBubbles.includes('state.perfStats.syncNodesMs = performance.now() - syncStart') &&
+  frontendBubbles.includes('state.perfStats.firstDrawAt = now') &&
+  frontendBubbles.includes('state.perfStats.firstVisibleBubbleAt = now') &&
+  frontendBubbles.includes('state.perfStats.totalFirstBubbleMs = now - state.perfStats.pageStartAt') &&
+  frontendBubbles.includes("' | member ' + perfMs(state.perfStats.membershipMs)") &&
+  frontendBubbles.includes("' | first ' + perfMs(state.perfStats.totalFirstBubbleMs)") &&
+  /syncNodes\(\);\s*state\.perfStats\.syncNodesMs[\s\S]*state\.nodes\.forEach\(function \(node\) \{ loadImage\(node\.record\.logoUrl\); \}\);/.test(frontendBubbles));
 ok('frontend WAXCASH analytics adapter maps selected root price, pair row price, liquidity, market cap, and pair_table rows',
   frontendBubbles.includes('function waxcashAnalyticsToBubblePayload(payload)') &&
   frontendBubbles.includes('var pairTable = sections.pair_table || {}') &&
