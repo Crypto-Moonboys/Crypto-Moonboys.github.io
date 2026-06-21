@@ -141,7 +141,7 @@ const neftyNormalizationDebug = __waxonedgeTestHooks.coreDexSourceNormalizationD
   reserve1: { contract: 'eosio.token', quantity: '1.00000000 WAX' },
 }, {
   code: 'WAXBAD',
-  reserve0: '100.00000000 WAXCASH',
+  reserve0: { contract: 'graffitiking', symbol: '8,WAXCASH' },
   reserve1: { contract: 'eosio.token', quantity: '1.00000000 WAX' },
 }], [{
   source: 'swap.nefty',
@@ -153,23 +153,24 @@ const neftyNormalizationDebug = __waxonedgeTestHooks.coreDexSourceNormalizationD
 }]);
 ok('WAXCASH Nefty normalization diagnostics distinguish raw WAXCASH rows from normalized WAXCASH pairs',
   neftyNormalizationDebug.raw_waxcash_row_count === 2 &&
+  neftyNormalizationDebug.raw_waxcash_row_count_actual === 2 &&
   neftyNormalizationDebug.normalized_waxcash_pair_count === 1 &&
   neftyNormalizationDebug.waxcash_normalization_reason === 'normalized_waxcash_pairs_available' &&
-  neftyNormalizationDebug.rejected_reason_counts.normalize_missing_token_identity === 1 &&
+  neftyNormalizationDebug.rejected_reason_counts.normalize_missing_reserves === 1 &&
   neftyNormalizationDebug.raw_waxcash_examples.length === 2);
 const neftyRejectedNormalizationDebug = __waxonedgeTestHooks.coreDexSourceNormalizationDiagnostics({
   source: 'swap.nefty',
   normalizer: 'reserve0-reserve1',
 }, [{
   code: 'WAXBAD',
-  reserve0: '100.00000000 WAXCASH',
+  reserve0: { contract: 'graffitiking', symbol: '8,WAXCASH' },
   reserve1: { contract: 'eosio.token', quantity: '1.00000000 WAX' },
 }], []);
 ok('WAXCASH Nefty normalization diagnostics explain raw WAXCASH rows rejected before normalization',
   neftyRejectedNormalizationDebug.raw_waxcash_row_count === 1 &&
   neftyRejectedNormalizationDebug.normalized_waxcash_pair_count === 0 &&
   neftyRejectedNormalizationDebug.waxcash_normalization_reason === 'raw_waxcash_rows_rejected_by_normalizer' &&
-  neftyRejectedNormalizationDebug.rejected_reason_counts.normalize_missing_token_identity === 1);
+  neftyRejectedNormalizationDebug.rejected_reason_counts.normalize_missing_reserves === 1);
 const neftyNoRawNormalizationDebug = __waxonedgeTestHooks.coreDexSourceNormalizationDiagnostics({
   source: 'swap.nefty',
   normalizer: 'reserve0-reserve1',
@@ -191,7 +192,11 @@ const tacoNormalizationDebug = __waxonedgeTestHooks.coreDexSourceNormalizationDi
   pool2: { contract: 'eosio.token', quantity: '1.00000000 WAX' },
 }, {
   pair_id: 'TACOBAD',
-  pool1: '100.00000000 WAXCASH',
+  pool1: { contract: 'graffitiking', symbol: '8,WAXCASH' },
+  pool2: { contract: 'eosio.token', quantity: '1.00000000 WAX' },
+}, {
+  pair_id: 'TACOBANKSY',
+  pool1: { contract: 'graffitiking', quantity: '50.00000000 BANKSY' },
   pool2: { contract: 'eosio.token', quantity: '1.00000000 WAX' },
 }], [{
   source: 'swap.taco',
@@ -204,9 +209,46 @@ const tacoNormalizationDebug = __waxonedgeTestHooks.coreDexSourceNormalizationDi
 ok('WAXCASH Taco normalization diagnostics expose raw and normalized WAXCASH row counts',
   tacoNormalizationDebug.source === 'swap.taco' &&
   tacoNormalizationDebug.raw_waxcash_row_count === 2 &&
+  tacoNormalizationDebug.raw_waxcash_row_count_actual === 2 &&
+  tacoNormalizationDebug.raw_graffitiking_contract_row_count === 3 &&
+  tacoNormalizationDebug.raw_graffitiking_non_waxcash_row_count === 1 &&
   tacoNormalizationDebug.normalized_waxcash_pair_count === 1 &&
-  tacoNormalizationDebug.rejected_reason_counts.normalize_missing_token_identity === 1 &&
-  tacoNormalizationDebug.raw_waxcash_examples.length === 2);
+  tacoNormalizationDebug.rejected_reason_counts.normalize_missing_reserves === 1 &&
+  tacoNormalizationDebug.rejected_reason_counts.raw_row_not_waxcash === 1 &&
+  tacoNormalizationDebug.raw_waxcash_examples.length === 2 &&
+  tacoNormalizationDebug.raw_graffitiking_non_waxcash_examples.length === 1);
+const tacoMergedNormalizationDebug = __waxonedgeTestHooks.mergeCoreDexSourceNormalizationDiagnostics({
+  source: 'swap.taco',
+  normalizer: 'pool1-pool2',
+}, {
+  source: 'swap.taco',
+  normalizer: 'pool1-pool2',
+  diagnostic_scope: 'current_chunk',
+  diagnostic_chunk_count: 9,
+  raw_rows_scanned: 9000,
+  raw_rows_scanned_total: 9000,
+  raw_waxcash_row_count: 10,
+  raw_waxcash_row_count_actual: 10,
+  raw_graffitiking_contract_row_count: 12,
+  raw_graffitiking_non_waxcash_row_count: 2,
+  normalized_pair_count: 9000,
+  normalized_waxcash_pair_count: 5,
+  rejected_reason_counts: { raw_row_not_waxcash: 8995 },
+  raw_waxcash_examples: [{ raw_pair_id: 'TACO1' }],
+  raw_graffitiking_non_waxcash_examples: [{ raw_pair_id: 'BANKSY1' }],
+  waxcash_normalization_reason: 'normalized_waxcash_pairs_available',
+}, tacoNormalizationDebug);
+ok('WAXCASH Taco normalization diagnostics accumulate across paged source sync chunks',
+  tacoMergedNormalizationDebug.diagnostic_scope === 'accumulated_sync_cycle' &&
+  tacoMergedNormalizationDebug.diagnostic_chunk_count === 10 &&
+  tacoMergedNormalizationDebug.raw_rows_scanned === 9003 &&
+  tacoMergedNormalizationDebug.raw_rows_scanned_total === 9003 &&
+  tacoMergedNormalizationDebug.raw_waxcash_row_count_actual === 12 &&
+  tacoMergedNormalizationDebug.normalized_waxcash_pair_count === 6 &&
+  tacoMergedNormalizationDebug.raw_graffitiking_non_waxcash_row_count === 3 &&
+  tacoMergedNormalizationDebug.rejected_reason_counts.raw_row_not_waxcash === 8996 &&
+  tacoMergedNormalizationDebug.raw_waxcash_examples.length === 3 &&
+  tacoMergedNormalizationDebug.raw_graffitiking_non_waxcash_examples.length === 2);
 
 for (const table of [
   'waxonedge_sync_runs',
@@ -4829,6 +4871,10 @@ ok('pre-guard complete WAXCASH source state is forced through recovery when curr
 ok('source stability debug exposes raw Nefty normalization and recovery diagnostics',
   route.includes('function coreDexSourceNormalizationDiagnostics') &&
   route.includes('raw_waxcash_row_count') &&
+  route.includes('raw_waxcash_row_count_actual') &&
+  route.includes('raw_graffitiking_non_waxcash_examples') &&
+  route.includes('raw_rows_scanned_total') &&
+  route.includes('mergeCoreDexSourceNormalizationDiagnostics') &&
   route.includes('normalized_waxcash_pair_count') &&
   route.includes('waxcash_normalization_reason') &&
   route.includes('raw_waxcash_examples') &&

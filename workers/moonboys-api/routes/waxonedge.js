@@ -1747,8 +1747,16 @@ function normalizeCoreDexPair(adapter, row, priceIndex, syncedAt) {
   };
 }
 
-function rawRowMentionsWaxcash(row) {
-  return /waxcash|graffitiking/i.test(JSON.stringify(row || {}));
+function parsedWaxcashTokenSide(row, adapter) {
+  const { tokenA, tokenB } = coreDexTokenSides(adapter, row || {});
+  return [tokenA, tokenB].some((token) => isWaxcashToken(token?.contract, token?.symbol));
+}
+
+function parsedGraffitikingNonWaxcashTokenSide(row, adapter) {
+  const { tokenA, tokenB } = coreDexTokenSides(adapter, row || {});
+  return [tokenA, tokenB].some((token) =>
+    normalizeContract(token?.contract) === WAXCASH_CONTRACT &&
+    normalizeSymbol(token?.symbol) !== WAXCASH_SYMBOL);
 }
 
 function coreDexPairNormalizationRejectionReason(adapter, row) {
@@ -1763,7 +1771,7 @@ function coreDexPairNormalizationRejectionReason(adapter, row) {
     (adapter.normalizer === 'waxfusion-global' ? 'dapp.fusion' : null);
   if (!pairId) return 'normalize_missing_pair_id';
   if (!isWaxcashToken(tokenA.contract, tokenA.symbol) && !isWaxcashToken(tokenB.contract, tokenB.symbol)) {
-    return rawRowMentionsWaxcash(row) ? 'raw_waxcash_not_preserved_after_normalization' : 'raw_row_not_waxcash';
+    return 'raw_row_not_waxcash';
   }
   return null;
 }
@@ -1771,19 +1779,35 @@ function coreDexPairNormalizationRejectionReason(adapter, row) {
 function coreDexSourceNormalizationDiagnostics(adapter, rows = [], normalizedPairs = [], options = {}) {
   const reasons = {};
   const rawWaxcashExamples = [];
+  const rawGraffitikingNonWaxcashExamples = [];
   let rawWaxcashRowCount = 0;
+  let rawGraffitikingNonWaxcashRowCount = 0;
   let normalizedWaxcashPairCount = 0;
   for (const pair of normalizedPairs || []) {
     if (pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL)) normalizedWaxcashPairCount += 1;
   }
   for (const row of rows || []) {
-    const rawMentionsWaxcash = rawRowMentionsWaxcash(row);
-    if (rawMentionsWaxcash) rawWaxcashRowCount += 1;
+    const rawWaxcashSide = parsedWaxcashTokenSide(row, adapter);
+    const rawGraffitikingNonWaxcashSide = parsedGraffitikingNonWaxcashTokenSide(row, adapter);
+    if (rawWaxcashSide) rawWaxcashRowCount += 1;
+    if (rawGraffitikingNonWaxcashSide) rawGraffitikingNonWaxcashRowCount += 1;
     const reason = coreDexPairNormalizationRejectionReason(adapter, row);
     if (reason) reasons[reason] = (reasons[reason] || 0) + 1;
-    if (rawMentionsWaxcash && rawWaxcashExamples.length < 5) {
+    if (rawWaxcashSide && rawWaxcashExamples.length < 5) {
       const { tokenA, tokenB } = coreDexTokenSides(adapter, row || {});
       rawWaxcashExamples.push({
+        raw_pair_id: safeString(firstPresent(row?.pairid, row?.pair_id, row?.pairId, row?.id, row?.code)) || null,
+        canonical_pair_id: canonicalAmmPairId(adapter.source, row || {}) || null,
+        og_laststats_pair_id: ogLastStatsPairIdForSource(adapter.source, row || {}) || null,
+        token_a: tokenA ? { contract: tokenA.contract || null, symbol: tokenA.symbol || null, amount: tokenA.amount ?? null } : null,
+        token_b: tokenB ? { contract: tokenB.contract || null, symbol: tokenB.symbol || null, amount: tokenB.amount ?? null } : null,
+        rejection_reason: reason,
+        raw_keys: Object.keys(row || {}).slice(0, 20),
+      });
+    }
+    if (rawGraffitikingNonWaxcashSide && rawGraffitikingNonWaxcashExamples.length < 5) {
+      const { tokenA, tokenB } = coreDexTokenSides(adapter, row || {});
+      rawGraffitikingNonWaxcashExamples.push({
         raw_pair_id: safeString(firstPresent(row?.pairid, row?.pair_id, row?.pairId, row?.id, row?.code)) || null,
         canonical_pair_id: canonicalAmmPairId(adapter.source, row || {}) || null,
         og_laststats_pair_id: ogLastStatsPairIdForSource(adapter.source, row || {}) || null,
@@ -1807,8 +1831,14 @@ function coreDexSourceNormalizationDiagnostics(adapter, rows = [], normalizedPai
   return {
     source: adapter.source,
     normalizer: adapter.normalizer,
+    diagnostic_scope: options.diagnosticScope || 'current_chunk',
+    diagnostic_chunk_count: options.diagnosticChunkCount || 1,
     raw_rows_scanned: rows.length,
+    raw_rows_scanned_total: rows.length,
     raw_waxcash_row_count: rawWaxcashRowCount,
+    raw_waxcash_row_count_actual: rawWaxcashRowCount,
+    raw_graffitiking_contract_row_count: rawWaxcashRowCount + rawGraffitikingNonWaxcashRowCount,
+    raw_graffitiking_non_waxcash_row_count: rawGraffitikingNonWaxcashRowCount,
     normalized_pair_count: normalizedPairs.length,
     normalized_waxcash_pair_count: normalizedWaxcashPairCount,
     rejected_reason_counts: reasons,
@@ -1816,7 +1846,69 @@ function coreDexSourceNormalizationDiagnostics(adapter, rows = [], normalizedPai
     source_rows_available: !options.unavailableReason,
     unavailable_reason: options.unavailableReason || null,
     raw_waxcash_examples: rawWaxcashExamples,
+    raw_graffitiking_non_waxcash_examples: rawGraffitikingNonWaxcashExamples,
     no_fake_rows: true,
+  };
+}
+
+function mergeReasonCounts(left = {}, right = {}) {
+  const merged = { ...(left || {}) };
+  for (const [key, value] of Object.entries(right || {})) {
+    merged[key] = (asNumber(merged[key]) || 0) + (asNumber(value) || 0);
+  }
+  return merged;
+}
+
+function mergeExampleRows(left = [], right = []) {
+  return [...(Array.isArray(left) ? left : []), ...(Array.isArray(right) ? right : [])].slice(0, 5);
+}
+
+function mergeCoreDexSourceNormalizationDiagnostics(adapter, previousDiagnostics, currentDiagnostics) {
+  if (!previousDiagnostics?.source || previousDiagnostics.source !== adapter.source) return currentDiagnostics;
+  if (!currentDiagnostics?.source) return previousDiagnostics;
+  const rawRowsScannedTotal = (asNumber(previousDiagnostics.raw_rows_scanned_total) ??
+    asNumber(previousDiagnostics.raw_rows_scanned) ?? 0) +
+    (asNumber(currentDiagnostics.raw_rows_scanned_total) ?? asNumber(currentDiagnostics.raw_rows_scanned) ?? 0);
+  const rawWaxcashRowCount = (asNumber(previousDiagnostics.raw_waxcash_row_count_actual) ??
+    asNumber(previousDiagnostics.raw_waxcash_row_count) ?? 0) +
+    (asNumber(currentDiagnostics.raw_waxcash_row_count_actual) ??
+      asNumber(currentDiagnostics.raw_waxcash_row_count) ?? 0);
+  const rawGraffitikingNonWaxcashCount = (asNumber(previousDiagnostics.raw_graffitiking_non_waxcash_row_count) || 0) +
+    (asNumber(currentDiagnostics.raw_graffitiking_non_waxcash_row_count) || 0);
+  const normalizedWaxcashPairCount = (asNumber(previousDiagnostics.normalized_waxcash_pair_count) || 0) +
+    (asNumber(currentDiagnostics.normalized_waxcash_pair_count) || 0);
+  let waxcashNormalizationReason = 'normalized_waxcash_pairs_available';
+  if (currentDiagnostics.unavailable_reason || previousDiagnostics.unavailable_reason) {
+    waxcashNormalizationReason = currentDiagnostics.unavailable_reason || previousDiagnostics.unavailable_reason;
+  } else if (rawWaxcashRowCount <= 0) {
+    waxcashNormalizationReason = 'no_raw_waxcash_rows_seen_in_scanned_source_rows';
+  } else if (normalizedWaxcashPairCount <= 0) {
+    waxcashNormalizationReason = 'raw_waxcash_rows_rejected_by_normalizer';
+  }
+  return {
+    ...currentDiagnostics,
+    diagnostic_scope: 'accumulated_sync_cycle',
+    diagnostic_chunk_count: (asNumber(previousDiagnostics.diagnostic_chunk_count) || 1) +
+      (asNumber(currentDiagnostics.diagnostic_chunk_count) || 1),
+    raw_rows_scanned: rawRowsScannedTotal,
+    raw_rows_scanned_total: rawRowsScannedTotal,
+    raw_waxcash_row_count: rawWaxcashRowCount,
+    raw_waxcash_row_count_actual: rawWaxcashRowCount,
+    raw_graffitiking_contract_row_count: rawWaxcashRowCount + rawGraffitikingNonWaxcashCount,
+    raw_graffitiking_non_waxcash_row_count: rawGraffitikingNonWaxcashCount,
+    normalized_pair_count: (asNumber(previousDiagnostics.normalized_pair_count) || 0) +
+      (asNumber(currentDiagnostics.normalized_pair_count) || 0),
+    normalized_waxcash_pair_count: normalizedWaxcashPairCount,
+    rejected_reason_counts: mergeReasonCounts(
+      previousDiagnostics.rejected_reason_counts,
+      currentDiagnostics.rejected_reason_counts,
+    ),
+    raw_waxcash_examples: mergeExampleRows(previousDiagnostics.raw_waxcash_examples, currentDiagnostics.raw_waxcash_examples),
+    raw_graffitiking_non_waxcash_examples: mergeExampleRows(
+      previousDiagnostics.raw_graffitiking_non_waxcash_examples,
+      currentDiagnostics.raw_graffitiking_non_waxcash_examples,
+    ),
+    waxcash_normalization_reason: waxcashNormalizationReason,
   };
 }
 
@@ -4364,7 +4456,15 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
         .filter(Boolean);
       previousSnapshot = previousSnapshot || await readSnapshot(env.DB, `${adapter.source}_${adapter.table}`);
       previousWaxcashPairCount = previousWaxcashPairCount ?? await countWaxcashPairsForSource(env.DB, adapter.source);
-      const normalizationDiagnostics = coreDexSourceNormalizationDiagnostics(adapter, rows, pairs);
+      const sameSnapshotCycle = previousSnapshot.data?.sync_cycle_id === activeCycleId;
+      const currentNormalizationDiagnostics = coreDexSourceNormalizationDiagnostics(adapter, rows, pairs);
+      const normalizationDiagnostics = sameSnapshotCycle
+        ? mergeCoreDexSourceNormalizationDiagnostics(
+          adapter,
+          previousSnapshot.data?.normalization_diagnostics,
+          currentNormalizationDiagnostics,
+        )
+        : currentNormalizationDiagnostics;
       await upsertPairs(env.DB, pairs);
       let complete = tableResult.complete ? 1 : 0;
       let status = complete ? 'success' : 'partial';
@@ -4402,7 +4502,6 @@ async function syncCoreDexAdapters(env, syncCycleId = '', options = {}) {
       const previousCursor = state.cursor || '';
       const reportedCursor = complete ? '' : (tableResult.next_key || '');
       const cursorChanged = previousCursor !== reportedCursor;
-      const sameSnapshotCycle = previousSnapshot.data?.sync_cycle_id === activeCycleId;
       const previousRetryCount = sameSnapshotCycle ? (asNumber(previousSnapshot.data?.retry_count) || 0) : 0;
       const retryCount = (!complete && reportedCursor && !cursorChanged) ? previousRetryCount + 1 : 0;
       const previousSkippedCursorCount = sameSnapshotCycle && !cursorChanged
@@ -12517,6 +12616,7 @@ export const __waxonedgeTestHooks = {
   waxcashSourceRecoveryDecision,
   waxcashSourceCollapseGuard,
   coreDexSourceNormalizationDiagnostics,
+  mergeCoreDexSourceNormalizationDiagnostics,
   buildWaxcashOgParityProof,
   applyOgLastStatsToWaxcashPairs,
   applyIndexedPairWindowVolumes,
