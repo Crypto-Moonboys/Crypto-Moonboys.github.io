@@ -1,4 +1,5 @@
 import { __waxonedgeTestHooks } from '../workers/moonboys-api/routes/waxonedge.js';
+import { readFileSync } from 'node:fs';
 
 let passed = 0;
 let failed = 0;
@@ -610,6 +611,119 @@ ok('generic token-page analytics marks non-indexed tokens without fallback token
   Array.isArray(missingTokenPage.pairs) &&
   missingTokenPage.pairs.length === 0 &&
   missingTokenPage.no_fake_values === true);
+
+const blockedContracts = ['waxlord.gm', 'hype.gm', 'memecreators'];
+const publicPairRows = [
+  {
+    source: 'swap.nefty',
+    pair_id: 'GOODWUF',
+    token_a_contract: 'wuffi',
+    token_a_symbol: 'WUF',
+    token_b_contract: 'eosio.token',
+    token_b_symbol: 'WAX',
+    reserve_a: '1000',
+    reserve_b: '5',
+    liquidity_wax: '10',
+    updated_at: '2026-06-22T00:00:00.000Z',
+  },
+  {
+    source: 'swap.nefty',
+    pair_id: 'BAD_A',
+    token_a_contract: 'waxlord.gm',
+    token_a_symbol: 'LORD',
+    token_b_contract: 'wuffi',
+    token_b_symbol: 'WUF',
+    reserve_a: '1000',
+    reserve_b: '5',
+    liquidity_wax: '999',
+    updated_at: '2026-06-22T00:01:00.000Z',
+  },
+  {
+    source: 'swap.taco',
+    pair_id: 'BAD_B',
+    token_a_contract: 'wuffi',
+    token_a_symbol: 'WUF',
+    token_b_contract: 'hype.gm',
+    token_b_symbol: 'HYPE',
+    reserve_a: '1000',
+    reserve_b: '5',
+    liquidity_wax: '999',
+    updated_at: '2026-06-22T00:02:00.000Z',
+  },
+  {
+    source: 'swap.alcor',
+    pair_id: 'BAD_C',
+    token_a_contract: 'memecreators',
+    token_a_symbol: 'MEME',
+    token_b_contract: 'wuffi',
+    token_b_symbol: 'WUF',
+    reserve_a: '1000',
+    reserve_b: '5',
+    liquidity_wax: '999',
+    updated_at: '2026-06-22T00:03:00.000Z',
+  },
+];
+function rowHasBlockedContract(row) {
+  return blockedContracts.includes(String(row?.token_a_contract || '').toLowerCase()) ||
+    blockedContracts.includes(String(row?.token_b_contract || '').toLowerCase());
+}
+function publicPairFeedDb(rows) {
+  return {
+    prepare(sql) {
+      return {
+        sql,
+        params: [],
+        bind(...params) {
+          this.params = params;
+          return this;
+        },
+        first() {
+          if (this.sql.includes('FROM waxonedge_tokens')) {
+            return Promise.resolve({ contract: 'wuffi', symbol: 'WUF', decimals: 8, updated_at: '2026-06-22T00:00:00.000Z' });
+          }
+          return Promise.resolve(null);
+        },
+        all() {
+          if (this.sql.includes('FROM waxonedge_pairs')) {
+            const hasWorkerBlocklist = blockedContracts.every((contract) => this.params.includes(contract)) &&
+              this.sql.includes('LOWER(token_a_contract) NOT IN') &&
+              this.sql.includes('LOWER(token_b_contract) NOT IN');
+            return Promise.resolve({ results: hasWorkerBlocklist ? rows.filter((row) => !rowHasBlockedContract(row)) : rows });
+          }
+          return Promise.resolve({ results: [] });
+        },
+      };
+    },
+  };
+}
+const publicPairDb = publicPairFeedDb(publicPairRows);
+const wufTokenPage = await __waxonedgeTestHooks.getTokenPageAnalytics(publicPairDb, 'wuffi', 'WUF');
+ok('/api/waxonedge/token-page/wuffi/WUF suppresses blocked pair contracts on either side',
+  wufTokenPage.indexed === true &&
+  wufTokenPage.pairs.length === 1 &&
+  wufTokenPage.pairs.every((row) => !rowHasBlockedContract(row)) &&
+  blockedContracts.every((contract) => wufTokenPage.pair_token_contract_blocklist.includes(contract)) &&
+  wufTokenPage.blocked_pair_contract_policy === 'exclude_rows_where_either_pair_side_contract_is_blocklisted');
+const wufPairFeed = await __waxonedgeTestHooks.listTokenPairs(publicPairDb, 'wuffi', 'WUF', { limit: 30 });
+ok('/api/waxonedge/token/:contract/:symbol/pairs uses the same pair contract blocklist',
+  wufPairFeed.rows.length === 1 &&
+  wufPairFeed.rows.every((row) => !rowHasBlockedContract(row)));
+const blockedTokenPage = await __waxonedgeTestHooks.getTokenPageAnalytics(publicPairDb, 'hype.gm', 'HYPE');
+ok('token-page returns blocked metadata for blocklisted requested token contracts',
+  blockedTokenPage.indexed === false &&
+  blockedTokenPage.blocked === true &&
+  blockedTokenPage.unavailable === 'Token contract blocked from public WaxOnEdge pair feeds');
+const workerSource = readFileSync(new URL('../workers/moonboys-api/routes/waxonedge.js', import.meta.url), 'utf8');
+const frontendPublicFiles = [
+  '../wiki/wuffi.html',
+  '../js/token-analytics-page.js',
+  '../waxcash.html',
+  '../js/waxcash-analytics.js',
+  '../js/waxonedge-bubbles-v2.js',
+].map((file) => readFileSync(new URL(file, import.meta.url), 'utf8')).join('\n');
+ok('pair contract blocklist is Worker-side, not frontend-only',
+  blockedContracts.every((contract) => workerSource.includes(contract)) &&
+  blockedContracts.every((contract) => !frontendPublicFiles.includes(contract)));
 
 console.log(`\nwaxonedge-valuation-contract.test: ${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

@@ -64,6 +64,11 @@ const WAXONEDGE_AGGREGATE_SOURCES = Object.freeze([
   'swap.adex',
   'dapp.fusion',
 ]);
+const WAXONEDGE_PAIR_TOKEN_CONTRACT_BLOCKLIST = Object.freeze([
+  'waxlord.gm',
+  'hype.gm',
+  'memecreators',
+]);
 let waxcashBubblesLiteGraphCache = null;
 const WAXONEDGE_OG_ENDPOINTS = Object.freeze([
   '/pools',
@@ -1028,6 +1033,24 @@ function normalizeSymbol(value) {
 
 function normalizeContract(value) {
   return String(value || '').trim().toLowerCase();
+}
+
+function isPairTokenContractBlocked(contract) {
+  return WAXONEDGE_PAIR_TOKEN_CONTRACT_BLOCKLIST.includes(normalizeContract(contract));
+}
+
+function pairTokenContractBlocklistSql(alias = '') {
+  const prefix = alias ? `${alias}.` : '';
+  const placeholders = WAXONEDGE_PAIR_TOKEN_CONTRACT_BLOCKLIST.map(() => '?').join(',');
+  return `LOWER(${prefix}token_a_contract) NOT IN (${placeholders}) AND LOWER(${prefix}token_b_contract) NOT IN (${placeholders})`;
+}
+
+function pairTokenContractBlocklistParams() {
+  return WAXONEDGE_PAIR_TOKEN_CONTRACT_BLOCKLIST.concat(WAXONEDGE_PAIR_TOKEN_CONTRACT_BLOCKLIST);
+}
+
+function pairUsesBlockedTokenContract(pair) {
+  return isPairTokenContractBlocked(pair?.token_a_contract) || isPairTokenContractBlocked(pair?.token_b_contract);
 }
 
 function parseAsset(asset) {
@@ -5843,9 +5866,10 @@ async function listTopPairs(db) {
             price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
             liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
      FROM waxonedge_pairs
+     WHERE ${pairTokenContractBlocklistSql()}
      ORDER BY CAST(COALESCE(volume_24h_wax, '0') AS NUMERIC) DESC, updated_at DESC
      LIMIT 250`
-  ).all();
+  ).bind(...pairTokenContractBlocklistParams()).all();
   return rows.results || [];
 }
 
@@ -5857,13 +5881,14 @@ async function listTokenPairs(db, contract, symbol, options = {}) {
             price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
             liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
      FROM waxonedge_pairs
-     WHERE (token_a_contract = ? AND token_a_symbol = ?)
-        OR (token_b_contract = ? AND token_b_symbol = ?)
+     WHERE ((token_a_contract = ? AND token_a_symbol = ?)
+        OR (token_b_contract = ? AND token_b_symbol = ?))
+       AND ${pairTokenContractBlocklistSql()}
      ORDER BY CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC,
               CAST(COALESCE(volume_24h_wax, '0') AS NUMERIC) DESC,
               updated_at DESC
      LIMIT ? OFFSET ?`
-  ).bind(contract, symbol, contract, symbol, limit + 1, offset).all();
+  ).bind(contract, symbol, contract, symbol, ...pairTokenContractBlocklistParams(), limit + 1, offset).all();
   const pageRows = rows.results || [];
   const hasMore = pageRows.length > limit;
   const visibleRows = pageRows.slice(0, limit);
@@ -8020,9 +8045,10 @@ async function loadPairRowsForToken(db, contract, symbol) {
             volume_7d, volume_7d_wax, volume_7d_usd, volume_30d, volume_30d_wax, volume_30d_usd,
             liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
      FROM waxonedge_pairs
-     WHERE (token_a_contract = ? AND token_a_symbol = ?)
-        OR (token_b_contract = ? AND token_b_symbol = ?)`
-  ).bind(contract, symbol, contract, symbol).all().catch(() => ({ results: [] }));
+     WHERE ((token_a_contract = ? AND token_a_symbol = ?)
+        OR (token_b_contract = ? AND token_b_symbol = ?))
+       AND ${pairTokenContractBlocklistSql()}`
+  ).bind(contract, symbol, contract, symbol, ...pairTokenContractBlocklistParams()).all().catch(() => ({ results: [] }));
   return rows.results || [];
 }
 
@@ -8073,8 +8099,9 @@ async function loadPairRowsForTokens(db, tokens = []) {
               volume_7d, volume_7d_wax, volume_7d_usd, volume_30d, volume_30d_wax, volume_30d_usd,
               liquidity_wax, liquidity_usd, reserve_a, reserve_b, updated_at
        FROM waxonedge_pairs
-       WHERE ${where}`
-    ).bind(...params).all().catch(() => ({ results: [] }));
+       WHERE (${where})
+         AND ${pairTokenContractBlocklistSql()}`
+    ).bind(...params, ...pairTokenContractBlocklistParams()).all().catch(() => ({ results: [] }));
     rows.push(...(result.results || []));
   }
   return dedupePairRows(rows);
@@ -12634,18 +12661,32 @@ async function getToken(db, contract, symbol, options = {}) {
 }
 
 async function getTokenPageAnalytics(db, contract, symbol) {
-  const detail = await getToken(db, contract, symbol);
   const policy = {
     pair_limit: 30,
     source_policy: 'indexed_waxonedge_pairs_only',
     ranking_policy: 'liquidity_wax_then_volume_24h_wax_then_backend_order',
     chart_policy: 'chart_uses_direct_alcor_candles_frontend_only_not_backend_pair_table',
     supported_sources: ['alcor', 'swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box', 'swap.adex', 'dapp.fusion'],
+    pair_token_contract_blocklist: WAXONEDGE_PAIR_TOKEN_CONTRACT_BLOCKLIST,
+    blocked_pair_contract_policy: 'exclude_rows_where_either_pair_side_contract_is_blocklisted',
     no_fake_values: true,
   };
+  if (isPairTokenContractBlocked(contract)) {
+    return {
+      indexed: false,
+      blocked: true,
+      unavailable: 'Token contract blocked from public WaxOnEdge pair feeds',
+      token: null,
+      stats: {},
+      pairs: [],
+      ...policy,
+    };
+  }
+  const detail = await getToken(db, contract, symbol);
   if (!detail.token) {
     return {
       indexed: false,
+      blocked: false,
       token: null,
       stats: {},
       pairs: [],
@@ -12661,19 +12702,21 @@ async function getTokenPageAnalytics(db, contract, symbol) {
      WHERE ((token_a_contract = ? AND token_a_symbol = ?)
         OR (token_b_contract = ? AND token_b_symbol = ?))
        AND source IN ('alcor','swap.alcor','swap.taco','swap.nefty','swap.box','swap.adex','dapp.fusion')
+       AND ${pairTokenContractBlocklistSql()}
      ORDER BY CASE WHEN liquidity_wax IS NOT NULL THEN 0 ELSE 1 END ASC,
               CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC,
               CASE WHEN volume_24h_wax IS NOT NULL THEN 0 ELSE 1 END ASC,
               CAST(COALESCE(volume_24h_wax, '0') AS NUMERIC) DESC,
               updated_at DESC
      LIMIT 30`
-  ).bind(contract, symbol, contract, symbol).all();
+  ).bind(contract, symbol, contract, symbol, ...pairTokenContractBlocklistParams()).all();
   const pairs = (rows.results || []).map((row) => ({
     ...row,
     pair_label: [row.token_a_symbol, row.token_b_symbol].filter(Boolean).join('/') || null,
   }));
   return {
     indexed: true,
+    blocked: false,
     token: detail.token,
     stats: detail.stats || {},
     pairs,
@@ -14197,6 +14240,7 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       const contract = normalizeContract(decodeURIComponent(tokenPageMatch[1]));
       const symbol = normalizeSymbol(decodeURIComponent(tokenPageMatch[2]));
       const page = await getTokenPageAnalytics(env.DB, contract, symbol);
+      if (page.blocked) return unavailable(page.unavailable || 'Token contract blocked from public WaxOnEdge pair feeds', 404, corsHeaders);
       if (!page.indexed) return unavailable('Token not indexed yet', 404, corsHeaders);
       return ok(page, ['Token page analytics are derived from indexed WaxOnEdge backend rows only; missing values remain unavailable.'], page.stats?.updated_at || page.token?.updated_at || null, corsHeaders);
     }
@@ -14252,6 +14296,9 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
 
 export const __waxonedgeTestHooks = {
   getTokenPageAnalytics,
+  listTokenPairs,
+  isPairTokenContractBlocked,
+  pairUsesBlockedTokenContract,
   deriveTokenPairMetrics,
   deriveReserveBackedTokenRow,
   deriveReserveBackedTokenRows,
