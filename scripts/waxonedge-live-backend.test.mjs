@@ -8836,8 +8836,8 @@ ok('Layer 1 unavailable adapter proof does not generate fake price or liquidity'
   adexProof.liquidityWax === null &&
   adexProof.proof_status === 'unavailable' &&
   adexProof.reason_codes.includes('adapter_swap_action_not_verified'));
-ok('frontend market-cap bubble sizing uses verified market cap WAX without liquidity fallback',
-  frontendBubbles.includes("metric: 'mcap'") &&
+ok('frontend keeps internal market-cap bubble sizing verified without making it the visible default',
+  frontendBubbles.includes("metric: 'liquidity'") &&
   frontendBubbles.includes('function verifiedBubbleSizeValue(record)') &&
   frontendBubbles.includes("record.marketCapConfidence === 'good' && record.marketCapWax != null") &&
   !frontendBubbles.includes("if (record.liquidityConfidence === 'good') {\n      if (record.bubbleLiquidityWax != null)") &&

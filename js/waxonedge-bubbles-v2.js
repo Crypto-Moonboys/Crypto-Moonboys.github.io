@@ -132,7 +132,7 @@
     pairs: [],
     visible: [],
     nodes: [],
-    metric: 'mcap',
+    metric: 'liquidity',
     timeframe: '24h',
     query: '',
     hovered: null,
@@ -792,13 +792,17 @@
 
   function applyMetricCapabilities(payload) {
     state.capabilities = extractMetricCapabilities(payload);
-    if (!metricAllowed(state.metric)) {
-      state.metric = ['change', 'price', 'volume', 'liquidity', 'tvl', 'mcap'].find(function (metric) {
-        return metricAllowed(metric);
-      }) || 'change';
-    }
-    if (!timeframeAllowed(state.timeframe)) state.timeframe = '24h';
+    state.metric = 'liquidity';
+    state.timeframe = '24h';
     updateCapabilityControls();
+  }
+
+  function displayPrice(record) {
+    if (record.selectedPriceConfidence === 'weak') return 'Proof weak';
+    if (record.selectedPriceConfidence !== 'good') return 'Not indexed';
+    if (record.selectedPriceUsd != null) return '$' + fmtPrice(record.selectedPriceUsd);
+    if (record.selectedPriceWax != null) return fmtPrice(record.selectedPriceWax) + ' WAX';
+    return 'No indexed price';
   }
 
   function displayValue(record) {
@@ -807,11 +811,7 @@
       return fmtPct(change);
     }
     if (state.metric === 'price') {
-      if (record.selectedPriceConfidence === 'weak') return 'Proof weak';
-      if (record.selectedPriceConfidence !== 'good') return 'Not indexed';
-      if (record.selectedPriceUsd != null) return '$' + fmtPrice(record.selectedPriceUsd);
-      if (record.selectedPriceWax != null) return fmtPrice(record.selectedPriceWax) + ' WAX';
-      return 'No indexed price';
+      return displayPrice(record);
     }
     if (state.metric === 'volume') {
       if (state.timeframe === '7d') return record.volume7dUsd != null ? '$' + fmtNum(record.volume7dUsd) : 'No indexed 7D volume';
@@ -830,10 +830,7 @@
       return 'No indexed TVL';
     }
     if (state.metric === 'liquidity') {
-      if (record.liquidityConfidence === 'weak') return 'Proof weak';
-      if (record.liquidityConfidence !== 'good') return 'Not indexed';
-      if (record.graphLiquidityWax != null) return fmtNum(record.graphLiquidityWax) + ' WAX graph liq';
-      return 'No graph liquidity';
+      return displayPrice(record);
     }
     if (state.metric === 'mcap') {
       if (record.marketCapConfidence === 'weak') return 'Proof weak';
