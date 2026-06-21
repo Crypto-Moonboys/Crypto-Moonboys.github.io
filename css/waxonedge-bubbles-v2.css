@@ -498,7 +498,7 @@ body.woe-antbubbles-page {
   bottom: 10px;
   z-index: 18;
   display: grid;
-  grid-template-columns: minmax(390px, auto) minmax(260px, 1fr) auto;
+  grid-template-columns: minmax(390px, auto) auto;
   align-items: center;
   gap: 14px;
   min-height: 32px;
@@ -529,50 +529,6 @@ body.woe-antbubbles-page {
 }
 .woe-ab-stats strong {
   color: #d7d7d7;
-}
-
-.woe-ab-live-feed {
-  position: relative;
-  min-width: 0;
-  width: 100%;
-  min-height: 22px;
-  display: flex;
-  align-items: center;
-  gap: 28px;
-  overflow: hidden;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  padding: 0;
-  mask-image: linear-gradient(90deg, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
-  pointer-events: none;
-}
-
-.woe-ab-feed-item {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: #c9c9c9;
-  font-size: 11px;
-  animation: woe-ab-ticker 120s linear infinite;
-}
-
-.woe-ab-feed-item strong,
-.woe-ab-feed-item span {
-  display: inline;
-}
-
-.woe-ab-feed-item strong {
-  color: var(--feed-color, #f89422);
-  font-size: 11px;
-  margin: 0;
-}
-
-.woe-ab-feed-item span {
-  color: #c9c9c9;
-  font-size: 11px;
-  line-height: 1.2;
 }
 
 .woe-ab-up {
@@ -609,18 +565,12 @@ body.woe-antbubbles-page {
   50% { opacity: 1; transform: scale(1.2); }
 }
 
-@keyframes woe-ab-ticker {
-  0% { transform: translateX(28vw); }
-  100% { transform: translateX(-135vw); }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .woe-ab-pulse {
     animation: none;
   }
 
   .woe-ab-canvas,
-  .woe-ab-live-feed,
   .woe-ab-tooltip {
     animation: none;
     transition: none;

@@ -140,9 +140,7 @@
     dragging: null,
     selected: null,
     shockwaves: [],
-    liveFeed: [],
     missingFeaturedLogged: {},
-    lastImpactAt: 0,
     profileName: '',
     profileChangedAt: 0,
     firstPaintAt: 0,
@@ -1313,7 +1311,6 @@
         record.shockwavePending = true;
         record.majorUpdatePending = true;
       }
-      record.liveMessage = liveMessageForUpdate(record, update, previousVolume, nextVolume, previousChange);
       record.searchText = tokenSearchText(record);
     }
     return changed;
@@ -1384,22 +1381,17 @@
       return;
     }
     var changed = 0;
-    var changedRecords = [];
     tokens.forEach(function (update) {
       var key = update.token_key || tokenKey(update.contract, update.symbol);
       var record = byKey[key];
       if (!record) return;
       if (applyLiveTokenUpdate(record, update)) {
         changed += 1;
-        changedRecords.push(record);
       }
     });
     if (!changed) return;
     refreshLiveTargetRadii();
     syncNodes();
-    changedRecords.forEach(function (record) {
-      if (record.liveMessage) addLiveFeed(record.liveMessage, record);
-    });
     queuePendingShockwaves();
   }
 
@@ -1416,19 +1408,6 @@
     return isVolumeSpike(previousVolume, nextVolume) && Math.abs(nextVolume - previousVolume) / previousVolume >= 0.18;
   }
 
-  function liveMessageForUpdate(record, update, previousVolume, nextVolume, previousChange) {
-    var type = String(update.event_type || update.type || update.reason || '').toLowerCase();
-    if (type.indexOf('whale') !== -1 || update.whale === true || update.is_whale === true) {
-      return 'Whale/high-volume update detected for ' + (record.displaySymbol || record.symbol) + ' from indexed snapshot data';
-    }
-    if (isVolumeSpike(previousVolume, nextVolume)) {
-      return 'Volume spike: ' + (record.displaySymbol || record.symbol) + ' 24h volume moved to ' + displayValueForMetric(record, 'volume', '24h');
-    }
-    var change = asNum(record.change24);
-    if (change != null && previousChange !== change) return 'Top mover update: ' + (record.displaySymbol || record.symbol) + ' now ' + fmtPct(change);
-    return 'Fresh history building: ' + (record.displaySymbol || record.symbol) + ' updated from WaxOnEdge snapshots';
-  }
-
   function displayValueForMetric(record, metric, timeframeOverride) {
     var oldMetric = state.metric;
     var oldTimeframe = state.timeframe;
@@ -1440,35 +1419,6 @@
       state.metric = oldMetric;
       state.timeframe = oldTimeframe;
     }
-  }
-
-  function addLiveFeed(message, record) {
-    state.liveFeed.unshift({
-      message: message,
-      symbol: record.displaySymbol || record.symbol,
-      color: ringColor(record),
-      time: Date.now(),
-    });
-    state.liveFeed = state.liveFeed.slice(0, 6);
-    if (record.majorUpdatePending) {
-      record.majorUpdatePending = false;
-    }
-    renderLiveFeed();
-  }
-
-  function renderLiveFeed() {
-    var feed = document.getElementById('woe-ab-live-feed');
-    if (!feed) return;
-    if (!state.liveFeed.length) {
-      feed.innerHTML = '<span class="woe-ab-feed-item"><strong>Live WAX Galaxy</strong><span>Waiting for real WaxOnEdge updates.</span></span>';
-      return;
-    }
-    feed.innerHTML = state.liveFeed.map(function (item) {
-      return '<span class="woe-ab-feed-item" style="--feed-color:' + escHtml(item.color) + '">' +
-        '<strong>' + escHtml(item.symbol) + '</strong>' +
-        '<span>' + escHtml(item.message) + '</span>' +
-      '</span>';
-    }).join('');
   }
 
   function queuePendingShockwaves() {
@@ -1516,15 +1466,6 @@
     return Math.max(tvl, liq, volume) > 50000 || (node.rank || 999) <= 12;
   }
 
-  function movementEventMessage(node, entry) {
-    if (!node.record) return null;
-    if (entry.event === 'mega_event') return 'Mega visual event: ' + (node.record.displaySymbol || node.record.symbol) + ' galaxy shockwave';
-    if (entry.event === 'bonus_surge') return 'Bonus surge visual: ' + (node.record.displaySymbol || node.record.symbol) + ' drift pulse';
-    if (entry.event === 'shockwave') return 'Shockwave visual: ' + (node.record.displaySymbol || node.record.symbol) + ' pushed nearby bubbles';
-    if (entry.event === 'whale_pulse' && isWhaleVisualNode(node)) return 'Whale pulse visual: ' + (node.record.displaySymbol || node.record.symbol) + ' glow expanded';
-    return null;
-  }
-
   function pushShockwave(node, now, scale, reason) {
     if (!node || !node.record) return;
     state.shockwaves.push({
@@ -1555,11 +1496,6 @@
       node.pulseUntil = Math.max(node.pulseUntil || 0, now + 1700);
       pushShockwave(node, now, entry.event === 'mega_event' ? 1.55 : 1.15, entry.event);
       node.nearbyRepelUntil = Math.max(node.nearbyRepelUntil || 0, now + 1200);
-    }
-    var message = movementEventMessage(node, entry);
-    if (message && now - state.lastImpactAt > 1600) {
-      state.lastImpactAt = now;
-      addLiveFeed(message, node.record);
     }
     scheduleNextMovementRoll(node, now);
   }
@@ -2672,25 +2608,17 @@
     var gainers = records.filter(function (r) { return asNum(r.change24) > 0; }).length;
     var losers = records.filter(function (r) { return asNum(r.change24) < 0; }).length;
     var volume = records.reduce(function (sum, r) { return sum + (r.volume24Usd || r.volume24Wax || 0); }, 0);
-    var topGainer = records.reduce(function (best, r) { return !best || (r.change24 || -Infinity) > (best.change24 || -Infinity) ? r : best; }, null);
-    var topLoser = records.reduce(function (best, r) { return !best || (r.change24 || Infinity) < (best.change24 || Infinity) ? r : best; }, null);
     var sources = {};
     records.forEach(function (r) { r.sources.forEach(function (s) { sources[s] = true; }); });
-    var feedStatus = 'WAXCASH analytics feed';
     bar.innerHTML = '<span class="woe-ab-stat-cluster">' +
       '<span>' + escHtml(tokenLabel) + '</span>' +
       '<span class="woe-ab-up">Up ' + escHtml(String(gainers)) + '</span>' +
       '<span class="woe-ab-down">Down ' + escHtml(String(losers)) + '</span>' +
       '<span>Vol 24h <strong>' + escHtml(fmtNum(volume)) + '</strong></span>' +
-      '<span>Top <strong class="woe-ab-up">' + escHtml(topGainer ? (topGainer.displaySymbol || topGainer.symbol) + ' ' + fmtPct(topGainer.change24) : 'Not indexed') + '</strong></span>' +
-      '<span>Bot <strong class="woe-ab-down">' + escHtml(topLoser ? (topLoser.displaySymbol || topLoser.symbol) + ' ' + fmtPct(topLoser.change24) : 'Not indexed') + '</strong></span>' +
       '<span>Sources <strong>' + escHtml(String(Object.keys(sources).length)) + '</strong></span>' +
-      '<span>' + escHtml(feedStatus) + '</span>' +
       '<span>WAXCASH pair members</span>' +
       '</span>' +
-      '<span id="woe-ab-live-feed" class="woe-ab-live-feed" aria-live="polite" aria-label="Live WaxOnEdge market feed"></span>' +
       '<span class="woe-ab-credit">Powered by WaxOnEdge multi-DEX indexer</span>';
-    renderLiveFeed();
   }
   function attachControls() {
     document.querySelectorAll('[data-woe-metric]').forEach(function (button) {
@@ -2762,7 +2690,6 @@
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') closeTokenModal();
     });
-    renderLiveFeed();
     window.addEventListener('resize', function () { window.clearTimeout(state.resizeTimer); state.resizeTimer = window.setTimeout(syncNodes, 120); });
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) requestDraw();
