@@ -353,10 +353,14 @@ ok('waxonedge-bubbles-v2.js uses the slim WAXCASH bubble backend endpoint, not f
   !v2Js.includes('wax.alcor.exchange'));
 ok('waxonedge-bubbles-v2.js bootstraps visible bubbles from membership fast path before enrichment',
   v2Js.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
-  v2Js.includes('apiJson(BOOTSTRAP_API)') &&
+  v2Js.includes('function fetchBootstrapSnapshot()') &&
+  v2Js.includes('apiJson(BOOTSTRAP_API).then(function (snapshot)') &&
+  v2Js.includes('return apiJson(BUBBLES_LITE_API).then(function (snapshot)') &&
+  v2Js.includes("if (isUnavailableLitePayload(snapshot)) throw new Error('WAXCASH membership bubble lite query unavailable')") &&
+  v2Js.includes('if (isUnavailableLitePayload(snapshot)) throw error') &&
   v2Js.includes('function fetchEnrichedSnapshotAfterFirstPaint()') &&
   /function fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*requestAnimationFrame[\s\S]*apiJson\(BUBBLES_LITE_API\)[\s\S]*applyLiveSnapshot\(snapshot\)/.test(v2Js) &&
-  /function load\(\)[\s\S]*syncNodes\(\)[\s\S]*fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*startLiveUpdates\(\)/.test(v2Js) &&
+  /function load\(\)[\s\S]*fetchBootstrapSnapshot\(\)[\s\S]*syncNodes\(\)[\s\S]*fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*startLiveUpdates\(\)/.test(v2Js) &&
   !v2Js.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics';") &&
   !v2Js.includes("var BOOTSTRAP_API = BUBBLES_LITE_API;"));
 ok('waxonedge-bubbles-v2.js phase-one adapter can normalize waxcash-analytics token stats and pair table rows into the slim shape',

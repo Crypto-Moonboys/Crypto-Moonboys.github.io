@@ -3615,6 +3615,45 @@ ok('VPS live indexer safely parses request path without trusting Host header',
         token_count: membershipLite.tokens?.length,
         payload_policy: membershipLite.payload_policy,
       }));
+    const membershipFailingDb = {
+      prepare() {
+        throw new Error('simulated membership d1 failure');
+      },
+    };
+    const failedMembershipLite = await __waxonedgeTestHooks.buildWaxcashBubblesLite(membershipFailingDb, { mode: 'membership' });
+    ok('WAXCASH bubbles membership mode fails soft when slim D1 queries fail',
+      failedMembershipLite.ok === false &&
+      failedMembershipLite.data_available === false &&
+      failedMembershipLite.mode === 'membership' &&
+      failedMembershipLite.source === 'waxcash_bubbles_lite' &&
+      Array.isArray(failedMembershipLite.tokens) &&
+      failedMembershipLite.tokens.length === 0 &&
+      Array.isArray(failedMembershipLite.pairs) &&
+      failedMembershipLite.pairs.length === 0 &&
+      failedMembershipLite.summary?.mode === 'membership' &&
+      failedMembershipLite.summary?.data_available === false &&
+      failedMembershipLite.summary?.lite_query_error?.includes('simulated membership d1 failure') &&
+      failedMembershipLite.payload_policy?.startup_fast_path === true &&
+      failedMembershipLite.payload_policy?.membership_only === true &&
+      failedMembershipLite.payload_policy?.skips_graph_enrichment === true &&
+      failedMembershipLite.payload_policy?.no_fake_value === true,
+      JSON.stringify(failedMembershipLite));
+    const nullRowsMembershipLite = __waxonedgeTestHooks.buildWaxcashBubblesLiteFromRows(null, null, '2026-06-21T00:00:00.000Z', {
+      rootSummaryAvailable: false,
+      rootQueryError: 'root_query_failed',
+      pairRowsAvailable: false,
+      pairQueryError: 'pair_query_failed',
+    });
+    ok('WAXCASH bubbles membership row builder handles null root and pair rows without throwing',
+      nullRowsMembershipLite.ok === false &&
+      nullRowsMembershipLite.data_available === false &&
+      nullRowsMembershipLite.tokens?.length === 1 &&
+      nullRowsMembershipLite.tokens?.[0]?.symbol === 'WAXCASH' &&
+      nullRowsMembershipLite.pairs?.length === 0 &&
+      nullRowsMembershipLite.summary?.lite_query_error?.includes('root_query_failed') &&
+      nullRowsMembershipLite.summary?.lite_query_error?.includes('pair_query_failed') &&
+      nullRowsMembershipLite.no_fake_value === true,
+      JSON.stringify(nullRowsMembershipLite));
     ok('WAXCASH bubbles membership branch returns before graph enrichment is requested',
       /if \(mode === 'membership' \|\| mode === 'members'\)[\s\S]*return lite;[\s\S]*const \[rootStats, pairRowsResult, graphResult\] = await Promise\.all/.test(route),
       'membership mode must stay before loadWaxcashBubblesLiteGraphResult');
@@ -9089,14 +9128,18 @@ ok('pair SELECT templates may still expose pair-level 7d/30d WAX/USD volume colu
   /async function loadWaxcashOgPairRows[\s\S]*volume_7d, volume_7d_wax, volume_7d_usd, volume_30d, volume_30d_wax, volume_30d_usd/.test(route),
   'Expected pair-level 7d/30d WAX/USD columns to remain on waxonedge_pairs SELECTs');
 ok('frontend bubbles bootstrap first and then starts live updates',
-  frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') > -1 &&
-  frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') < frontendBubbles.lastIndexOf('startLiveUpdates();') &&
+  frontendBubbles.indexOf('fetchBootstrapSnapshot()') > -1 &&
+  frontendBubbles.indexOf('fetchBootstrapSnapshot()') < frontendBubbles.lastIndexOf('startLiveUpdates();') &&
   frontendBubbles.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite'") &&
   frontendBubbles.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
   frontendBubbles.includes('function isUnavailableLitePayload(payload)') &&
   frontendBubbles.includes("data.source === 'waxcash_bubbles_lite' && data.data_available === false") &&
   frontendBubbles.includes('if (isUnavailableLitePayload(snapshot)) return') &&
-  frontendBubbles.includes("if (isUnavailableLitePayload(results[0])) throw new Error('WAXCASH bubble lite query unavailable')") &&
+  frontendBubbles.includes('function fetchBootstrapSnapshot()') &&
+  frontendBubbles.includes('apiJson(BOOTSTRAP_API).then(function (snapshot)') &&
+  frontendBubbles.includes('return apiJson(BUBBLES_LITE_API).then(function (snapshot)') &&
+  frontendBubbles.includes("if (isUnavailableLitePayload(snapshot)) throw new Error('WAXCASH membership bubble lite query unavailable')") &&
+  frontendBubbles.includes('if (isUnavailableLitePayload(snapshot)) throw error') &&
   frontendBubbles.includes('var BOOTSTRAP_API = BUBBLES_MEMBERSHIP_API;') &&
   frontendBubbles.includes('function fetchEnrichedSnapshotAfterFirstPaint()') &&
   frontendBubbles.includes('apiJson(BUBBLES_LITE_API).then(function (snapshot)') &&

@@ -9179,6 +9179,8 @@ async function loadWaxcashLitePairRows(db) {
 }
 
 function buildWaxcashBubblesLiteFromRows(rootStats = {}, pairRows = [], generatedAt = nowIso(), options = {}) {
+  rootStats = rootStats || {};
+  pairRows = sourceRows(pairRows);
   const rootSummaryAvailable = options.rootSummaryAvailable !== false;
   const pairRowsAvailable = options.pairRowsAvailable !== false;
   const rootQueryError = rootSummaryAvailable ? null : (options.rootQueryError || 'waxcash_lite_root_summary_query_failed');
@@ -9303,6 +9305,45 @@ function buildWaxcashBubblesLiteFromRows(rootStats = {}, pairRows = [], generate
     root_summary_available: rootSummaryAvailable,
     pair_rows_available: pairRowsAvailable,
     lite_query_error: liteQueryError,
+    no_fake_value: true,
+  };
+}
+
+function buildWaxcashBubblesLiteMembershipFailurePayload(error, generatedAt = nowIso()) {
+  const message = error?.message || String(error || 'waxcash_membership_lite_build_failed');
+  return {
+    ok: false,
+    data_available: false,
+    mode: 'membership',
+    generated_at: generatedAt,
+    updated_at: generatedAt,
+    source: 'waxcash_bubbles_lite',
+    tokens: [],
+    pairs: [],
+    summary: {
+      mode: 'membership',
+      generated_at: generatedAt,
+      updated_at: generatedAt,
+      data_available: false,
+      indexed_pair_count: null,
+      root_summary_available: false,
+      pair_rows_available: false,
+      enrichment_graph_available: false,
+      lite_query_error: message,
+    },
+    metric_capabilities: {},
+    payload_policy: {
+      slim: true,
+      startup_fast_path: true,
+      membership_only: true,
+      skips_graph_enrichment: true,
+      excludes_loadWaxcashGraphTokenRows: true,
+      no_fake_value: true,
+    },
+    root_summary_available: false,
+    pair_rows_available: false,
+    enrichment_graph_available: false,
+    lite_query_error: message,
     no_fake_value: true,
   };
 }
@@ -9833,30 +9874,37 @@ async function buildWaxcashBubblesLite(db, env) {
   void env;
   const mode = String(env?.mode || env?.view || '').toLowerCase();
   if (mode === 'membership' || mode === 'members') {
-    const [rootStats, pairRowsResult] = await Promise.all([
-      loadWaxcashLiteRootSummary(db),
-      loadWaxcashLitePairRows(db),
-    ]);
-    const lite = buildWaxcashBubblesLiteFromRows(rootStats.row, pairRowsResult.rows, nowIso(), {
-      rootSummaryAvailable: rootStats.ok,
-      rootQueryError: rootStats.error,
-      pairRowsAvailable: pairRowsResult.ok,
-      pairQueryError: pairRowsResult.error,
-    });
-    lite.mode = 'membership';
-    lite.summary = {
-      ...(lite.summary || {}),
-      mode: 'membership',
-      enrichment_graph_available: false,
-    };
-    lite.payload_policy = {
-      ...(lite.payload_policy || {}),
-      startup_fast_path: true,
-      membership_only: true,
-      skips_graph_enrichment: true,
-      excludes_loadWaxcashGraphTokenRows: true,
-    };
-    return lite;
+    try {
+      const [rootStats, pairRowsResult] = await Promise.all([
+        loadWaxcashLiteRootSummary(db),
+        loadWaxcashLitePairRows(db),
+      ]);
+      if (rootStats?.ok !== true || pairRowsResult?.ok !== true) {
+        return buildWaxcashBubblesLiteMembershipFailurePayload(rootStats?.error || pairRowsResult?.error || 'waxcash_membership_lite_query_failed');
+      }
+      const lite = buildWaxcashBubblesLiteFromRows(rootStats?.row, pairRowsResult?.rows, nowIso(), {
+        rootSummaryAvailable: true,
+        rootQueryError: rootStats?.error,
+        pairRowsAvailable: true,
+        pairQueryError: pairRowsResult?.error,
+      });
+      lite.mode = 'membership';
+      lite.summary = {
+        ...(lite.summary || {}),
+        mode: 'membership',
+        enrichment_graph_available: false,
+      };
+      lite.payload_policy = {
+        ...(lite.payload_policy || {}),
+        startup_fast_path: true,
+        membership_only: true,
+        skips_graph_enrichment: true,
+        excludes_loadWaxcashGraphTokenRows: true,
+      };
+      return lite;
+    } catch (error) {
+      return buildWaxcashBubblesLiteMembershipFailurePayload(error);
+    }
   }
   const [rootStats, pairRowsResult, graphResult] = await Promise.all([
     loadWaxcashLiteRootSummary(db),
