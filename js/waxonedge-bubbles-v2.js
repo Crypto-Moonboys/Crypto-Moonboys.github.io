@@ -15,6 +15,7 @@
   var LIVE_API = BUBBLES_LITE_API;
   var LIVE_STREAM_API = '/api/waxonedge/live/stream';
   var LIVE_POLL_MS = 1000;
+  var MEMBERSHIP_BOOTSTRAP_TIMEOUT_MS = 2000;
   var WAXCASH_CONTRACT = 'graffitiking';
   var WAXCASH_SYMBOL = 'WAXCASH';
   var WAXONEDGE_FEATURED_TOKENS = Array.isArray(window.WAXONEDGE_FEATURED_TOKENS)
@@ -158,6 +159,8 @@
       pageStartAt: SCRIPT_START_AT,
       membershipMs: 0,
       fullLiteMs: 0,
+      membershipState: '',
+      fullLiteState: '',
       normalizeMs: 0,
       syncNodesMs: 0,
       firstDrawAt: 0,
@@ -244,6 +247,10 @@
   function isUnavailableLitePayload(payload) {
     var data = payloadData(payload);
     return data && data.source === 'waxcash_bubbles_lite' && data.data_available === false;
+  }
+
+  function hasBubbleTokens(payload) {
+    return sourceRows(payloadData(payload).tokens).length > 0;
   }
 
   function fmtNum(value, decimals) {
@@ -2065,6 +2072,10 @@
     return value ? Math.round(value) + 'ms' : '-';
   }
 
+  function perfRequestLabel(value, stateName) {
+    return stateName ? stateName : perfMs(value);
+  }
+
   function updatePerfOverlay(dpr) {
     if (!state.perfDebug || !state.perfOverlay) return;
     var profile = renderProfile();
@@ -2072,8 +2083,8 @@
       'fps ' + state.perfStats.fps +
       ' | draw ' + state.perfStats.drawMs.toFixed(1) + 'ms' +
       ' | physics ' + state.perfStats.physicsMs.toFixed(1) + 'ms' +
-      ' | member ' + perfMs(state.perfStats.membershipMs) +
-      ' | lite ' + perfMs(state.perfStats.fullLiteMs) +
+      ' | member ' + perfRequestLabel(state.perfStats.membershipMs, state.perfStats.membershipState) +
+      ' | lite ' + perfRequestLabel(state.perfStats.fullLiteMs, state.perfStats.fullLiteState) +
       ' | norm ' + perfMs(state.perfStats.normalizeMs) +
       ' | sync ' + perfMs(state.perfStats.syncNodesMs) +
       ' | first ' + perfMs(state.perfStats.totalFirstBubbleMs) +
@@ -2531,12 +2542,16 @@
 
   function apiJsonTimed(path, label) {
     var start = performance.now();
+    if (label === 'membership') state.perfStats.membershipState = 'pending';
+    else if (label === 'full_lite') state.perfStats.fullLiteState = 'pending';
     return apiJson(path).then(function (snapshot) {
       if (label === 'membership') {
         state.perfStats.membershipMs = performance.now() - start;
+        if (state.perfStats.membershipState !== 'timeout') state.perfStats.membershipState = '';
         state.perfStats.membershipError = '';
       } else if (label === 'full_lite') {
         state.perfStats.fullLiteMs = performance.now() - start;
+        state.perfStats.fullLiteState = '';
         state.perfStats.fullLiteError = '';
       }
       if (state.perfDebug) {
@@ -2547,9 +2562,11 @@
     }).catch(function (error) {
       if (label === 'membership') {
         state.perfStats.membershipMs = performance.now() - start;
+        if (state.perfStats.membershipState !== 'timeout') state.perfStats.membershipState = 'fail';
         state.perfStats.membershipError = error && error.message ? error.message : String(error);
       } else if (label === 'full_lite') {
         state.perfStats.fullLiteMs = performance.now() - start;
+        state.perfStats.fullLiteState = 'fail';
         state.perfStats.fullLiteError = error && error.message ? error.message : String(error);
       }
       if (state.perfDebug) {
@@ -2622,14 +2639,51 @@
   }
 
   function fetchBootstrapSnapshot() {
-    return apiJsonTimed(BOOTSTRAP_API, 'membership').then(function (snapshot) {
-      if (isUnavailableLitePayload(snapshot)) throw new Error('WAXCASH membership bubble lite query unavailable');
+    var errors = [];
+    var settled = false;
+    function acceptValidSnapshot(snapshot, sourceLabel) {
+      if (isUnavailableLitePayload(snapshot)) throw new Error(sourceLabel + ' bubble lite query unavailable');
+      if (!hasBubbleTokens(snapshot)) throw new Error(sourceLabel + ' bubble lite query returned no tokens');
       return snapshot;
-    }).catch(function (error) {
-      return apiJsonTimed(BUBBLES_LITE_API, 'full_lite').then(function (snapshot) {
-        if (isUnavailableLitePayload(snapshot)) throw error;
-        return snapshot;
+    }
+    function raceCandidate(promise, sourceLabel, resolve, reject) {
+      promise.then(function (snapshot) {
+        if (settled) return;
+        try {
+          settled = true;
+          resolve(acceptValidSnapshot(snapshot, sourceLabel));
+        } catch (error) {
+          settled = false;
+          errors.push(error);
+          if (errors.length >= 2) reject(error);
+        }
+      }).catch(function (error) {
+        if (settled) return;
+        errors.push(error);
+        if (errors.length >= 2) reject(error);
       });
+    }
+    return new Promise(function (resolve, reject) {
+      var membershipRequest = apiJsonTimed(BOOTSTRAP_API, 'membership');
+      var fullLiteRequest = apiJsonTimed(BUBBLES_LITE_API, 'full_lite');
+      var membershipTimeout = 0;
+      var timedMembershipRequest = Promise.race([
+        membershipRequest,
+        new Promise(function (_, timeoutReject) {
+          membershipTimeout = window.setTimeout(function () {
+            if (settled) return;
+            var error = new Error('membership bootstrap timed out after ' + MEMBERSHIP_BOOTSTRAP_TIMEOUT_MS + 'ms');
+            state.perfStats.membershipMs = MEMBERSHIP_BOOTSTRAP_TIMEOUT_MS;
+            state.perfStats.membershipState = 'timeout';
+            state.perfStats.membershipError = error.message;
+            timeoutReject(error);
+          }, MEMBERSHIP_BOOTSTRAP_TIMEOUT_MS);
+        }),
+      ]).finally(function () {
+        window.clearTimeout(membershipTimeout);
+      });
+      raceCandidate(timedMembershipRequest, 'WAXCASH membership', resolve, reject);
+      raceCandidate(fullLiteRequest, 'WAXCASH full lite', resolve, reject);
     });
   }
 
