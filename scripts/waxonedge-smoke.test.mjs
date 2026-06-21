@@ -38,6 +38,7 @@ function ok(label, condition, detail) {
 
 ok('waxonedge.html exists', exists('waxonedge.html'));
 ok('waxcash.html exists', exists('waxcash.html'));
+ok('WAXCASH graffiti token image exists', exists('$WAXCASH TOKEN GRAFFITI GKNIFTYHEADS GRAFFITI KINGS NFTS 1.jpg'));
 ok('waxonedge/index.html clean-route alias exists', exists('waxonedge/index.html'));
 ok('analytics/token/index.html token analytics route exists', exists('analytics/token/index.html'));
 ok('css/waxonedge.css exists', exists('css/waxonedge.css'));
@@ -177,6 +178,16 @@ ok('waxcash.html is a dedicated analytics page without top nav or graph runtime'
   !waxcashHtml.includes('>Spot<') &&
   !waxcashHtml.includes('>Markets<') &&
   !waxcashHtml.includes('>Analytics<'));
+ok('waxcash.html uses the GKniftyHEADS WAXCASH artwork with larger token intro copy',
+  waxcashHtml.includes('src="/%24WAXCASH%20TOKEN%20GRAFFITI%20GKNIFTYHEADS%20GRAFFITI%20KINGS%20NFTS%201.jpg"') &&
+  waxcashHtml.includes('alt="WAXCASH token graffiti artwork"') &&
+  waxcashHtml.includes('grid-template-columns: 112px 1fr') &&
+  waxcashHtml.includes('width: 112px') &&
+  waxcashHtml.includes('height: 112px') &&
+  waxcashHtml.includes('The GKniftyHEADS (also known as Graffiti Kings)') &&
+  waxcashHtml.includes('DISRUPTION BREEDS KINGS, GREED BREEDS MEME$') &&
+  waxcashHtml.includes('href="https://gkniftyheads.com/"') &&
+  waxcashHtml.includes('href="https://t.me/gkniftyheads"'));
 ok('waxcash analytics frontend calls the dedicated backend endpoint only',
   waxcashAnalyticsJs.includes("var ENDPOINT = '/api/waxonedge/waxcash-analytics'") &&
   !waxcashAnalyticsJs.includes('/api/waxonedge/waxcash-graph') &&
