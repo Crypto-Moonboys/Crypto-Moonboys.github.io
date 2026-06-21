@@ -11,6 +11,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(path.join(ROOT, 'waxonedge.html'), 'utf8');
+const wuffiHtml = readFileSync(path.join(ROOT, 'wiki/wuffi.html'), 'utf8');
+const tokenAnalyticsPageJs = readFileSync(path.join(ROOT, 'js/token-analytics-page.js'), 'utf8');
 
 let passed = 0;
 let failed = 0;
@@ -28,6 +30,8 @@ function ok(label, condition, detail) {
 const apiConfigIndex = html.indexOf('src="/js/api-config.js"');
 const bubblesIndex = html.indexOf('src="/js/waxonedge-bubbles-v2.js');
 const routingShimIndex = html.indexOf('function rewriteWaxOnEdgeUrl');
+const wuffiApiConfigIndex = wuffiHtml.indexOf('src="/js/api-config.js"');
+const wuffiAnalyticsIndex = wuffiHtml.indexOf('src="/js/token-analytics-page.js"');
 
 ok('waxonedge.html loads api-config before the bubbles runtime',
   apiConfigIndex !== -1 && bubblesIndex !== -1 && apiConfigIndex < bubblesIndex);
@@ -49,6 +53,16 @@ ok('routing shim does not introduce wallet or trading UI',
   !html.includes('Swap') &&
   !html.includes('Add Liquidity') &&
   !html.includes('Remove Liquidity'));
+ok('wuffi.html loads api-config before token analytics runtime',
+  wuffiApiConfigIndex !== -1 && wuffiAnalyticsIndex !== -1 && wuffiApiConfigIndex < wuffiAnalyticsIndex);
+ok('WUF token analytics resolves Worker API through MOONBOYS_API production fallback',
+  tokenAnalyticsPageJs.includes('cfg.getApiBaseInfo({ allowProductionFallback: true })') &&
+  tokenAnalyticsPageJs.includes("var TOKEN_PAGE_PATH = '/api/waxonedge/token-page/wuffi/WUF';") &&
+  tokenAnalyticsPageJs.includes('return base + TOKEN_PAGE_PATH;'));
+ok('WUF token analytics does not fetch same-origin /api directly',
+  !tokenAnalyticsPageJs.includes("fetch('/api/waxonedge") &&
+  !tokenAnalyticsPageJs.includes('fetch("/api/waxonedge') &&
+  !tokenAnalyticsPageJs.includes("var ENDPOINT = '/api/waxonedge"));
 
 console.log('\nwaxonedge-api-routing.test: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);

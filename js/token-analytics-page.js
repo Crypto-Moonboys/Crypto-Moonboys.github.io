@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var ENDPOINT = '/api/waxonedge/token-page/wuffi/WUF';
+  var TOKEN_PAGE_PATH = '/api/waxonedge/token-page/wuffi/WUF';
   var ALCOR_CANDLES = 'https://wax.alcor.exchange/api/v2/swap/candles';
   var TOKEN_A = 'wuf-wuffi';
   var TOKEN_B = 'wax-eosio.token';
@@ -35,6 +35,15 @@
   function pairName(row) { return row && row.pair_label || [row && row.token_a_symbol, row && row.token_b_symbol].filter(Boolean).join('/') || 'WUF pair'; }
   function price(row) { return num(row && row.price) == null ? unavailable() : esc(fmt(row.price, '')); }
   function volume(row, prefix) { return dual(row && row[prefix + '_wax'], row && row[prefix + '_usd']); }
+  function tokenPageUrl() {
+    var cfg = window.MOONBOYS_API || {};
+    var info = typeof cfg.getApiBaseInfo === 'function'
+      ? cfg.getApiBaseInfo({ allowProductionFallback: true })
+      : null;
+    var base = info && info.available && info.url ? String(info.url).replace(/\/$/, '') : '';
+    if (!base) throw new Error('API base URL unavailable');
+    return base + TOKEN_PAGE_PATH;
+  }
 
   function renderAnalytics(payload) {
     var data = payload && payload.data ? payload.data : payload || {};
@@ -65,7 +74,7 @@
   }
 
   function loadAnalytics() {
-    fetch(ENDPOINT, { headers: { Accept: 'application/json' } })
+    fetch(tokenPageUrl(), { headers: { Accept: 'application/json' } })
       .then(function (response) { if (!response.ok) throw new Error('HTTP ' + response.status); return response.json(); })
       .then(renderAnalytics)
       .catch(function (error) {
