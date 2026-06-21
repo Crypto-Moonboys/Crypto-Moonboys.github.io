@@ -130,8 +130,34 @@ const neftyNormalizationDebug = __waxonedgeTestHooks.coreDexSourceNormalizationD
 ok('WAXCASH Nefty normalization diagnostics distinguish raw WAXCASH rows from normalized WAXCASH pairs',
   neftyNormalizationDebug.raw_waxcash_row_count === 2 &&
   neftyNormalizationDebug.normalized_waxcash_pair_count === 1 &&
+  neftyNormalizationDebug.waxcash_normalization_reason === 'normalized_waxcash_pairs_available' &&
   neftyNormalizationDebug.rejected_reason_counts.normalize_missing_token_identity === 1 &&
   neftyNormalizationDebug.raw_waxcash_examples.length === 2);
+const neftyRejectedNormalizationDebug = __waxonedgeTestHooks.coreDexSourceNormalizationDiagnostics({
+  source: 'swap.nefty',
+  normalizer: 'reserve0-reserve1',
+}, [{
+  code: 'WAXBAD',
+  reserve0: '100.00000000 WAXCASH',
+  reserve1: { contract: 'eosio.token', quantity: '1.00000000 WAX' },
+}], []);
+ok('WAXCASH Nefty normalization diagnostics explain raw WAXCASH rows rejected before normalization',
+  neftyRejectedNormalizationDebug.raw_waxcash_row_count === 1 &&
+  neftyRejectedNormalizationDebug.normalized_waxcash_pair_count === 0 &&
+  neftyRejectedNormalizationDebug.waxcash_normalization_reason === 'raw_waxcash_rows_rejected_by_normalizer' &&
+  neftyRejectedNormalizationDebug.rejected_reason_counts.normalize_missing_token_identity === 1);
+const neftyNoRawNormalizationDebug = __waxonedgeTestHooks.coreDexSourceNormalizationDiagnostics({
+  source: 'swap.nefty',
+  normalizer: 'reserve0-reserve1',
+}, [{
+  code: 'WAXOTHER',
+  reserve0: { contract: 'eosio.token', quantity: '1.00000000 WAX' },
+  reserve1: { contract: 'other.token', quantity: '1.0000 OTHER' },
+}], []);
+ok('WAXCASH Nefty normalization diagnostics explain no raw WAXCASH rows in scanned source rows',
+  neftyNoRawNormalizationDebug.raw_waxcash_row_count === 0 &&
+  neftyNoRawNormalizationDebug.normalized_waxcash_pair_count === 0 &&
+  neftyNoRawNormalizationDebug.waxcash_normalization_reason === 'no_raw_waxcash_rows_seen_in_scanned_source_rows');
 
 for (const table of [
   'waxonedge_sync_runs',
@@ -4752,8 +4778,11 @@ ok('source stability debug exposes raw Nefty normalization and recovery diagnost
   route.includes('function coreDexSourceNormalizationDiagnostics') &&
   route.includes('raw_waxcash_row_count') &&
   route.includes('normalized_waxcash_pair_count') &&
+  route.includes('waxcash_normalization_reason') &&
   route.includes('raw_waxcash_examples') &&
   route.includes('normalization_diagnostics: normalizationDiagnostics') &&
+  route.includes('source_table_unavailable_before_pair_scan') &&
+  route.includes('source_refresh_failed_before_or_during_pair_scan') &&
   route.includes('source_snapshot_diagnostics: sourceSnapshotDiagnostics'));
 ok('WAXCASH source stability debug reports complete-source row collapse guards',
   route.includes('const collapseGuardStates = sourceStateRows.filter') &&
