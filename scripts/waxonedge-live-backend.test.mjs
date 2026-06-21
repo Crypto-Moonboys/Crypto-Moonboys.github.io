@@ -4836,6 +4836,14 @@ ok('source stability debug exposes raw Nefty normalization and recovery diagnost
   route.includes('source_table_unavailable_before_pair_scan') &&
   route.includes('source_refresh_failed_before_or_during_pair_scan') &&
   route.includes('source_snapshot_diagnostics: sourceSnapshotDiagnostics'));
+ok('compact DEX snapshots persist WAXCASH normalization diagnostics read by analytics',
+  route.includes('async function writeCompactDexSnapshot') &&
+  route.includes('recovery_preflight: metadata.recovery_preflight || null') &&
+  route.includes('waxcash_collapse_guard: metadata.waxcash_collapse_guard || null') &&
+  route.includes('normalization_diagnostics: metadata.normalization_diagnostics || null') &&
+  route.includes('waxcash_pair_count: metadata.waxcash_pair_count ?? null') &&
+  route.includes('last_good_waxcash_pair_count: metadata.last_good_waxcash_pair_count ?? null') &&
+  route.includes('normalization_diagnostics: data.normalization_diagnostics || null'));
 ok('WAXCASH source stability debug reports complete-source row collapse guards',
   route.includes('const collapseGuardStates = sourceStateRows.filter') &&
   route.includes('source_complete_but_waxcash_rows_collapsed: collapseGuardStates.length > 0') &&

@@ -1234,6 +1234,11 @@ async function writeCompactDexSnapshot(db, adapter, metadata, fetchedAt) {
     error: metadata.error || null,
     cursor: metadata.cursor || '',
     sync_cycle_id: metadata.sync_cycle_id || '',
+    recovery_preflight: metadata.recovery_preflight || null,
+    waxcash_collapse_guard: metadata.waxcash_collapse_guard || null,
+    normalization_diagnostics: metadata.normalization_diagnostics || null,
+    waxcash_pair_count: metadata.waxcash_pair_count ?? null,
+    last_good_waxcash_pair_count: metadata.last_good_waxcash_pair_count ?? null,
     compact: true,
   }, fetchedAt);
 }
