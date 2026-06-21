@@ -9360,6 +9360,8 @@ function waxcashLiteEnrichmentDiagnostics(tokens = [], membershipMap = new Map()
     no_visible_ui: true,
     visible_waxcash_pair_member_count: membershipMap.size,
     enriched_token_count: memberTokens.length,
+    full_token_enriched_count: memberTokens.filter((token) => token.full_token_analytics_source === 'all_indexed_wax_dex_graph').length,
+    missing_full_token_analytics_count: missingFullAnalytics.length,
     tokens_with_direct_wax_price: memberTokens.filter((token) => token.valuation_basis === 'direct_wax_pair').length,
     tokens_with_routed_wax_price: memberTokens.filter((token) => token.valuation_basis === 'routed_wax_pair').length,
     tokens_with_waxcash_reserve_ratio_price: memberTokens.filter((token) => token.valuation_basis === 'waxcash_reserve_ratio_from_selected_waxcash_price').length,
@@ -9391,10 +9393,12 @@ function buildWaxcashBubblesLiteFromGraph(rootStats = {}, graph = {}, enrichedRo
   const pairRows = canonicalPairRows || graph.waxcashPairs || [];
   const membershipMap = waxcashLiteMembershipMap(pairRows);
   const rootSummaryAvailable = options.rootSummaryAvailable !== false;
-  const graphAvailable = options.graphAvailable !== false;
+  const pairRowsAvailable = options.pairRowsAvailable !== false;
+  const enrichmentGraphAvailable = options.graphAvailable !== false;
   const rootQueryError = rootSummaryAvailable ? null : (options.rootQueryError || 'waxcash_lite_root_summary_query_failed');
-  const graphQueryError = graphAvailable ? null : (options.graphQueryError || 'waxcash_lite_graph_query_failed');
-  const queryErrors = [rootQueryError, graphQueryError].filter(Boolean);
+  const pairQueryError = pairRowsAvailable ? null : (options.pairQueryError || 'waxcash_lite_pair_rows_query_failed');
+  const graphQueryError = enrichmentGraphAvailable ? null : (options.graphQueryError || 'waxcash_lite_graph_query_failed');
+  const queryErrors = [rootQueryError, pairQueryError, graphQueryError].filter(Boolean);
   const liteQueryError = queryErrors.length ? queryErrors.join('; ') : null;
   const sourceCounts = countRowsByAggregateSource(pairRows);
   const selectedWax = asNumber(rootStats.selected_price_wax);
@@ -9472,7 +9476,7 @@ function buildWaxcashBubblesLiteFromGraph(rootStats = {}, graph = {}, enrichedRo
     updated_at: row.updated_at || generatedAt,
   }));
   const updatedAt = rootStats.updated_at || rootStats.token_updated_at || generatedAt;
-  const dataAvailable = rootSummaryAvailable && graphAvailable;
+  const dataAvailable = rootSummaryAvailable && pairRowsAvailable;
   return {
     ok: dataAvailable,
     data_available: dataAvailable,
@@ -9484,10 +9488,11 @@ function buildWaxcashBubblesLiteFromGraph(rootStats = {}, graph = {}, enrichedRo
     summary: {
       generated_at: generatedAt,
       updated_at: updatedAt,
-      indexed_pair_count: graphAvailable ? pairRows.length : null,
+      indexed_pair_count: pairRowsAvailable ? pairRows.length : null,
       data_available: dataAvailable,
       root_summary_available: rootSummaryAvailable,
-      pair_rows_available: graphAvailable,
+      pair_rows_available: pairRowsAvailable,
+      enrichment_graph_available: enrichmentGraphAvailable,
       lite_query_error: liteQueryError,
       source_counts: sourceCounts,
       wax_price_usd: waxPriceUsd == null ? null : safeDecimal(waxPriceUsd),
@@ -9502,6 +9507,7 @@ function buildWaxcashBubblesLiteFromGraph(rootStats = {}, graph = {}, enrichedRo
       data_source: 'dedicated_slim_d1_queries_plus_all_dex_graph_enrichment',
       visible_tokens_selected_by: 'direct_waxcash_pair_membership',
       token_values_enriched_by: 'full_all_indexed_wax_dex_graph',
+      enrichment_graph_available: enrichmentGraphAvailable,
       excludes_full_waxcash_analytics_build: true,
       excludes_source_stability_debug: true,
       excludes_source_index_state_rows: true,
@@ -9511,7 +9517,8 @@ function buildWaxcashBubblesLiteFromGraph(rootStats = {}, graph = {}, enrichedRo
       no_fake_value: true,
     },
     root_summary_available: rootSummaryAvailable,
-    pair_rows_available: graphAvailable,
+    pair_rows_available: pairRowsAvailable,
+    enrichment_graph_available: enrichmentGraphAvailable,
     lite_query_error: liteQueryError,
     no_fake_value: true,
   };
@@ -9649,8 +9656,10 @@ async function buildWaxcashBubblesLite(db, env) {
     canonicalPairRows: pairRowsResult.rows,
     rootSummaryAvailable: rootStats.ok,
     rootQueryError: rootStats.error,
-    graphAvailable: pairRowsResult.ok && graphResult.ok,
-    graphQueryError: pairRowsResult.error || graphResult.error,
+    pairRowsAvailable: pairRowsResult.ok,
+    pairQueryError: pairRowsResult.error,
+    graphAvailable: graphResult.ok,
+    graphQueryError: graphResult.error,
   });
 }
 

@@ -3164,6 +3164,71 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       canonicalMissing?.metric_status?.liquidity?.reason === 'full_token_analytics_missing' &&
       canonicalMissing?.no_fake_value === true,
       JSON.stringify(canonicalMissing));
+    const graphFailureLite = __waxonedgeTestHooks.buildWaxcashBubblesLiteFromGraph({
+      selected_price_wax: '0.01',
+      selected_price_usd: '0.00005',
+      liquidity_wax: '100',
+      liquidity_usd: '0.50',
+      updated_at: '2026-06-21T00:00:00.000Z',
+    }, {
+      waxcashPairs: [],
+      pairRows: [],
+      tokenRows: [],
+    }, [], '2026-06-21T00:00:00.000Z', {
+      canonicalPairRows: [
+        {
+          source: 'swap.nefty',
+          pair_id: 'GRAPHFAIL1',
+          token_a_contract: 'graffitiking',
+          token_a_symbol: 'WAXCASH',
+          token_b_contract: 'tokenone',
+          token_b_symbol: 'ONE',
+        },
+        {
+          source: 'swap.taco',
+          pair_id: 'GRAPHFAIL2',
+          token_a_contract: 'tokentwo',
+          token_a_symbol: 'TWO',
+          token_b_contract: 'graffitiking',
+          token_b_symbol: 'WAXCASH',
+        },
+        {
+          source: 'swap.alcor',
+          pair_id: 'GRAPHFAIL3',
+          token_a_contract: 'graffitiking',
+          token_a_symbol: 'WAXCASH',
+          token_b_contract: 'tokenthree',
+          token_b_symbol: 'THREE',
+        },
+      ],
+      graphAvailable: false,
+      graphQueryError: 'simulated graph enrichment failure',
+    });
+    const graphFailureMemberTokens = (graphFailureLite.tokens || []).filter((token) => token.symbol !== 'WAXCASH');
+    ok('WAXCASH bubbles lite keeps canonical membership available when graph enrichment fails',
+      graphFailureLite.ok === true &&
+      graphFailureLite.data_available === true &&
+      graphFailureLite.summary?.data_available === true &&
+      graphFailureLite.summary?.pair_rows_available === true &&
+      graphFailureLite.summary?.enrichment_graph_available === false &&
+      graphFailureLite.enrichment_graph_available === false &&
+      graphFailureLite.summary?.indexed_pair_count === 3 &&
+      graphFailureLite.summary?.source_counts?.['swap.nefty'] === 1 &&
+      graphFailureLite.summary?.source_counts?.['swap.taco'] === 1 &&
+      graphFailureLite.summary?.source_counts?.['swap.alcor'] === 1 &&
+      graphFailureLite.summary?.lite_query_error === 'simulated graph enrichment failure' &&
+      graphFailureLite.tokens?.length === 4 &&
+      graphFailureMemberTokens.length === 3 &&
+      graphFailureMemberTokens.every((token) =>
+        token.visible_in_waxcash_bubbles === true &&
+        token.full_token_analytics_source === 'missing' &&
+        token.selected_price_wax === null &&
+        token.selected_price_usd === null &&
+        token.metric_status?.selected_price?.reason === 'full_token_analytics_missing') &&
+      graphFailureLite.enrichment_debug?.missing_full_token_analytics_count === 3 &&
+      graphFailureLite.enrichment_debug?.tokens_where_waxcash_pair_exists_but_full_token_analytics_missing?.length === 3 &&
+      graphFailureLite.no_fake_value === true,
+      JSON.stringify(graphFailureLite));
     const failingLiteDb = {
       prepare(sql) {
         return {
@@ -8688,13 +8753,19 @@ ok('WaxOnEdge route exposes slim WAXCASH bubble feed separately from full analyt
   route.includes('loadWaxcashGraphTokenRows(db)') &&
   route.includes('deriveReserveBackedTokenRows(db, graph.tokenRows') &&
   route.includes('root_summary_available: rootSummaryAvailable') &&
-  route.includes('pair_rows_available: graphAvailable') &&
+  route.includes('pairRowsAvailable: pairRowsResult.ok') &&
+  route.includes('graphAvailable: graphResult.ok') &&
+  route.includes('pair_rows_available: pairRowsAvailable') &&
+  route.includes('enrichment_graph_available: enrichmentGraphAvailable') &&
   route.includes('data_available: dataAvailable') &&
   route.includes('lite_query_error: liteQueryError') &&
   route.includes('rootQueryError') &&
+  route.includes('pairQueryError') &&
   route.includes('graphQueryError') &&
   route.includes("visible_tokens_selected_by: 'direct_waxcash_pair_membership'") &&
   route.includes("token_values_enriched_by: 'full_all_indexed_wax_dex_graph'") &&
+  route.includes('full_token_enriched_count') &&
+  route.includes('missing_full_token_analytics_count') &&
   route.includes('enrichment_debug: waxcashLiteEnrichmentDiagnostics(tokens, membershipMap)') &&
   route.includes('excludes_full_waxcash_analytics_build: true') &&
   route.includes('excludes_source_snapshot_diagnostics: true') &&
