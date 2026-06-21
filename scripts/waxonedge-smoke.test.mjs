@@ -77,7 +77,8 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
 ok('OG analytics parity PR cache-busts changed WaxOnEdge scanner assets',
   html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-liquidity-first') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-modal-cleanup') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-liquidity-first') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-waxcash-bubbles-lite-2') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-waxcash-bubbles-lite"') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260620-waxcash-bubbles-live') &&
@@ -93,7 +94,8 @@ ok('OG analytics parity PR cache-busts changed token analytics assets',
   !tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-confidence'));
 ok('WaxOnEdge bubble CSS cache key is bumped for live-details modal styling',
   html.includes('/css/waxonedge.css?v=woe-20260615-galaxy3') &&
-  html.includes('/css/waxonedge-bubbles-v2.css?v=woe-20260620-waxcash-bubbles-live') &&
+  html.includes('/css/waxonedge-bubbles-v2.css?v=woe-20260621-modal-cleanup') &&
+  !html.includes('/css/waxonedge-bubbles-v2.css?v=woe-20260620-waxcash-bubbles-live') &&
   !html.includes('/css/waxonedge-bubbles-v2.css?v=woe-20260615-galaxy3'));
 ok('waxonedge clean-route alias redirects to /waxonedge.html', aliasHtml.includes('url=/waxonedge.html'));
 ok('waxonedge clean-route alias preserves query-string routing', aliasHtml.includes("window.location.search || ''"));
@@ -539,16 +541,54 @@ ok('waxonedge-bubbles-v2.js opens an in-page live token details modal instead of
   v2Js.includes("'/api/waxonedge/token/' + encodeURIComponent(record.contract) + '/' + encodeURIComponent(record.symbol)") &&
   v2Js.includes("modalDetailApiPath(record) + '/pairs?limit=100'") &&
   v2Js.includes('woe-ab-modal-panel') &&
-  v2Js.includes('Symbol') &&
-  v2Js.includes('Detail source') &&
+  v2Js.includes('Current price') &&
   v2Js.includes('24h volume') &&
   v2Js.includes('30d volume') &&
-  v2Js.includes('WAXCASH pair') &&
-  v2Js.includes('Valuation basis') &&
+  v2Js.includes('Proof / diagnostics') &&
   !v2Js.includes('function openTokenAnalytics') &&
   !v2Js.includes('function tokenAnalyticsUrl') &&
   !v2Js.includes("'/analytics/token/?token='") &&
   !v2Js.includes('window.location.href'));
+const modalRowsMatch = v2Js.match(/var rows = \[[\s\S]*?\];/);
+const modalRowsBlock = modalRowsMatch ? modalRowsMatch[0] : '';
+const proofRowsMatch = v2Js.match(/var proofRows = \[[\s\S]*?\];/);
+const proofRowsBlock = proofRowsMatch ? proofRowsMatch[0] : '';
+ok('waxonedge-bubbles-v2.js keeps developer proof fields out of the default token modal',
+  modalRowsBlock.includes('Current price') &&
+  modalRowsBlock.includes('Liquidity') &&
+  modalRowsBlock.includes('Sources') &&
+  modalRowsBlock.includes('Pairs') &&
+  !modalRowsBlock.includes('Detail source') &&
+  !modalRowsBlock.includes('Selected price source') &&
+  !modalRowsBlock.includes('WAXCASH pair') &&
+  !modalRowsBlock.includes('Valuation basis') &&
+  !modalRowsBlock.includes('Diagnostics') &&
+  proofRowsBlock.includes('Data source') &&
+  proofRowsBlock.includes('Selected price source') &&
+  proofRowsBlock.includes('WAXCASH pair') &&
+  proofRowsBlock.includes('Valuation basis') &&
+  proofRowsBlock.includes('Diagnostics') &&
+  v2Js.includes('<details class="woe-ab-modal-proof"><summary>Proof / diagnostics</summary>'),
+  JSON.stringify({ modalRowsBlock, proofRowsBlock }));
+ok('waxonedge-bubbles-v2.js uses metric-specific modal unavailable copy instead of generic unindexed rows',
+  v2Js.includes('Price unavailable') &&
+  v2Js.includes('No live 24h volume') &&
+  v2Js.includes('No live 7d volume') &&
+  v2Js.includes('No live 30d volume') &&
+  v2Js.includes('Market cap unavailable') &&
+  v2Js.includes('Supply unavailable') &&
+  v2Js.includes('Holder feed unavailable') &&
+  !modalRowsBlock.includes('Not indexed'),
+  modalRowsBlock);
+ok('waxonedge-bubbles-v2.js shows human freshness text in the modal instead of raw ISO as the main value',
+  v2Js.includes('function relativeFreshness(ts)') &&
+  v2Js.includes('Live / refreshed just now') &&
+  v2Js.includes('Refreshed ') &&
+  v2Js.includes('Data age: ') &&
+  v2Js.includes('Token analytics refreshed ') &&
+  modalRowsBlock.includes("modalRow('Updated', freshness)") &&
+  !modalRowsBlock.includes('Last updated'),
+  modalRowsBlock);
 ok('waxonedge-bubbles-v2.js makes the canvas keyboard focusable and opens the live details modal from keyboard',
   v2Js.includes('tabindex="0"') &&
   v2Js.includes('role="application"') &&

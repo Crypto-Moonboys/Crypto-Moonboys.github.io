@@ -460,6 +460,37 @@ body.woe-antbubbles-page {
   overflow-wrap: anywhere;
 }
 
+.woe-ab-modal-proof {
+  margin: 0 18px 18px;
+  border-top: 1px solid rgba(124, 215, 255, .16);
+  padding-top: 10px;
+  color: rgba(210, 232, 255, .74);
+  font-size: 13px;
+}
+
+.woe-ab-modal-proof summary {
+  cursor: pointer;
+  color: rgba(24, 244, 213, .92);
+  font-weight: 800;
+}
+
+.woe-ab-modal-proof-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0;
+}
+
+.woe-ab-modal-proof-row span {
+  color: #8fa1b4;
+}
+
+.woe-ab-modal-proof-row strong {
+  color: rgba(248, 251, 255, .82);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
 .woe-ab-stats {
   position: fixed;
   left: 12px;

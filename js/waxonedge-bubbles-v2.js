@@ -2310,19 +2310,42 @@
     openTokenModal(node.record);
   }
 
-  function detailValue(value, formatter) {
-    if (value == null || value === '') return 'Not indexed';
+  function detailValue(value, formatter, unavailableText) {
+    if (value == null || value === '') return unavailableText || 'Unavailable';
     return formatter ? formatter(value) : String(value);
   }
 
-  function dualDetail(wax, usd) {
+  function dualDetail(wax, usd, unavailableText) {
     var waxText = asNum(wax) == null ? '' : fmtNum(wax) + ' WAX';
     var usdText = asNum(usd) == null ? '' : '$' + fmtNum(usd);
-    return waxText && usdText ? waxText + ' / ' + usdText : (waxText || usdText || 'Not indexed');
+    return waxText && usdText ? waxText + ' / ' + usdText : (waxText || usdText || unavailableText || 'Unavailable');
   }
 
   function modalRow(label, value) {
     return '<div class="woe-ab-modal-row"><span>' + escHtml(label) + '</span><strong>' + escHtml(value) + '</strong></div>';
+  }
+
+  function modalProofRow(label, value) {
+    return '<div class="woe-ab-modal-proof-row"><span>' + escHtml(label) + '</span><strong>' + escHtml(value) + '</strong></div>';
+  }
+
+  function relativeFreshness(ts) {
+    var millis = ts ? Date.parse(ts) : NaN;
+    if (!Number.isFinite(millis)) return 'Freshness unavailable';
+    var ageMs = Math.max(0, Date.now() - millis);
+    var ageMinutes = Math.floor(ageMs / 60000);
+    if (ageMinutes < 2) return 'Live / refreshed just now';
+    if (ageMinutes < 15) return 'Refreshed ' + ageMinutes + ' minutes ago';
+    if (ageMinutes < 120) return 'Data age: ' + ageMinutes + ' minutes old';
+    var ageHours = Math.floor(ageMinutes / 60);
+    if (ageHours < 48) return 'Data age: ' + ageHours + ' hours old';
+    var date = new Date(millis);
+    var utc = String(date.getUTCHours()).padStart(2, '0') + ':' + String(date.getUTCMinutes()).padStart(2, '0') + ' UTC';
+    return 'Token analytics refreshed ' + utc;
+  }
+
+  function modalUpdatedAt(record, detail) {
+    return detail.updatedAt || record.lastUpdated || record.liveUpdatedAt || state.lastUpdated || '';
   }
 
   function firstPresent() {
@@ -2374,6 +2397,7 @@
       selectedPriceSource: record.selectedPriceSource || record.selectedSource,
       valuationBasis: record.waxcashPairValuationBasis || record.valuationBasis,
       diagnostics: record.unavailableReasons || (record.metricReasonCodes || []).join(', '),
+      updatedAt: record.lastUpdated || record.liveUpdatedAt || state.lastUpdated,
     };
     return data;
   }
@@ -2409,6 +2433,7 @@
         selectedPriceSource: firstPresent(root.selected_price_source, stats.selected_price_source, stats.selected_pair_source, record.selectedPriceSource || record.selectedSource),
         valuationBasis: firstPresent(root.valuation_basis, stats.market_cap_basis, stats.selected_price_basis, record.valuationBasis),
         diagnostics: stats.metric_status && stats.metric_status.total_supply && stats.metric_status.total_supply.reason ? stats.metric_status.total_supply.reason : record.unavailableReasons,
+        updatedAt: firstPresent(root.updated_at, stats.updated_at, detail.updated_at, record.lastUpdated || record.liveUpdatedAt),
       };
     }
     var token = detail.token || {};
@@ -2443,6 +2468,7 @@
       selectedPriceSource: firstPresent(stats.selected_price_source, stats.selected_pair_source, token.selected_price_source, record.selectedPriceSource || record.selectedSource),
       valuationBasis: firstPresent(stats.valuation_basis, stats.selected_price_basis, stats.market_cap_basis, token.valuation_basis, record.waxcashPairValuationBasis || record.valuationBasis),
       diagnostics: firstPresent(selectedAudit.selected_price_summary_reason, selectedAudit.selected_price_reason, stats.selected_price_rejection_reason, detail.unavailable, stats.unavailable_reason, token.unavailable_reason, record.selectedPriceUnavailableReason, record.unavailableReasons),
+      updatedAt: firstPresent(stats.updated_at, token.updated_at, detail.updated_at, record.lastUpdated || record.liveUpdatedAt),
     };
   }
 
@@ -2476,37 +2502,42 @@
   function renderTokenModal(record, detailState) {
     if (!state.modal || !record) return;
     var detail = modalRecordDetails(record, detailState);
-    var holderText = detail.holderCountLive && detail.holderCount != null ? fmtNum(detail.holderCount, 0) : 'Not indexed';
+    var indexedPairCount = asNum(detail.indexedPairCount);
+    var sourceCount = detail.sources && detail.sources.length ? detail.sources.length : asNum(record.sourceCount);
+    var tokenIsIndexed = indexedPairCount > 0 || sourceCount > 0;
+    var holderText = detail.holderCountLive && detail.holderCount != null ? fmtNum(detail.holderCount, 0) : 'Holder feed unavailable';
     var pairRef = record.waxcashPairSource || record.waxcashPairId
       ? [record.waxcashPairSource, record.waxcashPairId ? '#' + record.waxcashPairId : ''].filter(Boolean).join(' ')
       : 'WAXCASH root';
+    var freshness = relativeFreshness(modalUpdatedAt(record, detail));
     var rows = [
-      modalRow('Symbol', record.displaySymbol || record.symbol),
-      modalRow('Contract', record.contract),
-      modalRow('Detail source', modalDetailStatus(detailState)),
-      modalRow('Price', dualDetail(detail.priceWax, detail.priceUsd)),
-      modalRow('TVL', dualDetail(detail.tvlWax, detail.tvlUsd)),
-      modalRow('Liquidity', dualDetail(detail.liquidityWax, detail.liquidityUsd)),
-      modalRow('24h volume', dualDetail(detail.volume24Wax, detail.volume24Usd)),
-      modalRow('7d volume', dualDetail(detail.volume7dWax, detail.volume7dUsd)),
-      modalRow('30d volume', dualDetail(detail.volume30dWax, detail.volume30dUsd)),
-      modalRow('24h change', detailValue(detail.change24, fmtPct)),
-      modalRow('Market cap', dualDetail(detail.marketCapWax, detail.marketCapUsd)),
-      modalRow('Supply', detailValue(detail.supply)),
+      modalRow('Current price', dualDetail(detail.priceWax, detail.priceUsd, 'Price unavailable')),
+      modalRow('24h change', detailValue(detail.change24, fmtPct, 'Price change unavailable')),
+      modalRow('Liquidity', dualDetail(detail.liquidityWax, detail.liquidityUsd, 'Liquidity unavailable')),
+      modalRow('TVL', dualDetail(detail.tvlWax, detail.tvlUsd, 'TVL unavailable')),
+      modalRow('24h volume', dualDetail(detail.volume24Wax, detail.volume24Usd, 'No live 24h volume')),
+      modalRow('7d volume', dualDetail(detail.volume7dWax, detail.volume7dUsd, 'No live 7d volume')),
+      modalRow('30d volume', dualDetail(detail.volume30dWax, detail.volume30dUsd, 'No live 30d volume')),
+      modalRow('Market cap', dualDetail(detail.marketCapWax, detail.marketCapUsd, detail.supply ? 'Market cap unavailable' : 'Supply unavailable')),
+      modalRow('Supply', detailValue(detail.supply, null, 'Supply unavailable')),
       modalRow('Holder count', holderText),
-      modalRow('Indexed pair count', detailValue(detail.indexedPairCount, function (value) { return fmtNum(value, 0); })),
-      modalRow('Sources', detail.sources && detail.sources.length ? detail.sources.join(', ') : 'Not indexed'),
-      modalRow('Selected price source', detail.selectedPriceSource || 'Not indexed'),
-      modalRow('WAXCASH pair', pairRef),
-      modalRow('Valuation basis', detail.valuationBasis || 'Not indexed'),
-      modalRow('Diagnostics', detail.diagnostics || 'No blocking diagnostics'),
-      modalRow('Last updated', record.lastUpdated || record.liveUpdatedAt || safeTimeLabel(state.lastUpdated) || 'Not indexed'),
+      modalRow('Sources', sourceCount != null ? fmtNum(sourceCount, 0) : (tokenIsIndexed ? 'Source count unavailable' : 'Sources unavailable')),
+      modalRow('Pairs', indexedPairCount != null ? fmtNum(indexedPairCount, 0) : (tokenIsIndexed ? 'Pair count unavailable' : 'Pairs unavailable')),
+      modalRow('Updated', freshness),
+    ];
+    var proofRows = [
+      modalProofRow('Data source', modalDetailStatus(detailState)),
+      modalProofRow('Selected price source', detail.selectedPriceSource || 'Price source unavailable'),
+      modalProofRow('WAXCASH pair', pairRef),
+      modalProofRow('Valuation basis', detail.valuationBasis || 'Valuation basis unavailable'),
+      modalProofRow('Diagnostics', detail.diagnostics || 'No blocking diagnostics'),
     ];
     state.modal.innerHTML = '<div class="woe-ab-modal-backdrop" data-woe-close-modal></div>' +
       '<section class="woe-ab-modal-panel" role="dialog" aria-modal="true" aria-label="' + escHtml(record.displaySymbol || record.symbol) + ' live token details">' +
       '<button class="woe-ab-modal-close" type="button" data-woe-close-modal aria-label="Close">x</button>' +
       '<div class="woe-ab-modal-head"><strong>' + escHtml(record.displaySymbol || record.symbol) + '</strong><span>' + escHtml(record.contract) + '</span></div>' +
       '<div class="woe-ab-modal-grid">' + rows.join('') + '</div>' +
+      '<details class="woe-ab-modal-proof"><summary>Proof / diagnostics</summary><div>' + proofRows.join('') + '</div></details>' +
       '</section>';
     state.modal.hidden = false;
   }
