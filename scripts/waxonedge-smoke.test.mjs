@@ -77,7 +77,8 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
 ok('OG analytics parity PR cache-busts changed WaxOnEdge scanner assets',
   html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-fast-membership') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-prebuilt-membership-v2') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-fast-membership') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-modal-cleanup') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-liquidity-first') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-waxcash-bubbles-lite-2') &&

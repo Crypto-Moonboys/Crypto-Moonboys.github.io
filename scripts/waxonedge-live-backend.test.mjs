@@ -9541,6 +9541,8 @@ ok('frontend bubble click opens in-page live token details without full token pa
 ok('waxonedge.html remains the live bubble scanner product path',
   html.includes('id="woe-bubble-board"') &&
   html.includes('/js/waxonedge-bubbles-v2.js') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-prebuilt-membership-v2') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-fast-membership') &&
   !html.includes('waxcash.html') &&
   !html.includes('waxcash-graph.js'));
 ok('live indexer dispatches adapter parsers without replacing existing feeds',
