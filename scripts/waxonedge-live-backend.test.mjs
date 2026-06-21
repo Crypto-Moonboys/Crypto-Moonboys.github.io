@@ -3229,6 +3229,66 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       graphFailureLite.enrichment_debug?.tokens_where_waxcash_pair_exists_but_full_token_analytics_missing?.length === 3 &&
       graphFailureLite.no_fake_value === true,
       JSON.stringify(graphFailureLite));
+    __waxonedgeTestHooks.resetWaxcashBubblesLiteGraphCache();
+    const cacheQueryCounts = {
+      waxcashPairGraphLoads: 0,
+      tokenRowLoads: 0,
+    };
+    const cachedGraphDb = {
+      prepare(sql) {
+        if (sql.includes('SELECT source, pair_id') && sql.includes('FROM waxonedge_pairs')) {
+          cacheQueryCounts.waxcashPairGraphLoads += 1;
+        }
+        if (sql.includes('FROM waxonedge_tokens')) {
+          cacheQueryCounts.tokenRowLoads += 1;
+        }
+        return {
+          bind(...params) {
+            return {
+              async all() {
+                if (sql.includes('FROM waxonedge_pairs')) {
+                  return { results: [{
+                    source: 'swap.nefty',
+                    pair_id: 'CACHEPAIR',
+                    token_a_contract: 'graffitiking',
+                    token_a_symbol: 'WAXCASH',
+                    token_b_contract: 'tokencache',
+                    token_b_symbol: 'CACHE',
+                    reserve_a: '100',
+                    reserve_b: '50',
+                    liquidity_wax: '10',
+                    updated_at: '2026-06-21T00:00:00.000Z',
+                  }] };
+                }
+                if (sql.includes('FROM waxonedge_tokens')) {
+                  const tokenRows = [
+                    { contract: 'graffitiking', symbol: 'WAXCASH', price_wax: '0.01', price_usd: '0.00005' },
+                    { contract: 'tokencache', symbol: 'CACHE', price_wax: '0.02', price_usd: '0.0001' },
+                    { contract: 'eosio.token', symbol: 'WAX', price_wax: '1', price_usd: '0.005' },
+                  ];
+                  return { results: tokenRows.filter((row) => !params.length || params.includes(row.contract) || params.includes(row.symbol)) };
+                }
+                return { results: [] };
+              },
+            };
+          },
+        };
+      },
+    };
+    const firstGraphResult = await __waxonedgeTestHooks.loadWaxcashBubblesLiteGraphResult(cachedGraphDb, 1000);
+    const afterFirstGraphLoads = cacheQueryCounts.waxcashPairGraphLoads;
+    const secondGraphResult = await __waxonedgeTestHooks.loadWaxcashBubblesLiteGraphResult(cachedGraphDb, 2000);
+    const afterSecondGraphLoads = cacheQueryCounts.waxcashPairGraphLoads;
+    const thirdGraphResult = await __waxonedgeTestHooks.loadWaxcashBubblesLiteGraphResult(cachedGraphDb, 1000 + 7000 + 1);
+    ok('WAXCASH bubbles lite graph enrichment uses a short TTL cache and recomputes after expiry',
+      firstGraphResult.ok === true &&
+      secondGraphResult.ok === true &&
+      thirdGraphResult.ok === true &&
+      afterFirstGraphLoads > 0 &&
+      afterSecondGraphLoads === afterFirstGraphLoads &&
+      cacheQueryCounts.waxcashPairGraphLoads > afterSecondGraphLoads,
+      JSON.stringify({ cacheQueryCounts, afterFirstGraphLoads, afterSecondGraphLoads }));
+    __waxonedgeTestHooks.resetWaxcashBubblesLiteGraphCache();
     const failingLiteDb = {
       prepare(sql) {
         return {
@@ -8749,6 +8809,8 @@ ok('WaxOnEdge route exposes slim WAXCASH bubble feed separately from full analyt
   route.includes('buildWaxcashBubblesLite(env.DB, env)') &&
   route.includes('Slim WAXCASH bubble feed excludes source diagnostics') &&
   route.includes('buildWaxcashBubblesLiteFromGraph') &&
+  route.includes('WAXCASH_BUBBLES_LITE_GRAPH_CACHE_TTL_MS') &&
+  route.includes('loadWaxcashBubblesLiteGraphResult(db)') &&
   route.includes('loadWaxcashLiteRootSummary(db)') &&
   route.includes('loadWaxcashGraphTokenRows(db)') &&
   route.includes('deriveReserveBackedTokenRows(db, graph.tokenRows') &&
@@ -8772,6 +8834,19 @@ ok('WaxOnEdge route exposes slim WAXCASH bubble feed separately from full analyt
   route.includes('excludes_normalization_diagnostics: true') &&
   route.includes('excludes_chart_candles: true') &&
   !/async function buildWaxcashBubblesLite\(db, env\)\s*{[^}]*buildWaxcashAnalytics/s.test(route));
+const tokenRowsForRefsSection = route.slice(
+  route.indexOf('async function loadTokenRowsForRefs'),
+  route.indexOf('async function deriveReserveBackedTokenRow'),
+);
+ok('WAXCASH all-DEX token enrichment does not select nonexistent 7d/30d WAX/USD token_stats columns',
+  tokenRowsForRefsSection.includes('s.volume_7d,') &&
+  tokenRowsForRefsSection.includes('s.volume_30d,') &&
+  !tokenRowsForRefsSection.includes('s.volume_7d_wax') &&
+  !tokenRowsForRefsSection.includes('s.volume_7d_usd') &&
+  !tokenRowsForRefsSection.includes('s.volume_30d_wax') &&
+  !tokenRowsForRefsSection.includes('s.volume_30d_usd') &&
+  /async function loadWaxcashLitePairRows[\s\S]*p\.volume_7d, p\.volume_7d_wax, p\.volume_7d_usd, p\.volume_30d, p\.volume_30d_wax, p\.volume_30d_usd/.test(route),
+  tokenRowsForRefsSection);
 ok('frontend bubbles bootstrap first and then starts live updates',
   frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') > -1 &&
   frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') < frontendBubbles.lastIndexOf('startLiveUpdates();') &&

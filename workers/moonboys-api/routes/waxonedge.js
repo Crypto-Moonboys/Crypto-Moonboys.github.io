@@ -39,6 +39,7 @@ const DEFAULT_TRADE_STREAM_PAGES_PER_RUN = 2;
 const HYPERION_SKIP_WINDOW_LIMIT = 10000;
 const HYPERION_SKIP_WINDOW_NEXT_ACTION = 'requires sequence/state-history cursor or VPS indexer for deeper history';
 const LIVE_SNAPSHOT_TOKEN_LIMIT = 250;
+const WAXCASH_BUBBLES_LITE_GRAPH_CACHE_TTL_MS = 7000;
 const FREE_SAFE_CORE_DEX_PAGES_PER_INVOCATION = 1;
 const FREE_SAFE_CORE_DEX_RPC_FETCH_BUDGET_PER_SOURCE = 1;
 const FREE_SAFE_CANDLE_BACKFILL_PAIR_LIMIT = 2;
@@ -61,6 +62,7 @@ const WAXONEDGE_AGGREGATE_SOURCES = Object.freeze([
   'swap.adex',
   'dapp.fusion',
 ]);
+let waxcashBubblesLiteGraphCache = null;
 const WAXONEDGE_OG_ENDPOINTS = Object.freeze([
   '/pools',
   '/pool',
@@ -5332,8 +5334,8 @@ async function loadTokenRowsForRefs(db, refs = []) {
       `SELECT t.contract, t.symbol, t.decimals, t.total_supply, t.max_supply, t.price_wax, t.price_usd,
               t.pair_count, t.icon_url, t.updated_at,
               s.volume_24h, s.volume_24h_wax, s.volume_24h_usd,
-              s.volume_7d, s.volume_7d_wax, s.volume_7d_usd,
-              s.volume_30d, s.volume_30d_wax, s.volume_30d_usd,
+              s.volume_7d,
+              s.volume_30d,
               s.liquidity_wax, s.liquidity_usd,
               s.tvl_wax, s.tvl_usd, s.change_24h, s.selected_price_wax, s.selected_price_usd,
               s.selected_pair_source, s.selected_pair_id, s.holder_count, s.circulating_supply,
@@ -9637,20 +9639,7 @@ async function buildWaxcashBubblesLite(db, env) {
   const [rootStats, pairRowsResult, graphResult] = await Promise.all([
     loadWaxcashLiteRootSummary(db),
     loadWaxcashLitePairRows(db),
-    loadWaxcashGraphTokenRows(db).then(async (graph) => ({
-      ok: true,
-      graph,
-      enrichedRows: await deriveReserveBackedTokenRows(db, graph.tokenRows, {
-        pairRows: graph.pairRows,
-        routeGraphRows: graph.pairRows,
-      }),
-      error: null,
-    })).catch((error) => ({
-      ok: false,
-      graph: { waxcashPairs: [], pairRows: [], tokenRows: [] },
-      enrichedRows: [],
-      error: error?.message || String(error),
-    })),
+    loadWaxcashBubblesLiteGraphResult(db),
   ]);
   return buildWaxcashBubblesLiteFromGraph(rootStats.row, graphResult.graph, graphResult.enrichedRows, nowIso(), {
     canonicalPairRows: pairRowsResult.rows,
@@ -9661,6 +9650,37 @@ async function buildWaxcashBubblesLite(db, env) {
     graphAvailable: graphResult.ok,
     graphQueryError: graphResult.error,
   });
+}
+
+async function loadWaxcashBubblesLiteGraphResult(db, nowMs = Date.now()) {
+  if (waxcashBubblesLiteGraphCache && waxcashBubblesLiteGraphCache.expires_at > nowMs) {
+    return waxcashBubblesLiteGraphCache.value;
+  }
+  const value = await loadWaxcashGraphTokenRows(db).then(async (graph) => ({
+    ok: true,
+    graph,
+    enrichedRows: await deriveReserveBackedTokenRows(db, graph.tokenRows, {
+      pairRows: graph.pairRows,
+      routeGraphRows: graph.pairRows,
+    }),
+    error: null,
+    cache_ttl_ms: WAXCASH_BUBBLES_LITE_GRAPH_CACHE_TTL_MS,
+  })).catch((error) => ({
+    ok: false,
+    graph: { waxcashPairs: [], pairRows: [], tokenRows: [] },
+    enrichedRows: [],
+    error: error?.message || String(error),
+    cache_ttl_ms: WAXCASH_BUBBLES_LITE_GRAPH_CACHE_TTL_MS,
+  }));
+  waxcashBubblesLiteGraphCache = {
+    expires_at: nowMs + WAXCASH_BUBBLES_LITE_GRAPH_CACHE_TTL_MS,
+    value,
+  };
+  return value;
+}
+
+function resetWaxcashBubblesLiteGraphCache() {
+  waxcashBubblesLiteGraphCache = null;
 }
 
 function waxonedgeOgApiBase(env) {
@@ -13663,6 +13683,8 @@ export const __waxonedgeTestHooks = {
   buildWaxcashBubblesLiteFromRows,
   waxcashLiteEnrichmentDiagnostics,
   waxcashLiteValuationBasis,
+  loadWaxcashBubblesLiteGraphResult,
+  resetWaxcashBubblesLiteGraphCache,
   loadWaxcashGraphTokenRows,
   buildWaxcashUdfChartFeed,
   runWaxOnEdgeRetentionCleanup,
