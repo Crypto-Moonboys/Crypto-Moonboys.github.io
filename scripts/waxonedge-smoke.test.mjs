@@ -77,7 +77,8 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
 ok('OG analytics parity PR cache-busts changed WaxOnEdge scanner assets',
   html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-waxcash-bubbles-lite-2') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-liquidity-first') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-waxcash-bubbles-lite-2') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-waxcash-bubbles-lite"') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260620-waxcash-bubbles-live') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-bubble-liquidity') &&
@@ -385,21 +386,25 @@ ok('waxonedge-bubbles-v2.js supports WAX Galaxy metric modes with dead controls 
   v2Js.includes("mcap: true") &&
   v2Js.includes("'7d': false") &&
   v2Js.includes("'30d': false"));
-ok('waxonedge.html exposes Liquidity scanner metric control when liquidity mode exists',
-  html.includes('data-woe-metric="liquidity"') &&
-  html.includes('>Liquidity</button>'));
-ok('waxonedge.html exposes required scanner metric controls by default',
-  html.includes('data-woe-metric="mcap"') &&
-  html.includes('>Market Cap</button>') &&
-  !html.includes('data-woe-capability="market_cap" hidden') &&
-  html.includes('data-woe-metric="price"') &&
-  html.includes('data-woe-metric="volume"') &&
-  html.includes('data-woe-metric="tvl"') &&
-  html.includes('data-woe-metric="liquidity"') &&
-  html.includes('data-woe-timeframe="7d"') &&
-  html.includes('data-woe-capability="volume_7d" hidden') &&
-  html.includes('data-woe-timeframe="30d"') &&
-  html.includes('data-woe-capability="volume_30d" hidden'));
+ok('waxonedge.html hides visible metric and timeframe switchers for liquidity-first scanner mode',
+  !html.includes('aria-label="Bubble metric"') &&
+  !html.includes('aria-label="Bubble timeframe"') &&
+  !html.includes('data-woe-metric=') &&
+  !html.includes('data-woe-timeframe=') &&
+  !html.includes('>Market Cap</button>') &&
+  !html.includes('>Liquidity</button>'));
+ok('waxonedge-bubbles-v2.js locks the main scanner to liquidity while keeping metric internals available',
+  v2Js.includes("metric: 'liquidity'") &&
+  v2Js.includes("state.metric = 'liquidity';") &&
+  v2Js.includes("state.timeframe = '24h';") &&
+  v2Js.includes('function metricAllowed(metric)') &&
+  v2Js.includes('function timeframeAllowed(timeframe)'));
+ok('waxonedge-bubbles-v2.js sizes bubbles by liquidity but labels them with proof-backed current price',
+  /function displayPrice\(record\)[\s\S]*record\.selectedPriceConfidence[\s\S]*record\.selectedPriceUsd[\s\S]*record\.selectedPriceWax/.test(v2Js) &&
+  /if \(state\.metric === 'price'\) \{[\s\S]*return displayPrice\(record\);[\s\S]*if \(state\.metric === 'volume'\)/.test(v2Js) &&
+  /if \(state\.metric === 'liquidity'\) \{[\s\S]*return displayPrice\(record\);[\s\S]*if \(state\.metric === 'mcap'\)/.test(v2Js) &&
+  /function computeRadii[\s\S]*valueForMetric\(record, metric, state\.timeframe\)/.test(v2Js) &&
+  /function valueForMetric[\s\S]*if \(metric === 'liquidity'\)[\s\S]*return record\.graphLiquidityWax/.test(v2Js));
 ok('waxonedge-bubbles-v2.js keeps metric availability honest with selected-metric sizing',
   v2Js.includes('return change != null ? Math.abs(change) : null') &&
   /if\s*\(\s*metric\s*===\s*'tvl'\s*\)\s*\{[\s\S]*if\s*\(\s*record\.tvlConfidence\s*!==\s*'good'\s*\)\s*return\s+null;[\s\S]*record\.bubbleTvlUsd[\s\S]*record\.bubbleTvlWax[\s\S]*return\s+record\.tvlUsd\s*!=\s*null\s*\?\s*record\.tvlUsd\s*:\s*record\.tvlWax\s*;[\s\S]*\}/.test(v2Js) &&
@@ -522,7 +527,6 @@ ok('waxonedge-bubbles-v2.js keeps modes and search scoped to backend graph token
   /function rankedRecords\(\)[\s\S]*state\.records\.filter[\s\S]*record\.searchText\.indexOf\(query\)[\s\S]*base\.map/.test(v2Js) &&
   /function computeRadii[\s\S]*value == null \? 0 : Math\.abs\(value\)/.test(v2Js) &&
   v2Js.includes('No indexed TVL') &&
-  v2Js.includes('No graph liquidity') &&
   v2Js.includes('No indexed volume') &&
   v2Js.includes('WAXCASH pair members') &&
   !v2Js.includes('Featured tokens only'));
@@ -804,9 +808,8 @@ ok('waxonedge-bubbles-v2.js blocks weak price, liquidity, and TVL from sizing/di
   v2Js.includes("if (record.liquidityConfidence !== 'good') return null") &&
   v2Js.includes("if (record.tvlConfidence !== 'good') return null") &&
   v2Js.includes("if (record.selectedPriceConfidence === 'weak') return 'Proof weak'") &&
-  v2Js.includes("if (record.liquidityConfidence === 'weak') return 'Proof weak'") &&
   v2Js.includes("record.liquidityConfidence === 'good' ? (toUsd(") &&
-  v2Js.includes('record.graphLiquidityWax'));
+  /function valueForMetric[\s\S]*if \(metric === 'liquidity'\)[\s\S]*record\.liquidityConfidence !== 'good'[\s\S]*return record\.graphLiquidityWax/.test(v2Js));
 ok('waxonedge-bubbles-v2.js reads bootstrap confidence fields for proof-backed metric data',
   v2Js.includes("selectedPriceConfidence: metricConfidenceFrom(token, 'selected_price')") &&
   v2Js.includes("liquidityConfidence: metricConfidenceFrom(token, 'liquidity')") &&
