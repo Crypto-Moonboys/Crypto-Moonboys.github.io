@@ -108,6 +108,30 @@ ok('WAXCASH source recovery decision forces a pre-guard complete Nefty state to 
   collapsedNeftyRecovery.reason === 'source_complete_but_waxcash_rows_collapsed' &&
   collapsedNeftyRecovery.previous_current_d1_waxcash_pair_count === 0 &&
   collapsedNeftyRecovery.guard_baseline_waxcash_pair_count === 58);
+const tacoMissingDiagnosticsRecovery = __waxonedgeTestHooks.waxcashSourceRecoveryDecision('swap.taco', 10, {
+  last_good_waxcash_pair_count: 12,
+});
+ok('WAXCASH source recovery decision forces a below-baseline Taco audit when normalization diagnostics are missing',
+  tacoMissingDiagnosticsRecovery.required === true &&
+  tacoMissingDiagnosticsRecovery.reason === 'source_waxcash_rows_below_baseline_needs_normalization_diagnostics' &&
+  tacoMissingDiagnosticsRecovery.previous_current_d1_waxcash_pair_count === 10 &&
+  tacoMissingDiagnosticsRecovery.minimum_waxcash_pair_count === 12 &&
+  tacoMissingDiagnosticsRecovery.guard_baseline_waxcash_pair_count === 12 &&
+  tacoMissingDiagnosticsRecovery.below_minimum_waxcash_pair_count === true &&
+  tacoMissingDiagnosticsRecovery.normalization_diagnostics_missing === true);
+const tacoDiagnosedRecovery = __waxonedgeTestHooks.waxcashSourceRecoveryDecision('swap.taco', 10, {
+  last_good_waxcash_pair_count: 12,
+  normalization_diagnostics: {
+    raw_rows_scanned: 9000,
+    raw_waxcash_row_count: 10,
+    normalized_waxcash_pair_count: 10,
+  },
+});
+ok('WAXCASH source recovery decision does not loop below-baseline Taco audits after diagnostics are captured',
+  tacoDiagnosedRecovery.required === false &&
+  tacoDiagnosedRecovery.reason === null &&
+  tacoDiagnosedRecovery.below_minimum_waxcash_pair_count === true &&
+  tacoDiagnosedRecovery.normalization_diagnostics_missing === false);
 const neftyNormalizationDebug = __waxonedgeTestHooks.coreDexSourceNormalizationDiagnostics({
   source: 'swap.nefty',
   normalizer: 'reserve0-reserve1',
@@ -158,6 +182,31 @@ ok('WAXCASH Nefty normalization diagnostics explain no raw WAXCASH rows in scann
   neftyNoRawNormalizationDebug.raw_waxcash_row_count === 0 &&
   neftyNoRawNormalizationDebug.normalized_waxcash_pair_count === 0 &&
   neftyNoRawNormalizationDebug.waxcash_normalization_reason === 'no_raw_waxcash_rows_seen_in_scanned_source_rows');
+const tacoNormalizationDebug = __waxonedgeTestHooks.coreDexSourceNormalizationDiagnostics({
+  source: 'swap.taco',
+  normalizer: 'pool1-pool2',
+}, [{
+  pair_id: 'TACOGOOD',
+  pool1: { contract: 'graffitiking', quantity: '100.00000000 WAXCASH' },
+  pool2: { contract: 'eosio.token', quantity: '1.00000000 WAX' },
+}, {
+  pair_id: 'TACOBAD',
+  pool1: '100.00000000 WAXCASH',
+  pool2: { contract: 'eosio.token', quantity: '1.00000000 WAX' },
+}], [{
+  source: 'swap.taco',
+  pair_id: 'TACOGOOD',
+  token_a_contract: 'graffitiking',
+  token_a_symbol: 'WAXCASH',
+  token_b_contract: 'eosio.token',
+  token_b_symbol: 'WAX',
+}]);
+ok('WAXCASH Taco normalization diagnostics expose raw and normalized WAXCASH row counts',
+  tacoNormalizationDebug.source === 'swap.taco' &&
+  tacoNormalizationDebug.raw_waxcash_row_count === 2 &&
+  tacoNormalizationDebug.normalized_waxcash_pair_count === 1 &&
+  tacoNormalizationDebug.rejected_reason_counts.normalize_missing_token_identity === 1 &&
+  tacoNormalizationDebug.raw_waxcash_examples.length === 2);
 
 for (const table of [
   'waxonedge_sync_runs',
@@ -4773,6 +4822,9 @@ ok('pre-guard complete WAXCASH source state is forced through recovery when curr
   route.includes('state?.complete === 1 && state.sync_cycle_id === activeCycleId && !recoveryDecision?.required') &&
   route.includes("error: recoveryDecision?.required") &&
   route.includes('recovery sync forced before accepting complete source state') &&
+  route.includes('source_waxcash_rows_below_baseline_needs_normalization_diagnostics') &&
+  route.includes('normalization_diagnostics_missing') &&
+  route.includes('below_minimum_waxcash_pair_count') &&
   route.includes('recovery_preflight: recoveryDecision'));
 ok('source stability debug exposes raw Nefty normalization and recovery diagnostics',
   route.includes('function coreDexSourceNormalizationDiagnostics') &&
