@@ -9332,6 +9332,11 @@ function buildWaxcashBubblesLiteMembershipFailurePayload(error, generatedAt = no
       pair_rows_available: false,
       enrichment_graph_available: false,
       lite_query_error: message,
+      membership_snapshot_source: 'unavailable',
+      membership_prebuilt: false,
+      membership_snapshot_age_ms: null,
+      membership_d1_fallback: false,
+      membership_build_duration_ms: null,
     },
     metric_capabilities: {},
     payload_policy: {
@@ -9346,6 +9351,11 @@ function buildWaxcashBubblesLiteMembershipFailurePayload(error, generatedAt = no
     pair_rows_available: false,
     enrichment_graph_available: false,
     lite_query_error: message,
+    membership_snapshot_source: 'unavailable',
+    membership_prebuilt: false,
+    membership_snapshot_age_ms: null,
+    membership_d1_fallback: false,
+    membership_build_duration_ms: null,
     no_fake_value: true,
   };
 }
@@ -9354,6 +9364,15 @@ function annotateWaxcashBubblesMembershipPayload(payload, options = {}) {
   const generatedAt = options.generatedAt || payload?.generated_at || nowIso();
   const snapshotFetchedAt = options.snapshotFetchedAt || null;
   const stale = !!options.stale;
+  const source = options.source || payload?.membership_snapshot_source || payload?.summary?.membership_snapshot_source || null;
+  const prebuilt = options.prebuilt != null
+    ? !!options.prebuilt
+    : source === 'prebuilt_d1_snapshot' || !!payload?.membership_prebuilt || !!payload?.payload_policy?.prebuilt_membership_snapshot;
+  const snapshotAgeMs = options.snapshotAgeMs ?? payload?.membership_snapshot_age_ms ?? payload?.summary?.membership_snapshot_age_ms ?? null;
+  const d1Fallback = options.d1Fallback != null
+    ? !!options.d1Fallback
+    : !!payload?.membership_d1_fallback || source === 'd1_membership_rows';
+  const buildDurationMs = options.buildDurationMs ?? payload?.membership_build_duration_ms ?? payload?.summary?.membership_build_duration_ms ?? null;
   return {
     ...(payload || {}),
     ok: payload?.ok !== false,
@@ -9367,9 +9386,13 @@ function annotateWaxcashBubblesMembershipPayload(payload, options = {}) {
     summary: {
       ...(payload?.summary || {}),
       mode: 'membership',
-      membership_snapshot_source: options.source || payload?.summary?.membership_snapshot_source || null,
+      membership_snapshot_source: source,
       membership_snapshot_fetched_at: snapshotFetchedAt || payload?.summary?.membership_snapshot_fetched_at || null,
       membership_snapshot_stale: stale,
+      membership_prebuilt: prebuilt,
+      membership_snapshot_age_ms: snapshotAgeMs,
+      membership_d1_fallback: d1Fallback,
+      membership_build_duration_ms: buildDurationMs,
       enrichment_graph_available: false,
     },
     payload_policy: {
@@ -9380,17 +9403,23 @@ function annotateWaxcashBubblesMembershipPayload(payload, options = {}) {
       skips_graph_enrichment: true,
       excludes_loadWaxcashGraphTokenRows: true,
       no_fake_value: true,
-      prebuilt_membership_snapshot: options.source === 'prebuilt_d1_snapshot' || !!payload?.payload_policy?.prebuilt_membership_snapshot,
+      prebuilt_membership_snapshot: prebuilt,
       stale_membership_snapshot_allowed: true,
+      d1_membership_fallback: d1Fallback,
     },
-    membership_snapshot_source: options.source || payload?.membership_snapshot_source || null,
+    membership_snapshot_source: source,
     membership_snapshot_fetched_at: snapshotFetchedAt || payload?.membership_snapshot_fetched_at || null,
     membership_snapshot_stale: stale,
+    membership_prebuilt: prebuilt,
+    membership_snapshot_age_ms: snapshotAgeMs,
+    membership_d1_fallback: d1Fallback,
+    membership_build_duration_ms: buildDurationMs,
     no_fake_value: true,
   };
 }
 
 async function readWaxcashBubblesMembershipSnapshot(db, nowMs = Date.now()) {
+  const startedAt = Date.now();
   const snapshot = await readSnapshot(db, WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_SOURCE).catch((error) => ({
     fetched_at: null,
     data: null,
@@ -9406,6 +9435,7 @@ async function readWaxcashBubblesMembershipSnapshot(db, nowMs = Date.now()) {
   }
   const fetchedMs = Date.parse(snapshot.fetched_at || payload.generated_at || payload.updated_at || '');
   const stale = Number.isFinite(fetchedMs) ? nowMs - fetchedMs > WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_STALE_MS : true;
+  const snapshotAgeMs = Number.isFinite(fetchedMs) ? Math.max(0, nowMs - fetchedMs) : null;
   return {
     ok: true,
     fetched_at: snapshot.fetched_at || null,
@@ -9414,27 +9444,135 @@ async function readWaxcashBubblesMembershipSnapshot(db, nowMs = Date.now()) {
       source: 'prebuilt_d1_snapshot',
       snapshotFetchedAt: snapshot.fetched_at || null,
       stale,
+      prebuilt: true,
+      snapshotAgeMs,
+      d1Fallback: false,
+      buildDurationMs: Date.now() - startedAt,
     }),
   };
 }
 
-async function buildWaxcashBubblesLiteMembershipFromD1(db, generatedAt = nowIso()) {
-  const [rootStats, pairRowsResult] = await Promise.all([
-    loadWaxcashLiteRootSummary(db),
-    loadWaxcashLitePairRows(db),
-  ]);
-  if (rootStats?.ok !== true || pairRowsResult?.ok !== true) {
-    return buildWaxcashBubblesLiteMembershipFailurePayload(rootStats?.error || pairRowsResult?.error || 'waxcash_membership_lite_query_failed', generatedAt);
+async function loadWaxcashMembershipPairRows(db) {
+  try {
+    const rows = await db.prepare(
+      `SELECT p.source, p.pair_id, p.token_a_contract, p.token_a_symbol, p.token_b_contract, p.token_b_symbol,
+              p.liquidity_wax, p.liquidity_usd, p.updated_at
+       FROM waxonedge_pairs p
+       WHERE (p.token_a_contract = ? AND p.token_a_symbol = ?)
+          OR (p.token_b_contract = ? AND p.token_b_symbol = ?)
+       ORDER BY CAST(COALESCE(p.liquidity_wax, '0') AS NUMERIC) DESC,
+                p.source ASC,
+                p.pair_id ASC`
+    ).bind(WAXCASH_CONTRACT, WAXCASH_SYMBOL, WAXCASH_CONTRACT, WAXCASH_SYMBOL).all();
+    return {
+      ok: true,
+      rows: rows.results || [],
+      error: null,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      rows: [],
+      error: error?.message || String(error),
+    };
   }
-  const lite = buildWaxcashBubblesLiteFromRows(rootStats?.row, pairRowsResult?.rows, generatedAt, {
-    rootSummaryAvailable: true,
-    rootQueryError: rootStats?.error,
-    pairRowsAvailable: true,
-    pairQueryError: pairRowsResult?.error,
-  });
+}
+
+function buildWaxcashBubblesLiteMembershipFromRows(pairRows = [], generatedAt = nowIso(), options = {}) {
+  pairRows = sourceRows(pairRows);
+  const pairRowsAvailable = options.pairRowsAvailable !== false;
+  const liteQueryError = pairRowsAvailable ? null : (options.pairQueryError || 'waxcash_membership_pair_rows_query_failed');
+  const sourceCounts = countRowsByAggregateSource(pairRows);
+  const membershipMap = waxcashLiteMembershipMap(pairRows);
+  const tokens = [{
+    symbol: WAXCASH_SYMBOL,
+    contract: WAXCASH_CONTRACT,
+    icon_url: null,
+    visible_in_waxcash_bubbles: true,
+    source_keys: Object.keys(sourceCounts),
+    source_count: Object.keys(sourceCounts).length,
+    indexed_pair_count: pairRowsAvailable ? pairRows.length : null,
+    metric_status: {
+      selected_price: { live: false, reason: 'membership_fast_path_only' },
+      holder_count: { live: false, reason: 'membership_fast_path_only' },
+      liquidity: { live: false, reason: 'membership_fast_path_only' },
+      tvl: { live: false, reason: 'membership_fast_path_only' },
+      market_cap: { live: false, reason: 'membership_fast_path_only' },
+    },
+    updated_at: generatedAt,
+    no_fake_value: true,
+  }, ...Array.from(membershipMap.values()).map((membership) => waxcashLiteMembershipOnlyBubble(membership, generatedAt)).filter(Boolean)];
+  const pairs = pairRows.map((row) => ({
+    token_a_contract: row.token_a_contract || null,
+    token_a_symbol: row.token_a_symbol || null,
+    token_b_contract: row.token_b_contract || null,
+    token_b_symbol: row.token_b_symbol || null,
+    pair_label: waxcashLitePairLabel(row),
+    pair_id: row.pair_id || null,
+    source: row.source || null,
+    liquidity_wax: row.liquidity_wax ?? null,
+    liquidity_usd: row.liquidity_usd ?? null,
+    updated_at: row.updated_at || generatedAt,
+  }));
+  return {
+    ok: pairRowsAvailable,
+    data_available: pairRowsAvailable,
+    mode: 'membership',
+    generated_at: generatedAt,
+    updated_at: generatedAt,
+    source: 'waxcash_bubbles_lite',
+    tokens,
+    pairs,
+    summary: {
+      mode: 'membership',
+      generated_at: generatedAt,
+      updated_at: generatedAt,
+      indexed_pair_count: pairRowsAvailable ? pairRows.length : null,
+      data_available: pairRowsAvailable,
+      root_summary_available: false,
+      pair_rows_available: pairRowsAvailable,
+      enrichment_graph_available: false,
+      lite_query_error: liteQueryError,
+      source_counts: sourceCounts,
+      metric_capabilities: metricCapabilitiesFromTokens(tokens),
+      source_feed: `${WAXONEDGE_API_PREFIX}/waxcash-bubbles-lite?mode=membership`,
+    },
+    metric_capabilities: metricCapabilitiesFromTokens(tokens),
+    payload_policy: {
+      slim: true,
+      startup_fast_path: true,
+      membership_only: true,
+      skips_graph_enrichment: true,
+      excludes_loadWaxcashGraphTokenRows: true,
+      excludes_full_waxcash_analytics_build: true,
+      d1_membership_fallback: true,
+      no_fake_value: true,
+    },
+    root_summary_available: false,
+    pair_rows_available: pairRowsAvailable,
+    enrichment_graph_available: false,
+    lite_query_error: liteQueryError,
+    no_fake_value: true,
+  };
+}
+
+async function buildWaxcashBubblesLiteMembershipFromD1(db, generatedAt = nowIso()) {
+  const startedAt = Date.now();
+  const pairRowsResult = await loadWaxcashMembershipPairRows(db);
+  if (pairRowsResult?.ok !== true) {
+    const failed = buildWaxcashBubblesLiteMembershipFailurePayload(pairRowsResult?.error || 'waxcash_membership_lite_query_failed', generatedAt);
+    failed.membership_build_duration_ms = Date.now() - startedAt;
+    failed.summary.membership_build_duration_ms = failed.membership_build_duration_ms;
+    return failed;
+  }
+  const lite = buildWaxcashBubblesLiteMembershipFromRows(pairRowsResult?.rows, generatedAt, { pairRowsAvailable: true });
   return annotateWaxcashBubblesMembershipPayload(lite, {
     source: 'd1_membership_rows',
     stale: false,
+    prebuilt: false,
+    snapshotAgeMs: null,
+    d1Fallback: true,
+    buildDurationMs: Date.now() - startedAt,
   });
 }
 

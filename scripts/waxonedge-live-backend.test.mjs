@@ -3608,6 +3608,11 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       membershipLite.payload_policy?.membership_only === true &&
       membershipLite.payload_policy?.skips_graph_enrichment === true &&
       membershipLite.payload_policy?.excludes_loadWaxcashGraphTokenRows === true &&
+      membershipLite.payload_policy?.d1_membership_fallback === true &&
+      membershipLite.membership_snapshot_source === 'd1_membership_rows' &&
+      membershipLite.membership_prebuilt === false &&
+      membershipLite.membership_d1_fallback === true &&
+      Number.isFinite(membershipLite.membership_build_duration_ms) &&
       membershipLite.summary?.enrichment_graph_available === false &&
       membershipLite.no_fake_value === true,
       JSON.stringify({
@@ -3651,6 +3656,13 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       cachedMembershipLite.tokens?.length === 93 &&
       cachedMembershipLite.pairs?.length === 92 &&
       cachedMembershipLite.membership_snapshot_source === 'prebuilt_d1_snapshot' &&
+      cachedMembershipLite.membership_prebuilt === true &&
+      cachedMembershipLite.membership_d1_fallback === false &&
+      Number.isFinite(cachedMembershipLite.membership_snapshot_age_ms) &&
+      Number.isFinite(cachedMembershipLite.membership_build_duration_ms) &&
+      cachedMembershipLite.summary?.membership_snapshot_source === 'prebuilt_d1_snapshot' &&
+      cachedMembershipLite.summary?.membership_prebuilt === true &&
+      cachedMembershipLite.summary?.membership_d1_fallback === false &&
       cachedMembershipLite.payload_policy?.prebuilt_membership_snapshot === true &&
       cachedMembershipLite.payload_policy?.skips_graph_enrichment === true &&
       cachedMembershipLite.payload_policy?.excludes_loadWaxcashGraphTokenRows === true,
@@ -3684,6 +3696,7 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       staleMembershipLite.data_available === true &&
       staleMembershipLite.membership_snapshot_stale === true &&
       staleMembershipLite.summary?.membership_snapshot_stale === true &&
+      Number.isFinite(staleMembershipLite.membership_snapshot_age_ms) &&
       staleMembershipLite.payload_policy?.stale_membership_snapshot_allowed === true &&
       staleMembershipLite.tokens?.length === 93,
       JSON.stringify({
@@ -3711,6 +3724,9 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       failedMembershipLite.payload_policy?.startup_fast_path === true &&
       failedMembershipLite.payload_policy?.membership_only === true &&
       failedMembershipLite.payload_policy?.skips_graph_enrichment === true &&
+      failedMembershipLite.membership_snapshot_source === 'unavailable' &&
+      failedMembershipLite.membership_prebuilt === false &&
+      failedMembershipLite.membership_d1_fallback === false &&
       failedMembershipLite.payload_policy?.no_fake_value === true,
       JSON.stringify(failedMembershipLite));
     const nullRowsMembershipLite = __waxonedgeTestHooks.buildWaxcashBubblesLiteFromRows(null, null, '2026-06-21T00:00:00.000Z', {
@@ -9142,7 +9158,8 @@ ok('WaxOnEdge route exposes slim WAXCASH bubble feed separately from full analyt
   !route.includes("const liteMode = query.get('mode') || query.get('view') || '';") &&
   route.includes('buildWaxcashBubblesLite(env.DB, { ...env, mode: liteMode })') &&
   route.includes("if ((liteMode === 'membership' || liteMode === 'members') && lite?.ok === false)") &&
-  route.includes("waxonedgeJson(envelope({\n          ok: false,\n          data: lite") &&
+  route.includes('return waxonedgeJson(envelope({') &&
+  route.includes('data: lite') &&
   route.includes("const WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_SOURCE = 'waxcash_bubbles_membership_lite'") &&
   route.includes('async function readWaxcashBubblesMembershipSnapshot') &&
   route.includes('async function refreshWaxcashBubblesMembershipSnapshot') &&
@@ -9224,11 +9241,13 @@ ok('frontend bubbles bootstrap first and then starts live updates',
   frontendBubbles.includes('if (isUnavailableLitePayload(snapshot)) return') &&
   frontendBubbles.includes('function fetchBootstrapSnapshot()') &&
   frontendBubbles.includes('var membershipRequest = apiJsonTimed(BOOTSTRAP_API, \'membership\')') &&
-  frontendBubbles.includes('var fullLiteRequest = apiJsonTimed(BUBBLES_LITE_API, \'full_lite\')') &&
+  frontendBubbles.includes('function fetchFullLiteRescue()') &&
+  frontendBubbles.includes("return apiJsonTimed(BUBBLES_LITE_API, 'full_lite').then(function (snapshot)") &&
   frontendBubbles.includes('var timedMembershipRequest = Promise.race([') &&
   frontendBubbles.includes("state.perfStats.membershipState = 'timeout'") &&
-  frontendBubbles.includes("raceCandidate(timedMembershipRequest, 'WAXCASH membership', resolve, reject)") &&
-  frontendBubbles.includes("raceCandidate(fullLiteRequest, 'WAXCASH full lite', resolve, reject)") &&
+  frontendBubbles.includes("resolve(acceptValidSnapshot(snapshot, 'WAXCASH membership'))") &&
+  frontendBubbles.includes('fetchFullLiteRescue().then(resolve).catch(reject)') &&
+  !frontendBubbles.includes('var fullLiteRequest = apiJsonTimed(BUBBLES_LITE_API, \'full_lite\')') &&
   !/apiJsonTimed\(BOOTSTRAP_API, 'membership'\)\.then[\s\S]*\.catch\(function \(error\) \{[\s\S]*apiJsonTimed\(BUBBLES_LITE_API, 'full_lite'\)/.test(frontendBubbles) &&
   frontendBubbles.includes('var BOOTSTRAP_API = BUBBLES_MEMBERSHIP_API;') &&
   frontendBubbles.includes('function fetchEnrichedSnapshotAfterFirstPaint()') &&
@@ -9547,7 +9566,8 @@ ok('frontend bubble click opens in-page live token details without full token pa
 ok('waxonedge.html remains the live bubble scanner product path',
   html.includes('id="woe-bubble-board"') &&
   html.includes('/js/waxonedge-bubbles-v2.js') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-bootstrap-race-v1') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-membership-first-paint-v1') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-bootstrap-race-v1') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-prebuilt-membership-v2') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-fast-membership') &&
   !html.includes('waxcash.html') &&
