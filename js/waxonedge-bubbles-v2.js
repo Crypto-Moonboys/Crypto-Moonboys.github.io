@@ -2442,7 +2442,7 @@
       sources: sourceKeys,
       selectedPriceSource: firstPresent(stats.selected_price_source, stats.selected_pair_source, token.selected_price_source, record.selectedPriceSource || record.selectedSource),
       valuationBasis: firstPresent(stats.valuation_basis, stats.selected_price_basis, stats.market_cap_basis, token.valuation_basis, record.waxcashPairValuationBasis || record.valuationBasis),
-      diagnostics: firstPresent(selectedAudit.selected_price_reason, stats.selected_price_rejection_reason, detail.unavailable, stats.unavailable_reason, token.unavailable_reason, record.selectedPriceUnavailableReason, record.unavailableReasons),
+      diagnostics: firstPresent(selectedAudit.selected_price_summary_reason, selectedAudit.selected_price_reason, stats.selected_price_rejection_reason, detail.unavailable, stats.unavailable_reason, token.unavailable_reason, record.selectedPriceUnavailableReason, record.unavailableReasons),
     };
   }
 

@@ -6741,21 +6741,25 @@ function pairReserveSnapshot(pair) {
   };
 }
 
-function waxcashReserveRatioAuditForPair(pair, contract, symbol, routeIndex = null) {
+function waxcashReserveRatioAuditForPair(pair, contract, symbol, routeIndex = null, options = {}) {
   const side = pairTokenSide(pair, contract, symbol);
   const waxcashSide = pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL);
   if (!side || !waxcashSide || side.side === waxcashSide.side) {
     return {
       status: 'not_waxcash_pair',
       possible: false,
+      accepted_as_selected_candidate: false,
       reason: 'pair_does_not_connect_token_to_waxcash',
+      basis: 'not_waxcash_pair',
     };
   }
   if (!hasRealPairReserves(pair)) {
     return {
       status: 'unavailable',
       possible: false,
+      accepted_as_selected_candidate: false,
       reason: 'missing_or_zero_reserves',
+      basis: 'waxcash_reserve_ratio_rejected_missing_reserves',
     };
   }
   const waxcashRoute = routeIndex?.get(WAXCASH_KEY) || null;
@@ -6764,16 +6768,46 @@ function waxcashReserveRatioAuditForPair(pair, contract, symbol, routeIndex = nu
     return {
       status: 'unavailable',
       possible: false,
+      accepted_as_selected_candidate: false,
       reason: 'selected_waxcash_wax_price_unavailable',
+      basis: 'waxcash_reserve_ratio_rejected_missing_selected_waxcash_price',
     };
   }
+  const tokenReserve = asNumber(side.token.reserve);
+  const waxcashReserve = asNumber(waxcashSide.token.reserve);
+  if (tokenReserve == null || tokenReserve <= 0 || waxcashReserve == null || waxcashReserve <= 0) {
+    return {
+      status: 'unavailable',
+      possible: false,
+      accepted_as_selected_candidate: false,
+      reason: 'missing_or_zero_reserves',
+      basis: 'waxcash_reserve_ratio_rejected_missing_reserves',
+    };
+  }
+  const waxcashPerToken = waxcashReserve / tokenReserve;
+  const tokenPerWaxcash = tokenReserve / waxcashReserve;
+  const derivedTokenPriceWax = waxcashPerToken * waxcashPriceWax;
+  const waxcashPriceUsd = asNumber(waxcashRoute?.priceUsd);
+  const waxUsd = waxcashPriceUsd != null && waxcashPriceWax > 0 ? waxcashPriceUsd / waxcashPriceWax : null;
+  const derivedTokenPriceUsd = waxUsd != null ? derivedTokenPriceWax * waxUsd : null;
+  const candidateAccepted = options.acceptedAsSelectedCandidate === true;
+  const rejectionReason = options.candidateReason || 'reserve_ratio_candidate_not_accepted_by_selected_price_policy';
   return {
-    status: 'possible',
+    status: candidateAccepted ? 'accepted_candidate' : 'computed_rejected',
     possible: true,
-    reason: null,
+    accepted_as_selected_candidate: candidateAccepted,
+    reason: candidateAccepted ? null : rejectionReason,
+    token_side: side.side,
+    waxcash_side: waxcashSide.side,
+    token_reserve: safeDecimal(tokenReserve),
+    waxcash_reserve: safeDecimal(waxcashReserve),
+    waxcash_per_token: safeDecimal(waxcashPerToken),
+    token_per_waxcash: safeDecimal(tokenPerWaxcash),
     selected_waxcash_price_wax: safeDecimal(waxcashPriceWax),
+    derived_token_price_wax: safeDecimal(derivedTokenPriceWax),
+    derived_token_price_usd: safeDecimal(derivedTokenPriceUsd),
     selected_waxcash_route_type: waxcashRoute?.route_type || null,
-    basis: 'waxcash_reserve_ratio_requires_selected_waxcash_price',
+    basis: 'waxcash_reserve_ratio_from_selected_waxcash_price',
   };
 }
 
@@ -6811,9 +6845,22 @@ function selectedPricePairAudit(pair, contract, symbol, priceIndex, routeIndex =
         status: 'route_unavailable',
         reason: 'no_verified_wax_route',
       },
-    waxcash_pair_reserve_ratio_status: waxcashReserveRatioAuditForPair(pair, contract, symbol, routeIndex),
+    waxcash_pair_reserve_ratio_status: waxcashReserveRatioAuditForPair(pair, contract, symbol, routeIndex, {
+      acceptedAsSelectedCandidate: !!candidate && candidate.quoteKey === WAXCASH_KEY,
+      candidateReason,
+    }),
     no_fake_value: true,
   };
+}
+
+function selectedPriceAuditSummaryReason(audit) {
+  if (!audit || audit.selected_price_available) return null;
+  const alcor = audit.alcor_pair_10836 || null;
+  const reserveRatio = alcor?.waxcash_pair_reserve_ratio_status || null;
+  if (reserveRatio?.possible && reserveRatio?.derived_token_price_wax != null) {
+    return `Indexed via ${audit.indexed_pair_count} pairs. Alcor WAXCASH pair has reserves, but selected price is unavailable because the current selected-price adapter does not accept this concentrated-pool/reserve-ratio proof as a live selected token price.`;
+  }
+  return audit.selected_price_reason || 'selected_price_unavailable';
 }
 
 function selectedPriceAuditForToken(contract, symbol, pairRows = [], priceIndex = new Map(), routeIndex = null, selected = null) {
@@ -6834,7 +6881,7 @@ function selectedPriceAuditForToken(contract, symbol, pairRows = [], priceIndex 
     return counts;
   }, {});
   const selectedPriceAvailable = asNumber(selectedProof?.priceWax) != null || asNumber(selectedProof?.priceUsd) != null;
-  return {
+  const audit = {
     contract: normalizedContract,
     symbol: normalizedSymbol,
     selected_price_available: selectedPriceAvailable,
@@ -6844,6 +6891,7 @@ function selectedPriceAuditForToken(contract, symbol, pairRows = [], priceIndex 
     selected_pair_id: selectedProof?.pair_id || null,
     selected_price_route: selectedProof?.route_type || null,
     selected_price_reason: selectedPriceAvailable ? null : (selectedProof?.rejection_reason || 'no_verified_price_candidate'),
+    selected_price_summary_reason: null,
     indexed_pair_count: pairAudits.length,
     usable_selected_candidate_count: usableCandidateCount,
     rejected_selected_candidate_count: pairAudits.length - usableCandidateCount,
@@ -6867,6 +6915,8 @@ function selectedPriceAuditForToken(contract, symbol, pairRows = [], priceIndex 
     pairs: pairAudits,
     no_fake_value: true,
   };
+  audit.selected_price_summary_reason = selectedPriceAuditSummaryReason(audit);
+  return audit;
 }
 
 function withPairContributionProof(pair, contract, symbol, priceIndex) {
@@ -13813,6 +13863,7 @@ export const __waxonedgeTestHooks = {
   tokenMetricProof,
   pairContributionProof,
   selectedPriceAuditForToken,
+  waxcashReserveRatioAuditForPair,
   aggregatePairContributionTotals,
   ogPairReserveValuation,
   buildOgWaxRouteGraph,
