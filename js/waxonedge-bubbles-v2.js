@@ -2559,6 +2559,18 @@
     scheduleLivePolling(LIVE_POLL_MS);
   }
 
+  function fetchBootstrapSnapshot() {
+    return apiJson(BOOTSTRAP_API).then(function (snapshot) {
+      if (isUnavailableLitePayload(snapshot)) throw new Error('WAXCASH membership bubble lite query unavailable');
+      return snapshot;
+    }).catch(function (error) {
+      return apiJson(BUBBLES_LITE_API).then(function (snapshot) {
+        if (isUnavailableLitePayload(snapshot)) throw error;
+        return snapshot;
+      });
+    });
+  }
+
   function fetchEnrichedSnapshotAfterFirstPaint() {
     window.requestAnimationFrame(function () {
       apiJson(BUBBLES_LITE_API).then(function (snapshot) {
@@ -2709,10 +2721,9 @@
     attachControls();
     initCanvas();
     Promise.all([
-      apiJson(BOOTSTRAP_API),
+      fetchBootstrapSnapshot(),
       apiJson(HEALTH_API).catch(function () { return null; }),
     ]).then(function (results) {
-      if (isUnavailableLitePayload(results[0])) throw new Error('WAXCASH bubble lite query unavailable');
       state.payload = results[0];
       state.health = results[1] ? payloadData(results[1]) : null;
       applyMetricCapabilities(state.payload);
