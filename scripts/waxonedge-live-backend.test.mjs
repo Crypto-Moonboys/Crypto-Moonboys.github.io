@@ -66,7 +66,16 @@ const waxcashAnalyticsFrontend = read('js/waxcash-analytics.js');
 const html = read('waxonedge.html');
 const waxcashHtml = read('waxcash.html');
 const tokenHtml = read('analytics/token/index.html');
+const staticBootstrapGenerator = read('scripts/generate-waxcash-bubbles-bootstrap.mjs');
 const staticBootstrap = JSON.parse(read('data/waxonedge/waxcash-bubbles-bootstrap.json'));
+const staticBootstrapPricedTokens = Array.isArray(staticBootstrap.tokens)
+  ? staticBootstrap.tokens.filter((token) => (
+    token &&
+    token.visible_in_waxcash_bubbles === true &&
+    token.selected_price_confidence === 'good' &&
+    (token.selected_price_wax != null || token.price_wax != null || token.selected_price_usd != null || token.price_usd != null)
+  ))
+  : [];
 const { __waxonedgeTestHooks } = await import(pathToFileURL(path.join(ROOT, 'workers/moonboys-api/routes/waxonedge.js')).href);
 const liveIndexer = await import(pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/src/index.mjs')).href);
 const referenceAudit = read('docs/waxonedge-real-reference-audit.md');
@@ -81,7 +90,7 @@ const liveIndexerCheckScript = read('services/waxonedge-live-indexer/scripts/che
 const liveIndexerSource = read('services/waxonedge-live-indexer/src/index.mjs');
 const liveIndexerCheck = await import(pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/scripts/check-live-indexer.mjs')).href);
 
-ok('static WAXCASH bubble bootstrap exists with membership-only no-fake payload',
+ok('static WAXCASH bubble bootstrap exists with priced indexed no-fake payload',
   exists('data/waxonedge/waxcash-bubbles-bootstrap.json') &&
   staticBootstrap.source === 'waxcash_bubbles_static_bootstrap' &&
   staticBootstrap.data_available === true &&
@@ -95,6 +104,17 @@ ok('static WAXCASH bubble bootstrap exists with membership-only no-fake payload'
   staticBootstrap.payload_policy?.no_worker_required_for_first_paint === true &&
   staticBootstrap.payload_policy?.no_fake_value === true,
   JSON.stringify(staticBootstrap.payload_policy));
+ok('static WAXCASH bubble bootstrap carries indexed pricing before enrichment',
+  staticBootstrapPricedTokens.length >= 65 &&
+  staticBootstrapPricedTokens.some((token) => token.metric_status?.selected_price?.live === true) &&
+  staticBootstrapPricedTokens.every((token) => token.no_fake_value === true));
+ok('static WAXCASH bubble bootstrap priced tokens do not render as Not indexed',
+  staticBootstrapPricedTokens.length >= 65 &&
+  staticBootstrapPricedTokens.every((token) => token.selected_price_confidence === 'good' &&
+    (token.selected_price_wax != null || token.price_wax != null || token.selected_price_usd != null || token.price_usd != null)));
+ok('static WAXCASH bootstrap generator defaults to priced lite snapshot, not membership placeholder',
+  staticBootstrapGenerator.includes("const DEFAULT_SOURCE_URL = 'https://cryptomoonboys.com/api/waxonedge/waxcash-bubbles-lite';") &&
+  !staticBootstrapGenerator.includes("DEFAULT_SOURCE_URL = 'https://cryptomoonboys.com/api/waxonedge/waxcash-bubbles-lite?mode=membership'"));
 
 ok('WAXCASH source collapse guard preserves prior Nefty rows on zero-row complete refresh',
   __waxonedgeTestHooks.waxcashSourceCollapseGuard(58, 0).ok === false &&
@@ -9248,7 +9268,7 @@ ok('pair SELECT templates may still expose pair-level 7d/30d WAX/USD volume colu
 ok('frontend bubbles bootstrap first and then starts live updates',
   frontendBubbles.indexOf('fetchBootstrapSnapshot()') > -1 &&
   frontendBubbles.indexOf('fetchBootstrapSnapshot()') < frontendBubbles.lastIndexOf('startLiveUpdates();') &&
-  frontendBubbles.includes("var BUBBLES_STATIC_BOOTSTRAP_API = '/data/waxonedge/waxcash-bubbles-bootstrap.json?v=woe-20260621-static-bootstrap-real-v1';") &&
+  frontendBubbles.includes("var BUBBLES_STATIC_BOOTSTRAP_API = '/data/waxonedge/waxcash-bubbles-bootstrap.json?v=woe-20260621-static-priced-bootstrap-v1';") &&
   frontendBubbles.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite'") &&
   frontendBubbles.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
   frontendBubbles.includes('var MEMBERSHIP_BOOTSTRAP_TIMEOUT_MS = 2000;') &&
@@ -9258,7 +9278,10 @@ ok('frontend bubbles bootstrap first and then starts live updates',
   frontendBubbles.includes('if (isUnavailableLitePayload(snapshot)) return') &&
   frontendBubbles.includes('function fetchBootstrapSnapshot()') &&
   frontendBubbles.includes('function fetchStaticBootstrap()') &&
-  frontendBubbles.includes('return apiJson(BUBBLES_STATIC_BOOTSTRAP_API).then(function (snapshot)') &&
+  frontendBubbles.includes('function staticBootstrapJson(path)') &&
+  frontendBubbles.includes('return staticBootstrapJson(BUBBLES_STATIC_BOOTSTRAP_API).then(function (snapshot)') &&
+  !/function fetchStaticBootstrap\(\)[\s\S]*apiJson\(BUBBLES_STATIC_BOOTSTRAP_API\)/.test(frontendBubbles) &&
+  !/function staticBootstrapJson\(path\)[\s\S]*cache: 'no-store'/.test(frontendBubbles) &&
   frontendBubbles.includes('function fetchWorkerMembershipBootstrap()') &&
   frontendBubbles.includes("var membershipRequest = apiJsonTimed(BUBBLES_MEMBERSHIP_API, 'membership')") &&
   frontendBubbles.includes('function fetchFullLiteRescue()') &&
@@ -9603,7 +9626,8 @@ ok('frontend bubble click opens in-page live token details without full token pa
 ok('waxonedge.html remains the live bubble scanner product path',
   html.includes('id="woe-bubble-board"') &&
   html.includes('/js/waxonedge-bubbles-v2.js') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-progressive-reveal-v1') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-priced-bootstrap-v1') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-progressive-reveal-v1') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-static-bootstrap-v1') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-membership-first-paint-v1') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-bootstrap-race-v1') &&

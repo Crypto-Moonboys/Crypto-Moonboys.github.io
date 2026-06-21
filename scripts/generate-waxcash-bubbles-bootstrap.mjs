@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUTPUT_PATH = path.join(ROOT, 'data/waxonedge/waxcash-bubbles-bootstrap.json');
-const DEFAULT_SOURCE_URL = 'https://cryptomoonboys.com/api/waxonedge/waxcash-bubbles-lite?mode=membership';
+const DEFAULT_SOURCE_URL = 'https://cryptomoonboys.com/api/waxonedge/waxcash-bubbles-lite';
 
 function argValue(name) {
   const index = process.argv.indexOf(name);
@@ -27,13 +27,13 @@ function staticBootstrapPayload(payload) {
   const data = payloadData(payload) || {};
   const tokens = sourceRows(data.tokens);
   const pairs = sourceRows(data.pairs);
-  if (!tokens.length) throw new Error('canonical membership source returned no tokens');
-  if (!pairs.length) throw new Error('canonical membership source returned no pairs');
+  if (!tokens.length) throw new Error('canonical WAXCASH bubble source returned no tokens');
+  if (!pairs.length) throw new Error('canonical WAXCASH bubble source returned no pairs');
   const generatedAt = data.generated_at || data.updated_at || new Date().toISOString();
   return {
     ok: true,
     data_available: true,
-    mode: 'membership',
+    mode: data.mode || 'static_bootstrap',
     source: 'waxcash_bubbles_static_bootstrap',
     generated_at: generatedAt,
     updated_at: data.updated_at || generatedAt,
@@ -41,7 +41,7 @@ function staticBootstrapPayload(payload) {
     pairs,
     summary: {
       ...(data.summary || {}),
-      mode: 'membership',
+      mode: data.summary?.mode || data.mode || 'static_bootstrap',
       generated_at: generatedAt,
       updated_at: data.updated_at || generatedAt,
       data_available: true,

@@ -8,7 +8,7 @@
   'use strict';
 
   var SCRIPT_START_AT = performance.now();
-  var BUBBLES_STATIC_BOOTSTRAP_API = '/data/waxonedge/waxcash-bubbles-bootstrap.json?v=woe-20260621-static-bootstrap-real-v1';
+  var BUBBLES_STATIC_BOOTSTRAP_API = '/data/waxonedge/waxcash-bubbles-bootstrap.json?v=woe-20260621-static-priced-bootstrap-v1';
   var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite';
   var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';
   var BOOTSTRAP_API = BUBBLES_STATIC_BOOTSTRAP_API;
@@ -2611,6 +2611,13 @@
     });
   }
 
+  function staticBootstrapJson(path) {
+    return fetch(path, { headers: { Accept: 'application/json' } }).then(function (response) {
+      if (!response.ok) throw new Error(path + ' failed: ' + response.status);
+      return response.json();
+    });
+  }
+
   function apiJsonTimed(path, label) {
     var start = performance.now();
     if (label === 'membership') state.perfStats.membershipState = 'pending';
@@ -2716,7 +2723,7 @@
       return snapshot;
     }
     function fetchStaticBootstrap() {
-      return apiJson(BUBBLES_STATIC_BOOTSTRAP_API).then(function (snapshot) {
+      return staticBootstrapJson(BUBBLES_STATIC_BOOTSTRAP_API).then(function (snapshot) {
         return acceptValidSnapshot(snapshot, 'WAXCASH static bootstrap');
       });
     }
