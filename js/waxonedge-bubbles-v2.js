@@ -1367,19 +1367,9 @@
     if (!tokens.length) return;
     var byKey = {};
     state.records.forEach(function (record) { byKey[record.key] = record; });
-    var hasNewRecords = tokens.some(function (update) {
-      var key = update.token_key || tokenKey(update.contract, update.symbol);
-      return key && !byKey[key];
-    });
-    if (hasNewRecords) {
-      state.payload = snapshot;
-      applyMetricCapabilities(snapshot);
-      state.records = normalizeRecords(snapshot);
-      state.pairs = sourceRows(data.pairs);
-      pruneModalDetailCacheForRecords(state.records);
-      syncNodes();
-      return;
-    }
+    state.payload = snapshot;
+    applyMetricCapabilities(snapshot);
+    state.pairs = sourceRows(data.pairs);
     var changed = 0;
     tokens.forEach(function (update) {
       var key = update.token_key || tokenKey(update.contract, update.symbol);
@@ -1389,7 +1379,15 @@
         changed += 1;
       }
     });
-    if (!changed) return;
+    var incomingRecords = normalizeRecords(snapshot);
+    var added = 0;
+    incomingRecords.forEach(function (record) {
+      if (!record || !record.key || byKey[record.key]) return;
+      state.records.push(record);
+      byKey[record.key] = record;
+      added += 1;
+    });
+    if (!changed && !added) return;
     refreshLiveTargetRadii();
     syncNodes();
     queuePendingShockwaves();

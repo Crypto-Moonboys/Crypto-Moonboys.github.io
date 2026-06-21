@@ -931,7 +931,9 @@ ok('waxonedge-bubbles-v2.js live token updates immediately resize market-cap bub
   /function applyLiveSnapshot\(snapshot\)[\s\S]*applyLiveTokenUpdate\(record, update\)[\s\S]*refreshLiveTargetRadii\(\)[\s\S]*syncNodes\(\)/.test(v2Js) &&
   /function valueForMetric[\s\S]*if \(metric === 'mcap'\)[\s\S]*return record\.marketCapWax/.test(v2Js));
 ok('waxonedge-bubbles-v2.js overlays enrichment without removing existing membership tokens',
-  /function applyLiveSnapshot\(snapshot\)[\s\S]*var hasNewRecords = tokens\.some[\s\S]*if \(hasNewRecords\)[\s\S]*state\.records = normalizeRecords\(snapshot\)[\s\S]*return;[\s\S]*tokens\.forEach[\s\S]*applyLiveTokenUpdate\(record, update\)/.test(v2Js) &&
+  /function applyLiveSnapshot\(snapshot\)[\s\S]*state\.payload = snapshot;[\s\S]*state\.pairs = sourceRows\(data\.pairs\);[\s\S]*tokens\.forEach[\s\S]*applyLiveTokenUpdate\(record, update\)[\s\S]*var incomingRecords = normalizeRecords\(snapshot\);[\s\S]*incomingRecords\.forEach[\s\S]*if \(!record \|\| !record\.key \|\| byKey\[record\.key\]\) return;[\s\S]*state\.records\.push\(record\)[\s\S]*syncNodes\(\)/.test(v2Js) &&
+  !/function applyLiveSnapshot\(snapshot\)[\s\S]*if \(hasNewRecords\)[\s\S]*state\.records = normalizeRecords\(snapshot\)[\s\S]*return;/.test(v2Js) &&
+  /function syncNodes\(\)[\s\S]*state\.nodes\.forEach\(function \(node\) \{ existing\[node\.id\] = node; \}\);[\s\S]*var old = existing\[record\.id\];[\s\S]*var node = old \|\|/.test(v2Js) &&
   /function fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*apiJson\(BUBBLES_LITE_API\)[\s\S]*applyLiveSnapshot\(snapshot\)/.test(v2Js));
 {
   const mcapBranchStart = v2Js.indexOf("if (state.metric === 'mcap') {");
