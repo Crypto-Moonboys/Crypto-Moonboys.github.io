@@ -66,6 +66,7 @@ const waxcashAnalyticsFrontend = read('js/waxcash-analytics.js');
 const html = read('waxonedge.html');
 const waxcashHtml = read('waxcash.html');
 const tokenHtml = read('analytics/token/index.html');
+const staticBootstrap = JSON.parse(read('data/waxonedge/waxcash-bubbles-bootstrap.json'));
 const { __waxonedgeTestHooks } = await import(pathToFileURL(path.join(ROOT, 'workers/moonboys-api/routes/waxonedge.js')).href);
 const liveIndexer = await import(pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/src/index.mjs')).href);
 const referenceAudit = read('docs/waxonedge-real-reference-audit.md');
@@ -79,6 +80,21 @@ const liveIndexerSystemd = read('services/waxonedge-live-indexer/waxonedge-live-
 const liveIndexerCheckScript = read('services/waxonedge-live-indexer/scripts/check-live-indexer.mjs');
 const liveIndexerSource = read('services/waxonedge-live-indexer/src/index.mjs');
 const liveIndexerCheck = await import(pathToFileURL(path.join(ROOT, 'services/waxonedge-live-indexer/scripts/check-live-indexer.mjs')).href);
+
+ok('static WAXCASH bubble bootstrap exists with membership-only no-fake payload',
+  exists('data/waxonedge/waxcash-bubbles-bootstrap.json') &&
+  staticBootstrap.source === 'waxcash_bubbles_static_bootstrap' &&
+  staticBootstrap.data_available === true &&
+  Array.isArray(staticBootstrap.tokens) &&
+  staticBootstrap.tokens.length >= 65 &&
+  Array.isArray(staticBootstrap.pairs) &&
+  staticBootstrap.pairs.length >= 90 &&
+  staticBootstrap.no_fake_value === true &&
+  staticBootstrap.payload_policy?.static_first_paint === true &&
+  staticBootstrap.payload_policy?.membership_only === true &&
+  staticBootstrap.payload_policy?.no_worker_required_for_first_paint === true &&
+  staticBootstrap.payload_policy?.no_fake_value === true,
+  JSON.stringify(staticBootstrap.payload_policy));
 
 ok('WAXCASH source collapse guard preserves prior Nefty rows on zero-row complete refresh',
   __waxonedgeTestHooks.waxcashSourceCollapseGuard(58, 0).ok === false &&
@@ -9232,6 +9248,7 @@ ok('pair SELECT templates may still expose pair-level 7d/30d WAX/USD volume colu
 ok('frontend bubbles bootstrap first and then starts live updates',
   frontendBubbles.indexOf('fetchBootstrapSnapshot()') > -1 &&
   frontendBubbles.indexOf('fetchBootstrapSnapshot()') < frontendBubbles.lastIndexOf('startLiveUpdates();') &&
+  frontendBubbles.includes("var BUBBLES_STATIC_BOOTSTRAP_API = '/data/waxonedge/waxcash-bubbles-bootstrap.json?v=woe-20260621-static-bootstrap-real-v1';") &&
   frontendBubbles.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite'") &&
   frontendBubbles.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
   frontendBubbles.includes('var MEMBERSHIP_BOOTSTRAP_TIMEOUT_MS = 2000;') &&
@@ -9240,20 +9257,40 @@ ok('frontend bubbles bootstrap first and then starts live updates',
   frontendBubbles.includes("data.source === 'waxcash_bubbles_lite' && data.data_available === false") &&
   frontendBubbles.includes('if (isUnavailableLitePayload(snapshot)) return') &&
   frontendBubbles.includes('function fetchBootstrapSnapshot()') &&
-  frontendBubbles.includes('var membershipRequest = apiJsonTimed(BOOTSTRAP_API, \'membership\')') &&
+  frontendBubbles.includes('function fetchStaticBootstrap()') &&
+  frontendBubbles.includes('return apiJson(BUBBLES_STATIC_BOOTSTRAP_API).then(function (snapshot)') &&
+  frontendBubbles.includes('function fetchWorkerMembershipBootstrap()') &&
+  frontendBubbles.includes("var membershipRequest = apiJsonTimed(BUBBLES_MEMBERSHIP_API, 'membership')") &&
   frontendBubbles.includes('function fetchFullLiteRescue()') &&
   frontendBubbles.includes("return apiJsonTimed(BUBBLES_LITE_API, 'full_lite').then(function (snapshot)") &&
-  frontendBubbles.includes('var timedMembershipRequest = Promise.race([') &&
+  frontendBubbles.includes('return Promise.race([') &&
   frontendBubbles.includes("state.perfStats.membershipState = 'timeout'") &&
-  frontendBubbles.includes("resolve(acceptValidSnapshot(snapshot, 'WAXCASH membership'))") &&
-  frontendBubbles.includes('fetchFullLiteRescue().then(resolve).catch(reject)') &&
+  frontendBubbles.includes("return acceptValidSnapshot(snapshot, 'WAXCASH membership')") &&
+  frontendBubbles.includes('return fetchStaticBootstrap().catch(function ()') &&
+  frontendBubbles.includes('return fetchWorkerMembershipBootstrap().catch(function ()') &&
+  frontendBubbles.includes('return fetchFullLiteRescue();') &&
+  frontendBubbles.indexOf('fetchStaticBootstrap()') < frontendBubbles.indexOf('fetchWorkerMembershipBootstrap().catch') &&
+  frontendBubbles.indexOf('fetchWorkerMembershipBootstrap().catch') < frontendBubbles.indexOf('fetchFullLiteRescue();') &&
   !frontendBubbles.includes('var fullLiteRequest = apiJsonTimed(BUBBLES_LITE_API, \'full_lite\')') &&
   !/apiJsonTimed\(BOOTSTRAP_API, 'membership'\)\.then[\s\S]*\.catch\(function \(error\) \{[\s\S]*apiJsonTimed\(BUBBLES_LITE_API, 'full_lite'\)/.test(frontendBubbles) &&
-  frontendBubbles.includes('var BOOTSTRAP_API = BUBBLES_MEMBERSHIP_API;') &&
+  frontendBubbles.includes('var BOOTSTRAP_API = BUBBLES_STATIC_BOOTSTRAP_API;') &&
+  /function load\(\)[\s\S]*fetchBootstrapSnapshot\(\)\.then\(function \(snapshot\)[\s\S]*enqueueRecordsForReveal\(state\.records, true\)[\s\S]*revealNextBubbles\(\)[\s\S]*fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*startLiveUpdates\(\)/.test(frontendBubbles) &&
   frontendBubbles.includes('function fetchEnrichedSnapshotAfterFirstPaint()') &&
   frontendBubbles.includes('apiJsonTimed(BUBBLES_LITE_API, \'full_lite\').then(function (snapshot)') &&
   frontendBubbles.includes('var LIVE_API = BUBBLES_LITE_API;') &&
   frontendBubbles.includes("var LIVE_STREAM_API = '/api/waxonedge/live/stream'"));
+ok('frontend progressively reveals bubbles without waiting for the full static set or logos',
+  frontendBubbles.includes('revealQueue: []') &&
+  frontendBubbles.includes('revealQueuedKeys: {}') &&
+  frontendBubbles.includes('revealVisibleKeys: {}') &&
+  frontendBubbles.includes('function enqueueRecordsForReveal(records, reset)') &&
+  frontendBubbles.includes('function revealNextBubbles()') &&
+  frontendBubbles.includes('function startProgressiveReveal()') &&
+  frontendBubbles.includes('return width < 900 ? 1 : 3') &&
+  /function rankedRecords\(\)[\s\S]*if \(!state\.revealVisibleKeys\[record\.key\]\) return false;/.test(frontendBubbles) &&
+  /function load\(\)[\s\S]*state\.records = normalizeRecords\(state\.payload\)[\s\S]*enqueueRecordsForReveal\(state\.records, true\)[\s\S]*state\.revealActive = true;[\s\S]*revealNextBubbles\(\)/.test(frontendBubbles) &&
+  /function revealNextBubbles\(\)[\s\S]*syncNodes\(\);[\s\S]*revealed\.forEach\(function \(record\) \{ loadImage\(record\.logoUrl\); \}\);/.test(frontendBubbles) &&
+  !/function load\(\)[\s\S]*state\.nodes\.forEach\(function \(node\) \{ loadImage\(node\.record\.logoUrl\); \}\);/.test(frontendBubbles));
 ok('frontend perf debug records time-to-first-bubble without blocking on logo image loads',
   frontendBubbles.includes('function apiJsonTimed(path, label)') &&
   frontendBubbles.includes("console.info('[WaxOnEdge perf] ' + label + ' request'") &&
@@ -9267,7 +9304,7 @@ ok('frontend perf debug records time-to-first-bubble without blocking on logo im
   frontendBubbles.includes('state.perfStats.totalFirstBubbleMs = now - state.perfStats.pageStartAt') &&
   frontendBubbles.includes("' | member ' + perfRequestLabel(state.perfStats.membershipMs, state.perfStats.membershipState)") &&
   frontendBubbles.includes("' | first ' + perfMs(state.perfStats.totalFirstBubbleMs)") &&
-  /syncNodes\(\);\s*state\.perfStats\.syncNodesMs[\s\S]*state\.nodes\.forEach\(function \(node\) \{ loadImage\(node\.record\.logoUrl\); \}\);/.test(frontendBubbles));
+  /revealNextBubbles\(\);\s*state\.perfStats\.syncNodesMs/.test(frontendBubbles));
 ok('frontend WAXCASH analytics adapter maps selected root price, pair row price, liquidity, market cap, and pair_table rows',
   frontendBubbles.includes('function waxcashAnalyticsToBubblePayload(payload)') &&
   frontendBubbles.includes('var pairTable = sections.pair_table || {}') &&
@@ -9566,7 +9603,9 @@ ok('frontend bubble click opens in-page live token details without full token pa
 ok('waxonedge.html remains the live bubble scanner product path',
   html.includes('id="woe-bubble-board"') &&
   html.includes('/js/waxonedge-bubbles-v2.js') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-membership-first-paint-v1') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-progressive-reveal-v1') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-static-bootstrap-v1') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-membership-first-paint-v1') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-bootstrap-race-v1') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-prebuilt-membership-v2') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-fast-membership') &&
@@ -9606,6 +9645,13 @@ try {
   ok('waxonedge route module passes node --check', true);
 } catch (error) {
   ok('waxonedge route module passes node --check', false, error.message);
+}
+
+try {
+  execFileSync(process.execPath, ['--check', path.join(ROOT, 'scripts/generate-waxcash-bubbles-bootstrap.mjs')], { encoding: 'utf8' });
+  ok('WAXCASH static bootstrap generator passes node --check', true);
+} catch (error) {
+  ok('WAXCASH static bootstrap generator passes node --check', false, error.message);
 }
 
 console.log('\nwaxonedge-live-backend.test: ' + passed + ' passed, ' + failed + ' failed');

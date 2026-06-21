@@ -8,9 +8,10 @@
   'use strict';
 
   var SCRIPT_START_AT = performance.now();
+  var BUBBLES_STATIC_BOOTSTRAP_API = '/data/waxonedge/waxcash-bubbles-bootstrap.json?v=woe-20260621-static-bootstrap-real-v1';
   var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite';
   var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';
-  var BOOTSTRAP_API = BUBBLES_MEMBERSHIP_API;
+  var BOOTSTRAP_API = BUBBLES_STATIC_BOOTSTRAP_API;
   var HEALTH_API = '/api/waxonedge/indexer-health';
   var LIVE_API = BUBBLES_LITE_API;
   var LIVE_STREAM_API = '/api/waxonedge/live/stream';
@@ -135,6 +136,11 @@
     pairs: [],
     visible: [],
     nodes: [],
+    revealQueue: [],
+    revealQueuedKeys: {},
+    revealVisibleKeys: {},
+    revealActive: false,
+    revealRaf: 0,
     metric: 'liquidity',
     timeframe: '24h',
     query: '',
@@ -1044,6 +1050,7 @@
   function rankedRecords() {
     var query = state.query.toLowerCase();
     var base = state.records.filter(function (record) {
+      if (!state.revealVisibleKeys[record.key]) return false;
       if (!query) return true;
       return record.searchText.indexOf(query) !== -1;
     }).sort(function (a, b) {
@@ -1150,6 +1157,62 @@
       x: Math.max(bounds.minX, Math.min(bounds.maxX, x)),
       y: Math.max(bounds.minY, Math.min(bounds.maxY, y)),
     };
+  }
+
+  function revealBatchSize() {
+    if (!state.canvas) return 1;
+    var width = Math.max(320, state.canvas.getBoundingClientRect().width || 0);
+    return width < 900 ? 1 : 3;
+  }
+
+  function enqueueRecordsForReveal(records, reset) {
+    if (reset) {
+      if (state.revealRaf) window.cancelAnimationFrame(state.revealRaf);
+      state.revealQueue = [];
+      state.revealQueuedKeys = {};
+      state.revealVisibleKeys = {};
+      state.revealActive = false;
+      state.revealRaf = 0;
+    }
+    (records || []).forEach(function (record) {
+      if (!record || !record.key) return;
+      if (state.revealVisibleKeys[record.key] || state.revealQueuedKeys[record.key]) return;
+      state.revealQueuedKeys[record.key] = true;
+      state.revealQueue.push(record);
+    });
+  }
+
+  function revealNextBubbles() {
+    state.revealRaf = 0;
+    if (!state.revealQueue.length) {
+      state.revealActive = false;
+      return;
+    }
+    var batch = Math.max(1, revealBatchSize());
+    var revealed = [];
+    while (batch > 0 && state.revealQueue.length) {
+      var record = state.revealQueue.shift();
+      batch -= 1;
+      if (!record || !record.key || state.revealVisibleKeys[record.key]) continue;
+      state.revealVisibleKeys[record.key] = true;
+      delete state.revealQueuedKeys[record.key];
+      revealed.push(record);
+    }
+    if (revealed.length) {
+      syncNodes();
+      revealed.forEach(function (record) { loadImage(record.logoUrl); });
+    }
+    if (state.revealQueue.length) {
+      state.revealRaf = window.requestAnimationFrame(revealNextBubbles);
+    } else {
+      state.revealActive = false;
+    }
+  }
+
+  function startProgressiveReveal() {
+    if (state.revealActive || !state.revealQueue.length) return;
+    state.revealActive = true;
+    state.revealRaf = window.requestAnimationFrame(revealNextBubbles);
   }
 
   function syncNodes() {
@@ -1399,15 +1462,23 @@
     });
     var incomingRecords = normalizeRecords(snapshot);
     var added = 0;
+    var addedRecords = [];
     incomingRecords.forEach(function (record) {
       if (!record || !record.key || byKey[record.key]) return;
       state.records.push(record);
       byKey[record.key] = record;
+      addedRecords.push(record);
       added += 1;
     });
     if (!changed && !added) return;
-    refreshLiveTargetRadii();
-    syncNodes();
+    if (addedRecords.length) {
+      enqueueRecordsForReveal(addedRecords, false);
+      startProgressiveReveal();
+    }
+    if (changed) {
+      refreshLiveTargetRadii();
+      syncNodes();
+    }
     queuePendingShockwaves();
   }
 
@@ -2644,15 +2715,15 @@
       if (!hasBubbleTokens(snapshot)) throw new Error(sourceLabel + ' bubble lite query returned no tokens');
       return snapshot;
     }
-    function fetchFullLiteRescue() {
-      return apiJsonTimed(BUBBLES_LITE_API, 'full_lite').then(function (snapshot) {
-        return acceptValidSnapshot(snapshot, 'WAXCASH full lite');
+    function fetchStaticBootstrap() {
+      return apiJson(BUBBLES_STATIC_BOOTSTRAP_API).then(function (snapshot) {
+        return acceptValidSnapshot(snapshot, 'WAXCASH static bootstrap');
       });
     }
-    return new Promise(function (resolve, reject) {
-      var membershipRequest = apiJsonTimed(BOOTSTRAP_API, 'membership');
+    function fetchWorkerMembershipBootstrap() {
+      var membershipRequest = apiJsonTimed(BUBBLES_MEMBERSHIP_API, 'membership');
       var membershipTimeout = 0;
-      var timedMembershipRequest = Promise.race([
+      return Promise.race([
         membershipRequest,
         new Promise(function (_, timeoutReject) {
           membershipTimeout = window.setTimeout(function () {
@@ -2665,11 +2736,18 @@
         }),
       ]).finally(function () {
         window.clearTimeout(membershipTimeout);
+      }).then(function (snapshot) {
+        return acceptValidSnapshot(snapshot, 'WAXCASH membership');
       });
-      timedMembershipRequest.then(function (snapshot) {
-        resolve(acceptValidSnapshot(snapshot, 'WAXCASH membership'));
-      }).catch(function () {
-        fetchFullLiteRescue().then(resolve).catch(reject);
+    }
+    function fetchFullLiteRescue() {
+      return apiJsonTimed(BUBBLES_LITE_API, 'full_lite').then(function (snapshot) {
+        return acceptValidSnapshot(snapshot, 'WAXCASH full lite');
+      });
+    }
+    return fetchStaticBootstrap().catch(function () {
+      return fetchWorkerMembershipBootstrap().catch(function () {
+        return fetchFullLiteRescue();
       });
     });
   }
@@ -2823,16 +2901,14 @@
   function load() {
     attachControls();
     initCanvas();
-    Promise.all([
-      fetchBootstrapSnapshot(),
-      apiJson(HEALTH_API).catch(function () { return null; }),
-    ]).then(function (results) {
-      state.payload = results[0];
-      state.health = results[1] ? payloadData(results[1]) : null;
+    fetchBootstrapSnapshot().then(function (snapshot) {
+      state.payload = snapshot;
+      state.health = null;
       applyMetricCapabilities(state.payload);
       var normalizeStart = performance.now();
       state.records = normalizeRecords(state.payload);
       state.perfStats.normalizeMs = performance.now() - normalizeStart;
+      enqueueRecordsForReveal(state.records, true);
       state.pairs = sourceRows(waxcashAnalyticsToBubblePayload(state.payload).pairs);
       pruneModalDetailCacheForRecords(state.records);
       state.connected = true;
@@ -2845,16 +2921,19 @@
       advanceLiveDisplayTimestamp(state.lastUpdated);
       updateWaxPrice(state.payload);
       var syncStart = performance.now();
-      syncNodes();
+      state.revealActive = true;
+      revealNextBubbles();
       state.perfStats.syncNodesMs = performance.now() - syncStart;
       if (state.perfDebug) {
         // eslint-disable-next-line no-console
         console.info('[WaxOnEdge perf] normalizeRecords', Math.round(state.perfStats.normalizeMs) + 'ms', 'syncNodes', Math.round(state.perfStats.syncNodesMs) + 'ms');
       }
       setStatus();
-      state.nodes.forEach(function (node) { loadImage(node.record.logoUrl); });
       fetchEnrichedSnapshotAfterFirstPaint();
       startLiveUpdates();
+      apiJson(HEALTH_API).then(function (health) {
+        state.health = payloadData(health);
+      }).catch(function () {});
       requestDraw();
     }).catch(function (error) {
       state.connected = false;
