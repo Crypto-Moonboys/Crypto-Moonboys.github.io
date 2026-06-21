@@ -603,14 +603,76 @@ ok('waxonedge-bubbles-v2.js renders cached fake-3D planet bubbles with live impa
   v2Js.includes("record.sourceCount + ' src'") &&
   v2Js.includes('bubbleCanvasCache.get(record.id)') &&
   !/function applyLiveTokenUpdate[\s\S]*?bubbleCanvasCache\.delete\(record\.id\)[\s\S]*?function refreshLiveTargetRadii/.test(v2Js));
-ok('waxonedge-bubbles-v2.js caps mobile canvas DPR and reduces expensive glow/effect detail',
+ok('waxonedge-bubbles-v2.js defines explicit performance profiles with balanced defaults',
   v2Js.includes('function canvasDpr()') &&
-  v2Js.includes('dprCap: small ? 1.25 : 2') &&
-  v2Js.includes('glowScale: small ? 0.55 : 1') &&
-  v2Js.includes('bandCount: small ? 3 : 5') &&
-  v2Js.includes('noiseCount: small ? 6 : 14') &&
-  v2Js.includes('animatedBands: !small') &&
+  v2Js.includes('var PERF_PROFILES = {') &&
+  v2Js.includes('desktop_high: {') &&
+  v2Js.includes("name: 'desktop_high'") &&
+  v2Js.includes('desktop_balanced: {') &&
+  v2Js.includes("name: 'desktop_balanced'") &&
+  v2Js.includes('mobile_low: {') &&
+  v2Js.includes("name: 'mobile_low'") &&
+  v2Js.includes('reduced_motion: {') &&
+  v2Js.includes("name: 'reduced_motion'") &&
+  v2Js.includes("return isSmallScreen() ? 'mobile_low' : 'desktop_balanced'") &&
+  v2Js.includes("if (override === 'high') return 'desktop_high'") &&
+  v2Js.includes("if (override === 'balanced') return 'desktop_balanced'") &&
+  v2Js.includes("if (override === 'low') return 'mobile_low'") &&
+  !v2Js.includes('dprCap: small ? 1.25 : 2') &&
   v2Js.includes('var dpr = canvasDpr();'));
+ok('waxonedge-bubbles-v2.js caps DPR and frame rate by performance profile',
+  v2Js.includes('dprCap: 1.5') &&
+  v2Js.includes('dprCap: 1,') &&
+  v2Js.includes('targetFps: 40') &&
+  v2Js.includes('targetFps: 24') &&
+  v2Js.includes('targetFps: 8') &&
+  v2Js.includes('targetFps: 60') &&
+  v2Js.includes('var frameInterval = 1000 / Math.max(1, profile.targetFps || 30)') &&
+  v2Js.includes('if (state.lastDrawAt && now - state.lastDrawAt < frameInterval)') &&
+  v2Js.includes("if (override === 'high') return 'desktop_high'") &&
+  !/desktop_balanced:\s*{[\s\S]*?dprCap:\s*2/.test(v2Js));
+ok('waxonedge-bubbles-v2.js batches offscreen bubble canvas generation and uses fallback circles',
+  v2Js.includes('var bubbleCanvasBuildQueue = []') &&
+  v2Js.includes('var bubbleCanvasQueuedKeys = new Map()') &&
+  v2Js.includes('function radiusCacheBucket(radius)') &&
+  v2Js.includes('var r = radiusCacheBucket(visualRadius(node))') &&
+  v2Js.includes('function queueBubbleCanvasBuild(node, dpr, key)') &&
+  v2Js.includes('function processBubbleCanvasBuildQueue(dpr)') &&
+  v2Js.includes('profile.maxCanvasBuildsPerFrame') &&
+  v2Js.includes('drawSimpleBubbleFallback(ctx, node)') &&
+  v2Js.includes('processBubbleCanvasBuildQueue(dpr)') &&
+  v2Js.includes('clearBubbleCanvasCache()') &&
+  !/function drawGalaxyNode[\s\S]*?drawBubbleOffscreen\(node, dpr\)/.test(v2Js));
+{
+  const processQueueSection = (v2Js.match(/function processBubbleCanvasBuildQueue\(dpr\)[\s\S]*?function drawBubbleOffscreen/) || [''])[0];
+  const drawSection = (v2Js.match(/function draw\(timestamp\)[\s\S]*?function marketWeather/) || [''])[0];
+  ok('waxonedge-bubbles-v2.js keeps RAF scheduling single-owned by the draw loop',
+    processQueueSection.includes('return bubbleCanvasBuildQueue.length > 0;') &&
+    !processQueueSection.includes('requestDraw()') &&
+    drawSection.includes('var queueHasMore = processBubbleCanvasBuildQueue(dpr);') &&
+    drawSection.includes('if (!state.raf && (shouldAnimate() || queueHasMore)) state.raf = window.requestAnimationFrame(draw);') &&
+    drawSection.includes('if (state.lastDrawAt && now - state.lastDrawAt < frameInterval)') &&
+    drawSection.includes('state.raf = window.requestAnimationFrame(draw);') &&
+    drawSection.includes('return;') &&
+    !drawSection.includes('processBubbleCanvasBuildQueue(dpr);\n    if (shouldAnimate()) state.raf = window.requestAnimationFrame(draw);'));
+}
+ok('waxonedge-bubbles-v2.js delays expensive polish and uses cheaper profiled physics',
+  v2Js.includes('function isPolishEnabled(now)') &&
+  v2Js.includes('profile.polishDelayMs') &&
+  v2Js.includes('if (polish) {') &&
+  v2Js.includes('if (profile.castShadow && isPolishEnabled(now))') &&
+  v2Js.includes('profile.animatedBands') &&
+  v2Js.includes('profile.shockwaveGlow') &&
+  v2Js.includes('function resolveCollisionsWithSpatialGrid(nodes, width, height, now, passes)') &&
+  v2Js.includes('state.collisionFrame % collisionEvery === 0') &&
+  v2Js.includes('profile.collisionPasses'));
+ok('waxonedge-bubbles-v2.js exposes perf stats overlay only through waxdebug=perf',
+  v2Js.includes("queryParam('waxdebug')") &&
+  v2Js.includes("=== 'perf'") &&
+  v2Js.includes('id="woe-ab-perf"') &&
+  v2Js.includes('function updatePerfOverlay(dpr)') &&
+  v2Js.includes('bubbleCanvasBuildQueue.length') &&
+  v2Css.includes('.woe-ab-perf'));
 ok('waxonedge-bubbles-v2.js uses selected metric and blended base score for bubble sizing',
   v2Js.includes('function blendedMarketScore') &&
   v2Js.includes('function reweightedScore') &&

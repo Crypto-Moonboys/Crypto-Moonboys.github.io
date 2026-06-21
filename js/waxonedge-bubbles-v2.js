@@ -44,8 +44,72 @@
   var IMAGE_CACHE_LIMIT = 160;
   var BUBBLE_CANVAS_CACHE_LIMIT = 240;
   var MODAL_DETAIL_CACHE_LIMIT = 32;
+  var PERF_PROFILES = {
+    desktop_high: {
+      name: 'desktop_high',
+      dprCap: 2,
+      targetFps: 60,
+      glowScale: 0.9,
+      bandCount: 5,
+      noiseCount: 14,
+      animatedBands: true,
+      castShadow: true,
+      shockwaveGlow: true,
+      collisionEvery: 1,
+      collisionPasses: 5,
+      maxCanvasBuildsPerFrame: 8,
+      polishDelayMs: 300,
+    },
+    desktop_balanced: {
+      name: 'desktop_balanced',
+      dprCap: 1.5,
+      targetFps: 40,
+      glowScale: 0.42,
+      bandCount: 3,
+      noiseCount: 7,
+      animatedBands: false,
+      castShadow: false,
+      shockwaveGlow: false,
+      collisionEvery: 2,
+      collisionPasses: 2,
+      maxCanvasBuildsPerFrame: 5,
+      polishDelayMs: 1400,
+    },
+    mobile_low: {
+      name: 'mobile_low',
+      dprCap: 1,
+      targetFps: 24,
+      glowScale: 0.24,
+      bandCount: 2,
+      noiseCount: 4,
+      animatedBands: false,
+      castShadow: false,
+      shockwaveGlow: false,
+      collisionEvery: 3,
+      collisionPasses: 1,
+      maxCanvasBuildsPerFrame: 3,
+      polishDelayMs: 1800,
+    },
+    reduced_motion: {
+      name: 'reduced_motion',
+      dprCap: 1,
+      targetFps: 8,
+      glowScale: 0.12,
+      bandCount: 0,
+      noiseCount: 0,
+      animatedBands: false,
+      castShadow: false,
+      shockwaveGlow: false,
+      collisionEvery: 8,
+      collisionPasses: 0,
+      maxCanvasBuildsPerFrame: 2,
+      polishDelayMs: 999999,
+    },
+  };
   var imageCache = new Map();
   var bubbleCanvasCache = new Map();
+  var bubbleCanvasBuildQueue = [];
+  var bubbleCanvasQueuedKeys = new Map();
   var reducedMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 
   var MOVEMENT_EVENT_TABLE = [
@@ -78,6 +142,20 @@
     liveFeed: [],
     missingFeaturedLogged: {},
     lastImpactAt: 0,
+    profileName: '',
+    profileChangedAt: 0,
+    firstPaintAt: 0,
+    lastDrawAt: 0,
+    frameCount: 0,
+    collisionFrame: 0,
+    perfDebug: false,
+    perfStats: {
+      fps: 0,
+      drawMs: 0,
+      physicsMs: 0,
+      lastSampleAt: 0,
+      framesSinceSample: 0,
+    },
     camera: {
       offsetX: 0,
       offsetY: 0,
@@ -91,6 +169,7 @@
     board: null,
     tooltip: null,
     modal: null,
+    perfOverlay: null,
     modalDetailCache: new Map(),
     modalDetailRequestId: 0,
     raf: 0,
@@ -246,6 +325,18 @@
     }
   }
 
+  function clearBubbleCanvasCache() {
+    bubbleCanvasCache.clear();
+    bubbleCanvasBuildQueue = [];
+    bubbleCanvasQueuedKeys.clear();
+  }
+
+  function isPolishEnabled(now) {
+    var profile = renderProfile();
+    var firstPaint = state.firstPaintAt || now || performance.now();
+    return (now || performance.now()) - firstPaint >= profile.polishDelayMs;
+  }
+
   function getModalDetailCache(key) {
     if (!key || !state.modalDetailCache.has(key)) return null;
     var cached = state.modalDetailCache.get(key);
@@ -298,16 +389,32 @@
       : window.innerWidth < 860;
   }
 
+  function queryParam(name) {
+    try {
+      return new URLSearchParams(window.location.search || '').get(name);
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function resolveRenderProfileName() {
+    var override = String(queryParam('waxperf') || '').trim().toLowerCase();
+    if (override === 'high') return 'desktop_high';
+    if (override === 'balanced') return 'desktop_balanced';
+    if (override === 'low') return 'mobile_low';
+    if (prefersReducedMotion()) return 'reduced_motion';
+    return isSmallScreen() ? 'mobile_low' : 'desktop_balanced';
+  }
+
   function renderProfile() {
-    var small = isSmallScreen();
-    return {
-      small: small,
-      dprCap: small ? 1.25 : 2,
-      glowScale: small ? 0.55 : 1,
-      bandCount: small ? 3 : 5,
-      noiseCount: small ? 6 : 14,
-      animatedBands: !small,
-    };
+    var name = resolveRenderProfileName();
+    if (state.profileName !== name) {
+      state.profileName = name;
+      state.profileChangedAt = performance.now();
+      clearBubbleCanvasCache();
+    }
+    var profile = PERF_PROFILES[name] || PERF_PROFILES.desktop_balanced;
+    return Object.assign({ small: name === 'mobile_low' || isSmallScreen() }, profile);
   }
 
   function canvasDpr() {
@@ -1494,6 +1601,7 @@
     var nodes = state.nodes;
     var animate = shouldAnimate();
     var now = performance.now();
+    var profile = renderProfile();
     nodes.forEach(function (node, index) {
       node.radius += (node.targetRadius - node.radius) * 0.075;
       if (!animate) return;
@@ -1517,50 +1625,11 @@
       applyMovementEventForces(node, nodes, index, now);
     });
 
-    for (var pass = 0; pass < 7; pass += 1) {
-      for (var i = 0; i < nodes.length; i += 1) {
-        for (var j = i + 1; j < nodes.length; j += 1) {
-          var a = nodes[i];
-          var b = nodes[j];
-          var dx = b.x - a.x;
-          var dy = b.y - a.y;
-          var distSq = dx * dx + dy * dy;
-          var min = visualRadius(a) + visualRadius(b) + 18;
-          if (distSq > 0 && distSq < min * min) {
-            var dist = Math.sqrt(distSq);
-            var nx = dx / dist;
-            var ny = dy / dist;
-            var overlap = min - dist;
-            var ar = visualRadius(a);
-            var br = visualRadius(b);
-            var total = ar + br || 1;
-            var aShare = br / total;
-            var bShare = ar / total;
-            if (state.dragging !== a) {
-              a.x -= nx * overlap * aShare * 0.62;
-              a.y -= ny * overlap * aShare * 0.62;
-              a.vx -= nx * overlap * 0.018;
-              a.vy -= ny * overlap * 0.018;
-            }
-            if (state.dragging !== b) {
-              b.x += nx * overlap * bShare * 0.62;
-              b.y += ny * overlap * bShare * 0.62;
-              b.vx += nx * overlap * 0.018;
-              b.vy += ny * overlap * 0.018;
-            }
-            if (overlap > 1.2) {
-              a.collisionUntil = Math.max(a.collisionUntil || 0, now + 360);
-              b.collisionUntil = Math.max(b.collisionUntil || 0, now + 360);
-              a.lastCollisionAt = now;
-              b.lastCollisionAt = now;
-              if (overlap > 7) {
-                a.driftAngle = Math.atan2(-ny, -nx);
-                b.driftAngle = Math.atan2(ny, nx);
-              }
-            }
-          }
-        }
-      }
+    state.collisionFrame += 1;
+    var collisionEvery = Math.max(1, profile.collisionEvery || 1);
+    var collisionPasses = profile.collisionPasses || 0;
+    if (animate && collisionPasses > 0 && state.collisionFrame % collisionEvery === 0) {
+      resolveCollisionsWithSpatialGrid(nodes, width, height, now, collisionPasses);
     }
 
     nodes.forEach(function (node) {
@@ -1610,6 +1679,10 @@
     return asNum(change);
   }
 
+  function radiusCacheBucket(radius) {
+    return Math.max(8, Math.round(radius / 4) * 4);
+  }
+
   function ringColor(record) {
     var change = signal(record);
     if (change == null) return '#00e5ff';
@@ -1647,18 +1720,129 @@
     return minSize;
   }
 
-  function drawBubbleOffscreen(node, dpr) {
+  function bubbleCanvasCacheKey(node, dpr, profile) {
     var record = node.record;
-    var r = Math.round(visualRadius(node));
+    var r = radiusCacheBucket(visualRadius(node));
     var img = imageCache.get(record.logoUrl);
+    return [r, profile.name, profile.small ? 'm' : 'd', state.metric, state.timeframe, displayValue(record), record.displaySymbol || record.symbol, record.sourceCount, ringColor(record), img ? 1 : 0, dpr].join('|');
+  }
+
+  function resolveCollisionsWithSpatialGrid(nodes, width, height, now, passes) {
+    var maxRadius = nodes.reduce(function (largest, node) {
+      return Math.max(largest, visualRadius(node));
+    }, 32);
+    var cellSize = Math.max(64, maxRadius * 2.5);
+    for (var pass = 0; pass < passes; pass += 1) {
+      var grid = new Map();
+      nodes.forEach(function (node, index) {
+        var gx = Math.floor(node.x / cellSize);
+        var gy = Math.floor(node.y / cellSize);
+        var key = gx + ':' + gy;
+        if (!grid.has(key)) grid.set(key, []);
+        grid.get(key).push(index);
+      });
+      var seen = {};
+      nodes.forEach(function (a, i) {
+        var gx = Math.floor(a.x / cellSize);
+        var gy = Math.floor(a.y / cellSize);
+        for (var ox = -1; ox <= 1; ox += 1) {
+          for (var oy = -1; oy <= 1; oy += 1) {
+            var bucket = grid.get((gx + ox) + ':' + (gy + oy));
+            if (!bucket) continue;
+            bucket.forEach(function (j) {
+              if (j <= i) return;
+              var pairKey = i + ':' + j;
+              if (seen[pairKey]) return;
+              seen[pairKey] = true;
+              resolveNodeCollision(a, nodes[j], now);
+            });
+          }
+        }
+      });
+    }
+    void width;
+    void height;
+  }
+
+  function resolveNodeCollision(a, b, now) {
+    var dx = b.x - a.x;
+    var dy = b.y - a.y;
+    var distSq = dx * dx + dy * dy;
+    var ar = visualRadius(a);
+    var br = visualRadius(b);
+    var min = ar + br + 18;
+    if (distSq <= 0 || distSq >= min * min) return;
+    var dist = Math.sqrt(distSq);
+    var nx = dx / dist;
+    var ny = dy / dist;
+    var overlap = min - dist;
+    var total = ar + br || 1;
+    var aShare = br / total;
+    var bShare = ar / total;
+    if (state.dragging !== a) {
+      a.x -= nx * overlap * aShare * 0.62;
+      a.y -= ny * overlap * aShare * 0.62;
+      a.vx -= nx * overlap * 0.018;
+      a.vy -= ny * overlap * 0.018;
+    }
+    if (state.dragging !== b) {
+      b.x += nx * overlap * bShare * 0.62;
+      b.y += ny * overlap * bShare * 0.62;
+      b.vx += nx * overlap * 0.018;
+      b.vy += ny * overlap * 0.018;
+    }
+    if (overlap > 1.2) {
+      a.collisionUntil = Math.max(a.collisionUntil || 0, now + 360);
+      b.collisionUntil = Math.max(b.collisionUntil || 0, now + 360);
+      a.lastCollisionAt = now;
+      b.lastCollisionAt = now;
+      if (overlap > 7) {
+        a.driftAngle = Math.atan2(-ny, -nx);
+        b.driftAngle = Math.atan2(ny, nx);
+      }
+    }
+  }
+
+  function queueBubbleCanvasBuild(node, dpr, key) {
+    if (!node || !node.record || !key || bubbleCanvasQueuedKeys.has(key)) return;
+    bubbleCanvasQueuedKeys.set(key, true);
+    bubbleCanvasBuildQueue.push({ node: node, dpr: dpr, key: key });
+  }
+
+  function getCachedBubbleCanvas(node, dpr) {
+    var record = node.record;
     var profile = renderProfile();
-    var key = [r, profile.small ? 'm' : 'd', state.metric, state.timeframe, displayValue(record), record.displaySymbol || record.symbol, record.sourceCount, ringColor(record), img ? 1 : 0, dpr].join('|');
+    var key = bubbleCanvasCacheKey(node, dpr, profile);
     var cached = bubbleCanvasCache.get(record.id);
     if (cached && cached.key === key) {
       bubbleCanvasCache.delete(record.id);
       bubbleCanvasCache.set(record.id, cached);
       return cached.canvas;
     }
+    queueBubbleCanvasBuild(node, dpr, key);
+    return null;
+  }
+
+  function processBubbleCanvasBuildQueue(dpr) {
+    var profile = renderProfile();
+    var limit = Math.max(1, profile.maxCanvasBuildsPerFrame || 4);
+    var built = 0;
+    while (bubbleCanvasBuildQueue.length && built < limit) {
+      var item = bubbleCanvasBuildQueue.shift();
+      bubbleCanvasQueuedKeys.delete(item.key);
+      if (!item.node || !item.node.record) continue;
+      var currentKey = bubbleCanvasCacheKey(item.node, item.dpr || dpr, profile);
+      if (currentKey !== item.key) continue;
+      drawBubbleOffscreen(item.node, item.dpr || dpr, currentKey, profile);
+      built += 1;
+    }
+    return bubbleCanvasBuildQueue.length > 0;
+  }
+
+  function drawBubbleOffscreen(node, dpr, key, profile) {
+    var record = node.record;
+    var r = Math.round(visualRadius(node));
+    var img = imageCache.get(record.logoUrl);
     var pad = Math.ceil(Math.max(10, r * 0.26));
     var size = (r * 2) + (pad * 2);
     var canvas = document.createElement('canvas');
@@ -1678,8 +1862,9 @@
     grad.addColorStop(0.64, core);
     grad.addColorStop(0.88, '#050506');
     grad.addColorStop(1, rim);
+    var polish = isPolishEnabled(performance.now());
     ctx.shadowColor = rim;
-    ctx.shadowBlur = Math.max(8, r * 0.34) * profile.glowScale;
+    ctx.shadowBlur = polish ? Math.max(4, r * 0.18) * profile.glowScale : 0;
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.fillStyle = grad;
@@ -1695,8 +1880,10 @@
     lower.addColorStop(1, 'rgba(0,0,0,.76)');
     ctx.fillStyle = lower;
     ctx.fillRect(-r, -r, r * 2, r * 2);
-    drawPlanetBands(ctx, record, r, 0, profile);
-    drawPlanetNoise(ctx, record, r, profile);
+    if (polish) {
+      drawPlanetBands(ctx, record, r, 0, profile);
+      drawPlanetNoise(ctx, record, r, profile);
+    }
     ctx.restore();
     var rimGrad = ctx.createRadialGradient(r * 0.35, r * 0.35, r * 0.35, 0, 0, r);
     rimGrad.addColorStop(0, 'rgba(255,255,255,0)');
@@ -1710,7 +1897,7 @@
     ctx.lineWidth = Math.max(1, r * 0.018);
     ctx.strokeStyle = rim;
     ctx.shadowColor = rim;
-    ctx.shadowBlur = Math.max(4, r * 0.16) * profile.glowScale;
+    ctx.shadowBlur = polish ? Math.max(2, r * 0.08) * profile.glowScale : 0;
     ctx.stroke();
     ctx.shadowBlur = 0;
     ctx.save();
@@ -1738,7 +1925,7 @@
       ctx.lineWidth = Math.max(2, symSize * 0.18);
       ctx.strokeStyle = 'rgba(0,0,0,.72)';
       ctx.shadowColor = 'rgba(0,0,0,.9)';
-      ctx.shadowBlur = Math.max(4, r * 0.08);
+      ctx.shadowBlur = polish ? Math.max(2, r * 0.04) : 0;
       ctx.strokeText(symbolLabel, 0, img ? r * 0.05 : -r * 0.02);
       ctx.fillText(symbolLabel, 0, img ? r * 0.05 : -r * 0.02);
       if (r > 36) {
@@ -1771,6 +1958,28 @@
     bubbleCanvasCache.set(record.id, { key: key, canvas: canvas });
     capMap(bubbleCanvasCache, BUBBLE_CANVAS_CACHE_LIMIT);
     return canvas;
+  }
+
+  function drawSimpleBubbleFallback(ctx, node) {
+    var record = node.record;
+    var r = Math.round(visualRadius(node));
+    var rim = ringColor(record);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = signal(record) != null && signal(record) < 0 ? '#210711' : '#071e14';
+    ctx.fill();
+    ctx.lineWidth = Math.max(1, r * 0.035);
+    ctx.strokeStyle = rim;
+    ctx.stroke();
+    if (r > 20) {
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '900 ' + Math.max(10, Math.min(18, r * 0.28)) + 'px Inter, Arial, sans-serif';
+      ctx.fillText((record.displaySymbol || record.symbol).slice(0, 8), node.x, node.y);
+    }
+    ctx.restore();
   }
 
   function hashText(value) {
@@ -1850,6 +2059,10 @@
   function drawShockwaves(ctx, now) {
     if (!state.shockwaves.length) return;
     var profile = renderProfile();
+    if (!profile.shockwaveGlow && profile.name === 'mobile_low') {
+      state.shockwaves = [];
+      return;
+    }
     state.shockwaves = state.shockwaves.filter(function (wave) {
       var t = (now - wave.startedAt) / wave.duration;
       if (t >= 1) return false;
@@ -1858,7 +2071,7 @@
       ctx.strokeStyle = wave.color;
       ctx.lineWidth = Math.max(1, wave.radius * 0.05 * (1 - t));
       ctx.shadowColor = wave.color;
-      ctx.shadowBlur = 18 * profile.glowScale * (1 - t);
+      ctx.shadowBlur = profile.shockwaveGlow ? 18 * profile.glowScale * (1 - t) : 0;
       ctx.beginPath();
       ctx.arc(wave.x, wave.y, wave.radius * (1.08 + t * 1.35), 0, Math.PI * 2);
       ctx.stroke();
@@ -1886,10 +2099,47 @@
     return point;
   }
 
-  function draw() {
+  function updatePerfStats(drawMs, physicsMs) {
+    if (!state.perfDebug) return;
+    var now = performance.now();
+    state.perfStats.framesSinceSample += 1;
+    if (!state.perfStats.lastSampleAt) state.perfStats.lastSampleAt = now;
+    if (now - state.perfStats.lastSampleAt >= 700) {
+      state.perfStats.fps = Math.round((state.perfStats.framesSinceSample * 1000) / (now - state.perfStats.lastSampleAt));
+      state.perfStats.framesSinceSample = 0;
+      state.perfStats.lastSampleAt = now;
+    }
+    state.perfStats.drawMs = drawMs;
+    state.perfStats.physicsMs = physicsMs;
+  }
+
+  function updatePerfOverlay(dpr) {
+    if (!state.perfDebug || !state.perfOverlay) return;
+    var profile = renderProfile();
+    state.perfOverlay.textContent =
+      'fps ' + state.perfStats.fps +
+      ' | draw ' + state.perfStats.drawMs.toFixed(1) + 'ms' +
+      ' | physics ' + state.perfStats.physicsMs.toFixed(1) + 'ms' +
+      ' | bubbles ' + state.nodes.length +
+      ' | cache ' + bubbleCanvasCache.size +
+      ' | queue ' + bubbleCanvasBuildQueue.length +
+      ' | ' + profile.name +
+      ' | dpr ' + dpr.toFixed(2);
+  }
+
+  function draw(timestamp) {
     state.raf = 0;
     if (!state.canvas || !state.ctx) return;
     if (document.hidden) return;
+    var profile = renderProfile();
+    var now = timestamp || performance.now();
+    var frameInterval = 1000 / Math.max(1, profile.targetFps || 30);
+    if (state.lastDrawAt && now - state.lastDrawAt < frameInterval) {
+      state.raf = window.requestAnimationFrame(draw);
+      return;
+    }
+    state.lastDrawAt = now;
+    if (!state.firstPaintAt) state.firstPaintAt = now;
     var canvas = state.canvas;
     var ctx = state.ctx;
     var rect = canvas.getBoundingClientRect();
@@ -1904,19 +2154,24 @@
     } else {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
+    var physicsStart = performance.now();
     forceSimulationEquivalent(width, height);
-    var now = performance.now();
+    var physicsMs = performance.now() - physicsStart;
+    var queueHasMore = processBubbleCanvasBuildQueue(dpr);
+    var drawStart = performance.now();
     updateCamera(width, height, now);
     ctx.clearRect(0, 0, width, height);
     ctx.save();
     applyCamera(ctx, width, height);
-    state.nodes.forEach(function (node) { drawCastShadow(ctx, node); });
-    drawShockwaves(ctx, now);
+    if (profile.castShadow && isPolishEnabled(now)) state.nodes.forEach(function (node) { drawCastShadow(ctx, node); });
+    if (isPolishEnabled(now)) drawShockwaves(ctx, now);
     state.nodes.slice().sort(function (a, b) { return (a.depth || 1) - (b.depth || 1); }).forEach(function (node) {
       drawGalaxyNode(ctx, node, dpr, now);
     });
     ctx.restore();
-    if (shouldAnimate()) state.raf = window.requestAnimationFrame(draw);
+    updatePerfStats(performance.now() - drawStart, physicsMs);
+    updatePerfOverlay(dpr);
+    if (!state.raf && (shouldAnimate() || queueHasMore)) state.raf = window.requestAnimationFrame(draw);
   }
 
   function marketWeather() {
@@ -1943,29 +2198,31 @@
     var shockwavePulse = node.shockwaveUntil && now < node.shockwaveUntil ? (node.shockwaveUntil - now) / 900 : 0;
     var volumePulse = record.volumeSpikeUntil && now < record.volumeSpikeUntil ? (record.volumeSpikeUntil - now) / 2600 : 0;
     var collisionPulse = node.collisionUntil && now < node.collisionUntil ? (node.collisionUntil - now) / 320 : 0;
-    if (recent || pulse || volumePulse || collisionPulse || eventPulse || shockwavePulse) {
+    var polish = isPolishEnabled(now);
+    if (polish && (recent || pulse || volumePulse || collisionPulse || eventPulse || shockwavePulse)) {
       ctx.beginPath();
       ctx.arc(node.x, node.y, r + 7 + volumePulse * 9 + collisionPulse * 4 + eventPulse * 10 + shockwavePulse * 15, 0, Math.PI * 2);
       ctx.strokeStyle = ringColor(record);
       ctx.globalAlpha = alpha * Math.max(0.25, pulse || volumePulse || collisionPulse * 0.72 || eventPulse * 0.78 || shockwavePulse * 0.9 || 0.22);
       ctx.lineWidth = Math.max(1, r * (0.03 + volumePulse * 0.04 + collisionPulse * 0.018));
       ctx.shadowColor = ringColor(record);
-      ctx.shadowBlur = (18 + volumePulse * 18 + collisionPulse * 12 + eventPulse * 20 + shockwavePulse * 24) * profile.glowScale;
+      ctx.shadowBlur = profile.shockwaveGlow ? (18 + volumePulse * 18 + collisionPulse * 12 + eventPulse * 20 + shockwavePulse * 24) * profile.glowScale : 0;
       ctx.stroke();
       ctx.shadowBlur = 0;
       ctx.globalAlpha = alpha;
     }
-    var bubble = drawBubbleOffscreen(node, dpr);
     var pad = Math.ceil(Math.max(10, r * 0.26));
-    ctx.drawImage(bubble, node.x - r - pad, node.y - r - pad, r * 2 + pad * 2, r * 2 + pad * 2);
-    drawAnimatedBands(ctx, node, now);
+    var bubble = getCachedBubbleCanvas(node, dpr);
+    if (bubble) ctx.drawImage(bubble, node.x - r - pad, node.y - r - pad, r * 2 + pad * 2, r * 2 + pad * 2);
+    else drawSimpleBubbleFallback(ctx, node);
+    if (polish && profile.animatedBands) drawAnimatedBands(ctx, node, now);
     if (state.hovered === node) {
       ctx.beginPath();
       ctx.arc(node.x, node.y, r + 5, 0, Math.PI * 2);
       ctx.strokeStyle = ringColor(record);
       ctx.lineWidth = 2;
       ctx.shadowColor = ringColor(record);
-      ctx.shadowBlur = 18 * profile.glowScale;
+      ctx.shadowBlur = profile.shockwaveGlow ? 18 * profile.glowScale : 0;
       ctx.stroke();
     }
     ctx.restore();
@@ -2394,7 +2651,7 @@
         if (!metricAllowed(metric)) return;
         state.metric = metric;
         updateCapabilityControls();
-        bubbleCanvasCache.clear();
+        clearBubbleCanvasCache();
         syncNodes();
       });
     });
@@ -2404,7 +2661,7 @@
         if (!timeframeAllowed(timeframe)) return;
         state.timeframe = timeframe;
         updateCapabilityControls();
-        bubbleCanvasCache.clear();
+        clearBubbleCanvasCache();
         syncNodes();
       });
     });
@@ -2434,13 +2691,16 @@
   function initCanvas() {
     state.board = document.getElementById('woe-bubble-board');
     if (!state.board) return;
+    state.perfDebug = String(queryParam('waxdebug') || '').toLowerCase() === 'perf';
     state.board.innerHTML = '<canvas id="woe-ab-canvas" class="woe-ab-canvas" tabindex="0" role="application" aria-label="WaxOnEdge WAX Galaxy scanner. Use Enter or Space to open live token details."></canvas>' +
       '<div id="woe-ab-tooltip" class="woe-ab-tooltip" hidden></div>' +
+      (state.perfDebug ? '<div id="woe-ab-perf" class="woe-ab-perf" aria-live="off"></div>' : '') +
       '<div id="woe-ab-token-modal" class="woe-ab-modal" hidden></div>';
     state.canvas = document.getElementById('woe-ab-canvas');
     state.ctx = state.canvas.getContext('2d');
     state.tooltip = document.getElementById('woe-ab-tooltip');
     state.modal = document.getElementById('woe-ab-token-modal');
+    state.perfOverlay = document.getElementById('woe-ab-perf');
     state.canvas.addEventListener('pointermove', onPointerMove);
     state.canvas.addEventListener('pointerdown', onPointerDown);
     state.canvas.addEventListener('pointerup', onPointerUp);
