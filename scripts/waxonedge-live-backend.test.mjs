@@ -9217,14 +9217,19 @@ ok('frontend bubbles bootstrap first and then starts live updates',
   frontendBubbles.indexOf('fetchBootstrapSnapshot()') < frontendBubbles.lastIndexOf('startLiveUpdates();') &&
   frontendBubbles.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite'") &&
   frontendBubbles.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
+  frontendBubbles.includes('var MEMBERSHIP_BOOTSTRAP_TIMEOUT_MS = 2000;') &&
   frontendBubbles.includes('function isUnavailableLitePayload(payload)') &&
+  frontendBubbles.includes('function hasBubbleTokens(payload)') &&
   frontendBubbles.includes("data.source === 'waxcash_bubbles_lite' && data.data_available === false") &&
   frontendBubbles.includes('if (isUnavailableLitePayload(snapshot)) return') &&
   frontendBubbles.includes('function fetchBootstrapSnapshot()') &&
-  frontendBubbles.includes('apiJsonTimed(BOOTSTRAP_API, \'membership\').then(function (snapshot)') &&
-  frontendBubbles.includes('return apiJsonTimed(BUBBLES_LITE_API, \'full_lite\').then(function (snapshot)') &&
-  frontendBubbles.includes("if (isUnavailableLitePayload(snapshot)) throw new Error('WAXCASH membership bubble lite query unavailable')") &&
-  frontendBubbles.includes('if (isUnavailableLitePayload(snapshot)) throw error') &&
+  frontendBubbles.includes('var membershipRequest = apiJsonTimed(BOOTSTRAP_API, \'membership\')') &&
+  frontendBubbles.includes('var fullLiteRequest = apiJsonTimed(BUBBLES_LITE_API, \'full_lite\')') &&
+  frontendBubbles.includes('var timedMembershipRequest = Promise.race([') &&
+  frontendBubbles.includes("state.perfStats.membershipState = 'timeout'") &&
+  frontendBubbles.includes("raceCandidate(timedMembershipRequest, 'WAXCASH membership', resolve, reject)") &&
+  frontendBubbles.includes("raceCandidate(fullLiteRequest, 'WAXCASH full lite', resolve, reject)") &&
+  !/apiJsonTimed\(BOOTSTRAP_API, 'membership'\)\.then[\s\S]*\.catch\(function \(error\) \{[\s\S]*apiJsonTimed\(BUBBLES_LITE_API, 'full_lite'\)/.test(frontendBubbles) &&
   frontendBubbles.includes('var BOOTSTRAP_API = BUBBLES_MEMBERSHIP_API;') &&
   frontendBubbles.includes('function fetchEnrichedSnapshotAfterFirstPaint()') &&
   frontendBubbles.includes('apiJsonTimed(BUBBLES_LITE_API, \'full_lite\').then(function (snapshot)') &&
@@ -9233,6 +9238,7 @@ ok('frontend bubbles bootstrap first and then starts live updates',
 ok('frontend perf debug records time-to-first-bubble without blocking on logo image loads',
   frontendBubbles.includes('function apiJsonTimed(path, label)') &&
   frontendBubbles.includes("console.info('[WaxOnEdge perf] ' + label + ' request'") &&
+  frontendBubbles.includes('function perfRequestLabel(value, stateName)') &&
   frontendBubbles.includes('state.perfStats.membershipMs = performance.now() - start') &&
   frontendBubbles.includes('state.perfStats.fullLiteMs = performance.now() - start') &&
   frontendBubbles.includes('state.perfStats.normalizeMs = performance.now() - normalizeStart') &&
@@ -9240,7 +9246,7 @@ ok('frontend perf debug records time-to-first-bubble without blocking on logo im
   frontendBubbles.includes('state.perfStats.firstDrawAt = now') &&
   frontendBubbles.includes('state.perfStats.firstVisibleBubbleAt = now') &&
   frontendBubbles.includes('state.perfStats.totalFirstBubbleMs = now - state.perfStats.pageStartAt') &&
-  frontendBubbles.includes("' | member ' + perfMs(state.perfStats.membershipMs)") &&
+  frontendBubbles.includes("' | member ' + perfRequestLabel(state.perfStats.membershipMs, state.perfStats.membershipState)") &&
   frontendBubbles.includes("' | first ' + perfMs(state.perfStats.totalFirstBubbleMs)") &&
   /syncNodes\(\);\s*state\.perfStats\.syncNodesMs[\s\S]*state\.nodes\.forEach\(function \(node\) \{ loadImage\(node\.record\.logoUrl\); \}\);/.test(frontendBubbles));
 ok('frontend WAXCASH analytics adapter maps selected root price, pair row price, liquidity, market cap, and pair_table rows',
@@ -9541,7 +9547,8 @@ ok('frontend bubble click opens in-page live token details without full token pa
 ok('waxonedge.html remains the live bubble scanner product path',
   html.includes('id="woe-bubble-board"') &&
   html.includes('/js/waxonedge-bubbles-v2.js') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-prebuilt-membership-v2') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-bootstrap-race-v1') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-prebuilt-membership-v2') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-fast-membership') &&
   !html.includes('waxcash.html') &&
   !html.includes('waxcash-graph.js'));

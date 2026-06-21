@@ -77,7 +77,8 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
 ok('OG analytics parity PR cache-busts changed WaxOnEdge scanner assets',
   html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-prebuilt-membership-v2') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-bootstrap-race-v1') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-prebuilt-membership-v2') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-fast-membership') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-modal-cleanup') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-liquidity-first') &&
@@ -354,11 +355,16 @@ ok('waxonedge-bubbles-v2.js uses the slim WAXCASH bubble backend endpoint, not f
   !v2Js.includes('wax.alcor.exchange'));
 ok('waxonedge-bubbles-v2.js bootstraps visible bubbles from membership fast path before enrichment',
   v2Js.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
+  v2Js.includes('var MEMBERSHIP_BOOTSTRAP_TIMEOUT_MS = 2000;') &&
   v2Js.includes('function fetchBootstrapSnapshot()') &&
-  v2Js.includes('apiJsonTimed(BOOTSTRAP_API, \'membership\').then(function (snapshot)') &&
-  v2Js.includes('return apiJsonTimed(BUBBLES_LITE_API, \'full_lite\').then(function (snapshot)') &&
-  v2Js.includes("if (isUnavailableLitePayload(snapshot)) throw new Error('WAXCASH membership bubble lite query unavailable')") &&
-  v2Js.includes('if (isUnavailableLitePayload(snapshot)) throw error') &&
+  v2Js.includes('function hasBubbleTokens(payload)') &&
+  v2Js.includes('var membershipRequest = apiJsonTimed(BOOTSTRAP_API, \'membership\')') &&
+  v2Js.includes('var fullLiteRequest = apiJsonTimed(BUBBLES_LITE_API, \'full_lite\')') &&
+  v2Js.includes('var timedMembershipRequest = Promise.race([') &&
+  v2Js.includes("state.perfStats.membershipState = 'timeout'") &&
+  v2Js.includes("raceCandidate(timedMembershipRequest, 'WAXCASH membership', resolve, reject)") &&
+  v2Js.includes("raceCandidate(fullLiteRequest, 'WAXCASH full lite', resolve, reject)") &&
+  !/apiJsonTimed\(BOOTSTRAP_API, 'membership'\)\.then[\s\S]*\.catch\(function \(error\) \{[\s\S]*apiJsonTimed\(BUBBLES_LITE_API, 'full_lite'\)/.test(v2Js) &&
   v2Js.includes('function fetchEnrichedSnapshotAfterFirstPaint()') &&
   /function fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*requestAnimationFrame[\s\S]*apiJsonTimed\(BUBBLES_LITE_API, 'full_lite'\)[\s\S]*applyLiveSnapshot\(snapshot\)/.test(v2Js) &&
   /function load\(\)[\s\S]*fetchBootstrapSnapshot\(\)[\s\S]*syncNodes\(\)[\s\S]*fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*startLiveUpdates\(\)/.test(v2Js) &&
@@ -367,6 +373,7 @@ ok('waxonedge-bubbles-v2.js bootstraps visible bubbles from membership fast path
 ok('waxonedge-bubbles-v2.js records startup timing and does not wait for logos before first draw',
   v2Js.includes('function apiJsonTimed(path, label)') &&
   v2Js.includes("console.info('[WaxOnEdge perf] ' + label + ' request'") &&
+  v2Js.includes('function perfRequestLabel(value, stateName)') &&
   v2Js.includes('state.perfStats.normalizeMs = performance.now() - normalizeStart') &&
   v2Js.includes('state.perfStats.syncNodesMs = performance.now() - syncStart') &&
   v2Js.includes('state.perfStats.firstDrawAt = now') &&
