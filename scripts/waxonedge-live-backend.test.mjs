@@ -8845,8 +8845,25 @@ ok('WAXCASH all-DEX token enrichment does not select nonexistent 7d/30d WAX/USD 
   !tokenRowsForRefsSection.includes('s.volume_7d_usd') &&
   !tokenRowsForRefsSection.includes('s.volume_30d_wax') &&
   !tokenRowsForRefsSection.includes('s.volume_30d_usd') &&
-  /async function loadWaxcashLitePairRows[\s\S]*p\.volume_7d, p\.volume_7d_wax, p\.volume_7d_usd, p\.volume_30d, p\.volume_30d_wax, p\.volume_30d_usd/.test(route),
+  true,
   tokenRowsForRefsSection);
+const tokenStatsSqlTemplates = Array.from(route.matchAll(/`[^`]*waxonedge_token_stats[^`]*`/g)).map((match) => match[0]);
+const invalidTokenStatsVolumeSelects = tokenStatsSqlTemplates.filter((sql) =>
+  /^\s*`\s*SELECT/i.test(sql) &&
+  /s\.volume_7d_wax|s\.volume_7d_usd|s\.volume_30d_wax|s\.volume_30d_usd/.test(sql)
+);
+ok('all waxonedge_token_stats SELECT templates avoid pair-only 7d/30d WAX/USD columns',
+  tokenStatsSqlTemplates.length > 0 &&
+  invalidTokenStatsVolumeSelects.length === 0 &&
+  tokenStatsSqlTemplates.some((sql) =>
+    sql.includes('waxonedge_token_stats s') &&
+    sql.includes('s.volume_7d') &&
+    sql.includes('s.volume_30d')),
+  JSON.stringify(invalidTokenStatsVolumeSelects));
+ok('pair SELECT templates may still expose pair-level 7d/30d WAX/USD volume columns',
+  /async function loadWaxcashLitePairRows[\s\S]*p\.volume_7d, p\.volume_7d_wax, p\.volume_7d_usd, p\.volume_30d, p\.volume_30d_wax, p\.volume_30d_usd/.test(route) &&
+  /async function loadWaxcashOgPairRows[\s\S]*volume_7d, volume_7d_wax, volume_7d_usd, volume_30d, volume_30d_wax, volume_30d_usd/.test(route),
+  'Expected pair-level 7d/30d WAX/USD columns to remain on waxonedge_pairs SELECTs');
 ok('frontend bubbles bootstrap first and then starts live updates',
   frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') > -1 &&
   frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') < frontendBubbles.lastIndexOf('startLiveUpdates();') &&
