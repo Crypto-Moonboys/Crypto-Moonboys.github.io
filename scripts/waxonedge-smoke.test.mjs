@@ -77,7 +77,8 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
 ok('OG analytics parity PR cache-busts changed WaxOnEdge scanner assets',
   html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-modal-cleanup') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-fast-membership') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-modal-cleanup') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-liquidity-first') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-waxcash-bubbles-lite-2') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-waxcash-bubbles-lite"') &&
@@ -341,13 +342,22 @@ ok('waxonedge.js keeps Lightweight Charts support', js.includes('window.Lightwei
 
 ok('waxonedge-bubbles-v2.js uses the slim WAXCASH bubble backend endpoint, not full analytics polling or live Alcor APIs',
   v2Js.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite';") &&
-  v2Js.includes('var BOOTSTRAP_API = BUBBLES_LITE_API;') &&
+  v2Js.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
+  v2Js.includes('var BOOTSTRAP_API = BUBBLES_MEMBERSHIP_API;') &&
   v2Js.includes("var HEALTH_API = '/api/waxonedge/indexer-health';") &&
   v2Js.includes('var LIVE_API = BUBBLES_LITE_API;') &&
   !v2Js.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics';") &&
   !v2Js.includes("var LIVE_API = '/api/waxonedge/waxcash-analytics';") &&
   !v2Js.includes('antbubbles') &&
   !v2Js.includes('wax.alcor.exchange'));
+ok('waxonedge-bubbles-v2.js bootstraps visible bubbles from membership fast path before enrichment',
+  v2Js.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
+  v2Js.includes('apiJson(BOOTSTRAP_API)') &&
+  v2Js.includes('function fetchEnrichedSnapshotAfterFirstPaint()') &&
+  /function fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*requestAnimationFrame[\s\S]*apiJson\(BUBBLES_LITE_API\)[\s\S]*applyLiveSnapshot\(snapshot\)/.test(v2Js) &&
+  /function load\(\)[\s\S]*syncNodes\(\)[\s\S]*fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*startLiveUpdates\(\)/.test(v2Js) &&
+  !v2Js.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics';") &&
+  !v2Js.includes("var BOOTSTRAP_API = BUBBLES_LITE_API;"));
 ok('waxonedge-bubbles-v2.js phase-one adapter can normalize waxcash-analytics token stats and pair table rows into the slim shape',
   v2Js.includes('source_feed: BUBBLES_LITE_API') &&
   v2Js.includes('function waxcashAnalyticsToBubblePayload(payload)') &&
@@ -622,7 +632,8 @@ ok('waxonedge-bubbles-v2.js caps modal detail cache for long scanner sessions',
   !v2Js.includes('state.modalDetailCache[key] ='));
 ok('WaxOnEdge frontend keeps the scanner on the slim Worker route and token analytics on Worker API routes only',
   v2Js.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite';") &&
-  v2Js.includes('var BOOTSTRAP_API = BUBBLES_LITE_API;') &&
+  v2Js.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
+  v2Js.includes('var BOOTSTRAP_API = BUBBLES_MEMBERSHIP_API;') &&
   v2Js.includes('var LIVE_API = BUBBLES_LITE_API;') &&
   v2Js.includes("var HEALTH_API = '/api/waxonedge/indexer-health';") &&
   js.includes("'/token/' + encodeURIComponent(chartContract) + '/' + encodeURIComponent(chartSymbol) + '/chart'") &&
@@ -919,6 +930,9 @@ ok('waxonedge-bubbles-v2.js live token updates immediately resize market-cap bub
   /function refreshLiveTargetRadii\(\)[\s\S]*computeRadii\(state\.visible[\s\S]*node\.targetRadius = radii\[index\]/.test(v2Js) &&
   /function applyLiveSnapshot\(snapshot\)[\s\S]*applyLiveTokenUpdate\(record, update\)[\s\S]*refreshLiveTargetRadii\(\)[\s\S]*syncNodes\(\)/.test(v2Js) &&
   /function valueForMetric[\s\S]*if \(metric === 'mcap'\)[\s\S]*return record\.marketCapWax/.test(v2Js));
+ok('waxonedge-bubbles-v2.js overlays enrichment without removing existing membership tokens',
+  /function applyLiveSnapshot\(snapshot\)[\s\S]*var hasNewRecords = tokens\.some[\s\S]*if \(hasNewRecords\)[\s\S]*state\.records = normalizeRecords\(snapshot\)[\s\S]*return;[\s\S]*tokens\.forEach[\s\S]*applyLiveTokenUpdate\(record, update\)/.test(v2Js) &&
+  /function fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*apiJson\(BUBBLES_LITE_API\)[\s\S]*applyLiveSnapshot\(snapshot\)/.test(v2Js));
 {
   const mcapBranchStart = v2Js.indexOf("if (state.metric === 'mcap') {");
   const mcapBranchEnd = v2Js.indexOf("return 'Not indexed';", mcapBranchStart);

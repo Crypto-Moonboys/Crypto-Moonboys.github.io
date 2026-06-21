@@ -8,7 +8,8 @@
   'use strict';
 
   var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite';
-  var BOOTSTRAP_API = BUBBLES_LITE_API;
+  var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';
+  var BOOTSTRAP_API = BUBBLES_MEMBERSHIP_API;
   var HEALTH_API = '/api/waxonedge/indexer-health';
   var LIVE_API = BUBBLES_LITE_API;
   var LIVE_STREAM_API = '/api/waxonedge/live/stream';
@@ -2624,6 +2625,19 @@
     scheduleLivePolling(LIVE_POLL_MS);
   }
 
+  function fetchEnrichedSnapshotAfterFirstPaint() {
+    window.requestAnimationFrame(function () {
+      apiJson(BUBBLES_LITE_API).then(function (snapshot) {
+        state.connected = true;
+        applyLiveSnapshot(snapshot);
+        updateWaxPrice(snapshot);
+        setStatus();
+      }).catch(function () {
+        setStatus();
+      });
+    });
+  }
+
   function setStatus() {
     var dot = document.getElementById('woe-ab-live-dot');
     var text = document.getElementById('woe-ab-live-text');
@@ -2792,6 +2806,7 @@
       syncNodes();
       setStatus();
       state.nodes.forEach(function (node) { loadImage(node.record.logoUrl); });
+      fetchEnrichedSnapshotAfterFirstPaint();
       startLiveUpdates();
       requestDraw();
     }).catch(function (error) {
