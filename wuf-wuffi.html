@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="WUF / WUFFI WAX token page for Crypto Moonboys, using the current site shell with WAX token details, WUFFI links, and an Alcor WUF/WAX chart panel.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="WUF / WUFFI Token | Crypto Moonboys">
+  <meta property="og:description" content="WUF / WUFFI WAX token page with WAX contract context, WUFFI project links, and a WUF/WAX chart panel.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cryptomoonboys.com/wuf-wuffi.html">
+  <meta property="og:image" content="https://cryptomoonboys.com/img/CRYPTO-MOONBOYS-BITCOIN-LOGO.png">
+  <link rel="canonical" href="https://cryptomoonboys.com/wuf-wuffi.html">
+  <title>WUF / WUFFI Token | Crypto Moonboys</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/wiki.css">
+  <link rel="stylesheet" href="/css/battle-layer.css">
+  <link rel="stylesheet" href="/css/retro-16bit-theme.css">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <style>
+    :root {
+      color-scheme: dark;
+      --wuf-bg: #101820;
+      --wuf-panel: rgba(12, 19, 27, 0.94);
+      --wuf-panel-2: rgba(20, 31, 43, 0.94);
+      --wuf-line: rgba(255, 255, 255, 0.14);
+      --wuf-text: #f5f7fb;
+      --wuf-muted: #a8b4c0;
+      --wuf-cyan: #02f0e7;
+      --wuf-yellow: #ffd000;
+      --wuf-green: #00f59f;
+    }
+    .wuf-page-wrap {
+      display: grid;
+      min-height: calc(100vh - 80px);
+      padding: 28px 16px 40px;
+      place-items: center;
+    }
+    .wuf-shell {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      border: 1px solid var(--wuf-line);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(26, 34, 44, 0.98), rgba(13, 20, 29, 0.98));
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
+      overflow: hidden;
+    }
+    .wuf-hero {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 20px;
+      align-items: center;
+      padding: 24px;
+      border-bottom: 1px solid var(--wuf-line);
+      background: radial-gradient(circle at top left, rgba(2, 240, 231, 0.18), transparent 34%), var(--wuf-panel);
+    }
+    .wuf-mark {
+      display: grid;
+      place-items: center;
+      width: 150px;
+      height: 150px;
+      border: 1px solid rgba(255, 208, 0, 0.42);
+      border-radius: 24px;
+      background: radial-gradient(circle, rgba(255, 208, 0, 0.22), rgba(0, 0, 0, 0.28));
+      font-size: 72px;
+      line-height: 1;
+    }
+    .wuf-eyebrow {
+      color: var(--wuf-yellow);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .wuf-title {
+      margin: 6px 0 8px;
+      color: var(--wuf-cyan);
+      font-size: clamp(28px, 4vw, 52px);
+      line-height: 1;
+    }
+    .wuf-subtitle {
+      max-width: 860px;
+      margin: 0;
+      color: var(--wuf-text);
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.55;
+    }
+    .wuf-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .wuf-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 9px 12px;
+      border: 1px solid rgba(2, 240, 231, 0.32);
+      border-radius: 10px;
+      color: var(--wuf-cyan);
+      background: rgba(2, 240, 231, 0.07);
+      font-size: 12px;
+      font-weight: 900;
+      text-decoration: none;
+    }
+    .wuf-link:hover,
+    .wuf-link:focus-visible { text-decoration: underline; }
+    .wuf-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 420px) minmax(0, 1fr);
+      gap: 14px;
+      padding: 14px;
+    }
+    .wuf-card {
+      border: 1px solid var(--wuf-line);
+      background: var(--wuf-panel-2);
+      overflow: hidden;
+    }
+    .wuf-card h2 {
+      margin: 0;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--wuf-line);
+      color: var(--wuf-cyan);
+      font-size: 18px;
+      background: rgba(0, 0, 0, 0.18);
+    }
+    .wuf-stat-row {
+      display: grid;
+      grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.2fr);
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .wuf-stat-row:last-child { border-bottom: 0; }
+    .wuf-label {
+      color: var(--wuf-muted);
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+    .wuf-value {
+      color: var(--wuf-text);
+      font-weight: 900;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+    .wuf-note {
+      margin: 0;
+      padding: 14px 16px 16px;
+      color: var(--wuf-muted);
+      font-size: 13px;
+      font-weight: 750;
+      line-height: 1.55;
+    }
+    .wuf-chart-host {
+      min-height: 560px;
+      padding: 12px;
+    }
+    .wuf-tradingview-chart {
+      width: 100%;
+      height: 540px;
+      min-height: 540px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #111722;
+    }
+    .wuf-tradingview-widget {
+      width: 100%;
+      height: 100%;
+      min-height: 540px;
+    }
+    .wuf-chart-note {
+      margin: 10px 0 0;
+      color: var(--wuf-muted);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+    .wuf-disclaimer {
+      padding: 14px 18px 18px;
+      border-top: 1px solid var(--wuf-line);
+      color: var(--wuf-muted);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.55;
+      background: rgba(0, 0, 0, 0.18);
+    }
+    @media (max-width: 900px) {
+      .wuf-page-wrap { padding: 14px 10px 28px; }
+      .wuf-hero { grid-template-columns: 1fr; text-align: center; }
+      .wuf-mark { margin: 0 auto; }
+      .wuf-links { justify-content: center; }
+      .wuf-grid { grid-template-columns: 1fr; }
+      .wuf-value { text-align: left; }
+      .wuf-stat-row { grid-template-columns: 1fr; }
+      .wuf-chart-host, .wuf-tradingview-chart, .wuf-tradingview-widget { min-height: 420px; height: 420px; }
+    }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "WUF / WUFFI Token",
+    "description": "Crypto Moonboys WUF / WUFFI WAX token page.",
+    "url": "https://cryptomoonboys.com/wuf-wuffi.html",
+    "publisher": { "@type": "Organization", "name": "Crypto Moonboys" }
+  }
+  </script>
+</head>
+<body class="page-wiki page-standard-shell page-has-right-panel">
+<main id="content" role="main">
+  <div class="wuf-page-wrap">
+    <section class="wuf-shell" aria-labelledby="wuf-title">
+      <header class="wuf-hero">
+        <div class="wuf-mark" aria-hidden="true">🐺</div>
+        <div>
+          <div class="wuf-eyebrow">WAX blockchain token</div>
+          <h1 id="wuf-title" class="wuf-title">WUF / WUFFI</h1>
+          <p class="wuf-subtitle">WUFFI is a multi-chain community coin connected to WAX, Solana, Base and TON. This Crypto Moonboys token page keeps the WAX-side context clear: token symbol WUF, WAX contract account wuffi, and a WUF/WAX chart panel for market viewing where Alcor candle data is available.</p>
+          <nav class="wuf-links" aria-label="WUFFI token links">
+            <a class="wuf-link" href="/wiki/wuffi.html">Read the WUFFI wiki</a>
+            <a class="wuf-link" href="https://www.wuffi.io/" target="_blank" rel="noopener noreferrer">wuffi.io</a>
+            <a class="wuf-link" href="https://waxblock.io/account/wuffi" target="_blank" rel="noopener noreferrer">WaxBlock account</a>
+            <a class="wuf-link" href="https://bridge.wuffi.io/" target="_blank" rel="noopener noreferrer">WUFFI bridge</a>
+          </nav>
+        </div>
+      </header>
+
+      <div class="wuf-grid">
+        <article class="wuf-card" aria-labelledby="wuf-stats-heading">
+          <h2 id="wuf-stats-heading">Token details</h2>
+          <div class="wuf-stat-row"><span class="wuf-label">Project</span><span class="wuf-value">WUFFI</span></div>
+          <div class="wuf-stat-row"><span class="wuf-label">Token</span><span class="wuf-value">WUF</span></div>
+          <div class="wuf-stat-row"><span class="wuf-label">WAX contract</span><span class="wuf-value">wuffi</span></div>
+          <div class="wuf-stat-row"><span class="wuf-label">Alcor token key</span><span class="wuf-value">wuf-wuffi</span></div>
+          <div class="wuf-stat-row"><span class="wuf-label">Native pair view</span><span class="wuf-value">WUF / WAX</span></div>
+          <div class="wuf-stat-row"><span class="wuf-label">Chain footprint</span><span class="wuf-value">WAX, Solana, Base, TON</span></div>
+          <p class="wuf-note">This page is read-only. It does not connect wallets, submit swaps, sign transactions, or run background site-wide polling. The chart request only runs when this WUF page is opened.</p>
+        </article>
+
+        <article class="wuf-card" aria-labelledby="wuf-chart-heading">
+          <h2 id="wuf-chart-heading">WUF/WAX chart</h2>
+          <div class="wuf-chart-host" aria-live="polite">
+            <div class="wuf-tradingview-chart">
+              <div id="wuf-tv-chart-container" class="wuf-tradingview-widget"></div>
+            </div>
+            <p class="wuf-chart-note">Chart panel uses Alcor candle data for <strong>wuf-wuffi</strong> against <strong>wax-eosio.token</strong>. If Alcor has no usable candle history for the pair, the chart may load empty without affecting the rest of the site.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="wuf-disclaimer">Informational token page only. Nothing here is financial advice, and no price, liquidity, or volume value is hard-coded into the page.</div>
+    </section>
+  </div>
+</main>
+
+<script data-cfasync="false" src="/js/api-config.js"></script>
+<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+<script data-cfasync="false" src="/js/identity-gate.js"></script>
+<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+<script data-cfasync="false" src="/js/site-shell.js"></script>
+<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+<script data-cfasync="false" src="https://alcor.exchange/charting_library/charting_library.standalone.js"></script>
+<script data-cfasync="false">
+(function () {
+  'use strict';
+  var CONTAINER_ID = 'wuf-tv-chart-container';
+  var ALCOR_CANDLES = 'https://wax.alcor.exchange/api/v2/swap/candles';
+  var TOKEN_A = 'wuf-wuffi';
+  var TOKEN_B = 'wax-eosio.token';
+  var RESOLUTIONS = ['1', '5', '15', '30', '60', '240', 'D', 'W', 'M'];
+  var activeResolution = '240';
+  var subscriptions = {};
+
+  function candleUrl(params) {
+    var url = new URL(ALCOR_CANDLES);
+    url.searchParams.set('tokenA', TOKEN_A);
+    url.searchParams.set('tokenB', TOKEN_B);
+    url.searchParams.set('resolution', params.resolution || activeResolution);
+    if (params.from != null) url.searchParams.set('from', String(params.from));
+    if (params.to != null) url.searchParams.set('to', String(params.to));
+    if (params.limit != null) url.searchParams.set('limit', String(params.limit));
+    return url.toString();
+  }
+
+  function alcorMillis(value) {
+    var time = Number(value);
+    if (!Number.isFinite(time) || time <= 0) return NaN;
+    return time < 100000000000 ? time * 1000 : time;
+  }
+
+  function tradingViewSecondsToAlcorMillis(value) {
+    var seconds = Number(value);
+    if (!Number.isFinite(seconds) || seconds <= 0) return NaN;
+    return Math.floor(seconds * 1000);
+  }
+
+  function toBar(candle) {
+    return {
+      time: alcorMillis(candle.time),
+      open: Number(candle.open),
+      high: Number(candle.high),
+      low: Number(candle.low),
+      close: Number(candle.close),
+      volume: Number(candle.volume || 0)
+    };
+  }
+
+  function resolutionMs(resolution) {
+    if (resolution === 'D' || resolution === '1D') return 24 * 60 * 60 * 1000;
+    if (resolution === 'W' || resolution === '1W') return 7 * 24 * 60 * 60 * 1000;
+    if (resolution === 'M' || resolution === '1M') return 31 * 24 * 60 * 60 * 1000;
+    var minutes = Number(resolution);
+    return Number.isFinite(minutes) && minutes > 0 ? minutes * 60 * 1000 : 4 * 60 * 60 * 1000;
+  }
+
+  function fetchLatestBar(resolution) {
+    var intervalMs = resolutionMs(resolution);
+    var to = Date.now();
+    var from = to - Math.max(intervalMs * 3, 30 * 60 * 1000);
+    return fetch(candleUrl({ resolution: resolution, from: from, to: to }))
+      .then(function (response) {
+        if (!response.ok) throw new Error('Alcor candles HTTP ' + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        var bars = (payload.candles || [])
+          .map(toBar)
+          .filter(function (bar) {
+            return Number.isFinite(bar.time) && Number.isFinite(bar.open) && Number.isFinite(bar.high) &&
+              Number.isFinite(bar.low) && Number.isFinite(bar.close);
+          })
+          .sort(function (a, b) { return a.time - b.time; });
+        return bars[bars.length - 1] || null;
+      });
+  }
+
+  function initWufTradingViewChart() {
+    if (!window.TradingView || !document.getElementById(CONTAINER_ID)) return;
+    var datafeed = {
+      onReady: function (callback) {
+        setTimeout(function () {
+          callback({
+            supported_resolutions: RESOLUTIONS,
+            supports_time: true,
+            supports_marks: false,
+            supports_timescale_marks: false,
+            supports_search: false
+          });
+        }, 0);
+      },
+      searchSymbols: function () {},
+      resolveSymbol: function (symbolName, onResolve) {
+        setTimeout(function () {
+          onResolve({
+            name: 'WUF_WAX',
+            ticker: 'WUF_WAX',
+            description: 'WUF / WAX',
+            type: 'crypto',
+            exchange: 'Alcor',
+            listed_exchange: 'Alcor',
+            timezone: 'Etc/UTC',
+            session: '24x7',
+            minmov: 1,
+            pricescale: 100000000,
+            has_intraday: true,
+            has_daily: true,
+            has_weekly_and_monthly: true,
+            supported_resolutions: RESOLUTIONS,
+            visible_plots_set: 'ohlcv',
+            volume_precision: 2,
+            data_status: 'streaming',
+            format: 'price'
+          });
+        }, 0);
+      },
+      getBars: function (symbolInfo, resolution, periodParams, onHistory, onError) {
+        activeResolution = resolution;
+        var from = Number(periodParams && periodParams.from);
+        var to = Number(periodParams && periodParams.to);
+        if (!Number.isFinite(from) || !Number.isFinite(to) || from <= 0 || to <= 0) {
+          onHistory([], { noData: true });
+          return;
+        }
+        var fromMs = tradingViewSecondsToAlcorMillis(from);
+        var toMs = tradingViewSecondsToAlcorMillis(to);
+        if (!Number.isFinite(fromMs) || !Number.isFinite(toMs)) {
+          onHistory([], { noData: true });
+          return;
+        }
+        fetch(candleUrl({ resolution: resolution, from: fromMs, to: toMs }))
+          .then(function (response) {
+            if (!response.ok) throw new Error('Alcor candles HTTP ' + response.status);
+            return response.json();
+          })
+          .then(function (payload) {
+            var bars = (payload.candles || [])
+              .map(toBar)
+              .filter(function (bar) {
+                return Number.isFinite(bar.time) && Number.isFinite(bar.open) && Number.isFinite(bar.high) &&
+                  Number.isFinite(bar.low) && Number.isFinite(bar.close);
+              })
+              .sort(function (a, b) { return a.time - b.time; });
+            onHistory(bars, { noData: bars.length === 0 });
+          })
+          .catch(function (error) {
+            console.error('[WUF TradingView] Alcor candle fetch failed:', error);
+            onError(error && error.message ? error.message : String(error));
+          });
+      },
+      subscribeBars: function (symbolInfo, resolution, onRealtime, subscriberUID) {
+        if (!symbolInfo || symbolInfo.ticker !== 'WUF_WAX' || !subscriberUID) return;
+        activeResolution = resolution || activeResolution;
+        if (subscriptions[subscriberUID]) clearInterval(subscriptions[subscriberUID].timer);
+        var subscription = { resolution: activeResolution, timer: null, lastTime: 0 };
+        function pollLatestBar() {
+          fetchLatestBar(subscription.resolution)
+            .then(function (bar) {
+              if (!bar || bar.time < subscription.lastTime) return;
+              subscription.lastTime = bar.time;
+              onRealtime(bar);
+            })
+            .catch(function (error) {
+              console.error('[WUF TradingView] Alcor live candle poll failed:', error);
+            });
+        }
+        pollLatestBar();
+        subscription.timer = setInterval(pollLatestBar, Math.max(15000, Math.min(resolutionMs(subscription.resolution), 60000)));
+        subscriptions[subscriberUID] = subscription;
+      },
+      unsubscribeBars: function (subscriberUID) {
+        var subscription = subscriptions[subscriberUID];
+        if (!subscription) return;
+        clearInterval(subscription.timer);
+        delete subscriptions[subscriberUID];
+      },
+      getMarks: function () {},
+      getTimescaleMarks: function () {},
+      getServerTime: function (callback) { callback(Math.floor(Date.now() / 1000)); }
+    };
+
+    new window.TradingView.widget({
+      autosize: true,
+      symbol: 'WUF_WAX',
+      interval: '240',
+      container: CONTAINER_ID,
+      datafeed: datafeed,
+      library_path: 'https://alcor.exchange/charting_library/',
+      locale: 'en',
+      timezone: 'Etc/UTC',
+      theme: 'dark',
+      style: '1',
+      toolbar_bg: '#111820',
+      custom_css_url: 'https://alcor.exchange/tv_themed.css',
+      enabled_features: ['side_toolbar_in_fullscreen_mode', 'header_in_fullscreen_mode'],
+      disabled_features: ['symbol_search_hot_key', 'header_symbol_search'],
+      favorites: { intervals: RESOLUTIONS },
+      studies_overrides: {
+        'volume.volume.color.0': '#ff3b6b',
+        'volume.volume.color.1': '#00e6a8',
+        'volume.volume.transparency': 65
+      },
+      overrides: {
+        'mainSeriesProperties.style': 1,
+        'mainSeriesProperties.candleStyle.upColor': '#00e6a8',
+        'mainSeriesProperties.candleStyle.downColor': '#ff3b6b',
+        'mainSeriesProperties.candleStyle.wickUpColor': '#00e6a8',
+        'mainSeriesProperties.candleStyle.wickDownColor': '#ff3b6b',
+        'paneProperties.background': '#111820',
+        'paneProperties.vertGridProperties.color': 'rgba(148, 163, 184, 0.15)',
+        'paneProperties.horzGridProperties.color': 'rgba(148, 163, 184, 0.15)',
+        'scalesProperties.textColor': '#a8bed3'
+      },
+      loading_screen: { backgroundColor: '#111820', foregroundColor: '#00f5e9' }
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initWufTradingViewChart);
+  else initWufTradingViewChart();
+}());
+</script>
+<script data-cfasync="false" src="/js/faction-alignment.js"></script>
+<script data-cfasync="false" src="/js/wiki.js"></script>
+<script data-cfasync="false" src="/js/engagement.js"></script>
+<script data-cfasync="false" src="/js/comments.js"></script>
+<script data-cfasync="false" src="/js/battle-layer.js"></script>
+</body>
+</html>
