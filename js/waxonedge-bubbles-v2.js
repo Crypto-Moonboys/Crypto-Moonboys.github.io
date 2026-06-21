@@ -2639,39 +2639,23 @@
   }
 
   function fetchBootstrapSnapshot() {
-    var errors = [];
-    var settled = false;
     function acceptValidSnapshot(snapshot, sourceLabel) {
       if (isUnavailableLitePayload(snapshot)) throw new Error(sourceLabel + ' bubble lite query unavailable');
       if (!hasBubbleTokens(snapshot)) throw new Error(sourceLabel + ' bubble lite query returned no tokens');
       return snapshot;
     }
-    function raceCandidate(promise, sourceLabel, resolve, reject) {
-      promise.then(function (snapshot) {
-        if (settled) return;
-        try {
-          settled = true;
-          resolve(acceptValidSnapshot(snapshot, sourceLabel));
-        } catch (error) {
-          settled = false;
-          errors.push(error);
-          if (errors.length >= 2) reject(error);
-        }
-      }).catch(function (error) {
-        if (settled) return;
-        errors.push(error);
-        if (errors.length >= 2) reject(error);
+    function fetchFullLiteRescue() {
+      return apiJsonTimed(BUBBLES_LITE_API, 'full_lite').then(function (snapshot) {
+        return acceptValidSnapshot(snapshot, 'WAXCASH full lite');
       });
     }
     return new Promise(function (resolve, reject) {
       var membershipRequest = apiJsonTimed(BOOTSTRAP_API, 'membership');
-      var fullLiteRequest = apiJsonTimed(BUBBLES_LITE_API, 'full_lite');
       var membershipTimeout = 0;
       var timedMembershipRequest = Promise.race([
         membershipRequest,
         new Promise(function (_, timeoutReject) {
           membershipTimeout = window.setTimeout(function () {
-            if (settled) return;
             var error = new Error('membership bootstrap timed out after ' + MEMBERSHIP_BOOTSTRAP_TIMEOUT_MS + 'ms');
             state.perfStats.membershipMs = MEMBERSHIP_BOOTSTRAP_TIMEOUT_MS;
             state.perfStats.membershipState = 'timeout';
@@ -2682,8 +2666,11 @@
       ]).finally(function () {
         window.clearTimeout(membershipTimeout);
       });
-      raceCandidate(timedMembershipRequest, 'WAXCASH membership', resolve, reject);
-      raceCandidate(fullLiteRequest, 'WAXCASH full lite', resolve, reject);
+      timedMembershipRequest.then(function (snapshot) {
+        resolve(acceptValidSnapshot(snapshot, 'WAXCASH membership'));
+      }).catch(function () {
+        fetchFullLiteRescue().then(resolve).catch(reject);
+      });
     });
   }
 

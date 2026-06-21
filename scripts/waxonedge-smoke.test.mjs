@@ -359,11 +359,13 @@ ok('waxonedge-bubbles-v2.js bootstraps visible bubbles from membership fast path
   v2Js.includes('function fetchBootstrapSnapshot()') &&
   v2Js.includes('function hasBubbleTokens(payload)') &&
   v2Js.includes('var membershipRequest = apiJsonTimed(BOOTSTRAP_API, \'membership\')') &&
-  v2Js.includes('var fullLiteRequest = apiJsonTimed(BUBBLES_LITE_API, \'full_lite\')') &&
+  v2Js.includes('function fetchFullLiteRescue()') &&
+  v2Js.includes("return apiJsonTimed(BUBBLES_LITE_API, 'full_lite').then(function (snapshot)") &&
   v2Js.includes('var timedMembershipRequest = Promise.race([') &&
   v2Js.includes("state.perfStats.membershipState = 'timeout'") &&
-  v2Js.includes("raceCandidate(timedMembershipRequest, 'WAXCASH membership', resolve, reject)") &&
-  v2Js.includes("raceCandidate(fullLiteRequest, 'WAXCASH full lite', resolve, reject)") &&
+  v2Js.includes("resolve(acceptValidSnapshot(snapshot, 'WAXCASH membership'))") &&
+  v2Js.includes('fetchFullLiteRescue().then(resolve).catch(reject)') &&
+  !v2Js.includes('var fullLiteRequest = apiJsonTimed(BUBBLES_LITE_API, \'full_lite\')') &&
   !/apiJsonTimed\(BOOTSTRAP_API, 'membership'\)\.then[\s\S]*\.catch\(function \(error\) \{[\s\S]*apiJsonTimed\(BUBBLES_LITE_API, 'full_lite'\)/.test(v2Js) &&
   v2Js.includes('function fetchEnrichedSnapshotAfterFirstPaint()') &&
   /function fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*requestAnimationFrame[\s\S]*apiJsonTimed\(BUBBLES_LITE_API, 'full_lite'\)[\s\S]*applyLiveSnapshot\(snapshot\)/.test(v2Js) &&
