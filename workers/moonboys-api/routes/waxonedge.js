@@ -22,6 +22,8 @@ const ALCOR_TRADE_INDEX_SOURCE = 'alcor_trade_rows';
 const AMM_TRADE_INDEX_SOURCE = 'amm_trade_rows';
 const LIVE_INDEXER_HISTORY_SOURCE = 'live_indexer_history_import';
 const WAXCASH_HOLDER_SNAPSHOT_SOURCE = 'waxcash_holder_snapshot';
+const WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_SOURCE = 'waxcash_bubbles_membership_lite';
+const WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_STALE_MS = 10 * 60 * 1000;
 const SUPPLY_SYNC_SOURCE = 'wax_rpc_supply';
 const AGGREGATE_REFRESH_REASON = 'Aggregate refresh pending after source cursor progress';
 const CANDLE_BACKFILL_PLAN = 'Internal 1D kline backfill planned from indexed trade rows; no fake candles are inserted.';
@@ -9348,6 +9350,138 @@ function buildWaxcashBubblesLiteMembershipFailurePayload(error, generatedAt = no
   };
 }
 
+function annotateWaxcashBubblesMembershipPayload(payload, options = {}) {
+  const generatedAt = options.generatedAt || payload?.generated_at || nowIso();
+  const snapshotFetchedAt = options.snapshotFetchedAt || null;
+  const stale = !!options.stale;
+  return {
+    ...(payload || {}),
+    ok: payload?.ok !== false,
+    data_available: payload?.data_available !== false,
+    mode: 'membership',
+    generated_at: payload?.generated_at || generatedAt,
+    updated_at: payload?.updated_at || generatedAt,
+    source: 'waxcash_bubbles_lite',
+    tokens: sourceRows(payload?.tokens),
+    pairs: sourceRows(payload?.pairs),
+    summary: {
+      ...(payload?.summary || {}),
+      mode: 'membership',
+      membership_snapshot_source: options.source || payload?.summary?.membership_snapshot_source || null,
+      membership_snapshot_fetched_at: snapshotFetchedAt || payload?.summary?.membership_snapshot_fetched_at || null,
+      membership_snapshot_stale: stale,
+      enrichment_graph_available: false,
+    },
+    payload_policy: {
+      ...(payload?.payload_policy || {}),
+      slim: true,
+      startup_fast_path: true,
+      membership_only: true,
+      skips_graph_enrichment: true,
+      excludes_loadWaxcashGraphTokenRows: true,
+      no_fake_value: true,
+      prebuilt_membership_snapshot: options.source === 'prebuilt_d1_snapshot' || !!payload?.payload_policy?.prebuilt_membership_snapshot,
+      stale_membership_snapshot_allowed: true,
+    },
+    membership_snapshot_source: options.source || payload?.membership_snapshot_source || null,
+    membership_snapshot_fetched_at: snapshotFetchedAt || payload?.membership_snapshot_fetched_at || null,
+    membership_snapshot_stale: stale,
+    no_fake_value: true,
+  };
+}
+
+async function readWaxcashBubblesMembershipSnapshot(db, nowMs = Date.now()) {
+  const snapshot = await readSnapshot(db, WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_SOURCE).catch((error) => ({
+    fetched_at: null,
+    data: null,
+    error: error?.message || String(error),
+  }));
+  const payload = snapshot?.data;
+  if (!payload || !Array.isArray(payload.tokens) || !Array.isArray(payload.pairs)) {
+    return {
+      ok: false,
+      reason: snapshot?.error || 'membership_snapshot_missing',
+      fetched_at: snapshot?.fetched_at || null,
+    };
+  }
+  const fetchedMs = Date.parse(snapshot.fetched_at || payload.generated_at || payload.updated_at || '');
+  const stale = Number.isFinite(fetchedMs) ? nowMs - fetchedMs > WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_STALE_MS : true;
+  return {
+    ok: true,
+    fetched_at: snapshot.fetched_at || null,
+    stale,
+    payload: annotateWaxcashBubblesMembershipPayload(payload, {
+      source: 'prebuilt_d1_snapshot',
+      snapshotFetchedAt: snapshot.fetched_at || null,
+      stale,
+    }),
+  };
+}
+
+async function buildWaxcashBubblesLiteMembershipFromD1(db, generatedAt = nowIso()) {
+  const [rootStats, pairRowsResult] = await Promise.all([
+    loadWaxcashLiteRootSummary(db),
+    loadWaxcashLitePairRows(db),
+  ]);
+  if (rootStats?.ok !== true || pairRowsResult?.ok !== true) {
+    return buildWaxcashBubblesLiteMembershipFailurePayload(rootStats?.error || pairRowsResult?.error || 'waxcash_membership_lite_query_failed', generatedAt);
+  }
+  const lite = buildWaxcashBubblesLiteFromRows(rootStats?.row, pairRowsResult?.rows, generatedAt, {
+    rootSummaryAvailable: true,
+    rootQueryError: rootStats?.error,
+    pairRowsAvailable: true,
+    pairQueryError: pairRowsResult?.error,
+  });
+  return annotateWaxcashBubblesMembershipPayload(lite, {
+    source: 'd1_membership_rows',
+    stale: false,
+  });
+}
+
+async function refreshWaxcashBubblesMembershipSnapshot(env, reason = 'scheduled_pair_sync') {
+  if (!env?.DB) return { ok: false, error: 'DB binding is not configured', no_fake_value: true };
+  const generatedAt = nowIso();
+  try {
+    const payload = await buildWaxcashBubblesLiteMembershipFromD1(env.DB, generatedAt);
+    if (payload?.ok !== true || payload?.data_available !== true) {
+      return {
+        ok: false,
+        source: WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_SOURCE,
+        reason: payload?.lite_query_error || payload?.summary?.lite_query_error || 'membership_payload_unavailable',
+        no_fake_value: true,
+      };
+    }
+    const snapshotPayload = annotateWaxcashBubblesMembershipPayload(payload, {
+      source: 'prebuilt_d1_snapshot',
+      snapshotFetchedAt: generatedAt,
+      stale: false,
+      generatedAt,
+    });
+    snapshotPayload.summary = {
+      ...(snapshotPayload.summary || {}),
+      membership_snapshot_generated_by: reason,
+    };
+    await writeSnapshot(env.DB, WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_SOURCE, snapshotPayload, generatedAt);
+    return {
+      ok: true,
+      source: WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_SOURCE,
+      generated_at: generatedAt,
+      token_count: snapshotPayload.tokens.length,
+      pair_count: snapshotPayload.pairs.length,
+      indexed_pair_count: snapshotPayload.summary?.indexed_pair_count ?? snapshotPayload.pairs.length,
+      reason,
+      no_fake_value: true,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      source: WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_SOURCE,
+      error: error?.message || String(error),
+      no_fake_value: true,
+    };
+  }
+}
+
 function waxcashLiteBetterToken(left, right) {
   if (!left) return right;
   if (!right) return left;
@@ -9875,33 +10009,13 @@ async function buildWaxcashBubblesLite(db, env) {
   const mode = String(env?.mode || env?.view || '').toLowerCase();
   if (mode === 'membership' || mode === 'members') {
     try {
-      const [rootStats, pairRowsResult] = await Promise.all([
-        loadWaxcashLiteRootSummary(db),
-        loadWaxcashLitePairRows(db),
-      ]);
-      if (rootStats?.ok !== true || pairRowsResult?.ok !== true) {
-        return buildWaxcashBubblesLiteMembershipFailurePayload(rootStats?.error || pairRowsResult?.error || 'waxcash_membership_lite_query_failed');
+      if (!env?.skipMembershipSnapshot) {
+        const snapshot = await readWaxcashBubblesMembershipSnapshot(db);
+        if (snapshot.ok && snapshot.payload) {
+          return snapshot.payload;
+        }
       }
-      const lite = buildWaxcashBubblesLiteFromRows(rootStats?.row, pairRowsResult?.rows, nowIso(), {
-        rootSummaryAvailable: true,
-        rootQueryError: rootStats?.error,
-        pairRowsAvailable: true,
-        pairQueryError: pairRowsResult?.error,
-      });
-      lite.mode = 'membership';
-      lite.summary = {
-        ...(lite.summary || {}),
-        mode: 'membership',
-        enrichment_graph_available: false,
-      };
-      lite.payload_policy = {
-        ...(lite.payload_policy || {}),
-        startup_fast_path: true,
-        membership_only: true,
-        skips_graph_enrichment: true,
-        excludes_loadWaxcashGraphTokenRows: true,
-      };
-      return lite;
+      return await buildWaxcashBubblesLiteMembershipFromD1(db);
     } catch (error) {
       return buildWaxcashBubblesLiteMembershipFailurePayload(error);
     }
@@ -13967,6 +14081,8 @@ export const __waxonedgeTestHooks = {
   waxcashLiteEnrichmentDiagnostics,
   waxcashLiteValuationBasis,
   loadWaxcashBubblesLiteGraphResult,
+  readWaxcashBubblesMembershipSnapshot,
+  refreshWaxcashBubblesMembershipSnapshot,
   resetWaxcashBubblesLiteGraphCache,
   loadWaxcashGraphTokenRows,
   buildWaxcashUdfChartFeed,
@@ -14171,7 +14287,8 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
           }),
           syncPinnedWaxcashPairs(env, syncCycleId),
         ]);
-        return { ok: core.ok && pinned.ok, syncCycleId, source: adapter.source, core, pinned };
+        const membershipSnapshot = await refreshWaxcashBubblesMembershipSnapshot(env, `minute_pair_sync_${adapter.source}`);
+        return { ok: core.ok && pinned.ok, syncCycleId, source: adapter.source, core, pinned, membershipSnapshot };
       })());
     } else if (rotationSlot === 2) {
       tasks.push(aggregateTokenAnalytics(env));
@@ -14199,7 +14316,8 @@ export async function runWaxOnEdgeScheduledSync(env, cron = '') {
       const aggregates = await aggregateTokenAnalytics(env);
       const candleBackfill = await planWaxOnEdgeCandleBackfill(env);
       const retention = await runWaxOnEdgeRetentionMaintenance(env);
-      return { ok: alcor.ok && core.ok && nefty.ok && pinned.ok && tradeBackfill.ok && holders.ok && aggregates.ok && candleBackfill.ok, syncCycleId, alcor, core, nefty, pinned, tradeBackfill, holders, aggregates, candleBackfill, retention };
+      const membershipSnapshot = await refreshWaxcashBubblesMembershipSnapshot(env, 'full_pair_sync');
+      return { ok: alcor.ok && core.ok && nefty.ok && pinned.ok && tradeBackfill.ok && holders.ok && aggregates.ok && candleBackfill.ok, syncCycleId, alcor, core, nefty, pinned, tradeBackfill, holders, aggregates, candleBackfill, retention, membershipSnapshot };
     })());
   } else if (isMinuteCron) {
     tasks.push((async () => {

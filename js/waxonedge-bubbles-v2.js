@@ -7,6 +7,7 @@
 (function () {
   'use strict';
 
+  var SCRIPT_START_AT = performance.now();
   var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite';
   var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';
   var BOOTSTRAP_API = BUBBLES_MEMBERSHIP_API;
@@ -154,6 +155,16 @@
       physicsMs: 0,
       lastSampleAt: 0,
       framesSinceSample: 0,
+      pageStartAt: SCRIPT_START_AT,
+      membershipMs: 0,
+      fullLiteMs: 0,
+      normalizeMs: 0,
+      syncNodesMs: 0,
+      firstDrawAt: 0,
+      firstVisibleBubbleAt: 0,
+      totalFirstBubbleMs: 0,
+      membershipError: '',
+      fullLiteError: '',
     },
     camera: {
       offsetX: 0,
@@ -2050,6 +2061,10 @@
     state.perfStats.physicsMs = physicsMs;
   }
 
+  function perfMs(value) {
+    return value ? Math.round(value) + 'ms' : '-';
+  }
+
   function updatePerfOverlay(dpr) {
     if (!state.perfDebug || !state.perfOverlay) return;
     var profile = renderProfile();
@@ -2057,6 +2072,11 @@
       'fps ' + state.perfStats.fps +
       ' | draw ' + state.perfStats.drawMs.toFixed(1) + 'ms' +
       ' | physics ' + state.perfStats.physicsMs.toFixed(1) + 'ms' +
+      ' | member ' + perfMs(state.perfStats.membershipMs) +
+      ' | lite ' + perfMs(state.perfStats.fullLiteMs) +
+      ' | norm ' + perfMs(state.perfStats.normalizeMs) +
+      ' | sync ' + perfMs(state.perfStats.syncNodesMs) +
+      ' | first ' + perfMs(state.perfStats.totalFirstBubbleMs) +
       ' | bubbles ' + state.nodes.length +
       ' | cache ' + bubbleCanvasCache.size +
       ' | queue ' + bubbleCanvasBuildQueue.length +
@@ -2076,7 +2096,10 @@
       return;
     }
     state.lastDrawAt = now;
-    if (!state.firstPaintAt) state.firstPaintAt = now;
+    if (!state.firstPaintAt) {
+      state.firstPaintAt = now;
+      state.perfStats.firstDrawAt = now;
+    }
     var canvas = state.canvas;
     var ctx = state.ctx;
     var rect = canvas.getBoundingClientRect();
@@ -2106,6 +2129,14 @@
       drawGalaxyNode(ctx, node, dpr, now);
     });
     ctx.restore();
+    if (state.nodes.length && !state.perfStats.firstVisibleBubbleAt) {
+      state.perfStats.firstVisibleBubbleAt = now;
+      state.perfStats.totalFirstBubbleMs = now - state.perfStats.pageStartAt;
+      if (state.perfDebug) {
+        // eslint-disable-next-line no-console
+        console.info('[WaxOnEdge perf] first visible bubbles', Math.round(state.perfStats.totalFirstBubbleMs) + 'ms');
+      }
+    }
     updatePerfStats(performance.now() - drawStart, physicsMs);
     updatePerfOverlay(dpr);
     if (!state.raf && (shouldAnimate() || queueHasMore)) state.raf = window.requestAnimationFrame(draw);
@@ -2498,6 +2529,37 @@
     });
   }
 
+  function apiJsonTimed(path, label) {
+    var start = performance.now();
+    return apiJson(path).then(function (snapshot) {
+      if (label === 'membership') {
+        state.perfStats.membershipMs = performance.now() - start;
+        state.perfStats.membershipError = '';
+      } else if (label === 'full_lite') {
+        state.perfStats.fullLiteMs = performance.now() - start;
+        state.perfStats.fullLiteError = '';
+      }
+      if (state.perfDebug) {
+        // eslint-disable-next-line no-console
+        console.info('[WaxOnEdge perf] ' + label + ' request', Math.round(performance.now() - start) + 'ms');
+      }
+      return snapshot;
+    }).catch(function (error) {
+      if (label === 'membership') {
+        state.perfStats.membershipMs = performance.now() - start;
+        state.perfStats.membershipError = error && error.message ? error.message : String(error);
+      } else if (label === 'full_lite') {
+        state.perfStats.fullLiteMs = performance.now() - start;
+        state.perfStats.fullLiteError = error && error.message ? error.message : String(error);
+      }
+      if (state.perfDebug) {
+        // eslint-disable-next-line no-console
+        console.info('[WaxOnEdge perf] ' + label + ' request failed', Math.round(performance.now() - start) + 'ms');
+      }
+      throw error;
+    });
+  }
+
   function liveSnapshotUrl() {
     return LIVE_API;
   }
@@ -2560,11 +2622,11 @@
   }
 
   function fetchBootstrapSnapshot() {
-    return apiJson(BOOTSTRAP_API).then(function (snapshot) {
+    return apiJsonTimed(BOOTSTRAP_API, 'membership').then(function (snapshot) {
       if (isUnavailableLitePayload(snapshot)) throw new Error('WAXCASH membership bubble lite query unavailable');
       return snapshot;
     }).catch(function (error) {
-      return apiJson(BUBBLES_LITE_API).then(function (snapshot) {
+      return apiJsonTimed(BUBBLES_LITE_API, 'full_lite').then(function (snapshot) {
         if (isUnavailableLitePayload(snapshot)) throw error;
         return snapshot;
       });
@@ -2573,7 +2635,7 @@
 
   function fetchEnrichedSnapshotAfterFirstPaint() {
     window.requestAnimationFrame(function () {
-      apiJson(BUBBLES_LITE_API).then(function (snapshot) {
+      apiJsonTimed(BUBBLES_LITE_API, 'full_lite').then(function (snapshot) {
         state.connected = true;
         applyLiveSnapshot(snapshot);
         updateWaxPrice(snapshot);
@@ -2727,7 +2789,9 @@
       state.payload = results[0];
       state.health = results[1] ? payloadData(results[1]) : null;
       applyMetricCapabilities(state.payload);
+      var normalizeStart = performance.now();
       state.records = normalizeRecords(state.payload);
+      state.perfStats.normalizeMs = performance.now() - normalizeStart;
       state.pairs = sourceRows(waxcashAnalyticsToBubblePayload(state.payload).pairs);
       pruneModalDetailCacheForRecords(state.records);
       state.connected = true;
@@ -2739,7 +2803,13 @@
         new Date().toISOString();
       advanceLiveDisplayTimestamp(state.lastUpdated);
       updateWaxPrice(state.payload);
+      var syncStart = performance.now();
       syncNodes();
+      state.perfStats.syncNodesMs = performance.now() - syncStart;
+      if (state.perfDebug) {
+        // eslint-disable-next-line no-console
+        console.info('[WaxOnEdge perf] normalizeRecords', Math.round(state.perfStats.normalizeMs) + 'ms', 'syncNodes', Math.round(state.perfStats.syncNodesMs) + 'ms');
+      }
       setStatus();
       state.nodes.forEach(function (node) { loadImage(node.record.logoUrl); });
       fetchEnrichedSnapshotAfterFirstPaint();

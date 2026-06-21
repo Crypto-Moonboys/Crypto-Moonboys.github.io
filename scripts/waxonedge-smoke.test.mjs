@@ -354,15 +354,25 @@ ok('waxonedge-bubbles-v2.js uses the slim WAXCASH bubble backend endpoint, not f
 ok('waxonedge-bubbles-v2.js bootstraps visible bubbles from membership fast path before enrichment',
   v2Js.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
   v2Js.includes('function fetchBootstrapSnapshot()') &&
-  v2Js.includes('apiJson(BOOTSTRAP_API).then(function (snapshot)') &&
-  v2Js.includes('return apiJson(BUBBLES_LITE_API).then(function (snapshot)') &&
+  v2Js.includes('apiJsonTimed(BOOTSTRAP_API, \'membership\').then(function (snapshot)') &&
+  v2Js.includes('return apiJsonTimed(BUBBLES_LITE_API, \'full_lite\').then(function (snapshot)') &&
   v2Js.includes("if (isUnavailableLitePayload(snapshot)) throw new Error('WAXCASH membership bubble lite query unavailable')") &&
   v2Js.includes('if (isUnavailableLitePayload(snapshot)) throw error') &&
   v2Js.includes('function fetchEnrichedSnapshotAfterFirstPaint()') &&
-  /function fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*requestAnimationFrame[\s\S]*apiJson\(BUBBLES_LITE_API\)[\s\S]*applyLiveSnapshot\(snapshot\)/.test(v2Js) &&
+  /function fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*requestAnimationFrame[\s\S]*apiJsonTimed\(BUBBLES_LITE_API, 'full_lite'\)[\s\S]*applyLiveSnapshot\(snapshot\)/.test(v2Js) &&
   /function load\(\)[\s\S]*fetchBootstrapSnapshot\(\)[\s\S]*syncNodes\(\)[\s\S]*fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*startLiveUpdates\(\)/.test(v2Js) &&
   !v2Js.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics';") &&
   !v2Js.includes("var BOOTSTRAP_API = BUBBLES_LITE_API;"));
+ok('waxonedge-bubbles-v2.js records startup timing and does not wait for logos before first draw',
+  v2Js.includes('function apiJsonTimed(path, label)') &&
+  v2Js.includes("console.info('[WaxOnEdge perf] ' + label + ' request'") &&
+  v2Js.includes('state.perfStats.normalizeMs = performance.now() - normalizeStart') &&
+  v2Js.includes('state.perfStats.syncNodesMs = performance.now() - syncStart') &&
+  v2Js.includes('state.perfStats.firstDrawAt = now') &&
+  v2Js.includes('state.perfStats.firstVisibleBubbleAt = now') &&
+  v2Js.includes('state.perfStats.totalFirstBubbleMs = now - state.perfStats.pageStartAt') &&
+  /syncNodes\(\);\s*state\.perfStats\.syncNodesMs[\s\S]*state\.nodes\.forEach\(function \(node\) \{ loadImage\(node\.record\.logoUrl\); \}\);/.test(v2Js) &&
+  v2Js.includes("' | first ' + perfMs(state.perfStats.totalFirstBubbleMs)"));
 ok('waxonedge-bubbles-v2.js phase-one adapter can normalize waxcash-analytics token stats and pair table rows into the slim shape',
   v2Js.includes('source_feed: BUBBLES_LITE_API') &&
   v2Js.includes('function waxcashAnalyticsToBubblePayload(payload)') &&
@@ -938,7 +948,7 @@ ok('waxonedge-bubbles-v2.js overlays enrichment without removing existing member
   /function applyLiveSnapshot\(snapshot\)[\s\S]*state\.payload = snapshot;[\s\S]*state\.pairs = sourceRows\(data\.pairs\);[\s\S]*tokens\.forEach[\s\S]*applyLiveTokenUpdate\(record, update\)[\s\S]*var incomingRecords = normalizeRecords\(snapshot\);[\s\S]*incomingRecords\.forEach[\s\S]*if \(!record \|\| !record\.key \|\| byKey\[record\.key\]\) return;[\s\S]*state\.records\.push\(record\)[\s\S]*syncNodes\(\)/.test(v2Js) &&
   !/function applyLiveSnapshot\(snapshot\)[\s\S]*if \(hasNewRecords\)[\s\S]*state\.records = normalizeRecords\(snapshot\)[\s\S]*return;/.test(v2Js) &&
   /function syncNodes\(\)[\s\S]*state\.nodes\.forEach\(function \(node\) \{ existing\[node\.id\] = node; \}\);[\s\S]*var old = existing\[record\.id\];[\s\S]*var node = old \|\|/.test(v2Js) &&
-  /function fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*apiJson\(BUBBLES_LITE_API\)[\s\S]*applyLiveSnapshot\(snapshot\)/.test(v2Js));
+  /function fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*apiJsonTimed\(BUBBLES_LITE_API, 'full_lite'\)[\s\S]*applyLiveSnapshot\(snapshot\)/.test(v2Js));
 {
   const mcapBranchStart = v2Js.indexOf("if (state.metric === 'mcap') {");
   const mcapBranchEnd = v2Js.indexOf("return 'Not indexed';", mcapBranchStart);
