@@ -9831,6 +9831,33 @@ function buildWaxcashBubblesLiteFromAnalytics(analytics) {
 
 async function buildWaxcashBubblesLite(db, env) {
   void env;
+  const mode = String(env?.mode || env?.view || '').toLowerCase();
+  if (mode === 'membership' || mode === 'members') {
+    const [rootStats, pairRowsResult] = await Promise.all([
+      loadWaxcashLiteRootSummary(db),
+      loadWaxcashLitePairRows(db),
+    ]);
+    const lite = buildWaxcashBubblesLiteFromRows(rootStats.row, pairRowsResult.rows, nowIso(), {
+      rootSummaryAvailable: rootStats.ok,
+      rootQueryError: rootStats.error,
+      pairRowsAvailable: pairRowsResult.ok,
+      pairQueryError: pairRowsResult.error,
+    });
+    lite.mode = 'membership';
+    lite.summary = {
+      ...(lite.summary || {}),
+      mode: 'membership',
+      enrichment_graph_available: false,
+    };
+    lite.payload_policy = {
+      ...(lite.payload_policy || {}),
+      startup_fast_path: true,
+      membership_only: true,
+      skips_graph_enrichment: true,
+      excludes_loadWaxcashGraphTokenRows: true,
+    };
+    return lite;
+  }
   const [rootStats, pairRowsResult, graphResult] = await Promise.all([
     loadWaxcashLiteRootSummary(db),
     loadWaxcashLitePairRows(db),
@@ -13742,7 +13769,8 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       return ok(analytics, ['WAXCASH analytics uses old WaxOnEdge-style direct WAX price proof; recursive graph routing is not a selected-price source.'], analytics.stats?.updated_at || analytics.token?.updated_at || null, corsHeaders);
     }
     if (path === `${WAXONEDGE_API_PREFIX}/waxcash-bubbles-lite`) {
-      const lite = await buildWaxcashBubblesLite(env.DB, env);
+      const liteMode = query.get('mode') || query.get('view') || '';
+      const lite = await buildWaxcashBubblesLite(env.DB, { ...env, mode: liteMode });
       return ok(lite, ['Slim WAXCASH bubble feed excludes source diagnostics, chart candles, proof internals, and large debug arrays.'], lite.updated_at || lite.generated_at || null, corsHeaders);
     }
     if (path === `${WAXONEDGE_API_PREFIX}/waxcash-analytics/laststats-diagnostics`) {

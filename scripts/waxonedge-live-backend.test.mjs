@@ -3556,6 +3556,68 @@ ok('VPS live indexer safely parses request path without trusting Host header',
       trueZeroLite.tokens?.length === 1 &&
       trueZeroLite.tokens?.[0]?.symbol === 'WAXCASH',
       JSON.stringify(trueZeroLite));
+    const membershipPairRows = Array.from({ length: 92 }, (_, index) => ({
+      source: index < 58 ? 'swap.nefty' : (index < 70 ? 'swap.taco' : 'swap.alcor'),
+      pair_id: `MEMBER${index + 1}`,
+      token_a_contract: 'graffitiking',
+      token_a_symbol: 'WAXCASH',
+      token_b_contract: `token${index + 1}`,
+      token_b_symbol: `TOK${index + 1}`,
+      price: null,
+      liquidity_wax: String(100 + index),
+      liquidity_usd: String((100 + index) * 0.005),
+      updated_at: '2026-06-21T00:00:00.000Z',
+    }));
+    const membershipLiteDb = {
+      prepare(sql) {
+        return {
+          bind() {
+            return {
+              async first() {
+                if (!sql.includes('FROM waxonedge_tokens')) throw new Error(`unexpected membership first query: ${sql}`);
+                return {
+                  contract: 'graffitiking',
+                  symbol: 'WAXCASH',
+                  selected_price_wax: '0.01',
+                  selected_price_usd: '0.00005',
+                  liquidity_wax: '1000',
+                  liquidity_usd: '5',
+                  updated_at: '2026-06-21T00:00:00.000Z',
+                };
+              },
+              async all() {
+                if (!sql.includes('FROM waxonedge_pairs p')) throw new Error(`membership mode should not run graph query: ${sql}`);
+                return { results: membershipPairRows };
+              },
+            };
+          },
+        };
+      },
+    };
+    const membershipLite = await __waxonedgeTestHooks.buildWaxcashBubblesLite(membershipLiteDb, { mode: 'membership' });
+    ok('WAXCASH bubbles membership mode returns canonical pair members without graph enrichment',
+      membershipLite.ok === true &&
+      membershipLite.data_available === true &&
+      membershipLite.mode === 'membership' &&
+      membershipLite.summary?.mode === 'membership' &&
+      membershipLite.summary?.indexed_pair_count === 92 &&
+      membershipLite.tokens?.length === 93 &&
+      membershipLite.tokens?.some((token) => token.symbol === 'WAXCASH') &&
+      membershipLite.tokens?.some((token) => token.symbol === 'TOK92') &&
+      membershipLite.payload_policy?.startup_fast_path === true &&
+      membershipLite.payload_policy?.membership_only === true &&
+      membershipLite.payload_policy?.skips_graph_enrichment === true &&
+      membershipLite.payload_policy?.excludes_loadWaxcashGraphTokenRows === true &&
+      membershipLite.summary?.enrichment_graph_available === false &&
+      membershipLite.no_fake_value === true,
+      JSON.stringify({
+        summary: membershipLite.summary,
+        token_count: membershipLite.tokens?.length,
+        payload_policy: membershipLite.payload_policy,
+      }));
+    ok('WAXCASH bubbles membership branch returns before graph enrichment is requested',
+      /if \(mode === 'membership' \|\| mode === 'members'\)[\s\S]*return lite;[\s\S]*const \[rootStats, pairRowsResult, graphResult\] = await Promise\.all/.test(route),
+      'membership mode must stay before loadWaxcashBubblesLiteGraphResult');
     const waxcashTokenStatLabels = (waxcashAnalytics.sections?.token_stats?.rows || []).map((row) => row.label);
     ok('WAXCASH token stats section keeps OG WaxOnEdge row names and omits selected-direct proof liquidity',
       JSON.stringify(waxcashTokenStatLabels.slice(0, 14)) === JSON.stringify([
@@ -8962,9 +9024,15 @@ ok('frontend scanner front door and token analytics route are present',
   frontend.includes('hasRealSignal'));
 ok('WaxOnEdge route exposes slim WAXCASH bubble feed separately from full analytics',
   route.includes('/waxcash-bubbles-lite') &&
-  route.includes('buildWaxcashBubblesLite(env.DB, env)') &&
+  route.includes("const liteMode = query.get('mode') || query.get('view') || '';") &&
+  route.includes('buildWaxcashBubblesLite(env.DB, { ...env, mode: liteMode })') &&
   route.includes('Slim WAXCASH bubble feed excludes source diagnostics') &&
   route.includes('buildWaxcashBubblesLiteFromGraph') &&
+  route.includes('buildWaxcashBubblesLiteFromRows') &&
+  route.includes("mode === 'membership' || mode === 'members'") &&
+  route.includes('startup_fast_path: true') &&
+  route.includes('membership_only: true') &&
+  route.includes('skips_graph_enrichment: true') &&
   route.includes('WAXCASH_BUBBLES_LITE_GRAPH_CACHE_TTL_MS') &&
   route.includes('loadWaxcashBubblesLiteGraphResult(db)') &&
   route.includes('loadWaxcashLiteRootSummary(db)') &&
@@ -9024,11 +9092,14 @@ ok('frontend bubbles bootstrap first and then starts live updates',
   frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') > -1 &&
   frontendBubbles.indexOf('apiJson(BOOTSTRAP_API)') < frontendBubbles.lastIndexOf('startLiveUpdates();') &&
   frontendBubbles.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite'") &&
+  frontendBubbles.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
   frontendBubbles.includes('function isUnavailableLitePayload(payload)') &&
   frontendBubbles.includes("data.source === 'waxcash_bubbles_lite' && data.data_available === false") &&
   frontendBubbles.includes('if (isUnavailableLitePayload(snapshot)) return') &&
   frontendBubbles.includes("if (isUnavailableLitePayload(results[0])) throw new Error('WAXCASH bubble lite query unavailable')") &&
-  frontendBubbles.includes('var BOOTSTRAP_API = BUBBLES_LITE_API;') &&
+  frontendBubbles.includes('var BOOTSTRAP_API = BUBBLES_MEMBERSHIP_API;') &&
+  frontendBubbles.includes('function fetchEnrichedSnapshotAfterFirstPaint()') &&
+  frontendBubbles.includes('apiJson(BUBBLES_LITE_API).then(function (snapshot)') &&
   frontendBubbles.includes('var LIVE_API = BUBBLES_LITE_API;') &&
   frontendBubbles.includes("var LIVE_STREAM_API = '/api/waxonedge/live/stream'"));
 ok('frontend WAXCASH analytics adapter maps selected root price, pair row price, liquidity, market cap, and pair_table rows',

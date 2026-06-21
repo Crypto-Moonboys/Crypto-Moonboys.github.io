@@ -77,7 +77,8 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
 ok('OG analytics parity PR cache-busts changed WaxOnEdge scanner assets',
   html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-modal-cleanup') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-fast-membership') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-modal-cleanup') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-liquidity-first') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-waxcash-bubbles-lite-2') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-waxcash-bubbles-lite"') &&
@@ -94,7 +95,8 @@ ok('OG analytics parity PR cache-busts changed token analytics assets',
   !tokenHtml.includes('/js/waxonedge.js?v=woe-20260617-confidence'));
 ok('WaxOnEdge bubble CSS cache key is bumped for live-details modal styling',
   html.includes('/css/waxonedge.css?v=woe-20260615-galaxy3') &&
-  html.includes('/css/waxonedge-bubbles-v2.css?v=woe-20260621-modal-cleanup') &&
+  html.includes('/css/waxonedge-bubbles-v2.css?v=woe-20260621-no-bottom-feed') &&
+  !html.includes('/css/waxonedge-bubbles-v2.css?v=woe-20260621-modal-cleanup') &&
   !html.includes('/css/waxonedge-bubbles-v2.css?v=woe-20260620-waxcash-bubbles-live') &&
   !html.includes('/css/waxonedge-bubbles-v2.css?v=woe-20260615-galaxy3'));
 ok('waxonedge clean-route alias redirects to /waxonedge.html', aliasHtml.includes('url=/waxonedge.html'));
@@ -341,13 +343,22 @@ ok('waxonedge.js keeps Lightweight Charts support', js.includes('window.Lightwei
 
 ok('waxonedge-bubbles-v2.js uses the slim WAXCASH bubble backend endpoint, not full analytics polling or live Alcor APIs',
   v2Js.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite';") &&
-  v2Js.includes('var BOOTSTRAP_API = BUBBLES_LITE_API;') &&
+  v2Js.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
+  v2Js.includes('var BOOTSTRAP_API = BUBBLES_MEMBERSHIP_API;') &&
   v2Js.includes("var HEALTH_API = '/api/waxonedge/indexer-health';") &&
   v2Js.includes('var LIVE_API = BUBBLES_LITE_API;') &&
   !v2Js.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics';") &&
   !v2Js.includes("var LIVE_API = '/api/waxonedge/waxcash-analytics';") &&
   !v2Js.includes('antbubbles') &&
   !v2Js.includes('wax.alcor.exchange'));
+ok('waxonedge-bubbles-v2.js bootstraps visible bubbles from membership fast path before enrichment',
+  v2Js.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
+  v2Js.includes('apiJson(BOOTSTRAP_API)') &&
+  v2Js.includes('function fetchEnrichedSnapshotAfterFirstPaint()') &&
+  /function fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*requestAnimationFrame[\s\S]*apiJson\(BUBBLES_LITE_API\)[\s\S]*applyLiveSnapshot\(snapshot\)/.test(v2Js) &&
+  /function load\(\)[\s\S]*syncNodes\(\)[\s\S]*fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*startLiveUpdates\(\)/.test(v2Js) &&
+  !v2Js.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics';") &&
+  !v2Js.includes("var BOOTSTRAP_API = BUBBLES_LITE_API;"));
 ok('waxonedge-bubbles-v2.js phase-one adapter can normalize waxcash-analytics token stats and pair table rows into the slim shape',
   v2Js.includes('source_feed: BUBBLES_LITE_API') &&
   v2Js.includes('function waxcashAnalyticsToBubblePayload(payload)') &&
@@ -464,7 +475,6 @@ ok('waxonedge-bubbles-v2.js selects featured tokens using multi-DEX aggregate fi
 ok('WaxOnEdge keeps missing 7d/30d/candle data honest instead of fake',
   v2Js.includes('No indexed 7D volume') &&
   v2Js.includes('No indexed 30D volume') &&
-  v2Js.includes('WAXCASH analytics feed') &&
   js.includes('Indexed candles not available yet for this pair') &&
   js.includes('Pair proof is available below') &&
   js.includes('function historicalVolumeAvailabilityHtml') &&
@@ -622,7 +632,8 @@ ok('waxonedge-bubbles-v2.js caps modal detail cache for long scanner sessions',
   !v2Js.includes('state.modalDetailCache[key] ='));
 ok('WaxOnEdge frontend keeps the scanner on the slim Worker route and token analytics on Worker API routes only',
   v2Js.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite';") &&
-  v2Js.includes('var BOOTSTRAP_API = BUBBLES_LITE_API;') &&
+  v2Js.includes("var BUBBLES_MEMBERSHIP_API = '/api/waxonedge/waxcash-bubbles-lite?mode=membership';") &&
+  v2Js.includes('var BOOTSTRAP_API = BUBBLES_MEMBERSHIP_API;') &&
   v2Js.includes('var LIVE_API = BUBBLES_LITE_API;') &&
   v2Js.includes("var HEALTH_API = '/api/waxonedge/indexer-health';") &&
   js.includes("'/token/' + encodeURIComponent(chartContract) + '/' + encodeURIComponent(chartSymbol) + '/chart'") &&
@@ -729,8 +740,9 @@ ok('waxonedge-bubbles-v2.js uses selected metric and blended base score for bubb
   /function computeRadii[\s\S]*valueForMetric\(record, metric, state\.timeframe\)/.test(v2Js));
 ok('waxonedge-bubbles-v2.js adds live WAX Galaxy reactions without camera jumps',
   !html.includes('id="woe-ab-live-feed"') &&
-  v2Js.includes('id="woe-ab-live-feed" class="woe-ab-live-feed"') &&
-  v2Js.includes('function addLiveFeed') &&
+  !v2Js.includes('id="woe-ab-live-feed"') &&
+  !v2Js.includes('function addLiveFeed') &&
+  !v2Js.includes('function renderLiveFeed') &&
   v2Js.includes('function updateCamera') &&
   v2Js.includes('camera.offsetX = 0') &&
   v2Js.includes('function sceneBounds(width, height, radius)') &&
@@ -739,7 +751,6 @@ ok('waxonedge-bubbles-v2.js adds live WAX Galaxy reactions without camera jumps'
   v2Js.includes('driftAngle') &&
   v2Js.includes('movementEvent') &&
   v2Js.includes('node.vx *= 0.965') &&
-  v2Js.includes("displayValueForMetric(record, 'volume', '24h')") &&
   v2Js.includes('function displayValueForMetric(record, metric, timeframeOverride)') &&
   v2Js.includes('var oldTimeframe = state.timeframe') &&
   v2Js.includes('} finally {') &&
@@ -750,9 +761,9 @@ ok('waxonedge-bubbles-v2.js adds live WAX Galaxy reactions without camera jumps'
   v2Js.includes('function marketWeather') &&
   v2Js.includes('record.recentUntil') &&
   v2Js.includes('record.volumeSpikeUntil') &&
-  v2Js.includes('Whale/high-volume update detected') &&
-  v2Js.includes('indexed snapshot data') &&
-  v2Js.includes('updated from WaxOnEdge snapshots') &&
+  !v2Js.includes('Whale/high-volume update detected') &&
+  !v2Js.includes('Top mover update') &&
+  !v2Js.includes('updated from WaxOnEdge snapshots') &&
   v2Js.includes('safeTimeLabel') &&
   !v2Js.includes('Invalid Date'));
 
@@ -783,8 +794,8 @@ ok('waxonedge-bubbles-v2.js includes visual-only 1-100 random movement event tab
 ok('waxonedge movement events are visual-only and avoid prize/trading language',
   movementEventSection.includes('bonus_surge') &&
   movementEventSection.includes('mega_event') &&
-  movementMessageSection.includes('Bonus surge visual') &&
-  movementMessageSection.includes('Mega visual event') &&
+  movementMessageSection === '' &&
+  !v2Js.includes('function movementEventMessage') &&
   !/wallet|trading|trade|swap|win|wins|prize|payout|jackpot/i.test(movementEventSection + movementMessageSection));
 ok('waxonedge-bubbles-v2.js pauses animation when hidden and respects reduced motion',
   v2Js.includes("window.matchMedia('(prefers-reduced-motion: reduce)'") &&
@@ -919,6 +930,11 @@ ok('waxonedge-bubbles-v2.js live token updates immediately resize market-cap bub
   /function refreshLiveTargetRadii\(\)[\s\S]*computeRadii\(state\.visible[\s\S]*node\.targetRadius = radii\[index\]/.test(v2Js) &&
   /function applyLiveSnapshot\(snapshot\)[\s\S]*applyLiveTokenUpdate\(record, update\)[\s\S]*refreshLiveTargetRadii\(\)[\s\S]*syncNodes\(\)/.test(v2Js) &&
   /function valueForMetric[\s\S]*if \(metric === 'mcap'\)[\s\S]*return record\.marketCapWax/.test(v2Js));
+ok('waxonedge-bubbles-v2.js overlays enrichment without removing existing membership tokens',
+  /function applyLiveSnapshot\(snapshot\)[\s\S]*state\.payload = snapshot;[\s\S]*state\.pairs = sourceRows\(data\.pairs\);[\s\S]*tokens\.forEach[\s\S]*applyLiveTokenUpdate\(record, update\)[\s\S]*var incomingRecords = normalizeRecords\(snapshot\);[\s\S]*incomingRecords\.forEach[\s\S]*if \(!record \|\| !record\.key \|\| byKey\[record\.key\]\) return;[\s\S]*state\.records\.push\(record\)[\s\S]*syncNodes\(\)/.test(v2Js) &&
+  !/function applyLiveSnapshot\(snapshot\)[\s\S]*if \(hasNewRecords\)[\s\S]*state\.records = normalizeRecords\(snapshot\)[\s\S]*return;/.test(v2Js) &&
+  /function syncNodes\(\)[\s\S]*state\.nodes\.forEach\(function \(node\) \{ existing\[node\.id\] = node; \}\);[\s\S]*var old = existing\[record\.id\];[\s\S]*var node = old \|\|/.test(v2Js) &&
+  /function fetchEnrichedSnapshotAfterFirstPaint\(\)[\s\S]*apiJson\(BUBBLES_LITE_API\)[\s\S]*applyLiveSnapshot\(snapshot\)/.test(v2Js));
 {
   const mcapBranchStart = v2Js.indexOf("if (state.metric === 'mcap') {");
   const mcapBranchEnd = v2Js.indexOf("return 'Not indexed';", mcapBranchStart);
@@ -953,6 +969,17 @@ ok('waxonedge-bubbles-v2.js does not size liquidity mode from direct WAXCASH pai
 ok('waxonedge-bubbles-v2.js footer uses clean gain/loss labels',
   v2Js.includes("'<span class=\"woe-ab-up\">Up '") &&
   v2Js.includes("'<span class=\"woe-ab-down\">Down '") &&
+  v2Js.includes("'<span>Vol 24h <strong>'") &&
+  v2Js.includes("'<span>Sources <strong>'") &&
+  v2Js.includes("'<span>WAXCASH pair members</span>'") &&
+  v2Js.includes('Powered by WaxOnEdge multi-DEX indexer') &&
+  !v2Js.includes("'<span>Top <strong") &&
+  !v2Js.includes("'<span>Bot <strong") &&
+  !v2Js.includes('WAXCASH analytics feed') &&
+  !v2Js.includes('woe-ab-live-feed') &&
+  !v2Js.includes('woe-ab-feed-item') &&
+  !v2Js.includes('Top AA Not indexed') &&
+  !v2Js.includes('Bot AA Not indexed') &&
   !v2Js.includes("'<span class=\"woe-ab-up\">? '") &&
   !v2Js.includes("'<span class=\"woe-ab-down\">? '"));
 ok('waxonedge.js colors bubbles from 24h change', js.includes('woe-bubble-up') && js.includes('woe-bubble-down'));
@@ -1151,9 +1178,11 @@ ok('waxonedge-bubbles-v2.css includes cyberpunk WAX Galaxy shell styling',
   v2Css.includes('#39ff88') &&
   v2Css.includes('.woe-ab-canvas') &&
   v2Css.includes('.woe-ab-stats'));
-ok('waxonedge-bubbles-v2.css includes live feed, tooltip, and live-details modal styling',
-  v2Css.includes('.woe-ab-live-feed') &&
-  v2Css.includes('.woe-ab-feed-item') &&
+ok('waxonedge-bubbles-v2.css includes tooltip and live-details modal styling without ticker feed CSS',
+  !v2Css.includes('.woe-ab-live-feed') &&
+  !v2Css.includes('.woe-ab-feed-item') &&
+  !v2Css.includes('@keyframes woe-ab-ticker') &&
+  !v2Css.includes('animation: woe-ab-ticker') &&
   v2Css.includes('.woe-ab-tooltip') &&
   v2Css.includes('.woe-ab-chart-empty') &&
   v2Css.includes('.woe-ab-modal-panel') &&
@@ -1163,10 +1192,8 @@ ok('waxonedge-bubbles-v2.css renders a page-wide transparent galaxy instead of a
   v2Css.includes('.woe-antbubbles-page::before') &&
   /\.woe-ab-board-section\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?inset:\s*0;[\s\S]*?background:\s*transparent;/.test(v2Css) &&
   /\.woe-antbubbles-page \.woe-bubble-board,\s*\n\.woe-ab-canvas\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?width:\s*100vw;[\s\S]*?height:\s*100vh;/.test(v2Css) &&
-  v2Css.includes('@keyframes woe-ab-ticker') &&
-  v2Css.includes('animation: woe-ab-ticker 120s linear infinite') &&
-  v2Css.includes('grid-template-columns: minmax(390px, auto) minmax(260px, 1fr) auto') &&
-  v2Css.includes('mask-image: linear-gradient') &&
+  v2Css.includes('grid-template-columns: minmax(390px, auto) auto') &&
+  !v2Css.includes('mask-image: linear-gradient') &&
   /body\.woe-antbubbles-page\s*\{[^}]*position:\s*fixed;[^}]*inset:\s*0;[^}]*color:\s*#fff;[^}]*\}/.test(v2Css) &&
   !/body\.woe-antbubbles-page\s*\{[^}]*background:/.test(v2Css) &&
   v2Css.includes('background: transparent;') &&
