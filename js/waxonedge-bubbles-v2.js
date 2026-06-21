@@ -7,9 +7,10 @@
 (function () {
   'use strict';
 
-  var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics';
+  var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite';
+  var BOOTSTRAP_API = BUBBLES_LITE_API;
   var HEALTH_API = '/api/waxonedge/indexer-health';
-  var LIVE_API = '/api/waxonedge/waxcash-analytics';
+  var LIVE_API = BUBBLES_LITE_API;
   var LIVE_STREAM_API = '/api/waxonedge/live/stream';
   var LIVE_POLL_MS = 1000;
   var WAXCASH_CONTRACT = 'graffitiking';
@@ -42,6 +43,7 @@
   var SOURCE_ORDER = ['alcor', 'swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'];
   var IMAGE_CACHE_LIMIT = 160;
   var BUBBLE_CANVAS_CACHE_LIMIT = 240;
+  var MODAL_DETAIL_CACHE_LIMIT = 32;
   var imageCache = new Map();
   var bubbleCanvasCache = new Map();
   var reducedMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
@@ -89,6 +91,8 @@
     board: null,
     tooltip: null,
     modal: null,
+    modalDetailCache: new Map(),
+    modalDetailRequestId: 0,
     raf: 0,
     resizeTimer: 0,
     lastFrame: 0,
@@ -146,6 +150,11 @@
 
   function payloadData(envelope) {
     return envelope && envelope.data ? envelope.data : (envelope || {});
+  }
+
+  function isUnavailableLitePayload(payload) {
+    var data = payloadData(payload);
+    return data && data.source === 'waxcash_bubbles_lite' && data.data_available === false;
   }
 
   function fmtNum(value, decimals) {
@@ -237,6 +246,31 @@
     }
   }
 
+  function getModalDetailCache(key) {
+    if (!key || !state.modalDetailCache.has(key)) return null;
+    var cached = state.modalDetailCache.get(key);
+    state.modalDetailCache.delete(key);
+    state.modalDetailCache.set(key, cached);
+    return cached;
+  }
+
+  function setModalDetailCache(key, value) {
+    if (!key) return;
+    if (state.modalDetailCache.has(key)) state.modalDetailCache.delete(key);
+    state.modalDetailCache.set(key, value);
+    capMap(state.modalDetailCache, MODAL_DETAIL_CACHE_LIMIT);
+  }
+
+  function pruneModalDetailCacheForRecords(records) {
+    var allowed = {};
+    sourceRows(records).forEach(function (record) {
+      if (record && record.key) allowed[record.key] = true;
+    });
+    Array.from(state.modalDetailCache.keys()).forEach(function (key) {
+      if (!allowed[key]) state.modalDetailCache.delete(key);
+    });
+  }
+
   function metricConfidenceFrom(token, metricName) {
     var direct = token && (token[metricName + '_confidence'] || token[metricName + 'Confidence']);
     if (direct) return normalizeConfidence(direct) || 'unavailable';
@@ -256,6 +290,28 @@
 
   function prefersReducedMotion() {
     return !!(reducedMotionQuery && reducedMotionQuery.matches);
+  }
+
+  function isSmallScreen() {
+    return window.matchMedia
+      ? window.matchMedia('(max-width: 860px), (pointer: coarse)').matches
+      : window.innerWidth < 860;
+  }
+
+  function renderProfile() {
+    var small = isSmallScreen();
+    return {
+      small: small,
+      dprCap: small ? 1.25 : 2,
+      glowScale: small ? 0.55 : 1,
+      bandCount: small ? 3 : 5,
+      noiseCount: small ? 6 : 14,
+      animatedBands: !small,
+    };
+  }
+
+  function canvasDpr() {
+    return Math.min(window.devicePixelRatio || 1, renderProfile().dprCap);
   }
 
   function shouldAnimate() {
@@ -457,7 +513,7 @@
         wax_price_usd: data.sections && data.sections.wax_price ? data.sections.wax_price.usd : derivedWaxUsd,
         wax_price_source: 'waxcash-analytics',
         metric_capabilities: waxcashMetricCapabilities(tokens),
-        source_feed: '/api/waxonedge/waxcash-analytics',
+        source_feed: BUBBLES_LITE_API,
       },
       metric_capabilities: waxcashMetricCapabilities(tokens),
       generated_at: data.generated_at || now,
@@ -1188,6 +1244,7 @@
   }
 
   function applyLiveSnapshot(snapshot) {
+    if (isUnavailableLitePayload(snapshot)) return;
     var data = waxcashAnalyticsToBubblePayload(snapshot);
     var tokens = sourceRows(data.tokens);
     var nextCursor = data.next_cursor || snapshot.next_cursor || null;
@@ -1212,6 +1269,7 @@
       applyMetricCapabilities(snapshot);
       state.records = normalizeRecords(snapshot);
       state.pairs = sourceRows(data.pairs);
+      pruneModalDetailCacheForRecords(state.records);
       syncNodes();
       return;
     }
@@ -1593,7 +1651,8 @@
     var record = node.record;
     var r = Math.round(visualRadius(node));
     var img = imageCache.get(record.logoUrl);
-    var key = [r, state.metric, state.timeframe, displayValue(record), record.displaySymbol || record.symbol, record.sourceCount, ringColor(record), img ? 1 : 0, dpr].join('|');
+    var profile = renderProfile();
+    var key = [r, profile.small ? 'm' : 'd', state.metric, state.timeframe, displayValue(record), record.displaySymbol || record.symbol, record.sourceCount, ringColor(record), img ? 1 : 0, dpr].join('|');
     var cached = bubbleCanvasCache.get(record.id);
     if (cached && cached.key === key) {
       bubbleCanvasCache.delete(record.id);
@@ -1620,7 +1679,7 @@
     grad.addColorStop(0.88, '#050506');
     grad.addColorStop(1, rim);
     ctx.shadowColor = rim;
-    ctx.shadowBlur = Math.max(12, r * 0.34);
+    ctx.shadowBlur = Math.max(8, r * 0.34) * profile.glowScale;
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.fillStyle = grad;
@@ -1636,8 +1695,8 @@
     lower.addColorStop(1, 'rgba(0,0,0,.76)');
     ctx.fillStyle = lower;
     ctx.fillRect(-r, -r, r * 2, r * 2);
-    drawPlanetBands(ctx, record, r, 0);
-    drawPlanetNoise(ctx, record, r);
+    drawPlanetBands(ctx, record, r, 0, profile);
+    drawPlanetNoise(ctx, record, r, profile);
     ctx.restore();
     var rimGrad = ctx.createRadialGradient(r * 0.35, r * 0.35, r * 0.35, 0, 0, r);
     rimGrad.addColorStop(0, 'rgba(255,255,255,0)');
@@ -1651,7 +1710,7 @@
     ctx.lineWidth = Math.max(1, r * 0.018);
     ctx.strokeStyle = rim;
     ctx.shadowColor = rim;
-    ctx.shadowBlur = Math.max(6, r * 0.16);
+    ctx.shadowBlur = Math.max(4, r * 0.16) * profile.glowScale;
     ctx.stroke();
     ctx.shadowBlur = 0;
     ctx.save();
@@ -1731,10 +1790,11 @@
     return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + alpha + ')';
   }
 
-  function drawPlanetBands(ctx, record, r, phase) {
+  function drawPlanetBands(ctx, record, r, phase, profile) {
     var seed = hashText(record.key || record.symbol);
+    var count = profile && profile.bandCount ? profile.bandCount : 5;
     ctx.globalCompositeOperation = 'screen';
-    for (var i = 0; i < 5; i += 1) {
+    for (var i = 0; i < count; i += 1) {
       var y = -r * 0.52 + (i * r * 0.24) + (((seed + i * 17) % 9) - 4);
       var offset = Math.sin(phase + i + seed * 0.001) * r * 0.08;
       ctx.beginPath();
@@ -1745,10 +1805,11 @@
     ctx.globalCompositeOperation = 'source-over';
   }
 
-  function drawPlanetNoise(ctx, record, r) {
+  function drawPlanetNoise(ctx, record, r, profile) {
     var seed = hashText(record.key || record.symbol);
+    var count = profile && profile.noiseCount ? profile.noiseCount : 14;
     ctx.fillStyle = 'rgba(255,255,255,.08)';
-    for (var i = 0; i < 14; i += 1) {
+    for (var i = 0; i < count; i += 1) {
       var angle = ((seed + i * 71) % 360) * Math.PI / 180;
       var dist = r * (0.18 + ((seed + i * 31) % 62) / 100);
       var x = Math.cos(angle) * dist;
@@ -1761,7 +1822,8 @@
   }
 
   function drawAnimatedBands(ctx, node, now) {
-    if (!shouldAnimate() || node.radius < 28) return;
+    var profile = renderProfile();
+    if (!profile.animatedBands || !shouldAnimate() || node.radius < 28) return;
     var r = visualRadius(node);
     ctx.save();
     ctx.beginPath();
@@ -1769,7 +1831,7 @@
     ctx.clip();
     ctx.translate(node.x, node.y);
     ctx.globalAlpha = 0.28;
-    drawPlanetBands(ctx, node.record, r, now / 1800);
+    drawPlanetBands(ctx, node.record, r, now / 1800, profile);
     ctx.restore();
   }
 
@@ -1787,6 +1849,7 @@
 
   function drawShockwaves(ctx, now) {
     if (!state.shockwaves.length) return;
+    var profile = renderProfile();
     state.shockwaves = state.shockwaves.filter(function (wave) {
       var t = (now - wave.startedAt) / wave.duration;
       if (t >= 1) return false;
@@ -1795,7 +1858,7 @@
       ctx.strokeStyle = wave.color;
       ctx.lineWidth = Math.max(1, wave.radius * 0.05 * (1 - t));
       ctx.shadowColor = wave.color;
-      ctx.shadowBlur = 18 * (1 - t);
+      ctx.shadowBlur = 18 * profile.glowScale * (1 - t);
       ctx.beginPath();
       ctx.arc(wave.x, wave.y, wave.radius * (1.08 + t * 1.35), 0, Math.PI * 2);
       ctx.stroke();
@@ -1830,7 +1893,7 @@
     var canvas = state.canvas;
     var ctx = state.ctx;
     var rect = canvas.getBoundingClientRect();
-    var dpr = window.devicePixelRatio || 1;
+    var dpr = canvasDpr();
     var width = Math.max(320, rect.width);
     var height = Math.max(320, rect.height);
     if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
@@ -1871,6 +1934,7 @@
     var alpha = state.query && !node.match ? 0.16 : 1;
     var record = node.record;
     var r = Math.round(visualRadius(node));
+    var profile = renderProfile();
     ctx.save();
     ctx.globalAlpha = alpha;
     var recent = record.recentUntil && now < record.recentUntil;
@@ -1886,7 +1950,7 @@
       ctx.globalAlpha = alpha * Math.max(0.25, pulse || volumePulse || collisionPulse * 0.72 || eventPulse * 0.78 || shockwavePulse * 0.9 || 0.22);
       ctx.lineWidth = Math.max(1, r * (0.03 + volumePulse * 0.04 + collisionPulse * 0.018));
       ctx.shadowColor = ringColor(record);
-      ctx.shadowBlur = 18 + volumePulse * 18 + collisionPulse * 12 + eventPulse * 20 + shockwavePulse * 24;
+      ctx.shadowBlur = (18 + volumePulse * 18 + collisionPulse * 12 + eventPulse * 20 + shockwavePulse * 24) * profile.glowScale;
       ctx.stroke();
       ctx.shadowBlur = 0;
       ctx.globalAlpha = alpha;
@@ -1901,7 +1965,7 @@
       ctx.strokeStyle = ringColor(record);
       ctx.lineWidth = 2;
       ctx.shadowColor = ringColor(record);
-      ctx.shadowBlur = 18;
+      ctx.shadowBlur = 18 * profile.glowScale;
       ctx.stroke();
     }
     ctx.restore();
@@ -2002,30 +2066,180 @@
     return '<div class="woe-ab-modal-row"><span>' + escHtml(label) + '</span><strong>' + escHtml(value) + '</strong></div>';
   }
 
-  function renderTokenModal(record) {
+  function firstPresent() {
+    for (var i = 0; i < arguments.length; i += 1) {
+      if (arguments[i] !== undefined && arguments[i] !== null && arguments[i] !== '') return arguments[i];
+    }
+    return null;
+  }
+
+  function modalDetailApiPath(record) {
+    if (isWaxcashToken(record.contract, record.symbol)) return '/api/waxonedge/waxcash-analytics';
+    return '/api/waxonedge/token/' + encodeURIComponent(record.contract) + '/' + encodeURIComponent(record.symbol);
+  }
+
+  function modalPairsApiPath(record) {
+    if (isWaxcashToken(record.contract, record.symbol)) return '';
+    return modalDetailApiPath(record) + '/pairs?limit=100';
+  }
+
+  function modalDetailStatus(detailState) {
+    if (!detailState) return 'Loading full token analytics...';
+    if (detailState.error) return 'Full token analytics unavailable: ' + detailState.error;
+    return detailState.source || 'Full token analytics loaded';
+  }
+
+  function modalRecordDetails(record, detailState) {
+    var data = detailState && detailState.data ? detailState.data : null;
+    if (!data) return {
+      priceWax: record.selectedPriceWax,
+      priceUsd: record.selectedPriceUsd,
+      tvlWax: record.tvlWax,
+      tvlUsd: record.tvlUsd,
+      liquidityWax: record.graphLiquidityWax,
+      liquidityUsd: record.graphLiquidityUsd,
+      volume24Wax: record.volume24Wax,
+      volume24Usd: record.volume24Usd,
+      volume7dWax: record.volume7dWax,
+      volume7dUsd: record.volume7dUsd,
+      volume30dWax: record.volume30dWax,
+      volume30dUsd: record.volume30dUsd,
+      change24: record.change24,
+      marketCapWax: record.marketCapWax,
+      marketCapUsd: record.marketCapUsd,
+      supply: record.circulatingSupply || record.totalSupply || record.supply,
+      holderCount: record.holderCount,
+      holderCountLive: record.holderCountLive,
+      indexedPairCount: record.indexedPairCount,
+      sources: record.sources,
+      selectedPriceSource: record.selectedPriceSource || record.selectedSource,
+      valuationBasis: record.waxcashPairValuationBasis || record.valuationBasis,
+      diagnostics: record.unavailableReasons || (record.metricReasonCodes || []).join(', '),
+    };
+    return data;
+  }
+
+  function normalizeModalDetail(record, detailPayload, pairsPayload) {
+    var detail = payloadData(detailPayload);
+    var pairsData = payloadData(pairsPayload || {});
+    if (isWaxcashToken(record.contract, record.symbol)) {
+      var waxcash = waxcashAnalyticsToBubblePayload(detail);
+      var root = sourceRows(waxcash.tokens).filter(function (token) { return isWaxcashToken(token.contract, token.symbol); })[0] || {};
+      var stats = detail.stats || {};
+      return {
+        priceWax: firstPresent(root.selected_price_wax, stats.selected_price_wax, record.selectedPriceWax),
+        priceUsd: firstPresent(root.selected_price_usd, stats.selected_price_usd, record.selectedPriceUsd),
+        tvlWax: firstPresent(root.tvl_wax, stats.tvl_wax, record.tvlWax),
+        tvlUsd: firstPresent(root.tvl_usd, stats.tvl_usd, record.tvlUsd),
+        liquidityWax: firstPresent(root.graph_liquidity_wax, stats.cumulated_pair_liquidity_wax, record.graphLiquidityWax),
+        liquidityUsd: firstPresent(root.graph_liquidity_usd, stats.cumulated_pair_liquidity_usd, record.graphLiquidityUsd),
+        volume24Wax: firstPresent(root.volume_24h_wax, stats.volume_24h_wax, record.volume24Wax),
+        volume24Usd: firstPresent(root.volume_24h_usd, stats.volume_24h_usd, record.volume24Usd),
+        volume7dWax: firstPresent(root.volume_7d_wax, stats.volume_7d_wax, record.volume7dWax),
+        volume7dUsd: firstPresent(root.volume_7d_usd, stats.volume_7d_usd, record.volume7dUsd),
+        volume30dWax: firstPresent(root.volume_30d_wax, stats.volume_30d_wax, record.volume30dWax),
+        volume30dUsd: firstPresent(root.volume_30d_usd, stats.volume_30d_usd, record.volume30dUsd),
+        change24: firstPresent(root.change_24h, stats.change_24h, record.change24),
+        marketCapWax: firstPresent(root.market_cap_wax, stats.market_cap_wax, record.marketCapWax),
+        marketCapUsd: firstPresent(root.market_cap_usd, stats.market_cap_usd, record.marketCapUsd),
+        supply: firstPresent(root.circulating_supply, stats.circulating_supply, root.total_supply, stats.total_supply, record.circulatingSupply || record.totalSupply || record.supply),
+        holderCount: firstPresent(root.holder_count, stats.holder_count, record.holderCount),
+        holderCountLive: root.holder_count_live === true || !!(stats.metric_status && stats.metric_status.holder_count && stats.metric_status.holder_count.live) || record.holderCountLive,
+        indexedPairCount: firstPresent(root.indexed_pair_count, stats.indexed_pair_count, sourceRows(detail.sections && detail.sections.pair_table && detail.sections.pair_table.rows).length, record.indexedPairCount),
+        sources: parseSourceKeys(root.source_keys || stats.source_keys || record.sources),
+        selectedPriceSource: firstPresent(root.selected_price_source, stats.selected_price_source, stats.selected_pair_source, record.selectedPriceSource || record.selectedSource),
+        valuationBasis: firstPresent(root.valuation_basis, stats.market_cap_basis, stats.selected_price_basis, record.valuationBasis),
+        diagnostics: stats.metric_status && stats.metric_status.total_supply && stats.metric_status.total_supply.reason ? stats.metric_status.total_supply.reason : record.unavailableReasons,
+      };
+    }
+    var token = detail.token || {};
+    var stats = detail.stats || token.stats || {};
+    var pairRows = sourceRows(pairsData.rows || pairsData.pairs || detail.pairs || []);
+    var sourceKeys = parseSourceKeys(firstPresent(stats.source_keys, token.source_keys, record.sources));
+    if (!sourceKeys.length && pairRows.length) {
+      sourceKeys = Array.from(new Set(pairRows.map(function (pair) { return pairSourceKey(pair); }).filter(Boolean))).sort(compareSources);
+    }
+    return {
+      priceWax: firstPresent(stats.selected_price_wax, stats.price_wax, token.selected_price_wax, token.price_wax, record.selectedPriceWax),
+      priceUsd: firstPresent(stats.selected_price_usd, stats.price_usd, token.selected_price_usd, token.price_usd, record.selectedPriceUsd),
+      tvlWax: firstPresent(stats.tvl_wax, token.tvl_wax, record.tvlWax),
+      tvlUsd: firstPresent(stats.tvl_usd, token.tvl_usd, record.tvlUsd),
+      liquidityWax: firstPresent(stats.graph_liquidity_wax, stats.liquidity_wax, token.graph_liquidity_wax, token.liquidity_wax, record.graphLiquidityWax),
+      liquidityUsd: firstPresent(stats.graph_liquidity_usd, stats.liquidity_usd, token.graph_liquidity_usd, token.liquidity_usd, record.graphLiquidityUsd),
+      volume24Wax: firstPresent(stats.volume_24h_wax, stats.volume_24h, token.volume_24h_wax, record.volume24Wax),
+      volume24Usd: firstPresent(stats.volume_24h_usd, token.volume_24h_usd, record.volume24Usd),
+      volume7dWax: firstPresent(stats.volume_7d_wax, token.volume_7d_wax, record.volume7dWax),
+      volume7dUsd: firstPresent(stats.volume_7d_usd, token.volume_7d_usd, record.volume7dUsd),
+      volume30dWax: firstPresent(stats.volume_30d_wax, token.volume_30d_wax, record.volume30dWax),
+      volume30dUsd: firstPresent(stats.volume_30d_usd, token.volume_30d_usd, record.volume30dUsd),
+      change24: firstPresent(stats.change_24h, token.change_24h, record.change24),
+      marketCapWax: firstPresent(stats.market_cap_wax, token.market_cap_wax, record.marketCapWax),
+      marketCapUsd: firstPresent(stats.market_cap_usd, token.market_cap_usd, record.marketCapUsd),
+      supply: firstPresent(stats.circulating_supply, token.circulating_supply, stats.total_supply, token.total_supply, record.circulatingSupply || record.totalSupply || record.supply),
+      holderCount: firstPresent(stats.holder_count, token.holder_count, record.holderCount),
+      holderCountLive: !!(stats.metric_status && stats.metric_status.holder_count && stats.metric_status.holder_count.live) || record.holderCountLive,
+      indexedPairCount: firstPresent(stats.indexed_pair_count, token.indexed_pair_count, pairRows.length, record.indexedPairCount),
+      sources: sourceKeys,
+      selectedPriceSource: firstPresent(stats.selected_price_source, stats.selected_pair_source, token.selected_price_source, record.selectedPriceSource || record.selectedSource),
+      valuationBasis: firstPresent(stats.valuation_basis, stats.selected_price_basis, stats.market_cap_basis, token.valuation_basis, record.waxcashPairValuationBasis || record.valuationBasis),
+      diagnostics: firstPresent(detail.unavailable, stats.unavailable_reason, token.unavailable_reason, record.unavailableReasons),
+    };
+  }
+
+  function loadTokenModalDetails(record) {
+    var key = record.key || tokenKey(record.contract, record.symbol);
+    var cached = getModalDetailCache(key);
+    if (cached) {
+      renderTokenModal(record, cached);
+      return;
+    }
+    var requestId = ++state.modalDetailRequestId;
+    renderTokenModal(record, { loading: true });
+    var detailPath = modalDetailApiPath(record);
+    var pairsPath = modalPairsApiPath(record);
+    var detailPromise = apiJson(detailPath);
+    var pairsPromise = pairsPath ? apiJson(pairsPath).catch(function (error) { return { unavailable: error.message }; }) : Promise.resolve(null);
+    Promise.all([detailPromise, pairsPromise]).then(function (responses) {
+      var detailState = {
+        source: isWaxcashToken(record.contract, record.symbol) ? 'Full WAXCASH analytics loaded on click' : 'Full token analytics loaded on click',
+        data: normalizeModalDetail(record, responses[0], responses[1]),
+      };
+      setModalDetailCache(key, detailState);
+      if (state.selected && state.selected.key === record.key && requestId === state.modalDetailRequestId) renderTokenModal(record, detailState);
+    }).catch(function (error) {
+      var errorState = { error: error && error.message ? error.message : String(error) };
+      setModalDetailCache(key, errorState);
+      if (state.selected && state.selected.key === record.key && requestId === state.modalDetailRequestId) renderTokenModal(record, errorState);
+    });
+  }
+
+  function renderTokenModal(record, detailState) {
     if (!state.modal || !record) return;
-    var holderText = record.holderCountLive && record.holderCount != null ? fmtNum(record.holderCount, 0) : 'Not indexed';
+    var detail = modalRecordDetails(record, detailState);
+    var holderText = detail.holderCountLive && detail.holderCount != null ? fmtNum(detail.holderCount, 0) : 'Not indexed';
     var pairRef = record.waxcashPairSource || record.waxcashPairId
       ? [record.waxcashPairSource, record.waxcashPairId ? '#' + record.waxcashPairId : ''].filter(Boolean).join(' ')
       : 'WAXCASH root';
     var rows = [
       modalRow('Symbol', record.displaySymbol || record.symbol),
       modalRow('Contract', record.contract),
-      modalRow('Price', dualDetail(record.selectedPriceWax, record.selectedPriceUsd)),
-      modalRow('TVL', dualDetail(record.tvlWax, record.tvlUsd)),
-      modalRow('Liquidity', dualDetail(record.graphLiquidityWax, record.graphLiquidityUsd)),
-      modalRow('24h volume', dualDetail(record.volume24Wax, record.volume24Usd)),
-      modalRow('7d volume', dualDetail(record.volume7dWax, record.volume7dUsd)),
-      modalRow('30d volume', dualDetail(record.volume30dWax, record.volume30dUsd)),
-      modalRow('24h change', detailValue(record.change24, fmtPct)),
-      modalRow('Market cap', dualDetail(record.marketCapWax, record.marketCapUsd)),
-      modalRow('Supply', detailValue(record.circulatingSupply || record.totalSupply || record.supply)),
+      modalRow('Detail source', modalDetailStatus(detailState)),
+      modalRow('Price', dualDetail(detail.priceWax, detail.priceUsd)),
+      modalRow('TVL', dualDetail(detail.tvlWax, detail.tvlUsd)),
+      modalRow('Liquidity', dualDetail(detail.liquidityWax, detail.liquidityUsd)),
+      modalRow('24h volume', dualDetail(detail.volume24Wax, detail.volume24Usd)),
+      modalRow('7d volume', dualDetail(detail.volume7dWax, detail.volume7dUsd)),
+      modalRow('30d volume', dualDetail(detail.volume30dWax, detail.volume30dUsd)),
+      modalRow('24h change', detailValue(detail.change24, fmtPct)),
+      modalRow('Market cap', dualDetail(detail.marketCapWax, detail.marketCapUsd)),
+      modalRow('Supply', detailValue(detail.supply)),
       modalRow('Holder count', holderText),
-      modalRow('Indexed pair count', detailValue(record.indexedPairCount, function (value) { return fmtNum(value, 0); })),
-      modalRow('Sources', record.sources.length ? record.sources.join(', ') : 'Not indexed'),
-      modalRow('Selected price source', record.selectedPriceSource || record.selectedSource || 'Not indexed'),
+      modalRow('Indexed pair count', detailValue(detail.indexedPairCount, function (value) { return fmtNum(value, 0); })),
+      modalRow('Sources', detail.sources && detail.sources.length ? detail.sources.join(', ') : 'Not indexed'),
+      modalRow('Selected price source', detail.selectedPriceSource || 'Not indexed'),
       modalRow('WAXCASH pair', pairRef),
-      modalRow('Valuation basis', record.waxcashPairValuationBasis || record.valuationBasis || 'Not indexed'),
+      modalRow('Valuation basis', detail.valuationBasis || 'Not indexed'),
+      modalRow('Diagnostics', detail.diagnostics || 'No blocking diagnostics'),
       modalRow('Last updated', record.lastUpdated || record.liveUpdatedAt || safeTimeLabel(state.lastUpdated) || 'Not indexed'),
     ];
     state.modal.innerHTML = '<div class="woe-ab-modal-backdrop" data-woe-close-modal></div>' +
@@ -2046,7 +2260,7 @@
   function openTokenModal(record) {
     if (!record) return;
     state.selected = record;
-    renderTokenModal(record);
+    loadTokenModalDetails(record);
   }
 
   function apiJson(path) {
@@ -2265,11 +2479,13 @@
       apiJson(BOOTSTRAP_API),
       apiJson(HEALTH_API).catch(function () { return null; }),
     ]).then(function (results) {
+      if (isUnavailableLitePayload(results[0])) throw new Error('WAXCASH bubble lite query unavailable');
       state.payload = results[0];
       state.health = results[1] ? payloadData(results[1]) : null;
       applyMetricCapabilities(state.payload);
       state.records = normalizeRecords(state.payload);
       state.pairs = sourceRows(waxcashAnalyticsToBubblePayload(state.payload).pairs);
+      pruneModalDetailCacheForRecords(state.records);
       state.connected = true;
       var loadedData = waxcashAnalyticsToBubblePayload(state.payload);
       setBackendLiveCursor(loadedData.next_cursor);

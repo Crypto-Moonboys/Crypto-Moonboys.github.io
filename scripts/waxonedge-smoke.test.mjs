@@ -77,7 +77,9 @@ ok('waxonedge.html versions WaxOnEdge scanner assets to avoid stale CDN bundles'
   html.includes('/js/waxonedge-bubbles-v2.js?v=woe-'));
 ok('OG analytics parity PR cache-busts changed WaxOnEdge scanner assets',
   html.includes('/js/waxonedge-featured-tokens.js?v=woe-20260616-featured') &&
-  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260620-waxcash-bubbles-live') &&
+  html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-waxcash-bubbles-lite-2') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260621-waxcash-bubbles-lite"') &&
+  !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260620-waxcash-bubbles-live') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-bubble-liquidity') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-og-analytics') &&
   !html.includes('/js/waxonedge-bubbles-v2.js?v=woe-20260617-trust-hardening') &&
@@ -334,14 +336,17 @@ ok('waxonedge.js uses path-segment-safe token analytics route detection',
 ok('waxonedge.js fetches Alcor chart candles from /markets/:id/charts for diagnostic fallback', js.includes('/charts') && js.includes('/markets'));
 ok('waxonedge.js keeps Lightweight Charts support', js.includes('window.LightweightCharts') && js.includes('tv.createChart'));
 
-ok('waxonedge-bubbles-v2.js uses WaxOnEdge backend endpoints, not AntBubbles or live Alcor APIs',
-  v2Js.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics';") &&
+ok('waxonedge-bubbles-v2.js uses the slim WAXCASH bubble backend endpoint, not full analytics polling or live Alcor APIs',
+  v2Js.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite';") &&
+  v2Js.includes('var BOOTSTRAP_API = BUBBLES_LITE_API;') &&
   v2Js.includes("var HEALTH_API = '/api/waxonedge/indexer-health';") &&
-  v2Js.includes("var LIVE_API = '/api/waxonedge/waxcash-analytics';") &&
+  v2Js.includes('var LIVE_API = BUBBLES_LITE_API;') &&
+  !v2Js.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics';") &&
+  !v2Js.includes("var LIVE_API = '/api/waxonedge/waxcash-analytics';") &&
   !v2Js.includes('antbubbles') &&
   !v2Js.includes('wax.alcor.exchange'));
-ok('waxonedge-bubbles-v2.js phase-one feed normalizes waxcash-analytics token stats and pair table rows',
-  v2Js.includes("source_feed: '/api/waxonedge/waxcash-analytics'") &&
+ok('waxonedge-bubbles-v2.js phase-one adapter can normalize waxcash-analytics token stats and pair table rows into the slim shape',
+  v2Js.includes('source_feed: BUBBLES_LITE_API') &&
   v2Js.includes('function waxcashAnalyticsToBubblePayload(payload)') &&
   v2Js.includes('var pairTable = sections.pair_table || {}') &&
   v2Js.includes('var rows = sourceRows(pairTable.rows)') &&
@@ -523,9 +528,15 @@ ok('waxonedge-bubbles-v2.js keeps modes and search scoped to backend graph token
   !v2Js.includes('Featured tokens only'));
 ok('waxonedge-bubbles-v2.js opens an in-page live token details modal instead of full token pages',
   v2Js.includes('function openTokenModal(record)') &&
-  v2Js.includes('function renderTokenModal(record)') &&
+  v2Js.includes('function renderTokenModal(record, detailState)') &&
+  v2Js.includes('function loadTokenModalDetails(record)') &&
+  v2Js.includes('function modalDetailApiPath(record)') &&
+  v2Js.includes("return '/api/waxonedge/waxcash-analytics'") &&
+  v2Js.includes("'/api/waxonedge/token/' + encodeURIComponent(record.contract) + '/' + encodeURIComponent(record.symbol)") &&
+  v2Js.includes("modalDetailApiPath(record) + '/pairs?limit=100'") &&
   v2Js.includes('woe-ab-modal-panel') &&
   v2Js.includes('Symbol') &&
+  v2Js.includes('Detail source') &&
   v2Js.includes('24h volume') &&
   v2Js.includes('30d volume') &&
   v2Js.includes('WAXCASH pair') &&
@@ -552,9 +563,23 @@ ok('waxonedge-bubbles-v2.js caps image and offscreen bubble canvas caches',
   v2Js.includes('capMap(imageCache, IMAGE_CACHE_LIMIT)') &&
   v2Js.includes('capMap(bubbleCanvasCache, BUBBLE_CANVAS_CACHE_LIMIT)') &&
   v2Js.includes('bubbleCanvasCache.clear()'));
-ok('WaxOnEdge frontend keeps the scanner and token analytics on Worker API routes only',
-  v2Js.includes("var BOOTSTRAP_API = '/api/waxonedge/waxcash-analytics';") &&
-  v2Js.includes("var LIVE_API = '/api/waxonedge/waxcash-analytics';") &&
+ok('waxonedge-bubbles-v2.js caps modal detail cache for long scanner sessions',
+  v2Js.includes('var MODAL_DETAIL_CACHE_LIMIT = 32') &&
+  v2Js.includes('modalDetailCache: new Map()') &&
+  v2Js.includes('function getModalDetailCache(key)') &&
+  v2Js.includes('function setModalDetailCache(key, value)') &&
+  v2Js.includes('capMap(state.modalDetailCache, MODAL_DETAIL_CACHE_LIMIT)') &&
+  v2Js.includes('function pruneModalDetailCacheForRecords(records)') &&
+  v2Js.includes('pruneModalDetailCacheForRecords(state.records)') &&
+  v2Js.includes('var cached = getModalDetailCache(key)') &&
+  v2Js.includes('setModalDetailCache(key, detailState)') &&
+  v2Js.includes('setModalDetailCache(key, errorState)') &&
+  !v2Js.includes('modalDetailCache: {}') &&
+  !v2Js.includes('state.modalDetailCache[key] ='));
+ok('WaxOnEdge frontend keeps the scanner on the slim Worker route and token analytics on Worker API routes only',
+  v2Js.includes("var BUBBLES_LITE_API = '/api/waxonedge/waxcash-bubbles-lite';") &&
+  v2Js.includes('var BOOTSTRAP_API = BUBBLES_LITE_API;') &&
+  v2Js.includes('var LIVE_API = BUBBLES_LITE_API;') &&
   v2Js.includes("var HEALTH_API = '/api/waxonedge/indexer-health';") &&
   js.includes("'/token/' + encodeURIComponent(chartContract) + '/' + encodeURIComponent(chartSymbol) + '/chart'") &&
   js.includes("selectedTokenApiPath(selection, '')") &&
@@ -578,6 +603,14 @@ ok('waxonedge-bubbles-v2.js renders cached fake-3D planet bubbles with live impa
   v2Js.includes("record.sourceCount + ' src'") &&
   v2Js.includes('bubbleCanvasCache.get(record.id)') &&
   !/function applyLiveTokenUpdate[\s\S]*?bubbleCanvasCache\.delete\(record\.id\)[\s\S]*?function refreshLiveTargetRadii/.test(v2Js));
+ok('waxonedge-bubbles-v2.js caps mobile canvas DPR and reduces expensive glow/effect detail',
+  v2Js.includes('function canvasDpr()') &&
+  v2Js.includes('dprCap: small ? 1.25 : 2') &&
+  v2Js.includes('glowScale: small ? 0.55 : 1') &&
+  v2Js.includes('bandCount: small ? 3 : 5') &&
+  v2Js.includes('noiseCount: small ? 6 : 14') &&
+  v2Js.includes('animatedBands: !small') &&
+  v2Js.includes('var dpr = canvasDpr();'));
 ok('waxonedge-bubbles-v2.js uses selected metric and blended base score for bubble sizing',
   v2Js.includes('function blendedMarketScore') &&
   v2Js.includes('function reweightedScore') &&
