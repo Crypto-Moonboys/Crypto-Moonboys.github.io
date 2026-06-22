@@ -111,8 +111,8 @@
     const amountIn = asNumber(els.amount.value);
     const tokenIn = selectedToken(els.tokenIn);
     const tokenOut = selectedToken(els.tokenOut);
-    const highLiquidityOnly = asNumber(els.minLiquidity.value) >= 10;
-    const route = engine.findOptimalSplit(amountIn, tokenIn, tokenOut, state.pools, highLiquidityOnly);
+    const minLiquidityScore = asNumber(els.minLiquidity.value);
+    const route = engine.findOptimalSplit(amountIn, tokenIn, tokenOut, state.pools, minLiquidityScore);
     const slippage = asNumber(els.slippage.value);
 
     if (!amountIn || amountIn <= 0) {
@@ -147,6 +147,7 @@
         <div class="stat"><small>Impact</small><b>${formatNumber(route.impact, 4)}%</b></div>
         <div class="stat"><small>Fee total</small><b>${formatNumber(route.feePercent, 4)}%</b></div>
         <div class="stat"><small>Minimum after tolerance</small><b>${formatNumber(minReceived)}</b></div>
+        <div class="stat"><small>Minimum score</small><b>${formatNumber(minLiquidityScore)}</b></div>
         <div class="stat"><small>Candidate routes</small><b>${candidates.length}</b></div>
         <div class="stat"><small>Split</small><b>${route.split ? 'Yes' : 'No'}</b></div>
       </div>
