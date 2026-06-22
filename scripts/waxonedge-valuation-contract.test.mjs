@@ -1082,6 +1082,39 @@ ok('analytics cache key separates liquidity, volume24, and debug token-page requ
 __waxonedgeTestHooks.clearWaxonedgePublicAnalyticsCache();
 ok('analytics cache test hook can clear Worker-isolate cache',
   __waxonedgeTestHooks.waxonedgePublicAnalyticsCacheSize() === 0);
+__waxonedgeTestHooks.storeAnalyticsPayload(
+  'expired-liquidity-key',
+  { token: { symbol: 'OLD' } },
+  1,
+  '2026-06-22T00:00:00.000Z',
+  1000,
+);
+__waxonedgeTestHooks.storeAnalyticsPayload(
+  'fresh-volume-key',
+  { token: { symbol: 'NEW' } },
+  60,
+  '2026-06-22T00:00:03.000Z',
+  3000,
+);
+ok('expired analytics cache entries are pruned when a different key is stored later',
+  __waxonedgeTestHooks.waxonedgePublicAnalyticsCacheSize() === 1 &&
+  __waxonedgeTestHooks.cachedAnalyticsPayload('expired-liquidity-key', 3000) == null &&
+  __waxonedgeTestHooks.cachedAnalyticsPayload('fresh-volume-key', 3000)?.cache_status === 'HIT');
+__waxonedgeTestHooks.clearWaxonedgePublicAnalyticsCache();
+for (let i = 0; i < __waxonedgeTestHooks.WAXONEDGE_PUBLIC_ANALYTICS_CACHE_MAX_ENTRIES + 7; i += 1) {
+  __waxonedgeTestHooks.storeAnalyticsPayload(
+    `cap-test-${i}`,
+    { token: { symbol: `CAP${i}` } },
+    60,
+    `2026-06-22T00:00:${String(i).padStart(2, '0')}.000Z`,
+    10_000 + i,
+  );
+}
+ok('analytics cache size cannot grow beyond the configured cap',
+  __waxonedgeTestHooks.waxonedgePublicAnalyticsCacheSize() === __waxonedgeTestHooks.WAXONEDGE_PUBLIC_ANALYTICS_CACHE_MAX_ENTRIES &&
+  __waxonedgeTestHooks.cachedAnalyticsPayload('cap-test-0', 20_000) == null &&
+  __waxonedgeTestHooks.cachedAnalyticsPayload(`cap-test-${__waxonedgeTestHooks.WAXONEDGE_PUBLIC_ANALYTICS_CACHE_MAX_ENTRIES + 6}`, 20_000)?.cache_status === 'HIT');
+__waxonedgeTestHooks.clearWaxonedgePublicAnalyticsCache();
 const waxcashCacheRoute = workerSource.slice(
   workerSource.indexOf("path === `${WAXONEDGE_API_PREFIX}/waxcash-analytics`"),
   workerSource.indexOf("path === `${WAXONEDGE_API_PREFIX}/waxcash-bubbles-lite`"),
@@ -1107,6 +1140,13 @@ ok('public analytics cache metadata is emitted for successful WAXCASH and token-
   workerSource.includes("'HIT'") &&
   workerSource.includes("'MISS'") &&
   workerSource.includes("'BYPASS'"));
+ok('analytics cache prunes expired entries and enforces a small max-entry cap',
+  workerSource.includes('const WAXONEDGE_PUBLIC_ANALYTICS_CACHE_MAX_ENTRIES = 50') &&
+  workerSource.includes('function pruneWaxonedgePublicAnalyticsCache(nowMs = Date.now())') &&
+  workerSource.includes('cached.expiresAt <= nowMs') &&
+  workerSource.includes('waxonedgePublicAnalyticsCache.size > WAXONEDGE_PUBLIC_ANALYTICS_CACHE_MAX_ENTRIES') &&
+  workerSource.includes('waxonedgePublicAnalyticsCache.keys().next().value') &&
+  workerSource.indexOf('pruneWaxonedgePublicAnalyticsCache(nowMs)') < workerSource.indexOf('waxonedgePublicAnalyticsCache.set(key'));
 
 console.log(`\nwaxonedge-valuation-contract.test: ${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

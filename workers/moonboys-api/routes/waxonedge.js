@@ -27,6 +27,7 @@ const WAXCASH_HOLDER_SNAPSHOT_SOURCE = 'waxcash_holder_snapshot';
 const WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_SOURCE = 'waxcash_bubbles_membership_lite';
 const WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_STALE_MS = 10 * 60 * 1000;
 const WAXONEDGE_PUBLIC_ANALYTICS_CACHE_TTL_SECONDS = 60;
+const WAXONEDGE_PUBLIC_ANALYTICS_CACHE_MAX_ENTRIES = 50;
 const SUPPLY_SYNC_SOURCE = 'wax_rpc_supply';
 const AGGREGATE_REFRESH_REASON = 'Aggregate refresh pending after source cursor progress';
 const CANDLE_BACKFILL_PLAN = 'Internal 1D kline backfill planned from indexed trade rows; no fake candles are inserted.';
@@ -1025,14 +1026,30 @@ function cachedAnalyticsPayload(key, nowMs = Date.now()) {
   );
 }
 
+function pruneWaxonedgePublicAnalyticsCache(nowMs = Date.now()) {
+  for (const [key, cached] of waxonedgePublicAnalyticsCache.entries()) {
+    if (!cached || cached.expiresAt <= nowMs) {
+      waxonedgePublicAnalyticsCache.delete(key);
+    }
+  }
+  while (waxonedgePublicAnalyticsCache.size > WAXONEDGE_PUBLIC_ANALYTICS_CACHE_MAX_ENTRIES) {
+    const oldestKey = waxonedgePublicAnalyticsCache.keys().next().value;
+    if (oldestKey == null) break;
+    waxonedgePublicAnalyticsCache.delete(oldestKey);
+  }
+}
+
 function storeAnalyticsPayload(key, data, ttlSeconds, generatedAt = nowIso(), nowMs = Date.now()) {
   if (!key || !data || ttlSeconds <= 0) return;
+  pruneWaxonedgePublicAnalyticsCache(nowMs);
+  waxonedgePublicAnalyticsCache.delete(key);
   waxonedgePublicAnalyticsCache.set(key, {
     data: cloneJsonSafe(data),
     generatedAt,
     ttlSeconds,
     expiresAt: nowMs + ttlSeconds * 1000,
   });
+  pruneWaxonedgePublicAnalyticsCache(nowMs);
 }
 
 function waxonedgePublicAnalyticsCacheSize() {
@@ -14765,6 +14782,10 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
 export const __waxonedgeTestHooks = {
   getTokenPageAnalytics,
   waxonedgeAnalyticsCacheKey,
+  cachedAnalyticsPayload,
+  storeAnalyticsPayload,
+  pruneWaxonedgePublicAnalyticsCache,
+  WAXONEDGE_PUBLIC_ANALYTICS_CACHE_MAX_ENTRIES,
   waxonedgePublicAnalyticsCacheSize,
   clearWaxonedgePublicAnalyticsCache,
   listTokenPairs,
