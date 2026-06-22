@@ -244,6 +244,6 @@
     new window.TradingView.widget({ autosize: true, symbol: 'WUF_WAX', interval: '240', container: CONTAINER_ID, datafeed: datafeed, library_path: 'https://alcor.exchange/charting_library/', locale: 'en', timezone: 'Etc/UTC', theme: 'dark', style: '1', toolbar_bg: '#111820', custom_css_url: 'https://alcor.exchange/tv_themed.css', disabled_features: ['symbol_search_hot_key', 'header_symbol_search'], favorites: { intervals: RESOLUTIONS }, loading_screen: { backgroundColor: '#111820', foregroundColor: '#ffd000' } });
   }
 
-  function init() { initSortControls(); loadAnalytics(); initChart(); }
+  function init() { initSortControls(); initChart(); loadAnalytics(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 }());

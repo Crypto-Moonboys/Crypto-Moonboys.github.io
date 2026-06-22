@@ -70,6 +70,10 @@ ok('WUF token analytics does not fetch same-origin /api directly',
   !tokenAnalyticsPageJs.includes("fetch('/api/waxonedge") &&
   !tokenAnalyticsPageJs.includes('fetch("/api/waxonedge') &&
   !tokenAnalyticsPageJs.includes("var ENDPOINT = '/api/waxonedge"));
+ok('WUF token analytics never requests debug token-page responses',
+  !tokenAnalyticsPageJs.includes("debug=1") &&
+  !tokenAnalyticsPageJs.includes("searchParams.set('debug'") &&
+  !tokenAnalyticsPageJs.includes('searchParams.set("debug"'));
 ok('wuffi.html cache-busts the WUF token analytics runtime',
   wuffiHtml.includes('/js/token-analytics-page.js?v=wuf-table-parity-20260622-1'));
 ok('WUF table exposes liquidity and 24h volume sort buttons',
@@ -84,6 +88,8 @@ ok('WUF token analytics supports liquidity and 24h volume sorting',
   tokenAnalyticsPageJs.includes('function setPairSort(sortKey)') &&
   tokenAnalyticsPageJs.includes('loadAnalytics();') &&
   tokenAnalyticsPageJs.includes('analyticsRequestId'));
+ok('WUF chart init is not blocked behind the token-page table request',
+  tokenAnalyticsPageJs.includes('function init() { initSortControls(); initChart(); loadAnalytics(); }'));
 ok('WUF generic table renders selected pair, DEX logos, token icons, native volume fallback, and clean verified liquidity badge',
   tokenAnalyticsPageJs.includes('token-selected-pair') &&
   tokenAnalyticsPageJs.includes('token-dex-logo') &&

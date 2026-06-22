@@ -26,6 +26,8 @@ const LIVE_INDEXER_HISTORY_SOURCE = 'live_indexer_history_import';
 const WAXCASH_HOLDER_SNAPSHOT_SOURCE = 'waxcash_holder_snapshot';
 const WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_SOURCE = 'waxcash_bubbles_membership_lite';
 const WAXCASH_BUBBLES_MEMBERSHIP_SNAPSHOT_STALE_MS = 10 * 60 * 1000;
+const WAXONEDGE_PUBLIC_ANALYTICS_CACHE_TTL_SECONDS = 60;
+const WAXONEDGE_PUBLIC_ANALYTICS_CACHE_MAX_ENTRIES = 50;
 const SUPPLY_SYNC_SOURCE = 'wax_rpc_supply';
 const AGGREGATE_REFRESH_REASON = 'Aggregate refresh pending after source cursor progress';
 const CANDLE_BACKFILL_PLAN = 'Internal 1D kline backfill planned from indexed trade rows; no fake candles are inserted.';
@@ -72,6 +74,7 @@ const WAXONEDGE_PAIR_TOKEN_CONTRACT_BLOCKLIST = Object.freeze([
   'memecreators',
 ]);
 let waxcashBubblesLiteGraphCache = null;
+const waxonedgePublicAnalyticsCache = new Map();
 const WAXONEDGE_OG_ENDPOINTS = Object.freeze([
   '/pools',
   '/pool',
@@ -978,6 +981,83 @@ function envelope({ ok = true, data = null, warnings = [], error = null, updated
 
 function ok(data, warnings = [], updatedAt = null, corsHeaders = {}) {
   return waxonedgeJson(envelope({ ok: true, data, warnings, updatedAt }), 200, corsHeaders);
+}
+
+function cloneJsonSafe(value) {
+  if (value == null) return value;
+  return JSON.parse(JSON.stringify(value));
+}
+
+function normalizeAnalyticsCacheDebug(value) {
+  return value === true || value === 1 || String(value || '').trim() === '1';
+}
+
+function waxonedgeAnalyticsCacheKey(parts = {}) {
+  return [
+    safeString(parts.path) || '',
+    normalizeContract(parts.contract) || '',
+    normalizeSymbol(parts.symbol) || '',
+    normalizeTokenPageSort(parts.sort),
+    normalizeAnalyticsCacheDebug(parts.debug) ? 'debug=1' : 'debug=0',
+  ].join('|');
+}
+
+function withAnalyticsCacheMetadata(data, status, ttlSeconds, generatedAt = null) {
+  return {
+    ...(data && typeof data === 'object' ? data : { value: data }),
+    cache_status: status,
+    cache_ttl_seconds: ttlSeconds,
+    generated_at: generatedAt || nowIso(),
+  };
+}
+
+function cachedAnalyticsPayload(key, nowMs = Date.now()) {
+  const cached = waxonedgePublicAnalyticsCache.get(key);
+  if (!cached) return null;
+  if (cached.expiresAt <= nowMs) {
+    waxonedgePublicAnalyticsCache.delete(key);
+    return null;
+  }
+  return withAnalyticsCacheMetadata(
+    cloneJsonSafe(cached.data),
+    'HIT',
+    cached.ttlSeconds,
+    cached.generatedAt,
+  );
+}
+
+function pruneWaxonedgePublicAnalyticsCache(nowMs = Date.now()) {
+  for (const [key, cached] of waxonedgePublicAnalyticsCache.entries()) {
+    if (!cached || cached.expiresAt <= nowMs) {
+      waxonedgePublicAnalyticsCache.delete(key);
+    }
+  }
+  while (waxonedgePublicAnalyticsCache.size > WAXONEDGE_PUBLIC_ANALYTICS_CACHE_MAX_ENTRIES) {
+    const oldestKey = waxonedgePublicAnalyticsCache.keys().next().value;
+    if (oldestKey == null) break;
+    waxonedgePublicAnalyticsCache.delete(oldestKey);
+  }
+}
+
+function storeAnalyticsPayload(key, data, ttlSeconds, generatedAt = nowIso(), nowMs = Date.now()) {
+  if (!key || !data || ttlSeconds <= 0) return;
+  pruneWaxonedgePublicAnalyticsCache(nowMs);
+  waxonedgePublicAnalyticsCache.delete(key);
+  waxonedgePublicAnalyticsCache.set(key, {
+    data: cloneJsonSafe(data),
+    generatedAt,
+    ttlSeconds,
+    expiresAt: nowMs + ttlSeconds * 1000,
+  });
+  pruneWaxonedgePublicAnalyticsCache(nowMs);
+}
+
+function waxonedgePublicAnalyticsCacheSize() {
+  return waxonedgePublicAnalyticsCache.size;
+}
+
+function clearWaxonedgePublicAnalyticsCache() {
+  waxonedgePublicAnalyticsCache.clear();
 }
 
 function unavailable(message, status = 503, corsHeaders = {}) {
@@ -14514,8 +14594,32 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       return ok(graph, ['WAXCASH graph is derived only from indexed direct waxonedge_pairs rows; bootstrap token inventory is not used.'], graph.updated_at, corsHeaders);
     }
     if (path === `${WAXONEDGE_API_PREFIX}/waxcash-analytics`) {
+      const debug = normalizeAnalyticsCacheDebug(url.searchParams.get('debug'));
+      const cacheKey = waxonedgeAnalyticsCacheKey({
+        path,
+        contract: WAXCASH_CONTRACT,
+        symbol: WAXCASH_SYMBOL,
+        sort: 'liquidity',
+        debug,
+      });
+      if (!debug) {
+        const cached = cachedAnalyticsPayload(cacheKey);
+        if (cached) {
+          return ok(cached, ['WAXCASH analytics served from short Worker cache.'], cached.stats?.updated_at || cached.token?.updated_at || null, corsHeaders);
+        }
+      }
       const analytics = await buildWaxcashAnalytics(env.DB, env);
-      return ok(analytics, ['WAXCASH analytics uses old WaxOnEdge-style direct WAX price proof; recursive graph routing is not a selected-price source.'], analytics.stats?.updated_at || analytics.token?.updated_at || null, corsHeaders);
+      const generatedAt = nowIso();
+      const payload = withAnalyticsCacheMetadata(
+        analytics,
+        debug ? 'BYPASS' : 'MISS',
+        debug ? 0 : WAXONEDGE_PUBLIC_ANALYTICS_CACHE_TTL_SECONDS,
+        generatedAt,
+      );
+      if (!debug) {
+        storeAnalyticsPayload(cacheKey, analytics, WAXONEDGE_PUBLIC_ANALYTICS_CACHE_TTL_SECONDS, generatedAt);
+      }
+      return ok(payload, ['WAXCASH analytics uses old WaxOnEdge-style direct WAX price proof; recursive graph routing is not a selected-price source.'], payload.stats?.updated_at || payload.token?.updated_at || null, corsHeaders);
     }
     if (path === `${WAXONEDGE_API_PREFIX}/waxcash-bubbles-lite`) {
       const liteMode = url.searchParams.get('mode') || url.searchParams.get('view') || '';
@@ -14597,14 +14701,33 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
     if (tokenPageMatch) {
       const contract = normalizeContract(decodeURIComponent(tokenPageMatch[1]));
       const symbol = normalizeSymbol(decodeURIComponent(tokenPageMatch[2]));
+      const sort = normalizeTokenPageSort(url.searchParams.get('sort'));
+      const debug = normalizeAnalyticsCacheDebug(url.searchParams.get('debug'));
+      const cacheKey = waxonedgeAnalyticsCacheKey({ path, contract, symbol, sort, debug });
+      if (!debug) {
+        const cached = cachedAnalyticsPayload(cacheKey);
+        if (cached) {
+          return ok(cached, ['Token page analytics served from short Worker cache.'], cached.stats?.updated_at || cached.token?.updated_at || null, corsHeaders);
+        }
+      }
       const page = await getTokenPageAnalytics(env.DB, contract, symbol, {
-        sort: url.searchParams.get('sort'),
-        debug: url.searchParams.get('debug'),
+        sort,
+        debug,
         env,
       });
       if (page.blocked) return unavailable(page.unavailable || 'Token contract blocked from public WaxOnEdge pair feeds', 404, corsHeaders);
       if (!page.indexed) return unavailable('Token not indexed yet', 404, corsHeaders);
-      return ok(page, ['Token page analytics are derived from indexed WaxOnEdge backend rows only; missing values remain unavailable.'], page.stats?.updated_at || page.token?.updated_at || null, corsHeaders);
+      const generatedAt = nowIso();
+      const payload = withAnalyticsCacheMetadata(
+        page,
+        debug ? 'BYPASS' : 'MISS',
+        debug ? 0 : WAXONEDGE_PUBLIC_ANALYTICS_CACHE_TTL_SECONDS,
+        generatedAt,
+      );
+      if (!debug) {
+        storeAnalyticsPayload(cacheKey, page, WAXONEDGE_PUBLIC_ANALYTICS_CACHE_TTL_SECONDS, generatedAt);
+      }
+      return ok(payload, ['Token page analytics are derived from indexed WaxOnEdge backend rows only; missing values remain unavailable.'], payload.stats?.updated_at || payload.token?.updated_at || null, corsHeaders);
     }
 
     const tokenMatch = path.match(/^\/api\/waxonedge\/token\/([^/]+)\/([^/]+)(?:\/([^/]+))?$/);
@@ -14658,6 +14781,13 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
 
 export const __waxonedgeTestHooks = {
   getTokenPageAnalytics,
+  waxonedgeAnalyticsCacheKey,
+  cachedAnalyticsPayload,
+  storeAnalyticsPayload,
+  pruneWaxonedgePublicAnalyticsCache,
+  WAXONEDGE_PUBLIC_ANALYTICS_CACHE_MAX_ENTRIES,
+  waxonedgePublicAnalyticsCacheSize,
+  clearWaxonedgePublicAnalyticsCache,
   listTokenPairs,
   isPairTokenContractBlocked,
   pairUsesBlockedTokenContract,
