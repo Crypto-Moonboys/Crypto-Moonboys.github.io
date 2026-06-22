@@ -12,6 +12,7 @@
   var pairSort = 'liquidity';
   var latestPairs = [];
   var latestSuppressedCount = 0;
+  var analyticsRequestId = 0;
   var DEX_LOGOS = {
     alcor: '/img/waxonedge/dex/alcor.png',
     'swap.alcor': '/img/waxonedge/dex/alcor.png',
@@ -82,24 +83,6 @@
     }
     return valueWithProof(unavailable(), 'No indexed volume was available for this row.');
   }
-  function pairSortMetric(row, sortKey) {
-    if (sortKey === 'volume24') return num(row && row.volume_24h_wax);
-    return num(row && row.liquidity_wax);
-  }
-  function sortedPairs(rows) {
-    return (rows || []).map(function (row, index) {
-      return { row: row, index: index };
-    }).sort(function (a, b) {
-      var av = pairSortMetric(a.row, pairSort);
-      var bv = pairSortMetric(b.row, pairSort);
-      if (av == null && bv == null) return a.index - b.index;
-      if (av == null) return 1;
-      if (bv == null) return -1;
-      return bv - av || a.index - b.index;
-    }).map(function (item) {
-      return item.row;
-    });
-  }
   function updateSortButtons() {
     ['liquidity', 'volume24'].forEach(function (sortKey) {
       var id = sortKey === 'volume24' ? 'wuf-sort-volume24' : 'wuf-sort-liquidity';
@@ -113,7 +96,7 @@
   function setPairSort(sortKey) {
     pairSort = sortKey === 'volume24' ? 'volume24' : 'liquidity';
     updateSortButtons();
-    renderPairTable();
+    loadAnalytics();
   }
   function tokenPageUrl() {
     var cfg = window.MOONBOYS_API || {};
@@ -122,11 +105,13 @@
       : null;
     var base = info && info.available && info.url ? String(info.url).replace(/\/$/, '') : '';
     if (!base) throw new Error('API base URL unavailable');
-    return base + TOKEN_PAGE_PATH;
+    var url = new URL(base + TOKEN_PAGE_PATH);
+    url.searchParams.set('sort', pairSort);
+    return url.toString();
   }
 
   function renderPairTable() {
-    var pairs = sortedPairs(latestPairs).slice(0, 30);
+    var pairs = latestPairs.slice(0, 30);
     if (byId('wuf-pair-summary')) {
       byId('wuf-pair-summary').textContent = pairs.length + ' indexed WUF pair rows shown, ' + latestSuppressedCount + ' suppressed by public-feed policy.';
     }
@@ -156,6 +141,8 @@
   function renderAnalytics(payload) {
     var data = payload && payload.data ? payload.data : payload || {};
     var stats = data.stats || {};
+    pairSort = data.sort === 'volume24' ? 'volume24' : 'liquidity';
+    updateSortButtons();
     latestPairs = Array.isArray(data.pairs) ? data.pairs.slice(0, 30) : [];
     latestSuppressedCount = num(data.blocked_pair_count) || 0;
     if (byId('wuf-liquidity')) byId('wuf-liquidity').innerHTML = dual(stats.liquidity_wax, stats.liquidity_usd);
@@ -176,9 +163,11 @@
   }
 
   function loadAnalytics() {
+    var requestId = ++analyticsRequestId;
+    if (byId('wuf-pair-summary')) byId('wuf-pair-summary').textContent = 'Loading indexed pairs...';
     fetch(tokenPageUrl(), { headers: { Accept: 'application/json' } })
       .then(function (response) { if (!response.ok) throw new Error('HTTP ' + response.status); return response.json(); })
-      .then(renderAnalytics)
+      .then(function (payload) { if (requestId === analyticsRequestId) renderAnalytics(payload); })
       .catch(function (error) {
         if (byId('wuf-pair-summary')) byId('wuf-pair-summary').textContent = 'Indexed analytics unavailable';
         if (byId('wuf-pairs')) byId('wuf-pairs').innerHTML = '<tr><td colspan="9" class="token-muted">Pair table unavailable: ' + esc(error.message || error) + '</td></tr>';

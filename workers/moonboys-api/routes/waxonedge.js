@@ -1085,7 +1085,7 @@ function pairUsesBlockedTokenContract(pair) {
 
 function genericTokenPageLiquidityProofSql(alias = '') {
   const prefix = alias ? `${alias}.` : '';
-  return `(CAST(COALESCE(${prefix}liquidity_wax, '0') AS NUMERIC) < ? OR COALESCE(UPPER(${prefix}token_a_symbol), '') = 'WAX' OR COALESCE(UPPER(${prefix}token_b_symbol), '') = 'WAX' OR CAST(COALESCE(${prefix}volume_24h_wax, '0') AS NUMERIC) > 0)`;
+  return `(CAST(COALESCE(${prefix}liquidity_wax, '0') AS NUMERIC) < ? OR (LOWER(COALESCE(${prefix}token_a_contract, '')) = 'eosio.token' AND UPPER(COALESCE(${prefix}token_a_symbol, '')) = 'WAX') OR (LOWER(COALESCE(${prefix}token_b_contract, '')) = 'eosio.token' AND UPPER(COALESCE(${prefix}token_b_symbol, '')) = 'WAX') OR CAST(COALESCE(${prefix}volume_24h_wax, '0') AS NUMERIC) > 0)`;
 }
 
 function genericTokenPagePublicFeedSql(alias = '') {
@@ -1097,7 +1097,8 @@ function genericTokenPagePublicFeedParams() {
 }
 
 function pairHasWaxSide(pair) {
-  return normalizeSymbol(pair?.token_a_symbol) === 'WAX' || normalizeSymbol(pair?.token_b_symbol) === 'WAX';
+  return (normalizeContract(pair?.token_a_contract) === 'eosio.token' && normalizeSymbol(pair?.token_a_symbol) === 'WAX') ||
+    (normalizeContract(pair?.token_b_contract) === 'eosio.token' && normalizeSymbol(pair?.token_b_symbol) === 'WAX');
 }
 
 function pairHasVolume24WaxProof(pair) {
@@ -12757,11 +12758,33 @@ async function countTokenPageSuppressedPairRows(db, contract, symbol) {
   return asNumber(row?.count) || 0;
 }
 
-async function getTokenPageAnalytics(db, contract, symbol) {
+function normalizeTokenPageSort(value) {
+  return String(value || '').toLowerCase() === 'volume24' ? 'volume24' : 'liquidity';
+}
+
+function tokenPagePairOrderSql(sort) {
+  if (normalizeTokenPageSort(sort) === 'volume24') {
+    return `CASE WHEN volume_24h_wax IS NOT NULL THEN 0 ELSE 1 END ASC,
+              CAST(COALESCE(volume_24h_wax, '0') AS NUMERIC) DESC,
+              CASE WHEN liquidity_wax IS NOT NULL THEN 0 ELSE 1 END ASC,
+              CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC,
+              updated_at DESC`;
+  }
+  return `CASE WHEN liquidity_wax IS NOT NULL THEN 0 ELSE 1 END ASC,
+              CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC,
+              CASE WHEN volume_24h_wax IS NOT NULL THEN 0 ELSE 1 END ASC,
+              CAST(COALESCE(volume_24h_wax, '0') AS NUMERIC) DESC,
+              updated_at DESC`;
+}
+
+async function getTokenPageAnalytics(db, contract, symbol, options = {}) {
+  const sort = normalizeTokenPageSort(options.sort);
   const policy = {
     pair_limit: 30,
     source_policy: 'indexed_waxonedge_pairs_only',
-    ranking_policy: 'liquidity_wax_then_volume_24h_wax_then_backend_order',
+    ranking_policy: sort === 'volume24' ? 'volume_24h_wax_then_liquidity_wax_then_backend_order' : 'liquidity_wax_then_volume_24h_wax_then_backend_order',
+    sort,
+    supported_sorts: ['liquidity', 'volume24'],
     chart_policy: 'chart_uses_direct_alcor_candles_frontend_only_not_backend_pair_table',
     supported_sources: ['alcor', 'swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box', 'swap.adex', 'dapp.fusion'],
     ...publicPairFeedPolicy(),
@@ -12802,11 +12825,7 @@ async function getTokenPageAnalytics(db, contract, symbol) {
        OR (token_b_contract = ? AND token_b_symbol = ?))
        AND source IN ('alcor','swap.alcor','swap.taco','swap.nefty','swap.box','swap.adex','dapp.fusion')
        AND ${genericTokenPagePublicFeedSql()}
-     ORDER BY CASE WHEN liquidity_wax IS NOT NULL THEN 0 ELSE 1 END ASC,
-              CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC,
-              CASE WHEN volume_24h_wax IS NOT NULL THEN 0 ELSE 1 END ASC,
-              CAST(COALESCE(volume_24h_wax, '0') AS NUMERIC) DESC,
-              updated_at DESC
+     ORDER BY ${tokenPagePairOrderSql(sort)}
      LIMIT 30`
     ).bind(contract, symbol, contract, symbol, ...genericTokenPagePublicFeedParams()).all(),
     countTokenPageSuppressedPairRows(db, contract, symbol),
@@ -14350,7 +14369,9 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
     if (tokenPageMatch) {
       const contract = normalizeContract(decodeURIComponent(tokenPageMatch[1]));
       const symbol = normalizeSymbol(decodeURIComponent(tokenPageMatch[2]));
-      const page = await getTokenPageAnalytics(env.DB, contract, symbol);
+      const page = await getTokenPageAnalytics(env.DB, contract, symbol, {
+        sort: url.searchParams.get('sort'),
+      });
       if (page.blocked) return unavailable(page.unavailable || 'Token contract blocked from public WaxOnEdge pair feeds', 404, corsHeaders);
       if (!page.indexed) return unavailable('Token not indexed yet', 404, corsHeaders);
       return ok(page, ['Token page analytics are derived from indexed WaxOnEdge backend rows only; missing values remain unavailable.'], page.stats?.updated_at || page.token?.updated_at || null, corsHeaders);

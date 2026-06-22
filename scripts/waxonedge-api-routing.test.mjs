@@ -60,7 +60,8 @@ ok('wuffi.html loads api-config before token analytics runtime',
 ok('WUF token analytics resolves Worker API through MOONBOYS_API production fallback',
   tokenAnalyticsPageJs.includes('cfg.getApiBaseInfo({ allowProductionFallback: true })') &&
   tokenAnalyticsPageJs.includes("var TOKEN_PAGE_PATH = '/api/waxonedge/token-page/wuffi/WUF';") &&
-  tokenAnalyticsPageJs.includes('return base + TOKEN_PAGE_PATH;'));
+  tokenAnalyticsPageJs.includes('new URL(base + TOKEN_PAGE_PATH)') &&
+  tokenAnalyticsPageJs.includes("url.searchParams.set('sort', pairSort);"));
 ok('WUF token analytics does not fetch same-origin /api directly',
   !tokenAnalyticsPageJs.includes("fetch('/api/waxonedge") &&
   !tokenAnalyticsPageJs.includes('fetch("/api/waxonedge') &&
@@ -75,10 +76,10 @@ ok('WUF table exposes liquidity and 24h volume sort buttons',
   wuffiHtml.includes('aria-pressed="true"'));
 ok('WUF token analytics supports liquidity and 24h volume sorting',
   tokenAnalyticsPageJs.includes("var pairSort = 'liquidity';") &&
-  tokenAnalyticsPageJs.includes("if (sortKey === 'volume24') return num(row && row.volume_24h_wax);") &&
-  tokenAnalyticsPageJs.includes('function sortedPairs(rows)') &&
+  tokenAnalyticsPageJs.includes("url.searchParams.set('sort', pairSort);") &&
   tokenAnalyticsPageJs.includes('function setPairSort(sortKey)') &&
-  tokenAnalyticsPageJs.includes('renderPairTable();'));
+  tokenAnalyticsPageJs.includes('loadAnalytics();') &&
+  tokenAnalyticsPageJs.includes('analyticsRequestId'));
 ok('WUF generic table renders selected pair, DEX logos, token icons, native volume fallback, and proof tooltips',
   tokenAnalyticsPageJs.includes('token-selected-pair') &&
   tokenAnalyticsPageJs.includes('token-dex-logo') &&
