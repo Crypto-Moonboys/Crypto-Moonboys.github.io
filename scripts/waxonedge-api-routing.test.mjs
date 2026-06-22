@@ -31,7 +31,7 @@ const apiConfigIndex = html.indexOf('src="/js/api-config.js"');
 const bubblesIndex = html.indexOf('src="/js/waxonedge-bubbles-v2.js');
 const routingShimIndex = html.indexOf('function rewriteWaxOnEdgeUrl');
 const wuffiApiConfigIndex = wuffiHtml.indexOf('src="/js/api-config.js"');
-const wuffiAnalyticsIndex = wuffiHtml.indexOf('src="/js/token-analytics-page.js"');
+const wuffiAnalyticsIndex = wuffiHtml.indexOf('src="/js/token-analytics-page.js');
 
 ok('waxonedge.html loads api-config before the bubbles runtime',
   apiConfigIndex !== -1 && bubblesIndex !== -1 && apiConfigIndex < bubblesIndex);
@@ -63,6 +63,15 @@ ok('WUF token analytics does not fetch same-origin /api directly',
   !tokenAnalyticsPageJs.includes("fetch('/api/waxonedge") &&
   !tokenAnalyticsPageJs.includes('fetch("/api/waxonedge') &&
   !tokenAnalyticsPageJs.includes("var ENDPOINT = '/api/waxonedge"));
+ok('wuffi.html cache-busts the WUF token analytics runtime',
+  /src="\/js\/token-analytics-page\.js\?v=[^"]+"/.test(wuffiHtml));
+ok('WUF generic table renders selected pair, DEX logos, token icons, native volume fallback, and proof tooltips',
+  tokenAnalyticsPageJs.includes('token-selected-pair') &&
+  tokenAnalyticsPageJs.includes('token-dex-logo') &&
+  tokenAnalyticsPageJs.includes('token-icon') &&
+  tokenAnalyticsPageJs.includes('Native units') &&
+  tokenAnalyticsPageJs.includes('token-proof') &&
+  tokenAnalyticsPageJs.includes('blocked_pair_count'));
 
 console.log('\nwaxonedge-api-routing.test: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);

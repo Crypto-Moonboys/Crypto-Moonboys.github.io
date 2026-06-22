@@ -9,6 +9,15 @@
   var RESOLUTIONS = ['1', '5', '15', '30', '60', '240', 'D', 'W', 'M'];
   var activeResolution = '240';
   var subscriptions = {};
+  var DEX_LOGOS = {
+    alcor: '/img/waxonedge/dex/alcor.png',
+    'swap.alcor': '/img/waxonedge/dex/alcor.png',
+    'swap.taco': '/img/waxonedge/dex/taco.png',
+    'swap.nefty': '/img/waxonedge/dex/neftyblocks.png',
+    'swap.box': '/img/waxonedge/dex/defibox.png',
+    'swap.adex': '/img/waxonedge/dex/adex.png',
+    'dapp.fusion': '/img/waxonedge/dex/waxfusion.png'
+  };
 
   function byId(id) { return document.getElementById(id); }
   function esc(value) { return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]; }); }
@@ -34,7 +43,42 @@
   }
   function pairName(row) { return row && row.pair_label || [row && row.token_a_symbol, row && row.token_b_symbol].filter(Boolean).join('/') || 'WUF pair'; }
   function price(row) { return num(row && row.price) == null ? unavailable() : esc(fmt(row.price, '')); }
-  function volume(row, prefix) { return dual(row && row[prefix + '_wax'], row && row[prefix + '_usd']); }
+  function proof(text, label) {
+    return '<span class="token-proof" title="' + esc(text) + '" aria-label="' + esc(text) + '">' + esc(label || '?') + '</span>';
+  }
+  function sourceKey(value) { return String(value || '').trim().toLowerCase(); }
+  function sourceLabel(row) {
+    var source = row && row.source || 'Unavailable';
+    var logo = DEX_LOGOS[sourceKey(source)];
+    var image = logo ? '<img class="token-dex-logo" src="' + esc(logo) + '" alt="" loading="lazy" decoding="async">' : '';
+    return '<span class="token-source-name">' + image + '<span>' + esc(source) + '</span></span>';
+  }
+  function tokenIcon(url, symbol) {
+    if (!url) return '<span class="token-icon token-icon-fallback" aria-hidden="true">' + esc(String(symbol || '?').slice(0, 1).toUpperCase()) + '</span>';
+    return '<img class="token-icon" src="' + esc(url) + '" alt="" loading="lazy" decoding="async">';
+  }
+  function pairCell(row) {
+    return '<div class="token-pair-line">' +
+      tokenIcon(row && row.token_a_icon, row && row.token_a_symbol) +
+      '<span>' + esc(row && row.token_a_symbol || '?') + '</span>' +
+      '<span class="token-muted">/</span>' +
+      tokenIcon(row && row.token_b_icon, row && row.token_b_symbol) +
+      '<span>' + esc(row && row.token_b_symbol || '?') + '</span>' +
+      '</div><div class="token-muted">' + esc([row && row.token_a_contract, row && row.token_b_contract].filter(Boolean).join(' / ')) + '</div>';
+  }
+  function valueWithProof(html, reason) {
+    return '<span class="token-value-with-proof">' + html + proof(reason || 'Indexed public pair feed value from Worker response.') + '</span>';
+  }
+  function volume(row, prefix) {
+    var converted = dual(row && row[prefix + '_wax'], row && row[prefix + '_usd']);
+    if (!converted.includes('Unavailable')) {
+      return valueWithProof(converted, 'WAX/USD volume supplied by the indexed Worker response.');
+    }
+    if (num(row && row[prefix]) != null) {
+      return valueWithProof('<span>' + esc(fmt(row[prefix], '')) + '</span><small>Native units</small>', 'Native volume is indexed, but WAX/USD conversion is unavailable for this row.');
+    }
+    return valueWithProof(unavailable(), 'No indexed volume was available for this row.');
+  }
   function tokenPageUrl() {
     var cfg = window.MOONBOYS_API || {};
     var info = typeof cfg.getApiBaseInfo === 'function'
@@ -52,20 +96,24 @@
     if (byId('wuf-liquidity')) byId('wuf-liquidity').innerHTML = dual(stats.liquidity_wax, stats.liquidity_usd);
     if (byId('wuf-volume-24h')) byId('wuf-volume-24h').innerHTML = dual(stats.volume_24h_wax || stats.volume_24h, stats.volume_24h_usd);
     if (byId('wuf-analytics-updated')) byId('wuf-analytics-updated').textContent = stats.updated_at ? 'Indexed backend updated: ' + stats.updated_at : 'Backend values are not guessed when missing.';
-    if (byId('wuf-pair-summary')) byId('wuf-pair-summary').textContent = pairs.length + ' indexed WUF pair rows';
+    if (byId('wuf-pair-summary')) {
+      byId('wuf-pair-summary').textContent = pairs.length + ' indexed WUF pair rows' + (num(data.blocked_pair_count) ? ' (' + data.blocked_pair_count + ' suppressed)' : '');
+    }
     if (!byId('wuf-pairs')) return;
     if (!pairs.length) {
       byId('wuf-pairs').innerHTML = '<tr><td colspan="9" class="token-muted">No indexed WUF pair rows returned.</td></tr>';
       return;
     }
     byId('wuf-pairs').innerHTML = pairs.map(function (row, index) {
-      return '<tr>' +
-        '<td>#' + (index + 1) + '</td>' +
-        '<td>' + esc(row.source || 'Unavailable') + '</td>' +
-        '<td>' + esc(pairName(row)) + '<br><span class="token-muted">' + esc([row.token_a_contract, row.token_b_contract].filter(Boolean).join(' / ')) + '</span></td>' +
-        '<td>' + dual(row.liquidity_wax, row.liquidity_usd) + '</td>' +
-        '<td>' + price(row) + '</td>' +
-        '<td>' + pct(row.change_24h) + '</td>' +
+      var selected = row && row.selected_pair;
+      var reason = row && row.public_feed_reason || 'Indexed public pair row passed Worker-side public feed policy.';
+      return '<tr class="' + (selected ? 'token-selected-pair' : '') + '">' +
+        '<td><span class="token-rank">#' + (index + 1) + '</span>' + (selected ? '<span class="token-selected-marker" title="Selected backend pricing pair">Selected</span>' : '') + '</td>' +
+        '<td>' + sourceLabel(row) + proof(reason, 'i') + '</td>' +
+        '<td>' + pairCell(row) + '</td>' +
+        '<td>' + valueWithProof(dual(row.liquidity_wax, row.liquidity_usd), 'Liquidity passed Worker-side contract blocklist and public-feed sanity checks.') + '</td>' +
+        '<td>' + valueWithProof(price(row), 'Indexed pair price from the Worker response.') + '</td>' +
+        '<td>' + valueWithProof(pct(row.change_24h), 'Indexed 24h price change from the Worker response.') + '</td>' +
         '<td>' + volume(row, 'volume_24h') + '</td>' +
         '<td>' + volume(row, 'volume_7d') + '</td>' +
         '<td>' + volume(row, 'volume_30d') + '</td>' +
