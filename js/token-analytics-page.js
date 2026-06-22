@@ -39,6 +39,11 @@
     var abs = Math.abs(parsed);
     return parsed.toLocaleString(undefined, { maximumFractionDigits: abs >= 1000 ? 2 : 8 }) + (suffix || '');
   }
+  function fmtToken(value, symbol) {
+    var parsed = num(value);
+    if (parsed == null) return null;
+    return parsed.toLocaleString(undefined, { maximumFractionDigits: Math.abs(parsed) >= 1000 ? 2 : 8 }) + (symbol ? ' ' + symbol : '');
+  }
   function dual(wax, usd) {
     var parts = [];
     if (num(wax) != null) parts.push(esc(fmt(wax, ' WAX')));
@@ -95,6 +100,8 @@
     var displayWaxKey = 'display_' + prefix + '_wax';
     var displayUsdKey = 'display_' + prefix + '_usd';
     var displayNativeKey = 'display_' + prefix + '_native';
+    var displayNativeAKey = 'display_' + prefix + '_a_native';
+    var displayNativeBKey = 'display_' + prefix + '_b_native';
     var hasDisplayVolume = owns(row, displayWaxKey) || owns(row, displayUsdKey) || owns(row, displayNativeKey);
     var converted = dual(
       hasDisplayVolume ? row && row[displayWaxKey] : row && row[prefix + '_wax'],
@@ -103,9 +110,17 @@
     if (!converted.includes('Unavailable')) {
       return cleanValue(converted);
     }
+    var nativeLines = [];
+    var nativeA = hasDisplayVolume ? row && row[displayNativeAKey] : row && row[prefix + '_a_native'];
+    var nativeB = hasDisplayVolume ? row && row[displayNativeBKey] : row && row[prefix + '_b_native'];
     var native = hasDisplayVolume ? row && row[displayNativeKey] : row && row[prefix];
-    if (num(native) != null) {
-      return cleanValue('<span>' + esc(fmt(native, '')) + '</span><small>Native units</small>');
+    var nativeALine = fmtToken(nativeA, row && row.token_a_symbol);
+    var nativeBLine = fmtToken(nativeB, row && row.token_b_symbol);
+    if (nativeALine) nativeLines.push(nativeALine);
+    if (nativeBLine) nativeLines.push(nativeBLine);
+    if (!nativeLines.length && num(native) != null) nativeLines.push(fmt(native, ''));
+    if (nativeLines.length) {
+      return cleanValue('<span>' + esc(nativeLines[0]) + '</span>' + (nativeLines[1] ? '<small>' + esc(nativeLines[1]) + '</small>' : '<small>Native units</small>'));
     }
     return cleanValue(unavailable());
   }
