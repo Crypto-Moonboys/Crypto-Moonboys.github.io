@@ -53,8 +53,8 @@
   function feeToMultiplier(rawFee, provider) {
     const f = asNumber(rawFee);
     if (!f) return provider === 'TACO' ? 0.9975 : 0.997;
-    if (f >= 100) return 1 - f / 1000000; // Alcor-style: 3000 = 0.3%.
-    return 1 - f / 10000; // bps-style: 30 = 0.3%.
+    if (f >= 100) return 1 - f / 1000000;
+    return 1 - f / 10000;
   }
 
   function feeToPercent(rawFee, provider) {
@@ -71,13 +71,15 @@
     return Math.sqrt(x * y);
   }
 
+  function resolveMinLiquidityScore(value) {
+    if (typeof value === 'boolean') return value ? 10 : 0;
+    const n = asNumber(value);
+    return n > 0 ? n : 0;
+  }
+
   function poolDirection(pool, tokenIn, tokenOut) {
-    if (sameToken(pool.tokenA, tokenIn) && sameToken(pool.tokenB, tokenOut)) {
-      return { reserveIn: pool.tokenA.reserve, reserveOut: pool.tokenB.reserve };
-    }
-    if (sameToken(pool.tokenB, tokenIn) && sameToken(pool.tokenA, tokenOut)) {
-      return { reserveIn: pool.tokenB.reserve, reserveOut: pool.tokenA.reserve };
-    }
+    if (sameToken(pool.tokenA, tokenIn) && sameToken(pool.tokenB, tokenOut)) return { reserveIn: pool.tokenA.reserve, reserveOut: pool.tokenB.reserve };
+    if (sameToken(pool.tokenB, tokenIn) && sameToken(pool.tokenA, tokenOut)) return { reserveIn: pool.tokenB.reserve, reserveOut: pool.tokenA.reserve };
     return null;
   }
 
@@ -95,7 +97,6 @@
     if (!orderbook) return { output: 0, impact: 0 };
     const orders = side === 'buy' ? orderbook.asks : orderbook.bids;
     if (!Array.isArray(orders) || !orders.length) return { output: 0, impact: 0 };
-
     let remaining = amountIn;
     let totalOut = 0;
     for (const order of orders) {
@@ -113,7 +114,6 @@
       }
       if (remaining <= 0) break;
     }
-
     const firstPrice = parseFloat(orders[0]?.[0] || '0');
     const finalPrice = totalOut > 0 ? (side === 'buy' ? amountIn / totalOut : totalOut / amountIn) : 0;
     const impact = firstPrice > 0 ? Math.abs((finalPrice - firstPrice) / firstPrice) * 100 : 0;
@@ -149,7 +149,7 @@
       provider: 'ALCOR',
       tokenA: { symbol: String(p?.tokenA?.symbol || '').toUpperCase(), contract: String(p?.tokenA?.contract || ''), reserve: reserveA, decimals: asNumber(p?.tokenA?.decimals) },
       tokenB: { symbol: String(p?.tokenB?.symbol || '').toUpperCase(), contract: String(p?.tokenB?.contract || ''), reserve: reserveB, decimals: asNumber(p?.tokenB?.decimals) },
-      liquidityUSD: tvlUSD,
+      liquidityUSD: tvlUSD || null,
       liquidityScore: tvlUSD || reserveScore(reserveA, reserveB),
       liquidityBasis: tvlUSD ? 'tvlUSD' : 'reserve_score',
       fee: asNumber(p?.fee || 3000),
@@ -277,28 +277,14 @@
     const res = getSwapResult(amountIn, dir.reserveIn, dir.reserveOut, feeToMultiplier(pool.fee, pool.provider));
     if (res.output <= 0) return null;
     return {
-      type: 'direct',
-      output: res.output,
-      amountIn,
-      provider: pool.provider,
-      poolId: pool.sourceId,
-      split: false,
-      impact: res.impact,
-      hops: [],
-      routePools: [pool],
+      type: 'direct', output: res.output, amountIn, provider: pool.provider, poolId: pool.sourceId, split: false, impact: res.impact, hops: [], routePools: [pool],
       splits: [{ provider: pool.provider.toLowerCase(), poolId: pool.sourceId, amount: amountIn, output: res.output, impact: res.impact, feePercent: feeToPercent(pool.fee, pool.provider) }],
-      path: [tokenIn.symbol, tokenOut.symbol],
-      feePercent: feeToPercent(pool.fee, pool.provider),
-      savingsPct: 0,
+      path: [tokenIn.symbol, tokenOut.symbol], feePercent: feeToPercent(pool.fee, pool.provider), savingsPct: 0,
     };
   }
 
   function getDirectCandidates(amountIn, tokenIn, tokenOut, pools, minLiquidityScore) {
-    return pools
-      .filter((pool) => pool.liquidityScore >= minLiquidityScore)
-      .map((pool) => routeQuote(pool, amountIn, tokenIn, tokenOut))
-      .filter(Boolean)
-      .sort((a, b) => b.output - a.output);
+    return pools.filter((pool) => pool.liquidityScore >= minLiquidityScore).map((pool) => routeQuote(pool, amountIn, tokenIn, tokenOut)).filter(Boolean).sort((a, b) => b.output - a.output);
   }
 
   function getMultiHopCandidates(amountIn, tokenIn, tokenOut, pools, minLiquidityScore) {
@@ -319,18 +305,10 @@
           if (hop2.output <= 0) continue;
           const feePercent = feeToPercent(poolIn.fee, poolIn.provider) + feeToPercent(poolOut.fee, poolOut.provider);
           routes.push({
-            type: 'multi-hop',
-            output: hop2.output,
-            amountIn,
-            provider: 'MULTI-HOP ROUTE',
-            split: false,
-            impact: hop1.impact + hop2.impact,
-            hops: [poolIn, poolOut],
-            routePools: [poolIn, poolOut],
+            type: 'multi-hop', output: hop2.output, amountIn, provider: 'MULTI-HOP ROUTE', split: false, impact: hop1.impact + hop2.impact,
+            hops: [poolIn, poolOut], routePools: [poolIn, poolOut],
             splits: [{ provider: 'multi-hop', poolId: `${poolIn.sourceId}>${poolOut.sourceId}`, amount: amountIn, output: hop2.output, impact: hop1.impact + hop2.impact, feePercent }],
-            path: [tokenIn.symbol, bridge.symbol, tokenOut.symbol],
-            feePercent,
-            savingsPct: 0,
+            path: [tokenIn.symbol, bridge.symbol, tokenOut.symbol], feePercent, savingsPct: 0,
           });
         }
       }
@@ -358,20 +336,7 @@
       feePercent += fp;
       splits.push({ provider: pool.provider.toLowerCase(), poolId: pool.sourceId, amount: amountPer, output: res.output, impact: res.impact, feePercent: fp });
     }
-    return {
-      type: 'split',
-      output,
-      amountIn,
-      provider: 'PxSmart Split',
-      split: true,
-      impact: impact / selected.length,
-      hops: [],
-      routePools: selected,
-      splits,
-      path: [tokenIn.symbol, tokenOut.symbol],
-      feePercent: feePercent / selected.length,
-      savingsPct: 0,
-    };
+    return { type: 'split', output, amountIn, provider: 'PxSmart Split', split: true, impact: impact / selected.length, hops: [], routePools: selected, splits, path: [tokenIn.symbol, tokenOut.symbol], feePercent: feePercent / selected.length, savingsPct: 0 };
   }
 
   function spotCandidate(amountIn, tokenIn, tokenOut, orderbook) {
@@ -379,24 +344,11 @@
     const native = normalize(tokenIn.symbol) === 'WAX';
     const res = calculateOrderBookOutput(amountIn, orderbook, native ? 'buy' : 'sell');
     if (res.output <= 0) return null;
-    return {
-      type: 'direct',
-      output: res.output,
-      amountIn,
-      provider: 'SPOT MARKET',
-      split: false,
-      impact: res.impact,
-      hops: [],
-      routePools: [],
-      splits: [{ provider: 'spot', poolId: 'spot', amount: amountIn, output: res.output, impact: res.impact, feePercent: 0 }],
-      path: [tokenIn.symbol, tokenOut.symbol],
-      feePercent: 0,
-      savingsPct: 0,
-    };
+    return { type: 'direct', output: res.output, amountIn, provider: 'SPOT MARKET', split: false, impact: res.impact, hops: [], routePools: [], splits: [{ provider: 'spot', poolId: 'spot', amount: amountIn, output: res.output, impact: res.impact, feePercent: 0 }], path: [tokenIn.symbol, tokenOut.symbol], feePercent: 0, savingsPct: 0 };
   }
 
   function findOptimalSplit(amountIn, tokenIn, tokenOut, allPools, highLiquidityOnly = false, orderbook, alcorTickers) {
-    const minLiquidityScore = highLiquidityOnly ? 10 : 0;
+    const minLiquidityScore = resolveMinLiquidityScore(highLiquidityOnly);
     const directCandidates = getDirectCandidates(amountIn, tokenIn, tokenOut, allPools, minLiquidityScore);
     const multiHopCandidates = getMultiHopCandidates(amountIn, tokenIn, tokenOut, allPools, minLiquidityScore);
     const spot = spotCandidate(amountIn, tokenIn, tokenOut, orderbook, alcorTickers);
@@ -404,11 +356,10 @@
     const bestSingle = singleCandidates[0] || null;
     const split = getSplitCandidate(amountIn, tokenIn, tokenOut, directCandidates);
     const final = split && (!bestSingle || split.output > bestSingle.output) ? split : bestSingle;
-    if (!final) {
-      return { type: 'none', output: 0, amountIn, savingsPct: 0, provider: 'NO ROUTE', split: false, impact: 0, hops: [], splits: [], path: [tokenIn.symbol, tokenOut.symbol], feePercent: 0, routePools: [], candidates: [] };
-    }
+    if (!final) return { type: 'none', output: 0, amountIn, savingsPct: 0, provider: 'NO ROUTE', split: false, impact: 0, hops: [], splits: [], path: [tokenIn.symbol, tokenOut.symbol], feePercent: 0, routePools: [], candidates: [] };
     final.savingsPct = bestSingle && bestSingle.output > 0 ? ((final.output - bestSingle.output) / bestSingle.output) * 100 : 0;
     final.candidates = [...singleCandidates, split].filter(Boolean).sort((a, b) => b.output - a.output);
+    final.minLiquidityScore = minLiquidityScore;
     return final;
   }
 
@@ -422,5 +373,6 @@
     sameToken,
     feeToMultiplier,
     feeToPercent,
+    resolveMinLiquidityScore,
   };
 })();
