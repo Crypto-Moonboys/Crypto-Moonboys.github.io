@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pool Quote</title>
+<link rel="stylesheet" href="/css/wax-quote-ui.css?v=1">
+</head>
+<body>
+<main class="shell">
+<h1>Pool Quote</h1>
+<p class="muted">Display-only quote page.</p>
+<section class="grid">
+<div class="card">
+<label>Amount<input id="amountIn" value="10" inputmode="decimal"></label>
+<label>From<select id="tokenIn"></select></label>
+<button id="switchTokens" type="button">Switch</button>
+<label>To<select id="tokenOut"></select></label>
+<label>Minimum TVL<select id="minLiquidity"><option value="0">Any</option><option value="10" selected>10+</option><option value="100">100+</option><option value="1000">1000+</option></select></label>
+<label>Tolerance<select id="slippage"><option value="0.005">0.5%</option><option value="0.01" selected>1%</option><option value="0.02">2%</option></select></label>
+<button id="quoteBtn" type="button">Refresh quote</button>
+</div>
+<aside id="resultPanel" class="card">Loading...</aside>
+</section>
+</main>
+<script src="/js/wax-quote-ui.js?v=1"></script>
+</body>
+</html>
