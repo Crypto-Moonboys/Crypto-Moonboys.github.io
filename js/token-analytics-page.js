@@ -26,6 +26,12 @@
   function byId(id) { return document.getElementById(id); }
   function esc(value) { return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]; }); }
   function num(value) { var parsed = Number(value); return Number.isFinite(parsed) ? parsed : null; }
+  function firstValue() {
+    for (var i = 0; i < arguments.length; i += 1) {
+      if (arguments[i] != null && arguments[i] !== '') return arguments[i];
+    }
+    return null;
+  }
   function unavailable() { return '<span class="token-muted">Unavailable</span>'; }
   function fmt(value, suffix) {
     var parsed = num(value);
@@ -46,7 +52,10 @@
     return '<span class="' + klass + '">' + esc(parsed.toLocaleString(undefined, { maximumFractionDigits: 2 })) + ' %</span>';
   }
   function pairName(row) { return row && row.pair_label || [row && row.token_a_symbol, row && row.token_b_symbol].filter(Boolean).join('/') || 'WUF pair'; }
-  function price(row) { return num(row && row.price) == null ? unavailable() : esc(fmt(row.price, '')); }
+  function price(row) {
+    var value = firstValue(row && row.display_price, row && row.price);
+    return num(value) == null ? unavailable() : esc(fmt(value, ''));
+  }
   function sourceKey(value) { return String(value || '').trim().toLowerCase(); }
   function sourceLabel(row) {
     var source = row && row.source || 'Unavailable';
@@ -55,7 +64,7 @@
     return '<span class="token-source-name">' + image + '<span>' + esc(source) + '</span></span>';
   }
   function tokenIcon(url, symbol) {
-    if (!url) return '<span class="token-icon token-icon-fallback" aria-hidden="true">' + esc(String(symbol || '?').slice(0, 1).toUpperCase()) + '</span>';
+    if (!url) return '<span class="token-icon token-icon-fallback" aria-hidden="true">' + esc(String(symbol || '').slice(0, 1).toUpperCase()) + '</span>';
     return '<img class="token-icon" src="' + esc(url) + '" alt="" loading="lazy" decoding="async">';
   }
   function pairCell(row) {
@@ -64,25 +73,32 @@
       : '';
     return '<div class="token-pair-line">' +
       tokenIcon(row && row.token_a_icon, row && row.token_a_symbol) +
-      '<span>' + esc(row && row.token_a_symbol || '?') + '</span>' +
+      '<span>' + esc(row && row.token_a_symbol || 'Token') + '</span>' +
       '<span class="token-muted">/</span>' +
       tokenIcon(row && row.token_b_icon, row && row.token_b_symbol) +
-      '<span>' + esc(row && row.token_b_symbol || '?') + '</span>' +
+      '<span>' + esc(row && row.token_b_symbol || 'Token') + '</span>' +
       '</div><div class="token-muted">' + esc([row && row.token_a_contract, row && row.token_b_contract].filter(Boolean).join(' / ')) + '</div>' + badge;
   }
   function cleanValue(html) {
     return '<span class="token-value-with-proof">' + html + '</span>';
   }
   function liquidity(row) {
-    return cleanValue(dual(row && (row.display_liquidity_wax ?? row.liquidity_wax), row && (row.display_liquidity_usd ?? row.liquidity_usd)));
+    return cleanValue(dual(
+      firstValue(row && row.display_liquidity_wax, row && row.liquidity_wax),
+      firstValue(row && row.display_liquidity_usd, row && row.liquidity_usd)
+    ));
   }
   function volume(row, prefix) {
-    var converted = dual(row && row[prefix + '_wax'], row && row[prefix + '_usd']);
+    var converted = dual(
+      firstValue(row && row['display_' + prefix + '_wax'], row && row[prefix + '_wax']),
+      firstValue(row && row['display_' + prefix + '_usd'], row && row[prefix + '_usd'])
+    );
     if (!converted.includes('Unavailable')) {
       return cleanValue(converted);
     }
-    if (num(row && row[prefix]) != null) {
-      return cleanValue('<span>' + esc(fmt(row[prefix], '')) + '</span><small>Native units</small>');
+    var native = firstValue(row && row['display_' + prefix + '_native'], row && row[prefix]);
+    if (num(native) != null) {
+      return cleanValue('<span>' + esc(fmt(native, '')) + '</span><small>Native units</small>');
     }
     return cleanValue(unavailable());
   }
@@ -131,7 +147,7 @@
         '<td>' + pairCell(row) + '</td>' +
         '<td>' + liquidity(row) + '</td>' +
         '<td>' + cleanValue(price(row)) + '</td>' +
-        '<td>' + cleanValue(pct(row.change_24h)) + '</td>' +
+        '<td>' + cleanValue(pct(firstValue(row && row.display_change_24h, row && row.change_24h))) + '</td>' +
         '<td>' + volume(row, 'volume_24h') + '</td>' +
         '<td>' + volume(row, 'volume_7d') + '</td>' +
         '<td>' + volume(row, 'volume_30d') + '</td>' +
@@ -147,7 +163,7 @@
     latestPairs = Array.isArray(data.pairs) ? data.pairs.slice(0, 30) : [];
     latestSuppressedCount = num(data.blocked_pair_count) || 0;
     if (byId('wuf-liquidity')) byId('wuf-liquidity').innerHTML = dual(stats.liquidity_wax, stats.liquidity_usd);
-    if (byId('wuf-volume-24h')) byId('wuf-volume-24h').innerHTML = dual(stats.volume_24h_wax || stats.volume_24h, stats.volume_24h_usd);
+    if (byId('wuf-volume-24h')) byId('wuf-volume-24h').innerHTML = dual(firstValue(stats.volume_24h_wax, stats.volume_24h), stats.volume_24h_usd);
     if (byId('wuf-analytics-updated')) byId('wuf-analytics-updated').textContent = stats.updated_at ? 'Indexed backend updated: ' + stats.updated_at : 'Backend values are not guessed when missing.';
     renderPairTable();
   }
