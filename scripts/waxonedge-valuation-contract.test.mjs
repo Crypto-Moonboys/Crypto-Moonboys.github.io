@@ -623,8 +623,12 @@ const publicPairRows = [
     token_b_symbol: 'WAX',
     reserve_a: '1000',
     reserve_b: '5',
-    liquidity_wax: '10',
-    liquidity_usd: '0.06',
+    price: '0.005',
+    change_24h: null,
+    liquidity_wax: '1500',
+    liquidity_usd: '9',
+    volume_24h_wax: null,
+    volume_7d: '12345',
     updated_at: '2026-06-22T00:00:00.000Z',
   },
   {
@@ -717,6 +721,7 @@ const publicPairRows = [
     reserve_b: '5',
     liquidity_wax: '2000000',
     liquidity_usd: '12000',
+    change_24h: '0',
     volume_24h_wax: '0',
     updated_at: '2026-06-22T00:04:45.000Z',
   },
@@ -729,9 +734,13 @@ const publicPairRows = [
     token_b_symbol: 'WUF',
     reserve_a: '1000',
     reserve_b: '5',
+    price: '0.00042',
+    change_24h: null,
     liquidity_wax: '100446.30917770014',
     liquidity_usd: '602.6778550662',
     volume_24h_wax: '12',
+    volume_7d_wax: '84',
+    volume_30d_wax: '360',
     updated_at: '2026-06-22T00:04:47.000Z',
   },
   {
@@ -847,6 +856,13 @@ function publicPairFeedDb(rows) {
                 updated_at: '2026-06-22T00:00:00.000Z',
               });
             }
+            if (contract === 'graffitiking' && symbol === 'WAXCASH') {
+              return Promise.resolve({
+                selected_price_wax: '583.0854843338559',
+                selected_price_usd: '34.98512906003135',
+                updated_at: '2026-06-22T00:00:00.000Z',
+              });
+            }
             return Promise.resolve(null);
           }
           if (this.sql.includes('FROM waxonedge_tokens')) {
@@ -933,6 +949,26 @@ ok('/api/waxonedge/token-page/wuffi/WUF ranks WAXCASH/WUF by verified display li
   wufTokenPage.pairs[0]?.raw_liquidity_wax === '100446.30917770014' &&
   wufTokenPage.pairs[0]?.display_liquidity_basis === 'waxcash_verified_pair_liquidity' &&
   Number(wufTokenPage.pairs[0]?.display_liquidity_wax) > Number(wufTokenPage.pairs.find((row) => row.pair_id === 'LARGE_WAX_DIRECT_WUF')?.display_liquidity_wax || 0));
+ok('/api/waxonedge/token-page/wuffi/WUF exposes normalized display metric fields where available',
+  wufTokenPage.pairs[0]?.display_price === '0.00042' &&
+  wufTokenPage.pairs[0]?.display_price_basis === 'indexed_pair_price' &&
+  wufTokenPage.pairs[0]?.display_volume_24h_wax === '12' &&
+  wufTokenPage.pairs[0]?.display_volume_7d_wax === '84' &&
+  wufTokenPage.pairs[0]?.display_volume_30d_wax === '360' &&
+  wufTokenPage.pairs[0]?.display_volume_24h_basis === 'indexed_pair_volume_wax_or_usd' &&
+  Object.hasOwn(wufTokenPage.pairs[0], 'metric_unavailable_reasons'));
+const goodWufDisplayRow = wufTokenPage.pairs.find((row) => row.pair_id === 'GOODWUF');
+const zeroMetricRow = wufTokenPage.pairs.find((row) => row.pair_id === 'LARGE_WAX_DIRECT_WUF');
+ok('/api/waxonedge/token-page/wuffi/WUF does not convert unavailable pair volume or change to zero',
+  goodWufDisplayRow?.display_volume_24h_wax === null &&
+  goodWufDisplayRow?.display_change_24h === null &&
+  goodWufDisplayRow?.metric_unavailable_reasons?.volume_24h &&
+  goodWufDisplayRow?.metric_unavailable_reasons?.change_24h);
+ok('/api/waxonedge/token-page/wuffi/WUF preserves real zero metrics and native volume fallback',
+  zeroMetricRow?.display_volume_24h_wax === '0' &&
+  zeroMetricRow?.display_change_24h === '0' &&
+  goodWufDisplayRow?.display_volume_7d_native === '12345' &&
+  goodWufDisplayRow?.display_volume_7d_basis === 'indexed_pair_native_volume');
 const wufVolumeTokenPage = await __waxonedgeTestHooks.getTokenPageAnalytics(publicPairDb, 'wuffi', 'WUF', { sort: 'volume24' });
 ok('/api/waxonedge/token-page/wuffi/WUF volume sort can return high-volume rows outside the liquidity top 30',
   wufTokenPage.sort === 'liquidity' &&

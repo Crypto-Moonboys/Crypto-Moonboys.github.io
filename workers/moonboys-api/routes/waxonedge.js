@@ -12831,6 +12831,77 @@ function tokenPagePairDisplayLiquidity(row, stats = {}) {
   };
 }
 
+function tokenPageWaxUsdFromStats(stats = {}) {
+  const priceWax = asNumber(stats?.selected_price_wax);
+  const priceUsd = asNumber(stats?.selected_price_usd);
+  return priceWax != null && priceWax > 0 && priceUsd != null ? priceUsd / priceWax : null;
+}
+
+async function tokenPageWaxcashSelectedPriceWax(db) {
+  const row = await db.prepare(
+    `SELECT selected_price_wax
+     FROM waxonedge_token_stats
+     WHERE contract = ? AND symbol = ?
+     LIMIT 1`
+  ).bind(WAXCASH_CONTRACT, WAXCASH_SYMBOL).first().catch(() => null);
+  return asNumber(row?.selected_price_wax);
+}
+
+function tokenPagePairMetricReasons(row = {}) {
+  const metricSources = row.metric_sources || {};
+  const reasons = {};
+  if (asNumber(row.price) == null) reasons.price = 'indexed_pair_price_unavailable';
+  if (asNumber(row.change_24h) == null) {
+    reasons.change_24h = metricSources.change_24h?.reason || 'indexed_pair_or_trade_price_change_unavailable';
+  }
+  for (const windowKey of ['24h', '7d', '30d']) {
+    const prefix = `volume_${windowKey}`;
+    const hasWax = asNumber(row[`${prefix}_wax`]) != null;
+    const hasUsd = asNumber(row[`${prefix}_usd`]) != null;
+    const hasNative = asNumber(row[prefix]) != null ||
+      asNumber(row[`${prefix}_a_native`]) != null ||
+      asNumber(row[`${prefix}_b_native`]) != null;
+    if (!hasWax && !hasUsd && !hasNative) {
+      reasons[prefix] = metricSources[`${prefix}_wax`]?.reason || `indexed_pair_or_trade_${prefix}_unavailable`;
+    }
+  }
+  return reasons;
+}
+
+function tokenPagePairDisplayVolume(row = {}, prefix) {
+  const wax = asNumber(row[`${prefix}_wax`]);
+  const usd = asNumber(row[`${prefix}_usd`]);
+  const native = asNumber(row[prefix]) ?? asNumber(row[`${prefix}_a_native`]) ?? asNumber(row[`${prefix}_b_native`]);
+  const waxSource = row.metric_sources?.[`${prefix}_wax`]?.source;
+  const nativeSource = row.metric_sources?.[`${prefix}_native`]?.source;
+  return {
+    [`display_${prefix}_wax`]: safeDecimal(wax),
+    [`display_${prefix}_usd`]: safeDecimal(usd),
+    [`display_${prefix}_native`]: wax == null && usd == null ? safeDecimal(native) : null,
+    [`display_${prefix}_basis`]: wax != null || usd != null
+      ? (waxSource || 'indexed_pair_volume_wax_or_usd')
+      : (native != null ? (nativeSource || 'indexed_pair_native_volume') : null),
+  };
+}
+
+function tokenPagePairDisplayMetrics(row = {}) {
+  const price = asNumber(row.price);
+  const change24h = asNumber(row.change_24h);
+  const metricSources = row.metric_sources || {};
+  return {
+    display_price: safeDecimal(price),
+    display_price_basis: price != null ? 'indexed_pair_price' : null,
+    display_change_24h: safeDecimal(change24h),
+    display_change_24h_basis: change24h != null
+      ? (metricSources.change_24h?.source || 'indexed_pair_or_trade_change')
+      : null,
+    ...tokenPagePairDisplayVolume(row, 'volume_24h'),
+    ...tokenPagePairDisplayVolume(row, 'volume_7d'),
+    ...tokenPagePairDisplayVolume(row, 'volume_30d'),
+    metric_unavailable_reasons: tokenPagePairMetricReasons(row),
+  };
+}
+
 async function getTokenPageAnalytics(db, contract, symbol, options = {}) {
   const sort = normalizeTokenPageSort(options.sort);
   const policy = {
@@ -12885,14 +12956,27 @@ async function getTokenPageAnalytics(db, contract, symbol, options = {}) {
     countTokenPageSuppressedPairRows(db, contract, symbol),
   ]);
   const rawPairs = rows.results || [];
-  const tokenRows = await loadTokenRowsForRefs(db, collectTokenRefsForPairs(rawPairs));
+  const [tokenRows, waxcashSelectedPriceWax] = await Promise.all([
+    loadTokenRowsForRefs(db, collectTokenRefsForPairs(rawPairs)),
+    tokenPageWaxcashSelectedPriceWax(db),
+  ]);
+  const tradeWindowPairs = rawPairs.map((row) => ({ ...row, direct_wax_pair: pairHasWaxSide(row) }));
+  const pairWindowVolumes = await indexedTradeWindowVolumesByPair(db, tradeWindowPairs, {
+    selectedPriceWax: waxcashSelectedPriceWax,
+  });
+  const metricPairs = applyIndexedPairWindowVolumes(
+    tradeWindowPairs,
+    pairWindowVolumes,
+    tokenPageWaxUsdFromStats(detail.stats || {}),
+  );
   const selectedSource = aggregateSourceKey(detail.stats?.selected_pair_source);
   const selectedPairId = safeString(detail.stats?.selected_pair_id);
-  const pairs = sortTokenPagePairs(enrichPairsWithTokenIcons(rawPairs, tokenRows).map((row) => {
+  const pairs = sortTokenPagePairs(enrichPairsWithTokenIcons(metricPairs, tokenRows).map((row) => {
     const metadata = pairLiquiditySanityMetadata(row);
     return {
       ...row,
       ...tokenPagePairDisplayLiquidity(row, detail.stats || {}),
+      ...tokenPagePairDisplayMetrics(row),
       pair_label: [row.token_a_symbol, row.token_b_symbol].filter(Boolean).join('/') || null,
       selected_pair: !!selectedPairId && aggregateSourceKey(row.source) === selectedSource && safeString(row.pair_id) === selectedPairId,
       ...metadata,

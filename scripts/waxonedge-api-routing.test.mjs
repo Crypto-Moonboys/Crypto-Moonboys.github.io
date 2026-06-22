@@ -71,7 +71,7 @@ ok('WUF token analytics does not fetch same-origin /api directly',
   !tokenAnalyticsPageJs.includes('fetch("/api/waxonedge') &&
   !tokenAnalyticsPageJs.includes("var ENDPOINT = '/api/waxonedge"));
 ok('wuffi.html cache-busts the WUF token analytics runtime',
-  wuffiHtml.includes('/js/token-analytics-page.js?v=wuf-clean-table-20260622-1'));
+  wuffiHtml.includes('/js/token-analytics-page.js?v=wuf-metric-parity-20260622-1'));
 ok('WUF table exposes liquidity and 24h volume sort buttons',
   wuffiHtml.includes('id="wuf-sort-liquidity"') &&
   wuffiHtml.includes('data-sort="liquidity"') &&
@@ -91,11 +91,21 @@ ok('WUF generic table renders selected pair, DEX logos, token icons, native volu
   tokenAnalyticsPageJs.includes('Native units') &&
   tokenAnalyticsPageJs.includes('display_liquidity_wax') &&
   tokenAnalyticsPageJs.includes('display_liquidity_basis') &&
+  tokenAnalyticsPageJs.includes('display_price') &&
+  tokenAnalyticsPageJs.includes('display_change_24h') &&
+  tokenAnalyticsPageJs.includes("display_' + prefix + '_wax") &&
+  tokenAnalyticsPageJs.includes("display_' + prefix + '_native") &&
   tokenAnalyticsPageJs.includes('Verified liquidity') &&
   tokenAnalyticsPageJs.includes('blocked_pair_count'));
+ok('WUF token analytics keeps missing metrics unavailable without treating real zero as missing',
+  tokenAnalyticsPageJs.includes('function firstValue()') &&
+  tokenAnalyticsPageJs.includes("arguments[i] != null && arguments[i] !== ''") &&
+  tokenAnalyticsPageJs.includes('firstValue(row && row.display_change_24h, row && row.change_24h)') &&
+  tokenAnalyticsPageJs.includes('firstValue(stats.volume_24h_wax, stats.volume_24h)'));
 ok('WUF public table no longer renders proof icons or internal policy text',
   !tokenAnalyticsPageJs.includes('token-proof') &&
   !tokenAnalyticsPageJs.includes("label || '?'") &&
+  !tokenAnalyticsPageJs.includes("symbol || '?'") &&
   !tokenAnalyticsPageJs.includes('Large liquidity row kept because') &&
   !tokenAnalyticsPageJs.includes('WAX-direct') &&
   !tokenAnalyticsPageJs.includes('24h WAX volume proof') &&
@@ -103,9 +113,9 @@ ok('WUF public table no longer renders proof icons or internal policy text',
   !wuffiHtml.includes('token-proof'));
 ok('WUF table polish markers are not added to WAXCASH page or bubble runtime',
   !waxcashHtml.includes('wuf-sort-liquidity') &&
-  !waxcashHtml.includes('wuf-clean-table-20260622-1') &&
+  !waxcashHtml.includes('wuf-metric-parity-20260622-1') &&
   !waxonedgeBubblesJs.includes('wuf-sort-liquidity') &&
-  !waxonedgeBubblesJs.includes('wuf-clean-table-20260622-1'));
+  !waxonedgeBubblesJs.includes('wuf-metric-parity-20260622-1'));
 
 console.log('\nwaxonedge-api-routing.test: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
