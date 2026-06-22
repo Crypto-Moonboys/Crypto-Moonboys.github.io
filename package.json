@@ -11,7 +11,6 @@
     "test:full": "npm run test",
     "test:anti-drift": "node scripts/anti-drift-check.mjs",
     "test:shell-parity": "node scripts/site-shell-parity-audit.mjs",
-    "test:wax-quote-ui": "node scripts/wax-quote-ui.test.mjs",
     "lint:shell": "node --check js/site-shell.js",
     "test:live-site": "node scripts/live-site-verify.mjs",
     "deploy:status": "node scripts/pages-deploy-status.mjs",
