@@ -13,6 +13,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(path.join(ROOT, 'waxonedge.html'), 'utf8');
 const wuffiHtml = readFileSync(path.join(ROOT, 'wiki/wuffi.html'), 'utf8');
 const tokenAnalyticsPageJs = readFileSync(path.join(ROOT, 'js/token-analytics-page.js'), 'utf8');
+const waxcashHtml = readFileSync(path.join(ROOT, 'waxcash.html'), 'utf8');
+const waxonedgeBubblesJs = readFileSync(path.join(ROOT, 'js/waxonedge-bubbles-v2.js'), 'utf8');
 
 let passed = 0;
 let failed = 0;
@@ -58,13 +60,26 @@ ok('wuffi.html loads api-config before token analytics runtime',
 ok('WUF token analytics resolves Worker API through MOONBOYS_API production fallback',
   tokenAnalyticsPageJs.includes('cfg.getApiBaseInfo({ allowProductionFallback: true })') &&
   tokenAnalyticsPageJs.includes("var TOKEN_PAGE_PATH = '/api/waxonedge/token-page/wuffi/WUF';") &&
-  tokenAnalyticsPageJs.includes('return base + TOKEN_PAGE_PATH;'));
+  tokenAnalyticsPageJs.includes('new URL(base + TOKEN_PAGE_PATH)') &&
+  tokenAnalyticsPageJs.includes("url.searchParams.set('sort', pairSort);"));
 ok('WUF token analytics does not fetch same-origin /api directly',
   !tokenAnalyticsPageJs.includes("fetch('/api/waxonedge") &&
   !tokenAnalyticsPageJs.includes('fetch("/api/waxonedge') &&
   !tokenAnalyticsPageJs.includes("var ENDPOINT = '/api/waxonedge"));
 ok('wuffi.html cache-busts the WUF token analytics runtime',
-  /src="\/js\/token-analytics-page\.js\?v=[^"]+"/.test(wuffiHtml));
+  wuffiHtml.includes('/js/token-analytics-page.js?v=wuf-table-sort-20260622-1'));
+ok('WUF table exposes liquidity and 24h volume sort buttons',
+  wuffiHtml.includes('id="wuf-sort-liquidity"') &&
+  wuffiHtml.includes('data-sort="liquidity"') &&
+  wuffiHtml.includes('id="wuf-sort-volume24"') &&
+  wuffiHtml.includes('data-sort="volume24"') &&
+  wuffiHtml.includes('aria-pressed="true"'));
+ok('WUF token analytics supports liquidity and 24h volume sorting',
+  tokenAnalyticsPageJs.includes("var pairSort = 'liquidity';") &&
+  tokenAnalyticsPageJs.includes("url.searchParams.set('sort', pairSort);") &&
+  tokenAnalyticsPageJs.includes('function setPairSort(sortKey)') &&
+  tokenAnalyticsPageJs.includes('loadAnalytics();') &&
+  tokenAnalyticsPageJs.includes('analyticsRequestId'));
 ok('WUF generic table renders selected pair, DEX logos, token icons, native volume fallback, and proof tooltips',
   tokenAnalyticsPageJs.includes('token-selected-pair') &&
   tokenAnalyticsPageJs.includes('token-dex-logo') &&
@@ -72,6 +87,11 @@ ok('WUF generic table renders selected pair, DEX logos, token icons, native volu
   tokenAnalyticsPageJs.includes('Native units') &&
   tokenAnalyticsPageJs.includes('token-proof') &&
   tokenAnalyticsPageJs.includes('blocked_pair_count'));
+ok('WUF table polish markers are not added to WAXCASH page or bubble runtime',
+  !waxcashHtml.includes('wuf-sort-liquidity') &&
+  !waxcashHtml.includes('wuf-table-sort-20260622-1') &&
+  !waxonedgeBubblesJs.includes('wuf-sort-liquidity') &&
+  !waxonedgeBubblesJs.includes('wuf-table-sort-20260622-1'));
 
 console.log('\nwaxonedge-api-routing.test: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);

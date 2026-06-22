@@ -9,6 +9,10 @@
   var RESOLUTIONS = ['1', '5', '15', '30', '60', '240', 'D', 'W', 'M'];
   var activeResolution = '240';
   var subscriptions = {};
+  var pairSort = 'liquidity';
+  var latestPairs = [];
+  var latestSuppressedCount = 0;
+  var analyticsRequestId = 0;
   var DEX_LOGOS = {
     alcor: '/img/waxonedge/dex/alcor.png',
     'swap.alcor': '/img/waxonedge/dex/alcor.png',
@@ -79,6 +83,21 @@
     }
     return valueWithProof(unavailable(), 'No indexed volume was available for this row.');
   }
+  function updateSortButtons() {
+    ['liquidity', 'volume24'].forEach(function (sortKey) {
+      var id = sortKey === 'volume24' ? 'wuf-sort-volume24' : 'wuf-sort-liquidity';
+      var button = byId(id);
+      if (!button) return;
+      var active = pairSort === sortKey;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+  function setPairSort(sortKey) {
+    pairSort = sortKey === 'volume24' ? 'volume24' : 'liquidity';
+    updateSortButtons();
+    loadAnalytics();
+  }
   function tokenPageUrl() {
     var cfg = window.MOONBOYS_API || {};
     var info = typeof cfg.getApiBaseInfo === 'function'
@@ -86,18 +105,15 @@
       : null;
     var base = info && info.available && info.url ? String(info.url).replace(/\/$/, '') : '';
     if (!base) throw new Error('API base URL unavailable');
-    return base + TOKEN_PAGE_PATH;
+    var url = new URL(base + TOKEN_PAGE_PATH);
+    url.searchParams.set('sort', pairSort);
+    return url.toString();
   }
 
-  function renderAnalytics(payload) {
-    var data = payload && payload.data ? payload.data : payload || {};
-    var stats = data.stats || {};
-    var pairs = Array.isArray(data.pairs) ? data.pairs.slice(0, 30) : [];
-    if (byId('wuf-liquidity')) byId('wuf-liquidity').innerHTML = dual(stats.liquidity_wax, stats.liquidity_usd);
-    if (byId('wuf-volume-24h')) byId('wuf-volume-24h').innerHTML = dual(stats.volume_24h_wax || stats.volume_24h, stats.volume_24h_usd);
-    if (byId('wuf-analytics-updated')) byId('wuf-analytics-updated').textContent = stats.updated_at ? 'Indexed backend updated: ' + stats.updated_at : 'Backend values are not guessed when missing.';
+  function renderPairTable() {
+    var pairs = latestPairs.slice(0, 30);
     if (byId('wuf-pair-summary')) {
-      byId('wuf-pair-summary').textContent = pairs.length + ' indexed WUF pair rows' + (num(data.blocked_pair_count) ? ' (' + data.blocked_pair_count + ' suppressed)' : '');
+      byId('wuf-pair-summary').textContent = pairs.length + ' indexed WUF pair rows shown, ' + latestSuppressedCount + ' suppressed by public-feed policy.';
     }
     if (!byId('wuf-pairs')) return;
     if (!pairs.length) {
@@ -107,10 +123,11 @@
     byId('wuf-pairs').innerHTML = pairs.map(function (row, index) {
       var selected = row && row.selected_pair;
       var reason = row && row.public_feed_reason || 'Indexed public pair row passed Worker-side public feed policy.';
+      var warning = row && row.public_feed_warning ? '<div class="token-warning">' + esc(row.public_feed_warning) + '</div>' : '';
       return '<tr class="' + (selected ? 'token-selected-pair' : '') + '">' +
         '<td><span class="token-rank">#' + (index + 1) + '</span>' + (selected ? '<span class="token-selected-marker" title="Selected backend pricing pair">Selected</span>' : '') + '</td>' +
         '<td>' + sourceLabel(row) + proof(reason, 'i') + '</td>' +
-        '<td>' + pairCell(row) + '</td>' +
+        '<td>' + pairCell(row) + warning + '</td>' +
         '<td>' + valueWithProof(dual(row.liquidity_wax, row.liquidity_usd), 'Liquidity passed Worker-side contract blocklist and public-feed sanity checks.') + '</td>' +
         '<td>' + valueWithProof(price(row), 'Indexed pair price from the Worker response.') + '</td>' +
         '<td>' + valueWithProof(pct(row.change_24h), 'Indexed 24h price change from the Worker response.') + '</td>' +
@@ -121,10 +138,36 @@
     }).join('');
   }
 
+  function renderAnalytics(payload) {
+    var data = payload && payload.data ? payload.data : payload || {};
+    var stats = data.stats || {};
+    pairSort = data.sort === 'volume24' ? 'volume24' : 'liquidity';
+    updateSortButtons();
+    latestPairs = Array.isArray(data.pairs) ? data.pairs.slice(0, 30) : [];
+    latestSuppressedCount = num(data.blocked_pair_count) || 0;
+    if (byId('wuf-liquidity')) byId('wuf-liquidity').innerHTML = dual(stats.liquidity_wax, stats.liquidity_usd);
+    if (byId('wuf-volume-24h')) byId('wuf-volume-24h').innerHTML = dual(stats.volume_24h_wax || stats.volume_24h, stats.volume_24h_usd);
+    if (byId('wuf-analytics-updated')) byId('wuf-analytics-updated').textContent = stats.updated_at ? 'Indexed backend updated: ' + stats.updated_at : 'Backend values are not guessed when missing.';
+    renderPairTable();
+  }
+
+  function initSortControls() {
+    ['wuf-sort-liquidity', 'wuf-sort-volume24'].forEach(function (id) {
+      var button = byId(id);
+      if (!button) return;
+      button.addEventListener('click', function () {
+        setPairSort(button.getAttribute('data-sort'));
+      });
+    });
+    updateSortButtons();
+  }
+
   function loadAnalytics() {
+    var requestId = ++analyticsRequestId;
+    if (byId('wuf-pair-summary')) byId('wuf-pair-summary').textContent = 'Loading indexed pairs...';
     fetch(tokenPageUrl(), { headers: { Accept: 'application/json' } })
       .then(function (response) { if (!response.ok) throw new Error('HTTP ' + response.status); return response.json(); })
-      .then(renderAnalytics)
+      .then(function (payload) { if (requestId === analyticsRequestId) renderAnalytics(payload); })
       .catch(function (error) {
         if (byId('wuf-pair-summary')) byId('wuf-pair-summary').textContent = 'Indexed analytics unavailable';
         if (byId('wuf-pairs')) byId('wuf-pairs').innerHTML = '<tr><td colspan="9" class="token-muted">Pair table unavailable: ' + esc(error.message || error) + '</td></tr>';
@@ -162,6 +205,6 @@
     new window.TradingView.widget({ autosize: true, symbol: 'WUF_WAX', interval: '240', container: CONTAINER_ID, datafeed: datafeed, library_path: 'https://alcor.exchange/charting_library/', locale: 'en', timezone: 'Etc/UTC', theme: 'dark', style: '1', toolbar_bg: '#111820', custom_css_url: 'https://alcor.exchange/tv_themed.css', disabled_features: ['symbol_search_hot_key', 'header_symbol_search'], favorites: { intervals: RESOLUTIONS }, loading_screen: { backgroundColor: '#111820', foregroundColor: '#ffd000' } });
   }
 
-  function init() { loadAnalytics(); initChart(); }
+  function init() { initSortControls(); loadAnalytics(); initChart(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 }());
