@@ -37,6 +37,9 @@
     .token-panel-header { display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; padding: .95rem 1rem; border-bottom: 1px solid rgba(255,255,255,.1); }
     .token-panel-header h2, .token-panel-header h3 { margin:0; color:#ffd000; }
     .token-panel-note, .token-analytics-status { color: rgba(255,255,255,.72); font-size: .82rem; line-height: 1.45; }
+    .token-pairs-actions { display:flex; align-items:flex-end; gap:.55rem; flex-wrap:wrap; justify-content:flex-end; }
+    .token-sort-button { border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.07); color:rgba(255,255,255,.78); border-radius:4px; padding:.42rem .6rem; font:inherit; font-size:.72rem; line-height:1; cursor:pointer; }
+    .token-sort-button.is-active { border-color:rgba(255,208,0,.72); background:rgba(255,208,0,.14); color:#ffd000; }
     .token-tradingview-chart { width:100%; height: 430px; min-height: 360px; background:#111820; }
     .token-stat-cards { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
     .token-stat-card { padding: 1rem; }
@@ -44,17 +47,25 @@
     .token-stat-card strong { display:block; margin-top:.45rem; font-size:1.25rem; color:#fff; overflow-wrap:anywhere; }
     .token-stat-card small { display:block; margin-top:.35rem; color:rgba(255,255,255,.62); line-height:1.4; }
     .token-pairs-table-wrap { max-width:100%; overflow-x:auto; }
-    .token-pairs-table { width:100%; min-width: 920px; border-collapse: collapse; }
-    .token-pairs-table th, .token-pairs-table td { padding:.72rem .65rem; border-bottom:1px solid rgba(255,255,255,.09); text-align:right; vertical-align:top; overflow-wrap:anywhere; }
-    .token-pairs-table th { color:rgba(255,255,255,.68); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; }
+    .token-pairs-table { width:100%; min-width: 820px; table-layout:fixed; border-collapse: collapse; font-size:.78rem; }
+    .token-pairs-table th, .token-pairs-table td { padding:.48rem .42rem; border-bottom:1px solid rgba(255,255,255,.09); text-align:right; vertical-align:top; overflow-wrap:normal; }
+    .token-pairs-table th { color:rgba(255,255,255,.68); font-size:.62rem; text-transform:uppercase; letter-spacing:.04em; }
+    .token-pairs-table th:nth-child(1) { width:7%; }
+    .token-pairs-table th:nth-child(2) { width:13%; }
+    .token-pairs-table th:nth-child(3) { width:18%; }
+    .token-pairs-table th:nth-child(4), .token-pairs-table th:nth-child(7), .token-pairs-table th:nth-child(8), .token-pairs-table th:nth-child(9) { width:11%; }
+    .token-pairs-table th:nth-child(5), .token-pairs-table th:nth-child(6) { width:9%; }
     .token-pairs-table th:nth-child(2), .token-pairs-table th:nth-child(3), .token-pairs-table td:nth-child(2), .token-pairs-table td:nth-child(3) { text-align:left; }
     .token-selected-pair { background: rgba(255,208,0,.08); box-shadow: inset 3px 0 0 rgba(255,208,0,.85); }
     .token-rank { display:block; font-weight:700; color:#fff; }
     .token-selected-marker { display:inline-block; margin-top:.3rem; padding:.18rem .34rem; border:1px solid rgba(255,208,0,.55); border-radius:4px; color:#ffd000; font-size:.62rem; text-transform:uppercase; }
-    .token-source-name, .token-pair-line, .token-value-with-proof { display:inline-flex; align-items:center; gap:.35rem; flex-wrap:wrap; }
-    .token-dex-logo, .token-icon { width:22px; height:22px; object-fit:contain; border-radius:50%; background:rgba(255,255,255,.1); flex:0 0 auto; }
+    .token-source-name, .token-pair-line, .token-value-with-proof { display:inline-flex; align-items:center; gap:.28rem; flex-wrap:wrap; }
+    .token-value-with-proof { justify-content:flex-end; white-space:nowrap; }
+    .token-value-with-proof small { display:block; width:100%; white-space:nowrap; }
+    .token-dex-logo, .token-icon { width:18px; height:18px; object-fit:contain; border-radius:50%; background:rgba(255,255,255,.1); flex:0 0 auto; }
     .token-icon-fallback { display:inline-flex; justify-content:center; align-items:center; font-size:.7rem; color:#ffd000; border:1px solid rgba(255,208,0,.35); }
-    .token-proof { display:inline-flex; width:1.15rem; height:1.15rem; justify-content:center; align-items:center; border:1px solid rgba(255,255,255,.22); border-radius:50%; color:rgba(255,255,255,.76); font-size:.68rem; line-height:1; cursor:help; }
+    .token-proof { display:inline-flex; width:1rem; height:1rem; justify-content:center; align-items:center; border:1px solid rgba(255,255,255,.22); border-radius:50%; color:rgba(255,255,255,.76); font-size:.62rem; line-height:1; cursor:help; flex:0 0 auto; }
+    .token-warning { margin-top:.18rem; color:#ffd000; font-size:.68rem; line-height:1.25; }
     .token-muted { color:rgba(255,255,255,.58); }
     .token-positive { color:#00f59f; }
     .token-negative { color:#ff5470; }
@@ -110,9 +121,13 @@
       <div class="token-panel-header">
         <div>
           <h2>Top 30 WUF Pairs</h2>
-          <div class="token-panel-note">Ranked by indexed liquidity first, then indexed 24h WAX volume, then backend row order.</div>
+          <div class="token-panel-note">Ranked by selected table mode across Worker-filtered indexed rows.</div>
         </div>
-        <div class="token-analytics-status" id="wuf-pair-summary">Loading indexed pairs…</div>
+        <div class="token-pairs-actions" aria-label="WUF pair sorting">
+          <button type="button" id="wuf-sort-liquidity" class="token-sort-button is-active" data-sort="liquidity" aria-pressed="true">Top liquidity</button>
+          <button type="button" id="wuf-sort-volume24" class="token-sort-button" data-sort="volume24" aria-pressed="false">24h volume</button>
+          <div class="token-analytics-status" id="wuf-pair-summary">Loading indexed pairs…</div>
+        </div>
       </div>
       <div class="token-pairs-table-wrap">
         <table class="token-pairs-table">
@@ -212,7 +227,7 @@
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <!-- 6. Page-specific scripts -->
 <script data-cfasync="false" src="https://alcor.exchange/charting_library/charting_library.standalone.js"></script>
-<script data-cfasync="false" src="/js/token-analytics-page.js?v=wuf-public-pairs-20260622-1"></script>
+<script data-cfasync="false" src="/js/token-analytics-page.js?v=wuf-table-sort-20260622-1"></script>
 
 <script type="application/ld+json">
   {

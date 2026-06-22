@@ -16,6 +16,7 @@ const SOURCE_STALE_MINUTES = 30;
 const MIN_TRUSTED_WAX_LIQUIDITY = 10;
 const MAX_REASONABLE_PAIR_TVL_USD = 100000000;
 const MAX_REASONABLE_PAIR_TVL_WAX = 10000000000;
+const GENERIC_TOKEN_SUSPICIOUS_LIQUIDITY_WAX = 1000000;
 const MAX_BUBBLE_LIQUIDITY_TO_MARKET_CAP_RATIO = 5;
 const CANDLE_BACKFILL_SOURCE = 'candle_backfill';
 const ALCOR_TRADE_INDEX_SOURCE = 'alcor_trade_rows';
@@ -1071,6 +1072,8 @@ function publicPairFeedPolicy() {
     pair_token_contract_blocklist: WAXONEDGE_PAIR_TOKEN_CONTRACT_BLOCKLIST,
     blocked_pair_contract_policy: 'exclude_rows_where_either_pair_side_contract_is_blocklisted',
     liquidity_sanity_policy: 'exclude_rows_with_negative_or_impossible_liquidity_values',
+    generic_token_large_liquidity_policy: 'exclude_non_wax_pairs_at_or_above_1000000_wax_liquidity_without_24h_wax_volume_proof_from_default_token_page_tables',
+    generic_token_suspicious_liquidity_wax: GENERIC_TOKEN_SUSPICIOUS_LIQUIDITY_WAX,
     max_reasonable_pair_liquidity_wax: MAX_REASONABLE_PAIR_TVL_WAX,
     max_reasonable_pair_liquidity_usd: MAX_REASONABLE_PAIR_TVL_USD,
   };
@@ -1078,6 +1081,58 @@ function publicPairFeedPolicy() {
 
 function pairUsesBlockedTokenContract(pair) {
   return isPairTokenContractBlocked(pair?.token_a_contract) || isPairTokenContractBlocked(pair?.token_b_contract);
+}
+
+function genericTokenPageLiquidityProofSql(alias = '') {
+  const prefix = alias ? `${alias}.` : '';
+  return `(CAST(COALESCE(${prefix}liquidity_wax, '0') AS NUMERIC) < ? OR COALESCE(UPPER(${prefix}token_a_symbol), '') = 'WAX' OR COALESCE(UPPER(${prefix}token_b_symbol), '') = 'WAX' OR CAST(COALESCE(${prefix}volume_24h_wax, '0') AS NUMERIC) > 0)`;
+}
+
+function genericTokenPagePublicFeedSql(alias = '') {
+  return `${publicPairFeedSql(alias)} AND ${genericTokenPageLiquidityProofSql(alias)}`;
+}
+
+function genericTokenPagePublicFeedParams() {
+  return publicPairFeedParams().concat([GENERIC_TOKEN_SUSPICIOUS_LIQUIDITY_WAX]);
+}
+
+function pairHasWaxSide(pair) {
+  return normalizeSymbol(pair?.token_a_symbol) === 'WAX' || normalizeSymbol(pair?.token_b_symbol) === 'WAX';
+}
+
+function pairHasVolume24WaxProof(pair) {
+  const volume = asNumber(pair?.volume_24h_wax);
+  return volume != null && volume > 0;
+}
+
+function pairLiquiditySanityMetadata(pair) {
+  const liquidityWax = asNumber(pair?.liquidity_wax);
+  if (liquidityWax == null) {
+    return {
+      liquidity_sanity_status: 'passed_no_liquidity_value',
+      public_feed_warning: null,
+      public_feed_reason: 'Indexed public pair feed row has no liquidity value and passed hard public-feed suppression rules.',
+    };
+  }
+  if (liquidityWax >= GENERIC_TOKEN_SUSPICIOUS_LIQUIDITY_WAX && !pairHasWaxSide(pair) && !pairHasVolume24WaxProof(pair)) {
+    return {
+      liquidity_sanity_status: 'suppressed_large_non_wax_pair_without_24h_volume_proof',
+      public_feed_warning: 'Large non-WAX liquidity row lacks 24h WAX volume proof.',
+      public_feed_reason: 'Suppressed from generic token page public feed by large-liquidity proof policy.',
+    };
+  }
+  if (liquidityWax >= GENERIC_TOKEN_SUSPICIOUS_LIQUIDITY_WAX) {
+    return {
+      liquidity_sanity_status: 'large_liquidity_proof_passed',
+      public_feed_warning: 'Large liquidity row kept because it is WAX-direct or has 24h WAX volume proof.',
+      public_feed_reason: 'Indexed public pair feed row passed contract blocklist, hard liquidity sanity, and large-liquidity proof policy.',
+    };
+  }
+  return {
+    liquidity_sanity_status: 'passed',
+    public_feed_warning: null,
+    public_feed_reason: 'Indexed public pair feed row passed contract blocklist, hard liquidity sanity, and large-liquidity proof policy.',
+  };
 }
 
 function parseAsset(asset) {
@@ -5910,12 +5965,12 @@ async function listTokenPairs(db, contract, symbol, options = {}) {
      FROM waxonedge_pairs
      WHERE ((token_a_contract = ? AND token_a_symbol = ?)
         OR (token_b_contract = ? AND token_b_symbol = ?))
-       AND ${publicPairFeedSql()}
+       AND ${genericTokenPagePublicFeedSql()}
      ORDER BY CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC,
               CAST(COALESCE(volume_24h_wax, '0') AS NUMERIC) DESC,
               updated_at DESC
      LIMIT ? OFFSET ?`
-  ).bind(contract, symbol, contract, symbol, ...publicPairFeedParams(), limit + 1, offset).all();
+  ).bind(contract, symbol, contract, symbol, ...genericTokenPagePublicFeedParams(), limit + 1, offset).all();
   const pageRows = rows.results || [];
   const hasMore = pageRows.length > limit;
   const visibleRows = pageRows.slice(0, limit);
@@ -5926,6 +5981,8 @@ async function listTokenPairs(db, contract, symbol, options = {}) {
   return {
     rows: visibleRows.map((pair) => ({
       ...pair,
+      ...pairLiquiditySanityMetadata(pair),
+      selected_pair: false,
       pair_contribution_proof: pairContributionProof(pair, contract, symbol, priceIndex, routeIndex),
     })),
     next_cursor: hasMore ? String(offset + limit) : null,
@@ -12693,10 +12750,10 @@ async function countTokenPageSuppressedPairRows(db, contract, symbol) {
     `SELECT COUNT(*) AS count
      FROM waxonedge_pairs
      WHERE ((token_a_contract = ? AND token_a_symbol = ?)
-        OR (token_b_contract = ? AND token_b_symbol = ?))
+       OR (token_b_contract = ? AND token_b_symbol = ?))
        AND source IN ('alcor','swap.alcor','swap.taco','swap.nefty','swap.box','swap.adex','dapp.fusion')
-       AND NOT (${publicPairFeedSql()})`
-  ).bind(contract, symbol, contract, symbol, ...publicPairFeedParams()).first().catch(() => null);
+       AND NOT (${genericTokenPagePublicFeedSql()})`
+  ).bind(contract, symbol, contract, symbol, ...genericTokenPagePublicFeedParams()).first().catch(() => null);
   return asNumber(row?.count) || 0;
 }
 
@@ -12742,28 +12799,31 @@ async function getTokenPageAnalytics(db, contract, symbol) {
             liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
      FROM waxonedge_pairs
      WHERE ((token_a_contract = ? AND token_a_symbol = ?)
-        OR (token_b_contract = ? AND token_b_symbol = ?))
+       OR (token_b_contract = ? AND token_b_symbol = ?))
        AND source IN ('alcor','swap.alcor','swap.taco','swap.nefty','swap.box','swap.adex','dapp.fusion')
-       AND ${publicPairFeedSql()}
+       AND ${genericTokenPagePublicFeedSql()}
      ORDER BY CASE WHEN liquidity_wax IS NOT NULL THEN 0 ELSE 1 END ASC,
               CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) DESC,
               CASE WHEN volume_24h_wax IS NOT NULL THEN 0 ELSE 1 END ASC,
               CAST(COALESCE(volume_24h_wax, '0') AS NUMERIC) DESC,
               updated_at DESC
      LIMIT 30`
-    ).bind(contract, symbol, contract, symbol, ...publicPairFeedParams()).all(),
+    ).bind(contract, symbol, contract, symbol, ...genericTokenPagePublicFeedParams()).all(),
     countTokenPageSuppressedPairRows(db, contract, symbol),
   ]);
   const rawPairs = rows.results || [];
   const tokenRows = await loadTokenRowsForRefs(db, collectTokenRefsForPairs(rawPairs));
   const selectedSource = aggregateSourceKey(detail.stats?.selected_pair_source);
   const selectedPairId = safeString(detail.stats?.selected_pair_id);
-  const pairs = enrichPairsWithTokenIcons(rawPairs, tokenRows).map((row) => ({
-    ...row,
-    pair_label: [row.token_a_symbol, row.token_b_symbol].filter(Boolean).join('/') || null,
-    selected_pair: !!selectedPairId && aggregateSourceKey(row.source) === selectedSource && safeString(row.pair_id) === selectedPairId,
-    public_feed_reason: 'indexed_public_pair_feed_passed_contract_blocklist_and_liquidity_sanity',
-  }));
+  const pairs = enrichPairsWithTokenIcons(rawPairs, tokenRows).map((row) => {
+    const metadata = pairLiquiditySanityMetadata(row);
+    return {
+      ...row,
+      pair_label: [row.token_a_symbol, row.token_b_symbol].filter(Boolean).join('/') || null,
+      selected_pair: !!selectedPairId && aggregateSourceKey(row.source) === selectedSource && safeString(row.pair_id) === selectedPairId,
+      ...metadata,
+    };
+  });
   return {
     indexed: true,
     blocked: false,
