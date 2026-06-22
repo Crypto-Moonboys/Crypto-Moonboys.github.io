@@ -624,7 +624,21 @@ const publicPairRows = [
     reserve_a: '1000',
     reserve_b: '5',
     liquidity_wax: '10',
+    liquidity_usd: '0.06',
     updated_at: '2026-06-22T00:00:00.000Z',
+  },
+  {
+    source: 'swap.taco',
+    pair_id: 'NULL_CONTRACT_WUF',
+    token_a_contract: null,
+    token_a_symbol: 'UNKNOWN',
+    token_b_contract: 'wuffi',
+    token_b_symbol: 'WUF',
+    reserve_a: '1000',
+    reserve_b: '5',
+    liquidity_wax: '9',
+    liquidity_usd: '0.05',
+    updated_at: '2026-06-22T00:00:30.000Z',
   },
   {
     source: 'swap.nefty',
@@ -636,6 +650,7 @@ const publicPairRows = [
     reserve_a: '1000',
     reserve_b: '5',
     liquidity_wax: '999',
+    liquidity_usd: '6',
     updated_at: '2026-06-22T00:01:00.000Z',
   },
   {
@@ -648,6 +663,7 @@ const publicPairRows = [
     reserve_a: '1000',
     reserve_b: '5',
     liquidity_wax: '999',
+    liquidity_usd: '6',
     updated_at: '2026-06-22T00:02:00.000Z',
   },
   {
@@ -660,12 +676,63 @@ const publicPairRows = [
     reserve_a: '1000',
     reserve_b: '5',
     liquidity_wax: '999',
+    liquidity_usd: '6',
     updated_at: '2026-06-22T00:03:00.000Z',
+  },
+  {
+    source: 'swap.alcor',
+    pair_id: 'IMPOSSIBLE_LIQUIDITY',
+    token_a_contract: 'wuffi',
+    token_a_symbol: 'WUF',
+    token_b_contract: 'eosio.token',
+    token_b_symbol: 'WAX',
+    reserve_a: '1000',
+    reserve_b: '5',
+    liquidity_wax: '10000000001',
+    liquidity_usd: '100000001',
+    updated_at: '2026-06-22T00:04:00.000Z',
+  },
+  {
+    source: 'swap.nefty',
+    pair_id: 'GOODWAXCASH',
+    token_a_contract: 'graffitiking',
+    token_a_symbol: 'WAXCASH',
+    token_b_contract: 'eosio.token',
+    token_b_symbol: 'WAX',
+    reserve_a: '1000',
+    reserve_b: '5',
+    liquidity_wax: '10',
+    liquidity_usd: '0.06',
+    updated_at: '2026-06-22T00:05:00.000Z',
+  },
+  {
+    source: 'swap.taco',
+    pair_id: 'BAD_WAXCASH',
+    token_a_contract: 'graffitiking',
+    token_a_symbol: 'WAXCASH',
+    token_b_contract: 'hype.gm',
+    token_b_symbol: 'HYPE',
+    reserve_a: '1000',
+    reserve_b: '5',
+    liquidity_wax: '999',
+    liquidity_usd: '6',
+    updated_at: '2026-06-22T00:06:00.000Z',
   },
 ];
 function rowHasBlockedContract(row) {
   return blockedContracts.includes(String(row?.token_a_contract || '').toLowerCase()) ||
     blockedContracts.includes(String(row?.token_b_contract || '').toLowerCase());
+}
+function rowHasImpossibleLiquidity(row) {
+  const wax = Number(row?.liquidity_wax ?? 0);
+  const usd = Number(row?.liquidity_usd ?? 0);
+  return !Number.isFinite(wax) || !Number.isFinite(usd) || wax < 0 || wax > 10000000000 || usd < 0 || usd > 100000000;
+}
+function rowMatchesToken(row, contract, symbol) {
+  const c = String(contract || '').toLowerCase();
+  const s = String(symbol || '').toUpperCase();
+  return (String(row?.token_a_contract || '').toLowerCase() === c && String(row?.token_a_symbol || '').toUpperCase() === s) ||
+    (String(row?.token_b_contract || '').toLowerCase() === c && String(row?.token_b_symbol || '').toUpperCase() === s);
 }
 function publicPairFeedDb(rows) {
   return {
@@ -679,16 +746,36 @@ function publicPairFeedDb(rows) {
         },
         first() {
           if (this.sql.includes('FROM waxonedge_tokens')) {
-            return Promise.resolve({ contract: 'wuffi', symbol: 'WUF', decimals: 8, updated_at: '2026-06-22T00:00:00.000Z' });
+            const contract = String(this.params[0] || '').toLowerCase();
+            const symbol = String(this.params[1] || '').toUpperCase();
+            if (contract === 'wuffi' && symbol === 'WUF') {
+              return Promise.resolve({ contract: 'wuffi', symbol: 'WUF', decimals: 8, updated_at: '2026-06-22T00:00:00.000Z' });
+            }
+            if (contract === 'graffitiking' && symbol === 'WAXCASH') {
+              return Promise.resolve({ contract: 'graffitiking', symbol: 'WAXCASH', decimals: 8, updated_at: '2026-06-22T00:00:00.000Z' });
+            }
+            return Promise.resolve(null);
+          }
+          if (this.sql.includes('COUNT(*) AS count') && this.sql.includes('FROM waxonedge_pairs')) {
+            const targetRows = rows.filter((row) => rowMatchesToken(row, this.params[0], this.params[1]));
+            return Promise.resolve({ count: targetRows.filter((row) => rowHasBlockedContract(row) || rowHasImpossibleLiquidity(row)).length });
           }
           return Promise.resolve(null);
         },
         all() {
           if (this.sql.includes('FROM waxonedge_pairs')) {
             const hasWorkerBlocklist = blockedContracts.every((contract) => this.params.includes(contract)) &&
-              this.sql.includes('LOWER(token_a_contract) NOT IN') &&
-              this.sql.includes('LOWER(token_b_contract) NOT IN');
-            return Promise.resolve({ results: hasWorkerBlocklist ? rows.filter((row) => !rowHasBlockedContract(row)) : rows });
+              this.sql.includes("COALESCE(LOWER(token_a_contract), '') NOT IN") &&
+              this.sql.includes("COALESCE(LOWER(token_b_contract), '') NOT IN");
+            const hasPublicLiquiditySanity = this.sql.includes("CAST(COALESCE(liquidity_wax, '0') AS NUMERIC) <= ?") &&
+              this.sql.includes("CAST(COALESCE(liquidity_usd, '0') AS NUMERIC) <= ?");
+            let pairRows = rows;
+            if (this.params.length >= 4) {
+              pairRows = pairRows.filter((row) => rowMatchesToken(row, this.params[0], this.params[1]));
+            }
+            if (hasWorkerBlocklist) pairRows = pairRows.filter((row) => !rowHasBlockedContract(row));
+            if (hasPublicLiquiditySanity) pairRows = pairRows.filter((row) => !rowHasImpossibleLiquidity(row));
+            return Promise.resolve({ results: pairRows });
           }
           return Promise.resolve({ results: [] });
         },
@@ -700,14 +787,26 @@ const publicPairDb = publicPairFeedDb(publicPairRows);
 const wufTokenPage = await __waxonedgeTestHooks.getTokenPageAnalytics(publicPairDb, 'wuffi', 'WUF');
 ok('/api/waxonedge/token-page/wuffi/WUF suppresses blocked pair contracts on either side',
   wufTokenPage.indexed === true &&
-  wufTokenPage.pairs.length === 1 &&
+  wufTokenPage.pairs.length === 2 &&
   wufTokenPage.pairs.every((row) => !rowHasBlockedContract(row)) &&
   blockedContracts.every((contract) => wufTokenPage.pair_token_contract_blocklist.includes(contract)) &&
   wufTokenPage.blocked_pair_contract_policy === 'exclude_rows_where_either_pair_side_contract_is_blocklisted');
+ok('/api/waxonedge/token-page/wuffi/WUF reports public-feed suppressions and keeps NULL contracts NULL-safe',
+  wufTokenPage.blocked_pair_count === 4 &&
+  wufTokenPage.liquidity_sanity_policy === 'exclude_rows_with_negative_or_impossible_liquidity_values' &&
+  wufTokenPage.pairs.some((row) => row.pair_id === 'NULL_CONTRACT_WUF') &&
+  wufTokenPage.pairs.every((row) => !rowHasImpossibleLiquidity(row)));
 const wufPairFeed = await __waxonedgeTestHooks.listTokenPairs(publicPairDb, 'wuffi', 'WUF', { limit: 30 });
 ok('/api/waxonedge/token/:contract/:symbol/pairs uses the same pair contract blocklist',
-  wufPairFeed.rows.length === 1 &&
-  wufPairFeed.rows.every((row) => !rowHasBlockedContract(row)));
+  wufPairFeed.rows.length === 2 &&
+  wufPairFeed.rows.every((row) => !rowHasBlockedContract(row)) &&
+  wufPairFeed.rows.every((row) => !rowHasImpossibleLiquidity(row)));
+const waxcashPairRows = await __waxonedgeTestHooks.loadWaxcashOgPairRows(publicPairDb);
+ok('/api/waxonedge/waxcash-analytics WAXCASH pair loader uses the same Worker-side public feed policy',
+  waxcashPairRows.length === 1 &&
+  waxcashPairRows[0].pair_id === 'GOODWAXCASH' &&
+  waxcashPairRows.every((row) => !rowHasBlockedContract(row)) &&
+  waxcashPairRows.every((row) => !rowHasImpossibleLiquidity(row)));
 const blockedTokenPage = await __waxonedgeTestHooks.getTokenPageAnalytics(publicPairDb, 'hype.gm', 'HYPE');
 ok('token-page returns blocked metadata for blocklisted requested token contracts',
   blockedTokenPage.indexed === false &&

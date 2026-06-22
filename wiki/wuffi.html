@@ -48,6 +48,13 @@
     .token-pairs-table th, .token-pairs-table td { padding:.72rem .65rem; border-bottom:1px solid rgba(255,255,255,.09); text-align:right; vertical-align:top; overflow-wrap:anywhere; }
     .token-pairs-table th { color:rgba(255,255,255,.68); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; }
     .token-pairs-table th:nth-child(2), .token-pairs-table th:nth-child(3), .token-pairs-table td:nth-child(2), .token-pairs-table td:nth-child(3) { text-align:left; }
+    .token-selected-pair { background: rgba(255,208,0,.08); box-shadow: inset 3px 0 0 rgba(255,208,0,.85); }
+    .token-rank { display:block; font-weight:700; color:#fff; }
+    .token-selected-marker { display:inline-block; margin-top:.3rem; padding:.18rem .34rem; border:1px solid rgba(255,208,0,.55); border-radius:4px; color:#ffd000; font-size:.62rem; text-transform:uppercase; }
+    .token-source-name, .token-pair-line, .token-value-with-proof { display:inline-flex; align-items:center; gap:.35rem; flex-wrap:wrap; }
+    .token-dex-logo, .token-icon { width:22px; height:22px; object-fit:contain; border-radius:50%; background:rgba(255,255,255,.1); flex:0 0 auto; }
+    .token-icon-fallback { display:inline-flex; justify-content:center; align-items:center; font-size:.7rem; color:#ffd000; border:1px solid rgba(255,208,0,.35); }
+    .token-proof { display:inline-flex; width:1.15rem; height:1.15rem; justify-content:center; align-items:center; border:1px solid rgba(255,255,255,.22); border-radius:50%; color:rgba(255,255,255,.76); font-size:.68rem; line-height:1; cursor:help; }
     .token-muted { color:rgba(255,255,255,.58); }
     .token-positive { color:#00f59f; }
     .token-negative { color:#ff5470; }
@@ -205,7 +212,7 @@
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <!-- 6. Page-specific scripts -->
 <script data-cfasync="false" src="https://alcor.exchange/charting_library/charting_library.standalone.js"></script>
-<script data-cfasync="false" src="/js/token-analytics-page.js"></script>
+<script data-cfasync="false" src="/js/token-analytics-page.js?v=wuf-public-pairs-20260622-1"></script>
 
 <script type="application/ld+json">
   {
