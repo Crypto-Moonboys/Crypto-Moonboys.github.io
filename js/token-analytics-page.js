@@ -88,15 +88,22 @@
       firstValue(row && row.display_liquidity_usd, row && row.liquidity_usd)
     ));
   }
+  function owns(obj, key) {
+    return !!obj && Object.prototype.hasOwnProperty.call(obj, key);
+  }
   function volume(row, prefix) {
+    var displayWaxKey = 'display_' + prefix + '_wax';
+    var displayUsdKey = 'display_' + prefix + '_usd';
+    var displayNativeKey = 'display_' + prefix + '_native';
+    var hasDisplayVolume = owns(row, displayWaxKey) || owns(row, displayUsdKey) || owns(row, displayNativeKey);
     var converted = dual(
-      firstValue(row && row['display_' + prefix + '_wax'], row && row[prefix + '_wax']),
-      firstValue(row && row['display_' + prefix + '_usd'], row && row[prefix + '_usd'])
+      hasDisplayVolume ? row && row[displayWaxKey] : row && row[prefix + '_wax'],
+      hasDisplayVolume ? row && row[displayUsdKey] : row && row[prefix + '_usd']
     );
     if (!converted.includes('Unavailable')) {
       return cleanValue(converted);
     }
-    var native = firstValue(row && row['display_' + prefix + '_native'], row && row[prefix]);
+    var native = hasDisplayVolume ? row && row[displayNativeKey] : row && row[prefix];
     if (num(native) != null) {
       return cleanValue('<span>' + esc(fmt(native, '')) + '</span><small>Native units</small>');
     }

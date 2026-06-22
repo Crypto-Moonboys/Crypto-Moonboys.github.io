@@ -12902,6 +12902,53 @@ function tokenPagePairDisplayMetrics(row = {}) {
   };
 }
 
+function waxcashProofPairKey(pair = {}) {
+  return [
+    moonboysCandleSource(pair.source || ''),
+    safeString(pair.pair_id),
+  ].join('::');
+}
+
+async function enrichTokenPagePairsWithWaxcashMetrics(db, pairs = [], options = {}) {
+  if (!(pairs || []).some((pair) => pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL))) {
+    return pairs || [];
+  }
+  const env = options.env || null;
+  const proofWrapper = await getWaxcashOgProof(db).catch(() => null);
+  const proofPairs = proofWrapper?.og_woe_parity?.all_pairs || [];
+  const proofByKey = new Map();
+  for (const pair of proofPairs) {
+    const key = waxcashProofPairKey(pair);
+    if (!proofByKey.has(key)) proofByKey.set(key, pair);
+  }
+  const waxUsd = tokenPageWaxUsdFromStats(options.stats || {});
+  const selectedPriceWax = asNumber(proofWrapper?.og_woe_parity?.headline_price?.og_headline_price_wax) ??
+    await tokenPageWaxcashSelectedPriceWax(db);
+  const waxcashPairs = (pairs || []).map((pair) => {
+    const proof = proofByKey.get(waxcashProofPairKey(pair));
+    if (!proof || !pairTokenSide(pair, WAXCASH_CONTRACT, WAXCASH_SYMBOL)) return pair;
+    return {
+      ...proof,
+      ...pair,
+      og_laststats_pair_id: pair.og_laststats_pair_id || proof.og_laststats_pair_id || null,
+      pair_price_relative_to_waxcash: proof.pair_price_relative_to_waxcash || pair.pair_price_relative_to_waxcash || null,
+      pair_price_usd: proof.pair_price_usd || pair.pair_price_usd || null,
+      paired_token: proof.paired_token || pair.paired_token || null,
+      paired_token_og_wax_price: proof.paired_token_og_wax_price || pair.paired_token_og_wax_price || null,
+      selected_waxcash_price_wax: proof.selected_waxcash_price_wax || safeDecimal(selectedPriceWax) || null,
+      valuation_basis: proof.valuation_basis || pair.valuation_basis || null,
+    };
+  });
+  const windowVolumes = await indexedTradeWindowVolumesByPair(db, waxcashPairs, {
+    selectedPriceWax,
+  }).catch(() => new Map());
+  const indexedPairs = applyIndexedPairWindowVolumes(waxcashPairs, windowVolumes, waxUsd);
+  const ogLastStats = options.ogLastStats || (env ? await fetchWaxcashOgLastStats(env).catch(() => null) : null);
+  return ogLastStats?.live
+    ? applyOgLastStatsToWaxcashPairs(indexedPairs, ogLastStats, waxUsd)
+    : indexedPairs;
+}
+
 async function getTokenPageAnalytics(db, contract, symbol, options = {}) {
   const sort = normalizeTokenPageSort(options.sort);
   const policy = {
@@ -12941,7 +12988,7 @@ async function getTokenPageAnalytics(db, contract, symbol, options = {}) {
   }
   const [rows, blockedPairCount] = await Promise.all([
     db.prepare(
-    `SELECT source, pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
+    `SELECT source, pair_id, og_laststats_pair_id, token_a_contract, token_a_symbol, token_b_contract, token_b_symbol,
             price, change_24h, volume_24h, volume_24h_wax, volume_24h_usd,
             volume_7d, volume_7d_wax, volume_7d_usd, volume_30d, volume_30d_wax, volume_30d_usd,
             liquidity_wax, liquidity_usd, reserve_a, reserve_b, fee_bps, updated_at
@@ -12964,11 +13011,16 @@ async function getTokenPageAnalytics(db, contract, symbol, options = {}) {
   const pairWindowVolumes = await indexedTradeWindowVolumesByPair(db, tradeWindowPairs, {
     selectedPriceWax: waxcashSelectedPriceWax,
   });
-  const metricPairs = applyIndexedPairWindowVolumes(
+  const indexedMetricPairs = applyIndexedPairWindowVolumes(
     tradeWindowPairs,
     pairWindowVolumes,
     tokenPageWaxUsdFromStats(detail.stats || {}),
   );
+  const metricPairs = await enrichTokenPagePairsWithWaxcashMetrics(db, indexedMetricPairs, {
+    env: options.env || null,
+    ogLastStats: options.ogLastStats || null,
+    stats: detail.stats || {},
+  });
   const selectedSource = aggregateSourceKey(detail.stats?.selected_pair_source);
   const selectedPairId = safeString(detail.stats?.selected_pair_id);
   const pairs = sortTokenPagePairs(enrichPairsWithTokenIcons(metricPairs, tokenRows).map((row) => {
@@ -14510,6 +14562,7 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       const symbol = normalizeSymbol(decodeURIComponent(tokenPageMatch[2]));
       const page = await getTokenPageAnalytics(env.DB, contract, symbol, {
         sort: url.searchParams.get('sort'),
+        env,
       });
       if (page.blocked) return unavailable(page.unavailable || 'Token contract blocked from public WaxOnEdge pair feeds', 404, corsHeaders);
       if (!page.indexed) return unavailable('Token not indexed yet', 404, corsHeaders);

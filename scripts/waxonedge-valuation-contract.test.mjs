@@ -728,6 +728,7 @@ const publicPairRows = [
   {
     source: 'swap.taco',
     pair_id: 'WAXCASH_WUF_VERIFIED',
+    og_laststats_pair_id: 'TACO_WAXCASH_WUF',
     token_a_contract: 'graffitiking',
     token_a_symbol: 'WAXCASH',
     token_b_contract: 'wuffi',
@@ -738,9 +739,9 @@ const publicPairRows = [
     change_24h: null,
     liquidity_wax: '100446.30917770014',
     liquidity_usd: '602.6778550662',
-    volume_24h_wax: '12',
-    volume_7d_wax: '84',
-    volume_30d_wax: '360',
+    volume_24h_wax: null,
+    volume_7d_wax: null,
+    volume_30d_wax: null,
     updated_at: '2026-06-22T00:04:47.000Z',
   },
   {
@@ -925,7 +926,21 @@ function publicPairFeedDb(rows) {
   };
 }
 const publicPairDb = publicPairFeedDb(publicPairRows);
-const wufTokenPage = await __waxonedgeTestHooks.getTokenPageAnalytics(publicPairDb, 'wuffi', 'WUF');
+const syntheticWaxcashLastStats = {
+  live: true,
+  lastVolumes: {
+    '24h': { pools: { taco: { TACO_WAXCASH_WUF: { volumeA: '10', volumeB: '2000', source: 'internal_d1_laststats', row_count: 4 } } } },
+    '7d': { pools: { taco: { TACO_WAXCASH_WUF: { volumeA: '20', volumeB: '4000', source: 'internal_d1_laststats', row_count: 8 } } } },
+    '30d': { pools: { taco: { TACO_WAXCASH_WUF: { volumeA: '30', volumeB: '6000', source: 'internal_d1_laststats', row_count: 12 } } } },
+  },
+  lastPriceChanges: {
+    '24h': { pools: { taco: { TACO_WAXCASH_WUF: 1.05 } } },
+  },
+  sources: { lastVolumes: 'internal_d1_laststats', lastPriceChanges: 'og_api_laststats' },
+};
+const wufTokenPage = await __waxonedgeTestHooks.getTokenPageAnalytics(publicPairDb, 'wuffi', 'WUF', {
+  ogLastStats: syntheticWaxcashLastStats,
+});
 ok('/api/waxonedge/token-page/wuffi/WUF suppresses blocked pair contracts on either side',
   wufTokenPage.indexed === true &&
   wufTokenPage.pairs.length === 30 &&
@@ -952,11 +967,23 @@ ok('/api/waxonedge/token-page/wuffi/WUF ranks WAXCASH/WUF by verified display li
 ok('/api/waxonedge/token-page/wuffi/WUF exposes normalized display metric fields where available',
   wufTokenPage.pairs[0]?.display_price === '0.00042' &&
   wufTokenPage.pairs[0]?.display_price_basis === 'indexed_pair_price' &&
-  wufTokenPage.pairs[0]?.display_volume_24h_wax === '12' &&
-  wufTokenPage.pairs[0]?.display_volume_7d_wax === '84' &&
-  wufTokenPage.pairs[0]?.display_volume_30d_wax === '360' &&
-  wufTokenPage.pairs[0]?.display_volume_24h_basis === 'indexed_pair_volume_wax_or_usd' &&
+  wufTokenPage.pairs[0]?.display_volume_24h_wax === '0.05' &&
+  wufTokenPage.pairs[0]?.display_volume_7d_wax === '0.1' &&
+  wufTokenPage.pairs[0]?.display_volume_30d_wax === '0.15' &&
+  wufTokenPage.pairs[0]?.display_volume_24h_basis === 'og_waxonedge_lastVolumes_route_converted_wax' &&
   Object.hasOwn(wufTokenPage.pairs[0], 'metric_unavailable_reasons'));
+ok('/api/waxonedge/token-page/wuffi/WUF enriches WAXCASH/WUF with WAXCASH-style LastStats display metrics',
+  wufTokenPage.pairs[0]?.pair_id === 'WAXCASH_WUF_VERIFIED' &&
+  wufTokenPage.pairs[0]?.display_change_24h === '5.000000000000004' &&
+  wufTokenPage.pairs[0]?.display_change_24h_basis === 'og_waxonedge_lastPriceChanges' &&
+  wufTokenPage.pairs[0]?.display_volume_24h_native === null &&
+  wufTokenPage.pairs[0]?.volume_24h_a_native === '10' &&
+  wufTokenPage.pairs[0]?.metric_sources?.volume_24h_wax?.source === 'og_waxonedge_lastVolumes_route_converted_wax');
+const wufTokenPageWithoutLastStats = await __waxonedgeTestHooks.getTokenPageAnalytics(publicPairDb, 'wuffi', 'WUF');
+ok('/api/waxonedge/token-page/wuffi/WUF keeps explicit WAXCASH/WUF unavailable reasons without proof',
+  wufTokenPageWithoutLastStats.pairs[0]?.pair_id === 'WAXCASH_WUF_VERIFIED' &&
+  wufTokenPageWithoutLastStats.pairs[0]?.display_volume_24h_wax === null &&
+  !!wufTokenPageWithoutLastStats.pairs[0]?.metric_unavailable_reasons?.volume_24h);
 const goodWufDisplayRow = wufTokenPage.pairs.find((row) => row.pair_id === 'GOODWUF');
 const zeroMetricRow = wufTokenPage.pairs.find((row) => row.pair_id === 'LARGE_WAX_DIRECT_WUF');
 ok('/api/waxonedge/token-page/wuffi/WUF does not convert unavailable pair volume or change to zero',
