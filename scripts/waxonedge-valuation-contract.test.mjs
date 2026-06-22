@@ -978,7 +978,21 @@ ok('/api/waxonedge/token-page/wuffi/WUF enriches WAXCASH/WUF with WAXCASH-style 
   wufTokenPage.pairs[0]?.display_change_24h_basis === 'og_waxonedge_lastPriceChanges' &&
   wufTokenPage.pairs[0]?.display_volume_24h_native === null &&
   wufTokenPage.pairs[0]?.volume_24h_a_native === '10' &&
-  wufTokenPage.pairs[0]?.metric_sources?.volume_24h_wax?.source === 'og_waxonedge_lastVolumes_route_converted_wax');
+  wufTokenPage.pairs[0]?.display_volume_24h_basis === 'og_waxonedge_lastVolumes_route_converted_wax');
+ok('/api/waxonedge/token-page/wuffi/WUF public rows omit bulky proof/debug objects',
+  wufTokenPage.debug === false &&
+  !Object.hasOwn(wufTokenPage.pairs[0], 'metric_sources') &&
+  !Object.hasOwn(wufTokenPage.pairs[0], 'og_laststats_debug') &&
+  !Object.hasOwn(wufTokenPage.pairs[0], 'valuation_debug') &&
+  !JSON.stringify(wufTokenPage.pairs[0]).includes('indexed_trade_window_debug'));
+const wufTokenPageDebug = await __waxonedgeTestHooks.getTokenPageAnalytics(publicPairDb, 'wuffi', 'WUF', {
+  debug: true,
+  ogLastStats: syntheticWaxcashLastStats,
+});
+ok('/api/waxonedge/token-page/wuffi/WUF exposes bulky metric proof only in debug mode',
+  wufTokenPageDebug.debug === true &&
+  wufTokenPageDebug.pairs[0]?.metric_sources?.volume_24h_wax?.source === 'og_waxonedge_lastVolumes_route_converted_wax' &&
+  Object.hasOwn(wufTokenPageDebug.pairs[0], 'og_laststats_debug'));
 const wufTokenPageWithoutLastStats = await __waxonedgeTestHooks.getTokenPageAnalytics(publicPairDb, 'wuffi', 'WUF');
 ok('/api/waxonedge/token-page/wuffi/WUF keeps explicit WAXCASH/WUF unavailable reasons without proof',
   wufTokenPageWithoutLastStats.pairs[0]?.pair_id === 'WAXCASH_WUF_VERIFIED' &&
@@ -1034,6 +1048,10 @@ const frontendPublicFiles = [
 ok('pair contract blocklist is Worker-side, not frontend-only',
   blockedContracts.every((contract) => workerSource.includes(contract)) &&
   blockedContracts.every((contract) => !frontendPublicFiles.includes(contract)));
+ok('right-side live panel and chart endpoints do not call token-page enrichment helpers',
+  (workerSource.match(/getTokenPageAnalytics\(/g) || []).length === 2 &&
+  workerSource.includes("child === 'chart'") &&
+  !workerSource.slice(workerSource.indexOf("child === 'chart'"), workerSource.indexOf("child === 'debug'")).includes('enrichTokenPagePairsWithWaxcashMetrics'));
 
 console.log(`\nwaxonedge-valuation-contract.test: ${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

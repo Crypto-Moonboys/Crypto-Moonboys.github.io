@@ -12871,13 +12871,17 @@ function tokenPagePairMetricReasons(row = {}) {
 function tokenPagePairDisplayVolume(row = {}, prefix) {
   const wax = asNumber(row[`${prefix}_wax`]);
   const usd = asNumber(row[`${prefix}_usd`]);
-  const native = asNumber(row[prefix]) ?? asNumber(row[`${prefix}_a_native`]) ?? asNumber(row[`${prefix}_b_native`]);
+  const nativeA = asNumber(row[`${prefix}_a_native`]);
+  const nativeB = asNumber(row[`${prefix}_b_native`]);
+  const native = asNumber(row[prefix]) ?? nativeA ?? nativeB;
   const waxSource = row.metric_sources?.[`${prefix}_wax`]?.source;
   const nativeSource = row.metric_sources?.[`${prefix}_native`]?.source;
   return {
     [`display_${prefix}_wax`]: safeDecimal(wax),
     [`display_${prefix}_usd`]: safeDecimal(usd),
     [`display_${prefix}_native`]: wax == null && usd == null ? safeDecimal(native) : null,
+    [`display_${prefix}_a_native`]: wax == null && usd == null ? safeDecimal(nativeA) : null,
+    [`display_${prefix}_b_native`]: wax == null && usd == null ? safeDecimal(nativeB) : null,
     [`display_${prefix}_basis`]: wax != null || usd != null
       ? (waxSource || 'indexed_pair_volume_wax_or_usd')
       : (native != null ? (nativeSource || 'indexed_pair_native_volume') : null),
@@ -12949,8 +12953,40 @@ async function enrichTokenPagePairsWithWaxcashMetrics(db, pairs = [], options = 
     : indexedPairs;
 }
 
+const TOKEN_PAGE_PUBLIC_PAIR_FIELDS = Object.freeze([
+  'source', 'pair_id', 'og_laststats_pair_id', 'pair_label',
+  'token_a_contract', 'token_a_symbol', 'token_a_icon', 'token_a_logo',
+  'token_b_contract', 'token_b_symbol', 'token_b_icon', 'token_b_logo',
+  'price', 'change_24h',
+  'volume_24h', 'volume_24h_wax', 'volume_24h_usd', 'volume_24h_a_native', 'volume_24h_b_native',
+  'volume_7d', 'volume_7d_wax', 'volume_7d_usd', 'volume_7d_a_native', 'volume_7d_b_native',
+  'volume_30d', 'volume_30d_wax', 'volume_30d_usd', 'volume_30d_a_native', 'volume_30d_b_native',
+  'liquidity_wax', 'liquidity_usd', 'raw_liquidity_wax', 'raw_liquidity_usd',
+  'display_liquidity_wax', 'display_liquidity_usd', 'display_liquidity_basis',
+  'display_price', 'display_price_basis',
+  'display_change_24h', 'display_change_24h_basis',
+  'display_volume_24h_wax', 'display_volume_24h_usd', 'display_volume_24h_native',
+  'display_volume_24h_a_native', 'display_volume_24h_b_native', 'display_volume_24h_basis',
+  'display_volume_7d_wax', 'display_volume_7d_usd', 'display_volume_7d_native',
+  'display_volume_7d_a_native', 'display_volume_7d_b_native', 'display_volume_7d_basis',
+  'display_volume_30d_wax', 'display_volume_30d_usd', 'display_volume_30d_native',
+  'display_volume_30d_a_native', 'display_volume_30d_b_native', 'display_volume_30d_basis',
+  'metric_unavailable_reasons',
+  'selected_pair', 'liquidity_sanity_status', 'public_feed_warning', 'public_feed_reason',
+]);
+
+function tokenPagePublicPairRow(row = {}, options = {}) {
+  if (options.debug) return row;
+  const clean = {};
+  for (const key of TOKEN_PAGE_PUBLIC_PAIR_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(row, key)) clean[key] = row[key];
+  }
+  return clean;
+}
+
 async function getTokenPageAnalytics(db, contract, symbol, options = {}) {
   const sort = normalizeTokenPageSort(options.sort);
+  const debug = options.debug === true || options.debug === '1' || options.debug === 1;
   const policy = {
     pair_limit: 30,
     source_policy: 'indexed_waxonedge_pairs_only',
@@ -13033,7 +13069,7 @@ async function getTokenPageAnalytics(db, contract, symbol, options = {}) {
       selected_pair: !!selectedPairId && aggregateSourceKey(row.source) === selectedSource && safeString(row.pair_id) === selectedPairId,
       ...metadata,
     };
-  }), sort).slice(0, 30);
+  }), sort).slice(0, 30).map((row) => tokenPagePublicPairRow(row, { debug }));
   return {
     indexed: true,
     blocked: false,
@@ -13041,6 +13077,7 @@ async function getTokenPageAnalytics(db, contract, symbol, options = {}) {
     stats: detail.stats || {},
     pairs,
     blocked_pair_count: blockedPairCount,
+    debug,
     ...policy,
   };
 }
@@ -14562,6 +14599,7 @@ export async function handleWaxOnEdgeRoute(request, env, corsHeaders = {}) {
       const symbol = normalizeSymbol(decodeURIComponent(tokenPageMatch[2]));
       const page = await getTokenPageAnalytics(env.DB, contract, symbol, {
         sort: url.searchParams.get('sort'),
+        debug: url.searchParams.get('debug'),
         env,
       });
       if (page.blocked) return unavailable(page.unavailable || 'Token contract blocked from public WaxOnEdge pair feeds', 404, corsHeaders);
