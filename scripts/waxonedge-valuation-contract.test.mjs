@@ -1052,6 +1052,61 @@ ok('right-side live panel and chart endpoints do not call token-page enrichment 
   (workerSource.match(/getTokenPageAnalytics\(/g) || []).length === 2 &&
   workerSource.includes("child === 'chart'") &&
   !workerSource.slice(workerSource.indexOf("child === 'chart'"), workerSource.indexOf("child === 'debug'")).includes('enrichTokenPagePairsWithWaxcashMetrics'));
+const tokenPageLiquidityCacheKey = __waxonedgeTestHooks.waxonedgeAnalyticsCacheKey({
+  path: '/api/waxonedge/token-page/wuffi/WUF',
+  contract: 'wuffi',
+  symbol: 'WUF',
+  sort: 'liquidity',
+  debug: false,
+});
+const tokenPageVolumeCacheKey = __waxonedgeTestHooks.waxonedgeAnalyticsCacheKey({
+  path: '/api/waxonedge/token-page/wuffi/WUF',
+  contract: 'wuffi',
+  symbol: 'WUF',
+  sort: 'volume24',
+  debug: false,
+});
+const tokenPageDebugCacheKey = __waxonedgeTestHooks.waxonedgeAnalyticsCacheKey({
+  path: '/api/waxonedge/token-page/wuffi/WUF',
+  contract: 'wuffi',
+  symbol: 'WUF',
+  sort: 'liquidity',
+  debug: true,
+});
+ok('analytics cache key separates liquidity, volume24, and debug token-page requests',
+  tokenPageLiquidityCacheKey !== tokenPageVolumeCacheKey &&
+  tokenPageLiquidityCacheKey !== tokenPageDebugCacheKey &&
+  tokenPageVolumeCacheKey !== tokenPageDebugCacheKey &&
+  tokenPageLiquidityCacheKey.includes('debug=0') &&
+  tokenPageDebugCacheKey.includes('debug=1'));
+__waxonedgeTestHooks.clearWaxonedgePublicAnalyticsCache();
+ok('analytics cache test hook can clear Worker-isolate cache',
+  __waxonedgeTestHooks.waxonedgePublicAnalyticsCacheSize() === 0);
+const waxcashCacheRoute = workerSource.slice(
+  workerSource.indexOf("path === `${WAXONEDGE_API_PREFIX}/waxcash-analytics`"),
+  workerSource.indexOf("path === `${WAXONEDGE_API_PREFIX}/waxcash-bubbles-lite`"),
+);
+const tokenPageCacheRoute = workerSource.slice(
+  workerSource.indexOf('const tokenPageMatch = path.match'),
+  workerSource.indexOf('const tokenMatch = path.match'),
+);
+ok('WAXCASH analytics route checks public cache before heavy analytics build',
+  waxcashCacheRoute.includes('cachedAnalyticsPayload(cacheKey)') &&
+  waxcashCacheRoute.indexOf('cachedAnalyticsPayload(cacheKey)') < waxcashCacheRoute.indexOf('buildWaxcashAnalytics(env.DB, env)') &&
+  waxcashCacheRoute.includes("debug ? 'BYPASS' : 'MISS'") &&
+  waxcashCacheRoute.includes('WAXONEDGE_PUBLIC_ANALYTICS_CACHE_TTL_SECONDS'));
+ok('WUF token-page route checks public cache before heavy token-page enrichment',
+  tokenPageCacheRoute.includes('cachedAnalyticsPayload(cacheKey)') &&
+  tokenPageCacheRoute.indexOf('cachedAnalyticsPayload(cacheKey)') < tokenPageCacheRoute.indexOf('getTokenPageAnalytics(env.DB, contract, symbol') &&
+  tokenPageCacheRoute.includes("debug ? 'BYPASS' : 'MISS'") &&
+  tokenPageCacheRoute.indexOf('storeAnalyticsPayload(cacheKey, page') > tokenPageCacheRoute.indexOf('if (!page.indexed)'));
+ok('public analytics cache metadata is emitted for successful WAXCASH and token-page payloads',
+  workerSource.includes('cache_status') &&
+  workerSource.includes('cache_ttl_seconds') &&
+  workerSource.includes('generated_at') &&
+  workerSource.includes("'HIT'") &&
+  workerSource.includes("'MISS'") &&
+  workerSource.includes("'BYPASS'"));
 
 console.log(`\nwaxonedge-valuation-contract.test: ${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
