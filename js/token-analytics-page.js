@@ -47,9 +47,6 @@
   }
   function pairName(row) { return row && row.pair_label || [row && row.token_a_symbol, row && row.token_b_symbol].filter(Boolean).join('/') || 'WUF pair'; }
   function price(row) { return num(row && row.price) == null ? unavailable() : esc(fmt(row.price, '')); }
-  function proof(text, label) {
-    return '<span class="token-proof" title="' + esc(text) + '" aria-label="' + esc(text) + '">' + esc(label || '?') + '</span>';
-  }
   function sourceKey(value) { return String(value || '').trim().toLowerCase(); }
   function sourceLabel(row) {
     var source = row && row.source || 'Unavailable';
@@ -62,26 +59,32 @@
     return '<img class="token-icon" src="' + esc(url) + '" alt="" loading="lazy" decoding="async">';
   }
   function pairCell(row) {
+    var badge = row && row.display_liquidity_basis === 'waxcash_verified_pair_liquidity'
+      ? '<div class="token-clean-badge">Verified liquidity</div>'
+      : '';
     return '<div class="token-pair-line">' +
       tokenIcon(row && row.token_a_icon, row && row.token_a_symbol) +
       '<span>' + esc(row && row.token_a_symbol || '?') + '</span>' +
       '<span class="token-muted">/</span>' +
       tokenIcon(row && row.token_b_icon, row && row.token_b_symbol) +
       '<span>' + esc(row && row.token_b_symbol || '?') + '</span>' +
-      '</div><div class="token-muted">' + esc([row && row.token_a_contract, row && row.token_b_contract].filter(Boolean).join(' / ')) + '</div>';
+      '</div><div class="token-muted">' + esc([row && row.token_a_contract, row && row.token_b_contract].filter(Boolean).join(' / ')) + '</div>' + badge;
   }
-  function valueWithProof(html, reason) {
-    return '<span class="token-value-with-proof">' + html + proof(reason || 'Indexed public pair feed value from Worker response.') + '</span>';
+  function cleanValue(html) {
+    return '<span class="token-value-with-proof">' + html + '</span>';
+  }
+  function liquidity(row) {
+    return cleanValue(dual(row && (row.display_liquidity_wax ?? row.liquidity_wax), row && (row.display_liquidity_usd ?? row.liquidity_usd)));
   }
   function volume(row, prefix) {
     var converted = dual(row && row[prefix + '_wax'], row && row[prefix + '_usd']);
     if (!converted.includes('Unavailable')) {
-      return valueWithProof(converted, 'WAX/USD volume supplied by the indexed Worker response.');
+      return cleanValue(converted);
     }
     if (num(row && row[prefix]) != null) {
-      return valueWithProof('<span>' + esc(fmt(row[prefix], '')) + '</span><small>Native units</small>', 'Native volume is indexed, but WAX/USD conversion is unavailable for this row.');
+      return cleanValue('<span>' + esc(fmt(row[prefix], '')) + '</span><small>Native units</small>');
     }
-    return valueWithProof(unavailable(), 'No indexed volume was available for this row.');
+    return cleanValue(unavailable());
   }
   function updateSortButtons() {
     ['liquidity', 'volume24'].forEach(function (sortKey) {
@@ -105,7 +108,7 @@
       : null;
     var base = info && info.available && info.url ? String(info.url).replace(/\/$/, '') : '';
     if (!base) throw new Error('API base URL unavailable');
-    var url = new URL(base + TOKEN_PAGE_PATH);
+    var url = new URL(base + TOKEN_PAGE_PATH, window.location.origin);
     url.searchParams.set('sort', pairSort);
     return url.toString();
   }
@@ -113,7 +116,7 @@
   function renderPairTable() {
     var pairs = latestPairs.slice(0, 30);
     if (byId('wuf-pair-summary')) {
-      byId('wuf-pair-summary').textContent = pairs.length + ' indexed WUF pair rows shown, ' + latestSuppressedCount + ' suppressed by public-feed policy.';
+      byId('wuf-pair-summary').textContent = pairs.length + ' indexed WUF pair rows shown, ' + latestSuppressedCount + ' filtered from the public table.';
     }
     if (!byId('wuf-pairs')) return;
     if (!pairs.length) {
@@ -122,15 +125,13 @@
     }
     byId('wuf-pairs').innerHTML = pairs.map(function (row, index) {
       var selected = row && row.selected_pair;
-      var reason = row && row.public_feed_reason || 'Indexed public pair row passed Worker-side public feed policy.';
-      var warning = row && row.public_feed_warning ? '<div class="token-warning">' + esc(row.public_feed_warning) + '</div>' : '';
       return '<tr class="' + (selected ? 'token-selected-pair' : '') + '">' +
         '<td><span class="token-rank">#' + (index + 1) + '</span>' + (selected ? '<span class="token-selected-marker" title="Selected backend pricing pair">Selected</span>' : '') + '</td>' +
-        '<td>' + sourceLabel(row) + proof(reason, 'i') + '</td>' +
-        '<td>' + pairCell(row) + warning + '</td>' +
-        '<td>' + valueWithProof(dual(row.liquidity_wax, row.liquidity_usd), 'Liquidity passed Worker-side contract blocklist and public-feed sanity checks.') + '</td>' +
-        '<td>' + valueWithProof(price(row), 'Indexed pair price from the Worker response.') + '</td>' +
-        '<td>' + valueWithProof(pct(row.change_24h), 'Indexed 24h price change from the Worker response.') + '</td>' +
+        '<td>' + sourceLabel(row) + '</td>' +
+        '<td>' + pairCell(row) + '</td>' +
+        '<td>' + liquidity(row) + '</td>' +
+        '<td>' + cleanValue(price(row)) + '</td>' +
+        '<td>' + cleanValue(pct(row.change_24h)) + '</td>' +
         '<td>' + volume(row, 'volume_24h') + '</td>' +
         '<td>' + volume(row, 'volume_7d') + '</td>' +
         '<td>' + volume(row, 'volume_30d') + '</td>' +

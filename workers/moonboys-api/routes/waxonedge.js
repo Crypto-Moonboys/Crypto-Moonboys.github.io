@@ -17,6 +17,7 @@ const MIN_TRUSTED_WAX_LIQUIDITY = 10;
 const MAX_REASONABLE_PAIR_TVL_USD = 100000000;
 const MAX_REASONABLE_PAIR_TVL_WAX = 10000000000;
 const GENERIC_TOKEN_SUSPICIOUS_LIQUIDITY_WAX = 1000000;
+const TOKEN_PAGE_PAIR_SCAN_LIMIT = 250;
 const MAX_BUBBLE_LIQUIDITY_TO_MARKET_CAP_RATIO = 5;
 const CANDLE_BACKFILL_SOURCE = 'candle_backfill';
 const ALCOR_TRADE_INDEX_SOURCE = 'alcor_trade_rows';
@@ -12722,6 +12723,7 @@ async function getToken(db, contract, symbol, options = {}) {
             market_cap_wax, market_cap_usd, fdv_wax, fdv_usd, liquidity_wax,
             liquidity_usd, tvl_wax, tvl_usd, selected_price_wax, selected_price_usd,
             change_24h, selected_pair_source, selected_pair_id, burned_amount, source_count,
+            direct_waxcash_pair_liquidity_wax,
             indexed_pair_count, source_keys, aggregate_complete, aggregate_sources_required,
             aggregate_sources_present, aggregate_sources_processed, aggregate_sources_failed,
             aggregate_truncated, aggregate_sources_truncated, updated_at
@@ -12733,6 +12735,12 @@ async function getToken(db, contract, symbol, options = {}) {
   const priceIndex = buildDbTokenPriceIndex(priceRows);
   const routeIndex = options.routeIndex || buildOgWaxRouteGraph(graphRows, priceIndex);
   const detailStats = deriveTokenPairMetrics(token || { contract, symbol }, stats || {}, pairRows, priceRows, graphRows, { routeIndex });
+  const indexedDirectWaxcashLiquidityWax = asNumber(stats?.direct_waxcash_pair_liquidity_wax);
+  const derivedDirectWaxcashLiquidityWax = asNumber(detailStats.direct_waxcash_pair_liquidity_wax);
+  if (indexedDirectWaxcashLiquidityWax != null &&
+      (derivedDirectWaxcashLiquidityWax == null || indexedDirectWaxcashLiquidityWax > derivedDirectWaxcashLiquidityWax)) {
+    detailStats.direct_waxcash_pair_liquidity_wax = safeDecimal(indexedDirectWaxcashLiquidityWax);
+  }
   const selectedPriceAudit = selectedPriceAuditForToken(contract, symbol, pairRows, priceIndex, routeIndex);
   const detail = {
     token,
@@ -12775,6 +12783,52 @@ function tokenPagePairOrderSql(sort) {
               CASE WHEN volume_24h_wax IS NOT NULL THEN 0 ELSE 1 END ASC,
               CAST(COALESCE(volume_24h_wax, '0') AS NUMERIC) DESC,
               updated_at DESC`;
+}
+
+function tokenPagePairSortValue(row, sort) {
+  if (normalizeTokenPageSort(sort) === 'volume24') return asNumber(row?.volume_24h_wax);
+  return asNumber(row?.display_liquidity_wax ?? row?.liquidity_wax);
+}
+
+function sortTokenPagePairs(rows, sort) {
+  const normalizedSort = normalizeTokenPageSort(sort);
+  return (rows || []).slice().sort((a, b) => {
+    const primaryA = tokenPagePairSortValue(a, normalizedSort);
+    const primaryB = tokenPagePairSortValue(b, normalizedSort);
+    if (primaryA == null && primaryB != null) return 1;
+    if (primaryB == null && primaryA != null) return -1;
+    if (primaryA != null && primaryB != null && primaryA !== primaryB) return primaryB - primaryA;
+    const secondaryA = normalizedSort === 'volume24' ? asNumber(a?.display_liquidity_wax ?? a?.liquidity_wax) : asNumber(a?.volume_24h_wax);
+    const secondaryB = normalizedSort === 'volume24' ? asNumber(b?.display_liquidity_wax ?? b?.liquidity_wax) : asNumber(b?.volume_24h_wax);
+    if (secondaryA == null && secondaryB != null) return 1;
+    if (secondaryB == null && secondaryA != null) return -1;
+    if (secondaryA != null && secondaryB != null && secondaryA !== secondaryB) return secondaryB - secondaryA;
+    return String(b?.updated_at || '').localeCompare(String(a?.updated_at || ''));
+  });
+}
+
+function tokenPagePairDisplayLiquidity(row, stats = {}) {
+  const rawWax = asNumber(row?.liquidity_wax);
+  const rawUsd = asNumber(row?.liquidity_usd);
+  const verifiedWaxcashWax = asNumber(stats?.direct_waxcash_pair_liquidity_wax);
+  if (pairTokenSide(row, WAXCASH_CONTRACT, WAXCASH_SYMBOL) &&
+      verifiedWaxcashWax != null &&
+      (rawWax == null || verifiedWaxcashWax > rawWax)) {
+    return {
+      raw_liquidity_wax: safeDecimal(rawWax),
+      raw_liquidity_usd: safeDecimal(rawUsd),
+      display_liquidity_wax: safeDecimal(verifiedWaxcashWax),
+      display_liquidity_usd: null,
+      display_liquidity_basis: 'waxcash_verified_pair_liquidity',
+    };
+  }
+  return {
+    raw_liquidity_wax: safeDecimal(rawWax),
+    raw_liquidity_usd: safeDecimal(rawUsd),
+    display_liquidity_wax: safeDecimal(rawWax),
+    display_liquidity_usd: safeDecimal(rawUsd),
+    display_liquidity_basis: rawWax != null || rawUsd != null ? 'indexed_pair_liquidity' : null,
+  };
 }
 
 async function getTokenPageAnalytics(db, contract, symbol, options = {}) {
@@ -12826,23 +12880,24 @@ async function getTokenPageAnalytics(db, contract, symbol, options = {}) {
        AND source IN ('alcor','swap.alcor','swap.taco','swap.nefty','swap.box','swap.adex','dapp.fusion')
        AND ${genericTokenPagePublicFeedSql()}
      ORDER BY ${tokenPagePairOrderSql(sort)}
-     LIMIT 30`
-    ).bind(contract, symbol, contract, symbol, ...genericTokenPagePublicFeedParams()).all(),
+     LIMIT ?`
+    ).bind(contract, symbol, contract, symbol, ...genericTokenPagePublicFeedParams(), TOKEN_PAGE_PAIR_SCAN_LIMIT).all(),
     countTokenPageSuppressedPairRows(db, contract, symbol),
   ]);
   const rawPairs = rows.results || [];
   const tokenRows = await loadTokenRowsForRefs(db, collectTokenRefsForPairs(rawPairs));
   const selectedSource = aggregateSourceKey(detail.stats?.selected_pair_source);
   const selectedPairId = safeString(detail.stats?.selected_pair_id);
-  const pairs = enrichPairsWithTokenIcons(rawPairs, tokenRows).map((row) => {
+  const pairs = sortTokenPagePairs(enrichPairsWithTokenIcons(rawPairs, tokenRows).map((row) => {
     const metadata = pairLiquiditySanityMetadata(row);
     return {
       ...row,
+      ...tokenPagePairDisplayLiquidity(row, detail.stats || {}),
       pair_label: [row.token_a_symbol, row.token_b_symbol].filter(Boolean).join('/') || null,
       selected_pair: !!selectedPairId && aggregateSourceKey(row.source) === selectedSource && safeString(row.pair_id) === selectedPairId,
       ...metadata,
     };
-  });
+  }), sort).slice(0, 30);
   return {
     indexed: true,
     blocked: false,
