@@ -47,6 +47,19 @@
     return `${token.symbol}::${token.contract}`;
   }
 
+  function optionExists(select, value) {
+    if (!select || !value) return false;
+    return Array.prototype.some.call(select.options || [], (option) => option.value === value);
+  }
+
+  function setSelectValue(select, value) {
+    if (optionExists(select, value)) {
+      select.value = value;
+      return true;
+    }
+    return false;
+  }
+
   function formatNumber(n, max = 8) {
     const value = asNumber(n);
     if (!value) return '0';
@@ -61,6 +74,31 @@
       return state.loadedAt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     } catch (_) {
       return 'loaded';
+    }
+  }
+
+  function readUrlState() {
+    try {
+      return new URLSearchParams(window.location.search || '');
+    } catch (_) {
+      return new URLSearchParams();
+    }
+  }
+
+  function writeUrlState() {
+    if (!window.history || !window.location) return;
+    const params = new URLSearchParams();
+    if (els.amount.value) params.set('amount', els.amount.value);
+    if (els.tokenIn.value) params.set('in', els.tokenIn.value);
+    if (els.tokenOut.value) params.set('out', els.tokenOut.value);
+    if (els.providerFilter?.value && els.providerFilter.value !== 'ALL') params.set('provider', els.providerFilter.value);
+    if (els.routeTypeFilter?.value && els.routeTypeFilter.value !== 'ALL') params.set('route', els.routeTypeFilter.value);
+    if (els.minLiquidity?.value && els.minLiquidity.value !== '10') params.set('min', els.minLiquidity.value);
+    if (els.slippage?.value && els.slippage.value !== '0.01') params.set('slippage', els.slippage.value);
+    const nextQuery = params.toString();
+    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash || ''}`;
+    if (nextUrl !== `${window.location.pathname}${window.location.search}${window.location.hash || ''}`) {
+      window.history.replaceState(null, '', nextUrl);
     }
   }
 
@@ -120,6 +158,23 @@
     els.tokenIn.innerHTML = options;
     els.tokenOut.innerHTML = options;
     setSelectFallbacks(currentIn, currentOut);
+  }
+
+  function applyUrlState() {
+    const params = readUrlState();
+    const amount = params.get('amount');
+    if (amount != null && amount.trim()) els.amount.value = amount.trim();
+    setSelectValue(els.providerFilter, String(params.get('provider') || '').toUpperCase());
+    setSelectValue(els.routeTypeFilter, params.get('route'));
+    setSelectValue(els.minLiquidity, params.get('min'));
+    setSelectValue(els.slippage, params.get('slippage'));
+    buildTokens();
+    fillSelects();
+    setSelectValue(els.tokenIn, params.get('in'));
+    setSelectValue(els.tokenOut, params.get('out'));
+    if (els.tokenIn.value && els.tokenIn.value === els.tokenOut.value) {
+      setSelectFallbacks('', els.tokenOut.value);
+    }
   }
 
   function providerSummary(pools = activePools()) {
@@ -195,6 +250,7 @@
     const minLiquidityScore = asNumber(els.minLiquidity.value);
     const route = applyRouteTypeFilter(engine.findOptimalSplit(amountIn, tokenIn, tokenOut, pools, minLiquidityScore));
     const slippage = asNumber(els.slippage.value);
+    writeUrlState();
 
     if (!amountIn || amountIn <= 0) {
       els.result.innerHTML = `<div class="muted">Enter an amount.<br>${htmlEscape(providerSummary(pools))}<br>Loaded: ${htmlEscape(formatLoadedAt())}</div>${sourceErrorHtml()}`;
@@ -255,8 +311,7 @@
     state.sourceCounts = result.sourceCounts || {};
     state.sourceErrors = result.sourceErrors || {};
     state.loadedAt = new Date();
-    buildTokens();
-    fillSelects();
+    applyUrlState();
     state.ready = true;
     render();
   }
