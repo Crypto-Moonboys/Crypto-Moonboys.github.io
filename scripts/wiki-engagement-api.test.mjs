@@ -11,7 +11,6 @@ const BASE_URL = 'https://moonboys-api.test';
 const TELEGRAM_BOT_TOKEN = '123456:test-bot-token';
 const LINKED_ID = '10001';
 const UNLINKED_ID = '10002';
-const nativeFetch = globalThis.fetch;
 
 const REQUIRED_TABLES = [
   'wiki_comments',
@@ -294,37 +293,6 @@ async function api(db, pathName, body, method = 'POST', envOverrides = {}) {
   return { response, json };
 }
 
-function mockModerationFetch({ decision = 'pending', status = 200, body, throws = null } = {}) {
-  const calls = [];
-  globalThis.fetch = async (url, init = {}) => {
-    calls.push({ url, init, body: init.body ? JSON.parse(init.body) : null });
-    if (throws) throw throws;
-    if (body === 'invalid-json') {
-      return new Response('not json', { status, headers: { 'Content-Type': 'text/plain' } });
-    }
-    return new Response(JSON.stringify(body || { decision, reason: 'test_reason' }), {
-      status,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  };
-  return calls;
-}
-
-async function postModeratedComment(db, overrides = {}, envOverrides = {}) {
-  return api(db, '/comments', {
-    page_id: 'wuffi',
-    name: 'Moderated User',
-    email: 'moderated@example.com',
-    text: 'Please moderate this wiki comment.',
-    telegram_auth: overrides.telegram_auth,
-    ...overrides,
-  }, 'POST', {
-    COMMENT_MODERATION_URL: 'https://moderation.test/wiki-comment',
-    COMMENT_MODERATION_TOKEN: 'test-comment-token',
-    ...envOverrides,
-  });
-}
-
 async function run() {
   console.log('\nWiki engagement API route regression\n');
 
@@ -369,104 +337,50 @@ async function run() {
     text: 'Email-only comment still works.',
   });
   assert.equal(emailGuest.response.status, 201, 'valid email plus no Telegram still works');
+  assert.equal(emailGuest.json.status, 'pending', 'email-only comment remains pending');
+  assert.equal(emailGuest.json.moderation, 'pending', 'email-only moderation remains pending');
   assert.equal(emailGuest.json.mission.reward_status, 'telegram_sync_required');
   assert(!JSON.stringify(emailGuest.json).includes('guest@example.com'), 'raw email is not exposed in comment post response');
+  assert.equal(guestDb.comments.get(emailGuest.json.comment_id).status, 'pending', 'email-only stored comment stays pending');
+  const emailGuestGet = await api(guestDb, '/comments?page_id=wuffi', null, 'GET');
+  assert.equal(emailGuestGet.json.comments.length, 0, 'email-only pending comment does not appear publicly');
 
   const approvedDb = new MockD1();
-  const moderationAuth = signTelegramAuth(LINKED_ID);
-  const approvedCalls = mockModerationFetch({ decision: 'approved' });
-  const approved = await postModeratedComment(approvedDb, {
-    telegram_auth: moderationAuth,
+  const telegramAuth = signTelegramAuth(LINKED_ID);
+  const approved = await api(approvedDb, '/comments', {
+    page_id: 'wuffi',
+    name: 'Telegram Approved',
+    text: 'Verified Telegram comment should publish immediately.',
+    avatar_url: 'https://t.me/i/userpic/320/linked.jpg',
+    telegram_auth: telegramAuth,
     telegram_username: 'linked_mod',
     discord_username: 'mod#1234',
   });
-  assert.equal(approved.response.status, 201, 'safe approved moderation returns 201');
-  assert.equal(approved.json.status, 'approved', 'safe approved moderation updates response status');
-  assert.equal(approved.json.moderation, 'approved', 'safe approved moderation updates response moderation');
+  assert.equal(approved.response.status, 201, 'Telegram-linked signed comment with blank email returns 201');
+  assert.equal(approved.json.status, 'approved', 'Telegram-linked signed comment with blank email becomes approved');
+  assert.equal(approved.json.moderation, 'approved', 'Telegram-linked signed comment moderation is approved');
   assert.equal(approved.json.message, 'Comment posted.');
-  assert(!JSON.stringify(approved.json).includes('test-comment-token'), 'moderation token is not exposed in approved response');
+  assert(!JSON.stringify(approved.json).includes('telegram_auth'), 'raw telegram_auth is not exposed in approved comment response');
   const approvedRow = approvedDb.comments.get(approved.json.comment_id);
-  assert.equal(approvedRow.status, 'approved', 'safe approved moderation updates stored status approved');
+  assert.equal(approvedRow.email_hash, telegramCommentHash(LINKED_ID), 'Telegram blank-email comment stores deterministic non-email hash');
+  assert.equal(approvedRow.status, 'approved', 'Telegram auto-approval updates stored status approved');
   const approvedGet = await api(approvedDb, '/comments?page_id=wuffi', null, 'GET');
-  assert.equal(approvedGet.json.comments.length, 1, 'approved comments appear in public GET /comments');
-  assert.equal(approvedCalls.length, 1, 'approved moderation calls provider once');
-  assert.equal(approvedCalls[0].body.type, 'wiki_comment_moderation');
-  assert.equal(approvedCalls[0].body.site, 'cryptomoonboys.com');
-  assert.equal(approvedCalls[0].body.page_id, 'wuffi');
-  assert.equal(approvedCalls[0].body.comment_id, approved.json.comment_id);
-  assert.equal(approvedCalls[0].body.text, 'Please moderate this wiki comment.');
-  assert.equal(approvedCalls[0].body.telegram_id, LINKED_ID, 'verified telegram_id may be sent to moderation provider');
-  assert.equal(approvedCalls[0].body.telegram_username, 'linked_mod');
-  assert.equal(approvedCalls[0].body.discord_username, 'mod#1234');
-  assert.equal(approvedCalls[0].body.email, undefined, 'raw email is not sent to moderation provider');
-  assert.equal(approvedCalls[0].body.email_hash, undefined, 'email hash is not sent to moderation provider');
-  assert.equal(approvedCalls[0].body.telegram_auth, undefined, 'raw telegram_auth is not sent to moderation provider');
-  assert.equal(approvedCalls[0].init.headers.Authorization, 'Bearer test-comment-token');
-
-  const rejectedDb = new MockD1();
-  mockModerationFetch({ decision: 'rejected' });
-  const rejected = await postModeratedComment(rejectedDb);
-  assert.equal(rejected.response.status, 201, 'rejected moderation still returns 201 for stored comment');
-  assert.equal(rejected.json.status, 'rejected', 'rejected moderation updates response status');
-  assert.equal(rejected.json.message, 'Comment could not be published.');
-  assert.equal(rejectedDb.comments.get(rejected.json.comment_id).status, 'rejected', 'rejected moderation updates stored status rejected');
-  const rejectedGet = await api(rejectedDb, '/comments?page_id=wuffi', null, 'GET');
-  assert.equal(rejectedGet.json.comments.length, 0, 'rejected comments do not appear publicly');
-
-  const pendingDb = new MockD1();
-  mockModerationFetch({ decision: 'pending' });
-  const pending = await postModeratedComment(pendingDb);
-  assert.equal(pending.response.status, 201, 'pending moderation returns 201');
-  assert.equal(pending.json.status, 'pending', 'pending moderation response remains pending');
-  assert.equal(pending.json.message, 'Comment received and awaiting automated review.');
-  assert.equal(pendingDb.comments.get(pending.json.comment_id).status, 'pending', 'pending moderation leaves stored status pending');
-
-  const missingConfigDb = new MockD1();
-  globalThis.fetch = async () => { throw new Error('moderation provider should not be called without config'); };
-  const missingConfig = await api(missingConfigDb, '/comments', {
-    page_id: 'wuffi',
-    name: 'Missing Config',
-    email: 'missing-config@example.com',
-    text: 'No moderation config should leave this pending.',
-  });
-  assert.equal(missingConfig.response.status, 201, 'missing moderation config returns 201');
-  assert.equal(missingConfig.json.status, 'pending', 'missing moderation config leaves pending');
-
-  const timeoutDb = new MockD1();
-  mockModerationFetch({ throws: new DOMException('Timeout', 'AbortError') });
-  const timeout = await postModeratedComment(timeoutDb);
-  assert.equal(timeout.response.status, 201, 'moderation timeout returns 201');
-  assert.equal(timeout.json.status, 'pending', 'moderation timeout leaves pending');
-
-  const fetchFailureDb = new MockD1();
-  mockModerationFetch({ throws: new Error('provider unavailable') });
-  const fetchFailure = await postModeratedComment(fetchFailureDb);
-  assert.equal(fetchFailure.response.status, 201, 'moderation fetch failure returns 201');
-  assert.equal(fetchFailure.json.status, 'pending', 'moderation fetch failure leaves pending');
-
-  const invalidJsonDb = new MockD1();
-  mockModerationFetch({ body: 'invalid-json' });
-  const invalidJson = await postModeratedComment(invalidJsonDb);
-  assert.equal(invalidJson.response.status, 201, 'moderation invalid JSON returns 201');
-  assert.equal(invalidJson.json.status, 'pending', 'moderation invalid JSON leaves pending');
-
-  const invalidDecisionDb = new MockD1();
-  mockModerationFetch({ body: { decision: 'publish_now', reason: 'bad_fixture' } });
-  const invalidDecision = await postModeratedComment(invalidDecisionDb);
-  assert.equal(invalidDecision.response.status, 201, 'moderation invalid decision returns 201');
-  assert.equal(invalidDecision.json.status, 'pending', 'moderation invalid decision leaves pending');
+  assert.equal(approvedGet.json.comments.length, 1, 'approved Telegram-linked comment appears in public GET /comments');
+  assert.equal(approvedGet.json.comments[0].id, approved.json.comment_id);
 
   const statusUpdateFailDb = new MockD1({ failCommentStatusUpdates: true });
-  mockModerationFetch({ decision: 'approved' });
-  const statusUpdateFail = await postModeratedComment(statusUpdateFailDb);
-  assert.equal(statusUpdateFail.response.status, 201, 'status update failure after moderation returns 201');
-  assert.equal(statusUpdateFail.json.status, 'pending', 'status update failure after approved returns pending');
+  const statusUpdateFail = await api(statusUpdateFailDb, '/comments', {
+    page_id: 'wuffi',
+    name: 'Telegram Update Fail',
+    text: 'Auto-approval update failure should fail closed.',
+    telegram_auth: telegramAuth,
+  });
+  assert.equal(statusUpdateFail.response.status, 201, 'status update failure after Telegram auto-approval returns 201');
+  assert.equal(statusUpdateFail.json.status, 'pending', 'status update failure after Telegram auto-approval returns pending');
   assert.equal(statusUpdateFail.json.moderation, 'pending', 'status update failure response moderation is pending');
   assert.equal(statusUpdateFail.json.message, 'Comment received and awaiting automated review.');
   const statusUpdateFailGet = await api(statusUpdateFailDb, '/comments?page_id=wuffi', null, 'GET');
   assert.equal(statusUpdateFailGet.json.comments.length, 0, 'status update failure leaves comment out of public GET');
-
-  globalThis.fetch = nativeFetch;
 
   const db = new MockD1();
   db.linkConfirmed.set(LINKED_ID, { action: 'link_confirmed', created_at: new Date().toISOString() });
@@ -480,7 +394,7 @@ async function run() {
     telegram_auth: linkedAuth,
   });
   assert.equal(engage1.response.status, 201);
-  assert.equal(engage1.json.status, 'pending', 'Engage rewards are submission-timed for stored pending comments');
+  assert.equal(engage1.json.status, 'approved', 'verified Telegram comments auto-approve while Engage reward timing stays submission-based');
   assert.equal(engage1.json.mission.reward_status, 'xp_synced');
   assert.equal(engage1.json.mission.mission_id, 'engage');
   const linkedComment = db.comments.get(engage1.json.comment_id);
