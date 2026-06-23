@@ -316,7 +316,14 @@
         })
         .then(function (r) { return r.ok ? r.json() : r.json().then(function (d) { throw d; }); })
         .then(function (data) {
-          status.textContent = 'Comment posted! It will appear after moderation.';
+          var moderation = data && data.moderation ? String(data.moderation) : 'pending';
+          status.textContent = (data && data.message) || (
+            moderation === 'approved'
+              ? 'Comment posted.'
+              : moderation === 'rejected'
+                ? 'Comment could not be published.'
+                : 'Comment received and awaiting automated review.'
+          );
           status.className   = 'comment-form-status cm-success';
           document.dispatchEvent(new CustomEvent('moonboys:comment-posted', {
             detail: { page_id: pageId, comment_id: data && data.comment_id, mission: data && data.mission ? data.mission : null }
@@ -325,6 +332,10 @@
           applyCommentProfile(form);
           applyLinkedTelegramIdentity(form);
           updateCommentIdentityCopy(form);
+          if (moderation === 'approved') {
+            var listEl = container.querySelector('#comments-list-' + pageId);
+            if (listEl) loadComments(pageId, listEl);
+          }
         })
         .catch(function (err) {
           if (err && err.error === 'email_required') return;
@@ -416,6 +427,22 @@
 
   // ── Section initialiser ──────────────────────────────────────
 
+  function loadComments(pageId, listEl) {
+    listEl.innerHTML = '<div class="comments-loading">Loading comments\u2026</div>';
+    return fetch(BASE + '/comments?page_id=' + encodeURIComponent(pageId) + '&limit=20')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (data) {
+          renderComments(listEl, data.comments || []);
+        } else {
+          listEl.innerHTML = '<div class="comments-error">' + COPY.API_UNAVAILABLE + ' \u2014 could not load comments.</div>';
+        }
+      })
+      .catch(function () {
+        listEl.innerHTML = '<div class="comments-error">' + COPY.API_UNAVAILABLE + ' \u2014 could not load comments.</div>';
+      });
+  }
+
   function initSection(el) {
     var pageId = el.dataset.pageId ||
       document.location.pathname.split('/').pop().replace(/\.html$/, '');
@@ -437,20 +464,7 @@
     if (!BASE || !FEATURES.COMMENTS) return;
 
     var listEl = el.querySelector('#comments-list-' + pageId);
-    listEl.innerHTML = '<div class="comments-loading">Loading comments…</div>';
-
-    fetch(BASE + '/comments?page_id=' + encodeURIComponent(pageId) + '&limit=20')
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (data) {
-        if (data) {
-          renderComments(listEl, data.comments || []);
-        } else {
-          listEl.innerHTML = '<div class="comments-error">' + COPY.API_UNAVAILABLE + ' \u2014 could not load comments.</div>';
-        }
-      })
-      .catch(function () {
-        listEl.innerHTML = '<div class="comments-error">' + COPY.API_UNAVAILABLE + ' \u2014 could not load comments.</div>';
-      });
+    loadComments(pageId, listEl);
   }
 
   // ── Boot ─────────────────────────────────────────────────────

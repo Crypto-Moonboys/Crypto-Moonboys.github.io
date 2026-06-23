@@ -72,6 +72,14 @@ check(battleLayer.includes("window.sessionStorage.setItem(getMissionStorageKey(p
 check(battleLayer.includes("CustomEvent(WIKI_MISSION_EVENT"), 'Mission layer emits a reward/completion event for Telegram-linked reward plumbing');
 
 check(worker.includes("path === '/comments'") && worker.includes("path === '/likes'") && worker.includes("path === '/citation-votes'"), 'Backend article engagement routes are present in moonboys-api worker');
+check(worker.includes('COMMENT_MODERATION_URL') && worker.includes('COMMENT_MODERATION_TOKEN') && !worker.includes('moderation.test/wiki-comment'), 'Wiki comment moderation provider is server-configured only');
+check(worker.includes("decision === 'approved' || decision === 'rejected' || decision === 'pending'") && worker.includes("SET status = ?"), 'Wiki comment moderation strictly validates decisions before publishing');
+check(worker.includes('wiki_comment_moderation_status_update_failed') && worker.includes("target_status: moderationStatus") && worker.includes("error_type: 'd1_update_failed'"), 'Wiki comment moderation status update fails closed with safe metadata');
+check(worker.includes("path === '/public/npc-chat'") && worker.includes('/api/swarmsy/public/npc-chat'), 'Existing /public/npc-chat bridge remains unchanged');
+check(/^main\s*=\s*"worker\.js"/m.test(read('workers/moonboys-api/wrangler.toml')), 'wrangler.toml main remains worker.js');
+check(worker.includes('async scheduled(event, env, _ctx)'), 'Worker scheduled handler remains present');
+check(comments.includes('Comment posted.') && comments.includes('Comment received and awaiting automated review.') && comments.includes('Comment could not be published.'), 'Comment form displays backend moderation states honestly');
+check(comments.includes('if (moderation === \'approved\')') && comments.includes('loadComments(pageId, listEl)'), 'Comment form refreshes list only for approved comments');
 
 if (process.exitCode) {
   console.error('\nWiki engagement layer regression FAILED.\n');
