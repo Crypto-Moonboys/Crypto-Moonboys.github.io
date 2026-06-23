@@ -6,6 +6,7 @@
     pools: [],
     tokens: [],
     ready: false,
+    loadedAt: null,
     sourceCounts: {},
     sourceErrors: {},
   };
@@ -52,6 +53,15 @@
     if (Math.abs(value) >= 1000000) return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
     if (Math.abs(value) >= 1) return value.toLocaleString(undefined, { maximumFractionDigits: Math.min(max, 6) });
     return value.toLocaleString(undefined, { maximumSignificantDigits: max });
+  }
+
+  function formatLoadedAt() {
+    if (!state.loadedAt) return 'not loaded';
+    try {
+      return state.loadedAt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    } catch (_) {
+      return 'loaded';
+    }
   }
 
   function activePools() {
@@ -119,6 +129,22 @@
     return `${parts.join(' · ')}${errors.length ? ` · Failed: ${errors.join(', ')}` : ''}`;
   }
 
+  function sourceErrorHtml() {
+    const entries = Object.entries(state.sourceErrors).filter(([, message]) => message);
+    if (!entries.length) return '';
+    return '<div class="warning">Source warnings: ' + entries
+      .map(([source, message]) => `${htmlEscape(source)}: ${htmlEscape(String(message).slice(0, 120))}`)
+      .join(' · ') + '</div>';
+  }
+
+  function routeQuality(route) {
+    if (!route || route.type === 'none') return 'No route';
+    if (route.impact >= 10) return 'Very high impact';
+    if (route.impact >= 5) return 'High impact';
+    if (route.impact >= 2) return 'Moderate impact';
+    return 'Low impact';
+  }
+
   function routePoolLabel(pool) {
     return `${pool.provider} ${pool.tokenA.symbol}/${pool.tokenB.symbol}`;
   }
@@ -140,6 +166,21 @@
     return selected;
   }
 
+  function noRouteDetails(route, pools) {
+    const wanted = String(els.routeTypeFilter?.value || 'ALL');
+    const availableTypes = Array.isArray(route?.candidates)
+      ? [...new Set(route.candidates.map((candidate) => candidate.type))]
+      : [];
+    const details = [
+      `Filters: ${String(els.providerFilter?.value || 'ALL')} · ${wanted} · min score ${asNumber(els.minLiquidity.value)}`,
+      `Pools used: ${pools.length}`,
+    ];
+    if (wanted !== 'ALL' && availableTypes.length) {
+      details.push(`Available route types: ${availableTypes.join(', ')}`);
+    }
+    return details.join(' | ');
+  }
+
   function render() {
     if (!state.ready) return;
     if (!engine) {
@@ -156,12 +197,12 @@
     const slippage = asNumber(els.slippage.value);
 
     if (!amountIn || amountIn <= 0) {
-      els.result.innerHTML = `<div class="muted">Enter an amount.<br>${htmlEscape(providerSummary(pools))}</div>`;
+      els.result.innerHTML = `<div class="muted">Enter an amount.<br>${htmlEscape(providerSummary(pools))}<br>Loaded: ${htmlEscape(formatLoadedAt())}</div>${sourceErrorHtml()}`;
       return;
     }
 
     if (!route || route.type === 'none' || route.output <= 0) {
-      els.result.innerHTML = `<div class="bad">No route found for this pair at the selected filters.</div><div class="warning">${htmlEscape(providerSummary(pools))}</div>`;
+      els.result.innerHTML = `<div class="bad">No route found for this pair at the selected filters.</div><div class="warning">${htmlEscape(providerSummary(pools))}<br>${htmlEscape(noRouteDetails(route, pools))}<br>Loaded: ${htmlEscape(formatLoadedAt())}</div>${sourceErrorHtml()}`;
       return;
     }
 
@@ -184,6 +225,7 @@
       <div class="stats">
         <div class="stat"><small>Route</small><b>${htmlEscape(route.type)}</b></div>
         <div class="stat"><small>Provider</small><b>${htmlEscape(route.provider)}</b></div>
+        <div class="stat"><small>Quality</small><b>${htmlEscape(routeQuality(route))}</b></div>
         <div class="stat"><small>Sources active / loaded</small><b>${htmlEscape(providerSummary(pools))}</b></div>
         <div class="stat"><small>Impact</small><b>${formatNumber(route.impact, 4)}%</b></div>
         <div class="stat"><small>Fee total</small><b>${formatNumber(route.feePercent, 4)}%</b></div>
@@ -192,9 +234,11 @@
         <div class="stat"><small>Candidate routes</small><b>${candidates.length}</b></div>
         <div class="stat"><small>Split</small><b>${route.split ? 'Yes' : 'No'}</b></div>
         <div class="stat"><small>Pool records used</small><b>${pools.length}</b></div>
+        <div class="stat"><small>Loaded</small><b>${htmlEscape(formatLoadedAt())}</b></div>
       </div>
       <div class="warning">Route: ${htmlEscape(routeNames)}<br>Pool IDs: ${htmlEscape(routePoolIds(route))}</div>
       ${warn}
+      ${sourceErrorHtml()}
       <div class="routes">${topRows}</div>
     `;
   }
@@ -210,6 +254,7 @@
     state.pools = result.pools || [];
     state.sourceCounts = result.sourceCounts || {};
     state.sourceErrors = result.sourceErrors || {};
+    state.loadedAt = new Date();
     buildTokens();
     fillSelects();
     state.ready = true;
