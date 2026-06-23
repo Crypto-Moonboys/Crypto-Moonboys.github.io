@@ -234,14 +234,13 @@
   COINGECKO_BASE: 'https://api.coingecko.com/api/v3',
 
   /* ── Feature Flags ───────────────────────────────────────── */
-  // Engagement features stay false until the matching Worker deploy and
-  // required D1 migrations are live. This keeps pages from calling routes
-  // before their backing tables exist.
+  // Article engagement backend is live: migration 029 and Worker routes
+  // have been verified for comments, likes, and citation votes.
   FEATURES: {
     PRICE_TICKER:       true,   // Live crypto price data (CoinGecko — no worker needed)
-    COMMENTS:           false,  // Article comments — requires Worker deploy + migration 029
-    LIKES:              false,  // Page likes — requires Worker deploy + migration 029
-    CITATION_VOTES:     false,  // Citation votes — requires Worker deploy + migration 029
+    COMMENTS:           true,   // Article comments — moonboys-api /comments route live
+    LIKES:              true,   // Page likes — moonboys-api /likes route live
+    CITATION_VOTES:     true,   // Citation votes — moonboys-api /citation-votes route live
     LEADERBOARD:        false,  // Engagement leaderboard — moonboys-api /leaderboard endpoint not yet live
     ARCADE_LEADERBOARD: true,   // Arcade score-submission worker (moonboys-leaderboard.sercullen.workers.dev) — live
     LIVE_FEED:          false,  // Activity feed — /feed endpoint not yet live
