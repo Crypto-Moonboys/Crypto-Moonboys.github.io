@@ -10,7 +10,7 @@
 <body>
 <main class="shell">
 <h1>Pool Quote</h1>
-<p class="muted">Display-only multi-source route estimate page.</p>
+<p class="muted">Display-only multi-source route estimate page. No wallet, no signing, no transaction execution.</p>
 <section class="grid">
 <div class="card">
 <label>Amount<input id="amountIn" value="10" inputmode="decimal"></label>
@@ -24,6 +24,17 @@
 <button id="quoteBtn" type="button">Refresh quote</button>
 </div>
 <aside id="resultPanel" class="card">Loading...</aside>
+</section>
+<section class="card" aria-label="Quote help">
+<h2>Quote help</h2>
+<p class="muted">This page estimates routes from public pool data only. It does not connect a wallet or submit swaps.</p>
+<div class="stats">
+<div class="stat"><small>DEX filter</small><b>Limits pools to All, Alcor, Taco, or Nefty.</b></div>
+<div class="stat"><small>Route type</small><b>Best, direct, split, or multi-hop candidates.</b></div>
+<div class="stat"><small>Minimum score</small><b>Filters low-score pool records before quoting.</b></div>
+<div class="stat"><small>Tolerance</small><b>Shows estimated minimum received after slippage tolerance.</b></div>
+<div class="stat"><small>Shortcuts</small><b>/ amount · r refresh · s switch · ? help.</b></div>
+</div>
 </section>
 </main>
 <script src="/js/wax-route-engine.js?v=2"></script>
