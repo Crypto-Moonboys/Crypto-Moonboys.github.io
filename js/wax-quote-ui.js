@@ -9,6 +9,7 @@
     loadedAt: null,
     sourceCounts: {},
     sourceErrors: {},
+    copyStatus: '',
   };
 
   const els = {
@@ -85,6 +86,14 @@
     }
   }
 
+  function currentQuoteUrl() {
+    try {
+      return new URL(`${window.location.pathname}${window.location.search}`, window.location.origin).toString();
+    } catch (_) {
+      return `${window.location.pathname}${window.location.search}`;
+    }
+  }
+
   function writeUrlState() {
     if (!window.history || !window.location) return;
     const params = new URLSearchParams();
@@ -100,6 +109,39 @@
     if (nextUrl !== `${window.location.pathname}${window.location.search}${window.location.hash || ''}`) {
       window.history.replaceState(null, '', nextUrl);
     }
+  }
+
+  function actionsHtml() {
+    const status = state.copyStatus ? `<small class="muted">${htmlEscape(state.copyStatus)}</small>` : '';
+    return `<div class="warning"><button type="button" data-quote-action="copy-link">Copy quote link</button> <button type="button" data-quote-action="reset-controls">Reset controls</button>${status ? `<br>${status}` : ''}</div>`;
+  }
+
+  async function copyCurrentQuoteUrl() {
+    const url = currentQuoteUrl();
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        state.copyStatus = 'Quote link copied.';
+      } else {
+        state.copyStatus = url;
+      }
+    } catch (_) {
+      state.copyStatus = url;
+    }
+    render();
+  }
+
+  function resetControls() {
+    state.copyStatus = '';
+    els.amount.value = '10';
+    if (els.providerFilter) els.providerFilter.value = 'ALL';
+    if (els.routeTypeFilter) els.routeTypeFilter.value = 'ALL';
+    if (els.minLiquidity) els.minLiquidity.value = '10';
+    if (els.slippage) els.slippage.value = '0.01';
+    buildTokens();
+    fillSelects();
+    writeUrlState();
+    render();
   }
 
   function activePools() {
@@ -253,12 +295,12 @@
     writeUrlState();
 
     if (!amountIn || amountIn <= 0) {
-      els.result.innerHTML = `<div class="muted">Enter an amount.<br>${htmlEscape(providerSummary(pools))}<br>Loaded: ${htmlEscape(formatLoadedAt())}</div>${sourceErrorHtml()}`;
+      els.result.innerHTML = `${actionsHtml()}<div class="muted">Enter an amount.<br>${htmlEscape(providerSummary(pools))}<br>Loaded: ${htmlEscape(formatLoadedAt())}</div>${sourceErrorHtml()}`;
       return;
     }
 
     if (!route || route.type === 'none' || route.output <= 0) {
-      els.result.innerHTML = `<div class="bad">No route found for this pair at the selected filters.</div><div class="warning">${htmlEscape(providerSummary(pools))}<br>${htmlEscape(noRouteDetails(route, pools))}<br>Loaded: ${htmlEscape(formatLoadedAt())}</div>${sourceErrorHtml()}`;
+      els.result.innerHTML = `${actionsHtml()}<div class="bad">No route found for this pair at the selected filters.</div><div class="warning">${htmlEscape(providerSummary(pools))}<br>${htmlEscape(noRouteDetails(route, pools))}<br>Loaded: ${htmlEscape(formatLoadedAt())}</div>${sourceErrorHtml()}`;
       return;
     }
 
@@ -275,6 +317,7 @@
     const warn = route.impact > 5 ? '<div class="warning">High price impact. Reduce amount or check another route before using this quote.</div>' : '';
 
     els.result.innerHTML = `
+      ${actionsHtml()}
       <div class="muted">Estimated output</div>
       <div class="big">${formatNumber(route.output)} ${htmlEscape(tokenOut.symbol)}</div>
       <div class="muted">For ${formatNumber(amountIn)} ${htmlEscape(tokenIn.symbol)}</div>
@@ -319,6 +362,7 @@
   for (const el of [els.amount, els.tokenIn, els.tokenOut, els.minLiquidity, els.providerFilter, els.routeTypeFilter, els.slippage]) {
     if (!el) continue;
     el.addEventListener('input', () => {
+      state.copyStatus = '';
       if (el === els.providerFilter) {
         buildTokens();
         fillSelects();
@@ -326,6 +370,7 @@
       render();
     });
     el.addEventListener('change', () => {
+      state.copyStatus = '';
       if (el === els.providerFilter) {
         buildTokens();
         fillSelects();
@@ -334,8 +379,17 @@
     });
   }
 
+  els.result.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-quote-action]');
+    if (!button) return;
+    const action = button.getAttribute('data-quote-action');
+    if (action === 'copy-link') copyCurrentQuoteUrl();
+    if (action === 'reset-controls') resetControls();
+  });
+
   els.quoteBtn.addEventListener('click', load);
   els.switchBtn.addEventListener('click', () => {
+    state.copyStatus = '';
     const oldIn = els.tokenIn.value;
     els.tokenIn.value = els.tokenOut.value;
     els.tokenOut.value = oldIn;
