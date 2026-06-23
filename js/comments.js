@@ -34,6 +34,12 @@
     API_UNAVAILABLE:     'Core API unavailable',
   };
 
+  function getFreshTelegramAuth() {
+    var gate = window.MOONBOYS_IDENTITY;
+    if (gate && gate.getFreshTelegramAuth) return gate.getFreshTelegramAuth();
+    return Promise.resolve(null);
+  }
+
   // ── HTML escape (prevents XSS when API data is rendered via innerHTML) ──
 
   function esc(str) {
@@ -171,15 +177,22 @@
       if (discord) payload.discord_username  = discord;
       if (avatar)  payload.avatar_url        = avatar;
 
-      fetch(BASE + '/comments', {
+      Promise.resolve(getFreshTelegramAuth())
+        .then(function (telegramAuth) {
+          if (telegramAuth) payload.telegram_auth = telegramAuth;
+          return fetch(BASE + '/comments', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
-      })
+            body:    JSON.stringify(payload),
+          });
+        })
         .then(function (r) { return r.ok ? r.json() : r.json().then(function (d) { throw d; }); })
-        .then(function () {
+        .then(function (data) {
           status.textContent = '✅ Comment posted! It will appear after moderation.';
           status.className   = 'comment-form-status cm-success';
+          document.dispatchEvent(new CustomEvent('moonboys:comment-posted', {
+            detail: { page_id: pageId, comment_id: data && data.comment_id, mission: data && data.mission ? data.mission : null }
+          }));
           form.reset();
         })
         .catch(function (err) {
