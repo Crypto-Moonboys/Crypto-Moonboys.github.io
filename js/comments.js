@@ -120,7 +120,7 @@
 
     if (tgStatus) {
       if (linked) {
-        tgStatus.textContent = 'Telegram linked: ' + (linked.name || linked.telegram_username || 'connected') + ' - rewards can sync after posting.';
+        tgStatus.textContent = 'Telegram linked: ' + (linked.name || linked.telegram_username || 'connected') + '. Email optional — Telegram identity will be used.';
         tgStatus.className = 'cm-tg-status cm-success';
       } else if (hasTelegramId) {
         tgStatus.textContent = 'Run /gklink to activate rewards.';
@@ -273,22 +273,10 @@
       var text    = form.querySelector('[name=text]').value.trim();
 
       if (!name || !text) {
-        status.textContent = '⚠️ Name and comment are required.';
+        status.textContent = 'Name and comment are required.';
         status.className   = 'comment-form-status cm-error';
         return;
       }
-      if (!email) {
-        status.textContent = '⚠️ Email is required (used for Gravatar avatar only).';
-        status.className   = 'comment-form-status cm-error';
-        return;
-      }
-      saveCommentProfile({
-        name: name,
-        email: email,
-        telegram_username: tg,
-        discord_username: discord,
-        avatar_url: avatar,
-      });
 
       if (!BASE || !FEATURES.COMMENTS) {
         status.textContent = '\u23f3 ' + COPY.FEATURE_UNAVAILABLE;
@@ -296,26 +284,39 @@
         return;
       }
 
-      status.textContent = 'Posting…';
+      status.textContent = 'Posting...';
       status.className   = 'comment-form-status cm-loading';
 
-      var payload = { page_id: pageId, name: name, email: email, text: text };
+      var payload = { page_id: pageId, name: name, text: text };
+      if (email)   payload.email = email;
       if (tg)      payload.telegram_username = tg;
       if (discord) payload.discord_username  = discord;
       if (avatar)  payload.avatar_url        = avatar;
 
       Promise.resolve(getFreshTelegramAuth())
         .then(function (telegramAuth) {
+          if (!email && !telegramAuth) {
+            status.textContent = 'Email required for Gravatar avatar, never displayed.';
+            status.className   = 'comment-form-status cm-error';
+            throw { error: 'email_required' };
+          }
+          saveCommentProfile({
+            name: name,
+            email: email,
+            telegram_username: tg,
+            discord_username: discord,
+            avatar_url: avatar,
+          });
           if (telegramAuth) payload.telegram_auth = telegramAuth;
           return fetch(BASE + '/comments', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify(payload),
           });
         })
         .then(function (r) { return r.ok ? r.json() : r.json().then(function (d) { throw d; }); })
         .then(function (data) {
-          status.textContent = '✅ Comment posted! It will appear after moderation.';
+          status.textContent = 'Comment posted! It will appear after moderation.';
           status.className   = 'comment-form-status cm-success';
           document.dispatchEvent(new CustomEvent('moonboys:comment-posted', {
             detail: { page_id: pageId, comment_id: data && data.comment_id, mission: data && data.mission ? data.mission : null }
@@ -326,8 +327,9 @@
           updateCommentIdentityCopy(form);
         })
         .catch(function (err) {
+          if (err && err.error === 'email_required') return;
           var msg = (err && err.message) ? err.message : 'Submission failed. Try again.';
-          status.textContent = '⚠️ ' + msg;
+          status.textContent = 'Warning: ' + msg;
           status.className   = 'comment-form-status cm-error';
         });
     });
@@ -346,7 +348,7 @@
     if (linked) {
       widgetSlot.innerHTML = '';
       if (statusEl) {
-        statusEl.textContent = 'Telegram linked: ' + (linked.name || linked.telegram_username || 'connected') + ' - rewards can sync after posting.';
+        statusEl.textContent = 'Telegram linked: ' + (linked.name || linked.telegram_username || 'connected') + '. Email optional — Telegram identity will be used.';
         statusEl.className = 'cm-tg-status cm-success';
       }
       return;
