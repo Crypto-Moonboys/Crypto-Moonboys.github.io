@@ -64,7 +64,7 @@ class MockStatement {
       return this.db.missingTables.has(a0) ? null : { name: a0 };
     }
     if (sql.includes('SELECT u.telegram_id FROM telegram_users u') && sql.includes("al.action = 'link_confirmed'")) {
-      return this.db.telegramUsers.has(a0) && (this.db.linkConfirmed.has(a0) || this.db.blocktopiaProgression.has(a0))
+      return this.db.telegramUsers.has(a0) && this.db.linkConfirmed.has(a0)
         ? { telegram_id: a0 }
         : null;
     }
@@ -288,16 +288,17 @@ async function run() {
 
   const unlinkedDb = new MockD1();
   const unlinkedAuth = signTelegramAuth(UNLINKED_ID);
+  unlinkedDb.blocktopiaProgression.set(UNLINKED_ID, { telegram_id: UNLINKED_ID, xp: 1 });
   const unlinkedComment = await api(unlinkedDb, '/comments', {
     page_id: 'wuffi',
     name: 'Signed Not Linked',
     email: 'not-linked@example.com',
-    text: 'Signed auth alone should not earn XP.',
+    text: 'Signed auth and progression alone should not earn XP.',
     telegram_auth: unlinkedAuth,
   });
   assert.equal(unlinkedComment.response.status, 201);
   assert.equal(unlinkedComment.json.mission.reward_status, 'telegram_link_required');
-  assert.equal(unlinkedDb.xpLog.length, 0, 'signed auth but not linked cannot earn XP');
+  assert.equal(unlinkedDb.xpLog.length, 0, 'signed auth plus blocktopia_progression but no link_confirmed cannot earn XP');
 
   const db = new MockD1();
   db.linkConfirmed.set(LINKED_ID, { action: 'link_confirmed', created_at: new Date().toISOString() });

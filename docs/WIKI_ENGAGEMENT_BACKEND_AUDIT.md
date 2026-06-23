@@ -66,7 +66,7 @@ Mission completions are stored in `wiki_mission_completions` keyed by:
 The Worker awards XP through `telegram_xp_log` only after:
 
 - signed Telegram auth verifies successfully
-- server-side linked evidence exists (`telegram_activity_log.action = 'link_confirmed'` or `blocktopia_progression`)
+- server-side `/gklink` completion evidence exists (`telegram_activity_log.action = 'link_confirmed'`)
 - the accepted action maps to the mission
 - the mission completion insert wins
 

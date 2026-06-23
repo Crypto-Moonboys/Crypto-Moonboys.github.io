@@ -725,15 +725,9 @@ async function isWikiRewardLinkedUser(db, telegramId) {
     SELECT u.telegram_id
     FROM telegram_users u
     WHERE u.telegram_id = ?
-      AND (
-        EXISTS (
-          SELECT 1 FROM telegram_activity_log al
-          WHERE al.telegram_id = u.telegram_id AND al.action = 'link_confirmed'
-        )
-        OR EXISTS (
-          SELECT 1 FROM blocktopia_progression bp
-          WHERE bp.telegram_id = u.telegram_id
-        )
+      AND EXISTS (
+        SELECT 1 FROM telegram_activity_log al
+        WHERE al.telegram_id = u.telegram_id AND al.action = 'link_confirmed'
       )
     LIMIT 1
   `).bind(String(telegramId || '')).first().catch(() => null);
