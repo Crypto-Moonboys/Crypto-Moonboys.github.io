@@ -138,7 +138,7 @@
             if (!telegramAuth) {
               handle403({ error: 'telegram_sync_required' }, btn);
               btn.classList.remove('like-btn--pending');
-              statusEl.textContent = 'ðŸ” Telegram sync required to like pages.';
+              statusEl.textContent = 'Telegram sync required to like pages.';
               throw { error: 'telegram_sync_required' };
             }
             payload.telegram_auth = telegramAuth;
@@ -153,7 +153,7 @@
               return r.json().then(function (d) {
                 handle403(d, btn);
                 btn.classList.remove('like-btn--pending');
-                statusEl.textContent = '🔐 Telegram sync required to like pages.';
+                statusEl.textContent = 'Telegram sync required to like pages.';
                 throw d;
               });
             }
@@ -166,14 +166,14 @@
             document.dispatchEvent(new CustomEvent('moonboys:page-liked', {
               detail: { page_id: pageId, count: data.count, mission: data.mission || null }
             }));
-            statusEl.textContent = '❤️ Liked!';
+            statusEl.textContent = 'Liked!';
           })
           .catch(function (err) {
             // telegram_sync_required: already handled by handle403 above (modal shown,
-            // status text set, button re-enabled) — no further action needed here.
+            // status text set, button re-enabled) - no further action needed here.
             if (err && err.error === 'telegram_sync_required') return;
             var msg = (err && err.message) ? err.message : 'Already liked or error.';
-            statusEl.textContent = '⚠️ ' + msg;
+            statusEl.textContent = 'Warning: ' + msg;
             btn.disabled = false;
             btn.classList.remove('like-btn--pending');
           });

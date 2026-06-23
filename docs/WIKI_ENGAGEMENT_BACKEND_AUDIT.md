@@ -72,6 +72,8 @@ The Worker awards XP through `telegram_xp_log` only after:
 
 Signed Telegram auth alone is not enough to earn XP. Duplicate actions return already-completed state and do not award duplicate XP.
 
+Engage rewards are submission-timed: a linked user earns the Engage mission when the Worker accepts and stores a comment row, even though the visible comment remains `pending` for moderation. This PR does not add a moderation approval reward flow.
+
 `POST /wiki-missions/complete` is not a blind claim endpoint. It verifies that the matching source action row exists for the same Telegram user before calling the mission completion helper.
 
 ## Deploy Notes

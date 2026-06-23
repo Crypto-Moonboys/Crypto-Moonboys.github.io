@@ -311,6 +311,7 @@ async function run() {
     telegram_auth: linkedAuth,
   });
   assert.equal(engage1.response.status, 201);
+  assert.equal(engage1.json.status, 'pending', 'Engage rewards are submission-timed for stored pending comments');
   assert.equal(engage1.json.mission.reward_status, 'xp_synced');
   assert.equal(engage1.json.mission.mission_id, 'engage');
 
