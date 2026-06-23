@@ -72,7 +72,7 @@ check(battleLayer.includes("window.sessionStorage.setItem(getMissionStorageKey(p
 check(battleLayer.includes("CustomEvent(WIKI_MISSION_EVENT"), 'Mission layer emits a reward/completion event for Telegram-linked reward plumbing');
 
 check(worker.includes("path === '/comments'") && worker.includes("path === '/likes'") && worker.includes("path === '/citation-votes'"), 'Backend article engagement routes are present in moonboys-api worker');
-check(worker.includes('COMMENT_MODERATION_URL') && worker.includes('COMMENT_MODERATION_TOKEN') && worker.includes("moderationUrl.startsWith('https://')") && !worker.includes('moderation.test/wiki-comment'), 'Wiki comment moderation provider is server-configured HTTPS-only');
+check(worker.includes('COMMENT_MODERATION_URL') && worker.includes('COMMENT_MODERATION_TOKEN') && worker.includes('/^https:\\/\\//i.test(moderationUrl)') && !worker.includes('moderation.test/wiki-comment'), 'Wiki comment moderation provider is server-configured HTTPS-only');
 check(worker.includes("decision === 'approved' || decision === 'rejected' || decision === 'pending'") && worker.includes("SET status = ?"), 'Wiki comment moderation strictly validates decisions before publishing');
 check(worker.includes('wiki_comment_moderation_status_update_failed') && worker.includes("target_status: moderationStatus") && worker.includes("error_type: 'd1_update_failed'"), 'Wiki comment moderation status update fails closed with safe metadata');
 check(worker.includes("path === '/public/npc-chat'") && worker.includes('/api/swarmsy/public/npc-chat'), 'Existing /public/npc-chat bridge remains unchanged');
