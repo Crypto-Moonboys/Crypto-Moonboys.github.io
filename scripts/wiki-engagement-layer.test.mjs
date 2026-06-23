@@ -41,7 +41,7 @@ check(battleLayer.includes("'.citations-list li, .source-ref-list li'"), 'Citati
 check(wuffi.includes('class="source-ref-list"'), 'WUF uses source-ref-list and is covered by citation injection');
 
 check(engagement.includes('COPY.FEATURE_UNAVAILABLE') && battleLayer.includes('mission-status--unavailable'), 'Disabled engagement features show unavailable state');
-check(apiConfig.includes('COMMENTS:           false') && apiConfig.includes('LIKES:              false') && apiConfig.includes('CITATION_VOTES:     false'), 'Article engagement feature flags stay disabled until migration/deploy are live');
+check(apiConfig.includes('COMMENTS:           true') && apiConfig.includes('LIKES:              true') && apiConfig.includes('CITATION_VOTES:     true'), 'Article engagement feature flags are enabled after migration/deploy verification');
 check(apiConfig.includes('LEADERBOARD:        false') && apiConfig.includes('LIVE_FEED:          false') && apiConfig.includes('ACTIVITY_PANEL:     false'), 'Unimplemented engagement panels remain disabled');
 
 check(comments.includes("CustomEvent('moonboys:comment-posted'"), 'Successful comment posts notify mission completion');

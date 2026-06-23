@@ -364,9 +364,9 @@ async function run() {
   assert.equal(db.xpLog.length, 3, 'forged direct completion does not award XP');
 
   const apiConfig = read('js/api-config.js');
-  assert(apiConfig.includes('COMMENTS:           false'), 'comments feature flag stays false until migration/deploy are live');
-  assert(apiConfig.includes('LIKES:              false'), 'likes feature flag stays false until migration/deploy are live');
-  assert(apiConfig.includes('CITATION_VOTES:     false'), 'citation votes feature flag stays false until migration/deploy are live');
+  assert(apiConfig.includes('COMMENTS:           true'), 'comments feature flag is enabled after migration/deploy verification');
+  assert(apiConfig.includes('LIKES:              true'), 'likes feature flag is enabled after migration/deploy verification');
+  assert(apiConfig.includes('CITATION_VOTES:     true'), 'citation votes feature flag is enabled after migration/deploy verification');
 
   const gif = 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXJ4dHVlaHJ0ZWdvem92dW1zanFyYnc5bmxmM3Fyb2N6Z2YxbG55dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/GwigOL3Iw4kAa2ugsZ/giphy.gif';
   const battleLayer = read('js/battle-layer.js');
