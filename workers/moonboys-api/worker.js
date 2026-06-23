@@ -718,52 +718,10 @@ async function verifyOptionalWikiTelegram(body, env) {
   return { verified };
 }
 
-function normalizeWikiCommentModerationDecision(value) {
-  const decision = String(value || '').trim().toLowerCase();
-  return decision === 'approved' || decision === 'rejected' || decision === 'pending'
-    ? decision
-    : 'pending';
-}
-
 function getWikiCommentModerationMessage(status) {
   if (status === 'approved') return 'Comment posted.';
   if (status === 'rejected') return 'Comment could not be published.';
   return 'Comment received and awaiting automated review.';
-}
-
-async function moderateWikiComment(env, payload) {
-  const moderationUrl = String(env.COMMENT_MODERATION_URL || '').trim();
-  const moderationToken = String(env.COMMENT_MODERATION_TOKEN || '').trim();
-  if (!/^https:\/\//i.test(moderationUrl) || !moderationToken) return 'pending';
-
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
-    let response;
-    try {
-      response = await fetch(moderationUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${moderationToken}`,
-        },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timeoutId);
-    }
-    if (!response || !response.ok) return 'pending';
-    const result = await response.json();
-    return normalizeWikiCommentModerationDecision(result?.decision);
-  } catch (error) {
-    logApiFailure('wiki_comment_moderation_failed', {
-      comment_id: payload?.comment_id || null,
-      page_id: payload?.page_id || null,
-      error_type: error?.name === 'AbortError' ? 'timeout' : 'fetch_or_parse_failure',
-    });
-    return 'pending';
-  }
 }
 
 async function verifyRequiredWikiTelegram(body, env) {
@@ -4739,30 +4697,19 @@ export default {
           source: 'comments',
           sourceId: commentId,
         });
-        const moderationStatus = await moderateWikiComment(env, {
-          type: 'wiki_comment_moderation',
-          site: 'cryptomoonboys.com',
-          page_id: pageId,
-          comment_id: commentId,
-          name,
-          text,
-          telegram_id: auth.verified?.telegramId || null,
-          telegram_username: normalizeTextField(body?.telegram_username, 60) || null,
-          discord_username: normalizeTextField(body?.discord_username, 60) || null,
-        });
-        let finalModerationStatus = moderationStatus;
-        if (moderationStatus === 'approved' || moderationStatus === 'rejected') {
+        let finalModerationStatus = auth.verified?.telegramId ? 'approved' : 'pending';
+        if (finalModerationStatus === 'approved') {
           try {
             await env.DB.prepare(`
               UPDATE wiki_comments
               SET status = ?
               WHERE id = ?
-            `).bind(moderationStatus, commentId).run();
+            `).bind(finalModerationStatus, commentId).run();
           } catch (error) {
-            logApiFailure('wiki_comment_moderation_status_update_failed', {
+            logApiFailure('wiki_comment_auto_approval_status_update_failed', {
               comment_id: commentId,
               page_id: pageId,
-              target_status: moderationStatus,
+              target_status: 'approved',
               error_type: 'd1_update_failed',
             });
             finalModerationStatus = 'pending';
