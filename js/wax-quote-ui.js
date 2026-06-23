@@ -6,8 +6,11 @@
     pools: [],
     tokens: [],
     ready: false,
+    loadedAt: null,
     sourceCounts: {},
     sourceErrors: {},
+    copyStatus: '',
+    lastSummary: '',
   };
 
   const els = {
@@ -46,12 +49,107 @@
     return `${token.symbol}::${token.contract}`;
   }
 
+  function optionExists(select, value) {
+    if (!select || !value) return false;
+    return Array.prototype.some.call(select.options || [], (option) => option.value === value);
+  }
+
+  function setSelectValue(select, value) {
+    if (optionExists(select, value)) {
+      select.value = value;
+      return true;
+    }
+    return false;
+  }
+
   function formatNumber(n, max = 8) {
     const value = asNumber(n);
     if (!value) return '0';
     if (Math.abs(value) >= 1000000) return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
     if (Math.abs(value) >= 1) return value.toLocaleString(undefined, { maximumFractionDigits: Math.min(max, 6) });
     return value.toLocaleString(undefined, { maximumSignificantDigits: max });
+  }
+
+  function formatLoadedAt() {
+    if (!state.loadedAt) return 'not loaded';
+    try {
+      return state.loadedAt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    } catch (_) {
+      return 'loaded';
+    }
+  }
+
+  function readUrlState() {
+    try {
+      return new URLSearchParams(window.location.search || '');
+    } catch (_) {
+      return new URLSearchParams();
+    }
+  }
+
+  function currentQuoteUrl() {
+    try {
+      return new URL(`${window.location.pathname}${window.location.search}`, window.location.origin).toString();
+    } catch (_) {
+      return `${window.location.pathname}${window.location.search}`;
+    }
+  }
+
+  function writeUrlState() {
+    if (!window.history || !window.location) return;
+    const params = new URLSearchParams();
+    if (els.amount.value) params.set('amount', els.amount.value);
+    if (els.tokenIn.value) params.set('in', els.tokenIn.value);
+    if (els.tokenOut.value) params.set('out', els.tokenOut.value);
+    if (els.providerFilter?.value && els.providerFilter.value !== 'ALL') params.set('provider', els.providerFilter.value);
+    if (els.routeTypeFilter?.value && els.routeTypeFilter.value !== 'ALL') params.set('route', els.routeTypeFilter.value);
+    if (els.minLiquidity?.value && els.minLiquidity.value !== '10') params.set('min', els.minLiquidity.value);
+    if (els.slippage?.value && els.slippage.value !== '0.01') params.set('slippage', els.slippage.value);
+    const nextQuery = params.toString();
+    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash || ''}`;
+    if (nextUrl !== `${window.location.pathname}${window.location.search}${window.location.hash || ''}`) {
+      window.history.replaceState(null, '', nextUrl);
+    }
+  }
+
+  function actionsHtml() {
+    const status = state.copyStatus ? `<small class="muted">${htmlEscape(state.copyStatus)}</small>` : '';
+    return `<div class="warning"><button type="button" data-quote-action="copy-link">Copy quote link</button> <button type="button" data-quote-action="copy-summary">Copy summary</button> <button type="button" data-quote-action="reset-controls">Reset controls</button>${status ? `<br>${status}` : ''}</div>`;
+  }
+
+  async function copyText(text, copiedMessage) {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        state.copyStatus = copiedMessage;
+      } else {
+        state.copyStatus = text;
+      }
+    } catch (_) {
+      state.copyStatus = text;
+    }
+    render();
+  }
+
+  function copyCurrentQuoteUrl() {
+    return copyText(currentQuoteUrl(), 'Quote link copied.');
+  }
+
+  function copyCurrentQuoteSummary() {
+    return copyText(state.lastSummary || currentQuoteUrl(), 'Quote summary copied.');
+  }
+
+  function resetControls() {
+    state.copyStatus = '';
+    els.amount.value = '10';
+    if (els.providerFilter) els.providerFilter.value = 'ALL';
+    if (els.routeTypeFilter) els.routeTypeFilter.value = 'ALL';
+    if (els.minLiquidity) els.minLiquidity.value = '10';
+    if (els.slippage) els.slippage.value = '0.01';
+    buildTokens();
+    fillSelects();
+    writeUrlState();
+    render();
   }
 
   function activePools() {
@@ -112,11 +210,44 @@
     setSelectFallbacks(currentIn, currentOut);
   }
 
+  function applyUrlState() {
+    const params = readUrlState();
+    const amount = params.get('amount');
+    if (amount != null && amount.trim()) els.amount.value = amount.trim();
+    setSelectValue(els.providerFilter, String(params.get('provider') || '').toUpperCase());
+    setSelectValue(els.routeTypeFilter, params.get('route'));
+    setSelectValue(els.minLiquidity, params.get('min'));
+    setSelectValue(els.slippage, params.get('slippage'));
+    buildTokens();
+    fillSelects();
+    setSelectValue(els.tokenIn, params.get('in'));
+    setSelectValue(els.tokenOut, params.get('out'));
+    if (els.tokenIn.value && els.tokenIn.value === els.tokenOut.value) {
+      setSelectFallbacks('', els.tokenOut.value);
+    }
+  }
+
   function providerSummary(pools = activePools()) {
     const counts = sourceCountsForPools(pools);
     const parts = ['ALCOR', 'TACO', 'NEFTY'].map((name) => `${name}: ${counts[name] || 0}/${state.sourceCounts[name] || 0}`);
     const errors = Object.entries(state.sourceErrors).filter(([, v]) => v).map(([k]) => k);
     return `${parts.join(' · ')}${errors.length ? ` · Failed: ${errors.join(', ')}` : ''}`;
+  }
+
+  function sourceErrorHtml() {
+    const entries = Object.entries(state.sourceErrors).filter(([, message]) => message);
+    if (!entries.length) return '';
+    return '<div class="warning">Source warnings: ' + entries
+      .map(([source, message]) => `${htmlEscape(source)}: ${htmlEscape(String(message).slice(0, 120))}`)
+      .join(' · ') + '</div>';
+  }
+
+  function routeQuality(route) {
+    if (!route || route.type === 'none') return 'No route';
+    if (route.impact >= 10) return 'Very high impact';
+    if (route.impact >= 5) return 'High impact';
+    if (route.impact >= 2) return 'Moderate impact';
+    return 'Low impact';
   }
 
   function routePoolLabel(pool) {
@@ -140,6 +271,21 @@
     return selected;
   }
 
+  function noRouteDetails(route, pools) {
+    const wanted = String(els.routeTypeFilter?.value || 'ALL');
+    const availableTypes = Array.isArray(route?.candidates)
+      ? [...new Set(route.candidates.map((candidate) => candidate.type))]
+      : [];
+    const details = [
+      `Filters: ${String(els.providerFilter?.value || 'ALL')} · ${wanted} · min score ${asNumber(els.minLiquidity.value)}`,
+      `Pools used: ${pools.length}`,
+    ];
+    if (wanted !== 'ALL' && availableTypes.length) {
+      details.push(`Available route types: ${availableTypes.join(', ')}`);
+    }
+    return details.join(' | ');
+  }
+
   function render() {
     if (!state.ready) return;
     if (!engine) {
@@ -154,14 +300,17 @@
     const minLiquidityScore = asNumber(els.minLiquidity.value);
     const route = applyRouteTypeFilter(engine.findOptimalSplit(amountIn, tokenIn, tokenOut, pools, minLiquidityScore));
     const slippage = asNumber(els.slippage.value);
+    writeUrlState();
 
     if (!amountIn || amountIn <= 0) {
-      els.result.innerHTML = `<div class="muted">Enter an amount.<br>${htmlEscape(providerSummary(pools))}</div>`;
+      state.lastSummary = `No quote amount entered. ${providerSummary(pools)}`;
+      els.result.innerHTML = `${actionsHtml()}<div class="muted">Enter an amount.<br>${htmlEscape(providerSummary(pools))}<br>Loaded: ${htmlEscape(formatLoadedAt())}</div>${sourceErrorHtml()}`;
       return;
     }
 
     if (!route || route.type === 'none' || route.output <= 0) {
-      els.result.innerHTML = `<div class="bad">No route found for this pair at the selected filters.</div><div class="warning">${htmlEscape(providerSummary(pools))}</div>`;
+      state.lastSummary = `No route found for ${formatNumber(amountIn)} ${tokenIn.symbol} to ${tokenOut.symbol}. ${noRouteDetails(route, pools)}. ${providerSummary(pools)}`;
+      els.result.innerHTML = `${actionsHtml()}<div class="bad">No route found for this pair at the selected filters.</div><div class="warning">${htmlEscape(providerSummary(pools))}<br>${htmlEscape(noRouteDetails(route, pools))}<br>Loaded: ${htmlEscape(formatLoadedAt())}</div>${sourceErrorHtml()}`;
       return;
     }
 
@@ -170,6 +319,7 @@
     const routeNames = Array.isArray(route.routePools) && route.routePools.length
       ? route.routePools.map(routePoolLabel).join(' → ')
       : route.splits.map((s) => `${s.provider} #${s.poolId}`).join(' + ');
+    state.lastSummary = `Quote estimate: ${formatNumber(amountIn)} ${tokenIn.symbol} -> ${formatNumber(route.output)} ${tokenOut.symbol}. Minimum after tolerance: ${formatNumber(minReceived)} ${tokenOut.symbol}. Route: ${route.type} via ${route.provider}. Quality: ${routeQuality(route)}. Impact: ${formatNumber(route.impact, 4)}%. Fee: ${formatNumber(route.feePercent, 4)}%. Pools: ${routeNames}. Link: ${currentQuoteUrl()}`;
     const topRows = candidates.slice(0, 6).map((r, idx) => {
       const routePools = Array.isArray(r.routePools) && r.routePools.length ? r.routePools.map(routePoolLabel).join(' → ') : r.splits.map((s) => `${s.provider} #${s.poolId}`).join(' + ');
       const active = r === route ? ' · selected' : '';
@@ -178,12 +328,14 @@
     const warn = route.impact > 5 ? '<div class="warning">High price impact. Reduce amount or check another route before using this quote.</div>' : '';
 
     els.result.innerHTML = `
+      ${actionsHtml()}
       <div class="muted">Estimated output</div>
       <div class="big">${formatNumber(route.output)} ${htmlEscape(tokenOut.symbol)}</div>
       <div class="muted">For ${formatNumber(amountIn)} ${htmlEscape(tokenIn.symbol)}</div>
       <div class="stats">
         <div class="stat"><small>Route</small><b>${htmlEscape(route.type)}</b></div>
         <div class="stat"><small>Provider</small><b>${htmlEscape(route.provider)}</b></div>
+        <div class="stat"><small>Quality</small><b>${htmlEscape(routeQuality(route))}</b></div>
         <div class="stat"><small>Sources active / loaded</small><b>${htmlEscape(providerSummary(pools))}</b></div>
         <div class="stat"><small>Impact</small><b>${formatNumber(route.impact, 4)}%</b></div>
         <div class="stat"><small>Fee total</small><b>${formatNumber(route.feePercent, 4)}%</b></div>
@@ -192,9 +344,11 @@
         <div class="stat"><small>Candidate routes</small><b>${candidates.length}</b></div>
         <div class="stat"><small>Split</small><b>${route.split ? 'Yes' : 'No'}</b></div>
         <div class="stat"><small>Pool records used</small><b>${pools.length}</b></div>
+        <div class="stat"><small>Loaded</small><b>${htmlEscape(formatLoadedAt())}</b></div>
       </div>
       <div class="warning">Route: ${htmlEscape(routeNames)}<br>Pool IDs: ${htmlEscape(routePoolIds(route))}</div>
       ${warn}
+      ${sourceErrorHtml()}
       <div class="routes">${topRows}</div>
     `;
   }
@@ -210,8 +364,8 @@
     state.pools = result.pools || [];
     state.sourceCounts = result.sourceCounts || {};
     state.sourceErrors = result.sourceErrors || {};
-    buildTokens();
-    fillSelects();
+    state.loadedAt = new Date();
+    applyUrlState();
     state.ready = true;
     render();
   }
@@ -219,6 +373,7 @@
   for (const el of [els.amount, els.tokenIn, els.tokenOut, els.minLiquidity, els.providerFilter, els.routeTypeFilter, els.slippage]) {
     if (!el) continue;
     el.addEventListener('input', () => {
+      state.copyStatus = '';
       if (el === els.providerFilter) {
         buildTokens();
         fillSelects();
@@ -226,6 +381,7 @@
       render();
     });
     el.addEventListener('change', () => {
+      state.copyStatus = '';
       if (el === els.providerFilter) {
         buildTokens();
         fillSelects();
@@ -234,8 +390,18 @@
     });
   }
 
+  els.result.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-quote-action]');
+    if (!button) return;
+    const action = button.getAttribute('data-quote-action');
+    if (action === 'copy-link') copyCurrentQuoteUrl();
+    if (action === 'copy-summary') copyCurrentQuoteSummary();
+    if (action === 'reset-controls') resetControls();
+  });
+
   els.quoteBtn.addEventListener('click', load);
   els.switchBtn.addEventListener('click', () => {
+    state.copyStatus = '';
     const oldIn = els.tokenIn.value;
     els.tokenIn.value = els.tokenOut.value;
     els.tokenOut.value = oldIn;
