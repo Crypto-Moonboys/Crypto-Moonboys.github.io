@@ -15,6 +15,8 @@
     tokenIn: document.getElementById('tokenIn'),
     tokenOut: document.getElementById('tokenOut'),
     minLiquidity: document.getElementById('minLiquidity'),
+    providerFilter: document.getElementById('providerFilter'),
+    routeTypeFilter: document.getElementById('routeTypeFilter'),
     slippage: document.getElementById('slippage'),
     quoteBtn: document.getElementById('quoteBtn'),
     switchBtn: document.getElementById('switchTokens'),
@@ -48,9 +50,22 @@
     return value.toLocaleString(undefined, { maximumSignificantDigits: max });
   }
 
+  function activePools() {
+    const provider = String(els.providerFilter?.value || 'ALL').toUpperCase();
+    if (provider === 'ALL') return state.pools;
+    return state.pools.filter((pool) => pool.provider === provider);
+  }
+
+  function sourceCountsForPools(pools) {
+    return pools.reduce((acc, pool) => {
+      acc[pool.provider] = (acc[pool.provider] || 0) + 1;
+      return acc;
+    }, {});
+  }
+
   function buildTokens() {
     const map = new Map();
-    for (const pool of state.pools) {
+    for (const pool of activePools()) {
       for (const token of [pool.tokenA, pool.tokenB]) {
         const key = `${token.symbol}::${token.contract}`;
         const existing = map.get(key) || { ...token, score: 0, providers: new Set() };
@@ -85,8 +100,9 @@
     if (!els.tokenOut.value && state.tokens[1]) els.tokenOut.value = `${state.tokens[1].symbol}::${state.tokens[1].contract}`;
   }
 
-  function providerSummary() {
-    const parts = ['ALCOR', 'TACO', 'NEFTY'].map((name) => `${name}: ${state.sourceCounts[name] || 0}`);
+  function providerSummary(pools = activePools()) {
+    const counts = sourceCountsForPools(pools);
+    const parts = ['ALCOR', 'TACO', 'NEFTY'].map((name) => `${name}: ${counts[name] || 0}/${state.sourceCounts[name] || 0}`);
     const errors = Object.entries(state.sourceErrors).filter(([, v]) => v).map(([k]) => k);
     return `${parts.join(' · ')}${errors.length ? ` · Failed: ${errors.join(', ')}` : ''}`;
   }
@@ -101,6 +117,17 @@
     return pools.map((p) => `${p.provider} #${p.sourceId} (${p.liquidityBasis || 'score'})`).join(', ');
   }
 
+  function applyRouteTypeFilter(route) {
+    const wanted = String(els.routeTypeFilter?.value || 'ALL');
+    if (wanted === 'ALL' || !route || !Array.isArray(route.candidates)) return route;
+    const selected = route.candidates.find((candidate) => candidate.type === wanted);
+    if (!selected) {
+      return { type: 'none', output: 0, candidates: route.candidates, splits: [], routePools: [], provider: 'NO ROUTE', split: false, impact: 0, feePercent: 0 };
+    }
+    selected.candidates = route.candidates;
+    return selected;
+  }
+
   function render() {
     if (!state.ready) return;
     if (!engine) {
@@ -108,20 +135,21 @@
       return;
     }
 
+    const pools = activePools();
     const amountIn = asNumber(els.amount.value);
     const tokenIn = selectedToken(els.tokenIn);
     const tokenOut = selectedToken(els.tokenOut);
     const minLiquidityScore = asNumber(els.minLiquidity.value);
-    const route = engine.findOptimalSplit(amountIn, tokenIn, tokenOut, state.pools, minLiquidityScore);
+    const route = applyRouteTypeFilter(engine.findOptimalSplit(amountIn, tokenIn, tokenOut, pools, minLiquidityScore));
     const slippage = asNumber(els.slippage.value);
 
     if (!amountIn || amountIn <= 0) {
-      els.result.innerHTML = `<div class="muted">Enter an amount.<br>${htmlEscape(providerSummary())}</div>`;
+      els.result.innerHTML = `<div class="muted">Enter an amount.<br>${htmlEscape(providerSummary(pools))}</div>`;
       return;
     }
 
     if (!route || route.type === 'none' || route.output <= 0) {
-      els.result.innerHTML = `<div class="bad">No route found for this pair at the selected filter.</div><div class="warning">${htmlEscape(providerSummary())}</div>`;
+      els.result.innerHTML = `<div class="bad">No route found for this pair at the selected filters.</div><div class="warning">${htmlEscape(providerSummary(pools))}</div>`;
       return;
     }
 
@@ -130,9 +158,10 @@
     const routeNames = Array.isArray(route.routePools) && route.routePools.length
       ? route.routePools.map(routePoolLabel).join(' → ')
       : route.splits.map((s) => `${s.provider} #${s.poolId}`).join(' + ');
-    const topRows = candidates.slice(0, 5).map((r, idx) => {
-      const pools = Array.isArray(r.routePools) && r.routePools.length ? r.routePools.map(routePoolLabel).join(' → ') : r.splits.map((s) => `${s.provider} #${s.poolId}`).join(' + ');
-      return `<div class="route"><strong>${idx === 0 ? 'Best' : `#${idx + 1}`}</strong><div><b>${htmlEscape(r.type)} · ${htmlEscape(r.provider)}</b><br><small>${htmlEscape(pools)}</small><br><small>Output ${formatNumber(r.output)} · Impact ${formatNumber(r.impact, 4)}% · Saving ${formatNumber(r.savingsPct || 0, 4)}%</small></div></div>`;
+    const topRows = candidates.slice(0, 6).map((r, idx) => {
+      const routePools = Array.isArray(r.routePools) && r.routePools.length ? r.routePools.map(routePoolLabel).join(' → ') : r.splits.map((s) => `${s.provider} #${s.poolId}`).join(' + ');
+      const active = r === route ? ' · selected' : '';
+      return `<div class="route"><strong>${idx === 0 ? 'Best' : `#${idx + 1}`}</strong><div><b>${htmlEscape(r.type)} · ${htmlEscape(r.provider)}${active}</b><br><small>${htmlEscape(routePools)}</small><br><small>Output ${formatNumber(r.output)} · Impact ${formatNumber(r.impact, 4)}% · Saving ${formatNumber(r.savingsPct || 0, 4)}%</small></div></div>`;
     }).join('');
     const warn = route.impact > 5 ? '<div class="warning">High price impact. Reduce amount or check another route before using this quote.</div>' : '';
 
@@ -143,13 +172,14 @@
       <div class="stats">
         <div class="stat"><small>Route</small><b>${htmlEscape(route.type)}</b></div>
         <div class="stat"><small>Provider</small><b>${htmlEscape(route.provider)}</b></div>
-        <div class="stat"><small>Sources loaded</small><b>${htmlEscape(providerSummary())}</b></div>
+        <div class="stat"><small>Sources active / loaded</small><b>${htmlEscape(providerSummary(pools))}</b></div>
         <div class="stat"><small>Impact</small><b>${formatNumber(route.impact, 4)}%</b></div>
         <div class="stat"><small>Fee total</small><b>${formatNumber(route.feePercent, 4)}%</b></div>
         <div class="stat"><small>Minimum after tolerance</small><b>${formatNumber(minReceived)}</b></div>
         <div class="stat"><small>Minimum score</small><b>${formatNumber(minLiquidityScore)}</b></div>
         <div class="stat"><small>Candidate routes</small><b>${candidates.length}</b></div>
         <div class="stat"><small>Split</small><b>${route.split ? 'Yes' : 'No'}</b></div>
+        <div class="stat"><small>Pool records used</small><b>${pools.length}</b></div>
       </div>
       <div class="warning">Route: ${htmlEscape(routeNames)}<br>Pool IDs: ${htmlEscape(routePoolIds(route))}</div>
       ${warn}
@@ -174,9 +204,22 @@
     render();
   }
 
-  for (const el of [els.amount, els.tokenIn, els.tokenOut, els.minLiquidity, els.slippage]) {
-    el.addEventListener('input', render);
-    el.addEventListener('change', render);
+  for (const el of [els.amount, els.tokenIn, els.tokenOut, els.minLiquidity, els.providerFilter, els.routeTypeFilter, els.slippage]) {
+    if (!el) continue;
+    el.addEventListener('input', () => {
+      if (el === els.providerFilter) {
+        buildTokens();
+        fillSelects();
+      }
+      render();
+    });
+    el.addEventListener('change', () => {
+      if (el === els.providerFilter) {
+        buildTokens();
+        fillSelects();
+      }
+      render();
+    });
   }
 
   els.quoteBtn.addEventListener('click', load);
