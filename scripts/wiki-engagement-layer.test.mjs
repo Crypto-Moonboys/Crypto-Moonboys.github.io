@@ -19,6 +19,13 @@ function check(condition, message) {
   console.log(`[PASS] ${message}`);
 }
 
+function section(source, startNeedle, endNeedle) {
+  const start = source.indexOf(startNeedle);
+  if (start < 0) return '';
+  const end = endNeedle ? source.indexOf(endNeedle, start + startNeedle.length) : -1;
+  return source.slice(start, end > start ? end : undefined);
+}
+
 const battleLayer = read('js/battle-layer.js');
 const engagement = read('js/engagement.js');
 const comments = read('js/comments.js');
@@ -45,6 +52,17 @@ check(apiConfig.includes('COMMENTS:           true') && apiConfig.includes('LIKE
 check(apiConfig.includes('LEADERBOARD:        false') && apiConfig.includes('LIVE_FEED:          false') && apiConfig.includes('ACTIVITY_PANEL:     false'), 'Unimplemented engagement panels remain disabled');
 
 check(comments.includes("CustomEvent('moonboys:comment-posted'"), 'Successful comment posts notify mission completion');
+check(comments.includes("COMMENT_PROFILE_KEY = 'moonboys_comment_profile_v1'"), 'Comment form stores a browser-local commenter profile');
+check(comments.includes('applyLinkedTelegramIdentity(form)') && comments.includes('getTelegramName') && comments.includes('getTelegramAuth') && comments.includes('isTelegramLinked'), 'Linked Telegram identity auto-fills comment form fields from identity-gate state');
+check(comments.includes("fillIfEmpty(form, 'name'") && comments.includes("fillIfEmpty(form, 'telegram_username'"), 'Comment auto-fill does not overwrite manually typed values');
+check(!comments.includes('telegram-widget.js') && !comments.includes('data-telegram-login') && !comments.includes('Bot domain invalid'), 'Linked/comment form path avoids the broken Telegram widget');
+check(comments.includes('Telegram linked:') && comments.includes('rewards can sync after posting'), 'Linked Telegram users see connected reward-sync copy');
+check(comments.includes('Telegram quick-fill unavailable. Link through the Incubator Hub /gklink flow.'), 'Unlinked users see a clean Telegram quick-fill fallback');
+check(comments.includes('Gravatar avatar ready from saved email.') && comments.includes('Email required for Gravatar avatar, never displayed.'), 'Gravatar copy reflects saved-email reality without fake account detection');
+const profileSave = section(comments, 'function saveCommentProfile(profile)', 'function cleanTelegramUsername');
+check(profileSave.includes("'name'") && profileSave.includes("'email'") && profileSave.includes("'telegram_username'") && profileSave.includes("'discord_username'") && profileSave.includes("'avatar_url'"), 'Saved commenter profile includes only expected identity fields');
+check(!profileSave.includes('telegram_auth') && !profileSave.includes('text'), 'Saved commenter profile excludes raw Telegram auth and comment text');
+check(!/gravatar(?:\.com)?\s+(?:login|account)/i.test(comments), 'Comment form does not claim fake Gravatar account detection');
 check(engagement.includes("CustomEvent('moonboys:page-liked'"), 'Successful page likes notify mission completion');
 check(engagement.includes("CustomEvent('moonboys:citation-voted'"), 'Successful citation votes notify mission completion');
 check(battleLayer.includes('if (isMissionComplete(pageId, missionId)) return;'), 'Mission completion is guarded once per page/window');
