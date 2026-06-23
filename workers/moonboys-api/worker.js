@@ -701,6 +701,13 @@ async function hashEmail(email) {
   return bytesToHex(digest);
 }
 
+async function hashTelegramCommentIdentity(telegramId) {
+  const normalized = String(telegramId || '').trim();
+  if (!normalized) return null;
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(normalized));
+  return `tg:${bytesToHex(digest)}`;
+}
+
 async function verifyOptionalWikiTelegram(body, env) {
   if (!body || !body.telegram_auth) return { verified: null };
   const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
@@ -4648,15 +4655,19 @@ export default {
       const pageId = normalizeWikiPageId(body?.page_id);
       const name = normalizeTextField(body?.name, 60);
       const text = normalizeTextField(body?.text, 1000);
-      const emailHash = await hashEmail(body?.email);
       if (!pageId) return err('page_id required', 400);
       if (!name) return err('name required', 400);
       if (!text) return err('text required', 400);
-      if (!emailHash) return err('valid email required', 400);
       try {
         { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
         const auth = await verifyOptionalWikiTelegram(body, env);
         if (auth.error) return err(auth.error, auth.status || 401);
+        const emailHash = await hashEmail(body?.email);
+        const commentIdentityHash = emailHash || await hashTelegramCommentIdentity(auth.verified?.telegramId);
+        if (!commentIdentityHash) return err('valid email or linked Telegram auth required', 400);
+        const avatarUrl = normalizeTextField(body?.avatar_url, 500)
+          || normalizeTextField(auth.verified?.user?.photo_url, 500)
+          || null;
         const commentId = crypto.randomUUID();
         await env.DB.prepare(`
           INSERT INTO wiki_comments
@@ -4667,8 +4678,8 @@ export default {
           pageId,
           auth.verified?.telegramId || null,
           name,
-          emailHash,
-          normalizeTextField(body?.avatar_url, 500) || null,
+          commentIdentityHash,
+          avatarUrl,
           normalizeTextField(body?.telegram_username, 60) || null,
           normalizeTextField(body?.discord_username, 60) || null,
           text,

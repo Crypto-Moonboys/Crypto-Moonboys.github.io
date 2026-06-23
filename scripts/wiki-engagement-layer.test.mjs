@@ -56,7 +56,8 @@ check(comments.includes("COMMENT_PROFILE_KEY = 'moonboys_comment_profile_v1'"), 
 check(comments.includes('applyLinkedTelegramIdentity(form)') && comments.includes('getTelegramName') && comments.includes('getTelegramAuth') && comments.includes('isTelegramLinked'), 'Linked Telegram identity auto-fills comment form fields from identity-gate state');
 check(comments.includes("fillIfEmpty(form, 'name'") && comments.includes("fillIfEmpty(form, 'telegram_username'"), 'Comment auto-fill does not overwrite manually typed values');
 check(!comments.includes('telegram-widget.js') && !comments.includes('data-telegram-login') && !comments.includes('Bot domain invalid'), 'Linked/comment form path avoids the broken Telegram widget');
-check(comments.includes('Telegram linked:') && comments.includes('rewards can sync after posting'), 'Linked Telegram users see connected reward-sync copy');
+check(comments.includes('Telegram linked:') && comments.includes('Email optional — Telegram identity will be used.'), 'Linked Telegram users see email-optional Telegram identity copy');
+check(comments.includes('if (!email && !telegramAuth)') && comments.includes('if (email)   payload.email = email;'), 'Comment submit requires email only when signed Telegram auth is unavailable');
 check(comments.includes('Telegram quick-fill unavailable. Link through the Incubator Hub /gklink flow.'), 'Unlinked users see a clean Telegram quick-fill fallback');
 check(comments.includes('Gravatar avatar ready from saved email.') && comments.includes('Email required for Gravatar avatar, never displayed.'), 'Gravatar copy reflects saved-email reality without fake account detection');
 const profileSave = section(comments, 'function saveCommentProfile(profile)', 'function cleanTelegramUsername');

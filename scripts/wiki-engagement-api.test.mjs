@@ -40,6 +40,10 @@ function signTelegramAuth(id) {
   return { ...fields, hash };
 }
 
+function telegramCommentHash(id) {
+  return `tg:${createHash('sha256').update(String(id)).digest('hex')}`;
+}
+
 class MockStatement {
   constructor(db, sql) {
     this.db = db;
@@ -159,6 +163,7 @@ class MockStatement {
         telegram_id: args[2] == null ? null : String(args[2]),
         name: String(args[3]),
         email_hash: String(args[4]),
+        avatar_url: args[5] == null ? null : String(args[5]),
         text: String(args[8]),
         status: 'pending',
         votes_up: 0,
@@ -300,6 +305,26 @@ async function run() {
   assert.equal(unlinkedComment.json.mission.reward_status, 'telegram_link_required');
   assert.equal(unlinkedDb.xpLog.length, 0, 'signed auth plus blocktopia_progression but no link_confirmed cannot earn XP');
 
+  const guestDb = new MockD1();
+  const blankGuest = await api(guestDb, '/comments', {
+    page_id: 'wuffi',
+    name: 'No Email Guest',
+    text: 'No email and no Telegram should fail.',
+  });
+  assert.equal(blankGuest.response.status, 400, 'blank email plus no Telegram auth is rejected');
+  assert.equal(blankGuest.json.error, 'valid email or linked Telegram auth required');
+  assert.equal(guestDb.comments.size, 0, 'rejected blank-email guest comment is not stored');
+
+  const emailGuest = await api(guestDb, '/comments', {
+    page_id: 'wuffi',
+    name: 'Email Guest',
+    email: 'guest@example.com',
+    text: 'Email-only comment still works.',
+  });
+  assert.equal(emailGuest.response.status, 201, 'valid email plus no Telegram still works');
+  assert.equal(emailGuest.json.mission.reward_status, 'telegram_sync_required');
+  assert(!JSON.stringify(emailGuest.json).includes('guest@example.com'), 'raw email is not exposed in comment post response');
+
   const db = new MockD1();
   db.linkConfirmed.set(LINKED_ID, { action: 'link_confirmed', created_at: new Date().toISOString() });
   const linkedAuth = signTelegramAuth(LINKED_ID);
@@ -307,14 +332,20 @@ async function run() {
   const engage1 = await api(db, '/comments', {
     page_id: 'wuffi',
     name: 'Linked User',
-    email: 'linked@example.com',
-    text: 'Engage mission source.',
+    text: 'Engage mission source with Telegram fallback avatar hash.',
+    avatar_url: 'https://t.me/i/userpic/320/linked.jpg',
     telegram_auth: linkedAuth,
   });
   assert.equal(engage1.response.status, 201);
   assert.equal(engage1.json.status, 'pending', 'Engage rewards are submission-timed for stored pending comments');
   assert.equal(engage1.json.mission.reward_status, 'xp_synced');
   assert.equal(engage1.json.mission.mission_id, 'engage');
+  const linkedComment = db.comments.get(engage1.json.comment_id);
+  assert.equal(linkedComment.email_hash, telegramCommentHash(LINKED_ID), 'Telegram fallback email_hash is deterministic');
+  assert(linkedComment.email_hash.startsWith('tg:'), 'Telegram fallback email_hash is explicitly non-Gravatar');
+  assert(!linkedComment.email_hash.includes(LINKED_ID), 'Telegram fallback email_hash does not contain raw telegram_id');
+  assert.equal(linkedComment.avatar_url, 'https://t.me/i/userpic/320/linked.jpg', 'Telegram avatar URL is stored when supplied');
+  assert(!JSON.stringify(engage1.json).includes('telegram_auth'), 'raw Telegram auth is not exposed in comment post response');
 
   const engage2 = await api(db, '/comments', {
     page_id: 'wuffi',
