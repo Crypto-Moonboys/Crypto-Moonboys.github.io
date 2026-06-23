@@ -42,6 +42,10 @@
     return { symbol, contract };
   }
 
+  function optionValue(token) {
+    return `${token.symbol}::${token.contract}`;
+  }
+
   function formatNumber(n, max = 8) {
     const value = asNumber(n);
     if (!value) return '0';
@@ -67,7 +71,7 @@
     const map = new Map();
     for (const pool of activePools()) {
       for (const token of [pool.tokenA, pool.tokenB]) {
-        const key = `${token.symbol}::${token.contract}`;
+        const key = optionValue(token);
         const existing = map.get(key) || { ...token, score: 0, providers: new Set() };
         existing.score += pool.liquidityScore || pool.liquidityUSD || 0;
         existing.providers.add(pool.provider);
@@ -81,23 +85,31 @@
     });
   }
 
+  function setSelectFallbacks(currentIn, currentOut) {
+    const values = new Set(state.tokens.map(optionValue));
+    const wax = state.tokens.find((t) => engine.normalize(t.symbol) === 'WAX' && String(t.contract).toLowerCase() === 'eosio.token');
+    const tlm = state.tokens.find((t) => engine.normalize(t.symbol) === 'TLM' && String(t.contract).toLowerCase() === 'alien.worlds');
+    const first = state.tokens[0] ? optionValue(state.tokens[0]) : '';
+    const second = state.tokens[1] ? optionValue(state.tokens[1]) : first;
+
+    els.tokenIn.value = values.has(currentIn) ? currentIn : (wax ? optionValue(wax) : first);
+    els.tokenOut.value = values.has(currentOut) ? currentOut : (tlm ? optionValue(tlm) : second);
+
+    if (els.tokenIn.value && els.tokenIn.value === els.tokenOut.value && second && second !== els.tokenIn.value) {
+      els.tokenOut.value = second;
+    }
+  }
+
   function fillSelects() {
     const currentIn = els.tokenIn.value;
     const currentOut = els.tokenOut.value;
     const options = state.tokens.map((token) => {
       const label = `${token.symbol} — ${token.contract} (${token.providers.join('/')})`;
-      return `<option value="${htmlEscape(token.symbol)}::${htmlEscape(token.contract)}">${htmlEscape(label)}</option>`;
+      return `<option value="${htmlEscape(optionValue(token))}">${htmlEscape(label)}</option>`;
     }).join('');
     els.tokenIn.innerHTML = options;
     els.tokenOut.innerHTML = options;
-    if (currentIn) els.tokenIn.value = currentIn;
-    if (currentOut) els.tokenOut.value = currentOut;
-
-    const wax = state.tokens.find((t) => engine.normalize(t.symbol) === 'WAX' && String(t.contract).toLowerCase() === 'eosio.token');
-    const tlm = state.tokens.find((t) => engine.normalize(t.symbol) === 'TLM' && String(t.contract).toLowerCase() === 'alien.worlds');
-    if (!els.tokenIn.value && wax) els.tokenIn.value = `${wax.symbol}::${wax.contract}`;
-    if (!els.tokenOut.value && tlm) els.tokenOut.value = `${tlm.symbol}::${tlm.contract}`;
-    if (!els.tokenOut.value && state.tokens[1]) els.tokenOut.value = `${state.tokens[1].symbol}::${state.tokens[1].contract}`;
+    setSelectFallbacks(currentIn, currentOut);
   }
 
   function providerSummary(pools = activePools()) {
