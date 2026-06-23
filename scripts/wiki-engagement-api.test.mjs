@@ -9,6 +9,7 @@ import worker from '../workers/moonboys-api/worker.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE_URL = 'https://moonboys-api.test';
 const TELEGRAM_BOT_TOKEN = '123456:test-bot-token';
+const SWARMSY_BRIDGE_TOKEN = 'test-swarmsy-bridge-token';
 const LINKED_ID = '10001';
 const UNLINKED_ID = '10002';
 
@@ -126,7 +127,14 @@ class MockStatement {
 
   async all() {
     const sql = this.normalizedSql();
-    if (sql.includes('FROM wiki_comments') && sql.includes("status = 'approved'")) return { results: [] };
+    if (sql.includes('FROM wiki_comments') && sql.includes("status = 'approved'")) {
+      const [pageId, limit] = this.args.map((arg) => String(arg));
+      return {
+        results: [...this.db.comments.values()]
+          .filter((row) => row.page_id === pageId && row.status === 'approved')
+          .slice(0, Number(limit) || 20),
+      };
+    }
     if (sql.includes('FROM wiki_mission_completions') && sql.includes('WHERE page_id = ?')) {
       const [pageId, missionWindow, telegramId] = this.args.map((arg) => String(arg));
       const results = [];
@@ -241,13 +249,22 @@ class MockStatement {
       if (row && vote === 'down') row.votes_down = (row.votes_down || 0) + 1;
       return { success: true, meta: { changes: row ? 1 : 0 } };
     }
+    if (sql.startsWith('UPDATE wiki_comments SET status = ? WHERE id = ?')) {
+      if (this.db.failCommentStatusUpdates) throw new Error('status update failed');
+      const status = String(args[0]);
+      const commentId = String(args[1]);
+      const row = this.db.comments.get(commentId);
+      if (row) row.status = status;
+      return { success: true, meta: { changes: row ? 1 : 0 } };
+    }
     throw new Error(`Unhandled run SQL: ${sql}`);
   }
 }
 
 class MockD1 {
-  constructor({ missingTables = [] } = {}) {
+  constructor({ missingTables = [], failCommentStatusUpdates = false } = {}) {
     this.missingTables = new Set(missingTables);
+    this.failCommentStatusUpdates = failCommentStatusUpdates;
     this.telegramUsers = new Map();
     this.linkConfirmed = new Map();
     this.blocktopiaProgression = new Map();
@@ -265,21 +282,40 @@ class MockD1 {
   }
 }
 
-function makeEnv(db) {
-  return { DB: db, TELEGRAM_BOT_TOKEN };
+function makeEnv(db, overrides = {}) {
+  return { DB: db, TELEGRAM_BOT_TOKEN, ...overrides };
 }
 
-async function api(db, pathName, body, method = 'POST') {
+async function api(db, pathName, body, method = 'POST', envOverrides = {}) {
   const init = method === 'GET'
     ? { method }
     : { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) };
-  const response = await worker.fetch(new Request(`${BASE_URL}${pathName}`, init), makeEnv(db), {});
+  const response = await worker.fetch(new Request(`${BASE_URL}${pathName}`, init), makeEnv(db, envOverrides), {});
   const json = await response.json().catch(() => ({}));
   return { response, json };
 }
 
+function installModerationFetch(decision, options = {}) {
+  const calls = [];
+  globalThis.fetch = async (url, init = {}) => {
+    calls.push({
+      url: String(url),
+      headers: init.headers || {},
+      body: init.body ? JSON.parse(init.body) : null,
+    });
+    if (options.throw) throw new Error(options.throw);
+    if (options.invalidJson) return new Response('not-json', { status: options.status || 200 });
+    return new Response(JSON.stringify(options.body || { decision, reason: `${decision || 'pending'}_by_test` }), {
+      status: options.status || 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+  return calls;
+}
+
 async function run() {
   console.log('\nWiki engagement API route regression\n');
+  const originalFetch = globalThis.fetch;
 
   const migration = read('workers/moonboys-api/migrations/029_wiki_engagement.sql');
   for (const table of REQUIRED_TABLES) {
@@ -323,11 +359,111 @@ async function run() {
   });
   assert.equal(emailGuest.response.status, 201, 'valid email plus no Telegram still works');
   assert.equal(emailGuest.json.mission.reward_status, 'telegram_sync_required');
+  assert.equal(emailGuest.json.status, 'pending', 'missing SWARMSY token leaves comment pending');
   assert(!JSON.stringify(emailGuest.json).includes('guest@example.com'), 'raw email is not exposed in comment post response');
+
+  const approvedGuestDb = new MockD1();
+  const approvedCalls = installModerationFetch('approved');
+  const approvedGuest = await api(approvedGuestDb, '/comments', {
+    page_id: 'wuffi',
+    name: 'Approved Guest',
+    email: 'approved@example.com',
+    text: 'Safe source-backed comment.',
+  }, 'POST', { SWARMSY_BRIDGE_TOKEN });
+  assert.equal(approvedGuest.response.status, 201, 'SWARMSY-approved comment posts');
+  assert.equal(approvedGuest.json.status, 'approved', 'SWARMSY-approved comment becomes approved');
+  assert.equal(approvedGuest.json.moderation, 'approved');
+  assert.equal(approvedGuest.json.message, 'Comment posted.');
+  assert(!JSON.stringify(approvedGuest.json).includes(SWARMSY_BRIDGE_TOKEN), 'SWARMSY bridge token is not exposed in approved response');
+  assert(!JSON.stringify(approvedGuest.json).includes('approved@example.com'), 'raw email is not exposed in approved response');
+  assert.equal(approvedCalls.length, 1, 'approved comment calls SWARMSY once');
+  assert.equal(approvedCalls[0].headers['X-SWARMSY-BRIDGE-TOKEN'], SWARMSY_BRIDGE_TOKEN, 'SWARMSY token is sent only as server-side header');
+  assert.equal(approvedCalls[0].body.email, undefined, 'raw email is not sent to SWARMSY');
+  assert.equal(approvedCalls[0].body.telegram_auth, undefined, 'raw telegram_auth is not sent to SWARMSY');
+  const approvedPublic = await api(approvedGuestDb, '/comments?page_id=wuffi', null, 'GET');
+  assert.equal(approvedPublic.response.status, 200);
+  assert.equal(approvedPublic.json.comments.length, 1, 'approved comment is returned by public GET /comments');
+  assert.equal(approvedPublic.json.comments[0].status, 'approved');
+
+  const updateFailureDb = new MockD1({ failCommentStatusUpdates: true });
+  installModerationFetch('approved');
+  const updateFailure = await api(updateFailureDb, '/comments', {
+    page_id: 'wuffi',
+    name: 'Update Failure Guest',
+    email: 'update-failure@example.com',
+    text: 'Approved moderation but failed status update should stay pending.',
+  }, 'POST', { SWARMSY_BRIDGE_TOKEN });
+  assert.equal(updateFailure.response.status, 201, 'moderation status update failure still returns 201');
+  assert.equal(updateFailure.json.status, 'pending', 'failed moderation status update falls back to pending response status');
+  assert.equal(updateFailure.json.moderation, 'pending', 'failed moderation status update falls back to pending moderation');
+  assert.equal(updateFailure.json.message, 'Comment received and awaiting automated review.');
+  const updateFailurePublic = await api(updateFailureDb, '/comments?page_id=wuffi', null, 'GET');
+  assert.equal(updateFailurePublic.json.comments.length, 0, 'failed moderation status update does not publish comment');
+
+  const rejectedDb = new MockD1();
+  installModerationFetch('rejected');
+  const rejectedComment = await api(rejectedDb, '/comments', {
+    page_id: 'wuffi',
+    name: 'Rejected Guest',
+    email: 'rejected@example.com',
+    text: 'Rejected by moderation.',
+  }, 'POST', { SWARMSY_BRIDGE_TOKEN });
+  assert.equal(rejectedComment.json.status, 'rejected', 'SWARMSY-rejected comment becomes rejected');
+  assert.equal(rejectedComment.json.message, 'Comment could not be published.');
+  const rejectedPublic = await api(rejectedDb, '/comments?page_id=wuffi', null, 'GET');
+  assert.equal(rejectedPublic.json.comments.length, 0, 'rejected comment is not returned publicly');
+
+  const pendingDb = new MockD1();
+  installModerationFetch('pending');
+  const pendingComment = await api(pendingDb, '/comments', {
+    page_id: 'wuffi',
+    name: 'Pending Guest',
+    email: 'pending@example.com',
+    text: 'Needs more review.',
+  }, 'POST', { SWARMSY_BRIDGE_TOKEN });
+  assert.equal(pendingComment.json.status, 'pending', 'SWARMSY pending decision remains pending');
+  const pendingPublic = await api(pendingDb, '/comments?page_id=wuffi', null, 'GET');
+  assert.equal(pendingPublic.json.comments.length, 0, 'pending comment is not returned publicly');
+
+  for (const [label, options] of [
+    ['unavailable', { status: 503, body: { decision: 'approved' } }],
+    ['invalid JSON', { invalidJson: true }],
+    ['invalid decision', { body: { decision: 'approved-beta' } }],
+    ['fetch failure', { throw: 'network down' }],
+  ]) {
+    const failClosedDb = new MockD1();
+    installModerationFetch('approved', options);
+    const result = await api(failClosedDb, '/comments', {
+      page_id: 'wuffi',
+      name: `Fail Closed ${label}`,
+      email: `${label.replace(/\s+/g, '-')}@example.com`,
+      text: `Moderation ${label} should not publish.`,
+    }, 'POST', { SWARMSY_BRIDGE_TOKEN });
+    assert.equal(result.response.status, 201, `SWARMSY ${label} does not block storing comment`);
+    assert.equal(result.json.status, 'pending', `SWARMSY ${label} leaves comment pending`);
+    const publicResult = await api(failClosedDb, '/comments?page_id=wuffi', null, 'GET');
+    assert.equal(publicResult.json.comments.length, 0, `SWARMSY ${label} does not publish comment`);
+  }
+
+  const linkedAuth = signTelegramAuth(LINKED_ID);
+
+  const linkedModeratedDb = new MockD1();
+  linkedModeratedDb.linkConfirmed.set(LINKED_ID, { action: 'link_confirmed', created_at: new Date().toISOString() });
+  const linkedApprovedCalls = installModerationFetch('approved');
+  const linkedApproved = await api(linkedModeratedDb, '/comments', {
+    page_id: 'wuffi',
+    name: 'Linked Approved',
+    text: 'Telegram-linked comment can publish without email.',
+    telegram_auth: linkedAuth,
+  }, 'POST', { SWARMSY_BRIDGE_TOKEN });
+  assert.equal(linkedApproved.response.status, 201, 'Telegram-linked signed auth can post comment with blank email');
+  assert.equal(linkedApproved.json.status, 'approved', 'Telegram-linked approved comment publishes without email');
+  assert.equal(linkedApprovedCalls[0].body.telegram_id, LINKED_ID, 'SWARMSY receives safe telegram_id evidence');
+  assert.equal(linkedApprovedCalls[0].body.telegram_auth, undefined, 'raw Telegram auth is not sent to SWARMSY');
+  assert(!JSON.stringify(linkedApproved.json).includes('telegram_auth'), 'raw Telegram auth is not exposed in linked approved response');
 
   const db = new MockD1();
   db.linkConfirmed.set(LINKED_ID, { action: 'link_confirmed', created_at: new Date().toISOString() });
-  const linkedAuth = signTelegramAuth(LINKED_ID);
 
   const engage1 = await api(db, '/comments', {
     page_id: 'wuffi',
@@ -410,6 +546,7 @@ async function run() {
   assert(waxcash.includes('WAXCASH'), 'WAXCASH page remains present');
   assert(waxonedgeRoute.includes('cachedAnalyticsPayload'), 'WaxOnEdge cache route remains present');
 
+  globalThis.fetch = originalFetch;
   console.log('Wiki engagement API route regression PASSED.');
 }
 

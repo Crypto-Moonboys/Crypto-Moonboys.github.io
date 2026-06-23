@@ -32,6 +32,7 @@ const comments = read('js/comments.js');
 const css = read('css/battle-layer.css');
 const apiConfig = read('js/api-config.js');
 const worker = read('workers/moonboys-api/worker.js');
+const wrangler = read('workers/moonboys-api/wrangler.toml');
 const wuffi = read('wiki/wuffi.html');
 const alcor = read('wiki/alcor-exchange.html');
 const rugPullWars = read('wiki/rug-pull-wars.html');
@@ -64,6 +65,7 @@ const profileSave = section(comments, 'function saveCommentProfile(profile)', 'f
 check(profileSave.includes("'name'") && profileSave.includes("'email'") && profileSave.includes("'telegram_username'") && profileSave.includes("'discord_username'") && profileSave.includes("'avatar_url'"), 'Saved commenter profile includes only expected identity fields');
 check(!profileSave.includes('telegram_auth') && !profileSave.includes('text'), 'Saved commenter profile excludes raw Telegram auth and comment text');
 check(!/gravatar(?:\.com)?\s+(?:login|account)/i.test(comments), 'Comment form does not claim fake Gravatar account detection');
+check(comments.includes('function loadComments(pageId, listEl)') && comments.includes("if (moderation === 'approved')") && comments.includes("Comment received and awaiting automated review."), 'Comment form refreshes approved posts and shows honest moderation states');
 check(engagement.includes("CustomEvent('moonboys:page-liked'"), 'Successful page likes notify mission completion');
 check(engagement.includes("CustomEvent('moonboys:citation-voted'"), 'Successful citation votes notify mission completion');
 check(battleLayer.includes('if (isMissionComplete(pageId, missionId)) return;'), 'Mission completion is guarded once per page/window');
@@ -72,6 +74,13 @@ check(battleLayer.includes("window.sessionStorage.setItem(getMissionStorageKey(p
 check(battleLayer.includes("CustomEvent(WIKI_MISSION_EVENT"), 'Mission layer emits a reward/completion event for Telegram-linked reward plumbing');
 
 check(worker.includes("path === '/comments'") && worker.includes("path === '/likes'") && worker.includes("path === '/citation-votes'"), 'Backend article engagement routes are present in moonboys-api worker');
+check(worker.includes('moderateWikiCommentWithSwarmsy') && worker.includes('/api/swarmsy/internal/moderate-comment') && worker.includes('X-SWARMSY-BRIDGE-TOKEN'), 'Wiki comments use dedicated server-side SWARMSY moderation bridge');
+check(worker.includes("decision === 'approved' || decision === 'rejected' || decision === 'pending'") && worker.includes("SET status = ?"), 'Wiki comment moderation strictly validates decisions before publishing');
+check(!worker.includes('telegram_auth: auth.verified') && !worker.includes('email: body?.email'), 'Wiki comment moderation payload does not forward raw email or telegram_auth');
+check(worker.includes('let finalModerationStatus = moderationStatus') && worker.includes('wiki_comment_moderation_status_update_failed') && worker.includes("target_status: moderationStatus") && worker.includes("error_type: 'd1_update_failed'"), 'Wiki comment status update failure fails closed to pending with safe log metadata');
+check(worker.includes("path === '/public/npc-chat'") && worker.includes('/api/swarmsy/public/npc-chat'), 'Existing /public/npc-chat Sparky bridge remains present');
+check(/^main\s*=\s*"worker\.js"/m.test(wrangler), 'wrangler.toml main remains worker.js');
+check(worker.includes('async scheduled(event, env, _ctx)'), 'Worker scheduled handler remains present');
 
 if (process.exitCode) {
   console.error('\nWiki engagement layer regression FAILED.\n');
