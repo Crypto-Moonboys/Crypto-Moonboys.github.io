@@ -26,6 +26,7 @@
   var BASE     = cfg.BASE_URL || null;
   var FEATURES = cfg.FEATURES || {};
   var TG_BOT   = cfg.TELEGRAM_BOT_USERNAME || null;
+  var COMMENT_PROFILE_KEY = 'moonboys_comment_profile_v1';
 
   // Resolved text constants — fall back to literals so no type="module" is needed.
   var COPY = window.UI_STATUS_COPY || {
@@ -38,6 +39,106 @@
     var gate = window.MOONBOYS_IDENTITY;
     if (gate && gate.getFreshTelegramAuth) return gate.getFreshTelegramAuth();
     return Promise.resolve(null);
+  }
+
+  function getIdentityGate() {
+    return window.MOONBOYS_IDENTITY || null;
+  }
+
+  function readCommentProfile() {
+    try {
+      var raw = window.localStorage ? window.localStorage.getItem(COMMENT_PROFILE_KEY) : null;
+      var parsed = raw ? JSON.parse(raw) : null;
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function saveCommentProfile(profile) {
+    var safe = {};
+    ['name', 'email', 'telegram_username', 'discord_username', 'avatar_url'].forEach(function (key) {
+      var value = profile && profile[key] != null ? String(profile[key]).trim() : '';
+      if (value) safe[key] = value;
+    });
+    try {
+      if (window.localStorage) window.localStorage.setItem(COMMENT_PROFILE_KEY, JSON.stringify(safe));
+    } catch {}
+    return safe;
+  }
+
+  function cleanTelegramUsername(value) {
+    return String(value || '').trim().replace(/^@+/, '');
+  }
+
+  function getLinkedTelegramProfile() {
+    var gate = getIdentityGate();
+    if (!gate || typeof gate.isTelegramLinked !== 'function' || !gate.isTelegramLinked()) return null;
+    var auth = typeof gate.getTelegramAuth === 'function' ? gate.getTelegramAuth() : null;
+    var name = typeof gate.getTelegramName === 'function' ? gate.getTelegramName() : '';
+    var username = auth && auth.username ? cleanTelegramUsername(auth.username) : '';
+    var avatar = '';
+    if (typeof gate.getTelegramPhotoUrl === 'function') avatar = gate.getTelegramPhotoUrl() || '';
+    if (!avatar && auth && auth.photo_url) avatar = auth.photo_url;
+    return {
+      name: String(name || '').trim(),
+      telegram_username: username,
+      avatar_url: String(avatar || '').trim(),
+    };
+  }
+
+  function fillIfEmpty(form, fieldName, value) {
+    var el = form.querySelector('[name=' + fieldName + ']');
+    if (el && !String(el.value || '').trim() && value) el.value = value;
+  }
+
+  function applyCommentProfile(form) {
+    var profile = readCommentProfile();
+    fillIfEmpty(form, 'name', profile.name);
+    fillIfEmpty(form, 'email', profile.email);
+    fillIfEmpty(form, 'telegram_username', profile.telegram_username);
+    fillIfEmpty(form, 'discord_username', profile.discord_username);
+    fillIfEmpty(form, 'avatar_url', profile.avatar_url);
+  }
+
+  function applyLinkedTelegramIdentity(form) {
+    var linked = getLinkedTelegramProfile();
+    if (!linked) return null;
+    fillIfEmpty(form, 'name', linked.name);
+    fillIfEmpty(form, 'telegram_username', linked.telegram_username);
+    fillIfEmpty(form, 'avatar_url', linked.avatar_url);
+    return linked;
+  }
+
+  function updateCommentIdentityCopy(form) {
+    var tgStatus = form.querySelector('.cm-tg-status');
+    var gravatarStatus = form.querySelector('.cm-gravatar-status');
+    var gate = getIdentityGate();
+    var profile = readCommentProfile();
+    var linked = getLinkedTelegramProfile();
+    var hasTelegramId = !!(gate && typeof gate.getTelegramId === 'function' && gate.getTelegramId());
+
+    if (tgStatus) {
+      if (linked) {
+        tgStatus.textContent = 'Telegram linked: ' + (linked.name || linked.telegram_username || 'connected') + ' - rewards can sync after posting.';
+        tgStatus.className = 'cm-tg-status cm-success';
+      } else if (hasTelegramId) {
+        tgStatus.textContent = 'Run /gklink to activate rewards.';
+        tgStatus.className = 'cm-tg-status cm-warning';
+      } else {
+        tgStatus.textContent = 'Optional for comments. Required for rewards. Telegram quick-fill unavailable. Link through the Incubator Hub /gklink flow.';
+        tgStatus.className = 'cm-tg-status';
+      }
+    }
+
+    if (gravatarStatus) {
+      var emailEl = form.querySelector('[name=email]');
+      if (profile.email || String(emailEl ? emailEl.value : '').trim()) {
+        gravatarStatus.textContent = 'Gravatar avatar ready from saved email.';
+      } else {
+        gravatarStatus.textContent = 'Email required for Gravatar avatar, never displayed.';
+      }
+    }
   }
 
   // ── HTML escape (prevents XSS when API data is rendered via innerHTML) ──
@@ -95,26 +196,25 @@
   // ── Submit form builder ──────────────────────────────────────
 
   function buildForm(pageId) {
-    var tgBlock = (TG_BOT && FEATURES.TELEGRAM_LOGIN)
-      ? '<div class="comment-form-field cm-tg-block">' +
-          '<label>Telegram <span class="cm-note">(optional — quick-fill identity)</span></label>' +
-          '<div class="cm-tg-login" id="cm-tg-login-' + pageId + '"></div>' +
-          '<span class="cm-tg-status" id="cm-tg-status-' + pageId + '"></span>' +
-        '</div>'
-      : '';
+    var tgBlock = '<div class="comment-form-field cm-tg-block">' +
+      '<label>Telegram identity</label>' +
+      '<div class="cm-tg-login" id="cm-tg-login-' + pageId + '"></div>' +
+      '<span class="cm-tg-status" id="cm-tg-status-' + pageId + '">Optional for comments. Required for rewards.</span>' +
+    '</div>';
     return '<form class="comment-form" data-page-id="' + pageId + '" novalidate>' +
       '<div class="comment-form-identity">' +
         '<div class="comment-form-field">' +
           '<label for="cm-name-' + pageId + '">Name / Handle <span class="cm-required">*</span></label>' +
-          '<input type="text" id="cm-name-' + pageId + '" name="name" placeholder="CryptoMoonboy" maxlength="60" required autocomplete="nickname">' +
+          '<input type="text" id="cm-name-' + pageId + '" name="name" placeholder="Your display name" maxlength="60" required autocomplete="nickname">' +
         '</div>' +
         '<div class="comment-form-field">' +
           '<label for="cm-email-' + pageId + '">Email <span class="cm-required">*</span> <span class="cm-note">(Gravatar avatar, never displayed)</span></label>' +
-          '<input type="email" id="cm-email-' + pageId + '" name="email" placeholder="you@example.com" maxlength="120" required autocomplete="email">' +
+          '<input type="email" id="cm-email-' + pageId + '" name="email" placeholder="Email required for Gravatar avatar" maxlength="120" required autocomplete="email">' +
+          '<span class="cm-gravatar-status">Email required for Gravatar avatar, never displayed.</span>' +
         '</div>' +
         '<div class="comment-form-field">' +
           '<label for="cm-tg-' + pageId + '">Telegram <span class="cm-note">(optional)</span></label>' +
-          '<input type="text" id="cm-tg-' + pageId + '" name="telegram_username" placeholder="@yourhandle" maxlength="60">' +
+          '<input type="text" id="cm-tg-' + pageId + '" name="telegram_username" placeholder="Telegram username" maxlength="60">' +
         '</div>' +
         '<div class="comment-form-field">' +
           '<label for="cm-discord-' + pageId + '">Discord <span class="cm-note">(optional)</span></label>' +
@@ -140,13 +240,33 @@
   function wireForm(container, pageId) {
     var form     = container.querySelector('.comment-form');
     if (!form) return;
+    applyCommentProfile(form);
+    applyLinkedTelegramIdentity(form);
+    updateCommentIdentityCopy(form);
+    var gate = getIdentityGate();
+    if (gate && typeof gate.isTelegramLinked === 'function' && gate.isTelegramLinked() && typeof gate.getFreshTelegramAuth === 'function') {
+      Promise.resolve(gate.getFreshTelegramAuth())
+        .then(function (auth) {
+          if (!auth) return;
+          fillIfEmpty(form, 'telegram_username', cleanTelegramUsername(auth.username));
+          fillIfEmpty(form, 'avatar_url', auth.photo_url || '');
+          updateCommentIdentityCopy(form);
+        })
+        .catch(function () {});
+    }
+
+    Array.prototype.forEach.call(form.querySelectorAll('input'), function (input) {
+      input.addEventListener('input', function () {
+        updateCommentIdentityCopy(form);
+      });
+    });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var status  = form.querySelector('.comment-form-status');
       var name    = form.querySelector('[name=name]').value.trim();
       var email   = form.querySelector('[name=email]').value.trim();
-      var tg      = form.querySelector('[name=telegram_username]').value.trim();
+      var tg      = cleanTelegramUsername(form.querySelector('[name=telegram_username]').value);
       var discord = form.querySelector('[name=discord_username]').value.trim();
       var avatar  = (form.querySelector('[name=avatar_url]') || {}).value || '';
       avatar      = avatar.trim();
@@ -162,6 +282,13 @@
         status.className   = 'comment-form-status cm-error';
         return;
       }
+      saveCommentProfile({
+        name: name,
+        email: email,
+        telegram_username: tg,
+        discord_username: discord,
+        avatar_url: avatar,
+      });
 
       if (!BASE || !FEATURES.COMMENTS) {
         status.textContent = '\u23f3 ' + COPY.FEATURE_UNAVAILABLE;
@@ -194,6 +321,9 @@
             detail: { page_id: pageId, comment_id: data && data.comment_id, mission: data && data.mission ? data.mission : null }
           }));
           form.reset();
+          applyCommentProfile(form);
+          applyLinkedTelegramIdentity(form);
+          updateCommentIdentityCopy(form);
         })
         .catch(function (err) {
           var msg = (err && err.message) ? err.message : 'Submission failed. Try again.';
@@ -203,80 +333,33 @@
     });
   }
 
-  // ── Telegram Login Widget ────────────────────────────────────
-  // Injects the Telegram Login Widget into the form's .cm-tg-login slot.
-  // When the user authenticates, calls /telegram/auth to get a normalised
-  // identity and prefills telegram_username, avatar_url, and (if empty) name.
-  // Email remains required and is never removed.
+  // Telegram identity state. The comment form avoids embedding the Telegram
+  // Login Widget because domain errors can leak a broken widget message into
+  // the page. Rewards still use the shared /gklink identity-gate path.
 
   function injectTelegramWidget(container) {
-    if (!TG_BOT || !FEATURES.TELEGRAM_LOGIN || !BASE) return;
     var widgetSlot = container.querySelector('.cm-tg-login');
+    var form = container.querySelector('.comment-form');
+    var statusEl = container.querySelector('.cm-tg-status');
     if (!widgetSlot) return;
-
-    var CALLBACK = '_moonboysTgAuth';
-
-    if (!window[CALLBACK]) {
-      window[CALLBACK] = function (user) {
-        fetch(BASE + '/telegram/auth', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify(user),
-        })
-          .then(function (r) { return r.ok ? r.json() : null; })
-          .then(function (data) {
-            if (!data || !data.ok || !data.identity) return;
-            var id = data.identity;
-            // Persist telegram_id so competitive actions (likes, votes, faction,
-            // arcade scores) are unblocked for the rest of the session.
-            if (window.MOONBOYS_IDENTITY && window.MOONBOYS_IDENTITY.saveTelegramIdentity && id.telegram_id) {
-              // Step 1 complete: save the Telegram identity (tier becomes 'telegram').
-              // Step 2 (/gklink via the Telegram bot) is still required to become
-              // competition-active.  Do NOT call setTelegramLinked() here.
-              window.MOONBOYS_IDENTITY.saveTelegramIdentity(
-                id.telegram_id,
-                id.display_name,
-                data.telegram_auth && typeof data.telegram_auth === 'object' ? data.telegram_auth : user
-              );
-            }
-            // Prefill every comment form visible on the page
-            Array.prototype.forEach.call(
-              document.querySelectorAll('.comment-form'),
-              function (form) {
-                var nameEl   = form.querySelector('[name=name]');
-                var tgEl     = form.querySelector('[name=telegram_username]');
-                var avatarEl = form.querySelector('[name=avatar_url]');
-                if (nameEl   && !nameEl.value   && id.display_name)      nameEl.value   = id.display_name;
-                if (tgEl     && !tgEl.value     && id.telegram_username) tgEl.value     = id.telegram_username;
-                if (avatarEl && !avatarEl.value && id.avatar_url)        avatarEl.value = id.avatar_url;
-                var statusEl = form.querySelector('.cm-tg-status');
-                if (statusEl) {
-                  statusEl.textContent = '✅ Connected as ' + esc(id.display_name);
-                  statusEl.className   = 'cm-tg-status cm-success';
-                }
-              }
-            );
-          })
-          .catch(function () {
-            Array.prototype.forEach.call(
-              document.querySelectorAll('.cm-tg-status'),
-              function (el) {
-                el.textContent = '⚠️ Telegram auth failed — please fill fields manually.';
-                el.className   = 'cm-tg-status cm-error';
-              }
-            );
-          });
-      };
+    var linked = form ? applyLinkedTelegramIdentity(form) : getLinkedTelegramProfile();
+    if (linked) {
+      widgetSlot.innerHTML = '';
+      if (statusEl) {
+        statusEl.textContent = 'Telegram linked: ' + (linked.name || linked.telegram_username || 'connected') + ' - rewards can sync after posting.';
+        statusEl.className = 'cm-tg-status cm-success';
+      }
+      return;
     }
-
-    var script = document.createElement('script');
-    script.async = true;
-    script.src   = 'https://telegram.org/js/telegram-widget.js?22'; // ?22 = widget API version
-    script.setAttribute('data-telegram-login',  TG_BOT);
-    script.setAttribute('data-size',            'medium');
-    script.setAttribute('data-onauth',          CALLBACK + '(user)');
-    script.setAttribute('data-request-access',  'write');
-    widgetSlot.appendChild(script);
+    if (statusEl) {
+      var gate = getIdentityGate();
+      var hasTelegramId = !!(gate && typeof gate.getTelegramId === 'function' && gate.getTelegramId());
+      statusEl.textContent = hasTelegramId
+        ? 'Run /gklink to activate rewards.'
+        : 'Telegram quick-fill unavailable. Link through the Incubator Hub /gklink flow.';
+      statusEl.className = hasTelegramId ? 'cm-tg-status cm-warning' : 'cm-tg-status';
+    }
+    widgetSlot.innerHTML = '';
   }
 
   // ── Vote button delegation ───────────────────────────────────
