@@ -10,6 +10,7 @@
     sourceCounts: {},
     sourceErrors: {},
     copyStatus: '',
+    lastSummary: '',
   };
 
   const els = {
@@ -113,22 +114,29 @@
 
   function actionsHtml() {
     const status = state.copyStatus ? `<small class="muted">${htmlEscape(state.copyStatus)}</small>` : '';
-    return `<div class="warning"><button type="button" data-quote-action="copy-link">Copy quote link</button> <button type="button" data-quote-action="reset-controls">Reset controls</button>${status ? `<br>${status}` : ''}</div>`;
+    return `<div class="warning"><button type="button" data-quote-action="copy-link">Copy quote link</button> <button type="button" data-quote-action="copy-summary">Copy summary</button> <button type="button" data-quote-action="reset-controls">Reset controls</button>${status ? `<br>${status}` : ''}</div>`;
   }
 
-  async function copyCurrentQuoteUrl() {
-    const url = currentQuoteUrl();
+  async function copyText(text, copiedMessage) {
     try {
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-        state.copyStatus = 'Quote link copied.';
+        await navigator.clipboard.writeText(text);
+        state.copyStatus = copiedMessage;
       } else {
-        state.copyStatus = url;
+        state.copyStatus = text;
       }
     } catch (_) {
-      state.copyStatus = url;
+      state.copyStatus = text;
     }
     render();
+  }
+
+  function copyCurrentQuoteUrl() {
+    return copyText(currentQuoteUrl(), 'Quote link copied.');
+  }
+
+  function copyCurrentQuoteSummary() {
+    return copyText(state.lastSummary || currentQuoteUrl(), 'Quote summary copied.');
   }
 
   function resetControls() {
@@ -295,11 +303,13 @@
     writeUrlState();
 
     if (!amountIn || amountIn <= 0) {
+      state.lastSummary = `No quote amount entered. ${providerSummary(pools)}`;
       els.result.innerHTML = `${actionsHtml()}<div class="muted">Enter an amount.<br>${htmlEscape(providerSummary(pools))}<br>Loaded: ${htmlEscape(formatLoadedAt())}</div>${sourceErrorHtml()}`;
       return;
     }
 
     if (!route || route.type === 'none' || route.output <= 0) {
+      state.lastSummary = `No route found for ${formatNumber(amountIn)} ${tokenIn.symbol} to ${tokenOut.symbol}. ${noRouteDetails(route, pools)}. ${providerSummary(pools)}`;
       els.result.innerHTML = `${actionsHtml()}<div class="bad">No route found for this pair at the selected filters.</div><div class="warning">${htmlEscape(providerSummary(pools))}<br>${htmlEscape(noRouteDetails(route, pools))}<br>Loaded: ${htmlEscape(formatLoadedAt())}</div>${sourceErrorHtml()}`;
       return;
     }
@@ -309,6 +319,7 @@
     const routeNames = Array.isArray(route.routePools) && route.routePools.length
       ? route.routePools.map(routePoolLabel).join(' → ')
       : route.splits.map((s) => `${s.provider} #${s.poolId}`).join(' + ');
+    state.lastSummary = `Quote estimate: ${formatNumber(amountIn)} ${tokenIn.symbol} -> ${formatNumber(route.output)} ${tokenOut.symbol}. Minimum after tolerance: ${formatNumber(minReceived)} ${tokenOut.symbol}. Route: ${route.type} via ${route.provider}. Quality: ${routeQuality(route)}. Impact: ${formatNumber(route.impact, 4)}%. Fee: ${formatNumber(route.feePercent, 4)}%. Pools: ${routeNames}. Link: ${currentQuoteUrl()}`;
     const topRows = candidates.slice(0, 6).map((r, idx) => {
       const routePools = Array.isArray(r.routePools) && r.routePools.length ? r.routePools.map(routePoolLabel).join(' → ') : r.splits.map((s) => `${s.provider} #${s.poolId}`).join(' + ');
       const active = r === route ? ' · selected' : '';
@@ -384,6 +395,7 @@
     if (!button) return;
     const action = button.getAttribute('data-quote-action');
     if (action === 'copy-link') copyCurrentQuoteUrl();
+    if (action === 'copy-summary') copyCurrentQuoteSummary();
     if (action === 'reset-controls') resetControls();
   });
 
