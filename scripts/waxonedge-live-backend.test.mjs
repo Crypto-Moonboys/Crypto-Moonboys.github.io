@@ -35,6 +35,25 @@ function almostEqual(a, b, epsilon = 1e-9) {
   return Math.abs(Number(a) - Number(b)) <= epsilon;
 }
 
+function parseVersionTuple(value) {
+  const match = String(value || '').trim().match(/^[~^]?(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/);
+  return match ? match.slice(1).map(Number) : null;
+}
+
+function versionAtLeast(actual, minimum) {
+  if (!actual || !minimum) return false;
+  for (let i = 0; i < minimum.length; i += 1) {
+    if (actual[i] > minimum[i]) return true;
+    if (actual[i] < minimum[i]) return false;
+  }
+  return true;
+}
+
+function isSupportedWranglerNode22Version(value) {
+  const version = parseVersionTuple(value);
+  return Boolean(version && version[0] === 4 && versionAtLeast(version, [4, 100, 0]));
+}
+
 ok('moonboys-api WaxOnEdge route module exists', exists('workers/moonboys-api/routes/waxonedge.js'));
 ok('moonboys-api WaxOnEdge migration exists', exists('workers/moonboys-api/migrations/022_waxonedge_live_indexer.sql'));
 ok('moonboys-api WaxOnEdge aggregate migration exists', exists('workers/moonboys-api/migrations/023_waxonedge_token_aggregate_stats.sql'));
@@ -9178,14 +9197,19 @@ ok('frontend maps backend adapter source labels',
   ['swap.alcor', 'swap.taco', 'swap.nefty', 'swap.box'].every((source) => frontend.includes(source)));
 ok('frontend has no fake all-DEX claims',
   !/all\s+DEXs|all\s+DEXes|every\s+DEX/i.test(frontend + html + tokenHtml + route));
+const wranglerPackageSpec = packageJson.devDependencies?.wrangler;
+const wranglerLockSpec = packageLock.packages?.['']?.devDependencies?.wrangler;
+const wranglerInstalledVersion = packageLock.packages?.['node_modules/wrangler']?.version;
 ok('Node/Wrangler versions are aligned on Node 22',
   ci.includes('node-version: 22') &&
   packageJson.engines &&
   packageJson.engines.node === '>=22' &&
   packageLock.packages[''].engines &&
   packageLock.packages[''].engines.node === '>=22' &&
-  packageJson.devDependencies &&
-  packageJson.devDependencies.wrangler === '^4.100.0');
+  wranglerPackageSpec === wranglerLockSpec &&
+  isSupportedWranglerNode22Version(wranglerPackageSpec) &&
+  isSupportedWranglerNode22Version(wranglerInstalledVersion),
+  `package=${wranglerPackageSpec || 'missing'}, lock=${wranglerLockSpec || 'missing'}, installed=${wranglerInstalledVersion || 'missing'}`);
 ok('frontend featured-token scanner allows eosio.token/WAX only by explicit allowlist',
   featuredTokens.includes("['WAXP', 'eosio.token', 'WAX']") &&
   frontend.includes('WAXONEDGE_FEATURED_TOKEN_MAP[key]') &&
