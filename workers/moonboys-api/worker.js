@@ -734,7 +734,7 @@ function getWikiCommentModerationMessage(status) {
 async function moderateWikiComment(env, payload) {
   const moderationUrl = String(env.COMMENT_MODERATION_URL || '').trim();
   const moderationToken = String(env.COMMENT_MODERATION_TOKEN || '').trim();
-  if (!moderationUrl || !moderationToken) return 'pending';
+  if (!moderationUrl || !moderationUrl.startsWith('https://') || !moderationToken) return 'pending';
 
   try {
     const controller = new AbortController();

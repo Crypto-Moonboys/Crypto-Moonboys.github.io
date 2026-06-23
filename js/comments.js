@@ -324,7 +324,9 @@
                 ? 'Comment could not be published.'
                 : 'Comment received and awaiting automated review.'
           );
-          status.className   = 'comment-form-status cm-success';
+          status.className = moderation === 'rejected'
+            ? 'comment-form-status cm-error'
+            : 'comment-form-status cm-success';
           document.dispatchEvent(new CustomEvent('moonboys:comment-posted', {
             detail: { page_id: pageId, comment_id: data && data.comment_id, mission: data && data.mission ? data.mission : null }
           }));
