@@ -41,16 +41,18 @@ check(battleLayer.includes("'.citations-list li, .source-ref-list li'"), 'Citati
 check(wuffi.includes('class="source-ref-list"'), 'WUF uses source-ref-list and is covered by citation injection');
 
 check(engagement.includes('COPY.FEATURE_UNAVAILABLE') && battleLayer.includes('mission-status--unavailable'), 'Disabled engagement features show unavailable state');
-check(apiConfig.includes('COMMENTS:           false') && apiConfig.includes('LIKES:              false') && apiConfig.includes('CITATION_VOTES:     false'), 'Article engagement feature flags remain disabled');
+check(apiConfig.includes('COMMENTS:           true') && apiConfig.includes('LIKES:              true') && apiConfig.includes('CITATION_VOTES:     true'), 'Article engagement feature flags are enabled only for implemented routes');
+check(apiConfig.includes('LEADERBOARD:        false') && apiConfig.includes('LIVE_FEED:          false') && apiConfig.includes('ACTIVITY_PANEL:     false'), 'Unimplemented engagement panels remain disabled');
 
 check(comments.includes("CustomEvent('moonboys:comment-posted'"), 'Successful comment posts notify mission completion');
 check(engagement.includes("CustomEvent('moonboys:page-liked'"), 'Successful page likes notify mission completion');
 check(engagement.includes("CustomEvent('moonboys:citation-voted'"), 'Successful citation votes notify mission completion');
 check(battleLayer.includes('if (isMissionComplete(pageId, missionId)) return;'), 'Mission completion is guarded once per page/window');
+check(battleLayer.includes('if (!mission || mission.completed !== true) return;'), 'Mission UI requires backend mission completion proof before marking complete');
 check(battleLayer.includes("window.sessionStorage.setItem(getMissionStorageKey(pageId, missionId), 'complete')"), 'Mission completion persists once per session mission window');
 check(battleLayer.includes("CustomEvent(WIKI_MISSION_EVENT"), 'Mission layer emits a reward/completion event for Telegram-linked reward plumbing');
 
-check(!worker.includes("path === '/comments'") && !worker.includes("path === '/likes'") && !worker.includes("path === '/citation-votes'"), 'Backend audit confirms article engagement routes are not live in moonboys-api worker');
+check(worker.includes("path === '/comments'") && worker.includes("path === '/likes'") && worker.includes("path === '/citation-votes'"), 'Backend article engagement routes are present in moonboys-api worker');
 
 if (process.exitCode) {
   console.error('\nWiki engagement layer regression FAILED.\n');

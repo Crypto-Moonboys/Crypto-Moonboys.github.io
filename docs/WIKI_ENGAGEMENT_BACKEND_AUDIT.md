@@ -14,16 +14,20 @@ This audit covers the article engagement layer used by wiki Battle Heat and Dail
 
 ## Current Route Status
 
-The frontend feature flags in `js/api-config.js` remain disabled for article comments, likes, citation votes, leaderboard, live feed, and activity panel. The WUF/Daily Missions quick fix does not turn those flags on.
+The frontend feature flags in `js/api-config.js` are enabled only for the article routes implemented in this PR:
+
+- `COMMENTS`
+- `LIKES`
+- `CITATION_VOTES`
+
+Leaderboard, live feed, and activity panel remain disabled because those routes are not part of this change.
 
 `workers/moonboys-api/worker.js` currently includes player and faction mission persistence routes, including:
 
 - `GET/POST /player/daily-missions`
 - `POST /player/daily-missions/progress`
 
-Those routes support arcade/faction daily mission state. They are not article-page comment, like, or citation-vote routes.
-
-The worker does not currently expose live article routes for:
+This PR adds article engagement routes for:
 
 - `GET /comments`
 - `POST /comments`
@@ -32,27 +36,38 @@ The worker does not currently expose live article routes for:
 - `POST /likes`
 - `GET /citation-votes`
 - `POST /citation-votes`
+- `GET/POST /wiki-missions/status`
+- `POST /wiki-missions/complete`
+
+The article routes require migration 029 before they can run against remote D1.
 
 ## Frontend Behaviour
 
-While the article engagement routes are disabled or absent, the UI renders honest unavailable states and does not fake counts.
+If the API base is unavailable or migration 029 is not applied, the UI renders unavailable/error states and does not fake counts.
 
-When those routes are later enabled and return successful responses:
+When the routes return successful responses:
 
-- `comments.js` dispatches `moonboys:comment-posted`
-- `engagement.js` dispatches `moonboys:page-liked`
-- `engagement.js` dispatches `moonboys:citation-voted`
-- `battle-layer.js` marks the relevant mission complete once per page/session/day window and emits `moonboys:wiki-mission-complete`
+- `comments.js` dispatches `moonboys:comment-posted` with backend mission status
+- `engagement.js` dispatches `moonboys:page-liked` with backend mission status
+- `engagement.js` dispatches `moonboys:citation-voted` with backend mission status
+- `battle-layer.js` marks the relevant mission complete only when `mission.completed === true`
 
-That completion event is the frontend hook for Telegram-linked reward plumbing. Server-side reward persistence should still enforce once-per-window/page/user before any XP or reward is granted.
+Server-side reward persistence enforces once-per-window/page/user before XP is granted.
 
-## Required Before Enabling Flags
+## Reward Authority
 
-Before flipping `COMMENTS`, `LIKES`, or `CITATION_VOTES` to `true`, add and test real worker routes with:
+Mission completions are stored in `wiki_mission_completions` keyed by:
 
-- server-side Telegram-linked identity validation for rewarded/competitive actions
-- idempotent mission completion keyed by page, mission, window, and user
-- moderation-safe comment posting
-- public read endpoints that return real counts only
-- duplicate vote/like protection
-- tests for disabled routes and live-route success paths
+- `page_id`
+- `mission_id`
+- `mission_window`
+- `telegram_id`
+
+The Worker awards XP through `telegram_xp_log` only after the mission completion insert wins. Duplicate actions return already-completed state and do not award duplicate XP.
+
+## Deploy Notes
+
+- Worker deploy required: Yes
+- D1 migration required: Yes, apply `workers/moonboys-api/migrations/029_wiki_engagement.sql`
+- VPS restart required: No
+- GitHub Pages only: No

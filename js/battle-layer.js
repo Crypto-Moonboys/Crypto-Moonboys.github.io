@@ -139,6 +139,12 @@
     return !!(gate.getTelegramId && gate.getTelegramId());
   }
 
+  function getFreshTelegramAuth() {
+    var gate = window.MOONBOYS_IDENTITY;
+    if (gate && gate.getFreshTelegramAuth) return gate.getFreshTelegramAuth();
+    return Promise.resolve(null);
+  }
+
   function missionStatusHTML(mission, pageId) {
     var complete = isMissionComplete(pageId, mission.id);
     if (!BASE || !FEATURES[mission.feature]) {
@@ -153,22 +159,30 @@
     return '<span class="mission-status mission-status--ready">' + esc(mission.actionLabel) + ' to complete</span>';
   }
 
-  function updateMissionStatus(pageId, missionId, state) {
+  function missionStatusLabel(state, mission) {
+    if (mission && mission.reward_status === 'xp_synced') return 'XP synced';
+    if (mission && mission.reward_status === 'already_completed') return 'Reward synced';
+    if (state === 'complete') return 'Complete';
+    return state;
+  }
+
+  function updateMissionStatus(pageId, missionId, state, mission) {
     var row = document.querySelector('.mission-row[data-mission-id="' + esc(missionId) + '"]');
     if (!row) return;
     var status = row.querySelector('.mission-status');
     if (!status) return;
     status.className = 'mission-status mission-status--' + state;
-    status.textContent = state === 'complete' ? 'Complete' : state;
+    status.textContent = missionStatusLabel(state, mission);
   }
 
-  function emitMissionReward(pageId, missionId, source) {
+  function emitMissionReward(pageId, missionId, source, mission) {
     var gate = window.MOONBOYS_IDENTITY;
     var payload = {
       page_id: pageId,
       mission_id: missionId,
       mission_window: getMissionWindowKey(),
-      source: source || 'wiki-engagement'
+      source: source || 'wiki-engagement',
+      mission: mission || null
     };
     if (gate && gate.getTelegramId) {
       var telegramId = gate.getTelegramId();
@@ -177,11 +191,39 @@
     document.dispatchEvent(new CustomEvent(WIKI_MISSION_EVENT, { detail: payload }));
   }
 
-  function completeMission(pageId, missionId, source) {
+  function completeMission(pageId, missionId, source, mission) {
+    if (!mission || mission.completed !== true) return;
     if (isMissionComplete(pageId, missionId)) return;
     setMissionComplete(pageId, missionId);
-    updateMissionStatus(pageId, missionId, 'complete');
-    emitMissionReward(pageId, missionId, source);
+    updateMissionStatus(pageId, missionId, 'complete', mission);
+    emitMissionReward(pageId, missionId, source, mission);
+  }
+
+  function hydrateMissionStatus(pageId) {
+    if (!BASE || !isTelegramLinked()) return;
+    Promise.resolve(getFreshTelegramAuth())
+      .then(function (telegramAuth) {
+        if (!telegramAuth) return null;
+        return fetch(BASE + '/wiki-missions/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ page_id: pageId, telegram_auth: telegramAuth })
+        });
+      })
+      .then(function (response) {
+        if (!response || !response.ok) return null;
+        return response.json();
+      })
+      .then(function (data) {
+        if (!data || !data.missions) return;
+        Object.keys(data.missions).forEach(function (missionId) {
+          var mission = data.missions[missionId];
+          if (!mission || mission.completed !== true) return;
+          setMissionComplete(pageId, missionId);
+          updateMissionStatus(pageId, missionId, 'complete', mission);
+        });
+      })
+      .catch(function () {});
   }
 
   function wireMissionEvents(pageId) {
@@ -189,15 +231,15 @@
     wireMissionEvents.bound = true;
     document.addEventListener('moonboys:comment-posted', function (event) {
       var detail = event.detail || {};
-      completeMission(detail.page_id || pageId, 'engage', 'comments');
+      completeMission(detail.page_id || pageId, 'engage', 'comments', detail.mission);
     });
     document.addEventListener('moonboys:page-liked', function (event) {
       var detail = event.detail || {};
-      completeMission(detail.page_id || pageId, 'signal', 'likes');
+      completeMission(detail.page_id || pageId, 'signal', 'likes', detail.mission);
     });
     document.addEventListener('moonboys:citation-voted', function (event) {
       var detail = event.detail || {};
-      completeMission(detail.page_id || pageId, 'cite', 'citation-votes');
+      completeMission(detail.page_id || pageId, 'cite', 'citation-votes', detail.mission);
     });
   }
 
@@ -308,6 +350,7 @@
       buildMissionHTML(pageId);
 
     target.insertAdjacentElement('afterend', deck);
+    hydrateMissionStatus(pageId);
   }
 
   function injectCommunityNav() {

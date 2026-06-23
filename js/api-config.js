@@ -239,9 +239,9 @@
   // "coming soon" placeholders instead of network errors.
   FEATURES: {
     PRICE_TICKER:       true,   // Live crypto price data (CoinGecko — no worker needed)
-    COMMENTS:           false,  // Article comments — /comments endpoint not yet live
-    LIKES:              false,  // Page likes — /likes endpoint not yet live
-    CITATION_VOTES:     false,  // Citation votes — /citation-votes endpoint not yet live
+    COMMENTS:           true,   // Article comments — moonboys-api /comments route
+    LIKES:              true,   // Page likes — moonboys-api /likes route
+    CITATION_VOTES:     true,   // Citation votes — moonboys-api /citation-votes route
     LEADERBOARD:        false,  // Engagement leaderboard — moonboys-api /leaderboard endpoint not yet live
     ARCADE_LEADERBOARD: true,   // Arcade score-submission worker (moonboys-leaderboard.sercullen.workers.dev) — live
     LIVE_FEED:          false,  // Activity feed — /feed endpoint not yet live

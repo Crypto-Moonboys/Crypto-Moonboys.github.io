@@ -51,6 +51,12 @@
     return gate ? gate.getTelegramId() : null;
   }
 
+  function getFreshTelegramAuth() {
+    var gate = getGate();
+    if (gate && gate.getFreshTelegramAuth) return gate.getFreshTelegramAuth();
+    return Promise.resolve(null);
+  }
+
   /**
    * Gate a competitive action (likes, citation votes).
    * Requires BOTH Step 1 (Telegram auth) AND Step 2 (/gklink completed).
@@ -127,11 +133,21 @@
         var tid = getTelegramId();
         if (tid) payload.telegram_id = tid;
 
-        fetch(BASE + '/likes', {
+        Promise.resolve(getFreshTelegramAuth())
+          .then(function (telegramAuth) {
+            if (!telegramAuth) {
+              handle403({ error: 'telegram_sync_required' }, btn);
+              btn.classList.remove('like-btn--pending');
+              statusEl.textContent = 'ðŸ” Telegram sync required to like pages.';
+              throw { error: 'telegram_sync_required' };
+            }
+            payload.telegram_auth = telegramAuth;
+            return fetch(BASE + '/likes', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify(payload),
-        })
+            });
+          })
           .then(function (r) {
             if (r.status === 403) {
               return r.json().then(function (d) {
@@ -148,7 +164,7 @@
             btn.classList.remove('like-btn--pending');
             btn.classList.add('like-btn--active');
             document.dispatchEvent(new CustomEvent('moonboys:page-liked', {
-              detail: { page_id: pageId, count: data.count }
+              detail: { page_id: pageId, count: data.count, mission: data.mission || null }
             }));
             statusEl.textContent = '❤️ Liked!';
           })
@@ -217,11 +233,19 @@
           var tid = getTelegramId();
           if (tid) payload.telegram_id = tid;
 
-          fetch(BASE + '/citation-votes', {
+          Promise.resolve(getFreshTelegramAuth())
+            .then(function (telegramAuth) {
+              if (!telegramAuth) {
+                handle403({ error: 'telegram_sync_required' }, btn);
+                throw { error: 'telegram_sync_required' };
+              }
+              payload.telegram_auth = telegramAuth;
+              return fetch(BASE + '/citation-votes', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify(payload),
-          })
+              });
+            })
             .then(function (r) {
               if (r.status === 403) {
                 return r.json().then(function (d) {
@@ -234,7 +258,7 @@
             .then(function (data) {
               if (data && data.score !== undefined) scoreEl.textContent = data.score;
               document.dispatchEvent(new CustomEvent('moonboys:citation-voted', {
-                detail: { page_id: pageId, cite_id: citeId, vote: btn.dataset.action, score: data && data.score }
+                detail: { page_id: pageId, cite_id: citeId, vote: btn.dataset.action, score: data && data.score, mission: data && data.mission ? data.mission : null }
               }));
             })
             .catch(function (err) {

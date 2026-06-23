@@ -34,6 +34,15 @@ import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFaction
  *   POST /player/modifiers/active
  *   GET/POST /player/daily-missions
  *   POST /player/daily-missions/progress
+ *   GET  /comments?page_id=
+ *   POST /comments
+ *   POST /comments/:id/vote
+ *   GET  /likes?page_id=
+ *   POST /likes
+ *   GET  /citation-votes?page_id=&cite_id=
+ *   POST /citation-votes
+ *   GET  /wiki-missions/status?page_id=
+ *   POST /wiki-missions/complete
  *   GET/POST /faction/signal
  *   POST /faction/signal/contribute
  *   GET  /battle-chamber/factions/standings?period=weekly
@@ -98,6 +107,13 @@ const ARCADE_SCORE_SANITY_MAX = 1_000_000_000;
 const BLOCKTOPIA_ADMIN_XP_GRANT_MAX = 50000;
 const BLOCKTOPIA_ADMIN_GEMS_GRANT_MAX = 50000;
 const ARCADE_ADMIN_XP_GRANT_MAX = 50000;
+const WIKI_MISSION_XP = 10;
+const WIKI_MISSION_IDS = new Set(['engage', 'signal', 'cite']);
+const WIKI_MISSION_SOURCE_BY_ID = Object.freeze({
+  engage: 'comments',
+  signal: 'likes',
+  cite: 'citation-votes',
+});
 
 const DEFAULT_CORS_ALLOWED_ORIGINS = [
   'https://cryptomoonboys.com',
@@ -650,6 +666,127 @@ async function awardXp(db, telegramId, xpChange, action, referenceId = '') {
   `).bind(xpChange, xpChange, telegramId).run();
 }
 
+function normalizeWikiPageId(value) {
+  const pageId = String(value || '').trim().toLowerCase().replace(/\.html$/, '');
+  return /^[a-z0-9][a-z0-9_-]{0,80}$/.test(pageId) ? pageId : null;
+}
+
+function normalizeWikiId(value, maxLength = 80) {
+  const id = String(value || '').trim().toLowerCase();
+  if (!id || id.length > maxLength) return null;
+  return /^[a-z0-9][a-z0-9:_-]*$/.test(id) ? id : null;
+}
+
+function normalizeWikiVote(value) {
+  const vote = String(value || '').trim().toLowerCase();
+  return vote === 'up' || vote === 'down' ? vote : null;
+}
+
+function normalizeTextField(value, maxLength) {
+  const text = String(value == null ? '' : value).trim();
+  if (!text) return '';
+  return text.length > maxLength ? text.slice(0, maxLength) : text;
+}
+
+function bytesToHex(buffer) {
+  return Array.from(new Uint8Array(buffer))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function hashEmail(email) {
+  const normalized = String(email || '').trim().toLowerCase();
+  if (!normalized || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(normalized)) return null;
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(normalized));
+  return bytesToHex(digest);
+}
+
+async function verifyOptionalWikiTelegram(body, env) {
+  if (!body || !body.telegram_auth) return { verified: null };
+  const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+  if (verified?.error) {
+    return { error: verified.error, status: verified.status || 401 };
+  }
+  await upsertTelegramUser(env.DB, verified.user);
+  return { verified };
+}
+
+async function verifyRequiredWikiTelegram(body, env) {
+  const verified = await verifyTelegramIdentityFromBody(body, env, verifyTelegramAuth);
+  if (verified?.error) {
+    return { error: verified.error, status: verified.status || 401 };
+  }
+  await upsertTelegramUser(env.DB, verified.user);
+  return { verified };
+}
+
+async function completeWikiMission(db, {
+  verified,
+  pageId,
+  missionId,
+  source,
+  sourceId,
+}) {
+  if (!verified?.telegramId) {
+    return {
+      completed: false,
+      reward_status: 'telegram_sync_required',
+      xp_awarded: 0,
+    };
+  }
+  if (!WIKI_MISSION_IDS.has(missionId)) {
+    throw new Error('invalid_wiki_mission_id');
+  }
+  const expectedSource = WIKI_MISSION_SOURCE_BY_ID[missionId];
+  if (expectedSource && source !== expectedSource) {
+    throw new Error('invalid_wiki_mission_source');
+  }
+  const missionWindow = getTodayUtcDate();
+  const referenceId = `${missionWindow}:${pageId}:${missionId}`;
+  const insertResult = await db.prepare(`
+    INSERT OR IGNORE INTO wiki_mission_completions
+      (page_id, mission_id, mission_window, telegram_id, source, source_id, xp_awarded)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    pageId,
+    missionId,
+    missionWindow,
+    verified.telegramId,
+    source || null,
+    sourceId || null,
+    WIKI_MISSION_XP,
+  ).run();
+  const inserted = Number(insertResult?.meta?.changes || 0) > 0;
+  if (inserted) {
+    await awardXp(db, verified.telegramId, WIKI_MISSION_XP, 'wiki_mission_complete', referenceId);
+    await logTelegramActivity(db, verified.telegramId, 'wiki_mission_complete', JSON.stringify({
+      page_id: pageId,
+      mission_id: missionId,
+      source,
+      source_id: sourceId || null,
+      xp_awarded: WIKI_MISSION_XP,
+    })).catch(() => {});
+  }
+  const row = await db.prepare(`
+    SELECT xp_awarded, source, source_id, created_at
+    FROM wiki_mission_completions
+    WHERE page_id = ? AND mission_id = ? AND mission_window = ? AND telegram_id = ?
+    LIMIT 1
+  `).bind(pageId, missionId, missionWindow, verified.telegramId).first().catch(() => null);
+  return {
+    completed: true,
+    already_completed: !inserted,
+    reward_status: inserted ? 'xp_synced' : 'already_completed',
+    xp_awarded: inserted ? WIKI_MISSION_XP : 0,
+    total_xp_awarded: Number(row?.xp_awarded || 0),
+    mission_id: missionId,
+    mission_window: missionWindow,
+    source: row?.source || source || null,
+    source_id: row?.source_id || sourceId || null,
+    completed_at: row?.created_at || null,
+  };
+}
+
 async function ensureArcadeProgressionTables(db) {
   const requiredTables = [
     'arcade_progression_state',
@@ -910,6 +1047,13 @@ const PLAYER_STATE_TABLES = [
   'player_streak_state',
   'player_game_mastery_state',
 ];
+const WIKI_ENGAGEMENT_TABLES = [
+  'wiki_comments',
+  'wiki_comment_votes',
+  'wiki_page_likes',
+  'wiki_citation_votes',
+  'wiki_mission_completions',
+];
 
 const DAILY_DIGEST_TABLES = [
   'daily_missed_perks',
@@ -982,6 +1126,30 @@ async function ensurePlayerStateTables(db) {
     }
   }
   return null; // all tables present
+}
+
+async function ensureWikiEngagementTables(db) {
+  for (const tableName of WIKI_ENGAGEMENT_TABLES) {
+    const row = await db.prepare(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ? LIMIT 1`
+    ).bind(tableName).first().catch(() => null);
+    if (!row?.name) {
+      return {
+        _isWikiEngagementUnavailable: true,
+        tableName,
+        response: new Response(JSON.stringify({
+          ok: false,
+          error: 'wiki_engagement_unavailable',
+          reason: `migration_pending:${tableName}`,
+          message: 'Wiki engagement tables are not yet configured. Apply migration 029.',
+        }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', 'Retry-After': '60', ...CORS_HEADERS },
+        }),
+      };
+    }
+  }
+  return null;
 }
 
 function safeJsonParse(raw, fallback) {
@@ -4390,6 +4558,329 @@ export default {
     // ── GET /player/state ─────────────────────────────────────────────────
     // Returns full server-backed player state for a Telegram-linked user.
     // Requires a signed telegram_auth payload in the query string or POST body.
+    if (path === '/comments' && request.method === 'GET') {
+      const pageId = normalizeWikiPageId(url.searchParams.get('page_id'));
+      if (!pageId) return err('page_id required', 400);
+      const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10) || 20, 1), 50);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        const rows = await env.DB.prepare(`
+          SELECT id, page_id, telegram_id, name, email_hash, avatar_url, telegram_username,
+                 discord_username, text, status, votes_up, votes_down, created_at
+          FROM wiki_comments
+          WHERE page_id = ? AND status = 'approved'
+          ORDER BY created_at DESC
+          LIMIT ?
+        `).bind(pageId, limit).all();
+        return json({
+          ok: true,
+          page_id: pageId,
+          comments: (rows.results || []).map((comment) => ({
+            ...comment,
+            time_ago: timeAgo(comment.created_at),
+          })),
+        });
+      } catch (error) {
+        logApiFailure('wiki_comments_get_failed', { pageId, message: error?.message || String(error) });
+        return err('Failed to load comments', 500);
+      }
+    }
+
+    if (path === '/comments' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const pageId = normalizeWikiPageId(body?.page_id);
+      const name = normalizeTextField(body?.name, 60);
+      const text = normalizeTextField(body?.text, 1000);
+      const emailHash = await hashEmail(body?.email);
+      if (!pageId) return err('page_id required', 400);
+      if (!name) return err('name required', 400);
+      if (!text) return err('text required', 400);
+      if (!emailHash) return err('valid email required', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyOptionalWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const commentId = crypto.randomUUID();
+        await env.DB.prepare(`
+          INSERT INTO wiki_comments
+            (id, page_id, telegram_id, name, email_hash, avatar_url, telegram_username, discord_username, text, status)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+        `).bind(
+          commentId,
+          pageId,
+          auth.verified?.telegramId || null,
+          name,
+          emailHash,
+          normalizeTextField(body?.avatar_url, 500) || null,
+          normalizeTextField(body?.telegram_username, 60) || null,
+          normalizeTextField(body?.discord_username, 60) || null,
+          text,
+        ).run();
+        const mission = await completeWikiMission(env.DB, {
+          verified: auth.verified,
+          pageId,
+          missionId: 'engage',
+          source: 'comments',
+          sourceId: commentId,
+        });
+        return json({
+          ok: true,
+          page_id: pageId,
+          comment_id: commentId,
+          status: 'pending',
+          moderation: 'pending',
+          mission,
+        }, 201);
+      } catch (error) {
+        logApiFailure('wiki_comments_post_failed', { pageId, message: error?.message || String(error) });
+        return err('Failed to post comment', 500);
+      }
+    }
+
+    const commentVoteMatch = path.match(/^\/comments\/([^/]+)\/vote$/);
+    if (commentVoteMatch && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const commentId = normalizeTextField(decodeURIComponent(commentVoteMatch[1]), 80);
+      const vote = normalizeWikiVote(body?.vote);
+      if (!commentId) return err('comment_id required', 400);
+      if (!vote) return err('vote must be up or down', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyRequiredWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const comment = await env.DB.prepare(`SELECT id FROM wiki_comments WHERE id = ? LIMIT 1`).bind(commentId).first();
+        if (!comment) return err('Comment not found', 404);
+        const existing = await env.DB.prepare(`
+          SELECT vote FROM wiki_comment_votes WHERE comment_id = ? AND telegram_id = ? LIMIT 1
+        `).bind(commentId, auth.verified.telegramId).first().catch(() => null);
+        if (!existing) {
+          await env.DB.prepare(`
+            INSERT INTO wiki_comment_votes (comment_id, telegram_id, vote) VALUES (?, ?, ?)
+          `).bind(commentId, auth.verified.telegramId, vote).run();
+          await env.DB.prepare(`
+            UPDATE wiki_comments
+            SET votes_up = votes_up + CASE WHEN ? = 'up' THEN 1 ELSE 0 END,
+                votes_down = votes_down + CASE WHEN ? = 'down' THEN 1 ELSE 0 END
+            WHERE id = ?
+          `).bind(vote, vote, commentId).run();
+        }
+        const counts = await env.DB.prepare(`
+          SELECT votes_up, votes_down FROM wiki_comments WHERE id = ? LIMIT 1
+        `).bind(commentId).first();
+        return json({
+          ok: true,
+          comment_id: commentId,
+          vote,
+          already_voted: !!existing,
+          votes_up: Number(counts?.votes_up || 0),
+          votes_down: Number(counts?.votes_down || 0),
+        });
+      } catch (error) {
+        logApiFailure('wiki_comment_vote_failed', { commentId, message: error?.message || String(error) });
+        return err('Failed to vote on comment', 500);
+      }
+    }
+
+    if (path === '/likes' && request.method === 'GET') {
+      const pageId = normalizeWikiPageId(url.searchParams.get('page_id'));
+      if (!pageId) return err('page_id required', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        const row = await env.DB.prepare(`SELECT COUNT(*) AS count FROM wiki_page_likes WHERE page_id = ?`).bind(pageId).first();
+        return json({ ok: true, page_id: pageId, count: Number(row?.count || 0) });
+      } catch (error) {
+        logApiFailure('wiki_likes_get_failed', { pageId, message: error?.message || String(error) });
+        return err('Failed to load likes', 500);
+      }
+    }
+
+    if (path === '/likes' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const pageId = normalizeWikiPageId(body?.page_id);
+      if (!pageId) return err('page_id required', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyRequiredWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const insertResult = await env.DB.prepare(`
+          INSERT OR IGNORE INTO wiki_page_likes (page_id, telegram_id) VALUES (?, ?)
+        `).bind(pageId, auth.verified.telegramId).run();
+        const row = await env.DB.prepare(`SELECT COUNT(*) AS count FROM wiki_page_likes WHERE page_id = ?`).bind(pageId).first();
+        const mission = await completeWikiMission(env.DB, {
+          verified: auth.verified,
+          pageId,
+          missionId: 'signal',
+          source: 'likes',
+          sourceId: pageId,
+        });
+        return json({
+          ok: true,
+          page_id: pageId,
+          count: Number(row?.count || 0),
+          already_liked: Number(insertResult?.meta?.changes || 0) === 0,
+          mission,
+        });
+      } catch (error) {
+        logApiFailure('wiki_likes_post_failed', { pageId, message: error?.message || String(error) });
+        return err('Failed to like page', 500);
+      }
+    }
+
+    if (path === '/citation-votes' && request.method === 'GET') {
+      const pageId = normalizeWikiPageId(url.searchParams.get('page_id'));
+      const citeId = normalizeWikiId(url.searchParams.get('cite_id'), 80);
+      if (!pageId) return err('page_id required', 400);
+      if (!citeId) return err('cite_id required', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        const row = await env.DB.prepare(`
+          SELECT
+            SUM(CASE WHEN vote = 'up' THEN 1 WHEN vote = 'down' THEN -1 ELSE 0 END) AS score,
+            SUM(CASE WHEN vote = 'up' THEN 1 ELSE 0 END) AS up,
+            SUM(CASE WHEN vote = 'down' THEN 1 ELSE 0 END) AS down
+          FROM wiki_citation_votes
+          WHERE page_id = ? AND cite_id = ?
+        `).bind(pageId, citeId).first();
+        return json({
+          ok: true,
+          page_id: pageId,
+          cite_id: citeId,
+          score: Number(row?.score || 0),
+          up: Number(row?.up || 0),
+          down: Number(row?.down || 0),
+        });
+      } catch (error) {
+        logApiFailure('wiki_citation_votes_get_failed', { pageId, citeId, message: error?.message || String(error) });
+        return err('Failed to load citation votes', 500);
+      }
+    }
+
+    if (path === '/citation-votes' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const pageId = normalizeWikiPageId(body?.page_id);
+      const citeId = normalizeWikiId(body?.cite_id, 80);
+      const vote = normalizeWikiVote(body?.vote);
+      if (!pageId) return err('page_id required', 400);
+      if (!citeId) return err('cite_id required', 400);
+      if (!vote) return err('vote must be up or down', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyRequiredWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const existing = await env.DB.prepare(`
+          SELECT vote FROM wiki_citation_votes
+          WHERE page_id = ? AND cite_id = ? AND telegram_id = ?
+          LIMIT 1
+        `).bind(pageId, citeId, auth.verified.telegramId).first().catch(() => null);
+        if (!existing) {
+          await env.DB.prepare(`
+            INSERT INTO wiki_citation_votes (page_id, cite_id, telegram_id, vote)
+            VALUES (?, ?, ?, ?)
+          `).bind(pageId, citeId, auth.verified.telegramId, vote).run();
+        }
+        const row = await env.DB.prepare(`
+          SELECT
+            SUM(CASE WHEN vote = 'up' THEN 1 WHEN vote = 'down' THEN -1 ELSE 0 END) AS score,
+            SUM(CASE WHEN vote = 'up' THEN 1 ELSE 0 END) AS up,
+            SUM(CASE WHEN vote = 'down' THEN 1 ELSE 0 END) AS down
+          FROM wiki_citation_votes
+          WHERE page_id = ? AND cite_id = ?
+        `).bind(pageId, citeId).first();
+        const mission = await completeWikiMission(env.DB, {
+          verified: auth.verified,
+          pageId,
+          missionId: 'cite',
+          source: 'citation-votes',
+          sourceId: citeId,
+        });
+        return json({
+          ok: true,
+          page_id: pageId,
+          cite_id: citeId,
+          vote,
+          already_voted: !!existing,
+          score: Number(row?.score || 0),
+          up: Number(row?.up || 0),
+          down: Number(row?.down || 0),
+          mission,
+        });
+      } catch (error) {
+        logApiFailure('wiki_citation_votes_post_failed', { pageId, citeId, message: error?.message || String(error) });
+        return err('Failed to vote on citation', 500);
+      }
+    }
+
+    if (path === '/wiki-missions/status' && (request.method === 'GET' || request.method === 'POST')) {
+      let body = {};
+      if (request.method === 'POST') {
+        try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      } else {
+        const rawAuth = url.searchParams.get('telegram_auth');
+        if (rawAuth) { try { body.telegram_auth = JSON.parse(rawAuth); } catch { return err('Invalid telegram_auth', 400); } }
+        body.page_id = url.searchParams.get('page_id');
+      }
+      const pageId = normalizeWikiPageId(body?.page_id);
+      if (!pageId) return err('page_id required', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyRequiredWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const missionWindow = getTodayUtcDate();
+        const rows = await env.DB.prepare(`
+          SELECT mission_id, xp_awarded, source, source_id, created_at
+          FROM wiki_mission_completions
+          WHERE page_id = ? AND mission_window = ? AND telegram_id = ?
+        `).bind(pageId, missionWindow, auth.verified.telegramId).all();
+        const missions = {};
+        for (const row of (rows.results || [])) {
+          missions[row.mission_id] = {
+            completed: true,
+            reward_status: 'xp_synced',
+            xp_awarded: Number(row.xp_awarded || 0),
+            source: row.source || null,
+            source_id: row.source_id || null,
+            completed_at: row.created_at || null,
+          };
+        }
+        return json({ ok: true, page_id: pageId, mission_window: missionWindow, missions });
+      } catch (error) {
+        logApiFailure('wiki_missions_status_failed', { pageId, message: error?.message || String(error) });
+        return err('Failed to load wiki mission status', 500);
+      }
+    }
+
+    if (path === '/wiki-missions/complete' && request.method === 'POST') {
+      let body;
+      try { body = await request.json(); } catch { return err('Invalid JSON', 400); }
+      const pageId = normalizeWikiPageId(body?.page_id);
+      const missionId = normalizeWikiId(body?.mission_id, 24);
+      const source = normalizeWikiId(body?.source, 80);
+      const sourceId = normalizeTextField(body?.source_id, 120) || null;
+      if (!pageId) return err('page_id required', 400);
+      if (!missionId || !WIKI_MISSION_IDS.has(missionId)) return err('valid mission_id required', 400);
+      if (source !== WIKI_MISSION_SOURCE_BY_ID[missionId]) return err('source does not match mission_id', 400);
+      try {
+        { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
+        const auth = await verifyRequiredWikiTelegram(body, env);
+        if (auth.error) return err(auth.error, auth.status || 401);
+        const mission = await completeWikiMission(env.DB, {
+          verified: auth.verified,
+          pageId,
+          missionId,
+          source,
+          sourceId,
+        });
+        return json({ ok: true, page_id: pageId, mission });
+      } catch (error) {
+        logApiFailure('wiki_missions_complete_failed', { pageId, missionId, message: error?.message || String(error) });
+        return err('Failed to complete wiki mission', 500);
+      }
+    }
+
     if (path === '/player/state' && (request.method === 'GET' || request.method === 'POST')) {
       let body = {};
       if (request.method === 'POST') {
