@@ -4,6 +4,37 @@
   var cfg      = window.MOONBOYS_API || {};
   var BASE     = cfg.BASE_URL || null;
   var FEATURES = cfg.FEATURES || {};
+  var WIKI_MISSION_WINDOW = 'daily';
+  var WIKI_MISSION_EVENT = 'moonboys:wiki-mission-complete';
+  var BATTLE_MEDIA_BY_PAGE = {
+    wuffi: {
+      src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXJ4dHVlaHJ0ZWdvem92dW1zanFyYnc5bmxmM3Fyb2N6Z2YxbG55dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/GwigOL3Iw4kAa2ugsZ/giphy.gif',
+      alt: 'WUFFI battle heat animation'
+    }
+  };
+  var MISSION_DEFINITIONS = [
+    {
+      id: 'engage',
+      tag: 'Engage',
+      text: 'Leave a strategic comment on this page to influence the narrative.',
+      feature: 'COMMENTS',
+      actionLabel: 'Comment'
+    },
+    {
+      id: 'signal',
+      tag: 'Signal',
+      text: 'Like this article to boost its standing in the Moonboys ecosystem.',
+      feature: 'LIKES',
+      actionLabel: 'Like'
+    },
+    {
+      id: 'cite',
+      tag: 'Cite',
+      text: 'Vote on citations to strengthen the credibility of this intelligence file.',
+      feature: 'CITATION_VOTES',
+      actionLabel: 'Vote'
+    }
+  ];
 
   function esc(str) {
     return String(str == null ? '' : str)
@@ -33,7 +64,7 @@
   }
 
   function enhanceCitations(pageId) {
-    var list = document.querySelectorAll('.citations-list li');
+    var list = document.querySelectorAll('.citations-list li, .source-ref-list li');
     if (!list.length) return;
     list.forEach(function (li, index) {
       if (li.querySelector('.cite-vote')) return;
@@ -45,6 +76,128 @@
       span.dataset.pageId = pageId;
       wrap.appendChild(span);
       li.appendChild(wrap);
+      if (window.MOONBOYS_ENGAGEMENT && window.MOONBOYS_ENGAGEMENT.initCiteVote) {
+        window.MOONBOYS_ENGAGEMENT.initCiteVote(span);
+      }
+    });
+  }
+
+  function ensurePageLikeWidget(pageId) {
+    var existing = document.querySelector('.page-like-widget');
+    if (existing) {
+      if (!existing.dataset.pageId) existing.dataset.pageId = pageId;
+      return;
+    }
+    var target = document.querySelector('.article-meta');
+    if (!target) return;
+    var div = document.createElement('div');
+    div.className = 'page-like-widget';
+    div.dataset.pageId = pageId;
+    target.insertAdjacentElement('afterend', div);
+    if (window.MOONBOYS_ENGAGEMENT && window.MOONBOYS_ENGAGEMENT.initPageLike) {
+      window.MOONBOYS_ENGAGEMENT.initPageLike(div);
+    }
+  }
+
+  function getMissionWindowKey() {
+    if (WIKI_MISSION_WINDOW === 'daily') {
+      return new Date().toISOString().slice(0, 10);
+    }
+    return WIKI_MISSION_WINDOW;
+  }
+
+  function getMissionStorageKey(pageId, missionId) {
+    return [
+      'moonboys_wiki_mission',
+      getMissionWindowKey(),
+      pageId || defaultPageId(),
+      missionId
+    ].join(':');
+  }
+
+  function isMissionComplete(pageId, missionId) {
+    try {
+      return window.sessionStorage &&
+        window.sessionStorage.getItem(getMissionStorageKey(pageId, missionId)) === 'complete';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function setMissionComplete(pageId, missionId) {
+    try {
+      if (window.sessionStorage) {
+        window.sessionStorage.setItem(getMissionStorageKey(pageId, missionId), 'complete');
+      }
+    } catch (_) {}
+  }
+
+  function isTelegramLinked() {
+    var gate = window.MOONBOYS_IDENTITY;
+    if (!gate) return false;
+    if (gate.isTelegramLinked) return !!gate.isTelegramLinked();
+    return !!(gate.getTelegramId && gate.getTelegramId());
+  }
+
+  function missionStatusHTML(mission, pageId) {
+    var complete = isMissionComplete(pageId, mission.id);
+    if (!BASE || !FEATURES[mission.feature]) {
+      return '<span class="mission-status mission-status--unavailable">Unavailable</span>';
+    }
+    if (complete) {
+      return '<span class="mission-status mission-status--complete">Complete</span>';
+    }
+    if (!isTelegramLinked()) {
+      return '<span class="mission-status mission-status--locked">Telegram sync required</span>';
+    }
+    return '<span class="mission-status mission-status--ready">' + esc(mission.actionLabel) + ' to complete</span>';
+  }
+
+  function updateMissionStatus(pageId, missionId, state) {
+    var row = document.querySelector('.mission-row[data-mission-id="' + esc(missionId) + '"]');
+    if (!row) return;
+    var status = row.querySelector('.mission-status');
+    if (!status) return;
+    status.className = 'mission-status mission-status--' + state;
+    status.textContent = state === 'complete' ? 'Complete' : state;
+  }
+
+  function emitMissionReward(pageId, missionId, source) {
+    var gate = window.MOONBOYS_IDENTITY;
+    var payload = {
+      page_id: pageId,
+      mission_id: missionId,
+      mission_window: getMissionWindowKey(),
+      source: source || 'wiki-engagement'
+    };
+    if (gate && gate.getTelegramId) {
+      var telegramId = gate.getTelegramId();
+      if (telegramId) payload.telegram_id = telegramId;
+    }
+    document.dispatchEvent(new CustomEvent(WIKI_MISSION_EVENT, { detail: payload }));
+  }
+
+  function completeMission(pageId, missionId, source) {
+    if (isMissionComplete(pageId, missionId)) return;
+    setMissionComplete(pageId, missionId);
+    updateMissionStatus(pageId, missionId, 'complete');
+    emitMissionReward(pageId, missionId, source);
+  }
+
+  function wireMissionEvents(pageId) {
+    if (wireMissionEvents.bound) return;
+    wireMissionEvents.bound = true;
+    document.addEventListener('moonboys:comment-posted', function (event) {
+      var detail = event.detail || {};
+      completeMission(detail.page_id || pageId, 'engage', 'comments');
+    });
+    document.addEventListener('moonboys:page-liked', function (event) {
+      var detail = event.detail || {};
+      completeMission(detail.page_id || pageId, 'signal', 'likes');
+    });
+    document.addEventListener('moonboys:citation-voted', function (event) {
+      var detail = event.detail || {};
+      completeMission(detail.page_id || pageId, 'cite', 'citation-votes');
     });
   }
 
@@ -82,29 +235,32 @@
   }
 
   function buildMissionHTML(pageId) {
-    var missions = [
-      { tag: 'Engage', text: 'Leave a strategic comment on this page to influence the narrative.' },
-      { tag: 'Signal', text: 'Like this article to boost its standing in the Moonboys ecosystem.' },
-      { tag: 'Cite', text: 'Vote on citations to strengthen the credibility of this intelligence file.' }
-    ];
-
     return '<div class="battle-shell"><div class="battle-shell-inner">' +
       '<h3>Daily Missions</h3>' +
       '<div class="mission-stack">' +
-      missions.map(function (m) {
-        return '<div class="mission-row">' +
+      MISSION_DEFINITIONS.map(function (m) {
+        return '<div class="mission-row" data-mission-id="' + esc(m.id) + '">' +
           '<div>' +
             '<span class="mission-tag">' + esc(m.tag) + '</span>' +
             '<div class="mission-text">' + esc(m.text) + '</div>' +
           '</div>' +
+          missionStatusHTML(m, pageId) +
         '</div>';
       }).join('') +
       '</div>' +
-      '<p class="battle-copy">Complete missions to build your reputation. XP and rank tracking activate once the engagement layer goes live.</p>' +
+      '<p class="battle-copy">Rewards sync only for Telegram-linked users after supported actions are accepted by the live backend.</p>' +
       '</div></div>';
   }
 
-  function buildBattleMeterHTML(engagement) {
+  function buildBattleMediaHTML(pageId) {
+    var media = BATTLE_MEDIA_BY_PAGE[pageId];
+    if (!media || !media.src) return '';
+    return '<figure class="battle-page-media">' +
+      '<img src="' + esc(media.src) + '" alt="' + esc(media.alt || '') + '" loading="lazy">' +
+    '</figure>';
+  }
+
+  function buildBattleMeterHTML(engagement, pageId) {
     var level = 'Calm';
     if (engagement > 60) level = 'Hot';
     else if (engagement > 30) level = 'Warming Up';
@@ -113,7 +269,8 @@
       '<h3>Battle Heat</h3>' +
       '<div class="battle-meter-shell"><div class="battle-bar-fill" style="width:' + engagement + '%"></div></div>' +
       '<div class="battle-meter-meta"><span>' + esc(level) + ' engagement</span><span>' + engagement + '%</span></div>' +
-      '<p class="battle-copy">Derived from recent comments, likes, and overall activity. Live battle intelligence activates once the engagement layer is connected.</p>' +
+      '<p class="battle-copy">Derived from accepted comments, likes, and citation activity when the engagement backend is available.</p>' +
+      buildBattleMediaHTML(pageId) +
       '</div></div>';
   }
 
@@ -136,6 +293,8 @@
     var pageId = defaultPageId();
     ensureCommentsContainer(pageId);
     enhanceCitations(pageId);
+    ensurePageLikeWidget(pageId);
+    wireMissionEvents(pageId);
 
     var target = document.querySelector('.article-meta');
     if (!target || document.querySelector('.battle-deck')) return;
@@ -145,7 +304,7 @@
     var deck = document.createElement('div');
     deck.className = 'battle-deck';
     deck.innerHTML =
-      buildBattleMeterHTML(engagement) +
+      buildBattleMeterHTML(engagement, pageId) +
       buildMissionHTML(pageId);
 
     target.insertAdjacentElement('afterend', deck);

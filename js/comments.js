@@ -180,6 +180,9 @@
         .then(function () {
           status.textContent = '✅ Comment posted! It will appear after moderation.';
           status.className   = 'comment-form-status cm-success';
+          document.dispatchEvent(new CustomEvent('moonboys:comment-posted', {
+            detail: { page_id: pageId }
+          }));
           form.reset();
         })
         .catch(function (err) {

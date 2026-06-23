@@ -80,6 +80,8 @@
   // ── Page Like Widget ─────────────────────────────────────────
 
   function initPageLike(el) {
+    if (el.dataset.engagementReady === 'true') return;
+    el.dataset.engagementReady = 'true';
     var pageId = el.dataset.pageId || defaultPageId();
 
     el.innerHTML =
@@ -104,6 +106,8 @@
           if (data && data.count !== undefined) countEl.textContent = data.count;
         })
         .catch(function () {});
+    } else {
+      statusEl.textContent = COPY.FEATURE_UNAVAILABLE;
     }
 
     btn.addEventListener('click', function () {
@@ -143,6 +147,9 @@
             countEl.textContent  = data.count;
             btn.classList.remove('like-btn--pending');
             btn.classList.add('like-btn--active');
+            document.dispatchEvent(new CustomEvent('moonboys:page-liked', {
+              detail: { page_id: pageId, count: data.count }
+            }));
             statusEl.textContent = '❤️ Liked!';
           })
           .catch(function (err) {
@@ -161,6 +168,8 @@
   // ── Citation Vote Widget ─────────────────────────────────────
 
   function initCiteVote(el) {
+    if (el.dataset.engagementReady === 'true') return;
+    el.dataset.engagementReady = 'true';
     var citeId = el.dataset.citeId || '0';
     var pageId = el.dataset.pageId || defaultPageId();
 
@@ -169,9 +178,11 @@
         '<button class="cite-vote-btn" data-action="up" aria-label="Upvote citation ' + citeId + '">▲</button>' +
         '<span class="cite-vote-score" aria-live="polite">—</span>' +
         '<button class="cite-vote-btn" data-action="down" aria-label="Downvote citation ' + citeId + '">▼</button>' +
-      '</span>';
+      '</span>' +
+      '<span class="cite-vote-status" role="status" aria-live="polite"></span>';
 
     var scoreEl = el.querySelector('.cite-vote-score');
+    var statusEl = el.querySelector('.cite-vote-status');
 
     // Load current score (public read — no auth needed)
     if (BASE && FEATURES.CITATION_VOTES) {
@@ -182,11 +193,17 @@
           if (data && data.score !== undefined) scoreEl.textContent = data.score;
         })
         .catch(function () {});
+    } else {
+      statusEl.textContent = COPY.FEATURE_UNAVAILABLE;
     }
 
     Array.prototype.forEach.call(el.querySelectorAll('.cite-vote-btn'), function (btn) {
       btn.addEventListener('click', function () {
-        if (!BASE || !FEATURES.CITATION_VOTES || btn.disabled) return;
+        if (!BASE || !FEATURES.CITATION_VOTES) {
+          statusEl.textContent = COPY.FEATURE_UNAVAILABLE;
+          return;
+        }
+        if (btn.disabled) return;
 
         // Gate: competitive action requires /gklink (telegram_linked tier)
         withLinkedAccount(function () {
@@ -216,6 +233,9 @@
             })
             .then(function (data) {
               if (data && data.score !== undefined) scoreEl.textContent = data.score;
+              document.dispatchEvent(new CustomEvent('moonboys:citation-voted', {
+                detail: { page_id: pageId, cite_id: citeId, vote: btn.dataset.action, score: data && data.score }
+              }));
             })
             .catch(function (err) {
               if (err && err.error !== 'telegram_sync_required') btn.disabled = false;
@@ -231,6 +251,12 @@
     Array.prototype.forEach.call(document.querySelectorAll('.page-like-widget'), initPageLike);
     Array.prototype.forEach.call(document.querySelectorAll('.cite-vote'), initCiteVote);
   }
+
+  window.MOONBOYS_ENGAGEMENT = {
+    init: init,
+    initPageLike: initPageLike,
+    initCiteVote: initCiteVote
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
