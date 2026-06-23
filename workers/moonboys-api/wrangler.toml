@@ -1,5 +1,5 @@
 name = "moonboys-api"
-main = "worker.js"
+main = "worker-with-comment-moderation.js"
 compatibility_date = "2026-04-12"
 workers_dev = true
 preview_urls = true
@@ -21,6 +21,7 @@ ANTI_CHEAT_WORKER_URL = "https://moonboys-anti-cheat.sercullen.workers.dev"
 LEADERBOARD_API_URL = "https://moonboys-leaderboard.sercullen.workers.dev"
 WAXONEDGE_FREE_SAFE_MODE = "false"
 WAXONEDGE_HYPERION_API = "https://wax.eosusa.io/v2"
+SWARMSY_MODERATION_URL = "https://swarmsy.cryptomoonboys.com/api/swarmsy/internal/moderate-comment"
 
 # WaxOnEdge live indexer probe config. Set production values explicitly when the
 # deployed Worker has a reachable VPS URL; never commit the shared secret value:
@@ -69,12 +70,13 @@ migrations_dir = "migrations"
 # LEADERBOARD_API_URL is a non-secret var above.
 
 # ── SWARMSY public NPC bridge secret ─────────────────────────────────────────
-# Required for POST /public/npc-chat (Sparky live chat bridge).
-# Set via Wrangler CLI — never commit the token value to source control:
+# Required for POST /public/npc-chat (Sparky live chat bridge) and server-side
+# wiki comment auto-moderation. Set via Wrangler CLI — never commit the token
+# value to source control:
 #
 #   wrangler secret put SWARMSY_BRIDGE_TOKEN
 #
-# SWARMSY_BRIDGE_TOKEN — ****** forwarded as X-SWARMSY-BRIDGE-TOKEN to
-#   https://swarmsy.cryptomoonboys.com/api/swarmsy/public/npc-chat.
+# SWARMSY_BRIDGE_TOKEN — ****** forwarded as X-SWARMSY-BRIDGE-TOKEN to SWARMSY.
 #   The token is never exposed in HTTP responses or Worker source code.
-#   If the secret is absent the route returns 503 { success:false, error:"npc_bridge_not_configured" }.
+#   If the secret is absent, Sparky chat returns 503 and comment moderation
+#   leaves submitted comments pending rather than publishing them.
