@@ -720,6 +720,59 @@ async function verifyRequiredWikiTelegram(body, env) {
   return { verified };
 }
 
+async function isWikiRewardLinkedUser(db, telegramId) {
+  const row = await db.prepare(`
+    SELECT u.telegram_id
+    FROM telegram_users u
+    WHERE u.telegram_id = ?
+      AND (
+        EXISTS (
+          SELECT 1 FROM telegram_activity_log al
+          WHERE al.telegram_id = u.telegram_id AND al.action = 'link_confirmed'
+        )
+        OR EXISTS (
+          SELECT 1 FROM blocktopia_progression bp
+          WHERE bp.telegram_id = u.telegram_id
+        )
+      )
+    LIMIT 1
+  `).bind(String(telegramId || '')).first().catch(() => null);
+  return !!row?.telegram_id;
+}
+
+async function verifyWikiMissionSourceAction(db, {
+  telegramId,
+  pageId,
+  missionId,
+  sourceId,
+}) {
+  if (missionId === 'engage') {
+    const row = await db.prepare(`
+      SELECT id FROM wiki_comments
+      WHERE id = ? AND page_id = ? AND telegram_id = ?
+      LIMIT 1
+    `).bind(sourceId || '', pageId, telegramId).first().catch(() => null);
+    return !!row?.id;
+  }
+  if (missionId === 'signal') {
+    const row = await db.prepare(`
+      SELECT page_id FROM wiki_page_likes
+      WHERE page_id = ? AND telegram_id = ?
+      LIMIT 1
+    `).bind(pageId, telegramId).first().catch(() => null);
+    return !!row?.page_id;
+  }
+  if (missionId === 'cite') {
+    const row = await db.prepare(`
+      SELECT cite_id FROM wiki_citation_votes
+      WHERE page_id = ? AND cite_id = ? AND telegram_id = ?
+      LIMIT 1
+    `).bind(pageId, sourceId || '', telegramId).first().catch(() => null);
+    return !!row?.cite_id;
+  }
+  return false;
+}
+
 async function completeWikiMission(db, {
   verified,
   pageId,
@@ -732,6 +785,15 @@ async function completeWikiMission(db, {
       completed: false,
       reward_status: 'telegram_sync_required',
       xp_awarded: 0,
+    };
+  }
+  const linked = await isWikiRewardLinkedUser(db, verified.telegramId);
+  if (!linked) {
+    return {
+      completed: false,
+      reward_status: 'telegram_link_required',
+      xp_awarded: 0,
+      mission_id: missionId,
     };
   }
   if (!WIKI_MISSION_IDS.has(missionId)) {
@@ -4867,6 +4929,13 @@ export default {
         { const _wikiCheck = await ensureWikiEngagementTables(env.DB); if (_wikiCheck) return _wikiCheck.response; }
         const auth = await verifyRequiredWikiTelegram(body, env);
         if (auth.error) return err(auth.error, auth.status || 401);
+        const sourceExists = await verifyWikiMissionSourceAction(env.DB, {
+          telegramId: auth.verified.telegramId,
+          pageId,
+          missionId,
+          sourceId,
+        });
+        if (!sourceExists) return err('matching source action required', 409);
         const mission = await completeWikiMission(env.DB, {
           verified: auth.verified,
           pageId,

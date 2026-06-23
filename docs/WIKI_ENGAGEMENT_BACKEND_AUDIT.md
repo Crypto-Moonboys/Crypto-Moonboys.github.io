@@ -14,7 +14,7 @@ This audit covers the article engagement layer used by wiki Battle Heat and Dail
 
 ## Current Route Status
 
-The frontend feature flags in `js/api-config.js` are enabled only for the article routes implemented in this PR:
+The frontend feature flags in `js/api-config.js` remain disabled until the Worker deploy and migration 029 are live:
 
 - `COMMENTS`
 - `LIKES`
@@ -43,7 +43,7 @@ The article routes require migration 029 before they can run against remote D1.
 
 ## Frontend Behaviour
 
-If the API base is unavailable or migration 029 is not applied, the UI renders unavailable/error states and does not fake counts.
+Because the flags remain disabled before deploy, the UI renders unavailable states and does not call the article engagement routes or fake counts.
 
 When the routes return successful responses:
 
@@ -63,7 +63,16 @@ Mission completions are stored in `wiki_mission_completions` keyed by:
 - `mission_window`
 - `telegram_id`
 
-The Worker awards XP through `telegram_xp_log` only after the mission completion insert wins. Duplicate actions return already-completed state and do not award duplicate XP.
+The Worker awards XP through `telegram_xp_log` only after:
+
+- signed Telegram auth verifies successfully
+- server-side linked evidence exists (`telegram_activity_log.action = 'link_confirmed'` or `blocktopia_progression`)
+- the accepted action maps to the mission
+- the mission completion insert wins
+
+Signed Telegram auth alone is not enough to earn XP. Duplicate actions return already-completed state and do not award duplicate XP.
+
+`POST /wiki-missions/complete` is not a blind claim endpoint. It verifies that the matching source action row exists for the same Telegram user before calling the mission completion helper.
 
 ## Deploy Notes
 
