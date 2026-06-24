@@ -656,7 +656,7 @@
   },
   {
     "entity_id": "charlie_buster",
-    "canonical_title": "charlie_buster — Crypto Moonboys Wiki",
+    "canonical_title": "charlie-buster — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/charlie-buster.html",
     "category": "characters",
     "aliases": [
@@ -3806,12 +3806,10 @@
   },
   {
     "entity_id": "trevor_fung",
-    "canonical_title": "trevor_fung — Crypto Moonboys Wiki",
+    "canonical_title": "Trevor Fung - Crypto Moonboys Wiki",
     "canonical_url": "/wiki/trevor-fung.html",
     "category": "factions",
-    "aliases": [
-      "trevor fung crypto moonboys wiki"
-    ],
+    "aliases": [],
     "tags": [
       "trevor",
       "fung",
@@ -3824,7 +3822,8 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "trevor fung"
+      "trevor fung",
+      "trevor fung crypto moonboys wiki"
     ]
   },
   {

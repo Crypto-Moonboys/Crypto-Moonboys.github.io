@@ -677,96 +677,6 @@
     "brand": null
   },
   {
-    "title": "charlie_buster — Crypto Moonboys Wiki",
-    "desc": "Charlie Buster, known across the digital realms as NFTBUSTER, stands as a central protagonist in the Crypto Moonboys and GraffPUNKS unified universe. A digital",
-    "url": "/wiki/charlie-buster.html",
-    "tags": [
-      "charlie",
-      "buster",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "charlie buster crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 665,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 8894,
-      "keyword_bag_size": 21,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 115,
-      "section_count": 6,
-      "lore_paragraph_count": 111,
-      "content_quality_score": 103,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 445,
-      "keyword_bag_points": 21,
-      "content_quality_points": 111,
-      "authority_points": 18,
-      "final_rank_score": 665,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "charlie buster crypto moonboys wiki",
-      "tokens": [
-        "charlie",
-        "buster",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "charlie",
-        "buster",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "known",
-        "across",
-        "the",
-        "digital",
-        "realms",
-        "as",
-        "nftbuster",
-        "stands",
-        "a",
-        "central",
-        "protagonist",
-        "in",
-        "and",
-        "graffpunks",
-        "unified",
-        "universe"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 47,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 47,
-      "authority": 0
-    },
-    "brand": null
-  },
-  {
     "title": "Ethereum (ETH) — Crypto Moonboys Wiki",
     "desc": "Ethereum (ETH) — a decentralised platform for smart contracts and dApps. Learn about Vitalik Buterin, DeFi, NFTs, and Ethereum",
     "url": "/wiki/ethereum.html",
@@ -3070,99 +2980,6 @@
         "all",
         "its",
         "den"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 38,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 38,
-      "authority": 0
-    },
-    "brand": null
-  },
-  {
-    "title": "trevor_fung — Crypto Moonboys Wiki",
-    "desc": "Trevor Fung, a co-founder of GraffPUNKS, stands as a cultural titan in the Crypto Moonboys universe, a visionary whose roots in the dance music revolution of th",
-    "url": "/wiki/trevor-fung.html",
-    "tags": [
-      "trevor",
-      "fung",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "trevor fung crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 388,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 3319,
-      "keyword_bag_size": 24,
-      "heading_count": 6,
-      "list_count": 3,
-      "internal_link_count": 0,
-      "paragraph_count": 36,
-      "section_count": 5,
-      "lore_paragraph_count": 31,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 166,
-      "keyword_bag_points": 24,
-      "content_quality_points": 115,
-      "authority_points": 18,
-      "final_rank_score": 388,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "trevor fung crypto moonboys wiki",
-      "tokens": [
-        "trevor",
-        "fung",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "trevor",
-        "fung",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "a",
-        "co",
-        "founder",
-        "of",
-        "graffpunks",
-        "stands",
-        "as",
-        "cultural",
-        "titan",
-        "in",
-        "the",
-        "universe",
-        "visionary",
-        "whose",
-        "roots",
-        "dance",
-        "music",
-        "revolution",
-        "th"
       ]
     },
     "link_score": {
@@ -6418,6 +6235,96 @@
     "brand": null
   },
   {
+    "title": "WUFFI / $WUF — Crypto Moonboys Wiki",
+    "desc": "Crypto Moonboys wiki guide to WUFFI and $WUF, a multi-chain community coin connected to WAX, Solana, Base and TON.",
+    "url": "/wiki/wuffi.html",
+    "tags": [
+      "wuffi",
+      "wuf",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "wuffi"
+      },
+      {
+        "title": "wuffi wuf crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 256,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 2,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1398,
+      "keyword_bag_size": 18,
+      "heading_count": 12,
+      "list_count": 2,
+      "internal_link_count": 2,
+      "paragraph_count": 21,
+      "section_count": 10,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 77,
+      "authority_score": 15
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 70,
+      "keyword_bag_points": 18,
+      "content_quality_points": 88,
+      "authority_points": 15,
+      "final_rank_score": 256,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "wuffi wuf crypto moonboys wiki",
+      "tokens": [
+        "wuffi",
+        "wuf",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "wuffi",
+        "wuf",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "guide",
+        "to",
+        "and",
+        "a",
+        "multi",
+        "chain",
+        "community",
+        "coin",
+        "connected",
+        "wax",
+        "solana",
+        "base",
+        "ton"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 0,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 0,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
     "title": "Alien Worlds / TLM — Crypto Moonboys Wiki",
     "desc": "Crypto Moonboys wiki guide to Alien Worlds and Trilium (TLM), one of the best-known blockchain game economies connected to WAX.",
     "url": "/wiki/alien-worlds-tlm.html",
@@ -6888,96 +6795,6 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 11,
       "authority": 3.5
-    },
-    "brand": null
-  },
-  {
-    "title": "WUFFI / $WUF — Crypto Moonboys Wiki",
-    "desc": "Crypto Moonboys wiki guide to WUFFI and $WUF, a multi-chain community coin connected to WAX, Solana, Base and TON.",
-    "url": "/wiki/wuffi.html",
-    "tags": [
-      "wuffi",
-      "wuf",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "wuffi"
-      },
-      {
-        "title": "wuffi wuf crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 252,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 2,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 1313,
-      "keyword_bag_size": 18,
-      "heading_count": 10,
-      "list_count": 2,
-      "internal_link_count": 2,
-      "paragraph_count": 21,
-      "section_count": 9,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 77,
-      "authority_score": 15
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 66,
-      "keyword_bag_points": 18,
-      "content_quality_points": 88,
-      "authority_points": 15,
-      "final_rank_score": 252,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "wuffi wuf crypto moonboys wiki",
-      "tokens": [
-        "wuffi",
-        "wuf",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "wuffi",
-        "wuf",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "guide",
-        "to",
-        "and",
-        "a",
-        "multi",
-        "chain",
-        "community",
-        "coin",
-        "connected",
-        "wax",
-        "solana",
-        "base",
-        "ton"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 0,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 0,
-      "authority": 0
     },
     "brand": null
   },
@@ -13063,6 +12880,100 @@
     "brand": null
   },
   {
+    "title": "charlie-buster — Crypto Moonboys Wiki",
+    "desc": "Charlie Buster bridges the historic Graffiti Kings movement into the blockchain era as key collaborator and founder of foundational projects. He maintains stric",
+    "url": "/wiki/charlie-buster.html",
+    "tags": [
+      "charlie",
+      "buster",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "charlie buster crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 209,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 572,
+      "keyword_bag_size": 25,
+      "heading_count": 5,
+      "list_count": 3,
+      "internal_link_count": 0,
+      "paragraph_count": 12,
+      "section_count": 4,
+      "lore_paragraph_count": 8,
+      "content_quality_score": 67,
+      "authority_score": 10
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 29,
+      "keyword_bag_points": 25,
+      "content_quality_points": 75,
+      "authority_points": 10,
+      "final_rank_score": 209,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "charlie buster crypto moonboys wiki",
+      "tokens": [
+        "charlie",
+        "buster",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "charlie",
+        "buster",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "bridges",
+        "the",
+        "historic",
+        "graffiti",
+        "kings",
+        "movement",
+        "into",
+        "blockchain",
+        "era",
+        "as",
+        "key",
+        "collaborator",
+        "and",
+        "founder",
+        "of",
+        "foundational",
+        "projects",
+        "he",
+        "maintains",
+        "stric"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 47,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 47,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
     "title": "NFTHive — Crypto Moonboys Wiki",
     "desc": "Crypto Moonboys wiki guide to NFTHive, a WAX NFT marketplace with collections, market pages, analytics, creator tools, crafting, bulk tools and CPU rental links.",
     "url": "/wiki/nfthive.html",
@@ -16502,6 +16413,76 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 23,
       "authority": 3.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Trevor Fung - Crypto Moonboys Wiki",
+    "desc": "",
+    "url": "/wiki/trevor-fung.html",
+    "tags": [
+      "trevor",
+      "fung",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [],
+    "rank_score": 101,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": false,
+      "article_word_count": 172,
+      "keyword_bag_size": 5,
+      "heading_count": 5,
+      "list_count": 2,
+      "internal_link_count": 0,
+      "paragraph_count": 14,
+      "section_count": 0,
+      "lore_paragraph_count": 0,
+      "content_quality_score": 18,
+      "authority_score": 6
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 0,
+      "category_points": 35,
+      "word_count_points": 9,
+      "keyword_bag_points": 5,
+      "content_quality_points": 26,
+      "authority_points": 6,
+      "final_rank_score": 101,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "trevor fung crypto moonboys wiki",
+      "tokens": [
+        "trevor",
+        "fung",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "trevor",
+        "fung",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 38,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 38,
+      "authority": 0
     },
     "brand": null
   },
