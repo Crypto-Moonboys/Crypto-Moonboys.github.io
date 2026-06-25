@@ -10405,6 +10405,100 @@
     "brand": null
   },
   {
+    "title": "charlie-buster — Crypto Moonboys Wiki",
+    "desc": "Charlie Buster bridges the historic Graffiti Kings movement into the blockchain era as key collaborator and founder of foundational projects. He maintains stric",
+    "url": "/wiki/charlie-buster.html",
+    "tags": [
+      "charlie",
+      "buster",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "charlie buster crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 227,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 737,
+      "keyword_bag_size": 25,
+      "heading_count": 5,
+      "list_count": 3,
+      "internal_link_count": 0,
+      "paragraph_count": 13,
+      "section_count": 4,
+      "lore_paragraph_count": 9,
+      "content_quality_score": 75,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 37,
+      "keyword_bag_points": 25,
+      "content_quality_points": 83,
+      "authority_points": 12,
+      "final_rank_score": 227,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "charlie buster crypto moonboys wiki",
+      "tokens": [
+        "charlie",
+        "buster",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "charlie",
+        "buster",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "bridges",
+        "the",
+        "historic",
+        "graffiti",
+        "kings",
+        "movement",
+        "into",
+        "blockchain",
+        "era",
+        "as",
+        "key",
+        "collaborator",
+        "and",
+        "founder",
+        "of",
+        "foundational",
+        "projects",
+        "he",
+        "maintains",
+        "stric"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 47,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 47,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
     "title": "canvas_clash — Crypto Moonboys Wiki",
     "desc": "The Canvas Clash is a legendary uprising etched into the annals of Block Topia, a digital rebellion led by GKniftyHEADS under the GraffPUNKS banner, where unera",
     "url": "/wiki/canvas-clash.html",
@@ -12876,100 +12970,6 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 18,
       "authority": 3.5
-    },
-    "brand": null
-  },
-  {
-    "title": "charlie-buster — Crypto Moonboys Wiki",
-    "desc": "Charlie Buster bridges the historic Graffiti Kings movement into the blockchain era as key collaborator and founder of foundational projects. He maintains stric",
-    "url": "/wiki/charlie-buster.html",
-    "tags": [
-      "charlie",
-      "buster",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "charlie buster crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 209,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 572,
-      "keyword_bag_size": 25,
-      "heading_count": 5,
-      "list_count": 3,
-      "internal_link_count": 0,
-      "paragraph_count": 12,
-      "section_count": 4,
-      "lore_paragraph_count": 8,
-      "content_quality_score": 67,
-      "authority_score": 10
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 29,
-      "keyword_bag_points": 25,
-      "content_quality_points": 75,
-      "authority_points": 10,
-      "final_rank_score": 209,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "charlie buster crypto moonboys wiki",
-      "tokens": [
-        "charlie",
-        "buster",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "charlie",
-        "buster",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "bridges",
-        "the",
-        "historic",
-        "graffiti",
-        "kings",
-        "movement",
-        "into",
-        "blockchain",
-        "era",
-        "as",
-        "key",
-        "collaborator",
-        "and",
-        "founder",
-        "of",
-        "foundational",
-        "projects",
-        "he",
-        "maintains",
-        "stric"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 47,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 47,
-      "authority": 0
     },
     "brand": null
   },
@@ -16562,5 +16562,10 @@
       "authority": 0.5
     },
     "brand": null
+  },
+  {
+    "title": "alfie-blaze",
+    "url": "/wiki/alfie-blaze.html",
+    "category": "concepts"
   }
 ]
