@@ -2710,195 +2710,6 @@
     "brand": null
   },
   {
-    "title": "darren_cullen — Crypto Moonboys Wiki",
-    "desc": "Darren Cullen, known by his iconic tag SER, stands as a cultural juggernaut in the Crypto Moonboys universe, the visionary founder of Graffiti Kings and a found",
-    "url": "/wiki/darren-cullen.html",
-    "tags": [
-      "darren",
-      "cullen",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "darren cullen crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 396,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 3345,
-      "keyword_bag_size": 26,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 35,
-      "section_count": 6,
-      "lore_paragraph_count": 30,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 167,
-      "keyword_bag_points": 26,
-      "content_quality_points": 115,
-      "authority_points": 18,
-      "final_rank_score": 396,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "darren cullen crypto moonboys wiki",
-      "tokens": [
-        "darren",
-        "cullen",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "darren",
-        "cullen",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "known",
-        "by",
-        "his",
-        "iconic",
-        "tag",
-        "ser",
-        "stands",
-        "as",
-        "a",
-        "cultural",
-        "juggernaut",
-        "in",
-        "the",
-        "universe",
-        "visionary",
-        "founder",
-        "of",
-        "graffiti",
-        "kings",
-        "and",
-        "found"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 35,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 35,
-      "authority": 0
-    },
-    "brand": null
-  },
-  {
-    "title": "ian_harrison — Crypto Moonboys Wiki",
-    "desc": "Ian Harrison stands as a narrative architect of the Crypto Moonboys universe, a real-world creative whose gritty, punk-infused storytelling on Medium and other",
-    "url": "/wiki/ian-harrison.html",
-    "tags": [
-      "ian",
-      "harrison",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "characters",
-    "aliases": [
-      {
-        "title": "ian harrison crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 392,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "characters",
-      "category_priority": 8,
-      "has_description": true,
-      "article_word_count": 3289,
-      "keyword_bag_size": 25,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 36,
-      "section_count": 6,
-      "lore_paragraph_count": 31,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 40,
-      "word_count_points": 164,
-      "keyword_bag_points": 25,
-      "content_quality_points": 115,
-      "authority_points": 18,
-      "final_rank_score": 392,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "ian harrison crypto moonboys wiki",
-      "tokens": [
-        "ian",
-        "harrison",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "ian",
-        "harrison",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "stands",
-        "as",
-        "a",
-        "narrative",
-        "architect",
-        "of",
-        "the",
-        "universe",
-        "real",
-        "world",
-        "creative",
-        "whose",
-        "gritty",
-        "punk",
-        "infused",
-        "storytelling",
-        "on",
-        "medium",
-        "and",
-        "other"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 31,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 31,
-      "authority": 0
-    },
-    "brand": null
-  },
-  {
     "title": "sacred_chain — Crypto Moonboys Wiki",
     "desc": "The Sacred Chain is the immutable lifeblood of the Crypto Moonboys universe, a primal blockchain that binds the fractured expanse of Block Topia and all its den",
     "url": "/wiki/sacred-chain.html",
@@ -2987,99 +2798,6 @@
       "outbound_count": 38,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 38,
-      "authority": 0
-    },
-    "brand": null
-  },
-  {
-    "title": "jillian_godsil — Crypto Moonboys Wiki",
-    "desc": "Jillian Godsil emerges as a narrative titan in the Crypto Moonboys universe, a real-world blockchain journalist whose evocative storytelling on Medium and beyon",
-    "url": "/wiki/jillian-godsil.html",
-    "tags": [
-      "jillian",
-      "godsil",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [
-      {
-        "title": "jillian godsil crypto moonboys wiki"
-      }
-    ],
-    "rank_score": 384,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": true,
-      "article_word_count": 3242,
-      "keyword_bag_size": 24,
-      "heading_count": 7,
-      "list_count": 4,
-      "internal_link_count": 0,
-      "paragraph_count": 37,
-      "section_count": 6,
-      "lore_paragraph_count": 32,
-      "content_quality_score": 107,
-      "authority_score": 18
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 10,
-      "category_points": 35,
-      "word_count_points": 162,
-      "keyword_bag_points": 24,
-      "content_quality_points": 115,
-      "authority_points": 18,
-      "final_rank_score": 384,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "jillian godsil crypto moonboys wiki",
-      "tokens": [
-        "jillian",
-        "godsil",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "jillian",
-        "godsil",
-        "crypto",
-        "moonboys",
-        "wiki",
-        "emerges",
-        "as",
-        "a",
-        "narrative",
-        "titan",
-        "in",
-        "the",
-        "universe",
-        "real",
-        "world",
-        "blockchain",
-        "journalist",
-        "whose",
-        "evocative",
-        "storytelling",
-        "on",
-        "medium",
-        "and",
-        "beyon"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 37,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 37,
       "authority": 0
     },
     "brand": null
@@ -3476,6 +3194,98 @@
       "outbound_count": 34,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 34,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
+    "title": "Trevor Fung — Crypto Moonboys Wiki",
+    "desc": "Trevor Fung operates as a foundational real-world anchor within the Crypto Moonboys mechanics, translating complex technical systems into narrative frameworks t",
+    "url": "/wiki/trevor-fung.html",
+    "tags": [
+      "trevor",
+      "fung",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "trevor fung crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 299,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 1857,
+      "keyword_bag_size": 23,
+      "heading_count": 6,
+      "list_count": 3,
+      "internal_link_count": 0,
+      "paragraph_count": 42,
+      "section_count": 5,
+      "lore_paragraph_count": 38,
+      "content_quality_score": 95,
+      "authority_score": 15
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 93,
+      "keyword_bag_points": 23,
+      "content_quality_points": 103,
+      "authority_points": 15,
+      "final_rank_score": 299,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "trevor fung crypto moonboys wiki",
+      "tokens": [
+        "trevor",
+        "fung",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "trevor",
+        "fung",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "operates",
+        "as",
+        "a",
+        "foundational",
+        "real",
+        "world",
+        "anchor",
+        "within",
+        "the",
+        "mechanics",
+        "translating",
+        "complex",
+        "technical",
+        "systems",
+        "into",
+        "narrative",
+        "frameworks",
+        "t"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 38,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 38,
       "authority": 0
     },
     "brand": null
@@ -4799,6 +4609,100 @@
       "existing_outbound_count": 7,
       "suggested_outbound_count": 14,
       "authority": 3.5
+    },
+    "brand": null
+  },
+  {
+    "title": "Darren Cullen — Crypto Moonboys Wiki",
+    "desc": "Darren Cullen operates as a core mechanic within the Crypto Moonboys underbelly, translating raw chain data into tangible street-level modifications that keep t",
+    "url": "/wiki/darren-cullen.html",
+    "tags": [
+      "darren",
+      "cullen",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "darren cullen crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 268,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 1085,
+      "keyword_bag_size": 25,
+      "heading_count": 6,
+      "list_count": 3,
+      "internal_link_count": 0,
+      "paragraph_count": 25,
+      "section_count": 5,
+      "lore_paragraph_count": 21,
+      "content_quality_score": 99,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 54,
+      "keyword_bag_points": 25,
+      "content_quality_points": 107,
+      "authority_points": 12,
+      "final_rank_score": 268,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "darren cullen crypto moonboys wiki",
+      "tokens": [
+        "darren",
+        "cullen",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "darren",
+        "cullen",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "operates",
+        "as",
+        "a",
+        "core",
+        "mechanic",
+        "within",
+        "the",
+        "underbelly",
+        "translating",
+        "raw",
+        "chain",
+        "data",
+        "into",
+        "tangible",
+        "street",
+        "level",
+        "modifications",
+        "that",
+        "keep",
+        "t"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 35,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 35,
+      "authority": 0
     },
     "brand": null
   },
@@ -8215,6 +8119,99 @@
     "brand": null
   },
   {
+    "title": "Ian Harrison — Crypto Moonboys Wiki",
+    "desc": "Ian Harrison functions as a technical validator and edge-case specialist in the Crypto Moonboys mechanics, drawing from both accepted canon and rejected-claims",
+    "url": "/wiki/ian-harrison.html",
+    "tags": [
+      "ian",
+      "harrison",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "characters",
+    "aliases": [
+      {
+        "title": "ian harrison crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 243,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "characters",
+      "category_priority": 8,
+      "has_description": true,
+      "article_word_count": 918,
+      "keyword_bag_size": 24,
+      "heading_count": 6,
+      "list_count": 3,
+      "internal_link_count": 0,
+      "paragraph_count": 16,
+      "section_count": 5,
+      "lore_paragraph_count": 12,
+      "content_quality_score": 83,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 40,
+      "word_count_points": 46,
+      "keyword_bag_points": 24,
+      "content_quality_points": 91,
+      "authority_points": 12,
+      "final_rank_score": 243,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "ian harrison crypto moonboys wiki",
+      "tokens": [
+        "ian",
+        "harrison",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "ian",
+        "harrison",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "functions",
+        "as",
+        "a",
+        "technical",
+        "validator",
+        "and",
+        "edge",
+        "case",
+        "specialist",
+        "in",
+        "the",
+        "mechanics",
+        "drawing",
+        "from",
+        "both",
+        "accepted",
+        "canon",
+        "rejected",
+        "claims"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 31,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 31,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
     "title": "The AllCity Bulls — Crypto Moonboys Wiki",
     "desc": "The AllCity Bulls are the iron-fisted urban enforcers of Block Topia, towering over the concrete jungles with brute strength and an unyielding grip on key terri",
     "url": "/wiki/the-allcity-bulls.html",
@@ -9652,6 +9649,97 @@
       "outbound_count": 4,
       "existing_outbound_count": 0,
       "suggested_outbound_count": 4,
+      "authority": 0
+    },
+    "brand": null
+  },
+  {
+    "title": "Jillian Godsil — Crypto Moonboys Wiki",
+    "desc": "Jillian Godsil provides strategic oversight within the Crypto Moonboys mechanics, ensuring that real-world insight informs the long-term sustainability and ethi",
+    "url": "/wiki/jillian-godsil.html",
+    "tags": [
+      "jillian",
+      "godsil",
+      "crypto",
+      "moonboys",
+      "wiki"
+    ],
+    "category": "factions",
+    "aliases": [
+      {
+        "title": "jillian godsil crypto moonboys wiki"
+      }
+    ],
+    "rank_score": 234,
+    "rank_signals": {
+      "is_canonical": true,
+      "alias_count": 1,
+      "tag_count": 5,
+      "mention_count": 0,
+      "category": "factions",
+      "category_priority": 7,
+      "has_description": true,
+      "article_word_count": 951,
+      "keyword_bag_size": 22,
+      "heading_count": 6,
+      "list_count": 3,
+      "internal_link_count": 0,
+      "paragraph_count": 16,
+      "section_count": 5,
+      "lore_paragraph_count": 12,
+      "content_quality_score": 79,
+      "authority_score": 12
+    },
+    "rank_diagnostics": {
+      "canonical_points": 20,
+      "description_points": 10,
+      "category_points": 35,
+      "word_count_points": 48,
+      "keyword_bag_points": 22,
+      "content_quality_points": 87,
+      "authority_points": 12,
+      "final_rank_score": 234,
+      "authority_graph_points": 0
+    },
+    "search_index": {
+      "normalized_title": "jillian godsil crypto moonboys wiki",
+      "tokens": [
+        "jillian",
+        "godsil",
+        "crypto",
+        "moonboys",
+        "wiki"
+      ],
+      "keyword_bag": [
+        "jillian",
+        "godsil",
+        "crypto",
+        "moonboys",
+        "wiki",
+        "provides",
+        "strategic",
+        "oversight",
+        "within",
+        "the",
+        "mechanics",
+        "ensuring",
+        "that",
+        "real",
+        "world",
+        "insight",
+        "informs",
+        "long",
+        "term",
+        "sustainability",
+        "and",
+        "ethi"
+      ]
+    },
+    "link_score": {
+      "inbound_count": 0,
+      "outbound_count": 37,
+      "existing_outbound_count": 0,
+      "suggested_outbound_count": 37,
       "authority": 0
     },
     "brand": null
@@ -16417,76 +16505,6 @@
     "brand": null
   },
   {
-    "title": "Trevor Fung - Crypto Moonboys Wiki",
-    "desc": "",
-    "url": "/wiki/trevor-fung.html",
-    "tags": [
-      "trevor",
-      "fung",
-      "crypto",
-      "moonboys",
-      "wiki"
-    ],
-    "category": "factions",
-    "aliases": [],
-    "rank_score": 101,
-    "rank_signals": {
-      "is_canonical": true,
-      "alias_count": 1,
-      "tag_count": 5,
-      "mention_count": 0,
-      "category": "factions",
-      "category_priority": 7,
-      "has_description": false,
-      "article_word_count": 172,
-      "keyword_bag_size": 5,
-      "heading_count": 5,
-      "list_count": 2,
-      "internal_link_count": 0,
-      "paragraph_count": 14,
-      "section_count": 0,
-      "lore_paragraph_count": 0,
-      "content_quality_score": 18,
-      "authority_score": 6
-    },
-    "rank_diagnostics": {
-      "canonical_points": 20,
-      "description_points": 0,
-      "category_points": 35,
-      "word_count_points": 9,
-      "keyword_bag_points": 5,
-      "content_quality_points": 26,
-      "authority_points": 6,
-      "final_rank_score": 101,
-      "authority_graph_points": 0
-    },
-    "search_index": {
-      "normalized_title": "trevor fung crypto moonboys wiki",
-      "tokens": [
-        "trevor",
-        "fung",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ],
-      "keyword_bag": [
-        "trevor",
-        "fung",
-        "crypto",
-        "moonboys",
-        "wiki"
-      ]
-    },
-    "link_score": {
-      "inbound_count": 0,
-      "outbound_count": 38,
-      "existing_outbound_count": 0,
-      "suggested_outbound_count": 38,
-      "authority": 0
-    },
-    "brand": null
-  },
-  {
     "title": "Bitcoin (BTC) — Crypto Moonboys Wiki",
     "desc": "Bitcoin (BTC) — Crypto Moonboys Wiki",
     "url": "/wiki/bitcoin-btc.html",
@@ -16562,5 +16580,10 @@
       "authority": 0.5
     },
     "brand": null
+  },
+  {
+    "title": "alfie-blaze",
+    "url": "/wiki/alfie-blaze.html",
+    "category": "concepts"
   }
 ]

@@ -722,7 +722,7 @@
   },
   {
     "entity_id": "darren_cullen",
-    "canonical_title": "darren_cullen — Crypto Moonboys Wiki",
+    "canonical_title": "Darren Cullen — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/darren-cullen.html",
     "category": "characters",
     "aliases": [
@@ -1684,7 +1684,7 @@
   },
   {
     "entity_id": "ian_harrison",
-    "canonical_title": "ian_harrison — Crypto Moonboys Wiki",
+    "canonical_title": "Ian Harrison — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/ian-harrison.html",
     "category": "characters",
     "aliases": [
@@ -1729,7 +1729,7 @@
   },
   {
     "entity_id": "jillian_godsil",
-    "canonical_title": "jillian_godsil — Crypto Moonboys Wiki",
+    "canonical_title": "Jillian Godsil — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/jillian-godsil.html",
     "category": "factions",
     "aliases": [
@@ -3806,10 +3806,12 @@
   },
   {
     "entity_id": "trevor_fung",
-    "canonical_title": "Trevor Fung - Crypto Moonboys Wiki",
+    "canonical_title": "Trevor Fung — Crypto Moonboys Wiki",
     "canonical_url": "/wiki/trevor-fung.html",
     "category": "factions",
-    "aliases": [],
+    "aliases": [
+      "trevor fung crypto moonboys wiki"
+    ],
     "tags": [
       "trevor",
       "fung",
@@ -3822,8 +3824,7 @@
     ],
     "brand": null,
     "alias_candidates": [
-      "trevor fung",
-      "trevor fung crypto moonboys wiki"
+      "trevor fung"
     ]
   },
   {
