@@ -302,7 +302,7 @@
     var media = BATTLE_MEDIA_BY_PAGE[pageId];
     if (!media || !media.src) return '';
     return '<figure class="battle-page-media">' +
-      '<img src="' + esc(media.src) + '" alt="' + esc(media.alt || '') + '" loading="lazy">' +
+      '<img src="' + esc(media.src) + '" alt="' + esc(media.alt || '') + '" loading="lazy" style="height:auto; max-height:none; object-fit:contain;">' +
     '</figure>';
   }
 
