@@ -10,6 +10,10 @@
     wuffi: {
       src: 'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXJ4dHVlaHJ0ZWdvem92dW1zanFyYnc5bmxmM3Fyb2N6Z2YxbG55dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/GwigOL3Iw4kAa2ugsZ/giphy.gif',
       alt: 'WUFFI battle heat animation'
+    },
+    'alfie-bitcoin-kid-blaze': {
+      src: '/alfie%20the%20bitcoin%20kid%20blaze.png',
+      alt: 'Alfie the Bitcoin Kid Blaze battle heat artwork'
     }
   };
   var MISSION_DEFINITIONS = [
