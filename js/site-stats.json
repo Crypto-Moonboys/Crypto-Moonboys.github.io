@@ -1,8 +1,8 @@
 {
-  "article_count": 181,
+  "article_count": 180,
   "entity_count": 180,
   "category_count": 15,
-  "totalArticles": 181,
+  "totalArticles": 180,
   "totalEntities": 180,
   "totalCategories": 15,
   "total_articles": 180,
@@ -12,5 +12,5 @@
   "excluded_legacy_paths": [
     "/wiki/index.html"
   ],
-  "last_updated": "2026-06-26T15:24:20.191Z"
+  "last_updated": "2026-06-29T20:28:51.634Z"
 }

@@ -1,0 +1,34 @@
+{
+  "contract": "atomicassets",
+  "collection_name": "gkniftyheads",
+  "name": "gkniftyheads",
+  "img": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa",
+  "author": "gkniftyheads",
+  "allow_notify": true,
+  "authorized_accounts": [
+    "gkniftyheads",
+    "nfthivecraft",
+    "blend.nefty",
+    "neftyblocksd",
+    "nfthivedrops",
+    "up.nefty",
+    "neftyblocksp"
+  ],
+  "notify_accounts": [
+    "blend.nefty",
+    "neftyblocksd",
+    "neftyblocksp"
+  ],
+  "market_fee": 0.15,
+  "data": {
+    "img": "QmTyYus1zrXkqXmajkN7LWsVPtje9UAva4E1KMBdFkZTwa",
+    "url": "https://gkniftyheads.com/",
+    "name": "gkniftyheads",
+    "images": "{\"banner_1920x500\":\"QmZA1dzte4tuHGVcu5AWNauDZiZojjibg8Rgk53KD89r4X\",\"logo_512x512\":\"QmYE1tGSCXqd9QNhX4Yck57Yu2EJwWKKcaAkkXQn8fRbhx\"}",
+    "socials": "{\"twitter\":\"https://twitter.com/HODLWARRIORS\",\"medium\":\"\",\"facebook\":\"\",\"github\":\"\",\"discord\":\"\",\"youtube\":\"GKniftyHEADS\",\"telegram\":\"https://t.me/Graffiti_Kings_R2\"}",
+    "description": "**\"WE DONT $ELL OUT, WE $ELL UP, GKniftyHEADS 👑$ETTING YOU UP, THAT$ #GETTINUP 🖕😎🖕**\n\n### “WE COLLABORATE, WE CREATE, WE INSPIRE, WE EMPOWER ⚡️⚡️⚡️\n\nCollect GKniftyHEADS Fun Coupons [HERE](url) https://wax.atomichub.io/market?blockchain=wax-mainnet&order=asc&primary_chain=wax-mainnet&sort=price&symbol=WAX&template_id=782888#sales\n\nBurn/swap them for GK P2E $MArT Cards [HERE](url) https://neftyblocks.com/collection/gkniftyheads/blends",
+    "creator_info": "{\"country\":\"GB\",\"address\":\"\",\"city\":\"\",\"zip\":\"\",\"company\":\"\",\"name\":\"\",\"registration_number\":\"\"}"
+  },
+  "created_at_time": "1684424408000",
+  "created_at_block": "245908514"
+}

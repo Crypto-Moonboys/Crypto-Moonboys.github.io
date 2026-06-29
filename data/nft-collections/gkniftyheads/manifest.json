@@ -1,0 +1,1879 @@
+{
+  "collection_name": "gkniftyheads",
+  "generated_at": "2026-06-29T20:28:51.098143+00:00",
+  "atomic_api_base": "https://wax.api.atomicassets.io/atomicassets/v1",
+  "collection_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/collections/gkniftyheads",
+  "schemas_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/schemas?collection_name=gkniftyheads",
+  "templates_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates?collection_name=gkniftyheads",
+  "assets_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=gkniftyheads",
+  "waxitems_url": "https://waxitems.com/atomicassets/collection/gkniftyheads#templates",
+  "schema_count": 11,
+  "template_count": 143,
+  "asset_count": 124463,
+  "collection_page": "/wiki/gkniftyheads-nft-collection.html",
+  "generated_page_count": 144,
+  "template_pages_built": 143,
+  "templates": [
+    {
+      "template_id": "773225",
+      "name": "BITCOIN KiD x SARAHPFLY",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/773225"
+    },
+    {
+      "template_id": "775997",
+      "name": "WE ARE VANDALS NOT VANDULS",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775997.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/775997"
+    },
+    {
+      "template_id": "775999",
+      "name": "WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775999.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/775999"
+    },
+    {
+      "template_id": "776000",
+      "name": "👉 WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776000.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776000"
+    },
+    {
+      "template_id": "776001",
+      "name": "👉 WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776001.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776001"
+    },
+    {
+      "template_id": "776002",
+      "name": "👉 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776002"
+    },
+    {
+      "template_id": "776003",
+      "name": "👉👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776003"
+    },
+    {
+      "template_id": "776004",
+      "name": "💊 BITCOIN KiD x SARAH PFLY INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776004"
+    },
+    {
+      "template_id": "776005",
+      "name": "👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776005"
+    },
+    {
+      "template_id": "776007",
+      "name": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776007"
+    },
+    {
+      "template_id": "776049",
+      "name": "⚡️⚡️⚡️ FREE`MINDS GK BEATS GENESIS",
+      "wiki_path": "/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776049"
+    },
+    {
+      "template_id": "776055",
+      "name": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776055"
+    },
+    {
+      "template_id": "776056",
+      "name": "👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776056"
+    },
+    {
+      "template_id": "776057",
+      "name": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776057"
+    },
+    {
+      "template_id": "776058",
+      "name": "👉👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776058"
+    },
+    {
+      "template_id": "776059",
+      "name": "👉 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776059"
+    },
+    {
+      "template_id": "776063",
+      "name": "WE ARE VANDALS NOT VANDULS",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776063.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776063"
+    },
+    {
+      "template_id": "776065",
+      "name": "👉 WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776065.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776065"
+    },
+    {
+      "template_id": "776066",
+      "name": "WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776066"
+    },
+    {
+      "template_id": "776074",
+      "name": "👉 BITCOIN KiD TV HEADS 100 ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776074"
+    },
+    {
+      "template_id": "776099",
+      "name": "👉 MR CHEO TEST PRESS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-test-press-776099.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776099"
+    },
+    {
+      "template_id": "776100",
+      "name": "👉 MR CHEO BRISTOL ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-bristol-776100.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776100"
+    },
+    {
+      "template_id": "776101",
+      "name": "👉 MR CHEO PURPLE PAINS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-purple-pains-776101.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776101"
+    },
+    {
+      "template_id": "776102",
+      "name": "👉 MR CHEO $LAP HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-lap-head-776102.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776102"
+    },
+    {
+      "template_id": "776103",
+      "name": "👉 MR CHEO SPIT HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-spit-head-776103.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776103"
+    },
+    {
+      "template_id": "776109",
+      "name": "👉 MR CHEO BRISTOL ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-bristol-776109.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776109"
+    },
+    {
+      "template_id": "776110",
+      "name": "👉 MR CHEO PURPLE PAINS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-purple-pains-776110.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776110"
+    },
+    {
+      "template_id": "776114",
+      "name": "👉 MR CHEO $LAP HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776114"
+    },
+    {
+      "template_id": "776117",
+      "name": "👉 MR CHEO SPIT HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-spit-head-776117.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776117"
+    },
+    {
+      "template_id": "776118",
+      "name": "👉 MR CHEO PILL HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-pill-head-776118.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776118"
+    },
+    {
+      "template_id": "776119",
+      "name": "👉 MR CHEO PINKY STAINS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-pinky-stains-776119.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776119"
+    },
+    {
+      "template_id": "776120",
+      "name": "👉 MR CHEO TAB HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-tab-head-776120.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776120"
+    },
+    {
+      "template_id": "776121",
+      "name": "👉 MR CHEO BOOM HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776121"
+    },
+    {
+      "template_id": "776123",
+      "name": "👉 FOLLOW DARREN CULLEN ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-follow-darren-cullen-776123.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776123"
+    },
+    {
+      "template_id": "776124",
+      "name": "👉 FOREVER DARREN CULLEN ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-forever-darren-cullen-776124.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776124"
+    },
+    {
+      "template_id": "776145",
+      "name": "👉👑 BITCOIN KiD ROYALE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776145"
+    },
+    {
+      "template_id": "776146",
+      "name": "👉 WE ARE VANDALS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-776146.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776146"
+    },
+    {
+      "template_id": "776147",
+      "name": "VANDAL ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-vandal-776147.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776147"
+    },
+    {
+      "template_id": "782888",
+      "name": "👉 GKniftyHEADS FUN COUPON ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/782888"
+    },
+    {
+      "template_id": "783235",
+      "name": "Slickshot 👑🕹️💲",
+      "wiki_path": "/wiki/gkniftyheads-slickshot-783235.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783235"
+    },
+    {
+      "template_id": "783237",
+      "name": "Chroma KiD 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-chroma-kid-783237.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783237"
+    },
+    {
+      "template_id": "783245",
+      "name": "Shadow Streak 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-shadow-streak-783245.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783245"
+    },
+    {
+      "template_id": "783247",
+      "name": "Chroma KiD 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-chroma-kid-783247.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783247"
+    },
+    {
+      "template_id": "783250",
+      "name": "Raze Rebel 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-raze-rebel-783250.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783250"
+    },
+    {
+      "template_id": "783252",
+      "name": "Drift Doodle 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-drift-doodle-783252.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783252"
+    },
+    {
+      "template_id": "783253",
+      "name": "Marker Maven 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-marker-maven-783253.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783253"
+    },
+    {
+      "template_id": "783255",
+      "name": "Dizzy Drip 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-dizzy-drip-783255.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783255"
+    },
+    {
+      "template_id": "783258",
+      "name": "Inked Fury 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-inked-fury-783258.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783258"
+    },
+    {
+      "template_id": "783260",
+      "name": "Scribe Serpent 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-scribe-serpent-783260.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783260"
+    },
+    {
+      "template_id": "783263",
+      "name": "Tagger Tempest 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-tagger-tempest-783263.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783263"
+    },
+    {
+      "template_id": "783269",
+      "name": "Rebel Riff 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-rebel-riff-783269.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783269"
+    },
+    {
+      "template_id": "783282",
+      "name": "Brick Burner 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-brick-burner-783282.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783282"
+    },
+    {
+      "template_id": "783291",
+      "name": "Stencil Storm 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-stencil-storm-783291.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783291"
+    },
+    {
+      "template_id": "783295",
+      "name": "Paint Patriot 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-paint-patriot-783295.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783295"
+    },
+    {
+      "template_id": "783296",
+      "name": "Stencil Siren 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-stencil-siren-783296.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783296"
+    },
+    {
+      "template_id": "783298",
+      "name": "Fume Fury ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-fume-fury-783298.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783298"
+    },
+    {
+      "template_id": "783300",
+      "name": "Daring Doodle 🐸🐸🐸",
+      "wiki_path": "/wiki/gkniftyheads-daring-doodle-783300.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783300"
+    },
+    {
+      "template_id": "783301",
+      "name": "Chromatic Crusader 🌎💥💥💥🚀",
+      "wiki_path": "/wiki/gkniftyheads-chromatic-crusader-783301.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783301"
+    },
+    {
+      "template_id": "783306",
+      "name": "Urban Oracle 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-urban-oracle-783306.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783306"
+    },
+    {
+      "template_id": "783307",
+      "name": "Graphite Ghost 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-graphite-ghost-783307.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783307"
+    },
+    {
+      "template_id": "783369",
+      "name": "Tommy \"The Titan\" Tucci ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-tommy-the-titan-tucci-783369.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783369"
+    },
+    {
+      "template_id": "783370",
+      "name": "Vin \"The Vanguard\" Ventura⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783370"
+    },
+    {
+      "template_id": "783371",
+      "name": "Vin \"The Vanguard\" Ventura ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783371"
+    },
+    {
+      "template_id": "783372",
+      "name": "Tommy \"The Titan\" Tucci ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-tommy-the-titan-tucci-783372.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783372"
+    },
+    {
+      "template_id": "783373",
+      "name": "👉 Joey \"The Oracle\" Olivieri ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-joey-the-oracle-olivieri-783373.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783373"
+    },
+    {
+      "template_id": "783374",
+      "name": "🌈 Frankie \"The Phoenix\" Piccioli ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-frankie-the-phoenix-piccioli-783374.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783374"
+    },
+    {
+      "template_id": "783375",
+      "name": "🎯 Vinny \"The Visionary\" Valenti ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-vinny-the-visionary-valenti-783375.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783375"
+    },
+    {
+      "template_id": "783376",
+      "name": "🐸 Tony \"The Technician\" Toscano⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-tony-the-technician-toscano-783376.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783376"
+    },
+    {
+      "template_id": "783377",
+      "name": "🌈 Richie \"The Ricochet\" Ricci⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-richie-the-ricochet-ricci-783377.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783377"
+    },
+    {
+      "template_id": "783378",
+      "name": "🍄 Marco \"The Maestro\" Mancini ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-marco-the-maestro-mancini-783378.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783378"
+    },
+    {
+      "template_id": "783379",
+      "name": "🌈 Rocco \"The Rocket\" Radic 👀",
+      "wiki_path": "/wiki/gkniftyheads-rocco-the-rocket-radic-783379.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783379"
+    },
+    {
+      "template_id": "783380",
+      "name": "👑 Carmine \"The Conductor\" Cimino⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-carmine-the-conductor-cimino-783380.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783380"
+    },
+    {
+      "template_id": "783383",
+      "name": "💋 Joey \"The Juggernaut\" Jablonski ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-joey-the-juggernaut-jablonski-783383.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783383"
+    },
+    {
+      "template_id": "783384",
+      "name": "🌈 Johnny \"The Jetstream\" Jankovic ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-johnny-the-jetstream-jankovic-783384.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783384"
+    },
+    {
+      "template_id": "783385",
+      "name": "👉 Nicky \"The Ninja\" Napolitano ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-nicky-the-ninja-napolitano-783385.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783385"
+    },
+    {
+      "template_id": "783389",
+      "name": "👉 Louie \"HAY YOU GUYS\" Lupo ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783389"
+    },
+    {
+      "template_id": "783392",
+      "name": "🍒 Blockchain Belle 💋",
+      "wiki_path": "/wiki/gkniftyheads-blockchain-belle-783392.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783392"
+    },
+    {
+      "template_id": "783394",
+      "name": "🍒 Digital Diva 💋",
+      "wiki_path": "/wiki/gkniftyheads-digital-diva-783394.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783394"
+    },
+    {
+      "template_id": "783395",
+      "name": "🍒 Bit Boss 💋",
+      "wiki_path": "/wiki/gkniftyheads-bit-boss-783395.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783395"
+    },
+    {
+      "template_id": "783398",
+      "name": "🍒 Virtual Vixen 💋",
+      "wiki_path": "/wiki/gkniftyheads-virtual-vixen-783398.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783398"
+    },
+    {
+      "template_id": "783399",
+      "name": "🍒 Decentralized Duchess 💋",
+      "wiki_path": "/wiki/gkniftyheads-decentralized-duchess-783399.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783399"
+    },
+    {
+      "template_id": "783400",
+      "name": "🍒 DeFi Dame 💋",
+      "wiki_path": "/wiki/gkniftyheads-defi-dame-783400.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783400"
+    },
+    {
+      "template_id": "783401",
+      "name": "🍒 Token Temptress 💋",
+      "wiki_path": "/wiki/gkniftyheads-token-temptress-783401.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783401"
+    },
+    {
+      "template_id": "783403",
+      "name": "🍒 Virtual Valkyrie 💋",
+      "wiki_path": "/wiki/gkniftyheads-virtual-valkyrie-783403.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783403"
+    },
+    {
+      "template_id": "783404",
+      "name": "🍒 Digital Duchess 💋",
+      "wiki_path": "/wiki/gkniftyheads-digital-duchess-783404.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783404"
+    },
+    {
+      "template_id": "783405",
+      "name": "🍒 Token Tycooness 💋",
+      "wiki_path": "/wiki/gkniftyheads-token-tycooness-783405.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783405"
+    },
+    {
+      "template_id": "783406",
+      "name": "🍒 Altcoin Avenger 💋",
+      "wiki_path": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783406"
+    },
+    {
+      "template_id": "783407",
+      "name": "🍒 Blockchain Bombshell 💋",
+      "wiki_path": "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783407"
+    },
+    {
+      "template_id": "783408",
+      "name": "🍒 Cipherella 💋",
+      "wiki_path": "/wiki/gkniftyheads-cipherella-783408.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783408"
+    },
+    {
+      "template_id": "783409",
+      "name": "🍒 WAXP Banshee 💋",
+      "wiki_path": "/wiki/gkniftyheads-waxp-banshee-783409.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783409"
+    },
+    {
+      "template_id": "783410",
+      "name": "🍒 WAXP Banshee 💋",
+      "wiki_path": "/wiki/gkniftyheads-waxp-banshee-783410.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783410"
+    },
+    {
+      "template_id": "783411",
+      "name": "🍒 Crypto Charmcaster 💋",
+      "wiki_path": "/wiki/gkniftyheads-crypto-charmcaster-783411.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783411"
+    },
+    {
+      "template_id": "783412",
+      "name": "🍒 Coin Conqueress 💋",
+      "wiki_path": "/wiki/gkniftyheads-coin-conqueress-783412.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783412"
+    },
+    {
+      "template_id": "783413",
+      "name": "🍒 Cipher Seraph 💋",
+      "wiki_path": "/wiki/gkniftyheads-cipher-seraph-783413.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783413"
+    },
+    {
+      "template_id": "783414",
+      "name": "🍒 WAXP Femme Fatale, the Token Temptress 💋",
+      "wiki_path": "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783414"
+    },
+    {
+      "template_id": "783415",
+      "name": "🍒 Bit Brawler, the Byte Battler 💋",
+      "wiki_path": "/wiki/gkniftyheads-bit-brawler-the-byte-battler-783415.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783415"
+    },
+    {
+      "template_id": "783431",
+      "name": "🤘 Vincenzo \"Il Criptografo\" Russo 👑",
+      "wiki_path": "/wiki/gkniftyheads-vincenzo-il-criptografo-russo-783431.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783431"
+    },
+    {
+      "template_id": "783432",
+      "name": "🤘 Marco \"Crypto Maestro\" Rossi 👑",
+      "wiki_path": "/wiki/gkniftyheads-marco-crypto-maestro-rossi-783432.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783432"
+    },
+    {
+      "template_id": "783433",
+      "name": "🤘 Giovanni \"Gas Guzzler\" Giordano 👑",
+      "wiki_path": "/wiki/gkniftyheads-giovanni-gas-guzzler-giordano-783433.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783433"
+    },
+    {
+      "template_id": "783442",
+      "name": "🤘 Alessandro \"Satoshi Samurai\" Ferrari 👑",
+      "wiki_path": "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783442"
+    },
+    {
+      "template_id": "783444",
+      "name": "🤘 Luca \"Altcoin Assassin\" Bianchi 👑",
+      "wiki_path": "/wiki/gkniftyheads-luca-altcoin-assassin-bianchi-783444.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783444"
+    },
+    {
+      "template_id": "783445",
+      "name": "🤘 Alessandro \"Anonymity Advocate\" Amato 👑",
+      "wiki_path": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783445"
+    },
+    {
+      "template_id": "783447",
+      "name": "🤘 Matteo \"Bitcoin Bandit\" Gallo 👑",
+      "wiki_path": "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783447"
+    },
+    {
+      "template_id": "783448",
+      "name": "🤘 Antonio \"Ether Emperor\" Costa 👑",
+      "wiki_path": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783448"
+    },
+    {
+      "template_id": "783451",
+      "name": "🤘 Giovanni \"CryptoCartel\" Ricci 👑",
+      "wiki_path": "/wiki/gkniftyheads-giovanni-cryptocartel-ricci-783451.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783451"
+    },
+    {
+      "template_id": "783453",
+      "name": "🤘 Giorgio \"CryptoChieftain\" Bianco 👑",
+      "wiki_path": "/wiki/gkniftyheads-giorgio-cryptochieftain-bianco-783453.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783453"
+    },
+    {
+      "template_id": "783454",
+      "name": "🤘 Davide \"Altcoin Alchemist\" Marino 👑",
+      "wiki_path": "/wiki/gkniftyheads-davide-altcoin-alchemist-marino-783454.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783454"
+    },
+    {
+      "template_id": "783455",
+      "name": "🤘 Andrea \"Blockchain Buccaneer\" Moretti 👑",
+      "wiki_path": "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783455"
+    },
+    {
+      "template_id": "783457",
+      "name": "🤘 Matteo \"Cryptocurrency Connoisseur\" De Angelis 👑",
+      "wiki_path": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783457"
+    },
+    {
+      "template_id": "783459",
+      "name": "🤘 VGiovanni \"NFT Ninja\" Rossi👑",
+      "wiki_path": "/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783459"
+    },
+    {
+      "template_id": "783461",
+      "name": "🤘 Alessandro \"Token Titan\" Marini 👑",
+      "wiki_path": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783461"
+    },
+    {
+      "template_id": "783462",
+      "name": "🤘 Matteo \"Token Tactician\" Romano 👑",
+      "wiki_path": "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783462"
+    },
+    {
+      "template_id": "783463",
+      "name": "🤘 Giulia \"Satoshi Sorceress\" Espositooo 👑",
+      "wiki_path": "/wiki/gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783463"
+    },
+    {
+      "template_id": "783464",
+      "name": "🤘 Marco \"Coin Conqueror\" Moretti 👑",
+      "wiki_path": "/wiki/gkniftyheads-marco-coin-conqueror-moretti-783464.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783464"
+    },
+    {
+      "template_id": "783466",
+      "name": "🤘 Martina \"Cryptocurrency Crusader\" Lombardi 👑",
+      "wiki_path": "/wiki/gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783466"
+    },
+    {
+      "template_id": "783468",
+      "name": "⚡️⚡️⚡️ Cyber Shinobi Shroud 🤖",
+      "wiki_path": "/wiki/gkniftyheads-cyber-shinobi-shroud-783468.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783468"
+    },
+    {
+      "template_id": "783470",
+      "name": "⚡️⚡️⚡️ Lotus Luminary \"CHARLIE BUSTER\" Lancer 🤖",
+      "wiki_path": "/wiki/gkniftyheads-lotus-luminary-charlie-buster-lancer-783470.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783470"
+    },
+    {
+      "template_id": "783747",
+      "name": "⚡️⚡️⚡️ Robin-Ronin Rampage 🤖",
+      "wiki_path": "/wiki/gkniftyheads-robin-ronin-rampage-783747.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783747"
+    },
+    {
+      "template_id": "783755",
+      "name": "⚡️⚡️⚡️ CZen Zone Zero Zealot 🤖",
+      "wiki_path": "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783755"
+    },
+    {
+      "template_id": "783757",
+      "name": "⚡️⚡️⚡️ Cyber Shinobi Strike 🤖",
+      "wiki_path": "/wiki/gkniftyheads-cyber-shinobi-strike-783757.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783757"
+    },
+    {
+      "template_id": "783759",
+      "name": "⚡️⚡️⚡️ Zenith Zephyr Zealot 🤖",
+      "wiki_path": "/wiki/gkniftyheads-zenith-zephyr-zealot-783759.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783759"
+    },
+    {
+      "template_id": "783760",
+      "name": "⚡️⚡️⚡️ Tsunami BTC Titan 🤖",
+      "wiki_path": "/wiki/gkniftyheads-tsunami-btc-titan-783760.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783760"
+    },
+    {
+      "template_id": "783764",
+      "name": "⚡️⚡️⚡️ Doughnut 🍩 Ninja Nova 🤖",
+      "wiki_path": "/wiki/gkniftyheads-doughnut-ninja-nova-783764.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783764"
+    },
+    {
+      "template_id": "784220",
+      "name": "⚡️⚡️⚡️ Bitman 🦇",
+      "wiki_path": "/wiki/gkniftyheads-bitman-784220.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784220"
+    },
+    {
+      "template_id": "784229",
+      "name": "⚡️⚡️⚡️ Bitman 🦇",
+      "wiki_path": "/wiki/gkniftyheads-bitman-784229.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784229"
+    },
+    {
+      "template_id": "784264",
+      "name": "⚡️⚡️⚡️ Satoshi Knight 🦇",
+      "wiki_path": "/wiki/gkniftyheads-satoshi-knight-784264.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784264"
+    },
+    {
+      "template_id": "784266",
+      "name": "⚡️⚡️⚡️ CryptoFrank ☠️",
+      "wiki_path": "/wiki/gkniftyheads-cryptofrank-784266.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784266"
+    },
+    {
+      "template_id": "784269",
+      "name": "⚡️⚡️⚡️ Freddie CryptoCrusader ☠️",
+      "wiki_path": "/wiki/gkniftyheads-freddie-cryptocrusader-784269.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784269"
+    },
+    {
+      "template_id": "784272",
+      "name": "⚡️⚡️⚡️ MyersCoin13 ☠️",
+      "wiki_path": "/wiki/gkniftyheads-myerscoin13-784272.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784272"
+    },
+    {
+      "template_id": "784274",
+      "name": "⚡️⚡️⚡️ WAXP Sentinel Solar Savior ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-waxp-sentinel-solar-savior-784274.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784274"
+    },
+    {
+      "template_id": "784276",
+      "name": "⚡️⚡️⚡️ Darknet Lord ☠️",
+      "wiki_path": "/wiki/gkniftyheads-darknet-lord-784276.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784276"
+    },
+    {
+      "template_id": "784277",
+      "name": "⚡️⚡️⚡️ Binary Blitzer 🌬🌬🌬",
+      "wiki_path": "/wiki/gkniftyheads-binary-blitzer-784277.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784277"
+    },
+    {
+      "template_id": "784280",
+      "name": "⚡️⚡️⚡️ Bit-Skull ☠️",
+      "wiki_path": "/wiki/gkniftyheads-bit-skull-784280.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784280"
+    },
+    {
+      "template_id": "784284",
+      "name": "⚡️⚡️⚡️ Bitcoin Barbarian ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784284"
+    },
+    {
+      "template_id": "784332",
+      "name": "⚡️⚡️⚡️ Bitforce Bitcoin Battler ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784332"
+    },
+    {
+      "template_id": "784340",
+      "name": "⚡️⚡️⚡️ WAXP BOBBY $TORM 👀",
+      "wiki_path": "/wiki/gkniftyheads-waxp-bobby-torm-784340.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784340"
+    },
+    {
+      "template_id": "784344",
+      "name": "⚡️⚡️⚡️ WAXP JOKE$TER ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-waxp-joke-ter-784344.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784344"
+    },
+    {
+      "template_id": "784349",
+      "name": "💋 SARAH PFLY 💋",
+      "wiki_path": "/wiki/gkniftyheads-sarah-pfly-784349.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784349"
+    },
+    {
+      "template_id": "784350",
+      "name": "💋 SARAH P2FLY 💋",
+      "wiki_path": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784350"
+    },
+    {
+      "template_id": "784413",
+      "name": "👉 Neon Nova Knightmare 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-neon-nova-knightmare-784413.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784413"
+    },
+    {
+      "template_id": "784419",
+      "name": "👉 Nova Shadow Shredder 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-nova-shadow-shredder-784419.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784419"
+    },
+    {
+      "template_id": "788015",
+      "name": "🍒 DeFi Dame 💋",
+      "wiki_path": "/wiki/gkniftyheads-defi-dame-788015.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/788015"
+    },
+    {
+      "template_id": "904071",
+      "name": "DEKO",
+      "wiki_path": "/wiki/gkniftyheads-deko-904071.html",
+      "page_generated": true,
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/904071"
+    }
+  ],
+  "template_pages": [
+    {
+      "template_id": "773225",
+      "name": "BITCOIN KiD x SARAHPFLY",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-x-sarahpfly-773225.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/773225"
+    },
+    {
+      "template_id": "775997",
+      "name": "WE ARE VANDALS NOT VANDULS",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775997.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/775997"
+    },
+    {
+      "template_id": "775999",
+      "name": "WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-775999.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/775999"
+    },
+    {
+      "template_id": "776000",
+      "name": "👉 WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776000.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776000"
+    },
+    {
+      "template_id": "776001",
+      "name": "👉 WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776001.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776001"
+    },
+    {
+      "template_id": "776002",
+      "name": "👉 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-infinite-776002.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776002"
+    },
+    {
+      "template_id": "776003",
+      "name": "👉👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-infinite-776003.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776003"
+    },
+    {
+      "template_id": "776004",
+      "name": "💊 BITCOIN KiD x SARAH PFLY INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-x-sarah-pfly-infinite-776004.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776004"
+    },
+    {
+      "template_id": "776005",
+      "name": "👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-infinite-776005.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776005"
+    },
+    {
+      "template_id": "776007",
+      "name": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-blockchain-furie-infinite-776007.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776007"
+    },
+    {
+      "template_id": "776049",
+      "name": "⚡️⚡️⚡️ FREE`MINDS GK BEATS GENESIS",
+      "wiki_path": "/wiki/gkniftyheads-free-minds-gk-beats-genesis-776049.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776049"
+    },
+    {
+      "template_id": "776055",
+      "name": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-blockchain-furie-infinite-776055.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776055"
+    },
+    {
+      "template_id": "776056",
+      "name": "👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-infinite-776056.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776056"
+    },
+    {
+      "template_id": "776057",
+      "name": "✨ BLOCKCHAIN FURIE INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-blockchain-furie-infinite-776057.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776057"
+    },
+    {
+      "template_id": "776058",
+      "name": "👉👑 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-infinite-776058.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776058"
+    },
+    {
+      "template_id": "776059",
+      "name": "👉 BITCOIN KiD INFINITE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-infinite-776059.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776059"
+    },
+    {
+      "template_id": "776063",
+      "name": "WE ARE VANDALS NOT VANDULS",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776063.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776063"
+    },
+    {
+      "template_id": "776065",
+      "name": "👉 WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776065.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776065"
+    },
+    {
+      "template_id": "776066",
+      "name": "WE ARE VANDALS NOT VANDULS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-not-vanduls-776066.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776066"
+    },
+    {
+      "template_id": "776074",
+      "name": "👉 BITCOIN KiD TV HEADS 100 ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-tv-heads-100-776074.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776074"
+    },
+    {
+      "template_id": "776099",
+      "name": "👉 MR CHEO TEST PRESS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-test-press-776099.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776099"
+    },
+    {
+      "template_id": "776100",
+      "name": "👉 MR CHEO BRISTOL ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-bristol-776100.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776100"
+    },
+    {
+      "template_id": "776101",
+      "name": "👉 MR CHEO PURPLE PAINS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-purple-pains-776101.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776101"
+    },
+    {
+      "template_id": "776102",
+      "name": "👉 MR CHEO $LAP HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-lap-head-776102.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776102"
+    },
+    {
+      "template_id": "776103",
+      "name": "👉 MR CHEO SPIT HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-spit-head-776103.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776103"
+    },
+    {
+      "template_id": "776109",
+      "name": "👉 MR CHEO BRISTOL ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-bristol-776109.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776109"
+    },
+    {
+      "template_id": "776110",
+      "name": "👉 MR CHEO PURPLE PAINS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-purple-pains-776110.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776110"
+    },
+    {
+      "template_id": "776114",
+      "name": "👉 MR CHEO $LAP HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-lap-head-776114.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776114"
+    },
+    {
+      "template_id": "776117",
+      "name": "👉 MR CHEO SPIT HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-spit-head-776117.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776117"
+    },
+    {
+      "template_id": "776118",
+      "name": "👉 MR CHEO PILL HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-pill-head-776118.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776118"
+    },
+    {
+      "template_id": "776119",
+      "name": "👉 MR CHEO PINKY STAINS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-pinky-stains-776119.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776119"
+    },
+    {
+      "template_id": "776120",
+      "name": "👉 MR CHEO TAB HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-tab-head-776120.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776120"
+    },
+    {
+      "template_id": "776121",
+      "name": "👉 MR CHEO BOOM HEAD ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-mr-cheo-boom-head-776121.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776121"
+    },
+    {
+      "template_id": "776123",
+      "name": "👉 FOLLOW DARREN CULLEN ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-follow-darren-cullen-776123.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776123"
+    },
+    {
+      "template_id": "776124",
+      "name": "👉 FOREVER DARREN CULLEN ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-forever-darren-cullen-776124.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776124"
+    },
+    {
+      "template_id": "776145",
+      "name": "👉👑 BITCOIN KiD ROYALE ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-kid-royale-776145.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776145"
+    },
+    {
+      "template_id": "776146",
+      "name": "👉 WE ARE VANDALS ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-we-are-vandals-776146.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776146"
+    },
+    {
+      "template_id": "776147",
+      "name": "VANDAL ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-vandal-776147.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/776147"
+    },
+    {
+      "template_id": "782888",
+      "name": "👉 GKniftyHEADS FUN COUPON ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-gkniftyheads-fun-coupon-782888.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/782888"
+    },
+    {
+      "template_id": "783235",
+      "name": "Slickshot 👑🕹️💲",
+      "wiki_path": "/wiki/gkniftyheads-slickshot-783235.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783235"
+    },
+    {
+      "template_id": "783237",
+      "name": "Chroma KiD 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-chroma-kid-783237.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783237"
+    },
+    {
+      "template_id": "783245",
+      "name": "Shadow Streak 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-shadow-streak-783245.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783245"
+    },
+    {
+      "template_id": "783247",
+      "name": "Chroma KiD 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-chroma-kid-783247.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783247"
+    },
+    {
+      "template_id": "783250",
+      "name": "Raze Rebel 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-raze-rebel-783250.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783250"
+    },
+    {
+      "template_id": "783252",
+      "name": "Drift Doodle 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-drift-doodle-783252.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783252"
+    },
+    {
+      "template_id": "783253",
+      "name": "Marker Maven 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-marker-maven-783253.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783253"
+    },
+    {
+      "template_id": "783255",
+      "name": "Dizzy Drip 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-dizzy-drip-783255.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783255"
+    },
+    {
+      "template_id": "783258",
+      "name": "Inked Fury 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-inked-fury-783258.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783258"
+    },
+    {
+      "template_id": "783260",
+      "name": "Scribe Serpent 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-scribe-serpent-783260.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783260"
+    },
+    {
+      "template_id": "783263",
+      "name": "Tagger Tempest 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-tagger-tempest-783263.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783263"
+    },
+    {
+      "template_id": "783269",
+      "name": "Rebel Riff 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-rebel-riff-783269.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783269"
+    },
+    {
+      "template_id": "783282",
+      "name": "Brick Burner 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-brick-burner-783282.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783282"
+    },
+    {
+      "template_id": "783291",
+      "name": "Stencil Storm 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-stencil-storm-783291.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783291"
+    },
+    {
+      "template_id": "783295",
+      "name": "Paint Patriot 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-paint-patriot-783295.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783295"
+    },
+    {
+      "template_id": "783296",
+      "name": "Stencil Siren 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-stencil-siren-783296.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783296"
+    },
+    {
+      "template_id": "783298",
+      "name": "Fume Fury ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-fume-fury-783298.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783298"
+    },
+    {
+      "template_id": "783300",
+      "name": "Daring Doodle 🐸🐸🐸",
+      "wiki_path": "/wiki/gkniftyheads-daring-doodle-783300.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783300"
+    },
+    {
+      "template_id": "783301",
+      "name": "Chromatic Crusader 🌎💥💥💥🚀",
+      "wiki_path": "/wiki/gkniftyheads-chromatic-crusader-783301.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783301"
+    },
+    {
+      "template_id": "783306",
+      "name": "Urban Oracle 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-urban-oracle-783306.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783306"
+    },
+    {
+      "template_id": "783307",
+      "name": "Graphite Ghost 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-graphite-ghost-783307.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783307"
+    },
+    {
+      "template_id": "783369",
+      "name": "Tommy \"The Titan\" Tucci ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-tommy-the-titan-tucci-783369.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783369"
+    },
+    {
+      "template_id": "783370",
+      "name": "Vin \"The Vanguard\" Ventura⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783370.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783370"
+    },
+    {
+      "template_id": "783371",
+      "name": "Vin \"The Vanguard\" Ventura ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-vin-the-vanguard-ventura-783371.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783371"
+    },
+    {
+      "template_id": "783372",
+      "name": "Tommy \"The Titan\" Tucci ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-tommy-the-titan-tucci-783372.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783372"
+    },
+    {
+      "template_id": "783373",
+      "name": "👉 Joey \"The Oracle\" Olivieri ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-joey-the-oracle-olivieri-783373.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783373"
+    },
+    {
+      "template_id": "783374",
+      "name": "🌈 Frankie \"The Phoenix\" Piccioli ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-frankie-the-phoenix-piccioli-783374.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783374"
+    },
+    {
+      "template_id": "783375",
+      "name": "🎯 Vinny \"The Visionary\" Valenti ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-vinny-the-visionary-valenti-783375.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783375"
+    },
+    {
+      "template_id": "783376",
+      "name": "🐸 Tony \"The Technician\" Toscano⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-tony-the-technician-toscano-783376.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783376"
+    },
+    {
+      "template_id": "783377",
+      "name": "🌈 Richie \"The Ricochet\" Ricci⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-richie-the-ricochet-ricci-783377.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783377"
+    },
+    {
+      "template_id": "783378",
+      "name": "🍄 Marco \"The Maestro\" Mancini ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-marco-the-maestro-mancini-783378.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783378"
+    },
+    {
+      "template_id": "783379",
+      "name": "🌈 Rocco \"The Rocket\" Radic 👀",
+      "wiki_path": "/wiki/gkniftyheads-rocco-the-rocket-radic-783379.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783379"
+    },
+    {
+      "template_id": "783380",
+      "name": "👑 Carmine \"The Conductor\" Cimino⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-carmine-the-conductor-cimino-783380.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783380"
+    },
+    {
+      "template_id": "783383",
+      "name": "💋 Joey \"The Juggernaut\" Jablonski ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-joey-the-juggernaut-jablonski-783383.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783383"
+    },
+    {
+      "template_id": "783384",
+      "name": "🌈 Johnny \"The Jetstream\" Jankovic ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-johnny-the-jetstream-jankovic-783384.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783384"
+    },
+    {
+      "template_id": "783385",
+      "name": "👉 Nicky \"The Ninja\" Napolitano ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-nicky-the-ninja-napolitano-783385.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783385"
+    },
+    {
+      "template_id": "783389",
+      "name": "👉 Louie \"HAY YOU GUYS\" Lupo ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-louie-hay-you-guys-lupo-783389.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783389"
+    },
+    {
+      "template_id": "783392",
+      "name": "🍒 Blockchain Belle 💋",
+      "wiki_path": "/wiki/gkniftyheads-blockchain-belle-783392.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783392"
+    },
+    {
+      "template_id": "783394",
+      "name": "🍒 Digital Diva 💋",
+      "wiki_path": "/wiki/gkniftyheads-digital-diva-783394.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783394"
+    },
+    {
+      "template_id": "783395",
+      "name": "🍒 Bit Boss 💋",
+      "wiki_path": "/wiki/gkniftyheads-bit-boss-783395.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783395"
+    },
+    {
+      "template_id": "783398",
+      "name": "🍒 Virtual Vixen 💋",
+      "wiki_path": "/wiki/gkniftyheads-virtual-vixen-783398.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783398"
+    },
+    {
+      "template_id": "783399",
+      "name": "🍒 Decentralized Duchess 💋",
+      "wiki_path": "/wiki/gkniftyheads-decentralized-duchess-783399.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783399"
+    },
+    {
+      "template_id": "783400",
+      "name": "🍒 DeFi Dame 💋",
+      "wiki_path": "/wiki/gkniftyheads-defi-dame-783400.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783400"
+    },
+    {
+      "template_id": "783401",
+      "name": "🍒 Token Temptress 💋",
+      "wiki_path": "/wiki/gkniftyheads-token-temptress-783401.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783401"
+    },
+    {
+      "template_id": "783403",
+      "name": "🍒 Virtual Valkyrie 💋",
+      "wiki_path": "/wiki/gkniftyheads-virtual-valkyrie-783403.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783403"
+    },
+    {
+      "template_id": "783404",
+      "name": "🍒 Digital Duchess 💋",
+      "wiki_path": "/wiki/gkniftyheads-digital-duchess-783404.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783404"
+    },
+    {
+      "template_id": "783405",
+      "name": "🍒 Token Tycooness 💋",
+      "wiki_path": "/wiki/gkniftyheads-token-tycooness-783405.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783405"
+    },
+    {
+      "template_id": "783406",
+      "name": "🍒 Altcoin Avenger 💋",
+      "wiki_path": "/wiki/gkniftyheads-altcoin-avenger-783406.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783406"
+    },
+    {
+      "template_id": "783407",
+      "name": "🍒 Blockchain Bombshell 💋",
+      "wiki_path": "/wiki/gkniftyheads-blockchain-bombshell-783407.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783407"
+    },
+    {
+      "template_id": "783408",
+      "name": "🍒 Cipherella 💋",
+      "wiki_path": "/wiki/gkniftyheads-cipherella-783408.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783408"
+    },
+    {
+      "template_id": "783409",
+      "name": "🍒 WAXP Banshee 💋",
+      "wiki_path": "/wiki/gkniftyheads-waxp-banshee-783409.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783409"
+    },
+    {
+      "template_id": "783410",
+      "name": "🍒 WAXP Banshee 💋",
+      "wiki_path": "/wiki/gkniftyheads-waxp-banshee-783410.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783410"
+    },
+    {
+      "template_id": "783411",
+      "name": "🍒 Crypto Charmcaster 💋",
+      "wiki_path": "/wiki/gkniftyheads-crypto-charmcaster-783411.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783411"
+    },
+    {
+      "template_id": "783412",
+      "name": "🍒 Coin Conqueress 💋",
+      "wiki_path": "/wiki/gkniftyheads-coin-conqueress-783412.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783412"
+    },
+    {
+      "template_id": "783413",
+      "name": "🍒 Cipher Seraph 💋",
+      "wiki_path": "/wiki/gkniftyheads-cipher-seraph-783413.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783413"
+    },
+    {
+      "template_id": "783414",
+      "name": "🍒 WAXP Femme Fatale, the Token Temptress 💋",
+      "wiki_path": "/wiki/gkniftyheads-waxp-femme-fatale-the-token-temptress-783414.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783414"
+    },
+    {
+      "template_id": "783415",
+      "name": "🍒 Bit Brawler, the Byte Battler 💋",
+      "wiki_path": "/wiki/gkniftyheads-bit-brawler-the-byte-battler-783415.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783415"
+    },
+    {
+      "template_id": "783431",
+      "name": "🤘 Vincenzo \"Il Criptografo\" Russo 👑",
+      "wiki_path": "/wiki/gkniftyheads-vincenzo-il-criptografo-russo-783431.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783431"
+    },
+    {
+      "template_id": "783432",
+      "name": "🤘 Marco \"Crypto Maestro\" Rossi 👑",
+      "wiki_path": "/wiki/gkniftyheads-marco-crypto-maestro-rossi-783432.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783432"
+    },
+    {
+      "template_id": "783433",
+      "name": "🤘 Giovanni \"Gas Guzzler\" Giordano 👑",
+      "wiki_path": "/wiki/gkniftyheads-giovanni-gas-guzzler-giordano-783433.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783433"
+    },
+    {
+      "template_id": "783442",
+      "name": "🤘 Alessandro \"Satoshi Samurai\" Ferrari 👑",
+      "wiki_path": "/wiki/gkniftyheads-alessandro-satoshi-samurai-ferrari-783442.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783442"
+    },
+    {
+      "template_id": "783444",
+      "name": "🤘 Luca \"Altcoin Assassin\" Bianchi 👑",
+      "wiki_path": "/wiki/gkniftyheads-luca-altcoin-assassin-bianchi-783444.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783444"
+    },
+    {
+      "template_id": "783445",
+      "name": "🤘 Alessandro \"Anonymity Advocate\" Amato 👑",
+      "wiki_path": "/wiki/gkniftyheads-alessandro-anonymity-advocate-amato-783445.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783445"
+    },
+    {
+      "template_id": "783447",
+      "name": "🤘 Matteo \"Bitcoin Bandit\" Gallo 👑",
+      "wiki_path": "/wiki/gkniftyheads-matteo-bitcoin-bandit-gallo-783447.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783447"
+    },
+    {
+      "template_id": "783448",
+      "name": "🤘 Antonio \"Ether Emperor\" Costa 👑",
+      "wiki_path": "/wiki/gkniftyheads-antonio-ether-emperor-costa-783448.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783448"
+    },
+    {
+      "template_id": "783451",
+      "name": "🤘 Giovanni \"CryptoCartel\" Ricci 👑",
+      "wiki_path": "/wiki/gkniftyheads-giovanni-cryptocartel-ricci-783451.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783451"
+    },
+    {
+      "template_id": "783453",
+      "name": "🤘 Giorgio \"CryptoChieftain\" Bianco 👑",
+      "wiki_path": "/wiki/gkniftyheads-giorgio-cryptochieftain-bianco-783453.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783453"
+    },
+    {
+      "template_id": "783454",
+      "name": "🤘 Davide \"Altcoin Alchemist\" Marino 👑",
+      "wiki_path": "/wiki/gkniftyheads-davide-altcoin-alchemist-marino-783454.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783454"
+    },
+    {
+      "template_id": "783455",
+      "name": "🤘 Andrea \"Blockchain Buccaneer\" Moretti 👑",
+      "wiki_path": "/wiki/gkniftyheads-andrea-blockchain-buccaneer-moretti-783455.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783455"
+    },
+    {
+      "template_id": "783457",
+      "name": "🤘 Matteo \"Cryptocurrency Connoisseur\" De Angelis 👑",
+      "wiki_path": "/wiki/gkniftyheads-matteo-cryptocurrency-connoisseur-de-angelis-783457.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783457"
+    },
+    {
+      "template_id": "783459",
+      "name": "🤘 VGiovanni \"NFT Ninja\" Rossi👑",
+      "wiki_path": "/wiki/gkniftyheads-vgiovanni-nft-ninja-rossi-783459.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783459"
+    },
+    {
+      "template_id": "783461",
+      "name": "🤘 Alessandro \"Token Titan\" Marini 👑",
+      "wiki_path": "/wiki/gkniftyheads-alessandro-token-titan-marini-783461.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783461"
+    },
+    {
+      "template_id": "783462",
+      "name": "🤘 Matteo \"Token Tactician\" Romano 👑",
+      "wiki_path": "/wiki/gkniftyheads-matteo-token-tactician-romano-783462.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783462"
+    },
+    {
+      "template_id": "783463",
+      "name": "🤘 Giulia \"Satoshi Sorceress\" Espositooo 👑",
+      "wiki_path": "/wiki/gkniftyheads-giulia-satoshi-sorceress-espositooo-783463.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783463"
+    },
+    {
+      "template_id": "783464",
+      "name": "🤘 Marco \"Coin Conqueror\" Moretti 👑",
+      "wiki_path": "/wiki/gkniftyheads-marco-coin-conqueror-moretti-783464.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783464"
+    },
+    {
+      "template_id": "783466",
+      "name": "🤘 Martina \"Cryptocurrency Crusader\" Lombardi 👑",
+      "wiki_path": "/wiki/gkniftyheads-martina-cryptocurrency-crusader-lombardi-783466.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783466"
+    },
+    {
+      "template_id": "783468",
+      "name": "⚡️⚡️⚡️ Cyber Shinobi Shroud 🤖",
+      "wiki_path": "/wiki/gkniftyheads-cyber-shinobi-shroud-783468.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783468"
+    },
+    {
+      "template_id": "783470",
+      "name": "⚡️⚡️⚡️ Lotus Luminary \"CHARLIE BUSTER\" Lancer 🤖",
+      "wiki_path": "/wiki/gkniftyheads-lotus-luminary-charlie-buster-lancer-783470.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783470"
+    },
+    {
+      "template_id": "783747",
+      "name": "⚡️⚡️⚡️ Robin-Ronin Rampage 🤖",
+      "wiki_path": "/wiki/gkniftyheads-robin-ronin-rampage-783747.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783747"
+    },
+    {
+      "template_id": "783755",
+      "name": "⚡️⚡️⚡️ CZen Zone Zero Zealot 🤖",
+      "wiki_path": "/wiki/gkniftyheads-czen-zone-zero-zealot-783755.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783755"
+    },
+    {
+      "template_id": "783757",
+      "name": "⚡️⚡️⚡️ Cyber Shinobi Strike 🤖",
+      "wiki_path": "/wiki/gkniftyheads-cyber-shinobi-strike-783757.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783757"
+    },
+    {
+      "template_id": "783759",
+      "name": "⚡️⚡️⚡️ Zenith Zephyr Zealot 🤖",
+      "wiki_path": "/wiki/gkniftyheads-zenith-zephyr-zealot-783759.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783759"
+    },
+    {
+      "template_id": "783760",
+      "name": "⚡️⚡️⚡️ Tsunami BTC Titan 🤖",
+      "wiki_path": "/wiki/gkniftyheads-tsunami-btc-titan-783760.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783760"
+    },
+    {
+      "template_id": "783764",
+      "name": "⚡️⚡️⚡️ Doughnut 🍩 Ninja Nova 🤖",
+      "wiki_path": "/wiki/gkniftyheads-doughnut-ninja-nova-783764.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/783764"
+    },
+    {
+      "template_id": "784220",
+      "name": "⚡️⚡️⚡️ Bitman 🦇",
+      "wiki_path": "/wiki/gkniftyheads-bitman-784220.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784220"
+    },
+    {
+      "template_id": "784229",
+      "name": "⚡️⚡️⚡️ Bitman 🦇",
+      "wiki_path": "/wiki/gkniftyheads-bitman-784229.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784229"
+    },
+    {
+      "template_id": "784264",
+      "name": "⚡️⚡️⚡️ Satoshi Knight 🦇",
+      "wiki_path": "/wiki/gkniftyheads-satoshi-knight-784264.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784264"
+    },
+    {
+      "template_id": "784266",
+      "name": "⚡️⚡️⚡️ CryptoFrank ☠️",
+      "wiki_path": "/wiki/gkniftyheads-cryptofrank-784266.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784266"
+    },
+    {
+      "template_id": "784269",
+      "name": "⚡️⚡️⚡️ Freddie CryptoCrusader ☠️",
+      "wiki_path": "/wiki/gkniftyheads-freddie-cryptocrusader-784269.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784269"
+    },
+    {
+      "template_id": "784272",
+      "name": "⚡️⚡️⚡️ MyersCoin13 ☠️",
+      "wiki_path": "/wiki/gkniftyheads-myerscoin13-784272.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784272"
+    },
+    {
+      "template_id": "784274",
+      "name": "⚡️⚡️⚡️ WAXP Sentinel Solar Savior ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-waxp-sentinel-solar-savior-784274.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784274"
+    },
+    {
+      "template_id": "784276",
+      "name": "⚡️⚡️⚡️ Darknet Lord ☠️",
+      "wiki_path": "/wiki/gkniftyheads-darknet-lord-784276.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784276"
+    },
+    {
+      "template_id": "784277",
+      "name": "⚡️⚡️⚡️ Binary Blitzer 🌬🌬🌬",
+      "wiki_path": "/wiki/gkniftyheads-binary-blitzer-784277.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784277"
+    },
+    {
+      "template_id": "784280",
+      "name": "⚡️⚡️⚡️ Bit-Skull ☠️",
+      "wiki_path": "/wiki/gkniftyheads-bit-skull-784280.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784280"
+    },
+    {
+      "template_id": "784284",
+      "name": "⚡️⚡️⚡️ Bitcoin Barbarian ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitcoin-barbarian-784284.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784284"
+    },
+    {
+      "template_id": "784332",
+      "name": "⚡️⚡️⚡️ Bitforce Bitcoin Battler ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-bitforce-bitcoin-battler-784332.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784332"
+    },
+    {
+      "template_id": "784340",
+      "name": "⚡️⚡️⚡️ WAXP BOBBY $TORM 👀",
+      "wiki_path": "/wiki/gkniftyheads-waxp-bobby-torm-784340.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784340"
+    },
+    {
+      "template_id": "784344",
+      "name": "⚡️⚡️⚡️ WAXP JOKE$TER ⚡️⚡️⚡️",
+      "wiki_path": "/wiki/gkniftyheads-waxp-joke-ter-784344.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784344"
+    },
+    {
+      "template_id": "784349",
+      "name": "💋 SARAH PFLY 💋",
+      "wiki_path": "/wiki/gkniftyheads-sarah-pfly-784349.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784349"
+    },
+    {
+      "template_id": "784350",
+      "name": "💋 SARAH P2FLY 💋",
+      "wiki_path": "/wiki/gkniftyheads-sarah-p2fly-784350.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784350"
+    },
+    {
+      "template_id": "784413",
+      "name": "👉 Neon Nova Knightmare 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-neon-nova-knightmare-784413.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784413"
+    },
+    {
+      "template_id": "784419",
+      "name": "👉 Nova Shadow Shredder 👑👈",
+      "wiki_path": "/wiki/gkniftyheads-nova-shadow-shredder-784419.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/784419"
+    },
+    {
+      "template_id": "788015",
+      "name": "🍒 DeFi Dame 💋",
+      "wiki_path": "/wiki/gkniftyheads-defi-dame-788015.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/788015"
+    },
+    {
+      "template_id": "904071",
+      "name": "DEKO",
+      "wiki_path": "/wiki/gkniftyheads-deko-904071.html",
+      "atomic_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/templates/gkniftyheads/904071"
+    }
+  ]
+}
