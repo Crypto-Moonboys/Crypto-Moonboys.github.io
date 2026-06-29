@@ -4139,5 +4139,53 @@
     "alias_candidates": [
       "xrp ledger"
     ]
+  },
+  {
+    "title": "gkniftyheads NFT Collection",
+    "url": "/wiki/gkniftyheads-nft-collection.html",
+    "slug": "gkniftyheads-nft-collection",
+    "category": "nfts",
+    "type": "nft_collection",
+    "hero_graph_node": false,
+    "template_pages": 143,
+    "minted_assets_counted": 124463,
+    "related_entities": [
+      {
+        "name": "Sarah PFLY",
+        "slug": "sarah-pfly",
+        "relationship": "NFT/template connected to existing entity",
+        "claim_policy": "relationship hint only; not a biography fact"
+      },
+      {
+        "name": "Sarah P2FLY",
+        "slug": "sarah-p2fly",
+        "relationship": "NFT/template connected to existing entity",
+        "claim_policy": "relationship hint only; not a biography fact"
+      },
+      {
+        "name": "Sarah PFLY",
+        "slug": "sarah-pfly",
+        "relationship": "NFT/template connected to existing entity",
+        "claim_policy": "relationship hint only; not a biography fact"
+      },
+      {
+        "name": "Sarah P2FLY",
+        "slug": "sarah-p2fly",
+        "relationship": "NFT/template connected to existing entity",
+        "claim_policy": "relationship hint only; not a biography fact"
+      },
+      {
+        "name": "Sarah PFLY",
+        "slug": "sarah-pfly",
+        "relationship": "NFT/template connected to existing entity",
+        "claim_policy": "relationship hint only; not a biography fact"
+      },
+      {
+        "name": "Sarah P2FLY",
+        "slug": "sarah-p2fly",
+        "relationship": "NFT/template connected to existing entity",
+        "claim_policy": "relationship hint only; not a biography fact"
+      }
+    ]
   }
 ]

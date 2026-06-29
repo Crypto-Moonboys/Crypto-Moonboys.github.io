@@ -12,5 +12,9 @@
   "excluded_legacy_paths": [
     "/wiki/index.html"
   ],
-  "last_updated": "2026-06-29T20:28:51.634Z"
+  "last_updated": "2026-06-29T20:28:51.634Z",
+  "nft_collection_pages": 1,
+  "nft_template_pages": 143,
+  "nft_minted_assets_counted": 124463,
+  "nft_raw_asset_pages": 0
 }
