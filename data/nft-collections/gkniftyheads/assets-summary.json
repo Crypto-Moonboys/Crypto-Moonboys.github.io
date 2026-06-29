@@ -3,7 +3,7 @@
   "schema_count": 11,
   "template_count": 143,
   "asset_count": 124463,
-  "generated_at": "2026-06-29T21:23:52.861042+00:00",
+  "generated_at": "2026-06-29T22:07:31.555274+00:00",
   "assets_api_url": "https://wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=gkniftyheads",
   "note": "Full minted asset ownership export is intentionally not committed to GitHub Pages. The public wiki is template-level only."
 }
