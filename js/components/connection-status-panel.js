@@ -570,6 +570,194 @@
     return state && typeof state === 'object' ? state : null;
   }
 
+  function getDailyLoopApi() {
+    return window.MOONBOYS_DAILY_LOOP || null;
+  }
+
+  function sourceStatus(loopState, subsystem) {
+    return loopState && loopState.source_status && loopState.source_status[subsystem]
+      ? loopState.source_status[subsystem]
+      : null;
+  }
+
+  function sourceState(loopState, subsystem) {
+    var status = sourceStatus(loopState, subsystem);
+    return status && status.state ? String(status.state) : 'unavailable';
+  }
+
+  function isSourceLiveish(loopState, subsystem) {
+    var state = sourceState(loopState, subsystem);
+    return state === 'live' || state === 'live_empty';
+  }
+
+  function isSourceProblem(loopState, subsystem) {
+    var state = sourceState(loopState, subsystem);
+    return state === 'migration_pending' || state === 'query_failed' || state === 'unavailable';
+  }
+
+  function sourceProblemCopy(loopState, subsystem, fallback) {
+    var status = sourceStatus(loopState, subsystem) || {};
+    var state = status.state || 'unavailable';
+    if (state === 'query_failed') return 'Sync unavailable';
+    if (state === 'migration_pending') return 'Migration pending';
+    if (state === 'preview') return 'Preview schedule';
+    if (state === 'live_empty') return fallback || 'No activity yet';
+    return fallback || 'Unavailable';
+  }
+
+  function getDailyLoopWtfFocus(loopState) {
+    var events = loopState && loopState.daily_wtf_status && Array.isArray(loopState.daily_wtf_status.events)
+      ? loopState.daily_wtf_status.events
+      : [];
+    if (!events.length) return null;
+    var active = events.filter(function (event) { return event && String(event.status || '').toLowerCase() === 'active'; });
+    if (active.length) return active[0];
+    var upcoming = events.filter(function (event) { return event && String(event.status || '').toLowerCase() === 'upcoming'; });
+    return upcoming[0] || events[0] || null;
+  }
+
+  function normalizeDailyLoopWtfState(loopState) {
+    if (!loopState || !loopState.daily_wtf_status) return null;
+    var status = sourceStatus(loopState, 'daily_wtf_status') || {};
+    var statusState = status.state || 'unavailable';
+    if (statusState === 'query_failed' || statusState === 'migration_pending' || statusState === 'unavailable') {
+      return { status: 'error', source_state: statusState, source_label: sourceProblemCopy(loopState, 'daily_wtf_status') };
+    }
+    var focus = getDailyLoopWtfFocus(loopState);
+    var lower = focus && focus.status ? String(focus.status).toLowerCase() : '';
+    var out = {
+      status: statusState === 'preview' ? 'preview' : 'ready',
+      source_state: statusState,
+      source_label: statusState === 'preview' ? 'Preview schedule' : (statusState === 'live_empty' ? 'No Daily WTF rows today' : 'Worker confirmed'),
+      countdown_seconds: loopState.seconds_until_reset,
+      active_event: lower === 'active' ? focus : null,
+      next_event: lower === 'upcoming' ? focus : null,
+      upcoming_events: lower === 'upcoming' && focus ? [focus] : [],
+      completed_today: 0,
+      missed_today: 0,
+      checked_in: focus && focus.player_status === 'checked_in',
+    };
+    if (lower === 'expired') out.missed_today = 1;
+    if (focus && focus.player_status === 'completed') out.completed_today = 1;
+    return out;
+  }
+
+  async function getDailyLoopStateForRail() {
+    var api = getDailyLoopApi();
+    if (!api || typeof api.getState !== 'function') return null;
+    try {
+      var state = await api.getState();
+      if (!state || state.fetch_status === 'error') return null;
+      return state;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function applyDailyLoopStateToRail(shared, loopState) {
+    if (!shared || !loopState || loopState.fetch_status === 'error') return shared;
+    shared.dailyLoopApplied = true;
+    shared.dailyLoopOwnsFaction = false;
+    shared.dailyLoopOwnsDailyMissions = false;
+    shared.dailyLoopOwnsMissed = false;
+    shared.dailyLoopOwnsWtf = false;
+    shared.dailyLoopState = loopState;
+    shared.dailyLoopSource = 'daily-loop-state';
+    shared.dailyLoopUtcDay = loopState.utc_day || null;
+
+    if (loopState.identity && loopState.identity.relink_required) {
+      shared.mode = 'relink';
+    } else if (loopState.identity && loopState.identity.linked === true) {
+      shared.mode = 'linked';
+      shared.linked = true;
+    }
+
+    if (isSourceLiveish(loopState, 'faction_state') && loopState.faction_state) {
+      shared.dailyLoopOwnsFaction = true;
+      var factionId = loopState.faction_state.faction_id || 'unaligned';
+      shared.faction = {
+        faction: factionId,
+        faction_xp: Math.max(0, Math.floor(Number(loopState.faction_state.faction_xp) || 0)),
+        label: loopState.faction_state.label || factionId,
+        icon: loopState.faction_state.icon || '',
+      };
+      var today = loopState.faction_state.today || {};
+      var contribution = today && Object.prototype.hasOwnProperty.call(today, factionId)
+        ? Math.max(0, Math.floor(Number(today[factionId]) || 0))
+        : 0;
+      shared.contribution = { value: String(contribution), pending: false };
+    } else if (isSourceProblem(loopState, 'faction_state')) {
+      shared.dailyLoopOwnsFaction = true;
+      shared.contribution = { value: sourceProblemCopy(loopState, 'faction_state'), pending: false };
+    }
+
+    if (isSourceLiveish(loopState, 'daily_missions')) {
+      shared.dailyLoopOwnsDailyMissions = true;
+      var missions = loopState.daily_missions && Array.isArray(loopState.daily_missions.items)
+        ? loopState.daily_missions.items
+        : [];
+      var completed = missions.filter(function (row) { return !!(row && row.completed); }).length;
+      shared.dailyLoopMissions = missions;
+      shared.dailyState = {
+        today_active: { mission_opportunities: missions },
+      };
+      shared.dailyCounts = shared.dailyCounts || {};
+      shared.dailyCounts.completed = completed;
+      if (loopState.missed_opportunities && loopState.missed_opportunities.total_today != null) {
+        shared.dailyState.missed_events_today = Math.max(0, Math.floor(Number(loopState.missed_opportunities.total_today) || 0));
+        shared.dailyCounts.missed = shared.dailyState.missed_events_today;
+      }
+      if (loopState.missed_opportunities && loopState.missed_opportunities.total_all_time != null) {
+        shared.dailyState.missed_events_all_time = Math.max(0, Math.floor(Number(loopState.missed_opportunities.total_all_time) || 0));
+      }
+      shared.dailyCounts = {
+        missed: shared.dailyCounts.missed,
+        completed: completed,
+      };
+      shared.dailyOpsStatus = missions.length
+        ? { value: String(completed) + '/' + String(missions.length) + ' completed', pending: false }
+        : { value: 'No missions today', pending: false };
+    } else if (isSourceProblem(loopState, 'daily_missions')) {
+      shared.dailyLoopOwnsDailyMissions = true;
+      shared.dailyLoopMissions = [];
+      shared.dailyOpsStatus = { value: sourceProblemCopy(loopState, 'daily_missions'), pending: false };
+    }
+
+    if (isSourceLiveish(loopState, 'missed_opportunities') && loopState.missed_opportunities) {
+      shared.dailyLoopOwnsMissed = true;
+      shared.missedXp = loopState.missed_opportunities.xp_total_all_time != null
+        ? Math.max(0, Math.floor(Number(loopState.missed_opportunities.xp_total_all_time) || 0))
+        : (shared.missedXp != null ? shared.missedXp : 0);
+      shared.dailyLoopMissed = loopState.missed_opportunities;
+      shared.dailyCounts = shared.dailyCounts || {};
+      if (loopState.missed_opportunities.total_today != null) {
+        shared.dailyCounts.missed = Math.max(0, Math.floor(Number(loopState.missed_opportunities.total_today) || 0));
+      }
+    } else if (isSourceProblem(loopState, 'missed_opportunities')) {
+      shared.dailyLoopOwnsMissed = true;
+      shared.dailyLoopMissed = { unavailable_label: sourceProblemCopy(loopState, 'missed_opportunities') };
+    }
+
+    var loopWtf = normalizeDailyLoopWtfState(loopState);
+    if (loopWtf) {
+      shared.dailyLoopOwnsWtf = true;
+      shared.wtfState = loopWtf;
+      shared.dailyWtfStatusDisplay = loopWtf.source_label || loopWtf.status || 'Daily WTF status';
+    }
+
+    var activityStatus = sourceState(loopState, 'battle_chamber_activity');
+    if (activityStatus === 'live' && loopState.battle_chamber_activity && Array.isArray(loopState.battle_chamber_activity.recent_activity)) {
+      var recent = loopState.battle_chamber_activity.recent_activity[0] || null;
+      if (recent) shared.latestActivityText = battleActivityText(recent);
+    } else if (activityStatus === 'live_empty') {
+      shared.latestActivityText = 'No Battle Chamber activity yet';
+    } else if (isSourceProblem(loopState, 'battle_chamber_activity')) {
+      shared.latestActivityText = sourceProblemCopy(loopState, 'battle_chamber_activity');
+    }
+
+    return shared;
+  }
+
   function invalidateSharedRailState() {
     _sharedRailStateCache = null;
     _sharedRailStateInflight = null;
@@ -616,7 +804,12 @@
         wtfState: currentWtfState(),
       };
 
-      if (!linked) {
+      var dailyLoopState = await getDailyLoopStateForRail();
+      if (dailyLoopState) {
+        applyDailyLoopStateToRail(shared, dailyLoopState);
+      }
+
+      if (!shared.linked) {
         return shared;
       }
 
@@ -632,12 +825,14 @@
         return shared;
       }
 
-      var missedXp = missedXpAllTime(shared.dailyState);
-      var dailyCounts = getDailyCounts(shared.dailyState);
-      var contribution = getContribution(faction, shared.playerState);
-      var dailyOpsStatus = getDailyOpsStatus(faction, shared.dailyState);
-      var dailyWtfStatusDisplay = getDailyWtfSignalStatus();
-      var needsDailyState = missedXp === null || dailyCounts.completed == null || dailyCounts.missed == null || dailyOpsStatus.pending;
+      var missedXp = shared.dailyLoopOwnsMissed ? shared.missedXp : missedXpAllTime(shared.dailyState);
+      var dailyCounts = shared.dailyLoopOwnsDailyMissions || shared.dailyLoopOwnsMissed
+        ? (shared.dailyCounts || { completed: null, missed: null })
+        : getDailyCounts(shared.dailyState);
+      var contribution = shared.dailyLoopOwnsFaction ? (shared.contribution || { value: 'syncing…', pending: false }) : getContribution(faction, shared.playerState);
+      var dailyOpsStatus = shared.dailyLoopOwnsDailyMissions ? shared.dailyOpsStatus : getDailyOpsStatus(faction, shared.dailyState);
+      var dailyWtfStatusDisplay = shared.dailyLoopOwnsWtf ? shared.dailyWtfStatusDisplay : getDailyWtfSignalStatus();
+      var needsDailyState = !shared.dailyLoopOwnsDailyMissions && !shared.dailyLoopOwnsMissed && (missedXp === null || dailyCounts.completed == null || dailyCounts.missed == null || dailyOpsStatus.pending);
 
       if (needsDailyState) {
         var patchGeneration = _dailyStateGeneration;
@@ -647,18 +842,20 @@
         }).catch(function () {});
       }
       if (contribution.pending) {
-        var playerPatchGeneration = _playerStateGeneration;
-        fetchPlayerStateWithAuth().then(function (confirmedState) {
-          if (playerPatchGeneration !== _playerStateGeneration) return;
-          if (confirmedState) schedulePanelRemount();
-        }).catch(function () {});
+        if (!shared.dailyLoopOwnsFaction) {
+          var playerPatchGeneration = _playerStateGeneration;
+          fetchPlayerStateWithAuth().then(function (confirmedState) {
+            if (playerPatchGeneration !== _playerStateGeneration) return;
+            if (confirmedState) schedulePanelRemount();
+          }).catch(function () {});
+        }
       }
 
-      shared.missedXp = missedXp;
-      shared.dailyCounts = dailyCounts;
-      shared.contribution = contribution;
-      shared.dailyOpsStatus = dailyOpsStatus;
-      shared.dailyWtfStatusDisplay = dailyWtfStatusDisplay;
+      if (!shared.dailyLoopOwnsMissed) shared.missedXp = missedXp;
+      if (!shared.dailyLoopOwnsDailyMissions && !shared.dailyLoopOwnsMissed) shared.dailyCounts = dailyCounts;
+      if (!shared.dailyLoopOwnsFaction) shared.contribution = contribution;
+      if (!shared.dailyLoopOwnsDailyMissions) shared.dailyOpsStatus = dailyOpsStatus;
+      if (!shared.dailyLoopOwnsWtf) shared.dailyWtfStatusDisplay = dailyWtfStatusDisplay;
       shared.needsDailyState = needsDailyState;
       return shared;
     }()).then(function (shared) {
@@ -716,6 +913,9 @@
   }
 
   function buildFactionDailyOpsHTML(shared) {
+    if (shared.dailyLoopState && isSourceProblem(shared.dailyLoopState, 'daily_missions')) {
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">' + esc(sourceProblemCopy(shared.dailyLoopState, 'daily_missions')) + '</span></div>';
+    }
     if (shared.mode === 'unlinked') {
       return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">Telegram sync required to unlock faction daily ops.</span></div>';
     }
@@ -736,10 +936,13 @@
       ? shared.faction.label + ' daily ops syncing\u2026'
       : 'Daily ops syncing\u2026';
     var missionsHTML;
+    if (shared.dailyLoopMissions) {
+      missionOpps = shared.dailyLoopMissions;
+    }
     if (missionOpps === null) {
       missionsHTML = '<div class="csp-missions-empty">' + esc(factionSyncLabel) + '</div>';
     } else if (!missionOpps.length) {
-      missionsHTML = '<div class="csp-missions-empty">No live missions reported.</div>';
+      missionsHTML = '<div class="csp-missions-empty">No missions today.</div>';
     } else {
       missionsHTML = missionOpps.map(function (m) {
         var title = esc(m.title || m.name || m.label || m.mission_key || 'Mission');
@@ -767,10 +970,11 @@
   }
 
   function buildDailyWtfSignalHTML(shared) {
-    if (shared.mode === 'unlinked') {
+    var hasDailyLoopWtf = !!(shared.dailyLoopState && shared.wtfState);
+    if (shared.mode === 'unlinked' && !hasDailyLoopWtf) {
       return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">Telegram sync required to receive Daily WTF signals.</span></div>';
     }
-    if (shared.mode === 'relink') {
+    if (shared.mode === 'relink' && !hasDailyLoopWtf) {
       return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">RELINK required to sync Daily WTF signal.</span></div>';
     }
     if (shared.mode === 'sync_pending') {
@@ -788,7 +992,9 @@
     // Status badge: derive directly from wtfState, not from human-readable statusText,
     // so badge and status row cannot contradict each other.
     var badgeLabel, badgeClass;
-    if (!wtf || !wtf.status || wtf.status === 'loading') {
+    if (wtf && wtf.source_state === 'preview') {
+      badgeLabel = 'PREVIEW'; badgeClass = 'csp-wtf-badge--upcoming';
+    } else if (!wtf || !wtf.status || wtf.status === 'loading') {
       badgeLabel = 'SYNCING'; badgeClass = 'csp-wtf-badge--syncing';
     } else if (wtf.status === 'error') {
       badgeLabel = 'UNAVAILABLE'; badgeClass = 'csp-wtf-badge--unavailable';
@@ -821,6 +1027,7 @@
     return '' +
       '<div class="csp-signal-card" role="status" aria-label="Daily WTF signal">' +
         '<div class="csp-wtf-badge ' + badgeClass + '">' + badgeLabel + '</div>' +
+        (wtf && wtf.source_label ? '<div class="csp-feed-row csp-feed-row--latest"><span class="csp-feed-label">Source:</span><span class="csp-feed-text">' + esc(wtf.source_label) + '</span></div>' : '') +
         (eventTitle ? '<div class="csp-wtf-event-title">' + esc(eventTitle) + '</div>' : '') +
         '<div class="csp-live-row"><span class="csp-live-row-label">Timer</span><span class="csp-live-row-val" data-csp-wtf-countdown>' + esc(timer) + '</span></div>' +
         '<div class="csp-live-row"><span class="csp-live-row-label">Action</span><span class="csp-live-row-val">' + action + '</span></div>' +
@@ -828,6 +1035,9 @@
   }
 
   function buildMissedOpportunitiesHTML(shared) {
+    if (shared.dailyLoopMissed && shared.dailyLoopMissed.unavailable_label) {
+      return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">' + esc(shared.dailyLoopMissed.unavailable_label) + '</span></div>';
+    }
     if (shared.mode === 'unlinked') {
       return '<div class="csp-section-content csp-section-content--locked"><span class="csp-locked-text">Telegram sync required to track missed opportunities.</span></div>';
     }
