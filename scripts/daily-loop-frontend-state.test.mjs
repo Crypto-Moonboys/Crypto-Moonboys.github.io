@@ -324,6 +324,36 @@ assert.equal(authRestoreCacheCalls[1].options.method, 'POST');
 assert.equal(authRestoreCacheCalls[1].url.includes('?'), false, 'auth restore POST must not put auth in query string');
 assert.deepEqual(JSON.parse(authRestoreCacheCalls[1].options.body), { telegram_auth: authRestorePayload });
 
+const recoveryCalls = [];
+const recoveryRuntime = createRuntime({
+  fetchImpl(url, options = {}) {
+    recoveryCalls.push({ url: String(url), options });
+    if (recoveryCalls.length === 1) return Promise.reject(new Error('temporary_daily_loop_failure'));
+    return response(dailyPayload({ source_status: { daily_loop: { state: 'live', source: 'worker_api' } } }));
+  },
+});
+const failedRecoveryState = await recoveryRuntime.window.MOONBOYS_DAILY_LOOP.refresh({ force: true });
+assert.equal(failedRecoveryState.fetch_status, 'error', 'first failed daily-loop fetch is exposed as an error state');
+const recoveredState = await recoveryRuntime.window.MOONBOYS_DAILY_LOOP.refresh({ force: true });
+assert.equal(recoveredState.fetch_status, 'ok', 'later successful refresh recovers from one failed daily-loop fetch');
+assert.equal(recoveryCalls.length, 2, 'recovery path performs exactly one later successful fetch');
+
+const staleCalls = [];
+const staleRuntime = createRuntime({
+  fetchImpl(url, options = {}) {
+    staleCalls.push({ url: String(url), options });
+    return response(dailyPayload());
+  },
+});
+staleRuntime.window.MOONBOYS_DAILY_LOOP.subscribe(() => {});
+staleRuntime.window.MOONBOYS_DAILY_LOOP.subscribe(() => {});
+staleRuntime.window.MOONBOYS_DAILY_LOOP.subscribe(() => {});
+staleRuntime.window.dispatchEvent(new staleRuntime.window.CustomEvent('moonboys:sync-state', { detail: { reason: 'smoke' } }));
+await Promise.resolve();
+await Promise.resolve();
+assert.equal(staleCalls.length, 1, 'one stale/invalidate event triggers one shared daily-loop refresh, not per-widget loops');
+assert.equal(staleRuntime.busEvents.filter((event) => event.name === 'daily-loop:stale').length, 1, 'stale event emits one shared stale notification');
+
 const tickCalls = [];
 const tickRuntime = createRuntime({
   fetchImpl(url, options = {}) {
