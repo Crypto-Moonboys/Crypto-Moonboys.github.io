@@ -204,10 +204,15 @@ const noCitationHtml = fs.readFileSync(path.join(root, 'wiki/no-citations.html')
 assert.ok(!noCitationHtml.includes('data-citation-vote-panel="true"'), 'citation panel does not render without citations');
 
 const css = fs.readFileSync(path.join(process.cwd(), 'css/wiki.css'), 'utf8');
+const battleCss = fs.readFileSync(path.join(process.cwd(), 'css/battle-layer.css'), 'utf8');
 assert.ok(/\.category-grid\s*\{[\s\S]*?minmax\(min\(100%, 285px\), 1fr\)/.test(css), 'category index cards use wider responsive tracks');
 assert.ok(/\.category-card\s*\{[\s\S]*?align-items:\s*flex-start/.test(css), 'category cards avoid cramped vertical centering');
 assert.ok(/\.category-card\s+\.cat-desc\s*\{[\s\S]*?overflow-wrap:\s*anywhere/.test(css), 'category descriptions wrap naturally');
 assert.ok(/\.wiki-rabbit-card\s*\{[\s\S]*?min-height:\s*68px/.test(css), 'Related Wiki Paths cards stay compact');
 assert.ok(/\.wiki-rabbit-group--nft-siblings\s+\.wiki-rabbit-grid\s*\{[\s\S]*?190px/.test(css), 'More from collection keeps distinct sibling-card sizing');
+assert.ok(/\.infobox\s*\{[\s\S]*?width:\s*min\(240px, 32vw\)/.test(css), 'right-side info cards are compact instead of forcing wide dead space');
+assert.ok(/\.infobox-image\s+span\s*\{[\s\S]*?font-size:\s*2\.6rem\s*!important/.test(css), 'emoji info cards do not dominate the hero area');
+assert.ok(!css.includes('.battle-engagement-deck {'), 'wiki.css no longer owns final engagement deck layout');
+assert.ok(battleCss.includes('.wiki-engagement-module .battle-deck.battle-engagement-deck'), 'battle-layer.css owns final engagement module layout');
 
 console.log('wiki-navigation-backfill-rendering.test.mjs passed');

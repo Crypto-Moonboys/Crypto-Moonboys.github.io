@@ -463,29 +463,33 @@ img { max-width: 100%; height: auto; }
 .infobox {
   float: right;
   clear: right;
-  margin: 0 0 20px 24px;
-  width: 280px;
+  margin: 0 0 12px 18px;
+  width: min(240px, 32vw);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   overflow: hidden;
-  font-size: .87rem;
+  font-size: .82rem;
 }
 .infobox-title {
   background: var(--color-accent);
   color: #000;
   font-weight: 700;
   text-align: center;
-  padding: 8px 12px;
-  font-size: .95rem;
+  padding: 7px 10px;
+  font-size: .88rem;
 }
 .infobox-image {
   text-align: center;
-  padding: 14px;
+  padding: 8px;
   border-bottom: 1px solid var(--color-border);
 }
+.infobox-image span {
+  font-size: 2.6rem !important;
+  line-height: 1;
+}
 .infobox-image img {
-  max-height: 160px;
+  max-height: 112px;
   width: auto;
   border-radius: var(--radius);
 }
@@ -495,7 +499,7 @@ img { max-width: 100%; height: auto; }
   margin: 0;
 }
 .infobox td {
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-top: 1px solid var(--color-border);
   vertical-align: top;
 }
@@ -756,63 +760,6 @@ img { max-width: 100%; height: auto; }
 .nft-template-article .article-meta .meta-item:has(a[href^="/categories/"]) {
   display: none;
 }
-.battle-engagement-deck {
-  position: relative;
-  grid-template-columns: minmax(260px, 1fr) minmax(230px, .72fr);
-  gap: 12px;
-  align-items: stretch;
-  margin: 12px 0 22px;
-  padding: 10px;
-  border: 1px solid rgba(99, 211, 255, .18);
-  border-radius: 14px;
-  background: linear-gradient(145deg, rgba(10,23,44,.5), rgba(8,18,34,.28));
-  box-shadow: inset 0 0 0 1px rgba(122,236,255,.04);
-}
-.battle-engagement-deck .battle-shell {
-  border-radius: 10px;
-  box-shadow: none;
-  min-height: 0;
-}
-.battle-engagement-deck .battle-shell-inner {
-  padding: 12px;
-}
-.battle-engagement-deck .battle-shell h3 {
-  font-size: .9rem;
-  margin-bottom: 8px;
-}
-.battle-engagement-deck .battle-copy {
-  font-size: .74rem;
-  line-height: 1.35;
-  margin-top: 8px;
-}
-.battle-engagement-deck .battle-shell--missions {
-  opacity: .82;
-  background: rgba(36,41,47,.38);
-}
-.battle-engagement-deck .battle-shell--missions .mission-stack {
-  gap: 6px;
-  max-height: none;
-  overflow: visible;
-  padding-right: 0;
-}
-.battle-engagement-deck .battle-shell--missions .mission-row {
-  padding: 7px 9px;
-  border-radius: 10px;
-  align-items: flex-start;
-}
-.battle-engagement-deck .battle-shell--missions .mission-text,
-.battle-engagement-deck .battle-shell--missions .mission-tag,
-.battle-engagement-deck .battle-shell--missions .mission-status {
-  font-size: .72rem;
-  line-height: 1.3;
-}
-.nft-template-article .battle-engagement-deck {
-  grid-template-columns: minmax(270px, .9fr) minmax(230px, .62fr);
-  margin: 12px 0 20px;
-}
-.nft-template-article .battle-shell--missions {
-  opacity: .82;
-}
 .nft-template-article .battle-shell--heat .battle-page-media img {
   max-height: min(46vh, 420px);
   object-fit: contain;
@@ -852,12 +799,6 @@ img { max-width: 100%; height: auto; }
   line-height: 1.2;
   text-transform: uppercase;
   letter-spacing: .03em;
-}
-@media (max-width: 860px) {
-  .battle-engagement-deck,
-  .nft-template-article .battle-engagement-deck {
-    grid-template-columns: 1fr;
-  }
 }
 
 .wiki-header { position: relative; }
