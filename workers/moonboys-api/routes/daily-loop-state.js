@@ -1,6 +1,10 @@
 import { verifyTelegramIdentityFromBody } from '../blocktopia/auth.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction } from '../shared/faction-canon.js';
 import { buildWtfPreviewSchedule, getWtfEventStatus } from '../shared/daily-wtf-schedule.js';
+import {
+  backfillMissedPerkGapsFromLastActiveDay,
+  ensureDailyOpportunityStateForToday,
+} from './daily-digest.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -138,22 +142,6 @@ function battlePeriodKey(period, date = new Date()) {
   const seasonEpochMs = Date.UTC(2024, 0, 1);
   const seasonIndex = Math.floor((now.getTime() - seasonEpochMs) / (90 * DAY_MS)) + 1;
   return `S${Math.max(1, seasonIndex)}`;
-}
-
-async function ensureDailyOpportunityState(db, telegramId, utcDay) {
-  const now = new Date().toISOString();
-  await db.prepare(`
-    INSERT INTO daily_opportunity_state
-      (telegram_id, utc_day, daily_seed, chain_depth, activated_at, last_roll_at, created_at, updated_at)
-    VALUES (?, ?, ?, 0, ?, NULL, ?, ?)
-    ON CONFLICT(telegram_id, utc_day) DO NOTHING
-  `).bind(String(telegramId), utcDay, crypto.randomUUID(), now, now, now).run();
-  return db.prepare(`
-    SELECT telegram_id, utc_day, daily_seed, chain_depth, activated_at, last_roll_at, created_at, updated_at
-    FROM daily_opportunity_state
-    WHERE telegram_id = ? AND utc_day = ?
-    LIMIT 1
-  `).bind(String(telegramId), utcDay).first();
 }
 
 function emptyLoopState({ utcDay, dayStartedAt, resetAt, secondsUntilReset, sourceStatus, nowMs }) {
@@ -372,6 +360,7 @@ export async function buildDailyLoopState(env, options = {}) {
       `, [telegramId, getIsoWeekKey(now)]);
     if (factionResult.ok && todayRows.ok && weekRows.ok) {
     const faction = factionResult.row;
+    const canonicalFactionId = normalizeBattleFaction(faction?.name) || FACTION_UNALIGNED;
     const today = {};
     const week = {};
     for (const row of todayRows.rows) today[row.faction_id] = Number(row.contribution) || 0;
@@ -381,7 +370,8 @@ export async function buildDailyLoopState(env, options = {}) {
       : statusLiveEmpty('worker_d1', { telegram_id: telegramId, reason: 'no_faction_or_signal_for_utc_day' });
     state.faction_state = {
       linked: true,
-      faction_id: normalizeBattleFaction(faction?.id || faction?.name) || FACTION_UNALIGNED,
+      faction_id: canonicalFactionId,
+      faction_table_id: faction?.id ?? null,
       label: faction?.name || 'Unaligned',
       role: faction?.role || null,
       joined_at: faction?.joined_at || null,
@@ -394,9 +384,11 @@ export async function buildDailyLoopState(env, options = {}) {
   if (canQuery(sourceStatus, 'arcade_daily_state')) {
     let row = null;
     try {
-      row = await ensureDailyOpportunityState(db, telegramId, utcDay);
+      const factionId = normalizeBattleFaction(state.faction_state?.faction_id) || null;
+      const backfill = await backfillMissedPerkGapsFromLastActiveDay(db, telegramId, utcDay, factionId);
+      row = await ensureDailyOpportunityStateForToday(db, telegramId, utcDay);
       sourceStatus.arcade_daily_state = row
-        ? statusLive('worker_d1', { telegram_id: telegramId, utc_day: utcDay })
+        ? statusLive('worker_d1', { telegram_id: telegramId, utc_day: utcDay, missed_backfill: backfill })
         : statusLiveEmpty('worker_d1', { telegram_id: telegramId, utc_day: utcDay, reason: 'daily_opportunity_not_created' });
     } catch (error) {
       sourceStatus.arcade_daily_state = statusQueryFailed('worker_d1', { error: error?.message || String(error) });

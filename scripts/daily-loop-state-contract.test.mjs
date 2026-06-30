@@ -53,19 +53,22 @@ assert.ok(
 
 function makeDb({ existingTables = [], failPatterns = [], rows = {} } = {}) {
   const tables = new Set(existingTables);
+  const calls = [];
   return {
+    _calls: calls,
     prepare(sql) {
       return {
         bind(...params) {
-          return makeStatement(sql, params, tables, failPatterns, rows);
+          return makeStatement(sql, params, tables, failPatterns, rows, calls);
         },
         first() {
-          return makeStatement(sql, [], tables, failPatterns, rows).first();
+          return makeStatement(sql, [], tables, failPatterns, rows, calls).first();
         },
         all() {
-          return makeStatement(sql, [], tables, failPatterns, rows).all();
+          return makeStatement(sql, [], tables, failPatterns, rows, calls).all();
         },
         run() {
+          calls.push({ method: 'run', sql, params: [] });
           return Promise.resolve({ success: true, meta: { changes: 0 } });
         },
       };
@@ -82,23 +85,63 @@ function tableFromSql(sql) {
   return match ? match[1] : null;
 }
 
-function makeStatement(sql, params, tables, failPatterns, rowsByTable) {
+function countRows(rowsByTable, tableName, params) {
+  const rows = rowsByTable[tableName] || [];
+  if (tableName === 'daily_missed_perks' && params.length >= 2) {
+    return rows.filter((row) => String(row.telegram_id) === String(params[0]) && String(row.utc_day) === String(params[1])).length;
+  }
+  if (tableName === 'daily_missed_perks' && params.length >= 1) {
+    return rows.filter((row) => String(row.telegram_id) === String(params[0])).length;
+  }
+  return rows.length;
+}
+
+function firstRowForSql(sql, params, rowsByTable) {
+  if (String(sql).includes('COUNT(*) AS total')) {
+    return { total: countRows(rowsByTable, 'daily_missed_perks', params) };
+  }
+  if (String(sql).includes('COUNT(*) AS events_total')) {
+    return { events_total: countRows(rowsByTable, 'daily_missed_perks', params) };
+  }
+  if (String(sql).includes('COALESCE(SUM(missed_xp_value)')) {
+    return { xp_total: 0 };
+  }
+  if (String(sql).includes('FROM daily_opportunity_state') && String(sql).includes('utc_day < ?')) {
+    return (rowsByTable.daily_opportunity_state_prior || [])[0] || null;
+  }
+  if (String(sql).includes('FROM daily_opportunity_state') && String(sql).includes('utc_day = ?')) {
+    return (rowsByTable.daily_opportunity_state_today || rowsByTable.daily_opportunity_state || [])[0] || null;
+  }
+  const tableName = tableFromSql(sql);
+  return (rowsByTable[tableName] || [])[0] || null;
+}
+
+function allRowsForSql(sql, rowsByTable) {
+  if (String(sql).includes('PRAGMA table_info(daily_missed_perks)')) {
+    return rowsByTable.__daily_missed_perks_columns || [];
+  }
+  const tableName = tableFromSql(sql);
+  return rowsByTable[tableName] || [];
+}
+
+function makeStatement(sql, params, tables, failPatterns, rowsByTable, calls) {
   return {
     async first() {
+      calls.push({ method: 'first', sql, params });
       if (shouldFail(sql, failPatterns)) throw new Error(`mock query failed: ${failPatterns[0]}`);
       if (sql.includes('sqlite_master')) {
         const tableName = params[0];
         return tables.has(tableName) ? { name: tableName } : null;
       }
-      const tableName = tableFromSql(sql);
-      return (rowsByTable[tableName] || [])[0] || null;
+      return firstRowForSql(sql, params, rowsByTable);
     },
     async all() {
+      calls.push({ method: 'all', sql, params });
       if (shouldFail(sql, failPatterns)) throw new Error(`mock query failed: ${failPatterns[0]}`);
-      const tableName = tableFromSql(sql);
-      return { results: rowsByTable[tableName] || [] };
+      return { results: allRowsForSql(sql, rowsByTable) };
     },
     async run() {
+      calls.push({ method: 'run', sql, params });
       if (shouldFail(sql, failPatterns)) throw new Error(`mock query failed: ${failPatterns[0]}`);
       return { success: true, meta: { changes: 0 } };
     },
@@ -192,5 +235,77 @@ for (const [key, status] of Object.entries(failedWtfState.source_status)) {
   if (key !== 'sam_status' && status.state !== 'live') continue;
   if (key === 'daily_wtf_status') assert.fail('query_failed Daily WTF state must never be live');
 }
+
+const linkedDb = makeDb({
+  existingTables: ALL_TABLES,
+  rows: {
+    telegram_faction_members: [{
+      id: 7,
+      name: 'hard-fork-rockers',
+      description: 'Hard Fork Rockers',
+      icon: 'bolt',
+      role: 'member',
+      joined_at: '2026-06-01T00:00:00.000Z',
+    }],
+    daily_opportunity_state_prior: [{ utc_day: '2026-06-27' }],
+    daily_opportunity_state_today: [{
+      telegram_id: '12345',
+      utc_day: '2026-06-30',
+      daily_seed: 'seed-12345',
+      chain_depth: 0,
+      activated_at: '2026-06-30T12:00:00.000Z',
+      last_roll_at: null,
+      created_at: '2026-06-30T12:00:00.000Z',
+      updated_at: '2026-06-30T12:00:00.000Z',
+    }],
+  },
+});
+
+const linkedState = await buildDailyLoopState({
+  DB: linkedDb,
+}, {
+  now: '2026-06-30T12:45:00.000Z',
+  verified: {
+    telegramId: '12345',
+    user: { username: 'dailyloop' },
+  },
+});
+
+assert.equal(linkedState.faction_state.faction_id, 'hard-fork-rockers');
+assert.equal(linkedState.faction_state.faction_table_id, 7);
+assert.equal(linkedState.arcade_daily_state.label, 'live');
+
+const callIndex = (needle) => linkedDb._calls.findIndex((call) => String(call.sql).includes(needle));
+const priorLookupIndex = callIndex('utc_day < ?');
+const missedBackfillInsertIndex = callIndex('INSERT INTO daily_missed_perks');
+const todayActivationInsertIndex = callIndex('INSERT INTO daily_opportunity_state');
+
+assert.ok(priorLookupIndex >= 0, 'linked daily-loop state must look for prior active days');
+assert.ok(missedBackfillInsertIndex >= 0, 'linked daily-loop state must backfill missed inactive UTC days');
+assert.ok(todayActivationInsertIndex >= 0, 'linked daily-loop state must create or reuse today after backfill');
+assert.ok(priorLookupIndex < todayActivationInsertIndex, 'prior-day backfill lookup must happen before today activation insert');
+assert.ok(missedBackfillInsertIndex < todayActivationInsertIndex, 'missed-day backfill must run before today activation insert');
+
+const failedArcadeDb = makeDb({
+  existingTables: ALL_TABLES,
+  failPatterns: ['FROM daily_opportunity_state WHERE telegram_id = ? AND utc_day < ?'],
+});
+const failedArcadeState = await buildDailyLoopState({
+  DB: failedArcadeDb,
+}, {
+  now: '2026-06-30T12:45:00.000Z',
+  verified: {
+    telegramId: '12345',
+    user: { username: 'dailyloop' },
+  },
+});
+
+assert.equal(failedArcadeState.source_status.arcade_daily_state.state, 'query_failed');
+assert.notEqual(failedArcadeState.source_status.arcade_daily_state.state, 'live');
+assert.equal(
+  failedArcadeDb._calls.some((call) => String(call.sql).includes('INSERT INTO daily_opportunity_state')),
+  false,
+  'daily-loop must not create today activation after missed-day backfill lookup fails'
+);
 
 console.log('daily-loop-state-contract tests passed');
