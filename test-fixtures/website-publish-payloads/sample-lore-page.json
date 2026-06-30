@@ -1,0 +1,22 @@
+{
+  "slug": "sample-lore-page",
+  "title": "Sample Lore Page",
+  "description": "A fixture payload proving middle-content-only lore imports are accepted.",
+  "category": "Lore",
+  "article_html": "<p class=\"lead-paragraph\">This fixture is intentionally only article middle content.</p>\n<section class=\"wiki-section\"><h2 id=\"overview\">Overview</h2><p>Normal article markup is allowed.</p></section>",
+  "citations": [
+    {
+      "title": "Fixture Source",
+      "url": "https://example.com/fixture"
+    }
+  ],
+  "see_also": [
+    "sample-nft-template"
+  ],
+  "source_refs": [
+    "fixture:lore"
+  ],
+  "requested_update_reason": "Test fixture",
+  "last_updated_source": "fixture",
+  "publish_mode": "middle_content_only"
+}
