@@ -26,7 +26,7 @@ export class FeedSyncError extends Error {
   }
 }
 
-const REAL_ROOT_SYNC_STEPS = [
+export const REAL_ROOT_SYNC_STEPS = [
   { surface: 'search', script: 'scripts/wiki-publish-gate.js' },
   { surface: 'search', script: 'scripts/generate-wiki-index.js' },
   { surface: 'graph', script: 'scripts/generate-link-map.js' },
@@ -266,6 +266,60 @@ function loadJsonArray(filePath) {
 function writeJson(filePath, data) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf8');
+}
+
+function snapshotFiles(rootDir, relativePaths) {
+  const snapshot = new Map();
+  for (const relativePath of relativePaths) {
+    const normalizedPath = relativePath.replaceAll('\\', '/');
+    const filePath = path.join(rootDir, normalizedPath);
+    snapshot.set(normalizedPath, {
+      exists: fs.existsSync(filePath),
+      content: fs.existsSync(filePath) ? fs.readFileSync(filePath) : null,
+    });
+  }
+  return snapshot;
+}
+
+function restoreSnapshot(rootDir, snapshot) {
+  for (const [relativePath, entry] of snapshot) {
+    const filePath = path.join(rootDir, relativePath);
+    if (entry.exists) {
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(filePath, entry.content);
+    } else if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  }
+}
+
+function expectedSyncFiles(payloads) {
+  const categoryFiles = new Set(['categories/index.html']);
+  for (const payload of payloads) {
+    categoryFiles.add(`categories/${categorySlug(payload.category)}.html`);
+  }
+
+  return [
+    ...categoryFiles,
+    'js/wiki-publish-audit.json',
+    'js/wiki-index.json',
+    'js/link-map.json',
+    'js/link-graph.json',
+    'js/entity-map.json',
+    'sam-memory.json',
+    'js/entity-graph.json',
+    'js/graph-data.json',
+    'js/timeline-data.json',
+    'js/timeline-intelligence.json',
+    'js/authority-trust.json',
+    'js/cluster-health.json',
+    'js/content-gaps.json',
+    'js/growth-priority.json',
+    'js/publishing-readiness.json',
+    'js/site-stats.json',
+    'index_stats.json',
+    'sitemap.xml',
+  ];
 }
 
 function upsertByUrl(existingEntries, newEntries) {
@@ -569,6 +623,14 @@ function runScriptStep(rootDir, step, logger) {
   }
 }
 
+export function assertRequiredRealRootSyncScripts(rootDir = ROOT) {
+  for (const step of REAL_ROOT_SYNC_STEPS) {
+    if (!fs.existsSync(path.join(rootDir, step.script))) {
+      throw new FeedSyncError(step.surface, `feed sync not implemented for ${step.surface}`);
+    }
+  }
+}
+
 function assertPayloadUrlsSynced(rootDir, payloads) {
   const wikiIndex = loadJsonArray(path.join(rootDir, 'js', 'wiki-index.json'));
   const indexedUrls = new Set(wikiIndex.map((entry) => entry.url));
@@ -589,6 +651,8 @@ function assertPayloadUrlsSynced(rootDir, payloads) {
 }
 
 function syncRealRootSurfaces(rootDir, payloads, logger) {
+  assertRequiredRealRootSyncScripts(rootDir);
+
   for (const step of REAL_ROOT_SYNC_STEPS) {
     runScriptStep(rootDir, step, logger);
   }
@@ -620,6 +684,7 @@ export function runImport({
   rootDir = ROOT,
   write = false,
   logger = console.log,
+  syncFeedSurfacesFn = syncFeedSurfaces,
 } = {}) {
   const validation = validatePayloadDirectory(payloadDir);
   if (validation.skipped) {
@@ -632,27 +697,46 @@ export function runImport({
 
   const plannedPages = [];
   const payloads = validation.payloads.map(({ payload }) => payload);
+  const renderedPages = write
+    ? validation.payloads.map(({ payload }) => ({
+      payload,
+      relPagePath: plannedPagePath(payload),
+      html: renderPageFromTemplate(payload, rootDir),
+    }))
+    : [];
+
   for (const { payload } of validation.payloads) {
     const relPagePath = plannedPagePath(payload);
     plannedPages.push(relPagePath);
     logger(`Intended page path: ${relPagePath}`);
-
-    if (write) {
-      const html = renderPageFromTemplate(payload, rootDir);
-      const outputPath = path.join(rootDir, relPagePath);
-      fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-      fs.writeFileSync(outputPath, html);
-      logger(`Wrote page: ${relPagePath}`);
-    }
   }
 
   if (!write) {
     logger('Dry run only: no pages were written. Pass --write to render with the website template/shell.');
   }
 
-  const sync = write
-    ? syncFeedSurfaces(rootDir, payloads, logger)
-    : null;
+  let sync = null;
+  if (write) {
+    const touchedFiles = [
+      ...renderedPages.map((page) => page.relPagePath),
+      ...expectedSyncFiles(payloads),
+    ];
+    const snapshot = snapshotFiles(rootDir, touchedFiles);
+
+    try {
+      for (const page of renderedPages) {
+        const outputPath = path.join(rootDir, page.relPagePath);
+        fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+        fs.writeFileSync(outputPath, page.html);
+        logger(`Wrote page: ${page.relPagePath}`);
+      }
+      sync = syncFeedSurfacesFn(rootDir, payloads, logger);
+    } catch (error) {
+      restoreSnapshot(rootDir, snapshot);
+      logger('Write-mode import rolled back because feed sync failed.');
+      throw error;
+    }
+  }
 
   return {
     ...validation,

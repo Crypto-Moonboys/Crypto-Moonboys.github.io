@@ -13,6 +13,7 @@ import {
 import {
   AFFECTED_SYNC_SURFACES,
   FeedSyncError,
+  assertRequiredRealRootSyncScripts,
   renderBattleHeatMediaTemplate,
   renderArticleMiddle,
   runImport,
@@ -235,6 +236,39 @@ assert.throws(
 assert.equal(fs.existsSync(path.join(badRoot, 'wiki', 'sample-lore-page.html')), false);
 assert.equal(fs.existsSync(path.join(badRoot, 'wiki', 'bad-full-shell.html')), false);
 console.log('PASS bad payloads fail before write-mode creates files');
+
+const rollbackRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'website-importer-rollback-'));
+const rollbackPayloadDir = path.join(rollbackRoot, 'website-publish-payloads');
+copyFixtures(rollbackPayloadDir);
+fs.copyFileSync(path.join(ROOT, '_article-template.html'), path.join(rollbackRoot, '_article-template.html'));
+const restoredLorePath = path.join(rollbackRoot, 'wiki', 'sample-lore-page.html');
+fs.mkdirSync(path.dirname(restoredLorePath), { recursive: true });
+fs.writeFileSync(restoredLorePath, 'ORIGINAL LORE PAGE', 'utf8');
+
+assert.throws(
+  () => runImport({
+    payloadDir: rollbackPayloadDir,
+    rootDir: rollbackRoot,
+    write: true,
+    logger: () => {},
+    syncFeedSurfacesFn: () => {
+      throw new FeedSyncError('graph', 'feed sync failed for graph: injected failure');
+    },
+  }),
+  (error) => error instanceof FeedSyncError &&
+    error.message.includes('feed sync failed for graph')
+);
+assert.equal(fs.readFileSync(restoredLorePath, 'utf8'), 'ORIGINAL LORE PAGE');
+assert.equal(fs.existsSync(path.join(rollbackRoot, 'wiki', 'sample-nft-template.html')), false);
+console.log('PASS feed sync failure rolls back write-mode page writes');
+
+const missingScriptsRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'website-importer-missing-scripts-'));
+assert.throws(
+  () => assertRequiredRealRootSyncScripts(missingScriptsRoot),
+  (error) => error instanceof FeedSyncError &&
+    error.message === 'feed sync not implemented for search'
+);
+console.log('PASS real-root feed sync preflight fails loudly for missing scripts');
 
 assert.ok(FeedSyncError, 'FeedSyncError export is available for feed sync failures');
 
