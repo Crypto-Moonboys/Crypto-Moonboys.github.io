@@ -32,6 +32,16 @@ function extractGroups(section) {
   return [...section.matchAll(/<div\b[^>]*class=["'][^"']*\bwiki-rabbit-grid\b[^"']*["'][^>]*>[\s\S]*?<\/div>/gi)].map((match) => match[0]);
 }
 
+function extractRabbitGroups(section) {
+  const starts = [...section.matchAll(/<div\b[^>]*class=["'][^"']*\bwiki-rabbit-group\b[^"']*["'][^>]*>/gi)];
+  return starts.map((match, index) => {
+    const end = starts[index + 1]?.index ?? section.search(/\s*<\/section>/i);
+    const html = section.slice(match.index, end === -1 ? undefined : end);
+    const title = match[0].match(/\bdata-related-group=["']([^"']+)["']/i)?.[1] || '';
+    return { title, html, links: hrefs(html) };
+  });
+}
+
 function isNftTemplatePage(file, html) {
   if (/data-page-type=["']nft_collection["']/i.test(html)) return false;
   return /data-page-type=["']nft_template["']/i.test(html) ||
@@ -156,7 +166,33 @@ for (const file of wikiFiles) {
   ]);
   check(section.includes('Collection Links'), `${relPath} must group collection links`);
   check(section.includes('Related Categories'), `${relPath} must group category links`);
-  check(section.includes('More from this collection'), `${relPath} must group capped collection neighbors`);
+  check(/More from (?:this collection|GKniftyHEADS)/.test(section), `${relPath} must group capped collection neighbors`);
+  check(
+    /wiki-rabbit-group--categories/i.test(section) && /wiki-rabbit-chip-grid/i.test(section) && /wiki-rabbit-chip/i.test(section),
+    `${relPath} related categories must render as compact chips`
+  );
+  check(
+    /wiki-rabbit-group--nft-siblings/i.test(section) && /wiki-rabbit-card--nft-sibling/i.test(section),
+    `${relPath} More from collection must render as a distinct NFT sibling group`
+  );
+
+  const groups = extractRabbitGroups(section);
+  const allLinks = groups.flatMap((group) => group.links);
+  check(allLinks.length === new Set(allLinks).size, `${relPath} must not repeat URLs across related groups`);
+  const moreGroup = groups.find((group) => /^More from /i.test(group.title));
+  check(Boolean(moreGroup), `${relPath} must have a clearly labelled More from collection group`);
+  if (moreGroup) {
+    check(
+      moreGroup.links.every((href) => /^\/wiki\/gkniftyheads-.+-\d{5,}\.html$/i.test(href)),
+      `${relPath} More from collection group must contain only NFT template page URLs`
+    );
+    check(moreGroup.links.length <= MAX_NFT_LINKS_IN_SECTION, `${relPath} More from collection group must stay capped at ${MAX_NFT_LINKS_IN_SECTION}`);
+  }
+  for (const group of groups.filter((item) => !/^More from /i.test(item.title))) {
+    const nftTemplateLinks = group.links.filter((href) => /^\/wiki\/gkniftyheads-.+-\d{5,}\.html$/i.test(href));
+    check(nftTemplateLinks.length === 0, `${relPath} contextual group "${group.title}" must not contain sibling NFT template URLs`);
+  }
+
   const categoryBlock = html.match(/<div\b[^>]*class=["'][^"']*\bcategory-tags\b[^"']*["'][\s\S]*?<\/div>/i)?.[0] || '';
   assertHasLinks(categoryBlock, relPath, [
     '/categories/gkniftyheads.html',

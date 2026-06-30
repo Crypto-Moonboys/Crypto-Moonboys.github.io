@@ -656,6 +656,31 @@ img { max-width: 100%; height: auto; }
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 10px;
 }
+.wiki-rabbit-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.wiki-rabbit-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 5px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: rgba(88,166,255,.08);
+  color: var(--color-text-muted);
+  font-size: .78rem;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.wiki-rabbit-chip:hover {
+  border-color: var(--color-accent);
+  background: rgba(247,201,72,.11);
+  color: var(--color-accent);
+  text-decoration: none;
+}
 .wiki-rabbit-card {
   display: flex;
   flex-direction: column;
@@ -687,6 +712,99 @@ img { max-width: 100%; height: auto; }
 }
 
 /* ── ARTICLE META ──────────────────────────────────────── */
+.wiki-rabbit-group--categories {
+  margin-top: 14px;
+}
+.wiki-rabbit-group--categories h3,
+.wiki-rabbit-group--nft-siblings h3 {
+  font-size: .86rem;
+  color: var(--color-text-muted);
+}
+.wiki-rabbit-group--nft-siblings {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+.wiki-rabbit-group--nft-siblings .wiki-rabbit-grid {
+  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+}
+.wiki-rabbit-card--nft-sibling {
+  min-height: 64px;
+  padding: 10px;
+  background: rgba(36,41,47,.58);
+  border-style: dashed;
+}
+.wiki-rabbit-card--nft-sibling .wiki-rabbit-card-title {
+  font-size: .9rem;
+}
+.wiki-rabbit-card--nft-sibling .wiki-rabbit-card-desc {
+  font-size: .72rem;
+  max-height: 2.7em;
+  overflow: hidden;
+}
+.nft-template-article .wiki-hero {
+  margin-bottom: 14px;
+}
+.nft-template-article .nft-category-tags {
+  margin-top: 14px;
+  padding-top: 10px;
+}
+.nft-template-article .article-meta {
+  margin: 8px 0 12px;
+}
+.nft-template-article .article-meta .meta-item:has(a[href^="/categories/"]) {
+  display: none;
+}
+.nft-template-article .battle-deck {
+  grid-template-columns: minmax(260px, .95fr) minmax(220px, .72fr);
+  gap: 14px;
+  margin: 14px 0 22px;
+  align-items: start;
+}
+.nft-template-article .battle-shell {
+  border-radius: 12px;
+}
+.nft-template-article .battle-shell-inner {
+  padding: 14px;
+}
+.nft-template-article .battle-shell h3 {
+  font-size: .92rem;
+}
+.nft-template-article .battle-shell--heat .battle-copy,
+.nft-template-article .battle-shell--missions .battle-copy {
+  font-size: .76rem;
+  line-height: 1.35;
+}
+.nft-template-article .battle-shell--missions {
+  opacity: .78;
+  box-shadow: none;
+  background: rgba(36,41,47,.46);
+}
+.nft-template-article .battle-shell--missions .mission-stack {
+  max-height: 178px;
+  overflow: auto;
+  padding-right: 2px;
+}
+.nft-template-article .battle-shell--missions .mission-row {
+  padding: 7px 0;
+}
+.nft-template-article .battle-shell--missions .mission-text,
+.nft-template-article .battle-shell--missions .mission-tag {
+  font-size: .74rem;
+}
+.nft-template-article .battle-shell--heat .battle-page-media img {
+  max-height: min(54vh, 520px);
+  object-fit: contain;
+}
+@media (max-width: 860px) {
+  .nft-template-article .battle-deck {
+    grid-template-columns: 1fr;
+  }
+  .nft-template-article .battle-shell--missions .mission-stack {
+    max-height: none;
+  }
+}
+
 .wiki-header { position: relative; }
 .article-meta {
   display: flex;

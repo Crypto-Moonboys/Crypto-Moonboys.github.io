@@ -31,6 +31,17 @@ function categoryBlock(html) {
   return html.match(/<div\b[^>]*class=["'][^"']*\bcategory-tags\b[^"']*["'][\s\S]*?<\/div>/i)?.[0] || '';
 }
 
+function relatedGroup(section, title) {
+  const starts = [...String(section || '').matchAll(/<div\b[^>]*class=["'][^"']*\bwiki-rabbit-group\b[^"']*["'][^>]*>/gi)];
+  for (let index = 0; index < starts.length; index += 1) {
+    const start = starts[index].index;
+    const end = starts[index + 1]?.index ?? section.search(/\s*<\/section>/i);
+    const html = section.slice(start, end === -1 ? undefined : end);
+    if (html.includes(`data-related-group="${title}"`)) return html;
+  }
+  return '';
+}
+
 function manualBlock(html) {
   return html.match(/<!-- MANUAL_CONTENT:BEGIN -->[\s\S]*?<!-- MANUAL_CONTENT:END -->/i)?.[0] || '';
 }
@@ -172,6 +183,10 @@ for (const expected of [
 ]) {
   assert.ok(nftSection.includes(`href="${expected}"`), `NFT related cards include ${expected}`);
 }
+assert.ok(nftSection.includes('wiki-rabbit-group--categories'), 'NFT related categories render in a compact category group');
+assert.ok(nftSection.includes('wiki-rabbit-chip-grid'), 'NFT related categories use chip grid markup');
+assert.ok(nftSection.includes('wiki-rabbit-chip'), 'NFT related categories use compact chips');
+assert.ok(!relatedGroup(nftSection, 'Related Categories').includes('wiki-rabbit-card'), 'NFT related categories do not render as large cards');
 for (const expected of [
   '/categories/nfts.html',
   '/categories/wax-nfts.html',

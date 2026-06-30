@@ -281,7 +281,7 @@
   }
 
   function buildMissionHTML(pageId) {
-    return '<div class="battle-shell"><div class="battle-shell-inner">' +
+    return '<div class="battle-shell battle-shell--missions"><div class="battle-shell-inner">' +
       '<h3>Daily Missions</h3>' +
       '<div class="mission-stack">' +
       MISSION_DEFINITIONS.map(function (m) {
@@ -311,7 +311,7 @@
     if (engagement > 60) level = 'Hot';
     else if (engagement > 30) level = 'Warming Up';
 
-    return '<div class="battle-shell"><div class="battle-shell-inner">' +
+    return '<div class="battle-shell battle-shell--heat"><div class="battle-shell-inner">' +
       '<h3>Battle Heat</h3>' +
       '<div class="battle-meter-shell"><div class="battle-bar-fill" style="width:' + engagement + '%"></div></div>' +
       '<div class="battle-meter-meta"><span>' + esc(level) + ' engagement</span><span>' + engagement + '%</span></div>' +

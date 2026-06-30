@@ -190,6 +190,116 @@ function entryTags(entry) {
   return tags;
 }
 
+function isNftTemplateUrl(url) {
+  return /^\/wiki\/gkniftyheads-.+-\d{5,}\.html$/i.test(String(url || ''));
+}
+
+function tokenize(value) {
+  const stop = new Set([
+    'and', 'the', 'with', 'from', 'this', 'that', 'template', 'gkniftyheads',
+    'nfts', 'wax', 'wiki', 'crypto', 'moonboys', 'description', 'name', 'id',
+    'rarity', 'variation', 'collection', 'member', 'card',
+  ]);
+  return String(value || '')
+    .toLowerCase()
+    .replace(/&amp;/g, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .split(/\s+/)
+    .filter((token) => token.length >= 3 && !/^\d+$/.test(token) && !stop.has(token));
+}
+
+function extractNftSearchTerms(html) {
+  const terms = [];
+  for (const match of String(html || '').matchAll(/<script\b(?=[^>]*class=["'][^"']*\bnft-search-terms\b)[^>]*>([\s\S]*?)<\/script>/gi)) {
+    try {
+      const parsed = JSON.parse(match[1]);
+      if (Array.isArray(parsed)) terms.push(...parsed.map(String));
+    } catch {
+      // Ignore malformed generated search hints; the visible page metadata still provides fallback tokens.
+    }
+  }
+  for (const match of String(html || '').matchAll(/<tr>\s*<th>(rarity|variation|schema|type|name)<\/th>\s*<td>([\s\S]*?)<\/td>\s*<\/tr>/gi)) {
+    terms.push(match[1], match[2]);
+  }
+  const title = String(html || '').match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1] || '';
+  if (title) terms.push(title);
+  return terms;
+}
+
+function nftProfile(context, url) {
+  if (!context.nftProfiles) context.nftProfiles = new Map();
+  if (context.nftProfiles.has(url)) return context.nftProfiles.get(url);
+
+  const html = context.htmlByUrl.get(url) || '';
+  const entry = context.byUrl.get(url) || {};
+  const tokens = new Set();
+  for (const tag of entryTags(entry)) for (const token of tokenize(tag)) tokens.add(token);
+  for (const term of extractNftSearchTerms(html)) for (const token of tokenize(term)) tokens.add(token);
+  for (const token of tokenize(path.basename(url, '.html'))) tokens.add(token);
+
+  const profile = {
+    collection: extractCollection(html, url),
+    tokens,
+    rankScore: Number(entry.rank_score || 0),
+    title: cleanTitle(entry.title, titleCaseSlug(path.basename(url, '.html'))),
+  };
+  context.nftProfiles.set(url, profile);
+  return profile;
+}
+
+function nftSimilarityScore(context, currentUrl, candidateUrl) {
+  const current = nftProfile(context, currentUrl);
+  const candidate = nftProfile(context, candidateUrl);
+  if (!current.collection || current.collection !== candidate.collection) return -1;
+  let score = 0;
+  for (const token of current.tokens) {
+    if (!candidate.tokens.has(token)) continue;
+    score += ['shadow', 'fury', 'sentinel', 'shifter', 'graffiti', 'kings', 'hodlwars', 'game', 'p2e'].includes(token) ? 4 : 1;
+  }
+  return score;
+}
+
+function rankedNftSiblingLinks(context, currentUrl, candidates) {
+  const ranked = candidates
+    .filter((entry) => entry?.url && entry.url !== currentUrl && isNftTemplateUrl(entry.url))
+    .map((entry) => ({
+      entry,
+      score: nftSimilarityScore(context, currentUrl, entry.url),
+      profile: nftProfile(context, entry.url),
+    }))
+    .filter((item) => item.score >= 0)
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (b.profile.rankScore !== a.profile.rankScore) return b.profile.rankScore - a.profile.rankScore;
+      return a.profile.title.localeCompare(b.profile.title);
+    });
+
+  return ranked
+    .slice(0, TEMPLATE_LIMIT)
+    .map(({ entry, score }) => linkFromEntry(
+      entry,
+      score > 0 ? 'Sibling NFT template with shared collection traits and metadata.' : 'Capped fallback from the same NFT collection.',
+      context.root
+    ));
+}
+
+function dedupeGroups(groups, currentUrl, root = ROOT) {
+  const seen = new Set([currentUrl]);
+  return groups
+    .map((group) => {
+      const links = [];
+      for (const link of group.links || []) {
+        if (!link?.url || seen.has(link.url) || !existsInternal(link.url, root)) continue;
+        seen.add(link.url);
+        links.push(link);
+        if (links.length >= GROUP_LIMIT) break;
+      }
+      return { ...group, links };
+    })
+    .filter((group) => group.links.length);
+}
+
 function makeLink(url, title, description = '', root = ROOT) {
   if (!existsInternal(url, root)) return null;
   return {
@@ -282,20 +392,33 @@ function explicitHintGroups(context, currentUrl) {
   return groups;
 }
 
+function groupKind(title) {
+  if (/^Related Categories$/i.test(title)) return 'categories';
+  if (/^More from /i.test(title) || /^Related NFT Templates$/i.test(title)) return 'nft-siblings';
+  return 'context';
+}
+
 function renderGroup(title, links) {
   if (!links.length) return '';
+  const kind = groupKind(title);
+  const groupClass = `wiki-rabbit-group wiki-rabbit-group--${kind}`;
+  const listClass = kind === 'categories' ? 'wiki-rabbit-chip-grid' : 'wiki-rabbit-grid';
   const items = links.map((link) => {
+    if (kind === 'categories') {
+      return `            <a class="wiki-rabbit-chip" href="${escapeHtml(link.url)}" role="listitem">${escapeHtml(link.title)}</a>`;
+    }
     const desc = link.description
       ? `<span class="wiki-rabbit-card-desc">${escapeHtml(link.description)}</span>`
       : '';
-    return `            <a class="wiki-rabbit-card" href="${escapeHtml(link.url)}" role="listitem">
+    const cardClass = kind === 'nft-siblings' ? 'wiki-rabbit-card wiki-rabbit-card--nft-sibling' : 'wiki-rabbit-card';
+    return `            <a class="${cardClass}" href="${escapeHtml(link.url)}" role="listitem">
               <span class="wiki-rabbit-card-title">${escapeHtml(link.title)}</span>
               ${desc}
             </a>`;
   }).join('\n');
-  return `        <div class="wiki-rabbit-group" data-related-group="${escapeHtml(title)}">
+  return `        <div class="${groupClass}" data-related-group="${escapeHtml(title)}">
           <h3>${escapeHtml(title)}</h3>
-          <div class="wiki-rabbit-grid" role="list">
+          <div class="${listClass}" role="list">
 ${items}
           </div>
         </div>`;
@@ -528,7 +651,7 @@ function buildContext(root) {
     .filter((entry) => /^\/wiki\/gkniftyheads-.+-\d{5,}\.html$/i.test(entry.url || ''))
     .sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
 
-  return { root, entries, byUrl, htmlByUrl, pageKinds, gkniftyTemplates, relationshipHints };
+  return { root, entries, byUrl, htmlByUrl, pageKinds, gkniftyTemplates, relationshipHints, nftProfiles: new Map() };
 }
 
 function knownPage(context, url, title, description = '') {
@@ -596,10 +719,7 @@ function cryptoMoonboysGroups(context, currentUrl) {
 function nftTemplateGroups(context, currentUrl, html) {
   const collection = extractCollection(html, currentUrl);
   const collectionTemplates = collection === 'gkniftyheads' ? context.gkniftyTemplates : [];
-  const relatedFromCollection = collectionTemplates
-    .filter((entry) => entry.url !== currentUrl)
-    .slice(0, TEMPLATE_LIMIT)
-    .map((entry) => linkFromEntry(entry, 'More from this NFT collection.', context.root));
+  const relatedFromCollection = rankedNftSiblingLinks(context, currentUrl, collectionTemplates);
 
   const loreLinks = [];
   const text = html.toLowerCase();
@@ -627,7 +747,7 @@ function nftTemplateGroups(context, currentUrl, html) {
       ], currentUrl, GROUP_LIMIT, context.root),
     },
     { title: 'Character / Faction / Game Links', links: uniqueLinks(loreLinks, currentUrl, GROUP_LIMIT, context.root) },
-    { title: 'More from this collection', links: uniqueLinks(relatedFromCollection, currentUrl, TEMPLATE_LIMIT, context.root) },
+    { title: collection === 'gkniftyheads' ? 'More from GKniftyHEADS' : 'More from this collection', links: uniqueLinks(relatedFromCollection, currentUrl, TEMPLATE_LIMIT, context.root) },
     {
       title: 'Timeline / Graph Links',
       links: uniqueLinks([
@@ -701,6 +821,24 @@ function groupsForPage(context, currentUrl, html, kind) {
     ];
   } else {
     fallbackGroups = genericGroups(context, currentUrl);
+  }
+
+  if (kind.isNftTemplate) {
+    const contextualHintGroups = hintGroups
+      .map((group) => ({
+        ...group,
+        links: group.links.filter((link) => !isNftTemplateUrl(link.url)),
+      }))
+      .filter((group) => group.links.length);
+    const contextualFallback = fallbackGroups
+      .filter((group) => !/^More from /i.test(group.title))
+      .map((group) => ({
+        ...group,
+        links: group.links.filter((link) => !isNftTemplateUrl(link.url)),
+      }))
+      .filter((group) => group.links.length);
+    const siblingGroup = fallbackGroups.find((group) => /^More from /i.test(group.title));
+    return dedupeGroups([...contextualHintGroups, ...contextualFallback, siblingGroup].filter(Boolean), currentUrl, context.root);
   }
 
   if (!hintGroups.length) return fallbackGroups;
