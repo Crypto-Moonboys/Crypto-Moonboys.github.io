@@ -2,7 +2,7 @@ import { GEMS_MAX, GEMS_MIN, TELEGRAM_AUTH_MAX_AGE, XP_MAX, XP_MIN } from './blo
 import { verifyTelegramIdentityFromBody } from './blocktopia/auth.js';
 import { getOrCreateBlockTopiaProgression, hasBlockTopiaFactionColumns } from './blocktopia/db.js';
 import { handleBlockTopiaProgressionRoute } from './blocktopia/routes.js';
-import { handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
+import { buildDailyLoopState, handleDailyLoopStateRoute } from './routes/daily-loop-state.js';
 import { handleRogueliteDailyRoutes } from './routes/daily-digest.js';
 import { handleWaxOnEdgeRoute, runWaxOnEdgeScheduledSync } from './routes/waxonedge.js';
 import { CANONICAL_FACTION_KEYS, FACTION_UNALIGNED, normalizeFaction, getFactionXpMultiplier } from './shared/faction-canon.js';
@@ -6019,16 +6019,16 @@ async function handleTelegramUpdate(update, env) {
     case 'help':         await cmdGkHelp(tok, chatId);                                break;
     case 'gklink':
     case 'link':         await cmdGkLink(db, tok, chatId, telegramId);               break;
-    case 'gkstatus':     await cmdGkStatus(db, tok, chatId, telegramId);             break;
+    case 'gkstatus':     await cmdGkStatus(env, tok, chatId, telegramId, fromUser);  break;
     case 'gkseason':     await cmdGkSeason(db, tok, chatId);                         break;
     case 'gkleaderboard':
     case 'leaderboard':  await cmdGkLeaderboard(db, tok, chatId);                    break;
     case 'gkquests':
-    case 'quest':        await cmdGkQuests(db, tok, chatId, telegramId);             break;
+    case 'quest':        await cmdGkQuests(env, tok, chatId, telegramId, fromUser);  break;
     case 'gkfaction':
-    case 'faction':      await cmdGkFaction(db, tok, chatId, telegramId, argStr);    break;
+    case 'faction':      await cmdGkFaction(env, tok, chatId, telegramId, argStr, fromUser); break;
     case 'gkunlink':     await cmdGkUnlink(db, tok, chatId, telegramId);             break;
-    case 'daily':        await cmdDaily(db, tok, chatId, telegramId);                break;
+    case 'daily':        await cmdDaily(env, tok, chatId, telegramId, fromUser);     break;
     case 'solve':        await cmdSolve(tok, chatId);                                break;
     case 'profile':      await cmdProfile(db, tok, chatId, telegramId);              break;
     // ── Admin-only moderation commands ───────────────────────────────────────
@@ -6200,61 +6200,188 @@ async function cmdGkLink(db, tok, chatId, telegramId) {
   );
 }
 
-async function cmdGkStatus(db, tok, chatId, telegramId) {
-  const [user, faction, season, missedRow] = await Promise.all([
-    db.prepare(
-      `SELECT username, first_name, last_name, xp, level, created_at
-       FROM telegram_users WHERE telegram_id = ?`
-    ).bind(telegramId).first().catch(() => null),
-    getUserFaction(db, telegramId),
-    getCurrentSeason(db),
-    db.prepare(
-      `SELECT COUNT(*) AS total
-       FROM daily_missed_perks
-       WHERE telegram_id = ?`
-    ).bind(telegramId).first().catch(() => ({ total: 0 })),
-  ]);
-
-  if (!user) {
-    await sendTelegramMessage(tok, chatId, '❓ No profile found. Use /gkstart to register.');
-    return;
-  }
-
-  const displayName = escapeHtml(getTelegramDisplayName({ ...user, id: telegramId }));
-  const factionName = faction ? escapeHtml(faction.name) : 'None';
-  const seasonLabel = season ? `S${season.id}` : '?';
-  const missedTotal = Math.max(0, Math.floor(Number(missedRow?.total) || 0));
-  let factionClout = 0;
-  try {
-    const normalizedFaction = normalizeBattleChamberFaction(faction?.id || faction?.name);
-    const bcCheck = await ensureBattleChamberTables(db);
-    if (!bcCheck && normalizedFaction) {
-      const weeklyPeriodKey = await getBattlePeriodKey('weekly', db, Date.now());
-      const cloutRow = await db.prepare(`
-        SELECT clout_total
-        FROM battle_chamber_member_clout
-        WHERE telegram_id = ? AND faction_id = ? AND period_type = 'weekly' AND period_key = ?
-        LIMIT 1
-      `).bind(telegramId, normalizedFaction, weeklyPeriodKey).first().catch(() => null);
-      factionClout = Math.max(0, Math.floor(Number(cloutRow?.clout_total) || 0));
-    }
-  } catch {
-    factionClout = 0;
-  }
-
-  await sendTelegramMessage(tok, chatId,
-    `📊 <b>Your Stats</b>\n\n` +
-    `Name:         ${displayName}\n` +
-    `Faction:      ${factionName}\n` +
-    `Faction clout (weekly): ${factionClout}\n` +
-    `XP:           ${user.xp || 0}\n` +
-    `Level:        ${user.level || 1}\n` +
-    `Season:       ${seasonLabel}\n` +
-    `Missed perks: ${missedTotal}\n` +
-    `Member since: ${(user.created_at || '').slice(0, 10)}`
-  );
+function buildTelegramLoopVerifiedIdentity(telegramId, fromUser = {}) {
+  const id = String(telegramId || fromUser?.id || '').trim();
+  if (!id) return null;
+  return {
+    telegramId: id,
+    user: {
+      id,
+      username: fromUser?.username || null,
+      first_name: fromUser?.first_name || null,
+      last_name: fromUser?.last_name || null,
+    },
+  };
 }
 
+async function buildTelegramCommandDailyLoopState(env, telegramId, fromUser = {}) {
+  const verified = buildTelegramLoopVerifiedIdentity(telegramId, fromUser);
+  return buildDailyLoopState(env, verified ? { verified } : {});
+}
+
+function formatResetCountdown(seconds) {
+  const total = Math.max(0, Math.floor(Number(seconds) || 0));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
+function formatSourceStatusForTelegram(status, emptyCopy = 'no activity yet') {
+  const state = status?.state || 'unavailable';
+  if (state === 'live') return 'synced';
+  if (state === 'live_empty') return emptyCopy;
+  if (state === 'preview') return 'preview/scheduled';
+  if (state === 'migration_pending') return 'migration pending';
+  if (state === 'query_failed') return 'sync unavailable';
+  return 'unavailable';
+}
+
+function formatLoopResetLine(loop) {
+  return `UTC day: ${escapeHtml(loop.utc_day)} | Reset: ${escapeHtml(formatResetCountdown(loop.seconds_until_reset))} (${escapeHtml(loop.next_utc_reset_at)})`;
+}
+
+function formatIdentityLine(loop) {
+  if (!loop.identity?.linked) return 'Identity: public/anonymous state';
+  const profile = loop.identity.profile || loop.identity;
+  const label = profile.username ? `@${profile.username}` : (profile.first_name || profile.telegram_id || 'Telegram user');
+  const xp = Number(profile.xp);
+  const level = Number(profile.level);
+  const progress = Number.isFinite(xp) ? ` | XP ${xp} | Level ${Number.isFinite(level) ? level : 1}` : '';
+  return `Identity: linked ${escapeHtml(label)}${progress}`;
+}
+
+function getLoopFactionLabel(loop) {
+  return loop.faction_state?.label || loop.faction_state?.faction_id || 'Unaligned';
+}
+
+function formatMissionSummary(missions, emptyCopy = 'no missions yet') {
+  const items = Array.isArray(missions?.items) ? missions.items : [];
+  if (!items.length) return emptyCopy;
+  const completed = items.filter((item) => item.completed).length;
+  return `${completed}/${items.length} complete`;
+}
+
+function formatMissionLines(missions, limit = 3) {
+  const items = Array.isArray(missions?.items) ? missions.items.slice(0, limit) : [];
+  if (!items.length) return [];
+  return items.map((item, index) => {
+    const title = item.title || item.mission_id || item.page_id || 'Mission';
+    const progress = item.completed ? 'complete' : `${Math.max(0, Math.floor(Number(item.progress) || 0))} / ?`;
+    return `${index + 1}. ${escapeHtml(title)} - ${escapeHtml(progress)}`;
+  });
+}
+
+function formatWikiMissionSummary(wikiMissions) {
+  const items = Array.isArray(wikiMissions?.items) ? wikiMissions.items : [];
+  if (!items.length) return 'no wiki completions yet';
+  const xp = items.reduce((total, item) => total + Math.max(0, Math.floor(Number(item.xp_awarded) || 0)), 0);
+  return `${items.length} completions${xp ? ` | ${xp} XP recorded` : ''}`;
+}
+
+function formatWikiMissionLines(wikiMissions, limit = 3) {
+  const items = Array.isArray(wikiMissions?.items) ? wikiMissions.items.slice(0, limit) : [];
+  return items.map((item, index) => {
+    const page = item.page_id || 'wiki page';
+    const mission = item.mission_id || 'mission';
+    return `${index + 1}. ${escapeHtml(page)} - ${escapeHtml(mission)}`;
+  });
+}
+
+function formatDailyWtfLine(loop) {
+  const status = loop.source_status?.daily_wtf_status;
+  const sourceCopy = formatSourceStatusForTelegram(status);
+  const event = Array.isArray(loop.daily_wtf_status?.events) ? loop.daily_wtf_status.events[0] : null;
+  if (!event) return `Daily WTF: ${sourceCopy}`;
+  const label = event.title || event.event_id || 'scheduled event';
+  const eventStatus = event.player_status || event.status || 'scheduled';
+  return `Daily WTF: ${sourceCopy} - ${escapeHtml(label)} (${escapeHtml(eventStatus)})`;
+}
+
+function formatMissedOpportunityLine(loop) {
+  const status = loop.source_status?.missed_opportunities;
+  const sourceCopy = formatSourceStatusForTelegram(status, 'no missed opportunities yet');
+  const missed = loop.missed_opportunities || {};
+  return `Missed opportunities: ${Math.max(0, Number(missed.total_today) || 0)} today / ${Math.max(0, Number(missed.total_all_time) || 0)} all-time (${sourceCopy})`;
+}
+
+function formatBattleActivityLine(loop) {
+  const status = loop.source_status?.battle_chamber_activity;
+  const sourceCopy = formatSourceStatusForTelegram(status, 'no Battle Chamber activity yet');
+  const battle = loop.battle_chamber_activity || {};
+  const standings = Array.isArray(battle.standings) ? battle.standings.length : 0;
+  const recent = Array.isArray(battle.recent_activity) ? battle.recent_activity.length : 0;
+  return `Battle Chamber: ${standings} standings / ${recent} recent events (${sourceCopy})`;
+}
+
+function formatDigestLine(loop) {
+  const status = loop.source_status?.telegram_digest_group_status;
+  const sourceCopy = formatSourceStatusForTelegram(status, 'no digest or group announcements yet');
+  const digest = loop.telegram_digest_group_status?.digest;
+  const groupAnnouncements = Array.isArray(loop.telegram_digest_group_status?.group_announcements)
+    ? loop.telegram_digest_group_status.group_announcements.length
+    : 0;
+  return `Digest/group: digest ${escapeHtml(digest?.status || 'not sent')} / ${groupAnnouncements} announcements (${sourceCopy})`;
+}
+
+function formatDailyLoopSourceSummary(loop, keys) {
+  const pieces = [];
+  for (const key of keys) {
+    const status = loop.source_status?.[key];
+    const copy = formatSourceStatusForTelegram(status);
+    if (copy !== 'synced') pieces.push(`${key}: ${copy}`);
+  }
+  return pieces.length ? `Source truth: ${escapeHtml(pieces.join('; '))}` : 'Source truth: synced';
+}
+
+function formatNextBestAction(loop) {
+  if (!loop.identity?.linked) return 'Next: run /gklink for linked personal progress.';
+  const missions = Array.isArray(loop.daily_missions?.items) ? loop.daily_missions.items : [];
+  const openMission = missions.find((item) => !item.completed);
+  if (openMission) return `Next: finish ${escapeHtml(openMission.title || openMission.mission_id || 'a daily mission')}.`;
+  if (!loop.faction_state?.faction_id || loop.faction_state.faction_id === FACTION_UNALIGNED) return 'Next: choose a faction in the Battle Chamber.';
+  return 'Next: check Battle Chamber or Arcade before UTC reset.';
+}
+
+function formatDailyLoopReadout(loop) {
+  const missionStatus = formatSourceStatusForTelegram(loop.source_status?.daily_missions, 'no missions yet');
+  return [
+    '<b>Daily Loop</b>',
+    formatLoopResetLine(loop),
+    `Faction: ${escapeHtml(getLoopFactionLabel(loop))}`,
+    `Daily missions: ${escapeHtml(formatMissionSummary(loop.daily_missions))} (${missionStatus})`,
+    formatDailyWtfLine(loop),
+    formatMissedOpportunityLine(loop),
+    formatNextBestAction(loop),
+    formatDailyLoopSourceSummary(loop, [
+      'daily_missions',
+      'daily_wtf_status',
+      'missed_opportunities',
+      'arcade_daily_state',
+      'telegram_digest_group_status',
+    ]),
+  ].join('\n');
+}
+
+async function cmdGkStatus(env, tok, chatId, telegramId, fromUser) {
+  const loop = await buildTelegramCommandDailyLoopState(env, telegramId, fromUser);
+  await sendTelegramMessage(tok, chatId,
+    `<b>GK Status</b>\n\n` +
+    `${formatIdentityLine(loop)}\n` +
+    `SAM: ${escapeHtml(loop.sam_status?.message || 'SAM status unavailable')}\n` +
+    `Faction: ${escapeHtml(getLoopFactionLabel(loop))}\n` +
+    `${formatBattleActivityLine(loop)}\n` +
+    `${formatDigestLine(loop)}\n` +
+    `${formatLoopResetLine(loop)}\n` +
+    `${formatDailyLoopSourceSummary(loop, [
+      'identity',
+      'faction_state',
+      'battle_chamber_activity',
+      'daily_wtf_status',
+      'telegram_digest_group_status',
+    ])}`
+  );
+}
 async function cmdGkSeason(db, tok, chatId) {
   const season = await getCurrentSeason(db).catch(() => null);
   if (!season) {
@@ -6317,68 +6444,27 @@ async function cmdGkLeaderboard(db, tok, chatId) {
   );
 }
 
-async function cmdGkQuests(db, tok, chatId, telegramId) {
-  const now  = new Date().toISOString();
-  const [rows, faction, missionRows, missedRow] = await Promise.all([
-    db.prepare(
-    `SELECT id, title, description, xp_reward
-     FROM telegram_quests
-     WHERE is_active = 1
-       AND (start_date IS NULL OR start_date <= ?)
-       AND (end_date IS NULL OR end_date >= ?)
-     ORDER BY created_at DESC
-      LIMIT 5`
-    ).bind(now, now).all().catch(() => ({ results: [] })),
-    getUserFaction(db, telegramId).catch(() => null),
-    db.prepare(`
-      SELECT mission_id, progress, completed
-      FROM player_daily_mission_state
-      WHERE telegram_id = ? AND mission_date = ?
-      ORDER BY mission_id ASC
-      LIMIT 3
-    `).bind(telegramId, getTodayUtcDate()).all().catch(() => ({ results: [] })),
-    db.prepare(`
-      SELECT COUNT(*) AS total
-      FROM daily_missed_perks
-      WHERE telegram_id = ?
-    `).bind(telegramId).first().catch(() => ({ total: 0 })),
-  ]);
-
-  const quests = rows.results || [];
-  const missionDigest = (missionRows?.results || []).map((row, idx) =>
-    `${idx + 1}. ${formatMissionIdLabel(row.mission_id)} — ${(Number(row.completed) === 1) ? 'complete' : `${Math.max(0, Math.floor(Number(row.progress) || 0))} / ?`}`
-  );
-  const missedTotal = Math.max(0, Math.floor(Number(missedRow?.total) || 0));
-  const factionLabel = faction?.name ? escapeHtml(faction.name) : 'Unaligned';
-  if (!quests.length) {
-    await sendTelegramMessage(tok, chatId,
-      `🔍 No active missions right now. Check back soon!\n\n` +
-      `<b>Battle Chamber daily missions</b>\n` +
-      `${missionDigest.length ? missionDigest.map((line) => escapeHtml(line)).join('\n') : 'No synced faction mission progress yet.'}\n\n` +
-      `Faction: ${factionLabel}\n` +
-      `Missed perks history count: ${missedTotal}\n` +
-      `Open Battle Chamber: ${SITE_URL}/community.html`
-    );
-    return;
-  }
-
-  const lines = quests.map(q =>
-    `📜 <b>${escapeHtml(q.title)}</b> — ${q.xp_reward} XP\n` +
-    `   ${escapeHtml(q.description || '')}`
-  ).join('\n\n');
+async function cmdGkQuests(env, tok, chatId, telegramId, fromUser) {
+  const loop = await buildTelegramCommandDailyLoopState(env, telegramId, fromUser);
+  const dailyLines = formatMissionLines(loop.daily_missions);
+  const wikiLines = formatWikiMissionLines(loop.wiki_missions);
+  const dailySource = formatSourceStatusForTelegram(loop.source_status?.daily_missions, 'no missions yet');
+  const wikiSource = formatSourceStatusForTelegram(loop.source_status?.wiki_missions, 'no wiki completions yet');
 
   await sendTelegramMessage(tok, chatId,
-    `🗺️ <b>Active Missions</b>\n\n${lines}\n\n` +
-    `<b>Battle Chamber daily missions</b>\n` +
-    `${missionDigest.length ? missionDigest.map((line) => escapeHtml(line)).join('\n') : 'No synced faction mission progress yet.'}\n\n` +
-    `Faction: ${factionLabel}\n` +
-    `Missed perks history count: ${missedTotal}\n` +
+    `<b>GK Quests</b>\n\n` +
+    `${formatLoopResetLine(loop)}\n` +
+    `Daily missions: ${escapeHtml(formatMissionSummary(loop.daily_missions))} (${dailySource})\n` +
+    `${dailyLines.length ? `${dailyLines.join('\n')}\n` : 'No daily mission rows yet.\n'}` +
+    `\nWiki missions: ${escapeHtml(formatWikiMissionSummary(loop.wiki_missions))} (${wikiSource})\n` +
+    `${wikiLines.length ? `${wikiLines.join('\n')}\n` : 'No wiki mission completions yet.\n'}` +
+    `\n${formatDailyLoopSourceSummary(loop, ['daily_missions', 'wiki_missions'])}\n` +
     `Battle Chamber: ${SITE_URL}/community.html\n` +
     `Arcade: ${SITE_URL}/games/index.html`
   );
 }
-
-async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
+async function cmdGkFaction(env, tok, chatId, telegramId, argStr, fromUser) {
+  const db = env.DB;
   // Anti-cheat gate: blocked accounts cannot perform competitive actions.
   try {
     const acState = await db.prepare(
@@ -6386,7 +6472,7 @@ async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
     ).bind(telegramId).first();
     if (acState && acState.is_blocked === 1) {
       await sendTelegramMessage(tok, chatId,
-        `🚫 Your account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.`
+        `Your account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.`
       );
       return;
     }
@@ -6397,52 +6483,39 @@ async function cmdGkFaction(db, tok, chatId, telegramId, argStr) {
     });
   }
 
+  const loop = await buildTelegramCommandDailyLoopState(env, telegramId, fromUser);
+  const faction = loop.faction_state || {};
+  const factionId = faction.faction_id || FACTION_UNALIGNED;
+  const todayContribution = Math.max(0, Math.floor(Number(faction.today?.[factionId]) || 0));
+  const weekContribution = Math.max(0, Math.floor(Number(faction.week?.[factionId]) || 0));
+  const factionSource = formatSourceStatusForTelegram(loop.source_status?.faction_state, 'no faction or signal yet');
   const battleChamberUrl = `${SITE_URL}/community.html#battle-join-faction`;
   const replyMarkup = {
     inline_keyboard: [
       [
-        { text: '⚔️ Open Battle Chamber', web_app: { url: battleChamberUrl } },
+        { text: 'Open Battle Chamber', web_app: { url: battleChamberUrl } },
       ],
       [
-        { text: '🌐 Open in Browser', url: battleChamberUrl },
+        { text: 'Open in Browser', url: battleChamberUrl },
       ],
     ],
   };
 
-  const [current, missedRow] = await Promise.all([
-    getUserFaction(db, telegramId),
-    db.prepare(`
-      SELECT COUNT(*) AS total
-      FROM daily_missed_perks
-      WHERE telegram_id = ?
-    `).bind(telegramId).first().catch(() => ({ total: 0 })),
-  ]);
-  const missedTotal = Math.max(0, Math.floor(Number(missedRow?.total) || 0));
-
-  if (current) {
-    await sendTelegramMessage(tok, chatId,
-      `⚔️ <b>Faction Status</b>\n\n` +
-      `Your faction: <b>${escapeHtml(current.name)}</b>\n\n` +
-      `You are locked to this faction for the current season.\n` +
-      `At season reset, your faction lock clears and you can choose a new side.\n\n` +
-      `Missed perks history count: ${missedTotal}\n\n` +
-      `View faction activity and missions in the Battle Chamber:`,
-      { reply_markup: replyMarkup },
-    );
-  } else {
-    await sendTelegramMessage(tok, chatId,
-      `⚔️ <b>Faction</b>\n\n` +
-      `You haven't joined a faction yet.\n\n` +
-      `If you're ready, choose your faction in the Battle Chamber. ` +
-      `Your choice locks for the current season, then resets when the next season starts.\n\n` +
-      `Faction clout only counts when you are Telegram-linked.\n` +
-      `No faction, no faction clout.\n\n` +
-      `Missed perks history count: ${missedTotal}`,
-      { reply_markup: replyMarkup },
-    );
-  }
+  await sendTelegramMessage(tok, chatId,
+    `<b>Faction Status</b>\n\n` +
+    `Faction: ${escapeHtml(getLoopFactionLabel(loop))}\n` +
+    `Faction id: ${escapeHtml(factionId)}\n` +
+    `Daily contribution: ${todayContribution}\n` +
+    `Weekly contribution: ${weekContribution}\n` +
+    `Source: ${factionSource}\n` +
+    `${formatMissedOpportunityLine(loop)}\n` +
+    `${formatLoopResetLine(loop)}\n\n` +
+    `Your choice locks for the current season.\n` +
+    `No faction, no faction clout.\n\n` +
+    `View faction activity and missions in the Battle Chamber:`,
+    { reply_markup: replyMarkup },
+  );
 }
-
 async function cmdGkUnlink(db, tok, chatId, telegramId) {
   try {
     await db.prepare(
@@ -6459,8 +6532,10 @@ async function cmdGkUnlink(db, tok, chatId, telegramId) {
   }
 }
 
-async function cmdDaily(db, tok, chatId, telegramId) {
-  const today = getTodayUtcDate();
+async function cmdDaily(env, tok, chatId, telegramId, fromUser) {
+  const db = env.DB;
+  const loop = await buildTelegramCommandDailyLoopState(env, telegramId, fromUser);
+  const today = loop.utc_day || getTodayUtcDate();
 
   // Anti-cheat gate: blocked accounts cannot claim XP.
   try {
@@ -6469,7 +6544,7 @@ async function cmdDaily(db, tok, chatId, telegramId) {
     ).bind(telegramId).first();
     if (acState && acState.is_blocked === 1) {
       await sendTelegramMessage(tok, chatId,
-        `🚫 Your account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.`
+        `Your account is blocked from competitive actions. Contact the Moonboys community on Telegram to appeal.`
       );
       return;
     }
@@ -6483,7 +6558,8 @@ async function cmdDaily(db, tok, chatId, telegramId) {
   // Check if already claimed today using telegram_xp_log
   if (await hasDailyClaimToday(db, telegramId).catch(() => false)) {
     await sendTelegramMessage(tok, chatId,
-      `⏳ You already claimed your daily XP today (UTC: ${today}).\nCome back tomorrow!`
+      `You already claimed your daily XP today (UTC: ${escapeHtml(today)}).\nCome back tomorrow!\n\n` +
+      formatDailyLoopReadout(loop)
     );
     return;
   }
@@ -6504,10 +6580,10 @@ async function cmdDaily(db, tok, chatId, telegramId) {
   });
 
   await sendTelegramMessage(tok, chatId,
-    `✅ Daily XP claimed! +${XP_DAILY_CLAIM} XP\n\nSee you tomorrow, moonboy. 🚀`
+    `Daily XP claimed! +${XP_DAILY_CLAIM} XP\n\n` +
+    formatDailyLoopReadout(loop)
   );
 }
-
 /**
  * /solve — disabled until a server-side answer system exists.
  * The real telegram_quests table has no answer_hash column, so automated
