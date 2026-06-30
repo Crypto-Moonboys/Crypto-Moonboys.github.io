@@ -247,10 +247,6 @@ for (const rel of SHELL_PAGES) {
 console.log('\n[5] Named live pages include live-activity-summary.js and daily-loop singleton');
 const LIVE_PAGES = [
   'index.html',
-  'sam.html',
-  'graph.html',
-  'search.html',
-  'timeline.html',
   'games/leaderboard.html',
 ];
 for (const rel of LIVE_PAGES) {
@@ -274,12 +270,11 @@ for (const rel of LIVE_PAGES) {
   }
 }
 
-// 6. Right-panel trigger: named live pages must have page-has-right-panel class
+// 6. Right-panel trigger: named live/action pages must have page-has-right-panel class
 //    OR be in the canonical allowlist in site-shell.js
-console.log('\n[6] Right-panel trigger present on named live pages');
+console.log('\n[6] Right-panel trigger present on named live/action pages');
 const RIGHT_PANEL_ALLOWLIST = [
-  '/index.html', '/sam.html', '/graph.html', '/search.html', '/timeline.html',
-  '/community.html', '/how-to-play.html',
+  '/index.html', '/community.html', '/how-to-play.html',
   '/games/', '/games/index.html', '/games/leaderboard.html',
 ];
 for (const rel of LIVE_PAGES) {
