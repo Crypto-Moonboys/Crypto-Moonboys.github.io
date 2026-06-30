@@ -21,6 +21,7 @@ const GLOBAL_SCRIPTS = new Set([
   '/js/identity-gate.js',
   '/js/components/ui-status-copy.js',
   '/js/core/moonboys-state.js',
+  '/js/core/daily-loop-state.js',
   '/js/core/moonboys-debug-panel.js',
   '/js/site-shell.js',
   '/js/components/connection-status-panel.js',
@@ -47,12 +48,14 @@ const CANONICAL_BOOT = `\
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
 <!-- 4. State -->
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<!-- 5. Shell + shared components -->
+<!-- 5. Daily loop singleton -->
+<script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
+<!-- 6. Shell + shared components -->
 <script data-cfasync="false" src="/js/site-shell.js"></script>
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 6. Page-specific scripts -->`;
+<!-- 7. Page-specific scripts -->`;
 
 /* ── Files to process ──────────────────────────────────────────── */
 function collectFiles() {

@@ -1,6 +1,5 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<!-- SAM:BEGIN:head -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,7 +24,6 @@
     .battle-page-media img { display: block; width: 100%; max-height: min(70vh, 760px); object-fit: contain; border-radius: 14px; }
   </style>
 </head>
-<!-- SAM:END:head -->
 <body class="page-wiki page-has-right-panel" data-entity-hash="nft-gkniftyheads-scribe-serpent-783260">
 <main id="content" role="main">
 <!-- SAM:BEGIN:article -->
@@ -97,16 +95,27 @@
 <!-- SAM:END:article -->
 </main>
 
-<!-- CANONICAL SCRIPT BOOT -->
-<!-- SAM:BEGIN:scripts -->
+<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
+<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
+<!-- so placeholder nodes are never injected into the boot sequence.    -->
+<!-- 1. Core config -->
 <script data-cfasync="false" src="/js/api-config.js"></script>
+<!-- 2. Event bus -->
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+<!-- 3. Identity -->
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
+<!-- 4. State -->
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+<!-- 5. Daily loop singleton -->
+<script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
+<!-- 6. Shell + shared components -->
 <script data-cfasync="false" src="/js/site-shell.js"></script>
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+<!-- 7. Page-specific scripts -->
+
+<script type="application/json" class="nft-search-terms" data-search-boost="nft">["Scribe Serpent 👑👈", "Scribe Serpent", "783260", "template 783260", "template id 783260", "gkniftyheads", "NFTs", "WAX NFTs", "Description", "$ay hello to GKniftyHEADS member Scribe Serpent 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE \u003c\u003c\u003c\u003e\u003e\u003e each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲", "Description $ay hello to GKniftyHEADS member Scribe Serpent 👑👈 a #GraffitiKings Play2Earn ArT Collectable 👑🕹️💲 Collect 40 cards/gang members in this variation/gang, there are 40 gangs with 40 members 👑🕹️💲 THE GK 40/40 #HODLWARRIORS ARE HERE \u003c\u003c\u003c\u003e\u003e\u003e each one a P2E HODL WARRIOR gaming card with their own game power, more details on the site link below... you can find more of the GK #HODLWARRIOR factions over @ https://neftyblocks.com/collection/graffk1ngsuk/blends 👑🕹️💲 Join our #GraffPUNKS Play2Earn IncubatorHUB over on Telegram 👑🕹️💲 Play our NFT game #GraffPUNKS MiDeViL HERO ARENA on WAX for FREE 👑🕹️💲", "#WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈", "GKniftyHEADS #WEDONTSELLOUTWESELLUP THATS #GETTINUP IN @boneidolink WE TRUST 👑👈", "id", "511", "id 511", "name", "name Scribe Serpent 👑👈", "rarity", "Shadow Streaker", "rarity Shadow Streaker", "variation", "#HODLWARS", "variation #HODLWARS", "website", "https://medium.com/@GKniftyHEADS", "website https://medium.com/@GKniftyHEADS"]</script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
 <script data-cfasync="false" src="/js/bible-loader.js"></script>
@@ -161,6 +170,5 @@
   });
 }());
 </script>
-<!-- SAM:END:scripts -->
 </body>
 </html>

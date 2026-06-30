@@ -22,7 +22,6 @@
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="page-waxonedge page-standard-shell woe-wide-mode woe-scanner-page woe-antbubbles-page">
-
 <main id="content" role="main">
   <div class="woe-page woe-ab-shell" id="woe-home">
     <header class="woe-og-bar woe-terminal-header woe-ab-topbar">
@@ -59,7 +58,27 @@
   </div>
 </main>
 
+<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
+<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
+<!-- so placeholder nodes are never injected into the boot sequence.    -->
+<!-- 1. Core config -->
 <script data-cfasync="false" src="/js/api-config.js"></script>
+<!-- 2. Event bus -->
+<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
+<!-- 3. Identity -->
+<script data-cfasync="false" src="/js/identity-gate.js"></script>
+<!-- 4. State -->
+<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
+<!-- 5. Daily loop singleton -->
+<script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
+<!-- 6. Shell + shared components -->
+<script data-cfasync="false" src="/js/site-shell.js"></script>
+<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
+<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
+<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
+<!-- 7. Page-specific scripts -->
+
+<script data-cfasync="false" src="/js/wiki.js"></script>
 <script data-cfasync="false">
 (function () {
   'use strict';
@@ -99,15 +118,7 @@
   }
 }());
 </script>
-<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<script data-cfasync="false" src="/js/identity-gate.js"></script>
-<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<script data-cfasync="false" src="/js/site-shell.js"></script>
-<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
-<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
-<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
 <script data-cfasync="false" src="/js/waxonedge-featured-tokens.js?v=woe-20260616-featured"></script>
 <script data-cfasync="false" src="/js/waxonedge-bubbles-v2.js?v=woe-20260621-priced-bootstrap-v1"></script>
-
 </body>
 </html>
