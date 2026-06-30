@@ -1,0 +1,21 @@
+{
+  "feed_id": "waxcash_analytics",
+  "page_paths": [
+    "/waxcash.html"
+  ],
+  "output_files": [
+    "data/waxcash_analytics/waxcash-analytics.json",
+    "data/waxcash_analytics/sync-status.json"
+  ],
+  "status": "error",
+  "stale": true,
+  "stale_after_hours": 30,
+  "checked_at": "2026-06-30T23:53:04.708Z",
+  "last_successful_update": null,
+  "last_error": "fetch failed",
+  "fallback_behavior": "preserve previous analytics JSON and show stale/error status if Worker data is unavailable",
+  "notes": [
+    "Uses the existing /api/waxonedge/waxcash-analytics page contract.",
+    "Previous analytics JSON preserved if present."
+  ]
+}

@@ -3082,6 +3082,30 @@ body.score-updated .lb-row.selected {
   display: none !important;
 }
 
+.feed-status-badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  border: 1px solid rgba(112, 240, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(5, 14, 24, 0.78);
+  color: rgba(230, 252, 255, 0.86);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  margin: 8px 0;
+  padding: 6px 10px;
+}
+
+.feed-status-badge.is-stale {
+  border-color: rgba(255, 218, 108, 0.52);
+  color: #ffeaa0;
+}
+
+.feed-status-badge.is-error {
+  border-color: rgba(255, 96, 120, 0.6);
+  color: #ffd3da;
+}
+
 @media (max-width: 720px) {
   .gk-rarity-filters button {
     flex: 1 1 auto;

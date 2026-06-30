@@ -1,0 +1,23 @@
+{
+  "feed_id": "wuffi_token_analytics",
+  "page_paths": [
+    "/wiki/wuffi.html"
+  ],
+  "output_files": [
+    "data/wuffi_token_analytics/token-page.json",
+    "data/wuffi_token_analytics/pairs-liquidity.json",
+    "data/wuffi_token_analytics/pairs-volume24.json",
+    "data/wuffi_token_analytics/sync-status.json"
+  ],
+  "status": "error",
+  "stale": true,
+  "stale_after_hours": 30,
+  "checked_at": "2026-06-30T23:53:04.714Z",
+  "last_successful_update": null,
+  "last_error": "token_page: fetch failed; pairs_liquidity: fetch failed; pairs_volume24: fetch failed",
+  "fallback_behavior": "preserve previous token analytics JSON and show stale/error status if Worker or chart data is unavailable",
+  "notes": [
+    "Uses existing WUFFI token analytics Worker contract; chart candles remain direct Alcor runtime data.",
+    "Previous WUFFI analytics JSON preserved for failed endpoints."
+  ]
+}
