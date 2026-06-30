@@ -196,8 +196,8 @@ check(opsBlock.includes('csp-ops-label">Battle</span>') && opsBlock.includes("va
 check(wtfSectionBlock.includes('Ready</a>') && wtfSectionBlock.includes('Play</a>') && wtfSectionBlock.includes('Open</a>') && !wtfSectionBlock.includes('Get Ready') && !wtfSectionBlock.includes('Play Arcade') && !wtfSectionBlock.includes('Open Arcade'), 'Daily WTF action labels are compact (Ready/Play/Open)');
 check(missedSectionBlock.includes('csp-live-row-val csp-live-row-val--warn') && csp.includes('#homepage-right-panel .csp-live-row-val{') && csp.includes('white-space:nowrap'), 'Missed values use right-rail nowrap styling so numbers cannot stack vertically');
 check(
-  retroTheme.includes('body.page-home #main-wrapper,') &&
-  retroTheme.includes('body.page-home #content {') &&
+  retroTheme.includes('body.page-home.page-standard-shell #main-wrapper,') &&
+  retroTheme.includes('body.page-home.page-standard-shell #content {') &&
   !/\/\* Homepage mobile\/tablet content centering \+ overflow guard \*\/[\s\S]*?@media \(max-width: 900px\)\s*\{[\s\S]*?overflow-x:\s*(?:clip|hidden)\s*!important;/u.test(retroTheme),
   'retro theme uses structural homepage mobile centering constraints instead of overflow clipping guards'
 );
