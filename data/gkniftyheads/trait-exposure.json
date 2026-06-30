@@ -1,0 +1,182 @@
+{
+  "collection": "gkniftyheads",
+  "generated_at": "2026-06-30T23:31:19.301Z",
+  "live_data_status": "issued-supply fallback",
+  "rarity_traits": [
+    {
+      "trait": "ROCKIN HOR$£ $HIT",
+      "template_count": 1,
+      "exposure_supply": 1,
+      "template_ids": [
+        776005
+      ]
+    },
+    {
+      "trait": "ROCKIN HORSE INFINITY SHIT ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 1,
+      "template_ids": [
+        776099
+      ]
+    },
+    {
+      "trait": "ROCKIN HORSE INFINITY 👑",
+      "template_count": 2,
+      "exposure_supply": 2,
+      "template_ids": [
+        776003,
+        776100
+      ]
+    },
+    {
+      "trait": "ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️",
+      "template_count": 4,
+      "exposure_supply": 4,
+      "template_ids": [
+        776002,
+        776101,
+        776102,
+        776103
+      ]
+    },
+    {
+      "trait": "✨ ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️",
+      "template_count": 3,
+      "exposure_supply": 9,
+      "template_ids": [
+        776007,
+        776055,
+        776057
+      ]
+    },
+    {
+      "trait": "👉 LONDONZ WHITE TRASH 👑👈",
+      "template_count": 3,
+      "exposure_supply": 9,
+      "template_ids": [
+        776000,
+        776001,
+        776065
+      ]
+    },
+    {
+      "trait": "💊 ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 12,
+      "template_ids": [
+        776004
+      ]
+    },
+    {
+      "trait": "LONDONZ WHITE TRASH 👑👈",
+      "template_count": 2,
+      "exposure_supply": 16,
+      "template_ids": [
+        775999,
+        776066
+      ]
+    },
+    {
+      "trait": "LONDONZ WHITE TRASH",
+      "template_count": 2,
+      "exposure_supply": 19,
+      "template_ids": [
+        775997,
+        776063
+      ]
+    },
+    {
+      "trait": "ROCKIN HORSE INFINITY SHIT",
+      "template_count": 1,
+      "exposure_supply": 20,
+      "template_ids": [
+        773225
+      ]
+    }
+  ],
+  "variation_traits": [
+    {
+      "trait": "👑 GKniftyHEADS ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 1,
+      "template_ids": [
+        776003
+      ]
+    },
+    {
+      "trait": "🚀 GKniftyHEADS ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 1,
+      "template_ids": [
+        776005
+      ]
+    },
+    {
+      "trait": "GKniftyHEADS ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 1,
+      "template_ids": [
+        776002
+      ]
+    },
+    {
+      "trait": "✨ GKniftyHEADS ⚡️⚡️⚡️",
+      "template_count": 3,
+      "exposure_supply": 9,
+      "template_ids": [
+        776007,
+        776055,
+        776057
+      ]
+    },
+    {
+      "trait": "💊 GKniftyHEADS ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 12,
+      "template_ids": [
+        776004
+      ]
+    },
+    {
+      "trait": "👉 VANDALS ⚡️⚡️⚡️",
+      "template_count": 7,
+      "exposure_supply": 13,
+      "template_ids": [
+        776000,
+        776001,
+        776065,
+        776099,
+        776101,
+        776102,
+        776103
+      ]
+    },
+    {
+      "trait": "VANDALS ⚡️⚡️⚡️",
+      "template_count": 3,
+      "exposure_supply": 17,
+      "template_ids": [
+        775999,
+        776066,
+        776100
+      ]
+    },
+    {
+      "trait": "VANDALS",
+      "template_count": 2,
+      "exposure_supply": 19,
+      "template_ids": [
+        775997,
+        776063
+      ]
+    },
+    {
+      "trait": "GKniftyHEADS",
+      "template_count": 1,
+      "exposure_supply": 20,
+      "template_ids": [
+        773225
+      ]
+    }
+  ]
+}

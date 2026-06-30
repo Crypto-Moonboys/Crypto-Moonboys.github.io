@@ -2977,3 +2977,113 @@ body.score-updated .lb-row.selected {
   .tg-sync-cta { flex-direction: column; }
   .tg-sync-cta-btn { align-self: flex-start; }
 }
+
+.gk-rarity-ranking {
+  display: grid;
+  gap: 18px;
+}
+
+.gk-rarity-method,
+.gk-rarity-status,
+.gk-rarity-source-note {
+  border-color: rgba(98, 248, 255, 0.26);
+  background: linear-gradient(135deg, rgba(12, 27, 42, 0.9), rgba(13, 17, 31, 0.86));
+}
+
+.gk-rarity-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gk-rarity-filters button {
+  min-height: 34px;
+  border: 1px solid rgba(108, 240, 255, 0.34);
+  border-radius: 999px;
+  background: rgba(8, 18, 30, 0.82);
+  color: var(--color-text, #e9fbff);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  letter-spacing: 0;
+  padding: 7px 12px;
+}
+
+.gk-rarity-filters button:hover,
+.gk-rarity-filters button:focus-visible,
+.gk-rarity-filters button.is-active {
+  border-color: rgba(255, 234, 128, 0.7);
+  background: rgba(255, 234, 128, 0.14);
+  color: #fff8c8;
+}
+
+.gk-rarity-table-wrap,
+.gk-rarity-ranking .wiki-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.gk-rarity-table,
+.gk-rarity-side-table {
+  min-width: 980px;
+}
+
+.gk-rarity-table th,
+.gk-rarity-table td,
+.gk-rarity-side-table th,
+.gk-rarity-side-table td {
+  vertical-align: top;
+}
+
+.rarity-band {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(112, 240, 255, 0.26);
+  border-radius: 999px;
+  color: #eafcff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 5px 8px;
+  white-space: nowrap;
+}
+
+.rarity-band--legendary {
+  border-color: rgba(255, 218, 108, 0.76);
+  background: rgba(255, 196, 72, 0.18);
+  color: #ffeaa0;
+}
+
+.rarity-band--ultra-rare {
+  border-color: rgba(213, 141, 255, 0.66);
+  background: rgba(171, 91, 255, 0.16);
+  color: #efd7ff;
+}
+
+.rarity-band--rare {
+  border-color: rgba(99, 201, 255, 0.62);
+  background: rgba(64, 169, 255, 0.14);
+  color: #d8f4ff;
+}
+
+.rarity-band--uncommon {
+  border-color: rgba(91, 255, 181, 0.52);
+  background: rgba(76, 220, 158, 0.12);
+  color: #dcffe9;
+}
+
+.rarity-band--common {
+  border-color: rgba(180, 194, 212, 0.36);
+  background: rgba(146, 161, 180, 0.12);
+  color: #edf4ff;
+}
+
+.gk-rarity-raw-fallback[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 720px) {
+  .gk-rarity-filters button {
+    flex: 1 1 auto;
+  }
+}
