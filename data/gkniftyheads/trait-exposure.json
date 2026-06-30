@@ -1,16 +1,8 @@
 {
   "collection": "gkniftyheads",
-  "generated_at": "2026-06-30T23:31:19.301Z",
+  "generated_at": "2026-06-30T23:41:29.795Z",
   "live_data_status": "issued-supply fallback",
   "rarity_traits": [
-    {
-      "trait": "ROCKIN HOR$£ $HIT",
-      "template_count": 1,
-      "exposure_supply": 1,
-      "template_ids": [
-        776005
-      ]
-    },
     {
       "trait": "ROCKIN HORSE INFINITY SHIT ⚡️⚡️⚡️",
       "template_count": 1,
@@ -20,23 +12,659 @@
       ]
     },
     {
-      "trait": "ROCKIN HORSE INFINITY 👑",
-      "template_count": 2,
-      "exposure_supply": 2,
+      "trait": "Corner Ruffian 🌈",
+      "template_count": 1,
+      "exposure_supply": 4,
       "template_ids": [
-        776003,
-        776100
+        783375
       ]
     },
     {
-      "trait": "ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️",
-      "template_count": 4,
+      "trait": "Cryptocurrency Connoisseur ☠️",
+      "template_count": 1,
       "exposure_supply": 4,
       "template_ids": [
-        776002,
-        776101,
-        776102,
-        776103
+        783432
+      ]
+    },
+    {
+      "trait": "Diamond Doyennes 🌈",
+      "template_count": 1,
+      "exposure_supply": 4,
+      "template_ids": [
+        783411
+      ]
+    },
+    {
+      "trait": "Fiat Fighter ☠️",
+      "template_count": 1,
+      "exposure_supply": 4,
+      "template_ids": [
+        783447
+      ]
+    },
+    {
+      "trait": "Liquidity Lord 👈",
+      "template_count": 1,
+      "exposure_supply": 4,
+      "template_ids": [
+        783444
+      ]
+    },
+    {
+      "trait": "Mempool Maestro ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 4,
+      "template_ids": [
+        783442
+      ]
+    },
+    {
+      "trait": "Small Fry 👈",
+      "template_count": 1,
+      "exposure_supply": 4,
+      "template_ids": [
+        783377
+      ]
+    },
+    {
+      "trait": "Virtual Vixen 🌈",
+      "template_count": 1,
+      "exposure_supply": 4,
+      "template_ids": [
+        783412
+      ]
+    },
+    {
+      "trait": "⚡️⚡️⚡️ Bitcoin Batboy ☠️",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        784266
+      ]
+    },
+    {
+      "trait": "⚡️⚡️⚡️ Ethereal Seraphim ☠️",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        784269
+      ]
+    },
+    {
+      "trait": "⚡️⚡️⚡️ Fantom Fighter ☠️",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        784284
+      ]
+    },
+    {
+      "trait": "👑 Syndicate Enforcer 🌈",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783384
+      ]
+    },
+    {
+      "trait": "💋 Emerald Empyreans",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783401
+      ]
+    },
+    {
+      "trait": "💋 Topaz Tyrants",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783399
+      ]
+    },
+    {
+      "trait": "Amber Archangels 🌈",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783398
+      ]
+    },
+    {
+      "trait": "Atomic Swap 🌈",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783448
+      ]
+    },
+    {
+      "trait": "Bitcoin Baron ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783457
+      ]
+    },
+    {
+      "trait": "Bitmaster 👈",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783454
+      ]
+    },
+    {
+      "trait": "Block Enforcer ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783373
+      ]
+    },
+    {
+      "trait": "Chainlink Connoisseur 🌈",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783451
+      ]
+    },
+    {
+      "trait": "Crypto Guru 🌈",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783445
+      ]
+    },
+    {
+      "trait": "Garnet Grandmasters ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783405
+      ]
+    },
+    {
+      "trait": "Inked Icon 👑👈",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783255
+      ]
+    },
+    {
+      "trait": "Legendary Tough Guy 🌈",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783389
+      ]
+    },
+    {
+      "trait": "Low-Level Goon",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783372
+      ]
+    },
+    {
+      "trait": "Mob Lieutenant ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783385
+      ]
+    },
+    {
+      "trait": "NFT Ninja 👈",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783413
+      ]
+    },
+    {
+      "trait": "Roughneck 👀",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783379
+      ]
+    },
+    {
+      "trait": "Ruby Ravagers🌈",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783404
+      ]
+    },
+    {
+      "trait": "Sapphire Seraphim 🌈",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783410
+      ]
+    },
+    {
+      "trait": "Sharding Siren 👈",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783433
+      ]
+    },
+    {
+      "trait": "Small-Time Crook",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783371
+      ]
+    },
+    {
+      "trait": "Street Punk 🌈",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783376
+      ]
+    },
+    {
+      "trait": "Street Punk⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783374
+      ]
+    },
+    {
+      "trait": "Token Titan ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783459
+      ]
+    },
+    {
+      "trait": "Vandal Virtuoso",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        783250
+      ]
+    },
+    {
+      "trait": "⚡️⚡️⚡️ Fantom-Flare ☠️",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        784280
+      ]
+    },
+    {
+      "trait": "⚡️⚡️⚡️ Sithchain Sovereign ☠️",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        784276
+      ]
+    },
+    {
+      "trait": "💋 Sapphire Saints",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        783403
+      ]
+    },
+    {
+      "trait": "Blaze Breaker",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        783263
+      ]
+    },
+    {
+      "trait": "Crypto Commander 👈",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        783461
+      ]
+    },
+    {
+      "trait": "Diamond Doyennes 👈",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        783407
+      ]
+    },
+    {
+      "trait": "Graffiti Guru",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        783252
+      ]
+    },
+    {
+      "trait": "Metro Master",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        783253
+      ]
+    },
+    {
+      "trait": "Mill Thug ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        783380
+      ]
+    },
+    {
+      "trait": "Opal Overlords 💋",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        783394
+      ]
+    },
+    {
+      "trait": "Roughneck ☠️",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        783378
+      ]
+    },
+    {
+      "trait": "Seraphim NUTS 🤘",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        783431
+      ]
+    },
+    {
+      "trait": "Shadow Streaker",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        783260
+      ]
+    },
+    {
+      "trait": "Street Scrawler",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        783247
+      ]
+    },
+    {
+      "trait": "Token Tamer ☠️",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        783415
+      ]
+    },
+    {
+      "trait": "#ALLCITYBUYS ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783747
+      ]
+    },
+    {
+      "trait": "⚡️⚡️⚡️ Cryptic Chrono Conduit ☠️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        784272
+      ]
+    },
+    {
+      "trait": "Abyssal Leviathan ☠️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783757
+      ]
+    },
+    {
+      "trait": "Chroma Chieftain 🐸🐸🐸",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783300
+      ]
+    },
+    {
+      "trait": "Coin Conqueror 👑",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783464
+      ]
+    },
+    {
+      "trait": "Crypto Phantom ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783462
+      ]
+    },
+    {
+      "trait": "Cryptocurrency Crusader ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783466
+      ]
+    },
+    {
+      "trait": "Genesis Guru 🌈",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783453
+      ]
+    },
+    {
+      "trait": "Opal Omnipotence ☠️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783406
+      ]
+    },
+    {
+      "trait": "Rebel Royalty",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783298
+      ]
+    },
+    {
+      "trait": "Rustic Rascal",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783306
+      ]
+    },
+    {
+      "trait": "Seductive Scribe Pfly 💋",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        784350
+      ]
+    },
+    {
+      "trait": "Street Sovereign",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783295
+      ]
+    },
+    {
+      "trait": "Tag Tactician",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783291
+      ]
+    },
+    {
+      "trait": "Tagging Titan",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783245
+      ]
+    },
+    {
+      "trait": "THΞ ₿LØ℃K$TΔR̸$ 🌈",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783755
+      ]
+    },
+    {
+      "trait": "Vandal Vanguard 👀",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783301
+      ]
+    },
+    {
+      "trait": "Virtual Vigilante 👀",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783414
+      ]
+    },
+    {
+      "trait": "Wildstyle Wizard",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783258
+      ]
+    },
+    {
+      "trait": "BTC TITAN ☠️",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783760
+      ]
+    },
+    {
+      "trait": "Chroma Novice",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783235
+      ]
+    },
+    {
+      "trait": "Dreadnought Desolator 🍩",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783764
+      ]
+    },
+    {
+      "trait": "Ruby Revenants 👀",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783408
+      ]
+    },
+    {
+      "trait": "Shadow Seraph 🤖",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783759
+      ]
+    },
+    {
+      "trait": "Wildstyle Warden ☠️",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783307
+      ]
+    },
+    {
+      "trait": "⚡️⚡️⚡️ Bit Blunted Brotherhood 🌬",
+      "template_count": 1,
+      "exposure_supply": 9,
+      "template_ids": [
+        784277
+      ]
+    },
+    {
+      "trait": "💋 Jade Judges",
+      "template_count": 1,
+      "exposure_supply": 9,
+      "template_ids": [
+        783395
+      ]
+    },
+    {
+      "trait": "Bitcoin Bandit ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 9,
+      "template_ids": [
+        783463
+      ]
+    },
+    {
+      "trait": "Bitcoinker of Chaos 👀",
+      "template_count": 1,
+      "exposure_supply": 9,
+      "template_ids": [
+        784344
+      ]
+    },
+    {
+      "trait": "Emerald Empyrean 🌈",
+      "template_count": 1,
+      "exposure_supply": 9,
+      "template_ids": [
+        788015
+      ]
+    },
+    {
+      "trait": "Garnet Goddesses 💋",
+      "template_count": 1,
+      "exposure_supply": 9,
+      "template_ids": [
+        783392
       ]
     },
     {
@@ -60,11 +688,126 @@
       ]
     },
     {
+      "trait": "Scribe Sentinel",
+      "template_count": 1,
+      "exposure_supply": 10,
+      "template_ids": [
+        783296
+      ]
+    },
+    {
+      "trait": "Uniswap Undefeatable 👀",
+      "template_count": 1,
+      "exposure_supply": 10,
+      "template_ids": [
+        784340
+      ]
+    },
+    {
+      "trait": "⚡️⚡️⚡️ Crypto Knight Coin Crusher ☠️",
+      "template_count": 1,
+      "exposure_supply": 11,
+      "template_ids": [
+        784332
+      ]
+    },
+    {
+      "trait": "ROCKIN HOR$£ $HIT",
+      "template_count": 2,
+      "exposure_supply": 11,
+      "template_ids": [
+        776005,
+        776056
+      ]
+    },
+    {
+      "trait": "⚡️⚡️⚡️ Primeval Paragon ☠️",
+      "template_count": 1,
+      "exposure_supply": 12,
+      "template_ids": [
+        784274
+      ]
+    },
+    {
       "trait": "💊 ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️",
       "template_count": 1,
       "exposure_supply": 12,
       "template_ids": [
         776004
+      ]
+    },
+    {
+      "trait": "Cyber Shinobi ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 12,
+      "template_ids": [
+        783470
+      ]
+    },
+    {
+      "trait": "Emperor&#x27;s Elite ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 12,
+      "template_ids": [
+        783468
+      ]
+    },
+    {
+      "trait": "ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️",
+      "template_count": 5,
+      "exposure_supply": 12,
+      "template_ids": [
+        776002,
+        776059,
+        776101,
+        776102,
+        776103
+      ]
+    },
+    {
+      "trait": "$HIT $HOW ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 13,
+      "template_ids": [
+        776074
+      ]
+    },
+    {
+      "trait": "ROCKIN HORSE INFINITY 👑",
+      "template_count": 3,
+      "exposure_supply": 13,
+      "template_ids": [
+        776003,
+        776058,
+        776100
+      ]
+    },
+    {
+      "trait": "⚡️⚡️⚡️ Bitcoin Batboy 🦇",
+      "template_count": 3,
+      "exposure_supply": 14,
+      "template_ids": [
+        784220,
+        784229,
+        784264
+      ]
+    },
+    {
+      "trait": "Chromatic Champion",
+      "template_count": 2,
+      "exposure_supply": 15,
+      "template_ids": [
+        783269,
+        783282
+      ]
+    },
+    {
+      "trait": "Echo Fury Shadow Sentinel Cyber Shadow 🎯",
+      "template_count": 2,
+      "exposure_supply": 16,
+      "template_ids": [
+        784413,
+        784419
       ]
     },
     {
@@ -96,27 +839,172 @@
   ],
   "variation_traits": [
     {
-      "trait": "👑 GKniftyHEADS ⚡️⚡️⚡️",
+      "trait": "Blockchain Bat 🦇",
       "template_count": 1,
       "exposure_supply": 1,
       "template_ids": [
-        776003
+        784220
       ]
     },
     {
-      "trait": "🚀 GKniftyHEADS ⚡️⚡️⚡️",
+      "trait": "Chainlink Champion ⚡️⚡️⚡️",
       "template_count": 1,
-      "exposure_supply": 1,
+      "exposure_supply": 5,
       "template_ids": [
-        776005
+        784284
+      ]
+    },
+    {
+      "trait": "Chrono Celestia ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        784269
+      ]
+    },
+    {
+      "trait": "Mining Master ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 5,
+      "template_ids": [
+        784266
+      ]
+    },
+    {
+      "trait": "Darth Hodler ☠️",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        784276
+      ]
+    },
+    {
+      "trait": "Fantom-Force ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        784280
+      ]
+    },
+    {
+      "trait": "Not supplied",
+      "template_count": 1,
+      "exposure_supply": 6,
+      "template_ids": [
+        784229
+      ]
+    },
+    {
+      "trait": "Blockchain Temptress 🦇",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        784350
+      ]
+    },
+    {
+      "trait": "Celestial Sentinel 🤖",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783757
+      ]
+    },
+    {
+      "trait": "Eternal Voidwalker ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783755
+      ]
+    },
+    {
+      "trait": "HODL Hero ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        784264
+      ]
+    },
+    {
+      "trait": "LONDONZ CALLING ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        783747
+      ]
+    },
+    {
+      "trait": "Radiant Relic ☠️",
+      "template_count": 1,
+      "exposure_supply": 7,
+      "template_ids": [
+        784272
+      ]
+    },
+    {
+      "trait": "Astral Ascendant 🤖",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783760
+      ]
+    },
+    {
+      "trait": "Doughnut 🍩 Conqueror 🤖",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783764
+      ]
+    },
+    {
+      "trait": "Frostfire Elemental ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        783759
+      ]
+    },
+    {
+      "trait": "Quantum Cybernetic Crusader 🎯",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        784413
+      ]
+    },
+    {
+      "trait": "Shadow Shifter 🎯",
+      "template_count": 1,
+      "exposure_supply": 8,
+      "template_ids": [
+        784419
+      ]
+    },
+    {
+      "trait": "Pancake Prankster ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 9,
+      "template_ids": [
+        784344
+      ]
+    },
+    {
+      "trait": "Token Toking Taskforce 🌬",
+      "template_count": 1,
+      "exposure_supply": 9,
+      "template_ids": [
+        784277
       ]
     },
     {
       "trait": "GKniftyHEADS ⚡️⚡️⚡️",
-      "template_count": 1,
-      "exposure_supply": 1,
+      "template_count": 2,
+      "exposure_supply": 9,
       "template_ids": [
-        776002
+        776002,
+        776059
       ]
     },
     {
@@ -130,11 +1018,69 @@
       ]
     },
     {
+      "trait": "Coin Ravager ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 10,
+      "template_ids": [
+        784340
+      ]
+    },
+    {
+      "trait": "Satoshi Savior ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 11,
+      "template_ids": [
+        784332
+      ]
+    },
+    {
+      "trait": "🚀 GKniftyHEADS ⚡️⚡️⚡️",
+      "template_count": 2,
+      "exposure_supply": 11,
+      "template_ids": [
+        776005,
+        776056
+      ]
+    },
+    {
       "trait": "💊 GKniftyHEADS ⚡️⚡️⚡️",
       "template_count": 1,
       "exposure_supply": 12,
       "template_ids": [
         776004
+      ]
+    },
+    {
+      "trait": "Crypto Shifter ☠️",
+      "template_count": 1,
+      "exposure_supply": 12,
+      "template_ids": [
+        784274
+      ]
+    },
+    {
+      "trait": "NO BALL GAMES ⚡️⚡️⚡️",
+      "template_count": 1,
+      "exposure_supply": 12,
+      "template_ids": [
+        783470
+      ]
+    },
+    {
+      "trait": "NOT GOING OUT LIKE OBI-WAN",
+      "template_count": 1,
+      "exposure_supply": 12,
+      "template_ids": [
+        783468
+      ]
+    },
+    {
+      "trait": "👑 GKniftyHEADS ⚡️⚡️⚡️",
+      "template_count": 2,
+      "exposure_supply": 12,
+      "template_ids": [
+        776003,
+        776058
       ]
     },
     {
@@ -152,16 +1098,6 @@
       ]
     },
     {
-      "trait": "VANDALS ⚡️⚡️⚡️",
-      "template_count": 3,
-      "exposure_supply": 17,
-      "template_ids": [
-        775999,
-        776066,
-        776100
-      ]
-    },
-    {
       "trait": "VANDALS",
       "template_count": 2,
       "exposure_supply": 19,
@@ -176,6 +1112,94 @@
       "exposure_supply": 20,
       "template_ids": [
         773225
+      ]
+    },
+    {
+      "trait": "VANDALS ⚡️⚡️⚡️",
+      "template_count": 4,
+      "exposure_supply": 30,
+      "template_ids": [
+        775999,
+        776066,
+        776074,
+        776100
+      ]
+    },
+    {
+      "trait": "#HODLWARS",
+      "template_count": 70,
+      "exposure_supply": 418,
+      "template_ids": [
+        783235,
+        783245,
+        783247,
+        783250,
+        783252,
+        783253,
+        783255,
+        783258,
+        783260,
+        783263,
+        783269,
+        783282,
+        783291,
+        783295,
+        783296,
+        783298,
+        783300,
+        783301,
+        783306,
+        783307,
+        783371,
+        783372,
+        783373,
+        783374,
+        783375,
+        783376,
+        783377,
+        783378,
+        783379,
+        783380,
+        783384,
+        783385,
+        783389,
+        783392,
+        783394,
+        783395,
+        783398,
+        783399,
+        783401,
+        783403,
+        783404,
+        783405,
+        783406,
+        783407,
+        783408,
+        783410,
+        783411,
+        783412,
+        783413,
+        783414,
+        783415,
+        783431,
+        783432,
+        783433,
+        783442,
+        783444,
+        783445,
+        783447,
+        783448,
+        783451,
+        783453,
+        783454,
+        783457,
+        783459,
+        783461,
+        783462,
+        783463,
+        783464,
+        783466,
+        788015
       ]
     }
   ]

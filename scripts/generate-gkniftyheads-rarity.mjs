@@ -88,13 +88,14 @@ function extractRows(collectionHtml, root = ROOT) {
 }
 
 function utilityReason(row) {
-  const haystack = [
+  const titleAndTraits = [
     row.title,
-    row.description,
     row.rarity_trait,
     row.variation_trait,
   ].join(' ').toLowerCase();
-  if (/\b(coupon|fun coupon|blend|burn here|redeem|farming|farm|drop|utility|base card|play2earn|p2e)\b/i.test(haystack)) {
+  const description = String(row.description || '').toLowerCase();
+  const explicitUtilityPattern = /\b(coupon|fun coupon|redeem|redeemable|blend|burn here|farming|farm|drop|utility|base card)\b/i;
+  if (explicitUtilityPattern.test(titleAndTraits) || explicitUtilityPattern.test(description)) {
     return 'Utility/open-mint wording in title, traits, or description.';
   }
   if (row.max_supply === 0 && row.issued_supply >= 50) {
@@ -167,7 +168,11 @@ function buildRanking(rows) {
     row.final_score = Number(((supplyScore * 50) + (rarityScore * 25) + (variationScore * 20) + (burnScore * 5)).toFixed(4));
   }
 
-  ranked.sort((a, b) => b.final_score - a.final_score || a.live_supply - b.live_supply || a.template_id - b.template_id);
+  ranked.sort((a, b) => {
+    const aOneOfOne = a.live_supply === 1 ? 1 : 0;
+    const bOneOfOne = b.live_supply === 1 ? 1 : 0;
+    return bOneOfOne - aOneOfOne || b.final_score - a.final_score || a.live_supply - b.live_supply || a.template_id - b.template_id;
+  });
   ranked.forEach((row, index) => {
     row.rank = index + 1;
     if (row.live_supply === 1) row.band = 'Legendary';
@@ -196,7 +201,8 @@ function buildStats(model) {
     utility_open_mint_templates: model.utility.length,
     unissued_templates: model.unissued.length,
     total_issued_supply: model.all.reduce((sum, row) => sum + row.issued_supply, 0),
-    live_assets_counted: model.ranked.reduce((sum, row) => sum + row.live_supply, 0) + model.utility.reduce((sum, row) => sum + row.live_supply, 0),
+    live_assets_counted: null,
+    fallback_issued_supply_counted: model.ranked.reduce((sum, row) => sum + row.live_supply, 0) + model.utility.reduce((sum, row) => sum + row.live_supply, 0),
     missing_burned_count: 0,
     last_scan_time: new Date().toISOString(),
     scan_block: null,
@@ -273,7 +279,8 @@ function buildRankingSection(model, stats, rawSection) {
             ${statCard('Utility / open mint templates', stats.utility_open_mint_templates)}
             ${statCard('Unissued templates', stats.unissued_templates)}
             ${statCard('Total issued supply', stats.total_issued_supply)}
-            ${statCard('Live assets counted', stats.live_assets_counted)}
+            ${statCard('Fallback issued supply counted', stats.fallback_issued_supply_counted)}
+            ${statCard('Live assets counted', 'Not scanned')}
             ${statCard('Missing/burned count', stats.missing_burned_count)}
             ${statCard('Last scan time', stats.last_scan_time)}
             ${statCard('Scan block', stats.scan_block || 'Not scanned')}
@@ -301,13 +308,13 @@ function buildRankingSection(model, stats, rawSection) {
                   <th>Band</th>
                   <th>NFT</th>
                   <th>Template ID</th>
-                  <th>Live Supply</th>
+                  <th>Issued Supply Fallback</th>
                   <th>Issued Supply</th>
                   <th>Missing/Burned</th>
                   <th>Rarity Trait</th>
-                  <th>Rarity Live Exposure</th>
+                  <th>Rarity Exposure (Fallback)</th>
                   <th>Variation Trait</th>
-                  <th>Variation Live Exposure</th>
+                  <th>Variation Exposure (Fallback)</th>
                   <th>Final Score</th>
                   <th>Links</th>
                 </tr>

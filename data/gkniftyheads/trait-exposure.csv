@@ -1,20 +1,138 @@
 trait_type,trait,template_count,exposure_supply,template_ids
-rarity,ROCKIN HOR$£ $HIT,1,1,776005
 rarity,ROCKIN HORSE INFINITY SHIT ⚡️⚡️⚡️,1,1,776099
-rarity,ROCKIN HORSE INFINITY 👑,2,2,"776003,776100"
-rarity,ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️,4,4,"776002,776101,776102,776103"
+rarity,Corner Ruffian 🌈,1,4,783375
+rarity,Cryptocurrency Connoisseur ☠️,1,4,783432
+rarity,Diamond Doyennes 🌈,1,4,783411
+rarity,Fiat Fighter ☠️,1,4,783447
+rarity,Liquidity Lord 👈,1,4,783444
+rarity,Mempool Maestro ⚡️⚡️⚡️,1,4,783442
+rarity,Small Fry 👈,1,4,783377
+rarity,Virtual Vixen 🌈,1,4,783412
+rarity,⚡️⚡️⚡️ Bitcoin Batboy ☠️,1,5,784266
+rarity,⚡️⚡️⚡️ Ethereal Seraphim ☠️,1,5,784269
+rarity,⚡️⚡️⚡️ Fantom Fighter ☠️,1,5,784284
+rarity,👑 Syndicate Enforcer 🌈,1,5,783384
+rarity,💋 Emerald Empyreans,1,5,783401
+rarity,💋 Topaz Tyrants,1,5,783399
+rarity,Amber Archangels 🌈,1,5,783398
+rarity,Atomic Swap 🌈,1,5,783448
+rarity,Bitcoin Baron ⚡️⚡️⚡️,1,5,783457
+rarity,Bitmaster 👈,1,5,783454
+rarity,Block Enforcer ⚡️⚡️⚡️,1,5,783373
+rarity,Chainlink Connoisseur 🌈,1,5,783451
+rarity,Crypto Guru 🌈,1,5,783445
+rarity,Garnet Grandmasters ⚡️⚡️⚡️,1,5,783405
+rarity,Inked Icon 👑👈,1,5,783255
+rarity,Legendary Tough Guy 🌈,1,5,783389
+rarity,Low-Level Goon,1,5,783372
+rarity,Mob Lieutenant ⚡️⚡️⚡️,1,5,783385
+rarity,NFT Ninja 👈,1,5,783413
+rarity,Roughneck 👀,1,5,783379
+rarity,Ruby Ravagers🌈,1,5,783404
+rarity,Sapphire Seraphim 🌈,1,5,783410
+rarity,Sharding Siren 👈,1,5,783433
+rarity,Small-Time Crook,1,5,783371
+rarity,Street Punk 🌈,1,5,783376
+rarity,Street Punk⚡️⚡️⚡️,1,5,783374
+rarity,Token Titan ⚡️⚡️⚡️,1,5,783459
+rarity,Vandal Virtuoso,1,5,783250
+rarity,⚡️⚡️⚡️ Fantom-Flare ☠️,1,6,784280
+rarity,⚡️⚡️⚡️ Sithchain Sovereign ☠️,1,6,784276
+rarity,💋 Sapphire Saints,1,6,783403
+rarity,Blaze Breaker,1,6,783263
+rarity,Crypto Commander 👈,1,6,783461
+rarity,Diamond Doyennes 👈,1,6,783407
+rarity,Graffiti Guru,1,6,783252
+rarity,Metro Master,1,6,783253
+rarity,Mill Thug ⚡️⚡️⚡️,1,6,783380
+rarity,Opal Overlords 💋,1,6,783394
+rarity,Roughneck ☠️,1,6,783378
+rarity,Seraphim NUTS 🤘,1,6,783431
+rarity,Shadow Streaker,1,6,783260
+rarity,Street Scrawler,1,6,783247
+rarity,Token Tamer ☠️,1,6,783415
+rarity,#ALLCITYBUYS ⚡️⚡️⚡️,1,7,783747
+rarity,⚡️⚡️⚡️ Cryptic Chrono Conduit ☠️,1,7,784272
+rarity,Abyssal Leviathan ☠️,1,7,783757
+rarity,Chroma Chieftain 🐸🐸🐸,1,7,783300
+rarity,Coin Conqueror 👑,1,7,783464
+rarity,Crypto Phantom ⚡️⚡️⚡️,1,7,783462
+rarity,Cryptocurrency Crusader ⚡️⚡️⚡️,1,7,783466
+rarity,Genesis Guru 🌈,1,7,783453
+rarity,Opal Omnipotence ☠️,1,7,783406
+rarity,Rebel Royalty,1,7,783298
+rarity,Rustic Rascal,1,7,783306
+rarity,Seductive Scribe Pfly 💋,1,7,784350
+rarity,Street Sovereign,1,7,783295
+rarity,Tag Tactician,1,7,783291
+rarity,Tagging Titan,1,7,783245
+rarity,THΞ ₿LØ℃K$TΔR̸$ 🌈,1,7,783755
+rarity,Vandal Vanguard 👀,1,7,783301
+rarity,Virtual Vigilante 👀,1,7,783414
+rarity,Wildstyle Wizard,1,7,783258
+rarity,BTC TITAN ☠️,1,8,783760
+rarity,Chroma Novice,1,8,783235
+rarity,Dreadnought Desolator 🍩,1,8,783764
+rarity,Ruby Revenants 👀,1,8,783408
+rarity,Shadow Seraph 🤖,1,8,783759
+rarity,Wildstyle Warden ☠️,1,8,783307
+rarity,⚡️⚡️⚡️ Bit Blunted Brotherhood 🌬,1,9,784277
+rarity,💋 Jade Judges,1,9,783395
+rarity,Bitcoin Bandit ⚡️⚡️⚡️,1,9,783463
+rarity,Bitcoinker of Chaos 👀,1,9,784344
+rarity,Emerald Empyrean 🌈,1,9,788015
+rarity,Garnet Goddesses 💋,1,9,783392
 rarity,✨ ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️,3,9,"776007,776055,776057"
 rarity,👉 LONDONZ WHITE TRASH 👑👈,3,9,"776000,776001,776065"
+rarity,Scribe Sentinel,1,10,783296
+rarity,Uniswap Undefeatable 👀,1,10,784340
+rarity,⚡️⚡️⚡️ Crypto Knight Coin Crusher ☠️,1,11,784332
+rarity,ROCKIN HOR$£ $HIT,2,11,"776005,776056"
+rarity,⚡️⚡️⚡️ Primeval Paragon ☠️,1,12,784274
 rarity,💊 ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️,1,12,776004
+rarity,Cyber Shinobi ⚡️⚡️⚡️,1,12,783470
+rarity,Emperor&#x27;s Elite ⚡️⚡️⚡️,1,12,783468
+rarity,ROCKIN HORSE INFINITY SHIT SHOW ⚡️⚡️⚡️,5,12,"776002,776059,776101,776102,776103"
+rarity,$HIT $HOW ⚡️⚡️⚡️,1,13,776074
+rarity,ROCKIN HORSE INFINITY 👑,3,13,"776003,776058,776100"
+rarity,⚡️⚡️⚡️ Bitcoin Batboy 🦇,3,14,"784220,784229,784264"
+rarity,Chromatic Champion,2,15,"783269,783282"
+rarity,Echo Fury Shadow Sentinel Cyber Shadow 🎯,2,16,"784413,784419"
 rarity,LONDONZ WHITE TRASH 👑👈,2,16,"775999,776066"
 rarity,LONDONZ WHITE TRASH,2,19,"775997,776063"
 rarity,ROCKIN HORSE INFINITY SHIT,1,20,773225
-variation,👑 GKniftyHEADS ⚡️⚡️⚡️,1,1,776003
-variation,🚀 GKniftyHEADS ⚡️⚡️⚡️,1,1,776005
-variation,GKniftyHEADS ⚡️⚡️⚡️,1,1,776002
+variation,Blockchain Bat 🦇,1,1,784220
+variation,Chainlink Champion ⚡️⚡️⚡️,1,5,784284
+variation,Chrono Celestia ⚡️⚡️⚡️,1,5,784269
+variation,Mining Master ⚡️⚡️⚡️,1,5,784266
+variation,Darth Hodler ☠️,1,6,784276
+variation,Fantom-Force ⚡️⚡️⚡️,1,6,784280
+variation,Not supplied,1,6,784229
+variation,Blockchain Temptress 🦇,1,7,784350
+variation,Celestial Sentinel 🤖,1,7,783757
+variation,Eternal Voidwalker ⚡️⚡️⚡️,1,7,783755
+variation,HODL Hero ⚡️⚡️⚡️,1,7,784264
+variation,LONDONZ CALLING ⚡️⚡️⚡️,1,7,783747
+variation,Radiant Relic ☠️,1,7,784272
+variation,Astral Ascendant 🤖,1,8,783760
+variation,Doughnut 🍩 Conqueror 🤖,1,8,783764
+variation,Frostfire Elemental ⚡️⚡️⚡️,1,8,783759
+variation,Quantum Cybernetic Crusader 🎯,1,8,784413
+variation,Shadow Shifter 🎯,1,8,784419
+variation,Pancake Prankster ⚡️⚡️⚡️,1,9,784344
+variation,Token Toking Taskforce 🌬,1,9,784277
+variation,GKniftyHEADS ⚡️⚡️⚡️,2,9,"776002,776059"
 variation,✨ GKniftyHEADS ⚡️⚡️⚡️,3,9,"776007,776055,776057"
+variation,Coin Ravager ⚡️⚡️⚡️,1,10,784340
+variation,Satoshi Savior ⚡️⚡️⚡️,1,11,784332
+variation,🚀 GKniftyHEADS ⚡️⚡️⚡️,2,11,"776005,776056"
 variation,💊 GKniftyHEADS ⚡️⚡️⚡️,1,12,776004
+variation,Crypto Shifter ☠️,1,12,784274
+variation,NO BALL GAMES ⚡️⚡️⚡️,1,12,783470
+variation,NOT GOING OUT LIKE OBI-WAN,1,12,783468
+variation,👑 GKniftyHEADS ⚡️⚡️⚡️,2,12,"776003,776058"
 variation,👉 VANDALS ⚡️⚡️⚡️,7,13,"776000,776001,776065,776099,776101,776102,776103"
-variation,VANDALS ⚡️⚡️⚡️,3,17,"775999,776066,776100"
 variation,VANDALS,2,19,"775997,776063"
 variation,GKniftyHEADS,1,20,773225
+variation,VANDALS ⚡️⚡️⚡️,4,30,"775999,776066,776074,776100"
+variation,#HODLWARS,70,418,"783235,783245,783247,783250,783252,783253,783255,783258,783260,783263,783269,783282,783291,783295,783296,783298,783300,783301,783306,783307,783371,783372,783373,783374,783375,783376,783377,783378,783379,783380,783384,783385,783389,783392,783394,783395,783398,783399,783401,783403,783404,783405,783406,783407,783408,783410,783411,783412,783413,783414,783415,783431,783432,783433,783442,783444,783445,783447,783448,783451,783453,783454,783457,783459,783461,783462,783463,783464,783466,788015"
