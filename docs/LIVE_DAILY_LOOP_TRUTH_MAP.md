@@ -5,6 +5,7 @@ Phase 1 creates one Worker-owned UTC Daily Loop authority:
 - `GET /daily-loop/state` returns public anonymous state.
 - `POST /daily-loop/state` returns Telegram-linked state and requires a fresh/restored signed `telegram_auth` payload.
 - All dates use the UTC day key from the Worker, not browser local time.
+- The daily-loop endpoint is an aggregator and should be fetched once per page/session by a shared frontend state layer.
 
 The response always includes `source_status` for every subsystem. `live` is reserved for non-empty data read from Worker/D1 or confirmed Worker API state. Empty successful D1 reads use `live_empty`. Server-generated schedules, local fallback, absent migrations, and failed queries must not be called live.
 

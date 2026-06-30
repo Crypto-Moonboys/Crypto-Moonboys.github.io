@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {
   buildDailyLoopState,
   getCurrentUtcDayStartedAt,
@@ -37,6 +38,18 @@ const EXPECTED_SOURCE_KEYS = [
   'missed_opportunities',
   'telegram_digest_group_status',
 ];
+
+const workerSplitPlan = fs.readFileSync(new URL('../docs/WORKER_SPLIT_PLAN.md', import.meta.url), 'utf8');
+const truthMap = fs.readFileSync(new URL('../docs/LIVE_DAILY_LOOP_TRUTH_MAP.md', import.meta.url), 'utf8');
+
+assert.ok(
+  workerSplitPlan.includes('call `/daily-loop/state` once per page load/session through a shared frontend singleton or state layer'),
+  'Worker split plan must require daily-loop state to be consumed through one shared frontend singleton/state layer'
+);
+assert.ok(
+  truthMap.includes('fetched once per page/session by a shared frontend state layer'),
+  'Truth map must warn that /daily-loop/state is an aggregator, not a per-widget endpoint'
+);
 
 function makeDb({ existingTables = [], failPatterns = [], rows = {} } = {}) {
   const tables = new Set(existingTables);
