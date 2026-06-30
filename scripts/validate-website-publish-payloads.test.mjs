@@ -13,6 +13,7 @@ import {
 import {
   AFFECTED_SYNC_SURFACES,
   renderBattleHeatMediaTemplate,
+  renderArticleMiddle,
   runImport,
 } from './import-website-publish-payloads.mjs';
 
@@ -118,10 +119,21 @@ assert.equal(fs.existsSync(path.join(tempRoot, 'wiki', 'sample-nft-template.html
 console.log('PASS dry-run reports affected surfaces and writes no files');
 
 const battleMediaTemplate = renderBattleHeatMediaTemplate(nftPayload);
-assert.match(battleMediaTemplate, /<template data-battle-media="nft">/);
-assert.match(battleMediaTemplate, /class="nft-battle-media-template"/);
-assert.match(battleMediaTemplate, /class="battle-page-media"/);
-assert.match(battleMediaTemplate, /<img src="https:\/\/example.com\/sample-nft.png" alt="Sample NFT fixture image"/);
+assert.match(
+  battleMediaTemplate,
+  /<template class="nft-battle-media-template" data-battle-media="nft" data-page-id="sample-nft-template">/
+);
+assert.match(battleMediaTemplate, /<figure class="battle-page-media nft-template-media-card">/);
+assert.match(
+  battleMediaTemplate,
+  /<img class="wiki-hero-image nft-image" src="https:\/\/example.com\/sample-nft.png" alt="Sample NFT fixture image" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs='\[&quot;https:\/\/example.com\/sample-nft.webp&quot;\]'>/
+);
+assert.doesNotMatch(battleMediaTemplate, /<picture\b/);
+assert.doesNotMatch(battleMediaTemplate, /<source\b/);
+const renderedNftMiddle = renderArticleMiddle(nftPayload);
+const nftTemplateBlock = renderedNftMiddle.match(/<template class="nft-battle-media-template"[\s\S]*?<\/template>/)?.[0] || '';
+assert.ok(nftTemplateBlock.includes('<img class="wiki-hero-image nft-image"'));
+assert.doesNotMatch(renderedNftMiddle.replace(nftTemplateBlock, ''), /<img\b[^>]*\bnft-image\b/);
 console.log('PASS NFT Battle Heat media template is preserved');
 
 console.log('\nvalidate-website-publish-payloads.test.mjs passed');

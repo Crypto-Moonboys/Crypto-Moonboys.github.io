@@ -22,7 +22,8 @@ function escapeHtml(value) {
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
 
 function categorySlug(category) {
@@ -37,20 +38,16 @@ function categorySlug(category) {
 export function renderBattleHeatMediaTemplate(payload) {
   if (payload.page_type !== 'nft_template') return '';
 
-  const fallbackSources = Array.isArray(payload.media.fallback_urls)
-    ? payload.media.fallback_urls.map((url) => `<source srcset="${escapeHtml(url)}">`).join('\n      ')
-    : '';
+  const fallbackUrls = Array.isArray(payload.media.fallback_urls)
+    ? payload.media.fallback_urls
+    : [];
+  const fallbackJson = JSON.stringify(fallbackUrls);
 
   return `
-        <template data-battle-media="nft">
-          <div class="nft-battle-media-template">
-            <figure class="battle-page-media">
-              <picture>
-      ${fallbackSources}
-                <img src="${escapeHtml(payload.media.image_url)}" alt="${escapeHtml(payload.media.alt)}" loading="lazy">
-              </picture>
-            </figure>
-          </div>
+        <template class="nft-battle-media-template" data-battle-media="nft" data-page-id="${escapeHtml(payload.slug)}">
+          <figure class="battle-page-media nft-template-media-card">
+            <img class="wiki-hero-image nft-image" src="${escapeHtml(payload.media.image_url)}" alt="${escapeHtml(payload.media.alt)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs='${escapeHtml(fallbackJson)}'>
+          </figure>
         </template>`;
 }
 
