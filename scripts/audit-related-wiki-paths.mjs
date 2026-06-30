@@ -29,7 +29,7 @@ function extractRelatedSection(html) {
 }
 
 function extractGroups(section) {
-  return [...section.matchAll(/<div\b[^>]*class=["'][^"']*\bwiki-rabbit-group\b[^"']*["'][\s\S]*?<\/div>/gi)].map((match) => match[0]);
+  return [...section.matchAll(/<div\b[^>]*class=["'][^"']*\bwiki-rabbit-grid\b[^"']*["'][^>]*>[\s\S]*?<\/div>/gi)].map((match) => match[0]);
 }
 
 function isNftTemplatePage(file, html) {
@@ -52,6 +52,20 @@ function assertHasLinks(html, relPath, links) {
   }
 }
 
+function hasSourceList(html) {
+  return /<ul\b[^>]*class=["'][^"']*\b(?:citations-list|source-ref-list|sources-list)\b[^"']*["'][\s\S]*?<li\b/i.test(html);
+}
+
+function assertCitationPanel(relPath, html) {
+  if (!hasSourceList(html)) return;
+  check(/data-citation-vote-panel=["']true["']/i.test(html), `${relPath} must render the citation vote panel when citations/sources exist`);
+  check(
+    html.includes('Vote on citations to strengthen the credibility of this intelligence file.'),
+    `${relPath} citation vote panel must use the required credibility prompt`
+  );
+  check(/class=["'][^"']*\bcite-vote\b/i.test(html), `${relPath} citation vote panel must expose a cite-vote hook`);
+}
+
 function assertRelatedSection(relPath, html) {
   const section = extractRelatedSection(html);
   check(Boolean(section), `${relPath} must contain a Related Wiki Paths section`);
@@ -59,11 +73,15 @@ function assertRelatedSection(relPath, html) {
 
   check(/data-related-wiki-paths=["']true["']/i.test(section), `${relPath} related section must be machine-auditable`);
   check(!/\bhref=["']https?:\/\//i.test(section), `${relPath} related section must not contain external links`);
+  check(!/\.html\.html(?:["'#?]|$)/i.test(section), `${relPath} related section must not contain .html.html links`);
+  check(!/\bwiki-rabbit-list\b/i.test(section), `${relPath} related section must use card/grid markup, not legacy rabbit lists`);
+  check(/\bwiki-rabbit-grid\b/i.test(section), `${relPath} related section must include card grids`);
+  check(/\bwiki-rabbit-card\b/i.test(section), `${relPath} related section must include rabbit-hole cards`);
 
   const groups = extractGroups(section);
   check(groups.length > 0, `${relPath} related section must contain grouped link blocks`);
   for (const group of groups) {
-    const items = (group.match(/<li\b/gi) || []).length;
+    const items = (group.match(/<a\b[^>]*class=["'][^"']*\bwiki-rabbit-card\b/gi) || []).length;
     check(items <= MAX_GROUP_ITEMS, `${relPath} related group has ${items} links; cap is ${MAX_GROUP_ITEMS}`);
   }
 
@@ -78,6 +96,7 @@ function assertRelatedSection(relPath, html) {
 
 const coreHtml = read(CORE_PAGE);
 const coreSection = assertRelatedSection(CORE_PAGE, coreHtml);
+assertCitationPanel(CORE_PAGE, coreHtml);
 assertHasLinks(coreHtml, CORE_PAGE, [
   '/wiki/gkniftyheads.html',
   '/wiki/gkniftyheads-nft-collection.html',
@@ -122,6 +141,7 @@ for (const file of wikiFiles) {
   const html = read(relPath);
   if (!isContentPage(html)) continue;
   const section = assertRelatedSection(relPath, html);
+  assertCitationPanel(relPath, html);
   if (!isNftTemplatePage(file, html)) continue;
   nftPages.push(relPath);
 
@@ -137,6 +157,13 @@ for (const file of wikiFiles) {
   check(section.includes('Collection Links'), `${relPath} must group collection links`);
   check(section.includes('Related Categories'), `${relPath} must group category links`);
   check(section.includes('More from this collection'), `${relPath} must group capped collection neighbors`);
+  const categoryBlock = html.match(/<div\b[^>]*class=["'][^"']*\bcategory-tags\b[^"']*["'][\s\S]*?<\/div>/i)?.[0] || '';
+  assertHasLinks(categoryBlock, relPath, [
+    '/categories/gkniftyheads.html',
+    '/categories/nfts.html',
+    '/categories/wax-nfts.html',
+    '/categories/nfts-digital-art.html',
+  ]);
 }
 
 check(nftPages.length >= 140, `expected at least 140 NFT template pages, found ${nftPages.length}`);

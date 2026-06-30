@@ -8,6 +8,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RELATIONSHIP_HINTS_PATH = path.join('js', 'wiki-relationship-hints.json');
 const BEGIN = '<!-- RELATED_WIKI_PATHS:BEGIN -->';
 const END = '<!-- RELATED_WIKI_PATHS:END -->';
+const CITATION_VOTE_BEGIN = '<!-- CITATION_VOTE_PANEL:BEGIN -->';
+const CITATION_VOTE_END = '<!-- CITATION_VOTE_PANEL:END -->';
 const GROUP_LIMIT = 8;
 const TEMPLATE_LIMIT = 8;
 const HINT_GROUP_TITLES = new Map([
@@ -284,15 +286,18 @@ function renderGroup(title, links) {
   if (!links.length) return '';
   const items = links.map((link) => {
     const desc = link.description
-      ? `<span class="wiki-rabbit-desc">${escapeHtml(link.description)}</span>`
+      ? `<span class="wiki-rabbit-card-desc">${escapeHtml(link.description)}</span>`
       : '';
-    return `          <li><a href="${escapeHtml(link.url)}">${escapeHtml(link.title)}</a>${desc}</li>`;
+    return `            <a class="wiki-rabbit-card" href="${escapeHtml(link.url)}" role="listitem">
+              <span class="wiki-rabbit-card-title">${escapeHtml(link.title)}</span>
+              ${desc}
+            </a>`;
   }).join('\n');
   return `        <div class="wiki-rabbit-group" data-related-group="${escapeHtml(title)}">
           <h3>${escapeHtml(title)}</h3>
-          <ul class="wiki-rabbit-list">
+          <div class="wiki-rabbit-grid" role="list">
 ${items}
-          </ul>
+          </div>
         </div>`;
 }
 
@@ -319,6 +324,11 @@ function replaceMarkedSection(html, section) {
 
 function removeMarkedSection(html) {
   const re = new RegExp(`\\s*${BEGIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+  return html.replace(re, '');
+}
+
+function removeCitationVotePanel(html) {
+  const re = new RegExp(`\\s*${CITATION_VOTE_BEGIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${CITATION_VOTE_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
   return html.replace(re, '');
 }
 
@@ -366,6 +376,129 @@ function updateCryptoMoonboysCategoryTags(html) {
     /\s*<div class=["']category-tags["'] aria-label=["']Article categories["']>[\s\S]*?<\/div>/,
     `\n${categoryTags}`
   );
+}
+
+function pageIdFromUrl(url) {
+  return path.basename(String(url || '').split('?')[0], '.html');
+}
+
+function countSourceItems(html) {
+  const listMatches = String(html || '').matchAll(/<ul\b[^>]*class=["'][^"']*\b(?:citations-list|source-ref-list|sources-list)\b[^"']*["'][\s\S]*?<\/ul>/gi);
+  let count = 0;
+  for (const match of listMatches) count += (match[0].match(/<li\b/gi) || []).length;
+  return count;
+}
+
+function hasCitationSources(html) {
+  return countSourceItems(html) > 0 ||
+    /<section\b[^>]*class=["'][^"']*\bcitations-section\b/i.test(html) ||
+    /<h2\b[^>]*>\s*(?:Sources|Citations|Source References)\s*<\/h2>/i.test(html);
+}
+
+function renderCitationVotePanel(url, html) {
+  const pageId = pageIdFromUrl(url);
+  const sourceCount = countSourceItems(html);
+  const countText = sourceCount ? `<span class="citation-vote-count">${sourceCount} source${sourceCount === 1 ? '' : 's'} found on this page.</span>` : '';
+  return `${CITATION_VOTE_BEGIN}
+      <section class="wiki-section citation-vote-panel" data-citation-vote-panel="true" data-page-id="${escapeHtml(pageId)}" aria-labelledby="citation-vote-panel-title">
+        <h2 id="citation-vote-panel-title">Citation Credibility</h2>
+        <p>Vote on citations to strengthen the credibility of this intelligence file.</p>
+        <div class="citation-vote-panel-actions">
+          <span class="cite-vote" data-page-id="${escapeHtml(pageId)}" data-cite-id="citation-panel"></span>
+          <span class="citation-vote-login-prompt">Connect/login to vote when citation voting is available.</span>
+          ${countText}
+        </div>
+      </section>
+${CITATION_VOTE_END}`;
+}
+
+function insertGeneratedBlock(html, block) {
+  const commentsIndex = html.search(/\s*<div class=["'][^"']*\bwiki-comments\b/i);
+  if (commentsIndex !== -1) return `${html.slice(0, commentsIndex)}\n${block}\n${html.slice(commentsIndex)}`;
+
+  const mainEnd = html.search(/\s*<\/main>/i);
+  if (mainEnd !== -1) return `${html.slice(0, mainEnd)}\n${block}\n${html.slice(mainEnd)}`;
+
+  return html;
+}
+
+function upsertCitationVotePanel(html, url) {
+  const withoutPanel = removeCitationVotePanel(html);
+  if (!hasCitationSources(withoutPanel)) return withoutPanel;
+  return insertGeneratedBlock(withoutPanel, renderCitationVotePanel(url, withoutPanel));
+}
+
+function categoryTitle(url) {
+  return CATEGORY_TITLES.get(url) || titleCaseSlug(path.basename(String(url || ''), '.html'));
+}
+
+function renderCategoryAnchor(url) {
+  return `<a href="${escapeHtml(url)}">${escapeHtml(categoryTitle(url))}</a>`;
+}
+
+function categoryUrlsForPage(context, currentUrl, html, kind) {
+  const urls = [];
+  const add = (url) => {
+    if (url && existsInternal(url, context.root) && !urls.includes(url)) urls.push(url);
+  };
+
+  const entry = context.byUrl.get(currentUrl);
+  const category = rankCategory(entry);
+  if (category) add(`/categories/${category}.html`);
+
+  const section = renderRelatedSection(groupsForPage(context, currentUrl, html, kind));
+  for (const href of hrefs(section)) {
+    if (href.startsWith('/categories/')) add(href);
+  }
+
+  if (currentUrl === CORE_PROJECT_URL) {
+    for (const url of [
+      '/categories/community-people.html',
+      '/categories/nfts.html',
+      '/categories/wax-nfts.html',
+      '/categories/nfts-digital-art.html',
+      '/categories/lore.html',
+      '/categories/gaming.html',
+      '/categories/technology.html',
+      '/categories/gkniftyheads.html',
+      '/categories/factions.html',
+      '/categories/cryptocurrencies.html',
+    ]) add(url);
+  }
+
+  if (kind?.isNftTemplate || kind?.isNftCollection) {
+    for (const url of [
+      '/categories/nfts.html',
+      '/categories/wax-nfts.html',
+      '/categories/nfts-digital-art.html',
+      '/categories/gkniftyheads.html',
+    ]) add(url);
+  }
+
+  return urls.slice(0, GROUP_LIMIT + 4);
+}
+
+function upsertCategoryTags(html, context, currentUrl, kind) {
+  const urls = categoryUrlsForPage(context, currentUrl, html, kind);
+  if (!urls.length) return html;
+
+  const existing = html.match(/<div\b[^>]*class=["'][^"']*\bcategory-tags\b[^"']*["'][\s\S]*?<\/div>/i);
+  if (existing) {
+    let block = existing[0];
+    const existingHrefs = new Set(hrefs(block));
+    const missing = urls.filter((url) => !existingHrefs.has(url));
+    if (!missing.length) return html;
+    const inserted = `${missing.map(renderCategoryAnchor).join('\n        ')}
+      </div>`;
+    block = block.replace(/\s*<\/div>\s*$/i, `\n        ${inserted}`);
+    return `${html.slice(0, existing.index)}${block}${html.slice(existing.index + existing[0].length)}`;
+  }
+
+  const block = `      <div class="category-tags generated-category-tags" aria-label="Article categories" data-generated-category-tags="true">
+        <span class="cat-label">Categories:</span>
+        ${urls.map(renderCategoryAnchor).join('\n        ')}
+      </div>`;
+  return insertGeneratedBlock(html, block);
 }
 
 function buildContext(root) {
@@ -588,7 +721,7 @@ export function runGenerateRelatedWikiPaths(root = ROOT) {
   for (const [url, html] of context.htmlByUrl.entries()) {
     const kind = context.pageKinds.get(url);
     if (!isContentPage(html)) {
-      const nextHtml = removeMarkedSection(html);
+      const nextHtml = removeCitationVotePanel(removeMarkedSection(html));
       if (nextHtml !== html) {
         fs.writeFileSync(path.join(root, relForUrl(url)), nextHtml, 'utf8');
         written += 1;
@@ -599,6 +732,8 @@ export function runGenerateRelatedWikiPaths(root = ROOT) {
     const section = renderRelatedSection(groups);
     let nextHtml = insertSection(html, section);
     if (url === CORE_PROJECT_URL) nextHtml = updateCryptoMoonboysCategoryTags(nextHtml);
+    nextHtml = upsertCategoryTags(nextHtml, context, url, kind);
+    nextHtml = upsertCitationVotePanel(nextHtml, url);
 
     if (nextHtml !== html) {
       const file = path.join(root, relForUrl(url));

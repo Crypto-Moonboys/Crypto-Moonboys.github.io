@@ -575,6 +575,33 @@ img { max-width: 100%; height: auto; }
 .cite-video   { background: rgba(255,123,114,.2); color: var(--color-red); }
 .cite-news    { background: rgba(140,100,255,.2); color: #a78bfa; }
 
+.citation-vote-panel {
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid rgba(247,201,72,.34);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(247,201,72,.08), rgba(36,41,47,.72));
+}
+.citation-vote-panel h2 {
+  margin: 0 0 8px;
+  color: var(--color-accent);
+}
+.citation-vote-panel p {
+  margin: 0 0 12px;
+  color: var(--color-text-muted);
+}
+.citation-vote-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.citation-vote-login-prompt,
+.citation-vote-count {
+  color: var(--color-text-muted);
+  font-size: .78rem;
+}
+
 /* ── CATEGORY TAGS ─────────────────────────────────────── */
 .category-tags {
   display: flex;
@@ -608,6 +635,55 @@ img { max-width: 100%; height: auto; }
   color: var(--color-accent);
   border-color: var(--color-accent);
   text-decoration: none;
+}
+
+.related-wiki-paths {
+  margin-top: 28px;
+}
+.related-wiki-paths > h2 {
+  color: var(--color-accent);
+}
+.wiki-rabbit-group {
+  margin-top: 18px;
+}
+.wiki-rabbit-group h3 {
+  margin: 0 0 10px;
+  font-size: .95rem;
+  color: var(--color-text);
+}
+.wiki-rabbit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+.wiki-rabbit-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 74px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: border-color .15s, transform .15s, background .15s;
+}
+.wiki-rabbit-card:hover {
+  border-color: var(--color-accent);
+  background: rgba(247,201,72,.09);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+.wiki-rabbit-card-title {
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.25;
+}
+.wiki-rabbit-card-desc {
+  color: var(--color-text-muted);
+  font-size: .78rem;
+  line-height: 1.35;
 }
 
 /* ── ARTICLE META ──────────────────────────────────────── */
