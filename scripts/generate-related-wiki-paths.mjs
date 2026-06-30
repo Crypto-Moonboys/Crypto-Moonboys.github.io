@@ -5,12 +5,22 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const WIKI_DIR = path.join(ROOT, 'wiki');
-const WIKI_INDEX_PATH = path.join(ROOT, 'js', 'wiki-index.json');
+const RELATIONSHIP_HINTS_PATH = path.join('js', 'wiki-relationship-hints.json');
 const BEGIN = '<!-- RELATED_WIKI_PATHS:BEGIN -->';
 const END = '<!-- RELATED_WIKI_PATHS:END -->';
 const GROUP_LIMIT = 8;
 const TEMPLATE_LIMIT = 8;
+const HINT_GROUP_TITLES = new Map([
+  ['project_hubs', 'Core Project Links'],
+  ['collections', 'Collection Links'],
+  ['factions', 'Related Factions'],
+  ['characters', 'Related Characters'],
+  ['games', 'Related Games'],
+  ['tokens', 'Related Tokens'],
+  ['lore', 'Related Lore'],
+  ['categories', 'Related Categories'],
+  ['tags', 'Related Tags'],
+]);
 
 const STATIC_LINKS = new Set([
   '/timeline.html',
@@ -40,6 +50,12 @@ const GKNIFTY_COLLECTION_URL = '/wiki/gkniftyheads-nft-collection.html';
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function readJsonObject(file) {
+  if (!fs.existsSync(file)) return {};
+  const parsed = readJson(file);
+  return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
 }
 
 function escapeHtml(value) {
@@ -90,15 +106,49 @@ function relForUrl(url) {
   return String(url || '').replace(/^\/+/, '');
 }
 
-function existsInternal(url) {
+function existsInternal(url, root = ROOT) {
   const clean = String(url || '').split('#')[0];
-  if (STATIC_LINKS.has(clean)) return fs.existsSync(path.join(ROOT, clean.split('?')[0].replace(/^\/+/, '')));
+  if (STATIC_LINKS.has(clean)) return fs.existsSync(path.join(root, clean.split('?')[0].replace(/^\/+/, '')));
   if (!clean.startsWith('/')) return false;
-  return fs.existsSync(path.join(ROOT, clean.split('?')[0].replace(/^\/+/, '')));
+  return fs.existsSync(path.join(root, clean.split('?')[0].replace(/^\/+/, '')));
 }
 
 function hrefs(html) {
   return [...String(html || '').matchAll(/\bhref=["']([^"']+)["']/gi)].map((match) => match[1]);
+}
+
+function slugify(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function normalizeHintUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw || /^https?:\/\//i.test(raw) || raw.startsWith('//')) return '';
+  const clean = raw.split('#')[0].split('?')[0].replace(/\\/g, '/');
+  let normalized = clean.startsWith('/') ? clean : `/wiki/${clean}`;
+  normalized = normalized.replace(/\/+/g, '/');
+  if (/^\/(wiki|categories)\//i.test(normalized) && !/\.html$/i.test(normalized)) {
+    normalized = `${normalized.replace(/\/$/, '')}.html`;
+  }
+  return normalized.replace(/\.html(?:\.html)+$/i, '.html');
+}
+
+function normalizePageUrl(value) {
+  const normalized = normalizeHintUrl(value);
+  if (!normalized.startsWith('/wiki/')) return '';
+  return normalized;
+}
+
+function normalizeCategoryUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw || /^https?:\/\//i.test(raw) || raw.startsWith('//')) return '';
+  if (raw.startsWith('/categories/')) return normalizeHintUrl(raw);
+  return `/categories/${slugify(raw)}.html`;
 }
 
 function isNftCollectionHtml(html) {
@@ -138,8 +188,8 @@ function entryTags(entry) {
   return tags;
 }
 
-function makeLink(url, title, description = '') {
-  if (!existsInternal(url)) return null;
+function makeLink(url, title, description = '', root = ROOT) {
+  if (!existsInternal(url, root)) return null;
   return {
     url,
     title: cleanTitle(title, titleCaseSlug(path.basename(url.split('?')[0], '.html'))),
@@ -147,17 +197,17 @@ function makeLink(url, title, description = '') {
   };
 }
 
-function linkFromEntry(entry, fallbackDescription = '') {
+function linkFromEntry(entry, fallbackDescription = '', root = ROOT) {
   if (!entry?.url) return null;
-  return makeLink(entry.url, entry.title, entry.desc || fallbackDescription);
+  return makeLink(entry.url, entry.title, entry.desc || fallbackDescription, root);
 }
 
-function uniqueLinks(links, currentUrl, limit = GROUP_LIMIT) {
+function uniqueLinks(links, currentUrl, limit = GROUP_LIMIT, root = ROOT) {
   const seen = new Set();
   const out = [];
   for (const link of links) {
     if (!link || !link.url || link.url === currentUrl || seen.has(link.url)) continue;
-    if (!existsInternal(link.url)) continue;
+    if (!existsInternal(link.url, root)) continue;
     seen.add(link.url);
     out.push(link);
     if (out.length >= limit) break;
@@ -165,9 +215,69 @@ function uniqueLinks(links, currentUrl, limit = GROUP_LIMIT) {
   return out;
 }
 
-function categoryLink(url, description = '') {
+function categoryLink(url, description = '', root = ROOT) {
   const title = CATEGORY_TITLES.get(url) || titleCaseSlug(path.basename(url, '.html'));
-  return makeLink(url, title, description);
+  return makeLink(url, title, description, root);
+}
+
+function hintCandidateUrls(group, hint) {
+  const candidates = [];
+  if (hint.url || hint.href || hint.path) candidates.push(normalizeHintUrl(hint.url || hint.href || hint.path));
+  if (hint.slug) candidates.push(normalizePageUrl(hint.slug));
+
+  const nameSlug = slugify(hint.name || hint.title || hint.label);
+  const slug = slugify(hint.slug);
+  const bestSlug = slug || nameSlug;
+  if (bestSlug) {
+    if (group === 'categories' || group === 'tags') candidates.push(`/categories/${bestSlug}.html`);
+    candidates.push(`/wiki/${bestSlug}.html`);
+  }
+
+  return [...new Set(candidates.filter(Boolean).map((url) => url.replace(/\.html(?:\.html)+$/i, '.html')))];
+}
+
+function linkFromHint(context, group, hint) {
+  if (!hint || typeof hint !== 'object' || Array.isArray(hint)) return null;
+  const candidates = group === 'categories' || group === 'tags'
+    ? [normalizeCategoryUrl(hint.url || hint.href || hint.path || hint.slug || hint.name || hint.title || hint.label), ...hintCandidateUrls(group, hint)]
+    : hintCandidateUrls(group, hint);
+
+  for (const url of candidates) {
+    if (!url || !existsInternal(url, context.root)) continue;
+    const entry = context.byUrl.get(url);
+    const title = hint.title || hint.name || hint.label || entry?.title || CATEGORY_TITLES.get(url) || titleCaseSlug(path.basename(url, '.html'));
+    const description = hint.description || hint.relationship || entry?.desc || '';
+    return makeLink(url, title, description, context.root);
+  }
+  return null;
+}
+
+function explicitHintGroups(context, currentUrl) {
+  const record = context.relationshipHints[currentUrl] || context.relationshipHints[currentUrl.replace(/^\/wiki\//, '').replace(/\.html$/, '')];
+  const hints = record?.relationship_hints || record;
+  if (!hints || typeof hints !== 'object' || Array.isArray(hints)) return [];
+
+  const groups = [];
+  const globalSeen = new Set([currentUrl]);
+  for (const [group, title] of HINT_GROUP_TITLES.entries()) {
+    const items = hints[group];
+    if (!Array.isArray(items)) continue;
+
+    const links = [];
+    const localSeen = new Set();
+    for (const item of items) {
+      const link = linkFromHint(context, group, item);
+      if (!link || globalSeen.has(link.url) || localSeen.has(link.url)) continue;
+      if (/\.html\.html(?:$|[?#])/i.test(link.url)) continue;
+      localSeen.add(link.url);
+      globalSeen.add(link.url);
+      links.push(link);
+      if (links.length >= GROUP_LIMIT) break;
+    }
+
+    if (links.length) groups.push({ title, links });
+  }
+  return groups;
 }
 
 function renderGroup(title, links) {
@@ -259,16 +369,19 @@ function updateCryptoMoonboysCategoryTags(html) {
 }
 
 function buildContext(root) {
-  const wikiIndex = readJson(WIKI_INDEX_PATH);
+  const wikiDir = path.join(root, 'wiki');
+  const wikiIndexPath = path.join(root, 'js', 'wiki-index.json');
+  const wikiIndex = readJson(wikiIndexPath);
   const entries = Array.isArray(wikiIndex) ? wikiIndex : [];
   const byUrl = new Map(entries.filter((entry) => entry?.url).map((entry) => [entry.url, entry]));
-  const wikiFiles = fs.readdirSync(WIKI_DIR).filter((file) => file.endsWith('.html') && file !== 'index.html').sort();
+  const wikiFiles = fs.readdirSync(wikiDir).filter((file) => file.endsWith('.html') && file !== 'index.html').sort();
   const htmlByUrl = new Map();
   const pageKinds = new Map();
+  const relationshipHints = readJsonObject(path.join(root, RELATIONSHIP_HINTS_PATH));
 
   for (const file of wikiFiles) {
     const url = `/wiki/${file}`;
-    const html = fs.readFileSync(path.join(WIKI_DIR, file), 'utf8');
+    const html = fs.readFileSync(path.join(wikiDir, file), 'utf8');
     htmlByUrl.set(url, html);
     pageKinds.set(url, {
       file,
@@ -282,13 +395,13 @@ function buildContext(root) {
     .filter((entry) => /^\/wiki\/gkniftyheads-.+-\d{5,}\.html$/i.test(entry.url || ''))
     .sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
 
-  return { root, entries, byUrl, htmlByUrl, pageKinds, gkniftyTemplates };
+  return { root, entries, byUrl, htmlByUrl, pageKinds, gkniftyTemplates, relationshipHints };
 }
 
 function knownPage(context, url, title, description = '') {
   const entry = context.byUrl.get(url);
-  if (entry && description) return makeLink(url, title || entry.title, description);
-  return linkFromEntry(entry, description) || makeLink(url, title, description);
+  if (entry && description) return makeLink(url, title || entry.title, description, context.root);
+  return linkFromEntry(entry, description, context.root) || makeLink(url, title, description, context.root);
 }
 
 function cryptoMoonboysGroups(context, currentUrl) {
@@ -303,20 +416,20 @@ function cryptoMoonboysGroups(context, currentUrl) {
   ];
 
   const categories = [
-    categoryLink('/categories/nfts.html', 'NFT category hub.'),
-    categoryLink('/categories/wax-nfts.html', 'WAX NFT category hub.'),
-    categoryLink('/categories/nfts-digital-art.html', 'NFT and digital art category hub.'),
-    categoryLink('/categories/lore.html', 'Lore category hub.'),
-    categoryLink('/categories/gaming.html', 'Gaming category hub.'),
-    categoryLink('/categories/technology.html', 'Web3 and technology category hub.'),
-    categoryLink('/categories/gkniftyheads.html', 'GKniftyHEADS category hub.'),
-    categoryLink('/categories/graffiti-street-art.html', 'Graffiti and street-art category hub.'),
+    categoryLink('/categories/nfts.html', 'NFT category hub.', context.root),
+    categoryLink('/categories/wax-nfts.html', 'WAX NFT category hub.', context.root),
+    categoryLink('/categories/nfts-digital-art.html', 'NFT and digital art category hub.', context.root),
+    categoryLink('/categories/lore.html', 'Lore category hub.', context.root),
+    categoryLink('/categories/gaming.html', 'Gaming category hub.', context.root),
+    categoryLink('/categories/technology.html', 'Web3 and technology category hub.', context.root),
+    categoryLink('/categories/gkniftyheads.html', 'GKniftyHEADS category hub.', context.root),
+    categoryLink('/categories/graffiti-street-art.html', 'Graffiti and street-art category hub.', context.root),
   ];
 
   const games = [
-    makeLink('/community.html', 'Battle Chamber', 'Live community and faction activity page.'),
-    makeLink('/games/index.html', 'Games', 'Game hub for playable Crypto Moonboys experiences.'),
-    makeLink('/games/leaderboard.html', 'Leaderboard', 'Game leaderboard and live/action surface.'),
+    makeLink('/community.html', 'Battle Chamber', 'Live community and faction activity page.', context.root),
+    makeLink('/games/index.html', 'Games', 'Game hub for playable Crypto Moonboys experiences.', context.root),
+    makeLink('/games/leaderboard.html', 'Leaderboard', 'Game leaderboard and live/action surface.', context.root),
     knownPage(context, '/wiki/gang-signs-card-game.html', 'Gang Signs Card Game', ''),
     knownPage(context, '/wiki/metaverse-battles.html', 'Metaverse Battles', ''),
   ];
@@ -328,21 +441,21 @@ function cryptoMoonboysGroups(context, currentUrl) {
     knownPage(context, '/wiki/xrp-ledger.html', 'XRP Ledger', ''),
   ];
 
-  const templates = context.gkniftyTemplates.slice(0, TEMPLATE_LIMIT).map((entry) => linkFromEntry(entry, 'GKniftyHEADS WAX NFT template page.'));
+  const templates = context.gkniftyTemplates.slice(0, TEMPLATE_LIMIT).map((entry) => linkFromEntry(entry, 'GKniftyHEADS WAX NFT template page.', context.root));
 
   return [
-    { title: 'Core Project Links', links: uniqueLinks(majorPages, currentUrl, GROUP_LIMIT) },
-    { title: 'Related Categories', links: uniqueLinks(categories, currentUrl, GROUP_LIMIT) },
-    { title: 'Related Games', links: uniqueLinks(games, currentUrl, GROUP_LIMIT) },
-    { title: 'Related Tokens', links: uniqueLinks(tokens, currentUrl, GROUP_LIMIT) },
-    { title: 'Related NFT Templates', links: uniqueLinks(templates, currentUrl, TEMPLATE_LIMIT) },
+    { title: 'Core Project Links', links: uniqueLinks(majorPages, currentUrl, GROUP_LIMIT, context.root) },
+    { title: 'Related Categories', links: uniqueLinks(categories, currentUrl, GROUP_LIMIT, context.root) },
+    { title: 'Related Games', links: uniqueLinks(games, currentUrl, GROUP_LIMIT, context.root) },
+    { title: 'Related Tokens', links: uniqueLinks(tokens, currentUrl, GROUP_LIMIT, context.root) },
+    { title: 'Related NFT Templates', links: uniqueLinks(templates, currentUrl, TEMPLATE_LIMIT, context.root) },
     {
       title: 'Timeline / Graph / Dashboard Links',
       links: uniqueLinks([
-        makeLink('/timeline.html', 'Timeline', 'Chronological route through project and lore entries.'),
-        makeLink('/graph.html?mode=hero', 'Graph', 'Visual relationship map for wiki entities.'),
-        makeLink('/dashboard.html', 'Dashboard', 'Site-wide wiki and project metrics.'),
-      ], currentUrl, GROUP_LIMIT),
+        makeLink('/timeline.html', 'Timeline', 'Chronological route through project and lore entries.', context.root),
+        makeLink('/graph.html?mode=hero', 'Graph', 'Visual relationship map for wiki entities.', context.root),
+        makeLink('/dashboard.html', 'Dashboard', 'Site-wide wiki and project metrics.', context.root),
+      ], currentUrl, GROUP_LIMIT, context.root),
     },
   ];
 }
@@ -353,7 +466,7 @@ function nftTemplateGroups(context, currentUrl, html) {
   const relatedFromCollection = collectionTemplates
     .filter((entry) => entry.url !== currentUrl)
     .slice(0, TEMPLATE_LIMIT)
-    .map((entry) => linkFromEntry(entry, 'More from this NFT collection.'));
+    .map((entry) => linkFromEntry(entry, 'More from this NFT collection.', context.root));
 
   const loreLinks = [];
   const text = html.toLowerCase();
@@ -369,25 +482,25 @@ function nftTemplateGroups(context, currentUrl, html) {
         knownPage(context, GKNIFTY_COLLECTION_URL, 'GKniftyHEADS NFT Collection', 'Full collection index for WAX AtomicAssets template pages.'),
         knownPage(context, '/wiki/gkniftyheads.html', 'GKniftyHEADS', 'Parent brand and faction hub.'),
         knownPage(context, CORE_PROJECT_URL, 'Crypto Moonboys', 'Core project hub for the wider wiki.'),
-      ], currentUrl, GROUP_LIMIT),
+      ], currentUrl, GROUP_LIMIT, context.root),
     },
     {
       title: 'Related Categories',
       links: uniqueLinks([
-        categoryLink('/categories/gkniftyheads.html', 'GKniftyHEADS category hub.'),
-        categoryLink('/categories/nfts.html', 'NFT category hub.'),
-        categoryLink('/categories/wax-nfts.html', 'WAX NFT category hub.'),
-        categoryLink('/categories/nfts-digital-art.html', 'NFT and digital art category hub.'),
-      ], currentUrl, GROUP_LIMIT),
+        categoryLink('/categories/gkniftyheads.html', 'GKniftyHEADS category hub.', context.root),
+        categoryLink('/categories/nfts.html', 'NFT category hub.', context.root),
+        categoryLink('/categories/wax-nfts.html', 'WAX NFT category hub.', context.root),
+        categoryLink('/categories/nfts-digital-art.html', 'NFT and digital art category hub.', context.root),
+      ], currentUrl, GROUP_LIMIT, context.root),
     },
-    { title: 'Character / Faction / Game Links', links: uniqueLinks(loreLinks, currentUrl, GROUP_LIMIT) },
-    { title: 'More from this collection', links: uniqueLinks(relatedFromCollection, currentUrl, TEMPLATE_LIMIT) },
+    { title: 'Character / Faction / Game Links', links: uniqueLinks(loreLinks, currentUrl, GROUP_LIMIT, context.root) },
+    { title: 'More from this collection', links: uniqueLinks(relatedFromCollection, currentUrl, TEMPLATE_LIMIT, context.root) },
     {
       title: 'Timeline / Graph Links',
       links: uniqueLinks([
-        makeLink('/timeline.html', 'Timeline', 'Chronological route through related wiki entries.'),
-        makeLink('/graph.html?mode=hero', 'Graph', 'Visual relationship map for wiki entities.'),
-      ], currentUrl, GROUP_LIMIT),
+        makeLink('/timeline.html', 'Timeline', 'Chronological route through related wiki entries.', context.root),
+        makeLink('/graph.html?mode=hero', 'Graph', 'Visual relationship map for wiki entities.', context.root),
+      ], currentUrl, GROUP_LIMIT, context.root),
     },
   ];
 }
@@ -401,7 +514,7 @@ function genericGroups(context, currentUrl) {
     .filter((candidate) => candidate.url !== currentUrl && rankCategory(candidate) === category)
     .sort((a, b) => (b.rank_score || 0) - (a.rank_score || 0))
     .slice(0, GROUP_LIMIT)
-    .map((candidate) => linkFromEntry(candidate, 'Related page in the same wiki category.'));
+    .map((candidate) => linkFromEntry(candidate, 'Related page in the same wiki category.', context.root));
 
   const tagRelated = context.entries
     .filter((candidate) => {
@@ -411,7 +524,7 @@ function genericGroups(context, currentUrl) {
     })
     .sort((a, b) => (b.rank_score || 0) - (a.rank_score || 0))
     .slice(0, GROUP_LIMIT)
-    .map((candidate) => linkFromEntry(candidate, 'Related page matched by existing wiki metadata.'));
+    .map((candidate) => linkFromEntry(candidate, 'Related page matched by existing wiki metadata.', context.root));
 
   const categoryUrl = category ? `/categories/${category}.html` : '';
   return [
@@ -419,65 +532,86 @@ function genericGroups(context, currentUrl) {
       title: 'Core Project Links',
       links: uniqueLinks([
         knownPage(context, CORE_PROJECT_URL, 'Crypto Moonboys', 'Core project hub for the wider wiki.'),
-        makeLink('/timeline.html', 'Timeline', 'Chronological route through wiki entries.'),
-        makeLink('/graph.html?mode=hero', 'Graph', 'Visual relationship map for wiki entities.'),
-      ], currentUrl, GROUP_LIMIT),
+        makeLink('/timeline.html', 'Timeline', 'Chronological route through wiki entries.', context.root),
+        makeLink('/graph.html?mode=hero', 'Graph', 'Visual relationship map for wiki entities.', context.root),
+      ], currentUrl, GROUP_LIMIT, context.root),
     },
-    { title: 'Related Categories', links: uniqueLinks([categoryLink(categoryUrl, 'Category hub for this page.')], currentUrl, GROUP_LIMIT) },
-    { title: 'Related Wiki Pages', links: uniqueLinks([...tagRelated, ...sameCategory], currentUrl, GROUP_LIMIT) },
+    { title: 'Related Categories', links: uniqueLinks([categoryLink(categoryUrl, 'Category hub for this page.', context.root)], currentUrl, GROUP_LIMIT, context.root) },
+    { title: 'Related Wiki Pages', links: uniqueLinks([...tagRelated, ...sameCategory], currentUrl, GROUP_LIMIT, context.root) },
   ];
 }
 
 function groupsForPage(context, currentUrl, html, kind) {
-  if (currentUrl === CORE_PROJECT_URL) return cryptoMoonboysGroups(context, currentUrl);
-  if (kind.isNftTemplate) return nftTemplateGroups(context, currentUrl, html);
-  if (kind.isNftCollection) {
-    return [
+  const hintGroups = explicitHintGroups(context, currentUrl);
+  let fallbackGroups;
+  if (currentUrl === CORE_PROJECT_URL) fallbackGroups = cryptoMoonboysGroups(context, currentUrl);
+  else if (kind.isNftTemplate) fallbackGroups = nftTemplateGroups(context, currentUrl, html);
+  else if (kind.isNftCollection) {
+    fallbackGroups = [
       {
         title: 'Collection Links',
         links: uniqueLinks([
           knownPage(context, '/wiki/gkniftyheads.html', 'GKniftyHEADS', 'Parent brand and faction hub.'),
           knownPage(context, CORE_PROJECT_URL, 'Crypto Moonboys', 'Core project hub for the wider wiki.'),
-        ], currentUrl, GROUP_LIMIT),
+        ], currentUrl, GROUP_LIMIT, context.root),
       },
       {
         title: 'Related Categories',
         links: uniqueLinks([
-          categoryLink('/categories/gkniftyheads.html', 'GKniftyHEADS category hub.'),
-          categoryLink('/categories/nfts.html', 'NFT category hub.'),
-          categoryLink('/categories/wax-nfts.html', 'WAX NFT category hub.'),
-          categoryLink('/categories/nfts-digital-art.html', 'NFT and digital art category hub.'),
-        ], currentUrl, GROUP_LIMIT),
+          categoryLink('/categories/gkniftyheads.html', 'GKniftyHEADS category hub.', context.root),
+          categoryLink('/categories/nfts.html', 'NFT category hub.', context.root),
+          categoryLink('/categories/wax-nfts.html', 'WAX NFT category hub.', context.root),
+          categoryLink('/categories/nfts-digital-art.html', 'NFT and digital art category hub.', context.root),
+        ], currentUrl, GROUP_LIMIT, context.root),
       },
-      { title: 'Related NFT Templates', links: uniqueLinks(context.gkniftyTemplates.slice(0, TEMPLATE_LIMIT).map((entry) => linkFromEntry(entry, 'Featured child template page.')), currentUrl, TEMPLATE_LIMIT) },
+      { title: 'Related NFT Templates', links: uniqueLinks(context.gkniftyTemplates.slice(0, TEMPLATE_LIMIT).map((entry) => linkFromEntry(entry, 'Featured child template page.', context.root)), currentUrl, TEMPLATE_LIMIT, context.root) },
     ];
+  } else {
+    fallbackGroups = genericGroups(context, currentUrl);
   }
-  return genericGroups(context, currentUrl);
+
+  if (!hintGroups.length) return fallbackGroups;
+  const hintedUrls = new Set(hintGroups.flatMap((group) => group.links.map((link) => link.url)));
+  const dedupedFallback = fallbackGroups
+    .map((group) => ({
+      ...group,
+      links: group.links.filter((link) => !hintedUrls.has(link.url)),
+    }))
+    .filter((group) => group.links.length);
+  return [...hintGroups, ...dedupedFallback];
 }
 
-const context = buildContext(ROOT);
-let written = 0;
+export function runGenerateRelatedWikiPaths(root = ROOT) {
+  const context = buildContext(root);
+  let written = 0;
 
-for (const [url, html] of context.htmlByUrl.entries()) {
-  const kind = context.pageKinds.get(url);
-  if (!isContentPage(html)) {
-    const nextHtml = removeMarkedSection(html);
+  for (const [url, html] of context.htmlByUrl.entries()) {
+    const kind = context.pageKinds.get(url);
+    if (!isContentPage(html)) {
+      const nextHtml = removeMarkedSection(html);
+      if (nextHtml !== html) {
+        fs.writeFileSync(path.join(root, relForUrl(url)), nextHtml, 'utf8');
+        written += 1;
+      }
+      continue;
+    }
+    const groups = groupsForPage(context, url, html, kind);
+    const section = renderRelatedSection(groups);
+    let nextHtml = insertSection(html, section);
+    if (url === CORE_PROJECT_URL) nextHtml = updateCryptoMoonboysCategoryTags(nextHtml);
+
     if (nextHtml !== html) {
-      fs.writeFileSync(htmlFileForUrl(url), nextHtml, 'utf8');
+      const file = path.join(root, relForUrl(url));
+      fs.writeFileSync(file, nextHtml, 'utf8');
       written += 1;
     }
-    continue;
   }
-  const groups = groupsForPage(context, url, html, kind);
-  const section = renderRelatedSection(groups);
-  let nextHtml = insertSection(html, section);
-  if (url === CORE_PROJECT_URL) nextHtml = updateCryptoMoonboysCategoryTags(nextHtml);
 
-  if (nextHtml !== html) {
-    const file = htmlFileForUrl(url);
-    fs.writeFileSync(file, nextHtml, 'utf8');
-    written += 1;
-  }
+  return { written };
 }
 
-console.log(`Related Wiki Paths generated for ${written} wiki page(s).`);
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  const root = process.argv[2] ? path.resolve(process.argv[2]) : ROOT;
+  const result = runGenerateRelatedWikiPaths(root);
+  console.log(`Related Wiki Paths generated for ${result.written} wiki page(s).`);
+}
