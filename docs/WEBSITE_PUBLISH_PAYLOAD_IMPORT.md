@@ -127,4 +127,14 @@ Dry-run mode:
 
 Write mode is only enabled with `--write`. Write mode must use the current website template/shell from this repo, never an agent-provided full shell.
 
-Actual feed/index generation can be implemented incrementally, but until then the importer must keep reporting planned affected surfaces so publishing does not silently skip categories, search, timeline, graph, dashboard, SAM page, or sitemap sync.
+Write mode validates every payload before writing any page. After page writes, it syncs the required website-owned surfaces:
+
+- categories
+- search / `js/wiki-index.json`
+- timeline data
+- graph data
+- dashboard support data
+- SAM support data
+- sitemap
+
+If a required surface cannot be synced, the importer fails instead of silently claiming success.
