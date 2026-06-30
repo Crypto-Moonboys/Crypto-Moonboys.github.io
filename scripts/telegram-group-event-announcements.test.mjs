@@ -15,6 +15,7 @@ function check(condition, label) {
 }
 
 const WORKER = 'workers/moonboys-api/worker.js';
+const WORKER_WTF_SCHEDULE = 'workers/moonboys-api/shared/daily-wtf-schedule.js';
 const WRANGLER = 'workers/moonboys-api/wrangler.toml';
 const MIGRATION = 'workers/moonboys-api/migrations/020_telegram_group_event_announcements.sql';
 const PACKAGE = 'package.json';
@@ -22,6 +23,7 @@ const DAILY_WTF_TEST = 'scripts/daily-wtf-timed-events.test.mjs';
 const LEADERBOARD = 'js/leaderboard-client.js';
 const BLOCKTOPIA_ROUTE = 'workers/moonboys-api/blocktopia/routes.js';
 const workerJs = read(WORKER);
+const workerWtfScheduleJs = read(WORKER_WTF_SCHEDULE);
 const wranglerToml = read(WRANGLER);
 const migrationSql = exists(MIGRATION) ? read(MIGRATION) : '';
 const packageJson = read(PACKAGE);
@@ -29,15 +31,9 @@ const dailyWtfTest = read(DAILY_WTF_TEST);
 const leaderboardJs = read(LEADERBOARD);
 const blockTopiaRoutes = read(BLOCKTOPIA_ROUTE);
 
-const scheduleBlock = (src, functionName) => {
-  const start = src.indexOf(`function ${functionName}`);
-  if (start < 0) return '';
-  const end = src.indexOf('\n}\n', start);
-  return end >= 0 ? src.slice(start, end + 3) : src.slice(start);
-};
 const extractSchedule = (block) => [...block.matchAll(/event_id: '([^']+)'[\s\S]*?title: '([^']+)'[\s\S]*?startHour: (\d+)[\s\S]*?durationMinutes: (\d+)/g)]
   .map((m) => ({ id: m[1], title: m[2], hour: Number(m[3]), duration: Number(m[4]) }));
-const workerEvents = extractSchedule(scheduleBlock(workerJs, 'getWtfDailySchedule'));
+const workerEvents = extractSchedule(workerWtfScheduleJs);
 
 console.log('\n--- Telegram Group Event Announcement Tests ---\n');
 
@@ -47,6 +43,7 @@ check(workerJs.includes('TELEGRAM_GROUP_THREAD_ID'), 'optionally reads TELEGRAM_
 check(workerJs.includes('telegram_group_not_configured'), 'missing group config skips safely with required log label');
 check(workerJs.includes('message_thread_id') && workerJs.includes('groupConfig.message_thread_id'), 'topic/thread config is passed as message_thread_id');
 check(!workerJs.includes('-1001967931909'), 'main group ID is not hardcoded');
+check(workerJs.includes("from './shared/daily-wtf-schedule.js'"), 'Worker imports shared Daily WTF schedule authority');
 
 console.log('\n[2] Timed event announcements');
 check(workerEvents.length === 6, 'six WTF events per UTC day are considered');
