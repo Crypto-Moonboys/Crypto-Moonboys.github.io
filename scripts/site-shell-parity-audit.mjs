@@ -100,6 +100,7 @@ console.log('\n─── Site Shell Parity Audit ──────────�
 console.log('[1] site-shell.js exists');
 const shellJs = read('js/site-shell.js');
 const applyShell = read('scripts/apply-shell.mjs');
+const retroTheme = read('css/retro-16bit-theme.css') || '';
 if (!shellJs) {
   fail('js/site-shell.js — file not found');
 } else {
@@ -294,6 +295,7 @@ for (const rel of LIVE_PAGES) {
 // 6b. Dashboard is editorial/wiki only: no static hooks and no runtime right-panel injection.
 console.log('\n[6b] Dashboard excludes runtime right panel');
 const dashboardHtml = read('dashboard.html') || '';
+const indexHtml = read('index.html') || '';
 const shouldShowRightPanelBlock = functionBlock(shellJs, 'shouldShowRightPanel');
 const runtimeAllowlist = stringArrayValues(shouldShowRightPanelBlock, 'exact');
 const STATIC_STANDARD_PAGES = [
@@ -341,6 +343,39 @@ if (shouldShowRightPanelBlock.includes("'/wiki/'") || shouldShowRightPanelBlock.
   pass('site-shell.js: no /wiki/ or /categories/ right-panel prefix allowlist');
 }
 
+console.log('\n[6aa] Homepage standard shell fills right-panel-free layout');
+if (/<body\b[^>]*class=["'][^"']*\bpage-home\b[^"']*\bpage-standard-shell\b[^"']*["']/u.test(indexHtml)) {
+  pass('index.html: body has page-home page-standard-shell');
+} else {
+  fail('index.html - body must include page-home page-standard-shell');
+}
+if (!indexHtml.includes('page-has-right-panel')) {
+  pass('index.html: no page-has-right-panel opt-in');
+} else {
+  fail('index.html - must not contain page-has-right-panel');
+}
+const homeLayoutRightPanelRules = Array.from(retroTheme.matchAll(/([^{}]*\.page-home\s+#layout[^{}]*)\{([^{}]*)\}/gu))
+  .filter((match) => match[2].includes('grid-template-columns') || match[2].includes('var(--right-panel-w)'));
+if (homeLayoutRightPanelRules.length === 0) {
+  pass('retro theme: .page-home #layout does not reserve right-panel grid space');
+} else {
+  fail('retro theme - .page-home #layout must not set grid-template-columns or var(--right-panel-w)');
+}
+if (!/body\.page-home\s+#layout\s*>\s*#homepage-right-panel/u.test(retroTheme)) {
+  pass('retro theme: page-home is not used as right-panel layout proxy');
+} else {
+  fail('retro theme - body.page-home #layout > #homepage-right-panel selector must not be used');
+}
+if (/\.page-has-right-panel\s+#layout\s*\{[\s\S]*?grid-template-columns:\s*var\(--color-sidebar-w\)\s+minmax\(0,\s*1fr\)\s+var\(--right-panel-w\)/u.test(retroTheme)) {
+  pass('retro theme: right-panel grid reservation is scoped to .page-has-right-panel');
+} else {
+  fail('retro theme - right-panel grid reservation must be scoped to .page-has-right-panel with minmax content column');
+}
+if (retroTheme.includes('body.page-standard-shell #layout') && retroTheme.includes('body.page-standard-shell #main-wrapper') && retroTheme.includes('body.page-standard-shell #content')) {
+  pass('retro theme: standard shell layout fills freed width');
+} else {
+  fail('retro theme - missing standard shell fill-width layout rules');
+}
 if (dashboardHtml.includes('data-csp-panel') || dashboardHtml.includes('data-las-panel')) {
   fail('dashboard.html — contains live player panel hooks');
 } else {

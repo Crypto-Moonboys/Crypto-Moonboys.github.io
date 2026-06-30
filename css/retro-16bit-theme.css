@@ -795,18 +795,35 @@ a.hero-stat-link:hover {
 }
 
 /* ── SHARED RIGHT-PANEL LAYOUT ───────────────────────────────── */
-/* Three-column grid: sidebar | content | right-panel
- * Applied to homepage (page-home) and all converted pages (page-has-right-panel)
+/* Three-column grid: sidebar | content | right-panel.
+ * Only pages that explicitly opt into the live/right-panel layout reserve
+ * the right-panel column.
  */
-.page-home #layout,
 .page-has-right-panel #layout {
   display: grid !important;
-  grid-template-columns: var(--color-sidebar-w) 1fr var(--right-panel-w);
+  grid-template-columns: var(--color-sidebar-w) minmax(0, 1fr) var(--right-panel-w);
   align-items: start;
 }
 
+body.page-standard-shell #layout,
+body.page-home.page-standard-shell #layout {
+  display: flex !important;
+}
+
+body.page-standard-shell #main-wrapper,
+body.page-home.page-standard-shell #main-wrapper {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+}
+
+body.page-standard-shell #content,
+body.page-home.page-standard-shell #content {
+  width: 100%;
+  max-width: none;
+}
+
 /* Ensure main wrapper still stacks vertically inside the grid */
-.page-home #main-wrapper,
 .page-has-right-panel #main-wrapper {
   min-width: 0;
   display: flex;
@@ -820,10 +837,9 @@ a.hero-stat-link:hover {
  *
  * The selector below mirrors the guard's :not() pseudo-classes, giving it
  * specificity (0,4,1,1): #layout=1 + #homepage-right-panel=1 + :not(#sidebar)=1 + :not(#main-wrapper)=1
- * = 4 IDs, plus .page-home/.page-has-right-panel=1 class, body=1 type.  4 IDs > 3 IDs, so
+ * = 4 IDs, plus .page-has-right-panel=1 class, body=1 type.  4 IDs > 3 IDs, so
  * every !important declaration here wins, making the panel visible at desktop (≥1201 px).
  */
-body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
 body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
   position: sticky !important;
   top: var(--color-header-h) !important;
@@ -1285,11 +1301,9 @@ body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#mai
 
 /* Collapse right panel below 1200 px */
 @media (max-width: 1200px) {
-  .page-home #layout,
   .page-has-right-panel #layout {
     grid-template-columns: var(--color-sidebar-w) 1fr;
   }
-  body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
   body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
     display: none !important;
     flex: 0 0 0 !important;
@@ -1303,7 +1317,6 @@ body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#mai
 
 /* Stack layout on mobile */
 @media (max-width: 900px) {
-  .page-home #layout,
   .page-has-right-panel #layout {
     display: flex !important;
     flex-direction: column;
@@ -1562,13 +1575,11 @@ body.page-home .retro-hud-body b {
   text-shadow: 0 0 6px rgba(255,255,255,.22), 2px 2px 0 #000;
 }
 
-body.page-home #homepage-right-panel,
 body.page-has-right-panel #homepage-right-panel {
   min-width: 250px;
   max-width: 310px;
 }
 
-body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
 body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
   background:
     repeating-linear-gradient(0deg, rgba(0,229,255,.035) 0 2px, transparent 2px 5px),
@@ -1687,7 +1698,7 @@ body.page-home .home-widget > * {
 }
 
 /* Right HUD */
-body.page-home #homepage-right-panel {
+body.page-has-right-panel #homepage-right-panel {
   background:
     repeating-linear-gradient(0deg, rgba(0,229,255,.035) 0 2px, transparent 2px 5px),
     linear-gradient(180deg, rgba(4, 8, 24, .86), rgba(1, 4, 12, .95)) !important;
@@ -1824,7 +1835,7 @@ body.page-home .launch-subcopy {
 }
 
 @media (max-width: 1200px) {
-  body.page-home #homepage-right-panel {
+  body.page-has-right-panel #homepage-right-panel {
     max-width: none;
   }
 }
@@ -1846,19 +1857,19 @@ body.page-home .launch-subcopy {
 
 /* ==========================================================================
    HUD REBUILD — REFERENCE MATCH
-   Scope: homepage only.
-   - Right-panel classes scoped under: body.page-home #homepage-right-panel
+   Scope: shared right-panel HUD and homepage hero accents.
+   - Right-panel classes scoped under: body.page-has-right-panel #homepage-right-panel
    - Hero logo wrap scoped under: body.page-home
    No JS / gameplay / auth / XP / worker logic touched.
    ========================================================================== */
 
 /* ── Mascot icons in HUD title bar ─────────────────────────────── */
-body.page-home #homepage-right-panel .retro-hud-title {
+body.page-has-right-panel #homepage-right-panel .retro-hud-title {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
 }
-body.page-home #homepage-right-panel .retro-hud-mascot {
+body.page-has-right-panel #homepage-right-panel .retro-hud-mascot {
   margin-left: auto;
   padding-left: 6px;
   font-size: 1.35rem;
@@ -1916,10 +1927,10 @@ body.page-home .hud-box--feed .retro-hud-title {
   color: var(--neon-purple) !important;
   text-shadow: 0 0 8px var(--neon-purple), 2px 2px 0 #000 !important;
 }
-body.page-home #homepage-right-panel .hud-box--feed .retro-hud-mascot {
+body.page-has-right-panel #homepage-right-panel .hud-box--feed .retro-hud-mascot {
   filter: drop-shadow(0 0 6px rgba(190, 76, 247, 0.80));
 }
-body.page-home #homepage-right-panel .hud-box--system .retro-hud-mascot {
+body.page-has-right-panel #homepage-right-panel .hud-box--system .retro-hud-mascot {
   filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.80));
 }
 
@@ -1932,14 +1943,14 @@ body.page-home .hud-box--feed::before   { border-color: var(--neon-purple) !impo
 body.page-home .hud-box--feed::after    { border-color: var(--neon-cyan) !important; }
 
 /* ── Player Portrait Row ─────────────────────────────────────── */
-body.page-home #homepage-right-panel .hud-player-portrait-row {
+body.page-has-right-panel #homepage-right-panel .hud-player-portrait-row {
   display: flex;
   gap: 10px;
   align-items: flex-start;
   margin-bottom: 10px;
 }
 
-body.page-home #homepage-right-panel .hud-avatar-box {
+body.page-has-right-panel #homepage-right-panel .hud-avatar-box {
   flex-shrink: 0;
   width: 64px;
   height: 64px;
@@ -1957,14 +1968,14 @@ body.page-home #homepage-right-panel .hud-avatar-box {
   position: relative;
 }
 
-body.page-home #homepage-right-panel .hud-avatar-icon {
+body.page-has-right-panel #homepage-right-panel .hud-avatar-icon {
   font-size: 2.5rem;
   line-height: 1;
   image-rendering: pixelated;
   filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.65));
 }
 
-body.page-home #homepage-right-panel .hud-player-info {
+body.page-has-right-panel #homepage-right-panel .hud-player-info {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -1972,7 +1983,7 @@ body.page-home #homepage-right-panel .hud-player-info {
   gap: 5px;
 }
 
-body.page-home #homepage-right-panel .hud-live-pill {
+body.page-has-right-panel #homepage-right-panel .hud-live-pill {
   display: inline-flex;
   align-self: flex-start;
   padding: 2px 7px;
@@ -1986,24 +1997,24 @@ body.page-home #homepage-right-panel .hud-live-pill {
   background: rgba(63, 185, 80, 0.12);
 }
 
-body.page-home #homepage-right-panel .hud-live-pill--relink {
+body.page-has-right-panel #homepage-right-panel .hud-live-pill--relink {
   color: #f7c948;
   background: rgba(247, 201, 72, 0.08);
   border-color: rgba(247, 201, 72, 0.45);
 }
 
-body.page-home #homepage-right-panel .hud-live-pill--pending {
+body.page-has-right-panel #homepage-right-panel .hud-live-pill--pending {
   color: #56dcff;
   background: rgba(86, 220, 255, 0.08);
   border-color: rgba(86, 220, 255, 0.35);
 }
 
-body.page-home #homepage-right-panel .hud-live-pill--relink a {
+body.page-has-right-panel #homepage-right-panel .hud-live-pill--relink a {
   color: #f7c948;
   text-decoration: none;
 }
 
-body.page-home #homepage-right-panel .hud-info-row {
+body.page-has-right-panel #homepage-right-panel .hud-info-row {
   display: flex;
   align-items: baseline;
   gap: 5px;
@@ -2012,7 +2023,7 @@ body.page-home #homepage-right-panel .hud-info-row {
   min-width: 0;
 }
 
-body.page-home #homepage-right-panel .hud-label {
+body.page-has-right-panel #homepage-right-panel .hud-label {
   font-family: var(--font-pixel);
   font-size: 0.38rem;
   color: var(--neon-magenta);
@@ -2024,7 +2035,7 @@ body.page-home #homepage-right-panel .hud-label {
   line-height: 1.6;
 }
 
-body.page-home #homepage-right-panel .hud-value {
+body.page-has-right-panel #homepage-right-panel .hud-value {
   font-family: var(--font-pixel);
   font-size: 0.40rem;
   color: #eaf8ff;
@@ -2038,25 +2049,25 @@ body.page-home #homepage-right-panel .hud-value {
   line-height: 1.6;
 }
 
-body.page-home #homepage-right-panel .hud-rank-val {
+body.page-has-right-panel #homepage-right-panel .hud-rank-val {
   color: var(--neon-yellow) !important;
   text-shadow: 0 0 8px rgba(255, 214, 0, 0.70), 1px 1px 0 #000 !important;
 }
 
-body.page-home #homepage-right-panel .hud-xp-inline {
+body.page-has-right-panel #homepage-right-panel .hud-xp-inline {
   color: var(--neon-cyan) !important;
   text-shadow: 0 0 6px rgba(0, 229, 255, 0.60), 1px 1px 0 #000 !important;
 }
 
 /* ── XP Progress Bar ─────────────────────────────────────────── */
-body.page-home #homepage-right-panel .hud-xp-bar-wrap {
+body.page-has-right-panel #homepage-right-panel .hud-xp-bar-wrap {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-bottom: 9px;
 }
 
-body.page-home #homepage-right-panel .hud-xp-label {
+body.page-has-right-panel #homepage-right-panel .hud-xp-label {
   font-family: var(--font-pixel);
   font-size: 0.38rem;
   color: var(--neon-magenta);
@@ -2066,7 +2077,7 @@ body.page-home #homepage-right-panel .hud-xp-label {
   line-height: 1;
 }
 
-body.page-home #homepage-right-panel .hud-xp-track {
+body.page-has-right-panel #homepage-right-panel .hud-xp-track {
   flex: 1;
   height: 10px;
   background: rgba(0, 0, 0, 0.65);
@@ -2076,7 +2087,7 @@ body.page-home #homepage-right-panel .hud-xp-track {
   box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.10);
 }
 
-body.page-home #homepage-right-panel .hud-xp-fill {
+body.page-has-right-panel #homepage-right-panel .hud-xp-fill {
   height: 100%;
   background: repeating-linear-gradient(
     90deg,
@@ -2090,7 +2101,7 @@ body.page-home #homepage-right-panel .hud-xp-fill {
   transition: width 0.4s ease;
 }
 
-body.page-home #homepage-right-panel .hud-xp-pct {
+body.page-has-right-panel #homepage-right-panel .hud-xp-pct {
   font-family: var(--font-pixel);
   font-size: 0.38rem;
   color: var(--neon-cyan);
@@ -2102,14 +2113,14 @@ body.page-home #homepage-right-panel .hud-xp-pct {
 }
 
 /* ── Stats Row (coins / gems / energy) ───────────────────────── */
-body.page-home #homepage-right-panel .hud-stats-row {
+body.page-has-right-panel #homepage-right-panel .hud-stats-row {
   display: flex;
   gap: 5px;
   justify-content: space-between;
   margin-bottom: 10px;
 }
 
-body.page-home #homepage-right-panel .hud-stat-chip {
+body.page-has-right-panel #homepage-right-panel .hud-stat-chip {
   flex: 1;
   display: flex;
   align-items: center;
@@ -2123,13 +2134,13 @@ body.page-home #homepage-right-panel .hud-stat-chip {
   overflow: hidden;
 }
 
-body.page-home #homepage-right-panel .hud-stat-icon {
+body.page-has-right-panel #homepage-right-panel .hud-stat-icon {
   font-size: 0.88rem;
   line-height: 1;
   flex-shrink: 0;
 }
 
-body.page-home #homepage-right-panel .hud-stat-val {
+body.page-has-right-panel #homepage-right-panel .hud-stat-val {
   font-family: var(--font-pixel);
   font-size: 0.38rem;
   color: var(--neon-cyan);
@@ -2142,14 +2153,14 @@ body.page-home #homepage-right-panel .hud-stat-val {
 }
 
 /* ── System Status Table ─────────────────────────────────────── */
-body.page-home #homepage-right-panel .hud-sys-table {
+body.page-has-right-panel #homepage-right-panel .hud-sys-table {
   display: flex;
   flex-direction: column;
   gap: 0;
   margin-bottom: 6px;
 }
 
-body.page-home #homepage-right-panel .hud-sys-row {
+body.page-has-right-panel #homepage-right-panel .hud-sys-row {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -2157,9 +2168,9 @@ body.page-home #homepage-right-panel .hud-sys-row {
   border-bottom: 1px solid rgba(0, 229, 255, 0.12);
   min-width: 0;
 }
-body.page-home #homepage-right-panel .hud-sys-row:last-child { border-bottom: none; }
+body.page-has-right-panel #homepage-right-panel .hud-sys-row:last-child { border-bottom: none; }
 
-body.page-home #homepage-right-panel .hud-sys-label {
+body.page-has-right-panel #homepage-right-panel .hud-sys-label {
   font-family: var(--font-pixel);
   font-size: 0.36rem;
   color: var(--color-text-muted);
@@ -2173,7 +2184,7 @@ body.page-home #homepage-right-panel .hud-sys-label {
   line-height: 1.6;
 }
 
-body.page-home #homepage-right-panel .hud-sys-val {
+body.page-has-right-panel #homepage-right-panel .hud-sys-val {
   font-family: var(--font-pixel);
   font-size: 0.38rem;
   letter-spacing: 0.06em;
@@ -2183,12 +2194,12 @@ body.page-home #homepage-right-panel .hud-sys-val {
   line-height: 1.6;
 }
 
-body.page-home #homepage-right-panel .hud-sys-online { color: var(--neon-green); }
-body.page-home #homepage-right-panel .hud-sys-ratio  { color: var(--neon-yellow); }
-body.page-home #homepage-right-panel .hud-sys-warn   { color: var(--neon-orange); }
-body.page-home #homepage-right-panel .hud-sys-error  { color: var(--neon-magenta); }
+body.page-has-right-panel #homepage-right-panel .hud-sys-online { color: var(--neon-green); }
+body.page-has-right-panel #homepage-right-panel .hud-sys-ratio  { color: var(--neon-yellow); }
+body.page-has-right-panel #homepage-right-panel .hud-sys-warn   { color: var(--neon-orange); }
+body.page-has-right-panel #homepage-right-panel .hud-sys-error  { color: var(--neon-magenta); }
 
-body.page-home #homepage-right-panel .hud-sys-dot {
+body.page-has-right-panel #homepage-right-panel .hud-sys-dot {
   width: 8px;
   height: 8px;
   min-width: 8px;
@@ -2200,8 +2211,8 @@ body.page-home #homepage-right-panel .hud-sys-dot {
 }
 
 /* ── Live Feed Items ─────────────────────────────────────────── */
-body.page-home #homepage-right-panel .hud-feed-item,
-body.page-home #homepage-right-panel .feed-item {
+body.page-has-right-panel #homepage-right-panel .hud-feed-item,
+body.page-has-right-panel #homepage-right-panel .feed-item {
   display: flex !important;
   align-items: flex-start !important;
   gap: 5px !important;
@@ -2209,10 +2220,10 @@ body.page-home #homepage-right-panel .feed-item {
   border-bottom: 1px solid rgba(190, 76, 247, 0.18) !important;
   min-width: 0;
 }
-body.page-home #homepage-right-panel .hud-feed-item:last-child,
-body.page-home #homepage-right-panel .feed-item:last-child { border-bottom: none !important; }
+body.page-has-right-panel #homepage-right-panel .hud-feed-item:last-child,
+body.page-has-right-panel #homepage-right-panel .feed-item:last-child { border-bottom: none !important; }
 
-body.page-home #homepage-right-panel .hud-feed-icon {
+body.page-has-right-panel #homepage-right-panel .hud-feed-icon {
   font-size: 0.78rem;
   line-height: 1.35;
   flex-shrink: 0;
@@ -2220,8 +2231,8 @@ body.page-home #homepage-right-panel .hud-feed-icon {
   text-align: center;
 }
 
-body.page-home #homepage-right-panel .hud-feed-text,
-body.page-home #homepage-right-panel .feed-text {
+body.page-has-right-panel #homepage-right-panel .hud-feed-text,
+body.page-has-right-panel #homepage-right-panel .feed-text {
   font-family: var(--font-pixel) !important;
   font-size: 0.36rem !important;
   color: #d0eaff !important;
@@ -2232,8 +2243,8 @@ body.page-home #homepage-right-panel .feed-text {
   letter-spacing: 0.02em;
 }
 
-body.page-home #homepage-right-panel .hud-feed-time,
-body.page-home #homepage-right-panel .feed-time {
+body.page-has-right-panel #homepage-right-panel .hud-feed-time,
+body.page-has-right-panel #homepage-right-panel .feed-time {
   font-family: var(--font-pixel) !important;
   font-size: 0.34rem !important;
   color: var(--neon-cyan) !important;
@@ -2246,7 +2257,7 @@ body.page-home #homepage-right-panel .feed-time {
 }
 
 /* ── Override CSP inline styles to match retro ──────────────── */
-body.page-home [data-csp-panel] .csp-panel {
+body.page-has-right-panel [data-csp-panel] .csp-panel {
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
@@ -2256,18 +2267,18 @@ body.page-home [data-csp-panel] .csp-panel {
   color: var(--color-text) !important;
 }
 
-body.page-home [data-csp-panel] .csp-row {
+body.page-has-right-panel [data-csp-panel] .csp-row {
   font-family: var(--font-pixel) !important;
   font-size: 0.38rem !important;
   gap: 6px !important;
   margin-bottom: 6px !important;
 }
 
-body.page-home [data-csp-panel] .csp-grid {
+body.page-has-right-panel [data-csp-panel] .csp-grid {
   gap: 5px !important;
 }
 
-body.page-home [data-csp-panel] .csp-item {
+body.page-has-right-panel [data-csp-panel] .csp-item {
   background: rgba(0, 0, 0, 0.50) !important;
   border: 2px solid rgba(0, 229, 255, 0.35) !important;
   border-radius: 0 !important;
@@ -2275,7 +2286,7 @@ body.page-home [data-csp-panel] .csp-item {
   padding: 6px 8px !important;
 }
 
-body.page-home [data-csp-panel] .csp-item-label {
+body.page-has-right-panel [data-csp-panel] .csp-item-label {
   font-family: var(--font-pixel) !important;
   font-size: 0.34rem !important;
   color: var(--neon-magenta) !important;
@@ -2284,14 +2295,14 @@ body.page-home [data-csp-panel] .csp-item-label {
   font-weight: 400 !important;
 }
 
-body.page-home [data-csp-panel] .csp-item-note {
+body.page-has-right-panel [data-csp-panel] .csp-item-note {
   font-family: var(--font-pixel) !important;
   font-size: 0.30rem !important;
   color: var(--color-text-muted) !important;
   opacity: 0.85 !important;
 }
 
-body.page-home [data-csp-panel] .csp-item-val {
+body.page-has-right-panel [data-csp-panel] .csp-item-val {
   font-family: var(--font-pixel) !important;
   font-size: 0.36rem !important;
   color: #eaf8ff !important;
@@ -2299,51 +2310,51 @@ body.page-home [data-csp-panel] .csp-item-val {
   margin-top: 3px !important;
 }
 
-body.page-home [data-csp-panel] .csp-item-val--badge {
+body.page-has-right-panel [data-csp-panel] .csp-item-val--badge {
   border-radius: 0 !important;
   padding: 2px 6px !important;
 }
 
-body.page-home [data-csp-panel] .csp-badge--good {
+body.page-has-right-panel [data-csp-panel] .csp-badge--good {
   background: rgba(57, 255, 20, 0.10) !important;
   border: 2px solid rgba(57, 255, 20, 0.55) !important;
   color: var(--neon-green) !important;
   border-radius: 0 !important;
 }
-body.page-home [data-csp-panel] .csp-badge--warn {
+body.page-has-right-panel [data-csp-panel] .csp-badge--warn {
   background: rgba(255, 138, 0, 0.10) !important;
   border: 2px solid rgba(255, 138, 0, 0.55) !important;
   color: var(--neon-orange) !important;
   border-radius: 0 !important;
 }
-body.page-home [data-csp-panel] .csp-badge--bad {
+body.page-has-right-panel [data-csp-panel] .csp-badge--bad {
   background: rgba(255, 45, 120, 0.10) !important;
   border: 2px solid rgba(255, 45, 120, 0.55) !important;
   color: var(--neon-magenta) !important;
   border-radius: 0 !important;
 }
 
-body.page-home [data-csp-panel] .csp-dot {
+body.page-has-right-panel [data-csp-panel] .csp-dot {
   border-radius: 0 !important;
 }
-body.page-home [data-csp-panel] .csp-dot--green {
+body.page-has-right-panel [data-csp-panel] .csp-dot--green {
   background: var(--neon-green) !important;
   box-shadow: 0 0 6px var(--neon-green) !important;
 }
-body.page-home [data-csp-panel] .csp-dot--red {
+body.page-has-right-panel [data-csp-panel] .csp-dot--red {
   background: var(--neon-magenta) !important;
   box-shadow: 0 0 6px var(--neon-magenta) !important;
 }
-body.page-home [data-csp-panel] .csp-val-good   { color: var(--neon-green)   !important; }
-body.page-home [data-csp-panel] .csp-val-locked { color: var(--neon-magenta) !important; }
-body.page-home [data-csp-panel] .csp-link {
+body.page-has-right-panel [data-csp-panel] .csp-val-good   { color: var(--neon-green)   !important; }
+body.page-has-right-panel [data-csp-panel] .csp-val-locked { color: var(--neon-magenta) !important; }
+body.page-has-right-panel [data-csp-panel] .csp-link {
   color: var(--neon-cyan) !important;
   font-family: var(--font-pixel) !important;
   font-size: 0.36rem !important;
 }
 
 /* ── Override LAS inline styles to match retro ──────────────── */
-body.page-home [data-las-panel] .las-panel {
+body.page-has-right-panel [data-las-panel] .las-panel {
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
@@ -2354,14 +2365,14 @@ body.page-home [data-las-panel] .las-panel {
   gap: 2px !important;
 }
 
-body.page-home [data-las-panel] .las-row {
+body.page-has-right-panel [data-las-panel] .las-row {
   padding: 3px 4px !important;
   border-bottom: 1px solid rgba(0, 229, 255, 0.10) !important;
   flex-wrap: nowrap !important;
   gap: 6px !important;
 }
 
-body.page-home [data-las-panel] .las-label {
+body.page-has-right-panel [data-las-panel] .las-label {
   font-family: var(--font-pixel) !important;
   font-size: 0.34rem !important;
   color: var(--color-text-muted) !important;
@@ -2370,23 +2381,23 @@ body.page-home [data-las-panel] .las-label {
   font-weight: 400 !important;
 }
 
-body.page-home [data-las-panel] .las-val {
+body.page-has-right-panel [data-las-panel] .las-val {
   font-family: var(--font-pixel) !important;
   font-size: 0.36rem !important;
   color: #eaf8ff !important;
   font-weight: 400 !important;
 }
-body.page-home [data-las-panel] .las-val--good { color: var(--neon-green)   !important; }
-body.page-home [data-las-panel] .las-val--bad  { color: var(--neon-magenta) !important; }
-body.page-home [data-las-panel] .las-val--warn { color: var(--neon-orange)  !important; }
+body.page-has-right-panel [data-las-panel] .las-val--good { color: var(--neon-green)   !important; }
+body.page-has-right-panel [data-las-panel] .las-val--bad  { color: var(--neon-magenta) !important; }
+body.page-has-right-panel [data-las-panel] .las-val--warn { color: var(--neon-orange)  !important; }
 
-body.page-home [data-las-panel] .las-link {
+body.page-has-right-panel [data-las-panel] .las-link {
   color: var(--neon-cyan) !important;
   font-family: var(--font-pixel) !important;
   font-size: 0.34rem !important;
 }
 
-body.page-home [data-las-panel] .las-event-log {
+body.page-has-right-panel [data-las-panel] .las-event-log {
   border-top: 2px solid rgba(0, 229, 255, 0.20) !important;
   border-radius: 0 !important;
   margin-top: 4px !important;
@@ -2394,26 +2405,26 @@ body.page-home [data-las-panel] .las-event-log {
   gap: 2px !important;
 }
 
-body.page-home [data-las-panel] .las-event-row {
+body.page-has-right-panel [data-las-panel] .las-event-row {
   padding: 3px 0 !important;
   border-bottom: 1px solid rgba(190, 76, 247, 0.10) !important;
   gap: 5px !important;
 }
 
-body.page-home [data-las-panel] .las-event-time {
+body.page-has-right-panel [data-las-panel] .las-event-time {
   font-family: var(--font-pixel) !important;
   font-size: 0.32rem !important;
   color: var(--neon-cyan) !important;
   text-shadow: 0 0 5px rgba(0, 229, 255, 0.55) !important;
 }
 
-body.page-home [data-las-panel] .las-event-icon {
+body.page-has-right-panel [data-las-panel] .las-event-icon {
   flex-shrink: 0 !important;
   width: 14px;
   text-align: center;
 }
 
-body.page-home [data-las-panel] .las-event-text {
+body.page-has-right-panel [data-las-panel] .las-event-text {
   font-family: var(--font-pixel) !important;
   font-size: 0.34rem !important;
   color: #d0eaff !important;
@@ -5001,7 +5012,6 @@ body.page-game .meta-item {
   box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.15) !important;
 }
 
-body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
 body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
 body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
   position: sticky !important;
@@ -5037,27 +5047,23 @@ body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
   font-size: 0.62rem !important;
 }
 
-body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-title,
 body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-title,
 body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-title {
   font-size: 0.62rem !important;
   line-height: 1.35 !important;
 }
 
-body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-body,
 body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-body,
 body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .retro-hud-body {
   font-size: 0.74rem !important;
   line-height: 1.5 !important;
 }
 
-body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-label,
 body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-label,
 body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-label {
   font-size: 0.60rem !important;
 }
 
-body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-value,
 body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-value,
 body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) .hud-value {
   font-size: 0.62rem !important;
@@ -5091,14 +5097,11 @@ body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
 }
 
 @media (max-width: 1360px) {
-  /* Homepage follows the same collapse rule at <=1360 for shell consistency. */
-  body.page-home #layout,
   body.page-has-right-panel #layout,
   body.page-game #layout {
     grid-template-columns: var(--color-sidebar-w) minmax(0, 1fr);
   }
 
-  body.page-home #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
   body.page-has-right-panel #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper),
   body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) {
     display: none !important;
@@ -5112,8 +5115,8 @@ body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
 
 /* Homepage mobile/tablet content centering + overflow guard */
 @media (max-width: 900px) {
-  body.page-home #main-wrapper,
-  body.page-home #content {
+  body.page-home.page-standard-shell #main-wrapper,
+  body.page-home.page-standard-shell #content {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
@@ -5122,7 +5125,7 @@ body.page-game #layout > #homepage-right-panel:not(#sidebar):not(#main-wrapper) 
     margin-right: auto !important;
   }
 
-  body.page-home #content {
+  body.page-home.page-standard-shell #content {
     padding-left: 16px !important;
     padding-right: 16px !important;
   }
