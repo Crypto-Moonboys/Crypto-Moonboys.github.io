@@ -67,7 +67,9 @@
     if (!container) return;
 
     const totalEntities    = (stats && (stats.totalEntities || stats.entity_count))      || '—';
-    const totalArticles    = (stats && (stats.totalArticles || stats.article_count))      || '—';
+    const totalWikiPages   = (stats && (stats.total_wiki_pages || stats.totalArticles || stats.article_count)) || '—';
+    const totalArticles    = (stats && stats.total_articles) || '—';
+    const nftTemplates     = (stats && stats.nft_template_pages) || 0;
     const totalCategories  = (stats && (stats.totalCategories || stats.category_count))   || '—';
     const orphanCount      = (gaps && gaps.summary && gaps.summary.isolated_pages)        || 0;
     const gapCount         = (gaps && gaps.summary && gaps.summary.underlinked_targets)   || 0;
@@ -79,8 +81,16 @@
         <span class="dash-metric-label">Total Entities</span>
       </div>
       <div class="dash-metric">
+        <span class="dash-metric-value">${totalWikiPages}</span>
+        <span class="dash-metric-label">Wiki Pages</span>
+      </div>
+      <div class="dash-metric">
         <span class="dash-metric-value">${totalArticles}</span>
-        <span class="dash-metric-label">Articles</span>
+        <span class="dash-metric-label">Articles excluding NFT templates</span>
+      </div>
+      <div class="dash-metric">
+        <span class="dash-metric-value">${nftTemplates}</span>
+        <span class="dash-metric-label">NFT Template Pages</span>
       </div>
       <div class="dash-metric">
         <span class="dash-metric-value">${totalCategories}</span>

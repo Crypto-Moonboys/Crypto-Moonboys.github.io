@@ -176,6 +176,8 @@ function buildSearchIndex(title, description, keywords, aliases = []) {
 }
 
 function detectCategory(filePath, html, samEntity) {
+  if (isNftTemplateHtml(html)) return 'nfts-digital-art';
+
   if (samEntity && samEntity.category) {
     return String(samEntity.category).toLowerCase();
   }
@@ -195,6 +197,13 @@ function detectCategory(filePath, html, samEntity) {
   ) return 'core';
 
   return 'misc';
+}
+
+function isNftTemplateHtml(html) {
+  if (/data-page-type=["']nft_collection["']/i.test(html)) return false;
+  return /data-page-type=["']nft_template["']/i.test(html) ||
+         /class=["'][^"']*\bnft-template-article\b/i.test(html) ||
+         /<template\b[^>]*class=["'][^"']*\bnft-battle-media-template\b/i.test(html);
 }
 
 function buildAliases(samEntity, canonicalSlug) {
@@ -516,8 +525,9 @@ function run() {
     const htmlKeywords = extractKeywords(html);
     const url = '/' + relative;
     const slug = slugFromUrl(url);
-    const canonicalSlug = canonicalizeSlug(slug);
-    const canonicalUrl = canonicalizeWikiUrl(url);
+    const isNftTemplate = isNftTemplateHtml(html);
+    const canonicalSlug = isNftTemplate ? slug : canonicalizeSlug(slug);
+    const canonicalUrl = isNftTemplate ? url : canonicalizeWikiUrl(url);
 
     const samEntity =
       samMemory.entitiesBySlug[canonicalSlug] ||
@@ -531,7 +541,7 @@ function run() {
 
     const keywords = Array.from(new Set([...htmlKeywords, ...memoryTags]));
     let aliases = mergeAliases(buildAliases(samEntity, canonicalSlug));
-    if (isAliasSlug(slug) || slug !== canonicalSlug) {
+    if (!isNftTemplate && (isAliasSlug(slug) || slug !== canonicalSlug)) {
       aliases = mergeAliases(aliases, [{ title: titleFromSlug(slug), url }]);
     }
 

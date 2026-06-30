@@ -154,9 +154,7 @@ assert.ok(!Object.prototype.hasOwnProperty.call(purgeSummary, 'blocked'), 'summa
 
 const audit = JSON.parse(fs.readFileSync(auditPath, 'utf8'));
 
-const restoredAliasCount = redirectAliasSlugs.has('alfie-blaze') ? 1 : 0;
-const auditedWikiFileCount = wikiFiles.length - collectionDerivedSlugs.size - restoredAliasCount;
-assert.equal(audit.summary.total, auditedWikiFileCount, 'wiki publish audit total must match current non-collection wiki file count');
+assert.equal(audit.summary.total, wikiFiles.length, 'wiki publish audit total must match current wiki file count');
 assert.equal(audit.summary.blocked, 0, 'wiki publish audit blocked count must be 0 after purge');
 assert.equal(audit.summary.needs_review, 0, 'wiki publish audit review count must be 0 after purge');
 
