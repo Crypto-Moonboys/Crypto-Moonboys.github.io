@@ -1,0 +1,483 @@
+#!/usr/bin/env node
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const WIKI_DIR = path.join(ROOT, 'wiki');
+const WIKI_INDEX_PATH = path.join(ROOT, 'js', 'wiki-index.json');
+const BEGIN = '<!-- RELATED_WIKI_PATHS:BEGIN -->';
+const END = '<!-- RELATED_WIKI_PATHS:END -->';
+const GROUP_LIMIT = 8;
+const TEMPLATE_LIMIT = 8;
+
+const STATIC_LINKS = new Set([
+  '/timeline.html',
+  '/graph.html?mode=hero',
+  '/dashboard.html',
+  '/community.html',
+  '/games/index.html',
+  '/games/leaderboard.html',
+]);
+
+const CATEGORY_TITLES = new Map([
+  ['/categories/community-people.html', 'Community & People'],
+  ['/categories/nfts.html', 'NFTs'],
+  ['/categories/wax-nfts.html', 'WAX NFTs'],
+  ['/categories/nfts-digital-art.html', 'NFTs & Digital Art'],
+  ['/categories/lore.html', 'Lore'],
+  ['/categories/gaming.html', 'Gaming'],
+  ['/categories/technology.html', 'Web3 / Technology'],
+  ['/categories/gkniftyheads.html', 'GKniftyHEADS'],
+  ['/categories/graffiti-street-art.html', 'Graffiti / Street Art'],
+  ['/categories/cryptocurrencies.html', 'Tokens / Crypto'],
+  ['/categories/factions.html', 'Factions'],
+]);
+
+const CORE_PROJECT_URL = '/wiki/crypto-moonboys.html';
+const GKNIFTY_COLLECTION_URL = '/wiki/gkniftyheads-nft-collection.html';
+
+function readJson(file) {
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function cleanTitle(value, fallback = '') {
+  return String(value || fallback || '')
+    .replace(/\s+-\s+Crypto Moonboys Wiki$/i, '')
+    .replace(/\s+—\s+Crypto Moonboys Wiki$/i, '')
+    .replace(/\s+â€”\s+Crypto Moonboys Wiki$/i, '')
+    .replace(/_/g, ' ')
+    .trim();
+}
+
+function cleanDescription(value) {
+  const text = String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\[[^\]]+\]\([^)]+\)/g, ' ')
+    .replace(/https?:\/\/\S+/g, ' ')
+    .replace(/[*_`#>]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text.length > 150 ? `${text.slice(0, 147).trim()}...` : text;
+}
+
+function titleCaseSlug(slug) {
+  return String(slug || '')
+    .replace(/\.html$/i, '')
+    .split(/[-_]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function htmlFileForUrl(url) {
+  const normalized = String(url || '').split('?')[0];
+  if (!normalized.startsWith('/wiki/')) return null;
+  return path.join(ROOT, normalized.replace(/^\/+/, ''));
+}
+
+function relForUrl(url) {
+  return String(url || '').replace(/^\/+/, '');
+}
+
+function existsInternal(url) {
+  const clean = String(url || '').split('#')[0];
+  if (STATIC_LINKS.has(clean)) return fs.existsSync(path.join(ROOT, clean.split('?')[0].replace(/^\/+/, '')));
+  if (!clean.startsWith('/')) return false;
+  return fs.existsSync(path.join(ROOT, clean.split('?')[0].replace(/^\/+/, '')));
+}
+
+function hrefs(html) {
+  return [...String(html || '').matchAll(/\bhref=["']([^"']+)["']/gi)].map((match) => match[1]);
+}
+
+function isNftCollectionHtml(html) {
+  return /data-page-type=["']nft_collection["']/i.test(html);
+}
+
+function isNftTemplatePage(fileName, html) {
+  if (isNftCollectionHtml(html)) return false;
+  return /data-page-type=["']nft_template["']/i.test(html) ||
+    /class=["'][^"']*\bnft-template-article\b/i.test(html) ||
+    /^gkniftyheads-.+-\d{5,}\.html$/i.test(fileName);
+}
+
+function isContentPage(html) {
+  if (/\bdata-wiki-stub=["']true["']/i.test(html)) return false;
+  if (/<meta\b[^>]*http-equiv=["']refresh["']/i.test(html)) return false;
+  if (/<meta\b(?=[^>]*name=["']robots["'])(?=[^>]*content=["'][^"']*\bnoindex\b)[^>]*>/i.test(html)) return false;
+  return /<article\b/i.test(html) || /class=["'][^"']*\bwiki-content\b/i.test(html) || /data-page-type=["']nft_/i.test(html);
+}
+
+function extractCollection(html, url) {
+  const explicit = html.match(/\bdata-collection=["']([^"']+)["']/i)?.[1];
+  if (explicit) return explicit.toLowerCase();
+  const slug = path.basename(String(url || ''), '.html').toLowerCase();
+  if (slug.startsWith('gkniftyheads-')) return 'gkniftyheads';
+  return '';
+}
+
+function rankCategory(entry) {
+  return String(entry?.category || entry?.rank_signals?.category || entry?.cat || entry?.rank || '').trim().toLowerCase();
+}
+
+function entryTags(entry) {
+  const tags = new Set();
+  for (const tag of entry?.tags || []) tags.add(String(tag).toLowerCase());
+  for (const tag of entry?.search_index?.tokens || []) tags.add(String(tag).toLowerCase());
+  return tags;
+}
+
+function makeLink(url, title, description = '') {
+  if (!existsInternal(url)) return null;
+  return {
+    url,
+    title: cleanTitle(title, titleCaseSlug(path.basename(url.split('?')[0], '.html'))),
+    description: cleanDescription(description),
+  };
+}
+
+function linkFromEntry(entry, fallbackDescription = '') {
+  if (!entry?.url) return null;
+  return makeLink(entry.url, entry.title, entry.desc || fallbackDescription);
+}
+
+function uniqueLinks(links, currentUrl, limit = GROUP_LIMIT) {
+  const seen = new Set();
+  const out = [];
+  for (const link of links) {
+    if (!link || !link.url || link.url === currentUrl || seen.has(link.url)) continue;
+    if (!existsInternal(link.url)) continue;
+    seen.add(link.url);
+    out.push(link);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+function categoryLink(url, description = '') {
+  const title = CATEGORY_TITLES.get(url) || titleCaseSlug(path.basename(url, '.html'));
+  return makeLink(url, title, description);
+}
+
+function renderGroup(title, links) {
+  if (!links.length) return '';
+  const items = links.map((link) => {
+    const desc = link.description
+      ? `<span class="wiki-rabbit-desc">${escapeHtml(link.description)}</span>`
+      : '';
+    return `          <li><a href="${escapeHtml(link.url)}">${escapeHtml(link.title)}</a>${desc}</li>`;
+  }).join('\n');
+  return `        <div class="wiki-rabbit-group" data-related-group="${escapeHtml(title)}">
+          <h3>${escapeHtml(title)}</h3>
+          <ul class="wiki-rabbit-list">
+${items}
+          </ul>
+        </div>`;
+}
+
+function renderRelatedSection(groups) {
+  const renderedGroups = groups
+    .filter((group) => group.links.length)
+    .map((group) => renderGroup(group.title, group.links))
+    .join('\n');
+
+  return `${BEGIN}
+      <section class="wiki-section related-wiki-paths" data-related-wiki-paths="true" aria-labelledby="related-wiki-paths-title">
+        <h2 id="related-wiki-paths-title">Related Wiki Paths</h2>
+        <p class="lore-paragraph">Follow these internal paths into connected pages, categories, collections, games, lore, and site maps.</p>
+${renderedGroups}
+      </section>
+${END}`;
+}
+
+function replaceMarkedSection(html, section) {
+  const re = new RegExp(`${BEGIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+  if (re.test(html)) return html.replace(re, section);
+  return null;
+}
+
+function removeMarkedSection(html) {
+  const re = new RegExp(`\\s*${BEGIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+  return html.replace(re, '');
+}
+
+function insertSection(html, section) {
+  html = removeMarkedSection(html);
+
+  const articleEnd = html.match(/\s*<\/article>/i);
+  if (articleEnd) {
+    const insertAt = articleEnd.index + articleEnd[0].length;
+    return `${html.slice(0, insertAt)}\n${section}\n${html.slice(insertAt)}`;
+  }
+
+  const categoryIndex = html.search(/\s*<div class=["'][^"']*\bcategory-tags\b/i);
+  if (categoryIndex !== -1) {
+    return `${html.slice(0, categoryIndex)}\n${section}\n${html.slice(categoryIndex)}`;
+  }
+
+  const commentsIndex = html.search(/\s*<div class=["'][^"']*\bwiki-comments\b/i);
+  if (commentsIndex !== -1) {
+    return `${html.slice(0, commentsIndex)}\n${section}\n${html.slice(commentsIndex)}`;
+  }
+
+  const mainEnd = html.search(/\s*<\/main>/i);
+  if (mainEnd !== -1) return `${html.slice(0, mainEnd)}\n${section}\n${html.slice(mainEnd)}`;
+
+  const samEnd = html.indexOf('<!-- SAM:END:article -->');
+  if (samEnd !== -1) return `${html.slice(0, samEnd)}${section}\n${html.slice(samEnd)}`;
+  return html;
+}
+
+function updateCryptoMoonboysCategoryTags(html) {
+  const categoryTags = `      <div class="category-tags" aria-label="Article categories">
+        <span class="cat-label">Categories:</span>
+        <a href="/categories/community-people.html">Community &amp; People</a>
+        <a href="/wiki/crypto-moonboys.html">Crypto Moonboys</a>
+        <a href="/categories/nfts.html">NFTs</a>
+        <a href="/categories/wax-nfts.html">WAX NFTs</a>
+        <a href="/categories/nfts-digital-art.html">NFTs &amp; Digital Art</a>
+        <a href="/categories/lore.html">Lore</a>
+        <a href="/categories/gaming.html">Gaming</a>
+        <a href="/categories/technology.html">Web3</a>
+        <a href="/categories/gkniftyheads.html">GKniftyHEADS</a>
+      </div>`;
+  return html.replace(
+    /\s*<div class=["']category-tags["'] aria-label=["']Article categories["']>[\s\S]*?<\/div>/,
+    `\n${categoryTags}`
+  );
+}
+
+function buildContext(root) {
+  const wikiIndex = readJson(WIKI_INDEX_PATH);
+  const entries = Array.isArray(wikiIndex) ? wikiIndex : [];
+  const byUrl = new Map(entries.filter((entry) => entry?.url).map((entry) => [entry.url, entry]));
+  const wikiFiles = fs.readdirSync(WIKI_DIR).filter((file) => file.endsWith('.html') && file !== 'index.html').sort();
+  const htmlByUrl = new Map();
+  const pageKinds = new Map();
+
+  for (const file of wikiFiles) {
+    const url = `/wiki/${file}`;
+    const html = fs.readFileSync(path.join(WIKI_DIR, file), 'utf8');
+    htmlByUrl.set(url, html);
+    pageKinds.set(url, {
+      file,
+      isNftTemplate: isNftTemplatePage(file, html),
+      isNftCollection: isNftCollectionHtml(html),
+      collection: extractCollection(html, url),
+    });
+  }
+
+  const gkniftyTemplates = entries
+    .filter((entry) => /^\/wiki\/gkniftyheads-.+-\d{5,}\.html$/i.test(entry.url || ''))
+    .sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
+
+  return { root, entries, byUrl, htmlByUrl, pageKinds, gkniftyTemplates };
+}
+
+function knownPage(context, url, title, description = '') {
+  const entry = context.byUrl.get(url);
+  if (entry && description) return makeLink(url, title || entry.title, description);
+  return linkFromEntry(entry, description) || makeLink(url, title, description);
+}
+
+function cryptoMoonboysGroups(context, currentUrl) {
+  const majorPages = [
+    knownPage(context, '/wiki/gkniftyheads.html', 'GKniftyHEADS', 'Parent brand and faction hub connected to the project.'),
+    knownPage(context, GKNIFTY_COLLECTION_URL, 'GKniftyHEADS NFT Collection', 'Generated collection index for WAX AtomicAssets template pages.'),
+    knownPage(context, '/wiki/graffpunks.html', 'GraffPUNKS', 'Related street-art and faction context.'),
+    knownPage(context, '/wiki/hodl-wars.html', 'HODL WARS', 'Game and lore context connected to the project.'),
+    knownPage(context, '/wiki/hodl-warriors.html', 'HODL Warriors', 'Related character and faction page.'),
+    knownPage(context, '/wiki/block-topia.html', 'Block Topia', 'Connected game/world page where present in the wiki.'),
+    knownPage(context, '/wiki/crypto-moongirls.html', 'Crypto Moongirls', ''),
+  ];
+
+  const categories = [
+    categoryLink('/categories/nfts.html', 'NFT category hub.'),
+    categoryLink('/categories/wax-nfts.html', 'WAX NFT category hub.'),
+    categoryLink('/categories/nfts-digital-art.html', 'NFT and digital art category hub.'),
+    categoryLink('/categories/lore.html', 'Lore category hub.'),
+    categoryLink('/categories/gaming.html', 'Gaming category hub.'),
+    categoryLink('/categories/technology.html', 'Web3 and technology category hub.'),
+    categoryLink('/categories/gkniftyheads.html', 'GKniftyHEADS category hub.'),
+    categoryLink('/categories/graffiti-street-art.html', 'Graffiti and street-art category hub.'),
+  ];
+
+  const games = [
+    makeLink('/community.html', 'Battle Chamber', 'Live community and faction activity page.'),
+    makeLink('/games/index.html', 'Games', 'Game hub for playable Crypto Moonboys experiences.'),
+    makeLink('/games/leaderboard.html', 'Leaderboard', 'Game leaderboard and live/action surface.'),
+    knownPage(context, '/wiki/gang-signs-card-game.html', 'Gang Signs Card Game', ''),
+    knownPage(context, '/wiki/metaverse-battles.html', 'Metaverse Battles', ''),
+  ];
+
+  const tokens = [
+    knownPage(context, '/wiki/punk-token.html', 'PUNK Token', ''),
+    knownPage(context, '/wiki/waxp.html', '$WAXP', ''),
+    knownPage(context, '/wiki/wax-blockchain.html', 'WAX Blockchain', ''),
+    knownPage(context, '/wiki/xrp-ledger.html', 'XRP Ledger', ''),
+  ];
+
+  const templates = context.gkniftyTemplates.slice(0, TEMPLATE_LIMIT).map((entry) => linkFromEntry(entry, 'GKniftyHEADS WAX NFT template page.'));
+
+  return [
+    { title: 'Core Project Links', links: uniqueLinks(majorPages, currentUrl, GROUP_LIMIT) },
+    { title: 'Related Categories', links: uniqueLinks(categories, currentUrl, GROUP_LIMIT) },
+    { title: 'Related Games', links: uniqueLinks(games, currentUrl, GROUP_LIMIT) },
+    { title: 'Related Tokens', links: uniqueLinks(tokens, currentUrl, GROUP_LIMIT) },
+    { title: 'Related NFT Templates', links: uniqueLinks(templates, currentUrl, TEMPLATE_LIMIT) },
+    {
+      title: 'Timeline / Graph / Dashboard Links',
+      links: uniqueLinks([
+        makeLink('/timeline.html', 'Timeline', 'Chronological route through project and lore entries.'),
+        makeLink('/graph.html?mode=hero', 'Graph', 'Visual relationship map for wiki entities.'),
+        makeLink('/dashboard.html', 'Dashboard', 'Site-wide wiki and project metrics.'),
+      ], currentUrl, GROUP_LIMIT),
+    },
+  ];
+}
+
+function nftTemplateGroups(context, currentUrl, html) {
+  const collection = extractCollection(html, currentUrl);
+  const collectionTemplates = collection === 'gkniftyheads' ? context.gkniftyTemplates : [];
+  const relatedFromCollection = collectionTemplates
+    .filter((entry) => entry.url !== currentUrl)
+    .slice(0, TEMPLATE_LIMIT)
+    .map((entry) => linkFromEntry(entry, 'More from this NFT collection.'));
+
+  const loreLinks = [];
+  const text = html.toLowerCase();
+  if (text.includes('graffpunks')) loreLinks.push(knownPage(context, '/wiki/graffpunks.html', 'GraffPUNKS', 'Related faction and lore context.'));
+  if (text.includes('hodl wars') || text.includes('hodl_wars')) loreLinks.push(knownPage(context, '/wiki/hodl-wars.html', 'HODL WARS', 'Related game and lore context.'));
+  if (text.includes('graffiti kings')) loreLinks.push(knownPage(context, '/wiki/graffiti-kings.html', 'Graffiti Kings', 'Related street-art context.'));
+  if (text.includes('block topia')) loreLinks.push(knownPage(context, '/wiki/block-topia.html', 'Block Topia', 'Related game/world context.'));
+
+  return [
+    {
+      title: 'Collection Links',
+      links: uniqueLinks([
+        knownPage(context, GKNIFTY_COLLECTION_URL, 'GKniftyHEADS NFT Collection', 'Full collection index for WAX AtomicAssets template pages.'),
+        knownPage(context, '/wiki/gkniftyheads.html', 'GKniftyHEADS', 'Parent brand and faction hub.'),
+        knownPage(context, CORE_PROJECT_URL, 'Crypto Moonboys', 'Core project hub for the wider wiki.'),
+      ], currentUrl, GROUP_LIMIT),
+    },
+    {
+      title: 'Related Categories',
+      links: uniqueLinks([
+        categoryLink('/categories/gkniftyheads.html', 'GKniftyHEADS category hub.'),
+        categoryLink('/categories/nfts.html', 'NFT category hub.'),
+        categoryLink('/categories/wax-nfts.html', 'WAX NFT category hub.'),
+        categoryLink('/categories/nfts-digital-art.html', 'NFT and digital art category hub.'),
+      ], currentUrl, GROUP_LIMIT),
+    },
+    { title: 'Character / Faction / Game Links', links: uniqueLinks(loreLinks, currentUrl, GROUP_LIMIT) },
+    { title: 'More from this collection', links: uniqueLinks(relatedFromCollection, currentUrl, TEMPLATE_LIMIT) },
+    {
+      title: 'Timeline / Graph Links',
+      links: uniqueLinks([
+        makeLink('/timeline.html', 'Timeline', 'Chronological route through related wiki entries.'),
+        makeLink('/graph.html?mode=hero', 'Graph', 'Visual relationship map for wiki entities.'),
+      ], currentUrl, GROUP_LIMIT),
+    },
+  ];
+}
+
+function genericGroups(context, currentUrl) {
+  const entry = context.byUrl.get(currentUrl);
+  const category = rankCategory(entry);
+  const tags = entryTags(entry);
+
+  const sameCategory = context.entries
+    .filter((candidate) => candidate.url !== currentUrl && rankCategory(candidate) === category)
+    .sort((a, b) => (b.rank_score || 0) - (a.rank_score || 0))
+    .slice(0, GROUP_LIMIT)
+    .map((candidate) => linkFromEntry(candidate, 'Related page in the same wiki category.'));
+
+  const tagRelated = context.entries
+    .filter((candidate) => {
+      if (candidate.url === currentUrl) return false;
+      const candidateTags = entryTags(candidate);
+      return [...tags].some((tag) => candidateTags.has(tag) && !['crypto', 'moonboys', 'wiki'].includes(tag));
+    })
+    .sort((a, b) => (b.rank_score || 0) - (a.rank_score || 0))
+    .slice(0, GROUP_LIMIT)
+    .map((candidate) => linkFromEntry(candidate, 'Related page matched by existing wiki metadata.'));
+
+  const categoryUrl = category ? `/categories/${category}.html` : '';
+  return [
+    {
+      title: 'Core Project Links',
+      links: uniqueLinks([
+        knownPage(context, CORE_PROJECT_URL, 'Crypto Moonboys', 'Core project hub for the wider wiki.'),
+        makeLink('/timeline.html', 'Timeline', 'Chronological route through wiki entries.'),
+        makeLink('/graph.html?mode=hero', 'Graph', 'Visual relationship map for wiki entities.'),
+      ], currentUrl, GROUP_LIMIT),
+    },
+    { title: 'Related Categories', links: uniqueLinks([categoryLink(categoryUrl, 'Category hub for this page.')], currentUrl, GROUP_LIMIT) },
+    { title: 'Related Wiki Pages', links: uniqueLinks([...tagRelated, ...sameCategory], currentUrl, GROUP_LIMIT) },
+  ];
+}
+
+function groupsForPage(context, currentUrl, html, kind) {
+  if (currentUrl === CORE_PROJECT_URL) return cryptoMoonboysGroups(context, currentUrl);
+  if (kind.isNftTemplate) return nftTemplateGroups(context, currentUrl, html);
+  if (kind.isNftCollection) {
+    return [
+      {
+        title: 'Collection Links',
+        links: uniqueLinks([
+          knownPage(context, '/wiki/gkniftyheads.html', 'GKniftyHEADS', 'Parent brand and faction hub.'),
+          knownPage(context, CORE_PROJECT_URL, 'Crypto Moonboys', 'Core project hub for the wider wiki.'),
+        ], currentUrl, GROUP_LIMIT),
+      },
+      {
+        title: 'Related Categories',
+        links: uniqueLinks([
+          categoryLink('/categories/gkniftyheads.html', 'GKniftyHEADS category hub.'),
+          categoryLink('/categories/nfts.html', 'NFT category hub.'),
+          categoryLink('/categories/wax-nfts.html', 'WAX NFT category hub.'),
+          categoryLink('/categories/nfts-digital-art.html', 'NFT and digital art category hub.'),
+        ], currentUrl, GROUP_LIMIT),
+      },
+      { title: 'Related NFT Templates', links: uniqueLinks(context.gkniftyTemplates.slice(0, TEMPLATE_LIMIT).map((entry) => linkFromEntry(entry, 'Featured child template page.')), currentUrl, TEMPLATE_LIMIT) },
+    ];
+  }
+  return genericGroups(context, currentUrl);
+}
+
+const context = buildContext(ROOT);
+let written = 0;
+
+for (const [url, html] of context.htmlByUrl.entries()) {
+  const kind = context.pageKinds.get(url);
+  if (!isContentPage(html)) {
+    const nextHtml = removeMarkedSection(html);
+    if (nextHtml !== html) {
+      fs.writeFileSync(htmlFileForUrl(url), nextHtml, 'utf8');
+      written += 1;
+    }
+    continue;
+  }
+  const groups = groupsForPage(context, url, html, kind);
+  const section = renderRelatedSection(groups);
+  let nextHtml = insertSection(html, section);
+  if (url === CORE_PROJECT_URL) nextHtml = updateCryptoMoonboysCategoryTags(nextHtml);
+
+  if (nextHtml !== html) {
+    const file = htmlFileForUrl(url);
+    fs.writeFileSync(file, nextHtml, 'utf8');
+    written += 1;
+  }
+}
+
+console.log(`Related Wiki Paths generated for ${written} wiki page(s).`);
