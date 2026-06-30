@@ -356,7 +356,7 @@ function renderCategoryPage(category, entries) {
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
-<body class="page-category">
+<body class="page-category page-standard-shell">
 <main id="content" role="main">
       <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">&rsaquo;</span><a href="/categories/index.html">Categories</a><span class="sep">&rsaquo;</span><span aria-current="page">${escapeHtml(category)}</span></nav>
       <h1 class="page-title">${escapeHtml(category)}</h1>
@@ -421,7 +421,7 @@ function upsertCategoryIndex(indexPath, wikiIndex) {
   if (!fs.existsSync(indexPath)) {
     fs.writeFileSync(indexPath, `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>All Categories - Crypto Moonboys Wiki</title><link rel="stylesheet" href="/css/wiki.css"></head>
-<body class="page-categories"><main id="content" role="main"><h1 class="page-title">All Categories</h1><div class="category-grid" aria-label="All categories">
+<body class="page-categories page-standard-shell"><main id="content" role="main"><h1 class="page-title">All Categories</h1><div class="category-grid" aria-label="All categories">
 ${cards.join('\n')}
 </div></main><script data-cfasync="false" src="/js/core/daily-loop-state.js"></script><script data-cfasync="false" src="/js/site-shell.js"></script></body></html>
 `, 'utf8');

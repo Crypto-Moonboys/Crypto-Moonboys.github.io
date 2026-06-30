@@ -90,7 +90,7 @@ function pageHtml({ slug, title, description, intro, sections }) {
   <link rel="stylesheet" href="/css/retro-16bit-theme.css">
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
-<body class="page-category">
+<body class="page-category page-standard-shell">
 <main id="content" role="main">
       <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/index.html">Home</a><span class="sep">&rsaquo;</span><a href="/categories/index.html">Categories</a><span class="sep">&rsaquo;</span><span aria-current="page">${escapeHtml(title)}</span></nav>
       <div class="category-header"><span class="cat-big-icon" aria-hidden="true">NFT</span><div><h1 class="page-title">${escapeHtml(title)}</h1><p style="color:var(--color-text-muted)">${escapeHtml(description)}</p></div></div>

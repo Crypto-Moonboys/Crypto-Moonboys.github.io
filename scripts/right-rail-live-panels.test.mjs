@@ -12,6 +12,14 @@ function check(condition, message) {
 
 const community = read('community.html');
 const games = read('games/index.html');
+const indexHtml = read('index.html');
+const searchHtml = read('search.html');
+const timelineHtml = read('timeline.html');
+const graphHtml = read('graph.html');
+const samHtml = read('sam.html');
+const aboutHtml = read('about.html');
+const howToPlayHtml = read('how-to-play.html');
+const incubatorHtml = read('gkniftyheads-incubator.html');
 const incubator = read('gkniftyheads-incubator.html');
 const nftTemplateExample = read('wiki/gkniftyheads-nova-shadow-shredder-784419.html');
 const blockTopiaPage = read('games/block-topia/index.html');
@@ -390,10 +398,26 @@ check(!rightPanelAllowlist.includes('/dashboard.html'), 'site-shell.js right-pan
 check(shouldShowRightPanelBlock.includes("if (p === '/dashboard.html') return false;"), 'site-shell.js explicitly prevents dashboard runtime right-rail injection even if body classes drift');
 check(shouldShowRightPanelBlock.includes("if (body.classList.contains('page-no-right-panel')) return false;"), 'site-shell.js supports page-no-right-panel as a force-disable before opt-in classes');
 check(shouldShowRightPanelBlock.includes("if (body.classList.contains('page-has-right-panel')) return true;"), 'site-shell.js keeps page-has-right-panel as explicit opt-in');
+for (const [route, html] of [
+  ['/index.html', indexHtml],
+  ['/search.html', searchHtml],
+  ['/timeline.html', timelineHtml],
+  ['/graph.html', graphHtml],
+  ['/sam.html', samHtml],
+  ['/about.html', aboutHtml],
+  ['/how-to-play.html', howToPlayHtml],
+  ['/gkniftyheads-incubator.html', incubatorHtml],
+]) {
+  check(!rightPanelAllowlist.includes(route), `site-shell.js right-panel allowlist excludes ${route}`);
+  check(!html.includes('page-has-right-panel'), `${route} does not force page-has-right-panel`);
+  check(html.includes('page-standard-shell'), `${route} uses page-standard-shell`);
+}
 check(!rightPanelAllowlist.includes('/wiki/') && !shouldShowRightPanelBlock.includes("'/wiki/'"), 'site-shell.js does not auto-enable right rail for /wiki/ prefix');
 check(!rightPanelAllowlist.includes('/categories/') && !shouldShowRightPanelBlock.includes("'/categories/'"), 'site-shell.js does not auto-enable right rail for /categories/ prefix');
 check(rightPanelAllowlist.includes('/community.html') && community.includes('page-has-right-panel'), 'community.html still opts into the Battle Chamber/right-rail live system');
+check(rightPanelAllowlist.includes('/games/index.html') && games.includes('page-has-right-panel'), 'games/index.html still opts into the live/action right rail');
 check(!nftTemplateExample.includes('page-has-right-panel'), 'NFT template example does not force page-has-right-panel');
+check(nftTemplateExample.includes('page-standard-shell'), 'NFT template example uses page-standard-shell');
 // Missed history persistence: data is accumulated, not reset by UTC day
 check(!las.toLowerCase().includes('missed xp resets') && !las.includes('missed_xp_reset'), 'right rail does not suggest missed XP resets by day');
 
