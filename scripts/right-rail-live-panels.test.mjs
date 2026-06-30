@@ -13,6 +13,7 @@ function check(condition, message) {
 const community = read('community.html');
 const games = read('games/index.html');
 const incubator = read('gkniftyheads-incubator.html');
+const nftTemplateExample = read('wiki/gkniftyheads-nova-shadow-shredder-784419.html');
 const blockTopiaPage = read('games/block-topia/index.html');
 const incubatorLink = read('js/incubator-link.js');
 const siteShell = read('js/site-shell.js');
@@ -387,6 +388,12 @@ check(!dashboard.includes('data-las-panel') && !dashboard.includes('data-csp-pan
 check(!dashboard.includes('page-has-right-panel'), 'dashboard.html does not opt into the runtime right rail');
 check(!rightPanelAllowlist.includes('/dashboard.html'), 'site-shell.js right-panel allowlist excludes /dashboard.html');
 check(shouldShowRightPanelBlock.includes("if (p === '/dashboard.html') return false;"), 'site-shell.js explicitly prevents dashboard runtime right-rail injection even if body classes drift');
+check(shouldShowRightPanelBlock.includes("if (body.classList.contains('page-no-right-panel')) return false;"), 'site-shell.js supports page-no-right-panel as a force-disable before opt-in classes');
+check(shouldShowRightPanelBlock.includes("if (body.classList.contains('page-has-right-panel')) return true;"), 'site-shell.js keeps page-has-right-panel as explicit opt-in');
+check(!rightPanelAllowlist.includes('/wiki/') && !shouldShowRightPanelBlock.includes("'/wiki/'"), 'site-shell.js does not auto-enable right rail for /wiki/ prefix');
+check(!rightPanelAllowlist.includes('/categories/') && !shouldShowRightPanelBlock.includes("'/categories/'"), 'site-shell.js does not auto-enable right rail for /categories/ prefix');
+check(rightPanelAllowlist.includes('/community.html') && community.includes('page-has-right-panel'), 'community.html still opts into the Battle Chamber/right-rail live system');
+check(!nftTemplateExample.includes('page-has-right-panel'), 'NFT template example does not force page-has-right-panel');
 // Missed history persistence: data is accumulated, not reset by UTC day
 check(!las.toLowerCase().includes('missed xp resets') && !las.includes('missed_xp_reset'), 'right rail does not suggest missed XP resets by day');
 

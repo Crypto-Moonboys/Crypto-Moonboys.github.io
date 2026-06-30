@@ -3,7 +3,7 @@
  * wiki-shell-guard.test.mjs
  *
  * Scans every wiki/*.html page and fails if a non-redirect page is missing
- * the canonical live right-rail runtime script stack.
+ * the canonical static shell runtime script stack.
  */
 
 import fs from 'node:fs';
@@ -71,7 +71,7 @@ const wikiFiles = fs.readdirSync(WIKI_DIR)
   .sort();
 
 console.log('\n--- Wiki Shell Guard ---\n');
-console.log(`Scanning ${wikiFiles.length} wiki pages for required runtime scripts...\n`);
+console.log(`Scanning ${wikiFiles.length} wiki pages for required shell scripts...\n`);
 
 const failingPages = [];
 const orderedBoot = [
@@ -127,7 +127,7 @@ if (!fs.existsSync(anchorPath)) {
 
   const anchorMissing = REQUIRED_SCRIPTS.filter((src) => !anchorHtml.includes(src));
   if (anchorMissing.length === 0) {
-    pass('/wiki/graffpunks.html - all required live right-rail scripts present');
+    pass('/wiki/graffpunks.html - all required shell scripts present');
   } else {
     for (const src of anchorMissing) fail(`/wiki/graffpunks.html - missing: ${src}`);
   }
@@ -155,9 +155,9 @@ if (!fs.existsSync(anchorPath)) {
   ]);
 
   if (anchorHtml.includes('page-has-right-panel')) {
-    pass('/wiki/graffpunks.html - page-has-right-panel class present');
+    fail('/wiki/graffpunks.html - static wiki article must not force-enable page-has-right-panel');
   } else {
-    fail('/wiki/graffpunks.html - missing page-has-right-panel class');
+    pass('/wiki/graffpunks.html - static wiki article does not force-enable page-has-right-panel');
   }
 }
 
@@ -177,5 +177,5 @@ if (failures > 0) {
   process.exit(1);
 }
 
-console.log(`Wiki shell guard PASSED. All ${wikiFiles.length - skipped} content wiki pages have the live right-rail runtime.\n`);
+console.log(`Wiki shell guard PASSED. All ${wikiFiles.length - skipped} content wiki pages have the static shell runtime.\n`);
 process.exit(0);
