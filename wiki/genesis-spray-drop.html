@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- SAM:BEGIN:head -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,8 +57,72 @@
     }
   </style>
 </head>
+<!-- SAM:END:head -->
 <body class="page-wiki page-has-right-panel" data-entity-hash="560912710bc6">
-<main id="content" role="main">
+
+<a class="skip-link" href="#content">Skip to content</a>
+
+<header id="site-header" role="banner">
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+  <a href="/index.html" class="site-logo" aria-label="Crypto Moonboys Wiki home">
+    <img src="/img/logo.svg" alt="" aria-hidden="true">
+    <span>
+      <span class="logo-text">🌙 Moonboys Wiki</span>
+      <span class="logo-sub">Crypto Encyclopedia</span>
+    </span>
+  </a>
+  <div id="header-search" role="search">
+    <input type="search" id="search-input" placeholder="Search articles…" aria-label="Search" autocomplete="off">
+    <button id="search-btn" aria-label="Search">🔍</button>
+    <div id="search-results" role="listbox"></div>
+  </div>
+  <nav class="header-nav" aria-label="Main navigation">
+    <a href="/index.html">Home</a>
+    <a href="/categories/index.html">Categories</a>
+    <a href="/search.html">Search</a>
+  </nav>
+</header>
+
+<div id="sidebar-overlay" aria-hidden="true"></div>
+
+<div id="layout">
+  <nav id="sidebar" aria-label="Wiki navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-nav">
+        <a href="/index.html"><span class="nav-icon">🏠</span> Main Page</a>
+        <a href="/categories/index.html"><span class="nav-icon">📂</span> All Categories</a>
+        <a href="/search.html"><span class="nav-icon">🔍</span> Search</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">🤖 SAM Lore</div>
+      <div class="sidebar-nav">
+        <a href="/categories/lore.html"><span class="nav-icon">📅</span> Lore</a>
+        <a href="/search.html"><span class="nav-icon">📖</span> All SAM Articles</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Cryptocurrencies</div>
+      <div class="sidebar-nav">
+        <a href="bitcoin.html"><span class="nav-icon">₿</span> Bitcoin (BTC)</a>
+        <a href="ethereum.html"><span class="nav-icon">Ξ</span> Ethereum (ETH)</a>
+        <a href="solana.html"><span class="nav-icon">◎</span> Solana (SOL)</a>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">⚔️ HODL Wars Lore</div>
+      <div class="sidebar-nav">
+        <a href="hodl-wars.html"><span class="nav-icon">📜</span> HODL Wars</a>
+        <a href="hodl-warriors.html"><span class="nav-icon">⚔️</span> HODL Warriors</a>
+        <a href="diamond-hands.html"><span class="nav-icon">💎</span> Diamond Hands</a>
+        <a href="moon-mission.html"><span class="nav-icon">🚀</span> Moon Mission</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main-wrapper">
+    <main id="content" role="main">
 <!-- SAM:BEGIN:article -->
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="/index.html">Home</a>
@@ -167,26 +232,32 @@
 
     </main>
 
-<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
-<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
-<!-- so placeholder nodes are never injected into the boot sequence.    -->
-<!-- 1. Core config -->
-<script data-cfasync="false" src="/js/api-config.js"></script>
-<!-- 2. Event bus -->
-<script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<!-- 3. Identity -->
-<script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
-<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
-<!-- 5. Shell + shared components -->
-<script data-cfasync="false" src="/js/site-shell.js"></script>
-<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
-<script data-cfasync="false" src="/js/components/global-player-header.js"></script>
-<script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 6. Page-specific scripts -->
+    <footer id="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-col"><h4>🌙 Moonboys Wiki</h4><p>Fan-driven encyclopedia for the crypto community.</p></div>
+        <div class="footer-col"><h4>Explore</h4><ul><li><a href="/index.html">Main Page</a></li><li><a href="/categories/index.html">Categories</a></li><li><a href="/search.html">Search</a></li><li><a href="/about.html">About</a></li></ul></div>
+        <div class="footer-col"><h4>🤖 SAM</h4><ul><li><a href="/search.html">SAM Articles</a></li><li><a href="hodl-wars.html">HODL Wars</a></li><li><a href="hodl-warriors.html">HODL Warriors</a></li></ul></div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Crypto Moonboys Wiki · Not financial advice.</p>
+        <p><span class="no-login-note">🔒 No sign-up · No login · Bot-maintained</span></p>
+      </div>
+    </footer>
+  </div>
+</div>
 
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<!-- SAM:BEGIN:scripts -->
+<script src="/js/api-config.js" data-cfasync="false"></script>
+<script src="/js/arcade/core/global-event-bus.js" data-cfasync="false"></script>
+<script src="/js/identity-gate.js" data-cfasync="false"></script>
+<script src="/js/core/moonboys-state.js" data-cfasync="false"></script>
+<script src="/js/site-shell.js" data-cfasync="false"></script>
+<script src="/js/components/connection-status-panel.js" data-cfasync="false"></script>
+<script src="/js/components/global-player-header.js" data-cfasync="false"></script>
+<script src="/js/components/live-activity-summary.js" data-cfasync="false"></script>
 <script src="/js/wiki.js" data-cfasync="false"></script>
 <script src="/js/bible-loader.js" data-cfasync="false"></script>
+<!-- SAM:END:scripts -->
 </body>
 </html>
