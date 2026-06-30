@@ -638,22 +638,23 @@ img { max-width: 100%; height: auto; }
 }
 
 .related-wiki-paths {
-  margin-top: 28px;
+  margin-top: 34px;
 }
 .related-wiki-paths > h2 {
   color: var(--color-accent);
+  font-size: 1.15rem;
 }
 .wiki-rabbit-group {
-  margin-top: 18px;
+  margin-top: 16px;
 }
 .wiki-rabbit-group h3 {
   margin: 0 0 10px;
-  font-size: .95rem;
+  font-size: .9rem;
   color: var(--color-text);
 }
 .wiki-rabbit-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   gap: 10px;
 }
 .wiki-rabbit-chip-grid {
@@ -685,8 +686,8 @@ img { max-width: 100%; height: auto; }
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-height: 74px;
-  padding: 12px;
+  min-height: 68px;
+  padding: 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background: var(--color-surface-2);
@@ -726,7 +727,7 @@ img { max-width: 100%; height: auto; }
   border-top: 1px solid var(--color-border);
 }
 .wiki-rabbit-group--nft-siblings .wiki-rabbit-grid {
-  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
 }
 .wiki-rabbit-card--nft-sibling {
   min-height: 64px;
@@ -743,65 +744,119 @@ img { max-width: 100%; height: auto; }
   overflow: hidden;
 }
 .nft-template-article .wiki-hero {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 .nft-template-article .nft-category-tags {
   margin-top: 14px;
   padding-top: 10px;
 }
 .nft-template-article .article-meta {
-  margin: 8px 0 12px;
+  margin: 8px 0 10px;
 }
 .nft-template-article .article-meta .meta-item:has(a[href^="/categories/"]) {
   display: none;
 }
-.nft-template-article .battle-deck {
-  grid-template-columns: minmax(260px, .95fr) minmax(220px, .72fr);
-  gap: 14px;
-  margin: 14px 0 22px;
-  align-items: start;
+.battle-engagement-deck {
+  position: relative;
+  grid-template-columns: minmax(260px, 1fr) minmax(230px, .72fr);
+  gap: 12px;
+  align-items: stretch;
+  margin: 12px 0 22px;
+  padding: 10px;
+  border: 1px solid rgba(99, 211, 255, .18);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(10,23,44,.5), rgba(8,18,34,.28));
+  box-shadow: inset 0 0 0 1px rgba(122,236,255,.04);
 }
-.nft-template-article .battle-shell {
-  border-radius: 12px;
+.battle-engagement-deck .battle-shell {
+  border-radius: 10px;
+  box-shadow: none;
+  min-height: 0;
 }
-.nft-template-article .battle-shell-inner {
-  padding: 14px;
+.battle-engagement-deck .battle-shell-inner {
+  padding: 12px;
 }
-.nft-template-article .battle-shell h3 {
-  font-size: .92rem;
+.battle-engagement-deck .battle-shell h3 {
+  font-size: .9rem;
+  margin-bottom: 8px;
 }
-.nft-template-article .battle-shell--heat .battle-copy,
-.nft-template-article .battle-shell--missions .battle-copy {
-  font-size: .76rem;
+.battle-engagement-deck .battle-copy {
+  font-size: .74rem;
   line-height: 1.35;
+  margin-top: 8px;
+}
+.battle-engagement-deck .battle-shell--missions {
+  opacity: .82;
+  background: rgba(36,41,47,.38);
+}
+.battle-engagement-deck .battle-shell--missions .mission-stack {
+  gap: 6px;
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
+}
+.battle-engagement-deck .battle-shell--missions .mission-row {
+  padding: 7px 9px;
+  border-radius: 10px;
+  align-items: flex-start;
+}
+.battle-engagement-deck .battle-shell--missions .mission-text,
+.battle-engagement-deck .battle-shell--missions .mission-tag,
+.battle-engagement-deck .battle-shell--missions .mission-status {
+  font-size: .72rem;
+  line-height: 1.3;
+}
+.nft-template-article .battle-engagement-deck {
+  grid-template-columns: minmax(270px, .9fr) minmax(230px, .62fr);
+  margin: 12px 0 20px;
 }
 .nft-template-article .battle-shell--missions {
-  opacity: .78;
-  box-shadow: none;
-  background: rgba(36,41,47,.46);
-}
-.nft-template-article .battle-shell--missions .mission-stack {
-  max-height: 178px;
-  overflow: auto;
-  padding-right: 2px;
-}
-.nft-template-article .battle-shell--missions .mission-row {
-  padding: 7px 0;
-}
-.nft-template-article .battle-shell--missions .mission-text,
-.nft-template-article .battle-shell--missions .mission-tag {
-  font-size: .74rem;
+  opacity: .82;
 }
 .nft-template-article .battle-shell--heat .battle-page-media img {
-  max-height: min(54vh, 520px);
+  max-height: min(46vh, 420px);
   object-fit: contain;
 }
+.wiki-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 145px), 1fr));
+  gap: 10px;
+  margin: 12px 0 14px;
+}
+.wiki-stat {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: rgba(255,255,255,.025);
+}
+.wiki-stat strong {
+  display: block;
+  color: var(--color-text);
+  font-size: 1rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.wiki-stat strong:empty::before {
+  content: "Not supplied";
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+.wiki-stat span {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: .72rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
 @media (max-width: 860px) {
-  .nft-template-article .battle-deck {
+  .battle-engagement-deck,
+  .nft-template-article .battle-engagement-deck {
     grid-template-columns: 1fr;
-  }
-  .nft-template-article .battle-shell--missions .mission-stack {
-    max-height: none;
   }
 }
 
@@ -1063,15 +1118,17 @@ a.hero-stat-link:hover {
 /* Category list on home */
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 285px), 1fr));
+  gap: 14px;
   margin-bottom: 32px;
 }
 .category-card {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  padding: 14px 16px;
+  min-width: 0;
+  min-height: 0;
+  padding: 13px 15px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
@@ -1082,9 +1139,32 @@ a.hero-stat-link:hover {
   border-color: var(--color-accent);
   text-decoration: none;
 }
-.category-card .cat-icon { font-size: 1.6rem; flex-shrink: 0; }
-.category-card .cat-name { font-weight: 600; font-size: .9rem; }
-.category-card .cat-count { font-size: .75rem; color: var(--color-text-muted); }
+.category-card .cat-icon {
+  flex: 0 0 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(86,220,255,.08);
+  font-size: 1rem;
+  line-height: 1;
+  text-align: center;
+}
+.category-card .cat-name {
+  font-weight: 700;
+  font-size: .9rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.category-card .cat-count,
+.category-card .cat-desc {
+  font-size: .75rem;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
 
 /* ── CATEGORY PAGE ─────────────────────────────────────── */
 .category-header {

@@ -203,4 +203,11 @@ assert.ok((nftSection.match(/\/wiki\/gkniftyheads-.+-\d{5,}\.html/g) || []).leng
 const noCitationHtml = fs.readFileSync(path.join(root, 'wiki/no-citations.html'), 'utf8');
 assert.ok(!noCitationHtml.includes('data-citation-vote-panel="true"'), 'citation panel does not render without citations');
 
+const css = fs.readFileSync(path.join(process.cwd(), 'css/wiki.css'), 'utf8');
+assert.ok(/\.category-grid\s*\{[\s\S]*?minmax\(min\(100%, 285px\), 1fr\)/.test(css), 'category index cards use wider responsive tracks');
+assert.ok(/\.category-card\s*\{[\s\S]*?align-items:\s*flex-start/.test(css), 'category cards avoid cramped vertical centering');
+assert.ok(/\.category-card\s+\.cat-desc\s*\{[\s\S]*?overflow-wrap:\s*anywhere/.test(css), 'category descriptions wrap naturally');
+assert.ok(/\.wiki-rabbit-card\s*\{[\s\S]*?min-height:\s*68px/.test(css), 'Related Wiki Paths cards stay compact');
+assert.ok(/\.wiki-rabbit-group--nft-siblings\s+\.wiki-rabbit-grid\s*\{[\s\S]*?190px/.test(css), 'More from collection keeps distinct sibling-card sizing');
+
 console.log('wiki-navigation-backfill-rendering.test.mjs passed');

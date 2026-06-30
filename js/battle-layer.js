@@ -348,7 +348,7 @@
     var engagement = await computeEngagement(pageId);
 
     var deck = document.createElement('div');
-    deck.className = 'battle-deck';
+    deck.className = 'battle-deck battle-engagement-deck';
     deck.innerHTML =
       buildBattleMeterHTML(engagement, pageId) +
       buildMissionHTML(pageId);
