@@ -392,20 +392,33 @@ function explicitHintGroups(context, currentUrl) {
   return groups;
 }
 
+function groupKind(title) {
+  if (/^Related Categories$/i.test(title)) return 'categories';
+  if (/^More from /i.test(title) || /^Related NFT Templates$/i.test(title)) return 'nft-siblings';
+  return 'context';
+}
+
 function renderGroup(title, links) {
   if (!links.length) return '';
+  const kind = groupKind(title);
+  const groupClass = `wiki-rabbit-group wiki-rabbit-group--${kind}`;
+  const listClass = kind === 'categories' ? 'wiki-rabbit-chip-grid' : 'wiki-rabbit-grid';
   const items = links.map((link) => {
+    if (kind === 'categories') {
+      return `            <a class="wiki-rabbit-chip" href="${escapeHtml(link.url)}" role="listitem">${escapeHtml(link.title)}</a>`;
+    }
     const desc = link.description
       ? `<span class="wiki-rabbit-card-desc">${escapeHtml(link.description)}</span>`
       : '';
-    return `            <a class="wiki-rabbit-card" href="${escapeHtml(link.url)}" role="listitem">
+    const cardClass = kind === 'nft-siblings' ? 'wiki-rabbit-card wiki-rabbit-card--nft-sibling' : 'wiki-rabbit-card';
+    return `            <a class="${cardClass}" href="${escapeHtml(link.url)}" role="listitem">
               <span class="wiki-rabbit-card-title">${escapeHtml(link.title)}</span>
               ${desc}
             </a>`;
   }).join('\n');
-  return `        <div class="wiki-rabbit-group" data-related-group="${escapeHtml(title)}">
+  return `        <div class="${groupClass}" data-related-group="${escapeHtml(title)}">
           <h3>${escapeHtml(title)}</h3>
-          <div class="wiki-rabbit-grid" role="list">
+          <div class="${listClass}" role="list">
 ${items}
           </div>
         </div>`;

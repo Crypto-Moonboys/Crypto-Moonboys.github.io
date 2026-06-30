@@ -167,6 +167,14 @@ for (const file of wikiFiles) {
   check(section.includes('Collection Links'), `${relPath} must group collection links`);
   check(section.includes('Related Categories'), `${relPath} must group category links`);
   check(/More from (?:this collection|GKniftyHEADS)/.test(section), `${relPath} must group capped collection neighbors`);
+  check(
+    /wiki-rabbit-group--categories/i.test(section) && /wiki-rabbit-chip-grid/i.test(section) && /wiki-rabbit-chip/i.test(section),
+    `${relPath} related categories must render as compact chips`
+  );
+  check(
+    /wiki-rabbit-group--nft-siblings/i.test(section) && /wiki-rabbit-card--nft-sibling/i.test(section),
+    `${relPath} More from collection must render as a distinct NFT sibling group`
+  );
 
   const groups = extractRabbitGroups(section);
   const allLinks = groups.flatMap((group) => group.links);

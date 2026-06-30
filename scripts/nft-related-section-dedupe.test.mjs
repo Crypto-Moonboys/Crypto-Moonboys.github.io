@@ -44,6 +44,11 @@ function nftPage(slug, title, terms) {
 <article class="wiki-content nft-template-article" data-page-type="nft_template" data-collection="gkniftyheads" data-template-id="${slug.match(/(\d+)$/)?.[1] || '100000'}">
   <h1>${title}</h1>
   <p>${title} is a GKniftyHEADS NFT template.</p>
+  <template class="nft-battle-media-template" data-battle-media="nft" data-page-id="${slug}">
+    <figure class="battle-page-media nft-template-media-card">
+      <img class="wiki-hero-image nft-image" src="/img/sample-nft.png" alt="${title}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-srcs="[]">
+    </figure>
+  </template>
   <script type="application/json" class="nft-search-terms">${JSON.stringify([title, 'gkniftyheads', 'rarity', ...terms])}</script>
   <table><tbody><tr><th>rarity</th><td>${terms.join(' ')}</td></tr><tr><th>variation</th><td>${terms[0] || 'plain'}</td></tr></tbody></table>
 </article>
@@ -129,6 +134,8 @@ assert.ok(!/\bhref=["']https?:\/\//i.test(section), 'no external links in Relate
 
 const more = group(section, 'More from GKniftyHEADS');
 assert.ok(more, 'NFT page gets a clearly labelled collection-sibling group');
+assert.ok(more.includes('wiki-rabbit-group--nft-siblings'), 'More group is visually distinct from contextual Related Wiki Paths');
+assert.ok(more.includes('wiki-rabbit-card--nft-sibling'), 'More group uses NFT sibling card markup');
 const moreHrefs = hrefs(more);
 assert.ok(moreHrefs.length <= 8, 'More group stays capped');
 assert.ok(moreHrefs.length > 0, 'More group falls back to collection siblings');
@@ -146,6 +153,10 @@ for (const expected of [
   assert.ok(contextual.includes(`href="${expected}"`), `contextual groups include ${expected}`);
 }
 assert.ok(!contextual.includes('/wiki/gkniftyheads-shadow-shifter-cousin-784420.html'), 'sibling NFT hint is not repeated in contextual groups');
+assert.ok(contextual.includes('wiki-rabbit-group--categories'), 'Related Categories group has a compact category group class');
+assert.ok(contextual.includes('wiki-rabbit-chip-grid'), 'Related Categories renders compact chip grid markup');
+assert.ok(contextual.includes('wiki-rabbit-chip'), 'Related Categories renders compact chips');
+assert.ok(!group(section, 'Related Categories').includes('wiki-rabbit-card'), 'Related Categories does not render as large cards');
 
 const allHrefs = hrefs(section);
 assert.equal(allHrefs.length, new Set(allHrefs).size, 'no URL repeats across NFT related groups');
@@ -154,5 +165,18 @@ const fallbackSection = relatedSection('gkniftyheads-plain-origin-784500');
 const fallbackMore = group(fallbackSection, 'More from GKniftyHEADS');
 assert.ok(fallbackMore, 'fallback NFT page still gets a collection-sibling group');
 assert.ok(hrefs(fallbackMore).every((href) => /^\/wiki\/gkniftyheads-.+-\d{5,}\.html$/i.test(href)), 'fallback More group still contains only NFT template URLs');
+
+const targetHtml = fs.readFileSync(path.join(root, 'wiki/gkniftyheads-nova-shadow-shredder-784419.html'), 'utf8');
+const templateBlock = targetHtml.match(/<template\b[^>]*class=["'][^"']*\bnft-battle-media-template\b[\s\S]*?<\/template>/i)?.[0] || '';
+assert.ok(templateBlock.includes('data-battle-media="nft"'), 'NFT Battle Heat template remains present');
+assert.ok(/<img\b[^>]*class=["'][^"']*\bnft-image\b/i.test(templateBlock), 'NFT image remains inside Battle Heat template');
+assert.ok(!targetHtml.replace(templateBlock, '').match(/<img\b[^>]*class=["'][^"']*\bnft-image\b/i), 'no loose NFT image outside Battle Heat template');
+
+const css = fs.readFileSync(path.join(process.cwd(), 'css/wiki.css'), 'utf8');
+const battleLayer = fs.readFileSync(path.join(process.cwd(), 'js/battle-layer.js'), 'utf8');
+assert.ok(battleLayer.includes('battle-shell--heat'), 'Battle Heat keeps a semantic shell class');
+assert.ok(battleLayer.includes('battle-shell--missions'), 'Daily Missions keeps a semantic shell class');
+assert.ok(css.includes('.nft-template-article .battle-shell--missions'), 'Daily Missions is styled as secondary on NFT template pages');
+assert.ok(css.includes('.nft-template-article .battle-shell--heat'), 'Battle Heat keeps NFT-page-specific styling');
 
 console.log('nft-related-section-dedupe.test.mjs passed');
