@@ -277,7 +277,7 @@ function listUtcDaysBetweenExclusive(startUtcDay, endUtcDay, maxDays = 45) {
   return days;
 }
 
-async function ensureDailyOpportunityStateForToday(db, telegramId, utcDay) {
+export async function ensureDailyOpportunityStateForToday(db, telegramId, utcDay) {
   const safeTelegramId = String(telegramId || '').trim();
   const dayKey = clampText(utcDay || getTodayUtcDate(), 10, getTodayUtcDate());
   await db.prepare(`
@@ -301,10 +301,10 @@ async function ensureDailyOpportunityStateForToday(db, telegramId, utcDay) {
   `).bind(safeTelegramId, dayKey).first().catch(() => null);
 }
 
-async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcDay, factionId) {
+export async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcDay, factionId) {
   const prior = await db.prepare(`
     SELECT utc_day FROM daily_opportunity_state WHERE telegram_id = ? AND utc_day < ? ORDER BY utc_day DESC LIMIT 1
-  `).bind(String(telegramId), todayUtcDay).first().catch(() => null);
+  `).bind(String(telegramId), todayUtcDay).first();
   if (!prior?.utc_day) return { days_backfilled: 0, entries_created: 0, created: 0, missed_days: [] };
   const missedDays = listUtcDaysBetweenExclusive(prior.utc_day, todayUtcDay, 45);
   const missedXpValueAvailable = await hasDailyMissedXpValueColumn(db);
@@ -332,6 +332,7 @@ async function backfillMissedPerkGapsFromLastActiveDay(db, telegramId, todayUtcD
       missedAt: `${missedDay}T23:59:59.000Z`,
       missedXpValueAvailable,
     });
+    if (!dailyResetInsert) throw new Error(`missed_perk_backfill_insert_failed:${missedDay}`);
     entriesCreated += Number(dailyResetInsert?.meta?.changes || 0);
     daysFilledCount += 1;
   }
@@ -358,7 +359,7 @@ export async function handleRogueliteDailyRoutes(request, env, url, helpers) {
       await upsertTelegramUser(env.DB, verified.user);
       const utcDay = getTodayUtcDate();
       const faction = await getUserFaction(env.DB, verified.telegramId).catch(() => null);
-      const factionId = normalizeBattleChamberFaction(faction?.id || faction?.name) || null;
+      const factionId = normalizeBattleChamberFaction(faction?.name) || null;
       const backfill = await backfillMissedPerkGapsFromLastActiveDay(env.DB, verified.telegramId, utcDay, factionId);
       const state = await ensureDailyOpportunityStateForToday(env.DB, verified.telegramId, utcDay);
       const playerTables = await ensurePlayerStateTables(env.DB);
