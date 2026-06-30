@@ -46,6 +46,27 @@ function read(rel) {
   return fs.readFileSync(full, 'utf8');
 }
 
+function scriptCount(html, src) {
+  const escaped = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return (html.match(new RegExp(`src=["']${escaped}["']`, 'g')) || []).length;
+}
+
+function assertScriptOrder(html, rel, orderedScripts) {
+  let ok = true;
+  for (let i = 1; i < orderedScripts.length; i += 1) {
+    const previous = orderedScripts[i - 1];
+    const current = orderedScripts[i];
+    const previousIdx = html.indexOf(previous);
+    const currentIdx = html.indexOf(current);
+    if (previousIdx === -1 || currentIdx === -1) continue;
+    if (currentIdx < previousIdx) {
+      fail(`${rel} - ${current} appears BEFORE ${previous}`);
+      ok = false;
+    }
+  }
+  if (ok) pass(`${rel}: daily-loop singleton boot order ok`);
+}
+
 const SHELL_PAGES = [
   'index.html',
   'graph.html',
@@ -61,11 +82,24 @@ const SHELL_PAGES = [
   'gkniftyheads-incubator.html',
 ];
 
+const CANONICAL_BOOT_SRCS = [
+  '/js/api-config.js',
+  '/js/arcade/core/global-event-bus.js',
+  '/js/identity-gate.js',
+  '/js/core/moonboys-state.js',
+  '/js/core/daily-loop-state.js',
+  '/js/site-shell.js',
+  '/js/components/connection-status-panel.js',
+  '/js/components/global-player-header.js',
+  '/js/components/live-activity-summary.js',
+];
+
 console.log('\n─── Site Shell Parity Audit ───────────────────────────────────\n');
 
 // 1. site-shell.js exists
 console.log('[1] site-shell.js exists');
 const shellJs = read('js/site-shell.js');
+const applyShell = read('scripts/apply-shell.mjs');
 if (!shellJs) {
   fail('js/site-shell.js — file not found');
 } else {
@@ -115,6 +149,30 @@ if (!shellJs) {
   }
 }
 
+console.log('\n[2c] apply-shell.mjs canonical daily-loop boot');
+if (!applyShell) {
+  fail('scripts/apply-shell.mjs - file not found');
+} else {
+  const moonboysStateIdx = applyShell.indexOf('<script data-cfasync="false" src="/js/core/moonboys-state.js"></script>');
+  const dailyLoopIdx = applyShell.indexOf('<script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>');
+  const connectionPanelIdx = applyShell.indexOf('<script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>');
+  if (dailyLoopIdx !== -1) {
+    pass('apply-shell.mjs includes /js/core/daily-loop-state.js in canonical boot block');
+  } else {
+    fail('apply-shell.mjs - missing /js/core/daily-loop-state.js in canonical boot block');
+  }
+  if (moonboysStateIdx !== -1 && dailyLoopIdx > moonboysStateIdx) {
+    pass('apply-shell.mjs loads daily-loop-state.js after moonboys-state.js');
+  } else {
+    fail('apply-shell.mjs - daily-loop-state.js must load after moonboys-state.js');
+  }
+  if (dailyLoopIdx !== -1 && connectionPanelIdx > dailyLoopIdx) {
+    pass('apply-shell.mjs loads daily-loop-state.js before connection-status-panel.js');
+  } else {
+    fail('apply-shell.mjs - daily-loop-state.js must load before connection-status-panel.js');
+  }
+}
+
 // 3. Shell pages checks
 console.log('\n[3] Shell pages: no hardcoded shell markup, has site-shell.js');
 for (const rel of SHELL_PAGES) {
@@ -146,40 +204,20 @@ for (const rel of SHELL_PAGES) {
 // 4. Shell pages: script load-order check
 // site-shell.js must appear before connection-status-panel.js, global-player-header.js,
 // and live-activity-summary.js on every named shell page.
-console.log('\n[4] Shell pages: site-shell.js loads before shared components');
-const ORDERED_COMPONENTS = [
-  '/js/components/connection-status-panel.js',
-  '/js/components/global-player-header.js',
-  '/js/components/live-activity-summary.js',
-];
+console.log('\n[4] Shell pages: canonical daily-loop singleton boot order');
 for (const rel of SHELL_PAGES) {
   const html = read(rel);
   if (!html) continue;
-  const shellIdx = html.indexOf('/js/site-shell.js');
-  if (shellIdx === -1) continue; // already caught above
-  let orderOk = true;
-  for (const comp of ORDERED_COMPONENTS) {
-    const compIdx = html.indexOf(comp);
-    if (compIdx !== -1 && compIdx < shellIdx) {
-      fail(`${rel} — ${comp} appears BEFORE site-shell.js`);
-      orderOk = false;
-    }
+  assertScriptOrder(html, rel, CANONICAL_BOOT_SRCS);
+
+  const dailyLoopCount = scriptCount(html, '/js/core/daily-loop-state.js');
+  if (dailyLoopCount !== 1) {
+    fail(`${rel} - expected exactly one daily-loop-state.js script, found ${dailyLoopCount}`);
   }
-  if (orderOk) pass(`${rel}: script order ok`);
 }
 
 // 4b. Rocket Loader bypass: all canonical boot scripts must have data-cfasync="false"
 console.log('\n[4b] Canonical boot scripts must have data-cfasync="false" (Rocket Loader bypass)');
-const CANONICAL_BOOT_SRCS = [
-  '/js/api-config.js',
-  '/js/arcade/core/global-event-bus.js',
-  '/js/identity-gate.js',
-  '/js/core/moonboys-state.js',
-  '/js/site-shell.js',
-  '/js/components/connection-status-panel.js',
-  '/js/components/global-player-header.js',
-  '/js/components/live-activity-summary.js',
-];
 for (const rel of SHELL_PAGES) {
   const html = read(rel);
   if (!html) continue;
@@ -206,7 +244,7 @@ for (const rel of SHELL_PAGES) {
 }
 
 // 5. Named live pages must include live-activity-summary.js
-console.log('\n[5] Named live pages include live-activity-summary.js');
+console.log('\n[5] Named live pages include live-activity-summary.js and daily-loop singleton');
 const LIVE_PAGES = [
   'index.html',
   'sam.html',
@@ -222,6 +260,17 @@ for (const rel of LIVE_PAGES) {
     pass(`${rel}: live-activity-summary.js present`);
   } else {
     fail(`${rel} — missing live-activity-summary.js`);
+  }
+}
+
+console.log('\n[5b] Named right-rail pages include daily-loop singleton');
+for (const rel of LIVE_PAGES) {
+  const html = read(rel);
+  if (!html) continue;
+  if (html.includes('/js/core/daily-loop-state.js')) {
+    pass(`${rel}: daily-loop-state.js present`);
+  } else {
+    fail(`${rel} - missing daily-loop-state.js`);
   }
 }
 
@@ -260,6 +309,11 @@ if (dashboardHtml.includes('page-has-right-panel')) {
   fail('dashboard.html — opts into page-has-right-panel');
 } else {
   pass('dashboard.html: no page-has-right-panel opt-in');
+}
+if (dashboardHtml.includes('/js/core/daily-loop-state.js')) {
+  pass('dashboard.html: daily-loop singleton boot does not require right rail');
+} else {
+  fail('dashboard.html - missing daily-loop singleton shell boot');
 }
 if (runtimeAllowlist.includes('/dashboard.html')) {
   fail('site-shell.js — right-panel allowlist includes /dashboard.html');
