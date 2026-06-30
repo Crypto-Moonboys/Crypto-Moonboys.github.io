@@ -8,6 +8,11 @@ import { PayloadValidationError, validatePayloadDirectory } from './validate-web
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_PAYLOAD_DIR = path.join(ROOT, 'website-publish-payloads');
+export const MANUAL_CONTENT_BEGIN = '<!-- MANUAL_CONTENT:BEGIN -->';
+export const MANUAL_CONTENT_END = '<!-- MANUAL_CONTENT:END -->';
+export const SAM_CONTENT_BEGIN = '<!-- SAM_CONTENT:BEGIN -->';
+export const SAM_CONTENT_END = '<!-- SAM_CONTENT:END -->';
+export const LEGACY_PRESERVED_CONTENT_NOTE = '<!-- LEGACY_PRESERVED_CONTENT: unmarked existing website article preserved for manual review; not proof of fresh SAM output or owner-approved canon. -->';
 export const AFFECTED_SYNC_SURFACES = [
   'categories',
   'search',
@@ -173,11 +178,71 @@ export function renderArticleMiddle(payload) {
     : payload.article_html.trim();
 }
 
-export function renderPageFromTemplate(payload, rootDir = ROOT) {
+function markerRegex(begin, end) {
+  return new RegExp(`${begin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${end.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i');
+}
+
+function extractMarkedBlock(html, begin, end) {
+  return String(html || '').match(markerRegex(begin, end))?.[0] || '';
+}
+
+function extractArticleInner(html) {
+  return String(html || '').match(/<article\b[^>]*>[\s\S]*?<\/article>/i)?.[0]
+    ?.replace(/^<article\b[^>]*>/i, '')
+    ?.replace(/<\/article>\s*$/i, '')
+    ?.trim() || '';
+}
+
+function stripGeneratedArticleBits(html) {
+  return String(html || '')
+    .replace(markerRegex(SAM_CONTENT_BEGIN, SAM_CONTENT_END), '')
+    .replace(/<!-- RELATED_WIKI_PATHS:BEGIN -->[\s\S]*?<!-- RELATED_WIKI_PATHS:END -->/gi, '')
+    .replace(/<div\b[^>]*\bid=["']bible-content["'][^>]*><\/div>/gi, '')
+    .trim();
+}
+
+function renderManualContentBlock(content, { legacyPreserved = false } = {}) {
+  const trimmed = String(content || '').trim();
+  if (!trimmed) return '';
+  const note = legacyPreserved ? `${LEGACY_PRESERVED_CONTENT_NOTE}\n` : '';
+  return `${MANUAL_CONTENT_BEGIN}\n${note}${trimmed}\n${MANUAL_CONTENT_END}`;
+}
+
+function renderSamContentBlock(payload) {
+  return `${SAM_CONTENT_BEGIN}\n${renderArticleMiddle(payload)}\n${SAM_CONTENT_END}`;
+}
+
+export function getManualContentBlock(existingHtml) {
+  const markedManual = extractMarkedBlock(existingHtml, MANUAL_CONTENT_BEGIN, MANUAL_CONTENT_END);
+  if (markedManual) return markedManual;
+
+  if (extractMarkedBlock(existingHtml, SAM_CONTENT_BEGIN, SAM_CONTENT_END)) return '';
+
+  const articleInner = stripGeneratedArticleBits(extractArticleInner(existingHtml));
+  return renderManualContentBlock(articleInner, { legacyPreserved: true });
+}
+
+export function mergeArticleOwnershipSections(payload, existingHtml = '') {
+  const manualBlock = getManualContentBlock(existingHtml);
+  const samBlock = renderSamContentBlock(payload);
+  return [manualBlock, samBlock]
+    .filter(Boolean)
+    .join('\n\n');
+}
+
+function assertManualContentPreserved(existingHtml, renderedHtml, relPagePath) {
+  const manualBlock = getManualContentBlock(existingHtml);
+  if (!manualBlock) return;
+  if (!renderedHtml.includes(manualBlock)) {
+    throw new Error(`manual content preservation failed for ${relPagePath}`);
+  }
+}
+
+export function renderPageFromTemplate(payload, rootDir = ROOT, existingHtml = '') {
   const templatePath = path.join(rootDir, '_article-template.html');
   const template = fs.readFileSync(templatePath, 'utf8');
   const catSlug = categorySlug(payload.category);
-  const articleMiddle = renderArticleMiddle(payload);
+  const articleMiddle = mergeArticleOwnershipSections(payload, existingHtml);
 
   const pageHtml = template
     .replace(
@@ -255,6 +320,81 @@ function payloadToIndexEntry(payload) {
     },
     brand: null,
   };
+}
+
+function titleFromHtml(html, fallback) {
+  const title = String(html || '').match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1] ||
+    String(html || '').match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] ||
+    fallback;
+  return stripHtml(title).replace(/\s+-\s+Crypto Moonboys Wiki$/i, '').trim() || fallback;
+}
+
+function descriptionFromHtml(html) {
+  return String(html || '').match(/<meta\b(?=[^>]*name=["']description["'])(?=[^>]*content=["']([^"']+)["'])[^>]*>/i)?.[1] ||
+    stripHtml(String(html || '').match(/<p\b[^>]*>([\s\S]*?)<\/p>/i)?.[1] || '').slice(0, 180);
+}
+
+function categoryFromHtml(html) {
+  const categoryHref = String(html || '').match(/href=["']\/categories\/([^"']+)\.html["']/i)?.[1];
+  return categoryHref || 'lore';
+}
+
+function htmlToIndexEntry(url, html) {
+  const slug = url.replace(/^\/wiki\//, '').replace(/\.html$/, '');
+  const title = titleFromHtml(html, slug.replace(/-/g, ' '));
+  const description = descriptionFromHtml(html);
+  const category = categoryFromHtml(html);
+  const words = stripHtml(html).split(/\s+/).filter(Boolean);
+  const tokens = Array.from(new Set([...tokenize(title), ...tokenize(description)]));
+
+  return {
+    title: `${title} - Crypto Moonboys Wiki`,
+    desc: description,
+    url,
+    tags: tokens.slice(0, 12),
+    category,
+    aliases: [],
+    rank_score: Math.max(100, words.length),
+    rank_signals: {
+      category,
+      has_description: Boolean(description),
+      article_word_count: words.length,
+      word_count: words.length,
+      heading_count: (html.match(/<h[1-6]\b/gi) || []).length,
+      internal_link_count: (html.match(/href=["']\/wiki\//gi) || []).length,
+      content_quality_score: Math.min(100, Math.max(1, Math.floor(words.length / 5))),
+      authority_score: 0,
+    },
+    rank_diagnostics: {
+      final_rank_score: Math.max(100, words.length),
+    },
+    search_index: {
+      normalized_title: tokenize(title).join(' '),
+      tokens: tokenize(title),
+      keyword_bag: tokens,
+    },
+    link_score: {
+      inbound_count: 0,
+      outbound_count: 0,
+      existing_outbound_count: 0,
+      suggested_outbound_count: 0,
+      authority: 0,
+    },
+    brand: null,
+  };
+}
+
+function discoverWikiPageEntries(rootDir) {
+  const wikiDir = path.join(rootDir, 'wiki');
+  if (!fs.existsSync(wikiDir)) return [];
+
+  return fs.readdirSync(wikiDir)
+    .filter((fileName) => fileName.endsWith('.html') && fileName !== 'index.html')
+    .map((fileName) => {
+      const url = `/wiki/${fileName}`;
+      const html = fs.readFileSync(path.join(wikiDir, fileName), 'utf8');
+      return htmlToIndexEntry(url, html);
+    });
 }
 
 function loadJsonArray(filePath) {
@@ -463,8 +603,9 @@ function syncPortableSurfaces(rootDir, payloads, logger) {
   fs.mkdirSync(jsDir, { recursive: true });
 
   const payloadEntries = payloads.map(payloadToIndexEntry);
+  const discoveredWikiEntries = discoverWikiPageEntries(rootDir);
   const wikiIndexPath = path.join(jsDir, 'wiki-index.json');
-  const wikiIndex = upsertByUrl(loadJsonArray(wikiIndexPath), payloadEntries);
+  const wikiIndex = upsertByUrl(loadJsonArray(wikiIndexPath), [...discoveredWikiEntries, ...payloadEntries]);
   writeJson(wikiIndexPath, wikiIndex);
 
   syncCategories(rootDir, wikiIndex, payloads);
@@ -698,11 +839,19 @@ export function runImport({
   const plannedPages = [];
   const payloads = validation.payloads.map(({ payload }) => payload);
   const renderedPages = write
-    ? validation.payloads.map(({ payload }) => ({
-      payload,
-      relPagePath: plannedPagePath(payload),
-      html: renderPageFromTemplate(payload, rootDir),
-    }))
+    ? validation.payloads.map(({ payload }) => {
+      const relPagePath = plannedPagePath(payload);
+      const existingPagePath = path.join(rootDir, relPagePath);
+      const existingHtml = fs.existsSync(existingPagePath) ? fs.readFileSync(existingPagePath, 'utf8') : '';
+      const html = renderPageFromTemplate(payload, rootDir, existingHtml);
+      assertManualContentPreserved(existingHtml, html, relPagePath);
+      return {
+        payload,
+        relPagePath,
+        existingHtml,
+        html,
+      };
+    })
     : [];
 
   for (const { payload } of validation.payloads) {

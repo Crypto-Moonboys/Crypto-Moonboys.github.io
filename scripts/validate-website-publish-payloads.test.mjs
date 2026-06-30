@@ -14,8 +14,15 @@ import {
   AFFECTED_SYNC_SURFACES,
   FeedSyncError,
   assertRequiredRealRootSyncScripts,
+  LEGACY_PRESERVED_CONTENT_NOTE,
+  MANUAL_CONTENT_BEGIN,
+  MANUAL_CONTENT_END,
+  SAM_CONTENT_BEGIN,
+  SAM_CONTENT_END,
+  getManualContentBlock,
   renderBattleHeatMediaTemplate,
   renderArticleMiddle,
+  renderPageFromTemplate,
   runImport,
 } from './import-website-publish-payloads.mjs';
 
@@ -214,6 +221,82 @@ assert.match(fs.readFileSync(path.join(writeRoot, 'sitemap.xml'), 'utf8'), /http
 assert.ok(writeOutput.some((line) => line.includes('Synced portable feed surfaces')));
 console.log('PASS write-mode creates pages and syncs all required temp surfaces');
 
+const manualRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'website-importer-manual-'));
+const manualPayloadDir = path.join(manualRoot, 'website-publish-payloads');
+fs.copyFileSync(path.join(ROOT, '_article-template.html'), path.join(manualRoot, '_article-template.html'));
+writeJson(path.join(manualPayloadDir, 'sample-lore-page.json'), lorePayload);
+const manualPagePath = path.join(manualRoot, 'wiki', 'sample-lore-page.html');
+fs.mkdirSync(path.dirname(manualPagePath), { recursive: true });
+fs.writeFileSync(manualPagePath, `<!DOCTYPE html><html><body><main id="content"><article class="wiki-content">
+<h1>Manual owner truth</h1>
+<p>MANUAL OWNER TEXT MUST SURVIVE.</p>
+<!-- RELATED_WIKI_PATHS:BEGIN --><section>Generated links can move.</section><!-- RELATED_WIKI_PATHS:END -->
+<div id="bible-content"></div>
+</article><div class="wiki-comments" data-page-id="sample-lore-page"></div></main></body></html>`, 'utf8');
+
+runImport({
+  payloadDir: manualPayloadDir,
+  rootDir: manualRoot,
+  write: true,
+  logger: () => {},
+});
+
+const preservedManualHtml = fs.readFileSync(manualPagePath, 'utf8');
+assert.ok(preservedManualHtml.includes(MANUAL_CONTENT_BEGIN), 'existing unmarked manual article must be wrapped with manual begin marker');
+assert.ok(preservedManualHtml.includes(MANUAL_CONTENT_END), 'existing unmarked manual article must be wrapped with manual end marker');
+assert.ok(preservedManualHtml.includes(LEGACY_PRESERVED_CONTENT_NOTE), 'unmarked existing article must be labeled as legacy preserved content');
+assert.ok(preservedManualHtml.includes('MANUAL OWNER TEXT MUST SURVIVE.'), 'manual owner text must be preserved');
+assert.ok(preservedManualHtml.includes(SAM_CONTENT_BEGIN), 'incoming payload must be written into SAM-managed section');
+assert.ok(preservedManualHtml.includes(SAM_CONTENT_END), 'incoming payload must close SAM-managed section');
+assert.ok(
+  preservedManualHtml.indexOf(MANUAL_CONTENT_BEGIN) < preservedManualHtml.indexOf(SAM_CONTENT_BEGIN),
+  'manual section must remain above SAM section'
+);
+assert.ok(!preservedManualHtml.includes('Generated links can move.'), 'generated Related Wiki Paths block must not become manual truth');
+console.log('PASS existing manual page is wrapped, preserved, and kept above incoming SAM payload');
+
+const existingMarkedHtml = `<!DOCTYPE html><html><body><main id="content"><article class="wiki-content">
+${MANUAL_CONTENT_BEGIN}
+<p>KEEP THIS MANUAL SECTION.</p>
+${MANUAL_CONTENT_END}
+${SAM_CONTENT_BEGIN}
+<p>OLD SAM SECTION MUST BE REPLACED.</p>
+${SAM_CONTENT_END}
+</article></main></body></html>`;
+const rerenderedMarkedHtml = renderPageFromTemplate(lorePayload, manualRoot, existingMarkedHtml);
+assert.ok(rerenderedMarkedHtml.includes('KEEP THIS MANUAL SECTION.'), 'marked manual section must survive render');
+assert.ok(!rerenderedMarkedHtml.includes('OLD SAM SECTION MUST BE REPLACED.'), 'old SAM section must be replaced');
+assert.ok(rerenderedMarkedHtml.includes(lorePayload.article_html.trim()), 'new SAM payload article_html must be present');
+console.log('PASS existing SAM page updates SAM section without deleting manual section');
+
+const manualOnlyRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'website-importer-manual-feed-'));
+const manualOnlyPayloadDir = path.join(manualOnlyRoot, 'website-publish-payloads');
+copyFixtures(manualOnlyPayloadDir);
+fs.copyFileSync(path.join(ROOT, '_article-template.html'), path.join(manualOnlyRoot, '_article-template.html'));
+const manualOnlyPath = path.join(manualOnlyRoot, 'wiki', 'manual-only-page.html');
+fs.mkdirSync(path.dirname(manualOnlyPath), { recursive: true });
+fs.writeFileSync(manualOnlyPath, `<!DOCTYPE html><html><head><title>Manual Only Page</title><meta name="description" content="Owner-written manual only page."></head><body><main id="content"><article class="wiki-content">
+${MANUAL_CONTENT_BEGIN}
+<h1>Manual Only Page</h1>
+<p>Manual-only page exists without an incoming payload.</p>
+${MANUAL_CONTENT_END}
+</article><div class="category-tags"><a href="/categories/lore.html">Lore</a></div></main></body></html>`, 'utf8');
+
+runImport({
+  payloadDir: manualOnlyPayloadDir,
+  rootDir: manualOnlyRoot,
+  write: true,
+  logger: () => {},
+});
+
+const manualOnlyWikiIndex = JSON.parse(fs.readFileSync(path.join(manualOnlyRoot, 'js', 'wiki-index.json'), 'utf8'));
+const manualOnlyUrls = new Set(manualOnlyWikiIndex.map((entry) => entry.url));
+assert.ok(manualOnlyUrls.has('/wiki/manual-only-page.html'), 'manual-only page must be included in portable search index');
+assert.match(fs.readFileSync(path.join(manualOnlyRoot, 'js', 'timeline-data.json'), 'utf8'), /manual-only-page/);
+assert.match(fs.readFileSync(path.join(manualOnlyRoot, 'js', 'graph-data.json'), 'utf8'), /manual-only-page/);
+assert.match(fs.readFileSync(path.join(manualOnlyRoot, 'categories', 'lore.html'), 'utf8'), /\/wiki\/manual-only-page\.html/);
+console.log('PASS manual-only pages remain in search, timeline, graph, and category sync');
+
 const badRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'website-importer-bad-'));
 const badPayloadDir = path.join(badRoot, 'website-publish-payloads');
 fs.copyFileSync(path.join(ROOT, '_article-template.html'), path.join(badRoot, '_article-template.html'));
@@ -262,6 +345,28 @@ assert.equal(fs.readFileSync(restoredLorePath, 'utf8'), 'ORIGINAL LORE PAGE');
 assert.equal(fs.existsSync(path.join(rollbackRoot, 'wiki', 'sample-nft-template.html')), false);
 console.log('PASS feed sync failure rolls back write-mode page writes');
 
+const manualRollbackRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'website-importer-manual-rollback-'));
+const manualRollbackPayloadDir = path.join(manualRollbackRoot, 'website-publish-payloads');
+writeJson(path.join(manualRollbackPayloadDir, 'sample-lore-page.json'), lorePayload);
+fs.copyFileSync(path.join(ROOT, '_article-template.html'), path.join(manualRollbackRoot, '_article-template.html'));
+const manualRollbackPagePath = path.join(manualRollbackRoot, 'wiki', 'sample-lore-page.html');
+fs.mkdirSync(path.dirname(manualRollbackPagePath), { recursive: true });
+fs.writeFileSync(manualRollbackPagePath, '<article class="wiki-content"><p>ORIGINAL MANUAL TRUTH</p></article>', 'utf8');
+assert.throws(
+  () => runImport({
+    payloadDir: manualRollbackPayloadDir,
+    rootDir: manualRollbackRoot,
+    write: true,
+    logger: () => {},
+    syncFeedSurfacesFn: () => {
+      throw new FeedSyncError('search', 'feed sync failed for search: injected manual rollback failure');
+    },
+  }),
+  (error) => error instanceof FeedSyncError
+);
+assert.equal(fs.readFileSync(manualRollbackPagePath, 'utf8'), '<article class="wiki-content"><p>ORIGINAL MANUAL TRUTH</p></article>');
+console.log('PASS manual page preservation rolls back with write-mode failure');
+
 const missingScriptsRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'website-importer-missing-scripts-'));
 assert.throws(
   () => assertRequiredRealRootSyncScripts(missingScriptsRoot),
@@ -271,5 +376,6 @@ assert.throws(
 console.log('PASS real-root feed sync preflight fails loudly for missing scripts');
 
 assert.ok(FeedSyncError, 'FeedSyncError export is available for feed sync failures');
+assert.ok(getManualContentBlock(existingMarkedHtml).includes('KEEP THIS MANUAL SECTION.'), 'manual content helper exposes marked manual truth');
 
 console.log('\nvalidate-website-publish-payloads.test.mjs passed');
