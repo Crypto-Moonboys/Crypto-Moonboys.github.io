@@ -111,6 +111,13 @@ for (const fname of wikiFiles) {
   }
 
   assertOrdered(html, rel, orderedBoot);
+
+  if (html.includes('page-has-right-panel')) {
+    fail(`${rel} - static wiki page must not force-enable page-has-right-panel`);
+  }
+  if (!html.includes('page-standard-shell')) {
+    fail(`${rel} - static wiki page must use page-standard-shell`);
+  }
 }
 
 console.log('\n--- Regression anchor: /wiki/graffpunks.html ---\n');
@@ -158,6 +165,11 @@ if (!fs.existsSync(anchorPath)) {
     fail('/wiki/graffpunks.html - static wiki article must not force-enable page-has-right-panel');
   } else {
     pass('/wiki/graffpunks.html - static wiki article does not force-enable page-has-right-panel');
+  }
+  if (anchorHtml.includes('page-standard-shell')) {
+    pass('/wiki/graffpunks.html - static wiki article uses page-standard-shell');
+  } else {
+    fail('/wiki/graffpunks.html - missing page-standard-shell');
   }
 }
 

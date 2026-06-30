@@ -6,7 +6,8 @@
  * By the time this runs, <main id="content"> is already in the DOM.
  * wiki.js (loaded after) handles all interactive event handlers.
  *
- * SHELL REBUILD TRUTH (index.html is canonical):
+ * SHELL REBUILD TRUTH:
+ * - site-shell.js owns canonical shell chrome; page classes only select layout mode.
  * - Always preserve <main id="content"> first.
  * - Safely detach main BEFORE removing any old #layout / #main-wrapper.
  * - Never append main to new wrapper until old shell nodes are removed.
@@ -160,7 +161,7 @@
     if (p === '/dashboard.html') return false;
     if (body.classList.contains('page-no-right-panel')) return false;
     if (body.classList.contains('page-has-right-panel')) return true;
-    var exact = ['/index.html','/community.html','/how-to-play.html','/games','/games/','/games/index.html','/games/leaderboard.html'];
+    var exact = ['/community.html','/games','/games/','/games/index.html','/games/leaderboard.html'];
     if (exact.indexOf(p) !== -1) return true;
     return false;
   }

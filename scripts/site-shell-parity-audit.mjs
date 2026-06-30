@@ -243,10 +243,11 @@ for (const rel of SHELL_PAGES) {
   if (cfOk) pass(`${rel}: all canonical boot scripts have data-cfasync="false"`);
 }
 
-// 5. Named live pages must include live-activity-summary.js
-console.log('\n[5] Named live pages include live-activity-summary.js and daily-loop singleton');
+// 5. Named live/action pages must include live-activity-summary.js
+console.log('\n[5] Named live/action pages include live-activity-summary.js and daily-loop singleton');
 const LIVE_PAGES = [
-  'index.html',
+  'community.html',
+  'games/index.html',
   'games/leaderboard.html',
 ];
 for (const rel of LIVE_PAGES) {
@@ -274,7 +275,7 @@ for (const rel of LIVE_PAGES) {
 //    OR be in the canonical allowlist in site-shell.js
 console.log('\n[6] Right-panel trigger present on named live/action pages');
 const RIGHT_PANEL_ALLOWLIST = [
-  '/index.html', '/community.html', '/how-to-play.html',
+  '/community.html',
   '/games/', '/games/index.html', '/games/leaderboard.html',
 ];
 for (const rel of LIVE_PAGES) {
@@ -295,6 +296,51 @@ console.log('\n[6b] Dashboard excludes runtime right panel');
 const dashboardHtml = read('dashboard.html') || '';
 const shouldShowRightPanelBlock = functionBlock(shellJs, 'shouldShowRightPanel');
 const runtimeAllowlist = stringArrayValues(shouldShowRightPanelBlock, 'exact');
+const STATIC_STANDARD_PAGES = [
+  'index.html',
+  'search.html',
+  'timeline.html',
+  'graph.html',
+  'sam.html',
+  'dashboard.html',
+  'about.html',
+  'about/index.html',
+  'agent.html',
+  'block-topia.html',
+  'gkniftyheads-incubator.html',
+  'hubs.html',
+  'how-to-play.html',
+  'paths.html',
+  'sparky.html',
+  'swarmsy.html',
+];
+console.log('\n[6a] Static editorial pages use standard shell without right rail opt-in');
+for (const rel of STATIC_STANDARD_PAGES) {
+  const html = read(rel) || '';
+  if (html.includes('page-has-right-panel')) {
+    fail(`${rel} — must not opt into page-has-right-panel`);
+  } else {
+    pass(`${rel}: no page-has-right-panel opt-in`);
+  }
+  if (html.includes('page-standard-shell')) {
+    pass(`${rel}: has page-standard-shell`);
+  } else {
+    fail(`${rel} — missing page-standard-shell`);
+  }
+}
+for (const route of ['/index.html', '/search.html', '/timeline.html', '/graph.html', '/sam.html', '/dashboard.html']) {
+  if (runtimeAllowlist.includes(route)) {
+    fail(`site-shell.js — right-panel allowlist includes static route ${route}`);
+  } else {
+    pass(`site-shell.js: right-panel allowlist excludes static route ${route}`);
+  }
+}
+if (shouldShowRightPanelBlock.includes("'/wiki/'") || shouldShowRightPanelBlock.includes("'/categories/'")) {
+  fail('site-shell.js — right-panel logic must not auto-enable /wiki/ or /categories/ prefixes');
+} else {
+  pass('site-shell.js: no /wiki/ or /categories/ right-panel prefix allowlist');
+}
+
 if (dashboardHtml.includes('data-csp-panel') || dashboardHtml.includes('data-las-panel')) {
   fail('dashboard.html — contains live player panel hooks');
 } else {
@@ -319,6 +365,25 @@ if (shouldShowRightPanelBlock.includes("if (p === '/dashboard.html') return fals
   pass('site-shell.js: shouldShowRightPanel explicitly blocks dashboard route');
 } else {
   fail('site-shell.js — shouldShowRightPanel lacks explicit dashboard exclusion');
+}
+
+const communityHtml = read('community.html') || '';
+const gamesHtml = read('games/index.html') || '';
+const leaderboardHtml = read('games/leaderboard.html') || '';
+if (communityHtml.includes('page-has-right-panel') && runtimeAllowlist.includes('/community.html')) {
+  pass('community.html: Battle Chamber keeps live right-rail behaviour');
+} else {
+  fail('community.html — must keep Battle Chamber live right-rail opt-in/allowlist');
+}
+if (gamesHtml.includes('page-has-right-panel') && runtimeAllowlist.includes('/games/index.html')) {
+  pass('games/index.html: game hub keeps live right-rail behaviour');
+} else {
+  fail('games/index.html — must keep live right-rail opt-in/allowlist');
+}
+if (leaderboardHtml.includes('page-has-right-panel') && runtimeAllowlist.includes('/games/leaderboard.html')) {
+  pass('games/leaderboard.html: leaderboard keeps live right-rail behaviour');
+} else {
+  fail('games/leaderboard.html — must keep live right-rail opt-in/allowlist');
 }
 
 // 6c. Dashboard left-nav parity: must use page-standard-shell for retro sidebar parity with home page.

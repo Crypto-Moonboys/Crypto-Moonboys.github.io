@@ -95,6 +95,7 @@ function auditNftPage(file, html) {
   const outsideTemplate = templateBlock ? html.replace(templateBlock, '') : html;
 
   check(/<body\b[^>]*class=["'][^"']*\bpage-wiki\b/i.test(html), `${rel}: body must include page-wiki`);
+  check(/<body\b[^>]*class=["'][^"']*\bpage-standard-shell\b/i.test(html), `${rel}: static NFT template page must use page-standard-shell`);
   check(!/<body\b[^>]*class=["'][^"']*\bpage-has-right-panel\b/i.test(html), `${rel}: static NFT template page must not force-enable the runtime right rail`);
   for (const src of [
     '/js/core/daily-loop-state.js',
