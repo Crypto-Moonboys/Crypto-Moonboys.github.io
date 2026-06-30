@@ -1,0 +1,34 @@
+{
+  "slug": "sample-nft-template",
+  "title": "Sample NFT Template",
+  "description": "A fixture payload proving NFT media is reserved for Battle Heat placement.",
+  "category": "NFTs Digital Art",
+  "article_html": "<p class=\"lead-paragraph\">This NFT fixture keeps article copy separate from Battle Heat media.</p>\n<section class=\"wiki-section\"><h2 id=\"template-lore\">Template Lore</h2><p>The image is rendered by the website-owned Battle Heat template.</p></section>",
+  "citations": [],
+  "see_also": [
+    "sample-lore-page"
+  ],
+  "source_refs": [
+    "fixture:nft"
+  ],
+  "requested_update_reason": "Test fixture",
+  "last_updated_source": "fixture",
+  "publish_mode": "middle_content_only",
+  "page_type": "nft_template",
+  "collection": "gkniftyheads",
+  "template_id": "123456",
+  "tags": [
+    "fixture",
+    "nft"
+  ],
+  "updated_at": "2026-06-30T00:00:00Z",
+  "media": {
+    "type": "nft_image",
+    "placement": "battle_heat",
+    "image_url": "https://example.com/sample-nft.png",
+    "alt": "Sample NFT fixture image",
+    "fallback_urls": [
+      "https://example.com/sample-nft.webp"
+    ]
+  }
+}
