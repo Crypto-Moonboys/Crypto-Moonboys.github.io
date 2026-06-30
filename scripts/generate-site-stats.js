@@ -78,20 +78,41 @@ function countWikiFiles() {
   };
 }
 
-function countWikiIndexPages() {
+function readWikiIndexEntries() {
   if (!fs.existsSync(INDEX_JSON)) {
     console.error('Warning: js/wiki-index.json not found; indexed page counts will be 0');
-    return 0;
+    return [];
   }
 
   try {
     const entries = readJson(INDEX_JSON);
-    if (!Array.isArray(entries)) return 0;
-    return entries.filter(entry => entry && typeof entry === 'object' && isWikiUrl(entry.url)).length;
+    return Array.isArray(entries) ? entries : [];
   } catch (err) {
     console.error('Warning: could not parse js/wiki-index.json:', err.message);
-    return 0;
+    return [];
   }
+}
+
+function htmlForWikiIndexEntry(entry) {
+  const url = normalizeWikiUrl(entry && entry.url);
+  if (!isWikiUrl(url)) return '';
+  const relative = url.replace(/^\/+/, '');
+  const filePath = path.join(ROOT, relative);
+  if (!filePath.startsWith(WIKI_DIR + path.sep) || !fs.existsSync(filePath)) return '';
+  return fs.readFileSync(filePath, 'utf8');
+}
+
+function countWikiIndexPages(entries) {
+  return entries.filter(entry => entry && typeof entry === 'object' && isWikiUrl(entry.url)).length;
+}
+
+function countIndexedArticles(entries) {
+  return entries.filter(entry => {
+    if (!entry || typeof entry !== 'object' || !isWikiUrl(entry.url)) return false;
+    const html = htmlForWikiIndexEntry(entry);
+    if (!html) return false;
+    return !isNftTemplateHtml(html) && !isNftCollectionHtml(html);
+  }).length;
 }
 
 function countCanonicalEntities() {
@@ -175,7 +196,9 @@ function preserveTimestampIfStable(stats) {
 }
 
 const wikiFileCounts = countWikiFiles();
-const indexedPages = countWikiIndexPages();
+const wikiIndexEntries = readWikiIndexEntries();
+const indexedPages = countWikiIndexPages(wikiIndexEntries);
+const indexedArticles = countIndexedArticles(wikiIndexEntries);
 const entityCount = countCanonicalEntities();
 const categoryCount = countCategories();
 const graphNodes = countGraphNodes();
@@ -183,7 +206,7 @@ const sitemapWikiUrls = countSitemapWikiUrls();
 
 const stats = {
   total_wiki_pages: wikiFileCounts.totalWikiPages,
-  total_articles: wikiFileCounts.totalArticles,
+  total_articles: indexedArticles,
   nft_template_pages: wikiFileCounts.nftTemplatePages,
   nft_collection_pages: wikiFileCounts.nftCollectionPages,
   indexed_pages: indexedPages,

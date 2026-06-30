@@ -1,6 +1,6 @@
 {
   "total_wiki_pages": 329,
-  "total_articles": 185,
+  "total_articles": 180,
   "nft_template_pages": 143,
   "nft_collection_pages": 1,
   "indexed_pages": 324,
@@ -19,5 +19,5 @@
   "excluded_legacy_paths": [
     "/wiki/index.html"
   ],
-  "last_updated": "2026-06-30T12:56:07.964Z"
+  "last_updated": "2026-06-30T13:14:58.908Z"
 }

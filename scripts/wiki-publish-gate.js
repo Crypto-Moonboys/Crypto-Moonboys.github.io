@@ -177,11 +177,42 @@ function hasNeedsBrandReviewMarker(html) {
   return /NEEDS_BRAND_REVIEW/i.test(html);
 }
 
-function isNftTemplatePage(html) {
+function extractTag(html, tagName, requiredPattern) {
+  const tagRegex = new RegExp(`<${tagName}\\b[^>]*>`, 'ig');
+  let match;
+  while ((match = tagRegex.exec(html))) {
+    const tag = match[0];
+    if (!requiredPattern || requiredPattern.test(tag)) return tag;
+  }
+  return '';
+}
+
+function extractAttr(tag, attrName) {
+  const escapedAttr = attrName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = String(tag || '').match(new RegExp(`\\b${escapedAttr}=["']([^"']*)["']`, 'i'));
+  return match ? match[1].trim() : '';
+}
+
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function isValidNftTemplatePage(slug, html) {
   if (/data-page-type=["']nft_collection["']/i.test(html)) return false;
-  return /data-page-type=["']nft_template["']/i.test(html) ||
-         /class=["'][^"']*\bnft-template-article\b/i.test(html) ||
-         /<template\b[^>]*class=["'][^"']*\bnft-battle-media-template\b/i.test(html);
+
+  const normalized = normalizeSlug(slug);
+  const articleTag = extractTag(html, 'article', /\bdata-page-type=["']nft_template["']/i);
+  const collection = normalizeSlug(extractAttr(articleTag, 'data-collection'));
+  const templateId = extractAttr(articleTag, 'data-template-id');
+  if (!articleTag || !collection || !/^\d+$/.test(templateId)) return false;
+
+  const slugPattern = new RegExp(`^${escapeRegex(collection)}-[a-z0-9]+(?:-[a-z0-9]+)*-${escapeRegex(templateId)}$`, 'i');
+  if (!slugPattern.test(normalized)) return false;
+
+  const templateTag = extractTag(html, 'template', /\bdata-battle-media=["']nft["']/i);
+  if (!templateTag) return false;
+  if (!/\bclass=["'][^"']*\bnft-battle-media-template\b/i.test(templateTag)) return false;
+  return extractAttr(templateTag, 'data-page-id') === normalized;
 }
 
 function isNftCollectionPage(html) {
@@ -310,7 +341,25 @@ function classifyPage(slug, html, canon) {
     };
   }
 
-  if (isNftTemplatePage(html)) {
+  if (slugResult.status === STATUS.NEEDS_BRAND_REVIEW && canon.reviewSlugs && canon.reviewSlugs.has(normalized)) {
+    return {
+      slug: normalized,
+      status: slugResult.status,
+      reason: slugResult.reason,
+      word_count: 0,
+    };
+  }
+
+  if (hasNeedsBrandReviewMarker(html)) {
+    return {
+      slug: normalized,
+      status: STATUS.NEEDS_BRAND_REVIEW,
+      reason: 'Page contains NEEDS_BRAND_REVIEW marker.',
+      word_count: 0,
+    };
+  }
+
+  if (isValidNftTemplatePage(normalized, html)) {
     return {
       slug: normalized,
       status: STATUS.APPROVED_CANON_PAGE,
@@ -334,16 +383,6 @@ function classifyPage(slug, html, canon) {
       slug: normalized,
       status: slugResult.status,
       reason: slugResult.reason,
-      word_count: 0,
-    };
-  }
-
-  // HTML-level checks
-  if (hasNeedsBrandReviewMarker(html)) {
-    return {
-      slug: normalized,
-      status: STATUS.NEEDS_BRAND_REVIEW,
-      reason: 'Page contains NEEDS_BRAND_REVIEW marker.',
       word_count: 0,
     };
   }

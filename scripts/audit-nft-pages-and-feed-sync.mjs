@@ -170,20 +170,37 @@ for (const page of nftPages) {
 }
 
 const wikiIndexPages = wikiIndex.filter((entry) => normalizeWikiUrl(entry.url).startsWith('/wiki/') && normalizeWikiUrl(entry.url) !== '/wiki/index.html').length;
+const indexedArticlePages = wikiIndex.filter((entry) => {
+  const url = normalizeWikiUrl(entry.url);
+  if (!url.startsWith('/wiki/') || url === '/wiki/index.html') return false;
+  const file = url.replace(/^\/wiki\//, '');
+  const page = pages.find((candidate) => candidate.file === file);
+  return page && !isNftTemplatePage(page.file, page.html) && !isNftCollectionPage(page.html);
+}).length;
 const graphNodes = (graphData.nodes || []).filter((node) => normalizeWikiUrl(node.url || node.id).startsWith('/wiki/')).length;
 const sitemapWikiUrls = countSitemapWikiUrls(sitemap);
 const categoryCount = fs.readdirSync(path.join(ROOT, 'categories')).filter((file) => file.endsWith('.html') && file !== 'index.html').length;
+const nonArticleRegressionUrls = [
+  '/wiki/alfie-blaze.html',
+  '/wiki/bitcoin-nfts.html',
+  '/wiki/bitcoin-tokens.html',
+  '/wiki/bitcoin-graffpunks.html',
+  '/wiki/games-graffpunks.html',
+];
 
 assert.equal(siteStats.total_wiki_pages, pages.length, 'site-stats total_wiki_pages must match real wiki files');
 assert.equal(siteStats.nft_template_pages, nftPages.length, 'site-stats nft_template_pages must match real NFT pages');
 assert.equal(siteStats.nft_collection_pages, nftCollectionPages.length, 'site-stats nft_collection_pages must match real NFT collection pages');
-assert.equal(siteStats.total_articles, pages.length - nftPages.length - nftCollectionPages.length, 'site-stats total_articles must exclude NFT templates/collections');
+assert.equal(siteStats.total_articles, indexedArticlePages, 'site-stats total_articles must match indexed non-NFT/non-collection articles');
 assert.equal(siteStats.indexed_pages, wikiIndexPages, 'site-stats indexed_pages must match wiki-index');
 assert.equal(siteStats.search_index_pages, wikiIndexPages, 'site-stats search_index_pages must match search source');
 assert.equal(siteStats.entity_count, entityMap.length, 'site-stats entity_count must match entity-map');
 assert.equal(siteStats.graph_nodes, graphNodes, 'site-stats graph_nodes must match graph-data nodes');
 assert.equal(siteStats.sitemap_wiki_urls, sitemapWikiUrls, 'site-stats sitemap_wiki_urls must match sitemap');
 assert.equal(siteStats.total_categories, categoryCount, 'site-stats total_categories must match categories directory');
+for (const url of nonArticleRegressionUrls) {
+  check(!wikiIndexByUrl.has(url), `${url}: redirect/noindex/stub page must not be indexed as an article`);
+}
 
 const indexHtml = read('index.html');
 const dashboardJs = read('js/dashboard.js');

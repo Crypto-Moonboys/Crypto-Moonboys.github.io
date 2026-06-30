@@ -40,6 +40,23 @@ const entityMap   = fs.existsSync(ENTITY_MAP_PATH)   ? JSON.parse(fs.readFileSyn
 const entityGraph = fs.existsSync(ENTITY_GRAPH_PATH) ? JSON.parse(fs.readFileSync(ENTITY_GRAPH_PATH, 'utf8')) : {};
 
 const canon = gate.loadBrandCanon();
+const baseCanon = {
+  blockedPatterns: canon.blockedPatterns,
+  approvedSlugs: new Set(),
+  payloadApprovedSlugs: new Set(),
+  reviewSlugs: new Set(),
+  brandIds: [],
+  genericWords: new Set(),
+};
+
+function withLongBody(markup) {
+  const words = Array.from({ length: 275 }, (_, index) => `word${index}`).join(' ');
+  return `<!doctype html><html><body>${markup}<p>${words}</p></body></html>`;
+}
+
+function assertNotApproved(result, message) {
+  assert.notEqual(result.status, gate.STATUS.APPROVED_CANON_PAGE, message);
+}
 
 // Build sets of approved and non-approved URLs from the audit file.
 const approvedUrlSet    = new Set([...(audit.approved || [])].map(e => `/wiki/${e.slug}.html`));
@@ -105,6 +122,55 @@ for (const slug of approvedSlugs) {
 }
 
 console.log(`✓ All ${approvedSlugs.length} real brand pages are APPROVED_CANON_PAGE`);
+
+const realNftSlug = 'gkniftyheads-deko-904071';
+const realNftHtml = fs.readFileSync(path.join(ROOT, 'wiki', `${realNftSlug}.html`), 'utf8');
+const realNftResult = gate.classifyPage(realNftSlug, realNftHtml, canon);
+assert.equal(
+  realNftResult.status,
+  gate.STATUS.APPROVED_CANON_PAGE,
+  `Expected ${realNftSlug} to be approved by validated NFT metadata, got ${realNftResult.status}: ${realNftResult.reason}`
+);
+
+assertNotApproved(
+  gate.classifyPage('fake-class-only-nft', withLongBody('<article class="nft-template-article"></article>'), baseCanon),
+  'A fake page with only class="nft-template-article" must not be auto-approved'
+);
+
+assertNotApproved(
+  gate.classifyPage(
+    'fake-template-class-only-nft',
+    withLongBody('<template class="nft-battle-media-template" data-battle-media="nft" data-page-id="fake-template-class-only-nft"></template>'),
+    baseCanon
+  ),
+  'A fake page with only class="nft-battle-media-template" must not be auto-approved'
+);
+
+assert.equal(
+  gate.classifyPage(
+    'fake-nft-via-spam',
+    withLongBody('<article class="nft-template-article" data-page-type="nft_template" data-collection="fake-nft" data-template-id="12345"></article><template class="nft-battle-media-template" data-battle-media="nft" data-page-id="fake-nft-via-spam"></template>'),
+    baseCanon
+  ).status,
+  gate.STATUS.BLOCKED_SYNTHETIC_SLUG,
+  'Blocked synthetic slug rules must override fake NFT markers'
+);
+
+const reviewCanon = {
+  ...baseCanon,
+  reviewSlugs: new Set(['fake-review-nft-12345']),
+};
+assert.equal(
+  gate.classifyPage(
+    'fake-review-nft-12345',
+    withLongBody('<article class="wiki-content nft-template-article" data-page-type="nft_template" data-collection="fake-review" data-template-id="12345"></article><template class="nft-battle-media-template" data-battle-media="nft" data-page-id="fake-review-nft-12345"></template>'),
+    reviewCanon
+  ).status,
+  gate.STATUS.NEEDS_BRAND_REVIEW,
+  'Explicit NEEDS_BRAND_REVIEW slug rules must override NFT markers'
+);
+
+console.log('✓ NFT gate approval requires validated metadata and hard slug checks still win');
 
 // ── 3. Audit file structure is valid ─────────────────────────────────────────
 
