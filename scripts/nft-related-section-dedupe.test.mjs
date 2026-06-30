@@ -174,14 +174,23 @@ assert.ok(!targetHtml.replace(templateBlock, '').match(/<img\b[^>]*class=["'][^"
 
 const css = fs.readFileSync(path.join(process.cwd(), 'css/wiki.css'), 'utf8');
 const battleLayer = fs.readFileSync(path.join(process.cwd(), 'js/battle-layer.js'), 'utf8');
+const battleCss = fs.readFileSync(path.join(process.cwd(), 'css/battle-layer.css'), 'utf8');
 assert.ok(battleLayer.includes('battle-shell--heat'), 'Battle Heat keeps a semantic shell class');
 assert.ok(battleLayer.includes('battle-shell--missions'), 'Daily Missions keeps a semantic shell class');
 assert.ok(battleLayer.includes('battle-deck battle-engagement-deck'), 'Battle Heat and Daily Missions render in one compact engagement area');
-assert.ok(css.includes('.nft-template-article .battle-shell--missions'), 'Daily Missions is styled as secondary on NFT template pages');
+assert.ok(battleLayer.includes('wiki-engagement-module'), 'Battle Heat and Daily Missions are wrapped in one shared engagement module');
+assert.ok(battleLayer.includes("article.dataset.pageType === 'nft_collection'"), 'NFT collection pages move engagement after collection content');
+assert.ok(battleCss.includes('.wiki-engagement-module .battle-deck.battle-engagement-deck'), 'final compact engagement rules live in battle-layer.css');
+assert.ok(
+  battleCss.lastIndexOf('.wiki-engagement-module .battle-deck.battle-engagement-deck') > battleCss.indexOf('.battle-deck {'),
+  'compact engagement rules appear after the base .battle-deck rule'
+);
+assert.ok(battleCss.includes('.battle-shell--heat:not(:has(.battle-page-media))'), 'non-NFT Battle Heat avoids giant empty media-panel treatment');
 assert.ok(css.includes('.nft-template-article .battle-shell--heat'), 'Battle Heat keeps NFT-page-specific styling');
-assert.ok(css.includes('.battle-engagement-deck .battle-shell--missions'), 'Daily Missions compact styles are scoped under the shared engagement deck');
-assert.ok(css.includes('overflow: visible'), 'Daily Missions compact mode avoids internal scrollbars');
+assert.ok(battleCss.includes('.battle-deck.battle-engagement-deck .battle-shell--missions'), 'Daily Missions compact styles are scoped under the shared engagement deck');
+assert.ok(battleCss.includes('overflow: visible'), 'Daily Missions compact mode avoids internal scrollbars');
 assert.ok(!/\.nft-template-article\s+\.battle-shell--missions\s+\.mission-stack\s*\{[\s\S]*?overflow:\s*auto/i.test(css), 'NFT Daily Missions no longer force an internal scrollbar');
+assert.ok(!/\.battle-deck\.battle-engagement-deck\s+\.battle-shell--missions\s+\.mission-stack\s*\{[\s\S]*?overflow:\s*auto/i.test(battleCss), 'shared Daily Missions compact rules do not force an internal scrollbar');
 assert.ok(css.includes('.wiki-stat strong:empty::before'), 'blank NFT stats render a visible fallback');
 assert.ok(css.includes('content: "Not supplied"'), 'blank Schema-style stats use Not supplied fallback copy');
 

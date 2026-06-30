@@ -343,17 +343,27 @@
     wireMissionEvents(pageId);
 
     var target = document.querySelector('.article-meta');
-    if (!target || document.querySelector('.battle-deck')) return;
+    if (!target || document.querySelector('.wiki-engagement-module, .battle-deck')) return;
 
     var engagement = await computeEngagement(pageId);
+
+    var module = document.createElement('section');
+    module.className = 'wiki-engagement-module';
+    module.setAttribute('aria-label', 'Wiki engagement');
 
     var deck = document.createElement('div');
     deck.className = 'battle-deck battle-engagement-deck';
     deck.innerHTML =
       buildBattleMeterHTML(engagement, pageId) +
       buildMissionHTML(pageId);
+    module.appendChild(deck);
 
-    target.insertAdjacentElement('afterend', deck);
+    var article = target.closest('article');
+    if (article && article.dataset.pageType === 'nft_collection') {
+      article.insertAdjacentElement('afterend', module);
+    } else {
+      target.insertAdjacentElement('afterend', module);
+    }
     hydrateMissionStatus(pageId);
   }
 
