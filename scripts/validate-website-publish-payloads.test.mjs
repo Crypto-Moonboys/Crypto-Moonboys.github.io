@@ -24,6 +24,7 @@ import {
   renderArticleMiddle,
   renderPageFromTemplate,
   runImport,
+  sanitizeRelationshipHints,
 } from './import-website-publish-payloads.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -108,6 +109,17 @@ assertValidationFails(
   'article_html must not include <script'
 );
 console.log('PASS agent legacy shell is rejected');
+
+assertValidationFails(
+  {
+    ...lorePayload,
+    relationship_hints: {
+      project_hubs: ['crypto-moonboys'],
+    },
+  },
+  'relationship_hints.project_hubs[0] must be an object'
+);
+console.log('PASS relationship_hints must keep object-shaped hints');
 
 const missingDir = path.join(os.tmpdir(), `missing-website-payloads-${Date.now()}`);
 const missingResult = validatePayloadDirectory(missingDir);
@@ -220,6 +232,42 @@ assert.ok(tempWikiUrls.has('/wiki/sample-nft-template.html'));
 assert.match(fs.readFileSync(path.join(writeRoot, 'sitemap.xml'), 'utf8'), /https:\/\/cryptomoonboys\.com\/wiki\/sample-nft-template\.html/);
 assert.ok(writeOutput.some((line) => line.includes('Synced portable feed surfaces')));
 console.log('PASS write-mode creates pages and syncs all required temp surfaces');
+
+const hintRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'website-importer-hints-'));
+const hintPayloadDir = path.join(hintRoot, 'website-publish-payloads');
+fs.copyFileSync(path.join(ROOT, '_article-template.html'), path.join(hintRoot, '_article-template.html'));
+const hintPagePath = path.join(hintRoot, 'wiki', 'sample-lore-page.html');
+fs.mkdirSync(path.dirname(hintPagePath), { recursive: true });
+fs.writeFileSync(hintPagePath, '<article class="wiki-content"><p>MANUAL HINT PAGE TEXT MUST SURVIVE.</p><!-- RELATED_WIKI_PATHS:BEGIN --><p>old generated links</p><!-- RELATED_WIKI_PATHS:END --></article>', 'utf8');
+writeJson(path.join(hintPayloadDir, 'sample-lore-page.json'), {
+  ...lorePayload,
+  relationship_hints: {
+    project_hubs: [
+      { url: '/wiki/crypto-moonboys.html.html', name: 'Crypto Moonboys', relationship: 'core hub' },
+      { url: 'https://example.com/external', name: 'External ignored' },
+    ],
+    collections: [{ slug: 'gkniftyheads-nft-collection', name: 'GKniftyHEADS NFT Collection' }],
+    categories: [{ slug: 'nfts', name: 'NFTs' }],
+  },
+});
+
+runImport({
+  payloadDir: hintPayloadDir,
+  rootDir: hintRoot,
+  write: true,
+  logger: () => {},
+});
+
+const persistedHints = JSON.parse(fs.readFileSync(path.join(hintRoot, 'js', 'wiki-relationship-hints.json'), 'utf8'));
+assert.ok(persistedHints['/wiki/sample-lore-page.html'], 'relationship hints must be persisted by URL');
+assert.equal(persistedHints['/wiki/sample-lore-page.html'].relationship_hints.project_hubs[0].url, '/wiki/crypto-moonboys.html');
+assert.ok(!JSON.stringify(persistedHints).includes('https://example.com/external'), 'external relationship hint URLs must not persist');
+assert.ok(!JSON.stringify(persistedHints).includes('.html.html'), 'persisted relationship hints must not contain .html.html URLs');
+const hintRenderedHtml = fs.readFileSync(hintPagePath, 'utf8');
+assert.ok(hintRenderedHtml.includes('MANUAL HINT PAGE TEXT MUST SURVIVE.'), 'relationship hint update must not overwrite manual content');
+assert.ok(!hintRenderedHtml.includes('old generated links'), 'relationship hint update must not capture old Related Wiki Paths as manual content');
+assert.deepEqual(Object.keys(sanitizeRelationshipHints({ bad: [{ url: '/wiki/nope.html' }] })), [], 'unknown hint groups are ignored by sanitizer');
+console.log('PASS relationship_hints persist without overwriting manual content');
 
 const manualRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'website-importer-manual-'));
 const manualPayloadDir = path.join(manualRoot, 'website-publish-payloads');

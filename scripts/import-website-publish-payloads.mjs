@@ -8,6 +8,18 @@ import { PayloadValidationError, validatePayloadDirectory } from './validate-web
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_PAYLOAD_DIR = path.join(ROOT, 'website-publish-payloads');
+const RELATIONSHIP_HINTS_FILE = 'js/wiki-relationship-hints.json';
+const RELATIONSHIP_HINT_GROUPS = [
+  'project_hubs',
+  'collections',
+  'factions',
+  'characters',
+  'games',
+  'tokens',
+  'lore',
+  'categories',
+  'tags',
+];
 export const MANUAL_CONTENT_BEGIN = '<!-- MANUAL_CONTENT:BEGIN -->';
 export const MANUAL_CONTENT_END = '<!-- MANUAL_CONTENT:END -->';
 export const SAM_CONTENT_BEGIN = '<!-- SAM_CONTENT:BEGIN -->';
@@ -67,6 +79,53 @@ function categorySlug(category) {
     .replace(/&/g, 'and')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '') || 'lore';
+}
+
+function normalizeHintUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw || /^https?:\/\//i.test(raw) || raw.startsWith('//')) return '';
+  const withoutHash = raw.split('#')[0].split('?')[0];
+  let normalized = withoutHash.startsWith('/') ? withoutHash : `/wiki/${withoutHash}`;
+  normalized = normalized.replace(/\\/g, '/').replace(/\/+/g, '/');
+  if (/^\/(wiki|categories)\//i.test(normalized) && !/\.html$/i.test(normalized)) {
+    normalized = `${normalized.replace(/\/$/, '')}.html`;
+  }
+  normalized = normalized.replace(/\.html(?:\.html)+$/i, '.html');
+  return normalized;
+}
+
+export function sanitizeRelationshipHints(rawHints) {
+  if (!rawHints || typeof rawHints !== 'object' || Array.isArray(rawHints)) return {};
+
+  const sanitized = {};
+  for (const group of RELATIONSHIP_HINT_GROUPS) {
+    const items = rawHints[group];
+    if (!Array.isArray(items)) continue;
+
+    const out = [];
+    const seen = new Set();
+    for (const item of items) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+      const url = normalizeHintUrl(item.url || item.href || item.path || item.slug);
+      const slug = String(item.slug || '').trim();
+      const name = String(item.name || item.title || item.label || '').trim();
+      const relationship = String(item.relationship || item.type || '').trim();
+      const description = String(item.description || item.note || '').trim();
+      const dedupeKey = url || slug || `${name.toLowerCase()}|${relationship.toLowerCase()}`;
+      if (!dedupeKey || seen.has(dedupeKey)) continue;
+      seen.add(dedupeKey);
+      out.push({
+        ...(url ? { url } : {}),
+        ...(slug ? { slug } : {}),
+        ...(name ? { name } : {}),
+        ...(relationship ? { relationship } : {}),
+        ...(description ? { description } : {}),
+      });
+    }
+    if (out.length) sanitized[group] = out;
+  }
+
+  return sanitized;
 }
 
 function cleanTitle(title) {
@@ -408,6 +467,38 @@ function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf8');
 }
 
+function readJsonObject(filePath) {
+  if (!fs.existsSync(filePath)) return {};
+  const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+}
+
+export function persistRelationshipHints(rootDir, payloads) {
+  const hintsPath = path.join(rootDir, RELATIONSHIP_HINTS_FILE);
+  const existing = readJsonObject(hintsPath);
+  let changed = false;
+
+  for (const payload of payloads) {
+    const hints = sanitizeRelationshipHints(payload.relationship_hints);
+    const url = `/wiki/${payload.slug}.html`;
+    if (Object.keys(hints).length === 0) continue;
+
+    existing[url] = {
+      slug: payload.slug,
+      url,
+      title: payload.title,
+      relationship_hints: hints,
+    };
+    changed = true;
+  }
+
+  if (changed || fs.existsSync(hintsPath)) {
+    writeJson(hintsPath, existing);
+  }
+
+  return existing;
+}
+
 function snapshotFiles(rootDir, relativePaths) {
   const snapshot = new Map();
   for (const relativePath of relativePaths) {
@@ -443,6 +534,7 @@ function expectedSyncFiles(payloads) {
     ...categoryFiles,
     'js/wiki-publish-audit.json',
     'js/wiki-index.json',
+    RELATIONSHIP_HINTS_FILE,
     'js/link-map.json',
     'js/link-graph.json',
     'js/entity-map.json',
@@ -601,6 +693,7 @@ function syncCategories(rootDir, wikiIndex, payloads) {
 function syncPortableSurfaces(rootDir, payloads, logger) {
   const jsDir = path.join(rootDir, 'js');
   fs.mkdirSync(jsDir, { recursive: true });
+  persistRelationshipHints(rootDir, payloads);
 
   const payloadEntries = payloads.map(payloadToIndexEntry);
   const discoveredWikiEntries = discoverWikiPageEntries(rootDir);
@@ -793,6 +886,7 @@ function assertPayloadUrlsSynced(rootDir, payloads) {
 
 function syncRealRootSurfaces(rootDir, payloads, logger) {
   assertRequiredRealRootSyncScripts(rootDir);
+  persistRelationshipHints(rootDir, payloads);
 
   for (const step of REAL_ROOT_SYNC_STEPS) {
     runScriptStep(rootDir, step, logger);

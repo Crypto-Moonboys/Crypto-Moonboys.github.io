@@ -21,6 +21,18 @@ export const OPTIONAL_ARRAY_FIELDS = [
   'see_also',
 ];
 
+export const RELATIONSHIP_HINT_GROUPS = [
+  'project_hubs',
+  'collections',
+  'factions',
+  'characters',
+  'games',
+  'tokens',
+  'lore',
+  'categories',
+  'tags',
+];
+
 export const CANONICAL_BOOT_MARKERS = [
   '/js/api-config.js',
   '/js/arcade/core/global-event-bus.js',
@@ -101,6 +113,28 @@ function validateNftPayload(payload, failures) {
   }
 }
 
+function validateRelationshipHints(payload, failures) {
+  if (!Object.prototype.hasOwnProperty.call(payload, 'relationship_hints')) return;
+  const hints = payload.relationship_hints;
+  if (!hints || typeof hints !== 'object' || Array.isArray(hints)) {
+    failures.push('relationship_hints must be an object when present');
+    return;
+  }
+
+  for (const [group, items] of Object.entries(hints)) {
+    if (!RELATIONSHIP_HINT_GROUPS.includes(group)) continue;
+    if (!Array.isArray(items)) {
+      failures.push(`relationship_hints.${group} must be an array when present`);
+      continue;
+    }
+    for (const [index, item] of items.entries()) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) {
+        failures.push(`relationship_hints.${group}[${index}] must be an object`);
+      }
+    }
+  }
+}
+
 export function validatePayload(payload, sourceName = '<payload>') {
   const failures = [];
 
@@ -130,6 +164,7 @@ export function validatePayload(payload, sourceName = '<payload>') {
 
   validateArticleHtml(payload, failures);
   validateNftPayload(payload, failures);
+  validateRelationshipHints(payload, failures);
 
   if (failures.length > 0) {
     throw new PayloadValidationError(
