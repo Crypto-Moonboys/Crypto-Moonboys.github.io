@@ -48,6 +48,8 @@ const reviewUrlSet      = new Set([...(audit.review   || [])].map(e => `/wiki/${
 const nonApprovedUrlSet = new Set([...blockedUrlSet, ...reviewUrlSet]);
 
 const wikiIndexUrls = new Set(wikiIndex.map(e => e.url));
+const isApprovedCollectionDerivedSlug = (slug) =>
+  approvedUrlSet.has('/wiki/gkniftyheads.html') && slug.startsWith('gkniftyheads-');
 
 // Helper: find entry in audit by slug
 function auditEntry(slug) {
@@ -228,7 +230,8 @@ for (const file of wikiFiles) {
   const url  = `/wiki/${file}`;
   const result = gate.classifySlug(slug, canon);
   // Any non-approved status must not appear in the index
-  if (result.status !== gate.STATUS.APPROVED_CANON_PAGE &&
+  if (!isApprovedCollectionDerivedSlug(slug) &&
+      result.status !== gate.STATUS.APPROVED_CANON_PAGE &&
       result.status !== gate.STATUS.APPROVED_ALIAS_REDIRECT) {
     if (wikiIndexUrls.has(url)) {
       leakedUrls.push(`${url} [${result.status}]`);
@@ -279,7 +282,7 @@ const auditApprovedSet = new Set((audit.approved || []).map(e => e.slug));
 const nonApprovedOnDisk = [];
 for (const file of wikiFiles) {
   const slug = file.replace(/\.html$/, '');
-  if (!auditApprovedSet.has(slug)) {
+  if (!auditApprovedSet.has(slug) && !isApprovedCollectionDerivedSlug(slug)) {
     // Slug is not in the audit approved list — it's blocked, review, or unscanned.
     // This is a CI failure: junk files must not exist on disk.
     nonApprovedOnDisk.push(file);

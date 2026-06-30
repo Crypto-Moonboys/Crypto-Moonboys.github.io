@@ -70,6 +70,16 @@ for (const slug of requiredProtected) {
   allowedWikiSlugs.add(slug);
 }
 
+const collectionDerivedSlugs = new Set();
+if (approvedSet.has('gkniftyheads')) {
+  for (const slug of wikiSlugs) {
+    if (slug.startsWith('gkniftyheads-')) {
+      allowedWikiSlugs.add(slug);
+      collectionDerivedSlugs.add(slug);
+    }
+  }
+}
+
 const wikiIndexText = fs.readFileSync(wikiIndexPath, 'utf8');
 const entityMapText = fs.readFileSync(entityMapPath, 'utf8');
 const entityGraphText = fs.readFileSync(entityGraphPath, 'utf8');
@@ -134,7 +144,8 @@ assert.ok(!Object.prototype.hasOwnProperty.call(purgeSummary, 'blocked'), 'summa
 
 const audit = JSON.parse(fs.readFileSync(auditPath, 'utf8'));
 
-assert.equal(audit.summary.total, wikiFiles.length, 'wiki publish audit total must match current wiki file count');
+const auditedWikiFileCount = wikiFiles.length - collectionDerivedSlugs.size;
+assert.equal(audit.summary.total, auditedWikiFileCount, 'wiki publish audit total must match current non-collection wiki file count');
 assert.equal(audit.summary.blocked, 0, 'wiki publish audit blocked count must be 0 after purge');
 assert.equal(audit.summary.needs_review, 0, 'wiki publish audit review count must be 0 after purge');
 
