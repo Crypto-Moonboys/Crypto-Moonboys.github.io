@@ -1,5 +1,6 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+<!-- SAM:BEGIN:head -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,6 +25,7 @@
     .battle-page-media img { display: block; width: 100%; max-height: min(70vh, 760px); object-fit: contain; border-radius: 14px; }
   </style>
 </head>
+<!-- SAM:END:head -->
 <body class="page-wiki page-has-right-panel" data-entity-hash="nft-gkniftyheads-bitcoin-kid-x-sarahpfly-773225">
 <main id="content" role="main">
 <!-- SAM:BEGIN:article -->
@@ -92,26 +94,16 @@
 <!-- SAM:END:article -->
 </main>
 
-<!-- ── CANONICAL SCRIPT BOOT ─────────────────────────────────────── -->
-<!-- data-cfasync="false" disables Cloudflare Rocket Loader per-script  -->
-<!-- so placeholder nodes are never injected into the boot sequence.    -->
-<!-- 1. Core config -->
+<!-- CANONICAL SCRIPT BOOT -->
+<!-- SAM:BEGIN:scripts -->
 <script data-cfasync="false" src="/js/api-config.js"></script>
-<!-- 2. Event bus -->
 <script data-cfasync="false" src="/js/arcade/core/global-event-bus.js"></script>
-<!-- 3. Identity -->
 <script data-cfasync="false" src="/js/identity-gate.js"></script>
-<!-- 4. State -->
 <script data-cfasync="false" src="/js/core/moonboys-state.js"></script>
-<script data-cfasync="false" src="/js/core/daily-loop-state.js"></script>
-<!-- 5. Shell + shared components -->
 <script data-cfasync="false" src="/js/site-shell.js"></script>
 <script data-cfasync="false" src="/js/components/connection-status-panel.js"></script>
 <script data-cfasync="false" src="/js/components/global-player-header.js"></script>
 <script data-cfasync="false" src="/js/components/live-activity-summary.js"></script>
-<!-- 6. Page-specific scripts -->
-
-<script type="application/json" class="nft-search-terms" data-search-boost="nft">["BITCOIN KiD x SARAHPFLY", "773225", "template 773225", "template id 773225", "gkniftyheads", "NFTs", "WAX NFTs", "ID", "420", "ID 420", "name", "name BITCOIN KiD x SARAHPFLY", "rarity", "ROCKIN HORSE INFINITY SHIT", "rarity ROCKIN HORSE INFINITY SHIT", "variation", "variation GKniftyHEADS"]</script>
 <script data-cfasync="false" src="/js/faction-alignment.js"></script>
 <script data-cfasync="false" src="/js/wiki.js"></script>
 <script data-cfasync="false" src="/js/bible-loader.js"></script>
@@ -166,5 +158,6 @@
   });
 }());
 </script>
+<!-- SAM:END:scripts -->
 </body>
 </html>
